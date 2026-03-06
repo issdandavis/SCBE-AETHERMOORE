@@ -1,0 +1,31 @@
+{
+  "id": "05ed8278e0788662",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "BitcoinAbuse dataset",
+  "content": "# BitcoinAbuse dataset\n\nAuthors: Serusi, Sergio\nPublished: 2020-06-05T13:50:31Z\nSubjects: Computer and Information Science\nDOI: doi:10.7910/DVN/SMPQBQ\n\nDataset of scams gathered from https://www.bitcoinabuse.com/\n\nCitation: Serusi, Sergio, 2020, \"BitcoinAbuse dataset\", https://doi.org/10.7910/DVN/SMPQBQ, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/SMPQBQ",
+  "timestamp": "2026-03-06T02:42:29.165217",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "bcc8772e788557bfd2acb301f90af6ecde4bda3462fe9761acab86e5d631f785",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/SMPQBQ",
+    "subjects": [
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Serusi, Sergio"
+    ],
+    "file_count": 1
+  }
+}

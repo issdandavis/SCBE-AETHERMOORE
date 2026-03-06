@@ -1,0 +1,30 @@
+{
+  "id": "26bd5aa66eaeb3f1",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Managing information in the public sector",
+  "content": "# Managing information in the public sector\n\nCreator: White, Jay D\nDate: 2007-01-01T00:00:00Z\nDownloads: 41\nSubjects: Public administration -- Information technology, Public administration -- Information resources management\n\nxii, 319 p. : 24 cm Includes bibliographical references (p. 287-306) and index Why study MIS in the public sector? -- Information technology for decision making -- Hardware and software issues -- Managing the agency's data resources -- The telecommunications revolution -- The Internet revolution -- Systems development and implementation -- Transforming government with technology -- End user computing issues -- Acquiring technology solutions -- Information security -- Managing information strategically",
+  "url": "https://archive.org/details/managinginformat0000whit",
+  "timestamp": "2026-03-06T02:40:52.039267",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "aef73085565458c28863536732d2094cf368e42601c7a45ff9f11fe31225668c",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "managinginformat0000whit",
+    "media_type": "texts",
+    "downloads": 41,
+    "subjects": [
+      "Public administration -- Information technology",
+      "Public administration -- Information resources management"
+    ]
+  }
+}

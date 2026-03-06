@@ -1,0 +1,32 @@
+{
+  "id": "b108b03c0f10012c",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Replication Data for: \"Did Earth eat its leftovers? Impact ejecta as a component of the late veneer\"",
+  "content": "# Replication Data for: \"Did Earth eat its leftovers? Impact ejecta as a component of the late veneer\"\n\nAuthors: Carter, Philip\nPublished: 2022-04-08T14:45:09Z\nSubjects: Astronomy and Astrophysics, Earth and Environmental Sciences\nDOI: doi:10.7910/DVN/4NOILF\n\nThis dataset contains data from the article: Carter, P. J. and Stewart, S. T., 2021, \"Did Earth eat its leftovers? Impact ejecta as a component of the late veneer\", PSJ, in press. These data consist of N-body simulation input files, processed data, select simulation output and code to read input/output files. See the README file for further information\n\nCitation: Carter, Philip, 2022, \"Replication Data for: \"Did Earth eat its leftovers? Impact ejecta as a component of the late veneer\"\", https://doi.org/10.7910/DVN/4NOILF, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/4NOILF",
+  "timestamp": "2026-03-06T04:18:49.817508",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "aa98dab25fd8e5efa6114b3a458d73aff92ef860d2ffa50d8100c30a35f56203",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/4NOILF",
+    "subjects": [
+      "Astronomy and Astrophysics",
+      "Earth and Environmental Sciences"
+    ],
+    "authors": [
+      "Carter, Philip"
+    ],
+    "file_count": 15590
+  }
+}

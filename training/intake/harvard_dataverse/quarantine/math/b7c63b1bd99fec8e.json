@@ -1,0 +1,32 @@
+{
+  "id": "b7c63b1bd99fec8e",
+  "source": "harvard_dataverse",
+  "category": "quarantine/math",
+  "title": "Replication Data for: C. elegans homeobox gene network benchmark",
+  "content": "# Replication Data for: C. elegans homeobox gene network benchmark\n\nAuthors: Gosztolai, Adam\nPublished: 2021-06-28T15:04:36Z\nSubjects: Mathematical Sciences, Physics\nDOI: doi:10.7910/DVN/XZD8Q0\n\nBenchmarking geometric clustering against other methods on the C. elegans homeobox gene regulatory network of Reilly, M. B., Cros, C., Varol, E., Yemini, E., & Hobert, O. (2020). Unique homeobox codes delineate all the neuron classes of C. elegans. Nature, 584(7822), 1\u201324 (2021-06-28)\n\nCitation: Gosztolai, Adam, 2021, \"Replication Data for: C. elegans homeobox gene network benchmark\", https://doi.org/10.7910/DVN/XZD8Q0, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/XZD8Q0",
+  "timestamp": "2026-03-06T04:18:54.179705",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "582c9f49a9ed9574c320cf7aad2598ba6a2325bc34d07910f4f06744f13f5aa5",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/XZD8Q0",
+    "subjects": [
+      "Mathematical Sciences",
+      "Physics"
+    ],
+    "authors": [
+      "Gosztolai, Adam"
+    ],
+    "file_count": 16
+  }
+}

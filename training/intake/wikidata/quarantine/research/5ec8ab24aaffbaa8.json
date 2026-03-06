@@ -1,0 +1,25 @@
+{
+  "id": "5ec8ab24aaffbaa8",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Post-Quantum Cryptography (Q105700510)",
+  "content": "# Post-Quantum Cryptography\n\nWikidata ID: Q105700510\nDescription: conference series\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q105700510",
+  "timestamp": "2026-03-06T02:41:03.050739",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "96bc1edaf23025954aa527f042e05ebc4be3ea1ec5b95f8c23baf4608dd9992d",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q105700510",
+    "description": "conference series"
+  }
+}

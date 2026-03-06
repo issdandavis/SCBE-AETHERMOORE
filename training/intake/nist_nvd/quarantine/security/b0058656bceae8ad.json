@@ -1,0 +1,30 @@
+{
+  "id": "b0058656bceae8ad",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2020-15601 \u2014 CVSS 8.1 (HIGH)",
+  "content": "# CVE-2020-15601\n\nCVSS Score: 8.1 (HIGH)\nPublished: 2020-08-27T21:15:12.227\nCWEs: CWE-287\n\nIf LDAP authentication is enabled, an LDAP authentication bypass vulnerability in Trend Micro Deep Security 10.x-12.x could allow an unauthenticated attacker with prior knowledge of the targeted organization to bypass manager authentication. Enabling multi-factor authentication prevents this attack. Installations using manager native authentication or SAML authentication are not impacted by this vulnerability.\n\nReferences: https://success.trendmicro.com/solution/000252039, https://www.zerodayinitiative.com/advisories/ZDI-20-1077/, https://success.trendmicro.com/solution/000252039",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-15601",
+  "timestamp": "2026-03-06T04:18:24.195221",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ca65027d75596759b7c2b0ef6c8820d64c66b86b5e9ed2f8e3f6c3d7d767f4b3",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2020-15601",
+    "cvss_score": 8.1,
+    "severity": "HIGH",
+    "cwes": [
+      "CWE-287"
+    ],
+    "published": "2020-08-27T21:15:12.227"
+  }
+}

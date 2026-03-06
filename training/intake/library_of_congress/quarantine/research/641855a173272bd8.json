@@ -1,0 +1,32 @@
+{
+  "id": "641855a173272bd8",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "H.R.3543 - 117th Congress (2021-2022): Blockchain Technology Coordination Act of 2021",
+  "content": "# H.R.3543 - 117th Congress (2021-2022): Blockchain Technology Coordination Act of 2021\n\nContributors: rep. soto, darren [d-fl-9], 117th congress, house of representatives\nDate: 2021-05-26\nSubjects: commerce, congress\n\nSummary of H.R.3543 - 117th Congress (2021-2022): Blockchain Technology Coordination Act of 2021",
+  "url": "https://www.congress.gov/bill/117th-congress/house-bill/3543",
+  "timestamp": "2026-03-06T02:38:39.088073",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "623621388e9206d9d14c5406f18b90606c1fac2a60eed5a3652df0c617445159",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "commerce",
+      "congress"
+    ],
+    "dates": "2021-05-26",
+    "original_format": [
+      "legislation"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "e57f7701b8281027",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "H.R.3987 - 118th Congress (2023-2024): Leveraging Quantum Computing Act",
+  "content": "# H.R.3987 - 118th Congress (2023-2024): Leveraging Quantum Computing Act\n\nContributors: rep. ross, deborah k. [d-nc-2], house of representatives, 118th congress\nDate: 2023-06-09\nSubjects: science, technology, communications, congress\n\nSummary of H.R.3987 - 118th Congress (2023-2024): Leveraging Quantum Computing Act",
+  "url": "https://www.congress.gov/bill/118th-congress/house-bill/3987",
+  "timestamp": "2026-03-06T02:38:03.634978",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ede4166176c0d38125444f2983f9d32d3f5ac8048feb96356eb20a5f6ddaa517",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "science, technology, communications",
+      "congress"
+    ],
+    "dates": "2023-06-09",
+    "original_format": [
+      "legislation"
+    ]
+  }
+}

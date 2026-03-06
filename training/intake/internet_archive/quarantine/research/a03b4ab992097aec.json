@@ -1,0 +1,34 @@
+{
+  "id": "a03b4ab992097aec",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "A comparative analysis of exponential smoothing method and deep learning models for bitcoin price prediction",
+  "content": "# A comparative analysis of exponential smoothing method and deep learning models for bitcoin price prediction\n\nCreator: Nrusingha Tripathy, Debahuti Mishra, Sarbeswara Hota, Mandakini Priyadarshani Behera, Gobinda Chandra Das, Sasanka Sekhar Dalai, Subrat Kumar Nayak\nDate: 2025-04-01T00:00:00Z\nDownloads: 27\nSubjects: Bi-LSTM, Cryptocurrency, Facebook-Prophet, Financial data analysis, Long short-term memory\n\nBlockchain technology is the foundation of cryptocurrencies, which are virtual currencies. The decentralized nature of cryptocurrencies has resulted in a significant reduction of central authority over them, which has implications for global trade and relations. The need for an effective model to anticipate the price of cryptocurrencies is essential due to their wide variations in value. Due to the shortcomings of conventional production forecasting, in this work, four distinct models were used. The deep learning models are the long short-term memory (LSTM) and bidirectional long short-term memory (Bi-LSTM), and both the Facebook-Prophet and Silverkite support the exponential smoothing technique. Silverkite is designed to handle a wide range of time series forecasting tasks. Considering past bitcoin information from January 2012 to March 2021, a period of nine years, we looked at the models. The Bi-LSTM model yields a 7.073 mean absolute error (MAE) and a 3.639 root mean squared error (RMSE). The Bi-LSTM model identifies the deviations that might draw attention and avert any problems.",
+  "url": "https://archive.org/details/54-25502",
+  "timestamp": "2026-03-06T02:40:44.318632",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e090912c18da654843b948a2961903acf144b8ad7cde849c52a1522f9df28d60",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "54-25502",
+    "media_type": "texts",
+    "downloads": 27,
+    "subjects": [
+      "Bi-LSTM",
+      "Cryptocurrency",
+      "Facebook-Prophet",
+      "Financial data analysis",
+      "Long short-term memory",
+      "Silverkite"
+    ]
+  }
+}

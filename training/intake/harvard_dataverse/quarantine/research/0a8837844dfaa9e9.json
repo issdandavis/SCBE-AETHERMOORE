@@ -1,0 +1,33 @@
+{
+  "id": "0a8837844dfaa9e9",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "BenthiCat - SSS Pre-training",
+  "content": "# BenthiCat - SSS Pre-training\n\nAuthors: Rajani, Hayat, Rajani, Hayat\nPublished: 2025-10-15T10:54:29Z\nSubjects: Computer and Information Science, Earth and Environmental Sciences\nDOI: doi:10.7910/DVN/2VCN7Y\n\nThis dataset comprises unlabeled side-scan sonar (SSS) tiles from the BenthiCat collection, curated for self-supervised representation learning and pre-training tasks. The dataset is organized into sector-specific subdirectories, each containing overlapping 384\u00d7384 pixel tiles extracted from the corresponding SSS waterfalls.\n\nCitation: Rajani, Hayat, 2025, \"BenthiCat - SSS Pre-training\", https://doi.org/10.7910/DVN/2VCN7Y, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/2VCN7Y",
+  "timestamp": "2026-03-06T04:18:45.403910",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "8dc43b436d1a5dd2347e635e0854cb6aa769a62bc1b6d0ef6f5ecc29f89dce4f",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/2VCN7Y",
+    "subjects": [
+      "Computer and Information Science",
+      "Earth and Environmental Sciences"
+    ],
+    "authors": [
+      "Rajani, Hayat",
+      "Rajani, Hayat"
+    ],
+    "file_count": 32
+  }
+}

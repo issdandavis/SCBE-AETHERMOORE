@@ -1,0 +1,32 @@
+{
+  "id": "99bb5d05036e1b72",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Word2vec Word Embeddings (1 year)",
+  "content": "# Word2vec Word Embeddings (1 year)\n\nAuthors: Pair, Emma\nPublished: 2021-12-08T02:07:31Z\nSubjects: Computer and Information Science, Social Sciences\nDOI: doi:10.7910/DVN/MA5TNE\n\nThese are word2vec word embeddings created from article text for each year (e.g. 1998, 1999) from the Daily Nation, a Kenyan newspaper, and the corresponding vocabulary files.\n\nCitation: Pair, Emma, 2021, \"Word2vec Word Embeddings (1 year)\", https://doi.org/10.7910/DVN/MA5TNE, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/MA5TNE",
+  "timestamp": "2026-03-06T02:42:11.933303",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "fa6004035a0d8431f27eb70f714dba95af1b171b2e6e0dea27d794b135a9bde4",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/MA5TNE",
+    "subjects": [
+      "Computer and Information Science",
+      "Social Sciences"
+    ],
+    "authors": [
+      "Pair, Emma"
+    ],
+    "file_count": 44
+  }
+}

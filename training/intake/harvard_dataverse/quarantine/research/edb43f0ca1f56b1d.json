@@ -1,0 +1,32 @@
+{
+  "id": "edb43f0ca1f56b1d",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Facelift Urban Scene Generator",
+  "content": "# Facelift Urban Scene Generator\n\nAuthors: Joglekar, Sagar\nPublished: 2019-05-20T15:34:40Z\nSubjects: Arts and Humanities, Computer and Information Science\nDOI: doi:10.7910/DVN/BNJECP\n\nThis dataset contains the Urban scene generator trained on the Augmented streeview dataset. The model is trained in Caffe. The Model can be tested with the demo code seen here : https://github.com/sagarjoglekar/FaceliftGenerator The dataset contains the caffemodel weights and the generator description in the prototext file.\n\nCitation: Joglekar, Sagar, 2019, \"Facelift Urban Scene Generator\", https://doi.org/10.7910/DVN/BNJECP, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/BNJECP",
+  "timestamp": "2026-03-06T04:18:54.179658",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "483cc7375a9e31fdfdfd91c2c3146a3de34db3b94469974ba1cbc431651bd94d",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/BNJECP",
+    "subjects": [
+      "Arts and Humanities",
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Joglekar, Sagar"
+    ],
+    "file_count": 2
+  }
+}

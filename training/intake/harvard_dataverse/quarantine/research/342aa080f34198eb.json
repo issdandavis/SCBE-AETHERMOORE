@@ -1,0 +1,33 @@
+{
+  "id": "342aa080f34198eb",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "GenBank collaboration network visualization: 1992-2018",
+  "content": "# GenBank collaboration network visualization: 1992-2018\n\nAuthors: Hemsley, Jeff, Qin, jian, Bratt, Sarah Elaine\nPublished: 2022-01-30T15:21:37Z\nSubjects: Social Sciences\nDOI: doi:10.7910/DVN/O078UE\n\nEach network represents one year of the data and includes the merged data submission and publication co-author networks. Nodes that only showed up in the publication network are blue with green links. Nodes that only showed up in the data submission network are dark red, with red links. Nodes that showed up in both networks are purple with dark purple links between them. To observe the main structures, we are focused on the giant component for each year, thus isolates and disconnected clusters have been removed. The visualizations were generated with external dataset S1: data submission network graph: https://doi.org/10.7910/DVN/4QUAXY and publication network graph: https://doi.org/10.7910/DVN/YGWKLA.\n\nCitation: Hemsley, Jeff; Qin, jian; Bratt, Sarah Elaine, 2022, \"GenBank collaboration network visualization: 1992-2018\", https://doi.org/10.7910/DVN/O078UE, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/O078UE",
+  "timestamp": "2026-03-06T02:42:16.312281",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "16fd1e60adb0729b4705b2f81daf1afc7afea3f75334763f6bc4182dcf7556be",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/O078UE",
+    "subjects": [
+      "Social Sciences"
+    ],
+    "authors": [
+      "Hemsley, Jeff",
+      "Qin, jian",
+      "Bratt, Sarah Elaine"
+    ],
+    "file_count": 1
+  }
+}

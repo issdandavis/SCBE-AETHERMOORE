@@ -1,0 +1,30 @@
+{
+  "id": "fa98ad02c58850fc",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2010-2372 \u2014 CVSS 4.3 (UNKNOWN)",
+  "content": "# CVE-2010-2372\n\nCVSS Score: 4.3 (UNKNOWN)\nPublished: 2010-07-13T22:30:02.453\nCWEs: NVD-CWE-noinfo\n\nUnspecified vulnerability in the Oracle Transportation Management component in Oracle Supply Chain Products Suite 6.1.1 allows remote attackers to affect integrity via unknown vectors, a different vulnerability than CVE-2010-2371.\n\nReferences: http://www.oracle.com/technetwork/topics/security/cpuoct2010-175626.html, http://www.oracle.com/technetwork/topics/security/cpuoct2010-175626.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2010-2372",
+  "timestamp": "2026-03-06T02:41:59.350864",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "9f0934452738ee4e14aa3f45d3ba9ba9818eb11c1746ae6555fd36aaee5aa933",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2010-2372",
+    "cvss_score": 4.3,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-noinfo"
+    ],
+    "published": "2010-07-13T22:30:02.453"
+  }
+}

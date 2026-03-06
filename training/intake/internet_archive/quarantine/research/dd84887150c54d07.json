@@ -1,0 +1,32 @@
+{
+  "id": "dd84887150c54d07",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "A Tidy Data Model for Natural Language Processing using cleanNLP",
+  "content": "# A Tidy Data Model for Natural Language Processing using cleanNLP\n\nCreator: Taylor Arnold\nDate: 2017-03-26T00:00:00Z\nDownloads: 38\nSubjects: Computation, Statistics, Computing Research Repository, Computation and Language\n\nThe package cleanNLP provides a set of fast tools for converting a textual corpus into a set of normalized tables. The underlying natural language processing pipeline utilizes Stanford's CoreNLP library, exposing a number of annotation tasks for text written in English, French, German, and Spanish. Annotators include tokenization, part of speech tagging, named entity recognition, entity linking, sentiment analysis, dependency parsing, coreference resolution, and information extraction.",
+  "url": "https://archive.org/details/arxiv-1703.09570",
+  "timestamp": "2026-03-06T02:40:36.587551",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "eb325efed34f77397cf84f5efd0305f8012d170448a320a7ca17bd355c02349e",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1703.09570",
+    "media_type": "texts",
+    "downloads": 38,
+    "subjects": [
+      "Computation",
+      "Statistics",
+      "Computing Research Repository",
+      "Computation and Language"
+    ]
+  }
+}

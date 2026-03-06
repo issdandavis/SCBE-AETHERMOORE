@@ -1,0 +1,38 @@
+{
+  "id": "9941759a8224d351",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Advances in computing and information technology : proceedings of the second International Conference on Advances in Computing and Information Technology (ACITY) July 13-15, 2012, Chennai, India. Volume 3",
+  "content": "# Advances in computing and information technology : proceedings of the second International Conference on Advances in Computing and Information Technology (ACITY) July 13-15, 2012, Chennai, India. Volume 3\n\nCreator: ACITY 2012 (2012 : Chennai, India)\nDate: 2013-01-01T00:00:00Z\nDownloads: 33\nSubjects: Computer science -- Congresses, Information technology -- Congresses, Artificial intelligence -- Congresses, COMPUTERS -- Computer Literacy, COMPUTERS -- Computer Science\n\n1 online resource The international conference on Advances in Computing and Information technology (ACITY 2012) provides an excellent international forum for both academics and professionals for sharing knowledge and results in theory, methodology and applications of Computer Science and Information Technology. The Second International Conference on Advances in Computing and Information technology (ACITY 2012), held in Chennai, India, during July 13-15, 2012, covered a number of topics in all major fields of Computer Science and Information Technology including: networking and communications, network security and applications, web and internet computing, ubiquitous computing, algorithms, bioinformatics, digital image processing and pattern recognition, artificial intelligence, soft computing and applications. Upon a strength review process, a number of high-quality, presenting not only innovative ideas but also a founded evaluation and a strong argumentation of the same, were selected and collected in the present proceedings, that is composed of three different volumes Includes bibliographical references and author index",
+  "url": "https://archive.org/details/advancesincomput0000acit",
+  "timestamp": "2026-03-06T02:40:52.039389",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "335ab8e5d70d19543f38477ea9b930f9f27d5669db981624746b42a1394b0890",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "advancesincomput0000acit",
+    "media_type": "texts",
+    "downloads": 33,
+    "subjects": [
+      "Computer science -- Congresses",
+      "Information technology -- Congresses",
+      "Artificial intelligence -- Congresses",
+      "COMPUTERS -- Computer Literacy",
+      "COMPUTERS -- Computer Science",
+      "COMPUTERS -- Data Processing",
+      "COMPUTERS -- Hardware -- General",
+      "COMPUTERS -- Information Technology",
+      "COMPUTERS -- Machine Theory",
+      "COMPUTERS -- Reference"
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "a0dbd62830580dae",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Decoupled energy estimates for tensorial non-linear wave equations and applications",
+  "content": "# Decoupled energy estimates for tensorial non-linear wave equations and applications\n\nAuthors: Sari Ghanem\nPublished: 2026-02-28T20:17:33Z\n\nWe prove energy estimates for solutions to a tensorial system of coupled non-linear wave equations, in a way that is suitable to deal with the structure of the non-linearity that arises from the Einstein-Yang-Mills system in the Lorenz gauge as well as with other new different non-linearities. We establish suitable bounds on the $L^2$-norm of each component in a frame decomposition of the tensorial solutions, in way that does not involve all the other components of the tensor, which would allow us to decouple the higher order energy estimates for certain components from the other components. We achieve this partly by exploiting the tensorial structure of the coupled non-linear wave equations, where the background metric that is \u00e0 priori unknown, is a perturbation of the Minkowski space-time in a certain fixed system of coordinates, and by exploiting the structure of the commutator term for the Lie derivatives of the solutions. These decoupled energy estimates for each component of the tensor in a frame, are new and motivated by a problem that we address in a subsequent paper to prove the exterior non-linear stability of the $(1+3)$-Minkowski space-time governed by a general class of perturbations, that includes the non-linearities that arise from the Einstein-Yang-Mills system in the Lorenz gauge as well as other new non-linearities, which have a different non-linear structure than the one treated by Lindblad-Rodnianski, for which their seminal $L^\\infty$-estimate does not work to the best of our knowledge. The decoupled energy bounds on each component in a frame derived here allow us to replace the celebrated $L^\\infty$-estimate of Lindblad-Rodnianski in a novel way that permits us to treat these new non-linear structures.",
+  "url": "http://arxiv.org/abs/2603.00799v1",
+  "timestamp": "2026-02-28T20:17:33Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "299045aec10ea9a8f4c5c83286dca3f64468f8029058ea2393465900eaf3f90a",
+  "parent_hash": "e450495e3da65b4d66a8294824f952f69c58995cbcbc238ce5e8a3eb07760896",
+  "metadata": {
+    "authors": [
+      "Sari Ghanem"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.00799v1"
+  }
+}

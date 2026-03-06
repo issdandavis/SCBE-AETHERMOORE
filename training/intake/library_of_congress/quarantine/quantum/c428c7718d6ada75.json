@@ -1,0 +1,33 @@
+{
+  "id": "c428c7718d6ada75",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "How Quantum Computing Will Change the Way We Collect, Store and Distribute Information",
+  "content": "# How Quantum Computing Will Change the Way We Collect, Store and Distribute Information\n\nContributors: john w. kluge center (library of congress), library of congress\nDate: 2005\nSubjects: science, technology, technology, industry, education\n\nJuan Pablo Paz is a quantum physist now working at the Los Alamos National Laboratory.",
+  "url": "https://www.loc.gov/item/2021687624/",
+  "timestamp": "2026-03-06T02:38:03.635010",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "05b8d4cabbef1a7d4169fa8f9a512ffb982988a8d274c253201cdf225916e898",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "science, technology",
+      "technology, industry",
+      "education"
+    ],
+    "dates": "2005",
+    "original_format": [
+      "film, video"
+    ]
+  }
+}

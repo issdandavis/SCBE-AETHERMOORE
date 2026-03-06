@@ -1,0 +1,28 @@
+{
+  "id": "c553b57bbfcfbdc0",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "On $U(1)^{n-2}$-Invariant Special Lagrangian $n$-Folds",
+  "content": "# On $U(1)^{n-2}$-Invariant Special Lagrangian $n$-Folds\n\nAuthors: Mia S. L. Beard\nPublished: 2026-02-23T13:51:25Z\n\nThis paper develops a construction of families of $ U(1)^{n-2} $-invariant special Lagrangian $ n $-folds in $ \\mathbb{C}^{n} $, extending the analytic framework introduced by Joyce ($ n = 3 $) to arbitrary dimension. By reducing the special Lagrangian condition to a quasilinear elliptic system of two-dimensional non-linear Cauchy-Riemann equations, we analyse both the resulting geometry and its degenerations at singular points. We show that the structure and multiplicity of singularities are governed by an associated polynomial arising from the symmetry reduction. Explicit examples are constructed, including affine and perturbative solutions, and are compared with the classical Harvey-Lawson $ U(1)^{n-1} $-invariant submanifolds. We further show that the key elements of Joyce's analysis in the non-singular case, in particular the potential formulation and Dirichlet problem, extend to this higher-dimensional setting, with the proofs unchanged.",
+  "url": "http://arxiv.org/abs/2602.19847v1",
+  "timestamp": "2026-02-23T13:51:25Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "3f675b709b6d0b12b9f5662b9750f515bdeb61dfd0b09224784fc5b0e634d148",
+  "parent_hash": "dedbd049a08dbb6c3232fdd53fb7ff76a46e2803695ba4b3e6b6eff5faf55e9b",
+  "metadata": {
+    "authors": [
+      "Mia S. L. Beard"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.19847v1"
+  }
+}

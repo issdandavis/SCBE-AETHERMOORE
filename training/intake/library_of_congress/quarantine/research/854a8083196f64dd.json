@@ -1,0 +1,32 @@
+{
+  "id": "854a8083196f64dd",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "H.R.9067 - 116th Congress (2019-2020): Blockchain Technology Coordination Act of 2020",
+  "content": "# H.R.9067 - 116th Congress (2019-2020): Blockchain Technology Coordination Act of 2020\n\nContributors: rep. soto, darren [d-fl-9], house of representatives, 116th congress\nDate: 2020-12-31\nSubjects: commerce, congress\n\nSummary of H.R.9067 - 116th Congress (2019-2020): Blockchain Technology Coordination Act of 2020",
+  "url": "https://www.congress.gov/bill/116th-congress/house-bill/9067",
+  "timestamp": "2026-03-06T02:38:39.088087",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c942330548e10fa06d4f9d1468f4ac71bec2a4c64ff9f247952e0269895251e6",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "commerce",
+      "congress"
+    ],
+    "dates": "2020-12-31",
+    "original_format": [
+      "legislation"
+    ]
+  }
+}

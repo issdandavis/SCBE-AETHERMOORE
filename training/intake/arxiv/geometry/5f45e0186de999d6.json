@@ -1,0 +1,28 @@
+{
+  "id": "5f45e0186de999d6",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Principal twistor models and asymptotic hyperk\u00e4hler metrics",
+  "content": "# Principal twistor models and asymptotic hyperk\u00e4hler metrics\n\nAuthors: Ryota Kotani\nPublished: 2026-03-04T10:31:52Z\n\nLet $X$ be a conical symplectic variety admitting a crepant resolution $Y$. Based on the theory of universal Poisson deformations, we construct a complex manifold called the principal twistor model associated with $Y$. We prove a universality theorem for this model: if the regular locus of $X$ admits a hyperk\u00e4hler cone metric, then the twistor space of any algebraic hyperk\u00e4hler metric on $Y$ asymptotic to this cone metric is uniquely recovered by slicing the principal twistor model. As an application, we use this universality to study the moduli space of hyperk\u00e4hler structures with asymptotic behavior, and show that it admits an inclusion into a finite-dimensional real vector space.",
+  "url": "http://arxiv.org/abs/2603.03923v1",
+  "timestamp": "2026-03-04T10:31:52Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "b64bacfad5b34f2d08905b3fd367d9ce7ef45b7d924f7a34162676d85afe9fb6",
+  "parent_hash": "3857bd6ea70315ac3cd4fa10498fd987466712099092b30d2555b4315d0a90b2",
+  "metadata": {
+    "authors": [
+      "Ryota Kotani"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.03923v1"
+  }
+}

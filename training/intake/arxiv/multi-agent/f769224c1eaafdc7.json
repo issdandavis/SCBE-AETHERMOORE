@@ -1,0 +1,35 @@
+{
+  "id": "f769224c1eaafdc7",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "From Spark to Fire: Modeling and Mitigating Error Cascades in LLM-Based Multi-Agent Collaboration",
+  "content": "# From Spark to Fire: Modeling and Mitigating Error Cascades in LLM-Based Multi-Agent Collaboration\n\nAuthors: Yizhe Xie, Congcong Zhu, Xinyue Zhang, Tianqing Zhu, Dayong Ye, Minfeng Qi, Huajie Chen, Wanlei Zhou\nPublished: 2026-03-04T11:45:27Z\n\nLarge Language Model-based Multi-Agent Systems (LLM-MAS) are increasingly applied to complex collaborative scenarios. However, their collaborative mechanisms may cause minor inaccuracies to gradually solidify into system-level false consensus through iteration. Such risks are difficult to trace since errors can propagate and amplify through message dependencies. Existing protections often rely on single-agent validation or require modifications to the collaboration architecture, which can weaken effective information flow and may not align with natural collaboration processes in real tasks. To address this, we propose a propagation dynamics model tailored for LLM-MAS that abstracts collaboration as a directed dependency graph and provides an early-stage risk criterion to characterize amplification risk. Through experiments on six mainstream frameworks, we identify three vulnerability classes: cascade amplification, topological sensitivity, and consensus inertia. We further instantiate an attack where injecting just a single atomic error seed leads to widespread failure. In response, we introduce a genealogy-graph-based governance layer, implemented as a message-layer plugin, that suppresses both endogenous and exogenous error amplification without altering the collaboration architecture. Experiments show that this approach raises the defense success rate from a baseline of 0.32 to over 0.89 and significantly mitigates the cascading spread of minor errors.",
+  "url": "http://arxiv.org/abs/2603.04474v1",
+  "timestamp": "2026-03-04T11:45:27Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "6367b88467aeea857b12e2f3501cf83ecaf5e2fa2606669b52faaabce8a42c9d",
+  "parent_hash": "455d1bf605be8cb3aafbd4cf4685393740bf5ffd95332d1338d44d49b1f58edc",
+  "metadata": {
+    "authors": [
+      "Yizhe Xie",
+      "Congcong Zhu",
+      "Xinyue Zhang",
+      "Tianqing Zhu",
+      "Dayong Ye",
+      "Minfeng Qi",
+      "Huajie Chen",
+      "Wanlei Zhou"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.04474v1"
+  }
+}

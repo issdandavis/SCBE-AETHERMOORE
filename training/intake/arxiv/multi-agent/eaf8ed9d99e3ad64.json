@@ -1,0 +1,29 @@
+{
+  "id": "eaf8ed9d99e3ad64",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Learning Approximate Nash Equilibria in Cooperative Multi-Agent Reinforcement Learning via Mean-Field Subsampling",
+  "content": "# Learning Approximate Nash Equilibria in Cooperative Multi-Agent Reinforcement Learning via Mean-Field Subsampling\n\nAuthors: Emile Anand, Ishani Karmarkar\nPublished: 2026-03-04T06:14:24Z\n\nMany large-scale platforms and networked control systems have a centralized decision maker interacting with a massive population of agents under strict observability constraints. Motivated by such applications, we study a cooperative Markov game with a global agent and $n$ homogeneous local agents in a communication-constrained regime, where the global agent only observes a subset of $k$ local agent states per time step. We propose an alternating learning framework $(\\texttt{ALTERNATING-MARL})$, where the global agent performs subsampled mean-field $Q$-learning against a fixed local policy, and local agents update by optimizing in an induced MDP. We prove that these approximate best-response dynamics converge to an $\\widetilde{O}(1/\\sqrt{k})$-approximate Nash Equilibrium, while yielding a separation in the sample complexities between the joint state space and action space. Finally, we validate our results in numerical simulations for multi-robot control and federated optimization.",
+  "url": "http://arxiv.org/abs/2603.03759v1",
+  "timestamp": "2026-03-04T06:14:24Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "bcfbc4f8bed93a45b26999a56b4799df2eeda9f3a8529ba750d85371a3362fc3",
+  "parent_hash": "de1e23d2dfede8e9c4cf1227a55231ff30209585483dbfba27df817772b4aef2",
+  "metadata": {
+    "authors": [
+      "Emile Anand",
+      "Ishani Karmarkar"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.03759v1"
+  }
+}

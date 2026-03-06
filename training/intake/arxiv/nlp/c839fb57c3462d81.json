@@ -1,0 +1,30 @@
+{
+  "id": "c839fb57c3462d81",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "HiMAP-Travel: Hierarchical Multi-Agent Planning for Long-Horizon Constrained Travel",
+  "content": "# HiMAP-Travel: Hierarchical Multi-Agent Planning for Long-Horizon Constrained Travel\n\nAuthors: The Viet Bui, Wenjun Li, Yong Liu\nPublished: 2026-03-05T02:55:53Z\n\nSequential LLM agents fail on long-horizon planning with hard constraints like budgets and diversity requirements. As planning progresses and context grows, these agents drift from global constraints. We propose HiMAP-Travel, a hierarchical multi-agent framework that splits planning into strategic coordination and parallel day-level execution. A Coordinator allocates resources across days, while Day Executors plan independently in parallel. Three key mechanisms enable this: a transactional monitor enforcing budget and uniqueness constraints across parallel agents, a bargaining protocol allowing agents to reject infeasible sub-goals and trigger re-planning, and a single policy trained with GRPO that powers all agents through role conditioning. On TravelPlanner, HiMAP-Travel with Qwen3-8B achieves 52.78% validation and 52.65% test Final Pass Rate (FPR). In a controlled comparison with identical model, training, and tools, it outperforms the sequential DeepTravel baseline by +8.67~pp. It also surpasses ATLAS by +17.65~pp and MTP by +10.0~pp. On FlexTravelBench multi-turn scenarios, it achieves 44.34% (2-turn) and 37.42% (3-turn) FPR while reducing latency 2.5x through parallelization.",
+  "url": "http://arxiv.org/abs/2603.04750v1",
+  "timestamp": "2026-03-05T02:55:53Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "7287c0e7ed7260575a206fc88d1f00c9b37ead64339596d91a7f6e20a015e554",
+  "parent_hash": "591b9ce944e44a4d4caeb6f58049cf505fd067bb1075973dc441d0875ada8787",
+  "metadata": {
+    "authors": [
+      "The Viet Bui",
+      "Wenjun Li",
+      "Yong Liu"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.04750v1"
+  }
+}

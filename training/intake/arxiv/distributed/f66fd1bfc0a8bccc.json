@@ -1,0 +1,30 @@
+{
+  "id": "f66fd1bfc0a8bccc",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Radiation Hydrodynamics at Scale: Comparing MPI and Asynchronous Many-Task Runtimes with FleCSI",
+  "content": "# Radiation Hydrodynamics at Scale: Comparing MPI and Asynchronous Many-Task Runtimes with FleCSI\n\nAuthors: Alexander Strack, Hartmut Kaiser, Dirk Pfl\u00fcger\nPublished: 2026-03-05T16:44:53Z\n\nWriting efficient distributed code remains a labor-intensive and complex endeavor. To simplify application development, the Flexible Computational Science Infrastructure (FleCSI) framework offers a user-oriented, high-level programming interface that is built upon a task-based runtime model. Internally, FleCSI integrates state-of-the-art parallelization backends, including MPI and the asynchronous many-task runtimes (AMTRs) Legion and HPX, enabling applications to fully leverage asynchronous parallelism. In this work, we benchmark two applications using FleCSI's three backends on up to 1024 nodes, intending to quantify the advantages and overheads introduced by the AMTR backends. As representative applications, we select a simple Poisson solver and the multidimensional radiation hydrodynamics code HARD. In the communication-focused Poisson solver benchmark, FleCSI achieves over 97% parallel efficiency using the MPI backend under weak scaling on up to 131072 cores, indicating that only minimal overhead is introduced by its abstraction layer. While the Legion backend exhibits notable overheads and scaling limitations, the HPX backend introduces only marginal overhead compared to MPI+Kokkos. However, the scalability of the HPX backend is currently limited due to the usage of non-optimized HPX collective operations. In the computation-focused radiation hydrodynamics benchmarks, the performance gap between the MPI and HPX backends fades. On fewer than 64 nodes, the HPX backend outperforms MPI+Kokkos, achieving an average speedup of 1.31 under weak scaling and up to 1.27 under strong scaling. For the hydrodynamics-only HARD benchmark, the HPX backend demonstrates superior performance on fewer than 32 nodes, achieving speedups of up to 1.20 relative to MPI and up to 1.64 relative to MPI+Kokkos.",
+  "url": "http://arxiv.org/abs/2603.05366v1",
+  "timestamp": "2026-03-05T16:44:53Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "ff1e0e53bdf38d247d7aac0d02560ad769b54f75d07ead94b6a10a077c549f0e",
+  "parent_hash": "827f8584d35ec84e6c1cc42f194fef24340279de88d2c57c85c83726adf9ebe5",
+  "metadata": {
+    "authors": [
+      "Alexander Strack",
+      "Hartmut Kaiser",
+      "Dirk Pfl\u00fcger"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.05366v1"
+  }
+}

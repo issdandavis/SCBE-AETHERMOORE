@@ -1,0 +1,34 @@
+{
+  "id": "2bd2e6a009110137",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "HyperParallel: A Supernode-Affinity AI Framework",
+  "content": "# HyperParallel: A Supernode-Affinity AI Framework\n\nAuthors: Xin Zhang, Beilei Sun, Teng Su, Qinghua Zhang, Chong Bao, Lei Chen, Xuefeng Jin\nPublished: 2026-03-04T05:03:33Z\n\nThe emergence of large-scale, sparse, multimodal, and agentic AI models has coincided with a shift in hardware toward supernode architectures that integrate hundreds to thousands of accelerators with ultra-low-latency interconnects and unified memory pools. However, existing AI frameworks are not designed to exploit these architectures efficiently, leading to high programming complexity, load imbalance, and poor memory utilization. In this paper, we propose a supernode-affinity AI framework that treats the supernode as a single logical computer and embeds hardware-aware orchestration into the framework. Implemented in MindSpore, our HyperParallel architecture comprises HyperOffload for automated hierarchical memory management, HyperMPMD for fine-grained MPMD parallelism across heterogeneous workloads, and HyperShard for declarative parallel strategy specification. Together, these techniques significantly improve training and inference efficiency while reducing parallel programming and system tuning overhead, demonstrating the necessity of supernode affinity for next-generation AI frameworks.",
+  "url": "http://arxiv.org/abs/2603.03731v1",
+  "timestamp": "2026-03-04T05:03:33Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "165943a7a8d5877c229774b93ba2b9426d5d0c52d33fe04a00268371c896fe08",
+  "parent_hash": "43645e37aabba7dc7ff29e65309d679113011b6a50693df1fcec2b3feea4c2a5",
+  "metadata": {
+    "authors": [
+      "Xin Zhang",
+      "Beilei Sun",
+      "Teng Su",
+      "Qinghua Zhang",
+      "Chong Bao",
+      "Lei Chen",
+      "Xuefeng Jin"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.03731v1"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "e6b4e2f1c0fcbdd5",
+  "source": "harvard_dataverse",
+  "category": "quarantine/ai",
+  "title": "Replication code for: Alpha Go Everywhere: Machine Learning and International Stock Returns",
+  "content": "# Replication code for: Alpha Go Everywhere: Machine Learning and International Stock Returns\n\nAuthors: Choi, Darwin, Jiang, Wenxi, Zhang, Chao\nPublished: 2025-04-26T08:25:43Z\nSubjects: Business and Management, Social Sciences\nDOI: doi:10.7910/DVN/J7LOYS\n\nThis is the replication code for the project Alpha Go Everywhere: Machine Learning and International Stock Returns, which was accepted by the Review of Asset Pricing Studies.\n\nCitation: Choi, Darwin; Jiang, Wenxi; Zhang, Chao, 2025, \"Replication code for: Alpha Go Everywhere: Machine Learning and International Stock Returns\", https://doi.org/10.7910/DVN/J7LOYS, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/J7LOYS",
+  "timestamp": "2026-03-06T02:42:33.567233",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7b83ad14fb80a05b8bd8834407cecd792377a00604379cb21da01c1fd2572509",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/J7LOYS",
+    "subjects": [
+      "Business and Management",
+      "Social Sciences"
+    ],
+    "authors": [
+      "Choi, Darwin",
+      "Jiang, Wenxi",
+      "Zhang, Chao"
+    ],
+    "file_count": 18
+  }
+}

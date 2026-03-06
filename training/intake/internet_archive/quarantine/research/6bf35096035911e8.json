@@ -1,0 +1,38 @@
+{
+  "id": "6bf35096035911e8",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Mackenzie heat",
+  "content": "# Mackenzie heat\n\nCreator: Mugglebee, Stephen T\nDate: 2010-01-01T00:00:00Z\nDownloads: 15\nSubjects: Hackers -- Fiction, Computer crimes -- Fiction, Banks and banking -- Fiction, Banks and banking, Computer crimes\n\n322 pages ; 22 cm Duncan MacKenzie, Director of Security for Sterling Bank and Trust of Boston, finds himself in a deadly game of blind man's bluff when a mysterious hacker sneaks into the bank's computer and steals $5 Million. The worse part is, it was an object lesson, and they threaten to do it again unless the bank shuts down an \"Operation\" no one has ever heard of. Mac, an ex-Boston cop, hates computers and distrusts the amount of private information they hold. After reading this story, the next time you pull out your plastic, you will think twice about using it. Is it fiction, or reality? In October, 1998, two FBI agents while testifying before a Senate subcommittee on banking, refused to answer a question about an unverified incident at a Boston bank. The question was stricken from the record, and the public has never been told why that question was asked. Truth, or fiction?",
+  "url": "https://archive.org/details/mackenzieheat0000mugg",
+  "timestamp": "2026-03-06T02:40:52.039336",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "371413d2a5ca13f694532def0fed97fa93ccfba122e223ff6f09d573374c25a2",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "mackenzieheat0000mugg",
+    "media_type": "texts",
+    "downloads": 15,
+    "subjects": [
+      "Hackers -- Fiction",
+      "Computer crimes -- Fiction",
+      "Banks and banking -- Fiction",
+      "Banks and banking",
+      "Computer crimes",
+      "Hackers",
+      "Boston (Mass.) -- Fiction",
+      "Massachusetts -- Fiction",
+      "Massachusetts",
+      "Massachusetts -- Boston"
+    ]
+  }
+}

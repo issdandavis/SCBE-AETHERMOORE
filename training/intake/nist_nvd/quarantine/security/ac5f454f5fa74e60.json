@@ -1,0 +1,30 @@
+{
+  "id": "ac5f454f5fa74e60",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2012-0390 \u2014 CVSS 4.3 (UNKNOWN)",
+  "content": "# CVE-2012-0390\n\nCVSS Score: 4.3 (UNKNOWN)\nPublished: 2012-01-06T01:55:01.080\nCWEs: CWE-310\n\nThe DTLS implementation in GnuTLS 3.0.10 and earlier executes certain error-handling code only if there is a specific relationship between a padding length and the ciphertext size, which makes it easier for remote attackers to recover partial plaintext via a timing side-channel attack, a related issue to CVE-2011-4108.\n\nReferences: http://lists.opensuse.org/opensuse-security-announce/2014-03/msg00001.html, http://secunia.com/advisories/57260, http://www.isg.rhul.ac.uk/~kp/dtls.pdf",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2012-0390",
+  "timestamp": "2026-03-06T04:18:33.345018",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "66ba7af8a34a362e0e08a09cf9509e906db1d2eca404ccd477a2efcf3701c8b5",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2012-0390",
+    "cvss_score": 4.3,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-310"
+    ],
+    "published": "2012-01-06T01:55:01.080"
+  }
+}

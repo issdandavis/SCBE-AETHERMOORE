@@ -1,0 +1,31 @@
+{
+  "id": "eece059c9d8c3793",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Six-dimensional GKM manifolds with four fixed points",
+  "content": "# Six-dimensional GKM manifolds with four fixed points\n\nAuthors: Donghoon Jang, Shintaro Kuroki, Mikiya Masuda, Takashi Sato\nPublished: 2026-02-18T07:01:28Z\n\nIn this paper, we study $6$-dimensional GKM manifolds with $4$ fixed points. We classify all possible GKM graphs, and for each type of graph we construct a manifold, proving the existence. We show that six types occur.\n  (P1) complex projective space $\\mathbb{C} P^3$ with standard complex structure\n  (P2) blow up of $S^6$ at a fixed point, diffeomorphic to $\\mathbb{C} P^3$\n  (P3) $\\mathbb{C} P^3$ as the homogeneous space $\\mathrm{Sp}(2)/(\\mathrm{U}(1) \\times \\mathrm{Sp}(1))$ with non-standard almost complex structure\n  (Q1) complex quadric $Q_3$ with standard complex structure\n  (Q2) blow up of $S^6$ along isotropy $2$-sphere, diffeomorphic to $Q_3$\n  (S) $S^2 \\times S^4$, obtained as equivariant gluing along orbits of two $S^6$'s",
+  "url": "http://arxiv.org/abs/2602.16225v1",
+  "timestamp": "2026-02-18T07:01:28Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "58fc31f0429de9fce52bd95d3b31dfecbb8b98fd2296f6633757a5ae3caf0072",
+  "parent_hash": "bc32a021c9b6716fe1bf9f70ec0d11cc68c6507465f9ff10332e8fffab1c4fa0",
+  "metadata": {
+    "authors": [
+      "Donghoon Jang",
+      "Shintaro Kuroki",
+      "Mikiya Masuda",
+      "Takashi Sato"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.16225v1"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "eeb84d1c10a05eb6",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2000-0120 \u2014 CVSS 7.5 (UNKNOWN)",
+  "content": "# CVE-2000-0120\n\nCVSS Score: 7.5 (UNKNOWN)\nPublished: 2000-01-01T05:00:00.000\nCWEs: NVD-CWE-Other\n\nThe Remote Access Service invoke.cfm template in Allaire Spectra 1.0 allows users to bypass authentication via the bAuthenticated parameter.\n\nReferences: http://www.securityfocus.com/bid/955, https://exchange.xforce.ibmcloud.com/vulnerabilities/4025, http://www.securityfocus.com/bid/955",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2000-0120",
+  "timestamp": "2026-03-06T02:41:48.082152",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "30c6c37930e0f7bb7946d5ab0eb084738b549b4c241c6ef2f5bc7866e60f15db",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2000-0120",
+    "cvss_score": 7.5,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "2000-01-01T05:00:00.000"
+  }
+}

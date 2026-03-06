@@ -1,0 +1,26 @@
+{
+  "id": "3e212f247777921e",
+  "source": "notion",
+  "category": "quarantine/scbe-general",
+  "title": "",
+  "content": "# \n\n",
+  "url": "https://www.notion.so/50c7cf81d67643af89e5e9e61d3da33f",
+  "timestamp": "2026-02-07T18:15:00.000Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "5ee9cd957fecf44efb302bceb95ed3806e09524360a7ce3f43f9cd32b7b11634",
+  "parent_hash": "8892c8f29e94183ab83532215fa1892201ed4d57b041eb81804f25d349c25b70",
+  "metadata": {
+    "notion_id": "50c7cf81-d676-43af-89e5-e9e61d3da33f",
+    "page_type": "database",
+    "parent_type": "workspace"
+  }
+}

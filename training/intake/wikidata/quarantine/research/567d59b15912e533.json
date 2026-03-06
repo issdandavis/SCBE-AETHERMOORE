@@ -1,0 +1,25 @@
+{
+  "id": "567d59b15912e533",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Retrieval-Augmented Generation for Query Target Type Identification (Q135347363)",
+  "content": "# Retrieval-Augmented Generation for Query Target Type Identification\n\nWikidata ID: Q135347363\nDescription: scientific article published on 9 April 2025\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q135347363",
+  "timestamp": "2026-03-06T02:41:28.754484",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "f89f1f78897febd46b7e300731e8bc2d719c2da42dc6b4b3eb7b146403da7821",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q135347363",
+    "description": "scientific article published on 9 April 2025"
+  }
+}

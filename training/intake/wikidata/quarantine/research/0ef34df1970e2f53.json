@@ -1,0 +1,25 @@
+{
+  "id": "0ef34df1970e2f53",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "golden ratio (Q41690)",
+  "content": "# golden ratio\n\nWikidata ID: Q41690\nDescription: ratio between two quantities whose sum is at the same ratio to the larger one\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q41690",
+  "timestamp": "2026-03-06T02:41:14.149584",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6fc7564af3f780dcfb28e8e72687ddff7a7a81cccf88a71f5783c7a363d3beef",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q41690",
+    "description": "ratio between two quantities whose sum is at the same ratio to the larger one"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "f047fe91e83213f7",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Preserving Continuous Symmetry in Discrete Spaces: Geometric-Aware Quantization for SO(3)-Equivariant GNNs",
+  "content": "# Preserving Continuous Symmetry in Discrete Spaces: Geometric-Aware Quantization for SO(3)-Equivariant GNNs\n\nAuthors: Haoyu Zhou, Ping Xue, Hao Zhang, Tianfan Fu\nPublished: 2026-03-05T16:20:21Z\n\nEquivariant Graph Neural Networks (GNNs) are essential for physically consistent molecular simulations but suffer from high computational costs and memory bottlenecks, especially with high-order representations. While low-bit quantization offers a solution, applying it naively to rotation-sensitive features destroys the SO(3)-equivariant structure, leading to significant errors and violations of conservation laws. To address this issue, in this work, we propose a Geometric-Aware Quantization (GAQ) framework that compresses and accelerates equivariant models while rigorously preserving continuous symmetry in discrete spaces. Our approach introduces three key contributions: (1) a Magnitude-Direction Decoupled Quantization (MDDQ) scheme that separates invariant lengths from equivariant orientations to maintain geometric fidelity; (2) a symmetry-aware training strategy that treats scalar and vector features with distinct quantization schedules; and (3) a robust attention normalization mechanism to stabilize gradients in low-bit regimes. Experiments on the rMD17 benchmark demonstrate that our W4A8 models match the accuracy of FP32 baselines (9.31 meV vs. 23.20 meV) while reducing Local Equivariance Error (LEE) by over 30x compared to naive quantization. On consumer hardware, GAQ achieves 2.39x inference speedup and 4x memory reduction, enabling stable, energy-conserving molecular dynamics simulations for nanosecond timescales.",
+  "url": "http://arxiv.org/abs/2603.05343v1",
+  "timestamp": "2026-03-05T16:20:21Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "827bfa544bcadb1f3a117b626c33d068aa3bc70208ce4832d39348a0be70a97b",
+  "parent_hash": "3d650c3c1e9b475d2e8dd746c1344ba4bf0200ddf8428896ba10a568d6ee2129",
+  "metadata": {
+    "authors": [
+      "Haoyu Zhou",
+      "Ping Xue",
+      "Hao Zhang",
+      "Tianfan Fu"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05343v1"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "5de936dabefdf0f5",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Chladni Figures Revisited Based on Nanomechanics (Q58642464)",
+  "content": "# Chladni Figures Revisited Based on Nanomechanics\n\nWikidata ID: Q58642464\nDescription: scientific article published in Physical Review Letters\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q58642464",
+  "timestamp": "2026-03-06T04:18:09.466373",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d1f3802427fa62efeebd4302fded40f0ba49d87c96387b0efa905f79138f80cf",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q58642464",
+    "description": "scientific article published in Physical Review Letters"
+  }
+}

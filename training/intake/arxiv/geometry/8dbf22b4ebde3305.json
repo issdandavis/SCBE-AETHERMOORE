@@ -1,0 +1,30 @@
+{
+  "id": "8dbf22b4ebde3305",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Aligning the Unseen in Attributed Graphs: Interplay between Graph Geometry and Node Attributes Manifold",
+  "content": "# Aligning the Unseen in Attributed Graphs: Interplay between Graph Geometry and Node Attributes Manifold\n\nAuthors: Aldric Labarthe, Roland Bouffanais, Julien Randon-Furling\nPublished: 2026-01-30T10:34:26Z\n\nThe standard approach to representation learning on attributed graphs -- i.e., simultaneously reconstructing node attributes and graph structure -- is geometrically flawed, as it merges two potentially incompatible metric spaces. This forces a destructive alignment that erodes information about the graph's underlying generative process. To recover this lost signal, we introduce a custom variational autoencoder that separates manifold learning from structural alignment. By quantifying the metric distortion needed to map the attribute manifold onto the graph's Heat Kernel, we transform geometric conflict into an interpretable structural descriptor. Experiments show our method uncovers connectivity patterns and anomalies undetectable by conventional approaches, proving both their theoretical inadequacy and practical limitations.",
+  "url": "http://arxiv.org/abs/2601.22806v1",
+  "timestamp": "2026-01-30T10:34:26Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "dce061f986abd94651a9aaafa9c4ace896eaad639ed1245b5fd54db395b5cd79",
+  "parent_hash": "db0abcc0ea8115c64bbc6d4ff315e4bf242075021090b318e196165df7a6a1f7",
+  "metadata": {
+    "authors": [
+      "Aldric Labarthe",
+      "Roland Bouffanais",
+      "Julien Randon-Furling"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2601.22806v1"
+  }
+}

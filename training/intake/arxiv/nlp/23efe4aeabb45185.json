@@ -1,0 +1,31 @@
+{
+  "id": "23efe4aeabb45185",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Can LLMs Capture Expert Uncertainty? A Comparative Analysis of Value Alignment in Ethnographic Qualitative Research",
+  "content": "# Can LLMs Capture Expert Uncertainty? A Comparative Analysis of Value Alignment in Ethnographic Qualitative Research\n\nAuthors: Arina Kostina, Marios Dikaiakos, Alejandro Porcel, Tassos Stassopoulos\nPublished: 2026-03-05T07:38:37Z\n\nQualitative analysis of open-ended interviews plays a central role in ethnographic and economic research by uncovering individuals' values, motivations, and culturally embedded financial behaviors. While large language models (LLMs) offer promising support for automating and enriching such interpretive work, their ability to produce nuanced, reliable interpretations under inherent task ambiguity remains unclear. In our work we evaluate LLMs on the task of identifying the top three human values expressed in long-form interviews based on the Schwartz Theory of Basic Values framework. We compare their outputs to expert annotations, analyzing both performance and uncertainty patterns relative to the experts. Results show that LLMs approach the human ceiling on set-based metrics (F1, Jaccard) but struggle to recover exact value rankings, as reflected in lower RBO scores. While the average Schwartz value distributions of most models closely match those of human analysts, their uncertainty structures across the Schwartz values diverge from expert uncertainty patterns. Among the evaluated models, Qwen performs closest to expert-level agreement and exhibits the strongest alignment with expert Schwartz value distributions. LLM ensemble methods yield consistent gains across metrics, with Majority Vote and Borda Count performing best. Notably, systematic overemphasis on certain Schwartz values, like Security, suggests both the potential of LLMs to provide complementary perspectives and the need to further investigate model-induced value biases. Overall, our findings highlight both the promise and the limitations of LLMs as collaborators in inherently ambiguous qualitative value analysis.",
+  "url": "http://arxiv.org/abs/2603.04897v1",
+  "timestamp": "2026-03-05T07:38:37Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "f1e3c5f6b44ab3a3833de21fc3aceab96309bd2ddeefc6b7b9de0219dfb2bad6",
+  "parent_hash": "8d3b758bf76b621543d6574dbcbaae7d2562e6e70534534ed1c64b60f1b3d76e",
+  "metadata": {
+    "authors": [
+      "Arina Kostina",
+      "Marios Dikaiakos",
+      "Alejandro Porcel",
+      "Tassos Stassopoulos"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.04897v1"
+  }
+}

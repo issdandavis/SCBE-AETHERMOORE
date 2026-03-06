@@ -1,0 +1,30 @@
+{
+  "id": "5204c1e8e0f0a0d6",
+  "source": "library_of_congress",
+  "category": "quarantine/governance",
+  "title": "Blockchain and Government Records Management",
+  "content": "# Blockchain and Government Records Management\n\nContributors: sharmila bhatia\nDate: \nSubjects: \n\nBlockchain and Government Records Management Sharmila Bhatia Designing Storage Architectures Meeting September 9, 2019   Background \u25cf  FY18 initiative to assess governments use of blockchain technology in records management  \u2013Review & analyze sources \u2013Identify impact in context of records management policy / guidance  \u25cf  Goal was to give NARA staff a better understanding of the technology and its implications 2   Records Management Implications Records on the Blockchain: The term \u201crecorded information\u201d as described in 44 U.S. Code \u00a7 3301b includes all traditional forms of records, regardless of physical form or characteristics, including information created, manipulated, communicated, or stored in digital or electronic form. The blockchain hash, block header, and transactional data could be Federal records. 3   Records Management Implications Records Appraisal:  \u25cf Hash and/or metadata could be records \u25cf Records are appraised on content, not the file format \u25cf Blockchain records may be considered a file format",
+  "url": "http://www.digitalpreservation.gov/meetings/DSA2019/Day_1/08_bhatia_Blockchain-LC-20190909.pdf",
+  "timestamp": "2026-03-06T02:38:39.088100",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "8f9b707c4317d0a5a1c6f693b301891e6fd7df3de924fc54b1f3642885780208",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [],
+    "dates": "",
+    "original_format": [
+      "book",
+      "web page"
+    ]
+  }
+}

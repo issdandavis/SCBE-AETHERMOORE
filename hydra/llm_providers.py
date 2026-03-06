@@ -708,6 +708,109 @@ class LocalProvider(LLMProvider):
 
 
 # ---------------------------------------------------------------------------
+# Grok (xAI) — OpenAI-compatible endpoint
+# ---------------------------------------------------------------------------
+
+class GrokProvider(LLMProvider):
+    """LLM provider backed by xAI's Grok API (OpenAI-compatible).
+
+    Requires:
+        pip install openai
+
+    Environment:
+        XAI_API_KEY - your xAI API key
+    """
+
+    def __init__(
+        self,
+        model: str = "grok-3-mini",
+        api_key: Optional[str] = None,
+        base_url: str = "https://api.x.ai/v1",
+    ):
+        try:
+            import openai  # noqa: F401
+        except ImportError:
+            raise ImportError(
+                "The 'openai' package is required for GrokProvider.\n"
+                "Install it with:  pip install openai"
+            )
+
+        self.model = model
+        self._api_key = api_key or os.environ.get("XAI_API_KEY", "")
+        if not self._api_key:
+            raise ValueError(
+                "XAI_API_KEY is not set. Provide it via the api_key "
+                "parameter or set the XAI_API_KEY environment variable."
+            )
+
+        import openai
+
+        self._client = openai.AsyncOpenAI(
+            api_key=self._api_key,
+            base_url=base_url,
+        )
+
+    async def complete(
+        self,
+        prompt: str,
+        system: Optional[str] = None,
+        max_tokens: int = 4096,
+        temperature: float = 0.7,
+    ) -> LLMResponse:
+        """Send a completion request to xAI Grok."""
+        system_prompt = system if system is not None else HYDRA_SYSTEM_PROMPT
+        messages: List[Dict[str, str]] = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ]
+
+        async def _call():
+            response = await self._client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=temperature,
+            )
+            choice = response.choices[0]
+            usage = response.usage
+            return LLMResponse(
+                text=choice.message.content or "",
+                model=response.model or self.model,
+                input_tokens=usage.prompt_tokens if usage else 0,
+                output_tokens=usage.completion_tokens if usage else 0,
+                finish_reason=choice.finish_reason or "stop",
+            )
+
+        return await _retry_with_backoff(_call)
+
+    async def stream(
+        self,
+        prompt: str,
+        system: Optional[str] = None,
+        max_tokens: int = 4096,
+        temperature: float = 0.7,
+    ) -> AsyncIterator[str]:
+        """Stream tokens from xAI Grok."""
+        system_prompt = system if system is not None else HYDRA_SYSTEM_PROMPT
+        messages: List[Dict[str, str]] = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ]
+
+        response = await self._client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            stream=True,
+        )
+
+        async for chunk in response:
+            if chunk.choices and chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
+
+
+# ---------------------------------------------------------------------------
 # Factory
 # ---------------------------------------------------------------------------
 
@@ -719,6 +822,8 @@ _PROVIDER_MAP: Dict[str, type] = {
     "openai": OpenAIProvider,
     "gemini": GeminiProvider,
     "google": GeminiProvider,
+    "grok": GrokProvider,
+    "xai": GrokProvider,
     "huggingface": HuggingFaceProvider,
     "hf": HuggingFaceProvider,
     "local": LocalProvider,

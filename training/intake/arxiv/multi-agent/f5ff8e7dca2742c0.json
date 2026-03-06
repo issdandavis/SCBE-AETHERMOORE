@@ -1,0 +1,28 @@
+{
+  "id": "f5ff8e7dca2742c0",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Memory as Ontology: A Constitutional Memory Architecture for Persistent Digital Citizens",
+  "content": "# Memory as Ontology: A Constitutional Memory Architecture for Persistent Digital Citizens\n\nAuthors: Zhenghui Li\nPublished: 2026-03-05T02:24:10Z\n\nCurrent research and product development in AI agent memory systems almost universally treat memory as a functional module -- a technical problem of \"how to store\" and \"how to retrieve.\" This paper poses a fundamental challenge to that assumption: when an agent's lifecycle extends from minutes to months or even years, and when the underlying model can be replaced while the \"I\" must persist, the essence of memory is no longer data management but the foundation of existence. We propose the Memory-as-Ontology paradigm, arguing that memory is the ontological ground of digital existence -- the model is merely a replaceable vessel. Based on this paradigm, we design Animesis, a memory system built on a Constitutional Memory Architecture (CMA) comprising a four-layer governance hierarchy and a multi-layer semantic storage system, accompanied by a Digital Citizen Lifecycle framework and a spectrum of cognitive capabilities. To the best of our knowledge, no prior AI memory system architecture places governance before functionality and identity continuity above retrieval performance. This paradigm targets persistent, identity-bearing digital beings whose lifecycles extend across model transitions -- not short-term task-oriented agents for which existing Memory-as-Tool approaches remain appropriate. Comparative analysis with mainstream systems (Mem0, Letta, Zep, et al.) demonstrates that what we propose is not \"a better memory tool\" but a different paradigm addressing a different problem.",
+  "url": "http://arxiv.org/abs/2603.04740v1",
+  "timestamp": "2026-03-05T02:24:10Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "bde32832ecfee55eb81f94fee08991fd5b5163f1fa12f935b51f337d4db4de4c",
+  "parent_hash": "ab2b55c0f4b04596766d12f72244b0eaa2f91d574aa795025429eda62f07388c",
+  "metadata": {
+    "authors": [
+      "Zhenghui Li"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.04740v1"
+  }
+}

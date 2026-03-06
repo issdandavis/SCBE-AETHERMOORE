@@ -1,0 +1,31 @@
+{
+  "id": "3d7521c15bce5b08",
+  "source": "harvard_dataverse",
+  "category": "quarantine/math",
+  "title": "A mathematical model relates intracellular TLR4 oscillations to sepsis progression ",
+  "content": "# A mathematical model relates intracellular TLR4 oscillations to sepsis progression \n\nAuthors: Camargo, Maristela\nPublished: 2017-10-31T12:29:05Z\nSubjects: Medicine, Health and Life Sciences\nDOI: doi:10.7910/DVN/NRLZRK\n\nMathematica simulation of the TLR4 intracellular trafficking\n\nCitation: Camargo, Maristela, 2017, \"A mathematical model relates intracellular TLR4 oscillations to sepsis progression\", https://doi.org/10.7910/DVN/NRLZRK, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/NRLZRK",
+  "timestamp": "2026-03-06T04:18:49.817554",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "0696c2bc1610de5cc823f6d39f80f07982cb96b234d0e79318224aa6fdb120e5",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/NRLZRK",
+    "subjects": [
+      "Medicine, Health and Life Sciences"
+    ],
+    "authors": [
+      "Camargo, Maristela"
+    ],
+    "file_count": 1
+  }
+}

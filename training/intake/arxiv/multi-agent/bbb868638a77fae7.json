@@ -1,0 +1,30 @@
+{
+  "id": "bbb868638a77fae7",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Principled Learning-to-Communicate with Quasi-Classical Information Structures",
+  "content": "# Principled Learning-to-Communicate with Quasi-Classical Information Structures\n\nAuthors: Xiangyu Liu, Haoyi You, Kaiqing Zhang\nPublished: 2026-03-04T02:36:18Z\n\nLearning-to-communicate (LTC) in partially observable environments has received increasing attention in deep multi-agent reinforcement learning, where the control and communication strategies are jointly learned. Meanwhile, the impact of communication on decision-making has been extensively studied in control theory. In this paper, we seek to formalize and better understand LTC by bridging these two lines of work, through the lens of information structures (ISs). To this end, we formalize LTC in decentralized partially observable Markov decision processes (Dec-POMDPs) under the common-information-based framework from decentralized stochastic control, and classify LTC problems based on the ISs before (additional) information sharing. We first show that non-classical LTCs are computationally intractable in general, and thus focus on quasi-classical (QC) LTCs. We then propose a series of conditions for QC LTCs, under which LTCs preserve the QC IS after information sharing, whereas violating which can cause computational hardness in general. Further, we develop provable planning and learning algorithms for QC LTCs, and establish quasi-polynomial time and sample complexities for several QC LTC examples that satisfy the above conditions. Along the way, we also establish results on the relationship between (strictly) QC IS and the condition of having strategy-independent common-information-based beliefs (SI-CIBs), as well as on solving Dec-POMDPs without computationally intractable oracles but beyond those with SI-CIBs, which may be of independent interest.",
+  "url": "http://arxiv.org/abs/2603.03664v1",
+  "timestamp": "2026-03-04T02:36:18Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "7011337720d888affec0489007187235337eac26929d3a22984855583ff449f2",
+  "parent_hash": "c63259671c65b74aa4143d6633aa31e97ffbd26e3112b9529522f022868a0c11",
+  "metadata": {
+    "authors": [
+      "Xiangyu Liu",
+      "Haoyi You",
+      "Kaiqing Zhang"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.03664v1"
+  }
+}

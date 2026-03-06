@@ -1,0 +1,31 @@
+{
+  "id": "c91a600fd9fbdb5e",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Standardizing Access to Heterogeneous Quantum Backends: A Case Study on Cloud Service Integration with QDMI",
+  "content": "# Standardizing Access to Heterogeneous Quantum Backends: A Case Study on Cloud Service Integration with QDMI\n\nAuthors: Patrick Hopf, Sebastian Stern, Robert Wille, Lukas Burgholzer\nPublished: 2026-03-05T13:05:29Z\n\nWith an increasingly diverse portfolio of quantum backends, the adoption of standardized interfaces has become a key prerequisite for scalable access and interoperability within quantum software stacks. The Quantum Device Management Interface (QDMI) addresses this challenge and is emerging as one of the de facto standards for hardware abstraction, enabling the unified management not only of individual Quantum Processing Units (QPUs) but also of complete full-stack cloud services. This paper presents a case study demonstrating the integration of QDMI with Amazon Braket, a quantum computing cloud service that provides a single access point to a wide range of hardware technologies. By treating the cloud service itself as a unified device, the proposed implementation enables management of the complete task lifecycle - ranging from authentication and circuit submission to result retrieval - across Braket's heterogeneous set of simulators and hardware backends. We detail the engineering insights gained from this integration and present a hands-on example workflow, ultimately paving the way for integrated access to cloud-hosted quantum resources from QDMI-enabled software stacks.",
+  "url": "http://arxiv.org/abs/2603.05138v1",
+  "timestamp": "2026-03-05T13:05:29Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "7d457b7b876504a7f921817978debe4f0a4fc59716a1bca5689b079fd57dbba3",
+  "parent_hash": "8d8be1988cb798087644ffa7fb898737d136ad396f66b4c9d48d7c7ddf0d1a0d",
+  "metadata": {
+    "authors": [
+      "Patrick Hopf",
+      "Sebastian Stern",
+      "Robert Wille",
+      "Lukas Burgholzer"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05138v1"
+  }
+}

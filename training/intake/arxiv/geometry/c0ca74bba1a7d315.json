@@ -1,0 +1,28 @@
+{
+  "id": "c0ca74bba1a7d315",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "The $1$-parametric $h$-principle for smooth conformal immersions of surfaces",
+  "content": "# The $1$-parametric $h$-principle for smooth conformal immersions of surfaces\n\nAuthors: Alaa Boukholkhal\nPublished: 2026-03-03T11:48:46Z\n\nWe reformulate the problem of finding conformal immersions of closed Riemannian surfaces in the language of the $h$-principle and we prove that the inclusion from the space of smooth conformal immersions to the space of immersions induces a bijection on the sets of path connected components.",
+  "url": "http://arxiv.org/abs/2603.02900v1",
+  "timestamp": "2026-03-03T11:48:46Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "51c1f1a010f933328bb1eefcf589ba259a3971c4aca3e8d929c69913859c388a",
+  "parent_hash": "bc0fd3479d45c1e3fd2ee5877da5047f82a753eba40c220f1dce5e589de23dbb",
+  "metadata": {
+    "authors": [
+      "Alaa Boukholkhal"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.02900v1"
+  }
+}

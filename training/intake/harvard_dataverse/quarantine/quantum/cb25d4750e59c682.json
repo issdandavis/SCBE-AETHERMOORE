@@ -1,0 +1,32 @@
+{
+  "id": "cb25d4750e59c682",
+  "source": "harvard_dataverse",
+  "category": "quarantine/quantum",
+  "title": "Quantum Computing and Its Implications for Asian Innovation Ecosystems",
+  "content": "# Quantum Computing and Its Implications for Asian Innovation Ecosystems\n\nAuthors: David, Lemuel Kenneth\nPublished: 2024-09-18T06:06:40Z\nSubjects: Business and Management, Social Sciences\nDOI: doi:10.7910/DVN/N6YEND\n\nthis paper investigates its influence on R&D efficiency and innovation outcomes across 4,500 firms in six key sectors\u2014pharmaceuticals, finance, materials science, energy, telecommunications, and logistics\n\nCitation: David, Lemuel Kenneth, 2024, \"Quantum Computing and Its Implications for Asian Innovation Ecosystems\", https://doi.org/10.7910/DVN/N6YEND, Harvard Dataverse, V1, UNF:6:3OE9z4DmK3kEr6zJQ6k6Hg== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/N6YEND",
+  "timestamp": "2026-03-06T02:42:24.924581",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "63b3a528d56dc45fe962f22015605e88080779082f89ea34fb78a9c94a760322",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/N6YEND",
+    "subjects": [
+      "Business and Management",
+      "Social Sciences"
+    ],
+    "authors": [
+      "David, Lemuel Kenneth"
+    ],
+    "file_count": 1
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "id": "e023f052c6206fa2",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Macromux: scalable postselection for high-threshold fault-tolerant quantum computation",
+  "content": "# Macromux: scalable postselection for high-threshold fault-tolerant quantum computation\n\nAuthors: Patrick Birchall, Jacob Bridgeman, Christopher Dawson, Terry Farrelly, Yehua Liu, Naomi Nickerson, Mihir Pant, Sam Roberts, Karthik Seetharam, David Tuckett\nPublished: 2026-03-05T07:04:40Z\n\nWe introduce a new resource-efficient scheme for fault-tolerant quantum computation known as `macroscale multiplexing' (or simply `Macromux'), that utilizes scalable postselection to significantly improve the threshold of a given fault-tolerant protocol against both Pauli and erasure errors. Macromux is a hierarchical method for postselecting on constant-size space-time windows of a fault tolerant protocol, requiring only constant additional overheads. The method can be straightforwardly implemented for any fault-tolerant protocol and in any architecture that has access to routing and memory, such as linear-optical fusion-based architectures. We construct fault-tolerant protocols that, to our knowledge, have the highest thresholds in the literature; we perform simulations of fusion-based schemes based on the surface code, showing a maximum possible increase in Pauli thresholds of up to a factor of $\\sim6$ (from $1.0\\%$ to $5.9\\%$). Our schemes are highly-resource efficient, and can for example, double the loss thresholds of some photonic fusion-based protocols using as little as $3 \\times$ overhead.",
+  "url": "http://arxiv.org/abs/2603.04875v1",
+  "timestamp": "2026-03-05T07:04:40Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "fecc24a3bd354f1a10e2a4442797d872bb2cef3a536c2f73afca48f18d421cf4",
+  "parent_hash": "87b8f87b62707285ec8e363ca965043bdae327ef9387d7e8330464e40f48cec3",
+  "metadata": {
+    "authors": [
+      "Patrick Birchall",
+      "Jacob Bridgeman",
+      "Christopher Dawson",
+      "Terry Farrelly",
+      "Yehua Liu",
+      "Naomi Nickerson",
+      "Mihir Pant",
+      "Sam Roberts",
+      "Karthik Seetharam",
+      "David Tuckett"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.04875v1"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "402086eaf8e153f2",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "DTIC ADA429732: Neural Network Control of a Parallel Hybrid-Electric Propulsion System for a Small Unmanned Aerial Vehicle",
+  "content": "# DTIC ADA429732: Neural Network Control of a Parallel Hybrid-Electric Propulsion System for a Small Unmanned Aerial Vehicle\n\nCreator: Defense Technical Information Center\nDate: 2004-01-01T00:00:00Z\nDownloads: 103\nSubjects: DTIC Archive, Harmon, Frederick G, CALIFORNIA UNIV DAVIS, *NEURAL NETS, *PROPULSION SYSTEMS\n\nParallel hybrid-electric propulsion systems would be beneficial for small unmanned aerial vehicles (UAVs) used for military, homeland security, and disaster monitoring missions involving intelligence, surveillance, or reconnaissance (ISR). The benefits include increased time-on-station and range than electric-powered UAVs and stealth modes not available with gasoline-powered UAVs. A conceptual design of a small UAV with a parallel hybrid-electric propulsion system, an optimization routine for the energy use, the application of a neural network to approximate the optimization results, and simulation results are provided. The two-point conceptual design includes an internal combustion engine sized for cruise and an electric motor and lithium-ion battery pack sized for endurance speed. The flexible optimization routine allows relative importance to be assigned between the use of gasoline, electricity, and recharging. The Cerebellar Model Arithmetic Computer (CMAC) neural network approximates the optimization results and is applied to the control of the parallel hybrid-electric propulsion system. The CMAC controller saves on the required memory compared to a large look-up table by two orders of magnitude. The energy use for the hybrid-electric UAV with the CMAC controller during a one-hour and a three-hour ISR mission is 58% and 27% less, respectively, than for a gasoline-powered UAV.",
+  "url": "https://archive.org/details/DTIC_ADA429732",
+  "timestamp": "2026-03-06T02:40:40.433902",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "b37bb2b04d4572f5fe1e74b8c3306b5a680182da83d368e9a2bae5c4441c8e54",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "DTIC_ADA429732",
+    "media_type": "texts",
+    "downloads": 103,
+    "subjects": [
+      "DTIC Archive",
+      "Harmon, Frederick G",
+      "CALIFORNIA UNIV DAVIS",
+      "*NEURAL NETS",
+      "*PROPULSION SYSTEMS",
+      "*ELECTRIC POWER",
+      "*HYBRID SYSTEMS",
+      "VELOCITY",
+      "COMPUTER PROGRAMS",
+      "OPTIMIZATION"
+    ]
+  }
+}

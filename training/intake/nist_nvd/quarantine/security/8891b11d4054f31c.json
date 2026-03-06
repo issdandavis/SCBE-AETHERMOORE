@@ -1,0 +1,30 @@
+{
+  "id": "8891b11d4054f31c",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-1999-0391 \u2014 CVSS 7.5 (UNKNOWN)",
+  "content": "# CVE-1999-0391\n\nCVSS Score: 7.5 (UNKNOWN)\nPublished: 1999-01-05T05:00:00.000\nCWEs: NVD-CWE-Other\n\nThe cryptographic challenge of SMB authentication in Windows 95 and Windows 98 can be reused, allowing an attacker to replay the response and impersonate a user.\n\nReferences: https://marc.info/?l=bugtraq&m=91552769809542&w=2, https://marc.info/?l=bugtraq&m=91552769809542&w=2",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-1999-0391",
+  "timestamp": "2026-03-06T02:41:32.739403",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "57ea18ebe5a39a8cc38c76496ee4a492ab46eebfc75c42243d64b770682b484e",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-1999-0391",
+    "cvss_score": 7.5,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "1999-01-05T05:00:00.000"
+  }
+}

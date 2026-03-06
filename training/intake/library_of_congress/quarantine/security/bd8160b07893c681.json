@@ -1,0 +1,35 @@
+{
+  "id": "bd8160b07893c681",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "China : regulation of artificial intelligence",
+  "content": "# China : regulation of artificial intelligence\n\nContributors: law library of congress (u.s.). global legal research directorate, zhang, laney\nDate: 2023\nSubjects: data protection, artificial intelligence, china, law and legislation, computer security\n\n\"LL File No. 2023-022300.\" \"June 2023.\" Includes bibliographical references. Description based on online resource, PDF version; title from cover (LOC, viewed Jan. 11, 2024).",
+  "url": "https://www.loc.gov/item/2023555933/",
+  "timestamp": "2026-03-06T02:37:58.020519",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7289fdffc98ae0ffea636b0f43aecd79e582d769547971cda562a86c40efec0e",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "data protection",
+      "artificial intelligence",
+      "china",
+      "law and legislation",
+      "computer security"
+    ],
+    "dates": "2023",
+    "original_format": [
+      "book"
+    ]
+  }
+}

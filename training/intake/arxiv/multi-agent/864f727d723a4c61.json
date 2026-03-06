@@ -1,0 +1,32 @@
+{
+  "id": "864f727d723a4c61",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Optimization of Edge Directions and Weights for Mixed Guidance Graphs in Lifelong Multi-Agent Path Finding",
+  "content": "# Optimization of Edge Directions and Weights for Mixed Guidance Graphs in Lifelong Multi-Agent Path Finding\n\nAuthors: Yulun Zhang, Varun Bhatt, Matthew C. Fontaine, Stefanos Nikolaidis, Jiaoyang Li\nPublished: 2026-02-26T19:54:00Z\n\nMulti-Agent Path Finding (MAPF) aims to move agents from their start to goal vertices on a graph. Lifelong MAPF (LMAPF) continuously assigns new goals to agents as they complete current ones. To guide agents' movement in LMAPF, prior works have proposed Guidance Graph Optimization (GGO) methods to optimize a guidance graph, which is a bidirected weighted graph whose directed edges represent moving and waiting actions with edge weights being action costs. Higher edge weights represent higher action costs. However, edge weights only provide soft guidance. An edge with a high weight only discourages agents from using it, instead of prohibiting agents from traversing it. In this paper, we explore the need to incorporate edge directions optimization into GGO, providing strict guidance. We generalize GGO to Mixed Guidance Graph Optimization (MGGO), presenting two MGGO methods capable of optimizing both edge weights and directions. The first optimizes edge directions and edge weights in two phases separately. The second applies Quality Diversity algorithms to optimize a neural network capable of generating edge directions and weights. We also incorporate traffic patterns relevant to edge directions into a GGO method, making it capable of generating edge-direction-aware guidance graphs.",
+  "url": "http://arxiv.org/abs/2602.23468v2",
+  "timestamp": "2026-02-26T19:54:00Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "5c1406d5587357a8cb99ab1ffa167842cdb7d1a2b71e942aedbfe80761e33d2e",
+  "parent_hash": "3b1c6251035e9859bd27a6eb98827cd4196e852353a3bd29d8e9d94739c0dcba",
+  "metadata": {
+    "authors": [
+      "Yulun Zhang",
+      "Varun Bhatt",
+      "Matthew C. Fontaine",
+      "Stefanos Nikolaidis",
+      "Jiaoyang Li"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2602.23468v2"
+  }
+}

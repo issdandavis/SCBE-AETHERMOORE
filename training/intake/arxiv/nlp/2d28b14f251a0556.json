@@ -1,0 +1,33 @@
+{
+  "id": "2d28b14f251a0556",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "FlashAttention-4: Algorithm and Kernel Pipelining Co-Design for Asymmetric Hardware Scaling",
+  "content": "# FlashAttention-4: Algorithm and Kernel Pipelining Co-Design for Asymmetric Hardware Scaling\n\nAuthors: Ted Zadouri, Markus Hoehnerbach, Jay Shah, Timmy Liu, Vijay Thakkar, Tri Dao\nPublished: 2026-03-05T18:24:49Z\n\nAttention, as a core layer of the ubiquitous Transformer architecture, is the bottleneck for large language models and long-context applications. While FlashAttention-3 optimized attention for Hopper GPUs through asynchronous execution and warp specialization, it primarily targets the H100 architecture. The AI industry has rapidly transitioned to deploying Blackwell-based systems such as the B200 and GB200, which exhibit fundamentally different performance characteristics due to asymmetric hardware scaling: tensor core throughput doubles while other functional units (shared memory bandwidth, exponential units) scale more slowly or remain unchanged. We develop several techniques to address these shifting bottlenecks on Blackwell GPUs: (1) redesigned pipelines that exploit fully asynchronous MMA operations and larger tile sizes, (2) software-emulated exponential and conditional softmax rescaling that reduces non-matmul operations, and (3) leveraging tensor memory and the 2-CTA MMA mode to reduce shared memory traffic and atomic adds in the backward pass. We demonstrate that our method, FlashAttention-4, achieves up to 1.3$\\times$ speedup over cuDNN 9.13 and 2.7$\\times$ over Triton on B200 GPUs with BF16, reaching up to 1613 TFLOPs/s (71% utilization). Beyond algorithmic innovations, we implement FlashAttention-4 entirely in CuTe-DSL embedded in Python, achieving 20-30$\\times$ faster compile times compared to traditional C++ template-based approaches while maintaining full expressivity.",
+  "url": "http://arxiv.org/abs/2603.05451v1",
+  "timestamp": "2026-03-05T18:24:49Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "c3c76a95ce9d037b5f9df7fb68828504d23b5b9762372ec228e0c89675a8e528",
+  "parent_hash": "0ccf906aba73fc41d0c5a9ce76c1772fe217b473216256dee664da86f22f5e63",
+  "metadata": {
+    "authors": [
+      "Ted Zadouri",
+      "Markus Hoehnerbach",
+      "Jay Shah",
+      "Timmy Liu",
+      "Vijay Thakkar",
+      "Tri Dao"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05451v1"
+  }
+}

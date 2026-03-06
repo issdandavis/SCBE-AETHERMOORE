@@ -1,0 +1,31 @@
+{
+  "id": "22b140a2ed383ffd",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "How important are the genes to explain the outcome - the asymmetric Shapley value as an honest importance metric for high-dimensional features",
+  "content": "# How important are the genes to explain the outcome - the asymmetric Shapley value as an honest importance metric for high-dimensional features\n\nAuthors: Mark A. van de Wiel, Jeroen Goedhart, Martin Jullum, Kjersti Aas\nPublished: 2026-03-05T15:58:50Z\n\nIn clinical prediction settings the importance of a high-dimensional feature like genomics is often assessed by evaluating the change in predictive performance when adding it to a set of traditional clinical variables. This approach is questionable, because it does not account for collinearity nor known directionality of dependencies between variables. We suggest to use asymmetric Shapley values as a more suitable alternative to quantify feature importance in the context of a mixed-dimensional prediction model. We focus on a setting that is particularly relevant in clinical prediction: disease state as a mediating variable for genomic effects, with additional confounders for which the direction of effects may be unknown. We derive efficient algorithms to compute local and global asymmetric Shapley values for this setting. The former are shown to be very useful for inference, whereas the latter provide interpretation by decomposing any predictive performance metric into contributions of the features. Throughout, we illustrate our framework by a leading example: the prediction of progression-free survival for colorectal cancer patients.",
+  "url": "http://arxiv.org/abs/2603.05317v1",
+  "timestamp": "2026-03-05T15:58:50Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "f1130389d32063398402a6792063fb13b96ed3c5d26515e07119d0d0eac76b7f",
+  "parent_hash": "1b606c98b0d5cf874305ca5cfffdc6237b74f6266396ac8a3362ae57967ba43f",
+  "metadata": {
+    "authors": [
+      "Mark A. van de Wiel",
+      "Jeroen Goedhart",
+      "Martin Jullum",
+      "Kjersti Aas"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05317v1"
+  }
+}

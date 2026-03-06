@@ -1,0 +1,30 @@
+{
+  "id": "a2656a68c5e78786",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Can AI Agents Agree?",
+  "content": "# Can AI Agents Agree?\n\nAuthors: Fr\u00e9d\u00e9ric Berdoz, Leonardo Rugli, Roger Wattenhofer\nPublished: 2026-03-01T18:18:59Z\n\nLarge language models are increasingly deployed as cooperating agents, yet their behavior in adversarial consensus settings has not been systematically studied. We evaluate LLM-based agents on a Byzantine consensus game over scalar values using a synchronous all-to-all simulation. We test consensus in a no-stake setting where agents have no preferences over the final value, so evaluation focuses on agreement rather than value optimality. Across hundreds of simulations spanning model sizes, group sizes, and Byzantine fractions, we find that valid agreement is not reliable even in benign settings and degrades as group size grows. Introducing a small number of Byzantine agents further reduces success. Failures are dominated by loss of liveness, such as timeouts and stalled convergence, rather than subtle value corruption. Overall, the results suggest that reliable agreement is not yet a dependable emergent capability of current LLM-agent groups even in no-stake settings, raising caution for deployments that rely on robust coordination.",
+  "url": "http://arxiv.org/abs/2603.01213v1",
+  "timestamp": "2026-03-01T18:18:59Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "79d263ef41e532ba229bcb4413b1540769e21c554144eb0079c492029eec8f14",
+  "parent_hash": "348488ae29a15903f5b51dc568b7e13418c8f716987f802995788ade1b83fde1",
+  "metadata": {
+    "authors": [
+      "Fr\u00e9d\u00e9ric Berdoz",
+      "Leonardo Rugli",
+      "Roger Wattenhofer"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.01213v1"
+  }
+}

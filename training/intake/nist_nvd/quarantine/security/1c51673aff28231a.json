@@ -1,0 +1,30 @@
+{
+  "id": "1c51673aff28231a",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2012-3128 \u2014 CVSS 3.7 (UNKNOWN)",
+  "content": "# CVE-2012-3128\n\nCVSS Score: 3.7 (UNKNOWN)\nPublished: 2012-07-17T23:55:03.567\nCWEs: NVD-CWE-noinfo\n\nUnspecified vulnerability in Oracle SPARC T-Series Servers running System Firmware 8.2.0 and 8.1.4.e or earlier allows local users to affect confidentiality, integrity, and availability via unknown vectors related to Integrated Lights Out Manager.\n\nReferences: http://osvdb.org/83973, http://www.mandriva.com/security/advisories?name=MDVSA-2013:150, http://www.oracle.com/technetwork/topics/security/cpujul2012-392727.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2012-3128",
+  "timestamp": "2026-03-06T04:18:37.159981",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "546ffb444d5c3f313bea07546746afc69174bb7916e5a377eebd5ba0fae8c302",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2012-3128",
+    "cvss_score": 3.7,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-noinfo"
+    ],
+    "published": "2012-07-17T23:55:03.567"
+  }
+}

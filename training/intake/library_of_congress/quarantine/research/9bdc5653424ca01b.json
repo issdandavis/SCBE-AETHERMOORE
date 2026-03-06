@@ -1,0 +1,29 @@
+{
+  "id": "9bdc5653424ca01b",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Ellen;",
+  "content": "# Ellen;\n\nContributors: battell, joseph\nDate: 1901\nSubjects: \n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/01013959/",
+  "timestamp": "2026-03-06T04:17:18.822554",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4c83d3b71412001c636152af6aef8cd7e72039349f3e879bf0e3e2b342956045",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [],
+    "dates": "1901",
+    "original_format": [
+      "book"
+    ]
+  }
+}

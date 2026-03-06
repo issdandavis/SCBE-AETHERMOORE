@@ -1,0 +1,33 @@
+{
+  "id": "39f6b44ebc9867c2",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Flame model Pregnane X receptor activation",
+  "content": "# Flame model Pregnane X receptor activation\n\nAuthors: Pastor, Manuel\nPublished: 2023-02-01T15:03:38Z\nSubjects: Chemistry, Computer and Information Science, Medicine, Health and Life Sciences\nDOI: doi:10.7910/DVN/IALHR8\n\nDataset containing a Flame QSAR model for predicting Pregnane X receptor activation. The model is described in the metadata.txt file. The PXR_FAIR.tgz file can be imported into any instance of the open-source Flame (https://github.com/phi-grib/flame) and be used for predicting the properties of chemical substances from their 2D structure.\n\nCitation: Pastor, Manuel, 2023, \"Flame model Pregnane X receptor activation\", https://doi.org/10.7910/DVN/IALHR8, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/IALHR8",
+  "timestamp": "2026-03-06T02:42:07.859347",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c783462ce8a0e6a11c70174f0736cf7be3b385a8d5ba77144fcc78fff44861f1",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/IALHR8",
+    "subjects": [
+      "Chemistry",
+      "Computer and Information Science",
+      "Medicine, Health and Life Sciences"
+    ],
+    "authors": [
+      "Pastor, Manuel"
+    ],
+    "file_count": 3
+  }
+}

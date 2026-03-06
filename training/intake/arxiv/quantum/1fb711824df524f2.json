@@ -1,0 +1,29 @@
+{
+  "id": "1fb711824df524f2",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Extreme Quantum Cognition Machines for Deliberative Decision Making",
+  "content": "# Extreme Quantum Cognition Machines for Deliberative Decision Making\n\nAuthors: Francesco Romeo, Jacopo Settino\nPublished: 2026-03-05T17:53:35Z\n\nWe introduce Extreme Quantum Cognition Machines, a class of quantum learning architectures for deliberative decision making that is tolerant to noisy and contradictory training data. Inspired by the quantum cognition paradigm, Extreme Quantum Cognition Machines are closely related to quantum extreme learning and quantum reservoir computing, where fixed quantum dynamics generates a nonlinear feature map and learning is confined to a linear readout. A dynamical attention mechanism, implemented through an input-dependent interaction term in the Hamiltonian, modulates the quantum evolution and biases the resulting feature embedding toward task-relevant correlations. The approach is validated on linguistic classification tasks, which serve as paradigmatic examples of deliberative inference. Hardware-compatible quantum implementations of the proposed framework are discussed, together with potential applications in symbolic inference, sequence analysis, anomaly detection, and automatic diagnosis, with direct relevance to domains such as biology, forensics, and cybersecurity.",
+  "url": "http://arxiv.org/abs/2603.05430v1",
+  "timestamp": "2026-03-05T17:53:35Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "907420101e85694716f02c573daa2467f93b704f69885df860ade4bd4695caaf",
+  "parent_hash": "add4fa71ba8d08fec9ab5435e9bbee2a93003559d1558710fcbd74a97a311979",
+  "metadata": {
+    "authors": [
+      "Francesco Romeo",
+      "Jacopo Settino"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05430v1"
+  }
+}

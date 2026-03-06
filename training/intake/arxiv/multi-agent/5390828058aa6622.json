@@ -1,0 +1,38 @@
+{
+  "id": "5390828058aa6622",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Silo-Bench: A Scalable Environment for Evaluating Distributed Coordination in Multi-Agent LLM Systems",
+  "content": "# Silo-Bench: A Scalable Environment for Evaluating Distributed Coordination in Multi-Agent LLM Systems\n\nAuthors: Yuzhe Zhang, Feiran Liu, Yi Shan, Xinyi Huang, Xin Yang, Yueqi Zhu, Xuxin Cheng, Cao Liu, Ke Zeng, Terry Jingchen Zhang, Wenyuan Jiang\nPublished: 2026-03-01T10:56:00Z\n\nLarge language models are increasingly deployed in multi-agent systems to overcome context limitations by distributing information across agents. Yet whether agents can reliably compute with distributed information -- rather than merely exchange it -- remains an open question. We introduce Silo-Bench, a role-agnostic benchmark of 30 algorithmic tasks across three communication complexity levels, evaluating 54 configurations over 1,620 experiments. Our experiments expose a fundamental Communication-Reasoning Gap: agents spontaneously form task-appropriate coordination topologies and exchange information actively, yet systematically fail to synthesize distributed state into correct answers. The failure is localized to the reasoning-integration stage -- agents often acquire sufficient information but cannot integrate it. This coordination overhead compounds with scale, eventually eliminating parallelization gains entirely. These findings demonstrate that naively scaling agent count cannot circumvent context limitations, and Silo-Bench provides a foundation for tracking progress toward genuinely collaborative multi-agent systems.",
+  "url": "http://arxiv.org/abs/2603.01045v1",
+  "timestamp": "2026-03-01T10:56:00Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "dced8304a5740385234d580ddae7fd141c7bfd09eeb1e1d4fe32ea6ff9cfa285",
+  "parent_hash": "79d263ef41e532ba229bcb4413b1540769e21c554144eb0079c492029eec8f14",
+  "metadata": {
+    "authors": [
+      "Yuzhe Zhang",
+      "Feiran Liu",
+      "Yi Shan",
+      "Xinyi Huang",
+      "Xin Yang",
+      "Yueqi Zhu",
+      "Xuxin Cheng",
+      "Cao Liu",
+      "Ke Zeng",
+      "Terry Jingchen Zhang",
+      "Wenyuan Jiang"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.01045v1"
+  }
+}

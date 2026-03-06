@@ -1,0 +1,29 @@
+{
+  "id": "2c0e1cfd24eab750",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "NOAA Antarctic 2006-2007, Bransfield Strait and Scotia Sea Hydrophone Data, Mooring 4",
+  "content": "# NOAA Antarctic 2006-2007, Bransfield Strait and Scotia Sea Hydrophone Data, Mooring 4\n\nAuthors: R.P. Dziak et al.\nPublished: 2015-03-14T00:00:00Z\nSubjects: \nDOI: doi:10.7910/DVN/FXD9N\n\nNOAA Antarctic 2006-2007, Bransfield Strait and Scotia Sea Hydrophone Data, Mooring 3\n\nCitation: R.P. Dziak et al., 2015, \"NOAA Antarctic 2006-2007, Bransfield Strait and Scotia Sea Hydrophone Data, Mooring 4\", https://doi.org/10.7910/DVN/FXD9N, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/FXD9N",
+  "timestamp": "2026-03-06T04:18:45.404030",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "1db0ff7dccd0d1af0b32dab19201488d5fe208d84c49acee5e2aa1e4798b2d09",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/FXD9N",
+    "subjects": [],
+    "authors": [
+      "R.P. Dziak et al."
+    ],
+    "file_count": 13
+  }
+}

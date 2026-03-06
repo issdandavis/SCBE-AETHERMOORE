@@ -1,0 +1,30 @@
+{
+  "id": "848aa190097b0a07",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2000-0259 \u2014 CVSS 7.2 (UNKNOWN)",
+  "content": "# CVE-2000-0259\n\nCVSS Score: 7.2 (UNKNOWN)\nPublished: 2000-04-12T04:00:00.000\nCWEs: NVD-CWE-Other\n\nThe default permissions for the Cryptography\\Offload registry key used by the OffloadModExpo in Windows NT 4.0 allows local users to obtain compromise the cryptographic keys of other users.\n\nReferences: http://www.securityfocus.com/bid/1105, https://docs.microsoft.com/en-us/security-updates/securitybulletins/2000/ms00-024, http://www.securityfocus.com/bid/1105",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2000-0259",
+  "timestamp": "2026-03-06T02:41:32.739434",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ac8a82c3886a68f9519095a72f45c974ccc1033113125190f63f7f0df0371d9b",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2000-0259",
+    "cvss_score": 7.2,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "2000-04-12T04:00:00.000"
+  }
+}

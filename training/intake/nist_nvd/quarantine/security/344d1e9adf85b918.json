@@ -1,0 +1,30 @@
+{
+  "id": "344d1e9adf85b918",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2021-32637 \u2014 CVSS 10.0 (CRITICAL)",
+  "content": "# CVE-2021-32637\n\nCVSS Score: 10.0 (CRITICAL)\nPublished: 2021-05-28T17:15:07.493\nCWEs: CWE-287\n\nAuthelia is a a single sign-on multi-factor portal for web apps. This affects uses who are using nginx ngx_http_auth_request_module with Authelia, it allows a malicious individual who crafts a malformed HTTP request to bypass the authentication mechanism. It additionally could theoretically affect other proxy servers, but all of the ones we officially support except nginx do not allow malformed URI paths. The problem is rectified entirely in v4.29.3. As this patch is relatively straightforward we can back port this to any version upon request. Alternatively we are supplying a git patch to 4.25.1 which should be relatively straightforward to apply to any version, the git patches for specific versions can be found in the references. The most relevant workaround is upgrading. You can also add a block which fails requests that contains a malformed URI in the internal location block.\n\nReferences: https://github.com/authelia/authelia/commit/c62dbd43d6e69ae81530e7c4f8763857f8ff1dda, https://github.com/authelia/authelia/security/advisories/GHSA-68wm-pfjf-wqp6, https://github.com/authelia/authelia/commit/c62dbd43d6e69ae81530e7c4f8763857f8ff1dda",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2021-32637",
+  "timestamp": "2026-03-06T04:18:24.195361",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "25a759bde9552f30ddbcb76254a1aee2a298129dad95db66d1f2ecebdc62530b",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2021-32637",
+    "cvss_score": 10.0,
+    "severity": "CRITICAL",
+    "cwes": [
+      "CWE-287"
+    ],
+    "published": "2021-05-28T17:15:07.493"
+  }
+}

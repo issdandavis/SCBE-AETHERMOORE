@@ -1,0 +1,30 @@
+{
+  "id": "8948d62613f7cb61",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2007-3108 \u2014 CVSS 1.2 (UNKNOWN)",
+  "content": "# CVE-2007-3108\n\nCVSS Score: 1.2 (UNKNOWN)\nPublished: 2007-08-08T01:17:00.000\nCWEs: NVD-CWE-Other\n\nThe BN_from_montgomery function in crypto/bn/bn_mont.c in OpenSSL 0.9.8e and earlier does not properly perform Montgomery multiplication, which might allow local users to conduct a side-channel attack and retrieve RSA private keys.\n\nReferences: http://cvs.openssl.org/chngview?cn=16275, http://lists.vmware.com/pipermail/security-announce/2008/000002.html, http://openssl.org/news/patch-CVE-2007-3108.txt",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2007-3108",
+  "timestamp": "2026-03-06T04:18:33.344981",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "442a5c97139c8ccca7cf2ea7586db7c3f52f94f0f1f0310f97aacee673c2a904",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2007-3108",
+    "cvss_score": 1.2,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "2007-08-08T01:17:00.000"
+  }
+}

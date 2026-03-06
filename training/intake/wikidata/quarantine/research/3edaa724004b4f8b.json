@@ -1,0 +1,25 @@
+{
+  "id": "3edaa724004b4f8b",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Retrieval Augmented Generation with Rich Answer Encoding (Q134487855)",
+  "content": "# Retrieval Augmented Generation with Rich Answer Encoding\n\nWikidata ID: Q134487855\nDescription: \n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q134487855",
+  "timestamp": "2026-03-06T02:41:28.754478",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4e73e061fa7193e4d8d268c29b87df2f2879dfb7d15cffae708c71c3521838bf",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q134487855",
+    "description": ""
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "cc7e8aeb50197395",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2000-0610 \u2014 CVSS 5.0 (UNKNOWN)",
+  "content": "# CVE-2000-0610\n\nCVSS Score: 5.0 (UNKNOWN)\nPublished: 2000-06-23T04:00:00.000\nCWEs: NVD-CWE-Other\n\nNetWin dMailWeb and cwMail 2.6g and earlier allows remote attackers to bypass authentication and use the server for mail relay via a username that contains a carriage return.\n\nReferences: http://archives.neohapsis.com/archives/bugtraq/2000-06/0243.html, http://www.securityfocus.com/bid/1390, https://exchange.xforce.ibmcloud.com/vulnerabilities/4770",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2000-0610",
+  "timestamp": "2026-03-06T02:41:48.082194",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "62fa97ab2ea3ccff428ff8f9b83dc1311995df5d8e76cc2ee7be9fc2a6106e81",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2000-0610",
+    "cvss_score": 5.0,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "2000-06-23T04:00:00.000"
+  }
+}

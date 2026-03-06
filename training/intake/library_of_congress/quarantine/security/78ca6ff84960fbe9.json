@@ -1,0 +1,36 @@
+{
+  "id": "78ca6ff84960fbe9",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "Abraham Lincoln papers: Series 1. General Correspondence. 1833-1916: John Slight to Abraham Lincoln, Monday, March 04, 1861 (System of cryptographic writing)",
+  "content": "# Abraham Lincoln papers: Series 1. General Correspondence. 1833-1916: John Slight to Abraham Lincoln, Monday, March 04, 1861 (System of cryptographic writing)\n\nContributors: lincoln, abraham\nDate: 1861-03-04\nSubjects: civil war, united states, manuscripts, presidents, politics and government\n\n",
+  "url": "https://www.loc.gov/item/mal0777400/",
+  "timestamp": "2026-03-06T02:37:46.460922",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6f0e0c34cddaeba378af548742b29d792dbba9582a8a06a5375f5cb460fb6da2",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "civil war",
+      "united states",
+      "manuscripts",
+      "presidents",
+      "politics and government",
+      "history"
+    ],
+    "dates": "1861-03-04",
+    "original_format": [
+      "manuscript/mixed material"
+    ]
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "id": "26d7f5e537fd9acb",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "George Miseyko Collection",
+  "content": "# George Miseyko Collection\n\nContributors: miseyko, george, land of sky regional council, may, sara b.\nDate: 1943\nSubjects: personal narratives, united states. navy, biographical information, navy, veteran\n\nCryptographic Specialist First Class, Navy, World War, 1939-1945 - Boston, Massachusetts; Detroit, Michigan; Chicago, Illinois; Camp Sampson, New York.",
+  "url": "https://www.loc.gov/item/afc2001001.89189/",
+  "timestamp": "2026-03-06T02:37:46.460909",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6bc1c5b0ba2252bd34f813a0c4af69d9d8a57a3aa00ad2d38c1d8443aceaf05d",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "personal narratives",
+      "united states. navy",
+      "biographical information",
+      "navy",
+      "veteran",
+      "male",
+      "world war, 1939-1945",
+      "enlisted",
+      "world war",
+      "miseyko, george"
+    ],
+    "dates": "1943",
+    "original_format": [
+      "sound recording",
+      "personal narrative",
+      "manuscript/mixed material"
+    ]
+  }
+}

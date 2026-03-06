@@ -1,0 +1,32 @@
+{
+  "id": "b9fca2aabcd825f6",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "H.R.6919 - 116th Congress (2019-2020): Advancing Quantum Computing Act",
+  "content": "# H.R.6919 - 116th Congress (2019-2020): Advancing Quantum Computing Act\n\nContributors: house of representatives, 116th congress, rep. griffith, h. morgan [r-va-9]\nDate: 2020-05-19\nSubjects: commerce, congress\n\nSummary of H.R.6919 - 116th Congress (2019-2020): Advancing Quantum Computing Act",
+  "url": "https://www.congress.gov/bill/116th-congress/house-bill/6919",
+  "timestamp": "2026-03-06T02:38:03.634954",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "2ad96d85ac77622119cf45b4f62159cd20a1880d9b7dfcfeb35236d0931eff25",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "commerce",
+      "congress"
+    ],
+    "dates": "2020-05-19",
+    "original_format": [
+      "legislation"
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "122e63e75b4306b6",
+  "source": "arxiv",
+  "category": "security",
+  "title": "Cyber Threat Intelligence for Artificial Intelligence Systems",
+  "content": "# Cyber Threat Intelligence for Artificial Intelligence Systems\n\nAuthors: Natalia Krawczyk, Mateusz Szczepkowski, Adrian Brodzik, Krzysztof Bocianiak\nPublished: 2026-03-05T11:37:47Z\n\nAs artificial intelligence (AI) becomes deeply embedded in critical services and everyday products, it is increasingly exposed to security threats which traditional cyber defenses were not designed to handle. In this paper, we investigate how cyber threat intelligence (CTI) may evolve to address attacks that target AI systems. We first analyze the assumptions and workflows of conventional threat intelligence with the needs of AI-focused defense, highlighting AI-specific assets and vulnerabilities. We then review and organize the current landscape of AI security knowledge. Based on this, we outline what an AI-oriented threat intelligence knowledge base should contain, describing concrete indicators of compromise (IoC) for different AI supply-chain phases and artifacts, and showing how such a knowledge base could support security tools. Finally, we discuss techniques for measuring similarity between collected indicators and newly observed AI artifacts. The review reveals gaps and quality issues in existing resources and identifies potential future research directions toward a practical threat intelligence framework tailored to AI.",
+  "url": "http://arxiv.org/abs/2603.05068v1",
+  "timestamp": "2026-03-05T11:37:47Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "0685a5cf850c4e6aa58b5e7b2b7bc5aefe7491c4322dfc875d37e5aeead24479",
+  "parent_hash": "3a246306945568117f8cf5129ff3a5a5beb638824f76ccf3c78caa6cecf0291a",
+  "metadata": {
+    "authors": [
+      "Natalia Krawczyk",
+      "Mateusz Szczepkowski",
+      "Adrian Brodzik",
+      "Krzysztof Bocianiak"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.05068v1"
+  }
+}

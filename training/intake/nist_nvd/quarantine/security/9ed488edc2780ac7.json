@@ -1,0 +1,30 @@
+{
+  "id": "9ed488edc2780ac7",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2013-0169 \u2014 CVSS 2.6 (UNKNOWN)",
+  "content": "# CVE-2013-0169\n\nCVSS Score: 2.6 (UNKNOWN)\nPublished: 2013-02-08T19:55:01.030\nCWEs: CWE-310\n\nThe TLS protocol 1.1 and 1.2 and the DTLS protocol 1.0 and 1.2, as used in OpenSSL, OpenJDK, PolarSSL, and other products, do not properly consider timing side-channel attacks on a MAC check requirement during the processing of malformed CBC padding, which allows remote attackers to conduct distinguishing attacks and plaintext-recovery attacks via statistical analysis of timing data for crafted packets, aka the \"Lucky Thirteen\" issue.\n\nReferences: http://blog.fuseyism.com/index.php/2013/02/20/security-icedtea-2-1-6-2-2-6-2-3-7-for-openjdk-7-released/, http://lists.apple.com/archives/security-announce/2013/Sep/msg00002.html, http://lists.fedoraproject.org/pipermail/package-announce/2013-April/101366.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2013-0169",
+  "timestamp": "2026-03-06T04:18:33.345046",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e3eb68c0fe5f553e93c6aaed5ea1ccecd645a7cb34e622e6d5155efac090f4cc",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2013-0169",
+    "cvss_score": 2.6,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-310"
+    ],
+    "published": "2013-02-08T19:55:01.030"
+  }
+}

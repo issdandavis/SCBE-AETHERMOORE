@@ -1,0 +1,31 @@
+{
+  "id": "11f288d41847e6f5",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Video file for the paper \"Plumelets: Dynamic Filamentary Structures in Solar Coronal Plumes\" (ApJ 2020).",
+  "content": "# Video file for the paper \"Plumelets: Dynamic Filamentary Structures in Solar Coronal Plumes\" (ApJ 2020).\n\nAuthors: DeForest, Craig\nPublished: 2020-11-26T04:56:21Z\nSubjects: Astronomy and Astrophysics\nDOI: doi:10.7910/DVN/FELQVX\n\nVideo of small-scale plasma outflows in a solar coronal plume for the paper \"Plumelets: Dynamic Filamentary Structures in Solar Coronal Plumes\" (ApJ 2020).\n\nCitation: DeForest, Craig, 2020, \"Video file for the paper \"Plumelets: Dynamic Filamentary Structures in Solar Coronal Plumes\" (ApJ 2020).\", https://doi.org/10.7910/DVN/FELQVX, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/FELQVX",
+  "timestamp": "2026-03-06T04:18:41.248906",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4efefaeb2c509e88cdd0b3b4fdd29408c9d6ea27f819ccd24da6a327a4a55376",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/FELQVX",
+    "subjects": [
+      "Astronomy and Astrophysics"
+    ],
+    "authors": [
+      "DeForest, Craig"
+    ],
+    "file_count": 1
+  }
+}

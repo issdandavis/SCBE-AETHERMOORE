@@ -1,0 +1,38 @@
+{
+  "id": "f4e6d1a098dd6165",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "DTIC ADA253030: Magnetic Resonance Elucidation of Molecule/Macromolecule Interaction Stereochemistry.",
+  "content": "# DTIC ADA253030: Magnetic Resonance Elucidation of Molecule/Macromolecule Interaction Stereochemistry.\n\nCreator: Defense Technical Information Center\nDate: 1992-07-09T00:00:00Z\nDownloads: 58\nSubjects: DTIC Archive, Andersen, Niels H, WASHINGTON UNIV SEATTLE DEPT OF CHEMISTRY, *MOLECULES, *MAGNETIC RESONANCE\n\nour primary accomplishments were the development of software for the computer-aided structure elucidation of structural features of biological systems based on NOESY data: (a) simulating accurate theoretical NOESY spectra based on structural models, motional assumptions and NMR experiment parameters; and (b) the automated extraction of modeling constraints directly from raw NOESY data. The most recent software developments are the incorporation of model-free order parameters into NOESY simulations and the addition of routines for comparing computer-extracted distances (or cross-rates) with the expectation ranges based on the full spectrum of torsional freedom so as to generate precision estimates for NOE-distances from a single NOESY spectrum. These methods have been used to define the conformational states of a variety of polypeptide and drug molecule systems including: prostaglandin and steroid analogs, peptide hormones such as dynorphin-related peptides and GNRH analogs, rigid and flexible endothelin analogs, and a small protein allergen. The methods have also been applied to receptor-bound peptides. Nuclear Magnetic Resonance, Molecular Recognition, NOESY Spectral Simulation, Structure Refinement, Software Development.",
+  "url": "https://archive.org/details/DTIC_ADA253030",
+  "timestamp": "2026-03-06T04:17:58.219795",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "2ef703bb32037cc3a6d337da57c1271c74b27ce95896ce15067c31daeeac678a",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "DTIC_ADA253030",
+    "media_type": "texts",
+    "downloads": 58,
+    "subjects": [
+      "DTIC Archive",
+      "Andersen, Niels H",
+      "WASHINGTON UNIV SEATTLE DEPT OF CHEMISTRY",
+      "*MOLECULES",
+      "*MAGNETIC RESONANCE",
+      "*STEREOCHEMISTRY",
+      "SIMULATION",
+      "HORMONES",
+      "NUCLEAR MAGNETIC RESONANCE",
+      "PEPTIDES"
+    ]
+  }
+}

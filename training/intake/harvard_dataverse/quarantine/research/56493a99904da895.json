@@ -1,0 +1,31 @@
+{
+  "id": "56493a99904da895",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Appendix Table D1 (Fitting Results Including Inner 2 pc)",
+  "content": "# Appendix Table D1 (Fitting Results Including Inner 2 pc)\n\nAuthors: Zucker, Catherine\nPublished: 2021-08-18T23:57:27Z\nSubjects: Astronomy and Astrophysics\nDOI: doi:10.7910/DVN/V8NGLX\n\nThis dataset summarizes the radial profile fitting results when the inner 2 pc of the profile (radial distances between 0 and 2 pc) are included. These results have lower goodness of fit compared to when the inner 2 pc are excluded, so we report the full profile results here for completion only. Users should defer to the restricted profile (r > 2 pc) results at for most purposes.\n\nCitation: Zucker, Catherine, 2021, \"Appendix Table D1 (Fitting Results Including Inner 2 pc)\", https://doi.org/10.7910/DVN/V8NGLX, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/V8NGLX",
+  "timestamp": "2026-03-06T04:18:41.248989",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "036ddae605067391b3d33d0705268cf58830eec09f1aa62c7a977c55b1a56e99",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/V8NGLX",
+    "subjects": [
+      "Astronomy and Astrophysics"
+    ],
+    "authors": [
+      "Zucker, Catherine"
+    ],
+    "file_count": 1
+  }
+}

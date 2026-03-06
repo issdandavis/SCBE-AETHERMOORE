@@ -1,0 +1,28 @@
+{
+  "id": "983662b8be445603",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Unlocking Python's Cores: Hardware Usage and Energy Implications of Removing the GIL",
+  "content": "# Unlocking Python's Cores: Hardware Usage and Energy Implications of Removing the GIL\n\nAuthors: Jos\u00e9 Daniel Montoya Salazar\nPublished: 2026-03-05T04:01:30Z\n\nPython's Global Interpreter Lock prevents execution on more than one CPU core at the same time, even when multiple threads are used. However, starting with Python 3.13 an experimental build allows disabling the GIL. While prior work has examined speedup implications of this disabling, the effects on energy consumption and hardware utilization have received less attention. This study measures execution time, CPU utilization, memory usage, and energy consumption using four workload categories: NumPy-based, sequential kernels, threaded numerical workloads, and threaded object workloads, comparing GIL and free-threaded builds of Python 3.14.2.\n  The results highlight a trade-off. For parallelizable workloads operating on independent data, the free-threaded build reduces execution time by up to 4 times, with a proportional reduction in energy consumption, and effective multi-core utilization, at the cost of an increase in memory usage. In contrast, sequential workloads do not benefit from removing the GIL and instead show a 13-43% increase in energy consumption. Similarly, workloads where threads frequently access and modify the same objects show reduced improvements or even degradation due to lock contention. Across all workloads, energy consumption is proportional to execution time, indicating that disabling the GIL does not significantly affect power consumption, even when CPU utilization increases. When it comes to memory, the no-GIL build shows a general increase, more visible in virtual memory than in physical memory. This increase is primarily attributed to per-object locking, additional thread-safety mechanisms in the runtime, and the adoption of a new memory allocator.\n  These findings suggest that Python's no-GIL build is not a universal improvement. Developers should evaluate whether their workload can effectively benefit from parallel execution before adoption.",
+  "url": "http://arxiv.org/abs/2603.04782v1",
+  "timestamp": "2026-03-05T04:01:30Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "0f0e5dc969e02167d59d4c96e6e9ca0bc12ccfdc897024319d5f16b3f7b3df8e",
+  "parent_hash": "a95ce10108430f35f7773f103d426dcdd728f904d0f7db3fa7ac14e9f9141b59",
+  "metadata": {
+    "authors": [
+      "Jos\u00e9 Daniel Montoya Salazar"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.04782v1"
+  }
+}

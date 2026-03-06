@@ -1,0 +1,32 @@
+{
+  "id": "59102878447a59be",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "Introduction to data science and machine learning",
+  "content": "# Introduction to data science and machine learning\n\nContributors: kadry, seifedine, erdogmus, pakize, sud, keshav\nDate: 2020-01-01\nSubjects: electronic data processing, machine learning\n\nIncludes bibliographical references. Description based on print version record; resource not viewed.",
+  "url": "https://www.loc.gov/item/2020718268/",
+  "timestamp": "2026-03-06T02:38:34.742608",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4c8fa23999a7fcf504ad32a4308ad67a3a40f2576db8925328f89f674ba2357e",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "electronic data processing",
+      "machine learning"
+    ],
+    "dates": "2020-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

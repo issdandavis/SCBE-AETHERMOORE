@@ -1,0 +1,30 @@
+{
+  "id": "41f1e5af618878b2",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Classification of quadratically pinched self-shrinkers in higher codimension",
+  "content": "# Classification of quadratically pinched self-shrinkers in higher codimension\n\nAuthors: Debora Impera, Michele Rimoldi, Francesco Ruatta\nPublished: 2026-02-23T10:24:41Z\n\nWe classify properly immersed self-shrinkers of the mean curvature flow in arbitrary codimension under a quadratic pinching condition of Andrews-Baker type on the second fundamental form that is preserved along the flow. Under this assumption, such self-shrinkers reduce effectively to codimension one and are therefore generalized self-shrinking cylinders. In contrast to previous works, our approach is purely elliptic: it relies on parabolicity in a weighted setting and is tailored specifically to self-shrinkers, rather than to general ancient solutions of the flow. This allows us to avoid assuming any uniform pinching condition, to treat in any dimension the sharp Andrews-Baker pinching constant $\\frac{4}{3n}$ and hence to sharpen, in the self-shrinker setting, the pinching constants appearing in recent classification results for ancient solutions.",
+  "url": "http://arxiv.org/abs/2602.19681v1",
+  "timestamp": "2026-02-23T10:24:41Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "d723a24dd32eb2a0b6644cebd3c12e212173ae636514bbf5810f3c492896c0b8",
+  "parent_hash": "0a7f975a4f983851f54a19c1f8a448eed0e10a8696059a1eefe30f960140f901",
+  "metadata": {
+    "authors": [
+      "Debora Impera",
+      "Michele Rimoldi",
+      "Francesco Ruatta"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.19681v1"
+  }
+}

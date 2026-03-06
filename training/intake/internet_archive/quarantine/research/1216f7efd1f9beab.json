@@ -1,0 +1,38 @@
+{
+  "id": "1216f7efd1f9beab",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "ERIC ED608568: Examining Language-Agnostic Methods of Automatic Coding in the Community of Inquiry Framework",
+  "content": "# ERIC ED608568: Examining Language-Agnostic Methods of Automatic Coding in the Community of Inquiry Framework\n\nCreator: ERIC\nDate: 2019-01-01T00:00:00Z\nDownloads: 42\nSubjects: ERIC Archive, ERIC, Taniguchi, Yuta Konomi, Shin'ichi Goda, Yoshiko, Coding, Multilingualism\n\nThis study discusses the automatic coding methods of the Community of Inquiry (CoI) framework for multilingual contexts, in particular. In universities, foreign students cannot be overlooked, and learning systems are also required to work in multilingual situations. However, none of the existing work has addressed the lack of language-agnostic and automatic coding algorithms for the CoI framework, even though the framework is widely used to assess student-generated texts. In this study, we investigate the performance of a data-driven text tokenization algorithm for automatic coding. Using a real-world dataset, we compare the prediction performance of the language-independent tokenizer with a language-dependent tokenizer. Our experiments show the data-driven tokenizer to be comparable to its competitor, and a classification algorithm with this tokenizer could achieve high prediction performance for many CoI indicators. We believe that our experimental results are informative and could provide a baseline for future research. [For the complete proceedings, see ED608557.]",
+  "url": "https://archive.org/details/ERIC_ED608568",
+  "timestamp": "2026-03-06T02:40:36.587449",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "a008516da52f7c68ebc1e48551292dde3f14a467617a09b14c30c7529e6d5231",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "ERIC_ED608568",
+    "media_type": "texts",
+    "downloads": 42,
+    "subjects": [
+      "ERIC Archive",
+      "ERIC",
+      "Taniguchi, Yuta Konomi, Shin'ichi Goda, Yoshiko",
+      "Coding",
+      "Multilingualism",
+      "Foreign Students",
+      "College Students",
+      "Data Analysis",
+      "Computer Software",
+      "Classification"
+    ]
+  }
+}

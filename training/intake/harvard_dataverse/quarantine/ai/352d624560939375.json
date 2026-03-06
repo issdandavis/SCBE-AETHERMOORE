@@ -1,0 +1,39 @@
+{
+  "id": "352d624560939375",
+  "source": "harvard_dataverse",
+  "category": "quarantine/ai",
+  "title": "Replication Data for: Scalable deep learning to identify brick kilns and aid regulatory capacity",
+  "content": "# Replication Data for: Scalable deep learning to identify brick kilns and aid regulatory capacity\n\nAuthors: Lee, Jihyeon, Brooks, Nina, Tajwar, Fahim, Burke, Marshall, Ermon, Stefano\nPublished: 2021-04-09T21:43:00Z\nSubjects: Computer and Information Science, Earth and Environmental Sciences\nDOI: doi:10.7910/DVN/HVGW8L\n\nData and code to replicate parts of \"Scalable deep learning to identify brick kilns and aid regulatory capacity\". We used DigitalGlobe (now Maxar Technologies) imagery, which is proprietary. However, we are able to share a \"de-geo-identified\" version of the imagery used in our machine learning pipeline. This data is stripped of its geospatial metadata, which means certain steps of our pipeline, such as translating the pixel locations of kilns detected within an image to a latitude and longitude will not be reproducible with this data. We also provide the final output of the machine learning pipeline (the GPS coordinates of all model predicted kilns), so the remainder of the analysis is replicable. The Government of Bangladesh data on brick kilns is proprietary and can be requested directly from the Department of Environment. All other geospatial data used to assess the scale and scope of brick manufacturing (population distributions, forests, schools, health facilities, protected areas, PM2.5, wind, precipitation, temperature, and administrative boundaries) are publicly available and we provide details on how to obtain them.\n\nCitation: Lee, Jihyeon; Brooks, Nina; Tajwar, Fahim; Burke, Marshall; Ermon, Stefano; Lobell, David; Biswas, Debashish; Luby, Stephen, 2021, \"Replication Data for: Scalable deep learning to identify brick kilns and aid regulatory capacity\", https://doi.org/10.7910/DVN/HVGW8L, Harvard Dataverse, V2, UNF:6:EyEuhTPLiB1QKc5fxBAF0w== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/HVGW8L",
+  "timestamp": "2026-03-06T04:18:54.179737",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "f75825c876207e4ad45831acde4f5fc329a70be3396f97aac90f341d6d0ac1a8",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/HVGW8L",
+    "subjects": [
+      "Computer and Information Science",
+      "Earth and Environmental Sciences"
+    ],
+    "authors": [
+      "Lee, Jihyeon",
+      "Brooks, Nina",
+      "Tajwar, Fahim",
+      "Burke, Marshall",
+      "Ermon, Stefano",
+      "Lobell, David",
+      "Biswas, Debashish",
+      "Luby, Stephen"
+    ],
+    "file_count": 21
+  }
+}

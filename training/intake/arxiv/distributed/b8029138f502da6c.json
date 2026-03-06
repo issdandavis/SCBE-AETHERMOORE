@@ -1,0 +1,28 @@
+{
+  "id": "b8029138f502da6c",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Bisynchronous FIFOs and the FITO Category Mistake: Silicon-Proven Interaction Primitives for Distributed Coordination",
+  "content": "# Bisynchronous FIFOs and the FITO Category Mistake: Silicon-Proven Interaction Primitives for Distributed Coordination\n\nAuthors: Paul Borrill\nPublished: 2026-03-03T19:28:59Z\n\nBisynchronous FIFOs -- hardware buffers that mediate data transfer between independent clock domains without a shared global timebase -- have been designed, formally verified, and commercially deployed in silicon for over four decades. We survey this literature from Chapiro's 1984 GALS thesis through Cummings's Gray-code pointer techniques, Chelcea and Nowick's mixed-timing interfaces, Greenstreet's STARI protocol, and the 2015 NVIDIA pausible bisynchronous FIFO, and argue that this body of work constitutes a silicon-proven existence proof against the Forward-In-Time-Only (FITO) assumption that pervades distributed systems. The central claim is that interaction-based synchronization primitives -- handshakes, mutual exclusion, and causal flow control -- can replace timestamp-based coordination at the most demanding levels of digital engineering, directly undermining the FITO assumption in protocols such as PTP, TSN, and conventional Ethernet. We draw a structural parallel between on-chip bisynchronous coordination and the Open Atomic Ethernet (OAE) architecture, and identify the handshake -- not the timestamp -- as the fundamental primitive for coordination between independent causal domains.",
+  "url": "http://arxiv.org/abs/2603.03470v1",
+  "timestamp": "2026-03-03T19:28:59Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "dbc332af2e085d227ea09745683ceb31de72e818e4dfc70f4e8dc08c11e4c8be",
+  "parent_hash": "9f7ef418d16f9a8ee7782b52d9cbc2e939e564d36c7cc66819e371f015e24349",
+  "metadata": {
+    "authors": [
+      "Paul Borrill"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.03470v1"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "58124def18519790",
+  "source": "notion",
+  "category": "scbe-general",
+  "title": "Physics Simulation API - Documentation & Revenue Plan",
+  "content": "# Physics Simulation API - Documentation & Revenue Plan\n\nPython\nOverview\nWorking AWS Lambda physics calculation API\nStatus: Live and functional\nLast tested: January 8, 2026, 6 PM PST\nExecution time: 11 seconds\nInfrastructure: Production-ready (SQS, API Gateway, S3, EventBridge)\nWhat It Does (VERIFIED WORKING)\nCalculates real quantum mechanics and classical physics:\nQuantum Mechanics\nHydrogen Atom Energy Levels\nPhoton Energy from Wavelength\nParticle in a Box\nHeisenberg Uncertainty Principle\nAPI Format\nInput (JSON):\n{\n  \"simulation_type\": \"quantum\",\n  \"parameters\": {\n    \"principal_quantum_number\": 2,\n    \"wavelength\": 500e-9,\n    \"box_length\": 1e-9,\n    \"quantum_number\": 1,\n    \"position_uncertainty\": 1e-10\n  }\n}\n\nOutput (JSON):\n{\n  \"statusCode\": 200,\n  \"body\": {\n    \"photon_energy\": 3.97e-19,\n    \"frequency\": 5.996e14,\n    \"hydrogen_energy_eV\": -3.4,\n    \"energy_level\": 6.02e-20,\n    \"momentum_uncertainty_min\": 5.27e-25,\n    \"constants_used\": {\n      \"planck_constant\": 6.626e-34,\n      \"speed_of_light\": 299792458\n    }\n  }\n}\n\nRevenue Plan (Realistic Path to $120/year minimum)\nWeek 1 (Jan 9-15, 2026)\nCreate simple documentation website on S3 ($0.50/mo)\nAdd 2 more calculation types (orbital mechanics, thermodynamics)\nSet up API Gateway with authentication\nWeek 2 (Jan 16-22)\nIntegrate Stripe billing\nPricing tiers:\nWeek 3 (Jan 23-29)\nPost on r/AskPhysics: \"Free quantum calculator API - need beta testers\"\nEmail 10 physics TAs at UW/WSU\nGet 10-20 free users testing\nWeek 4 (Jan 30 - Feb 5)\nLaunch paid tiers\nTarget: 1 paying customer = SUCCESS\n$120/year minimum = AWS costs covered\nTechnical Details\nAWS Resources:\nLambda function: physics-simulation-engine\nRegion: us-west-2\nMemory: 128 MB\nTimeout: 15 minutes\nFunction ARN: arn:aws:lambda:us-west-2:861870144562:function:physics-simulation-engine\nConnected Services:\nSQS: Batch job processing\nAPI Gateway: 2 REST endpoints\nEventBridge: Scheduled runs\nS3: File storage for results\nPhysics Constants (CODATA 2018):\nPlanck constant: 6.62607015\u00d710\u207b\u00b3\u2074 J\u00b7s\nSpeed of light: 299,792,458 m/s\nGravitational constant: 6.67430\u00d710\u207b\u00b9\u00b9 m\u00b3/kg\u00b7s\u00b2\nBoltzmann constant: 1.380649\u00d710\u207b\u00b2\u00b3 J/K\nAvogadro constant: 6.02214076\u00d710\u00b2\u00b3 mol\u207b\u00b9\nNext Steps (Priority Order)\nTODAY: Finish this documentation\nTomorrow: Create S3 website with API examples\nThis weekend: Add orbital mechanics calculations\nNext week: Set up Stripe + launch free beta\nEnd of month: Get first paying customer\nContact for Testing\nReddit: r/AskPhysics, r/Physics\nUniversities: UW Physics, WSU Physics, Bellevue College\nTarget: Physics students, TAs, researchers\nLast updated: January 8, 2026 by Izack ThorneLocation: Port Angeles, WA\nDark Energy Expanding Ring Implementation\nThis implements the SpiralRing-64 with exponential expansion:\n/code",
+  "url": "https://www.notion.so/Physics-Simulation-API-Documentation-Revenue-Plan-2e3f96de82e580628834d90a25da957c",
+  "timestamp": "2026-01-09T02:21:00.000Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "d182f7437f905ffda6452ec93a89854463947b3cc9ec80310c5056de716d86c9",
+  "parent_hash": "779a9430300d0aff3d9b302ccc08a5ad1bba4a186309fdf47c7fc4dbac330d14",
+  "metadata": {
+    "notion_id": "2e3f96de-82e5-8062-8834-d90a25da957c",
+    "page_type": "page",
+    "parent_type": "workspace"
+  }
+}

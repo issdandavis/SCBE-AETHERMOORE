@@ -1,0 +1,25 @@
+{
+  "id": "e5377b2a41512746",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Blockchain Consensus Algorithms: The State of the Art and Future Trends (Q118421008)",
+  "content": "# Blockchain Consensus Algorithms: The State of the Art and Future Trends\n\nWikidata ID: Q118421008\nDescription: scholarly article in Acta Automatica Sinica, no. 11, 2018\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q118421008",
+  "timestamp": "2026-03-06T02:41:17.799111",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "47efbfcaab90b750fcbca23fbced0dfe00d02b52762b03269fa62ad433ab468e",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q118421008",
+    "description": "scholarly article in Acta Automatica Sinica, no. 11, 2018"
+  }
+}

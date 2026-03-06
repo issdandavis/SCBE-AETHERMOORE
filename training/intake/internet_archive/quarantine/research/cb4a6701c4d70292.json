@@ -1,0 +1,32 @@
+{
+  "id": "cb4a6701c4d70292",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Consensus in the Presence of Multiple Opinion Leaders: Effect of Bounded Confidence",
+  "content": "# Consensus in the Presence of Multiple Opinion Leaders: Effect of Bounded Confidence\n\nCreator: Ranga Dabarera, Kamal Premaratne, Manohar N. Murthi, Dilip Sarkar\nDate: 2016-05-25T00:00:00Z\nDownloads: 28\nSubjects: Multiagent Systems, Systems and Control, Computing Research Repository, Social and Information Networks\n\nThe problem of analyzing the performance of networked agents exchanging evidence in a dynamic network has recently grown in importance. This problem has relevance in signal and data fusion network applications and in studying opinion and consensus dynamics in social networks. Due to its capability of handling a wider variety of uncertainties and ambiguities associated with evidence, we use the framework of Dempster-Shafer (DS) theory to capture the opinion of an agent. We then examine the consensus among agents in dynamic networks in which an agent can utilize either a cautious or receptive updating strategy. In particular, we examine the case of bounded confidence updating where an agent exchanges its opinion only with neighboring nodes possessing 'similar' evidence. In a fusion network, this captures the case in which nodes only update their state based on evidence consistent with the node's own evidence. In opinion dynamics, this captures the notions of Social Judgment Theory (SJT) in which agents update their opinions only with other agents possessing opinions closer to their own. Focusing on the two special DS theoretic cases where an agent state is modeled as a Dirichlet body of evidence and a probability mass function (p.m.f.), we utilize results from matrix theory, graph theory, and networks to prove the existence of consensus agent states in several time-varying network cases of interest. For example, we show the existence of a consensus in which a subset of network nodes achieves a consensus that is adopted by follower network nodes. Of particular interest is the case of multiple opinion leaders, where we show that the agents do not reach a consensus in general, but rather converge to 'opinion clusters'. Simulation results are provided to illustrate the main results.",
+  "url": "https://archive.org/details/arxiv-1605.07861",
+  "timestamp": "2026-03-06T02:40:48.214119",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "67dd442101edd6701dc5e6e13e97fa2ca26b128feac7a269d4aaea8d782adbd5",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1605.07861",
+    "media_type": "texts",
+    "downloads": 28,
+    "subjects": [
+      "Multiagent Systems",
+      "Systems and Control",
+      "Computing Research Repository",
+      "Social and Information Networks"
+    ]
+  }
+}

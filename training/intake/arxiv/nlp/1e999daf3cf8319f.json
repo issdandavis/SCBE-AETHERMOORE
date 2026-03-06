@@ -1,0 +1,29 @@
+{
+  "id": "1e999daf3cf8319f",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Dissociating Direct Access from Inference in AI Introspection",
+  "content": "# Dissociating Direct Access from Inference in AI Introspection\n\nAuthors: Harvey Lederman, Kyle Mahowald\nPublished: 2026-03-05T17:39:37Z\n\nIntrospection is a foundational cognitive ability, but its mechanism is not well understood. Recent work has shown that AI models can introspect. We study their mechanism of introspection, first extensively replicating Lindsey et al. (2025)'s thought injection detection paradigm in large open-source models. We show that these models detect injected representations via two separable mechanisms: (i) probability-matching (inferring from perceived anomaly of the prompt) and (ii) direct access to internal states. The direct access mechanism is content-agnostic: models detect that an anomaly occurred but cannot reliably identify its semantic content. The two model classes we study confabulate injected concepts that are high-frequency and concrete (e.g., \"apple'\"); for them correct concept guesses typically require significantly more tokens. This content-agnostic introspective mechanism is consistent with leading theories in philosophy and psychology.",
+  "url": "http://arxiv.org/abs/2603.05414v1",
+  "timestamp": "2026-03-05T17:39:37Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "920510c1e3a5b2fa8bed2fd977c965b3938a9e3a05f92eb606da97ff6895fb82",
+  "parent_hash": "35f7b997861a93e0cdabd817cca8c3bc21127a567bddebd737f4002ddc518505",
+  "metadata": {
+    "authors": [
+      "Harvey Lederman",
+      "Kyle Mahowald"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05414v1"
+  }
+}

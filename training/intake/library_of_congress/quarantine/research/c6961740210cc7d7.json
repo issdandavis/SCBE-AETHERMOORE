@@ -1,0 +1,32 @@
+{
+  "id": "c6961740210cc7d7",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "H.Res.111 - 119th Congress (2025-2026): Expressing support for blockchain technology and digital assets.",
+  "content": "# H.Res.111 - 119th Congress (2025-2026): Expressing support for blockchain technology and digital assets.\n\nContributors: rep. johnson, dusty [r-sd-at large], house of representatives, 119th congress\nDate: 2025-02-05\nSubjects: finance and financial sector, congress\n\nSummary of H.Res.111 - 119th Congress (2025-2026): Expressing support for blockchain technology and digital assets.",
+  "url": "https://www.congress.gov/bill/119th-congress/house-resolution/111",
+  "timestamp": "2026-03-06T02:38:39.088116",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "92408d3dec0d2110121b55f58b1532eb806add8181e7f68a3f4f35ed0a431c51",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "finance and financial sector",
+      "congress"
+    ],
+    "dates": "2025-02-05",
+    "original_format": [
+      "legislation"
+    ]
+  }
+}

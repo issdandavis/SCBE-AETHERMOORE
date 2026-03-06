@@ -1,0 +1,38 @@
+{
+  "id": "2714173899de620a",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Internet and network economics : first international workshop, WINE 2005, Hong Kong, China, December 15-17, 2005 : proceedings",
+  "content": "# Internet and network economics : first international workshop, WINE 2005, Hong Kong, China, December 15-17, 2005 : proceedings\n\nCreator: WINE 2005 (2005 : Hong Kong, China)\nDate: 2005-01-01T00:00:00Z\nDownloads: 64\nSubjects: Internet -- Congresses, Computer networks -- Economic aspects -- Congresses, Econometrics -- Congresses, Internet -- Congre\u0300s, Re\u0301seaux d'ordinateurs -- Aspect e\u0301conomique -- Congre\u0300s\n\n1 online resource (xvii, 1106 pages) : WINE 2005, the First Workshop on Internet and Network Economics (WINE 2005), took place in Hong Kong, China, December 15-17, 2005. The symposium aims to provide a forum for researchers working in Internet and Network Economic algorithms from all over the world. The final count of electronic submissions was 372, of which 108 were accepted. It consists of the main program of 31 papers, of which the submitter email accounts are: 10 from edu (USA) accounts, 3 from hk (Hong Kong), 2 each from il (Isreal), cn (China), ch (Switzerland), de (Germany), jp (Japan), gr (Greece), 1 each from hp. com, sohu. com, pl (Poland), fr (France), ca (Canada), and in (India). In addition, 77 papers from 20 countries or regions and 6 dot. coms were selected for 16 special focus tracks in the areas of Internet and Algorithmic Economics; E-Commerce Protocols; Security; Collaboration, Reputation and Social Networks; Algorithmic Mechanism; Financial Computing; Auction Algorithms; Online Algorithms; Collective Rationality; Pricing Policies; Web Mining Strategies; Network Economics; Coalition Strategies; Internet Protocols; Price Sequence; Equilibrium. We had one best student paper nomination: \"Walrasian Equilibrium: Hardness, Approximations and Tracktable Instances\" by Ning Chen and Atri Rudra. We would like to thank Andrew Yao for serving the conference as its Chair, with inspiring encouragement and far-sighted leadership. We would like to thank the International Program Committee for spending their valuable time and effort in the review process Includes bibliographical references and index Print version record Recent Developments in Equilibria Algorithms -- Partially-Specified Large Games -- Exchange Market Equilibria with Leontief's Utility: Freedom of Pricing Leads to Rationality -- A Primal-Dual Algorithm for Computing Fisher Equilibrium in the Absence of Gross Substitutability Property -- Click Fraud Resistant Methods for Learning Click-Through Rates -- Experiments with an Economic Model of the Worldwide Web -- Coordination Mechanisms for Selfish Scheduling -- Economic Mechanisms for Shortest Path Cooperative Games with Incomplete Information -- Truth-Telling Reservations -- Inapproximability Results for Combinatorial Auctions with Submodular Utility Functions -- An Auction-Based Market Equilibrium Algorithm for a Production Model -- New Algorithms for Mining the Reputation of Participants of Online Auctions -- A Simple Characterization for Truth-Revealing Single-Item Auctions -- Prediction Games -- Walrasian Equilibrium: Hardness, Approximations and Tractable Instances -- On the Structure and Complexity of Worst-Case Equilibria -- Club Formation by Rational Sharing: Content, Viability and Community Structure -- Subjective-Cost Policy Routing -- Economic Analysis of Networking Technologies for Rural Developing Regions -- A Simple Graph-Theoretic Model for Selfish Restricted Scheduling -- A Cost Mechanism for Fair Pricing of Resour",
+  "url": "https://archive.org/details/internetnetworke0000wine_z8l3",
+  "timestamp": "2026-03-06T02:40:40.434252",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "69778b26a71e6bd31ed51b9765e25bccaecb785aeb086915f974a8c33df79815",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "internetnetworke0000wine_z8l3",
+    "media_type": "texts",
+    "downloads": 64,
+    "subjects": [
+      "Internet -- Congresses",
+      "Computer networks -- Economic aspects -- Congresses",
+      "Econometrics -- Congresses",
+      "Internet -- Congre\u0300s",
+      "Re\u0301seaux d'ordinateurs -- Aspect e\u0301conomique -- Congre\u0300s",
+      "E\u0301conome\u0301trie -- Congre\u0300s",
+      "COMPUTERS -- Reference",
+      "COMPUTERS -- Machine Theory",
+      "COMPUTERS -- Computer Literacy",
+      "COMPUTERS -- Information Technology"
+    ]
+  }
+}

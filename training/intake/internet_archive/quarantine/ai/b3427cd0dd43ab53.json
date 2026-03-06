@@ -1,0 +1,33 @@
+{
+  "id": "b3427cd0dd43ab53",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Comprehensive survey of automated plant leaf disease identification techniques: advancements, challenges, and future directions",
+  "content": "# Comprehensive survey of automated plant leaf disease identification techniques: advancements, challenges, and future directions\n\nCreator: \nDate: 2025-06-01T00:00:00Z\nDownloads: 11\nSubjects: Convolutional neural network, Deep learning, Global food security, Image processing, Plant leaf disease detection\n\nThis survey paper extensively researches into the domain of timely plant disease detection, crucial for alleviating agricultural losses and ensuring food security. It accentuates the significance of early identification in efficient disease management and informed agricultural decisions. Conventional manual methods, constrained by labor intensity and subjectivity, pave the way for investigating automated disease detection avenues, prominently leveraging image processing and deep learning techniques. In the subsequent exploration of related work, a panoramic view encompasses an array of methodologies, encompassing neural networks and convolutional neural networks (CNNs), paramount in automated disease detection. The synthesis of image processing intricacies, pre-processing strategies, and feature extraction paradigms alongside deep learning models is meticulously expounded. As the field advances, the paper accentuates lingering challenges in early-stage detection, alongside insightful solutions like data augmentation and sophisticated deep learning models. This survey paper culminates by underlining the dynamic trajectory of automated plant disease identification, accentuating its paramount role in upholding global food security.",
+  "url": "https://archive.org/details/httpdoi.org10.11591ijai.v14.i3.pp1719-1726",
+  "timestamp": "2026-03-06T02:40:40.434111",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "286eecd25ea9c1f582a5b5e69843e6812c627b35f81ea19ee9d826ce6f01f241",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "httpdoi.org10.11591ijai.v14.i3.pp1719-1726",
+    "media_type": "texts",
+    "downloads": 11,
+    "subjects": [
+      "Convolutional neural network",
+      "Deep learning",
+      "Global food security",
+      "Image processing",
+      "Plant leaf disease detection"
+    ]
+  }
+}

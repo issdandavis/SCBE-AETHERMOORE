@@ -1,0 +1,32 @@
+{
+  "id": "1928fff3161a6161",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "POET-X: Memory-efficient LLM Training by Scaling Orthogonal Transformation",
+  "content": "# POET-X: Memory-efficient LLM Training by Scaling Orthogonal Transformation\n\nAuthors: Zeju Qiu, Lixin Liu, Adrian Weller, Han Shi, Weiyang Liu\nPublished: 2026-03-05T18:59:23Z\n\nEfficient and stable training of large language models (LLMs) remains a core challenge in modern machine learning systems. To address this challenge, Reparameterized Orthogonal Equivalence Training (POET), a spectrum-preserving framework that optimizes each weight matrix through orthogonal equivalence transformation, has been proposed. Although POET provides strong training stability, its original implementation incurs high memory consumption and computational overhead due to intensive matrix multiplications. To overcome these limitations, we introduce POET-X, a scalable and memory-efficient variant that performs orthogonal equivalence transformations with significantly reduced computational cost. POET-X maintains the generalization and stability benefits of POET while achieving substantial improvements in throughput and memory efficiency. In our experiments, POET-X enables the pretraining of billion-parameter LLMs on a single Nvidia H100 GPU, and in contrast, standard optimizers such as AdamW run out of memory under the same settings.",
+  "url": "http://arxiv.org/abs/2603.05500v1",
+  "timestamp": "2026-03-05T18:59:23Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "be8afc2f6ad619496b745139205a82e79f8fa6345e9f08eb3002e1fce1c93f0b",
+  "parent_hash": "6541bb0dcda3d35490eeecb59985b9fdfeed2db17e8044f56d32c8552d2277ae",
+  "metadata": {
+    "authors": [
+      "Zeju Qiu",
+      "Lixin Liu",
+      "Adrian Weller",
+      "Han Shi",
+      "Weiyang Liu"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05500v1"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "7ef9ad0bc890f7c1",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Causally Robust Reward Learning from Reason-Augmented Preference Feedback",
+  "content": "# Causally Robust Reward Learning from Reason-Augmented Preference Feedback\n\nAuthors: Minjune Hwang, Yigit Korkmaz, Daniel Seita, Erdem B\u0131y\u0131k\nPublished: 2026-03-05T06:35:21Z\n\nPreference-based reward learning is widely used for shaping agent behavior to match a user's preference, yet its sparse binary feedback makes it especially vulnerable to causal confusion. The learned reward often latches onto spurious features that merely co-occur with preferred trajectories during training, collapsing when those correlations disappear or reverse at test time. We introduce ReCouPLe, a lightweight framework that uses natural language rationales to provide the missing causal signal. Each rationale is treated as a guiding projection axis in an embedding space, training the model to score trajectories based on features aligned with that axis while de-emphasizing context that is unrelated to the stated reason. Because the same rationales (e.g., \"avoids collisions\", \"completes the task faster\") can appear across multiple tasks, ReCouPLe naturally reuses the same causal direction whenever tasks share semantics, and transfers preference knowledge to novel tasks without extra data or language-model fine-tuning. Our learned reward model can ground preferences on the articulated reason, aligning better with user intent and generalizing beyond spurious features. ReCouPLe outperforms baselines by up to 1.5x in reward accuracy under distribution shifts, and 2x in downstream policy performance in novel tasks. We have released our code at https://github.com/mj-hwang/ReCouPLe",
+  "url": "http://arxiv.org/abs/2603.04861v1",
+  "timestamp": "2026-03-05T06:35:21Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "a2c4b5b963e8154de9de4db7ecdea30d706106ee5af9ad913db792d17f7755e1",
+  "parent_hash": "9f698bb559b65201e21669ea366b19076c02eee2dc2535f66d150c82893df33a",
+  "metadata": {
+    "authors": [
+      "Minjune Hwang",
+      "Yigit Korkmaz",
+      "Daniel Seita",
+      "Erdem B\u0131y\u0131k"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.04861v1"
+  }
+}

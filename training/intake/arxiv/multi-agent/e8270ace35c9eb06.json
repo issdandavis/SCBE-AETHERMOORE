@@ -1,0 +1,34 @@
+{
+  "id": "e8270ace35c9eb06",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "MedCoRAG: Interpretable Hepatology Diagnosis via Hybrid Evidence Retrieval and Multispecialty Consensus",
+  "content": "# MedCoRAG: Interpretable Hepatology Diagnosis via Hybrid Evidence Retrieval and Multispecialty Consensus\n\nAuthors: Zheng Li, Jiayi Xu, Zhikai Hu, Hechang Chen, Lele Cong, Yunyun Wang, Shuchao Pang\nPublished: 2026-03-05T12:58:45Z\n\nDiagnosing hepatic diseases accurately and interpretably is critical, yet it remains challenging in real-world clinical settings. Existing AI approaches for clinical diagnosis often lack transparency, structured reasoning, and deployability. Recent efforts have leveraged large language models (LLMs), retrieval-augmented generation (RAG), and multi-agent collaboration. However, these approaches typically retrieve evidence from a single source and fail to support iterative, role-specialized deliberation grounded in structured clinical data. To address this, we propose MedCoRAG (i.e., Medical Collaborative RAG), an end-to-end framework that generates diagnostic hypotheses from standardized abnormal findings and constructs a patient-specific evidence package by jointly retrieving and pruning UMLS knowledge graph paths and clinical guidelines. It then performs Multi-Agent Collaborative Reasoning: a Router Agent dynamically dispatches Specialist Agents based on case complexity; these agents iteratively reason over the evidence and trigger targeted re-retrievals when needed, while a Generalist Agent synthesizes all deliberations into a traceable consensus diagnosis that emulates multidisciplinary consultation. Experimental results on hepatic disease cases from MIMIC-IV show that MedCoRAG outperforms existing methods and closed-source models in both diagnostic performance and reasoning interpretability.",
+  "url": "http://arxiv.org/abs/2603.05129v1",
+  "timestamp": "2026-03-05T12:58:45Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "493939c69834c1618630594f1ba509d1181bab08f49bdacc4e8f858b8edd0f6b",
+  "parent_hash": "3926d367c780e2a19105df1b3a1fa179ee39aa4a7ed97673034f32c41db5b3b1",
+  "metadata": {
+    "authors": [
+      "Zheng Li",
+      "Jiayi Xu",
+      "Zhikai Hu",
+      "Hechang Chen",
+      "Lele Cong",
+      "Yunyun Wang",
+      "Shuchao Pang"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.05129v1"
+  }
+}

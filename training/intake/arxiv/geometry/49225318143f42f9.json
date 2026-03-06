@@ -1,0 +1,29 @@
+{
+  "id": "49225318143f42f9",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "On a new filtration of the variational bicomplex",
+  "content": "# On a new filtration of the variational bicomplex\n\nAuthors: Siye Wu, Haoran Yang\nPublished: 2025-12-31T15:41:59Z\n\nWe define a filtration on the variational bicomplex according to jet order. The filtration is preserved by the interior Euler operator, which is not a module homomorphism with respect to the ring of smooth functions on the jet space. However, the induced maps on the graded components of this filtration are. Furthermore, the space of functional forms in the image of the interior Euler operator inherits a filtration. Though the filtered subspaces are not submodules either, the graded components are isomorphic to linear spaces which do have module structures. This works for any fixed degree of the functional forms. In this way, the condition that a functional form vanishes can be stated concisely with a module basis. We work out explicitly two examples: one for functional forms of degree two in relation to the Helmholtz conditions and the other of arbitrary degree but with jet order one.",
+  "url": "http://arxiv.org/abs/2512.24931v1",
+  "timestamp": "2025-12-31T15:41:59Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "47a2ac36891232e25e4c49f39335bb4ab78e87f69d57a71972fffdf37080f870",
+  "parent_hash": "4cfb4f4d041ce7fc5ad2840a054eb755bbe05309cc86f83cb7c2f31046f56138",
+  "metadata": {
+    "authors": [
+      "Siye Wu",
+      "Haoran Yang"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2512.24931v1"
+  }
+}

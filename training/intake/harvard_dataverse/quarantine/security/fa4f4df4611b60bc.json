@@ -1,0 +1,30 @@
+{
+  "id": "fa4f4df4611b60bc",
+  "source": "harvard_dataverse",
+  "category": "quarantine/security",
+  "title": "Replication data for: Beware the middleman: Empirical analysis of Bitcoin-exchange risk",
+  "content": "# Replication data for: Beware the middleman: Empirical analysis of Bitcoin-exchange risk\n\nAuthors: Moore, Tyler, Christin, Nicolas\nPublished: 2014-04-21T00:00:00Z\nSubjects: \nDOI: doi:10.7910/DVN/25545\n\nBitcoin has enjoyed wider adoption than any previous crypto-currency; yet its success has also attracted the attention of fraudsters who have taken advantage of operational insecurity and transaction irreversibility. We study the risk investors face from Bitcoin exchanges, which convert between Bitcoins and hard currency. We examine the track record of 40 Bitcoin exchanges established over the past three years, and find that 18 have since closed, with customer account balances often wiped out. Fraudsters are sometimes to blame, but not always. Using a proportional hazards model, we find that an exchange's transaction volume indicates whether or not it is likely to close. Less popular exchanges are more likely to be shut than popular ones. We also present a logistic regression showing that popular exchanges are more likely to suffer a security breach.\n\nCitation: Moore, Tyler; Christin, Nicolas, 2014, \"Replication data for: Beware the middleman: Empirical analysis of Bitcoin-exchange risk\", https://doi.org/10.7910/DVN/25545, Harvard Dataverse, V2",
+  "url": "https://doi.org/10.7910/DVN/25545",
+  "timestamp": "2026-03-06T02:42:03.535858",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "1fcf541a7462cbe82bf3671ac726d066cbb5b965052a8f92e0441816c2537538",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/25545",
+    "subjects": [],
+    "authors": [
+      "Moore, Tyler",
+      "Christin, Nicolas"
+    ],
+    "file_count": 3
+  }
+}

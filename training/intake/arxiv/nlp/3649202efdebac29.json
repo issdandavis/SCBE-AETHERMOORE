@@ -1,0 +1,34 @@
+{
+  "id": "3649202efdebac29",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Progressive Residual Warmup for Language Model Pretraining",
+  "content": "# Progressive Residual Warmup for Language Model Pretraining\n\nAuthors: Tianhao Chen, Xin Xu, Lu Yin, Hao Chen, Yang Wang, Shizhe Diao, Can Yang\nPublished: 2026-03-05T16:52:15Z\n\nTransformer architectures serve as the backbone for most modern Large Language Models, therefore their pretraining stability and convergence speed are of central concern. Motivated by the logical dependency of sequentially stacked layers, we propose Progressive Residual Warmup (ProRes) for language model pretraining. ProRes implements an \"early layer learns first\" philosophy by multiplying each layer's residual with a scalar that gradually warms up from 0 to 1, with deeper layers taking longer warmup steps. In this way, deeper layers wait for early layers to settle into a more stable regime before contributing to learning. We demonstrate the effectiveness of ProRes through pretraining experiments across various model scales, as well as normalization and initialization schemes. Comprehensive analysis shows that ProRes not only stabilizes pretraining but also introduces a unique optimization trajectory, leading to faster convergence, stronger generalization and better downstream performance. Our code is available at https://github.com/dandingsky/ProRes.",
+  "url": "http://arxiv.org/abs/2603.05369v1",
+  "timestamp": "2026-03-05T16:52:15Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "98c4079f400317d6232403b3f51037b132604c2191455a93a8ddd77663b49339",
+  "parent_hash": "c3c76a95ce9d037b5f9df7fb68828504d23b5b9762372ec228e0c89675a8e528",
+  "metadata": {
+    "authors": [
+      "Tianhao Chen",
+      "Xin Xu",
+      "Lu Yin",
+      "Hao Chen",
+      "Yang Wang",
+      "Shizhe Diao",
+      "Can Yang"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05369v1"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "id": "6db016a1526bf6e7",
+  "source": "library_of_congress",
+  "category": "quarantine/governance",
+  "title": "Distributed operations in a contested environment : implications for USAF force presentation",
+  "content": "# Distributed operations in a contested environment : implications for USAF force presentation\n\nContributors: vick, alan, priebe, miranda, united states. air force, rand corporation, project air force (u.s.). strategy and doctrine program\nDate: 2019\nSubjects: military bases, american, planning, foreign countries, united states, air warfare\n\nThe 2018 National Defense Strategy instructed the services to prioritize capabilities for conflict with another great power. This gave new urgency to ongoing initiatives within the U.S. Air Force (USAF) to prepare for growing air and missile threats to bases and a contested communications environment. There are a wide range of possible counters to the particular problem of air base vulnerability, including greater reliance on long-range systems, active defenses, hardening of bases, and on-base dispersal of assets. The authors of this report focus on a particular set of emerging concepts for distributed operations that call for using a larger number of air bases to complicate enemy targeting and employing a more decentralized command and control approach. The USAF asked RAND to consider whether it needs to change its force presentation model (FPM), the way it organizes to employ airpower as part of a joint operation, to implement these concepts. Since the USAF has not developed a single, detailed concept for distributed operations, in this report the authors synthesize and extend the logic of emerging concepts. They then identify an initial list of capabilities the USAF may need in order to protect, command and control, and sustain fighter forces at a larger number of operating locations. Finally, the authors assess whether the current USAF FPM for fighter forces provides these capabilities and identify the trade-offs associated with force presentation changes.",
+  "url": "https://www.loc.gov/item/2024739000/",
+  "timestamp": "2026-03-06T02:38:15.031861",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "90483f624d97aa1895c595568561eb5baa4d471663950ac055fcedda845a788e",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "military bases, american",
+      "planning",
+      "foreign countries",
+      "united states",
+      "air warfare",
+      "air force",
+      "access denial (military science)",
+      "prevention",
+      "command and control systems",
+      "military policy"
+    ],
+    "dates": "2019",
+    "original_format": [
+      "book"
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "4e0b332bdcb0bf5c",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2011-3532 \u2014 CVSS 5.0 (UNKNOWN)",
+  "content": "# CVE-2011-3532\n\nCVSS Score: 5.0 (UNKNOWN)\nPublished: 2011-10-18T22:55:04.277\nCWEs: NVD-CWE-noinfo\n\nUnspecified vulnerability in the Oracle Agile Product Supplier Collaboration for Process component in Oracle Supply Chain Products Suite 5.2.2, 6.0.0.2, 6.0.0.3, and 6.0.0.4 allows remote attackers to affect confidentiality via unknown vectors related to Supplier Portal.\n\nReferences: http://www.oracle.com/technetwork/topics/security/cpuoct2011-330135.html, http://www.securityfocus.com/bid/50227, http://www.securitytracker.com/id?1026205",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2011-3532",
+  "timestamp": "2026-03-06T02:41:59.350949",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "b0e051cdb0353456abffcb59202fe70338fb5c97a4dd3d9e9c6c17a0d5874765",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2011-3532",
+    "cvss_score": 5.0,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-noinfo"
+    ],
+    "published": "2011-10-18T22:55:04.277"
+  }
+}

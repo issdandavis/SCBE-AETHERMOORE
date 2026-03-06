@@ -1,0 +1,31 @@
+{
+  "id": "cffc7499b16eb371",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "GALACTIC: Global and Local Agnostic Counterfactuals for Time-series Clustering",
+  "content": "# GALACTIC: Global and Local Agnostic Counterfactuals for Time-series Clustering\n\nAuthors: Christos Fragkathoulas, Eleni Psaroudaki, Themis Palpanas, Evaggelia Pitoura\nPublished: 2026-03-05T15:59:33Z\n\nTime-series clustering is a fundamental tool for pattern discovery, yet existing explainability methods, primarily based on feature attribution or metadata, fail to identify the transitions that move an instance across cluster boundaries. While Counterfactual Explanations (CEs) identify the minimal temporal perturbations required to alter the prediction of a model, they have been mostly confined to supervised settings. This paper introduces GALACTIC, the first unified framework to bridge local and global counterfactual explainability for unsupervised time-series clustering. At instance level (local), GALACTIC generates perturbations via a cluster-aware optimization objective that respects the target and underlying cluster assignments. At cluster level (global), to mitigate cognitive load and enhance interpretability, we formulate a representative CE selection problem. We propose a Minimum Description Length (MDL) objective to extract a non-redundant summary of global explanations that characterize the transitions between clusters. We prove that our MDL objective is supermodular, which allows the corresponding MDL reduction to be framed as a monotone submodular set function. This enables an efficient greedy selection algorithm with provable $(1-1/e)$ approximation guarantees. Extensive experimental evaluation on the UCR Archive demonstrates that GALACTIC produces significantly sparser local CEs and more concise global summaries than state-of-the-art baselines adapted for our problem, offering the first unified approach for interpreting clustered time-series through counterfactuals.",
+  "url": "http://arxiv.org/abs/2603.05318v1",
+  "timestamp": "2026-03-05T15:59:33Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "d340eead65aecd28f05cd17b805c50aba50e656492a73235c1e12f1e5d21f92b",
+  "parent_hash": "dac72715498abd03e407f70c8ca451b69d5585bfb9fb1d59efcefa0a4f99b988",
+  "metadata": {
+    "authors": [
+      "Christos Fragkathoulas",
+      "Eleni Psaroudaki",
+      "Themis Palpanas",
+      "Evaggelia Pitoura"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05318v1"
+  }
+}

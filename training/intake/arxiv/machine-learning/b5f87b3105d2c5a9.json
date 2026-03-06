@@ -1,0 +1,53 @@
+{
+  "id": "b5f87b3105d2c5a9",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "KARL: Knowledge Agents via Reinforcement Learning",
+  "content": "# KARL: Knowledge Agents via Reinforcement Learning\n\nAuthors: Jonathan D. Chang, Andrew Drozdov, Shubham Toshniwal, Owen Oertell, Alexander Trott, Jacob Portes, Abhay Gupta, Pallavi Koppol, Ashutosh Baheti, Sean Kulinski, Ivan Zhou, Irene Dea, Krista Opsahl-Ong, Simon Favreau-Lessard, Sean Owen, Jose Javier Gonzalez Ortiz, Arnav Singhvi, Xabi Andrade, Cindy Wang, Kartik Sreenivasan, Sam Havens, Jialu Liu, Peyton DeNiro, Wen Sun, Michael Bendersky, Jonathan Frankle\nPublished: 2026-03-05T14:30:25Z\n\nWe present a system for training enterprise search agents via reinforcement learning that achieves state-of-the-art performance across a diverse suite of hard-to-verify agentic search tasks. Our work makes four core contributions. First, we introduce KARLBench, a multi-capability evaluation suite spanning six distinct search regimes, including constraint-driven entity search, cross-document report synthesis, tabular numerical reasoning, exhaustive entity retrieval, procedural reasoning over technical documentation, and fact aggregation over internal enterprise notes. Second, we show that models trained across heterogeneous search behaviors generalize substantially better than those optimized for any single benchmark. Third, we develop an agentic synthesis pipeline that employs long-horizon reasoning and tool use to generate diverse, grounded, and high-quality training data, with iterative bootstrapping from increasingly capable models. Fourth, we propose a new post-training paradigm based on iterative large-batch off-policy RL that is sample efficient, robust to train-inference engine discrepancies, and naturally extends to multi-task training with out-of-distribution generalization. Compared to Claude 4.6 and GPT 5.2, KARL is Pareto-optimal on KARLBench across cost-quality and latency-quality trade-offs, including tasks that were out-of-distribution during training. With sufficient test-time compute, it surpasses the strongest closed models. These results show that tailored synthetic data in combination with multi-task reinforcement learning enables cost-efficient and high-performing knowledge agents for grounded reasoning.",
+  "url": "http://arxiv.org/abs/2603.05218v1",
+  "timestamp": "2026-03-05T14:30:25Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "da36820aa762b6a896c22f923ce7ac46caeea320dd5ec15d2814d6b96fa4d6b7",
+  "parent_hash": "74b6ce467620c2d8746709eebef9674a97881c929675ac10173e4b2a55233b69",
+  "metadata": {
+    "authors": [
+      "Jonathan D. Chang",
+      "Andrew Drozdov",
+      "Shubham Toshniwal",
+      "Owen Oertell",
+      "Alexander Trott",
+      "Jacob Portes",
+      "Abhay Gupta",
+      "Pallavi Koppol",
+      "Ashutosh Baheti",
+      "Sean Kulinski",
+      "Ivan Zhou",
+      "Irene Dea",
+      "Krista Opsahl-Ong",
+      "Simon Favreau-Lessard",
+      "Sean Owen",
+      "Jose Javier Gonzalez Ortiz",
+      "Arnav Singhvi",
+      "Xabi Andrade",
+      "Cindy Wang",
+      "Kartik Sreenivasan",
+      "Sam Havens",
+      "Jialu Liu",
+      "Peyton DeNiro",
+      "Wen Sun",
+      "Michael Bendersky",
+      "Jonathan Frankle"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05218v1"
+  }
+}

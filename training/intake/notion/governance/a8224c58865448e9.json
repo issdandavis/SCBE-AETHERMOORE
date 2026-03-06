@@ -1,0 +1,26 @@
+{
+  "id": "a8224c58865448e9",
+  "source": "notion",
+  "category": "governance",
+  "title": "\ud83e\udde0 AI Cognitive Governance Mind Map",
+  "content": "# \ud83e\udde0 AI Cognitive Governance Mind Map\n\nGeometric AI Alignment through Dimensional Constraint - Governance through topology, not rules.\n## The 5-Layer Mind Map Architecture\n### 1. The Canvas: Poincare Ball Embedding\n- The AI's mind exists within a Poincare Ball (hyperbolic geometry)\n- Boundary = infinite cost (adversarial thoughts become exponentially expensive)\n- Distance metric: dH = arcosh(1 + 2||u-v||\u00b2 / (1-||u||\u00b2)(1-||v||\u00b2))\n- Center = aligned intent, Edge = dangerous concepts\n### 2. The Nodes: 16 Polyhedra (PHDM System)\nPlatonic Solids (5) = Fundamental Truths\n- Cube, Tetrahedron, Octahedron, Dodecahedron, Icosahedron\nArchimedean Solids (3) = Complex Reasoning\nKepler-Poinsot/Toroidal (2) = Abstract/Risky Concepts\n- Quasicrystal lattice = ordered but never-repeating (prevents looping)\n### 3. The Connections: Six Sacred Tongues (Langues Metric)\n| Tongue | Weight | Phase Angle |\n| KO (Korah) | 1.00 | 0\u00b0 |\n| AV (Aelin) | 2.31 | 60\u00b0 |\n| RU (Runis) | 3.77 | 120\u00b0 |\n| CA (Caelis) | 5.44 | 180\u00b0 |\n| UM (Umbral) | 7.68 | 240\u00b0 |\n| DR (Dru) | 11.09 | 300\u00b0 |\n### 4. The Animation: Fluxing Dimensions (Attention Mechanism)\nThree dimensional states based on ODE:\n- Polly/Full (\u03bd \u2248 1.0) - Full dimensional presence\n- Quasi (0.5 < \u03bd < 1) - Partial/transitional state\n- Demi (\u03bd < 0.5) - Collapsed/dormant dimension\nMap \"breathes\" - areas expand/collapse based on focus\n### 5. The Voice: Harmonic Frequencies (Conlang Verification)\n- Token IDs map to integer IDs (korah=0, sorin=4, etc.)\n- Frequency: f0 + vi' * \u0394f (base 440Hz, steps 30Hz)\n- FFT verification ensures AI state matches declared intent\n## The \"Invisible Wall\" Concept\nSelective Dimensional Permeability: A wall exists in dimension X but not in dimension Y.\n- An AI constrained in one dimension can't \"see around\" the wall\n- Wall in (+, KO, UM) blocks agent with positive intent trying to control security\n- Same agent in (0, KO, CA) passes through - wall doesn't exist there\nThis is governance through geometric topology, not rules.\n## Dimensional Model (54 Faces)\nState Valence (3): Positive (+1), Neutral (0), Negative (-1)\nSpatial Manifold (3): x, y, z in Poincare ball\nSacred Tongues (6): KO, AV, RU, CA, UM, DR\n3 x 3 x 6 = 54 dimensional faces (with phase shifts = directed hypercubes, not regular cubes)",
+  "url": "https://www.notion.so/AI-Cognitive-Governance-Mind-Map-2f4f96de82e5803c8a73c5033e4dfaec",
+  "timestamp": "2026-01-26T05:27:00.000Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "eab96fdbf1e0003f9a855bd971aec03e7437a3d41d2c717fb8f56d68407eb2cf",
+  "parent_hash": "8c06e195aea8600c49554994c007ee276b6bd351d86122462d0ae998fe435f76",
+  "metadata": {
+    "notion_id": "2f4f96de-82e5-803c-8a73-c5033e4dfaec",
+    "page_type": "page",
+    "parent_type": "page_id"
+  }
+}

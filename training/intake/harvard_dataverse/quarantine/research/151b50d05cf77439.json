@@ -1,0 +1,32 @@
+{
+  "id": "151b50d05cf77439",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Daily Nation Article Text (Uncleaned) 1998-2019",
+  "content": "# Daily Nation Article Text (Uncleaned) 1998-2019\n\nAuthors: Pair, Emma\nPublished: 2021-12-08T02:07:55Z\nSubjects: Computer and Information Science, Social Sciences\nDOI: doi:10.7910/DVN/MGVVBY\n\nThis contains article text scrapped from the Daily Nation website. It contains article text separated by year and subject (e.g. sports, news).\n\nCitation: Pair, Emma, 2021, \"Daily Nation Article Text (Uncleaned) 1998-2019\", https://doi.org/10.7910/DVN/MGVVBY, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/MGVVBY",
+  "timestamp": "2026-03-06T02:42:11.933346",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "95c8de94ee09f70b3f00ff51f43c1ce74f4a177ff4704b5b081a84f2748b6481",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/MGVVBY",
+    "subjects": [
+      "Computer and Information Science",
+      "Social Sciences"
+    ],
+    "authors": [
+      "Pair, Emma"
+    ],
+    "file_count": 119
+  }
+}

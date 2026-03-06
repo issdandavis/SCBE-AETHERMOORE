@@ -1,0 +1,36 @@
+{
+  "id": "f8b4fa2fdc494348",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "MedCollab: Causal-Driven Multi-Agent Collaboration for Full-Cycle Clinical Diagnosis via IBIS-Structured Argumentation",
+  "content": "# MedCollab: Causal-Driven Multi-Agent Collaboration for Full-Cycle Clinical Diagnosis via IBIS-Structured Argumentation\n\nAuthors: Yuqi Zhan, Xinyue Wu, Tianyu Lin, Yutong Bao, Xiaoyu Wang, Weihao Cheng, Huangwei Chen, Feiwei Qin, Zhu Zhu\nPublished: 2026-03-01T14:25:58Z\n\nLarge language models (LLMs) have shown promise in healthcare applications, however, their use in clinical practice is still limited by diagnostic hallucinations and insufficiently interpretable reasoning. We present MedCollab, a novel multi-agent framework that emulates the hierarchical consultation workflow of modern hospitals to autonomously navigate the full-cycle diagnostic process. The framework incorporates a dynamic specialist recruitment mechanism that adaptively assembles clinical and examination agents according to patient-specific symptoms and examination results. To ensure the rigor of clinical work, we adopt a structured Issue-Based Information System (IBIS) argumentation protocol that requires agents to provide ``Positions'' backed by traceable evidence from medical knowledge and clinical data. Furthermore, the framework constructs a Hierarchical Disease Causal Chain that transforms flattened diagnostic predictions into a structured model of pathological progression through explicit logical operators. A multi-round Consensus Mechanism iteratively filters low-quality reasoning through logic auditing and weighted voting. Evaluated on real-world clinical datasets, MedCollab significantly outperforms pure LLMs and medical multi-agent systems in Accuracy and RaTEScore, demonstrating a marked reduction in medical hallucinations. These findings indicate that MedCollab provides an extensible, transparent, and clinically compliant approach to medical decision-making.",
+  "url": "http://arxiv.org/abs/2603.01131v1",
+  "timestamp": "2026-03-01T14:25:58Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "fc402bf6e56485c57cfaca6f01026978e2b868b1dbba3f792a9c69ab5904ec1b",
+  "parent_hash": "ae87cc13a8e83af89e879f0aa23a550e1ab59e59ba76702fcd1cd08c74d78ecd",
+  "metadata": {
+    "authors": [
+      "Yuqi Zhan",
+      "Xinyue Wu",
+      "Tianyu Lin",
+      "Yutong Bao",
+      "Xiaoyu Wang",
+      "Weihao Cheng",
+      "Huangwei Chen",
+      "Feiwei Qin",
+      "Zhu Zhu"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.01131v1"
+  }
+}

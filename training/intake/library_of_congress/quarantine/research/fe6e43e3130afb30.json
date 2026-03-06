@@ -1,0 +1,30 @@
+{
+  "id": "fe6e43e3130afb30",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Moving Data and Distributing Data",
+  "content": "# Moving Data and Distributing Data\n\nContributors: raymond clarke\nDate: \nSubjects: \n\nMoving Data and Distributing Data  Raymond A. Clarke Sr. Enterprise Storage Solutions Specialist, Sun Microsystems - Archive & Backup Solutions SNIA Data Management Forum, Board of Directors 1   Sun\u2019s Enterprise Archive Alternatives Unstructured Data Structured Data SAP  Email  Primary Access/Ingest  7000 Unified Storage/H SP  Database Backup Capacity Disk Unified Storage or JBOD Data Deduplication Encryption  Database Archive  Green Archive  7000 Unified Storage/H SP Replication  Replication  NFS  Long-term Preservation & Retention Archive  EMail Archiver  NFS  Tiered Storage Management Assured Delete  SAM-FS (IAS)  Remote Disk,Tape Libraries and Virtual Tape  SAM-FS (IAS)  Capacity Disk Unified Storage or JBOD  Local Tape  Open Storage/ Open Archive Sparc or Sun Fire SSDBased Servers  7000 Unified Tiered Storage Storage /HSP Management  Encryption  Capacity Disk JBOD VTL  Images  Oracle  Primary Database  Sparc or Sun Fire SSD-Based Servers  Audio/Video  LoC \u2013 Moving & Distributing Data - Sun Microsystems",
+  "url": "http://www.digitalpreservation.gov/meetings/documents/othermeetings/4-4_Clarke-SUN-LoC%20Moving_Data.pdf",
+  "timestamp": "2026-03-06T02:38:15.031879",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "264b0a8288dcc239fb71d2cbb313831add6e89a21259835ff6caa431d9b48736",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [],
+    "dates": "",
+    "original_format": [
+      "book",
+      "web page"
+    ]
+  }
+}

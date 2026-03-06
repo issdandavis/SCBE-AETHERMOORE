@@ -1,0 +1,25 @@
+{
+  "id": "3b6ee01e14fe0f70",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Golden Ratio (Q11176910)",
+  "content": "# Golden Ratio\n\nWikidata ID: Q11176910\nDescription: \n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q11176910",
+  "timestamp": "2026-03-06T02:41:14.149610",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "5489324392d1038ea692dafb1a6749fdcb3cffd88d9ff55a9600a6bc453c73e4",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q11176910",
+    "description": ""
+  }
+}

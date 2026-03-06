@@ -1,0 +1,33 @@
+{
+  "id": "5b9162d9b2124b9a",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Review of Home Automation Systems and Network Security using IoT",
+  "content": "# Review of Home Automation Systems and Network Security using IoT\n\nCreator: Otieno Godfrey Oduor\nDate: \nDownloads: 47\nSubjects: Artificial Intelligence, IoT \u00e2\u20ac\u201c Internet of Things, MQTT - Message Queuing Telemetry Transport, ANN \u00e2\u20ac\u201c Artificial Neural Networks, DDoS \u00e2\u20ac\u201c Distributed Denial of Service PKI \u00e2\u20ac\u201c Public Key Infrastructure\n\nIn the current tech world, there are multiple advancements being made in the field of Network Security, this is because devices are grouped into various networks and can be accessed remotely through the use of the internet. As a result, it is integral to ensure that only the authorized personnel are able to access and control the respective devices which are connected in the various networks. Mobile devices such as smart phones, laptops, tablets etc. have enabled users to access their information on the go at any time provided they have internet connectivity and are connected to the devices network. Otieno Godfrey Oduor \"Review of Home Automation Systems and Network Security using IoT\" Published in International Journal of Trend in Scientific Research and Development (ijtsrd), ISSN: 2456-6470, Volume-4 | Issue-3 , April 2020, URL: https://www.ijtsrd.com/papers/ijtsrd30687.pdf Paper Url :https://www.ijtsrd.com/computer-science/artificial-intelligence/30687/review-of-home-automation-systems-and-network-security-using-iot/otieno-godfrey-oduor",
+  "url": "https://archive.org/details/httpswww.ijtsrd.comcomputer-scienceartificial-intelligence30687review-of-home-au",
+  "timestamp": "2026-03-06T02:40:40.434050",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4568f9a80413a43b8fa4a3c90f3510d9623696961a51f26ccfb0d5937d25f12d",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "httpswww.ijtsrd.comcomputer-scienceartificial-intelligence30687review-of-home-au",
+    "media_type": "texts",
+    "downloads": 47,
+    "subjects": [
+      "Artificial Intelligence",
+      "IoT \u00e2\u20ac\u201c Internet of Things",
+      "MQTT - Message Queuing Telemetry Transport",
+      "ANN \u00e2\u20ac\u201c Artificial Neural Networks",
+      "DDoS \u00e2\u20ac\u201c Distributed Denial of Service PKI \u00e2\u20ac\u201c Public Key Infrastructure"
+    ]
+  }
+}

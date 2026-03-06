@@ -1,0 +1,29 @@
+{
+  "id": "ca9c05dea14b09a2",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Coexact $1$-form spectral gaps of hyperbolic rational homology spheres",
+  "content": "# Coexact $1$-form spectral gaps of hyperbolic rational homology spheres\n\nAuthors: Francesco Lin, Michael Lipnowski\nPublished: 2026-03-02T17:10:35Z\n\nWe discuss a construction of families of hyperbolic rational homology spheres with coexact $1$-form spectral gap uniformly bounded below which is well-suited for explicit computations. Using this, we provide several disjoint intervals containing a limit point of such spectral gaps, the rightmost of which is $[0.8196,0.8277]$. Furthermore, we also exhibit a family of arithmetic examples, answering a question of Abdurrahman-Adve-Giri-Lowe-Zung.",
+  "url": "http://arxiv.org/abs/2603.02093v1",
+  "timestamp": "2026-03-02T17:10:35Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "14230f7eea46caecd9d4dddaeae897ba88999b2986c73f0ad2131f2e7f94434e",
+  "parent_hash": "6a4db718be6f440f7955376e0e3d0854f655d54f6ef47c154f649b21d6300ec7",
+  "metadata": {
+    "authors": [
+      "Francesco Lin",
+      "Michael Lipnowski"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.02093v1"
+  }
+}

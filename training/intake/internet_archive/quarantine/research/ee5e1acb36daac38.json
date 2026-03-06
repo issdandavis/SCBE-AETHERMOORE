@@ -1,0 +1,30 @@
+{
+  "id": "ee5e1acb36daac38",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Existence of quasicrystals and universal stable sampling and interpolation in LCA groups",
+  "content": "# Existence of quasicrystals and universal stable sampling and interpolation in LCA groups\n\nCreator: E. Agora, J. Antezana, C. Cabrelli, B. Matei\nDate: 2016-11-17T00:00:00Z\nDownloads: 29\nSubjects: Classical Analysis and ODEs, Mathematics\n\nWe characterize all the locally compact abelian (LCA) groups that contain quasicrystals (a class of model sets). Moreover, we describe all possible quasicrystals in the group constructing an appropriate lattice associated with the cut and project scheme that produces it. On the other hand, if an LCA group G admits a simple quasicrystal, we prove that recent results of Meyer and Matei for the case of the n-dimensional Euclidean space can be extended to G. More precisely, we prove that simple quasicrystals are universal sets of stable sampling and universal sets of stable interpolation in generalized Paley-Wiener spaces.",
+  "url": "https://archive.org/details/arxiv-1611.05804",
+  "timestamp": "2026-03-06T04:17:45.776824",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "0faf786daf03d604708360d4d34c5e58edf3ce2482456411e39686e6cd35ea00",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1611.05804",
+    "media_type": "texts",
+    "downloads": 29,
+    "subjects": [
+      "Classical Analysis and ODEs",
+      "Mathematics"
+    ]
+  }
+}

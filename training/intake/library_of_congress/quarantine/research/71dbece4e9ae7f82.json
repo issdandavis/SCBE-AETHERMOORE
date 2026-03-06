@@ -1,0 +1,36 @@
+{
+  "id": "71dbece4e9ae7f82",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "High magnetic field science and its application in the United States : current status and future directions",
+  "content": "# High magnetic field science and its application in the United States : current status and future directions\n\nContributors: national research council (u.s.). committee to assess the current status and future direction of high magnetic field science in the united states\nDate: 2013\nSubjects: magnetic resonance imaging, magnetic fields, nuclear magnetic resonance, magnetics, research\n\n\"The Committee to Assess the Current Status and Future Direction of High Magnetic Field Science in the United States was convened by the National Research Council in response to a request by the National Science Foundation. This report answers three questions: (1) What is the current state of high-field magnet science, engineering, and technology in the United States, and are there any conspicuous needs to be addressed? (2) What are the current science drivers and which scientific opportunities and challenges can be anticipated over the next ten years? (3) What are the principal existing and planned high magnetic field facilities outside of the United States, what roles have U.S. high field magnet development efforts played in developing those facilities, and what potentials exist for further international collaboration in this area? A magnetic field is produced by an electrical current in a metal coil. This current exerts an expansive force on the coil, and a magnetic field is \"high\" if it challenges the strength and current-carrying capacity of the materials that create the field. Although lower magnetic fields can be achieved using commercially available magnets, research in the highest achievable fields has been, and will continue to be, most often performed in large research centers that possess the materials and systems know-how for forefront research. Only a few high field centers exist around the world; in the United States, the principal center is the National High Magnetic Field Laboratory (NHMFL). High Magnetic Field Science and Its Application in the United States considers continued support for a centralized high-field facility such as NHFML to be the highest priority. This report contains a recommendation for the funding and siting of several new high field nuclear magnetic resonance magnets at user facilities in different regions of the United States. Continued advancement in high-magnetic field science requires substantial investments in magnets with enhanced capabilities. High Magnetic Field Science and Its Application in the United States contains recommendations for the further development of all-superconducting, hybrid, and higher field pulsed magnets that meet ambitious but achievable goals.\"-- Publisher's Description.",
+  "url": "//lccn.loc.gov/2013951030",
+  "timestamp": "2026-03-06T04:17:33.805603",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "9e2b0c050913c0b676870e0e9144c28b4c78a72228231406337c294946024d57",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "magnetic resonance imaging",
+      "magnetic fields",
+      "nuclear magnetic resonance",
+      "magnetics",
+      "research",
+      "technological innovations"
+    ],
+    "dates": "2013",
+    "original_format": [
+      "book"
+    ]
+  }
+}

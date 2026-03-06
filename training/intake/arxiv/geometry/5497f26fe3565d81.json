@@ -1,0 +1,28 @@
+{
+  "id": "5497f26fe3565d81",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Riemannian Geometry of Optimal Rebalancing in Dynamic Weight Automated Market Makers",
+  "content": "# Riemannian Geometry of Optimal Rebalancing in Dynamic Weight Automated Market Makers\n\nAuthors: Matthew Willetts\nPublished: 2026-03-05T16:06:50Z\n\nIn Temporal Function Market Making (TFMM), a dynamic weight AMM pool rebalances from initial to final holdings by creating a series of arbitrage opportunities whose total cost depends on the weight trajectory taken. We show that the per-step arbitrage loss is the KL divergence between new and old weight vectors, meaning the Fisher--Rao metric is the natural Riemannian metric on the weight simplex. The loss-minimising interpolation under the leading-order expansion of this KL cost is SLERP (Spherical Linear Interpolation) in the Hellinger coordinates $\u03b7_i = \\sqrt{w_i}$, i.e.\\ a geodesic on the positive orthant of the unit sphere traversed at constant speed. The SLERP midpoint equals the (AM+GM)/normalise heuristic of prior work (Willetts & Harrington, 2024), so the heuristic lies on the geodesic. This identity holds for any number of tokens and any magnitude of weight change; using this link, all dyadic points on the geodesic can be reached by recursive AM-GM bisection without trigonometric functions. SLERP's relative sub-optimality on the full KL cost is proportional to the squared magnitude of the overall weight change and to $1/f^2$, where $f$ is the number of interpolation steps.",
+  "url": "http://arxiv.org/abs/2603.05326v1",
+  "timestamp": "2026-03-05T16:06:50Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "dcc98820323abf42de2c5e90a94ab850c3aed24cced970cbbb48c1c803d9f0a5",
+  "parent_hash": "dd97dfcc9b588c110c6b055b5b12a8dd04f35f2d64e78c7439307ec344d9d460",
+  "metadata": {
+    "authors": [
+      "Matthew Willetts"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.05326v1"
+  }
+}

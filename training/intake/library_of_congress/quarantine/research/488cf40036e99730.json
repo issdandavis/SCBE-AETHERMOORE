@@ -1,0 +1,29 @@
+{
+  "id": "488cf40036e99730",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Evaluation of the Wightman pneumatic suspension. (Engineering Report No. 61)",
+  "content": "# Evaluation of the Wightman pneumatic suspension. (Engineering Report No. 61)\n\nContributors: united states. office of scientific research and development. national defense research committee\nDate: 1942\nSubjects: \n\nResearch lab: Baker Manufacturing Company. Report. Digital reproduction from OSRD-NRDC microfilm; also available in print and on microfilm. Description from catalog card image included in microfilmed report. start page 528 ; end page 535",
+  "url": "https://www.loc.gov/item/2020666376/",
+  "timestamp": "2026-03-06T04:17:33.805657",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "1d0a100a455e0ab4da895c44f6cc08378bc38b08682314e73d7ec31abdd81960",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [],
+    "dates": "1942",
+    "original_format": [
+      "book"
+    ]
+  }
+}

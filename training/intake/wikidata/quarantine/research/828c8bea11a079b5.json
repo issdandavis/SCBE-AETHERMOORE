@@ -1,0 +1,25 @@
+{
+  "id": "828c8bea11a079b5",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Hyperbolic Geometry and Reflection Groups (Q112852848)",
+  "content": "# Hyperbolic Geometry and Reflection Groups\n\nWikidata ID: Q112852848\nDescription: 1994 doctoral thesis by Timothy Hamilton Marshall at University of Auckland\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q112852848",
+  "timestamp": "2026-03-06T02:40:55.681274",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "cdb28e2ba0680a0a4b2fa35c975246e85a740d17fed6707b4cb2b861b4a273ce",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q112852848",
+    "description": "1994 doctoral thesis by Timothy Hamilton Marshall at University of Auckland"
+  }
+}

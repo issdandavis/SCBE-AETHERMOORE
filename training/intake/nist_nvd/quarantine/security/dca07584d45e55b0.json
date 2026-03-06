@@ -1,0 +1,30 @@
+{
+  "id": "dca07584d45e55b0",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2020-0837 \u2014 CVSS 5.0 (MEDIUM)",
+  "content": "# CVE-2020-0837\n\nCVSS Score: 5.0 (MEDIUM)\nPublished: 2020-09-11T17:15:14.010\nCWEs: NVD-CWE-noinfo\n\n<p>An elevation of privilege vulnerability exists when Active Directory Federation Services (ADFS) improperly handles multi-factor authentication requests. An attacker who successfully exploited this vulnerability could bypass some, but not all, of the authentication factors.</p>\n<p>To exploit this vulnerability, an attacker could send a specially crafted authentication request.</p>\n<p>This security update corrects how ADFS handles multi-factor authentication requests.</p>\n\nReferences: https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2020-0837, https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/CVE-2020-0837",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2020-0837",
+  "timestamp": "2026-03-06T04:18:24.195320",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "cc7a2e0128369f57f4a81be5566cba15e9c46ffb08d5df1371f2989390c6435e",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2020-0837",
+    "cvss_score": 5.0,
+    "severity": "MEDIUM",
+    "cwes": [
+      "NVD-CWE-noinfo"
+    ],
+    "published": "2020-09-11T17:15:14.010"
+  }
+}

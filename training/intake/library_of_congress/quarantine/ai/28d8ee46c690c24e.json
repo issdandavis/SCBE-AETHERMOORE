@@ -1,0 +1,35 @@
+{
+  "id": "28d8ee46c690c24e",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "AI jidai no jo\u0304ho\u0304 kyo\u0304iku = Artificial intelligence",
+  "content": "# AI jidai no jo\u0304ho\u0304 kyo\u0304iku = Artificial intelligence\n\nContributors: kan\u014d, hiroko\nDate: 2017\nSubjects: educational applications, study and teaching (elementary), computer science, artificial intelligence, japan\n\nErrata slip inserted. In Japanese.",
+  "url": "//lccn.loc.gov/2018430574",
+  "timestamp": "2026-03-06T02:37:58.020552",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d953fd3d4dab599653f64276fcb3036161432160fe3826f22e354553b6d17da0",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "educational applications",
+      "study and teaching (elementary)",
+      "computer science",
+      "artificial intelligence",
+      "japan"
+    ],
+    "dates": "2017",
+    "original_format": [
+      "book"
+    ]
+  }
+}

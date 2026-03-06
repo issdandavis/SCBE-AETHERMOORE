@@ -1,0 +1,29 @@
+{
+  "id": "925aed03e54e6e45",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Invariant Curves and the Variational Structure in Tubular Origami Dynamical Systems",
+  "content": "# Invariant Curves and the Variational Structure in Tubular Origami Dynamical Systems\n\nAuthors: Ryutaro Ichikawa, Mitsuru Shibayama\nPublished: 2026-03-02T21:39:05Z\n\nWe present a rigorous dynamical systems analysis of tubular origami tessellations by identifying the inverse module number, $N^{-1}$, as a perturbation parameter within the framework of Kolmogorov-Arnold-Moser (KAM) theory. In the large-module limit ($N \\to \\infty$), we prove that the conservative dynamics converges to an integrable map with a variational structure, whose generating function corresponds to the total discrete mean curvature. Although the geometric interpretation of the generating function becomes more complex under perturbations, it is straightforward in the integrable limit, where its structure can be clearly understood. This limit also provides a fundamental framework for characterizing the global behavior of the system. The KAM-predicted persistence of invariant curves is supported by numerical results showing a phase space densely populated with such curves. By adjusting mountain-valley fold assignments and fold lengths, the system can be transformed into a nontwist map that exhibits multiple zero frequencies. The resonance associated with these zero frequencies leads to the emergence of new stable foldable regions in phase space, appearing as elliptic islands. These regions enable the design of foldable configurations that are inaccessible within standard twist regimes. Finally, we analyze the expanding and contracting dynamics of the origami structure within the framework of conformally symplectic systems. By introducing a virtual auxiliary fold as a drift control mechanism, we numerically confirm the existence of stable quasi-periodic attractors.",
+  "url": "http://arxiv.org/abs/2603.02410v1",
+  "timestamp": "2026-03-02T21:39:05Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "6a4db718be6f440f7955376e0e3d0854f655d54f6ef47c154f649b21d6300ec7",
+  "parent_hash": "ba7165f4dfbbc5522d6675a71b9fd1bedc152231a5e4d32490312e33a2caf85a",
+  "metadata": {
+    "authors": [
+      "Ryutaro Ichikawa",
+      "Mitsuru Shibayama"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.02410v1"
+  }
+}

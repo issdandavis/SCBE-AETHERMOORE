@@ -1,0 +1,32 @@
+{
+  "id": "1506724b2a78a9d0",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "HACHIMI: Scalable and Controllable Student Persona Generation via Orchestrated Agents",
+  "content": "# HACHIMI: Scalable and Controllable Student Persona Generation via Orchestrated Agents\n\nAuthors: Yilin Jiang, Fei Tan, Xuanyu Yin, Jing Leng, Aimin Zhou\nPublished: 2026-03-05T06:20:41Z\n\nStudent Personas (SPs) are emerging as infrastructure for educational LLMs, yet prior work often relies on ad-hoc prompting or hand-crafted profiles with limited control over educational theory and population distributions. We formalize this as Theory-Aligned and Distribution-Controllable Persona Generation (TAD-PG) and introduce HACHIMI, a multi-agent Propose-Validate-Revise framework that generates theory-aligned, quota-controlled personas. HACHIMI factorizes each persona into a theory-anchored educational schema, enforces developmental and psychological constraints via a neuro-symbolic validator, and combines stratified sampling with semantic deduplication to reduce mode collapse. The resulting HACHIMI-1M corpus comprises 1 million personas for Grades 1-12. Intrinsic evaluation shows near-perfect schema validity, accurate quotas, and substantial diversity, while external evaluation instantiates personas as student agents answering CEPS and PISA 2022 surveys; across 16 cohorts, math and curiosity/growth constructs align strongly between humans and agents, whereas classroom-climate and well-being constructs are only moderately aligned, revealing a fidelity gradient. All personas are generated with Qwen2.5-72B, and HACHIMI provides a standardized synthetic student population for group-level benchmarking and social-science simulations. Resources available at https://github.com/ZeroLoss-Lab/HACHIMI",
+  "url": "http://arxiv.org/abs/2603.04855v1",
+  "timestamp": "2026-03-05T06:20:41Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "591b9ce944e44a4d4caeb6f58049cf505fd067bb1075973dc441d0875ada8787",
+  "parent_hash": "aa0a78cc3041ecb379e0f73a122d7d1a6d58ff9c1f42fbe26c5fe09a4ba7f679",
+  "metadata": {
+    "authors": [
+      "Yilin Jiang",
+      "Fei Tan",
+      "Xuanyu Yin",
+      "Jing Leng",
+      "Aimin Zhou"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.04855v1"
+  }
+}

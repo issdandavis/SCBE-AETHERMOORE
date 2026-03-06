@@ -1,0 +1,36 @@
+{
+  "id": "809c4adaf4ebd537",
+  "source": "arxiv",
+  "category": "security",
+  "title": "Scores Know Bobs Voice: Speaker Impersonation Attack",
+  "content": "# Scores Know Bobs Voice: Speaker Impersonation Attack\n\nAuthors: Chanwoo Hwang, Sunpill Kim, Yong Kiam Tan, Tianchi Liu, Seunghun Paik, Dongsoo Kim, Mondal Soumik, Khin Mi Mi Aung, Jae Hong Seo\nPublished: 2026-03-03T09:20:48Z\n\nAdvances in deep learning have enabled the widespread deployment of speaker recognition systems (SRSs), yet they remain vulnerable to score-based impersonation attacks. Existing attacks that operate directly on raw waveforms require a large number of queries due to the difficulty of optimizing in high-dimensional audio spaces. Latent-space optimization within generative models offers improved efficiency, but these latent spaces are shaped by data distribution matching and do not inherently capture speaker-discriminative geometry. As a result, optimization trajectories often fail to align with the adversarial direction needed to maximize victim scores.\n  To address this limitation, we propose an inversion-based generative attack framework that explicitly aligns the latent space of the synthesis model with the discriminative feature space of SRSs. We first analyze the requirements of an inverse model for score-based attacks and introduce a feature-aligned inversion strategy that geometrically synchronizes latent representations with speaker embeddings. This alignment ensures that latent updates directly translate into score improvements. Moreover, it enables new attack paradigms, including subspace-projection-based attacks, which were previously infeasible due to the absence of a faithful feature-to-audio mapping.\n  Experiments show that our method significantly improves query efficiency, achieving competitive attack success rates with on average 10x fewer queries than prior approaches. In particular, the enabled subspace-projection-based attack attains up to 91.65% success using only 50 queries. These findings establish feature-aligned inversion as a key tool for evaluating the robustness of modern SRSs against score-based impersonation threats.",
+  "url": "http://arxiv.org/abs/2603.02781v1",
+  "timestamp": "2026-03-03T09:20:48Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "32968e6ca87b70bfe56125c5c9959c0f1e7d086d2366f07d6f5ec7152024cc73",
+  "parent_hash": "e58d8f6fffbac41559473b73a8f0f3724af5c53a2c0fd3c25f8e2adf9ba949fa",
+  "metadata": {
+    "authors": [
+      "Chanwoo Hwang",
+      "Sunpill Kim",
+      "Yong Kiam Tan",
+      "Tianchi Liu",
+      "Seunghun Paik",
+      "Dongsoo Kim",
+      "Mondal Soumik",
+      "Khin Mi Mi Aung",
+      "Jae Hong Seo"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.02781v1"
+  }
+}

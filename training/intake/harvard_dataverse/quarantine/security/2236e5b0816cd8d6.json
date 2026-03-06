@@ -1,0 +1,32 @@
+{
+  "id": "2236e5b0816cd8d6",
+  "source": "harvard_dataverse",
+  "category": "quarantine/security",
+  "title": "Quantum-Fractal Logical Unified Field Theory",
+  "content": "# Quantum-Fractal Logical Unified Field Theory\n\nAuthors: Vidal Silvente, Enrique\nPublished: 2025-08-12T07:30:18Z\nSubjects: Mathematical Sciences, Physics\nDOI: doi:10.7910/DVN/034M7Z\n\nThis community hosts original research on the Quantum\u2013Fractal Logical Unified Field Theory, a novel framework integrating quantum field theory, fractal geometry, logical computation, and number theory. The approach is centered around a self-similar, resonant structure of the vacuum field, where fundamental interactions, prime number distributions, and physical constants emerge as spectral invariants of a logical\u2013fractal operator. Key topics include: Fractal Hilbert spaces and logical projections Resonant integral operators and their spectral modes Prime number prediction and the Riemann Hypothesis Logical coherence as a physical force Applications to cryptography, consciousness, and energy extraction The theory proposes a unifying field model governed by a recursive logical structure encoded through quantum-fractal operators, offering new insights into foundational problems in physics and mathematics.\n\nCitation: Vidal Silvente, Enrique, 2025, \"Quantum-Fractal Logical Unified Field Theory\", https://doi.org/10.7910/DVN/034M7Z, Harvard Dataverse, V6",
+  "url": "https://doi.org/10.7910/DVN/034M7Z",
+  "timestamp": "2026-03-06T02:42:03.535658",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "af2148e9a389a47134c482774dac30be621775dcd25cd606059b71e62dfc8a0a",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/034M7Z",
+    "subjects": [
+      "Mathematical Sciences",
+      "Physics"
+    ],
+    "authors": [
+      "Vidal Silvente, Enrique"
+    ],
+    "file_count": 7
+  }
+}

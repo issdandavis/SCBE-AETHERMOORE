@@ -1,0 +1,33 @@
+{
+  "id": "6c98fe8797c024e1",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "SpiderCat: Optimal Fault-Tolerant Cat State Preparation",
+  "content": "# SpiderCat: Optimal Fault-Tolerant Cat State Preparation\n\nAuthors: Andrey Boris Khesin, Sarah Meng Li, Boldizs\u00e1r Po\u00f3r, Benjamin Rodatz, John van de Wetering, Richie Yeung\nPublished: 2026-03-05T17:22:55Z\n\nThe ability to fault-tolerantly prepare CAT states, also known as multi-qubit GHZ states, is an important primitive for quantum error correction. It is required for Shor-style syndrome extraction, and can also be used as a subroutine for doing fault-tolerant state preparation of CSS codewords. Existing approaches to fault-tolerant CAT state preparations have been found using computationally expensive heuristics involving SAT solving, reinforcement learning, or exhaustive analysis. In this paper, we constructively find optimal circuits for CAT states in a more scalable way. In particular, we derive formal lower bounds on the number of CNOT gates required for circuits implementing $n$-qubit CAT states that do not spread errors of weight at most $t$ for $1\\leq t \\leq 5$. We do this by using fault-equivalent rewrites of ZX-diagrams to reduce it to a problem of characterising certain 3-regular simple graphs. We then provide families of such optimal graphs for infinitely many values of $n$ and $t\\leq5$. By encoding the construction of optimal graphs as a constraint satisfaction problem we find explicit constructions for circuits that match this lower bound on CNOT count for all $n\\leq50$ and $t \\leq 5$ and for nearly all pairs $(n,t)$ with $n\\leq 100$ and $t\\leq 5$ or $n\\leq 50$ and $t\\leq 7$, significantly extending the regimes that were achievable by previous methods and improving the resource counts for existing constructions. We additionally show how to trade CNOT count against depth, allowing us to construct constant-depth fault-tolerant implementations using $O(n)$ ancilla and $O(n)$ CNOT gates.",
+  "url": "http://arxiv.org/abs/2603.05391v1",
+  "timestamp": "2026-03-05T17:22:55Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "06b3bbeb4b446ad750bc5b448db59f11a0f9b15803f1ec7e08411a6e41876300",
+  "parent_hash": "8baa1f72839060c1030efecc92ba12e75075d07551bf09adaac2a328af821dee",
+  "metadata": {
+    "authors": [
+      "Andrey Boris Khesin",
+      "Sarah Meng Li",
+      "Boldizs\u00e1r Po\u00f3r",
+      "Benjamin Rodatz",
+      "John van de Wetering",
+      "Richie Yeung"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05391v1"
+  }
+}

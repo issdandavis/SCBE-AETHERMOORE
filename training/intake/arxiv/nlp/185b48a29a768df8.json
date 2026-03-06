@@ -1,0 +1,32 @@
+{
+  "id": "185b48a29a768df8",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "A Multilingual Human Annotated Corpus of Original and Easy-to-Read Texts to Support Access to Democratic Participatory Processes",
+  "content": "# A Multilingual Human Annotated Corpus of Original and Easy-to-Read Texts to Support Access to Democratic Participatory Processes\n\nAuthors: Stefan Bott, Verena Riegler, Horacio Saggion, Almudena Rasc\u00f3n Alcaina, Nouran Khallaf\nPublished: 2026-03-05T16:21:25Z\n\nBeing able to understand information is a key factor for a self-determined life and society. It is also very important for participating in democratic processes. The study of automatic text simplification is often limited by the availability of high quality material for the training and evaluation on automatic simplifiers. This is true for English, but more so for less resourced languages like Spanish, Catalan and Italian. In order to fill this gap, we present a corpus of original texts for these 3 languages, with high quality simplification produced by human experts in text simplification. It was developed within the iDEM project to assess the impact of Easy-to-Read (E2R) language for democratic participation. The original texts were compiled from domains related to this topic. The corpus includes different text types, selected based on relevance, copyright availability, and ethical standards. All texts were simplified to E2R level. The corpus is particularity valuable because it includes the first annotated corpus of its kind for the Catalan language. It also represents a noteworthy contribution for Spanish and Italian, offering high-quality, human-annotated language resources that are rarely available in these domains. The corpus will be made freely accessible to the public.",
+  "url": "http://arxiv.org/abs/2603.05345v1",
+  "timestamp": "2026-03-05T16:21:25Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "6009de7830c0299a0daa02b1bd1fd52d92c6fc6c233a9a488c0147a37458888e",
+  "parent_hash": "1d7d20cf823a91e3a085555b4278ede1e2bff59cb22a2975094dce96b056567e",
+  "metadata": {
+    "authors": [
+      "Stefan Bott",
+      "Verena Riegler",
+      "Horacio Saggion",
+      "Almudena Rasc\u00f3n Alcaina",
+      "Nouran Khallaf"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05345v1"
+  }
+}

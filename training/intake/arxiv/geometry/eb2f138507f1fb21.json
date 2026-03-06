@@ -1,0 +1,30 @@
+{
+  "id": "eb2f138507f1fb21",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Estimates of eigenvalues of elliptical differential problems in divergence form",
+  "content": "# Estimates of eigenvalues of elliptical differential problems in divergence form\n\nAuthors: Marcio C. Ara\u00fajo FIlho, Juliana F. R. Miranda, Cristiano S. Silva\nPublished: 2026-03-05T14:58:58Z\n\nIn this paper, we compute universal estimates of eigenvalues for a class of coupled systems of elliptic differential equations in divergence form on a bounded domain in Euclidean space, which includes the well-known Lam\u00e9 and the Laplacian operator. Furthermore, we also give universal estimates of eigenvalues for a class of fourth-order elliptic differential problems in divergence form, which encloses the well-known bi-Laplacian operator. In both cases, as applications, we obtain the gap between consecutive eigenvalues as well as an upper bound for each eigenvalue.",
+  "url": "http://arxiv.org/abs/2603.05245v1",
+  "timestamp": "2026-03-05T14:58:58Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "80e52d57a87f8d74b9a9eee182d5aa8ee6b51c0b97d82e94afdfed92423d3792",
+  "parent_hash": "5988eab06f3ffed56777543dd2bf1b394c635191489f998005690746660525ae",
+  "metadata": {
+    "authors": [
+      "Marcio C. Ara\u00fajo FIlho",
+      "Juliana F. R. Miranda",
+      "Cristiano S. Silva"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.05245v1"
+  }
+}

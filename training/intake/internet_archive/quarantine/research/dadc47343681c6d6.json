@@ -1,0 +1,27 @@
+{
+  "id": "dadc47343681c6d6",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Predicting the Severity and Prognosis of Trismus after Intensity-Modulated Radiation Therapy for Oral Cancer Patients by Magnetic Resonance Imaging.",
+  "content": "# Predicting the Severity and Prognosis of Trismus after Intensity-Modulated Radiation Therapy for Oral Cancer Patients by Magnetic Resonance Imaging.\n\nCreator: Hsieh, Li-Chun, Chen, John W., Wang, Li-Ying, Tsang, Yuk-Ming, Shueng, Pei-Wei, Liao, Li-Jen, Lo, Wu-Chia, Lin, Yu-Chin, Tseng, Chien-Fu, Kuo, Ying-Shiung, Jhuang, Jie-Yang, Tien, Hui-Ju, Juan, Hsueh-Fen, Hsieh, Chen-Hsi\nDate: 2014-03-21T00:00:00Z\nDownloads: 78\nSubjects: \n\nThis article is from PLoS ONE , volume 9 . Abstract To develop magnetic resonance imaging (MRI) indicators to predict trismus outcome for post-operative oral cavity cancer patients who received adjuvant intensity-modulated radiation therapy (IMRT), 22 patients with oral cancer treated with IMRT were studied over a two-year period. Signal abnormality scores (SA scores) were computed from Likert-type ratings of the abnormalities of nine masticator structures and compared with the Mann-Whitney U-test and Kruskal\u2013Wallis one-way ANOVA test between groups. Seventeen patients (77.3%) experienced different degrees of trismus during the two-year follow-up period. The SA score correlated with the trismus grade (r\u200a=\u200a0.52, p",
+  "url": "https://archive.org/details/pubmed-PMC3962418",
+  "timestamp": "2026-03-06T04:17:58.219713",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "842ff13f0ba782e7ac499d2f514c111faaa2809e8a49920bb88db12cb25646a3",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "pubmed-PMC3962418",
+    "media_type": "texts",
+    "downloads": 78,
+    "subjects": []
+  }
+}

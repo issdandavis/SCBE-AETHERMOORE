@@ -1,0 +1,41 @@
+{
+  "id": "37058da04d502b78",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Scaling Real-Time Traffic Analytics on Edge-Cloud Fabrics for City-Scale Camera Networks",
+  "content": "# Scaling Real-Time Traffic Analytics on Edge-Cloud Fabrics for City-Scale Camera Networks\n\nAuthors: Akash Sharma, Pranjal Naman, Roopkatha Banerjee, Priyanshu Pansari, Sankalp Gawali, Mayank Arya, Sharath Chandra, Arun Josephraj, Rakshit Ramesh, Punit Rathore, Anirban Chakraborty, Raghu Krishnapuram, Vijay Kovvali, Yogesh Simmhan\nPublished: 2026-03-05T14:30:10Z\n\nReal-time city-scale traffic analytics requires processing 100s-1000s of CCTV streams under strict latency, bandwidth, and compute limits. We present a scalable AI-driven Intelligent Transportation System (AIITS) designed to address multi-dimensional scaling on an edge-cloud fabric. Our platform transforms live multi-camera video feeds into a dynamic traffic graph through a DNN inferencing pipeline, complemented by real-time nowcasting and short-horizon forecasting using Spatio-Temporal GNNs. Using a testbed to validate in a Bengaluru neighborhood, we ingest 100+ RTSP feeds from Raspberry Pis, while Jetson Orin edge accelerators perform high-throughput detection and tracking, producing lightweight flow summaries for cloud-based GNN inference. A capacity-aware scheduler orchestrates load-balancing across heterogeneous devices to sustain real-time performance as stream counts increase. To ensure continuous adaptation, we integrate SAM3 foundation-model assisted labeling and Continuous Federated Learning to update DNN detectors on the edge. Experiments show stable ingestion up to 2000 FPS on Jetson Orins, low-latency aggregation, and accurate and scalable ST-GNN forecasts for up to 1000 streams. A planned live demonstration will scale the full pipeline to 1000 streams, showcasing practical, cross-fabric scalability.",
+  "url": "http://arxiv.org/abs/2603.05217v1",
+  "timestamp": "2026-03-05T14:30:10Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "ef084413b73baf73e131ac408b62d46f2e8e72ef403e7211140fdb43e7fe8f22",
+  "parent_hash": "ab2c3a2cbf9b31dfc6ce6d3686f1be69d880e3a91aa57ae14e6e7ac349eb1256",
+  "metadata": {
+    "authors": [
+      "Akash Sharma",
+      "Pranjal Naman",
+      "Roopkatha Banerjee",
+      "Priyanshu Pansari",
+      "Sankalp Gawali",
+      "Mayank Arya",
+      "Sharath Chandra",
+      "Arun Josephraj",
+      "Rakshit Ramesh",
+      "Punit Rathore",
+      "Anirban Chakraborty",
+      "Raghu Krishnapuram",
+      "Vijay Kovvali",
+      "Yogesh Simmhan"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.05217v1"
+  }
+}

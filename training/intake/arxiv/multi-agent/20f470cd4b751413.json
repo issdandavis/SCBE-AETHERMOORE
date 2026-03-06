@@ -1,0 +1,35 @@
+{
+  "id": "20f470cd4b751413",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Credibility Governance: A Social Mechanism for Collective Self-Correction under Weak Truth Signals",
+  "content": "# Credibility Governance: A Social Mechanism for Collective Self-Correction under Weak Truth Signals\n\nAuthors: Wanying He, Yanxi Lin, Ziheng Zhou, Xue Feng, Min Peng, Qianqian Xie, Zilong Zheng, Yipeng Kang\nPublished: 2026-03-03T06:10:13Z\n\nOnline platforms increasingly rely on opinion aggregation to allocate real-world attention and resources, yet common signals such as engagement votes or capital-weighted commitments are easy to amplify and often track visibility rather than reliability. This makes collective judgments brittle under weak truth signals, noisy or delayed feedback, early popularity surges, and strategic manipulation. We propose Credibility Governance (CG), a mechanism that reallocates influence by learning which agents and viewpoints consistently track evolving public evidence. CG maintains dynamic credibility scores for both agents and opinions, updates opinion influence via credibility-weighted endorsements, and updates agent credibility based on the long-run performance of the opinions they support, rewarding early and persistent alignment with emerging evidence while filtering short-lived noise. We evaluate CG in POLIS, a socio-physical simulation environment that models coupled belief dynamics and downstream feedback under uncertainty. Across settings with initial majority misalignment, observation noise and contamination, and misinformation shocks, CG outperforms vote-based, stake-weighted, and no-governance baselines, yielding faster recovery to the true state, reduced lock-in and path dependence, and improved robustness under adversarial pressure. Our implementation and experimental scripts are publicly available at https://github.com/Wanying-He/Credibility_Governance.",
+  "url": "http://arxiv.org/abs/2603.02640v1",
+  "timestamp": "2026-03-03T06:10:13Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "af80e7e27de14ac0b7b3167ed20630eadabbbdab92de97a56d3ea3edf8e36185",
+  "parent_hash": "c395768b62cc430fb95b379fb38bbea257e11d3274a7332101091f471e851c4e",
+  "metadata": {
+    "authors": [
+      "Wanying He",
+      "Yanxi Lin",
+      "Ziheng Zhou",
+      "Xue Feng",
+      "Min Peng",
+      "Qianqian Xie",
+      "Zilong Zheng",
+      "Yipeng Kang"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.02640v1"
+  }
+}

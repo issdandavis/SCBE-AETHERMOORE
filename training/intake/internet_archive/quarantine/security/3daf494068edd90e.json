@@ -1,0 +1,33 @@
+{
+  "id": "3daf494068edd90e",
+  "source": "internet_archive",
+  "category": "quarantine/security",
+  "title": "Post-Quantum Cryptography: S381 Cyclic Subgroup of High Order",
+  "content": "# Post-Quantum Cryptography: S381 Cyclic Subgroup of High Order\n\nCreator: \nDate: \nDownloads: 173\nSubjects: Post-Quantum Cryptography, Non-Commutative Cryptography, Symmetric groups, Permutations, Diffie-Hellman key exchange.\n\nCurrently there is an active Post-Quantum Cryptography (PQC) solutions search, which attempts to find cryptographic protocols resistant to attacks by means of for instance Shor\u00e2\u20ac\u2122s polynomial time algorithm for numerical field problems like integer factorization (IFP) or the discrete logarithm (DLP). The use of non-commutative or non-associative structures are, among others, valid choices for these kinds of protocols. In our case, we focus on a permutation subgroup of high order and belonging to the symmetric group S381. Using adequate one-way functions (OWF), we derived a Diffie-Hellman key exchange and an ElGamal ciphering procedure that only relies on combinatorial operations. Both OWF pose hard search problems which are assumed as not belonging to BQP time-complexity class. Obvious advantages of present protocols are their conceptual simplicity, fast throughput implementations, high cryptanalytic security and no need for arithmetic operations and therefore extended precision libraries. Such features make them suitable for low performance and low power consumption platforms like smart cards, USB-keys and cellphones.",
+  "url": "https://archive.org/details/10PostQuantumCryptography",
+  "timestamp": "2026-03-06T03:59:15.207763",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6c266f4f922a6267cf6f0cd02a4157b1f82be14f0ad65b651df1618226a8f6aa",
+  "parent_hash": "12cd4a96fd71dc9d970d8a14ed6b5852b9056b4bfd16d8333f7b43b74b85d684",
+  "metadata": {
+    "ia_identifier": "10PostQuantumCryptography",
+    "media_type": "texts",
+    "downloads": 173,
+    "subjects": [
+      "Post-Quantum Cryptography",
+      "Non-Commutative Cryptography",
+      "Symmetric groups",
+      "Permutations",
+      "Diffie-Hellman key exchange."
+    ]
+  }
+}

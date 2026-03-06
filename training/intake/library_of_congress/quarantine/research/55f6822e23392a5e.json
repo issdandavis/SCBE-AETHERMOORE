@@ -1,0 +1,33 @@
+{
+  "id": "55f6822e23392a5e",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Computational science and its applications : ICCSA 2006 : international conference, Glasgow, UK, May 8-11, 2006 : proceedings",
+  "content": "# Computational science and its applications : ICCSA 2006 : international conference, Glasgow, UK, May 8-11, 2006 : proceedings\n\nContributors: iccsa 2006, gavrilova, marina l.\nDate: 2006\nSubjects: computational complexity, congresses, computer science\n\nIncludes bibliographical references and index. Also issued online.",
+  "url": "//lccn.loc.gov/2006925086",
+  "timestamp": "2026-03-06T02:38:43.165513",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "1a24680e4459e0c860427e19c522a90aeb829f80e264744b02bcd62ef4c2f2bb",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "computational complexity",
+      "congresses",
+      "computer science"
+    ],
+    "dates": "2006",
+    "original_format": [
+      "book"
+    ]
+  }
+}

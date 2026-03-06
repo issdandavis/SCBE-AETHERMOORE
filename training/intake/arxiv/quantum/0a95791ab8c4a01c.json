@@ -1,0 +1,30 @@
+{
+  "id": "0a95791ab8c4a01c",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Machine Learning the Strong Disorder Renormalization Group Method for Disordered Quantum Spin Chains",
+  "content": "# Machine Learning the Strong Disorder Renormalization Group Method for Disordered Quantum Spin Chains\n\nAuthors: A. Ustyuzhanin, J. Vahedi, S. Kettemann\nPublished: 2026-03-05T13:35:00Z\n\nWe train machine learning algorithms to infer the entanglement structure of disordered long-range interacting quantum spin chains by learning from the strong disorder renormalisation group (SDRG) method. The system consists of $S=1/2$-quantum spins coupled by antiferromagnetic power-law interactions with decay exponent $\u03b1$ at random positions on a one-dimensional chain. Using SDRG as a physics-informed teacher, we compare a Random Forest classifier as a classical baseline with a graph neural network (GNN) that operates directly on the interaction graph and learns a bond-ranking rule mirroring the SDRG decimation policy. The GNN achieves a disorder-averaged pairing accuracy close to one and reproduces the entanglement entropy $S(\\ell)$ in excellent quantitative agreement with SDRG across all subsystem sizes and interaction exponents. RG flow heat maps confirm that the GNN learns the sequential decimation hierarchy rather than merely fitting final-state observables. Finite-temperature entanglement properties are incorporated via the SDRGX framework through a two-stage strategy, using the zero-temperature GNN to generate the RG flow and sampling thermal occupations from the canonical ensemble, yielding results in agreement with both numerical SDRGX and analytical predictions without retraining.",
+  "url": "http://arxiv.org/abs/2603.05164v1",
+  "timestamp": "2026-03-05T13:35:00Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "3f6a7ea97d58a9c338373a072fc5730fd7dca5108a5fa830291537fddf7c01d0",
+  "parent_hash": "4501d7245c0e50b4b207aacd5327d8be935091e8cc951b09e243e434442c7ca1",
+  "metadata": {
+    "authors": [
+      "A. Ustyuzhanin",
+      "J. Vahedi",
+      "S. Kettemann"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05164v1"
+  }
+}

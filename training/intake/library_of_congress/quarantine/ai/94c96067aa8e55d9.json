@@ -1,0 +1,30 @@
+{
+  "id": "94c96067aa8e55d9",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "Artificial Intelligence and Copyright",
+  "content": "# Artificial Intelligence and Copyright\n\nContributors: united states copyright office\nDate: \nSubjects: \n\nUnited States Copyright Office Artificial Intelligence and Copyright PUBLISHED ON WEDNESDAY, AUGUST 30, 2023 59942 FEDERAL REGISTER, VOL. 88, NO. 167 ACTION: Notice of inquiry and request for comments. SUMMARY: The United States Copyright Office is undertaking a study of the copyright law and policy issues raised by artificial intelligence (\u201cAI\u201d) systems. To inform the Office\u2019s study and help assess whether legislative or regulatory steps in this area are warranted, the Office seeks comment on these issues, including those involved in the use of copyrighted works to train AI models, the appropriate levels of transparency and disclosure with respect to the use of copyrighted works, and the legal status of AIgenerated outputs. DATES: Written comments are due no later than 11:59 p.m. Eastern Time on Wednesday, October 18, 2023. Written reply comments are due no later than 11:59 p.m. Eastern Time on Wednesday, November 15, 2023. ADDRESSES: For reasons of governmental efficiency, the Copyright Office is using the",
+  "url": "https://www.copyright.gov/ai/docs/Federal-Register-Document-Artificial-Intelligence-and-Copyright-NOI.pdf",
+  "timestamp": "2026-03-06T02:37:58.020505",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "b41080374c57de6cf044a396ff5be44d5d44a6eeca18a15946b061cac1245ad1",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [],
+    "dates": "",
+    "original_format": [
+      "book",
+      "web page"
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "7fdddc9aa899cd73",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2005-1665 \u2014 CVSS 5.0 (UNKNOWN)",
+  "content": "# CVE-2005-1665\n\nCVSS Score: 5.0 (UNKNOWN)\nPublished: 2005-05-18T04:00:00.000\nCWEs: NVD-CWE-Other\n\nThe __VIEWSTATE functionality in Microsoft ASP.NET 1.x, when not cryptographically signed, allows remote attackers to cause a denial of service (CPU consumption) via deeply nested markup.\n\nReferences: http://marc.info/?l=bugtraq&m=111513127704270&w=2, http://scottonwriting.net/sowblog/posts/3747.aspx, http://secunia.com/advisories/15241",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2005-1665",
+  "timestamp": "2026-03-06T02:41:32.739505",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "52c7aa96c1b5d1eb92d2c3aaed86fa5627214ac8acfaae17b07191680cb1de22",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2005-1665",
+    "cvss_score": 5.0,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "2005-05-18T04:00:00.000"
+  }
+}

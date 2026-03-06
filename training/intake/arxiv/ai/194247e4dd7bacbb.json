@@ -1,0 +1,35 @@
+{
+  "id": "194247e4dd7bacbb",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "Latent-Mark: An Audio Watermark Robust to Neural Resynthesis",
+  "content": "# Latent-Mark: An Audio Watermark Robust to Neural Resynthesis\n\nAuthors: Yen-Shan Chen, Shih-Yu Lai, Ying-Jung Tsou, Yi-Cheng Lin, Bing-Yu Chen, Yun-Nung Chen, Hung-Yi Lee, Shang-Tse Chen\nPublished: 2026-03-05T15:51:09Z\n\nWhile existing audio watermarking techniques have achieved strong robustness against traditional digital signal processing (DSP) attacks, they remain vulnerable to neural resynthesis. This occurs because modern neural audio codecs act as semantic filters and discard the imperceptible waveform variations used in prior watermarking methods. To address this limitation, we propose Latent-Mark, the first zero-bit audio watermarking framework designed to survive semantic compression. Our key insight is that robustness to the encode-decode process requires embedding the watermark within the codec's invariant latent space. We achieve this by optimizing the audio waveform to induce a detectable directional shift in its encoded latent representation, while constraining perturbations to align with the natural audio manifold to ensure imperceptibility. To prevent overfitting to a single codec's quantization rules, we introduce Cross-Codec Optimization, jointly optimizing the waveform across multiple surrogate codecs to target shared latent invariants. Extensive evaluations demonstrate robust zero-shot transferability to unseen neural codecs, achieving state-of-the-art resilience against traditional DSP attacks while preserving perceptual imperceptibility. Our work inspires future research into universal watermarking frameworks capable of maintaining integrity across increasingly complex and diverse generative distortions.",
+  "url": "http://arxiv.org/abs/2603.05310v1",
+  "timestamp": "2026-03-05T15:51:09Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "2321234bb94f3c103f2689eced25cae27146650ff8dfbf3f921ab6e1db50aa89",
+  "parent_hash": "4afc97294ee99265dd0acb6105016bfe81c47f528083b9fd2fa394364995b090",
+  "metadata": {
+    "authors": [
+      "Yen-Shan Chen",
+      "Shih-Yu Lai",
+      "Ying-Jung Tsou",
+      "Yi-Cheng Lin",
+      "Bing-Yu Chen",
+      "Yun-Nung Chen",
+      "Hung-Yi Lee",
+      "Shang-Tse Chen"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05310v1"
+  }
+}

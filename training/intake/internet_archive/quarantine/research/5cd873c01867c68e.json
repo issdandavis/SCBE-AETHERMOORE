@@ -1,0 +1,31 @@
+{
+  "id": "5cd873c01867c68e",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "On the stability of exponential backoff",
+  "content": "# On the stability of exponential backoff\n\nCreator: Song, N.O., Kwak, B.J., Miller, L.E.\nDate: 2003-07-01T00:00:00Z\nDownloads: 377\nSubjects: stability, exponential backoff algorithm, medium access control\n\nJournal of Research of the National Institute of Standards and Technology",
+  "url": "https://archive.org/details/jresv108n4p289",
+  "timestamp": "2026-03-06T03:59:17.368077",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "30eb5e18196018d50dc057ec006c7dc5f6faa594bdd8f7111ff2d98f4d6a9537",
+  "parent_hash": "2da5f516980cbdb270092f148839fdae59e74398586f1932c987a4886a9193c0",
+  "metadata": {
+    "ia_identifier": "jresv108n4p289",
+    "media_type": "texts",
+    "downloads": 377,
+    "subjects": [
+      "stability",
+      "exponential backoff algorithm",
+      "medium access control"
+    ]
+  }
+}

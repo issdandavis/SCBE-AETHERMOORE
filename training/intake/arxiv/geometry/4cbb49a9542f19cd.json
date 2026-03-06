@@ -1,0 +1,28 @@
+{
+  "id": "4cbb49a9542f19cd",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "The Archimedean height pairing for differential forms on degeneration of Riemann surfaces",
+  "content": "# The Archimedean height pairing for differential forms on degeneration of Riemann surfaces\n\nAuthors: Junyu Cao\nPublished: 2026-03-05T04:44:15Z\n\nWe define the Archimedean height pairing for fiberwise cohomologically trivial differential forms on a one-parameter degeneration of Riemann surfaces, and we study its asymptotic behavior. The proof relies on recent work by Dai--Yoshikawa on the asymptotics of small eigenvalues. As an application, we relate this pairing to the current-valued pairing of Filip--Tosatti, extending their construction to broader geometric settings.",
+  "url": "http://arxiv.org/abs/2603.04802v1",
+  "timestamp": "2026-03-05T04:44:15Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "2d1813f3f43ba6d929980787c40215dcad2637924b79c2d2bbf66abe3915d291",
+  "parent_hash": "7a8fccb5311ea11e5b1c943f150c61dd7ffbb65696030351adb3e9d84c1208e2",
+  "metadata": {
+    "authors": [
+      "Junyu Cao"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.04802v1"
+  }
+}

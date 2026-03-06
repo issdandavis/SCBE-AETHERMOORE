@@ -1,0 +1,31 @@
+{
+  "id": "e67960698064a4f4",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "A monitoring system for collecting and aggregating metrics from distributed clouds",
+  "content": "# A monitoring system for collecting and aggregating metrics from distributed clouds\n\nAuthors: Tamara Rankovi\u0107, Mateja Rilak, Janko Rakonjac, Milo\u0161 Simi\u0107\nPublished: 2026-03-05T14:56:37Z\n\nApplications requiring real-time processing of large volumes of data have been the main driver for rethinking the traditional cloud, giving rise to novel cloud models. Distributed cloud (DC) is a model that allows users to dynamically create and dispose of strategically located ad-hoc clouds that contain resources best tailored to their needs. It is essential for this model to provide a high degree of observability for it to be viable in real-world scenarios. In this paper, we present the design and implementation of a monitoring system that collects metrics from DCs and makes them accessible to diverse clients. Agents running on nodes are responsible for collecting machine-, container-, and application-level metrics. During the health-check protocol, that data is transferred from the node to the DC's control plane running inside the cloud. There, it is persisted and served via multiple APIs, including a streaming API. Moreover, node metrics are aggregated for every DC in order to provide a more comprehensive view of the system's state.",
+  "url": "http://arxiv.org/abs/2603.05241v1",
+  "timestamp": "2026-03-05T14:56:37Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "79031e25670e7f56630540e342435616c0cfd71b49de5bf7d58e592dcd732b9f",
+  "parent_hash": "0ed932939e647882cf90d7d17c135c4beb8d8b82f042d32b0a4050a6bb7c40f5",
+  "metadata": {
+    "authors": [
+      "Tamara Rankovi\u0107",
+      "Mateja Rilak",
+      "Janko Rakonjac",
+      "Milo\u0161 Simi\u0107"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.05241v1"
+  }
+}

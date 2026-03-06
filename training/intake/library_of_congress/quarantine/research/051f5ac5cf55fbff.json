@@ -1,0 +1,32 @@
+{
+  "id": "051f5ac5cf55fbff",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "A short history of natural science and of the progress of discovery from the time of the Greeks to the present day; for the use of schools and young persons,",
+  "content": "# A short history of natural science and of the progress of discovery from the time of the Greeks to the present day; for the use of schools and young persons,\n\nContributors: buckley, arabella b. (arabella burton)\nDate: 1893\nSubjects: history, science\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/32034952/",
+  "timestamp": "2026-03-06T04:17:18.822592",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c48404935b03cb901a82ec78f97c73c8f88b75fae296e989092919c79010e57e",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "history",
+      "science"
+    ],
+    "dates": "1893",
+    "original_format": [
+      "book"
+    ]
+  }
+}

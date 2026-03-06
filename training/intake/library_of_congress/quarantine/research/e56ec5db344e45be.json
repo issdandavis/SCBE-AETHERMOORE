@@ -1,0 +1,37 @@
+{
+  "id": "e56ec5db344e45be",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Spin-crossover materials properties and applications",
+  "content": "# Spin-crossover materials properties and applications\n\nContributors: halcrow, malcolm a.\nDate: 2013\nSubjects: magnetic properties, nanostructured materials, electric properties, spintronics, science / chemistry / inorganic\n\n\"The phenomenon of spin-crossover has a large impact on the physical properties of a solid material, including its colour, magnetic moment, and electrical resistance. Some materials also show a structural phase change during the transition. Several practical applications of spin-crossover materials have been demonstrated including display and memory devices, electrical and electroluminescent devices, and MRI contrast agents. Switchable liquid crystals, nanoparticles, and thin films of spin-crossover materials have also been achieved.Spin-Crossover Materials: Properties and Applications presents a comprehensivesurvey of recent developments in spin-crossover research, highlighting the multidisciplinary nature of this rapidly expanding field. Following an introductory chapter which describes the spin-crossover phenomenon and historical development of the field, the book goes on to cover a wide range of topics including  Spin-crossover in mononuclear, polynuclear and polymeric complexes  Structure: function relationships in molecular spin-crossover materials  Charge-transfer-induced spin-transitions  Reversible spin-pairing in crystalline organic radicals  Spin-state switching in solution  Spin-crossover compounds in multifunctional switchable materials and nanotechnology  Physical and theoretical methods for studying spin-crossover materials  Spin-Crossover Materials: Properties and Applications is a valuable resource for academic researchers working in the field of spin-crossover materials and topics related to crystal engineering, solid state chemistry and physics, and molecular materials. Postgraduate students will also find this book useful as a comprehensive introduction to the field\"-- Provided by publisher.",
+  "url": "//lccn.loc.gov/2012050739",
+  "timestamp": "2026-03-06T04:17:33.805702",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e10bd32d616eb90b2659e645a1650ca9ea5c13716f0a5f9524402d31d4aef865",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "magnetic properties",
+      "nanostructured materials",
+      "electric properties",
+      "spintronics",
+      "science / chemistry / inorganic",
+      "materials",
+      "electron paramagnetic resonance"
+    ],
+    "dates": "2013",
+    "original_format": [
+      "book"
+    ]
+  }
+}

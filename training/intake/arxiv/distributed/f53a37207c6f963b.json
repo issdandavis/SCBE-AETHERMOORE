@@ -1,0 +1,28 @@
+{
+  "id": "f53a37207c6f963b",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "The Ghost in the Datacenter: Link Flapping, Topology Knowledge Failures, and the FITO Category Mistake",
+  "content": "# The Ghost in the Datacenter: Link Flapping, Topology Knowledge Failures, and the FITO Category Mistake\n\nAuthors: Paul Borrill\nPublished: 2026-03-04T05:12:40Z\n\nEvery link disconnection or flap in a datacenter corrupts the network's self-knowledge -- its graph. We call this corruption a ghost: a node that appears reachable but is not, a link that reports \"up\" but silently drops traffic, or an IP address that resolves to a partitioned machine. Ghosts arise at every scale -- chiplet-to-chiplet (PCIe, UCIe), GPU-to-GPU (NVLink, NVSwitch), node-to-node (Ethernet, Thunderbolt), and cluster-to-cluster (IP, BGP) -- because all these protocols inherit Shannon's forward-in-time-only (FITO) channel model and use Timeout And Retry (TAR) as their failure detector. TAR cannot distinguish \"slow\" from \"dead,\" which is precisely the ambiguity that Fischer--Lynch--Paterson proved unresolvable in asynchronous systems. We survey the problem using production data from Meta (419 interruptions in 54 days of LLaMA 3 training), ByteDance (38,236 explicit and 5,948 implicit failures in three months), Google (TPUv4 optical circuit switching), and Alibaba (0.057% NIC--ToR link failures per month). At 2025 cluster scale (${\\sim}3$ million GPUs, ${>}10$ million optical links), a link flap occurs every 48 seconds. We show that every existing mitigation -- Phi Accrual failure detectors, SWIM, BFD, OSPF/ISIS fast convergence, SmartNIC offload, lossless Ethernet (RoCE/PFC), and Kubernetes pod eviction -- still creates ghosts because each is fundamentally timeout-based. We connect ghosts to gray failures (Huang et al., HotOS 2017) and metastable failures (Bronson et al., HotOS 2021; validated across 22 failures at 11 organizations, OSDI 2022). We argue that Open Atomic Ethernet eliminates ghosts at the link layer through a Reliable Link Failure Detector, Perfect Information Feedback, triangle failover, and atomic token transfer -- making topology knowledge transactional.",
+  "url": "http://arxiv.org/abs/2603.03736v1",
+  "timestamp": "2026-03-04T05:12:40Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "7a94458d3a94deae137b6b3770ae05a381174af2a228405b0c1aab5c1ab256f6",
+  "parent_hash": "7791b513e668a7db07d4d6300fdb40f7345fc7fc3ff09588bd7422794a21551b",
+  "metadata": {
+    "authors": [
+      "Paul Borrill"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.03736v1"
+  }
+}

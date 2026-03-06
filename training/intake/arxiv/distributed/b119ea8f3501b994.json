@@ -1,0 +1,28 @@
+{
+  "id": "b119ea8f3501b994",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Token Management in Multi-Tenant AI Inference Platforms",
+  "content": "# Token Management in Multi-Tenant AI Inference Platforms\n\nAuthors: William J. Cunningham\nPublished: 2026-02-27T22:44:09Z\n\nMulti-tenant AI inference platforms must balance resource utilization against service-level guarantees under variable demand. Conventional approaches fail to achieve this balance: dedicated endpoints strand capacity on idle models, while rate limits ignore the heterogeneous cost of inference requests. We introduce \\emph{token pools}, a control-plane abstraction that represents inference capacity as explicit entitlements expressed in inference-native units (token throughput, KV cache, concurrency). Unlike rate limits, which govern request admission without regard to execution cost, token pools authorize both admission and autoscaling from the same capacity model, ensuring consistency between what is promised and what is provisioned. The abstraction captures burst modes across multiple dimensions invisible to conventional throttling. Dynamic per-entitlement limits on each burst dimension enable fine-grained control over resource consumption while permitting work-conserving backfill by low-priority traffic. The design supports priority-aware allocation, service tiers with differentiated guarantees, and debt-based fairness mechanisms, all without modifying the underlying inference runtime or cluster scheduler. In experiments on a Kubernetes cluster with vLLM backends, token pools maintain a bounded P99 latency for guaranteed workloads during overload by selectively throttling spot traffic, while a baseline without admission control experiences unbounded latency degradation across all workloads. A second experiment demonstrates debt-based fair-share convergence among elastic workloads with heterogeneous SLO requirements during capacity scarcity.",
+  "url": "http://arxiv.org/abs/2603.00356v1",
+  "timestamp": "2026-02-27T22:44:09Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "c161aaebb31b850af988025adcadafee7e1d8ca78c437671008a9b0451c7845b",
+  "parent_hash": "6031d6a326e6b8a75f631aa94c59b44237918454c62d177a28a7676bf0062df9",
+  "metadata": {
+    "authors": [
+      "William J. Cunningham"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.00356v1"
+  }
+}

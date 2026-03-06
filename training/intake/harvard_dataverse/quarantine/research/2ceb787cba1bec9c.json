@@ -1,0 +1,31 @@
+{
+  "id": "2ceb787cba1bec9c",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "EtherAddressLookup dataset",
+  "content": "# EtherAddressLookup dataset\n\nAuthors: Loddo, Andrea\nPublished: 2020-07-24T11:20:37Z\nSubjects: Computer and Information Science\nDOI: doi:10.7910/DVN/XCP6KF\n\nDataset of scams gathered from https://github.com/409H/EtherAddressLookup\n\nCitation: Loddo, Andrea, 2020, \"EtherAddressLookup dataset\", https://doi.org/10.7910/DVN/XCP6KF, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/XCP6KF",
+  "timestamp": "2026-03-06T02:42:29.165232",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "2673927c63bb2fa85fa10f03d6f51873ffd8cf2d0ab3af6147665529f6c87009",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/XCP6KF",
+    "subjects": [
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Loddo, Andrea"
+    ],
+    "file_count": 1
+  }
+}

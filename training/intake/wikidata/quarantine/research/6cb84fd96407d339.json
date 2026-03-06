@@ -1,0 +1,25 @@
+{
+  "id": "6cb84fd96407d339",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "post-quantum cryptography (Q7233576)",
+  "content": "# post-quantum cryptography\n\nWikidata ID: Q7233576\nDescription: cryptography that is secure against quantum computers\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q7233576",
+  "timestamp": "2026-03-06T02:41:03.050674",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c5f6ed6fbe0f1bdbc850473f4399e7fc9cd0b95458c13f61e69ffadf87174506",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q7233576",
+    "description": "cryptography that is secure against quantum computers"
+  }
+}

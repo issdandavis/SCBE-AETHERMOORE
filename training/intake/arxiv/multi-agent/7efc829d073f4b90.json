@@ -1,0 +1,29 @@
+{
+  "id": "7efc829d073f4b90",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Agile V: A Compliance-Ready Framework for AI-Augmented Engineering -- From Concept to Audit-Ready Delivery",
+  "content": "# Agile V: A Compliance-Ready Framework for AI-Augmented Engineering -- From Concept to Audit-Ready Delivery\n\nAuthors: Christopher Koch, Joshua Andreas Wellbrock\nPublished: 2026-02-24T08:41:05Z\n\nCurrent AI-assisted engineering workflows lack a built-in mechanism to maintain task-level verification and regulatory traceability at machine-speed delivery. Agile V addresses this gap by embedding independent verification and audit artifact generation into each task cycle. The framework merges Agile iteration with V-Model verification into a continuous Infinity Loop, deploying specialized AI agents for requirements, design, build, test, and compliance, governed by mandatory human approval gates. We evaluate three hypotheses: (H1) audit-ready artifacts emerge as a by-product of development, (H2) 100% requirement-level verification is achievable with independent test generation, and (H3) verified increments can be delivered with single-digit human interactions per cycle. A feasibility case study on a Hardware-in-the-Loop system (about 500 LOC, 8 requirements, 54 tests) supports all three hypotheses: audit-ready documentation was generated automatically (H1), 100% requirement-level pass rate was achieved (H2), and only 6 prompts per cycle were required (H3), yielding an estimated 10-50x cost reduction versus a COCOMO II baseline (sensitivity range from pessimistic to optimistic assumptions). We invite independent replication to validate generalizability.",
+  "url": "http://arxiv.org/abs/2602.20684v1",
+  "timestamp": "2026-02-24T08:41:05Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "76a9c0d6b0cf3c24d572c728f75a5788b05f24a605da668a4ffaca0787e52150",
+  "parent_hash": "1d8b0be3c4091c19dcce2f614ab7141e6dcbc6357a660b7fcc62e321ff612a2d",
+  "metadata": {
+    "authors": [
+      "Christopher Koch",
+      "Joshua Andreas Wellbrock"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2602.20684v1"
+  }
+}

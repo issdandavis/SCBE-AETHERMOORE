@@ -1,0 +1,25 @@
+{
+  "id": "a22755da8b4371d9",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Penrose tilings, cluster models and the quasi-unit cell picture (Q126988878)",
+  "content": "# Penrose tilings, cluster models and the quasi-unit cell picture\n\nWikidata ID: Q126988878\nDescription: scholarly article\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q126988878",
+  "timestamp": "2026-03-06T04:18:16.815810",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "549b7b87636e8d21be655050f351c1baab7394fe0f2f4c6530ebb24507011c1f",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q126988878",
+    "description": "scholarly article"
+  }
+}

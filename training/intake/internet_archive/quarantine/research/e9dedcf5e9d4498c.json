@@ -1,0 +1,27 @@
+{
+  "id": "e9dedcf5e9d4498c",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Left-right symmetry breaking in mice by left-right dynein may occur via a biased chromatid segregation mechanism, without directly involving the Nodal gene.",
+  "content": "# Left-right symmetry breaking in mice by left-right dynein may occur via a biased chromatid segregation mechanism, without directly involving the Nodal gene.\n\nCreator: Sauer, Stephan, Klar, Amar J. S.\nDate: 2012-11-16T00:00:00Z\nDownloads: 81\nSubjects: \n\nThis article is from Frontiers in Oncology , volume 2 . Abstract Ever since cloning the classic iv (inversedviscerum) mutation identified the \u201cleft-right dynein\u201d (lrd) gene in mice, most research on body laterality determination has focused on its function in motile cilia at the node embryonic organizer. This model is attractive, as it links chirality of cilia architecture to asymmetry development. However, lrd is also expressed in blastocysts and embryonic stem cells, where it was shown to bias the segregation of recombined sister chromatids away from each other in mitosis. These data suggested that lrd is part of a cellular mechanism that recognizes and selectively segregates sister chromatids based on their replication history: old \u201cWatson\u201d versus old \u201cCrick\u201d strands. We previously proposed that the mouse left-right axis is established via an asymmetric cell division prior to/or during gastrulation. In this model, left-right dynein selectively segregates epigenetically differentiated sister chromatids harboring a hypothetical \u201cleft-right axis development 1\u201d (\u201clra1\u201d) gene during the left-right axis establishing cell division. Here, asymmetry development would be ultimately governed by the chirality of the cytoskeleton and the DNA molecule. Our model predicts that randomization of chromatid segregation in lrd mutants should produce embryos with 25% situs solitus, 25% situs inversus, and 50% embryonic death due to heterotaxia and isomerism. Here we confirmed this prediction by using two distinct lrd mutant alleles. Other than lrd, thus far Nodal gene is the most upstream function implicated in visceral organs laterality determination. We next tested whether the Nodal gene constitutes the lra1 gene hypothesized in the model by testing mutant\u2019s effect on 50% embryonic lethality observed in lrd mutants. Since Nodal mutation did not suppress lethality, we conclude that Nodal is not equivalent to the lra1 gene. In summary, we describe the origin of 50% lethality in lrd mutant mice not yet explained by any other laterality-generating hypothesis.",
+  "url": "https://archive.org/details/pubmed-PMC3540932",
+  "timestamp": "2026-03-06T04:17:53.893876",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "1f6a1bf2680a2a24388de0e0d3178ace20f721f974851d2b9f33e0388f4808cf",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "pubmed-PMC3540932",
+    "media_type": "texts",
+    "downloads": 81,
+    "subjects": []
+  }
+}

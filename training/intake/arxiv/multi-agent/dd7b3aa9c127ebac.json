@@ -1,0 +1,31 @@
+{
+  "id": "dd7b3aa9c127ebac",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "MO-MIX: Multi-Objective Multi-Agent Cooperative Decision-Making With Deep Reinforcement Learning",
+  "content": "# MO-MIX: Multi-Objective Multi-Agent Cooperative Decision-Making With Deep Reinforcement Learning\n\nAuthors: Tianmeng Hu, Biao Luo, Chunhua Yang, Tingwen Huang\nPublished: 2026-02-28T16:25:22Z\n\nDeep reinforcement learning (RL) has been applied extensively to solve complex decision-making problems. In many real-world scenarios, tasks often have several conflicting objectives and may require multiple agents to cooperate, which are the multi-objective multi-agent decision-making problems. However, only few works have been conducted on this intersection. Existing approaches are limited to separate fields and can only handle multi-agent decision-making with a single objective, or multi-objective decision-making with a single agent. In this paper, we propose MO-MIX to solve the multi-objective multi-agent reinforcement learning (MOMARL) problem. Our approach is based on the centralized training with decentralized execution (CTDE) framework. A weight vector representing preference over the objectives is fed into the decentralized agent network as a condition for local action-value function estimation, while a mixing network with parallel architecture is used to estimate the joint action-value function. In addition, an exploration guide approach is applied to improve the uniformity of the final non-dominated solutions. Experiments demonstrate that the proposed method can effectively solve the multi-objective multi-agent cooperative decision-making problem and generate an approximation of the Pareto set. Our approach not only significantly outperforms the baseline method in all four kinds of evaluation metrics, but also requires less computational cost.",
+  "url": "http://arxiv.org/abs/2603.00730v1",
+  "timestamp": "2026-02-28T16:25:22Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "ab2c3a2cbf9b31dfc6ce6d3686f1be69d880e3a91aa57ae14e6e7ac349eb1256",
+  "parent_hash": "44b69484afeb4d9f435a9e41c1341133dd827c02ac734d339292d01092a1860a",
+  "metadata": {
+    "authors": [
+      "Tianmeng Hu",
+      "Biao Luo",
+      "Chunhua Yang",
+      "Tingwen Huang"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.00730v1"
+  }
+}

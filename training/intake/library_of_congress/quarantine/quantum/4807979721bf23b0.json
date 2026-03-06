@@ -1,0 +1,29 @@
+{
+  "id": "4807979721bf23b0",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "Commercial and military applications and timelines for quantum technology",
+  "content": "# Commercial and military applications and timelines for quantum technology\n\nContributors: parker, edward\nDate: 2021\nSubjects: \n\nThis report provides an overview of the current state of quantum technology and its potential commercial and military applications. The author discusses each of the three major categories of quantum technology: quantum sensing, quantum communication, and quantum computing. He also considers the likely commercial outlook over the next few years, the major international players, and the potential national security implications of these emerging technologies. This report is based on a survey of the available academic literature, news reporting, and government-issued position papers. Most of these technologies are still in the laboratory. Applications of quantum sensing could become commercially or militarily ready within the next few years. Although limited commercial deployment of quantum communication technology already exists, the most-useful military applications still lie many years away. Similarly, there may be niche applications of quantum computers in the future, but all known applications are likely at least ten years away. China currently leads the world in the development of quantum communication, while the United States leads in the development of quantum computing.",
+  "url": "https://www.loc.gov/item/2024739724/",
+  "timestamp": "2026-03-06T02:38:03.635021",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "64fa3955de620a72a38a077eb43cd6e902f98850a38847c4292e0e4e1ef76bf7",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [],
+    "dates": "2021",
+    "original_format": [
+      "book"
+    ]
+  }
+}

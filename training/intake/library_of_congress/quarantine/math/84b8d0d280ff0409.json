@@ -1,0 +1,32 @@
+{
+  "id": "84b8d0d280ff0409",
+  "source": "library_of_congress",
+  "category": "quarantine/math",
+  "title": "A complete manual on teaching arithmetic, algebra, and geometry : including a brief history of these branches",
+  "content": "# A complete manual on teaching arithmetic, algebra, and geometry : including a brief history of these branches\n\nContributors: greenwood, j. m. (james mickleborough)\nDate: 1890\nSubjects: study and teaching, mathematics\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/05036385/",
+  "timestamp": "2026-03-06T02:38:09.282299",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "918985b5e6961d05bd6feb575426e30776c6b6c7fc1d5afd1ac981dac094d8a7",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "study and teaching",
+      "mathematics"
+    ],
+    "dates": "1890",
+    "original_format": [
+      "book"
+    ]
+  }
+}

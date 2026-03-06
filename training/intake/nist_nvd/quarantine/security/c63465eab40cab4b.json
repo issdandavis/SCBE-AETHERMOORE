@@ -1,0 +1,30 @@
+{
+  "id": "c63465eab40cab4b",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2000-0350 \u2014 CVSS 5.0 (UNKNOWN)",
+  "content": "# CVE-2000-0350\n\nCVSS Score: 5.0 (UNKNOWN)\nPublished: 2000-05-17T04:00:00.000\nCWEs: NVD-CWE-Other\n\nA debugging feature in NetworkICE ICEcap 2.0.23 and earlier is enabled, which allows a remote attacker to bypass the weak authentication and post unencrypted events.\n\nReferences: http://advice.networkice.com/advice/Support/KB/q000166/, http://www.osvdb.org/312, http://www.securityfocus.com/bid/1216",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2000-0350",
+  "timestamp": "2026-03-06T02:41:48.082184",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "941cd9631f8453e4ff2cd9786843a5437275f9a4c69e5a4d92396c570ba8c438",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2000-0350",
+    "cvss_score": 5.0,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "2000-05-17T04:00:00.000"
+  }
+}

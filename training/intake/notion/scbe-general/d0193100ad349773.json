@@ -1,0 +1,26 @@
+{
+  "id": "d0193100ad349773",
+  "source": "notion",
+  "category": "scbe-general",
+  "title": "SCBE-AETHERMOORE Operations Hub",
+  "content": "# SCBE-AETHERMOORE Operations Hub\n\nCentral command for automated publishing, content scheduling, store operations, and work tracking. All content flows from here to Twitter/X, WordPress, Shopify, and GitHub via automation tools.\nQuick Links: GitHub | Shopify | Gumroad | X/Twitter | Streamlit Demo | npm Package\n\ud83d\udd17 https://github.com/issdandavis/SCBE-AETHERMOORE\n\ud83d\uded2 https://aethermoorgames.myshopify.com\n\ud83d\udcb0 https://aethermoorgames.gumroad.com\n\ud83d\udc26 https://x.com/davisissac\n\ud83c\udfae https://scbe-aethermoore-ezaociw8wy6t5rnaynzvzc.streamlit.app\ud83d\udcca https://scbe-aethermoore-x8vu3ly.gamma.site\nTweet Queue\nAutomated tweet pipeline. Each row = 1 tweet. Polled by Scheduled.so or n8n every 15 min.\nArticles Pipeline\nAuto-publish to WordPress/Super.so via Zapier. Grok + GPT draft generation. Status = Ready triggers publish.",
+  "url": "https://www.notion.so/SCBE-AETHERMOORE-Operations-Hub-303f96de82e580dca63bf1ffd84e4ad3",
+  "timestamp": "2026-02-10T09:59:00.000Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "8fabe765e85aa89d600fa2a789127a2414def91314fffb3e4f3a9b8b57e3b5ee",
+  "parent_hash": "437dd7c1fd24c88b8ca860c481be99d7cd8dd66369a80afd3e188855f028cb36",
+  "metadata": {
+    "notion_id": "303f96de-82e5-80dc-a63b-f1ffd84e4ad3",
+    "page_type": "page",
+    "parent_type": "workspace"
+  }
+}

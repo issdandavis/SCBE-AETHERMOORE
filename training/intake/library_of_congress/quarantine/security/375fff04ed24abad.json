@@ -1,0 +1,32 @@
+{
+  "id": "375fff04ed24abad",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "S.4592 - 117th Congress (2021-2022): Quantum Computing Cybersecurity Preparedness Act",
+  "content": "# S.4592 - 117th Congress (2021-2022): Quantum Computing Cybersecurity Preparedness Act\n\nContributors: senate, 117th congress, sen. hassan, margaret wood [d-nh]\nDate: 2022-12-13\nSubjects: government operations and politics, congress\n\nSummary of S.4592 - 117th Congress (2021-2022): Quantum Computing Cybersecurity Preparedness Act",
+  "url": "https://www.congress.gov/bill/117th-congress/senate-bill/4592",
+  "timestamp": "2026-03-06T02:38:03.634966",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "79cd102065d6c13a3568415ff8af377c52813ed87036b17123ceef36f6fa9519",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "government operations and politics",
+      "congress"
+    ],
+    "dates": "2022-12-13",
+    "original_format": [
+      "legislation"
+    ]
+  }
+}

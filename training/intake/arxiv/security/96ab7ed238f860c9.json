@@ -1,0 +1,29 @@
+{
+  "id": "96ab7ed238f860c9",
+  "source": "arxiv",
+  "category": "security",
+  "title": "Modification to Fully Homomorphic Modified Rivest Scheme",
+  "content": "# Modification to Fully Homomorphic Modified Rivest Scheme\n\nAuthors: Sona Alex, Bian Yang\nPublished: 2026-03-05T08:45:53Z\n\nThis document details the Fully Homomorphic Modified Rivest Scheme (FHMRS), a security issue in FHMRS, and a modification to FHMRS (mFHMRS) to mitigate the security issue.",
+  "url": "http://arxiv.org/abs/2603.04952v1",
+  "timestamp": "2026-03-05T08:45:53Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "1f282571931ebdb6d3999da12b4363c6b84a19b3fb479ad1c0096f89a5cc4d00",
+  "parent_hash": "301e84486483381db2a9c7b1dbb4f720e202943522924a8deeaa92e8447fc72d",
+  "metadata": {
+    "authors": [
+      "Sona Alex",
+      "Bian Yang"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.04952v1"
+  }
+}

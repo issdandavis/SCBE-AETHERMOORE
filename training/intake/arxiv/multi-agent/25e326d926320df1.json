@@ -1,0 +1,29 @@
+{
+  "id": "25e326d926320df1",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Selection as Power: Constrained Reinforcement for Bounded Decision Authority",
+  "content": "# Selection as Power: Constrained Reinforcement for Bounded Decision Authority\n\nAuthors: Jose Manuel de la Chica Rodriguez, Juan Manuel Vera D\u00edaz\nPublished: 2026-03-02T16:02:34Z\n\nSelection as Power argued that upstream selection authority, rather than internal objective misalignment, constitutes a primary source of risk in high-stakes agentic systems. However, the original framework was static: governance constraints bounded selection power but did not adapt over time. In this work, we extend the framework to dynamic settings by introducing incentivized selection governance, where reinforcement updates are applied to scoring and reducer parameters under externally enforced sovereignty constraints.\n  We formalize selection as a constrained reinforcement process in which parameter updates are projected onto governance-defined feasible sets, preventing concentration beyond prescribed bounds. Across multiple regulated financial scenarios, unconstrained reinforcement consistently collapses into deterministic dominance under repeated feedback, especially at higher learning rates. In contrast, incentivized governance enables adaptive improvement while maintaining bounded selection concentration.\n  Projection-based constraints transform reinforcement from irreversible lock-in into controlled adaptation, with governance debt quantifying the tension between optimization pressure and authority bounds. These results demonstrate that learning dynamics can coexist with structural diversity when sovereignty constraints are enforced at every update step, offering a principled approach to integrating reinforcement into high-stakes agentic systems without surrendering bounded selection authority.",
+  "url": "http://arxiv.org/abs/2603.02019v1",
+  "timestamp": "2026-03-02T16:02:34Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "e0ce67c58ac652065541db4169d08599b8cdb77c1b0662f3487d25acf66a9677",
+  "parent_hash": "7ed5f49ea42db2dca24844b781ce5b81ef34039da3a4fd156bf1ba78ff13fc3e",
+  "metadata": {
+    "authors": [
+      "Jose Manuel de la Chica Rodriguez",
+      "Juan Manuel Vera D\u00edaz"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.02019v1"
+  }
+}

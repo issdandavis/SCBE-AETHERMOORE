@@ -1,0 +1,35 @@
+{
+  "id": "9e960e91129c1a41",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "GCAgent: Enhancing Group Chat Communication through Dialogue Agents System",
+  "content": "# GCAgent: Enhancing Group Chat Communication through Dialogue Agents System\n\nAuthors: Zijie Meng, Zheyong Xie, Zheyu Ye, Chonggang Lu, Zuozhu Liu, Zihan Niu, Yao Hu, Shaosheng Cao\nPublished: 2026-03-05T14:55:57Z\n\nAs a key form in online social platforms, group chat is a popular space for interest exchange or problem-solving, but its effectiveness is often hindered by inactivity and management challenges. While recent large language models (LLMs) have powered impressive one-to-one conversational agents, their seamlessly integration into multi-participant conversations remains unexplored. To address this gap, we introduce GCAgent, an LLM-driven system for enhancing group chats communication with both entertainment- and utility-oriented dialogue agents. The system comprises three tightly integrated modules: Agent Builder, which customizes agents to align with users' interests; Dialogue Manager, which coordinates dialogue states and manage agent invocations; and Interface Plugins, which reduce interaction barriers by three distinct tools. Through extensive experiment, GCAgent achieved an average score of 4.68 across various criteria and was preferred in 51.04\\% of cases compared to its base model. Additionally, in real-world deployments over 350 days, it increased message volume by 28.80\\%, significantly improving group activity and engagement. Overall, this work presents a practical blueprint for extending LLM-based dialogue agent from one-party chats to multi-party group scenarios.",
+  "url": "http://arxiv.org/abs/2603.05240v1",
+  "timestamp": "2026-03-05T14:55:57Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "f9e16f32f157c8bf62de1bdcee3e5e1251bdb7e90b48dd437d73d2eea51543be",
+  "parent_hash": "14d760f7b52cab4bb951d5fa2ecfbf50a9a7550efbd64e6f8662eb94eb77e9f0",
+  "metadata": {
+    "authors": [
+      "Zijie Meng",
+      "Zheyong Xie",
+      "Zheyu Ye",
+      "Chonggang Lu",
+      "Zuozhu Liu",
+      "Zihan Niu",
+      "Yao Hu",
+      "Shaosheng Cao"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05240v1"
+  }
+}

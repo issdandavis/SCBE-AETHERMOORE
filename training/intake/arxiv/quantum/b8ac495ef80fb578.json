@@ -1,0 +1,33 @@
+{
+  "id": "b8ac495ef80fb578",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Quantum Simulation of Coupled Harmonic Oscillators: From Theory to Implementation",
+  "content": "# Quantum Simulation of Coupled Harmonic Oscillators: From Theory to Implementation\n\nAuthors: Viraj Dsouza, Weronika Golletz, Dimitrios Kranas, Bakhao Dioum, Vardaan Sahgal, Eden Schirman\nPublished: 2026-03-05T18:49:13Z\n\nWe investigate the quantum algorithm of Babbush et al. (arXiv:2303.13012v3) for simulating coupled harmonic oscillators, which promises exponential speedups over classical methods. Focusing on linearly connected oscillator chains, we bridge the gap between theory and implementation by developing and comparing three concrete realizations of the algorithm. First, we implement a sparse initial state preparation combined with product-formula (Suzuki-Trotter) Hamiltonian simulation. Second, we implement a fully quantum, oracle-based framework in which classical data are accessed via oracles, the Hamiltonian is block-encoded, and time evolution is performed using QSVT-based Hamiltonian simulation. Third, we propose an efficient alternative that combines the sparse state-preparation routine of the first approach with the oracle and block-encoding-based simulation pipeline of the second. We provide these implementations on Classiq, a high-level quantum design platform and provide appropriate resource benchmarks. Our simulation results show that the complex initial state preparation proposed by Babbush et al. can be circumvented at least in the linear-chain case. Finally, we illustrate two physical applications-extracting normal modes and simulating coarse-grained energy propagation-demonstrating how the algorithm connects to measurable observables. Our results clarify the resource requirements of the algorithm and provide concrete pathways toward practical quantum advantage.",
+  "url": "http://arxiv.org/abs/2603.05479v1",
+  "timestamp": "2026-03-05T18:49:13Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "e28760bba85bc015380610352f21d832ff4262090d3bec9eed788e78906b4faf",
+  "parent_hash": "b9156c36046e2fe32ec457b95555c2ba29295589ace2ba3e3e93126c9562825f",
+  "metadata": {
+    "authors": [
+      "Viraj Dsouza",
+      "Weronika Golletz",
+      "Dimitrios Kranas",
+      "Bakhao Dioum",
+      "Vardaan Sahgal",
+      "Eden Schirman"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05479v1"
+  }
+}

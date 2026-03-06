@@ -1,0 +1,29 @@
+{
+  "id": "0e1e91b37142f6f8",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "DiSCTT: Consensus-Guided Self-Curriculum for Efficient Test-Time Adaptation in Reasoning",
+  "content": "# DiSCTT: Consensus-Guided Self-Curriculum for Efficient Test-Time Adaptation in Reasoning\n\nAuthors: Mohammad Mahdi Moradi, Sudhir Mudur\nPublished: 2026-03-05T16:38:50Z\n\nTest-time adaptation offers a promising avenue for improving reasoning performance in large language models without additional supervision, but existing approaches often apply a uniform optimization objective across all inputs, leading to inefficient or unstable adaptation on heterogeneous reasoning problems. We propose DiSCTT, a difficulty-aware, consensus-guided self-curriculum framework that dynamically allocates test-time optimization strategies based on instance-level epistemic uncertainty estimated from agreement among sampled reasoning trajectories. Inputs with high consensus are consolidated via supervised fine-tuning using majority-agreed solutions as pseudo-labels, while low-consensus inputs are optimized via reinforcement learning with a consensus-regularized objective that encourages diversity under relevance constraints. Across a broad suite of mathematical and general reasoning benchmarks, DiSCTT consistently outperforms strong test-time adaptation baselines, achieving higher accuracy with reduced variance and substantially lower computation and wall-clock training times. These results demonstrate that explicitly accounting for instance difficulty and uncertainty enables more stable, efficient, and effective test-time adaptation for reasoning models.",
+  "url": "http://arxiv.org/abs/2603.05357v1",
+  "timestamp": "2026-03-05T16:38:50Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "df37518eb93330f291c95882b8e0cd7a8246b1027639eb539a4b1d38a39d4136",
+  "parent_hash": "98c4079f400317d6232403b3f51037b132604c2191455a93a8ddd77663b49339",
+  "metadata": {
+    "authors": [
+      "Mohammad Mahdi Moradi",
+      "Sudhir Mudur"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05357v1"
+  }
+}

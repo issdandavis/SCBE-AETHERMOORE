@@ -1,0 +1,25 @@
+{
+  "id": "4716c87fb1a28013",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Proceedings of the International Workshop on Retrieval-Augmented Generation Enabled by Knowledge Graphs (RAGE-KG 2024) (Q131144756)",
+  "content": "# Proceedings of the International Workshop on Retrieval-Augmented Generation Enabled by Knowledge Graphs (RAGE-KG 2024)\n\nWikidata ID: Q131144756\nDescription: RAGE-KG 2024 proceedings\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q131144756",
+  "timestamp": "2026-03-06T02:41:28.754457",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7490db947402720b8c0fc862a2e2261fe91f1cc91ca48f05e090c90d2c28eb8a",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q131144756",
+    "description": "RAGE-KG 2024 proceedings"
+  }
+}

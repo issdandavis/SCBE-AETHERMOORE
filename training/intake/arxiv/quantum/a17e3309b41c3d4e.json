@@ -1,0 +1,30 @@
+{
+  "id": "a17e3309b41c3d4e",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "MQED-QD: An Open-Source Package for Quantum Dynamics Simulation in Complex Dielectric Environments",
+  "content": "# MQED-QD: An Open-Source Package for Quantum Dynamics Simulation in Complex Dielectric Environments\n\nAuthors: Guangming Liu, Siwei Wang, Hsing-Ta Chen\nPublished: 2026-03-05T17:06:03Z\n\nSimulating the dynamics of molecular excitons in complex nanophotonic environments requires integrating rigorous electromagnetic simulations with accurate treatments of open quantum system dynamics. In this work, we develop MQED-QD (Macroscopic Quantum Electrodynamics for Quantum Dynamics), a robust computational package for simulating exciton dynamics in arbitrary dielectric and plasmonic environments. Based on the MQED framework, the package offers a unified workflow for constructing the dyadic Green's functions from classical electromagnetic solvers, parametrizing quantum master equations, and propagating the time evolution to determine the molecular subsystem's dynamical properties. To demonstrate the package's capabilities, we simulate exciton transport within a one-dimensional molecular chain near a silver nanostructure, including benchmarking against planar surfaces and exploring the influence of silver nanorods. Our results reveal that surface plasmon polaritons on nanorods dramatically enhance long-range dipole-dipole interactions, accelerating exciton delocalization and yielding higher participation ratios compared to planar geometries. By elucidating accurate molecular exciton dynamics in conjunction with nanophotonics and plasmonics, MQED-QD provides a powerful, open-source package that facilitates the rational design of nanoscale architectures.",
+  "url": "http://arxiv.org/abs/2603.05378v1",
+  "timestamp": "2026-03-05T17:06:03Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "966effb587d675dc9c68a3f8698a683b68ca0f3ec137246f119681918d462a86",
+  "parent_hash": "745a87ad05b975161e9d39a22922846acbd1bb3fd7f7588f68f636e207a2900b",
+  "metadata": {
+    "authors": [
+      "Guangming Liu",
+      "Siwei Wang",
+      "Hsing-Ta Chen"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05378v1"
+  }
+}

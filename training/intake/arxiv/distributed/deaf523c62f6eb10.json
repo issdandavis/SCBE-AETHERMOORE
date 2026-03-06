@@ -1,0 +1,36 @@
+{
+  "id": "deaf523c62f6eb10",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "DuaLip-GPU Technical Report",
+  "content": "# DuaLip-GPU Technical Report\n\nAuthors: Gregory Dexter, Aida Rahmattalabi, Sanjana Garg, Qinquan Song, Ruby Tu, Yuan Gao, Yi Zhang, Zhipeng Wang, Rahul Mazumder\nPublished: 2026-03-04T21:30:10Z\n\nLarge-scale linear programs (LPs) arise in many decision systems, including ranking, allocation, and matching problems that must be solved repeatedly at massive scale. Prior work such as ECLIPSE and LinkedIn's open-source DuaLip showed that ridge-regularized dual ascent with first-order methods can scale to these settings. However, the original implementation was tightly coupled to a small number of schemas and built on a CPU-centric Scala/Spark stack, limiting extensibility and preventing effective use of modern accelerators.\n  We present a redesigned solver architecture that decouples problem specification from the optimization engine and targets GPU execution. The system uses an operator-centric programming model in which LP formulations are expressed through composable primitives for dual objective evaluation and blockwise projection operators for decomposable constraint families. This design allows new formulations to be added locally while reusing a shared optimization loop, diagnostics, and distributed infrastructure.\n  To realize the available parallelism, we develop GPU execution techniques tailored to sparse matching constraints, including constraint-aligned sparse layouts, batched projection kernels, and a distributed design that communicates only dual variables. Further, we improve the underlying ridge-regularized dual ascent method with Jacobi-style row normalization, primal scaling, and a continuation scheme for the regularization parameter.\n  On extreme-scale matching workloads, the GPU implementation achieves at least a 10x wall-clock speedup over the prior distributed CPU DuaLip solver under matched stopping criteria, while maintaining convergence guarantees.",
+  "url": "http://arxiv.org/abs/2603.04621v1",
+  "timestamp": "2026-03-04T21:30:10Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "89636c492e5241ef3fb96335892064ada59ca38a653df134877cbf3d844365ed",
+  "parent_hash": "2668bf5f6c2cd0d5771e27f8c511d76492ec3a5f174570ea93bad90990bd4fc3",
+  "metadata": {
+    "authors": [
+      "Gregory Dexter",
+      "Aida Rahmattalabi",
+      "Sanjana Garg",
+      "Qinquan Song",
+      "Ruby Tu",
+      "Yuan Gao",
+      "Yi Zhang",
+      "Zhipeng Wang",
+      "Rahul Mazumder"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.04621v1"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "bbdeb4a3a1e9a31a",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Dynamic Contract Analysis for Parallel Programming Models",
+  "content": "# Dynamic Contract Analysis for Parallel Programming Models\n\nAuthors: Yussur Mustafa Oraji, Alexander H\u00fcck, Christian Bischof\nPublished: 2026-03-03T14:15:29Z\n\nParallel programming in high-performance computing depends on low-level APIs such as MPI, requiring users to manage synchronization and resources manually. Several correctness checking tools exist to help bug-free code development, though most target a single programming model, limiting their applicability. Our previous work, the static analysis tool CoVer, leverages a contract-based approach enabling users to specify custom error-checking rules and support emerging or unconventional programming models without requiring extensive new tooling. However, static analysis cannot fully reason about runtime-dependent behavior such as pointer aliasing or indirect control flow. To address this, we present CoVer-Dynamic, a dynamic analysis extension that reuses CoVer's contract language to provide a unified static-dynamic verification framework. By enforcing the same contracts at runtime, CoVer-Dynamic improves classification accuracy and eliminates false positives on standardized MPI and OpenSHMEM benchmarks, while detecting errors beyond static analysis only. Our evaluation shows that CoVer-Dynamic consistently outperforms the state-of-the-art correctness checker MUST, averaging a 2x speedup. Finally, our results show limitations in the expressiveness of the contract language, motivating future work to support more error classes.",
+  "url": "http://arxiv.org/abs/2603.03023v1",
+  "timestamp": "2026-03-03T14:15:29Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "24dd982a12b5ca7bf0076afbd091562e4a6bd2012f9a0afea707bd65c88daecb",
+  "parent_hash": "31f0594fcf28bff12842a558fa22652da591a6f5d868f85567f6d7f23b91be44",
+  "metadata": {
+    "authors": [
+      "Yussur Mustafa Oraji",
+      "Alexander H\u00fcck",
+      "Christian Bischof"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.03023v1"
+  }
+}

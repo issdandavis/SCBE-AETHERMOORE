@@ -1,0 +1,29 @@
+{
+  "id": "bd30efefc6525280",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "Legal interpretation and AI: from expert systems to argumentation and LLMs",
+  "content": "# Legal interpretation and AI: from expert systems to argumentation and LLMs\n\nAuthors: V\u00e1clav Jane\u010dek, Giovanni Sartor\nPublished: 2026-03-05T17:22:56Z\n\nAI and Law research has encountered legal interpretation in different ways, in the context of its evolving approaches and methodologies. Research on expert system has focused on legal knowledge engineering, with the goal of ensuring that human-generated interpretations can be precisely transferred into knowledge-bases, to be consistently applied. Research on argumentation has aimed at representing the structure of interpretive arguments, as well as their dialectical interactions, to assess of the acceptability of interpretive claims within argumentation frameworks. Research on machine learning has focused on the automated generation of interpretive suggestions and arguments, through general and specialised language models, now being increasingly deployed in legal practice.",
+  "url": "http://arxiv.org/abs/2603.05392v1",
+  "timestamp": "2026-03-05T17:22:56Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "c0d5bc999c4d4745993d1432763eadc1912aecb2512a0b464646dc16d52b6784",
+  "parent_hash": "95db66e24dcfb617a157ec9d61f13d2938fa3437073273e7487884af11d56f00",
+  "metadata": {
+    "authors": [
+      "V\u00e1clav Jane\u010dek",
+      "Giovanni Sartor"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05392v1"
+  }
+}

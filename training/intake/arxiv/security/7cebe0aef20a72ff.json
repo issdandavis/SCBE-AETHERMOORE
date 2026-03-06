@@ -1,0 +1,30 @@
+{
+  "id": "7cebe0aef20a72ff",
+  "source": "arxiv",
+  "category": "security",
+  "title": "On Google's SynthID-Text LLM Watermarking System: Theoretical Analysis and Empirical Validation",
+  "content": "# On Google's SynthID-Text LLM Watermarking System: Theoretical Analysis and Empirical Validation\n\nAuthors: Romina Omidi, Yun Dong, Binghui Wang\nPublished: 2026-03-03T17:49:01Z\n\nGoogle's SynthID-Text, the first ever production-ready generative watermark system for large language model, designs a novel Tournament-based method that achieves the state-of-the-art detectability for identifying AI-generated texts. The system's innovation lies in: 1) a new Tournament sampling algorithm for watermarking embedding, 2) a detection strategy based on the introduced score function (e.g., Bayesian or mean score), and 3) a unified design that supports both distortionary and non-distortionary watermarking methods. This paper presents the first theoretical analysis of SynthID-Text, with a focus on its detection performance and watermark robustness, complemented by empirical validation. For example, we prove that the mean score is inherently vulnerable to increased tournament layers, and design a layer inflation attack to break SynthID-Text. We also prove the Bayesian score offers improved watermark robustness w.r.t. layers and further establish that the optimal Bernoulli distribution for watermark detection is achieved when the parameter is set to 0.5. Together, these theoretical and empirical insights not only deepen our understanding of SynthID-Text, but also open new avenues for analyzing effective watermark removal strategies and designing robust watermarking techniques. Source code is available at https: //github.com/romidi80/Synth-ID-Empirical-Analysis.",
+  "url": "http://arxiv.org/abs/2603.03410v1",
+  "timestamp": "2026-03-03T17:49:01Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "e58d8f6fffbac41559473b73a8f0f3724af5c53a2c0fd3c25f8e2adf9ba949fa",
+  "parent_hash": "efe9a024a0fc44bbfe6f79112f5a7ba36012dd0433810aa69be203fadc1ee8de",
+  "metadata": {
+    "authors": [
+      "Romina Omidi",
+      "Yun Dong",
+      "Binghui Wang"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.03410v1"
+  }
+}

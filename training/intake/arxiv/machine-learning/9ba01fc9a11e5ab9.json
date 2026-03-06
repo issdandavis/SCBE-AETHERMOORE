@@ -1,0 +1,29 @@
+{
+  "id": "9ba01fc9a11e5ab9",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Kraus Constrained Sequence Learning For Quantum Trajectories from Continuous Measurement",
+  "content": "# Kraus Constrained Sequence Learning For Quantum Trajectories from Continuous Measurement\n\nAuthors: Priyanshi Singh, Krishna Bhatia\nPublished: 2026-03-05T18:37:05Z\n\nReal-time reconstruction of conditional quantum states from continuous measurement records is a fundamental requirement for quantum feedback control, yet standard stochastic master equation (SME) solvers require exact model specification, known system parameters, and are sensitive to parameter mismatch. While neural sequence models can fit these stochastic dynamics, the unconstrained predictors can violate physicality such as positivity or trace constraints, leading to unstable rollouts and unphysical estimates. We propose a Kraus-structured output layer that converts the hidden representation of a generic sequence backbone into a completely positive trace preserving (CPTP) quantum operation, yielding physically valid state updates by construction. We instantiate this layer across diverse backbones, RNN, GRU, LSTM, TCN, ESN and Mamba; including Neural ODE as a comparative baseline, on stochastic trajectories characterized by parameter drift. Our evaluation reveals distinct trade-offs between gating mechanisms, linear recurrence, and global attention. Across all models, Kraus-LSTM achieves the strongest results, improving state estimation quality by 7% over its unconstrained counterpart while guaranteeing physically valid predictions in non-stationary regimes.",
+  "url": "http://arxiv.org/abs/2603.05468v1",
+  "timestamp": "2026-03-05T18:37:05Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "acba75b926e55f55ecc056953f63073c956b14d0289b2d445df2e16905796331",
+  "parent_hash": "48c4b29019f244b0856d20b397e5569b7cd154a6ec6f087147e52f5b1184b1df",
+  "metadata": {
+    "authors": [
+      "Priyanshi Singh",
+      "Krishna Bhatia"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05468v1"
+  }
+}

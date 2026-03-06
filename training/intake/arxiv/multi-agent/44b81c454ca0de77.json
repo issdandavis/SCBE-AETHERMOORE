@@ -1,0 +1,31 @@
+{
+  "id": "44b81c454ca0de77",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "CUCo: An Agentic Framework for Compute and Communication Co-design",
+  "content": "# CUCo: An Agentic Framework for Compute and Communication Co-design\n\nAuthors: Bodun Hu, Yoga Sri Varshan, Saurabh Agarwal, Aditya Akella\nPublished: 2026-03-02T20:35:50Z\n\nCustom CUDA kernel development is essential for maximizing GPU utilization in large-scale distributed LLM training and inference, yet manually writing kernels that jointly leverage both computation and communication remains a labor-intensive and error-prone process. Prior work on kernel optimization has focused almost exclusively on computation, leaving communication kernels largely untouched even though they constitute a significant share of total execution time. We introduce CUCo, a training-free agent-driven workflow that automatically generates high-performance CUDA kernels that jointly orchestrate computation and communication. By co-optimizing these traditionally disjoint components, CUCo unlocks new optimization opportunities unavailable to existing approaches, outperforming state-of-the-art baselines and reducing end-to-end latency by up to $1.57\\times$.",
+  "url": "http://arxiv.org/abs/2603.02376v1",
+  "timestamp": "2026-03-02T20:35:50Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "348488ae29a15903f5b51dc568b7e13418c8f716987f802995788ade1b83fde1",
+  "parent_hash": "8b58f77197d3e0e4d0b62de6314dee4a0708f9556b28c0f54fb433e7bd2a76a0",
+  "metadata": {
+    "authors": [
+      "Bodun Hu",
+      "Yoga Sri Varshan",
+      "Saurabh Agarwal",
+      "Aditya Akella"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.02376v1"
+  }
+}

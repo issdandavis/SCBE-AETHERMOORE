@@ -1,0 +1,33 @@
+{
+  "id": "4c0333ddfadc55db",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Facelift Beauty Classifier (Binary)",
+  "content": "# Facelift Beauty Classifier (Binary)\n\nAuthors: Joglekar, Sagar\nPublished: 2019-05-20T15:26:21Z\nSubjects: Arts and Humanities, Computer and Information Science, Social Sciences\nDOI: doi:10.7910/DVN/ATXYTP\n\nThis dataset contains the Beauty classifier models, trained in Caffe. The set contains the prototext definition, binaryproto mean image and the actual model weights.\n\nCitation: Joglekar, Sagar, 2019, \"Facelift Beauty Classifier (Binary)\", https://doi.org/10.7910/DVN/ATXYTP, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/ATXYTP",
+  "timestamp": "2026-03-06T04:18:54.179639",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ab42026cdd321022c2ee5007a4cc17291c7bc5fadb1e0fad05353104efd3ecd9",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/ATXYTP",
+    "subjects": [
+      "Arts and Humanities",
+      "Computer and Information Science",
+      "Social Sciences"
+    ],
+    "authors": [
+      "Joglekar, Sagar"
+    ],
+    "file_count": 3
+  }
+}

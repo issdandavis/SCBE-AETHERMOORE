@@ -1,0 +1,30 @@
+{
+  "id": "4327f318a54f9ea4",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2006-0897 \u2014 CVSS 7.5 (UNKNOWN)",
+  "content": "# CVE-2006-0897\n\nCVSS Score: 7.5 (UNKNOWN)\nPublished: 2006-02-25T11:02:00.000\nCWEs: CWE-89\n\nSQL injection vulnerability in VCS Virtual Program Management Intranet (VPMi) Enterprise 3.3 allows remote attackers to execute arbitrary SQL commands via the UpdateID0 parameter to Service_Requests.asp.  NOTE: the provenance of this information is unknown; the details are obtained solely from third party information.  NOTE: the vendor has disputed this issue, saying that \"[we] have a behind the scenes complex state management system that uses a combination of keys placed in JavaScript and Session State (server side) that protects against the type of SQL injection you describe.  We have tested for many of the cases and have not found it to be an issue.\"  Further investigation suggests that the original researcher might have triggered errors using invalid field values, which is not proof of SQL injection; however, the vendor did not receive a response from the original researcher\n\nReferences: http://secunia.com/advisories/18842, http://www.attrition.org/pipermail/vim/2006-March/000598.html, http://www.attrition.org/pipermail/vim/2006-March/000599.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2006-0897",
+  "timestamp": "2026-03-06T04:18:29.314783",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e39f24e179d1eed9c8c48681ccf6aedf087a89f82ebf1e37cf4f0fe559173e20",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2006-0897",
+    "cvss_score": 7.5,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-89"
+    ],
+    "published": "2006-02-25T11:02:00.000"
+  }
+}

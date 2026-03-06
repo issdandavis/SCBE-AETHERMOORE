@@ -1,0 +1,34 @@
+{
+  "id": "e69f86c0fc75cf1d",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "CAF3",
+  "content": "# CAF3\n\nAuthors: Neupane, Pawan, Liu, Jian, Cheng, Jianlin, Cheng, Jianlin\nPublished: 2026-01-26T20:44:22Z\nSubjects: Computer and Information Science\nDOI: doi:10.7910/DVN/KGWHRE\n\nThis dataset contains the inputs (MSA+template combinations) for results in the manuscript \"Improving AlphaFold3 by Engineering MSA and Template Inputs\"\n\nCitation: Neupane, Pawan; Liu, Jian; Cheng, Jianlin, 2026, \"CAF3\", https://doi.org/10.7910/DVN/KGWHRE, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/KGWHRE",
+  "timestamp": "2026-03-06T04:18:41.248949",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "1ca051d6c54efd44f00a7086d4f22654f7ef932aac41dc0592382dcdc1a51320",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/KGWHRE",
+    "subjects": [
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Neupane, Pawan",
+      "Liu, Jian",
+      "Cheng, Jianlin",
+      "Cheng, Jianlin"
+    ],
+    "file_count": 3
+  }
+}

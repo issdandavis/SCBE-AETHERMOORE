@@ -1,0 +1,40 @@
+{
+  "id": "67b7f3f69c54c141",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Distributed kill chains : drawing insights for mosaic warfare from the immune system and from the Navy",
+  "content": "# Distributed kill chains : drawing insights for mosaic warfare from the immune system and from the Navy\n\nContributors: o'donoughue, nicholas a.\nDate: 2021\nSubjects: guerre de l'information, united states, commandement militaire, forecasting, information warfare\n\nIn Mosaic warfare, individual warfighting platforms are assembled-like the ceramic tiles in mosaics-to make a larger picture or, in this case, a force package. The Defense Advanced Research Projects Agency (DARPA) is developing this novel warfighting construct to acquire, field, and employ forces. To reveal the value of Mosaic warfare and uncover potential challenges in the transition to this system, the authors of this report present a pair of case studies: (1) an analysis of the human immune system's response to pathogens and (2) an analysis of the U.S. Navy's Naval Integrated Fire Control-Counter Air (NIFC-CA) project. Noting that the human immune system has evolved over 500 million years to exhibit mosaiclike properties-meaning that these properties have conferred some evolutionary advantage-the authors suggest that Mosaic warfare might have similar advantages, such as resilience and adaptability, over other approaches to defeating a threat. They then discuss lessons and best practices from the NIFC-CA project, which largely owes its success to its unique approach to development and fielding. For example, NIFC-CA used preexisting testing infrastructure; approached testing in a scientific manner, in which failure was viewed as a learning opportunity rather than a setback; and had a lengthy development timeline. From these lessons, the authors derive a cohesive set of policy recommendations for DARPA.",
+  "url": "https://www.loc.gov/item/2024739868/",
+  "timestamp": "2026-03-06T02:38:15.031846",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "f32be54edbbfad3c6fc865d055d41c28f077a57580c2301bd85be898b4c941a1",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "guerre de l'information",
+      "united states",
+      "commandement militaire",
+      "forecasting",
+      "information warfare",
+      "\u00e9tats-unis",
+      "\u00e9valuation",
+      "evaluation",
+      "pr\u00e9vision",
+      "command and control systems"
+    ],
+    "dates": "2021",
+    "original_format": [
+      "book"
+    ]
+  }
+}

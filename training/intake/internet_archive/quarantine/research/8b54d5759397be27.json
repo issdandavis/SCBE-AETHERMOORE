@@ -1,0 +1,27 @@
+{
+  "id": "8b54d5759397be27",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Jones v. Commissioner of Social Security",
+  "content": "# Jones v. Commissioner of Social Security\n\nCreator: \nDate: \nDownloads: 5\nSubjects: \n\nThis item represents a case in PACER, the U.S. Government's website for federal case data. This information is uploaded quarterly. To see our most recent version please use the source url parameter, linked below. To see the canonical source for this data, please consult PACER directly.",
+  "url": "https://archive.org/details/gov.uscourts.flmd.287548",
+  "timestamp": "2026-03-06T02:40:52.039406",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "2ea25696b4619580650de82e7f1423e402db6cd8b17cf83610b5cdaec667a9d2",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "gov.uscourts.flmd.287548",
+    "media_type": "texts",
+    "downloads": 5,
+    "subjects": []
+  }
+}

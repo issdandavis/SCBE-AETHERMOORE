@@ -1,0 +1,31 @@
+{
+  "id": "e937afc16e368637",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Competitive Multi-Operator Reinforcement Learning for Joint Pricing and Fleet Rebalancing in AMoD Systems",
+  "content": "# Competitive Multi-Operator Reinforcement Learning for Joint Pricing and Fleet Rebalancing in AMoD Systems\n\nAuthors: Emil Kragh Toft, Carolin Schmidt, Daniele Gammelli, Filipe Rodrigues\nPublished: 2026-03-05T09:44:24Z\n\nAutonomous Mobility-on-Demand (AMoD) systems promise to revolutionize urban transportation by providing affordable on-demand services to meet growing travel demand. However, realistic AMoD markets will be competitive, with multiple operators competing for passengers through strategic pricing and fleet deployment. While reinforcement learning has shown promise in optimizing single-operator AMoD control, existing work fails to capture competitive market dynamics. We investigate the impact of competition on policy learning by introducing a multi-operator reinforcement learning framework where two operators simultaneously learn pricing and fleet rebalancing policies. By integrating discrete choice theory, we enable passenger allocation and demand competition to emerge endogenously from utility-maximizing decisions. Experiments using real-world data from multiple cities demonstrate that competition fundamentally alters learned behaviors, leading to lower prices and distinct fleet positioning patterns compared to monopolistic settings. Notably, we demonstrate that learning-based approaches are robust to the additional stochasticity of competition, with competitive agents successfully converging to effective policies while accounting for partially unobserved competitor strategies.",
+  "url": "http://arxiv.org/abs/2603.05000v1",
+  "timestamp": "2026-03-05T09:44:24Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "72a74c2334524fc27538904ce5b29f7a667e7601a695978be0b07b49b030d630",
+  "parent_hash": "46442e0cfded0cb7a7382000d505aaffd0afd0224794adca5b31cae878131b66",
+  "metadata": {
+    "authors": [
+      "Emil Kragh Toft",
+      "Carolin Schmidt",
+      "Daniele Gammelli",
+      "Filipe Rodrigues"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.05000v1"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "bf9db34a6148f3b2",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "A Game-Theoretic Model and Best-Response Learning Method for Ad Hoc Coordination in Multiagent Systems",
+  "content": "# A Game-Theoretic Model and Best-Response Learning Method for Ad Hoc Coordination in Multiagent Systems\n\nCreator: Stefano V. Albrecht, Subramanian Ramamoorthy\nDate: 2015-06-03T00:00:00Z\nDownloads: 59\nSubjects: Artificial Intelligence, Computing Research Repository, Computer Science and Game Theory, Multiagent Systems\n\nThe ad hoc coordination problem is to design an autonomous agent which is able to achieve optimal flexibility and efficiency in a multiagent system with no mechanisms for prior coordination. We conceptualise this problem formally using a game-theoretic model, called the stochastic Bayesian game, in which the behaviour of a player is determined by its private information, or type. Based on this model, we derive a solution, called Harsanyi-Bellman Ad Hoc Coordination (HBA), which utilises the concept of Bayesian Nash equilibrium in a planning procedure to find optimal actions in the sense of Bellman optimal control. We evaluate HBA in a multiagent logistics domain called level-based foraging, showing that it achieves higher flexibility and efficiency than several alternative algorithms. We also report on a human-machine experiment at a public science exhibition in which the human participants played repeated Prisoner's Dilemma and Rock-Paper-Scissors against HBA and alternative algorithms, showing that HBA achieves equal efficiency and a significantly higher welfare and winning rate.",
+  "url": "https://archive.org/details/arxiv-1506.01170",
+  "timestamp": "2026-03-06T04:18:02.169816",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d1c7531a84ab8bdbb1d5ba3685dccc6780f7d5dc4e8e2d4d1f745ce9901f28f6",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1506.01170",
+    "media_type": "texts",
+    "downloads": 59,
+    "subjects": [
+      "Artificial Intelligence",
+      "Computing Research Repository",
+      "Computer Science and Game Theory",
+      "Multiagent Systems"
+    ]
+  }
+}

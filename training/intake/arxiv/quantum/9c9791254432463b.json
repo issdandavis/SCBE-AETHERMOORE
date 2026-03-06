@@ -1,0 +1,38 @@
+{
+  "id": "9c9791254432463b",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Quantum State Certification via Effective Parent Hamiltonians from Local Measurement Data",
+  "content": "# Quantum State Certification via Effective Parent Hamiltonians from Local Measurement Data\n\nAuthors: Guy-Philippe Nadon, Guanyi Heng, Pac\u00f4me Gasnier, Antoine Lemelin, Camille Coti, Zeljko Zilic, Mikko M\u00f6tt\u00f6nen, Ville Kotovirta, Toni Annala, Ernesto Campos, Jacob Biamonte\nPublished: 2026-03-04T19:00:02Z\n\nThe preparation and certification of quantum states is a fundamental challenge across quantum information technology. We introduce a tomography-free state certification method that lower-bounds the fidelity by estimating expectation values of engineered parent-Hamiltonian terms from local measurement data. We apply this framework to construct a parent Hamiltonian that enables certification and variational optimization across the Dicke-state family, which includes the single-excitation $W_n$ state. We experimentally validate the framework on IBM quantum hardware, certifying genuine multipartite entanglement for $W_n$ states up to six qubits and establishing positive lower bounds on the state fidelity up to thirteen qubits. For Dicke states with two- and three-excitations, we certify genuine multipartite entanglement up to seven qubits. Within this stringent certification framework, these results constitute among the largest witness-certified demonstrations of such states on a programmable quantum processor.",
+  "url": "http://arxiv.org/abs/2603.04499v1",
+  "timestamp": "2026-03-04T19:00:02Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "1632005785d51b54d75ba7c7414ac041421998bfa213c704658bce222f2cbe3e",
+  "parent_hash": "999d0d4e6b24dd00085099501fca8f6ef3fa208b9db23db92d52a3888a692c88",
+  "metadata": {
+    "authors": [
+      "Guy-Philippe Nadon",
+      "Guanyi Heng",
+      "Pac\u00f4me Gasnier",
+      "Antoine Lemelin",
+      "Camille Coti",
+      "Zeljko Zilic",
+      "Mikko M\u00f6tt\u00f6nen",
+      "Ville Kotovirta",
+      "Toni Annala",
+      "Ernesto Campos",
+      "Jacob Biamonte"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.04499v1"
+  }
+}

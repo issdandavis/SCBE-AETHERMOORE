@@ -1,0 +1,28 @@
+{
+  "id": "0d6f55a496a596a9",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Uniformly elliptic boundary value problems",
+  "content": "# Uniformly elliptic boundary value problems\n\nAuthors: Matti Lyko\nPublished: 2026-02-26T08:36:20Z\n\nWe study boundary conditions for elliptic operators on non-compact manifolds with boundary via uniform K-homology, a version of K-homology sensitive to the large-scale geometry of the manifold. To that end, we develop the theory of relative uniform K-homology. We show that boundary conditions for uniformly elliptic differential operators define classes in the relative and non-relative uniform K-homology of the manifold, depending on the assumed regularity of the boundary condition. Moreover, we define and study a relative index map on relative uniform K-homology that combines uniform coarse information on the interior with secondary information on the boundary. As an application, we compute that on a spin manifold with product structure and uniformly positive scalar curvature on the boundary the image of the relative uniform K-homology class of the Dirac operator under this relative index map is closely connected to a uniform version of the higher $\u03c1$-invariant of the boundary. In particular, a delocalized APS-index theorem of Piazza and Schick is proved in the uniform setting.",
+  "url": "http://arxiv.org/abs/2602.22748v2",
+  "timestamp": "2026-02-26T08:36:20Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "e38698e385f11904804a42cad88b1a1b8e86ed3627428066494ac88f1716e6f3",
+  "parent_hash": "14230f7eea46caecd9d4dddaeae897ba88999b2986c73f0ad2131f2e7f94434e",
+  "metadata": {
+    "authors": [
+      "Matti Lyko"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.22748v2"
+  }
+}

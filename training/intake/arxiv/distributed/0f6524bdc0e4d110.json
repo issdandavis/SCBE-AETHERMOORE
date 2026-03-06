@@ -1,0 +1,32 @@
+{
+  "id": "0f6524bdc0e4d110",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "PromptTuner: SLO-Aware Elastic System for LLM Prompt Tuning",
+  "content": "# PromptTuner: SLO-Aware Elastic System for LLM Prompt Tuning\n\nAuthors: Wei Gao, Peng Sun, Dmitrii Ustiugov, Tianwei Zhang, Yonggang Wen\nPublished: 2026-03-05T11:58:55Z\n\nPrompt tuning has become a prominent strategy for enhancing the performance of Large Language Models (LLMs) on downstream tasks. Many IT enterprises now offer Prompt-Tuning-as-a-Service to fulfill the growing demand for prompt tuning LLMs on downstream tasks. Their primary objective is to satisfy users Service Level Objectives (SLOs) while reducing resource provisioning costs. Nevertheless, our characterization analysis for existing deep learning resource management systems reveals that they are insufficient to optimize these objectives for LLM prompt tuning workloads.\n  In this paper, we introduce PromptTuner, an SLO-aware elastic system to optimize LLM prompt tuning. It contains two innovations. (1) We design a Prompt Bank to identify efficient initial prompts to expedite the convergence of prompt tuning. (2) We develop aWorkload Scheduler to enable fast resource allocation to reduce the SLO violation and resource costs. In our evaluation, PromptTuner reduces SLO violations by 4.0x and 7.9x, and lowers costs by 1.6x and 4.5x, compared to INFless and ElasticFlow respectively.",
+  "url": "http://arxiv.org/abs/2603.05087v1",
+  "timestamp": "2026-03-05T11:58:55Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "281f0da2eefa20894c1cab98c51a0dbceb97d94b57fb39a112f4809affc5edfb",
+  "parent_hash": "4bc3b86064c44a911a42ca5dcfc20143411ec4b5275c8adc354a064be562dd79",
+  "metadata": {
+    "authors": [
+      "Wei Gao",
+      "Peng Sun",
+      "Dmitrii Ustiugov",
+      "Tianwei Zhang",
+      "Yonggang Wen"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.05087v1"
+  }
+}

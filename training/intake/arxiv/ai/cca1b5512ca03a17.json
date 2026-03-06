@@ -1,0 +1,30 @@
+{
+  "id": "cca1b5512ca03a17",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "PersianPunc: A Large-Scale Dataset and BERT-Based Approach for Persian Punctuation Restoration",
+  "content": "# PersianPunc: A Large-Scale Dataset and BERT-Based Approach for Persian Punctuation Restoration\n\nAuthors: Mohammad Javad Ranjbar Kalahroodi, Heshaam Faili, Azadeh Shakery\nPublished: 2026-03-05T15:55:55Z\n\nPunctuation restoration is essential for improving the readability and downstream utility of automatic speech recognition (ASR) outputs, yet remains underexplored for Persian despite its importance. We introduce PersianPunc, a large-scale, high-quality dataset of 17 million samples for Persian punctuation restoration, constructed through systematic aggregation and filtering of existing textual resources. We formulate punctuation restoration as a token-level sequence labeling task and fine-tune ParsBERT to achieve strong performance. Through comparative evaluation, we demonstrate that while large language models can perform punctuation restoration, they suffer from critical limitations: over-correction tendencies that introduce undesired edits beyond punctuation insertion (particularly problematic for speech-to-text pipelines) and substantially higher computational requirements. Our lightweight BERT-based approach achieves a macro-averaged F1 score of 91.33% on our test set while maintaining efficiency suitable for real-time applications. We make our dataset (https://huggingface.co/datasets/MohammadJRanjbar/persian-punctuation-restoration) and model (https://huggingface.co/MohammadJRanjbar/parsbert-persian-punctuation) publicly available to facilitate future research in Persian NLP and provide a scalable framework applicable to other morphologically rich, low-resource languages.",
+  "url": "http://arxiv.org/abs/2603.05314v1",
+  "timestamp": "2026-03-05T15:55:55Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "7401251f85d7c0d0d7c74ffe757342f6eb56ef1944d9ce023f11db0fa96c5418",
+  "parent_hash": "b832f7080a48d93bd737ba9bc5832d007604bad59584981c77a00a469cfd3ad9",
+  "metadata": {
+    "authors": [
+      "Mohammad Javad Ranjbar Kalahroodi",
+      "Heshaam Faili",
+      "Azadeh Shakery"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05314v1"
+  }
+}

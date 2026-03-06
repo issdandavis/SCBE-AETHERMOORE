@@ -1,0 +1,38 @@
+{
+  "id": "78c81ad3ffe152f6",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "DTIC ADA199816: A Graph Theoretical and Topological Approach to Chemical Structure, Reactivity, and Dynamics",
+  "content": "# DTIC ADA199816: A Graph Theoretical and Topological Approach to Chemical Structure, Reactivity, and Dynamics\n\nCreator: Defense Technical Information Center\nDate: 1988-10-01T00:00:00Z\nDownloads: 84\nSubjects: DTIC Archive, King, R B, GEORGIA UNIV RESEARCH FOUNDATION INC ATHENS, *TOPOLOGY, *SUPERCONDUCTORS\n\nThis report summarizes work done by the mathematical chemistry group at the University of Georgia during the period 1984-1988 on applications of graph theory, topology, and group theory to problems in the areas of chemical structure, chemical reactivity, and chemical dynamics. Applications of these theoretical methods to superconductivity, surface science, fuel design, medicine, and environmental technology have been identified. A list of 108 publications arising from this project has been appended. Keywords: Metal clusters, Superconductors, Polyhedra, Symmetry, Molecular connectivity, Fractals, Recurrence relations.",
+  "url": "https://archive.org/details/DTIC_ADA199816",
+  "timestamp": "2026-03-06T02:40:48.213957",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6ab8db9618c578a9fa3507964ffa6cd6634f29de43d4d5f1382835e7eb314421",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "DTIC_ADA199816",
+    "media_type": "texts",
+    "downloads": 84,
+    "subjects": [
+      "DTIC Archive",
+      "King, R B",
+      "GEORGIA UNIV RESEARCH FOUNDATION INC ATHENS",
+      "*TOPOLOGY",
+      "*SUPERCONDUCTORS",
+      "*DYNAMICS",
+      "*MOLECULAR STRUCTURE",
+      "*CHEMICAL REACTIONS",
+      "REACTIVITIES",
+      "SURFACES"
+    ]
+  }
+}

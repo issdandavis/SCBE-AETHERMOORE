@@ -1,0 +1,25 @@
+{
+  "id": "f146dc811c120406",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Chirality (Q92175)",
+  "content": "# Chirality\n\nWikidata ID: Q92175\nDescription: yuri manga series by Satoshi Urushihara\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q92175",
+  "timestamp": "2026-03-06T04:18:13.109181",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "3261b82f8eebb209db0bb4e7e2a7a52ef19a310f3d6f062a19d359fa742a4446",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q92175",
+    "description": "yuri manga series by Satoshi Urushihara"
+  }
+}

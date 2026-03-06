@@ -1,0 +1,29 @@
+{
+  "id": "e71030c3c9171b3e",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "The Alignment Flywheel: A Governance-Centric Hybrid MAS for Architecture-Agnostic Safety",
+  "content": "# The Alignment Flywheel: A Governance-Centric Hybrid MAS for Architecture-Agnostic Safety\n\nAuthors: Elias Malomgr\u00e9, Pieter Simoens\nPublished: 2026-02-28T00:48:06Z\n\nMulti-agent systems provide mature methodologies for role decomposition, coordination, and normative governance, capabilities that remain essential as increasingly powerful autonomous decision components are embedded within agent-based systems. While learned and generative models substantially expand system capability, their safety behavior is often entangled with training, making it opaque, difficult to audit, and costly to update after deployment. This paper formalizes the Alignment Flywheel as a governance-centric hybrid MAS architecture that decouples decision generation from safety governance. A Proposer, representing any autonomous decision component, generates candidate trajectories, while a Safety Oracle returns raw safety signals through a stable interface. An enforcement layer applies explicit risk policy at runtime, and a governance MAS supervises the Oracle through auditing, uncertainty-driven verification, and versioned refinement. The central engineering principle is patch locality: many newly observed safety failures can be mitigated by updating the governed oracle artifact and its release pipeline rather than retracting or retraining the underlying decision component. The architecture is implementation-agnostic with respect to both the Proposer and the Safety Oracle, and specifies the roles, artifacts, protocols, and release semantics needed for runtime gating, audit intake, signed patching, and staged rollout across distributed deployments. The result is a hybrid MAS engineering framework for integrating highly capable but fallible autonomous systems under explicit, version-controlled, and auditable oversight.",
+  "url": "http://arxiv.org/abs/2603.02259v1",
+  "timestamp": "2026-02-28T00:48:06Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "eb5295d63e5ad348b55e41cf2822176821409fce6d70cb9349215c8e535da75f",
+  "parent_hash": "91e704c61df7126cfc94e1bf1f3020497b72054e4c96dff22e8af837b62dc7b1",
+  "metadata": {
+    "authors": [
+      "Elias Malomgr\u00e9",
+      "Pieter Simoens"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.02259v1"
+  }
+}

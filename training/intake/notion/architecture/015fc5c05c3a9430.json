@@ -1,0 +1,26 @@
+{
+  "id": "015fc5c05c3a9430",
+  "source": "notion",
+  "category": "architecture",
+  "title": "SCBE Security Architecture Explainer",
+  "content": "# SCBE Security Architecture Explainer\n\nSCBE Security Architecture Explainer",
+  "url": "https://www.notion.so/SCBE-Security-Architecture-Explainer-1a19c2bb8bc442af8a057f5870dbfda1",
+  "timestamp": "2026-02-02T07:43:00.000Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "1a1667bfcf12e212b2f7f113c4abecd324568806e4d8f483e0b5c4d5f4b00908",
+  "parent_hash": "b64a1d0442337112af242a76d2391256ae12df53d2e7e6e4a1502ebd14459997",
+  "metadata": {
+    "notion_id": "1a19c2bb-8bc4-42af-8a05-7f5870dbfda1",
+    "page_type": "page",
+    "parent_type": "database_id"
+  }
+}

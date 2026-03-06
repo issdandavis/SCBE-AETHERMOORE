@@ -1,0 +1,38 @@
+{
+  "id": "b841908de598deee",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "DTIC ADA605029: Multi-Agent Coordination Techniques for Naval Tactical Combat Resources Management",
+  "content": "# DTIC ADA605029: Multi-Agent Coordination Techniques for Naval Tactical Combat Resources Management\n\nCreator: Defense Technical Information Center\nDate: 2008-07-01T00:00:00Z\nDownloads: 87\nSubjects: DTIC Archive, DEFENCE RESEARCH AND DEVELOPMENT CANADA VALCARTIER (QUEBEC), *DECISION SUPPORT SYSTEMS, *RESOURCE MANAGEMENT, *TACTICAL WARFARE\n\nReaction times of modern current and future war platforms are eroded, since they are expected to operate in a large variety of complex scenarios. To cope with the increasingly diverse air and surface threats, modern platforms, either operating in a single ship configuration or within a (joint and/or combined) task group/force, will require their sensor suite and weapon arsenal to be efficiently managed. The coordination and tight integration of these resources will also be required. The Decision Support Systems (DSS) Section, at Defence Research & Development Canada- Valcartier (DRDC Valcartier), has initiated collaboration with industry and university partners. This collaboration aims at developing and demonstrating advanced concepts of combat resource management, which could apply to the current Command & Control Systems (CCSs) of the Halifax and Iroquois Class ships, as well as their possible future upgrade (e.g., Canadian Surface Combatant platform), in order to improve their performance against the predicted future threat. This activity builds upon and broadens the scope of prior research in the domain. It is oriented to the study, development, and implementation of management decision aids for tactical shipboard resources, based on intelligent agent technology and techniques for multi-agent planning and coordination. This report presents a review of agent and multi-agent coordination approaches. Theoretical basis of distributed planning in multi-agent systems is introduced and coordination mechanisms are described. Multi-agent approaches are used to address the coordination problems for: 1) hardkill/softkill, 2) weapons deployment/ship navigation, and 3) multi-ship positioning and operations. Results of the implementation and test of different algorithms for these combat resource coordination problems, in naval engagements, are presented and discussed.",
+  "url": "https://archive.org/details/DTIC_ADA605029",
+  "timestamp": "2026-03-06T04:18:02.169993",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c39f02273c1a42b8f7a92362143d95eefb8bfe1498c5ad810bf8a9dab0d9af3b",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "DTIC_ADA605029",
+    "media_type": "texts",
+    "downloads": 87,
+    "subjects": [
+      "DTIC Archive",
+      "DEFENCE RESEARCH AND DEVELOPMENT CANADA VALCARTIER (QUEBEC)",
+      "*DECISION SUPPORT SYSTEMS",
+      "*RESOURCE MANAGEMENT",
+      "*TACTICAL WARFARE",
+      "COMMAND AND CONTROL SYSTEMS",
+      "DETECTORS",
+      "NAVAL PLANNING",
+      "NAVIGATION",
+      "SHIPBOARD"
+    ]
+  }
+}

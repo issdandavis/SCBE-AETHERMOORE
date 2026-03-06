@@ -1,0 +1,30 @@
+{
+  "id": "c083459a9706a106",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2025-48946 \u2014 CVSS 3.7 (LOW)",
+  "content": "# CVE-2025-48946\n\nCVSS Score: 3.7 (LOW)\nPublished: 2025-05-30T20:15:43.710\nCWEs: CWE-327\n\nliboqs is a C-language cryptographic library that provides implementations of post-quantum cryptography algorithms. liboqs prior to version 0.13.0 supports the HQC algorithm, an algorithm with a theoretical design flaw which leads to large numbers of malformed ciphertexts sharing the same implicit rejection value. Currently, no concrete attack on the algorithm is known. However, prospective users of HQC must take extra care when using the algorithm in protocols involving key derivation. In particular, HQC does not provide the same security guarantees as Kyber or ML-KEM. There is currently no patch for the HQC flaw available in liboqs, so HQC is disabled by default in liboqs starting from version 0.13.0. OQS will update its implementation after the HQC team releases an updated algorithm specification.\n\nReferences: https://durumcrustulum.com/2024/02/24/how-to-hold-kems/#hqc, https://github.com/open-quantum-safe/liboqs/commit/a7d698ca9c9d98990647459253183cbe29c550af, https://github.com/open-quantum-safe/liboqs/security/advisories/GHSA-3rxw-4v8q-9gq5",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-48946",
+  "timestamp": "2026-03-06T02:41:36.374108",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "80d33a3fcf71551db7ebaad71a18056593caeaf3548fffa005e85b2e9cd8349d",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2025-48946",
+    "cvss_score": 3.7,
+    "severity": "LOW",
+    "cwes": [
+      "CWE-327"
+    ],
+    "published": "2025-05-30T20:15:43.710"
+  }
+}

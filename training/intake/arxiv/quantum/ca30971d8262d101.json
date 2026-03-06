@@ -1,0 +1,33 @@
+{
+  "id": "ca30971d8262d101",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Local strategies are pretty good at computing Boolean properties of quantum sequences",
+  "content": "# Local strategies are pretty good at computing Boolean properties of quantum sequences\n\nAuthors: Tathagata Gupta, Ankith Mohan, Shayeef Murshid, Vincent Russo, Jamie Sikora, Alice Zheng\nPublished: 2026-03-05T18:24:52Z\n\nQuantum memory is a scarce and costly resource, yet little is known about which learning tasks remain feasible under severe memory constraints. We study the problem of computing global properties of quantum sequences when quantum systems must be measured individually, without storing or jointly processing them. In our setting, a bit string $x \\in \\{0,1\\}^n$ is encoded into an $n$-qubit product state $|\u03c8_{x_1}\\rangle \\otimes \\cdots \\otimes |\u03c8_{x_n}\\rangle$, and the goal is to infer $f(x) \\in \\{0,1\\}$ from measurements of this quantum encoding. We consider a simple local strategy, which we call the greedy strategy, that applies the same optimal single-system measurement independently to each subsystem and then infers $f(x)$ from the outcomes. Our main result gives a complete characterization of when the greedy strategy is optimal: it achieves the same maximum success probability as an unrestricted global measurement if and only if the target Boolean function is affine (in all but finitely many cases). We establish a universal performance guarantee for general Boolean functions, showing that the success probability of the greedy strategy is always at least the square of the optimal global success probability, in direct analogy with the Barnum-Knill bound for the pretty good measurement. These results demonstrate that even under extreme memory constraints, simple local measurement strategies can remain provably competitive for learning global properties of quantum sequences.",
+  "url": "http://arxiv.org/abs/2603.05452v1",
+  "timestamp": "2026-03-05T18:24:52Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "5da7bb643249f7730430b0b893c9a963e49f28df0277cfc2afad1ae276eb7ccd",
+  "parent_hash": "7c2b7965c44ad9a18850c2a5222461b9a877dc06e277c7490e3df54f34e29023",
+  "metadata": {
+    "authors": [
+      "Tathagata Gupta",
+      "Ankith Mohan",
+      "Shayeef Murshid",
+      "Vincent Russo",
+      "Jamie Sikora",
+      "Alice Zheng"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05452v1"
+  }
+}

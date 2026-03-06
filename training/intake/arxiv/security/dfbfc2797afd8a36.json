@@ -1,0 +1,35 @@
+{
+  "id": "dfbfc2797afd8a36",
+  "source": "arxiv",
+  "category": "security",
+  "title": "A Practical Post-Quantum Distributed Ledger Protocol for Financial Institutions",
+  "content": "# A Practical Post-Quantum Distributed Ledger Protocol for Financial Institutions\n\nAuthors: Yeoh Wei Zhu, Naresh Goud Boddu, Yao Ma, Shaltiel Eloul, Giulio Golinelli, Yash Satsangi, Rob Otter, Kaushik Chakraborty\nPublished: 2026-03-05T09:54:12Z\n\nTraditional financial institutions face inefficiencies that can be addressed by distributed ledger technology. However, a primary barrier to adoption is the privacy concerns surrounding publicly available transaction data. Existing private protocols for distributed ledger that focus on the Ring-CT model are not suitable for adoption for financial institutions. We propose a post-quantum, lattice-based transaction scheme for encrypted ledgers which better aligns with institutions' requirements for confidentiality and audit-ability. The construction leverages various zero-knowledge proof techniques, and introduces a new method for equating two commitment messages, without the capability to open one of the commitment during the re-commitment. Subsequently, we build a publicly verifiable transaction scheme that is efficient for single or multi-assets, by introducing a new compact range-proof. We then provide a security analysis of it. The techniques used and the proofs constructed could be of independent interest.",
+  "url": "http://arxiv.org/abs/2603.05005v1",
+  "timestamp": "2026-03-05T09:54:12Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "ffb63e2a9904d29cc6a357f441a2ee4c72c6e8670be946b7c0e292ded4f6c415",
+  "parent_hash": "292e15c6da398550917d255a5615238001cb06d52e9ad12524fb78205d18c18f",
+  "metadata": {
+    "authors": [
+      "Yeoh Wei Zhu",
+      "Naresh Goud Boddu",
+      "Yao Ma",
+      "Shaltiel Eloul",
+      "Giulio Golinelli",
+      "Yash Satsangi",
+      "Rob Otter",
+      "Kaushik Chakraborty"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.05005v1"
+  }
+}

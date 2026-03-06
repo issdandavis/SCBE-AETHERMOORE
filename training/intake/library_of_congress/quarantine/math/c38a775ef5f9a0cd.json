@@ -1,0 +1,35 @@
+{
+  "id": "c38a775ef5f9a0cd",
+  "source": "library_of_congress",
+  "category": "quarantine/math",
+  "title": "Geographical and mathematical discussion of Plutarch's account of ancient voyages to the New World",
+  "content": "# Geographical and mathematical discussion of Plutarch's account of ancient voyages to the New World\n\nContributors: albany institute of history and art, ya pamphlet collection (library of congress), colvin, verplanck\nDate: 1898-01-01\nSubjects: plutarch, knowledge, discovery and exploration, greek, america\n\n\"Read before the Albany Institute, April 4, 1893.\" Includes bibliographical references. Also available in digital form on the Library of Congress Web site.",
+  "url": "https://www.loc.gov/item/06000317/",
+  "timestamp": "2026-03-06T02:38:09.282396",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "9437193525f03c1b98bf9885ddc1d6d22b100e050d519edb536618cb83d098e0",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "plutarch",
+      "knowledge",
+      "discovery and exploration",
+      "greek",
+      "america"
+    ],
+    "dates": "1898-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

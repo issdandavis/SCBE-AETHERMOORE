@@ -1,0 +1,32 @@
+{
+  "id": "042a822ade75ce52",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Token-level Data Selection for Safe LLM Fine-tuning",
+  "content": "# Token-level Data Selection for Safe LLM Fine-tuning\n\nAuthors: Yanping Li, Zhening Liu, Zijian Li, Zehong Lin, Jun Zhang\nPublished: 2026-03-01T16:52:05Z\n\nFine-tuning large language models (LLMs) on custom datasets has become a standard approach for adapting these models to specific domains and applications. However, recent studies have shown that such fine-tuning can lead to significant degradation in the model's safety. Existing defense methods operate at the sample level and often suffer from an unsatisfactory trade-off between safety and utility. To address this limitation, we perform a systematic token-level diagnosis of safety degradation during fine-tuning. Based on this, we propose token-level data selection for safe LLM fine-tuning (TOSS), a novel framework that quantifies the safety risk of each token by measuring the loss difference between a safety-degraded model and a utility-oriented model. This token-level granularity enables accurate identification and removal of unsafe tokens, thereby preserving valuable task-specific information. In addition, we introduce a progressive refinement strategy, TOSS-Pro, which iteratively enhances the safety-degraded model's ability to identify unsafe tokens. Extensive experiments demonstrate that our approach robustly safeguards LLMs during fine-tuning while achieving superior downstream task performance, significantly outperforming existing sample-level defense methods. Our code is available at https://github.com/Polly-LYP/TOSS.",
+  "url": "http://arxiv.org/abs/2603.01185v1",
+  "timestamp": "2026-03-01T16:52:05Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "6d583f0ac37b263c7b196210e0bc11d23154cfb2812fdb851e523a1a509e3d19",
+  "parent_hash": "dd36cbfc5e949b229d154f8560fa97302ab6189e7bccb25f5da3352f3a8753b6",
+  "metadata": {
+    "authors": [
+      "Yanping Li",
+      "Zhening Liu",
+      "Zijian Li",
+      "Zehong Lin",
+      "Jun Zhang"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.01185v1"
+  }
+}

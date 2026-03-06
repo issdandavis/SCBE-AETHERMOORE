@@ -1,0 +1,33 @@
+{
+  "id": "9ba1327bf7836a14",
+  "source": "harvard_dataverse",
+  "category": "quarantine/quantum",
+  "title": "QISAP : Quantum Instruction Set Analytics Platform",
+  "content": "# QISAP : Quantum Instruction Set Analytics Platform\n\nAuthors: Jha, Ayush\nPublished: 2025-09-03T04:43:14Z\nSubjects: Computer and Information Science, Engineering, Physics\nDOI: doi:10.7910/DVN/QMYLWC\n\nThe current landscape of quantum computing is dominated by the Noisy Intermediate-Scale Quantum (NISQ) era, where hardware limitations necessitate highly optimized quantum circuits to maximize computational fidelity. This research presents a comparative analysis of three prominent quantum compilers\u2014Qiskit, Cirq, and PyQuil\u2014evaluating their performance on the Greenberger-Horne-Zeilinger (GHZ) state generation circuit. The study focuses on key performance metrics including circuit depth, CX gate count, and total gate count for 3, 4, and 5-qubit GHZ states compiled for Rigetti\u2019s Aspen-M quantum processor. While all compilers produced functionally equivalent circuits for this benchmark, significant differences in compilation strategies and overhead were observed. The findings highlight the critical trade-offs between compilation time and circuit optimization, and underscore the importance of hardwareaware compilation in the NISQ era. Index Terms of File (Research Paper) Quantum computing, quantum compilation, NISQ devices, GHZ state, compiler performance, Qiskit, Cirq, PyQuil\n\nCitation: Jha, Ayush, 2025, \"QISAP : Quantum Instruction Set Analytics Platform\", https://doi.org/10.7910/DVN/QMYLWC, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/QMYLWC",
+  "timestamp": "2026-03-06T02:42:24.924383",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4d7f2fdc1aac777242b92a16912699137e5be1c41d02c48dd4249b82f148bef6",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/QMYLWC",
+    "subjects": [
+      "Computer and Information Science",
+      "Engineering",
+      "Physics"
+    ],
+    "authors": [
+      "Jha, Ayush"
+    ],
+    "file_count": 170
+  }
+}

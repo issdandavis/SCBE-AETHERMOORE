@@ -1,0 +1,31 @@
+{
+  "id": "d1da3d91adb62bea",
+  "source": "library_of_congress",
+  "category": "quarantine/math",
+  "title": "Descriptive geometry,",
+  "content": "# Descriptive geometry,\n\nContributors: ashley, george f. (george francis), anthony, gardner chace\nDate: 1909\nSubjects: geometry, descriptive\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/09010270/",
+  "timestamp": "2026-03-06T02:37:52.081771",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e3b52ac07ed12b672c77967c3f4f122572b265356e3fcc414b9ed72cbe219f27",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "geometry, descriptive"
+    ],
+    "dates": "1909",
+    "original_format": [
+      "book"
+    ]
+  }
+}

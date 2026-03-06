@@ -1,0 +1,29 @@
+{
+  "id": "3a544822347a1bf8",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Magnetic equations on the Heisenberg group: symmetries, solutions and the inverse problem of the calculus of variations",
+  "content": "# Magnetic equations on the Heisenberg group: symmetries, solutions and the inverse problem of the calculus of variations\n\nAuthors: Gabriela Ovando, Mauro Subils\nPublished: 2026-02-24T18:39:21Z\n\nThe Heisenberg Lie group $H_3$ is modeled on the differentiable structure of $\\mathbb{R}^3$ but equipped with another non-commutative product operation. By fixing the usual metric on the Heisenberg Lie group, this work provides a comprehensive overview of the behavior of magnetic geodesics for any invariant Lorentz force. After writing the magnetic equations, we found symmetries that enable the explicit computation of the magnetic trajectories for any homogeneous exact and non-exact magnetic form. Finally we show that these magnetic trajectories are solutions of a variational problem: we present explicit examples of Lagrangians.",
+  "url": "http://arxiv.org/abs/2602.21187v1",
+  "timestamp": "2026-02-24T18:39:21Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "4d4c9f492351df33b5eea07353272a97804a58d1a8d274bc7bee57575758617a",
+  "parent_hash": "72195eef7b84765a84dddbd95f4da787838c726b86f72daf9736c02387731234",
+  "metadata": {
+    "authors": [
+      "Gabriela Ovando",
+      "Mauro Subils"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.21187v1"
+  }
+}

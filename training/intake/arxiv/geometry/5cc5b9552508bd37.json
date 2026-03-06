@@ -1,0 +1,29 @@
+{
+  "id": "5cc5b9552508bd37",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Complexity of quantum cohomology",
+  "content": "# Complexity of quantum cohomology\n\nAuthors: Xiaobo Liu, Chongyu Wang\nPublished: 2026-03-03T08:40:19Z\n\nCircuit complexity for two-dimensional topological quantum field theories (2D TQFT) was defined by Couch, Fan, and Shashi in [12]. In this paper, we study complexity for the 2D TQFT given by quantum cohomology of compact symplectic manifolds. We will estimate the number of states with finite approximate complexity of arbitrarily small tolerance for Fano complete intersections and (co)minuscule homogeneous varieties. We will give an upper bound for the dimension of the space spanned by states with finite complexity. In the case of Gr(2, n), this bound is sharp and we also obtain a precise description for this subspace. For (co)minuscule homogeneous varieties, we prove a positivity result for the eigenvalues of quantum multiplication by the handle element (also called the quantum Euler class) divided by the class of a point.",
+  "url": "http://arxiv.org/abs/2603.02736v1",
+  "timestamp": "2026-03-03T08:40:19Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "9439abfda9f9ec74dd78bcba483a97980271bcd2d3ead852a4eb22a3619baf49",
+  "parent_hash": "6abccad0b163737b221c96c22a3cda4d1531eeea9c7ff7bb204aabf36bbf39d7",
+  "metadata": {
+    "authors": [
+      "Xiaobo Liu",
+      "Chongyu Wang"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.02736v1"
+  }
+}

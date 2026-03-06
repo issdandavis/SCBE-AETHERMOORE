@@ -1,0 +1,25 @@
+{
+  "id": "239ef609b2c07e0e",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "hyperbolic geometry (Q209306)",
+  "content": "# hyperbolic geometry\n\nWikidata ID: Q209306\nDescription: type of non-Euclidean geometry\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q209306",
+  "timestamp": "2026-03-06T02:40:55.681238",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "9a5c86793377afa670d032e38950947d7f948dd5fea1e4e451d00de08f70c063",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q209306",
+    "description": "type of non-Euclidean geometry"
+  }
+}

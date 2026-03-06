@@ -1,0 +1,36 @@
+{
+  "id": "9e72c3771685604b",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "An assessment of U.S.-allied nations' industrial bases in quantum technology",
+  "content": "# An assessment of U.S.-allied nations' industrial bases in quantum technology\n\nContributors: lee, justin w., acquisition and technology policy center, silberglitt, richard, gonzales, daniel, rand corporation\nDate: 2023\nSubjects: international cooperation, photons, quantum systems, quantum computing, united states\n\n\"The U.S. government has identified quantum technology as important for future U.S. economic prosperity and national security because it could eventually offer groundbreaking new capabilities in information collection, processing, and communication. RAND researchers had previously developed a set of metrics for holistically assessing a nation's industrial base in quantum technology and had applied those metrics to the industrial bases of the United States and China. For this report, the authors used a similar methodology to assess the quantum industrial bases of several other nations. The report begins with a broad look at the entire global quantum ecosystem, and then focuses in more detail on Australia, Germany, Japan, and the United Kingdom (UK). The authors considered four categories of metrics: scientific research, government support, industry activity, and technical achievement. Whenever possible, they assessed the metrics separately across the three technology application domains of quantum computing, quantum communications, and quantum sensing. The report concludes with recommendations for how policymakers could strengthen international collaboration in quantum technology research and development (R&D) between the United States and its allied nations.\"--Publisher's description.",
+  "url": "//lccn.loc.gov/2022303265",
+  "timestamp": "2026-03-06T02:38:03.635047",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "07ef59fabd2eb34e145d7fda9b7f7f4b8d1ed28103cd135055e203717b0ee99a",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "international cooperation",
+      "photons",
+      "quantum systems",
+      "quantum computing",
+      "united states",
+      "quantum communication"
+    ],
+    "dates": "2023",
+    "original_format": [
+      "book"
+    ]
+  }
+}

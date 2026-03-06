@@ -1,0 +1,33 @@
+{
+  "id": "3d0d9e05181ca6b7",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Embedded Inter-Subject Variability in Adversarial Learning for Inertial Sensor-Based Human Activity Recognition",
+  "content": "# Embedded Inter-Subject Variability in Adversarial Learning for Inertial Sensor-Based Human Activity Recognition\n\nAuthors: Francisco M. Calatrava-Nicol\u00e1s, Shoko Miyauchi, Vitor Fortes Rey, Paul Lukowicz, Todor Stoyanov, Oscar Martinez Mozos\nPublished: 2026-03-05T16:57:15Z\n\nThis paper addresses the problem of Human Activity Recognition (HAR) using data from wearable inertial sensors. An important challenge in HAR is the model's generalization capabilities to new unseen individuals due to inter-subject variability, i.e., the same activity is performed differently by different individuals. To address this problem, we propose a novel deep adversarial framework that integrates the concept of inter-subject variability in the adversarial task, thereby encouraging subject-invariant feature representations and enhancing the classification performance in the HAR problem. Our approach outperforms previous methods in three well-established HAR datasets using a leave-one-subject-out (LOSO) cross-validation. Further results indicate that our proposed adversarial task effectively reduces inter-subject variability among different users in the feature space, and it outperforms adversarial tasks from previous works when integrated into our framework. Code: https://github.com/FranciscoCalatrava/EmbeddedSubjectVariability.git",
+  "url": "http://arxiv.org/abs/2603.05371v1",
+  "timestamp": "2026-03-05T16:57:15Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "6c3aa288229bb0ea65588af8b12be690c97afcab9b22e188cc37ec2316834cb4",
+  "parent_hash": "5160bc9628cd49baf8ac4ccbf43d53bc988f5700a5acb4a31f991502effc024a",
+  "metadata": {
+    "authors": [
+      "Francisco M. Calatrava-Nicol\u00e1s",
+      "Shoko Miyauchi",
+      "Vitor Fortes Rey",
+      "Paul Lukowicz",
+      "Todor Stoyanov",
+      "Oscar Martinez Mozos"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05371v1"
+  }
+}

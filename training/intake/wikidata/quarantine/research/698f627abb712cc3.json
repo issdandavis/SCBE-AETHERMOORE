@@ -1,0 +1,25 @@
+{
+  "id": "698f627abb712cc3",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Quasicrystal with one-dimensional translational symmetry and a tenfold rotation axis (Q74468821)",
+  "content": "# Quasicrystal with one-dimensional translational symmetry and a tenfold rotation axis\n\nWikidata ID: Q74468821\nDescription: scientific article published on 01 September 1985\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q74468821",
+  "timestamp": "2026-03-06T04:18:05.821563",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "113a699bfcd405d811ba6efe47f96eef6f00e55ee9bed8a117437bd9616d5d9e",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q74468821",
+    "description": "scientific article published on 01 September 1985"
+  }
+}

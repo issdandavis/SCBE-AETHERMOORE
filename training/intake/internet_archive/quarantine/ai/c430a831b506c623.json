@@ -1,0 +1,29 @@
+{
+  "id": "c430a831b506c623",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Pulse charging based intelligent battery management system for electric vehicle",
+  "content": "# Pulse charging based intelligent battery management system for electric vehicle\n\nCreator: \nDate: \nDownloads: 39\nSubjects: Battery management system\n\nElectric vehicles (EVs) are now an important part of the automotive industry for two main reasons: decreased reliance on oil and reduced air pollution, which helps us contribute to the development of an environmentally friendly environment. EV buyers examine overall vehicle mileage, recharge time, vehicle mileage after every charge, batteries charging/discharging security, lifespan, charged rate, capability, and temperature increase. A new improved pulse charging technique is proposed, in which the battery is charged using proportional integral derivative (PID) control action and a neural network. A PID controller is used to develop the charging unit in this design. The feed forward neural network was used to determine the values of the PID control parameters. The battery management system (BMS) ensures that this designed battery charging system takes less time to charge the battery efficiently. The system is built with MATLAB/Simulink.",
+  "url": "https://archive.org/details/10.11591eei.v12i4.5229",
+  "timestamp": "2026-03-06T02:40:40.434274",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "3c6667cfc8279d86176dad08832dbe44adfe242473432e4ba5031681d3bc375f",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "10.11591eei.v12i4.5229",
+    "media_type": "texts",
+    "downloads": 39,
+    "subjects": [
+      "Battery management system"
+    ]
+  }
+}

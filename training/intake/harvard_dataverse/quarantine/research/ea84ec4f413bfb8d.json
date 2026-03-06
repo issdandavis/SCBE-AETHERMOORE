@@ -1,0 +1,35 @@
+{
+  "id": "ea84ec4f413bfb8d",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Replication Data for: \"The energy budgets of giant impacts\"",
+  "content": "# Replication Data for: \"The energy budgets of giant impacts\"\n\nAuthors: Carter, Philip J., Lock, Simon J., Stewart, Sarah T.\nPublished: 2020-01-07T20:38:43Z\nSubjects: Astronomy and Astrophysics, Earth and Environmental Sciences, Physics\nDOI: doi:10.7910/DVN/YYNJSX\n\nThis dataset contains data from the article: Carter, P. J.; Lock, S. J. and Stewart, S. T., 2019, \"The energy budgets of giant impacts\", JGR: Planets, in press, https://doi.org/10.1029/2019JE006042. These data consist of giant impact simulation input files, processed data used to create the figures in the article, select simulation output and code to read input/output files, and EOS tables for use with the GADGET2 code. See the README file for further information.\n\nCitation: Carter, Philip J.; Lock, Simon J.; Stewart, Sarah T., 2019, \"Replication Data for: \"The energy budgets of giant impacts\"\", https://doi.org/10.7910/DVN/YYNJSX, Harvard Dataverse, V2, UNF:6:HAdZyxMh2CTaQ/STxFCARA== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/YYNJSX",
+  "timestamp": "2026-03-06T04:18:49.817544",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "8de618a27786edda87a6945fc5afced3c4c1a03bc5b6d1e4de9ded43de365c01",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/YYNJSX",
+    "subjects": [
+      "Astronomy and Astrophysics",
+      "Earth and Environmental Sciences",
+      "Physics"
+    ],
+    "authors": [
+      "Carter, Philip J.",
+      "Lock, Simon J.",
+      "Stewart, Sarah T."
+    ],
+    "file_count": 241
+  }
+}

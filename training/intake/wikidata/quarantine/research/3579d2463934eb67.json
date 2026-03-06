@@ -1,0 +1,25 @@
+{
+  "id": "3579d2463934eb67",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "chirality (Q2467946)",
+  "content": "# chirality\n\nWikidata ID: Q2467946\nDescription: geometric property of an object which cannot be mapped to its mirror image by rotations and translations alone\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q2467946",
+  "timestamp": "2026-03-06T04:18:13.109174",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4f6a6e1dcd27eb5d775192fb7ee6de57bc5e1f036e7c75fc508eac19c3eb2ef3",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q2467946",
+    "description": "geometric property of an object which cannot be mapped to its mirror image by rotations and translations alone"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "ada437cf42dd905a",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Complete closed-form solutions to the problem of inextensional bending for surfaces of translation and origami tessellations",
+  "content": "# Complete closed-form solutions to the problem of inextensional bending for surfaces of translation and origami tessellations\n\nAuthors: Adam Reddy, Asma Karami, Hussein Nassar\nPublished: 2026-02-18T20:38:51Z\n\nPlates generally admit six deformation modes: three of which are high in strain energy, stretch the plate's midsurface and are called membrane modes; and three are low-energy, bend the midsurface without stretching it and are called bending modes. For origami tessellations, and other corrugated compliant thin shells, the modes are mixed and it is no longer clear what modes, if any, are low in energy in the sense that they are inextensional. Here, it is shown, by direct construction of closed-form solutions, that when the midsurface is a surface of translation, there exists three infinitesimally inextensional deformation modes that correspond to (1) stretching, with an effective Poisson's effect; (2) bending, with an effective synclastic or anti-clastic effect; and to (3) twisting. The provided expressions are valid irrespective of surface regularity and, in particular, properly handle any creases be them straight or curved. The results provide a powerful benchmark for the validation of numerical methods and further insight into the elastic stiffness of thin corrugated compliant shells.",
+  "url": "http://arxiv.org/abs/2602.16860v1",
+  "timestamp": "2026-02-18T20:38:51Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "9f798c1d6fc4bf7c00b07f84c0cddd7d041e4e43626618329bcfac74f039106d",
+  "parent_hash": "151f896bf0d6c01730e69619451e046534778949035e378488994c1ffc30b6aa",
+  "metadata": {
+    "authors": [
+      "Adam Reddy",
+      "Asma Karami",
+      "Hussein Nassar"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.16860v1"
+  }
+}

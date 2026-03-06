@@ -1,0 +1,30 @@
+{
+  "id": "dc7531fad1ef3092",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2001-0856 \u2014 CVSS 4.6 (UNKNOWN)",
+  "content": "# CVE-2001-0856\n\nCVSS Score: 4.6 (UNKNOWN)\nPublished: 2001-12-06T05:00:00.000\nCWEs: NVD-CWE-Other\n\nCommon Cryptographic Architecture (CCA) in IBM 4758 allows an attacker with physical access to the system and Combine_Key_Parts permissions, to steal DES and 3DES keys by using a brute force attack to create a 3DES exporter key.\n\nReferences: http://marc.info/?l=bugtraq&m=100533053219673&w=2, http://www.cl.cam.ac.uk/~rnc1/descrack/, http://www.cl.cam.ac.uk/~rnc1/descrack/attack.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2001-0856",
+  "timestamp": "2026-03-06T02:41:32.739448",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e5c82ee71ba16535af441ee2353bc6c4e91dfdc5e2b5b1b3e0d61530a4601311",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2001-0856",
+    "cvss_score": 4.6,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "2001-12-06T05:00:00.000"
+  }
+}

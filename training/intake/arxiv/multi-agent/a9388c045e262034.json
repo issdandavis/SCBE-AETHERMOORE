@@ -1,0 +1,35 @@
+{
+  "id": "a9388c045e262034",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Behind the Prompt: The Agent-User Problem in Information Retrieval",
+  "content": "# Behind the Prompt: The Agent-User Problem in Information Retrieval\n\nAuthors: Saber Zerhoudi, Michael Granitzer, Dang Hai Dang, Jelena Mitrovic, Florian Lemmerich, Annette Hautli-Janisz, Stefan Katzenbeisser, Kanishka Ghosh Dastidar\nPublished: 2026-03-04T01:42:14Z\n\nUser models in information retrieval rest on a foundational assumption that observed behavior reveals intent. This assumption collapses when the user is an AI agent privately configured by a human operator. For any action an agent takes, a hidden instruction could have produced identical output - making intent non-identifiable at the individual level. This is not a detection problem awaiting better tools; it is a structural property of any system where humans configure agents behind closed doors. We investigate the agent-user problem through a large-scale corpus from an agent-native social platform: 370K posts from 47K agents across 4K communities. Our findings are threefold: (1) individual agent actions cannot be classified as autonomous or operator-directed from observables; (2) population-level platform signals still separate agents into meaningful quality tiers, but a click model trained on agent interactions degrades steadily (-8.5% AUC) as lower-quality agents enter training data; (3) cross-community capability references spread endemically ($R_0$ 1.26-3.53) and resist suppression even under aggressive modeled intervention. For retrieval systems, the question is no longer whether agent users will arrive, but whether models built on human-intent assumptions will survive their presence.",
+  "url": "http://arxiv.org/abs/2603.03630v1",
+  "timestamp": "2026-03-04T01:42:14Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "2e3d22a7a58e346c33b8465b982bcf685a307fe5db771c1ed09eba2e010ae8bd",
+  "parent_hash": "7011337720d888affec0489007187235337eac26929d3a22984855583ff449f2",
+  "metadata": {
+    "authors": [
+      "Saber Zerhoudi",
+      "Michael Granitzer",
+      "Dang Hai Dang",
+      "Jelena Mitrovic",
+      "Florian Lemmerich",
+      "Annette Hautli-Janisz",
+      "Stefan Katzenbeisser",
+      "Kanishka Ghosh Dastidar"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.03630v1"
+  }
+}

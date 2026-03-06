@@ -1,0 +1,29 @@
+{
+  "id": "a72822b8b89e5d47",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Dynamical quantum phase transitions through the lens of mode dynamics",
+  "content": "# Dynamical quantum phase transitions through the lens of mode dynamics\n\nAuthors: Akash Mitra, Shashi C. L. Srivastava\nPublished: 2026-03-05T15:29:42Z\n\nWe study the mode dynamics of a generic quadratic fermionic Hamiltonian under a sudden quench protocol in momentum space. Modes with zero energy at any given time, $t$, are referred to as dynamical critical modes. Among all zero-energy modes, spin-flip symmetry is restored in the eigenvector corresponding to selected zero-energy modes. This symmetry restoration is used to define the dynamical quantum phase transition (DQPT). This shows that the occurrence of these dynamical critical modes is necessary but not sufficient for a DQPT. We show that the conditions on the quench protocol and time for such dynamical symmetry restoration are the same as the divergence of the rate function and integer jump in the dynamical topological order parameter, which have been the traditional identifiers of a DQPT. This perspective also naturally explains when one or both of DQPT and ground-state quantum phase transitions will occur.",
+  "url": "http://arxiv.org/abs/2603.05284v1",
+  "timestamp": "2026-03-05T15:29:42Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "b247124b60753d99af50adce18822aaa0e944168cca8727012f55c8a740887ea",
+  "parent_hash": "c2e6b98aaef23498f78584321492aaa1674d3333d4ec131852d18d215b57d152",
+  "metadata": {
+    "authors": [
+      "Akash Mitra",
+      "Shashi C. L. Srivastava"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05284v1"
+  }
+}

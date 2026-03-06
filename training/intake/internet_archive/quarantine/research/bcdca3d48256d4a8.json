@@ -1,0 +1,27 @@
+{
+  "id": "bcdca3d48256d4a8",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Chirality, D-branes and gauge/string unification",
+  "content": "# Chirality, D-branes and gauge/string unification\n\nCreator: Erich Poppitz\nDate: 1998-06-08T00:00:00Z\nDownloads: 90\nSubjects: \n\nWe point out that models where gauge and charged matter fields live on the world volume of D3 branes can provide a weak string coupling description of the gauge coupling unification in the supersymmetric standard model at a scale of order $10^{16}$ GeV. In the D3 brane picture, the string and unification scales coincide, while the size of the extra dimensions is somewhat larger than the string length. We then construct a quasirealistic \"three generation\" model with D3 branes at orbifold fixed points. We point out that placing D3 branes at different orbifold fixed points provides a geometric description of the disconnected branches of moduli space and discuss the appropriate consistency conditions. These disconnected branches allow for patterns of gauge symmetry breaking inaccessible on the connected part of moduli space and can give rise to \"hidden\" and \"visible\" sectors. Finally, we analyze supersymmetry breaking on the brane world volume.",
+  "url": "https://archive.org/details/arxiv-hep-ph9806309",
+  "timestamp": "2026-03-06T04:17:53.893786",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "88e5ac7676e0e3fe8d34ccc00c4db0fe06dd73b6e5289a269f204a40da706279",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-hep-ph9806309",
+    "media_type": "texts",
+    "downloads": 90,
+    "subjects": []
+  }
+}

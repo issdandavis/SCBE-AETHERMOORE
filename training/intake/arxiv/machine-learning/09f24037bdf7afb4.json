@@ -1,0 +1,29 @@
+{
+  "id": "09f24037bdf7afb4",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Particle-Guided Diffusion for Gas-Phase Reaction Kinetics",
+  "content": "# Particle-Guided Diffusion for Gas-Phase Reaction Kinetics\n\nAuthors: Andrew Millard, Henrik Pedersen\nPublished: 2026-03-05T13:09:28Z\n\nPhysics-guided sampling with diffusion model priors has shown promise for solving partial differential equation (PDE) governed problems, but applications to chemically meaningful reaction-transport systems remain limited. We apply diffusion-based guided sampling to gas-phase chemical reactions by training on solutions of the advection-reaction-diffusion (ARD) equation across varying parameters. The method generates physically consistent concentration fields and accurately predicts outlet concentrations, including at unseen parameter values, demonstrating the potential of diffusion models for inference in reactive transport.",
+  "url": "http://arxiv.org/abs/2603.05139v1",
+  "timestamp": "2026-03-05T13:09:28Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "ae1ce9f68e4b23ae20656bda3149ecea14274470b136dcb5b5dbe398e91dcf1a",
+  "parent_hash": "27f5ec0dd46271a4c33a23554743465aac88b19e75fcdb8191bbe458188153e5",
+  "metadata": {
+    "authors": [
+      "Andrew Millard",
+      "Henrik Pedersen"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05139v1"
+  }
+}

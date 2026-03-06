@@ -1,0 +1,25 @@
+{
+  "id": "fcbfc7081f1a5535",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Quasicrystals and Geometry (Q85795271)",
+  "content": "# Quasicrystals and Geometry\n\nWikidata ID: Q85795271\nDescription: 1995 book\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q85795271",
+  "timestamp": "2026-03-06T04:18:05.821528",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d7c1253fa92dc584a19ef75e4652d71e780519254f1d5c065c75e49e3c7b558f",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q85795271",
+    "description": "1995 book"
+  }
+}

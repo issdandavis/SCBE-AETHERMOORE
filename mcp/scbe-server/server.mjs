@@ -658,6 +658,205 @@ function decideOffline(args) {
   };
 }
 
+const VOXEL_APP_NODES = [
+  { id: 'ingress_a', label: 'Ingress A', x: -0.68, y: -0.24, isMerge: false },
+  { id: 'ingress_b', label: 'Ingress B', x: -0.68, y: 0.24, isMerge: false },
+  { id: 'router_a', label: 'Router A', x: -0.24, y: -0.26, isMerge: false },
+  { id: 'router_b', label: 'Router B', x: -0.24, y: 0.26, isMerge: false },
+  { id: 'merge_hub', label: 'Merge Hub', x: 0.0, y: 0.0, isMerge: true },
+  { id: 'audit', label: 'Audit', x: 0.3, y: -0.18, isMerge: false },
+  { id: 'archive', label: 'Archive', x: 0.62, y: 0.24, isMerge: false },
+  { id: 'publish', label: 'Publish', x: 0.62, y: -0.24, isMerge: false },
+  { id: 'near_merge', label: 'Near Merge Lane', x: 0.08, y: 0.08, isMerge: false },
+];
+
+const VOXEL_APP_EDGES = [
+  { from: 'ingress_a', to: 'router_a' },
+  { from: 'ingress_b', to: 'router_b' },
+  { from: 'router_a', to: 'merge_hub' },
+  { from: 'router_b', to: 'merge_hub' },
+  { from: 'merge_hub', to: 'audit' },
+  { from: 'merge_hub', to: 'archive' },
+  { from: 'merge_hub', to: 'publish' },
+  { from: 'router_a', to: 'near_merge' },
+  { from: 'near_merge', to: 'publish' },
+  { from: 'near_merge', to: 'archive' },
+  { from: 'audit', to: 'publish' },
+];
+
+function canonicalVoxelPath(mode, index) {
+  if (mode === 'dense') {
+    return index % 2 === 0
+      ? ['ingress_a', 'router_a', 'merge_hub', 'publish']
+      : ['ingress_b', 'router_b', 'merge_hub', 'archive'];
+  }
+  if (mode === 'quasi') {
+    if (index % 3 === 0) return ['ingress_a', 'router_a', 'near_merge', 'publish'];
+    if (index % 3 === 1) return ['ingress_b', 'router_b', 'merge_hub', 'archive'];
+    return ['ingress_a', 'router_a', 'merge_hub', 'audit', 'publish'];
+  }
+  if (index % 3 === 0) return ['ingress_a', 'router_a', 'merge_hub', 'publish'];
+  if (index % 3 === 1) return ['ingress_b', 'router_b', 'merge_hub', 'archive'];
+  return ['ingress_a', 'router_a', 'near_merge', 'archive'];
+}
+
+function phaseFromFlowDepth(flowId, depth) {
+  const seed = `${flowId}:${depth}`;
+  let total = 0;
+  for (const ch of seed) total += ch.charCodeAt(0);
+  return ((total % 360) / 180) * Math.PI;
+}
+
+function normalizeVector3(value) {
+  const arr = Array.isArray(value) ? value : [];
+  return [asNumber(arr[0], 0), asNumber(arr[1], 0), asNumber(arr[2], 0)];
+}
+
+function toUnixMs(value, fallback) {
+  const n = asNumber(value, Number.NaN);
+  if (!Number.isFinite(n)) return fallback;
+  if (n > 0 && n < 1e11) return n * 1000;
+  return n;
+}
+
+function normalizeCymaticVoxelLayout(raw, mode, atUnixMs, windowMs, flowCount) {
+  const source = raw && typeof raw === 'object' ? raw : {};
+  const nodeMap = Object.fromEntries(VOXEL_APP_NODES.map((n) => [n.id, n]));
+
+  const flowsRaw = Array.isArray(source.flows) ? source.flows : [];
+  const fallbackCount = Math.max(1, Math.min(32, Math.floor(flowCount)));
+  const totalFlows = Math.max(fallbackCount, flowsRaw.length || 0);
+
+  const flows = Array.from({ length: totalFlows }).map((_, idx) => {
+    const src = flowsRaw[idx] && typeof flowsRaw[idx] === 'object' ? flowsRaw[idx] : {};
+    const sequence = Math.max(0, Math.floor(asNumber(src.sequence, idx)));
+    const id = asText(src.id || `flow_${idx + 1}`);
+    const path = Array.isArray(src.path) && src.path.length > 0
+      ? src.path.map((v) => asText(v))
+      : canonicalVoxelPath(mode, sequence);
+    return {
+      id,
+      sequence,
+      wavelengthNm: asNumber(src.wavelengthNm, 540),
+      authority: asText(src.authority || 'internal'),
+      intentTag: asText(src.intentTag || 'route'),
+      intentVector: normalizeVector3(src.intentVector),
+      path,
+    };
+  });
+
+  const flowById = Object.fromEntries(flows.map((f) => [f.id, f]));
+
+  const voxelsRaw = Array.isArray(source.voxels) ? source.voxels : [];
+  const voxels = voxelsRaw.map((value, idx) => {
+    const src = value && typeof value === 'object' ? value : {};
+    const rawId = asText(src.id || `voxel_${idx + 1}`);
+    const inferredFlowId = rawId.match(/^(flow_\d+)/)?.[1] || flows[0]?.id || 'flow_1';
+    const flowId = asText(src.flowId || inferredFlowId);
+    const flow = flowById[flowId] || flows[0];
+    const depth = Math.max(0, Math.floor(asNumber(src.z, 0)));
+    const fallbackNodeId = flow?.path?.[Math.min(depth, Math.max(0, flow.path.length - 1))] || 'merge_hub';
+    const nodeId = asText(src.nodeId || fallbackNodeId);
+    const node = nodeMap[nodeId] || nodeMap.merge_hub;
+    const createdAtUnixMs = toUnixMs(src.createdAtUnixMs ?? src.created_at, atUnixMs);
+    const updatedAtUnixMs = toUnixMs(src.updatedAtUnixMs ?? src.updated_at, createdAtUnixMs);
+    const authority = asText(src.authority || flow?.authority || 'internal');
+    const intentTag = asText(src.intentTag || flow?.intentTag || 'route');
+    const intentVector = normalizeVector3(src.intentVector || flow?.intentVector);
+
+    return {
+      id: rawId,
+      flowId,
+      nodeId,
+      x: asNumber(src.x, node.x),
+      y: asNumber(src.y, node.y),
+      z: asNumber(src.z, depth),
+      phase: asNumber(src.phase, phaseFromFlowDepth(flowId, depth)),
+      intensity: asNumber(src.intensity, 0.5),
+      wavelengthNm: asNumber(src.wavelengthNm, flow?.wavelengthNm || 540),
+      authority,
+      authoritySignature: asText(src.authoritySignature || src.authorityHash || src.authority_hash || ''),
+      authorityHash: asText(src.authorityHash || src.authority_hash || src.authoritySignature || ''),
+      intentTag,
+      intentVector,
+      modeN: asNumber(src.modeN, 3),
+      modeM: asNumber(src.modeM, 2),
+      chladniValue: asNumber(src.chladniValue, src.chladniAddress),
+      createdAtUnixMs,
+      updatedAtUnixMs,
+      tIndex: Math.floor((updatedAtUnixMs - (atUnixMs - windowMs)) / Math.max(1, windowMs)),
+    };
+  });
+
+  const collisionsRaw = Array.isArray(source.collisions) ? source.collisions : [];
+  const collisions = collisionsRaw.map((value) => {
+    const src = value && typeof value === 'object' ? value : {};
+    const flowA = asText(src.flows?.[0] || src.flowA || flows[0]?.id || 'flow_1');
+    const flowB = asText(src.flows?.[1] || src.flowB || flowA);
+    return {
+      type: asText(src.type || 'node_overlap'),
+      flows: [flowA, flowB],
+      detail: asText(src.detail || ''),
+    };
+  });
+
+  const temporalSource = source.temporal && typeof source.temporal === 'object' ? source.temporal : {};
+  const temporalAuthority = { public: 0, internal: 0, restricted: 0, sealed: 0 };
+  const temporalIntent = {};
+  const halfWindow = windowMs / 2;
+  const activeVoxels = voxels.filter((v) =>
+    Math.abs(v.updatedAtUnixMs - atUnixMs) <= halfWindow ||
+    (v.createdAtUnixMs <= atUnixMs && atUnixMs <= v.updatedAtUnixMs + halfWindow));
+  for (const voxel of activeVoxels) {
+    if (Object.prototype.hasOwnProperty.call(temporalAuthority, voxel.authority)) {
+      temporalAuthority[voxel.authority] += 1;
+    }
+    temporalIntent[voxel.intentTag] = (temporalIntent[voxel.intentTag] || 0) + 1;
+  }
+  const activeFlowIds = new Set(activeVoxels.map((v) => v.flowId));
+  const activeCollisionCount = collisions.filter(
+    (c) => activeFlowIds.has(c.flows[0]) && activeFlowIds.has(c.flows[1]),
+  ).length;
+
+  const collisionFlowIds = new Set(collisions.flatMap((c) => c.flows));
+  const spectralIsolation = mode === 'dense' ? 0.08 : 0.1;
+  const hyperbolicMinSeparation = mode === 'quasi' ? 0.25 : 0.3;
+
+  return {
+    mode,
+    thresholds: {
+      spectralIsolation: asNumber(source?.thresholds?.spectralIsolation, spectralIsolation),
+      hyperbolicMinSeparation: asNumber(source?.thresholds?.hyperbolicMinSeparation, hyperbolicMinSeparation),
+    },
+    dimensions: source.dimensions || {
+      explicit: ['x', 'y', 'z', 'spectral', 'authority', 'intent'],
+      implied: ['timestamp'],
+    },
+    nodes: VOXEL_APP_NODES,
+    edges: VOXEL_APP_EDGES,
+    flows,
+    collisions,
+    voxels,
+    temporal: {
+      atUnixMs: asNumber(temporalSource.atUnixMs, atUnixMs),
+      windowMs: asNumber(temporalSource.windowMs, windowMs),
+      activeVoxelCount: asNumber(temporalSource.activeVoxelCount, activeVoxels.length),
+      activeCollisionCount: asNumber(temporalSource.activeCollisionCount, activeCollisionCount),
+      authorityDistribution: temporalSource.authorityDistribution || temporalAuthority,
+      intentDistribution: temporalSource.intentDistribution || temporalIntent,
+    },
+    metrics: {
+      collisionCount: collisions.length,
+      safeFlowCount: Math.max(0, flows.length - collisionFlowIds.size),
+      mergeNodeCount: VOXEL_APP_NODES.filter((n) => n.isMerge).length,
+      sealedVoxelCount: voxels.filter((v) => v.authority === 'sealed').length,
+      authorityDiversity: new Set(voxels.map((v) => v.authority)).size,
+      intentDiversity: new Set(voxels.map((v) => v.intentTag)).size,
+      sourceMetrics: source.metrics || {},
+    },
+  };
+}
+
 function okText(text) {
   return {
     content: [{ type: 'text', text }],
@@ -846,6 +1045,19 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           context: { type: 'array', description: 'Context vector used for context binding.', items: { type: 'number' } },
         },
         required: ['payload_b64'],
+      },
+    },
+    {
+      name: 'cymatic-voxel-layout',
+      description: 'Generate a 6D+t cymatic voxel layout with spectral flow isolation, authority/intent encoding, Chladni addressing, and temporal slicing.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          flowCount: { type: 'number', description: 'Number of spectral flows (1-32, default 8)' },
+          mode: { type: 'string', enum: ['default', 'quasi', 'dense'], description: 'Layout mode' },
+          atUnixMs: { type: 'number', description: 'Center timestamp for temporal slice (default: now)' },
+          windowMs: { type: 'number', description: 'Window width in ms for temporal slice (default 60000)' },
+        },
       },
     },
     {
@@ -1059,6 +1271,42 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'scbe_sacred_egg_create': {
         const result = scbeSacredEggCreate(args);
         return okText(JSON.stringify(result, null, 2));
+      }
+
+      case 'cymatic-voxel-layout': {
+        const flowCount = asNumber(args.flowCount, 8);
+        const mode = ['default', 'quasi', 'dense'].includes(asText(args.mode)) ? asText(args.mode) : 'default';
+        const atUnixMs = asNumber(args.atUnixMs, Date.now());
+        const windowMs = asNumber(args.windowMs, 60000);
+        const pyArgs = [
+          '-m', 'hydra.voxel_cli', 'layout',
+          '--flows', String(Math.max(1, Math.min(32, Math.floor(flowCount)))),
+          '--mode', mode,
+          '--at-unix-ms', String(atUnixMs),
+          '--window-ms', String(windowMs),
+          '--json',
+        ];
+        try {
+          const { stdout } = await execFileAsync('python', pyArgs, {
+            cwd: REPO_ROOT,
+            encoding: 'utf8',
+            windowsHide: true,
+            timeout: 30000,
+          });
+          const rawText = asText(stdout).trim();
+          let payload;
+          try {
+            const parsed = JSON.parse(rawText);
+            payload = normalizeCymaticVoxelLayout(parsed, mode, atUnixMs, windowMs, flowCount);
+          } catch {
+            payload = normalizeCymaticVoxelLayout({}, mode, atUnixMs, windowMs, flowCount);
+            payload.metrics.sourceParseError = 'python_layout_json_parse_failed';
+            payload.metrics.rawTextPreview = rawText.slice(0, 1000);
+          }
+          return okText(JSON.stringify(payload, null, 2));
+        } catch (pyErr) {
+          return errText(`cymatic-voxel-layout error: ${pyErr.message || pyErr}`);
+        }
       }
 
       case 'scbe_sacred_egg_hatch': {

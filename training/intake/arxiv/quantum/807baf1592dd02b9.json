@@ -1,0 +1,34 @@
+{
+  "id": "807baf1592dd02b9",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Universal Hamiltonian control in a planar trimon circuit",
+  "content": "# Universal Hamiltonian control in a planar trimon circuit\n\nAuthors: Vivek Maurya, Daria Kowsari, Kumar Saurav, S. A. Shanto, R. Vijay, Daniel A. Lidar, Eli M. Levenson-Falk\nPublished: 2026-03-04T19:54:03Z\n\nMultimode circuits provide an avenue for flexible control of single and multi-qubit gates. In this work we implement a multimode circuit known as a trimon integrated in a planar geometry. The trimon features three transmon-like modes with strong all-to-all $ZZ$ coupling. We demonstrate high fidelity operations on the trimon, achieving flexible control of its rich state space. This includes qubit rotations conditioned on one or both other qubits, unconditional single-qubit rotations, and both excitation-conserving and double-excitation two-qubit entangling gates. Through multi-tone driving we are able to implement all 16 two-qubit Pauli operators in the two-qubit space. We further demonstrate using the trimon as a qudit with up to 8 states and higher coherence than typical transmon-based implementations. Our results show a compact, highly controllable device that can potentially replace transmons in standard superconducting processor architectures.",
+  "url": "http://arxiv.org/abs/2603.04566v1",
+  "timestamp": "2026-03-04T19:54:03Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "e108a33580fb926a840bf3785a1ef50ece3df11b681f48952dec9d9bf64b4bf9",
+  "parent_hash": "67ddf3d710ab4b9913d5c17295be4fa207b451fa0e6f06a5ba2ce96f9da0c86c",
+  "metadata": {
+    "authors": [
+      "Vivek Maurya",
+      "Daria Kowsari",
+      "Kumar Saurav",
+      "S. A. Shanto",
+      "R. Vijay",
+      "Daniel A. Lidar",
+      "Eli M. Levenson-Falk"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.04566v1"
+  }
+}

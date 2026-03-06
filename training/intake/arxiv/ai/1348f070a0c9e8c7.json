@@ -1,0 +1,34 @@
+{
+  "id": "1348f070a0c9e8c7",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "Distributed Partial Information Puzzles: Examining Common Ground Construction Under Epistemic Asymmetry",
+  "content": "# Distributed Partial Information Puzzles: Examining Common Ground Construction Under Epistemic Asymmetry\n\nAuthors: Yifan Zhu, Mariah Bradford, Kenneth Lai, Timothy Obiso, Videep Venkatesha, James Pustejovsky, Nikhil Krishnaswamy\nPublished: 2026-03-05T18:22:55Z\n\nEstablishing common ground, a shared set of beliefs and mutually recognized facts, is fundamental to collaboration, yet remains a challenge for current AI systems, especially in multimodal, multiparty settings, where the collaborators bring different information to the table. We introduce the Distributed Partial Information Puzzle (DPIP), a collaborative construction task that elicits rich multimodal communication under epistemic asymmetry. We present a multimodal dataset of these interactions, annotated and temporally aligned across speech, gesture, and action modalities to support reasoning over propositional content and belief dynamics. We then evaluate two paradigms for modeling common ground (CG): (1) state-of-the-art large language models (LLMs), prompted to infer shared beliefs from multimodal updates, and (2) an axiomatic pipeline grounded in Dynamic Epistemic Logic (DEL) that incrementally performs the same task. Results on the annotated DPIP data indicate that it poses a challenge to modern LLMs' abilities to track both task progression and belief state.",
+  "url": "http://arxiv.org/abs/2603.05450v1",
+  "timestamp": "2026-03-05T18:22:55Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "05e88005365ff8641178dbf91234513d92e45a14b404f656ccaf0167a7e6f053",
+  "parent_hash": "c4b7a5ef375da2b1a00095f0569fac168d7e4eb797484444c79186f27a95f7f1",
+  "metadata": {
+    "authors": [
+      "Yifan Zhu",
+      "Mariah Bradford",
+      "Kenneth Lai",
+      "Timothy Obiso",
+      "Videep Venkatesha",
+      "James Pustejovsky",
+      "Nikhil Krishnaswamy"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05450v1"
+  }
+}

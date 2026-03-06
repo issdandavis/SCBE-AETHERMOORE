@@ -1,0 +1,33 @@
+{
+  "id": "92305509aa2b9abf",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Autoclaved-citrate extractable soil protein pedotransfer functions based on random forest",
+  "content": "# Autoclaved-citrate extractable soil protein pedotransfer functions based on random forest\n\nAuthors: Amsili, Joseph, van Es, Harold, Schindelbeck, Robert\nPublished: 2025-02-10T20:33:51Z\nSubjects: Agricultural Sciences\nDOI: doi:10.7910/DVN/HGBPCW\n\nAutoclaved-citrate extractable soil protein (ACE protein, but hereafter referred as \u201csoil protein\u201d) is a novel biological soil health indicator that can indirectly capture a soil\u2019s capacity to supply N. A dataset of 4,171 soil samples with texture, total carbon (C) and nitrogen (N), carbon-to-nitrogen ratio (C/N), soil protein, permanganate-oxidizable carbon, pH, and extractable magnesium and iron, was used to develop three pedotransfer functions for soil protein. The three pedotransfer functions included a full random forest (RF) model utilizing all variables, and a reduced RF model and a multiple linear regression model employing a subset of the variables. Models were validated using a US subset of the North American Project to Evaluate Soil Health Measurements (NAPESHM) dataset that contained 1,406 samples. The full RF model for soil protein reduced the root mean square error (RMSE) by 41.7 and 53.4 % compared to reduced RF and multiple linear regression models, respectively. Total C was a more important variable in the model than total N. Soil protein was sensitive to management at 36/57 long-term experiments and the full RF model was able to replicate 92% of those significant results.\n\nCitation: Amsili, Joseph; van Es, Harold; Schindelbeck, Robert, 2024, \"Autoclaved-citrate extractable soil protein pedotransfer functions based on random forest\", https://doi.org/10.7910/DVN/HGBPCW, Harvard Dataverse, V2, UNF:6:9/deQyujE87Gak1OLd9RKw== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/HGBPCW",
+  "timestamp": "2026-03-06T02:42:07.859384",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c79874c7e75d8a719873313eec04067c61b16a738c0d454cb6305af364f3c3d0",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/HGBPCW",
+    "subjects": [
+      "Agricultural Sciences"
+    ],
+    "authors": [
+      "Amsili, Joseph",
+      "van Es, Harold",
+      "Schindelbeck, Robert"
+    ],
+    "file_count": 6
+  }
+}

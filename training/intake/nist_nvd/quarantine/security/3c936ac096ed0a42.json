@@ -1,0 +1,30 @@
+{
+  "id": "3c936ac096ed0a42",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2013-0258 \u2014 CVSS 6.8 (UNKNOWN)",
+  "content": "# CVE-2013-0258\n\nCVSS Score: 6.8 (UNKNOWN)\nPublished: 2013-03-27T21:55:02.143\nCWEs: CWE-287\n\nThe Google Authenticator login (ga_login) module 7.x before 7.x-1.3 for Drupal, when multi-factor authentication is enabled, allows remote attackers to bypass authentication for accounts without an associated Google Authenticator token by logging in with the username.\n\nReferences: http://drupal.org/node/1902102, http://drupal.org/node/1903282, http://drupalcode.org/project/ga_login.git/commitdiff/50b032d",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2013-0258",
+  "timestamp": "2026-03-06T04:18:24.195075",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "5cdc7409b703ef002225846cb92d3673cd70ac0e8685189f83b16458a22ad9b2",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2013-0258",
+    "cvss_score": 6.8,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-287"
+    ],
+    "published": "2013-03-27T21:55:02.143"
+  }
+}

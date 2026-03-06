@@ -1,0 +1,30 @@
+{
+  "id": "049d9a2676cbfdd3",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Multistability and Self-Trapping in Cavity-Magnonic Dimer",
+  "content": "# Multistability and Self-Trapping in Cavity-Magnonic Dimer\n\nAuthors: Pooja Kumari Gupta, Amarendra K. Sarma, Subhadeep Chakraborty\nPublished: 2026-03-05T04:52:35Z\n\nWe show that a driven-dissipative cavity-magnonic dimer supports multistability with coexisting symmetric and symmetry-broken steady states. The interplay between magnon Kerr nonlinearity and photon tunneling induces magnon self-trapping, leading to a persistent population imbalance between the two resonators. In the vicinity of saddle-node bifurcations, the system exhibits critical slowing down, with relaxation times far exceeding the intrinsic dissipation scale. Focusing on quan- tum correlations, we analyze the quantum fidelity and mutual information between the intercavity magnon modes. We find that both the infidelity and the mutual information increase sharply near the phase boundaries, providing clear quantum signatures of the multistable and symmetry-broken phases. Our results establish cavity magnonic dimers as a versatile platform for exploring nonlinear nonequilibrium physics in hybrid quantum systems.",
+  "url": "http://arxiv.org/abs/2603.04808v1",
+  "timestamp": "2026-03-05T04:52:35Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "67ddf3d710ab4b9913d5c17295be4fa207b451fa0e6f06a5ba2ce96f9da0c86c",
+  "parent_hash": "b247124b60753d99af50adce18822aaa0e944168cca8727012f55c8a740887ea",
+  "metadata": {
+    "authors": [
+      "Pooja Kumari Gupta",
+      "Amarendra K. Sarma",
+      "Subhadeep Chakraborty"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.04808v1"
+  }
+}

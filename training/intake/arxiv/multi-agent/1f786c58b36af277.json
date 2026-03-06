@@ -1,0 +1,30 @@
+{
+  "id": "1f786c58b36af277",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "Strategic Interactions in Multi-Level Stackelberg Games with Non-Follower Agents and Heterogeneous Leaders",
+  "content": "# Strategic Interactions in Multi-Level Stackelberg Games with Non-Follower Agents and Heterogeneous Leaders\n\nAuthors: Niloofar Aminikalibar, Farzaneh Farhadi, Maria Chli\nPublished: 2026-03-04T21:42:57Z\n\nStrategic interaction in congested systems is commonly modelled using Stackelberg games, where competing leaders anticipate the behaviour of self-interested followers. A key limitation of existing models is that they typically ignore agents who do not directly participate in market competition, yet both contribute to and adapt to congestion. Although such non-follower agents do not generate revenue or respond to market incentives, their behaviour reshapes congestion patterns, which in turn affects the decisions of leaders and followers through shared resources.\n  We argue that overlooking non-followers leads to systematically distorted equilibrium predictions in congestion-coupled markets. To address this, we introduce a three-level Stackelberg framework with heterogeneous leaders differing in decision horizons and feasible actions, strategic followers, and non-follower agents that captures bidirectional coupling between infrastructure decisions, competition, and equilibrium congestion.\n  We instantiate the framework in the context of electric vehicle (EV) charging infrastructure, where charging providers compete with rivals, while EV and non-EV traffic jointly shape congestion. The model illustrates how explicitly accounting for non-followers and heterogeneous competitors qualitatively alters strategic incentives and equilibrium outcomes. Beyond EV charging, the framework applies to a broad class of congestion-coupled multi-agent systems in mobility, energy, and computing markets.",
+  "url": "http://arxiv.org/abs/2603.04628v1",
+  "timestamp": "2026-03-04T21:42:57Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "3db87efabe81921283359eede04242c5f2b4c9e70ba59e7e2b92596cd138a1e2",
+  "parent_hash": "3e99b441bc0604a38265391febde4dd4a372fb6ad08ef1ed2a13adadd120aae5",
+  "metadata": {
+    "authors": [
+      "Niloofar Aminikalibar",
+      "Farzaneh Farhadi",
+      "Maria Chli"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.04628v1"
+  }
+}

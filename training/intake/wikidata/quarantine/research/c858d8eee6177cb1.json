@@ -1,0 +1,25 @@
+{
+  "id": "c858d8eee6177cb1",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Chirality (Q39070951)",
+  "content": "# Chirality\n\nWikidata ID: Q39070951\nDescription: album by John Burke\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q39070951",
+  "timestamp": "2026-03-06T04:18:13.109195",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4923b350b3ed535bfdb8365963397ca9f41e00a1e6540390e44f077cfed09efd",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q39070951",
+    "description": "album by John Burke"
+  }
+}

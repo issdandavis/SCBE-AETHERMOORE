@@ -1,0 +1,30 @@
+{
+  "id": "319d1f45c66f12a0",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2015-4550 \u2014 CVSS 4.3 (UNKNOWN)",
+  "content": "# CVE-2015-4550\n\nCVSS Score: 4.3 (UNKNOWN)\nPublished: 2015-06-17T10:59:07.727\nCWEs: CWE-310\n\nThe Cavium cryptographic-module firmware on Cisco Adaptive Security Appliance (ASA) devices with software 9.3(3) and 9.4(1.1) does not verify the AES-GCM Integrity Check Value (ICV) octets, which makes it easier for man-in-the-middle attackers to spoof IPSec and IKEv2 traffic by modifying packet data, aka Bug ID CSCuu66218.\n\nReferences: http://tools.cisco.com/security/center/viewAlert.x?alertId=39366, http://www.securityfocus.com/bid/75269, http://www.securitytracker.com/id/1032595",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2015-4550",
+  "timestamp": "2026-03-06T04:18:37.160077",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e7f3bba569ad37441c3adc52c0618c4c18b8ac50685ab25a3b543e7e173a3594",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2015-4550",
+    "cvss_score": 4.3,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-310"
+    ],
+    "published": "2015-06-17T10:59:07.727"
+  }
+}

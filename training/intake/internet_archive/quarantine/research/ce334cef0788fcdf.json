@@ -1,0 +1,27 @@
+{
+  "id": "ce334cef0788fcdf",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Monte Carlo study of the ordering of the weakly anisotropic Heisenberg spin glass in magnetic fields",
+  "content": "# Monte Carlo study of the ordering of the weakly anisotropic Heisenberg spin glass in magnetic fields\n\nCreator: Daisuke Imagawa, Hikaru Kawamura\nDate: 2004-08-19T00:00:00Z\nDownloads: 91\nSubjects: \n\nThe ordering of the three-dimensional Heisenberg spin glass with the weak random anisotropy in magnetic fields is studied by extensive equilibrium Monte Carlo simulations. Both the spin and the chirality are monitored. We find strong numerical evidence that a replica symmetry breaking transition occurs in the chiral sector, which accompanies the simultaneous spin-glass order. Despite the similarity in the global symmetry, the ordering behavior of the weakly anisotropic Heisenberg spin glass differs significantly from that of the strongly anisotropic Ising spin glass. The obtained phase diagram in the temperature - magnetic field plane is similar to the experimental phase diagram. Our results highlight the importance of the chirality in the spin-glass ordering of the Heisenberg-like spin glass, and support the spin-chirality decoupling-recoupling scenario of spin-glass transitions.",
+  "url": "https://archive.org/details/arxiv-cond-mat0405139",
+  "timestamp": "2026-03-06T04:17:53.893543",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "cf4b5d3704c2fb687bf734170d4034add34ba80a08902a977f36c5f849428b8e",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-cond-mat0405139",
+    "media_type": "texts",
+    "downloads": 91,
+    "subjects": []
+  }
+}

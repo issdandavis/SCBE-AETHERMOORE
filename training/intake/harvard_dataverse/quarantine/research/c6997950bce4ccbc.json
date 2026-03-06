@@ -1,0 +1,33 @@
+{
+  "id": "c6997950bce4ccbc",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "An Available Water Capacity Pedotransfer Function using Random Forest - 2020 Cornell Soil Health Model",
+  "content": "# An Available Water Capacity Pedotransfer Function using Random Forest - 2020 Cornell Soil Health Model\n\nAuthors: Amsili, Joseph, Harold van Es, Robert Schindelbeck\nPublished: 2024-06-18T20:37:42Z\nSubjects: Agricultural Sciences\nDOI: doi:10.7910/DVN/U5DAEP\n\nIn late 2018, the Cornell Soil Health lab determined that AWC, a valuable, but time-intensive measurement, could be accurately predicted. A CASH database containing 7,232 soil samples was used to develop a Random Forest model to predict Field Capacity, Permanent Wilting Point, and AWC from a suite of measured parameters, including % sand, % silt, % clay, Organic Matter, Active Carbon also known as Permanganate Oxidizable Carbon (POxC), Respiration, Wet Aggregate Stability, Potassium, Magnesium, Iron, and Manganese. The Random Forest model was able to explain more variation in AWC than alternative multiple linear regression models. In Spring 2024, the peer reviewed manuscript, \"Pedotransfer functions for field capacity, permanent wilting point, and available water capacity based on random forest models for routine soil health analysis\" was published. All random forest models and the training dataset are downloadable here.\n\nCitation: Amsili, Joseph; Harold van Es; Robert Schindelbeck, 2022, \"An Available Water Capacity Pedotransfer Function using Random Forest - 2020 Cornell Soil Health Model\", https://doi.org/10.7910/DVN/U5DAEP, Harvard Dataverse, V2, UNF:6:165Gfin1rPR9XGn56TIr9A== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/U5DAEP",
+  "timestamp": "2026-03-06T02:42:33.567193",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d3de2a8d94f7727ece8196a33416363cc8d35e2aa93bebd1d3e03f6cb8367754",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/U5DAEP",
+    "subjects": [
+      "Agricultural Sciences"
+    ],
+    "authors": [
+      "Amsili, Joseph",
+      "Harold van Es",
+      "Robert Schindelbeck"
+    ],
+    "file_count": 11
+  }
+}

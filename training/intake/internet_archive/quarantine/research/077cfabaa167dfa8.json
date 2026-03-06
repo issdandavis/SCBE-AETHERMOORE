@@ -1,0 +1,30 @@
+{
+  "id": "077cfabaa167dfa8",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Efficient and Modular Consensus-Free Reconfiguration for Fault-Tolerant Storage",
+  "content": "# Efficient and Modular Consensus-Free Reconfiguration for Fault-Tolerant Storage\n\nCreator: Eduardo Alchieri, Alysson Bessani, Fabiola Greve, Joni Fraga\nDate: 2016-07-18T00:00:00Z\nDownloads: 37\nSubjects: Distributed, Parallel, and Cluster Computing, Computing Research Repository\n\nQuorum systems are useful tools for implementing consistent and available storage in the presence of failures. These systems usually comprise a static set of servers that provide a fault-tolerant read/write register accessed by a set of clients. We consider a dynamic variant of these systems and propose FreeStore, a set of fault-tolerant protocols that emulates a register in dynamic asynchronous systems in which processes are able to join/leave the servers set during the execution. These protocols use a new abstraction called view generators, that captures the agreement requirements of reconfiguration and can be implemented in different system models with different properties. Particularly interesting, we present a reconfiguration protocol that is modular, efficient, consensus-free and loosely coupled with read/write protocols, improving the overall system performance.",
+  "url": "https://archive.org/details/arxiv-1607.05344",
+  "timestamp": "2026-03-06T03:59:17.368138",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "de01f7320d068c19e59599588389baa526646117a87a699c73b120400eb3e295",
+  "parent_hash": "2da5f516980cbdb270092f148839fdae59e74398586f1932c987a4886a9193c0",
+  "metadata": {
+    "ia_identifier": "arxiv-1607.05344",
+    "media_type": "texts",
+    "downloads": 37,
+    "subjects": [
+      "Distributed, Parallel, and Cluster Computing",
+      "Computing Research Repository"
+    ]
+  }
+}

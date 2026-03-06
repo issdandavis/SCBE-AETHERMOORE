@@ -1,0 +1,30 @@
+{
+  "id": "359d74b0ad896906",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2008-4343 \u2014 CVSS 9.3 (UNKNOWN)",
+  "content": "# CVE-2008-4343\n\nCVSS Score: 9.3 (UNKNOWN)\nPublished: 2008-09-30T17:22:09.537\nCWEs: CWE-20\n\nThe Chilkat XML ChilkatUtil.CkData.1 ActiveX control (ChilkatUtil.dll) 3.0.3.0 and earlier allows remote attackers to create, overwrite, and modify arbitrary files for execution via a call to the (1) SaveToFile, (2) SaveToTempFile, or (3) AppendBinary method.  NOTE: this issue might only be exploitable in limited environments or non-default browser settings.  NOTE: this can be leveraged for remote code execution by accessing files using hcp:// URLs.\n\nReferences: http://secunia.com/advisories/31951, http://www.securityfocus.com/bid/31332, http://www.shinnai.net/xplits/TXT_rNowA1916DKFNUF48NyS",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2008-4343",
+  "timestamp": "2026-03-06T02:41:44.330295",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "8a8839659477cb7cb6f7d4321cee20567cb10df9d60a9d1b574794e09f5cfe53",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2008-4343",
+    "cvss_score": 9.3,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-20"
+    ],
+    "published": "2008-09-30T17:22:09.537"
+  }
+}

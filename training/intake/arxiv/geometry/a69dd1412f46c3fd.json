@@ -1,0 +1,28 @@
+{
+  "id": "a69dd1412f46c3fd",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Interpretable Analytic Calabi-Yau Metrics via Symbolic Distillation",
+  "content": "# Interpretable Analytic Calabi-Yau Metrics via Symbolic Distillation\n\nAuthors: D Yang Eng\nPublished: 2026-02-08T05:51:35Z\n\nCalabi--Yau manifolds are essential for string theory but require computing intractable metrics. Here we show that symbolic regression can distill neural approximations into simple, interpretable formulas. Our five-term expression matches neural accuracy ($R^2 = 0.9994$) with 3,000-fold fewer parameters. Multi-seed validation confirms that geometric constraints select essential features, specifically power sums and symmetric polynomials, while permitting structural diversity. The functional form can be maintained across the studied moduli range ($\u03c8\\in [0, 0.8]$) with coefficients varying smoothly; we interpret these trends as empirical hypotheses within the accuracy regime of the locally-trained teachers ($\u03c3\\approx 8-9\\%$ at $\u03c8\\neq 0$). The formula reproduces physical observables -- volume integrals and Yukawa couplings -- validating that symbolic distillation recovers compact, interpretable models for quantities previously accessible only to black-box networks.",
+  "url": "http://arxiv.org/abs/2602.07834v1",
+  "timestamp": "2026-02-08T05:51:35Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "5e634bb51ff337bca8efc56c08ac5e992d194619ddc87063884e8d53acc6456d",
+  "parent_hash": "88e71cd4ddf0dfb4203c23862d1ae590989804d2b764438197da00d67463d2d3",
+  "metadata": {
+    "authors": [
+      "D Yang Eng"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.07834v1"
+  }
+}

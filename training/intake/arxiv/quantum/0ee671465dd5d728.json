@@ -1,0 +1,29 @@
+{
+  "id": "0ee671465dd5d728",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "From Reachability to Learnability: Geometric Design Principles for Quantum Neural Networks",
+  "content": "# From Reachability to Learnability: Geometric Design Principles for Quantum Neural Networks\n\nAuthors: Vishal S. Ngairangbam, Michael Spannowsky\nPublished: 2026-03-03T15:17:53Z\n\nClassical deep networks are effective because depth enables adaptive geometric deformation of data representations. In quantum neural networks (QNNs), however, depth or state reachability alone does not guarantee this feature-learning capability. We study this question in the pure-state setting by viewing encoded data as an embedded manifold in $\\mathbb{C}P^{2^n-1}$ and analysing infinitesimal unitary actions through Lie-algebra directions. We introduce Classical-to-Lie-algebra (CLA) maps and the criterion of almost Complete Local Selectivity (aCLS), which combines directional completeness with data-dependent local selectivity. Within this framework, we show that data-independent trainable unitaries are complete but non-selective, i.e. learnable rigid reorientations, whereas pure data encodings are selective but non-tunable, i.e. fixed deformations. Hence, geometric flexibility requires a non-trivial joint dependence on data and trainable weights. We further show that accessing high-dimensional deformations of many-qubit state manifolds requires parametrised entangling directions; fixed entanglers such as CNOT alone do not provide adaptive geometric control. Numerical examples validate that CLS-satisfying data re-uploading models outperform non-tunable schemes while requiring only a quarter of the gate operations. Thus, the resulting picture reframes QNN design from state reachability to controllable geometry of hidden quantum representations.",
+  "url": "http://arxiv.org/abs/2603.03071v1",
+  "timestamp": "2026-03-03T15:17:53Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "845d80bf4aeb5336d63da89f7c2d6454e4be1babc29ac503193daf190c27f465",
+  "parent_hash": "9085fb22a75129a4b1f257dcc15acce034036dc8eaa6f16961decebbb92b7e06",
+  "metadata": {
+    "authors": [
+      "Vishal S. Ngairangbam",
+      "Michael Spannowsky"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.03071v1"
+  }
+}

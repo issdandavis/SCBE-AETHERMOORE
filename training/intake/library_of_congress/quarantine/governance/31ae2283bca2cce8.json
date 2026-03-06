@@ -1,0 +1,31 @@
+{
+  "id": "31ae2283bca2cce8",
+  "source": "library_of_congress",
+  "category": "quarantine/governance",
+  "title": "Governance der Kreativwirtschaft : Diagnosen und Handlungsoptionen",
+  "content": "# Governance der Kreativwirtschaft : Diagnosen und Handlungsoptionen\n\nContributors: lange, bastian\nDate: 2009-01-01\nSubjects: cultural industries\n\nIncludes bibliographical references. Includes contributions in English. Description based on print version record; resource not viewed.",
+  "url": "https://www.loc.gov/item/2020717584/",
+  "timestamp": "2026-03-06T04:17:41.942125",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "f57f3cf14cdf2b4ea5a42ecdea6d23155e59e421bf9a28c9d0b2df5d767e0fc1",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "cultural industries"
+    ],
+    "dates": "2009-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

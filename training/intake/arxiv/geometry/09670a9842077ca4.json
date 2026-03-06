@@ -1,0 +1,29 @@
+{
+  "id": "09670a9842077ca4",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "The Cone of J-Hermitian Matrices and a Geometric Mean",
+  "content": "# The Cone of J-Hermitian Matrices and a Geometric Mean\n\nAuthors: Jose Franco, Allan Merino\nPublished: 2026-02-23T17:50:13Z\n\nWe study the cone $\\mathscr{P}_{\\text{J}}$ of positive J-Hermitian matrices associated with an indefinite signature matrix J = $\\text{Id}_{p,q}$. We show that the J-exponential map is bijective and use it to analyze the algebraic and geometric structure of $\\mathscr{P}_{\\text{J}}$. Through a canonical identification with the cone of positive definite matrices, we endow $\\mathscr{P}_{\\text{J}}$ with a natural Riemannian structure. In this setting, we define a J-geometric mean as the midpoint of geodesics and prove that it is uniquely characterized as the solution of a Riccati-type equation.",
+  "url": "http://arxiv.org/abs/2602.21258v1",
+  "timestamp": "2026-02-23T17:50:13Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "5a6e58dd01f79e7bd50914c1f4d71f6c7af07353e79009c90a874e43f01d9d9e",
+  "parent_hash": "0b48732420433189d450b20c0922069e47b80cc525776c7afc44a2ce2df8a022",
+  "metadata": {
+    "authors": [
+      "Jose Franco",
+      "Allan Merino"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.21258v1"
+  }
+}

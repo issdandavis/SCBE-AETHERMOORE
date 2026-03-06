@@ -1,0 +1,30 @@
+{
+  "id": "f6028ab26d9e54c1",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2013-4165 \u2014 CVSS 4.3 (UNKNOWN)",
+  "content": "# CVE-2013-4165\n\nCVSS Score: 4.3 (UNKNOWN)\nPublished: 2013-08-02T12:10:40.487\nCWEs: CWE-200\n\nThe HTTPAuthorized function in bitcoinrpc.cpp in bitcoind 0.8.1 provides information about authentication failure upon detecting the first incorrect byte of a password, which makes it easier for remote attackers to determine passwords via a timing side-channel attack.\n\nReferences: http://openwall.com/lists/oss-security/2013/07/25/5, https://github.com/bitcoin/bitcoin/issues/2838, https://github.com/bitcoin/bitcoin/pull/2845",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2013-4165",
+  "timestamp": "2026-03-06T04:18:33.345175",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "0a3b34aab8f06a10075e6d21d22098ab18b1c37ca5f7fab294cceb17c5edace0",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2013-4165",
+    "cvss_score": 4.3,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-200"
+    ],
+    "published": "2013-08-02T12:10:40.487"
+  }
+}

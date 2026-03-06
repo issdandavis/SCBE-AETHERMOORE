@@ -1,0 +1,278 @@
+[
+  {
+    "angle": "security_vs_math",
+    "description": "Where does security meet mathematics?",
+    "nodes_analyzed": 51,
+    "bridges_found": 51,
+    "top_bridges": [
+      {
+        "id": "8e3dd2e0bbc55d05",
+        "title": "Lambda-randomization: multi-dimensional randomized response made easy",
+        "category": "security",
+        "bridges_to": [
+          "ai",
+          "nlp",
+          "security",
+          "geometry",
+          "machine-learning"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "e71676dc40ac5171",
+        "title": "Robust Single-message Shuffle Differential Privacy Protocol for Accurate Distribution Estimation",
+        "category": "security",
+        "bridges_to": [
+          "distributed",
+          "geometry",
+          "machine-learning",
+          "multi-agent"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "dfbfc2797afd8a36",
+        "title": "A Practical Post-Quantum Distributed Ledger Protocol for Financial Institutions",
+        "category": "security",
+        "bridges_to": [
+          "geometry",
+          "quantum",
+          "security"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "a6db3637f6b1e927",
+        "title": "AgentSCOPE: Evaluating Contextual Privacy Across Agentic Workflows",
+        "category": "security",
+        "bridges_to": [
+          "quantum",
+          "geometry",
+          "machine-learning",
+          "multi-agent"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "3b4adde6d430e84d",
+        "title": "Osmosis Distillation: Model Hijacking with the Fewest Samples",
+        "category": "security",
+        "bridges_to": [
+          "quantum",
+          "geometry",
+          "security"
+        ],
+        "connection_count": 5
+      }
+    ]
+  },
+  {
+    "angle": "ai_vs_governance",
+    "description": "How does AI governance intersect with swarm intelligence?",
+    "nodes_analyzed": 14,
+    "bridges_found": 14,
+    "top_bridges": [
+      {
+        "id": "e241321865fc9d4c",
+        "title": "RealWonder: Real-Time Physical Action-Conditioned Video Generation",
+        "category": "ai",
+        "bridges_to": [
+          "nlp",
+          "quantum",
+          "machine-learning",
+          "security"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "4a2797de300a3261",
+        "title": "Planning in 8 Tokens: A Compact Discrete Tokenizer for Latent World Model",
+        "category": "ai",
+        "bridges_to": [
+          "ai",
+          "distributed",
+          "quantum",
+          "machine-learning"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "262fa51436b667ab",
+        "title": "SAIL: Similarity-Aware Guidance and Inter-Caption Augmentation-based Learning for Weakly-Supervised Dense Video Captioning",
+        "category": "ai",
+        "bridges_to": [
+          "security",
+          "machine-learning",
+          "multi-agent",
+          "distributed",
+          "quantum"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "25576c282f681f52",
+        "title": "RelaxFlow: Text-Driven Amodal 3D Generation",
+        "category": "ai",
+        "bridges_to": [
+          "ai",
+          "quantum",
+          "machine-learning",
+          "security"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "44bdb5e7a92a412a",
+        "title": "Residual RL--MPC for Robust Microrobotic Cell Pushing Under Time-Varying Flow",
+        "category": "ai",
+        "bridges_to": [
+          "nlp",
+          "multi-agent",
+          "quantum",
+          "security"
+        ],
+        "connection_count": 5
+      }
+    ]
+  },
+  {
+    "angle": "nlp_vs_geometry",
+    "description": "Language models and geometric embeddings",
+    "nodes_analyzed": 79,
+    "bridges_found": 79,
+    "top_bridges": [
+      {
+        "id": "990722b082a67ce7",
+        "title": "Leveraging LLM Parametric Knowledge for Fact Checking without Retrieval",
+        "category": "nlp",
+        "bridges_to": [
+          "nlp",
+          "distributed",
+          "multi-agent"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "1348f070a0c9e8c7",
+        "title": "Distributed Partial Information Puzzles: Examining Common Ground Construction Under Epistemic Asymmetry",
+        "category": "nlp",
+        "bridges_to": [
+          "nlp",
+          "distributed",
+          "multi-agent"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "948744d8315c05f7",
+        "title": "DEBISS: a Corpus of Individual, Semi-structured and Spoken Debates",
+        "category": "nlp",
+        "bridges_to": [
+          "distributed",
+          "security",
+          "machine-learning",
+          "multi-agent"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "2d28b14f251a0556",
+        "title": "FlashAttention-4: Algorithm and Kernel Pipelining Co-Design for Asymmetric Hardware Scaling",
+        "category": "nlp",
+        "bridges_to": [
+          "ai",
+          "distributed",
+          "machine-learning",
+          "security"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "e050f87e048a9969",
+        "title": "The Extra Vanishing Structure and Nonlinear Stability of Multi-Dimensional Rarefaction Waves: The Geometric Weighted Energy Estimates",
+        "category": "geometry",
+        "bridges_to": [
+          "ai",
+          "quantum",
+          "geometry",
+          "machine-learning"
+        ],
+        "connection_count": 5
+      }
+    ]
+  },
+  {
+    "angle": "lore_vs_research",
+    "description": "Narrative patterns in research structures",
+    "nodes_analyzed": 0,
+    "bridges_found": 0,
+    "top_bridges": []
+  },
+  {
+    "angle": "cross_domain",
+    "description": "Highest-connected nodes across all categories",
+    "nodes_analyzed": 20,
+    "bridges_found": 20,
+    "top_bridges": [
+      {
+        "id": "8af9046f98b5e59f",
+        "title": "RoboPocket: Improve Robot Policies Instantly with Your Phone",
+        "category": "machine-learning",
+        "bridges_to": [
+          "ai",
+          "machine-learning",
+          "security"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "38b55fc720e9be13",
+        "title": "Censored LLMs as a Natural Testbed for Secret Knowledge Elicitation",
+        "category": "machine-learning",
+        "bridges_to": [
+          "ai",
+          "nlp",
+          "security",
+          "geometry",
+          "machine-learning"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "9fcb54db6adc375a",
+        "title": "SurvHTE-Bench: A Benchmark for Heterogeneous Treatment Effect Estimation in Survival Analysis",
+        "category": "machine-learning",
+        "bridges_to": [
+          "ai",
+          "nlp",
+          "security",
+          "geometry",
+          "quantum"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "990722b082a67ce7",
+        "title": "Leveraging LLM Parametric Knowledge for Fact Checking without Retrieval",
+        "category": "nlp",
+        "bridges_to": [
+          "nlp",
+          "distributed",
+          "multi-agent"
+        ],
+        "connection_count": 5
+      },
+      {
+        "id": "1348f070a0c9e8c7",
+        "title": "Distributed Partial Information Puzzles: Examining Common Ground Construction Under Epistemic Asymmetry",
+        "category": "nlp",
+        "bridges_to": [
+          "nlp",
+          "distributed",
+          "multi-agent"
+        ],
+        "connection_count": 5
+      }
+    ]
+  }
+]

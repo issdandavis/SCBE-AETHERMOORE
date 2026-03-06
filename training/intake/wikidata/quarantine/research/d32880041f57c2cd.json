@@ -1,0 +1,25 @@
+{
+  "id": "d32880041f57c2cd",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Golden ratio sparse MRI using tiny golden angles (Q50887197)",
+  "content": "# Golden ratio sparse MRI using tiny golden angles\n\nWikidata ID: Q50887197\nDescription: scientific article published on July 7, 2015\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q50887197",
+  "timestamp": "2026-03-06T02:41:14.149653",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "fa9417b2e55ae31109005104280e170a179059961dde8858535bba6a79f3f3c4",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q50887197",
+    "description": "scientific article published on July 7, 2015"
+  }
+}

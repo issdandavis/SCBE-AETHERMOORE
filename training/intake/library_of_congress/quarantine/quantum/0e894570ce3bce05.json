@@ -1,0 +1,31 @@
+{
+  "id": "0e894570ce3bce05",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "Elementary treatise on physics, experimental and applied.",
+  "content": "# Elementary treatise on physics, experimental and applied.\n\nContributors: atkinson, e. (edmund), ganot, a. (adolphe)\nDate: 1868\nSubjects: physics\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/17008559/",
+  "timestamp": "2026-03-06T04:17:18.822566",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "bc8acd867172c248324aaf4f1744fcc5446cbf2d2f8aa51dba45c35f23409741",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "physics"
+    ],
+    "dates": "1868",
+    "original_format": [
+      "book"
+    ]
+  }
+}

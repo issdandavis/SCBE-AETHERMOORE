@@ -1,0 +1,32 @@
+{
+  "id": "8882918be0d8a3be",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Kenyan Political Leader Sentences",
+  "content": "# Kenyan Political Leader Sentences\n\nAuthors: Pair, Emma\nPublished: 2021-12-08T02:05:50Z\nSubjects: Computer and Information Science, Social Sciences\nDOI: doi:10.7910/DVN/WFIUIU\n\nThese are sentences from Daily Nation article text, grouped by years of three. We pulled sentences containing male and female gender nouns (female1 and male1) and the names of male and female Kenyan political leaders (female2 and male2) and the two surrounding sentences.\n\nCitation: Pair, Emma, 2021, \"Kenyan Political Leader Sentences\", https://doi.org/10.7910/DVN/WFIUIU, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/WFIUIU",
+  "timestamp": "2026-03-06T02:42:11.933362",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "70c37a01cd7141c32d77aa129ee24e2f5acd5e6eea321344f7eda94a35cdf035",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/WFIUIU",
+    "subjects": [
+      "Computer and Information Science",
+      "Social Sciences"
+    ],
+    "authors": [
+      "Pair, Emma"
+    ],
+    "file_count": 24
+  }
+}

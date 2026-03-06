@@ -1,0 +1,31 @@
+{
+  "id": "ce4dee8957474a5a",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Exploring Challenges in Developing Edge-Cloud-Native Applications Across Multiple Business Domains",
+  "content": "# Exploring Challenges in Developing Edge-Cloud-Native Applications Across Multiple Business Domains\n\nAuthors: Pawissanutt Lertpongrujikorn, Hai Duc Nguyen, Juahn Kwon, Mohsen Amini Salehi\nPublished: 2026-03-04T05:15:33Z\n\nAs the convergence of cloud computing and advanced networking continues to reshape modern software development, edge-cloud-native paradigms have become essential for enabling scalable, resilient, and agile digital services that depend on high-performance, low-latency, and reliable communication. This study investigates the practical challenges of developing, deploying, and maintaining edge-cloud-native applications through in-depth interviews with professionals from diverse domains, including IT, finance, healthcare, education, and industry. Despite significant advancements in cloud technologies, practitioners, particularly those from non-technical backgrounds-continue to encounter substantial complexity stemming from fragmented toolchains, steep learning curves, and operational overhead of managing distributed networking and computing, ensuring consistent performance across hybrid environments, and navigating steep learning curves at the cloud-network boundary. Across sectors, participants consistently prioritized productivity, Quality of Service, and usability over conventional concerns such as cost or migration. These findings highlight the need for operationally simplified, SLA-aware, and developer-friendly platforms that streamline the full application lifecycle. This study contributes a practice-informed perspective to support the alignment of edge-cloud-native systems with the realities and needs of modern enterprises, offering critical insights for the advancement of seamless cloud-network convergence.",
+  "url": "http://arxiv.org/abs/2603.03738v1",
+  "timestamp": "2026-03-04T05:15:33Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "7791b513e668a7db07d4d6300fdb40f7345fc7fc3ff09588bd7422794a21551b",
+  "parent_hash": "613f9370efb6c2b65e65255e7be06a2a81b57177d3d2a1d56ff5719c04a2cc22",
+  "metadata": {
+    "authors": [
+      "Pawissanutt Lertpongrujikorn",
+      "Hai Duc Nguyen",
+      "Juahn Kwon",
+      "Mohsen Amini Salehi"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.03738v1"
+  }
+}
