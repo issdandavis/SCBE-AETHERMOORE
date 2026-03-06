@@ -1,0 +1,346 @@
+/* ═══════════════════════════════════════════════════════════════
+   Vibe Coder Conference — Global Styles
+   Dark-first, terminal-inspired, with SCBE governance accents.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-card: #1a1a2e;
+  --bg-card-hover: #222240;
+  --border: #2a2a4a;
+  --border-accent: #4a4a8a;
+  --text-primary: #e0e0f0;
+  --text-secondary: #8888aa;
+  --text-muted: #555570;
+  --accent-blue: #4488ff;
+  --accent-purple: #8844ff;
+  --accent-green: #44cc88;
+  --accent-amber: #ffaa44;
+  --accent-red: #ff4466;
+  --accent-cyan: #44ccdd;
+  --gradient-hero: linear-gradient(135deg, #1a1a3e 0%, #0a0a2a 50%, #0f1020 100%);
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body, #root {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--accent-blue);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+button {
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius);
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--accent-blue);
+  color: white;
+}
+.btn-primary:hover { background: #3377ee; }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--accent-blue);
+  border: 1px solid var(--border-accent);
+}
+.btn-secondary:hover { background: var(--bg-card); }
+
+.btn-success {
+  background: var(--accent-green);
+  color: #0a0a0f;
+}
+.btn-success:hover { background: #33bb77; }
+
+.btn-danger {
+  background: var(--accent-red);
+  color: white;
+}
+
+input, textarea, select {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  font-family: var(--font-sans);
+  width: 100%;
+  transition: border-color 0.2s;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+/* ═══════ Layout ═══════ */
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.app-header .logo {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.app-header nav {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.app-header nav a {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.app-header nav a:hover { color: var(--text-primary); text-decoration: none; }
+
+.app-main {
+  flex: 1;
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ═══════ Cards ═══════ */
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--border-accent); }
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+/* ═══════ Badges ═══════ */
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-allow { background: rgba(68, 204, 136, 0.15); color: var(--accent-green); border: 1px solid rgba(68, 204, 136, 0.3); }
+.badge-quarantine { background: rgba(255, 170, 68, 0.15); color: var(--accent-amber); border: 1px solid rgba(255, 170, 68, 0.3); }
+.badge-deny { background: rgba(255, 68, 102, 0.15); color: var(--accent-red); border: 1px solid rgba(255, 68, 102, 0.3); }
+.badge-escalate { background: rgba(136, 68, 255, 0.15); color: var(--accent-purple); border: 1px solid rgba(136, 68, 255, 0.3); }
+.badge-live { background: rgba(255, 68, 102, 0.2); color: #ff6688; border: 1px solid rgba(255, 68, 102, 0.4); animation: pulse 2s infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ═══════ Governance Ribbon ═══════ */
+
+.governance-ribbon {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.governance-stat {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.governance-stat .value {
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+/* ═══════ Ticker ═══════ */
+
+.ticker-bar {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 20px;
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.ticker-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.ticker-amount {
+  color: var(--accent-green);
+  font-weight: 700;
+}
+
+/* ═══════ Hero ═══════ */
+
+.hero {
+  background: var(--gradient-hero);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 64px 48px;
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.hero h1 {
+  font-family: var(--font-mono);
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto 32px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+/* ═══════ Forms ═══════ */
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* ═══════ Live Room ═══════ */
+
+.live-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  height: calc(100vh - 120px);
+}
+
+.live-stage {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
+
+.live-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.commit-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.commit-panel h3 {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--accent-cyan);
+  margin-bottom: 16px;
+}
+
+.commit-tiers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.commit-tier-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-align: center;
+}
+.commit-tier-btn:hover {
+  border-color: var(--accent-green);
+  background: rgba(68, 204, 136, 0.1);
+}
+
+/* ═══════ Responsive ═══════ */
+
+@media (max-width: 768px) {
+  .app-main { padding: 16px; }
+  .hero { padding: 32px 24px; }
+  .hero h1 { font-size: 1.6rem; }
+  .hero-actions { flex-direction: column; }
+  .card-grid { grid-template-columns: 1fr; }
+  .live-layout { grid-template-columns: 1fr; }
+}
