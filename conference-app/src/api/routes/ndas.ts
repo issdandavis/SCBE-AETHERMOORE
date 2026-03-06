@@ -18,6 +18,12 @@ import type { NDARecord, ApiResponse, AccessLevel } from '../../shared/types/ind
 
 const router = Router();
 
+/** Express v5 params may be string | string[]; extract safely */
+function param(req: Request, name: string): string {
+  const v = req.params[name];
+  return Array.isArray(v) ? v[0] : v;
+}
+
 router.use(authMiddleware);
 
 /**
@@ -95,7 +101,7 @@ router.get('/status', requireRole('investor'), (req: Request, res: Response) => 
  * Get the access level for an investor viewing a specific project.
  */
 router.get('/access/:projectId', requireRole('investor'), (req: Request, res: Response) => {
-  const project = store.getProject(req.params.projectId);
+  const project = store.getProject(param(req, 'projectId'));
   if (!project) {
     res.status(404).json({ success: false, error: 'Project not found' });
     return;

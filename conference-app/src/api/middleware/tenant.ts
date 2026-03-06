@@ -47,7 +47,7 @@ export function tenantResolver(req: Request, _res: Response, next: NextFunction)
   }
 
   // 3. Route param
-  const orgSlug = req.params.orgSlug;
+  const orgSlug = req.params.orgSlug as string | undefined;
   if (orgSlug) {
     req.org = tenantService.getBySlug(orgSlug);
   }
