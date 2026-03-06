@@ -1,0 +1,34 @@
+{
+  "id": "f0ddf69ac3c1b182",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "LBM: Hierarchical Large Auto-Bidding Model via Reasoning and Acting",
+  "content": "# LBM: Hierarchical Large Auto-Bidding Model via Reasoning and Acting\n\nAuthors: Yewen Li, Zhiyi Lyu, Peng Jiang, Qingpeng Cai, Fei Pan, Bo An, Peng Jiang\nPublished: 2026-03-05T13:01:21Z\n\nThe growing scale of ad auctions on online advertising platforms has intensified competition, making manual bidding impractical and necessitating auto-bidding to help advertisers achieve their economic goals. Current auto-bidding methods have evolved to use offline reinforcement learning or generative methods to optimize bidding strategies, but they can sometimes behave counterintuitively due to the black-box training manner and limited mode coverage of datasets, leading to challenges in understanding task status and generalization in dynamic ad environments. Large language models (LLMs) offer a promising solution by leveraging prior human knowledge and reasoning abilities to improve auto-bidding performance. However, directly applying LLMs to auto-bidding faces difficulties due to the need for precise actions in competitive auctions and the lack of specialized auto-bidding knowledge, which can lead to hallucinations and suboptimal decisions. To address these challenges, we propose a hierarchical Large autoBidding Model (LBM) to leverage the reasoning capabilities of LLMs for developing a superior auto-bidding strategy. This includes a high-level LBM-Think model for reasoning and a low-level LBM-Act model for action generation. Specifically, we propose a dual embedding mechanism to efficiently fuse two modalities, including language and numerical inputs, for language-guided training of the LBM-Act; then, we propose an offline reinforcement fine-tuning technique termed GQPO for mitigating the LLM-Think's hallucinations and enhancing decision-making performance without simulation or real-world rollout like previous multi-turn LLM-based methods. Experiments demonstrate the superiority of a generative backbone based on our LBM, especially in an efficient training manner and generalization ability.",
+  "url": "http://arxiv.org/abs/2603.05134v1",
+  "timestamp": "2026-03-05T13:01:21Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "df07d53dc8062e379c242e34f4eedbef6a981ad12e2a11aa18c25c7e82c824a3",
+  "parent_hash": "1d6ae8bc6266f8c1ecab5bd3c57af61940f43f9c7a668a0ebc3c751b5affe27b",
+  "metadata": {
+    "authors": [
+      "Yewen Li",
+      "Zhiyi Lyu",
+      "Peng Jiang",
+      "Qingpeng Cai",
+      "Fei Pan",
+      "Bo An",
+      "Peng Jiang"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05134v1"
+  }
+}

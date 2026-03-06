@@ -1,0 +1,33 @@
+{
+  "id": "c25ce3ba0d214a1b",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "Visual-Informed Speech Enhancement Using Attention-Based Beamforming",
+  "content": "# Visual-Informed Speech Enhancement Using Attention-Based Beamforming\n\nAuthors: Chihyun Liu, Jiaxuan Fan, Mingtung Sun, Michael Anthony, Mingsian R. Bai, Yu Tsao\nPublished: 2026-03-05T15:19:41Z\n\nRecent studies have demonstrated that incorporating auxiliary information, such as speaker voiceprint or visual cues, can substantially improve Speech Enhancement (SE) performance. However, single-channel methods often yield suboptimal results in low signal-to-noise ratio (SNR) conditions, when there is high reverberation, or in complex scenarios involving dynamic speakers, overlapping speech, or non-stationary noise. To address these issues, we propose a novel Visual-Informed Neural Beamforming Network (VI-NBFNet), which integrates microphone array signal processing and deep neural networks (DNNs) using multimodal input features. The proposed network leverages a pretrained visual speech recognition model to extract lip movements as input features, which serve for voice activity detection (VAD) and target speaker identification. The system is intended to handle both static and moving speakers by introducing a supervised end-to-end beamforming framework equipped with an attention mechanism. The experimental results demonstrated that the proposed audiovisual system has achieved better SE performance and robustness for both stationary and dynamic speaker scenarios, compared to several baseline methods.",
+  "url": "http://arxiv.org/abs/2603.05270v1",
+  "timestamp": "2026-03-05T15:19:41Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "459820bf6110b7106d275c388b2880555b45b4f07eb9763b6ecc2288946db375",
+  "parent_hash": "2321234bb94f3c103f2689eced25cae27146650ff8dfbf3f921ab6e1db50aa89",
+  "metadata": {
+    "authors": [
+      "Chihyun Liu",
+      "Jiaxuan Fan",
+      "Mingtung Sun",
+      "Michael Anthony",
+      "Mingsian R. Bai",
+      "Yu Tsao"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05270v1"
+  }
+}

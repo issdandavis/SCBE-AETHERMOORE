@@ -1,0 +1,33 @@
+{
+  "id": "a54167be60628969",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Transducing Language Models",
+  "content": "# Transducing Language Models\n\nAuthors: V\u00e9steinn Sn\u00e6bjarnarson, Samuel Kiegeland, Tianyu Liu, Reda Boumasmoud, Ryan Cotterell, Tim Vieira\nPublished: 2026-03-05T14:04:08Z\n\nModern language models define distributions over strings, but downstream tasks often require different output formats. For instance, a model that generates byte-pair strings does not directly produce word-level predictions, and a DNA model does not directly produce amino-acid sequences. In such cases, a deterministic string-to-string transformation can convert the model's output to the desired form. This is a familiar pattern in probability theory: applying a function $f$ to a random variable $X\\sim p$ yields a transformed random variable $f(X)$ with an induced distribution. While such transformations are occasionally used in language modeling, prior work does not treat them as yielding new, fully functional language models. We formalize this perspective and introduce a general framework for language models derived from deterministic string-to-string transformations. We focus on transformations representable as finite-state transducers -- a commonly used state-machine abstraction for efficient string-to-string mappings. We develop algorithms that compose a language model with an FST to *marginalize* over source strings mapping to a given target, propagating probabilities through the transducer without altering model parameters and enabling *conditioning* on transformed outputs. We present an exact algorithm, an efficient approximation, and a theoretical analysis. We conduct experiments in three domains: converting language models from tokens to bytes, from tokens to words, and from DNA to amino acids. These experiments demonstrate inference-time adaptation of pretrained language models to match application-specific output requirements.",
+  "url": "http://arxiv.org/abs/2603.05193v1",
+  "timestamp": "2026-03-05T14:04:08Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "2c8577d29c5190e47f90a834f5c162ae9bae16f26bfebbdc568946799db36649",
+  "parent_hash": "11c184306f5693a491fdc81affc77906b7c055228093c0c9d9039439a11e7146",
+  "metadata": {
+    "authors": [
+      "V\u00e9steinn Sn\u00e6bjarnarson",
+      "Samuel Kiegeland",
+      "Tianyu Liu",
+      "Reda Boumasmoud",
+      "Ryan Cotterell",
+      "Tim Vieira"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05193v1"
+  }
+}

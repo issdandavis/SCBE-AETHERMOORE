@@ -1,0 +1,28 @@
+{
+  "id": "4933be2c5f59f465",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "The Semantic Arrow of Time, Part II: The Semantics of Open Atomic Ethernet",
+  "content": "# The Semantic Arrow of Time, Part II: The Semantics of Open Atomic Ethernet\n\nAuthors: Paul Borrill\nPublished: 2026-03-04T05:29:23Z\n\nThis is the second of five papers comprising The Semantic Arrow of Time. Part I established that computing's arrow of time is semantic rather than thermodynamic, and that the Forward-In-Time-Only (FITO) assumption constitutes a category mistake. This paper develops the constructive alternative. We present the semantics of Open Atomic Ethernet (OAE) links as a concrete realization of a non-FITO protocol architecture. The key insight is that causal order is not assumed a priori but created through transaction structure: the link state machine progresses through TENTATIVE to REFLECTING to COMMITTED, with the option to abort at any point before commitment. Delivery does not imply commitment; commitment requires reflective acknowledgment -- proof that information has round-tripped and been semantically validated by both endpoints. We formalize this through three frameworks. First, the OAE link state machine, a six-state finite automaton whose normative invariants guarantee that semantic corruption cannot occur at the link level. Second, Indefinite Logical Timestamps (ILT), a four-valued causal structure that admits a genuinely indefinite relation between concurrent events, resolving only after symmetric link-level exchange. Third, the Slowdown Theorem applied to links, which establishes that round-trip measurement is the minimum interaction required to establish causal order. We show that ILT is strictly more expressive than Definite Causal Order systems for reversible link protocols. We connect these results to the Knowledge Balance Principle from quantum information theory. The paper concludes with a comparative analysis showing that OAE achieves infinite consensus number while RDMA, NVLink, and UALink remain limited to finite consensus numbers due to their FITO semantics.",
+  "url": "http://arxiv.org/abs/2603.03743v1",
+  "timestamp": "2026-03-04T05:29:23Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "613f9370efb6c2b65e65255e7be06a2a81b57177d3d2a1d56ff5719c04a2cc22",
+  "parent_hash": "d105b85a6c10a1db0c5c74555bd6765a185166e68e8da94fe69f91e123f72fdf",
+  "metadata": {
+    "authors": [
+      "Paul Borrill"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.03743v1"
+  }
+}

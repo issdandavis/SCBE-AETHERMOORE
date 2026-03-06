@@ -1,0 +1,34 @@
+{
+  "id": "c5509c6ec96c8e67",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Generalization of lattice Dirac operator index",
+  "content": "# Generalization of lattice Dirac operator index\n\nAuthors: Shoto Aoki, Hajime Fujita, Hidenori Fukaya, Mikio Furuta, Shinichiroh Matsuo, Tetsuya Onogi, Satoshi Yamaguchi\nPublished: 2026-02-26T10:51:56Z\n\nWe provide a comprehensive lattice formulation of various types of the Dirac operator indices, employing $K$-theory to classify the Wilson Dirac operator via its spectral flow. In contrast to the index of the overlap Dirac operator defined through the Ginsparg-Wilson relation, which is restricted to flat tori in even dimensions, our formulation offers several key advantages: 1) It can be applied straightforwardly to the Atiyah-Patodi-Singer index for manifolds with boundary. 2) The boundary can be curved, allowing for the inclusion of gravitational background effects. 3) The mod-2 index in both even and odd dimensions can be defined as a natural extension of the same formulation. In this talk, we present the mathematical proof and provide numerical evidence supporting the formulation.",
+  "url": "http://arxiv.org/abs/2602.22858v1",
+  "timestamp": "2026-02-26T10:51:56Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "1a8a9c49c8beb287f1b1222228e0bf177e65e4c3d9b9aae261cb1c9c6efe9fa2",
+  "parent_hash": "5e807f71337c3da29618de530783284b5591e9b2942a7cb2d4edc3e095c7cbcf",
+  "metadata": {
+    "authors": [
+      "Shoto Aoki",
+      "Hajime Fujita",
+      "Hidenori Fukaya",
+      "Mikio Furuta",
+      "Shinichiroh Matsuo",
+      "Tetsuya Onogi",
+      "Satoshi Yamaguchi"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.22858v1"
+  }
+}

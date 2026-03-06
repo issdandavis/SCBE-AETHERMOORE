@@ -1,0 +1,33 @@
+{
+  "id": "a0a2980d52b7c728",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Developing an Open-Source Multi-Agent Simulation Environment for Connected Autonomous Vehicles",
+  "content": "# Developing an Open-Source Multi-Agent Simulation Environment for Connected Autonomous Vehicles\n\nAuthors: Negrut, Dan, Serban, Radu, Elmquist, Asher\nPublished: 2019-08-06T16:15:01Z\nSubjects: Engineering\nDOI: doi:10.7910/DVN/WF4ZO5\n\nThis document contains an overview of the software infrastructure developed under the SAFER-SIM project \u201cDeveloping an Open Source Multi-Agent Simulation Environment for Connected Autonomous Vehicles\u201d. We provide a description of the four foundational simulation elements \u2013 agent dynamics, sensing, communication, and virtual worlds \u2013 that anchor Synchrono, a simulation platform for connected and autonomous agents. Synchrono is built around a \u201cserver-paradigm\u201d, where two specialized servers are in charge of maintaining time, space, and communication coherence. The first server, called the Synchrono Dynamics Server, maintains coherence in space and time for all agents participating in a scenario. This would enable the dynamics of a collection of Synchrono clients to advance their evolution in time in a coherent fashion. Moreover, for sensing purposes, the clients will be in a position to sense each other, owing to the space coherence attribute of a scenario enabled by the dynamics server. The Synchrono Communication Server establishes a virtualization layer that provides a \u201ccommunication space\u201d in which messages are sent and received in a time coherent fashion. Synchrono is demonstrated in conjunction with a 30-vehicle simulation that builds off a busy Madison intersection between University Avenue and Park Street. The simulated scenario touches on several aspects of Synchrono, such as vehicle dynamics simulation, agent communication, sensor simulation, and synthetic virtual worlds\n\nCitation: Negrut, Dan; Serban, Radu; Elmquist, Asher, 2019, \"Developing an Open-Source Multi-Agent Simulation Environment for Connected Autonomous Vehicles\", https://doi.org/10.7910/DVN/WF4ZO5, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/WF4ZO5",
+  "timestamp": "2026-03-06T04:18:49.817449",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "f3407439506bb8bc175d7390cdd73f565162ca9cc2f0d7b851719db7b77fb2ed",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/WF4ZO5",
+    "subjects": [
+      "Engineering"
+    ],
+    "authors": [
+      "Negrut, Dan",
+      "Serban, Radu",
+      "Elmquist, Asher"
+    ],
+    "file_count": 26
+  }
+}

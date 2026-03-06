@@ -1,0 +1,34 @@
+{
+  "id": "f168b11de8422753",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "The art of insight in science and engineering : mastering complexity",
+  "content": "# The art of insight in science and engineering : mastering complexity\n\nContributors: mahajan, sanjoy\nDate: 2014-01-01\nSubjects: statistical physics, problem solving, hypothesis, estimation theory\n\nIncludes bibliographical references (pages 359-361) and index. Description based on print version record; resource not viewed.",
+  "url": "https://www.loc.gov/item/2020717571/",
+  "timestamp": "2026-03-06T04:17:33.805671",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "852de62b108cbd680e0a465b1803265e65d094d5f900d39c49210cd1f36e46e3",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "statistical physics",
+      "problem solving",
+      "hypothesis",
+      "estimation theory"
+    ],
+    "dates": "2014-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

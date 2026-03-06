@@ -1,0 +1,31 @@
+{
+  "id": "d0725add3b7791a6",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2022-36311 \u2014 CVSS 6.1 (MEDIUM)",
+  "content": "# CVE-2022-36311\n\nCVSS Score: 6.1 (MEDIUM)\nPublished: 2022-08-16T01:15:13.960\nCWEs: CWE-79, CWE-79\n\nAirspan AirVelocity 1500 prior to software version 15.18.00.2511 is vulnerable to injection leading to XSS in the SNMP community field in the eNodeB's web management UI. This issue may affect other AirVelocity and AirSpeed models.\n\nReferences: https://helpdesk.airspan.com/browse/TRN3-1694, https://helpdesk.airspan.com/browse/TRN3-1694",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-36311",
+  "timestamp": "2026-03-06T02:41:55.735660",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "309dbc5394d02ec18f828e7b2abc8fbca86e6c7a800d0435dd2c442f7d205e2f",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2022-36311",
+    "cvss_score": 6.1,
+    "severity": "MEDIUM",
+    "cwes": [
+      "CWE-79",
+      "CWE-79"
+    ],
+    "published": "2022-08-16T01:15:13.960"
+  }
+}

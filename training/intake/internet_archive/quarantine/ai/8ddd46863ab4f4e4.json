@@ -1,0 +1,38 @@
+{
+  "id": "8ddd46863ab4f4e4",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Artificial intelligence and the future of testing",
+  "content": "# Artificial intelligence and the future of testing\n\nCreator: \nDate: 1990-01-01T00:00:00Z\nDownloads: 59\nSubjects: Educational tests and measurements -- United States -- Congresses, Artificial intelligence -- Educational applications -- Congresses, Computer-assisted instruction -- United States -- Congresses, Computer-Assisted Instruction, Tests et mesures en e\u0301ducation -- E\u0301tats-Unis -- Congre\u0300s\n\nxiv, 329 pages : 24 cm Includes bibliographical references and indexes Artificial intelligence and its implications for the future of ETS's tests / Roy Freedle -- From interactive instruction to interactive testing / Tryg A. Ager -- The Teacher's Apprentice Project : building an algebra tutor / Robert Milson, Matthew W. Lewis, and John R. Anderson -- A theory of graph comprehension / Steven Pinker -- What computers can see : a sketch of accomplishments in computer vision, with speculations on its use in educational testing / Leslie Kitchen -- Issues for a theory of analogical learning / Mark Burstein and Beth Adelson -- The access and use of relevant information : a specific case and general issues / Brian H. Ross -- Modeling software design within a problem-space architecture / Beth Adelson -- Memory organization and retrieval : an artificial intelligence perspective / Lisa F. Rau -- Two hurdles for natural language systems / Paul S. Jacobs Comments on artificial intelligence research : related issues in education and testing / Saul Amarel -- Communicative functions in interactions in natural language and other modalities / Aravind K. Joshi -- Assessment of an expert system's ability to grade and diagnose automatically student's constructed responses to computer science problems / Randy Elliot Bennett [and others]",
+  "url": "https://archive.org/details/artificialintell0000unse_z8y6",
+  "timestamp": "2026-03-06T02:40:48.213771",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "316b7e56c15da1d7293d536093495fea5cdc506e6289e6f7be0081492f13f5ef",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "artificialintell0000unse_z8y6",
+    "media_type": "texts",
+    "downloads": 59,
+    "subjects": [
+      "Educational tests and measurements -- United States -- Congresses",
+      "Artificial intelligence -- Educational applications -- Congresses",
+      "Computer-assisted instruction -- United States -- Congresses",
+      "Computer-Assisted Instruction",
+      "Tests et mesures en e\u0301ducation -- E\u0301tats-Unis -- Congre\u0300s",
+      "Intelligence artificielle -- Applications en e\u0301ducation -- Congre\u0300s",
+      "Enseignement assiste\u0301 par ordinateur -- E\u0301tats-Unis -- Congre\u0300s",
+      "Artificial intelligence -- Educational applications",
+      "Computer-assisted instruction",
+      "Educational tests and measurements"
+    ]
+  }
+}

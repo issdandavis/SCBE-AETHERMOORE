@@ -1,0 +1,25 @@
+{
+  "id": "6717328f534d62d8",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Penrose tiling (Q585688)",
+  "content": "# Penrose tiling\n\nWikidata ID: Q585688\nDescription: non-periodic tiling of the plane\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q585688",
+  "timestamp": "2026-03-06T04:18:16.815762",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e7405fa061aca205e85e45a877c5482113920565a8884a86430fc08385da9d83",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q585688",
+    "description": "non-periodic tiling of the plane"
+  }
+}

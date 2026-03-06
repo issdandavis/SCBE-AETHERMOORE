@@ -1,0 +1,30 @@
+{
+  "id": "6b9c1b407cf2ff2c",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "QAOA-Predictor: Forecasting Success Probabilities and Minimal Depths for Efficient Fixed-Parameter Optimization",
+  "content": "# QAOA-Predictor: Forecasting Success Probabilities and Minimal Depths for Efficient Fixed-Parameter Optimization\n\nAuthors: Rodrigo Coelho, Georg Kruse, Jeanette Miriam Lorenz\nPublished: 2026-03-03T13:43:44Z\n\nQuantum Computing promises to solve complex combinatorial optimization problems more efficiently than classical methods, with the Quantum Approximate Optimization Algorithm (QAOA) being a leading candidate. Recent fixed-parameter variations of QAOA eliminate costly run-time optimization, but determining their optimal initialization as well as the number of required layers (p) for a target solution remains a critical, unsolved challenge. In this work, we propose a novel approach using a Graph Neural Network (GNN) to predict QAOA performance: Based on a graph representation of the problem, the GNN forecasts the probability of the optimal solution in the resulting distribution across different parameter initializations and layer depths for a wide variety of combinatorial optimization problems. We demonstrate that the GNN accurately predicts QAOA performance within a 10% margin of the true values. Furthermore, the model exhibits strong generalization capabilities across unseen problem classes, larger problem sizes, and higher layer counts. Our approach allows to identify viable problem instances for QAOA and to select an adequate parameter initialization strategy with minimal layer depth, without the need of costly parameter optimization.",
+  "url": "http://arxiv.org/abs/2603.02990v1",
+  "timestamp": "2026-03-03T13:43:44Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "ec1c94eb2a1d9725b737a419b9a5e2b83d6f86f6bbd380cabb85f8c07cbc91dc",
+  "parent_hash": "845d80bf4aeb5336d63da89f7c2d6454e4be1babc29ac503193daf190c27f465",
+  "metadata": {
+    "authors": [
+      "Rodrigo Coelho",
+      "Georg Kruse",
+      "Jeanette Miriam Lorenz"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.02990v1"
+  }
+}

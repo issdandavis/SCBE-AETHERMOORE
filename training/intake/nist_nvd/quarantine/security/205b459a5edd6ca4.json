@@ -1,0 +1,30 @@
+{
+  "id": "205b459a5edd6ca4",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2012-3247 \u2014 CVSS 4.9 (UNKNOWN)",
+  "content": "# CVE-2012-3247\n\nCVSS Score: 4.9 (UNKNOWN)\nPublished: 2012-08-16T10:38:07.890\nCWEs: NVD-CWE-noinfo\n\nUnspecified vulnerability on the HP Integrity Server BL860c i2, BL870c i2, and BL890c i2 with firmware before 26.31 and the HP Integrity Server rx2800 i2 with firmware before 26.30 allows local users to cause a denial of service via unknown vectors.\n\nReferences: http://www.securitytracker.com/id?1027376, https://h20566.www2.hp.com/portal/site/hpsc/public/kb/docDisplay?docId=emr_na-c03450553, http://www.securitytracker.com/id?1027376",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2012-3247",
+  "timestamp": "2026-03-06T04:18:37.160021",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "487359a99a82c6777ff80bb4bcae060a221139ec9fd338716fb4dfa30102fc82",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2012-3247",
+    "cvss_score": 4.9,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-noinfo"
+    ],
+    "published": "2012-08-16T10:38:07.890"
+  }
+}

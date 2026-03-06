@@ -1,0 +1,29 @@
+{
+  "id": "f2e2e9b4e0b02182",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "A discrete view of Gromov's filling area conjecture",
+  "content": "# A discrete view of Gromov's filling area conjecture\n\nAuthors: Joseph Briggs, Chris Wells\nPublished: 2026-02-19T21:46:25Z\n\nA compact metric surface $M$ isometrically fills a closed metric curve $C$ if $\\partial M=C$ and $d_M(x,y)=d_C(x,y)$ for every $x,y\\in C=\\partial M$; that is, $M$ does not introduce any ``shortcuts'' between points on its boundary. Gromov's filling area conjecture in differential geometry from 1983 asserts that among all compact, orientable Riemannian surfaces which isometrically fill the Riemannian circle, the one with the smallest surface area is the hemisphere. Gromov demonstrated that this is indeed the case if $M$ is homeomorphic to the disk. While Gromov's conjecture has since been verified in some other cases, the full conjecture remains unresolved.\n  In this paper, we consider a discrete analogue of Gromov's problem, which is likely natural to those who study graph embeddings on arbitrary surfaces. Using standard graph-theoretic tools, such as Menger's theorem, we obtain reasonable asymptotic bounds on this discrete variant. We then demonstrate how these discrete bounds can be translated to the continuous setting, showing that any isometric filling of the Riemannian circle of length $2\u03c0$ has surface area at least $1.36\u03c0$ (the hemisphere has surface area $2\u03c0$). This appears to be the first quantitative lower-bound on Gromov's problem that applies to arbitrary isometric fillings.",
+  "url": "http://arxiv.org/abs/2602.17859v1",
+  "timestamp": "2026-02-19T21:46:25Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "bc32a021c9b6716fe1bf9f70ec0d11cc68c6507465f9ff10332e8fffab1c4fa0",
+  "parent_hash": "9af25a33f48cdbbb3823591b9bbebb1387e43fb69203e63f417f2e73679fa518",
+  "metadata": {
+    "authors": [
+      "Joseph Briggs",
+      "Chris Wells"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.17859v1"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "426a79d1fdca3fd5",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "DTIC ADA512588: Agent-based Training: Facilitating Knowledge and Skill Acquisition in a Modern Space Operations Team",
+  "content": "# DTIC ADA512588: Agent-based Training: Facilitating Knowledge and Skill Acquisition in a Modern Space Operations Team\n\nCreator: Defense Technical Information Center\nDate: 2002-04-01T00:00:00Z\nDownloads: 85\nSubjects: DTIC Archive, CHI SYSTEMS INC ORLANDO FL, *CREWS, *SOFTWARE TOOLS, *AIR FORCE\n\nThe U.S. Air Force is in the process of implementing a substantially larger role for space operations and a new operations system, the space-based infrared system (SBIRS), to accompany that role. Despite the increased responsibility that will accompany this new role and the implementation of SBIRS, increases in satellite operations personnel may not occur and if they do, they are unlikely to be commensurate with the increase in responsibility. In this effort we have identified SBIRS System Crew Chief (SCCH) task performance demands that are likely to be worsened by the pending increase in workload but which, if managed well, can reduce its negative impact. These task demands are event prioritization, task allocation, and team communications. In this paper, we describe the design stages and design of a training and performance support system, the Adaptive Decision Enabling and Performance Tracking Toolkit (ADEPTT), that will assist the SCCH manage team coordination and perform the aforementioned tasks in particular during high workload periods. ADEPTT will be built using a cognitive agent architecture and will have four major components: 1. supervisory agents, 2. an instructional agent, 3. a crew communication tool, and 4. synthetic teammates - in order to provide comprehensive training and performance support. It is our goal to build ADEPTT so that it is maximally supportive, minimally obtrusive, has a minimal learning curve, and integrates easily into current training and operations. In designing this toolkit, we followed human-centered design principles, taking into account the demands and limitations operators already face, and being careful to not add to existing problems such as limited display space. This required us to work closely with members of the SBIRS operational community and use research tools such as cognitive task analysis methods.",
+  "url": "https://archive.org/details/DTIC_ADA512588",
+  "timestamp": "2026-03-06T04:18:02.170034",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "817152c80dd668ed600f97f62ecbb40fb66bcbe79fa88246fada57aefb5c0a57",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "DTIC_ADA512588",
+    "media_type": "texts",
+    "downloads": 85,
+    "subjects": [
+      "DTIC Archive",
+      "CHI SYSTEMS INC ORLANDO FL",
+      "*CREWS",
+      "*SOFTWARE TOOLS",
+      "*AIR FORCE",
+      "*ADAPTIVE SYSTEMS",
+      "*KNOWLEDGE BASED SYSTEMS",
+      "*INFRARED RADIATION",
+      "*MAN COMPUTER INTERFACE",
+      "*TRAINING"
+    ]
+  }
+}

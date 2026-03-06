@@ -1,0 +1,29 @@
+{
+  "id": "3850071c32834399",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "An interpretable prototype parts-based neural network for medical tabular data",
+  "content": "# An interpretable prototype parts-based neural network for medical tabular data\n\nAuthors: Jacek Karolczak, Jerzy Stefanowski\nPublished: 2026-03-05T17:43:32Z\n\nThe ability to interpret machine learning model decisions is critical in such domains as healthcare, where trust in model predictions is as important as their accuracy. Inspired by the development of prototype parts-based deep neural networks in computer vision, we propose a new model for tabular data, specifically tailored to medical records, that requires discretization of diagnostic result norms. Unlike the original vision models that rely on the spatial structure, our method employs trainable patching over features describing a patient, to learn meaningful prototypical parts from structured data. These parts are represented as binary or discretized feature subsets. This allows the model to express prototypes in human-readable terms, enabling alignment with clinical language and case-based reasoning. Our proposed neural network is inherently interpretable and offers interpretable concept-based predictions by comparing the patient's description to learned prototypes in the latent space of the network. In experiments, we demonstrate that the model achieves classification performance competitive to widely used baseline models on medical benchmark datasets, while also offering transparency, bridging the gap between predictive performance and interpretability in clinical decision support.",
+  "url": "http://arxiv.org/abs/2603.05423v1",
+  "timestamp": "2026-03-05T17:43:32Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "626801d2c1cb4fc50c8885dbb29864b775fc21a1a77c9a8ca4124119d4b019ce",
+  "parent_hash": "acba75b926e55f55ecc056953f63073c956b14d0289b2d445df2e16905796331",
+  "metadata": {
+    "authors": [
+      "Jacek Karolczak",
+      "Jerzy Stefanowski"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05423v1"
+  }
+}

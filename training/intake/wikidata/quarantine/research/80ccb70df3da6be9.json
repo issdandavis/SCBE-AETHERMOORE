@@ -1,0 +1,25 @@
+{
+  "id": "80ccb70df3da6be9",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "chirality (Q214514)",
+  "content": "# chirality\n\nWikidata ID: Q214514\nDescription: geometric property of some molecules and ions\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q214514",
+  "timestamp": "2026-03-06T04:18:13.109112",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "55725e428686ef1eaeef4347c4de1c797dc3e1d17501fc5f721a879839d2577e",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q214514",
+    "description": "geometric property of some molecules and ions"
+  }
+}

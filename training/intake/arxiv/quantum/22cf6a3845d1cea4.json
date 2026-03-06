@@ -1,0 +1,30 @@
+{
+  "id": "22cf6a3845d1cea4",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Non-Hermitian Quantum Mechanics with Applications to Gravity",
+  "content": "# Non-Hermitian Quantum Mechanics with Applications to Gravity\n\nAuthors: Oem Trivedi, Alfredo Gurrola, Robert J. Scherrer\nPublished: 2026-03-04T18:38:37Z\n\nHermiticity is usually treated as a foundational axiom of quantum mechanics, guaranteeing real spectra and unitary time evolution. In this work we argue that Hermiticity is more naturally understood as a symmetry law arising from the global conservation of an inner product current. We show that in spacetimes admitting complete Cauchy surfaces without boundary flux this conservation reduces to the familiar Hermiticity condition of the canonical inner product. However, in the presence of causal horizons, most strikingly in black hole geometries, this conservation law becomes obstructed for restricted observers. Tracing over inaccessible degrees of freedom then inevitably yields completely positive trace preserving dynamics with an effective non-Hermitian generator. Using quantum thermodynamics and the monotonicity of relative entropy, we demonstrate that the generalized second law may be reinterpreted as an entropy balance that compensates precisely for the flux of inner product charge through the horizon. The structure of Einstein equations, through the Bianchi identity and the Raychaudhuri focusing equation, provides the geometric mechanism underlying this balance. We also show that black hole ringdown can serve as a realistic observational probe of this idea and may provide quantitative upper bounds on the strength of horizon-induced inner product flux. In this way gravity, entropy production, and effective non-Hermiticity are unified under a single structural principle, with Hermiticity emerging as the special case of globally conserved inner product symmetry.",
+  "url": "http://arxiv.org/abs/2603.04375v1",
+  "timestamp": "2026-03-04T18:38:37Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "78e3247c1e726accd63004092a4cde67bc9070999445ffd1edb8760ec4381a53",
+  "parent_hash": "71c0a287ab68d102eed11e3d64cbaf052d3488c18a0c59bdf02e64e248bd2ea7",
+  "metadata": {
+    "authors": [
+      "Oem Trivedi",
+      "Alfredo Gurrola",
+      "Robert J. Scherrer"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.04375v1"
+  }
+}

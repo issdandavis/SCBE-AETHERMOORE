@@ -1,0 +1,30 @@
+{
+  "id": "e1679f31b4dae535",
+  "source": "arxiv",
+  "category": "security",
+  "title": "Impact of 5G SA Logical Vulnerabilities on UAV Communications: Threat Models and Testbed Evaluation",
+  "content": "# Impact of 5G SA Logical Vulnerabilities on UAV Communications: Threat Models and Testbed Evaluation\n\nAuthors: Wagner Comin Sonaglio, \u00c1gney Lopes Roth Ferraz, Louren\u00e7o Alves Pereira J\u00fanior\nPublished: 2026-03-04T22:52:27Z\n\nThis paper examines how logical vulnerabilities in 5G Standalone networks affect UAV command and control communication. The study looks at three attacker positions in the architecture: a malicious user equipment (UE) connected to the same logical network as the UAV, an attacker with access to the 5G core, and a compromised gNodeB. To test these scenarios, a testbed was created using Open5GS, UERANSIM, and Kubernetes. The setup simulates a UAV-GCS communication system over a 5G SA network and allows for controlled attacks on various network interfaces. The experiments reveal that attacks at different points in the architecture can disrupt UAV operations. These disruptions include manipulating control commands and terminating data sessions. The findings emphasize the need for isolation measures in the 5G user plane and integrity protection in UAV command protocols.",
+  "url": "http://arxiv.org/abs/2603.04662v1",
+  "timestamp": "2026-03-04T22:52:27Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "701f8d8dad3ae72f31de51ddd0b90701c7e0af156494b4966c870e50ee2aa520",
+  "parent_hash": "5adee9d605a5e07ef109f7c1f71b8cefe0761d82b44ef001ec1c40004fa08273",
+  "metadata": {
+    "authors": [
+      "Wagner Comin Sonaglio",
+      "\u00c1gney Lopes Roth Ferraz",
+      "Louren\u00e7o Alves Pereira J\u00fanior"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.04662v1"
+  }
+}

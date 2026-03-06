@@ -1,0 +1,30 @@
+{
+  "id": "76ed7763513362f0",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2013-1619 \u2014 CVSS 4.0 (UNKNOWN)",
+  "content": "# CVE-2013-1619\n\nCVSS Score: 4.0 (UNKNOWN)\nPublished: 2013-02-08T19:55:01.157\nCWEs: CWE-310\n\nThe TLS implementation in GnuTLS before 2.12.23, 3.0.x before 3.0.28, and 3.1.x before 3.1.7 does not properly consider timing side-channel attacks on a noncompliant MAC check operation during the processing of malformed CBC padding, which allows remote attackers to conduct distinguishing attacks and plaintext-recovery attacks via statistical analysis of timing data for crafted packets, a related issue to CVE-2013-0169.\n\nReferences: http://lists.opensuse.org/opensuse-security-announce/2014-03/msg00001.html, http://lists.opensuse.org/opensuse-security-announce/2014-03/msg00003.html, http://lists.opensuse.org/opensuse-security-announce/2014-03/msg00009.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2013-1619",
+  "timestamp": "2026-03-06T04:18:33.345084",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "afb55bdbc9f5aa197b8f3c5725c770ee4cc6b52bd2559901441fd72adbb555b4",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2013-1619",
+    "cvss_score": 4.0,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-310"
+    ],
+    "published": "2013-02-08T19:55:01.157"
+  }
+}

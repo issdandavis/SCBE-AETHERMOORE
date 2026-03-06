@@ -1,0 +1,28 @@
+{
+  "id": "0577f98e083e0dd0",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "General Casorati Inequality for Riemannian Submersions Involving Horizontal and Vertical Casorati Curvatures and Applications",
+  "content": "# General Casorati Inequality for Riemannian Submersions Involving Horizontal and Vertical Casorati Curvatures and Applications\n\nAuthors: Ravindra Singh\nPublished: 2026-02-17T18:43:00Z\n\nIn this paper, we develop and introduce a Casorati inequality for Riemannian submersions involving the Casorati curvatures of both the vertical and horizontal distributions. A general form of the inequality is derived for Riemannian submersions between Riemannian manifolds, and the corresponding equality cases are completely characterised. As applications, we obtain the inequality for Riemannian submersions whose total spaces are real, complex, generalised Sasakian, Sasakian, cosymplectic, Kenmotsu, and almost $c(\u03b1)$-space forms. For each theorem, we present illustrative examples. Some of these examples achieve equality, while others do not. Furthermore, these inequalities are derived for invariant, anti-invariant, slant, semi-slant, hemi-slant, and bi-slant Riemannian submersions.",
+  "url": "http://arxiv.org/abs/2602.15804v1",
+  "timestamp": "2026-02-17T18:43:00Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "a08285113eb11dcab8b3a931904e6c3359740bad242d2619c098d1755f2b003e",
+  "parent_hash": "0c3f42f7e3f5eb3c50ffc3d189e6baadb4b3462c04593a13bdf57c1fb2a5a50d",
+  "metadata": {
+    "authors": [
+      "Ravindra Singh"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.15804v1"
+  }
+}

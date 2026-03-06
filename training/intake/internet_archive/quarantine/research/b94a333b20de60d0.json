@@ -1,0 +1,27 @@
+{
+  "id": "b94a333b20de60d0",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Stereo-selective swelling of imprinted cholesteric networks",
+  "content": "# Stereo-selective swelling of imprinted cholesteric networks\n\nCreator: S. Courty, A. R. Tajbakhsh, E. M. Terentjev\nDate: 2003-09-09T00:00:00Z\nDownloads: 72\nSubjects: \n\nMolecular chirality, and the chiral symmetry breaking of resulting macroscopic phases, can be topologically imprinted and manipulated by crosslinking and swelling of polymer networks. We present a new experimental approach to stereo-specific separation of chiral isomers by using a cholesteric elastomer in which a helical director distribution has been topological imprinted by crosslinking. This makes the material unusual in that is has a strong phase chirality, but no molecular chirality at all; we study the nature and parameters controlling the twist-untwist transition. Adding a racemic mixture to the imprinted network results in selective swelling by only the component of ``correct'' handedness. We investigate the capacity of demixing in a racemic environment, which depends on network parameters and the underlying nematic order.",
+  "url": "https://archive.org/details/arxiv-cond-mat0309214",
+  "timestamp": "2026-03-06T04:17:53.893709",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "46dffb208ddd1c85070491324b27d00d69a2bb0fad1057b7c7b5065d8f9459b9",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-cond-mat0309214",
+    "media_type": "texts",
+    "downloads": 72,
+    "subjects": []
+  }
+}

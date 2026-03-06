@@ -1,0 +1,29 @@
+{
+  "id": "63531eae11b4dc12",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Multi-dimensional consistency of principal binets",
+  "content": "# Multi-dimensional consistency of principal binets\n\nAuthors: Niklas C. Affolter, Jan Techter\nPublished: 2026-03-02T22:42:25Z\n\nPrincipal binets are a discretization of curvature line parametrized surfaces defined on the vertices and faces of the square lattice $\\Z^2$. They generalize the previously established discretizations given by circular nets, conical nets, and principal contact element nets. We show that principal binets constitute a discrete integrable system in the sense of multi-dimensional consistency. In particular, they generalize to higher-dimensional square lattices $\\Z^N$. We also discuss relations to the notion of discrete orthogonal coordinate systems as previously established for discrete confocal quadrics.",
+  "url": "http://arxiv.org/abs/2603.02449v1",
+  "timestamp": "2026-03-02T22:42:25Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "89e686acf3518c9bdedadaf58f2d22776a7ef8f5dd62d30f40e3a3d8a2dcdae4",
+  "parent_hash": "a53ddbd978a6ba43a92681c54ef0a75170ba8aa494c61f3cb7be65ad71c303fa",
+  "metadata": {
+    "authors": [
+      "Niklas C. Affolter",
+      "Jan Techter"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.02449v1"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "976c19fe5f39a0d1",
+  "source": "internet_archive",
+  "category": "quarantine/quantum",
+  "title": "DTIC ADP013140: Coherent Transients in Semiconductor Nanostructures as the Base of Optical Logic Operating",
+  "content": "# DTIC ADP013140: Coherent Transients in Semiconductor Nanostructures as the Base of Optical Logic Operating\n\nCreator: Defense Technical Information Center\nDate: 2000-06-23T00:00:00Z\nDownloads: 111\nSubjects: DTIC Archive, Gerlovin, I. Ya., Ovsyankin, V. V., Stroganov, B. V., Zapasskii, V. S.\n\nThe idea of the design is proposed for the photonic quantum gates (PG) with their input/output properties based on nonlinear optical dynamics of 2D arrays of two-level systems (TLS) in the resonance field of coherent optical pulses. As a particular example of the 2D medium with functions of the PG we consider the GaAs/AlGaAs-based 2D excitonic structures. By methods of femtosecond chronopolarimetry of delayed photoreflection. we have studied the energy and phase relaxation rates and the biexciton binding energy in these structures and have shown that the GaAs/AlGaAs MQW can serve as a good basis for building the PG.",
+  "url": "https://archive.org/details/DTIC_ADP013140",
+  "timestamp": "2026-03-06T04:17:58.219935",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "a2fa1a1eab416889a54ac7bce923614b4222a810aea302e3200dab792d2b4f6d",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "DTIC_ADP013140",
+    "media_type": "texts",
+    "downloads": 111,
+    "subjects": [
+      "DTIC Archive",
+      "Gerlovin, I. Ya.",
+      "Ovsyankin, V. V.",
+      "Stroganov, B. V.",
+      "Zapasskii, V. S.",
+      "STATE OPTICAL INST SAINT PETERSBURG (RUSSIA)",
+      "*GATES(CIRCUITS)",
+      "*QUANTUM ELECTRONICS",
+      "OPTICAL PROPERTIES",
+      "ALUMINUM GALLIUM ARSENIDES"
+    ]
+  }
+}

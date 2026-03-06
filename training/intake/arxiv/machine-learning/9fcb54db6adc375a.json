@@ -1,0 +1,31 @@
+{
+  "id": "9fcb54db6adc375a",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "SurvHTE-Bench: A Benchmark for Heterogeneous Treatment Effect Estimation in Survival Analysis",
+  "content": "# SurvHTE-Bench: A Benchmark for Heterogeneous Treatment Effect Estimation in Survival Analysis\n\nAuthors: Shahriar Noroozizadeh, Xiaobin Shen, Jeremy C. Weiss, George H. Chen\nPublished: 2026-03-05T18:52:02Z\n\nEstimating heterogeneous treatment effects (HTEs) from right-censored survival data is critical in high-stakes applications such as precision medicine and individualized policy-making. Yet, the survival analysis setting poses unique challenges for HTE estimation due to censoring, unobserved counterfactuals, and complex identification assumptions. Despite recent advances, from Causal Survival Forests to survival meta-learners and outcome imputation approaches, evaluation practices remain fragmented and inconsistent. We introduce SurvHTE-Bench, the first comprehensive benchmark for HTE estimation with censored outcomes. The benchmark spans (i) a modular suite of synthetic datasets with known ground truth, systematically varying causal assumptions and survival dynamics, (ii) semi-synthetic datasets that pair real-world covariates with simulated treatments and outcomes, and (iii) real-world datasets from a twin study (with known ground truth) and from an HIV clinical trial. Across synthetic, semi-synthetic, and real-world settings, we provide the first rigorous comparison of survival HTE methods under diverse conditions and realistic assumption violations. SurvHTE-Bench establishes a foundation for fair, reproducible, and extensible evaluation of causal survival methods. The data and code of our benchmark are available at: https://github.com/Shahriarnz14/SurvHTE-Bench .",
+  "url": "http://arxiv.org/abs/2603.05483v1",
+  "timestamp": "2026-03-05T18:52:02Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "af88a2e9809fa70e27fe3c7c9f3f7e4ea0d9c1e90787062b3c4f0ac45993ac27",
+  "parent_hash": "006506f9db1f65ec9a978717ec9f68b8369e826ed513501f3a3a456f1e4c4807",
+  "metadata": {
+    "authors": [
+      "Shahriar Noroozizadeh",
+      "Xiaobin Shen",
+      "Jeremy C. Weiss",
+      "George H. Chen"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05483v1"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ad7dfbfe1616e424",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Chladni figures (Q1094747)",
+  "content": "# Chladni figures\n\nWikidata ID: Q1094747\nDescription: Mathematical patterns made by sound\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q1094747",
+  "timestamp": "2026-03-06T04:18:09.466327",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d87f452151a95f4825a363f716a968ccc86a21efc34e7cf6c6769426399cbd87",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q1094747",
+    "description": "Mathematical patterns made by sound"
+  }
+}

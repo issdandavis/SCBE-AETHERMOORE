@@ -1,0 +1,31 @@
+{
+  "id": "0418167e7b07ea0e",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Heatsink",
+  "content": "# Heatsink\n\nAuthors: Zhong, Weiheng\nPublished: 2025-05-15T19:37:06Z\nSubjects: Engineering\nDOI: doi:10.7910/DVN/OZQMD4\n\nHeatsink simulation\n\nCitation: Zhong, Weiheng, 2025, \"Heatsink\", https://doi.org/10.7910/DVN/OZQMD4, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/OZQMD4",
+  "timestamp": "2026-03-06T02:42:16.312293",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "b13a3a14d650e46a97dc6b6bd0ad29d9eef9df7d2c66d9bcc24e75d05572667f",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/OZQMD4",
+    "subjects": [
+      "Engineering"
+    ],
+    "authors": [
+      "Zhong, Weiheng"
+    ],
+    "file_count": 1
+  }
+}

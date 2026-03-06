@@ -1,0 +1,30 @@
+{
+  "id": "165e3ddf622977fb",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2017-5722 \u2014 CVSS 7.5 (HIGH)",
+  "content": "# CVE-2017-5722\n\nCVSS Score: 7.5 (HIGH)\nPublished: 2017-10-11T00:29:00.333\nCWEs: CWE-269\n\nIncorrect policy enforcement in system firmware for Intel NUC7i3BNK, NUC7i3BNH, NUC7i5BNK, NUC7i5BNH, NUC7i7BNH versions BN0049 and below allows attackers with local or physical access to bypass enforcement of integrity protections via manipulation of firmware storage.\n\nReferences: http://www.securityfocus.com/bid/101236, https://security-center.intel.com/advisory.aspx?intelid=INTEL-SA-00084&languageid=en-fr, http://www.securityfocus.com/bid/101236",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2017-5722",
+  "timestamp": "2026-03-06T04:18:37.160127",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "761af71466b73ab99c9e72b4d8852c08a4a0e9002a2834f8d78d1573f90779a5",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2017-5722",
+    "cvss_score": 7.5,
+    "severity": "HIGH",
+    "cwes": [
+      "CWE-269"
+    ],
+    "published": "2017-10-11T00:29:00.333"
+  }
+}

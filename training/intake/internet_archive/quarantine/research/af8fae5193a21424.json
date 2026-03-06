@@ -1,0 +1,30 @@
+{
+  "id": "af8fae5193a21424",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Unbeatable Set Consensus via Topological and Combinatorial Reasoning",
+  "content": "# Unbeatable Set Consensus via Topological and Combinatorial Reasoning\n\nCreator: Armando Casta\u00f1eda, Yannai A. Gonczarowski, Yoram Moses\nDate: 2016-05-24T00:00:00Z\nDownloads: 29\nSubjects: Distributed, Parallel, and Cluster Computing, Computing Research Repository\n\nThe set consensus problem has played an important role in the study of distributed systems for over two decades. Indeed, the search for lower bounds and impossibility results for this problem spawned the topological approach to distributed computing, which has given rise to new techniques in the design and analysis of protocols. The design of efficient solutions to set consensus has also proven to be challenging. In the synchronous crash failure model, the literature contains a sequence of solutions to set consensus, each improving upon the previous ones. This paper presents an unbeatable protocol for nonuniform k-set consensus in the synchronous crash failure model. This is an efficient protocol whose decision times cannot be improved upon. Moreover, the description of our protocol is extremely succinct. Proving unbeatability of this protocol is a nontrivial challenge. We provide two proofs for its unbeatability: one is a subtle constructive combinatorial proof, and the other is a topological proof of a new style. These two proofs provide new insight into the connection between topological reasoning and combinatorial reasoning about protocols, which has long been a subject of interest. In particular, our topological proof reasons in a novel way about subcomplexes of the protocol complex, and sheds light on an open question posed by Guerraoui and Pochon (2009). Finally, using the machinery developed in the design of this unbeatable protocol, we propose a protocol for uniform k-set consensus that beats all known solutions by a large margin.",
+  "url": "https://archive.org/details/arxiv-1605.07354",
+  "timestamp": "2026-03-06T03:59:26.497920",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7e5e3a2ef1b42014e1bd95cf423f4698e3a9ca7f0a14284eb1ece1c4203d4237",
+  "parent_hash": "12cd4a96fd71dc9d970d8a14ed6b5852b9056b4bfd16d8333f7b43b74b85d684",
+  "metadata": {
+    "ia_identifier": "arxiv-1605.07354",
+    "media_type": "texts",
+    "downloads": 29,
+    "subjects": [
+      "Distributed, Parallel, and Cluster Computing",
+      "Computing Research Repository"
+    ]
+  }
+}

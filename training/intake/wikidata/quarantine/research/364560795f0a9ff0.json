@@ -1,0 +1,25 @@
+{
+  "id": "364560795f0a9ff0",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "chirality (Q2305173)",
+  "content": "# chirality\n\nWikidata ID: Q2305173\nDescription: phenomenon applied in physics\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q2305173",
+  "timestamp": "2026-03-06T04:18:13.109167",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "495ba7eb9a4ef6b1572f5166e8ad22c9a73c29172ce50bd4130d92e415633ae6",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q2305173",
+    "description": "phenomenon applied in physics"
+  }
+}

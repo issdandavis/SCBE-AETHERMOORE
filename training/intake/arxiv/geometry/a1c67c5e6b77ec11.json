@@ -1,0 +1,29 @@
+{
+  "id": "a1c67c5e6b77ec11",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "$C^0$-Poisson geometry, coisotropic submanifolds, and clean intersection points",
+  "content": "# $C^0$-Poisson geometry, coisotropic submanifolds, and clean intersection points\n\nAuthors: Robert Cardona, Fabio Gironella\nPublished: 2026-02-23T22:02:03Z\n\nIn this work, we initiate the study of rigidity and non-rigidity phenomena for Poisson homeomorphisms, defined as uniform $C^0$-limits of Poisson diffeomorphisms. First, we prove that Poisson homeomorphisms preserve the singular symplectic foliation: they map symplectic leaves to symplectic leaves by symplectic homeomorphisms. Second, we establish the $C^0$-rigidity of coisotropic submanifolds in Poisson manifolds. A key ingredient is the notion of ''clean intersection point'' between a submanifold and the leaves of a singular foliation, whose study is of independent interest for singular foliation theory and Poisson geometry. In contrast with the symplectic case, characteristic foliations of coisotropic submanifolds are not rigid under Poisson homeomorphisms, exhibiting flexibility phenomena specific to the Poisson setting. We discuss partial rigidity results, introduce a topological invariant of coisotropic submanifolds, the $C^0$-characteristic partition, and show that $C^0$-coisotropic submanifolds are non-smooth objects whose vanishing ideal defines a Lie subalgebra of the Poisson algebra. Finally, we consider Poisson homeomorphisms that lift to symplectic homeomorphisms of a symplectic realization and show that nearly all Poisson manifolds admit non-liftable Poisson homeomorphisms. Our main results answer three questions posed by Joksimovi\u0107 and M\u0103rcu\u0163.",
+  "url": "http://arxiv.org/abs/2602.20388v1",
+  "timestamp": "2026-02-23T22:02:03Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "0a7f975a4f983851f54a19c1f8a448eed0e10a8696059a1eefe30f960140f901",
+  "parent_hash": "b5a4ccd0521a2b45fd420efc8812513ebe630c45acef3637f699bc4263bece51",
+  "metadata": {
+    "authors": [
+      "Robert Cardona",
+      "Fabio Gironella"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.20388v1"
+  }
+}

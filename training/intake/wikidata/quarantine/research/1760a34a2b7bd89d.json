@@ -1,0 +1,25 @@
+{
+  "id": "1760a34a2b7bd89d",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Blockchain Consensus Based User Access Strategies in D2D Networks for Data-Intensive Applications (Q120920467)",
+  "content": "# Blockchain Consensus Based User Access Strategies in D2D Networks for Data-Intensive Applications\n\nWikidata ID: Q120920467\nDescription: scientific article published in 2018\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q120920467",
+  "timestamp": "2026-03-06T02:41:17.799072",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "04fb7c8d2b2b382672269b5d595cc93274c7e3ef98ebd4d27347b94a7d28946f",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q120920467",
+    "description": "scientific article published in 2018"
+  }
+}

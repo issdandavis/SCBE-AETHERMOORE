@@ -1,0 +1,27 @@
+{
+  "id": "f2542869b0bdf42d",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "FRETmatrix: a general methodology for the simulation and analysis of FRET in nucleic acids.",
+  "content": "# FRETmatrix: a general methodology for the simulation and analysis of FRET in nucleic acids.\n\nCreator: Preus, S?ren, Kilsa, Kristine, Miannay, Francois-Alexandre, Albinsson, Bo, Wilhelmsson, L. Marcus\nDate: 2012-09-12T00:00:00Z\nDownloads: 92\nSubjects: \n\nThis article is from Nucleic Acids Research , volume 41 . Abstract F\u00f6rster resonance energy transfer (FRET) is a technique commonly used to unravel the structure and conformational changes of biomolecules being vital for all living organisms. Typically, FRET is performed using dyes attached externally to nucleic acids through a linker that complicates quantitative interpretation of experiments because of dye diffusion and reorientation. Here, we report a versatile, general methodology for the simulation and analysis of FRET in nucleic acids, and demonstrate its particular power for modelling FRET between probes possessing limited diffusional and rotational freedom, such as our recently developed nucleobase analogue FRET pairs (base\u2013base FRET). These probes are positioned inside the DNA/RNA structures as a replacement for one of the natural bases, thus, providing unique control of their position and orientation and the advantage of reporting from inside sites of interest. In demonstration studies, not requiring molecular dynamics modelling, we obtain previously inaccessible insight into the orientation and nanosecond dynamics of the bases inside double-stranded DNA, and we reconstruct high resolution 3D structures of kinked DNA. The reported methodology is accompanied by a freely available software package, FRETmatrix, for the design and analysis of FRET in nucleic acid containing systems.",
+  "url": "https://archive.org/details/pubmed-PMC3592456",
+  "timestamp": "2026-03-06T04:17:58.219850",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d3bfb87fde5f003dc5406850d3850b30daa092f94dd2dc4d0f03239ac594b55b",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "pubmed-PMC3592456",
+    "media_type": "texts",
+    "downloads": 92,
+    "subjects": []
+  }
+}

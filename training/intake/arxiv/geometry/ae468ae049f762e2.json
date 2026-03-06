@@ -1,0 +1,29 @@
+{
+  "id": "ae468ae049f762e2",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Geometry of pseudo-non-degenerate two-ruled hypersurfaces",
+  "content": "# Geometry of pseudo-non-degenerate two-ruled hypersurfaces\n\nAuthors: Junzhen Li, Kentaro Saji\nPublished: 2026-03-03T05:46:59Z\n\nWe investigate the singularities of two-ruled hypersurfaces in the Euclidean four-space. By considering the points that minimize the distance between adjacent rulings, we obtain a characterization the striction curve. We introduce the notion of pseudo-non-degenerate two-ruled hypersurfaces and examine their fundamental properties. We show that two-ruled hypersurfaces constructed from a curve equipped with a Frenet-type frame, via height functions, are pseudo-non-degenerate. Furthermore, we study properties of the original curve through the striction curves and the singularities of pseudo-non-degenerate two-ruled hypersurfaces constructed in this manner.",
+  "url": "http://arxiv.org/abs/2603.03382v1",
+  "timestamp": "2026-03-03T05:46:59Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "824e45508048a9080970a2cc0580c73d993e775f5061b1ecc34fd45bbeba64fa",
+  "parent_hash": "6a9e1b37d9bec285b5374dbd3c80ab05ea57a43e8802c618aaebbc7a61786580",
+  "metadata": {
+    "authors": [
+      "Junzhen Li",
+      "Kentaro Saji"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.03382v1"
+  }
+}

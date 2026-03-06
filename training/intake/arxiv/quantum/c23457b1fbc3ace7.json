@@ -1,0 +1,30 @@
+{
+  "id": "c23457b1fbc3ace7",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Necessary conditions for the Markovian Mpemba effect",
+  "content": "# Necessary conditions for the Markovian Mpemba effect\n\nAuthors: Ido Avitan, Roee Factor, David Gelbwaser-Klimovsky\nPublished: 2026-03-04T19:54:17Z\n\nThe Mpemba effect is a thermodynamic anomaly in which a system farther away in temperature from equilibrium thermalizes before one that is initially closer. The effect has been experimentally observed across a wide range of systems, including water, colloids, and trapped ions. It has recently been the focus of numerous studies aimed at understanding its mechanisms and developing multiple applications. Despite extensive work in the field, clearly determining which types of systems exhibit the Mpemba effect remains an open question. To address this, we derive simple necessary conditions on the transition rates for the Mpemba effect in a Markovian 3-level system and show that they can be applied to study the Mpemba effect in an N-level system. Multiple time scales govern thermalization in these systems. This allows the evolution to occur more quickly across larger temperature differences, explaining the Mpemba effect. We apply our protocol to evaluate which types of systems exhibit the Mpemba effect and, in doing so, explain why the Mpemba effect in Markovian systems remains a thermodynamic anomaly. In particular, due to the maximum entropy principle, our conditions allow us to discard the sub-Ohmic and Ohmic spectra. The latter describes a wide range of physical and chemical phenomena, which will not exhibit the Mpemba effect. Moreover, our results provide a clear path to determine the minimal physical requirements for the Mpemba effect, and we apply them to understand its underlying mechanisms better. Finally, our protocol could help identify relevant parameters for experiments, numerical simulations and diverse applications.",
+  "url": "http://arxiv.org/abs/2603.04567v1",
+  "timestamp": "2026-03-04T19:54:17Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "20637597f087ceb0557e3a7177cc9eff2b60d9d71b7528c0264609ba0edbfe93",
+  "parent_hash": "59aef1485d9b090806d4eb844f07620ca27d31df9dcea322ecee4b9ac40b3028",
+  "metadata": {
+    "authors": [
+      "Ido Avitan",
+      "Roee Factor",
+      "David Gelbwaser-Klimovsky"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.04567v1"
+  }
+}

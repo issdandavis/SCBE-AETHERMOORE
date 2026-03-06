@@ -1,0 +1,32 @@
+{
+  "id": "4454a46f9c78e560",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "2-Coloring Cycles in One Round",
+  "content": "# 2-Coloring Cycles in One Round\n\nAuthors: Maxime Flin, Alesya Raevskaya, Ronja Stimpert, Jukka Suomela, Qingxin Yang\nPublished: 2026-03-04T16:18:30Z\n\nWe show that there is a one-round randomized distributed algorithm that can 2-color cycles such that the expected fraction of monochromatic edges is less than 0.24118. We also show that a one-round algorithm cannot achieve a fraction less than 0.23879. Before this work, the best upper and lower bounds were 0.25 and 0.2. Our proof was largely discovered and developed by large language models, and both the upper and lower bounds have been formalized in Lean 4.",
+  "url": "http://arxiv.org/abs/2603.04235v2",
+  "timestamp": "2026-03-04T16:18:30Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "34d08950353b8ee19e1e23f64b33d72a9ec77aead2142cf5de56e3f6c038987a",
+  "parent_hash": "20fe65a640bd41fb92cc75411e0cd07d36a5278923aa515422b0d784a20f1d14",
+  "metadata": {
+    "authors": [
+      "Maxime Flin",
+      "Alesya Raevskaya",
+      "Ronja Stimpert",
+      "Jukka Suomela",
+      "Qingxin Yang"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.04235v2"
+  }
+}

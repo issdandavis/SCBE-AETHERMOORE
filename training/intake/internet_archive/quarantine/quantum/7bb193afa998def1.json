@@ -1,0 +1,30 @@
+{
+  "id": "7bb193afa998def1",
+  "source": "internet_archive",
+  "category": "quarantine/quantum",
+  "title": "Chiral supersolid in spin-orbit-coupled soft-core Bose gases",
+  "content": "# Chiral supersolid in spin-orbit-coupled soft-core Bose gases\n\nCreator: Wei Han, Xiao-Fei Zhang, Deng-Shan Wang, Hai-Feng Jiang, Wei Zhang, Shou-Gang Zhang\nDate: 2017-01-07T00:00:00Z\nDownloads: 24\nSubjects: Quantum Gases, Condensed Matter\n\nChirality represents a kind of symmetry breaking characterized by the non-coincidence of an object with its mirror image, and has been attracting intense attention in a broad range of scientific areas. The recent realization of spin-orbit coupling in atomic gases provides a new perspective to study quantum states with chirality. Here we demonstrate that the combined effects of spin-orbit coupling and interatomic soft-core interaction can induce an exotic supersolid phase, in which the chiral symmetry is broken and accompanied by the spontaneous emergence of circulating particle current. This implies that a finite angular momentum is generated in a non-rotating frame. More surprisingly, it is found that the direction of the angular momentum can be altered by adjusting the strengths of spin-orbit coupling or interatomic interaction. The predicted chiral supersolid phase can be experimentally observed in Rydberg-dressed Bose-Einstein condensates with spin-orbit coupling.",
+  "url": "https://archive.org/details/arxiv-1701.01869",
+  "timestamp": "2026-03-06T04:17:53.893496",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "35547c7b1051f1d29df9660d3f47e568bb3e3242eb98842edef0b081d072bb55",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-1701.01869",
+    "media_type": "texts",
+    "downloads": 24,
+    "subjects": [
+      "Quantum Gases",
+      "Condensed Matter"
+    ]
+  }
+}

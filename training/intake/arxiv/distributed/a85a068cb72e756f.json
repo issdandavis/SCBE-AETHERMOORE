@@ -1,0 +1,31 @@
+{
+  "id": "a85a068cb72e756f",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "A High-Throughput AES-GCM Implementation on GPUs for Secure, Policy-Based Access to Massive Astronomical Catalogs",
+  "content": "# A High-Throughput AES-GCM Implementation on GPUs for Secure, Policy-Based Access to Massive Astronomical Catalogs\n\nAuthors: Samuel Lemes-Perera, Miguel R. Alarcon, Pino Caballero-Gil, Miquel Serra-Ricart\nPublished: 2026-02-26T14:54:24Z\n\nThe era of large astronomical surveys generates massive image catalogs requiring efficient and secure access, particularly during pre-publication periods where data confidentiality and integrity are paramount. While Findable, Accessible, Interoperable, and Reusable (FAIR) principles guide the eventual public dissemination of data, traditional security methods for restricted phases often lack granularity or incur prohibitive performance penalties. To address this, we present a framework that integrates a flexible policy engine for fine-grained access control with a novel GPU-accelerated implementation of the AES-GCM authenticated encryption protocol.\n  The novelty of this work lies in the adaptation and optimization of a parallel tree-reduction strategy to overcome the main performance bottleneck in authenticated encryption on GPUs: the inherently sequential Galois/Counter Mode (GCM) authentication hash (GHASH). We present both the algorithmic adaptation and its efficient execution on GPU architectures. Although similar parallelization techniques have been explored in cryptographic research, this is, to our knowledge, the first demonstration of their integration into a high-throughput encryption framework specifically designed for large-scale astronomical data. Our implementation transforms the sequential GHASH computation into a highly parallelizable, logarithmic-time process, achieving authenticated encryption throughput suitable for petabyte-scale image analysis.\n  Our solution provides a robust mechanism for data providers to enforce access policies, ensuring both confidentiality and integrity without hindering research workflows, thereby facilitating a secure and managed transition of data to public, FAIR archives.",
+  "url": "http://arxiv.org/abs/2602.23067v1",
+  "timestamp": "2026-02-26T14:54:24Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "3de7f80331daf74fdfd661e80ff816c0a99f4b9b349d8625e9d4f56cb0129426",
+  "parent_hash": "42141c27b46573d437619e32fbc377b6f616d1fbd310e7f996c2c8b6627a8af5",
+  "metadata": {
+    "authors": [
+      "Samuel Lemes-Perera",
+      "Miguel R. Alarcon",
+      "Pino Caballero-Gil",
+      "Miquel Serra-Ricart"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2602.23067v1"
+  }
+}

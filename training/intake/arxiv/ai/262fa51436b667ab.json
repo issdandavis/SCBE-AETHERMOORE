@@ -1,0 +1,33 @@
+{
+  "id": "262fa51436b667ab",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "SAIL: Similarity-Aware Guidance and Inter-Caption Augmentation-based Learning for Weakly-Supervised Dense Video Captioning",
+  "content": "# SAIL: Similarity-Aware Guidance and Inter-Caption Augmentation-based Learning for Weakly-Supervised Dense Video Captioning\n\nAuthors: Ye-Chan Kim, SeungJu Cha, Si-Woo Kim, Minju Jeon, Hyungee Kim, Dong-Jin Kim\nPublished: 2026-03-05T17:59:58Z\n\nWeakly-Supervised Dense Video Captioning aims to localize and describe events in videos trained only on caption annotations, without temporal boundaries. Prior work introduced an implicit supervision paradigm based on Gaussian masking and complementary captioning. However, existing method focuses merely on generating non-overlapping masks without considering their semantic relationship to corresponding events, resulting in simplistic, uniformly distributed masks that fail to capture semantically meaningful regions. Moreover, relying solely on ground-truth captions leads to sub-optimal performance due to the inherent sparsity of existing datasets. In this work, we propose SAIL, which constructs semantically-aware masks through cross-modal alignment. Our similarity aware training objective guides masks to emphasize video regions with high similarity to their corresponding event captions. Furthermore, to guide more accurate mask generation under sparse annotation settings, we introduce an LLM-based augmentation strategy that generates synthetic captions to provide additional alignment signals. These synthetic captions are incorporated through an inter-mask mechanism, providing auxiliary guidance for precise temporal localization without degrading the main objective. Experiments on ActivityNet Captions and YouCook2 demonstrate state-of-the-art performance on both captioning and localization metrics.",
+  "url": "http://arxiv.org/abs/2603.05437v1",
+  "timestamp": "2026-03-05T17:59:58Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "263dd30cde4c1acc1b98ad9fcc0e6b05256b864c0eb9c15d3fe7ef68e223a580",
+  "parent_hash": "0cc4df2b6941ee9da863b1986c172aee7e10e742dcd63146b95e85cabd2b9206",
+  "metadata": {
+    "authors": [
+      "Ye-Chan Kim",
+      "SeungJu Cha",
+      "Si-Woo Kim",
+      "Minju Jeon",
+      "Hyungee Kim",
+      "Dong-Jin Kim"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05437v1"
+  }
+}

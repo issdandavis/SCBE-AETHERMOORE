@@ -1,0 +1,35 @@
+{
+  "id": "00420c6f06ba334c",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "HeRo: Adaptive Orchestration of Agentic RAG on Heterogeneous Mobile SoC",
+  "content": "# HeRo: Adaptive Orchestration of Agentic RAG on Heterogeneous Mobile SoC\n\nAuthors: Maoliang Li, Jiayu Chen, Zihao Zheng, Ziqian Li, Xinhao Sun, Guojie Luo, Chenchen Liu, Xiang Chen\nPublished: 2026-03-02T09:51:01Z\n\nWith the increasing computational capability of mobile devices, deploying agentic retrieval-augmented generation (RAG) locally on heterogeneous System-on-Chips (SoCs) has become a promising way to enhance LLM-based applications. However, agentic RAG induces multi-stage workflows with heterogeneous models and dynamic execution flow, while mobile SoCs exhibit strong accelerator affinity, shape sensitivity, and shared-memory bandwidth contention, making naive scheduling ineffective. We present HeRo, a heterogeneous-aware framework for low-latency agentic RAG on mobile SoCs. HeRo builds profiling-based performance models for each sub-stage and model-PU configuration, capturing latency, workload shape, and contention-induced slowdown, and leverages them in a lightweight online scheduler that combines shape-aware sub-stage partitioning, criticality-based accelerator mapping, and bandwidth-aware concurrency control. Experiments on commercial mobile devices show that HeRo reduces end-to-end latency by up to $10.94\\times$ over existing deployment strategies, enabling practical on-device agentic RAG.",
+  "url": "http://arxiv.org/abs/2603.01661v1",
+  "timestamp": "2026-03-02T09:51:01Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "eed3711fea3a0401ed771532d5720897a091896a891d7185f7fb52d478934b17",
+  "parent_hash": "c4db899a20c74404852b8f0f644a9d2e177567ae18b6129fbf225ca5474421d7",
+  "metadata": {
+    "authors": [
+      "Maoliang Li",
+      "Jiayu Chen",
+      "Zihao Zheng",
+      "Ziqian Li",
+      "Xinhao Sun",
+      "Guojie Luo",
+      "Chenchen Liu",
+      "Xiang Chen"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.01661v1"
+  }
+}

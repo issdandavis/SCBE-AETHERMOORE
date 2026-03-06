@@ -1,0 +1,28 @@
+{
+  "id": "5b7444988a85794f",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Why iCloud Fails: The Category Mistake of Cloud Synchronization",
+  "content": "# Why iCloud Fails: The Category Mistake of Cloud Synchronization\n\nAuthors: Paul Borrill\nPublished: 2026-02-23T02:03:03Z\n\niCloud Drive presents a filesystem interface but implements cloud synchronization semantics that diverge from POSIX in fundamental ways. This divergence is not an implementation bug; it is a Category Mistake -- the same one that pervades distributed computing wherever Forward-In-Time-Only (FITO) assumptions are embedded into protocol design. Parker et al. showed in 1983 that network partitioning destroys mutual consistency; iCloud adds a user interface that conceals this impossibility behind a facade of seamlessness. This document presents a unified analysis of why iCloud fails when composed with Time Machine, git, automated toolchains, and general-purpose developer workflows, supported by direct evidence including documented corruption events and a case study involving 366 GB of divergent state accumulated through normal use. We show that the failures arise from five interlocking incompatibilities rooted in a single structural error: the projection of a distributed causal graph onto a linear temporal chain. We then show how the same Category Mistake, when it occurs in network fabrics as link flapping, destroys topology knowledge through epistemic collapse. Finally, we argue that Open Atomic Ethernet (OAE) transactional semantics -- bilateral, reversible, and conservation-preserving -- provide the structural foundation for resolving these failures, not by defeating physics, but by aligning protocol behavior with physical reality.",
+  "url": "http://arxiv.org/abs/2602.19433v2",
+  "timestamp": "2026-02-23T02:03:03Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "5c21d0003bac4fb81153e4167d780e42f5c70d5089bf29ab6e20d17ef79ff659",
+  "parent_hash": "0e6706006c4eef98ff52b81bca23e957a30b429ff0de6ce9d73133e3c02020f5",
+  "metadata": {
+    "authors": [
+      "Paul Borrill"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2602.19433v2"
+  }
+}

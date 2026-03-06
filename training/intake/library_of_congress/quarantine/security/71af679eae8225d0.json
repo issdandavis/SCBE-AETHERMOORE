@@ -1,0 +1,37 @@
+{
+  "id": "71af679eae8225d0",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "Mythos Enigma : die Chiffriermaschine als Sammler- und Medienobjekt",
+  "content": "# Mythos Enigma : die Chiffriermaschine als Sammler- und Medienobjekt\n\nContributors: landwehr, dominik\nDate: 2008-01-01\nSubjects: cryptography in popular culture, enigma cipher system, world war, collectors and collecting, cryptography\n\nThesis (doctoral)--Universista\u0308t Basel, 2007 Includes bibliographical references (pages 229-247) and index. Description based on print version record; resource not viewed.",
+  "url": "https://www.loc.gov/item/2020718604/",
+  "timestamp": "2026-03-06T02:37:46.460949",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "bdd94e5d18718739ba2a17192ae17492cfb72f98609f338547da946ffd143ef7",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "cryptography in popular culture",
+      "enigma cipher system",
+      "world war",
+      "collectors and collecting",
+      "cryptography",
+      "history",
+      "equipment and supplies"
+    ],
+    "dates": "2008-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

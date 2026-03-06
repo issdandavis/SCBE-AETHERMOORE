@@ -1,0 +1,36 @@
+{
+  "id": "07c6b4f9db2aa597",
+  "source": "internet_archive",
+  "category": "quarantine/security",
+  "title": "Securing the Future of Connected Healthcare AI, Blockchain, and Emerging Technologies in Medical Device Cybersecurity",
+  "content": "# Securing the Future of Connected Healthcare AI, Blockchain, and Emerging Technologies in Medical Device Cybersecurity\n\nCreator: Raghuveer Reddy Chandanaduru Narasimha Murthy\nDate: \nDownloads: 6\nSubjects: Medical Device, Cybersecurity, Internet of Medical Things (IoMT), Artificial Intelligence in Healthcare Security, Blockchain for Medical Devices\n\nThe rapid expansion of the Internet of Medical Things IoMT has transformed healthcare by enabling real time monitoring, remote diagnostics, and data driven treatment. However, this innovation also introduces profound cybersecurity risks, where vulnerabilities in connected devices can threaten both patient safety and system integrity. This paper examines the evolving threat landscape and explores how artificial intelligence, blockchain, and emerging technologies such as quantum resistant cryptography, digital twins, and Zero Trust frameworks can strengthen device security. By integrating these tools, healthcare systems can move from reactive defenses to proactive, resilient ecosystems. The discussion emphasizes not only technological solutions but also regulatory gaps, ethical considerations, and the need for cross industry collaboration. Ultimately, securing connected healthcare requires more than advanced tools it demands a holistic strategy that balances innovation with trust, accountability, and patient protection in an increasingly digital environment. Raghuveer Reddy Chandanaduru Narasimha Murthy \"Securing the Future of Connected Healthcare: AI, Blockchain, and Emerging Technologies in Medical Device Cybersecurity\" Published in International Journal of Trend in Scientific Research and Development (ijtsrd), ISSN: 2456-6470, Volume-9 | Issue-5 , October 2025, URL: https://www.ijtsrd.com/papers/ijtsrd97424.pdf Paper URL: https://www.ijtsrd.com/computer-science/other/97424/securing-the-future-of-connected-healthcare-ai-blockchain-and-emerging-technologies-in-medical-device-cybersecurity/raghuveer-reddy-chandanaduru-narasimha-murthy",
+  "url": "https://archive.org/details/httpswww.ijtsrd.comcomputer-scienceother97424securing-the-future-of-conne",
+  "timestamp": "2026-03-06T03:59:15.208281",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "26872e7f7cff64f868fc6eff210a126f34034c55e4b8acab30220f1b744a1374",
+  "parent_hash": "12cd4a96fd71dc9d970d8a14ed6b5852b9056b4bfd16d8333f7b43b74b85d684",
+  "metadata": {
+    "ia_identifier": "httpswww.ijtsrd.comcomputer-scienceother97424securing-the-future-of-conne",
+    "media_type": "texts",
+    "downloads": 6,
+    "subjects": [
+      "Medical Device",
+      "Cybersecurity",
+      "Internet of Medical Things (IoMT)",
+      "Artificial Intelligence in Healthcare Security",
+      "Blockchain for Medical Devices",
+      "Zero Trust Architecture",
+      "Post-Quantum Cryptography",
+      "Digital Twins in Healthcare."
+    ]
+  }
+}

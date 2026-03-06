@@ -1,0 +1,32 @@
+{
+  "id": "d77fd9bdff8952a7",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "Judge Reliability Harness: Stress Testing the Reliability of LLM Judges",
+  "content": "# Judge Reliability Harness: Stress Testing the Reliability of LLM Judges\n\nAuthors: Sunishchal Dev, Andrew Sloan, Joshua Kavner, Nicholas Kong, Morgan Sandler\nPublished: 2026-03-05T17:27:07Z\n\nWe present the Judge Reliability Harness, an open source library for constructing validation suites that test the reliability of LLM judges. As LLM based scoring is widely deployed in AI benchmarks, more tooling is needed to efficiently assess the reliability of these methods. Given a benchmark dataset and an LLM judge configuration, the harness generates reliability tests that evaluate both binary judgment accuracy and ordinal grading performance for free-response and agentic task formats. We evaluate four state-of-the-art judges across four benchmarks spanning safety, persuasion, misuse, and agentic behavior, and find meaningful variation in performance across models and perturbation types, highlighting opportunities to improve the robustness of LLM judges. No judge that we evaluated is uniformly reliable across benchmarks using our harness. For example, our preliminary experiments on judges revealed consistency issues as measured by accuracy in judging another LLM's ability to complete a task due to simple text formatting changes, paraphrasing, changes in verbosity, and flipping the ground truth label in LLM-produced responses. The code for this tool is available at: https://github.com/RANDCorporation/judge-reliability-harness",
+  "url": "http://arxiv.org/abs/2603.05399v1",
+  "timestamp": "2026-03-05T17:27:07Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "073b49437ed29a01571afcafb1a37a7f30c1cbc868096ca08f6eb665de9be7c2",
+  "parent_hash": "77d0975e542d6ddf3161ced982e14548afc542c183d5521d2d0ecc51e62ee3b2",
+  "metadata": {
+    "authors": [
+      "Sunishchal Dev",
+      "Andrew Sloan",
+      "Joshua Kavner",
+      "Nicholas Kong",
+      "Morgan Sandler"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05399v1"
+  }
+}

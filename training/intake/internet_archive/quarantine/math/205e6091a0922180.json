@@ -1,0 +1,34 @@
+{
+  "id": "205e6091a0922180",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "International Journal of Mathematical Combinatorics (IJMC). Volume 1/2019",
+  "content": "# International Journal of Mathematical Combinatorics (IJMC). Volume 1/2019\n\nCreator: Linfan Mao (Editor in Chief)\nDate: 2019-03-01T00:00:00Z\nDownloads: 96\nSubjects: Smarandache geometries, Smarandache curves, graphs, combinatorial maps, topology\n\nThe International J. Mathematical Combinatorics (ISSN 1937-1055) is a fully refereed international journal, sponsored by the MADIS of Chinese Academy of Sciences and published \u00a0 quarterly comprising 100-150 pages approx. per volume, which publishes original research papers and survey articles in all aspects of Smarandache multi-spaces, Smarandache geometries, mathematical combinatorics, non-Euclidean geometry and topology and their applications to other sciences. Topics in detail to be covered are: Smarandache multi-spaces with applications to other sciences, such as those of algebraic multi-systems, multi-metric spaces etc. Smarandache geometries; Differential Geometry; Geometry on manifolds; Smarandache curves; Topological graphs; Algebraic graphs; Random graphs; Combinatorial maps; Graph and map enumeration; Combinatorial designs; Combinatorial enumeration; Low Dimensional Topology; Differential Topology; Topology of Manifolds; Geometrical aspects of Mathematical Physics and Relations with Manifold Topology; Applications of Smarandache multi-spaces to theoretical physics; Applications of Combinatorics to mathematics and theoretical physics; Mathematical theory on gravitational fields; Mathematical theory on parallel universes; Other applications of Smarandache multi-space and combinatorics.",
+  "url": "https://archive.org/details/ijmc-1-2019",
+  "timestamp": "2026-03-06T02:40:48.213831",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e26e6bc40260af1eedcd2ba251ea0139ad3c07585c8d9d244d2332b0b1ddd1f4",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "ijmc-1-2019",
+    "media_type": "texts",
+    "downloads": 96,
+    "subjects": [
+      "Smarandache geometries",
+      "Smarandache curves",
+      "graphs",
+      "combinatorial maps",
+      "topology",
+      "differential topology"
+    ]
+  }
+}

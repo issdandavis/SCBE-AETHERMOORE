@@ -1,0 +1,32 @@
+{
+  "id": "25de48fed6312bce",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "Detroit Black Community Food Security Network (DBCFSN)",
+  "content": "# Detroit Black Community Food Security Network (DBCFSN)\n\nContributors: N/A\nDate: 2019\nSubjects: website, african american history and culture\n\nDetroit Black Community Food Security Network supports a farm, education network and food coop.  Website.   electronic |   Electronic (Form).",
+  "url": "https://www.loc.gov/item/lcwaN0039048/",
+  "timestamp": "2026-03-06T02:38:19.805343",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d274ffc5fb1bfae9f409993d0629a962c030754bf1e9e131bfc651cd89c00332",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "website",
+      "african american history and culture"
+    ],
+    "dates": "2019",
+    "original_format": [
+      "web archive"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "id": "28c01781d4917a51",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Quasicrystals: A New Class of Ordered Structures (Q27450252)",
+  "content": "# Quasicrystals: A New Class of Ordered Structures\n\nWikidata ID: Q27450252\nDescription: scientific article\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q27450252",
+  "timestamp": "2026-03-06T04:18:05.821542",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "a443df464601e078cbf4cf00ae12c11bca31685d74a7b8590123ea6dc08d78b1",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q27450252",
+    "description": "scientific article"
+  }
+}

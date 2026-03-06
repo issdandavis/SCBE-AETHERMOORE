@@ -1,0 +1,25 @@
+{
+  "id": "af0ef36f17ef43d6",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Blockchain consensus method and device and electronic equipment (Q123683651)",
+  "content": "# Blockchain consensus method and device and electronic equipment\n\nWikidata ID: Q123683651\nDescription: US patent 11410171\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q123683651",
+  "timestamp": "2026-03-06T02:41:17.799041",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "9c3006db4d24b94fc0acac608f9ddff5c8fb5d8155162458dc9199b2f7d41bb0",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q123683651",
+    "description": "US patent 11410171"
+  }
+}

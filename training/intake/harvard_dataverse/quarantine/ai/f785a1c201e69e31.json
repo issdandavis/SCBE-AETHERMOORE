@@ -1,0 +1,40 @@
+{
+  "id": "f785a1c201e69e31",
+  "source": "harvard_dataverse",
+  "category": "quarantine/ai",
+  "title": "Replication Data for Igbo Natural Language Processing Tasks II",
+  "content": "# Replication Data for Igbo Natural Language Processing Tasks II\n\nAuthors: Nweya, Gerald Okey, Akinola, Solomon Oluwole, Onwuegbuzia, Emeka Felix, Ejinwa, Samuel Obinna, Adiboshi, Anita\nPublished: 2022-07-07T10:11:02Z\nSubjects: Arts and Humanities, Computer and Information Science, Other\nDOI: doi:10.7910/DVN/YB9FWK\n\nThe Igbo synchronised corpus (IgboSynCorp) is an annotated corpus of spoken Igbo created by a team of linguists and NLP experts at the University of Ibadan and Afe Babalola University, Nigeria. The project was designed to create an open access labelled and unlabelled dataset for Natural Language Processing tasks in the Igbo language. The dataset was created to enable robust and more equitable application of machine learning tools of high social value in Igbo. The dataset is consists of ELAN text and wav files of Igbo speech. There are two categories of ELAN files: Gold files (90 mins) and Non Gold files (188 mins). The Gold files (19,722 words or 2761 sentences were transcribed phonetically and orthographically, translated to English, glossed and PoS tagged based on the universal dependency PoS tags . The None Gold files were only transcribed orthographically and translated to English. There are 110 recordings of spoken Igbo (.wav Files) amounting to 38.8075 hours or 2,328.45 minutes. There are 110 wav files of Igbo Oral narratives. The metadata is compiled in excel sheets. The Igbosyncorp Metadata I contains the demographic information about the language consultants. While Igbosyncorp metadata II outlines domains of speech represented in the individual wav file (oral narrative). There are two lexicon files with about 2300 words altogether which originated from the glossing and part of speech tagging, The project was funded by Lacuna Fund https://lacunafund.org of the Meridian Institute, 105 Village Place, Dillion, Colorado 80435, United States of America.\n\nCitation: Nweya, Gerald Okey; Akinola, Solomon Oluwole; Onwuegbuzia, Emeka Felix; Ejinwa, Samuel Obinna; Adiboshi, Anita; Nwokwu, Daniel Success; Ihunna Peter; Osuagwu, Amarachi Akudo, 2022, \"Replication Data for Igbo Natural Language Processing Tasks II\", https://doi.org/10.7910/DVN/YB9FWK, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/YB9FWK",
+  "timestamp": "2026-03-06T02:42:20.598413",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7e5fb6951296bbb75ef10dc559917cb4dbc4d1a52180f1855158cac7ba908f11",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/YB9FWK",
+    "subjects": [
+      "Arts and Humanities",
+      "Computer and Information Science",
+      "Other"
+    ],
+    "authors": [
+      "Nweya, Gerald Okey",
+      "Akinola, Solomon Oluwole",
+      "Onwuegbuzia, Emeka Felix",
+      "Ejinwa, Samuel Obinna",
+      "Adiboshi, Anita",
+      "Nwokwu, Daniel Success",
+      "Ihunna Peter",
+      "Osuagwu, Amarachi Akudo"
+    ],
+    "file_count": 109
+  }
+}

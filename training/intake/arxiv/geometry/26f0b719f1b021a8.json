@@ -1,0 +1,34 @@
+{
+  "id": "26f0b719f1b021a8",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "A Machine Learning Approach to the Nirenberg Problem",
+  "content": "# A Machine Learning Approach to the Nirenberg Problem\n\nAuthors: Gianfranco Cort\u00e9s, Maria Esteban-Casadevall, Yueqing Feng, Jonas Henkel, Edward Hirst, Tancredi Schettini Gherardini, Alexander G. Stapleton\nPublished: 2026-02-12T19:58:11Z\n\nThis work introduces the Nirenberg Neural Network: a numerical approach to the Nirenberg problem of prescribing Gaussian curvature on $S^2$ for metrics that are pointwise conformal to the round metric. Our mesh-free physics-informed neural network (PINN) approach directly parametrises the conformal factor globally and is trained with a geometry-aware loss enforcing the curvature equation. Additional consistency checks were performed via the Gauss-Bonnet theorem, and spherical-harmonic expansions were fit to the learnt models to provide interpretability.\n  For prescribed curvatures with known realisability, the neural network achieves very low losses ($10^{-7} - 10^{-10}$), while unrealisable curvatures yield significantly higher losses. This distinction enables the assessment of unknown cases, separating likely realisable functions from non-realisable ones. The current capabilities of the Nirenberg Neural Network demonstrate that neural solvers can serve as exploratory tools in geometric analysis, offering a quantitative computational perspective on longstanding existence questions.",
+  "url": "http://arxiv.org/abs/2602.12368v1",
+  "timestamp": "2026-02-12T19:58:11Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "fb312b0083a0e6d25a43b4cdcfb8521c89207403b053e40f0f1d1b888a965f51",
+  "parent_hash": "669b582602a6c9d4e55afa430d70541b71e8f292059bdc72a94027f1eeaa211d",
+  "metadata": {
+    "authors": [
+      "Gianfranco Cort\u00e9s",
+      "Maria Esteban-Casadevall",
+      "Yueqing Feng",
+      "Jonas Henkel",
+      "Edward Hirst",
+      "Tancredi Schettini Gherardini",
+      "Alexander G. Stapleton"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.12368v1"
+  }
+}

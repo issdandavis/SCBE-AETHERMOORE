@@ -1,0 +1,40 @@
+{
+  "id": "18a59b43c3676886",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Decay Rates in Interleaved Benchmarking with Single-Qubit References",
+  "content": "# Decay Rates in Interleaved Benchmarking with Single-Qubit References\n\nAuthors: Ilya A. Simakov, Arina V. Zotova, Tatyana A. Chudakova, Alena S. Kazmina, Artyom M. Polyanskiy, Nikolay N. Abramov, Mikhail A. Tarkhov, Alexander M. Mumlyakov, Igor V. Trofimov, Nikita Yu. Rudenko, Maxim V. Chichkov, Vladimir I. Chichkov, Grigoriy S. Mazhorin\nPublished: 2026-03-05T17:43:30Z\n\nCross-entropy benchmarking (XEB) with single-qubit reference sequences is widely used to characterize multi-qubit gates in large-scale quantum processors, despite the lack of a rigorous theoretical justification. Here we show that the commonly employed additive single-qubit errors approximation underlying this approach breaks down and leads to a systematic overestimation of gate fidelities. We derive an analytical expression for the joint decay of simultaneous single-qubit reference sequences and introduce a refined expression for the interleaved gate fidelity estimation. Experiments on a superconducting quantum processor validate the theory and demonstrate that fidelities obtained using XEB with single-qubit references agree with those extracted from standard interleaved randomized benchmarking (IRB), while achieving higher precision due to reduced reference-sequence errors. Our results establish theoretical foundation for the single-qubit-based XEB and show that, with appropriate post-processing, it enables a reliable and robust approach for entangling gates benchmarking without the need for multi-qubit Clifford reference sequences.",
+  "url": "http://arxiv.org/abs/2603.05422v1",
+  "timestamp": "2026-03-05T17:43:30Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "0cf1389c8fc24c663fbb42ea0cc31b6fd984296ada2edd7ad939b571f9ee844b",
+  "parent_hash": "8444955f04eee493e13e96672e16d43d2b4f0219183d2b47fb12ecd4535aad9a",
+  "metadata": {
+    "authors": [
+      "Ilya A. Simakov",
+      "Arina V. Zotova",
+      "Tatyana A. Chudakova",
+      "Alena S. Kazmina",
+      "Artyom M. Polyanskiy",
+      "Nikolay N. Abramov",
+      "Mikhail A. Tarkhov",
+      "Alexander M. Mumlyakov",
+      "Igor V. Trofimov",
+      "Nikita Yu. Rudenko",
+      "Maxim V. Chichkov",
+      "Vladimir I. Chichkov",
+      "Grigoriy S. Mazhorin"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05422v1"
+  }
+}

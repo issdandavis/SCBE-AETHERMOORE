@@ -1,0 +1,30 @@
+{
+  "id": "23b02ce3fdf08155",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "A connection between flat fronts in hyperbolic space and minimal surfaces in euclidean space",
+  "content": "# A connection between flat fronts in hyperbolic space and minimal surfaces in euclidean space\n\nCreator: Antonio Mart\u00ednez, Pedro Roitman, Keti Tenenblat\nDate: 2015-03-18T00:00:00Z\nDownloads: 42\nSubjects: Differential Geometry, Mathematics\n\nA geometric construction is provided that associates to a given flat front in $\\mathbb{H}^3$ a pair of minimal surfaces in $\\mathbb{R}^3$ which are related by a Ribaucour transformation. This construction is generalized associating to a given frontal in $\\mathbb{H}^3$ , a pair of frontals in $\\mathbb{R}^3$ that are envelopes of a smooth congruence of spheres. The theory of Ribaucour transformations for minimal surfaces is reformulated in terms of a complex Riccati ordinary differential equation for a holomorphic function. This enables one to simplify and extend the classical theory, that in principle only works for umbilic free and simply connected surfaces, to surfaces with umbilic points and non trivial topology. Explicit examples are included.",
+  "url": "https://archive.org/details/arxiv-1503.05386",
+  "timestamp": "2026-03-06T02:38:47.919018",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "f12215b258c6236d4f433a95e12944a1188e9cb67dc7fa0f929f0f93062597d2",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1503.05386",
+    "media_type": "texts",
+    "downloads": 42,
+    "subjects": [
+      "Differential Geometry",
+      "Mathematics"
+    ]
+  }
+}

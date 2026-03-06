@@ -1,0 +1,35 @@
+{
+  "id": "339f998d486fe899",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Aura: Universal Multi-dimensional Exogenous Integration for Aviation Time Series",
+  "content": "# Aura: Universal Multi-dimensional Exogenous Integration for Aviation Time Series\n\nAuthors: Jiafeng Lin, Mengren Zheng, Simeng Ye, Yuxuan Wang, Huan Zhang, Yuhui Liu, Zhongyi Pei, Jianmin Wang\nPublished: 2026-03-05T12:05:15Z\n\nTime series forecasting has witnessed an increasing demand across diverse industrial applications, where accurate predictions are pivotal for informed decision-making. Beyond numerical time series data, reliable forecasting in practical scenarios requires integrating diverse exogenous factors. Such exogenous information is often multi-dimensional or even multimodal, introducing heterogeneous interactions that unimodal time series models struggle to capture. In this paper, we delve into an aviation maintenance scenario and identify three distinct types of exogenous factors that influence temporal dynamics through distinct interaction modes. Based on this empirical insight, we propose Aura, a universal framework that explicitly organizes and encodes heterogeneous external information according to its interaction mode with the target time series. Specifically, Aura utilizes a tailored tripartite encoding mechanism to embed heterogeneous features into well-established time series models, ensuring seamless integration of non-sequential context. Extensive experiments on a large-scale, three-year industrial dataset from China Southern Airlines, covering the Boeing 777 and Airbus A320 fleets, demonstrate that Aura consistently achieves state-of-the-art performance across all baselines and exhibits superior adaptability. Our findings highlight Aura's potential as a general-purpose enhancement for aviation safety and reliability.",
+  "url": "http://arxiv.org/abs/2603.05092v1",
+  "timestamp": "2026-03-05T12:05:15Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "1566f50493b5cf24c27ab54ed812fe61f7ed05b2836b1461486fc7a94d702b87",
+  "parent_hash": "b170c2a1aba515133594ba864d650f16a70c2b82ea007084ce09cdaa2ad567a6",
+  "metadata": {
+    "authors": [
+      "Jiafeng Lin",
+      "Mengren Zheng",
+      "Simeng Ye",
+      "Yuxuan Wang",
+      "Huan Zhang",
+      "Yuhui Liu",
+      "Zhongyi Pei",
+      "Jianmin Wang"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05092v1"
+  }
+}

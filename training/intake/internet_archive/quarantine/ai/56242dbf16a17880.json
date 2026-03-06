@@ -1,0 +1,33 @@
+{
+  "id": "56242dbf16a17880",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Enhanced Twitter Sentiment Classification Using a Grey Wolf and Genetic Algorithm-Based Voting Ensemble",
+  "content": "# Enhanced Twitter Sentiment Classification Using a Grey Wolf and Genetic Algorithm-Based Voting Ensemble\n\nCreator: International Research Journal on Advanced Engineering and Management (IRJAEM)\nDate: 2025-11-27T00:00:00Z\nDownloads: 6\nSubjects: Genetic Algorithm, Gray Wolf, Hybrid Optimization, Sentiment Analysis, Voting Classification\n\nThe exponential growth of social media platforms such as Twitter has led to an immense amount of user-generated data, providing valuable insights into public opinion. Sentiment analysis, a subfield of Natural Language Processing (NLP), helps categorize user sentiments as positive, negative, or neutral. However, traditional approaches often face limitations in accuracy due to inefficient feature extraction and data noise. This study proposes a hybrid optimization-based sentiment classification model that combines the Genetic Algorithm (GA) and Grey Wolf Optimizer (GWO) for efficient feature selection. The extracted features are then classified using a voting ensemble model integrating K-Nearest Neighbor (KNN), Support Vector Machine (SVM), and Decision Tree classifiers. The model is trained and tested on real-time Twitter data collected via the Twitter API, following preprocessing steps such as tokenization, stop-word removal, and lemmatization. Experimental evaluation demonstrates that the proposed hybrid model achieves a classification accuracy of approximately 99%, outperforming existing machine learning models. The results confirm that the integration of GA-GWO optimization with ensemble classification enhances sentiment detection accuracy and robustness in large-scale social media datasets.",
+  "url": "https://archive.org/details/enhanced-twitter-sentiment-classification-using-a-grey-wolf-and-genetic-algorith",
+  "timestamp": "2026-03-06T02:40:36.587528",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "23a439fbce5785a5143893157190b5f2823640cec265279689920f3ac5d511d1",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "enhanced-twitter-sentiment-classification-using-a-grey-wolf-and-genetic-algorith",
+    "media_type": "texts",
+    "downloads": 6,
+    "subjects": [
+      "Genetic Algorithm",
+      "Gray Wolf",
+      "Hybrid Optimization",
+      "Sentiment Analysis",
+      "Voting Classification"
+    ]
+  }
+}

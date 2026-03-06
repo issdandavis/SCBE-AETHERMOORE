@@ -1,0 +1,38 @@
+{
+  "id": "5a2b98a527f516e1",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Cooling and entangling ultracold atoms in optical lattices",
+  "content": "# Cooling and entangling ultracold atoms in optical lattices\n\nAuthors: Yang, Bing, Sun, Hui, Huang, Chun-Jiong, Wang, Han-Yi, Deng, Youjin\nPublished: 2020-05-29T13:50:10Z\nSubjects: Physics\nDOI: doi:10.7910/DVN/XSFBAB\n\nContains data in Excel format for the figures of the Science article \"Cooling and entangling ultracold atoms in optical lattices\".\n\nCitation: Yang, Bing; Sun, Hui; Huang, Chun-Jiong; Wang, Han-Yi; Deng, Youjin; Dai, Han-Ning; Yuan, Zhen-Sheng; Pan, Jian-Wei, 2020, \"Cooling and entangling ultracold atoms in optical lattices\", https://doi.org/10.7910/DVN/XSFBAB, Harvard Dataverse, V2, UNF:6:/JeASc1l0e7JMT7FtfCeYQ== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/XSFBAB",
+  "timestamp": "2026-03-06T02:42:24.924470",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "cc82f69e1d4f77fdd785ed820877b4297c29faccb153af3e54f56a8b40ac8e8a",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/XSFBAB",
+    "subjects": [
+      "Physics"
+    ],
+    "authors": [
+      "Yang, Bing",
+      "Sun, Hui",
+      "Huang, Chun-Jiong",
+      "Wang, Han-Yi",
+      "Deng, Youjin",
+      "Dai, Han-Ning",
+      "Yuan, Zhen-Sheng",
+      "Pan, Jian-Wei"
+    ],
+    "file_count": 17
+  }
+}

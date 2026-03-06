@@ -1,0 +1,32 @@
+{
+  "id": "e41ce3c47adc1448",
+  "source": "library_of_congress",
+  "category": "quarantine/quantum",
+  "title": "Topical outline with definitions of the elements of natural philosophy.",
+  "content": "# Topical outline with definitions of the elements of natural philosophy.\n\nContributors: N/A\nDate: 1892\nSubjects: physics, outlines, syllabi, etc\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/06013250/",
+  "timestamp": "2026-03-06T04:17:18.822469",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "44c8f2936ead86c2fdb9bf221f1255d9b75c30435e03eb7280cb474dc18fa3a5",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "physics",
+      "outlines, syllabi, etc"
+    ],
+    "dates": "1892",
+    "original_format": [
+      "book"
+    ]
+  }
+}

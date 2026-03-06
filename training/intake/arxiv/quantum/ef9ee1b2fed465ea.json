@@ -1,0 +1,30 @@
+{
+  "id": "ef9ee1b2fed465ea",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Optimal Decoding with the Worm",
+  "content": "# Optimal Decoding with the Worm\n\nAuthors: Zac Tobias, Nikolas P. Breuckmann, Benedikt Placke\nPublished: 2026-03-05T17:51:27Z\n\nWe propose a new decoder for ``matchable'' qLDPC codes that uses a Markov-Chain Monte-Carlo algorithm -- called the \\emph{worm algorithm} -- to approximately compute the probabilities of logical error classes given a syndrome. The algorithm hence performs (approximate) \\emph{optimal} decoding, and we expect it to be computationally efficient in certain settings.\n  The algorithm is applicable to decoding random errors for the surface code, the honeycomb Floquet code, and hyperbolic surface codes with constant rate, in all cases with and without measurement errors.\n  The efficiency of the decoder hinges on the mixing time of the underlying Markov chain. We give a rigorous mixing time guarantee in terms of a quantity that we call the \\emph{defect susceptibility}. We connect this quantity to the notion of disorder operators in statistical mechanics and use this to argue (non-rigorously) that the algorithm is efficient for \\emph{typical} errors in the entire decodable phase.\n  We also demonstrate the effectiveness of the worm decoder numerically by applying it to the surface code with measurement errors as well as a family of hyperbolic surface codes.\n  For most codes, the matchability condition restricts direct application of our decoder to noise models with independent bit-flip, phase-flip, and measurement errors. However, our decoder returns \\emph{soft information} which makes it useful also in heuristic ``correlated decoding'' schemes which work beyond this simple setting. We demonstrate this by simulating decoding of the surface code under depolarizing noise, and we find that the threshold for ``correlated worm decoding'' is substantially higher than for both minimum-weight perfect matching and for correlated matching.",
+  "url": "http://arxiv.org/abs/2603.05428v1",
+  "timestamp": "2026-03-05T17:51:27Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "4fd4252a3f1dd0c88100f54ee44b3cd66d37b0d93170f35a814f7847cd387da5",
+  "parent_hash": "e0bda23d5e655639f7a0e3dfdd36eb18e3ecd790ee9fb8e080e5aa813e84db8d",
+  "metadata": {
+    "authors": [
+      "Zac Tobias",
+      "Nikolas P. Breuckmann",
+      "Benedikt Placke"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05428v1"
+  }
+}

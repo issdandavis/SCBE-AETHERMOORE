@@ -1,0 +1,29 @@
+{
+  "id": "9658d8a7077075bb",
+  "source": "arxiv",
+  "category": "security",
+  "title": "ShieldBypass: On the Persistence of Impedance Leakage Beyond EM Shielding",
+  "content": "# ShieldBypass: On the Persistence of Impedance Leakage Beyond EM Shielding\n\nAuthors: Md Sadik Awal, Md Tauhidur Rahman\nPublished: 2026-03-05T04:42:39Z\n\nElectromagnetic (EM) shielding is widely used to suppress radiated emissions and limit passive EM side-channel leakage. However, shielding does not address active probing, where an adversary injects external radio-frequency (RF) signals and observes the device's reflective response. This work studies whether such impedance-modulated backscattering persists when radiated emissions are suppressed by shielding. By injecting controlled RF signals and analyzing the reflections, we demonstrate that state-dependent impedance variations remain observable at frequencies outside the shields' primary attenuation band. Using processors implemented on FPGA and microcontroller prototypes, and evaluating workload profiles under three industry-standard shields, we find that passive EM measurements lose discriminative power under shielding, while backscattering responses remain separable. These results indicate that active RF probing can expose execution-dependent behavior even in shielded systems, motivating the need to consider active impedance-based probing within hardware security evaluation flows.",
+  "url": "http://arxiv.org/abs/2603.04801v1",
+  "timestamp": "2026-03-05T04:42:39Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "9713ab9ff703b491154e7838220dd1c98f8c8a16f3ce843ed935689fc5464840",
+  "parent_hash": "c0fecd18f293e36234e45de3af5b0f418ef8f42dc8b8d21635572451ade270aa",
+  "metadata": {
+    "authors": [
+      "Md Sadik Awal",
+      "Md Tauhidur Rahman"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.04801v1"
+  }
+}

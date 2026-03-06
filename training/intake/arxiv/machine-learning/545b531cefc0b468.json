@@ -1,0 +1,30 @@
+{
+  "id": "545b531cefc0b468",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Lightweight and Scalable Transfer Learning Framework for Load Disaggregation",
+  "content": "# Lightweight and Scalable Transfer Learning Framework for Load Disaggregation\n\nAuthors: L. E. Garcia-Marrero, G. Petrone, E. Monmasson\nPublished: 2026-03-05T09:43:48Z\n\nNon-Intrusive Load Monitoring (NILM) aims to estimate appliance-level consumption from aggregate electrical signals recorded at a single measurement point. In recent years, the field has increasingly adopted deep learning approaches; however, cross-domain generalization remains a persistent challenge due to variations in appliance characteristics, usage patterns, and background loads across homes. Transfer learning provides a practical paradigm to adapt models with limited target data. However, existing methods often assume a fixed appliance set, lack flexibility for evolving real-world deployments, remain unsuitable for edge devices, or scale poorly for real-time operation. This paper proposes RefQuery, a scalable multi-appliance, multi-task NILM framework that conditions disaggregation on compact appliance fingerprints, allowing one shared model to serve many appliances without a fixed output set. RefQuery keeps a pretrained disaggregation network fully frozen and adapts to a target home by learning only a per-appliance embedding during a lightweight backpropagation stage. Experiments on three public datasets demonstrate that RefQuery delivers a strong accuracy-efficiency trade-off against single-appliance and multi-appliance baselines, including modern Transformer-based methods. These results support RefQuery as a practical path toward scalable, real-time NILM on resource-constrained edge devices.",
+  "url": "http://arxiv.org/abs/2603.04998v1",
+  "timestamp": "2026-03-05T09:43:48Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "abc85604be5008d1081e2c889906509b14d84bcc83e4ce33c50917c26ceba2b9",
+  "parent_hash": "e0ba0c8e8a81bad4f493000193adc012d7d60a3d7fb69caaf0f89e5a1f079698",
+  "metadata": {
+    "authors": [
+      "L. E. Garcia-Marrero",
+      "G. Petrone",
+      "E. Monmasson"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.04998v1"
+  }
+}

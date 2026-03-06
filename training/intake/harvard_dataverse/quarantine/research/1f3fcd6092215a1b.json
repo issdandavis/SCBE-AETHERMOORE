@@ -1,0 +1,35 @@
+{
+  "id": "1f3fcd6092215a1b",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Architecture Descriptions, Model Checkpoints, and Training Histories for A4NN Workflow on Protein Diffraction Data",
+  "content": "# Architecture Descriptions, Model Checkpoints, and Training Histories for A4NN Workflow on Protein Diffraction Data\n\nAuthors: Channing, Georgia, Patel, Ria, Michela Taufer\nPublished: 2023-06-26T03:29:29Z\nSubjects: Chemistry, Computer and Information Science, Physics\nDOI: doi:10.7910/DVN/JS9FR6\n\nThis artifact contains scripts, input, and output datasets that reinforce the reproducibility of our results in our ICPP 2023 paper \u201cComposable Workflow for Accelerating Neural Architecture Search Using In Situ Analytics for Protein Classification\u201d (see README.txt). The input data comprises simulated protein diffraction patterns from X-ray Free Electron Laser (XFEL) experiments at low, medium, and high beam intensities. The datasets for each beam intensity contain 63,508 images for training and 15,876 images for testing (80/20 train-test split). The output dataset contains neural network (NN) models and metadata generated with the Analytics for Neural Networks (A4NN) workflow for several laser beam intensities on different GPU distributions. Each experiment contains 100 NN models that train for 25 epochs (max) each. There are approximately 72,900 model-related files in total.\n\nCitation: Channing, Georgia; Patel, Ria; Michela Taufer, 2023, \"Architecture Descriptions, Model Checkpoints, and Training Histories for A4NN Workflow on Protein Diffraction Data\", https://doi.org/10.7910/DVN/JS9FR6, Harvard Dataverse, V9, UNF:6:VC20hf9YdEgiPoEcOrhGjw== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/JS9FR6",
+  "timestamp": "2026-03-06T02:42:16.312145",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4d280a051f918c83f5f561c1ec3d9b6cdc5425ab876f739318098ba87146eb53",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/JS9FR6",
+    "subjects": [
+      "Chemistry",
+      "Computer and Information Science",
+      "Physics"
+    ],
+    "authors": [
+      "Channing, Georgia",
+      "Patel, Ria",
+      "Michela Taufer"
+    ],
+    "file_count": 44
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "a4f00de2b712e31b",
+  "source": "internet_archive",
+  "category": "quarantine/governance",
+  "title": "ECONOMIC AND CYBER SECURITY",
+  "content": "# ECONOMIC AND CYBER SECURITY\n\nCreator: \nDate: \nDownloads: 26\nSubjects: nteger economic data processing systems, modular number system, non-positional number sys-tem, economic cyber security, national economy\n\nCollective monograph highlights the results of systematic scientific research devoted to the problems of economic cyber security as a component of the financial security of the state, and contains practical recommendations on measures to strengthen the security of the state, in particular strategically important enterprises, in the presence of modern threats. Chapter 1 analyzes the position of Ukraine in the global cyber security ratings and outlines promising directions for increasing its level, one of which is the improvement of information protection systems of critical infrastructure objects. A data comparison algorithm is considered, which consists in continuous monitoring and scanning of data by constantly comparing data with information patterns of users and services, as well as threat patterns and indicators based on previous experience, not only one's own, within a local network or system, but also globally scale An improved method of rapid data comparison is presented, which provides maximum accuracy of comparison with a minimum amount of equipment for comparing devices. Its use makes it possible to identify potential cyber threats and take preventive measures, which will increase the level of protection of critical infrastructure objects. Chapter 2 focuses on defining strategic directions for ensuring economic cyber security of business in Ukraine. The importance of information protection in the context of the development of the digital economy has been updated, and the place of economic cyber security in the national security system has been determined. A thorough analysis of the dynamics of cyber incidents in the world in recent years was carried out and the specifics of the manifestation of cyber threats at the macro and micro levels were outlined. Special attention is paid to the intrusion detection process and a detailed study of the working principles of modern intrusion detection and prevention systems. It is expected that the use of the proposed recommendations on the cyber security policy will significantly increase the level of information security (confidentiality, integrity and availability) of the business. Chapter 3 is dedicated to solving the problem of strengthening the security of strategically important enterprises of Ukraine by developing effective forms of implementation of the state regulatory policy in this direction. The issue of identifying strategically important enterprises and forming their security at the state level as a basis for supporting and restoring the national economy has been updated. The strategic directions of deregulation of business activity in Ukraine, including strategically important enterprises, have been determined. One of them is institutional support of state regulatory policy, improvement of regulatory policy. On the basis of the analysis of the existing institutional support of the state regulatory policy regarding strategically important enterprises, it has been proved that the basis ",
+  "url": "https://archive.org/details/economic-and-cyber-security",
+  "timestamp": "2026-03-06T02:40:36.587678",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e986f0174327173f7a147d8010ac722a0f7346c852120aef008451797ca37138",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "economic-and-cyber-security",
+    "media_type": "texts",
+    "downloads": 26,
+    "subjects": [
+      "nteger economic data processing systems",
+      "modular number system",
+      "non-positional number sys-tem",
+      "economic cyber security",
+      "national economy",
+      "intrusion detection systems",
+      "unauthorized access",
+      "strategically important enterprises",
+      "state regulatory policy",
+      "institutional support"
+    ]
+  }
+}

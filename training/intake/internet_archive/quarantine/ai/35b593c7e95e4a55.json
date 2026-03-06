@@ -1,0 +1,35 @@
+{
+  "id": "35b593c7e95e4a55",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "A secure framework of blockchain technology using CNN long short-term memory hybrid deep learning model",
+  "content": "# A secure framework of blockchain technology using CNN long short-term memory hybrid deep learning model\n\nCreator: Gillala Chandra Sekhar, Aruna Rajendran\nDate: 2022-12-01T00:00:00Z\nDownloads: 104\nSubjects: Blockchain, Convolutional neural network, Deep learning, Edge intelligence, Internet of things\n\nGeneration Z is embracing blockchain technology, which is appropriate for the digital age. Internet of things (IoT) can benefit from blockchain technology IoT. The proliferation of IoT technology has led to breakthroughs in distributed system architecture. For the blockchain network to store, communicate, and exchange data, it needs a randomized data management system. This shows how difficult it may be to provide consistent and safe data replication in a distributed system, an issue blockchain technology may overcome. We need a solid prediction model that improves results. This article describes an innovative way to overcome the limitations of third-party transactions using Bitcoin. In this article, convolutional neural networks-long short term memory (CNN-LSTM) deep learning forecasting models are introduced. Convolutional layers help extract relevant data from instances. It has an long short-term memory (LSTM) layer, which lets it find long-and short term dependencies. The experiment's goal was to test the multivariate statistical model we suggested and compare its performance to wellestablished models. The addition of convolutional layers to a forecasting model may improve its accuracy, according to an experiment. The research shows that this strategy has a better chance of success and is more trustworthy than others.",
+  "url": "https://archive.org/details/a-secure-framework-of-blockchain-technology-using-cnn-long-short-term-memory-hyb",
+  "timestamp": "2026-03-06T02:40:44.318549",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "8c23ee3ea16aedf5d9e5e6c494c611f4e729b0215d8d4bdde53b9dddbea0d339",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "a-secure-framework-of-blockchain-technology-using-cnn-long-short-term-memory-hyb",
+    "media_type": "texts",
+    "downloads": 104,
+    "subjects": [
+      "Blockchain",
+      "Convolutional neural network",
+      "Deep learning",
+      "Edge intelligence",
+      "Internet of things",
+      "Long short-term memory",
+      "Model training"
+    ]
+  }
+}

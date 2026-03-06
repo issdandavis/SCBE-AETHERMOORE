@@ -1,0 +1,38 @@
+{
+  "id": "dab5cf26569b0076",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "Instagram Spam Detection ISD",
+  "content": "# Instagram Spam Detection ISD\n\nCreator: Pranali V. Dhote | Rima Ramteke | Anjali R. Patel | Pratik Dewalker | Prof. Anupam Chaube\nDate: \nDownloads: 15\nSubjects: Instagram, Spam Detection (ISD), Machine Learning, Natural Language Processing (NLP), Feature Extraction\n\nAn Instagram spam detection project would cover the projects aim, methods, and outcomes. It would detail how the project identifies and filters out spam content on Instagram to enhance user experience and security. The abstract might mention the use of machine learning algorithms, natural language processing, and image recognition to detect and remove spam posts, comments, and accounts. It could also highlight the importance of such a project in maintaining a clean and authentic environment on the platform. The focus is on developing algorithms and tools to automatically identify and filter out spam content on the platform. This involves using machine learning techniques to analyze patterns in user behavior, text content, and images to distinguish between legitimate posts and spam. By training the system on a large dataset of known spam content, the model can learn to recognize and flag suspicious activity in real time, helping to maintain a safe and enjoyable environment for user. Assuring a safe and fulfilling user experience on the well known social media platform requires the crucial duty of Instagram Spam Detection ISD . Cyberbullying, identity theft, and even financial fraud can result from unsolicited messages on Instagram. Several machine learning algorithms for Instagram spam detection have been presented by researchers as a solution to this problem. Tokenization, stop word removal, and sentiment analysis using the VADER algorithm are some methods of preparing the text data. Following preprocessing, Count Vectorizer is used to turn the data into numerical feature vectors. Based on the labeled data, three classifiers are trained and assessed F1 score, accuracy, precision, recall, and Decision Trees Random Forest. Taking into consideration weighted parameters that are essential in establishing an accounts legitimacy, Gradient Boosting Classifier has demonstrated encouraging results in detecting phony accounts on Instagram. Instagram streaming spam detection continues to be difficult, and a strong detection method should take into account the elements of popular topics, content, URL, and user identity. Pranali V. Dhote | Rima Ramteke | Anjali R. Patel | Pratik Dewalker | Prof. Anupam Chaube \"Instagram Spam Detection (ISD)\" Published in International Journal of Trend in Scientific Research and Development (ijtsrd), ISSN: 2456-6470, Volume-8 | Issue-5 , October 2024, URL: https://www.ijtsrd.com/papers/ijtsrd69419.pdf Paper Url: https://www.ijtsrd.com/other-scientific-research-area/other/69419/instagram-spam-detection-isd/pranali-v-dhote",
+  "url": "https://archive.org/details/httpswww.ijtsrd.comother-scientific-research-areaother69419instagram-spam-detect",
+  "timestamp": "2026-03-06T02:40:36.587504",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "bf932e9856cfb39277b18e30f3abae06855553f47c0e7ed372ad07ecfce49891",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "httpswww.ijtsrd.comother-scientific-research-areaother69419instagram-spam-detect",
+    "media_type": "texts",
+    "downloads": 15,
+    "subjects": [
+      "Instagram",
+      "Spam Detection (ISD)",
+      "Machine Learning",
+      "Natural Language Processing (NLP)",
+      "Feature Extraction",
+      "Text Preprocessing",
+      "Tokenization",
+      "Stop Word Removal",
+      "Sentiment Analysis",
+      "VADER"
+    ]
+  }
+}

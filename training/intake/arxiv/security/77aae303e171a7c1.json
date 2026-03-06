@@ -1,0 +1,35 @@
+{
+  "id": "77aae303e171a7c1",
+  "source": "arxiv",
+  "category": "security",
+  "title": "When Safety Becomes a Vulnerability: Exploiting LLM Alignment Homogeneity for Transferable Blocking in RAG",
+  "content": "# When Safety Becomes a Vulnerability: Exploiting LLM Alignment Homogeneity for Transferable Blocking in RAG\n\nAuthors: Junchen Li, Chao Qi, Rongzheng Wang, Qizhi Chen, Liang Xu, Di Liang, Bob Simons, Shuang Liang\nPublished: 2026-03-04T10:27:09Z\n\nRetrieval-Augmented Generation (RAG) enhances the capabilities of large language models (LLMs) by incorporating external knowledge, but its reliance on potentially poisonable knowledge bases introduces new availability risks. Attackers can inject documents that cause LLMs to refuse benign queries, attacks known as blocking attacks. Prior blocking attacks relying on adversarial suffixes or explicit instruction injection are increasingly ineffective against modern safety-aligned LLMs. We observe that safety-aligned LLMs exhibit heightened sensitivity to query-relevant risk signals, causing alignment mechanisms designed for harm prevention to become a source of exploitable refusal. Moreover, mainstream alignment practices share overlapping risk categories and refusal criteria, a phenomenon we term alignment homogeneity, enabling restricted risk context constructed on an accessible LLM to transfer across LLMs. Based on this insight, we propose TabooRAG, a transferable blocking attack framework operating under a strict black-box setting. An attacker can generate a single retrievable blocking document per query by optimizing against a surrogate LLM in an accessible RAG environment, and directly transfer it to an unknown target RAG system without access to the target model. We further introduce a query-aware strategy library to reuse previously effective strategies and improve optimization efficiency. Experiments across 7 modern LLMs and 3 datasets demonstrate that TabooRAG achieves stable cross-model transferability and state-of-the-art blocking success rates, reaching up to 96% on GPT-5.2. Our findings show that increasingly standardized safety alignment across modern LLMs creates a shared and transferable attack surface in RAG systems, revealing a need for improved defenses.",
+  "url": "http://arxiv.org/abs/2603.03919v1",
+  "timestamp": "2026-03-04T10:27:09Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "2f6e24cfae40ccab1a22a7f439994d113fa06a2bfb5bfbd647f094933d381e71",
+  "parent_hash": "4dceab99503754231a310013c8a116a5d455af6b94d365b5b2d9443b99a2c174",
+  "metadata": {
+    "authors": [
+      "Junchen Li",
+      "Chao Qi",
+      "Rongzheng Wang",
+      "Qizhi Chen",
+      "Liang Xu",
+      "Di Liang",
+      "Bob Simons",
+      "Shuang Liang"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.03919v1"
+  }
+}

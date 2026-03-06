@@ -1,0 +1,33 @@
+{
+  "id": "b5dfbe9a9f635ef8",
+  "source": "harvard_dataverse",
+  "category": "quarantine/ai",
+  "title": "The LGBTQ+ Minority Stress on Social Media (MiSSoM) Dataset: A Labeled Dataset for Natural Language Processing and Machine Learning",
+  "content": "# The LGBTQ+ Minority Stress on Social Media (MiSSoM) Dataset: A Labeled Dataset for Natural Language Processing and Machine Learning\n\nAuthors: Cascalheira, Cory\nPublished: 2024-01-13T20:51:01Z\nSubjects: Computer and Information Science, Medicine, Health and Life Sciences, Social Sciences\nDOI: doi:10.7910/DVN/GPRSXH\n\nMinority stress is the leading theoretical construct for understanding LGBTQ+ health disparities. As such, there is an urgent need to develop innovative policies and technologies to reduce minority stress. To spur technological innovation, we created the largest labeled datasets on minority stress using natural language from subreddits related to sexual and gender minority people. A team of mental health clinicians, LGBTQ+ health experts, and computer scientists developed two datasets: (1) the publicly available LGBTQ+ Minority Stress on Social Media (MiSSoM) dataset and (2) the advanced request-only version of the dataset, LGBTQ+ MiSSoM+. Both datasets have seven labels related to minority stress, including an overall composite label and six sublabels. LGBTQ+ MiSSoM (N = 27,709) includes both human- and machine-annotated la-bels and comes preprocessed with features (e.g., topic models, psycholinguistic attributes, sentiment, clinical keywords, word embeddings, n-grams, lexicons). LGBTQ+ MiSSoM+ includes all the characteristics of the open-access dataset, but also includes the original Reddit text and sentence-level labeling for a subset of posts (N = 5,772). Benchmark supervised machine learning analyses revealed that features of the LGBTQ+ MiSSoM datasets can predict overall minority stress quite well (F1 = 0.869). Benchmark performance metrics yielded in the prediction of the other labels, namely prejudiced events (F1 = 0.942), expected rejection (F1 = 0.964), internalized stigma (F1 = 0.952), identity concealment (F1 = 0.971), gender dysphoria (F1 = 0.947), and minority coping (F1 = 0.917), were excellent.\n\nCitation: Cascalheira, Cory, 2024, \"The LGBTQ+ Minority Stress on Social Media (MiSSoM) Dataset: A Labeled Dataset for Natural Language Processing and Machine Learning\", https://doi.org/10.7910/DVN/GPRSXH, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/GPRSXH",
+  "timestamp": "2026-03-06T02:42:20.598540",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "11ed3a342f775294f74e3346be82e352cc5b27c8754026e623fff165d24f65b7",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/GPRSXH",
+    "subjects": [
+      "Computer and Information Science",
+      "Medicine, Health and Life Sciences",
+      "Social Sciences"
+    ],
+    "authors": [
+      "Cascalheira, Cory"
+    ],
+    "file_count": 3
+  }
+}

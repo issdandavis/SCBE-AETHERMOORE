@@ -1,0 +1,33 @@
+{
+  "id": "13d8a4f57c2a00d1",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Computational science--ICCS 2006 : 6th international conference, Reading, UK, May 28-31, 2006 : proceedings",
+  "content": "# Computational science--ICCS 2006 : 6th international conference, Reading, UK, May 28-31, 2006 : proceedings\n\nContributors: iccs 2006, alexandrov, vassil\nDate: 2006\nSubjects: computational complexity, congresses, computer science\n\nIncludes bibliographical references and indexes. Also issued online.",
+  "url": "//lccn.loc.gov/2006926429",
+  "timestamp": "2026-03-06T02:38:43.165471",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "bed9f491616775926e68f77e1426db6ced00b1b471c5728d2b9c42caedf937ef",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "computational complexity",
+      "congresses",
+      "computer science"
+    ],
+    "dates": "2006",
+    "original_format": [
+      "book"
+    ]
+  }
+}

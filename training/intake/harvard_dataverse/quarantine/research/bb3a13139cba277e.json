@@ -1,0 +1,33 @@
+{
+  "id": "bb3a13139cba277e",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Distribution change in GenBank submission networks: 1992-2018.",
+  "content": "# Distribution change in GenBank submission networks: 1992-2018.\n\nAuthors: Hemsley, Jeff, Qin, jian, Bratt, Sarah Elaine\nPublished: 2022-01-30T14:59:59Z\nSubjects: Social Sciences\nDOI: doi:10.7910/DVN/TMGAYB\n\nDegree centrality plotted on the y-axis with network nodes sorted from largest to smallest on the x-axis. Point colors reflect the networks nodes are in. (Red: data submission; blue: publication; purple: both) The highest degree nodes in 2017 and 2018 (red) may reflect a professionalization of data submission administration. The visualizations were generated with External dataset S1: data submission network graph: https://doi.org/10.7910/DVN/4QUAXY and publication network graph: https://doi.org/10.7910/DVN/YGWKLA.\n\nCitation: Hemsley, Jeff; Qin, jian; Bratt, Sarah Elaine, 2022, \"Distribution change in GenBank submission networks: 1992-2018.\", https://doi.org/10.7910/DVN/TMGAYB, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/TMGAYB",
+  "timestamp": "2026-03-06T02:42:16.312261",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "8f3b566031dcea7e8a4344e87de1a120e3223b25605e6564f5e4c41a50c56a67",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/TMGAYB",
+    "subjects": [
+      "Social Sciences"
+    ],
+    "authors": [
+      "Hemsley, Jeff",
+      "Qin, jian",
+      "Bratt, Sarah Elaine"
+    ],
+    "file_count": 1
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "cc4531500662b19f",
+  "source": "harvard_dataverse",
+  "category": "quarantine/security",
+  "title": "Initiative to make the Internet Private and Secure Potentially gone wrong?",
+  "content": "# Initiative to make the Internet Private and Secure Potentially gone wrong?\n\nAuthors: \u0106erti\u0107, Stefan\nPublished: 2021-06-06T18:26:14Z\nSubjects: Computer and Information Science, Engineering\nDOI: doi:10.7910/DVN/NAHIV5\n\nComputer Scientists and Cyber Security Researcher Stefan \u0106erti\u0107 warns emerging Security as a service can be a double-edged sword. Modern asymmetric cryptography, in its essence, provide a viable solution ensuring the authenticity of a website while browsing the web and prevention of man in the middle decryption by third parity. Benefits of privacy likely inspired the Encrypted Web Initiative back in 2014 - when Google announced encrypted web communication will translate as a positive signal in search engine ranking. Following years, the SEO race made us to a point that the majority, 51.8 percent of websites use SSL. Most of internet traffic is now encrypted in transit using Transport Layer Security (TLS) \u2013 hence ISP or \u201ca guy next-door\u201d can\u2019t decode your surfing habits or even passwords through ethernet or Wifi sniffing. It seems like the mission has been accomplished. So, what could go wrong? Imposed changes required a bit of technical knowledge to implement by website owners which was a perfect business opportunity adopted by a couple of startups - translated as \u201cLet us do it for you\u201d - Just point your Name Servers to us, and we will handle the rest. According to public data, SECaaS companies such as Cloudflare protect 12 million websites, adding approximately 20,000 new customers every day. These numbers are getting drastically higher and already occupy around 20% of Global Internet Traffic. As opposed to primary idea of Public Key Infrastructure, SECaaS had something different in core concept. Ensure you can\u2019t reach the origin server directly. Protecting owner, not the user. Ensure encryption takes place at the edge of such service or In other words, re-encryption, a legit \u201cMan in the middle\u201d, so you don\u2019t need to become a cryptography expert to follow up with Google\u2019s initiative as website owner. With all the hats off to Google and attempts to make the web more secure and private place for end users, modern internet ended up with a few fundamental problems. Inability to validate the origin server is what is supposed to be. Inability to prevent theoretical man in the middle interceptions, theoretically putting SECaaS into privileged position to sniff traffic and execute an attack. Essentially the whole concept of cryptography got broken the very same moment millions of keys are held at the very same place \u2013 that also transits the traffic, encrypted using the very same keys. Does that mean interception of traffic no longer can be executed by a \u201cguy next door\u201d, your ISP, or a suspicious car parked across the street, yes! However, single email request for your data towards SECaaS providers theoretically can result in obtaining full set of data no matter where you are in the world \u2013 warns \u0106erti\u0107 in recent blog post published on his Information Security Consulting Blog\n\nCitation: \u0106erti\u0107, Stefan, 2021, \"Initiative to make the Internet Private and Secure Potentially gone wrong?\", https://doi.org/10.7910/DVN/NAHIV5, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/NAHIV5",
+  "timestamp": "2026-03-06T02:42:03.535558",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "0788f52c8a76b48f193158f79177e3fd172d169008a9f6b56a70975ff380eee3",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/NAHIV5",
+    "subjects": [
+      "Computer and Information Science",
+      "Engineering"
+    ],
+    "authors": [
+      "\u0106erti\u0107, Stefan"
+    ],
+    "file_count": 1
+  }
+}

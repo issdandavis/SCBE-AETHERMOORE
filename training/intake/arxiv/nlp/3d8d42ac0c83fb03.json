@@ -1,0 +1,29 @@
+{
+  "id": "3d8d42ac0c83fb03",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Diffusion LLMs can think EoS-by-EoS",
+  "content": "# Diffusion LLMs can think EoS-by-EoS\n\nAuthors: Sarah Breckner, Sebastian Schuster\nPublished: 2026-03-05T14:06:21Z\n\nDiffusion LLMs have been proposed as an alternative to autoregressive LLMs, excelling especially at complex reasoning tasks with interdependent sub-goals. Curiously, this is particularly true if the generation length, i.e., the number of tokens the model has to output, is set to a much higher value than is required for providing the correct answer to the task, and the model pads its answer with end-of-sequence (EoS) tokens. We hypothesize that diffusion models think EoS-by-EoS, that is, they use the representations of EoS tokens as a hidden scratchpad, which allows them to solve harder reasoning problems. We experiment with the diffusion models LLaDA1.5, LLaDA2.0-mini, and Dream-v0 on the tasks Addition, Entity Tracking, and Sudoku. In a controlled prompting experiment, we confirm that adding EoS tokens improves the LLMs' reasoning capabilities. To further verify whether they serve as space for hidden computations, we patch the hidden states of the EoS tokens with those of a counterfactual generation, which frequently changes the generated output to the counterfactual. The success of the causal intervention underscores that the EoS tokens, which one may expect to be devoid of meaning, carry information on the problem to solve. The behavioral experiments and the causal interventions indicate that diffusion LLMs can indeed think EoS-by-EoS.",
+  "url": "http://arxiv.org/abs/2603.05197v1",
+  "timestamp": "2026-03-05T14:06:21Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "ce9261c1f5d1608f1c1fb47a7992d4df372e0409fa7fe211d08d8c6445bfc032",
+  "parent_hash": "6481c7b6a8733aa54f678a08604b509c8fb413271e80140397dd3be7f5a7031f",
+  "metadata": {
+    "authors": [
+      "Sarah Breckner",
+      "Sebastian Schuster"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05197v1"
+  }
+}

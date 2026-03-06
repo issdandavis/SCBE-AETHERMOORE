@@ -1,0 +1,38 @@
+{
+  "id": "5a35bd605fb7b145",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Q Text",
+  "content": "# Q Text\n\nContributors: library of congress, policy and standards division\nDate: \nSubjects: library of congress classification, knowledge, lcc, schedules, organization\n\nQ  SCIENCE (GENERAL) Science (General)  For applied science and technology, see Class T  1.A1 1.A3-Z 2 3 4 (9)  Periodicals. By language of publication Polyglot English French German Other languages (not A-Z) Yearbooks see Q1+  Collected works (nonserial) see Q111+ Societies 10 11 21 22 23 25 29 33 41 44 44.2 44.4 46 49 52 54 55 56 56.2 57 60 60.18 60.2 60.4 60.6 60.7 60.8 61 62 63 64  Including works about societies, serial publications of societies  International America United States Canada Latin America Mexico Central America West Indies South America Europe Great Britain Czechoslovakia Hungary Austria France Germany Greece Italy Vatican City Belgium Luxembourg Netherlands Soviet Union Ukraine Finland Poland Baltic States Estonia Latvia Lithuania Scandinavia (General) Denmark. Iceland Norway Sweden 1  Q   Q  65 67 69 69.2 69.3 69.4 72 72.5 73 74 75 76 77 80.A-Z 80.C4 80.I67 80.I7 80.J67 80.K6 80.P3 80.Q38 80.R8 80.S2 80.S5 80.S64 80.S9 80.T5 80.T8 82 83 85 85.2 85.4 85.6 85.8 87 89 89.2 89.5 91.A-Z  SCIEN",
+  "url": "https://www.loc.gov/aba/publications/Archived-LCC01/Q-text.pdf",
+  "timestamp": "2026-03-06T04:17:08.453413",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "f613ebd544362982fe8cdbf722d704feef10a09f6bac834569817a5e2a72e91a",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "library of congress classification",
+      "knowledge",
+      "lcc",
+      "schedules",
+      "organization",
+      "class",
+      "books"
+    ],
+    "dates": "",
+    "original_format": [
+      "book",
+      "web page"
+    ]
+  }
+}

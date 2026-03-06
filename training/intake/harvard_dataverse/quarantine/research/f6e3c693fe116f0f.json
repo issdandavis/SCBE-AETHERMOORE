@@ -1,0 +1,31 @@
+{
+  "id": "f6e3c693fe116f0f",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Simulation pipeline for HapGen2",
+  "content": "# Simulation pipeline for HapGen2\n\nAuthors: Zhang, Haoyu\nPublished: 2023-03-07T16:06:18Z\nSubjects: Medicine, Health and Life Sciences\nDOI: doi:10.7910/DVN/DZAYXC\n\nThis data contains information required for simulation pipeline for HapGen2\n\nCitation: Zhang, Haoyu, 2022, \"Simulation pipeline for HapGen2\", https://doi.org/10.7910/DVN/DZAYXC, Harvard Dataverse, V3",
+  "url": "https://doi.org/10.7910/DVN/DZAYXC",
+  "timestamp": "2026-03-06T04:18:49.817340",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "bed69169f9095a350d1ae045af47635b07d19288bc50b67e25876c2e3f9d146f",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/DZAYXC",
+    "subjects": [
+      "Medicine, Health and Life Sciences"
+    ],
+    "authors": [
+      "Zhang, Haoyu"
+    ],
+    "file_count": 265
+  }
+}

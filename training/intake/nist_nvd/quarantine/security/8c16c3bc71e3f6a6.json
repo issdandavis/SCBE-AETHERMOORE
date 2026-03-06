@@ -1,0 +1,31 @@
+{
+  "id": "8c16c3bc71e3f6a6",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2022-36309 \u2014 CVSS 8.8 (HIGH)",
+  "content": "# CVE-2022-36309\n\nCVSS Score: 8.8 (HIGH)\nPublished: 2022-08-16T01:15:13.707\nCWEs: CWE-78, CWE-78\n\nAirspan AirVelocity 1500 software versions prior to 15.18.00.2511 have a root command injection vulnerability in the ActiveBank parameter of the recoverySubmit.cgi script running on the eNodeB's web management UI. This issue may affect other AirVelocity and AirSpeed models.\n\nReferences: https://github.com/metaredteam/external-disclosures/security/advisories/GHSA-p295-2jh6-g6g4, https://helpdesk.airspan.com/browse/TRN3-1690, https://github.com/metaredteam/external-disclosures/security/advisories/GHSA-p295-2jh6-g6g4",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-36309",
+  "timestamp": "2026-03-06T02:41:55.735634",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ce739aa67893222c4f3f65a096ef5e638278890ec56dc71b1e54fc2bc360fe67",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2022-36309",
+    "cvss_score": 8.8,
+    "severity": "HIGH",
+    "cwes": [
+      "CWE-78",
+      "CWE-78"
+    ],
+    "published": "2022-08-16T01:15:13.707"
+  }
+}
