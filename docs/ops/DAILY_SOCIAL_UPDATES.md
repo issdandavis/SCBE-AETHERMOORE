@@ -26,6 +26,9 @@ Required X secrets for live X posting:
 - `X_ACCESS_TOKEN`
 - `X_REFRESH_TOKEN`
 
+If `SCBE_SOCIAL_LIVE=true` but X secrets are incomplete, the workflow still
+publishes GitHub Discussions live and logs a skip notice for X.
+
 Manual live run:
 - GitHub Actions → `Daily Social Updates` → `Run workflow` with `live_publish=true`.
 
