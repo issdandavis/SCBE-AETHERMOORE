@@ -5,6 +5,7 @@ Usage:
     python -m hydra.voxel_cli store --x 0.3 --y 0.5 --wl 540 --tongue RU --authority agent.claude --intent "0.8,0.1,0.1"
     python -m hydra.voxel_cli query-intent --intent "0.9,0.1,0.0" --top-k 3
     python -m hydra.voxel_cli layout --flows 8 --mode default --json
+    python -m hydra.voxel_cli lattice25d --bundles 12 --cell-size 0.4 --json
 """
 from __future__ import annotations
 
@@ -18,6 +19,7 @@ import numpy as np
 
 from hydra.voxel_storage import VoxelGrid, Voxel, chladni_amplitude, generate_chladni_grid
 from hydra.color_dimension import TONGUE_WAVELENGTHS, TONGUE_WEIGHTS, ColorBand
+from hydra.octree_sphere_grid import HyperbolicLattice25D
 
 
 def _build_layout(flow_count: int = 8, mode: str = "default", at_unix_ms: float | None = None, window_ms: float = 60000) -> dict:
@@ -193,6 +195,86 @@ def cmd_chladni(args):
             print(f"  {line}")
 
 
+def cmd_lattice25d(args):
+    lat = HyperbolicLattice25D(
+        cell_size=args.cell_size,
+        max_depth=args.max_depth,
+        phase_weight=args.phase_weight,
+    )
+
+    tongues = list(TONGUE_WEIGHTS.keys())
+    presets = [
+        ("govern", [0.9, 0.0, 0.1]),
+        ("research", [0.0, 0.1, 0.9]),
+        ("route", [0.5, 0.5, 0.0]),
+        ("contain", [0.8, 0.1, 0.1]),
+    ]
+
+    for i in range(args.bundles):
+        # Intentionally force partial overlap by reusing coarse lattice points
+        x = math.cos(i * 0.73) * args.radius + (0.06 if i % 3 == 0 else 0.0)
+        y = math.sin(i * 0.91) * args.radius + (0.06 if i % 4 == 0 else 0.0)
+        phase = (i * args.phase_step) % (2 * math.pi)
+        label, vec = presets[i % len(presets)]
+        tongue = tongues[i % len(tongues)]
+        lat.insert_bundle(
+            x=x,
+            y=y,
+            phase_rad=phase,
+            tongue=tongue,
+            authority=["public", "internal", "sealed"][i % 3],
+            intent_vector=vec,
+            intent_label=f"{label}_{i}",
+            payload={"flow_index": i},
+            wavelength_nm=float(TONGUE_WAVELENGTHS.get(tongue, 550.0)),
+        )
+
+    q = lat.query_nearest(
+        x=args.query_x,
+        y=args.query_y,
+        phase_rad=args.query_phase,
+        intent_vector=[0.9, 0.0, 0.1],
+        tongue="DR",
+        top_k=min(5, args.bundles),
+    )
+
+    result = {
+        "stats": lat.stats(),
+        "overlap_cells": [
+            {"cell": list(cell), "count": len(items)}
+            for cell, items in lat.overlapping_cells().items()
+        ],
+        "lace_edge_count": len(lat.lace_edges()),
+        "nearest": [
+            {
+                "bundle_id": b.bundle_id,
+                "label": b.intent_label,
+                "tongue": b.tongue,
+                "phase_rad": b.phase_rad,
+                "distance": dist,
+            }
+            for b, dist in q
+        ],
+    }
+
+    if args.json:
+        print(json.dumps(result, indent=2, default=str))
+    else:
+        s = result["stats"]
+        print("2.5D Hyperbolic Lattice")
+        print(f"  bundles: {s['bundle_count']}")
+        print(f"  occupied cells: {s['occupied_cells']}")
+        print(f"  overlap cells: {s['overlap_cells']} (max overlap: {s['max_overlap']})")
+        print(f"  lace edges: {result['lace_edge_count']}")
+        print(f"  semantic weight avg: {s['semantic_weight_avg']:.3f}")
+        print("  nearest:")
+        for n in result["nearest"]:
+            print(
+                f"    - {n['label']:14s} tongue={n['tongue']:2s} "
+                f"phase={n['phase_rad']:.3f} d={n['distance']:.4f}"
+            )
+
+
 def main():
     parser = argparse.ArgumentParser(prog="hydra-voxel6d", description="6D Voxel Storage CLI")
     sub = parser.add_subparsers(dest="command")
@@ -222,6 +304,18 @@ def main():
     p_chladni.add_argument("--mode-m", type=int, default=2)
     p_chladni.add_argument("--json", action="store_true")
 
+    p_lattice = sub.add_parser("lattice25d", help="2.5D cyclic lattice + hyperbolic octree projection")
+    p_lattice.add_argument("--bundles", type=int, default=12)
+    p_lattice.add_argument("--cell-size", type=float, default=0.4)
+    p_lattice.add_argument("--max-depth", type=int, default=6)
+    p_lattice.add_argument("--phase-weight", type=float, default=0.35)
+    p_lattice.add_argument("--phase-step", type=float, default=0.7)
+    p_lattice.add_argument("--radius", type=float, default=0.7)
+    p_lattice.add_argument("--query-x", type=float, default=0.1)
+    p_lattice.add_argument("--query-y", type=float, default=0.1)
+    p_lattice.add_argument("--query-phase", type=float, default=0.0)
+    p_lattice.add_argument("--json", action="store_true")
+
     args = parser.parse_args()
 
     if args.command == "demo":
@@ -232,6 +326,8 @@ def main():
         cmd_store(args)
     elif args.command == "chladni":
         cmd_chladni(args)
+    elif args.command == "lattice25d":
+        cmd_lattice25d(args)
     else:
         parser.print_help()
 
