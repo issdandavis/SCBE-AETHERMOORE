@@ -191,7 +191,7 @@ class BillingEvent(Base):
     invoice_url = Column(Text, nullable=True)
     invoice_pdf = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-    metadata = Column(Text, nullable=True)  # JSON
+    event_metadata = Column("metadata", Text, nullable=True)  # JSON
 
 
 def init_db():
