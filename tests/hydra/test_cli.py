@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from hydra.cli import (
     _load_json_object,
+    _parse_lattice25d_options,
     _normalize_command,
     _parse_branch_options,
     _resolve_command_and_args,
@@ -82,3 +83,26 @@ def test_parse_branch_options_accepts_context_and_exports():
     assert options["context"] == {"domain": "uav"}
     assert options["export_n8n_path"] == "out/workflow.json"
     assert options["export_choicescript_path"] == "out/workflow.txt"
+
+
+def test_parse_lattice25d_options_accepts_query_and_glob():
+    options = _parse_lattice25d_options(
+        [
+            "--glob",
+            "docs/**/*.md",
+            "--max-notes",
+            "25",
+            "--cell-size",
+            "0.5",
+            "--query-intent",
+            "0.7,0.2,0.1",
+            "--query-top-k",
+            "3",
+        ]
+    )
+    assert options is not None
+    assert options["glob"] == "docs/**/*.md"
+    assert options["max_notes"] == 25
+    assert options["cell_size"] == 0.5
+    assert options["query_intent"] == [0.7, 0.2, 0.1]
+    assert options["query_top_k"] == 3
