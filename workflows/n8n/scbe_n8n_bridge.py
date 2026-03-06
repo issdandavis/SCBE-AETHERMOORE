@@ -70,6 +70,23 @@ from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent import (
     TaskStatus,
 )
 from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.publishers import create_publisher
+import re
+
+
+def _validate_hf_dataset_repo(repo: str) -> str:
+    """Validate HF dataset repo name: must be 'owner/name' with safe chars only."""
+    if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repo):
+        raise ValueError(f"Invalid HF dataset repo: {repo!r}")
+    return repo
+
+
+def _sanitize_commit_message(msg: str | None) -> str:
+    """Strip control characters and limit length of commit message."""
+    if not msg:
+        return "Update lattice25d notes"
+    sanitized = ''.join(c for c in msg if c.isprintable())
+    return sanitized[:200]
+
 
 # ---------------------------------------------------------------------------
 #  App setup
@@ -1407,16 +1424,18 @@ async def workflow_lattice25d(
         if req.hf_dataset_repo:
             export_result["dataset_repo"] = req.hf_dataset_repo
             if req.hf_push:
+                _repo = _validate_hf_dataset_repo(req.hf_dataset_repo)
+                _commit_msg = _sanitize_commit_message(req.hf_commit_message)
                 cmd = [
                     "hf",
                     "upload",
-                    req.hf_dataset_repo,
+                    _repo,
                     export_result["path"],
                     f"lattice25d/{os.path.basename(export_result['path'])}",
                     "--repo-type",
                     "dataset",
                     "--commit-message",
-                    req.hf_commit_message,
+                    _commit_msg,
                 ]
                 if req.hf_create_pr:
                     cmd.append("--create-pr")
