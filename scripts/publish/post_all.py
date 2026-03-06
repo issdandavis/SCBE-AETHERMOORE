@@ -21,11 +21,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTICLES_DIR = REPO_ROOT / "content" / "articles"
 EVIDENCE_DIR = REPO_ROOT / "artifacts" / "publish_browser"
 POST_TO_X = REPO_ROOT / "scripts" / "publish" / "post_to_x.py"
+POST_TO_BUFFER = REPO_ROOT / "scripts" / "publish" / "post_to_buffer.py"
 POST_TO_GITHUB_DISCUSSIONS = REPO_ROOT / "scripts" / "publish" / "publish_discussions.py"
 
 PLATFORM_PREFIXES: dict[str, tuple[str, ...]] = {
     "x": ("x_thread_", "twitter_thread_"),
     "twitter": ("x_thread_", "twitter_thread_"),
+    "buffer": ("x_thread_", "twitter_thread_", "buffer_"),
     "linkedin": ("linkedin_",),
     "medium": ("medium_",),
     "devto": ("devto_",),
@@ -34,7 +36,7 @@ PLATFORM_PREFIXES: dict[str, tuple[str, ...]] = {
     "github": ("2026-",),
 }
 
-PLATFORM_ORDER = ["x", "github", "linkedin", "medium", "devto", "reddit", "hackernews"]
+PLATFORM_ORDER = ["x", "buffer", "github", "linkedin", "medium", "devto", "reddit", "hackernews"]
 
 
 def _normalize_platforms(raw_only: str | None) -> list[str]:
@@ -100,6 +102,34 @@ def _run_x_publish(article: Path, dry_run: bool) -> tuple[str, str]:
     return "error", ((proc.stderr or output) or "unknown error")[-4000:]
 
 
+def _run_buffer_publish(article: Path, dry_run: bool) -> tuple[str, str]:
+    if not POST_TO_BUFFER.exists():
+        return "error", f"missing publisher: {POST_TO_BUFFER}"
+
+    is_thread = "thread" in article.name.lower()
+    if is_thread:
+        cmd = [sys.executable, str(POST_TO_BUFFER), "--thread", str(article)]
+        if dry_run:
+            cmd.append("--dry-run")
+    else:
+        text = _extract_text_for_single_post(article)
+        cmd = [sys.executable, str(POST_TO_BUFFER), "--text", text]
+        if dry_run:
+            cmd.append("--dry-run")
+
+    proc = subprocess.run(
+        cmd,
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PYTHONPATH": os.environ.get("PYTHONPATH", ".")},
+    )
+    output = ((proc.stdout or "") + "\n" + (proc.stderr or "")).strip()
+    if proc.returncode == 0:
+        return ("dry_run_ready" if dry_run else "posted"), output[-4000:]
+    return "error", output[-4000:] or "unknown error"
+
+
 def _run_github_publish(dry_run: bool, glob_pattern: str, limit: int) -> tuple[str, str]:
     if not POST_TO_GITHUB_DISCUSSIONS.exists():
         return "error", f"missing publisher: {POST_TO_GITHUB_DISCUSSIONS}"
@@ -130,7 +160,11 @@ def _run_github_publish(dry_run: bool, glob_pattern: str, limit: int) -> tuple[s
 def main() -> int:
     parser = argparse.ArgumentParser(description="Publish SCBE articles across supported platforms.")
     parser.add_argument("--dry-run", action="store_true", help="Do not publish; report what would be posted.")
-    parser.add_argument("--only", default="", help="Comma-separated platforms (x,linkedin,medium,devto,reddit,hackernews).")
+    parser.add_argument(
+        "--only",
+        default="",
+        help="Comma-separated platforms (x,buffer,github,linkedin,medium,devto,reddit,hackernews).",
+    )
     parser.add_argument("--browser-fallback", action="store_true", help="Record browser fallback mode in evidence.")
     parser.add_argument("--browser-publish", action="store_true", help="Record browser publish intent in evidence.")
     parser.add_argument(
@@ -160,7 +194,9 @@ def main() -> int:
     statuses: list[dict] = []
     explicit_articles: dict[str, Path] = {}
     if args.x_article.strip():
-        explicit_articles["x"] = Path(args.x_article).expanduser().resolve()
+        resolved_x = Path(args.x_article).expanduser().resolve()
+        explicit_articles["x"] = resolved_x
+        explicit_articles["buffer"] = resolved_x
     if args.linkedin_article.strip():
         explicit_articles["linkedin"] = Path(args.linkedin_article).expanduser().resolve()
 
@@ -201,6 +237,10 @@ def main() -> int:
 
         if platform == "x":
             status, detail = _run_x_publish(article, dry_run=args.dry_run)
+            row["status"] = status
+            row["detail"] = detail
+        elif platform == "buffer":
+            status, detail = _run_buffer_publish(article, dry_run=args.dry_run)
             row["status"] = status
             row["detail"] = detail
         else:
