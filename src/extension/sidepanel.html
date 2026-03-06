@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AetherBrowser</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div id="app">
+    <header id="agent-grid"></header>
+    <main id="conversation-feed"></main>
+    <footer id="command-bar">
+      <div class="ab-quick-actions">
+        <button id="btn-this-page" class="ab-btn ab-btn--quick">This Page</button>
+        <button id="btn-research" class="ab-btn ab-btn--quick">Research</button>
+        <button id="btn-autopilot" class="ab-btn ab-btn--quick" disabled title="Coming in v0.2">Autopilot</button>
+      </div>
+      <div class="ab-input-row">
+        <textarea id="input-text" placeholder="Ask the squad..." rows="1"></textarea>
+        <button id="btn-send" class="ab-btn ab-btn--primary">Send</button>
+      </div>
+    </footer>
+    <div id="settings-panel" class="ab-settings hidden"></div>
+    <div id="disconnected-banner" class="hidden"></div>
+  </div>
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>
