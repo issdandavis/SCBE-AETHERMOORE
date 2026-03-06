@@ -214,6 +214,10 @@ def build_lattice25d_payload(
     cell_size: float = 0.4,
     max_depth: int = 6,
     phase_weight: float = 0.35,
+    index_mode: str = "grid",
+    quadtree_capacity: int = 8,
+    quadtree_z_variance: float = 0.01,
+    quadtree_query_extent: float = 0.35,
     radius: float = 0.72,
     query_intent: Optional[List[float]] = None,
     query_x: float = 0.1,
@@ -228,6 +232,10 @@ def build_lattice25d_payload(
         cell_size=cell_size,
         max_depth=max_depth,
         phase_weight=phase_weight,
+        index_mode=index_mode,
+        quadtree_capacity=quadtree_capacity,
+        quadtree_z_variance=quadtree_z_variance,
+        quadtree_query_extent=quadtree_query_extent,
     )
 
     inserted: List[Dict[str, Any]] = []
@@ -302,6 +310,7 @@ def build_lattice25d_payload(
 
     return {
         "dimensions": ["x", "y", "phase", "tongue", "authority", "intent"],
+        "index_mode": index_mode,
         "ingested_count": len(inserted),
         "stats": lattice.stats(),
         "overlap_cells": overlap,
