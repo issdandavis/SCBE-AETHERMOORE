@@ -31,6 +31,7 @@ from hydra.octree_sphere_grid import (
     OctreeNode,
     SignedOctree,
     CyclicBundle25D,
+    AdaptiveQuadtree25D,
     HyperbolicLattice25D,
     OCTANT_NAMES,
     FACE_PLANES,
@@ -574,3 +575,81 @@ class TestHyperbolicLattice25D:
         assert s["bundle_count"] == 2
         assert s["semantic_weight_sum"] > 0.0
         assert "overlap_cells" in s
+
+    def test_quadtree_index_mode_exposes_stats(self):
+        lat = HyperbolicLattice25D(
+            cell_size=0.25,
+            index_mode="quadtree",
+            quadtree_capacity=2,
+            quadtree_z_variance=0.0,
+        )
+        for i in range(8):
+            lat.insert_bundle(
+                x=math.cos(i * 0.4) * 0.7,
+                y=math.sin(i * 0.5) * 0.7,
+                phase_rad=i * 0.37,
+                tongue="KO",
+                intent_vector=[1.0, 0.0, 0.0],
+            )
+        s = lat.stats()
+        assert s["index_mode"] == "quadtree"
+        assert "quadtree" in s
+        assert s["quadtree"]["entry_count"] == 8
+        assert s["quadtree"]["node_count"] >= 1
+
+    def test_hybrid_index_query_returns_results(self):
+        lat = HyperbolicLattice25D(
+            cell_size=0.4,
+            index_mode="hybrid",
+            quadtree_capacity=2,
+            quadtree_z_variance=0.0,
+            quadtree_query_extent=0.2,
+        )
+        for i in range(6):
+            lat.insert_bundle(
+                x=-0.6 + i * 0.2,
+                y=-0.5 + i * 0.15,
+                phase_rad=i * 0.4,
+                tongue="DR" if i % 2 else "KO",
+                intent_vector=[0.9, 0.1, 0.0],
+                intent_label=f"b{i}",
+            )
+        out = lat.query_nearest(
+            x=-0.2,
+            y=-0.1,
+            phase_rad=0.4,
+            intent_vector=[0.9, 0.1, 0.0],
+            top_k=3,
+        )
+        assert len(out) == 3
+        assert all(isinstance(row[0].bundle_id, str) for row in out)
+
+
+class TestAdaptiveQuadtree25D:
+    def test_query_window_wraps_boundaries(self):
+        qt = AdaptiveQuadtree25D(max_depth=4, capacity=1, z_variance_threshold=0.0)
+        b1 = CyclicBundle25D(bundle_id="a", x=0.95, y=0.95, phase_rad=0.1)
+        b2 = CyclicBundle25D(bundle_id="b", x=-0.96, y=-0.95, phase_rad=0.2)
+        qt.insert_bundle(b1)
+        qt.insert_bundle(b2)
+        ids = qt.query_window(0.99, 0.99, half_extent=0.08)
+        assert "a" in ids
+        ids_wrap = qt.query_window(-0.99, -0.99, half_extent=0.08)
+        assert "b" in ids_wrap
+
+    def test_lod_mesh_contains_leaf_tiles(self):
+        qt = AdaptiveQuadtree25D(max_depth=4, capacity=1, z_variance_threshold=0.0)
+        qt.insert_bundle(CyclicBundle25D(bundle_id="a", x=0.1, y=0.1, phase_rad=0.5))
+        qt.insert_bundle(CyclicBundle25D(bundle_id="b", x=0.2, y=0.2, phase_rad=1.5))
+        mesh = qt.lod_mesh()
+        assert len(mesh) >= 1
+        assert "height" in mesh[0]
+        assert "lod" in mesh[0]
+
+    def test_quadtree_to_octree_projection(self):
+        lat = HyperbolicLattice25D(cell_size=0.4, index_mode="quadtree", quadtree_capacity=1, quadtree_z_variance=0.0)
+        lat.insert_bundle(0.1, 0.1, phase_rad=0.2, tongue="DR", intent_label="p0")
+        lat.insert_bundle(-0.2, 0.3, phase_rad=1.0, tongue="KO", intent_label="p1")
+        inserted = lat.project_quadtree_to_octree()
+        assert inserted == 2
+        assert lat.octree.stats()["count"] == 2

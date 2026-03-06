@@ -901,6 +901,10 @@ def _parse_lattice25d_options(tokens: List[str]) -> Optional[Dict[str, Any]]:
         "cell_size": 0.4,
         "max_depth": 6,
         "phase_weight": 0.35,
+        "index_mode": "grid",
+        "qt_capacity": 8,
+        "qt_z_variance": 0.01,
+        "qt_extent": 0.35,
         "radius": 0.72,
         "query_intent": [0.9, 0.1, 0.1],
         "query_x": 0.1,
@@ -963,6 +967,38 @@ def _parse_lattice25d_options(tokens: List[str]) -> Optional[Dict[str, Any]]:
                 options["phase_weight"] = float(tokens[idx + 1])
             except ValueError:
                 print(f"Error: --phase-weight expects float, got: {tokens[idx + 1]}")
+                return None
+            idx += 2
+            continue
+        if tok == "--index" and idx + 1 < len(tokens):
+            mode = tokens[idx + 1].strip().lower()
+            if mode not in {"grid", "quadtree", "hybrid"}:
+                print(f"Error: --index must be grid|quadtree|hybrid, got: {tokens[idx + 1]}")
+                return None
+            options["index_mode"] = mode
+            idx += 2
+            continue
+        if tok == "--qt-capacity" and idx + 1 < len(tokens):
+            try:
+                options["qt_capacity"] = max(1, int(tokens[idx + 1]))
+            except ValueError:
+                print(f"Error: --qt-capacity expects integer, got: {tokens[idx + 1]}")
+                return None
+            idx += 2
+            continue
+        if tok == "--qt-z-var" and idx + 1 < len(tokens):
+            try:
+                options["qt_z_variance"] = max(0.0, float(tokens[idx + 1]))
+            except ValueError:
+                print(f"Error: --qt-z-var expects float, got: {tokens[idx + 1]}")
+                return None
+            idx += 2
+            continue
+        if tok == "--qt-extent" and idx + 1 < len(tokens):
+            try:
+                options["qt_extent"] = max(0.01, float(tokens[idx + 1]))
+            except ValueError:
+                print(f"Error: --qt-extent expects float, got: {tokens[idx + 1]}")
                 return None
             idx += 2
             continue
@@ -1036,6 +1072,7 @@ def handle_lattice25d(args: List[str], parsed_args) -> None:
         print("  hydra lattice25d sample [--count N] [--cell-size F] [--phase-weight F] [--json]")
         print("  hydra lattice25d notes [--glob PATTERN] [--max-notes N] [--note \"text\"] [--json]")
         print("                 [--cell-size F] [--max-depth N] [--phase-weight F] [--radius F]")
+        print("                 [--index grid|quadtree|hybrid] [--qt-capacity N] [--qt-z-var F] [--qt-extent F]")
         print("                 [--query-intent a,b,c] [--query-x X] [--query-y Y] [--query-phase P] [--query-top-k K]")
         print()
         print("Examples:")
@@ -1093,6 +1130,10 @@ def handle_lattice25d(args: List[str], parsed_args) -> None:
         cell_size=options["cell_size"],
         max_depth=options["max_depth"],
         phase_weight=options["phase_weight"],
+        index_mode=options["index_mode"],
+        quadtree_capacity=options["qt_capacity"],
+        quadtree_z_variance=options["qt_z_variance"],
+        quadtree_query_extent=options["qt_extent"],
         radius=options["radius"],
         query_intent=options["query_intent"],
         query_x=options["query_x"],
@@ -1117,6 +1158,15 @@ def handle_lattice25d(args: List[str], parsed_args) -> None:
     print(f"  Lace edges:  {payload['lace_edge_count']}")
     print(f"  Octree vox:  {stats['octree_voxel_count']}")
     print(f"  Weight avg:  {stats['semantic_weight_avg']:.3f}")
+    print(f"  Index mode:  {stats.get('index_mode', options['index_mode'])}")
+    qt = stats.get("quadtree")
+    if isinstance(qt, dict):
+        print(
+            "  Quadtree:    "
+            f"nodes={qt.get('node_count', 0)} "
+            f"leaves={qt.get('leaf_count', 0)} "
+            f"depth={qt.get('max_depth_used', 0)}"
+        )
     print()
     print("  Nearest Bundles:")
     for row in payload.get("nearest", [])[:5]:
