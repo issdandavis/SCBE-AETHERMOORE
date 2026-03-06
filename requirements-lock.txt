@@ -66,7 +66,7 @@ itsdangerous==2.2.0
 Jinja2==3.1.6
 jiter==0.13.0
 jmespath==1.1.0
-jsii==1.122.0
+jsii==1.127.0
 jsonschema==4.26.0
 jsonschema-path==0.3.4
 jsonschema-specifications==2025.9.1
