@@ -43,6 +43,11 @@ def _hash_unit(seed: str) -> float:
     return raw / float((1 << 64) - 1)
 
 
+# Safe root directory - all loaded notes must reside within this directory
+_SAFE_NOTES_ROOT = Path(__file__).parent.parent.resolve()
+
+
+
 def load_notes_from_glob(
     pattern: str,
     max_notes: int = 100,
@@ -54,7 +59,12 @@ def load_notes_from_glob(
     for p in paths:
         if len(notes) >= max(0, max_notes):
             break
-        path = Path(p)
+        path = Path(p).resolve()
+        # Guard against path traversal: reject paths outside the safe root
+        try:
+            path.relative_to(_SAFE_NOTES_ROOT)
+        except ValueError:
+            continue
         if not path.is_file():
             continue
         suffix = path.suffix.lower()
@@ -214,6 +224,10 @@ def build_lattice25d_payload(
     cell_size: float = 0.4,
     max_depth: int = 6,
     phase_weight: float = 0.35,
+    index_mode: str = "grid",
+    quadtree_capacity: int = 8,
+    quadtree_z_variance: float = 0.01,
+    quadtree_query_extent: float = 0.35,
     radius: float = 0.72,
     query_intent: Optional[List[float]] = None,
     query_x: float = 0.1,
@@ -228,6 +242,10 @@ def build_lattice25d_payload(
         cell_size=cell_size,
         max_depth=max_depth,
         phase_weight=phase_weight,
+        index_mode=index_mode,
+        quadtree_capacity=quadtree_capacity,
+        quadtree_z_variance=quadtree_z_variance,
+        quadtree_query_extent=quadtree_query_extent,
     )
 
     inserted: List[Dict[str, Any]] = []
@@ -302,6 +320,7 @@ def build_lattice25d_payload(
 
     return {
         "dimensions": ["x", "y", "phase", "tongue", "authority", "intent"],
+        "index_mode": index_mode,
         "ingested_count": len(inserted),
         "stats": lattice.stats(),
         "overlap_cells": overlap,
