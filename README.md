@@ -270,8 +270,9 @@ curl -X POST https://YOUR_API/v1/fleet/run-scenario \
 
 | Suite | Status | Count |
 |-------|--------|-------|
-| TypeScript | ✅ Passing | 950/950 |
-| Python | ✅ Passing | 97/103 |
+| TypeScript | Passing | 950+ |
+| Python (core) | Passing | 103+ |
+| Python (spatial: octree + quadtree + hyperbolic terrain) | Passing | 166+ |
 
 ---
 
@@ -284,10 +285,17 @@ curl -X POST https://YOUR_API/v1/fleet/run-scenario \
 - **HKDF-SHA256**: Key derivation
 
 ### Mathematical Foundations
-- **Poincaré Ball Model**: Hyperbolic geometry
-- **Hamiltonian Mechanics**: Energy conservation
-- **Möbius Addition**: Gyrogroup operations
-- **Quasicrystal Lattice**: 6D → 3D projection
+- **Poincare Ball Model**: Hyperbolic geometry with exponential cost scaling
+- **Hamiltonian Mechanics**: Energy conservation across decision wells
+- **Mobius Addition**: Gyrogroup operations, isometric transformations
+- **Quasicrystal Lattice**: 6D-to-3D projection via cut-and-project
+
+### Spatial Intelligence Stack
+- **SignedOctree**: 8 signed octants, Morton Z-order curves, fractal Chladni addressing
+- **Quadtree25D**: Variance-based terrain subdivision, LOD, adaptive mesh generation
+- **HyperbolicLattice25D**: Cyclic phase bundles with Poincare distance and lace edges
+- **HyperbolicTerrain**: Geodesic pathfinding, eccentricity detection, conformal LOD
+- **SphereGrid**: FF10-style 10-slot ring topology per voxel node
 
 ---
 
@@ -315,11 +323,46 @@ curl -X POST https://YOUR_API/v1/fleet/run-scenario \
 
 ---
 
+## Commercial Integration
+
+SCBE-AETHERMOORE is open-source for researchers, independent developers, and educational use.
+
+For enterprise and defense deployments, we offer:
+
+### Sovereignty License
+
+Local-first, air-gapped deployment of the full 14-layer governance stack. No cloud dependency. No vendor lock-in. Your models, your rules, your infrastructure.
+
+- Post-quantum cryptographic envelope (ML-KEM-768, ML-DSA-65)
+- Hyperbolic geometry containment (adversarial cost grows exponentially)
+- Multi-agent swarm governance with BFT consensus
+- Full audit trail with deterministic replay
+
+### Governance-as-a-Service (GaaS)
+
+Connect your existing AI fleet (OpenAI, Anthropic, Gemini, local models) through the SCBE governance proxy. Every prompt and response passes through the 14-layer pipeline before reaching your systems.
+
+- Usage-based pricing (per-token safety tax)
+- Dashboard with real-time drift detection
+- Compliance reporting (SOC 2, FedRAMP-ready)
+- Zero-trust agent authorization
+
+### Integration Support
+
+- **Defense/IC**: SBIR/STTR eligible. Patent pending (USPTO #63/961,403).
+- **Enterprise**: Custom deployment, SLA, dedicated support.
+- **Startups**: Open-core model. Build on top of the public packages.
+
+**Contact**: issdandavis@gmail.com | [@davisissac](https://x.com/davisissac)
+
+---
+
 ## Contact
 
 **Issac Daniel Davis**
 Email: issdandavis@gmail.com
 GitHub: [@issdandavis](https://github.com/issdandavis)
+ORCID: [0009-0002-3936-9369](https://orcid.org/0009-0002-3936-9369)
 
 ---
 
@@ -329,7 +372,7 @@ Proprietary. Contact for licensing inquiries.
 
 ---
 
-*Built with hyperbolic geometry. Secured by mathematics.*
+*Built with hyperbolic geometry. Secured by mathematics. Patent pending.*
 
 
 ## Publishing (AI-assisted)
