@@ -15,6 +15,12 @@ import type { Conference, ConferenceSlot, ApiResponse } from '../../shared/types
 
 const router = Router();
 
+/** Express v5 params may be string | string[]; extract safely */
+function param(req: Request, name: string): string {
+  const v = req.params[name];
+  return Array.isArray(v) ? v[0] : v;
+}
+
 router.use(authMiddleware);
 
 /**
@@ -65,7 +71,7 @@ router.get('/', (_req: Request, res: Response) => {
  * GET /api/conferences/:id
  */
 router.get('/:id', (req: Request, res: Response) => {
-  const conf = store.conferences.get(req.params.id);
+  const conf = store.conferences.get(param(req, 'id'));
   if (!conf) {
     res.status(404).json({ success: false, error: 'Conference not found' });
     return;
@@ -86,7 +92,7 @@ router.get('/:id', (req: Request, res: Response) => {
  * Body: { projectId, durationMinutes?, pitchMinutes?, qaMinutes? }
  */
 router.post('/:id/slots', requireRole('curator'), (req: Request, res: Response) => {
-  const conf = store.conferences.get(req.params.id);
+  const conf = store.conferences.get(param(req, 'id'));
   if (!conf) {
     res.status(404).json({ success: false, error: 'Conference not found' });
     return;
@@ -142,7 +148,7 @@ router.post('/:id/slots', requireRole('curator'), (req: Request, res: Response) 
  * Set conference status to live (curator only).
  */
 router.post('/:id/go-live', requireRole('curator'), (req: Request, res: Response) => {
-  const conf = store.conferences.get(req.params.id);
+  const conf = store.conferences.get(param(req, 'id'));
   if (!conf) {
     res.status(404).json({ success: false, error: 'Conference not found' });
     return;
@@ -165,7 +171,7 @@ router.post('/:id/go-live', requireRole('curator'), (req: Request, res: Response
  * End a live conference (curator only).
  */
 router.post('/:id/end', requireRole('curator'), (req: Request, res: Response) => {
-  const conf = store.conferences.get(req.params.id);
+  const conf = store.conferences.get(param(req, 'id'));
   if (!conf) {
     res.status(404).json({ success: false, error: 'Conference not found' });
     return;
