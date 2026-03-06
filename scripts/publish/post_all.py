@@ -21,11 +21,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTICLES_DIR = REPO_ROOT / "content" / "articles"
 EVIDENCE_DIR = REPO_ROOT / "artifacts" / "publish_browser"
 POST_TO_X = REPO_ROOT / "scripts" / "publish" / "post_to_x.py"
+POST_TO_BUFFER = REPO_ROOT / "scripts" / "publish" / "post_to_buffer.py"
 POST_TO_GITHUB_DISCUSSIONS = REPO_ROOT / "scripts" / "publish" / "publish_discussions.py"
 
 PLATFORM_PREFIXES: dict[str, tuple[str, ...]] = {
     "x": ("x_thread_", "twitter_thread_"),
     "twitter": ("x_thread_", "twitter_thread_"),
+    "buffer": ("x_thread_", "twitter_thread_", "buffer_"),
     "linkedin": ("linkedin_",),
     "medium": ("medium_",),
     "devto": ("devto_",),
@@ -34,7 +36,7 @@ PLATFORM_PREFIXES: dict[str, tuple[str, ...]] = {
     "github": ("2026-",),
 }
 
-PLATFORM_ORDER = ["x", "github", "linkedin", "medium", "devto", "reddit", "hackernews"]
+PLATFORM_ORDER = ["x", "buffer", "github", "linkedin", "medium", "devto", "reddit", "hackernews"]
 
 
 def _normalize_platforms(raw_only: str | None) -> list[str]:
@@ -100,16 +102,44 @@ def _run_x_publish(article: Path, dry_run: bool) -> tuple[str, str]:
     return "error", ((proc.stderr or output) or "unknown error")[-4000:]
 
 
-def _run_github_publish(dry_run: bool) -> tuple[str, str]:
+def _run_buffer_publish(article: Path, dry_run: bool) -> tuple[str, str]:
+    if not POST_TO_BUFFER.exists():
+        return "error", f"missing publisher: {POST_TO_BUFFER}"
+
+    is_thread = "thread" in article.name.lower()
+    if is_thread:
+        cmd = [sys.executable, str(POST_TO_BUFFER), "--thread", str(article)]
+        if dry_run:
+            cmd.append("--dry-run")
+    else:
+        text = _extract_text_for_single_post(article)
+        cmd = [sys.executable, str(POST_TO_BUFFER), "--text", text]
+        if dry_run:
+            cmd.append("--dry-run")
+
+    proc = subprocess.run(
+        cmd,
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PYTHONPATH": os.environ.get("PYTHONPATH", ".")},
+    )
+    output = ((proc.stdout or "") + "\n" + (proc.stderr or "")).strip()
+    if proc.returncode == 0:
+        return ("dry_run_ready" if dry_run else "posted"), output[-4000:]
+    return "error", output[-4000:] or "unknown error"
+
+
+def _run_github_publish(dry_run: bool, glob_pattern: str, limit: int) -> tuple[str, str]:
     if not POST_TO_GITHUB_DISCUSSIONS.exists():
         return "error", f"missing publisher: {POST_TO_GITHUB_DISCUSSIONS}"
     cmd = [
         sys.executable,
         str(POST_TO_GITHUB_DISCUSSIONS),
         "--glob",
-        "2026-03-06-*.md",
+        glob_pattern,
         "--limit",
-        "5",
+        str(limit),
         "--skip-existing",
     ]
     if dry_run:
@@ -130,9 +160,21 @@ def _run_github_publish(dry_run: bool) -> tuple[str, str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Publish SCBE articles across supported platforms.")
     parser.add_argument("--dry-run", action="store_true", help="Do not publish; report what would be posted.")
-    parser.add_argument("--only", default="", help="Comma-separated platforms (x,linkedin,medium,devto,reddit,hackernews).")
+    parser.add_argument(
+        "--only",
+        default="",
+        help="Comma-separated platforms (x,buffer,github,linkedin,medium,devto,reddit,hackernews).",
+    )
     parser.add_argument("--browser-fallback", action="store_true", help="Record browser fallback mode in evidence.")
     parser.add_argument("--browser-publish", action="store_true", help="Record browser publish intent in evidence.")
+    parser.add_argument(
+        "--github-glob",
+        default="",
+        help="Glob for GitHub Discussions article files in content/articles (default: UTC YYYY-MM-DD-*.md).",
+    )
+    parser.add_argument("--github-limit", type=int, default=3, help="Max GitHub Discussion posts per run.")
+    parser.add_argument("--x-article", default="", help="Explicit article path for X posting.")
+    parser.add_argument("--linkedin-article", default="", help="Explicit article path for LinkedIn status reporting.")
     args = parser.parse_args()
 
     platforms = _normalize_platforms(args.only)
@@ -140,12 +182,26 @@ def main() -> int:
         print("No valid platforms selected.")
         return 1
 
+    github_glob = args.github_glob.strip() if args.github_glob else ""
+    if not github_glob:
+        github_glob = os.environ.get("SCBE_GITHUB_DISCUSSIONS_GLOB", "").strip()
+    if not github_glob:
+        github_glob = datetime.now(timezone.utc).strftime("%Y-%m-%d-*.md")
+
     EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
     statuses: list[dict] = []
+    explicit_articles: dict[str, Path] = {}
+    if args.x_article.strip():
+        resolved_x = Path(args.x_article).expanduser().resolve()
+        explicit_articles["x"] = resolved_x
+        explicit_articles["buffer"] = resolved_x
+    if args.linkedin_article.strip():
+        explicit_articles["linkedin"] = Path(args.linkedin_article).expanduser().resolve()
+
     for platform in platforms:
-        article = _pick_article(platform)
+        article = explicit_articles.get(platform) or _pick_article(platform)
         row = {
             "platform": platform,
             "article": str(article) if article else None,
@@ -157,9 +213,13 @@ def main() -> int:
         }
 
         if platform == "github":
-            status, detail = _run_github_publish(dry_run=args.dry_run)
+            status, detail = _run_github_publish(
+                dry_run=args.dry_run,
+                glob_pattern=github_glob,
+                limit=max(1, int(args.github_limit)),
+            )
             row["status"] = status
-            row["article"] = "content/articles/2026-03-06-*.md (limit=5)"
+            row["article"] = f"content/articles/{github_glob} (limit={max(1, int(args.github_limit))})"
             row["detail"] = detail
             statuses.append(row)
             continue
@@ -169,9 +229,18 @@ def main() -> int:
             row["detail"] = f"No article file found with prefixes: {PLATFORM_PREFIXES.get(platform, ())}"
             statuses.append(row)
             continue
+        if platform in explicit_articles and not article.exists():
+            row["status"] = "no_article"
+            row["detail"] = f"Explicit article path does not exist: {article}"
+            statuses.append(row)
+            continue
 
         if platform == "x":
             status, detail = _run_x_publish(article, dry_run=args.dry_run)
+            row["status"] = status
+            row["detail"] = detail
+        elif platform == "buffer":
+            status, detail = _run_buffer_publish(article, dry_run=args.dry_run)
             row["status"] = status
             row["detail"] = detail
         else:
@@ -184,6 +253,8 @@ def main() -> int:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "dry_run": bool(args.dry_run),
         "platforms": platforms,
+        "github_glob": github_glob,
+        "github_limit": max(1, int(args.github_limit)),
         "statuses": statuses,
     }
 
