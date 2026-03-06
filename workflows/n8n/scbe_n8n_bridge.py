@@ -1278,6 +1278,13 @@ def _write_lattice_jsonl(payload: Dict[str, Any], output_path: str) -> Dict[str,
     out = Path(output_path)
     if not out.is_absolute():
         out = Path(_PROJECT) / out
+    # Guard against path traversal
+    _safe_root = Path(_PROJECT).resolve()
+    out = out.resolve()
+    try:
+        out.relative_to(_safe_root)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid output path") from exc
     out.parent.mkdir(parents=True, exist_ok=True)
 
     rows = payload.get("notes", []) if isinstance(payload.get("notes"), list) else []
