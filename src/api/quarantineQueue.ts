@@ -18,6 +18,7 @@
  */
 
 import { createHash, randomBytes } from 'crypto';
+import type { DiagnosticSnapshot, DiagnosticState } from './diagnosticSnapshot';
 
 // ============================================================================
 // Types
@@ -57,6 +58,8 @@ export interface QuarantineItem {
   trustAtEnqueue: number;
   /** Current decayed trust */
   decayedTrust: number;
+  /** Diagnostic state from triage engine (null if enqueued without snapshot) */
+  diagnosticState: DiagnosticState | null;
   /** Resolution (null if still pending) */
   resolution: QuarantineResolution | null;
   /** Who resolved it (null if auto or pending) */
@@ -170,6 +173,7 @@ export class QuarantineQueue {
       cohortKey: this.computeCohortKey(params.intent, params.riskScore),
       trustAtEnqueue: params.trustScore,
       decayedTrust: params.trustScore,
+      diagnosticState: null,
       resolution: null,
       resolvedBy: null,
       resolvedAt: null,
@@ -179,6 +183,57 @@ export class QuarantineQueue {
 
     // Run maintenance after enqueue
     this.runMaintenance();
+
+    return item;
+  }
+
+  /**
+   * Enqueue a request from a DiagnosticSnapshot.
+   *
+   * Routes the snapshot based on its diagnostic state:
+   * - PASS, WATCH → not enqueued (returns null, caller should ALLOW)
+   * - RETEST, DEFERRED, DEGRADED, FLAGGED → enqueued with appropriate priority
+   * - TRIAGE, ISOLATED, SUSPENDED → enqueued with elevated priority
+   * - REJECTED → not enqueued (returns null, caller should DENY)
+   */
+  enqueueFromSnapshot(snapshot: DiagnosticSnapshot): QuarantineItem | null {
+    // States that bypass the queue entirely
+    const allowStates: DiagnosticState[] = ['PASS', 'WATCH'];
+    const denyStates: DiagnosticState[] = ['REJECTED'];
+
+    if (allowStates.includes(snapshot.diagnosticState) || denyStates.includes(snapshot.diagnosticState)) {
+      return null;
+    }
+
+    // Map diagnostic state to priority override
+    const priorityMap: Partial<Record<DiagnosticState, QuarantinePriority>> = {
+      RETEST: 'low',
+      DEFERRED: 'low',
+      DEGRADED: 'medium',
+      FLAGGED: 'medium',
+      TRIAGE: 'high',
+      ISOLATED: 'high',
+      SUSPENDED: 'critical',
+    };
+
+    const item = this.enqueue({
+      requestId: snapshot.snapshotId,
+      actorId: snapshot.actorId,
+      intent: snapshot.intent,
+      riskScore: snapshot.riskScore,
+      harmonicCost: snapshot.harmonicCost,
+      rationale: snapshot.explanation,
+      trustScore: snapshot.trustScore,
+    });
+
+    // Override priority from diagnostic state
+    const overridePriority = priorityMap[snapshot.diagnosticState];
+    if (overridePriority) {
+      item.priority = overridePriority;
+    }
+
+    // Attach diagnostic state
+    item.diagnosticState = snapshot.diagnosticState;
 
     return item;
   }
