@@ -218,7 +218,7 @@ sse-starlette==3.3.2
 starlette==0.52.1
 stone==3.3.9
 strands-agents==1.28.0
-strands-agents-tools==0.2.21
+strands-agents-tools==0.2.22
 sympy==1.14.0
 tenacity==9.1.2
 toml==0.10.2
