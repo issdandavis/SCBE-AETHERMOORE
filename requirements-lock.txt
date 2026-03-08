@@ -142,7 +142,7 @@ opentelemetry-instrumentation-urllib==0.60b1
 opentelemetry-instrumentation-urllib3==0.61b0
 opentelemetry-instrumentation-wsgi==0.54b1
 opentelemetry-processor-baggage==0.54b1
-opentelemetry-propagator-aws-xray==1.0.1
+opentelemetry-propagator-aws-xray==1.0.2
 opentelemetry-propagator-b3==1.33.1
 opentelemetry-propagator-jaeger==1.33.1
 opentelemetry-propagator-ot-trace==0.60b1
