@@ -1,0 +1,40 @@
+SCBE-AETHERMOORE
+Copyright (c) 2026 Issac Daniel Davis
+
+INDEPENDENT RESEARCH NOTICE
+============================
+
+This software is the product of independent, self-directed research and
+engineering. The author is self-taught and does not endorse any third-party
+framework, standard, policy, vendor, or organization without thorough
+independent evaluation and verification.
+
+Where this software references or implements published standards, algorithms,
+or protocols (including but not limited to NIST FIPS 203/204/205, NIST AI RMF,
+ISO 42001, or any government framework), such references reflect technical
+interoperability and independent research — NOT organizational endorsement,
+affiliation, certification, or validation by any standards body, government
+agency, or institution.
+
+DUAL LICENSING
+==============
+
+This project uses a dual licensing model:
+
+1. OPEN SOURCE (MIT License)
+   Core components are available under the MIT License.
+   See LICENSE for full terms.
+
+2. COMMERCIAL (Customer License Agreement)
+   Proprietary components — including but not limited to multi-agent swarm
+   orchestration, flock governance, enterprise governance pipelines, training
+   data, and deployment configurations — are available under a separate
+   commercial license.
+   See CUSTOMER_LICENSE_AGREEMENT.md for full terms.
+
+THIRD-PARTY COMPONENTS
+======================
+
+This software includes third-party open source components, each subject to
+their own license terms. See individual LICENSE files in node_modules/ and
+package dependencies for details.
