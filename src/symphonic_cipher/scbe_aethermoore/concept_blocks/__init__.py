@@ -1,18 +1,29 @@
 """
-Concept Blocks — Nodal Navigation Primitives
-=============================================
+Concept Blocks — Nodal Navigation Primitives (Mr. Potato Head Architecture)
+===========================================================================
 
-Six domain-agnostic building blocks that work across flight, web, and
+Seven domain-agnostic building blocks that work across flight, web, and
 game navigation.  Each block wraps a single mathematical primitive and
 exposes the same tick/reset/configure lifecycle.
 
-Blocks
-------
+Like Mr. Potato Head, blocks are snap-on sense organs that attach to
+sockets on an agent body (``PotatoHead``).  Each socket is gated by
+Sacred Egg ring predicates and Sacred Tongue phase affinity.
+
+Blocks (Sense Organs)
+---------------------
 - **DECIDE**     : Behaviour tree execution (Layer 7)
 - **PLAN**       : A* path-finding over any graph (Layer 6)
 - **SENSE**      : Kalman filter state estimation (Layer 9)
 - **STEER**      : PID continuous correction (Layer 8)
 - **COORDINATE** : BFT swarm consensus (Layer 12)
+- **PROXIMITY**  : Decimal-drift 6th sense (Layer 14)
+
+Body
+----
+- ``PotatoHead`` : agent body with typed sockets
+- ``SocketSpec`` : socket definition (layer, ring, tongue)
+- ``EggRing``    : Sacred Egg access control tiers
 
 Shared
 ------
@@ -56,6 +67,28 @@ from .coordinate import (
     CoordinateBlock,
     SwarmNode,
 )
+from .proximity import (
+    DriftShadowBuffer,
+    ProximityBlock,
+    ProximityLevel,
+    ProximityReading,
+    compute_drift_distance,
+)
+from .socket import (
+    AttachmentRecord,
+    EggRing,
+    PotatoHead,
+    SocketSpec,
+)
+from .aperiodic_phase import (
+    AperiodicPhaseBlock,
+    AperiodicPhaseController,
+    GateVector,
+    PenroseInterval,
+    fibonacci_word,
+    fibonacci_word_char,
+    penrose_intervals,
+)
 
 __all__ = [
     # Base
@@ -72,4 +105,12 @@ __all__ = [
     "SteerBlock", "PIDController",
     # COORDINATE
     "CoordinateBlock", "BFTConsensus", "SwarmNode",
+    # PROXIMITY (6th Sense)
+    "ProximityBlock", "ProximityLevel", "ProximityReading",
+    "DriftShadowBuffer", "compute_drift_distance",
+    # SOCKET (Mr. Potato Head Body)
+    "PotatoHead", "SocketSpec", "EggRing", "AttachmentRecord",
+    # APERIODIC PHASE (Controlled Chaos)
+    "AperiodicPhaseBlock", "AperiodicPhaseController", "GateVector",
+    "PenroseInterval", "fibonacci_word", "fibonacci_word_char", "penrose_intervals",
 ]
