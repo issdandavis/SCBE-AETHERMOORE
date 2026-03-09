@@ -149,7 +149,7 @@ Full telemetry on every layer. Know exactly what's happening, in real-time.
 - ✓ Priority support (24h SLA)
 - ✓ Compliance documentation
 - ✓ Custom integrations
-- **$499/month**
+- **Pricing on request**
 - [Contact Sales →]
 
 #### Enterprise
@@ -157,7 +157,7 @@ Full telemetry on every layer. Know exactly what's happening, in real-time.
 - ✓ Dedicated support engineer
 - ✓ On-premise deployment
 - ✓ Custom SLA (99.99%)
-- ✓ Patent license included
+- ✓ Commercial agreement options (support/SLA/proprietary bundles)
 - **Custom pricing**
 - [Book a Call →]
 
@@ -212,7 +212,7 @@ A: Minimal. Full 14-layer seal/retrieve takes <5ms. You can disable layers for e
 A: Yes. SCBE includes built-in compliance features for HIPAA, SOC 2, ISO 27001, and FIPS 140-3. We provide audit documentation.
 
 **Q: Can I use it commercially?**
-A: The code is MIT licensed for development. Commercial production use requires a patent license (included in Professional/Enterprise plans).
+A: The open-source core is MIT-licensed. Commercial terms may apply for designated proprietary components and enterprise delivery packages. See `COMMERCIAL.md` and `CUSTOMER_LICENSE_AGREEMENT.md`.
 
 **Q: What if I need help integrating?**
 A: Professional and Enterprise plans include integration support. We also offer paid consulting for complex deployments.
@@ -235,7 +235,7 @@ Join the companies that trust SCBE-AETHERMOORE to protect their most sensitive d
 
 **Patent Pending** - USPTO Application #63/961,403
 
-- [GitHub](https://github.com/ISDanDavis2/scbe-aethermoore)
+- [GitHub](https://github.com/issdandavis/SCBE-AETHERMOORE)
 - [Documentation](./docs/)
 - [API Reference](./docs/API.md)
 - [Support](mailto:issdandavis@gmail.com)
