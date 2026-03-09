@@ -1,60 +1,56 @@
-# Commercial Licensing for SCBE-AETHERMOORE
+# Commercial Use
 
-## Open Source License
+SCBE-AETHERMOORE uses a dual-license model.
 
-SCBE-AETHERMOORE is available under the **GNU Affero General Public License v3.0 (AGPLv3)**.
+## Free (MIT License)
 
-This means it's **free** for:
-- Open-source projects
-- Personal and educational use
-- Research and academic work
-- Any use where you comply with AGPLv3 requirements
+The core library is MIT-licensed and free for:
+- Personal projects
+- Academic research
+- Open-source software
+- Evaluation and prototyping
 
-AGPLv3 requires that if you modify the software and provide it as a network service, you must make your modifications available under the same license.
+This includes the published npm/PyPI packages: 14-layer pipeline, symphonic cipher, PQC primitives, Sacred Tongues tokenizer, and hyperbolic distance functions.
 
-## Commercial License
+## Commercial Agreement Scope
 
-For **commercial or enterprise use** without AGPLv3 obligations, paid commercial licenses are available.
+If you use only MIT-licensed components distributed in this repository, MIT terms apply.
 
-### When You Need a Commercial License
+A commercial agreement is required when you need rights or packages beyond MIT, including:
+- Use of explicitly designated proprietary components
+- Enterprise delivery packages (regulated deployment bundles, governance operations, dedicated support/SLA)
+- Training data, model weights, or deployment configurations delivered under paid terms
+- Contractual commitments (indemnity, negotiated support, procurement terms)
 
-- Closed-source integrations or modifications
-- SaaS offerings using SCBE-AETHERMOORE
-- Internal enterprise deployments without source disclosure
-- Compliance with corporate open-source policies that prohibit AGPLv3
+### Proprietary Components
 
-### Commercial License Benefits
+These are delivered under paid commercial terms:
+- Multi-agent swarm orchestration (`src/fleet/`, `agents/`)
+- Flock governance and shepherd protocols
+- Enterprise governance decision pipeline
+- Training data and model weights (`training-data/`)
+- Deployment configurations (`deploy/`)
 
-- Use in proprietary products without source disclosure
-- Priority support and consulting
-- Custom integrations and features
-- Legal indemnification
-- Patent rights included (USPTO provisional filed)
+### Tiers
 
-### Pricing
+| | Homebrew | Professional | Enterprise |
+|---|---|---|---|
+| Users | 1 | Up to 10 | Unlimited |
+| Deploy instances | 1 | Up to 5 | Unlimited |
+| Swarm agents | 3 | 12 | Unlimited |
+| Support | Community | Email (48h) | Dedicated (24h) |
 
-| Tier | Price | For |
-|------|-------|-----|
-| Startup | $499/month | Teams under 10, revenue under $1M |
-| Business | $1,499/month | Teams under 50 |
-| Enterprise | Custom | Larger teams, custom needs |
-
-All tiers include patent rights and basic support.
-
-### Contact
-
-For commercial licensing inquiries:
-
-- **Email**: aethermoregames@pm.me
-- **GitHub**: Open an issue labeled "Commercial Inquiry"
-
-All inquiries handled via secure, end-to-end encrypted Proton Mail.
+Pricing available on request. Full terms: [CUSTOMER_LICENSE_AGREEMENT.md](CUSTOMER_LICENSE_AGREEMENT.md)
 
 ## Patent Notice
 
-SCBE-AETHERMOORE includes patent-pending technology (USPTO provisional application filed).
+Portions of this system are covered by US Provisional Patent Application No. 63/961,403. Commercial licenses include rights to practice the patented methods.
 
-Commercial licenses include rights to practice the patented methods. Open-source use under AGPLv3 is permitted for non-commercial purposes.
+## Contact
+
+**Issac Daniel Davis**
+Email: issdandavis@gmail.com
+GitHub: [@issdandavis](https://github.com/issdandavis)
 
 ---
 
