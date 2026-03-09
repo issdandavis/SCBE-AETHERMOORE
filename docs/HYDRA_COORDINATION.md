@@ -808,7 +808,7 @@ librarian.add_relationship(
 
 ---
 
-Repository: https://github.com/ISDanDavis2/scbe-aethermoore
+Repository: https://github.com/issdandavis/SCBE-AETHERMOORE
 
 Latest Commit: fd49eeb (spectral analysis + consensus)
 
