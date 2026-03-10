@@ -1,5 +1,5 @@
 param(
-  [string]$WorkspacePath = "C:\Users\issda\OneDrive\Documents\DOCCUMENTS\A follder\AI Workspace",
+  [string]$WorkspacePath = "",
   [string]$Sender = "agent.codex",
   [string]$Recipient = "agent.claude",
   [string]$Intent = "handoff",
@@ -74,71 +74,65 @@ if (-not $Codename) {
   updated_at_utc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 } | ConvertTo-Json -Depth 3 | Set-Content -Path $statePath -Encoding UTF8
 
-$payloadObj = [ordered]@{
-  summary = $Summary
-  recipient = $Recipient
-  sender = $Sender
-  intent = $Intent
-  status = $Status
-  task_id = $TaskId
-  next_action = $NextAction
-  risk = $Risk
-  repo = $Repo
-  branch = $Branch
-  proof = $Proof
-  session_id = $SessionId
-  codename = $Codename
-  where = $Where
-  why = $Why
-  how = $How
+$senderAgent = $Sender -replace '^agent\.', ''
+$recipientAgent = $Recipient -replace '^agent\.', ''
+$artifactsArg = (($Proof | Where-Object { $_ -and $_.Trim() }) -join ",")
+
+$opsArgs = @(
+  "scripts/system/ops_control.py",
+  "send",
+  "--from", $senderAgent,
+  "--to", $recipientAgent,
+  "--intent", $Intent,
+  "--status", $Status,
+  "--summary", $Summary,
+  "--json"
+)
+
+if ($NextAction) {
+  $opsArgs += @("--next", $NextAction)
+}
+if ($TaskId) {
+  $opsArgs += @("--task-id", $TaskId)
+}
+if ($Risk) {
+  $opsArgs += @("--risk", $Risk)
+}
+if ($Where) {
+  $opsArgs += @("--where", $Where)
+}
+if ($Why) {
+  $opsArgs += @("--why", $Why)
+}
+if ($How) {
+  $opsArgs += @("--how", $How)
+}
+if ($SessionId) {
+  $opsArgs += @("--session-id", $SessionId)
+}
+if ($Codename) {
+  $opsArgs += @("--codename", $Codename)
+}
+if ($WorkspacePath) {
+  $opsArgs += @("--workspace", $WorkspacePath)
 }
 
-$payloadJson = ($payloadObj | ConvertTo-Json -Depth 8 -Compress)
+if ($artifactsArg) {
+  $opsArgs += @("--artifacts", $artifactsArg)
+}
 
-$py = @"
-import json
-from src.aethercode.gateway import CrossTalkRequest, _write_crosstalk_packet
-
-payload = json.loads(r'''$payloadJson''')
-req = CrossTalkRequest(**payload)
-res = _write_crosstalk_packet(req)
-print(json.dumps({
-    "packet_id": res["packet"]["packet_id"],
-    "packet_path": str(res["packet_path"]),
-    "line": res["line"],
-}))
-"@
-
-$packetOut = $py | python -
+$packetOut = & python @opsArgs
 if ($LASTEXITCODE -ne 0) {
   throw "Packet emission failed."
 }
 
 $packet = $packetOut | ConvertFrom-Json
 
-& (Join-Path $repoRoot "scripts\system\cross_talk_append.ps1") `
-  -WorkspacePath $WorkspacePath `
-  -Agent "Codex" `
-  -Task $TaskId `
-  -Status $Status `
-  -Summary $Summary `
-  -Artifacts @($packet.packet_path) `
-  -Next $NextAction `
-  -SessionId $SessionId `
-  -Codename $Codename `
-  -Where $Where `
-  -Why $Why `
-  -How $How
-
-if ($LASTEXITCODE -ne 0) {
-  throw "Obsidian cross-talk append failed."
-}
-
 [pscustomobject]@{
   ok = $true
   session_id = $SessionId
   codename = $Codename
-  packet_id = $packet.packet_id
-  packet_path = $packet.packet_path
-  workspace = $WorkspacePath
+  packet_id = $packet.packet.packet_id
+  packet_path = $packet.delivery.json_packet.detail
+  workspace = $packet.workspace
 } | ConvertTo-Json -Depth 4
