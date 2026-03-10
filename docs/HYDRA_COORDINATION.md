@@ -1,6 +1,6 @@
 # 🦾 HYDRA Multi-Agent Coordination System - Complete Architecture
 
-> last-synced: 2026-03-02T07:26:10.411Z
+> last-synced: 2026-03-09T07:27:34.845Z
 
 # HYDRA Multi-Agent Coordination System
 
@@ -815,6 +815,42 @@ Latest Commit: fd49eeb (spectral analysis + consensus)
 Status: ✅ Production-Ready v1.1.0
 
 Tests: 226/226 passing
+
+---
+
+## 2026-03-06 Update: Voxel/Octree Spatial Layer + Polyglot Interop
+
+New HYDRA modules added to the coordination stack:
+
+Spatial Storage Layer (hydra/):
+
+- octree_sphere_grid.py — Signed-axis octree with 8 octants, Morton Z-order curves, FF10-style 10-slot sphere grids per voxel, fractal Chladni subdivision (phi^depth scaling), mirror ops, toroidal wrap, 12 cross-branch attachments
+
+- voxel_storage.py — 6D+t voxel grid (x, y, z, wavelength, authority, intent, time) with Chladni addressing and semantic intent queries
+
+- voxel_cli.py — Terminal CLI for voxel6d operations (demo, layout, store, chladni)
+
+- color_dimension.py — Spectral flow isolation mapping LLM providers to 380-780nm frequency bands with phi-weighted Sacred Tongue overtones
+
+MCP Cymatic Voxel App (mcp/apps/cymatic-voxel-app/):
+
+- TypeScript 6D voxel engine with Poincare distance, Chladni equation, wavelength-to-RGB
+
+- Canvas visualization frontend
+
+- Python backend bridge via normalizeCymaticVoxelLayout() in server.mjs
+
+Polyglot Translation Matrix:
+
+- P0-P4 portability rubric across Python/TS/Rust/Go/WASM
+
+- Shared golden test vectors for Poincare metric parity
+
+- Rust poincare-core reference implementation
+
+- INTEROP_MATRIX Rosetta Stone: 8 concepts x 9 languages
+
+New Tests: 122 Python tests (49 voxel + 73 octree) + TS/Python polyglot parity tests
 
 "Any AI can wear the armor. HYDRA makes them unstoppable."
 
