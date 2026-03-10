@@ -36,6 +36,9 @@ export * from './oscillator-bus';
 export * from './governed-drift';
 export * from './node-kernel';
 
+// Claude Code Studio Integration Bridge
+export * from './ccs-connector';
+
 // Export types (canonical source for shared types)
 export * from './types';
 
