@@ -1,0 +1,67 @@
+{
+  "chapter": "ch23",
+  "title": "The Underroot",
+  "word_count_approx": 3200,
+  "systems_mapped": {
+    "GeoSeed_sphere_grid": {
+      "narrative_form": "World Tree root network as icosahedral subdivision grid",
+      "key_lines": [
+        "icosahedral subdivision projected through three-dimensional earth",
+        "every junction connects to six neighbors",
+        "you can't remove one vertex without weakening the whole structure"
+      ],
+      "technical_source": "src/geoseed/sphere_grid.py — 642 vertices, icosahedral res-3"
+    },
+    "HallPassGuidance": {
+      "narrative_form": "corridor warrant — live state proof that dies on transfer",
+      "key_lines": [
+        "rolling cryptographic attestation that could not be paused, copied, or rewound",
+        "you can't replay a corridor. The corridor isn't the same corridor twice"
+      ],
+      "failure_modes_shown": [
+        "timing mismatch (stride length vs elapsed time)",
+        "witness chain broken (entry junction recorded different bearer)",
+        "burden mismatch (different cargo/emotional load)",
+        "intent-shape mismatch (evasive vs direct)",
+        "corridor state drift (roots grow, moisture shifts, tongue-field changes)"
+      ],
+      "technical_source": "src/fleet/skill_deck_engine.py — HallPassGuidance Hamiltonian corridors"
+    },
+    "quarantine_as_middle_state": {
+      "narrative_form": "roots tighten to hold, not harm — diagnostic not punishment",
+      "connects_to": "ch22 (Alexander's quarantine-as-pathfinding-state)"
+    },
+    "training_pipeline_echo": {
+      "narrative_form": "Underroot learned from past unauthorized signals — grew verification geometry as scar tissue",
+      "key_line": "The system had learned what happened when you let anything move through your infrastructure unchecked"
+    }
+  },
+  "characters_present": ["Marcus", "Senna", "Polly", "Voss (new)", "Kelth (new)"],
+  "new_characters": {
+    "Voss": "courier third class, sister Sera died 8 months ago, recruited by unknown Void Seed agent to access deep junction",
+    "Kelth": "dwarven Rootwarden, processes quarantine intakes"
+  },
+  "emotional_beats": {
+    "senna_romance": "Marcus reads Senna's stillness through intention-faculty, delivers Mira's message, Senna admits she carries too much",
+    "kael_parallel": "Voss mirrors Kael — bad solution to real problem, grief as operational motivation",
+    "polly_witness": "Polly notes the system isn't built to prevent unauthorized compassion"
+  },
+  "plot_threads_advanced": [
+    "Void Seed recruiting living agents through grief",
+    "Deep junction connects to pre-Founding channels without governance",
+    "Senna knew Sera Voss personally — the gap is personal now",
+    "Campaign, not lone rogue — organized exploitation of dead backlog"
+  ],
+  "continuity_links": {
+    "backward": {
+      "ch20": "dead backlog, seventh absence, Kael's dormant infrastructure",
+      "ch22": "quarantine as middle state, intention dimension, Alexander's training",
+      "ch18": "Irondeep corridor routing, live state proofs, chained records",
+      "ch19": "Mira's message to Senna (continuity is not silence)"
+    },
+    "forward": {
+      "ch24_dremsreach": "risk-tiered thresholds, phase-shifted terrain, time-damage",
+      "ch25_council": "Voss case as evidence, campaign discovery, doctrine revision"
+    }
+  }
+}

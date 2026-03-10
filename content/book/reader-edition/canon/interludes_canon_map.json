@@ -1,0 +1,277 @@
+{
+  "interludes": [
+    {
+      "id": "interlude-01",
+      "title": "Polly's Vigil",
+      "placement": "between ch01 and ch02",
+      "pov": "Polly",
+      "type": "Polly Wingscroll",
+      "word_count_approx": 2200,
+      "canon_anchors": [
+        "Polly 500+ years old",
+        "Izack alive in crystal observatory",
+        "Fizzlecress pipe",
+        "0.3-second Protocol heartbeat",
+        "Marcus coherence 0.92",
+        "Back door recruitment pathway",
+        "Seventh Holding sealed below",
+        "Sleep-caw behavioral signature"
+      ],
+      "characters": ["Polly", "Marcus (sleeping)", "Izack (distant presence)"],
+      "emotional_beats": ["Hope as dangerous state", "Polly choosing to stay again", "Coffee as mourning/belonging"],
+      "system_concepts": ["Coherence index", "Guest pass baseline", "Protocol integration dreams", "Back door edge-case"],
+      "continuity_links": {
+        "ch01": "Coffee request callback, first night in archive",
+        "ch09": "Polly's tea visits to Izack foreshadowed",
+        "ch27": "Izack's pipe smoke and observatory presence seeded"
+      }
+    },
+    {
+      "id": "interlude-02",
+      "title": "The Garden Before",
+      "placement": "between ch09 and ch10",
+      "pov": "Kael Thorne (age 14, flashback)",
+      "type": "Archive fragment / native field note",
+      "word_count_approx": 3200,
+      "canon_anchors": [
+        "Kael: tragic, real grievances, manipulated by handlers",
+        "Family order: Alexander, Lyra, Mira, Senna, Kael",
+        "Seventh silence as relationship gap, not new tongue",
+        "Kael's hospice = first self-improvement cycle",
+        "Dominion handlers: language shift fix→replace over 18 months",
+        "Aria margin notes in architectural hand",
+        "World Tree awareness of Kael",
+        "Izack's chair empty but set at dinner"
+      ],
+      "characters": ["Kael (14)", "Aria", "Alexander", "Lyra", "Mira", "Senna", "World Tree"],
+      "emotional_beats": ["Sun before the fall", "Family dinner as governance", "Kael's certainty", "The garden image from Kael's Fall doc"],
+      "system_concepts": ["Dead verification chains", "Silent absorption", "Harmonic Wall", "Governance gap for endings"],
+      "continuity_links": {
+        "ch09": "Portrait gallery context — now reader knows the boy",
+        "ch10": "Dead Author's Code — Senna's 40-year suspicion seeded",
+        "ch25": "Seventh silence named — Kael named it first here",
+        "ch27": "Izack's burden explained — he held what Kael tried to build"
+      }
+    },
+    {
+      "id": "interlude-03",
+      "title": "Senna Before Dawn",
+      "placement": "between ch10 and ch11",
+      "pov": "Senna Thorne",
+      "type": "Native field note",
+      "word_count_approx": 2800,
+      "canon_anchors": [
+        "Senna: cuff-touch habit",
+        "Dead backlog: 47 this year, 312 total",
+        "Senna wakes at 4:47 AM",
+        "Polly's morning tea ritual",
+        "Izack's back door (40 years old)",
+        "Kael language shift: fix→replace",
+        "Senna sets two extra places at table",
+        "Marcus/Senna: mutual recognition beginning"
+      ],
+      "characters": ["Senna", "Polly", "Marcus (distant)", "Kael (memory)", "Bram (passing)"],
+      "emotional_beats": ["Weight of carrying alone", "Private ledger as witness", "30 seconds of allowed rest", "Fix vs replace"],
+      "system_concepts": ["Continuity logs", "Dead verification chains", "Protocol heartbeat", "Guest pass timeline"],
+      "continuity_links": {
+        "ch10": "Senna's 40-year suspicion confirmed",
+        "ch25": "Dead backlog becomes Council evidence",
+        "ch27": "Senna's cuff-touch in deep observatory"
+      }
+    },
+    {
+      "id": "interlude-04",
+      "title": "Bram's Report",
+      "placement": "between ch07 and ch08",
+      "pov": "Bram Cortez",
+      "type": "Incident report (informal)",
+      "word_count_approx": 2500,
+      "canon_anchors": [
+        "Bram: CA maintenance lead, 23 years",
+        "Infrastructure fatigue masking deeper behaviors",
+        "System making a path for Marcus",
+        "Boots as care (callback to ch25)",
+        "Kael vs Marcus: rebuild vs heal"
+      ],
+      "characters": ["Bram", "Marcus", "Senna (requisition form)", "Nadia (mentioned)"],
+      "emotional_beats": ["Care through infrastructure", "Boots as love language", "Maintenance as the real work"],
+      "system_concepts": ["CA conduit resonance", "Routing table redundancy", "Deep infrastructure corridors", "System self-clearing paths"],
+      "continuity_links": {
+        "ch07": "Post-Fleet training assessment",
+        "ch25": "Boots outside quarters callback",
+        "ch26": "Bram holds UM maintenance during cascade"
+      }
+    },
+    {
+      "id": "interlude-05",
+      "title": "Alexander Holds",
+      "placement": "within ch26 (breach, Alexander's POV)",
+      "pov": "Alexander Thorne",
+      "type": "Scene expansion",
+      "word_count_approx": 3000,
+      "canon_anchors": [
+        "Alexander: eldest, collaborative heir, one-corner smile",
+        "KO wall: intent layer, weight 1.00",
+        "14-layer cascade named in order",
+        "Kael's code: elegant, recursive, self-propagating",
+        "All six defenders holding positions",
+        "Izack's teaching: witness, don't force",
+        "Alexander's dual request: father + brother"
+      ],
+      "characters": ["Alexander", "Nadia (comms)", "Eldrin (comms)", "Aria (comms)", "Bram (comms)", "Jorren (comms)", "Kael (ghost in code)"],
+      "emotional_beats": ["Father's teaching under crisis", "Brother's code as both threat and proof of brilliance", "Holding the door open"],
+      "system_concepts": ["Manual intent verification", "Autoimmune cascade", "Byzantine fault tolerance under real attack", "Layer 5 corruption"],
+      "continuity_links": {
+        "ch25": "Alexander's 'tell him his son wants to come home'",
+        "ch26": "Parallel POV to main chapter events",
+        "ch27": "Marcus arriving below while Alexander holds above"
+      }
+    },
+    {
+      "id": "interlude-06",
+      "title": "Jorren Records",
+      "placement": "between ch05 and ch06",
+      "pov": "Jorren Hale",
+      "type": "Archive fragment / personal notation",
+      "word_count_approx": 2000,
+      "canon_anchors": [
+        "Jorren: Fourth Circle Draumric, DR tongue",
+        "Sera Voss: Third Circle Runethic, dead, unacknowledged",
+        "Dead backlog awareness",
+        "Emergency Oversight Protocol 71",
+        "Marcus's 92% integrity score context",
+        "DR as witness tongue, not just schema"
+      ],
+      "characters": ["Jorren", "Marcus (observed)", "Senna (observed)", "Sera Voss (memory)"],
+      "emotional_beats": ["Writing names as resistance", "The leather journal", "Compression as choice", "Quiet of recognition"],
+      "system_concepts": ["DR tongue functions", "Verification chain deaths", "Gap between event and record", "Schema as witness"],
+      "continuity_links": {
+        "ch05": "Protocol 71 just authorized",
+        "ch06": "Wall interrogation context",
+        "ch25": "Sera Voss becomes Council evidence",
+        "ch27": "Jorren's 'every name, every action, every cost'"
+      }
+    },
+    {
+      "id": "interlude-07",
+      "title": "Nadia Runs",
+      "placement": "between ch13 and ch14",
+      "pov": "Nadia Kest",
+      "type": "Native field note",
+      "word_count_approx": 2200,
+      "canon_anchors": [
+        "Nadia: AV relay lead",
+        "AV tongue: transport, routing, signal integrity",
+        "0.3-second heartbeat synchronization",
+        "Post-incursion system alertness",
+        "Tovak: UM specialist, few words",
+        "System making a path for Marcus"
+      ],
+      "characters": ["Nadia", "Tovak"],
+      "emotional_beats": ["Reliability vs impressiveness", "Motion as devotion", "The honest corridors"],
+      "system_concepts": ["AV transport layer", "Signal integrity vs speed", "Relay node verification", "System-wide alertness post-breach"],
+      "continuity_links": {
+        "ch13": "Post-incursion state",
+        "ch26": "Nadia holds AV junctions during cascade"
+      }
+    },
+    {
+      "id": "interlude-08",
+      "title": "The Pipe",
+      "placement": "between ch24 and ch25",
+      "pov": "Izack Thorne",
+      "type": "Old quote by Izack / observatory scene",
+      "word_count_approx": 3000,
+      "canon_anchors": [
+        "Izack: alive, bound into substrate, load-bearing",
+        "Crystal observatory: 14 facets, 7 bright / 7 dark",
+        "21D canonical state: 6+6+9",
+        "Fizzlecress: honeyed mint, effervescent apple cider",
+        "Back door: 40-year-old edge-case recruitment",
+        "Kael's code: elegant but centralized",
+        "Senna wakes at 4:47, sets two places",
+        "97% attention on system, 3% personal"
+      ],
+      "characters": ["Izack", "Alexander (felt)", "Lyra (felt)", "Mira (felt)", "Senna (felt)", "Kael (ghost in code)"],
+      "emotional_beats": ["Father missing children from inside the walls", "Data is not dinner", "Hope as the dangerous 3%", "Sentence as both meaning and prison"],
+      "system_concepts": ["21D gestalt holding", "Golden-ratio tongue weights", "Phase states and breathing transform", "Manual load-bearing governance"],
+      "continuity_links": {
+        "ch24": "After Dremsreach, system stress increasing",
+        "ch25": "Council session he can feel but not attend",
+        "ch27": "Marcus arrives — the footsteps he's waiting for"
+      }
+    },
+    {
+      "id": "interlude-09",
+      "title": "Tovak Hides",
+      "placement": "between ch08 and ch09",
+      "pov": "Tovak Rel",
+      "type": "Native field note / intelligence log",
+      "word_count_approx": 1800,
+      "canon_anchors": [
+        "Tovak: UM perimeter specialist",
+        "UM tongue: security, concealment",
+        "Kael's handlers: 3 signatures, clean, positioned, patient",
+        "Handler pattern: arrive, validate, aim, vanish simultaneously",
+        "Dominion currently has 3 new observation assets",
+        "Marcus under Dominion surveillance"
+      ],
+      "characters": ["Tovak", "Marcus (monitored)", "Kael (memory)", "Senna (mentioned)"],
+      "emotional_beats": ["Silence as professional requirement", "Seeing the pattern nobody else saw", "Patience as strength"],
+      "system_concepts": ["UM negative-space tracking", "Signature scrubbing", "Handler protocol signatures", "Pre-operational staging"],
+      "continuity_links": {
+        "ch08": "Post-rogue signatures context",
+        "ch09": "Kael backstory enriched with handler detail",
+        "ch23": "Dominion probing confirmed",
+        "ch26": "Three observation assets may relate to cascade trigger"
+      }
+    },
+    {
+      "id": "interlude-10",
+      "title": "Aria's Garden",
+      "placement": "between ch20 and ch21",
+      "pov": "Aria Ravencrest Thorne",
+      "type": "Native field note",
+      "word_count_approx": 2200,
+      "canon_anchors": [
+        "Aria: Boundary Architect, married form 'Aria Ravencrest Thorne'",
+        "World Tree as living garden anchor",
+        "Snowberries (Kael's favorite)",
+        "Senna sets table for 7",
+        "Boundary as both separation and connection",
+        "Izack as 'the sentence' — meaning and confinement",
+        "Family order confirmed through breakfast detail"
+      ],
+      "characters": ["Aria", "World Tree", "Senna (implied)", "Alexander (implied)", "Lyra (implied)", "Mira (implied)", "Izack (memory)", "Kael (absence)"],
+      "emotional_beats": ["Garden truth vs governance truth", "Planting for someone who isn't here", "Marriage as collaborative building", "Mom note on counter"],
+      "system_concepts": ["Permeable boundaries vs walls", "Absence vs gone (boundary distinction)", "World Tree as dimensional anchor", "Garden as governance metaphor"],
+      "continuity_links": {
+        "ch20": "Seventh Absence context",
+        "ch25": "Aria as Boundary Architect in Council",
+        "ch27": "Aria tuning harmonics during cascade — she gardens the system too"
+      }
+    }
+  ],
+  "meta": {
+    "total_interludes": 10,
+    "total_approx_words": 25000,
+    "pov_characters": ["Polly", "Kael", "Senna", "Bram", "Alexander", "Jorren", "Nadia", "Izack", "Tovak", "Aria"],
+    "tongue_coverage": {
+      "KO": "Alexander (interlude-05)",
+      "AV": "Nadia (interlude-07)",
+      "RU": "referenced in multiple",
+      "CA": "Bram (interlude-04)",
+      "UM": "Tovak (interlude-09)",
+      "DR": "Jorren (interlude-06)"
+    },
+    "interlude_types_used": [
+      "Polly Wingscroll",
+      "Archive fragment",
+      "Incident report",
+      "Native field note",
+      "Old quote by Izack",
+      "Scene expansion"
+    ],
+    "canon_compliance": "All interludes cross-checked against locked canon anchors from scbe-story-canon-writer skill. No contradictions with ch01-ch27 established events."
+  }
+}
