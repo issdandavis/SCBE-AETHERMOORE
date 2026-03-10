@@ -5,7 +5,7 @@ ops_control.py — Unified cross-talk bus for SCBE multi-agent coordination.
 Writes packets to all 4 surfaces atomically:
   1. JSON packet  → artifacts/agent_comm/{date}/
   2. JSONL lane   → artifacts/agent_comm/github_lanes/cross_talk.jsonl
-  3. Obsidian     → Cross Talk.md (A follder vault)
+  3. Obsidian     → Cross Talk.md (resolved workspace)
   4. Agent log    → agents/{agent}.md
 
 Usage:
@@ -36,11 +36,16 @@ AGENT_COMM = REPO_ROOT / "artifacts" / "agent_comm"
 GITHUB_LANES = AGENT_COMM / "github_lanes"
 AGENTS_DIR = REPO_ROOT / "agents"
 SCBE_DIR = REPO_ROOT / ".scbe"
-OBSIDIAN_VAULT = Path(
+SESSION_SIGNONS = AGENT_COMM / "session_signons.jsonl"
+OBSIDIAN_DEFAULT_FILE = Path.home() / ".codex" / "obsidian_default_path.txt"
+LEGACY_OBSIDIAN_WORKSPACE = Path(
     r"C:\Users\issda\OneDrive\Documents\DOCCUMENTS\A follder\AI Workspace"
 )
-CROSS_TALK_MD = OBSIDIAN_VAULT / "Cross Talk.md"
-SESSION_SIGNONS = AGENT_COMM / "session_signons.jsonl"
+FALLBACK_OBSIDIAN_WORKSPACES = [
+    Path.home() / "Documents" / "Avalon Files" / "SCBE Research" / "Agent Ops",
+    Path.home() / "Documents" / "Avalon Files" / "SCBE Research",
+    LEGACY_OBSIDIAN_WORKSPACE,
+]
 
 
 def now_utc() -> str:
@@ -60,12 +65,67 @@ def make_packet_id(from_agent: str, intent: str) -> str:
     return f"{from_agent}-{intent}-{ts}-{h}"
 
 
+def normalize_obsidian_workspace(candidate: Path | None) -> Path | None:
+    """Accept either a workspace path or a vault root and return a usable workspace."""
+    if candidate is None:
+        return None
+    path = Path(candidate).expanduser()
+    if not path.exists():
+        return None
+
+    direct_markers = (
+        path / "Cross Talk.md",
+        path / "Sessions",
+    )
+    if any(marker.exists() for marker in direct_markers):
+        return path
+
+    for relative in [
+        Path("Agent Ops"),
+        Path("AI Workspace"),
+        Path("SCBE Research") / "Agent Ops",
+    ]:
+        derived = path / relative
+        if derived.exists():
+            return derived
+
+    return path
+
+
+def resolve_obsidian_workspace(override: str = "") -> Path | None:
+    """Resolve the active Obsidian workspace from override, env, config, or fallback."""
+    candidates = []
+    if override:
+        candidates.append(Path(override))
+
+    for env_var in ("SCBE_OBSIDIAN_WORKSPACE", "OBSIDIAN_WORKSPACE"):
+        raw = os.environ.get(env_var, "").strip()
+        if raw:
+            candidates.append(Path(raw))
+
+    if OBSIDIAN_DEFAULT_FILE.exists():
+        try:
+            raw = OBSIDIAN_DEFAULT_FILE.read_text(encoding="utf-8").strip()
+            if raw:
+                candidates.append(Path(raw))
+        except OSError:
+            pass
+
+    candidates.extend(FALLBACK_OBSIDIAN_WORKSPACES)
+
+    for candidate in candidates:
+        resolved = normalize_obsidian_workspace(candidate)
+        if resolved is not None and resolved.exists():
+            return resolved
+    return None
+
+
 def build_packet(args) -> dict:
     artifacts = []
     if args.artifacts:
         artifacts = [a.strip() for a in args.artifacts.split(",") if a.strip()]
 
-    return {
+    packet = {
         "packet_id": make_packet_id(args.from_agent, args.intent),
         "created_at": now_utc(),
         "from": f"agent.{args.from_agent}",
@@ -77,6 +137,19 @@ def build_packet(args) -> dict:
         "next": args.next_action or "",
         "ack_required": args.intent not in ("ack", "status_update"),
     }
+    optional_fields = {
+        "task_id": getattr(args, "task_id", ""),
+        "risk": getattr(args, "risk", ""),
+        "where": getattr(args, "where", ""),
+        "why": getattr(args, "why", ""),
+        "how": getattr(args, "how", ""),
+        "session_id": getattr(args, "session_id", ""),
+        "codename": getattr(args, "codename", ""),
+    }
+    for key, value in optional_fields.items():
+        if value:
+            packet[key] = value
+    return packet
 
 
 # ---- Surface Writers ----
@@ -105,11 +178,14 @@ def write_jsonl_lane(packet: dict) -> tuple[bool, str]:
         return False, str(e)
 
 
-def write_obsidian(packet: dict) -> tuple[bool, str]:
+def write_obsidian(packet: dict, workspace_override: str = "") -> tuple[bool, str]:
     """Surface 3: Append markdown block to Obsidian Cross Talk.md"""
     try:
-        if not OBSIDIAN_VAULT.exists():
-            return False, f"Obsidian vault not found: {OBSIDIAN_VAULT}"
+        workspace = resolve_obsidian_workspace(workspace_override)
+        if workspace is None:
+            return False, "Obsidian workspace not found"
+        workspace.mkdir(parents=True, exist_ok=True)
+        cross_talk_md = workspace / "Cross Talk.md"
 
         agent_name = packet["from"].replace("agent.", "").title()
         task_slug = packet["intent"]
@@ -118,16 +194,26 @@ def write_obsidian(packet: dict) -> tuple[bool, str]:
             items = "\n".join(f"  - {a}" for a in packet["artifacts"])
             artifacts_md = f"\n- artifacts:\n{items}"
 
+        optional_lines = []
+        for key in ("task_id", "where", "why", "how", "risk", "session_id", "codename"):
+            if packet.get(key):
+                optional_lines.append(f"- {key}: {packet[key]}")
+        optional_md = ""
+        if optional_lines:
+            optional_md = "\n" + "\n".join(optional_lines)
+
         block = (
             f"\n## {packet['created_at']} | {agent_name} | {task_slug}\n\n"
+            f"- packet_id: {packet['packet_id']}\n"
             f"- status: {packet['status']}\n"
             f"- summary: {packet['summary']}{artifacts_md}\n"
             f"- next: {packet.get('next', 'none')}\n"
+            f"{optional_md}\n"
         )
 
-        with open(CROSS_TALK_MD, "a", encoding="utf-8") as f:
+        with open(cross_talk_md, "a", encoding="utf-8") as f:
             f.write(block)
-        return True, str(CROSS_TALK_MD)
+        return True, str(cross_talk_md)
     except Exception as e:
         return False, str(e)
 
@@ -149,7 +235,8 @@ def write_agent_log(packet: dict) -> tuple[bool, str]:
         line = (
             f"- {packet['created_at']} {packet['from']} -> {packet['to']} "
             f"| {packet['intent']} | {packet['status']} "
-            f"| {packet['summary'][:80]} ({first_artifact})\n"
+            f"| {packet['summary'][:80]} ({first_artifact}) "
+            f"| packet_id={packet['packet_id']}\n"
         )
 
         with open(path, "a", encoding="utf-8") as f:
@@ -159,17 +246,18 @@ def write_agent_log(packet: dict) -> tuple[bool, str]:
         return False, str(e)
 
 
-def deliver_to_all(packet: dict) -> dict:
+def deliver_to_all(packet: dict, workspace_override: str = "") -> dict:
     """Write packet to all 4 surfaces, return delivery report."""
     results = {}
     for name, writer in [
         ("json_packet", write_json_packet),
         ("jsonl_lane", write_jsonl_lane),
-        ("obsidian", write_obsidian),
         ("agent_log", write_agent_log),
     ]:
         ok, detail = writer(packet)
         results[name] = {"ok": ok, "detail": detail}
+    ok, detail = write_obsidian(packet, workspace_override=workspace_override)
+    results["obsidian"] = {"ok": ok, "detail": detail}
     return results
 
 
@@ -177,9 +265,20 @@ def deliver_to_all(packet: dict) -> dict:
 
 def cmd_send(args):
     packet = build_packet(args)
-    delivery = deliver_to_all(packet)
+    delivery = deliver_to_all(packet, workspace_override=args.workspace)
 
     successes = sum(1 for v in delivery.values() if v["ok"])
+    if args.json_output:
+        print(json.dumps({
+            "packet": packet,
+            "delivery": delivery,
+            "successes": successes,
+            "workspace": str(resolve_obsidian_workspace(args.workspace) or ""),
+        }, indent=2))
+        if successes < 4:
+            sys.exit(1)
+        return
+
     print(f"\n--- SEND: {packet['packet_id']} ---")
     print(f"From: {packet['from']} -> To: {packet['to']}")
     print(f"Intent: {packet['intent']} | Status: {packet['status']}")
@@ -212,7 +311,7 @@ def cmd_ack(args):
         "ack_required": False,
     }
 
-    delivery = deliver_to_all(ack_packet)
+    delivery = deliver_to_all(ack_packet, workspace_override=args.workspace)
     successes = sum(1 for v in delivery.values() if v["ok"])
     print(f"\n--- ACK: {args.packet_id} ---")
     print(f"Delivery: {successes}/4 surfaces")
@@ -301,11 +400,15 @@ def cmd_verify(args):
                 pass
 
     # Surface 3: Obsidian
-    if CROSS_TALK_MD.exists():
-        content = CROSS_TALK_MD.read_text(encoding="utf-8")
+    cross_talk_md = None
+    workspace = resolve_obsidian_workspace(getattr(args, "workspace", ""))
+    if workspace is not None:
+        cross_talk_md = workspace / "Cross Talk.md"
+    if cross_talk_md and cross_talk_md.exists():
+        content = cross_talk_md.read_text(encoding="utf-8")
         # Check for packet ID or matching timestamp
         if pid in content:
-            found["obsidian"] = str(CROSS_TALK_MD)
+            found["obsidian"] = str(cross_talk_md)
 
     # Surface 4: Agent log
     for f in AGENTS_DIR.glob("*.md"):
@@ -392,11 +495,21 @@ def main():
     p_send.add_argument("--summary", required=True)
     p_send.add_argument("--artifacts", default="", help="Comma-separated file paths")
     p_send.add_argument("--next", dest="next_action", default="")
+    p_send.add_argument("--task-id", default="")
+    p_send.add_argument("--risk", default="")
+    p_send.add_argument("--where", default="")
+    p_send.add_argument("--why", default="")
+    p_send.add_argument("--how", default="")
+    p_send.add_argument("--session-id", default="")
+    p_send.add_argument("--codename", default="")
+    p_send.add_argument("--workspace", default="")
+    p_send.add_argument("--json", dest="json_output", action="store_true")
 
     # ack
     p_ack = sub.add_parser("ack", help="Acknowledge a packet")
     p_ack.add_argument("--packet-id", required=True)
     p_ack.add_argument("--from", dest="from_agent", default="claude")
+    p_ack.add_argument("--workspace", default="")
 
     # status
     sub.add_parser("status", help="Show active lanes and pending handoffs")
@@ -404,6 +517,7 @@ def main():
     # verify
     p_verify = sub.add_parser("verify", help="Verify packet delivery")
     p_verify.add_argument("--packet-id", required=True)
+    p_verify.add_argument("--workspace", default="")
 
     # roster
     sub.add_parser("roster", help="Show agent registry")
