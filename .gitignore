@@ -26,6 +26,10 @@ tests/test_artifacts/
 aethermoore_aqm.png
 aethermoore_soliton.png
 
+# Claude Code Studio runtime data
+config.json
+data/
+
 # Node / frontend
 node_modules/
 dist/
