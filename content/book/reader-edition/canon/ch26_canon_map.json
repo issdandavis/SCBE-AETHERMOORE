@@ -1,0 +1,35 @@
+{
+  "chapter": "ch26",
+  "title": "The Keys",
+  "word_count_approx": 4500,
+  "setting": "Spiral Spire — governance hall, deep infrastructure, descent corridors, crystal observatory threshold",
+  "system_imports": {
+    "14_layer_stack_explicit": "Each layer named and shown under attack. L1 context stressed, L2 realification flickering, L3-4 Langues Metric contaminated, L5 Poincare reference points shifted (autoimmune analogy), L6 breathing transform disrupted (0.3s pulse stutter), L8+ cascade propagating",
+    "geoseed_defensive": "Icosahedral root grid (642 vertices) as holding points for distributed defense. Nadia holds six critical junctions.",
+    "hallpassguidance_under_stress": "Corridor warrants invalidating, transit paths rerouting through unauthorized channels using Kael's dormant modifications",
+    "hydra_recon_vs_action": "Each Thorne takes a tongue: sensing (Alexander/KO), routing (Nadia/AV), legislation (Eldrin/RU), tuning (Aria/CA), maintenance (Bram/UM), recording (Jorren/DR). Recon vs action distinction embodied in six defenders."
+  },
+  "scenes": [
+    {"id": "s1_breach_alarm", "summary": "Spire screams — all six tongue-lights fire simultaneously. Kael's dormant infrastructure activating across the network."},
+    {"id": "s2_governance_hall_crisis", "summary": "Council chamber as war room. Six walls broadcasting simultaneously. Alexander becomes commander."},
+    {"id": "s3_dominion_trigger", "summary": "Marcus realizes the probes were the trigger signal, not the attack. Kael's planted code is the weapon."},
+    {"id": "s4_distributed_defense", "summary": "Six defenders take six tongues. Alexander=KO (patience), Nadia=AV (courage), Eldrin=RU (legislation), Aria=CA (tuning), Bram=UM (maintenance), Jorren=DR (record). Each holding their piece of the distributed lock."},
+    {"id": "s5_cascade_layers", "summary": "Marcus reads the cascade through the 14-layer stack. L5 autoimmune analogy. L6 breathing disrupted. The system attacking itself."},
+    {"id": "s6_descent_decision", "summary": "Marcus must go now. Senna commits. Polly leads."},
+    {"id": "s7_descent", "summary": "Deep layers — architecture stops pretending, hyperbolic geometry visible. Marcus feels each defender through the crystal."},
+    {"id": "s8_observatory_arrival", "summary": "Crystal observatory. Fourteen facets (seven dark, seven glowing). Izack in his chair. Fizzlecress smoke. 'Polly. You brought company.'"}
+  ],
+  "continuity_links": {
+    "backward": {
+      "ch01": "0.3-second Protocol pulse stutters during breach — callback to first sensation",
+      "ch05": "Sera Voss — Jorren vows 'every name, every action, every cost'",
+      "ch22": "Alexander's training — hyperbolic manifold visible in deep layers",
+      "ch23": "Icosahedral root grid as defensive holding points",
+      "ch24": "Dominion probes were the trigger signal, not reconnaissance",
+      "ch25": "Council seating translates directly to defensive positions"
+    },
+    "forward": {
+      "ch27": "Observatory arrival — Izack meeting, seventh silence, 'bring him home'"
+    }
+  }
+}
