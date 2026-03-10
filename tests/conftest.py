@@ -10,6 +10,9 @@ import numpy as np
 import sys
 import os
 import importlib
+import tempfile
+import shutil
+import uuid
 from pathlib import Path
 from ctypes.util import find_library
 from typing import Dict, Any, List
@@ -17,6 +20,34 @@ from dataclasses import dataclass
 
 # Add src to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+# Keep pytest temp factories inside the repo workspace so Windows temp ACL issues
+# do not break tmp_path/tmpdir-based tests.
+_PYTEST_TEMP_PARENT = Path(__file__).resolve().parents[1] / "artifacts" / "pytest_temp_root"
+_PYTEST_TEMP_PARENT.mkdir(parents=True, exist_ok=True)
+_PYTEST_TEMP_ROOT = _PYTEST_TEMP_PARENT / f"session-{uuid.uuid4().hex[:8]}"
+_PYTEST_TEMP_ROOT.mkdir(parents=True, exist_ok=True)
+tempfile.tempdir = str(_PYTEST_TEMP_ROOT)
+os.environ["TMPDIR"] = str(_PYTEST_TEMP_ROOT)
+os.environ["TEMP"] = str(_PYTEST_TEMP_ROOT)
+os.environ["TMP"] = str(_PYTEST_TEMP_ROOT)
+
+
+@pytest.fixture
+def tmp_path():
+    """Repo-local replacement for pytest's temp-path fixture on Windows.
+
+    Some environments in this repo cannot create or recycle pytest's default
+    temp roots due to ACL and sandbox interactions. A simple repo-local temp
+    directory keeps file-based tests deterministic and avoids fixture setup
+    failures unrelated to the code under test.
+    """
+    path = _PYTEST_TEMP_ROOT / f"case-{uuid.uuid4().hex[:8]}"
+    path.mkdir(parents=True, exist_ok=True)
+    try:
+        yield path
+    finally:
+        shutil.rmtree(path, ignore_errors=True)
 
 # Compatibility alias for ai_brain package imports that may resolve through
 # legacy/broken repo symlink paths.

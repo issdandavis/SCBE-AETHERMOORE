@@ -1,0 +1,39 @@
+{
+  "chapter": "ch27",
+  "title": "The Architect",
+  "word_count_approx": 4200,
+  "setting": "Crystal observatory (deep substrate) → governance hall → Spire terrace",
+  "system_imports": {
+    "21d_canonical_state": "6 tongue positions + 6 phase states + 9 telemetry channels. Izack holds all 21 dimensions. Marcus perceives the full state for the first time.",
+    "seventh_silence": "Not a new tongue. The relationship between all six — the rests between notes, the gaps between tongues, the space where endings live. Already existed unconsciously in every Protocol heartbeat. Marcus makes it governed.",
+    "keys_revealed": "The keys are the ordered relationships between tongues. The seventh silence completes the lock by governing the gaps the Dominion wanted to exploit. You cannot steal a relationship between people who choose to remember together."
+  },
+  "scenes": [
+    {"id": "s1_izack_introduction", "summary": "Izack smells like honeyed mint and exhaustion. Voice of a man who stayed up too late. Polly lands on the chair arm groove."},
+    {"id": "s2_polly_reunion", "summary": "Polly confronts Izack about the tea. 'You didn't look up.' Izack apologizes. Hairline crack in Polly's composure."},
+    {"id": "s3_marcus_assessed", "summary": "Izack reads Marcus completely. Reveals the back door — emergency recruitment pathway, 40-year-old edge case. 'I expected it to fire roughly never.'"},
+    {"id": "s4_senna_reunion", "summary": "Senna appears. 'You look like your mother.' 'I look like someone who carries too much.' 'Yes. Like your mother.'"},
+    {"id": "s5_seventh_silence_explained", "summary": "Izack explains the gap. Six tongues govern continuation. Nothing governs endings. The seventh silence is the function in the gaps. It was always there — just ungoverned."},
+    {"id": "s6_21d_state", "summary": "Marcus perceives the full 21D canonical state. Izack has been holding all 21 dimensions manually for decades."},
+    {"id": "s7_bring_him_home", "summary": "Izack asks Marcus to bring Kael home. Not a command — a father's voice. 'Tell him I never stopped holding it.'"},
+    {"id": "s8_ascent_and_resolution", "summary": "Marcus ascends with the seventh silence in his perception. Sits in the witness chair. Acknowledges the gap. The system hears itself. Kael's cascade loses its exploit surface."},
+    {"id": "s9_terrace_coda", "summary": "Marcus and Polly on the terrace. 'You still owe me for the coffee.' Full circle to ch01. Book 1 complete."}
+  ],
+  "continuity_links": {
+    "backward": {
+      "ch01": "Stale coffee callback. 0.3-second pulse callback. 'Fell through the floor of what was real.' Protocol handshake = Izack's back door.",
+      "ch02": "Virtual memory / differently addressed space. Polly's corridor. First mention of the Architect.",
+      "ch03": "Essence brew, training hall, 'parenthood not architecture' thought recurs on terrace",
+      "ch05": "Sera Voss's empty verification chain — the specific dead who is acknowledged",
+      "ch09": "Gallery portrait — 'tired eyes, too-late dinner' — paid off in person",
+      "ch20": "Bonecasters holding death with skulls because system gave them nothing better",
+      "ch23": "Voss's stolen warrant motivated by sister's unacknowledged death",
+      "ch24": "Herepoint hand-holding, Senna's handler confession",
+      "ch25": "Ordered witness, council vote, Alexander's 'both sons' request",
+      "ch26": "Breach, defenders, cascade, observatory arrival"
+    },
+    "forward": {
+      "book2": "Bring Kael home. Implement seventh silence fully. Face Dominion directly. Izack can rest."
+    }
+  }
+}
