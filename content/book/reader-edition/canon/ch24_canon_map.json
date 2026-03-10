@@ -1,0 +1,73 @@
+{
+  "chapter": "ch24",
+  "title": "The Time Tax",
+  "region": "Dremsreach",
+  "word_count_approx": 3400,
+  "systems_mapped": [
+    {
+      "system": "Risk-tiered thresholds",
+      "narrative_form": "Attestation disc with escalating silver rings. 1-ring (low zone): presence only. 3-ring (mid zone): identity + purpose + witness. 6-ring (deep zone): full Sacred Tongue ordered attestation with burden accounting.",
+      "technical_source": "src/aaoe/task_monitor.py (drift levels), bee-immune-tiers.ts",
+      "key_lines": "The disc knew him better than it had yesterday. Not because he had provided more credentials. Because he had understood more, and the understanding itself was attestation.",
+      "innovation": "Comprehension-as-attestation — the system measures readiness, not rank"
+    },
+    {
+      "system": "Lattice25D phase logic",
+      "narrative_form": "Dremsreach terrain cycles through phase states. Same coordinates, different accessibility. Paths exist in one state, vanish in another. Locals (Dremsfolk) navigate by budgeting when-cost. Herepoints are fixed nodes where phase displacement is zero.",
+      "technical_source": "hydra/lattice25d_ops.py, content/articles/2026-03-05-25d-quadtree-octree-hybrid.md",
+      "key_lines": "A 2.5-dimensional lattice. Spatial position plus cyclic phase. Two things can be neighbors in one dimension and strangers in another.",
+      "innovation": "Phase-native navigation — locals think in 'when' not 'where'"
+    },
+    {
+      "system": "Chladni resonance addressing",
+      "narrative_form": "Ice-shelf formations store knowledge via standing wave patterns. Information at nodal lines (stable, cold, archived). Antinodes are active merge zones. Retrieved by frequency, not label. Modal parameters scale by golden ratio at each depth.",
+      "technical_source": "src/scbe_signed_chladni.py, src/scbe_chiral_chladni.py",
+      "key_lines": "Content-addressed storage. Not by hash. By harmonic. You don't search for what you need. You sing for it.",
+      "innovation": "Resonance probing as attack vector — Dominion maps the storage structure by sweeping frequencies"
+    }
+  ],
+  "characters": {
+    "marcus": "Detection faculty evolving — now reads phase cycling, resonance patterns, and attestation depth. Romantic advancement with Senna (hand-holding at herepoint). Growing from auditor to intelligence analyst.",
+    "senna": "Reveals Kael's 'bad kids' — friends who arrived over 2 years, changed his language from 'fix' to 'replace', disappeared when consequences landed. Admits carrying alone. Allows Marcus's hand. Reframes audit as intelligence report.",
+    "polly": "Confirms border anomalies — phase-boundary probes reported for months. Stays quiet at the fire (wisdom of silence).",
+    "dremsfolk": "Phase-native locals who budget time-cost. Fisherman waits for ice. Child runs phase-timed bridge. 20-generation herepoint families.",
+    "checkpoint_dwarf": "Unnamed female dwarf, explains ring system, born annoyed."
+  },
+  "emotional_beats": [
+    {
+      "beat": "Marcus/Senna hand-holding at herepoint",
+      "weight": "major",
+      "notes": "Not confession. Connection under pressure. 'The way an engineer secures a connection.' Fixed point between two people who chose to stop rotating."
+    },
+    {
+      "beat": "Senna reveals Kael's handlers",
+      "weight": "major",
+      "notes": "Bad kids = planted handlers. Arrived at right time, left at right moment. Kael's language shifted from 'fixing' to 'replacing.' Senna blames herself for not acting sooner."
+    },
+    {
+      "beat": "Mira's message echoed",
+      "weight": "minor",
+      "notes": "Senna quotes back 'continuity is not the same thing as silence' — callback to ch23 delivery."
+    },
+    {
+      "beat": "Polly's silence at fire",
+      "weight": "minor",
+      "notes": "Polly says nothing during the romantic moment. 'This, too, was a kind of wisdom.'"
+    }
+  ],
+  "plot_threads": {
+    "dominion_probing": "First on-page physical evidence — systematic frequency probes on ice-shelf from outside the phase cycle. Border anomalies reported for months. Pattern: mapping, not attacking.",
+    "kael_corruption": "Senna's full account: 2-year infiltration by handler-friends. Targeted Kael's genuine grievances. Aimed his brilliance at load-bearing architecture. Disappeared when he acted. Rebuilding governance = dissolving distributed keys = Dominion access.",
+    "audit_becomes_intelligence": "Senna reframes: 'The audit isn't an inspection anymore. It's an intelligence report.' Sets up ch25 Council presentation.",
+    "marcus_senna_romance": "Advanced from ch23 (Mira's message, 'you carry too much') to physical connection (hand-holding) and emotional reciprocity. Senna chose to let his grip 'mean something.'"
+  },
+  "continuity_links": {
+    "ch23": "Underroot exit → travel to Dremsreach. Voss case and corridor warrant system referenced implicitly. Mira's message echoed.",
+    "ch22": "Quarantine concept from Alexander's lesson continues.",
+    "ch18": "Lyra's Irondeep and Symphonic Cipher referenced by attestation disc mechanics.",
+    "ch09": "Izack 'getting busier' — Kael backstory fills in the timeline of why.",
+    "ch08": "AAS squad referenced implicitly through border warden reports.",
+    "ch05": "Sera Voss — Third Circle Runethic — contextualizes Senna's guilt about system gaps.",
+    "ch25_setup": "Council presentation. Intelligence report framing. All evidence gathered."
+  }
+}

@@ -12,7 +12,7 @@ permalink: /
 Post-Quantum AI Governance Framework
 {: .fs-6 .fw-300 }
 
-14-layer hyperbolic security boundary with patent-pending cryptography. Open source under AGPLv3.
+14-layer hyperbolic security boundary with patent-pending cryptography. Open core under MIT with commercial terms for designated proprietary components.
 {: .fs-4 .fw-300 }
 
 [Try the Live Demo](https://huggingface.co/spaces/issdandavis/SCBE-AETHERMOORE-Demo){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [Get Products](https://aetherdavis.gumroad.com){: .btn .fs-5 .mb-4 .mb-md-0 } [View on GitHub](https://github.com/issdandavis/SCBE-AETHERMOORE){: .btn .fs-5 .mb-4 .mb-md-0 }
@@ -85,6 +85,10 @@ Or try the [live demo on HuggingFace](https://huggingface.co/spaces/issdandavis/
 
 ## Licensing
 
-Open source under **AGPLv3** - free for open-source and compliant deployments.
+Open-source core is available under the **MIT License** (see `LICENSE`).
 
-For commercial/enterprise use without AGPL obligations, [contact for commercial license](mailto:aethermoregames@pm.me?subject=SCBE-AETHERMOORE%20Commercial%20License).
+Commercial terms apply to designated proprietary components and enterprise delivery packages. See:
+- [COMMERCIAL.md](https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/COMMERCIAL.md)
+- [CUSTOMER_LICENSE_AGREEMENT.md](https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/CUSTOMER_LICENSE_AGREEMENT.md)
+
+For enterprise licensing/support inquiries: [issdandavis@gmail.com](mailto:issdandavis@gmail.com?subject=SCBE-AETHERMOORE%20Commercial%20Inquiry).

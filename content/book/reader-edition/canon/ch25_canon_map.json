@@ -1,0 +1,118 @@
+{
+  "chapter": "ch25",
+  "title": "Ordered Witness",
+  "word_count_approx": 4200,
+  "setting": "Spiral Spire — Governance Hall (hexagonal council chamber)",
+  "scenes": [
+    {
+      "id": "s1_return_to_spire",
+      "summary": "Marcus and Senna arrive back at the Spire; runners intercept with council summons",
+      "system_anchors": [],
+      "characters": ["Marcus", "Senna", "Polly"],
+      "emotional_beats": ["urgency", "preparation", "humor under pressure"],
+      "visual_anchors_used": ["Senna: cuff-touch", "Polly: shoulder perch"]
+    },
+    {
+      "id": "s2_council_chamber",
+      "summary": "Governance hall described — hexagonal, six tongue-walls, seven seats. Council members introduced with visual presence.",
+      "system_anchors": ["six_tongues_architecture", "ordered_governance_structure"],
+      "characters": ["Marcus", "Polly", "Senna", "Aria", "Alexander", "Eldrin", "Jorren", "Bram", "Nadia"],
+      "emotional_beats": ["institutional gravity", "character positioning"],
+      "visual_anchors_used": [
+        "Aria: auburn hair with silver, one-eyebrow criticism",
+        "Alexander: open face, laugh-lines, dirt on cuffs",
+        "Eldrin: age as elegance, threshold humor in eyes",
+        "Jorren: square face, bronze spectacles, slate and ink",
+        "Bram: built like maintenance and bad sleep",
+        "Nadia: wind-burned, grin first, barely still",
+        "Marcus: witness chair, no tongue affiliation"
+      ]
+    },
+    {
+      "id": "s3_audit_presentation",
+      "summary": "Marcus presents the field audit findings — systems confirmed, gaps identified. Sera Voss's death as evidence of the system's inability to process endings.",
+      "system_anchors": ["risk_tiered_thresholds", "chladni_addressing", "witness_chains", "dead_backlog"],
+      "characters": ["Marcus", "Jorren", "Senna"],
+      "emotional_beats": ["institutional grief", "Sera Voss callback to ch05"],
+      "plot_threads": ["sera_voss_continuity", "dead_backlog_governance_gap"]
+    },
+    {
+      "id": "s4_intelligence_report",
+      "summary": "Dominion evidence presented: Dremsreach probes, Voss recruitment, Kael's handler pattern. Senna reveals the handler timeline.",
+      "system_anchors": ["dominion_probing", "handler_grooming", "corridor_warrant_theft"],
+      "characters": ["Marcus", "Senna", "Eldrin"],
+      "emotional_beats": ["pattern recognition", "Senna's controlled grief", "Alexander's silent weight"],
+      "plot_threads": ["dominion_threat", "kael_handlers", "voss_corridor_theft"]
+    },
+    {
+      "id": "s5_keys_and_centralization",
+      "summary": "Marcus explains the keys as relationships, not objects. Ordered attestation as defense. Centralization dissolves the lock. Polly: 'The keys dissolve. And the door opens.'",
+      "system_anchors": ["ordered_attestation_paths", "distributed_keys", "centralization_as_breach"],
+      "characters": ["Marcus", "Polly"],
+      "emotional_beats": ["architectural revelation", "threat crystallization"],
+      "plot_threads": ["dominion_strategy", "key_architecture"]
+    },
+    {
+      "id": "s6_aria_speaks",
+      "summary": "Aria as Boundary Architect explains Izack's understanding, the seventh silence gap, why he bound himself into the substrate. Nadia asks where he is. Polly describes his state.",
+      "system_anchors": ["seventh_silence", "izack_binding", "gap_between_tongues"],
+      "characters": ["Aria", "Nadia", "Polly", "Bram"],
+      "emotional_beats": ["family grief", "Polly's tea memory", "Bram's helplessness"],
+      "plot_threads": ["izack_status", "seventh_silence_architecture"]
+    },
+    {
+      "id": "s7_self_learning_proposal",
+      "summary": "Marcus proposes the system must learn from its own failures. Kael's hospice as first self-improvement cycle. HYDRA concept: sensing distinct from classifying distinct from acting.",
+      "system_anchors": ["training_pipeline", "self_learning", "hydra_recon_vs_action", "kael_hospice"],
+      "characters": ["Marcus", "Aria", "Jorren"],
+      "emotional_beats": ["intellectual courage", "Kael reframed as tragedy not evil"],
+      "plot_threads": ["system_improvement", "seventh_silence_implementation"]
+    },
+    {
+      "id": "s8_descent_decision",
+      "summary": "Marcus volunteers to descend to the deep observatory. Alexander asks him to tell Izack his son wants to come home (both sons). Senna declares she's going too. Aria approves.",
+      "system_anchors": [],
+      "characters": ["Marcus", "Alexander", "Senna", "Aria"],
+      "emotional_beats": ["dual meaning of 'his son'", "Senna choosing companionship", "Aria seeing herself in Senna"],
+      "plot_threads": ["descent_to_observatory", "bring_kael_home"]
+    },
+    {
+      "id": "s9_ordered_vote",
+      "summary": "Council votes in tongue order: KO→AV→RU→CA→UM→DR. Each vote builds on the prior. Marcus perceives the sequence as cryptographic ceremony.",
+      "system_anchors": ["ordered_attestation_paths", "six_tongue_governance", "attestation_choreography"],
+      "characters": ["Alexander", "Nadia", "Eldrin", "Aria", "Bram", "Jorren"],
+      "emotional_beats": ["each voice carries character", "Jorren's vow about Sera Voss"],
+      "visual_anchors_used": [
+        "Alexander: one-corner mouth",
+        "Nadia: grin / punch",
+        "Jorren: pen moving fast"
+      ]
+    },
+    {
+      "id": "s10_aftermath",
+      "summary": "Council disperses. Character moments: Alexander's shoulder grip, Nadia's arm punch, Jorren's nod, Bram's silent boot evaluation. Polly describes what Marcus will find. Senna takes his hand.",
+      "system_anchors": [],
+      "characters": ["Marcus", "Polly", "Senna", "Alexander", "Nadia", "Jorren", "Bram"],
+      "emotional_beats": ["farewell through character voice", "Polly's grief/hope", "boots as love"],
+      "plot_threads": ["preparation_for_descent"]
+    }
+  ],
+  "system_imports": {
+    "ordered_attestation_paths": "Council vote in KO→AV→RU→CA→UM→DR sequence; first signer establishes context, each subsequent builds; order changes governance weight; diversity of orderings is itself defense",
+    "hydra_recon_vs_action": "Marcus articulates sensing/classifying/acting as distinct operations; audit was sensing, intelligence report is classification, next step is distributed action",
+    "training_pipeline_self_learning": "System must learn from its own failures; every unacknowledged death/stolen warrant/unmonitored boundary is data; Kael's hospice was first self-improvement cycle"
+  },
+  "continuity_links": {
+    "backward": {
+      "ch05": "Sera Voss callback — 'called me an entity to my face'; oversight chamber vs governance hall",
+      "ch09": "Izack portrait — 'tired eyes, too-late dinner'; gallery discovery",
+      "ch20": "Death-ledger / Shardfold witness chains referenced in audit presentation",
+      "ch23": "Voss corridor warrant theft; Underroot icosahedral root network",
+      "ch24": "Dremsreach probes; ice-shelf resonance mapping; handler revelation; hand-holding; audit as intelligence report"
+    },
+    "forward": {
+      "ch26": "Breach — Kael's dormant infrastructure activates; Dominion exploits chaos",
+      "ch27": "Deep observatory — Marcus meets Izack; seventh silence; 'Bring him home'; Fizzlecress"
+    }
+  }
+}

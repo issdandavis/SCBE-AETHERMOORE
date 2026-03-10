@@ -27,8 +27,8 @@ pip install -r requirements.txt
 
 ### From Source
 ```bash
-git clone https://github.com/ISDanDavis2/scbe-aethermoore.git
-cd scbe-aethermoore
+git clone https://github.com/issdandavis/SCBE-AETHERMOORE.git
+cd SCBE-AETHERMOORE
 npm install && pip install -r requirements.txt
 ```
 

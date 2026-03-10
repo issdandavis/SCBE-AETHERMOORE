@@ -377,8 +377,8 @@ Where w_i is the weight of tongue i and φ is the Golden Ratio.
 
 ```bash
 # Clone repository
-git clone https://github.com/ISDanDavis2/scbe-aethermoore
-cd scbe-aethermoore
+git clone https://github.com/issdandavis/SCBE-AETHERMOORE.git
+cd SCBE-AETHERMOORE
 
 # Install dependencies
 pip install -r requirements.txt
