@@ -113,8 +113,12 @@ def html_to_text(raw_html: str, max_chars: int = 8000) -> str:
             tag.decompose()
         text = soup.get_text(separator=" ")
     except Exception:
-        # Lightweight fallback for environments without bs4/lxml.
-        text = re.sub(r"<[^>]+>", " ", raw_html)
+        # Lightweight fallback: strip script/style blocks, then remaining tags.
+        text = re.sub(
+            r"<(script|style|noscript|svg|iframe)[^>]*>.*?</\1>",
+            " ", raw_html, flags=re.DOTALL | re.IGNORECASE,
+        )
+        text = re.sub(r"<[^>]+>", " ", text)
 
     compact = " ".join(text.split())
     return compact[: max(1, int(max_chars))]
