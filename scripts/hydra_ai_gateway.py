@@ -92,6 +92,18 @@ def _check_auth(authorization: Optional[str] = Header(None)):
 
 _browser = None
 _browser_mode = "headless"
+_trainer = None
+_training_enabled = os.environ.get("HYDRA_TRAINING", "1") == "1"
+
+
+def _get_trainer():
+    """Lazy-init the browser training bridge."""
+    global _trainer
+    if _trainer is None and _training_enabled:
+        from hydra.browser_trainer import BrowserTrainer
+        _trainer = BrowserTrainer()
+        _trainer.start()
+    return _trainer
 
 
 async def _get_browser():
@@ -187,6 +199,20 @@ async def browse(req: BrowseRequest):
         import base64
         screenshot_b64 = base64.b64encode(shot).decode()
 
+    duration_ms = (time.time() - t0) * 1000
+
+    # --- Training bridge: record browse + antivirus scan ---
+    trainer = _get_trainer()
+    if trainer and text:
+        trainer.record_browse(
+            url=req.url,
+            selector=req.extract or "body",
+            extracted_text=text,
+            title=title or "",
+            duration_ms=duration_ms,
+        )
+        trainer.auto_scan_and_record(text, url=req.url)
+
     return BrowseResponse(
         url=page.url,
         title=title,
@@ -194,7 +220,7 @@ async def browse(req: BrowseRequest):
         screenshot_b64=screenshot_b64,
         session=req.session,
         mode=browser._active_mode.value if browser._active_mode else "unknown",
-        duration_ms=(time.time() - t0) * 1000,
+        duration_ms=duration_ms,
     )
 
 
@@ -210,6 +236,10 @@ async def click(req: ClickRequest):
 
     try:
         await page.click(req.selector, timeout=10000)
+        # Training bridge: record click
+        trainer = _get_trainer()
+        if trainer:
+            trainer.record_click(page.url, req.selector, "success")
         return ActionResponse(success=True, action="click", data={"selector": req.selector},
                               session=req.session, duration_ms=(time.time() - t0) * 1000)
     except Exception as e:
@@ -229,6 +259,10 @@ async def type_text(req: TypeRequest):
 
     try:
         await page.fill(req.selector, req.text)
+        # Training bridge: record type action
+        trainer = _get_trainer()
+        if trainer:
+            trainer.record_type(page.url, req.selector, req.text)
         return ActionResponse(success=True, action="type",
                               data={"selector": req.selector, "length": len(req.text)},
                               session=req.session, duration_ms=(time.time() - t0) * 1000)
@@ -269,6 +303,18 @@ async def swarm_task(req: SwarmRequest):
     await swarm.launch()
     result = await swarm.execute_task(req.task)
     await swarm.shutdown()
+
+    # Training bridge: record swarm consensus decision
+    trainer = _get_trainer()
+    if trainer and isinstance(result, dict):
+        trainer.record_swarm_decision(
+            task=req.task,
+            agent_votes=result.get("votes", {}),
+            final_decision=result.get("decision", "UNKNOWN"),
+            action=result.get("action", ""),
+            target=result.get("target", ""),
+        )
+
     return result
 
 
@@ -390,6 +436,36 @@ async def list_tools():
                     },
                 },
             },
+            {
+                "name": "training_stats",
+                "description": "Get training data collection statistics (browse sessions, threats, swarm decisions).",
+                "parameters": {"type": "object", "properties": {}},
+            },
+            {
+                "name": "load_model",
+                "description": "Load a HuggingFace model for text generation. Models can serve as swarm agent brains.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "repo_id": {"type": "string", "description": "HuggingFace model repo (e.g. 'mistralai/Mistral-7B-v0.1')"},
+                        "task": {"type": "string", "default": "text-generation"},
+                    },
+                    "required": ["repo_id"],
+                },
+            },
+            {
+                "name": "generate",
+                "description": "Generate text using a loaded HuggingFace model.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "repo_id": {"type": "string", "description": "Model repo ID (must be loaded first)"},
+                        "prompt": {"type": "string", "description": "Input prompt"},
+                        "max_tokens": {"type": "integer", "default": 256},
+                    },
+                    "required": ["repo_id", "prompt"],
+                },
+            },
         ],
         "service": GATEWAY_NAME,
         "version": GATEWAY_VERSION,
@@ -426,6 +502,110 @@ async def ai_plugin_manifest(request: Request):
 
 
 # ---------------------------------------------------------------------------
+#  Training endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/training/stats", tags=["Training"])
+async def training_stats():
+    """Get training data collection statistics."""
+    _check_auth()
+    trainer = _get_trainer()
+    if not trainer:
+        return {"enabled": False, "message": "Training disabled. Set HYDRA_TRAINING=1 to enable."}
+    return {"enabled": True, **trainer.get_stats()}
+
+
+@app.post("/training/push", tags=["Training"])
+async def training_push(token: Optional[str] = None):
+    """Push collected training data to HuggingFace Hub.
+
+    Requires HF_TOKEN env var or pass token in request body.
+    """
+    _check_auth()
+    trainer = _get_trainer()
+    if not trainer:
+        return {"error": "Training disabled."}
+    return await trainer.push_to_hf(token=token)
+
+
+@app.post("/training/toggle", tags=["Training"])
+async def training_toggle(enable: bool = True):
+    """Enable or disable training data collection at runtime."""
+    _check_auth()
+    global _training_enabled, _trainer
+    _training_enabled = enable
+    if not enable and _trainer:
+        _trainer.stop()
+        _trainer = None
+        return {"enabled": False, "message": "Training stopped and flushed."}
+    elif enable and _trainer is None:
+        _get_trainer()
+        return {"enabled": True, "message": "Training started."}
+    return {"enabled": _training_enabled, "message": "No change."}
+
+
+# ---------------------------------------------------------------------------
+#  HuggingFace model loader
+# ---------------------------------------------------------------------------
+
+_loaded_models: Dict[str, Any] = {}
+
+
+@app.post("/models/load", tags=["Models"])
+async def load_model(repo_id: str, task: str = "text-generation", revision: str = "main"):
+    """Load an open-source model from HuggingFace Hub.
+
+    The model becomes available as a swarm agent brain.
+    Requires: pip install transformers torch
+    """
+    _check_auth()
+    if repo_id in _loaded_models:
+        return {"status": "already_loaded", "repo_id": repo_id}
+
+    try:
+        from transformers import pipeline as hf_pipeline
+        pipe = hf_pipeline(task, model=repo_id, revision=revision, device_map="auto")
+        _loaded_models[repo_id] = {"pipeline": pipe, "task": task, "loaded_at": time.time()}
+        return {"status": "loaded", "repo_id": repo_id, "task": task}
+    except ImportError:
+        raise HTTPException(501, "transformers/torch not installed. Run: pip install transformers torch")
+    except Exception as e:
+        raise HTTPException(500, f"Failed to load model: {e}")
+
+
+@app.get("/models/list", tags=["Models"])
+async def list_models():
+    """List currently loaded models."""
+    _check_auth()
+    return {
+        "models": [
+            {"repo_id": k, "task": v["task"], "loaded_at": v["loaded_at"]}
+            for k, v in _loaded_models.items()
+        ],
+        "count": len(_loaded_models),
+    }
+
+
+@app.post("/models/generate", tags=["Models"])
+async def model_generate(repo_id: str, prompt: str, max_tokens: int = 256):
+    """Generate text using a loaded HuggingFace model.
+
+    Load a model first via /models/load.
+    """
+    _check_auth()
+    if repo_id not in _loaded_models:
+        raise HTTPException(404, f"Model '{repo_id}' not loaded. Call /models/load first.")
+
+    pipe = _loaded_models[repo_id]["pipeline"]
+    try:
+        result = pipe(prompt, max_new_tokens=max_tokens, do_sample=True, temperature=0.7)
+        text = result[0]["generated_text"] if result else ""
+        return {"repo_id": repo_id, "prompt": prompt, "generated": text}
+    except Exception as e:
+        raise HTTPException(500, f"Generation failed: {e}")
+
+
+# ---------------------------------------------------------------------------
 #  Health + status
 # ---------------------------------------------------------------------------
 
@@ -458,7 +638,10 @@ from contextlib import asynccontextmanager
 @asynccontextmanager
 async def _lifespan(application: FastAPI):
     yield
-    global _browser
+    global _browser, _trainer
+    if _trainer:
+        _trainer.stop()
+        _trainer = None
     if _browser:
         await _browser.close()
         _browser = None
@@ -501,6 +684,14 @@ def main():
     print(f"    POST /screenshot — Capture view")
     print(f"    POST /swarm     — Multi-agent task")
     print(f"    POST /switch-mode — Toggle headless/headed")
+    print(f"\n  Training endpoints:")
+    print(f"    GET  /training/stats  — Training data statistics")
+    print(f"    POST /training/push   — Push data to HuggingFace")
+    print(f"    POST /training/toggle — Enable/disable training")
+    print(f"\n  Model endpoints:")
+    print(f"    POST /models/load     — Load HuggingFace model")
+    print(f"    GET  /models/list     — List loaded models")
+    print(f"    POST /models/generate — Generate with loaded model")
     print()
 
     uvicorn.run(app, host=args.host, port=args.port)
