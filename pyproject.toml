@@ -43,6 +43,24 @@ Homepage = "https://github.com/issdandavis/SCBE-AETHERMOORE"
 Repository = "https://github.com/issdandavis/SCBE-AETHERMOORE"
 Issues = "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
 
+[project.optional-dependencies]
+browser = [
+    "playwright>=1.40.0",
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "pydantic>=2.6.0",
+    "httpx>=0.25.0",
+]
+browser-stealth = [
+    "playwright-stealth",
+]
+mcp = [
+    "mcp>=1.0.0",
+]
+ai = [
+    "openai>=1.0.0",
+]
+
 [project.scripts]
 scbe-convert-to-sft = "symphonic_cipher.scbe_aethermoore.convert_to_sft:main"
 scbe-code-prism = "code_prism.cli:main"

@@ -117,7 +117,12 @@
     "xops:dryrun": "node scripts/system/x_ops_queue_runner.mjs --queue workflows/n8n/x_ops_queue.sample.json --dry-run",
     "xops:run": "node scripts/system/x_ops_queue_runner.mjs --queue workflows/n8n/x_ops_queue.sample.json",
     "skills:bridge": "powershell -ExecutionPolicy Bypass -File ./scripts/system/scbe_skill_tool_bridge.ps1 -Action quick",
-    "skills:bridge:full": "powershell -ExecutionPolicy Bypass -File ./scripts/system/scbe_skill_tool_bridge.ps1 -Action full"
+    "skills:bridge:full": "powershell -ExecutionPolicy Bypass -File ./scripts/system/scbe_skill_tool_bridge.ps1 -Action full",
+    "browser:check": "python scripts/postinstall_check.py",
+    "browser:server": "python scripts/hydra_quick_start.py server",
+    "browser:swarm": "python scripts/hydra_quick_start.py swarm",
+    "browser:scrape": "python scripts/hydra_quick_start.py scrape",
+    "browser:gateway": "python scripts/hydra_ai_gateway.py"
   },
   "keywords": [
     "cryptography",
