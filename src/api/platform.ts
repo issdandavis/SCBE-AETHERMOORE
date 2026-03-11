@@ -34,6 +34,8 @@ import {
   SealedActionResult,
 } from '../browser/spiralSealSession.js';
 import type { BrowserActionType, BrowserDecision } from '../browser/types.js';
+import { RedisStore, getRedisStore } from './redisStore.js';
+import { scanForMaliciousContent, scanUrl } from './securityGuardrails.js';
 
 // ============================================================================
 // Types — Platform API
@@ -225,6 +227,19 @@ interface OwnerUsage {
   agentsConnected: Set<string>;
 }
 
+/** Serialisable subset of PlatformSession for Redis persistence */
+interface SessionMeta {
+  sessionId: string;
+  ownerId: string;
+  agentId: string;
+  policy: string;
+  stepsExecuted: number;
+  decisions: Record<BrowserDecision, number>;
+  startedAt: number;
+  lastStepAt: number;
+  active: boolean;
+}
+
 // ============================================================================
 // Platform API Controller
 // ============================================================================
@@ -241,14 +256,22 @@ export class SCBEPlatformAPI {
   private readonly apiKeys: Map<string, ApiKey> = new Map();
   private readonly usage: Map<string, OwnerUsage> = new Map();
   private readonly sessionTtlMs: number;
+  private readonly store: RedisStore;
 
   constructor(options?: {
     masterKey?: string;
     sessionTtlMs?: number;
+    redisUrl?: string;
   }) {
     const masterKey = options?.masterKey ?? randomBytes(32).toString('hex');
     this.sealBrowser = new SpiralSealSessionBrowser(masterKey);
     this.sessionTtlMs = options?.sessionTtlMs ?? 30 * 60 * 1000;
+    this.store = getRedisStore({ url: options?.redisUrl });
+  }
+
+  /** Connect to Redis for persistence. Safe to skip — falls back to in-memory. */
+  async connectStore(): Promise<boolean> {
+    return this.store.connect();
   }
 
   // --------------------------------------------------------------------------
@@ -270,14 +293,19 @@ export class SCBEPlatformAPI {
 
     const limit = limits[tier];
 
-    this.apiKeys.set(keyHash, {
+    const apiKey: ApiKey = {
       keyHash,
       ownerId,
       tier,
       createdAt: Date.now(),
       rateLimit: limit.rate,
       monthlySessionBudget: limit.sessions,
-    });
+    };
+
+    this.apiKeys.set(keyHash, apiKey);
+
+    // Persist to Redis (fire-and-forget, in-memory is authoritative for hot path)
+    this.store.set('apikey:' + keyHash, apiKey).catch(() => {});
 
     return raw;
   }
@@ -288,6 +316,25 @@ export class SCBEPlatformAPI {
   validateApiKey(rawKey: string): ApiKey | null {
     const keyHash = createHash('sha256').update(rawKey).digest('hex');
     return this.apiKeys.get(keyHash) ?? null;
+  }
+
+  /**
+   * Validate API key with async Redis fallback.
+   * Checks in-memory first, then Redis if miss.
+   */
+  async validateApiKeyAsync(rawKey: string): Promise<ApiKey | null> {
+    const keyHash = createHash('sha256').update(rawKey).digest('hex');
+
+    // Hot path: check in-memory
+    const cached = this.apiKeys.get(keyHash);
+    if (cached) return cached;
+
+    // Cold path: check Redis
+    const stored = await this.store.get<ApiKey>('apikey:' + keyHash);
+    if (stored) {
+      this.apiKeys.set(keyHash, stored); // Warm the cache
+    }
+    return stored;
   }
 
   // --------------------------------------------------------------------------
@@ -333,6 +380,20 @@ export class SCBEPlatformAPI {
     // Track usage
     this._trackUsage(ownerId, req.agentId, 'session_open');
 
+    // Persist session metadata to Redis (TTL = session TTL)
+    const meta: SessionMeta = {
+      sessionId: platformSession.sessionId,
+      ownerId: platformSession.ownerId,
+      agentId: platformSession.agentId,
+      policy: platformSession.policy,
+      stepsExecuted: platformSession.stepsExecuted,
+      decisions: platformSession.decisions,
+      startedAt: platformSession.startedAt,
+      lastStepAt: platformSession.lastStepAt,
+      active: platformSession.active,
+    };
+    this.store.set('session:' + sealSession.sessionId, meta, this.sessionTtlMs / 1000).catch(() => {});
+
     return {
       sessionId: sealSession.sessionId,
       sealMetadata: {
@@ -360,6 +421,35 @@ export class SCBEPlatformAPI {
         trustScore: this._emptyTrustScore(),
         sealVerification: { newChecksum: 0, tongueVerification: ['SESSION_NOT_FOUND'] },
         error: 'Session not found or inactive',
+        latencyMs: Date.now() - start,
+      };
+    }
+
+    // Security guardrail scan — blocks credit card scams, phishing, code injection
+    const urlScan = scanUrl(req.target);
+    if (urlScan.recommendation === 'DENY') {
+      session.decisions['DENY']++;
+      this._persistSession(session);
+      return {
+        success: false,
+        decision: 'DENY',
+        trustScore: this._emptyTrustScore(),
+        sealVerification: { newChecksum: session.sealSession.temporalChecksum, tongueVerification: ['GUARDRAIL_DENY'] },
+        error: `Security guardrail: ${urlScan.hits.map((h) => h.description).join('; ')}`,
+        latencyMs: Date.now() - start,
+      };
+    }
+
+    const payloadScan = scanForMaliciousContent(JSON.stringify(req.payload ?? {}));
+    if (payloadScan.recommendation === 'DENY') {
+      session.decisions['DENY']++;
+      this._persistSession(session);
+      return {
+        success: false,
+        decision: 'DENY',
+        trustScore: this._emptyTrustScore(),
+        sealVerification: { newChecksum: session.sealSession.temporalChecksum, tongueVerification: ['GUARDRAIL_DENY'] },
+        error: `Security guardrail: ${payloadScan.hits.map((h) => h.description).join('; ')}`,
         latencyMs: Date.now() - start,
       };
     }
@@ -404,6 +494,9 @@ export class SCBEPlatformAPI {
     // Track usage
     this._trackUsage(session.ownerId, session.agentId, 'step');
 
+    // Persist updated session metadata
+    this._persistSession(session);
+
     return {
       success: sealResult.success,
       decision: trustScore.decision,
@@ -427,6 +520,7 @@ export class SCBEPlatformAPI {
 
     session.active = false;
     this.sealBrowser.terminateSession(sessionId);
+    this._persistSession(session);
 
     const durationMs = Date.now() - session.startedAt;
 
@@ -517,6 +611,28 @@ export class SCBEPlatformAPI {
     } else {
       u.totalSteps++;
     }
+
+    // Persist usage counters to Redis
+    const usageKey = 'usage:' + ownerId;
+    this.store.incr(usageKey, event === 'session_open' ? 'sessionsOpened' : 'totalSteps').catch(() => {});
+    this.store.sadd('usage:agents:' + ownerId, agentId).catch(() => {});
+  }
+
+  /** Persist session metadata to Redis (fire-and-forget). */
+  private _persistSession(session: PlatformSession): void {
+    const meta: SessionMeta = {
+      sessionId: session.sessionId,
+      ownerId: session.ownerId,
+      agentId: session.agentId,
+      policy: session.policy,
+      stepsExecuted: session.stepsExecuted,
+      decisions: session.decisions,
+      startedAt: session.startedAt,
+      lastStepAt: session.lastStepAt,
+      active: session.active,
+    };
+    const remainingTtl = Math.max(1, (this.sessionTtlMs - (Date.now() - session.startedAt)) / 1000);
+    this.store.set('session:' + session.sessionId, meta, remainingTtl).catch(() => {});
   }
 
   private _dominantDecision(decisions: Record<BrowserDecision, number>): BrowserDecision {

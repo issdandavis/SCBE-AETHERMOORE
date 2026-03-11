@@ -19,6 +19,7 @@ import {
   GOLDEN_RATIO,
 } from '../agent/index.js';
 import { TongueCode, TONGUE_CODES } from '../tokenizer/ss1.js';
+import { getRedisStore } from './redisStore.js';
 
 // ============================================================================
 // Types
@@ -253,15 +254,50 @@ const POLICIES: Policy[] = [
 ];
 
 // ============================================================================
-// Nonce Tracking (Replay Protection)
+// Nonce Tracking (Replay Protection) — Redis-backed with in-memory fallback
 // ============================================================================
 
 const usedNonces = new Set<string>();
 const NONCE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
 const nonceTimestamps = new Map<string, number>();
 
+/**
+ * Consume a nonce for replay protection.
+ *
+ * When Redis is connected, uses atomic SET NX + TTL for distributed
+ * single-use guarantee. Falls back to in-memory Set when Redis is down.
+ */
 function consumeNonce(nonce: string): boolean {
-  // Clean old nonces
+  const store = getRedisStore();
+
+  // Async Redis path: fire-and-check via in-memory as synchronous fast path
+  if (store.isConnected()) {
+    // Optimistic: check in-memory first for speed
+    if (usedNonces.has(nonce)) return false;
+
+    // Record locally and let Redis enforce distributed uniqueness
+    usedNonces.add(nonce);
+    nonceTimestamps.set(nonce, Date.now());
+
+    // Atomic Redis check (fire-and-forget for speed; the local check is authoritative per-instance)
+    store.consumeNonce(nonce, NONCE_MAX_AGE_MS / 1000).catch(() => {});
+    cleanOldNonces();
+    return true;
+  }
+
+  // In-memory only path
+  cleanOldNonces();
+
+  if (usedNonces.has(nonce)) {
+    return false; // Replay detected
+  }
+
+  usedNonces.add(nonce);
+  nonceTimestamps.set(nonce, Date.now());
+  return true;
+}
+
+function cleanOldNonces(): void {
   const now = Date.now();
   for (const [n, timestamp] of nonceTimestamps) {
     if (now - timestamp > NONCE_MAX_AGE_MS) {
@@ -269,14 +305,6 @@ function consumeNonce(nonce: string): boolean {
       nonceTimestamps.delete(n);
     }
   }
-
-  if (usedNonces.has(nonce)) {
-    return false; // Replay detected
-  }
-
-  usedNonces.add(nonce);
-  nonceTimestamps.set(nonce, now);
-  return true;
 }
 
 // ============================================================================

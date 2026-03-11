@@ -9,6 +9,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { randomUUID } from 'crypto';
 import { govern, listPolicies, GovernanceRequest, GovernanceResponse } from './govern.js';
+import { getRedisStore, RedisStore } from './redisStore.js';
 
 // ============================================================================
 // Types
@@ -24,17 +25,27 @@ interface AuditEntry {
 }
 
 // ============================================================================
-// In-Memory Audit Log (replace with database in production)
+// Audit Log — Redis-backed with in-memory fallback
 // ============================================================================
 
 const auditLog: AuditEntry[] = [];
 const MAX_AUDIT_ENTRIES = 10000;
+let _store: RedisStore | null = null;
+
+function getStore(): RedisStore {
+  if (!_store) {
+    _store = getRedisStore();
+  }
+  return _store;
+}
 
 function addAuditEntry(entry: AuditEntry): void {
   auditLog.unshift(entry);
   if (auditLog.length > MAX_AUDIT_ENTRIES) {
     auditLog.pop();
   }
+  // Persist to Redis (fire-and-forget)
+  getStore().pushAudit(entry, MAX_AUDIT_ENTRIES).catch(() => {});
 }
 
 // ============================================================================
@@ -68,13 +79,44 @@ function apiKeyAuth(req: Request, res: Response, next: NextFunction): void {
   next();
 }
 
-/** Rate limiting (simple in-memory implementation) */
+/** Rate limiting — Redis-backed with in-memory fallback */
 const rateLimits = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW_MS = 60000;
 const RATE_LIMIT_MAX_REQUESTS = 100;
 
 function rateLimit(req: Request, res: Response, next: NextFunction): void {
   const key = req.ip || 'unknown';
+  const store = getStore();
+
+  // Prefer Redis-backed rate limiting when connected
+  if (store.isConnected()) {
+    store
+      .checkRateLimit(key, RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_MS / 1000)
+      .then((result) => {
+        if (!result.allowed) {
+          const retryAfter = Math.ceil((result.resetAt - Date.now()) / 1000);
+          res.status(429).json({
+            error: 'Too Many Requests',
+            message: `Rate limit exceeded. Try again in ${retryAfter} seconds`,
+          });
+          return;
+        }
+        res.setHeader('X-RateLimit-Limit', RATE_LIMIT_MAX_REQUESTS.toString());
+        res.setHeader('X-RateLimit-Remaining', result.remaining.toString());
+        res.setHeader('X-RateLimit-Reset', Math.ceil(result.resetAt / 1000).toString());
+        next();
+      })
+      .catch(() => {
+        // Redis error: fall through to in-memory
+        rateLimitInMemory(key, req, res, next);
+      });
+    return;
+  }
+
+  rateLimitInMemory(key, req, res, next);
+}
+
+function rateLimitInMemory(key: string, _req: Request, res: Response, next: NextFunction): void {
   const now = Date.now();
 
   let limit = rateLimits.get(key);
@@ -338,11 +380,16 @@ export function createApp(): express.Application {
 /**
  * Start the server
  */
-export function startServer(port = 8080): void {
+export async function startServer(port = 8080): Promise<void> {
+  // Connect Redis store (non-blocking; falls back to in-memory)
+  const store = getStore();
+  const redisOk = await store.connect().catch(() => false);
+
   const app = createApp();
 
   app.listen(port, () => {
-    console.log(`🛡️  SCBE Governance API running on http://localhost:${port}`);
+    console.log(`SCBE Governance API running on http://localhost:${port}`);
+    console.log(`   Redis: ${redisOk ? 'connected' : 'in-memory fallback'}`);
     console.log(`   POST /v1/govern       - Request governance decision`);
     console.log(`   POST /v1/govern/batch - Batch governance decisions`);
     console.log(`   GET  /v1/policies     - List active policies`);
