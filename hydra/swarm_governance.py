@@ -1086,13 +1086,28 @@ class AutonomousCodeAgent:
             "consensus_required": result.get("consensus_reached", False)
         }
 
-    def _assess_code_risk(self, code: str, language: str) -> float:
-        """Assess risk level of code."""
-        risk = 0.2  # Base risk
+    # Patterns that MUST block execution outright (not advisory)
+    _BLOCKED_CODE_PATTERNS: List[str] = [
+        "credit_card", "creditcard", "card_number", "cvv", "card_skimmer",
+        "phishing", "keylogger", "credential_harvest",
+        "ransomware", "crypto_miner", "cryptojack",
+    ]
 
+    def _assess_code_risk(self, code: str, language: str) -> float:
+        """Assess risk level of code. Raises ValueError for blocked patterns."""
         code_lower = code.lower()
 
-        # High-risk patterns
+        # Hard block: patterns that must never execute regardless of governance
+        for blocked in self._BLOCKED_CODE_PATTERNS:
+            if blocked in code_lower:
+                raise ValueError(
+                    f"GUARDRAIL_DENY: code contains blocked pattern '{blocked}' — "
+                    "execution refused"
+                )
+
+        risk = 0.2  # Base risk
+
+        # High-risk patterns (advisory — governance decides)
         high_risk = ["os.system", "subprocess", "eval(", "exec(", "import os", "__import__"]
         medium_risk = ["open(", "file", "write", "delete", "remove"]
 
@@ -1172,6 +1187,16 @@ class AutonomousCodeAgent:
     # Private execution helpers
     # ---------------------------------------------------------------
 
+    # Dangerous Python code patterns blocked at execution time
+    _PYTHON_BLOCKED = [
+        "os.system(", "os.popen(", "os.exec",
+        "subprocess.run(", "subprocess.call(", "subprocess.popen(",
+        "subprocess.check_output(", "subprocess.check_call(",
+        "__import__('os')", '__import__("os")',
+        "credit_card", "creditcard", "card_number", "cvv",
+        "phishing", "keylogger", "credential_harvest",
+    ]
+
     @staticmethod
     def _execute_python(
         code: str,
@@ -1180,6 +1205,22 @@ class AutonomousCodeAgent:
     ) -> Dict[str, Any]:
         """Write *code* to a temp .py file and run it with the current interpreter."""
         start_time = time.monotonic()
+
+        # Hard block: refuse to write and execute dangerous Python code
+        code_lower = code.lower()
+        from hydra.swarm_governance import SwarmGovernanceEngine  # avoid circular at module level
+        for pattern in SwarmGovernanceEngine._PYTHON_BLOCKED:
+            if pattern in code_lower:
+                elapsed_ms = int((time.monotonic() - start_time) * 1000)
+                return {
+                    "status": "blocked",
+                    "stdout": "",
+                    "stderr": f"GUARDRAIL_DENY: Python code contains blocked pattern '{pattern}'",
+                    "exit_code": -1,
+                    "execution_time_ms": elapsed_ms,
+                    "working_dir": work_dir,
+                }
+
         script_path = os.path.join(work_dir, "_exec_script.py")
 
         try:

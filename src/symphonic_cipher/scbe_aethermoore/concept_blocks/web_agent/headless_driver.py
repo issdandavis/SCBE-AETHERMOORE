@@ -333,9 +333,44 @@ class HeadlessBrowserDriver:
             return ActionResult(success=False, action="extract", error=str(e),
                                 duration_ms=(time.time() - t0) * 1000)
 
+    # Patterns blocked from browser JS evaluation to prevent weaponisation
+    _JS_BLOCKED_PATTERNS = (
+        r"document\.cookie",
+        r"localStorage\.(get|set|remove)Item",
+        r"sessionStorage\.(get|set|remove)Item",
+        r"XMLHttpRequest|fetch\s*\(",
+        r"navigator\.sendBeacon",
+        r"window\.open\s*\(",
+        r"eval\s*\(",
+        r"Function\s*\(",
+        r"importScripts",
+        r"credit.?card|cc.?num|cvv|cvc|card.?number",
+        r"password|passwd|secret.?key|api.?key",
+        r"document\.write",
+        r"btoa\s*\(|atob\s*\(",
+        r"WebSocket\s*\(",
+    )
+
+    def _check_js_safety(self, script: str) -> str | None:
+        """Return reason string if script is blocked, else None."""
+        import re as _re
+        for pat in self._JS_BLOCKED_PATTERNS:
+            match = _re.search(pat, script, _re.IGNORECASE)
+            if match:
+                return f"Blocked JS pattern: {match.group(0)[:60]}"
+        return None
+
     async def evaluate(self, script: str, platform: str = "default") -> ActionResult:
-        """Run JavaScript on the page."""
+        """Run JavaScript on the page (with safety guardrails)."""
         t0 = time.time()
+
+        # Security: block dangerous JS patterns before execution
+        block_reason = self._check_js_safety(script)
+        if block_reason:
+            return ActionResult(success=False, action="evaluate",
+                                error=f"GUARDRAIL_DENY: {block_reason}",
+                                duration_ms=(time.time() - t0) * 1000)
+
         try:
             page = await self.get_page(platform)
             result = await page.evaluate(script)

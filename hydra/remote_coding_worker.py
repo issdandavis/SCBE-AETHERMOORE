@@ -170,6 +170,22 @@ def _execute_payload(
         if prefix not in allowed_prefixes:
             raise ValueError(f"command prefix '{prefix}' is not allowed")
 
+        # Block shell escape via Python's os/subprocess when python is an allowed prefix
+        _cmd_lower = command.lower()
+        _blocked_payloads = [
+            "os.system", "os.popen", "os.exec",
+            "subprocess.run", "subprocess.call", "subprocess.popen", "subprocess.check",
+            "__import__", "importlib",
+            "shutil.rmtree", "shutil.move",
+            "open(/etc", "open('/etc", 'open("/etc',
+            "eval(", "exec(",
+            "compile(",
+            "credit_card", "creditcard", "card_number", "cvv",
+        ]
+        for blocked in _blocked_payloads:
+            if blocked in _cmd_lower:
+                raise ValueError(f"command contains blocked pattern: {blocked}")
+
         timeout_sec = int(params.get("timeout_sec", 60))
         completed = subprocess.run(
             parts,
