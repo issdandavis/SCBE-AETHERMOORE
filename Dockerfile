@@ -81,11 +81,18 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install runtime dependencies
+# Install runtime dependencies + Playwright system deps for headless Chrome
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       curl \
       libssl3 \
+      # Playwright/Chromium headless deps
+      libnss3 libnspr4 libdbus-1-3 libatk1.0-0 libatk-bridge2.0-0 \
+      libcups2 libdrm2 libxkbcommon0 libatspi2.0-0 libxcomposite1 \
+      libxdamage1 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 \
+      libcairo2 libasound2 libxshmfence1 \
+      # Xvfb for optional headed mode
+      xvfb \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
     apt-get clean && \
@@ -106,6 +113,15 @@ COPY --from=ts-builder /app/dist ./dist
 COPY --from=ts-builder /app/node_modules ./node_modules
 COPY --from=ts-builder /app/package.json ./
 
+# Copy HYDRA browser + gateway + MCP servers
+COPY hydra/ ./hydra/
+COPY agents/ ./agents/
+COPY mcp/ ./mcp/
+COPY scripts/hydra_ai_gateway.py scripts/hydra_quick_start.py scripts/postinstall_check.py ./scripts/
+
+# Install Playwright Chromium browser binary
+RUN python -m playwright install chromium 2>/dev/null || true
+
 # Copy demo files
 COPY demo/ ./demo/
 
@@ -116,8 +132,8 @@ COPY README.md LICENSE ./
 ENV SCBE_ENV=production
 ENV SCBE_PQC_BACKEND=liboqs
 
-# Expose ports
-EXPOSE 8080
+# Expose ports: 8080 = main API, 8002 = AI tool-use gateway
+EXPOSE 8080 8002
 # Health check - verify API is responding
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1

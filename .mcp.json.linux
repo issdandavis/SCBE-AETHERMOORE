@@ -1,0 +1,67 @@
+{
+  "mcpServers": {
+    "fs": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ],
+      "env": {}
+    },
+    "fetch": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-fetch"
+      ],
+      "env": {}
+    },
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}"
+      }
+    },
+    "scbe-orchestrator": {
+      "type": "stdio",
+      "command": "python",
+      "args": [
+        "mcp/orchestrator.py"
+      ],
+      "env": {
+        "SWARM_DRY_RUN": "1"
+      }
+    },
+    "hydra-swarm": {
+      "type": "stdio",
+      "command": "python",
+      "args": [
+        "mcp/swarm_server.py"
+      ],
+      "env": {
+        "SWARM_DRY_RUN": "1",
+        "SWARM_BACKEND": "playwright"
+      }
+    },
+    "notion-sweep": {
+      "type": "stdio",
+      "command": "python",
+      "args": [
+        "mcp/notion_server.py"
+      ],
+      "env": {
+        "NOTION_API_KEY": "${NOTION_API_KEY}",
+        "NOTION_TOKEN": "${NOTION_TOKEN}",
+        "NOTION_MCP_TOKEN": "${NOTION_MCP_TOKEN}"
+      }
+    }
+  }
+}
