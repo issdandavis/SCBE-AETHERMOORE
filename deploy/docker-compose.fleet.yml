@@ -1,0 +1,122 @@
+# SCBE-AETHERMOORE Fleet Swarm Browser Deployment
+# ================================================
+#
+# Production deployment for the SCBE Browser-as-a-Service platform.
+#
+# Components:
+#   - platform-api:     Express/FastAPI gateway (session/open, step, close, usage)
+#   - fleet-coordinator: FleetSwarmBrowser consensus coordinator
+#   - browser-worker:   HTB + SSSB browser workers (Playwright/CDP)
+#   - redis:            Session state, replay guard, rate limiting
+#
+# Usage:
+#   docker compose -f deploy/docker-compose.fleet.yml up --scale browser-worker=6
+#
+# Sacred Tongues alignment: 6 browser workers = one per tongue (KO, AV, RU, CA, UM, DR)
+
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------------
+  # Platform API Gateway
+  # ----------------------------------------------------------------
+  platform-api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: node dist/src/api/index.js
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - SCBE_MODE=platform
+      - SCBE_MASTER_KEY=${SCBE_MASTER_KEY:-change-me-in-production}
+      - SESSION_TTL_MS=1800000
+      - REDIS_URL=redis://redis:6379
+      - TONGUE_THRESHOLD=4
+      - RATE_LIMIT_RPM=100
+      - LOG_LEVEL=info
+    depends_on:
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ----------------------------------------------------------------
+  # Fleet Swarm Coordinator
+  # ----------------------------------------------------------------
+  fleet-coordinator:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: node dist/src/fleet/fleet-manager.js
+    environment:
+      - NODE_ENV=production
+      - SCBE_MODE=cluster
+      - TONGUE_CONSENSUS=4
+      - HYPERBOLIC_BALL_DIMENSION=6
+      - REDIS_URL=redis://redis:6379
+      - FLEET_MAX_AGENTS=24
+      - HEALTH_CHECK_INTERVAL_MS=30000
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------
+  # Browser Workers (scale to N)
+  # ----------------------------------------------------------------
+  browser-worker:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: node dist/src/browser/agent.js
+    deploy:
+      replicas: 6
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+    environment:
+      - NODE_ENV=production
+      - SCBE_MODE=worker
+      - FLEET_COORDINATOR=http://fleet-coordinator:8080
+      - REDIS_URL=redis://redis:6379
+      - BROWSER_POOL_MAX_INSTANCES=3
+      - BROWSER_POOL_MAX_MEMORY_MB=768
+      - BROWSER_IDLE_TIMEOUT_MS=60000
+      - HTB_ALLOW_THRESHOLD=0.3
+      - HTB_QUARANTINE_THRESHOLD=0.6
+      - HTB_DENY_THRESHOLD=0.85
+      - BREATHING_FREQ_HZ=0.1
+    depends_on:
+      - fleet-coordinator
+      - redis
+    restart: unless-stopped
+    # Playwright needs these for headless Chrome
+    shm_size: '512m'
+    security_opt:
+      - seccomp:unconfined
+
+  # ----------------------------------------------------------------
+  # Redis (session state, replay guard, rate limiting)
+  # ----------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  redis-data:
+    driver: local

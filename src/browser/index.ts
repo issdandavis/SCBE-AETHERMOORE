@@ -137,3 +137,48 @@ export type { CDPBackendOptions } from './cdp-backend.js';
 // WebSocket Client (zero-dependency RFC 6455 client)
 export { WSClient } from './ws-client.js';
 export type { WSClientOptions, WSReadyState } from './ws-client.js';
+
+// ---------------------------------------------------------------------------
+// SCBE Browser Frameworks (5 frameworks for platform monetisation)
+// ---------------------------------------------------------------------------
+
+// Framework 1: Hyperbolic Trust Browser (HTB)
+export { HyperbolicTrustBrowser } from './hyperbolicTrustBrowser.js';
+export type {
+  NavigationIntent,
+  HyperbolicTrustScore,
+  DomainTrustRecord,
+  HTBConfig,
+} from './hyperbolicTrustBrowser.js';
+
+// Framework 2: SpiralSeal Session Browser (SSSB)
+export { SpiralSealSessionBrowser } from './spiralSealSession.js';
+export type {
+  EncryptedSession,
+  SessionState,
+  SealedAction,
+  SealedActionResult,
+  SSSBConfig,
+} from './spiralSealSession.js';
+
+// Framework 4: Fleet Swarm Browser (FSB)
+export { FleetSwarmBrowser } from './fleetSwarmBrowser.js';
+export type {
+  SwarmTask,
+  SwarmSubTask,
+  SwarmResult,
+  ConsensusResult,
+  FSBConfig,
+} from './fleetSwarmBrowser.js';
+
+// Framework 5: Quantum-Resistant Stealth Browser (QRSB)
+export { QuantumStealthBrowser } from './quantumStealthBrowser.js';
+export type {
+  StealthSession,
+  HyperbolicFingerprint,
+  PoincareCoords,
+  StealthNavigationResult,
+  QRSBConfig,
+} from './quantumStealthBrowser.js';
+
+// Framework 3 (CWA) is Python-only — see src/browser/constitutionalWebAgent.py

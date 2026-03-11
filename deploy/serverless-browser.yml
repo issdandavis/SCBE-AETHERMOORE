@@ -1,0 +1,144 @@
+# SCBE-AETHERMOORE Serverless Browser Agent
+# ==========================================
+#
+# AWS Lambda deployment for stateless browser governance API.
+# Good for: authorize/navigation-plan calls that return trust
+# decisions, session descriptors, and tongue verdicts.
+#
+# For long-running browser sessions, use docker-compose.fleet.yml.
+#
+# Usage:
+#   npx serverless deploy --config deploy/serverless-browser.yml
+
+service: scbe-browser-agent
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ${opt:region, 'us-east-1'}
+  memorySize: 512
+  timeout: 30
+  environment:
+    SCBE_AXIOM_MODE: strict
+    BREATHING_ENABLED: 'true'
+    TONGUE_THRESHOLD: '4'
+    SESSION_TTL_MS: '1800000'
+    NODE_ENV: production
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:Query
+          Resource:
+            - !GetAtt SessionTable.Arn
+            - !GetAtt UsageTable.Arn
+
+functions:
+  # Session lifecycle
+  sessionOpen:
+    handler: dist/src/api/lambda.sessionOpen
+    events:
+      - http:
+          path: /v1/session/open
+          method: post
+          cors: true
+
+  sessionStep:
+    handler: dist/src/api/lambda.sessionStep
+    events:
+      - http:
+          path: /v1/session/step
+          method: post
+          cors: true
+
+  sessionClose:
+    handler: dist/src/api/lambda.sessionClose
+    events:
+      - http:
+          path: /v1/session/close
+          method: post
+          cors: true
+
+  sessionStatus:
+    handler: dist/src/api/lambda.sessionStatus
+    events:
+      - http:
+          path: /v1/session/{id}
+          method: get
+          cors: true
+
+  # Usage metering
+  usage:
+    handler: dist/src/api/lambda.usage
+    events:
+      - http:
+          path: /v1/usage
+          method: get
+          cors: true
+
+  # Trust evaluation (stateless, no session needed)
+  authorize:
+    handler: dist/src/api/lambda.authorize
+    events:
+      - http:
+          path: /v1/authorize
+          method: post
+          cors: true
+
+  # Swarm execution (long timeout)
+  swarmExecute:
+    handler: dist/src/api/lambda.swarmExecute
+    timeout: 120
+    memorySize: 1024
+    events:
+      - http:
+          path: /v1/swarm/execute
+          method: post
+          cors: true
+
+resources:
+  Resources:
+    SessionTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: scbe-sessions-${sls:stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: sessionId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: sessionId
+            KeyType: HASH
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+
+    UsageTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: scbe-usage-${sls:stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: ownerId
+            AttributeType: S
+          - AttributeName: period
+            AttributeType: S
+        KeySchema:
+          - AttributeName: ownerId
+            KeyType: HASH
+          - AttributeName: period
+            KeyType: RANGE
+
+plugins:
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 3001

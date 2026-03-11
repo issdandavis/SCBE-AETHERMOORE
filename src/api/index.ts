@@ -649,3 +649,21 @@ export async function checkAccess(
 export function requiredTongues(action: ActionType): TongueID[] {
   return Roundtable.requiredTongues(action);
 }
+
+// ============================================================
+// Platform API (Browser-as-a-Service monetisation layer)
+// ============================================================
+
+export { SCBEPlatformAPI } from './platform.js';
+export type {
+  ApiKey,
+  PlatformTier,
+  SessionOpenRequest,
+  SessionOpenResponse,
+  SessionStepRequest,
+  SessionStepResponse,
+  SessionCloseResponse,
+  SessionStatusResponse,
+  UsageResponse,
+  SwarmExecuteRequest,
+} from './platform.js';
