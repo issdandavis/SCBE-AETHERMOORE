@@ -37,7 +37,20 @@ export * from './governed-drift';
 export * from './node-kernel';
 
 // Claude Code Studio Integration Bridge
-export * from './ccs-connector';
+// Note: GovernanceTier is already exported from ./types, so use named re-exports
+export {
+  CCSConnector,
+  classifyTaskTier,
+  computeHarmonicCost,
+} from './ccs-connector';
+export type {
+  CCSTask,
+  CCSSession,
+  GovernanceDecision,
+  LayerTrace,
+  CCSEventType,
+  CCSBridgeEvent,
+} from './ccs-connector';
 
 // Export types (canonical source for shared types)
 export * from './types';
