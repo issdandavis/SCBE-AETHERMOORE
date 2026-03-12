@@ -378,7 +378,41 @@
           </div>
         </div>
 
-        <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div class="grid md:grid-cols-4 gap-6 max-w-7xl mx-auto">
+          <!-- Access Pass -->
+          <div class="glass rounded-2xl p-8 border border-white/10 hover:border-green-500/50 transition">
+            <h3 class="text-2xl font-bold mb-2">Access Pass</h3>
+            <p class="text-gray-400 mb-6">One-time payment, instant access</p>
+            <div class="mb-6">
+              <span class="text-5xl font-bold">$2</span>
+              <span class="text-gray-400"> once</span>
+            </div>
+            <ul class="space-y-3 mb-8">
+              <li class="flex items-center gap-2">
+                <span class="text-green-400">&#10003;</span>
+                <span>Up to 50,000 requests/month</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-green-400">&#10003;</span>
+                <span>Basic 14-layer security</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-green-400">&#10003;</span>
+                <span>1 API key</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-green-400">&#10003;</span>
+                <span>Pay once, use forever</span>
+              </li>
+            </ul>
+            <button
+              id="access-pass-button"
+              class="w-full px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg transition font-bold glow-green"
+            >
+              Get Access &mdash; $2
+            </button>
+          </div>
+
           <!-- Starter Plan -->
           <div class="glass rounded-2xl p-8 border border-white/10">
             <h3 class="text-2xl font-bold mb-2">Starter</h3>
@@ -756,6 +790,46 @@
         } catch (error) {
           setCheckoutStatus(error.message || 'Unable to start checkout.', true);
         }
+      }
+
+      // Access Pass one-time $2 checkout
+      const accessPassButton = document.getElementById('access-pass-button');
+      if (accessPassButton) {
+        accessPassButton.addEventListener('click', async () => {
+          const email = (checkoutEmailInput?.value || '').trim();
+          if (!email || !email.includes('@')) {
+            setCheckoutStatus('Enter a valid work email before purchasing.', true);
+            checkoutEmailInput?.focus();
+            return;
+          }
+
+          const apiBase =
+            window.SCBE_API_BASE || (location.protocol === 'file:' ? 'http://127.0.0.1:8080' : location.origin);
+          const successUrl = `${location.origin}${location.pathname}?checkout=success&type=access_pass`;
+          const cancelUrl = `${location.origin}${location.pathname}?checkout=cancel&type=access_pass`;
+
+          setCheckoutStatus('Creating Access Pass checkout...');
+
+          try {
+            const response = await fetch(`${apiBase}/v1/billing/access-pass/checkout`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email,
+                success_url: successUrl,
+                cancel_url: cancelUrl,
+                source: 'product-landing',
+              }),
+            });
+
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.detail || 'Checkout request failed.');
+            if (!payload.checkout_url) throw new Error('Checkout URL missing from response.');
+            window.location.href = payload.checkout_url;
+          } catch (error) {
+            setCheckoutStatus(error.message || 'Unable to start checkout.', true);
+          }
+        });
       }
 
       checkoutButtons.forEach((button) => {

@@ -177,6 +177,34 @@ class UsageAggregate(Base):
     avg_latency_ms = Column(Float, nullable=True)
 
 
+class AccessPass(Base):
+    """One-time access pass purchase. Gates API access behind a small payment."""
+
+    __tablename__ = "access_passes"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    customer_id = Column(String(36), ForeignKey("customers.id"), nullable=False)
+    stripe_session_id = Column(String(255), unique=True, nullable=False)
+    stripe_payment_intent = Column(String(255), nullable=True)
+    amount_cents = Column(Integer, nullable=False)
+    currency = Column(String(3), default="usd")
+    status = Column(
+        String(20),
+        CheckConstraint("status IN ('pending', 'paid', 'refunded')"),
+        nullable=False,
+        default="pending",
+    )
+    created_at = Column(DateTime, default=datetime.utcnow)
+    paid_at = Column(DateTime, nullable=True)
+
+    customer = relationship("Customer")
+
+    __table_args__ = (
+        Index("idx_access_pass_customer", "customer_id"),
+        Index("idx_access_pass_session", "stripe_session_id"),
+    )
+
+
 class BillingEvent(Base):
     """Billing events for invoice history."""
 

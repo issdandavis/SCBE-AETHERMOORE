@@ -10,9 +10,9 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from pydantic import BaseModel
 
-from .database import get_db, Customer, Subscription, UsageRecord, BillingEvent
+from .database import get_db, Customer, Subscription, UsageRecord, BillingEvent, AccessPass
 from .stripe_client import StripeClient
-from .tiers import PRICING_TIERS, get_price_id_for_tier
+from .tiers import PRICING_TIERS, get_price_id_for_tier, ACCESS_PASS_PRICE_CENTS
 from .webhooks import process_webhook_event
 from ..auth import verify_api_key, CustomerContext
 
@@ -282,6 +282,96 @@ async def list_invoices(
         invoices = StripeClient.list_invoices(db_customer.stripe_customer_id, limit=limit)
 
     return {"invoices": invoices}
+
+
+# --- Access Pass (one-time $2 payment to unlock API access) ---
+
+class AccessPassCheckoutRequest(BaseModel):
+    email: str
+    success_url: Optional[str] = None
+    cancel_url: Optional[str] = None
+    source: Optional[str] = "landing"
+
+
+class AccessPassCheckoutResponse(BaseModel):
+    session_id: str
+    checkout_url: str
+    amount_cents: int
+
+
+class AccessPassStatusResponse(BaseModel):
+    has_access: bool
+    tier: str
+    paid_at: Optional[datetime] = None
+
+
+@router.post("/access-pass/checkout", response_model=AccessPassCheckoutResponse)
+async def create_access_pass_checkout(request: AccessPassCheckoutRequest):
+    """
+    Create a one-time $2 payment checkout to unlock API access.
+
+    No auth required — this is the entry point for new users.
+    """
+    email = (request.email or "").strip()
+    if "@" not in email:
+        raise HTTPException(status_code=400, detail="Valid email is required.")
+
+    result = StripeClient.create_payment_checkout(
+        price_cents=ACCESS_PASS_PRICE_CENTS,
+        product_name="SCBE-AETHERMOORE Access Pass",
+        customer_email=email,
+        success_url=request.success_url,
+        cancel_url=request.cancel_url,
+        metadata={
+            "type": "access_pass",
+            "source": (request.source or "landing").strip()[:64],
+        },
+    )
+
+    return AccessPassCheckoutResponse(
+        session_id=result["session_id"],
+        checkout_url=result["checkout_url"],
+        amount_cents=ACCESS_PASS_PRICE_CENTS,
+    )
+
+
+@router.get("/access-pass/status", response_model=AccessPassStatusResponse)
+async def check_access_pass(
+    customer: CustomerContext = Depends(verify_api_key),
+):
+    """Check if the caller has a paid access pass or active subscription."""
+    with get_db() as db:
+        # Check for an active subscription first (subscriptions outrank access passes)
+        subscription = (
+            db.query(Subscription)
+            .filter(
+                Subscription.customer_id == customer.customer_id,
+                Subscription.status == "active",
+            )
+            .first()
+        )
+        if subscription:
+            return AccessPassStatusResponse(
+                has_access=True, tier=subscription.tier
+            )
+
+        # Check for a paid access pass
+        access_pass = (
+            db.query(AccessPass)
+            .filter(
+                AccessPass.customer_id == customer.customer_id,
+                AccessPass.status == "paid",
+            )
+            .first()
+        )
+        if access_pass:
+            return AccessPassStatusResponse(
+                has_access=True,
+                tier="ACCESS_PASS",
+                paid_at=access_pass.paid_at,
+            )
+
+    return AccessPassStatusResponse(has_access=False, tier="FREE")
 
 
 # Stripe Webhook endpoint (no auth - uses Stripe signature verification)

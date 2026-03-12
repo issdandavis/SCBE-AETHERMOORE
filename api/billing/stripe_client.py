@@ -69,6 +69,48 @@ class StripeClient:
         }
 
     @staticmethod
+    def create_payment_checkout(
+        price_cents: int,
+        product_name: str,
+        customer_email: Optional[str] = None,
+        success_url: Optional[str] = None,
+        cancel_url: Optional[str] = None,
+        metadata: Optional[Dict[str, str]] = None,
+    ) -> dict:
+        """
+        Create a one-time payment Stripe Checkout session (not subscription).
+
+        Used for access passes and pay-to-use purchases.
+        """
+        _require_stripe()
+        session_params = {
+            "mode": "payment",
+            "line_items": [
+                {
+                    "price_data": {
+                        "currency": "usd",
+                        "unit_amount": price_cents,
+                        "product_data": {"name": product_name},
+                    },
+                    "quantity": 1,
+                }
+            ],
+            "success_url": success_url or f"{SUCCESS_URL}?session_id={{CHECKOUT_SESSION_ID}}",
+            "cancel_url": cancel_url or CANCEL_URL,
+            "metadata": metadata or {},
+        }
+
+        if customer_email:
+            session_params["customer_email"] = customer_email
+
+        session = stripe.checkout.Session.create(**session_params)
+
+        return {
+            "session_id": session.id,
+            "checkout_url": session.url,
+        }
+
+    @staticmethod
     def create_portal_session(
         stripe_customer_id: str,
         return_url: Optional[str] = None,

@@ -13,7 +13,7 @@ try:
 except ImportError:  # pragma: no cover - depends on environment
     stripe = None
 
-from .database import get_db, Customer, Subscription, ApiKey, BillingEvent
+from .database import get_db, Customer, Subscription, ApiKey, BillingEvent, AccessPass
 from .tiers import get_tier_from_price_id
 from ..keys.generator import generate_api_key
 
@@ -29,14 +29,72 @@ async def handle_checkout_completed(event: Any) -> dict:
     """
     Handle checkout.session.completed event.
 
-    Creates customer, subscription, and initial API key.
+    Routes to subscription or access-pass flow based on session mode.
     """
     _require_stripe()
     session = event.data.object
     logger.info(f"Checkout completed: {session.id}")
 
+    metadata = getattr(session, "metadata", {}) or {}
+
+    # One-time access pass payment (mode=payment, metadata.type=access_pass)
+    if getattr(session, "mode", None) == "payment" and metadata.get("type") == "access_pass":
+        return await _handle_access_pass_payment(event, session)
+
+    # Subscription checkout (existing flow)
+    return await _handle_subscription_checkout(event, session)
+
+
+async def _handle_access_pass_payment(event: Any, session: Any) -> dict:
+    """Handle a one-time access pass payment."""
     with get_db() as db:
-        # Get or create customer
+        customer = db.query(Customer).filter(
+            Customer.stripe_customer_id == session.customer
+        ).first()
+
+        if not customer:
+            email = session.customer_email or ""
+            if hasattr(session, "customer_details") and session.customer_details:
+                email = email or getattr(session.customer_details, "email", "") or ""
+            customer = Customer(
+                stripe_customer_id=session.customer,
+                email=email,
+            )
+            db.add(customer)
+            db.flush()
+
+        # Record the access pass
+        access_pass = AccessPass(
+            customer_id=customer.id,
+            stripe_session_id=session.id,
+            stripe_payment_intent=getattr(session, "payment_intent", None),
+            amount_cents=getattr(session, "amount_total", 200) or 200,
+            status="paid",
+            paid_at=datetime.utcnow(),
+        )
+        db.add(access_pass)
+
+        # Generate API key so the user can start making requests
+        key, key_record = generate_api_key(customer.id, name="Access Pass Key")
+        db.add(key_record)
+
+        billing_event = BillingEvent(
+            customer_id=customer.id,
+            stripe_event_id=event.id,
+            event_type="checkout.session.completed",
+            amount_cents=access_pass.amount_cents,
+            currency="usd",
+        )
+        db.add(billing_event)
+
+        logger.info(f"Access pass granted for customer {customer.id}")
+
+    return {"status": "success", "type": "access_pass", "customer_id": customer.id}
+
+
+async def _handle_subscription_checkout(event: Any, session: Any) -> dict:
+    """Handle a subscription checkout (existing flow)."""
+    with get_db() as db:
         customer = db.query(Customer).filter(
             Customer.stripe_customer_id == session.customer
         ).first()
@@ -54,7 +112,6 @@ async def handle_checkout_completed(event: Any) -> dict:
         price_id = stripe_sub.items.data[0].price.id if stripe_sub.items.data else None
         tier = get_tier_from_price_id(price_id) if price_id else "STARTER"
 
-        # Create subscription record
         subscription = Subscription(
             customer_id=customer.id,
             stripe_subscription_id=session.subscription,
@@ -66,11 +123,9 @@ async def handle_checkout_completed(event: Any) -> dict:
         )
         db.add(subscription)
 
-        # Generate initial API key
         key, key_record = generate_api_key(customer.id, name="Default Key")
         db.add(key_record)
 
-        # Log billing event
         billing_event = BillingEvent(
             customer_id=customer.id,
             stripe_event_id=event.id,

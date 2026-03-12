@@ -11,15 +11,33 @@ from typing import Optional
 STRIPE_PRICE_STARTER = os.getenv("STRIPE_PRICE_STARTER", "price_starter_monthly")
 STRIPE_PRICE_PRO = os.getenv("STRIPE_PRICE_PRO", "price_pro_monthly")
 STRIPE_PRICE_ENTERPRISE = os.getenv("STRIPE_PRICE_ENTERPRISE", "price_enterprise_monthly")
+STRIPE_PRICE_ACCESS_PASS = os.getenv("STRIPE_PRICE_ACCESS_PASS", "price_access_pass")
+
+# One-time access pass pricing (in cents)
+ACCESS_PASS_PRICE_CENTS = int(os.getenv("ACCESS_PASS_PRICE_CENTS", "200"))  # $2.00
 
 PRICING_TIERS = {
     "FREE": {
         "stripe_price_id": None,
         "monthly_price_cents": 0,
         "rate_limits": {
-            "per_minute": 10,
-            "daily": 1000,
-            "monthly": None,  # No monthly cap, daily enforced
+            "per_minute": 0,
+            "daily": 0,
+            "monthly": 0,
+        },
+        "features": [],
+        "max_api_keys": 0,
+        "audit_retention_days": 0,
+        "requires_payment": True,
+    },
+    "ACCESS_PASS": {
+        "stripe_price_id": STRIPE_PRICE_ACCESS_PASS,
+        "price_cents": ACCESS_PASS_PRICE_CENTS,  # $2 one-time
+        "mode": "payment",  # one-time, not subscription
+        "rate_limits": {
+            "per_minute": 30,
+            "daily": 5000,
+            "monthly": 50_000,
         },
         "features": [
             "basic_governance",
