@@ -409,28 +409,36 @@ async function runConversationWithFallback(messages, onText) {
   throw new Error(`All AI providers failed. ${failures.join(" | ")}`);
 }
 
-function attachWebSocketBridge(server) {
+function buildSessionMetadata(req, msg = {}, options = {}) {
+  const url = new URL(req.url || "/", "ws://localhost");
+  return {
+    agentId: msg.agentId || url.searchParams.get("agent") || process.env.SCBE_WORD_ADDIN_AGENT_ID || undefined,
+    surface: msg.surface || url.searchParams.get("surface") || undefined,
+    mode: msg.mode || url.searchParams.get("mode") || undefined,
+    documentTitle: msg.documentTitle || undefined,
+    repoName: "SCBE-AETHERMOORE",
+    branchName: options.branchName || process.env.SCBE_WORD_ADDIN_BRANCH || "",
+  };
+}
+
+function attachWebSocketBridge(server, options = {}) {
   const wss = new WebSocketServer({ server });
 
   wss.on("connection", (ws, req) => {
-    // ─── Session Envelope: one narrow governed lane ───
-    // Parse session ID from query string or generate a new one.
     const url = new URL(req.url || "/", `ws://localhost`);
     const sessionId = url.searchParams.get("session") || generateSessionId();
-    const envelope = loadOrCreateSession(sessionId);
+    const envelope = loadOrCreateSession(sessionId, buildSessionMetadata(req, {}, options));
+    const resumed = envelope.conversationHistory.length > 0 || envelope.syncCount > 0;
 
     console.log(`[bridge] Client connected — session=${sessionId} pad=${envelope.padId} zone=${envelope.currentZone}`);
 
-    // Restore conversation state from envelope (survives reconnects)
     let conversationHistory = envelope.conversationHistory;
     let syncedDocumentContext = envelope.documentContext;
 
-    // Tell the client its session info on connect
     ws.send(JSON.stringify({
       type: "session",
-      session_id: sessionId,
-      pad_id: envelope.padId,
-      zone: envelope.currentZone,
+      resumed,
+      ...envelope.getClientSummary(),
     }));
 
     ws.on("message", async (raw) => {
@@ -441,33 +449,37 @@ function attachWebSocketBridge(server) {
         return;
       }
 
-      if (msg.type === "sync_context") {
-        syncedDocumentContext = typeof msg.documentContext === "string" ? msg.documentContext : "";
-        envelope.documentContext = syncedDocumentContext;
-        envelope.documentTitle = msg.documentTitle || envelope.documentTitle;
+      if (msg.type === "hello") {
+        envelope.updateMetadata(buildSessionMetadata(req, msg, options));
         envelope.save();
+        ws.send(JSON.stringify({
+          type: "session",
+          resumed: true,
+          ...envelope.getClientSummary(),
+        }));
+      } else if (msg.type === "sync_context") {
+        syncedDocumentContext = typeof msg.documentContext === "string" ? msg.documentContext : "";
+        envelope.setDocumentContext(syncedDocumentContext, buildSessionMetadata(req, msg, options));
         ws.send(JSON.stringify({
           type: "synced",
           chars: syncedDocumentContext.length,
           zone: envelope.currentZone,
+          session_id: envelope.sessionId,
         }));
       } else if (msg.type === "chat") {
         let userContent = msg.content;
+        const messageMetadata = buildSessionMetadata(req, msg, options);
 
-        // ─── Gate 1: Antivirus scan on user input ───
-        const threats = envelope.scanThreats(userContent);
-        if (!threats.clean) {
-          envelope.logEdit("threat_blocked", { hits: threats.hits }, "DENY");
+        const governance = envelope.governanceCheck(userContent);
+        if (!governance.threats.clean) {
+          envelope.logEdit("threat_blocked", { hits: governance.threats.hits }, "DENY");
           envelope.save();
           ws.send(JSON.stringify({
             type: "error",
-            message: `Input blocked by antivirus gate (${threats.hits.length} pattern match${threats.hits.length > 1 ? "es" : ""})`,
+            message: `Input blocked by antivirus gate (${governance.threats.hits.length} pattern match${governance.threats.hits.length > 1 ? "es" : ""})`,
           }));
           return;
         }
-
-        // ─── Gate 2: Pipeline scoring ───
-        const score = envelope.scoreInput(userContent);
 
         const contextBlocks = [];
 
@@ -484,6 +496,7 @@ function attachWebSocketBridge(server) {
         }
 
         conversationHistory.push({ role: "user", content: userContent });
+        envelope.recordUserMessage(msg.content, msg.documentContext || "", messageMetadata);
 
         if (conversationHistory.length > 40) {
           conversationHistory = conversationHistory.slice(-30);
@@ -508,18 +521,16 @@ function attachWebSocketBridge(server) {
           const wordCommands = extractCommands(fullResponse, "@@WORD_CMD@@");
           const editorCommands = extractCommands(fullResponse, "@@EDITOR_CMD@@");
 
-          // ─── Gate 3: Scan response before executing commands ───
           const responseThreats = envelope.scanThreats(fullResponse);
 
           if (wordCommands.length > 0) {
-            const decision = responseThreats.clean ? score.decision : "ESCALATE";
+            const decision = responseThreats.clean ? governance.score.decision : "ESCALATE";
             envelope.logEdit("word_commands", {
               count: wordCommands.length,
               decision,
               zone: envelope.currentZone,
             }, decision);
 
-            // Only execute commands if governance allows
             if (decision === "ALLOW" || decision === "QUARANTINE") {
               ws.send(JSON.stringify({ type: "word_commands", commands: wordCommands }));
             } else {
@@ -534,37 +545,44 @@ function attachWebSocketBridge(server) {
             ws.send(JSON.stringify({ type: "editor_commands", commands: editorCommands }));
           }
 
-          // Persist conversation + governance state to envelope
           envelope.conversationHistory = conversationHistory;
+          envelope.recordAssistantMessage(fullResponse, {
+            provider: result.label,
+            model: result.model,
+            fallback: result.fallback,
+            wordCommands,
+            editorCommands,
+          });
           envelope.save();
 
           ws.send(JSON.stringify({ type: "stream_end" }));
         } catch (err) {
+          envelope.recordEvent("error", {
+            message: err.message,
+          });
           ws.send(JSON.stringify({ type: "error", message: err.message }));
         }
       } else if (msg.type === "clear") {
         conversationHistory = [];
         syncedDocumentContext = "";
-        envelope.conversationHistory = [];
-        envelope.documentContext = "";
-        envelope.save();
+        envelope.clearConversation();
         ws.send(JSON.stringify({ type: "cleared" }));
       } else if (msg.type === "promote") {
-        // Request HOT → SAFE promotion
         const promoted = envelope.promote();
         envelope.save();
         ws.send(JSON.stringify({
           type: "zone_update",
           zone: envelope.currentZone,
           promoted,
+          session_id: envelope.sessionId,
         }));
       }
     });
 
     ws.on("close", () => {
-      // Persist final state on disconnect
       envelope.conversationHistory = conversationHistory;
       envelope.save();
+      envelope.recordEvent("disconnect", {});
       console.log(`[bridge] Client disconnected — session=${sessionId}`);
     });
   });
@@ -577,7 +595,7 @@ function createBridgeServer(options = {}) {
   const server = useHttps
     ? https.createServer(loadCerts(), app)
     : http.createServer(app);
-  const wss = attachWebSocketBridge(server);
+  const wss = attachWebSocketBridge(server, options);
   return { server, wss };
 }
 

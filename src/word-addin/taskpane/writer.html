@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SCBE Book Studio</title>
+  <link rel="stylesheet" href="writer.css"/>
+</head>
+<body data-theme="warm">
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="title-wrap">
+        <div class="kicker">SCBE Book Studio</div>
+        <input id="draft-title" class="draft-title" type="text" value="Untitled Book" aria-label="Book title"/>
+        <input id="book-subtitle" class="subtitle-input" type="text" value="" placeholder="Subtitle, edition line, or series note" aria-label="Book subtitle"/>
+      </div>
+      <div class="top-actions">
+        <button id="new-draft" type="button">New</button>
+        <button id="load-reader-edition" type="button">Load Reader Edition</button>
+        <button id="open-draft" type="button">Open</button>
+        <button id="build-kdp-open" type="button">Build KDP + LibreOffice</button>
+        <button id="export-html" type="button">Export Book HTML</button>
+        <button id="export-text" type="button">Export TXT</button>
+        <button id="print-preview" type="button">Print Preview</button>
+        <button id="sync-context" class="accent" type="button">Sync To AI</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="book-panel">
+        <div class="panel-bar">
+          <div class="toolbar">
+            <button data-command="bold" type="button"><strong>B</strong></button>
+            <button data-command="italic" type="button"><em>I</em></button>
+            <button data-command="underline" type="button"><span class="underline">U</span></button>
+            <button data-command="h1" type="button">H1</button>
+            <button data-command="h2" type="button">H2</button>
+            <button data-command="quote" type="button">Quote</button>
+            <button data-command="ul" type="button">Bullets</button>
+            <button data-command="ol" type="button">Numbers</button>
+            <button data-command="chapter" type="button">Chapter</button>
+            <button data-command="break" type="button">Break</button>
+            <button data-command="clear" type="button">Clear</button>
+          </div>
+          <div class="meta">
+            <span id="save-state">idle</span>
+            <span id="draft-stats">0 words</span>
+          </div>
+        </div>
+
+        <div class="book-stage">
+          <section class="cover-card" id="cover-card">
+            <div class="cover-visual-wrap">
+              <div id="cover-visual" class="cover-visual">
+                <div class="cover-placeholder">Add a cover image</div>
+              </div>
+              <div class="cover-actions">
+                <button id="upload-cover" type="button">Upload Cover</button>
+                <button id="remove-cover" type="button">Remove Cover</button>
+              </div>
+            </div>
+
+            <div class="cover-copy">
+              <div class="cover-kicker">Final Form Front Matter</div>
+              <h1 id="cover-title-display" class="cover-title-display">Untitled Book</h1>
+              <p id="cover-subtitle-display" class="cover-subtitle-display">Subtitle or edition line</p>
+              <input id="book-author" class="cover-author-input" type="text" value="Issac Davis" placeholder="Author name" aria-label="Author name"/>
+              <textarea id="book-tagline" class="cover-tagline" rows="4" placeholder="Back-cover hook, edition note, or tagline"></textarea>
+            </div>
+          </section>
+
+          <article class="book-page" id="book-page">
+            <div class="running-head">
+              <span id="running-head-left">Untitled Book</span>
+              <span id="running-head-right">Issac Davis</span>
+            </div>
+
+            <div
+              id="editor"
+              class="editor"
+              contenteditable="true"
+              spellcheck="true"
+              data-placeholder="Write the book directly in designed form. Headings, art, ornament breaks, and typography should live here, not as a later cleanup task."
+            ></div>
+          </article>
+        </div>
+      </section>
+
+      <aside class="studio-panel">
+        <section class="design-panel">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Book Design</div>
+              <div class="section-caption">Make the editable manuscript look like the finished object.</div>
+            </div>
+          </div>
+
+          <div class="control-grid">
+            <label class="control-field">
+              <span>Body Font</span>
+              <select id="body-font">
+                <option value="'Palatino Linotype', 'Book Antiqua', serif">Palatino</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="'Baskerville Old Face', 'Times New Roman', serif">Baskerville</option>
+                <option value="'Garamond', 'Times New Roman', serif">Garamond</option>
+              </select>
+            </label>
+
+            <label class="control-field">
+              <span>Heading Font</span>
+              <select id="heading-font">
+                <option value="'Trebuchet MS', 'Aptos Display', sans-serif">Trebuchet</option>
+                <option value="'Segoe UI Variable Display', 'Aptos Display', sans-serif">Aptos Display</option>
+                <option value="'Palatino Linotype', 'Book Antiqua', serif">Palatino Serif</option>
+                <option value="Georgia, serif">Georgia Serif</option>
+              </select>
+            </label>
+
+            <label class="control-field">
+              <span>Theme</span>
+              <select id="theme-select">
+                <option value="warm">Warm Paper</option>
+                <option value="library">Library Slate</option>
+                <option value="meadow">Moss Ledger</option>
+              </select>
+            </label>
+
+            <label class="control-field">
+              <span>Page Width</span>
+              <select id="page-width">
+                <option value="720">Compact</option>
+                <option value="780" selected>Standard</option>
+                <option value="860">Wide</option>
+              </select>
+            </label>
+
+            <label class="control-field range-field">
+              <span>Body Size <strong id="body-size-value">19px</strong></span>
+              <input id="body-size" type="range" min="15" max="24" step="1" value="19"/>
+            </label>
+
+            <label class="control-field range-field">
+              <span>Line Height <strong id="line-height-value">1.72</strong></span>
+              <input id="line-height" type="range" min="1.35" max="2.1" step="0.05" value="1.72"/>
+            </label>
+
+            <label class="toggle-field">
+              <input id="dropcap-toggle" type="checkbox"/>
+              <span>Enable opening drop cap</span>
+            </label>
+          </div>
+
+          <div class="tool-cluster">
+            <div class="cluster-title">Art And Structure</div>
+            <div class="cluster-actions">
+              <button id="insert-art-left" type="button">Side Art Left</button>
+              <button id="insert-art-right" type="button">Side Art Right</button>
+              <button id="insert-art-full" type="button">Full Width Art</button>
+              <button id="insert-scene-break" type="button">Ornament Break</button>
+              <button id="insert-chapter" type="button">Chapter Opener</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="assistant-panel">
+          <div class="assistant-head">
+            <div>
+              <div class="assistant-title">AI Lane</div>
+              <div id="connection-state" class="connection-state">connecting...</div>
+            </div>
+            <button id="clear-chat" type="button">Clear Chat</button>
+          </div>
+
+          <div class="quick-actions">
+            <button id="rewrite-selection" type="button">Rewrite Selection</button>
+            <button id="expand-selection" type="button">Expand</button>
+            <button id="continue-selection" type="button">Continue</button>
+            <button id="summarize-selection" type="button">Summarize</button>
+          </div>
+
+          <div id="selection-state" class="selection-state">No selection cached</div>
+          <div id="chat-log" class="chat-log"></div>
+
+          <div class="composer">
+            <textarea id="prompt-input" placeholder="Ask for line edits, structure, scene thickening, typography-aware rewrites, or publication cleanup." rows="6"></textarea>
+            <button id="send-prompt" class="accent" type="button">Ask AI</button>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <input id="file-input" type="file" accept=".txt,.md,.html,.htm" hidden/>
+  <input id="image-input" type="file" accept="image/*" hidden/>
+  <script src="writer.js"></script>
+</body>
+</html>

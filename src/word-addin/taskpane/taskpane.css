@@ -1,0 +1,78 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #1a1a2e;
+  color: #e0e0e0;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #16213e;
+  border-bottom: 1px solid #0f3460;
+  flex-shrink: 0;
+}
+
+.logo {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e94560;
+  letter-spacing: 1px;
+}
+
+.controls {
+  display: flex;
+  gap: 6px;
+}
+
+.controls button {
+  background: #0f3460;
+  color: #e0e0e0;
+  border: 1px solid #1a1a4e;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.15s;
+}
+
+.controls button:hover {
+  background: #e94560;
+  color: #fff;
+}
+
+#terminal-container {
+  flex: 1;
+  padding: 4px;
+  overflow: hidden;
+}
+
+#status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px;
+  background: #16213e;
+  border-top: 1px solid #0f3460;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+#status-text { color: #888; }
+#status-text.connected { color: #4ecca3; }
+#status-text.error { color: #e94560; }
+#word-count { color: #666; }
+
+/* xterm overrides */
+.xterm { height: 100%; }
+.xterm-viewport::-webkit-scrollbar { width: 6px; }
+.xterm-viewport::-webkit-scrollbar-thumb { background: #0f3460; border-radius: 3px; }
+.xterm-viewport::-webkit-scrollbar-track { background: transparent; }

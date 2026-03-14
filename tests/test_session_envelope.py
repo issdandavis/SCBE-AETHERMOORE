@@ -64,11 +64,16 @@ class TestPersistence:
             const {{ loadOrCreateSession }} = require("./src/word-addin/session_envelope");
             loadOrCreateSession("persist-test");
         """)
-        session_file = tmp_path / "agent.word-addin" / "session-persist-test.json"
+        session_file = tmp_path / "agent.word-addin" / "sessions" / "session-persist-test.json"
+        manifest_file = tmp_path / "agent.word-addin" / "manifest.json"
         assert session_file.exists()
+        assert manifest_file.exists()
         data = json.loads(session_file.read_text())
         assert data["session_id"] == "persist-test"
         assert data["current_zone"] == "HOT"
+        manifest = json.loads(manifest_file.read_text())
+        assert manifest["storage"]["sessions_count"] == 1
+        assert manifest["storage"]["sessions"][0]["session_id"] == "persist-test"
 
 
 # ─── Threat Scanning ───
