@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import pytest
+
 from hydra.lattice25d_ops import (
     NoteRecord,
     build_lattice25d_payload,
+    load_notes_from_glob,
     metric_tags,
     sample_notes,
     text_metrics,
@@ -66,3 +69,9 @@ def test_sample_notes_builder_count():
     notes = sample_notes(7)
     assert len(notes) == 7
     assert notes[0].note_id.startswith("sample-")
+
+
+@pytest.mark.parametrize("pattern", ["../**/*.md", "C:/Windows/**/*.md"])
+def test_load_notes_from_glob_rejects_unsafe_patterns(pattern: str):
+    with pytest.raises(ValueError, match="notes_glob"):
+        load_notes_from_glob(pattern)

@@ -14,6 +14,8 @@
  * @see https://developers.zoom.us/docs/meeting-sdk/
  */
 
+import { randomBytes } from 'crypto';
+
 // ═══════════════════════════════════════════════════════════════
 // Types
 // ═══════════════════════════════════════════════════════════════
@@ -38,6 +40,17 @@ export interface ZoomMeeting {
 export interface ZoomTokenCache {
   accessToken: string;
   expiresAt: number;
+}
+
+const ZOOM_HOST_EMAIL_RE =
+  /^[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+$/i;
+
+function normalizeZoomHostEmail(hostEmail: string): string {
+  const normalized = hostEmail.trim().toLowerCase();
+  if (!normalized || normalized.length > 254 || !ZOOM_HOST_EMAIL_RE.test(normalized)) {
+    throw new Error('Invalid Zoom host email');
+  }
+  return normalized;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -124,15 +137,17 @@ export class ZoomService {
     durationMinutes: number,
     hostEmail: string
   ): Promise<ZoomMeeting> {
+    const normalizedHostEmail = normalizeZoomHostEmail(hostEmail);
+
     // If Zoom isn't configured, return a simulated meeting for dev/demo
     if (!this.config) {
       const simulated: ZoomMeeting = {
         id: Math.floor(Math.random() * 9_000_000_000) + 1_000_000_000,
         joinUrl: `https://zoom.us/j/simulated-${conferenceId.slice(0, 8)}`,
         startUrl: `https://zoom.us/s/simulated-${conferenceId.slice(0, 8)}`,
-        password: require('crypto').randomBytes(6).toString('hex'),
+        password: randomBytes(6).toString('hex'),
         topic,
-        hostEmail,
+        hostEmail: normalizedHostEmail,
         createdAt: new Date().toISOString(),
       };
       this.meetings.set(conferenceId, simulated);
@@ -140,7 +155,9 @@ export class ZoomService {
     }
 
     const token = await this.getAccessToken();
-    const res = await fetch(`https://api.zoom.us/v2/users/${hostEmail}/meetings`, {
+    const res = await fetch(
+      `https://api.zoom.us/v2/users/${encodeURIComponent(normalizedHostEmail)}/meetings`,
+      {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -160,7 +177,8 @@ export class ZoomService {
           auto_recording: 'cloud',
         },
       }),
-    });
+      }
+    );
 
     if (!res.ok) {
       const text = await res.text();
@@ -180,7 +198,7 @@ export class ZoomService {
       startUrl: data.start_url,
       password: data.password,
       topic,
-      hostEmail,
+      hostEmail: normalizedHostEmail,
       createdAt: new Date().toISOString(),
     };
 
