@@ -124,6 +124,12 @@ def _build_decode_map(tongue: str) -> Dict[str, int]:
     return {_encode_byte(tongue, i): i for i in range(256)}
 
 
+# Pre-built decode maps — avoids rebuilding on every call
+_DECODE_CACHE: Dict[str, Dict[str, int]] = {
+    t: _build_decode_map(t) for t in _CANONICAL_TONGUES
+}
+
+
 def encode_bytes(tongue: str, data: bytes) -> str:
     tongue = tongue.upper()
     return " ".join(_encode_byte(tongue, b) for b in data)
@@ -131,7 +137,7 @@ def encode_bytes(tongue: str, data: bytes) -> str:
 
 def decode_tokens(tongue: str, text: str) -> bytes:
     tongue = tongue.upper()
-    dmap = _build_decode_map(tongue)
+    dmap = _DECODE_CACHE.get(tongue) or _build_decode_map(tongue)
     tokens = text.strip().split()
     out = bytearray()
     for tok in tokens:
@@ -144,33 +150,214 @@ def decode_tokens(tongue: str, text: str) -> bytes:
 
 # ═══════════════════════════════════════════════════════════════
 # Pipeline (lightweight — no scipy/numpy required)
+#
+# Natural sieve: each layer preserves the input's shape and catches
+# what it naturally catches.  Sand falls through; gold stays on the mesh.
+#
+#   L1-L3 proxy  →  raw byte statistics (character sieve)
+#   L4-L5 proxy  →  distance from reference distribution (geometry sieve)
+#   L6-L11 proxy →  variance / coherence check (dynamics sieve)
+#   L12-L13      →  H(d, pd) = 1/(1+d+2*pd) → risk decision
 # ═══════════════════════════════════════════════════════════════
 
+# Reference byte-frequency distribution for "normal English prose".
+# Derived from the character class ratios of a 100K-word fiction corpus.
+_REF_PROFILE = {
+    "alpha_ratio": 0.78,      # letters dominate
+    "digit_ratio": 0.02,      # sparse digits
+    "space_ratio": 0.16,      # word gaps
+    "punct_ratio": 0.03,      # commas, periods, quotes
+    "control_ratio": 0.0,     # zero control chars
+    "highbyte_ratio": 0.0,    # zero non-ASCII in English baseline
+    "shannon": 4.2,           # bits/byte for English text
+    "bigram_shannon": 7.5,    # bits per character pair
+    "repetition": 0.35,       # unique_bytes / total_bytes (moderate diversity)
+}
+
+
+def _byte_frequency(raw: bytes) -> List[int]:
+    """Count occurrences of each byte value 0-255."""
+    freq = [0] * 256
+    for b in raw:
+        freq[b] += 1
+    return freq
+
+
+def _shannon_entropy(freq: List[int], total: int) -> float:
+    """Shannon entropy in bits/byte from a frequency table."""
+    if total == 0:
+        return 0.0
+    h = 0.0
+    for f in freq:
+        if f > 0:
+            p = f / total
+            h -= p * math.log2(p)
+    return h
+
+
+def _bigram_entropy(raw: bytes) -> float:
+    """Shannon entropy of byte pairs (bigrams)."""
+    if len(raw) < 2:
+        return 0.0
+    counts: Dict[int, int] = {}
+    for i in range(len(raw) - 1):
+        key = (raw[i] << 8) | raw[i + 1]
+        counts[key] = counts.get(key, 0) + 1
+    total = len(raw) - 1
+    h = 0.0
+    for c in counts.values():
+        p = c / total
+        h -= p * math.log2(p)
+    return h
+
+
+def _char_class_profile(raw: bytes) -> Dict[str, float]:
+    """L1-L3 proxy: decompose input into character class ratios."""
+    n = len(raw) or 1  # avoid division by zero
+    alpha = digit = space = punct = control = highbyte = 0
+    for b in raw:
+        if 65 <= b <= 90 or 97 <= b <= 122:
+            alpha += 1
+        elif 48 <= b <= 57:
+            digit += 1
+        elif b in (32, 9, 10, 13):
+            space += 1
+        elif 33 <= b <= 47 or 58 <= b <= 64 or 91 <= b <= 96 or 123 <= b <= 126:
+            punct += 1
+        elif b < 32 or b == 127:
+            control += 1
+        else:
+            highbyte += 1
+    return {
+        "alpha_ratio": alpha / n,
+        "digit_ratio": digit / n,
+        "space_ratio": space / n,
+        "punct_ratio": punct / n,
+        "control_ratio": control / n,
+        "highbyte_ratio": highbyte / n,
+    }
+
+
+def _distribution_distance(profile: Dict[str, float], freq: List[int],
+                            total: int, bigram_h: float) -> float:
+    """L4-L5 proxy: distance from reference distribution.
+
+    Returns d* in [0, ~5] — higher means further from normal text.
+    """
+    # Treat alpha + highbyte together as "text characters" so that
+    # non-Latin scripts (Japanese, Arabic, Cyrillic, etc.) aren't
+    # penalized for having high bytes — they're still natural language.
+    text_ratio = profile.get("alpha_ratio", 0.0) + profile.get("highbyte_ratio", 0.0)
+    ref_text_ratio = _REF_PROFILE["alpha_ratio"] + _REF_PROFILE["highbyte_ratio"]
+
+    # Ratio divergence on structural axes (text vs digits vs control)
+    ratio_div = (
+        (text_ratio - ref_text_ratio) ** 2
+        + (profile.get("digit_ratio", 0.0) - _REF_PROFILE["digit_ratio"]) ** 2
+        + (profile.get("space_ratio", 0.0) - _REF_PROFILE["space_ratio"]) ** 2
+        + (profile.get("punct_ratio", 0.0) - _REF_PROFILE["punct_ratio"]) ** 2
+        + (profile.get("control_ratio", 0.0) - _REF_PROFILE["control_ratio"]) ** 2 * 4.0
+    )
+
+    # Shannon divergence from reference
+    shannon = _shannon_entropy(freq, total)
+    shannon_div = abs(shannon - _REF_PROFILE["shannon"]) / 8.0
+
+    # Bigram divergence
+    bigram_div = abs(bigram_h - _REF_PROFILE["bigram_shannon"]) / 16.0
+
+    # Repetition divergence: unique bytes / total
+    unique_bytes = sum(1 for f in freq if f > 0)
+    rep = unique_bytes / 256.0 if total > 0 else 0.0
+    rep_div = abs(rep - _REF_PROFILE["repetition"])
+
+    # Weighted combination — ratio divergence dominates because it captures
+    # the coarsest structural signal (what KIND of bytes are present).
+    # The sqrt on ratio_div keeps the scale human-readable.
+    d_star = (
+        5.0 * math.sqrt(ratio_div)    # character class mismatch
+        + 1.5 * shannon_div            # information density mismatch
+        + 1.0 * bigram_div             # sequential pattern mismatch
+        + 0.8 * rep_div                # byte diversity mismatch
+    )
+
+    return d_star
+
+
+def _phase_deviation(profile: Dict[str, float], d_star: float,
+                     total: int) -> float:
+    """L6-L11 proxy: coherence / phase deviation.
+
+    Catches inputs that look structurally normal but have suspicious
+    internal dynamics — high control char ratios, degenerate repetition,
+    extreme length anomalies.
+    """
+    # Control chars are phase red flags; high bytes alone are not
+    # (they could be UTF-8 natural language)
+    phase = profile["control_ratio"] * 4.0
+
+    # Extreme length: very short or very long inputs get a small bump
+    if total == 0:
+        phase += 0.3
+    elif total < 5:
+        phase += 0.15
+    elif total > 500_000:
+        phase += 0.1
+
+    # Near-zero d* but high digit ratio = possible encoded payload
+    if d_star < 0.3 and profile["digit_ratio"] > 0.3:
+        phase += 0.2
+
+    return min(phase, 2.0)
+
+
 def pipeline_quick_score(text: str) -> Dict[str, Any]:
-    """Lightweight 14-layer scoring: d* -> x -> H_eff -> risk decision."""
+    """Lightweight 14-layer scoring — natural sieve, no hash.
+
+    Each stage preserves the input's statistical shape and catches
+    what it naturally catches.  The canonical formula
+    H(d, pd) = 1/(1 + d + 2*pd) compresses the findings into a
+    bounded safety score in (0, 1].
+    """
     raw = text.encode("utf-8")
-    digest = hashlib.sha256(raw).digest()
+    n = len(raw)
 
-    entropy = sum(b * math.log2(b + 1) for b in digest[:8]) / (8 * 8)
-    d_star = min(entropy / 10.0, 0.99)
-    x = math.tanh(d_star)
-    R = 0.95
-    H_eff = 1.0 / (1.0 + d_star + 2.0 * d_star * (1.0 - x / R))
+    # L1-L3: character sieve — let the input's natural shape emerge
+    freq = _byte_frequency(raw)
+    profile = _char_class_profile(raw)
+    bigram_h = _bigram_entropy(raw)
 
-    if H_eff >= 0.8:
+    # L4-L5: geometry sieve — how far from normal text?
+    d_star = _distribution_distance(profile, freq, n, bigram_h)
+
+    # L6-L11: dynamics sieve — coherence and phase checks
+    pd = _phase_deviation(profile, d_star, n)
+
+    # L12: harmonic wall — canonical bounded formula
+    H_eff = 1.0 / (1.0 + d_star + 2.0 * pd)
+
+    # L13: risk decision
+    if H_eff >= 0.75:
         decision = "ALLOW"
-    elif H_eff >= 0.5:
+    elif H_eff >= 0.45:
         decision = "QUARANTINE"
     elif H_eff >= 0.2:
         decision = "ESCALATE"
     else:
         decision = "DENY"
 
+    # Poincare ball coordinate for display (tanh projection of d*)
+    x_poincare = math.tanh(d_star)
+
+    # Provenance digest (for audit trail, not for scoring)
+    digest = hashlib.sha256(raw).digest()
+
     return {
-        "input_len": len(raw),
+        "input_len": n,
         "d_star": round(d_star, 6),
-        "x_poincare": round(x, 6),
+        "x_poincare": round(x_poincare, 6),
         "H_eff": round(H_eff, 6),
+        "phase_deviation": round(pd, 6),
         "decision": decision,
         "digest_hex": digest[:16].hex(),
     }
