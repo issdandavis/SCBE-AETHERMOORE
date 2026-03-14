@@ -11,6 +11,13 @@ python scripts/scbe-system-cli.py --repo-root C:/Users/issda/SCBE-AETHERMOORE-wo
 
 `--repo-root` defaults to the current checkout and can usually be omitted.
 
+For the unified front door, the top-level `scbe` launcher now forwards key system operations here:
+
+```bash
+python scbe pollypad list
+python scbe run --language python --code "print('SCBE runtime')"
+```
+
 ## Commands
 
 ### `tongues ...`
@@ -106,6 +113,9 @@ python scripts/scbe-system-cli.py pollypad book add --agent-id agent-001 --title
 python scripts/scbe-system-cli.py pollypad app install --agent-id agent-001 --name "scbe-checker" --entrypoint "python scbe.py check" --description "Local validation utility"
 python scripts/scbe-system-cli.py pollypad app list --agent-id agent-001
 
+# Run an installed pad app inside the governed runtime
+python scripts/scbe-system-cli.py pollypad app run --agent-id agent-001 --name "scbe-checker"
+
 # Export a snapshot for handoff/sync
 python scripts/scbe-system-cli.py pollypad snapshot --agent-id agent-001
 ```
@@ -115,6 +125,26 @@ Pads are stored under `.scbe/polly-pads/<agent-id>/`:
 - `notes/`
 - `books/`
 - `apps/`
+
+### `runtime run` (Governed polyglot execution)
+
+Run inline code, controlled files, or installed Polly Pad apps under an allowlisted runtime with SCBE execution metadata.
+
+```bash
+# Run inline Python
+python scripts/scbe-system-cli.py runtime run --language python --code "print('hello from CA')"
+
+# Run a controlled file inside the repo
+python scripts/scbe-system-cli.py runtime run --file scripts/example.py
+
+# Run an installed Polly Pad app
+python scripts/scbe-system-cli.py runtime run --agent-id agent-001 --app-name "scbe-checker"
+```
+
+Notes:
+- Direct runtime support is built in for `python`, `javascript`, `typescript`, `powershell`, `bash`, and `cmd`.
+- Additional languages can be introduced through Polly Pad app entrypoints, which keeps custom runtimes explicit and auditable.
+- Each run writes a JSON artifact under `artifacts/runtime_runs/` with command/source metadata, Sacred Tongue label, and lexicon attestation.
 
 ### `agent` (Squad Orchestration)
 
@@ -165,6 +195,7 @@ Notes:
 - `web` and `antivirus` provide the **agentic tool layer** for environment-scope automation and safety triage.
 - `status` aligns with the `.scbe/next-coder-marker.md` handoff flow.
 - `pollypad` aligns with your “Kindle for AI” concept (agent-local note/books/app bundle with manifest).
+- `runtime run` is the missing execution bridge: same pads, same lexicon/governance lane, but now able to actually run installed utilities or inline code.
 
 ## Suggested Daily Run Sequence
 
