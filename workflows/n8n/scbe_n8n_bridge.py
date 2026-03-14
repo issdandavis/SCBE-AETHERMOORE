@@ -29,11 +29,12 @@ from __future__ import annotations
 import logging
 import json
 import os
-import subprocess
+import re
 import sys
 import threading
 import time
 import uuid
+from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional
 from urllib import error as urllib_error
 from urllib import request as urllib_request
@@ -125,6 +126,15 @@ _ANTHROPIC_DEFAULT_MODEL = os.environ.get(
 ).strip()
 _XAI_DEFAULT_MODEL = os.environ.get("SCBE_XAI_MODEL", "grok-beta").strip()
 _HF_DEFAULT_MODEL = os.environ.get("SCBE_HF_MODEL", "Qwen/Qwen2.5-7B-Instruct").strip()
+_HF_DATASET_REPO_RE = re.compile(
+    r"^[A-Za-z0-9][A-Za-z0-9._-]{0,95}/[A-Za-z0-9][A-Za-z0-9._-]{0,95}$"
+)
+_HF_ALLOWED_DATASET_REPOS = {
+    repo.strip().lower()
+    for repo in os.environ.get("SCBE_HF_ALLOWED_DATASET_REPOS", "").split(",")
+    if repo.strip()
+}
+_HF_COMMIT_MESSAGE_MAX_LEN = 120
 
 
 def _check_key(api_key: Optional[str] = None):
@@ -1272,19 +1282,27 @@ def _fetch_notion_notes(
     return notes
 
 
-def _write_lattice_jsonl(payload: Dict[str, Any], output_path: str) -> Dict[str, Any]:
-    from pathlib import Path
-
-    out = Path(output_path)
-    if not out.is_absolute():
-        out = Path(_PROJECT) / out
-    # Guard against path traversal
-    _safe_root = Path(_PROJECT).resolve()
-    out = out.resolve()
+def _resolve_repo_relative_output_path(output_path: str) -> Path:
+    candidate = Path((output_path or "").strip())
+    if candidate.is_absolute():
+        raise HTTPException(status_code=400, detail="Output path must be repo-relative")
+    if not candidate.parts:
+        raise HTTPException(status_code=400, detail="Output path is required")
+    if any(part in {"..", ""} for part in candidate.parts):
+        raise HTTPException(status_code=400, detail="Invalid output path")
+    safe_root = Path(_PROJECT).resolve()
+    out = safe_root.joinpath(*candidate.parts).resolve(strict=False)
     try:
-        out.relative_to(_safe_root)
+        out.relative_to(safe_root)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="Invalid output path") from exc
+    if out.suffix.lower() != ".jsonl":
+        raise HTTPException(status_code=400, detail="Output path must end with .jsonl")
+    return out
+
+
+def _write_lattice_jsonl(payload: Dict[str, Any], output_path: str) -> Dict[str, Any]:
+    out = _resolve_repo_relative_output_path(output_path)
     out.parent.mkdir(parents=True, exist_ok=True)
 
     rows = payload.get("notes", []) if isinstance(payload.get("notes"), list) else []
@@ -1307,6 +1325,80 @@ def _write_lattice_jsonl(payload: Dict[str, Any], output_path: str) -> Dict[str,
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
             line_count += 1
     return {"path": str(out), "rows": line_count}
+
+
+def _validate_hf_dataset_repo(repo_id: str) -> str:
+    normalized = (repo_id or "").strip()
+    if not normalized or not _HF_DATASET_REPO_RE.fullmatch(normalized):
+        raise HTTPException(
+            status_code=400,
+            detail="hf_dataset_repo must match 'owner/name' using only letters, numbers, '.', '_' or '-'.",
+        )
+    return normalized
+
+
+def _sanitize_hf_commit_message(message: str) -> str:
+    normalized = " ".join(str(message or "").replace("\r", " ").replace("\n", " ").split())
+    if not normalized:
+        return "feat(dataset): lattice25d notes export"
+    if len(normalized) > _HF_COMMIT_MESSAGE_MAX_LEN:
+        raise HTTPException(
+            status_code=400,
+            detail=f"hf_commit_message must be {_HF_COMMIT_MESSAGE_MAX_LEN} characters or fewer.",
+        )
+    return normalized
+
+
+def _upload_lattice25d_export_to_hf(
+    *,
+    repo_id: str,
+    local_path: str,
+    commit_message: str,
+    create_pr: bool,
+) -> Dict[str, Any]:
+    allowed = _HF_ALLOWED_DATASET_REPOS
+    repo_id = _validate_hf_dataset_repo(repo_id)
+    if not allowed:
+        raise HTTPException(
+            status_code=403,
+            detail="HF push is disabled until SCBE_HF_ALLOWED_DATASET_REPOS is configured.",
+        )
+    if repo_id.lower() not in allowed:
+        raise HTTPException(
+            status_code=403,
+            detail=f"HF push blocked for non-allowlisted dataset repo: {repo_id}",
+        )
+    if not _HF_ROUTER_TOKEN:
+        raise HTTPException(status_code=503, detail="HF token not configured for dataset upload.")
+
+    try:
+        from huggingface_hub import HfApi
+    except ImportError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="huggingface_hub is required for dataset upload.",
+        ) from exc
+
+    remote_path = f"lattice25d/{Path(local_path).name}"
+    api = HfApi(token=_HF_ROUTER_TOKEN)
+    try:
+        api.upload_file(
+            path_or_fileobj=local_path,
+            path_in_repo=remote_path,
+            repo_id=repo_id,
+            repo_type="dataset",
+            commit_message=commit_message,
+            create_pr=create_pr,
+        )
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=f"HF dataset upload failed: {exc}") from exc
+
+    return {
+        "status": "uploaded",
+        "dataset_repo": repo_id,
+        "path_in_repo": remote_path,
+        "create_pr": create_pr,
+    }
 
 
 @app.post("/v1/workflow/lattice25d")
@@ -1369,14 +1461,17 @@ async def workflow_lattice25d(
     if req.include_repo_notes:
         remaining = max(0, int(req.max_notes) - len(notes))
         if remaining > 0:
-            notes.extend(
-                load_notes_from_glob(
-                    pattern=req.notes_glob,
-                    max_notes=remaining,
-                    source="repo",
-                    authority="internal",
+            try:
+                notes.extend(
+                    load_notes_from_glob(
+                        pattern=req.notes_glob,
+                        max_notes=remaining,
+                        source="repo",
+                        authority="internal",
+                    )
                 )
-            )
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     if not notes:
         raise HTTPException(
@@ -1406,32 +1501,17 @@ async def workflow_lattice25d(
         export_result["status"] = "written"
 
         if req.hf_dataset_repo:
-            export_result["dataset_repo"] = req.hf_dataset_repo
+            dataset_repo = _validate_hf_dataset_repo(req.hf_dataset_repo)
+            export_result["dataset_repo"] = dataset_repo
             if req.hf_push:
-                cmd = [
-                    "hf",
-                    "upload",
-                    req.hf_dataset_repo,
-                    export_result["path"],
-                    f"lattice25d/{os.path.basename(export_result['path'])}",
-                    "--repo-type",
-                    "dataset",
-                    "--commit-message",
-                    req.hf_commit_message,
-                ]
-                if req.hf_create_pr:
-                    cmd.append("--create-pr")
-                proc = subprocess.run(
-                    cmd,
-                    capture_output=True,
-                    text=True,
-                    timeout=180,
+                export_result.update(
+                    _upload_lattice25d_export_to_hf(
+                        repo_id=dataset_repo,
+                        local_path=export_result["path"],
+                        commit_message=_sanitize_hf_commit_message(req.hf_commit_message),
+                        create_pr=req.hf_create_pr,
+                    )
                 )
-                if proc.returncode == 0:
-                    export_result["status"] = "uploaded"
-                else:
-                    export_result["status"] = "upload_error"
-                    export_result["error"] = (proc.stderr or proc.stdout)[-2000:]
             else:
                 export_result["status"] = "staged"
         payload["hf_export"] = export_result

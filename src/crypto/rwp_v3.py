@@ -93,6 +93,15 @@ ARGON2_PARAMS = {
     "type": Argon2Type.ID if ARGON2_AVAILABLE else None,  # Argon2id (hybrid mode)
 }
 
+SCRYPT_FALLBACK_PARAMS = {
+    "n": 1 << 14,
+    "r": 8,
+    "p": 1,
+    "dklen": 32,
+}
+
+PBKDF2_FALLBACK_ITERATIONS = 600_000
+
 
 # ============================================================
 # RWP v3.0 ENVELOPE STRUCTURE
@@ -203,8 +212,23 @@ class RWPv3Protocol:
                 type=ARGON2_PARAMS["type"],
             )
         except Exception:
-            # Lightweight fallback (deterministic and fast)
-            return hashlib.blake2s(password + salt, digest_size=32).digest()
+            try:
+                return hashlib.scrypt(
+                    password=password,
+                    salt=salt,
+                    n=SCRYPT_FALLBACK_PARAMS["n"],
+                    r=SCRYPT_FALLBACK_PARAMS["r"],
+                    p=SCRYPT_FALLBACK_PARAMS["p"],
+                    dklen=SCRYPT_FALLBACK_PARAMS["dklen"],
+                )
+            except (AttributeError, ValueError):
+                return hashlib.pbkdf2_hmac(
+                    "sha256",
+                    password,
+                    salt,
+                    PBKDF2_FALLBACK_ITERATIONS,
+                    dklen=ARGON2_PARAMS["hash_len"],
+                )
 
     def encrypt(
         self,

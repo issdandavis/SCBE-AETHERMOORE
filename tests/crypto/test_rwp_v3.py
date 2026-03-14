@@ -9,6 +9,7 @@ Target: 95%+ coverage
 import pytest
 import json
 import secrets
+import hashlib
 from typing import Dict, Any
 
 # Import with fallback for missing dependencies
@@ -215,6 +216,20 @@ class TestRWPv3Protocol:
         envelope = protocol.encrypt(b"password", plaintext)
         decrypted = protocol.decrypt(b"password", envelope)
         assert decrypted == plaintext
+
+    def test_derive_key_fallback_is_not_fast_hashing(self, monkeypatch):
+        """Argon2 fallback should remain a real KDF, not a fast digest."""
+        protocol = object.__new__(RWPv3Protocol)
+
+        monkeypatch.setattr("src.crypto.rwp_v3.hash_secret_raw", lambda **_: (_ for _ in ()).throw(RuntimeError("boom")))
+
+        password = b"test-password"
+        salt = b"0123456789abcdef"
+        fallback_key = protocol._derive_key(password, salt)
+
+        assert len(fallback_key) == ARGON2_PARAMS["hash_len"]
+        assert fallback_key == protocol._derive_key(password, salt)
+        assert fallback_key != hashlib.blake2s(password + salt, digest_size=32).digest()
 
 
 class TestConvenienceAPI:
