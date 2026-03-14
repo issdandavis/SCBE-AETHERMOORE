@@ -149,7 +149,10 @@ async def test_workflow_lattice25d_includes_notion_notes(monkeypatch) -> None:
 @pytest.mark.asyncio
 async def test_workflow_lattice25d_hf_export_staged(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
-    out_path = tmp_path / "lattice_export.jsonl"
+    repo_root = tmp_path / "repo-root"
+    repo_root.mkdir()
+    monkeypatch.setattr(bridge, "_PROJECT", str(repo_root))
+    out_path = repo_root / "artifacts" / "hf" / "lattice_export.jsonl"
 
     req = bridge.Lattice25DRequest.model_validate(
         {
@@ -164,7 +167,7 @@ async def test_workflow_lattice25d_hf_export_staged(monkeypatch, tmp_path) -> No
                 }
             ],
             "include_repo_notes": False,
-            "hf_output_path": str(out_path),
+            "hf_output_path": "artifacts/hf/lattice_export.jsonl",
             "hf_dataset_repo": "issdandavis/scbe-lattice-notes",
             "hf_push": False,
         }
@@ -177,3 +180,76 @@ async def test_workflow_lattice25d_hf_export_staged(monkeypatch, tmp_path) -> No
     assert len(lines) == 1
     first = json.loads(lines[0])
     assert first["note_id"] == "n1"
+
+
+def test_resolve_repo_relative_output_path_rejects_absolute_path(tmp_path) -> None:
+    with pytest.raises(bridge.HTTPException) as exc:
+        bridge._resolve_repo_relative_output_path(str(tmp_path / "bad.jsonl"))
+
+    assert exc.value.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_workflow_lattice25d_rejects_invalid_hf_dataset_repo(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+    repo_root = tmp_path / "repo-root"
+    repo_root.mkdir()
+    monkeypatch.setattr(bridge, "_PROJECT", str(repo_root))
+
+    req = bridge.Lattice25DRequest.model_validate(
+        {
+            "notes": [
+                {
+                    "note_id": "n1",
+                    "text": "Export note",
+                    "tags": ["export"],
+                    "source": "repo",
+                    "authority": "internal",
+                    "tongue": "DR",
+                }
+            ],
+            "include_repo_notes": False,
+            "hf_output_path": "artifacts/hf/lattice_export.jsonl",
+            "hf_dataset_repo": "../../evil",
+            "hf_push": False,
+        }
+    )
+
+    with pytest.raises(bridge.HTTPException) as exc:
+        await bridge.workflow_lattice25d(req, x_api_key="test-key")
+
+    assert exc.value.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_workflow_lattice25d_push_requires_allowlisted_repo(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+    monkeypatch.setattr(bridge, "_HF_ALLOWED_DATASET_REPOS", set())
+    monkeypatch.setattr(bridge, "_HF_ROUTER_TOKEN", "hf_test_token")
+    repo_root = tmp_path / "repo-root"
+    repo_root.mkdir()
+    monkeypatch.setattr(bridge, "_PROJECT", str(repo_root))
+
+    req = bridge.Lattice25DRequest.model_validate(
+        {
+            "notes": [
+                {
+                    "note_id": "n1",
+                    "text": "Export note",
+                    "tags": ["export"],
+                    "source": "repo",
+                    "authority": "internal",
+                    "tongue": "DR",
+                }
+            ],
+            "include_repo_notes": False,
+            "hf_output_path": "artifacts/hf/lattice_export.jsonl",
+            "hf_dataset_repo": "issdandavis/scbe-lattice-notes",
+            "hf_push": True,
+        }
+    )
+
+    with pytest.raises(bridge.HTTPException) as exc:
+        await bridge.workflow_lattice25d(req, x_api_key="test-key")
+
+    assert exc.value.status_code == 403
