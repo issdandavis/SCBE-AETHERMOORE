@@ -24,6 +24,21 @@ const MIN_MODULUS = 17;
 /** Maximum modulus to prevent overflow */
 const MAX_MODULUS = 65521; // Largest 16-bit prime
 
+function secureRandomIntBelow(maxExclusive: number): number {
+  if (!Number.isInteger(maxExclusive) || maxExclusive <= 0 || maxExclusive > 0x1_0000_0000) {
+    throw new RangeError(`maxExclusive must be an integer in (0, 2^32], got ${maxExclusive}`);
+  }
+
+  const domainSize = 0x1_0000_0000;
+  const limit = domainSize - (domainSize % maxExclusive);
+  while (true) {
+    const candidate = crypto.randomBytes(4).readUInt32LE(0);
+    if (candidate < limit) {
+      return candidate % maxExclusive;
+    }
+  }
+}
+
 /**
  * Validate and clamp watermark configuration
  */
@@ -40,14 +55,9 @@ function validateConfig(config: WatermarkConfig): WatermarkConfig {
  */
 function randomPolynomial(n: number, q: number): number[] {
   const poly: number[] = new Array(n);
-  const bytes = crypto.randomBytes(n * 4);
 
   for (let i = 0; i < n; i++) {
-    // Rejection sampling to avoid modulo bias
-    let val = bytes.readUInt32LE(i * 4);
-    const limit = Math.floor(0x100000000 / q) * q;
-    while (val >= limit) { val = crypto.randomBytes(4).readUInt32LE(0); }
-    poly[i] = val % q;
+    poly[i] = secureRandomIntBelow(q);
   }
 
   return poly;
@@ -60,14 +70,9 @@ function randomPolynomial(n: number, q: number): number[] {
 function errorPolynomial(n: number, errorBound: number): number[] {
   const poly: number[] = new Array(n);
   const range = 2 * errorBound + 1;
-  const bytes = crypto.randomBytes(n * 4);
 
   for (let i = 0; i < n; i++) {
-    // Rejection sampling to avoid modulo bias
-    let val = bytes.readUInt32LE(i * 4);
-    const limit = Math.floor(0x100000000 / range) * range;
-    while (val >= limit) { val = crypto.randomBytes(4).readUInt32LE(0); }
-    poly[i] = (val % range) - errorBound;
+    poly[i] = secureRandomIntBelow(range) - errorBound;
   }
 
   return poly;

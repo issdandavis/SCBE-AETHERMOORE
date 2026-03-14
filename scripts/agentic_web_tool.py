@@ -11,11 +11,12 @@ import os
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import quote_plus
 from urllib.request import Request, urlopen
+
+from scripts.system.html_text import html_to_text
 
 
 @dataclass
@@ -28,38 +29,6 @@ class CaptureResult:
     method: str
     screenshot_path: str | None = None
     warning: str | None = None
-
-
-class _VisibleTextExtractor(HTMLParser):
-    """Extract visible text while dropping script/style content."""
-
-    def __init__(self) -> None:
-        super().__init__(convert_charrefs=True)
-        self._ignore_depth = 0
-        self._parts: List[str] = []
-
-    def handle_starttag(self, tag: str, attrs: List[tuple[str, Optional[str]]]) -> None:
-        if tag.lower() in {"script", "style"}:
-            self._ignore_depth += 1
-
-    def handle_endtag(self, tag: str) -> None:
-        if tag.lower() in {"script", "style"} and self._ignore_depth:
-            self._ignore_depth -= 1
-
-    def handle_data(self, data: str) -> None:
-        if not self._ignore_depth and data:
-            self._parts.append(data)
-
-    def to_text(self) -> str:
-        return " ".join(self._parts)
-
-
-def _html_to_plain_text(html: str) -> str:
-    parser = _VisibleTextExtractor()
-    parser.feed(html)
-    parser.close()
-    text = parser.to_text()
-    return re.sub(r"\s+", " ", text).strip()
 
 
 def _http_fetch_html(url: str, timeout: int = 25) -> tuple[int | None, str]:
@@ -76,13 +45,13 @@ def _http_fetch(url: str, timeout: int = 25) -> CaptureResult:
     status_code, html = _http_fetch_html(url, timeout=timeout)
 
     title_match = re.search(r"<title[^>]*>(.*?)</title>", html, flags=re.I | re.S)
-    title = title_match.group(1).strip() if title_match else url
-    text = _html_to_plain_text(html)
+    title = re.sub(r"\s+", " ", title_match.group(1)).strip() if title_match else url
+    text = html_to_text(html)
 
     links: List[Dict[str, str]] = []
     for match in re.finditer(r"<a[^>]+href=['\\\"](.*?)['\\\"][^>]*>(.*?)</a>", html, flags=re.I | re.S):
         href = match.group(1).strip()
-        label = re.sub(r"<[^>]+>", "", match.group(2)).strip()
+        label = html_to_text(match.group(2))
         if href and not href.lower().startswith("javascript:"):
             links.append({"href": href, "text": label[:120]})
         if len(links) >= 20:
@@ -163,14 +132,22 @@ def _search_duckduckgo(query: str, max_results: int = 8) -> List[Dict[str, str]]
 
     # Best effort HTML parsing, no dependency on external parsers.
     results: List[Dict[str, str]] = []
-    for match in re.finditer(r'<a[^>]+class="result__a"[^>]+href="([^"]+)"[^>]*>(.*?)</a>', html, flags=re.I | re.S):
+    for match in re.finditer(r'<a[^>]+class="[^"]*\bresult__a\b[^"]*"[^>]+href="([^"]+)"[^>]*>(.*?)</a>', html, flags=re.I | re.S):
         link = match.group(1)
-        title = re.sub(r"<[^>]+>", "", match.group(2)).strip()
+        title = html_to_text(match.group(2))
         results.append({"title": title, "url": link})
         if len(results) >= max_results:
             break
 
     return results
+
+
+def _resolve_output_dir(raw_path: str) -> Path:
+    target = (Path.cwd() / raw_path).resolve()
+    artifacts_root = (Path.cwd() / "artifacts").resolve()
+    if target != artifacts_root and artifacts_root not in target.parents:
+        raise ValueError("output path must stay under artifacts/")
+    return target
 
 
 def _save_capture(output_dir: Path, result: CaptureResult) -> Path:
@@ -222,7 +199,7 @@ def main() -> int:
     capture_parser.add_argument("--url", required=True)
 
     args = parser.parse_args()
-    output_dir = Path(args.output_dir)
+    output_dir = _resolve_output_dir(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     if args.command == "search":

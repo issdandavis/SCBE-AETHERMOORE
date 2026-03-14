@@ -880,6 +880,40 @@ describe('CDPBackend with mock CDP server', () => {
     await backend.close();
   });
 
+  it('should escape unsafe characters when serializing executeScript args', async () => {
+    const backend = new CDPBackend({ port: serverPort });
+    let capturedExpression = '';
+
+    commandHandler = (cmd) => {
+      if (cmd.method === 'Runtime.evaluate') {
+        capturedExpression = String(cmd.params?.expression ?? '');
+        return { result: { value: 'ok' } };
+      }
+      if (['Page.enable', 'DOM.enable', 'Runtime.enable', 'Network.enable', 'Emulation.setDeviceMetricsOverride'].includes(cmd.method)) {
+        return {};
+      }
+      return {};
+    };
+
+    await backend.initialize({
+      sessionId: 'test',
+      agentId: 'test',
+      tongue: 'KO',
+      browserType: 'chromium',
+      headless: true,
+      viewport: { width: 1280, height: 720 },
+      timeout: 10000,
+    });
+
+    const result = await backend.executeScript<string>('(...xs) => xs.join(\"\")', ['</script>', '\u2028']);
+
+    expect(result).toBe('ok');
+    expect(capturedExpression).not.toContain('</script>');
+    expect(capturedExpression).toContain('\\u003C');
+    expect(capturedExpression).toContain('\\u2028');
+    await backend.close();
+  });
+
   it('should throw on script execution error', async () => {
     const backend = new CDPBackend({ port: serverPort });
 
