@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
@@ -46,6 +47,15 @@ DEFAULT_COMPLEXITY_TIERS = {
     "hard": ["cheap", "standard", "premium"],
 }
 
+SENSITIVE_KEY_PATTERN = re.compile(
+    r"(?i)(api[_-]?key|token|secret|password|authorization|bearer|cookie|session)"
+)
+BEARER_PATTERN = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._\-~+/=]+\b")
+KEY_VALUE_PATTERN = re.compile(
+    r"(?i)\b([A-Z0-9_]*(?:TOKEN|SECRET|KEY|PASSWORD)[A-Z0-9_]*)\s*[:=]\s*([^\s,;]+)"
+)
+SECRET_DETAIL_KEYS = {"accepted_keys", "key_name", "key_source", "response", "response_excerpt", "raw"}
+
 
 if str(REPO_ROOT) not in os.sys.path:
     os.sys.path.insert(0, str(REPO_ROOT))
@@ -75,6 +85,64 @@ def _read_json(path: Path, default: Any) -> Any:
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
+def _redact_sensitive_text(value: str) -> str:
+    text = str(value)
+    text = BEARER_PATTERN.sub("Bearer [redacted]", text)
+    text = KEY_VALUE_PATTERN.sub(lambda match: f"{match.group(1)}=[redacted]", text)
+    return text
+
+
+def _sanitize_public_value(value: Any) -> Any:
+    if isinstance(value, dict):
+        sanitized: dict[str, Any] = {}
+        for key, child in value.items():
+            if key in SECRET_DETAIL_KEYS:
+                continue
+            if SENSITIVE_KEY_PATTERN.search(key):
+                if isinstance(child, bool):
+                    sanitized[key] = child
+                elif child in (None, "", [], {}):
+                    sanitized[key] = child
+                else:
+                    sanitized[key] = "[redacted]"
+                continue
+            sanitized[key] = _sanitize_public_value(child)
+        return sanitized
+    if isinstance(value, list):
+        return [_sanitize_public_value(item) for item in value]
+    if isinstance(value, str):
+        return _redact_sensitive_text(value)
+    return value
+
+
+def _summarize_alias_sync(alias_sync: dict[str, Any]) -> dict[str, int]:
+    summary: dict[str, int] = {"set": 0, "synced": 0, "missing": 0}
+    for item in alias_sync.values():
+        if not isinstance(item, dict):
+            continue
+        status = str(item.get("status", "")).strip().lower()
+        if status in summary:
+            summary[status] += 1
+    return summary
+
+
+def _build_public_health_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    public_payload = {
+        "generated_at_utc": payload.get("generated_at_utc"),
+        "config_path": payload.get("config_path"),
+        "checks": payload.get("checks", []),
+        "alias_sync_summary": _summarize_alias_sync(payload.get("alias_sync", {})),
+        "status": {},
+    }
+    status_map = payload.get("status", {})
+    if isinstance(status_map, dict):
+        public_payload["status"] = {
+            str(provider): _sanitize_public_value(result)
+            for provider, result in status_map.items()
+        }
+    return public_payload
 
 
 def _request_json(
@@ -312,8 +380,9 @@ def run_health(args: argparse.Namespace) -> int:
         "alias_sync": alias_sync,
         "status": status_map,
     }
-    _write_json(Path(args.output), payload)
-    print(json.dumps(payload, indent=2))
+    public_payload = _build_public_health_payload(payload)
+    _write_json(Path(args.output), public_payload)
+    print(json.dumps(public_payload, indent=2))
 
     if args.strict:
         failing = [name for name, val in status_map.items() if val.get("status") != "ok"]
@@ -574,7 +643,6 @@ def run_call(args: argparse.Namespace) -> int:
                         "model": model,
                         "status": "skipped",
                         "reason": "missing_api_key",
-                        "accepted_keys": key_candidates,
                     }
                 )
                 continue
@@ -650,11 +718,9 @@ def run_call(args: argparse.Namespace) -> int:
                     "provider": provider,
                     "tier": tier,
                     "model": model,
-                    "key_name": key_name,
-                    "key_source": key_source,
                     "status": "ok" if ok else "failed",
                     "http_status": http_status,
-                    "error": error,
+                    "error": _redact_sensitive_text(error),
                 }
             )
 
@@ -678,10 +744,13 @@ def run_call(args: argparse.Namespace) -> int:
                 final_text = text.strip()
                 break
 
-            # Keep the last raw error payload for troubleshooting without leaking keys.
-            attempts[-1]["response_excerpt"] = (
-                body if isinstance(body, (dict, list)) else str(body)
-            )
+            if body:
+                if isinstance(body, dict):
+                    excerpt = body.get("error") or body.get("message") or body.get("detail") or ""
+                else:
+                    excerpt = str(body)
+                if excerpt:
+                    attempts[-1]["error_detail"] = _redact_sensitive_text(str(excerpt))[:240]
         if selected:
             break
 
@@ -696,7 +765,7 @@ def run_call(args: argparse.Namespace) -> int:
         "tiers_tried": tiers,
         "selected": selected,
         "attempts": attempts,
-        "response": final_text,
+        "response": _redact_sensitive_text(final_text),
         "ledger_path": str(ledger_path.resolve()),
     }
     _write_json(Path(args.output), result)
