@@ -14,6 +14,7 @@ Patent Claims: 61, 62, 16
 Author: Isaac Davis / SpiralVerse OS
 """
 
+import logging
 import numpy as np
 from dataclasses import dataclass
 from typing import Tuple, List
@@ -96,7 +97,8 @@ def anti_fragile_stiffness(
 
 
 def breathing_transform(
-    point: np.ndarray, breath_factor: float, eps: float = 1e-6
+    point: np.ndarray, breath_factor: float, eps: float = 1e-6,
+    logger: logging.Logger = None
 ) -> np.ndarray:
     """
     Breathing Transform - Space contracts/expands based on threat level.
@@ -112,6 +114,7 @@ def breathing_transform(
         point: Point in Poincare ball (||point|| < 1)
         breath_factor: Breathing parameter b
         eps: Small epsilon for numerical stability
+        logger: Optional logger for audit events on high-threat contractions/expansions
 
     Returns:
         Transformed point, still inside the ball
@@ -130,7 +133,18 @@ def breathing_transform(
     arctanh_norm = np.arctanh(norm)
     new_norm = np.tanh(breath_factor * arctanh_norm)
 
-    return point * (new_norm / norm)
+    transformed = point * (new_norm / norm)
+
+    # A4: Audit high-threat boundary events (breath_factor > PHI triggers log)
+    if logger and breath_factor > PHI:
+        scale = new_norm / norm
+        logger.info(
+            "Boundary expansion: breath_factor=%.4f, scale=%.4f, "
+            "input_norm=%.4f, output_norm=%.4f",
+            breath_factor, scale, norm, np.linalg.norm(transformed),
+        )
+
+    return transformed
 
 
 # =============================================================================
