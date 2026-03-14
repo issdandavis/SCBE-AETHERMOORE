@@ -5,6 +5,9 @@ on:
     - cron: '0 6 * * 1'  # Weekly on Mondays (was daily)
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   PRIMARY_HF_REPO: issdandavis/spiralverse-ai-federated-v1
   BACKUP_HF_REPO: issdandavis/phdm-21d-embedding

@@ -6,6 +6,9 @@ on:
     tags:
       - 'paper-v*'
 
+permissions:
+  contents: read
+
 jobs:
   build-arxiv:
     runs-on: ubuntu-latest

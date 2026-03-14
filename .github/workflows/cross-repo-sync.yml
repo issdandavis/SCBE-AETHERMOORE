@@ -17,6 +17,9 @@ on:
           - from-gumroad
           - bidirectional
 
+permissions:
+  contents: read
+
 env:
   TARGET_REPO: issdandavis/gumroad-automation-demo
   SHARED_PATHS: |
