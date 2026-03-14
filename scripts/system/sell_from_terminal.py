@@ -11,9 +11,9 @@ Runs core selling actions without requiring dashboard/browser hopping:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
-import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -27,48 +27,14 @@ if str(REPO_ROOT) not in sys.path:
 from src.security.secret_store import get_secret  # noqa: E402
 
 
-BEARER_PATTERN = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._\-~+/=]+\b")
-KEY_VALUE_PATTERN = re.compile(
-    r"(?i)\b([A-Z0-9_]*(?:TOKEN|SECRET|KEY|PASSWORD)[A-Z0-9_]*)\s*[:=]\s*([^\s,;]+)"
-)
+SENSITIVE_METADATA_ITERATIONS = 120_000
 
 
 def _now_utc() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _mask(value: str) -> str:
-    if not value:
-        return "missing"
-    if len(value) <= 8:
-        return "set"
-    return f"{value[:4]}...{value[-4:]}"
-
-
-def _redact_sensitive_text(value: str) -> str:
-    text = str(value)
-    text = BEARER_PATTERN.sub("Bearer [redacted]", text)
-    text = KEY_VALUE_PATTERN.sub(lambda match: f"{match.group(1)}=[redacted]", text)
-    return text
-
-
-def _summarize_process_result(command: list[str], proc: subprocess.CompletedProcess[str]) -> dict[str, Any]:
-    stdout = _redact_sensitive_text(proc.stdout.strip())
-    stderr = _redact_sensitive_text(proc.stderr.strip())
-    summary: dict[str, Any] = {
-        "command": " ".join(command),
-        "returncode": proc.returncode,
-        "stdout_present": bool(stdout),
-        "stderr_present": bool(stderr),
-    }
-    if proc.returncode != 0 and stderr:
-        summary["error_excerpt"] = stderr[:240]
-    elif proc.returncode != 0 and stdout:
-        summary["error_excerpt"] = stdout[:240]
-    return summary
-
-
-def _load_secret_env() -> dict[str, int]:
+def _load_secret_env() -> dict[str, str]:
     keys = [
         "SHOPIFY_SHOP",
         "SHOPIFY_SHOP_DOMAIN",
@@ -86,34 +52,61 @@ def _load_secret_env() -> dict[str, int]:
         "GITHUB_TOKEN",
         "NOTION_TOKEN",
     ]
-    summary = {
-        "present_in_env": 0,
-        "loaded_from_store": 0,
-        "missing": 0,
-        "aliases_applied": 0,
-    }
+    status: dict[str, str] = {}
 
     for key in keys:
         existing = os.getenv(key, "").strip()
         if existing:
-            summary["present_in_env"] += 1
+            status[key] = "env"
             continue
 
         stored = get_secret(key, "").strip()
         if stored:
             os.environ[key] = stored
-            summary["loaded_from_store"] += 1
+            status[key] = "stored"
         else:
-            summary["missing"] += 1
+            status[key] = "missing"
 
     # Common Shopify alias fallback.
     if not os.getenv("SHOPIFY_SHOP", "").strip():
         alias = os.getenv("SHOPIFY_SHOP_DOMAIN", "").strip()
         if alias:
             os.environ["SHOPIFY_SHOP"] = alias
-            summary["aliases_applied"] += 1
 
-    return summary
+    return status
+
+
+def _resolve_report_path(raw_path: str) -> Path:
+    target = (REPO_ROOT / raw_path).resolve()
+    artifacts_root = (REPO_ROOT / "artifacts").resolve()
+    if target != artifacts_root and artifacts_root not in target.parents:
+        raise ValueError("report path must stay under artifacts/")
+    return target
+
+
+def _sensitive_fingerprint(text: str) -> str:
+    salt = os.getenv("SCBE_METADATA_HASH_KEY", "sell-from-terminal-metadata").encode("utf-8")
+    return hashlib.pbkdf2_hmac(
+        "sha256",
+        text.encode("utf-8"),
+        salt,
+        SENSITIVE_METADATA_ITERATIONS,
+    ).hex()
+
+
+def _text_metadata(text: str) -> dict[str, Any]:
+    return {
+        "present": bool(text),
+        "length": len(text),
+        "pbkdf2_sha256": _sensitive_fingerprint(text) if text else "",
+    }
+
+
+def _sanitize_result(result: dict[str, Any]) -> dict[str, Any]:
+    clean = {key: value for key, value in result.items() if key not in {"stdout", "stderr"}}
+    clean["stdout_metadata"] = _text_metadata(str(result.get("stdout", "")).strip())
+    clean["stderr_metadata"] = _text_metadata(str(result.get("stderr", "")).strip())
+    return clean
 
 
 def _run_cmd(cmd: list[str], *, timeout: int = 180) -> dict[str, Any]:
@@ -125,7 +118,12 @@ def _run_cmd(cmd: list[str], *, timeout: int = 180) -> dict[str, Any]:
         timeout=timeout,
         check=False,
     )
-    return _summarize_process_result(cmd, proc)
+    return _sanitize_result({
+        "command": " ".join(cmd),
+        "returncode": proc.returncode,
+        "stdout": proc.stdout.strip(),
+        "stderr": proc.stderr.strip(),
+    })
 
 
 def _connector_health() -> dict[str, Any]:
@@ -150,18 +148,12 @@ def _connector_health() -> dict[str, Any]:
         check=False,
         env=env,
     )
-    return _summarize_process_result(
-        [
-            "python",
-            "scripts/connector_health_check.py",
-            "--checks",
-            "github",
-            "notion",
-            "huggingface",
-            "zapier",
-        ],
-        proc,
-    )
+    return _sanitize_result({
+        "command": "python scripts/connector_health_check.py --checks github notion huggingface zapier",
+        "returncode": proc.returncode,
+        "stdout": proc.stdout.strip(),
+        "stderr": proc.stderr.strip(),
+    })
 
 
 def main() -> int:
@@ -215,14 +207,21 @@ def main() -> int:
 
     report["actions"].append({"name": "connector_health", "result": _connector_health()})
 
-    out = Path(args.report)
+    out = _resolve_report_path(args.report)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2), encoding="utf-8")
 
     print(f"report={out.resolve()}")
-    print("secret_summary:")
-    for key, value in report["secret_summary"].items():
-        print(f"  {key}={value}")
+    secret_summary = report["secret_summary"]
+    env_count = sum(1 for value in secret_summary.values() if value == "env")
+    stored_count = sum(1 for value in secret_summary.values() if value == "stored")
+    missing_count = sum(1 for value in secret_summary.values() if value == "missing")
+    print(
+        "secret_summary:"
+        f" env={env_count}"
+        f" secret_store={stored_count}"
+        f" missing={missing_count}"
+    )
 
     for action in report["actions"]:
         name = action.get("name")

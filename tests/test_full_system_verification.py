@@ -528,45 +528,32 @@ check("Langues metric: 6D phase-shifted exponential",
 section("10. Game Engine Integration")
 
 try:
-    from engine import Tongue, Character, Stats, EvoStage, TrainingExporter
-    check("Game engine imports", True)
+    from symphonic_cipher.scbe_aethermoore.concept_blocks.earn_engine.engine import EarnEngine
+    from symphonic_cipher.scbe_aethermoore.concept_blocks.earn_engine.game_hooks import GameHooks
+    from symphonic_cipher.scbe_aethermoore.game.regions import REGIONS, get_region_by_tongue, get_tower_floor
+    from symphonic_cipher.scbe_aethermoore.game.types import TongueCode
 
-    # Tongue enum matches
-    check("6 Sacred Tongues defined",
-          len(list(Tongue)) == 6)
+    check("Game integration imports", True)
+    check("6 tongue regions defined", len(REGIONS) == 6)
 
-    for t in Tongue:
-        check(f"Tongue.{t.value} exists", True)
+    for tongue in ("KO", "AV", "RU", "CA", "UM", "DR"):
+        region = get_region_by_tongue(tongue)
+        check(f"Region mapped for {tongue}", region is not None)
 
-    # Evo stages
-    stages = list(EvoStage)
-    check("6 evolution stages",
-          len(stages) == 6,
-          f"stages={[s.value for s in stages]}")
+    floor_1 = get_tower_floor(1)
+    floor_100 = get_tower_floor(100)
+    check("Tower floor 1 valid", floor_1.floor == 1 and floor_1.region == "ember_reach")
+    check("Tower floor 100 valid", floor_100.floor == 100 and floor_100.region == "bastion_fields")
 
-    # Training exporter
-    exp = TrainingExporter("verify_session")
-    exp.record_battle("Izack", "Hash Slime", "Cipher Strike", 42, "CA", "super effective")
-    exp.record_evolution("Polly", "Rookie", "Champion", {"DR": 0.8, "KO": 0.5})
-    check("Training exporter records", exp.total_pairs == 2)
-
-except Exception as e:
-    check("Game engine imports", False, str(e))
-
-try:
-    from encounters import EncounterTable, AETHERMOOR_ROUTES, Bestiary
-    check("Encounters module imports", True)
-    check("10 routes defined", len(AETHERMOOR_ROUTES) == 10,
-          f"found {len(AETHERMOOR_ROUTES)}")
-
-    table = EncounterTable()
-    for name, zone in AETHERMOOR_ROUTES.items():
-        enc = table.generate_encounter(zone, 10)
-        check(f"Route {name}: generates encounters",
-              enc is not None and "name" in enc)
+    game_engine = EarnEngine(agent_id="verifier-game")
+    game_hooks = GameHooks(engine=game_engine)
+    battle_entry = game_hooks.battle_victory("Hash Slime", 12, "CA", xp_gained=42)
+    check("Game hook battle pipeline", battle_entry.face_value > 0 and battle_entry.state.value == "EARNED")
+    catch_entry = game_hooks.creature_caught("Packet Wraith", 10, "AV", is_rare=True)
+    check("Game hook catch pipeline", catch_entry.face_value > 0 and catch_entry.state.value == "EARNED")
 
 except Exception as e:
-    check("Encounters module imports", False, str(e))
+    check("Game integration imports", False, str(e))
 
 
 # =====================================================================
@@ -656,4 +643,11 @@ print(f"  Inventor:   Isaac Daniel Davis")
 print(f"  Coverage:   14-layer pipeline, PHDM, unified kernel")
 print(f"{'='*70}\n")
 
-sys.exit(0 if failed == 0 else 1)
+
+def test_full_system_verification_report():
+    assert total > 0
+    assert failed == 0, f"{failed} issue(s) found during full system verification"
+
+
+if __name__ == "__main__":
+    sys.exit(0 if failed == 0 else 1)
