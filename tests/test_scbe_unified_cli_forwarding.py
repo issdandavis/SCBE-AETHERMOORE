@@ -18,7 +18,7 @@ def _load_module(name: str, path: Path):
     return module
 
 
-scbe_cli = _load_module("test_scbe_unified_cli_forwarding", ROOT / "scbe")
+scbe_cli = _load_module("test_scbe_unified_cli_forwarding", ROOT / "scbe.py")
 
 
 class _Result:
