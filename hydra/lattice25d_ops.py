@@ -47,6 +47,20 @@ def _hash_unit(seed: str) -> float:
 _SAFE_NOTES_ROOT = Path(__file__).parent.parent.resolve()
 
 
+def _resolve_safe_glob_pattern(pattern: str) -> str:
+    normalized = (pattern or "").strip().replace("\\", "/")
+    if not normalized:
+        raise ValueError("notes_glob is required")
+    if normalized.startswith("/") or re.match(r"^[A-Za-z]:", normalized):
+        raise ValueError("notes_glob must be repo-relative")
+
+    parts = [part for part in normalized.split("/") if part]
+    if not parts or any(part == ".." for part in parts):
+        raise ValueError("notes_glob contains invalid path segments")
+
+    return str(_SAFE_NOTES_ROOT.joinpath(*parts))
+
+
 
 def load_notes_from_glob(
     pattern: str,
@@ -54,7 +68,8 @@ def load_notes_from_glob(
     source: str = "repo",
     authority: str = "public",
 ) -> List[NoteRecord]:
-    paths = sorted(glob.glob(pattern, recursive=True))
+    safe_pattern = _resolve_safe_glob_pattern(pattern)
+    paths = sorted(glob.glob(safe_pattern, recursive=True))
     notes: List[NoteRecord] = []
     for p in paths:
         if len(notes) >= max(0, max_notes):
