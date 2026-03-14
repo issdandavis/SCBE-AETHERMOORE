@@ -97,19 +97,110 @@ function sha256Hex(value) {
   return createHash('sha256').update(canonicalStringify(value)).digest('hex');
 }
 
-function stripHtml(html) {
-  // Iteratively strip tags to handle nested/malformed HTML
-  let text = String(html);
-  // Remove script and style blocks first (non-greedy, case-insensitive)
-  text = text.replace(/<script[\s\S]*?<\/script\s*>/gi, '');
-  text = text.replace(/<style[\s\S]*?<\/style\s*>/gi, '');
-  // Strip remaining tags iteratively until stable
-  let prev;
-  do {
-    prev = text;
-    text = text.replace(/<[^>]*>/g, ' ');
-  } while (text !== prev);
-  return text.replace(/\s+/g, ' ').trim();
+function startsWithInsensitive(source, index, needle) {
+  return source.slice(index, index + needle.length).toLowerCase() === needle.toLowerCase();
+}
+
+function appendNormalizedText(buffer, value, state) {
+  for (const ch of value) {
+    if (/\s/.test(ch)) {
+      if (!state.lastWasSpace && buffer.length > 0) {
+        buffer.push(' ');
+        state.lastWasSpace = true;
+      }
+      continue;
+    }
+    buffer.push(ch);
+    state.lastWasSpace = false;
+  }
+}
+
+function findTagEnd(source, startIndex) {
+  let quote = null;
+  for (let i = startIndex; i < source.length; i++) {
+    const ch = source[i];
+    if (quote) {
+      if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      quote = ch;
+      continue;
+    }
+    if (ch === '>') return i;
+  }
+  return -1;
+}
+
+function readTagName(source, startIndex) {
+  let i = startIndex;
+  while (i < source.length && /\s/.test(source[i])) i += 1;
+  if (source[i] === '/') i += 1;
+  while (i < source.length && /\s/.test(source[i])) i += 1;
+  const begin = i;
+  while (i < source.length && /[A-Za-z0-9:-]/.test(source[i])) i += 1;
+  return source.slice(begin, i).toLowerCase();
+}
+
+export function stripHtml(html) {
+  const source = String(html ?? '');
+  const buffer = [];
+  const state = { lastWasSpace: true };
+  let mode = 'text';
+
+  for (let i = 0; i < source.length; i += 1) {
+    if (mode === 'comment') {
+      if (source.startsWith('-->', i)) {
+        mode = 'text';
+        i += 2;
+      }
+      continue;
+    }
+
+    if (mode === 'script' || mode === 'style') {
+      const closingTag = `</${mode}`;
+      if (startsWithInsensitive(source, i, closingTag)) {
+        const tagEnd = findTagEnd(source, i);
+        if (tagEnd >= 0) {
+          mode = 'text';
+          i = tagEnd;
+          appendNormalizedText(buffer, ' ', state);
+          continue;
+        }
+      }
+      continue;
+    }
+
+    const ch = source[i];
+    if (ch !== '<') {
+      appendNormalizedText(buffer, ch, state);
+      continue;
+    }
+
+    if (source.startsWith('<!--', i)) {
+      mode = 'comment';
+      i += 3;
+      continue;
+    }
+
+    const tagEnd = findTagEnd(source, i + 1);
+    if (tagEnd < 0) {
+      appendNormalizedText(buffer, source.slice(i), state);
+      break;
+    }
+
+    const tagName = readTagName(source, i + 1);
+    if (tagName === 'script' || tagName === 'style') {
+      mode = tagName;
+      i = tagEnd;
+      continue;
+    }
+
+    appendNormalizedText(buffer, ' ', state);
+    i = tagEnd;
+  }
+
+  return buffer.join('').trim();
 }
 
 function isTlsIssuerCertError(error) {
