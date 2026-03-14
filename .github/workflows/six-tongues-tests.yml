@@ -14,6 +14,9 @@ on:
       - 'requirements*.txt'
       - '.github/workflows/six-tongues-tests.yml'
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Run Six Tongues Selftest
@@ -49,9 +52,4 @@ jobs:
 
       - name: Verify bijective mapping integrity
         run: |
-          python -c "
-import sys
-print('Python version:', sys.version)
-print('Six Tongues CI/CD pipeline ready')
-print('Bijective mapping tests will run when aethermoore.py is committed')
-"
+          python -c "import sys; print('Python version:', sys.version); print('Six Tongues CI/CD pipeline ready'); print('Bijective mapping tests will run when aethermoore.py is committed')"

@@ -5,6 +5,9 @@ on:
     - cron: '0 9 * * 1'  # Every Monday at 9 AM UTC
   workflow_dispatch:  # Manual trigger
 
+permissions:
+  contents: read
+
 jobs:
   npm-audit:
     runs-on: ubuntu-latest
@@ -183,33 +186,7 @@ jobs:
           echo "- pip-audit high: ${{ steps.check_vulns.outputs.pip_high }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Total critical: ${{ steps.check_vulns.outputs.total_critical }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Total high: ${{ steps.check_vulns.outputs.total_high }}" >> "$GITHUB_STEP_SUMMARY"
-          python3 - <<'PY'
-import json
-import os
-from pathlib import Path
-
-reports_dir = Path('./reports')
-npm_critical = 0
-pip_critical = 0
-
-npm_report = reports_dir / 'npm-audit.json'
-if npm_report.exists():
-    npm_data = json.loads(npm_report.read_text(encoding='utf-8'))
-    npm_critical = int(npm_data.get('metadata', {}).get('vulnerabilities', {}).get('critical', 0) or 0)
-
-pip_report = reports_dir / 'pip-audit.json'
-if pip_report.exists():
-    pip_data = json.loads(pip_report.read_text(encoding='utf-8'))
-    if isinstance(pip_data, list):
-        pip_critical = sum(1 for finding in pip_data if str(finding.get('severity', '')).lower() == 'critical')
-
-total_critical = npm_critical + pip_critical
-output_file = os.environ['GITHUB_OUTPUT']
-with open(output_file, 'a', encoding='utf-8') as fh:
-    fh.write(f'npm_critical={npm_critical}\n')
-    fh.write(f'pip_critical={pip_critical}\n')
-    fh.write(f'total_critical={total_critical}\n')
-PY
+          python3 -c "import json, os; from pathlib import Path; reports_dir = Path('./reports'); npm_report = reports_dir / 'npm-audit.json'; pip_report = reports_dir / 'pip-audit.json'; npm_critical = int(json.loads(npm_report.read_text(encoding='utf-8')).get('metadata', {}).get('vulnerabilities', {}).get('critical', 0) or 0) if npm_report.exists() else 0; pip_payload = json.loads(pip_report.read_text(encoding='utf-8')) if pip_report.exists() else []; pip_critical = sum(1 for finding in pip_payload if isinstance(pip_payload, list) and str(finding.get('severity', '')).lower() == 'critical'); total_critical = npm_critical + pip_critical; output_file = os.environ['GITHUB_OUTPUT']; open(output_file, 'a', encoding='utf-8').write(f'npm_critical={npm_critical}\\npip_critical={pip_critical}\\ntotal_critical={total_critical}\\n')"
 
       - name: Create issue if critical vulnerabilities found
         if: fromJSON(steps.check_vulns.outputs.total_critical) > 0
