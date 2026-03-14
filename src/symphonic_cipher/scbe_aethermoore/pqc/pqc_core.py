@@ -283,9 +283,8 @@ class _LiboqsKyber:
     @staticmethod
     def generate_keypair() -> KyberKeyPair:
         """Generate a Kyber768 keypair using liboqs."""
-        if _KEM_ALGORITHM is None:
+        if not _LIBOQS_AVAILABLE or _oqs is None:
             raise RuntimeError("No supported liboqs KEM algorithm found")
-        with _oqs.KeyEncapsulation(_KEM_ALGORITHM) as kem:
         with _oqs.KeyEncapsulation(_KEM_ALG) as kem:
             public_key = kem.generate_keypair()
             secret_key = kem.export_secret_key()
@@ -296,9 +295,8 @@ class _LiboqsKyber:
         """Encapsulate using Kyber768 public key."""
         if len(public_key) != KYBER768_PUBLIC_KEY_SIZE:
             raise ValueError(f"Invalid public key size: {len(public_key)}")
-        if _KEM_ALGORITHM is None:
+        if not _LIBOQS_AVAILABLE or _oqs is None:
             raise RuntimeError("No supported liboqs KEM algorithm found")
-        with _oqs.KeyEncapsulation(_KEM_ALGORITHM) as kem:
         with _oqs.KeyEncapsulation(_KEM_ALG) as kem:
             ciphertext, shared_secret = kem.encap_secret(public_key)
             return EncapsulationResult(ciphertext=ciphertext, shared_secret=shared_secret)
@@ -310,12 +308,13 @@ class _LiboqsKyber:
             raise ValueError(f"Invalid secret key size: {len(secret_key)}")
         if len(ciphertext) != KYBER768_CIPHERTEXT_SIZE:
             raise ValueError(f"Invalid ciphertext size: {len(ciphertext)}")
-        if _KEM_ALGORITHM is None:
+        if not _LIBOQS_AVAILABLE or _oqs is None:
             raise RuntimeError("No supported liboqs KEM algorithm found")
-        with _oqs.KeyEncapsulation(_KEM_ALGORITHM, secret_key) as kem:
         with _oqs.KeyEncapsulation(_KEM_ALG, secret_key) as kem:
             shared_secret = kem.decap_secret(ciphertext)
             return shared_secret
+
+
 class _LiboqsDilithium:
     """Dilithium3/ML-DSA-65 implementation using liboqs."""
 
@@ -325,15 +324,14 @@ class _LiboqsDilithium:
 
     @staticmethod
     def _algorithm() -> str:
-        if _DSA_ALGORITHM is None:
+        if not _LIBOQS_AVAILABLE or _oqs is None:
             raise RuntimeError("No supported liboqs signature algorithm found")
-        return _DSA_ALGORITHM
+        return _SIG_ALG
 
     @staticmethod
     def generate_keypair() -> DilithiumKeyPair:
         """Generate a Dilithium3 keypair using liboqs."""
         algorithm = _LiboqsDilithium._algorithm()
-        with _oqs.Signature(algorithm) as sig:
         with _oqs.Signature(_SIG_ALG) as sig:
             public_key = sig.generate_keypair()
             secret_key = sig.export_secret_key()
@@ -350,8 +348,6 @@ class _LiboqsDilithium:
         if cached is not None:
             return cached
 
-        algorithm = _LiboqsDilithium._algorithm()
-        with _oqs.Signature(algorithm, secret_key) as sig:
         with _oqs.Signature(_SIG_ALG, secret_key) as sig:
             signature = sig.sign(message)
 
@@ -365,8 +361,6 @@ class _LiboqsDilithium:
             raise ValueError(f"Invalid public key size: {len(public_key)}")
         if len(signature) != DILITHIUM3_SIGNATURE_SIZE:
             return False
-        algorithm = _LiboqsDilithium._algorithm()
-        with _oqs.Signature(algorithm) as sig:
         with _oqs.Signature(_SIG_ALG) as sig:
             return sig.verify(message, signature, public_key)
 
@@ -398,7 +392,7 @@ class Kyber768:
         assert shared_secret_sender == shared_secret_receiver
     """
 
-    _impl = _LiboqsKyber if (_LIBOQS_AVAILABLE and _KEM_ALGORITHM is not None) else _MockKyber
+    _impl = _LiboqsKyber if _LIBOQS_AVAILABLE else _MockKyber
 
     @classmethod
     def generate_keypair(cls) -> KyberKeyPair:
@@ -470,7 +464,7 @@ class Dilithium3:
         assert is_valid
     """
 
-    _impl = _LiboqsDilithium if (_LIBOQS_AVAILABLE and _DSA_ALGORITHM is not None) else _MockDilithium
+    _impl = _LiboqsDilithium if _LIBOQS_AVAILABLE else _MockDilithium
 
     @classmethod
     def generate_keypair(cls) -> DilithiumKeyPair:

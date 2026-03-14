@@ -4,7 +4,6 @@ Enhanced API key authentication with tier-based rate limiting.
 Replaces the hardcoded API key system with database-backed authentication.
 """
 
-import hashlib
 import os
 from datetime import datetime, timedelta
 from typing import Optional
@@ -15,6 +14,7 @@ from fastapi.security import APIKeyHeader
 
 from .billing.database import get_db_session, ApiKey, Customer, Subscription, UsageRecord
 from .billing.tiers import get_tier_limits, PRICING_TIERS
+from .keys.hashing import api_key_hash_candidates
 
 API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
 
@@ -49,12 +49,6 @@ class CustomerContext:
             "subscription_id": self.subscription_id,
         }
 
-
-def hash_api_key(api_key: str) -> str:
-    """Hash an API key for storage/lookup."""
-    return hashlib.sha256(api_key.encode()).hexdigest()
-
-
 async def verify_api_key(
     api_key: str = Security(API_KEY_HEADER),
 ) -> CustomerContext:
@@ -70,7 +64,7 @@ async def verify_api_key(
         )
 
     # Hash the key for lookup
-    key_hash = hash_api_key(api_key)
+    candidate_hashes = api_key_hash_candidates(api_key)
 
     # Look up key in database
     db = next(get_db_session())
@@ -78,7 +72,7 @@ async def verify_api_key(
         key_record = (
             db.query(ApiKey)
             .filter(
-                ApiKey.key_hash == key_hash,
+                ApiKey.key_hash.in_(candidate_hashes),
                 ApiKey.is_active == True,
             )
             .first()

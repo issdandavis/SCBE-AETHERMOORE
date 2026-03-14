@@ -196,21 +196,31 @@ const LORE_FALLBACK = [
 async function loadLoreStrip() {
   const strip = document.getElementById('loreStrip');
   if (!strip) return;
+  const renderItems = (items) => {
+    strip.replaceChildren();
+    items.forEach((item) => {
+      const imgSrc = safeLoreImageUrl(item && item.url);
+      if (!imgSrc) return;
+      const title = String((item && item.title) || 'Lore');
+      const thumb = document.createElement('span');
+      thumb.className = 'lore-thumb';
+      thumb.title = title;
+      const img = document.createElement('img');
+      img.src = imgSrc;
+      img.alt = title;
+      img.loading = 'lazy';
+      thumb.appendChild(img);
+      strip.appendChild(thumb);
+    });
+  };
   try {
     const resp = await fetch(API + '/v1/lore/art');
     const data = resp.ok ? await resp.json() : { items: [] };
     const items = Array.isArray(data.items) && data.items.length ? data.items.slice(0, 4) : LORE_FALLBACK;
-    strip.innerHTML = items.map(item => `
-      <span class="lore-thumb" title="${escHtml(item.title || 'Lore')}">
-        <img src="${item.url}" alt="${escHtml(item.title || 'Lore')}" loading="lazy" />
-      </span>
-    `).join('');
+    renderItems(items);
+    if (!strip.childElementCount) renderItems(LORE_FALLBACK);
   } catch (_err) {
-    strip.innerHTML = LORE_FALLBACK.map(item => `
-      <span class="lore-thumb" title="${escHtml(item.title)}">
-        <img src="${item.url}" alt="${escHtml(item.title)}" loading="lazy" />
-      </span>
-    `).join('');
+    renderItems(LORE_FALLBACK);
   }
 }
 
@@ -358,7 +368,19 @@ function createSeat(player) {
 }
 
 function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function safeLoreImageUrl(url) {
+  try {
+    const parsed = new URL(String(url ?? ''), window.location.origin);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+    return parsed.origin === window.location.origin
+      ? `${parsed.pathname}${parsed.search}${parsed.hash}`
+      : parsed.href;
+  } catch (_err) {
+    return '';
+  }
 }
 
 function trimText(s, maxLen = 1800) {

@@ -600,6 +600,16 @@ export function phasonShift(
   dim0: number = 0,
   dim1: number = 1,
 ): number[][] {
+  if (!Number.isInteger(dim0) || dim0 < 0 || dim0 >= 6) {
+    throw new RangeError(`dim0 must be an integer in [0, 5], got ${dim0}`);
+  }
+  if (!Number.isInteger(dim1) || dim1 < 0 || dim1 >= 6) {
+    throw new RangeError(`dim1 must be an integer in [0, 5], got ${dim1}`);
+  }
+  if (dim0 === dim1) {
+    throw new RangeError('phasonShift requires two distinct rotation dimensions');
+  }
+
   // Build 6D rotation matrix (identity + Givens rotation in (dim0, dim1))
   const rot6d: number[][] = Array.from({ length: 6 }, (_, i) =>
     Array.from({ length: 6 }, (_, j) => (i === j ? 1 : 0)),

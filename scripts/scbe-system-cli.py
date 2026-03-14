@@ -32,10 +32,7 @@ DEFAULT_PAD_ROOT = Path(".scbe") / "polly-pads"
 DEFAULT_AGENT_REGISTRY = Path(".scbe") / "agent_squad.json"
 DEFAULT_NOTEBOOKLM_PAD_ID = "notebooklm-main"
 DEFAULT_NOTEBOOKLM_URL = "https://notebooklm.google.com/notebook/bf1e9a1b-b49c-4343-8f0e-8494546e4f24"
-BEARER_PATTERN = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._\-~+/=]+\b")
-KEY_VALUE_PATTERN = re.compile(
-    r"(?i)\b([A-Z0-9_]*(?:TOKEN|SECRET|KEY|PASSWORD)[A-Z0-9_]*)\s*[:=]\s*([^\s,;]+)"
-)
+SENSITIVE_METADATA_ITERATIONS = 120_000
 
 
 def _run_script(script: Path, args: list[str]) -> int:
@@ -44,38 +41,6 @@ def _run_script(script: Path, args: list[str]) -> int:
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
-def _redact_sensitive_text(value: str) -> str:
-    text = str(value)
-    text = BEARER_PATTERN.sub("Bearer [redacted]", text)
-    text = KEY_VALUE_PATTERN.sub(lambda match: f"{match.group(1)}=[redacted]", text)
-    return text
-
-
-def _sanitize_agent_result_for_disk(result: dict) -> dict:
-    sanitized = {
-        "ok": bool(result.get("ok", False)),
-        "agent_id": result.get("agent_id"),
-        "provider": result.get("provider"),
-    }
-    for key in ("model", "mode", "message", "notebook_url", "generated_at"):
-        if key in result:
-            sanitized[key] = result.get(key)
-
-    content = result.get("content")
-    if isinstance(content, str) and content:
-        sanitized["content_char_count"] = len(content)
-        sanitized["content_sha256"] = hashlib.sha256(content.encode("utf-8")).hexdigest()
-
-    error = result.get("error")
-    if error:
-        sanitized["error"] = _redact_sensitive_text(str(error))
-
-    if result.get("output_path"):
-        sanitized["output_path"] = result.get("output_path")
-
-    return sanitized
 
 
 def _pad_root(repo_root: Path) -> Path:
@@ -183,6 +148,40 @@ def _new_agent_entry(
     return entry
 
 
+def _text_metadata(value: str | None) -> dict[str, object]:
+    text = str(value or "")
+    return {
+        "present": bool(text),
+        "length": len(text),
+        "pbkdf2_sha256": _sensitive_fingerprint(text) if text else "",
+    }
+
+
+def _sensitive_fingerprint(text: str) -> str:
+    salt = os.getenv("SCBE_METADATA_HASH_KEY", "scbe-system-cli-metadata").encode("utf-8")
+    return hashlib.pbkdf2_hmac(
+        "sha256",
+        text.encode("utf-8"),
+        salt,
+        SENSITIVE_METADATA_ITERATIONS,
+    ).hex()
+
+
+def _sanitize_agent_result_for_storage(result: dict) -> dict:
+    clean = {
+        key: value
+        for key, value in result.items()
+        if key not in {"raw", "content", "prompt", "error"}
+    }
+    if "content" in result:
+        clean["content_metadata"] = _text_metadata(result.get("content"))
+    if "error" in result:
+        clean["error_metadata"] = _text_metadata(result.get("error"))
+    if "prompt" in result:
+        clean["prompt_metadata"] = _text_metadata(result.get("prompt"))
+    return clean
+
+
 def _resolve_agent_api_key(agent: dict, env_cache: dict[str, str]) -> tuple[str | None, str | None]:
     env_var = agent.get("api_key_env")
     if not env_var:
@@ -248,16 +247,18 @@ def _call_openai_agent(agent: dict, prompt: str, output_dir: Path, env_cache: di
             "agent_id": agent.get("agent_id"),
             "provider": provider,
             "model": model,
+            "raw": response_obj,
             "content": content,
             "output_path": str((output_dir / f"{agent.get('agent_id')}_openai.json").resolve()) if output_dir else None,
         }
     except urllib.error.HTTPError as exc:
         body = exc.read().decode("utf-8", errors="ignore") if getattr(exc, "read", None) else ""
+        body_summary = _text_metadata(body)
         return {
             "ok": False,
             "agent_id": agent.get("agent_id"),
             "provider": provider,
-            "error": f"HTTP {exc.code}: {body or str(exc)}",
+            "error": f"HTTP {exc.code}: upstream_error body_present={body_summary['present']} body_length={body_summary['length']}",
         }
     except Exception as exc:  # pragma: no cover - defensive
         return {
@@ -271,8 +272,7 @@ def _call_openai_agent(agent: dict, prompt: str, output_dir: Path, env_cache: di
 def _write_agent_call_result(output_dir: Path, agent_id: str, result: dict) -> str:
     output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / f"{agent_id}_agent_call.json"
-    sanitized = _sanitize_agent_result_for_disk(result)
-    path.write_text(json.dumps(sanitized, indent=2, sort_keys=True), encoding="utf-8")
+    path.write_text(json.dumps(_sanitize_agent_result_for_storage(result), indent=2, sort_keys=True), encoding="utf-8")
     return str(path)
 
 
@@ -303,14 +303,11 @@ def _notebooklm_fallback(agent: dict, prompt: str, output_dir: Path) -> dict:
             "NotebookLM has no documented public REST API endpoint in this code path. "
             "Use the web UI with the notebook id and paste this prompt."
         ),
+        "prompt_metadata": _text_metadata(prompt),
         "notebook_url": notebook_url,
         "generated_at": _now_iso(),
-        "content": prompt,
     }
-    path.write_text(
-        json.dumps(_sanitize_agent_result_for_disk(result), indent=2, sort_keys=True),
-        encoding="utf-8",
-    )
+    path.write_text(json.dumps(_sanitize_agent_result_for_storage(result), indent=2, sort_keys=True), encoding="utf-8")
     result["output_path"] = str(path)
     return result
 
@@ -909,7 +906,7 @@ def cmd_agent_call(args: argparse.Namespace) -> int:
 
     summary = {
         "called_at": _now_iso(),
-        "prompt": prompt,
+        "prompt_metadata": _text_metadata(prompt),
         "agents": {},
         "succeeded": 0,
         "failed": 0,
@@ -933,15 +930,16 @@ def cmd_agent_call(args: argparse.Namespace) -> int:
             summary["succeeded"] += 1
             if args.show_output:
                 print(f"\n[{aid}]")
-                print(_redact_sensitive_text(result.get("content", "")))
+                print(json.dumps({"content_metadata": _text_metadata(result.get("content", ""))}, indent=2))
         else:
             summary["failed"] += 1
             if args.show_output:
-                print(f"[{aid}] FAIL: {_redact_sensitive_text(result.get('error', ''))}")
+                print(f"[{aid}] FAIL")
+                print(json.dumps({"error_metadata": _text_metadata(result.get("error", ""))}, indent=2))
 
     summary_path = out_dir / "agent_call_summary.json"
     summary_path.parent.mkdir(parents=True, exist_ok=True)
-    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
+    summary_path.write_text(json.dumps(_sanitize_agent_result_for_storage(summary), indent=2, sort_keys=True), encoding="utf-8")
     print(f"Summary: {summary['succeeded']} ok, {summary['failed']} failed")
     print(f"Saved: {summary_path}")
     return 0 if summary["failed"] == 0 else 1
