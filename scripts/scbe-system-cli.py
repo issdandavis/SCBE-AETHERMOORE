@@ -13,6 +13,7 @@ Commands:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -31,6 +32,10 @@ DEFAULT_PAD_ROOT = Path(".scbe") / "polly-pads"
 DEFAULT_AGENT_REGISTRY = Path(".scbe") / "agent_squad.json"
 DEFAULT_NOTEBOOKLM_PAD_ID = "notebooklm-main"
 DEFAULT_NOTEBOOKLM_URL = "https://notebooklm.google.com/notebook/bf1e9a1b-b49c-4343-8f0e-8494546e4f24"
+BEARER_PATTERN = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._\-~+/=]+\b")
+KEY_VALUE_PATTERN = re.compile(
+    r"(?i)\b([A-Z0-9_]*(?:TOKEN|SECRET|KEY|PASSWORD)[A-Z0-9_]*)\s*[:=]\s*([^\s,;]+)"
+)
 
 
 def _run_script(script: Path, args: list[str]) -> int:
@@ -39,6 +44,38 @@ def _run_script(script: Path, args: list[str]) -> int:
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _redact_sensitive_text(value: str) -> str:
+    text = str(value)
+    text = BEARER_PATTERN.sub("Bearer [redacted]", text)
+    text = KEY_VALUE_PATTERN.sub(lambda match: f"{match.group(1)}=[redacted]", text)
+    return text
+
+
+def _sanitize_agent_result_for_disk(result: dict) -> dict:
+    sanitized = {
+        "ok": bool(result.get("ok", False)),
+        "agent_id": result.get("agent_id"),
+        "provider": result.get("provider"),
+    }
+    for key in ("model", "mode", "message", "notebook_url", "generated_at"):
+        if key in result:
+            sanitized[key] = result.get(key)
+
+    content = result.get("content")
+    if isinstance(content, str) and content:
+        sanitized["content_char_count"] = len(content)
+        sanitized["content_sha256"] = hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+    error = result.get("error")
+    if error:
+        sanitized["error"] = _redact_sensitive_text(str(error))
+
+    if result.get("output_path"):
+        sanitized["output_path"] = result.get("output_path")
+
+    return sanitized
 
 
 def _pad_root(repo_root: Path) -> Path:
@@ -211,7 +248,6 @@ def _call_openai_agent(agent: dict, prompt: str, output_dir: Path, env_cache: di
             "agent_id": agent.get("agent_id"),
             "provider": provider,
             "model": model,
-            "raw": response_obj,
             "content": content,
             "output_path": str((output_dir / f"{agent.get('agent_id')}_openai.json").resolve()) if output_dir else None,
         }
@@ -235,7 +271,8 @@ def _call_openai_agent(agent: dict, prompt: str, output_dir: Path, env_cache: di
 def _write_agent_call_result(output_dir: Path, agent_id: str, result: dict) -> str:
     output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / f"{agent_id}_agent_call.json"
-    path.write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
+    sanitized = _sanitize_agent_result_for_disk(result)
+    path.write_text(json.dumps(sanitized, indent=2, sort_keys=True), encoding="utf-8")
     return str(path)
 
 
@@ -266,11 +303,14 @@ def _notebooklm_fallback(agent: dict, prompt: str, output_dir: Path) -> dict:
             "NotebookLM has no documented public REST API endpoint in this code path. "
             "Use the web UI with the notebook id and paste this prompt."
         ),
-        "prompt": prompt,
         "notebook_url": notebook_url,
         "generated_at": _now_iso(),
+        "content": prompt,
     }
-    path.write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
+    path.write_text(
+        json.dumps(_sanitize_agent_result_for_disk(result), indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
     result["output_path"] = str(path)
     return result
 
@@ -893,11 +933,11 @@ def cmd_agent_call(args: argparse.Namespace) -> int:
             summary["succeeded"] += 1
             if args.show_output:
                 print(f"\n[{aid}]")
-                print(result.get("content", ""))
+                print(_redact_sensitive_text(result.get("content", "")))
         else:
             summary["failed"] += 1
             if args.show_output:
-                print(f"[{aid}] FAIL: {result.get('error')}")
+                print(f"[{aid}] FAIL: {_redact_sensitive_text(result.get('error', ''))}")
 
     summary_path = out_dir / "agent_call_summary.json"
     summary_path.parent.mkdir(parents=True, exist_ok=True)
