@@ -101,9 +101,9 @@ class AIPortRegistry:
         try:
             result = self._providers[name](prompt, options)
             return result
-        except Exception as e:
-            logger.error("AI provider %s failed: %s", name, e)
-            return f"[ERROR] Provider {name} failed: {e}"
+        except Exception:
+            logger.exception("AI provider %s failed", name)
+            return f"[ERROR] Provider {name} failed"
 
 
 # ---------------------------------------------------------------------------

@@ -170,12 +170,12 @@ class PHDMEmbedder:
         
         # User ID hash component
         user_id = context.get("user_id", "anonymous")
-        user_hash = int(hashlib.md5(user_id.encode()).hexdigest()[:8], 16)
+        user_hash = int(hashlib.sha256(user_id.encode()).hexdigest()[:8], 16)
         user_normalized = (user_hash % 1000) / 1000
         
         # Session component
         session_id = context.get("session_id", str(time.time()))
-        session_hash = int(hashlib.md5(session_id.encode()).hexdigest()[:8], 16)
+        session_hash = int(hashlib.sha256(session_id.encode()).hexdigest()[:8], 16)
         session_normalized = (session_hash % 1000) / 1000
         
         return np.array([

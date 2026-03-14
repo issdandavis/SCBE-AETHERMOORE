@@ -16,12 +16,37 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EVIDENCE_DIR = REPO_ROOT / "artifacts" / "page_evidence"
+
+
+class _VisibleTextExtractor(HTMLParser):
+    """Extract human-visible text while ignoring script/style payloads."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self._ignore_depth = 0
+        self._parts: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.lower() in {"script", "style"}:
+            self._ignore_depth += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() in {"script", "style"} and self._ignore_depth:
+            self._ignore_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if not self._ignore_depth and data:
+            self._parts.append(data)
+
+    def to_text(self) -> str:
+        return " ".join(self._parts)
 
 
 def _utc_iso() -> str:
@@ -66,9 +91,10 @@ def _extract_title(html: str) -> str:
 
 
 def _extract_text_excerpt(html: str, max_chars: int = 1200) -> str:
-    text = re.sub(r"<script[\s\S]*?</script>", " ", html, flags=re.IGNORECASE)
-    text = re.sub(r"<style[\s\S]*?</style>", " ", text, flags=re.IGNORECASE)
-    text = re.sub(r"<[^>]+>", " ", text)
+    parser = _VisibleTextExtractor()
+    parser.feed(html)
+    parser.close()
+    text = parser.to_text()
     text = re.sub(r"\s+", " ", text).strip()
     return text[:max_chars]
 

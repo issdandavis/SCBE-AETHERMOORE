@@ -603,15 +603,14 @@ def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Di
             status = int(getattr(resp, "status", 200))
             text = resp.read().decode("utf-8", errors="replace")
             if 200 <= status < 300:
-                return {"ok": True, "status": status, "detail": text[:400]}
-            return {"ok": False, "code": "connector_http_status", "status": status, "detail": text[:400]}
+                return {"ok": True, "status": status, "detail": "connector request completed"}
+            return {"ok": False, "code": "connector_http_status", "status": status, "detail": "connector returned non-success status"}
     except HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace") if hasattr(exc, "read") else str(exc)
-        return {"ok": False, "code": "connector_http_error", "status": int(exc.code), "detail": detail[:400]}
+        return {"ok": False, "code": "connector_http_error", "status": int(exc.code), "detail": "connector request failed"}
     except URLError as exc:
-        return {"ok": False, "code": "connector_network_error", "detail": str(exc.reason)}
-    except Exception as exc:
-        return {"ok": False, "code": "connector_dispatch_error", "detail": str(exc)}
+        return {"ok": False, "code": "connector_network_error", "detail": "connector network error"}
+    except Exception:
+        return {"ok": False, "code": "connector_dispatch_error", "detail": "connector dispatch failed"}
 
 
 # ============================================================================
@@ -670,8 +669,8 @@ async def seal_memory(request: SealRequest, user: str = Depends(verify_api_key))
 
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(500, f"Seal failed: {str(e)}")
+    except Exception:
+        raise HTTPException(500, "Seal failed")
 
 
 @app.post("/retrieve-memory", tags=["Core"])
@@ -762,8 +761,8 @@ async def retrieve_memory(
 
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(500, f"Retrieve failed: {str(e)}")
+    except Exception:
+        raise HTTPException(500, "Retrieve failed")
 
 
 @app.get("/governance-check", tags=["Governance"])
@@ -824,8 +823,8 @@ async def governance_check(
 
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(500, f"Governance check failed: {str(e)}")
+    except Exception:
+        raise HTTPException(500, "Governance check failed")
 
 
 @app.post("/simulate-attack", tags=["Demo"])
@@ -882,8 +881,8 @@ async def simulate_attack(request: SimulateAttackRequest):
 
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(500, f"Simulation failed: {str(e)}")
+    except Exception:
+        raise HTTPException(500, "Simulation failed")
 
 
 @app.post("/mobile/connectors", tags=["Mobile Autonomy"])
