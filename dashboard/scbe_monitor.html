@@ -731,25 +731,45 @@
       setInterval(updateTime, 1000);
       updateTime();
 
-      // Format decision for display
-      function formatDecision(d) {
-        const time = d.timestamp ? d.timestamp.split('T')[1].slice(0, 12) : new Date().toISOString().split('T')[1].slice(0, 12);
-        let statusClass = 'status-allow';
-        if (d.decision === 'QUARANTINE') statusClass = 'status-quarantine';
-        if (d.decision === 'DENY') statusClass = 'status-deny';
+      function decisionStatusClass(decision) {
+        if (decision === 'QUARANTINE') return 'status-quarantine';
+        if (decision === 'DENY') return 'status-deny';
+        return 'status-allow';
+      }
 
-        return `<div class="p-1.5 bg-white/5 rounded flex items-center justify-between">
-          <span class="text-gray-500">${time}</span>
-          <span class="text-gray-400">${d.agent || 'unknown'}</span>
-          <span class="text-gray-500">${d.topic || 'query'}</span>
-          <span class="text-gray-400">d*=${(d.d_star || 0).toFixed(3)}</span>
-          <span class="${statusClass} font-bold">${d.decision}</span>
-        </div>`;
+      // Build a safe DOM row for the live feed
+      function buildDecisionRow(d) {
+        const time = d.timestamp ? d.timestamp.split('T')[1].slice(0, 12) : new Date().toISOString().split('T')[1].slice(0, 12);
+        const row = document.createElement('div');
+        row.className = 'p-1.5 bg-white/5 rounded flex items-center justify-between';
+
+        const fields = [
+          { className: 'text-gray-500', text: time },
+          { className: 'text-gray-400', text: d.agent || 'unknown' },
+          { className: 'text-gray-500', text: d.topic || 'query' },
+          {
+            className: 'text-gray-400',
+            text: `d*=${Number.isFinite(Number(d.d_star)) ? Number(d.d_star).toFixed(3) : '0.000'}`,
+          },
+          {
+            className: `${decisionStatusClass(d.decision)} font-bold`,
+            text: d.decision || 'ALLOW',
+          },
+        ];
+
+        fields.forEach((field) => {
+          const span = document.createElement('span');
+          span.className = field.className;
+          span.textContent = field.text;
+          row.appendChild(span);
+        });
+
+        return row;
       }
 
       // Add decision to feed
       function addDecision(d) {
-        feed.innerHTML = formatDecision(d) + feed.innerHTML;
+        feed.insertBefore(buildDecisionRow(d), feed.firstChild);
         while (feed.children.length > 50) {
           feed.removeChild(feed.lastChild);
         }
@@ -804,9 +824,9 @@
 
             if (msg.type === 'init') {
               // Initial state
-              if (msg.metrics) updateMetrics(msg.metrics);
-              if (msg.history) {
-                feed.innerHTML = '';
+            if (msg.metrics) updateMetrics(msg.metrics);
+            if (msg.history) {
+                feed.replaceChildren();
                 msg.history.reverse().forEach(d => addDecision(d));
               }
             } else if (msg.type === 'decision') {
