@@ -24,6 +24,7 @@ import os
 import re
 import time
 from dataclasses import dataclass, field
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -39,6 +40,37 @@ DEFAULT_OUTPUT_DIR = Path(os.environ.get(
     str(Path(__file__).resolve().parent.parent.parent / "training-data" / "gacha_sessions"),
 ))
 DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+
+class _VisibleTextExtractor(HTMLParser):
+    """Extract visible text while ignoring active HTML blocks."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self._ignore_depth = 0
+        self._parts: List[str] = []
+
+    def handle_starttag(self, tag: str, attrs: List[tuple[str, Optional[str]]]) -> None:
+        if tag.lower() in {"script", "style"}:
+            self._ignore_depth += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() in {"script", "style"} and self._ignore_depth:
+            self._ignore_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if not self._ignore_depth and data:
+            self._parts.append(data)
+
+    def to_text(self) -> str:
+        return " ".join(self._parts)
+
+
+def _sanitize_training_text(text: str) -> str:
+    parser = _VisibleTextExtractor()
+    parser.feed(text)
+    parser.close()
+    return re.sub(r"\s+", " ", parser.to_text()).strip()
 
 
 def _compute_ternary(value: Any) -> tuple:
@@ -147,7 +179,7 @@ class HFTrainingLoop:
         Security: sanitize input, check coherence, verify hash.
         """
         # Sanitize — strip potential injection
-        sanitized = re.sub(r"<script>.*?</script>", "", event.prompt + event.response, flags=re.DOTALL)
+        sanitized = _sanitize_training_text(event.prompt + " " + event.response)
 
         # PQC hash for tamper detection
         pair_hash = _ml_dsa_hash(sanitized.encode())
