@@ -11,6 +11,7 @@ import os
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import quote_plus
@@ -29,6 +30,38 @@ class CaptureResult:
     warning: str | None = None
 
 
+class _VisibleTextExtractor(HTMLParser):
+    """Extract visible text while dropping script/style content."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self._ignore_depth = 0
+        self._parts: List[str] = []
+
+    def handle_starttag(self, tag: str, attrs: List[tuple[str, Optional[str]]]) -> None:
+        if tag.lower() in {"script", "style"}:
+            self._ignore_depth += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() in {"script", "style"} and self._ignore_depth:
+            self._ignore_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if not self._ignore_depth and data:
+            self._parts.append(data)
+
+    def to_text(self) -> str:
+        return " ".join(self._parts)
+
+
+def _html_to_plain_text(html: str) -> str:
+    parser = _VisibleTextExtractor()
+    parser.feed(html)
+    parser.close()
+    text = parser.to_text()
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def _http_fetch_html(url: str, timeout: int = 25) -> tuple[int | None, str]:
     req = Request(url, headers={"User-Agent": "SCBE-Agentic-Web-Tool/1.0"})
     with urlopen(req, timeout=timeout) as response:
@@ -44,10 +77,7 @@ def _http_fetch(url: str, timeout: int = 25) -> CaptureResult:
 
     title_match = re.search(r"<title[^>]*>(.*?)</title>", html, flags=re.I | re.S)
     title = title_match.group(1).strip() if title_match else url
-    text = re.sub(r"<script[^>]*>.*?</script>", " ", html, flags=re.I | re.S)
-    text = re.sub(r"<style[^>]*>.*?</style>", " ", text, flags=re.I | re.S)
-    text = re.sub(r"<[^>]+>", " ", text)
-    text = re.sub(r"\s+", " ", text).strip()
+    text = _html_to_plain_text(html)
 
     links: List[Dict[str, str]] = []
     for match in re.finditer(r"<a[^>]+href=['\\\"](.*?)['\\\"][^>]*>(.*?)</a>", html, flags=re.I | re.S):

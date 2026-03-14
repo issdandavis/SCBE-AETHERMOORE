@@ -10,6 +10,7 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Iterable
 
@@ -35,6 +36,30 @@ class SourceResult:
     error: str | None = None
 
 
+class _VisibleTextExtractor(HTMLParser):
+    """Extract visible text while ignoring script/style bodies."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self._ignore_depth = 0
+        self._parts: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.lower() in {"script", "style"}:
+            self._ignore_depth += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() in {"script", "style"} and self._ignore_depth:
+            self._ignore_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if not self._ignore_depth and data:
+            self._parts.append(data)
+
+    def to_text(self) -> str:
+        return " ".join(self._parts)
+
+
 def _parse_keywords(raw: str) -> list[str]:
     items = [x.strip().lower() for x in raw.split(",")]
     return [x for x in items if x]
@@ -48,9 +73,10 @@ def _extract_title(html_text: str) -> str:
 
 
 def _to_text(html_text: str) -> str:
-    text = re.sub(r"<script[\s\S]*?</script>", " ", html_text, flags=re.IGNORECASE)
-    text = re.sub(r"<style[\s\S]*?</style>", " ", text, flags=re.IGNORECASE)
-    text = re.sub(r"<[^>]+>", " ", text)
+    parser = _VisibleTextExtractor()
+    parser.feed(html_text)
+    parser.close()
+    text = parser.to_text()
     text = re.sub(r"\s+", " ", text)
     return text.lower()
 
