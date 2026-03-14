@@ -65,7 +65,7 @@ This project uses three overlapping axiom systems. They are not contradictory; t
 
 ### Gaps in Formal Axioms (not covering pipeline concepts)
 
-1. **No FA for triadic temporal distance** (PA11 / L11). The three-timescale aggregation d_tri = sqrt(lam1*d1^2 + lam2*d2^2 + lam3*dG^2) has no formal axiom stating its properties.
+1. **L11 formalization exists only as a draft, not yet canonicalized** (PA11 / L11). The triadic object `d_tri` is live in the core math and code, and the draft admissibility/residual formalization now exists in `docs/research/2026-03-13-l11-triadic-temporal-axiom-draft.md`, but it has not yet been promoted into the canonical formal axiom set.
 2. **No FA for realm assignment** (PA9 / L8). The nearest-centroid assignment d* = min_k d_H(u, mu_k) has no formal axiom.
 3. **No FA for input composition** (PA1 / L1, L14). The complex context encoding and audio axis telemetry have no formal axiom.
 
