@@ -9,6 +9,7 @@ Author: Issac Davis
 Date: 2026-02-21
 """
 
+import ast
 import json
 import os
 import re
@@ -306,26 +307,26 @@ def extract_py_docstrings(filepath: Path) -> List[Tuple[str, str]]:
     except (OSError, IOError):
         return sections
 
-    # Module-level docstring
-    module_match = re.match(r'^(?:#!.*\n)?(?:\s*\n)*"""(.*?)"""', text, re.DOTALL)
-    if not module_match:
-        module_match = re.match(r"^(?:#!.*\n)?(?:\s*\n)*'''(.*?)'''", text, re.DOTALL)
-    if module_match:
-        doc = module_match.group(1).strip()
-        if len(doc) >= MIN_SECTION_CHARS:
-            module_name = filepath.stem
-            sections.append((f"Module: {module_name}", doc))
+    try:
+        tree = ast.parse(text, filename=str(filepath))
+    except SyntaxError:
+        return sections
 
-    # Class and function docstrings
-    pattern = re.compile(
-        r'(?:class|def)\s+(\w+)[^:]*:\s*\n\s+"""(.*?)"""',
-        re.DOTALL
-    )
-    for match in pattern.finditer(text):
-        name = match.group(1)
-        doc = match.group(2).strip()
+    module_doc = ast.get_docstring(tree)
+    if module_doc:
+        module_doc = module_doc.strip()
+        if len(module_doc) >= MIN_SECTION_CHARS:
+            sections.append((f"Module: {filepath.stem}", module_doc))
+
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        doc = ast.get_docstring(node)
+        if not doc:
+            continue
+        doc = doc.strip()
         if len(doc) >= MIN_SECTION_CHARS:
-            sections.append((f"Function/Class: {name}", doc))
+            sections.append((f"Function/Class: {node.name}", doc))
 
     return sections
 
