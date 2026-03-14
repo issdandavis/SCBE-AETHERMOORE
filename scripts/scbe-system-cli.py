@@ -13,12 +13,16 @@ Commands:
 from __future__ import annotations
 
 import argparse
+import hashlib
+import importlib.util
 import json
 import os
 import re
+import shlex
 import shutil
 import uuid
 import subprocess
+import tempfile
 from datetime import datetime, timezone
 import sys
 import urllib.error
@@ -31,6 +35,53 @@ DEFAULT_PAD_ROOT = Path(".scbe") / "polly-pads"
 DEFAULT_AGENT_REGISTRY = Path(".scbe") / "agent_squad.json"
 DEFAULT_NOTEBOOKLM_PAD_ID = "notebooklm-main"
 DEFAULT_NOTEBOOKLM_URL = "https://notebooklm.google.com/notebook/bf1e9a1b-b49c-4343-8f0e-8494546e4f24"
+SENSITIVE_METADATA_ITERATIONS = 120_000
+RUNTIME_FILE_SUFFIXES = {
+    "python": ".py",
+    "javascript": ".js",
+    "typescript": ".ts",
+    "powershell": ".ps1",
+    "bash": ".sh",
+    "cmd": ".cmd",
+}
+RUNTIME_LANGUAGE_ALIASES = {
+    "python": "python",
+    "py": "python",
+    "javascript": "javascript",
+    "js": "javascript",
+    "node": "javascript",
+    "typescript": "typescript",
+    "ts": "typescript",
+    "powershell": "powershell",
+    "pwsh": "powershell",
+    "ps1": "powershell",
+    "bash": "bash",
+    "sh": "bash",
+    "cmd": "cmd",
+    "batch": "cmd",
+}
+RUNTIME_LANGUAGE_CHOICES = tuple(sorted(set(RUNTIME_LANGUAGE_ALIASES.values())))
+RUNTIME_TONGUE_BY_LANGUAGE = {
+    "python": "CA",
+    "javascript": "CA",
+    "typescript": "CA",
+    "powershell": "KO",
+    "bash": "KO",
+    "cmd": "KO",
+}
+RUNTIME_EXTENSION_ALIASES = {
+    ".py": "python",
+    ".js": "javascript",
+    ".mjs": "javascript",
+    ".cjs": "javascript",
+    ".ts": "typescript",
+    ".ps1": "powershell",
+    ".sh": "bash",
+    ".bash": "bash",
+    ".cmd": "cmd",
+    ".bat": "cmd",
+}
+_TONGUES_MODULE = None
 
 
 def _run_script(script: Path, args: list[str]) -> int:
@@ -55,6 +106,313 @@ def _manifest_path(pad_dir: Path) -> Path:
 
 def _ensure_agent_id(agent_id: str) -> bool:
     return bool(re.match(r"^[A-Za-z0-9._-]{2,64}$", agent_id))
+
+
+def _resolve_pad_root(repo_root: Path, agent_root: str | None = None) -> Path:
+    raw = Path(agent_root) if agent_root else DEFAULT_PAD_ROOT
+    return raw if raw.is_absolute() else repo_root / raw
+
+
+def _pad_dir_for_root(repo_root: Path, agent_id: str, agent_root: str | None = None) -> Path:
+    return _resolve_pad_root(repo_root, agent_root) / agent_id
+
+
+def _normalize_runtime_language(language: str | None) -> str | None:
+    if not language:
+        return None
+    return RUNTIME_LANGUAGE_ALIASES.get(language.strip().lower())
+
+
+def _infer_runtime_language_from_path(path: Path) -> str | None:
+    return RUNTIME_EXTENSION_ALIASES.get(path.suffix.lower())
+
+
+def _is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
+def _resolve_controlled_source_path(repo_root: Path, raw_path: str, extra_root: Path | None = None) -> Path:
+    candidate = Path(raw_path).expanduser()
+    resolved = candidate.resolve() if candidate.is_absolute() else (repo_root / candidate).resolve()
+    allowed_roots = [repo_root.resolve()]
+    if extra_root is not None:
+        allowed_roots.append(extra_root.resolve())
+    if any(_is_relative_to(resolved, root) for root in allowed_roots):
+        return resolved
+    raise ValueError(f"Path is outside the controlled SCBE workspace: {raw_path}")
+
+
+def _resolve_runtime_argv_prefix(language: str) -> list[str]:
+    runtime = _normalize_runtime_language(language)
+    if runtime == "python":
+        return [sys.executable]
+    candidates = {
+        "javascript": [["node"]],
+        "typescript": [["tsx"], ["npx", "tsx"], ["npx.cmd", "tsx"]],
+        "powershell": [["pwsh"], ["powershell"]],
+        "bash": [["bash"]],
+        "cmd": [["cmd.exe", "/c"], ["cmd", "/c"]],
+    }.get(runtime or "", [])
+    for candidate in candidates:
+        exe = candidate[0]
+        if Path(exe).is_file():
+            return [exe, *candidate[1:]]
+        resolved = shutil.which(exe)
+        if resolved:
+            return [resolved, *candidate[1:]]
+    raise ValueError(f"No runtime executable found for language '{language}'")
+
+
+def _load_tongues_module(repo_root: Path):
+    global _TONGUES_MODULE
+    if _TONGUES_MODULE is not None:
+        return _TONGUES_MODULE
+    module_path = repo_root / "six-tongues-cli.py"
+    if not module_path.exists():
+        return None
+    spec = importlib.util.spec_from_file_location("scbe_six_tongues_runtime", module_path)
+    if not spec or not spec.loader:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    _TONGUES_MODULE = module
+    return module
+
+
+def _tongue_attestation(repo_root: Path, tongue: str, payload: bytes, max_tokens: int = 6) -> str:
+    module = _load_tongues_module(repo_root)
+    if module is None:
+        return ""
+    try:
+        lex = module.Lexicons()
+        tokenizer = module.TongueTokenizer(lex)
+        return " ".join(tokenizer.encode_bytes(tongue.upper(), payload)[:max_tokens])
+    except Exception:
+        return ""
+
+
+def _source_metadata(path: Path | None = None, text: str | None = None) -> dict[str, object]:
+    if path is not None:
+        raw = path.read_bytes()
+        return {
+            "kind": "file",
+            "path": str(path),
+            "length": len(raw),
+            "sha256": hashlib.sha256(raw).hexdigest(),
+        }
+    material = (text or "").encode("utf-8")
+    return {
+        "kind": "inline",
+        "length": len(material),
+        "sha256": hashlib.sha256(material).hexdigest(),
+    }
+
+
+def _command_metadata(repo_root: Path, tongue: str, argv: list[str]) -> dict[str, object]:
+    raw = json.dumps(argv, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    digest = hashlib.sha256(raw).digest()
+    return {
+        "argc": len(argv),
+        "argv_preview": argv[:8],
+        "sha256": digest.hex(),
+        "tongue": tongue.upper(),
+        "lexicon_attestation": _tongue_attestation(repo_root, tongue, digest[:12]),
+    }
+
+
+def _runtime_output_dir(repo_root: Path, output_dir: str) -> Path:
+    path = Path(output_dir)
+    return path if path.is_absolute() else repo_root / path
+
+
+def _normalize_extra_args(values: list[str] | None) -> list[str]:
+    if not values:
+        return []
+    if values and values[0] == "--":
+        return values[1:]
+    return values
+
+
+def _find_pad_app(manifest: dict, app_id: str | None = None, app_name: str | None = None) -> dict | None:
+    apps = manifest.get("storage", {}).get("apps", [])
+    if app_id:
+        for app in apps:
+            if app.get("id") == app_id:
+                return app
+    if app_name:
+        needle = app_name.strip().lower()
+        for app in apps:
+            if str(app.get("name", "")).strip().lower() == needle:
+                return app
+    return None
+
+
+def _execute_runtime(args: argparse.Namespace, *, app_entry: dict | None = None) -> int:
+    output_dir = _runtime_output_dir(args.repo_root, args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    run_id = uuid.uuid4().hex[:12]
+    agent_id = getattr(args, "agent_id", "") or ""
+    pad_dir: Path | None = None
+    manifest: dict | None = None
+    if agent_id:
+        if not _ensure_agent_id(agent_id):
+            print("Invalid --agent-id. Use 2-64 chars: letters, numbers, . _ -")
+            return 2
+        pad_dir = _pad_dir_for_root(args.repo_root, agent_id, getattr(args, "agent_root", None))
+        manifest_path = _manifest_path(pad_dir)
+        if not manifest_path.exists():
+            print("Pad not found. Run pollypad init first.")
+            return 1
+        manifest = _load_manifest(manifest_path)
+
+    runtime_mode = "app" if app_entry is not None else "direct"
+    source_path: Path | None = None
+    source_text: str | None = None
+    keep_source = bool(getattr(args, "keep_source", False))
+    cleanup_source = False
+
+    try:
+        extra_args = _normalize_extra_args(getattr(args, "extra_args", []))
+        if app_entry is not None:
+            entrypoint = str(app_entry.get("entrypoint") or "").strip()
+            if not entrypoint:
+                print("App entrypoint is empty.")
+                return 2
+            command = shlex.split(entrypoint, posix=os.name != "nt")
+            if not command:
+                print("App entrypoint could not be parsed.")
+                return 2
+            if len(command) == 1 and app_entry.get("local_script"):
+                local_script = (pad_dir / app_entry["local_script"]).resolve() if pad_dir else None
+                if local_script and local_script.exists():
+                    command.append(str(local_script))
+                    source_path = local_script
+            command.extend(extra_args)
+            language = _normalize_runtime_language(getattr(args, "language", None))
+            if not language and source_path is not None:
+                language = _infer_runtime_language_from_path(source_path)
+            tongue = (getattr(args, "tongue", None) or language and RUNTIME_TONGUE_BY_LANGUAGE.get(language) or "CA").upper()
+            cwd = str(pad_dir or args.repo_root)
+        else:
+            if bool(getattr(args, "file", "")) == bool(getattr(args, "code", "")):
+                print("Use exactly one of --file or --code.")
+                return 2
+            if getattr(args, "file", ""):
+                source_path = _resolve_controlled_source_path(
+                    args.repo_root,
+                    args.file,
+                    extra_root=pad_dir,
+                )
+                language = _normalize_runtime_language(getattr(args, "language", None)) or _infer_runtime_language_from_path(source_path)
+                if not language:
+                    print("Unable to infer --language from file extension. Set --language explicitly.")
+                    return 2
+            else:
+                source_text = args.code
+                language = _normalize_runtime_language(getattr(args, "language", None))
+                if not language:
+                    print("--language is required when using --code.")
+                    return 2
+                suffix = RUNTIME_FILE_SUFFIXES.get(language)
+                if not suffix:
+                    print(f"Unsupported language '{language}'.")
+                    return 2
+                temp_root = (pad_dir or output_dir / "inline") / ".scbe-runtime"
+                temp_root.mkdir(parents=True, exist_ok=True)
+                with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=suffix, dir=str(temp_root), delete=False) as handle:
+                    handle.write(source_text)
+                    source_path = Path(handle.name)
+                cleanup_source = not keep_source
+
+            prefix = _resolve_runtime_argv_prefix(language)
+            command = [*prefix, str(source_path), *extra_args]
+            tongue = (getattr(args, "tongue", None) or RUNTIME_TONGUE_BY_LANGUAGE.get(language) or "CA").upper()
+            cwd = str((pad_dir if pad_dir else args.repo_root).resolve())
+
+        child_env = os.environ.copy()
+        child_env["SCBE_RUN_ID"] = run_id
+        child_env["SCBE_RUN_TONGUE"] = tongue
+        child_env["SCBE_RUN_MODE"] = runtime_mode
+        child_env["SCBE_RUN_AGENT_ID"] = agent_id
+        if pad_dir is not None:
+            child_env["SCBE_POLLY_PAD_DIR"] = str(pad_dir.resolve())
+
+        completed = subprocess.run(
+            command,
+            cwd=cwd,
+            env=child_env,
+            capture_output=True,
+            text=True,
+            timeout=args.timeout_seconds,
+            check=False,
+        )
+
+        if completed.stdout:
+            print(completed.stdout, end="")
+        if completed.stderr:
+            print(completed.stderr, end="", file=sys.stderr)
+
+        artifact = {
+            "run_id": run_id,
+            "executed_at": _now_iso(),
+            "ok": completed.returncode == 0,
+            "exit_code": completed.returncode,
+            "mode": runtime_mode,
+            "runtime_language": _normalize_runtime_language(getattr(args, "language", None))
+            or (source_path and _infer_runtime_language_from_path(source_path))
+            or "",
+            "tongue": tongue,
+            "agent_id": agent_id,
+            "pad_manifest_path": str(_manifest_path(pad_dir)) if pad_dir is not None else None,
+            "app": {
+                "id": app_entry.get("id"),
+                "name": app_entry.get("name"),
+            } if app_entry is not None else None,
+            "command_metadata": _command_metadata(args.repo_root, tongue, command),
+            "source_metadata": _source_metadata(text=source_text) if source_text is not None else _source_metadata(path=source_path),
+            "stdout_metadata": _text_metadata(completed.stdout),
+            "stderr_metadata": _text_metadata(completed.stderr),
+            "working_directory": cwd,
+        }
+        artifact_path = output_dir / f"{run_id}_runtime.json"
+        artifact_path.write_text(json.dumps(artifact, indent=2, sort_keys=True), encoding="utf-8")
+        return int(completed.returncode)
+    except subprocess.TimeoutExpired as exc:
+        artifact_path = output_dir / f"{run_id}_runtime.json"
+        artifact_path.write_text(
+            json.dumps(
+                {
+                    "run_id": run_id,
+                    "executed_at": _now_iso(),
+                    "ok": False,
+                    "exit_code": None,
+                    "mode": runtime_mode,
+                    "agent_id": agent_id,
+                    "timed_out": True,
+                    "timeout_seconds": args.timeout_seconds,
+                    "stdout_metadata": _text_metadata(getattr(exc, "stdout", None)),
+                    "stderr_metadata": _text_metadata(getattr(exc, "stderr", None)),
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+            encoding="utf-8",
+        )
+        print(f"Runtime timed out after {args.timeout_seconds} seconds.", file=sys.stderr)
+        return 124
+    except ValueError as exc:
+        print(str(exc))
+        return 2
+    finally:
+        if cleanup_source and source_path is not None:
+            try:
+                source_path.unlink(missing_ok=True)
+            except OSError:
+                pass
 
 
 def _load_manifest(manifest_path: Path) -> dict:
@@ -146,6 +504,40 @@ def _new_agent_entry(
     return entry
 
 
+def _text_metadata(value: str | None) -> dict[str, object]:
+    text = str(value or "")
+    return {
+        "present": bool(text),
+        "length": len(text),
+        "pbkdf2_sha256": _sensitive_fingerprint(text) if text else "",
+    }
+
+
+def _sensitive_fingerprint(text: str) -> str:
+    salt = os.getenv("SCBE_METADATA_HASH_KEY", "scbe-system-cli-metadata").encode("utf-8")
+    return hashlib.pbkdf2_hmac(
+        "sha256",
+        text.encode("utf-8"),
+        salt,
+        SENSITIVE_METADATA_ITERATIONS,
+    ).hex()
+
+
+def _sanitize_agent_result_for_storage(result: dict) -> dict:
+    clean = {
+        key: value
+        for key, value in result.items()
+        if key not in {"raw", "content", "prompt", "error"}
+    }
+    if "content" in result:
+        clean["content_metadata"] = _text_metadata(result.get("content"))
+    if "error" in result:
+        clean["error_metadata"] = _text_metadata(result.get("error"))
+    if "prompt" in result:
+        clean["prompt_metadata"] = _text_metadata(result.get("prompt"))
+    return clean
+
+
 def _resolve_agent_api_key(agent: dict, env_cache: dict[str, str]) -> tuple[str | None, str | None]:
     env_var = agent.get("api_key_env")
     if not env_var:
@@ -217,11 +609,12 @@ def _call_openai_agent(agent: dict, prompt: str, output_dir: Path, env_cache: di
         }
     except urllib.error.HTTPError as exc:
         body = exc.read().decode("utf-8", errors="ignore") if getattr(exc, "read", None) else ""
+        body_summary = _text_metadata(body)
         return {
             "ok": False,
             "agent_id": agent.get("agent_id"),
             "provider": provider,
-            "error": f"HTTP {exc.code}: {body or str(exc)}",
+            "error": f"HTTP {exc.code}: upstream_error body_present={body_summary['present']} body_length={body_summary['length']}",
         }
     except Exception as exc:  # pragma: no cover - defensive
         return {
@@ -235,7 +628,7 @@ def _call_openai_agent(agent: dict, prompt: str, output_dir: Path, env_cache: di
 def _write_agent_call_result(output_dir: Path, agent_id: str, result: dict) -> str:
     output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / f"{agent_id}_agent_call.json"
-    path.write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
+    path.write_text(json.dumps(_sanitize_agent_result_for_storage(result), indent=2, sort_keys=True), encoding="utf-8")
     return str(path)
 
 
@@ -266,11 +659,11 @@ def _notebooklm_fallback(agent: dict, prompt: str, output_dir: Path) -> dict:
             "NotebookLM has no documented public REST API endpoint in this code path. "
             "Use the web UI with the notebook id and paste this prompt."
         ),
-        "prompt": prompt,
+        "prompt_metadata": _text_metadata(prompt),
         "notebook_url": notebook_url,
         "generated_at": _now_iso(),
     }
-    path.write_text(json.dumps(result, indent=2, sort_keys=True), encoding="utf-8")
+    path.write_text(json.dumps(_sanitize_agent_result_for_storage(result), indent=2, sort_keys=True), encoding="utf-8")
     result["output_path"] = str(path)
     return result
 
@@ -481,6 +874,18 @@ def cmd_pollypad_app_list(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_pollypad_app_run(args: argparse.Namespace) -> int:
+    pad_dir = _pad_dir_for_root(args.repo_root, args.agent_id, getattr(args, "agent_root", None))
+    manifest = _load_manifest(_manifest_path(pad_dir))
+    app = _find_pad_app(manifest, getattr(args, "app_id", None), getattr(args, "name", None))
+    if app is None:
+        print("App not found in Polly Pad.")
+        return 2
+    runtime_args = argparse.Namespace(**vars(args))
+    runtime_args.app_name = app.get("name")
+    return _execute_runtime(runtime_args, app_entry=app)
+
+
 def cmd_pollypad_snapshot(args: argparse.Namespace) -> int:
     pad_path = _pad_dir(args.repo_root, args.agent_id)
     manifest_path = _manifest_path(pad_path)
@@ -508,6 +913,21 @@ def cmd_tongues(args: argparse.Namespace) -> int:
         print("  tongues xlate --src KO --dst AV")
         return 2
     return _run_script(script, args.tongue_args)
+
+
+def cmd_runtime_run(args: argparse.Namespace) -> int:
+    app_entry = None
+    if getattr(args, "app_id", None) or getattr(args, "app_name", None):
+        if not getattr(args, "agent_id", None):
+            print("--agent-id is required when running a Polly Pad app.")
+            return 2
+        pad_dir = _pad_dir_for_root(args.repo_root, args.agent_id, getattr(args, "agent_root", None))
+        manifest = _load_manifest(_manifest_path(pad_dir))
+        app_entry = _find_pad_app(manifest, getattr(args, "app_id", None), getattr(args, "app_name", None))
+        if app_entry is None:
+            print("App not found in Polly Pad.")
+            return 2
+    return _execute_runtime(args, app_entry=app_entry)
 
 
 def cmd_gap_review(args: argparse.Namespace) -> int:
@@ -869,7 +1289,7 @@ def cmd_agent_call(args: argparse.Namespace) -> int:
 
     summary = {
         "called_at": _now_iso(),
-        "prompt": prompt,
+        "prompt_metadata": _text_metadata(prompt),
         "agents": {},
         "succeeded": 0,
         "failed": 0,
@@ -893,15 +1313,16 @@ def cmd_agent_call(args: argparse.Namespace) -> int:
             summary["succeeded"] += 1
             if args.show_output:
                 print(f"\n[{aid}]")
-                print(result.get("content", ""))
+                print(json.dumps({"content_metadata": _text_metadata(result.get("content", ""))}, indent=2))
         else:
             summary["failed"] += 1
             if args.show_output:
-                print(f"[{aid}] FAIL: {result.get('error')}")
+                print(f"[{aid}] FAIL")
+                print(json.dumps({"error_metadata": _text_metadata(result.get("error", ""))}, indent=2))
 
     summary_path = out_dir / "agent_call_summary.json"
     summary_path.parent.mkdir(parents=True, exist_ok=True)
-    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True), encoding="utf-8")
+    summary_path.write_text(json.dumps(_sanitize_agent_result_for_storage(summary), indent=2, sort_keys=True), encoding="utf-8")
     print(f"Summary: {summary['succeeded']} ok, {summary['failed']} failed")
     print(f"Saved: {summary_path}")
     return 0 if summary["failed"] == 0 else 1
@@ -1114,11 +1535,39 @@ def build_parser() -> argparse.ArgumentParser:
     pp_app_list = pp_app_sub.add_parser("list", help="List apps/utilities")
     pp_app_list.add_argument("--agent-id", required=True)
     pp_app_list.set_defaults(func=cmd_pollypad_app_list)
+    pp_app_run = pp_app_sub.add_parser("run", help="Run one installed Polly Pad app in the governed runtime")
+    pp_app_run.add_argument("--agent-id", required=True)
+    pp_app_run.add_argument("--app-id", default="")
+    pp_app_run.add_argument("--name", default="")
+    pp_app_run.add_argument("--language", choices=RUNTIME_LANGUAGE_CHOICES, default="")
+    pp_app_run.add_argument("--tongue", choices=("KO", "AV", "RU", "CA", "UM", "DR"), default="")
+    pp_app_run.add_argument("--output-dir", default="artifacts/runtime_runs")
+    pp_app_run.add_argument("--timeout-seconds", type=int, default=60)
+    pp_app_run.add_argument("--keep-source", action="store_true", help="Keep generated runtime source files")
+    pp_app_run.add_argument("extra_args", nargs=argparse.REMAINDER, help="Args passed to the installed app after --")
+    pp_app_run.set_defaults(func=cmd_pollypad_app_run)
 
     pp_snapshot = pollypad_sub.add_parser("snapshot", help="Export current pad snapshot JSON")
     pp_snapshot.add_argument("--agent-id", required=True)
     pp_snapshot.add_argument("--output")
     pp_snapshot.set_defaults(func=cmd_pollypad_snapshot)
+
+    runtime = sub.add_parser("runtime", help="Governed polyglot execution runtime")
+    runtime_sub = runtime.add_subparsers(dest="runtime_cmd", required=True)
+    rt_run = runtime_sub.add_parser("run", help="Run code or a Polly Pad app inside the controlled runtime")
+    rt_run.add_argument("--agent-id", default="", help="Optional Polly Pad agent id for scoped execution")
+    rt_run.add_argument("--agent-root", default=str(DEFAULT_PAD_ROOT), help="Optional root path for polly pads")
+    rt_run.add_argument("--app-id", default="", help="Installed Polly Pad app id to run")
+    rt_run.add_argument("--app-name", default="", help="Installed Polly Pad app name to run")
+    rt_run.add_argument("--language", choices=RUNTIME_LANGUAGE_CHOICES, default="", help="Runtime language for direct execution")
+    rt_run.add_argument("--tongue", choices=("KO", "AV", "RU", "CA", "UM", "DR"), default="", help="Attach a Sacred Tongue execution label")
+    rt_run.add_argument("--file", default="", help="Controlled source file path to run")
+    rt_run.add_argument("--code", default="", help="Inline source code to run")
+    rt_run.add_argument("--output-dir", default="artifacts/runtime_runs")
+    rt_run.add_argument("--timeout-seconds", type=int, default=60)
+    rt_run.add_argument("--keep-source", action="store_true", help="Keep generated runtime source files for inline code")
+    rt_run.add_argument("extra_args", nargs=argparse.REMAINDER, help="Args passed to the runtime after --")
+    rt_run.set_defaults(func=cmd_runtime_run)
 
     return parser
 
