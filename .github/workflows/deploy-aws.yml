@@ -12,6 +12,9 @@ on:
           - production
           - staging
 
+permissions:
+  contents: read
+
 env:
   AWS_REGION: us-west-2
   PYTHON_VERSION: '3.11'
