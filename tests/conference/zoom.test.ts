@@ -5,7 +5,7 @@
  * Tests for Zoom integration and live event services.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ZoomService } from '../../conference-app/src/api/services/zoom';
 import { liveEventBus } from '../../conference-app/src/api/services/liveEvents';
 
@@ -18,6 +18,11 @@ describe('ZoomService', () => {
     delete process.env.ZOOM_CLIENT_ID;
     delete process.env.ZOOM_CLIENT_SECRET;
     service = new ZoomService();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('reports not configured without env vars', () => {
@@ -64,6 +69,51 @@ describe('ZoomService', () => {
     expect(joinUrl).toContain('/j/');
     expect(startUrl).toContain('/s/');
     expect(joinUrl).not.toBe(startUrl);
+  });
+
+  it('rejects malformed host emails before building the Zoom path', async () => {
+    await expect(
+      service.createMeeting('conf-900', 'Test', '2026-03-15T14:00:00Z', 60, '../../users/me')
+    ).rejects.toThrow(/Invalid Zoom host email/);
+  });
+
+  it('encodes the validated host email in the Zoom API path', async () => {
+    process.env.ZOOM_ACCOUNT_ID = 'acct';
+    process.env.ZOOM_CLIENT_ID = 'client';
+    process.env.ZOOM_CLIENT_SECRET = 'secret';
+    service = new ZoomService();
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: 'token', expires_in: 3600 }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 123456789,
+          join_url: 'https://zoom.us/j/123456789',
+          start_url: 'https://zoom.us/s/123456789',
+          password: 'secretpw',
+        }),
+      });
+
+    vi.stubGlobal('fetch', fetchMock as typeof fetch);
+
+    const meeting = await service.createMeeting(
+      'conf-901',
+      'Encoded Test',
+      '2026-03-15T14:00:00Z',
+      60,
+      'Curator+Ops@Example.com'
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1][0]).toBe(
+      'https://api.zoom.us/v2/users/curator%2Bops%40example.com/meetings'
+    );
+    expect(meeting.hostEmail).toBe('curator+ops@example.com');
   });
 });
 
