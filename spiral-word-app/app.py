@@ -47,6 +47,16 @@ sync = SyncEngine()
 connections: Dict[str, Set[WebSocket]] = {}
 
 
+def _public_ai_result_payload(result: str) -> dict | None:
+    """Normalize provider status strings into safe client payloads."""
+    if result.startswith("[BLOCKED]"):
+        reason = result[len("[BLOCKED]"):].strip() or "Request blocked by governance"
+        return {"status": "blocked", "message": reason}
+    if result.startswith("[ERROR]"):
+        return {"status": "error", "message": "AI provider request failed"}
+    return None
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("SpiralWord server starting")
@@ -212,8 +222,9 @@ async def ai_edit(doc_id: str, req: AIEditRequest):
     # AI port handles its own governance check
     result = ai_ports.call(req.prompt, provider=req.provider, options=req.options)
 
-    if result.startswith("[BLOCKED]") or result.startswith("[ERROR]"):
-        return {"status": "blocked", "message": result}
+    public_status = _public_ai_result_payload(result)
+    if public_status is not None:
+        return public_status
 
     doc = sync.get_or_create(doc_id)
     op = doc.insert(doc.length, result, site_id=req.site_id)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from urllib import error as urllib_error
 
 import pytest
 
@@ -24,6 +25,19 @@ def test_send_zapier_event_skips_when_no_env_hook(monkeypatch) -> None:
     monkeypatch.setattr(bridge, "_ZAPIER_WEBHOOK_URL", "")
     result = bridge._send_zapier_event({"event": "llm_dispatch"})
     assert result["status"] == "skipped"
+
+
+def test_browser_health_check_hides_internal_exception_text(monkeypatch) -> None:
+    def fake_urlopen(*args, **kwargs):
+        raise urllib_error.URLError("secret host details")
+
+    monkeypatch.setattr(bridge.urllib_request, "urlopen", fake_urlopen)
+
+    result = bridge._browser_health_check()
+
+    assert result["reachable"] is False
+    assert result["error"] == "browser_service_network_error"
+    assert "secret host details" not in json.dumps(result)
 
 
 @pytest.mark.asyncio
@@ -59,6 +73,20 @@ async def test_llm_dispatch_ignores_user_hook_override(monkeypatch) -> None:
 
     assert result["zapier"]["status"] == "sent"
     assert "zapier_hook_url" not in req.model_dump()
+
+
+def test_dispatch_single_provider_hides_exception_text(monkeypatch) -> None:
+    monkeypatch.setattr(
+        bridge,
+        "_dispatch_openai_compatible",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("secret stack details")),
+    )
+
+    result = bridge._dispatch_single_provider("openai", "hello", "system prompt")
+
+    assert result["status"] == "error"
+    assert result["error"] == "provider_dispatch_failed"
+    assert "secret" not in json.dumps(result)
 
 
 @pytest.mark.asyncio

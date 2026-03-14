@@ -606,9 +606,16 @@ def _browser_health_check() -> Dict[str, Any]:
                 "url": url,
             }
     except Exception as exc:  # noqa: BLE001
+        error_code = "browser_service_unavailable"
+        if isinstance(exc, urllib_error.HTTPError):
+            error_code = "browser_service_http_error"
+        elif isinstance(exc, urllib_error.URLError):
+            error_code = "browser_service_network_error"
+        elif isinstance(exc, json.JSONDecodeError):
+            error_code = "browser_service_invalid_json"
         return {
             "reachable": False,
-            "error": str(exc),
+            "error": error_code,
             "url": url,
         }
 
@@ -642,12 +649,12 @@ def _forward_to_browser_service(payload: Dict[str, Any], bridge_api_key: str) ->
     except urllib_error.URLError as exc:
         raise HTTPException(
             status_code=503,
-            detail=f"Browser service unavailable at {_BROWSER_SERVICE_URL}: {exc.reason}",
+            detail="Browser service unavailable.",
         )
-    except json.JSONDecodeError as exc:
+    except json.JSONDecodeError:
         raise HTTPException(
             status_code=502,
-            detail=f"Browser service returned invalid JSON: {exc}",
+            detail="Browser service returned invalid JSON.",
         )
 
 
@@ -693,8 +700,8 @@ async def tongue_encode(req: TongueEncodeRequest, x_api_key: Optional[str] = Hea
                 "token_count": len(env.tokens),
                 "transport": "tongue",
             }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Six tongues encoding failed.")
 
 
 @app.post("/v1/buffer/post")
@@ -869,8 +876,8 @@ def _dispatch_single_provider(provider: str, prompt: str, system_prompt: str, ma
             return {"provider": p, "text": _extract_anthropic_response(raw).get("text", ""), "status": "ok"}
         else:
             return {"provider": p, "text": "", "status": "unsupported"}
-    except Exception as exc:
-        return {"provider": p, "text": "", "status": "error", "error": str(exc)[:500]}
+    except Exception:
+        return {"provider": p, "text": "", "status": "error", "error": "provider_dispatch_failed"}
 
 
 @app.post("/v1/council/deliberate")
@@ -1035,7 +1042,7 @@ def _get_trainer():
             logger.error("Failed to start RealTimeHFTrainer: %s", exc)
             raise HTTPException(
                 status_code=503,
-                detail=f"Training pipeline unavailable: {exc}",
+                detail="Training pipeline unavailable.",
             )
     return _trainer
 
@@ -1391,7 +1398,7 @@ def _upload_lattice25d_export_to_hf(
             create_pr=create_pr,
         )
     except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=502, detail=f"HF dataset upload failed: {exc}") from exc
+        raise HTTPException(status_code=502, detail="HF dataset upload failed.") from exc
 
     return {
         "status": "uploaded",
