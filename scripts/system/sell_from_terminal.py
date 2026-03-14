@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -24,6 +25,12 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.security.secret_store import get_secret  # noqa: E402
+
+
+BEARER_PATTERN = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._\-~+/=]+\b")
+KEY_VALUE_PATTERN = re.compile(
+    r"(?i)\b([A-Z0-9_]*(?:TOKEN|SECRET|KEY|PASSWORD)[A-Z0-9_]*)\s*[:=]\s*([^\s,;]+)"
+)
 
 
 def _now_utc() -> str:
@@ -38,7 +45,30 @@ def _mask(value: str) -> str:
     return f"{value[:4]}...{value[-4:]}"
 
 
-def _load_secret_env() -> dict[str, str]:
+def _redact_sensitive_text(value: str) -> str:
+    text = str(value)
+    text = BEARER_PATTERN.sub("Bearer [redacted]", text)
+    text = KEY_VALUE_PATTERN.sub(lambda match: f"{match.group(1)}=[redacted]", text)
+    return text
+
+
+def _summarize_process_result(command: list[str], proc: subprocess.CompletedProcess[str]) -> dict[str, Any]:
+    stdout = _redact_sensitive_text(proc.stdout.strip())
+    stderr = _redact_sensitive_text(proc.stderr.strip())
+    summary: dict[str, Any] = {
+        "command": " ".join(command),
+        "returncode": proc.returncode,
+        "stdout_present": bool(stdout),
+        "stderr_present": bool(stderr),
+    }
+    if proc.returncode != 0 and stderr:
+        summary["error_excerpt"] = stderr[:240]
+    elif proc.returncode != 0 and stdout:
+        summary["error_excerpt"] = stdout[:240]
+    return summary
+
+
+def _load_secret_env() -> dict[str, int]:
     keys = [
         "SHOPIFY_SHOP",
         "SHOPIFY_SHOP_DOMAIN",
@@ -56,29 +86,34 @@ def _load_secret_env() -> dict[str, str]:
         "GITHUB_TOKEN",
         "NOTION_TOKEN",
     ]
-    status: dict[str, str] = {}
+    summary = {
+        "present_in_env": 0,
+        "loaded_from_store": 0,
+        "missing": 0,
+        "aliases_applied": 0,
+    }
 
     for key in keys:
         existing = os.getenv(key, "").strip()
         if existing:
-            status[key] = _mask(existing)
+            summary["present_in_env"] += 1
             continue
 
         stored = get_secret(key, "").strip()
         if stored:
             os.environ[key] = stored
-            status[key] = _mask(stored)
+            summary["loaded_from_store"] += 1
         else:
-            status[key] = "missing"
+            summary["missing"] += 1
 
     # Common Shopify alias fallback.
     if not os.getenv("SHOPIFY_SHOP", "").strip():
         alias = os.getenv("SHOPIFY_SHOP_DOMAIN", "").strip()
         if alias:
             os.environ["SHOPIFY_SHOP"] = alias
-            status["SHOPIFY_SHOP"] = _mask(alias)
+            summary["aliases_applied"] += 1
 
-    return status
+    return summary
 
 
 def _run_cmd(cmd: list[str], *, timeout: int = 180) -> dict[str, Any]:
@@ -90,12 +125,7 @@ def _run_cmd(cmd: list[str], *, timeout: int = 180) -> dict[str, Any]:
         timeout=timeout,
         check=False,
     )
-    return {
-        "command": " ".join(cmd),
-        "returncode": proc.returncode,
-        "stdout": proc.stdout.strip(),
-        "stderr": proc.stderr.strip(),
-    }
+    return _summarize_process_result(cmd, proc)
 
 
 def _connector_health() -> dict[str, Any]:
@@ -120,12 +150,18 @@ def _connector_health() -> dict[str, Any]:
         check=False,
         env=env,
     )
-    return {
-        "command": "python scripts/connector_health_check.py --checks github notion huggingface zapier",
-        "returncode": proc.returncode,
-        "stdout": proc.stdout.strip(),
-        "stderr": proc.stderr.strip(),
-    }
+    return _summarize_process_result(
+        [
+            "python",
+            "scripts/connector_health_check.py",
+            "--checks",
+            "github",
+            "notion",
+            "huggingface",
+            "zapier",
+        ],
+        proc,
+    )
 
 
 def main() -> int:
@@ -147,7 +183,7 @@ def main() -> int:
 
     report: dict[str, Any] = {
         "generated_at_utc": _now_utc(),
-        "secret_status": _load_secret_env(),
+        "secret_summary": _load_secret_env(),
         "actions": [],
     }
 
@@ -184,8 +220,8 @@ def main() -> int:
     out.write_text(json.dumps(report, indent=2), encoding="utf-8")
 
     print(f"report={out.resolve()}")
-    print("secret_status:")
-    for key, value in report["secret_status"].items():
+    print("secret_summary:")
+    for key, value in report["secret_summary"].items():
         print(f"  {key}={value}")
 
     for action in report["actions"]:
