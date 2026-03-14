@@ -22,11 +22,11 @@ import os
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 import requests
+from scripts.system.html_text import html_to_text as _safe_html_to_text
 
 from hydra.limbs import BrowserLimb
 from hydra.switchboard import Switchboard
@@ -39,6 +39,9 @@ try:
 except Exception:  # noqa: BLE001
     HfApi = None
     login = None
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 PROMPT_INJECTION_PATTERNS = [
@@ -71,30 +74,6 @@ class MembraneReport:
     reasons: List[str]
 
 
-class _VisibleTextExtractor(HTMLParser):
-    """Extract text while ignoring script/style blocks."""
-
-    def __init__(self) -> None:
-        super().__init__(convert_charrefs=True)
-        self._ignore_depth = 0
-        self._parts: List[str] = []
-
-    def handle_starttag(self, tag: str, attrs: List[Tuple[str, str | None]]) -> None:
-        if tag.lower() in {"script", "style"}:
-            self._ignore_depth += 1
-
-    def handle_endtag(self, tag: str) -> None:
-        if tag.lower() in {"script", "style"} and self._ignore_depth:
-            self._ignore_depth -= 1
-
-    def handle_data(self, data: str) -> None:
-        if not self._ignore_depth and data:
-            self._parts.append(data)
-
-    def to_text(self) -> str:
-        return " ".join(self._parts)
-
-
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -105,12 +84,23 @@ def extract_post_id(url: str) -> str:
 
 
 def html_to_text(raw_html: str) -> str:
-    parser = _VisibleTextExtractor()
-    parser.feed(raw_html)
-    parser.close()
-    s = html.unescape(parser.to_text())
-    s = re.sub(r"\s+", " ", s).strip()
-    return s
+    return html.unescape(_safe_html_to_text(raw_html))
+
+
+def _resolve_run_root(raw_path: str) -> Path:
+    target = (REPO_ROOT / raw_path).resolve()
+    allowed_root = (REPO_ROOT / "training" / "runs").resolve()
+    if target != allowed_root and allowed_root not in target.parents:
+        raise ValueError("run root must stay under training/runs/")
+    return target
+
+
+def _resolve_artifact_db_path(raw_path: str) -> Path:
+    target = (REPO_ROOT / raw_path).resolve()
+    allowed_root = (REPO_ROOT / "artifacts").resolve()
+    if target != allowed_root and allowed_root not in target.parents:
+        raise ValueError("artifact db path must stay under artifacts/")
+    return target
 
 
 def chunk_text(text: str, chunk_size: int = 1400, overlap: int = 250) -> List[str]:

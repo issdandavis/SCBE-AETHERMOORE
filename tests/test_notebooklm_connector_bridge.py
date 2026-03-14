@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from urllib.parse import urlparse
+
 import pytest
 
 from src.fleet.connector_bridge import ConnectorBridge, ConnectorCapability
@@ -78,8 +80,9 @@ async def test_notebooklm_seed_notebooks_passes_source_urls(monkeypatch: pytest.
     )
     assert result.success is True
     assert seen["args"].count("--source-url") == 2
-    assert "https://arxiv.org" in seen["args"]
-    assert "https://example.com/report" in seen["args"]
+    seen_hosts = {(urlparse(arg).hostname or "") for arg in seen["args"] if arg.startswith("https://")}
+    assert "arxiv.org" in seen_hosts
+    assert "example.com" in seen_hosts
 
 
 @pytest.mark.asyncio

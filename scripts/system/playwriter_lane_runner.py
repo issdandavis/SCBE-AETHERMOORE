@@ -16,37 +16,15 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
-from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Dict, Tuple
+
+from scripts.system.html_text import html_to_text
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EVIDENCE_DIR = REPO_ROOT / "artifacts" / "page_evidence"
-
-
-class _VisibleTextExtractor(HTMLParser):
-    """Extract human-visible text while ignoring script/style payloads."""
-
-    def __init__(self) -> None:
-        super().__init__(convert_charrefs=True)
-        self._ignore_depth = 0
-        self._parts: list[str] = []
-
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if tag.lower() in {"script", "style"}:
-            self._ignore_depth += 1
-
-    def handle_endtag(self, tag: str) -> None:
-        if tag.lower() in {"script", "style"} and self._ignore_depth:
-            self._ignore_depth -= 1
-
-    def handle_data(self, data: str) -> None:
-        if not self._ignore_depth and data:
-            self._parts.append(data)
-
-    def to_text(self) -> str:
-        return " ".join(self._parts)
+_SESSION_RE = re.compile(r"[^A-Za-z0-9._-]+")
 
 
 def _utc_iso() -> str:
@@ -54,7 +32,8 @@ def _utc_iso() -> str:
 
 
 def _state_path(session_id: str) -> Path:
-    return EVIDENCE_DIR / f"playwriter-session-{session_id}.json"
+    safe_session = _SESSION_RE.sub("_", str(session_id)).strip("._-") or "session"
+    return EVIDENCE_DIR / f"playwriter-session-{safe_session}.json"
 
 
 def _load_state(session_id: str) -> Dict[str, Any]:
@@ -91,12 +70,7 @@ def _extract_title(html: str) -> str:
 
 
 def _extract_text_excerpt(html: str, max_chars: int = 1200) -> str:
-    parser = _VisibleTextExtractor()
-    parser.feed(html)
-    parser.close()
-    text = parser.to_text()
-    text = re.sub(r"\s+", " ", text).strip()
-    return text[:max_chars]
+    return html_to_text(html, max_chars=max_chars)
 
 
 def _write_evidence(session_id: str, task: str, payload: Dict[str, Any]) -> Path:

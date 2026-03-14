@@ -9,6 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDir = path.join(__dirname, 'public');
 
+const MAX_FILES = 64;
 const MAX_FILE_BYTES = 512 * 1024;
 const MAX_TOTAL_BYTES = 2 * 1024 * 1024;
 const MAX_OUTPUT_BYTES = 300 * 1024;
@@ -21,15 +22,19 @@ const RATE_LIMIT_MAX_REQUESTS = 10;
 let activeRuns = 0;
 const rateLimitMap = new Map();
 
-function checkRateLimit(ip) {
+function checkRateLimit(key) {
   const now = Date.now();
-  let entry = rateLimitMap.get(ip);
+  let entry = rateLimitMap.get(key);
   if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
     entry = { windowStart: now, count: 0 };
-    rateLimitMap.set(ip, entry);
+    rateLimitMap.set(key, entry);
   }
   entry.count++;
-  return entry.count <= RATE_LIMIT_MAX_REQUESTS;
+  return {
+    allowed: entry.count <= RATE_LIMIT_MAX_REQUESTS,
+    remaining: Math.max(RATE_LIMIT_MAX_REQUESTS - entry.count, 0),
+    retryAfterSeconds: Math.max(Math.ceil((entry.windowStart + RATE_LIMIT_WINDOW_MS - now) / 1000), 1),
+  };
 }
 
 const SECRET_PATTERNS = [
@@ -71,6 +76,13 @@ function clipText(value, maxBytes = MAX_OUTPUT_BYTES) {
   return buf.subarray(0, maxBytes).toString('utf8') + '\n...[truncated]';
 }
 
+function appendClipped(existing, chunk, maxBytes = MAX_OUTPUT_BYTES) {
+  const current = Buffer.from(existing, 'utf8');
+  if (current.length >= maxBytes) return clipText(existing, maxBytes);
+  const next = Buffer.concat([current, Buffer.from(chunk, 'utf8')]);
+  return clipText(next.toString('utf8'), maxBytes);
+}
+
 function asObject(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
   return value;
@@ -80,9 +92,14 @@ function normalizeFiles(input) {
   const filesIn = asObject(input);
   const filesOut = {};
   let totalBytes = 0;
+  let fileCount = 0;
   for (const [rawName, rawContent] of Object.entries(filesIn)) {
     const name = String(rawName || '').replace(/\\/g, '/').trim();
     if (!name || name.startsWith('/') || name.includes('..')) continue;
+    fileCount++;
+    if (fileCount > MAX_FILES) {
+      throw new Error(`Too many files. Maximum is ${MAX_FILES}.`);
+    }
     const content = String(rawContent ?? '');
     const bytes = Buffer.byteLength(content, 'utf8');
     if (bytes > MAX_FILE_BYTES) {
@@ -98,6 +115,19 @@ function normalizeFiles(input) {
     filesOut['index.js'] = "console.log('hello from sandbox');\n";
   }
   return filesOut;
+}
+
+function enforceRateLimit(req, res, routeId) {
+  const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+  const limit = checkRateLimit(`${routeId}:${clientIp}`);
+  res.set('X-RateLimit-Limit', String(RATE_LIMIT_MAX_REQUESTS));
+  res.set('X-RateLimit-Remaining', String(limit.remaining));
+  res.set('Retry-After', String(limit.retryAfterSeconds));
+  if (!limit.allowed) {
+    res.status(429).json({ ok: false, error: 'Rate limit exceeded.', route: routeId });
+    return false;
+  }
+  return true;
 }
 
 function normalizePackageJson(input) {
@@ -255,10 +285,10 @@ function runProcess(command, args, timeoutMs) {
     }, timeoutMs);
 
     child.stdout.on('data', (chunk) => {
-      stdout += chunk.toString('utf8');
+      stdout = appendClipped(stdout, chunk.toString('utf8'));
     });
     child.stderr.on('data', (chunk) => {
-      stderr += chunk.toString('utf8');
+      stderr = appendClipped(stderr, chunk.toString('utf8'));
     });
     child.on('error', (error) => {
       clearTimeout(timer);
@@ -348,9 +378,8 @@ app.get('/api/health', async (_req, res) => {
 });
 
 app.post('/api/preflight', (req, res) => {
-  const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
-  if (!checkRateLimit(clientIp)) {
-    return res.status(429).json({ ok: false, error: 'Rate limit exceeded.' });
+  if (!enforceRateLimit(req, res, 'preflight')) {
+    return;
   }
   try {
     const payload = parsePayload(req.body || {});
@@ -369,9 +398,8 @@ app.post('/api/preflight', (req, res) => {
 });
 
 app.post('/api/run', async (req, res) => {
-  const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
-  if (!checkRateLimit(clientIp)) {
-    return res.status(429).json({ ok: false, error: 'Rate limit exceeded. Try again later.' });
+  if (!enforceRateLimit(req, res, 'run')) {
+    return;
   }
   if (activeRuns >= MAX_CONCURRENT_RUNS) {
     return res.status(503).json({ ok: false, error: `Max concurrent runs (${MAX_CONCURRENT_RUNS}) reached.` });

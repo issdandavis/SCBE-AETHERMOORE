@@ -21,6 +21,8 @@ from typing import Any, Dict, List, Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 
+from scripts.system.html_text import html_to_text
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -44,8 +46,15 @@ def safe_slug(value: str) -> str:
 
 
 def strip_html(raw: str) -> str:
-    no_tags = re.sub(r"<[^>]+>", " ", raw or "")
-    return html.unescape(re.sub(r"\s+", " ", no_tags)).strip()
+    return html.unescape(html_to_text(raw or ""))
+
+
+def _resolve_output_dir(raw_path: str) -> Path:
+    target = (REPO_ROOT / raw_path).resolve()
+    artifacts_root = (REPO_ROOT / "artifacts").resolve()
+    if target != artifacts_root and artifacts_root not in target.parents:
+        raise ValueError("output path must stay under artifacts/")
+    return target
 
 
 def first_sku(product: Dict[str, Any]) -> str:
