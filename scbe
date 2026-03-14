@@ -43,6 +43,16 @@ from typing import Any, Dict, List, Optional, Tuple
 
 VERSION = "2.0.0"
 REPO_ROOT = Path(__file__).resolve().parent
+FORWARDED_SYSTEM_COMMANDS = {
+    "agent": ["agent"],
+    "pollypad": ["pollypad"],
+    "web": ["web"],
+    "antivirus": ["antivirus"],
+    "aetherauth": ["aetherauth"],
+    "notion-gap": ["notion-gap"],
+    "self-improve": ["self-improve"],
+    "run": ["runtime", "run"],
+}
 
 # Handle SIGPIPE gracefully
 try:
@@ -500,6 +510,17 @@ def cmd_selftest(_args: argparse.Namespace) -> int:
     return 1 if errors else 0
 
 
+def _run_system_cli(args: List[str]) -> int:
+    script = REPO_ROOT / "scripts" / "scbe-system-cli.py"
+    if not script.exists():
+        print(f"System CLI not found: {script}")
+        return 1
+    return subprocess.run(
+        [sys.executable, str(script), "--repo-root", str(REPO_ROOT), *args],
+        check=False,
+    ).returncode
+
+
 # ═══════════════════════════════════════════════════════════════
 # Legacy command bridge (backward compatibility)
 # ═══════════════════════════════════════════════════════════════
@@ -545,6 +566,8 @@ Legacy (backward compat):
   scbe cli                          Interactive CLI
   scbe agent                        AI agent
   scbe demo                         Demo mode
+  scbe pollypad init --agent-id rex --name "Rex"
+  scbe run --language python --code "print('SCBE')"
         """,
     )
     sub = p.add_subparsers(dest="command")
@@ -615,6 +638,13 @@ Legacy (backward compat):
     # ─── top-level ───
     sub.add_parser("status", help="Project status").set_defaults(func=cmd_status)
     sub.add_parser("selftest", help="Self-test suite").set_defaults(func=cmd_selftest)
+    sub.add_parser("pollypad", help="Polly Pad storage + app management (forwarded to system CLI)")
+    sub.add_parser("run", help="Governed multi-language runtime (forwarded to system CLI)")
+    sub.add_parser("web", help="Web lookup/capture helpers (forwarded to system CLI)")
+    sub.add_parser("antivirus", help="Safety scan helpers (forwarded to system CLI)")
+    sub.add_parser("aetherauth", help="Context-bound access decisions (forwarded to system CLI)")
+    sub.add_parser("notion-gap", help="Notion/pipeline gap review (forwarded to system CLI)")
+    sub.add_parser("self-improve", help="Self-improvement orchestration (forwarded to system CLI)")
 
     # ─── legacy ───
     for cmd in LEGACY_SCRIPTS:
@@ -624,10 +654,16 @@ Legacy (backward compat):
 
 
 def main() -> int:
-    cli = build_cli()
     if len(sys.argv) == 1:
+        cli = build_cli()
         cli.print_help()
         return 0
+
+    forwarded = FORWARDED_SYSTEM_COMMANDS.get(sys.argv[1])
+    if forwarded is not None:
+        return _run_system_cli([*forwarded, *sys.argv[2:]])
+
+    cli = build_cli()
 
     # Handle legacy commands
     if len(sys.argv) >= 2 and sys.argv[1] in LEGACY_SCRIPTS:
