@@ -1,0 +1,38 @@
+{
+  "id": "8dd8486cd7a2e7fe",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Realization of a Bosonic Antiferromagnet",
+  "content": "# Realization of a Bosonic Antiferromagnet\n\nAuthors: Sun, Hui, Yang, Bing, Wang, Han-Yi, Zhou, Zhao-Yu, Su, Guo-Xian\nPublished: 2020-09-07T10:12:21Z\nSubjects: Physics\nDOI: doi:10.7910/DVN/GPMPMP\n\nContains experimental data and theoretical simulations for an article named \"Realization of Bosonic Antiferromagnet\".\n\nCitation: Sun, Hui; Yang, Bing; Wang, Han-Yi; Zhou, Zhao-Yu; Su, Guo-Xian; Dai, Han-Ning; Yuan, Zhen-Sheng; Pan, Jian-Wei, 2020, \"Realization of a Bosonic Antiferromagnet\", https://doi.org/10.7910/DVN/GPMPMP, Harvard Dataverse, V1, UNF:6:bREBB8hPUWYJ5VXjwOGtqQ== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/GPMPMP",
+  "timestamp": "2026-03-06T02:42:24.924455",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4ef586df9daf6de4debaa0a9bf47615996fa242206b21fcf15cd2917122891bd",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/GPMPMP",
+    "subjects": [
+      "Physics"
+    ],
+    "authors": [
+      "Sun, Hui",
+      "Yang, Bing",
+      "Wang, Han-Yi",
+      "Zhou, Zhao-Yu",
+      "Su, Guo-Xian",
+      "Dai, Han-Ning",
+      "Yuan, Zhen-Sheng",
+      "Pan, Jian-Wei"
+    ],
+    "file_count": 11
+  }
+}

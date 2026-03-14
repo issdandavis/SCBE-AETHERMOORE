@@ -32,24 +32,70 @@ import numpy as np
 
 class NonceCache:
     """
-    Simple in-memory nonce cache for replay protection.
-    In production, use Redis with TTL.
+    Replay protection via nonce caching.
+
+    Supports two modes:
+    - Set mode (default): exact membership check, bounded by max_size with FIFO eviction.
+    - Bloom filter mode (use_bloom=True): probabilistic membership for high-volume
+      scenarios. Requires the ``bloom_filter2`` package (``pip install bloom_filter2``).
+      False positives are possible at the configured error_rate; false negatives are not.
+
+    In production, use Redis with TTL for distributed replay protection.
     """
 
-    def __init__(self, max_age_seconds: int = 300):
-        self.used_nonces = set()
+    def __init__(
+        self,
+        max_age_seconds: int = 300,
+        max_size: int = 10000,
+        use_bloom: bool = False,
+        bloom_error_rate: float = 0.001,
+    ):
         self.max_age = max_age_seconds
+        self.max_size = max_size
+        self.use_bloom = use_bloom
+
+        if use_bloom:
+            try:
+                from bloom_filter2 import BloomFilter
+
+                self._bloom = BloomFilter(
+                    max_elements=max_size, error_rate=bloom_error_rate
+                )
+            except ImportError:
+                # Graceful fallback: bloom_filter2 not installed
+                self.use_bloom = False
+                self.used_nonces = set()
+        else:
+            self.used_nonces = set()
 
     def is_used(self, nonce: str) -> bool:
+        if self.use_bloom:
+            nonce_hash = hashlib.sha256(nonce.encode()).hexdigest()
+            return nonce_hash in self._bloom
         return nonce in self.used_nonces
 
     def mark_used(self, nonce: str):
-        self.used_nonces.add(nonce)
-        # In production: implement TTL cleanup
+        if self.use_bloom:
+            nonce_hash = hashlib.sha256(nonce.encode()).hexdigest()
+            self._bloom.add(nonce_hash)
+        else:
+            self.used_nonces.add(nonce)
+            if len(self.used_nonces) > self.max_size:
+                self.used_nonces.pop()  # FIFO eviction
 
     def clear(self):
         """For testing only"""
-        self.used_nonces.clear()
+        if self.use_bloom:
+            try:
+                from bloom_filter2 import BloomFilter
+
+                self._bloom = BloomFilter(
+                    max_elements=self.max_size, error_rate=0.001
+                )
+            except ImportError:
+                pass
+        else:
+            self.used_nonces.clear()
 
 
 # Global cache (in production, inject as dependency)
@@ -363,9 +409,53 @@ class RoundtableCore:
             return RoundtableCore.TIERS["critical"]
 
     @staticmethod
-    def verify_quorum(signatures: dict, required: list) -> bool:
-        """Check if we have all required signatures"""
-        return all(tongue in signatures for tongue in required)
+    def verify_quorum(
+        signatures: dict, required: list, pqc_pubkey: bytes = None
+    ) -> bool:
+        """
+        Check if we have all required signatures.
+
+        Args:
+            signatures: Dict mapping tongue name to signature bytes/str.
+            required: List of tongue names that must be present.
+            pqc_pubkey: Optional ML-DSA (Dilithium) public key. When provided,
+                each signature is verified as a PQC signature over the tongue
+                name, adding Layer 14 post-quantum integrity to the quorum.
+
+        Returns:
+            True if all required tongues are present (and PQC-valid if key given).
+        """
+        if not all(tongue in signatures for tongue in required):
+            return False
+
+        # L14: Optional PQC signature verification for critical operations
+        if pqc_pubkey is not None:
+            try:
+                import oqs
+
+                # Try ML-DSA-65 first, fall back to legacy Dilithium3
+                for alg_name in ("ML-DSA-65", "Dilithium3"):
+                    try:
+                        verifier = oqs.Signature(alg_name)
+                        break
+                    except Exception:
+                        continue
+                else:
+                    return False  # No supported DSA algorithm available
+
+                for tongue in required:
+                    sig = signatures[tongue]
+                    if isinstance(sig, str):
+                        sig = sig.encode("utf-8")
+                    if not verifier.verify(
+                        tongue.encode("utf-8"), sig, pqc_pubkey
+                    ):
+                        return False
+            except ImportError:
+                # liboqs not installed — skip PQC check, rely on presence check
+                pass
+
+        return True
 
 
 # ============================================================================

@@ -1,0 +1,25 @@
+{
+  "id": "8d5eba22f029faf3",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Golden Ratio is beating in our heart (Q43847214)",
+  "content": "# Golden Ratio is beating in our heart\n\nWikidata ID: Q43847214\nDescription: scientific article published on July 25, 2013\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q43847214",
+  "timestamp": "2026-03-06T02:41:14.149667",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "62e2610357d8c58eb047464b0ba57ca6b95336c61aee102fe03dee7fe3ade2f9",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q43847214",
+    "description": "scientific article published on July 25, 2013"
+  }
+}

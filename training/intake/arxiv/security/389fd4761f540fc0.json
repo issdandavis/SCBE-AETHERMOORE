@@ -1,0 +1,30 @@
+{
+  "id": "389fd4761f540fc0",
+  "source": "arxiv",
+  "category": "security",
+  "title": "On the Suitability of LLM-Driven Agents for Dark Pattern Audits",
+  "content": "# On the Suitability of LLM-Driven Agents for Dark Pattern Audits\n\nAuthors: Chen Sun, Yash Vekaria, Rishab Nithyanand\nPublished: 2026-03-04T09:32:49Z\n\nAs LLM-driven agents begin to autonomously navigate the web, their ability to interpret and respond to manipulative interface design becomes critical. A fundamental question that emerges is: can such agents reliably recognize patterns of friction, misdirection, and coercion in interface design (i.e., dark patterns)? We study this question in a setting where the workflows are consequential: website portals associated with the submission of CCPA-related data rights requests. These portals operationalize statutory rights, but they are implemented as interactive interfaces whose design can be structured to facilitate, burden, or subtly discourage the exercise of those rights. We design and deploy an LLM-driven auditing agent capable of end-to-end traversal of rights-request workflows, structured evidence gathering, and classification of potential dark patterns. Across a set of 456 data broker websites, we evaluate: (1) the ability of the agent to consistently locate and complete request flows, (2) the reliability and reproducibility of its dark pattern classifications, and (3) the conditions under which it fails or produces poor judgments. Our findings characterize both the feasibility and the limitations of using LLM-driven agents for scalable dark pattern auditing.",
+  "url": "http://arxiv.org/abs/2603.03881v1",
+  "timestamp": "2026-03-04T09:32:49Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "1efde1378e5ebfbfea37314122e2a95199adfc600a7c410923a78a390fc8502a",
+  "parent_hash": "197adbca244f8a25d01a089c27afe862aa5815672ea46949f48876ab6aac4346",
+  "metadata": {
+    "authors": [
+      "Chen Sun",
+      "Yash Vekaria",
+      "Rishab Nithyanand"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.03881v1"
+  }
+}

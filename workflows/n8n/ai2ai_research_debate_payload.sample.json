@@ -1,0 +1,12 @@
+{
+  "query": "Best monetization strategy for AI browser automation products in 2026",
+  "prompt": "Debate the top execution plan with milestones, risks, and first revenue steps.",
+  "max_results": 8,
+  "max_models": 4,
+  "create_issue": true,
+  "min_avg_governance": 0.64,
+  "min_any_governance": 0.45,
+  "require_tests_hint": true,
+  "labels": ["ai2ai", "workflow", "research", "monetization"],
+  "assignees": []
+}

@@ -1,0 +1,31 @@
+{
+  "id": "b7351b4702f79915",
+  "source": "internet_archive",
+  "category": "quarantine/security",
+  "title": "Roll over image to zoom in Read sample Follow the author Jean-Philippe Aumasson Jean-Philippe AumassonJean-Philippe\u2026 Follow Serious Cryptography: A Practical Introduction to Modern Encryption",
+  "content": "# Roll over image to zoom in Read sample Follow the author Jean-Philippe Aumasson Jean-Philippe AumassonJean-Philippe\u2026 Follow Serious Cryptography: A Practical Introduction to Modern Encryption\n\nCreator: Jean-Philippe Aumasson\nDate: 2017-11-06T00:00:00Z\nDownloads: 215\nSubjects: Computer, Cryptography, Encryption\n\nThis practical guide to modern encryption breaks down the fundamental mathematical concepts at the heart of cryptography without shying away from meaty discussions of how they work. You\u2019ll learn about authenticated encryption, secure randomness, hash functions, block ciphers, and public-key techniques such as RSA and elliptic curve cryptography. You\u2019ll also learn: - Key concepts in cryptography, such as computational security, attacker models, and forward secrecy - The strengths and limitations of the TLS protocol behind HTTPS secure websites - Quantum computation and post-quantum cryptography - About various vulnerabilities by examining numerous code examples and use cases - How to choose the best algorithm or protocol and ask vendors the right questions Each chapter includes a discussion of common implementation mistakes using real-world examples and details what could go wrong and how to avoid these pitfalls.\u00a0 Whether you\u2019re a seasoned practitioner or a beginner looking to dive into the field,\u00a0 Serious Cryptography \u00a0will provide a complete survey of modern encryption and its applications.",
+  "url": "https://archive.org/details/serious-crytography",
+  "timestamp": "2026-03-06T03:59:15.208258",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4fb1cb17d2f91010f52cc133d7c2445a6c4d627a132a9126cf9f3c49aa96d6db",
+  "parent_hash": "12cd4a96fd71dc9d970d8a14ed6b5852b9056b4bfd16d8333f7b43b74b85d684",
+  "metadata": {
+    "ia_identifier": "serious-crytography",
+    "media_type": "texts",
+    "downloads": 215,
+    "subjects": [
+      "Computer",
+      "Cryptography",
+      "Encryption"
+    ]
+  }
+}

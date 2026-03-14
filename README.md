@@ -44,6 +44,7 @@ Linear Threshold:           38.7%
 - **SCBE Kernel Spec (Canonical):** `SPEC.md`
 - **Langues Weighting System (Layer 3 + 6):** `docs/LANGUES_WEIGHTING_SYSTEM.md`
 - **HYDRA Orchestration (Execution Plane):** `docs/hydra/ARCHITECTURE.md`
+- **HYDRA CLI User Guide:** `docs/HYDRA_CLI_USER_GUIDE.md`
 - **Concept Glossary (Indexable Terms):** `CONCEPTS.md`
 - **Research Drafts (Non-Canonical):** `docs/research/README.md`
 
@@ -308,6 +309,11 @@ curl -X POST https://YOUR_API/v1/fleet/run-scenario \
 - **Gumroad**: [aethermoorgames.gumroad.com](https://aethermoorgames.gumroad.com) - Notion templates, AI workflow tools
 - **Ko-fi**: [ko-fi.com/izdandavis](https://ko-fi.com/izdandavis) - Support development
 
+### Commercial & Pilot
+- **Commercial terms overview**: `COMMERCIAL.md`
+- **Customer agreement template**: `CUSTOMER_LICENSE_AGREEMENT.md`
+- **2-week pilot outbound one-pager**: `docs/monetization/OUTBOUND_ONE_PAGER_2026-03-09.md`
+
 ### Social & Updates
 - **X/Twitter**: [@davisissac](https://x.com/davisissac)
 - **Substack**: [Issac "Izreal" Davis](https://substack.com/profile/153446638-issac-izreal-davis)
@@ -324,7 +330,13 @@ GitHub: [@issdandavis](https://github.com/issdandavis)
 
 ## License
 
-Proprietary. Contact for licensing inquiries.
+Open-source core is available under the MIT License (`LICENSE`).
+
+Commercial terms apply to designated proprietary components and enterprise delivery packages. See:
+- `COMMERCIAL.md`
+- `CUSTOMER_LICENSE_AGREEMENT.md`
+
+For enterprise licensing/support inquiries: `issdandavis@gmail.com`.
 
 ---
 

@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-03-05T20:29:39.319787+00:00",
+  "query": "aether browser connectors rag arxiv wikidata nvd mit dataverse knowledge library governance memory graph",
+  "window_count": 3,
+  "sources": [
+    {
+      "chunk_id": "wikidata_query_service",
+      "title": "Wikidata Query Service",
+      "category": "knowledge_graph",
+      "docs_url": "https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual",
+      "score": 6.0
+    },
+    {
+      "chunk_id": "harvard_dataverse_native_api",
+      "title": "Dataverse Native API",
+      "category": "datasets",
+      "docs_url": "https://guides.dataverse.org/en/latest/api/native-api.html",
+      "score": 6.0
+    },
+    {
+      "chunk_id": "nvd_vulnerabilities_api",
+      "title": "NVD Vulnerabilities API",
+      "category": "security",
+      "docs_url": "https://nvd.nist.gov/developers/vulnerabilities",
+      "score": 6.0
+    }
+  ],
+  "context_text": "[1] Wikidata Query Service\nWikidata Query Service. Category: knowledge_graph. Base URL: https://query.wikidata.org/sparql. Auth: none. Best for: entity graph traversal, facts, linked-data joins. Constraints: SPARQL endpoint fair-use expectations.\nSource: https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual\n\n[2] Dataverse Native API\nDataverse Native API. Category: datasets. Base URL: https://dataverse.harvard.edu/api. Auth: token optional by endpoint. Best for: dataset metadata, files, collection traversal. Constraints: Dataverse installation policy.\nSource: https://guides.dataverse.org/en/latest/api/native-api.html\n\n[3] NVD Vulnerabilities API\nNVD Vulnerabilities API. Category: security. Base URL: https://services.nvd.nist.gov/rest/json/cves/2.0. Auth: none (API key optional). Best for: CVE ingestion, security governance, risk intelligence. Constraints: pagination and request limits.\nSource: https://nvd.nist.gov/developers/vulnerabilities",
+  "usage": {
+    "load_first": "capsule_3w.json",
+    "then_retrieve_from": "library_chunks.jsonl",
+    "intent": "small active context, large retrieval memory"
+  }
+}

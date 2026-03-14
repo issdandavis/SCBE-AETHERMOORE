@@ -1,0 +1,40 @@
+{
+  "id": "6dd958baf8592be9",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Wake Vision",
+  "content": "# Wake Vision\n\nAuthors: Banbury, Colby, Njor, Emil, Stewart, Matthew, Warden, Pete, Kudlur, Manjunath\nPublished: 2024-05-29T12:24:58Z\nSubjects: Computer and Information Science, Engineering\nDOI: doi:10.7910/DVN/1HOPXC\n\n\"Wake Vision\" is a large, high-quality dataset featuring over 6 million images, significantly exceeding the scale and diversity of current tinyML datasets (100x). The dataset contains images with annotations of whether each image contains a person. Additionally, the dataset incorporates a comprehensive fine-grained benchmark to assess fairness and robustness, covering perceived gender, perceived age, subject distance, lighting conditions, and depictions. This dataset hosted on Harvard Dataverse contains images, CSV files, and code to generate a Wake Vision TensorFlow Dataset. We publish the annotations of this dataset under a CC BY 4.0 license. All images in the dataset are from the Open Images v7 dataset, which are sourced images from Flickr and are listed as having a CC BY 2.0 license.\n\nCitation: Banbury, Colby; Njor, Emil; Stewart, Matthew; Warden, Pete; Kudlur, Manjunath; Jeffries, Nat; Howard, Andrew; Fafoutis, Xenofon; Reddi, Vijay, 2024, \"Wake Vision\", https://doi.org/10.7910/DVN/1HOPXC, Harvard Dataverse, V4, UNF:6:aIWdvSzezr8+vXbOYU+NFA== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/1HOPXC",
+  "timestamp": "2026-03-06T02:42:24.924493",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "8199aa3771d6e61d83bf9c2f3d2702ebd61819b43bfe5667242fee9e482004d5",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/1HOPXC",
+    "subjects": [
+      "Computer and Information Science",
+      "Engineering"
+    ],
+    "authors": [
+      "Banbury, Colby",
+      "Njor, Emil",
+      "Stewart, Matthew",
+      "Warden, Pete",
+      "Kudlur, Manjunath",
+      "Jeffries, Nat",
+      "Howard, Andrew",
+      "Fafoutis, Xenofon",
+      "Reddi, Vijay"
+    ],
+    "file_count": 96
+  }
+}

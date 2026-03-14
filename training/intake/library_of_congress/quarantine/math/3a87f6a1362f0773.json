@@ -1,0 +1,32 @@
+{
+  "id": "3a87f6a1362f0773",
+  "source": "library_of_congress",
+  "category": "quarantine/math",
+  "title": "Geometry and faith; a supplement to the Ninth Bridgewater treatise,",
+  "content": "# Geometry and faith; a supplement to the Ninth Bridgewater treatise,\n\nContributors: hill, thomas\nDate: 1882\nSubjects: geometry, natural theology\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/12034098/",
+  "timestamp": "2026-03-06T02:38:09.282385",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4f9cb9f5bcffd8dc32c2ee072a6baed78bb4a056f2fe8e1ca82fd71e47944597",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "geometry",
+      "natural theology"
+    ],
+    "dates": "1882",
+    "original_format": [
+      "book"
+    ]
+  }
+}

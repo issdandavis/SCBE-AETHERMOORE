@@ -1,0 +1,38 @@
+{
+  "id": "3d9e55bb752c099c",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "GESP 3B: Boundary Sonar for Grounding in AI",
+  "content": "# GESP 3B: Boundary Sonar for Grounding in AI\n\nCreator: Micah Hughes\nDate: 2025-08-20T00:00:00Z\nDownloads: 20\nSubjects: Artificial Intelligence, AI Alignment, Grounding, Proprioception, Embodiment\n\nExploratory research notes introducing GESP 3B (Generative Emergent Structured Poetics, 3rd Baseline) as a method for probing language model boundaries. The document explores how boundary-probing can function like sonar to provide grounding for AI in proprioception, sight, touch, proximity, object manipulation, and moral/social fields. Version v1.0, archived for authorship and provenance. Author Note: For non-commercial research, alignment, or safety evaluation purposes, derivative use may be granted upon request. Contact Micah Hughes (@8Tr3k) for licensing exceptions or discussion. This document is superseded by the full GESP 3B / SONAR package released Sept 7, 2025 under CC BY-NC-ND 4.0. See: [link to full archive]",
+  "url": "https://archive.org/details/gesp3b-sonar-grounding-v1",
+  "timestamp": "2026-03-06T03:59:09.838561",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7c26bbcef0f932c1ebe5139805fbf9fb6e895ea34a25229261a52b7c177c3c83",
+  "parent_hash": "2da5f516980cbdb270092f148839fdae59e74398586f1932c987a4886a9193c0",
+  "metadata": {
+    "ia_identifier": "gesp3b-sonar-grounding-v1",
+    "media_type": "texts",
+    "downloads": 20,
+    "subjects": [
+      "Artificial Intelligence",
+      "AI Alignment",
+      "Grounding",
+      "Proprioception",
+      "Embodiment",
+      "GESP 3B",
+      "Language Models",
+      "Ethics",
+      "Robotics",
+      "Cognitive Science"
+    ]
+  }
+}

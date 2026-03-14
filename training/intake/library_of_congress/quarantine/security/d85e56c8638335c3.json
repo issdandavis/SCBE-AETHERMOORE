@@ -1,0 +1,34 @@
+{
+  "id": "d85e56c8638335c3",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "International Relations and Security Network ISN.",
+  "content": "# International Relations and Security Network ISN.\n\nContributors: eidgen\u00f6ssische technische hochschule z\u00fcrich. forschungsstelle f\u00fcr sicherheitspolitik und konfliktanalyse\nDate: 2001\nSubjects: security, international, peace, research, international relations\n\nAn electronic clearinghouse for resources in the field of security and defense studies, peace and conflict research, and international relations. An initiative coordinated by the Center for Security Studies and Conflict Research, features resources in the field of security and defense studies, peace and conflict research, and international relations. Provides access to an annotated links library; a limited area search tool (ISN LASE); a selection of resources on current world affairs; and specialized fact databases.",
+  "url": "//lccn.loc.gov/2001562770",
+  "timestamp": "2026-03-06T02:38:19.805358",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "9bd8f7df7d589b57313aea31fe22c27073b6219d323799b2d80d1a1f04aa7240",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "security, international",
+      "peace",
+      "research",
+      "international relations"
+    ],
+    "dates": "2001",
+    "original_format": [
+      "book"
+    ]
+  }
+}

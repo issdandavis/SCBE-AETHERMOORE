@@ -1,0 +1,32 @@
+{
+  "id": "ff502be683444f34",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Guidelines for the Annotation and Visualization of Legal Argumentation Structures in Chinese Judicial Decisions",
+  "content": "# Guidelines for the Annotation and Visualization of Legal Argumentation Structures in Chinese Judicial Decisions\n\nAuthors: Kun Chen, Xianglei Liao, Kaixue Fei, Yi Xing, Xinrui Li\nPublished: 2026-03-05T13:39:54Z\n\nThis guideline proposes a systematic and operational annotation framework for representing the structure of legal argumentation in judicial decisions. Grounded in theories of legal reasoning and argumentation, the framework aims to reveal the logical organization of judicial reasoning and to provide a reliable data foundation for computational analysis. At the proposition level, the guideline distinguishes four types of propositions: general normative propositions, specific normative propositions, general factual propositions, and specific factual propositions. At the relational level, five types of relations are defined to capture argumentative structures: support, attack, joint, match, and identity. These relations represent positive and negative argumentative connections, conjunctive reasoning structures, the correspondence between legal norms and case facts, and semantic equivalence between propositions. The guideline further specifies formal representation rules and visualization conventions for both basic and nested structures, enabling consistent graphical representation of complex argumentation patterns. In addition, it establishes a standardized annotation workflow and consistency control mechanisms to ensure reproducibility and reliability of the annotated data. By providing a clear conceptual model, formal representation rules, and practical annotation procedures, this guideline offers methodological support for large-scale analysis of judicial reasoning and for future research in legal argument mining, computational modeling of legal reasoning, and AI-assisted legal analysis.",
+  "url": "http://arxiv.org/abs/2603.05171v1",
+  "timestamp": "2026-03-05T13:39:54Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "4b9e2a4c8b3108fc2ca6edd11c36611774f1f03f83dd984874b593cb1138c570",
+  "parent_hash": "2c8577d29c5190e47f90a834f5c162ae9bae16f26bfebbdc568946799db36649",
+  "metadata": {
+    "authors": [
+      "Kun Chen",
+      "Xianglei Liao",
+      "Kaixue Fei",
+      "Yi Xing",
+      "Xinrui Li"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05171v1"
+  }
+}

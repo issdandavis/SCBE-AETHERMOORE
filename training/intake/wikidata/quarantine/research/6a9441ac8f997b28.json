@@ -1,0 +1,25 @@
+{
+  "id": "6a9441ac8f997b28",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Post-Quantum Cryptography \u2014 PQCrypto 2010 (Q21769848)",
+  "content": "# Post-Quantum Cryptography \u2014 PQCrypto 2010\n\nWikidata ID: Q21769848\nDescription: Post-Quantum Cryptography. Third International Workshop, PQCrypto 2010, Darmstadt, Germany, May 25-28, 2010. Proceedings\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q21769848",
+  "timestamp": "2026-03-06T02:41:03.050756",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4f030fae237d06c14334867f28d80fa747f6f7f118b83ba7dc234c8e86f91029",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q21769848",
+    "description": "Post-Quantum Cryptography. Third International Workshop, PQCrypto 2010, Darmstadt, Germany, May 25-28, 2010. Proceedings"
+  }
+}

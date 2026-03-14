@@ -1,6 +1,6 @@
 # ☁️ Google Cloud Infrastructure Setup - SCBE-AETHERMOORE
 
-> last-synced: 2026-02-16T07:29:12.295Z
+> last-synced: 2026-03-09T07:28:11.688Z
 
 # Google Cloud Infrastructure Setup
 
@@ -146,7 +146,7 @@ Workload Identity Pool:
 
 Repository Connection:
 
-- GitHub Repository: ISDanDavis2/scbe-aethermoore
+- GitHub Repository: issdandavis/SCBE-AETHERMOORE
 
 - Branch Restrictions: main, production
 
@@ -168,8 +168,8 @@ OIDC Token Claims:
 Attribute Conditions:
 
 ```javascript
-assertion.repository == 'ISDanDavis2/scbe-aethermoore' &&
-assertion.repository_owner == 'ISDanDavis2'
+assertion.repository == 'issdandavis/SCBE-AETHERMOORE' &&
+assertion.repository_owner == 'issdandavis'
 ```
 
 Security Benefit:

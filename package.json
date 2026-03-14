@@ -69,6 +69,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:python": "pytest tests/ -v",
+    "test:rust": "cargo test --manifest-path rust/scbe_core/Cargo.toml",
     "test:all": "npm test && npm run test:python",
     "typecheck": "tsc --noEmit",
     "check:circular": "madge --circular --extensions ts src/",
@@ -79,8 +80,11 @@
     "lint:python": "flake8 src/ tests/ --max-line-length=120",
     "cli": "python scbe-cli.py",
     "codeprism:build": "python scripts/code_prism_build.py",
+    "codeprism:mesh": "python scripts/code_mesh_build.py",
     "connector:health": "python scripts/connector_health_check.py",
+    "scbe:bootstrap": "powershell -ExecutionPolicy Bypass -File ./scripts/scbe_bootstrap.ps1",
     "system:cli": "python scripts/scbe-system-cli.py",
+    "m6:train": "python scripts/train_m6_spheremesh.py",
     "demo": "start scbe-aethermoore/customer-demo.html",
     "agentic:demo": "ts-node src/agentic/demo-runner.ts",
     "docker:build": "docker build -t scbe-aethermoore:latest .",
@@ -111,7 +115,9 @@
     "gateway:serve": "node dist-gateway/gateway/authorize-service.js",
     "gateway:build": "tsc -p tsconfig.gateway.json",
     "xops:dryrun": "node scripts/system/x_ops_queue_runner.mjs --queue workflows/n8n/x_ops_queue.sample.json --dry-run",
-    "xops:run": "node scripts/system/x_ops_queue_runner.mjs --queue workflows/n8n/x_ops_queue.sample.json"
+    "xops:run": "node scripts/system/x_ops_queue_runner.mjs --queue workflows/n8n/x_ops_queue.sample.json",
+    "skills:bridge": "powershell -ExecutionPolicy Bypass -File ./scripts/system/scbe_skill_tool_bridge.ps1 -Action quick",
+    "skills:bridge:full": "powershell -ExecutionPolicy Bypass -File ./scripts/system/scbe_skill_tool_bridge.ps1 -Action full"
   },
   "keywords": [
     "cryptography",

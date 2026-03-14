@@ -1,0 +1,30 @@
+{
+  "id": "b2bf396a9973a2c6",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2010-4429 \u2014 CVSS 3.5 (UNKNOWN)",
+  "content": "# CVE-2010-4429\n\nCVSS Score: 3.5 (UNKNOWN)\nPublished: 2011-01-19T17:00:01.530\nCWEs: NVD-CWE-noinfo\n\nUnspecified vulnerability in the Agile Core component in Oracle Supply Chain Products Suite 9.3.0.2 and 9.3.1 allows remote authenticated users to affect integrity via unknown vectors related to Web Client, a different vulnerability than CVE-2010-3505.\n\nReferences: http://osvdb.org/70563, http://secunia.com/advisories/42923, http://www.oracle.com/technetwork/topics/security/cpujan2011-194091.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2010-4429",
+  "timestamp": "2026-03-06T02:41:59.350903",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7e772cef99263d5a2fc2e6870f22e5176fe0a1a123cca208203b5a31245995d0",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2010-4429",
+    "cvss_score": 3.5,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-noinfo"
+    ],
+    "published": "2011-01-19T17:00:01.530"
+  }
+}

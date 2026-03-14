@@ -1,0 +1,30 @@
+{
+  "id": "29a2247e13c8196c",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Worst-case Throughput Analysis for Parametric Rate and Parametric Actor Execution Time Scenario-Aware Dataflow Graphs",
+  "content": "# Worst-case Throughput Analysis for Parametric Rate and Parametric Actor Execution Time Scenario-Aware Dataflow Graphs\n\nCreator: Mladen Skelin, Marc Geilen, Francky Catthoor, Sverre Hendseth\nDate: 2014-03-31T00:00:00Z\nDownloads: 28\nSubjects: Computing Research Repository, Programming Languages\n\nScenario-aware dataflow (SADF) is a prominent tool for modeling and analysis of dynamic embedded dataflow applications. In SADF the application is represented as a finite collection of synchronous dataflow (SDF) graphs, each of which represents one possible application behaviour or scenario. A finite state machine (FSM) specifies the possible orders of scenario occurrences. The SADF model renders the tightest possible performance guarantees, but is limited by its finiteness. This means that from a practical point of view, it can only handle dynamic dataflow applications that are characterized by a reasonably sized set of possible behaviours or scenarios. In this paper we remove this limitation for a class of SADF graphs by means of SADF model parametrization in terms of graph port rates and actor execution times. First, we formally define the semantics of the model relevant for throughput analysis based on (max,+) linear system theory and (max,+) automata. Second, by generalizing some of the existing results, we give the algorithms for worst-case throughput analysis of parametric rate and parametric actor execution time acyclic SADF graphs with a fully connected, possibly infinite state transition system. Third, we demonstrate our approach on a few realistic applications from digital signal processing (DSP) domain mapped onto an embedded multi-processor architecture.",
+  "url": "https://archive.org/details/arxiv-1404.0089",
+  "timestamp": "2026-03-06T02:40:48.214015",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "e8f6478cba72deb0a556049c53c03fcd4e1269ebffcc455cf3ab22660da70b82",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1404.0089",
+    "media_type": "texts",
+    "downloads": 28,
+    "subjects": [
+      "Computing Research Repository",
+      "Programming Languages"
+    ]
+  }
+}

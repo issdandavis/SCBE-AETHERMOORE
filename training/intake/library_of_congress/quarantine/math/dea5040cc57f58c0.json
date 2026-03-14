@@ -1,0 +1,32 @@
+{
+  "id": "dea5040cc57f58c0",
+  "source": "library_of_congress",
+  "category": "quarantine/math",
+  "title": "Libellus post saeculum quam Ioannes Bolyai de Bolya anno MDCCCII A.D. XVIII kalendas ianuarias Claudiopoli natus est ad celebrandam memoriam eius immortalem.",
+  "content": "# Libellus post saeculum quam Ioannes Bolyai de Bolya anno MDCCCII A.D. XVIII kalendas ianuarias Claudiopoli natus est ad celebrandam memoriam eius immortalem.\n\nContributors: schlesinger, ludwig, magyar kir\u00e1lyi ferenc j\u00f3zsef tudom\u00e1nyegyetem\nDate: 1902\nSubjects: b\u00f3lyai, j\u00e1nos, geometry, hyperbolic\n\nTitle in red and black. Preface signed: Ludovicus Schlesinger, huius libri redactor. Iulius Farkas, h.t. decanus. Half-title: Regia litt. universitas hung. claudiopolitana. Ioannis Bolyai in memoriam. A digital reproduction made from a copy held by Cornel University is available from the Cornell University Library's Historical Mathematics Monographs Web site.",
+  "url": "//lccn.loc.gov/03015658",
+  "timestamp": "2026-03-06T02:37:52.081707",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "0b8e6954d5f4a928b0ec5ae56c7decca384aa59afb94998b0ad0328e387a2bbf",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "b\u00f3lyai, j\u00e1nos",
+      "geometry, hyperbolic"
+    ],
+    "dates": "1902",
+    "original_format": [
+      "book"
+    ]
+  }
+}

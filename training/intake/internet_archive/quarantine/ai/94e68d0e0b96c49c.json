@@ -1,0 +1,38 @@
+{
+  "id": "94e68d0e0b96c49c",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "SONAR: A Progression Toward Machine Sight (with GESP 3B Integration)",
+  "content": "# SONAR: A Progression Toward Machine Sight (with GESP 3B Integration)\n\nCreator: Micah Hughes (independent researcher)\nDate: 2024-08-24T00:00:00Z\nDownloads: 15\nSubjects: Artificial Intelligence, Machine Vision, Gradient Sensing, AI Grounding, Cognitive Architecture\n\nA speculative research document outlining SONAR, a progression framework for enabling machine \u201csight\u201d through gradient sensing, resolution improvement, optical instrumentation, and word-to-world mapping. Includes discussion of the GESP 3B probing method, examples of boundary interpretation, and implications for machine perception. Part of a broader lineage of independent research into Deliberate Humanity, AI alignment, and grounding methods. Prepared for archival purposes. Author Note: For non-commercial research, alignment, or safety evaluation purposes, derivative use may be granted upon request. Contact Micah Hughes (@8Tr3k) for licensing exceptions or discussion. This document is superseded by the full GESP 3B / SONAR package released Sept 7, 2025 under CC BY-NC-ND 4.0. See: [link to full archive]",
+  "url": "https://archive.org/details/sonar-with-examples",
+  "timestamp": "2026-03-06T03:59:18.940366",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "36c2bcb5285d7ada2a625f26c4afbf5ab544e383d0e03a75a98c65df6ca586e1",
+  "parent_hash": "12cd4a96fd71dc9d970d8a14ed6b5852b9056b4bfd16d8333f7b43b74b85d684",
+  "metadata": {
+    "ia_identifier": "sonar-with-examples",
+    "media_type": "texts",
+    "downloads": 15,
+    "subjects": [
+      "Artificial Intelligence",
+      "Machine Vision",
+      "Gradient Sensing",
+      "AI Grounding",
+      "Cognitive Architecture",
+      "GESP 3B",
+      "SONAR",
+      "Deliberate Humanity",
+      "AI Ethics",
+      "AI Alignment"
+    ]
+  }
+}

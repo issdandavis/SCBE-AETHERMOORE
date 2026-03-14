@@ -1,0 +1,29 @@
+{
+  "id": "b239270f022d7950",
+  "source": "arxiv",
+  "category": "security",
+  "title": "Multiparty Quantum Key Agreement: Architectures, State-of-the-art, and Open Problems",
+  "content": "# Multiparty Quantum Key Agreement: Architectures, State-of-the-art, and Open Problems\n\nAuthors: Malik Mouaji, Saif Al-Kuwari\nPublished: 2026-03-03T18:17:34Z\n\nMultiparty quantum key agreement (MQKA) enables $n \\geq 3$ mutually distrustful users to establish a shared secret key through collaborative quantum protocols. In this paper, we provide a comprehensive review where we argue that MQKA is best understood as a design space organized along three orthogonal but tightly coupled axes: (1) network architecture, which determines how quantum states flow between participants; (2) quantum resources, which encode the physical degrees of freedom used for implementation; and (3) security model, which defines trust assumptions about devices and infrastructure. Rather than treating MQKA as a linear sequence of isolated protocols, we develop this three-axis perspective to reveal recurrent patterns, sharp trade-offs, and unexplored design spaces. We classify MQKA protocols into structural families, map them to underlying quantum resources, and analyze how different security models shape fairness and collusion resistance. We further identify open challenges in composable security frameworks, network native integration, device-independent implementations, and propose a research roadmap toward hybrid-resource, bosonic-code-encoded, and fairness-aware MQKA suitable for the future quantum internet deployments in the post-NISQ era.",
+  "url": "http://arxiv.org/abs/2603.03225v1",
+  "timestamp": "2026-03-03T18:17:34Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "3ec165d0ec55b540f19cfc266cca7b95b4a3737b1be2db90475b8344221c0788",
+  "parent_hash": "1efde1378e5ebfbfea37314122e2a95199adfc600a7c410923a78a390fc8502a",
+  "metadata": {
+    "authors": [
+      "Malik Mouaji",
+      "Saif Al-Kuwari"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.03225v1"
+  }
+}

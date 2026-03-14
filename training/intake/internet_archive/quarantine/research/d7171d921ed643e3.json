@@ -1,0 +1,30 @@
+{
+  "id": "d7171d921ed643e3",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Top 10 Toronto",
+  "content": "# Top 10 Toronto\n\nCreator: Johnson, Lorraine\nDate: 2015-01-01T00:00:00Z\nDownloads: 21\nSubjects: Toronto (Ont.) -- Guidebooks, Ontario -- Toronto\n\n128 pages : 19 cm + Discusses lodging, dining, and entertainment in Toronto, along with information on trip planning, security, and shopping Includes indexes Includes bibliographical references (page 110) and indexes",
+  "url": "https://archive.org/details/top10toronto0000john_n5y5",
+  "timestamp": "2026-03-06T02:40:52.039245",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "722e490139a1125c0bc4d0cb83e1ccbd585d54e3725db866f8ff6d8873d7bfab",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "top10toronto0000john_n5y5",
+    "media_type": "texts",
+    "downloads": 21,
+    "subjects": [
+      "Toronto (Ont.) -- Guidebooks",
+      "Ontario -- Toronto"
+    ]
+  }
+}

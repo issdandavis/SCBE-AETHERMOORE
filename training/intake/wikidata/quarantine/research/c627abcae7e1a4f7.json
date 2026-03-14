@@ -1,0 +1,25 @@
+{
+  "id": "c627abcae7e1a4f7",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "multi-agent system (Q529909)",
+  "content": "# multi-agent system\n\nWikidata ID: Q529909\nDescription: built of multiple interacting agents\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q529909",
+  "timestamp": "2026-03-06T02:41:21.447481",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "424cd0a2544ca7a6df262bb242d254ea26c3934518175b66ac0d92bc505fb7e0",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q529909",
+    "description": "built of multiple interacting agents"
+  }
+}

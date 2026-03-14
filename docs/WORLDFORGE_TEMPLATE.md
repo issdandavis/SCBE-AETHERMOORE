@@ -1,6 +1,6 @@
-# 📚 WorldForge - RAG Training Files
+# WorldForge - Complete Worldbuilding & Conlang Template
 
-> last-synced: 2026-02-16T07:30:25.335Z
+> last-synced: 2026-03-09T07:29:57.468Z
 
 📄 worldforge_overview.md
 
@@ -9,6 +9,345 @@
 🌍 WorldForge - Complete Worldbuilding & Conlang Template
 
 # Welcome to WorldForge
+
+<!-- Unsupported block type: child_page -->
+# Welcome to Your WorldForge Setup! QUICK CHECK LIST THEN 5 Minute set-up Guide Next! 
+
+Congratulations on getting WorldForge! This wizard will walk you through the essential steps to start building your world. You can work through these steps in order, or jump to what excites you most. REMEMBER this is YOURS, Make a beautiful or terrible world, its okay, you can start over and do what you like.
+
+---
+
+## ✅ Setup Checklist
+
+### Step 1: Explore the Example World
+
+- [ ] Browse the Aethermoor example entries in each database
+
+- [ ] Notice how entries link to each other (cultures → languages, characters → cultures)
+
+- [ ] Read the example conlang Kor'aelin to see a complete language structure
+
+- [ ] Check out the example character Polly Fizzlewing to see how all properties connect
+
+Why this helps: Understanding the example structure shows you how to build your own interconnected world.
+
+---
+
+### Step 2: Choose Your Starting Point
+
+Pick ONE of these paths based on what excites you most:
+
+Path A: Start with a Culture (Recommended for beginners)
+
+- [ ] Go to the Cultures database
+
+- [ ] Create your first culture (e.g., "Mountain Dwellers," "Desert Nomads," "Sky Pirates")
+
+- [ ] Fill in their core values, customs, and aesthetics
+
+- [ ] Then create their language, homeland, and key characters
+
+Path B: Start with a Language (For conlang enthusiasts)
+
+- [ ] Go to the Constructed Languages database
+
+- [ ] Use the Phonology Builder Worksheet to design your sound system
+
+- [ ] Create your first language entry
+
+- [ ] Then create the culture that speaks it
+
+Path C: Start with a Character (For character-driven writers)
+
+- [ ] Go to the Characters database
+
+- [ ] Create your protagonist or a key character
+
+- [ ] Build outward: What culture are they from? What language do they speak?
+
+- [ ] Create those supporting elements next
+
+Path D: Start with a Magic System (For hard worldbuilders)
+
+- [ ] Go to the Magic/Tech Systems database
+
+- [ ] Design your magic rules using the Magic System Consistency Check worksheet
+
+- [ ] Then create cultures based on their relationship to that magic
+
+---
+
+### Step 3: Clean Out Example Data (When Ready)
+
+Don't rush this step! Keep the examples until you understand the system.
+
+When you're ready:
+
+- [ ] Delete or archive the Aethermoor example entries
+
+- [ ] Keep the database structure intact (don't delete the databases themselves)
+
+- [ ] Consider keeping one example as a template you can duplicate
+
+Pro tip: Instead of deleting, create a "Status" property and mark examples as "Archive" so you can reference them later.
+
+---
+
+### Step 4: Link Everything Together
+
+This is where WorldForge becomes powerful:
+
+- [ ] Link your cultures to the languages they speak
+
+- [ ] Link your characters to their cultures and languages
+
+- [ ] Link your characters to their home locations
+
+- [ ] Add a few historical events and link them to locations and cultures
+
+- [ ] Link your magic/tech systems to cultures (who uses it? who fears it?)
+
+See the Architecture Diagram on the main page to understand how pieces connect.
+
+---
+
+### Step 5: Use the Worksheets
+
+These aren't just "fill in the blanks"—they're deep-dive exercises:
+
+For Languages:
+
+- [ ] Complete the Phonology Builder Worksheet (design your sound system)
+
+- [ ] Use the Grammar Structure Template (build syntax rules)
+
+- [ ] Reference the Vocabulary Development Guide (create words efficiently)
+
+For Worldbuilding:
+
+- [ ] Work through Culture Development Prompts (50+ questions to flesh out societies)
+
+- [ ] Complete the Magic System Consistency Check (stress-test your rules)
+
+- [ ] Use the Timeline Brainstorming worksheet (build cause-and-effect history)
+
+These worksheets prevent plot holes and create depth other worldbuilders miss.
+
+---
+
+## 🎯 Common Workflows by Goal
+
+### For Novel Writers
+
+Your 7-day setup:
+
+Day 1-2: Create your protagonist's culture and your antagonist's culture
+
+Day 3: Build basic languages for each (at minimum: naming patterns + 50 core words)
+
+Day 4: Add 3-5 major historical events that created current story tensions
+
+Day 5: Populate 10-15 key characters, linking them to cultures and events
+
+Day 6: Design your magic/tech system and run the Consistency Check
+
+Day 7: Add key locations and link them to cultures and events
+
+Result: You now have a plot-hole-resistant world bible to reference while drafting.
+
+---
+
+### For TTRPG Game Masters
+
+Your session-zero prep:
+
+Week before Session 1:
+
+  - Create the starting region in Locations (continent → region → starting town)
+
+  - Build 2-3 factions with conflicting goals in Cultures
+
+  - Populate 15-20 NPCs, linking them to factions
+
+  - Add 5 recent historical events (last 1-10 years) for adventure hooks
+
+Ongoing campaign:
+
+  - Add new locations as players explore
+
+  - Track NPC relationships in the Characters database
+
+  - Add new events to the Timeline as consequences of player actions
+
+  - Expand languages and cultures when players ask deeper questions
+
+Result: You can improvise confidently because you know your world's internal logic.
+
+---
+
+### For Video Game Designers
+
+Your design doc workflow:
+
+Phase 1: Geography
+
+  - Map your entire game world hierarchically (continent → region → city → district)
+
+  - Define biomes and how they affect gameplay
+
+Phase 2: Cultures & Politics
+
+  - Create major factions with territories marked in Locations
+
+  - Define relationships (allies, rivals, neutral)
+
+Phase 3: Language & Naming
+
+  - Build naming pattern rules for each culture (even if not full languages)
+
+  - Use Phonology Builder to keep names consistent
+
+Phase 4: Characters & Quests
+
+  - Populate NPCs with relationship webs
+
+  - Link characters to locations and events for quest generation
+
+Phase 5: Lore & History
+
+  - Build timeline of major events
+
+  - Create discoverable lore entries that reference your databases
+
+Result: Your design doc writes itself with built-in consistency.
+
+---
+
+### For Worldbuilding Hobbyists
+
+No pressure approach:
+
+  - Start with whatever excites you most (a cool language? A magic system? A character?)
+
+  - Let that starting point pull you outward organically
+
+  - Use the databases to track connections as they emerge
+
+  - Don't feel obligated to fill every field—build deep instead of wide
+
+  - Revisit the Consistency Check worksheets every few months
+
+Result: A living, breathing world that grows with your interests.
+
+---
+
+## 💡 Pro Tips for Success
+
+### Start Small, Build Deep
+
+  - Don't try to fill every database at once
+
+  - Pick one culture or language and flesh it out completely
+
+  - Quality over quantity—3 detailed cultures beat 20 shallow ones
+
+### Use Text-to-Speech for Languages
+
+  - Speak your conlang words out loud
+
+  - Use speech-to-text to capture phonetics as you hear them
+
+  - Helps catch awkward sound combinations early
+
+### Consistency Over Completeness
+
+  - A few well-developed elements beat dozens of shallow ones
+
+  - Use the worksheets to stress-test your ideas
+
+  - If something breaks your world's rules, revise it now (not in Chapter 15)
+
+### Make It Yours
+
+  - Delete sections you don't need (if you don't use magic, remove that database)
+
+  - Add databases for genre-specific needs (sci-fi tech, superhero powers, political systems)
+
+  - Customize properties to match your workflow
+
+### Save Often, Version Control
+
+  - Duplicate your WorldForge page monthly as a backup
+
+  - Name backups "WorldForge - January 2026 Backup"
+
+  - Notion has version history, but explicit backups are safer
+
+---
+
+## 🆘 Troubleshooting
+
+"I don't know where to start!"
+
+→ Use Path A (Start with a Culture). It's the most beginner-friendly.
+
+"The databases feel overwhelming."
+
+→ Hide properties you don't need yet. Focus on Title, Description, and one or two key fields.
+
+"I'm stuck on naming things."
+
+→ Use the Phonology Builder to create naming rules. Generate syllables, combine them randomly, pick what sounds good.
+
+"My world feels generic."
+
+→ Work through the Culture Development Prompts worksheet. The deep questions reveal uniqueness.
+
+"I keep finding plot holes."
+
+→ That's what the Consistency Check worksheets are for! Run your systems through the stress tests.
+
+"Links between databases aren't working."
+
+→ Make sure you're using the Relation properties (they have a chain link icon). These auto-connect databases.
+
+---
+
+## 📬 Need Help?
+
+Questions? Stuck on something? Want to show off your world?
+
+Email me: issdandavis7795@gmail.com
+
+I read every message and love seeing what people build with WorldForge!
+
+---
+
+## ✅ Quick Checklist Summary
+
+- [ ] I've explored the Aethermoor examples
+
+- [ ] I've chosen my starting point (Culture, Language, Character, or Magic)
+
+- [ ] I've created my first entry in that database
+
+- [ ] I've started linking entries together (using Relation properties)
+
+- [ ] I've completed at least one worksheet
+
+- [ ] I understand the Architecture Diagram on the main page
+
+- [ ] I've bookmarked this Setup Wizard for reference
+
+When you've checked all these boxes, you're ready to build!
+
+---
+
+Now go create something amazing. 🌍✨
+
+Your world is waiting.
+
+5 Minute set-up Guide Next!
 
 <!-- Unsupported block type: child_page -->
 <!-- Unsupported block type: callout -->
@@ -127,69 +466,6 @@ graph TB
   5. 3 Events
 
   6. 1 Magic/Tech system
-
-<!-- Unsupported block type: callout -->
-
-<!-- Unsupported block type: child_page -->
-<!-- Unsupported block type: callout -->
-
-### 1) Cleanup (remove personal stuff)
-
-  - Delete or archive any pages that are only relevant to your example world.
-
-  - Keep 3–10 example entries per database (or none, if you want a clean starting point).
-
-  - Replace any “Add your link here” placeholders with real links (Gumroad, email, etc.).
-
-### 2) Final QA (fast checks)
-
-  - Open each core database and confirm:
-    - Relations are still connected.
-
-    - Required properties exist.
-
-    - Views look clean (Table / Board / Gallery).
-
-  - Click through 3 random pages and confirm backlinks render.
-
-### 3) Export + screenshots
-
-  - Export a PDF of the main landing page (optional).
-
-  - Take 3–5 screenshots:
-    - The main landing page hero section
-
-    - One core database view
-
-    - One example entry page
-
-    - One worksheet page
-
-### 4) Publish flow (visual)
-
-```mermaid
-graph LR
-	A[🧹 Cleanup] --> B[🧪 QA Pass]
-	B --> C[📸 Screenshots]
-	C --> D[🎥 Short demo video]
-	D --> E[📝 Listing copy]
-	E --> F[🌐 Publish / Share]
-	F --> G[🛒 Gumroad + Notion Marketplace]
-
-	%% Readability defaults
-	classDef node fill:#f8fafc,stroke:#1f2937,stroke-width:1px,color:#111827;
-	class A,B,C,D,E,F,G node;
-```
-
-### 5) Listing copy skeleton
-
-  - Headline: What it is + who it’s for
-
-  - 3 bullets: What’s included
-
-  - 1 paragraph: Why it’s different
-
-  - Call to action: Buy / duplicate / get started
 
 <!-- Unsupported block type: callout -->
 
@@ -1956,7 +2232,7 @@ Perfect for: Novel writers, TTRPG GMs, game designers, worldbuilding hobbyists
 
 ### 💳 Purchase Options
 
-🛒 Buy on Gumroad - $12 ← Add your link here
+🛒 Buy on Gumroad - $29
 
 Single payment. Instant delivery. No subscription. Lifetime access.
 
@@ -3267,343 +3543,6 @@ Use this as your blueprint, then build your own world.
 ---
 
 © 2026 Issac D Davis • Included as example content with WorldForge
-
-<!-- Unsupported block type: child_page -->
-# Welcome to Your WorldForge Setup!
-
-Congratulations on getting WorldForge! This wizard will walk you through the essential steps to start building your world. You can work through these steps in order, or jump to what excites you most.
-
----
-
-## ✅ Setup Checklist
-
-### Step 1: Explore the Example World
-
-- [ ] Browse the Aethermoor example entries in each database
-
-- [ ] Notice how entries link to each other (cultures → languages, characters → cultures)
-
-- [ ] Read the example conlang Kor'aelin to see a complete language structure
-
-- [ ] Check out the example character Polly Fizzlewing to see how all properties connect
-
-Why this helps: Understanding the example structure shows you how to build your own interconnected world.
-
----
-
-### Step 2: Choose Your Starting Point
-
-Pick ONE of these paths based on what excites you most:
-
-Path A: Start with a Culture (Recommended for beginners)
-
-- [ ] Go to the Cultures database
-
-- [ ] Create your first culture (e.g., "Mountain Dwellers," "Desert Nomads," "Sky Pirates")
-
-- [ ] Fill in their core values, customs, and aesthetics
-
-- [ ] Then create their language, homeland, and key characters
-
-Path B: Start with a Language (For conlang enthusiasts)
-
-- [ ] Go to the Constructed Languages database
-
-- [ ] Use the Phonology Builder Worksheet to design your sound system
-
-- [ ] Create your first language entry
-
-- [ ] Then create the culture that speaks it
-
-Path C: Start with a Character (For character-driven writers)
-
-- [ ] Go to the Characters database
-
-- [ ] Create your protagonist or a key character
-
-- [ ] Build outward: What culture are they from? What language do they speak?
-
-- [ ] Create those supporting elements next
-
-Path D: Start with a Magic System (For hard worldbuilders)
-
-- [ ] Go to the Magic/Tech Systems database
-
-- [ ] Design your magic rules using the Magic System Consistency Check worksheet
-
-- [ ] Then create cultures based on their relationship to that magic
-
----
-
-### Step 3: Clean Out Example Data (When Ready)
-
-Don't rush this step! Keep the examples until you understand the system.
-
-When you're ready:
-
-- [ ] Delete or archive the Aethermoor example entries
-
-- [ ] Keep the database structure intact (don't delete the databases themselves)
-
-- [ ] Consider keeping one example as a template you can duplicate
-
-Pro tip: Instead of deleting, create a "Status" property and mark examples as "Archive" so you can reference them later.
-
----
-
-### Step 4: Link Everything Together
-
-This is where WorldForge becomes powerful:
-
-- [ ] Link your cultures to the languages they speak
-
-- [ ] Link your characters to their cultures and languages
-
-- [ ] Link your characters to their home locations
-
-- [ ] Add a few historical events and link them to locations and cultures
-
-- [ ] Link your magic/tech systems to cultures (who uses it? who fears it?)
-
-See the Architecture Diagram on the main page to understand how pieces connect.
-
----
-
-### Step 5: Use the Worksheets
-
-These aren't just "fill in the blanks"—they're deep-dive exercises:
-
-For Languages:
-
-- [ ] Complete the Phonology Builder Worksheet (design your sound system)
-
-- [ ] Use the Grammar Structure Template (build syntax rules)
-
-- [ ] Reference the Vocabulary Development Guide (create words efficiently)
-
-For Worldbuilding:
-
-- [ ] Work through Culture Development Prompts (50+ questions to flesh out societies)
-
-- [ ] Complete the Magic System Consistency Check (stress-test your rules)
-
-- [ ] Use the Timeline Brainstorming worksheet (build cause-and-effect history)
-
-These worksheets prevent plot holes and create depth other worldbuilders miss.
-
----
-
-## 🎯 Common Workflows by Goal
-
-### For Novel Writers
-
-Your 7-day setup:
-
-Day 1-2: Create your protagonist's culture and your antagonist's culture
-
-Day 3: Build basic languages for each (at minimum: naming patterns + 50 core words)
-
-Day 4: Add 3-5 major historical events that created current story tensions
-
-Day 5: Populate 10-15 key characters, linking them to cultures and events
-
-Day 6: Design your magic/tech system and run the Consistency Check
-
-Day 7: Add key locations and link them to cultures and events
-
-Result: You now have a plot-hole-resistant world bible to reference while drafting.
-
----
-
-### For TTRPG Game Masters
-
-Your session-zero prep:
-
-Week before Session 1:
-
-  - Create the starting region in Locations (continent → region → starting town)
-
-  - Build 2-3 factions with conflicting goals in Cultures
-
-  - Populate 15-20 NPCs, linking them to factions
-
-  - Add 5 recent historical events (last 1-10 years) for adventure hooks
-
-Ongoing campaign:
-
-  - Add new locations as players explore
-
-  - Track NPC relationships in the Characters database
-
-  - Add new events to the Timeline as consequences of player actions
-
-  - Expand languages and cultures when players ask deeper questions
-
-Result: You can improvise confidently because you know your world's internal logic.
-
----
-
-### For Video Game Designers
-
-Your design doc workflow:
-
-Phase 1: Geography
-
-  - Map your entire game world hierarchically (continent → region → city → district)
-
-  - Define biomes and how they affect gameplay
-
-Phase 2: Cultures & Politics
-
-  - Create major factions with territories marked in Locations
-
-  - Define relationships (allies, rivals, neutral)
-
-Phase 3: Language & Naming
-
-  - Build naming pattern rules for each culture (even if not full languages)
-
-  - Use Phonology Builder to keep names consistent
-
-Phase 4: Characters & Quests
-
-  - Populate NPCs with relationship webs
-
-  - Link characters to locations and events for quest generation
-
-Phase 5: Lore & History
-
-  - Build timeline of major events
-
-  - Create discoverable lore entries that reference your databases
-
-Result: Your design doc writes itself with built-in consistency.
-
----
-
-### For Worldbuilding Hobbyists
-
-No pressure approach:
-
-  - Start with whatever excites you most (a cool language? A magic system? A character?)
-
-  - Let that starting point pull you outward organically
-
-  - Use the databases to track connections as they emerge
-
-  - Don't feel obligated to fill every field—build deep instead of wide
-
-  - Revisit the Consistency Check worksheets every few months
-
-Result: A living, breathing world that grows with your interests.
-
----
-
-## 💡 Pro Tips for Success
-
-### Start Small, Build Deep
-
-  - Don't try to fill every database at once
-
-  - Pick one culture or language and flesh it out completely
-
-  - Quality over quantity—3 detailed cultures beat 20 shallow ones
-
-### Use Text-to-Speech for Languages
-
-  - Speak your conlang words out loud
-
-  - Use speech-to-text to capture phonetics as you hear them
-
-  - Helps catch awkward sound combinations early
-
-### Consistency Over Completeness
-
-  - A few well-developed elements beat dozens of shallow ones
-
-  - Use the worksheets to stress-test your ideas
-
-  - If something breaks your world's rules, revise it now (not in Chapter 15)
-
-### Make It Yours
-
-  - Delete sections you don't need (if you don't use magic, remove that database)
-
-  - Add databases for genre-specific needs (sci-fi tech, superhero powers, political systems)
-
-  - Customize properties to match your workflow
-
-### Save Often, Version Control
-
-  - Duplicate your WorldForge page monthly as a backup
-
-  - Name backups "WorldForge - January 2026 Backup"
-
-  - Notion has version history, but explicit backups are safer
-
----
-
-## 🆘 Troubleshooting
-
-"I don't know where to start!"
-
-→ Use Path A (Start with a Culture). It's the most beginner-friendly.
-
-"The databases feel overwhelming."
-
-→ Hide properties you don't need yet. Focus on Title, Description, and one or two key fields.
-
-"I'm stuck on naming things."
-
-→ Use the Phonology Builder to create naming rules. Generate syllables, combine them randomly, pick what sounds good.
-
-"My world feels generic."
-
-→ Work through the Culture Development Prompts worksheet. The deep questions reveal uniqueness.
-
-"I keep finding plot holes."
-
-→ That's what the Consistency Check worksheets are for! Run your systems through the stress tests.
-
-"Links between databases aren't working."
-
-→ Make sure you're using the Relation properties (they have a chain link icon). These auto-connect databases.
-
----
-
-## 📬 Need Help?
-
-Questions? Stuck on something? Want to show off your world?
-
-Email me: issdandavis7795@gmail.com
-
-I read every message and love seeing what people build with WorldForge!
-
----
-
-## ✅ Quick Checklist Summary
-
-- [ ] I've explored the Aethermoor examples
-
-- [ ] I've chosen my starting point (Culture, Language, Character, or Magic)
-
-- [ ] I've created my first entry in that database
-
-- [ ] I've started linking entries together (using Relation properties)
-
-- [ ] I've completed at least one worksheet
-
-- [ ] I understand the Architecture Diagram on the main page
-
-- [ ] I've bookmarked this Setup Wizard for reference
-
-When you've checked all these boxes, you're ready to build!
-
----
-
-Now go create something amazing. 🌍✨
-
-Your world is waiting.
 
 <!-- Unsupported block type: child_page -->
 # The Echo of Self → The Endless Protocol
@@ -5167,4 +5106,8 @@ WorldForge is designed as a connected web:
 
 ### Source page
 
-  - Original Notion page: 📚 WorldForge - RAG Training Files
+  - Original Notion page: WorldForge - Complete Worldbuilding & Conlang Template
+
+$29 — Full Worldbuilding System
+
+<!-- Unsupported block type: child_database -->

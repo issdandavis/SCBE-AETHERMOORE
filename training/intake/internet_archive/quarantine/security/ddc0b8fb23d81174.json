@@ -1,0 +1,33 @@
+{
+  "id": "ddc0b8fb23d81174",
+  "source": "internet_archive",
+  "category": "quarantine/security",
+  "title": "Rising Threats and Next Generation Defenses in Cybersecurity",
+  "content": "# Rising Threats and Next Generation Defenses in Cybersecurity\n\nCreator: Nikunj Doshi\nDate: \nDownloads: 5\nSubjects: Cybersecurity trends, Artificial intelligence attacks, Zero-trust architecture, post-quantum cryptography, Cybersecurity governance.\n\nThe cybersecurity domain is undergoing rapid transformation as artificial intelligence, quantum computing, and globally connected devices dramatically widen the digital attack surface. This study examines the principal trends in reshaping the threat environment and assesses the defensive measures organizations are adopting to address escalating risks. Using recent breach data and illustrative case studies, the analysis identifies eight critical emerging threats\u2014including AI driven intrusions, supply chain compromises, and the pending disruption of post quantum cryptography, together with counterstrategies such as zero trust implementation, adaptive security models, and secure by design development practices. Key research deficits are highlighted in areas like adversarial AI, neuromorphic hardware protection, and harmonization of international regulatory frameworks. The paper concludes with practical guidance for industry professionals, academic researchers, and policymakers, stressing the importance of workforce upskilling, continuous threat exposure management, and cross border collaboration. By integrating technological, organizational, and policy viewpoints, this work offers a strategic roadmap for reducing cyber risk and safeguarding critical infrastructure in the coming decade. Nikunj Doshi \"Rising Threats and Next-Generation Defenses in Cybersecurity\" Published in International Journal of Trend in Scientific Research and Development (ijtsrd), ISSN: 2456-6470, Volume-9 | Issue-5 , October 2025, URL: https://www.ijtsrd.com/papers/ijtsrd97555.pdf Paper URL: https://www.ijtsrd.com/other-scientific-research-area/other/97555/rising-threats-and-nextgeneration-defenses-in-cybersecurity/nikunj-doshi",
+  "url": "https://archive.org/details/httpswww.ijtsrd.comother-scientific-research-areaother97555rising-threats",
+  "timestamp": "2026-03-06T03:59:15.208308",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "46a34059774f816d30c5e10d75bb635fed91af70f13d21cd6ff6876682ee6184",
+  "parent_hash": "12cd4a96fd71dc9d970d8a14ed6b5852b9056b4bfd16d8333f7b43b74b85d684",
+  "metadata": {
+    "ia_identifier": "httpswww.ijtsrd.comother-scientific-research-areaother97555rising-threats",
+    "media_type": "texts",
+    "downloads": 5,
+    "subjects": [
+      "Cybersecurity trends",
+      "Artificial intelligence attacks",
+      "Zero-trust architecture",
+      "post-quantum cryptography",
+      "Cybersecurity governance."
+    ]
+  }
+}

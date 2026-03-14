@@ -1,0 +1,38 @@
+{
+  "id": "e8b3b97f0b54a810",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "DTIC ADA473693: MAJIC: A Java Application for Controlling Multiple, Heterogeneous Robotic Agents",
+  "content": "# DTIC ADA473693: MAJIC: A Java Application for Controlling Multiple, Heterogeneous Robotic Agents\n\nCreator: Defense Technical Information Center\nDate: 2007-09-01T00:00:00Z\nDownloads: 75\nSubjects: DTIC Archive, Ball, Gregory P, NAVAL POSTGRADUATE SCHOOL MONTEREY CA, *ROBOTICS, *JAVA PROGRAMMING LANGUAGE\n\nCurrent capability to command and control a team of heterogeneous robotic agents is limited by proprietary command formats and operating systems. A specific challenge in this context is the specification, the programming, and the testing of software for such a wide variety of mobile robot teams. This work explores the applicability of an application program interface (API), called the Multi-Agent Java Interface Controller (MAJIC), that supports command, control, and coordination of heterogeneous robot teams. MAJIC encapsulates scripted commands, preprogrammed behaviors, and simultaneous, multi-agent control. By exploiting the powerful techniques of polymorphism and object-oriented programming, a generic MajicBot class will provide the necessary level of abstraction between the user and the proprietary architectures. Utilizing the technique of inheritance, future NPS students will be able to extend the generic class in order to easily add new robot-specific libraries. Students will also be able to utilize the existing libraries to program and test their own robot behaviors in real-world environments utilizing the MAJIC package. A final display of the versatility and power of programming behaviors within the MAJIC software architecture is demonstrated by a series of example programs conducted on a team of robots consisting of a Sony Aibo, a Mobile Robots Pioneer, and a K-Team Hemisson.",
+  "url": "https://archive.org/details/DTIC_ADA473693",
+  "timestamp": "2026-03-06T04:18:02.170069",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "1c70e8a055356ac2b26890273ba1b5e7e3542275338508c1faa350feb808ae78",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "DTIC_ADA473693",
+    "media_type": "texts",
+    "downloads": 75,
+    "subjects": [
+      "DTIC Archive",
+      "Ball, Gregory P",
+      "NAVAL POSTGRADUATE SCHOOL MONTEREY CA",
+      "*ROBOTICS",
+      "*JAVA PROGRAMMING LANGUAGE",
+      "COMPUTER PROGRAMS",
+      "ENVIRONMENTS",
+      "STUDENTS",
+      "INTERFACES",
+      "COMPUTER PROGRAMMING"
+    ]
+  }
+}

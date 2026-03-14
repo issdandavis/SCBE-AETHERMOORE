@@ -1,0 +1,25 @@
+{
+  "id": "f018de69a4064586",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "blockchain consensus algorithm (Q85824984)",
+  "content": "# blockchain consensus algorithm\n\nWikidata ID: Q85824984\nDescription: algorithm to coordinate and ensure consensus on a blockchain\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q85824984",
+  "timestamp": "2026-03-06T02:41:17.799004",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "9db13fb0dbe28eb82f0c3c82051cb13939dc55697b5d66b85770ee0204f91c7f",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q85824984",
+    "description": "algorithm to coordinate and ensure consensus on a blockchain"
+  }
+}

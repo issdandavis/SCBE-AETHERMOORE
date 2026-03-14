@@ -1,0 +1,30 @@
+{
+  "id": "64d1eb4a4464ebe5",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2018-7213 \u2014 CVSS 9.8 (CRITICAL)",
+  "content": "# CVE-2018-7213\n\nCVSS Score: 9.8 (CRITICAL)\nPublished: 2018-03-11T05:29:00.210\nCWEs: CWE-287\n\nThe Password Manager Extension in Abine Blur 7.8.242* before 7.8.2428 allows attackers to bypass the Multi-Factor Authentication and macOS disk-encryption protection mechanisms, and consequently exfiltrate secured data, because the right-click context menu is not secured.\n\nReferences: http://packetstormsecurity.com/files/152139/Abine-Blur-7.8.24x-Authentication-Bypass.html, http://seclists.org/fulldisclosure/2019/Mar/33, https://addons.mozilla.org/en-US/firefox/addon/donottrackplus/versions/?page=1#version-7.8.2428",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2018-7213",
+  "timestamp": "2026-03-06T04:18:24.195159",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c75fabe51379fbbcc61d9b2669ee8212bb0fff90ded962076792bbe677ee5ce9",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "cve_id": "CVE-2018-7213",
+    "cvss_score": 9.8,
+    "severity": "CRITICAL",
+    "cwes": [
+      "CWE-287"
+    ],
+    "published": "2018-03-11T05:29:00.210"
+  }
+}

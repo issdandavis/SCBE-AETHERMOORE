@@ -1,0 +1,38 @@
+{
+  "id": "552176ceb8dd359b",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Z Outline",
+  "content": "# Z Outline\n\nContributors: library of congress, policy and standards division\nDate: \nSubjects: lcc, class, organization, books, schedules\n\nOUTLINE Z4-115.5 Z4-8 Z40-104.5 Z41-42.5 Z43-45 Z48 Z49-51.5 Z52-52.5 Z53-102 Z102.5-104.5 Z105-115.5 Z116-659 Z116.A2 Z116.A3 Z116.A5-265.5 Z124-228 Z231-234 Z234 Z235-236 Z237 Z240-241.5 Z242.9-264.5  Z265-265.5  Z266-276 Z278-549 Z551-656 Z657-659 Z662-1000.5 Z662-664 Z665-718.8 Z668-669.7 Z672-Z672.13 Z674.7-674.83 Z675 Z678-678.88 Z678.89-678.892  Books (General). Writing. Paleography History of books and bookmaking Writing Autographs. Signatures Calligraphy. Penmanship Duplicating processes. Copying services Including mimeographing, multilithing Typewriters. Typewriting. Keyboards. Keyboarding Word processing Shorthand. Stenography. Phonography Cryptography. Ciphers. Invisible writing Manuscripts. Paleography Book industries and trade Treatises on the modern printed book Book design Printing History Printers and printing establishments Medallic history of printing. Tokens Printer's marks, mottoes, etc. Paper. Watermarks, etc. Incunabula. Block books Including broadsides, playing cards Practical printing",
+  "url": "//www.loc.gov/aba/publications/Archived-LCC01/Z-outline.pdf",
+  "timestamp": "2026-03-06T02:37:46.460994",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6a6ec185c3cf9842d1f9fa284eafde38bf7f1b4ace59e108a2fa88935271964d",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "lcc",
+      "class",
+      "organization",
+      "books",
+      "schedules",
+      "knowledge",
+      "library of congress classification"
+    ],
+    "dates": "",
+    "original_format": [
+      "book",
+      "web page"
+    ]
+  }
+}

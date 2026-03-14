@@ -1,0 +1,31 @@
+{
+  "id": "d848cc141e46be8c",
+  "source": "internet_archive",
+  "category": "quarantine/security",
+  "title": "Limitations on information theoretically secure quantum homomorphic encryption",
+  "content": "# Limitations on information theoretically secure quantum homomorphic encryption\n\nCreator: Li Yu, Carlos A. Perez-Delgado, Joseph F. Fitzsimons\nDate: 2014-06-10T00:00:00Z\nDownloads: 30\nSubjects: Quantum Physics, Cryptography and Security, Computing Research Repository\n\nHomomorphic encryption is a form of encryption which allows computation to be carried out on the encrypted data without the need for decryption. The success of quantum approaches to related tasks in a delegated computation setting has raised the question of whether quantum mechanics may be used to achieve information theoretically secure fully homomorphic encryption. Here we show, via an information localisation argument, that deterministic fully homomorphic encryption necessarily incurs exponential overhead if perfect security is required.",
+  "url": "https://archive.org/details/arxiv-1406.2456",
+  "timestamp": "2026-03-06T02:40:52.039349",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "3ccf808793fbbdabd4820e4cdc03bb6a15ebf8f52fb14dd5c3afc39fc43047ac",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1406.2456",
+    "media_type": "texts",
+    "downloads": 30,
+    "subjects": [
+      "Quantum Physics",
+      "Cryptography and Security",
+      "Computing Research Repository"
+    ]
+  }
+}

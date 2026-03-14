@@ -1,0 +1,25 @@
+{
+  "id": "93c0a1fca104ac8f",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Multi-agent system for efficient decentralized information aggregation by modeling other agents' behavior (Q118105381)",
+  "content": "# Multi-agent system for efficient decentralized information aggregation by modeling other agents' behavior\n\nWikidata ID: Q118105381\nDescription: US patent 11281983\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q118105381",
+  "timestamp": "2026-03-06T02:41:21.447555",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4fc4e2ce6ef49f2e5310d873bb9e7b42a1777e5f210c2487f6903485077a4006",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q118105381",
+    "description": "US patent 11281983"
+  }
+}

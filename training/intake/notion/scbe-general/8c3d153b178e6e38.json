@@ -1,0 +1,26 @@
+{
+  "id": "8c3d153b178e6e38",
+  "source": "notion",
+  "category": "scbe-general",
+  "title": "SCBE-AETHERMOORE Hub",
+  "content": "# SCBE-AETHERMOORE Hub\n\n\ud83c\udfaf Central navigation hub for the SCBE-AETHERMOORE ecosystem\nSingle source of truth for all repositories, specifications, and artifacts.\n\ud83d\udcda Quick Navigation\n\ud83c\udf10 14-Layer Architecture Map\n\ud83d\udcc1 Resources Sub-Pages\n\ud83d\udcca Releases - Version history and changelog\n\ud83d\udcdd Specifications - Technical specs and patents\n\ud83d\udce6 Dropbox Backups - Encrypted artifacts and journals\n\ud83e\uddea Experiments - Validation notebooks and results\n\ud83d\udcc5 Milestones - Sprint planning and deadlines\n\ud83d\udce8 Integration Points\nLast updated: February 7, 2026",
+  "url": "https://www.notion.so/SCBE-AETHERMOORE-Hub-300f96de82e580d09a66cdd048e5cab5",
+  "timestamp": "2026-02-07T18:04:00.000Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "b1214be9e8079b9667a0d73434c5fe1035f26f5bffb8c8109cf11a78c043b089",
+  "parent_hash": "eec11e6fe217d5a4b8b5efa167f96cceeaa0f44fab9e8e093703ad23b17fcbb9",
+  "metadata": {
+    "notion_id": "300f96de-82e5-80d0-9a66-cdd048e5cab5",
+    "page_type": "page",
+    "parent_type": "page_id"
+  }
+}

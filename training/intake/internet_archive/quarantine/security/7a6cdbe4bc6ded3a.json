@@ -1,0 +1,30 @@
+{
+  "id": "7a6cdbe4bc6ded3a",
+  "source": "internet_archive",
+  "category": "quarantine/security",
+  "title": "Sacred geometry : deciphering the code",
+  "content": "# Sacred geometry : deciphering the code\n\nCreator: Skinner, Stephen, 1948-\nDate: 2006-01-01T00:00:00Z\nDownloads: 3178\nSubjects: Geometry -- Philosophy, Geometry -- Religious aspects\n\n160 p. : 25 cm Includes bibliographical references (p. 153-154) and index",
+  "url": "https://archive.org/details/sacredgeometryde0000skin",
+  "timestamp": "2026-03-06T03:59:13.619018",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "94682e8320194cbbfee573cde8bcb54a065e9af1898453004ab6c808c32b01ce",
+  "parent_hash": "2da5f516980cbdb270092f148839fdae59e74398586f1932c987a4886a9193c0",
+  "metadata": {
+    "ia_identifier": "sacredgeometryde0000skin",
+    "media_type": "texts",
+    "downloads": 3178,
+    "subjects": [
+      "Geometry -- Philosophy",
+      "Geometry -- Religious aspects"
+    ]
+  }
+}

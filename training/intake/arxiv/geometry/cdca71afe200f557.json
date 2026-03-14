@@ -1,0 +1,28 @@
+{
+  "id": "cdca71afe200f557",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "A Non-Abelian Approach to Riemann Surfaces",
+  "content": "# A Non-Abelian Approach to Riemann Surfaces\n\nAuthors: Mehrzad Ajoodanian\nPublished: 2026-03-04T15:10:36Z\n\nWe develop a non-abelian, gauge-theoretic framework for the Schwarzian derivative and for second-order differential equations on Riemann surfaces. As applications, we extend Dedekind's Schwarzian approach to elliptic periods to generic one-parameter families of curves of genus $g$ by replacing the non-canonical scalar Picard--Fuchs equation of order $2g$ with a canonical second-order equation with $g\\times g$ matrix coefficients on the Hodge bundle. In higher dimensions, we discuss periods of a one-parameter family of cubic threefolds via the intermediate Jacobian. Finally, we discuss mass--spring systems in mechanics as a natural testing ground for the non-abelian Schwarzian viewpoint.",
+  "url": "http://arxiv.org/abs/2603.04153v1",
+  "timestamp": "2026-03-04T15:10:36Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "f3c648b22a41084cff3cd6453bc423e419f4743ccf93ec21b684de873ce02022",
+  "parent_hash": "ccf002ba296b9f371c780639f40e0bb2252b88fa2fd361ecef3dc4162a6253ca",
+  "metadata": {
+    "authors": [
+      "Mehrzad Ajoodanian"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.04153v1"
+  }
+}

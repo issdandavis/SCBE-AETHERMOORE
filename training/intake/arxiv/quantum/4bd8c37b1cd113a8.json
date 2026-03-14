@@ -1,0 +1,33 @@
+{
+  "id": "4bd8c37b1cd113a8",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Ansatz-Free Learning of Lindbladian Dynamics In Situ",
+  "content": "# Ansatz-Free Learning of Lindbladian Dynamics In Situ\n\nAuthors: Petr Ivashkov, Nikita Romanov, Weiyuan Gong, Andi Gu, Hong-Ye Hu, Susanne F. Yelin\nPublished: 2026-03-05T18:57:25Z\n\nCharacterizing the dynamics of open quantum systems at the level of microscopic interactions and error mechanisms is essential for calibrating quantum hardware, designing robust simulation protocols, and developing tailored error-correction methods. Under Markovian noise/dissipation, a natural characterization approach is to identify the full Lindbladian generator that gives rise to both coherent (Hamiltonian) and dissipative dynamics. Prior protocols for learning Lindbladians from dynamical data assumed pre-specified interaction structure, which can be restrictive when the relevant noise channels or control imperfections are not known in advance. In this paper, we present the first sample-efficient protocol for learning sparse Lindbladians without assuming any a priori structure or locality. Our protocol is ancilla-free, uses only product-state preparations and Pauli-basis measurements, and achieves near-optimal time resolution, making it compatible with near-term experimental capabilities. The final sample complexity depends on linear-system conditioning, which we find empirically to be moderate for a broad class of physically motivated models. Together, this provides a systematic route to scalable characterization of open-system quantum dynamics, especially in settings where the error mechanisms of interest are unknown.",
+  "url": "http://arxiv.org/abs/2603.05492v1",
+  "timestamp": "2026-03-05T18:57:25Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "42731fc953be303d455184beab1c439872262af9d0064fa318024124ec6fb29e",
+  "parent_hash": "af703216bf310a301f1710f449076d71a166fee757ef0a3599219d9fe44455a8",
+  "metadata": {
+    "authors": [
+      "Petr Ivashkov",
+      "Nikita Romanov",
+      "Weiyuan Gong",
+      "Andi Gu",
+      "Hong-Ye Hu",
+      "Susanne F. Yelin"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05492v1"
+  }
+}

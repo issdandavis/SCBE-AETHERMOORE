@@ -1,0 +1,31 @@
+{
+  "id": "494f539b52f71b30",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Latent Wasserstein Adversarial Imitation Learning",
+  "content": "# Latent Wasserstein Adversarial Imitation Learning\n\nAuthors: Siqi Yang, Kai Yan, Alexander G. Schwing, Yu-Xiong Wang\nPublished: 2026-03-05T18:01:49Z\n\nImitation Learning (IL) enables agents to mimic expert behavior by learning from demonstrations. However, traditional IL methods require large amounts of medium-to-high-quality demonstrations as well as actions of expert demonstrations, both of which are often unavailable. To reduce this need, we propose Latent Wasserstein Adversarial Imitation Learning (LWAIL), a novel adversarial imitation learning framework that focuses on state-only distribution matching. It benefits from the Wasserstein distance computed in a dynamics-aware latent space. This dynamics-aware latent space differs from prior work and is obtained via a pre-training stage, where we train the Intention Conditioned Value Function (ICVF) to capture a dynamics-aware structure of the state space using a small set of randomly generated state-only data. We show that this enhances the policy's understanding of state transitions, enabling the learning process to use only one or a few state-only expert episodes to achieve expert-level performance. Through experiments on multiple MuJoCo environments, we demonstrate that our method outperforms prior Wasserstein-based IL methods and prior adversarial IL methods, achieving better results across various tasks.",
+  "url": "http://arxiv.org/abs/2603.05440v1",
+  "timestamp": "2026-03-05T18:01:49Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "baefc9cc8bf931046f0841e8040957a032c3e0d000c53a4a3ff0da1b180de995",
+  "parent_hash": "cb4d15acbfa198638f43aa98503c5aaf2747830e9c52097c1fc53111a7d1ba11",
+  "metadata": {
+    "authors": [
+      "Siqi Yang",
+      "Kai Yan",
+      "Alexander G. Schwing",
+      "Yu-Xiong Wang"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05440v1"
+  }
+}

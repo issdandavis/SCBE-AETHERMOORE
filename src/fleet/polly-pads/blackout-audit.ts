@@ -380,7 +380,7 @@ export class MerkleAuditChain {
   constructor(sessionId?: string) {
     this.sessionId =
       sessionId ??
-      `blackout-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+      `blackout-${Date.now().toString(36)}-${Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b => b.toString(16).padStart(2, '0')).join('')}`;
     this.startedAt = Date.now();
   }
 
@@ -883,7 +883,7 @@ export class BlackoutManager {
 
     this.commsState = 'BLACKOUT';
 
-    const sessionId = `blackout-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+    const sessionId = `blackout-${Date.now().toString(36)}-${Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b => b.toString(16).padStart(2, '0')).join('')}`;
     this.activeChain = new MerkleAuditChain(sessionId);
 
     // Store pre-declared envelope IDs and squad members. These will be

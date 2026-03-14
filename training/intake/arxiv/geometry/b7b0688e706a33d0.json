@@ -1,0 +1,30 @@
+{
+  "id": "b7b0688e706a33d0",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "$\\mathrm{L}^p$-based Sobolev theory on closed manifolds of minimal regularity: Scalar Elliptic Equations",
+  "content": "# $\\mathrm{L}^p$-based Sobolev theory on closed manifolds of minimal regularity: Scalar Elliptic Equations\n\nAuthors: Gonzalo A. Benavides, Ricardo H. Nochetto, Mansur Shakipov\nPublished: 2026-03-02T18:27:47Z\n\nThis paper and its follow-up arXiv:2508.11109 are concerned with the well-posedness and $\\mathrm{L}^p$-based Sobolev regularity for appropriate weak formulations of a family of prototypical PDEs posed on manifolds of minimal regularity. In particular, the domains are assumed to be compact, connected $d$-dimensional manifolds without boundary of class $C^k$ and $C^{k-1,1}$ ($k \\geq 1$) embedded in $\\mathrm{R}^{d+1}$. The focus of this program is on the $\\mathrm{L}^p$-based theory that is sharp with respect to the regularity of the source terms and the manifold. In the present paper, we focus our attention on the case of general scalar elliptic problems. We first establish $\\mathrm{L}^p$-based well-posedness and higher regularity for the purely diffusive problems with variable coefficients by localizing and rewriting these equations in flat domains to employ the Calder\u00f3n--Zygmund theory, combined with duality arguments. We then invoke the Fredholm alternative to derive analogous results for general scalar elliptic problems, underscoring the subtle differences that the geometric setting entails compared to the theory in flat domains.",
+  "url": "http://arxiv.org/abs/2603.02163v1",
+  "timestamp": "2026-03-02T18:27:47Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "352b6cc898456b61922fe57be731b80e89c1bbc2c9ad0c231ddb1090d87fa8e1",
+  "parent_hash": "9915455ec5b061c17532fc0e94ed48496def36941364ca633af16b443111d116",
+  "metadata": {
+    "authors": [
+      "Gonzalo A. Benavides",
+      "Ricardo H. Nochetto",
+      "Mansur Shakipov"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.02163v1"
+  }
+}

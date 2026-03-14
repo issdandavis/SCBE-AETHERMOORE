@@ -1,0 +1,33 @@
+{
+  "id": "5d4d13812c767615",
+  "source": "library_of_congress",
+  "category": "quarantine/governance",
+  "title": "Negotiating Internet governance",
+  "content": "# Negotiating Internet governance\n\nContributors: radu, roxana\nDate: 2019-01-01\nSubjects: law and legislation, internet governance, internet\n\nThis book provides an incisive analysis of the emergence and evolution of global Internet governance, revealing its mechanisms, key actors and dominant community practices. Based on extensive empirical analysis covering more than four decades, it presents the evolution of Internet regulation from the early days of networking to more recent debates on algorithms and artificial intelligence, putting into perspective its politically-mediated system of rules built on technical features and power differentials. For anyone interested in understanding contemporary global developments, this book is a primer on how norms of behaviour online and Internet regulation are renegotiated in numerous fora by a variety of actors - including governments, businesses, international organisations, civil society, technical and academic experts - and what that means for everyday users.",
+  "url": "https://www.loc.gov/item/2022667458/",
+  "timestamp": "2026-03-06T04:17:41.941981",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "d3d8ee1c0a2297e06d80c24bfba6f7057d12ea58102fc66352719e0d86bf9b6a",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "law and legislation",
+      "internet governance",
+      "internet"
+    ],
+    "dates": "2019-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

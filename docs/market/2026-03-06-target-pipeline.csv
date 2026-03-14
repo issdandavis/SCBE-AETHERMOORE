@@ -1,0 +1,21 @@
+rank,account_name,segment,primary_need,entry_offer,owner,status,next_action,due_date,fit_score
+1,USSOCOM SOF ATL,DoD program office,Collaborative autonomy governance,90-day governed autonomy pilot,issac,targeted,send pilot one-pager and request intro,2026-03-10,98
+2,DEVCOM ARL C-UAS lane,Army RFI lane,Low-cost swarm detection software,2.5D lattice proximity demo,issac,targeted,submit RFI response brief,2026-03-25,96
+3,PMA-263 UCC,Navy UAS control lane,Multi-platform command coordination,semantic mesh + lattice control bridge,issac,targeted,deliver capability white paper,2026-03-23,95
+4,DARPA I2O BORDEAUX,DARPA cyber AI lane,Trusted AI security hardening,governed AI runtime control prototype,issac,researching,finalize technical annex,2026-03-14,92
+5,AFRL Rome mesh networking,AFRL BAA lane,Tactical mesh autonomy routing,hyperbolic lattice routing pilot,issac,researching,prepare 3-5 page white paper,2026-03-20,90
+6,DIU ALPV,DIU maritime autonomy lane,Autonomous vessel mission governance,maritime autonomy governance pilot,issac,targeted,submit solution package,2026-03-16,89
+7,NSWC PCD SLAM2ER,OTA consortium lane,Autonomy and littoral integration,subcontract-ready governance module,issac,researching,identify consortium partner lead,2026-03-13,88
+8,NSWC Corona cyber AI OTA,Naval prototyping lane,Cyber and AI prototype acceleration,governed multi-agent cyber workflow pilot,issac,researching,send nontraditional vendor brief,2026-03-18,86
+9,SSC S6 mission AI,Space operations lane,Mission AI reliability,hyperbolic intent-control stack pilot,issac,researching,submit capability statement,2026-03-22,84
+10,CPE ES2 JETMS,Enterprise DoD tasking lane,Large-scale AI task governance,multi-agent workflow governance pilot,issac,researching,submit 3-page concept and ROM,2026-03-09,83
+11,Booz Allen defense AI,Prime contractor,Governed orchestration for client missions,prime-sub governance integration module,issac,prospect,find practice lead and send intro,2026-03-12,82
+12,Leidos autonomy systems,Prime contractor,Swarm and autonomy control assurance,SCBE governance sidecar pilot,issac,prospect,request technical discovery call,2026-03-13,81
+13,SAIC mission software,Prime contractor,Program-safe AI automation,deterministic decision trail module,issac,prospect,share pilot packet and references,2026-03-14,80
+14,L3Harris autonomy division,Prime contractor,UAS mission software reliability,lattice route governance adapter,issac,prospect,request subcontract lane review,2026-03-15,79
+15,General Dynamics Mission Systems,Prime contractor,Secure autonomous mission workflows,post-quantum governed workflow pilot,issac,prospect,send integration architecture sheet,2026-03-16,78
+16,Anduril federal programs,Defense tech prime,Autonomy safety + mission controls,governed runtime containment pilot,issac,prospect,request technical fit meeting,2026-03-17,76
+17,Palantir FedStart ecosystem,Federal platform partner,Interoperable AI controls,audit-first governance connector,issac,prospect,identify platform partnership contact,2026-03-18,75
+18,Accenture Federal Services,Federal integrator,Responsible AI deployment controls,multi-model governance package,issac,prospect,share pilot outcomes deck,2026-03-19,74
+19,Deloitte Government and Public Services,Federal integrator,AI risk and compliance operations,decision traceability module,issac,prospect,request partner discovery session,2026-03-20,73
+20,ManTech mission solutions,Federal cyber contractor,Cyber mission automation governance,governed cyber workflow pilot,issac,prospect,send 2-page technical brief,2026-03-21,72

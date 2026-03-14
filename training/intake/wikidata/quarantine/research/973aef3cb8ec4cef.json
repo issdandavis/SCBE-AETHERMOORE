@@ -1,0 +1,25 @@
+{
+  "id": "973aef3cb8ec4cef",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Chirality Medal (Q30686552)",
+  "content": "# Chirality Medal\n\nWikidata ID: Q30686552\nDescription: award for scientists\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q30686552",
+  "timestamp": "2026-03-06T04:18:13.109202",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "1129761caf81a7df61303293b1bfedd2dd6f4960cb2a2a1022241a56fbd7ef89",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q30686552",
+    "description": "award for scientists"
+  }
+}

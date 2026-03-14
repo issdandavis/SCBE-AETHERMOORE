@@ -1,0 +1,25 @@
+{
+  "id": "6d809ee6ae2e7385",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Blockchain Consensus Rule Based Dynamic Blind Voting for Non-Dependency Transaction (Q123166809)",
+  "content": "# Blockchain Consensus Rule Based Dynamic Blind Voting for Non-Dependency Transaction\n\nWikidata ID: Q123166809\nDescription: scientific article published in 2017\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q123166809",
+  "timestamp": "2026-03-06T02:41:17.799103",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "18309c122a765576ad08ec33955436902e6fc4897dad83b82d859e9771aabd8c",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q123166809",
+    "description": "scientific article published in 2017"
+  }
+}

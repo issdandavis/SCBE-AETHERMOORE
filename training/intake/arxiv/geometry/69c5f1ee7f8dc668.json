@@ -1,0 +1,29 @@
+{
+  "id": "69c5f1ee7f8dc668",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "The isoperimetric inequality for the first positive Neumann eigenvalue on the sphere",
+  "content": "# The isoperimetric inequality for the first positive Neumann eigenvalue on the sphere\n\nAuthors: Luigi Provenzano, Alessandro Savo\nPublished: 2026-03-04T16:18:39Z\n\nWe prove that the geodesic disks are the unique maximisers of the first non-trivial Neumann eigenvalue among all simply connected domains of the sphere $\\mathbb S^2$ with fixed area.",
+  "url": "http://arxiv.org/abs/2603.04236v1",
+  "timestamp": "2026-03-04T16:18:39Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "3c9b451f9acfce20f3d05d201d8b20ecd204471bfca284822481b765c905c2f8",
+  "parent_hash": "c662d1df3529ffea5929c131494a0a7d902f6d625d0780412a3730c123dce397",
+  "metadata": {
+    "authors": [
+      "Luigi Provenzano",
+      "Alessandro Savo"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.04236v1"
+  }
+}

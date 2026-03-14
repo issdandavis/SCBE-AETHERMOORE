@@ -1,0 +1,29 @@
+{
+  "id": "9fa92a8ff086805e",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Learning Causal Structure of Time Series using Best Order Score Search",
+  "content": "# Learning Causal Structure of Time Series using Best Order Score Search\n\nAuthors: Irene Gema Castillo Mansilla, Urmi Ninad\nPublished: 2026-03-05T16:54:20Z\n\nCausal structure learning from observational data is central to many scientific and policy domains, but the time series setting common to many disciplines poses several challenges due to temporal dependence. In this paper we focus on score-based causal discovery for multivariate time series and introduce TS-BOSS, a time series extension of the recently proposed Best Order Score Search (BOSS) (Andrews et al. 2023). TS-BOSS performs a permutation-based search over dynamic Bayesian network structures while leveraging grow-shrink trees to cache intermediate score computations, preserving the scalability and strong empirical performance of BOSS in the static setting. We provide theoretical guarantees establishing the soundness of TS-BOSS under suitable assumptions, and we present an intermediate result that extends classical subgraph minimality results for permutation-based methods to the dynamic (time series) setting. Our experiments on synthetic data show that TS-BOSS is especially effective in high auto-correlation regimes, where it consistently achieves higher adjacency recall at comparable precision than standard constraint-based methods. Overall, TS-BOSS offers a high-performing, scalable approach for time series causal discovery and our results provide a principled bridge for extending sparsity-based, permutation-driven causal learning theory to dynamic settings.",
+  "url": "http://arxiv.org/abs/2603.05370v1",
+  "timestamp": "2026-03-05T16:54:20Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "3d650c3c1e9b475d2e8dd746c1344ba4bf0200ddf8428896ba10a568d6ee2129",
+  "parent_hash": "42d8b38492b49ef27b1bfcc69a23de070f15ac22341d7699f93067fb2a8dbff0",
+  "metadata": {
+    "authors": [
+      "Irene Gema Castillo Mansilla",
+      "Urmi Ninad"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05370v1"
+  }
+}

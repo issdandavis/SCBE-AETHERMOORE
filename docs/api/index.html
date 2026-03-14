@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCBE-AETHERMOORE API</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+    <style>
+        body { margin: 0; background: #1a1a2e; }
+        .topbar { display: none; }
+        .swagger-ui .info .title { color: #e2e2e2; }
+        .swagger-ui .info .description p { color: #ccc; }
+        .swagger-ui .scheme-container { background: #16213e; }
+        .swagger-ui .opblock-tag { color: #e2e2e2; border-bottom-color: #333; }
+        .swagger-ui .opblock .opblock-summary-description { color: #aaa; }
+        #swagger-ui { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header-bar {
+            background: linear-gradient(135deg, #0f3460 0%, #533483 50%, #e94560 100%);
+            padding: 30px 40px;
+            color: white;
+            text-align: center;
+        }
+        .header-bar h1 { margin: 0 0 8px 0; font-size: 28px; font-family: system-ui; }
+        .header-bar p { margin: 0; opacity: 0.85; font-size: 14px; font-family: system-ui; }
+        .header-bar .links { margin-top: 12px; }
+        .header-bar .links a {
+            color: white; text-decoration: none; margin: 0 12px;
+            padding: 4px 12px; border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 4px; font-size: 13px; font-family: system-ui;
+        }
+        .header-bar .links a:hover { background: rgba(255,255,255,0.15); }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <h1>SCBE-AETHERMOORE API</h1>
+        <p>Quantum-resistant memory sealing with hyperbolic governance | 14-layer security pipeline | Sacred Tongues tokenization</p>
+        <div class="links">
+            <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
+            <a href="https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data">Dataset</a>
+            <a href="openapi.json">OpenAPI Spec</a>
+            <a href="https://huggingface.co/issdandavis/geoseed-network">Model</a>
+        </div>
+    </div>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script>
+        SwaggerUIBundle({
+            url: './openapi.json',
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIBundle.SwaggerUIStandalonePreset
+            ],
+            layout: "BaseLayout",
+            defaultModelsExpandDepth: 1,
+            defaultModelExpandDepth: 2,
+            docExpansion: "list",
+            filter: true,
+            tryItOutEnabled: false
+        });
+    </script>
+</body>
+</html>

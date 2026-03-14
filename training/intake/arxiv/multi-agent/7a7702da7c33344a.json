@@ -1,0 +1,32 @@
+{
+  "id": "7a7702da7c33344a",
+  "source": "arxiv",
+  "category": "multi-agent",
+  "title": "LLM-Guided Decentralized Exploration with Self-Organizing Robot Teams",
+  "content": "# LLM-Guided Decentralized Exploration with Self-Organizing Robot Teams\n\nAuthors: Hiroaki Kawashima, Shun Ikejima, Takeshi Takai, Mikita Miyaguchi, Yasuharu Kunii\nPublished: 2026-03-05T03:20:20Z\n\nWhen individual robots have limited sensing capabilities or insufficient fault tolerance, it becomes necessary for multiple robots to form teams during exploration, thereby increasing the collective observation range and reliability. Traditionally, swarm formation has often been managed by a central controller; however, from the perspectives of robustness and flexibility, it is preferable for the swarm to operate autonomously even in the absence of centralized control. In addition, the determination of exploration targets for each team is crucial for efficient exploration in such multi-team exploration scenarios. This study therefore proposes an exploration method that combines (1) an algorithm for self-organization, enabling the autonomous and dynamic formation of multiple teams, and (2) an algorithm that allows each team to autonomously determine its next exploration target (destination). In particular, for (2), this study explores a novel strategy based on large language models (LLMs), while classical frontier-based methods and deep reinforcement learning approaches have been widely studied. The effectiveness of the proposed method was validated through simulations involving tens to hundreds of robots.",
+  "url": "http://arxiv.org/abs/2603.04762v1",
+  "timestamp": "2026-03-05T03:20:20Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "0ed932939e647882cf90d7d17c135c4beb8d8b82f042d32b0a4050a6bb7c40f5",
+  "parent_hash": "a3685c86662c1748ca087ba6a1bb9083a5605a9efc390eda6d515eee92ad019b",
+  "metadata": {
+    "authors": [
+      "Hiroaki Kawashima",
+      "Shun Ikejima",
+      "Takeshi Takai",
+      "Mikita Miyaguchi",
+      "Yasuharu Kunii"
+    ],
+    "arxiv_category": "cs.MA",
+    "arxiv_id": "2603.04762v1"
+  }
+}

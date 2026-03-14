@@ -17,6 +17,8 @@ htmlcov/
 
 # Test artifacts
 tests/test_telemetry_*.json
+*.sqlite
+scbe_metering.db
 tests/test_artifacts/
 **/test_output.txt
 
@@ -38,6 +40,8 @@ pnpm-debug.log*
 # Environments / secrets
 .env
 .env.*
+config/connector_oauth/*.json
+config/connector_oauth/.kaggle.env
 .venv/
 venv/
 .python-version
@@ -114,3 +118,10 @@ demo/tuxemon_src/
 demo/*.png
 training-data/audio/
 tmp_*.xml
+
+# Runtime/session noise
+.firebase/
+.playwright-profile-*/
+.scbe/lanes/
+.scbe/packets/
+.scbe/skill_registry/

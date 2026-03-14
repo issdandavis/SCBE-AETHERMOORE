@@ -1,0 +1,33 @@
+{
+  "id": "25576c282f681f52",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "RelaxFlow: Text-Driven Amodal 3D Generation",
+  "content": "# RelaxFlow: Text-Driven Amodal 3D Generation\n\nAuthors: Jiayin Zhu, Guoji Fu, Xiaolu Liu, Qiyuan He, Yicong Li, Angela Yao\nPublished: 2026-03-05T17:45:47Z\n\nImage-to-3D generation faces inherent semantic ambiguity under occlusion, where partial observation alone is often insufficient to determine object category. In this work, we formalize text-driven amodal 3D generation, where text prompts steer the completion of unseen regions while strictly preserving input observation. Crucially, we identify that these objectives demand distinct control granularities: rigid control for the observation versus relaxed structural control for the prompt. To this end, we propose RelaxFlow, a training-free dual-branch framework that decouples control granularity via a Multi-Prior Consensus Module and a Relaxation Mechanism. Theoretically, we prove that our relaxation is equivalent to applying a low-pass filter on the generative vector field, which suppresses high-frequency instance details to isolate geometric structure that accommodates the observation. To facilitate evaluation, we introduce two diagnostic benchmarks, ExtremeOcc-3D and AmbiSem-3D. Extensive experiments demonstrate that RelaxFlow successfully steers the generation of unseen regions to match the prompt intent without compromising visual fidelity.",
+  "url": "http://arxiv.org/abs/2603.05425v1",
+  "timestamp": "2026-03-05T17:45:47Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "0cf4c2fa097d5a4111baa12eebd73aa1b0189fdbf98ba302c2429d17e1b8f182",
+  "parent_hash": "534b06566fda6b87e8da7dde997a2fe4785fc5b9cbbaf8171a82777b6cf63457",
+  "metadata": {
+    "authors": [
+      "Jiayin Zhu",
+      "Guoji Fu",
+      "Xiaolu Liu",
+      "Qiyuan He",
+      "Yicong Li",
+      "Angela Yao"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.05425v1"
+  }
+}

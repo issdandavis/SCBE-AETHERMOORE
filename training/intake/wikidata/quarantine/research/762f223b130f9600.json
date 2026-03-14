@@ -1,0 +1,25 @@
+{
+  "id": "762f223b130f9600",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "retrieval-augmented generation (Q121362277)",
+  "content": "# retrieval-augmented generation\n\nWikidata ID: Q121362277\nDescription: language generation model\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q121362277",
+  "timestamp": "2026-03-06T02:41:28.754419",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "eafd99945b6b94e1b8b37b8e84875e23f4e6238b7b74bd6d76a3dc86a2c7555b",
+  "parent_hash": "",
+  "metadata": {
+    "wikidata_id": "Q121362277",
+    "description": "language generation model"
+  }
+}

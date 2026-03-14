@@ -1,0 +1,36 @@
+{
+  "id": "63e58ba86461b7cd",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Generalized matching decoders for 2D topological translationally-invariant codes",
+  "content": "# Generalized matching decoders for 2D topological translationally-invariant codes\n\nAuthors: Shi Jie Samuel Tan, Ian Gill, Eric Huang, Pengyu Liu, Chen Zhao, Hossein Dehghani, Aleksander Kubica, Hengyun Zhou, Arpit Dua\nPublished: 2026-03-05T17:29:09Z\n\nTwo-dimensional topological translationally-invariant (TTI) quantum codes, such as the toric code (TC) and bivariate bicycle (BB) codes, are promising candidates for fault-tolerant quantum computation. For such codes to be practically relevant, their decoders must successfully correct the most likely errors while remaining computationally efficient. For the TC, graph-matching decoders satisfy both requirements and, additionally, admit provable performance guarantees. Given the equivalence between TTI codes and (multiple copies of) the TC, one may then ask whether TTI codes also admit analogous graph-matching decoders. In this work, we develop a graph-matching approach to decoding general TTI codes. Intuitively, our approach coarse-grains the TTI code to obtain an effective description of the syndrome in terms of TC excitations, which can then be removed using graph-matching techniques. We prove that our decoders correct errors of weight up to a constant fraction of the code distance and achieve non-zero code-capacity thresholds. We further numerically study a variant optimized for practically relevant BB codes and observe performance comparable to that of the belief propagation with ordered statistics decoder. Our results indicate that graph-matching decoders are a viable approach to decoding BB codes and other TTI codes.",
+  "url": "http://arxiv.org/abs/2603.05402v1",
+  "timestamp": "2026-03-05T17:29:09Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "0c0b3c80b0f40c6326dc46077d8927d4335b3e4450bb8f09f4bd3f19e26c2100",
+  "parent_hash": "251d11fde921ecab019dc86f666a2c5874969b419a02fc693a025d7df8ed9383",
+  "metadata": {
+    "authors": [
+      "Shi Jie Samuel Tan",
+      "Ian Gill",
+      "Eric Huang",
+      "Pengyu Liu",
+      "Chen Zhao",
+      "Hossein Dehghani",
+      "Aleksander Kubica",
+      "Hengyun Zhou",
+      "Arpit Dua"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05402v1"
+  }
+}

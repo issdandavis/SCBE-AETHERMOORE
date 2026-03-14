@@ -1,0 +1,143 @@
+name: Build AetherCode - Play Store and Kindle
+
+on:
+  push:
+    paths:
+      - 'kindle-app/**'
+      - 'public/arena.html'
+  workflow_dispatch:
+    inputs:
+      build_release:
+        description: 'Build signed release AAB for Play Store'
+        type: boolean
+        default: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      KEY_ALIAS: aethercode
+      KEYSTORE_PASSWORD: aethercode2026
+      KEY_PASSWORD: aethercode2026
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        working-directory: kindle-app
+        run: npm install
+
+      - name: Copy PWA assets
+        working-directory: kindle-app
+        run: node scripts/copy-pwa-assets.js
+
+      - name: Sync Capacitor
+        working-directory: kindle-app
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
+          npx cap sync android
+
+      - name: Build debug APK
+        working-directory: kindle-app/android
+        run: ./gradlew assembleDebug
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AetherCode-debug-apk
+          path: kindle-app/android/app/build/outputs/apk/debug/*.apk
+          retention-days: 90
+
+      - name: Generate signing keystore
+        if: inputs.build_release == true || github.event_name == 'push'
+        working-directory: kindle-app/android
+        run: |
+          keytool -genkeypair \
+            -v \
+            -keystore app/aethercode-release.jks \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -alias "$KEY_ALIAS" \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -keypass "$KEY_PASSWORD" \
+            -dname "CN=Issac Davis, OU=AetherCode, O=Aethermoore Works, L=Port Angeles, ST=WA, C=US"
+
+      - name: Inject signing config
+        if: inputs.build_release == true || github.event_name == 'push'
+        working-directory: kindle-app/android
+        run: |
+          python3 - << 'PYEOF'
+          with open("app/build.gradle", "r") as f:
+              content = f.read()
+          if "signingConfigs" not in content:
+              signing = '''
+              signingConfigs {
+                  release {
+                      storeFile file("aethercode-release.jks")
+                      storePassword System.getenv("KEYSTORE_PASSWORD") ?: "aethercode2026"
+                      keyAlias System.getenv("KEY_ALIAS") ?: "aethercode"
+                      keyPassword System.getenv("KEY_PASSWORD") ?: "aethercode2026"
+                  }
+              }
+          '''
+              content = content.replace("buildTypes {", signing + "\n    buildTypes {")
+              content = content.replace(
+                  "minifyEnabled false",
+                  "minifyEnabled false\n            signingConfig signingConfigs.release"
+              )
+              with open("app/build.gradle", "w") as f:
+                  f.write(content)
+              print("Signing config injected")
+          else:
+              print("Signing config already present")
+          PYEOF
+
+      - name: Build release AAB (Play Store)
+        if: inputs.build_release == true || github.event_name == 'push'
+        working-directory: kindle-app/android
+        run: ./gradlew bundleRelease
+
+      - name: Build release APK (Amazon Appstore)
+        if: inputs.build_release == true || github.event_name == 'push'
+        working-directory: kindle-app/android
+        run: ./gradlew assembleRelease
+
+      - name: Upload release AAB
+        if: inputs.build_release == true || github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: AetherCode-release-aab
+          path: kindle-app/android/app/build/outputs/bundle/release/*.aab
+          retention-days: 90
+
+      - name: Upload release APK
+        if: inputs.build_release == true || github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: AetherCode-release-apk
+          path: kindle-app/android/app/build/outputs/apk/release/*.apk
+          retention-days: 90
+
+      - name: Summary
+        run: |
+          echo "## AetherCode Build" >> $GITHUB_STEP_SUMMARY
+          echo "- Package: com.issdandavis.aethercode" >> $GITHUB_STEP_SUMMARY
+          echo "- Debug APK: uploaded" >> $GITHUB_STEP_SUMMARY
+          ls kindle-app/android/app/build/outputs/bundle/release/*.aab 2>/dev/null && echo "- Release AAB: uploaded (Play Store ready)" >> $GITHUB_STEP_SUMMARY || true
+          ls kindle-app/android/app/build/outputs/apk/release/*.apk 2>/dev/null && echo "- Release APK: uploaded (Amazon ready)" >> $GITHUB_STEP_SUMMARY || true

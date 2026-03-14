@@ -1,0 +1,32 @@
+{
+  "id": "1f0bb468ca07b8d0",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Functional materials : selected, peer-reviewed papers from the International Conference on Functional Materials (ICFM 2019), Japan : selected, peer reviewed papers from the International Conference on Functional Materials (ICFM 2019), September 4-6, 2019, Sendai, Japan",
+  "content": "# Functional materials : selected, peer-reviewed papers from the International Conference on Functional Materials (ICFM 2019), Japan : selected, peer reviewed papers from the International Conference on Functional Materials (ICFM 2019), September 4-6, 2019, Sendai, Japan\n\nContributors: yin, shu, pesin, alexander, international conference on functional materials\nDate: 2020\nSubjects: congresses, materials science\n\nThe presented papers cover wide-variety topics from modern materials science and materials processing technologies, focuses on the important categories, including environmental engineering, electronic materials, and energy materials. Polymers, Composites, Metal Matrix Composites, Nanocomposites, Nanomaterials, Aerogel, Rubber, Thin Films, Building Materials, Steel, Alloys, Gray Iron, Metallurgy, Surfactant, Surface Plasmon Resonance, Disperse Dyes Materials Science, Building Materials, Mechanical Engineering.",
+  "url": "//lccn.loc.gov/2022503431",
+  "timestamp": "2026-03-06T04:17:33.805640",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4691060bc32383e8fd460b42e8a6b499b65dabca865bf5c1f9196954d971c9d8",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "congresses",
+      "materials science"
+    ],
+    "dates": "2020",
+    "original_format": [
+      "book"
+    ]
+  }
+}

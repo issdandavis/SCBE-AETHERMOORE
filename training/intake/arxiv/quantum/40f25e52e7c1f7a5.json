@@ -1,0 +1,30 @@
+{
+  "id": "40f25e52e7c1f7a5",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Towards Predictive Quantum Algorithmic Performance: Modeling Time-Correlated Noise at Scale",
+  "content": "# Towards Predictive Quantum Algorithmic Performance: Modeling Time-Correlated Noise at Scale\n\nAuthors: Amit Jamadagni, Gregory Quiroz, Eugene Dumitrescu\nPublished: 2026-03-04T19:09:29Z\n\nCombining tensor network techniques with quantum autoregressive moving average models, we quantify the effects of time-correlated noise on quantum algorithms and predict their performance at scale. As a paradigmatic test case, we examine the quantum Fourier transformation. Building on our first technical result, which shows how stochastic tensor network calculations capture frequency correlations, our second result is the revelation that infidelity exponents (scaling from diffuse, to superdiffuse) are determined by the spectral features of the noise. This numerical result rigorously quantifies the common belief that the temporal correlation scale is a key predictive feature of noise's deleterious impact on multi-qubit circuits. To highlight prospects for predicting algorithmic performance, our third result quantifies how infidelity scaling exponents -- which are fits determined by training data at moderate scales (40-80 qubits) -- can be used to predict more computationally expensive simulation at larger scales (100-128 qubits). Aside from highlighting the scalability of our methods, this workflow feeds into our last result, which is the proposal of predictive benchmarking protocols connecting simulations to experiments. Our work paves the way for large-scale algorithmic simulations and performance prediction under hardware-relevant noise conditions informed by realistic device characteristics.",
+  "url": "http://arxiv.org/abs/2603.04524v1",
+  "timestamp": "2026-03-04T19:09:29Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "999d0d4e6b24dd00085099501fca8f6ef3fa208b9db23db92d52a3888a692c88",
+  "parent_hash": "77e206420f62541d4535c939deae4a4704d4f663a01c223f3ac2d5c47cb65fb4",
+  "metadata": {
+    "authors": [
+      "Amit Jamadagni",
+      "Gregory Quiroz",
+      "Eugene Dumitrescu"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.04524v1"
+  }
+}

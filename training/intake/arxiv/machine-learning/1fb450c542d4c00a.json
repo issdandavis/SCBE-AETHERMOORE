@@ -1,0 +1,31 @@
+{
+  "id": "1fb450c542d4c00a",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Whispering to a Blackbox: Bootstrapping Frozen OCR with Visual Prompts",
+  "content": "# Whispering to a Blackbox: Bootstrapping Frozen OCR with Visual Prompts\n\nAuthors: Samandar Samandarov, Nazirjon Ismoiljonov, Abdullah Sattorov, Temirlan Sabyrbayev\nPublished: 2026-03-05T15:22:51Z\n\nIn the landscape of modern machine learning, frozen pre-trained models provide stability and efficiency but often underperform on specific tasks due to mismatched data distributions. This paper introduces the Whisperer, a novel visual prompting framework that learns diffusion-based preprocessors to adapt inputs in pixel space, effectively \"whispering\" enhancements to frozen downstream models like EasyOCR. By framing the process as behavioral cloning of stochastically discovered improvement policies, our method achieves an 8% absolute (10.6% relative) reduction in Character Error Rate (CER) on a challenging dataset of 300k degraded synthetic text images, surpassing hand-engineered baselines such as CLAHE. The key innovation is a four-stage training curriculum that uses behavioral cloning to amplify \"lucky\" improvements discovered through the stochastic exploration of a partially trained diffusion model. This approach is highly sample-efficient and avoids the pitfalls of traditional reinforcement learning. Crucially, we frame this not as naive reinforcement learning, but as behavioral cloning of an exploration policy: we stochastically sample intermediate diffusion outputs, select those that improve CER by chance, and then train the model to reproduce them. This bootstrapping curriculum (4 stages over 60 GPU-hours) amplifies random successes into a systematic strategy. In summary, by whispering to the frozen OCR through its inputs, we improve an imperfect classifier without touching its weights.",
+  "url": "http://arxiv.org/abs/2603.05276v1",
+  "timestamp": "2026-03-05T15:22:51Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "13d89bf9385486f53c9ef84c862e9c536a0fe67b0b3b29a485281cd2c573bdb9",
+  "parent_hash": "49f6f6ee4613862e1c60d9cc6ea9ee47e7170f879e33746c60ae2f8c201ca52f",
+  "metadata": {
+    "authors": [
+      "Samandar Samandarov",
+      "Nazirjon Ismoiljonov",
+      "Abdullah Sattorov",
+      "Temirlan Sabyrbayev"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.05276v1"
+  }
+}

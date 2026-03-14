@@ -1,0 +1,25 @@
+{
+  "id": "e767ae56906cc039",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Quasicrystals. I. Definition and structure (Q77979199)",
+  "content": "# Quasicrystals. I. Definition and structure\n\nWikidata ID: Q77979199\nDescription: scientific article published on 01 July 1986\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q77979199",
+  "timestamp": "2026-03-06T04:18:05.821556",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "6f7524ff25b6cbc8aa6a942ca05934053d6a887460b1c082d5908bdb81d6acdd",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q77979199",
+    "description": "scientific article published on 01 July 1986"
+  }
+}

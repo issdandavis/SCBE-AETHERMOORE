@@ -1,0 +1,31 @@
+{
+  "id": "090a5e48cc13585a",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Emergence of Turbulence in a counterflow geometry of 2D Polariton Quantum Fluids",
+  "content": "# Emergence of Turbulence in a counterflow geometry of 2D Polariton Quantum Fluids\n\nAuthors: Louis Depaepe, Kayce Ouahrouche, Alberto Amo, Clement Hainaut\nPublished: 2026-03-05T12:53:14Z\n\nWe numerically investigate the nonlinear dynamics of a two-dimensional exciton-polariton quantum fluid coherently driven by two counter-propagating laser beams. Using an exciton-photon coupled driven-dissipative Gross-Pitaevskii framework, we identify four distinct regimes-linear, solitonic, turbulent, and superfluid-emerging from the interplay between pump strength, laser detuning, and injected momentum, which together control the balance between kinetic and interaction energies in the quantum fluid. The different regimes are characterized through real-space and momentum-space observables, as well as through the temporal first-order coherence function. We show that turbulence occupies a well-defined and extended region of parameter space, marked by spontaneous vortex nucleation, and a pronounced reduction of temporal coherence, providing a clear signature of nonstationary dynamics. By constructing quantitative phase diagrams, we delineate the transitions between the various regimes and identify multiple pathways connecting solitonic, turbulent, and superfluid behaviors. Finally, we demonstrate that the turbulent regime persists over experimentally realistic parameter ranges compatible with state-of-the-art GaAs-based micro-cavity platforms, establishing counter-propagating polariton flows as a robust and versatile setting for the study of driven-dissipative quantum turbulence in two dimensions.",
+  "url": "http://arxiv.org/abs/2603.05125v1",
+  "timestamp": "2026-03-05T12:53:14Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "f25ef757b344307c8c87639c591d155e4672895d49627a50881f4cc374130ccf",
+  "parent_hash": "966effb587d675dc9c68a3f8698a683b68ca0f3ec137246f119681918d462a86",
+  "metadata": {
+    "authors": [
+      "Louis Depaepe",
+      "Kayce Ouahrouche",
+      "Alberto Amo",
+      "Clement Hainaut"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05125v1"
+  }
+}

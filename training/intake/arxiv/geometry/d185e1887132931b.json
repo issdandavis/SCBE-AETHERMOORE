@@ -1,0 +1,30 @@
+{
+  "id": "d185e1887132931b",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Singularity removal rigidity theorems for minimal hypersurfaces in manifolds with nonnegative scalar curvature",
+  "content": "# Singularity removal rigidity theorems for minimal hypersurfaces in manifolds with nonnegative scalar curvature\n\nAuthors: Shihang He, Yuguang Shi, Haobin Yu\nPublished: 2026-02-27T06:13:31Z\n\nWe prove two \"Singularity removal rigidity theorems\" for minimal hypersurfaces with isolated singularities in manifolds of nonnegative scalar curvature (Theorems \\ref{thm: rigidity for minimal surface} and \\ref{thm: georch free of singularity}). In particular, we observe a new phenomenon that the extremal scalar curvature condition forces smoothness, which reveals a kind of positive effect of minimal hypersurface singularities in scalar curvature geometry.\n  As an application, we obtain a direct proof of the positive mass theorem (PMT) for asymptotically flat $8$-manifolds with arbitrary ends (Theorem \\ref{thm: pmt8dim}), without using N. Smale's generic regularity theorem. A key ingredient is a new spectral version of PMT for AF manifolds with arbitrary ends, whose proof relies on PMT for asymptotically locally flat (ALF) manifolds with $\\mathbf{S}^1$-symmetry.",
+  "url": "http://arxiv.org/abs/2602.23705v1",
+  "timestamp": "2026-02-27T06:13:31Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "72195eef7b84765a84dddbd95f4da787838c726b86f72daf9736c02387731234",
+  "parent_hash": "c449e2e2c7ccf45970f670ca8c86c901503b8e6712a477aa35b7ce461e6e1595",
+  "metadata": {
+    "authors": [
+      "Shihang He",
+      "Yuguang Shi",
+      "Haobin Yu"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.23705v1"
+  }
+}

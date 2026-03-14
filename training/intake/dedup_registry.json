@@ -1,0 +1,692 @@
+{
+  "bbe996a7c8499b39": {
+    "source": "loc",
+    "query": "cryptography history",
+    "count": 10,
+    "timestamp": "2026-03-06T02:37:46.492042+00:00"
+  },
+  "a964ccdb7a079151": {
+    "source": "loc",
+    "query": "hyperbolic geometry",
+    "count": 10,
+    "timestamp": "2026-03-06T02:37:52.104468+00:00"
+  },
+  "a341af24a53c92a6": {
+    "source": "loc",
+    "query": "artificial intelligence",
+    "count": 10,
+    "timestamp": "2026-03-06T02:37:58.048732+00:00"
+  },
+  "ef48770dbf0a84d8": {
+    "source": "loc",
+    "query": "quantum computing",
+    "count": 10,
+    "timestamp": "2026-03-06T02:38:03.657795+00:00"
+  },
+  "fbb4e9ac22333954": {
+    "source": "loc",
+    "query": "sacred geometry mathematics",
+    "count": 10,
+    "timestamp": "2026-03-06T02:38:09.311584+00:00"
+  },
+  "2f570ba0c93ecb42": {
+    "source": "loc",
+    "query": "distributed systems",
+    "count": 10,
+    "timestamp": "2026-03-06T02:38:15.058479+00:00"
+  },
+  "550a42503ab378b4": {
+    "source": "loc",
+    "query": "network security",
+    "count": 10,
+    "timestamp": "2026-03-06T02:38:19.835164+00:00"
+  },
+  "30b365978c6eee00": {
+    "source": "loc",
+    "query": "machine learning",
+    "count": 10,
+    "timestamp": "2026-03-06T02:38:34.765147+00:00"
+  },
+  "56656355cc7cebf1": {
+    "source": "loc",
+    "query": "blockchain technology",
+    "count": 10,
+    "timestamp": "2026-03-06T02:38:39.111367+00:00"
+  },
+  "0e98238d8bb76162": {
+    "source": "loc",
+    "query": "computational complexity",
+    "count": 10,
+    "timestamp": "2026-03-06T02:38:43.194773+00:00"
+  },
+  "47f625c092411e6f": {
+    "source": "ia",
+    "query": "hyperbolic geometry",
+    "count": 10,
+    "timestamp": "2026-03-06T02:38:47.980113+00:00"
+  },
+  "31bf9ec35bcc33ca": {
+    "source": "ia",
+    "query": "tokenization natural language",
+    "count": 10,
+    "timestamp": "2026-03-06T02:40:36.614775+00:00"
+  },
+  "d32b455a6c785556": {
+    "source": "ia",
+    "query": "neural network security",
+    "count": 10,
+    "timestamp": "2026-03-06T02:40:40.457140+00:00"
+  },
+  "91c4227558403158": {
+    "source": "ia",
+    "query": "blockchain memory",
+    "count": 10,
+    "timestamp": "2026-03-06T02:40:44.344352+00:00"
+  },
+  "18634c13c989e9f6": {
+    "source": "ia",
+    "query": "graph theory applications",
+    "count": 10,
+    "timestamp": "2026-03-06T02:40:48.239740+00:00"
+  },
+  "21ebaa982a5b1094": {
+    "source": "ia",
+    "query": "information security",
+    "count": 10,
+    "timestamp": "2026-03-06T02:40:52.061830+00:00"
+  },
+  "0d4e7d129bb33775": {
+    "source": "wikidata",
+    "query": "hyperbolic geometry",
+    "count": 10,
+    "timestamp": "2026-03-06T02:40:55.707093+00:00"
+  },
+  "5e7f61550be03030": {
+    "source": "wikidata",
+    "query": "Poincare disk model",
+    "count": 1,
+    "timestamp": "2026-03-06T02:40:59.403324+00:00"
+  },
+  "31faad5f438b45c5": {
+    "source": "wikidata",
+    "query": "post-quantum cryptography",
+    "count": 10,
+    "timestamp": "2026-03-06T02:41:03.080950+00:00"
+  },
+  "c2ccfc6c83e1b3d1": {
+    "source": "wikidata",
+    "query": "AI alignment",
+    "count": 3,
+    "timestamp": "2026-03-06T02:41:06.709846+00:00"
+  },
+  "8a999e49c75488ef": {
+    "source": "wikidata",
+    "query": "sacred geometry",
+    "count": 3,
+    "timestamp": "2026-03-06T02:41:10.503384+00:00"
+  },
+  "be9a0c92ca524645": {
+    "source": "wikidata",
+    "query": "golden ratio",
+    "count": 10,
+    "timestamp": "2026-03-06T02:41:14.172842+00:00"
+  },
+  "0a19f26415383a36": {
+    "source": "wikidata",
+    "query": "blockchain consensus",
+    "count": 10,
+    "timestamp": "2026-03-06T02:41:17.822660+00:00"
+  },
+  "0b4a1cdda883a86d": {
+    "source": "wikidata",
+    "query": "multi-agent system",
+    "count": 10,
+    "timestamp": "2026-03-06T02:41:21.468331+00:00"
+  },
+  "912b0e2f801c36ef": {
+    "source": "wikidata",
+    "query": "lattice-based cryptography",
+    "count": 1,
+    "timestamp": "2026-03-06T02:41:25.138677+00:00"
+  },
+  "6550a7a8c4b00188": {
+    "source": "wikidata",
+    "query": "retrieval-augmented generation",
+    "count": 10,
+    "timestamp": "2026-03-06T02:41:28.776988+00:00"
+  },
+  "d93577083eed94f0": {
+    "source": "nist",
+    "query": "cryptographic",
+    "count": 10,
+    "timestamp": "2026-03-06T02:41:32.769532+00:00"
+  },
+  "23acb4784dafbe6a": {
+    "source": "nist",
+    "query": "post-quantum",
+    "count": 9,
+    "timestamp": "2026-03-06T02:41:36.394217+00:00"
+  },
+  "7b6ad0f2aae5a15f": {
+    "source": "nist",
+    "query": "machine learning adversarial",
+    "count": 0,
+    "timestamp": "2026-03-06T02:41:40.003577+00:00"
+  },
+  "6096e9d2289c8043": {
+    "source": "nist",
+    "query": "browser remote code execution",
+    "count": 10,
+    "timestamp": "2026-03-06T02:41:44.351345+00:00"
+  },
+  "f10c070793537c67": {
+    "source": "nist",
+    "query": "authentication bypass",
+    "count": 10,
+    "timestamp": "2026-03-06T02:41:48.102787+00:00"
+  },
+  "f7ac7c73862046de": {
+    "source": "nist",
+    "query": "blockchain vulnerability",
+    "count": 10,
+    "timestamp": "2026-03-06T02:41:52.080567+00:00"
+  },
+  "70cb4121c5d21192": {
+    "source": "nist",
+    "query": "AI model injection",
+    "count": 10,
+    "timestamp": "2026-03-06T02:41:55.752399+00:00"
+  },
+  "33615349e59bea3c": {
+    "source": "nist",
+    "query": "supply chain",
+    "count": 10,
+    "timestamp": "2026-03-06T02:41:59.374973+00:00"
+  },
+  "5e517d7ba6ff584a": {
+    "source": "dataverse",
+    "query": "cryptography",
+    "count": 10,
+    "timestamp": "2026-03-06T02:42:03.562401+00:00"
+  },
+  "0b9406e22341c72a": {
+    "source": "dataverse",
+    "query": "machine learning security",
+    "count": 10,
+    "timestamp": "2026-03-06T02:42:07.886294+00:00"
+  },
+  "026b638bcbce9a00": {
+    "source": "dataverse",
+    "query": "hyperbolic embedding",
+    "count": 10,
+    "timestamp": "2026-03-06T02:42:11.957712+00:00"
+  },
+  "131ba188d0843a43": {
+    "source": "dataverse",
+    "query": "graph neural network",
+    "count": 10,
+    "timestamp": "2026-03-06T02:42:16.332891+00:00"
+  },
+  "1b423c6b16221c63": {
+    "source": "dataverse",
+    "query": "natural language processing",
+    "count": 10,
+    "timestamp": "2026-03-06T02:42:20.621449+00:00"
+  },
+  "d183b03d867af6bc": {
+    "source": "dataverse",
+    "query": "quantum computing",
+    "count": 10,
+    "timestamp": "2026-03-06T02:42:24.954773+00:00"
+  },
+  "2980cbc71ad00ab2": {
+    "source": "dataverse",
+    "query": "blockchain",
+    "count": 10,
+    "timestamp": "2026-03-06T02:42:29.187901+00:00"
+  },
+  "e470baf65175230e": {
+    "source": "dataverse",
+    "query": "adversarial machine learning",
+    "count": 10,
+    "timestamp": "2026-03-06T02:42:33.588603+00:00"
+  },
+  "9d2e78bbba5c4215": {
+    "source": "arxiv",
+    "query": "hyperbolic geometry AI safety",
+    "count": 40,
+    "timestamp": "2026-03-06T03:48:59.961593+00:00"
+  },
+  "de38271b86637dac": {
+    "source": "arxiv",
+    "query": "Poincare ball embedding",
+    "count": 40,
+    "timestamp": "2026-03-06T03:49:30.798213+00:00"
+  },
+  "783da0004e044c77": {
+    "source": "arxiv",
+    "query": "post-quantum cryptography lattice",
+    "count": 40,
+    "timestamp": "2026-03-06T03:50:02.287070+00:00"
+  },
+  "fe8b8a64dcacd4d5": {
+    "source": "arxiv",
+    "query": "multi-agent governance consensus",
+    "count": 40,
+    "timestamp": "2026-03-06T03:50:33.396910+00:00"
+  },
+  "2da9940633ccbc97": {
+    "source": "arxiv",
+    "query": "geometric deep learning",
+    "count": 40,
+    "timestamp": "2026-03-06T03:51:06.726392+00:00"
+  },
+  "109ac94ae9e414ea": {
+    "source": "arxiv",
+    "query": "adversarial robustness exponential cost",
+    "count": 40,
+    "timestamp": "2026-03-06T03:51:39.033124+00:00"
+  },
+  "353ae1b3afaf670f": {
+    "source": "arxiv",
+    "query": "knowledge graph retrieval augmented",
+    "count": 40,
+    "timestamp": "2026-03-06T03:52:11.062861+00:00"
+  },
+  "2aae55982f0f5950": {
+    "source": "arxiv",
+    "query": "federated learning privacy",
+    "count": 40,
+    "timestamp": "2026-03-06T03:52:42.095578+00:00"
+  },
+  "ee8949e34e9c84cb": {
+    "source": "arxiv",
+    "query": "homomorphic encryption neural",
+    "count": 40,
+    "timestamp": "2026-03-06T03:53:13.982179+00:00"
+  },
+  "444df82b6e0f32d2": {
+    "source": "arxiv",
+    "query": "topological data analysis",
+    "count": 40,
+    "timestamp": "2026-03-06T03:53:46.582184+00:00"
+  },
+  "f30f3d891759089d": {
+    "source": "arxiv",
+    "query": "graph neural network security",
+    "count": 40,
+    "timestamp": "2026-03-06T03:54:17.953187+00:00"
+  },
+  "b61ee22799cbc40b": {
+    "source": "arxiv",
+    "query": "differential privacy machine learning",
+    "count": 40,
+    "timestamp": "2026-03-06T03:54:49.199780+00:00"
+  },
+  "f7b2173572952e8c": {
+    "source": "arxiv",
+    "query": "zero knowledge proof blockchain",
+    "count": 40,
+    "timestamp": "2026-03-06T03:55:21.338102+00:00"
+  },
+  "a1213ac98ff1a992": {
+    "source": "arxiv",
+    "query": "swarm intelligence optimization",
+    "count": 40,
+    "timestamp": "2026-03-06T03:55:52.151322+00:00"
+  },
+  "b4d53b5f57e922df": {
+    "source": "arxiv",
+    "query": "manifold learning dimensionality reduction",
+    "count": 40,
+    "timestamp": "2026-03-06T03:56:48.323738+00:00"
+  },
+  "178ac4ed49043ea2": {
+    "source": "arxiv",
+    "query": "causal inference deep learning",
+    "count": 40,
+    "timestamp": "2026-03-06T03:57:16.408492+00:00"
+  },
+  "4ff9a55f9b65175e": {
+    "source": "arxiv",
+    "query": "quantum error correction",
+    "count": 40,
+    "timestamp": "2026-03-06T03:57:44.599340+00:00"
+  },
+  "f1c2a8b481f954af": {
+    "source": "arxiv",
+    "query": "Byzantine fault tolerance distributed",
+    "count": 40,
+    "timestamp": "2026-03-06T03:58:13.129142+00:00"
+  },
+  "b58d8b5843a42188": {
+    "source": "arxiv",
+    "query": "attention mechanism transformer geometry",
+    "count": 40,
+    "timestamp": "2026-03-06T03:58:43.265763+00:00"
+  },
+  "0bfdc045560eaf17": {
+    "source": "arxiv",
+    "query": "information theoretic security",
+    "count": 40,
+    "timestamp": "2026-03-06T03:59:11.443573+00:00"
+  },
+  "879d47f13d618463": {
+    "source": "ia",
+    "query": "post-quantum cryptography",
+    "count": 10,
+    "timestamp": "2026-03-06T03:59:15.247640+00:00"
+  },
+  "64415d0bd0c2a7da": {
+    "source": "ia",
+    "query": "AI safety alignment",
+    "count": 10,
+    "timestamp": "2026-03-06T03:59:18.968363+00:00"
+  },
+  "a27f95cf4690ed6d": {
+    "source": "ia",
+    "query": "sacred geometry",
+    "count": 10,
+    "timestamp": "2026-03-06T03:59:22.633964+00:00"
+  },
+  "178cd09c4d52aed4": {
+    "source": "ia",
+    "query": "distributed consensus protocols",
+    "count": 10,
+    "timestamp": "2026-03-06T03:59:26.530084+00:00"
+  },
+  "efe4f68ea9fa60df": {
+    "source": "arxiv",
+    "query": "quasicrystal aperiodic tiling data structure",
+    "count": 40,
+    "timestamp": "2026-03-06T04:09:10.264486+00:00"
+  },
+  "0f43b5d80d77a9eb": {
+    "source": "arxiv",
+    "query": "Chladni pattern vibration mode nodal",
+    "count": 40,
+    "timestamp": "2026-03-06T04:09:41.044941+00:00"
+  },
+  "40f36e938555167c": {
+    "source": "arxiv",
+    "query": "chiral symmetry breaking information theory",
+    "count": 40,
+    "timestamp": "2026-03-06T04:10:12.398481+00:00"
+  },
+  "dc5854a1a6090ebc": {
+    "source": "arxiv",
+    "query": "resonance gated access control",
+    "count": 40,
+    "timestamp": "2026-03-06T04:10:43.011816+00:00"
+  },
+  "67ef953c5b1d9619": {
+    "source": "arxiv",
+    "query": "icosahedral symmetry projection higher dimensional",
+    "count": 40,
+    "timestamp": "2026-03-06T04:11:14.085406+00:00"
+  },
+  "3fdf8bea8a91dcf2": {
+    "source": "arxiv",
+    "query": "Penrose tiling computational properties",
+    "count": 40,
+    "timestamp": "2026-03-06T04:11:44.826221+00:00"
+  },
+  "8affedd2c8dc17da": {
+    "source": "arxiv",
+    "query": "multi-agent reinforcement learning cooperative",
+    "count": 40,
+    "timestamp": "2026-03-06T04:12:15.988537+00:00"
+  },
+  "c16c71900a00f1c2": {
+    "source": "arxiv",
+    "query": "constitutional AI alignment training",
+    "count": 40,
+    "timestamp": "2026-03-06T04:12:46.909730+00:00"
+  },
+  "848ca37ed7f82693": {
+    "source": "arxiv",
+    "query": "language model safety evaluation benchmark",
+    "count": 40,
+    "timestamp": "2026-03-06T04:13:17.878831+00:00"
+  },
+  "c67471b4f654b8ef": {
+    "source": "arxiv",
+    "query": "autonomous agent tool use planning",
+    "count": 40,
+    "timestamp": "2026-03-06T04:13:48.764017+00:00"
+  },
+  "a47ea79498c2f673": {
+    "source": "arxiv",
+    "query": "reward hacking specification gaming",
+    "count": 40,
+    "timestamp": "2026-03-06T04:14:19.707633+00:00"
+  },
+  "64aa347143247e3d": {
+    "source": "arxiv",
+    "query": "hyperbolic neural network hierarchical",
+    "count": 40,
+    "timestamp": "2026-03-06T04:14:51.137550+00:00"
+  },
+  "791ea2eb64dd1ef5": {
+    "source": "arxiv",
+    "query": "Riemannian optimization manifold",
+    "count": 40,
+    "timestamp": "2026-03-06T04:15:22.259843+00:00"
+  },
+  "4ea67ab5ca839b32": {
+    "source": "arxiv",
+    "query": "persistent homology machine learning",
+    "count": 40,
+    "timestamp": "2026-03-06T04:15:54.116894+00:00"
+  },
+  "c6937f34c814f878": {
+    "source": "arxiv",
+    "query": "equivariant neural network symmetry",
+    "count": 40,
+    "timestamp": "2026-03-06T04:16:33.183864+00:00"
+  },
+  "e942540dd51cdcda": {
+    "source": "arxiv",
+    "query": "fiber bundle gauge neural network",
+    "count": 40,
+    "timestamp": "2026-03-06T04:17:04.213219+00:00"
+  },
+  "d494576409b86cf2": {
+    "source": "loc",
+    "query": "quasicrystals aperiodic",
+    "count": 10,
+    "timestamp": "2026-03-06T04:17:08.479291+00:00"
+  },
+  "ef9b4531f292a413": {
+    "source": "loc",
+    "query": "Chladni acoustics vibration",
+    "count": 10,
+    "timestamp": "2026-03-06T04:17:18.844720+00:00"
+  },
+  "28c8276b42bfe929": {
+    "source": "loc",
+    "query": "chirality chemistry physics",
+    "count": 10,
+    "timestamp": "2026-03-06T04:17:25.170428+00:00"
+  },
+  "48e06b52abff30be": {
+    "source": "loc",
+    "query": "resonance engineering",
+    "count": 10,
+    "timestamp": "2026-03-06T04:17:33.823756+00:00"
+  },
+  "2217d2b5482fa4e9": {
+    "source": "loc",
+    "query": "game theory governance",
+    "count": 10,
+    "timestamp": "2026-03-06T04:17:41.968740+00:00"
+  },
+  "f51f758ca8af9833": {
+    "source": "ia",
+    "query": "quasicrystal mathematics",
+    "count": 10,
+    "timestamp": "2026-03-06T04:17:45.801411+00:00"
+  },
+  "b604b0c655ab95a3": {
+    "source": "ia",
+    "query": "Chladni plate acoustics",
+    "count": 1,
+    "timestamp": "2026-03-06T04:17:50.076722+00:00"
+  },
+  "e49a2016f82a8dfe": {
+    "source": "ia",
+    "query": "chirality symmetry breaking",
+    "count": 10,
+    "timestamp": "2026-03-06T04:17:53.925440+00:00"
+  },
+  "30d585128bcb7d61": {
+    "source": "ia",
+    "query": "resonance structures",
+    "count": 10,
+    "timestamp": "2026-03-06T04:17:58.245274+00:00"
+  },
+  "ee1b2598a9ff600b": {
+    "source": "ia",
+    "query": "agent coordination systems",
+    "count": 10,
+    "timestamp": "2026-03-06T04:18:02.193257+00:00"
+  },
+  "88a113fe945c6fc8": {
+    "source": "wikidata",
+    "query": "quasicrystal",
+    "count": 10,
+    "timestamp": "2026-03-06T04:18:05.846030+00:00"
+  },
+  "216636c3df196047": {
+    "source": "wikidata",
+    "query": "Chladni figure",
+    "count": 4,
+    "timestamp": "2026-03-06T04:18:09.476947+00:00"
+  },
+  "6f942bad20fa71cc": {
+    "source": "wikidata",
+    "query": "chirality",
+    "count": 10,
+    "timestamp": "2026-03-06T04:18:13.132835+00:00"
+  },
+  "3ba811d0bf1d239a": {
+    "source": "wikidata",
+    "query": "Penrose tiling",
+    "count": 5,
+    "timestamp": "2026-03-06T04:18:16.829061+00:00"
+  },
+  "a80d2d3c223792d4": {
+    "source": "wikidata",
+    "query": "icosahedral symmetry",
+    "count": 8,
+    "timestamp": "2026-03-06T04:18:20.488344+00:00"
+  },
+  "f222e893c21c8e1c": {
+    "source": "nist",
+    "query": "multi-factor authentication",
+    "count": 10,
+    "timestamp": "2026-03-06T04:18:24.221832+00:00"
+  },
+  "2add04c21cff30aa": {
+    "source": "nist",
+    "query": "key management",
+    "count": 10,
+    "timestamp": "2026-03-06T04:18:29.343312+00:00"
+  },
+  "d80185c966b8c29f": {
+    "source": "nist",
+    "query": "side-channel attack",
+    "count": 10,
+    "timestamp": "2026-03-06T04:18:33.365344+00:00"
+  },
+  "b12e277c6cc83297": {
+    "source": "nist",
+    "query": "firmware integrity",
+    "count": 10,
+    "timestamp": "2026-03-06T04:18:37.185234+00:00"
+  },
+  "2d8af109543de960": {
+    "source": "dataverse",
+    "query": "quasicrystal structure",
+    "count": 10,
+    "timestamp": "2026-03-06T04:18:41.271869+00:00"
+  },
+  "5ada1e731ef8bddb": {
+    "source": "dataverse",
+    "query": "acoustic resonance",
+    "count": 10,
+    "timestamp": "2026-03-06T04:18:45.426205+00:00"
+  },
+  "0441af0181d12f6e": {
+    "source": "dataverse",
+    "query": "multi-agent simulation",
+    "count": 10,
+    "timestamp": "2026-03-06T04:18:49.841957+00:00"
+  },
+  "b1240201c06c5089": {
+    "source": "dataverse",
+    "query": "geometric deep learning",
+    "count": 10,
+    "timestamp": "2026-03-06T04:18:54.203162+00:00"
+  },
+  "7549de409e87d86e": {
+    "source": "hydra",
+    "query": "quasicrystal data storage resonance-gated access control",
+    "count": 0,
+    "timestamp": "2026-03-06T04:19:19.919099+00:00"
+  },
+  "48ee4281a4b5c5e6": {
+    "source": "hydra",
+    "query": "chiral symmetry breaking data security cryptographic",
+    "count": 0,
+    "timestamp": "2026-03-06T04:19:42.099450+00:00"
+  },
+  "95206b28614cd55d": {
+    "source": "hydra",
+    "query": "Poincare ball embedding governance decision multi-agent",
+    "count": 0,
+    "timestamp": "2026-03-06T04:20:06.776530+00:00"
+  },
+  "eb6c5732b91388e2": {
+    "source": "hydra",
+    "query": "Sacred geometry tokenization language model",
+    "count": 0,
+    "timestamp": "2026-03-06T04:20:30.342719+00:00"
+  },
+  "c8fc18391ffe9ee3": {
+    "source": "hydra",
+    "query": "hyperbolic neural network exponential cost adversarial",
+    "count": 0,
+    "timestamp": "2026-03-06T04:20:53.830528+00:00"
+  },
+  "3b2813d4d7d2ef3e": {
+    "source": "hydra",
+    "query": "Chladni pattern vibration mode storage addressing",
+    "count": 0,
+    "timestamp": "2026-03-06T04:21:20.072501+00:00"
+  },
+  "f6c544b43355a64f": {
+    "source": "hydra",
+    "query": "federated learning geometric aggregation",
+    "count": 0,
+    "timestamp": "2026-03-06T04:21:44.992057+00:00"
+  },
+  "26c4846f61e62b22": {
+    "source": "hydra",
+    "query": "Byzantine fault tolerance Poincare metric",
+    "count": 0,
+    "timestamp": "2026-03-06T04:22:07.875454+00:00"
+  },
+  "5961f00275302cbe": {
+    "source": "hydra",
+    "query": "lore-seeded tokenizer narrative corpus",
+    "count": 0,
+    "timestamp": "2026-03-06T04:22:28.831170+00:00"
+  },
+  "2902a6d5fbc0aa2a": {
+    "source": "hydra",
+    "query": "multi-modal AI safety evaluation framework",
+    "count": 0,
+    "timestamp": "2026-03-06T04:22:52.226654+00:00"
+  }
+}

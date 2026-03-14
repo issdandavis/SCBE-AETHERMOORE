@@ -1,0 +1,27 @@
+{
+  "id": "0f69718770a15598",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "Alpha-Cluster States Populated in 24Mg+12C",
+  "content": "# Alpha-Cluster States Populated in 24Mg+12C\n\nCreator: C. Beck\nDate: 2008-08-18T00:00:00Z\nDownloads: 73\nSubjects: \n\nCharged particle and gamma decays in light alpha-like nuclei are investigated for 24Mg+12C. Various theoretical predictions for the occurence of superdeformed and hyperdeformed bands associated with resonance structures with low spin are presented. The inverse kinematics reaction 24Mg+12C is studied at Elab(24Mg) = 130 MeV. Exclusive data were collected with the Binary Reaction Spectrometer in coincidence with EUROBALL IV installed at the VIVITRON Tandem facility at Strasbourg. Specific structures with large deformation were selectively populated in binary reactions and their associated gamma decays studied. Coincident events from $\\alpha$-transfer channels were selected by choosing the excitation energy or the entry point via the two-body Q-values. The analysis of the binary reaction channels is presented with a particular emphasis on 20Ne-gamma and 16O-gamma coincidences.",
+  "url": "https://archive.org/details/arxiv-0808.2405",
+  "timestamp": "2026-03-06T04:17:58.220002",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "718c42b9a0a08370e9afe5a1e904452c591d29230237070c070de87a718a0276",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "ia_identifier": "arxiv-0808.2405",
+    "media_type": "texts",
+    "downloads": 73,
+    "subjects": []
+  }
+}

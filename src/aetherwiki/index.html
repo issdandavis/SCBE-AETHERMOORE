@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AetherWiki — The AI Encyclopedia</title>
+<meta name="description" content="AetherWiki: The open AI encyclopedia. Every model, agent, company, tool, protocol, and wild experiment cataloged. Submit anything. Powered by AetherGates from the Everweave.">
+<meta name="keywords" content="AI encyclopedia, artificial intelligence wiki, AI models, LLM, GPT, Claude, Gemini, Llama, AI agents, AI tools, machine learning, deep learning, AI companies, AI protocols, MCP, A2A, SCBE, AetherGates">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="author" content="Aethermoore Works">
+<link rel="canonical" href="https://aetherwiki.aethermoore.com/">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="AetherWiki — The Open AI Encyclopedia">
+<meta property="og:description" content="Every AI model, agent, company, tool, and protocol cataloged. Submit anything — nothing is deleted, the weird stuff lives in the Hyperbolic Void.">
+<meta property="og:site_name" content="AetherWiki">
+<meta property="og:locale" content="en_US">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AetherWiki — The Open AI Encyclopedia">
+<meta name="twitter:description" content="Every AI model, agent, tool, protocol cataloged. Submit anything. One man's trash is another man's treasure.">
+
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "AetherWiki",
+  "alternateName": "The AI Encyclopedia",
+  "url": "https://aetherwiki.aethermoore.com/",
+  "description": "Open encyclopedia of AI models, agents, companies, tools, and protocols. Accepts all submissions.",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://aetherwiki.aethermoore.com/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Aethermoore Works",
+    "url": "https://aethermoore.com"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "AI Encyclopedia Entries",
+  "numberOfItems": 22,
+  "itemListElement": [
+    {"@type":"ListItem","position":1,"name":"GPT-4o","url":"https://aetherwiki.aethermoore.com/#gpt-4o"},
+    {"@type":"ListItem","position":2,"name":"Claude Opus 4","url":"https://aetherwiki.aethermoore.com/#claude-opus-4"},
+    {"@type":"ListItem","position":3,"name":"Gemini 2.5","url":"https://aetherwiki.aethermoore.com/#gemini-2"},
+    {"@type":"ListItem","position":4,"name":"Llama 4","url":"https://aetherwiki.aethermoore.com/#llama-4"},
+    {"@type":"ListItem","position":5,"name":"DeepSeek-V3","url":"https://aetherwiki.aethermoore.com/#deepseek-v3"},
+    {"@type":"ListItem","position":6,"name":"OpenAI","url":"https://aetherwiki.aethermoore.com/#openai"},
+    {"@type":"ListItem","position":7,"name":"Anthropic","url":"https://aetherwiki.aethermoore.com/#anthropic"},
+    {"@type":"ListItem","position":8,"name":"Google DeepMind","url":"https://aetherwiki.aethermoore.com/#google-deepmind"},
+    {"@type":"ListItem","position":9,"name":"Meta AI","url":"https://aetherwiki.aethermoore.com/#meta-ai"},
+    {"@type":"ListItem","position":10,"name":"Claude Code","url":"https://aetherwiki.aethermoore.com/#claude-code"},
+    {"@type":"ListItem","position":11,"name":"SCBE-AETHERMOORE","url":"https://aetherwiki.aethermoore.com/#scbe"},
+    {"@type":"ListItem","position":12,"name":"Model Context Protocol","url":"https://aetherwiki.aethermoore.com/#mcp"},
+    {"@type":"ListItem","position":13,"name":"AetherGates","url":"https://aetherwiki.aethermoore.com/#aether-gates"},
+    {"@type":"ListItem","position":14,"name":"Hugging Face","url":"https://aetherwiki.aethermoore.com/#huggingface"},
+    {"@type":"ListItem","position":15,"name":"PyTorch","url":"https://aetherwiki.aethermoore.com/#pytorch"},
+    {"@type":"ListItem","position":16,"name":"LangChain","url":"https://aetherwiki.aethermoore.com/#langchain"},
+    {"@type":"ListItem","position":17,"name":"AetherBrowse","url":"https://aetherwiki.aethermoore.com/#aetherbrowse"},
+    {"@type":"ListItem","position":18,"name":"Hydra Armor API","url":"https://aetherwiki.aethermoore.com/#hydra-armor"},
+    {"@type":"ListItem","position":19,"name":"Cursor","url":"https://aetherwiki.aethermoore.com/#cursor"},
+    {"@type":"ListItem","position":20,"name":"GitHub Copilot","url":"https://aetherwiki.aethermoore.com/#github-copilot"},
+    {"@type":"ListItem","position":21,"name":"OpenAI Operator","url":"https://aetherwiki.aethermoore.com/#openai-operator"},
+    {"@type":"ListItem","position":22,"name":"Manus","url":"https://aetherwiki.aethermoore.com/#manus"}
+  ]
+}
+</script>
+<style>
+:root {
+  --bg: #0a0a12;
+  --bg2: #12121f;
+  --bg3: #1a1a2e;
+  --text: #e0e0f0;
+  --text2: #9090b0;
+  --accent: #7b5ea7;
+  --accent2: #a855f7;
+  --ko: #e74c3c;
+  --av: #00bcd4;
+  --ru: #f1c40f;
+  --ca: #2ecc71;
+  --um: #9b59b6;
+  --dr: #e67e22;
+  --border: #2a2a45;
+  --glow: rgba(123, 94, 167, 0.3);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, var(--bg2) 0%, var(--bg3) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+.header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: conic-gradient(var(--ko), var(--av), var(--ru), var(--ca), var(--um), var(--dr), var(--ko));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  animation: spin 20s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.logo-text { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px; }
+.logo-sub { font-size: 0.7rem; color: var(--text2); text-transform: uppercase; letter-spacing: 2px; }
+
+.search-box {
+  flex: 1;
+  max-width: 600px;
+  position: relative;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: var(--accent2);
+  box-shadow: 0 0 20px var(--glow);
+}
+
+.search-box::before {
+  content: "\1F50D";
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+}
+
+.nav-links { display: flex; gap: 1rem; }
+.nav-links a {
+  color: var(--text2);
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.nav-links a:hover { color: var(--text); background: var(--bg3); }
+.nav-links a.active { color: var(--accent2); background: rgba(168, 85, 247, 0.1); }
+
+/* Hero */
+.hero {
+  text-align: center;
+  padding: 4rem 2rem 3rem;
+  background: radial-gradient(ellipse at center, rgba(123, 94, 167, 0.15) 0%, transparent 70%);
+}
+
+.hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent2), var(--av), var(--dr));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.hero p { color: var(--text2); font-size: 1.2rem; max-width: 600px; margin: 0 auto 2rem; }
+
+.tongue-bar {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tongue-pill {
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.tongue-pill:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.tongue-pill.active { border-color: currentColor; }
+.tongue-pill[data-tongue="ALL"] { background: var(--bg3); color: var(--text); }
+.tongue-pill[data-tongue="KO"] { background: rgba(231,76,60,0.15); color: var(--ko); }
+.tongue-pill[data-tongue="AV"] { background: rgba(0,188,212,0.15); color: var(--av); }
+.tongue-pill[data-tongue="RU"] { background: rgba(241,196,15,0.15); color: var(--ru); }
+.tongue-pill[data-tongue="CA"] { background: rgba(46,204,113,0.15); color: var(--ca); }
+.tongue-pill[data-tongue="UM"] { background: rgba(155,89,182,0.15); color: var(--um); }
+.tongue-pill[data-tongue="DR"] { background: rgba(230,126,34,0.15); color: var(--dr); }
+
+/* Main content */
+.main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+.section-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 2rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Card grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.card[data-tongue="KO"]::before { background: var(--ko); }
+.card[data-tongue="AV"]::before { background: var(--av); }
+.card[data-tongue="RU"]::before { background: var(--ru); }
+.card[data-tongue="CA"]::before { background: var(--ca); }
+.card[data-tongue="UM"]::before { background: var(--um); }
+.card[data-tongue="DR"]::before { background: var(--dr); }
+
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+.card-title { font-size: 1.15rem; font-weight: 700; }
+.card-badge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-type { color: var(--text2); font-size: 0.85rem; margin-bottom: 0.5rem; }
+.card-desc { color: var(--text2); font-size: 0.9rem; line-height: 1.5; }
+.card-meta { margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.card-tag {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  background: var(--bg);
+  border-radius: 4px;
+  color: var(--text2);
+}
+
+/* Article view */
+.article-view {
+  display: none;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.article-view.active { display: block; }
+
+.article-back {
+  color: var(--accent2);
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+.article-title { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+.article-subtitle { color: var(--text2); font-size: 1.1rem; margin-bottom: 1.5rem; }
+
+.article-body { line-height: 1.8; }
+.article-body h2 { font-size: 1.3rem; margin: 1.5rem 0 0.75rem; color: var(--accent2); }
+.article-body h3 { font-size: 1.1rem; margin: 1rem 0 0.5rem; }
+.article-body p { margin-bottom: 1rem; }
+.article-body ul { margin: 0.5rem 0 1rem 1.5rem; }
+.article-body li { margin-bottom: 0.3rem; }
+.article-body code {
+  background: var(--bg);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.article-body table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+.article-body th, .article-body td {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border);
+  text-align: left;
+  font-size: 0.9rem;
+}
+.article-body th { background: var(--bg3); font-weight: 600; }
+
+/* Live data panel */
+.live-panel {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.live-panel-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent2);
+  margin-bottom: 0.5rem;
+}
+
+.live-data { font-family: 'Courier New', monospace; font-size: 0.9rem; }
+
+/* Stats bar */
+.stats-bar {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1.5rem 2rem;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.stat { text-align: center; }
+.stat-num { font-size: 1.8rem; font-weight: 800; color: var(--accent2); }
+.stat-label { font-size: 0.75rem; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text2);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border);
+}
+
+.footer a { color: var(--accent2); text-decoration: none; }
+
+/* Void realm */
+.void-banner {
+  background: linear-gradient(135deg, #0a0008 0%, #1a0020 50%, #0a0a12 100%);
+  border: 1px solid #3a1050;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.void-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 50%, rgba(155,89,182,0.1) 0%, transparent 50%),
+              radial-gradient(circle at 70% 50%, rgba(230,126,34,0.08) 0%, transparent 50%);
+  animation: voidPulse 8s ease-in-out infinite;
+}
+
+@keyframes voidPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.void-banner h2 { color: #9b59b6; font-size: 1.5rem; position: relative; }
+.void-banner p { color: #7060a0; font-size: 0.9rem; position: relative; margin-top: 0.5rem; }
+
+.void-coord {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: #503070;
+  margin-top: 0.5rem;
+  position: relative;
+}
+
+.card.void-card {
+  border-color: #2a1040;
+  background: linear-gradient(135deg, #0f0018 0%, #12121f 100%);
+  opacity: 0.8;
+}
+
+.card.void-card:hover { opacity: 1; border-color: #9b59b6; }
+.card.void-card::before { background: linear-gradient(90deg, #9b59b6, #e67e22); }
+
+/* Submit modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal h2 { margin-bottom: 0.5rem; }
+.modal p.modal-sub { color: var(--text2); font-size: 0.9rem; margin-bottom: 1.5rem; }
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-size: 0.85rem; color: var(--text2); margin-bottom: 0.3rem; }
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.form-group textarea { min-height: 80px; resize: vertical; }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+  outline: none;
+  border-color: var(--accent2);
+}
+
+.submit-btn {
+  background: var(--accent2);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+}
+
+.submit-btn:hover { background: #9333ea; transform: translateY(-1px); }
+
+.submit-note {
+  font-size: 0.75rem;
+  color: var(--text2);
+  margin-top: 0.75rem;
+  text-align: center;
+  font-style: italic;
+}
+
+.nav-submit-btn {
+  background: var(--accent2);
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.nav-submit-btn:hover { background: #9333ea; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-inner { flex-wrap: wrap; }
+  .search-box { order: 3; max-width: 100%; }
+  .hero h1 { font-size: 2rem; }
+  .grid { grid-template-columns: 1fr; }
+  .modal { width: 95%; padding: 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="#" class="logo" onclick="showHome()">
+      <div class="logo-icon">W</div>
+      <div>
+        <div class="logo-text">AetherWiki</div>
+        <div class="logo-sub">The AI Encyclopedia</div>
+      </div>
+    </a>
+    <div class="search-box">
+      <input type="text" id="search" placeholder="Search AI models, agents, companies, tools..." oninput="filterEntries(this.value)">
+    </div>
+    <nav class="nav-links">
+      <a href="#" class="active" onclick="showHome()">Encyclopedia</a>
+      <a href="#" onclick="showSection('void')">The Void</a>
+      <a href="#" onclick="showSection('live')">Live Data</a>
+      <a href="#" onclick="showSection('about')">About</a>
+      <button class="nav-submit-btn" onclick="openSubmitModal()">+ Submit</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" id="hero">
+  <h1>The Open AI Encyclopedia</h1>
+  <p>Every AI model, agent, company, tool, protocol, and wild experiment — cataloged. Submit anything. Nothing is deleted. The weird stuff lives in the Hyperbolic Void.</p>
+  <div class="tongue-bar" id="tonguebar">
+    <span class="tongue-pill active" data-tongue="ALL" onclick="filterByTongue('ALL')">All</span>
+    <span class="tongue-pill" data-tongue="KO" onclick="filterByTongue('KO')">KO Authority</span>
+    <span class="tongue-pill" data-tongue="AV" onclick="filterByTongue('AV')">AV Transport</span>
+    <span class="tongue-pill" data-tongue="RU" onclick="filterByTongue('RU')">RU Policy</span>
+    <span class="tongue-pill" data-tongue="CA" onclick="filterByTongue('CA')">CA Compute</span>
+    <span class="tongue-pill" data-tongue="UM" onclick="filterByTongue('UM')">UM Security</span>
+    <span class="tongue-pill" data-tongue="DR" onclick="filterByTongue('DR')">DR Schema</span>
+  </div>
+</section>
+
+<div class="stats-bar" id="statsbar">
+  <div class="stat"><div class="stat-num" id="stat-entries">0</div><div class="stat-label">Entries</div></div>
+  <div class="stat"><div class="stat-num" id="stat-models">0</div><div class="stat-label">Models</div></div>
+  <div class="stat"><div class="stat-num" id="stat-companies">0</div><div class="stat-label">Companies</div></div>
+  <div class="stat"><div class="stat-num" id="stat-tools">0</div><div class="stat-label">Tools</div></div>
+  <div class="stat"><div class="stat-num" id="stat-protocols">0</div><div class="stat-label">Protocols</div></div>
+  <div class="stat"><div class="stat-num" id="stat-void">0</div><div class="stat-label">In The Void</div></div>
+</div>
+
+<main class="main" id="main-grid">
+  <!-- Populated by JS -->
+</main>
+
+<div class="article-view" id="article-view">
+  <!-- Populated when clicking a card -->
+</div>
+
+<!-- Submit Modal -->
+<div class="modal-overlay" id="submitModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeSubmitModal()">&times;</button>
+    <h2>Submit to AetherWiki</h2>
+    <p class="modal-sub">Everything is accepted. Vetted entries join the main encyclopedia. Unvetted, weird, experimental, or fringe entries go to <strong>The Void</strong> — the hyperbolic realm where nothing is deleted and everything persists at exotic coordinates. One man's trash is another man's treasure.</p>
+    <form onsubmit="handleSubmit(event)">
+      <div class="form-group">
+        <label>Title *</label>
+        <input type="text" id="sub-title" required placeholder="e.g. My Weird Neural Net Experiment">
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="sub-type">
+          <option value="Model">Model</option>
+          <option value="Tool">Tool</option>
+          <option value="Agent">Agent</option>
+          <option value="Company">Company</option>
+          <option value="Protocol">Protocol</option>
+          <option value="Framework">Framework</option>
+          <option value="Platform">Platform</option>
+          <option value="Dataset">Dataset</option>
+          <option value="Research">Research Paper</option>
+          <option value="Experiment">Experiment</option>
+          <option value="Concept">Concept / Theory</option>
+          <option value="Meme">Meme / Culture</option>
+          <option value="Unknown">Unknown / Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Creator / Company</label>
+        <input type="text" id="sub-company" placeholder="Who made it?">
+      </div>
+      <div class="form-group">
+        <label>Summary *</label>
+        <textarea id="sub-summary" required placeholder="What is it? What does it do? Be as weird as you want."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Full Description</label>
+        <textarea id="sub-article" placeholder="Details, specs, lore, rants, manifestos — anything goes." style="min-height:120px"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Tags (comma-separated)</label>
+        <input type="text" id="sub-tags" placeholder="e.g. experimental, neural-net, cursed, beautiful">
+      </div>
+      <div class="form-group">
+        <label>Sacred Tongue Affinity</label>
+        <select id="sub-tongue">
+          <option value="AUTO">Auto-assign</option>
+          <option value="KO">KO (Authority)</option>
+          <option value="AV">AV (Transport)</option>
+          <option value="RU">RU (Policy)</option>
+          <option value="CA">CA (Compute)</option>
+          <option value="UM">UM (Security)</option>
+          <option value="DR">DR (Schema)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Link (optional)</label>
+        <input type="url" id="sub-link" placeholder="https://...">
+      </div>
+      <button type="submit" class="submit-btn">Submit to the Everweave</button>
+      <p class="submit-note">All submissions are accepted. Rath observes. Nothing is deleted — only relocated to where it belongs.</p>
+    </form>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>AetherWiki &mdash; The Open AI Encyclopedia from the Everweave</p>
+  <p>Powered by <a href="#">AetherGates</a> &bull; Built by <a href="#">Aethermoore Works</a> &bull; SCBE-AETHERMOORE</p>
+  <p style="margin-top:0.5rem">Submit anything. Nothing is deleted. The Void remembers all. Rath observes.</p>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// AetherWiki — AI Encyclopedia Data
+// ══════════════════════════════════════════════════════════════
+
+const entries = [
+  // ── Models (CA: Compute) ──
+  {
+    id: "gpt-4o",
+    title: "GPT-4o",
+    type: "Model",
+    tongue: "CA",
+    company: "OpenAI",
+    tags: ["multimodal", "transformer", "commercial"],
+    summary: "OpenAI's flagship omni-modal model combining text, vision, and audio in a single architecture.",
+    article: `<h2>Overview</h2><p>GPT-4o (\"o\" for omni) is OpenAI's multimodal large language model released in May 2024. It processes text, images, and audio inputs and generates text and audio outputs with near-human response latency.</p><h2>Architecture</h2><p>Built on the transformer architecture with dense attention layers. Unlike previous GPT-4 variants that used separate models stitched together, GPT-4o processes all modalities end-to-end in a single neural network.</p><h2>Capabilities</h2><ul><li>Text generation and comprehension across 50+ languages</li><li>Image understanding and description</li><li>Real-time audio conversation</li><li>Code generation and debugging</li><li>Mathematical reasoning</li></ul><h2>Key Metrics</h2><table><tr><th>Metric</th><th>Value</th></tr><tr><td>Context Window</td><td>128K tokens</td></tr><tr><td>Training Cutoff</td><td>October 2023</td></tr><tr><td>Parameters</td><td>Estimated 200B+ (undisclosed)</td></tr><tr><td>Modalities</td><td>Text, Vision, Audio</td></tr></table>`
+  },
+  {
+    id: "claude-opus-4",
+    title: "Claude Opus 4",
+    type: "Model",
+    tongue: "CA",
+    company: "Anthropic",
+    tags: ["reasoning", "safety", "agentic", "commercial"],
+    summary: "Anthropic's most capable model — world-class coding, advanced reasoning, and extended agentic operation.",
+    article: `<h2>Overview</h2><p>Claude Opus 4 is Anthropic's frontier model, designed for sustained autonomous operation and complex reasoning. It excels at coding, mathematical analysis, and multi-step problem solving.</p><h2>Key Innovations</h2><ul><li><strong>Extended thinking</strong>: Deep reasoning chains for complex problems</li><li><strong>Agentic workflows</strong>: Reliable operation over hours with tool use</li><li><strong>Constitutional AI</strong>: Safety-trained using Anthropic's RLHF + CAI approach</li><li><strong>200K context</strong>: Process entire codebases in a single conversation</li></ul><h2>Capabilities</h2><table><tr><th>Metric</th><th>Value</th></tr><tr><td>Context Window</td><td>200K tokens</td></tr><tr><td>Output</td><td>Up to 64K tokens</td></tr><tr><td>Modalities</td><td>Text, Vision, Tool Use</td></tr><tr><td>API</td><td>Messages API + Batch API</td></tr></table><h2>Use Cases</h2><p>Software engineering, research synthesis, complex analysis, agentic coding (Claude Code), extended tool use chains.</p>`
+  },
+  {
+    id: "gemini-2",
+    title: "Gemini 2.5",
+    type: "Model",
+    tongue: "CA",
+    company: "Google DeepMind",
+    tags: ["multimodal", "reasoning", "commercial"],
+    summary: "Google's thinking model with built-in reasoning capabilities across text, code, images, and video.",
+    article: `<h2>Overview</h2><p>Gemini 2.5 is Google DeepMind's latest model family featuring native multimodal understanding and built-in \"thinking\" capabilities for complex reasoning tasks.</p><h2>Variants</h2><ul><li><strong>Gemini 2.5 Pro</strong>: Full reasoning model with 1M context</li><li><strong>Gemini 2.5 Flash</strong>: Fast, cost-efficient with thinking budget control</li></ul><h2>Key Features</h2><ul><li>Native multimodal: text, images, video, audio, code</li><li>1 million token context window (Pro)</li><li>Built-in reasoning with thought traces</li><li>Code execution and tool use</li></ul>`
+  },
+  {
+    id: "llama-4",
+    title: "Llama 4",
+    type: "Model",
+    tongue: "CA",
+    company: "Meta",
+    tags: ["open-source", "transformer", "mixture-of-experts"],
+    summary: "Meta's open-weight model family using Mixture of Experts (MoE) architecture.",
+    article: `<h2>Overview</h2><p>Llama 4 is Meta's latest open-weight language model family, introducing Mixture of Experts (MoE) architecture for efficient scaling.</p><h2>Variants</h2><ul><li><strong>Llama 4 Scout</strong>: 109B total params, 17B active (16 experts)</li><li><strong>Llama 4 Maverick</strong>: 400B total params, 17B active (128 experts)</li><li><strong>Llama 4 Behemoth</strong>: 2T+ params (unreleased)</li></ul><h2>License</h2><p>Open-weight with Llama Community License, allowing commercial use with restrictions for very large deployments.</p>`
+  },
+  {
+    id: "deepseek-v3",
+    title: "DeepSeek-V3",
+    type: "Model",
+    tongue: "CA",
+    company: "DeepSeek",
+    tags: ["open-source", "MoE", "reasoning", "chinese"],
+    summary: "Chinese lab's efficient MoE model trained for $5.6M challenging the assumption that frontier models require billions in compute.",
+    article: `<h2>Overview</h2><p>DeepSeek-V3 demonstrated that frontier-level AI performance can be achieved with dramatically less compute than Western labs typically use. Trained for approximately $5.6 million in compute costs.</p><h2>Architecture</h2><ul><li>671B total parameters, 37B active per token</li><li>Multi-head Latent Attention (MLA)</li><li>DeepSeekMoE with auxiliary-loss-free load balancing</li><li>Multi-Token Prediction training objective</li></ul>`
+  },
+
+  // ── Companies (KO: Authority) ──
+  {
+    id: "openai",
+    title: "OpenAI",
+    type: "Company",
+    tongue: "KO",
+    company: "OpenAI",
+    tags: ["frontier", "commercial", "AGI-lab"],
+    summary: "AI research lab and company behind GPT-4, ChatGPT, DALL-E, and the Assistant API. Founded 2015.",
+    article: `<h2>Overview</h2><p>OpenAI is an AI research and deployment company founded in December 2015. Originally a nonprofit, it transitioned to a \"capped-profit\" structure in 2019.</p><h2>Key Products</h2><ul><li><strong>ChatGPT</strong>: Consumer AI assistant (200M+ weekly users)</li><li><strong>GPT-4o / GPT-4.5</strong>: Flagship language models</li><li><strong>DALL-E 3</strong>: Image generation</li><li><strong>Whisper</strong>: Speech recognition (open-source)</li><li><strong>Sora</strong>: Video generation</li><li><strong>Operator</strong>: AI agent for web tasks</li></ul><h2>Founded</h2><p>2015 by Sam Altman, Greg Brockman, Ilya Sutskever, and others. HQ: San Francisco.</p>`
+  },
+  {
+    id: "anthropic",
+    title: "Anthropic",
+    type: "Company",
+    tongue: "KO",
+    company: "Anthropic",
+    tags: ["safety", "frontier", "commercial"],
+    summary: "AI safety company building Claude. Pioneers of Constitutional AI and RLHF alignment techniques. Founded 2021.",
+    article: `<h2>Overview</h2><p>Anthropic is an AI safety company founded by former OpenAI researchers Dario Amodei and Daniela Amodei in 2021. The company focuses on developing reliable, interpretable, and steerable AI systems.</p><h2>Key Products</h2><ul><li><strong>Claude</strong>: AI assistant family (Opus, Sonnet, Haiku)</li><li><strong>Claude Code</strong>: Agentic coding tool for terminal</li><li><strong>Model Context Protocol (MCP)</strong>: Open protocol for tool use</li><li><strong>Messages API</strong>: Developer API for Claude integration</li></ul><h2>Research Contributions</h2><ul><li>Constitutional AI (CAI)</li><li>RLHF at scale</li><li>Interpretability research (Sparse Autoencoders)</li><li>Responsible Scaling Policy</li></ul>`
+  },
+  {
+    id: "google-deepmind",
+    title: "Google DeepMind",
+    type: "Company",
+    tongue: "KO",
+    company: "Google",
+    tags: ["frontier", "research", "commercial"],
+    summary: "Google's AI research lab, merger of DeepMind and Google Brain. Behind Gemini, AlphaFold, and AlphaGo.",
+    article: `<h2>Overview</h2><p>Google DeepMind was formed in 2023 by merging DeepMind (founded 2010) with Google Brain. It is one of the world's largest AI research organizations.</p><h2>Key Achievements</h2><ul><li><strong>AlphaGo</strong>: First AI to defeat a Go world champion (2016)</li><li><strong>AlphaFold</strong>: Protein structure prediction revolution</li><li><strong>Gemini</strong>: Multimodal AI model family</li><li><strong>Transformer architecture</strong>: Co-invented at Google Brain (2017)</li></ul>`
+  },
+  {
+    id: "meta-ai",
+    title: "Meta AI",
+    type: "Company",
+    tongue: "KO",
+    company: "Meta",
+    tags: ["open-source", "research"],
+    summary: "Meta's AI division producing open-weight Llama models, PyTorch framework, and AR/VR AI research.",
+    article: `<h2>Overview</h2><p>Meta AI (formerly FAIR - Facebook AI Research) is Meta Platforms' AI research division. Known for championing open-source AI development.</p><h2>Key Contributions</h2><ul><li><strong>Llama</strong>: Open-weight LLM family</li><li><strong>PyTorch</strong>: Most widely used ML framework</li><li><strong>Segment Anything</strong>: Foundation model for image segmentation</li><li><strong>NLLB</strong>: No Language Left Behind translation</li></ul>`
+  },
+
+  // ── Tools (AV: Transport) ──
+  {
+    id: "claude-code",
+    title: "Claude Code",
+    type: "Tool",
+    tongue: "AV",
+    company: "Anthropic",
+    tags: ["agentic", "CLI", "coding"],
+    summary: "Anthropic's agentic coding CLI that lives in the terminal. Reads, edits, tests, and commits code autonomously.",
+    article: `<h2>Overview</h2><p>Claude Code is Anthropic's command-line tool for agentic software development. It operates directly in the terminal, understanding project context, editing files, running tests, and managing git workflows.</p><h2>Key Features</h2><ul><li>Full codebase understanding via context window</li><li>Multi-file editing with diff-based changes</li><li>Test execution and debugging loops</li><li>Git commit and PR creation</li><li>Plugin system with skills, commands, agents, and hooks</li><li>MCP server integration for external tools</li></ul><h2>Architecture</h2><p>Uses Claude models via the Anthropic API. Supports tool use for file operations, bash execution, web fetching, and more. Extensible through plugins and hooks.</p>`
+  },
+  {
+    id: "cursor",
+    title: "Cursor",
+    type: "Tool",
+    tongue: "AV",
+    company: "Anysphere",
+    tags: ["IDE", "coding", "commercial"],
+    summary: "AI-first code editor built on VS Code with deep model integration for code completion and chat.",
+    article: `<h2>Overview</h2><p>Cursor is an AI-powered code editor forked from VS Code, designed from the ground up for AI-assisted programming.</p><h2>Features</h2><ul><li>Tab completion with multi-line predictions</li><li>Chat with codebase context</li><li>Composer for multi-file edits</li><li>Background indexing for codebase search</li></ul>`
+  },
+  {
+    id: "github-copilot",
+    title: "GitHub Copilot",
+    type: "Tool",
+    tongue: "AV",
+    company: "GitHub / Microsoft",
+    tags: ["coding", "IDE", "commercial"],
+    summary: "AI pair programmer integrated into VS Code, JetBrains, and Neovim. Powered by OpenAI Codex and GPT-4.",
+    article: `<h2>Overview</h2><p>GitHub Copilot is an AI coding assistant that suggests code completions, generates functions, and helps with debugging directly in the IDE.</p><h2>Modes</h2><ul><li><strong>Copilot</strong>: Inline code suggestions</li><li><strong>Copilot Chat</strong>: Conversational coding help</li><li><strong>Copilot Workspace</strong>: Agentic multi-file editing</li><li><strong>Copilot Coding Agent</strong>: Autonomous issue resolution</li></ul>`
+  },
+
+  // ── Protocols (RU: Policy) ──
+  {
+    id: "mcp",
+    title: "Model Context Protocol (MCP)",
+    type: "Protocol",
+    tongue: "RU",
+    company: "Anthropic",
+    tags: ["open-standard", "tool-use", "interop"],
+    summary: "Open protocol for connecting AI models to external tools and data sources. The USB-C of AI integration.",
+    article: `<h2>Overview</h2><p>The Model Context Protocol (MCP) is an open standard developed by Anthropic for connecting AI assistants to external data sources and tools. It provides a universal interface between AI models and the systems they need to interact with.</p><h2>Architecture</h2><ul><li><strong>Servers</strong>: Expose tools, resources, and prompts</li><li><strong>Clients</strong>: AI applications that connect to servers</li><li><strong>Transport</strong>: stdio (local) or SSE (remote)</li></ul><h2>Adoption</h2><p>Supported by Claude Code, VS Code, Cursor, Zed, and many other tools. Growing ecosystem of community MCP servers.</p>`
+  },
+  {
+    id: "a2a",
+    title: "Agent-to-Agent Protocol (A2A)",
+    type: "Protocol",
+    tongue: "RU",
+    company: "Google",
+    tags: ["open-standard", "agents", "interop"],
+    summary: "Google's open protocol for AI agents to communicate and collaborate with each other.",
+    article: `<h2>Overview</h2><p>The Agent-to-Agent (A2A) protocol, introduced by Google in April 2025, enables AI agents built on different frameworks to discover each other's capabilities and collaborate on tasks.</p><h2>Key Concepts</h2><ul><li><strong>Agent Cards</strong>: JSON metadata describing agent capabilities</li><li><strong>Task Objects</strong>: Structured work items passed between agents</li><li><strong>Streaming</strong>: Real-time updates via Server-Sent Events</li></ul>`
+  },
+  {
+    id: "scbe",
+    title: "SCBE-AETHERMOORE",
+    type: "Protocol",
+    tongue: "RU",
+    company: "Aethermoore Works",
+    tags: ["governance", "safety", "hyperbolic", "open-source"],
+    summary: "AI safety governance framework using hyperbolic geometry for exponential cost scaling of adversarial behavior. 14-layer security pipeline.",
+    article: `<h2>Overview</h2><p>The Symphonic Cipher of the Binary Epoch (SCBE) AETHERMOORE is an AI safety and governance framework that uses hyperbolic geometry (Poincare ball model) to make adversarial AI behavior exponentially more expensive.</p><h2>Core Innovation</h2><p>Adversarial intent costs exponentially more the further it drifts from safe operation, making attacks computationally infeasible. The Harmonic Wall formula <code>H(d,R) = R^(d&sup2;)</code> enforces this exponential barrier.</p><h2>14-Layer Pipeline</h2><table><tr><th>Layers</th><th>Function</th></tr><tr><td>L1-2</td><td>Complex context, Realification</td></tr><tr><td>L3-4</td><td>Weighted transform, Poincare embedding</td></tr><tr><td>L5</td><td>Hyperbolic distance</td></tr><tr><td>L6-7</td><td>Breathing transform, Mobius phase</td></tr><tr><td>L8</td><td>Multi-well Hamiltonian</td></tr><tr><td>L9-10</td><td>Spectral + spin coherence</td></tr><tr><td>L11</td><td>Triadic temporal distance</td></tr><tr><td>L12</td><td>Harmonic scaling wall</td></tr><tr><td>L13</td><td>Risk decision (ALLOW/DENY/QUARANTINE)</td></tr><tr><td>L14</td><td>Audio axis telemetry</td></tr></table><h2>Sacred Tongues</h2><p>6-dimensional language system with golden ratio weights: KO (1.00), AV (1.62), RU (2.62), CA (4.24), UM (6.85), DR (11.09).</p><h2>Patent</h2><p>US Provisional Patent #63/961,403: \"Context-Bound Cryptographic Authorization System\"</p>`
+  },
+
+  // ── Agents (UM: Security) ──
+  {
+    id: "openai-operator",
+    title: "OpenAI Operator",
+    type: "Agent",
+    tongue: "UM",
+    company: "OpenAI",
+    tags: ["web-agent", "autonomous", "commercial"],
+    summary: "OpenAI's autonomous web browsing agent that can navigate websites and complete tasks on behalf of users.",
+    article: `<h2>Overview</h2><p>Operator is OpenAI's AI agent that can browse the web and take actions on websites. It can fill forms, click buttons, navigate pages, and complete multi-step tasks autonomously.</p><h2>Capabilities</h2><ul><li>Web browsing with visual understanding</li><li>Form filling and data entry</li><li>Multi-step task completion</li><li>Human-in-the-loop for sensitive actions</li></ul>`
+  },
+  {
+    id: "manus",
+    title: "Manus",
+    type: "Agent",
+    tongue: "UM",
+    company: "Monica.im",
+    tags: ["general-agent", "autonomous", "chinese"],
+    summary: "General-purpose AI agent that can browse, code, manage files, and deploy applications autonomously.",
+    article: `<h2>Overview</h2><p>Manus is a general-purpose AI agent developed by Monica.im that can perform a wide range of tasks autonomously, including web research, coding, file management, and application deployment.</p>`
+  },
+  {
+    id: "aetherbrowse",
+    title: "AetherBrowse",
+    type: "Agent",
+    tongue: "UM",
+    company: "Aethermoore Works",
+    tags: ["governed-browser", "SCBE", "open-source"],
+    summary: "SCBE-governed AI browser agent with 4-agent loop: PERCEIVE (Polly/UM) > PLAN (Zara/KO) > GOVERN (Aria/AV) > EXECUTE (Kael/CA).",
+    article: `<h2>Overview</h2><p>AetherBrowse is the AI-governed browser built on SCBE-AETHERMOORE. It uses a 4-agent loop where every browser action passes through governance checks before execution.</p><h2>Agent Loop</h2><table><tr><th>Phase</th><th>Agent</th><th>Tongue</th><th>Role</th></tr><tr><td>PERCEIVE</td><td>Polly</td><td>UM</td><td>Analyze page state</td></tr><tr><td>PLAN</td><td>Zara</td><td>KO</td><td>Generate action plan</td></tr><tr><td>GOVERN</td><td>Aria</td><td>AV</td><td>Governance gate check</td></tr><tr><td>EXECUTE</td><td>Kael</td><td>CA</td><td>Execute browser actions</td></tr></table><h2>Architecture</h2><ul><li><strong>Electron shell</strong>: Tab management, DevTools bridge</li><li><strong>Python runtime</strong>: FastAPI on port 8400</li><li><strong>Playwright worker</strong>: Headless browser automation</li><li><strong>Hydra Armor</strong>: Multi-model governance consensus</li></ul>`
+  },
+
+  // ── Frameworks (DR: Schema) ──
+  {
+    id: "pytorch",
+    title: "PyTorch",
+    type: "Framework",
+    tongue: "DR",
+    company: "Meta",
+    tags: ["open-source", "deep-learning", "python"],
+    summary: "The most widely used deep learning framework. Dynamic computation graphs, extensive ecosystem.",
+    article: `<h2>Overview</h2><p>PyTorch is an open-source machine learning framework developed by Meta AI. It is the dominant framework for AI research and increasingly for production deployment.</p><h2>Key Features</h2><ul><li>Dynamic computation graphs (define-by-run)</li><li>Extensive GPU acceleration (CUDA, ROCm)</li><li>Rich ecosystem: torchvision, torchaudio, torchtext</li><li>TorchScript for production deployment</li><li>Distributed training support</li></ul>`
+  },
+  {
+    id: "langchain",
+    title: "LangChain",
+    type: "Framework",
+    tongue: "DR",
+    company: "LangChain Inc",
+    tags: ["open-source", "agents", "RAG", "python"],
+    summary: "Framework for building applications with LLMs — chains, agents, RAG pipelines, and tool use.",
+    article: `<h2>Overview</h2><p>LangChain is a framework for developing applications powered by language models. It provides abstractions for chains, agents, retrieval-augmented generation (RAG), and memory.</p><h2>Components</h2><ul><li><strong>LangChain Core</strong>: Base abstractions and LCEL</li><li><strong>LangGraph</strong>: Stateful multi-actor agent framework</li><li><strong>LangSmith</strong>: Observability and evaluation platform</li><li><strong>LangServe</strong>: Deploy chains as REST APIs</li></ul>`
+  },
+  {
+    id: "huggingface",
+    title: "Hugging Face",
+    type: "Platform",
+    tongue: "DR",
+    company: "Hugging Face",
+    tags: ["open-source", "models", "datasets", "community"],
+    summary: "The GitHub of AI — hosting 1M+ models, 250K+ datasets, and the Transformers library.",
+    article: `<h2>Overview</h2><p>Hugging Face is the central platform for the open-source AI community. It hosts models, datasets, and Spaces (demo applications) with Git-based version control.</p><h2>Key Products</h2><ul><li><strong>Hub</strong>: 1M+ models, 250K+ datasets</li><li><strong>Transformers</strong>: Python library for model inference and training</li><li><strong>Spaces</strong>: Free hosting for ML demos (Gradio, Streamlit)</li><li><strong>Inference API</strong>: Serverless model inference</li><li><strong>TRL</strong>: Transformer Reinforcement Learning library</li></ul>`
+  },
+  {
+    id: "hydra-armor",
+    title: "Hydra Armor API",
+    type: "Tool",
+    tongue: "UM",
+    company: "Aethermoore Works",
+    tags: ["governance", "API", "multi-model", "SCBE"],
+    summary: "Governance-as-a-Service API providing multi-head consensus on AI actions. Free tier: 2M requests/month.",
+    article: `<h2>Overview</h2><p>Hydra Armor is a standalone Governance-as-a-Service API from the SCBE-AETHERMOORE stack. It provides multi-model consensus governance checks for AI agent actions.</p><h2>Endpoints</h2><table><tr><th>Method</th><th>Path</th><th>Description</th></tr><tr><td>POST</td><td>/v1/armor/verify</td><td>Action-level governance check</td></tr><tr><td>POST</td><td>/v1/hydra-armor</td><td>Multi-head consensus on browser snapshot</td></tr><tr><td>GET</td><td>/v1/armor/health</td><td>API health check</td></tr><tr><td>GET</td><td>/v1/armor/usage/{id}</td><td>Usage stats per agent</td></tr></table><h2>Pricing</h2><ul><li><strong>Free</strong>: 1,000 checks/month</li><li><strong>Starter</strong>: $5/month, 50K checks</li><li><strong>Pro</strong>: $29/month, unlimited</li></ul>`
+  },
+  {
+    id: "aether-gates",
+    title: "AetherGates",
+    type: "Tool",
+    tongue: "AV",
+    company: "Aethermoore Works",
+    tags: ["portals", "governance", "free-APIs", "SCBE", "Everweave"],
+    summary: "Controlled portal system connecting to 21 free external APIs, governed by Sacred Tongue affinity and Rath observer agent.",
+    article: `<h2>Overview</h2><p>AetherGates are controlled portals forged by Izack in the Everweave, connecting the Aethermoor data lattices to external protocol realms. Each gate is mapped to a Sacred Tongue and governed by privilege tiers.</p><h2>Lore</h2><p>From the Aethermoor chronicles: \"Izack discovered that the AetherNet's crystalline data lattices could resonate with external protocol realms. By tuning each gate to a specific Sacred Tongue frequency, he created controlled portals that only authorized agents could traverse.\"</p><h2>Gates by Tongue</h2><table><tr><th>Tongue</th><th>Gates</th><th>Examples</th></tr><tr><td>KO (Authority)</td><td>2</td><td>System Health, Identity Mirror</td></tr><tr><td>AV (Transport)</td><td>3</td><td>Cartographer's Gate, Atlas of Realms</td></tr><tr><td>RU (Policy)</td><td>4</td><td>Chronicle Gate, Lorekeeper's Gate</td></tr><tr><td>CA (Compute)</td><td>4</td><td>Crypto Oracle, Currency Bridge</td></tr><tr><td>UM (Security)</td><td>3</td><td>Shadow Scanner, Name Resolver</td></tr><tr><td>DR (Schema)</td><td>5</td><td>Wisdom Gate, Creature Codex</td></tr></table><h2>Privilege Tiers</h2><p>Observer (Rath) &rarr; Scout &rarr; Operator &rarr; Architect &rarr; Admin (Izack)</p>`
+  }
+];
+
+// ── Rendering ──
+
+let currentFilter = "ALL";
+let currentSearch = "";
+
+function renderCards(items) {
+  const main = document.getElementById("main-grid");
+  if (!items.length) {
+    main.innerHTML = '<p style="text-align:center;color:var(--text2);padding:3rem">No entries found.</p>';
+    return;
+  }
+
+  const byType = {};
+  items.forEach(e => {
+    if (!byType[e.type]) byType[e.type] = [];
+    byType[e.type].push(e);
+  });
+
+  let html = "";
+  const typeOrder = ["Model", "Company", "Tool", "Protocol", "Agent", "Framework", "Platform", "Dataset", "Research", "Experiment", "Concept", "Meme", "Unknown"];
+  const typeIcons = { Model: "\u{1F9E0}", Company: "\u{1F3E2}", Tool: "\u{1F527}", Protocol: "\u{1F4DC}", Agent: "\u{1F916}", Framework: "\u{1F3D7}\uFE0F", Platform: "\u{1F310}", Dataset: "\u{1F4CA}", Research: "\u{1F4D1}", Experiment: "\u{1F9EA}", Concept: "\u{1F4A1}", Meme: "\u{1F30A}", Unknown: "\u{2753}" };
+
+  for (const type of typeOrder) {
+    if (!byType[type]) continue;
+    html += `<h2 class="section-title">${typeIcons[type] || ""} ${type}s</h2>`;
+    html += '<div class="grid">';
+    for (const e of byType[type]) {
+      const tongueColors = { KO: "var(--ko)", AV: "var(--av)", RU: "var(--ru)", CA: "var(--ca)", UM: "var(--um)", DR: "var(--dr)" };
+      html += `
+        <div class="card" data-tongue="${e.tongue}" onclick="showArticle('${e.id}')">
+          <div class="card-header">
+            <div class="card-title">${e.title}</div>
+            <span class="card-badge" style="background:${tongueColors[e.tongue]}22;color:${tongueColors[e.tongue]}">${e.tongue}</span>
+          </div>
+          <div class="card-type">${e.type} &bull; ${e.company}</div>
+          <div class="card-desc">${e.summary}</div>
+          <div class="card-meta">${e.tags.map(t => `<span class="card-tag">${t}</span>`).join("")}</div>
+        </div>`;
+    }
+    html += '</div>';
+  }
+  main.innerHTML = html;
+}
+
+function updateStats(items) {
+  document.getElementById("stat-entries").textContent = items.length;
+  document.getElementById("stat-models").textContent = items.filter(e => e.type === "Model").length;
+  document.getElementById("stat-companies").textContent = items.filter(e => e.type === "Company").length;
+  document.getElementById("stat-tools").textContent = items.filter(e => e.type === "Tool").length;
+  document.getElementById("stat-protocols").textContent = items.filter(e => e.type === "Protocol").length;
+  document.getElementById("stat-void").textContent = loadVoidEntries().length;
+}
+
+function getFiltered() {
+  return entries.filter(e => {
+    const tongueMatch = currentFilter === "ALL" || e.tongue === currentFilter;
+    const searchMatch = !currentSearch ||
+      e.title.toLowerCase().includes(currentSearch) ||
+      e.summary.toLowerCase().includes(currentSearch) ||
+      e.company.toLowerCase().includes(currentSearch) ||
+      e.tags.some(t => t.toLowerCase().includes(currentSearch));
+    return tongueMatch && searchMatch;
+  });
+}
+
+function filterByTongue(tongue) {
+  currentFilter = tongue;
+  document.querySelectorAll(".tongue-pill").forEach(p => p.classList.toggle("active", p.dataset.tongue === tongue));
+  const items = getFiltered();
+  renderCards(items);
+  updateStats(items);
+}
+
+function filterEntries(query) {
+  currentSearch = query.toLowerCase().trim();
+  const items = getFiltered();
+  renderCards(items);
+  updateStats(items);
+}
+
+function showArticle(id) {
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+
+  document.getElementById("main-grid").style.display = "none";
+  document.getElementById("hero").style.display = "none";
+  document.getElementById("statsbar").style.display = "none";
+
+  const view = document.getElementById("article-view");
+  view.className = "article-view active";
+  view.innerHTML = `
+    <span class="article-back" onclick="showHome()">&larr; Back to Encyclopedia</span>
+    <h1 class="article-title">${entry.title}</h1>
+    <div class="article-subtitle">${entry.type} &bull; ${entry.company} &bull; Tongue: ${entry.tongue}</div>
+    <div class="card-meta" style="margin-bottom:1.5rem">${entry.tags.map(t => `<span class="card-tag">${t}</span>`).join("")}</div>
+    <div class="article-body">${entry.article}</div>
+  `;
+}
+
+function showHome() {
+  document.getElementById("main-grid").style.display = "block";
+  document.getElementById("hero").style.display = "block";
+  document.getElementById("statsbar").style.display = "flex";
+  document.getElementById("article-view").className = "article-view";
+  const items = getFiltered();
+  renderCards(items);
+  updateStats(items);
+}
+
+function showSection(name) {
+  if (name === "live") {
+    document.getElementById("main-grid").style.display = "block";
+    document.getElementById("hero").style.display = "none";
+    document.getElementById("statsbar").style.display = "flex";
+    document.getElementById("article-view").className = "article-view";
+    document.getElementById("main-grid").innerHTML = `
+      <h2 class="section-title">Live AetherGate Data</h2>
+      <div class="grid">
+        <div class="live-panel" id="live-btc">
+          <div class="live-panel-title">Crypto Oracle (CA)</div>
+          <div class="live-data">Loading...</div>
+        </div>
+        <div class="live-panel" id="live-rates">
+          <div class="live-panel-title">Currency Bridge (CA)</div>
+          <div class="live-data">Loading...</div>
+        </div>
+        <div class="live-panel" id="live-advice">
+          <div class="live-panel-title">Oracle of Counsel (DR)</div>
+          <div class="live-data">Loading...</div>
+        </div>
+        <div class="live-panel" id="live-ip">
+          <div class="live-panel-title">Identity Mirror (KO)</div>
+          <div class="live-data">Loading...</div>
+        </div>
+      </div>
+      <p style="color:var(--text2);text-align:center;margin-top:2rem;font-size:0.85rem">Data fetched live from AetherGates. Rath observes all queries.</p>
+    `;
+    fetchLiveData();
+  } else if (name === "about") {
+    document.getElementById("main-grid").style.display = "block";
+    document.getElementById("hero").style.display = "none";
+    document.getElementById("statsbar").style.display = "none";
+    document.getElementById("article-view").className = "article-view";
+    document.getElementById("main-grid").innerHTML = `
+      <div style="max-width:700px;margin:0 auto">
+        <h2 class="section-title">About AetherWiki</h2>
+        <p>AetherWiki is the <strong>open AI encyclopedia</strong> from the Everweave &mdash; a living compendium where every AI model, agent, company, tool, protocol, experiment, and weird creation is cataloged.</p>
+
+        <h3 style="margin-top:1.5rem;color:var(--accent2)">The Philosophy</h3>
+        <p style="margin-top:0.5rem"><strong>Everything is accepted. Nothing is deleted.</strong> Vetted entries live in the main encyclopedia. Unvetted, experimental, weird, or fringe submissions go to <strong>The Void</strong> &mdash; a hyperbolic realm mapped onto the Poincare ball at coordinates far from the origin. The further out, the harder to reach, but everything persists. One man's trash is another man's treasure.</p>
+
+        <h3 style="margin-top:1.5rem;color:var(--accent2)">Sacred Tongue Classification</h3>
+        <p style="margin-top:0.5rem">Each entry is tagged with a <strong>Sacred Tongue</strong> affinity from the Aethermoor lore:</p>
+        <ul style="margin:1rem 0 1rem 1.5rem">
+          <li><span style="color:var(--ko)">KO (Authority)</span> &mdash; Companies, governance bodies, leadership</li>
+          <li><span style="color:var(--av)">AV (Transport)</span> &mdash; Tools, IDEs, developer platforms, movement</li>
+          <li><span style="color:var(--ru)">RU (Policy)</span> &mdash; Protocols, standards, regulations, rules</li>
+          <li><span style="color:var(--ca)">CA (Compute)</span> &mdash; Models, training systems, processing</li>
+          <li><span style="color:var(--um)">UM (Security)</span> &mdash; Agents, security tools, guardians</li>
+          <li><span style="color:var(--dr)">DR (Schema)</span> &mdash; Frameworks, platforms, data structures</li>
+        </ul>
+
+        <h3 style="margin-top:1.5rem;color:var(--accent2)">The Hyperbolic Void</h3>
+        <p style="margin-top:0.5rem">Community submissions start in The Void at Poincare coordinates with radius r > 0.7. The hyperbolic distance from the origin grows exponentially &mdash; <code>d<sub>H</sub> = acosh(1 + 2r&sup2;/((1-r&sup2;)&sup2;))</code> &mdash; meaning Void entries require exponentially more effort to reach. They're there, always, but you have to want to find them. This is the Harmonic Wall at work.</p>
+
+        <p style="margin-top:1.5rem">Powered by <strong>AetherGates</strong> for live external data, monitored by <strong>Rath</strong> (the Observer Agent), and built on the <strong>SCBE-AETHERMOORE</strong> governance stack.</p>
+        <p style="margin-top:1rem;color:var(--text2)">Built by Aethermoore Works &bull; Issac Davis &bull; 2026</p>
+      </div>
+    `;
+  }
+}
+
+async function fetchLiveData() {
+  try {
+    const [btc, rates, advice, ip] = await Promise.allSettled([
+      fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd").then(r=>r.json()),
+      fetch("https://open.er-api.com/v6/latest/USD").then(r=>r.json()),
+      fetch("https://api.adviceslip.com/advice").then(r=>r.json()),
+      fetch("https://api.ipify.org?format=json").then(r=>r.json()),
+    ]);
+
+    if (btc.status === "fulfilled") {
+      const d = btc.value;
+      document.querySelector("#live-btc .live-data").textContent =
+        `BTC: $${d.bitcoin?.usd?.toLocaleString()} | ETH: $${d.ethereum?.usd?.toLocaleString()} | SOL: $${d.solana?.usd?.toLocaleString()}`;
+    }
+    if (rates.status === "fulfilled") {
+      const r = rates.value.rates || {};
+      document.querySelector("#live-rates .live-data").textContent =
+        `EUR: ${r.EUR} | GBP: ${r.GBP} | JPY: ${r.JPY} | CAD: ${r.CAD}`;
+    }
+    if (advice.status === "fulfilled") {
+      document.querySelector("#live-advice .live-data").textContent =
+        `"${advice.value.slip?.advice || 'No counsel today.'}"`;
+    }
+    if (ip.status === "fulfilled") {
+      document.querySelector("#live-ip .live-data").textContent =
+        `Your realm identity: ${ip.value.ip}`;
+    }
+  } catch(e) {
+    console.error("Live data fetch error:", e);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// The Void — Hyperbolic realm for community submissions
+// Nothing is deleted. Weird is welcome. Trash is treasure.
+// ══════════════════════════════════════════════════════════════
+
+const VOID_STORAGE_KEY = "aetherwiki_void_entries";
+const MAIN_STORAGE_KEY = "aetherwiki_community_entries";
+
+function loadVoidEntries() {
+  try { return JSON.parse(localStorage.getItem(VOID_STORAGE_KEY) || "[]"); } catch { return []; }
+}
+
+function loadCommunityEntries() {
+  try { return JSON.parse(localStorage.getItem(MAIN_STORAGE_KEY) || "[]"); } catch { return []; }
+}
+
+function saveVoidEntries(arr) {
+  localStorage.setItem(VOID_STORAGE_KEY, JSON.stringify(arr));
+}
+
+function saveCommunityEntries(arr) {
+  localStorage.setItem(MAIN_STORAGE_KEY, JSON.stringify(arr));
+}
+
+// Hyperbolic coordinate in the Poincare disk — further from origin = harder to reach
+function generateVoidCoordinate(entry) {
+  const hash = entry.title.split("").reduce((a, c) => ((a << 5) - a + c.charCodeAt(0)) | 0, 0);
+  const theta = (Math.abs(hash) % 628) / 100; // angle 0-2pi
+  // Radius in Poincare disk: 0.7-0.95 (deep in hyperbolic space, hard to reach)
+  const r = 0.7 + (Math.abs(hash >> 8) % 25) / 100;
+  const x = (r * Math.cos(theta)).toFixed(4);
+  const y = (r * Math.sin(theta)).toFixed(4);
+  const dH = Math.acosh(1 + 2 * r * r / ((1 - r * r) * (1 - r * r)));
+  return { x, y, r: r.toFixed(4), dH: dH.toFixed(2), theta: theta.toFixed(2) };
+}
+
+function autoAssignTongue(entry) {
+  const text = (entry.title + " " + entry.summary + " " + (entry.tags || []).join(" ")).toLowerCase();
+  if (/company|founded|ceo|org|govern/.test(text)) return "KO";
+  if (/tool|ide|cli|editor|browser|transport/.test(text)) return "AV";
+  if (/protocol|standard|policy|regulation|law/.test(text)) return "RU";
+  if (/model|train|gpu|compute|parameter|llm|neural/.test(text)) return "CA";
+  if (/agent|security|scan|guard|audit/.test(text)) return "UM";
+  if (/framework|schema|data|platform|library/.test(text)) return "DR";
+  const tongues = ["KO","AV","RU","CA","UM","DR"];
+  return tongues[Math.abs(text.split("").reduce((a,c)=>((a<<5)-a+c.charCodeAt(0))|0,0)) % 6];
+}
+
+function openSubmitModal() {
+  document.getElementById("submitModal").classList.add("active");
+}
+
+function closeSubmitModal() {
+  document.getElementById("submitModal").classList.remove("active");
+}
+
+function handleSubmit(e) {
+  e.preventDefault();
+  const title = document.getElementById("sub-title").value.trim();
+  const type = document.getElementById("sub-type").value;
+  const company = document.getElementById("sub-company").value.trim() || "Community";
+  const summary = document.getElementById("sub-summary").value.trim();
+  const article = document.getElementById("sub-article").value.trim();
+  const tagsRaw = document.getElementById("sub-tags").value.trim();
+  let tongue = document.getElementById("sub-tongue").value;
+  const link = document.getElementById("sub-link").value.trim();
+
+  if (!title || !summary) return;
+
+  const id = "void-" + title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
+  const tags = tagsRaw ? tagsRaw.split(",").map(t => t.trim()).filter(Boolean) : ["community-submitted"];
+  tags.push("void-entry");
+
+  const newEntry = {
+    id,
+    title,
+    type,
+    tongue: tongue === "AUTO" ? autoAssignTongue({ title, summary, tags }) : tongue,
+    company,
+    tags,
+    summary,
+    article: article ? `<h2>Description</h2><p>${article.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</p>` : `<p>${summary}</p>`,
+    link,
+    submittedAt: new Date().toISOString(),
+    voidCoord: null, // assigned below
+    isVoid: true
+  };
+
+  newEntry.voidCoord = generateVoidCoordinate(newEntry);
+
+  // All community submissions go to the Void first
+  const voidEntries = loadVoidEntries();
+  voidEntries.push(newEntry);
+  saveVoidEntries(voidEntries);
+
+  closeSubmitModal();
+  e.target.reset();
+
+  // Show the Void with their new entry
+  showSection("void");
+}
+
+function getAllEntries() {
+  const community = loadCommunityEntries();
+  return [...entries, ...community];
+}
+
+function showVoidSection() {
+  const voidEntries = loadVoidEntries();
+  document.getElementById("main-grid").style.display = "block";
+  document.getElementById("hero").style.display = "none";
+  document.getElementById("statsbar").style.display = "none";
+  document.getElementById("article-view").className = "article-view";
+
+  let html = `
+    <div class="void-banner">
+      <h2>The Hyperbolic Void</h2>
+      <p>Where everything exists. Nothing is deleted. The weird, the wild, the experimental, the unvetted — all persist here at exotic Poincare coordinates, far from the origin but never forgotten.</p>
+      <p>"One man's trash is another man's treasure."</p>
+      <div class="void-coord">Realm: Poincare Ball &bull; Curvature: K=-1 &bull; Entries exist at r > 0.7 (deep hyperbolic space)</div>
+    </div>
+  `;
+
+  if (!voidEntries.length) {
+    html += '<p style="text-align:center;color:var(--text2);padding:2rem">The Void is empty... for now. <a href="#" onclick="openSubmitModal()" style="color:var(--accent2)">Submit something</a> and it will materialize here.</p>';
+  } else {
+    html += '<div class="grid">';
+    for (const e of voidEntries) {
+      const coord = e.voidCoord || generateVoidCoordinate(e);
+      const tongueColors = { KO: "var(--ko)", AV: "var(--av)", RU: "var(--ru)", CA: "var(--ca)", UM: "var(--um)", DR: "var(--dr)" };
+      html += `
+        <div class="card void-card" data-tongue="${e.tongue}" onclick="showVoidArticle('${e.id}')">
+          <div class="card-header">
+            <div class="card-title">${e.title}</div>
+            <span class="card-badge" style="background:${tongueColors[e.tongue]}22;color:${tongueColors[e.tongue]}">${e.tongue}</span>
+          </div>
+          <div class="card-type">${e.type} &bull; ${e.company}</div>
+          <div class="card-desc">${e.summary}</div>
+          <div class="card-meta">${e.tags.map(t => '<span class="card-tag">' + t + '</span>').join("")}</div>
+          <div class="void-coord" style="margin-top:0.5rem">P(${coord.x}, ${coord.y}) &bull; r=${coord.r} &bull; d<sub>H</sub>=${coord.dH}</div>
+        </div>`;
+    }
+    html += '</div>';
+  }
+
+  html += `
+    <div style="text-align:center;margin-top:2rem">
+      <button class="nav-submit-btn" onclick="openSubmitModal()" style="font-size:1rem;padding:0.6rem 2rem">+ Submit to the Void</button>
+    </div>
+    <p style="color:#503070;text-align:center;margin-top:1rem;font-size:0.8rem">
+      Void entries exist at hyperbolic distance d<sub>H</sub> > 2.0 from the origin.<br>
+      To reach them, one must traverse exponentially more geodesic path — by design.<br>
+      The Harmonic Wall H(d,R) = R<sup>d&sup2;</sup> ensures the Void is reachable but costly.
+    </p>
+  `;
+
+  document.getElementById("main-grid").innerHTML = html;
+}
+
+function showVoidArticle(id) {
+  const voidEntries = loadVoidEntries();
+  const entry = voidEntries.find(e => e.id === id);
+  if (!entry) return;
+
+  const coord = entry.voidCoord || generateVoidCoordinate(entry);
+
+  document.getElementById("main-grid").style.display = "none";
+  document.getElementById("hero").style.display = "none";
+  document.getElementById("statsbar").style.display = "none";
+
+  const view = document.getElementById("article-view");
+  view.className = "article-view active";
+  view.innerHTML = `
+    <span class="article-back" onclick="showSection('void')">&larr; Back to The Void</span>
+    <h1 class="article-title">${entry.title}</h1>
+    <div class="article-subtitle">${entry.type} &bull; ${entry.company} &bull; Tongue: ${entry.tongue} &bull; Void Entry</div>
+    <div class="card-meta" style="margin-bottom:0.5rem">${entry.tags.map(t => '<span class="card-tag">' + t + '</span>').join("")}</div>
+    <div class="void-coord" style="margin-bottom:1.5rem;color:#9b59b6;font-size:0.85rem">
+      Poincare Coordinate: (${coord.x}, ${coord.y}) &bull; r=${coord.r} &bull; d<sub>H</sub>=${coord.dH} &bull; &theta;=${coord.theta}
+    </div>
+    ${entry.link ? '<p style="margin-bottom:1rem"><a href="' + entry.link + '" target="_blank" rel="noopener" style="color:var(--accent2)">External Link &rarr;</a></p>' : ''}
+    <div class="article-body">${entry.article}</div>
+    <p style="margin-top:2rem;color:#503070;font-size:0.8rem">Submitted: ${entry.submittedAt ? new Date(entry.submittedAt).toLocaleDateString() : 'Unknown'} &bull; Void Entry &bull; Rath has observed this submission.</p>
+  `;
+}
+
+// Override showSection to handle void
+const _origShowSection = showSection;
+showSection = function(name) {
+  if (name === "void") {
+    showVoidSection();
+  } else {
+    _origShowSection(name);
+  }
+};
+
+// Override getFiltered to include community-promoted entries
+const _origGetFiltered = getFiltered;
+getFiltered = function() {
+  const base = _origGetFiltered();
+  const community = loadCommunityEntries().filter(e => {
+    const tongueMatch = currentFilter === "ALL" || e.tongue === currentFilter;
+    const searchMatch = !currentSearch ||
+      e.title.toLowerCase().includes(currentSearch) ||
+      e.summary.toLowerCase().includes(currentSearch) ||
+      e.company.toLowerCase().includes(currentSearch) ||
+      e.tags.some(t => t.toLowerCase().includes(currentSearch));
+    return tongueMatch && searchMatch;
+  });
+  return [...base, ...community];
+};
+
+// Close modal on overlay click
+document.getElementById("submitModal").addEventListener("click", function(e) {
+  if (e.target === this) closeSubmitModal();
+});
+
+// Init
+renderCards(getFiltered());
+updateStats(getFiltered());
+</script>
+</body>
+</html>

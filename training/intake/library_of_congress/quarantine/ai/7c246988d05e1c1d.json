@@ -1,0 +1,33 @@
+{
+  "id": "7c246988d05e1c1d",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "Artificial Intelligence Task Force : final report",
+  "content": "# Artificial Intelligence Task Force : final report\n\nContributors: vermont. artificial intelligence task force\nDate: 2020-01-01\nSubjects: artificial intelligence task force, vermont, artificial intelligence\n\n\"January 15, 2020.\" Includes bibliographical references. Also available in digital form on the Library of Congress Web site. Description based on online resource, viewed on 2020-11-04.",
+  "url": "https://www.loc.gov/item/2019722904/",
+  "timestamp": "2026-03-06T02:37:58.020492",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "05d136151b2bcb044ffc151e2b39d3f168911e56917571f7464eb03e8b8068e2",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "artificial intelligence task force",
+      "vermont",
+      "artificial intelligence"
+    ],
+    "dates": "2020-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "dbefdeed2e38612b",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Algorithms and complexity : 6th Italian conference, CIAC 2006, Rome, Italy, May 29-31, 2006 : proceedings",
+  "content": "# Algorithms and complexity : 6th Italian conference, CIAC 2006, Rome, Italy, May 29-31, 2006 : proceedings\n\nContributors: calamoneri, tiziana, italian conference on algorithms and complexity, finocchi, irene, italiano, giuseppe f.\nDate: 2006\nSubjects: computational complexity, congresses, algorithms\n\nIncludes bibliographical references and index. Also issued online.",
+  "url": "//lccn.loc.gov/2006925893",
+  "timestamp": "2026-03-06T02:38:43.165432",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "ec8ed1eff2d0da47e2a347cfeb9b42cfaa2e597b43228641e5390c68d076a1e6",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "computational complexity",
+      "congresses",
+      "algorithms"
+    ],
+    "dates": "2006",
+    "original_format": [
+      "book"
+    ]
+  }
+}

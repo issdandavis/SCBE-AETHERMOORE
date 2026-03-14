@@ -1,0 +1,35 @@
+{
+  "id": "e2993cd8fe34d1de",
+  "source": "library_of_congress",
+  "category": "quarantine/ai",
+  "title": "Machine Learning + Libraries Summit: Event Summary now live!",
+  "content": "# Machine Learning + Libraries Summit: Event Summary now live!\n\nContributors: manchester, eileen j.\nDate: 2020-02-12\nSubjects: blogs, ndiipp, national digital information infrastructure and preservation program, personal archiving, digital content\n\nThe Machine Learning + Libraries Summit Event Summary is now available as a downloadable report on labs.loc.gov. This document includes more detailed information about the conference proceedings. It broadly summarizes recurring themes of discussion and compiles the outputs of the small group activities.",
+  "url": "https://blogs.loc.gov/thesignal/2020/02/machine-learning-libraries-summit-event-summary-now-live/",
+  "timestamp": "2026-03-06T02:38:34.742674",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "5900c67c0521f45a4c11175a6be688dec493c4146ed097b2dc8a09b3de8b7ca6",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "blogs",
+      "ndiipp",
+      "national digital information infrastructure and preservation program",
+      "personal archiving",
+      "digital content"
+    ],
+    "dates": "2020-02-12",
+    "original_format": [
+      "web page"
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "84b657b262c00773",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Core-bound waves on a Gross-Pitaevskii vortex",
+  "content": "# Core-bound waves on a Gross-Pitaevskii vortex\n\nAuthors: Evan Papoutsis, Nathan Apfel, Nir Navon\nPublished: 2026-03-05T18:59:55Z\n\nWe find the dispersion relations of two elusive families of core-bound excitations of the Gross-Pitaevskii (GP) vortex, varicose (axisymmetric) and fluting (quadrupole) waves. For wavelengths of order the healing length, these two families -- and the well-known Kelvin wave -- possess an infinite sequence of core-bound, vortex-specific branches whose energies lie below the Bogoliubov dispersion relation. In the short-wavelength limit, these excitations can be interpreted as particles radially bound to the vortex, which acts as a waveguide. In the long-wavelength limit, the fluting waves unbind from the core, the varicose waves reduce to phonons propagating along the vortex, and the fundamental Kelvin wave is the only core-bound vortex-specific excitation. Finally, we propose a realistic spectroscopic protocol for creating and detecting the varicose wave, which we test by direct numerical simulations of the GP equation.",
+  "url": "http://arxiv.org/abs/2603.05505v1",
+  "timestamp": "2026-03-05T18:59:55Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "dec26d3a145c9676e3492b3968b64d30dff7d3af5796ab1f1ea1515eaaf49ae6",
+  "parent_hash": "d723a24dd32eb2a0b6644cebd3c12e212173ae636514bbf5810f3c492896c0b8",
+  "metadata": {
+    "authors": [
+      "Evan Papoutsis",
+      "Nathan Apfel",
+      "Nir Navon"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.05505v1"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "2751b6b6c8931bf9",
+  "source": "library_of_congress",
+  "category": "quarantine/security",
+  "title": "S.2998 - 115th Congress (2017-2018): Quantum Computing Research Act of 2018",
+  "content": "# S.2998 - 115th Congress (2017-2018): Quantum Computing Research Act of 2018\n\nContributors: senate, sen. harris, kamala d. [d-ca], 115th congress\nDate: 2018-06-05\nSubjects: armed forces and national security, congress\n\nSummary of S.2998 - 115th Congress (2017-2018): Quantum Computing Research Act of 2018",
+  "url": "https://www.congress.gov/bill/115th-congress/senate-bill/2998",
+  "timestamp": "2026-03-06T02:38:03.634998",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "fa2533b627cc4450c5b62850d2f748893f0e01cef400637426d123467b907cb4",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "armed forces and national security",
+      "congress"
+    ],
+    "dates": "2018-06-05",
+    "original_format": [
+      "legislation"
+    ]
+  }
+}

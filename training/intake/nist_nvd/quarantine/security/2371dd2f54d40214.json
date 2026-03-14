@@ -1,0 +1,30 @@
+{
+  "id": "2371dd2f54d40214",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-1999-1481 \u2014 CVSS 5.0 (UNKNOWN)",
+  "content": "# CVE-1999-1481\n\nCVSS Score: 5.0 (UNKNOWN)\nPublished: 1999-12-31T05:00:00.000\nCWEs: NVD-CWE-Other\n\nSquid 2.2.STABLE5 and below, when using external authentication, allows attackers to bypass access controls via a newline in the user/password pair.\n\nReferences: http://www.securityfocus.com/archive/1/33295, http://www.securityfocus.com/bid/741, http://www.squid-cache.org/Versions/v2/2.2/bugs/",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-1999-1481",
+  "timestamp": "2026-03-06T02:41:48.082130",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4e42343cd623e74d0d1a9c37617832433b665bdd89c7e1fc82ecfd0696debf41",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-1999-1481",
+    "cvss_score": 5.0,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "1999-12-31T05:00:00.000"
+  }
+}

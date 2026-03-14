@@ -1,0 +1,30 @@
+{
+  "id": "608fcfc5ce688096",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2000-0148 \u2014 CVSS 7.5 (UNKNOWN)",
+  "content": "# CVE-2000-0148\n\nCVSS Score: 7.5 (UNKNOWN)\nPublished: 2000-02-08T05:00:00.000\nCWEs: NVD-CWE-Other\n\nMySQL 3.22 allows remote attackers to bypass password authentication and access a database via a short check string.\n\nReferences: http://archives.neohapsis.com/archives/bugtraq/2000-02/0053.html, http://www.securityfocus.com/bid/975, http://archives.neohapsis.com/archives/bugtraq/2000-02/0053.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2000-0148",
+  "timestamp": "2026-03-06T02:41:48.082162",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "06c5946faf4945b08cac6c7f45549c6053e4288bd5292b899da1f4e90e982666",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2000-0148",
+    "cvss_score": 7.5,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-Other"
+    ],
+    "published": "2000-02-08T05:00:00.000"
+  }
+}

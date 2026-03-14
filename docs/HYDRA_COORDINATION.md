@@ -1,6 +1,6 @@
 # 🦾 HYDRA Multi-Agent Coordination System - Complete Architecture
 
-> last-synced: 2026-02-16T07:28:38.653Z
+> last-synced: 2026-03-09T07:27:34.845Z
 
 # HYDRA Multi-Agent Coordination System
 
@@ -32,28 +32,7 @@ HYDRA is a terminal-native, multi-agent coordination system that acts as "armor"
 
 - Terminal-native operation with pipe compatibility
 
-Security Multiplier: Tier 6 (all 6 Sacred Tongues) = 518,400× security multiplier
-
----
-
-## Law vs Flux Contract
-
-To keep governance deterministic and auditable, HYDRA treats some values as immutable law and others as runtime flux.
-
-| Class | Item | Rule |
-|---|---|---|
-| Law (immutable) | Agent state block layout | Fixed schema versioned in code |
-| Law (immutable) | Quorum math + Byzantine bound | n >= 3f + 1 and threshold >= 2f + 1 |
-| Law (immutable) | Ledger idempotency invariant | Duplicate idempotency key must not create a second write |
-| Law (immutable) | Canonical agent ordering for spectral ops | Sort by stable `agent_id` before matrix construction |
-| Law (immutable) | Prefix/token grammar constraints | ASCII-only, lowercase, exactly one apostrophe |
-| Flux (manifest) | GFSS anomaly threshold | Runtime manifest parameter |
-| Flux (manifest) | Policy quorum by tier | Runtime manifest parameter |
-| Flux (manifest) | Embedding model id | Runtime manifest parameter |
-| Flux (manifest) | Smear/wave parameters | Runtime manifest parameter |
-| Flux (manifest) | Enforcement toggles (`--enforce-location`) | Runtime manifest parameter |
-
-Every run writes the manifest hash to the ledger for replayable audit.
+Tier 6 approval-sequence diversity: Tier 6 (all 6 Sacred Tongues) supports 518,400 distinct ordered approval sequences ((6!)²). This is attestation path diversity, not a cryptographic security multiplier.
 
 ---
 
@@ -79,8 +58,8 @@ Every run writes the manifest hash to the ledger for replayable audit.
 │           LAYER 5: SPECTRAL GOVERNANCE                      │
 │                                                             │
 │  ┌────────────────────────┐  ┌─────────────────────────┐  │
-│  │ Graph Fourier Scan     │  │ Byzantine Consensus     │  │
-│  │ Statistics (GFSS)      │  │ (4/6 quorum, f=1 max)   │  │
+│  │ Graph Fourier Scan     │  │ Threshold Governance    │  │
+│  │ Statistics (GFSS)      │  │ (risk-tiered quorum)    │  │
 │  │ - Anomaly detection    │  │ - Crash fault tolerance │  │
 │  │ - Collusion detection  │  │ - Right-shift detection │  │
 │  └────────────────────────┘  └─────────────────────────┘  │
@@ -394,13 +373,15 @@ DR-JUDGE (300° - Draumric)
 
 - Weight: 11.09 (highest authority)
 
-### Byzantine Fault Tolerance
+### Threshold Governance (BFT-informed)
 
-Configuration: n=6 agents, f_max = (n-1)/3 = 1
+Classical bound: For n=6 agents, the maximum Byzantine tolerance is f=1 (since n ≥ 3f+1).
 
-Quorum Requirement: 2f+1 = 3 matching votes
+Default threshold: 2f+1 = 3/6 matching votes for low-risk actions.
 
-Tolerance: System survives 1 Byzantine (malicious) agent
+Escalation: Increase threshold for higher-risk actions (example policy: 4/6 medium, 5/6 high, 6/6 critical).
+
+Note: This is threshold voting, not a full BFT consensus protocol (no view change / leader election).
 
 Consensus Algorithm (from hydra/consensus.py):
 
@@ -508,7 +489,7 @@ Tier 3 (Triple - KO+RU+UM): Form submission with sensitive data
 
 Tier 6 (Full Roundtable): System-level changes, configuration updates
 
-Security Multiplier at Tier 6: 518,400×
+Tier 6 approval-sequence diversity: 518,400 distinct ordered approval sequences ((6!)²).
 
 ---
 
@@ -827,13 +808,49 @@ librarian.add_relationship(
 
 ---
 
-Repository: https://github.com/ISDanDavis2/scbe-aethermoore
+Repository: https://github.com/issdandavis/SCBE-AETHERMOORE
 
 Latest Commit: fd49eeb (spectral analysis + consensus)
 
 Status: ✅ Production-Ready v1.1.0
 
 Tests: 226/226 passing
+
+---
+
+## 2026-03-06 Update: Voxel/Octree Spatial Layer + Polyglot Interop
+
+New HYDRA modules added to the coordination stack:
+
+Spatial Storage Layer (hydra/):
+
+- octree_sphere_grid.py — Signed-axis octree with 8 octants, Morton Z-order curves, FF10-style 10-slot sphere grids per voxel, fractal Chladni subdivision (phi^depth scaling), mirror ops, toroidal wrap, 12 cross-branch attachments
+
+- voxel_storage.py — 6D+t voxel grid (x, y, z, wavelength, authority, intent, time) with Chladni addressing and semantic intent queries
+
+- voxel_cli.py — Terminal CLI for voxel6d operations (demo, layout, store, chladni)
+
+- color_dimension.py — Spectral flow isolation mapping LLM providers to 380-780nm frequency bands with phi-weighted Sacred Tongue overtones
+
+MCP Cymatic Voxel App (mcp/apps/cymatic-voxel-app/):
+
+- TypeScript 6D voxel engine with Poincare distance, Chladni equation, wavelength-to-RGB
+
+- Canvas visualization frontend
+
+- Python backend bridge via normalizeCymaticVoxelLayout() in server.mjs
+
+Polyglot Translation Matrix:
+
+- P0-P4 portability rubric across Python/TS/Rust/Go/WASM
+
+- Shared golden test vectors for Poincare metric parity
+
+- Rust poincare-core reference implementation
+
+- INTEROP_MATRIX Rosetta Stone: 8 concepts x 9 languages
+
+New Tests: 122 Python tests (49 voxel + 73 octree) + TS/Python polyglot parity tests
 
 "Any AI can wear the armor. HYDRA makes them unstoppable."
 
@@ -940,14 +957,19 @@ Fix:
 
 ```python
 def parse_token(tongue, token):
-    # Enforce strict token grammar
+    # Enforce ASCII apostrophe only
+    if "'" not in token or token.count("'") != 1:
+        raise ValueError(f"Invalid token format (must have exactly one apostrophe): {token}")
+    
+    # Reject non-ASCII characters
     if not token.isascii():
-        raise ValueError("Only ASCII allowed")
-    if token.count("'") != 1:
-        raise ValueError("Exactly one apostrophe required")
-    if token != token.lower():
-        raise ValueError("Lowercase only")
-
+        raise ValueError(f"Only ASCII characters allowed: {token}")
+    
+    # Verify apostrophe is ASCII (not Unicode variant)
+    apostrophe_idx = token.index("'")
+    if ord(token[apostrophe_idx]) != 0x27:  # ASCII apostrophe
+        raise ValueError(f"Only ASCII apostrophe (U+0027) allowed: {token}")
+    
     pre, suf = token.split("'", 1)
     # Existing logic...
 ```
@@ -978,18 +1000,16 @@ Risk: Prefixed tokens cause ValueError on decode, breaking cross-tongue workflow
 Fix:
 
 ```python
-PREFIXES = ("ko:", "av:", "ru:", "ca:", "um:", "dr:")
-
 def decode(tokens, tongue=DEFAULT_TONGUE):
-    token_list = []
-    for raw in tokens.split():
-        t = raw
-        for p in PREFIXES:
-            if t.startswith(p):
-                t = t[len(p):]
-                break
-        token_list.append(t)
-
+    token_list = tokens.split()
+    
+    # Strip tongue prefixes (e.g., "ko:", "av:", "ru:")
+    prefix = tongue.lower() + ':'
+    token_list = [
+        t.removeprefix(prefix) if t.startswith(prefix) else t 
+        for t in token_list
+    ]
+    
     return bytes(parse_token(tongue, t) for t in token_list)
 ```
 
@@ -1140,13 +1160,6 @@ class VoxelRecord:
     parents: Optional[List[str]] = None
 ```
 
-### SQL Storage Index (Canonical)
-
-```sql
-CREATE INDEX ix_voxel_lookup
-ON voxel_records (env, shard, voxel_key, created_at);
-```
-
 ### Deterministic CubeId Generation
 
 Purpose: Content-addressable identifier for voxels, enables deduplication and verification
@@ -1215,14 +1228,20 @@ Polly Pad = Mode-specialized AI workspace with:
 
 ### Mode-Specific Pads
 
-| Pad Mode | Purpose | Tools | AI Assistant Role |
-|---|---|---|---|
-| ENGINEERING | Code development | `ide_draft`, `code_exec_safe`, `build_deploy` | Draft code, suggest patterns, run tests |
-| NAVIGATION | Path planning | `map_query`, `proximity_track`, `path_plan` | Find routes, track neighbors, optimize paths |
-| SYSTEMS | Infrastructure | `telemetry_read`, `config_set`, `policy_enforce` | Monitor health, adjust configs, enforce rules |
-| SCIENCE | Research & analysis | `hypothesis_gen`, `experiment_run`, `model_tune` | Generate hypotheses, design experiments |
-| COMMS | Communication and negotiation | `msg_send`, `negotiate`, `protocol_exec` | Draft messages, coordinate negotiation, execute protocol flows |
-| MISSION | Goal orchestration | `goal_set`, `constraint_check`, `orchestrate_squad` | Decompose objectives, validate constraints, coordinate squad execution |
+<!-- Unsupported block type: table -->
+<!-- Unsupported block type: table_row -->
+
+<!-- Unsupported block type: table_row -->
+
+<!-- Unsupported block type: table_row -->
+
+<!-- Unsupported block type: table_row -->
+
+<!-- Unsupported block type: table_row -->
+
+<!-- Unsupported block type: table_row -->
+
+<!-- Unsupported block type: table_row -->
 
 ### Dual Code Zones
 
@@ -1848,12 +1867,16 @@ def reach_consensus(votes):
 
 ### 3. Risk-Tiered Thresholds
 
-| Risk Tier | Quorum | Percentage | Verification |
-|---|---:|---:|---|
-| Low | 3/6 | 50% | ✅ 3/6 = 0.50 |
-| Medium | 4/6 | 67% | ✅ 4/6 = 0.667 |
-| High | 5/6 | 83% | ✅ 5/6 = 0.833 |
-| Critical | 6/6 | 100% | ✅ 6/6 = 1.00 |
+<!-- Unsupported block type: table -->
+<!-- Unsupported block type: table_row -->
+
+<!-- Unsupported block type: table_row -->
+
+<!-- Unsupported block type: table_row -->
+
+<!-- Unsupported block type: table_row -->
+
+<!-- Unsupported block type: table_row -->
 
 Liveness guarantee: Even at highest tier (6/6), system remains live as long as all 6 agents are operational. This is acceptable for critical operations (secrets, writes, deployments) where unanimous approval is required.
 
@@ -1914,12 +1937,16 @@ def scbe_decide(d_star: float, coherence: float, h_eff: float, thr: Thresholds) 
 
 Verification with test cases:
 
-| d_star | coherence | h_eff | Expected | Verification |
-|---:|---:|---:|---|---|
-| 0.2 | 0.9 | 10 | ALLOW | ✅ ALLOW |
-| 5.0 | 0.9 | 10 | DENY | ✅ DENY (`d_star > 2.2`) |
-| 0.2 | 0.1 | 1 | DENY | ✅ DENY (`coherence < 0.25`) |
-| 1.5 | 0.5 | 500 | QUARANTINE | ✅ QUARANTINE |
+<!-- Unsupported block type: table -->
+<!-- Unsupported block type: table_row -->
+
+<!-- Unsupported block type: table_row -->
+
+<!-- Unsupported block type: table_row -->
+
+<!-- Unsupported block type: table_row -->
+
+<!-- Unsupported block type: table_row -->
 
 ---
 

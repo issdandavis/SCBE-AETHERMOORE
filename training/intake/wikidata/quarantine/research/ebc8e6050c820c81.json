@@ -1,0 +1,25 @@
+{
+  "id": "ebc8e6050c820c81",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Quasicrystal Research (Q18791487)",
+  "content": "# Quasicrystal Research\n\nWikidata ID: Q18791487\nDescription: 2011 film by Alexander Tuschinski\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q18791487",
+  "timestamp": "2026-03-06T04:18:05.821535",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "162f64ba8a75df0c681d00523326874b2dc53483f93788619d0a658a9fcf97da",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q18791487",
+    "description": "2011 film by Alexander Tuschinski"
+  }
+}

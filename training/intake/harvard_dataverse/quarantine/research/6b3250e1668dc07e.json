@@ -1,0 +1,32 @@
+{
+  "id": "6b3250e1668dc07e",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Simulated surface Chl, satellite-like derived Chl, and remotely sensed reflectance",
+  "content": "# Simulated surface Chl, satellite-like derived Chl, and remotely sensed reflectance\n\nAuthors: Dutkiewicz, Stephanie, Jahn, Oliver\nPublished: 2018-01-26T15:36:54Z\nSubjects: Earth and Environmental Sciences\nDOI: doi:10.7910/DVN/NWR1QY\n\nModel output Daily from 1994-2006 (note each year has only 360 days) in netcdf files. - Simulated surface (0-50m) Chl-a (Called \"actual Chl-a\" in the BG paper). Units mgChl/m3 - Derived Chl-a from the simulated remotely sensed reflectance. (Called \"GS derived Chl-a:\" in the BG paper). Units mgChl/m3 - Simulated remotely sensed reflectance in the blue spectrum (450, 475,500nm) and green (550 nm). Units 1/sr\n\nCitation: Dutkiewicz, Stephanie; Jahn, Oliver, 2018, \"Simulated surface Chl, satellite-like derived Chl, and remotely sensed reflectance\", https://doi.org/10.7910/DVN/NWR1QY, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/NWR1QY",
+  "timestamp": "2026-03-06T04:18:49.817468",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "039b23b5220ab77c5e0953fb754a9db42066ae70bbcc036d49912a5d9cba06a8",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/NWR1QY",
+    "subjects": [
+      "Earth and Environmental Sciences"
+    ],
+    "authors": [
+      "Dutkiewicz, Stephanie",
+      "Jahn, Oliver"
+    ],
+    "file_count": 78
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "id": "b5ad4e36e1fbf6a8",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "A treatise on the structure, economy, and diseases of the ear ...",
+  "content": "# A treatise on the structure, economy, and diseases of the ear ...\n\nContributors: pilcher, george\nDate: 1843\nSubjects: ear, diseases\n\nAlso available in digital form.",
+  "url": "https://www.loc.gov/item/06027929/",
+  "timestamp": "2026-03-06T04:17:18.822607",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "bbbd3f20dc428d9c7b76f1deea88b3dcdc9be33a189fc14ccbdba78abd0a806c",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "ear",
+      "diseases"
+    ],
+    "dates": "1843",
+    "original_format": [
+      "book"
+    ]
+  }
+}

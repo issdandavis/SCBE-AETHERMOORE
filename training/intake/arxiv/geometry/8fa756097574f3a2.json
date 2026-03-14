@@ -1,0 +1,29 @@
+{
+  "id": "8fa756097574f3a2",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Generalization of the catenary in the dual plane",
+  "content": "# Generalization of the catenary in the dual plane\n\nAuthors: Muhittin Evren Aydin, Rafael L\u00f3pez\nPublished: 2026-03-02T17:25:26Z\n\nIn this paper, we study a dual analogue of the classical catenary within the class of admissible curves in the dual plane $\\mathbb{D}^2$. We introduce $\u03b1$-catenaries in $\\mathbb{D}^2$ as stationary points of a potential energy functional, where $\u03b1\\in \\mathbb{R}$ is a real parameter. We derive the corresponding Euler-Lagrange equations and obtain explicit equations of these curves for specific values of $\u03b1$. Furthermore, we establish a geometric characterization of $\u03b1$-catenaries in terms of their curvature and unit normal vector field.",
+  "url": "http://arxiv.org/abs/2603.02107v1",
+  "timestamp": "2026-03-02T17:25:26Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "8160fbece69426a21c252c4cb76cb8a67eaafa8ddfc760482bf637a44af3d32c",
+  "parent_hash": "110b1257ae357dc0613322a5654d29d7fda4f5bc5ab1984dc1ada789875315e6",
+  "metadata": {
+    "authors": [
+      "Muhittin Evren Aydin",
+      "Rafael L\u00f3pez"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2603.02107v1"
+  }
+}

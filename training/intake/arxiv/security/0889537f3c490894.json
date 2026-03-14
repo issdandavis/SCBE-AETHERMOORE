@@ -1,0 +1,31 @@
+{
+  "id": "0889537f3c490894",
+  "source": "arxiv",
+  "category": "security",
+  "title": "Structure-Aware Distributed Backdoor Attacks in Federated Learning",
+  "content": "# Structure-Aware Distributed Backdoor Attacks in Federated Learning\n\nAuthors: Wang Jian, Shen Hong, Ke Wei, Liu Xue Hua\nPublished: 2026-03-04T09:19:32Z\n\nWhile federated learning protects data privacy, it also makes the model update process vulnerable to long-term stealthy perturbations. Existing studies on backdoor attacks in federated learning mainly focus on trigger design or poisoning strategies, typically assuming that identical perturbations behave similarly across different model architectures. This assumption overlooks the impact of model structure on perturbation effectiveness. From a structure-aware perspective, this paper analyzes the coupling relationship between model architectures and backdoor perturbations. We introduce two metrics, Structural Responsiveness Score (SRS) and Structural Compatibility Coefficient (SCC), to measure a model's sensitivity to perturbations and its preference for fractal perturbations. Based on these metrics, we develop a structure-aware fractal perturbation injection framework (TFI) to study the role of architectural properties in the backdoor injection process. Experimental results show that model architecture significantly influences the propagation and aggregation of perturbations. Networks with multi-path feature fusion can amplify and retain fractal perturbations even under low poisoning ratios, while models with low structural compatibility constrain their effectiveness. Further analysis reveals a strong correlation between SCC and attack success rate, suggesting that SCC can predict perturbation survivability. These findings highlight that backdoor behaviors in federated learning depend not only on perturbation design or poisoning intensity but also on the interaction between model architecture and aggregation mechanisms, offering new insights for structure-aware defense design.",
+  "url": "http://arxiv.org/abs/2603.03865v1",
+  "timestamp": "2026-03-04T09:19:32Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "821b68ba98c259456a16681f42c9a0078dff546fbb277d52af287f4822fbab5e",
+  "parent_hash": "f6b5330988b0b70fbdd8303ed47b6223a234bc5c22bee811197c2d1e55715f5e",
+  "metadata": {
+    "authors": [
+      "Wang Jian",
+      "Shen Hong",
+      "Ke Wei",
+      "Liu Xue Hua"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.03865v1"
+  }
+}

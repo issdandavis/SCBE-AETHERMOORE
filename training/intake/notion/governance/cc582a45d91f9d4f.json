@@ -1,0 +1,26 @@
+{
+  "id": "cc582a45d91f9d4f",
+  "source": "notion",
+  "category": "governance",
+  "title": "Multi-Signature Governance Tutorial",
+  "content": "# Multi-Signature Governance Tutorial\n\nMulti-Signature Governance Tutorial",
+  "url": "https://www.notion.so/Multi-Signature-Governance-Tutorial-0cb733c90d2b4bdaad14405e3a769ce3",
+  "timestamp": "2026-02-02T07:43:00.000Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "ae0c7e21ab7d84003df7d397cfc8c37adb525c809e462568db35568b4d076579",
+  "parent_hash": "c42a2156056fa3f47ea3bf6ca5a9808789aca3844c005d03689fa82fea77ad59",
+  "metadata": {
+    "notion_id": "0cb733c9-0d2b-4bda-ad14-405e3a769ce3",
+    "page_type": "page",
+    "parent_type": "database_id"
+  }
+}

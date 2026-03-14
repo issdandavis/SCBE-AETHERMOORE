@@ -1,0 +1,31 @@
+{
+  "id": "3f11a19428b3d808",
+  "source": "arxiv",
+  "category": "quantum",
+  "title": "Variance-Driven Mean Temperature Reduction in Nonuniformly Heated Radiative-Conductive Systems",
+  "content": "# Variance-Driven Mean Temperature Reduction in Nonuniformly Heated Radiative-Conductive Systems\n\nAuthors: Juntao Lu, Zihan Zhang, Yongjian Xiong, Jie Fu\nPublished: 2026-03-04T12:22:10Z\n\nRadiative-conductive systems are intrinsically nonlinear due to the quartic temperature dependence of thermal radiation. Under fixed total heating power, convexity arguments imply that nonuniform temperature distributions radiate more efficiently and therefore exhibit a lower mean temperature than their isothermal counterparts. However, this conclusion remains qualitative, and an explicit quantitative relation between temperature heterogeneity and mean temperature reduction has been lacking. Here we derive a variance-based analytical expression linking the area-averaged temperature to the corresponding isothermal equilibrium temperature in a nonuniformly heated radiative--conductive system. By integrating the governing equation and performing a systematic second-order expansion about the ambient temperature, we show that the decrease of the mean temperature relative to the isothermal equilibrium value is linearly proportional to the temperature variance, with a proportionality coefficient set solely by the ambient temperature. This result transforms the convexity-based inequality into a quantitative statistical relation within the perturbative regime and provides a physically transparent framework for describing nonlinear radiative averaging in thermally heterogeneous systems.",
+  "url": "http://arxiv.org/abs/2603.03979v1",
+  "timestamp": "2026-03-04T12:22:10Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "0c0592c3c61a83a28d7b79850294f2dc3147c47c9e40b7afb3c4acf1272023fd",
+  "parent_hash": "d5c831e847047c49267ea259ca2f82acf0b2df5a40b47af65524c21981dd94c1",
+  "metadata": {
+    "authors": [
+      "Juntao Lu",
+      "Zihan Zhang",
+      "Yongjian Xiong",
+      "Jie Fu"
+    ],
+    "arxiv_category": "quant-ph",
+    "arxiv_id": "2603.03979v1"
+  }
+}

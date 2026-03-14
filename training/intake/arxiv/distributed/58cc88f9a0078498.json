@@ -1,0 +1,43 @@
+{
+  "id": "58cc88f9a0078498",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Lambdas at the Far Edge: a Tale of Flying Lambdas and Lambdas on Wheels",
+  "content": "# Lambdas at the Far Edge: a Tale of Flying Lambdas and Lambdas on Wheels\n\nAuthors: Giorgio Audrito, Daniele Bortoluzzi, Ferruccio Damiani, Giordano Scarso, Gianluca Torta, Andrea Basso, Monica Cochi, Lorenzo Gusman, Lorenzo Comba, Paolo Gay, Paola Dal Zovo, Giada Galati, Francesco Gallo, Alja\u017e Grdadolnik, Massimo Pescarollo, Paola Pisano\nPublished: 2026-03-04T12:50:07Z\n\nAggregate Programming (AP) is a paradigm for programming the collective behaviour of sets of distributed devices, possibly situated at the network far edge, by relying on asynchronous proximity-based interactions. The eXchange Calculus (XC), a recently proposed foundational model for AP, is essentially a typed lambda calculus extended with an operator (the exchange operator) providing an implicit communication mechanism between neighbour devices. This paper provides a gentle introduction to XC and to its implementation as a C++ library, called FCPP. The FCPP library and toolchain has been mainly developed at the Department of Computer Science of the University of Turin, where Stefano Berardi spent most of his academic career conducting outstanding research about logical foundation of computer science and transmitting his passion for research to students and young researchers, often exploiting typed lambda calculi. An FCCP program is essentially a typed lambda term, and FCPP has been used to write code that has been deployed on devices at the far edge of the network, including rovers and (soon) Uncrewed Aerial Vehicles (UAVs); hence the title of the paper.",
+  "url": "http://arxiv.org/abs/2603.04008v1",
+  "timestamp": "2026-03-04T12:50:07Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "parent_hash": "08c1fc8cf3c6fe213b060e1374b5f12b1f564e6aac8cb22f88b8acb02c86dee4",
+  "metadata": {
+    "authors": [
+      "Giorgio Audrito",
+      "Daniele Bortoluzzi",
+      "Ferruccio Damiani",
+      "Giordano Scarso",
+      "Gianluca Torta",
+      "Andrea Basso",
+      "Monica Cochi",
+      "Lorenzo Gusman",
+      "Lorenzo Comba",
+      "Paolo Gay",
+      "Paola Dal Zovo",
+      "Giada Galati",
+      "Francesco Gallo",
+      "Alja\u017e Grdadolnik",
+      "Massimo Pescarollo",
+      "Paola Pisano"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.04008v1"
+  }
+}

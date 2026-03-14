@@ -1,0 +1,33 @@
+{
+  "id": "9891b3c15d2f0ece",
+  "source": "internet_archive",
+  "category": "quarantine/ai",
+  "title": "XKFHnet: Xception Kronecker Forward Fractional Net for Intrusion Detection in Cloud",
+  "content": "# XKFHnet: Xception Kronecker Forward Fractional Net for Intrusion Detection in Cloud\n\nCreator: \nDate: \nDownloads: 20\nSubjects: Deep Learning, Hypervisor, Kronecker Neural Network, Virtual Machine, Xception\n\nIn this new era of on-demand cloud computing, security is crucial. To find breaches in the cloud computing environment, researchers have surveyed a number of intrusion detection methods. The majority of them discuss conventional abuse and anomaly detection methods. By positioning the analysing component outside the virtual machine, usually at the hypervisor, Virtual Machine Introspection techniques are highly useful in identifying various stealth attacks that target user-level and kernel-level processes operating in VMs. Techniques such as Hypervisor Introspection protect the hypervisor and stop a compromised hypervisor from attacking virtual machines that run on it. Through the use of hardware-assisted used in virtualization-enabled technologies, introspection approaches examine the hypervisor. Our paper's primary goal is to present a thorough literature review of the many intrusion detection methods that have been suggested for cloud environments, along with an evaluation of their capacity to detect attacks. To clarify the vulnerabilities in the cloud, we offer a threat model and attack taxonomy. Our taxonomy of IDS techniques offers a thorough analysis of approaches together with their distinguishing characteristics, and it represents the state of the art in classification. In the survey, we have given a thorough understanding of methods based on Virtual Machine Introspection and Hypervisor Introspection. With the help of our study, researchers should be able to start investigating intrusion detection techniques in cloud environments.",
+  "url": "https://archive.org/details/5-ijaers-0220256-xkfhnet",
+  "timestamp": "2026-03-06T02:40:40.433951",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "aa9d277074067d82cb1c657fadaa5debc2cac059552a53c65b9bd073d4ad9f5c",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "5-ijaers-0220256-xkfhnet",
+    "media_type": "texts",
+    "downloads": 20,
+    "subjects": [
+      "Deep Learning",
+      "Hypervisor",
+      "Kronecker Neural Network",
+      "Virtual Machine",
+      "Xception"
+    ]
+  }
+}

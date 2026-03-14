@@ -1,0 +1,17 @@
+{
+  "cycle_time": "2026-03-06T04:00:43.341349+00:00",
+  "requests_made": 0,
+  "chunks_allowed": 0,
+  "total_ever_scraped": 1217,
+  "grid_nodes": 0,
+  "graph_nodes": 0,
+  "graph_cords": 0,
+  "funnel_stats": {
+    "total": 0,
+    "allowed": 0,
+    "quarantined": 0,
+    "denied": 0,
+    "chain_length": 0
+  },
+  "analysis_angles": 5
+}

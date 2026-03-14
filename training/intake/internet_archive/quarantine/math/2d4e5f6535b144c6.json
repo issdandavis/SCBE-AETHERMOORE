@@ -1,0 +1,27 @@
+{
+  "id": "2d4e5f6535b144c6",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "Average Consensus in the Presence of Delays and Dynamically Changing Directed Graph Topologies",
+  "content": "# Average Consensus in the Presence of Delays and Dynamically Changing Directed Graph Topologies\n\nCreator: Christoforos N. Hadjicostis, Themistoklis Charalambous\nDate: 2013-02-22T00:00:00Z\nDownloads: 84\nSubjects: \n\nClassical approaches for asymptotic convergence to the global average in a distributed fashion typically assume timely and reliable exchange of information between neighboring components of a given multi-component system. These assumptions are not necessarily valid in practical settings due to varying delays that might affect transmissions at different times, as well as possible changes in the underlying interconnection topology (e.g., due to component mobility). In this work, we propose protocols to overcome these limitations. We first consider a fixed interconnection topology (captured by a - possibly directed - graph) and propose a discrete-time protocol that can reach asymptotic average consensus in a distributed fashion, despite the presence of arbitrary (but bounded) delays in the communication links. The protocol requires that each component has knowledge of the number of its outgoing links (i.e., the number of components to which it sends information). We subsequently extend the protocol to also handle changes in the underlying interconnection topology and describe a variety of rather loose conditions under which the modified protocol allows the components to reach asymptotic average consensus. The proposed algorithms are illustrated via examples.",
+  "url": "https://archive.org/details/arxiv-1210.4778",
+  "timestamp": "2026-03-06T03:59:17.368002",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "39fa61685fe93a74d9cf4ed4aaab8449df13bde024e7d2a9a81ed815dc7a878a",
+  "parent_hash": "2da5f516980cbdb270092f148839fdae59e74398586f1932c987a4886a9193c0",
+  "metadata": {
+    "ia_identifier": "arxiv-1210.4778",
+    "media_type": "texts",
+    "downloads": 84,
+    "subjects": []
+  }
+}

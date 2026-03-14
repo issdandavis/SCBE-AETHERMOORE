@@ -231,7 +231,10 @@ class N8nBrowseRequest(BaseModel):
 
 
 # Global state
-_browser: Optional[PlaywrightWrapper] = None
+_session_browsers: Dict[str, PlaywrightWrapper] = {}
+_browser_lru: List[str] = []
+_browser_lock = asyncio.Lock()
+_BROWSER_SESSION_POOL_LIMIT = max(1, int(os.getenv("SCBE_BROWSER_SESSION_POOL_LIMIT", "8")))
 _embedder: Optional[VisionEmbedder] = None
 _phdm: Optional[SimplePHDM] = None
 
@@ -239,7 +242,7 @@ _phdm: Optional[SimplePHDM] = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
-    global _browser, _embedder, _phdm
+    global _embedder, _phdm
 
     # Initialize components
     logger.info("Initializing browser agent components...")
@@ -254,8 +257,14 @@ async def lifespan(app: FastAPI):
     yield
 
     # Cleanup
-    if _browser:
-        await _browser.close()
+    if _session_browsers:
+        for browser in list(_session_browsers.values()):
+            try:
+                await browser.close()
+            except Exception:
+                logger.exception("Error closing browser session during shutdown")
+        _session_browsers.clear()
+        _browser_lru.clear()
     logger.info("Browser agent shutdown complete")
 
 
@@ -379,21 +388,42 @@ class HealthResponse(BaseModel):
 # Core Browse Logic
 # ============================================================================
 
-async def ensure_browser() -> PlaywrightWrapper:
-    """Ensure browser is initialized."""
-    global _browser
+def _touch_browser_session(session_id: str) -> None:
+    if session_id in _browser_lru:
+        _browser_lru.remove(session_id)
+    _browser_lru.append(session_id)
 
-    if _browser is None:
+
+async def ensure_browser(session_id: str) -> PlaywrightWrapper:
+    """Ensure a session-isolated browser is initialized."""
+    async with _browser_lock:
+        existing = _session_browsers.get(session_id)
+        if existing is not None and existing._is_initialized:
+            _touch_browser_session(session_id)
+            return existing
+
+        # Evict least-recently-used session when pool is full.
+        while len(_session_browsers) >= _BROWSER_SESSION_POOL_LIMIT and _browser_lru:
+            evicted_sid = _browser_lru.pop(0)
+            evicted_browser = _session_browsers.pop(evicted_sid, None)
+            if evicted_browser is None:
+                continue
+            try:
+                await evicted_browser.close()
+            except Exception:
+                logger.exception("Failed to close evicted browser session %s", evicted_sid)
+
         config = BrowserConfig(
             headless=True,
             default_timeout_ms=30000,
             max_actions_per_session=100
         )
-        _browser = PlaywrightWrapper(config)
-        await _browser.initialize()
-        logger.info("Browser initialized on demand")
-
-    return _browser
+        browser = PlaywrightWrapper(config)
+        await browser.initialize()
+        _session_browsers[session_id] = browser
+        _touch_browser_session(session_id)
+        logger.info("Browser initialized for session=%s", session_id)
+        return browser
 
 
 async def check_action_safety(
@@ -523,7 +553,7 @@ async def browse(
 
     browser = None
     if not request.dry_run:
-        browser = await ensure_browser()
+        browser = await ensure_browser(session_id)
 
     for action in request.actions:
         start_time = time.time()
@@ -685,13 +715,21 @@ async def reset_session(user: str = Depends(verify_api_key)):
     """
     Reset the browser session and containment history.
     """
-    global _browser
+    if _session_browsers:
+        async with _browser_lock:
+            for sid, browser in list(_session_browsers.items()):
+                try:
+                    browser.reset_session()
+                    await browser.close()
+                except Exception:
+                    logger.exception("Failed to reset browser session %s", sid)
+            _session_browsers.clear()
+            _browser_lru.clear()
 
-    if _browser:
-        _browser.reset_session()
-
-    _phdm.reset_history()
-    _embedder.clear_cache()
+    if _phdm:
+        _phdm.reset_history()
+    if _embedder:
+        _embedder.clear_cache()
 
     return {
         "status": "success",
@@ -710,7 +748,7 @@ async def health():
         status="healthy",
         phdm_ready=_phdm is not None,
         embedder_ready=_embedder is not None and _embedder._is_initialized,
-        browser_ready=_browser is not None and _browser._is_initialized,
+        browser_ready=any(browser._is_initialized for browser in _session_browsers.values()),
         safe_radius=_phdm.safe_radius if _phdm else 0.0,
         dimension=_phdm.dim if _phdm else 0,
         containment_stats=_phdm.get_containment_stats() if _phdm else {}

@@ -1,0 +1,32 @@
+{
+  "id": "63739c3fec38b525",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Graph Neural Networks for Road Safety Modeling: Datasets and Evaluations for Accident Analysis",
+  "content": "# Graph Neural Networks for Road Safety Modeling: Datasets and Evaluations for Accident Analysis\n\nAuthors: Abhinav Nippani, Dongyue Li\nPublished: 2024-02-29T21:14:58Z\nSubjects: Computer and Information Science\nDOI: doi:10.7910/DVN/V71K5R\n\nHere we deposit the datasets we have extracted for ten states in the US. In each zip file, we include each state's accident records, road networks, and network features. For further information about using the dataset and how we extracted the data, check out our GitHub repository for instructions.\n\nCitation: Abhinav Nippani; Dongyue Li, 2023, \"Graph Neural Networks for Road Safety Modeling: Datasets and Evaluations for Accident Analysis\", https://doi.org/10.7910/DVN/V71K5R, Harvard Dataverse, V2",
+  "url": "https://doi.org/10.7910/DVN/V71K5R",
+  "timestamp": "2026-03-06T02:42:16.312240",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "9d458a596a0831394660e7e6560292fa692fddaabe1894795f2b72b2d7e215f1",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/V71K5R",
+    "subjects": [
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Abhinav Nippani",
+      "Dongyue Li"
+    ],
+    "file_count": 11
+  }
+}

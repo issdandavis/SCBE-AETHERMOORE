@@ -1,0 +1,31 @@
+{
+  "id": "8be29cca26990a7c",
+  "source": "arxiv",
+  "category": "nlp",
+  "title": "Exploring the potential and limitations of Model Merging for Multi-Domain Adaptation in ASR",
+  "content": "# Exploring the potential and limitations of Model Merging for Multi-Domain Adaptation in ASR\n\nAuthors: Carlos Carvalho, Francisco Teixeira, Thomas Rolland, Alberto Abad\nPublished: 2026-03-05T16:34:24Z\n\nModel merging is a scalable alternative to multi-task training that combines the capabilities of multiple specialised models into a single model. This is particularly attractive for large speech foundation models, which are typically adapted through domain-specific fine-tuning, resulting in multiple customised checkpoints, for which repeating full fine-tuning when new data becomes available is computationally prohibitive. In this work, we study model merging for multi-domain ASR and benchmark 11 merging algorithms for 10 European Portuguese domains, evaluating in-domain accuracy, robustness under distribution shift, as well as English and multilingual performance. We further propose BoostedTSV-M, a new merging algorithm based on TSV-M that mitigates rank collapse via singular-value boosting and improves numerical stability. Overall, our approach outperforms full fine-tuning on European Portuguese while preserving out-of-distribution generalisation in a single model.",
+  "url": "http://arxiv.org/abs/2603.05354v1",
+  "timestamp": "2026-03-05T16:34:24Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "886222969f922c4df6dfb8a66ace2dae1d69b5871204c75ef571c65dc8f49acf",
+  "parent_hash": "9b538dec4f959ae4edf88e29431dbe89421ae6fc895ccabc4632ce8d5e41c0ff",
+  "metadata": {
+    "authors": [
+      "Carlos Carvalho",
+      "Francisco Teixeira",
+      "Thomas Rolland",
+      "Alberto Abad"
+    ],
+    "arxiv_category": "cs.CL",
+    "arxiv_id": "2603.05354v1"
+  }
+}

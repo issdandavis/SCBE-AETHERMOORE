@@ -1,0 +1,29 @@
+{
+  "id": "dba3f3d2330d65bc",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Urysohn Width and Surgeries",
+  "content": "# Urysohn Width and Surgeries\n\nAuthors: Aleksandr Berdnikov, Brendan Isley\nPublished: 2026-02-17T13:26:01Z\n\nWe analyze the behavior of Urysohn width of manifolds under a connected sum operation, specifically, bounding widths of summands in terms of widths of the sum and vice versa. Our methods also apply to the universal covers of these spaces, and to more general type of surgeries. Lastly, we provide examples that show the optimality of constants in our estimates.",
+  "url": "http://arxiv.org/abs/2602.15565v1",
+  "timestamp": "2026-02-17T13:26:01Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "c67c1e08be53b92ddbe182bf6e3564a74c9d2aaa22eb9d0f6cdf5395bfbc7aa0",
+  "parent_hash": "0d574a2da8d10e2e80e8b67ac26a59d5dbb652135365b082fc146a6b92fdd9ae",
+  "metadata": {
+    "authors": [
+      "Aleksandr Berdnikov",
+      "Brendan Isley"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.15565v1"
+  }
+}

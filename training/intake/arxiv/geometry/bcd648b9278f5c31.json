@@ -1,0 +1,31 @@
+{
+  "id": "bcd648b9278f5c31",
+  "source": "arxiv",
+  "category": "geometry",
+  "title": "Neural and numerical methods for $\\mathrm{G}_2$-structures on contact Calabi-Yau 7-manifolds",
+  "content": "# Neural and numerical methods for $\\mathrm{G}_2$-structures on contact Calabi-Yau 7-manifolds\n\nAuthors: Elli Heyes, Edward Hirst, Henrique N. S\u00e1 Earp, Tom\u00e1s S. R. Silva\nPublished: 2026-02-12T21:52:06Z\n\nA numerical framework for approximating $\\mathrm{G}_2$-structure 3-forms on contact Calabi-Yau manifolds is presented. The approach proceeds in three stages: first, existing neural network models are employed to compute an approximate Ricci-flat metric on a Calabi-Yau threefold. Second, using this metric and the explicit construction of a $\\mathrm{G}_2$-structure on the associated 7-dimensional Calabi-Yau link in the 9-sphere, numerical approximations of the 3-form are generated on a large set of sampled points. Finally, a dedicated neural architecture is trained to learn the 3-form and its induced Riemannian metric directly from data, validating the learned structure and its torsion via a numerical implementation of the exterior derivative, which may be of independent interest.",
+  "url": "http://arxiv.org/abs/2602.12438v1",
+  "timestamp": "2026-02-12T21:52:06Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "669b582602a6c9d4e55afa430d70541b71e8f292059bdc72a94027f1eeaa211d",
+  "parent_hash": "69164a614917fa2ac918f3ecd514ed2cfbc3ad042246a9d6ab85ec46bc82c21d",
+  "metadata": {
+    "authors": [
+      "Elli Heyes",
+      "Edward Hirst",
+      "Henrique N. S\u00e1 Earp",
+      "Tom\u00e1s S. R. Silva"
+    ],
+    "arxiv_category": "math.DG",
+    "arxiv_id": "2602.12438v1"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "b077e6c5c25ccda2",
+  "source": "internet_archive",
+  "category": "quarantine/research",
+  "title": "The dynamics of message passing on dense graphs, with applications to compressed sensing",
+  "content": "# The dynamics of message passing on dense graphs, with applications to compressed sensing\n\nCreator: Mohsen Bayati, Andrea Montanari\nDate: 2011-01-27T00:00:00Z\nDownloads: 104\nSubjects: \n\nApproximate message passing algorithms proved to be extremely effective in reconstructing sparse signals from a small number of incoherent linear measurements. Extensive numerical experiments further showed that their dynamics is accurately tracked by a simple one-dimensional iteration termed state evolution. In this paper we provide the first rigorous foundation to state evolution. We prove that indeed it holds asymptotically in the large system limit for sensing matrices with independent and identically distributed gaussian entries. While our focus is on message passing algorithms for compressed sensing, the analysis extends beyond this setting, to a general class of algorithms on dense graphs. In this context, state evolution plays the role that density evolution has for sparse graphs. The proof technique is fundamentally different from the standard approach to density evolution, in that it copes with large number of short loops in the underlying factor graph. It relies instead on a conditioning technique recently developed by Erwin Bolthausen in the context of spin glass theory.",
+  "url": "https://archive.org/details/arxiv-1001.3448",
+  "timestamp": "2026-03-06T02:40:48.213986",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "fe25ca735c7f410c9cb9f62a634e454e117a8f2dfebfcecc7784233aa22dd792",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1001.3448",
+    "media_type": "texts",
+    "downloads": 104,
+    "subjects": []
+  }
+}

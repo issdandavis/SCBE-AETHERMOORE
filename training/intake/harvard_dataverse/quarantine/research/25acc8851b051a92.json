@@ -1,0 +1,31 @@
+{
+  "id": "25acc8851b051a92",
+  "source": "harvard_dataverse",
+  "category": "quarantine/research",
+  "title": "Blockchain datasets collection",
+  "content": "# Blockchain datasets collection\n\nAuthors: Li, Lydia\nPublished: 2019-04-14T18:30:10Z\nSubjects: Computer and Information Science\nDOI: doi:10.7910/DVN/F00FE5\n\ncoinbase dataset\n\nCitation: Li, Lydia, 2019, \"Blockchain datasets collection\", https://doi.org/10.7910/DVN/F00FE5, Harvard Dataverse, V1, UNF:6:OhskW8t2+qieahw4THL2Bw== [fileUNF]",
+  "url": "https://doi.org/10.7910/DVN/F00FE5",
+  "timestamp": "2026-03-06T02:42:29.165325",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4e39e0a096bc21bf440f64821608416a36c445be480026ce5b59c4cd6962fdcc",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/F00FE5",
+    "subjects": [
+      "Computer and Information Science"
+    ],
+    "authors": [
+      "Li, Lydia"
+    ],
+    "file_count": 5
+  }
+}

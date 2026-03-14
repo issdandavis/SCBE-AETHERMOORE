@@ -1,0 +1,30 @@
+{
+  "id": "9de0355cd231dac5",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "A Cascaded Graph Neural Network for Joint Root Cause Localization and Analysis in Edge Computing Environments",
+  "content": "# A Cascaded Graph Neural Network for Joint Root Cause Localization and Analysis in Edge Computing Environments\n\nAuthors: Duneesha Fernando, Maria A. Rodriguez, Rajkumar Buyya\nPublished: 2026-03-02T04:57:04Z\n\nEdge computing environments host increasingly complex microservice-based IoT applications that are prone to performance anomalies propagating across dependent services. Identifying the faulty component (root cause localization) and the underlying fault type (root cause analysis) is essential for timely mitigation. Supervised graph neural networks (GNNs) currently represent the state of the art for joint root cause localization and analysis. However, existing approaches rely on centralized processing over full-system graphs, leading to high inference latency and limited scalability in large, distributed edge environments. In this paper, we propose a cascaded GNN framework for joint RCL and fault type identification that explicitly addresses these scalability challenges. Our approach employs communication-driven clustering to partition large service graphs into highly interacting communities and a cascaded network with two subnetworks that perform hierarchical RCL/RCA. By restricting message passing to reduced and structured subgraphs, the proposed framework significantly lowers computational complexity while preserving critical dependency information. We evaluate the proposed method on the MicroCERCL benchmark and large-scale datasets generated using the iAnomaly simulation framework. Experimental results show that the cascaded architecture achieves diagnostic accuracy comparable to centralized GNN baselines while maintaining near-constant inference latency as graph size increases, enabling scalable and actionable AIOps in edge computing environments.",
+  "url": "http://arxiv.org/abs/2603.01447v1",
+  "timestamp": "2026-03-02T04:57:04Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "04fb5ccbf4e659e381bbb6950e4f5a98d4fc27d5b5fffb3d7dc9365890a45ef9",
+  "parent_hash": "d1dc1e657931b10515bdf1921f60346d321231c841354f579219f48639874a55",
+  "metadata": {
+    "authors": [
+      "Duneesha Fernando",
+      "Maria A. Rodriguez",
+      "Rajkumar Buyya"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.01447v1"
+  }
+}

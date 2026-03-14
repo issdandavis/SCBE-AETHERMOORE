@@ -1,0 +1,31 @@
+{
+  "id": "dc77fe6774b0ba9b",
+  "source": "arxiv",
+  "category": "distributed",
+  "title": "Trident: Adaptive Scheduling for Heterogeneous Multimodal Data Pipelines",
+  "content": "# Trident: Adaptive Scheduling for Heterogeneous Multimodal Data Pipelines\n\nAuthors: Ding Pan, Zhuangzhuang Zhou, Long Qian, Binhang Yuan\nPublished: 2026-03-02T17:00:22Z\n\nThe rapid adoption of large language models and multimodal foundation models has made multimodal data preparation pipelines critical AI infrastructure. These pipelines interleave CPU-heavy preprocessing with accelerator-backed (GPU/NPU/TPU) inference and produce massive intermediate artifacts. Achieving high throughput is difficult because workloads are highly non-stationary: regime shifts, input-dependent inference, and transient memory spikes cause rapid performance fluctuations and out-of-memory (OOM) failures. Existing schedulers typically rely on threshold-based autoscaling or assume synchronous, homogeneous operators, leading to poor efficiency. We present Trident, an adaptive scheduling framework for heterogeneous multimodal pipelines on fixed-resource clusters. Trident closes the loop across three coupled layers: (i) an observation layer that estimates per-operator sustainable throughput for asynchronous operators via Gaussian Process regression with anomaly filtering; (ii) an adaptation layer that detects workload shifts online and performs memory-constrained Bayesian optimization to recommend OOM-safe configurations; and (iii) a scheduling layer that solves a mixed-integer linear program to jointly optimize operator parallelism, placement, and configuration transitions under heterogeneous compute and bandwidth constraints, accounting for cold-start overhead via rolling updates. Decisions trigger sample invalidation and model refresh to keep estimates consistent with the active configuration. Implemented on Ray Data, Trident improves end-to-end throughput by up to 2.01x on a document curation (PDF) pipeline and 1.88x on a video curation pipeline over a static baseline, with low overhead suitable for online re-optimization.",
+  "url": "http://arxiv.org/abs/2603.02075v1",
+  "timestamp": "2026-03-02T17:00:22Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "6ebc70560c28f4a08ab89f6a98d6fe7f48766fb6f32f7f3ad6a8c54658470b8a",
+  "parent_hash": "9930220d16c050f7c6a6daf5ff19965feae2d64f09649ca1514f425c9e79ee25",
+  "metadata": {
+    "authors": [
+      "Ding Pan",
+      "Zhuangzhuang Zhou",
+      "Long Qian",
+      "Binhang Yuan"
+    ],
+    "arxiv_category": "cs.DC",
+    "arxiv_id": "2603.02075v1"
+  }
+}

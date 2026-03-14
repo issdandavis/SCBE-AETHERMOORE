@@ -1,0 +1,30 @@
+{
+  "id": "09dbbc51d299baf9",
+  "source": "internet_archive",
+  "category": "quarantine/math",
+  "title": "Dynamics and the Godbillon-Vey Class of C^1 Foliations",
+  "content": "# Dynamics and the Godbillon-Vey Class of C^1 Foliations\n\nCreator: Steven Hurder, R\u00e9mi Langevin\nDate: 2014-03-03T00:00:00Z\nDownloads: 35\nSubjects: Mathematics, Differential Geometry\n\nLet F be a codimension-one, C^2-foliation on a manifold M without boundary. In this work we show that if the Godbillon--Vey class GV(F) \\in H^3(M) is non-zero, then F has a hyperbolic resilient leaf. Our approach is based on methods of C^1-dynamical systems, and does not use the classification theory of C^2-foliations. We first prove that for a codimension--one C^1-foliation with non-trivial Godbillon measure, the set of infinitesimally expanding points E(F) has positive Lebesgue measure. We then prove that if E(F) has positive measure for a C^1-foliation F, then F must have a hyperbolic resilient leaf, and hence its geometric entropy must be positive. The proof of this uses a pseudogroup version of the Pliss Lemma. The theorem then follows, as a C^2-foliation with non-zero Godbillon-Vey class has non-trivial Godbillon measure. These results apply for both the case when M is compact, and when M is an open manifold.",
+  "url": "https://archive.org/details/arxiv-1403.0494",
+  "timestamp": "2026-03-06T02:38:47.918953",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "4b757da595d8a5628ced1872f024b6376f106c3d485ab5478c03bc73f14f7f4a",
+  "parent_hash": "",
+  "metadata": {
+    "ia_identifier": "arxiv-1403.0494",
+    "media_type": "texts",
+    "downloads": 35,
+    "subjects": [
+      "Mathematics",
+      "Differential Geometry"
+    ]
+  }
+}

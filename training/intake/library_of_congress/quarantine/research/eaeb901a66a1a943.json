@@ -1,0 +1,40 @@
+{
+  "id": "eaeb901a66a1a943",
+  "source": "library_of_congress",
+  "category": "quarantine/research",
+  "title": "Managing the Complexity of Critical Infrastructures : A Modelling and Simulation Approach",
+  "content": "# Managing the Complexity of Critical Infrastructures : A Modelling and Simulation Approach\n\nContributors: rosato, vittorio, setola, roberto, rome, erich, kyriakides, elias\nDate: 2016-01-01\nSubjects: simulation and modeling, computational complexity, electrical engineering, complexity, quality control, reliability, safety and risk\n\nThis book is open access under a CC BY 4.0 license. This book summarizes work being pursued in the context of the CIPRNet (Critical Infrastructure Preparedness and Resilience Research Network) research project, co-funded by the European Union under the Seventh Framework Programme (FP7). The project is intended to provide concrete and on-going support to the Critical Infrastructure Protection (CIP) research communities, enhancing their preparedness for CI-related emergencies, while also providing expertise and technologies for other stakeholders to promote their understanding and mitigation of the consequences of CI disruptions, leading to enhanced resilience. The book collects the tutorial material developed by the authors for several courses on the modelling, simulation and analysis of CIs, representing extensive and integrated CIP expertise. It will help CI stakeholders, CI operators and civil protection authorities understand the complex system of CIs, and help them adapt to these changes and threats in order to be as prepared as possible for mitigating emergencies and crises affecting or arising from CIs.",
+  "url": "https://www.loc.gov/item/2019748382/",
+  "timestamp": "2026-03-06T02:38:43.165385",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "2b93818e17b86463712e13335380b4a9c6dbc6ca8c01cba921ef1d66334ee6b9",
+  "parent_hash": "",
+  "metadata": {
+    "loc_collection": "",
+    "subjects": [
+      "simulation and modeling",
+      "computational complexity",
+      "electrical engineering",
+      "complexity",
+      "quality control, reliability, safety and risk",
+      "quality control",
+      "reliability",
+      "industrial safety",
+      "computer simulation",
+      "communications engineering, networks"
+    ],
+    "dates": "2016-01-01",
+    "original_format": [
+      "book"
+    ]
+  }
+}

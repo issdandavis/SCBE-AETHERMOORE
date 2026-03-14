@@ -1,0 +1,29 @@
+{
+  "id": "13b552f98567409f",
+  "source": "harvard_dataverse",
+  "category": "quarantine/nlp",
+  "title": "Stanford NLP Model Output for Biofuel Patent Classification",
+  "content": "# Stanford NLP Model Output for Biofuel Patent Classification\n\nAuthors: Kessler, Jeff\nPublished: 2015-03-06T00:00:00Z\nSubjects: \nDOI: doi:10.7910/DVN/29374\n\nThis NLP model was generated using the Stanford NLP Classifier (available from: http://nlp.stanford.edu/software/classifier.shtml). The model was trained using a random selection of 700 manually classified biofuel patents from 1976 through 2013, and validated against 300 manually classified biofuel patents on January 03, 2014. Included are the classification results and associated patent numbers for both the manually trained patents, and for the automatically categorized patents.\n\nCitation: Kessler, Jeff, 2015, \"Stanford NLP Model Output for Biofuel Patent Classification\", https://doi.org/10.7910/DVN/29374, Harvard Dataverse, V1",
+  "url": "https://doi.org/10.7910/DVN/29374",
+  "timestamp": "2026-03-06T02:42:20.598557",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "b2e04e27818a903f97b4733b385f396d5a8fe255be1e997f3e6d675cfd52beb6",
+  "parent_hash": "",
+  "metadata": {
+    "dataverse_id": "doi:10.7910/DVN/29374",
+    "subjects": [],
+    "authors": [
+      "Kessler, Jeff"
+    ],
+    "file_count": 4
+  }
+}

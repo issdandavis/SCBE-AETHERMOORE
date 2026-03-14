@@ -1,0 +1,25 @@
+{
+  "id": "7cb8d2f73f690ad2",
+  "source": "wikidata",
+  "category": "quarantine/research",
+  "title": "Quasicrystals. II. Unit-cell configurations (Q57533587)",
+  "content": "# Quasicrystals. II. Unit-cell configurations\n\nWikidata ID: Q57533587\nDescription: scientific article published on 01 July 1986\n\nStructured knowledge entity from Wikidata.",
+  "url": "http://www.wikidata.org/entity/Q57533587",
+  "timestamp": "2026-03-06T04:18:05.821570",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "a0881d305cfb9dbef112e3eccf9d2b53d192e5fc2da0ea3522cce10a6ee4e93d",
+  "parent_hash": "764119b649ad7ce31b4df93267d7b6ea09c754c8e7807ffe7bdaa7d5ee9ce98e",
+  "metadata": {
+    "wikidata_id": "Q57533587",
+    "description": "scientific article published on 01 July 1986"
+  }
+}

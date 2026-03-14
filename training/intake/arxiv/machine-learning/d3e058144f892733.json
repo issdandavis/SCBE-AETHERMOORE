@@ -1,0 +1,30 @@
+{
+  "id": "d3e058144f892733",
+  "source": "arxiv",
+  "category": "machine-learning",
+  "title": "Interpretable Pre-Release Baseball Pitch Type Anticipation from Broadcast 3D Kinematics",
+  "content": "# Interpretable Pre-Release Baseball Pitch Type Anticipation from Broadcast 3D Kinematics\n\nAuthors: Jerrin Bright, Michelle Lu, John Zelek\nPublished: 2026-03-05T07:04:35Z\n\nHow much can a pitcher's body reveal about the upcoming pitch? We study this question at scale by classifying eight pitch types from monocular 3D pose sequences, without access to ball-flight data. Our pipeline chains a diffusion-based 3D pose backbone with automatic pitching-event detection, groundtruth-validated biomechanical feature extraction, and gradient-boosted classification over 229 kinematic features. Evaluated on 119,561 professional pitches, the largest such benchmark to date, we achieve 80.4\\% accuracy using body kinematics alone. A systematic importance analysis reveals that upper-body mechanics contribute 64.9\\% of the predictive signal versus 35.1\\% for the lower body, with wrist position (14.8\\%) and trunk lateral tilt emerging as the most informative joint group and biomechanical feature, respectively. We further show that grip-defined variants (four-seam vs.\\ two-seam fastball) are not separable from pose, establishing an empirical ceiling near 80\\% and delineating where kinematic information ends and ball-flight information begins.",
+  "url": "http://arxiv.org/abs/2603.04874v1",
+  "timestamp": "2026-03-05T07:04:35Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "9f698bb559b65201e21669ea366b19076c02eee2dc2535f66d150c82893df33a",
+  "parent_hash": "abc85604be5008d1081e2c889906509b14d84bcc83e4ce33c50917c26ceba2b9",
+  "metadata": {
+    "authors": [
+      "Jerrin Bright",
+      "Michelle Lu",
+      "John Zelek"
+    ],
+    "arxiv_category": "cs.LG",
+    "arxiv_id": "2603.04874v1"
+  }
+}

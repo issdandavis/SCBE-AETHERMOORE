@@ -1,0 +1,28 @@
+{
+  "id": "babfd424fcaccee3",
+  "source": "arxiv",
+  "category": "security",
+  "title": "DKD-KAN: A Lightweight knowledge-distilled KAN intrusion detection framework, based on MLP and KAN",
+  "content": "# DKD-KAN: A Lightweight knowledge-distilled KAN intrusion detection framework, based on MLP and KAN\n\nAuthors: Mohammad Alikhani\nPublished: 2026-03-03T20:02:11Z\n\nCyber-security systems often operate in resource-constrained environments, such as edge environments and real-time monitoring systems, where model size and inference time are crucial. A light-weight intrusion detection framework is proposed that utilizes the Kolmogorov-Arnold Network (KAN) to capture complex features in the data, with the efficiency of decoupled knowledge distillation (DKD) training approach. A high-capacity KAN network is first trained to detect attacks performed on the test bed. This model then serves as a teacher to guide a much smaller multilayer perceptron (MLP) student model via DKD. The resulting DKD-MLP model contains only 2,522 and 1,622 parameters for WADI and SWaT datasets, which are significantly smaller than the number of parameters of the KAN teacher model. This is highly appropriate for deployment in resource-constrained devices with limited computational resources. Despite its low size, the student model maintains a high performance. Our approach demonstrate the practicality of using KAN as a knowledge-rich teacher to train much smaller student models, without considerable drop in accuracy in intrusion detection frameworks. We have validated our approach on two publicly available datasets. We report F1-score improvements of 4.18% on WADI and 3.07% on SWaT when using the DKD-MLP model, compared to the bare student model. The implementation of this paper is available on our GitHub repository.",
+  "url": "http://arxiv.org/abs/2603.03486v1",
+  "timestamp": "2026-03-03T20:02:11Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "4fa71321485a67750d80cc6772c0fc32ee85d140bebc67237065b45534ccd114",
+  "parent_hash": "821b68ba98c259456a16681f42c9a0078dff546fbb277d52af287f4822fbab5e",
+  "metadata": {
+    "authors": [
+      "Mohammad Alikhani"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.03486v1"
+  }
+}

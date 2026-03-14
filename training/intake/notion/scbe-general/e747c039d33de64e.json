@@ -1,0 +1,26 @@
+{
+  "id": "e747c039d33de64e",
+  "source": "notion",
+  "category": "scbe-general",
+  "title": "SCBE-AETHERMOORE Licensing Term Sheet Template",
+  "content": "# SCBE-AETHERMOORE Licensing Term Sheet Template\n\nCONFIDENTIAL - FOR DISCUSSION PURPOSES ONLY\nDate: January 18, 2026\nLicensor: Issac Daniel Davis\nLicensee: [Company Name]\n1. Licensed Technology\nSCBE-AETHERMOORE quantum-resistant cryptographic framework\n14-layer hyperbolic geometry security architecture\nPost-quantum cryptography modules (Kyber768, Dilithium3)\nSource code (Python + TypeScript implementations)\nPatent rights (Patent Pending: [Provisional #])\nDocumentation and compliance test suites\n2. License Grant\nType: Non-exclusive, worldwide license\nField of Use: [Specify: Financial Services / Healthcare / Defense / General]\nTerm: 3 years, auto-renewable\nDeployment: Unlimited internal use, [X] external customer deployments\n3. Financial Terms\nOption A: Annual License\nYear 1: $150,000\nYear 2: $200,000\nYear 3: $250,000\nRenewal: $300,000/year\nOption B: One-Time Purchase\nPerpetual license: $750,000\nIncludes 2 years support\nExcludes resale rights\nOption C: Revenue Share\nUpfront: $50,000\n5% of gross revenue from products using SCBE\nMinimum annual guarantee: $100,000\nAudit rights quarterly\n4. Support & Maintenance\nEmail/GitHub support: 48-hour response time\nQuarterly security updates\nCompliance report assistance (HIPAA, FIPS, PCI-DSS)\nIntegration consulting: 20 hours/year included\n5. Intellectual Property\nLicensor retains all ownership of patents, copyrights, trade secrets\nLicensee may not reverse engineer or sublicense\nImprovements/modifications owned by Licensor\nLicensee receives updates for active license period\n6. Compliance & Warranties\nCode delivered \"as-is\" with documented test results\nLicensor warrants non-infringement of third-party IP\nLicensee responsible for own compliance implementations\nLimitation of liability: License fees paid\n7. Termination\nEither party: 60 days written notice\nImmediate termination for breach\nUpon termination: Licensee ceases use, returns/destroys code\nAccrued fees remain payable\n8. Confidentiality\nBoth parties maintain confidentiality of proprietary information\nSurvives termination for 5 years\n9. Governing Law\nWashington State law\nDisputes: Binding arbitration in Seattle, WA\nNext Steps\nExecute mutual NDA\nTechnical due diligence (1-2 weeks)\nNegotiate final terms\nExecute license agreement\nOnboarding & integration kickoff\nQuestions? Contact Issac Daniel Davis: [email/phone]",
+  "url": "https://www.notion.so/SCBE-AETHERMOORE-Licensing-Term-Sheet-Template-2ecf96de82e581ff8f86f3f0a26116ce",
+  "timestamp": "2026-01-18T11:40:00.000Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "1346302c69fe5dee7bf9597e470ccbe8bcc0f66f34ada7daf9a44d781323de92",
+  "parent_hash": "92c2b7d8a73bd76a980d274f746caebdcec10a41413f5f98c38ff2ecfa2e8897",
+  "metadata": {
+    "notion_id": "2ecf96de-82e5-81ff-8f86-f3f0a26116ce",
+    "page_type": "page",
+    "parent_type": "workspace"
+  }
+}

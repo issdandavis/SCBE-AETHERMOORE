@@ -1,0 +1,30 @@
+{
+  "id": "c600cd46527e1637",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2025-34150 \u2014 CVSS 0.0 (UNKNOWN)",
+  "content": "# CVE-2025-34150\n\nCVSS Score: 0.0 (UNKNOWN)\nPublished: 2025-08-07T17:15:28.870\nCWEs: CWE-78\n\nThe PPPoE configuration interface of the Shenzhen Aitemi M300 Wi-Fi Repeater (hardware model MT02) is vulnerable to command injection via the 'user' parameter. Input is processed unsafely during network setup, allowing attackers to execute arbitrary system commands with root privileges.\n\nReferences: https://chocapikk.com/posts/2025/when-a-wifi-name-gives-you-root-part-two/, https://www.aliexpress.us/item/3256806767641280.html, https://www.vulncheck.com/advisories/shenzhen-aitemi-m300-wifi-repeater-pppoe-username-command-injection",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2025-34150",
+  "timestamp": "2026-03-06T02:41:55.735745",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "c0137a2b13990d6d5eba08f028d6f47d0b1fc6b0b9e7f486c83702d1d5417b09",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2025-34150",
+    "cvss_score": 0.0,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "CWE-78"
+    ],
+    "published": "2025-08-07T17:15:28.870"
+  }
+}

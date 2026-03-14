@@ -1,0 +1,28 @@
+{
+  "id": "a7b828435b88099c",
+  "source": "arxiv",
+  "category": "security",
+  "title": "Exploiting PendingIntent Provenance Confusion to Spoof Android SDK Authentication",
+  "content": "# Exploiting PendingIntent Provenance Confusion to Spoof Android SDK Authentication\n\nAuthors: Ramanpreet Singh Khinda\nPublished: 2026-03-03T02:53:17Z\n\nA single authentication bypass in a partner SDK grants attackers the identity of every partner in the ecosystem -- and millions of apps use SDKs with exactly this vulnerability. OWASP's 2024 Mobile Top 10 ranks Inadequate Supply Chain Security as the second most critical mobile risk, explicitly identifying third-party SDKs as a primary attack vector. Cross-app mobile SDKs -- where a partner application communicates with a platform provider's application via inter-process communication (IPC) -- mediate sensitive operations such as content publishing, payment initiation, and identity federation. Unlike embedded libraries that execute within a single app's process, cross-app SDKs require the provider's service to authenticate the calling application at runtime. A pattern sometimes used for this authentication relies on PendingIntent.getCreatorPackage() to verify sender identity. We demonstrate that this mechanism exhibits a fundamental provenance confusion vulnerability: a PendingIntent reliably identifies who created it but cannot attest who presents it -- and this distinction is fatal for authentication. An attacker app with notification access can steal a legitimate partner's PendingIntent via NotificationListenerService and replay it to impersonate that partner, bypassing authentication entirely. The attack succeeds against both mutable and immutable PendingIntents because immutability protects the token's contents, not its provenance. We systematically evaluate eight Android IPC authentication mechanisms against an SDK-specific threat model and present a defense architecture combining Bound Service IPC with kernel-level caller verification via Binder.getCallingUid(), supplemented by server-side certificate-hash validation. This provides authentication guarantees while remaining scalable across partner ecosystems.",
+  "url": "http://arxiv.org/abs/2603.02539v1",
+  "timestamp": "2026-03-03T02:53:17Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "3cfddc7983b6f5847c203b3862dc4d5a7f260fd017cfbde947ec8cba7220b68e",
+  "parent_hash": "323dd46313576c45f86652cf6738c392106db02bf1405eeaf2b1f32ae5c7cfba",
+  "metadata": {
+    "authors": [
+      "Ramanpreet Singh Khinda"
+    ],
+    "arxiv_category": "cs.CR",
+    "arxiv_id": "2603.02539v1"
+  }
+}

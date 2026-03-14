@@ -1,0 +1,32 @@
+{
+  "id": "7def7408f0001fee",
+  "source": "arxiv",
+  "category": "ai",
+  "title": "CAM-LDS: Cyber Attack Manifestations for Automatic Interpretation of System Logs and Security Alerts",
+  "content": "# CAM-LDS: Cyber Attack Manifestations for Automatic Interpretation of System Logs and Security Alerts\n\nAuthors: Max Landauer, Wolfgang Hotwagner, Thorina Boenke, Florian Skopik, Markus Wurzenberger\nPublished: 2026-03-04T15:38:21Z\n\nLog data are essential for intrusion detection and forensic investigations. However, manual log analysis is tedious due to high data volumes, heterogeneous event formats, and unstructured messages. Even though many automated methods for log analysis exist, they usually still rely on domain-specific configurations such as expert-defined detection rules, handcrafted log parsers, or manual feature-engineering. Crucially, the level of automation of conventional methods is limited due to their inability to semantically understand logs and explain their underlying causes. In contrast, Large Language Models enable domain- and format-agnostic interpretation of system logs and security alerts. Unfortunately, research on this topic remains challenging, because publicly available and labeled data sets covering a broad range of attack techniques are scarce. To address this gap, we introduce the Cyber Attack Manifestation Log Data Set (CAM-LDS), comprising seven attack scenarios that cover 81 distinct techniques across 13 tactics and collected from 18 distinct sources within a fully open-source and reproducible test environment. We extract log events that directly result from attack executions to facilitate analysis of manifestations concerning command observability, event frequencies, performance metrics, and intrusion detection alerts. We further present an illustrative case study utilizing an LLM to process the CAM-LDS. The results indicate that correct attack techniques are predicted perfectly for approximately one third of attack steps and adequately for another third, highlighting the potential of LLM-based log interpretation and utility of our data set.",
+  "url": "http://arxiv.org/abs/2603.04186v1",
+  "timestamp": "2026-03-04T15:38:21Z",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "GREEN",
+  "chain_hash": "e8dcbbe156a70a8b8a514a139c6dc27751c11729c5d79960a47027fad2dc19d0",
+  "parent_hash": "fe355c883d8804b5e671fe3ea89d5dce58bdac7fa61dc545aac7a06d4191c0d2",
+  "metadata": {
+    "authors": [
+      "Max Landauer",
+      "Wolfgang Hotwagner",
+      "Thorina Boenke",
+      "Florian Skopik",
+      "Markus Wurzenberger"
+    ],
+    "arxiv_category": "cs.AI",
+    "arxiv_id": "2603.04186v1"
+  }
+}

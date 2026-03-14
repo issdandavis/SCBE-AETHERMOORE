@@ -1,0 +1,30 @@
+{
+  "id": "c71aa48869751b77",
+  "source": "nist_nvd",
+  "category": "quarantine/security",
+  "title": "CVE-2010-4432 \u2014 CVSS 3.5 (UNKNOWN)",
+  "content": "# CVE-2010-4432\n\nCVSS Score: 3.5 (UNKNOWN)\nPublished: 2011-01-19T17:00:01.670\nCWEs: NVD-CWE-noinfo\n\nUnspecified vulnerability in the Oracle Transportation Manager component in Oracle Supply Chain Products Suite 5.5.06, 6.0, 6.1, and 6.2 allows remote authenticated users to affect confidentiality via unknown vectors related to UI Infrastructure.\n\nReferences: http://osvdb.org/70566, http://secunia.com/advisories/42993, http://www.oracle.com/technetwork/topics/security/cpujan2011-194091.html",
+  "url": "https://nvd.nist.gov/vuln/detail/CVE-2010-4432",
+  "timestamp": "2026-03-06T02:41:59.350916",
+  "tongue_coords": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "trust_score": 0.5,
+  "governance_zone": "YELLOW",
+  "chain_hash": "7eae184e7956dcf81bfe8d5ff39ff7c8c840e8e1f05fca7e4001445e65fa6d8a",
+  "parent_hash": "",
+  "metadata": {
+    "cve_id": "CVE-2010-4432",
+    "cvss_score": 3.5,
+    "severity": "UNKNOWN",
+    "cwes": [
+      "NVD-CWE-noinfo"
+    ],
+    "published": "2011-01-19T17:00:01.670"
+  }
+}

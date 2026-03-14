@@ -1,0 +1,76 @@
+Subject: Please help me submit USPTO missing-parts response (App. 63/961,403)
+
+Hi Mom,
+
+Thank you for helping me with this. I need you to help submit my missing-parts response in USPTO Patent Center for:
+
+- Application number: 63/961,403
+- Invention title: Context-Bound Cryptographic Authorization System
+- Filing type: Response to Notice to File Missing Parts
+
+Important rules:
+
+1) Do NOT sign anything as yourself.
+2) I (the inventor/applicant) must be the signer for inventor/applicant signature lines.
+3) Signature authority must stay correct.
+4) Patent Center account sharing is not allowed, and independent inventors cannot sponsor another user account.
+5) Safest flow: please help me step-by-step while I am logged in on my own Patent Center account.
+
+Official references:
+
+- Patent Center login: https://patentcenter.uspto.gov
+- Patent Center new-user/account rules (includes account sharing and sponsorship limits): https://www.uspto.gov/patents/apply/applying-online/getting-started-new-users
+- USPTO "Attach Documents" steps: https://www.uspto.gov/patents/apply/filing-online/tps-info-attach-documents
+- USPTO fee schedule: https://www.uspto.gov/learning-and-resources/fees-and-payment/uspto-fee-schedule
+- Micro entity status page: https://www.uspto.gov/patents/laws/micro-entity-status
+- Who may sign SB/15A and SB/15B: https://www.uspto.gov/patents/apply/forms/who-may-sign-forms-ptosb15a-and-15b
+- Official SB/15A form: https://www.uspto.gov/sites/default/files/documents/sb0015a.pdf
+- Official SB/16 form: https://www.uspto.gov/sites/default/files/documents/sb0016.pdf
+
+Files to upload (as separate PDFs, not one giant file):
+
+1) PTO_SB_15A_Micro_Entity_Certification.pdf
+2) PTO_SB_16_Cover_Sheet.pdf
+3) Cover_Letter_Missing_Parts.pdf (optional but recommended)
+
+Local file paths:
+
+- C:\Users\issda\SCBE-AETHERMOORE\docs\patent\filing_kit\01-urgent\PTO_SB_15A_Micro_Entity_Certification.pdf
+- C:\Users\issda\SCBE-AETHERMOORE\docs\patent\filing_kit\01-urgent\PTO_SB_16_Cover_Sheet.pdf
+- C:\Users\issda\SCBE-AETHERMOORE\docs\patent\filing_kit\01-urgent\Cover_Letter_Missing_Parts.pdf
+- (Reference only) C:\Users\issda\SCBE-AETHERMOORE\docs\patent\filing_kit\01-urgent\Combined_Filing_Package.pdf
+
+Step-by-step checklist:
+
+1) Sign in at https://patentcenter.uspto.gov
+2) Find application 63/961,403
+3) Start a follow-on submission / response to missing parts
+4) On "Attach Documents":
+   - Upload each file separately
+   - Choose Category: EProcessing (or closest equivalent in current UI)
+   - Choose best matching Document Description for each file
+   - Click Upload & Validate for each file
+5) Confirm micro entity status is reflected
+6) Go to Fees
+7) Verify provisional application filing fee line:
+   - Micro base fee is currently $65 (fee code 3005)
+   - If fee display is different, check entity status and fee lines before paying
+8) Submit payment
+9) Save proof immediately:
+   - Receipt number
+   - Submission confirmation screenshot/PDF
+   - Date/time
+10) Send me back:
+    - Receipt number
+    - Screenshot/PDF confirmation
+    - Any warnings/errors shown by Patent Center
+
+If anything looks uncertain, stop and call USPTO support before final submit:
+
+- USPTO Contact Center: 1-800-786-9199
+- USPTO Electronic Business Center: 866-217-9197
+- Pro Se Assistance Center: 866-767-3848 (ProSeAssistanceCenter@uspto.gov)
+
+Thank you. I really appreciate your help.
+
+Love you.
