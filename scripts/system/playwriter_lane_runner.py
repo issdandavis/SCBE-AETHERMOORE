@@ -19,9 +19,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
+from scripts.system.html_text import html_to_text
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EVIDENCE_DIR = REPO_ROOT / "artifacts" / "page_evidence"
+_SESSION_RE = re.compile(r"[^A-Za-z0-9._-]+")
 
 
 def _utc_iso() -> str:
@@ -29,7 +32,8 @@ def _utc_iso() -> str:
 
 
 def _state_path(session_id: str) -> Path:
-    return EVIDENCE_DIR / f"playwriter-session-{session_id}.json"
+    safe_session = _SESSION_RE.sub("_", str(session_id)).strip("._-") or "session"
+    return EVIDENCE_DIR / f"playwriter-session-{safe_session}.json"
 
 
 def _load_state(session_id: str) -> Dict[str, Any]:
@@ -66,11 +70,7 @@ def _extract_title(html: str) -> str:
 
 
 def _extract_text_excerpt(html: str, max_chars: int = 1200) -> str:
-    text = re.sub(r"<script[\s\S]*?</script>", " ", html, flags=re.IGNORECASE)
-    text = re.sub(r"<style[\s\S]*?</style>", " ", text, flags=re.IGNORECASE)
-    text = re.sub(r"<[^>]+>", " ", text)
-    text = re.sub(r"\s+", " ", text).strip()
-    return text[:max_chars]
+    return html_to_text(html, max_chars=max_chars)
 
 
 def _write_evidence(session_id: str, task: str, payload: Dict[str, Any]) -> Path:

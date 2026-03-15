@@ -19,6 +19,7 @@ import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
+from urllib.parse import urlparse
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -288,9 +289,15 @@ def detect_github_repo() -> str:
         return ""
     if url.startswith("git@github.com:"):
         repo = url.split(":", 1)[1]
-    elif "github.com/" in url:
-        repo = url.split("github.com/", 1)[1]
     else:
+        parsed = urlparse(url)
+        if parsed.scheme not in {"http", "https", "ssh"}:
+            return ""
+        if (parsed.hostname or "").lower() != "github.com":
+            return ""
+        repo = parsed.path.lstrip("/")
+    repo = repo.split("?", 1)[0].split("#", 1)[0].strip("/")
+    if not repo:
         return ""
     return repo[:-4] if repo.endswith(".git") else repo
 

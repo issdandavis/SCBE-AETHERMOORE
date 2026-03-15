@@ -83,6 +83,20 @@ const SENSITIVE_PATTERNS: [RegExp, SensitiveFieldType][] = [
   [/biometric|fingerprint|face.?id/i, 'biometric'],
 ];
 
+const UNSAFE_EVAL_CHAR_MAP: Record<string, string> = {
+  '<': '\\u003C',
+  '>': '\\u003E',
+  '/': '\\u002F',
+  '\u2028': '\\u2028',
+  '\u2029': '\\u2029',
+};
+
+const UNSAFE_EVAL_CHARS = /[<>/\u2028\u2029]/g;
+
+function escapeUnsafeEvalChars(value: string): string {
+  return value.replace(UNSAFE_EVAL_CHARS, (char) => UNSAFE_EVAL_CHAR_MAP[char] ?? char);
+}
+
 // =============================================================================
 // CDP BACKEND
 // =============================================================================
@@ -355,8 +369,10 @@ export class CDPBackend implements BrowserBackend {
     // Wrap script with args if provided
     let expression = script;
     if (args && args.length > 0) {
-      const argsJson = JSON.stringify(args);
-      expression = `(function() { const __args = ${argsJson}; return (${script}).apply(null, __args); })()`;
+      const argsJson = escapeUnsafeEvalChars(JSON.stringify(args));
+      expression =
+        `(function() { const __args = JSON.parse(${JSON.stringify(argsJson)}); ` +
+        `return (${script}).apply(null, __args); })()`;
     }
 
     const result = await this.send('Runtime.evaluate', {

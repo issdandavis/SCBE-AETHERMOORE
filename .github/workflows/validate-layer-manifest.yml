@@ -16,6 +16,9 @@ on:
       - scripts/validate_layer_manifest.py
       - .github/workflows/validate-layer-manifest.yml
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest

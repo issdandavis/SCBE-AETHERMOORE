@@ -137,13 +137,11 @@ function checkAndAddNonce(nonce: string, timestamp: number): boolean {
 // ============================================================================
 
 function toBase64Url(buf: Buffer): string {
-  return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  return buf.toString('base64url');
 }
 
 function fromBase64Url(s: string): Buffer {
-  let str = s.replace(/-/g, '+').replace(/_/g, '/');
-  while (str.length % 4) str += '=';
-  return Buffer.from(str, 'base64');
+  return Buffer.from(s, 'base64url');
 }
 
 /**

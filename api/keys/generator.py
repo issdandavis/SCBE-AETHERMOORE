@@ -5,10 +5,10 @@ Generates cryptographically secure API keys with proper formatting.
 """
 
 import secrets
-import hashlib
 from typing import Tuple
 
 from ..billing.database import ApiKey
+from .hashing import hash_api_key
 
 
 def generate_api_key(
@@ -29,7 +29,7 @@ def generate_api_key(
     raw_key = f"scbe_{random_part}"
 
     # Hash for storage
-    key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
+    key_hash = hash_api_key(raw_key)
 
     # Prefix for display (first 12 chars)
     key_prefix = raw_key[:12]
