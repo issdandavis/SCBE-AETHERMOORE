@@ -212,12 +212,36 @@ def _source_metadata(path: Path | None = None, text: str | None = None) -> dict[
     }
 
 
+_SENSITIVE_ARG_FLAGS = frozenset({
+    "--secret", "--token", "--api-key", "--api-key-env",
+    "--password", "--credential", "--auth",
+})
+
+
+def _redact_argv(argv: list[str], limit: int = 8) -> list[str]:
+    """Return a preview of argv with sensitive flag values masked."""
+    preview: list[str] = []
+    redact_next = False
+    for arg in argv[:limit]:
+        if redact_next:
+            preview.append("***REDACTED***")
+            redact_next = False
+        elif arg.lower() in _SENSITIVE_ARG_FLAGS:
+            preview.append(arg)
+            redact_next = True
+        elif "=" in arg and arg.split("=", 1)[0].lower() in _SENSITIVE_ARG_FLAGS:
+            preview.append(arg.split("=", 1)[0] + "=***REDACTED***")
+        else:
+            preview.append(arg)
+    return preview
+
+
 def _command_metadata(repo_root: Path, tongue: str, argv: list[str]) -> dict[str, object]:
     raw = json.dumps(argv, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
     digest = hashlib.sha256(raw).digest()
     return {
         "argc": len(argv),
-        "argv_preview": argv[:8],
+        "argv_preview": _redact_argv(argv, limit=8),
         "sha256": digest.hex(),
         "tongue": tongue.upper(),
         "lexicon_attestation": _tongue_attestation(repo_root, tongue, digest[:12]),

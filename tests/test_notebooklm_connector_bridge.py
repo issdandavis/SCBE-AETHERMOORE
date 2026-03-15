@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from urllib.parse import urlparse
+
 import pytest
 
 from src.fleet.connector_bridge import ConnectorBridge, ConnectorCapability
@@ -9,6 +11,7 @@ def test_notebooklm_connector_registered() -> None:
     bridge = ConnectorBridge()
     infos = {info.platform: info for info in bridge.list_connectors()}
     assert "notebooklm" in infos
+    assert "automations" in infos
     caps = infos["notebooklm"].capabilities
     assert ConnectorCapability.CREATE in caps
     assert ConnectorCapability.UPDATE in caps
@@ -78,8 +81,9 @@ async def test_notebooklm_seed_notebooks_passes_source_urls(monkeypatch: pytest.
     )
     assert result.success is True
     assert seen["args"].count("--source-url") == 2
-    assert "https://arxiv.org" in seen["args"]
-    assert "https://example.com/report" in seen["args"]
+    seen_hosts = {(urlparse(arg).hostname or "") for arg in seen["args"] if arg.startswith("https://")}
+    assert "arxiv.org" in seen_hosts
+    assert "example.com" in seen_hosts
 
 
 @pytest.mark.asyncio
@@ -101,3 +105,35 @@ async def test_notebooklm_resolve_routes_action(monkeypatch: pytest.MonkeyPatch)
     assert result.success is True
     assert "resolve-notebook" in seen["args"]
     assert "--title" in seen["args"]
+
+
+@pytest.mark.asyncio
+async def test_automation_connector_posts_to_local_hub(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SCBE_AUTOMATIONS_URL", "http://127.0.0.1:8001/v1/automations/emit")
+    bridge = ConnectorBridge()
+    seen: dict[str, object] = {}
+
+    async def _fake_post(url: str, payload: dict[str, object]) -> dict[str, object]:
+        seen["url"] = url
+        seen["payload"] = payload
+        return {"status_code": 200, "response": {"ok": True}}
+
+    monkeypatch.setattr(bridge, "_post_json", _fake_post)
+
+    result = await bridge.execute(
+        "automations",
+        "trigger",
+        {"event": "lead.created", "payload": {"lead_id": "demo"}},
+    )
+
+    assert result.success is True
+    assert seen["url"] == "http://127.0.0.1:8001/v1/automations/emit"
+    assert seen["payload"] == {"event": "lead.created", "payload": {"lead_id": "demo"}}
+
+
+@pytest.mark.asyncio
+async def test_automation_connector_requires_event() -> None:
+    bridge = ConnectorBridge()
+    result = await bridge.execute("automations", "trigger", {"payload": {"lead_id": "demo"}})
+    assert result.success is False
+    assert "event is required" in result.error

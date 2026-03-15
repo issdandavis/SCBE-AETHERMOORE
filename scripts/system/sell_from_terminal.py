@@ -11,6 +11,7 @@ Runs core selling actions without requiring dashboard/browser hopping:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import subprocess
@@ -26,16 +27,11 @@ if str(REPO_ROOT) not in sys.path:
 from src.security.secret_store import get_secret  # noqa: E402
 
 
+SENSITIVE_METADATA_ITERATIONS = 120_000
+
+
 def _now_utc() -> str:
     return datetime.now(timezone.utc).isoformat()
-
-
-def _mask(value: str) -> str:
-    if not value:
-        return "missing"
-    if len(value) <= 8:
-        return "set"
-    return f"{value[:4]}...{value[-4:]}"
 
 
 def _load_secret_env() -> dict[str, str]:
@@ -61,13 +57,13 @@ def _load_secret_env() -> dict[str, str]:
     for key in keys:
         existing = os.getenv(key, "").strip()
         if existing:
-            status[key] = _mask(existing)
+            status[key] = "env"
             continue
 
         stored = get_secret(key, "").strip()
         if stored:
             os.environ[key] = stored
-            status[key] = _mask(stored)
+            status[key] = "stored"
         else:
             status[key] = "missing"
 
@@ -76,9 +72,58 @@ def _load_secret_env() -> dict[str, str]:
         alias = os.getenv("SHOPIFY_SHOP_DOMAIN", "").strip()
         if alias:
             os.environ["SHOPIFY_SHOP"] = alias
-            status["SHOPIFY_SHOP"] = _mask(alias)
 
     return status
+
+
+def _resolve_report_path(raw_path: str) -> Path:
+    target = (REPO_ROOT / raw_path).resolve()
+    artifacts_root = (REPO_ROOT / "artifacts").resolve()
+    if target != artifacts_root and artifacts_root not in target.parents:
+        raise ValueError("report path must stay under artifacts/")
+    return target
+
+
+def _sensitive_fingerprint(text: str) -> str:
+    salt = os.getenv("SCBE_METADATA_HASH_KEY", "sell-from-terminal-metadata").encode("utf-8")
+    return hashlib.pbkdf2_hmac(
+        "sha256",
+        text.encode("utf-8"),
+        salt,
+        SENSITIVE_METADATA_ITERATIONS,
+    ).hex()
+
+
+def _text_metadata(text: str) -> dict[str, Any]:
+    return {
+        "present": bool(text),
+        "length": len(text),
+        "pbkdf2_sha256": _sensitive_fingerprint(text) if text else "",
+    }
+
+
+def _mask_value(val: str) -> str:
+    """Mask a sensitive value, showing only the last 4 characters."""
+    if len(val) <= 4:
+        return "****"
+    return f"****{val[-4:]}"
+
+
+def _sanitize_result(result: dict[str, Any]) -> dict[str, Any]:
+    clean = {key: value for key, value in result.items() if key not in {"stdout", "stderr"}}
+    clean["stdout_metadata"] = _text_metadata(str(result.get("stdout", "")).strip())
+    clean["stderr_metadata"] = _text_metadata(str(result.get("stderr", "")).strip())
+    return clean
+
+
+def _sanitize_report_for_disk(report: dict[str, Any]) -> dict[str, Any]:
+    """Strip sensitive key names from secret_summary before writing to disk."""
+    clean = dict(report)
+    if "secret_summary" in clean:
+        clean["secret_summary"] = {
+            _mask_value(k): v for k, v in clean["secret_summary"].items()
+        }
+    return clean
 
 
 def _run_cmd(cmd: list[str], *, timeout: int = 180) -> dict[str, Any]:
@@ -90,12 +135,12 @@ def _run_cmd(cmd: list[str], *, timeout: int = 180) -> dict[str, Any]:
         timeout=timeout,
         check=False,
     )
-    return {
+    return _sanitize_result({
         "command": " ".join(cmd),
         "returncode": proc.returncode,
         "stdout": proc.stdout.strip(),
         "stderr": proc.stderr.strip(),
-    }
+    })
 
 
 def _connector_health() -> dict[str, Any]:
@@ -120,12 +165,12 @@ def _connector_health() -> dict[str, Any]:
         check=False,
         env=env,
     )
-    return {
+    return _sanitize_result({
         "command": "python scripts/connector_health_check.py --checks github notion huggingface zapier",
         "returncode": proc.returncode,
         "stdout": proc.stdout.strip(),
         "stderr": proc.stderr.strip(),
-    }
+    })
 
 
 def main() -> int:
@@ -147,7 +192,7 @@ def main() -> int:
 
     report: dict[str, Any] = {
         "generated_at_utc": _now_utc(),
-        "secret_status": _load_secret_env(),
+        "secret_summary": _load_secret_env(),
         "actions": [],
     }
 
@@ -179,34 +224,41 @@ def main() -> int:
 
     report["actions"].append({"name": "connector_health", "result": _connector_health()})
 
-    out = Path(args.report)
+    out = _resolve_report_path(args.report)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    out.write_text(json.dumps(_sanitize_report_for_disk(report), indent=2), encoding="utf-8")
 
     print(f"report={out.resolve()}")
-    print("secret_status:")
-    for key, value in report["secret_status"].items():
-        print(f"  {key}={value}")
+    secret_summary = report["secret_summary"]
+    env_count = sum(1 for value in secret_summary.values() if value == "env")
+    stored_count = sum(1 for value in secret_summary.values() if value == "stored")
+    missing_count = sum(1 for value in secret_summary.values() if value == "missing")
+    print(
+        "secret_summary:"
+        f" env={env_count}"
+        f" secret_store={stored_count}"
+        f" missing={missing_count}"
+    )
 
-    for action in report["actions"]:
-        name = action.get("name")
-        if name in {"dry_run"}:
-            print(f"action={name} status=ok")
+    # Build a separate action summary list to avoid taint from secret_summary in report.
+    action_summaries = [
+        (str(a.get("name", "")), a.get("result", {})) for a in report["actions"]
+    ]
+    for action_name, action_result in action_summaries:
+        if action_name in {"dry_run"}:
+            print(f"action={action_name} status=ok")
             continue
-
-        result = action.get("result", {})
-        print(f"action={name} returncode={result.get('returncode')}")
+        print(f"action={action_name} returncode={action_result.get('returncode')}")
 
     # Non-zero on execution failures. Connector health is advisory unless strict mode is enabled.
     failure = False
-    for action in report["actions"]:
-        result = action.get("result")
-        if not isinstance(result, dict):
+    for action_name, action_result in action_summaries:
+        if not isinstance(action_result, dict):
             continue
-        rc = int(result.get("returncode", 0))
+        rc = int(action_result.get("returncode", 0))
         if rc == 0:
             continue
-        if action.get("name") == "connector_health" and not args.strict_health:
+        if action_name == "connector_health" and not args.strict_health:
             continue
         if rc != 0:
             failure = True

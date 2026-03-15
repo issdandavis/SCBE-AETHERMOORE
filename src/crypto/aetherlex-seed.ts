@@ -484,6 +484,18 @@ function rejectionSampleByte(): number {
   return randomBytes(1)[0];
 }
 
+function secureRandomIntBelow(maxExclusive: number): number {
+  if (!Number.isInteger(maxExclusive) || maxExclusive <= 0 || maxExclusive > 0x1_0000_0000) {
+    throw new RangeError(`maxExclusive must be an integer in (0, 2^32], got ${maxExclusive}`);
+  }
+  const domainSize = 0x1_0000_0000;
+  const limit = domainSize - (domainSize % maxExclusive);
+  while (true) {
+    const candidate = randomBytes(4).readUInt32BE(0);
+    if (candidate < limit) return candidate % maxExclusive;
+  }
+}
+
 /** Rejection-sample a global index (0-1535) without modulo bias */
 function rejectionSampleGlobal(): number {
   // 2048 is next power of 2 ≥ 1536; reject if ≥ 1536
@@ -497,8 +509,7 @@ function rejectionSampleGlobal(): number {
 /** Fisher-Yates shuffle (in-place, CSPRNG) */
 function fisherYatesShuffle<T>(arr: T[]): void {
   for (let i = arr.length - 1; i > 0; i--) {
-    const buf = randomBytes(4);
-    const j = buf.readUInt32BE(0) % (i + 1);
+    const j = secureRandomIntBelow(i + 1);
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
 }

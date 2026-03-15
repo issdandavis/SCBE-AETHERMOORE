@@ -6,8 +6,73 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
+def _allowed_vault_roots() -> list[Path]:
+    roots = [PROJECT_ROOT]
+
+    joined_roots = os.getenv("SCBE_ALLOWED_VAULT_ROOTS", "")
+    if joined_roots:
+        for raw in joined_roots.split(os.pathsep):
+            raw = raw.strip()
+            if raw:
+                roots.append(Path(raw).expanduser())
+
+    for env_name in ("SCBE_VAULTS_ROOT", "OBSIDIAN_VAULT_PATH"):
+        raw = os.getenv(env_name, "").strip()
+        if raw:
+            roots.append(Path(raw).expanduser())
+
+    deduped: list[Path] = []
+    seen: set[str] = set()
+    for root in roots:
+        resolved = root.resolve(strict=False)
+        key = str(resolved).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(resolved)
+    return deduped
+
+
+def _resolve_vault_root(vault_path: str) -> Path:
+    raw = str(vault_path or "").strip()
+    if not raw:
+        raise ValueError("vault_path is required")
+
+    # Reject path traversal sequences before resolution
+    if ".." in raw.replace("\\", "/").split("/"):
+        raise ValueError("vault_path must not contain '..' path traversal segments")
+
+    resolved = Path(raw).expanduser().resolve(strict=False)
+    if not resolved.exists() or not resolved.is_dir():
+        raise ValueError(f"Vault path must be an existing directory: {resolved}")
+
+    for allowed_root in _allowed_vault_roots():
+        if _is_relative_to(resolved, allowed_root):
+            return resolved
+
+    roots = ", ".join(str(root) for root in _allowed_vault_roots())
+    raise ValueError(f"Vault path must stay within an allowed root: {roots}")
+
+
+def _safe_model_slug(model: str) -> str:
+    slug = re.sub(r"[^A-Za-z0-9._-]+", "_", str(model or ""))
+    slug = re.sub(r"_+", "_", slug).strip("._-")
+    return slug or "model"
 
 
 def call_hf(model: str, prompt: str) -> str:
@@ -50,13 +115,13 @@ def call_vertex(model: str, prompt: str) -> str:
 
 
 def write_log(vault_path: str, provider: str, model: str, prompt: str, response: str) -> Path:
-    root = Path(vault_path)
+    root = _resolve_vault_root(vault_path)
     ts = datetime.now(timezone.utc)
     day = ts.strftime("%Y-%m-%d")
     stamp = ts.strftime("%H%M%S")
     folder = root / "SCBE-Hub" / "AI-Bridge" / day
     folder.mkdir(parents=True, exist_ok=True)
-    path = folder / f"{stamp}-{provider}-{model.replace('/', '_')}.md"
+    path = folder / f"{stamp}-{provider}-{_safe_model_slug(model)}.md"
     lines = [
         f"# AI Bridge Log - {provider}",
         "",
