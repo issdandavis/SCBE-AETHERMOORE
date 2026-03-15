@@ -610,16 +610,22 @@ export function phasonShift(
     throw new RangeError('phasonShift requires two distinct rotation dimensions');
   }
 
-  // Build 6D rotation matrix (identity + Givens rotation in (dim0, dim1))
+  // Sanitized indices — hardened against prototype-polluting keys.
+  // Only values 0-5 survive the guard above; re-derive via safe list lookup.
+  const SAFE_DIMS = [0, 1, 2, 3, 4, 5] as const;
+  const d0 = SAFE_DIMS[dim0];
+  const d1 = SAFE_DIMS[dim1];
+
+  // Build 6D rotation matrix (identity + Givens rotation in (d0, d1))
   const rot6d: number[][] = Array.from({ length: 6 }, (_, i) =>
     Array.from({ length: 6 }, (_, j) => (i === j ? 1 : 0)),
   );
   const c = Math.cos(theta);
   const s = Math.sin(theta);
-  rot6d[dim0][dim0] = c;
-  rot6d[dim0][dim1] = -s;
-  rot6d[dim1][dim0] = s;
-  rot6d[dim1][dim1] = c;
+  rot6d[d0][d0] = c;
+  rot6d[d0][d1] = -s;
+  rot6d[d1][d0] = s;
+  rot6d[d1][d1] = c;
 
   // Multiply: newMatrix = matrix @ rot6d^T  (each row of matrix * columns of rot6d)
   const result: number[][] = [];

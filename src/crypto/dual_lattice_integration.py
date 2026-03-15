@@ -58,6 +58,11 @@ LIGHT_BASE_FREQ = 528.0   # "Miracle tone" Hz
 SHADOW_BASE_FREQ = 220.0  # Low A
 BALANCED_BASE_FREQ = 440.0  # Concert A
 
+# Layer 11 temporal admissibility defaults
+TEMPORAL_EPSILON = 1e-9
+TEMPORAL_VELOCITY_LIMIT = 2.5
+TEMPORAL_ACCELERATION_LIMIT = 1.5
+
 
 class RealmType(str, Enum):
     """Realm classification for lattice points."""
@@ -527,9 +532,92 @@ def triadic_temporal_distance(path: List[np.ndarray]) -> float:
     return total_triadic / max(1, len(path) - 2)
 
 
+def layer_11_temporal_residual(
+    path: List[np.ndarray],
+    timestamps: Optional[List[float]] = None,
+    velocity_limit: float = TEMPORAL_VELOCITY_LIMIT,
+    acceleration_limit: float = TEMPORAL_ACCELERATION_LIMIT,
+) -> Dict[str, Any]:
+    """
+    Compute the Layer 11 temporal residual δ_11 for an intrinsic path.
+
+    The residual is distinct from d_tri. It acts as an admissibility gate
+    over local causal monotonicity and bounded velocity / acceleration.
+    """
+    if len(path) < 3:
+        return {
+            "delta_11": 0.0,
+            "temporal_admissible": True,
+            "max_velocity": 0.0,
+            "max_velocity_delta": 0.0,
+            "triads_evaluated": 0,
+            "timestamps": [float(i) for i in range(len(path))],
+        }
+
+    if timestamps is None:
+        local_times = [float(i) for i in range(len(path))]
+    else:
+        local_times = [float(t) for t in timestamps]
+
+    if len(local_times) != len(path):
+        return {
+            "delta_11": float("inf"),
+            "temporal_admissible": False,
+            "max_velocity": float("inf"),
+            "max_velocity_delta": float("inf"),
+            "triads_evaluated": 0,
+            "timestamps": local_times,
+            "reason": "timestamp_count_mismatch",
+        }
+
+    total_residual = 0.0
+    max_velocity = 0.0
+    max_velocity_delta = 0.0
+
+    for i in range(len(path) - 2):
+        tau_prev = local_times[i]
+        tau_curr = local_times[i + 1]
+        tau_next = local_times[i + 2]
+
+        dt_k = tau_curr - tau_prev
+        dt_next = tau_next - tau_curr
+
+        monotone_violation = max(0.0, TEMPORAL_EPSILON - dt_k) + max(0.0, TEMPORAL_EPSILON - dt_next)
+
+        safe_dt_k = max(dt_k, TEMPORAL_EPSILON)
+        safe_dt_next = max(dt_next, TEMPORAL_EPSILON)
+
+        v_k = hyperbolic_distance_safe(path[i], path[i + 1]) / safe_dt_k
+        v_next = hyperbolic_distance_safe(path[i + 1], path[i + 2]) / safe_dt_next
+
+        velocity_violation = max(0.0, max(v_k, v_next) - velocity_limit)
+        acceleration_violation = max(0.0, abs(v_next - v_k) - acceleration_limit)
+
+        total_residual += monotone_violation + velocity_violation + acceleration_violation
+        max_velocity = max(max_velocity, v_k, v_next)
+        max_velocity_delta = max(max_velocity_delta, abs(v_next - v_k))
+
+    triads_evaluated = len(path) - 2
+    delta_11 = total_residual / triads_evaluated
+
+    return {
+        "delta_11": float(delta_11),
+        "temporal_admissible": bool(delta_11 <= 0.0),
+        "max_velocity": float(max_velocity),
+        "max_velocity_delta": float(max_velocity_delta),
+        "triads_evaluated": triads_evaluated,
+        "timestamps": local_times,
+        "velocity_limit": float(velocity_limit),
+        "acceleration_limit": float(acceleration_limit),
+    }
+
+
 def validate_hyperpath(
     path: List[np.ndarray],
-    coherence_threshold: float = 0.4
+    coherence_threshold: float = 0.4,
+    timestamps: Optional[List[float]] = None,
+    velocity_limit: float = TEMPORAL_VELOCITY_LIMIT,
+    acceleration_limit: float = TEMPORAL_ACCELERATION_LIMIT,
 ) -> Tuple[bool, LayerDecision]:
     """
     Layer 9-11: Validate hyperpath with spectral coherence.
@@ -547,18 +635,30 @@ def validate_hyperpath(
 
     # Layer 11: Triadic temporal distance
     d_tri = triadic_temporal_distance(path)
+    temporal_metrics = layer_11_temporal_residual(
+        path,
+        timestamps=timestamps,
+        velocity_limit=velocity_limit,
+        acceleration_limit=acceleration_limit,
+    )
 
     # Validation
-    is_valid = s_spec >= coherence_threshold and d_tri < 1.0
+    is_valid = (
+        s_spec >= coherence_threshold
+        and d_tri < 1.0
+        and temporal_metrics["temporal_admissible"]
+    )
 
     layer_decision = LayerDecision(
         layer=11,
         decision="ALLOW" if is_valid else "DENY",
-        score=s_spec * (1.0 / (1.0 + d_tri)),
+        score=s_spec * (1.0 / (1.0 + d_tri + temporal_metrics["delta_11"])),
         metadata={
             "spectral_coherence": float(s_spec),
             "triadic_distance": float(d_tri),
-            "coherence_threshold": coherence_threshold
+            "coherence_threshold": coherence_threshold,
+            "path_points": len(path),
+            **temporal_metrics,
         }
     )
 
@@ -578,8 +678,73 @@ def harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
     return float(1.0 / (1.0 + d + 2.0 * phase_deviation))
 
 
+def _extract_spatial_point(state: np.ndarray) -> np.ndarray:
+    """
+    Collapse a layer state into a bounded 3D intrinsic witness point.
+
+    The live path validators operate on a low-dimensional hyperpath.
+    This keeps the point inside the Poincare ball without requiring an
+    extrinsic observer.
+    """
+    point = np.array(state[:3] if len(state) >= 3 else state, dtype=float)
+
+    if point.shape[0] < 3:
+        point = np.pad(point, (0, 3 - point.shape[0]))
+
+    norm = np.linalg.norm(point)
+    if norm >= 0.95:
+        point = point / (norm + 1e-9) * 0.95
+
+    return point
+
+
+def _phase_signature_point(
+    point: np.ndarray,
+    phase: float,
+    realm: RealmType
+) -> np.ndarray:
+    """
+    Derive a third witness point from local phase and realm.
+
+    This gives L9-L11 and L14 a minimal causal path even for a single action,
+    instead of collapsing the action to one point and losing temporal structure.
+    """
+    realm_bias = {
+        RealmType.LIGHT: 0.02,
+        RealmType.BALANCED: 0.0,
+        RealmType.SHADOW: -0.02,
+        RealmType.QUARANTINED: -0.04,
+    }[realm]
+
+    phase_offset = np.array([
+        0.04 * np.cos(phase),
+        0.04 * np.sin(phase),
+        realm_bias,
+    ])
+
+    phase_point = point + phase_offset
+    norm = np.linalg.norm(phase_point)
+    if norm >= 0.95:
+        phase_point = phase_point / (norm + 1e-9) * 0.95
+
+    return phase_point
+
+
+def _step_phase_deviation(a: np.ndarray, b: np.ndarray) -> float:
+    """
+    Estimate local phase drift from the first two coordinates of a step.
+
+    Returns a normalized angular deviation in [0, 1].
+    """
+    angle_a = np.arctan2(a[1], a[0]) if len(a) >= 2 else 0.0
+    angle_b = np.arctan2(b[1], b[0]) if len(b) >= 2 else 0.0
+    phase_delta = np.arccos(np.clip(np.cos(angle_b - angle_a), -1.0, 1.0))
+    return float(phase_delta / np.pi)
+
+
 def compute_path_cost(
     path: List[np.ndarray],
+    realms: Optional[List[RealmType]] = None,
     realm_weights: Dict[RealmType, float] = None
 ) -> float:
     """
@@ -598,22 +763,32 @@ def compute_path_cost(
             RealmType.QUARANTINED: 10.0  # Quarantine very expensive
         }
 
+    if realms is None:
+        realms = [RealmType.BALANCED] * len(path)
+
     total_cost = 0.0
 
     for i in range(len(path) - 1):
         # Base hyperbolic distance
         d = hyperbolic_distance_safe(path[i], path[i + 1])
+        phase_deviation = _step_phase_deviation(path[i], path[i + 1])
 
-        # Apply harmonic scaling
-        scaled = harmonic_scaling(d)
+        # Apply harmonic scaling, then convert back into a monotone penalty.
+        # Larger geometric or phase drift must increase path cost.
+        scaled = harmonic_scaling(d, phase_deviation)
+        penalty = (1.0 / max(scaled, 1e-10)) - 1.0
 
-        total_cost += scaled
+        step_realm = realms[min(i + 1, len(realms) - 1)]
+        realm_weight = realm_weights.get(step_realm, 1.0)
+
+        total_cost += penalty * realm_weight
 
     return total_cost
 
 
 def layer_12_13_evaluate(
     path: List[np.ndarray],
+    realms: Optional[List[RealmType]] = None,
     risk_threshold: float = 0.3
 ) -> Tuple[str, LayerDecision]:
     """
@@ -628,11 +803,11 @@ def layer_12_13_evaluate(
         )
 
     # Compute total cost
-    total_cost = compute_path_cost(path)
+    total_cost = compute_path_cost(path, realms=realms)
 
     # Normalize to risk score
-    expected_cost = len(path) - 1  # Linear baseline
-    risk_score = min(1.0, total_cost / max(1.0, expected_cost * 5))
+    expected_cost = max(1, len(path) - 1)
+    risk_score = min(1.0, total_cost / max(0.75, expected_cost * 0.75))
 
     # Layer 13: Decision
     if risk_score <= risk_threshold:
@@ -797,6 +972,9 @@ class DualLatticeIntegrator:
         self.governor = TongueLatticeGovernor()
         self.octree = HyperbolicOctree(grid_size=grid_size, max_depth=max_depth)
         self.pathfinder = None  # Initialized when octree has points
+        self.recent_points: List[np.ndarray] = []
+        self.recent_realms: List[RealmType] = []
+        self.path_history_limit = 8
 
     def process_action(
         self,
@@ -857,18 +1035,29 @@ class DualLatticeIntegrator:
         # Insert into octree for pathfinding
         self.octree.insert(breathed[:3] if len(breathed) >= 3 else breathed, realm.value)
 
-        # Layer 8: Clustering (if we have multiple points)
-        sample_points = [breathed[:3] if len(breathed) >= 3 else breathed]
-        realms, l8_decision = layer_8_cluster(sample_points)
+        # Build an intrinsic micro-path so L8-L14 can reason over a causal trace
+        projected_point = _extract_spatial_point(projected)
+        breathed_point = _extract_spatial_point(breathed)
+        phase_point = _phase_signature_point(breathed_point, phase, realm)
+
+        path = self.recent_points[-2:] + [projected_point, breathed_point, phase_point]
+        path_realms = self.recent_realms[-2:] + [realm, realm, realm]
+
+        self.recent_points.extend([breathed_point, phase_point])
+        self.recent_realms.extend([realm, realm])
+        self.recent_points = self.recent_points[-self.path_history_limit :]
+        self.recent_realms = self.recent_realms[-self.path_history_limit :]
+
+        # Layer 8: Clustering on the intrinsic path
+        realms, l8_decision = layer_8_cluster(path)
         decisions.append(l8_decision)
 
-        # Layers 9-11: Path validation (using single point as path for now)
-        path = [breathed[:3] if len(breathed) >= 3 else breathed]
+        # Layers 9-11: Path validation on the causal path
         valid, l11_decision = validate_hyperpath(path)
         decisions.append(l11_decision)
 
         # Layers 12-13: Harmonic scaling and decision
-        final_decision, l13_decision = layer_12_13_evaluate(path)
+        final_decision, l13_decision = layer_12_13_evaluate(path, realms=realms)
         decisions.append(l13_decision)
 
         # Layer 14: Sonification
@@ -889,7 +1078,11 @@ class DualLatticeIntegrator:
             trust_score=float(trust_score),
             path_cost=l13_decision.metadata.get("path_cost", 0.0),
             audio_signature=frequencies,
-            lattice_proof=gov_result.get("lattice_proof", {})
+            lattice_proof={
+                **gov_result.get("lattice_proof", {}),
+                "intrinsic_path_points": len(path),
+                "realm_path": [r.value for r in realms],
+            }
         )
 
     def find_path(

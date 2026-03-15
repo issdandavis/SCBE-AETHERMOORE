@@ -53,6 +53,10 @@ def _resolve_vault_root(vault_path: str) -> Path:
     if not raw:
         raise ValueError("vault_path is required")
 
+    # Reject path traversal sequences before resolution
+    if ".." in raw.replace("\\", "/").split("/"):
+        raise ValueError("vault_path must not contain '..' path traversal segments")
+
     resolved = Path(raw).expanduser().resolve(strict=False)
     if not resolved.exists() or not resolved.is_dir():
         raise ValueError(f"Vault path must be an existing directory: {resolved}")

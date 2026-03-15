@@ -4,6 +4,11 @@ SCBE n8n Bridge — FastAPI service connecting n8n workflows to SCBE Web Agent
 
 Endpoints:
   POST /v1/governance/scan        — Semantic antivirus scan
+  GET  /v1/automations/health     — Self-hosted automation hub health
+  GET  /v1/automations/rules      — List local automation rules
+  POST /v1/automations/rules      — Register local automation rule
+  DELETE /v1/automations/rules/{id} — Remove local automation rule
+  POST /v1/automations/emit       — Emit event through local automation rules
   POST /v1/tongue/encode          — Sacred Tongue encoding
   POST /v1/buffer/post            — Content Buffer posting
   POST /v1/agent/task             — Submit web agent task
@@ -26,6 +31,7 @@ Start:
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import json
 import os
@@ -33,6 +39,7 @@ import re
 import sys
 import threading
 import time
+import subprocess
 import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional
@@ -71,6 +78,7 @@ from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent import (
     TaskStatus,
 )
 from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.publishers import create_publisher
+from workflows.n8n.scbe_automation_hub import AutomationHub, parse_allowed_hosts
 
 # ---------------------------------------------------------------------------
 #  App setup
@@ -80,6 +88,15 @@ app = FastAPI(
     title="SCBE n8n Bridge",
     version="2.0.0",
     description="SCBE-AETHERMOORE web agent pipeline + AI Round Table council",
+)
+
+# CORS — allow the mobile app (Capacitor webview) and local dev
+from starlette.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Shared instances
@@ -117,6 +134,11 @@ _HF_ROUTER_TOKEN = (
     or os.environ.get("HUGGINGFACEHUB_API_TOKEN", "").strip()
     or os.environ.get("HUGGINGFACE_HUB_TOKEN", "").strip()
 )
+_GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "").strip()
+_CEREBRAS_API_KEY = os.environ.get("CEREBRAS_API_KEY", "").strip()
+_GOOGLE_AI_KEY = os.environ.get("GOOGLE_AI_KEY", os.environ.get("GEMINI_API_KEY", "")).strip()
+_GITHUB_MODELS_TOKEN = os.environ.get("GITHUB_TOKEN", os.environ.get("GITHUB_PERSONAL_ACCESS_TOKEN", "")).strip()
+_OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
 _ZAPIER_WEBHOOK_URL = os.environ.get("SCBE_ZAPIER_HOOK_URL", "").strip()
 
 _OPENAI_DEFAULT_MODEL = os.environ.get("SCBE_OPENAI_MODEL", "gpt-4o-mini").strip()
@@ -135,6 +157,24 @@ _HF_ALLOWED_DATASET_REPOS = {
     if repo.strip()
 }
 _HF_COMMIT_MESSAGE_MAX_LEN = 120
+_AUTOMATION_RULES_PATH = Path(
+    os.environ.get(
+        "SCBE_AUTOMATION_RULES_PATH",
+        os.path.join(_PROJECT, "artifacts", "automations", "rules.json"),
+    )
+).resolve()
+_AUTOMATION_RUNS_PATH = Path(
+    os.environ.get(
+        "SCBE_AUTOMATION_RUNS_PATH",
+        os.path.join(_PROJECT, "artifacts", "automations", "runs.jsonl"),
+    )
+).resolve()
+_AUTOMATION_ALLOWED_HOSTS = parse_allowed_hosts(os.environ.get("SCBE_AUTOMATION_ALLOWED_HOSTS", ""))
+_AUTOMATION_HUB = AutomationHub(
+    store_path=_AUTOMATION_RULES_PATH,
+    runs_path=_AUTOMATION_RUNS_PATH,
+    allowed_hosts=_AUTOMATION_ALLOWED_HOSTS,
+)
 
 
 def _check_key(api_key: Optional[str] = None):
@@ -280,6 +320,30 @@ class Lattice25DRequest(BaseModel):
     hf_create_pr: bool = False
     hf_commit_message: str = "feat(dataset): lattice25d notes export"
     include_note_payload: bool = True
+
+
+class AutomationRuleRequest(BaseModel):
+    name: str
+    event: str
+    target_url: str
+    method: Literal["POST", "PUT", "PATCH"] = "POST"
+    description: str = ""
+    enabled: bool = True
+    static_headers: Dict[str, str] = Field(default_factory=dict)
+    static_payload: Dict[str, Any] = Field(default_factory=dict)
+
+
+class AutomationEmitRequest(BaseModel):
+    event: str
+    payload: Dict[str, Any] = Field(default_factory=dict)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    dry_run: bool = False
+
+
+class CodeExecRequest(BaseModel):
+    code: str
+    language: str = "python"
+    timeout: int = 10
 
 
 # ---------------------------------------------------------------------------
@@ -591,6 +655,153 @@ async def llm_dispatch(req: LLMDispatchRequest, x_api_key: Optional[str] = Heade
     return result
 
 
+# ── Arena Chat endpoint (used by AetherCode mobile app) ──────────────
+
+# Map app seat IDs → provider + base_url + key + default model
+_ARENA_PROVIDERS = {
+    "groq":          {"base_url": "https://api.groq.com/openai/v1/chat/completions",          "key_fn": lambda: _GROQ_API_KEY,         "model": "llama-3.3-70b-versatile", "style": "openai"},
+    "cerebras":      {"base_url": "https://api.cerebras.ai/v1/chat/completions",               "key_fn": lambda: _CEREBRAS_API_KEY,     "model": "llama3.1-8b",             "style": "openai"},
+    "google_ai":     {"base_url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "key_fn": lambda: _GOOGLE_AI_KEY, "model": "gemini-2.5-flash", "style": "openai"},
+    "claude":        {"base_url": None,                                                        "key_fn": lambda: _ANTHROPIC_API_KEY,    "model": _ANTHROPIC_DEFAULT_MODEL,  "style": "anthropic"},
+    "xai":           {"base_url": "https://api.x.ai/v1/chat/completions",                      "key_fn": lambda: _XAI_API_KEY,          "model": "grok-3-mini-fast",        "style": "openai"},
+    "openrouter":    {"base_url": "https://openrouter.ai/api/v1/chat/completions",             "key_fn": lambda: _OPENROUTER_API_KEY,   "model": "moonshotai/kimi-k2",      "style": "openai"},
+    "github_models": {"base_url": "https://models.inference.ai.azure.com/chat/completions",    "key_fn": lambda: _GITHUB_MODELS_TOKEN,  "model": "gpt-4o-mini",             "style": "openai"},
+    "huggingface":   {"base_url": "https://router.huggingface.co/v1/chat/completions",         "key_fn": lambda: _HF_ROUTER_TOKEN,      "model": _HF_DEFAULT_MODEL,         "style": "openai"},
+    "ollama":        {"base_url": "http://127.0.0.1:11434/v1/chat/completions",                "key_fn": lambda: "ollama",              "model": "llama3.2",                "style": "openai"},
+}
+
+
+class ArenaChatRequest(BaseModel):
+    message: str
+    mode: str = "chat"
+    tentacle: str = "groq"
+    context: List[Dict[str, Any]] = []
+
+
+def _arena_chat_openai_sdk(messages: List[Dict], base_url: str, api_key: str, model: str) -> str:
+    """Use the openai SDK to avoid Cloudflare 1010 blocks on raw urllib."""
+    try:
+        from openai import OpenAI
+    except ImportError:
+        raise HTTPException(500, "openai SDK not installed. Run: pip install openai")
+    # Strip /chat/completions from base_url — SDK adds it
+    base = base_url.rsplit("/chat/completions", 1)[0]
+    client = OpenAI(api_key=api_key, base_url=base)
+    resp = client.chat.completions.create(model=model, messages=messages, max_tokens=800)
+    return resp.choices[0].message.content or ""
+
+
+def _arena_chat_anthropic_sdk(messages: List[Dict], api_key: str, model: str) -> str:
+    """Use anthropic SDK for Claude."""
+    try:
+        from anthropic import Anthropic
+    except ImportError:
+        raise HTTPException(500, "anthropic SDK not installed. Run: pip install anthropic")
+    system_parts = [m["content"] for m in messages if m["role"] == "system"]
+    user_msgs = [m for m in messages if m["role"] != "system"]
+    client = Anthropic(api_key=api_key)
+    resp = client.messages.create(
+        model=model,
+        system="\n\n".join(system_parts) if system_parts else "",
+        messages=user_msgs,
+        max_tokens=800,
+    )
+    return resp.content[0].text if resp.content else ""
+
+
+@app.post("/v1/chat")
+async def arena_chat(req: ArenaChatRequest):
+    """AetherCode Arena chat — routes to the right AI provider via SDK (no Cloudflare blocks)."""
+    t0 = time.time()
+    seat = req.tentacle.lower().strip()
+    cfg = _ARENA_PROVIDERS.get(seat)
+    if not cfg:
+        raise HTTPException(400, f"Unknown seat '{seat}'. Available: {list(_ARENA_PROVIDERS.keys())}")
+
+    api_key = cfg["key_fn"]()
+    if not api_key or (api_key == "ollama" and seat != "ollama"):
+        raise HTTPException(503, f"No API key configured for '{seat}'.")
+
+    # Build messages from context + user message
+    messages = []
+    for ctx in req.context:
+        if isinstance(ctx, dict) and "role" in ctx and "content" in ctx:
+            messages.append({"role": ctx["role"], "content": ctx["content"]})
+    messages.append({"role": "user", "content": req.message})
+
+    try:
+        if cfg["style"] == "anthropic":
+            text = _arena_chat_anthropic_sdk(messages, api_key, cfg["model"])
+        else:
+            text = _arena_chat_openai_sdk(messages, cfg["base_url"], api_key, cfg["model"])
+
+        latency_ms = (time.time() - t0) * 1000
+        return {
+            "response": text,
+            "tentacle": seat,
+            "model": cfg["model"],
+            "latency_ms": latency_ms,
+            "governance_score": 1.0,
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        latency_ms = (time.time() - t0) * 1000
+        raise HTTPException(502, detail=f"{seat} error: {str(exc)[:300]}")
+
+
+@app.get("/v1/providers")
+async def arena_providers():
+    """Return which providers are available for the Arena app."""
+    result = {}
+    for seat, cfg in _ARENA_PROVIDERS.items():
+        api_key = cfg["key_fn"]()
+        available = bool(api_key) and (api_key != "ollama" or seat == "ollama")
+        result[seat] = {
+            "available": available,
+            "model": cfg["model"],
+            "required_env": "API key",
+        }
+    return result
+
+
+@app.post("/v1/execute")
+async def execute_code(req: CodeExecRequest):
+    """Run user-supplied code in a subprocess and return stdout/stderr/exit_code."""
+    if req.language not in ("python", "javascript"):
+        raise HTTPException(400, detail=f"Unsupported language: {req.language}")
+    timeout = max(1, min(req.timeout, 30))
+    if req.language == "python":
+        cmd = [sys.executable, "-c", req.code]
+    else:
+        cmd = ["node", "-e", req.code]
+    t0 = time.time()
+    try:
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        duration_ms = round((time.time() - t0) * 1000)
+        return {
+            "stdout": proc.stdout,
+            "stderr": proc.stderr,
+            "exit_code": proc.returncode,
+            "language": req.language,
+            "duration_ms": duration_ms,
+        }
+    except subprocess.TimeoutExpired:
+        duration_ms = round((time.time() - t0) * 1000)
+        return {
+            "stdout": "",
+            "stderr": f"Process timed out after {timeout}s",
+            "exit_code": -1,
+            "language": req.language,
+            "duration_ms": duration_ms,
+        }
+
+
 def _browser_health_check() -> Dict[str, Any]:
     """Probe browser service /health endpoint."""
     url = f"{_BROWSER_SERVICE_URL}/health"
@@ -606,16 +817,9 @@ def _browser_health_check() -> Dict[str, Any]:
                 "url": url,
             }
     except Exception as exc:  # noqa: BLE001
-        error_code = "browser_service_unavailable"
-        if isinstance(exc, urllib_error.HTTPError):
-            error_code = "browser_service_http_error"
-        elif isinstance(exc, urllib_error.URLError):
-            error_code = "browser_service_network_error"
-        elif isinstance(exc, json.JSONDecodeError):
-            error_code = "browser_service_invalid_json"
         return {
             "reachable": False,
-            "error": error_code,
+            "error": str(exc),
             "url": url,
         }
 
@@ -649,12 +853,12 @@ def _forward_to_browser_service(payload: Dict[str, Any], bridge_api_key: str) ->
     except urllib_error.URLError as exc:
         raise HTTPException(
             status_code=503,
-            detail="Browser service unavailable.",
+            detail=f"Browser service unavailable at {_BROWSER_SERVICE_URL}: {exc.reason}",
         )
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as exc:
         raise HTTPException(
             status_code=502,
-            detail="Browser service returned invalid JSON.",
+            detail=f"Browser service returned invalid JSON: {exc}",
         )
 
 
@@ -669,6 +873,64 @@ async def integrations_status(x_api_key: Optional[str] = Header(None)):
         },
         "browser_service": _browser_health_check(),
     }
+
+
+@app.get("/v1/automations/health")
+async def automation_health(x_api_key: Optional[str] = Header(None)):
+    """Return health and file locations for the self-hosted automation hub."""
+    _check_key(x_api_key)
+    return {
+        "status": "ok",
+        "rules_path": str(_AUTOMATION_RULES_PATH),
+        "runs_path": str(_AUTOMATION_RUNS_PATH),
+        "allowed_hosts": sorted(_AUTOMATION_ALLOWED_HOSTS) if _AUTOMATION_ALLOWED_HOSTS else ["*"],
+        "rules_count": len(_AUTOMATION_HUB.list_rules()),
+    }
+
+
+@app.get("/v1/automations/rules")
+async def automation_list_rules(x_api_key: Optional[str] = Header(None)):
+    """List registered automation rules for the local hub."""
+    _check_key(x_api_key)
+    return {"rules": _AUTOMATION_HUB.list_rules()}
+
+
+@app.post("/v1/automations/rules")
+async def automation_register_rule(req: AutomationRuleRequest, x_api_key: Optional[str] = Header(None)):
+    """Register a local automation rule that routes matching events to a webhook."""
+    _check_key(x_api_key)
+    try:
+        rule = _AUTOMATION_HUB.register_rule(req.model_dump())
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"status": "registered", "rule": rule}
+
+
+@app.delete("/v1/automations/rules/{rule_id}")
+async def automation_delete_rule(rule_id: str, x_api_key: Optional[str] = Header(None)):
+    """Delete a local automation rule."""
+    _check_key(x_api_key)
+    deleted = _AUTOMATION_HUB.delete_rule(rule_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Automation rule not found")
+    return {"status": "deleted", "rule_id": rule_id}
+
+
+@app.post("/v1/automations/emit")
+async def automation_emit(req: AutomationEmitRequest, x_api_key: Optional[str] = Header(None)):
+    """Emit an event through all matching local automation rules."""
+    _check_key(x_api_key)
+    try:
+        result = await asyncio.to_thread(
+            _AUTOMATION_HUB.emit_event,
+            event=req.event,
+            payload=req.payload,
+            metadata=req.metadata,
+            dry_run=bool(req.dry_run),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return result
 
 
 @app.post("/v1/governance/scan")
@@ -700,8 +962,8 @@ async def tongue_encode(req: TongueEncodeRequest, x_api_key: Optional[str] = Hea
                 "token_count": len(env.tokens),
                 "transport": "tongue",
             }
-    except Exception:
-        raise HTTPException(status_code=500, detail="Six tongues encoding failed.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/v1/buffer/post")
@@ -876,8 +1138,8 @@ def _dispatch_single_provider(provider: str, prompt: str, system_prompt: str, ma
             return {"provider": p, "text": _extract_anthropic_response(raw).get("text", ""), "status": "ok"}
         else:
             return {"provider": p, "text": "", "status": "unsupported"}
-    except Exception:
-        return {"provider": p, "text": "", "status": "error", "error": "provider_dispatch_failed"}
+    except Exception as exc:
+        return {"provider": p, "text": "", "status": "error", "error": str(exc)[:500]}
 
 
 @app.post("/v1/council/deliberate")
@@ -1042,7 +1304,7 @@ def _get_trainer():
             logger.error("Failed to start RealTimeHFTrainer: %s", exc)
             raise HTTPException(
                 status_code=503,
-                detail="Training pipeline unavailable.",
+                detail=f"Training pipeline unavailable: {exc}",
             )
     return _trainer
 
@@ -1398,7 +1660,7 @@ def _upload_lattice25d_export_to_hf(
             create_pr=create_pr,
         )
     except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=502, detail="HF dataset upload failed.") from exc
+        raise HTTPException(status_code=502, detail=f"HF dataset upload failed: {exc}") from exc
 
     return {
         "status": "uploaded",
