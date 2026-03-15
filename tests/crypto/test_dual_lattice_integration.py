@@ -45,6 +45,7 @@ from crypto.dual_lattice_integration import (
     # Layer 9-11
     spectral_coherence,
     triadic_temporal_distance,
+    layer_11_temporal_residual,
     validate_hyperpath,
     # Layer 12-13
     harmonic_scaling,
@@ -323,6 +324,42 @@ class TestLayers9to11PathValidation:
         assert valid is False
         assert decision.decision == "DENY"
 
+    def test_temporal_residual_zero_for_monotone_path(self):
+        """A smooth monotone path should have no L11 temporal residual."""
+        path = [np.array([i * 0.1, 0.0, 0.0]) for i in range(5)]
+        metrics = layer_11_temporal_residual(path)
+        assert metrics["temporal_admissible"] is True
+        assert metrics["delta_11"] == 0.0
+
+    def test_validate_rejects_non_monotone_timestamps(self):
+        """Replay or inverted local time should fail the L11 admissibility gate."""
+        path = [np.array([i * 0.1, 0.0, 0.0]) for i in range(4)]
+        valid, decision = validate_hyperpath(path, timestamps=[0.0, 1.0, 0.5, 1.5])
+        assert valid is False
+        assert decision.decision == "DENY"
+        assert decision.metadata["temporal_admissible"] is False
+        assert decision.metadata["delta_11"] > 0.0
+
+    def test_validate_rejects_timestamp_count_mismatch(self):
+        """Mismatched timestamp metadata should fail closed."""
+        path = [np.array([i * 0.1, 0.0, 0.0]) for i in range(4)]
+        valid, decision = validate_hyperpath(path, timestamps=[0.0, 1.0])
+        assert valid is False
+        assert decision.decision == "DENY"
+        assert decision.metadata["reason"] == "timestamp_count_mismatch"
+
+    def test_validate_rejects_excessive_temporal_slope(self):
+        """Tiny time steps for large motion should trigger the L11 residual tripwire."""
+        path = [
+            np.array([0.0, 0.0, 0.0]),
+            np.array([0.25, 0.0, 0.0]),
+            np.array([0.5, 0.0, 0.0]),
+        ]
+        valid, decision = validate_hyperpath(path, timestamps=[0.0, 0.01, 0.02])
+        assert valid is False
+        assert decision.decision == "DENY"
+        assert decision.metadata["delta_11"] > 0.0
+
 
 class TestLayers12to13HarmonicScaling:
     """Test Layers 12-13: Harmonic scaling and decision."""
@@ -358,6 +395,31 @@ class TestLayers12to13HarmonicScaling:
         path = [np.array([0.0, 0.0, 0.0]), np.array([0.05, 0.0, 0.0])]
         decision_str, decision = layer_12_13_evaluate(path)
         assert decision_str == "ALLOW"
+
+    def test_path_cost_increases_with_distance(self):
+        """Risk cost should increase as the path becomes more extreme."""
+        near = [
+            np.array([0.0, 0.0, 0.0]),
+            np.array([0.05, 0.0, 0.0]),
+            np.array([0.08, 0.01, 0.0]),
+        ]
+        far = [
+            np.array([0.0, 0.0, 0.0]),
+            np.array([0.85, 0.0, 0.0]),
+            np.array([0.0, 0.85, 0.0]),
+        ]
+        assert compute_path_cost(far) > compute_path_cost(near)
+
+    def test_layer_12_13_deny_high_risk(self):
+        """Large jumps through the ball should now be denied."""
+        path = [
+            np.array([0.0, 0.0, 0.0]),
+            np.array([0.85, 0.0, 0.0]),
+            np.array([0.0, 0.85, 0.0]),
+        ]
+        decision_str, decision = layer_12_13_evaluate(path)
+        assert decision_str == "DENY"
+        assert decision.metadata["risk_score"] >= 1.0
 
 
 class TestLayer14Sonification:
@@ -437,6 +499,13 @@ class TestDualLatticeIntegrator:
         result = integrator.process_action("read", "test.py", 0.3)
         assert result.audio_signature is not None
         assert len(result.audio_signature) > 0
+
+    def test_process_action_builds_intrinsic_path(self, integrator):
+        """Single actions should still generate a multi-point intrinsic path."""
+        result = integrator.process_action("read", "test.py", 0.3)
+        layer_11 = next(d for d in result.decisions if d.layer == 11)
+        assert layer_11.metadata["path_points"] >= 3
+        assert result.lattice_proof["intrinsic_path_points"] >= 3
 
     def test_realm_assignment(self, integrator):
         """Realm should be assigned based on context."""

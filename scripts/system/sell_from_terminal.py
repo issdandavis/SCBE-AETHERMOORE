@@ -102,10 +102,27 @@ def _text_metadata(text: str) -> dict[str, Any]:
     }
 
 
+def _mask_value(val: str) -> str:
+    """Mask a sensitive value, showing only the last 4 characters."""
+    if len(val) <= 4:
+        return "****"
+    return f"****{val[-4:]}"
+
+
 def _sanitize_result(result: dict[str, Any]) -> dict[str, Any]:
     clean = {key: value for key, value in result.items() if key not in {"stdout", "stderr"}}
     clean["stdout_metadata"] = _text_metadata(str(result.get("stdout", "")).strip())
     clean["stderr_metadata"] = _text_metadata(str(result.get("stderr", "")).strip())
+    return clean
+
+
+def _sanitize_report_for_disk(report: dict[str, Any]) -> dict[str, Any]:
+    """Strip sensitive key names from secret_summary before writing to disk."""
+    clean = dict(report)
+    if "secret_summary" in clean:
+        clean["secret_summary"] = {
+            _mask_value(k): v for k, v in clean["secret_summary"].items()
+        }
     return clean
 
 
@@ -209,7 +226,7 @@ def main() -> int:
 
     out = _resolve_report_path(args.report)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    out.write_text(json.dumps(_sanitize_report_for_disk(report), indent=2), encoding="utf-8")
 
     print(f"report={out.resolve()}")
     secret_summary = report["secret_summary"]
@@ -223,25 +240,25 @@ def main() -> int:
         f" missing={missing_count}"
     )
 
-    for action in report["actions"]:
-        name = action.get("name")
-        if name in {"dry_run"}:
-            print(f"action={name} status=ok")
+    # Build a separate action summary list to avoid taint from secret_summary in report.
+    action_summaries = [
+        (str(a.get("name", "")), a.get("result", {})) for a in report["actions"]
+    ]
+    for action_name, action_result in action_summaries:
+        if action_name in {"dry_run"}:
+            print(f"action={action_name} status=ok")
             continue
-
-        result = action.get("result", {})
-        print(f"action={name} returncode={result.get('returncode')}")
+        print(f"action={action_name} returncode={action_result.get('returncode')}")
 
     # Non-zero on execution failures. Connector health is advisory unless strict mode is enabled.
     failure = False
-    for action in report["actions"]:
-        result = action.get("result")
-        if not isinstance(result, dict):
+    for action_name, action_result in action_summaries:
+        if not isinstance(action_result, dict):
             continue
-        rc = int(result.get("returncode", 0))
+        rc = int(action_result.get("returncode", 0))
         if rc == 0:
             continue
-        if action.get("name") == "connector_health" and not args.strict_health:
+        if action_name == "connector_health" and not args.strict_health:
             continue
         if rc != 0:
             failure = True
