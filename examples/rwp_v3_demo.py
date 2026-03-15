@@ -44,8 +44,8 @@ def demo_basic_encryption():
     }
 
     print(f"📤 Alice encrypts message:")
-    print(f"   Message: '{message}'")
-    print(f"   Password: '{password}'")
+    print(f"   Message length: {len(message)} characters")
+    print(f"   Password metadata: present=True length={len(password)}")
     print(f"   Metadata: {json.dumps(metadata, indent=2)}")
 
     # Encrypt
@@ -119,7 +119,7 @@ def demo_pqc_hybrid():
     ).encode("utf-8")
 
     print(f"\n📤 Alice encrypts classified message:")
-    print(f"   Message: '{message}'")
+    print(f"   Message length: {len(message)} characters")
     print(f"   Using: Argon2id + ML-KEM-768 + XChaCha20-Poly1305")
 
     envelope = protocol.encrypt(
@@ -194,7 +194,7 @@ def demo_wrong_password():
     correct_password = "CorrectPassword123"
     wrong_password = "WrongPassword456"
 
-    print(f"📤 Alice encrypts with password: '{correct_password}'")
+    print(f"📤 Alice encrypts with password metadata: present=True length={len(correct_password)}")
     envelope = rwp_encrypt_message(
         password=correct_password, message=message, enable_pqc=False
     )
@@ -202,7 +202,7 @@ def demo_wrong_password():
     print(f"   ✅ Encryption successful")
 
     # Try to decrypt with wrong password
-    print(f"\n🔓 Attacker tries to decrypt with: '{wrong_password}'")
+    print(f"\n🔓 Attacker tries to decrypt with password metadata: present=True length={len(wrong_password)}")
 
     try:
         decrypted = rwp_decrypt_message(

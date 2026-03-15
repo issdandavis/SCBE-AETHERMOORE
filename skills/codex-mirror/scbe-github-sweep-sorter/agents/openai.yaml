@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE GitHub Sweep Sorter"
+  short_description: "Sort GitHub sweeps into governed agent lanes"
+  default_prompt: "Use $scbe-github-sweep-sorter to classify repo sweep targets, choose a HYDRA formation, and emit roundtable packets."

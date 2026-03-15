@@ -197,12 +197,9 @@ def derive_key_scrypt(password: bytes, salt: bytes) -> bytes:
         )
 
 
-def derive_key_hkdf(password: bytes, salt: bytes) -> bytes:
-    """Emergency HKDF fallback (not recommended for passwords)."""
-    # Extract
-    prk = hmac.new(salt, password, hashlib.sha256).digest()
-    # Expand
-    return hmac.new(prk, b"\x01", hashlib.sha256).digest()
+def derive_key_pbkdf2(password: bytes, salt: bytes) -> bytes:
+    """Emergency PBKDF2 fallback for password-derived keys."""
+    return hashlib.pbkdf2_hmac("sha256", password, salt, 600_000, dklen=SCRYPT_DKLEN)
 
 
 def derive_key(
@@ -213,20 +210,18 @@ def derive_key(
         try:
             return derive_key_argon2id(password, salt)
         except (RuntimeError, Exception):
-            # Fall back to scrypt, then HKDF
+            # Fall back to scrypt, then PBKDF2.
             try:
                 return derive_key_scrypt(password, salt)
             except (ValueError, OSError, Exception):
-                # Memory limit exceeded, fall back to HKDF
-                return derive_key_hkdf(password, salt)
+                return derive_key_pbkdf2(password, salt)
     elif kdf_type == KDFType.SCRYPT:
         try:
             return derive_key_scrypt(password, salt)
         except (ValueError, OSError, Exception):
-            # Memory limit exceeded, fall back to HKDF
-            return derive_key_hkdf(password, salt)
+            return derive_key_pbkdf2(password, salt)
     else:
-        return derive_key_hkdf(password, salt)
+        return derive_key_pbkdf2(password, salt)
 
 
 # =============================================================================
