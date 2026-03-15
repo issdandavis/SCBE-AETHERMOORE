@@ -82,9 +82,17 @@ def _read_json(path: Path, default: Any) -> Any:
         return default
 
 
+def _mask_value(val: str) -> str:
+    """Mask a sensitive value, showing only the last 4 characters."""
+    if len(val) <= 4:
+        return "****"
+    return f"****{val[-4:]}"
+
+
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(_sanitize_for_report(payload), indent=2), encoding="utf-8")
+    sanitized = _sanitize_for_report(payload)
+    path.write_text(json.dumps(sanitized, indent=2), encoding="utf-8")
 
 
 def _is_relative_to(path: Path, root: Path) -> bool:
@@ -198,6 +206,10 @@ def _sanitize_for_report(payload: Any) -> Any:
         "response",
         "response_excerpt",
         "raw",
+        "key_value",
+        "alias_value",
+        "password",
+        "credential",
     }
     if isinstance(payload, dict):
         clean: dict[str, Any] = {}
@@ -476,7 +488,7 @@ def run_health(args: argparse.Namespace) -> int:
         "alias_sync": _summarize_mapping(alias_sync),
         "status": _summarize_mapping(status_map),
     }
-    print(json.dumps(stdout_payload, indent=2))
+    print(json.dumps(_sanitize_for_report(stdout_payload), indent=2))
 
     if args.strict:
         failing = [name for name, val in status_map.items() if val.get("status") != "ok"]

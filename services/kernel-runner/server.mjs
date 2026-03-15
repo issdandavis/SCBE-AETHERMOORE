@@ -18,9 +18,22 @@ const PORT = Number(process.env.KERNEL_RUNNER_PORT || 4242);
 const MAX_CONCURRENT_RUNS = 3;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 10;
+const MAX_TIMEOUT_MS = 300_000; // 5 minutes max for any user-supplied timeout
+const MIN_TIMEOUT_MS = 5_000;   // 5 seconds minimum
+const RATE_LIMIT_CLEANUP_INTERVAL_MS = 120_000; // purge stale entries every 2 min
 
 let activeRuns = 0;
 const rateLimitMap = new Map();
+
+// Periodically purge expired rate-limit entries to prevent unbounded memory growth
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap) {
+    if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+      rateLimitMap.delete(key);
+    }
+  }
+}, RATE_LIMIT_CLEANUP_INTERVAL_MS).unref();
 
 function checkRateLimit(key) {
   const now = Date.now();
@@ -152,6 +165,12 @@ function normalizePackageJson(input) {
     null,
     2,
   ) + '\n';
+}
+
+function clampTimeout(value, fallback = 120_000) {
+  const n = Number(value || fallback);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(MIN_TIMEOUT_MS, Math.min(MAX_TIMEOUT_MS, n));
 }
 
 function safeRunCommand(input) {
@@ -439,7 +458,7 @@ app.post('/api/run', async (req, res) => {
     const installResult = await runDockerStage({
       workspace,
       network: installNetwork,
-      timeoutMs: Number(req.body?.installTimeoutMs || 120000),
+      timeoutMs: clampTimeout(req.body?.installTimeoutMs),
       command: 'npm install --ignore-scripts --no-audit --fund=false',
     });
 
@@ -455,7 +474,7 @@ app.post('/api/run', async (req, res) => {
     const executeResult = await runDockerStage({
       workspace,
       network: 'none',
-      timeoutMs: Number(req.body?.runTimeoutMs || 120000),
+      timeoutMs: clampTimeout(req.body?.runTimeoutMs),
       command: payload.runCommand,
     });
 
