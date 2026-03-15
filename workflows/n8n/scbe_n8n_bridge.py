@@ -1,4 +1,4 @@
-"""
+h"""
 SCBE n8n Bridge — FastAPI service connecting n8n workflows to SCBE Web Agent
 =============================================================================
 
