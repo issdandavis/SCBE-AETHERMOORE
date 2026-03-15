@@ -53,12 +53,16 @@ def _resolve_vault_root(vault_path: str) -> Path:
     if not raw:
         raise ValueError("vault_path is required")
 
-    resolved = Path(raw).expanduser().resolve(strict=False)
-    if not resolved.exists() or not resolved.is_dir():
+    # Resolve the user-provided path to an absolute, normalized directory.
+    # Using strict=True ensures the path exists and all symlinks are resolved.
+    resolved = Path(raw).expanduser().resolve(strict=True)
+    if not resolved.is_dir():
         raise ValueError(f"Vault path must be an existing directory: {resolved}")
 
     for allowed_root in _allowed_vault_roots():
-        if _is_relative_to(resolved, allowed_root):
+        # Ensure allowed roots are also normalized before comparison.
+        allowed_root_resolved = allowed_root.resolve(strict=False)
+        if _is_relative_to(resolved, allowed_root_resolved):
             return resolved
 
     roots = ", ".join(str(root) for root in _allowed_vault_roots())
