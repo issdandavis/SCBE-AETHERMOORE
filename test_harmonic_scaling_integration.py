@@ -237,7 +237,7 @@ def test_quantum_resistant_binding() -> bool:
         print("  [X] PQ binding not enforced when required")
     except ValueError as e:
         binding_required_ok = "commitment required" in str(e)
-        print(f"  [+] PQ binding enforced: {e}")
+        print(f"  [+] PQ binding enforced: [error message redacted]")
     all_passed &= binding_required_ok
 
     # Test 2: Valid commitment accepted
@@ -258,7 +258,7 @@ def test_quantum_resistant_binding() -> bool:
         print("  [X] Invalid commitment size accepted")
     except ValueError as e:
         invalid_size_ok = "size" in str(e).lower()
-        print(f"  [+] Invalid size rejected: {e}")
+        print(f"  [+] Invalid size rejected: [error message redacted]")
     all_passed &= invalid_size_ok
 
     # Test 4: Context commitment creation
@@ -309,10 +309,10 @@ def test_security_decision_engine() -> bool:
         d_star=0.5
     )
     scenario1_ok = decision1 is True
-    print(f"\n  Scenario 1: Accept (valid crypto, low risk)")
-    print(f"    crypto_valid=True, risk=0.1, d*=0.5")
-    print(f"    H={details1['H']:.4f}, final_risk={details1['final_risk']:.4f}")
-    print(f"    Decision: {decision1} {'OK' if scenario1_ok else 'FAIL'}")
+    print("\n  Scenario 1: Accept (valid crypto, low risk)")
+    print("    [inputs redacted]")
+    print(f"    H={details1['H']:.4f}, final_risk=[redacted]")
+    print(f"    Decision: {'accepted' if decision1 else 'rejected'} {'OK' if scenario1_ok else 'FAIL'}")
     all_passed &= scenario1_ok
 
     # Scenario 2: Reject (crypto invalid)
@@ -322,9 +322,9 @@ def test_security_decision_engine() -> bool:
         d_star=0.5
     )
     scenario2_ok = decision2 is False
-    print(f"\n  Scenario 2: Reject (invalid crypto)")
-    print(f"    crypto_valid=False, risk=0.1, d*=0.5")
-    print(f"    Decision: {decision2} {'OK' if scenario2_ok else 'FAIL'}")
+    print("\n  Scenario 2: Reject (invalid crypto)")
+    print("    [inputs redacted]")
+    print(f"    Decision: {'accepted' if decision2 else 'rejected'} {'OK' if scenario2_ok else 'FAIL'}")
     all_passed &= scenario2_ok
 
     # Scenario 3: Reject (high risk due to large d*)
@@ -334,10 +334,10 @@ def test_security_decision_engine() -> bool:
         d_star=5.0  # Far from trusted realm
     )
     scenario3_ok = decision3 is False
-    print(f"\n  Scenario 3: Reject (high scaled risk)")
-    print(f"    crypto_valid=True, risk=0.5, d*=5.0")
-    print(f"    H={details3['H']:.4f}, final_risk={details3['final_risk']:.4f}")
-    print(f"    Decision: {decision3} (expected False) {'OK' if scenario3_ok else 'FAIL'}")
+    print("\n  Scenario 3: Reject (high scaled risk)")
+    print("    [inputs redacted]")
+    print(f"    H={details3['H']:.4f}, final_risk=[redacted]")
+    print(f"    Decision: {'accepted' if decision3 else 'rejected'} (expected rejected) {'OK' if scenario3_ok else 'FAIL'}")
     all_passed &= scenario3_ok
 
     # Scenario 4: Edge case at threshold
@@ -351,10 +351,10 @@ def test_security_decision_engine() -> bool:
         d_star=0.0  # Perfect match: H=1, final_risk=0.1
     )
     scenario4_ok = decision4 is True
-    print(f"\n  Scenario 4: Edge case (perfect match)")
-    print(f"    crypto_valid=True, risk=0.1, d*=0.0")
-    print(f"    H={details4['H']:.4f}, final_risk={details4['final_risk']:.4f}")
-    print(f"    Decision: {decision4} {'OK' if scenario4_ok else 'FAIL'}")
+    print("\n  Scenario 4: Edge case (perfect match)")
+    print("    [inputs redacted]")
+    print(f"    H={details4['H']:.4f}, final_risk=[redacted]")
+    print(f"    Decision: {'accepted' if decision4 else 'rejected'} {'OK' if scenario4_ok else 'FAIL'}")
     all_passed &= scenario4_ok
 
     print_result("Security Decision Engine", all_passed)
@@ -458,8 +458,8 @@ def test_find_nearest_realm() -> bool:
     nearest_ok = idx == 0
     distance_ok = d_star > 0
 
-    print(f"  Point: {point}")
-    print(f"  Realms: {[r.tolist() for r in realms]}")
+    print(f"  Point norm: {np.linalg.norm(point):.4f}")
+    print(f"  Realm count: {len(realms)}")
     print(f"  Nearest realm index: {idx} (expected 0) {'OK' if nearest_ok else 'FAIL'}")
     print(f"  Distance d*: {d_star:.4f} {'OK' if distance_ok else 'FAIL'}")
 
