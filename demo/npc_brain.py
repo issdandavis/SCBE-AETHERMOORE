@@ -26,6 +26,7 @@ import os
 import random
 import re
 import time
+from html.parser import HTMLParser
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -115,12 +116,41 @@ _RE_MARKDOWN_BOLD = re.compile(r"\*\*(.+?)\*\*")
 _RE_MARKDOWN_ITALIC = re.compile(r"\*(.+?)\*")
 _RE_MARKDOWN_HEADER = re.compile(r"^#{1,6}\s+", re.MULTILINE)
 _RE_URL = re.compile(r"https?://\S+")
-_RE_SCRIPT = re.compile(r"<script[\s\S]*?</script>", re.IGNORECASE)
 _RE_EVAL = re.compile(r"eval\s*\(", re.IGNORECASE)
 _RE_IMPORT = re.compile(r"\bimport\s+")
-_RE_HTML_TAG = re.compile(r"<[^>]+>")
 
 _MAX_RESPONSE_LENGTH = 200
+
+
+class _VisibleTextExtractor(HTMLParser):
+    """Extract visible text while discarding script/style blocks."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self._ignore_depth = 0
+        self._parts: List[str] = []
+
+    def handle_starttag(self, tag: str, attrs: List[tuple[str, Optional[str]]]) -> None:
+        if tag.lower() in {"script", "style"}:
+            self._ignore_depth += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() in {"script", "style"} and self._ignore_depth:
+            self._ignore_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if not self._ignore_depth and data:
+            self._parts.append(data)
+
+    def to_text(self) -> str:
+        return " ".join(self._parts)
+
+
+def _strip_html_markup(raw: str) -> str:
+    parser = _VisibleTextExtractor()
+    parser.feed(raw)
+    parser.close()
+    return parser.to_text()
 
 
 # ---------------------------------------------------------------------------
@@ -251,16 +281,13 @@ class NPCBrain:
         text = _RE_MARKDOWN_ITALIC.sub(r"\1", text)
         text = _RE_MARKDOWN_HEADER.sub("", text)
 
-        # Remove dangerous patterns  # A9: Spectral coherence gate
-        text = _RE_SCRIPT.sub("", text)
+        # Remove dangerous HTML/script payloads before token cleanup.
+        text = _strip_html_markup(text)
         text = _RE_EVAL.sub("", text)
         text = _RE_IMPORT.sub("", text)
 
         # Remove URLs
         text = _RE_URL.sub("", text)
-
-        # Remove residual HTML tags
-        text = _RE_HTML_TAG.sub("", text)
 
         # Collapse whitespace
         text = re.sub(r"\s+", " ", text).strip()
@@ -513,6 +540,8 @@ def selftest() -> None:
     # Script tags
     check("Strips script tags",
           "script" not in sanitize("<script>alert('xss')</script>safe text").lower())
+    check("Strips malformed script end tags",
+          "alert" not in sanitize("<script>alert('xss')</script >safe text").lower())
 
     # eval
     check("Strips eval(", "eval" not in sanitize("Try eval(something) here"))

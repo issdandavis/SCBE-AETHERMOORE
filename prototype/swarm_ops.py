@@ -529,7 +529,7 @@ def demo():
     )
     swarm.submit_task(task3)
     result3 = swarm.execute_pipeline(task3.id)
-    print(f"   Password after processing: {result3.get('password', 'N/A')}")  # Should be [REDACTED]
+    print(f"   Password field redacted: {'password' in result3}")  # Should remain redacted in payload
 
     # Task that should fail (policy violation)
     print("\n📋 Task 4: Policy Violation (should fail)")

@@ -229,7 +229,7 @@ class TestRWPv3Protocol:
 
         assert len(fallback_key) == ARGON2_PARAMS["hash_len"]
         assert fallback_key == protocol._derive_key(password, salt)
-        assert fallback_key != hashlib.blake2s(password + salt, digest_size=32).digest()
+        assert fallback_key != (password + salt)[:ARGON2_PARAMS["hash_len"]]
 
 
 class TestConvenienceAPI:

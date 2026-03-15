@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 import requests
+from scripts.system.html_text import html_to_text as _safe_html_to_text
 
 from hydra.limbs import BrowserLimb
 from hydra.switchboard import Switchboard
@@ -38,6 +39,9 @@ try:
 except Exception:  # noqa: BLE001
     HfApi = None
     login = None
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 PROMPT_INJECTION_PATTERNS = [
@@ -80,12 +84,23 @@ def extract_post_id(url: str) -> str:
 
 
 def html_to_text(raw_html: str) -> str:
-    s = re.sub(r"(?is)<script.*?>.*?</script>", " ", raw_html)
-    s = re.sub(r"(?is)<style.*?>.*?</style>", " ", s)
-    s = re.sub(r"(?is)<[^>]+>", " ", s)
-    s = html.unescape(s)
-    s = re.sub(r"\s+", " ", s).strip()
-    return s
+    return html.unescape(_safe_html_to_text(raw_html))
+
+
+def _resolve_run_root(raw_path: str) -> Path:
+    target = (REPO_ROOT / raw_path).resolve()
+    allowed_root = (REPO_ROOT / "training" / "runs").resolve()
+    if target != allowed_root and allowed_root not in target.parents:
+        raise ValueError("run root must stay under training/runs/")
+    return target
+
+
+def _resolve_artifact_db_path(raw_path: str) -> Path:
+    target = (REPO_ROOT / raw_path).resolve()
+    allowed_root = (REPO_ROOT / "artifacts").resolve()
+    if target != allowed_root and allowed_root not in target.parents:
+        raise ValueError("artifact db path must stay under artifacts/")
+    return target
 
 
 def chunk_text(text: str, chunk_size: int = 1400, overlap: int = 250) -> List[str]:

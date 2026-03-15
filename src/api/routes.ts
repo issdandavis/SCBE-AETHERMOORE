@@ -15,7 +15,7 @@
  * @version 1.0.0
  */
 
-import { randomBytes, createHash } from 'crypto';
+import { randomBytes, createHash, scryptSync, timingSafeEqual } from 'crypto';
 
 // ============================================================
 // TYPE DEFINITIONS
@@ -287,7 +287,7 @@ export async function handleCreateEnvelope(req: EnvelopeRequest): Promise<Envelo
   const aad = JSON.stringify(req.aad || { timestamp: Date.now() });
 
   // Derive key (simplified - in production use Argon2id)
-  const key = require('crypto').scryptSync(req.password, salt, 32);
+  const key = scryptSync(req.password, salt, 32);
 
   // Encrypt (simplified - in production use XChaCha20-Poly1305)
   const ct = Buffer.from(Buffer.from(req.plaintext).map((b, i) => b ^ key[i % 32]));
@@ -335,12 +335,12 @@ export async function handleVerifyEnvelope(req: VerifyRequest): Promise<VerifyRe
     // Decode components (simplified)
     const aad = decodeFromSacredTongue(parts[1]);
     const salt = decodeFromSacredTongue(parts[2]);
-    const nonce = decodeFromSacredTongue(parts[3]);
+    decodeFromSacredTongue(parts[3]);
     const ct = decodeFromSacredTongue(parts[4]);
     const tag = decodeFromSacredTongue(parts[5]);
 
     // Derive key
-    const key = createHash('sha256').update(req.password).update(salt).digest();
+    const key = scryptSync(req.password, salt, 32);
 
     // Verify MAC
     const expectedTag = createHash('sha256')
@@ -350,7 +350,9 @@ export async function handleVerifyEnvelope(req: VerifyRequest): Promise<VerifyRe
       .digest()
       .slice(0, 16);
 
-    const macValid = Buffer.from(tag).equals(expectedTag);
+    const tagBuffer = Buffer.from(tag);
+    const macValid =
+      tagBuffer.length === expectedTag.length && timingSafeEqual(tagBuffer, expectedTag);
 
     if (!macValid) {
       return {
@@ -365,7 +367,7 @@ export async function handleVerifyEnvelope(req: VerifyRequest): Promise<VerifyRe
     }
 
     // Decrypt
-    const plaintext = Buffer.from(Buffer.from(ct).map((b, i) => b ^ key[i % 32])).toString('utf-8');
+    const plaintext = Buffer.from(Buffer.from(ct).map((b, i) => b ^ key[i % key.length])).toString('utf-8');
 
     return {
       valid: true,
@@ -501,7 +503,7 @@ function simulateDecision(req: AuthorizeRequest): {
 
 function encodeToSacredTongue(data: Buffer, tongue: string): string {
   // Simplified encoding - in production use full Sacred Tongue tokenizer
-  return `${tongue.toLowerCase()}'${data.toString('hex').slice(0, 16)}`;
+  return `${tongue.toLowerCase()}'${data.toString('hex')}`;
 }
 
 function decodeFromSacredTongue(encoded: string): Buffer {

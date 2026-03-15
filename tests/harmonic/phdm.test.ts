@@ -619,6 +619,14 @@ describe('Phason Shift', () => {
     }
     expect(anyDifferent).toBe(true);
   });
+
+  it('should reject invalid or duplicate rotation dimensions', () => {
+    const matrix = generateProjectionMatrix();
+
+    expect(() => phasonShift(matrix, Math.PI / 4, -1, 1)).toThrow(/dim0/);
+    expect(() => phasonShift(matrix, Math.PI / 4, 0, 6)).toThrow(/dim1/);
+    expect(() => phasonShift(matrix, Math.PI / 4, 2, 2)).toThrow(/distinct/);
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════

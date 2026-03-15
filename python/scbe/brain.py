@@ -456,11 +456,11 @@ def embed_to_21d(text: str, context: Optional[Dict] = None) -> np.ndarray:
     ts_norm = (ts % 86400) / 86400
 
     user_id = context.get("user_id", "anonymous")
-    user_hash = int(hashlib.md5(user_id.encode()).hexdigest()[:8], 16)
+    user_hash = int(hashlib.sha256(user_id.encode()).hexdigest()[:8], 16)
     user_norm = (user_hash % 1000) / 1000
 
     session_id = context.get("session_id", str(time.time()))
-    session_hash = int(hashlib.md5(session_id.encode()).hexdigest()[:8], 16)
+    session_hash = int(hashlib.sha256(session_id.encode()).hexdigest()[:8], 16)
     session_norm = (session_hash % 1000) / 1000
 
     audit = np.array([
