@@ -17,6 +17,8 @@ import {
   TweetOptions,
 } from '../../src/skills/socialContent';
 
+const EXAMPLE_LINK = new URL('https://example.com');
+
 describe('socialContent', () => {
   describe('generateHashtags', () => {
     it('should generate hashtags from keywords', () => {
@@ -144,7 +146,16 @@ describe('socialContent', () => {
     it('should include link in tweets', () => {
       const tweets = generateTweets(sampleContent);
 
-      const hasLink = tweets.some((t) => t.text.includes('https://example.com'));
+      const hasLink = tweets.some((t) =>
+        t.text.split(/\s+/).some((token) => {
+          const normalized = token.replace(/[),.!]+$/u, '');
+          try {
+            return new URL(normalized).href === EXAMPLE_LINK.href;
+          } catch {
+            return false;
+          }
+        })
+      );
       expect(hasLink).toBe(true);
     });
 

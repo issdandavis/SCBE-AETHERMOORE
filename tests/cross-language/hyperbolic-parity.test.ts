@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import * as path from 'path';
 import {
   hyperbolicDistance,
@@ -17,22 +17,26 @@ import {
   logarithmicMap,
 } from '../../src/harmonic/hyperbolic.js';
 
+const PYTHON_BIN = process.platform === 'win32' ? 'python' : 'python3';
+
 /**
  * Execute Python script and return JSON result
  */
 function execPython(script: string, args: Record<string, unknown>): unknown {
+  const srcPath = JSON.stringify(path.resolve(__dirname, '../../src'));
+  const argsJson = JSON.stringify(JSON.stringify(args));
   const pythonScript = `
 import sys
 import json
-sys.path.insert(0, '${path.resolve(__dirname, '../../src')}')
+sys.path.insert(0, ${srcPath})
 
-args = json.loads('${JSON.stringify(args)}')
+args = json.loads(${argsJson})
 ${script}
 print(json.dumps(result))
 `;
 
   try {
-    const output = execSync(`python3 -c "${pythonScript.replace(/"/g, '\\"')}"`, {
+    const output = execFileSync(PYTHON_BIN, ['-c', pythonScript], {
       encoding: 'utf-8',
       timeout: 10000,
     });
@@ -48,7 +52,7 @@ print(json.dumps(result))
  */
 function isPythonAvailable(): boolean {
   try {
-    execSync('python3 --version', { encoding: 'utf-8' });
+    execFileSync(PYTHON_BIN, ['--version'], { encoding: 'utf-8' });
     return true;
   } catch {
     return false;
@@ -165,13 +169,13 @@ else:
     lambda_p = 2 / (1 - np.dot(p, p))
     direction = v / norm_v
     tanh_term = np.tanh(lambda_p * norm_v / 2)
-            expV = tanh_term * direction
-        uv = np.dot(p, expV)
-        norm_p_sq = np.dot(p, p)
-        norm_expV_sq = np.dot(expV, expV)
-        denom = 1 + 2*uv + norm_p_sq * norm_expV_sq
-        num = (1 + 2*uv + norm_expV_sq) * p + (1 - norm_p_sq) * expV
-        result = (num / denom).tolist()
+    expV = tanh_term * direction
+    uv = np.dot(p, expV)
+    norm_p_sq = np.dot(p, p)
+    norm_expV_sq = np.dot(expV, expV)
+    denom = 1 + 2*uv + norm_p_sq * norm_expV_sq
+    num = (1 + 2*uv + norm_expV_sq) * p + (1 - norm_p_sq) * expV
+    result = (num / denom).tolist()
     # Normalize to stay in ball
     norm_result = np.linalg.norm(result)
     if norm_result >= 1:

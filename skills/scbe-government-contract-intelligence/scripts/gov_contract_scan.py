@@ -13,6 +13,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
+from scripts.system.html_text import html_to_text
+
 
 DEFAULT_SOURCES = [
     ("sam_contract_opportunities", "https://sam.gov/content/opportunities"),
@@ -48,11 +50,16 @@ def _extract_title(html_text: str) -> str:
 
 
 def _to_text(html_text: str) -> str:
-    text = re.sub(r"<script[\s\S]*?</script>", " ", html_text, flags=re.IGNORECASE)
-    text = re.sub(r"<style[\s\S]*?</style>", " ", text, flags=re.IGNORECASE)
-    text = re.sub(r"<[^>]+>", " ", text)
-    text = re.sub(r"\s+", " ", text)
-    return text.lower()
+    return html_to_text(html_text, lower=True)
+
+
+def _resolve_output_dir(raw_path: str) -> Path:
+    repo_root = Path(__file__).resolve().parents[3]
+    target = (repo_root / raw_path).resolve()
+    artifacts_root = (repo_root / "artifacts").resolve()
+    if target != artifacts_root and artifacts_root not in target.parents:
+        raise ValueError("output path must stay under artifacts/")
+    return target
 
 
 def _count_hits(text: str, keywords: Iterable[str]) -> dict[str, int]:
@@ -188,7 +195,7 @@ def main() -> int:
         return 1
 
     results = run_scan(keywords, timeout=max(5, args.timeout), extra_urls=args.extra_url)
-    json_path, md_path = write_outputs(results, keywords, out_dir=Path(args.out_dir))
+    json_path, md_path = write_outputs(results, keywords, out_dir=_resolve_output_dir(args.out_dir))
 
     print(f"Scan complete. JSON: {json_path}")
     print(f"Scan complete. MD:   {md_path}")

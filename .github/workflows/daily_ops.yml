@@ -15,6 +15,9 @@ on:
         type: boolean
         default: true
 
+permissions:
+  contents: read
+
 env:
   VM_IP: "34.134.99.90"
   VM_PORT: "8001"
