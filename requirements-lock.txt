@@ -206,7 +206,7 @@ ruamel.yaml.clib==0.2.15
 s3transfer==0.16.0
 scbe-aethermoore==3.0.0
 -e git+https://github.com/issdandavis/scbe-aethermoore-demo.git@7438cd80fe99f41fa1ab7876237dfb36460cd2c9#egg=SCBEAgent&subdirectory=examples\scbeagent
-scipy==1.16.3
+scipy==1.17.1
 shellingham==1.5.4
 six==1.17.0
 slack_bolt==1.27.0
