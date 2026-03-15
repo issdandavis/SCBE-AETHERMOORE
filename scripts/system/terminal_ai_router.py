@@ -11,6 +11,7 @@ Features:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import urllib.error
@@ -18,6 +19,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG_PATH = REPO_ROOT / "config" / "governance" / "terminal_ai_router_profiles.json"
@@ -44,6 +46,14 @@ DEFAULT_COMPLEXITY_TIERS = {
     "easy": ["cheap"],
     "medium": ["cheap", "standard"],
     "hard": ["cheap", "standard", "premium"],
+}
+SENSITIVE_METADATA_ITERATIONS = 120_000
+DEFAULT_PROVIDER_HOSTS: dict[str, set[str]] = {
+    "openai": {"api.openai.com"},
+    "anthropic": {"api.anthropic.com"},
+    "xai": {"api.x.ai"},
+    "huggingface": {"huggingface.co"},
+    "hf": {"huggingface.co"},
 }
 
 
@@ -72,9 +82,149 @@ def _read_json(path: Path, default: Any) -> Any:
         return default
 
 
+def _mask_value(val: str) -> str:
+    """Mask a sensitive value, showing only the last 4 characters."""
+    if len(val) <= 4:
+        return "****"
+    return f"****{val[-4:]}"
+
+
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    sanitized = _sanitize_for_report(payload)
+    path.write_text(json.dumps(sanitized, indent=2), encoding="utf-8")
+
+
+def _is_relative_to(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+        return True
+    except ValueError:
+        return False
+
+
+def _response_metadata(text: str | None) -> dict[str, Any]:
+    value = str(text or "")
+    return {
+        "present": bool(value),
+        "length": len(value),
+        "pbkdf2_sha256": _sensitive_fingerprint(value) if value else "",
+    }
+
+
+def _sensitive_fingerprint(value: str) -> str:
+    salt = os.getenv("SCBE_METADATA_HASH_KEY", "scbe-terminal-router-metadata").encode("utf-8")
+    derived = hashlib.pbkdf2_hmac(
+        "sha256",
+        value.encode("utf-8"),
+        salt,
+        SENSITIVE_METADATA_ITERATIONS,
+    )
+    return derived.hex()
+
+
+def _safe_body_summary(body: Any) -> dict[str, Any]:
+    if isinstance(body, dict):
+        return {
+            "type": "dict",
+            "size": len(body),
+            "keys": sorted(str(key) for key in body.keys())[:32],
+        }
+    if isinstance(body, list):
+        return {
+            "type": "list",
+            "length": len(body),
+        }
+    if body is None:
+        return {"type": "null", "present": False}
+    return {
+        "type": type(body).__name__,
+        "present": True,
+        "length": len(str(body)),
+    }
+
+
+def _attach_response_summary(detail: dict[str, Any], body: Any) -> None:
+    summary = _safe_body_summary(body)
+    if summary.get("present", True) or summary.get("type") != "null":
+        detail["response_summary"] = summary
+
+
+def _resolve_artifact_output(output_path: str) -> Path:
+    artifacts_root = (REPO_ROOT / "artifacts").resolve()
+    candidate = Path(output_path)
+    resolved = (REPO_ROOT / candidate).resolve() if not candidate.is_absolute() else candidate.resolve()
+    if not _is_relative_to(resolved, artifacts_root):
+        raise ValueError("Output path must stay under artifacts/")
+    return resolved
+
+
+def _validate_provider_endpoint(endpoint: str, provider: str, provider_cfg: dict[str, Any]) -> str:
+    parsed = urlparse(endpoint)
+    host = (parsed.hostname or "").lower()
+    allow_insecure_local = bool(provider_cfg.get("allow_insecure_local", False))
+    if parsed.scheme != "https":
+        if not allow_insecure_local or host not in {"localhost", "127.0.0.1"}:
+            raise ValueError(f"Provider endpoint for {provider} must use HTTPS unless local override is enabled")
+    allow_custom_endpoint = bool(provider_cfg.get("allow_custom_endpoint", False))
+    allowed_hosts = DEFAULT_PROVIDER_HOSTS.get(provider, set())
+    if allowed_hosts and not allow_custom_endpoint and host not in allowed_hosts:
+        raise ValueError(f"Provider endpoint for {provider} must use an approved host")
+    return endpoint
+
+
+def _summarize_mapping(values: dict[str, Any]) -> dict[str, Any]:
+    summary: dict[str, Any] = {}
+    for key, value in values.items():
+        if isinstance(value, dict):
+            row = {"status": value.get("status")}
+            detail = value.get("detail")
+            if isinstance(detail, dict):
+                if detail.get("http_status") is not None:
+                    row["http_status"] = detail.get("http_status")
+                if detail.get("reason"):
+                    row["reason"] = detail.get("reason")
+                if detail.get("error"):
+                    row["error"] = detail.get("error")
+            summary[key] = row
+        else:
+            summary[key] = value
+    return summary
+
+
+def _sanitize_for_report(payload: Any) -> Any:
+    sensitive_fragments = {
+        "api_key",
+        "content",
+        "prompt",
+        "token",
+        "secret",
+        "authorization",
+        "x-api-key",
+        "stdout",
+        "stderr",
+        "response",
+        "response_excerpt",
+        "raw",
+        "key_value",
+        "alias_value",
+        "password",
+        "credential",
+    }
+    if isinstance(payload, dict):
+        clean: dict[str, Any] = {}
+        for key, value in payload.items():
+            key_text = str(key).lower()
+            if any(fragment in key_text for fragment in sensitive_fragments) and not (
+                key_text.endswith("_metadata") or key_text.endswith("_summary")
+            ):
+                clean[key] = "[redacted]"
+                continue
+            clean[key] = _sanitize_for_report(value)
+        return clean
+    if isinstance(payload, list):
+        return [_sanitize_for_report(item) for item in payload]
+    return payload
 
 
 def _request_json(
@@ -173,7 +323,11 @@ def _health_openai(provider_cfg: dict[str, Any]) -> dict[str, Any]:
     if not key_value:
         return {"status": "requires_auth", "detail": {"reason": "missing_key", "accepted_keys": env_keys}}
 
-    url = str(provider_cfg.get("health_endpoint") or "https://api.openai.com/v1/models").strip()
+    url = _validate_provider_endpoint(
+        str(provider_cfg.get("health_endpoint") or "https://api.openai.com/v1/models").strip(),
+        "openai",
+        provider_cfg,
+    )
     status, body, error = _request_json(url, headers={"Authorization": f"Bearer {key_value}"}, timeout=20)
     detail = {
         "http_status": status,
@@ -186,9 +340,9 @@ def _health_openai(provider_cfg: dict[str, Any]) -> dict[str, Any]:
         if isinstance(data, list):
             detail["sample_models"] = [str(item.get("id", "")) for item in data[:8] if isinstance(item, dict)]
         else:
-            detail["response"] = body
+            _attach_response_summary(detail, body)
     else:
-        detail["response"] = body
+        _attach_response_summary(detail, body)
     return {"status": _status_from_http(status), "detail": detail}
 
 
@@ -198,7 +352,11 @@ def _health_anthropic(provider_cfg: dict[str, Any]) -> dict[str, Any]:
     if not key_value:
         return {"status": "requires_auth", "detail": {"reason": "missing_key", "accepted_keys": env_keys}}
 
-    url = str(provider_cfg.get("health_endpoint") or "https://api.anthropic.com/v1/models").strip()
+    url = _validate_provider_endpoint(
+        str(provider_cfg.get("health_endpoint") or "https://api.anthropic.com/v1/models").strip(),
+        "anthropic",
+        provider_cfg,
+    )
     headers = {
         "x-api-key": key_value,
         "anthropic-version": "2023-06-01",
@@ -215,9 +373,9 @@ def _health_anthropic(provider_cfg: dict[str, Any]) -> dict[str, Any]:
         if isinstance(data, list):
             detail["sample_models"] = [str(item.get("id", "")) for item in data[:8] if isinstance(item, dict)]
         else:
-            detail["response"] = body
+            _attach_response_summary(detail, body)
     else:
-        detail["response"] = body
+        _attach_response_summary(detail, body)
     return {"status": _status_from_http(status), "detail": detail}
 
 
@@ -227,7 +385,11 @@ def _health_xai(provider_cfg: dict[str, Any]) -> dict[str, Any]:
     if not key_value:
         return {"status": "requires_auth", "detail": {"reason": "missing_key", "accepted_keys": env_keys}}
 
-    url = str(provider_cfg.get("health_endpoint") or "https://api.x.ai/v1/models").strip()
+    url = _validate_provider_endpoint(
+        str(provider_cfg.get("health_endpoint") or "https://api.x.ai/v1/models").strip(),
+        "xai",
+        provider_cfg,
+    )
     status, body, error = _request_json(url, headers={"Authorization": f"Bearer {key_value}"}, timeout=20)
     detail = {
         "http_status": status,
@@ -240,9 +402,9 @@ def _health_xai(provider_cfg: dict[str, Any]) -> dict[str, Any]:
         if isinstance(data, list):
             detail["sample_models"] = [str(item.get("id", "")) for item in data[:8] if isinstance(item, dict)]
         else:
-            detail["response"] = body
+            _attach_response_summary(detail, body)
     else:
-        detail["response"] = body
+        _attach_response_summary(detail, body)
     return {"status": _status_from_http(status), "detail": detail}
 
 
@@ -252,7 +414,11 @@ def _health_hf(provider_cfg: dict[str, Any]) -> dict[str, Any]:
     if not key_value:
         return {"status": "requires_auth", "detail": {"reason": "missing_key", "accepted_keys": env_keys}}
 
-    url = str(provider_cfg.get("health_endpoint") or "https://huggingface.co/api/whoami-v2").strip()
+    url = _validate_provider_endpoint(
+        str(provider_cfg.get("health_endpoint") or "https://huggingface.co/api/whoami-v2").strip(),
+        "huggingface",
+        provider_cfg,
+    )
     status, body, error = _request_json(url, headers={"Authorization": f"Bearer {key_value}"}, timeout=20)
     detail = {
         "http_status": status,
@@ -263,7 +429,7 @@ def _health_hf(provider_cfg: dict[str, Any]) -> dict[str, Any]:
     if isinstance(body, dict):
         detail["user"] = body.get("name") or body.get("fullname")
     else:
-        detail["response"] = body
+        _attach_response_summary(detail, body)
     return {"status": _status_from_http(status), "detail": detail}
 
 
@@ -312,8 +478,17 @@ def run_health(args: argparse.Namespace) -> int:
         "alias_sync": alias_sync,
         "status": status_map,
     }
-    _write_json(Path(args.output), payload)
-    print(json.dumps(payload, indent=2))
+    output_path = _resolve_artifact_output(args.output)
+    _write_json(output_path, payload)
+    stdout_payload = {
+        "generated_at_utc": payload["generated_at_utc"],
+        "config_path": payload["config_path"],
+        "checks": checks,
+        "output_path": str(output_path),
+        "alias_sync": _summarize_mapping(alias_sync),
+        "status": _summarize_mapping(status_map),
+    }
+    print(json.dumps(_sanitize_for_report(stdout_payload), indent=2))
 
     if args.strict:
         failing = [name for name, val in status_map.items() if val.get("status") != "ok"]
@@ -611,6 +786,20 @@ def run_call(args: argparse.Namespace) -> int:
                 )
                 continue
 
+            try:
+                endpoint = _validate_provider_endpoint(endpoint, provider, cfg)
+            except ValueError as exc:
+                attempts.append(
+                    {
+                        "provider": provider,
+                        "tier": tier,
+                        "model": model,
+                        "status": "skipped",
+                        "reason": str(exc),
+                    }
+                )
+                continue
+
             if provider in {"openai", "xai"}:
                 ok, text, http_status, body, error = _call_openai_like(
                     endpoint=endpoint,
@@ -678,14 +867,12 @@ def run_call(args: argparse.Namespace) -> int:
                 final_text = text.strip()
                 break
 
-            # Keep the last raw error payload for troubleshooting without leaking keys.
-            attempts[-1]["response_excerpt"] = (
-                body if isinstance(body, (dict, list)) else str(body)
-            )
+            attempts[-1]["response_summary"] = _safe_body_summary(body)
         if selected:
             break
 
     _write_json(ledger_path, ledger)
+    output_path = _resolve_artifact_output(args.output)
 
     result = {
         "generated_at_utc": _iso_now(),
@@ -696,15 +883,15 @@ def run_call(args: argparse.Namespace) -> int:
         "tiers_tried": tiers,
         "selected": selected,
         "attempts": attempts,
-        "response": final_text,
+        "response_metadata": _response_metadata(final_text),
         "ledger_path": str(ledger_path.resolve()),
     }
-    _write_json(Path(args.output), result)
-    print(json.dumps(result, indent=2))
+    _write_json(output_path, result)
+    print(json.dumps(_sanitize_for_report({**result, "output_path": str(output_path)}), indent=2))
 
     if args.print_response and final_text:
         print("")
-        print(final_text)
+        print(json.dumps({"response_metadata": _response_metadata(final_text)}, indent=2))
 
     return 0 if selected else 1
 
