@@ -1,6 +1,6 @@
 # 🦾 HYDRA Multi-Agent Coordination System - Complete Architecture
 
-> last-synced: 2026-03-09T07:27:34.845Z
+> last-synced: 2026-03-16T07:36:34.343Z
 
 # HYDRA Multi-Agent Coordination System
 
@@ -808,7 +808,7 @@ librarian.add_relationship(
 
 ---
 
-Repository: https://github.com/issdandavis/SCBE-AETHERMOORE
+Repository: https://github.com/ISDanDavis2/scbe-aethermoore
 
 Latest Commit: fd49eeb (spectral analysis + consensus)
 
