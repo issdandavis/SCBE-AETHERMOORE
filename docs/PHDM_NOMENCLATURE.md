@@ -1,6 +1,6 @@
 # 📘 PHDM Nomenclature Reference - Canonical Definitions
 
-> last-synced: 2026-03-09T07:28:13.152Z
+> last-synced: 2026-03-16T07:37:09.772Z
 
 # PHDM Nomenclature Reference
 
