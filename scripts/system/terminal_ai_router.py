@@ -14,6 +14,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
@@ -60,7 +61,16 @@ DEFAULT_PROVIDER_HOSTS: dict[str, set[str]] = {
 if str(REPO_ROOT) not in os.sys.path:
     os.sys.path.insert(0, str(REPO_ROOT))
 
-from src.security.secret_store import get_secret, set_secret  # noqa: E402
+from src.security.secret_store import (  # noqa: E402
+    get_secret,
+    set_secret,
+    redact_sensitive_text as _shared_redact,
+    sensitive_fingerprint as _shared_fingerprint,
+    read_json as _shared_read_json,
+    write_json as _shared_write_json,
+    sanitize_for_report as _shared_sanitize,
+    mask_value as _shared_mask,
+)
 
 
 def _now_utc() -> datetime:
@@ -76,23 +86,19 @@ def _utc_day() -> str:
 
 
 def _read_json(path: Path, default: Any) -> Any:
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return default
+    return _shared_read_json(path, default)
 
 
 def _mask_value(val: str) -> str:
-    """Mask a sensitive value, showing only the last 4 characters."""
-    if len(val) <= 4:
-        return "****"
-    return f"****{val[-4:]}"
+    return _shared_mask(val)
+
+
+def _redact_sensitive_text(text: str | None) -> str:
+    return _shared_redact(text)
 
 
 def _write_json(path: Path, payload: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    sanitized = _sanitize_for_report(payload)
-    path.write_text(json.dumps(sanitized, indent=2), encoding="utf-8")
+    _shared_write_json(path, payload, sanitize=True)
 
 
 def _is_relative_to(path: Path, root: Path) -> bool:
@@ -113,14 +119,7 @@ def _response_metadata(text: str | None) -> dict[str, Any]:
 
 
 def _sensitive_fingerprint(value: str) -> str:
-    salt = os.getenv("SCBE_METADATA_HASH_KEY", "scbe-terminal-router-metadata").encode("utf-8")
-    derived = hashlib.pbkdf2_hmac(
-        "sha256",
-        value.encode("utf-8"),
-        salt,
-        SENSITIVE_METADATA_ITERATIONS,
-    )
-    return derived.hex()
+    return _shared_fingerprint(value, salt_default="scbe-terminal-router-metadata")
 
 
 def _safe_body_summary(body: Any) -> dict[str, Any]:
@@ -192,39 +191,49 @@ def _summarize_mapping(values: dict[str, Any]) -> dict[str, Any]:
     return summary
 
 
-def _sanitize_for_report(payload: Any) -> Any:
-    sensitive_fragments = {
-        "api_key",
-        "content",
-        "prompt",
-        "token",
-        "secret",
-        "authorization",
-        "x-api-key",
-        "stdout",
-        "stderr",
-        "response",
-        "response_excerpt",
-        "raw",
-        "key_value",
-        "alias_value",
-        "password",
-        "credential",
-    }
-    if isinstance(payload, dict):
-        clean: dict[str, Any] = {}
-        for key, value in payload.items():
-            key_text = str(key).lower()
-            if any(fragment in key_text for fragment in sensitive_fragments) and not (
-                key_text.endswith("_metadata") or key_text.endswith("_summary")
-            ):
-                clean[key] = "[redacted]"
+def _build_public_health_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    alias_sync = payload.get("alias_sync", {})
+    alias_sync_summary = {"set": 0, "synced": 0, "missing": 0}
+    if isinstance(alias_sync, dict):
+        for row in alias_sync.values():
+            if not isinstance(row, dict):
                 continue
-            clean[key] = _sanitize_for_report(value)
-        return clean
-    if isinstance(payload, list):
-        return [_sanitize_for_report(item) for item in payload]
-    return payload
+            status = str(row.get("status", "")).strip().lower()
+            if status in alias_sync_summary:
+                alias_sync_summary[status] += 1
+
+    public_status: dict[str, Any] = {}
+    raw_status = payload.get("status", {})
+    if isinstance(raw_status, dict):
+        for name, row in raw_status.items():
+            if not isinstance(row, dict):
+                public_status[str(name)] = row
+                continue
+            public_row = {"status": row.get("status")}
+            detail = row.get("detail")
+            if isinstance(detail, dict):
+                detail_clean: dict[str, Any] = {}
+                for key, value in detail.items():
+                    if key in {"key_name", "key_preview", "key_source", "accepted_keys"}:
+                        continue
+                    if key == "error":
+                        detail_clean[key] = _redact_sensitive_text(value)
+                    else:
+                        detail_clean[key] = _sanitize_for_report(value)
+                public_row["detail"] = detail_clean
+            public_status[str(name)] = public_row
+
+    return {
+        "generated_at_utc": payload.get("generated_at_utc"),
+        "config_path": payload.get("config_path"),
+        "checks": payload.get("checks", []),
+        "alias_sync_summary": alias_sync_summary,
+        "status": public_status,
+    }
+
+
+def _sanitize_for_report(payload: Any) -> Any:
+    return _shared_sanitize(payload)
 
 
 def _request_json(
@@ -331,7 +340,7 @@ def _health_openai(provider_cfg: dict[str, Any]) -> dict[str, Any]:
     status, body, error = _request_json(url, headers={"Authorization": f"Bearer {key_value}"}, timeout=20)
     detail = {
         "http_status": status,
-        "key_name": key_name,
+        "key_preview": _mask_value(key_value),
         "key_source": key_source,
         "error": error,
     }
@@ -364,7 +373,7 @@ def _health_anthropic(provider_cfg: dict[str, Any]) -> dict[str, Any]:
     status, body, error = _request_json(url, headers=headers, timeout=20)
     detail = {
         "http_status": status,
-        "key_name": key_name,
+        "key_preview": _mask_value(key_value),
         "key_source": key_source,
         "error": error,
     }
@@ -393,7 +402,7 @@ def _health_xai(provider_cfg: dict[str, Any]) -> dict[str, Any]:
     status, body, error = _request_json(url, headers={"Authorization": f"Bearer {key_value}"}, timeout=20)
     detail = {
         "http_status": status,
-        "key_name": key_name,
+        "key_preview": _mask_value(key_value),
         "key_source": key_source,
         "error": error,
     }
@@ -422,7 +431,7 @@ def _health_hf(provider_cfg: dict[str, Any]) -> dict[str, Any]:
     status, body, error = _request_json(url, headers={"Authorization": f"Bearer {key_value}"}, timeout=20)
     detail = {
         "http_status": status,
-        "key_name": key_name,
+        "key_preview": _mask_value(key_value),
         "key_source": key_source,
         "error": error,
     }
@@ -480,14 +489,8 @@ def run_health(args: argparse.Namespace) -> int:
     }
     output_path = _resolve_artifact_output(args.output)
     _write_json(output_path, payload)
-    stdout_payload = {
-        "generated_at_utc": payload["generated_at_utc"],
-        "config_path": payload["config_path"],
-        "checks": checks,
-        "output_path": str(output_path),
-        "alias_sync": _summarize_mapping(alias_sync),
-        "status": _summarize_mapping(status_map),
-    }
+    stdout_payload = _build_public_health_payload(payload)
+    stdout_payload["output_path"] = str(output_path)
     print(json.dumps(_sanitize_for_report(stdout_payload), indent=2))
 
     if args.strict:

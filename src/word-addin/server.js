@@ -8,6 +8,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const express = require("express");
+const rateLimit = require("express-rate-limit");
 const { spawn } = require("child_process");
 const { WebSocketServer } = require("ws");
 const Anthropic = require("@anthropic-ai/sdk").default;
@@ -15,30 +16,95 @@ const { loadOrCreateSession, generateSessionId } = require("./session_envelope")
 
 const PORT = 3000;
 const app = express();
+app.set("trust proxy", 1);
+const appLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 240,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// ─── In-memory per-IP rate limiter (mirrors kernel-runner pattern) ───
+const ROUTE_RATE_LIMIT_WINDOW_MS = 60_000;
+const ROUTE_RATE_LIMIT_MAX = 60;          // 60 requests/min per IP for REST endpoints
+const WS_RATE_LIMIT_MAX = 30;             // 30 messages/min per session for WebSocket
+const RATE_LIMIT_CLEANUP_INTERVAL_MS = 120_000;
+
+const rateLimitMap = new Map();
+
+// Periodically purge expired rate-limit entries to prevent unbounded memory growth
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap) {
+    if (now - entry.windowStart > ROUTE_RATE_LIMIT_WINDOW_MS) {
+      rateLimitMap.delete(key);
+    }
+  }
+}, RATE_LIMIT_CLEANUP_INTERVAL_MS).unref();
+
+function checkRateLimit(key, max) {
+  const now = Date.now();
+  let entry = rateLimitMap.get(key);
+  if (!entry || now - entry.windowStart > ROUTE_RATE_LIMIT_WINDOW_MS) {
+    entry = { windowStart: now, count: 0 };
+    rateLimitMap.set(key, entry);
+  }
+  entry.count++;
+  return {
+    allowed: entry.count <= max,
+    remaining: Math.max(max - entry.count, 0),
+    retryAfterSeconds: Math.max(Math.ceil((entry.windowStart + ROUTE_RATE_LIMIT_WINDOW_MS - now) / 1000), 1),
+  };
+}
+
+function enforceRouteRateLimit(req, res, routeId) {
+  const clientIp = req.ip || req.socket.remoteAddress || "unknown";
+  const limit = checkRateLimit(`${routeId}:${clientIp}`, ROUTE_RATE_LIMIT_MAX);
+  res.set("X-RateLimit-Limit", String(ROUTE_RATE_LIMIT_MAX));
+  res.set("X-RateLimit-Remaining", String(limit.remaining));
+  res.set("Retry-After", String(limit.retryAfterSeconds));
+  if (!limit.allowed) {
+    res.status(429).json({ error: "Rate limit exceeded.", route: routeId });
+    return false;
+  }
+  return true;
+}
+
 const repoRoot = path.resolve(__dirname, "..", "..");
 const readerEditionPath = path.join(repoRoot, "content", "book", "reader-edition", "the-six-tongues-protocol-full.md");
 const buildKdpPath = path.join(repoRoot, "content", "book", "build_kdp.py");
 const kdpOutputPath = path.join(repoRoot, "content", "book", "the-six-tongues-protocol-kdp.docx");
 const libreOfficePath = path.join("C:", "Program Files", "LibreOffice", "program", "swriter.exe");
 
+app.use(appLimiter);
 app.use(express.json());
 
 // Serve manifest.xml at root for catalog discovery
-app.get("/manifest.xml", (_req, res) => {
+app.get("/manifest.xml", (req, res) => {
+  if (!enforceRouteRateLimit(req, res, "manifest")) return;
   res.type("application/xml").sendFile(path.join(__dirname, "manifest.xml"));
 });
 
-// Serve static taskpane files
-app.use("/taskpane", express.static(path.join(__dirname, "taskpane")));
+// Serve static taskpane files (rate-limited to mitigate asset-based DoS)
+const taskpaneStatic = express.static(path.join(__dirname, "taskpane"));
+app.use("/taskpane", (req, res, next) => {
+  if (!enforceRouteRateLimit(req, res, "taskpane")) return;
+  taskpaneStatic(req, res, next);
+});
 
-app.get("/", (_req, res) => {
+app.get("/", (req, res) => {
+  if (!enforceRouteRateLimit(req, res, "root")) return;
   res.redirect("/taskpane/writer.html");
 });
 
 // Health check
-app.get("/health", (_req, res) => res.json({ status: "ok", service: "scbe-word-addin" }));
+app.get("/health", (req, res) => {
+  if (!enforceRouteRateLimit(req, res, "health")) return;
+  res.json({ status: "ok", service: "scbe-word-addin" });
+});
 
-app.get("/api/manuscript/reader-edition", (_req, res) => {
+app.get("/api/manuscript/reader-edition", (req, res) => {
+  if (!enforceRouteRateLimit(req, res, "manuscript")) return;
   try {
     const content = fs.readFileSync(readerEditionPath, "utf8");
     res.json({
@@ -85,7 +151,8 @@ function runProcess(command, args, options = {}) {
   });
 }
 
-app.post("/api/book/build-kdp-open", async (_req, res) => {
+app.post("/api/book/build-kdp-open", async (req, res) => {
+  if (!enforceRouteRateLimit(req, res, "build-kdp")) return;
   try {
     const buildResult = await runProcess("python", [buildKdpPath], {
       cwd: path.dirname(buildKdpPath),
@@ -421,6 +488,9 @@ function attachWebSocketBridge(server) {
 
     console.log(`[bridge] Client connected — session=${sessionId} pad=${envelope.padId} zone=${envelope.currentZone}`);
 
+    // ─── WebSocket per-session rate limiting (30 msgs/min) ───
+    const wsRateLimitKey = `ws:${sessionId}`;
+
     // Restore conversation state from envelope (survives reconnects)
     let conversationHistory = envelope.conversationHistory;
     let syncedDocumentContext = envelope.documentContext;
@@ -434,6 +504,16 @@ function attachWebSocketBridge(server) {
     }));
 
     ws.on("message", async (raw) => {
+      // Enforce WebSocket rate limit (30 messages/min per session)
+      const wsLimit = checkRateLimit(wsRateLimitKey, WS_RATE_LIMIT_MAX);
+      if (!wsLimit.allowed) {
+        ws.send(JSON.stringify({
+          type: "error",
+          message: `Rate limit exceeded (${WS_RATE_LIMIT_MAX} msgs/min). Retry in ${wsLimit.retryAfterSeconds}s.`,
+        }));
+        return;
+      }
+
       let msg;
       try {
         msg = JSON.parse(raw);
