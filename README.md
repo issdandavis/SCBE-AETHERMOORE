@@ -8,6 +8,10 @@
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](.)
 [![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue)](.)
 [![Release & Deploy](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/release-and-deploy.yml/badge.svg)](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/release-and-deploy.yml)
+[![Sponsor](https://img.shields.io/badge/sponsor-Support%20SCBE-ff69b4?logo=github-sponsors)](https://github.com/sponsors/issdandavis)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-F16061?logo=ko-fi)](https://ko-fi.com/izdandavis)
+[![npm](https://img.shields.io/npm/v/scbe-aethermoore)](https://www.npmjs.com/package/scbe-aethermoore)
+[![PyPI](https://img.shields.io/pypi/v/scbe-aethermoore)](https://pypi.org/project/scbe-aethermoore/)
 
 ---
 
@@ -317,6 +321,19 @@ curl -X POST https://YOUR_API/v1/fleet/run-scenario \
 ### Social & Updates
 - **X/Twitter**: [@davisissac](https://x.com/davisissac)
 - **Substack**: [Issac "Izreal" Davis](https://substack.com/profile/153446638-issac-izreal-davis)
+
+---
+
+## Support This Project
+
+SCBE-AETHERMOORE is built by a solo developer. If it helps your team manage AI agents safely, consider supporting continued development:
+
+| | Link |
+|---|---|
+| **GitHub Sponsors** | [github.com/sponsors/issdandavis](https://github.com/sponsors/issdandavis) |
+| **Ko-fi** | [ko-fi.com/izdandavis](https://ko-fi.com/izdandavis) |
+| **SaaS API** | Usage-based governance API — [contact for access](mailto:issdandavis@gmail.com?subject=SCBE%20API%20Access) |
+| **Book** | *The Six Tongues Protocol* on Kindle — search "Issac Davis Six Tongues" on Amazon |
 
 ---
 
