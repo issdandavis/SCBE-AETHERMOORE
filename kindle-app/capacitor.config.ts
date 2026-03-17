@@ -15,16 +15,7 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     allowNavigation: [
-      '34.134.99.90',
-      'aethercode.issdandavis.com',
-      'aetherbrowse.web.app',
-      'aetherbrowse.issdandavis.com',
-      '*.googleapis.com',
-      '*.openai.com',
-      '*.anthropic.com',
-      '*.groq.com',
-      '*.x.ai',
-      '*.huggingface.co',
+      '*',
     ],
   },
   android: {
