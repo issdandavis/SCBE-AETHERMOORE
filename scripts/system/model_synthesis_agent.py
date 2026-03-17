@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""CLI agent for coupling 2 or 3 models with M4-style governance."""
+"""CLI agent for coupling 2 or 3 models with M4-style governance.
+
+NOTE: Requires the polly_eggs prototype at prototype/polly_eggs/.
+The import below resolves to prototype.polly_eggs.src.polly_eggs.model_synthesis.
+If you see ImportError, ensure the prototype subproject is present and that
+the repo root is on sys.path (this script adds it automatically).
+"""
 
 from __future__ import annotations
 
