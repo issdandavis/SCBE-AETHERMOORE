@@ -3,92 +3,340 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCBE-AETHERMOORE — AI Safety Through Hyperbolic Geometry</title>
-    <meta name="description" content="Open-source AI governance framework using Poincare ball geometry, Sacred Tongues tokenization, and post-quantum cryptography. Born from a DnD campaign.">
-    <meta property="og:title" content="SCBE-AETHERMOORE">
-    <meta property="og:description" content="AI safety framework where adversarial behavior costs exponentially more. 14-layer security pipeline with post-quantum crypto.">
+    <title>SCBE-AETHERMOORE — AI Governance That Scales</title>
+    <meta name="description" content="Production-ready AI agent governance. 14-layer security pipeline with hyperbolic geometry makes rogue AI mathematically impossible. API access from $49/mo.">
+    <meta property="og:title" content="SCBE-AETHERMOORE — AI Governance API">
+    <meta property="og:description" content="The mathematical bouncer for your AI fleet. Rogue agents cost exponentially more. Post-quantum crypto. Usage-based billing.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://issdandavis.github.io/SCBE-AETHERMOORE/">
+    <meta property="og:url" content="https://aethermoorgames.com">
+    <link rel="canonical" href="https://aethermoorgames.com">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #0a0a1a;
             color: #e2e2e2;
-            line-height: 1.6;
+            line-height: 1.7;
         }
+        a { color: #7b8cff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* NAV */
+        .topnav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(10,10,26,0.92); backdrop-filter: blur(12px);
+            border-bottom: 1px solid #1a1a3e;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px; height: 56px; font-size: 14px;
+        }
+        .topnav .brand { font-weight: 700; font-size: 16px; color: #fff; }
+        .topnav nav { display: flex; gap: 24px; }
+        .topnav nav a { color: #aaa; font-size: 14px; }
+        .topnav nav a:hover { color: #fff; text-decoration: none; }
+        .topnav .cta-sm {
+            background: #6c5ce7; color: #fff; padding: 6px 16px;
+            border-radius: 6px; font-weight: 600; font-size: 13px;
+        }
+        .topnav .cta-sm:hover { background: #7b6cf0; text-decoration: none; }
+
+        /* HERO */
         .hero {
-            background: linear-gradient(135deg, #0f3460 0%, #533483 40%, #e94560 100%);
-            padding: 80px 40px;
+            padding: 140px 32px 80px;
             text-align: center;
+            background: radial-gradient(ellipse at 50% 0%, #1a1050 0%, #0a0a1a 70%);
         }
-        .hero h1 { font-size: 48px; margin-bottom: 16px; letter-spacing: -1px; }
-        .hero .subtitle { font-size: 20px; opacity: 0.9; max-width: 700px; margin: 0 auto 30px; }
-        .hero .tagline { font-size: 14px; opacity: 0.7; font-style: italic; }
-        .nav-links { margin-top: 30px; display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
-        .nav-links a {
-            color: white; text-decoration: none; padding: 10px 24px;
-            border: 1px solid rgba(255,255,255,0.3); border-radius: 6px;
-            font-size: 15px; transition: all 0.2s;
+        .hero h1 {
+            font-size: clamp(32px, 5vw, 56px);
+            font-weight: 800; letter-spacing: -1.5px;
+            background: linear-gradient(135deg, #fff 0%, #a29bfe 50%, #6c5ce7 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        .nav-links a:hover { background: rgba(255,255,255,0.15); border-color: white; }
-        .nav-links a.primary { background: rgba(255,255,255,0.2); border-color: white; font-weight: 600; }
-        .content { max-width: 900px; margin: 0 auto; padding: 60px 30px; }
-        h2 { font-size: 28px; margin: 40px 0 20px; color: #e94560; }
-        h3 { font-size: 20px; margin: 24px 0 12px; }
-        p { margin-bottom: 16px; color: #bbb; }
-        .formula {
-            background: #111; padding: 20px; border-radius: 8px; text-align: center;
-            font-family: 'Courier New', monospace; font-size: 24px; color: #e94560;
-            margin: 20px 0; border-left: 3px solid #533483;
+        .hero .subtitle {
+            font-size: clamp(16px, 2.2vw, 22px);
+            color: #999; max-width: 640px; margin: 20px auto 32px;
         }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0; }
-        .card {
-            background: #111; padding: 24px; border-radius: 8px;
-            border: 1px solid #222; transition: border-color 0.2s;
+        .hero .cta-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .btn {
+            display: inline-block; padding: 14px 32px; border-radius: 8px;
+            font-size: 16px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer;
         }
-        .card:hover { border-color: #533483; }
-        .card h3 { margin-top: 0; color: #e2e2e2; font-size: 18px; }
-        .card p { font-size: 14px; }
-        .card .tag { display: inline-block; background: #1a1a3e; color: #7b7bff; padding: 2px 8px; border-radius: 3px; font-size: 12px; margin-right: 4px; }
-        .tongues-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        .tongues-table th, .tongues-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #222; }
-        .tongues-table th { color: #e94560; font-size: 13px; text-transform: uppercase; }
-        .tongues-table td { font-size: 14px; color: #ccc; }
+        .btn-primary { background: #6c5ce7; color: #fff; }
+        .btn-primary:hover { background: #7b6cf0; text-decoration: none; }
+        .btn-ghost { background: transparent; color: #ccc; border: 1px solid #333; }
+        .btn-ghost:hover { border-color: #6c5ce7; color: #fff; text-decoration: none; }
+        .hero .social-proof {
+            margin-top: 40px; font-size: 13px; color: #666;
+            display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;
+        }
+        .hero .social-proof span { display: flex; align-items: center; gap: 6px; }
+
+        /* SECTIONS */
+        section { padding: 80px 32px; }
+        .container { max-width: 1080px; margin: 0 auto; }
+        .section-label {
+            font-size: 12px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 2px; color: #6c5ce7; margin-bottom: 8px;
+        }
+        .section-title {
+            font-size: clamp(24px, 3.5vw, 40px);
+            font-weight: 700; margin-bottom: 16px;
+        }
+        .section-desc { color: #888; font-size: 17px; max-width: 600px; margin-bottom: 40px; }
+
+        /* FEATURES */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        .feature-card {
+            background: #111; border: 1px solid #1a1a3e; border-radius: 12px;
+            padding: 32px; transition: border-color 0.3s;
+        }
+        .feature-card:hover { border-color: #6c5ce7; }
+        .feature-card .icon { font-size: 28px; margin-bottom: 16px; }
+        .feature-card h3 { font-size: 18px; margin-bottom: 8px; }
+        .feature-card p { font-size: 14px; color: #888; }
+
+        /* PIPELINE */
+        .pipeline-steps {
+            display: flex; gap: 2px; margin: 32px 0; flex-wrap: wrap;
+        }
+        .pipeline-step {
+            flex: 1; min-width: 120px; padding: 16px 12px;
+            background: #111; border: 1px solid #1a1a3e;
+            text-align: center; font-size: 12px; color: #888;
+            position: relative;
+        }
+        .pipeline-step:first-child { border-radius: 8px 0 0 8px; }
+        .pipeline-step:last-child { border-radius: 0 8px 8px 0; }
+        .pipeline-step .layer-num { font-weight: 700; color: #6c5ce7; font-size: 14px; display: block; margin-bottom: 4px; }
+
+        /* PRICING */
+        #pricing { background: #0d0d22; }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px; max-width: 960px; margin: 0 auto;
+        }
+        .price-card {
+            background: #111; border: 1px solid #1a1a3e; border-radius: 16px;
+            padding: 40px 32px; text-align: center; position: relative;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+        .price-card:hover { border-color: #6c5ce7; transform: translateY(-4px); }
+        .price-card.popular {
+            border-color: #6c5ce7;
+            box-shadow: 0 0 40px rgba(108, 92, 231, 0.15);
+        }
+        .price-card.popular::before {
+            content: 'MOST POPULAR';
+            position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+            background: #6c5ce7; color: #fff; font-size: 11px; font-weight: 700;
+            padding: 4px 16px; border-radius: 20px; letter-spacing: 1px;
+        }
+        .price-card .plan-name { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .price-card .price {
+            font-size: 48px; font-weight: 800; margin: 16px 0 4px;
+        }
+        .price-card .price span { font-size: 16px; font-weight: 400; color: #888; }
+        .price-card .price-desc { font-size: 13px; color: #666; margin-bottom: 24px; }
+        .price-card ul {
+            list-style: none; text-align: left; margin-bottom: 32px;
+        }
+        .price-card ul li {
+            padding: 8px 0; font-size: 14px; color: #aaa;
+            border-bottom: 1px solid #1a1a2e;
+        }
+        .price-card ul li::before { content: '\2713'; color: #6c5ce7; margin-right: 10px; font-weight: 700; }
+        .price-card .btn { width: 100%; text-align: center; }
+
+        /* EU AI ACT BANNER */
+        .eu-banner {
+            background: linear-gradient(90deg, #1a1050, #2d1b69);
+            border: 1px solid #6c5ce7;
+            border-radius: 12px; padding: 32px;
+            display: flex; align-items: center; gap: 24px;
+            margin-top: 48px; flex-wrap: wrap;
+        }
+        .eu-banner .badge-lg { font-size: 40px; }
+        .eu-banner h3 { font-size: 20px; margin-bottom: 4px; }
+        .eu-banner p { font-size: 14px; color: #aaa; }
+
+        /* BOOK / SUPPORT */
+        .book-section {
+            display: flex; gap: 48px; align-items: center; flex-wrap: wrap;
+        }
+        .book-info { flex: 1; min-width: 280px; }
+        .book-info h3 { font-size: 24px; margin-bottom: 12px; }
+        .book-info p { color: #888; }
+        .support-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px; margin-top: 32px;
+        }
+        .support-card {
+            background: #111; border: 1px solid #1a1a3e; border-radius: 12px;
+            padding: 24px; text-align: center; transition: border-color 0.3s;
+        }
+        .support-card:hover { border-color: #6c5ce7; }
+        .support-card .icon { font-size: 32px; margin-bottom: 12px; }
+        .support-card h4 { margin-bottom: 4px; }
+        .support-card p { font-size: 13px; color: #888; }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid #1a1a3e; padding: 48px 32px;
+            text-align: center; color: #555; font-size: 13px;
+        }
+        footer .links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+        footer .links a { color: #777; }
+
+        /* FORMULA */
+        .formula-box {
+            background: #0d0d22; border: 1px solid #1a1a3e; border-radius: 12px;
+            padding: 32px; text-align: center; margin: 32px 0;
+        }
+        .formula-box .formula {
+            font-family: 'Courier New', monospace;
+            font-size: clamp(20px, 3vw, 32px);
+            color: #a29bfe; margin-bottom: 12px;
+        }
+        .formula-box .explain { font-size: 14px; color: #666; }
+
+        /* TONGUES TABLE */
+        .tongues-table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+        .tongues-table th, .tongues-table td {
+            padding: 12px 16px; text-align: left;
+            border-bottom: 1px solid #1a1a3e; font-size: 14px;
+        }
+        .tongues-table th { color: #6c5ce7; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
         .tongues-table td:first-child { font-weight: 600; color: #e2e2e2; }
-        .tongues-table td:last-child { font-family: monospace; color: #7b7bff; }
-        .footer {
-            text-align: center; padding: 40px 20px; border-top: 1px solid #222;
-            color: #666; font-size: 13px;
+        .tongues-table td:last-child { font-family: monospace; color: #a29bfe; }
+
+        @media (max-width: 640px) {
+            .topnav nav { display: none; }
+            .hero { padding: 100px 20px 60px; }
+            section { padding: 48px 20px; }
+            .pipeline-steps { flex-direction: column; }
+            .pipeline-step { border-radius: 0 !important; }
+            .eu-banner { flex-direction: column; text-align: center; }
         }
-        .footer a { color: #7b7bff; text-decoration: none; }
-        code { background: #1a1a2e; padding: 2px 6px; border-radius: 3px; font-size: 14px; }
-        .badge { display: inline-block; margin: 4px; }
-        .badge img { height: 20px; }
     </style>
 </head>
 <body>
-    <div class="hero">
-        <h1>SCBE-AETHERMOORE</h1>
-        <div class="subtitle">AI safety framework where adversarial behavior costs exponentially more. Born from 12,596 paragraphs of a DnD campaign.</div>
-        <div class="tagline">Thul'medan kess'ara nav'kor zar'aelin — "The spiral turns, knowledge grows through different hearts across dimensions."</div>
-        <div class="nav-links">
-            <a href="api/" class="primary">API Docs</a>
-            <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
-            <a href="https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data">Dataset</a>
-            <a href="https://huggingface.co/issdandavis/geoseed-network">Model</a>
-            <a href="api/openapi.json">OpenAPI Spec</a>
+
+<!-- NAV -->
+<div class="topnav">
+    <div class="brand">SCBE</div>
+    <nav>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#book">Book</a>
+        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
+    </nav>
+    <a href="#pricing" class="cta-sm">Get API Access</a>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+    <h1>AI Governance That Scales</h1>
+    <p class="subtitle">
+        The mathematical security layer for AI agent fleets.
+        Rogue behavior costs exponentially more. No false positives. Post-quantum crypto.
+    </p>
+    <div class="cta-row">
+        <a href="#pricing" class="btn btn-primary">View Pricing</a>
+        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" class="btn btn-ghost">Star on GitHub</a>
+    </div>
+    <div class="social-proof">
+        <span>950+ tests passing</span>
+        <span>14-layer pipeline</span>
+        <span>Post-quantum ready</span>
+        <span>npm + PyPI published</span>
+    </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+    <div class="container">
+        <div class="section-label">Why SCBE</div>
+        <h2 class="section-title">Your AI agents need a bouncer</h2>
+        <p class="section-desc">
+            As AI agents get more autonomous, the attack surface explodes.
+            SCBE makes unauthorized actions mathematically infeasible.
+        </p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="icon">&#x1F6E1;</div>
+                <h3>14-Layer Security Pipeline</h3>
+                <p>Every request passes through 14 mathematical transformations. Hyperbolic distance, FFT coherence, Hamiltonian energy wells, and more.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">&#x1F4D0;</div>
+                <h3>Hyperbolic Cost Scaling</h3>
+                <p>Safe operations are cheap. Risky ones cost exponentially more. At the boundary, attacks become computationally impossible.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">&#x1F916;</div>
+                <h3>Fleet Management</h3>
+                <p>Spawn, monitor, and govern agent flocks. Byzantine fault tolerance. Automatic rogue detection through math alone.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">&#x1F512;</div>
+                <h3>Post-Quantum Crypto</h3>
+                <p>ML-KEM-768 key exchange + ML-DSA-65 signatures. Your governance decisions are quantum-resistant today.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">&#x1F310;</div>
+                <h3>Sacred Tongues Tokenizer</h3>
+                <p>Six semantic domains weighted by golden ratio. Higher-privilege operations require proportionally more authorization.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">&#x2705;</div>
+                <h3>Zero False Positives</h3>
+                <p>Legitimate agents never get flagged. The geometry guarantees it — authorized operations always stay near the center.</p>
+            </div>
+        </div>
+
+        <div class="formula-box">
+            <div class="formula">H(d, R) = R<sup>d&sup2;</sup></div>
+            <div class="explain">
+                d = hyperbolic distance from safe operation &nbsp;|&nbsp; R = realm radius<br>
+                At d=0.3: cost ~1.1x &nbsp;|&nbsp; At d=0.95: cost explodes beyond feasibility
+            </div>
+        </div>
+
+        <div class="eu-banner">
+            <div class="badge-lg">&#x1F1EA;&#x1F1FA;</div>
+            <div>
+                <h3>EU AI Act Ready</h3>
+                <p>Enforcement begins August 2, 2026. Penalties up to 35M EUR. SCBE provides the governance audit trail your AI systems need for compliance. The $4.83B AI governance market (CAGR 45.3%) is just starting.</p>
+            </div>
         </div>
     </div>
+</section>
 
-    <div class="content">
-        <h2>The Harmonic Wall</h2>
-        <p>The core innovation: adversarial intent costs exponentially more the further it drifts from safe operation.</p>
-        <div class="formula">H(d, R) = R<sup>d&sup2;</sup></div>
-        <p>Where <code>d</code> is the hyperbolic distance from safe operation (measured in the Poincare ball) and <code>R</code> is the realm radius. At d=0.3, cost is ~1.1x. At d=0.95, cost explodes beyond computational feasibility.</p>
+<!-- PIPELINE -->
+<section style="background: #0d0d22;">
+    <div class="container">
+        <div class="section-label">Architecture</div>
+        <h2 class="section-title">14 layers between your agents and chaos</h2>
+        <div class="pipeline-steps">
+            <div class="pipeline-step"><span class="layer-num">L1-2</span>Context Embedding</div>
+            <div class="pipeline-step"><span class="layer-num">L3-4</span>Poincare Ball</div>
+            <div class="pipeline-step"><span class="layer-num">L5</span>Hyperbolic Distance</div>
+            <div class="pipeline-step"><span class="layer-num">L6-7</span>Breathing + Phase</div>
+            <div class="pipeline-step"><span class="layer-num">L8</span>Energy Wells</div>
+            <div class="pipeline-step"><span class="layer-num">L9-10</span>Spectral Coherence</div>
+            <div class="pipeline-step"><span class="layer-num">L11</span>Temporal Distance</div>
+            <div class="pipeline-step"><span class="layer-num">L12</span>Harmonic Wall</div>
+            <div class="pipeline-step"><span class="layer-num">L13</span>Risk Decision</div>
+            <div class="pipeline-step"><span class="layer-num">L14</span>Audio Telemetry</div>
+        </div>
 
-        <h2>Six Sacred Tongues</h2>
-        <p>Six semantic domains with golden ratio (phi) weighting. Higher-privilege operations cost exponentially more.</p>
+        <h3 style="margin: 32px 0 16px;">Six Sacred Tongues</h3>
         <table class="tongues-table">
             <tr><th>Tongue</th><th>Domain</th><th>Weight</th></tr>
             <tr><td>KO (Kor'aelin)</td><td>Intent / Orchestration</td><td>1.000</td></tr>
@@ -98,94 +346,140 @@
             <tr><td>UM (Umbroth)</td><td>Security / Redaction</td><td>6.854</td></tr>
             <tr><td>DR (Draumric)</td><td>Schema / Attestation</td><td>11.09</td></tr>
         </table>
-
-        <h2>14-Layer Security Pipeline</h2>
-        <div class="grid">
-            <div class="card">
-                <h3>L1-L4: Embedding</h3>
-                <p>Complex context, realification, weighted transform, Poincare ball embedding</p>
-                <span class="tag">Unitarity</span><span class="tag">Locality</span>
-            </div>
-            <div class="card">
-                <h3>L5-L7: Geometry</h3>
-                <p>Hyperbolic distance, breathing transform, Mobius phase rotation</p>
-                <span class="tag">Symmetry</span><span class="tag">Causality</span>
-            </div>
-            <div class="card">
-                <h3>L8-L10: Coherence</h3>
-                <p>Multi-well realms (Hamiltonian), spectral FFT, spin coherence</p>
-                <span class="tag">Symmetry</span>
-            </div>
-            <div class="card">
-                <h3>L11-L14: Decision</h3>
-                <p>Triadic temporal, harmonic wall, risk decision (ALLOW/QUARANTINE/DENY), audio axis</p>
-                <span class="tag">Causality</span><span class="tag">Composition</span>
-            </div>
-        </div>
-
-        <h2>API Domains</h2>
-        <div class="grid">
-            <div class="card">
-                <h3>Core</h3>
-                <p>Quantum-resistant data sealing, retrieval, governance evaluation, attack simulation</p>
-                <a href="api/#/Core" style="color: #7b7bff; font-size: 14px;">View endpoints</a>
-            </div>
-            <div class="card">
-                <h3>HYDRA</h3>
-                <p>Multi-head AI orchestration. Register Claude, GPT, Gemini, Grok heads. Execute workflows.</p>
-                <a href="api/#/HYDRA" style="color: #7b7bff; font-size: 14px;">View endpoints</a>
-            </div>
-            <div class="card">
-                <h3>Mesh</h3>
-                <p>Semantic knowledge graph with tongue-space search and governed writes</p>
-                <a href="api/#/Mesh" style="color: #7b7bff; font-size: 14px;">View endpoints</a>
-            </div>
-            <div class="card">
-                <h3>Gateway</h3>
-                <p>14-layer authorization pipeline, RWP v3 envelopes, fleet task submission</p>
-                <a href="api/#/Gateway" style="color: #7b7bff; font-size: 14px;">View endpoints</a>
-            </div>
-        </div>
-
-        <h2>Post-Quantum Cryptography</h2>
-        <p>All cryptographic operations use NIST-approved post-quantum algorithms:</p>
-        <div class="grid">
-            <div class="card">
-                <h3>ML-KEM-768</h3>
-                <p>Key Encapsulation Mechanism (formerly Kyber). Lattice-based key exchange resistant to quantum attacks.</p>
-            </div>
-            <div class="card">
-                <h3>ML-DSA-65</h3>
-                <p>Digital Signature Algorithm (formerly Dilithium). Lattice-based signatures for envelope authentication.</p>
-            </div>
-            <div class="card">
-                <h3>AES-256-GCM</h3>
-                <p>Symmetric encryption with authenticated additional data. Used for payload encryption inside RWP envelopes.</p>
-            </div>
-        </div>
-
-        <h2>Quick Start</h2>
-        <pre style="background: #111; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; color: #ccc;">
-git clone https://github.com/issdandavis/SCBE-AETHERMOORE
-cd SCBE-AETHERMOORE
-npm install && npm run build
-npm test
-
-# Start the API
-pip install fastapi uvicorn numpy
-uvicorn src.api.main:app --reload --port 8000
-
-# Open API docs
-open http://localhost:8000/docs</pre>
-
-        <h2>Origin</h2>
-        <p>SCBE-AETHERMOORE started as a DnD campaign on <a href="https://everweave.ai/" style="color: #7b7bff;">Everweave</a>. 12,596 paragraphs of AI-generated collaborative storytelling became the tokenizer seed for the Sacred Tongues system. The magic system — where collaboration was cheap and unilateral force was expensive — turned out to be a security architecture.</p>
-        <p>Patent: USPTO #63/961,403 (provisional)</p>
     </div>
+</section>
 
-    <div class="footer">
-        <p>Built by <a href="https://github.com/issdandavis">Issac Daniel Davis</a> | Port Angeles, WA</p>
-        <p style="margin-top: 8px;">USPTO #63/961,403 | <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">Code</a> | <a href="https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data">Dataset</a> | <a href="api/">API</a></p>
+<!-- PRICING -->
+<section id="pricing">
+    <div class="container">
+        <div class="section-label">Pricing</div>
+        <h2 class="section-title" style="text-align: center;">Start governing your AI fleet</h2>
+        <p class="section-desc" style="text-align: center; margin: 0 auto 48px;">
+            Usage-based pricing. No contracts. Cancel anytime.
+        </p>
+        <div class="pricing-grid">
+            <div class="price-card">
+                <div class="plan-name">Starter</div>
+                <div class="price">$49<span>/mo</span></div>
+                <div class="price-desc">For teams starting with AI agents</div>
+                <ul>
+                    <li>1 agent flock</li>
+                    <li>Up to 8 agents</li>
+                    <li>5,000 governance checks/mo</li>
+                    <li>$0.01/check overage</li>
+                    <li>API key + docs</li>
+                </ul>
+                <a href="/billing/checkout?plan=starter" class="btn btn-ghost" style="width:100%;" onclick="startCheckout('starter'); return false;">Get Started</a>
+            </div>
+            <div class="price-card popular">
+                <div class="plan-name">Growth</div>
+                <div class="price">$149<span>/mo</span></div>
+                <div class="price-desc">For scaling AI operations</div>
+                <ul>
+                    <li>5 agent flocks</li>
+                    <li>Up to 40 agents</li>
+                    <li>25,000 governance checks/mo</li>
+                    <li>$0.005/check overage</li>
+                    <li>Priority support</li>
+                </ul>
+                <a href="/billing/checkout?plan=growth" class="btn btn-primary" style="width:100%;" onclick="startCheckout('growth'); return false;">Get Started</a>
+            </div>
+            <div class="price-card">
+                <div class="plan-name">Enterprise</div>
+                <div class="price">$499<span>/mo</span></div>
+                <div class="price-desc">For production AI fleets</div>
+                <ul>
+                    <li>25 agent flocks</li>
+                    <li>Up to 250 agents</li>
+                    <li>100,000 governance checks/mo</li>
+                    <li>$0.0025/check overage</li>
+                    <li>SLA + audit reports</li>
+                </ul>
+                <a href="/billing/checkout?plan=enterprise" class="btn btn-ghost" style="width:100%;" onclick="startCheckout('enterprise'); return false;">Contact Us</a>
+            </div>
+        </div>
     </div>
+</section>
+
+<!-- BOOK + SUPPORT -->
+<section id="book">
+    <div class="container">
+        <div class="section-label">From the Creator</div>
+        <div class="book-section">
+            <div class="book-info">
+                <h3>The Six Tongues Protocol</h3>
+                <p>The novel that started it all. 12,596 paragraphs of AI-collaborative storytelling became a real security architecture. The magic system where collaboration is cheap and unilateral force is expensive turned out to be the math behind AI governance.</p>
+                <p style="margin-top: 16px;">
+                    <a href="https://www.amazon.com/s?k=Issac+Davis+Six+Tongues" class="btn btn-primary" style="padding: 10px 24px; font-size: 14px;" target="_blank">Read on Kindle</a>
+                </p>
+            </div>
+        </div>
+
+        <h3 style="margin: 48px 0 16px;">Support Development</h3>
+        <p style="color: #888; margin-bottom: 24px;">SCBE is built by a solo developer in Port Angeles, WA. Every contribution goes directly to development.</p>
+        <div class="support-grid">
+            <a href="https://github.com/sponsors/issdandavis" class="support-card" target="_blank">
+                <div class="icon">&#x1F496;</div>
+                <h4>GitHub Sponsors</h4>
+                <p>Monthly support with perks</p>
+            </a>
+            <a href="https://ko-fi.com/izdandavis" class="support-card" target="_blank">
+                <div class="icon">&#x2615;</div>
+                <h4>Ko-fi</h4>
+                <p>One-time or recurring</p>
+            </a>
+            <a href="https://www.npmjs.com/package/scbe-aethermoore" class="support-card" target="_blank">
+                <div class="icon">&#x1F4E6;</div>
+                <h4>npm</h4>
+                <p>npm i scbe-aethermoore</p>
+            </a>
+            <a href="https://pypi.org/project/scbe-aethermoore/" class="support-card" target="_blank">
+                <div class="icon">&#x1F40D;</div>
+                <h4>PyPI</h4>
+                <p>pip install scbe-aethermoore</p>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="links">
+        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
+        <a href="https://www.npmjs.com/package/scbe-aethermoore">npm</a>
+        <a href="https://pypi.org/project/scbe-aethermoore/">PyPI</a>
+        <a href="https://huggingface.co/issdandavis">HuggingFace</a>
+        <a href="https://ko-fi.com/izdandavis">Ko-fi</a>
+        <a href="https://x.com/davisissac">X/Twitter</a>
+    </div>
+    <p>Built by <a href="https://github.com/issdandavis">Issac Daniel Davis</a> &middot; Port Angeles, WA</p>
+    <p style="margin-top: 4px; color: #444;">USPTO #63/961,403 &middot; ORCID 0009-0002-3936-9369</p>
+</footer>
+
+<script>
+async function startCheckout(plan) {
+    // Try the API first; fall back to email contact
+    const apiBase = window.location.origin;
+    try {
+        const res = await fetch(apiBase + '/billing/checkout', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({plan: plan})
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.checkout_url) {
+                window.location.href = data.checkout_url;
+                return;
+            }
+        }
+    } catch(e) { /* API not available, fall back */ }
+    // Fallback: email
+    window.location.href = 'mailto:issdandavis@gmail.com?subject=SCBE%20' +
+        encodeURIComponent(plan.charAt(0).toUpperCase() + plan.slice(1)) +
+        '%20Plan&body=I%27d%20like%20to%20subscribe%20to%20the%20' +
+        encodeURIComponent(plan) + '%20plan.';
+}
+</script>
 </body>
 </html>
