@@ -537,6 +537,17 @@ def _text_metadata(value: str | None) -> dict[str, object]:
     }
 
 
+_SECRET_RE = re.compile(
+    r"(?:ghp_|gho_|ghu_|ghs_|ghr_|hf_|sk-|sk-proj-|xai-|rk_live_|rk_test_|shpat_|AKIA)[A-Za-z0-9_\-]{8,}",
+)
+
+
+def _redact_sensitive_text(text: str | None) -> str:
+    if not text:
+        return ""
+    return _SECRET_RE.sub("[REDACTED]", str(text))
+
+
 def _sensitive_fingerprint(text: str) -> str:
     salt = os.getenv("SCBE_METADATA_HASH_KEY", "scbe-system-cli-metadata").encode("utf-8")
     return hashlib.pbkdf2_hmac(
@@ -559,6 +570,21 @@ def _sanitize_agent_result_for_storage(result: dict) -> dict:
         clean["error_metadata"] = _text_metadata(result.get("error"))
     if "prompt" in result:
         clean["prompt_metadata"] = _text_metadata(result.get("prompt"))
+    return clean
+
+
+def _sanitize_agent_result_for_disk(result: dict) -> dict:
+    clean = {
+        key: value
+        for key, value in result.items()
+        if key not in {"raw", "content", "prompt", "error"}
+    }
+    for field in ("content", "prompt", "error"):
+        if field not in result:
+            continue
+        text = str(result.get(field) or "")
+        clean[f"{field}_char_count"] = len(text)
+        clean[f"{field}_sha256"] = hashlib.sha256(text.encode("utf-8")).hexdigest()
     return clean
 
 
@@ -633,7 +659,7 @@ def _call_openai_agent(agent: dict, prompt: str, output_dir: Path, env_cache: di
         }
     except urllib.error.HTTPError as exc:
         body = exc.read().decode("utf-8", errors="ignore") if getattr(exc, "read", None) else ""
-        body_summary = _text_metadata(body)
+        body_summary = _text_metadata(_redact_sensitive_text(body))
         return {
             "ok": False,
             "agent_id": agent.get("agent_id"),
@@ -645,7 +671,7 @@ def _call_openai_agent(agent: dict, prompt: str, output_dir: Path, env_cache: di
             "ok": False,
             "agent_id": agent.get("agent_id"),
             "provider": provider,
-            "error": str(exc),
+            "error": _redact_sensitive_text(str(exc)),
         }
 
 
