@@ -1,456 +1,543 @@
-#!/usr/bin/env python3
-"""AetherBrowse Toolkit — fast, persistent, parallel browsing for AI agents.
+"""
+Browser Toolkit — Lightweight HTTP Utilities for HYDRA
+=======================================================
 
-No frameworks. No abstractions. Just results.
+Provides simple, httpx-based utilities that do NOT require Playwright.
+Use these for quick tasks where a full HydraHand squad is overkill:
+
+    - search()       — Google/DuckDuckGo search with parsed results
+    - diff()         — Monitor a page for changes over time
+    - extract()      — Regex-based structured data extraction
+    - needs_js()     — Detect if a page requires a JS runtime
+
+All functions use httpx (async HTTP/2 client) and return clean
+dataclasses.  No Playwright, no browser launch overhead.
 
 Usage:
-    from src.browser.toolkit import browse, multi, session
+    from src.browser.toolkit import search, diff, extract, needs_js
 
-    # Single page
-    page = browse("https://example.com")
-    print(page.text[:500])
-    print(page.links[:10])
-    print(page.forms)
+    results = await search("SCBE hyperbolic security")
+    changes = await diff("https://example.com/status", interval=30)
+    prices  = await extract("https://shop.example.com", "price")
+    heavy   = await needs_js("https://spa-app.example.com")
 
-    # Parallel
-    pages = multi(["https://a.com", "https://b.com", "https://c.com"])
+Layer compliance:
+    L8  — Governance-safe: no credential handling, no downloads
+    L13 — Informational only; no mutation actions
 
-    # Persistent session (cookies survive)
-    s = session()
-    s.go("https://github.com/login")
-    s.fill({"login": "user", "password": "pass"})
-    s.submit()
-    dashboard = s.go("https://github.com")  # still logged in
-    s.save()  # persist cookies to disk
+@module browser/toolkit
+@layer Layer 8, Layer 13
+@component Browser Toolkit
 """
 
 from __future__ import annotations
 
-import asyncio
-import hashlib
-import json
+import logging
 import re
 import time
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any, Optional
-from urllib.parse import urljoin, urlparse
+from typing import Any, Dict, List, Optional, Set
+from urllib.parse import quote_plus, urljoin, urlparse
 
 import httpx
 
-try:
-    from selectolax.parser import HTMLParser
-except ImportError:
-    HTMLParser = None  # fallback to regex extraction
+logger = logging.getLogger("browser-toolkit")
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-SESSION_DIR = REPO_ROOT / "artifacts" / "browser_sessions"
-DEFAULT_TIMEOUT = 20
-MAX_PARALLEL = 10
+# ── Constants ────────────────────────────────────────────────────────
 
-# Common headers that don't get blocked
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+DEFAULT_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    ),
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
-    "Accept-Encoding": "gzip, deflate, br",
+}
+
+DEFAULT_TIMEOUT = 15.0  # seconds
+
+
+# ── Data Classes ─────────────────────────────────────────────────────
+
+@dataclass
+class SearchResult:
+    """A single search engine result."""
+    title: str
+    url: str
+    snippet: str
+    source: str = "google"  # "google" or "duckduckgo"
+
+
+@dataclass
+class PageDiff:
+    """Changes detected between two fetches of the same URL."""
+    url: str
+    interval_seconds: float
+    added_links: List[str] = field(default_factory=list)
+    removed_links: List[str] = field(default_factory=list)
+    text_changed: bool = False
+    old_length: int = 0
+    new_length: int = 0
+    diff_summary: str = ""
+    elapsed_ms: float = 0.0
+
+
+@dataclass
+class ExtractedItem:
+    """A single extracted data point from a page."""
+    pattern_name: str
+    value: str
+    context: str = ""  # surrounding text for reference
+
+
+@dataclass
+class JSDetectionResult:
+    """Result of JavaScript dependency detection."""
+    url: str
+    needs_js: bool
+    reason: str
+    content_length: int = 0
+    script_count: int = 0
+    noscript_present: bool = False
+    meta_redirect: bool = False
+    body_text_length: int = 0
+    elapsed_ms: float = 0.0
+
+
+# ── Extraction Patterns ──────────────────────────────────────────────
+
+BUILTIN_PATTERNS: Dict[str, str] = {
+    "email": r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}",
+    "price": r"\$\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})?",
+    "date": r"\b\d{4}[-/]\d{1,2}[-/]\d{1,2}\b",
+    "phone": r"\+?1?\s?\(?\d{3}\)?[\s\-.]?\d{3}[\s\-.]?\d{4}",
+    "url": r"https?://[^\s\"'<>]+",
+    "ipv4": r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b",
 }
 
 
-# ---------------------------------------------------------------------------
-# Data structures
-# ---------------------------------------------------------------------------
+# ── Internal Helpers ─────────────────────────────────────────────────
 
-@dataclass
-class Link:
-    text: str
-    href: str
-    rel: str = ""
-
-
-@dataclass
-class FormField:
-    name: str
-    type: str
-    value: str = ""
-    placeholder: str = ""
+def _build_client(**kwargs) -> httpx.AsyncClient:
+    """Create an httpx client with sane defaults."""
+    defaults = {
+        "headers": DEFAULT_HEADERS,
+        "timeout": DEFAULT_TIMEOUT,
+        "follow_redirects": True,
+    }
+    defaults.update(kwargs)
+    return httpx.AsyncClient(**defaults)
 
 
-@dataclass
-class Form:
-    action: str
-    method: str
-    fields: list[FormField] = field(default_factory=list)
-
-
-@dataclass
-class Page:
-    url: str
-    status: int
-    title: str
-    text: str
-    links: list[Link]
-    forms: list[Form]
-    meta: dict[str, str]
-    headers: dict[str, str]
-    elapsed_ms: int
-    error: str = ""
-    raw_html: str = ""
-
-    @property
-    def ok(self) -> bool:
-        return 200 <= self.status < 400 and not self.error
-
-    def find_links(self, pattern: str) -> list[Link]:
-        """Find links matching a regex pattern in text or href."""
-        rx = re.compile(pattern, re.IGNORECASE)
-        return [lnk for lnk in self.links if rx.search(lnk.text) or rx.search(lnk.href)]
-
-    def find_form(self, action_pattern: str = "") -> Optional[Form]:
-        """Find first form matching action pattern, or first form if no pattern."""
-        if not self.forms:
-            return None
-        if not action_pattern:
-            return self.forms[0]
-        rx = re.compile(action_pattern, re.IGNORECASE)
-        for f in self.forms:
-            if rx.search(f.action):
-                return f
-        return self.forms[0]
-
-    def summary(self, max_chars: int = 2000) -> str:
-        """Quick summary for LLM context."""
-        lines = [
-            f"URL: {self.url}",
-            f"Status: {self.status}",
-            f"Title: {self.title}",
-            f"Links: {len(self.links)}",
-            f"Forms: {len(self.forms)}",
-            f"Time: {self.elapsed_ms}ms",
-        ]
-        if self.error:
-            lines.append(f"Error: {self.error}")
-        text_preview = self.text[:max_chars].strip()
-        if text_preview:
-            lines.append(f"\n--- Content ---\n{text_preview}")
-        return "\n".join(lines)
-
-
-# ---------------------------------------------------------------------------
-# HTML parsing
-# ---------------------------------------------------------------------------
-
-def _parse_html(html: str, base_url: str) -> tuple[str, list[Link], list[Form], dict[str, str], str]:
-    """Extract text, links, forms, meta from HTML. Fast path with selectolax, fallback to regex."""
-    if HTMLParser is not None:
-        return _parse_selectolax(html, base_url)
-    return _parse_regex(html, base_url)
-
-
-def _parse_selectolax(html: str, base_url: str) -> tuple[str, list[Link], list[Form], dict[str, str], str]:
-    tree = HTMLParser(html)
-
-    # Title
-    title_node = tree.css_first("title")
-    title = title_node.text(strip=True) if title_node else ""
-
-    # Remove script/style
-    for tag in tree.css("script, style, noscript"):
-        tag.decompose()
-
-    # Text
-    text = tree.body.text(separator="\n", strip=True) if tree.body else tree.text(strip=True)
-
-    # Links
-    links = []
-    for a in tree.css("a[href]"):
-        href = a.attributes.get("href", "")
-        if href and not href.startswith(("#", "javascript:", "mailto:")):
-            links.append(Link(
-                text=a.text(strip=True)[:120],
-                href=urljoin(base_url, href),
-                rel=a.attributes.get("rel", ""),
-            ))
-
-    # Forms
-    forms = []
-    for form in tree.css("form"):
-        action = urljoin(base_url, form.attributes.get("action", ""))
-        method = (form.attributes.get("method", "GET")).upper()
-        fields = []
-        for inp in form.css("input, textarea, select"):
-            name = inp.attributes.get("name", "")
-            if name:
-                fields.append(FormField(
-                    name=name,
-                    type=inp.attributes.get("type", "text"),
-                    value=inp.attributes.get("value", ""),
-                    placeholder=inp.attributes.get("placeholder", ""),
-                ))
-        forms.append(Form(action=action, method=method, fields=fields))
-
-    # Meta
-    meta = {}
-    for m in tree.css("meta"):
-        name = m.attributes.get("name", "") or m.attributes.get("property", "")
-        content = m.attributes.get("content", "")
-        if name and content:
-            meta[name] = content[:500]
-
-    return text, links, forms, meta, title
-
-
-def _parse_regex(html: str, base_url: str) -> tuple[str, list[Link], list[Form], dict[str, str], str]:
-    """Regex fallback when selectolax isn't installed."""
-    # Title
-    m = re.search(r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
-    title = m.group(1).strip() if m else ""
-
-    # Strip tags for text
-    clean = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", "", html, flags=re.IGNORECASE | re.DOTALL)
-    text = re.sub(r"<[^>]+>", " ", clean)
+def _extract_text_from_html(html: str) -> str:
+    """Crude text extraction: strip tags, collapse whitespace."""
+    # Remove script and style blocks
+    text = re.sub(r"<script[^>]*>.*?</script>", " ", html, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r"<style[^>]*>.*?</style>", " ", text, flags=re.DOTALL | re.IGNORECASE)
+    # Remove tags
+    text = re.sub(r"<[^>]+>", " ", text)
+    # Decode common entities
+    for entity, char in [("&amp;", "&"), ("&lt;", "<"), ("&gt;", ">"),
+                         ("&quot;", '"'), ("&#39;", "'"), ("&nbsp;", " ")]:
+        text = text.replace(entity, char)
+    # Collapse whitespace
     text = re.sub(r"\s+", " ", text).strip()
-
-    # Links
-    links = []
-    for m in re.finditer(r'<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', html, re.IGNORECASE | re.DOTALL):
-        href, link_text = m.group(1), re.sub(r"<[^>]+>", "", m.group(2)).strip()
-        if href and not href.startswith(("#", "javascript:", "mailto:")):
-            links.append(Link(text=link_text[:120], href=urljoin(base_url, href)))
-
-    # Forms (basic)
-    forms = []
-    for fm in re.finditer(r"<form\s([^>]*)>(.*?)</form>", html, re.IGNORECASE | re.DOTALL):
-        attrs, body = fm.group(1), fm.group(2)
-        action_m = re.search(r'action=["\']([^"\']*)["\']', attrs, re.IGNORECASE)
-        method_m = re.search(r'method=["\']([^"\']*)["\']', attrs, re.IGNORECASE)
-        action = urljoin(base_url, action_m.group(1)) if action_m else base_url
-        method = (method_m.group(1) if method_m else "GET").upper()
-        fields = []
-        for inp in re.finditer(r'<(?:input|textarea|select)\s([^>]*)/?>', body, re.IGNORECASE):
-            inp_attrs = inp.group(1)
-            name_m = re.search(r'name=["\']([^"\']*)["\']', inp_attrs, re.IGNORECASE)
-            if name_m:
-                type_m = re.search(r'type=["\']([^"\']*)["\']', inp_attrs, re.IGNORECASE)
-                val_m = re.search(r'value=["\']([^"\']*)["\']', inp_attrs, re.IGNORECASE)
-                ph_m = re.search(r'placeholder=["\']([^"\']*)["\']', inp_attrs, re.IGNORECASE)
-                fields.append(FormField(
-                    name=name_m.group(1),
-                    type=type_m.group(1) if type_m else "text",
-                    value=val_m.group(1) if val_m else "",
-                    placeholder=ph_m.group(1) if ph_m else "",
-                ))
-        forms.append(Form(action=action, method=method, fields=fields))
-
-    # Meta
-    meta = {}
-    for m in re.finditer(r'<meta\s([^>]*)/?>', html, re.IGNORECASE):
-        attrs = m.group(1)
-        name_m = re.search(r'(?:name|property)=["\']([^"\']*)["\']', attrs, re.IGNORECASE)
-        content_m = re.search(r'content=["\']([^"\']*)["\']', attrs, re.IGNORECASE)
-        if name_m and content_m:
-            meta[name_m.group(1)] = content_m.group(1)[:500]
-
-    return text, links, forms, meta, title
+    return text
 
 
-# ---------------------------------------------------------------------------
-# Core: browse()
-# ---------------------------------------------------------------------------
+def _extract_links_from_html(html: str, base_url: str) -> Set[str]:
+    """Pull all href values from anchor tags."""
+    links: Set[str] = set()
+    for match in re.finditer(r'<a\s[^>]*href=["\']([^"\']+)["\']', html, re.IGNORECASE):
+        href = match.group(1).strip()
+        if href.startswith(("http://", "https://")):
+            links.add(href)
+        elif href.startswith("/"):
+            links.add(urljoin(base_url, href))
+    return links
 
-def browse(
-    url: str,
-    *,
-    method: str = "GET",
-    data: dict[str, Any] | None = None,
-    headers: dict[str, str] | None = None,
-    cookies: dict[str, str] | None = None,
-    timeout: int = DEFAULT_TIMEOUT,
-    follow_redirects: bool = True,
-    max_text: int = 50000,
-) -> Page:
-    """Fetch a URL and return structured Page data."""
-    t0 = time.time()
-    merged_headers = {**HEADERS, **(headers or {})}
 
-    try:
-        with httpx.Client(
-            follow_redirects=follow_redirects,
-            timeout=timeout,
-            headers=merged_headers,
-            cookies=cookies,
-        ) as client:
-            if method.upper() == "POST" and data:
-                resp = client.post(url, data=data)
-            else:
-                resp = client.get(url)
+# ── 1. Google Search ─────────────────────────────────────────────────
 
-        elapsed = int((time.time() - t0) * 1000)
-        html = resp.text[:500000]  # cap at 500KB
-        text, links, forms, meta, title = _parse_html(html, str(resp.url))
+def _parse_google_results(html: str) -> List[SearchResult]:
+    """Parse Google search HTML into SearchResult list.
 
-        return Page(
-            url=str(resp.url),
-            status=resp.status_code,
+    Google's HTML structure changes frequently.  We look for common
+    patterns: <a href="..."><h3>Title</h3></a> followed by snippet divs.
+    """
+    results: List[SearchResult] = []
+
+    # Pattern: links that look like organic results (not google internal)
+    # Google wraps results in <a href="/url?q=ACTUAL_URL&..."> or direct links
+    link_pattern = re.compile(
+        r'<a\s[^>]*href="(/url\?q=([^"&]+)&[^"]*|https?://(?!www\.google\.com)[^"]+)"[^>]*>'
+        r'.*?<h3[^>]*>(.*?)</h3>',
+        re.DOTALL | re.IGNORECASE,
+    )
+
+    for match in link_pattern.finditer(html):
+        raw_href = match.group(1)
+        title_html = match.group(3) if match.group(3) else ""
+
+        # Resolve /url?q= redirect
+        if raw_href.startswith("/url?q="):
+            url = match.group(2)
+        else:
+            url = raw_href
+
+        if not url or "google.com" in url:
+            continue
+
+        title = re.sub(r"<[^>]+>", "", title_html).strip()
+        if not title:
+            continue
+
+        # Try to find a snippet near this result
+        snippet = ""
+        # Look for text in the next few hundred chars after the match
+        after = html[match.end():match.end() + 500]
+        # Snippet is often in a <span> or <div> after the link
+        snippet_match = re.search(r'<(?:span|div)[^>]*class="[^"]*"[^>]*>(.*?)</(?:span|div)>', after, re.DOTALL)
+        if snippet_match:
+            snippet = re.sub(r"<[^>]+>", "", snippet_match.group(1)).strip()
+
+        results.append(SearchResult(
             title=title,
-            text=text[:max_text],
-            links=links[:200],
-            forms=forms[:20],
-            meta=meta,
-            headers=dict(resp.headers),
-            elapsed_ms=elapsed,
-            raw_html=html if len(html) < 100000 else "",
+            url=url,
+            snippet=snippet[:300],
+            source="google",
+        ))
+
+    return results
+
+
+def _parse_duckduckgo_results(html: str) -> List[SearchResult]:
+    """Parse DuckDuckGo HTML results page."""
+    results: List[SearchResult] = []
+
+    # DDG result links are in <a class="result__a" href="...">Title</a>
+    # with snippets in <a class="result__snippet" ...>...</a>
+    result_pattern = re.compile(
+        r'<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"[^>]*>(.*?)</a>',
+        re.DOTALL | re.IGNORECASE,
+    )
+
+    for match in result_pattern.finditer(html):
+        url = match.group(1).strip()
+        title_html = match.group(2)
+        title = re.sub(r"<[^>]+>", "", title_html).strip()
+
+        if not url.startswith("http") or not title:
+            continue
+
+        # Look for snippet
+        snippet = ""
+        after = html[match.end():match.end() + 500]
+        snippet_match = re.search(
+            r'<a[^>]*class="[^"]*result__snippet[^"]*"[^>]*>(.*?)</a>',
+            after, re.DOTALL | re.IGNORECASE,
         )
-    except Exception as exc:
-        elapsed = int((time.time() - t0) * 1000)
-        return Page(
-            url=url, status=0, title="", text="", links=[], forms=[],
-            meta={}, headers={}, elapsed_ms=elapsed, error=str(exc),
-        )
+        if snippet_match:
+            snippet = re.sub(r"<[^>]+>", "", snippet_match.group(1)).strip()
+
+        results.append(SearchResult(
+            title=title,
+            url=url,
+            snippet=snippet[:300],
+            source="duckduckgo",
+        ))
+
+    return results
 
 
-# ---------------------------------------------------------------------------
-# Parallel: multi()
-# ---------------------------------------------------------------------------
+async def search(
+    query: str,
+    num_results: int = 10,
+    timeout: float = DEFAULT_TIMEOUT,
+) -> List[SearchResult]:
+    """Search Google (with DuckDuckGo fallback) and return parsed results.
 
-async def _fetch_one(client: httpx.AsyncClient, url: str, max_text: int) -> Page:
-    t0 = time.time()
+    Args:
+        query: The search query string.
+        num_results: Maximum number of results to return.
+        timeout: HTTP timeout in seconds.
+
+    Returns:
+        List of SearchResult dataclasses with title, url, snippet.
+        Falls back to DuckDuckGo if Google returns no results or errors.
+    """
+    results: List[SearchResult] = []
+
+    # ── Try Google first ──────────────────────────────────────────
+    google_url = f"https://www.google.com/search?q={quote_plus(query)}&num={num_results}"
     try:
-        resp = await client.get(url)
-        elapsed = int((time.time() - t0) * 1000)
-        html = resp.text[:500000]
-        text, links, forms, meta, title = _parse_html(html, str(resp.url))
-        return Page(
-            url=str(resp.url), status=resp.status_code, title=title,
-            text=text[:max_text], links=links[:200], forms=forms[:20],
-            meta=meta, headers=dict(resp.headers), elapsed_ms=elapsed,
-        )
+        async with _build_client(timeout=timeout) as client:
+            resp = await client.get(google_url)
+            if resp.status_code == 200:
+                results = _parse_google_results(resp.text)
     except Exception as exc:
-        elapsed = int((time.time() - t0) * 1000)
-        return Page(
-            url=url, status=0, title="", text="", links=[], forms=[],
-            meta={}, headers={}, elapsed_ms=elapsed, error=str(exc),
-        )
+        logger.debug("Google search failed: %s", exc)
 
+    if results:
+        return results[:num_results]
 
-async def _multi_async(urls: list[str], max_text: int, timeout: int) -> list[Page]:
-    async with httpx.AsyncClient(
-        follow_redirects=True, timeout=timeout, headers=HEADERS,
-    ) as client:
-        tasks = [_fetch_one(client, url, max_text) for url in urls[:MAX_PARALLEL]]
-        return await asyncio.gather(*tasks)
-
-
-def multi(urls: list[str], *, max_text: int = 50000, timeout: int = DEFAULT_TIMEOUT) -> list[Page]:
-    """Fetch multiple URLs in parallel. Returns list of Page objects."""
+    # ── Fallback: DuckDuckGo ──────────────────────────────────────
+    ddg_url = f"https://html.duckduckgo.com/html/?q={quote_plus(query)}"
     try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = None
+        async with _build_client(timeout=timeout) as client:
+            resp = await client.get(ddg_url)
+            if resp.status_code == 200:
+                results = _parse_duckduckgo_results(resp.text)
+    except Exception as exc:
+        logger.warning("DuckDuckGo search also failed: %s", exc)
 
-    if loop and loop.is_running():
-        # Already in async context — use nest_asyncio or run sync
-        import concurrent.futures
-        with concurrent.futures.ThreadPoolExecutor() as pool:
-            future = pool.submit(asyncio.run, _multi_async(urls, max_text, timeout))
-            return future.result()
-    return asyncio.run(_multi_async(urls, max_text, timeout))
+    return results[:num_results]
 
 
-# ---------------------------------------------------------------------------
-# Session: persistent cookies + state
-# ---------------------------------------------------------------------------
+# ── 2. Page Diff ─────────────────────────────────────────────────────
 
-class Session:
-    """Persistent browsing session with cookie jar and history."""
+async def diff(
+    url: str,
+    interval: float = 60.0,
+    timeout: float = DEFAULT_TIMEOUT,
+) -> PageDiff:
+    """Fetch a page twice with a delay and report what changed.
 
-    def __init__(self, name: str = "default"):
-        self.name = name
-        self.cookies: dict[str, str] = {}
-        self.history: list[str] = []
-        self._state_path = SESSION_DIR / f"{name}.json"
-        self._load()
+    Args:
+        url: The URL to monitor.
+        interval: Seconds to wait between the two fetches.
+        timeout: HTTP timeout in seconds per fetch.
 
-    def _load(self) -> None:
-        if self._state_path.exists():
-            try:
-                data = json.loads(self._state_path.read_text(encoding="utf-8"))
-                self.cookies = data.get("cookies", {})
-                self.history = data.get("history", [])[-100:]
-            except Exception:
-                pass
+    Returns:
+        PageDiff with added/removed links, text change flag, and summary.
+    """
+    start = time.monotonic()
+    result = PageDiff(url=url, interval_seconds=interval)
 
-    def save(self) -> None:
-        SESSION_DIR.mkdir(parents=True, exist_ok=True)
-        self._state_path.write_text(json.dumps({
-            "cookies": self.cookies,
-            "history": self.history[-100:],
-            "updated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        }, indent=2), encoding="utf-8")
+    async with _build_client(timeout=timeout) as client:
+        # First fetch
+        try:
+            resp1 = await client.get(url)
+            html1 = resp1.text
+        except Exception as exc:
+            result.diff_summary = f"First fetch failed: {exc}"
+            result.elapsed_ms = (time.monotonic() - start) * 1000
+            return result
 
-    def go(self, url: str, **kwargs) -> Page:
-        """Navigate to URL with persistent cookies."""
-        page = browse(url, cookies=self.cookies, **kwargs)
-        # Merge any new cookies from response
-        raw_cookies = page.headers.get("set-cookie", "")
-        if raw_cookies:
-            for chunk in raw_cookies.split("\n"):
-                parts = chunk.strip().split("=", 1)
-                if len(parts) == 2:
-                    name = parts[0].strip()
-                    val = parts[1].split(";")[0].strip()
-                    if name and not name.startswith(("path", "Path", "domain", "Domain", "expires", "Expires", "max-age", "Max-Age", "secure", "Secure", "httponly", "HttpOnly", "samesite", "SameSite")):
-                        self.cookies[name] = val
-        self.history.append(url)
-        self.save()
-        return page
+        # Wait
+        import asyncio
+        await asyncio.sleep(interval)
 
-    def fill(self, form: Form, values: dict[str, str]) -> Page:
-        """Submit a form with values."""
-        # Merge form defaults with provided values
-        data = {}
-        for f in form.fields:
-            if f.name in values:
-                data[f.name] = values[f.name]
-            elif f.value:
-                data[f.name] = f.value
+        # Second fetch
+        try:
+            resp2 = await client.get(url)
+            html2 = resp2.text
+        except Exception as exc:
+            result.diff_summary = f"Second fetch failed: {exc}"
+            result.elapsed_ms = (time.monotonic() - start) * 1000
+            return result
 
-        return self.go(
-            form.action,
-            method=form.method,
-            data=data if form.method == "POST" else None,
-        )
+    # Compare links
+    links1 = _extract_links_from_html(html1, url)
+    links2 = _extract_links_from_html(html2, url)
+    result.added_links = sorted(links2 - links1)
+    result.removed_links = sorted(links1 - links2)
 
-    def back(self) -> Optional[Page]:
-        """Go back in history."""
-        if len(self.history) >= 2:
-            self.history.pop()  # remove current
-            return self.go(self.history[-1])
-        return None
+    # Compare text
+    text1 = _extract_text_from_html(html1)
+    text2 = _extract_text_from_html(html2)
+    result.old_length = len(text1)
+    result.new_length = len(text2)
+    result.text_changed = text1 != text2
 
+    # Build summary
+    changes: List[str] = []
+    if result.added_links:
+        changes.append(f"+{len(result.added_links)} links")
+    if result.removed_links:
+        changes.append(f"-{len(result.removed_links)} links")
+    if result.text_changed:
+        delta = result.new_length - result.old_length
+        sign = "+" if delta >= 0 else ""
+        changes.append(f"text changed ({sign}{delta} chars)")
+    result.diff_summary = "; ".join(changes) if changes else "no changes detected"
 
-def session(name: str = "default") -> Session:
-    """Create or resume a named browsing session."""
-    return Session(name)
+    result.elapsed_ms = (time.monotonic() - start) * 1000
+    return result
 
 
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
+# ── 3. Smart Extract ─────────────────────────────────────────────────
 
-if __name__ == "__main__":
-    import sys
+async def extract(
+    url: str,
+    pattern: str,
+    timeout: float = DEFAULT_TIMEOUT,
+    context_chars: int = 40,
+) -> List[ExtractedItem]:
+    """Fetch a page and extract structured data matching a pattern.
 
-    if len(sys.argv) < 2:
-        print("Usage: python -m src.browser.toolkit <url> [url2] [url3]")
-        sys.exit(1)
+    Args:
+        url: Page to fetch and extract from.
+        pattern: Either a builtin pattern name (email, price, date,
+                 phone, url, ipv4) or a raw regex string.
+        timeout: HTTP timeout in seconds.
+        context_chars: Number of surrounding characters to include.
 
-    urls = sys.argv[1:]
-    if len(urls) == 1:
-        page = browse(urls[0])
-        print(page.summary())
-    else:
-        pages = multi(urls)
-        for p in pages:
-            print(f"\n{'='*60}")
-            print(p.summary(max_chars=500))
+    Returns:
+        List of ExtractedItem with matched values and surrounding context.
+    """
+    # Resolve builtin pattern or use raw regex
+    regex_str = BUILTIN_PATTERNS.get(pattern, pattern)
+    try:
+        regex = re.compile(regex_str)
+    except re.error as exc:
+        logger.error("Invalid regex pattern %r: %s", pattern, exc)
+        return []
+
+    pattern_name = pattern if pattern in BUILTIN_PATTERNS else "custom"
+
+    async with _build_client(timeout=timeout) as client:
+        try:
+            resp = await client.get(url)
+            html = resp.text
+        except Exception as exc:
+            logger.warning("Extract fetch failed for %s: %s", url, exc)
+            return []
+
+    # Extract from raw HTML (captures values inside tags/attributes too)
+    text = _extract_text_from_html(html)
+
+    items: List[ExtractedItem] = []
+    seen: Set[str] = set()
+
+    for match in regex.finditer(text):
+        value = match.group(0)
+        if value in seen:
+            continue
+        seen.add(value)
+
+        # Surrounding context
+        start = max(0, match.start() - context_chars)
+        end = min(len(text), match.end() + context_chars)
+        context = text[start:end].strip()
+
+        items.append(ExtractedItem(
+            pattern_name=pattern_name,
+            value=value,
+            context=context,
+        ))
+
+    return items
+
+
+# ── 4. JavaScript Detection ─────────────────────────────────────────
+
+async def needs_js(
+    url: str,
+    timeout: float = DEFAULT_TIMEOUT,
+) -> JSDetectionResult:
+    """Detect whether a page likely requires JavaScript to render content.
+
+    Heuristics:
+        1. Very little visible text but many <script> tags
+        2. Presence of JS framework root markers (id="root", id="app", id="__next")
+        3. <noscript> tags with content warnings
+        4. Meta refresh / JS redirect patterns
+
+    Args:
+        url: The URL to check.
+        timeout: HTTP timeout in seconds.
+
+    Returns:
+        JSDetectionResult with needs_js bool and reasoning.
+    """
+    start = time.monotonic()
+
+    async with _build_client(timeout=timeout) as client:
+        try:
+            resp = await client.get(url)
+            html = resp.text
+        except Exception as exc:
+            return JSDetectionResult(
+                url=url,
+                needs_js=False,
+                reason=f"Fetch failed: {exc}",
+                elapsed_ms=(time.monotonic() - start) * 1000,
+            )
+
+    content_length = len(html)
+
+    # Count <script> tags
+    script_count = len(re.findall(r"<script[\s>]", html, re.IGNORECASE))
+
+    # Check <noscript> presence with meaningful content
+    noscript_match = re.search(r"<noscript[^>]*>(.*?)</noscript>", html, re.DOTALL | re.IGNORECASE)
+    noscript_present = False
+    if noscript_match:
+        noscript_text = noscript_match.group(1).strip()
+        # Only count it if it has real content (not just a tracking pixel)
+        if len(noscript_text) > 20 and "<img" not in noscript_text.lower():
+            noscript_present = True
+
+    # Check for meta redirect
+    meta_redirect = bool(re.search(
+        r'<meta[^>]*http-equiv=["\']refresh["\'][^>]*>',
+        html, re.IGNORECASE,
+    ))
+
+    # Extract body text
+    body_match = re.search(r"<body[^>]*>(.*?)</body>", html, re.DOTALL | re.IGNORECASE)
+    body_html = body_match.group(1) if body_match else html
+    body_text = _extract_text_from_html(body_html)
+    body_text_length = len(body_text)
+
+    # Check for SPA framework root markers
+    spa_markers = re.findall(
+        r'id=["\'](?:root|app|__next|__nuxt|__svelte)["\']',
+        html, re.IGNORECASE,
+    )
+
+    # ── Decision logic ──────────────────────────────────────────
+    reasons: List[str] = []
+    js_score = 0
+
+    # Heuristic 1: Lots of scripts, little text
+    if script_count >= 5 and body_text_length < 200:
+        reasons.append(f"{script_count} scripts but only {body_text_length} chars of body text")
+        js_score += 3
+
+    # Heuristic 2: SPA framework markers
+    if spa_markers:
+        reasons.append(f"SPA root marker found: {spa_markers[0]}")
+        js_score += 2
+
+    # Heuristic 3: noscript warning
+    if noscript_present:
+        reasons.append("meaningful <noscript> content present")
+        js_score += 2
+
+    # Heuristic 4: meta redirect (often used with JS redirect)
+    if meta_redirect:
+        reasons.append("meta refresh redirect detected")
+        js_score += 1
+
+    # Heuristic 5: Very short body relative to total HTML
+    if content_length > 1000 and body_text_length < 100:
+        reasons.append(f"HTML is {content_length} bytes but body text is only {body_text_length} chars")
+        js_score += 2
+
+    needs_javascript = js_score >= 3
+    reason = "; ".join(reasons) if reasons else "page appears to render without JS"
+
+    return JSDetectionResult(
+        url=url,
+        needs_js=needs_javascript,
+        reason=reason,
+        content_length=content_length,
+        script_count=script_count,
+        noscript_present=noscript_present,
+        meta_redirect=meta_redirect,
+        body_text_length=body_text_length,
+        elapsed_ms=(time.monotonic() - start) * 1000,
+    )
