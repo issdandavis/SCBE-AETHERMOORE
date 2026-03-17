@@ -128,7 +128,7 @@ body {
 </div>
 
 <!-- Browser iframe -->
-<iframe class="browser-frame" id="browseFrame" title="AetherBrowse" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+<iframe class="browser-frame" id="browseFrame" title="AetherBrowse" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"></iframe>
 
 <script>
 // =========================================================
@@ -259,6 +259,10 @@ function showActive() {
 // =========================================================
 // Navigation
 // =========================================================
+function isLocalUrl(url) {
+  return url.startsWith("./") || url.startsWith("../") || url.startsWith("file:");
+}
+
 function openUrl(raw) {
   let url = raw.trim();
   if (!url) return;
@@ -277,7 +281,20 @@ function openUrl(raw) {
   let title = url;
   try { title = new URL(url).hostname; } catch { title = url.slice(0, 30); }
 
-  // Reuse existing tab or create new
+  // Track in recent
+  saveRecent(url, title);
+  renderRecent();
+
+  // External URLs: navigate the whole WebView (not iframe — sites block iframes)
+  if (!isLocalUrl(url)) {
+    saveTabs();
+    // Store return state so we can come back to AetherBrowse
+    localStorage.setItem("aether.return", "true");
+    window.location.href = url;
+    return;
+  }
+
+  // Local pages use iframe tab system
   const existing = tabs.find(t => t.url === url);
   if (existing) {
     activeTabId = existing.id;
@@ -287,8 +304,6 @@ function openUrl(raw) {
     activeTabId = tab.id;
   }
   saveTabs();
-  saveRecent(url, title);
-  renderRecent();
   showActive();
 }
 
