@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""FrankenModel Swarm Agent: capability-coupled 2-3 model synthesis."""
+"""FrankenModel Swarm Agent: capability-coupled 2-3 model synthesis.
+
+NOTE: Requires the polly_eggs prototype at prototype/polly_eggs/.
+The import below resolves to prototype.polly_eggs.src.polly_eggs.frankenmodel.
+If you see ImportError, ensure the prototype subproject is present and that
+the repo root is on sys.path (this script adds it automatically).
+"""
 
 from __future__ import annotations
 
