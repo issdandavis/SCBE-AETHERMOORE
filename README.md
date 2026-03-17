@@ -333,7 +333,7 @@ SCBE-AETHERMOORE is built by a solo developer. If it helps your team manage AI a
 | **GitHub Sponsors** | [github.com/sponsors/issdandavis](https://github.com/sponsors/issdandavis) |
 | **Ko-fi** | [ko-fi.com/izdandavis](https://ko-fi.com/izdandavis) |
 | **SaaS API** | Usage-based governance API — [contact for access](mailto:issdandavis@gmail.com?subject=SCBE%20API%20Access) |
-| **Book** | *The Six Tongues Protocol* on Kindle — search "Issac Davis Six Tongues" on Amazon |
+| **Book** | [*The Six Tongues Protocol*](https://www.amazon.com/dp/B0GSSFQD9G) on Kindle |
 
 ---
 
