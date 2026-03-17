@@ -36,6 +36,8 @@ billing_router = APIRouter(prefix="/billing", tags=["Billing"])
 PLANS: Dict[str, Dict[str, Any]] = {
     "starter": {
         "name": "Starter",
+        "stripe_price_id": "price_1TBnUmJTF2SuUODIbz41CUFZ",
+        "stripe_product_id": "prod_UA7k4QNcyyt2Ta",
         "price_monthly_cents": 4900,
         "description": "1 flock, 8 agents, 5K governance checks/mo",
         "limits": {"flocks": 1, "agents": 8, "monthly_governance": 5000},
@@ -43,6 +45,8 @@ PLANS: Dict[str, Dict[str, Any]] = {
     },
     "growth": {
         "name": "Growth",
+        "stripe_price_id": "price_1TBnUmJTF2SuUODIevRegHf0",
+        "stripe_product_id": "prod_UA7kQq6zDwMa8W",
         "price_monthly_cents": 14900,
         "description": "5 flocks, 40 agents, 25K governance checks/mo",
         "limits": {"flocks": 5, "agents": 40, "monthly_governance": 25000},
@@ -50,6 +54,8 @@ PLANS: Dict[str, Dict[str, Any]] = {
     },
     "enterprise": {
         "name": "Enterprise",
+        "stripe_price_id": "price_1TBnUnJTF2SuUODIZwBEak7Q",
+        "stripe_product_id": "prod_UA7kPel50bZDqr",
         "price_monthly_cents": 49900,
         "description": "25 flocks, 250 agents, 100K governance checks/mo",
         "limits": {"flocks": 25, "agents": 250, "monthly_governance": 100000},
@@ -202,11 +208,7 @@ async def create_checkout(request: CheckoutRequest):
         "mode": "subscription",
         "success_url": success_url,
         "cancel_url": cancel_url,
-        "line_items[0][price_data][currency]": "usd",
-        "line_items[0][price_data][unit_amount]": str(plan["price_monthly_cents"]),
-        "line_items[0][price_data][recurring][interval]": "month",
-        "line_items[0][price_data][product_data][name]": f"SCBE {plan['name']} Plan",
-        "line_items[0][price_data][product_data][description]": plan["description"],
+        "line_items[0][price]": plan["stripe_price_id"],
         "line_items[0][quantity]": "1",
         "metadata[scbe_plan]": request.plan,
     }
