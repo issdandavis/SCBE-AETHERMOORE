@@ -79,6 +79,8 @@ training/notion_codebase_comparison.json
 
 # Pytest temp artifacts (any location)
 **/pytest_tmp/
+**/.pytest_tmp/
+**/pytest-cache-files-*/
 
 # Model weights & binary artifacts
 *.npz
