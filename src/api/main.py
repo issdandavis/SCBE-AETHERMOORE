@@ -39,6 +39,7 @@ from src.crypto.sacred_tongues import SacredTongueTokenizer
 from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
 from src.api.hydra_routes import hydra_router, init_hydra_spine
 from src.api.saas_routes import saas_router
+from src.api.stripe_billing import billing_router
 
 try:
     from src.api.mesh_routes import mesh_router
@@ -82,6 +83,9 @@ if mesh_router is not None:
 
 # Additive SaaS control plane for tenant + flock orchestration.
 app.include_router(saas_router)
+
+# Stripe billing — checkout, webhooks, API key provisioning.
+app.include_router(billing_router)
 
 # ============================================================================
 # RATE LIMITING
