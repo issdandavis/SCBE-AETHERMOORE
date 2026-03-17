@@ -12,10 +12,20 @@ if str(REPO_ROOT) not in sys.path:
 
 src_module = sys.modules.setdefault("src", types.ModuleType("src"))
 security_module = sys.modules.setdefault("src.security", types.ModuleType("src.security"))
-secret_store_module = types.ModuleType("src.security.secret_store")
-secret_store_module.get_secret = lambda key, default="": default
-secret_store_module.set_secret = lambda key, value, note="": None
-sys.modules["src.security.secret_store"] = secret_store_module
+# Load the real secret_store module by file path so its utility functions
+# (redact, fingerprint, etc.) are available, but override get/set to avoid
+# touching real credential files during tests.
+_ss_spec = importlib.util.spec_from_file_location(
+    "src.security.secret_store", REPO_ROOT / "src" / "security" / "secret_store.py"
+)
+_ss_mod = importlib.util.module_from_spec(_ss_spec)
+_ss_spec.loader.exec_module(_ss_mod)
+_ss_mod.get_secret = lambda key, default="": default
+_ss_mod.set_secret = lambda key, value, note="": None
+src_module = sys.modules.setdefault("src", types.ModuleType("src"))
+security_module = sys.modules.setdefault("src.security", types.ModuleType("src.security"))
+sys.modules["src.security.secret_store"] = _ss_mod
+setattr(src_module, "security", security_module)
 setattr(src_module, "security", security_module)
 
 

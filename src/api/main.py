@@ -38,6 +38,7 @@ from src.crypto.rwp_v3 import RWPv3Protocol, RWPEnvelope
 from src.crypto.sacred_tongues import SacredTongueTokenizer
 from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
 from src.api.hydra_routes import hydra_router, init_hydra_spine
+from src.api.saas_routes import saas_router
 
 try:
     from src.api.mesh_routes import mesh_router
@@ -56,12 +57,20 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS for demo
+# CORS — restrict to known origins; override via SCBE_CORS_ORIGINS env (comma-sep)
+_cors_env = os.getenv("SCBE_CORS_ORIGINS", "").strip()
+_allowed_origins = [o.strip() for o in _cors_env.split(",") if o.strip()] if _cors_env else [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
+    "https://aethermore-works.myshopify.com",
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Restrict in production
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=_allowed_origins,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "x-api-key"],
 )
 
 # Include HYDRA router
@@ -70,6 +79,9 @@ app.include_router(hydra_router)
 # Include Semantic Mesh router (embryonic intake + tongue-space KG)
 if mesh_router is not None:
     app.include_router(mesh_router)
+
+# Additive SaaS control plane for tenant + flock orchestration.
+app.include_router(saas_router)
 
 # ============================================================================
 # RATE LIMITING
@@ -103,6 +115,20 @@ class RateLimiter:
 
 
 rate_limiter = RateLimiter()
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """Apply rate limiting to all endpoints by client IP."""
+    client_ip = request.client.host if request.client else "unknown"
+    if not rate_limiter.is_allowed(client_ip):
+        return JSONResponse(
+            status_code=429,
+            content={"detail": "Rate limit exceeded. Try again later."},
+        )
+    response = await call_next(request)
+    return response
+
 
 # ============================================================================
 # METRICS STORAGE (In-memory for MVP)
@@ -465,6 +491,8 @@ def _sign_connector_payload(payload: Dict[str, Any]) -> tuple[str, str]:
     signing_key = os.getenv("SCBE_CONNECTOR_SIGNING_KEY", "").encode("utf-8")
     body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     if not signing_key:
+        import logging
+        logging.getLogger("scbe.api").warning("SCBE_CONNECTOR_SIGNING_KEY not set — connector payloads are unsigned")
         return ts, ""
     sig = hmac.new(signing_key, ts.encode("utf-8") + b"." + body, hashlib.sha256).hexdigest()
     return ts, sig
