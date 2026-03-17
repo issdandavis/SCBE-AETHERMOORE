@@ -69,6 +69,77 @@ docker run \
   ghcr.io/browserless/chromium
 ```
 
+## Attack Chain (SCBE-Specific)
+
+```
+Malicious page (agent navigates to untrusted URL)
+   |
+Chrome sandbox escape (CVE-2026-3909/3910)
+   |
+Container breakout (CrackArmor AppArmor bypass)
+   |
+Host access / lateral movement
+   |
+Credential theft (cookies, tokens, secrets in userDataDir)
+```
+
+### Why HYDRA is a High-Value Target
+- Persistent Playwright profiles (`userDataDir`) store cookies, session tokens, localStorage
+- HYDRA "limbs" reuse sessions = high-value persistence target
+- Multiple agents hitting same Chromium service = cross-session contamination
+- Agents autonomously click links, run scripts, extract content = automated exploit trigger
+
+## Fastest 3 Upgrades (80% Risk Reduction)
+
+1. **Run browsers in gVisor/Firecracker** (not bare containers)
+2. **Per-agent persistent storage** (no shared sessions): `/data/playwright/userdata/<agentId>/`
+3. **Pre-navigation policy gate** (ALLOW/DENY/QUARANTINE via 14-layer pipeline)
+
+## SCBE Layer Mapping
+
+| SCBE Layer | Real-world Control |
+|------------|-------------------|
+| Intent validation (L1-4) | Pre-navigation risk scoring |
+| Harmonic constraints (L12) | Rate + capability limits |
+| Entropic defense (L8) | Session isolation + rotation |
+| SpiralSeal (PQC) | Encrypted audit + signing |
+| Sacred Tongues | Domain-specific browsing policies |
+
+## Chromium Hardening Flags
+
+```
+--no-sandbox=false
+--disable-dev-shm-usage
+--disable-gpu
+--js-flags="--noexpose_wasm"
+--disable-webassembly
+--disable-site-isolation-trials=false
+--enable-strict-mixed-content-checking
+```
+
+## Network Containment
+
+Browsers must NOT have open outbound internet. Route through proxy:
+
+```
+Browser VM → Proxy Gateway (policy enforced) → Internet
+```
+
+Add: domain allowlists, DNS filtering, rate limits per agent.
+
+## Secrets Isolation
+
+Never expose API keys, cookies, or tokens inside browser runtime. Use:
+- Short-lived signed tokens (per-task)
+- Per-agent credentials with TTL
+- Encrypt `userDataDir` at rest
+
+## Observability
+
+- Falco for container escape detection
+- eBPF tracing for syscall anomaly detection
+- Log: navigation events, JS execution spikes, abnormal syscalls
+
 ## References
 - https://thehackernews.com/2026/03/google-fixes-two-chrome-zero-days.html
 - https://www.itpro.com/software/linux/alert-issued-over-critical-vulnerabilities-in-linuxs-apparmor-security-layer
