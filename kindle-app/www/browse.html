@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>AetherBrowse</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./static/icons/icon-192.png">
+<meta name="theme-color" content="#0a0a1a">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0a0a1a; color: #e2e2e2;
+  min-height: 100vh; display: flex; flex-direction: column;
+}
+
+/* URL bar */
+.url-bar {
+  display: flex; gap: 6px; padding: 8px; background: #111;
+  border-bottom: 1px solid #1a1a3e; position: sticky; top: 0; z-index: 10;
+}
+.url-bar input {
+  flex: 1; background: #1a1a2e; color: #e2e2e2; border: 1px solid #333;
+  border-radius: 20px; padding: 8px 16px; font-size: 14px; outline: none;
+}
+.url-bar input:focus { border-color: #6c5ce7; }
+.url-bar button {
+  background: #6c5ce7; color: #fff; border: none; border-radius: 20px;
+  padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.url-bar .btn-back { background: #222; }
+
+/* Tab strip */
+.tab-strip {
+  display: flex; gap: 2px; padding: 4px 8px; background: #0d0d20;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.tab-chip {
+  background: #1a1a3e; color: #888; border: none; border-radius: 12px;
+  padding: 4px 12px; font-size: 11px; white-space: nowrap; cursor: pointer;
+  flex-shrink: 0;
+}
+.tab-chip.active { background: #6c5ce7; color: #fff; }
+.tab-chip .close { margin-left: 6px; opacity: 0.5; }
+
+/* Homepage */
+.homepage {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; padding: 32px 16px;
+}
+.homepage h1 {
+  font-size: 28px; font-weight: 700; margin-bottom: 4px;
+  background: linear-gradient(135deg, #fff, #a29bfe, #6c5ce7);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.homepage .tagline { color: #555; font-size: 12px; margin-bottom: 24px; }
+
+/* Quick links grid */
+.quick-links {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; width: 100%; max-width: 400px; margin-bottom: 24px;
+}
+.qlink {
+  display: flex; flex-direction: column; align-items: center;
+  text-decoration: none; color: #aaa; padding: 12px 4px;
+  background: #111; border: 1px solid #1a1a3e; border-radius: 12px;
+  transition: border-color 0.2s;
+}
+.qlink:hover, .qlink:active { border-color: #6c5ce7; color: #fff; }
+.qlink .icon { font-size: 24px; margin-bottom: 4px; }
+.qlink .label { font-size: 10px; text-align: center; }
+
+/* Section headers */
+.section-head {
+  width: 100%; max-width: 400px; font-size: 11px; font-weight: 600;
+  color: #6c5ce7; text-transform: uppercase; letter-spacing: 1px;
+  margin: 16px 0 8px; padding-left: 4px;
+}
+
+/* Recent / frequent list */
+.recent-list {
+  width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 2px;
+}
+.recent-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; background: #111; border-radius: 8px;
+  text-decoration: none; color: #ccc; font-size: 13px;
+}
+.recent-item:active { background: #1a1a3e; }
+.recent-item .favicon { width: 16px; height: 16px; border-radius: 3px; background: #333; }
+.recent-item .url { color: #555; font-size: 11px; }
+
+/* iframe browser */
+.browser-frame {
+  flex: 1; width: 100%; border: none; display: none;
+  background: #fff;
+}
+.browser-frame.active { display: block; }
+.homepage.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<!-- URL Bar -->
+<div class="url-bar">
+  <button class="btn-back" id="backBtn">&larr;</button>
+  <input id="urlInput" type="text" placeholder="Search or enter URL" autocomplete="off">
+  <button id="goBtn">Go</button>
+</div>
+
+<!-- Tabs -->
+<div class="tab-strip" id="tabStrip"></div>
+
+<!-- Homepage (shown when no active page) -->
+<div class="homepage" id="homePage">
+  <h1>AetherBrowse</h1>
+  <p class="tagline">your internet, governed</p>
+
+  <div class="section-head">Quick Links</div>
+  <div class="quick-links" id="quickLinks"></div>
+
+  <div class="section-head">Tools</div>
+  <div class="quick-links" id="toolLinks"></div>
+
+  <div class="section-head">Recent</div>
+  <div class="recent-list" id="recentList"></div>
+</div>
+
+<!-- Browser iframe -->
+<iframe class="browser-frame" id="browseFrame" title="AetherBrowse" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+
+<script>
+// =========================================================
+// Quick Links Config — edit these to change the homepage
+// =========================================================
+const QUICK_LINKS = [
+  { icon: "\uD83D\uDCBB", label: "GitHub", url: "https://github.com/issdandavis" },
+  { icon: "\uD83E\uDD17", label: "HuggingFace", url: "https://huggingface.co/issdandavis" },
+  { icon: "\uD83D\uDCDD", label: "Dev.to", url: "https://dev.to/issdandavis" },
+  { icon: "\uD83D\uDCB3", label: "Stripe", url: "https://dashboard.stripe.com" },
+  { icon: "\uD83D\uDCE6", label: "npm", url: "https://www.npmjs.com/package/scbe-aethermoore" },
+  { icon: "\uD83D\uDC0D", label: "PyPI", url: "https://pypi.org/project/scbe-aethermoore/" },
+  { icon: "\u2615", label: "Ko-fi", url: "https://ko-fi.com/izdandavis" },
+  { icon: "\uD83C\uDFE0", label: "Site", url: "https://aethermoorgames.com" },
+];
+
+const TOOL_LINKS = [
+  { icon: "\uD83D\uDCDA", label: "Notion", url: "https://notion.so" },
+  { icon: "\uD83D\uDD0D", label: "arXiv", url: "https://arxiv.org" },
+  { icon: "\uD83C\uDFAE", label: "Manhwa", url: "./reader.html" },
+  { icon: "\uD83D\uDCF1", label: "Ops", url: "./ops.html" },
+  { icon: "\uD83E\uDD9C", label: "Polly", url: "./polly-pad.html" },
+  { icon: "\uD83D\uDCD6", label: "Kindle", url: "https://www.amazon.com/dp/B0GSSFQD9G" },
+  { icon: "\uD83D\uDCAC", label: "X", url: "https://x.com/davisissac" },
+  { icon: "\uD83D\uDD27", label: "Chat", url: "./chat.html" },
+];
+
+// =========================================================
+// State
+// =========================================================
+const TABS_KEY = "aether.tabs.v2";
+const RECENT_KEY = "aether.recent.v1";
+
+let tabs = JSON.parse(localStorage.getItem(TABS_KEY) || "[]");
+let activeTabId = null;
+
+function saveTabs() { localStorage.setItem(TABS_KEY, JSON.stringify(tabs)); }
+function saveRecent(url, title) {
+  let recent = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+  recent = recent.filter(r => r.url !== url);
+  recent.unshift({ url, title: title || url, ts: Date.now() });
+  recent = recent.slice(0, 20);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+}
+
+// =========================================================
+// Render
+// =========================================================
+function renderQuickLinks() {
+  const render = (links, containerId) => {
+    document.getElementById(containerId).innerHTML = links.map(l =>
+      `<a class="qlink" href="#" data-url="${l.url}">
+        <span class="icon">${l.icon}</span>
+        <span class="label">${l.label}</span>
+      </a>`
+    ).join("");
+    document.getElementById(containerId).querySelectorAll(".qlink").forEach(el => {
+      el.addEventListener("click", e => { e.preventDefault(); openUrl(el.dataset.url); });
+    });
+  };
+  render(QUICK_LINKS, "quickLinks");
+  render(TOOL_LINKS, "toolLinks");
+}
+
+function renderRecent() {
+  const recent = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+  document.getElementById("recentList").innerHTML = recent.slice(0, 8).map(r => {
+    let host = r.url;
+    try { host = new URL(r.url).hostname; } catch {}
+    return `<a class="recent-item" href="#" data-url="${r.url}">
+      <div class="favicon"></div>
+      <div>
+        <div>${r.title.slice(0, 40)}</div>
+        <div class="url">${host}</div>
+      </div>
+    </a>`;
+  }).join("");
+  document.getElementById("recentList").querySelectorAll(".recent-item").forEach(el => {
+    el.addEventListener("click", e => { e.preventDefault(); openUrl(el.dataset.url); });
+  });
+}
+
+function renderTabs() {
+  const strip = document.getElementById("tabStrip");
+  strip.innerHTML = [
+    `<button class="tab-chip ${!activeTabId ? 'active' : ''}" data-tab="home">Home</button>`
+  ].concat(tabs.map(t =>
+    `<button class="tab-chip ${t.id === activeTabId ? 'active' : ''}" data-tab="${t.id}">
+      ${(t.title || "Tab").slice(0, 20)}<span class="close" data-close="${t.id}">&times;</span>
+    </button>`
+  )).join("");
+
+  strip.querySelectorAll("[data-tab]").forEach(el => {
+    el.addEventListener("click", e => {
+      if (e.target.dataset.close) {
+        tabs = tabs.filter(t => t.id !== e.target.dataset.close);
+        if (activeTabId === e.target.dataset.close) activeTabId = null;
+        saveTabs(); renderTabs(); showActive();
+        return;
+      }
+      const id = el.dataset.tab;
+      activeTabId = id === "home" ? null : id;
+      showActive();
+    });
+  });
+}
+
+function showActive() {
+  const frame = document.getElementById("browseFrame");
+  const home = document.getElementById("homePage");
+  if (!activeTabId) {
+    frame.classList.remove("active");
+    frame.src = "about:blank";
+    home.classList.remove("hidden");
+    document.getElementById("urlInput").value = "";
+    renderTabs();
+    return;
+  }
+  const tab = tabs.find(t => t.id === activeTabId);
+  if (!tab) { activeTabId = null; showActive(); return; }
+  home.classList.add("hidden");
+  frame.classList.add("active");
+  frame.src = tab.url;
+  document.getElementById("urlInput").value = tab.url;
+  renderTabs();
+}
+
+// =========================================================
+// Navigation
+// =========================================================
+function openUrl(raw) {
+  let url = raw.trim();
+  if (!url) return;
+  // Local pages
+  if (url.startsWith("./") || url.startsWith("../")) {
+    // keep as-is
+  } else if (!url.match(/^https?:\/\//)) {
+    // Treat as search if not a URL pattern
+    if (url.includes(".") && !url.includes(" ")) {
+      url = "https://" + url;
+    } else {
+      url = "https://www.google.com/search?q=" + encodeURIComponent(url);
+    }
+  }
+
+  let title = url;
+  try { title = new URL(url).hostname; } catch { title = url.slice(0, 30); }
+
+  // Reuse existing tab or create new
+  const existing = tabs.find(t => t.url === url);
+  if (existing) {
+    activeTabId = existing.id;
+  } else {
+    const tab = { id: "t" + Date.now(), url, title };
+    tabs.push(tab);
+    activeTabId = tab.id;
+  }
+  saveTabs();
+  saveRecent(url, title);
+  renderRecent();
+  showActive();
+}
+
+// =========================================================
+// Events
+// =========================================================
+document.getElementById("goBtn").addEventListener("click", () => {
+  openUrl(document.getElementById("urlInput").value);
+});
+document.getElementById("urlInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") { e.preventDefault(); openUrl(e.target.value); }
+});
+document.getElementById("backBtn").addEventListener("click", () => {
+  activeTabId = null;
+  showActive();
+});
+
+// =========================================================
+// Init
+// =========================================================
+renderQuickLinks();
+renderRecent();
+renderTabs();
+showActive();
+</script>
+</body>
+</html>
