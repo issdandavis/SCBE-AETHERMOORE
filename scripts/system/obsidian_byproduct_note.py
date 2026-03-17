@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Write a work-session byproduct note into Obsidian."""
+"""Write a work-session byproduct note into Obsidian.
+
+NOTE: Requires the obsidian_researcher agent at agents/obsidian_researcher/.
+The import below resolves to agents.obsidian_researcher.byproduct_logger.
+If you see ImportError, ensure the agents directory is present and that
+the repo root is on sys.path (this script adds it automatically).
+"""
 
 from __future__ import annotations
 
