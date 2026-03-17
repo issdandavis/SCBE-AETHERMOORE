@@ -11,7 +11,6 @@ Runs core selling actions without requiring dashboard/browser hopping:
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import subprocess
@@ -24,10 +23,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.security.secret_store import get_secret  # noqa: E402
-
-
-SENSITIVE_METADATA_ITERATIONS = 120_000
+from src.security.secret_store import (  # noqa: E402
+    get_secret,
+    redact_sensitive_text as _shared_redact,
+    sensitive_fingerprint as _shared_fingerprint,
+    mask_value as _shared_mask,
+    text_metadata as _shared_text_metadata,
+)
 
 
 def _now_utc() -> str:
@@ -85,34 +87,50 @@ def _resolve_report_path(raw_path: str) -> Path:
 
 
 def _sensitive_fingerprint(text: str) -> str:
-    salt = os.getenv("SCBE_METADATA_HASH_KEY", "sell-from-terminal-metadata").encode("utf-8")
-    return hashlib.pbkdf2_hmac(
-        "sha256",
-        text.encode("utf-8"),
-        salt,
-        SENSITIVE_METADATA_ITERATIONS,
-    ).hex()
+    return _shared_fingerprint(text, salt_default="sell-from-terminal-metadata")
 
 
 def _text_metadata(text: str) -> dict[str, Any]:
-    return {
-        "present": bool(text),
-        "length": len(text),
-        "pbkdf2_sha256": _sensitive_fingerprint(text) if text else "",
-    }
+    return _shared_text_metadata(text)
 
 
 def _mask_value(val: str) -> str:
-    """Mask a sensitive value, showing only the last 4 characters."""
-    if len(val) <= 4:
-        return "****"
-    return f"****{val[-4:]}"
+    return _shared_mask(val)
+
+
+def _redact_sensitive_text(text: str) -> str:
+    return _shared_redact(text)
+
+
+def _summarize_process_result(cmd: list[str], proc: Any) -> dict[str, Any]:
+    stdout = str(getattr(proc, "stdout", "") or "").strip()
+    stderr = str(getattr(proc, "stderr", "") or "").strip()
+    error_excerpt_source = stderr or (stdout if int(getattr(proc, "returncode", 0) or 0) != 0 else "")
+
+    summary = {
+        "command": _redact_sensitive_text(" ".join(cmd)),
+        "returncode": int(getattr(proc, "returncode", -1) or -1),
+        "stdout_present": bool(stdout),
+        "stderr_present": bool(stderr),
+        "stdout_metadata": _text_metadata(_redact_sensitive_text(stdout)),
+        "stderr_metadata": _text_metadata(_redact_sensitive_text(stderr)),
+    }
+    if error_excerpt_source:
+        summary["error_excerpt"] = _redact_sensitive_text(error_excerpt_source[:240])
+    return summary
 
 
 def _sanitize_result(result: dict[str, Any]) -> dict[str, Any]:
+    stdout = str(result.get("stdout", "")).strip()
+    stderr = str(result.get("stderr", "")).strip()
     clean = {key: value for key, value in result.items() if key not in {"stdout", "stderr"}}
-    clean["stdout_metadata"] = _text_metadata(str(result.get("stdout", "")).strip())
-    clean["stderr_metadata"] = _text_metadata(str(result.get("stderr", "")).strip())
+    clean["stdout_present"] = bool(stdout)
+    clean["stderr_present"] = bool(stderr)
+    clean["stdout_metadata"] = _text_metadata(stdout)
+    clean["stderr_metadata"] = _text_metadata(stderr)
+    error_excerpt_source = stderr or (stdout if int(result.get("returncode", 0) or 0) != 0 else "")
+    if error_excerpt_source:
+        clean["error_excerpt"] = _redact_sensitive_text(error_excerpt_source[:240])
     return clean
 
 
@@ -135,12 +153,7 @@ def _run_cmd(cmd: list[str], *, timeout: int = 180) -> dict[str, Any]:
         timeout=timeout,
         check=False,
     )
-    return _sanitize_result({
-        "command": " ".join(cmd),
-        "returncode": proc.returncode,
-        "stdout": proc.stdout.strip(),
-        "stderr": proc.stderr.strip(),
-    })
+    return _summarize_process_result(cmd, proc)
 
 
 def _connector_health() -> dict[str, Any]:
@@ -165,12 +178,18 @@ def _connector_health() -> dict[str, Any]:
         check=False,
         env=env,
     )
-    return _sanitize_result({
-        "command": "python scripts/connector_health_check.py --checks github notion huggingface zapier",
-        "returncode": proc.returncode,
-        "stdout": proc.stdout.strip(),
-        "stderr": proc.stderr.strip(),
-    })
+    return _summarize_process_result(
+        [
+            "python",
+            "scripts/connector_health_check.py",
+            "--checks",
+            "github",
+            "notion",
+            "huggingface",
+            "zapier",
+        ],
+        proc,
+    )
 
 
 def main() -> int:

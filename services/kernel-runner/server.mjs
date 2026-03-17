@@ -291,6 +291,7 @@ function buildVerification({ packageJsonText, packageJsonObj, files, runCommand 
 }
 
 function runProcess(command, args, timeoutMs) {
+  const safeTimeout = clampTimeout(timeoutMs);
   return new Promise((resolve) => {
     const child = spawn(command, args, { windowsHide: true });
     let stdout = '';
@@ -301,7 +302,7 @@ function runProcess(command, args, timeoutMs) {
     const timer = setTimeout(() => {
       timedOut = true;
       child.kill('SIGKILL');
-    }, timeoutMs);
+    }, safeTimeout);
 
     child.stdout.on('data', (chunk) => {
       stdout = appendClipped(stdout, chunk.toString('utf8'));
@@ -385,7 +386,10 @@ const app = express();
 app.use(express.json({ limit: '3mb' }));
 app.use(express.static(publicDir));
 
-app.get('/api/health', async (_req, res) => {
+app.get('/api/health', async (req, res) => {
+  if (!enforceRateLimit(req, res, 'health')) {
+    return;
+  }
   const docker = await checkDocker();
   res.json({
     status: 'ok',
@@ -487,7 +491,7 @@ app.post('/api/run', async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       ok: false,
-      error: String(error?.message || error),
+      error: 'internal_error',
     });
   } finally {
     activeRuns--;
@@ -497,7 +501,10 @@ app.post('/api/run', async (req, res) => {
   }
 });
 
-app.use((_req, res) => {
+app.use((req, res) => {
+  if (!enforceRateLimit(req, res, 'static')) {
+    return;
+  }
   res.sendFile(path.join(publicDir, 'index.html'));
 });
 

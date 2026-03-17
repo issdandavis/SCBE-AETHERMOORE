@@ -81,7 +81,7 @@ async def test_notebooklm_seed_notebooks_passes_source_urls(monkeypatch: pytest.
     )
     assert result.success is True
     assert seen["args"].count("--source-url") == 2
-    seen_hosts = {(urlparse(arg).hostname or "") for arg in seen["args"] if arg.startswith("https://")}
+    seen_hosts = {(urlparse(arg).hostname or "") for arg in seen["args"] if urlparse(arg).scheme == "https"}
     assert "arxiv.org" in seen_hosts
     assert "example.com" in seen_hosts
 

@@ -39,7 +39,6 @@ import re
 import sys
 import threading
 import time
-import subprocess
 import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional
@@ -765,40 +764,111 @@ async def arena_providers():
     return result
 
 
+_KERNEL_RUNNER_URL = os.getenv("KERNEL_RUNNER_URL", "http://127.0.0.1:4242")
+
+
 @app.post("/v1/execute")
 async def execute_code(req: CodeExecRequest):
-    """Run user-supplied code in a subprocess and return stdout/stderr/exit_code."""
+    """Delegate code execution to the Docker-sandboxed kernel-runner service.
+
+    Instead of running user-supplied code in a local subprocess (command-injection
+    risk), we POST to the kernel-runner at ``_KERNEL_RUNNER_URL/api/run`` which
+    executes inside a constrained Docker container with no network, capped CPU/
+    memory, and a governance preflight gate.
+    """
     if req.language not in ("python", "javascript"):
         raise HTTPException(400, detail=f"Unsupported language: {req.language}")
     timeout = max(1, min(req.timeout, 30))
+
+    # Build the kernel-runner payload.  The service expects files + packageJson +
+    # runCommand.  We wrap the user code in an entry-point file and set the run
+    # command to invoke it via the appropriate interpreter.
     if req.language == "python":
-        cmd = [sys.executable, "-c", req.code]
+        files = {"main.py": req.code}
+        run_command = "npm test"
+        pkg = {
+            "name": "bridge-exec",
+            "version": "0.0.1",
+            "private": True,
+            "scripts": {"test": "python3 main.py"},
+        }
     else:
-        cmd = ["node", "-e", req.code]
+        files = {"index.js": req.code}
+        run_command = "npm test"
+        pkg = {
+            "name": "bridge-exec",
+            "version": "0.0.1",
+            "private": True,
+            "scripts": {"test": "node index.js"},
+        }
+
+    payload = json.dumps({
+        "files": files,
+        "packageJson": pkg,
+        "runCommand": run_command,
+        "runTimeoutMs": timeout * 1000,
+    }).encode("utf-8")
+
+    url = f"{_KERNEL_RUNNER_URL}/api/run"
+    http_req = urllib_request.Request(
+        url=url,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+
     t0 = time.time()
     try:
-        proc = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
+        with urllib_request.urlopen(http_req, timeout=timeout + 10) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
         duration_ms = round((time.time() - t0) * 1000)
+
+        execute_result = body.get("execute", {})
         return {
-            "stdout": proc.stdout,
-            "stderr": proc.stderr,
-            "exit_code": proc.returncode,
+            "stdout": execute_result.get("stdout", ""),
+            "stderr": execute_result.get("stderr", ""),
+            "exit_code": execute_result.get("exit_code", 0 if body.get("ok") else 1),
             "language": req.language,
             "duration_ms": duration_ms,
+            "sandboxed": True,
         }
-    except subprocess.TimeoutExpired:
+    except urllib_error.HTTPError as exc:
         duration_ms = round((time.time() - t0) * 1000)
+        error_body: Dict[str, Any] = {}
+        try:
+            error_body = json.loads(exc.read().decode("utf-8"))
+        except Exception:
+            pass
+        stderr = error_body.get("error", str(exc))
+        if error_body.get("blocked"):
+            stderr = f"Governance gate blocked execution: {error_body.get('decision_record', {}).get('reason', stderr)}"
         return {
             "stdout": "",
-            "stderr": f"Process timed out after {timeout}s",
+            "stderr": stderr,
             "exit_code": -1,
             "language": req.language,
             "duration_ms": duration_ms,
+            "sandboxed": True,
+        }
+    except urllib_error.URLError as exc:
+        duration_ms = round((time.time() - t0) * 1000)
+        return {
+            "stdout": "",
+            "stderr": f"kernel-runner unreachable at {url}: {exc.reason}",
+            "exit_code": -1,
+            "language": req.language,
+            "duration_ms": duration_ms,
+            "sandboxed": True,
+        }
+    except Exception as exc:
+        duration_ms = round((time.time() - t0) * 1000)
+        return {
+            "stdout": "",
+            "stderr": f"kernel-runner request failed: {exc}",
+            "exit_code": -1,
+            "language": req.language,
+            "duration_ms": duration_ms,
+            "sandboxed": True,
         }
 
 

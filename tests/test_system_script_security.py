@@ -12,10 +12,15 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-secret_store_stub = types.ModuleType("src.security.secret_store")
-secret_store_stub.get_secret = lambda key, default="": default
-secret_store_stub.set_secret = lambda key, value, note="": None
-sys.modules["src.security.secret_store"] = secret_store_stub
+import importlib.util as _ilu
+_ss_spec = _ilu.spec_from_file_location(
+    "src.security.secret_store", ROOT / "src" / "security" / "secret_store.py"
+)
+_ss_mod = _ilu.module_from_spec(_ss_spec)
+_ss_spec.loader.exec_module(_ss_mod)
+_ss_mod.get_secret = lambda key, default="": default
+_ss_mod.set_secret = lambda key, value, note="": None
+sys.modules["src.security.secret_store"] = _ss_mod
 
 _ORIGINAL_MODULES = {
     name: sys.modules.get(name)

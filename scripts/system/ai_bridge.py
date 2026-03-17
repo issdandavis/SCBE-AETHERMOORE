@@ -57,15 +57,16 @@ def _resolve_vault_root(vault_path: str) -> Path:
     if ".." in raw.replace("\\", "/").split("/"):
         raise ValueError("vault_path must not contain '..' path traversal segments")
 
-    resolved = Path(raw).expanduser().resolve(strict=False)
-    if not resolved.exists() or not resolved.is_dir():
-        raise ValueError(f"Vault path must be an existing directory: {resolved}")
-
-    for allowed_root in _allowed_vault_roots():
+    normalized = Path(os.path.normpath(raw)).expanduser()
+    resolved = normalized.resolve(strict=False)
+    allowed_roots = _allowed_vault_roots()
+    for allowed_root in allowed_roots:
         if _is_relative_to(resolved, allowed_root):
+            if not resolved.exists() or not resolved.is_dir():
+                raise ValueError(f"Vault path must be an existing directory: {resolved}")
             return resolved
 
-    roots = ", ".join(str(root) for root in _allowed_vault_roots())
+    roots = ", ".join(str(root) for root in allowed_roots)
     raise ValueError(f"Vault path must stay within an allowed root: {roots}")
 
 
