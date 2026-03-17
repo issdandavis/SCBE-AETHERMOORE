@@ -144,3 +144,60 @@ Gates(
     max_cost_per_1k_tokens=1.0,
 )
 ```
+
+## SFT Pairs from SaaS/Billing API Interactions
+
+Every API call through the SaaS routes (`src/api/saas_routes.py`) is a natural source of training data. The request/response pairs demonstrate real usage patterns, governance decisions, and error handling.
+
+### What to Capture
+
+| API Endpoint | SFT Instruction Pattern | Track |
+|-------------|------------------------|-------|
+| `POST /saas/tenants` | "How do I provision a new tenant with plan X?" | system |
+| `POST /saas/flocks` | "Create a flock with N agents for task Y" | functions |
+| `POST /saas/flocks/{id}/governance` | "Evaluate this payload against governance rules" | governance |
+| `GET /saas/flocks/{id}/metrics` | "What are the current metrics for flock X?" | system |
+| `POST /saas/audit-report` | "Generate an audit report for tenant X" | governance |
+| Error responses (401, 403, 429) | "What happens when rate limit / auth fails?" | governance |
+
+### Generation Pattern
+
+```python
+import json
+from datetime import datetime
+
+def api_call_to_sft(method: str, path: str, request_body: dict, response_body: dict, status: int) -> dict:
+    """Convert an API request/response pair into an SFT training record."""
+    if status < 400:
+        instruction = f"Using the SCBE SaaS API, {method} {path} with the following parameters: {json.dumps(request_body, indent=2)}"
+        response = f"The API responds with status {status}:\n```json\n{json.dumps(response_body, indent=2)}\n```"
+    else:
+        instruction = f"What happens when you call {method} {path} with invalid or unauthorized parameters?"
+        response = f"The API returns status {status} with error: {json.dumps(response_body)}"
+
+    return {
+        "instruction": instruction,
+        "response": response,
+        "metadata": {
+            "source_type": "api_interaction",
+            "track": "governance" if "governance" in path or status >= 400 else "functions",
+            "endpoint": f"{method} {path}",
+            "status_code": status,
+            "generated_at": datetime.utcnow().isoformat(),
+        }
+    }
+```
+
+### Integration Points
+
+1. **Middleware logger**: Add a FastAPI middleware that captures request/response pairs to a JSONL file at `training-data/sft_api_interactions.jsonl`.
+2. **Merge pipeline**: Add `sft_api_interactions.jsonl` as a source in `scripts/merge_and_upload.py`.
+3. **Governance-heavy data**: Error responses (auth failures, rate limits, plan violations) are high-value governance training data -- weight them 2x in the merge.
+4. **Metering data**: The `MeteringStore` counters (`GOVERNANCE_EVALUATIONS`, `WORKFLOW_EXECUTIONS`, `AUDIT_REPORT_GENERATIONS`) provide aggregate stats for system-level SFT pairs.
+
+### Privacy and Safety
+
+- Strip API keys and tenant identifiers before writing SFT records.
+- Replace real tenant names with synthetic placeholders (e.g., `tenant_alpha`, `tenant_beta`).
+- Never include raw request headers in training data.
+- Run governance scan on generated SFT pairs before merging into the corpus.
