@@ -1,6 +1,6 @@
 # 🔤 SS1 Tokenizer Protocol - Sacred Tongue Integration
 
-> last-synced: 2026-03-09T07:27:51.137Z
+> last-synced: 2026-03-16T07:36:49.684Z
 
 # SS1 Tokenizer Protocol
 
@@ -377,8 +377,8 @@ Where w_i is the weight of tongue i and φ is the Golden Ratio.
 
 ```bash
 # Clone repository
-git clone https://github.com/issdandavis/SCBE-AETHERMOORE.git
-cd SCBE-AETHERMOORE
+git clone https://github.com/ISDanDavis2/scbe-aethermoore
+cd scbe-aethermoore
 
 # Install dependencies
 pip install -r requirements.txt
