@@ -26,4 +26,14 @@ docker compose -f docker-compose.gateway.local.yml --profile gateway-local up --
 docker compose -f deploy/gateway/docker-compose.gateway.prod.yml up --build -d
 ```
 
+
 The production compose file enforces required governance variables at compose-evaluation time.
+
+### Port override behavior
+
+`decision-gateway` now binds host/container ports from the same `PORT` value:
+
+- Default mapping: `8081:8081`
+- Override mapping: set `PORT` and Compose maps `${PORT}:${PORT}` (for example `PORT=9090` gives `9090:9090`).
+
+The container runtime, startup command, and Docker healthcheck all read the same `PORT` value, so the service and `/health` probe stay aligned when the port is overridden.
