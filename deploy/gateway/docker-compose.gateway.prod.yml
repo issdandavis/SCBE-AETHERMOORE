@@ -7,7 +7,7 @@ services:
       context: ../..
       dockerfile: Dockerfile.gateway
     ports:
-      - '8081:8081'
+      - '${PORT:-8081}:${PORT:-8081}'
     environment:
       NODE_ENV: production
       PORT: ${PORT:-8081}
