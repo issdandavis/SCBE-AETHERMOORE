@@ -104,11 +104,7 @@ export class WormholeNetwork {
    * @param halfLife - Half-life in seconds (default: 300 = 5 min)
    * @returns The created wormhole
    */
-  createWormhole(
-    throatA: number[],
-    throatB: number[],
-    halfLife: number = 300
-  ): Wormhole {
+  createWormhole(throatA: number[], throatB: number[], halfLife: number = 300): Wormhole {
     const id = `wh-${this.nextId++}`;
     const now = Date.now();
 
@@ -138,7 +134,7 @@ export class WormholeNetwork {
    */
   getStability(wormhole: Wormhole, now: number = Date.now()): number {
     const deltaSeconds = (now - wormhole.createdAt) / 1000;
-    return Math.exp(-Math.LN2 * deltaSeconds / wormhole.halfLife);
+    return Math.exp((-Math.LN2 * deltaSeconds) / wormhole.halfLife);
   }
 
   /**
@@ -186,11 +182,7 @@ export class WormholeNetwork {
    * @param now - Current timestamp
    * @returns Transport result
    */
-  transport(
-    point: number[],
-    wormholeId: string,
-    now: number = Date.now()
-  ): TransportResult {
+  transport(point: number[], wormholeId: string, now: number = Date.now()): TransportResult {
     const wh = this.wormholes.get(wormholeId);
     if (!wh) {
       return { destination: point, distanceSaved: 0, stabilityAtTraversal: 0, success: false };
@@ -200,7 +192,12 @@ export class WormholeNetwork {
     if (stability < 0.05) {
       // Wormhole has collapsed
       this.wormholes.delete(wormholeId);
-      return { destination: point, distanceSaved: 0, stabilityAtTraversal: stability, success: false };
+      return {
+        destination: point,
+        distanceSaved: 0,
+        stabilityAtTraversal: stability,
+        success: false,
+      };
     }
 
     // Determine which throat is closer
@@ -240,11 +237,7 @@ export class WormholeNetwork {
    * @param now - Current timestamp
    * @returns Effective distance (potentially much shorter than geodesic)
    */
-  effectiveDistance(
-    source: number[],
-    target: number[],
-    now: number = Date.now()
-  ): number {
+  effectiveDistance(source: number[], target: number[], now: number = Date.now()): number {
     const directDist = hyperbolicDist(source, target);
     let bestDist = directDist;
 

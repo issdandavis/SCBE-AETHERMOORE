@@ -22,6 +22,7 @@ export default defineConfig({
       '**/hioujhn/**',
       '**/scbe-aethermoore/**',
       '**/scbe-aethermoore-demo/**',
+      '**/e2e/**',
     ],
     testTimeout: 30000,
     // Enterprise test suite configuration

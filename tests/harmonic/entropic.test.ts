@@ -232,7 +232,7 @@ describe('Expansion Tracking', () => {
     it('should be finite for all trajectories', () => {
       for (let trial = 0; trial < 10; trial++) {
         const samples = Array.from({ length: 8 }, (_, i) =>
-          makeSample(randomBallPoint(6, 0.5), i * 100),
+          makeSample(randomBallPoint(6, 0.5), i * 100)
         );
         const rate = computeExpansionRate(samples);
         expect(Number.isFinite(rate)).toBe(true);
@@ -247,8 +247,14 @@ describe('Expansion Tracking', () => {
     });
 
     it('should increase with spread', () => {
-      const tight = [[0.1, 0, 0, 0, 0, 0], [0.11, 0, 0, 0, 0, 0]];
-      const wide = [[0.1, 0, 0, 0, 0, 0], [0.6, 0, 0, 0, 0, 0]];
+      const tight = [
+        [0.1, 0, 0, 0, 0, 0],
+        [0.11, 0, 0, 0, 0, 0],
+      ];
+      const wide = [
+        [0.1, 0, 0, 0, 0, 0],
+        [0.6, 0, 0, 0, 0, 0],
+      ];
 
       expect(estimateReachableVolume(wide)).toBeGreaterThan(estimateReachableVolume(tight));
     });

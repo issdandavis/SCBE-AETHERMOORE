@@ -38,13 +38,20 @@ import type {
   DOMElementState,
   FormObservation,
 } from '../../src/browser/types.js';
-import type { TrajectoryPoint, CombinedAssessment, DetectionResult } from '../../src/ai_brain/types.js';
+import type {
+  TrajectoryPoint,
+  CombinedAssessment,
+  DetectionResult,
+} from '../../src/ai_brain/types.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Helpers
 // ═══════════════════════════════════════════════════════════════
 
-function mockPageObs(url = 'https://example.com', overrides: Partial<PageObservation> = {}): PageObservation {
+function mockPageObs(
+  url = 'https://example.com',
+  overrides: Partial<PageObservation> = {}
+): PageObservation {
   return {
     url,
     title: `Page at ${url}`,
@@ -60,7 +67,10 @@ function mockPageObs(url = 'https://example.com', overrides: Partial<PageObserva
   };
 }
 
-function mockObservation(url = 'https://example.com', overrides: Partial<PageObservation> = {}): BrowserObservation {
+function mockObservation(
+  url = 'https://example.com',
+  overrides: Partial<PageObservation> = {}
+): BrowserObservation {
   return {
     sessionId: 'test-session',
     sequence: 0,
@@ -92,7 +102,7 @@ function mockGovernance(overrides: Partial<GovernanceResult> = {}): GovernanceRe
 function makeDOMElement(
   tagName: string,
   dataAttributes: Record<string, string> = {},
-  value?: string,
+  value?: string
 ): DOMElementState {
   return {
     tagName,
@@ -106,7 +116,10 @@ function makeDOMElement(
   };
 }
 
-function makeForm(id: string, fields: Array<{ name: string; sensitive?: boolean }> = []): FormObservation {
+function makeForm(
+  id: string,
+  fields: Array<{ name: string; sensitive?: boolean }> = []
+): FormObservation {
   return {
     identifier: id,
     action: '/submit',
@@ -116,7 +129,7 @@ function makeForm(id: string, fields: Array<{ name: string; sensitive?: boolean 
       type: 'text',
       value: '',
       required: true,
-      sensitivity: f.sensitive ? 'password' as const : 'none' as const,
+      sensitivity: f.sensitive ? ('password' as const) : ('none' as const),
     })),
     hasSensitiveFields: fields.some((f) => f.sensitive),
     sensitiveFieldTypes: fields.filter((f) => f.sensitive).map(() => 'password' as const),
@@ -124,25 +137,36 @@ function makeForm(id: string, fields: Array<{ name: string; sensitive?: boolean 
 }
 
 /** Create a mock browser backend with configurable observations */
-function createMockBackend(
-  obs: PageObservation = mockPageObs(),
-): BrowserBackend {
+function createMockBackend(obs: PageObservation = mockPageObs()): BrowserBackend {
   let currentUrl = 'about:blank';
   let connected = false;
 
   return {
-    async initialize() { connected = true; },
-    async navigate(url: string) { currentUrl = url; obs = { ...obs, url }; },
+    async initialize() {
+      connected = true;
+    },
+    async navigate(url: string) {
+      currentUrl = url;
+      obs = { ...obs, url };
+    },
     async click() {},
     async type() {},
     async scroll() {},
-    async executeScript<T>(script: string): Promise<T> { return undefined as T; },
-    async screenshot() { return Buffer.from('mock'); },
+    async executeScript<T>(script: string): Promise<T> {
+      return undefined as T;
+    },
+    async screenshot() {
+      return Buffer.from('mock');
+    },
     async observe(): Promise<PageObservation> {
       return { ...obs, url: currentUrl };
     },
-    async close() { connected = false; },
-    isConnected() { return connected; },
+    async close() {
+      connected = false;
+    },
+    isConnected() {
+      return connected;
+    },
   };
 }
 
@@ -151,7 +175,7 @@ function agentConfig(
   agentId: string,
   role: 'scout' | 'analyzer' | 'sentinel' | 'reporter',
   tongue: 'KO' | 'AV' | 'RU' | 'CA' | 'UM' | 'DR' = 'KO',
-  obs?: PageObservation,
+  obs?: PageObservation
 ): CrawlAgentBrowserConfig {
   return {
     agentId,
@@ -178,7 +202,8 @@ function makeCombinedAssessment(score: number, flagged: boolean): CombinedAssess
       makeDetection('six_tonic'),
     ],
     combinedScore: score,
-    decision: score >= 0.85 ? 'DENY' : score >= 0.7 ? 'ESCALATE' : score >= 0.5 ? 'QUARANTINE' : 'ALLOW',
+    decision:
+      score >= 0.85 ? 'DENY' : score >= 0.7 ? 'ESCALATE' : score >= 0.5 ? 'QUARANTINE' : 'ALLOW',
     anyFlagged: flagged,
     flagCount: flagged ? 5 : 0,
     timestamp: Date.now(),
@@ -234,9 +259,7 @@ describe('A — Link & Data Extraction', () => {
 
   it('A5: extracts links from value field as fallback', () => {
     const obs = mockObservation('https://example.com', {
-      interactiveElements: [
-        makeDOMElement('a', {}, 'https://via-value.com'),
-      ],
+      interactiveElements: [makeDOMElement('a', {}, 'https://via-value.com')],
     });
     const links = extractLinksFromObservation(obs);
     expect(links).toHaveLength(1);
@@ -260,10 +283,7 @@ describe('A — Link & Data Extraction', () => {
   it('A7: extracts form metadata without field values', () => {
     const obs = mockObservation('https://example.com', {
       forms: [
-        makeForm('login-form', [
-          { name: 'username' },
-          { name: 'password', sensitive: true },
-        ]),
+        makeForm('login-form', [{ name: 'username' }, { name: 'password', sensitive: true }]),
       ],
     });
     const data = extractDataFromObservation(obs);
@@ -606,9 +626,12 @@ describe('E — Sentinel Scanning', () => {
     const managed = runner.getAgent('bad-agent')!;
     for (let i = 0; i < 5; i++) {
       managed.trajectory.push({
-        step: i, state: new Array(21).fill(0.8),
-        embedded: new Array(6).fill(0.5), distance: 4,
-        curvature: 0, timestamp: Date.now(),
+        step: i,
+        state: new Array(21).fill(0.8),
+        embedded: new Array(6).fill(0.5),
+        distance: 4,
+        curvature: 0,
+        timestamp: Date.now(),
       });
     }
 
@@ -628,9 +651,12 @@ describe('E — Sentinel Scanning', () => {
     const managed = runner.getAgent('safe-agent')!;
     for (let i = 0; i < 5; i++) {
       managed.trajectory.push({
-        step: i, state: new Array(21).fill(0.1),
-        embedded: new Array(6).fill(0.05), distance: 0.5,
-        curvature: 0, timestamp: Date.now(),
+        step: i,
+        state: new Array(21).fill(0.1),
+        embedded: new Array(6).fill(0.05),
+        distance: 0.5,
+        curvature: 0,
+        timestamp: Date.now(),
       });
     }
 
@@ -646,9 +672,12 @@ describe('E — Sentinel Scanning', () => {
     const managed = runner.getAgent('sentinel-1')!;
     for (let i = 0; i < 5; i++) {
       managed.trajectory.push({
-        step: i, state: new Array(21).fill(0.9),
-        embedded: new Array(6).fill(0.5), distance: 4,
-        curvature: 0, timestamp: Date.now(),
+        step: i,
+        state: new Array(21).fill(0.9),
+        embedded: new Array(6).fill(0.5),
+        distance: 4,
+        curvature: 0,
+        timestamp: Date.now(),
       });
     }
 
@@ -665,9 +694,12 @@ describe('E — Sentinel Scanning', () => {
     const managed = runner.getAgent('risky-agent')!;
     for (let i = 0; i < 5; i++) {
       managed.trajectory.push({
-        step: i, state: new Array(21).fill(0.5),
-        embedded: new Array(6).fill(0.3), distance: 2,
-        curvature: 0, timestamp: Date.now(),
+        step: i,
+        state: new Array(21).fill(0.5),
+        embedded: new Array(6).fill(0.3),
+        distance: 2,
+        curvature: 0,
+        timestamp: Date.now(),
       });
     }
     // Add high-risk governance entries
@@ -698,9 +730,12 @@ describe('E — Sentinel Scanning', () => {
       const managed = runner.getAgent(id)!;
       for (let i = 0; i < 5; i++) {
         managed.trajectory.push({
-          step: i, state: new Array(21).fill(0.2),
-          embedded: new Array(6).fill(0.1), distance: 1,
-          curvature: 0, timestamp: Date.now(),
+          step: i,
+          state: new Array(21).fill(0.2),
+          embedded: new Array(6).fill(0.1),
+          distance: 1,
+          curvature: 0,
+          timestamp: Date.now(),
         });
       }
     }

@@ -129,13 +129,41 @@ export const CANONICAL_POLYHEDRA: Polyhedron[] = [
   { name: 'Icosahedron', vertices: 12, edges: 30, faces: 20, genus: 0, family: 'platonic' },
 
   // Archimedean Solids (3) — Processing
-  { name: 'Truncated Tetrahedron', vertices: 12, edges: 18, faces: 8, genus: 0, family: 'archimedean' },
+  {
+    name: 'Truncated Tetrahedron',
+    vertices: 12,
+    edges: 18,
+    faces: 8,
+    genus: 0,
+    family: 'archimedean',
+  },
   { name: 'Cuboctahedron', vertices: 12, edges: 24, faces: 14, genus: 0, family: 'archimedean' },
-  { name: 'Icosidodecahedron', vertices: 30, edges: 60, faces: 32, genus: 0, family: 'archimedean' },
+  {
+    name: 'Icosidodecahedron',
+    vertices: 30,
+    edges: 60,
+    faces: 32,
+    genus: 0,
+    family: 'archimedean',
+  },
 
   // Kepler-Poinsot (2) — High-risk
-  { name: 'Small Stellated Dodecahedron', vertices: 12, edges: 30, faces: 12, genus: 4, family: 'kepler-poinsot' },
-  { name: 'Great Dodecahedron', vertices: 12, edges: 30, faces: 12, genus: 4, family: 'kepler-poinsot' },
+  {
+    name: 'Small Stellated Dodecahedron',
+    vertices: 12,
+    edges: 30,
+    faces: 12,
+    genus: 4,
+    family: 'kepler-poinsot',
+  },
+  {
+    name: 'Great Dodecahedron',
+    vertices: 12,
+    edges: 30,
+    faces: 12,
+    genus: 4,
+    family: 'kepler-poinsot',
+  },
 
   // Toroidal (2) — Recursive
   { name: 'Szilassi', vertices: 7, edges: 21, faces: 14, genus: 1, family: 'toroidal' },
@@ -558,7 +586,7 @@ export class PHDMDeviationDetector {
  */
 export function getActivePolyhedra(
   fluxState: FluxState,
-  polyhedra: Polyhedron[] = CANONICAL_POLYHEDRA,
+  polyhedra: Polyhedron[] = CANONICAL_POLYHEDRA
 ): Polyhedron[] {
   const allowedFamilies = new Set(FLUX_FAMILIES[fluxState]);
   return polyhedra.filter((p) => allowedFamilies.has(p.family));
@@ -598,7 +626,7 @@ export function phasonShift(
   matrix: number[][],
   theta: number,
   dim0: number = 0,
-  dim1: number = 1,
+  dim1: number = 1
 ): number[][] {
   if (!Number.isInteger(dim0) || dim0 < 0 || dim0 >= 6) {
     throw new RangeError(`dim0 must be an integer in [0, 5], got ${dim0}`);
@@ -618,7 +646,7 @@ export function phasonShift(
 
   // Build 6D rotation matrix (identity + Givens rotation in (d0, d1))
   const rot6d: number[][] = Array.from({ length: 6 }, (_, i) =>
-    Array.from({ length: 6 }, (_, j) => (i === j ? 1 : 0)),
+    Array.from({ length: 6 }, (_, j) => (i === j ? 1 : 0))
   );
   const c = Math.cos(theta);
   const s = Math.sin(theta);
@@ -667,7 +695,7 @@ export class PolyhedralHamiltonianDefenseManifold {
   constructor(
     polyhedra: Polyhedron[] = CANONICAL_POLYHEDRA,
     snapThreshold: number = 0.1,
-    curvatureThreshold: number = 0.5,
+    curvatureThreshold: number = 0.5
   ) {
     this._allPolyhedra = polyhedra;
     this._projectionMatrix = generateProjectionMatrix();
@@ -694,7 +722,7 @@ export class PolyhedralHamiltonianDefenseManifold {
    */
   simulateAttack(
     attackType: 'deviation' | 'skip' | 'curvature',
-    intensity: number = 1.0,
+    intensity: number = 1.0
   ): IntrusionResult[] {
     return this.detector.simulateAttack(attackType, intensity);
   }
@@ -728,7 +756,7 @@ export class PolyhedralHamiltonianDefenseManifold {
     this.detector = new PHDMDeviationDetector(
       active,
       snapThreshold ?? 0.1,
-      curvatureThreshold ?? 0.5,
+      curvatureThreshold ?? 0.5
     );
   }
 

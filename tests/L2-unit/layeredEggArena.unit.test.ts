@@ -134,8 +134,8 @@ describe('LayeredEggChain', () => {
       const snapshot = chain.getKeyspaceSnapshot();
 
       const result = chain.hatchLayer(1, {
-        tongue: 'KO',        // L1 requires KO
-        ringLevel: 0,        // Core (0 <= 4)
+        tongue: 'KO', // L1 requires KO
+        ringLevel: 0, // Core (0 <= 4)
         currentKeyspace: snapshot,
         previousEggHash: 'genesis', // First egg
       });
@@ -153,7 +153,7 @@ describe('LayeredEggChain', () => {
       const snapshot = chain.getKeyspaceSnapshot();
 
       const result = chain.hatchLayer(1, {
-        tongue: 'UM',        // L1 requires KO, not UM
+        tongue: 'UM', // L1 requires KO, not UM
         ringLevel: 0,
         currentKeyspace: snapshot,
         previousEggHash: 'genesis',
@@ -171,7 +171,7 @@ describe('LayeredEggChain', () => {
       // L13 requires ring 0 (CORE), try with ring 2
       const result = chain.hatchLayer(13, {
         tongue: 'RU',
-        ringLevel: 2,         // Too high — L13 requires 0
+        ringLevel: 2, // Too high — L13 requires 0
         currentKeyspace: snapshot,
         previousEggHash: chain.computeEggHash(12),
       });
@@ -233,7 +233,7 @@ describe('LayeredEggChain', () => {
       // Hatch L2 using L1's egg hash as chain proof
       const l1Hash = chain.computeEggHash(1);
       const r2 = chain.hatchLayer(2, {
-        tongue: 'KO',       // L2 also requires KO
+        tongue: 'KO', // L2 also requires KO
         ringLevel: 0,
         currentKeyspace: snapshot,
         previousEggHash: l1Hash,
@@ -370,9 +370,7 @@ describe('LayeredEggChain', () => {
       const analysis = chain.getSecurityAnalysis();
 
       // Total = sequential + tongue diversity + ring escalation
-      expect(analysis.totalEffectiveBits).toBeGreaterThan(
-        analysis.sequentialCostLog2,
-      );
+      expect(analysis.totalEffectiveBits).toBeGreaterThan(analysis.sequentialCostLog2);
     });
   });
 

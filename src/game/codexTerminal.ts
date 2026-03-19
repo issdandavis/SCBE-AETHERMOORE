@@ -24,12 +24,12 @@ import { RiskDecision, TongueVector, tongueNorm, GameEvent, DatasetTier } from '
 
 /** Categories of allowed codex queries */
 export type CodexCategory =
-  | 'math_reference'    // Look up mathematical concepts
-  | 'lore_wiki'         // Browse in-world lore
-  | 'creature_codex'    // Companion/creature information
-  | 'strategy_guide'    // Gameplay strategies
-  | 'visual_thermal'    // Real-time data visualization
-  | 'external_api';     // External API call (most restricted)
+  | 'math_reference' // Look up mathematical concepts
+  | 'lore_wiki' // Browse in-world lore
+  | 'creature_codex' // Companion/creature information
+  | 'strategy_guide' // Gameplay strategies
+  | 'visual_thermal' // Real-time data visualization
+  | 'external_api'; // External API call (most restricted)
 
 /** A codex terminal request */
 export interface CodexRequest {
@@ -306,9 +306,7 @@ export class CodexTerminal {
   /** L8: Control flow integrity — is this a valid request pattern? */
   private scoreCFI(req: CodexRequest): number {
     // Penalize rapid-fire requests (possible automation/exploit)
-    const recentCount = this.requestLog.filter(
-      (r) => req.timestamp - r.timestamp < 10_000
-    ).length;
+    const recentCount = this.requestLog.filter((r) => req.timestamp - r.timestamp < 10_000).length;
     return Math.max(0.1, 1.0 - recentCount * 0.15);
   }
 
@@ -328,11 +326,7 @@ export class CodexTerminal {
   //  Utility
   // -------------------------------------------------------------------------
 
-  private buildDeny(
-    request: CodexRequest,
-    reason: string,
-    harmonicScore: number
-  ): CodexEvaluation {
+  private buildDeny(request: CodexRequest, reason: string, harmonicScore: number): CodexEvaluation {
     return {
       requestId: request.requestId,
       decision: 'DENY',
@@ -351,11 +345,7 @@ export class CodexTerminal {
   }
 
   /** Convert a request + evaluation to a game event for training pipeline */
-  toGameEvent(
-    request: CodexRequest,
-    evaluation: CodexEvaluation,
-    agentId: string
-  ): GameEvent {
+  toGameEvent(request: CodexRequest, evaluation: CodexEvaluation, agentId: string): GameEvent {
     return {
       eventId: request.requestId,
       timestamp: request.timestamp,

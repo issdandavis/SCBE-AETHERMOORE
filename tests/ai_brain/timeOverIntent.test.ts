@@ -295,12 +295,14 @@ describe('evaluateTimeOverIntent', () => {
   });
 
   it('caps modulated risk at 1.0', () => {
-    const result = evaluateTimeOverIntent(makeObs({
-      distance: 10.0,
-      baseRisk: 0.5,
-      curvature: 5.0,
-      coherence: 0.1,
-    }));
+    const result = evaluateTimeOverIntent(
+      makeObs({
+        distance: 10.0,
+        baseRisk: 0.5,
+        curvature: 5.0,
+        coherence: 0.1,
+      })
+    );
     expect(result.modulatedRisk).toBeLessThanOrEqual(1.0);
   });
 

@@ -57,7 +57,11 @@ export class ExecutionDistrict {
 
     const tooOld = now - decisionRecord.timestamp > this.maxTicketAgeMs;
     if (tooOld) {
-      return this.denyResult(request, decisionRecord, 'Execution blocked: stale governance ticket.');
+      return this.denyResult(
+        request,
+        decisionRecord,
+        'Execution blocked: stale governance ticket.'
+      );
     }
 
     if (decisionRecord.action !== 'ALLOW') {

@@ -272,7 +272,7 @@ describe('Test F: Auto-Propagation', () => {
     net = new CymaticVoxelNet(
       [1, 1, 1, 1, 1, 1], // Equal pairs → trivially nodal
       undefined,
-      { maxHops: 10, coherenceDecay: 0.85 },
+      { maxHops: 10, coherenceDecay: 0.85 }
     );
   });
 
@@ -306,11 +306,10 @@ describe('Test F: Auto-Propagation', () => {
 
   it('tongue assignment varies along propagation path', () => {
     // With non-trivial state and larger steps, tongues may change
-    const net2 = new CymaticVoxelNet(
-      [1, 3, 2, 5, 4, 2],
-      undefined,
-      { maxHops: 10, coherenceDecay: 0.9 },
-    );
+    const net2 = new CymaticVoxelNet([1, 3, 2, 5, 4, 2], undefined, {
+      maxHops: 10,
+      coherenceDecay: 0.9,
+    });
     const acts = net2.propagate([0.5, 0.2, 0.1, 0.8, 0.3, 0.7], 10, 0.2);
     const tongues = new Set(acts.map((a) => a.tongue));
     // At least one tongue should be assigned
@@ -331,11 +330,7 @@ describe('Test F: Auto-Propagation', () => {
   });
 
   it('propagation respects maxHops config', () => {
-    const small = new CymaticVoxelNet(
-      [1, 1, 1, 1, 1, 1],
-      undefined,
-      { maxHops: 3 },
-    );
+    const small = new CymaticVoxelNet([1, 1, 1, 1, 1, 1], undefined, { maxHops: 3 });
     const acts = small.propagate([0, 0, 0, 0, 0, 0]);
     expect(acts.length).toBeLessThanOrEqual(3);
   });

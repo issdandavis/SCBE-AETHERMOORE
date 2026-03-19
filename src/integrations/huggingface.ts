@@ -87,7 +87,10 @@ const DEFAULT_INFERENCE_URL = 'https://api-inference.huggingface.co';
 
 function resolveConfig(config?: Partial<HFConfig>): Required<HFConfig> {
   return {
-    apiKey: config?.apiKey !== undefined ? config.apiKey : (process.env.HUGGINGFACE_API_KEY || process.env.HUGGINGFACE_TOKEN || ''),
+    apiKey:
+      config?.apiKey !== undefined
+        ? config.apiKey
+        : process.env.HUGGINGFACE_API_KEY || process.env.HUGGINGFACE_TOKEN || '',
     endpoint: config?.endpoint || process.env.HUGGINGFACE_ENDPOINT || DEFAULT_INFERENCE_URL,
     hubUrl: config?.hubUrl || DEFAULT_HUB_URL,
     timeoutMs: config?.timeoutMs ?? 30_000,
@@ -247,9 +250,21 @@ export class HuggingFaceClient {
   // ── Identity ──────────────────────────────────────────────
 
   /** Get authenticated user info (whoami) */
-  async whoami(): Promise<{ name: string; fullname: string; email?: string; orgs?: Array<{ name: string }> }> {
-    return this.request(this.config.hubUrl.replace('/api', ''), '/api/whoami-v2', 'GET') as Promise<{
-      name: string; fullname: string; email?: string; orgs?: Array<{ name: string }>;
+  async whoami(): Promise<{
+    name: string;
+    fullname: string;
+    email?: string;
+    orgs?: Array<{ name: string }>;
+  }> {
+    return this.request(
+      this.config.hubUrl.replace('/api', ''),
+      '/api/whoami-v2',
+      'GET'
+    ) as Promise<{
+      name: string;
+      fullname: string;
+      email?: string;
+      orgs?: Array<{ name: string }>;
     }>;
   }
 
@@ -257,7 +272,11 @@ export class HuggingFaceClient {
 
   /** List models for the authenticated user or a specific author */
   async listModels(author?: string, limit: number = 20): Promise<HFModelInfo[]> {
-    const params = new URLSearchParams({ limit: String(limit), sort: 'lastModified', direction: '-1' });
+    const params = new URLSearchParams({
+      limit: String(limit),
+      sort: 'lastModified',
+      direction: '-1',
+    });
     if (author) params.set('author', author);
     return this.request(this.config.hubUrl, `/models?${params}`) as Promise<HFModelInfo[]>;
   }
@@ -295,54 +314,40 @@ export class HuggingFaceClient {
     modelId: string,
     request: HFTextGenerationRequest
   ): Promise<HFTextGenerationResult[]> {
-    return this.request(
-      this.config.endpoint,
-      `/models/${modelId}`,
-      'POST',
-      request
-    ) as Promise<HFTextGenerationResult[]>;
+    return this.request(this.config.endpoint, `/models/${modelId}`, 'POST', request) as Promise<
+      HFTextGenerationResult[]
+    >;
   }
 
   /** Get embeddings (feature extraction) — feeds into 21D pipeline */
-  async embeddings(
-    modelId: string,
-    request: HFEmbeddingRequest
-  ): Promise<number[][] | number[]> {
-    return this.request(
-      this.config.endpoint,
-      `/models/${modelId}`,
-      'POST',
-      request
-    ) as Promise<number[][] | number[]>;
+  async embeddings(modelId: string, request: HFEmbeddingRequest): Promise<number[][] | number[]> {
+    return this.request(this.config.endpoint, `/models/${modelId}`, 'POST', request) as Promise<
+      number[][] | number[]
+    >;
   }
 
   /** Run text classification */
-  async classify(
-    modelId: string,
-    inputs: string
-  ): Promise<HFClassificationResult[][]> {
-    return this.request(
-      this.config.endpoint,
-      `/models/${modelId}`,
-      'POST',
-      { inputs }
-    ) as Promise<HFClassificationResult[][]>;
+  async classify(modelId: string, inputs: string): Promise<HFClassificationResult[][]> {
+    return this.request(this.config.endpoint, `/models/${modelId}`, 'POST', { inputs }) as Promise<
+      HFClassificationResult[][]
+    >;
   }
 
   // ── Datasets ──────────────────────────────────────────────
 
   /** List datasets for an author */
   async listDatasets(author?: string, limit: number = 20): Promise<HFDatasetInfo[]> {
-    const params = new URLSearchParams({ limit: String(limit), sort: 'lastModified', direction: '-1' });
+    const params = new URLSearchParams({
+      limit: String(limit),
+      sort: 'lastModified',
+      direction: '-1',
+    });
     if (author) params.set('author', author);
     return this.request(this.config.hubUrl, `/datasets?${params}`) as Promise<HFDatasetInfo[]>;
   }
 
   /** Create a dataset repository */
-  async createDatasetRepo(
-    name: string,
-    options?: { private?: boolean }
-  ): Promise<{ url: string }> {
+  async createDatasetRepo(name: string, options?: { private?: boolean }): Promise<{ url: string }> {
     const repoId = this.config.namespace ? `${this.config.namespace}/${name}` : name;
     return this.request(this.config.hubUrl, '/repos/create', 'POST', {
       name: repoId,

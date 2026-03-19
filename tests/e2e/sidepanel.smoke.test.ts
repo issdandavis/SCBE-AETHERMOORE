@@ -153,7 +153,9 @@ test.describe('C — Provider Health', () => {
     await page.goto(BASE_URL);
     await waitForConnection(page);
 
-    await expect(page.locator('.ab-provider-pill--blocked').first()).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator('.ab-provider-pill--blocked').first()).toBeVisible({
+      timeout: 5_000,
+    });
 
     const blockedPills = page.locator('.ab-provider-pill--blocked');
     const count = await blockedPills.count();
@@ -382,13 +384,13 @@ test.describe('G — Visual Sanity', () => {
     await page.goto(BASE_URL);
     await waitForConnection(page);
 
-    const gridDir = await page.evaluate(() =>
-      getComputedStyle(document.getElementById('agent-grid')!).flexDirection
+    const gridDir = await page.evaluate(
+      () => getComputedStyle(document.getElementById('agent-grid')!).flexDirection
     );
     expect(gridDir).toBe('column');
 
-    const rowDir = await page.evaluate(() =>
-      getComputedStyle(document.getElementById('agent-grid-row')!).flexDirection
+    const rowDir = await page.evaluate(
+      () => getComputedStyle(document.getElementById('agent-grid-row')!).flexDirection
     );
     expect(rowDir).toBe('row');
   });

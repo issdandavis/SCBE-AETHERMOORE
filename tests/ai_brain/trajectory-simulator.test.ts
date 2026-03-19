@@ -110,7 +110,11 @@ describe('AGENT_PROFILES', () => {
 
   it('profiles have monotonically decreasing trust from honest to malicious', () => {
     const order: Array<keyof typeof AGENT_PROFILES> = [
-      'honest', 'neutral', 'semi_honest', 'semi_malicious', 'malicious'
+      'honest',
+      'neutral',
+      'semi_honest',
+      'semi_malicious',
+      'malicious',
     ];
     for (let i = 1; i < order.length; i++) {
       expect(AGENT_PROFILES[order[i]].baseTrust).toBeLessThan(
@@ -121,7 +125,11 @@ describe('AGENT_PROFILES', () => {
 
   it('profiles have monotonically increasing noise from honest to malicious', () => {
     const order: Array<keyof typeof AGENT_PROFILES> = [
-      'honest', 'neutral', 'semi_honest', 'semi_malicious', 'malicious'
+      'honest',
+      'neutral',
+      'semi_honest',
+      'semi_malicious',
+      'malicious',
     ];
     for (let i = 1; i < order.length; i++) {
       expect(AGENT_PROFILES[order[i]].noiseAmplitude).toBeGreaterThanOrEqual(
@@ -223,7 +231,8 @@ describe('Trajectory behavior characteristics', () => {
     const honest = generateTrajectory('h', AGENT_PROFILES.honest, config);
     const malicious = generateTrajectory('m', AGENT_PROFILES.malicious, config);
     const avgHonest = honest.points.reduce((s, p) => s + p.distance, 0) / honest.points.length;
-    const avgMalicious = malicious.points.reduce((s, p) => s + p.distance, 0) / malicious.points.length;
+    const avgMalicious =
+      malicious.points.reduce((s, p) => s + p.distance, 0) / malicious.points.length;
     expect(avgMalicious).toBeGreaterThan(avgHonest);
   });
 
@@ -231,10 +240,10 @@ describe('Trajectory behavior characteristics', () => {
     const honest = generateTrajectory('h', AGENT_PROFILES.honest, config);
     const malicious = generateTrajectory('m', AGENT_PROFILES.malicious, config);
     // Compare average absolute curvature (skip first 2 points which have curvature = 0)
-    const curvatures = (t: typeof honest) =>
-      t.points.slice(2).map((p) => Math.abs(p.curvature));
+    const curvatures = (t: typeof honest) => t.points.slice(2).map((p) => Math.abs(p.curvature));
     const avgHonest = curvatures(honest).reduce((s, c) => s + c, 0) / (honest.points.length - 2);
-    const avgMalicious = curvatures(malicious).reduce((s, c) => s + c, 0) / (malicious.points.length - 2);
+    const avgMalicious =
+      curvatures(malicious).reduce((s, c) => s + c, 0) / (malicious.points.length - 2);
     // Malicious should have higher curvature due to sudden direction changes
     expect(avgMalicious).toBeGreaterThanOrEqual(avgHonest * 0.5); // Allow some variance
   });

@@ -361,7 +361,7 @@ describe('GravitationalBraking.getWarningAgents and getFrozenAgents', () => {
     const trustVector = [1, 0, 0, 0, 0, 0];
 
     gb.update('frozen-x', 10, trustVector); // Very high divergence => likely frozen
-    gb.update('active-x', 0, trustVector);  // Zero divergence => not frozen
+    gb.update('active-x', 0, trustVector); // Zero divergence => not frozen
 
     const frozen = gb.getFrozenAgents();
     const frozenIds = frozen.map((s) => s.agentId);

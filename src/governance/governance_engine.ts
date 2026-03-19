@@ -1,8 +1,4 @@
-import type {
-  DecisionResult,
-  EnforcementRequest,
-  OfflineRuntime,
-} from './offline_mode.js';
+import type { DecisionResult, EnforcementRequest, OfflineRuntime } from './offline_mode.js';
 import { DECIDE } from './offline_mode.js';
 
 export type {
@@ -14,8 +10,7 @@ export type {
 
 export function governanceDecide(
   request: EnforcementRequest,
-  runtime: OfflineRuntime,
+  runtime: OfflineRuntime
 ): DecisionResult {
   return DECIDE(request, runtime);
 }
-

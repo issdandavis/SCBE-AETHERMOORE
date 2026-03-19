@@ -109,7 +109,7 @@ export class EntropicLayer {
 
     // Euclidean volume factor: pi^(d/2) * r^d / Gamma(d/2 + 1)
     const halfD = d / 2;
-    const eucFactor = Math.pow(Math.PI, halfD) * Math.pow(r, d) / this.gamma(halfD + 1);
+    const eucFactor = (Math.pow(Math.PI, halfD) * Math.pow(r, d)) / this.gamma(halfD + 1);
 
     // Hyperbolic expansion factor: exp((d-1) * r)
     const hypFactor = Math.exp(Math.min((d - 1) * r, 50)); // cap to avoid overflow
@@ -132,8 +132,7 @@ export class EntropicLayer {
     const volumeRatio = volume / this.config.maxVolume;
 
     // Escape velocity bound: k > 2*C_quantum / sqrt(N0)
-    const escapeVelocityBound =
-      (2 * this.config.cQuantum) / Math.sqrt(this.config.n0);
+    const escapeVelocityBound = (2 * this.config.cQuantum) / Math.sqrt(this.config.n0);
 
     // Radial velocity (dot product of velocity with normalized position)
     let rSq = 0;
@@ -145,9 +144,7 @@ export class EntropicLayer {
     const r = Math.sqrt(rSq);
     const radialVelocity = r > 1e-10 ? vDotR / r : 0;
 
-    const escaped =
-      volume > this.config.maxVolume ||
-      radialVelocity > escapeVelocityBound;
+    const escaped = volume > this.config.maxVolume || radialVelocity > escapeVelocityBound;
 
     return {
       escaped,

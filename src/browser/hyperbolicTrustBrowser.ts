@@ -304,7 +304,12 @@ export class HyperbolicTrustBrowser {
       trustGap, // L10: spin coherence / trust gap
       Math.min(1, trustGap * (1 + Math.abs(breathingPhase))), // L11: temporal
       this.harmonicScale(distance, Math.abs(breathingPhase)), // L12: harmonic wall
-      this.computeRisk(distance, this.harmonicScale(distance, 0), [true, true, true, true, true, true], intent), // L13: risk
+      this.computeRisk(
+        distance,
+        this.harmonicScale(distance, 0),
+        [true, true, true, true, true, true],
+        intent
+      ), // L13: risk
       Math.abs(breathingPhase) * actionRisk, // L14: audio axis
     ];
   }
@@ -416,11 +421,7 @@ export class HyperbolicTrustBrowser {
     }
   }
 
-  private updateDomainHistory(
-    url: string,
-    distance: number,
-    decision: BrowserDecision
-  ): void {
+  private updateDomainHistory(url: string, distance: number, decision: BrowserDecision): void {
     const domain = this.extractDomain(url);
     const existing = this.domainHistory.get(domain);
 

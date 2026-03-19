@@ -79,11 +79,11 @@ export const LWS_WEIGHTS: Record<TongueCode, number> = {
 /** PHDM tongue weights (φⁿ crisis-mode scaling) */
 export const PHDM_WEIGHTS: Record<TongueCode, number> = {
   ko: 1.0,
-  av: PHI,          // ≈ 1.618
-  ru: PHI ** 2,     // ≈ 2.618
-  ca: PHI ** 3,     // ≈ 4.236
-  um: PHI ** 4,     // ≈ 6.854
-  dr: PHI ** 5,     // ≈ 11.090
+  av: PHI, // ≈ 1.618
+  ru: PHI ** 2, // ≈ 2.618
+  ca: PHI ** 3, // ≈ 4.236
+  um: PHI ** 4, // ≈ 6.854
+  dr: PHI ** 5, // ≈ 11.090
 };
 
 // ════════════════════════════════════════════════════════════════
@@ -369,10 +369,7 @@ export function encodeTokenIndices(tokens: AetherToken[]): Uint8Array {
  *   - ML-DSA-65 KeyGen (32 bytes → ξ)
  *   - Any other algorithm expecting uniform seed bytes
  */
-export function deriveSeed(
-  phrase: string | AetherPhrase,
-  options?: SeedOptions
-): DerivedSeed {
+export function deriveSeed(phrase: string | AetherPhrase, options?: SeedOptions): DerivedSeed {
   const parsed = typeof phrase === 'string' ? parsePhrase(phrase) : phrase;
   const domain = options?.domain ?? AETHERLEX_DOMAIN;
   const outputLen = options?.outputBytes ?? 64;
@@ -427,10 +424,7 @@ export function deriveSeed(
  * Each token is chosen uniformly from the 1,536-token space using
  * CSPRNG rejection sampling (no modulo bias).
  */
-export function generatePhrase(
-  tokenCount: number = 12,
-  profile?: SeedProfile
-): AetherPhrase {
+export function generatePhrase(tokenCount: number = 12, profile?: SeedProfile): AetherPhrase {
   if (tokenCount < 1 || tokenCount > 64) {
     throw new RangeError('Token count must be 1-64');
   }
@@ -550,9 +544,7 @@ export function validatePhrase(
     const required = profile.tongueRequirements[code];
     const actual = parsed.tongueDistribution[code];
     if (actual < required) {
-      errors.push(
-        `Tongue ${code.toUpperCase()} requires ${required} tokens, has ${actual}`
-      );
+      errors.push(`Tongue ${code.toUpperCase()} requires ${required} tokens, has ${actual}`);
     }
   }
 

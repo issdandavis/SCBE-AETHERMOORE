@@ -23,7 +23,9 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install numpy scipy
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || pip install numpy scipy
 
       - name: "Verify Axiom A4 (Poincaré Constraint)"
         run: |
@@ -67,7 +69,9 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install numpy scipy
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || pip install numpy scipy
 
       - name: "Run Module Self-Tests"
         run: |
@@ -112,7 +116,9 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install numpy scipy
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || pip install numpy scipy
 
       - name: "R1: Energy Preservation"
         run: |
@@ -210,7 +216,9 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install numpy scipy
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || pip install numpy scipy
 
       - name: "Run Patent Validation Tests"
         run: python symphonic_cipher/scbe_aethermoore/patent_validation_tests.py

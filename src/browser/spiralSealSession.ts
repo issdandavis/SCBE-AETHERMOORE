@@ -135,9 +135,7 @@ export class SpiralSealSessionBrowser {
   constructor(masterKey: Buffer | string, config?: Partial<SSSBConfig>) {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.masterKey =
-      typeof masterKey === 'string'
-        ? createHash('sha256').update(masterKey).digest()
-        : masterKey;
+      typeof masterKey === 'string' ? createHash('sha256').update(masterKey).digest() : masterKey;
   }
 
   /**
@@ -236,7 +234,12 @@ export class SpiralSealSessionBrowser {
     const currentKey = this.deriveKey(sessionId, session.agentId, session.keyVersion);
     let state: SessionState;
     try {
-      const decrypted = this.decrypt(session.sealedState, currentKey, session.noncePrefix, session.keyVersion);
+      const decrypted = this.decrypt(
+        session.sealedState,
+        currentKey,
+        session.noncePrefix,
+        session.keyVersion
+      );
       state = JSON.parse(decrypted) as SessionState;
     } catch {
       return {
@@ -255,7 +258,12 @@ export class SpiralSealSessionBrowser {
     const newKey = this.deriveKey(sessionId, session.agentId, newKeyVersion);
 
     // Re-encrypt with new key
-    const newSealedState = this.encrypt(JSON.stringify(state), newKey, session.noncePrefix, newKeyVersion);
+    const newSealedState = this.encrypt(
+      JSON.stringify(state),
+      newKey,
+      session.noncePrefix,
+      newKeyVersion
+    );
     const newBreathingPhase = this.breathingTransform(Date.now());
     const newChecksum = this.computeTemporalChecksum(newSealedState, newBreathingPhase);
 
@@ -346,9 +354,7 @@ export class SpiralSealSessionBrowser {
 
   /** Derive deterministic IV from prefix + counter */
   private deriveIV(noncePrefix: string, counter: number): Buffer {
-    const hash = createHash('sha256')
-      .update(`${noncePrefix}:${counter}`)
-      .digest();
+    const hash = createHash('sha256').update(`${noncePrefix}:${counter}`).digest();
     return hash.subarray(0, AES_IV_LENGTH);
   }
 

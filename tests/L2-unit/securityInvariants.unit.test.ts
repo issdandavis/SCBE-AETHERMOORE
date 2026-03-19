@@ -26,7 +26,14 @@ import {
 // ═══════════════════════════════════════════════════════════════
 
 const ORIGIN: Vector6D = [0, 0, 0, 0, 0, 0];
-const ALIGNED_PHASE: Vector6D = [0, Math.PI / 3, (2 * Math.PI) / 3, Math.PI, (4 * Math.PI) / 3, (5 * Math.PI) / 3];
+const ALIGNED_PHASE: Vector6D = [
+  0,
+  Math.PI / 3,
+  (2 * Math.PI) / 3,
+  Math.PI,
+  (4 * Math.PI) / 3,
+  (5 * Math.PI) / 3,
+];
 
 function makeAlignedState(pos: Vector6D): CHSFNState {
   return { position: pos, phase: [...ALIGNED_PHASE] as Vector6D, mass: 1.0 };

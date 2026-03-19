@@ -19,12 +19,7 @@
  * Validated: 100 trials, 20 agents, 100 steps -> Combined AUC 1.000
  */
 
-import {
-  BRAIN_DIMENSIONS,
-  PHI,
-  type AgentTrajectory,
-  type TrajectoryPoint,
-} from './types.js';
+import { BRAIN_DIMENSIONS, PHI, type AgentTrajectory, type TrajectoryPoint } from './types.js';
 import type { GovernanceTier, DimensionalState } from '../fleet/types.js';
 import { UnifiedBrainState, safePoincareEmbed, hyperbolicDistanceSafe } from './unified-state.js';
 
@@ -249,7 +244,14 @@ export function generateTrajectory(
     agentId,
     classification: profile.classification,
     governanceTier: config.governanceTier ?? 'KO',
-    dimensionalState: profile.baseTrust >= 0.8 ? 'POLLY' : profile.baseTrust >= 0.5 ? 'QUASI' : profile.baseTrust >= 0.1 ? 'DEMI' : 'COLLAPSED',
+    dimensionalState:
+      profile.baseTrust >= 0.8
+        ? 'POLLY'
+        : profile.baseTrust >= 0.5
+          ? 'QUASI'
+          : profile.baseTrust >= 0.1
+            ? 'DEMI'
+            : 'COLLAPSED',
     points,
   };
 }
@@ -276,7 +278,12 @@ export function generateMixedBatch(
     neutral: Math.round(agentCount * 0.2),
     semi_honest: Math.round(agentCount * 0.15),
     semi_malicious: Math.round(agentCount * 0.15),
-    malicious: agentCount - Math.round(agentCount * 0.4) - Math.round(agentCount * 0.2) - Math.round(agentCount * 0.15) - Math.round(agentCount * 0.15),
+    malicious:
+      agentCount -
+      Math.round(agentCount * 0.4) -
+      Math.round(agentCount * 0.2) -
+      Math.round(agentCount * 0.15) -
+      Math.round(agentCount * 0.15),
   };
 
   for (const [cls, count] of Object.entries(counts)) {
@@ -288,11 +295,7 @@ export function generateMixedBatch(
   return distribution.map((cls, idx) => {
     const profile = AGENT_PROFILES[cls];
     const agentSeed = (config.seed ?? 42) + idx * 1000;
-    return generateTrajectory(
-      `agent-${cls}-${idx}`,
-      profile,
-      { ...config, seed: agentSeed }
-    );
+    return generateTrajectory(`agent-${cls}-${idx}`, profile, { ...config, seed: agentSeed });
   });
 }
 
@@ -308,31 +311,31 @@ function initializeState(
 ): number[] {
   return [
     // SCBE Context (6D)
-    profile.baseTrust + rng.gaussian(0, 0.01),        // deviceTrust
-    profile.baseTrust + rng.gaussian(0, 0.01),        // locationTrust
-    profile.baseTrust + rng.gaussian(0, 0.01),        // networkTrust
-    profile.baseIntent + rng.gaussian(0, 0.01),       // behaviorScore
-    0.5 + rng.gaussian(0, 0.05),                      // timeOfDay
-    profile.baseIntent + rng.gaussian(0, 0.01),       // intentAlignment
+    profile.baseTrust + rng.gaussian(0, 0.01), // deviceTrust
+    profile.baseTrust + rng.gaussian(0, 0.01), // locationTrust
+    profile.baseTrust + rng.gaussian(0, 0.01), // networkTrust
+    profile.baseIntent + rng.gaussian(0, 0.01), // behaviorScore
+    0.5 + rng.gaussian(0, 0.05), // timeOfDay
+    profile.baseIntent + rng.gaussian(0, 0.01), // intentAlignment
     // Navigation (6D)
-    rng.gaussian(0, 0.1),                             // x
-    rng.gaussian(0, 0.1),                             // y
-    rng.gaussian(0, 0.1),                             // z
-    0,                                                 // time (starts at 0)
-    0.5 + rng.gaussian(0, 0.05),                      // priority
-    profile.baseTrust + rng.gaussian(0, 0.02),        // confidence
+    rng.gaussian(0, 0.1), // x
+    rng.gaussian(0, 0.1), // y
+    rng.gaussian(0, 0.1), // z
+    0, // time (starts at 0)
+    0.5 + rng.gaussian(0, 0.05), // priority
+    profile.baseTrust + rng.gaussian(0, 0.02), // confidence
     // Cognitive Position (3D)
-    rng.gaussian(0, 0.05),                            // px
-    rng.gaussian(0, 0.05),                            // py
-    rng.gaussian(0, 0.05),                            // pz
+    rng.gaussian(0, 0.05), // px
+    rng.gaussian(0, 0.05), // py
+    rng.gaussian(0, 0.05), // pz
     // Semantic Phase (3D)
-    tonguePhase / (Math.PI / 3),                      // activeTongue (index)
-    tonguePhase,                                       // phaseAngle
-    tongueWeight,                                      // tongueWeight
+    tonguePhase / (Math.PI / 3), // activeTongue (index)
+    tonguePhase, // phaseAngle
+    tongueWeight, // tongueWeight
     // Swarm Coordination (3D)
-    profile.baseTrust + rng.gaussian(0, 0.02),        // trustScore
-    0,                                                 // byzantineVotes
-    0.8 + rng.gaussian(0, 0.05),                      // spectralCoherence
+    profile.baseTrust + rng.gaussian(0, 0.02), // trustScore
+    0, // byzantineVotes
+    0.8 + rng.gaussian(0, 0.05), // spectralCoherence
   ];
 }
 
@@ -359,7 +362,7 @@ function evolveState(
     // so trust scores must vary smoothly to create low-curvature trajectories.
     // The threat Lissajous projects behavior(dim 3) vs intent(dim 5) — these
     // must trace a simple, non-self-intersecting path.
-    const navFreq = 2 * Math.PI / config.steps;
+    const navFreq = (2 * Math.PI) / config.steps;
 
     // SCBE context (dims 0-2): smooth sinusoidal variation around base trust
     // Large amplitude creates well-separated embedded points, preventing
@@ -418,14 +421,14 @@ function evolveState(
   } else if (profile.replayPattern && step >= config.steps / 2) {
     // Replay: copy from first half
     const sourceStep = step - Math.floor(config.steps / 2);
-    state[17] = tongueWeight + 0.1 * Math.sin(2 * Math.PI * sourceStep / 20);
+    state[17] = tongueWeight + 0.1 * Math.sin((2 * Math.PI * sourceStep) / 20);
   } else {
-    state[17] = tongueWeight + 0.1 * Math.sin(2 * Math.PI * step / 20 + rng.gaussian(0, 0.05));
+    state[17] = tongueWeight + 0.1 * Math.sin((2 * Math.PI * step) / 20 + rng.gaussian(0, 0.05));
   }
 
   // Lissajous injection in threat dimensions (intent vs behavior)
   if (profile.lissajousAmplitude > 0) {
-    const freq1 = 2 * Math.PI * step / 30;
+    const freq1 = (2 * Math.PI * step) / 30;
     const freq2 = profile.lissajousFreqRatio * freq1;
     state[3] = profile.baseIntent + profile.lissajousAmplitude * Math.sin(freq1); // behaviorScore
     state[5] = profile.baseIntent + profile.lissajousAmplitude * Math.sin(freq2); // intentAlignment
@@ -477,7 +480,7 @@ function hashString(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const ch = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + ch;
+    hash = (hash << 5) - hash + ch;
     hash |= 0;
   }
   return Math.abs(hash) || 1;

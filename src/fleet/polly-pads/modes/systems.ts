@@ -33,10 +33,7 @@ export class SystemsMode extends BaseMode {
     // Persist telemetry state
   }
 
-  protected doExecuteAction(
-    action: string,
-    params: Record<string, unknown>
-  ): ModeActionResult {
+  protected doExecuteAction(action: string, params: Record<string, unknown>): ModeActionResult {
     switch (action) {
       case 'check_power':
         return this.checkPower(params);
@@ -80,7 +77,7 @@ export class SystemsMode extends BaseMode {
   }
 
   private sensorHealth(params: Record<string, unknown>): ModeActionResult {
-    const sensorId = params.sensorId as string || 'all';
+    const sensorId = (params.sensorId as string) || 'all';
 
     const sensors = [
       { id: 'cam_front', status: 'healthy', calibration: 0.98 },
@@ -90,8 +87,7 @@ export class SystemsMode extends BaseMode {
       { id: 'pressure', status: 'degraded', calibration: 0.82 },
     ];
 
-    const result =
-      sensorId === 'all' ? sensors : sensors.filter((s) => s.id === sensorId);
+    const result = sensorId === 'all' ? sensors : sensors.filter((s) => s.id === sensorId);
 
     return {
       success: true,
@@ -111,7 +107,7 @@ export class SystemsMode extends BaseMode {
         memory: { usedMB: 2048, totalMB: 4096 },
         storage: { usedGB: 32, totalGB: 64 },
         network: { meshActive: true, earthContact: false },
-        uptime: Date.now() - (this.stateData.bootTime as number || Date.now() - 86400000),
+        uptime: Date.now() - ((this.stateData.bootTime as number) || Date.now() - 86400000),
       },
       timestamp: Date.now(),
       confidence: 0.98,
@@ -119,7 +115,7 @@ export class SystemsMode extends BaseMode {
   }
 
   private allocatePower(params: Record<string, unknown>): ModeActionResult {
-    const subsystem = params.subsystem as string || 'unknown';
+    const subsystem = (params.subsystem as string) || 'unknown';
     const watts = (params.watts as number) || 10;
     const budget = this.stateData.powerBudget as Record<string, number>;
 
