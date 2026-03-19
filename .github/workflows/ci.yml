@@ -47,7 +47,7 @@ jobs:
       - name: Install Python dependencies for cross-language tests
         run: |
           python -m pip install --upgrade pip
-          pip install numpy scipy matplotlib
+          pip install -r requirements.txt || pip install numpy scipy matplotlib
 
       - name: Install dependencies
         run: npm install
