@@ -607,7 +607,9 @@ export class MockBrowserBackend implements BrowserBackend {
   }
 
   async executeScript<T>(_script: string): Promise<T> {
-    throw new Error('MockBrowserBackend.executeScript is not available — use a real browser backend (CDP or Playwright)');
+    throw new Error(
+      'MockBrowserBackend.executeScript is not available — use a real browser backend (CDP or Playwright)'
+    );
   }
 
   async screenshot(): Promise<Buffer> {

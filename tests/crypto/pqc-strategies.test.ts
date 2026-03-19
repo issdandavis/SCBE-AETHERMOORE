@@ -218,9 +218,7 @@ describe('D. TriStitch — Multi-KEM', () => {
 
   it('3-family stitch should report 2 distinct families', async () => {
     // ML-KEM-768 (lattice) + McEliece (code-based) + ML-KEM-1024 (lattice)
-    const { result } = await triStitch(
-      ['ML-KEM-768', 'Classic-McEliece-348864', 'ML-KEM-1024']
-    );
+    const { result } = await triStitch(['ML-KEM-768', 'Classic-McEliece-348864', 'ML-KEM-1024']);
     expect(result.familyCount).toBe(2); // lattice + code-based
   });
 
@@ -243,7 +241,13 @@ describe('D. TriStitch — Multi-KEM', () => {
 
   it('should reject more than 4 KEMs', async () => {
     await expect(
-      triStitch(['ML-KEM-512', 'ML-KEM-768', 'ML-KEM-1024', 'Classic-McEliece-348864', 'ML-KEM-512'])
+      triStitch([
+        'ML-KEM-512',
+        'ML-KEM-768',
+        'ML-KEM-1024',
+        'Classic-McEliece-348864',
+        'ML-KEM-512',
+      ])
     ).rejects.toThrow('at most 4');
   });
 });
@@ -404,7 +408,10 @@ describe('G. Geometric Binding Verification', () => {
 
 describe('H. Strategy Execution', () => {
   beforeEach(() => clearRegistry());
-  afterEach(() => { clearRegistry(); clearCustomStrategies(); });
+  afterEach(() => {
+    clearRegistry();
+    clearCustomStrategies();
+  });
 
   it('balanced-v1 should execute with single KEM', async () => {
     const result = await executeStrategy('balanced-v1', mock21D());

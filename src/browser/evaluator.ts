@@ -586,7 +586,9 @@ export class BrowserActionEvaluator {
     });
 
     if (keywordElement) {
-      const selector = keywordElement.id ? `#${keywordElement.id}` : keywordElement.tagName.toLowerCase();
+      const selector = keywordElement.id
+        ? `#${keywordElement.id}`
+        : keywordElement.tagName.toLowerCase();
       candidates.push({ type: 'click', selector });
     } else if (observation.page.interactiveElements[0]) {
       const first = observation.page.interactiveElements[0];
@@ -624,8 +626,7 @@ export class BrowserActionEvaluator {
   ): string {
     const interactiveCount = observation.page.interactiveElements.length;
     const formCount = observation.page.forms.length;
-    const cautionSuffix =
-      cautionFlags.length > 0 ? ` Cautions: ${cautionFlags.join(', ')}.` : '';
+    const cautionSuffix = cautionFlags.length > 0 ? ` Cautions: ${cautionFlags.join(', ')}.` : '';
     return `${observation.page.title} on ${domainCategory} domain with ${interactiveCount} interactive element(s) and ${formCount} form(s).${cautionSuffix}`;
   }
 }

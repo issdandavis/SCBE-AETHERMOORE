@@ -35,7 +35,7 @@ const TEST_SIGNING_KEY = 'test-signing-key-for-node-kernel-tests';
  */
 function applyValidPolicy(
   kernel: NodeKernel,
-  overrides: Partial<PolicyParams> = {},
+  overrides: Partial<PolicyParams> = {}
 ): PolicyManifest {
   const manifest = kernel.createPolicy(overrides);
   const result = kernel.applyPolicy(manifest);
@@ -169,17 +169,14 @@ describe('NodeKernel', () => {
       // Consume with default rate
       kernel.updateEnergy(1.0);
       kernel.consumeEnergy();
-      expect(kernel.getState().energy).toBeCloseTo(
-        1.0 - DEFAULT_KERNEL_CONFIG.energyPerStep,
-        10,
-      );
+      expect(kernel.getState().energy).toBeCloseTo(1.0 - DEFAULT_KERNEL_CONFIG.energyPerStep, 10);
 
       // Recharge with default rate
       kernel.updateEnergy(0.5);
       kernel.rechargeEnergy();
       expect(kernel.getState().energy).toBeCloseTo(
         0.5 + DEFAULT_KERNEL_CONFIG.energyRechargeRate,
-        10,
+        10
       );
     });
   });
@@ -413,7 +410,7 @@ describe('NodeKernel', () => {
       expect(overrideDecision.violations.length).toBe(0);
       // Should have human_override invariant entry
       const overrideInvariant = overrideDecision.invariants.find(
-        (inv) => inv.name === 'human_override',
+        (inv) => inv.name === 'human_override'
       );
       expect(overrideInvariant).toBeDefined();
       expect(overrideInvariant!.passed).toBe(true);

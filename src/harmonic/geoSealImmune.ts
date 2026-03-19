@@ -18,12 +18,12 @@ import { hyperbolicDistance, mobiusAdd, projectToBall } from './hyperbolic';
 
 /** Phase angles for the Six Sacred Tongues (radians) */
 export const TONGUE_PHASES: Record<string, number> = {
-  KO: 0.0,                    // Kor'aelin - Control/orchestration
-  AV: Math.PI / 3,            // Avali - Initialization/transport
-  RU: (2 * Math.PI) / 3,      // Runethic - Policy/authorization
-  CA: Math.PI,                // Cassisivadan - Encryption/compute
-  UM: (4 * Math.PI) / 3,      // Umbroth - Redaction/privacy
-  DR: (5 * Math.PI) / 3,      // Draumric - Authentication/integrity
+  KO: 0.0, // Kor'aelin - Control/orchestration
+  AV: Math.PI / 3, // Avali - Initialization/transport
+  RU: (2 * Math.PI) / 3, // Runethic - Policy/authorization
+  CA: Math.PI, // Cassisivadan - Encryption/compute
+  UM: (4 * Math.PI) / 3, // Umbroth - Redaction/privacy
+  DR: (5 * Math.PI) / 3, // Draumric - Authentication/integrity
 };
 
 /** Reverse mapping: phase → tongue name */
@@ -45,12 +45,12 @@ export const PHASE_TO_TONGUE: Map<number, string> = new Map(
  */
 export interface SwarmAgent {
   id: string;
-  position: number[];          // Embedding in Poincaré ball (||v|| < 1)
-  phase: number | null;        // Tongue phase, or null if rogue/unknown
-  tongue?: string;             // Which Sacred Tongue (if any)
-  suspicionCount: Map<string, number>;  // Per-neighbor suspicion
+  position: number[]; // Embedding in Poincaré ball (||v|| < 1)
+  phase: number | null; // Tongue phase, or null if rogue/unknown
+  tongue?: string; // Which Sacred Tongue (if any)
+  suspicionCount: Map<string, number>; // Per-neighbor suspicion
   isQuarantined: boolean;
-  trustScore: number;          // 0.0 = untrusted, 1.0 = fully trusted
+  trustScore: number; // 0.0 = untrusted, 1.0 = fully trusted
 }
 
 /** Result of computing repulsion force between two agents */
@@ -64,8 +64,8 @@ export interface RepulsionResult {
 export interface SwarmMetrics {
   quarantineCount: number;
   avgTrustScore: number;
-  boundaryAgents: number;    // Agents pushed near boundary (norm > 0.9)
-  suspiciousPairs: number;   // Number of agent pairs with high suspicion
+  boundaryAgents: number; // Agents pushed near boundary (norm > 0.9)
+  suspiciousPairs: number; // Number of agent pairs with high suspicion
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -78,10 +78,7 @@ export interface SwarmMetrics {
  * Returns 1.0 (maximum) if either phase is null (rogue/unknown).
  * Otherwise returns angular difference normalized to [0, 1].
  */
-export function phaseDeviation(
-  phase1: number | null,
-  phase2: number | null
-): number {
+export function phaseDeviation(phase1: number | null, phase2: number | null): number {
   if (phase1 === null || phase2 === null) {
     return 1.0; // Maximum deviation for unknown phase
   }
@@ -310,7 +307,7 @@ export function createCandidateAgent(
   assignedTongue?: string,
   initialTrust: number = 0.5
 ): SwarmAgent {
-  const phase = assignedTongue ? TONGUE_PHASES[assignedTongue] ?? null : null;
+  const phase = assignedTongue ? (TONGUE_PHASES[assignedTongue] ?? null) : null;
 
   // Project embedding to Poincaré ball if needed
   let position = [...embedding];
@@ -337,21 +334,14 @@ export function createCandidateAgent(
 /**
  * Filter agents by trust score, returning only those above threshold.
  */
-export function filterByTrust(
-  agents: SwarmAgent[],
-  threshold: number = 0.3
-): SwarmAgent[] {
-  return agents.filter(
-    (a) => a.trustScore >= threshold || a.id.startsWith('tongue-')
-  );
+export function filterByTrust(agents: SwarmAgent[], threshold: number = 0.3): SwarmAgent[] {
+  return agents.filter((a) => a.trustScore >= threshold || a.id.startsWith('tongue-'));
 }
 
 /**
  * Extract trust scores as attention weights for RAG reweighting.
  */
-export function getAttentionWeights(
-  agents: SwarmAgent[]
-): Map<string, number> {
+export function getAttentionWeights(agents: SwarmAgent[]): Map<string, number> {
   const weights = new Map<string, number>();
   for (const agent of agents) {
     if (!agent.id.startsWith('tongue-')) {
@@ -377,8 +367,7 @@ export function computeSwarmMetrics(agents: SwarmAgent[]): SwarmMetrics {
   }
 
   const quarantineCount = nonTongue.filter((a) => a.isQuarantined).length;
-  const avgTrustScore =
-    nonTongue.reduce((sum, a) => sum + a.trustScore, 0) / nonTongue.length;
+  const avgTrustScore = nonTongue.reduce((sum, a) => sum + a.trustScore, 0) / nonTongue.length;
   const boundaryAgents = nonTongue.filter((a) => norm(a.position) > 0.9).length;
 
   let suspiciousPairs = 0;
@@ -411,10 +400,7 @@ export function computeSwarmMetrics(agents: SwarmAgent[]): SwarmMetrics {
  * - Legitimate agents (matching phase, close to tongues): score → 1.0
  * - Rogue agents (null phase or far from tongues): score → 0.0
  */
-export function phaseDistanceScore(
-  agent: SwarmAgent,
-  tongueAgents: SwarmAgent[]
-): number {
+export function phaseDistanceScore(agent: SwarmAgent, tongueAgents: SwarmAgent[]): number {
   // Find closest tongue agent
   let minDistance = Infinity;
   let closestTonguePhase: number | null = null;
@@ -499,7 +485,7 @@ export function sphericalNodalPosition(
     position[d] =
       0.1 *
       Math.sin(harmonicOrder * baseAngle) *
-      Math.cos(oscillationFreq * time / harmonicOrder);
+      Math.cos((oscillationFreq * time) / harmonicOrder);
   }
 
   // Ensure position stays in Poincaré ball

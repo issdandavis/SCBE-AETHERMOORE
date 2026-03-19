@@ -75,7 +75,7 @@ export const ARENA_SYSTEMS: PQCSystemDescriptor[] = [
     quantumBits: 64,
     publicKeyBytes: 800,
     secretKeyBytes: 1632,
-    outputBytes: 768,       // ciphertext
+    outputBytes: 768, // ciphertext
     sharedSecretBytes: 32,
     primitive: 'kem',
     standard: 'FIPS 203',
@@ -115,9 +115,9 @@ export const ARENA_SYSTEMS: PQCSystemDescriptor[] = [
     nistLevel: 1,
     classicalBits: 128,
     quantumBits: 64,
-    publicKeyBytes: 261120,   // 255 KB — the giant
+    publicKeyBytes: 261120, // 255 KB — the giant
     secretKeyBytes: 6492,
-    outputBytes: 128,         // tiny ciphertext
+    outputBytes: 128, // tiny ciphertext
     sharedSecretBytes: 32,
     primitive: 'kem',
     standard: 'NIST Round 4',
@@ -132,7 +132,7 @@ export const ARENA_SYSTEMS: PQCSystemDescriptor[] = [
     quantumBits: 64,
     publicKeyBytes: 1312,
     secretKeyBytes: 2560,
-    outputBytes: 2420,        // signature
+    outputBytes: 2420, // signature
     sharedSecretBytes: 0,
     primitive: 'signature',
     standard: 'FIPS 204',
@@ -172,9 +172,9 @@ export const ARENA_SYSTEMS: PQCSystemDescriptor[] = [
     nistLevel: 1,
     classicalBits: 128,
     quantumBits: 64,
-    publicKeyBytes: 32,       // tiny keys
+    publicKeyBytes: 32, // tiny keys
     secretKeyBytes: 64,
-    outputBytes: 7856,        // huge signatures
+    outputBytes: 7856, // huge signatures
     sharedSecretBytes: 0,
     primitive: 'signature',
     standard: 'FIPS 205',
@@ -188,7 +188,7 @@ export const ARENA_SYSTEMS: PQCSystemDescriptor[] = [
     quantumBits: 128,
     publicKeyBytes: 64,
     secretKeyBytes: 128,
-    outputBytes: 29792,       // very large signatures
+    outputBytes: 29792, // very large signatures
     sharedSecretBytes: 0,
     primitive: 'signature',
     standard: 'FIPS 205',
@@ -401,10 +401,8 @@ export class ShiftingKeyspace {
     //          = 2^(log2(opsPerSec × seconds) - bits)
     //
     // If bits > log2(ops_done), progress ≈ 0 (good!)
-    const opsLog2 =
-      elapsedSeconds > 0 ? Math.log2(attackerOpsPerSec * elapsedSeconds) : 0;
-    const attackerProgress =
-      opsLog2 < effectiveBits ? Math.pow(2, opsLog2 - effectiveBits) : 1;
+    const opsLog2 = elapsedSeconds > 0 ? Math.log2(attackerOpsPerSec * elapsedSeconds) : 0;
+    const attackerProgress = opsLog2 < effectiveBits ? Math.pow(2, opsLog2 - effectiveBits) : 1;
 
     // Harmonic wall cost: H(d, pd) = 1 / (1 + d + 2*pd)
     // d = normalized distance from safe origin (use breathing phase as proxy)
@@ -653,11 +651,7 @@ export class PQCArena {
           ? systemB.name
           : 'TIE';
     const sizeWinner =
-      wireSizeA < wireSizeB
-        ? systemA.name
-        : wireSizeA > wireSizeB
-          ? systemB.name
-          : 'TIE';
+      wireSizeA < wireSizeB ? systemA.name : wireSizeA > wireSizeB ? systemB.name : 'TIE';
 
     // Build human-readable summary
     const costMultiple =

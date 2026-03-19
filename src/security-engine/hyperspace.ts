@@ -57,8 +57,15 @@ export const HYPER_DIMS = 9;
 
 /** Dimension names for serialization/logging */
 export const DIMENSION_NAMES: readonly string[] = [
-  'context', 'time', 'intention', 'trust',
-  'risk', 'entropy', 'policy', 'load', 'behavior',
+  'context',
+  'time',
+  'intention',
+  'trust',
+  'risk',
+  'entropy',
+  'policy',
+  'load',
+  'behavior',
 ] as const;
 
 // ═══════════════════════════════════════════════════════════════
@@ -67,8 +74,15 @@ export const DIMENSION_NAMES: readonly string[] = [
 
 /** A point in 9D hyperspace */
 export type HyperspaceCoord = [
-  number, number, number, number, number,
-  number, number, number, number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
 ];
 
 /** A point in hyperspace with metadata */
@@ -103,13 +117,13 @@ const PHI = 1.618033988749895;
 export const DEFAULT_DIMENSION_WEIGHTS: DimensionWeights = {
   context: 1.0,
   time: PHI,
-  intention: PHI ** 2,       // ~2.618 — intention matters more than raw context
-  trust: PHI ** 3,           // ~4.236 — trust is heavily weighted
-  risk: PHI ** 2,            // ~2.618 — risk matches intention weight
-  entropy: 1.0,              // entropy is observational
-  policy: PHI,               // ~1.618 — policy is a shaping force
-  load: 0.5,                 // load is informational, low weight
-  behavior: PHI ** 2,        // ~2.618 — behavioral deviation is critical
+  intention: PHI ** 2, // ~2.618 — intention matters more than raw context
+  trust: PHI ** 3, // ~4.236 — trust is heavily weighted
+  risk: PHI ** 2, // ~2.618 — risk matches intention weight
+  entropy: 1.0, // entropy is observational
+  policy: PHI, // ~1.618 — policy is a shaping force
+  load: 0.5, // load is informational, low weight
+  behavior: PHI ** 2, // ~2.618 — behavioral deviation is critical
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -118,8 +132,7 @@ export const DEFAULT_DIMENSION_WEIGHTS: DimensionWeights = {
 
 /** Convert DimensionWeights to array form */
 function weightsToArray(w: DimensionWeights): number[] {
-  return [w.context, w.time, w.intention, w.trust, w.risk,
-          w.entropy, w.policy, w.load, w.behavior];
+  return [w.context, w.time, w.intention, w.trust, w.risk, w.entropy, w.policy, w.load, w.behavior];
 }
 
 /**
@@ -133,7 +146,7 @@ function weightsToArray(w: DimensionWeights): number[] {
 export function hyperspaceDistance(
   a: HyperspaceCoord,
   b: HyperspaceCoord,
-  weights?: DimensionWeights,
+  weights?: DimensionWeights
 ): number {
   const w = weightsToArray(weights ?? DEFAULT_DIMENSION_WEIGHTS);
   let sum = 0;
@@ -151,7 +164,7 @@ export function hyperspaceDistance(
 export function hyperspaceDistanceQ16(
   a: HyperspaceCoord,
   b: HyperspaceCoord,
-  weights?: DimensionWeights,
+  weights?: DimensionWeights
 ): number {
   const w = weightsToArray(weights ?? DEFAULT_DIMENSION_WEIGHTS);
   let sumQ16 = 0;
@@ -171,15 +184,15 @@ export function hyperspaceDistanceQ16(
  */
 export function safeOrigin(): HyperspaceCoord {
   return [
-    0.0,  // context: neutral
-    0.0,  // time: present
-    0.0,  // intention: benign
-    1.0,  // trust: fully trusted
-    0.0,  // risk: no risk
-    0.0,  // entropy: low entropy (coherent)
-    0.0,  // policy: no constraint pressure
-    0.0,  // load: idle
-    0.0,  // behavior: on-attractor
+    0.0, // context: neutral
+    0.0, // time: present
+    0.0, // intention: benign
+    1.0, // trust: fully trusted
+    0.0, // risk: no risk
+    0.0, // entropy: low entropy (coherent)
+    0.0, // policy: no constraint pressure
+    0.0, // load: idle
+    0.0, // behavior: on-attractor
   ];
 }
 
@@ -192,10 +205,7 @@ export function safeOrigin(): HyperspaceCoord {
  * indicator. Time only matters for relative distances between entities (temporal
  * synchronization) and for velocity computation.
  */
-export function distanceFromSafe(
-  point: HyperspaceCoord,
-  weights?: DimensionWeights,
-): number {
+export function distanceFromSafe(point: HyperspaceCoord, weights?: DimensionWeights): number {
   const origin = safeOrigin();
   // Match time dimension so it doesn't contribute to "safety distance"
   origin[HyperDim.TIME] = point[HyperDim.TIME];
@@ -250,7 +260,7 @@ function projectContext6D(ctx: [number, number, number, number, number, number])
 export function embedInHyperspace(
   entityId: string,
   inputs: EmbeddingInputs,
-  prevPoint?: HyperspacePoint,
+  prevPoint?: HyperspacePoint
 ): HyperspacePoint {
   const coords: HyperspaceCoord = [
     projectContext6D(inputs.context6D),
@@ -269,9 +279,7 @@ export function embedInHyperspace(
   if (prevPoint) {
     const dt = (inputs.timestampUs - prevPoint.timestampUs) / 1_000_000;
     if (dt > 0) {
-      velocity = coords.map(
-        (c, i) => (c - prevPoint.coords[i]) / dt,
-      ) as HyperspaceCoord;
+      velocity = coords.map((c, i) => (c - prevPoint.coords[i]) / dt) as HyperspaceCoord;
     }
   }
 

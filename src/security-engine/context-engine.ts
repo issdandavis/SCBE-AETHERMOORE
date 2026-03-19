@@ -36,12 +36,7 @@ import {
   distanceFromSafe,
 } from './hyperspace.js';
 import { type PolicyEvaluation, PolicyFieldEvaluator } from './policy-fields.js';
-import {
-  type MachineConstants,
-  getGlobalRegistry,
-  toQ16,
-  fromQ16,
-} from './machine-constants.js';
+import { type MachineConstants, getGlobalRegistry, toQ16, fromQ16 } from './machine-constants.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Decision Types
@@ -133,7 +128,7 @@ function updateIntentState(
   state: IntentState,
   distance: number,
   velocity: number,
-  constants: MachineConstants,
+  constants: MachineConstants
 ): IntentState {
   const next = { ...state };
 
@@ -143,11 +138,10 @@ function updateIntentState(
   const rawIntent = velocityFactor + distanceFactor;
 
   // Decay accumulated intent then add new
-  next.accumulatedIntent =
-    state.accumulatedIntent * constants.temporal.intentDecayRate + rawIntent;
+  next.accumulatedIntent = state.accumulatedIntent * constants.temporal.intentDecayRate + rawIntent;
   next.accumulatedIntent = Math.min(
     next.accumulatedIntent,
-    constants.temporal.maxIntentAccumulation,
+    constants.temporal.maxIntentAccumulation
   );
 
   // Track recent distances
@@ -156,8 +150,7 @@ function updateIntentState(
 
   // Update trust
   if (next.lastDistances.length >= 3) {
-    const avgDist =
-      next.lastDistances.reduce((s, d) => s + d, 0) / next.lastDistances.length;
+    const avgDist = next.lastDistances.reduce((s, d) => s + d, 0) / next.lastDistances.length;
     let trustChange = -0.1 * avgDist - 0.05 * next.accumulatedIntent;
     if (next.accumulatedIntent < 0.5 && avgDist < 0.3) {
       trustChange += 0.02;
@@ -207,10 +200,7 @@ export class ContextCoupledSecurityEngine {
   private _intentStates: Map<string, IntentState> = new Map();
   private _evaluationCount: number = 0;
 
-  constructor(
-    manifold?: HyperspaceManifold,
-    policyEvaluator?: PolicyFieldEvaluator,
-  ) {
+  constructor(manifold?: HyperspaceManifold, policyEvaluator?: PolicyFieldEvaluator) {
     this._manifold = manifold ?? new HyperspaceManifold();
     this._policyEvaluator = policyEvaluator ?? PolicyFieldEvaluator.createStandard();
   }
@@ -256,9 +246,8 @@ export class ContextCoupledSecurityEngine {
       const dt = (request.timestampUs - prevPoint.timestampUs) / 1_000_000;
       if (dt > 0) {
         // Distance moved per second
-        velocity = distanceFromSafe(prevPoint.coords) - distanceFromSafe([
-          0, 0, 0, 1, 0, 0, 0, 0, 0,
-        ]);
+        velocity =
+          distanceFromSafe(prevPoint.coords) - distanceFromSafe([0, 0, 0, 1, 0, 0, 0, 0, 0]);
         behaviorDeviation = Math.abs(velocity);
       }
     }
@@ -295,8 +284,8 @@ export class ContextCoupledSecurityEngine {
     // 9. Compute Omega (composite decision score)
     const pqcFactor = request.pqcValid ? 1.0 : 0.0;
     const harmScore = 1.0 / (1.0 + Math.log(Math.max(1.0, harmonicWallCost)));
-    const driftFactor = 1.0 - intentState.accumulatedIntent /
-      constants.temporal.maxIntentAccumulation;
+    const driftFactor =
+      1.0 - intentState.accumulatedIntent / constants.temporal.maxIntentAccumulation;
     const triadicFactor = request.triadicStability ?? 1.0;
     const spectralFactor = request.spectralCoherence ?? 1.0;
 
@@ -304,7 +293,10 @@ export class ContextCoupledSecurityEngine {
 
     // 10. Compute routing cost multiplier
     // Legitimate: ~1.0x, Suspicious: 2-10x, Adversarial: 100x+
-    const routingCostMultiplier = Math.max(1.0, harmonicWallCost * (1 + policyEval.totalPressure * 0.1));
+    const routingCostMultiplier = Math.max(
+      1.0,
+      harmonicWallCost * (1 + policyEval.totalPressure * 0.1)
+    );
 
     // 11. Make decision
     const reasonCodes: string[] = [];
@@ -397,9 +389,9 @@ export class ContextCoupledSecurityEngine {
         exiled: false,
         lowTrustRounds: 0,
         accumulatedIntent: 0, // reset intent to give a fresh start
-        trustScore: 0.5,      // start mid-range, must earn full trust back
+        trustScore: 0.5, // start mid-range, must earn full trust back
         sampleCount: 0,
-        lastDistances: [],     // clear history so old distances don't drag trust down
+        lastDistances: [], // clear history so old distances don't drag trust down
       });
       // Clear manifold position so old adversarial coordinates don't create
       // a spurious velocity spike on the rehabilitated entity's next evaluation

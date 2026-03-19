@@ -188,14 +188,26 @@ describe('Phason Shifts', () => {
     const r2 = applyPhasonShift(point6D, shift2);
 
     // Larger magnitude → larger displacement
-    const d1 = latticeNorm6D({ components: [
-      r1.components[0] - 1, r1.components[1], r1.components[2],
-      r1.components[3], r1.components[4], r1.components[5],
-    ] as [number, number, number, number, number, number] });
-    const d2 = latticeNorm6D({ components: [
-      r2.components[0] - 1, r2.components[1], r2.components[2],
-      r2.components[3], r2.components[4], r2.components[5],
-    ] as [number, number, number, number, number, number] });
+    const d1 = latticeNorm6D({
+      components: [
+        r1.components[0] - 1,
+        r1.components[1],
+        r1.components[2],
+        r1.components[3],
+        r1.components[4],
+        r1.components[5],
+      ] as [number, number, number, number, number, number],
+    });
+    const d2 = latticeNorm6D({
+      components: [
+        r2.components[0] - 1,
+        r2.components[1],
+        r2.components[2],
+        r2.components[3],
+        r2.components[4],
+        r2.components[5],
+      ] as [number, number, number, number, number, number],
+    });
 
     expect(d2).toBeGreaterThan(d1);
   });
@@ -289,7 +301,8 @@ describe('DualLatticeSystem', () => {
     const phason2 = system.createThreatPhason(0.5, [10, 11]);
 
     // Different anomaly dimensions → different shift directions
-    const dirDiff = Math.abs(phason1.perpShift[0] - phason2.perpShift[0]) +
+    const dirDiff =
+      Math.abs(phason1.perpShift[0] - phason2.perpShift[0]) +
       Math.abs(phason1.perpShift[1] - phason2.perpShift[1]);
     expect(dirDiff).toBeGreaterThan(0);
   });

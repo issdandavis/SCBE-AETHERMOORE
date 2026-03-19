@@ -144,12 +144,7 @@ export const RISK_LATTICE: CompleteLattice<RiskLevel> = {
   join: (a, b) => Math.max(a, b) as RiskLevel,
   leq: (a, b) => a <= b,
   eq: (a, b) => a === b,
-  elements: () => [
-    RiskLevel.ALLOW,
-    RiskLevel.QUARANTINE,
-    RiskLevel.ESCALATE,
-    RiskLevel.DENY,
-  ],
+  elements: () => [RiskLevel.ALLOW, RiskLevel.QUARANTINE, RiskLevel.ESCALATE, RiskLevel.DENY],
 };
 
 /** Boolean lattice: {false, true} with false < true */
@@ -186,7 +181,7 @@ export function intervalLattice(n: number): CompleteLattice<number> {
  */
 export function productLattice<A, B>(
   la: CompleteLattice<A>,
-  lb: CompleteLattice<B>,
+  lb: CompleteLattice<B>
 ): CompleteLattice<[A, B]> {
   return {
     top: () => [la.top(), lb.top()],
@@ -225,15 +220,13 @@ export function productLattice<A, B>(
  */
 export function tarskiLaplacian0<V, E>(
   sheaf: CellularSheaf<V, E>,
-  cochain: Cochain0<V>,
+  cochain: Cochain0<V>
 ): Cochain0<V> {
   const result: Cochain0<V> = new Map();
 
   for (const v of sheaf.complex.vertices) {
     const vLat = sheaf.vertexLattice(v.id);
-    const cofaces = sheaf.complex.edges.filter(
-      (e) => e.source === v.id || e.target === v.id,
-    );
+    const cofaces = sheaf.complex.edges.filter((e) => e.source === v.id || e.target === v.id);
 
     if (cofaces.length === 0) {
       // Isolated vertex: L₀ returns ⊤ (neutral under meet with id)
@@ -258,8 +251,7 @@ export function tarskiLaplacian0<V, E>(
       const edgeMeet = eLat.meet(srcInEdge, tgtInEdge);
 
       // Pull back via the appropriate upper adjoint
-      const pulledBack =
-        edge.source === v.id ? srcRestr.upper(edgeMeet) : tgtRestr.upper(edgeMeet);
+      const pulledBack = edge.source === v.id ? srcRestr.upper(edgeMeet) : tgtRestr.upper(edgeMeet);
 
       accumulated = vLat.meet(accumulated, pulledBack);
     }
@@ -561,7 +553,7 @@ export function braidedMetaTime(
   t: number,
   intent: number,
   context: number,
-  includePredictive: boolean = false,
+  includePredictive: boolean = false
 ): number {
   const k = includePredictive ? 2 : 2;
   const base = Math.pow(Math.max(1e-10, T), t + k) * intent * context;
@@ -591,7 +583,7 @@ export function braidedMetaTime(
 export function cohomologicalHarmonicWall(
   obstruction: number,
   maxDimension: number = 6,
-  R: number = 1.5,
+  R: number = 1.5
 ): number {
   // Map obstruction [0,1] → effective dimension [0, maxDimension]
   const dStar = obstruction * maxDimension;
@@ -688,11 +680,7 @@ export function v2GlobalSections<T>(sheaf: V2CellularSheaf<T>): CohomologyResult
  * Up-Laplacian L_k^+ (diffusion to cofaces only).
  * Acts on k-cochains using (k+1)-dimensional incidence.
  */
-export function upLaplacian<T>(
-  sheaf: V2CellularSheaf<T>,
-  dim: number,
-  x: Cochain<T>
-): Cochain<T> {
+export function upLaplacian<T>(sheaf: V2CellularSheaf<T>, dim: number, x: Cochain<T>): Cochain<T> {
   // Same as tarskiLaplacian — uses cofaces
   return tarskiLaplacian(sheaf, dim, x);
 }
@@ -964,10 +952,7 @@ export function scalingConnection(scale: number): V2GaloisConnection<number, num
  * Build a cell complex from an undirected graph (vertices + edges).
  * Vertices are 0-cells, edges are 1-cells.
  */
-export function graphComplex(
-  numVertices: number,
-  edges: [number, number][]
-): V2CellComplex {
+export function graphComplex(numVertices: number, edges: [number, number][]): V2CellComplex {
   const vertices: Cell[] = Array.from({ length: numVertices }, (_, i) => ({
     dim: 0,
     id: i,
@@ -1378,9 +1363,7 @@ export class SheafCohomologyEngine {
     const edgeScales = new Map<number, number>();
     for (let e = 0; e < edges.length; e++) {
       const [i, j] = edges[e];
-      const dist = Math.sqrt(
-        vectors[i].reduce((s, x, k) => s + (x - vectors[j][k]) ** 2, 0)
-      );
+      const dist = Math.sqrt(vectors[i].reduce((s, x, k) => s + (x - vectors[j][k]) ** 2, 0));
       // Scale by golden ratio coupling: closer vectors → stronger connection
       const scale = Math.exp(-dist * this.config.harmonicCoupling);
       edgeScales.set(e, Math.max(0.01, Math.min(1, scale)));
@@ -1468,4 +1451,3 @@ export class SheafCohomologyEngine {
  * Default sheaf cohomology engine with standard configuration.
  */
 export const defaultSheafEngine = new SheafCohomologyEngine();
-

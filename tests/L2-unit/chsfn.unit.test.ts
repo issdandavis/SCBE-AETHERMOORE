@@ -163,7 +163,14 @@ describe('L2-UNIT: tongueImpedanceAt', () => {
     // Expected phase for tongue i = (2πi/6)
     const state: CHSFNState = {
       position: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
-      phase: [0, (2 * Math.PI) / 6, (4 * Math.PI) / 6, Math.PI, (8 * Math.PI) / 6, (10 * Math.PI) / 6],
+      phase: [
+        0,
+        (2 * Math.PI) / 6,
+        (4 * Math.PI) / 6,
+        Math.PI,
+        (8 * Math.PI) / 6,
+        (10 * Math.PI) / 6,
+      ],
       mass: 1.0,
     };
     const imp = tongueImpedanceAt(state, 0);
@@ -179,7 +186,14 @@ describe('L2-UNIT: isAccessible', () => {
   it('should return true when all conditions are met', () => {
     const state: CHSFNState = {
       position: [0, 0, 0, 0, 0, 0], // Origin (zero-set, near, phase-aligned)
-      phase: [0, (2 * Math.PI) / 6, (4 * Math.PI) / 6, Math.PI, (8 * Math.PI) / 6, (10 * Math.PI) / 6],
+      phase: [
+        0,
+        (2 * Math.PI) / 6,
+        (4 * Math.PI) / 6,
+        Math.PI,
+        (8 * Math.PI) / 6,
+        (10 * Math.PI) / 6,
+      ],
       mass: 1.0,
     };
     // At origin, cymatic field is 0, distance is 0, impedance is low

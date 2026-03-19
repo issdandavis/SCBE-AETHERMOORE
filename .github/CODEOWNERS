@@ -1,3 +1,29 @@
+# Documentation
 docs/ @issdandavis
+articles/ @issdandavis
+
+# Tests
 tests/ @issdandavis
+
+# CI/CD & Infrastructure
 .github/workflows/ @issdandavis
+.github/ISSUE_TEMPLATE/ @issdandavis
+deploy/ @issdandavis
+Dockerfile @issdandavis
+
+# Core pipeline
+src/harmonic/ @issdandavis
+src/crypto/ @issdandavis
+src/spectral/ @issdandavis
+
+# Governance & axioms
+src/symphonic_cipher/scbe_aethermoore/axiom_grouped/ @issdandavis
+src/governance/ @issdandavis
+
+# Agents
+agents/ @issdandavis
+
+# Package config
+package.json @issdandavis
+tsconfig.json @issdandavis
+requirements.txt @issdandavis

@@ -11,7 +11,11 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { GovernedDrift, DEFAULT_DRIFT_CONFIG } from '../../src/fleet/governed-drift.js';
-import type { DriftInputs, DriftResult, DriftGovernanceConfig } from '../../src/fleet/governed-drift.js';
+import type {
+  DriftInputs,
+  DriftResult,
+  DriftGovernanceConfig,
+} from '../../src/fleet/governed-drift.js';
 import { vecMag } from '../../src/fleet/swarm-geometry.js';
 import type { Vec } from '../../src/fleet/swarm-geometry.js';
 import type { SwarmMode } from '../../src/fleet/oscillator-bus.js';

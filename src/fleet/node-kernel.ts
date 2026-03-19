@@ -145,7 +145,7 @@ export interface NodeKernelConfig {
 }
 
 export const DEFAULT_KERNEL_CONFIG: Readonly<NodeKernelConfig> = {
-  signingKey: '',  // MUST be set by caller — empty triggers validation below
+  signingKey: '', // MUST be set by caller — empty triggers validation below
   policyGracePeriodMs: 30_000,
   energyPerStep: 0.001,
   energyRechargeRate: 0.002,
@@ -187,17 +187,13 @@ export class NodeKernel {
   }> = [];
   private maxAuditEntries: number = 500;
 
-  constructor(
-    nodeId: string,
-    initialPosition: Vec,
-    config: Partial<NodeKernelConfig> = {},
-  ) {
+  constructor(nodeId: string, initialPosition: Vec, config: Partial<NodeKernelConfig> = {}) {
     this.config = { ...DEFAULT_KERNEL_CONFIG, ...config };
 
     if (!this.config.signingKey) {
       throw new Error(
         'NodeKernel requires a signingKey in config. ' +
-        'Generate one with: crypto.randomBytes(32).toString("hex")'
+          'Generate one with: crypto.randomBytes(32).toString("hex")'
       );
     }
 
@@ -310,7 +306,7 @@ export class NodeKernel {
    */
   public createPolicy(
     params: Partial<PolicyParams> = {},
-    ttlMs: number = 3_600_000,
+    ttlMs: number = 3_600_000
   ): PolicyManifest {
     const nextEpoch = this.activePolicy ? this.activePolicy.epoch + 1 : 1;
     const now = Date.now();
@@ -351,7 +347,10 @@ export class NodeKernel {
 
     // Verify epoch monotonicity
     if (this.activePolicy && manifest.epoch <= this.activePolicy.epoch) {
-      return { applied: false, reason: `epoch_not_monotonic:${manifest.epoch}<=${this.activePolicy.epoch}` };
+      return {
+        applied: false,
+        reason: `epoch_not_monotonic:${manifest.epoch}<=${this.activePolicy.epoch}`,
+      };
     }
 
     // Verify not expired

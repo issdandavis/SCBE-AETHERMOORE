@@ -59,9 +59,16 @@ describe('Denomination System', () => {
 describe('Service Base Costs', () => {
   it('all service types have a base cost', () => {
     const services = [
-      'healing', 'formation_buff', 'scouting', 'transform_assist',
-      'evolution_catalyst', 'drift_cleanse', 'codex_query', 'escort',
-      'training', 'governance_vote',
+      'healing',
+      'formation_buff',
+      'scouting',
+      'transform_assist',
+      'evolution_catalyst',
+      'drift_cleanse',
+      'codex_query',
+      'escort',
+      'training',
+      'governance_vote',
     ] as const;
     for (const svc of services) {
       expect(SERVICE_BASE_COSTS[svc]).toBeGreaterThan(0);
@@ -86,7 +93,10 @@ describe('Service Base Costs', () => {
 describe('Credit Minting', () => {
   it('mints a credit with valid fields', () => {
     const credit = mintCredit(
-      'agent-1', 'crysling', 'CA', 'healing',
+      'agent-1',
+      'crysling',
+      'CA',
+      'healing',
       [0.1, 0.1, 0.1, 0.6, 0.1, 0.1]
     );
 
@@ -100,9 +110,16 @@ describe('Credit Minting', () => {
 
   it('face value = weight × energy × legibility', () => {
     const credit = mintCredit(
-      'agent-1', 'crysling', 'KO', 'scouting',
+      'agent-1',
+      'crysling',
+      'KO',
+      'scouting',
       [0.5, 0.1, 0.1, 0.1, 0.1, 0.1],
-      0, 0, 'ALLOW', [], 1.0
+      0,
+      0,
+      'ALLOW',
+      [],
+      1.0
     );
 
     // KO weight=1, energy=1/(1+0+0)=1, legibility=1 → face value = 1
@@ -117,8 +134,13 @@ describe('Credit Minting', () => {
 
   it('higher Hamiltonian deviation = lower energy (higher cost)', () => {
     const credit = mintCredit(
-      'a', 's', 'KO', 'healing', [0.5, 0.1, 0.1, 0.1, 0.1, 0.1],
-      2.0, 1.0 // high d, high pd
+      'a',
+      's',
+      'KO',
+      'healing',
+      [0.5, 0.1, 0.1, 0.1, 0.1, 0.1],
+      2.0,
+      1.0 // high d, high pd
     );
     // H(2,1) = 1/(1+2+2) = 0.2
     expect(energyCost(credit.dna)).toBeCloseTo(0.2, 5);
@@ -132,8 +154,18 @@ describe('Credit Minting', () => {
 
   it('proof-of-context produces valid nonce (hash starts with 0)', () => {
     const credit = mintCredit(
-      'a', 's', 'KO', 'healing', [0, 0, 0, 0, 0, 0],
-      0, 0, 'ALLOW', [], 1.0, '', 1
+      'a',
+      's',
+      'KO',
+      'healing',
+      [0, 0, 0, 0, 0, 0],
+      0,
+      0,
+      'ALLOW',
+      [],
+      1.0,
+      '',
+      1
     );
     const hash = creditHash(credit);
     expect(hash[0]).toBe('0');
@@ -284,9 +316,7 @@ describe('Compute Exchange', () => {
 
   it('posts an offer', () => {
     const { exchange } = setupExchange();
-    const offer = exchange.postOffer(
-      'bob', 'healing', 'KO', 'Heal your companion', 5.0
-    );
+    const offer = exchange.postOffer('bob', 'healing', 'KO', 'Heal your companion', 5.0);
     expect(offer.state).toBe('POSTED');
     expect(offer.offererId).toBe('bob');
   });

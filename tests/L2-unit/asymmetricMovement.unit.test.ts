@@ -261,7 +261,7 @@ describe('compositePosition', () => {
     expect(pos[5]).toBe(0);
   });
 
-  it('single AI = that agent\'s vertical position', () => {
+  it("single AI = that agent's vertical position", () => {
     const agent = makeAI({ position: [0, 0, 0.4, 0.2, 0.1, 0.05] });
     const unit = makeUnit({ agents: [agent] });
     const pos = compositePosition(unit);
@@ -360,12 +360,15 @@ describe('authTierDepthLimit', () => {
 
   it('tiers increase monotonically', () => {
     const tiers: Array<'KO' | 'AV' | 'RU' | 'CA' | 'UM' | 'DR'> = [
-      'KO', 'AV', 'RU', 'CA', 'UM', 'DR',
+      'KO',
+      'AV',
+      'RU',
+      'CA',
+      'UM',
+      'DR',
     ];
     for (let i = 1; i < tiers.length; i++) {
-      expect(authTierDepthLimit(tiers[i])).toBeGreaterThan(
-        authTierDepthLimit(tiers[i - 1]),
-      );
+      expect(authTierDepthLimit(tiers[i])).toBeGreaterThan(authTierDepthLimit(tiers[i - 1]));
     }
   });
 
@@ -427,7 +430,7 @@ describe('complementarityScore', () => {
           id: `ai-${j}`,
           coherence: Math.random(),
           activeTongue: (['RU', 'CA', 'UM', 'DR'] as const)[j % 4],
-        }),
+        })
       );
       const unit = makeUnit({
         human: makeHuman({ attention: Math.random() }),
@@ -453,10 +456,10 @@ describe('blindSpots', () => {
 
   it('full coverage = no blind spots', () => {
     const agents = [
-      makeAI({ id: 'a1', activeTongue: 'RU', coherence: 0.9 }),  // Z
-      makeAI({ id: 'a2', activeTongue: 'CA', coherence: 0.8 }),  // V
+      makeAI({ id: 'a1', activeTongue: 'RU', coherence: 0.9 }), // Z
+      makeAI({ id: 'a2', activeTongue: 'CA', coherence: 0.8 }), // V
       makeAI({ id: 'a3', activeTongue: 'UM', coherence: 0.85 }), // P
-      makeAI({ id: 'a4', activeTongue: 'DR', coherence: 0.7 }),  // S
+      makeAI({ id: 'a4', activeTongue: 'DR', coherence: 0.7 }), // S
     ];
     const unit = makeUnit({
       human: makeHuman({ attention: 0.9 }),

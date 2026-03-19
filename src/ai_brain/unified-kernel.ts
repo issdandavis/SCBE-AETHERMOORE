@@ -331,8 +331,7 @@ export function torusWriteGate(
   const dSigma = Math.abs(angleDiff(current.sigma, candidateSigma));
 
   // Weighted divergence: domain + polarity matter most
-  const divergence =
-    dTheta * 0.35 + dRho * 0.30 + dSigma * 0.20 + dPhi * 0.15;
+  const divergence = dTheta * 0.35 + dRho * 0.3 + dSigma * 0.2 + dPhi * 0.15;
   const normalizedDivergence = divergence / Math.PI; // [0, 1]
 
   const snap = normalizedDivergence > threshold;
@@ -407,7 +406,7 @@ export function computeMetrics(
   // Combined risk score (geometric measures only)
   const combinedRiskScore = Math.min(
     1,
-    hyperbolicDistance * 0.3 / 20.0 +
+    (hyperbolicDistance * 0.3) / 20.0 +
       phaseDeviation * 0.3 +
       (1 - spectralCoherence) * 0.2 +
       driftMagnitude * 0.2
@@ -481,8 +480,8 @@ export class UnifiedKernel {
     if (!masterKeyHex) {
       throw new Error(
         'UnifiedBrainKernel requires a PHDM master key. ' +
-        'Set config.phdm.masterKeyHex or SCBE_PHDM_MASTER_KEY env var. ' +
-        'Generate with: crypto.randomBytes(32).toString("hex")'
+          'Set config.phdm.masterKeyHex or SCBE_PHDM_MASTER_KEY env var. ' +
+          'Generate with: crypto.randomBytes(32).toString("hex")'
       );
     }
     this.phdm.initializeWithKey(Buffer.from(masterKeyHex, 'hex'));
@@ -559,7 +558,7 @@ export class UnifiedKernel {
     const rawNorm = Math.sqrt(rawNormSq);
     if (rawNorm >= POINCARE_MAX_NORM) {
       const projScale = (POINCARE_MAX_NORM - BRAIN_EPSILON) / rawNorm;
-      state.hyp = action.stateVector.map(v => v * projScale);
+      state.hyp = action.stateVector.map((v) => v * projScale);
     } else {
       state.hyp = [...action.stateVector];
     }
@@ -662,11 +661,7 @@ export class UnifiedKernel {
     // ═══ Step 6: Memory write attempt (Torus gate) ═══
     let memoryResult: MemoryWriteResult | null = null;
     if (memoryEvent && (decision === 'ALLOW' || decision === 'TRANSFORM')) {
-      memoryResult = torusWriteGate(
-        state.torus,
-        memoryEvent,
-        this.config.snapDivergenceThreshold
-      );
+      memoryResult = torusWriteGate(state.torus, memoryEvent, this.config.snapDivergenceThreshold);
       if (memoryResult.committed) {
         state.torus = memoryResult.newTorus;
       }
@@ -936,10 +931,7 @@ export class UnifiedKernel {
 /**
  * Find anomaly dimensions: indices where |value| exceeds threshold.
  */
-function findAnomalyDimensions(
-  state: number[],
-  threshold: number = 0.7
-): number[] {
+function findAnomalyDimensions(state: number[], threshold: number = 0.7): number[] {
   const dims: number[] = [];
   const maxLen = Math.min(state.length, 10000);
   for (let i = 0; i < maxLen; i++) {

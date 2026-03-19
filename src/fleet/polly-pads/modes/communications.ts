@@ -33,10 +33,7 @@ export class CommunicationsMode extends BaseMode {
     // Persist message queue
   }
 
-  protected doExecuteAction(
-    action: string,
-    params: Record<string, unknown>
-  ): ModeActionResult {
+  protected doExecuteAction(action: string, params: Record<string, unknown>): ModeActionResult {
     switch (action) {
       case 'queue_message':
         return this.queueMessage(params);
@@ -116,7 +113,7 @@ export class CommunicationsMode extends BaseMode {
   }
 
   private broadcastSquad(params: Record<string, unknown>): ModeActionResult {
-    const message = params.message as string || '';
+    const message = (params.message as string) || '';
 
     return {
       success: true,

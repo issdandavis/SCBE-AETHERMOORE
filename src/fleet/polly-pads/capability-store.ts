@@ -282,7 +282,7 @@ export class CapabilityStore {
     if (!signatureKey || signatureKey.length === 0) {
       throw new Error(
         'CapabilityStore requires an explicit signatureKey. ' +
-        'Generate one with: crypto.randomBytes(32)'
+          'Generate one with: crypto.randomBytes(32)'
       );
     }
     this.signatureKey = signatureKey;

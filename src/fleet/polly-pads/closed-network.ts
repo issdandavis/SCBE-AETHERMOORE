@@ -17,7 +17,6 @@ import { createHmac } from 'crypto';
  * All external access goes through SCBE governance.
  */
 
-
 // ═══════════════════════════════════════════════════════════════
 // Types
 // ═══════════════════════════════════════════════════════════════
@@ -291,7 +290,11 @@ export class ClosedNetwork {
     return [...this.earthQueue];
   }
 
-  getStatus(padId: string): { totalSent: number; totalReceived: number; outboundQueueSize: number } {
+  getStatus(padId: string): {
+    totalSent: number;
+    totalReceived: number;
+    outboundQueueSize: number;
+  } {
     const totalSent = this.messageLog.filter((m) => m.from === padId).length;
     const totalReceived = this.messageLog.filter(
       (m) => m.to === padId || (m.to === 'broadcast' && m.from !== padId)

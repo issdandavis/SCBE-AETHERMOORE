@@ -1,0 +1,9 @@
+Date,Vendor,Amount,Category,Purpose,Receipt Source
+,,,,,"Download bank statements and fill in rows below"
+2026-01-XX,Anthropic (Claude),,AI Subscription,Claude Pro/API for SCBE development,Bank Statement
+2026-01-XX,OpenAI (GPT),,AI Subscription,GPT Plus/API for SCBE development,Bank Statement
+2026-01-XX,Hetzner,,Hosting/Cloud,VPS deployment for SCBE-AETHERMOORE,Bank Statement
+2026-XX-XX,USPTO,,Patent Filing,SCBE systems provisional patent filing,Bank Statement
+2026-XX-XX,GitHub,,Dev Tools,GitHub subscription/Copilot,Bank Statement
+2026-XX-XX,Domain Registrar,,Domain,Project domain registration,Bank Statement
+2026-XX-XX,npm/Other,,Dev Tools,Paid packages or dev services,Bank Statement

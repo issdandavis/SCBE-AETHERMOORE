@@ -30,7 +30,12 @@ import type { TongueCode } from '../tokenizer/ss1.js';
 import type { BrowserBackend, BrowserAgentConfig } from '../browser/agent.js';
 import type { BrowserObservation, GovernanceResult } from '../browser/types.js';
 import type { TrajectoryPoint, CombinedAssessment } from '../ai_brain/types.js';
-import { CrawlCoordinator, type CrawlRole, type CrawlResult, type CrawlCoordinatorConfig } from './crawl-coordinator.js';
+import {
+  CrawlCoordinator,
+  type CrawlRole,
+  type CrawlResult,
+  type CrawlCoordinatorConfig,
+} from './crawl-coordinator.js';
 import type { FrontierEntry } from './crawl-frontier.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -189,7 +194,7 @@ export function extractLinksFromObservation(observation: BrowserObservation): st
  * Returns page metadata and form information.
  */
 export function extractDataFromObservation(
-  observation: BrowserObservation,
+  observation: BrowserObservation
 ): Record<string, unknown> {
   const data: Record<string, unknown> = {
     url: observation.page.url,
@@ -221,19 +226,19 @@ export function extractDataFromObservation(
 export function buildTrajectoryPoint(
   observation: BrowserObservation,
   governance: GovernanceResult,
-  sequence: number,
+  sequence: number
 ): TrajectoryPoint {
   // Map browser state to a simplified 21D-compatible state vector
   // Using governance risk factors as proxy dimensions
   const state = new Array(21).fill(0);
 
   // SCBE Context block [0-5]
-  state[0] = governance.riskFactors.actionRisk;     // action risk
-  state[1] = governance.riskFactors.domainRisk;     // domain risk
-  state[2] = governance.riskFactors.sessionRisk;    // session risk
-  state[3] = governance.riskScore;                  // behavior score (STATE_DIM.BEHAVIOR_SCORE)
-  state[4] = governance.riskFactors.temporalRisk;   // temporal risk
-  state[5] = governance.confidence;                 // intent alignment (STATE_DIM.INTENT_ALIGNMENT)
+  state[0] = governance.riskFactors.actionRisk; // action risk
+  state[1] = governance.riskFactors.domainRisk; // domain risk
+  state[2] = governance.riskFactors.sessionRisk; // session risk
+  state[3] = governance.riskScore; // behavior score (STATE_DIM.BEHAVIOR_SCORE)
+  state[4] = governance.riskFactors.temporalRisk; // temporal risk
+  state[5] = governance.confidence; // intent alignment (STATE_DIM.INTENT_ALIGNMENT)
 
   // Navigation block [6-11] — from observation
   state[6] = observation.page.scroll?.x ?? 0;
@@ -251,14 +256,14 @@ export function buildTrajectoryPoint(
   // Semantic block [15-17]
   state[15] = 0; // phase — would come from evaluator internals
   // STATE_DIM.PHASE_ANGLE = 16
-  state[16] = (observation.page.url?.length ?? 0) % (2 * Math.PI) / (2 * Math.PI);
+  state[16] = ((observation.page.url?.length ?? 0) % (2 * Math.PI)) / (2 * Math.PI);
   // STATE_DIM.TONGUE_WEIGHT = 17
   state[17] = governance.riskScore;
 
   // Swarm block [18-20]
   state[18] = governance.riskFactors.actionRisk;
   state[19] = 1.0; // participation ratio placeholder
-  state[20] = 0;   // spectral entropy placeholder
+  state[20] = 0; // spectral entropy placeholder
 
   // Compute embedded representation (use state directly since no full pipeline)
   const embedded = state.slice(0, 6);
@@ -339,7 +344,7 @@ export class CrawlRunner {
   private detectionFn?: (
     trajectory: TrajectoryPoint[],
     expectedTongueIndex: number,
-    config?: Record<string, unknown>,
+    config?: Record<string, unknown>
   ) => CombinedAssessment;
 
   constructor(config: CrawlRunnerConfig = {}) {
@@ -365,8 +370,8 @@ export class CrawlRunner {
     fn: (
       trajectory: TrajectoryPoint[],
       expectedTongueIndex: number,
-      config?: Record<string, unknown>,
-    ) => CombinedAssessment,
+      config?: Record<string, unknown>
+    ) => CombinedAssessment
   ): void {
     this.detectionFn = fn;
   }
@@ -554,7 +559,11 @@ export class CrawlRunner {
       if (governance.decision === 'DENY') {
         this.stats.failedSteps++;
         this.stats.governanceDenied++;
-        this.coordinator.reportFailure(assignment.url, agentId, `Governance denied: ${governance.explanation}`);
+        this.coordinator.reportFailure(
+          assignment.url,
+          agentId,
+          `Governance denied: ${governance.explanation}`
+        );
         return {
           agentId,
           url: assignment.url,
@@ -573,7 +582,11 @@ export class CrawlRunner {
       }
 
       // Build trajectory point for detection
-      const trajectoryPoint = buildTrajectoryPoint(observation, governance, managed.urlsCrawled.length);
+      const trajectoryPoint = buildTrajectoryPoint(
+        observation,
+        governance,
+        managed.urlsCrawled.length
+      );
       managed.trajectory.push(trajectoryPoint);
 
       // Trim trajectory if too long
@@ -710,7 +723,12 @@ export class CrawlRunner {
 
     // Sacred Tongue index mapping
     const tongueIndexMap: Record<string, number> = {
-      KO: 0, AV: 1, RU: 2, CA: 3, UM: 4, DR: 5,
+      KO: 0,
+      AV: 1,
+      RU: 2,
+      CA: 3,
+      UM: 4,
+      DR: 5,
     };
 
     for (const [agentId, managed] of this.managedAgents) {
@@ -725,11 +743,9 @@ export class CrawlRunner {
       // Run detection if function is available
       if (this.detectionFn) {
         const tongueIndex = tongueIndexMap[managed.tongue] ?? 0;
-        const assessment = this.detectionFn(
-          managed.trajectory,
-          tongueIndex,
-          { detectionThreshold: this.config.detectionThreshold },
-        );
+        const assessment = this.detectionFn(managed.trajectory, tongueIndex, {
+          detectionThreshold: this.config.detectionThreshold,
+        });
         managed.lastAssessment = assessment;
 
         if (assessment.anyFlagged) {
@@ -742,7 +758,10 @@ export class CrawlRunner {
 
           // Auto-quarantine if score exceeds threshold
           if (assessment.combinedScore >= this.config.quarantineThreshold) {
-            this.coordinator.quarantineAgent(agentId, `sentinel_detection: score=${assessment.combinedScore.toFixed(3)}`);
+            this.coordinator.quarantineAgent(
+              agentId,
+              `sentinel_detection: score=${assessment.combinedScore.toFixed(3)}`
+            );
             quarantinedAgents.push(agentId);
             this.stats.sentinelQuarantines++;
           }
@@ -763,7 +782,10 @@ export class CrawlRunner {
             });
 
             if (maxRisk >= this.config.quarantineThreshold) {
-              this.coordinator.quarantineAgent(agentId, `risk_threshold: max=${maxRisk.toFixed(3)}`);
+              this.coordinator.quarantineAgent(
+                agentId,
+                `risk_threshold: max=${maxRisk.toFixed(3)}`
+              );
               quarantinedAgents.push(agentId);
               this.stats.sentinelQuarantines++;
             }
@@ -867,7 +889,7 @@ export class CrawlRunner {
    */
   private evaluateNavigation(
     observation: BrowserObservation,
-    managed: ManagedAgent,
+    managed: ManagedAgent
   ): GovernanceResult {
     const url = observation.page.url ?? '';
 
@@ -890,7 +912,8 @@ export class CrawlRunner {
     const historicalRisk = sessionRisk;
 
     // Combined risk
-    const baseRisk = actionRisk * 0.35 + domainRisk * 0.25 + temporalRisk * 0.2 + historicalRisk * 0.2;
+    const baseRisk =
+      actionRisk * 0.35 + domainRisk * 0.25 + temporalRisk * 0.2 + historicalRisk * 0.2;
     const riskScore = Math.min(baseRisk, 1.0);
 
     // Decision

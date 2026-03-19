@@ -83,9 +83,7 @@ describe('GeoSeal Immune System', () => {
     it('should place agents inside Poincaré ball', () => {
       const agents = createTongueAgents(8);
       for (const agent of agents) {
-        const norm = Math.sqrt(
-          agent.position.reduce((sum, x) => sum + x * x, 0)
-        );
+        const norm = Math.sqrt(agent.position.reduce((sum, x) => sum + x * x, 0));
         expect(norm).toBeLessThan(1.0);
       }
     });
@@ -93,47 +91,28 @@ describe('GeoSeal Immune System', () => {
 
   describe('createCandidateAgent', () => {
     it('should create agent with assigned tongue phase', () => {
-      const agent = createCandidateAgent(
-        'test-001',
-        [0.1, 0.2, 0, 0, 0, 0, 0, 0],
-        'KO'
-      );
+      const agent = createCandidateAgent('test-001', [0.1, 0.2, 0, 0, 0, 0, 0, 0], 'KO');
       expect(agent.phase).toBe(TONGUE_PHASES.KO);
       expect(agent.tongue).toBe('KO');
     });
 
     it('should create rogue agent with null phase', () => {
-      const agent = createCandidateAgent(
-        'rogue-001',
-        [0.1, 0.2, 0, 0, 0, 0, 0, 0]
-      );
+      const agent = createCandidateAgent('rogue-001', [0.1, 0.2, 0, 0, 0, 0, 0, 0]);
       expect(agent.phase).toBeNull();
       expect(agent.tongue).toBeUndefined();
     });
 
     it('should project to ball if embedding too large', () => {
-      const agent = createCandidateAgent(
-        'test-002',
-        [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
-      );
-      const norm = Math.sqrt(
-        agent.position.reduce((sum, x) => sum + x * x, 0)
-      );
+      const agent = createCandidateAgent('test-002', [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]);
+      const norm = Math.sqrt(agent.position.reduce((sum, x) => sum + x * x, 0));
       expect(norm).toBeLessThan(1.0);
     });
   });
 
   describe('computeRepelForce', () => {
     it('should flag rogue agents as anomalous', () => {
-      const legitimate = createCandidateAgent(
-        'legit',
-        [0.1, 0.1, 0, 0, 0, 0, 0, 0],
-        'KO'
-      );
-      const rogue = createCandidateAgent(
-        'rogue',
-        [0.2, 0.1, 0, 0, 0, 0, 0, 0]
-      );
+      const legitimate = createCandidateAgent('legit', [0.1, 0.1, 0, 0, 0, 0, 0, 0], 'KO');
+      const rogue = createCandidateAgent('rogue', [0.2, 0.1, 0, 0, 0, 0, 0, 0]);
 
       const result = computeRepelForce(legitimate, rogue);
       expect(result.anomalyFlag).toBe(true);
@@ -141,16 +120,8 @@ describe('GeoSeal Immune System', () => {
     });
 
     it('should not flag matching phases as anomalous', () => {
-      const agent1 = createCandidateAgent(
-        'agent1',
-        [0.1, 0.1, 0, 0, 0, 0, 0, 0],
-        'KO'
-      );
-      const agent2 = createCandidateAgent(
-        'agent2',
-        [0.15, 0.05, 0, 0, 0, 0, 0, 0],
-        'KO'
-      );
+      const agent1 = createCandidateAgent('agent1', [0.1, 0.1, 0, 0, 0, 0, 0, 0], 'KO');
+      const agent2 = createCandidateAgent('agent2', [0.15, 0.05, 0, 0, 0, 0, 0, 0], 'KO');
 
       const result = computeRepelForce(agent1, agent2);
       expect(result.anomalyFlag).toBe(false);
@@ -158,11 +129,7 @@ describe('GeoSeal Immune System', () => {
     });
 
     it('should amplify force for quarantined agents', () => {
-      const agent1 = createCandidateAgent(
-        'agent1',
-        [0.1, 0.1, 0, 0, 0, 0, 0, 0],
-        'KO'
-      );
+      const agent1 = createCandidateAgent('agent1', [0.1, 0.1, 0, 0, 0, 0, 0, 0], 'KO');
       const quarantined: SwarmAgent = {
         ...createCandidateAgent('quarantined', [0.2, 0.1, 0, 0, 0, 0, 0, 0]),
         isQuarantined: true,
@@ -175,10 +142,7 @@ describe('GeoSeal Immune System', () => {
 
   describe('updateSuspicion', () => {
     it('should increment suspicion on anomaly', () => {
-      const agent = createCandidateAgent(
-        'test',
-        [0.1, 0.1, 0, 0, 0, 0, 0, 0]
-      );
+      const agent = createCandidateAgent('test', [0.1, 0.1, 0, 0, 0, 0, 0, 0]);
 
       updateSuspicion(agent, 'neighbor-1', true);
       expect(agent.suspicionCount.get('neighbor-1')).toBe(1);
@@ -188,10 +152,7 @@ describe('GeoSeal Immune System', () => {
     });
 
     it('should decay suspicion when no anomaly', () => {
-      const agent = createCandidateAgent(
-        'test',
-        [0.1, 0.1, 0, 0, 0, 0, 0, 0]
-      );
+      const agent = createCandidateAgent('test', [0.1, 0.1, 0, 0, 0, 0, 0, 0]);
 
       // Build up suspicion
       for (let i = 0; i < 5; i++) {
@@ -205,10 +166,7 @@ describe('GeoSeal Immune System', () => {
     });
 
     it('should quarantine when consensus reached', () => {
-      const agent = createCandidateAgent(
-        'test',
-        [0.1, 0.1, 0, 0, 0, 0, 0, 0]
-      );
+      const agent = createCandidateAgent('test', [0.1, 0.1, 0, 0, 0, 0, 0, 0]);
 
       // 3 neighbors with suspicion >= 3 each
       for (let n = 1; n <= 3; n++) {
@@ -221,12 +179,7 @@ describe('GeoSeal Immune System', () => {
     });
 
     it('should reduce trust with accumulated suspicion', () => {
-      const agent = createCandidateAgent(
-        'test',
-        [0.1, 0.1, 0, 0, 0, 0, 0, 0],
-        'KO',
-        1.0
-      );
+      const agent = createCandidateAgent('test', [0.1, 0.1, 0, 0, 0, 0, 0, 0], 'KO', 1.0);
 
       // Accumulate suspicion
       for (let i = 0; i < 10; i++) {
@@ -256,9 +209,7 @@ describe('GeoSeal Immune System', () => {
       runSwarmDynamics(agents, 50, 0.1);
 
       for (const agent of agents) {
-        const norm = Math.sqrt(
-          agent.position.reduce((sum, x) => sum + x * x, 0)
-        );
+        const norm = Math.sqrt(agent.position.reduce((sum, x) => sum + x * x, 0));
         expect(norm).toBeLessThan(1.0);
       }
     });
@@ -436,16 +387,8 @@ describe('GeoSeal Immune System', () => {
     it('should give higher scores to agents closer to center', () => {
       const tongues = createTongueAgents(8);
 
-      const nearCenter = createCandidateAgent(
-        'near',
-        [0.1, 0, 0, 0, 0, 0, 0, 0],
-        'KO'
-      );
-      const nearBoundary = createCandidateAgent(
-        'far',
-        [0.9, 0, 0, 0, 0, 0, 0, 0],
-        'KO'
-      );
+      const nearCenter = createCandidateAgent('near', [0.1, 0, 0, 0, 0, 0, 0, 0], 'KO');
+      const nearBoundary = createCandidateAgent('far', [0.9, 0, 0, 0, 0, 0, 0, 0], 'KO');
 
       const nearScore = phaseDistanceScore(nearCenter, tongues);
       const farScore = phaseDistanceScore(nearBoundary, tongues);
@@ -499,7 +442,7 @@ describe('GeoSeal Immune System', () => {
       ];
       const rogues = [
         { id: 'r1', embedding: [0.2, 0.05, 0, 0, 0, 0, 0, 0] }, // Same positions
-        { id: 'r2', embedding: [0.1, 0.2, 0, 0, 0, 0, 0, 0] },  // but no tongue
+        { id: 'r2', embedding: [0.1, 0.2, 0, 0, 0, 0, 0, 0] }, // but no tongue
         { id: 'r3', embedding: [-0.1, 0.2, 0, 0, 0, 0, 0, 0] },
       ];
 
@@ -565,9 +508,7 @@ describe('GeoSeal Immune System', () => {
       const ko0 = agents0.find((a) => a.tongue === 'KO')!;
       const ko1 = agents1.find((a) => a.tongue === 'KO')!;
 
-      const moved = ko0.position.some(
-        (v, i) => Math.abs(v - ko1.position[i]) > 0.01
-      );
+      const moved = ko0.position.some((v, i) => Math.abs(v - ko1.position[i]) > 0.01);
       expect(moved).toBe(true);
     });
 
@@ -583,26 +524,15 @@ describe('GeoSeal Immune System', () => {
 
   describe('temporalPhaseScore', () => {
     it('should give consistent scores to aligned agents', () => {
-      const aligned = createCandidateAgent(
-        'aligned',
-        [0.25, 0.05, 0, 0, 0, 0, 0, 0],
-        'KO'
-      );
+      const aligned = createCandidateAgent('aligned', [0.25, 0.05, 0, 0, 0, 0, 0, 0], 'KO');
 
       const score = temporalPhaseScore(aligned, 5, 8);
       expect(score).toBeGreaterThan(0.4);
     });
 
     it('should penalize rogue agents across time steps', () => {
-      const aligned = createCandidateAgent(
-        'aligned',
-        [0.2, 0.1, 0, 0, 0, 0, 0, 0],
-        'KO'
-      );
-      const rogue = createCandidateAgent(
-        'rogue',
-        [0.2, 0.1, 0, 0, 0, 0, 0, 0]
-      );
+      const aligned = createCandidateAgent('aligned', [0.2, 0.1, 0, 0, 0, 0, 0, 0], 'KO');
+      const rogue = createCandidateAgent('rogue', [0.2, 0.1, 0, 0, 0, 0, 0, 0]);
 
       const alignedScore = temporalPhaseScore(aligned, 5, 8);
       const rogueScore = temporalPhaseScore(rogue, 5, 8);
@@ -617,11 +547,7 @@ describe('GeoSeal Immune System', () => {
         [0.3, 0, 0, 0, 0, 0, 0, 0],
         'CA' // Opposite of KO
       );
-      const rightPhase = createCandidateAgent(
-        'right',
-        [0.3, 0, 0, 0, 0, 0, 0, 0],
-        'KO'
-      );
+      const rightPhase = createCandidateAgent('right', [0.3, 0, 0, 0, 0, 0, 0, 0], 'KO');
 
       const wrongScore = temporalPhaseScore(wrongPhase, 5, 8);
       const rightScore = temporalPhaseScore(rightPhase, 5, 8);

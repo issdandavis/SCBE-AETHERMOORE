@@ -234,9 +234,7 @@ export class AutoRetrigger {
    * Get all tasks currently in retry.
    */
   getActiveRetries(): RetryState[] {
-    return Array.from(this.retryStates.values()).filter(
-      (s) => !s.circuitBroken && s.attempt > 0
-    );
+    return Array.from(this.retryStates.values()).filter((s) => !s.circuitBroken && s.attempt > 0);
   }
 
   /**

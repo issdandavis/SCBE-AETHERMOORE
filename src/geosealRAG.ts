@@ -90,9 +90,7 @@ export async function initTongueAgents(embedFn: EmbedFn): Promise<Agent[]> {
     const rawEmbedding = await embedFn(domain_text);
     const position = projectEmbeddingToBall(rawEmbedding);
 
-    agents.push(
-      createAgent(`tongue-${tongue}`, position, TONGUE_PHASES[tongue], tongue, 1.0)
-    );
+    agents.push(createAgent(`tongue-${tongue}`, position, TONGUE_PHASES[tongue], tongue, 1.0));
   }
 
   return agents;

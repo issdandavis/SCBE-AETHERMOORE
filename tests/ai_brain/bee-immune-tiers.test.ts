@@ -79,12 +79,18 @@ describe('Agent Caste System', () => {
   });
 
   it('should give queen the highest trust multiplier', () => {
-    expect(CASTE_PROFILES.queen.trustMultiplier).toBeGreaterThan(CASTE_PROFILES.worker.trustMultiplier);
-    expect(CASTE_PROFILES.queen.trustMultiplier).toBeGreaterThan(CASTE_PROFILES.guard.trustMultiplier);
+    expect(CASTE_PROFILES.queen.trustMultiplier).toBeGreaterThan(
+      CASTE_PROFILES.worker.trustMultiplier
+    );
+    expect(CASTE_PROFILES.queen.trustMultiplier).toBeGreaterThan(
+      CASTE_PROFILES.guard.trustMultiplier
+    );
   });
 
   it('should give nurse the widest inspection range', () => {
-    expect(CASTE_PROFILES.nurse.inspectionRange).toBeGreaterThan(CASTE_PROFILES.worker.inspectionRange);
+    expect(CASTE_PROFILES.nurse.inspectionRange).toBeGreaterThan(
+      CASTE_PROFILES.worker.inspectionRange
+    );
     expect(CASTE_PROFILES.nurse.inspectionRange).toBe(3);
   });
 
@@ -221,9 +227,7 @@ describe('Tier 3: Social Grooming', () => {
   });
 
   it('should perform a waggle dance', () => {
-    const dance = hive.performWaggleDance(
-      'nurse-01', 'suspect', [0, 1, 2], 0.7, 0.5
-    );
+    const dance = hive.performWaggleDance('nurse-01', 'suspect', [0, 1, 2], 0.7, 0.5);
 
     expect(dance.dancerId).toBe('nurse-01');
     expect(dance.targetId).toBe('suspect');
@@ -233,12 +237,8 @@ describe('Tier 3: Social Grooming', () => {
   });
 
   it('should weight dance confidence by caste pheromone rate', () => {
-    const nurseDance = hive.performWaggleDance(
-      'nurse-01', 'suspect', [0], 0.5, 0.3
-    );
-    const guardDance = hive.performWaggleDance(
-      'guard-01', 'suspect', [0], 0.5, 0.3
-    );
+    const nurseDance = hive.performWaggleDance('nurse-01', 'suspect', [0], 0.5, 0.3);
+    const guardDance = hive.performWaggleDance('guard-01', 'suspect', [0], 0.5, 0.3);
 
     // Guard has pheromoneRate 1.5, nurse has 1.0
     expect(guardDance.confidence).toBeGreaterThan(nurseDance.confidence);

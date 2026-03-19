@@ -179,19 +179,19 @@ export interface CrossTalkEdge {
 
 /** Types of cross-domain relationships */
 export type CrossTalkRelationship =
-  | 'adjacent'      // Neighboring tongues (spectral adjacency)
-  | 'complementary'  // Opposite tongues (creative tension)
-  | 'harmonic'       // Tongues sharing a harmonic (φ-related)
-  | 'bridging';      // Non-adjacent, non-complementary links
+  | 'adjacent' // Neighboring tongues (spectral adjacency)
+  | 'complementary' // Opposite tongues (creative tension)
+  | 'harmonic' // Tongues sharing a harmonic (φ-related)
+  | 'bridging'; // Non-adjacent, non-complementary links
 
 /** Polyhedral family that validates a cross-talk edge */
 export type PolyhedralValidator =
-  | 'platonic'       // Core axioms — always valid
-  | 'archimedean'    // Processing — valid in QUASI+
+  | 'platonic' // Core axioms — always valid
+  | 'archimedean' // Processing — valid in QUASI+
   | 'kepler-poinsot' // High-risk leaps — POLLY only
-  | 'toroidal'       // Recursive loops — POLLY only
-  | 'johnson'        // Direct connectors — POLLY only
-  | 'rhombic';       // Space-filling — POLLY only
+  | 'toroidal' // Recursive loops — POLLY only
+  | 'johnson' // Direct connectors — POLLY only
+  | 'rhombic'; // Space-filling — POLLY only
 
 /**
  * Build the cross-talk edge set.
@@ -453,12 +453,12 @@ export function isValidatorAvailable(
  */
 export function validatorFacetCount(validator: PolyhedralValidator): number {
   const FACET_COUNTS: Record<PolyhedralValidator, number> = {
-    platonic: 50,        // 4+6+8+12+20
-    archimedean: 54,     // 8+14+32
+    platonic: 50, // 4+6+8+12+20
+    archimedean: 54, // 8+14+32
     'kepler-poinsot': 24, // 12+12
-    toroidal: 28,        // 14+14
-    johnson: 18,         // 10+8
-    rhombic: 24,         // 12+12
+    toroidal: 28, // 14+14
+    johnson: 18, // 10+8
+    rhombic: 24, // 12+12
   };
   return FACET_COUNTS[validator];
 }
@@ -617,10 +617,7 @@ export class CrossTalkKernel {
    * Translate a token from its primary domain to a target domain.
    * Confidence is based on: token's resonance in target × edge weight × validation strength.
    */
-  translate(
-    token: DomainToken,
-    targetDomain: AcademicDomain
-  ): CrossDomainTranslation | null {
+  translate(token: DomainToken, targetDomain: AcademicDomain): CrossDomainTranslation | null {
     if (token.primaryDomain === targetDomain) return null;
 
     const sourceTongue = token.primaryTongue;
@@ -801,9 +798,9 @@ export class CrossTalkKernel {
     }
 
     // Find route between the two strongest non-primary domains
-    const sortedDomains = ALL_DOMAINS
-      .filter((d) => d !== primaryDomain)
-      .sort((a, b) => aggregated[b] - aggregated[a]);
+    const sortedDomains = ALL_DOMAINS.filter((d) => d !== primaryDomain).sort(
+      (a, b) => aggregated[b] - aggregated[a]
+    );
 
     if (sortedDomains.length >= 1 && aggregated[sortedDomains[0]] > 0.2) {
       const primaryTongue = domainToTongue(primaryDomain);
@@ -815,11 +812,7 @@ export class CrossTalkKernel {
     const resonanceVector = ALL_DOMAINS.map((d) => aggregated[d]);
 
     // 5. Compute coherence
-    const coherence = this.computeCoherence(
-      resonanceVector,
-      allTranslations,
-      bestRoute
-    );
+    const coherence = this.computeCoherence(resonanceVector, allTranslations, bestRoute);
 
     // 6. Governance decision
     let decision: 'ALLOW' | 'QUARANTINE' | 'DENY';
@@ -891,10 +884,7 @@ export class CrossTalkKernel {
       return Math.min(1, concentration * 0.8 + 0.2);
     }
 
-    return Math.min(
-      1,
-      concentration * 0.4 + translationScore * 0.35 + routeScore * 0.25
-    );
+    return Math.min(1, concentration * 0.4 + translationScore * 0.35 + routeScore * 0.25);
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -905,10 +895,7 @@ export class CrossTalkKernel {
    * Get the cross-talk affinity between two domains.
    * Returns the edge weight if a direct edge exists, or the best route weight.
    */
-  domainAffinity(
-    domainA: AcademicDomain,
-    domainB: AcademicDomain
-  ): number {
+  domainAffinity(domainA: AcademicDomain, domainB: AcademicDomain): number {
     if (domainA === domainB) return 1.0;
 
     const tongueA = domainToTongue(domainA);
@@ -938,15 +925,15 @@ export class CrossTalkKernel {
    * Identify which domains a query resonates with most strongly.
    * Returns sorted list of (domain, score) pairs.
    */
-  domainResonance(input: string): Array<{ domain: AcademicDomain; tongue: TongueCode; score: number }> {
+  domainResonance(
+    input: string
+  ): Array<{ domain: AcademicDomain; tongue: TongueCode; score: number }> {
     const result = this.process(input);
-    return ALL_DOMAINS
-      .map((d, i) => ({
-        domain: d,
-        tongue: domainToTongue(d),
-        score: result.resonanceVector[i],
-      }))
-      .sort((a, b) => b.score - a.score);
+    return ALL_DOMAINS.map((d, i) => ({
+      domain: d,
+      tongue: domainToTongue(d),
+      score: result.resonanceVector[i],
+    })).sort((a, b) => b.score - a.score);
   }
 
   /**
@@ -971,9 +958,7 @@ export class CrossTalkKernel {
 /**
  * Create a cross-talk kernel with custom configuration.
  */
-export function createCrossTalkKernel(
-  config?: Partial<CrossTalkKernelConfig>
-): CrossTalkKernel {
+export function createCrossTalkKernel(config?: Partial<CrossTalkKernelConfig>): CrossTalkKernel {
   return new CrossTalkKernel(config);
 }
 

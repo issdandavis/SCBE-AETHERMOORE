@@ -144,10 +144,7 @@ export class DigitalTwinGovernor {
   /**
    * Compute ManifoldStats from a hyperspace snapshot.
    */
-  computeStats(
-    points: Map<string, HyperspacePoint>,
-    exiledCount: number,
-  ): ManifoldStats {
+  computeStats(points: Map<string, HyperspacePoint>, exiledCount: number): ManifoldStats {
     if (points.size === 0) {
       return {
         entityCount: 0,
@@ -216,27 +213,26 @@ export class DigitalTwinGovernor {
 
     this._ema.meanDistance = fromQ16(
       mulQ16(alphaQ16, toQ16(stats.meanDistance)) +
-      mulQ16(oneMinusAlphaQ16, toQ16(this._ema.meanDistance)),
+        mulQ16(oneMinusAlphaQ16, toQ16(this._ema.meanDistance))
     );
     this._ema.maxDistance = fromQ16(
       mulQ16(alphaQ16, toQ16(stats.maxDistance)) +
-      mulQ16(oneMinusAlphaQ16, toQ16(this._ema.maxDistance)),
+        mulQ16(oneMinusAlphaQ16, toQ16(this._ema.maxDistance))
     );
     this._ema.meanTrust = fromQ16(
       mulQ16(alphaQ16, toQ16(stats.meanTrust)) +
-      mulQ16(oneMinusAlphaQ16, toQ16(this._ema.meanTrust)),
+        mulQ16(oneMinusAlphaQ16, toQ16(this._ema.meanTrust))
     );
     this._ema.meanIntent = fromQ16(
       mulQ16(alphaQ16, toQ16(stats.meanIntent)) +
-      mulQ16(oneMinusAlphaQ16, toQ16(this._ema.meanIntent)),
+        mulQ16(oneMinusAlphaQ16, toQ16(this._ema.meanIntent))
     );
 
     // Compute danger fraction
-    const dangerFraction =
-      stats.entityCount > 0 ? stats.dangerCount / stats.entityCount : 0;
+    const dangerFraction = stats.entityCount > 0 ? stats.dangerCount / stats.entityCount : 0;
     this._ema.dangerFraction = fromQ16(
       mulQ16(alphaQ16, toQ16(dangerFraction)) +
-      mulQ16(oneMinusAlphaQ16, toQ16(this._ema.dangerFraction)),
+        mulQ16(oneMinusAlphaQ16, toQ16(this._ema.dangerFraction))
     );
 
     // Compute threat level [0, 1]
@@ -253,33 +249,25 @@ export class DigitalTwinGovernor {
 
     // Compute AQM multiplier
     // Normal: 1.0, under threat: up to 2.0 (more aggressive dropping)
-    const aqmMultiplier = Math.max(
-      0.5,
-      Math.min(2.0, 1.0 + this._ema.threatLevel),
-    );
+    const aqmMultiplier = Math.max(0.5, Math.min(2.0, 1.0 + this._ema.threatLevel));
 
     // Compute routing cost base
     // Normal: 1.0, under threat: up to 10.0
-    const routingCostBase = Math.max(
-      1.0,
-      Math.min(10.0, 1.0 + this._ema.threatLevel * 9.0),
-    );
+    const routingCostBase = Math.max(1.0, Math.min(10.0, 1.0 + this._ema.threatLevel * 9.0));
 
     // Trust decay override (tighter when threat is high)
     let trustDecayOverride: number | null = null;
     if (tighten) {
       // Faster decay: multiply default by (1 + threat)
-      trustDecayOverride = constants.temporal.intentDecayRate *
-        (1 - this._ema.threatLevel * 0.3);
+      trustDecayOverride = constants.temporal.intentDecayRate * (1 - this._ema.threatLevel * 0.3);
     }
 
     // Safety field strength adjustment
-    const safetyFieldStrength = constants.policy.safetyFieldStrength *
-      (1 + this._ema.threatLevel);
+    const safetyFieldStrength = constants.policy.safetyFieldStrength * (1 + this._ema.threatLevel);
 
     // Compliance field coupling adjustment
-    const complianceFieldCoupling = constants.policy.complianceFieldCoupling *
-      (1 + this._ema.threatLevel * 0.5);
+    const complianceFieldCoupling =
+      constants.policy.complianceFieldCoupling * (1 + this._ema.threatLevel * 0.5);
 
     const outputs: ControlOutputs = {
       aqmMultiplier,
@@ -314,10 +302,7 @@ export class DigitalTwinGovernor {
    * Run a full tick cycle: compute stats, run twin, apply controls.
    * This is the convenient "all-in-one" method.
    */
-  fullCycle(
-    points: Map<string, HyperspacePoint>,
-    exiledCount: number,
-  ): ControlOutputs {
+  fullCycle(points: Map<string, HyperspacePoint>, exiledCount: number): ControlOutputs {
     const stats = this.computeStats(points, exiledCount);
     const outputs = this.tick(stats);
     this.applyControls(outputs);
@@ -335,9 +320,9 @@ export class DigitalTwinGovernor {
     const recent = this._history.slice(-10);
     if (recent.length < 2) return this._ema.threatLevel;
 
-    const firstThreat = recent[0].meanDistance * 0.5 +
-      (1 - recent[0].meanTrust) * 0.5;
-    const lastThreat = recent[recent.length - 1].meanDistance * 0.5 +
+    const firstThreat = recent[0].meanDistance * 0.5 + (1 - recent[0].meanTrust) * 0.5;
+    const lastThreat =
+      recent[recent.length - 1].meanDistance * 0.5 +
       (1 - recent[recent.length - 1].meanTrust) * 0.5;
 
     const trend = (lastThreat - firstThreat) / recent.length;

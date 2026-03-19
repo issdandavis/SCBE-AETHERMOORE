@@ -149,7 +149,7 @@ export interface GenesisEvaluation {
  */
 export function computeHatchWeight(
   passed: boolean[],
-  ranks: number[] = DEFAULT_GENESIS_CONFIG.predicateRanks,
+  ranks: number[] = DEFAULT_GENESIS_CONFIG.predicateRanks
 ): number {
   let W = 0;
   for (let i = 0; i < passed.length; i++) {
@@ -191,7 +191,7 @@ export function evaluateGenesis(
   egg: SacredEgg,
   state: VerifierState,
   config: Partial<GenesisConfig> = {},
-  verifyApproval: (approval: Approval, eggId: string) => boolean = () => true,
+  verifyApproval: (approval: Approval, eggId: string) => boolean = () => true
 ): GenesisEvaluation {
   const cfg = { ...DEFAULT_GENESIS_CONFIG, ...config };
 
@@ -205,14 +205,15 @@ export function evaluateGenesis(
   const pCrypto = state.sharedSecret.length > 0;
 
   const predicateResults: [boolean, boolean, boolean, boolean, boolean] = [
-    pTongue, pGeo, pPath, pQuorum, pCrypto,
+    pTongue,
+    pGeo,
+    pPath,
+    pQuorum,
+    pCrypto,
   ];
 
   // Compute hatch weight
-  const hatchWeight = computeHatchWeight(
-    predicateResults,
-    [...cfg.predicateRanks],
-  );
+  const hatchWeight = computeHatchWeight(predicateResults, [...cfg.predicateRanks]);
   const meetsThreshold = hatchWeight >= cfg.genesisThreshold;
 
   // GeoSeal check
@@ -229,8 +230,14 @@ export function evaluateGenesis(
 
   // Genesis granted only if ALL conditions met (conjunction of all predicates)
   const genesisGranted =
-    meetsThreshold && geoSealPassed && triadicPassed &&
-    pTongue && pGeo && pPath && pQuorum && pCrypto;
+    meetsThreshold &&
+    geoSealPassed &&
+    triadicPassed &&
+    pTongue &&
+    pGeo &&
+    pPath &&
+    pQuorum &&
+    pCrypto;
 
   return {
     predicateResults,
@@ -253,7 +260,7 @@ function generateGenesisSeal(
   tongue: Tongue,
   ring: RingLevel,
   hatchWeight: number,
-  passed: boolean[],
+  passed: boolean[]
 ): string {
   // Build deterministic string representation
   const data = [
@@ -333,7 +340,7 @@ export function genesis(
   egg: SacredEgg,
   state: VerifierState,
   config: Partial<GenesisConfig> = {},
-  verifyApproval: (approval: Approval, eggId: string) => boolean = () => true,
+  verifyApproval: (approval: Approval, eggId: string) => boolean = () => true
 ): GenesisResult {
   const evaluation = evaluateGenesis(egg, state, config, verifyApproval);
 
@@ -359,7 +366,7 @@ export function genesis(
     egg.policy.primaryTongue,
     ringLevel,
     evaluation.hatchWeight,
-    [...evaluation.predicateResults],
+    [...evaluation.predicateResults]
   );
 
   const certificate: GenesisCertificate = {
@@ -389,7 +396,7 @@ export function verifyCertificateSeal(cert: GenesisCertificate): boolean {
     cert.tongueDomain,
     cert.ringLevel,
     cert.hatchWeight,
-    [...cert.predicatesPassed],
+    [...cert.predicatesPassed]
   );
   return recomputed === cert.genesisSeal;
 }

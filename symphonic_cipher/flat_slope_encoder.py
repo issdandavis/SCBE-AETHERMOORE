@@ -135,7 +135,7 @@ def derive_harmonic_mask(
     # Commitment for later verification
     key_commitment = hmac.new(
         secret_key,
-        f"commit:{token_id}".encode('utf-8'),
+        f"commit:{domain}:{token_id}".encode('utf-8'),
         hashlib.sha256
     ).digest()[:16]
 
