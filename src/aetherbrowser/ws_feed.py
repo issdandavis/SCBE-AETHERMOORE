@@ -63,8 +63,17 @@ class WsFeed:
             "seq": self._next_seq(),
         }
 
-    def chat(self, agent: Agent, text: str, model: str | None = None) -> dict:
-        return self._base(MsgType.CHAT, agent, model=model, payload={"text": text})
+    def chat(
+        self,
+        agent: Agent,
+        text: str,
+        model: str | None = None,
+        payload: dict[str, Any] | None = None,
+    ) -> dict:
+        merged_payload = {"text": text}
+        if payload:
+            merged_payload.update(payload)
+        return self._base(MsgType.CHAT, agent, model=model, payload=merged_payload)
 
     def agent_status(self, agent: Agent, state: str, model: str | None = None) -> dict:
         return self._base(MsgType.AGENT_STATUS, agent, model=model, payload={"state": state})

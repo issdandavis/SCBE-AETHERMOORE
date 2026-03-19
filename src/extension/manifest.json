@@ -3,7 +3,7 @@
   "name": "AetherBrowser",
   "version": "0.1.0",
   "description": "Multi-agent AI sidebar with governed browsing",
-  "permissions": ["activeTab", "sidePanel", "storage", "nativeMessaging"],
+  "permissions": ["activeTab", "sidePanel", "storage", "nativeMessaging", "tabs"],
   "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"],
   "side_panel": {
     "default_path": "sidepanel.html"
