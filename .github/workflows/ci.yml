@@ -51,6 +51,8 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
       - name: Run type check
         run: npm run typecheck
@@ -121,6 +123,8 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
       - name: Check TypeScript formatting
         run: npx prettier --check "src/**/*.ts" "tests/**/*.ts"
