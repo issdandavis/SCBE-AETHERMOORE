@@ -1,0 +1,123 @@
+{
+  "pad_id": "scbe-polly-pad-mobile-v2",
+  "title": "Polly Pad Phone Shell",
+  "updated_at": "2026-03-16T04:15:00Z",
+  "lanes": [
+    {
+      "id": "device-lane",
+      "zone": "device",
+      "status": "live",
+      "title": "Device Shell",
+      "summary": "One large main surface plus one visible assistant surface for the AI phone and tablet lane.",
+      "checks": [
+        "Main panel stays visually dominant so the owned device state is readable.",
+        "Assistant panel stays live for Ops, Test, or another helper lane while headless work runs elsewhere."
+      ],
+      "actions": [
+        {
+          "label": "Open Device Shell",
+          "href": "./device-shell.html",
+          "kind": "primary"
+        },
+        {
+          "label": "Open Browse",
+          "href": "./browse.html",
+          "kind": "secondary"
+        }
+      ]
+    },
+    {
+      "id": "reader-lane",
+      "zone": "reader",
+      "status": "ready",
+      "title": "Reader",
+      "summary": "Dedicated webtoon reading lane with saved position, chapter picker, and low chrome so phone rhythm is easy to judge.",
+      "checks": [
+        "Use text-overlay mode for pacing and clean mode for pure visual flow.",
+        "This page is for scroll reading only, not chat, test controls, or diagnostics."
+      ],
+      "actions": [
+        {
+          "label": "Open Reader",
+          "href": "./reader.html?chapter=ch01&variant=generated",
+          "kind": "primary"
+        },
+        {
+          "label": "Reader Home",
+          "href": "./reader.html",
+          "kind": "secondary"
+        }
+      ]
+    },
+    {
+      "id": "browse-lane",
+      "zone": "browse",
+      "status": "live",
+      "title": "Browse",
+      "summary": "Human mobile browsing lane with persistent tabs, URL state, and share-to-AI handoff.",
+      "checks": [
+        "Use this for actual browsing targets instead of stuffing them into the launcher.",
+        "Sites that block embedding can still live here as saved tab state."
+      ],
+      "actions": [
+        {
+          "label": "Open Browse",
+          "href": "./browse.html",
+          "kind": "primary"
+        },
+        {
+          "label": "Classic Arena",
+          "href": "./index.html?arena=1",
+          "kind": "secondary"
+        }
+      ]
+    },
+    {
+      "id": "test-lane",
+      "zone": "test",
+      "status": "watch",
+      "title": "Test",
+      "summary": "AI testing lane for target URL, task prompt, run mode, and artifact capture.",
+      "checks": [
+        "Use this for Playwright/browser bridge runs, not for human reading or normal chat.",
+        "Artifacts are stored locally on-device so each test pass leaves readable evidence."
+      ],
+      "actions": [
+        {
+          "label": "Open Test",
+          "href": "./test.html",
+          "kind": "primary"
+        }
+      ]
+    },
+    {
+      "id": "ops-lane",
+      "zone": "ops",
+      "status": "live",
+      "title": "Ops",
+      "summary": "Chat, bridge controls, provider chips, and diagnostics. This is the command lane, not the reader.",
+      "checks": [
+        "Shared targets from Browse and Test land here for quick backend analysis.",
+        "Provider selection and bridge diagnostics stay together so debugging is faster."
+      ],
+      "actions": [
+        {
+          "label": "Open Ops",
+          "href": "./ops.html",
+          "kind": "primary"
+        },
+        {
+          "label": "Legacy Chat Link",
+          "href": "./chat.html",
+          "kind": "secondary"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Reader is for scroll rhythm only. Browse is for human tabs. Test is for AI runs. Ops is for chat and diagnostics.",
+    "Android emulator uses 10.0.2.2 to reach host services. Browser preview uses 127.0.0.1 instead.",
+    "The intended phone loop is Reader or Browse -> Test if needed -> Ops for synthesis or debugging.",
+    "Dev-side emulator prep still lives in scripts/system/start_polly_pad_emulator.ps1."
+  ]
+}

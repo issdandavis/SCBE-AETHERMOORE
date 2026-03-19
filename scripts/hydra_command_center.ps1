@@ -19,6 +19,8 @@ $script:IssacAetherbrowserSearchScript = Join-Path $script:IssacCommandCenterRoo
 $script:IssacGithubSweepScript = Join-Path $script:IssacCommandCenterRoot "scripts\system\run_github_sweep.py"
 $script:IssacGithubNavScript = Join-Path $script:IssacCommandCenterRoot "scripts\system\aetherbrowser_github_nav.py"
 $script:IssacYoutubeTranscriptScript = Join-Path $script:IssacCommandCenterRoot "scripts\system\youtube_transcript_pull.py"
+$script:IssacColabCatalogScript = Join-Path $script:IssacCommandCenterRoot "scripts\system\colab_workflow_catalog.py"
+$script:IssacColabBridgeScript = "C:\Users\issda\.codex\skills\scbe-n8n-colab-bridge\scripts\colab_n8n_bridge.py"
 $script:IssacDeepResearchLoop = Join-Path $script:IssacCommandCenterRoot "scripts\system\run_deep_research_self_healing.ps1"
 $script:IssacWorkflowVectorScript = Join-Path $script:IssacCommandCenterRoot "scripts\system\workflow_vector.py"
 $script:IssacPostAllScript = Join-Path $script:IssacCommandCenterRoot "scripts\publish\post_all.py"
@@ -218,6 +220,7 @@ BUILDFLOW
   buildflow-article <topic>        Article research loop scaffold
   buildflow-workflow <topic>       n8n/workflow mesh scaffold
   buildflow-training <topic>       HF specialist training scaffold
+  buildflow-colab <topic>          Colab notebook + training scaffold
 
 DAILY OPS
   gh-browse <q>            AetherBrowser GitHub search -> live vault
@@ -238,6 +241,14 @@ DAILY OPS
   hf-generate-sft          Generate specialist SFT pairs from modules
   hf-train-wave            Run daily training merge/upload wave
   hf-agent-loop            Run local HF agent training loop
+
+COLAB
+  colab-catalog            List repo Colab notebooks and purposes
+  colab-show <name>        Show one notebook entry and Colab URL
+  colab-url <name>         Print the direct Colab URL
+  colab-bridge-status      Show saved local Colab bridge profile
+  colab-bridge-env         Emit env exports for a saved bridge profile
+  colab-bridge-set         Save/update a Colab local bridge profile
 
 SERVICES
   scbe-bridge        Start n8n browser bridge (:8001)
@@ -494,7 +505,7 @@ function hmission {
 
 function Invoke-IssacBuildflow {
     param(
-        [ValidateSet("marketing", "research", "browser", "publish", "github", "youtube", "article", "workflow", "training", "story", "custom")]
+        [ValidateSet("marketing", "research", "browser", "publish", "github", "youtube", "article", "workflow", "training", "colab", "story", "custom")]
         [string]$Mode = "custom",
         [switch]$DryRun,
         [Parameter(ValueFromRemainingArguments = $true)][string[]]$Args
@@ -586,6 +597,14 @@ function Invoke-IssacBuildflow {
             Invoke-IssacCascadeStep "daily training wave" { hf-train-wave } -DryRun:$DryRun | Out-Null
             Invoke-IssacCascadeStep "training relay packet" { xtalk-send trainer "Buildflow training ready for '$topic'" } -DryRun:$DryRun | Out-Null
         }
+        "colab" {
+            Invoke-IssacCascadeStep "refresh skill synthesis" { hskills-refresh } -DryRun:$DryRun | Out-Null
+            Invoke-IssacCascadeStep "compose colab skill stack" { hstack "google colab training workflow for $topic" } -DryRun:$DryRun | Out-Null
+            Invoke-IssacCascadeStep "colab notebook catalog" { colab-catalog } -DryRun:$DryRun | Out-Null
+            Invoke-IssacCascadeStep "pivot notebook route" { colab-show pivot } -DryRun:$DryRun | Out-Null
+            Invoke-IssacCascadeStep "generate specialist sft" { hf-generate-sft } -DryRun:$DryRun | Out-Null
+            Invoke-IssacCascadeStep "colab relay packet" { xtalk-send trainer "Buildflow colab ready for '$topic'" } -DryRun:$DryRun | Out-Null
+        }
         "story" {
             Invoke-IssacCascadeStep "compose story skill stack" { hstack "story pipeline for $topic" } -DryRun:$DryRun | Out-Null
             Invoke-IssacCascadeStep "story relay packet" { xtalk-send storyteller "Buildflow story ready for '$topic'" } -DryRun:$DryRun | Out-Null
@@ -599,7 +618,7 @@ function Invoke-IssacBuildflow {
 
 function buildflow {
     param(
-        [ValidateSet("marketing", "research", "browser", "publish", "github", "youtube", "article", "workflow", "training", "story", "custom")]
+        [ValidateSet("marketing", "research", "browser", "publish", "github", "youtube", "article", "workflow", "training", "colab", "story", "custom")]
         [string]$Mode = "custom",
         [switch]$DryRun,
         [Parameter(ValueFromRemainingArguments = $true)][string[]]$Args
@@ -650,6 +669,72 @@ function buildflow-workflow {
 function buildflow-training {
     param([switch]$DryRun, [Parameter(ValueFromRemainingArguments = $true)][string[]]$Args)
     Invoke-IssacBuildflow -Mode "training" -DryRun:$DryRun @Args
+}
+
+function buildflow-colab {
+    param([switch]$DryRun, [Parameter(ValueFromRemainingArguments = $true)][string[]]$Args)
+    Invoke-IssacBuildflow -Mode "colab" -DryRun:$DryRun @Args
+}
+
+function colab-catalog {
+    param([switch]$Json)
+    $scriptArgs = @("list")
+    if ($Json) {
+        $scriptArgs += "--json"
+    }
+    Invoke-IssacPythonFile $script:IssacColabCatalogScript @scriptArgs
+}
+
+function colab-show {
+    param([string]$Name, [switch]$Json)
+    Assert-IssacText $Name "Usage: colab-show <name> [-Json]"
+    $scriptArgs = @("show", $Name)
+    if ($Json) {
+        $scriptArgs += "--json"
+    }
+    Invoke-IssacPythonFile $script:IssacColabCatalogScript @scriptArgs
+}
+
+function colab-url {
+    param([string]$Name, [switch]$Json)
+    Assert-IssacText $Name "Usage: colab-url <name> [-Json]"
+    $scriptArgs = @("url", $Name)
+    if ($Json) {
+        $scriptArgs += "--json"
+    }
+    Invoke-IssacPythonFile $script:IssacColabCatalogScript @scriptArgs
+}
+
+function colab-bridge-status {
+    param([string]$Name = "pivot")
+    Invoke-IssacPythonFile $script:IssacColabBridgeScript --status --name $Name
+}
+
+function colab-bridge-env {
+    param([string]$Name = "pivot")
+    Invoke-IssacPythonFile $script:IssacColabBridgeScript --env --name $Name
+}
+
+function colab-bridge-set {
+    param(
+        [string]$Name = "pivot",
+        [string]$BackendUrl,
+        [string]$Token = "",
+        [string]$N8nWebhook = "",
+        [switch]$Probe
+    )
+    Assert-IssacText $BackendUrl "Usage: colab-bridge-set -BackendUrl <http://127.0.0.1:8888/?token=...> [-Name pivot] [-N8nWebhook <url>] [-Probe]"
+    $scriptArgs = @("--set", "--name", $Name, "--backend-url", $BackendUrl)
+    if (-not [string]::IsNullOrWhiteSpace($Token)) {
+        $scriptArgs += @("--token", $Token)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($N8nWebhook)) {
+        $scriptArgs += @("--n8n-webhook", $N8nWebhook)
+    }
+    if ($Probe) {
+        $scriptArgs += "--probe"
+    }
+    Invoke-IssacPythonFile $script:IssacColabBridgeScript @scriptArgs
 }
 
 function gh-browse {

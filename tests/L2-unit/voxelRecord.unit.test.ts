@@ -14,6 +14,12 @@ import {
   computeSignaturePayload,
   scbeDecide,
   harmonicCost,
+  computeSpectrumPressure,
+  computeSpectrumGate,
+  pressureToWavelength,
+  wavelengthToBand,
+  pressureToSpectrumState,
+  projectBandPressuresToSpectrum,
   validateQuorum,
   buildVoxelRecord,
   simulateQuorum,
@@ -166,6 +172,53 @@ describe('L2-UNIT: harmonicCost', () => {
     const c1 = harmonicCost(1);
     const c10 = harmonicCost(10);
     expect(c10).toBeGreaterThan(c1 * 1000);
+  });
+});
+
+// อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+// Continuous Spectrum Gate Tests
+// อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ
+
+describe('L2-UNIT: continuous spectrum gate overlay', () => {
+  it('should map zero pressure to the safe end of the spectrum', () => {
+    expect(pressureToWavelength(0)).toBe(380);
+    expect(wavelengthToBand(380)).toBe('violet');
+    expect(pressureToSpectrumState(0)).toBe('stable');
+  });
+
+  it('should map full pressure to the break end of the spectrum', () => {
+    expect(pressureToWavelength(1)).toBe(700);
+    expect(wavelengthToBand(700)).toBe('red');
+    expect(pressureToSpectrumState(1)).toBe('breaking');
+  });
+
+  it('should produce low pressure for a safe state', () => {
+    const result = computeSpectrumPressure(0.2, 0.9, 10.0);
+    expect(result.pressure).toBeLessThan(0.1);
+    expect(result.coherencePressure).toBe(0);
+    expect(result.driftPressure).toBe(0);
+  });
+
+  it('should produce high pressure when coherence collapses', () => {
+    const result = computeSpectrumPressure(0.2, 0.1, 10.0);
+    expect(result.coherencePressure).toBe(1);
+    expect(result.pressure).toBeGreaterThan(0.7);
+  });
+
+  it('should preserve the existing discrete decision while adding a spectrum overlay', () => {
+    const gate = computeSpectrumGate(1.5, 0.7, 100);
+    expect(gate.discreteDecision).toBe('QUARANTINE');
+    expect(gate.pressure).toBeGreaterThan(0);
+    expect(gate.wavelengthNm).toBeGreaterThanOrEqual(380);
+    expect(gate.wavelengthNm).toBeLessThanOrEqual(700);
+  });
+
+  it('should project per-band pressures for experimental audio routing', () => {
+    const projected = projectBandPressuresToSpectrum([0, 0.25, 0.5, 0.75, 1]);
+    expect(projected).toHaveLength(5);
+    expect(projected[0].band).toBe('violet');
+    expect(projected[4].band).toBe('red');
+    expect(projected[2].state).toBe('near_break');
   });
 });
 

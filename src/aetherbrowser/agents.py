@@ -69,7 +69,7 @@ class AgentSquad:
 
     def decompose(self, text: str, task_type: str | None = None) -> list[dict[str, Any]]:
         if task_type is None:
-            task_type = self._infer_task_type(text)
+            task_type = self.infer_task_type(text)
         roles = _TASK_ROLES.get(task_type, _TASK_ROLES["default"])
         assignments = []
         for role in roles:
@@ -79,7 +79,7 @@ class AgentSquad:
             })
         return assignments
 
-    def _infer_task_type(self, text: str) -> str:
+    def infer_task_type(self, text: str) -> str:
         words = set(text.lower().split())
         if words & _RESEARCH_KEYWORDS:
             return "research"
