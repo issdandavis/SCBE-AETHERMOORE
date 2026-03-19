@@ -23,6 +23,7 @@ from src.aetherbrowser.command_planner import CommandPlan, build_command_plan
 from src.aetherbrowser.page_analyzer import PageAnalyzer
 from src.aetherbrowser.provider_executor import ProviderExecutor
 from src.aetherbrowser.router import OctoArmorRouter
+from src.aetherbrowser.topology_engine import compute_page_topology
 
 logger = logging.getLogger("aetherbrowser")
 
@@ -162,6 +163,7 @@ async def _handle_page_context(ws: WebSocket, msg: dict) -> None:
         page_type=payload.get("page_type", "generic"),
         screenshot=payload.get("screenshot", ""),
     )
+    topology = result.get("topology_lens", {})
 
     summary_text = (
         f"Page: {result['title']}\n"
@@ -169,6 +171,8 @@ async def _handle_page_context(ws: WebSocket, msg: dict) -> None:
         f"Topics: {', '.join(result['topics']) or 'General'}\n"
         f"Intent: {result['intent']}\n"
         f"Risk: {result['risk_tier']}\n"
+        f"Topology: {topology.get('zone', 'UNKNOWN')} | Axis: {topology.get('primary_axis', 'General')} | "
+        f"d_H: {topology.get('trust_distance', 'n/a')}\n"
         f"Type: {result['page_type']}\n"
         f"Headings: {result['heading_count']} | Links: {result['link_count']} | Forms: {result['form_count']} | Tabs: {result['tab_count']}\n\n"
         f"{result['summary']}"
@@ -193,6 +197,21 @@ async def _handle_page_context(ws: WebSocket, msg: dict) -> None:
                 payload={"page_analysis": result},
             )
         )
+
+    # Topology visualization (curved browser)
+    try:
+        topology = compute_page_topology(
+            url=url,
+            title=title,
+            text=text,
+            links=payload.get("links") or [],
+            headings=payload.get("headings") or [],
+            topics=result.get("topics") or [],
+            risk_tier=result.get("risk_tier", "low"),
+        )
+        await ws.send_json(feed._base(MsgType.TOPOLOGY, Agent.UM, payload=topology))
+    except Exception as exc:
+        logger.warning(f"Topology computation failed: {exc}")
 
 
 async def _handle_zone_response(ws: WebSocket, msg: dict) -> None:

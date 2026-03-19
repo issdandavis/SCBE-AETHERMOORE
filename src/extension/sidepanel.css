@@ -449,6 +449,86 @@ body {
 }
 
 /* --------------------------------------------------------------------------
+   #topology-view — Poincare disk topology visualization
+   -------------------------------------------------------------------------- */
+#topology-view {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+#topology-canvas-container {
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+}
+
+#topology-canvas-container canvas {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.ab-topology-tooltip {
+  position: absolute;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 11px;
+  color: var(--text);
+  pointer-events: none;
+  z-index: 10;
+  max-width: 200px;
+  line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.ab-topology-compass {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ab-topology-axis {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ab-topology-axis__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.ab-topology-axis__name {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ab-topology-axis__meta {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.ab-topology-axis__bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(139, 148, 158, 0.14);
+}
+
+.ab-topology-axis__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(88, 166, 255, 0.55), rgba(63, 185, 80, 0.95));
+}
+
+/* --------------------------------------------------------------------------
    .ab-zone-card — Zone warning/alert cards
    -------------------------------------------------------------------------- */
 .ab-zone-card {

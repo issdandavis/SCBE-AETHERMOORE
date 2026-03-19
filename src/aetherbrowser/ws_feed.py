@@ -22,6 +22,7 @@ class MsgType(str, Enum):
     ZONE_REQUEST = "zone_request"
     ZONE_RESPONSE = "zone_response"
     PAGE_CONTEXT = "page_context"
+    TOPOLOGY = "topology"
     ERROR = "error"
 
 
