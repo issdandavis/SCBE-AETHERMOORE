@@ -8,8 +8,8 @@
 
 import { WsClient } from './lib/ws-client.js';
 import { loadSettings } from './lib/storage.js';
-import { readActivePage } from './lib/dom-reader.js';
-import { renderAgentGrid, updateAgentBadge, resetAllBadges } from './components/AgentGrid.js';
+import { captureVisibleTab, getOpenTabs, readActivePage } from './lib/dom-reader.js';
+import { renderAgentGrid, updateAgentBadge, resetAllBadges, renderProviderHealth, clearProviderHealth } from './components/AgentGrid.js';
 import { initConversationFeed, appendMessage, appendUserMessage } from './components/ConversationFeed.js';
 import { renderZoneApproval } from './components/ZoneApproval.js';
 import { renderProgress } from './components/ProgressCard.js';
@@ -28,11 +28,21 @@ const researchBtn = document.getElementById('btn-research');
 const commandBar = document.getElementById('command-bar');
 
 let ws = null;
+let currentSettings = null;
+let healthPollHandle = null;
+
+function routingContext() {
+  return {
+    preferences: currentSettings?.preferences || {},
+    auto_cascade: Boolean(currentSettings?.autoCascade),
+  };
+}
 
 async function init() {
-  const settings = await loadSettings();
+  currentSettings = await loadSettings();
 
   renderAgentGrid(agentGridEl);
+  clearProviderHealth();
   initConversationFeed(feedEl);
 
   // Add settings gear to agent grid
@@ -44,6 +54,8 @@ async function init() {
   gearBtn.addEventListener('click', () => {
     renderSettingsPanel(settingsEl, async () => {
       const newSettings = await loadSettings();
+      currentSettings = newSettings;
+      stopHealthPolling();
       if (ws) {
         ws.disconnect();
         ws.url = `ws://127.0.0.1:${newSettings.port}/ws`;
@@ -51,11 +63,11 @@ async function init() {
       }
     });
   });
-  agentGridEl.appendChild(gearBtn);
+  document.getElementById('agent-grid-row')?.appendChild(gearBtn);
 
   // Connect WebSocket
   ws = new WsClient({
-    url: `ws://127.0.0.1:${settings.port}/ws`,
+    url: `ws://127.0.0.1:${currentSettings.port}/ws`,
     onMessage: handleWsMessage,
     onConnectionChange: handleConnectionChange,
   });
@@ -104,10 +116,14 @@ function handleConnectionChange(connected) {
     feedEl.classList.remove('hidden');
     commandBar.classList.remove('hidden');
     resetAllBadges();
+    refreshHealthStatus();
+    startHealthPolling();
   } else {
+    stopHealthPolling();
     feedEl.classList.add('hidden');
     commandBar.classList.add('hidden');
     disconnectedEl.classList.remove('hidden');
+    clearProviderHealth();
     renderDisconnectedBanner(disconnectedEl, {
       port: ws?.url ? parseInt(new URL(ws.url).port, 10) : 8002,
       onServerStarted: () => ws.connect(),
@@ -119,7 +135,7 @@ function handleSend() {
   const text = inputEl.value.trim();
   if (!text) return;
   appendUserMessage(feedEl, text);
-  ws.sendCommand(text);
+  ws.sendCommand(text, routingContext());
   inputEl.value = '';
   inputEl.focus();
 }
@@ -127,8 +143,27 @@ function handleSend() {
 async function handleThisPage() {
   try {
     appendUserMessage(feedEl, '[Analyzing current page...]');
-    const page = await readActivePage();
-    ws.sendPageContext(page.url, page.title, page.text);
+    const [page, tabs, screenshot] = await Promise.all([
+      readActivePage(),
+      getOpenTabs().catch(() => []),
+      captureVisibleTab().catch(() => ''),
+    ]);
+    ws.sendPageContext(
+      {
+        url: page.url,
+        title: page.title,
+        text: page.text,
+        headings: page.headings || [],
+        links: page.links || [],
+        buttons: page.buttons || [],
+        forms: page.forms || [],
+        selection: page.selection || '',
+        page_type: page.pageType || 'generic',
+        tabs,
+        screenshot,
+      },
+      routingContext(),
+    );
   } catch (err) {
     appendMessage(feedEl, {
       agent: 'system',
@@ -145,8 +180,38 @@ function handleResearch() {
     return;
   }
   appendUserMessage(feedEl, `[Research] ${text}`);
-  ws.sendCommand(text);
+  ws.sendCommand(text, routingContext());
   inputEl.value = '';
+}
+
+function healthUrl() {
+  return `http://127.0.0.1:${currentSettings?.port || 8002}/health`;
+}
+
+async function refreshHealthStatus() {
+  try {
+    const response = await fetch(healthUrl(), { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error(`health ${response.status}`);
+    }
+    const health = await response.json();
+    renderProviderHealth(health.executor || health.providers || {});
+  } catch {
+    renderProviderHealth({});
+  }
+}
+
+function startHealthPolling() {
+  if (healthPollHandle) return;
+  healthPollHandle = window.setInterval(() => {
+    refreshHealthStatus().catch(() => {});
+  }, 15000);
+}
+
+function stopHealthPolling() {
+  if (!healthPollHandle) return;
+  window.clearInterval(healthPollHandle);
+  healthPollHandle = null;
 }
 
 init().catch(console.error);
