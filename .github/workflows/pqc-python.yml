@@ -46,16 +46,17 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-cov hypothesis oqs pqcrypto
+          pip install pytest pytest-cov hypothesis
 
       - name: Validate oqs import
         run: |
-          python - <<'PY'
+          python -c "
           import oqs
-          print("oqs version:", oqs.oqs_python_version())
-          print("kem count:", len(oqs.get_enabled_kem_mechanisms()))
-          print("sig count:", len(oqs.get_enabled_sig_mechanisms()))
-          PY
+          print('oqs version:', getattr(oqs, '__version__', 'unknown'))
+          print('liboqs version:', oqs.oqs_version())
+          print('kem count:', len(oqs.get_enabled_kem_mechanisms()))
+          print('sig count:', len(oqs.get_enabled_sig_mechanisms()))
+          "
 
       - name: Run PQC marker lane
         run: |
