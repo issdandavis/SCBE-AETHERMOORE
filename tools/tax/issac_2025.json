@@ -1,0 +1,45 @@
+{
+  "_comment": "Issac Davis — TY2025 Federal Return (from ADP W-2)",
+  "taxpayer": {
+    "first_name": "Issac",
+    "last_name": "Davis",
+    "ssn": "XXX-XX-XXXX",
+    "filing_status": "single",
+    "age": 0,
+    "is_blind": false,
+    "address": "2351 East 5th Avenue",
+    "city": "Port Angeles",
+    "state": "WA",
+    "zip_code": "98362",
+    "can_be_claimed_as_dependent": false
+  },
+  "w2s": [
+    {
+      "employer_name": "Burger Management Systems Washington Inc",
+      "employer_ein": "82-1105576",
+      "wages": 32357.11,
+      "federal_tax_withheld": 2684.48,
+      "social_security_wages": 34394.63,
+      "social_security_tax": 2132.47,
+      "medicare_wages": 34394.63,
+      "medicare_tax": 498.72,
+      "state": "WA",
+      "state_wages": 34394.63,
+      "state_tax_withheld": 0.00
+    }
+  ],
+  "income_1099s": [],
+  "other_income": 0.00,
+  "itemized_deductions": null,
+  "credits": {
+    "child_tax_credit_dependents": 0,
+    "other_dependents": 0,
+    "education_credits": 0.00,
+    "retirement_savings_credit": 0.00,
+    "earned_income_credit": 0.00,
+    "estimated_tax_payments": 0.00
+  },
+  "ira_deduction": 0.00,
+  "student_loan_interest": 0.00,
+  "hsa_deduction": 0.00
+}
