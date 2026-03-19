@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { scbeSacredEggCreate, scbeSacredEggHatch, scbeStateEmit21D, stripHtml } from '../../mcp/scbe-server/server.mjs';
+import {
+  scbeSacredEggCreate,
+  scbeSacredEggHatch,
+  scbeStateEmit21D,
+  stripHtml,
+} from '../../mcp/scbe-server/server.mjs';
 
 describe('SCBE MCP Server Phase 1 Tools', () => {
   it('emits canonical 21D state telemetry', () => {
@@ -111,8 +116,8 @@ describe('SCBE MCP Server Phase 1 Tools', () => {
   });
 
   it('strips active HTML content without regex tag filtering', () => {
-    const html = '<div>Hello <script>alert(1)</script><style>.x{}</style><strong>world</strong><!--gone--></div>';
+    const html =
+      '<div>Hello <script>alert(1)</script><style>.x{}</style><strong>world</strong><!--gone--></div>';
     expect(stripHtml(html)).toBe('Hello world');
   });
 });
-

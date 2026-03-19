@@ -24,12 +24,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 /** Message channels for crawl coordination */
-export type CrawlChannel =
-  | 'discovery'
-  | 'status'
-  | 'findings'
-  | 'governance'
-  | 'sentinel';
+export type CrawlChannel = 'discovery' | 'status' | 'findings' | 'governance' | 'sentinel';
 
 /** Crawl-specific event types */
 export type CrawlEventType =
@@ -174,7 +169,10 @@ export function topicMatches(topic: string, pattern: string): boolean {
  * ```
  */
 export class CrawlMessageBus {
-  private subscriptions: Map<string, { pattern: string; subscriberId: string; handler: MessageHandler }> = new Map();
+  private subscriptions: Map<
+    string,
+    { pattern: string; subscriberId: string; handler: MessageHandler }
+  > = new Map();
   private agentSequences: Map<string, number> = new Map();
   private messageLog: CrawlMessage[] = [];
   private maxLogSize: number;
@@ -205,7 +203,7 @@ export class CrawlMessageBus {
     channel: CrawlChannel,
     event: CrawlEventType,
     payload: T,
-    options: { toAgent?: string; priority?: MessagePriority; correlationId?: string } = {},
+    options: { toAgent?: string; priority?: MessagePriority; correlationId?: string } = {}
   ): CrawlMessage<T> {
     const seq = (this.agentSequences.get(fromAgent) ?? 0) + 1;
     this.agentSequences.set(fromAgent, seq);
@@ -261,7 +259,7 @@ export class CrawlMessageBus {
   subscribe<T = unknown>(
     subscriberId: string,
     pattern: string,
-    handler: MessageHandler<T>,
+    handler: MessageHandler<T>
   ): Subscription {
     const id = `sub-${subscriberId}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 
@@ -338,7 +336,7 @@ export class CrawlMessageBus {
   private updateStats(): void {
     this.stats.activeSubscriptions = this.subscriptions.size;
     this.stats.connectedAgents = new Set(
-      [...this.subscriptions.values()].map((s) => s.subscriberId),
+      [...this.subscriptions.values()].map((s) => s.subscriberId)
     ).size;
   }
 }

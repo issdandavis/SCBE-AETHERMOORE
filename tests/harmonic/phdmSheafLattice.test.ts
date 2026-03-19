@@ -390,9 +390,7 @@ describe('PHDMGovernanceRouter', () => {
       const pollyAnalysis = pollyRouter.analyseFullLattice();
 
       // DEMI has only Platonic (all intra-family) → high coherence
-      expect(demiAnalysis.coherenceScore).toBeGreaterThanOrEqual(
-        pollyAnalysis.coherenceScore
-      );
+      expect(demiAnalysis.coherenceScore).toBeGreaterThanOrEqual(pollyAnalysis.coherenceScore);
     });
   });
 });
@@ -548,14 +546,10 @@ describe('PHDM Validation Battery', () => {
       const riskyResult = router.validatePath(riskyPath);
 
       // Safe path should have higher or equal coherence
-      expect(safeResult.coherenceScore).toBeGreaterThanOrEqual(
-        riskyResult.coherenceScore
-      );
+      expect(safeResult.coherenceScore).toBeGreaterThanOrEqual(riskyResult.coherenceScore);
 
       // Risky path has more neighborhood obstructions → higher risk amplification
-      expect(riskyResult.riskAmplification).toBeGreaterThanOrEqual(
-        safeResult.riskAmplification
-      );
+      expect(riskyResult.riskAmplification).toBeGreaterThanOrEqual(safeResult.riskAmplification);
     });
 
     it('adversarial trust manipulation detected via sheaf obstructions', () => {
@@ -668,11 +662,11 @@ describe('PHDM Validation Battery', () => {
     it('disconnected paths → DENY (not ALLOW)', () => {
       const router = new PHDMGovernanceRouter();
       const disconnected = [
-        [0, 8],  // Platonic → Kepler (no edge)
-        [0, 9],  // Platonic → Kepler
+        [0, 8], // Platonic → Kepler (no edge)
+        [0, 9], // Platonic → Kepler
         [0, 10], // Platonic → Toroidal
         [0, 11], // Platonic → Toroidal
-        [5, 8],  // Archimedean → Kepler
+        [5, 8], // Archimedean → Kepler
         [5, 10], // Archimedean → Toroidal
       ];
 
@@ -816,9 +810,7 @@ describe('Property-Based Tests', () => {
 
     for (let trial = 0; trial < 20; trial++) {
       const pathLen = 1 + Math.floor(Math.random() * 5);
-      const path = Array.from({ length: pathLen }, () =>
-        Math.floor(Math.random() * 16)
-      );
+      const path = Array.from({ length: pathLen }, () => Math.floor(Math.random() * 16));
 
       const result = router.validatePath(path);
       expect(result.coherenceScore).toBeGreaterThanOrEqual(0);
@@ -831,9 +823,7 @@ describe('Property-Based Tests', () => {
 
     for (let trial = 0; trial < 20; trial++) {
       const pathLen = 2 + Math.floor(Math.random() * 4);
-      const path = Array.from({ length: pathLen }, () =>
-        Math.floor(Math.random() * 16)
-      );
+      const path = Array.from({ length: pathLen }, () => Math.floor(Math.random() * 16));
 
       const result = router.validatePath(path);
       expect(result.riskAmplification).toBeGreaterThanOrEqual(1);
@@ -864,9 +854,9 @@ describe('Property-Based Tests', () => {
     // Collect results for various paths
     const results: GovernanceRoutingResult[] = [];
     for (const path of [
-      [0, 1],       // Likely ALLOW
-      [0, 5, 12],   // Might be QUARANTINE
-      [0, 99],      // DENY (invalid)
+      [0, 1], // Likely ALLOW
+      [0, 5, 12], // Might be QUARANTINE
+      [0, 99], // DENY (invalid)
     ]) {
       results.push(router.validatePath(path));
     }
@@ -877,9 +867,7 @@ describe('Property-Based Tests', () => {
         const ri = results[i];
         const rj = results[j];
         if (ri.coherenceScore > rj.coherenceScore + 0.1) {
-          expect(decisionOrder[ri.decision]).toBeGreaterThanOrEqual(
-            decisionOrder[rj.decision]
-          );
+          expect(decisionOrder[ri.decision]).toBeGreaterThanOrEqual(decisionOrder[rj.decision]);
         }
       }
     }

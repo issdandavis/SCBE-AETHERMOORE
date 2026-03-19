@@ -198,9 +198,7 @@ export class GravitationalBraking {
    * Get all agents currently being braked above warning threshold.
    */
   getWarningAgents(): BrakingState[] {
-    return Array.from(this.states.values()).filter(
-      (s) => s.intensity >= this.warningThreshold
-    );
+    return Array.from(this.states.values()).filter((s) => s.intensity >= this.warningThreshold);
   }
 
   /**

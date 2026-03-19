@@ -32,9 +32,21 @@ import {
 // ═══════════════════════════════════════════════════════════════
 
 const ORIGIN: Vector6D = [0, 0, 0, 0, 0, 0];
-const ALIGNED_PHASE: Vector6D = [0, Math.PI / 3, (2 * Math.PI) / 3, Math.PI, (4 * Math.PI) / 3, (5 * Math.PI) / 3];
+const ALIGNED_PHASE: Vector6D = [
+  0,
+  Math.PI / 3,
+  (2 * Math.PI) / 3,
+  Math.PI,
+  (4 * Math.PI) / 3,
+  (5 * Math.PI) / 3,
+];
 
-function makeChunk(id: string, pos: Vector6D, phase?: Vector6D, uncertainty?: number): HyperbolicChunk {
+function makeChunk(
+  id: string,
+  pos: Vector6D,
+  phase?: Vector6D,
+  uncertainty?: number
+): HyperbolicChunk {
   return {
     chunkId: id,
     position: pos,

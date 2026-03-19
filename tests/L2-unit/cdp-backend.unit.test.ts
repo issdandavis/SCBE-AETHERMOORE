@@ -385,9 +385,7 @@ describe('CDPBackend', () => {
 
     it('should throw when calling type without initialization', async () => {
       const backend = new CDPBackend();
-      await expect(backend.type('#input', 'text')).rejects.toThrow(
-        'CDP backend is not connected'
-      );
+      await expect(backend.type('#input', 'text')).rejects.toThrow('CDP backend is not connected');
     });
 
     it('should throw when calling scroll without initialization', async () => {
@@ -409,9 +407,7 @@ describe('CDPBackend', () => {
 
     it('should throw when calling executeScript without initialization', async () => {
       const backend = new CDPBackend();
-      await expect(backend.executeScript('1+1')).rejects.toThrow(
-        'CDP backend is not connected'
-      );
+      await expect(backend.executeScript('1+1')).rejects.toThrow('CDP backend is not connected');
     });
   });
 });
@@ -428,7 +424,11 @@ describe('CDPBackend with mock CDP server', () => {
   const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 
   // CDP command handlers
-  let commandHandler: (cmd: { id: number; method: string; params: Record<string, unknown> }) => Record<string, unknown> | null;
+  let commandHandler: (cmd: {
+    id: number;
+    method: string;
+    params: Record<string, unknown>;
+  }) => Record<string, unknown> | null;
 
   function startMockCDPServer(): Promise<number> {
     return new Promise((resolve) => {
@@ -722,9 +722,7 @@ describe('CDPBackend with mock CDP server', () => {
       timeout: 10000,
     });
 
-    await expect(
-      backend.click('#btn', { position: { x: 100, y: 200 } })
-    ).resolves.not.toThrow();
+    await expect(backend.click('#btn', { position: { x: 100, y: 200 } })).resolves.not.toThrow();
     await backend.close();
   });
 
@@ -756,9 +754,7 @@ describe('CDPBackend with mock CDP server', () => {
       timeout: 10000,
     });
 
-    await expect(
-      backend.type('#input', 'world', { clear: true })
-    ).resolves.not.toThrow();
+    await expect(backend.type('#input', 'world', { clear: true })).resolves.not.toThrow();
     await backend.close();
   });
 
@@ -774,9 +770,7 @@ describe('CDPBackend with mock CDP server', () => {
       timeout: 10000,
     });
 
-    await expect(
-      backend.scroll({ delta: { x: 0, y: 300 } })
-    ).resolves.not.toThrow();
+    await expect(backend.scroll({ delta: { x: 0, y: 300 } })).resolves.not.toThrow();
     await backend.close();
   });
 
@@ -792,9 +786,7 @@ describe('CDPBackend with mock CDP server', () => {
       timeout: 10000,
     });
 
-    await expect(
-      backend.scroll({ selector: '#footer' })
-    ).resolves.not.toThrow();
+    await expect(backend.scroll({ selector: '#footer' })).resolves.not.toThrow();
     await backend.close();
   });
 
@@ -859,7 +851,15 @@ describe('CDPBackend with mock CDP server', () => {
         return { result: { value: 42 } };
       }
       // Default handling for init commands
-      if (['Page.enable', 'DOM.enable', 'Runtime.enable', 'Network.enable', 'Emulation.setDeviceMetricsOverride'].includes(cmd.method)) {
+      if (
+        [
+          'Page.enable',
+          'DOM.enable',
+          'Runtime.enable',
+          'Network.enable',
+          'Emulation.setDeviceMetricsOverride',
+        ].includes(cmd.method)
+      ) {
         return {};
       }
       return {};
@@ -889,7 +889,15 @@ describe('CDPBackend with mock CDP server', () => {
         capturedExpression = String(cmd.params?.expression ?? '');
         return { result: { value: 'ok' } };
       }
-      if (['Page.enable', 'DOM.enable', 'Runtime.enable', 'Network.enable', 'Emulation.setDeviceMetricsOverride'].includes(cmd.method)) {
+      if (
+        [
+          'Page.enable',
+          'DOM.enable',
+          'Runtime.enable',
+          'Network.enable',
+          'Emulation.setDeviceMetricsOverride',
+        ].includes(cmd.method)
+      ) {
         return {};
       }
       return {};
@@ -905,7 +913,10 @@ describe('CDPBackend with mock CDP server', () => {
       timeout: 10000,
     });
 
-    const result = await backend.executeScript<string>('(...xs) => xs.join(\"\")', ['</script>', '\u2028']);
+    const result = await backend.executeScript<string>('(...xs) => xs.join(\"\")', [
+      '</script>',
+      '\u2028',
+    ]);
 
     expect(result).toBe('ok');
     expect(capturedExpression).not.toContain('</script>');
@@ -924,7 +935,15 @@ describe('CDPBackend with mock CDP server', () => {
           exceptionDetails: { text: 'ReferenceError: foo is not defined' },
         };
       }
-      if (['Page.enable', 'DOM.enable', 'Runtime.enable', 'Network.enable', 'Emulation.setDeviceMetricsOverride'].includes(cmd.method)) {
+      if (
+        [
+          'Page.enable',
+          'DOM.enable',
+          'Runtime.enable',
+          'Network.enable',
+          'Emulation.setDeviceMetricsOverride',
+        ].includes(cmd.method)
+      ) {
         return {};
       }
       return {};
@@ -1164,7 +1183,15 @@ describe('CDPBackend with mock CDP server', () => {
           ],
         };
       }
-      if (['Page.enable', 'DOM.enable', 'Runtime.enable', 'Network.enable', 'Emulation.setDeviceMetricsOverride'].includes(cmd.method)) {
+      if (
+        [
+          'Page.enable',
+          'DOM.enable',
+          'Runtime.enable',
+          'Network.enable',
+          'Emulation.setDeviceMetricsOverride',
+        ].includes(cmd.method)
+      ) {
         return {};
       }
       return {};
@@ -1194,7 +1221,15 @@ describe('CDPBackend with mock CDP server', () => {
       if (cmd.method === 'Page.navigate') {
         return { frameId: 'f1', errorText: 'net::ERR_NAME_NOT_RESOLVED' };
       }
-      if (['Page.enable', 'DOM.enable', 'Runtime.enable', 'Network.enable', 'Emulation.setDeviceMetricsOverride'].includes(cmd.method)) {
+      if (
+        [
+          'Page.enable',
+          'DOM.enable',
+          'Runtime.enable',
+          'Network.enable',
+          'Emulation.setDeviceMetricsOverride',
+        ].includes(cmd.method)
+      ) {
         return {};
       }
       return {};
@@ -1287,10 +1322,22 @@ describe('sensitive field detection (via observe)', () => {
 describe('key code resolution', () => {
   it('maps standard keys', () => {
     const KEY_CODES: Record<string, number> = {
-      Backspace: 8, Tab: 9, Enter: 13, Escape: 27, Space: 32,
-      ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40,
-      Delete: 46, Home: 36, End: 35, PageUp: 33, PageDown: 34,
-      F1: 112, F12: 123,
+      Backspace: 8,
+      Tab: 9,
+      Enter: 13,
+      Escape: 27,
+      Space: 32,
+      ArrowLeft: 37,
+      ArrowUp: 38,
+      ArrowRight: 39,
+      ArrowDown: 40,
+      Delete: 46,
+      Home: 36,
+      End: 35,
+      PageUp: 33,
+      PageDown: 34,
+      F1: 112,
+      F12: 123,
     };
 
     for (const [key, code] of Object.entries(KEY_CODES)) {
@@ -1316,10 +1363,21 @@ describe('modifier resolution', () => {
       let flags = 0;
       for (const mod of modifiers) {
         switch (mod.toLowerCase()) {
-          case 'alt': flags |= 1; break;
-          case 'control': case 'ctrl': flags |= 2; break;
-          case 'meta': case 'command': case 'cmd': flags |= 4; break;
-          case 'shift': flags |= 8; break;
+          case 'alt':
+            flags |= 1;
+            break;
+          case 'control':
+          case 'ctrl':
+            flags |= 2;
+            break;
+          case 'meta':
+          case 'command':
+          case 'cmd':
+            flags |= 4;
+            break;
+          case 'shift':
+            flags |= 8;
+            break;
         }
       }
       return flags;

@@ -40,7 +40,11 @@ describe('BrowserActionEvaluator', () => {
     });
 
     const defaultDecision = defaultEvaluator.evaluate(action, observation, sessionState).decision;
-    const tightenedDecision = tightenedEvaluator.evaluate(action, observation, sessionState).decision;
+    const tightenedDecision = tightenedEvaluator.evaluate(
+      action,
+      observation,
+      sessionState
+    ).decision;
 
     expect(defaultDecision).toBe('ALLOW');
     expect(tightenedDecision).not.toBe(defaultDecision);

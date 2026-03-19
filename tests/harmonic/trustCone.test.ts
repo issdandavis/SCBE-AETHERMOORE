@@ -74,11 +74,7 @@ describe('TrustCone', () => {
 
   describe('createTrustCone', () => {
     it('should create a cone with normalized direction', () => {
-      const cone = createTrustCone(
-        [0, 0, 0, 0, 0, 0],
-        [1, 1, 0, 0, 0, 0],
-        0.8
-      );
+      const cone = createTrustCone([0, 0, 0, 0, 0, 0], [1, 1, 0, 0, 0, 0], 0.8);
 
       // Direction should be unit vector
       const normSq = cone.direction.reduce((sum, x) => sum + x * x, 0);
@@ -107,9 +103,9 @@ describe('TrustCone', () => {
   describe('checkTrustCone', () => {
     it('should find target directly ahead as within cone', () => {
       const cone = createTrustCone(
-        [0, 0, 0, 0, 0, 0],       // apex at origin
-        [1, 0, 0, 0, 0, 0],       // pointing along x-axis
-        0.8                         // high confidence → narrow cone
+        [0, 0, 0, 0, 0, 0], // apex at origin
+        [1, 0, 0, 0, 0, 0], // pointing along x-axis
+        0.8 // high confidence → narrow cone
       );
 
       const target = [0.3, 0, 0, 0, 0, 0]; // directly ahead
@@ -121,11 +117,7 @@ describe('TrustCone', () => {
     });
 
     it('should find target at apex as within cone', () => {
-      const cone = createTrustCone(
-        [0.1, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0],
-        0.5
-      );
+      const cone = createTrustCone([0.1, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], 0.5);
 
       const result = checkTrustCone(cone, [0.1, 0, 0, 0, 0, 0]);
       expect(result.withinCone).toBe(true);
@@ -135,8 +127,8 @@ describe('TrustCone', () => {
     it('should find perpendicular target outside narrow cone', () => {
       const cone = createTrustCone(
         [0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0],       // pointing along x
-        0.9                         // narrow cone
+        [1, 0, 0, 0, 0, 0], // pointing along x
+        0.9 // narrow cone
       );
 
       const target = [0, 0.3, 0, 0, 0, 0]; // perpendicular (along y)
@@ -149,7 +141,7 @@ describe('TrustCone', () => {
     it('should find target behind apex outside cone', () => {
       const cone = createTrustCone(
         [0.3, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0],       // pointing forward
+        [1, 0, 0, 0, 0, 0], // pointing forward
         0.5
       );
 
@@ -174,11 +166,7 @@ describe('TrustCone', () => {
     });
 
     it('should report hyperbolic distance', () => {
-      const cone = createTrustCone(
-        [0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0],
-        0.8
-      );
+      const cone = createTrustCone([0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], 0.8);
 
       const target = [0.5, 0, 0, 0, 0, 0];
       const result = checkTrustCone(cone, target);
@@ -231,11 +219,7 @@ describe('TrustCone', () => {
     });
 
     it('should increase penalty for targets further outside cone', () => {
-      const cone = createTrustCone(
-        [0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0],
-        0.95
-      );
+      const cone = createTrustCone([0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], 0.95);
 
       // Slightly off-axis vs perpendicular
       const slightlyOff = [0.3, 0.15, 0, 0, 0, 0];
@@ -249,11 +233,7 @@ describe('TrustCone', () => {
     });
 
     it('should use golden ratio (φ) in exponential penalty', () => {
-      const cone = createTrustCone(
-        [0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0],
-        0.95
-      );
+      const cone = createTrustCone([0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0], 0.95);
 
       const target = [0, 0.3, 0, 0, 0, 0];
       const penalty = trustConePenalty(cone, target);
@@ -270,11 +250,7 @@ describe('TrustCone', () => {
 
   describe('createRealmTrustCone', () => {
     it('should create cone pointing toward KO realm from origin', () => {
-      const cone = createRealmTrustCone(
-        [0, 0, 0, 0, 0, 0],
-        REALM_CENTERS.KO,
-        0.8
-      );
+      const cone = createRealmTrustCone([0, 0, 0, 0, 0, 0], REALM_CENTERS.KO, 0.8);
 
       // Direction should point toward KO = [0.3, 0, 0, 0, 0, 0]
       expect(cone.direction[0]).toBeGreaterThan(0.99); // approximately [1, 0, 0, 0, 0, 0]
@@ -282,27 +258,15 @@ describe('TrustCone', () => {
     });
 
     it('should create wider cone with lower confidence', () => {
-      const narrowCone = createRealmTrustCone(
-        [0, 0, 0, 0, 0, 0],
-        REALM_CENTERS.KO,
-        0.9
-      );
+      const narrowCone = createRealmTrustCone([0, 0, 0, 0, 0, 0], REALM_CENTERS.KO, 0.9);
 
-      const wideCone = createRealmTrustCone(
-        [0, 0, 0, 0, 0, 0],
-        REALM_CENTERS.KO,
-        0.3
-      );
+      const wideCone = createRealmTrustCone([0, 0, 0, 0, 0, 0], REALM_CENTERS.KO, 0.3);
 
       expect(wideCone.halfAngle).toBeGreaterThan(narrowCone.halfAngle);
     });
 
     it('should include KO center within cone pointing to KO', () => {
-      const cone = createRealmTrustCone(
-        [0, 0, 0, 0, 0, 0],
-        REALM_CENTERS.KO,
-        0.8
-      );
+      const cone = createRealmTrustCone([0, 0, 0, 0, 0, 0], REALM_CENTERS.KO, 0.8);
 
       const result = checkTrustCone(cone, REALM_CENTERS.KO);
       expect(result.withinCone).toBe(true);

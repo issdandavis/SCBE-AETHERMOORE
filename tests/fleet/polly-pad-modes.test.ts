@@ -601,12 +601,15 @@ describe('Squad', () => {
 
   describe('BFT Constraints', () => {
     it('should enforce n >= 3f + 1', () => {
-      expect(() => new Squad({
-        id: 'BAD',
-        name: 'Bad Squad',
-        maxPads: 3,
-        maxFaulty: 1,
-      })).toThrow('BFT constraint violated');
+      expect(
+        () =>
+          new Squad({
+            id: 'BAD',
+            name: 'Bad Squad',
+            maxPads: 3,
+            maxFaulty: 1,
+          })
+      ).toThrow('BFT constraint violated');
     });
 
     it('should allow valid configurations', () => {
@@ -732,9 +735,7 @@ describe('Squad', () => {
       });
 
       squad.vote(proposal.id, 'ALPHA-001', 'APPROVE', 0.8);
-      expect(() =>
-        squad.vote(proposal.id, 'ALPHA-001', 'APPROVE', 0.9)
-      ).toThrow('already voted');
+      expect(() => squad.vote(proposal.id, 'ALPHA-001', 'APPROVE', 0.9)).toThrow('already voted');
     });
 
     it('should prevent votes from non-members', () => {
@@ -744,9 +745,9 @@ describe('Squad', () => {
         data: {},
       });
 
-      expect(() =>
-        squad.vote(proposal.id, 'OUTSIDER', 'APPROVE', 0.8)
-      ).toThrow('not in this squad');
+      expect(() => squad.vote(proposal.id, 'OUTSIDER', 'APPROVE', 0.8)).toThrow(
+        'not in this squad'
+      );
     });
 
     it('should prevent voting on decided proposals', () => {
@@ -762,9 +763,9 @@ describe('Squad', () => {
       squad.vote(proposal.id, 'GAMMA-001', 'APPROVE', 0.6);
       squad.vote(proposal.id, 'DELTA-001', 'APPROVE', 0.9);
 
-      expect(() =>
-        squad.vote(proposal.id, 'EPSILON-001', 'APPROVE', 0.5)
-      ).toThrow('already decided');
+      expect(() => squad.vote(proposal.id, 'EPSILON-001', 'APPROVE', 0.5)).toThrow(
+        'already decided'
+      );
     });
   });
 

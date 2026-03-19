@@ -168,7 +168,10 @@ export class DecisionRoundabouts {
       );
     }
 
-    if (input.trustScore < this.thresholds.lowTrust || input.coherenceScore < this.thresholds.lowCoherence) {
+    if (
+      input.trustScore < this.thresholds.lowTrust ||
+      input.coherenceScore < this.thresholds.lowCoherence
+    ) {
       return this.makeDecision(
         input,
         'R1',

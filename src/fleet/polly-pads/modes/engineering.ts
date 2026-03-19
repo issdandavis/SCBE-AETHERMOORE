@@ -33,10 +33,7 @@ export class EngineeringMode extends BaseMode {
     // Persist any in-progress repairs
   }
 
-  protected doExecuteAction(
-    action: string,
-    params: Record<string, unknown>
-  ): ModeActionResult {
+  protected doExecuteAction(action: string, params: Record<string, unknown>): ModeActionResult {
     switch (action) {
       case 'diagnose':
         return this.diagnose(params);
@@ -59,7 +56,7 @@ export class EngineeringMode extends BaseMode {
   }
 
   private diagnose(params: Record<string, unknown>): ModeActionResult {
-    const component = params.component as string || 'unknown';
+    const component = (params.component as string) || 'unknown';
     const diagnostics = this.stateData.diagnosticResults as Array<Record<string, unknown>>;
 
     const result = {
@@ -82,7 +79,7 @@ export class EngineeringMode extends BaseMode {
   }
 
   private generateRepairPlan(params: Record<string, unknown>): ModeActionResult {
-    const component = params.component as string || 'unknown';
+    const component = (params.component as string) || 'unknown';
 
     const options = [
       {
@@ -118,7 +115,7 @@ export class EngineeringMode extends BaseMode {
   }
 
   private executeRepair(params: Record<string, unknown>): ModeActionResult {
-    const optionId = params.optionId as string || 'option_b';
+    const optionId = (params.optionId as string) || 'option_b';
     const repairs = this.stateData.activeRepairs as Array<Record<string, unknown>>;
 
     const repair = {
@@ -138,7 +135,7 @@ export class EngineeringMode extends BaseMode {
   }
 
   private checkParts(params: Record<string, unknown>): ModeActionResult {
-    const component = params.component as string || 'unknown';
+    const component = (params.component as string) || 'unknown';
 
     return {
       success: true,

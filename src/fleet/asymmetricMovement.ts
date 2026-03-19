@@ -69,12 +69,12 @@ export const VERTICAL_AXES: readonly AxisLabel[] = ['Z', 'V', 'P', 'S'];
 
 /** Sacred Tongue → primary axis mapping */
 export const TONGUE_AXIS: Record<Lang, AxisLabel> = {
-  KO: 'X',  // flow orientation → lateral
-  AV: 'Y',  // boundary condition → lateral
-  RU: 'Z',  // constraint field → vertical (trust depth)
-  CA: 'V',  // active operator → vertical (coherence)
-  UM: 'P',  // entropic sink → vertical (policy)
-  DR: 'S',  // structural tensor → vertical (stability)
+  KO: 'X', // flow orientation → lateral
+  AV: 'Y', // boundary condition → lateral
+  RU: 'Z', // constraint field → vertical (trust depth)
+  CA: 'V', // active operator → vertical (coherence)
+  UM: 'P', // entropic sink → vertical (policy)
+  DR: 'S', // structural tensor → vertical (stability)
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -165,7 +165,7 @@ export function aiMovementCost(
   from: Hyperbolic6D,
   to: Hyperbolic6D,
   coherence: number,
-  R: number = 1.5,
+  R: number = 1.5
 ): number {
   // Hyperbolic distance in Poincaré ball
   const delta: number[] = [];
@@ -176,7 +176,7 @@ export function aiMovementCost(
 
   // Poincaré distance: d_H = acosh(1 + 2|u-v|² / ((1-|u|²)(1-|v|²)))
   const denom = Math.max((1 - fromNorm2) * (1 - toNorm2), 1e-12);
-  const arg = 1 + 2 * deltaNorm2 / denom;
+  const arg = 1 + (2 * deltaNorm2) / denom;
   const d = Math.acosh(Math.max(arg, 1));
 
   // Phase deviation from coherence
@@ -202,7 +202,7 @@ export function aiMovementCost(
  */
 export function humanMovementCost(
   from: Hyperbolic6D,
-  to: Hyperbolic6D,
+  to: Hyperbolic6D
 ): { lateral: number; vertical: number; total: number; reachable: boolean } {
   // Lateral displacement (X, Y) — first 2 dims
   const dLat = Math.sqrt((to[0] - from[0]) ** 2 + (to[1] - from[1]) ** 2);
@@ -298,8 +298,7 @@ export function compositePosition(unit: FleetUnit): Hyperbolic6D {
   for (let dim = 2; dim < 6; dim++) {
     const vals = agents.map((a) => a.position[dim]).sort((a, b) => a - b);
     const mid = Math.floor(vals.length / 2);
-    const median =
-      vals.length % 2 === 0 ? (vals[mid - 1] + vals[mid]) / 2 : vals[mid];
+    const median = vals.length % 2 === 0 ? (vals[mid - 1] + vals[mid]) / 2 : vals[mid];
     medians.push(median);
   }
 
@@ -338,7 +337,7 @@ export interface MovementCheck {
 export function validateMovement(
   unit: FleetUnit,
   proposedPosition: Hyperbolic6D,
-  proposer: 'HUMAN' | 'AI',
+  proposer: 'HUMAN' | 'AI'
 ): MovementCheck {
   const current = unit.compositePosition;
   const movedAxes: AxisLabel[] = [];
@@ -351,9 +350,7 @@ export function validateMovement(
 
   // Check human constraints
   if (proposer === 'HUMAN') {
-    const verticalMoved = movedAxes.filter((a) =>
-      (VERTICAL_AXES as readonly string[]).includes(a),
-    );
+    const verticalMoved = movedAxes.filter((a) => (VERTICAL_AXES as readonly string[]).includes(a));
     if (verticalMoved.length > 0) {
       return {
         allowed: false,
@@ -371,10 +368,9 @@ export function validateMovement(
   // AI vertical cost (use median coherence)
   const medianCoherence =
     unit.agents.length > 0
-      ? unit.agents
-          .map((a) => a.coherence)
-          .sort((a, b) => a - b)
-          [Math.floor(unit.agents.length / 2)]
+      ? unit.agents.map((a) => a.coherence).sort((a, b) => a - b)[
+          Math.floor(unit.agents.length / 2)
+        ]
       : 0;
 
   const aiCost = aiMovementCost(current, proposedPosition, medianCoherence);

@@ -38,9 +38,7 @@ describe('AdaptiveHyperbolicNavigator', () => {
       expect(nav.getCurrentR(1.0)).toBeCloseTo(DEFAULT_CONFIG.baseR);
 
       // Zero coherence → R_base + λ
-      expect(nav.getCurrentR(0.0)).toBeCloseTo(
-        DEFAULT_CONFIG.baseR + DEFAULT_CONFIG.lambdaPenalty
-      );
+      expect(nav.getCurrentR(0.0)).toBeCloseTo(DEFAULT_CONFIG.baseR + DEFAULT_CONFIG.lambdaPenalty);
 
       // Half coherence → R_base + λ/2
       expect(nav.getCurrentR(0.5)).toBeCloseTo(

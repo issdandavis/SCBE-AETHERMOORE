@@ -55,20 +55,20 @@ import { ShiftingKeyspace } from './pqcArena';
 
 /** Which Sacred Tongue governs each pipeline layer */
 export const LAYER_TONGUE_MAP: Record<number, 'KO' | 'AV' | 'RU' | 'CA' | 'UM' | 'DR'> = {
-  1: 'KO',   // L1 Complex Context — Control
-  2: 'KO',   // L2 Realification — Control
-  3: 'RU',   // L3 Weighted Transform — Policy
-  4: 'RU',   // L4 Poincaré Embedding — Policy
-  5: 'UM',   // L5 Hyperbolic Distance — Security
-  6: 'AV',   // L6 Breathing Transform — I/O
-  7: 'AV',   // L7 Möbius Phase — I/O
-  8: 'CA',   // L8 Multi-well Hamiltonian — Logic
-  9: 'CA',   // L9 Spectral Coherence — Logic
-  10: 'DR',  // L10 Spin Coherence — Types
-  11: 'DR',  // L11 Temporal Distance — Types
-  12: 'UM',  // L12 Harmonic Wall — Security
-  13: 'RU',  // L13 Risk Decision — Policy
-  14: 'AV',  // L14 Audio Axis — I/O
+  1: 'KO', // L1 Complex Context — Control
+  2: 'KO', // L2 Realification — Control
+  3: 'RU', // L3 Weighted Transform — Policy
+  4: 'RU', // L4 Poincaré Embedding — Policy
+  5: 'UM', // L5 Hyperbolic Distance — Security
+  6: 'AV', // L6 Breathing Transform — I/O
+  7: 'AV', // L7 Möbius Phase — I/O
+  8: 'CA', // L8 Multi-well Hamiltonian — Logic
+  9: 'CA', // L9 Spectral Coherence — Logic
+  10: 'DR', // L10 Spin Coherence — Types
+  11: 'DR', // L11 Temporal Distance — Types
+  12: 'UM', // L12 Harmonic Wall — Security
+  13: 'RU', // L13 Risk Decision — Policy
+  14: 'AV', // L14 Audio Axis — I/O
 };
 
 /** Which quantum axiom each layer satisfies */
@@ -91,20 +91,20 @@ export const LAYER_AXIOM_MAP: Record<number, string> = {
 
 /** Ring level required for each layer (0=core, 4=edge) */
 export const LAYER_RING_REQUIREMENT: Record<number, number> = {
-  1: 4,   // Entry — any ring
-  2: 4,   // Realification — any ring
-  3: 3,   // Weighted — outer ok
-  4: 3,   // Poincaré — outer ok
-  5: 2,   // Hyperbolic distance — inner/middle only
-  6: 3,   // Breathing — outer ok (I/O layer)
-  7: 2,   // Möbius — inner/middle
-  8: 1,   // Multi-well Hamiltonian — inner only
-  9: 2,   // Spectral — inner/middle
-  10: 2,  // Spin — inner/middle
-  11: 1,  // Temporal — inner only
-  12: 1,  // Harmonic wall — inner only (security critical)
-  13: 0,  // Risk decision — CORE ONLY
-  14: 2,  // Audio axis — inner/middle
+  1: 4, // Entry — any ring
+  2: 4, // Realification — any ring
+  3: 3, // Weighted — outer ok
+  4: 3, // Poincaré — outer ok
+  5: 2, // Hyperbolic distance — inner/middle only
+  6: 3, // Breathing — outer ok (I/O layer)
+  7: 2, // Möbius — inner/middle
+  8: 1, // Multi-well Hamiltonian — inner only
+  9: 2, // Spectral — inner/middle
+  10: 2, // Spin — inner/middle
+  11: 1, // Temporal — inner only
+  12: 1, // Harmonic wall — inner only (security critical)
+  13: 0, // Risk decision — CORE ONLY
+  14: 2, // Audio axis — inner/middle
 };
 
 /**
@@ -201,7 +201,7 @@ export function createGovernanceFingerprint(snapshot: KeyspaceSnapshot): string 
  */
 export function verifyGovernanceFingerprint(
   fingerprint: string,
-  currentSnapshot: KeyspaceSnapshot,
+  currentSnapshot: KeyspaceSnapshot
 ): boolean {
   return createGovernanceFingerprint(currentSnapshot) === fingerprint;
 }
@@ -413,7 +413,7 @@ export class LayeredEggChain {
     // P3: Governance fingerprint check
     const governanceValid = verifyGovernanceFingerprint(
       egg.governanceFingerprint,
-      context.currentKeyspace,
+      context.currentKeyspace
     );
 
     // P4: Chain integrity check
@@ -501,8 +501,7 @@ export class LayeredEggChain {
     const ringEscalationBits = Math.log2(120);
 
     // Total effective chain security
-    const totalEffectiveBits =
-      sequentialCostLog2 + tongueDiversityBits + ringEscalationBits;
+    const totalEffectiveBits = sequentialCostLog2 + tongueDiversityBits + ringEscalationBits;
 
     return {
       layerCount: eggs.length,
@@ -523,7 +522,7 @@ export class LayeredEggChain {
         perEggBits,
         sequentialCostLog2,
         totalEffectiveBits,
-        requiredTongues.size,
+        requiredTongues.size
       ),
     };
   }
@@ -557,7 +556,7 @@ export class LayeredEggChain {
     perEggBits: number,
     sequentialBits: number,
     totalBits: number,
-    tongueCount: number,
+    tongueCount: number
   ): string {
     return [
       `Layered Egg Chain Security Analysis`,

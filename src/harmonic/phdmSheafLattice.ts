@@ -128,9 +128,10 @@ export interface PolyhedralEdge {
  * @param polyhedra The set of polyhedra (default: CANONICAL_POLYHEDRA)
  * @returns Edges with trust weights and the adjacency pairs
  */
-export function buildPolyhedralGraph(
-  polyhedra: Polyhedron[] = CANONICAL_POLYHEDRA
-): { edges: PolyhedralEdge[]; pairs: [number, number][] } {
+export function buildPolyhedralGraph(polyhedra: Polyhedron[] = CANONICAL_POLYHEDRA): {
+  edges: PolyhedralEdge[];
+  pairs: [number, number][];
+} {
   const edges: PolyhedralEdge[] = [];
   const pairs: [number, number][] = [];
 
@@ -196,9 +197,7 @@ export function buildPolyhedralGraph(
  * Trust = familyTrust * topologicalFactor
  * where topologicalFactor penalises non-zero genus (g > 0 = riskier).
  */
-export function computePolyhedralTrust(
-  polyhedra: Polyhedron[] = CANONICAL_POLYHEDRA
-): number[] {
+export function computePolyhedralTrust(polyhedra: Polyhedron[] = CANONICAL_POLYHEDRA): number[] {
   return polyhedra.map((p) => {
     const familyBase = FAMILY_TRUST[p.family];
     // Genus penalty: genus 0 = 1.0, genus 1 = 0.7, genus 4 = 0.4
@@ -324,10 +323,7 @@ export class PHDMGovernanceRouter {
   private readonly lattice: CompleteLattice<number>;
   private _fluxState: FluxState;
 
-  constructor(
-    config?: GovernanceRouterConfig,
-    fluxState: FluxState = 'POLLY'
-  ) {
+  constructor(config?: GovernanceRouterConfig, fluxState: FluxState = 'POLLY') {
     this.config = { ...DEFAULT_ROUTER_CONFIG, ...config };
     this._fluxState = fluxState;
     this.polyhedra = getActivePolyhedra(fluxState);
@@ -369,10 +365,7 @@ export class PHDMGovernanceRouter {
    * @param customTrust Optional override trust scores for the path vertices
    * @returns Governance routing result
    */
-  validatePath(
-    path: number[],
-    customTrust?: number[]
-  ): GovernanceRoutingResult {
+  validatePath(path: number[], customTrust?: number[]): GovernanceRoutingResult {
     if (path.length === 0) {
       return this.emptyResult(path);
     }
@@ -402,9 +395,10 @@ export class PHDMGovernanceRouter {
 
     // Compute cohomology
     const th0 = tarskiCohomology(sheaf, 0, this.config.maxIterations);
-    const th1 = complex.maxDim() >= 1
-      ? tarskiCohomology(sheaf, 1, this.config.maxIterations)
-      : { cochains: new Map<number, number>(), iterations: 0, converged: true, degree: 1 };
+    const th1 =
+      complex.maxDim() >= 1
+        ? tarskiCohomology(sheaf, 1, this.config.maxIterations)
+        : { cochains: new Map<number, number>(), iterations: 0, converged: true, degree: 1 };
 
     // Detect obstructions on the local trust assignment
     const obstructions = detectObstructions(sheaf, assignment);
@@ -450,12 +444,13 @@ export class PHDMGovernanceRouter {
       ...neighborhoodObstructions.map((o) => ({ ...o, severity: o.severity * 0.3 })),
     ];
     const significantObs = allRelevantObs.filter((o) => o.severity >= 0.3);
-    const riskAmplification = significantObs.length > 0
-      ? Math.pow(
-          this.config.harmonicCoupling,
-          significantObs.reduce((s, o) => s + o.severity * o.severity, 0)
-        )
-      : 1;
+    const riskAmplification =
+      significantObs.length > 0
+        ? Math.pow(
+            this.config.harmonicCoupling,
+            significantObs.reduce((s, o) => s + o.severity * o.severity, 0)
+          )
+        : 1;
 
     // Decision
     let decision: GovernanceDecision;
@@ -529,9 +524,10 @@ export class PHDMGovernanceRouter {
 
     // Compute cohomology
     const th0 = tarskiCohomology(sheaf, 0, this.config.maxIterations);
-    const th1 = complex.maxDim() >= 1
-      ? tarskiCohomology(sheaf, 1, this.config.maxIterations)
-      : { cochains: new Map<number, number>(), iterations: 0, converged: true, degree: 1 };
+    const th1 =
+      complex.maxDim() >= 1
+        ? tarskiCohomology(sheaf, 1, this.config.maxIterations)
+        : { cochains: new Map<number, number>(), iterations: 0, converged: true, degree: 1 };
     const hh0 = hodgeCohomology(sheaf, 0, this.config.maxIterations);
     const obstructions = detectObstructions(sheaf, localAssignment);
     const diagnostics = analyseCohomology(th0, lattice);
@@ -541,12 +537,13 @@ export class PHDMGovernanceRouter {
     const coherenceScore = Math.max(0, 1 - totalSeverity / maxPossibleSeverity);
 
     const significantObstructions = obstructions.filter((o) => o.severity >= 0.3);
-    const riskAmplification = significantObstructions.length > 0
-      ? Math.pow(
-          this.config.harmonicCoupling,
-          significantObstructions.reduce((s, o) => s + o.severity * o.severity, 0)
-        )
-      : 1;
+    const riskAmplification =
+      significantObstructions.length > 0
+        ? Math.pow(
+            this.config.harmonicCoupling,
+            significantObstructions.reduce((s, o) => s + o.severity * o.severity, 0)
+          )
+        : 1;
 
     let decision: GovernanceDecision;
     if (coherenceScore >= this.config.allowThreshold) {
@@ -729,13 +726,9 @@ export function polyhedralEulerCharacteristic(
  * Build the trust distance matrix for the polyhedral graph.
  * d(i,j) = 1 - trustScale(edge(i,j)), or Infinity if no edge.
  */
-export function trustDistanceMatrix(
-  polyhedra: Polyhedron[] = CANONICAL_POLYHEDRA
-): number[][] {
+export function trustDistanceMatrix(polyhedra: Polyhedron[] = CANONICAL_POLYHEDRA): number[][] {
   const n = polyhedra.length;
-  const dist: number[][] = Array.from({ length: n }, () =>
-    Array(n).fill(Infinity)
-  );
+  const dist: number[][] = Array.from({ length: n }, () => Array(n).fill(Infinity));
 
   for (let i = 0; i < n; i++) dist[i][i] = 0;
 

@@ -100,31 +100,45 @@ describe('Trajectory Simulator', () => {
 
     it('honest agents have high trust scores', () => {
       const traj = generateTrajectory('honest-1', AGENT_PROFILES.honest, defaultConfig);
-      const avgTrust = traj.points.reduce((s, p) => {
-        const trust = (p.state[0] + p.state[1] + p.state[2]) / 3;
-        return s + trust;
-      }, 0) / traj.points.length;
+      const avgTrust =
+        traj.points.reduce((s, p) => {
+          const trust = (p.state[0] + p.state[1] + p.state[2]) / 3;
+          return s + trust;
+        }, 0) / traj.points.length;
       expect(avgTrust).toBeGreaterThan(0.8);
     });
 
     it('malicious agents have low trust scores', () => {
       const traj = generateTrajectory('mal-1', AGENT_PROFILES.malicious, defaultConfig);
-      const avgTrust = traj.points.reduce((s, p) => {
-        const trust = (p.state[0] + p.state[1] + p.state[2]) / 3;
-        return s + trust;
-      }, 0) / traj.points.length;
+      const avgTrust =
+        traj.points.reduce((s, p) => {
+          const trust = (p.state[0] + p.state[1] + p.state[2]) / 3;
+          return s + trust;
+        }, 0) / traj.points.length;
       expect(avgTrust).toBeLessThan(0.3);
     });
 
     it('is deterministic with same seed', () => {
-      const traj1 = generateTrajectory('det-1', AGENT_PROFILES.honest, { ...defaultConfig, seed: 123 });
-      const traj2 = generateTrajectory('det-1', AGENT_PROFILES.honest, { ...defaultConfig, seed: 123 });
+      const traj1 = generateTrajectory('det-1', AGENT_PROFILES.honest, {
+        ...defaultConfig,
+        seed: 123,
+      });
+      const traj2 = generateTrajectory('det-1', AGENT_PROFILES.honest, {
+        ...defaultConfig,
+        seed: 123,
+      });
       expect(traj1.points[0].state).toEqual(traj2.points[0].state);
       expect(traj1.points[49].state).toEqual(traj2.points[49].state);
     });
 
     it('sets correct classification', () => {
-      for (const cls of ['honest', 'neutral', 'semi_honest', 'semi_malicious', 'malicious'] as const) {
+      for (const cls of [
+        'honest',
+        'neutral',
+        'semi_honest',
+        'semi_malicious',
+        'malicious',
+      ] as const) {
         const traj = generateTrajectory(`test-${cls}`, AGENT_PROFILES[cls], defaultConfig);
         expect(traj.classification).toBe(cls);
       }
@@ -143,8 +157,8 @@ describe('Trajectory Simulator', () => {
       for (const traj of batch) {
         counts[traj.classification] = (counts[traj.classification] ?? 0) + 1;
       }
-      expect(counts['honest']).toBe(8);   // 40% of 20
-      expect(counts['neutral']).toBe(4);   // 20% of 20
+      expect(counts['honest']).toBe(8); // 40% of 20
+      expect(counts['neutral']).toBe(4); // 20% of 20
       expect(counts['semi_honest']).toBe(3); // 15% of 20
     });
 
@@ -184,8 +198,18 @@ describe('Immune Response System', () => {
   it('increases suspicion on flagged detections', () => {
     const flaggedAssessment: CombinedAssessment = {
       detections: [
-        { mechanism: 'phase_distance', score: 0.9, flagged: true, detectedAttackTypes: ['wrong_tongue'] },
-        { mechanism: 'curvature_accumulation', score: 0.8, flagged: true, detectedAttackTypes: ['path_deviation'] },
+        {
+          mechanism: 'phase_distance',
+          score: 0.9,
+          flagged: true,
+          detectedAttackTypes: ['wrong_tongue'],
+        },
+        {
+          mechanism: 'curvature_accumulation',
+          score: 0.8,
+          flagged: true,
+          detectedAttackTypes: ['path_deviation'],
+        },
       ],
       combinedScore: 0.85,
       decision: 'ESCALATE',
@@ -202,9 +226,24 @@ describe('Immune Response System', () => {
   it('transitions through immune states with increasing suspicion', () => {
     const highFlagAssessment: CombinedAssessment = {
       detections: [
-        { mechanism: 'phase_distance', score: 0.95, flagged: true, detectedAttackTypes: ['wrong_tongue'] },
-        { mechanism: 'threat_lissajous', score: 0.9, flagged: true, detectedAttackTypes: ['malicious_pattern'] },
-        { mechanism: 'six_tonic', score: 0.9, flagged: true, detectedAttackTypes: ['replay_attack'] },
+        {
+          mechanism: 'phase_distance',
+          score: 0.95,
+          flagged: true,
+          detectedAttackTypes: ['wrong_tongue'],
+        },
+        {
+          mechanism: 'threat_lissajous',
+          score: 0.9,
+          flagged: true,
+          detectedAttackTypes: ['malicious_pattern'],
+        },
+        {
+          mechanism: 'six_tonic',
+          score: 0.9,
+          flagged: true,
+          detectedAttackTypes: ['replay_attack'],
+        },
       ],
       combinedScore: 0.92,
       decision: 'DENY',
@@ -225,7 +264,9 @@ describe('Immune Response System', () => {
   it('decays suspicion when not flagged', () => {
     // First create suspicion
     const flagged: CombinedAssessment = {
-      detections: [{ mechanism: 'phase_distance', score: 0.8, flagged: true, detectedAttackTypes: [] }],
+      detections: [
+        { mechanism: 'phase_distance', score: 0.8, flagged: true, detectedAttackTypes: [] },
+      ],
       combinedScore: 0.8,
       decision: 'ESCALATE',
       anyFlagged: true,
@@ -381,7 +422,7 @@ describe('Swarm Formation', () => {
   const makeAgents = (count: number) =>
     Array.from({ length: count }, (_, i) => ({
       agentId: `agent-${i}`,
-      currentPosition: new Array(BRAIN_DIMENSIONS).fill(0).map((_, d) => d === 0 ? i * 0.1 : 0),
+      currentPosition: new Array(BRAIN_DIMENSIONS).fill(0).map((_, d) => (d === 0 ? i * 0.1 : 0)),
       trustScore: 0.5 + (i / count) * 0.4,
     }));
 
@@ -590,11 +631,11 @@ describe('Brain Integration Pipeline', () => {
       // Malicious detection scores should exceed honest detection scores
       for (const trial of result.trials) {
         const malScores = trial.assessments
-          .filter(a => a.classification === 'malicious')
-          .map(a => a.detection.combinedScore);
+          .filter((a) => a.classification === 'malicious')
+          .map((a) => a.detection.combinedScore);
         const honestScores = trial.assessments
-          .filter(a => a.classification === 'honest')
-          .map(a => a.detection.combinedScore);
+          .filter((a) => a.classification === 'honest')
+          .map((a) => a.detection.combinedScore);
         if (malScores.length > 0 && honestScores.length > 0) {
           const avgMal = malScores.reduce((s, v) => s + v, 0) / malScores.length;
           const avgHonest = honestScores.reduce((s, v) => s + v, 0) / honestScores.length;

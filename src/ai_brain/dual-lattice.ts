@@ -284,21 +284,9 @@ function invert3x3(m: number[][]): number[][] {
 
   const invDet = 1 / det;
   return [
-    [
-      (e * k - f * h) * invDet,
-      (c * h - b * k) * invDet,
-      (b * f - c * e) * invDet,
-    ],
-    [
-      (f * g - d * k) * invDet,
-      (a * k - c * g) * invDet,
-      (c * d - a * f) * invDet,
-    ],
-    [
-      (d * h - e * g) * invDet,
-      (b * g - a * h) * invDet,
-      (a * e - b * d) * invDet,
-    ],
+    [(e * k - f * h) * invDet, (c * h - b * k) * invDet, (b * f - c * e) * invDet],
+    [(f * g - d * k) * invDet, (a * k - c * g) * invDet, (c * d - a * f) * invDet],
+    [(d * h - e * g) * invDet, (b * g - a * h) * invDet, (a * e - b * d) * invDet],
   ];
 }
 
@@ -334,8 +322,7 @@ export function staticProjection(
   // Tile type classification based on perpendicular distance
   // Thick rhombus: closer to center of acceptance domain
   // Thin rhombus: closer to boundary
-  const tileType: 'thick' | 'thin' =
-    perpNorm < config.acceptanceRadius / PHI ? 'thick' : 'thin';
+  const tileType: 'thick' | 'thin' = perpNorm < config.acceptanceRadius / PHI ? 'thick' : 'thin';
 
   return {
     point3D,
@@ -447,11 +434,7 @@ export function dynamicTransform(
 
   // Compute 3x frequency interference pattern
   // The dual lattice harmonics create interference at triple frequency
-  const interferenceValue = computeTripleFrequencyInterference(
-    lifted6D,
-    shifted6D,
-    point3D
-  );
+  const interferenceValue = computeTripleFrequencyInterference(lifted6D, shifted6D, point3D);
 
   // Check if aperiodic structure is preserved
   // If phason amplitude exceeds max, structure breaks
@@ -498,8 +481,7 @@ function computeTripleFrequencyInterference(
   const correlation = dotProd / normProduct;
 
   // 3× frequency modulation from anchor point
-  const anchorPhase =
-    anchor3D.x * PHI + anchor3D.y * PHI * PHI + anchor3D.z / PHI;
+  const anchorPhase = anchor3D.x * PHI + anchor3D.y * PHI * PHI + anchor3D.z / PHI;
 
   // The interference pattern at triple frequency
   return correlation * Math.cos(3 * anchorPhase);
@@ -606,13 +588,9 @@ export class DualLatticeSystem {
    * This makes the quasicrystal structure a moving target that adapts
    * to the current threat landscape.
    */
-  createThreatPhason(
-    threatLevel: number,
-    anomalyDimensions: number[] = []
-  ): PhasonShift {
+  createThreatPhason(threatLevel: number, anomalyDimensions: number[] = []): PhasonShift {
     const clampedThreat = Math.max(0, Math.min(1, threatLevel));
-    const magnitude =
-      clampedThreat * this.config.maxPhasonAmplitude * this.config.phasonCoupling;
+    const magnitude = clampedThreat * this.config.maxPhasonAmplitude * this.config.phasonCoupling;
 
     // Derive shift direction from anomaly dimensions
     let px = 0,
@@ -633,7 +611,7 @@ export class DualLatticeSystem {
       }
     } else {
       // Default shift direction based on golden angle
-      const angle = this.stepCounter * 2 * Math.PI / PHI;
+      const angle = (this.stepCounter * 2 * Math.PI) / PHI;
       px = Math.cos(angle);
       py = Math.sin(angle);
       pz = Math.cos(angle / PHI);
@@ -667,8 +645,7 @@ export class DualLatticeSystem {
     const acceptanceScore = staticResult.accepted ? 1.0 : 0.3;
 
     // Factor 4: Interference pattern should be moderate (not saturated)
-    const interferenceScore =
-      1 - Math.abs(dynamicResult.interferenceValue) * 0.5;
+    const interferenceScore = 1 - Math.abs(dynamicResult.interferenceValue) * 0.5;
 
     // Weighted combination
     return (
