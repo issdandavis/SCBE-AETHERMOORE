@@ -267,10 +267,7 @@ export function isWhitelisted(command: string, whitelist: string[]): boolean {
  * Check if any argument matches a blocked pattern.
  * Returns the first matched pattern or null.
  */
-export function matchesBlockedPattern(
-  args: string[],
-  blockedPatterns: string[]
-): string | null {
+export function matchesBlockedPattern(args: string[], blockedPatterns: string[]): string | null {
   const fullArgs = args.join(' ');
   for (const pattern of blockedPatterns) {
     try {
@@ -408,10 +405,7 @@ export class SCBEShellExecutor {
       this.config.whitelist = config.whitelist;
     }
     if (config.blockedPatterns) {
-      this.config.blockedPatterns = [
-        ...DEFAULT_CONFIG.blockedPatterns,
-        ...config.blockedPatterns,
-      ];
+      this.config.blockedPatterns = [...DEFAULT_CONFIG.blockedPatterns, ...config.blockedPatterns];
     }
     if (config.allowedPaths) {
       this.config.allowedPaths = config.allowedPaths;
@@ -575,15 +569,11 @@ export class SCBEShellExecutor {
     const startTime = Date.now();
 
     try {
-      const { stdout, stderr, exitCode } = await this.spawnCommand(
-        cmd.command,
-        cmd.args,
-        {
-          cwd: cmd.cwd,
-          timeout,
-          env: { ...process.env, ...sanitizedEnv },
-        }
-      );
+      const { stdout, stderr, exitCode } = await this.spawnCommand(cmd.command, cmd.args, {
+        cwd: cmd.cwd,
+        timeout,
+        env: { ...process.env, ...sanitizedEnv },
+      });
 
       const durationMs = Date.now() - startTime;
       const result: ExecutionResult = {
@@ -656,7 +646,8 @@ export class SCBEShellExecutor {
               resolve({
                 stdout: stdout || '',
                 stderr: stderr || '',
-                exitCode: error.code !== undefined && typeof error.code === 'number' ? error.code : 1,
+                exitCode:
+                  error.code !== undefined && typeof error.code === 'number' ? error.code : 1,
               });
             }
           } else {
@@ -684,9 +675,7 @@ export class SCBEShellExecutor {
     result: ExecutionResult
   ): void {
     const prevHash =
-      this.auditLog.length > 0
-        ? this.auditLog[this.auditLog.length - 1].hash
-        : '0'.repeat(64);
+      this.auditLog.length > 0 ? this.auditLog[this.auditLog.length - 1].hash : '0'.repeat(64);
 
     const event: ShellAuditEvent = {
       id: result.auditId,
@@ -808,9 +797,7 @@ export class SCBEShellExecutor {
 /**
  * Create a shell executor with custom configuration.
  */
-export function createShellExecutor(
-  config?: Partial<ShellExecutorConfig>
-): SCBEShellExecutor {
+export function createShellExecutor(config?: Partial<ShellExecutorConfig>): SCBEShellExecutor {
   return new SCBEShellExecutor(config);
 }
 

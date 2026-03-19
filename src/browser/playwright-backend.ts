@@ -52,10 +52,7 @@ interface PwContext {
   close(): Promise<void>;
 }
 interface PwPage {
-  goto(
-    url: string,
-    opts?: { waitUntil?: string; timeout?: number }
-  ): Promise<unknown>;
+  goto(url: string, opts?: { waitUntil?: string; timeout?: number }): Promise<unknown>;
   url(): string;
   title(): Promise<string>;
   click(selector: string, opts?: Record<string, unknown>): Promise<void>;
@@ -102,11 +99,7 @@ const SENSITIVE_PATTERNS: [RegExp, SensitiveFieldType][] = [
   [/biometric|fingerprint|retina/i, 'biometric'],
 ];
 
-function detectSensitivity(
-  name: string,
-  type: string,
-  label: string
-): SensitiveFieldType | 'none' {
+function detectSensitivity(name: string, type: string, label: string): SensitiveFieldType | 'none' {
   const combined = `${name} ${type} ${label}`;
   for (const [re, kind] of SENSITIVE_PATTERNS) {
     if (re.test(combined)) return kind;
@@ -274,9 +267,7 @@ export class PlaywrightBackend implements BrowserBackend {
   constructor(options?: PlaywrightBackendOptions) {
     this.launchFn = options?.launchFn;
     this.launchOptions = options?.launchOptions ?? {};
-    this.blockResourceTypes = new Set(
-      options?.blockResourceTypes ?? ['image', 'font', 'media']
-    );
+    this.blockResourceTypes = new Set(options?.blockResourceTypes ?? ['image', 'font', 'media']);
   }
 
   // ── Lifecycle ─────────────────────────────────────────────────────────
@@ -322,23 +313,23 @@ export class PlaywrightBackend implements BrowserBackend {
     this.page = await this.context.newPage();
 
     // Track dialogs
-    this.page.on('dialog', (dialog: { type: () => string; message: () => string; defaultValue: () => string }) => {
-      this.dialogs.push({
-        type: dialog.type() as DialogObservation['type'],
-        message: dialog.message(),
-        defaultValue: dialog.defaultValue() || undefined,
-      });
-    });
+    this.page.on(
+      'dialog',
+      (dialog: { type: () => string; message: () => string; defaultValue: () => string }) => {
+        this.dialogs.push({
+          type: dialog.type() as DialogObservation['type'],
+          message: dialog.message(),
+          defaultValue: dialog.defaultValue() || undefined,
+        });
+      }
+    );
 
     this.connected = true;
   }
 
   // ── Navigation ────────────────────────────────────────────────────────
 
-  async navigate(
-    url: string,
-    options?: { waitUntil?: string; timeout?: number }
-  ): Promise<void> {
+  async navigate(url: string, options?: { waitUntil?: string; timeout?: number }): Promise<void> {
     this.ensurePage();
     this.loadStart = Date.now();
     await this.page!.goto(url, {
@@ -349,10 +340,7 @@ export class PlaywrightBackend implements BrowserBackend {
 
   // ── Interactions ──────────────────────────────────────────────────────
 
-  async click(
-    selector: string,
-    options?: { position?: { x: number; y: number } }
-  ): Promise<void> {
+  async click(selector: string, options?: { position?: { x: number; y: number } }): Promise<void> {
     this.ensurePage();
     await this.page!.click(selector, options ? { position: options.position } : undefined);
   }
@@ -369,10 +357,7 @@ export class PlaywrightBackend implements BrowserBackend {
     await this.page!.type(selector, text, { delay: options?.delay });
   }
 
-  async scroll(options: {
-    selector?: string;
-    delta?: { x: number; y: number };
-  }): Promise<void> {
+  async scroll(options: { selector?: string; delta?: { x: number; y: number } }): Promise<void> {
     this.ensurePage();
     if (options.selector) {
       await this.page!.evaluate(
@@ -398,10 +383,7 @@ export class PlaywrightBackend implements BrowserBackend {
 
   // ── Screenshot ────────────────────────────────────────────────────────
 
-  async screenshot(options?: {
-    fullPage?: boolean;
-    selector?: string;
-  }): Promise<Buffer> {
+  async screenshot(options?: { fullPage?: boolean; selector?: string }): Promise<Buffer> {
     this.ensurePage();
     if (options?.selector) {
       // Element screenshot via evaluate + clip
@@ -465,13 +447,19 @@ export class PlaywrightBackend implements BrowserBackend {
     this.connected = false;
     try {
       if (this.page && !this.page.isClosed()) await this.page.close();
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     try {
       if (this.context) await this.context.close();
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     try {
       if (this.browser) await this.browser.close();
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     this.page = null;
     this.context = null;
     this.browser = null;
@@ -501,8 +489,6 @@ export class PlaywrightBackend implements BrowserBackend {
  * const backend = createPlaywrightBackend({ headless: true });
  * ```
  */
-export function createPlaywrightBackend(
-  options?: PlaywrightBackendOptions
-): PlaywrightBackend {
+export function createPlaywrightBackend(options?: PlaywrightBackendOptions): PlaywrightBackend {
   return new PlaywrightBackend(options);
 }

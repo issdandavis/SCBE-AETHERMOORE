@@ -7,7 +7,11 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { TenantService, PLAN_LIMITS, DEFAULT_GOVERNANCE_CONFIG } from '../../conference-app/src/api/services/tenant';
+import {
+  TenantService,
+  PLAN_LIMITS,
+  DEFAULT_GOVERNANCE_CONFIG,
+} from '../../conference-app/src/api/services/tenant';
 
 describe('TenantService', () => {
   let service: TenantService;

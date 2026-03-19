@@ -167,7 +167,11 @@ export function computeSpectrumPressure(
     thresholds.allowMinCoherence,
     thresholds.quarantineMinCoherence
   );
-  const driftPressure = risingPressure(dStar, thresholds.allowMaxDrift, thresholds.quarantineMaxDrift);
+  const driftPressure = risingPressure(
+    dStar,
+    thresholds.allowMaxDrift,
+    thresholds.quarantineMaxDrift
+  );
   const costPressure = logarithmicPressure(
     hEff,
     thresholds.allowMaxCost,

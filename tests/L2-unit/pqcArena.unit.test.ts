@@ -8,11 +8,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import {
-  PQCArena,
-  ShiftingKeyspace,
-  ARENA_SYSTEMS,
-} from '../../src/crypto/pqcArena';
+import { PQCArena, ShiftingKeyspace, ARENA_SYSTEMS } from '../../src/crypto/pqcArena';
 
 // ============================================================================
 // ShiftingKeyspace Tests
@@ -256,8 +252,8 @@ describe('PQCArena', () => {
     it('should have correct McEliece parameters (giant keys, tiny ciphertext)', () => {
       const mc = arena.getSystem('mceliece');
       expect(mc).toBeDefined();
-      expect(mc!.publicKeyBytes).toBe(261120);  // ~255 KB
-      expect(mc!.outputBytes).toBe(128);          // tiny
+      expect(mc!.publicKeyBytes).toBe(261120); // ~255 KB
+      expect(mc!.outputBytes).toBe(128); // tiny
     });
   });
 
@@ -343,8 +339,8 @@ describe('PQCArena', () => {
 
       // SLH-128s has tiny keys but huge signatures
       const slh = arena.getSystem('slh128s')!;
-      expect(slh.publicKeyBytes).toBe(32);       // tiny
-      expect(slh.outputBytes).toBe(7856);         // huge sig
+      expect(slh.publicKeyBytes).toBe(32); // tiny
+      expect(slh.outputBytes).toBe(7856); // huge sig
     });
 
     it('should show governance amplification for all systems', () => {
@@ -353,15 +349,11 @@ describe('PQCArena', () => {
       // Lower base bits → higher amplification ratio
       // KEM-512: 64 base → 64+96=160 effective → 2.5× amplification
       // KEM-1024: 128 base → 128+96=224 effective → 1.75× amplification
-      expect(result.governanceAmplificationA).toBeGreaterThan(
-        result.governanceAmplificationB,
-      );
+      expect(result.governanceAmplificationA).toBeGreaterThan(result.governanceAmplificationB);
     });
 
     it('should throw for unknown system IDs', () => {
-      expect(() => arena.match('nonexistent', 'kem768')).toThrow(
-        'Unknown system: nonexistent',
-      );
+      expect(() => arena.match('nonexistent', 'kem768')).toThrow('Unknown system: nonexistent');
     });
   });
 
@@ -374,7 +366,7 @@ describe('PQCArena', () => {
       // Should be sorted descending by effectiveBits
       for (let i = 1; i < leaderboard.entries.length; i++) {
         expect(leaderboard.entries[i - 1]!.effectiveBits).toBeGreaterThanOrEqual(
-          leaderboard.entries[i]!.effectiveBits,
+          leaderboard.entries[i]!.effectiveBits
         );
       }
     });
@@ -394,10 +386,7 @@ describe('PQCArena', () => {
       for (const entry of leaderboard.entries) {
         expect(entry.governanceBits).toBe(96);
         expect(entry.effectiveBits).toBe(entry.baseBits + 96);
-        expect(entry.amplification).toBeCloseTo(
-          entry.effectiveBits / entry.baseBits,
-          1,
-        );
+        expect(entry.amplification).toBeCloseTo(entry.effectiveBits / entry.baseBits, 1);
       }
     });
 
@@ -414,16 +403,12 @@ describe('PQCArena', () => {
       const leaderboard = arena.tournament();
 
       // Find McEliece — should have the largest wire size
-      const mc = leaderboard.entries.find(
-        (e) => e.system.id === 'mceliece',
-      );
+      const mc = leaderboard.entries.find((e) => e.system.id === 'mceliece');
       expect(mc).toBeDefined();
       expect(mc!.wireSize).toBe(261120 + 128); // 261248 bytes
 
       // Find SLH-DSA-128s — tiny keys but huge sigs
-      const slh = leaderboard.entries.find(
-        (e) => e.system.id === 'slh128s',
-      );
+      const slh = leaderboard.entries.find((e) => e.system.id === 'slh128s');
       expect(slh).toBeDefined();
       expect(slh!.wireSize).toBe(32 + 7856); // 7888 bytes
     });
@@ -436,18 +421,14 @@ describe('PQCArena', () => {
 
       // Take snapshot before breathing
       const snap1 = ks.snapshot();
-      const axes1Values = snap1.axes
-        .filter((a) => a.temporal)
-        .map((a) => a.currentValue);
+      const axes1Values = snap1.axes.filter((a) => a.temporal).map((a) => a.currentValue);
 
       // Breathe — the stairwell rotates
       ks.breathe();
 
       // Take snapshot after breathing
       const snap2 = ks.snapshot();
-      const axes2Values = snap2.axes
-        .filter((a) => a.temporal)
-        .map((a) => a.currentValue);
+      const axes2Values = snap2.axes.filter((a) => a.temporal).map((a) => a.currentValue);
 
       // Temporal axis values should have shifted
       expect(axes2Values).not.toEqual(axes1Values);

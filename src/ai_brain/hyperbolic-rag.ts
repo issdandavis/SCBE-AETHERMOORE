@@ -118,9 +118,7 @@ export class HyperbolicRAG {
       const rawTrust = 1.0 / (1.0 + dist + this.config.phaseWeight * phaseDev);
 
       // Gating: d* above threshold OR phase below minimum
-      const gated =
-        dist > this.config.costThreshold ||
-        phase_score < this.config.minPhaseAlignment;
+      const gated = dist > this.config.costThreshold || phase_score < this.config.minPhaseAlignment;
 
       return {
         id: c.id,
@@ -165,9 +163,7 @@ export class HyperbolicRAG {
       const phaseDev = phaseDeviation(queryPhase, candPhase);
       const phase_score = 1.0 - phaseDev;
       const rawTrust = 1.0 / (1.0 + dist + this.config.phaseWeight * phaseDev);
-      const gated =
-        dist > this.config.costThreshold ||
-        phase_score < this.config.minPhaseAlignment;
+      const gated = dist > this.config.costThreshold || phase_score < this.config.minPhaseAlignment;
 
       return {
         id: c.id,

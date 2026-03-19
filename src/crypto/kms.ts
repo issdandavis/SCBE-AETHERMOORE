@@ -24,14 +24,14 @@ export async function getMasterKey(kid: string): Promise<Buffer> {
     }
     throw new Error(
       'SCBE_KMS_URI is not set. Set it to your KMS endpoint (e.g., "awskms://alias/scbe-master") ' +
-      'or set NODE_ENV=development for local testing.'
+        'or set NODE_ENV=development for local testing.'
     );
   }
 
   if (uri === 'mem://dev' && env !== 'development' && env !== 'test') {
     throw new Error(
       'SCBE_KMS_URI=mem://dev is not allowed outside development/test. ' +
-      'Configure a real KMS endpoint for production.'
+        'Configure a real KMS endpoint for production.'
     );
   }
 

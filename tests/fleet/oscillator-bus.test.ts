@@ -38,7 +38,7 @@ function addClusteredNodes(
     trust?: number;
     phase?: number;
     phaseSpread?: number;
-  } = {},
+  } = {}
 ): string[] {
   const { frequency = 3.5, trust = 1.0, phase = 0, phaseSpread = 0 } = options;
   const ids: string[] = [];

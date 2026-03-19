@@ -143,7 +143,9 @@ export function hashEvent(event: BlackoutEvent): string {
  * @returns Hex-encoded SHA-256 digest of the concatenation
  */
 function hashInternal(left: string, right: string): string {
-  return createHash('sha256').update(left + right, 'utf-8').digest('hex');
+  return createHash('sha256')
+    .update(left + right, 'utf-8')
+    .digest('hex');
 }
 
 /**
@@ -380,7 +382,9 @@ export class MerkleAuditChain {
   constructor(sessionId?: string) {
     this.sessionId =
       sessionId ??
-      `blackout-${Date.now().toString(36)}-${Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b => b.toString(16).padStart(2, '0')).join('')}`;
+      `blackout-${Date.now().toString(36)}-${Array.from(crypto.getRandomValues(new Uint8Array(4)))
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('')}`;
     this.startedAt = Date.now();
   }
 
@@ -584,11 +588,7 @@ export class MerkleAuditChain {
    * @param peaks  - Array of peak hashes (as returned by getPeaks)
    * @returns true if the proof is valid
    */
-  static verifyInclusion(
-    event: BlackoutEvent,
-    proof: MMRInclusionProof,
-    peaks: string[]
-  ): boolean {
+  static verifyInclusion(event: BlackoutEvent, proof: MMRInclusionProof, peaks: string[]): boolean {
     if (proof.peakIndex < 0 || proof.peakIndex >= peaks.length) {
       return false;
     }
@@ -883,7 +883,11 @@ export class BlackoutManager {
 
     this.commsState = 'BLACKOUT';
 
-    const sessionId = `blackout-${Date.now().toString(36)}-${Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b => b.toString(16).padStart(2, '0')).join('')}`;
+    const sessionId = `blackout-${Date.now().toString(36)}-${Array.from(
+      crypto.getRandomValues(new Uint8Array(4))
+    )
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')}`;
     this.activeChain = new MerkleAuditChain(sessionId);
 
     // Store pre-declared envelope IDs and squad members. These will be
@@ -938,14 +942,8 @@ export class BlackoutManager {
 
     // Merge pre-declared envelope IDs and squad members with
     // those discovered from events
-    const mergedEnvelopeIds = new Set([
-      ...record.envelopeIds,
-      ...this._pendingEnvelopeIds,
-    ]);
-    const mergedSquadMembers = new Set([
-      ...record.squadMembers,
-      ...this._pendingSquadMembers,
-    ]);
+    const mergedEnvelopeIds = new Set([...record.envelopeIds, ...this._pendingEnvelopeIds]);
+    const mergedSquadMembers = new Set([...record.squadMembers, ...this._pendingSquadMembers]);
 
     record.envelopeIds = Array.from(mergedEnvelopeIds);
     record.squadMembers = Array.from(mergedSquadMembers);
@@ -992,9 +990,7 @@ export class BlackoutManager {
    */
   clearSyncedSessions(sessionIds: string[]): void {
     const idSet = new Set(sessionIds);
-    this.completedSessions = this.completedSessions.filter(
-      (s) => !idSet.has(s.sessionId)
-    );
+    this.completedSessions = this.completedSessions.filter((s) => !idSet.has(s.sessionId));
   }
 
   /**

@@ -345,8 +345,7 @@ export class PHDMCore {
     const keyFingerprint = stepKey.toString('hex').slice(0, 16);
 
     // PHDM escalation check
-    const intrusionRate =
-      this.totalSteps > 0 ? this.intrusionCount / this.totalSteps : 0;
+    const intrusionRate = this.totalSteps > 0 ? this.intrusionCount / this.totalSteps : 0;
     const phdmEscalation =
       this.intrusionCount >= this.config.maxIntrusionsBeforeDeny ||
       (this.totalSteps >= 5 && intrusionRate > this.config.intrusionRateThreshold);
@@ -442,10 +441,7 @@ export class PHDMCore {
     let phdmTrust: number;
     if (deviation > this.config.snapThreshold) {
       // Agent is OFF the geodesic → penalize proportionally
-      const normalizedDeviation = Math.min(
-        deviation / (this.config.snapThreshold * 10),
-        1
-      );
+      const normalizedDeviation = Math.min(deviation / (this.config.snapThreshold * 10), 1);
       phdmTrust = Math.max(0, 0.3 * (1 - normalizedDeviation));
     } else {
       // Agent is ON the geodesic → high trust

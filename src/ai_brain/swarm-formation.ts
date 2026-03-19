@@ -160,7 +160,7 @@ export class SwarmFormationManager {
         targetPosition,
         currentPosition: agent.currentPosition,
         trustWeight: agent.trustScore ** this.config.trustExponent,
-        role: idx === 0 ? 'leader' as const : 'wing' as const,
+        role: idx === 0 ? ('leader' as const) : ('wing' as const),
         distanceToCenter: radius,
       };
     });
@@ -206,7 +206,7 @@ export class SwarmFormationManager {
         targetPosition,
         currentPosition: agent.currentPosition,
         trustWeight: agent.trustScore ** this.config.trustExponent,
-        role: idx === 0 ? 'leader' as const : idx < 3 ? 'wing' as const : 'support' as const,
+        role: idx === 0 ? ('leader' as const) : idx < 3 ? ('wing' as const) : ('support' as const),
         distanceToCenter: euclideanDist(targetPosition, center),
       };
     });
@@ -234,10 +234,14 @@ export class SwarmFormationManager {
     const positions = agents.map((agent, idx) => {
       // Position based on trust-weighted angle (higher trust = more arc space)
       const weightedAngle = (2 * Math.PI * agent.trustScore) / totalTrust;
-      const cumulativeAngle = agents.slice(0, idx).reduce(
-        (s, a) => s + (2 * Math.PI * a.trustScore) / totalTrust, 0
+      const cumulativeAngle = agents
+        .slice(0, idx)
+        .reduce((s, a) => s + (2 * Math.PI * a.trustScore) / totalTrust, 0);
+      const targetPosition = computeCirclePosition(
+        center,
+        radius,
+        cumulativeAngle + weightedAngle / 2
       );
-      const targetPosition = computeCirclePosition(center, radius, cumulativeAngle + weightedAngle / 2);
 
       return {
         agentId: agent.agentId,

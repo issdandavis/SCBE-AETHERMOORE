@@ -201,7 +201,10 @@ export class QuarantineQueue {
     const allowStates: DiagnosticState[] = ['PASS', 'WATCH'];
     const denyStates: DiagnosticState[] = ['REJECTED'];
 
-    if (allowStates.includes(snapshot.diagnosticState) || denyStates.includes(snapshot.diagnosticState)) {
+    if (
+      allowStates.includes(snapshot.diagnosticState) ||
+      denyStates.includes(snapshot.diagnosticState)
+    ) {
       return null;
     }
 
@@ -397,7 +400,10 @@ export class QuarantineQueue {
     for (const [id, item] of Array.from(this.pending.entries())) {
       // 1. Trust decay
       const elapsedSec = (now - item.enqueuedAt) / 1000;
-      item.decayedTrust = Math.max(0, item.trustAtEnqueue - this.config.trustDecayPerSec * elapsedSec);
+      item.decayedTrust = Math.max(
+        0,
+        item.trustAtEnqueue - this.config.trustDecayPerSec * elapsedSec
+      );
 
       // 2. Auto-deny on trust exhaustion
       if (item.decayedTrust < this.config.autoDeNyTrustThreshold) {

@@ -429,7 +429,7 @@ describe('WormholeNetwork – multiple wormholes', () => {
     const count = 10;
 
     for (let i = 0; i < count; i++) {
-      const x = (i * 0.08) + 0.01;
+      const x = i * 0.08 + 0.01;
       net.createWormhole([x, 0], [x + 0.05, 0], 1_000_000);
     }
 

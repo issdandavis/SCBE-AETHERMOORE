@@ -120,9 +120,7 @@ describe('OrderedRejectionPipeline', () => {
         context,
         'scbe-ordered-rejection-default-key'
       );
-      const result = pipeline.verify(
-        validRequest({ context, contextCommitment: commitment })
-      );
+      const result = pipeline.verify(validRequest({ context, contextCommitment: commitment }));
       expect(result.accepted).toBe(true);
     });
   });
@@ -142,17 +140,13 @@ describe('OrderedRejectionPipeline', () => {
 
   describe('S5: Policy Evaluation', () => {
     it('rejects destructive intent from AI actors', () => {
-      const result = pipeline.verify(
-        validRequest({ intent: 'delete', actorType: 'ai' })
-      );
+      const result = pipeline.verify(validRequest({ intent: 'delete', actorType: 'ai' }));
       expect(result.accepted).toBe(false);
       expect(result.rejectedAt).toBe('S5_POLICY_EVAL');
     });
 
     it('allows destructive intent from human actors', () => {
-      const result = pipeline.verify(
-        validRequest({ intent: 'delete', actorType: 'human' })
-      );
+      const result = pipeline.verify(validRequest({ intent: 'delete', actorType: 'human' }));
       expect(result.accepted).toBe(true);
     });
 

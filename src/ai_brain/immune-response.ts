@@ -18,12 +18,7 @@
  * repels adversarial inputs, rather than passively filtering them.
  */
 
-import {
-  PHI,
-  type CombinedAssessment,
-  type RiskDecision,
-  type TrajectoryPoint,
-} from './types.js';
+import { PHI, type CombinedAssessment, type RiskDecision, type TrajectoryPoint } from './types.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Immune System Types
@@ -72,7 +67,13 @@ export interface ImmuneEvent {
   /** Agent affected */
   agentId: string;
   /** Event type */
-  eventType: 'suspicion_increase' | 'suspicion_decrease' | 'state_change' | 'quarantine' | 'release' | 'expulsion';
+  eventType:
+    | 'suspicion_increase'
+    | 'suspicion_decrease'
+    | 'state_change'
+    | 'quarantine'
+    | 'release'
+    | 'expulsion';
   /** Previous state */
   previousState: ImmuneState;
   /** New state */
@@ -205,18 +206,36 @@ export class ImmuneResponseSystem {
 
     // Record state change events
     if (prevState !== status.state) {
-      this.recordEvent(agentId, 'state_change', prevState, status.state, status.suspicion,
-        `Suspicion ${status.suspicion.toFixed(3)}, flags: ${status.flagCount}`);
+      this.recordEvent(
+        agentId,
+        'state_change',
+        prevState,
+        status.state,
+        status.suspicion,
+        `Suspicion ${status.suspicion.toFixed(3)}, flags: ${status.flagCount}`
+      );
 
       if (status.state === 'quarantined') {
         status.quarantineCount++;
-        this.recordEvent(agentId, 'quarantine', prevState, status.state, status.suspicion,
-          `Quarantine #${status.quarantineCount}`);
+        this.recordEvent(
+          agentId,
+          'quarantine',
+          prevState,
+          status.state,
+          status.suspicion,
+          `Quarantine #${status.quarantineCount}`
+        );
       }
 
       if (status.state === 'expelled') {
-        this.recordEvent(agentId, 'expulsion', prevState, status.state, status.suspicion,
-          `Exceeded max quarantine count (${this.config.maxQuarantineCount})`);
+        this.recordEvent(
+          agentId,
+          'expulsion',
+          prevState,
+          status.state,
+          status.suspicion,
+          `Exceeded max quarantine count (${this.config.maxQuarantineCount})`
+        );
       }
     }
 
@@ -250,8 +269,14 @@ export class ImmuneResponseSystem {
     status.accusers.clear();
     status.lastStateChange = Date.now();
 
-    this.recordEvent(agentId, 'release', prevState, status.state, status.suspicion,
-      'Released from quarantine by review');
+    this.recordEvent(
+      agentId,
+      'release',
+      prevState,
+      status.state,
+      status.suspicion,
+      'Released from quarantine by review'
+    );
     this.agents.set(agentId, status);
   }
 
@@ -278,11 +303,16 @@ export class ImmuneResponseSystem {
     if (!status) return 1.0;
 
     switch (status.state) {
-      case 'healthy': return 1.0;
-      case 'monitoring': return 1.2;
-      case 'inflamed': return 1.5;
-      case 'quarantined': return this.config.quarantineAmplification;
-      case 'expelled': return Infinity;
+      case 'healthy':
+        return 1.0;
+      case 'monitoring':
+        return 1.2;
+      case 'inflamed':
+        return 1.5;
+      case 'quarantined':
+        return this.config.quarantineAmplification;
+      case 'expelled':
+        return Infinity;
     }
   }
 

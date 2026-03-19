@@ -821,8 +821,9 @@ describe('integration scenarios', () => {
     // Then let them both decay
     state = tickPhases(state, [TPhaseType.FAST, TPhaseType.SET], 0.0);
     // SET decays much faster (0.5) than FAST (0.99)
-    expect(state.clocks[TPhaseType.FAST].accumulatedIntent)
-      .toBeGreaterThan(state.clocks[TPhaseType.SET].accumulatedIntent);
+    expect(state.clocks[TPhaseType.FAST].accumulatedIntent).toBeGreaterThan(
+      state.clocks[TPhaseType.SET].accumulatedIntent
+    );
   });
 
   it('deploy event forces re-evaluation', () => {
@@ -881,7 +882,7 @@ describe('integration scenarios', () => {
       breathValues.push(state.clocks[TPhaseType.CIRCADIAN].breathingFactor);
     }
     // Should see variation (not all 1.0)
-    const unique = new Set(breathValues.map(v => v.toFixed(3)));
+    const unique = new Set(breathValues.map((v) => v.toFixed(3)));
     expect(unique.size).toBeGreaterThan(1);
   });
 

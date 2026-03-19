@@ -37,9 +37,7 @@ describe('Token Packages', () => {
   });
 
   it('larger packages have better per-token rates', () => {
-    const rates = TOKEN_PACKAGES.map(
-      (p) => p.priceUsd / (p.tokens + p.bonusTokens)
-    );
+    const rates = TOKEN_PACKAGES.map((p) => p.priceUsd / (p.tokens + p.bonusTokens));
     for (let i = 1; i < rates.length; i++) {
       expect(rates[i]).toBeLessThan(rates[i - 1]);
     }
@@ -252,7 +250,7 @@ describe('EnergyWallet — Compute Hours', () => {
     wallet.recordPurchase('starter', 'pi_1'); // 100 tokens
 
     // 100 tokens × 60 seconds / 3600 = 1.667 hours
-    expect(wallet.computeHoursPurchased()).toBeCloseTo(100 * 60 / 3600, 5);
+    expect(wallet.computeHoursPurchased()).toBeCloseTo((100 * 60) / 3600, 5);
   });
 
   it('calculates consumed compute hours', () => {
@@ -260,7 +258,7 @@ describe('EnergyWallet — Compute Hours', () => {
     wallet.recordPurchase('starter', 'pi_1');
     wallet.consume('dungeon_run', null, 's1'); // 20 tokens
 
-    expect(wallet.computeHoursConsumed()).toBeCloseTo(20 * 60 / 3600, 5);
+    expect(wallet.computeHoursConsumed()).toBeCloseTo((20 * 60) / 3600, 5);
   });
 
   it('summary includes all fields', () => {

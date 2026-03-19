@@ -66,8 +66,12 @@ describe('A: CrawlMessageBus', () => {
     });
 
     it('topicMatches supports exact match', () => {
-      expect(topicMatches('scbe.crawl.discovery.url_found', 'scbe.crawl.discovery.url_found')).toBe(true);
-      expect(topicMatches('scbe.crawl.discovery.url_found', 'scbe.crawl.discovery.url_failed')).toBe(false);
+      expect(topicMatches('scbe.crawl.discovery.url_found', 'scbe.crawl.discovery.url_found')).toBe(
+        true
+      );
+      expect(
+        topicMatches('scbe.crawl.discovery.url_found', 'scbe.crawl.discovery.url_failed')
+      ).toBe(false);
     });
 
     it('topicMatches supports * wildcard', () => {
@@ -108,9 +112,15 @@ describe('A: CrawlMessageBus', () => {
       bus.subscribe('agent-1', '*', (msg) => received1.push(msg));
       bus.subscribe('agent-2', '*', (msg) => received2.push(msg));
 
-      bus.publish('agent-3', 'governance', 'role_switch_approved', { approved: true }, {
-        toAgent: 'agent-1',
-      });
+      bus.publish(
+        'agent-3',
+        'governance',
+        'role_switch_approved',
+        { approved: true },
+        {
+          toAgent: 'agent-1',
+        }
+      );
 
       expect(received1).toHaveLength(1);
       expect(received2).toHaveLength(0);
@@ -149,9 +159,15 @@ describe('A: CrawlMessageBus', () => {
     });
 
     it('includes correlationId for request-response', () => {
-      const msg = bus.publish('agent-1', 'governance', 'consensus_request', {}, {
-        correlationId: 'req-123',
-      });
+      const msg = bus.publish(
+        'agent-1',
+        'governance',
+        'consensus_request',
+        {},
+        {
+          correlationId: 'req-123',
+        }
+      );
       expect(msg.correlationId).toBe('req-123');
     });
 
@@ -570,7 +586,7 @@ describe('D: Role Switching', () => {
           const toCoords = ROLE_BRAID_MAP[to as keyof typeof ROLE_BRAID_MAP];
           const chebyshev = Math.max(
             Math.abs(fromCoords.primary - toCoords.primary),
-            Math.abs(fromCoords.mirror - toCoords.mirror),
+            Math.abs(fromCoords.mirror - toCoords.mirror)
           );
           expect(chebyshev).toBeLessThanOrEqual(1);
         }
@@ -864,7 +880,7 @@ function makeResult(
   agentId: string,
   safe: boolean,
   discoveredUrls: string[] = [],
-  riskScore: number = safe ? 0.1 : 0.8,
+  riskScore: number = safe ? 0.1 : 0.8
 ): CrawlResult {
   return {
     url,

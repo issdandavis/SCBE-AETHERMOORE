@@ -125,7 +125,9 @@ export class DistributedWorkflowService {
     }));
   }
 
-  public async executeWorkflow(request: WorkflowExecutionRequest): Promise<WorkflowExecutionResult> {
+  public async executeWorkflow(
+    request: WorkflowExecutionRequest
+  ): Promise<WorkflowExecutionResult> {
     const profile = this.brandProfiles.get(request.brandProfileId);
     if (!profile) {
       throw new Error(`Unknown brand profile: ${request.brandProfileId}`);

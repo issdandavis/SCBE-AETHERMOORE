@@ -167,9 +167,7 @@ describe('Cross-Talk Graph', () => {
 
   it('bidirectional: for each A→B there is B→A with same weight', () => {
     for (const edge of edges) {
-      const reverse = edges.find(
-        (e) => e.from === edge.to && e.to === edge.from
-      );
+      const reverse = edges.find((e) => e.from === edge.to && e.to === edge.from);
       expect(reverse).toBeDefined();
       expect(reverse!.weight).toBeCloseTo(edge.weight, 10);
       expect(reverse!.relationship).toBe(edge.relationship);
@@ -241,7 +239,12 @@ describe('Cross-Talk Graph', () => {
 describe('Polyhedral Validation', () => {
   it('POLLY mode: all validators available', () => {
     const validators: PolyhedralValidator[] = [
-      'platonic', 'archimedean', 'kepler-poinsot', 'toroidal', 'johnson', 'rhombic',
+      'platonic',
+      'archimedean',
+      'kepler-poinsot',
+      'toroidal',
+      'johnson',
+      'rhombic',
     ];
     for (const v of validators) {
       expect(isValidatorAvailable(v, 'POLLY')).toBe(true);
@@ -265,7 +268,12 @@ describe('Polyhedral Validation', () => {
 
   it('facet counts are positive for all families', () => {
     const validators: PolyhedralValidator[] = [
-      'platonic', 'archimedean', 'kepler-poinsot', 'toroidal', 'johnson', 'rhombic',
+      'platonic',
+      'archimedean',
+      'kepler-poinsot',
+      'toroidal',
+      'johnson',
+      'rhombic',
     ];
     for (const v of validators) {
       expect(validatorFacetCount(v)).toBeGreaterThan(0);
@@ -291,7 +299,12 @@ describe('Polyhedral Validation', () => {
 
   it('validationStrength normalized to [0, 1]', () => {
     const validators: PolyhedralValidator[] = [
-      'platonic', 'archimedean', 'kepler-poinsot', 'toroidal', 'johnson', 'rhombic',
+      'platonic',
+      'archimedean',
+      'kepler-poinsot',
+      'toroidal',
+      'johnson',
+      'rhombic',
     ];
     for (const v of validators) {
       const edge: CrossTalkEdge = {
@@ -845,7 +858,9 @@ describe('Configuration', () => {
     expect(DEFAULT_KERNEL_CONFIG.vaguenessThreshold).toBeGreaterThan(0);
     expect(DEFAULT_KERNEL_CONFIG.vaguenessThreshold).toBeLessThan(1);
     expect(DEFAULT_KERNEL_CONFIG.maxRouteLength).toBeGreaterThan(0);
-    expect(DEFAULT_KERNEL_CONFIG.allowThreshold).toBeGreaterThan(DEFAULT_KERNEL_CONFIG.denyThreshold);
+    expect(DEFAULT_KERNEL_CONFIG.allowThreshold).toBeGreaterThan(
+      DEFAULT_KERNEL_CONFIG.denyThreshold
+    );
     expect(DEFAULT_KERNEL_CONFIG.fluxState).toBe('POLLY');
   });
 
@@ -877,7 +892,12 @@ describe('Configuration', () => {
 describe('Property-Based Tests', () => {
   const tongueArb = fc.constantFrom<TongueCode>('KO', 'AV', 'RU', 'CA', 'UM', 'DR');
   const domainArb = fc.constantFrom<AcademicDomain>(
-    'humanities', 'social_sciences', 'mathematics', 'engineering', 'creative_arts', 'physical_sciences'
+    'humanities',
+    'social_sciences',
+    'mathematics',
+    'engineering',
+    'creative_arts',
+    'physical_sciences'
   );
 
   it('domainToTongue/tongueToDomain round-trip (100 iterations)', () => {
