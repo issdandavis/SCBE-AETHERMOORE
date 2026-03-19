@@ -24,7 +24,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Label based on size
-        uses: codelytv/pr-size-labeler@v1
+        uses: codelytv/pr-size-labeler@v1.10.1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           xs_label: 'size/XS'
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name != 'schedule'
     steps:
-      - uses: pozil/auto-assign-issue@v1
+      - uses: pozil/auto-assign-issue@v2
         with:
           assignees: issdandavis
           numOfAssignee: 1
