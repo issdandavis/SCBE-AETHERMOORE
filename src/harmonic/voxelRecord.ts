@@ -54,6 +54,188 @@ export const DEFAULT_THRESHOLDS: Readonly<SCBEThresholds> = {
   quarantineMaxDrift: 2.2,
 };
 
+/** Visible-spectrum bounds used for continuous gate visualization. */
+const SPECTRUM_MIN_NM = 380;
+const SPECTRUM_MAX_NM = 700;
+
+/** Continuous spectrum band labels. */
+export type SpectrumBand = 'violet' | 'blue' | 'green' | 'yellow' | 'orange' | 'red';
+
+/** Continuous spectrum state labels for pressure near the decision wall. */
+export type SpectrumState = 'stable' | 'pressured' | 'near_break' | 'breaking';
+
+/** Component pressures that feed the continuous spectrum overlay. */
+export interface SpectrumPressureComponents {
+  coherencePressure: number;
+  driftPressure: number;
+  costPressure: number;
+}
+
+/**
+ * Continuous gate overlay that sits beside the discrete L13 decision.
+ *
+ * This does not replace ALLOW / QUARANTINE / DENY. It exposes where the
+ * current state sits on a continuous pressure spectrum so downstream systems
+ * (audio, UI, telemetry) can reason about edge behavior without weakening
+ * deterministic enforcement.
+ */
+export interface SpectrumGate {
+  /** The authoritative discrete governance result from scbeDecide(). */
+  discreteDecision: Decision;
+  /** Continuous pressure ০ [0,1], where 0=safe center and 1=break point. */
+  pressure: number;
+  /** Visible-spectrum projection of pressure in nanometers. */
+  wavelengthNm: number;
+  /** Coarse color band for the projected wavelength. */
+  band: SpectrumBand;
+  /** Human-readable state label for the pressure region. */
+  state: SpectrumState;
+  /** Component-level contribution to the final pressure. */
+  components: SpectrumPressureComponents;
+}
+
+/** Per-band projection helper for audio or multi-channel overlays. */
+export interface SpectrumBandProjection {
+  bandIndex: number;
+  pressure: number;
+  wavelengthNm: number;
+  band: SpectrumBand;
+  state: SpectrumState;
+}
+
+function clamp01(value: number): number {
+  return Math.min(1, Math.max(0, value));
+}
+
+function risingPressure(value: number, safeMax: number, dangerMax: number): number {
+  if (value <= safeMax) return 0;
+  if (value >= dangerMax) return 1;
+  return clamp01((value - safeMax) / (dangerMax - safeMax));
+}
+
+function fallingPressure(value: number, safeMin: number, dangerMin: number): number {
+  if (value >= safeMin) return 0;
+  if (value <= dangerMin) return 1;
+  return clamp01((safeMin - value) / (safeMin - dangerMin));
+}
+
+function logarithmicPressure(value: number, safeMax: number, dangerMax: number): number {
+  const v = Math.log10(Math.max(value, 1e-12));
+  const safe = Math.log10(Math.max(safeMax, 1e-12));
+  const danger = Math.log10(Math.max(dangerMax, 1e-12));
+  return risingPressure(v, safe, danger);
+}
+
+/** Convert normalized pressure into a visible-spectrum wavelength. */
+export function pressureToWavelength(pressure: number): number {
+  const p = clamp01(pressure);
+  return SPECTRUM_MIN_NM + p * (SPECTRUM_MAX_NM - SPECTRUM_MIN_NM);
+}
+
+/** Map wavelength to a coarse visible-spectrum band label. */
+export function wavelengthToBand(wavelengthNm: number): SpectrumBand {
+  if (wavelengthNm < 450) return 'violet';
+  if (wavelengthNm < 495) return 'blue';
+  if (wavelengthNm < 570) return 'green';
+  if (wavelengthNm < 590) return 'yellow';
+  if (wavelengthNm < 620) return 'orange';
+  return 'red';
+}
+
+/** Map normalized pressure to a state label near the wall. */
+export function pressureToSpectrumState(pressure: number): SpectrumState {
+  const p = clamp01(pressure);
+  if (p < 0.2) return 'stable';
+  if (p < 0.5) return 'pressured';
+  if (p < 0.8) return 'near_break';
+  return 'breaking';
+}
+
+/**
+ * Compute normalized component pressures from the existing SCBE thresholds.
+ *
+ * Cost uses a log scale because harmonic cost spans orders of magnitude.
+ */
+export function computeSpectrumPressure(
+  dStar: number,
+  coherence: number,
+  hEff: number,
+  thresholds: SCBEThresholds = DEFAULT_THRESHOLDS
+): SpectrumPressureComponents & { pressure: number } {
+  const coherencePressure = fallingPressure(
+    coherence,
+    thresholds.allowMinCoherence,
+    thresholds.quarantineMinCoherence
+  );
+  const driftPressure = risingPressure(dStar, thresholds.allowMaxDrift, thresholds.quarantineMaxDrift);
+  const costPressure = logarithmicPressure(
+    hEff,
+    thresholds.allowMaxCost,
+    thresholds.quarantineMaxCost
+  );
+
+  // Conservative blend: strongest failing component dominates, but retain
+  // some contribution from the average so the curve moves smoothly.
+  const pressure = clamp01(
+    Math.max(coherencePressure, driftPressure, costPressure) * 0.7 +
+      ((coherencePressure + driftPressure + costPressure) / 3) * 0.3
+  );
+
+  return { coherencePressure, driftPressure, costPressure, pressure };
+}
+
+/**
+ * Compute a continuous spectrum overlay beside the discrete L13 decision.
+ */
+export function computeSpectrumGate(
+  dStar: number,
+  coherence: number,
+  hEff: number,
+  thresholds: SCBEThresholds = DEFAULT_THRESHOLDS
+): SpectrumGate {
+  const discreteDecision = scbeDecide(dStar, coherence, hEff, thresholds);
+  const { pressure, coherencePressure, driftPressure, costPressure } = computeSpectrumPressure(
+    dStar,
+    coherence,
+    hEff,
+    thresholds
+  );
+  const wavelengthNm = pressureToWavelength(pressure);
+
+  return {
+    discreteDecision,
+    pressure,
+    wavelengthNm,
+    band: wavelengthToBand(wavelengthNm),
+    state: pressureToSpectrumState(pressure),
+    components: {
+      coherencePressure,
+      driftPressure,
+      costPressure,
+    },
+  };
+}
+
+/**
+ * Project arbitrary normalized per-band pressures into the visible spectrum.
+ *
+ * Useful for experimental audio-band gating without changing the core SCBE
+ * decision envelope.
+ */
+export function projectBandPressuresToSpectrum(pressures: number[]): SpectrumBandProjection[] {
+  return pressures.map((pressure, bandIndex) => {
+    const p = clamp01(pressure);
+    const wavelengthNm = pressureToWavelength(p);
+    return {
+      bandIndex,
+      pressure: p,
+      wavelengthNm,
+      band: wavelengthToBand(wavelengthNm),
+      state: pressureToSpectrumState(p),
+    };
+  });
+}
+
 // ═══════════════════════════════════════════════════════════════
 // CubeId + Digest (deterministic, canonical)
 // ═══════════════════════════════════════════════════════════════
@@ -65,12 +247,7 @@ export const DEFAULT_THRESHOLDS: Readonly<SCBEThresholds> = {
  *
  * Uses JCS (RFC 8785) canonicalization for stability.
  */
-export function computeCubeId(
-  lang: Lang,
-  voxel: Voxel6,
-  epoch: number,
-  padMode: PadMode
-): string {
+export function computeCubeId(lang: Lang, voxel: Voxel6, epoch: number, padMode: PadMode): string {
   const payload = { lang, voxel: Array.from(voxel), epoch, padMode };
   const canonical = canonicalize(payload);
   return createHash('sha256').update(canonical, 'utf-8').digest('hex');
@@ -272,10 +449,7 @@ export function buildVoxelRecord(params: VoxelRecordParams): VoxelRecord {
     kdf: 'pi_phi',
     dStar,
     coherence,
-    nonce: createHash('sha256')
-      .update(`${cubeId}:${Date.now()}`)
-      .digest('hex')
-      .slice(0, 24),
+    nonce: createHash('sha256').update(`${cubeId}:${Date.now()}`).digest('hex').slice(0, 24),
     aad: headerHash,
   };
 
