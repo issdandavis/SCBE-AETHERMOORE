@@ -64,6 +64,8 @@ def test_help_lists_new_command_center_surface() -> None:
     assert "publish-dryrun" in out
     assert "voice-spec" in out
     assert "video-prompts" in out
+    assert "colab-catalog" in out
+    assert "buildflow-colab <topic>" in out
 
 
 def test_offline_command_wrappers_smoke() -> None:
@@ -116,6 +118,13 @@ def test_buildflow_training_supports_dry_run() -> None:
     assert "training relay packet" in out
 
 
+def test_buildflow_colab_supports_dry_run() -> None:
+    out = _run_powershell("buildflow-colab -DryRun 'pivot training on free colab'")
+    assert "colab notebook catalog" in out
+    assert "pivot notebook route" in out
+    assert "colab relay packet" in out
+
+
 def test_n8_template_commands_surface_local_workflows() -> None:
     out = _run_powershell("n8-templates")
     assert "asana_aetherbrowse_scheduler.workflow.json" in out
@@ -136,3 +145,15 @@ def test_publish_and_media_commands_surface_real_assets() -> None:
 
     voice_status = _run_powershell("voice-status")
     assert "\"summary\"" in voice_status
+
+
+def test_colab_catalog_commands_surface_repo_notebooks() -> None:
+    catalog = _run_powershell("colab-catalog")
+    assert "scbe-pivot-v2" in catalog
+    assert "scbe_finetune_colab.ipynb" in catalog
+
+    show = _run_powershell("colab-show pivot -Json")
+    assert "\"name\": \"scbe-pivot-v2\"" in show
+
+    url = _run_powershell("colab-url pivot")
+    assert "colab.research.google.com" in url
