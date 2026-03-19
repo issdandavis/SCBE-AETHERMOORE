@@ -10,6 +10,7 @@ import { WsClient } from './lib/ws-client.js';
 import { loadSettings } from './lib/storage.js';
 import { captureVisibleTab, getOpenTabs, readActivePage } from './lib/dom-reader.js';
 import { renderAgentGrid, updateAgentBadge, resetAllBadges, renderProviderHealth, clearProviderHealth } from './components/AgentGrid.js';
+import { renderTopologyCanvas, destroyTopologyCanvas } from './components/TopologyCanvas.js';
 import { initConversationFeed, appendMessage, appendUserMessage } from './components/ConversationFeed.js';
 import { renderZoneApproval } from './components/ZoneApproval.js';
 import { renderProgress } from './components/ProgressCard.js';
@@ -25,6 +26,9 @@ const inputEl = document.getElementById('input-text');
 const sendBtn = document.getElementById('btn-send');
 const thisPageBtn = document.getElementById('btn-this-page');
 const researchBtn = document.getElementById('btn-research');
+const topologyBtn = document.getElementById('btn-topology');
+const topologyView = document.getElementById('topology-view');
+const topologyContainer = document.getElementById('topology-canvas-container');
 const commandBar = document.getElementById('command-bar');
 
 let ws = null;
@@ -83,6 +87,9 @@ async function init() {
   });
   thisPageBtn.addEventListener('click', handleThisPage);
   researchBtn.addEventListener('click', handleResearch);
+  topologyBtn.addEventListener('click', () => {
+    topologyView.classList.toggle('hidden');
+  });
 }
 
 function handleWsMessage(msg) {
@@ -100,6 +107,14 @@ function handleWsMessage(msg) {
       renderZoneApproval(feedEl, msg, (seq, decision) => {
         ws.sendZoneResponse(seq, decision);
       });
+      break;
+    case 'topology':
+      renderTopologyCanvas(topologyContainer, msg.payload, {
+        onNodeClick: (node) => {
+          if (node.url) chrome.tabs.update({ url: node.url });
+        },
+      });
+      topologyView.classList.remove('hidden');
       break;
     case 'error':
       appendMessage(feedEl, {
