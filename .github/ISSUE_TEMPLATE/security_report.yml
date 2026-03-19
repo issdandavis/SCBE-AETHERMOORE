@@ -1,0 +1,69 @@
+name: Security Report
+description: Report a security concern (non-critical). For critical vulnerabilities, use the private security advisory.
+title: "[Security]: "
+labels: ["security", "needs-triage"]
+assignees:
+  - issdandavis
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **For critical security vulnerabilities**, please use [private security advisories](https://github.com/issdandavis/SCBE-AETHERMOORE/security/advisories/new) instead.
+
+        Use this template for non-critical security concerns, hardening suggestions, or audit findings.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Security Category
+      options:
+        - Post-quantum cryptography (ML-KEM / ML-DSA)
+        - Harmonic wall bypass
+        - Governance decision evasion
+        - Input validation / injection
+        - Authentication / authorization
+        - Dependency vulnerability
+        - Side-channel / timing attack
+        - Axiom violation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Estimated Severity
+      options:
+        - Low — Minor concern
+        - Medium — Potential risk under specific conditions
+        - High — Exploitable with moderate effort
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the security concern
+      placeholder: What is the issue and how might it be exploited?
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected
+    attributes:
+      label: Affected Components
+      description: Which layers, modules, or files are affected?
+      placeholder: |
+        - Layer 5 (hyperbolic distance)
+        - src/crypto/envelope.ts
+    validations:
+      required: true
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Suggested Mitigation
+      description: How could this be addressed?
+    validations:
+      required: false

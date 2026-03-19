@@ -128,6 +128,55 @@ dependencies:
           - 'requirements.txt'
           - 'requirements-lock.txt'
 
+# Governance labels
+governance:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/governance/**/*'
+          - 'src/symphonic_cipher/scbe_aethermoore/axiom_grouped/**/*'
+          - 'tests/hydra/**/*'
+
+# AI Brain labels
+ai-brain:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/ai_brain/**/*'
+          - 'src/symphonic_cipher/scbe_aethermoore/ai_brain/**/*'
+
+# Sacred Tongues labels
+sacred-tongues:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/tokenizer/**/*'
+          - 'src/harmonic/languesMetric*'
+          - 'tests/six-tongues/**/*'
+
+# Web agent labels
+web-agent:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/**/*'
+          - 'agents/browser_agent*'
+
+# WIT/WASM labels
+wit:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'packages/wit/**/*'
+
+# Training data labels
+training-data:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'training-data/**/*'
+
+# Deploy/infrastructure labels
+deploy:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'deploy/**/*'
+          - 'k8s/**/*'
+
 # Enterprise/compliance labels
 enterprise:
   - changed-files:
