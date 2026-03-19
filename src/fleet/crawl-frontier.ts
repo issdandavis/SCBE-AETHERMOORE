@@ -26,13 +26,7 @@
 const PHI = 1.6180339887498949;
 
 /** Status of a URL in the frontier */
-export type URLStatus =
-  | 'queued'
-  | 'claimed'
-  | 'crawling'
-  | 'completed'
-  | 'failed'
-  | 'blocked';
+export type URLStatus = 'queued' | 'claimed' | 'crawling' | 'completed' | 'failed' | 'blocked';
 
 /** A URL entry in the frontier */
 export interface FrontierEntry {

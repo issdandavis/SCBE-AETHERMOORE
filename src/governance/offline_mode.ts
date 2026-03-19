@@ -201,7 +201,10 @@ const BASE_THRESHOLDS: PolicyThresholds = {
 const STALE_FACTOR = 1.5;
 const STRICT_FACTOR = 1.25;
 
-export function getThresholdsForState(trust: TrustState, manifest?: FluxManifest): PolicyThresholds {
+export function getThresholdsForState(
+  trust: TrustState,
+  manifest?: FluxManifest
+): PolicyThresholds {
   const base: PolicyThresholds = manifest
     ? {
         coherence_min: manifest.thresholds['coherence_min'] ?? BASE_THRESHOLDS.coherence_min,
@@ -263,7 +266,7 @@ const SAFE_OPS = new Set(['config.read', 'audit.export', 'diagnostics.run']);
 
 export function failClosedGate(
   check: FailClosedCheck,
-  action: string,
+  action: string
 ): { pass: boolean; reason?: string } {
   if (!check.laws_present || !check.laws_hash_valid) {
     return { pass: SAFE_OPS.has(action), reason: 'LAWS_MISSING_OR_CORRUPT' };
@@ -388,7 +391,7 @@ export function buildCapsule(
   decision: Decision,
   reasons: string[],
   signingKey: Uint8Array,
-  nowMono: bigint,
+  nowMono: bigint
 ): DecisionCapsule {
   const payload = {
     request: {
@@ -447,19 +450,21 @@ export interface OfflineRuntime {
   signerPubKey: Uint8Array;
   computeMMX(
     request: EnforcementRequest,
-    context: EnforcementContext,
+    context: EnforcementContext
   ): Omit<GovernanceScalars, 'trust_level'>;
 }
 
 export function DECIDE(request: EnforcementRequest, runtime: OfflineRuntime): DecisionResult {
   const fc: FailClosedCheck = {
     laws_present: !!runtime.laws,
-    laws_hash_valid: bytesEqual(PQCrypto.hash(canonicalLawsBytes(runtime.laws)), runtime.laws.laws_hash),
+    laws_hash_valid: bytesEqual(
+      PQCrypto.hash(canonicalLawsBytes(runtime.laws)),
+      runtime.laws.laws_hash
+    ),
     manifest_present: !!runtime.manifest,
     manifest_sig_ok: verifyManifest(runtime.manifest, runtime.signerPubKey),
     keys_present: !!runtime.keys && runtime.keys.fingerprints.length > 0,
-    audit_intact:
-      runtime.ledger.length === 0 || runtime.ledger.verify(runtime.keys.signing_public),
+    audit_intact: runtime.ledger.length === 0 || runtime.ledger.verify(runtime.keys.signing_public),
     voxel_root_ok: runtime.voxelRoot.length > 0,
   };
 
@@ -474,7 +479,7 @@ export function DECIDE(request: EnforcementRequest, runtime: OfflineRuntime): De
       Decision.DENY,
       reasons,
       runtime.keys.signing_secret,
-      runtime.nowMono,
+      runtime.nowMono
     );
     runtime.ledger.append(encodeCanonical(capsule));
     return {
@@ -532,7 +537,7 @@ export function DECIDE(request: EnforcementRequest, runtime: OfflineRuntime): De
     decision,
     reasons,
     runtime.keys.signing_secret,
-    runtime.nowMono,
+    runtime.nowMono
   );
   runtime.ledger.append(encodeCanonical(capsule));
 
@@ -565,7 +570,7 @@ export interface SyncResult {
 export function resolveManifestConflict(
   a: FluxManifest,
   b: FluxManifest,
-  signerPub: Uint8Array,
+  signerPub: Uint8Array
 ): FluxManifest {
   const aValid = verifyManifest(a, signerPub);
   const bValid = verifyManifest(b, signerPub);
@@ -624,9 +629,7 @@ function canonicalStringify(value: unknown): string {
   }
   const record = value as Record<string, unknown>;
   const keys = Object.keys(record).sort();
-  const body = keys
-    .map((k) => `${JSON.stringify(k)}:${canonicalStringify(record[k])}`)
-    .join(',');
+  const body = keys.map((k) => `${JSON.stringify(k)}:${canonicalStringify(record[k])}`).join(',');
   return `{${body}}`;
 }
 
@@ -649,4 +652,3 @@ function makeContext(rt: OfflineRuntime): EnforcementContext {
     state_root: PQCrypto.hash(concatBytes(rt.ledger.root, rt.voxelRoot)),
   };
 }
-

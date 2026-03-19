@@ -159,8 +159,13 @@ describe('BFTConsensus', () => {
       const bft = new BFTConsensus(2);
       // 5 honest approve, 2 Byzantine reject
       const votes: ConsensusVote[] = [
-        'approve', 'approve', 'approve', 'approve', 'approve',
-        'reject', 'reject',
+        'approve',
+        'approve',
+        'approve',
+        'approve',
+        'approve',
+        'reject',
+        'reject',
       ];
       const result = bft.evaluate(votes);
       expect(result.reached).toBe(true);
@@ -216,7 +221,7 @@ describe('BFTConsensus', () => {
 
     it('exact boundary: 3f+1 is sufficient, 3f is not', () => {
       const bft = new BFTConsensus(2);
-      expect(bft.isSufficient(7)).toBe(true);  // 3*2+1 = 7
+      expect(bft.isSufficient(7)).toBe(true); // 3*2+1 = 7
       expect(bft.isSufficient(6)).toBe(false); // 3*2 = 6
     });
   });

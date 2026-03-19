@@ -12,7 +12,10 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { HyperbolicTrustBrowser, type NavigationIntent } from '../../src/browser/hyperbolicTrustBrowser';
+import {
+  HyperbolicTrustBrowser,
+  type NavigationIntent,
+} from '../../src/browser/hyperbolicTrustBrowser';
 import { SpiralSealSessionBrowser } from '../../src/browser/spiralSealSession';
 import { FleetSwarmBrowser, type SwarmTask } from '../../src/browser/fleetSwarmBrowser';
 import { QuantumStealthBrowser } from '../../src/browser/quantumStealthBrowser';

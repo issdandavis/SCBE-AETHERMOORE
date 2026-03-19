@@ -35,7 +35,14 @@ interface PhaseConfig {
 
 const PHASE_CONFIGS: Record<MissionPhase, PhaseConfig> = {
   transit: {
-    defaultModes: ['navigation', 'navigation', 'systems', 'communications', 'mission_planning', 'systems'],
+    defaultModes: [
+      'navigation',
+      'navigation',
+      'systems',
+      'communications',
+      'mission_planning',
+      'systems',
+    ],
     description: 'In transit — navigation-heavy',
   },
   science_ops: {
@@ -43,31 +50,69 @@ const PHASE_CONFIGS: Record<MissionPhase, PhaseConfig> = {
     description: 'Normal science operations — science-heavy',
   },
   maintenance: {
-    defaultModes: ['engineering', 'engineering', 'systems', 'systems', 'communications', 'mission_planning'],
+    defaultModes: [
+      'engineering',
+      'engineering',
+      'systems',
+      'systems',
+      'communications',
+      'mission_planning',
+    ],
     description: 'Scheduled maintenance — engineering-heavy',
   },
   crisis: {
-    defaultModes: ['engineering', 'systems', 'mission_planning', 'communications', 'navigation', 'science'],
+    defaultModes: [
+      'engineering',
+      'systems',
+      'mission_planning',
+      'communications',
+      'navigation',
+      'science',
+    ],
     description: 'Crisis response — balanced coverage',
   },
   earth_sync: {
-    defaultModes: ['communications', 'communications', 'science', 'mission_planning', 'systems', 'engineering'],
+    defaultModes: [
+      'communications',
+      'communications',
+      'science',
+      'mission_planning',
+      'systems',
+      'engineering',
+    ],
     description: 'Earth contact window — communications-heavy',
   },
   standby: {
-    defaultModes: ['systems', 'systems', 'communications', 'mission_planning', 'science', 'engineering'],
+    defaultModes: [
+      'systems',
+      'systems',
+      'communications',
+      'mission_planning',
+      'science',
+      'engineering',
+    ],
     description: 'Low-power standby — monitoring-heavy',
   },
 };
 
-const CRISIS_ASSIGNMENTS: Record<CrisisType, {
-  modes: SpecialistMode[];
-  priorities: Array<ModeAssignment['priority']>;
-  requiresEarth: boolean;
-  estimatedMinutes: number;
-}> = {
+const CRISIS_ASSIGNMENTS: Record<
+  CrisisType,
+  {
+    modes: SpecialistMode[];
+    priorities: Array<ModeAssignment['priority']>;
+    requiresEarth: boolean;
+    estimatedMinutes: number;
+  }
+> = {
   equipment_failure: {
-    modes: ['engineering', 'systems', 'mission_planning', 'communications', 'engineering', 'science'],
+    modes: [
+      'engineering',
+      'systems',
+      'mission_planning',
+      'communications',
+      'engineering',
+      'science',
+    ],
     priorities: ['critical', 'critical', 'high', 'medium', 'high', 'standby'],
     requiresEarth: false,
     estimatedMinutes: 60,
@@ -79,25 +124,53 @@ const CRISIS_ASSIGNMENTS: Record<CrisisType, {
     estimatedMinutes: 120,
   },
   navigation_lost: {
-    modes: ['navigation', 'navigation', 'systems', 'mission_planning', 'communications', 'engineering'],
+    modes: [
+      'navigation',
+      'navigation',
+      'systems',
+      'mission_planning',
+      'communications',
+      'engineering',
+    ],
     priorities: ['critical', 'critical', 'high', 'high', 'medium', 'standby'],
     requiresEarth: false,
     estimatedMinutes: 45,
   },
   communication_blackout: {
-    modes: ['communications', 'communications', 'systems', 'mission_planning', 'science', 'engineering'],
+    modes: [
+      'communications',
+      'communications',
+      'systems',
+      'mission_planning',
+      'science',
+      'engineering',
+    ],
     priorities: ['critical', 'critical', 'high', 'high', 'medium', 'standby'],
     requiresEarth: false,
     estimatedMinutes: 30,
   },
   power_critical: {
-    modes: ['systems', 'systems', 'engineering', 'mission_planning', 'communications', 'navigation'],
+    modes: [
+      'systems',
+      'systems',
+      'engineering',
+      'mission_planning',
+      'communications',
+      'navigation',
+    ],
     priorities: ['critical', 'critical', 'critical', 'high', 'medium', 'standby'],
     requiresEarth: true,
     estimatedMinutes: 90,
   },
   environmental_hazard: {
-    modes: ['navigation', 'systems', 'science', 'mission_planning', 'communications', 'engineering'],
+    modes: [
+      'navigation',
+      'systems',
+      'science',
+      'mission_planning',
+      'communications',
+      'engineering',
+    ],
     priorities: ['critical', 'critical', 'high', 'high', 'medium', 'standby'],
     requiresEarth: false,
     estimatedMinutes: 30,
@@ -260,13 +333,62 @@ export class Squad {
 }
 
 const COORDINATOR_CRISIS_MODES: Record<CrisisType | 'power_emergency', SpecialistMode[]> = {
-  equipment_failure: ['engineering', 'systems', 'mission_planning', 'communications', 'engineering', 'science'],
-  novel_discovery: ['science', 'science', 'science', 'communications', 'mission_planning', 'systems'],
-  navigation_lost: ['navigation', 'navigation', 'systems', 'mission_planning', 'communications', 'engineering'],
-  communication_blackout: ['communications', 'communications', 'systems', 'mission_planning', 'science', 'engineering'],
-  power_critical: ['systems', 'systems', 'engineering', 'mission_planning', 'communications', 'navigation'],
-  power_emergency: ['systems', 'systems', 'engineering', 'mission_planning', 'communications', 'navigation'],
-  environmental_hazard: ['navigation', 'systems', 'science', 'mission_planning', 'communications', 'engineering'],
+  equipment_failure: [
+    'engineering',
+    'systems',
+    'mission_planning',
+    'communications',
+    'engineering',
+    'science',
+  ],
+  novel_discovery: [
+    'science',
+    'science',
+    'science',
+    'communications',
+    'mission_planning',
+    'systems',
+  ],
+  navigation_lost: [
+    'navigation',
+    'navigation',
+    'systems',
+    'mission_planning',
+    'communications',
+    'engineering',
+  ],
+  communication_blackout: [
+    'communications',
+    'communications',
+    'systems',
+    'mission_planning',
+    'science',
+    'engineering',
+  ],
+  power_critical: [
+    'systems',
+    'systems',
+    'engineering',
+    'mission_planning',
+    'communications',
+    'navigation',
+  ],
+  power_emergency: [
+    'systems',
+    'systems',
+    'engineering',
+    'mission_planning',
+    'communications',
+    'navigation',
+  ],
+  environmental_hazard: [
+    'navigation',
+    'systems',
+    'science',
+    'mission_planning',
+    'communications',
+    'engineering',
+  ],
 };
 
 export class MissionCoordinator {

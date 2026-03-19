@@ -220,10 +220,7 @@ export class QuantumStealthBrowser {
 
     // Compute URL embedding in Poincaré ball
     const urlCoords = this.urlToHyperbolic(url);
-    const distance = this.poincareDistance(
-      session.fingerprint.poincareCoords.coords,
-      urlCoords
-    );
+    const distance = this.poincareDistance(session.fingerprint.poincareCoords.coords, urlCoords);
 
     // Route hash (simulates routing through contact graph)
     const routeHash = createHmac('sha256', session.sessionKey)
@@ -319,7 +316,7 @@ export class QuantumStealthBrowser {
 
     // Project to ball interior (norm < maxBallRadius)
     const norm = Math.sqrt(raw.reduce((sum, v) => sum + v * v, 0));
-    const targetNorm = (norm > 0 ? (entropy[dim * 2]! / 255) : 0.5) * this.config.maxBallRadius;
+    const targetNorm = (norm > 0 ? entropy[dim * 2]! / 255 : 0.5) * this.config.maxBallRadius;
     const coords = norm > 0 ? raw.map((v) => (v / norm) * targetNorm) : raw;
 
     // Golden ratio tongue weights
@@ -391,9 +388,7 @@ export class QuantumStealthBrowser {
 
   /** Derive session HMAC key from master secret */
   private deriveSessionKey(sessionId: string): Buffer {
-    return createHmac('sha256', this.masterSecret)
-      .update(`qrsb-session-key:${sessionId}`)
-      .digest();
+    return createHmac('sha256', this.masterSecret).update(`qrsb-session-key:${sessionId}`).digest();
   }
 
   /** Breathing transform for temporal binding */

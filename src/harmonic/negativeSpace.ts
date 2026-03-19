@@ -83,10 +83,7 @@ export function classifyRealm(intentStrength: number, ballNorm: number): Realm {
  * @param intentStrength - Signed intent: -1.0 (opposing) to +1.0 (aligned)
  * @returns Signed embedding with realm classification
  */
-export function createSignedEmbedding(
-  features: number[],
-  intentStrength: number
-): SignedEmbedding {
+export function createSignedEmbedding(features: number[], intentStrength: number): SignedEmbedding {
   const clampedIntent = Math.max(-1, Math.min(1, intentStrength));
 
   // Scale features by intent: negative intent inverts and pushes to boundary
@@ -99,9 +96,10 @@ export function createSignedEmbedding(
     projected = scaled.map(() => 0);
   } else {
     // Push negative-intent vectors closer to boundary
-    const boundaryPressure = clampedIntent < 0
-      ? 0.85 + 0.14 * Math.abs(clampedIntent) // Shadow: 0.85-0.99
-      : Math.tanh(n);                          // Light: normal tanh projection
+    const boundaryPressure =
+      clampedIntent < 0
+        ? 0.85 + 0.14 * Math.abs(clampedIntent) // Shadow: 0.85-0.99
+        : Math.tanh(n); // Light: normal tanh projection
     projected = scaled.map((x) => (x / n) * Math.min(boundaryPressure, 1 - EPSILON));
   }
 
@@ -162,11 +160,7 @@ export function contrastiveDistance(a: SignedEmbedding, b: SignedEmbedding): num
  * @param negDimStart - Index where negative dimensions begin (default: half)
  * @returns Pseudo-metric inner product
  */
-export function pseudoMetricInnerProduct(
-  u: number[],
-  v: number[],
-  negDimStart?: number
-): number {
+export function pseudoMetricInnerProduct(u: number[], v: number[], negDimStart?: number): number {
   const boundary = negDimStart ?? Math.floor(u.length / 2);
   let result = 0;
 
@@ -192,11 +186,7 @@ export function pseudoMetricInnerProduct(
  * @param negDimStart - Index where negative dimensions begin
  * @returns Signed similarity in [-1, 1]
  */
-export function signedCosineSimilarity(
-  u: number[],
-  v: number[],
-  negDimStart?: number
-): number {
+export function signedCosineSimilarity(u: number[], v: number[], negDimStart?: number): number {
   const innerProduct = pseudoMetricInnerProduct(u, v, negDimStart);
   const uNorm = vecNorm(u);
   const vNorm = vecNorm(v);

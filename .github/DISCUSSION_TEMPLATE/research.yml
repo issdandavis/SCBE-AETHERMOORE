@@ -1,0 +1,42 @@
+title: "[Research] "
+labels:
+  - discussion
+  - research
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share research findings, paper references, mathematical insights, or experimental results
+        related to SCBE-AETHERMOORE's approach to AI safety.
+
+  - type: dropdown
+    id: domain
+    attributes:
+      label: Research Domain
+      options:
+        - Hyperbolic geometry / Poincare model
+        - Post-quantum cryptography
+        - AI safety & alignment
+        - Information theory / entropy
+        - Spectral analysis / FFT
+        - Adversarial robustness
+        - Multi-agent systems
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Summarize the research and its relevance to SCBE-AETHERMOORE
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links to papers, articles, or prior work
+    validations:
+      required: false

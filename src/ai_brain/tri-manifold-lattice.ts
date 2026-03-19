@@ -59,16 +59,16 @@ export const HARMONIC_R = 1.5;
 
 /** Default temporal window sizes (in ticks/samples) */
 export const DEFAULT_WINDOW_SIZES = {
-  immediate: 5,    // W₁: last 5 samples — fast reaction
-  memory: 25,      // W₂: last 25 samples — pattern memory
-  governance: 100,  // W_G: last 100 samples — policy enforcement
+  immediate: 5, // W₁: last 5 samples — fast reaction
+  memory: 25, // W₂: last 25 samples — pattern memory
+  governance: 100, // W_G: last 100 samples — policy enforcement
 } as const;
 
 /** Default triadic weights (λ₁, λ₂, λ₃), sum to 1 */
 export const DEFAULT_TRIADIC_WEIGHTS: TriadicWeights = {
-  immediate: 0.5,    // λ₁: fast signals weighted highest
-  memory: 0.3,       // λ₂: medium-term patterns
-  governance: 0.2,   // λ₃: slow governance drift
+  immediate: 0.5, // λ₁: fast signals weighted highest
+  memory: 0.3, // λ₂: medium-term patterns
+  governance: 0.2, // λ₃: slow governance drift
 };
 
 /** Maximum lattice depth before pruning old nodes */
@@ -112,8 +112,8 @@ export interface LatticeNode {
   hyperbolicDist: number;
   /** Windowed average distances per manifold */
   manifoldDistances: {
-    immediate: number;  // d₁(t)
-    memory: number;     // d₂(t)
+    immediate: number; // d₁(t)
+    memory: number; // d₂(t)
     governance: number; // d_G(t)
   };
   /** Combined triadic distance */
@@ -181,7 +181,7 @@ export function harmonicScaleInverse(d: number, R: number = HARMONIC_R): number 
  */
 export function harmonicScaleTable(
   maxD: number,
-  R: number = HARMONIC_R,
+  R: number = HARMONIC_R
 ): Array<{ d: number; scale: number; logScale: number }> {
   const table: Array<{ d: number; scale: number; logScale: number }> = [];
   for (let d = 1; d <= maxD; d++) {
@@ -214,12 +214,10 @@ export function triadicDistance(
   d1: number,
   d2: number,
   dG: number,
-  weights: TriadicWeights = DEFAULT_TRIADIC_WEIGHTS,
+  weights: TriadicWeights = DEFAULT_TRIADIC_WEIGHTS
 ): number {
   const sumSq =
-    weights.immediate * d1 * d1 +
-    weights.memory * d2 * d2 +
-    weights.governance * dG * dG;
+    weights.immediate * d1 * d1 + weights.memory * d2 * d2 + weights.governance * dG * dG;
   return Math.sqrt(Math.max(0, sumSq));
 }
 
@@ -227,11 +225,7 @@ export function triadicDistance(
  * Partial derivative of triadic distance w.r.t. component i.
  * ∂d_tri/∂dᵢ = λᵢ·dᵢ / d_tri
  */
-export function triadicPartial(
-  dI: number,
-  lambdaI: number,
-  dTri: number,
-): number {
+export function triadicPartial(dI: number, lambdaI: number, dTri: number): number {
   if (dTri < BRAIN_EPSILON) return 0;
   return (lambdaI * dI) / dTri;
 }
@@ -456,7 +450,7 @@ export class TriManifoldLattice {
     const d2 = this.nodes[n - 1].triadicDistance;
     const d1 = this.nodes[n - 2].triadicDistance;
     const d0 = this.nodes[n - 3].triadicDistance;
-    return (d2 - 2 * d1 + d0); // discrete second derivative
+    return d2 - 2 * d1 + d0; // discrete second derivative
   }
 
   /** Get the current triadic distance (0 if no samples). */
@@ -505,8 +499,7 @@ export class TriManifoldLattice {
     const { immediate: d1, memory: d2, governance: dG } = latest.manifoldDistances;
     const avg = (d1 + d2 + dG) / 3;
     if (avg < BRAIN_EPSILON) return 1; // All near zero = perfect resonance
-    const variance =
-      ((d1 - avg) ** 2 + (d2 - avg) ** 2 + (dG - avg) ** 2) / 3;
+    const variance = ((d1 - avg) ** 2 + (d2 - avg) ** 2 + (dG - avg) ** 2) / 3;
     // Map variance to [0, 1] resonance. Variance 0 → resonance 1.
     return 1 / (1 + variance / (avg * avg));
   }

@@ -63,12 +63,12 @@ function makeOutcome(overrides: Partial<EventOutcome> = {}): EventOutcome {
   };
 }
 
-function makeEvent(
-  safetyScore: number = 0.95,
-  success: boolean = true
-): GameEvent {
+function makeEvent(safetyScore: number = 0.95, success: boolean = true): GameEvent {
   return createGameEvent(
-    'session-1', 'player-1', 'comp-1', 'combat_action',
+    'session-1',
+    'player-1',
+    'comp-1',
+    'combat_action',
     makeContext(),
     makeAction(),
     makeOutcome({ safetyScore, success })
@@ -117,9 +117,9 @@ describe('Event Ingestion', () => {
   it('ingests a session of events with auto-classification', () => {
     const pipeline = makePipeline();
     const events = [
-      makeEvent(0.95),  // → APPROVED
-      makeEvent(0.6),   // → QUARANTINED
-      makeEvent(0.1),   // → REJECTED (below quarantine threshold)
+      makeEvent(0.95), // → APPROVED
+      makeEvent(0.6), // → QUARANTINED
+      makeEvent(0.1), // → REJECTED (below quarantine threshold)
     ];
 
     const result = pipeline.ingestSession(events);
@@ -235,13 +235,21 @@ describe('SFT Generation', () => {
     // failure: 0.95 × 0.3 × 0.9 = 0.2565 — still below threshold
     // So use confidence=1.0 and safety=1.0 for the failure event
     const successEvent = createGameEvent(
-      'session-1', 'player-1', 'comp-1', 'combat_action',
-      makeContext(), makeAction({ confidence: 1.0 }),
+      'session-1',
+      'player-1',
+      'comp-1',
+      'combat_action',
+      makeContext(),
+      makeAction({ confidence: 1.0 }),
       makeOutcome({ safetyScore: 0.95, success: true })
     );
     const failureEvent = createGameEvent(
-      'session-1', 'player-1', 'comp-1', 'combat_action',
-      makeContext(), makeAction({ confidence: 1.0 }),
+      'session-1',
+      'player-1',
+      'comp-1',
+      'combat_action',
+      makeContext(),
+      makeAction({ confidence: 1.0 }),
       makeOutcome({ safetyScore: 1.0, success: false })
     );
     // failure quality = 1.0 × 0.3 × 1.0 = 0.3 — still below 0.5
@@ -393,8 +401,8 @@ describe('Pipeline Summary', () => {
     const pipeline = makePipeline();
     pipeline.ingestSession([
       makeEvent(0.95), // approved
-      makeEvent(0.6),  // quarantined
-      makeEvent(0.1),  // rejected
+      makeEvent(0.6), // quarantined
+      makeEvent(0.1), // rejected
     ]);
     pipeline.generateSFTPairs();
     const batch = pipeline.createBatch()!;
@@ -436,8 +444,13 @@ describe('Pipeline Summary', () => {
 describe('createGameEvent', () => {
   it('creates a well-formed event', () => {
     const event = createGameEvent(
-      'session-1', 'player-1', 'comp-1', 'combat_action',
-      makeContext(), makeAction(), makeOutcome()
+      'session-1',
+      'player-1',
+      'comp-1',
+      'combat_action',
+      makeContext(),
+      makeAction(),
+      makeOutcome()
     );
 
     expect(event.eventId).toMatch(/^evt_/);

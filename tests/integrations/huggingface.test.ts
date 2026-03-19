@@ -56,9 +56,10 @@ function mockTransport(
 }
 
 /** Capture transport: records all requests */
-function captureTransport(
-  response: { status?: number; body: unknown } = { body: {} }
-): { transport: HttpTransport; calls: Array<{ url: string; method: string; body?: string }> } {
+function captureTransport(response: { status?: number; body: unknown } = { body: {} }): {
+  transport: HttpTransport;
+  calls: Array<{ url: string; method: string; body?: string }>;
+} {
   const calls: Array<{ url: string; method: string; body?: string }> = [];
   const transport: HttpTransport = async (url, init) => {
     calls.push({ url, method: init.method, body: init.body });
@@ -150,7 +151,9 @@ describe('B. Identity', () => {
   });
 
   it('should throw on 401', async () => {
-    setHttpTransport(mockTransport([{ match: 'whoami', status: 401, body: { error: 'Unauthorized' } }]));
+    setHttpTransport(
+      mockTransport([{ match: 'whoami', status: 401, body: { error: 'Unauthorized' } }])
+    );
     const client = new HuggingFaceClient({ apiKey: 'bad_key' });
     await expect(client.whoami()).rejects.toThrow(HFApiError);
   });
@@ -167,8 +170,22 @@ describe('B. Identity', () => {
 
 describe('C. Model Management', () => {
   const mockModels: Partial<HFModelInfo>[] = [
-    { id: 'user/model-1', modelId: 'model-1', author: 'user', tags: ['text-generation'], downloads: 100, likes: 5 },
-    { id: 'user/model-2', modelId: 'model-2', author: 'user', tags: ['feature-extraction'], downloads: 50, likes: 2 },
+    {
+      id: 'user/model-1',
+      modelId: 'model-1',
+      author: 'user',
+      tags: ['text-generation'],
+      downloads: 100,
+      likes: 5,
+    },
+    {
+      id: 'user/model-2',
+      modelId: 'model-2',
+      author: 'user',
+      tags: ['feature-extraction'],
+      downloads: 50,
+      likes: 2,
+    },
   ];
 
   it('should list models', async () => {
@@ -187,7 +204,9 @@ describe('C. Model Management', () => {
   });
 
   it('should create model repo', async () => {
-    const { transport, calls } = captureTransport({ body: { url: 'https://huggingface.co/user/new-model' } });
+    const { transport, calls } = captureTransport({
+      body: { url: 'https://huggingface.co/user/new-model' },
+    });
     setHttpTransport(transport);
 
     const client = new HuggingFaceClient({ apiKey: 'hf_test' });
@@ -200,7 +219,9 @@ describe('C. Model Management', () => {
   });
 
   it('should include namespace in repo creation', async () => {
-    const { transport, calls } = captureTransport({ body: { url: 'https://huggingface.co/myorg/new-model' } });
+    const { transport, calls } = captureTransport({
+      body: { url: 'https://huggingface.co/myorg/new-model' },
+    });
     setHttpTransport(transport);
 
     const client = new HuggingFaceClient({ apiKey: 'hf_test', namespace: 'myorg' });
@@ -219,7 +240,9 @@ describe('C. Model Management', () => {
   });
 
   it('should throw on 404 for missing model', async () => {
-    setHttpTransport(mockTransport([{ match: '/models/nonexistent', status: 404, body: { error: 'Not Found' } }]));
+    setHttpTransport(
+      mockTransport([{ match: '/models/nonexistent', status: 404, body: { error: 'Not Found' } }])
+    );
     const client = new HuggingFaceClient({ apiKey: 'hf_test' });
     await expect(client.getModel('nonexistent')).rejects.toThrow(HFApiError);
   });
@@ -252,15 +275,20 @@ describe('D. Inference — Text Generation', () => {
     const { transport, calls } = captureTransport({ body: [{ generated_text: 'test' }] });
     setHttpTransport(transport);
 
-    const client = new HuggingFaceClient({ apiKey: 'hf_test', endpoint: 'https://api-inference.huggingface.co' });
+    const client = new HuggingFaceClient({
+      apiKey: 'hf_test',
+      endpoint: 'https://api-inference.huggingface.co',
+    });
     await client.textGeneration('model-x', { inputs: 'test' });
     expect(calls[0].url).toContain('api-inference.huggingface.co/models/model-x');
   });
 
   it('should handle 503 (model loading)', async () => {
-    setHttpTransport(mockTransport([
-      { match: /models/, status: 503, body: { error: 'Model is currently loading' } },
-    ]));
+    setHttpTransport(
+      mockTransport([
+        { match: /models/, status: 503, body: { error: 'Model is currently loading' } },
+      ])
+    );
     const client = new HuggingFaceClient({ apiKey: 'hf_test' });
     await expect(client.textGeneration('big-model', { inputs: 'hi' })).rejects.toThrow('503');
   });
@@ -314,14 +342,19 @@ describe('E. Inference — Embeddings', () => {
 
 describe('F. Inference — Classification', () => {
   it('should classify text', async () => {
-    const mockResult = [[
-      { label: 'POSITIVE', score: 0.95 },
-      { label: 'NEGATIVE', score: 0.05 },
-    ]];
+    const mockResult = [
+      [
+        { label: 'POSITIVE', score: 0.95 },
+        { label: 'NEGATIVE', score: 0.05 },
+      ],
+    ];
     setHttpTransport(mockTransport([{ match: /models/, body: mockResult }]));
 
     const client = new HuggingFaceClient({ apiKey: 'hf_test' });
-    const result = await client.classify('distilbert-base-uncased-finetuned-sst-2-english', 'I love SCBE');
+    const result = await client.classify(
+      'distilbert-base-uncased-finetuned-sst-2-english',
+      'I love SCBE'
+    );
     expect(result[0][0].label).toBe('POSITIVE');
     expect(result[0][0].score).toBeGreaterThan(0.9);
   });
@@ -355,7 +388,9 @@ describe('G. Datasets', () => {
   });
 
   it('should create dataset repo', async () => {
-    const { transport, calls } = captureTransport({ body: { url: 'https://huggingface.co/datasets/user/new-ds' } });
+    const { transport, calls } = captureTransport({
+      body: { url: 'https://huggingface.co/datasets/user/new-ds' },
+    });
     setHttpTransport(transport);
 
     const client = new HuggingFaceClient({ apiKey: 'hf_test' });

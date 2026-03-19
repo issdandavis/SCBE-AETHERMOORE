@@ -46,12 +46,7 @@ export interface PolyhedronAccess {
   cognitiveFunction: string;
 }
 
-export type PolyhedronCategory =
-  | 'core'
-  | 'cortex'
-  | 'subconscious'
-  | 'cerebellum'
-  | 'connectome';
+export type PolyhedronCategory = 'core' | 'cortex' | 'subconscious' | 'cerebellum' | 'connectome';
 
 /**
  * The 16 canonical polyhedra with their access requirements
@@ -62,22 +57,82 @@ export const POLYHEDRA: PolyhedronAccess[] = [
   { name: 'Cube', category: 'core', minFlux: 0.1, cognitiveFunction: 'Stable facts' },
   { name: 'Octahedron', category: 'core', minFlux: 0.1, cognitiveFunction: 'Binary decisions' },
   { name: 'Dodecahedron', category: 'core', minFlux: 0.15, cognitiveFunction: 'Complex rules' },
-  { name: 'Icosahedron', category: 'core', minFlux: 0.2, cognitiveFunction: 'Multi-modal integration' },
+  {
+    name: 'Icosahedron',
+    category: 'core',
+    minFlux: 0.2,
+    cognitiveFunction: 'Multi-modal integration',
+  },
   // Cortex (3 Archimedean Solids) - accessible at QUASI and above
-  { name: 'Truncated Icosahedron', category: 'cortex', minFlux: 0.5, cognitiveFunction: 'Multi-step planning' },
-  { name: 'Rhombicuboctahedron', category: 'cortex', minFlux: 0.55, cognitiveFunction: 'Concept bridging' },
-  { name: 'Snub Dodecahedron', category: 'cortex', minFlux: 0.6, cognitiveFunction: 'Creative synthesis' },
+  {
+    name: 'Truncated Icosahedron',
+    category: 'cortex',
+    minFlux: 0.5,
+    cognitiveFunction: 'Multi-step planning',
+  },
+  {
+    name: 'Rhombicuboctahedron',
+    category: 'cortex',
+    minFlux: 0.55,
+    cognitiveFunction: 'Concept bridging',
+  },
+  {
+    name: 'Snub Dodecahedron',
+    category: 'cortex',
+    minFlux: 0.6,
+    cognitiveFunction: 'Creative synthesis',
+  },
   // Subconscious (2 Kepler-Poinsot Stars) - accessible at POLLY only
-  { name: 'Small Stellated Dodecahedron', category: 'subconscious', minFlux: 0.8, cognitiveFunction: 'High-risk abstract' },
-  { name: 'Great Stellated Dodecahedron', category: 'subconscious', minFlux: 0.85, cognitiveFunction: 'Adversarial detect' },
+  {
+    name: 'Small Stellated Dodecahedron',
+    category: 'subconscious',
+    minFlux: 0.8,
+    cognitiveFunction: 'High-risk abstract',
+  },
+  {
+    name: 'Great Stellated Dodecahedron',
+    category: 'subconscious',
+    minFlux: 0.85,
+    cognitiveFunction: 'Adversarial detect',
+  },
   // Cerebellum (2 Toroidal) - accessible at POLLY only
-  { name: 'Szilassi Polyhedron', category: 'cerebellum', minFlux: 0.8, cognitiveFunction: 'Self-diagnostic loops' },
-  { name: 'Csaszar Polyhedron', category: 'cerebellum', minFlux: 0.85, cognitiveFunction: 'Recursive processing' },
+  {
+    name: 'Szilassi Polyhedron',
+    category: 'cerebellum',
+    minFlux: 0.8,
+    cognitiveFunction: 'Self-diagnostic loops',
+  },
+  {
+    name: 'Csaszar Polyhedron',
+    category: 'cerebellum',
+    minFlux: 0.85,
+    cognitiveFunction: 'Recursive processing',
+  },
   // Connectome (4 Johnson/Rhombic) - accessible at QUASI and above
-  { name: 'Pentagonal Bipyramid', category: 'connectome', minFlux: 0.5, cognitiveFunction: 'Space-filling logic' },
-  { name: 'Triangular Cupola', category: 'connectome', minFlux: 0.5, cognitiveFunction: 'Pattern matching' },
-  { name: 'Rhombic Dodecahedron', category: 'connectome', minFlux: 0.55, cognitiveFunction: 'Spatial tiling' },
-  { name: 'Bilinski Dodecahedron', category: 'connectome', minFlux: 0.6, cognitiveFunction: 'Dual-space bridging' },
+  {
+    name: 'Pentagonal Bipyramid',
+    category: 'connectome',
+    minFlux: 0.5,
+    cognitiveFunction: 'Space-filling logic',
+  },
+  {
+    name: 'Triangular Cupola',
+    category: 'connectome',
+    minFlux: 0.5,
+    cognitiveFunction: 'Pattern matching',
+  },
+  {
+    name: 'Rhombic Dodecahedron',
+    category: 'connectome',
+    minFlux: 0.55,
+    cognitiveFunction: 'Spatial tiling',
+  },
+  {
+    name: 'Bilinski Dodecahedron',
+    category: 'connectome',
+    minFlux: 0.6,
+    cognitiveFunction: 'Dual-space bridging',
+  },
 ];
 
 /**
@@ -224,7 +279,8 @@ export class FluxStateManager {
     const reversion = this.config.meanReversionRate * (nuBar - record.nu);
 
     // Sinusoidal oscillation (breathing)
-    const oscillation = this.config.oscillationAmplitude *
+    const oscillation =
+      this.config.oscillationAmplitude *
       Math.sin(this.config.oscillationFrequency * record.timeStep);
 
     // Immune state penalty
@@ -283,13 +339,37 @@ export class FluxStateManager {
   } {
     switch (state) {
       case 'POLLY':
-        return { canProcess: true, canPlan: true, canCreate: true, canSelfDiagnose: true, maxCognitiveLayers: 16 };
+        return {
+          canProcess: true,
+          canPlan: true,
+          canCreate: true,
+          canSelfDiagnose: true,
+          maxCognitiveLayers: 16,
+        };
       case 'QUASI':
-        return { canProcess: true, canPlan: true, canCreate: false, canSelfDiagnose: false, maxCognitiveLayers: 11 };
+        return {
+          canProcess: true,
+          canPlan: true,
+          canCreate: false,
+          canSelfDiagnose: false,
+          maxCognitiveLayers: 11,
+        };
       case 'DEMI':
-        return { canProcess: true, canPlan: false, canCreate: false, canSelfDiagnose: false, maxCognitiveLayers: 5 };
+        return {
+          canProcess: true,
+          canPlan: false,
+          canCreate: false,
+          canSelfDiagnose: false,
+          maxCognitiveLayers: 5,
+        };
       case 'COLLAPSED':
-        return { canProcess: false, canPlan: false, canCreate: false, canSelfDiagnose: false, maxCognitiveLayers: 0 };
+        return {
+          canProcess: false,
+          canPlan: false,
+          canCreate: false,
+          canSelfDiagnose: false,
+          maxCognitiveLayers: 0,
+        };
     }
   }
 

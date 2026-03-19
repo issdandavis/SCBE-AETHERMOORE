@@ -225,17 +225,15 @@ export function localVote(
   phases: Record<string, number>,
   weights: Record<string, number>,
   denyCost: number = 50,
-  quarantineCost: number = 12,
+  quarantineCost: number = 12
 ): Decision {
   const allPhases = Object.values(phases);
-  const meanPhase = allPhases.length > 0
-    ? allPhases.reduce((a, b) => a + b, 0) / allPhases.length
-    : 0;
+  const meanPhase =
+    allPhases.length > 0 ? allPhases.reduce((a, b) => a + b, 0) / allPhases.length : 0;
   const phaseDelta = Math.abs(wrapPi((phases[lang] ?? 0) - meanPhase)) / Math.PI;
   const w = weights[lang] ?? 0.5;
 
-  const risk =
-    cost * (1 + 0.6 * phaseDelta) * (1 + 0.15 * w) * (1 + 0.5 * (1 - coherence));
+  const risk = cost * (1 + 0.6 * phaseDelta) * (1 + 0.15 * w) * (1 + 0.5 * (1 - coherence));
 
   if (risk > denyCost) return 'DENY';
   if (risk > quarantineCost) return 'QUARANTINE';
@@ -270,7 +268,7 @@ export function governanceTick(
   cost: number,
   coherence: number,
   phases: Record<string, number>,
-  weights: Record<string, number>,
+  weights: Record<string, number>
 ): { decision: Decision; votes: Record<Lang, Decision> } {
   const votes = {} as Record<Lang, Decision>;
   for (const L of TONGUES) {
@@ -329,7 +327,7 @@ export function eggSign(eggKeyBytes: Buffer, payload: string): string {
  */
 export function commitVoxel(
   rec: SimVoxelRecord,
-  eggKeyBytes?: Buffer,
+  eggKeyBytes?: Buffer
 ): { key: string; sig?: string } {
   const payload = JSON.stringify(rec);
   const sig = eggKeyBytes ? eggSign(eggKeyBytes, payload) : undefined;
@@ -377,7 +375,7 @@ export class GovernanceSimState {
   tick(
     pos: Point3D,
     phases: Record<string, number>,
-    weights: Record<string, number>,
+    weights: Record<string, number>
   ): {
     decision: Decision;
     motionAllowed: boolean;
@@ -397,12 +395,7 @@ export class GovernanceSimState {
 
     this.cost = layer12Cost(this.dStar, this.coherence);
 
-    const { decision, votes } = governanceTick(
-      this.cost,
-      this.coherence,
-      phases,
-      weights,
-    );
+    const { decision, votes } = governanceTick(this.cost, this.coherence, phases, weights);
     this.decision = decision;
     this.votes = votes;
 

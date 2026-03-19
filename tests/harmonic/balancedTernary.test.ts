@@ -185,7 +185,12 @@ describe('addBalancedTernary', () => {
   });
 
   it('result trits decode correctly via fromBalancedTernary', () => {
-    for (const [x, y] of [[7, 3], [-4, 9], [0, -12], [15, -15]]) {
+    for (const [x, y] of [
+      [7, 3],
+      [-4, 9],
+      [0, -12],
+      [15, -15],
+    ]) {
       const a = toBalancedTernary(x);
       const b = toBalancedTernary(y);
       const result = addBalancedTernary(a, b);
@@ -310,7 +315,7 @@ describe('quantize and dequantize', () => {
     const scale = 1.0;
     const { bt } = quantize(-1.0, scale);
     const recovered = dequantize(bt, scale);
-    expect(Math.abs(recovered - (-1.0))).toBeLessThan(0.01);
+    expect(Math.abs(recovered - -1.0)).toBeLessThan(0.01);
   });
 
   it('error field reflects quantization residual', () => {

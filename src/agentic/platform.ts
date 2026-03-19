@@ -316,7 +316,11 @@ export class AgenticCoderPlatform {
       this.emitEvent({
         type: 'task_failed',
         timestamp: Date.now(),
-        data: { taskId, error: blockedMsg, governanceAction: executionTicket.decisionRecord.action },
+        data: {
+          taskId,
+          error: blockedMsg,
+          governanceAction: executionTicket.decisionRecord.action,
+        },
       });
 
       return { success: false, output: blockedMsg, contributions: [] };
@@ -605,7 +609,8 @@ Style: ${agent.systemPrompt || 'Professional and thorough'}
 
 You are performing the action: ${action}
 Respond with clear, actionable output.`;
-      const providerTimeoutMs = Number.parseInt(process.env.SCBE_PROVIDER_TIMEOUT_MS || '', 10) || 10000;
+      const providerTimeoutMs =
+        Number.parseInt(process.env.SCBE_PROVIDER_TIMEOUT_MS || '', 10) || 10000;
 
       try {
         // Call provider with fallback chain and a hard timeout to prevent hangs.
@@ -655,13 +660,14 @@ Respond with clear, actionable output.`;
     const trustScore = Math.min(1.0, 0.5 + group.agents.length * 0.15);
     // Derive risk from task complexity
     const complexityRisk: Record<TaskComplexity, number> = {
-      simple: 0.2, moderate: 0.4, complex: 0.7,
+      simple: 0.2,
+      moderate: 0.4,
+      complex: 0.7,
     };
     const riskScore = complexityRisk[task.complexity] ?? 0.5;
     // Coherence from contribution alignment
-    const coherenceScore = task.contributions.length > 0
-      ? Math.min(1.0, 0.6 + task.contributions.length * 0.1)
-      : 0.8;
+    const coherenceScore =
+      task.contributions.length > 0 ? Math.min(1.0, 0.6 + task.contributions.length * 0.1) : 0.8;
 
     return {
       requestId: task.id,
@@ -693,6 +699,3 @@ Respond with clear, actionable output.`;
 export function createAgenticPlatform(provider: string = 'openai'): AgenticCoderPlatform {
   return new AgenticCoderPlatform({ defaultProvider: provider });
 }
-
-
-

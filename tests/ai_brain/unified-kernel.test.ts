@@ -27,7 +27,6 @@ import {
 } from '../../src/ai_brain/unified-kernel.js';
 import { BRAIN_DIMENSIONS, POINCARE_MAX_NORM } from '../../src/ai_brain/types.js';
 
-
 const ORIGINAL_HF_TOKEN = process.env.HUGGINGFACE_TOKEN;
 const ORIGINAL_PHDM_KEY = process.env.SCBE_PHDM_MASTER_KEY;
 
@@ -74,7 +73,7 @@ function safeAction(agentId: string, scale: number = 0.1): ProposedAction {
 function adversarialAction(agentId: string, scale: number = 0.95): ProposedAction {
   const state = new Array(BRAIN_DIMENSIONS).fill(0);
   for (let i = 0; i < state.length; i++) {
-    state[i] = (i % 2 === 0 ? 1 : -1) * scale / Math.sqrt(BRAIN_DIMENSIONS);
+    state[i] = ((i % 2 === 0 ? 1 : -1) * scale) / Math.sqrt(BRAIN_DIMENSIONS);
   }
   return { type: 'attack', stateVector: state };
 }
@@ -116,9 +115,7 @@ describe('Test A: Safety Invariant', () => {
     for (let i = 0; i < 20; i++) {
       const action = safeAction('safe-agent', 0.1 + i * 0.03);
       const result = kernel.processAction('safe-agent', action);
-      const norm = Math.sqrt(
-        result.state.hyp.reduce((s, v) => s + v * v, 0)
-      );
+      const norm = Math.sqrt(result.state.hyp.reduce((s, v) => s + v * v, 0));
       expect(norm).toBeLessThan(1.0);
     }
   });
@@ -193,21 +190,13 @@ describe('Test B: Torus Snap → Stutter → Flux Contraction', () => {
 
     // First: commit a normal event to establish torus position
     const normalEvent = memoryEvent(5, 1);
-    const r1 = kernel.processAction(
-      'snap-agent',
-      safeAction('snap-agent'),
-      normalEvent
-    );
+    const r1 = kernel.processAction('snap-agent', safeAction('snap-agent'), normalEvent);
     expect(r1.memoryResult).not.toBeNull();
     expect(r1.memoryResult!.committed).toBe(true);
 
     // Second: attempt a contradictory event
     const contradictory = contradictoryMemoryEvent();
-    const r2 = kernel.processAction(
-      'snap-agent',
-      safeAction('snap-agent'),
-      contradictory
-    );
+    const r2 = kernel.processAction('snap-agent', safeAction('snap-agent'), contradictory);
     expect(r2.memoryResult).not.toBeNull();
     expect(r2.memoryResult!.snap).toBe(true);
     expect(r2.memoryResult!.committed).toBe(false);
@@ -223,11 +212,7 @@ describe('Test B: Torus Snap → Stutter → Flux Contraction', () => {
     const tauBefore = stateBefore.penalties.tauDelay;
 
     // Trigger snap with contradictory event
-    kernel.processAction(
-      'stutter-agent',
-      safeAction('stutter-agent'),
-      contradictoryMemoryEvent()
-    );
+    kernel.processAction('stutter-agent', safeAction('stutter-agent'), contradictoryMemoryEvent());
 
     const stateAfter = kernel.getState('stutter-agent')!;
     expect(stateAfter.penalties.tauDelay).toBeGreaterThan(tauBefore);
@@ -262,11 +247,7 @@ describe('Test B: Torus Snap → Stutter → Flux Contraction', () => {
 
     // Trigger 3 snaps
     for (let i = 0; i < 3; i++) {
-      kernel.processAction(
-        'snap-counter',
-        safeAction('snap-counter'),
-        contradictoryMemoryEvent()
-      );
+      kernel.processAction('snap-counter', safeAction('snap-counter'), contradictoryMemoryEvent());
     }
 
     const state = kernel.getState('snap-counter')!;
@@ -328,10 +309,7 @@ describe('Test C: Dual-Lattice Runtime Response', () => {
     kernel.initializeAgent('phason-test');
 
     const safeResult = kernel.processAction('phason-test', safeAction('phason-test', 0.05));
-    const riskyResult = kernel.processAction(
-      'phason-test',
-      adversarialAction('phason-test', 0.8)
-    );
+    const riskyResult = kernel.processAction('phason-test', adversarialAction('phason-test', 0.8));
 
     // Higher risk should produce more topology changes
     // (measured by interference or displacement differences)
@@ -511,11 +489,7 @@ describe('Test E: Full Pipeline Lifecycle', () => {
     kernel.initializeAgent('memory-gate');
 
     // Safe action + memory event → should commit
-    const r1 = kernel.processAction(
-      'memory-gate',
-      safeAction('memory-gate'),
-      memoryEvent(5)
-    );
+    const r1 = kernel.processAction('memory-gate', safeAction('memory-gate'), memoryEvent(5));
     if (r1.decision === 'ALLOW' || r1.decision === 'TRANSFORM') {
       expect(r1.memoryResult).not.toBeNull();
     }
@@ -579,7 +553,7 @@ describe('Test F: Module Contract Verification', () => {
     const torus: TorusCoordinates = { theta: 1.0, phi: 0.5, rho: 1.5, sigma: 0.3 };
     const event: MemoryEvent = {
       contentHash: 'test',
-      domain: 3,  // maps to θ ≈ 0.898 (close to 1.0)
+      domain: 3, // maps to θ ≈ 0.898 (close to 1.0)
       sequence: 1,
       polarity: 0,
       authority: 0.05,
@@ -595,10 +569,10 @@ describe('Test F: Module Contract Verification', () => {
     const torus: TorusCoordinates = { theta: 0, phi: 0, rho: 0, sigma: 0 };
     const event: MemoryEvent = {
       contentHash: 'divergent',
-      domain: 10,       // maps to θ ≈ π (opposite of 0)
+      domain: 10, // maps to θ ≈ π (opposite of 0)
       sequence: 500,
-      polarity: 1,      // maps to ρ = π (far from 0)
-      authority: 0.5,   // maps to σ = π (far from 0)
+      polarity: 1, // maps to ρ = π (far from 0)
+      authority: 0.5, // maps to σ = π (far from 0)
     };
 
     const result = torusWriteGate(torus, event, 0.3);
@@ -646,9 +620,8 @@ describe('Test G: Adversarial Stress', () => {
     kernel.initializeAgent('alternator');
 
     for (let i = 0; i < 30; i++) {
-      const action = i % 2 === 0
-        ? safeAction('alternator', 0.1)
-        : adversarialAction('alternator', 0.85);
+      const action =
+        i % 2 === 0 ? safeAction('alternator', 0.1) : adversarialAction('alternator', 0.85);
       const result = kernel.processAction('alternator', action);
 
       // Should never crash, always produce valid result

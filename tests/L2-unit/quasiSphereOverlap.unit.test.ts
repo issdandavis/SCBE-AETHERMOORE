@@ -32,13 +32,27 @@ import {
 function makeState(pos: Vector6D, phase?: Vector6D): CHSFNState {
   return {
     position: pos,
-    phase: phase ?? [0, Math.PI / 3, (2 * Math.PI) / 3, Math.PI, (4 * Math.PI) / 3, (5 * Math.PI) / 3],
+    phase: phase ?? [
+      0,
+      Math.PI / 3,
+      (2 * Math.PI) / 3,
+      Math.PI,
+      (4 * Math.PI) / 3,
+      (5 * Math.PI) / 3,
+    ],
     mass: 1.0,
   };
 }
 
 const ORIGIN: Vector6D = [0, 0, 0, 0, 0, 0];
-const ALIGNED_PHASE: Vector6D = [0, Math.PI / 3, (2 * Math.PI) / 3, Math.PI, (4 * Math.PI) / 3, (5 * Math.PI) / 3];
+const ALIGNED_PHASE: Vector6D = [
+  0,
+  Math.PI / 3,
+  (2 * Math.PI) / 3,
+  Math.PI,
+  (4 * Math.PI) / 3,
+  (5 * Math.PI) / 3,
+];
 
 // ═══════════════════════════════════════════════════════════════
 // createQuasiSphere
@@ -296,7 +310,12 @@ describe('L2-UNIT: isWithinGeodesicConstraint', () => {
     // Misaligned phase should have high impedance → fail
     const misaligned: Vector6D = [Math.PI, Math.PI, Math.PI, Math.PI, Math.PI, Math.PI];
     const state = makeState(ORIGIN, misaligned);
-    const ok = isWithinGeodesicConstraint(state, center, PAD_GEODESIC_CONSTRAINTS.ENGINEERING, 0.001);
+    const ok = isWithinGeodesicConstraint(
+      state,
+      center,
+      PAD_GEODESIC_CONSTRAINTS.ENGINEERING,
+      0.001
+    );
     // Strict impedance threshold should likely reject
     expect(typeof ok).toBe('boolean');
   });

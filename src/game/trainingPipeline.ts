@@ -30,16 +30,16 @@ import { ConsumptionRecord } from './energyToken.js';
 
 /** Categories of game events that generate training data */
 export type GameEventType =
-  | 'combat_action'       // Player chose an attack / defense / dodge
-  | 'companion_command'   // Player issued a companion command
-  | 'companion_response'  // Companion autonomous behavior
-  | 'evolution_choice'    // Player selected an evolution branch
-  | 'formation_change'    // Player rearranged fleet formation
-  | 'codex_query'         // Player used codex terminal
-  | 'npc_dialogue'        // Player made a dialogue choice
-  | 'item_use'            // Player used an item
-  | 'exploration_action'  // Player explored / solved puzzle
-  | 'tower_strategy';     // Tower floor tactical decision
+  | 'combat_action' // Player chose an attack / defense / dodge
+  | 'companion_command' // Player issued a companion command
+  | 'companion_response' // Companion autonomous behavior
+  | 'evolution_choice' // Player selected an evolution branch
+  | 'formation_change' // Player rearranged fleet formation
+  | 'codex_query' // Player used codex terminal
+  | 'npc_dialogue' // Player made a dialogue choice
+  | 'item_use' // Player used an item
+  | 'exploration_action' // Player explored / solved puzzle
+  | 'tower_strategy'; // Tower floor tactical decision
 
 /** A single game event captured during an adventure */
 export interface GameEvent {
@@ -373,9 +373,7 @@ export class TrainingPipeline {
       `Evolution: ${ctx.evolutionStage}`,
       `Formation: ${ctx.formationType}`,
       `Enemies: ${ctx.enemyCount}`,
-      ctx.statusEffects.length > 0
-        ? `Status: ${ctx.statusEffects.join(', ')}`
-        : null,
+      ctx.statusEffects.length > 0 ? `Status: ${ctx.statusEffects.join(', ')}` : null,
       `Tongue: [${ctx.tongueVector.map((v) => v.toFixed(2)).join(', ')}]`,
       ``,
       `What action should the companion take?`,
@@ -393,8 +391,7 @@ export class TrainingPipeline {
 
     // Quality score = safety × success_factor × confidence
     const successFactor = outcome.success ? 1.0 : 0.3;
-    const qualityScore =
-      outcome.safetyScore * successFactor * Math.max(action.confidence, 0.5);
+    const qualityScore = outcome.safetyScore * successFactor * Math.max(action.confidence, 0.5);
 
     return {
       pairId: `sft_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,

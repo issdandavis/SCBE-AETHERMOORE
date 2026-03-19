@@ -41,7 +41,10 @@ function genuineDrift(dims: number = 21): { before: number[]; after: number[] } 
 }
 
 /** Generate a "synthetic" drift: uniform, too-clean noise */
-function syntheticDrift(dims: number = 21, epsilon: number = 0.001): { before: number[]; after: number[] } {
+function syntheticDrift(
+  dims: number = 21,
+  epsilon: number = 0.001
+): { before: number[]; after: number[] } {
   const before = Array.from({ length: dims }, () => Math.random());
   // Uniform drift — every dimension shifts by exactly epsilon
   const after = before.map((v) => v + epsilon);
@@ -141,7 +144,8 @@ describe('B — Fractal Dimension', () => {
     const captures: DriftCapture[] = [];
     for (let i = 0; i < 32; i++) {
       captures.push({
-        step: i, layer: 1,
+        step: i,
+        layer: 1,
         drift: [0.01, 0.01, 0.01],
         magnitude: 0.0173, // sqrt(3) * 0.01
         cv: 0,
@@ -189,9 +193,12 @@ describe('B — Fractal Dimension', () => {
     const captures: DriftCapture[] = [];
     for (let i = 0; i < 32; i++) {
       captures.push({
-        step: i, layer: 1,
+        step: i,
+        layer: 1,
         drift: [Math.sin(i * 0.7), Math.cos(i * 1.1), Math.sin(i * 0.3 + 1)],
-        magnitude: Math.sqrt(Math.sin(i * 0.7) ** 2 + Math.cos(i * 1.1) ** 2 + Math.sin(i * 0.3 + 1) ** 2),
+        magnitude: Math.sqrt(
+          Math.sin(i * 0.7) ** 2 + Math.cos(i * 1.1) ** 2 + Math.sin(i * 0.3 + 1) ** 2
+        ),
         cv: 0.5,
         timestamp: 1000 + i,
       });
@@ -206,7 +213,8 @@ describe('B — Fractal Dimension', () => {
     const captures: DriftCapture[] = [];
     for (let i = 0; i < 32; i++) {
       captures.push({
-        step: i, layer: 1,
+        step: i,
+        layer: 1,
         drift: [i * 0.01],
         magnitude: i * 0.01,
         cv: 0.5,
@@ -330,7 +338,8 @@ describe('D — Authenticity Assessment', () => {
     const captures: DriftCapture[] = [];
     for (let i = 0; i < 32; i++) {
       captures.push({
-        step: i, layer: 1,
+        step: i,
+        layer: 1,
         drift: [0.001, 0.001, 0.001],
         magnitude: 0.00173,
         cv: 0, // Uniform

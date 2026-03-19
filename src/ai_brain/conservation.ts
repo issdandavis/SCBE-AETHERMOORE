@@ -289,9 +289,7 @@ export function projectLatticeContinuity(
   if (!isAdjacent) {
     // Snap idx1 to nearest neighbor of idx0
     const neighbors = adjacencyMatrix
-      ? Array.from({ length: LATTICE_SIZE }, (_, j) => j).filter(
-          (j) => adjacencyMatrix[idx0]?.[j]
-        )
+      ? Array.from({ length: LATTICE_SIZE }, (_, j) => j).filter((j) => adjacencyMatrix[idx0]?.[j])
       : [Math.max(0, idx0 - 1), idx0, Math.min(LATTICE_SIZE - 1, idx0 + 1)];
 
     const uniqueNeighbors = [...new Set(neighbors)];
@@ -398,10 +396,7 @@ export function projectSpectralBounds(
  * @param vector - 21D state vector
  * @param config - Conservation configuration
  */
-export function computeGlobalInvariant(
-  vector: number[],
-  config: ConservationConfig = {}
-): number {
+export function computeGlobalInvariant(vector: number[], config: ConservationConfig = {}): number {
   const results = [
     projectContainment(vector, config.poincareClampNorm),
     projectPhaseCoherence(vector),

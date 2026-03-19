@@ -28,12 +28,19 @@ import {
 // ═══════════════════════════════════════════════════════════════
 
 const ORIGIN: Vector6D = [0, 0, 0, 0, 0, 0];
-const ALIGNED_PHASE: Vector6D = [0, Math.PI / 3, (2 * Math.PI) / 3, Math.PI, (4 * Math.PI) / 3, (5 * Math.PI) / 3];
+const ALIGNED_PHASE: Vector6D = [
+  0,
+  Math.PI / 3,
+  (2 * Math.PI) / 3,
+  Math.PI,
+  (4 * Math.PI) / 3,
+  (5 * Math.PI) / 3,
+];
 
 function makeState(pos: Vector6D, phase?: Vector6D, mass?: number): CHSFNState {
   return {
     position: pos,
-    phase: phase ?? [...ALIGNED_PHASE] as Vector6D,
+    phase: phase ?? ([...ALIGNED_PHASE] as Vector6D),
     mass: mass ?? 1.0,
   };
 }
@@ -104,10 +111,7 @@ describe('L2-UNIT: computeThreatLevel', () => {
 
   it('should increase with phase misalignment', () => {
     const aligned = makeState(ORIGIN, ALIGNED_PHASE);
-    const misaligned = makeState(
-      ORIGIN,
-      ALIGNED_PHASE.map((p) => p + Math.PI / 2) as Vector6D
-    );
+    const misaligned = makeState(ORIGIN, ALIGNED_PHASE.map((p) => p + Math.PI / 2) as Vector6D);
     expect(computeThreatLevel(misaligned)).toBeGreaterThanOrEqual(computeThreatLevel(aligned));
   });
 });
@@ -230,14 +234,10 @@ describe('L2-UNIT: detectTimeDilation', () => {
   });
 
   it('should NOT detect loops for spread-out positions', () => {
-    const history: Vector6D[] = Array.from({ length: 20 }, (_, i) => [
-      0.05 * i * 0.01 * (i % 3),
-      0.03 * i,
-      0.01 * (i * i % 7),
-      0,
-      0,
-      0,
-    ] as Vector6D);
+    const history: Vector6D[] = Array.from(
+      { length: 20 },
+      (_, i) => [0.05 * i * 0.01 * (i % 3), 0.03 * i, 0.01 * ((i * i) % 7), 0, 0, 0] as Vector6D
+    );
     const result = detectTimeDilation(history);
     // Spread-out positions should have fewer or no loops
     expect(result.hostile).toBe(false);
@@ -268,14 +268,10 @@ describe('L2-UNIT: computePositionEntropy', () => {
   });
 
   it('should be higher for diverse positions', () => {
-    const diverse: Vector6D[] = Array.from({ length: 10 }, (_, i) => [
-      (i - 5) * 0.15,
-      (i % 3 - 1) * 0.15,
-      0,
-      0,
-      0,
-      0,
-    ] as Vector6D);
+    const diverse: Vector6D[] = Array.from(
+      { length: 10 },
+      (_, i) => [(i - 5) * 0.15, ((i % 3) - 1) * 0.15, 0, 0, 0, 0] as Vector6D
+    );
     const uniform: Vector6D[] = new Array(10).fill([0.1, 0, 0, 0, 0, 0] as Vector6D);
 
     const eDiverse = computePositionEntropy(diverse);
@@ -284,14 +280,10 @@ describe('L2-UNIT: computePositionEntropy', () => {
   });
 
   it('should be in [0, 1]', () => {
-    const history: Vector6D[] = Array.from({ length: 5 }, (_, i) => [
-      i * 0.1,
-      0,
-      0,
-      0,
-      0,
-      0,
-    ] as Vector6D);
+    const history: Vector6D[] = Array.from(
+      { length: 5 },
+      (_, i) => [i * 0.1, 0, 0, 0, 0, 0] as Vector6D
+    );
     const e = computePositionEntropy(history);
     expect(e).toBeGreaterThanOrEqual(0);
     expect(e).toBeLessThanOrEqual(1);
