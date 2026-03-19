@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>AI Device Shell</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./static/icons/icon-192.png">
+<meta name="theme-color" content="#17c6cf">
+<link rel="stylesheet" href="./static/phone-shell.css">
+</head>
+<body>
+<div class="phone-shell has-primary-surface">
+  <section class="hero">
+    <div class="hero-top">
+      <span class="eyebrow">AI Device Shell</span>
+      <div class="actions">
+        <a class="btn-link" href="./polly-pad.html">Launcher</a>
+        <a class="btn-link" href="./browse.html">Browse</a>
+      </div>
+    </div>
+    <h1>One device. One main surface. One assistant surface.</h1>
+    <p class="lede">
+      This is the owned phone/tablet shell for the agent lane. The main panel stays large. The assistant panel stays visible.
+      Headless jobs can run in parallel, but this page preserves one readable live screen.
+    </p>
+    <div class="actions">
+      <span class="pill" id="runtimePill">Runtime: loading</span>
+      <span class="pill" id="mainPill">Main: loading</span>
+      <span class="pill" id="assistantPill">Assistant: loading</span>
+    </div>
+  </section>
+
+  <section class="section surface-primary">
+    <div class="section-head">
+      <div>
+        <h2>Main Surface</h2>
+        <p class="section-copy">Keep the real working screen here. Reader, Browse, Test, or another local route.</p>
+      </div>
+      <div class="actions">
+        <button class="btn" type="button" id="swapBtn">Swap Panels</button>
+      </div>
+    </div>
+    <div class="tab-row" id="mainPresetRow"></div>
+    <div class="iframe-shell">
+      <div class="iframe-toolbar">
+        <input id="mainRouteInput" type="text" placeholder="./browse.html">
+        <button class="btn primary" type="button" id="mainLoadBtn">Load Main</button>
+        <a class="btn-link secondary" id="mainOpenLink" target="_blank" rel="noopener">Open Full</a>
+      </div>
+      <iframe class="frame" id="mainFrame" title="Main Device Surface" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"></iframe>
+    </div>
+  </section>
+
+  <section class="section surface-support">
+    <div class="section-head">
+      <div>
+        <h2>Assistant Surface</h2>
+        <p class="section-copy">Keep Ops, Test, or another helper lane visible without stealing the main panel.</p>
+      </div>
+    </div>
+    <div class="tab-row" id="assistantPresetRow"></div>
+    <div class="iframe-shell">
+      <div class="iframe-toolbar">
+        <input id="assistantRouteInput" type="text" placeholder="./ops.html">
+        <button class="btn primary" type="button" id="assistantLoadBtn">Load Assistant</button>
+        <a class="btn-link secondary" id="assistantOpenLink" target="_blank" rel="noopener">Open Full</a>
+      </div>
+      <iframe class="frame" id="assistantFrame" title="Assistant Device Surface" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"></iframe>
+    </div>
+  </section>
+
+  <section class="section surface-support">
+    <div class="section-head">
+      <div>
+        <h2>Operating Pattern</h2>
+        <p class="section-copy">This page is the live shell. Background agents stay off-screen; the visible agent keeps one coherent device state.</p>
+      </div>
+    </div>
+    <div class="card-grid">
+      <article class="card">
+        <h3>Main panel</h3>
+        <p class="small-note">Put the browser, reader, or target lane here. It should stay the biggest visible surface.</p>
+      </article>
+      <article class="card">
+        <h3>Assistant panel</h3>
+        <p class="small-note">Keep Ops or Test here for synthesis, diagnostics, and command relay.</p>
+      </article>
+      <article class="card">
+        <h3>Headless lanes</h3>
+        <p class="small-note">Use background browser or workflow agents for extra work without destroying the live screen.</p>
+      </article>
+    </div>
+  </section>
+</div>
+
+<script src="./static/phone-shell.js"></script>
+<script>
+const STATE_KEY = "scbe.device.shell.v1";
+const PRESETS = [
+  { label: "Browse", route: "./browse.html" },
+  { label: "Reader", route: "./reader.html?chapter=ch01&variant=generated" },
+  { label: "Test", route: "./test.html" },
+  { label: "Ops", route: "./ops.html" },
+  { label: "Pad", route: "./polly-pad.html" }
+];
+
+function readState() {
+  return PhoneShell.readStorageJson(STATE_KEY, {
+    main: "./browse.html",
+    assistant: "./ops.html"
+  });
+}
+
+function writeState(state) {
+  PhoneShell.writeStorageJson(STATE_KEY, state);
+}
+
+function resolveRoute(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "./browse.html";
+  return raw;
+}
+
+function renderPresetRow(containerId, targetKey) {
+  const container = document.getElementById(containerId);
+  const state = readState();
+  container.innerHTML = PRESETS.map((preset) => {
+    const active = state[targetKey] === preset.route ? " active" : "";
+    return `<button class="tab-chip${active}" type="button" data-surface="${targetKey}" data-route="${PhoneShell.escapeHtml(preset.route)}">${PhoneShell.escapeHtml(preset.label)}</button>`;
+  }).join("");
+}
+
+function renderShell() {
+  const state = readState();
+  const mainRoute = resolveRoute(state.main);
+  const assistantRoute = resolveRoute(state.assistant);
+  document.getElementById("runtimePill").textContent = `Runtime: ${PhoneShell.runtimeLabel()}`;
+  document.getElementById("mainPill").textContent = `Main: ${mainRoute}`;
+  document.getElementById("assistantPill").textContent = `Assistant: ${assistantRoute}`;
+  document.getElementById("mainRouteInput").value = mainRoute;
+  document.getElementById("assistantRouteInput").value = assistantRoute;
+  document.getElementById("mainFrame").src = mainRoute;
+  document.getElementById("assistantFrame").src = assistantRoute;
+  document.getElementById("mainOpenLink").href = mainRoute;
+  document.getElementById("assistantOpenLink").href = assistantRoute;
+  renderPresetRow("mainPresetRow", "main");
+  renderPresetRow("assistantPresetRow", "assistant");
+  document.querySelectorAll("[data-surface]").forEach((node) => {
+    node.addEventListener("click", () => {
+      const next = readState();
+      next[node.dataset.surface] = node.dataset.route;
+      writeState(next);
+      renderShell();
+    });
+  });
+}
+
+function loadSurface(targetKey) {
+  const state = readState();
+  state[targetKey] = resolveRoute(document.getElementById(`${targetKey}RouteInput`).value);
+  writeState(state);
+  renderShell();
+}
+
+document.getElementById("mainLoadBtn").addEventListener("click", () => loadSurface("main"));
+document.getElementById("assistantLoadBtn").addEventListener("click", () => loadSurface("assistant"));
+document.getElementById("swapBtn").addEventListener("click", () => {
+  const state = readState();
+  const next = { main: state.assistant, assistant: state.main };
+  writeState(next);
+  renderShell();
+});
+document.getElementById("mainRouteInput").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    loadSurface("main");
+  }
+});
+document.getElementById("assistantRouteInput").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    loadSurface("assistant");
+  }
+});
+
+renderShell();
+</script>
+</body>
+</html>

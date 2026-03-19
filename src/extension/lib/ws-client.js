@@ -79,8 +79,20 @@ export class WsClient {
     return true;
   }
 
-  sendCommand(text) { return this.send('command', { text }); }
-  sendPageContext(url, title, text) { return this.send('page_context', { url, title, text }); }
+  sendCommand(text, routing = null) {
+    return this.send('command', {
+      text,
+      ...(routing ? { routing } : {}),
+    });
+  }
+
+  sendPageContext(payload, routing = null) {
+    return this.send('page_context', {
+      ...payload,
+      ...(routing ? { routing } : {}),
+    });
+  }
+
   sendZoneResponse(requestSeq, decision) { return this.send('zone_response', { request_seq: requestSeq, decision }); }
 
   disconnect() {

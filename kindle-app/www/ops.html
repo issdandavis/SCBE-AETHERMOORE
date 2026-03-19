@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ops Lane</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./static/icons/icon-192.png">
+<meta name="theme-color" content="#17c6cf">
+<link rel="stylesheet" href="./static/phone-shell.css">
+</head>
+<body>
+<div class="phone-shell has-primary-surface">
+  <section class="hero">
+    <div class="hero-top">
+      <span class="eyebrow">Ops Lane</span>
+      <div class="actions">
+        <a class="btn-link" href="./polly-pad.html">Launcher</a>
+        <a class="btn-link" href="./test.html">Test</a>
+      </div>
+    </div>
+    <h1>Chat, bridge control, and diagnostics.</h1>
+    <p class="lede">
+      This is the ops surface for the phone shell: one threaded chat, one bridge config, and lightweight diagnostics that confirm whether the backend is alive.
+    </p>
+    <div class="actions">
+      <span class="pill" id="runtimePill">Runtime: loading</span>
+      <span class="pill" id="providerPill">Provider: none</span>
+      <span class="status-pill" id="statusPill">Idle</span>
+    </div>
+  </section>
+
+  <section class="section surface-support">
+    <div class="section-head">
+      <div>
+        <h2>Bridge Settings</h2>
+        <p class="section-copy">Chat uses the bridge base. Diagnostics also use the bridge key because the integration status route is protected.</p>
+      </div>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label for="apiBaseInput">Bridge API base</label>
+        <input id="apiBaseInput" type="text">
+      </div>
+      <div class="field">
+        <label for="apiKeyInput">Bridge API key</label>
+        <input id="apiKeyInput" type="text" placeholder="scbe-dev-key">
+      </div>
+      <div class="field" style="grid-column:1/-1">
+        <label for="systemPromptInput">System prompt</label>
+        <input id="systemPromptInput" type="text" value="You are AetherCode Ops. Be concise, practical, and honest about limits.">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn" type="button" id="saveSettingsBtn">Save</button>
+      <button class="btn secondary" type="button" id="refreshDiagBtn">Refresh Diagnostics</button>
+    </div>
+  </section>
+
+  <section class="section surface-support" id="sharedSection" hidden>
+    <div class="section-head">
+      <div>
+        <h2>Shared Target</h2>
+        <p class="section-copy">Browse and Test can push a URL here so you can immediately ask the backend about it.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="small-note" id="sharedMeta"></div>
+      <h3 id="sharedTitle">Untitled</h3>
+      <div class="small-note mono" id="sharedUrl"></div>
+      <div class="actions" style="margin-top:10px">
+        <button class="btn primary" type="button" id="injectSharedBtn">Inject into Composer</button>
+        <a class="btn-link" href="./browse.html">Back to Browse</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section surface-support">
+    <div class="section-head">
+      <div>
+        <h2>Diagnostics</h2>
+        <p class="section-copy">Small checks only: health, providers, and browser integration reachability.</p>
+      </div>
+    </div>
+    <div class="card-grid" id="diagGrid"></div>
+  </section>
+
+  <section class="section surface-support">
+    <div class="section-head">
+      <div>
+        <h2>Providers</h2>
+        <p class="section-copy">These chips come from `v1/providers`. Pick one and keep the thread normal.</p>
+      </div>
+      <button class="btn" type="button" id="refreshProvidersBtn">Refresh Providers</button>
+    </div>
+    <div class="chip-row" id="providerChips"></div>
+  </section>
+
+  <section class="stack-card surface-primary">
+    <div class="stack-head">
+      <div class="meta-row">
+        <div>
+          <h2>Conversation</h2>
+          <p class="section-copy">Ops chat is a single clean thread over `v1/chat`.</p>
+        </div>
+        <button class="btn" type="button" id="clearThreadBtn">Clear</button>
+      </div>
+    </div>
+    <div class="stack-body">
+      <div class="thread" id="thread"></div>
+      <form id="composerForm">
+        <div class="composer">
+          <textarea id="composerInput" placeholder="Ask the backend to inspect the shared target, debug a route, or explain a failure. Shift+Enter makes a new line."></textarea>
+          <div class="actions">
+            <label class="small-note"><input id="keepThreadCheckbox" type="checkbox" checked> Keep thread memory</label>
+            <button class="btn primary" type="submit" id="sendBtn">Send</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+
+<script src="./static/phone-shell.js"></script>
+<script>
+const STATE_KEY = "scbe.ops.settings.v1";
+const THREAD_KEY = "scbe.ops.thread.v1";
+const TENTACLE_KEY = "scbe.ops.tentacle.v1";
+let providers = [];
+let thread = PhoneShell.readStorageJson(THREAD_KEY, []);
+let pending = false;
+
+function settings() {
+  return {
+    apiBase: document.getElementById("apiBaseInput").value.trim(),
+    apiKey: document.getElementById("apiKeyInput").value.trim(),
+    systemPrompt: document.getElementById("systemPromptInput").value.trim(),
+  };
+}
+
+function saveSettings() {
+  const state = settings();
+  PhoneShell.writeStorageJson(STATE_KEY, state);
+  return state;
+}
+
+function selectedProvider() {
+  return localStorage.getItem(TENTACLE_KEY) || "";
+}
+
+function setSelectedProvider(value) {
+  localStorage.setItem(TENTACLE_KEY, value);
+  document.getElementById("providerPill").textContent = `Provider: ${value || "none"}`;
+}
+
+function setStatus(label, tone = "") {
+  const pill = document.getElementById("statusPill");
+  pill.textContent = label;
+  pill.className = `status-pill${tone ? ` ${tone}` : ""}`;
+}
+
+function renderThread() {
+  const target = document.getElementById("thread");
+  if (!thread.length) {
+    target.innerHTML = `<div class="card"><div class="small-note">No messages yet. Choose a provider, then ask about the active app lane, bridge health, or the shared target.</div></div>`;
+    return;
+  }
+  target.innerHTML = thread.map((item) => `
+    <article class="bubble ${PhoneShell.escapeHtml(item.role)}">
+      <div class="bubble-text">${PhoneShell.escapeHtml(item.content)}</div>
+      ${item.meta ? `<div class="bubble-meta">${PhoneShell.escapeHtml(item.meta)}</div>` : ""}
+    </article>
+  `).join("");
+  target.scrollTop = target.scrollHeight;
+}
+
+function storeThread() {
+  PhoneShell.writeStorageJson(THREAD_KEY, thread.slice(-24));
+}
+
+function normaliseProviders(data) {
+  if (Array.isArray(data?.tentacles)) return data.tentacles;
+  if (data?.providers && typeof data.providers === "object") {
+    return Object.entries(data.providers).map(([tentacle, row]) => ({ tentacle, ...row }));
+  }
+  if (data && typeof data === "object") {
+    return Object.entries(data).map(([tentacle, row]) => ({ tentacle, ...(typeof row === "object" ? row : { available: Boolean(row) }) }));
+  }
+  return [];
+}
+
+function renderProviders() {
+  const selected = selectedProvider();
+  const target = document.getElementById("providerChips");
+  if (!providers.length) {
+    target.innerHTML = `<span class="status-pill bad">No providers returned</span>`;
+    return;
+  }
+  target.innerHTML = providers.map((row) => {
+    const active = row.tentacle === selected ? " active" : "";
+    const disabled = row.available ? "" : " disabled";
+    const offline = row.available ? "" : " offline";
+    return `<button class="chip${active}${offline}" type="button" data-provider="${PhoneShell.escapeHtml(row.tentacle)}"${disabled}>${PhoneShell.escapeHtml((row.display_name || row.tentacle) + " · " + (row.model || "model?"))}</button>`;
+  }).join("");
+  document.querySelectorAll("[data-provider]").forEach((node) => {
+    node.addEventListener("click", () => {
+      setSelectedProvider(node.getAttribute("data-provider"));
+      renderProviders();
+    });
+  });
+}
+
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, options);
+  const payload = await PhoneShell.readJson(response);
+  if (!response.ok) {
+    throw new Error(typeof payload.detail === "string" ? payload.detail : JSON.stringify(payload.detail || payload));
+  }
+  return payload;
+}
+
+async function refreshProviders() {
+  const state = saveSettings();
+  try {
+    providers = normaliseProviders(await fetchJson(`${state.apiBase}/v1/providers`, { cache: "no-store" }));
+    if (!providers.some((row) => row.tentacle === selectedProvider() && row.available)) {
+      const first = providers.find((row) => row.available);
+      setSelectedProvider(first ? first.tentacle : "");
+    }
+    renderProviders();
+  } catch (error) {
+    providers = [];
+    renderProviders();
+    setStatus(String(error), "bad");
+  }
+}
+
+async function refreshDiagnostics() {
+  const state = saveSettings();
+  const cards = [];
+  try {
+    const health = await fetchJson(`${state.apiBase}/health`);
+    cards.push({ title: "Bridge Health", tone: "good", body: JSON.stringify(health, null, 2) });
+  } catch (error) {
+    cards.push({ title: "Bridge Health", tone: "bad", body: String(error) });
+  }
+  try {
+    const integration = await fetchJson(`${state.apiBase}/v1/integrations/status`, {
+      headers: { "X-API-Key": state.apiKey },
+    });
+    cards.push({ title: "Integration Status", tone: integration.browser_service?.reachable ? "good" : "warn", body: JSON.stringify(integration, null, 2) });
+  } catch (error) {
+    cards.push({ title: "Integration Status", tone: "bad", body: String(error) });
+  }
+  cards.push({
+    title: "Runtime",
+    tone: "warn",
+    body: JSON.stringify({ runtime: PhoneShell.runtimeLabel(), hostAlias: PhoneShell.runtimeHost }, null, 2),
+  });
+  document.getElementById("diagGrid").innerHTML = cards.map((card) => `
+    <article class="card">
+      <div class="meta-row">
+        <h3>${PhoneShell.escapeHtml(card.title)}</h3>
+        <span class="status-pill ${PhoneShell.escapeHtml(card.tone)}">${PhoneShell.escapeHtml(card.tone)}</span>
+      </div>
+      <pre class="artifact-pre">${PhoneShell.escapeHtml(card.body)}</pre>
+    </article>
+  `).join("");
+}
+
+function renderSharedTarget() {
+  const shared = PhoneShell.getSharedTarget();
+  if (!shared || !shared.url) return;
+  document.getElementById("sharedSection").hidden = false;
+  document.getElementById("sharedMeta").textContent = `${shared.source || "unknown"} · ${shared.savedAt || ""}`;
+  document.getElementById("sharedTitle").textContent = shared.title || "Shared target";
+  document.getElementById("sharedUrl").textContent = shared.url;
+  document.getElementById("injectSharedBtn").onclick = () => {
+    const prompt = `Inspect this target and tell me the fastest next action.\nURL: ${shared.url}\nNote: ${shared.note || "none"}`;
+    const composer = document.getElementById("composerInput");
+    composer.value = composer.value ? `${composer.value}\n\n${prompt}` : prompt;
+    composer.focus();
+  };
+}
+
+function buildContext() {
+  const ctx = [];
+  const state = saveSettings();
+  if (state.systemPrompt) {
+    ctx.push({ role: "system", content: state.systemPrompt });
+  }
+  if (document.getElementById("keepThreadCheckbox").checked) {
+    ctx.push(...thread.filter((item) => item.role === "user" || item.role === "assistant").slice(-12).map((item) => ({
+      role: item.role,
+      content: item.content,
+    })));
+  }
+  return ctx;
+}
+
+async function sendMessage(event) {
+  event.preventDefault();
+  if (pending) return;
+  const text = document.getElementById("composerInput").value.trim();
+  if (!text) return;
+  const provider = selectedProvider();
+  if (!provider) {
+    setStatus("Pick a provider first", "bad");
+    return;
+  }
+  const state = saveSettings();
+  thread.push({ role: "user", content: text });
+  storeThread();
+  renderThread();
+  document.getElementById("composerInput").value = "";
+  pending = true;
+  document.getElementById("sendBtn").disabled = true;
+  setStatus(`Sending to ${provider}...`, "warn");
+  try {
+    const data = await fetchJson(`${state.apiBase}/v1/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: text,
+        mode: "chat",
+        tentacle: provider,
+        context: buildContext(),
+      }),
+    });
+    thread.push({
+      role: "assistant",
+      content: data.response || "",
+      meta: `${data.tentacle || provider} / ${data.model || "model?"} / ${Math.round(data.latency_ms || 0)}ms`,
+    });
+    storeThread();
+    renderThread();
+    setStatus("Response received", "good");
+  } catch (error) {
+    thread.push({ role: "error", content: String(error) });
+    storeThread();
+    renderThread();
+    setStatus("Chat failed", "bad");
+  } finally {
+    pending = false;
+    document.getElementById("sendBtn").disabled = false;
+  }
+}
+
+const initial = PhoneShell.readStorageJson(STATE_KEY, {
+  apiBase: PhoneShell.bridgeBase(8001),
+  apiKey: "scbe-dev-key",
+  systemPrompt: "You are AetherCode Ops. Be concise, practical, and honest about limits.",
+});
+document.getElementById("apiBaseInput").value = initial.apiBase;
+document.getElementById("apiKeyInput").value = initial.apiKey;
+document.getElementById("systemPromptInput").value = initial.systemPrompt;
+document.getElementById("runtimePill").textContent = `Runtime: ${PhoneShell.runtimeLabel()}`;
+setSelectedProvider(selectedProvider());
+renderThread();
+renderSharedTarget();
+document.getElementById("saveSettingsBtn").addEventListener("click", () => {
+  saveSettings();
+  setStatus("Settings saved", "good");
+});
+document.getElementById("refreshDiagBtn").addEventListener("click", refreshDiagnostics);
+document.getElementById("refreshProvidersBtn").addEventListener("click", refreshProviders);
+document.getElementById("clearThreadBtn").addEventListener("click", () => {
+  thread = [];
+  storeThread();
+  renderThread();
+  setStatus("Thread cleared", "warn");
+});
+document.getElementById("composerForm").addEventListener("submit", sendMessage);
+document.getElementById("composerInput").addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    document.getElementById("composerForm").requestSubmit();
+  }
+});
+refreshProviders();
+refreshDiagnostics();
+</script>
+</body>
+</html>
