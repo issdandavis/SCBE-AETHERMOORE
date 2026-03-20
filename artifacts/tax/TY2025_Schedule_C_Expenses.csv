@@ -1,0 +1,75 @@
+Date,Vendor,Amount,Category,Schedule_C_Line,Type
+2025-06-05,Google ChatGPT,21.77,AI Subscription,27a,Expense
+2025-06-07,ANTHROPIC,5.43,AI Subscription,27a,Expense
+2025-06-07,Google Claude by Anth,21.78,AI Subscription,27a,Expense
+2025-06-07,CLAUDE.AI SUBSCRIPTION,21.72,AI Subscription,27a,Expense
+2025-06-07,Google ChatGPT,185.38,AI Subscription,27a,Expense
+2025-06-09,CLAUDE.AI SUBSCRIPTION,88.43,AI Subscription,27a,Expense
+2025-06-09,XAI LLC,30.0,AI Subscription,27a,Expense
+2025-06-10,Google Claude by Anth,-21.78,AI Subscription,27a,Refund
+2025-06-14,CLAUDE.AI SUBSCRIPTION,125.02,AI Subscription,27a,Expense
+2025-06-19,Google One,21.77,Cloud Storage,27a,Expense
+2025-06-28,Google Perplexity Ask,21.77,AI Subscription,27a,Expense
+2025-07-03,Google ChatGPT,217.8,AI Subscription,27a,Expense
+2025-07-09,XAI LLC,30.0,AI Subscription,27a,Expense
+2025-07-14,CLAUDE.AI SUBSCRIPTION,217.2,AI Subscription,27a,Expense
+2025-08-08,Google ChatGPT,10.89,AI Subscription,27a,Expense
+2025-08-09,XAI LLC,30.0,AI Subscription,27a,Expense
+2025-08-14,CLAUDE.AI SUBSCRIPTION,108.6,AI Subscription,27a,Expense
+2025-09-06,Google ChatGPT,10.89,AI Subscription,27a,Expense
+2025-09-09,XAI LLC,30.0,AI Subscription,27a,Expense
+2025-09-14,CLAUDE.AI SUBSCRIPTION,21.72,AI Subscription,27a,Expense
+2025-10-06,Google ChatGPT,10.89,AI Subscription,27a,Expense
+2025-10-14,CLAUDE.AI SUBSCRIPTION,21.72,AI Subscription,27a,Expense
+2025-11-06,Google ChatGPT,21.77,AI Subscription,27a,Expense
+2025-11-14,CLAUDE.AI SUBSCRIPTION,21.72,AI Subscription,27a,Expense
+2025-11-19,CLAUDE.AI SUBSCRIPTION,199.35,AI Subscription,27a,Expense
+2025-11-19,XAI LLC,30.0,AI Subscription,27a,Expense
+2025-11-20,"GITHUB, INC.",10.0,Dev Tools,27a,Expense
+2025-11-22,"GITHUB, INC.",51.85,Dev Tools,27a,Expense
+2025-11-22,"GITHUB, INC.",10.0,Dev Tools,27a,Expense
+2025-11-22,"GITHUB, INC.",10.0,Dev Tools,27a,Expense
+2025-11-22,"GITHUB, INC.",39.53,Dev Tools,27a,Expense
+2025-11-22,GOOGLE *GitHub,42.46,Dev Tools,27a,Expense
+2025-11-22,GOOGLE *GitHub,42.46,Dev Tools,27a,Expense
+2025-11-23,"GITHUB, INC.",1.0,Dev Tools,27a,Expense
+2025-11-23,"GITHUB, INC.",52.13,Dev Tools,27a,Expense
+2025-11-23,"GITHUB, INC.",10.0,Dev Tools,27a,Expense
+2025-11-24,Google One,-12.35,Cloud Storage,27a,Refund
+2025-11-29,WWW.PERPLEXITY.AI,43.44,AI Subscription,27a,Expense
+2025-11-30,OPENAI *CHATGPT SUBSCR,65.16,AI Subscription,27a,Expense
+2025-11-30,OPENAI *CHATGPT SUBSCR,65.16,AI Subscription,27a,Expense
+2025-11-30,CANVA* I04716-16681515,21.72,Dev Tools,27a,Expense
+2025-11-30,CANVA* PAAAAG5CUNWHFDX,1.0,Dev Tools,27a,Expense
+2025-11-30,CANVA* PAAAAG5CTPZKYY2,1.0,Dev Tools,27a,Expense
+2025-11-30,SLACK T0A0YJDC36D,19.55,Dev Tools,27a,Expense
+2025-12-01,"GITHUB, INC.",20.33,Dev Tools,27a,Expense
+2025-12-01,"GITHUB, INC.",20.33,Dev Tools,27a,Expense
+2025-12-01,STRIPE TRANSFER,97.74,Business Services,27a,Expense
+2025-12-07,"REPLIT, INC.",27.15,Dev Tools,27a,Expense
+2025-12-07,ZAPIER.COM/CHARGE,76.23,Dev Tools,27a,Expense
+2025-12-07,ANTHROPIC,10.97,AI Subscription,27a,Expense
+2025-12-08,"NOTION LABS, INC.",52.13,Dev Tools,27a,Expense
+2025-12-09,ZAPIER.COM/CHARGE,38.31,Dev Tools,27a,Expense
+2025-12-14,"REPLIT, INC.",56.09,Dev Tools,27a,Expense
+2025-12-14,"REPLIT, INC.",55.15,Dev Tools,27a,Expense
+2025-12-15,"REPLIT, INC.",54.6,Dev Tools,27a,Expense
+2025-12-15,"REPLIT, INC.",54.94,Dev Tools,27a,Expense
+2025-12-16,"REPLIT, INC.",54.57,Dev Tools,27a,Expense
+2025-12-19,"GITHUB, INC.",20.0,Dev Tools,27a,Expense
+2025-12-19,CLAUDE.AI SUBSCRIPTION,217.2,AI Subscription,27a,Expense
+2025-12-19,XAI LLC,30.0,AI Subscription,27a,Expense
+2025-12-19,SHOPIFY* 461928566,1.09,Business Services,27a,Expense
+2025-12-20,"NOTION LABS, INC.",26.06,Dev Tools,27a,Expense
+2025-12-20,WWW.PERPLEXITY.AI,13.67,AI Subscription,27a,Expense
+2025-12-20,SLACK T09U9MBHKB7,39.1,Dev Tools,27a,Expense
+2025-12-22,"NOTION LABS, INC.",7.15,Dev Tools,27a,Expense
+2025-12-23,"GITHUB, INC.",20.0,Dev Tools,27a,Expense
+2025-12-26,VERCEL INC.,21.72,Hosting/Cloud,25,Expense
+2025-12-26,VERCEL INC.,0.5,Hosting/Cloud,25,Expense
+2025-12-29,WWW.PERPLEXITY.AI,86.88,AI Subscription,27a,Expense
+2025-12-30,OPENAI *CHATGPT SUBSCR,129.76,AI Subscription,27a,Expense
+2025-12-30,CANVA* I04746-22780725,43.44,Dev Tools,27a,Expense
+2025-12-30,CANVA* I04746-20705915,217.2,Dev Tools,27a,Expense
+2025-12-30,CANVA* I04746-20705915,217.2,Dev Tools,27a,Expense
+2025-12-31,OPENAI *CHATGPT SUBSCR,65.16,AI Subscription,27a,Expense
