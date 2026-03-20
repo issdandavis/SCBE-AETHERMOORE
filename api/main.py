@@ -20,9 +20,13 @@ import json
 import logging
 import math
 import os
+import sys
 import secrets
 import time
 import uuid
+
+# Add examples/ to path for spiralverse_core/spiralverse_sdk imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "examples"))
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional

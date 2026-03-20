@@ -19,6 +19,12 @@ All security-critical code is in spiralverse_core.py.
 
 import asyncio
 import json
+import os
+import sys
+
+# Add examples/ to path for spiralverse_core import
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "examples"))
+
 from spiralverse_core import (
     EnvelopeCore,
     SecurityGateCore,

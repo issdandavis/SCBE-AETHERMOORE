@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **Property Testing** | fast-check (TS), Hypothesis (Python) |
 | **API** | FastAPI + Uvicorn (Python), Express 5 (TypeScript) |
 | **TypeScript** | ^5.8.3, target ES2022, CommonJS |
-| **Package Version** | npm 3.2.6 / PyPI 3.3.0 |
+| **Package Version** | 3.3.0 (npm + PyPI synced) |
 | **Package Entry** | `./dist/src/index.js` |
 
 ## Common Commands
@@ -84,9 +84,17 @@ There are **two** `symphonic_cipher/` directories with **different** math:
 | **Root** `symphonic_cipher/` | `H(d,R) = R^(d²)` | Exponential cost multiplier |
 | **`src/symphonic_cipher/`** | `H(d,pd) = 1/(1+d+2*pd)` | Bounded safety score in (0,1] |
 
-**Import collision**: Many test files do `sys.path.insert(0, "src/")`, which causes `import symphonic_cipher` to resolve to the `src/` version instead of root. Tests use `_IS_SAFETY_SCORE` flag to detect which variant loaded. When writing new tests, be explicit about which module you need.
+**Import collision**: Many test files do `sys.path.insert(0, "src/")`, which causes `import symphonic_cipher` to resolve to the `src/` version instead of root. Both packages expose variant tags for runtime detection:
 
-The `tests/conftest.py` adds the project root to `sys.path` and patches `ai_brain` submodule aliases for legacy import paths.
+```python
+import symphonic_cipher
+if symphonic_cipher._IS_SAFETY_SCORE:   # True = src/ variant (bounded score)
+    ...
+if symphonic_cipher._VARIANT == "root": # "root" or "src"
+    ...
+```
+
+When writing new tests, be explicit about which module you need. The `tests/conftest.py` adds the project root to `sys.path` and patches `ai_brain` submodule aliases for legacy import paths.
 
 ## liboqs PQC Migration
 
@@ -202,6 +210,8 @@ scripts/                        # 149 automation scripts
 ├── hf_training_loop.py         # HuggingFace training
 └── ...                         # Build, deploy, training, orchestration
 
+demos/                          # Demo scripts (moved from root)
+examples/                       # Standalone example modules (moved from root)
 config/                         # Configuration files (8 subdirs)
 k8s/                            # Kubernetes manifests (3 subdirs)
 rust/                           # Rust implementations (scbe_core)
@@ -209,7 +219,6 @@ mcp/                            # MCP server implementation
 plugins/                        # Plugin system
 tools/                          # Utility tools
 ui/                             # React/UI components
-godot/                          # Godot game engine integration
 skills/                         # Skill implementations (10 subdirs)
 training/                       # Training orchestration (14 subdirs)
 training-data/                  # SFT/DPO training data (26 subdirs)
