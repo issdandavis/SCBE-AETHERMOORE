@@ -1,0 +1,75 @@
+{
+  "_comment": "SCBE Tax Tool \u2014 Tax Year 2025 input template. Fill in your values.",
+  "taxpayer": {
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "ssn": "000-00-0000",
+    "filing_status": "single",
+    "_filing_status_options": [
+      "single",
+      "married_filing_jointly",
+      "married_filing_separately",
+      "head_of_household",
+      "qualifying_surviving_spouse"
+    ],
+    "age": 30,
+    "is_blind": false,
+    "spouse_first_name": "",
+    "spouse_last_name": "",
+    "spouse_ssn": "",
+    "spouse_age": 0,
+    "spouse_is_blind": false,
+    "address": "123 Main St",
+    "city": "Anytown",
+    "state": "CA",
+    "zip_code": "90210",
+    "can_be_claimed_as_dependent": false
+  },
+  "w2s": [
+    {
+      "_comment": "One entry per W-2. Copy values from your W-2 form.",
+      "employer_name": "Acme Corp",
+      "employer_ein": "12-3456789",
+      "wages": 65000.0,
+      "federal_tax_withheld": 8500.0,
+      "social_security_wages": 65000.0,
+      "social_security_tax": 4030.0,
+      "medicare_wages": 65000.0,
+      "medicare_tax": 942.5,
+      "state": "CA",
+      "state_wages": 65000.0,
+      "state_tax_withheld": 3200.0
+    }
+  ],
+  "income_1099s": [
+    {
+      "_comment": "One entry per 1099. type: INT, DIV, NEC, or MISC.",
+      "type": "INT",
+      "payer_name": "Chase Bank",
+      "amount": 150.0,
+      "federal_tax_withheld": 0.0
+    }
+  ],
+  "other_income": 0.0,
+  "itemized_deductions": {
+    "_comment": "Fill this out OR delete this section to use standard deduction.",
+    "medical_expenses": 0.0,
+    "state_local_taxes": 0.0,
+    "real_estate_taxes": 0.0,
+    "mortgage_interest": 0.0,
+    "charitable_cash": 0.0,
+    "charitable_noncash": 0.0,
+    "other_deductions": 0.0
+  },
+  "credits": {
+    "child_tax_credit_dependents": 0,
+    "other_dependents": 0,
+    "education_credits": 0.0,
+    "retirement_savings_credit": 0.0,
+    "earned_income_credit": 0.0,
+    "estimated_tax_payments": 0.0
+  },
+  "ira_deduction": 0.0,
+  "student_loan_interest": 0.0,
+  "hsa_deduction": 0.0
+}
