@@ -16,6 +16,8 @@ We introduce the **PhaseTunnelGate**, a post-hoc analysis and governance mechani
 
 **Keywords:** mechanistic interpretability, attention heads, spectral analysis, AI governance, phase tunneling, transformer weight matrices, mode-selective control
 
+**Reproducibility:** All experiments are available as executable cells in the [Colab Notebook](https://colab.research.google.com/gist/issdandavis/dcf0260083f8570815e33e0262e7a4c7/spiralverse-protocol-ai-training-data-generator.ipynb). Source code: [github.com/issdandavis/SCBE-AETHERMOORE](https://github.com/issdandavis/SCBE-AETHERMOORE).
+
 ---
 
 ## 1. Introduction
