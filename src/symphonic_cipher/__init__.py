@@ -15,6 +15,11 @@ All formulas follow the mathematical specification exactly.
 __version__ = "1.0.0"
 __author__ = "Spiralverse RWP v3"
 
+# Variant tag: SRC package uses bounded safety score H(d,pd) = 1/(1+d+2*pd) ∈ (0,1]
+# See CLAUDE.md "Critical Gotcha: Dual symphonic_cipher Packages"
+_IS_SAFETY_SCORE = True
+_VARIANT = "src"
+
 from .symphonic_core import (
     SymphonicCipher,
     ConlangDictionary,
