@@ -83,6 +83,33 @@ Dev.to post attempt failed:
 
 This is an auth problem, not a content problem.
 
+### Follow-up repair pass
+
+The Dev.to path was checked again after the first handoff.
+
+Findings:
+
+- the connector oauth file still held the placeholder value `REPLACE_ME`
+- `scripts/publish/post_to_devto.py` was updated to ignore placeholder values instead of treating them as real API keys
+- focused regression test added in `tests/test_post_to_devto.py`
+- targeted pytest result: `2 passed`
+
+Current Dev.to blocker after the fix:
+
+- evidence: `artifacts/publish_browser/devto_20260319T232100Z.json`
+- result: `No Dev.to API key found. Set DEVTO_API_KEY environment variable.`
+
+Browser fallback was also probed through the persistent `creator-main` browser profile:
+
+- direct visit to `https://dev.to/new` still showed the Dev.to sign-in wall
+- GitHub OAuth fallback redirected to GitHub sign-in instead of silently completing auth
+
+Meaning:
+
+- there is no working Dev.to API credential in the current repo/env path
+- there is also no reusable logged-in Dev.to/GitHub browser session available in the current creator profile
+- Dev.to remains blocked until credentials or a live session are restored
+
 ---
 
 ## Search visibility state
@@ -99,6 +126,17 @@ What is **not** confirmed yet:
 - exact-title indexing in Google or other web search
 
 Exact-title web checks did **not** show immediate indexing. That is consistent with Google's own guidance: eligibility and accessibility do not guarantee immediate crawl or index inclusion.
+
+Follow-up search recheck after publishing:
+
+- exact-title queries still did not surface the Hugging Face discussion URLs in generic web search
+- exact-URL queries also did not surface the pages in generic web search
+- direct fetch verification still returned HTTP 200 for both Hugging Face discussion URLs
+
+So the state is still:
+
+- `public and reachable`: yes
+- `search indexed`: not yet demonstrated
 
 Search state artifact:
 
@@ -120,6 +158,7 @@ Web GitHub posting was not used in this lane because `gh auth status` was invali
 2. Repair GitHub CLI auth if a GitHub discussion or issue mirror is required.
 3. Re-check search indexing after crawl delay instead of assuming same-day visibility.
 4. If stronger search visibility is needed, publish matching articles on a property you control directly and add a crawl path there.
+5. Reuse the fixed Dev.to publisher behavior so placeholder secrets fail fast instead of producing misleading 401 errors.
 
 ---
 
