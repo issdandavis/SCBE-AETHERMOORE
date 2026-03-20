@@ -43,6 +43,9 @@ import sys
 import time
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+# Add examples/ to path for spatial_engine import
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "examples"))
+
 # ═══════════════════════════════════════════════════════════════
 # Core Lexicon & Tokenizer
 # ═══════════════════════════════════════════════════════════════
