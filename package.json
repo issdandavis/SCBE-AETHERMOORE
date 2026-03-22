@@ -6,6 +6,10 @@
   "license": "MIT",
   "type": "commonjs",
   "main": "./dist/src/index.js",
+  "bin": {
+    "scbe": "./bin/scbe.cjs",
+    "scbe-system": "./bin/scbe-system.cjs"
+  },
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
@@ -56,6 +60,11 @@
   },
   "files": [
     "dist/src",
+    "bin",
+    "scbe.py",
+    "scripts/scbe-system-cli.py",
+    "scripts/scbe_system_cli.py",
+    "scripts/__init__.py",
     "README.md",
     "LICENSE",
     "examples/npm"
@@ -84,6 +93,15 @@
     "connector:health": "python scripts/connector_health_check.py",
     "scbe:bootstrap": "powershell -ExecutionPolicy Bypass -File ./scripts/scbe_bootstrap.ps1",
     "system:cli": "python scripts/scbe-system-cli.py",
+    "eval:legacy:hf": "python scripts/run_legacy_hf_eval.py",
+    "probe:attention:fft": "python scripts/probe_attention_fft.py",
+    "probe:attention:fft:live": "python scripts/run_attention_fft_probe.py",
+    "probe:attention:thermal": "python scripts/probe_thermal_mirror.py",
+    "probe:attention:thermal:live": "python scripts/run_thermal_mirror_probe.py",
+    "aetherbrowser:model:cli": "python scripts/system/aetherbrowser_model_cli.py",
+    "aetherbrowser:service:start": "powershell -ExecutionPolicy Bypass -File ./scripts/system/start_aetherbrowser_extension_service.ps1",
+    "aetherbrowser:service:verify": "python scripts/verify_aetherbrowser_extension_service.py --run-backend-smoke",
+    "aetherbrowser:service:stop": "powershell -ExecutionPolicy Bypass -File ./scripts/system/stop_aetherbrowser_extension_service.ps1",
     "m6:train": "python scripts/train_m6_spheremesh.py",
     "demo": "start scbe-aethermoore/customer-demo.html",
     "agentic:demo": "ts-node src/agentic/demo-runner.ts",
@@ -149,7 +167,8 @@
     "@noble/hashes": "^2.0.1",
     "@noble/post-quantum": "^0.5.4",
     "@notionhq/client": "^5.9.0",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.3.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
@@ -164,7 +183,8 @@
     "ts-node": "^10.9.2",
     "typedoc": "^0.28.17",
     "typescript": "^5.8.3",
-    "vitest": "^4.0.17"
+    "vitest": "^4.0.17",
+    "ws": "^8.19.0"
   },
   "overrides": {
     "tar": ">=7.0.0",

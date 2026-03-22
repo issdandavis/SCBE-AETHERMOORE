@@ -58,7 +58,7 @@ def test_parser_based_html_text_extractors_strip_malformed_script_tags() -> None
 
     excerpt = playwriter_lane_runner._extract_text_excerpt(html)
     gov_text = gov_contract_scan._to_text(html)
-    plain = agentic_web_tool._html_to_plain_text(html)
+    plain = agentic_web_tool.html_to_text(html)
 
     for value in (excerpt, gov_text, plain):
         assert "alert(1)" not in value

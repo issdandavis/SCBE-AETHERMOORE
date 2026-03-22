@@ -4,6 +4,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pytest
 
@@ -49,6 +50,10 @@ def _run_powershell(command: str, timeout: int = 180) -> str:
             f"PowerShell failed with exit code {proc.returncode}\nSTDOUT:\n{proc.stdout}\nSTDERR:\n{proc.stderr}"
         )
     return proc.stdout
+
+
+def _host_equals(url: str, expected_host: str) -> bool:
+    return (urlparse(url.strip()).hostname or "").strip(".").lower() == expected_host.lower()
 
 
 def test_help_lists_new_command_center_surface() -> None:
@@ -156,4 +161,4 @@ def test_colab_catalog_commands_surface_repo_notebooks() -> None:
     assert "\"name\": \"scbe-pivot-v2\"" in show
 
     url = _run_powershell("colab-url pivot")
-    assert "colab.research.google.com" in url
+    assert _host_equals(url, "colab.research.google.com")

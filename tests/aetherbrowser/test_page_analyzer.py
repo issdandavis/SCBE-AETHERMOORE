@@ -45,3 +45,12 @@ class TestPageAnalyzer:
         long_text = "word " * 100_000
         result = analyzer.analyze_sync(url="https://long.com", title="Long", text=long_text)
         assert result["truncated"] is True
+
+    def test_repository_review_uses_hostname_not_url_substring(self):
+        analyzer = PageAnalyzer()
+        result = analyzer.analyze_sync(
+            url="https://example.com/docs/github.com-notes",
+            title="Governance Notes",
+            text="This page explains governance checkpoints and operator notes.",
+        )
+        assert result["intent"] == "inspect_page"

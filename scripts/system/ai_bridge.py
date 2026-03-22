@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_SAFE_VAULT_SEGMENT_RE = re.compile(r"^[A-Za-z0-9._ -]+$")
 
 
 def _is_relative_to(path: Path, root: Path) -> bool:
@@ -57,14 +58,40 @@ def _resolve_vault_root(vault_path: str) -> Path:
     if ".." in raw.replace("\\", "/").split("/"):
         raise ValueError("vault_path must not contain '..' path traversal segments")
 
-    normalized = Path(os.path.normpath(raw)).expanduser()
-    resolved = normalized.resolve(strict=False)
     allowed_roots = _allowed_vault_roots()
+
+    expanded = Path(raw).expanduser()
+    if expanded.is_absolute():
+        resolved = expanded.resolve(strict=False)
+        if not any(_is_relative_to(resolved, allowed_root) for allowed_root in allowed_roots):
+            roots = ", ".join(str(root) for root in allowed_roots)
+            raise ValueError(f"Vault path must stay within an allowed root: {roots}")
+        if not resolved.exists() or not resolved.is_dir():
+            raise ValueError(f"Vault path must be an existing directory: {resolved}")
+        return resolved
+
+    segments: list[str] = []
+    for segment in raw.replace("\\", "/").split("/"):
+        segment = segment.strip()
+        if not segment or segment == ".":
+            continue
+        if not _SAFE_VAULT_SEGMENT_RE.fullmatch(segment):
+            raise ValueError(f"Vault path contains unsupported segment: {segment}")
+        segments.append(segment)
+
+    if not segments:
+        raise ValueError("vault_path must include at least one safe segment")
+
+    first_scoped_candidate: Path | None = None
     for allowed_root in allowed_roots:
-        if _is_relative_to(resolved, allowed_root):
-            if not resolved.exists() or not resolved.is_dir():
-                raise ValueError(f"Vault path must be an existing directory: {resolved}")
-            return resolved
+        candidate = (allowed_root / Path(*segments)).resolve(strict=False)
+        if any(_is_relative_to(candidate, allowed_root) for allowed_root in allowed_roots):
+            first_scoped_candidate = first_scoped_candidate or candidate
+            if candidate.exists() and candidate.is_dir():
+                return candidate
+
+    if first_scoped_candidate is not None:
+        raise ValueError(f"Vault path must be an existing directory: {first_scoped_candidate}")
 
     roots = ", ".join(str(root) for root in allowed_roots)
     raise ValueError(f"Vault path must stay within an allowed root: {roots}")
