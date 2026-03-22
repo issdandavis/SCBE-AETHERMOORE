@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Code Scanning Ops"
+  short_description: "Triage and fix GitHub code-scanning alerts with CodeQL-aware logic"
+  default_prompt: "Use $scbe-code-scanning-ops to inspect SCBE code-scanning alerts, map them to fix classes, and wire the dedicated CodeQL workflow."
