@@ -26,6 +26,7 @@ from __future__ import annotations
 import math
 import hashlib
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Optional
 
 import numpy as np
@@ -77,6 +78,7 @@ def augment_text(text: str, tongue: str, tier: int = 1) -> str:
 #  2. Sacred Geometry Rotation Matrices
 # =========================================================================
 
+@lru_cache(maxsize=None)
 def _build_rotation_matrix(tongue: str, dim: int = 384) -> np.ndarray:
     """
     Build a tongue-specific rotation matrix.
@@ -91,9 +93,6 @@ def _build_rotation_matrix(tongue: str, dim: int = 384) -> np.ndarray:
     # Seed the rotation from tongue properties
     angle = TONGUE_KEYS.index(tongue) * math.pi / 3  # 0, 60, 120, 180, 240, 300 deg
     weight = TONGUE_WEIGHTS[tongue]
-
-    # Create a deterministic pseudo-random rotation using tongue as seed
-    rng = np.random.RandomState(hash(tongue) % (2**31))
 
     # Givens rotation: rotate pairs of dimensions by tongue-specific angles
     # This is a sparse rotation that doesn't destroy the embedding structure
@@ -114,17 +113,14 @@ def _build_rotation_matrix(tongue: str, dim: int = 384) -> np.ndarray:
     return rotation
 
 
-# Pre-compute rotation matrices
-_ROTATIONS = {tongue: _build_rotation_matrix(tongue) for tongue in TONGUE_KEYS}
-
-
 def sacred_rotate(embedding: np.ndarray, tongue: str) -> np.ndarray:
     """
     Apply tongue-specific rotation to push embedding into dedicated subspace.
 
-    This is the second Tetris move — rotating the piece into its slot.
+    This is the second Tetris move - rotating the piece into its slot.
     """
-    rotated = _ROTATIONS[tongue] @ embedding
+    dim = int(embedding.shape[0])
+    rotated = _build_rotation_matrix(tongue, dim) @ embedding
     # Re-normalize (rotation should preserve norm, but float precision)
     norm = np.linalg.norm(rotated)
     if norm > 0:
