@@ -220,7 +220,7 @@ stone==3.3.9
 strands-agents==1.28.0
 strands-agents-tools==0.2.22
 sympy==1.14.0
-tenacity==9.1.2
+tenacity==9.1.4
 toml==0.10.2
 tqdm==4.67.3
 typeguard==4.5.1
