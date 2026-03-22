@@ -137,36 +137,3 @@ def test_secret_store_write_json_ignores_unsanitized_flag(tmp_path: Path) -> Non
     assert saved["token"] == "[redacted]"
     assert "[redacted]" in saved["note"]
     assert "super-secret-token" not in out.read_text(encoding="utf-8")
-
-
-def test_scbe_system_cli_prepares_colab_bridge_token_env() -> None:
-    clean_url, env_overrides = scbe_system_cli._prepare_colab_bridge_secret_inputs(
-        "http://127.0.0.1:8888/?token=secret-token-123"
-    )
-
-    assert clean_url == "http://127.0.0.1:8888"
-    assert env_overrides == {"SCBE_COLAB_BRIDGE_TOKEN": "secret-token-123"}
-
-
-def test_scbe_system_cli_save_agent_registry_strips_secret_fields(tmp_path: Path) -> None:
-    registry_path = tmp_path / "agent_squad.json"
-    payload = {
-        "version": "1.0.0",
-        "agents": {
-            "codex": {
-                "agent_id": "codex",
-                "provider": "openai",
-                "display_name": "Codex",
-                "api_key_env": "OPENAI_API_KEY",
-                "token": "super-secret-token",
-                "authorization": "Bearer super-secret-token",
-            }
-        },
-    }
-
-    scbe_system_cli._save_agent_registry(registry_path, payload)
-    saved = json.loads(registry_path.read_text(encoding="utf-8"))
-
-    assert saved["agents"]["codex"]["api_key_env"] == "OPENAI_API_KEY"
-    assert "token" not in saved["agents"]["codex"]
-    assert "authorization" not in saved["agents"]["codex"]

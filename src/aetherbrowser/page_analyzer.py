@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter
+from urllib.parse import urlparse
 
 MAX_WORDS = 50_000
 
