@@ -8,16 +8,20 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import sys
 import time
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
+import httpx
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 NOTEBOOKLM_SCRIPT = REPO_ROOT / "scripts" / "system" / "notebooklm_connector.py"
+DEFAULT_AUTOMATIONS_URL = "http://127.0.0.1:8001/v1/automations/emit"
 
 
 @dataclass
@@ -61,6 +65,17 @@ class ConnectorBridge:
                 },
                 configured=NOTEBOOKLM_SCRIPT.exists(),
                 description="NotebookLM browser-first connector bridge",
+            ),
+            "automations": ConnectorInfo(
+                platform="automations",
+                capabilities={
+                    ConnectorCapability.WRITE,
+                    ConnectorCapability.WEBHOOK,
+                    ConnectorCapability.CREATE,
+                    ConnectorCapability.UPDATE,
+                },
+                configured=True,
+                description="Local automation hub bridge",
             )
         }
 
@@ -93,14 +108,30 @@ class ConnectorBridge:
             parsed["ok"] = process.returncode == 0
         return parsed
 
+    async def _post_json(self, url: str, payload: dict[str, Any]) -> dict[str, Any]:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.post(url, json=payload)
+        content_type = response.headers.get("content-type", "")
+        parsed: Any
+        if "application/json" in content_type.lower():
+            parsed = response.json()
+        else:
+            parsed = response.text
+        return {"status_code": response.status_code, "response": parsed}
+
     async def execute(self, platform: str, action: str, payload: dict[str, Any] | None = None) -> ConnectorResult:
         platform = platform.lower()
         payload = payload or {}
         started = time.perf_counter()
-        if platform != "notebooklm":
-            return ConnectorResult(success=False, error=f"Unknown platform: {platform}", platform=platform)
         try:
-            result = await self._execute_notebooklm(action, payload)
+            if platform == "notebooklm":
+                result = await self._execute_notebooklm(action, payload)
+            elif platform == "automations":
+                result = await self._execute_automations(action, payload)
+            else:
+                return ConnectorResult(
+                    success=False, error=f"Unknown platform: {platform}", platform=platform
+                )
         except Exception as exc:  # noqa: BLE001
             result = ConnectorResult(success=False, error=str(exc), platform=platform)
         result.platform = platform
@@ -165,4 +196,31 @@ class ConnectorBridge:
 
         raw = await self._run_notebooklm_connector(args)
         ok = bool(raw.get("ok", False))
-        return ConnectorResult(success=ok, data=raw if ok else {}, error="" if ok else str(raw.get("error") or raw.get("stderr") or "NotebookLM connector failed"))
+        return ConnectorResult(
+            success=ok,
+            data=raw if ok else {},
+            error="" if ok else str(raw.get("error") or raw.get("stderr") or "NotebookLM connector failed"),
+        )
+
+    async def _execute_automations(self, action: str, payload: dict[str, Any]) -> ConnectorResult:
+        if action != "trigger":
+            return ConnectorResult(success=False, error=f"Unknown automations action: {action}")
+
+        event = str(payload.get("event", "")).strip()
+        if not event:
+            return ConnectorResult(success=False, error="event is required")
+
+        target_url = str(os.getenv("SCBE_AUTOMATIONS_URL", DEFAULT_AUTOMATIONS_URL)).strip()
+        parsed = urlparse(target_url)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            return ConnectorResult(success=False, error="SCBE_AUTOMATIONS_URL must be a valid http(s) URL")
+
+        body = {"event": event, "payload": payload.get("payload", {})}
+        raw = await self._post_json(target_url, body)
+        status_code = int(raw.get("status_code", 0))
+        ok = 200 <= status_code < 300
+        return ConnectorResult(
+            success=ok,
+            data=raw if ok else {},
+            error="" if ok else f"automation hub returned status {status_code}",
+        )
