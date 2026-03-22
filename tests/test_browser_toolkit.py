@@ -10,6 +10,7 @@ HTTP requests are made.
 import re
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
@@ -58,8 +59,14 @@ class MockTransport(httpx.AsyncBaseTransport):
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
         self.request_log.append(request)
         url_str = str(request.url)
+        hostname = (urlparse(url_str).hostname or "").lower().rstrip(".")
         for pattern, response in self._responses.items():
-            if pattern in url_str:
+            normalized = str(pattern).lower().rstrip(".")
+            if normalized.startswith(("http://", "https://")):
+                if url_str.startswith(normalized):
+                    return response
+                continue
+            if hostname == normalized or hostname.endswith(f".{normalized}"):
                 return response
         return httpx.Response(
             status_code=200,
@@ -232,7 +239,17 @@ class TestParseGoogleResults:
         '''
         results = _parse_google_results(html)
         urls = [r.url for r in results]
-        assert not any("google.com" in u for u in urls)
+        assert not any((urlparse(u).hostname or "").endswith("google.com") for u in urls)
+
+    def test_does_not_reject_non_google_urls_with_google_substring(self):
+        html = '''
+        <a href="/url?q=https://evil.example.com/path/google.com-marker&sa=U">
+            <h3>Mirror Result</h3>
+        </a>
+        '''
+        results = _parse_google_results(html)
+        assert len(results) == 1
+        assert results[0].url == "https://evil.example.com/path/google.com-marker"
 
     def test_empty_html(self):
         assert _parse_google_results("") == []
@@ -308,7 +325,7 @@ class TestSearch:
         async def mock_get(self_client, url, **kwargs):
             nonlocal call_count
             call_count += 1
-            if "google.com" in str(url):
+            if (urlparse(str(url)).hostname or "").endswith("google.com"):
                 # Google returns no useful results
                 return _make_response("<html><body>blocked</body></html>")
             else:

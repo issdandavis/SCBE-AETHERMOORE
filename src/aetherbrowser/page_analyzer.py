@@ -82,6 +82,15 @@ _DESTRUCTIVE_HINTS = {
 }
 
 
+def _hostname_matches(url: str, domain: str) -> bool:
+    try:
+        hostname = (urlparse(url).hostname or "").lower().rstrip(".")
+    except ValueError:
+        return False
+    normalized = domain.lower().rstrip(".")
+    return hostname == normalized or hostname.endswith(f".{normalized}")
+
+
 class PageAnalyzer:
     def analyze_sync(
         self,
@@ -231,7 +240,7 @@ class PageAnalyzer:
             or self._buttons_match(buttons, _PAYMENT_HINTS)
         ):
             return "checkout"
-        if "github.com" in url or "repository" in combined:
+        if _hostname_matches(url, "github.com") or "repository" in combined:
             return "repository_review"
         if {"query", "results", "search"} & tokens:
             return "search_results"

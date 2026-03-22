@@ -32,6 +32,7 @@ Layer compliance:
 
 from __future__ import annotations
 
+from html.parser import HTMLParser
 import logging
 import re
 import time
@@ -56,6 +57,30 @@ DEFAULT_HEADERS = {
 }
 
 DEFAULT_TIMEOUT = 15.0  # seconds
+
+
+class _VisibleTextParser(HTMLParser):
+    """Extract visible text while ignoring script/style blocks."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self._chunks: list[str] = []
+        self._ignored_depth = 0
+
+    def handle_starttag(self, tag: str, attrs) -> None:  # type: ignore[override]
+        if tag.lower() in {"script", "style"}:
+            self._ignored_depth += 1
+
+    def handle_endtag(self, tag: str) -> None:  # type: ignore[override]
+        if tag.lower() in {"script", "style"} and self._ignored_depth > 0:
+            self._ignored_depth -= 1
+
+    def handle_data(self, data: str) -> None:  # type: ignore[override]
+        if not self._ignored_depth and data:
+            self._chunks.append(data)
+
+    def text(self) -> str:
+        return " ".join(self._chunks)
 
 
 # ── Data Classes ─────────────────────────────────────────────────────
@@ -130,20 +155,21 @@ def _build_client(**kwargs) -> httpx.AsyncClient:
     return httpx.AsyncClient(**defaults)
 
 
+def _hostname_matches(url: str, domain: str) -> bool:
+    try:
+        hostname = (urlparse(url).hostname or "").lower().rstrip(".")
+    except ValueError:
+        return False
+    normalized = domain.lower().rstrip(".")
+    return hostname == normalized or hostname.endswith(f".{normalized}")
+
+
 def _extract_text_from_html(html: str) -> str:
-    """Crude text extraction: strip tags, collapse whitespace."""
-    # Remove script and style blocks
-    text = re.sub(r"<script[^>]*>.*?</script>", " ", html, flags=re.DOTALL | re.IGNORECASE)
-    text = re.sub(r"<style[^>]*>.*?</style>", " ", text, flags=re.DOTALL | re.IGNORECASE)
-    # Remove tags
-    text = re.sub(r"<[^>]+>", " ", text)
-    # Decode common entities
-    for entity, char in [("&amp;", "&"), ("&lt;", "<"), ("&gt;", ">"),
-                         ("&quot;", '"'), ("&#39;", "'"), ("&nbsp;", " ")]:
-        text = text.replace(entity, char)
-    # Collapse whitespace
-    text = re.sub(r"\s+", " ", text).strip()
-    return text
+    """Crude text extraction using an HTML parser instead of regex stripping."""
+    parser = _VisibleTextParser()
+    parser.feed(html)
+    parser.close()
+    return re.sub(r"\s+", " ", parser.text()).strip()
 
 
 def _extract_links_from_html(html: str, base_url: str) -> Set[str]:
@@ -186,10 +212,11 @@ def _parse_google_results(html: str) -> List[SearchResult]:
         else:
             url = raw_href
 
-        if not url or "google.com" in url:
+        parsed = urlparse(url)
+        if parsed.scheme not in {"http", "https"} or _hostname_matches(url, "google.com"):
             continue
 
-        title = re.sub(r"<[^>]+>", "", title_html).strip()
+        title = _extract_text_from_html(title_html).strip()
         if not title:
             continue
 
@@ -200,7 +227,7 @@ def _parse_google_results(html: str) -> List[SearchResult]:
         # Snippet is often in a <span> or <div> after the link
         snippet_match = re.search(r'<(?:span|div)[^>]*class="[^"]*"[^>]*>(.*?)</(?:span|div)>', after, re.DOTALL)
         if snippet_match:
-            snippet = re.sub(r"<[^>]+>", "", snippet_match.group(1)).strip()
+            snippet = _extract_text_from_html(snippet_match.group(1)).strip()
 
         results.append(SearchResult(
             title=title,
@@ -226,7 +253,7 @@ def _parse_duckduckgo_results(html: str) -> List[SearchResult]:
     for match in result_pattern.finditer(html):
         url = match.group(1).strip()
         title_html = match.group(2)
-        title = re.sub(r"<[^>]+>", "", title_html).strip()
+        title = _extract_text_from_html(title_html).strip()
 
         if not url.startswith("http") or not title:
             continue
@@ -239,7 +266,7 @@ def _parse_duckduckgo_results(html: str) -> List[SearchResult]:
             after, re.DOTALL | re.IGNORECASE,
         )
         if snippet_match:
-            snippet = re.sub(r"<[^>]+>", "", snippet_match.group(1)).strip()
+            snippet = _extract_text_from_html(snippet_match.group(1)).strip()
 
         results.append(SearchResult(
             title=title,
