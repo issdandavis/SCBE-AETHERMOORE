@@ -153,7 +153,7 @@ opentelemetry-semantic-conventions==0.60b1
 opentelemetry-util-http==0.54b1
 packaging==26.0
 pandas==3.0.1
-pathable==0.4.4
+pathable==0.5.0
 pathspec==1.0.4
 pillow==12.1.1
 platformdirs==4.9.2
