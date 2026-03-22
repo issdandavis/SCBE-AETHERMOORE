@@ -480,7 +480,7 @@ def compute_hyperbolic_distance(p1: HyperbolicPoint, p2: HyperbolicPoint) -> flo
     arg = 1.0 + (2.0 * duv / denom)
     arg = max(arg, 1.0)
 
-    return float(np.arccosh(arg))
+    return float(np.arccosh(max(arg, 1.0)))
 
 
 def verify_principal_curve_membership(state: Dict[str, Any]) -> bool:
