@@ -71,3 +71,36 @@ This snapshot exists to support the next cleanup pass: consolidation of overlapp
 - GitHub cannot manually `workflow_dispatch` the new `codeql-analysis.yml` by name until that workflow exists on the default branch. The PR lane is therefore the correct rescan path for now.
 - The code-scanning warnings on GitHub will remain open until the new workflow runs and uploads fresh results.
 - The signing keystore is now durable, but the long-term release path should eventually move from a repo-secret base64 blob to a more formal secret-storage or signing service lane.
+
+## Follow-Up Batch - Remaining Scanner Alerts
+
+This follow-up batch targeted the remaining selected alerts after PR `#608` was already open:
+
+- `#2228` clear-text storage in [scripts/scbe-system-cli.py](C:/Users/issda/SCBE-AETHERMOORE/scripts/scbe-system-cli.py)
+- `#2248`, `#2247`, `#2068`, `#2067` information exposure through exception in [scbe_n8n_bridge.py](C:/Users/issda/SCBE-AETHERMOORE/workflows/n8n/scbe_n8n_bridge.py)
+- `#2246` overly permissive regex in [secret_store.py](C:/Users/issda/SCBE-AETHERMOORE/src/security/secret_store.py)
+- `#2263` missing workflow permissions in [security-checks.yml](C:/Users/issda/SCBE-AETHERMOORE/.github/workflows/security-checks.yml)
+- stale test-lane logging hits `#500` and `#501` in [test_harmonic_scaling_integration.py](C:/Users/issda/SCBE-AETHERMOORE/tests/test_harmonic_scaling_integration.py)
+
+### Exact Follow-Up Steps
+
+1. Traced the stale `scbe-system-cli.py` line reference to the current Colab bridge lane and confirmed the sensitive path was the bridge setter carrying tokens through process arguments and registry-like persistence surfaces.
+2. Added token-safe bridge preparation in [scripts/scbe-system-cli.py](C:/Users/issda/SCBE-AETHERMOORE/scripts/scbe-system-cli.py) so `bridge-set` strips `?token=...` from backend URLs, moves the token into `SCBE_COLAB_BRIDGE_TOKEN`, and passes only `--token-env` to the helper script.
+3. Hardened `_save_agent_registry(...)` in that same file so accidental secret-like keys are removed before registry JSON is written to disk while preserving safe `api_key_env` references.
+4. Patched [colab_n8n_bridge.py](C:/Users/issda/SCBE-AETHERMOORE/external/codex-skills-live/scbe-n8n-colab-bridge/scripts/colab_n8n_bridge.py) to support `--token-env`, stop storing `backend_url_raw`, and stop reflecting token-bearing probe URLs in output.
+5. Tightened [secret_store.py](C:/Users/issda/SCBE-AETHERMOORE/src/security/secret_store.py) by narrowing the Shopify token regex and adding optional `tongue` compatibility for the bridge helper.
+6. Added public-error sanitization helpers in [scbe_n8n_bridge.py](C:/Users/issda/SCBE-AETHERMOORE/workflows/n8n/scbe_n8n_bridge.py) and converted kernel-runner, browser-service, provider-dispatch, tongue-encoding, Zapier, and HF-upload failure paths to stable error codes instead of raw exception text or upstream bodies.
+7. Added explicit least-privilege permissions and normalized formatting in [security-checks.yml](C:/Users/issda/SCBE-AETHERMOORE/.github/workflows/security-checks.yml).
+8. Reduced the stale harmonic test log surface in [test_harmonic_scaling_integration.py](C:/Users/issda/SCBE-AETHERMOORE/tests/test_harmonic_scaling_integration.py) so the selected lines no longer print raw index/distance values.
+9. Added deterministic regressions in [test_scbe_n8n_bridge_security.py](C:/Users/issda/SCBE-AETHERMOORE/tests/test_scbe_n8n_bridge_security.py), [test_sensitive_output_redaction.py](C:/Users/issda/SCBE-AETHERMOORE/tests/test_sensitive_output_redaction.py), and [test_system_script_security.py](C:/Users/issda/SCBE-AETHERMOORE/tests/test_system_script_security.py).
+
+### Follow-Up Test Evidence
+
+- `python -m pytest tests/test_scbe_n8n_bridge_security.py tests/test_sensitive_output_redaction.py tests/test_harmonic_scaling_integration.py -q`
+  - `29 passed`
+- `python -m pytest tests/test_system_script_security.py tests/test_scbe_system_cli_operator.py tests/test_github_workflow_audit.py tests/test_code_scanning_batch5.py -q`
+  - `26 passed`
+- `python -c "import py_compile; ..."`
+  - `py_compile ok` for the touched Python files
+- `python -c "import yaml, pathlib; ..."`
+  - `yaml ok` for [security-checks.yml](C:/Users/issda/SCBE-AETHERMOORE/.github/workflows/security-checks.yml)
