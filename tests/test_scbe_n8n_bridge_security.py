@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import json
 import sys
 from pathlib import Path
@@ -25,6 +26,20 @@ def test_send_zapier_event_skips_when_no_env_hook(monkeypatch) -> None:
     monkeypatch.setattr(bridge, "_ZAPIER_WEBHOOK_URL", "")
     result = bridge._send_zapier_event({"event": "llm_dispatch"})
     assert result["status"] == "skipped"
+
+
+def test_send_zapier_event_hides_exception_text(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_ZAPIER_WEBHOOK_URL", "https://hooks.zapier.com/hooks/catch/123/abc")
+
+    def fake_urlopen(*args, **kwargs):
+        raise RuntimeError("secret webhook failure")
+
+    monkeypatch.setattr(bridge.urllib_request, "urlopen", fake_urlopen)
+    result = bridge._send_zapier_event({"event": "llm_dispatch"})
+
+    assert result["status"] == "failed"
+    assert result["error"] == "zapier_webhook_failed"
+    assert "secret webhook failure" not in json.dumps(result)
 
 
 def test_browser_health_check_hides_internal_exception_text(monkeypatch) -> None:
@@ -87,6 +102,43 @@ def test_dispatch_single_provider_hides_exception_text(monkeypatch) -> None:
     assert result["status"] == "error"
     assert result["error"] == "provider_dispatch_failed"
     assert "secret" not in json.dumps(result)
+
+
+@pytest.mark.asyncio
+async def test_execute_code_hides_kernel_runner_exception_text(monkeypatch) -> None:
+    def fake_urlopen(*args, **kwargs):
+        raise RuntimeError("secret kernel-runner details")
+
+    monkeypatch.setattr(bridge.urllib_request, "urlopen", fake_urlopen)
+
+    result = await bridge.execute_code(bridge.CodeExecRequest(code="print('hi')"))
+
+    assert result["stderr"] == "kernel-runner request failed"
+    assert "secret kernel-runner details" not in json.dumps(result)
+
+
+def test_forward_to_browser_service_hides_upstream_body(monkeypatch) -> None:
+    error = urllib_error.HTTPError(
+        url="http://127.0.0.1:8011/v1/integrations/n8n/browse",
+        code=502,
+        msg="Bad Gateway",
+        hdrs=None,
+        fp=io.BytesIO(b'{"error":"token=secret-browser-token"}'),
+    )
+
+    def fake_urlopen(*args, **kwargs):
+        raise error
+
+    monkeypatch.setattr(bridge.urllib_request, "urlopen", fake_urlopen)
+
+    with pytest.raises(bridge.HTTPException) as exc:
+        bridge._forward_to_browser_service({"actions": []}, "test-key")
+
+    detail = exc.value.detail
+    assert detail["error"] == "browser_service_http_error"
+    assert detail["upstream_status"] == 502
+    assert detail["detail_present"] is True
+    assert "secret-browser-token" not in json.dumps(detail)
 
 
 @pytest.mark.asyncio
