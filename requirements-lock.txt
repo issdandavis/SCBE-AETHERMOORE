@@ -150,7 +150,7 @@ opentelemetry-proto==1.39.1
 opentelemetry-sdk==1.40.0
 opentelemetry-sdk-extension-aws==2.1.0
 opentelemetry-semantic-conventions==0.60b1
-opentelemetry-util-http==0.54b1
+opentelemetry-util-http==0.61b0
 packaging==26.0
 pandas==3.0.1
 pathable==0.5.0
