@@ -285,6 +285,18 @@ describe('Video Generator', () => {
       expect(keys1.secretKey).not.toEqual(keys2.secretKey);
     });
 
+    it('should keep generated watermark coefficients inside configured bounds', () => {
+      const { publicKey, secretKey } = generateWatermarkKeys({
+        dimension: 16,
+        modulus: 97,
+        errorBound: 2,
+      });
+
+      expect(publicKey[0].every((coeff) => Number.isInteger(coeff) && coeff >= 0 && coeff < 97)).toBe(true);
+      expect(publicKey[1].every((coeff) => Number.isInteger(coeff) && coeff >= 0 && coeff < 97)).toBe(true);
+      expect(secretKey.every((coeff) => Number.isInteger(coeff) && coeff >= -2 && coeff <= 2)).toBe(true);
+    });
+
     it('should create watermark chain', () => {
       const hashes = ['a'.repeat(64), 'b'.repeat(64), 'c'.repeat(64)];
 
