@@ -44,6 +44,7 @@ class Decision(str, Enum):
     DENY = "DENY"
     QUARANTINE = "QUARANTINE"
     REROUTE = "REROUTE"
+    REVIEW = "REVIEW"  # 6-council deep inspection — throw the book at them
 
 
 @dataclass
@@ -133,7 +134,7 @@ class RuntimeGate:
         self.cumulative_cost_deny = cumulative_cost_deny
 
         # Reroute table
-        self._reroute_rules = reroute_rules or DEFAULT_REROUTES
+        self._reroute_rules = reroute_rules if reroute_rules is not None else DEFAULT_REROUTES
         self._reroute_patterns = [
             (re.compile(r.pattern, re.IGNORECASE), r) for r in self._reroute_rules
         ]
@@ -355,21 +356,28 @@ class RuntimeGate:
             self._immune.add(action_hash)  # learn this attack
             noise = _fail_to_noise(action_hash)
 
-        # 2+ QUARANTINE signals → QUARANTINE
-        elif sum(1 for s in signals if "quarantine" in s) >= 2:
-            decision = Decision.QUARANTINE
+        # QUARANTINE-level signals → 6-COUNCIL REVIEW
+        # The council deliberates on anything suspicious.
+        # This is the Seireitei — you don't just get waved through.
+        # Anything suspicious (quarantine OR elevated) → 6-COUNCIL REVIEW
+        # The councils deliberate. The time this takes IS the cost.
+        # Agents with auth tokens skip this (fast-path via reflex).
+        elif any("quarantine" in s or "elevated" in s for s in signals):
+            if self._has_auth_token(action_text):
+                decision = Decision.ALLOW
+                signals.append("auth_fast_path")
+            else:
+                council_decision, council_signals = self._council_review(
+                    action_text, coords, cost, magnitude, action_hash
+                )
+                signals.extend(council_signals)
+                decision = council_decision
+                if council_decision == Decision.DENY:
+                    self._immune.add(action_hash)
+                    noise = _fail_to_noise(action_hash)
 
-        # 1 QUARANTINE signal → still QUARANTINE (conservative)
-        elif any("quarantine" in s for s in signals):
-            decision = Decision.QUARANTINE
-
-        # Cost elevated but no quarantine signals → ALLOW with warning
-        elif any("elevated" in s for s in signals):
-            decision = Decision.ALLOW
-            signals.append("allow_with_warning")
-
-        # Clean → learn as safe reflex
-        if decision == Decision.ALLOW and not signals:
+        # Clean → learn as safe reflex (fast-path for future)
+        if decision == Decision.ALLOW and not any("council" in s for s in signals):
             self._reflex[action_hash] = True
 
         result = GateResult(
@@ -387,6 +395,129 @@ class RuntimeGate:
     # ------------------------------------------------------------------ #
     #  Session management
     # ------------------------------------------------------------------ #
+
+    # ------------------------------------------------------------------ #
+    #  6-COUNCIL REVIEW (Seireitei Gate — throw the book at them)
+    #
+    #  6 independent reviewers, each checking a different dimension.
+    #  Each reviewer speaks one Sacred Tongue.
+    #  All 6 must pass for ALLOW. Any 2 fails = DENY.
+    #  1 fail = QUARANTINE pending human review.
+    #
+    #  The TIME the review takes IS the security cost.
+    #  Legitimate agents with proper auth tokens skip to fast-path.
+    #  Attackers sit in the lobby while all 6 councils deliberate.
+    # ------------------------------------------------------------------ #
+
+    def _council_review(
+        self,
+        action_text: str,
+        coords: List[float],
+        cost: float,
+        spin_magnitude: int,
+        action_hash: str,
+    ) -> Tuple[Decision, List[str]]:
+        """Six independent security councils review the action.
+
+        Each council checks one dimension:
+          KO Council (Intent):     Does the action match declared intent?
+          AV Council (Transport):  Is the data flow pattern normal?
+          RU Council (Policy):     Does it comply with active policies?
+          CA Council (Compute):    Is the computational signature expected?
+          UM Council (Redaction):  Does it try to access redacted content?
+          DR Council (Integrity):  Does the data trace verify?
+
+        Returns: (decision, signals)
+        """
+        reviews: List[Tuple[str, bool, str]] = []
+
+        # --- KO Council: Intent Review ---
+        # Check if action text sentiment matches the tongue coordinate
+        ko_coord = coords[0]
+        has_override_language = any(w in action_text.upper() for w in [
+            "OVERRIDE", "BYPASS", "IGNORE", "DISABLE", "SUDO", "ADMIN",
+            "GRANT", "ELEVATE", "UNRESTRICTED", "GOD MODE",
+        ])
+        ko_pass = not (has_override_language and ko_coord > 0.5)
+        reviews.append(("KO_intent", ko_pass,
+                        "override language with high governance signal" if not ko_pass else "clean"))
+
+        # --- AV Council: Transport/Flow Review ---
+        # Check for external data exfiltration patterns
+        has_external = any(w in action_text.lower() for w in [
+            "external", "send to", "forward to", "post to", "upload to",
+            "webhook", "http://", "https://", "attacker", ".com",
+        ])
+        av_pass = not has_external
+        reviews.append(("AV_transport", av_pass,
+                        "external data flow detected" if not av_pass else "internal only"))
+
+        # --- RU Council: Policy Review ---
+        # Check against known restricted operations
+        has_restricted = any(w in action_text.lower() for w in [
+            "delete all", "drop table", "rm -rf", "format disk",
+            "shutdown", "kill process", "wipe", "destroy",
+        ])
+        ru_pass = not has_restricted
+        reviews.append(("RU_policy", ru_pass,
+                        "restricted operation attempted" if not ru_pass else "within policy"))
+
+        # --- CA Council: Compute Signature Review ---
+        # Check if the action's computational profile (digit ratio, length) is anomalous
+        ca_coord = coords[3]  # CA dimension
+        ca_anomalous = ca_coord > 0.7  # high numeric content = suspicious
+        ca_pass = not ca_anomalous
+        reviews.append(("CA_compute", ca_pass,
+                        f"anomalous compute signature (CA={ca_coord:.2f})" if not ca_pass else "normal signature"))
+
+        # --- UM Council: Redaction Review ---
+        # Check for attempts to access credentials, secrets, PII
+        has_credential_access = any(w in action_text.lower() for w in [
+            "password", "secret", "credential", "private key", "ssh key",
+            "token", "bearer", "auth", "/etc/shadow", "wallet", "seed phrase",
+        ])
+        um_pass = not has_credential_access
+        reviews.append(("UM_redaction", um_pass,
+                        "credential/PII access attempt" if not um_pass else "no sensitive access"))
+
+        # --- DR Council: Integrity/Data Trace Review ---
+        # Check for signs of injection or encoded payloads
+        chars = max(len(action_text), 1)
+        punct_ratio = sum(c in "!@#$%^&*()_+-=[]{}|;':\",./<>?" for c in action_text) / chars
+        has_encoding_artifacts = punct_ratio > 0.15 or "base64" in action_text.lower() or "\\x" in action_text
+        # Also check if action hash has been seen in a suspicious context before
+        dr_pass = not has_encoding_artifacts
+        reviews.append(("DR_integrity", dr_pass,
+                        f"encoding artifacts detected (punct={punct_ratio:.2f})" if not dr_pass else "clean trace"))
+
+        # --- Council Deliberation ---
+        fail_count = sum(1 for _, passed, _ in reviews if not passed)
+        fail_details = [(name, reason) for name, passed, reason in reviews if not passed]
+
+        signals = [f"council_{name}={'PASS' if passed else 'FAIL'}({reason})"
+                   for name, passed, reason in reviews]
+        signals.append(f"council_verdict={fail_count}/6_failed")
+
+        if fail_count == 0:
+            return Decision.ALLOW, signals
+        elif fail_count == 1:
+            return Decision.QUARANTINE, signals
+        else:  # 2+ councils reject
+            return Decision.DENY, signals
+
+    def _has_auth_token(self, action_text: str) -> bool:
+        """Check if the action carries a valid fast-path auth token.
+
+        Legitimate agents embed their auth in the action context.
+        This is the equivalent of showing your papers at the gate —
+        if you have the right credentials, you skip the 6-council review.
+        """
+        # In production: verify HMAC/signature of embedded token
+        # For now: check if a known reflex hash exists
+        action_hash = hashlib.blake2s(
+            action_text.encode("utf-8", errors="replace"), digest_size=8
+        ).hexdigest()
+        return action_hash in self._reflex
 
     def reset_session(self) -> None:
         """Reset session state (keep immune memory and reflexes)."""
