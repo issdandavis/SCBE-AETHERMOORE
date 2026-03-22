@@ -46,7 +46,7 @@ def hyperbolic_distance_poincare(u, v, eps: float = 1e-12) -> float:
     denom = max(denom, eps)
     arg = 1.0 + (2.0 * l2_dist_sq(u, v)) / denom
     arg = max(arg, 1.0 + eps)  # acosh domain
-    return math.acosh(arg)
+    return math.acosh(max(arg, 1.0))
 
 
 # ═══════════════════════════════════════════════════════════════

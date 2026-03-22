@@ -227,7 +227,7 @@ def hyperbolic_distance(u: List[float], v: List[float]) -> float:
     arg = 1.0 + 2.0 * diff_sq / denom
     arg = max(arg, 1.0 + EPSILON)  # arccosh domain
 
-    return math.acosh(arg)
+    return math.acosh(max(arg, 1.0))
 
 
 def drift_to_level(d_H: float) -> DriftLevel:
