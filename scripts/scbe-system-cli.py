@@ -1517,7 +1517,7 @@ def _sanitize_agent_result_for_disk(result: dict) -> dict:
             continue
         text = str(result.get(field) or "")
         clean[f"{field}_char_count"] = len(text)
-        clean[f"{field}_sha256"] = hashlib.sha256(text.encode("utf-8")).hexdigest()
+        clean[f"{field}_pbkdf2_sha256"] = _sensitive_fingerprint(text) if text else ""
     return clean
 
 

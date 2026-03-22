@@ -114,7 +114,7 @@ def test_scbe_system_cli_sanitize_agent_result_for_disk_omits_content() -> None:
     assert "raw" not in sanitized
     assert "prompt" not in sanitized
     assert sanitized["content_char_count"] == len("password=hunter2")
-    assert len(sanitized["content_sha256"]) == 64
+    assert len(sanitized["content_pbkdf2_sha256"]) == 64
 
 
 def test_secret_store_redacts_shopify_tokens() -> None:
@@ -122,6 +122,21 @@ def test_secret_store_redacts_shopify_tokens() -> None:
     redacted = _ss_mod.redact_sensitive_text(payload)
     assert "[redacted]" in redacted
     assert "ABCDEF1234567890" not in redacted
+
+
+def test_secret_store_write_json_ignores_unsanitized_flag(tmp_path: Path) -> None:
+    out = tmp_path / "report.json"
+    payload = {
+        "token": "super-secret-token",
+        "note": "hf_ABCDEFGH12345678 should not hit disk",
+    }
+
+    _ss_mod.write_json(out, payload, sanitize=False)
+    saved = json.loads(out.read_text(encoding="utf-8"))
+
+    assert saved["token"] == "[redacted]"
+    assert "[redacted]" in saved["note"]
+    assert "super-secret-token" not in out.read_text(encoding="utf-8")
 
 
 def test_scbe_system_cli_prepares_colab_bridge_token_env() -> None:
