@@ -76,7 +76,24 @@ class AttackResult:
 # =========================================================================== #
 
 def text_to_tongue_coords(text: str) -> List[float]:
-    """Derive 6D tongue coordinates from text content."""
+    """Derive 6D tongue coordinates from text content.
+
+    Current: text-level feature extraction (28.6% detection, 0% FP).
+
+    KNOWN LIMITATION: This is syntactic, not semantic. Multilingual
+    attacks (0% detection) and gradual drift (0% detection) evade
+    because they produce similar text metrics to clean text.
+
+    Sacred Tongue byte-level encoding was tested but produces too-uniform
+    entropy across tongues (dropped detection to 4.4%). The semantic
+    signal needs to come from a HIGHER layer — token-level meaning,
+    not byte-level encoding patterns.
+
+    FUTURE: The "same bits, different spin" idea — encode the same
+    text through multiple tongues and use the SPIN of the encoding
+    (which tongue's token distribution diverges most) as the
+    discriminating signal, rather than raw entropy.
+    """
     words = WORD_RE.findall(text)
     wc = len(words)
     chars = max(len(text), 1)
