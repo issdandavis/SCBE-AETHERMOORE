@@ -8,7 +8,7 @@ argon2-cffi-bindings==25.1.0
 asgiref==3.11.1
 attrs==25.4.0
 autopep8==2.3.2
-aws-cdk-lib==2.240.0
+aws-cdk-lib==2.244.0
 aws-cdk.asset-awscli-v1==2.2.270
 aws-cdk.asset-node-proxy-agent-v6==2.1.0
 aws-cdk.cloud-assembly-schema==48.20.0
