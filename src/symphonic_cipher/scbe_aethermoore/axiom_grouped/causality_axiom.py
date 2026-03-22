@@ -362,7 +362,7 @@ def hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
     arg = 1 + 2 * diff_sq / denominator
     arg = max(arg, 1.0)
 
-    return float(np.arccosh(arg))
+    return float(np.arccosh(max(arg, 1.0)))
 
 
 @causality_check(require_time_param=False)
