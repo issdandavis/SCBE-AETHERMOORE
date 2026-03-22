@@ -10,6 +10,7 @@ Covers:
 """
 
 import json
+import math
 import sys
 import os
 import time
@@ -22,6 +23,7 @@ from src.licensing.oem_license import (
     LicenseModel,
     LicenseClaims,
     LicenseKey,
+    ValidationResult,
     generate_license_key,
     validate_license_key,
     create_tier_license,
@@ -33,10 +35,13 @@ from src.licensing.usage_meter import (
     DEFAULT_RATE_PER_1K_DECISIONS,
     DEFAULT_PLATFORM_FLOOR_MONTHLY,
     DEFAULT_AGENT_BUNDLE_MONTHLY,
+    TARGET_P95_LATENCY_MS,
     TARGET_FALSE_QUARANTINE_RATE,
 )
 from src.licensing.nist_ai_rmf import (
     RMFFunction,
+    ComplianceCheck,
+    ComplianceReport,
     generate_compliance_report,
     TradeWindsProfile,
     SBIRDeliverable,
@@ -49,7 +54,6 @@ SIGNING_SECRET = "test-secret-key-do-not-use-in-production"
 # ============================================================================
 # OEM License Tests
 # ============================================================================
-
 
 class TestLicenseTiers:
     """Verify tier definitions match CUSTOMER_LICENSE_AGREEMENT.md."""
@@ -122,8 +126,7 @@ class TestLicenseKeyGeneration:
 
     def test_oem_license_has_gateway(self):
         key = create_tier_license(
-            LicenseTier.OEM,
-            "WhiteLabelInc",
+            LicenseTier.OEM, "WhiteLabelInc",
             signing_secret=SIGNING_SECRET,
         )
         assert key.claims.white_label is True
@@ -131,8 +134,7 @@ class TestLicenseKeyGeneration:
 
     def test_perpetual_license(self):
         key = create_tier_license(
-            LicenseTier.ENTERPRISE,
-            "GovCorp",
+            LicenseTier.ENTERPRISE, "GovCorp",
             model=LicenseModel.PERPETUAL,
             duration_days=0,
             signing_secret=SIGNING_SECRET,
@@ -141,8 +143,7 @@ class TestLicenseKeyGeneration:
 
     def test_key_serialization_roundtrip(self):
         key = create_tier_license(
-            LicenseTier.HOMEBREW,
-            "TestCo",
+            LicenseTier.HOMEBREW, "TestCo",
             signing_secret=SIGNING_SECRET,
         )
         json_str = key.to_json()
@@ -156,8 +157,7 @@ class TestLicenseValidation:
 
     def test_valid_license(self):
         key = create_tier_license(
-            LicenseTier.PROFESSIONAL,
-            "ValidCorp",
+            LicenseTier.PROFESSIONAL, "ValidCorp",
             signing_secret=SIGNING_SECRET,
         )
         result = validate_license_key(key, SIGNING_SECRET)
@@ -167,8 +167,7 @@ class TestLicenseValidation:
 
     def test_invalid_signature(self):
         key = create_tier_license(
-            LicenseTier.HOMEBREW,
-            "BadCorp",
+            LicenseTier.HOMEBREW, "BadCorp",
             signing_secret=SIGNING_SECRET,
         )
         result = validate_license_key(key, "wrong-secret")
@@ -190,8 +189,7 @@ class TestLicenseValidation:
 
     def test_quota_exceeded(self):
         key = create_tier_license(
-            LicenseTier.HOMEBREW,
-            "QuotaCorp",
+            LicenseTier.HOMEBREW, "QuotaCorp",
             signing_secret=SIGNING_SECRET,
         )
         # Homebrew has 10,000 decisions/month
@@ -201,8 +199,7 @@ class TestLicenseValidation:
 
     def test_quota_warning(self):
         key = create_tier_license(
-            LicenseTier.HOMEBREW,
-            "NearQuotaCorp",
+            LicenseTier.HOMEBREW, "NearQuotaCorp",
             signing_secret=SIGNING_SECRET,
         )
         result = validate_license_key(key, SIGNING_SECRET, current_decisions_this_month=9_500)
@@ -212,8 +209,7 @@ class TestLicenseValidation:
 
     def test_enterprise_unlimited_quota(self):
         key = create_tier_license(
-            LicenseTier.ENTERPRISE,
-            "UnlimitedCorp",
+            LicenseTier.ENTERPRISE, "UnlimitedCorp",
             signing_secret=SIGNING_SECRET,
         )
         result = validate_license_key(key, SIGNING_SECRET, current_decisions_this_month=999_999)
@@ -235,8 +231,7 @@ class TestLicenseValidation:
 
     def test_modules_list_returned(self):
         key = create_tier_license(
-            LicenseTier.OEM,
-            "ModularCorp",
+            LicenseTier.OEM, "ModularCorp",
             signing_secret=SIGNING_SECRET,
         )
         result = validate_license_key(key, SIGNING_SECRET)
@@ -247,7 +242,6 @@ class TestLicenseValidation:
 # ============================================================================
 # Usage Meter Tests
 # ============================================================================
-
 
 class TestUsageMeter:
     """Test per-decision usage metering."""
@@ -290,48 +284,42 @@ class TestUsageMeter:
 
     def test_tenant_tracking(self, meter):
         for i in range(5):
-            meter.record_decision(
-                DecisionRecord(
-                    timestamp=time.time(),
-                    tenant_id="tenant-001",
-                    agent_id=f"agent-{i % 3}",
-                    decision="ALLOW",
-                    latency_ms=40.0,
-                    risk_score=0.1,
-                    policy_ids=[],
-                )
-            )
+            meter.record_decision(DecisionRecord(
+                timestamp=time.time(),
+                tenant_id="tenant-001",
+                agent_id=f"agent-{i % 3}",
+                decision="ALLOW",
+                latency_ms=40.0,
+                risk_score=0.1,
+                policy_ids=[],
+            ))
         assert meter.tenant_decisions("tenant-001") == 5
         assert meter.tenant_agents("tenant-001") == 3
 
     def test_multi_tenant(self, meter):
         for tenant in ["t1", "t2", "t3"]:
-            meter.record_decision(
-                DecisionRecord(
-                    timestamp=time.time(),
-                    tenant_id=tenant,
-                    agent_id="agent-a",
-                    decision="ALLOW",
-                    latency_ms=50.0,
-                    risk_score=0.1,
-                    policy_ids=[],
-                )
-            )
+            meter.record_decision(DecisionRecord(
+                timestamp=time.time(),
+                tenant_id=tenant,
+                agent_id="agent-a",
+                decision="ALLOW",
+                latency_ms=50.0,
+                risk_score=0.1,
+                policy_ids=[],
+            ))
         assert meter.unique_tenants == 3
 
     def test_decision_distribution(self, meter):
         for decision in ["ALLOW", "ALLOW", "QUARANTINE", "DENY"]:
-            meter.record_decision(
-                DecisionRecord(
-                    timestamp=time.time(),
-                    tenant_id="t1",
-                    agent_id="a1",
-                    decision=decision,
-                    latency_ms=50.0,
-                    risk_score=0.5,
-                    policy_ids=[],
-                )
-            )
+            meter.record_decision(DecisionRecord(
+                timestamp=time.time(),
+                tenant_id="t1",
+                agent_id="a1",
+                decision=decision,
+                latency_ms=50.0,
+                risk_score=0.5,
+                policy_ids=[],
+            ))
         dist = meter.decision_distribution
         assert dist["ALLOW"] == 2
         assert dist["QUARANTINE"] == 1
@@ -339,60 +327,32 @@ class TestUsageMeter:
 
     def test_false_quarantine_rate(self, meter):
         for _ in range(98):
-            meter.record_decision(
-                DecisionRecord(
-                    timestamp=time.time(),
-                    tenant_id="t1",
-                    agent_id="a1",
-                    decision="ALLOW",
-                    latency_ms=50.0,
-                    risk_score=0.1,
-                    policy_ids=[],
-                )
-            )
-        meter.record_decision(
-            DecisionRecord(
-                timestamp=time.time(),
-                tenant_id="t1",
-                agent_id="a1",
-                decision="QUARANTINE",
-                latency_ms=50.0,
-                risk_score=0.5,
-                policy_ids=[],
-            )
-        )
+            meter.record_decision(DecisionRecord(
+                timestamp=time.time(), tenant_id="t1", agent_id="a1",
+                decision="ALLOW", latency_ms=50.0, risk_score=0.1, policy_ids=[],
+            ))
+        meter.record_decision(DecisionRecord(
+            timestamp=time.time(), tenant_id="t1", agent_id="a1",
+            decision="QUARANTINE", latency_ms=50.0, risk_score=0.5, policy_ids=[],
+        ))
         # 1 out of 99 = ~1.01%
         assert meter.false_quarantine_rate < TARGET_FALSE_QUARANTINE_RATE
 
     def test_p95_latency(self, meter):
         for i in range(100):
-            meter.record_decision(
-                DecisionRecord(
-                    timestamp=time.time(),
-                    tenant_id="t1",
-                    agent_id="a1",
-                    decision="ALLOW",
-                    latency_ms=float(i),
-                    risk_score=0.1,
-                    policy_ids=[],
-                )
-            )
+            meter.record_decision(DecisionRecord(
+                timestamp=time.time(), tenant_id="t1", agent_id="a1",
+                decision="ALLOW", latency_ms=float(i), risk_score=0.1, policy_ids=[],
+            ))
         p95 = meter.p95_latency_ms
         assert p95 == 95.0  # 95th percentile of 0-99
 
     def test_revenue_estimation(self, meter):
         for i in range(1000):
-            meter.record_decision(
-                DecisionRecord(
-                    timestamp=time.time(),
-                    tenant_id="t1",
-                    agent_id="a1",
-                    decision="ALLOW",
-                    latency_ms=50.0,
-                    risk_score=0.1,
-                    policy_ids=[],
-                )
-            )
+            meter.record_decision(DecisionRecord(
+                timestamp=time.time(), tenant_id="t1", agent_id="a1",
+                decision="ALLOW", latency_ms=50.0, risk_score=0.1, policy_ids=[],
+            ))
         rev = meter.estimate_revenue()
         assert rev["decisions_counted"] == 1000
         assert rev["decision_revenue"] == DEFAULT_RATE_PER_1K_DECISIONS
@@ -402,50 +362,29 @@ class TestUsageMeter:
 
     def test_per_tenant_revenue(self, meter):
         for i in range(500):
-            meter.record_decision(
-                DecisionRecord(
-                    timestamp=time.time(),
-                    tenant_id="t1",
-                    agent_id="a1",
-                    decision="ALLOW",
-                    latency_ms=50.0,
-                    risk_score=0.1,
-                    policy_ids=[],
-                )
-            )
+            meter.record_decision(DecisionRecord(
+                timestamp=time.time(), tenant_id="t1", agent_id="a1",
+                decision="ALLOW", latency_ms=50.0, risk_score=0.1, policy_ids=[],
+            ))
         rev = meter.estimate_revenue(tenant_id="t1")
         assert rev["tenants_counted"] == 1
 
     def test_quota_check(self, meter):
         for i in range(50):
-            meter.record_decision(
-                DecisionRecord(
-                    timestamp=time.time(),
-                    tenant_id="t1",
-                    agent_id="a1",
-                    decision="ALLOW",
-                    latency_ms=50.0,
-                    risk_score=0.1,
-                    policy_ids=[],
-                )
-            )
+            meter.record_decision(DecisionRecord(
+                timestamp=time.time(), tenant_id="t1", agent_id="a1",
+                decision="ALLOW", latency_ms=50.0, risk_score=0.1, policy_ids=[],
+            ))
         within, remaining = meter.check_quota("t1", 100)
         assert within is True
         assert remaining == 50
 
     def test_quota_exceeded(self, meter):
         for i in range(101):
-            meter.record_decision(
-                DecisionRecord(
-                    timestamp=time.time(),
-                    tenant_id="t1",
-                    agent_id="a1",
-                    decision="ALLOW",
-                    latency_ms=50.0,
-                    risk_score=0.1,
-                    policy_ids=[],
-                )
-            )
+            meter.record_decision(DecisionRecord(
+                timestamp=time.time(), tenant_id="t1", agent_id="a1",
+                decision="ALLOW", latency_ms=50.0, risk_score=0.1, policy_ids=[],
+            ))
         within, remaining = meter.check_quota("t1", 100)
         assert within is False
         assert remaining == 0
@@ -457,17 +396,10 @@ class TestUsageMeter:
 
     def test_slo_report(self, meter):
         for i in range(100):
-            meter.record_decision(
-                DecisionRecord(
-                    timestamp=time.time(),
-                    tenant_id="t1",
-                    agent_id="a1",
-                    decision="ALLOW",
-                    latency_ms=50.0,
-                    risk_score=0.1,
-                    policy_ids=[],
-                )
-            )
+            meter.record_decision(DecisionRecord(
+                timestamp=time.time(), tenant_id="t1", agent_id="a1",
+                decision="ALLOW", latency_ms=50.0, risk_score=0.1, policy_ids=[],
+            ))
         slo = meter.slo_report()
         assert slo["p95_latency_pass"] is True
         assert slo["false_quarantine_pass"] is True
@@ -497,7 +429,6 @@ class TestUsageMeter:
 # ============================================================================
 # NIST AI RMF Tests
 # ============================================================================
-
 
 class TestNISTAIRMF:
     """Test NIST AI RMF compliance report generation."""
