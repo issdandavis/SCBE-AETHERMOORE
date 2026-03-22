@@ -90,7 +90,9 @@ jobs:
 
       - name: Build Android app for CodeQL extraction
         working-directory: kindle-app/android
-        run: ./gradlew --no-daemon assembleDebug
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon assembleDebug
 
       - name: Analyze
         uses: github/codeql-action/analyze@v4

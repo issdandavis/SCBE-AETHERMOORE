@@ -24,6 +24,8 @@ jobs:
       KEY_PASSWORD: ${{ secrets.AETHERCODE_KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -57,7 +59,9 @@ jobs:
 
       - name: Build debug APK
         working-directory: kindle-app/android
-        run: ./gradlew assembleDebug
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -129,12 +133,16 @@ jobs:
       - name: Build release AAB (Play Store)
         if: (inputs.build_release == true || github.event_name == 'push') && steps.release_guard.outputs.ready == 'true'
         working-directory: kindle-app/android
-        run: ./gradlew bundleRelease
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bundleRelease
 
       - name: Build release APK (Amazon Appstore)
         if: (inputs.build_release == true || github.event_name == 'push') && steps.release_guard.outputs.ready == 'true'
         working-directory: kindle-app/android
-        run: ./gradlew assembleRelease
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleRelease
 
       - name: Upload release AAB
         if: (inputs.build_release == true || github.event_name == 'push') && steps.release_guard.outputs.ready == 'true'
