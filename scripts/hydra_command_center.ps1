@@ -142,6 +142,24 @@ function Show-IssacJsonFile {
     Get-Content -Path $Path -Raw -Encoding UTF8 | ConvertFrom-Json | ConvertTo-Json -Depth 20
 }
 
+function Show-IssacJsonFallback {
+    param(
+        [string]$Path,
+        [hashtable]$Fallback
+    )
+    if (Test-Path $Path) {
+        Show-IssacJsonFile -Path $Path
+        return
+    }
+    $payload = [ordered]@{}
+    foreach ($key in $Fallback.Keys) {
+        $payload[$key] = $Fallback[$key]
+    }
+    $payload["status"] = "missing"
+    $payload["path"] = $Path
+    $payload | ConvertTo-Json -Depth 20
+}
+
 function Resolve-IssacAgent {
     param([string]$Name)
     if ([string]::IsNullOrWhiteSpace($Name)) {
@@ -828,11 +846,16 @@ function voice-audio-axis {
 }
 
 function voice-manifest {
-    Show-IssacJsonFile -Path $script:IssacVoiceManifest
+    Show-IssacJsonFallback -Path $script:IssacVoiceManifest -Fallback @{
+        selected_sample = $null
+        summary = "Voice manifest missing."
+    }
 }
 
 function voice-status {
-    Show-IssacJsonFile -Path $script:IssacVoiceStatusPacket
+    Show-IssacJsonFallback -Path $script:IssacVoiceStatusPacket -Fallback @{
+        summary = "Voice status packet missing."
+    }
 }
 
 function voice-gate {
