@@ -1,0 +1,34 @@
+version: "1.0.0"
+incident:
+  id: "[incident-id]"
+  timestamp: "[ISO8601 UTC]"
+  environment: "[local|ci|production]"
+state_vector:
+  command: "[exact command invoked]"
+  service_status: "[running|degraded|down]"
+  unhealthy_containers: []
+  open_ports:
+    - 8000
+    - 8080
+    - 3000
+  evidence_paths:
+    - "[container logs]"
+    - "[health probe output]"
+decision_record:
+  action: "[rebuild|restart|rollback|clean|none]"
+  signature: "[operator or automation identity]"
+  reason: "[why this action was taken]"
+  confidence: "[high|medium|low]"
+  timestamp: "[ISO8601 UTC]"
+action_summary:
+  files_changed: []
+  rationale: "[concise rationale]"
+  services_to_update:
+    - "[skill/repo/service identifiers]"
+  pending_integrations:
+    - "[follow-up needed, dependencies, config changes]"
+handoff:
+  next_skill: "scbe-system-engine"
+  next_inputs:
+    - "[required logs/tests]"
+    - "[diagnostic artifacts]"

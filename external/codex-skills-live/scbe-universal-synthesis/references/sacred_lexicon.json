@@ -1,0 +1,309 @@
+{
+  "generated_at": "2026-03-10T08:15:05Z",
+  "format": "prefix:stem",
+  "decode_rule": "Lookup token prefix -> tongue metadata; stem carries action semantics.",
+  "tongues": {
+    "KO": {
+      "role": "architect",
+      "emotion": "clarity",
+      "intent": "system_design",
+      "prefix": "ko",
+      "agentic_character": "Koraelin",
+      "runtime_character": ""
+    },
+    "AV": {
+      "role": "coder",
+      "emotion": "creative_flow",
+      "intent": "implementation",
+      "prefix": "av",
+      "agentic_character": "Avali",
+      "runtime_character": ""
+    },
+    "RU": {
+      "role": "reviewer",
+      "emotion": "discernment",
+      "intent": "quality_review",
+      "prefix": "ru",
+      "agentic_character": "Runethic",
+      "runtime_character": ""
+    },
+    "CA": {
+      "role": "tester",
+      "emotion": "assurance",
+      "intent": "validation",
+      "prefix": "ca",
+      "agentic_character": "Cassisivadan",
+      "runtime_character": ""
+    },
+    "UM": {
+      "role": "security",
+      "emotion": "vigilance",
+      "intent": "protection",
+      "prefix": "um",
+      "agentic_character": "Umbroth",
+      "runtime_character": ""
+    },
+    "DR": {
+      "role": "deployer",
+      "emotion": "resolve",
+      "intent": "release_execution",
+      "prefix": "dr",
+      "agentic_character": "Draumric",
+      "runtime_character": ""
+    }
+  },
+  "tokens": [
+    {
+      "token": "ko:anchor",
+      "tongue": "KO",
+      "emotion": "clarity",
+      "intent": "scope_lock",
+      "decode": "KO::anchor"
+    },
+    {
+      "token": "ko:pulse",
+      "tongue": "KO",
+      "emotion": "clarity",
+      "intent": "momentum",
+      "decode": "KO::pulse"
+    },
+    {
+      "token": "ko:guard",
+      "tongue": "KO",
+      "emotion": "clarity",
+      "intent": "risk_control",
+      "decode": "KO::guard"
+    },
+    {
+      "token": "ko:forge",
+      "tongue": "KO",
+      "emotion": "clarity",
+      "intent": "creation",
+      "decode": "KO::forge"
+    },
+    {
+      "token": "ko:verify",
+      "tongue": "KO",
+      "emotion": "clarity",
+      "intent": "evidence_check",
+      "decode": "KO::verify"
+    },
+    {
+      "token": "ko:release",
+      "tongue": "KO",
+      "emotion": "clarity",
+      "intent": "ship",
+      "decode": "KO::release"
+    },
+    {
+      "token": "av:anchor",
+      "tongue": "AV",
+      "emotion": "creative_flow",
+      "intent": "scope_lock",
+      "decode": "AV::anchor"
+    },
+    {
+      "token": "av:pulse",
+      "tongue": "AV",
+      "emotion": "creative_flow",
+      "intent": "momentum",
+      "decode": "AV::pulse"
+    },
+    {
+      "token": "av:guard",
+      "tongue": "AV",
+      "emotion": "creative_flow",
+      "intent": "risk_control",
+      "decode": "AV::guard"
+    },
+    {
+      "token": "av:forge",
+      "tongue": "AV",
+      "emotion": "creative_flow",
+      "intent": "creation",
+      "decode": "AV::forge"
+    },
+    {
+      "token": "av:verify",
+      "tongue": "AV",
+      "emotion": "creative_flow",
+      "intent": "evidence_check",
+      "decode": "AV::verify"
+    },
+    {
+      "token": "av:release",
+      "tongue": "AV",
+      "emotion": "creative_flow",
+      "intent": "ship",
+      "decode": "AV::release"
+    },
+    {
+      "token": "ru:anchor",
+      "tongue": "RU",
+      "emotion": "discernment",
+      "intent": "scope_lock",
+      "decode": "RU::anchor"
+    },
+    {
+      "token": "ru:pulse",
+      "tongue": "RU",
+      "emotion": "discernment",
+      "intent": "momentum",
+      "decode": "RU::pulse"
+    },
+    {
+      "token": "ru:guard",
+      "tongue": "RU",
+      "emotion": "discernment",
+      "intent": "risk_control",
+      "decode": "RU::guard"
+    },
+    {
+      "token": "ru:forge",
+      "tongue": "RU",
+      "emotion": "discernment",
+      "intent": "creation",
+      "decode": "RU::forge"
+    },
+    {
+      "token": "ru:verify",
+      "tongue": "RU",
+      "emotion": "discernment",
+      "intent": "evidence_check",
+      "decode": "RU::verify"
+    },
+    {
+      "token": "ru:release",
+      "tongue": "RU",
+      "emotion": "discernment",
+      "intent": "ship",
+      "decode": "RU::release"
+    },
+    {
+      "token": "ca:anchor",
+      "tongue": "CA",
+      "emotion": "assurance",
+      "intent": "scope_lock",
+      "decode": "CA::anchor"
+    },
+    {
+      "token": "ca:pulse",
+      "tongue": "CA",
+      "emotion": "assurance",
+      "intent": "momentum",
+      "decode": "CA::pulse"
+    },
+    {
+      "token": "ca:guard",
+      "tongue": "CA",
+      "emotion": "assurance",
+      "intent": "risk_control",
+      "decode": "CA::guard"
+    },
+    {
+      "token": "ca:forge",
+      "tongue": "CA",
+      "emotion": "assurance",
+      "intent": "creation",
+      "decode": "CA::forge"
+    },
+    {
+      "token": "ca:verify",
+      "tongue": "CA",
+      "emotion": "assurance",
+      "intent": "evidence_check",
+      "decode": "CA::verify"
+    },
+    {
+      "token": "ca:release",
+      "tongue": "CA",
+      "emotion": "assurance",
+      "intent": "ship",
+      "decode": "CA::release"
+    },
+    {
+      "token": "um:anchor",
+      "tongue": "UM",
+      "emotion": "vigilance",
+      "intent": "scope_lock",
+      "decode": "UM::anchor"
+    },
+    {
+      "token": "um:pulse",
+      "tongue": "UM",
+      "emotion": "vigilance",
+      "intent": "momentum",
+      "decode": "UM::pulse"
+    },
+    {
+      "token": "um:guard",
+      "tongue": "UM",
+      "emotion": "vigilance",
+      "intent": "risk_control",
+      "decode": "UM::guard"
+    },
+    {
+      "token": "um:forge",
+      "tongue": "UM",
+      "emotion": "vigilance",
+      "intent": "creation",
+      "decode": "UM::forge"
+    },
+    {
+      "token": "um:verify",
+      "tongue": "UM",
+      "emotion": "vigilance",
+      "intent": "evidence_check",
+      "decode": "UM::verify"
+    },
+    {
+      "token": "um:release",
+      "tongue": "UM",
+      "emotion": "vigilance",
+      "intent": "ship",
+      "decode": "UM::release"
+    },
+    {
+      "token": "dr:anchor",
+      "tongue": "DR",
+      "emotion": "resolve",
+      "intent": "scope_lock",
+      "decode": "DR::anchor"
+    },
+    {
+      "token": "dr:pulse",
+      "tongue": "DR",
+      "emotion": "resolve",
+      "intent": "momentum",
+      "decode": "DR::pulse"
+    },
+    {
+      "token": "dr:guard",
+      "tongue": "DR",
+      "emotion": "resolve",
+      "intent": "risk_control",
+      "decode": "DR::guard"
+    },
+    {
+      "token": "dr:forge",
+      "tongue": "DR",
+      "emotion": "resolve",
+      "intent": "creation",
+      "decode": "DR::forge"
+    },
+    {
+      "token": "dr:verify",
+      "tongue": "DR",
+      "emotion": "resolve",
+      "intent": "evidence_check",
+      "decode": "DR::verify"
+    },
+    {
+      "token": "dr:release",
+      "tongue": "DR",
+      "emotion": "resolve",
+      "intent": "ship",
+      "decode": "DR::release"
+    }
+  ]
+}

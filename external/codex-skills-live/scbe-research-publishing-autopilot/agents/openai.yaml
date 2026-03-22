@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Research Publishing Autopilot"
+  short_description: "Multi-hour research posting with truth gates."
+  default_prompt: "Use $scbe-research-publishing-autopilot to run a multi-hour evidence-gated content cycle with retriggers and monitoring artifacts."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Shopify Money Flow"
+  short_description: "Deterministic Shopify money-making workflow orchestration."
+  default_prompt: "Run the SCBE Shopify monetization flow with evidence, governance, and publish lanes."

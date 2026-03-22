@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Gov Contract Intel"
+  short_description: "Find and prioritize federal contract paths for SCBE."
+  default_prompt: "Investigate federal and prime-contractor opportunities for SCBE swarm/autonomy technology, then produce a ranked capture plan with evidence."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Worker Productizer"
+  short_description: "Turn worker automation notes into offers"
+  default_prompt: "Use $scbe-autonomous-worker-productizer to turn SCBE automation pages into a concrete offer, workflow pack, or pilot plan."

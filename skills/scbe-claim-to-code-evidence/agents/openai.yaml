@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Claim Evidence"
+  short_description: "Map Notion technical claims to repo proof"
+  default_prompt: "Use $scbe-claim-to-code-evidence to map the strongest SCBE Notion claims to code, tests, and demos in this repo."

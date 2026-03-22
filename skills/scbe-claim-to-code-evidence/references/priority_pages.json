@@ -1,0 +1,50 @@
+[
+  {
+    "title": "SCBE-AETHERMOORE + PHDM: Complete Mathematical & Security Specification",
+    "notion_id": "2d7f96de-82e5-803e-b8a4-ec918262b980",
+    "priority_tier": "tier1",
+    "reason": "Top-level root spec for math, security, patent, and implementation framing."
+  },
+  {
+    "title": "Core Architecture: 14-Layer Security Fabric",
+    "notion_id": "2a8e8d49-c25b-4bda-a8c5-739db28e2ec1",
+    "priority_tier": "tier1",
+    "reason": "Best architectural summary page for technical diligence."
+  },
+  {
+    "title": "HYDRA Governance Specification - Mathematical Corrections",
+    "notion_id": "0e48a4c3-a3ea-40c6-889f-086fec027dcb",
+    "priority_tier": "tier1",
+    "reason": "Correction trail is useful evidence for disciplined technical iteration."
+  },
+  {
+    "title": "SCBE Implementation Proof Package - Test Vectors & Benchmarks",
+    "notion_id": "f0cbbefe-75e8-41ff-813b-cc5a08740518",
+    "priority_tier": "tier1",
+    "reason": "Most direct bridge from claims to implementation and tests."
+  },
+  {
+    "title": "SCBE Product Brief - Buyer Guide & Demo Requirements",
+    "notion_id": "10f05a63-0a7a-41fb-b6c0-f0c93b14172d",
+    "priority_tier": "tier1",
+    "reason": "Best bridge page between deep tech proof and buyer-facing demo packaging."
+  },
+  {
+    "title": "HYDRA Multi-Agent Coordination System - Complete Architecture",
+    "notion_id": "0ecedff1-2370-4e65-b249-897bf534d6ef",
+    "priority_tier": "tier2",
+    "reason": "Already has an existing repo manifest mapping and is fast to verify."
+  },
+  {
+    "title": "GeoSeal: Geometric Access Control Kernel - RAG Immune System",
+    "notion_id": "6f1c851a-42e5-4f11-bc14-ba7ebfb9d559",
+    "priority_tier": "tier2",
+    "reason": "Strong component page with direct runtime linkage."
+  },
+  {
+    "title": "Six Tongues + GeoSeal CLI - Python Implementation",
+    "notion_id": "8cad7ff3-551e-49a9-8900-f4c66f3acc98",
+    "priority_tier": "tier2",
+    "reason": "Runnable component framing with existing code surfaces."
+  }
+]

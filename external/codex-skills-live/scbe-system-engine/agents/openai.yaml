@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE System Engine"
+  short_description: "Coordinate SCBE audits, automation, and multi-service routing"
+  default_prompt: "Use $scbe-system-engine for SCBE math checks, KO-tongue reviews, and connector-driven tri-fold actions."
