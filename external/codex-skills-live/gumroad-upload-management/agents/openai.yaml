@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gumroad Upload Manager"
+  short_description: "Automate Gumroad image uploads and troubleshooting."
+  default_prompt: "Use this skill to run Gumroad image upload automation, preview product-image matches, and troubleshoot Selenium or Chrome session errors during upload workflows."

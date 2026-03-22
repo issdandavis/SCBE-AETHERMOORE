@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hydra Deep Research"
+  short_description: "Run self-healing 24/7 HYDRA deep research loops."
+  default_prompt: "Execute a full deep-research cycle: sense, plan, execute, verify, recover, and emit cross-talk updates at each state."

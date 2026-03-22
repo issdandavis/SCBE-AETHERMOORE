@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Codebase Orienter"
+  short_description: "Explain the real SCBE repo lanes and entrypoints."
+  default_prompt: "Orient me inside SCBE-AETHERMOORE, show the active code lanes, and point me to the right entrypoints."

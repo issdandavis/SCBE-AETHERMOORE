@@ -1,0 +1,4 @@
+interface:
+  display_name: "Novel Editor Flow"
+  short_description: "Assess and stage fiction edit lanes"
+  default_prompt: "Use $novel-editor-flow to assess a novel draft and stage the next editing passes."

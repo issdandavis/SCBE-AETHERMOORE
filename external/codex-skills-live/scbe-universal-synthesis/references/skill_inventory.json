@@ -1,0 +1,462 @@
+{
+  "generated_at": "2026-03-10T08:15:05Z",
+  "count": 76,
+  "skills": [
+    {
+      "slug": "aetherbrowser-arxiv-nav",
+      "name": "aetherbrowser-arxiv-nav",
+      "description": "Navigate arXiv papers and topic searches through AetherBrowser for research extraction workflows. Use when collecting abstracts, paper metadata, and evidence snapshots from arxiv.org.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\aetherbrowser-arxiv-nav"
+    },
+    {
+      "slug": "aetherbrowser-github-nav",
+      "name": "aetherbrowser-github-nav",
+      "description": "Navigate GitHub repositories, pull requests, issues, and settings through AetherBrowser tentacle routing. Use when tasks require browser-based GitHub movement, page evidence capture, or coordinated lane assignment with playwriter or playwright.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\aetherbrowser-github-nav"
+    },
+    {
+      "slug": "aetherbrowser-huggingface-nav",
+      "name": "aetherbrowser-huggingface-nav",
+      "description": "Navigate Hugging Face models, datasets, and spaces through AetherBrowser for research, validation, and publishing workflows. Use when inspecting repo cards, files, docs, and leaderboard surfaces in browser mode.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\aetherbrowser-huggingface-nav"
+    },
+    {
+      "slug": "aetherbrowser-notion-nav",
+      "name": "aetherbrowser-notion-nav",
+      "description": "Navigate Notion workspace pages in AetherBrowser for knowledge retrieval and workspace coordination tasks. Use when locating pages, databases, or section paths in browser mode before API operations.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\aetherbrowser-notion-nav"
+    },
+    {
+      "slug": "aetherbrowser-shopify-nav",
+      "name": "aetherbrowser-shopify-nav",
+      "description": "Navigate Shopify admin and storefront pages through AetherBrowser for merchandising and operations tasks. Use when working on products, collections, orders, settings, or marketing surfaces in browser mode.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\aetherbrowser-shopify-nav"
+    },
+    {
+      "slug": "aethermoor-lore",
+      "name": "aethermoor-lore",
+      "description": "Reference and generate Aethermoor world lore, characters, locations, magic systems, and story canon. Use when writing dialogue, scenes, world-building content, NPC backstories, quest text, or any narrative content for the Aethermoor game.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\aethermoor-lore"
+    },
+    {
+      "slug": "agent-handoff-packager",
+      "name": "agent-handoff-packager",
+      "description": "Package agent context and state for handoff between agents or sessions. Use when transferring work between agents, saving checkpoint state, or preparing a compact summary for another agent to resume from.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\agent-handoff-packager"
+    },
+    {
+      "slug": "article-posting-ops",
+      "name": "article-posting-ops",
+      "description": "Create, validate, and publish SCBE articles across social/blog platforms with API-first posting and Playwright browser fallback. Use when the user asks to write articles, post online, run headless browser posting, or move content toward revenue with lead capture.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\article-posting-ops"
+    },
+    {
+      "slug": "development-flow-loop",
+      "name": "development-flow-loop",
+      "description": "Structured software delivery lifecycle for coding tasks that should move from planning to production with repeated quality gates. Use when building features, refactors, integrations, automations, or systems work where the expected flow is Plan, Architect, Evaluate, Implement, Test, Fix, Test, Improve, Test, Fix or Launch, Launch.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\development-flow-loop"
+    },
+    {
+      "slug": "game-dev",
+      "name": "game-dev",
+      "description": "Build, prototype, debug, and ship game features across Unity, Unreal, Godot, and web game stacks. Use when requests involve gameplay systems, mechanics implementation, level scripting, input/camera/UI flow, save-load design, multiplayer foundations, performance profiling, content pipelines, or release-readiness planning for game projects.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\game-dev"
+    },
+    {
+      "slug": "gh-address-comments",
+      "name": "gh-address-comments",
+      "description": "Help address review/issue comments on the open GitHub PR for the current branch using gh CLI; verify gh auth first and prompt the user to authenticate if not logged in.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\gh-address-comments"
+    },
+    {
+      "slug": "gh-fix-ci",
+      "name": "gh-fix-ci",
+      "description": "Use when a user asks to debug or fix failing GitHub PR checks that run in GitHub Actions; use `gh` to inspect checks and logs, summarize failure context, draft a fix plan, and implement only after explicit approval. Treat external providers (for example Buildkite) as out of scope and report only the details URL.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\gh-fix-ci"
+    },
+    {
+      "slug": "gumroad-upload-management",
+      "name": "gumroad-upload-management",
+      "description": "Automate Gumroad product image uploads and listing maintenance with Selenium and Chrome profile sessions. Use when users ask to upload or replace Gumroad product images, map local image files to product pages, run `gumroad_image_uploader.py`, troubleshoot Chrome/Selenium session failures, or verify upload results from logs.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\gumroad-upload-management"
+    },
+    {
+      "slug": "hf-publish-workflow",
+      "name": "hf-publish-workflow",
+      "description": "Automate Hugging Face model/dataset/space publishing from PowerShell with one-time auth, README card generation, `hf upload` commands, and optional `--create-pr` review flow. Use when users ask to log in to Hugging Face CLI, publish artifacts, add or update model/dataset/space cards, wire a reusable profile publish function (for example `scbe-hf-publish`), or troubleshoot common `hf` command usage.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\hf-publish-workflow"
+    },
+    {
+      "slug": "high-school-explainer",
+      "name": "high-school-explainer",
+      "description": "Use when the user asks for simple high-school-level explanations of complex topics.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\high-school-explainer"
+    },
+    {
+      "slug": "hugging-face-cli",
+      "name": "hugging-face-cli",
+      "description": "Execute Hugging Face Hub operations using the `hf` CLI. Use when the user needs to download models/datasets/spaces, upload files to Hub repositories, create repos, manage local cache, or run compute jobs on HF infrastructure. Covers authentication, file transfers, repository creation, cache operations, and cloud compute.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\hugging-face-cli"
+    },
+    {
+      "slug": "hugging-face-datasets",
+      "name": "hugging-face-datasets",
+      "description": "Create and manage datasets on Hugging Face Hub. Supports initializing repos, defining configs/system prompts, streaming row updates, and SQL-based dataset querying/transformation. Designed to work alongside HF MCP server for comprehensive dataset workflows.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\hugging-face-datasets"
+    },
+    {
+      "slug": "hugging-face-model-trainer",
+      "name": "hugging-face-model-trainer",
+      "description": "This skill should be used when users want to train or fine-tune language models using TRL (Transformer Reinforcement Learning) on Hugging Face Jobs infrastructure. Covers SFT, DPO, GRPO and reward modeling training methods, plus GGUF conversion for local deployment. Includes guidance on the TRL Jobs package, UV scripts with PEP 723 format, dataset preparation and validation, hardware selection, cost estimation, Trackio monitoring, Hub authentication, and model persistence. Should be invoked for tasks involving cloud GPU training, GGUF conversion, or when users mention training on Hugging Face Jobs without local GPU setup.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\hugging-face-model-trainer"
+    },
+    {
+      "slug": "hydra-clawbot-synthesis",
+      "name": "hydra-clawbot-synthesis",
+      "description": "Synthesize HYDRA terminal browsing, multi-agent orchestration, Playwright smoke checks, Airtable/Hugging Face dataset handoff, and Obsidian command-lane publishing for Clawbot/OpenClaw operations.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\hydra-clawbot-synthesis"
+    },
+    {
+      "slug": "hydra-deep-research-self-healing",
+      "name": "hydra-deep-research-self-healing",
+      "description": "Run deep-research loops with HYDRA/Clawbot using self-healing workflow methods (sense, plan, execute, verify, recover), combining arXiv routing, Playwright evidence capture, synthesis smoke checks, and CI triage hooks. Use when operating long-running 24/7 research automation with deterministic cross-talk logging.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\hydra-deep-research-self-healing"
+    },
+    {
+      "slug": "hydra-node-terminal-browsing",
+      "name": "hydra-node-terminal-browsing",
+      "description": "Use when HYDRA tasks need Node.js-first terminal browsing, deterministic page extraction, and evidence JSON output that can be routed into hydra swarm workflows.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\hydra-node-terminal-browsing"
+    },
+    {
+      "slug": "issac-story-engine",
+      "name": "issac-story-engine",
+      "description": "Write and revise scenes, chapters, and full novels in Issac's style using research-backed craft, canon-aware worldbuilding, and a balanced technical-plus-human narrative voice. Use when drafting fiction, sharpening scenes, adding interludes, preserving tone, or turning research and lore into readable prose.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\issac-story-engine"
+    },
+    {
+      "slug": "kindle-app-delivery",
+      "name": "kindle-app-delivery",
+      "description": "Build, sideload, and publish the SCBE Kindle/Fire app using Capacitor, Gradle, ADB, and Amazon Appstore checklist steps.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\kindle-app-delivery"
+    },
+    {
+      "slug": "kindle-app-ops",
+      "name": "kindle-app-ops",
+      "description": "Build, sideload, and validate the SCBE Kindle/Fire OS app loop with Capacitor, ADB, and release-readiness checks.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\kindle-app-ops"
+    },
+    {
+      "slug": "kindle-tablet-ui-review",
+      "name": "kindle-tablet-ui-review",
+      "description": "Review and improve AetherCode UI for Kindle Fire tablet constraints (7-11 inch displays, touch ergonomics, offline resilience).",
+      "path": "C:\\Users\\issda\\.codex\\skills\\kindle-tablet-ui-review"
+    },
+    {
+      "slug": "living-codex-browser-builder",
+      "name": "living-codex-browser-builder",
+      "description": "Build and evolve an AI-native browser stack (Living Codex Browser / AetherBrowse) using existing SCBE infrastructure. Use when implementing browser architecture, headless research lanes, UI panels, agent routing, or browser reliability/performance upgrades across Electron, Playwright, and runtime APIs.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\living-codex-browser-builder"
+    },
+    {
+      "slug": "multi-agent-orchestrator",
+      "name": "multi-agent-orchestrator",
+      "description": "Coordinate multi-agent workflows end to end. Use when a task should be decomposed into parallel sub-work with explicit ownership, dependency ordering, collision avoidance, checkpoint tracking, and final output recomposition.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\multi-agent-orchestrator"
+    },
+    {
+      "slug": "multi-agent-review-gate",
+      "name": "multi-agent-review-gate",
+      "description": "Run a structured review gate before merging multi-agent outputs. Use when multiple agents have produced work packets that need quality checks, conflict detection, and approval before integration.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\multi-agent-review-gate"
+    },
+    {
+      "slug": "notion",
+      "name": "notion",
+      "description": "Notion API for creating and managing pages, databases, and blocks.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\notion"
+    },
+    {
+      "slug": "notion-hf-curator",
+      "name": "notion-hf-curator",
+      "description": "End-to-end Notion-to-Hugging Face dataset and model curation workflow for SCBE repositories (export, QA, comparison, GitHub Actions, publishing).",
+      "path": "C:\\Users\\issda\\.codex\\skills\\notion-hf-curator"
+    },
+    {
+      "slug": "notion-knowledge-capture",
+      "name": "notion-knowledge-capture",
+      "description": "Capture conversations and decisions into structured Notion pages; use when turning chats/notes into wiki entries, how-tos, decisions, or FAQs with proper linking.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\notion-knowledge-capture"
+    },
+    {
+      "slug": "notion-meeting-intelligence",
+      "name": "notion-meeting-intelligence",
+      "description": "Prepare meeting materials with Notion context and Codex research; use when gathering context, drafting agendas/pre-reads, and tailoring materials to attendees.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\notion-meeting-intelligence"
+    },
+    {
+      "slug": "notion-research-documentation",
+      "name": "notion-research-documentation",
+      "description": "Research across Notion and synthesize into structured documentation; use when gathering info from multiple Notion sources to produce briefs, comparisons, or reports with citations.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\notion-research-documentation"
+    },
+    {
+      "slug": "notion-spec-to-implementation",
+      "name": "notion-spec-to-implementation",
+      "description": "Turn Notion specs into implementation plans, tasks, and progress tracking; use when implementing PRDs/feature specs and creating Notion plans + tasks from them.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\notion-spec-to-implementation"
+    },
+    {
+      "slug": "obsidian",
+      "name": "obsidian",
+      "description": "Work with Obsidian vaults (plain Markdown notes) and automate via obsidian-cli.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\obsidian"
+    },
+    {
+      "slug": "obsidian-vault-ops",
+      "name": "obsidian-vault-ops",
+      "description": "Operate Obsidian vaults for SCBE workflows, including discovery, inspection, and controlled note export.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\obsidian-vault-ops"
+    },
+    {
+      "slug": "plan-check-gate",
+      "name": "plan-check-gate",
+      "description": "Require fact-backed research and an explicit implementation plan before writing code. Use when the user asks for planning first, wants verification/citations, says they may be wrong, or when the task is high-risk/high-cost and code should stay blocked until plan approval.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\plan-check-gate"
+    },
+    {
+      "slug": "playwright",
+      "name": "playwright",
+      "description": "Use when the task requires automating a real browser from the terminal (navigation, form filling, snapshots, screenshots, data extraction, UI-flow debugging) via `playwright-cli` or the bundled wrapper script.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\playwright"
+    },
+    {
+      "slug": "profit-autopilot",
+      "name": "profit-autopilot",
+      "description": "Run a fact-checked monetization pipeline that upgrades the landing page, builds Shopify launch assets, validates storefront/admin state, and optionally publishes products live with evidence reports. Use when the user asks for money progress, product launch automation, website-to-store pipelines, or end-to-end sell-from-terminal execution.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\profit-autopilot"
+    },
+    {
+      "slug": "scbe-admin-autopilot",
+      "name": "scbe-admin-autopilot",
+      "description": "Operate SCBE in admin mode for continuous multi-agent execution, storage shipping, verified cloud/repo backups, and safe local pruning. Use when the user asks for always-on agent workflows, disk-space automation, verified backup lanes, or admin-level orchestration.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-admin-autopilot"
+    },
+    {
+      "slug": "scbe-ai-to-ai-communication",
+      "name": "scbe-ai-to-ai-communication",
+      "description": "Standardize AI-to-AI coordination messages and exchange protocols across Codex, Claude, and other autonomous agents through Obsidian cross-talk and shared JSON packets.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-ai-to-ai-communication"
+    },
+    {
+      "slug": "scbe-ai2ai-kindle-research",
+      "name": "scbe-ai2ai-kindle-research",
+      "description": "Run Kindle-focused AI2AI research/debate workflows through n8n and SCBE bridge endpoints with governance thresholds.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-ai2ai-kindle-research"
+    },
+    {
+      "slug": "scbe-api-key-local-mirror",
+      "name": "scbe-api-key-local-mirror",
+      "description": "Securely mirror API keys from environment or prompt into a local Windows DPAPI-encrypted token store, then resolve them back into runtime env vars for terminal workflows. Use when users ask for quick API key access, local backup key storage, tokenized secret indexing, or safe secret handoff for services like World Anvil.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-api-key-local-mirror"
+    },
+    {
+      "slug": "scbe-browser-sidepanel-ops",
+      "name": "scbe-browser-sidepanel-ops",
+      "description": "Build, improve, and package the local AetherBrowse browser with an AI sidepanel workflow, governance checks, and app-store-ready Android artifacts.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-browser-sidepanel-ops"
+    },
+    {
+      "slug": "scbe-claude-crosstalk-workflow",
+      "name": "scbe-claude-crosstalk-workflow",
+      "description": "Use when two AI lanes (Codex and Claude) work in parallel and need deterministic handoff packets with session IDs, lane-bus appends, and repairable delivery checks.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-claude-crosstalk-workflow"
+    },
+    {
+      "slug": "scbe-connector-health-check",
+      "name": "scbe-connector-health-check",
+      "description": "Run safety-first connector diagnostics for MCP/services used by SCBE so outreach, research, publishing, and runtime calls do not break silently.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-connector-health-check"
+    },
+    {
+      "slug": "scbe-crosstalk-reliability",
+      "name": "scbe-crosstalk-reliability",
+      "description": "Audit and repair SCBE cross-talk packet delivery across JSON packets, JSONL lane bus, and markdown mirrors.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-crosstalk-reliability"
+    },
+    {
+      "slug": "scbe-docker-workflow",
+      "name": "scbe-docker-workflow",
+      "description": "Coordinate SCBE Docker workflows from build to runtime. Use for SCBE container commands, docker-compose service startup, health checks, and troubleshooting of image/build failures, port conflicts, and container startup issues in SCBE repos.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-docker-workflow"
+    },
+    {
+      "slug": "scbe-experimental-research-safe-integration",
+      "name": "scbe-experimental-research-safe-integration",
+      "description": "Design and execute advanced experimental research with fail-closed safety integration for SCBE systems. Use when users ask to test novel kernels/manifolds, map proposals into the 21D/M4 state layout, add semantic mesh overlays (including 230-bit envelopes), or move experimental results toward production safely.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-experimental-research-safe-integration"
+    },
+    {
+      "slug": "scbe-gh-powershell-workflow",
+      "name": "scbe-gh-powershell-workflow",
+      "description": "Manage GitHub workflows and SCBE-AETHERMOORE repository operations from PowerShell 7 preview. Use for authenticated gh CLI actions, PR and branch workflows, CI triage, and SCBE code-aware repository inspections.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-gh-powershell-workflow"
+    },
+    {
+      "slug": "scbe-github-systems",
+      "name": "scbe-github-systems",
+      "description": "Navigate and develop Issac Davis' SCBE-AETHERMOORE projects with a consistent GitHub workflow. Use for repo orientation (14-layer pipeline, Sacred Tongues, Polly Pads), running build/test/demo/API, and git/GitHub tasks (branching, Conventional Commits, PR reviews, CI workflows, releases) in SCBE repos like SCBE-AETHERMOORE-working and scbe-ultimate.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-github-systems"
+    },
+    {
+      "slug": "scbe-government-contract-intelligence",
+      "name": "scbe-government-contract-intelligence",
+      "description": "Investigate and prioritize U.S. federal and prime-contractor opportunities for SCBE swarm, autonomy, navigation, and AI-governance technologies. Use when evaluating SAM.gov/DIU/AFWERX/SBIR pathways, validating policy/news claims, producing capture plans, or preparing outreach packets for government-adjacent revenue.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-government-contract-intelligence"
+    },
+    {
+      "slug": "scbe-internet-workflow-synthesis",
+      "name": "scbe-internet-workflow-synthesis",
+      "description": "Synthesize and operate SCBE end-to-end internet workflows by discovering local and GitHub architecture templates, generating a baseline web pipeline profile, running ingestion and governance scans, and tuning system variables after the first run. Use when users ask to build, repair, or optimize internet workflow pipelines, workflow architecture maps, n8n or agent orchestration flows, or post-baseline threshold and concurrency tuning.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-internet-workflow-synthesis"
+    },
+    {
+      "slug": "scbe-manhwa-video-picture-research",
+      "name": "scbe-manhwa-video-picture-research",
+      "description": "Research manhwa recap video and image workflows and emit production-ready scene packets with source-traceable outputs.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-manhwa-video-picture-research"
+    },
+    {
+      "slug": "scbe-marketing-outreach-runbook",
+      "name": "scbe-marketing-outreach-runbook",
+      "description": "Build safe, high-value B2B outreach campaigns for SCBE services (cold email, social, investor outreach) with strong hooks, high-signal targeting, and anti-spam controls.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-marketing-outreach-runbook"
+    },
+    {
+      "slug": "scbe-monetization-thought-to-cash",
+      "name": "scbe-monetization-thought-to-cash",
+      "description": "Drive end-to-end monetization from idea to cash for SCBE projects using offer design, Stripe/Shopify execution, launch tasks, revenue tracking, and Obsidian evidence logging. Use when the user asks to make money, launch paid products, create pricing, wire checkout and webhooks, publish store products, or run a daily cash execution loop.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-monetization-thought-to-cash"
+    },
+    {
+      "slug": "scbe-n8n-colab-bridge",
+      "name": "scbe-n8n-colab-bridge",
+      "description": "Configure and reuse Google Colab local notebook connection settings for SCBE n8n automation and agent handoff workflows.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-n8n-colab-bridge"
+    },
+    {
+      "slug": "scbe-npm-prepublish-autopublish",
+      "name": "scbe-npm-prepublish-autopublish",
+      "description": "Enforce deterministic npm prepublish cleanup and auto-publish workflow gates for SCBE-AETHERMOORE. Use when preparing npm releases, hardening package contents, adding tarball guard checks, or updating GitHub Actions publish jobs to run the same local gates.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-npm-prepublish-autopublish"
+    },
+    {
+      "slug": "scbe-overwatch-relay-swarm",
+      "name": "scbe-overwatch-relay-swarm",
+      "description": "Run a baton-style multi-agent sequence with dedicated overwatcher gates, deterministic AI-to-AI packet passing, and terminal-first execution artifacts.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-overwatch-relay-swarm"
+    },
+    {
+      "slug": "scbe-rapid-shell-guidance",
+      "name": "scbe-rapid-shell-guidance",
+      "description": "Deliver fast, low-friction PowerShell coaching for SCBE workflows with exact copy-paste commands, shell labeling (Shell A server, Shell B client), and single-step execution checks. Use when users ask for short command-first help for browser-agent startup, API tests, MCP setup, port/process fixes, or GitHub CLI operations.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-rapid-shell-guidance"
+    },
+    {
+      "slug": "scbe-research-publishing-autopilot",
+      "name": "scbe-research-publishing-autopilot",
+      "description": "Build and operate multi-hour SCBE research-to-publishing loops for articles and social posts with retrigger logic, evidence gates, and performance monitoring. Use when repeatable growth execution must stay lore/code accurate and avoid invention misrepresentation.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-research-publishing-autopilot"
+    },
+    {
+      "slug": "scbe-self-improvement-skill-management",
+      "name": "scbe-self-improvement-skill-management",
+      "description": "Run the SCBE self-improvement loop by documenting completed work, creating new skills, updating existing skills, and propagating SCBE knowledge to other AI systems via context documents and structured knowledge files. Use when users ask to create/update skills, formalize repeated SCBE workflows, enforce skill approval gates, generate transfer prompts for Claude/Gemini/custom agents, or publish SCBE knowledge artifacts to Hugging Face datasets.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-self-improvement-skill-management"
+    },
+    {
+      "slug": "scbe-session-corkscrew",
+      "name": "scbe-session-corkscrew",
+      "description": "Manage SCBE multi-agent session continuity with timestamped callsigns, append-only cross-talk packets, Obsidian handoffs, and verification roll-forward. Use when starting or rotating an agent session, sending AI-to-AI updates, acknowledging packets, marking work verified or retired, or stabilizing coordination across repo bus and Obsidian.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-session-corkscrew"
+    },
+    {
+      "slug": "scbe-session-crosstalk-manager",
+      "name": "scbe-session-crosstalk-manager",
+      "description": "Manage SCBE terminal cross-talk sessions with collision-safe logs, persistent codenames, session IDs, and where/why/how metadata across repo packet lanes and Obsidian handoff notes. Use when starting a new AI work session, posting updates, handing off work, verifying lane sync, or closing a session.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-session-crosstalk-manager"
+    },
+    {
+      "slug": "scbe-shopify-money-flow",
+      "name": "scbe-shopify-money-flow",
+      "description": "Execute revenue-focused Shopify operations using SCBE and HYDRA command lanes with deterministic evidence, cross-talk dispatch, and workflow tuning. Use when the goal is to improve Shopify conversion, publish or refresh digital offers, coordinate monetization agents, or run pre-launch smoke checks before live store actions.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-shopify-money-flow"
+    },
+    {
+      "slug": "scbe-spiralverse-intent-auth",
+      "name": "scbe-spiralverse-intent-auth",
+      "description": "Implement and operate Spiralverse intent-authenticated communication for HYDRA/SCBE using six sacred tongues, governance gates, and signed audit packets.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-spiralverse-intent-auth"
+    },
+    {
+      "slug": "scbe-system-engine",
+      "name": "scbe-system-engine",
+      "description": "Coordinate SCBE-AETHERMOORE math, automation, and service connectors so multi-agent systems can execute work end-to-end. Use when tasks require SCBE dimensional validation, AI-to-AI workflows, browser automation planning, Hugging Face or GitHub/Linear/Notion/Zapier integration, or self-improving skill updates.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-system-engine"
+    },
+    {
+      "slug": "scbe-universal-synthesis",
+      "name": "scbe-universal-synthesis",
+      "description": "Orchestrate all installed Codex skills through an auto-updating synthesis matrix with Sacred Tongues routing, emotion/intent metadata, and decodable lexicon packets tied to established SCBE characters. Use when the user asks for cross-skill coordination, auto skill updates, multi-skill routing, or Sacred Tongues intent mapping.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-universal-synthesis"
+    },
+    {
+      "slug": "scbe-world-anvil-lore-rag-7th-tongue",
+      "name": "scbe-world-anvil-lore-rag-7th-tongue",
+      "description": "Build and operate a lore-focused RAG system using World Anvil exports and SCBE docs, with deterministic Claude/Codex cross-talk packets for handoff. Use when users ask to structure lore canon retrieval, sync worldbuilding data, enforce citation-grounded generation, or coordinate a 7th Tongue overseer lane across multiple AI agents.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\scbe-world-anvil-lore-rag-7th-tongue"
+    },
+    {
+      "slug": "screenshot",
+      "name": "screenshot",
+      "description": "Use when the user explicitly asks for a desktop or system screenshot (full screen, specific app or window, or a pixel region), or when tool-specific capture capabilities are unavailable and an OS-level capture is needed.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\screenshot"
+    },
+    {
+      "slug": "shopify-management-ops",
+      "name": "shopify-management-ops",
+      "description": "Run Shopify management from terminal with audit-first checks, product sync, storefront gate control, and optional live publish. Use when the user asks to manage Shopify products, storefront state, or monetization operations.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\shopify-management-ops"
+    },
+    {
+      "slug": "skill-synthesis",
+      "name": "skill-synthesis",
+      "description": "Compose multiple installed skills into one coordinated execution stack with ordered packets, minimal context load, and deterministic handoff artifacts. Use when tasks span multiple domains (for example HYDRA + browser + training + deploy) and you need a single combined workflow instead of invoking skills one-by-one.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\skill-synthesis"
+    },
+    {
+      "slug": "speed-line-delivery",
+      "name": "speed-line-delivery",
+      "description": "Deliver terminal instructions with shell-labeled lanes and one-line command blocks so users can execute quickly without context confusion. Use when users are working across multiple terminals, mixing chat and shell actions, hitting PowerShell parsing errors, or asking to learn while still completing setup/ops tasks fast.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\speed-line-delivery"
+    },
+    {
+      "slug": "telegram-bot-maker",
+      "name": "telegram-bot-maker",
+      "description": "Build and operate Telegram bots with BotFather, HTTPS webhooks, n8n workflows, and SCBE connector automation. Use when users ask to create, wire, debug, or harden Telegram bot pipelines.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\telegram-bot-maker"
+    },
+    {
+      "slug": "vercel-deploy",
+      "name": "vercel-deploy",
+      "description": "Deploy applications and websites to Vercel. Use when the user requests deployment actions like \"deploy my app\", \"deploy and give me the link\", \"push this live\", or \"create a preview deployment\".",
+      "path": "C:\\Users\\issda\\.codex\\skills\\vercel-deploy"
+    },
+    {
+      "slug": "video-source-verification",
+      "name": "video-source-verification",
+      "description": "Use this skill for fast, traceable internet-source verification of claims from videos/articles (especially YouTube claims) before acting on them.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\video-source-verification"
+    }
+  ]
+}

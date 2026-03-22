@@ -1,0 +1,4 @@
+interface:
+  display_name: "High School Explainer"
+  short_description: "Explain complex ideas in clear high-school level language"
+  default_prompt: "Explain this in plain language for a high school student: define key terms, use one analogy, and end with a quick recap."

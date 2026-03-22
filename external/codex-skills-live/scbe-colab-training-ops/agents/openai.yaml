@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Colab Training Ops"
+  short_description: "Run SCBE Colab notebooks and bridge them into daily training flows."
+  default_prompt: "Use the SCBE Colab notebook catalog, bridge profiles, and training commands to operate the remote compute lane."
