@@ -21,6 +21,7 @@ from typing import Any
 
 
 CRYPTPROTECT_UI_FORBIDDEN = 0x1
+FINGERPRINT_ITERATIONS = 120_000
 
 
 class DATA_BLOB(ctypes.Structure):
@@ -130,8 +131,24 @@ class Item:
     token_id: str
     created_at: str
     blob: str
-    sha256: str
+    fingerprint: str
     source: str
+
+
+def sensitive_fingerprint(
+    value: str,
+    *,
+    salt_env: str = "SCBE_METADATA_HASH_KEY",
+    salt_default: str = "scbe-key-mirror",
+) -> str:
+    salt = os.getenv(salt_env, salt_default).encode("utf-8")
+    derived = hashlib.pbkdf2_hmac(
+        "sha256",
+        value.encode("utf-8"),
+        salt,
+        FINGERPRINT_ITERATIONS,
+    )
+    return derived.hex()
 
 
 class KeyMirror:
@@ -163,12 +180,12 @@ class KeyMirror:
         encrypted = dpapi_protect(key_value.encode("utf-8"), entropy, f"SCBE Key Mirror {service}")
         blob_path.write_bytes(encrypted)
 
-        digest = hashlib.sha256(key_value.encode("utf-8")).hexdigest()
+        digest = sensitive_fingerprint(key_value)
         item = Item(
             token_id=token_id,
             created_at=utc_now(),
             blob=str(blob_path),
-            sha256=digest,
+            fingerprint=digest,
             source=source,
         )
 
@@ -192,13 +209,14 @@ class KeyMirror:
             items = slot.get("items", [])
             latest = slot.get("latest", "")
             last = items[-1] if items else {}
+            fingerprint = last.get("fingerprint") or last.get("sha256") or ""
             result.append(
                 {
                     "service": service,
                     "versions": len(items),
                     "latest": latest,
                     "updated_at": last.get("created_at", ""),
-                    "fingerprint": (last.get("sha256", "")[:12] if last.get("sha256") else ""),
+                    "fingerprint": fingerprint[:12],
                 }
             )
         return result
@@ -223,7 +241,7 @@ class KeyMirror:
         return {
             "service": service,
             "token_id": item["token_id"],
-            "fingerprint": item["sha256"][:12],
+            "fingerprint": str(item.get("fingerprint") or item.get("sha256") or "")[:12],
             "value": raw,
         }
 
