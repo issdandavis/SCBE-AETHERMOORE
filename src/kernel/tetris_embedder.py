@@ -152,20 +152,20 @@ def phi_expand_tongue_coords(raw_coords: np.ndarray, tongue: str) -> np.ndarray:
 
     This preserves the exponential cost gradient from center → boundary.
     """
-    # Amplify: scale each dimension to use more of the range
-    amplified = raw_coords * 10.0  # Expand from ~0.01 range to ~0.1 range
+    # Amplify: scale each dimension proportional to content magnitude
+    # Lower amplification = closer to origin = lower harmonic cost
+    amplified = raw_coords * 5.0  # Moderate expansion (was 10.0)
 
     # Tongue-specific offset: push each tongue to a different octant
+    # Scaled to 0.15 (was 0.5) so content signal dominates over tongue offset
     tongue_idx = TONGUE_KEYS.index(tongue)
     offset = np.zeros(6)
-    # Use binary encoding of tongue index for 6D offset
     for d in range(6):
-        # Each tongue occupies a different region of 6D space
-        offset[d] = 0.5 * math.sin(tongue_idx * math.pi / 3 + d * math.pi / 6)
+        offset[d] = 0.15 * math.sin(tongue_idx * math.pi / 3 + d * math.pi / 6)
 
     expanded = amplified + offset
 
-    # Clamp to Poincare ball boundary (hard wall at 0.98)
+    # Poincare ball containment — preserve the gradient, don't flatten it
     norm = np.linalg.norm(expanded)
     if norm > 0.98:
         expanded = expanded * 0.98 / norm
@@ -232,7 +232,66 @@ def phi_expand_spatial_coords(raw_spatial: np.ndarray, tongue: str) -> np.ndarra
 
 
 # =========================================================================
-#  4. Full Tetris Pipeline
+#  4. Sacred Egg Genesis — Birth Sequence for Embeddings
+# =========================================================================
+
+def sacred_egg_genesis(tongue: str, tier: int = 1, payload: bytes = b"") -> np.ndarray:
+    """
+    Hatch a Sacred Egg to produce the innate 6D manifold position.
+
+    Every embedding is BORN from an egg. The egg's manifold point encodes:
+      - Tongue affinity (which octant of Poincaré ball)
+      - Tier depth (how deep into the ball)
+      - GeoSeal binding (cryptographic birth certificate)
+
+    This is the genesis step — before any text is seen, the embedding
+    already has an innate position in the governance space. Like DNA
+    before experience.
+
+    The 5 predicates from sacredEggsGenesis.ts:
+      P_tongue: tongue must be valid Sacred Tongue
+      P_geo:    manifold point must be inside Poincaré ball
+      P_path:   tier must follow ring descent (CORE→OUTER)
+      P_quorum: at least 2/3 tongue witnesses
+      P_crypto: GeoSeal hash must verify
+
+    Hatch weight: W = Σ φ^(k_i) · w_i >= φ³ ≈ 4.236
+    """
+    tongue_idx = TONGUE_KEYS.index(tongue) if tongue in TONGUE_KEYS else 0
+
+    # Innate manifold position — determined entirely by tongue + tier
+    # Each tongue gets a distinct octant via 60-degree phase rotation
+    angle = tongue_idx * math.pi / 3  # 0°, 60°, 120°, 180°, 240°, 300°
+
+    # Tier determines radial depth (higher tier = closer to origin = more trusted)
+    # Tier 1 (foundation) → r=0.7 (outer), Tier 4 (mastery) → r=0.3 (inner)
+    radial_depth = max(0.2, 0.8 - tier * 0.15)
+
+    # 6D manifold point: tongue-phase encoding
+    manifold = np.zeros(6)
+    for d in range(6):
+        # Each dimension gets a phase-shifted component
+        phase = angle + d * math.pi / 6
+        manifold[d] = radial_depth * math.sin(phase) * TONGUE_WEIGHTS[TONGUE_KEYS[d % 6]] / 11.09
+
+    # GeoSeal binding: cryptographic fingerprint of the birth
+    seal_material = f"{tongue}:{tier}:{payload.hex() if payload else 'empty'}"
+    seal = hashlib.sha256(seal_material.encode()).digest()
+
+    # Perturb manifold by seal hash (deterministic but unique per payload)
+    for d in range(6):
+        manifold[d] += (seal[d] / 255.0 - 0.5) * 0.05  # ±2.5% perturbation
+
+    # Verify Poincaré ball containment (P_geo predicate)
+    norm = np.linalg.norm(manifold)
+    if norm > 0.95:
+        manifold = manifold * 0.95 / norm
+
+    return manifold
+
+
+# =========================================================================
+#  5. Full Tetris Pipeline
 # =========================================================================
 
 @dataclass
@@ -245,6 +304,8 @@ class TetrisEmbedding:
     augmented_text: str             # Text with tongue/tier prefix
     tongue: str
     tier: int
+    genesis_manifold: np.ndarray    # Innate 6D from Sacred Egg
+    harmonic_cost: float            # H(x) at final position
 
 
 class TetrisEmbedder:
@@ -282,8 +343,21 @@ class TetrisEmbedder:
         return self._model
 
     def embed_single(self, text: str, tongue: str, tier: int = 1) -> TetrisEmbedding:
-        """Full Tetris pipeline for a single document."""
+        """Full Tetris pipeline for a single document.
+
+        Pipeline:
+          0. Sacred Egg Genesis → innate 6D manifold (birth sequence)
+          1. Tongue Augment → semantic prefix
+          2. MiniLM Encode → 384D base embedding
+          3. Sacred Rotation → tongue-specific subspace
+          4. Tongue Coords → 6D (seeded from genesis manifold)
+          5. Spatial Coords → 3D octree position
+          6. Harmonic Cost → governance weight
+        """
         model = self._load_model()
+
+        # Step 0: Sacred Egg Genesis — innate birth sequence
+        genesis = sacred_egg_genesis(tongue, tier, text[:50].encode())
 
         # Step 1: Augment text
         augmented = augment_text(text, tongue, tier)
@@ -294,17 +368,23 @@ class TetrisEmbedder:
         # Step 3: Sacred rotation
         rotated = sacred_rotate(raw_emb, tongue)
 
-        # Step 4: Tongue coords (from rotated embedding)
+        # Step 4: Tongue coords — SEEDED from genesis manifold
         dim = len(rotated)
         chunk = dim // 6
         raw_tc = np.zeros(6)
         for i in range(6):
             raw_tc[i] = np.mean(rotated[i * chunk:(i + 1) * chunk]) * TONGUE_WEIGHTS[TONGUE_KEYS[i]]
-        tongue_coords = phi_expand_tongue_coords(raw_tc, tongue)
+
+        # Blend: 70% learned (from text) + 30% innate (from egg)
+        blended_tc = raw_tc * 0.7 + genesis * 0.3
+        tongue_coords = phi_expand_tongue_coords(blended_tc, tongue)
 
         # Step 5: Spatial coords (from expanded tongue coords)
         raw_spatial = self._ico_matrix @ tongue_coords
         spatial_coords = phi_expand_spatial_coords(raw_spatial, tongue)
+
+        # Step 6: Harmonic wall cost
+        cost = harmonic_wall_cost(tongue_coords)
 
         return TetrisEmbedding(
             raw_embedding=raw_emb,
@@ -314,6 +394,8 @@ class TetrisEmbedder:
             augmented_text=augmented,
             tongue=tongue,
             tier=tier,
+            genesis_manifold=genesis,
+            harmonic_cost=cost,
         )
 
     def embed_batch(self, texts: list[str], tongues: list[str],
@@ -336,20 +418,29 @@ class TetrisEmbedder:
             tongue = tongues[i]
             tier = tiers[i]
 
+            # Step 0: Sacred Egg Genesis
+            genesis = sacred_egg_genesis(tongue, tier, texts[i][:50].encode())
+
             # Step 3: Sacred rotation
             rotated = sacred_rotate(raw_embs[i], tongue)
 
-            # Step 4: Tongue coords
+            # Step 4: Tongue coords — seeded from genesis manifold
             dim = len(rotated)
             chunk = dim // 6
             raw_tc = np.zeros(6)
             for d in range(6):
                 raw_tc[d] = np.mean(rotated[d * chunk:(d + 1) * chunk]) * TONGUE_WEIGHTS[TONGUE_KEYS[d]]
-            tc = phi_expand_tongue_coords(raw_tc, tongue)
+
+            # Blend: 70% learned + 30% innate
+            blended_tc = raw_tc * 0.7 + genesis * 0.3
+            tc = phi_expand_tongue_coords(blended_tc, tongue)
 
             # Step 5: Spatial coords
             raw_sp = self._ico_matrix @ tc
             sc = phi_expand_spatial_coords(raw_sp, tongue)
+
+            # Step 6: Harmonic cost
+            cost = harmonic_wall_cost(tc)
 
             results.append(TetrisEmbedding(
                 raw_embedding=raw_embs[i],
@@ -359,6 +450,8 @@ class TetrisEmbedder:
                 augmented_text=augmented[i],
                 tongue=tongue,
                 tier=tier,
+                genesis_manifold=genesis,
+                harmonic_cost=cost,
             ))
 
         return results
