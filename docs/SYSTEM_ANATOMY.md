@@ -207,6 +207,73 @@ graph TB
 
 ---
 
+## Health Status (Pass 2 — 2026-03-22)
+
+```
+TOTAL: 3856 passed, 39 failed, 11 collection errors = 99.0% pass rate
+```
+
+```mermaid
+graph TB
+    subgraph HEALTHY["HEALTHY (100% pass)"]
+        style HEALTHY fill:#0a5,stroke:#0a5
+        SK[SKELETON<br/>71 tests<br/>pi^phi, HKDF]
+        NV[NERVOUS L13<br/>7 tests<br/>quorum, hash]
+        MEM[MEMORY<br/>177 tests<br/>6 surfaces]
+        DNA2[DNA<br/>43 tests<br/>spin, dispersal]
+        CIRC[CIRCULATORY<br/>27 tests<br/>lightning, membrane]
+        IMM[IMMUNE<br/>29 tests pass<br/>28.6% detection]
+        FUS[FUSIONS<br/>13 tests<br/>3 combos]
+    end
+
+    subgraph NEEDS_WORK["NEEDS WORK (39 failures)"]
+        style NEEDS_WORK fill:#a50,stroke:#a50
+        QCV[QC Voxel Drive<br/>6 xfail spec features]
+        GEO[Geoseed M6<br/>~8 failures<br/>spec drift]
+        DYN[Dynosphere<br/>~5 failures<br/>API changed]
+        BV[Braided Voxel<br/>~4 failures<br/>encoding change]
+        WT[Webtoon<br/>~4 failures<br/>quality gate]
+        MISC[Misc<br/>~18 failures<br/>import paths]
+    end
+
+    subgraph ISOLATED["ISOLATED (collection errors)"]
+        style ISOLATED fill:#555,stroke:#555
+        AE[test_aethermoore<br/>scipy missing]
+        EDE[test_ede<br/>dep missing]
+        PQC[test_pqc<br/>liboqs missing]
+        N8N[test_n8n_bridge<br/>dep missing]
+    end
+
+    subgraph FIX_PLAN["FIX PLAN"]
+        T1[Tier 1: Update imports<br/>30 min each, low risk]
+        T2[Tier 2: Implement features<br/>1-2 hr each, medium risk]
+        T3[Tier 3: Mark xfail<br/>5 min each, zero risk]
+    end
+
+    NEEDS_WORK --> T1
+    QCV --> T2
+    ISOLATED --> T3
+
+    subgraph IMMUNE_DETAIL["IMMUNE SYSTEM GAPS"]
+        ML[Multilingual: 0%<br/>NEEDS: semantic encoding]
+        SD[Spin Drift: 0%<br/>NEEDS: cumulative tracker]
+        AS[Adaptive Seq: 9%<br/>NEEDS: sequence detection]
+        DO[Direct Override: 30%<br/>NEEDS: threshold tuning]
+    end
+```
+
+## What's Left and Why
+
+| Gap | Why it exists | Best fix | Worst fix |
+|-----|---------------|----------|-----------|
+| Multilingual 0% | Text metrics are language-blind | Token-level semantic encoding across tongues | Keyword blocklist (brittle) |
+| Spin drift 0% | Cost rises 7x but per-message, not cumulative | Sliding window cost tracker across conversation | Lower threshold (more false positives) |
+| QC float→int | `int(abs(c)*10)` loses precision | Native float gate vectors | Wider acceptance radius (loses security) |
+| 11 collection errors | Module moves during rapid dev | Update import paths | Delete the test files (loses coverage) |
+| 39 test failures | Spec changes not reflected in tests | Rewrite tests to match code | Rewrite code to match tests (risky) |
+
+---
+
 ## Quick Reference: What Goes Where
 
 | Question | Organ | Module |
