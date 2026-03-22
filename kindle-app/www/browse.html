@@ -175,20 +175,92 @@ function saveRecent(url, title) {
   localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
 }
 
+function clearChildren(node) {
+  while (node.firstChild) {
+    node.removeChild(node.firstChild);
+  }
+}
+
+function createLinkTile(link) {
+  const anchor = document.createElement("a");
+  anchor.className = "qlink";
+  anchor.href = "#";
+  anchor.dataset.url = link.url;
+
+  const icon = document.createElement("span");
+  icon.className = "icon";
+  icon.textContent = link.icon;
+
+  const label = document.createElement("span");
+  label.className = "label";
+  label.textContent = link.label;
+
+  anchor.appendChild(icon);
+  anchor.appendChild(label);
+  anchor.addEventListener("click", e => {
+    e.preventDefault();
+    openUrl(link.url);
+  });
+  return anchor;
+}
+
+function createRecentItem(entry) {
+  const anchor = document.createElement("a");
+  anchor.className = "recent-item";
+  anchor.href = "#";
+  anchor.dataset.url = entry.url;
+
+  const favicon = document.createElement("div");
+  favicon.className = "favicon";
+
+  const textWrap = document.createElement("div");
+  const title = document.createElement("div");
+  title.textContent = (entry.title || entry.url || "").slice(0, 40);
+
+  let host = entry.url || "";
+  try { host = new URL(entry.url).hostname; } catch {}
+  const hostNode = document.createElement("div");
+  hostNode.className = "url";
+  hostNode.textContent = host;
+
+  textWrap.appendChild(title);
+  textWrap.appendChild(hostNode);
+  anchor.appendChild(favicon);
+  anchor.appendChild(textWrap);
+  anchor.addEventListener("click", e => {
+    e.preventDefault();
+    openUrl(entry.url);
+  });
+  return anchor;
+}
+
+function createTabChip(tab, isHome = false) {
+  const button = document.createElement("button");
+  button.className = `tab-chip ${(isHome ? !activeTabId : tab.id === activeTabId) ? "active" : ""}`;
+  button.dataset.tab = isHome ? "home" : tab.id;
+
+  if (isHome) {
+    button.textContent = "Home";
+    return button;
+  }
+
+  button.appendChild(document.createTextNode((tab.title || "Tab").slice(0, 20)));
+  const close = document.createElement("span");
+  close.className = "close";
+  close.dataset.close = tab.id;
+  close.textContent = "×";
+  button.appendChild(close);
+  return button;
+}
+
 // =========================================================
 // Render
 // =========================================================
 function renderQuickLinks() {
   const render = (links, containerId) => {
-    document.getElementById(containerId).innerHTML = links.map(l =>
-      `<a class="qlink" href="#" data-url="${l.url}">
-        <span class="icon">${l.icon}</span>
-        <span class="label">${l.label}</span>
-      </a>`
-    ).join("");
-    document.getElementById(containerId).querySelectorAll(".qlink").forEach(el => {
-      el.addEventListener("click", e => { e.preventDefault(); openUrl(el.dataset.url); });
-    });
+    const container = document.getElementById(containerId);
+    clearChildren(container);
+    links.forEach(link => container.appendChild(createLinkTile(link)));
   };
   render(QUICK_LINKS, "quickLinks");
   render(TOOL_LINKS, "toolLinks");
@@ -196,31 +268,16 @@ function renderQuickLinks() {
 
 function renderRecent() {
   const recent = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
-  document.getElementById("recentList").innerHTML = recent.slice(0, 8).map(r => {
-    let host = r.url;
-    try { host = new URL(r.url).hostname; } catch {}
-    return `<a class="recent-item" href="#" data-url="${r.url}">
-      <div class="favicon"></div>
-      <div>
-        <div>${r.title.slice(0, 40)}</div>
-        <div class="url">${host}</div>
-      </div>
-    </a>`;
-  }).join("");
-  document.getElementById("recentList").querySelectorAll(".recent-item").forEach(el => {
-    el.addEventListener("click", e => { e.preventDefault(); openUrl(el.dataset.url); });
-  });
+  const list = document.getElementById("recentList");
+  clearChildren(list);
+  recent.slice(0, 8).forEach(entry => list.appendChild(createRecentItem(entry)));
 }
 
 function renderTabs() {
   const strip = document.getElementById("tabStrip");
-  strip.innerHTML = [
-    `<button class="tab-chip ${!activeTabId ? 'active' : ''}" data-tab="home">Home</button>`
-  ].concat(tabs.map(t =>
-    `<button class="tab-chip ${t.id === activeTabId ? 'active' : ''}" data-tab="${t.id}">
-      ${(t.title || "Tab").slice(0, 20)}<span class="close" data-close="${t.id}">&times;</span>
-    </button>`
-  )).join("");
+  clearChildren(strip);
+  strip.appendChild(createTabChip(null, true));
+  tabs.forEach(tab => strip.appendChild(createTabChip(tab)));
 
   strip.querySelectorAll("[data-tab]").forEach(el => {
     el.addEventListener("click", e => {
