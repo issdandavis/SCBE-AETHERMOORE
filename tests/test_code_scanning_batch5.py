@@ -33,6 +33,16 @@ def test_lore_strip_copies_use_dom_rendering_and_safe_url_helper():
         assert "document.createElement('img')" in text
 
 
+def test_kindle_browse_uses_dom_construction_for_dynamic_lists():
+    text = (ROOT / "kindle-app/www/browse.html").read_text(encoding="utf-8")
+    assert 'document.getElementById(containerId).innerHTML' not in text
+    assert 'document.getElementById("recentList").innerHTML' not in text
+    assert 'strip.innerHTML' not in text
+    assert "createLinkTile" in text
+    assert "createRecentItem" in text
+    assert "createTabChip" in text
+
+
 def test_ai_bridge_write_log_uses_allowlisted_root_and_safe_filename(tmp_path, monkeypatch):
     monkeypatch.setenv("SCBE_ALLOWED_VAULT_ROOTS", str(tmp_path))
 
