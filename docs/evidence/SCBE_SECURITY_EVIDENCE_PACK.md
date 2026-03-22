@@ -16,12 +16,36 @@ This is engineering documentation, not marketing material.
 
 ---
 
+## Core Philosophy
+
+**Injection is inevitable. Execution is controllable.**
+
+SCBE does not claim to prevent prompt injection, data poisoning, or
+adversarial inputs. Research confirms these are unsolved problems —
+adaptive attackers bypass >90% of published defenses.
+
+SCBE instead constrains what injected instructions can accomplish.
+It treats AI security as a control problem over a bounded state space,
+not a classification problem. The goal is not 100% prevention — it is
+making unwanted behavior structurally and computationally expensive,
+reliably, 1% better than the current best.
+
+This is the same model as:
+- Cryptography: doesn't prevent brute force, makes it computationally infeasible
+- Network security: doesn't prevent packets, rate-limits and throttles
+- Zero trust: doesn't prevent access attempts, enforces least privilege
+- Sandboxing: doesn't prevent code execution, constrains what it can reach
+
+---
+
 ## Definition
 
-SCBE is a pre-execution control system that evaluates agent actions in a
-multi-dimensional state space and enforces constraints before execution.
+SCBE is an execution constraint system that limits what injected or
+adversarial instructions can accomplish by evaluating actions across
+multiple dimensions and raising the cost of deviations before execution.
 
-It is not a prompt filter, not a classifier, and not just encryption.
+It is not a prompt filter, not a classifier, not an injection preventer.
+It is a state-space constraint layer.
 
 ---
 
@@ -261,19 +285,65 @@ deployed systems that document this combination."
 
 ---
 
-## E. Next Steps (ordered by impact)
+## E. First Measurable Metric
 
-1. **Adversarial benchmark**: Run 100+ prompt injection examples through
-   SCBE scoring. Measure baseline vs SCBE-gated success rate.
+**The one number that matters:**
 
-2. **Boundary hardening**: Implement Lorentz model dual representation
+> "SCBE reduces successful harmful tool execution under injection
+> attempts by X% compared to unprotected baseline."
+
+This is the metric to measure. Not "stops injection" (it doesn't).
+Not "detects all attacks" (it can't). The question is:
+
+**When injection succeeds (and it will), does SCBE reduce the damage?**
+
+### Benchmark Design
+
+**Dataset:** 100+ adversarial prompts in three categories:
+- Direct injection (override system instructions)
+- Indirect injection (hidden instructions in retrieved content)
+- Tool abuse (legitimate-looking requests that misuse available tools)
+
+**Test protocol:**
+1. Run each prompt through baseline (no SCBE gate)
+2. Run each prompt through SCBE gate (tongue encoding + cost scoring + dispersal check)
+3. For each: did the harmful action EXECUTE or was it CONSTRAINED?
+
+**Metrics to report:**
+- Harmful Execution Rate (HER): % of injections that produce harmful tool calls
+- Baseline HER vs SCBE-gated HER
+- False constraint rate: % of benign prompts incorrectly blocked
+- Cost distribution: what does the SCBE cost function look like across the dataset?
+
+**What we are NOT claiming:**
+- Not claiming SCBE prevents injection (it doesn't)
+- Not claiming 100% detection (impossible)
+- Not comparing against proprietary systems we can't reproduce
+
+**What we ARE claiming:**
+- Given that injection will occur, SCBE constrains the resulting execution space
+- The constraint is measurable and reproducible
+- The cost function creates a continuous degradation (not binary pass/fail)
+
+---
+
+## F. Next Steps (ordered by impact)
+
+1. **Build benchmark harness**: Script that runs adversarial prompts through
+   baseline vs SCBE-gated paths. Output: HER comparison + cost distribution.
+
+2. **Curate adversarial dataset**: Pull from OWASP LLM Top 10 examples,
+   published jailbreak datasets, and craft SCBE-specific test cases.
+
+3. **Run benchmark**: Measure HER. Report honestly regardless of result.
+
+4. **Boundary hardening**: Implement Lorentz model dual representation
    for operations near the Poincare ball boundary.
 
-3. **External red team**: Invite security researchers to attack the
+5. **Paper draft**: "Execution Constraint Models for AI Agent Security"
+   — submit to arXiv as experimental/position paper. Core claim:
+   "Injection is inevitable. Execution is controllable. Here's the math
+   and the first benchmark results."
+
+6. **External red team**: Invite security researchers to attack the
    Chladni access control and tongue coordinate derivation.
-
-4. **Standardized dataset**: Test tamper detection against NIST/MITRE
-   adversarial ML datasets (not just internally generated attacks).
-
-5. **Paper draft**: "Geometric State-Space Control for AI Agent Security"
-   — submit to arXiv as experimental/position paper, not as solved-problem.
