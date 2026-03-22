@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hydra Node Terminal Browsing"
+  short_description: "Node.js terminal web/repo browsing workflows for HYDRA tasks"
+  default_prompt: "Use Node.js-first terminal browsing patterns for HYDRA research, extraction, and evidence capture."

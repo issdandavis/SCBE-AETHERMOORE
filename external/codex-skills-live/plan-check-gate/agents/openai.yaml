@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plan Check Gate"
+  short_description: "Fact and research gate before coding"
+  default_prompt: "Use this skill to require source-backed research and explicit plan approval before writing code."

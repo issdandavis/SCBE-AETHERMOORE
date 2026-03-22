@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Handoff Packager"
+  short_description: "Create deterministic handoff packets for agents"
+  default_prompt: "Use $agent-handoff-packager to prepare clean handoff briefs for parallel agents."

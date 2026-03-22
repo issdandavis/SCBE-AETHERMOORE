@@ -1,0 +1,4 @@
+interface:
+  display_name: "Issac Story Engine"
+  short_description: "Scenes, chapters, and novels in Issac style"
+  default_prompt: "Use $issac-story-engine to draft or revise a scene, chapter, or novel segment in Issac's style with research-backed structure."

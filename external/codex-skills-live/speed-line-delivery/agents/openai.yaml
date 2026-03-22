@@ -1,0 +1,4 @@
+interface:
+  display_name: "Speed Line Delivery"
+  short_description: "Run commands fast with shell-labeled steps and zero ambiguity."
+  default_prompt: "Use [CHAT]/[SERVER]/[OPS] labels, give one command per line, and keep me moving."

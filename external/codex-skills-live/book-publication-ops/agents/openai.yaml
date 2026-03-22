@@ -1,0 +1,4 @@
+interface:
+  display_name: "Book Publication Ops"
+  short_description: "Research, format, review, and package books"
+  default_prompt: "Use $book-publication-ops to research platform requirements, audit my manuscript, and prepare ebook and print publication assets."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Telegram Bot Maker"
+  short_description: "Build Telegram bots with n8n + SCBE"
+  default_prompt: "Create and wire a Telegram bot with webhook, n8n workflow, and SCBE checks."

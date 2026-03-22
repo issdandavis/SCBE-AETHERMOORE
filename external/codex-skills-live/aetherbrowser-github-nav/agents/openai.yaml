@@ -1,0 +1,4 @@
+interface:
+  display_name: "AetherBrowser GitHub Nav"
+  short_description: "Navigate GitHub workflows with AetherBrowser"
+  default_prompt: "Use AetherBrowser GitHub nav flow."

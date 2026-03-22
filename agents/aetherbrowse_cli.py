@@ -17,8 +17,10 @@ import json
 from pathlib import Path
 import shlex
 from typing import Any, Dict, Optional
+from urllib import error as urllib_error
+from urllib import request as urllib_request
 
-from agents.browsers import list_backends
+from agents.browsers import get_chrome_launch_command, list_backends
 from agents.browser.session_manager import AetherbrowseSession, AetherbrowseSessionConfig
 
 
@@ -54,6 +56,145 @@ def _load_actions(path: str) -> list[dict[str, str]]:
         if isinstance(data, list):
             return [dict(item) for item in data]
         raise ValueError("Action script must be a JSON array of {action,target,value?} objects.")
+
+
+def _is_loopback_host(host: str) -> bool:
+    normalized = host.strip().lower()
+    return normalized in {"127.0.0.1", "localhost", "::1"} or normalized.startswith("127.")
+
+
+def _read_json_url(url: str, timeout: float = 2.0) -> tuple[int, Any]:
+    with urllib_request.urlopen(url, timeout=timeout) as response:
+        status = getattr(response, "status", response.getcode())
+        payload = response.read().decode("utf-8")
+    return status, json.loads(payload)
+
+
+def _format_target_list(targets: list[dict[str, Any]], limit: int = 5) -> str:
+    labels = []
+    for target in targets[:limit]:
+        ident = str(target.get("id", "unknown"))
+        title = str(target.get("title") or target.get("url") or target.get("type") or "untitled").strip()
+        labels.append(f"{ident} ({title})")
+    return ", ".join(labels) if labels else "none"
+
+
+def _build_cdp_unavailable_message(host: str, port: int, detail: str) -> str:
+    endpoint = f"http://{host}:{port}/json"
+    if _is_loopback_host(host):
+        launch_cmd = get_chrome_launch_command(port=port)
+        return (
+            f"CDP endpoint {endpoint} is unavailable ({detail}). "
+            f"Start a local Chrome/Chromium instance with remote debugging enabled, for example: {launch_cmd}. "
+            f"Then retry this command or switch backends with --backend playwright or --backend mock."
+        )
+    return (
+        f"CDP endpoint {endpoint} is unavailable ({detail}). "
+        f"Verify the remote browser is running with remote debugging enabled and that {endpoint} returns JSON."
+    )
+
+
+def _build_cdp_no_targets_message(host: str, port: int) -> str:
+    endpoint = f"http://{host}:{port}/json"
+    if _is_loopback_host(host):
+        launch_cmd = get_chrome_launch_command(port=port)
+        return (
+            f"CDP endpoint {endpoint} responded, but it exposed no debuggable targets. "
+            f"Start Chrome/Chromium with remote debugging enabled and open at least one tab. "
+            f"Example launch command: {launch_cmd}."
+        )
+    return (
+        f"CDP endpoint {endpoint} responded, but it exposed no debuggable targets. "
+        f"Open a page in the remote browser or choose a valid --target-id before retrying."
+    )
+
+
+def _build_cdp_missing_target_message(
+    host: str,
+    port: int,
+    target_id: str,
+    targets: list[dict[str, Any]],
+) -> str:
+    endpoint = f"http://{host}:{port}/json"
+    return (
+        f"CDP endpoint {endpoint} responded, but no target matched --target-id {target_id}. "
+        f"Available targets: {_format_target_list(targets)}. "
+        f"Open the intended tab or pass a valid --target-id."
+    )
+
+
+def _build_cdp_missing_websocket_message(host: str, port: int, target: dict[str, Any]) -> str:
+    endpoint = f"http://{host}:{port}/json"
+    target_id = str(target.get("id", "unknown"))
+    title = str(target.get("title") or target.get("url") or target.get("type") or "untitled").strip()
+    return (
+        f"CDP target {target_id} ({title}) from {endpoint} is missing webSocketDebuggerUrl. "
+        f"Refresh or reopen that tab, or choose a different target."
+    )
+
+
+def _build_cdp_session_init_message(host: str, port: int, detail: str) -> str:
+    endpoint = f"http://{host}:{port}/json"
+    if _is_loopback_host(host):
+        launch_cmd = get_chrome_launch_command(port=port)
+        return (
+            f"Failed to initialize the CDP session at {endpoint} ({detail}). "
+            f"Reconfirm the local browser is still listening on that port and retry. "
+            f"Example launch command: {launch_cmd}."
+        )
+    return (
+        f"Failed to initialize the CDP session at {endpoint} ({detail}). "
+        f"Verify the remote browser is still reachable and exposing a valid CDP target."
+    )
+
+
+def _build_session_init_error(args: argparse.Namespace, session: AetherbrowseSession) -> str:
+    details = ""
+    for entry in reversed(session.get_audit_log()):
+        if entry.get("event") == "backend_init_failed":
+            details = str(entry.get("error") or "").strip()
+            break
+
+    if args.backend == "cdp":
+        return _build_cdp_session_init_message(
+            args.host,
+            args.port,
+            details or "session initialization failed after the readiness probe passed",
+        )
+
+    if details:
+        return f"Failed to initialize {args.backend} session/back-end ({details})."
+    return f"Failed to initialize {args.backend} session/back-end."
+
+
+async def _check_cdp_readiness(host: str, port: int, target_id: Optional[str]) -> Optional[str]:
+    endpoint = f"http://{host}:{port}/json"
+    try:
+        status, targets = await asyncio.to_thread(_read_json_url, endpoint)
+    except urllib_error.URLError as exc:
+        detail = str(exc.reason or exc).strip()
+        return _build_cdp_unavailable_message(host, port, detail)
+    except Exception as exc:  # noqa: BLE001
+        return _build_cdp_unavailable_message(host, port, str(exc).strip())
+
+    if status != 200:
+        return _build_cdp_unavailable_message(host, port, f"HTTP {status}")
+    if not isinstance(targets, list):
+        return _build_cdp_unavailable_message(host, port, f"unexpected payload type {type(targets).__name__}")
+    if not targets:
+        return _build_cdp_no_targets_message(host, port)
+
+    if target_id:
+        target = next((item for item in targets if str(item.get("id")) == target_id), None)
+        if target is None:
+            return _build_cdp_missing_target_message(host, port, target_id, targets)
+    else:
+        target = next((item for item in targets if item.get("type") == "page"), targets[0])
+
+    if not target.get("webSocketDebuggerUrl"):
+        return _build_cdp_missing_websocket_message(host, port, target)
+
+    return None
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -173,6 +314,11 @@ async def _main_async(args: argparse.Namespace) -> None:
         print(json.dumps(list_backends(), indent=2, default=str))
         return
 
+    if args.backend == "cdp":
+        readiness_error = await _check_cdp_readiness(args.host, args.port, args.target_id)
+        if readiness_error:
+            raise RuntimeError(readiness_error)
+
     cfg = AetherbrowseSessionConfig(
         backend=args.backend,
         host=args.host,
@@ -189,9 +335,10 @@ async def _main_async(args: argparse.Namespace) -> None:
         sensitivity_factor=args.sensitivity_factor,
     )
 
-    async with AetherbrowseSession(cfg) as session:
+    session = AetherbrowseSession(cfg)
+    try:
         if not await session.initialize():
-            raise RuntimeError("Failed to initialize session/back-end.")
+            raise RuntimeError(_build_session_init_error(args, session))
 
         if args.command == "run-script":
             results = await _run_script(session, args.script, args.audit_only)
@@ -216,6 +363,8 @@ async def _main_async(args: argparse.Namespace) -> None:
             _append_training_records(args.training_log, session, results)
 
         print(json.dumps(payload, indent=2, default=str))
+    finally:
+        await session.close()
 
 
 def main() -> None:
@@ -224,7 +373,10 @@ def main() -> None:
     if not args.list_backends and args.command is None:
         parser.error("A command is required unless --list-backends is used.")
 
-    asyncio.run(_main_async(args))
+    try:
+        asyncio.run(_main_async(args))
+    except RuntimeError as exc:
+        parser.exit(1, f"{exc}\n")
 
 
 if __name__ == "__main__":

@@ -24,6 +24,7 @@ from src.aetherbrowser.page_analyzer import PageAnalyzer
 from src.aetherbrowser.provider_executor import ProviderExecutor
 from src.aetherbrowser.router import OctoArmorRouter
 from src.aetherbrowser.topology_engine import compute_page_topology
+from src.aetherbrowser.trilane_router import TriLaneRouter
 
 logger = logging.getLogger("aetherbrowser")
 
@@ -42,6 +43,7 @@ squad = AgentSquad(feed)
 analyzer = PageAnalyzer()
 router = OctoArmorRouter()
 executor = ProviderExecutor()
+trilane = TriLaneRouter(enable_shadow_training=True, local_first=True)
 pending_zone_requests: dict[int, "PendingCommandApproval"] = {}
 
 
@@ -60,6 +62,48 @@ def health():
         "providers": router.provider_status_snapshot(),
         "executor": executor.runtime_status_snapshot(),
     }
+
+
+# =============================================================================
+# TriLane REST Endpoints — the "kiosk" API
+# =============================================================================
+
+@app.post("/v1/browse")
+async def trilane_browse(body: dict):
+    """Execute a browser task through the 3-lane router.
+
+    POST /v1/browse
+    Body: {"task": "scrape arxiv.org for AI safety papers"}
+    """
+    task = body.get("task", "")
+    if not task:
+        return {"error": "Missing 'task' field"}
+
+    result = await trilane.execute(task)
+    return result.to_dict()
+
+
+@app.get("/v1/browse/classify")
+def trilane_classify(task: str = ""):
+    """Classify a task without executing it.
+
+    GET /v1/browse/classify?task=scrape+arxiv+papers
+    """
+    if not task:
+        return {"error": "Missing 'task' query param"}
+    intent = trilane.classify_intent(task)
+    lanes = trilane.select_lanes(intent, task)
+    return {
+        "task": task,
+        "intent": intent.value,
+        "lanes": [l.value for l in lanes],
+    }
+
+
+@app.get("/v1/browse/stats")
+def trilane_stats():
+    """Get TriLane router usage statistics."""
+    return trilane.get_stats()
 
 
 @app.websocket("/ws")

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Game Dev"
+  short_description: "Plan, build, and debug game features fast"
+  default_prompt: "Use $game-dev to plan and implement a gameplay feature for my project."
