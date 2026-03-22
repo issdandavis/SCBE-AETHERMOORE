@@ -338,9 +338,15 @@ class QuasiCrystalVoxelDrive:
                 }
                 for name, slab in self.tensor_slabs.items()
             },
-            "categories": {},
+            "categories": dict(sorted(
+                {cat: sum(1 for c in self.cells.values() if c.category == cat)
+                 for cat in {c.category for c in self.cells.values()}}.items()
+            )) if self.cells else {},
             "max_depth": max((c.depth for c in self.cells.values()), default=0),
-            "phase_distribution": {},
+            "phase_distribution": dict(sorted(
+                {ph: sum(1 for c in self.cells.values() if c.phase == ph)
+                 for ph in {c.phase for c in self.cells.values()}}.items()
+            )) if self.cells else {},
         }
 
     def export(self, path: str) -> str:
@@ -369,7 +375,7 @@ class QuasiCrystalVoxelDrive:
                     "children": c.children,
                     "phase": c.phase,
                     "viscosity": c.viscosity,
-                    "is_valid": c.is_valid,
+                    "is_valid": bool(c.is_valid),
                 }
                 for cid, c in self.cells.items()
             },
@@ -382,7 +388,7 @@ class QuasiCrystalVoxelDrive:
             },
         }
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        Path(path).write_text(json.dumps(data, indent=2))
+        Path(path).write_text(json.dumps(data, indent=2), encoding="utf-8")
         return path
 
 
