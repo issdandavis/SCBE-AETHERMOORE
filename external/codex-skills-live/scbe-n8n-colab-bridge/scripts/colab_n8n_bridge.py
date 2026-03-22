@@ -169,14 +169,14 @@ def status_profile(args: argparse.Namespace) -> int:
         print(json.dumps({"error": "profile_not_found", "name": profile}, indent=2))
         return 1
 
-    token = get_secret(str(record.get("token_secret_name", "")), "")
     print(
         json.dumps(
             {
                 "name": profile,
-                "backend_url": get_secret(str(record.get("backend_secret_name", "")), ""),
                 "backend_secret_name": record.get("backend_secret_name"),
-                "token_hint": mask(token),
+                "backend_configured": has_secret(str(record.get("backend_secret_name", ""))),
+                "token_secret_name": record.get("token_secret_name"),
+                "token_configured": has_secret(str(record.get("token_secret_name", ""))),
                 "n8n_webhook": record.get("n8n_webhook"),
                 "config_path": str(CONFIG_PATH),
             },
@@ -203,10 +203,14 @@ def env_profile(args: argparse.Namespace) -> int:
         print(f"# missing_secret_for_profile: {profile}")
         return 1
 
-    print(f"$env:SCBE_COLAB_BACKEND_URL = ({_python_secret_resolver(backend_secret_name)})")
-    print(f"$env:SCBE_COLAB_TOKEN = ({_python_secret_resolver(token_secret_name)})")
-    if record.get("n8n_webhook"):
-        print(f'$env:N8N_WEBHOOK_URL = "{record.get("n8n_webhook")}"')
+    payload = {
+        "name": profile,
+        "backend_secret_name": backend_secret_name,
+        "token_secret_name": token_secret_name,
+        "n8n_webhook": record.get("n8n_webhook"),
+        "resolution": "Resolve secrets locally via src.security.secret_store.get_secret before exporting env.",
+    }
+    print(json.dumps(payload, indent=2))
     return 0
 
 

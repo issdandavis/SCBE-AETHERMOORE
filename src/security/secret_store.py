@@ -31,6 +31,7 @@ except Exception:  # pragma: no cover - cryptography is expected, but fail close
 
 SENSITIVE_METADATA_ITERATIONS = 120_000
 SECRET_STORE_KEY_ENV = "SCBE_SECRET_STORE_KEY"
+SECRET_STORE_KEY_SALT_ENV = "SCBE_SECRET_STORE_KEY_SALT"
 
 _SENSITIVE_TEXT_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"Authorization:\s*Bearer\s+[^\s]+", re.IGNORECASE), "Authorization: Bearer [redacted]"),
@@ -162,8 +163,15 @@ def _get_fernet() -> Fernet | None:
     passphrase = os.getenv(SECRET_STORE_KEY_ENV, "").strip()
     if not passphrase:
         return None
-    digest = hashlib.sha256(passphrase.encode("utf-8")).digest()
-    return Fernet(base64.urlsafe_b64encode(digest))
+    salt = os.getenv(SECRET_STORE_KEY_SALT_ENV, "scbe-secret-store-key").encode("utf-8")
+    derived = hashlib.pbkdf2_hmac(
+        "sha256",
+        passphrase.encode("utf-8"),
+        salt,
+        SENSITIVE_METADATA_ITERATIONS,
+        dklen=32,
+    )
+    return Fernet(base64.urlsafe_b64encode(derived))
 
 
 def _dpapi_encrypt(value: str) -> str:
@@ -300,9 +308,9 @@ def read_json(path: Path, default: Any = None) -> Any:
 
 
 def write_json(path: Path, payload: Any, *, sanitize: bool = True) -> None:
-    """Write JSON to path, optionally sanitizing sensitive keys."""
+    """Write JSON to path, always sanitizing sensitive content before disk."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    data = sanitize_for_report(payload) if sanitize else payload
+    data = sanitize_for_report(payload)
     path.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
@@ -326,4 +334,8 @@ def sanitize_for_report(payload: Any) -> Any:
         return clean
     if isinstance(payload, list):
         return [sanitize_for_report(item) for item in payload]
+    if isinstance(payload, str):
+        return redact_sensitive_text(payload)
+    if isinstance(payload, (bytes, bytearray)):
+        return "[redacted-bytes]"
     return payload
