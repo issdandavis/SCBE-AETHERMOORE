@@ -49,6 +49,18 @@ def _allowed_vault_roots() -> list[Path]:
     return deduped
 
 
+def _safe_vault_segments(raw_path: str) -> list[str]:
+    segments: list[str] = []
+    for segment in raw_path.replace("\\", "/").split("/"):
+        segment = segment.strip()
+        if not segment or segment == ".":
+            continue
+        if not _SAFE_VAULT_SEGMENT_RE.fullmatch(segment):
+            raise ValueError(f"Vault path contains unsupported segment: {segment}")
+        segments.append(segment)
+    return segments
+
+
 def _resolve_vault_root(vault_path: str) -> Path:
     raw = str(vault_path or "").strip()
     if not raw:
@@ -60,24 +72,31 @@ def _resolve_vault_root(vault_path: str) -> Path:
 
     allowed_roots = _allowed_vault_roots()
 
-    expanded = Path(raw).expanduser()
-    if expanded.is_absolute():
-        resolved = expanded.resolve(strict=False)
-        if not any(_is_relative_to(resolved, allowed_root) for allowed_root in allowed_roots):
-            roots = ", ".join(str(root) for root in allowed_roots)
-            raise ValueError(f"Vault path must stay within an allowed root: {roots}")
-        if not resolved.exists() or not resolved.is_dir():
-            raise ValueError(f"Vault path must be an existing directory: {resolved}")
-        return resolved
+    expanded_raw = os.path.expanduser(raw)
+    if os.path.isabs(expanded_raw):
+        normalized_raw = os.path.normcase(os.path.normpath(os.path.abspath(expanded_raw)))
+        for allowed_root in allowed_roots:
+            allowed_str = str(allowed_root)
+            normalized_allowed = os.path.normcase(os.path.normpath(os.path.abspath(allowed_str)))
+            try:
+                common = os.path.commonpath([normalized_raw, normalized_allowed])
+            except ValueError:
+                continue
+            if common != normalized_allowed:
+                continue
+            relative = os.path.relpath(normalized_raw, normalized_allowed)
+            if relative in (".", ""):
+                candidate = allowed_root
+            else:
+                candidate = (allowed_root / Path(*_safe_vault_segments(relative))).resolve(strict=False)
+            if candidate.exists() and candidate.is_dir():
+                return candidate
+            raise ValueError(f"Vault path must be an existing directory: {candidate}")
 
-    segments: list[str] = []
-    for segment in raw.replace("\\", "/").split("/"):
-        segment = segment.strip()
-        if not segment or segment == ".":
-            continue
-        if not _SAFE_VAULT_SEGMENT_RE.fullmatch(segment):
-            raise ValueError(f"Vault path contains unsupported segment: {segment}")
-        segments.append(segment)
+        roots = ", ".join(str(root) for root in allowed_roots)
+        raise ValueError(f"Vault path must stay within an allowed root: {roots}")
+
+    segments = _safe_vault_segments(raw)
 
     if not segments:
         raise ValueError("vault_path must include at least one safe segment")
