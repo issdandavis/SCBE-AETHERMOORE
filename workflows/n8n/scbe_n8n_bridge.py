@@ -1397,7 +1397,7 @@ def _get_trainer():
             logger.error("Failed to start RealTimeHFTrainer: %s", exc)
             raise HTTPException(
                 status_code=503,
-                detail=f"Training pipeline unavailable: {exc}",
+                detail="Training pipeline unavailable.",
             )
     return _trainer
 
@@ -1521,17 +1521,12 @@ def _notion_request(
         detail = exc.read().decode("utf-8", errors="replace")
         raise HTTPException(
             status_code=502,
-            detail={
-                "error": "notion_http_error",
-                "upstream_status": exc.code,
-                "path": path,
-                "body": detail[:1800],
-            },
+            detail=_public_error_detail("notion_http_error", upstream_status=exc.code, detail_text=detail),
         )
     except urllib_error.URLError as exc:
         raise HTTPException(
             status_code=503,
-            detail=f"Notion unavailable: {exc.reason}",
+            detail=_public_error_detail("notion_unavailable", detail_text=exc.reason),
         )
 
 

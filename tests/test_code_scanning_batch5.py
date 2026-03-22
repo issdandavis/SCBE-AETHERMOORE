@@ -61,6 +61,16 @@ def test_ai_bridge_write_log_uses_allowlisted_root_and_safe_filename(tmp_path, m
     assert "gpt_4o_preview" in log_path.name
 
 
+def test_ai_bridge_resolve_vault_root_anchors_relative_paths_to_allowlisted_root(tmp_path, monkeypatch):
+    nested = tmp_path / "team-vault"
+    nested.mkdir()
+    monkeypatch.setenv("SCBE_ALLOWED_VAULT_ROOTS", str(tmp_path))
+
+    resolved = ai_bridge._resolve_vault_root("team-vault")
+
+    assert resolved == nested.resolve()
+
+
 def test_codebase_to_sft_extract_py_docstrings_uses_ast_and_handles_invalid(tmp_path):
     module_doc = "Module docstring " + ("A" * 120)
     class_doc = "Class docstring " + ("B" * 120)
