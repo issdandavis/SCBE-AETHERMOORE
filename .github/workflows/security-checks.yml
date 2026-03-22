@@ -1,35 +1,37 @@
 name: Security Checks
-    
-    on:
-      push:
-        branches: [ main ]
-      pull_request:
-        branches: [ main ]
-    
-    jobs:
-      security:
-        runs-on: ubuntu-latest
-        steps:
-        - name: Checkout code
-          uses: actions/checkout@v3
-    
-        - name: Run gitleaks
-          uses: gitleaks/gitleaks-action@v2
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Gitleaks requires GITHUB_TOKEN to scan
-    
-        - name: Run bandit
-          uses: jpetrucciani/bandit-check@main
-          with:
-            path: '.' # Scan the whole repo
-    
-        - name: Check for package.json and run npm audit
-          if: hashFiles('**/package.json') != ''
-          run: npm audit --audit-level=critical
-    
-        - name: Check for requirements.txt and run pip-audit
-          if: hashFiles('**/requirements.txt') != ''
-          run: |
-            pip install pip-audit
-            pip-audit
-    
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run bandit
+        uses: jpetrucciani/bandit-check@main
+        with:
+          path: "."
+
+      - name: Check for package.json and run npm audit
+        if: hashFiles('**/package.json') != ''
+        run: npm audit --audit-level=critical
+
+      - name: Check for requirements.txt and run pip-audit
+        if: hashFiles('**/requirements.txt') != ''
+        run: |
+          pip install pip-audit
+          pip-audit

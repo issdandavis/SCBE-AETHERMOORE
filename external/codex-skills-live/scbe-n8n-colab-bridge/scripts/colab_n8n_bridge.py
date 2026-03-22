@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Dict, Tuple
@@ -56,11 +57,11 @@ def probe_backend(base: str, token: str) -> Dict:
         with urlopen(req, timeout=8) as response:
             status = getattr(response, "status", response.getcode())
             body = response.read(160).decode("utf-8", errors="ignore")
-            return {"ok": True, "status": status, "url": req.full_url, "preview": body[:120]}
+            return {"ok": True, "status": status, "api_root": f"{base.rstrip('/')}/api", "preview": body[:120]}
     except HTTPError as err:
-        return {"ok": False, "status": err.code, "error": str(err)}
-    except URLError as err:
-        return {"ok": False, "status": 0, "error": str(err)}
+        return {"ok": False, "status": err.code, "error": "backend_http_error"}
+    except URLError:
+        return {"ok": False, "status": 0, "error": "backend_network_error"}
 
 
 def load_store() -> Dict:
@@ -101,7 +102,8 @@ def secret_names(profile: str) -> Tuple[str, str]:
 
 def set_profile(args: argparse.Namespace) -> int:
     profile = sanitize_profile(args.name)
-    base, token = parse_backend(args.backend_url, args.token)
+    token_override = args.token or os.environ.get(args.token_env, "").strip()
+    base, token = parse_backend(args.backend_url, token_override)
 
     if args.probe:
         probe = probe_backend(base, token)
@@ -110,8 +112,8 @@ def set_profile(args: argparse.Namespace) -> int:
             return 2
 
     backend_secret, token_secret = secret_names(profile)
-    set_secret(backend_secret, base, tongue="KO")
-    set_secret(token_secret, token, tongue="KO")
+    set_secret(backend_secret, base, note=f"colab-bridge:{profile}", tongue="KO")
+    set_secret(token_secret, token, note=f"colab-bridge:{profile}", tongue="KO")
 
     store = load_store()
     profiles = store.setdefault("profiles", {})
@@ -121,7 +123,6 @@ def set_profile(args: argparse.Namespace) -> int:
         "backend_secret_name": backend_secret,
         "token_secret_name": token_secret,
         "n8n_webhook": args.n8n_webhook or prior.get("n8n_webhook", ""),
-        "backend_url_raw": args.backend_url,
     }
     save_store(store)
     print(
@@ -214,12 +215,13 @@ def main() -> int:
 
     parser.add_argument("--backend-url", help="Colab local backend URL including token")
     parser.add_argument("--token", default="", help="Colab token (alternative to ?token= in backend URL)")
+    parser.add_argument("--token-env", default="", help="Environment variable containing the Colab token")
     parser.add_argument("--n8n-webhook", default="", help="Optional n8n webhook URL")
     parser.add_argument("--check", action="store_true", help="Alias for --probe with --set")
 
     args = parser.parse_args()
-    if args.set and not (args.backend_url or args.token):
-        parser.error("--backend-url (with ?token=...) or --token is required for --set")
+    if args.set and not (args.backend_url or args.token or args.token_env):
+        parser.error("--backend-url plus ?token=..., --token, or --token-env is required for --set")
 
     if args.check:
         args.probe = True

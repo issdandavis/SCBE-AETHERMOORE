@@ -30,7 +30,7 @@ _SENSITIVE_TEXT_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"\bsk-[A-Za-z0-9_-]{8,}\b"), "[redacted]"),
     (re.compile(r"\bhf_[A-Za-z0-9_-]{8,}\b"), "[redacted]"),
     (re.compile(r"\bghp_[A-Za-z0-9_-]{8,}\b"), "[redacted]"),
-    (re.compile(r"\bshpat_[A-Za-z0-9a-f]{8,}\b"), "[redacted]"),
+    (re.compile(r"\bshpat_[0-9A-Fa-f]{8,}\b"), "[redacted]"),
     (re.compile(r"\brk_live_[A-Za-z0-9_-]{8,}\b"), "[redacted]"),
     (re.compile(r"\bxoxe\.[A-Za-z0-9_.-]{8,}\b"), "[redacted]"),
 ]
@@ -58,10 +58,13 @@ def get_secret(name: str, default: str = "") -> str:
     return default
 
 
-def set_secret(name: str, value: str, *, note: str = "") -> None:
+def set_secret(name: str, value: str, *, note: str = "", tongue: str | None = None) -> None:
     """Persist secret to local store and set in current process env."""
     store = _load_store()
-    store[name] = {"value": value, "note": note}
+    entry: dict[str, Any] = {"value": value, "note": note}
+    if tongue:
+        entry["tongue"] = tongue
+    store[name] = entry
     _save_store(store)
     os.environ[name] = value
 
