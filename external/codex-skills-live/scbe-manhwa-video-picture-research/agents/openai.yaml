@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Manhwa Research"
+  short_description: "Research manhwa recap video and image production packets."
+  default_prompt: "Run the manhwa recap research loop, gather visual and audio references, and emit production packets for YouTube and webtoon outputs."

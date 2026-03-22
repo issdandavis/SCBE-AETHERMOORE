@@ -1,0 +1,4 @@
+interface:
+  display_name: "Session Corkscrew"
+  short_description: "Session sign-on and cross-talk lifecycle"
+  default_prompt: "Run a new session sign-on, emit machine + Obsidian cross-talk, and compact verified history."

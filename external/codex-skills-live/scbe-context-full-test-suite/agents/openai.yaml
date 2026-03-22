@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Context + Full Test Suite"
+  short_description: "Trim SCBE context and run full validation lanes"
+  default_prompt: "Use $scbe-context-full-test-suite to gather only the needed SCBE context and run the right validation lane."

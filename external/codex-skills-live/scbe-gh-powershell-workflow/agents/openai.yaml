@@ -1,0 +1,3 @@
+display_name: SCBE GitHub & PowerShell Workflow
+short_description: Execute GitHub CLI and PowerShell 7 preview workflows for SCBE repos with safe PR, CI, and repo inspection flows.
+default_prompt: Use this skill for GitHub CLI operations, branch/PR workflows, and SCBE repository tasks from PowerShell 7 preview, including local vs remote --repo behavior, deterministic code-assistant scans, LLM training preflight modes (llm-training/ai-nodal-dev-specialist), and workflow-architect/demo self-heal actions.

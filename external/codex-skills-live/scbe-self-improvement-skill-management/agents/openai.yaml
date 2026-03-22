@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Self-Improvement"
+  short_description: "Manage SCBE skills, updates, and knowledge transfer"
+  default_prompt: "Use $scbe-self-improvement-skill-management to create or update SCBE skills, enforce approval gates, and package context for other AI systems."

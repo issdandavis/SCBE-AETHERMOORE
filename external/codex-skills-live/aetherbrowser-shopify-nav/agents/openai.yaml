@@ -1,0 +1,4 @@
+interface:
+  display_name: "AetherBrowser Shopify Nav"
+  short_description: "Navigate Shopify admin/store flows with AetherBrowser"
+  default_prompt: "Use AetherBrowser Shopify nav flow."

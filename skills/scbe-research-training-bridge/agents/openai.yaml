@@ -1,0 +1,4 @@
+interface:
+  display_name: "Research Training Bridge"
+  short_description: "Stage research into HF training bundles"
+  default_prompt: "Use $scbe-research-training-bridge to stage arXiv evidence and Obsidian notes into a source-grounded Hugging Face training bundle."

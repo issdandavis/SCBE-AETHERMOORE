@@ -1,0 +1,4 @@
+interface:
+  display_name: "Development Flow Loop"
+  short_description: "Plan-to-launch iterative development workflow"
+  default_prompt: "Use the development-flow-loop process on this task."

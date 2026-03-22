@@ -1,0 +1,4 @@
+interface:
+  display_name: "Living Codex Browser Builder"
+  short_description: "Build and evolve the AI-native Living Codex browser"
+  default_prompt: "Use the Living Codex browser builder workflow for this task."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "AetherBrowser Operator"
+  short_description: "Run online tasks through AetherBrowser"
+  default_prompt: "Use $aetherbrowser-operator to route this online task through AetherBrowser, capture proof, and fall back cleanly if needed."

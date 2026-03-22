@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Synthesis"
+  short_description: "Compose installed skills into one packetized execution loop"
+  default_prompt: "Select the minimal set of relevant skills and execute an ordered multi-packet workflow with evidence outputs."
