@@ -163,16 +163,150 @@ const TOOL_LINKS = [
 const TABS_KEY = "aether.tabs.v2";
 const RECENT_KEY = "aether.recent.v1";
 
-let tabs = JSON.parse(localStorage.getItem(TABS_KEY) || "[]");
+function safeText(value, maxLength = 80) {
+  return String(value || "")
+    .replace(/[\u0000-\u001f\u007f]+/g, " ")
+    .trim()
+    .slice(0, maxLength);
+}
+
+function sanitizeStoredUrl(raw) {
+  const value = String(raw || "").trim().slice(0, 2048);
+  if (!value) return "";
+  if (value.startsWith("./") || value.startsWith("../") || value.startsWith("file:")) {
+    return value;
+  }
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return parsed.toString();
+    }
+  } catch {}
+  return "";
+}
+
+function sanitizeTabRecord(tab) {
+  if (!tab || typeof tab !== "object") return null;
+  const url = sanitizeStoredUrl(tab.url);
+  const id = safeText(tab.id, 48);
+  if (!url || !id) return null;
+  return { id, url, title: safeText(tab.title || url, 40) };
+}
+
+function sanitizeRecentRecord(entry) {
+  if (!entry || typeof entry !== "object") return null;
+  const url = sanitizeStoredUrl(entry.url);
+  if (!url) return null;
+  return {
+    url,
+    title: safeText(entry.title || url, 40),
+    ts: Number(entry.ts || 0) || Date.now(),
+  };
+}
+
+function loadStoredItems(key, sanitizer) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(sanitizer).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+let tabs = loadStoredItems(TABS_KEY, sanitizeTabRecord);
 let activeTabId = null;
 
-function saveTabs() { localStorage.setItem(TABS_KEY, JSON.stringify(tabs)); }
+function saveTabs() {
+  tabs = tabs.map(sanitizeTabRecord).filter(Boolean);
+  localStorage.setItem(TABS_KEY, JSON.stringify(tabs));
+}
 function saveRecent(url, title) {
-  let recent = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
-  recent = recent.filter(r => r.url !== url);
-  recent.unshift({ url, title: title || url, ts: Date.now() });
+  const safeUrl = sanitizeStoredUrl(url);
+  if (!safeUrl) return;
+  let recent = loadStoredItems(RECENT_KEY, sanitizeRecentRecord);
+  recent = recent.filter(r => r.url !== safeUrl);
+  recent.unshift({ url: safeUrl, title: safeText(title || safeUrl, 40), ts: Date.now() });
   recent = recent.slice(0, 20);
   localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+}
+
+function clearChildren(node) {
+  while (node.firstChild) {
+    node.removeChild(node.firstChild);
+  }
+}
+
+function createLinkTile(link) {
+  const anchor = document.createElement("a");
+  anchor.className = "qlink";
+  anchor.href = "#";
+  anchor.dataset.url = link.url;
+
+  const icon = document.createElement("span");
+  icon.className = "icon";
+  icon.textContent = link.icon;
+
+  const label = document.createElement("span");
+  label.className = "label";
+  label.textContent = link.label;
+
+  anchor.appendChild(icon);
+  anchor.appendChild(label);
+  anchor.addEventListener("click", e => {
+    e.preventDefault();
+    openUrl(link.url);
+  });
+  return anchor;
+}
+
+function createRecentItem(entry) {
+  const anchor = document.createElement("a");
+  anchor.className = "recent-item";
+  anchor.href = "#";
+  anchor.dataset.url = entry.url;
+
+  const favicon = document.createElement("div");
+  favicon.className = "favicon";
+
+  const textWrap = document.createElement("div");
+  const title = document.createElement("div");
+  title.textContent = (entry.title || entry.url || "").slice(0, 40);
+
+  let host = entry.url || "";
+  try { host = new URL(entry.url).hostname; } catch {}
+  const hostNode = document.createElement("div");
+  hostNode.className = "url";
+  hostNode.textContent = host;
+
+  textWrap.appendChild(title);
+  textWrap.appendChild(hostNode);
+  anchor.appendChild(favicon);
+  anchor.appendChild(textWrap);
+  anchor.addEventListener("click", e => {
+    e.preventDefault();
+    openUrl(entry.url);
+  });
+  return anchor;
+}
+
+function createTabChip(tab, isHome = false) {
+  const button = document.createElement("button");
+  button.className = `tab-chip ${(isHome ? !activeTabId : tab.id === activeTabId) ? "active" : ""}`;
+  button.dataset.tab = isHome ? "home" : tab.id;
+
+  if (isHome) {
+    button.textContent = "Home";
+    return button;
+  }
+
+  button.appendChild(document.createTextNode((tab.title || "Tab").slice(0, 20)));
+  const close = document.createElement("span");
+  close.className = "close";
+  close.dataset.close = tab.id;
+  close.textContent = "×";
+  button.appendChild(close);
+  return button;
 }
 
 // =========================================================
@@ -180,47 +314,26 @@ function saveRecent(url, title) {
 // =========================================================
 function renderQuickLinks() {
   const render = (links, containerId) => {
-    document.getElementById(containerId).innerHTML = links.map(l =>
-      `<a class="qlink" href="#" data-url="${l.url}">
-        <span class="icon">${l.icon}</span>
-        <span class="label">${l.label}</span>
-      </a>`
-    ).join("");
-    document.getElementById(containerId).querySelectorAll(".qlink").forEach(el => {
-      el.addEventListener("click", e => { e.preventDefault(); openUrl(el.dataset.url); });
-    });
+    const container = document.getElementById(containerId);
+    clearChildren(container);
+    links.forEach(link => container.appendChild(createLinkTile(link)));
   };
   render(QUICK_LINKS, "quickLinks");
   render(TOOL_LINKS, "toolLinks");
 }
 
 function renderRecent() {
-  const recent = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
-  document.getElementById("recentList").innerHTML = recent.slice(0, 8).map(r => {
-    let host = r.url;
-    try { host = new URL(r.url).hostname; } catch {}
-    return `<a class="recent-item" href="#" data-url="${r.url}">
-      <div class="favicon"></div>
-      <div>
-        <div>${r.title.slice(0, 40)}</div>
-        <div class="url">${host}</div>
-      </div>
-    </a>`;
-  }).join("");
-  document.getElementById("recentList").querySelectorAll(".recent-item").forEach(el => {
-    el.addEventListener("click", e => { e.preventDefault(); openUrl(el.dataset.url); });
-  });
+  const recent = loadStoredItems(RECENT_KEY, sanitizeRecentRecord);
+  const list = document.getElementById("recentList");
+  clearChildren(list);
+  recent.slice(0, 8).forEach(entry => list.appendChild(createRecentItem(entry)));
 }
 
 function renderTabs() {
   const strip = document.getElementById("tabStrip");
-  strip.innerHTML = [
-    `<button class="tab-chip ${!activeTabId ? 'active' : ''}" data-tab="home">Home</button>`
-  ].concat(tabs.map(t =>
-    `<button class="tab-chip ${t.id === activeTabId ? 'active' : ''}" data-tab="${t.id}">
-      ${(t.title || "Tab").slice(0, 20)}<span class="close" data-close="${t.id}">&times;</span>
-    </button>`
-  )).join("");
+  clearChildren(strip);
+  strip.appendChild(createTabChip(null, true));
+  tabs.forEach(tab => strip.appendChild(createTabChip(tab)));
 
   strip.querySelectorAll("[data-tab]").forEach(el => {
     el.addEventListener("click", e => {
@@ -278,9 +391,11 @@ function openUrl(raw) {
       url = "https://www.google.com/search?q=" + encodeURIComponent(url);
     }
   }
+  url = sanitizeStoredUrl(url);
+  if (!url) return;
 
   let title = url;
-  try { title = new URL(url).hostname; } catch { title = url.slice(0, 30); }
+  try { title = safeText(new URL(url).hostname, 30); } catch { title = safeText(url, 30); }
 
   // Track in recent
   saveRecent(url, title);
