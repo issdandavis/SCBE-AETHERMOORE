@@ -163,14 +163,70 @@ const TOOL_LINKS = [
 const TABS_KEY = "aether.tabs.v2";
 const RECENT_KEY = "aether.recent.v1";
 
-let tabs = JSON.parse(localStorage.getItem(TABS_KEY) || "[]");
+function safeText(value, maxLength = 80) {
+  return String(value || "")
+    .replace(/[\u0000-\u001f\u007f]+/g, " ")
+    .trim()
+    .slice(0, maxLength);
+}
+
+function sanitizeStoredUrl(raw) {
+  const value = String(raw || "").trim().slice(0, 2048);
+  if (!value) return "";
+  if (value.startsWith("./") || value.startsWith("../") || value.startsWith("file:")) {
+    return value;
+  }
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return parsed.toString();
+    }
+  } catch {}
+  return "";
+}
+
+function sanitizeTabRecord(tab) {
+  if (!tab || typeof tab !== "object") return null;
+  const url = sanitizeStoredUrl(tab.url);
+  const id = safeText(tab.id, 48);
+  if (!url || !id) return null;
+  return { id, url, title: safeText(tab.title || url, 40) };
+}
+
+function sanitizeRecentRecord(entry) {
+  if (!entry || typeof entry !== "object") return null;
+  const url = sanitizeStoredUrl(entry.url);
+  if (!url) return null;
+  return {
+    url,
+    title: safeText(entry.title || url, 40),
+    ts: Number(entry.ts || 0) || Date.now(),
+  };
+}
+
+function loadStoredItems(key, sanitizer) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(sanitizer).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+let tabs = loadStoredItems(TABS_KEY, sanitizeTabRecord);
 let activeTabId = null;
 
-function saveTabs() { localStorage.setItem(TABS_KEY, JSON.stringify(tabs)); }
+function saveTabs() {
+  tabs = tabs.map(sanitizeTabRecord).filter(Boolean);
+  localStorage.setItem(TABS_KEY, JSON.stringify(tabs));
+}
 function saveRecent(url, title) {
-  let recent = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
-  recent = recent.filter(r => r.url !== url);
-  recent.unshift({ url, title: title || url, ts: Date.now() });
+  const safeUrl = sanitizeStoredUrl(url);
+  if (!safeUrl) return;
+  let recent = loadStoredItems(RECENT_KEY, sanitizeRecentRecord);
+  recent = recent.filter(r => r.url !== safeUrl);
+  recent.unshift({ url: safeUrl, title: safeText(title || safeUrl, 40), ts: Date.now() });
   recent = recent.slice(0, 20);
   localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
 }
@@ -267,7 +323,7 @@ function renderQuickLinks() {
 }
 
 function renderRecent() {
-  const recent = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+  const recent = loadStoredItems(RECENT_KEY, sanitizeRecentRecord);
   const list = document.getElementById("recentList");
   clearChildren(list);
   recent.slice(0, 8).forEach(entry => list.appendChild(createRecentItem(entry)));
@@ -335,9 +391,11 @@ function openUrl(raw) {
       url = "https://www.google.com/search?q=" + encodeURIComponent(url);
     }
   }
+  url = sanitizeStoredUrl(url);
+  if (!url) return;
 
   let title = url;
-  try { title = new URL(url).hostname; } catch { title = url.slice(0, 30); }
+  try { title = safeText(new URL(url).hostname, 30); } catch { title = safeText(url, 30); }
 
   // Track in recent
   saveRecent(url, title);

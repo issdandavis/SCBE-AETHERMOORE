@@ -10,6 +10,8 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
+from html import unescape
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Iterable
 
@@ -35,6 +37,30 @@ class SourceResult:
     error: str | None = None
 
 
+class _VisibleTextParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self._skip_depth = 0
+        self._chunks: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs) -> None:  # type: ignore[override]
+        if tag.lower() in {"script", "style"}:
+            self._skip_depth += 1
+
+    def handle_endtag(self, tag: str) -> None:  # type: ignore[override]
+        if tag.lower() in {"script", "style"} and self._skip_depth > 0:
+            self._skip_depth -= 1
+        elif tag.lower() in {"p", "div", "section", "article", "main", "li", "br"}:
+            self._chunks.append("\n")
+
+    def handle_data(self, data: str) -> None:  # type: ignore[override]
+        if self._skip_depth == 0 and data:
+            self._chunks.append(data)
+
+    def get_text(self) -> str:
+        return "".join(self._chunks)
+
+
 def _parse_keywords(raw: str) -> list[str]:
     items = [x.strip().lower() for x in raw.split(",")]
     return [x for x in items if x]
@@ -48,9 +74,10 @@ def _extract_title(html_text: str) -> str:
 
 
 def _to_text(html_text: str) -> str:
-    text = re.sub(r"<script[\s\S]*?</script>", " ", html_text, flags=re.IGNORECASE)
-    text = re.sub(r"<style[\s\S]*?</style>", " ", text, flags=re.IGNORECASE)
-    text = re.sub(r"<[^>]+>", " ", text)
+    parser = _VisibleTextParser()
+    parser.feed(html_text)
+    parser.close()
+    text = unescape(parser.get_text())
     text = re.sub(r"\s+", " ", text)
     return text.lower()
 

@@ -73,7 +73,7 @@ def test_secret_store_migrates_legacy_plaintext_entries(tmp_path: Path, monkeypa
     assert "legacy-secret" not in store_path.read_text(encoding="utf-8")
 
 
-def test_env_profile_emits_resolver_commands_without_secret(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_env_profile_emits_secret_names_without_secret_values(tmp_path: Path, monkeypatch, capsys) -> None:
     config_path = tmp_path / "colab_n8n_bridge.json"
     config_path.write_text(
         json.dumps(
@@ -103,11 +103,45 @@ def test_env_profile_emits_resolver_commands_without_secret(tmp_path: Path, monk
 
     result = colab_bridge.env_profile(argparse.Namespace(name="pivot"))
     output = capsys.readouterr().out
+    payload = json.loads(output)
 
     assert result == 0
     assert "secret-token-123" not in output
-    assert "SCBE_COLAB_TOKEN_PIVOT" in output
-    assert "SCBE_COLAB_BACKEND_URL_PIVOT" in output
+    assert payload["token_secret_name"] == "SCBE_COLAB_TOKEN_PIVOT"
+    assert payload["backend_secret_name"] == "SCBE_COLAB_BACKEND_URL_PIVOT"
+    assert "resolve secrets locally" in payload["resolution"].lower()
+
+
+def test_status_profile_omits_backend_value_and_token_value(tmp_path: Path, monkeypatch, capsys) -> None:
+    config_path = tmp_path / "colab_n8n_bridge.json"
+    config_path.write_text(
+        json.dumps(
+            {
+                "profiles": {
+                    "pivot": {
+                        "backend_secret_name": "SCBE_COLAB_BACKEND_URL_PIVOT",
+                        "token_secret_name": "SCBE_COLAB_TOKEN_PIVOT",
+                        "n8n_webhook": "https://example.com/hook",
+                    }
+                }
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(colab_bridge, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(colab_bridge, "has_secret", lambda key: key.endswith("_PIVOT"))
+    monkeypatch.setattr(colab_bridge, "get_secret", lambda key, default="": "secret-token-123")
+
+    result = colab_bridge.status_profile(argparse.Namespace(name="pivot"))
+    output = capsys.readouterr().out
+    payload = json.loads(output)
+
+    assert result == 0
+    assert "secret-token-123" not in output
+    assert "http://127.0.0.1:8888" not in output
+    assert payload["backend_configured"] is True
+    assert payload["token_configured"] is True
 
 
 def test_probe_profile_omits_preview_and_secret_text(tmp_path: Path, monkeypatch, capsys) -> None:

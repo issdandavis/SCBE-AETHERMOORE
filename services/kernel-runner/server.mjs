@@ -180,6 +180,9 @@ function clampTimeout(value, fallback = 120_000) {
   return Math.max(MIN_TIMEOUT_MS, Math.min(MAX_TIMEOUT_MS, n));
 }
 
+const INSTALL_TIMEOUT_MS = clampTimeout(process.env.KERNEL_RUNNER_INSTALL_TIMEOUT_MS, 120_000);
+const RUN_TIMEOUT_MS = clampTimeout(process.env.KERNEL_RUNNER_RUN_TIMEOUT_MS, 60_000);
+
 function safeRunCommand(input) {
   const raw = String(input || 'npm test').trim().slice(0, 256);
   if (/^npm\s+test\b.*$/i.test(raw)) return raw;
@@ -503,7 +506,7 @@ app.post('/api/run', async (req, res) => {
     const installResult = await runDockerStage({
       workspace,
       network: installNetwork,
-      timeoutMs: clampTimeout(req.body?.installTimeoutMs),
+      timeoutMs: INSTALL_TIMEOUT_MS,
       command: 'npm install --ignore-scripts --no-audit --fund=false',
     });
 
@@ -519,7 +522,7 @@ app.post('/api/run', async (req, res) => {
     const executeResult = await runDockerStage({
       workspace,
       network: 'none',
-      timeoutMs: clampTimeout(req.body?.runTimeoutMs),
+      timeoutMs: RUN_TIMEOUT_MS,
       command: payload.runCommand,
     });
 

@@ -11,6 +11,7 @@ a RED zone link without CLICKING through?
 import json
 import math
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pytest
 
@@ -26,6 +27,13 @@ from src.aetherbrowser.topology_engine import (
     compute_page_topology,
     semantic_distance,
 )
+
+
+def _host_has_suffix(url: str, *labels: str) -> bool:
+    host = (urlparse(url).hostname or "").strip(".").lower()
+    host_labels = [part for part in host.split(".") if part]
+    suffix = [part.lower() for part in labels]
+    return len(host_labels) >= len(suffix) and host_labels[-len(suffix):] == suffix
 
 # ---------------------------------------------------------------------------
 # Load the RED zone test site
@@ -120,7 +128,7 @@ class TestRedZoneTopology:
 
     def test_reddit_classified_yellow(self):
         for node in self.topology["nodes"]:
-            if "reddit.com" in node["url"]:
+            if _host_has_suffix(node["url"], "reddit", "com"):
                 assert node["zone"] == "YELLOW", f"Reddit should be YELLOW, got {node['zone']}"
 
     def test_red_nodes_further_from_center_than_green(self):

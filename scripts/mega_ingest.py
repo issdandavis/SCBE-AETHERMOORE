@@ -33,6 +33,7 @@ import re
 import sys
 import time
 import zipfile
+from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -75,6 +76,40 @@ STP_TONGUE_MAP = {
     "interlude-07": "AV", "interlude-08": "RU", "interlude-09": "CA",
     "interlude-10": "UM", "interlude-11": "DR",
 }
+
+
+class _VisibleTextParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self._skip_depth = 0
+        self._chunks: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs) -> None:  # type: ignore[override]
+        if tag.lower() in {"script", "style"}:
+            self._skip_depth += 1
+
+    def handle_endtag(self, tag: str) -> None:  # type: ignore[override]
+        tag_name = tag.lower()
+        if tag_name in {"script", "style"} and self._skip_depth > 0:
+            self._skip_depth -= 1
+        elif tag_name in {"p", "div", "section", "article", "main", "li", "br"}:
+            self._chunks.append("\n")
+
+    def handle_data(self, data: str) -> None:  # type: ignore[override]
+        if self._skip_depth == 0 and data:
+            self._chunks.append(data)
+
+    def get_text(self) -> str:
+        return "".join(self._chunks)
+
+
+def _html_to_visible_text(raw: str) -> str:
+    parser = _VisibleTextParser()
+    parser.feed(raw)
+    parser.close()
+    text = html.unescape(parser.get_text())
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text
 
 
 def infer_tongue(text: str) -> str:
@@ -462,13 +497,7 @@ def load_gemini_export() -> list[dict]:
         return pairs
     try:
         raw = gemini_path.read_text(encoding="utf-8", errors="replace")
-        # Strip HTML tags for a rough text extraction
-        text = re.sub(r'<script[^>]*>.*?</script>', '', raw, flags=re.DOTALL)
-        text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
-        text = re.sub(r'<[^>]+>', '\n', text)
-        text = html.unescape(text)
-        # Remove excessive whitespace
-        text = re.sub(r'\n{3,}', '\n\n', text)
+        text = _html_to_visible_text(raw)
         if len(text) > 200:
             pairs.extend(text_to_sft_pairs(text, source="Google Gemini Export"))
     except Exception as e:
@@ -488,12 +517,7 @@ def load_chatgpt_html() -> list[dict]:
             continue
         try:
             raw = path.read_text(encoding="utf-8", errors="replace")
-            # Strip HTML
-            text = re.sub(r'<script[^>]*>.*?</script>', '', raw, flags=re.DOTALL)
-            text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
-            text = re.sub(r'<[^>]+>', '\n', text)
-            text = html.unescape(text)
-            text = re.sub(r'\n{3,}', '\n\n', text)
+            text = _html_to_visible_text(raw)
             if len(text) > 500:
                 pairs.extend(text_to_sft_pairs(text, source="ChatGPT Export"))
             break  # Only use one copy
@@ -513,8 +537,7 @@ def load_grok_drop() -> list[dict]:
             try:
                 text = f.read_text(encoding="utf-8", errors="replace")
                 if f.suffix == ".html":
-                    text = re.sub(r'<[^>]+>', '\n', text)
-                    text = html.unescape(text)
+                    text = _html_to_visible_text(text)
                 if len(text) > 100:
                     pairs.extend(text_to_sft_pairs(text, source="Grok Export", chapter=f.stem))
             except Exception:
