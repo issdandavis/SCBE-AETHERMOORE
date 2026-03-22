@@ -244,7 +244,7 @@ def hyperbolic_distance_6d(a: Position6D, b: Position6D, curvature: float = -1.0
     if arg < 1.0:
         arg = 1.0
 
-    return float(np.arccosh(arg))
+    return float(np.arccosh(max(arg, 1.0)))
 
 
 # =============================================================================

@@ -241,7 +241,7 @@ def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
     cosh_dist = 1 + 2 * diff_sq / denom
     cosh_dist = max(cosh_dist, 1.0)
 
-    return float(np.arccosh(cosh_dist))
+    return float(np.arccosh(max(cosh_dist, 1.0)))
 
 
 # =============================================================================
