@@ -1,0 +1,2 @@
+Drop your Grok export here (any format: .txt, .md, .json, .html, .jsonl)
+Then re-run: python scripts/mega_ingest.py --ingest --tetris
