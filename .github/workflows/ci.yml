@@ -95,7 +95,7 @@ jobs:
 
       - name: Run Python tests
         run: |
-          SCBE_FORCE_SKIP_LIBOQS=1 PYTHONPATH=. pytest tests/ -v --ignore=tests/node_modules
+          python scripts/system/run_core_python_checks.py
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4

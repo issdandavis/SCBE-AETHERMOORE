@@ -22,7 +22,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 try:
-    from src.security.secret_store import get_secret, set_secret  # noqa: E402
+    from src.security.secret_store import get_secret, has_secret, set_secret  # noqa: E402
 except Exception as exc:
     raise SystemExit(f"failed to import src.security.secret_store: {exc}")
 
@@ -56,8 +56,8 @@ def probe_backend(base: str, token: str) -> Dict:
     try:
         with urlopen(req, timeout=8) as response:
             status = getattr(response, "status", response.getcode())
-            body = response.read(160).decode("utf-8", errors="ignore")
-            return {"ok": True, "status": status, "api_root": f"{base.rstrip('/')}/api", "preview": body[:120]}
+            _ = response.read(160)
+            return {"ok": True, "status": status, "api_root": f"{base.rstrip('/')}/api"}
     except HTTPError as err:
         return {"ok": False, "status": err.code, "error": "backend_http_error"}
     except URLError:
@@ -98,6 +98,28 @@ def sanitize_profile(name: str) -> str:
 def secret_names(profile: str) -> Tuple[str, str]:
     tag = profile.upper().replace("-", "_")
     return f"SCBE_COLAB_BACKEND_URL_{tag}", f"SCBE_COLAB_TOKEN_{tag}"
+
+
+def _python_secret_resolver(secret_name: str) -> str:
+    repo_root = str(REPO_ROOT)
+    return (
+        "& python -c 'import sys; "
+        f'sys.path.insert(0, r\"{repo_root}\"); '
+        "from src.security.secret_store import get_secret; "
+        f'print(get_secret(\"{secret_name}\", \"\"))' + "'"
+    )
+
+
+def _public_probe_result(result: Dict) -> Dict:
+    payload = {
+        "ok": bool(result.get("ok")),
+        "status": int(result.get("status", 0) or 0),
+    }
+    if result.get("api_root"):
+        payload["api_root"] = str(result["api_root"])
+    if result.get("error"):
+        payload["error"] = str(result["error"])
+    return payload
 
 
 def set_profile(args: argparse.Namespace) -> int:
@@ -172,14 +194,17 @@ def env_profile(args: argparse.Namespace) -> int:
         print(f"# profile_not_found: {profile}")
         return 1
 
-    backend = get_secret(str(record.get("backend_secret_name", "")), "")
-    token = get_secret(str(record.get("token_secret_name", "")), "")
-    if not backend or not token:
+    backend_secret_name = str(record.get("backend_secret_name", ""))
+    token_secret_name = str(record.get("token_secret_name", ""))
+    if not backend_secret_name or not token_secret_name:
+        print(f"# missing_secret_for_profile: {profile}")
+        return 1
+    if not has_secret(backend_secret_name) or not has_secret(token_secret_name):
         print(f"# missing_secret_for_profile: {profile}")
         return 1
 
-    print(f'$env:SCBE_COLAB_BACKEND_URL = "{backend}"')
-    print(f'$env:SCBE_COLAB_TOKEN = "{token}"')
+    print(f"$env:SCBE_COLAB_BACKEND_URL = ({_python_secret_resolver(backend_secret_name)})")
+    print(f"$env:SCBE_COLAB_TOKEN = ({_python_secret_resolver(token_secret_name)})")
     if record.get("n8n_webhook"):
         print(f'$env:N8N_WEBHOOK_URL = "{record.get("n8n_webhook")}"')
     return 0
@@ -200,7 +225,7 @@ def probe_profile(args: argparse.Namespace) -> int:
         return 1
 
     result = probe_backend(backend, token)
-    print(json.dumps(result, indent=2))
+    print(json.dumps(_public_probe_result(result), indent=2))
     return 0 if result.get("ok") else 2
 
 

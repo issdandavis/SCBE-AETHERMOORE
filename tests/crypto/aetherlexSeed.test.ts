@@ -119,7 +119,7 @@ describe('A – Token Indexing', () => {
 
   it('A9: tokenToAether rejects malformed tokens', () => {
     expect(() => tokenToAether('notavalidtoken')).toThrow(/Invalid token format/);
-    expect(() => tokenToAether('fake\'nonexistent')).toThrow(/not found/);
+    expect(() => tokenToAether("fake'nonexistent")).toThrow(/not found/);
   });
 });
 
@@ -257,10 +257,18 @@ describe('C – Seed Derivation', () => {
 describe('D – Profile Validation', () => {
   const makeForgePhrase = () => {
     const tokens = [
-      ...Array(3).fill(null).map((_, i) => byteToToken('ru', i).token),
-      ...Array(3).fill(null).map((_, i) => byteToToken('um', i).token),
-      ...Array(3).fill(null).map((_, i) => byteToToken('dr', i).token),
-      ...Array(3).fill(null).map((_, i) => byteToToken('ko', i).token),
+      ...Array(3)
+        .fill(null)
+        .map((_, i) => byteToToken('ru', i).token),
+      ...Array(3)
+        .fill(null)
+        .map((_, i) => byteToToken('um', i).token),
+      ...Array(3)
+        .fill(null)
+        .map((_, i) => byteToToken('dr', i).token),
+      ...Array(3)
+        .fill(null)
+        .map((_, i) => byteToToken('ko', i).token),
     ];
     return tokens.join(' ');
   };
@@ -380,9 +388,7 @@ describe('E – Random Phrase Generation', () => {
 
 describe('F – ML-KEM / ML-DSA Seed Splitting', () => {
   const makePhrase = () =>
-    Array.from({ length: 12 }, (_, i) =>
-      byteToToken(TONGUE_ORDER[i % 6], i * 20).token
-    ).join(' ');
+    Array.from({ length: 12 }, (_, i) => byteToToken(TONGUE_ORDER[i % 6], i * 20).token).join(' ');
 
   it('F1: splitForMLKEM returns d (32 bytes) and z (32 bytes)', () => {
     const seed = deriveSeed(makePhrase(), { outputBytes: 64 });
@@ -460,8 +466,8 @@ describe('G – Entropy & Security', () => {
 
   it('G5: encodeTokenIndices packs 11 bits per token', () => {
     const tokens: AetherToken[] = [
-      byteToToken('ko', 0),    // global 0
-      byteToToken('dr', 255),  // global 1535
+      byteToToken('ko', 0), // global 0
+      byteToToken('dr', 255), // global 1535
     ];
     const bits = encodeTokenIndices(tokens);
     // 2 tokens × 11 bits = 22 bits = 3 bytes
@@ -473,6 +479,14 @@ describe('G – Entropy & Security', () => {
     const a = deriveSeed(phrase, { domain: 'PROTOCOL-A' });
     const b = deriveSeed(phrase, { domain: 'PROTOCOL-B' });
     expect(Buffer.from(a.seed)).not.toEqual(Buffer.from(b.seed));
+  });
+
+  it('G7: generated tokens stay inside the canonical global index space', () => {
+    const phrase = generatePhrase(24);
+    for (const token of phrase.tokens) {
+      expect(token.globalIndex).toBeGreaterThanOrEqual(0);
+      expect(token.globalIndex).toBeLessThan(TOTAL_TOKENS);
+    }
   });
 });
 

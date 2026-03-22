@@ -6,7 +6,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { URL } from "node:url";
+import { URL, pathToFileURL } from "node:url";
 
 function parseArgs(argv) {
   const out = {
@@ -54,41 +54,93 @@ Options:
 `);
 }
 
-function decodeEntities(s) {
+export function decodeEntities(s) {
   return s
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
+    .replace(/&nbsp;/gi, " ")
     .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, " ");
+    .replace(/&quot;/gi, '"')
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&amp;/gi, "&");
 }
 
-function extractTitle(html) {
+export function extractTitle(html) {
   const m = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
   return m ? decodeEntities(m[1].trim()) : "";
 }
 
-function stripHtml(html) {
+function findTagStart(sourceLower, tagName, startIndex) {
+  const token = `<${tagName}`;
+  let cursor = startIndex;
+  while (true) {
+    const matchIndex = sourceLower.indexOf(token, cursor);
+    if (matchIndex === -1) {
+      return -1;
+    }
+    const nextChar = sourceLower[matchIndex + token.length] ?? ">";
+    if (nextChar === ">" || /\s|\//.test(nextChar)) {
+      return matchIndex;
+    }
+    cursor = matchIndex + token.length;
+  }
+}
+
+function stripElementBlock(html, tagName) {
+  const lower = html.toLowerCase();
+  const closeToken = `</${tagName}`;
+  let cursor = 0;
+  let output = "";
+
+  while (cursor < html.length) {
+    const openIndex = findTagStart(lower, tagName, cursor);
+    if (openIndex === -1) {
+      output += html.slice(cursor);
+      break;
+    }
+    output += `${html.slice(cursor, openIndex)} `;
+    const closeIndex = lower.indexOf(closeToken, openIndex);
+    if (closeIndex === -1) {
+      break;
+    }
+    const closeEnd = lower.indexOf(">", closeIndex + closeToken.length);
+    if (closeEnd === -1) {
+      break;
+    }
+    cursor = closeEnd + 1;
+  }
+
+  return output;
+}
+
+export function stripHtml(html) {
   let s = html;
-  s = s.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ");
-  s = s.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ");
-  s = s.replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, " ");
+  s = stripElementBlock(s, "script");
+  s = stripElementBlock(s, "style");
+  s = stripElementBlock(s, "noscript");
   s = s.replace(/<[^>]+>/g, " ");
   s = decodeEntities(s);
   s = s.replace(/\s+/g, " ").trim();
   return s;
 }
 
-function extractLinks(html, baseUrl, maxLinks) {
+function normalizeHref(rawHref) {
+  return decodeEntities(String(rawHref ?? "").trim());
+}
+
+export function isBlockedHref(rawHref) {
+  const normalized = normalizeHref(rawHref).replace(/[\u0000-\u0020\u007f]+/g, "").toLowerCase();
+  return normalized.startsWith("#") || normalized.startsWith("javascript:") || normalized.startsWith("data:") || normalized.startsWith("vbscript:");
+}
+
+export function extractLinks(html, baseUrl, maxLinks) {
   const links = [];
   const seen = new Set();
   const re = /<a\b[^>]*\bhref\s*=\s*["']([^"']+)["'][^>]*>/gi;
   let m;
   while ((m = re.exec(html)) !== null) {
-    const raw = m[1]?.trim();
+    const raw = normalizeHref(m[1]);
     if (!raw) continue;
-    if (raw.startsWith("#") || raw.toLowerCase().startsWith("javascript:")) continue;
+    if (isBlockedHref(raw)) continue;
     let abs = "";
     try {
       abs = new URL(raw, baseUrl).toString();
@@ -167,5 +219,8 @@ async function main() {
   console.log(JSON.stringify(result, null, 2));
 }
 
-main();
+const invokedPath = process.argv[1] ? pathToFileURL(path.resolve(process.argv[1])).href : "";
+if (import.meta.url === invokedPath) {
+  main();
+}
 
