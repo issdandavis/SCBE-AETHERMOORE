@@ -43,6 +43,13 @@ from typing import Any, Dict, List, Optional, Tuple
 
 VERSION = "2.0.0"
 REPO_ROOT = Path(__file__).resolve().parent
+SCBE_PACKAGE_ROOT = REPO_ROOT / "src" / "scbe"
+
+# Allow the root CLI module to behave as a package when other modules import
+# `scbe.context_encoder` while `scbe.py` is already loaded.
+if SCBE_PACKAGE_ROOT.is_dir():
+    __path__ = [str(SCBE_PACKAGE_ROOT)]
+
 FORWARDED_SYSTEM_COMMANDS = {
     "agent": ["agent"],
     "pollypad": ["pollypad"],

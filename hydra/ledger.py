@@ -11,6 +11,7 @@ import json
 import os
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Dict, Any, List, Optional
 from enum import Enum
 import hashlib
@@ -85,13 +86,7 @@ class Ledger:
         db_path: str = None,
         session_id: str = None
     ):
-        # Default to user's home directory
-        if db_path is None:
-            hydra_dir = os.path.join(os.path.expanduser("~"), ".hydra")
-            os.makedirs(hydra_dir, exist_ok=True)
-            db_path = os.path.join(hydra_dir, "ledger.db")
-
-        self.db_path = db_path
+        self.db_path = str(self._resolve_db_path(db_path))
         self.session_id = session_id or self._generate_session_id()
         self._lock = threading.Lock()
         self._secret = hashlib.sha256(f"hydra:{self.session_id}".encode()).hexdigest()
@@ -104,10 +99,60 @@ class Ledger:
         rand = hashlib.sha256(str(id(self)).encode()).hexdigest()[:8]
         return f"session-{ts}-{rand}"
 
+    @staticmethod
+    def _repo_fallback_db() -> Path:
+        """Use a repo-local fallback when the home directory is not writable."""
+        return Path(__file__).resolve().parents[1] / "artifacts" / "runtime" / "hydra" / "ledger.db"
+
+    @classmethod
+    def _default_db_path(cls) -> Path:
+        env_path = os.environ.get("HYDRA_LEDGER_DB")
+        if env_path:
+            return Path(env_path).expanduser()
+        return Path(os.path.expanduser("~")) / ".hydra" / "ledger.db"
+
+    @staticmethod
+    def _can_write_path(path: Path) -> bool:
+        try:
+            path = path.expanduser()
+            path.parent.mkdir(parents=True, exist_ok=True)
+            probe = path.parent / f".hydra-write-test-{os.getpid()}-{threading.get_ident()}"
+            probe.write_text("ok", encoding="utf-8")
+            probe.unlink(missing_ok=True)
+            if path.exists() and not os.access(path, os.W_OK):
+                return False
+            return True
+        except OSError:
+            return False
+
+    @classmethod
+    def _resolve_db_path(cls, db_path: str | None) -> Path:
+        requested = Path(db_path).expanduser() if db_path else cls._default_db_path()
+        if cls._can_write_path(requested):
+            return requested
+        fallback = cls._repo_fallback_db()
+        fallback.parent.mkdir(parents=True, exist_ok=True)
+        return fallback
+
+    def _connect(self) -> sqlite3.Connection:
+        """Open a connection, repairing readonly/unopenable paths once."""
+        try:
+            return sqlite3.connect(self.db_path, timeout=30.0)
+        except sqlite3.OperationalError as exc:
+            message = str(exc).lower()
+            if "readonly" not in message and "unable to open" not in message:
+                raise
+            fallback = str(self._repo_fallback_db())
+            if self.db_path == fallback:
+                raise
+            self.db_path = fallback
+            Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
+            return sqlite3.connect(self.db_path, timeout=30.0)
+
     def _init_db(self) -> None:
         """Initialize database schema."""
         with self._lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = self._connect()
             cursor = conn.cursor()
 
             # Main ledger table
@@ -191,7 +236,7 @@ class Ledger:
 
     def _get_conn(self) -> sqlite3.Connection:
         """Get database connection."""
-        conn = sqlite3.connect(self.db_path)
+        conn = self._connect()
         conn.row_factory = sqlite3.Row
         return conn
 

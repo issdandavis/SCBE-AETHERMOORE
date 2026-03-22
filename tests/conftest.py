@@ -33,6 +33,58 @@ os.environ["TEMP"] = str(_PYTEST_TEMP_ROOT)
 os.environ["TMP"] = str(_PYTEST_TEMP_ROOT)
 
 
+def _safe_repo_mkdtemp(
+    suffix: str | None = None,
+    prefix: str | None = None,
+    dir: str | os.PathLike[str] | None = None,
+) -> str:
+    """Create a writable temp directory inside the repo workspace.
+
+    Python 3.14's stdlib tempfile helpers are creating directories that are not
+    writable/recyclable in this Windows sandbox. Build temp directories
+    ourselves with plain Path.mkdir so tests can safely write SQLite/files.
+    """
+    parent = Path(dir) if dir is not None else _PYTEST_TEMP_ROOT
+    parent.mkdir(parents=True, exist_ok=True)
+    stem = f"{prefix or 'tmp'}{uuid.uuid4().hex[:8]}{suffix or ''}"
+    path = parent / stem
+    path.mkdir(parents=True, exist_ok=False)
+    return str(path)
+
+
+class RepoTemporaryDirectory:
+    """Repo-local TemporaryDirectory replacement for sandbox-safe cleanup."""
+
+    def __init__(
+        self,
+        suffix: str | None = None,
+        prefix: str | None = None,
+        dir: str | os.PathLike[str] | None = None,
+        ignore_cleanup_errors: bool = False,
+        *,
+        delete: bool = True,
+    ) -> None:
+        self.name = _safe_repo_mkdtemp(suffix=suffix, prefix=prefix, dir=dir)
+        self._delete = delete
+        self._ignore_cleanup_errors = ignore_cleanup_errors
+
+    def __enter__(self) -> str:
+        return self.name
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        self.cleanup()
+
+    def cleanup(self) -> None:
+        if not self._delete:
+            return
+        shutil.rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+
+
+# Force repo-local temp helpers for tests that still use tempfile directly.
+tempfile.mkdtemp = _safe_repo_mkdtemp
+tempfile.TemporaryDirectory = RepoTemporaryDirectory
+
+
 @pytest.fixture
 def tmp_path():
     """Repo-local replacement for pytest's temp-path fixture on Windows.

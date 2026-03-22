@@ -48,14 +48,5 @@ scbe-code-prism = "code_prism.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = [
-    "code_prism*",
-    "symphonic_cipher*",
-    "api*",
-    "crypto*",
-    "harmonic*",
-    "spiralverse*",
-    "minimal*",
-    "storage*",
-]
+include = ["*"]
 exclude = ["tests*", "scripts*", "agents*", "training*"]
