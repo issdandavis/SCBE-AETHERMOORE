@@ -1,4 +1,5 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import { spawn } from 'child_process';
 import fs from 'fs/promises';
 import os from 'os';
@@ -24,6 +25,12 @@ const RATE_LIMIT_CLEANUP_INTERVAL_MS = 120_000; // purge stale entries every 2 m
 
 let activeRuns = 0;
 const rateLimitMap = new Map();
+const appLimiter = rateLimit({
+  windowMs: RATE_LIMIT_WINDOW_MS,
+  max: RATE_LIMIT_MAX_REQUESTS,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Periodically purge expired rate-limit entries to prevent unbounded memory growth
 setInterval(() => {
@@ -173,6 +180,9 @@ function clampTimeout(value, fallback = 120_000) {
   return Math.max(MIN_TIMEOUT_MS, Math.min(MAX_TIMEOUT_MS, n));
 }
 
+const INSTALL_TIMEOUT_MS = clampTimeout(process.env.KERNEL_RUNNER_INSTALL_TIMEOUT_MS, 120_000);
+const RUN_TIMEOUT_MS = clampTimeout(process.env.KERNEL_RUNNER_RUN_TIMEOUT_MS, 60_000);
+
 function safeRunCommand(input) {
   const raw = String(input || 'npm test').trim().slice(0, 256);
   if (/^npm\s+test\b.*$/i.test(raw)) return raw;
@@ -293,40 +303,72 @@ function buildVerification({ packageJsonText, packageJsonObj, files, runCommand 
 function runProcess(command, args, timeoutMs) {
   const safeTimeout = clampTimeout(timeoutMs);
   return new Promise((resolve) => {
-    const child = spawn(command, args, { windowsHide: true });
+    const child = spawn(command, args, { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
     let stdout = '';
     let stderr = '';
     let timedOut = false;
+    let outputLimited = false;
+    let settled = false;
+    let stdoutBytes = 0;
+    let stderrBytes = 0;
     const start = Date.now();
+
+    const killChild = () => {
+      if (!child.killed) {
+        child.kill('SIGKILL');
+      }
+    };
+
+    const finish = (payload) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      child.stdout?.removeAllListeners('data');
+      child.stderr?.removeAllListeners('data');
+      resolve(payload);
+    };
 
     const timer = setTimeout(() => {
       timedOut = true;
-      child.kill('SIGKILL');
+      killChild();
     }, safeTimeout);
 
     child.stdout.on('data', (chunk) => {
+      stdoutBytes += Buffer.byteLength(chunk);
       stdout = appendClipped(stdout, chunk.toString('utf8'));
+      if (stdoutBytes > MAX_OUTPUT_BYTES) {
+        outputLimited = true;
+        killChild();
+      }
     });
     child.stderr.on('data', (chunk) => {
+      stderrBytes += Buffer.byteLength(chunk);
       stderr = appendClipped(stderr, chunk.toString('utf8'));
+      if (stderrBytes > MAX_OUTPUT_BYTES) {
+        outputLimited = true;
+        killChild();
+      }
     });
     child.on('error', (error) => {
-      clearTimeout(timer);
-      resolve({
+      finish({
         ok: false,
         exit_code: -1,
         timed_out: false,
+        output_limited: outputLimited,
         duration_ms: Date.now() - start,
         stdout: '',
         stderr: String(error?.message || error),
       });
     });
     child.on('close', (code) => {
-      clearTimeout(timer);
-      resolve({
-        ok: !timedOut && code === 0,
+      if (outputLimited) {
+        stderr = clipText(`${stderr}\n...[terminated after output limit exceeded]`);
+      }
+      finish({
+        ok: !timedOut && !outputLimited && code === 0,
         exit_code: code ?? -1,
         timed_out: timedOut,
+        output_limited: outputLimited,
         duration_ms: Date.now() - start,
         stdout: clipText(stdout),
         stderr: clipText(stderr),
@@ -383,8 +425,10 @@ function parsePayload(body) {
 }
 
 const app = express();
+app.set('trust proxy', 1);
+app.use(appLimiter);
 app.use(express.json({ limit: '3mb' }));
-app.use(express.static(publicDir));
+app.use(express.static(publicDir, { index: false }));
 
 app.get('/api/health', async (req, res) => {
   if (!enforceRateLimit(req, res, 'health')) {
@@ -462,7 +506,7 @@ app.post('/api/run', async (req, res) => {
     const installResult = await runDockerStage({
       workspace,
       network: installNetwork,
-      timeoutMs: clampTimeout(req.body?.installTimeoutMs),
+      timeoutMs: INSTALL_TIMEOUT_MS,
       command: 'npm install --ignore-scripts --no-audit --fund=false',
     });
 
@@ -478,7 +522,7 @@ app.post('/api/run', async (req, res) => {
     const executeResult = await runDockerStage({
       workspace,
       network: 'none',
-      timeoutMs: clampTimeout(req.body?.runTimeoutMs),
+      timeoutMs: RUN_TIMEOUT_MS,
       command: payload.runCommand,
     });
 

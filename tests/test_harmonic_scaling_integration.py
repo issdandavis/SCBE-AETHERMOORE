@@ -490,10 +490,7 @@ def test_find_nearest_realm() -> bool:
     nearest_ok = idx == 0
     distance_ok = d_star > 0
 
-    print(f"  Point norm: {np.linalg.norm(point):.4f}")
-    print(f"  Realm count: {len(realms)}")
-    print(f"  Nearest realm index: {idx} (expected 0) {'OK' if nearest_ok else 'FAIL'}")
-    print(f"  Distance d*: {d_star:.4f} {'OK' if distance_ok else 'FAIL'}")
+    print("  Realm lookup executed.")
 
     all_passed = nearest_ok and distance_ok
     print_result("Find Nearest Realm", all_passed)

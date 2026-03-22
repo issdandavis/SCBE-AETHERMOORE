@@ -10,6 +10,7 @@ HTTP requests are made.
 import re
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
@@ -38,6 +39,28 @@ from src.browser.toolkit import (
 
 # ── Helpers ──────────────────────────────────────────────────────────
 
+def _has_exact_url(urls: list[str], expected: str) -> bool:
+    expected_parts = urlparse(expected)
+    expected_host = (expected_parts.hostname or "").lower()
+    expected_path = expected_parts.path or ""
+    for candidate in urls:
+        parts = urlparse(candidate)
+        if (
+            parts.scheme == expected_parts.scheme
+            and (parts.hostname or "").lower() == expected_host
+            and (parts.path or "") == expected_path
+        ):
+            return True
+    return False
+
+
+def _host_has_suffix(url: str, *labels: str) -> bool:
+    host = (urlparse(str(url)).hostname or "").strip(".").lower()
+    host_labels = [part for part in host.split(".") if part]
+    suffix = [part.lower() for part in labels]
+    return len(host_labels) >= len(suffix) and host_labels[-len(suffix):] == suffix
+
+
 def _make_response(text: str, status_code: int = 200) -> httpx.Response:
     """Create a fake httpx.Response with the given text body."""
     return httpx.Response(
@@ -58,8 +81,14 @@ class MockTransport(httpx.AsyncBaseTransport):
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
         self.request_log.append(request)
         url_str = str(request.url)
+        hostname = (urlparse(url_str).hostname or "").lower().rstrip(".")
         for pattern, response in self._responses.items():
-            if pattern in url_str:
+            normalized = str(pattern).lower().rstrip(".")
+            if normalized.startswith(("http://", "https://")):
+                if url_str.startswith(normalized):
+                    return response
+                continue
+            if hostname == normalized or hostname.endswith(f".{normalized}"):
                 return response
         return httpx.Response(
             status_code=200,
@@ -176,12 +205,12 @@ class TestExtractLinksFromHtml:
     def test_absolute_links(self):
         html = '<a href="https://example.com/page">Link</a>'
         links = _extract_links_from_html(html, "https://example.com")
-        assert "https://example.com/page" in links
+        assert _has_exact_url(links, "https://example.com/page")
 
     def test_relative_links_resolved(self):
         html = '<a href="/about">About</a>'
         links = _extract_links_from_html(html, "https://example.com")
-        assert "https://example.com/about" in links
+        assert _has_exact_url(links, "https://example.com/about")
 
     def test_ignores_fragment_links(self):
         html = '<a href="#section">Jump</a>'
@@ -195,9 +224,9 @@ class TestExtractLinksFromHtml:
         <a href="/c">C</a>
         '''
         links = _extract_links_from_html(html, "https://example.com")
-        assert "https://a.com" in links
-        assert "https://b.com" in links
-        assert "https://example.com/c" in links
+        assert _has_exact_url(links, "https://a.com")
+        assert _has_exact_url(links, "https://b.com")
+        assert _has_exact_url(links, "https://example.com/c")
 
     def test_deduplicates(self):
         html = '<a href="https://a.com">1</a><a href="https://a.com">2</a>'
@@ -232,7 +261,17 @@ class TestParseGoogleResults:
         '''
         results = _parse_google_results(html)
         urls = [r.url for r in results]
-        assert not any("google.com" in u for u in urls)
+        assert not any(_host_has_suffix(u, "google", "com") for u in urls)
+
+    def test_does_not_reject_non_google_urls_with_google_substring(self):
+        html = '''
+        <a href="/url?q=https://evil.example.com/path/google.com-marker&sa=U">
+            <h3>Mirror Result</h3>
+        </a>
+        '''
+        results = _parse_google_results(html)
+        assert len(results) == 1
+        assert results[0].url == "https://evil.example.com/path/google.com-marker"
 
     def test_empty_html(self):
         assert _parse_google_results("") == []
@@ -308,7 +347,7 @@ class TestSearch:
         async def mock_get(self_client, url, **kwargs):
             nonlocal call_count
             call_count += 1
-            if "google.com" in str(url):
+            if _host_has_suffix(str(url), "google", "com"):
                 # Google returns no useful results
                 return _make_response("<html><body>blocked</body></html>")
             else:
@@ -404,7 +443,7 @@ class TestDiff:
         with patch("httpx.AsyncClient.get", new=mock_get):
             result = await diff("https://example.com", interval=0.01)
 
-        assert "https://b.com" in result.added_links
+        assert _has_exact_url(result.added_links, "https://b.com")
         assert result.removed_links == []
 
     @pytest.mark.asyncio
@@ -425,7 +464,7 @@ class TestDiff:
         with patch("httpx.AsyncClient.get", new=mock_get):
             result = await diff("https://example.com", interval=0.01)
 
-        assert "https://b.com" in result.removed_links
+        assert _has_exact_url(result.removed_links, "https://b.com")
 
     @pytest.mark.asyncio
     async def test_diff_first_fetch_failure(self):

@@ -1,0 +1,23 @@
+name: scbe-codeql-config
+
+paths:
+  - src
+  - scripts
+  - services
+  - tests
+  - kindle-app/android
+  - kindle-app/www
+
+paths-ignore:
+  - artifacts/**
+  - training/**
+  - training-data/**
+  - external/**
+  - dist/**
+  - node_modules/**
+  - kindle-app/node_modules/**
+  - kindle-app/android/**/build/**
+  - kindle-app/android/.gradle/**
+  - kindle-app/android/capacitor-cordova-android-plugins/**
+  - .n8n_local_iso/**
+  - SCBE-AETHERMOORE-v3.0.0/**

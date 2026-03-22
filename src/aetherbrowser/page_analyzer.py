@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter
+from urllib.parse import urlparse
 
 MAX_WORDS = 50_000
 
@@ -24,6 +25,15 @@ _TOPIC_KEYWORDS: dict[str, list[str]] = {
 _AUTH_HINTS = {"auth", "credential", "email", "login", "password", "sign in", "signin", "username"}
 _PAYMENT_HINTS = {"billing", "buy", "card", "checkout", "invoice", "order", "pay", "payment", "wallet"}
 _DESTRUCTIVE_HINTS = {"delete", "deploy", "merge", "publish", "push", "remove", "submit", "transfer"}
+
+
+def _hostname_matches(url: str, domain: str) -> bool:
+    try:
+        hostname = (urlparse(url).hostname or "").lower().rstrip(".")
+    except ValueError:
+        return False
+    normalized = domain.lower().rstrip(".")
+    return hostname == normalized or hostname.endswith(f".{normalized}")
 
 
 class PageAnalyzer:
@@ -149,7 +159,7 @@ class PageAnalyzer:
             return "authenticate"
         if forms and (self._contains_hint(combined, _PAYMENT_HINTS) or self._buttons_match(buttons, _PAYMENT_HINTS)):
             return "checkout"
-        if "github.com" in url or "repository" in combined:
+        if _hostname_matches(url, "github.com") or "repository" in combined:
             return "repository_review"
         if {"query", "results", "search"} & tokens:
             return "search_results"
