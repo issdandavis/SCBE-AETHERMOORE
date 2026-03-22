@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import json
 import sys
+import types
 from pathlib import Path
 from urllib import error as urllib_error
 
@@ -139,6 +140,48 @@ def test_forward_to_browser_service_hides_upstream_body(monkeypatch) -> None:
     assert detail["upstream_status"] == 502
     assert detail["detail_present"] is True
     assert "secret-browser-token" not in json.dumps(detail)
+
+
+def test_notion_request_hides_upstream_body(monkeypatch) -> None:
+    monkeypatch.setenv("NOTION_TOKEN", "test-token")
+
+    error = urllib_error.HTTPError(
+        url="https://api.notion.com/v1/search",
+        code=502,
+        msg="Bad Gateway",
+        hdrs=None,
+        fp=io.BytesIO(b'{"error":"secret-notion-token"}'),
+    )
+
+    def fake_urlopen(*args, **kwargs):
+        raise error
+
+    monkeypatch.setattr(bridge.urllib_request, "urlopen", fake_urlopen)
+
+    with pytest.raises(bridge.HTTPException) as exc:
+        bridge._notion_request(method="POST", path="/v1/search", payload={})
+
+    detail = exc.value.detail
+    assert detail["error"] == "notion_http_error"
+    assert detail["upstream_status"] == 502
+    assert detail["detail_present"] is True
+    assert "secret-notion-token" not in json.dumps(detail)
+
+
+def test_get_trainer_hides_startup_exception_text(monkeypatch) -> None:
+    class BoomTrainer:
+        def __init__(self):
+            raise RuntimeError("secret trainer boot detail")
+
+    fake_module = types.SimpleNamespace(RealTimeHFTrainer=BoomTrainer, load_dotenv=lambda: None)
+    monkeypatch.setitem(sys.modules, "hf_trainer", fake_module)
+    monkeypatch.setattr(bridge, "_trainer", None)
+
+    with pytest.raises(bridge.HTTPException) as exc:
+        bridge._get_trainer()
+
+    assert exc.value.status_code == 503
+    assert exc.value.detail == "Training pipeline unavailable."
 
 
 @pytest.mark.asyncio
