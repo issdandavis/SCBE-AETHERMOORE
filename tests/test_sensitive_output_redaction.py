@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 import types
 from pathlib import Path
@@ -21,7 +22,7 @@ _ss_spec = importlib.util.spec_from_file_location(
 _ss_mod = importlib.util.module_from_spec(_ss_spec)
 _ss_spec.loader.exec_module(_ss_mod)
 _ss_mod.get_secret = lambda key, default="": default
-_ss_mod.set_secret = lambda key, value, note="": None
+_ss_mod.set_secret = lambda key, value, note="", tongue=None: None
 src_module = sys.modules.setdefault("src", types.ModuleType("src"))
 security_module = sys.modules.setdefault("src.security", types.ModuleType("src.security"))
 sys.modules["src.security.secret_store"] = _ss_mod
@@ -113,4 +114,59 @@ def test_scbe_system_cli_sanitize_agent_result_for_disk_omits_content() -> None:
     assert "raw" not in sanitized
     assert "prompt" not in sanitized
     assert sanitized["content_char_count"] == len("password=hunter2")
-    assert len(sanitized["content_sha256"]) == 64
+    assert len(sanitized["content_pbkdf2_sha256"]) == 64
+
+
+def test_secret_store_redacts_shopify_tokens() -> None:
+    payload = "token=shpat_ABCDEF1234567890"
+    redacted = _ss_mod.redact_sensitive_text(payload)
+    assert "[redacted]" in redacted
+    assert "ABCDEF1234567890" not in redacted
+
+
+def test_secret_store_write_json_ignores_unsanitized_flag(tmp_path: Path) -> None:
+    out = tmp_path / "report.json"
+    payload = {
+        "token": "super-secret-token",
+        "note": "hf_ABCDEFGH12345678 should not hit disk",
+    }
+
+    _ss_mod.write_json(out, payload, sanitize=False)
+    saved = json.loads(out.read_text(encoding="utf-8"))
+
+    assert saved["token"] == "[redacted]"
+    assert "[redacted]" in saved["note"]
+    assert "super-secret-token" not in out.read_text(encoding="utf-8")
+
+
+def test_scbe_system_cli_prepares_colab_bridge_token_env() -> None:
+    clean_url, env_overrides = scbe_system_cli._prepare_colab_bridge_secret_inputs(
+        "http://127.0.0.1:8888/?token=secret-token-123"
+    )
+
+    assert clean_url == "http://127.0.0.1:8888"
+    assert env_overrides == {"SCBE_COLAB_BRIDGE_TOKEN": "secret-token-123"}
+
+
+def test_scbe_system_cli_save_agent_registry_strips_secret_fields(tmp_path: Path) -> None:
+    registry_path = tmp_path / "agent_squad.json"
+    payload = {
+        "version": "1.0.0",
+        "agents": {
+            "codex": {
+                "agent_id": "codex",
+                "provider": "openai",
+                "display_name": "Codex",
+                "api_key_env": "OPENAI_API_KEY",
+                "token": "super-secret-token",
+                "authorization": "Bearer super-secret-token",
+            }
+        },
+    }
+
+    scbe_system_cli._save_agent_registry(registry_path, payload)
+    saved = json.loads(registry_path.read_text(encoding="utf-8"))
+
+    assert saved["agents"]["codex"]["api_key_env"] == "OPENAI_API_KEY"
+    assert "token" not in saved["agents"]["codex"]
+    assert "authorization" not in saved["agents"]["codex"]
