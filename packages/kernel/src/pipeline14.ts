@@ -562,6 +562,9 @@ export interface Pipeline14Config {
   wS?: number; // Spin weight
   wTau?: number; // Temporal weight
   wA?: number; // Audio weight
+  // Historical data for Layer 11
+  dMidTerm?: number;
+  dLongTerm?: number;
 }
 
 export interface Pipeline14Result {
@@ -610,6 +613,8 @@ export function scbe14LayerPipeline(t: number[], config: Pipeline14Config = {}):
     wS = 0.2,
     wTau = 0.2,
     wA = 0.2,
+    dMidTerm,
+    dLongTerm,
   } = config;
 
   const n = 2 * D;
@@ -665,19 +670,31 @@ export function scbe14LayerPipeline(t: number[], config: Pipeline14Config = {}):
   const l10_spin = layer10SpinCoherence(phases);
 
   // === LAYER 11: Triadic Temporal ===
-  // Use realm distance for all temporal scales (simplified)
-  const l11_triadic = layer11TriadicTemporal(l8_realmDist, l8_realmDist, l8_realmDist);
+  // Use provided historical distances or fallback to current
+  const l11_triadic = layer11TriadicTemporal(
+    l8_realmDist,
+    dMidTerm ?? l8_realmDist,
+    dLongTerm ?? l8_realmDist
+  );
 
   // === LAYER 12: Harmonic Scaling ===
   const l12_harmonic = layer12HarmonicScaling(l8_realmDist);
 
+  // === LAYER 14: Audio Axis ===
+  const l14_audio = layer14AudioAxis(t);
+
   // === Compute Base Risk ===
+  // Verify weights sum to 1.0 (approx)
+  const weightSum = wD + wC + wS + wTau + wA;
+  const scale = Math.abs(weightSum - 1.0) < 1e-6 ? 1.0 : 1.0 / weightSum;
+
   const riskBase =
-    wD * l8_realmDist +
-    wC * (1 - l9_spectral) +
-    wS * (1 - l10_spin) +
-    wTau * l11_triadic +
-    wA * 0.5;
+    scale *
+    (wD * l8_realmDist +
+      wC * (1 - l9_spectral) +
+      wS * (1 - l10_spin) +
+      wTau * l11_triadic +
+      wA * (1 - l14_audio));
 
   // === LAYER 13: Risk Decision ===
   const { decision: l13_decision, riskPrime } = layer13RiskDecision(
@@ -686,9 +703,6 @@ export function scbe14LayerPipeline(t: number[], config: Pipeline14Config = {}):
     theta1,
     theta2
   );
-
-  // === LAYER 14: Audio Axis ===
-  const l14_audio = layer14AudioAxis(t);
 
   return {
     decision: l13_decision,
