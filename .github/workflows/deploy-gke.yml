@@ -113,9 +113,11 @@ jobs:
             -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
           if [ -n "$EXTERNAL_IP" ]; then
             echo "External IP: $EXTERNAL_IP"
-            curl -sf "http://$EXTERNAL_IP/v1/health" \
-              && echo " - Health OK" \
-              || echo " - Health check pending (service starting)"
+            if curl -sf --max-time 10 "http://$EXTERNAL_IP/v1/health"; then
+              echo " - Health OK"
+            else
+              echo "::warning::Health check pending (service starting)"
+            fi
             break
           fi
           echo "  Waiting for LoadBalancer IP... ($i/30)"

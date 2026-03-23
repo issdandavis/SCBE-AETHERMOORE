@@ -38,7 +38,12 @@ jobs:
             --repo-type model \
             --include "src/**" "docs/**" "README.md" "package.json" \
             --exclude ".git/**" "node_modules/**" \
-            --token $HF_TOKEN || echo "Primary sync failed, continuing..."
+            --token $HF_TOKEN
+          PRIMARY_STATUS=$?
+          if [ $PRIMARY_STATUS -ne 0 ]; then
+            echo "::error::Primary HF sync to $PRIMARY_HF_REPO failed with exit code $PRIMARY_STATUS"
+            echo "SYNC_FAILURES=primary" >> $GITHUB_ENV
+          fi
 
       - name: Sync to Backup HF Datacenter
         env:
@@ -49,7 +54,13 @@ jobs:
             --repo-type model \
             --include "src/**" "docs/**" "README.md" \
             --exclude ".git/**" "node_modules/**" \
-            --token $HF_TOKEN || echo "Backup sync failed, continuing..."
+            --token $HF_TOKEN
+          BACKUP_STATUS=$?
+          if [ $BACKUP_STATUS -ne 0 ]; then
+            echo "::error::Backup HF sync to $BACKUP_HF_REPO failed with exit code $BACKUP_STATUS"
+            SYNC_FAILURES="${SYNC_FAILURES:+$SYNC_FAILURES,}backup"
+            echo "SYNC_FAILURES=$SYNC_FAILURES" >> $GITHUB_ENV
+          fi
 
       - name: Generate Sync Report
         run: |
@@ -58,7 +69,12 @@ jobs:
           echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Primary:** $PRIMARY_HF_REPO" >> $GITHUB_STEP_SUMMARY
           echo "- **Backup:** $BACKUP_HF_REPO" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status:** Sync completed" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$SYNC_FAILURES" ]; then
+            echo "- **Status:** ⚠️ Sync partially failed ($SYNC_FAILURES)" >> $GITHUB_STEP_SUMMARY
+            echo "::warning::HuggingFace sync had failures: $SYNC_FAILURES"
+          else
+            echo "- **Status:** Sync completed" >> $GITHUB_STEP_SUMMARY
+          fi
 
   health-check:
     runs-on: ubuntu-latest

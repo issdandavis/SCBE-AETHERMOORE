@@ -273,7 +273,9 @@ jobs:
         run: |
           sleep 5
           echo "Testing health endpoint..."
-          curl -s "${API_URL}/v1/health" | jq . || echo "Health check pending..."
+          if ! curl -sf --max-time 15 "${API_URL}/v1/health" | jq .; then
+            echo "::warning::Health check did not pass — service may still be starting"
+          fi
 
       - name: Deployment summary
         run: |
