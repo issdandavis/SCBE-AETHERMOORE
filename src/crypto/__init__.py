@@ -15,95 +15,140 @@ Modules:
 """
 
 # Dual Lattice (Kyber/Dilithium + Sacred Tongues)
-from .dual_lattice import (
-    # Core types
-    SacredTongue,
-    FluxState,
-    LatticeVector,
-    TongueContext,
-    # Pattern generators
-    CrossStitchPattern,
-    # Cryptographic layers
-    KyberTongueEncryptor,
-    DilithiumTongueSigner,
-    # Complete system
-    DualLatticeCrossStitch,
-    # Governance integration
-    TongueLatticeGovernor,
-    # Constants
-    TONGUE_PHASES,
-    TONGUE_WEIGHTS,
-    PHI,
-)
+try:
+    from .dual_lattice import (
+        # Core types
+        SacredTongue,
+        FluxState,
+        LatticeVector,
+        TongueContext,
+        # Pattern generators
+        CrossStitchPattern,
+        # Cryptographic layers
+        KyberTongueEncryptor,
+        DilithiumTongueSigner,
+        # Complete system
+        DualLatticeCrossStitch,
+        # Governance integration
+        TongueLatticeGovernor,
+        # Constants
+        TONGUE_PHASES,
+        TONGUE_WEIGHTS,
+        PHI,
+    )
+except ImportError:
+    SacredTongue = None
+    FluxState = None
+    LatticeVector = None
+    TongueContext = None
+    CrossStitchPattern = None
+    KyberTongueEncryptor = None
+    DilithiumTongueSigner = None
+    DualLatticeCrossStitch = None
+    TongueLatticeGovernor = None
+    TONGUE_PHASES = None
+    TONGUE_WEIGHTS = None
+    PHI = None
 
 # Symphonic Cipher (Signed Audio Frequency Mapping)
-from .symphonic_cipher import (
-    SymphonicToken,
-    TonguePolarity,
-    SACRED_TONGUE_VOCAB,
-    BASE_FREQ,
-    FREQ_STEP,
-    token_to_frequency,
-    id_to_frequency,
-    generate_tone,
-    generate_symphonic_sequence,
-    analyze_polarity_balance,
-)
+try:
+    from .symphonic_cipher import (
+        SymphonicToken,
+        TonguePolarity,
+        SACRED_TONGUE_VOCAB,
+        BASE_FREQ,
+        FREQ_STEP,
+        token_to_frequency,
+        id_to_frequency,
+        generate_tone,
+        generate_symphonic_sequence,
+        analyze_polarity_balance,
+    )
+except ImportError:
+    SymphonicToken = TonguePolarity = None
+    SACRED_TONGUE_VOCAB = BASE_FREQ = FREQ_STEP = None
+    token_to_frequency = id_to_frequency = generate_tone = None
+    generate_symphonic_sequence = analyze_polarity_balance = None
 
 # GeoSeal (Hyperbolic Geometry + Signed Context)
-from .geo_seal import (
-    ContextVector,
-    SecurityPosture,
-    bytes_to_signed_signal,
-    signed_signal_to_bytes,
-    hyperbolic_distance,
-    hyperbolic_midpoint,
-    hyperbolic_angle,
-    compute_triangle_deficit,
-    harmonic_wall_cost,
-    trust_from_position,
-)
+try:
+    from .geo_seal import (
+        ContextVector,
+        SecurityPosture,
+        bytes_to_signed_signal,
+        signed_signal_to_bytes,
+        hyperbolic_distance,
+        hyperbolic_midpoint,
+        hyperbolic_angle,
+        compute_triangle_deficit,
+        harmonic_wall_cost,
+        trust_from_position,
+    )
+except ImportError:
+    ContextVector = SecurityPosture = None
+    bytes_to_signed_signal = signed_signal_to_bytes = None
+    hyperbolic_distance = hyperbolic_midpoint = hyperbolic_angle = None
+    compute_triangle_deficit = harmonic_wall_cost = trust_from_position = None
 
 # Signed Lattice Bridge (Integration Layer)
-from .signed_lattice_bridge import (
-    SignedGovernanceResult,
-    SignedLatticeBridge,
-)
+try:
+    from .signed_lattice_bridge import (
+        SignedGovernanceResult,
+        SignedLatticeBridge,
+    )
+except ImportError:
+    SignedGovernanceResult = SignedLatticeBridge = None
 
 # Hyperbolic Octree (Sparse Voxel Storage + Spectral Clustering)
-from .octree import (
-    SpectralVoxel,
-    OctreeNode,
-    HyperbolicOctree,
-)
+try:
+    from .octree import (
+        SpectralVoxel,
+        OctreeNode,
+        HyperbolicOctree,
+    )
+except ImportError:
+    SpectralVoxel = OctreeNode = HyperbolicOctree = None
 
 # Hyperpath Finder (A* and Bidirectional A*)
-from .hyperpath_finder import (
-    HyperpathFinder,
-    PathResult,
-    hyperbolic_distance_safe,
-)
+try:
+    from .hyperpath_finder import (
+        HyperpathFinder,
+        PathResult,
+        hyperbolic_distance_safe,
+    )
+except ImportError:
+    HyperpathFinder = PathResult = hyperbolic_distance_safe = None
 
 # Visualization (Poincare Disk + 3D Voxels)
-from .hyperbolic_viz import (
-    classical_mds,
-    poincare_geodesic,
-    visualize_poincare_disk,
-    visualize_3d_voxels,
-)
+try:
+    from .hyperbolic_viz import (
+        classical_mds,
+        poincare_geodesic,
+        visualize_poincare_disk,
+        visualize_3d_voxels,
+    )
+except ImportError:
+    classical_mds = poincare_geodesic = None
+    visualize_poincare_disk = visualize_3d_voxels = None
 
 # Symphonic Waveform Export (Audio Synthesis)
-from .symphonic_waveform import (
-    SymphonicIntent,
-    HarmonicFingerprint,
-    position_to_intent,
-    hyperpath_to_intents,
-    hyperpath_to_waveform,
-    geodesic_to_waveform,
-    export_wav,
-    compute_harmonic_fingerprint,
-    RealTimeRenderer,
-)
+try:
+    from .symphonic_waveform import (
+        SymphonicIntent,
+        HarmonicFingerprint,
+        position_to_intent,
+        hyperpath_to_intents,
+        hyperpath_to_waveform,
+        geodesic_to_waveform,
+        export_wav,
+        compute_harmonic_fingerprint,
+        RealTimeRenderer,
+    )
+except ImportError:
+    SymphonicIntent = HarmonicFingerprint = None
+    position_to_intent = hyperpath_to_intents = None
+    hyperpath_to_waveform = geodesic_to_waveform = None
+    export_wav = compute_harmonic_fingerprint = RealTimeRenderer = None
 
 # H-LWE (Hyperbolic LWE Vector Encryption)
 # Temporarily commented out due to remaining syntax errors in h_lwe.py
@@ -166,28 +211,38 @@ except ImportError:
     pass  # scipy not available — dual lattice integration disabled
 
 # Quasicrystal Lattice (Icosahedral 6D -> 3D Verification)
-from .quasicrystal_lattice import (
-    QuasicrystalLattice,
-    LatticePoint,
-    DefectReport,
-    fibonacci_gates,
-    tongue_fibonacci_gates,
-)
+try:
+    from .quasicrystal_lattice import (
+        QuasicrystalLattice,
+        LatticePoint,
+        DefectReport,
+        fibonacci_gates,
+        tongue_fibonacci_gates,
+    )
+except ImportError:
+    QuasicrystalLattice = LatticePoint = DefectReport = None
+    fibonacci_gates = tongue_fibonacci_gates = None
 
 # Sacred Eggs (Cryptographic Secret Containers)
-from .sacred_eggs import (
-    SacredEgg,
-    EggCarton,
-    EggRing,
-    SacredRituals,
-    IncubationResult,
-    TriadicBindingResult,
-    RingDescentResult,
-    FailToNoiseResult,
-    flux_state_to_ring,
-    create_session_egg,
-    ring_allows,
-)
+try:
+    from .sacred_eggs import (
+        SacredEgg,
+        EggCarton,
+        EggRing,
+        SacredRituals,
+        IncubationResult,
+        TriadicBindingResult,
+        RingDescentResult,
+        FailToNoiseResult,
+        flux_state_to_ring,
+        create_session_egg,
+        ring_allows,
+    )
+except ImportError:
+    SacredEgg = EggCarton = EggRing = SacredRituals = None
+    IncubationResult = TriadicBindingResult = None
+    RingDescentResult = FailToNoiseResult = None
+    flux_state_to_ring = create_session_egg = ring_allows = None
 
 __all__ = [
     # === Dual Lattice ===

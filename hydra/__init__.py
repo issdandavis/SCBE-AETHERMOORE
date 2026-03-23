@@ -27,69 +27,101 @@ from .spine import HydraSpine
 from .head import HydraHead, create_claude_head, create_codex_head, create_gpt_head, create_local_head
 from .limbs import BrowserLimb, TerminalLimb, APILimb, MultiTabBrowserLimb
 from .librarian import Librarian, MemoryQuery, MemoryResult
-from .arxiv_retrieval import (
-    ArxivClient,
-    ArxivSearchResult,
-    ArxivPaper,
-    AI2AIRetrievalService,
-    ArxivAPIError,
-)
 from .ledger import Ledger, LedgerEntry, EntryType
-from .spectral import (
-    GraphFourierAnalyzer,
-    ByzantineDetector,
-    SpectralAnomaly,
-    analyze_hydra_system,
-)
-from .consensus import (
-    ByzantineConsensus,
-    RoundtableConsensus,
-    Vote,
-    Proposal,
-    ConsensusResult,
-    VoteDecision,
-)
-from .websocket_manager import (
-    WebSocketManager,
-    WebSocketClient,
-    SubscriptionChannel,
-    ClientState,
-    create_websocket_manager,
-    run_websocket_server,
-)
-from .swarm_governance import (
-    SwarmGovernance,
-    SwarmAgent,
-    AgentRole,
-    AgentState,
-    GovernanceConfig,
-    AutonomousCodeAgent,
-    create_swarm_governance,
-    create_autonomous_coder,
-    simulate_swarm_attack,
-)
-from .switchboard import Switchboard
-from .research import (
-    ResearchOrchestrator,
-    ResearchConfig,
-    ResearchReport,
-    ResearchSubTask,
-    ResearchSource,
-)
-from .llm_providers import (
-    LLMProvider,
-    LLMResponse,
-    ClaudeProvider,
-    OpenAIProvider,
-    GeminiProvider,
-    LocalProvider,
-    create_provider,
-    HYDRA_SYSTEM_PROMPT,
-)
-from .hf_summarizer import HFSummarizer
-from .browsers import BrowserBackend, PlaywrightBackend, SeleniumBackend, CDPBackend
-from .swarm_browser import SwarmBrowser, AGENTS as SWARM_AGENTS
-from .llm_providers import HuggingFaceProvider
+
+# --- Optional imports: modules with heavy dependencies (numpy, httpx, etc.) ---
+# Wrapped in try/except so that missing optional deps don't break the entire package.
+
+try:
+    from .arxiv_retrieval import (
+        ArxivClient, ArxivSearchResult, ArxivPaper,
+        AI2AIRetrievalService, ArxivAPIError,
+    )
+except ImportError:
+    ArxivClient = ArxivSearchResult = ArxivPaper = None
+    AI2AIRetrievalService = ArxivAPIError = None
+
+try:
+    from .spectral import (
+        GraphFourierAnalyzer, ByzantineDetector,
+        SpectralAnomaly, analyze_hydra_system,
+    )
+except ImportError:
+    GraphFourierAnalyzer = ByzantineDetector = SpectralAnomaly = None
+    analyze_hydra_system = None
+
+try:
+    from .consensus import (
+        ByzantineConsensus, RoundtableConsensus,
+        Vote, Proposal, ConsensusResult, VoteDecision,
+    )
+except ImportError:
+    ByzantineConsensus = RoundtableConsensus = None
+    Vote = Proposal = ConsensusResult = VoteDecision = None
+
+try:
+    from .websocket_manager import (
+        WebSocketManager, WebSocketClient, SubscriptionChannel,
+        ClientState, create_websocket_manager, run_websocket_server,
+    )
+except ImportError:
+    WebSocketManager = WebSocketClient = SubscriptionChannel = None
+    ClientState = create_websocket_manager = run_websocket_server = None
+
+try:
+    from .swarm_governance import (
+        SwarmGovernance, SwarmAgent, AgentRole, AgentState,
+        GovernanceConfig, AutonomousCodeAgent,
+        create_swarm_governance, create_autonomous_coder, simulate_swarm_attack,
+    )
+except ImportError:
+    SwarmGovernance = SwarmAgent = AgentRole = AgentState = None
+    GovernanceConfig = AutonomousCodeAgent = None
+    create_swarm_governance = create_autonomous_coder = simulate_swarm_attack = None
+
+try:
+    from .switchboard import Switchboard
+except ImportError:
+    Switchboard = None
+
+try:
+    from .research import (
+        ResearchOrchestrator, ResearchConfig, ResearchReport,
+        ResearchSubTask, ResearchSource,
+    )
+except ImportError:
+    ResearchOrchestrator = ResearchConfig = ResearchReport = None
+    ResearchSubTask = ResearchSource = None
+
+try:
+    from .llm_providers import (
+        LLMProvider, LLMResponse, ClaudeProvider, OpenAIProvider,
+        GeminiProvider, LocalProvider, create_provider, HYDRA_SYSTEM_PROMPT,
+    )
+except ImportError:
+    LLMProvider = LLMResponse = ClaudeProvider = OpenAIProvider = None
+    GeminiProvider = LocalProvider = create_provider = HYDRA_SYSTEM_PROMPT = None
+
+try:
+    from .hf_summarizer import HFSummarizer
+except ImportError:
+    HFSummarizer = None
+
+try:
+    from .browsers import BrowserBackend, PlaywrightBackend, SeleniumBackend, CDPBackend
+except ImportError:
+    BrowserBackend = PlaywrightBackend = SeleniumBackend = CDPBackend = None
+
+try:
+    from .swarm_browser import SwarmBrowser, AGENTS as SWARM_AGENTS
+except ImportError:
+    SwarmBrowser = None
+    SWARM_AGENTS = None
+
+try:
+    from .llm_providers import HuggingFaceProvider
+except ImportError:
+    HuggingFaceProvider = None
 
 __all__ = [
     # Core
