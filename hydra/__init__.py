@@ -27,13 +27,21 @@ from .spine import HydraSpine
 from .head import HydraHead, create_claude_head, create_codex_head, create_gpt_head, create_local_head
 from .limbs import BrowserLimb, TerminalLimb, APILimb, MultiTabBrowserLimb
 from .librarian import Librarian, MemoryQuery, MemoryResult
-from .arxiv_retrieval import (
-    ArxivClient,
-    ArxivSearchResult,
-    ArxivPaper,
-    AI2AIRetrievalService,
-    ArxivAPIError,
-)
+try:
+    from .arxiv_retrieval import (
+        ArxivClient,
+        ArxivSearchResult,
+        ArxivPaper,
+        AI2AIRetrievalService,
+        ArxivAPIError,
+    )
+except ImportError:
+    # httpx may not be installed; arxiv_retrieval is optional
+    ArxivClient = None  # type: ignore[assignment,misc]
+    ArxivSearchResult = None  # type: ignore[assignment,misc]
+    ArxivPaper = None  # type: ignore[assignment,misc]
+    AI2AIRetrievalService = None  # type: ignore[assignment,misc]
+    ArxivAPIError = None  # type: ignore[assignment,misc]
 from .ledger import Ledger, LedgerEntry, EntryType
 from .spectral import (
     GraphFourierAnalyzer,
