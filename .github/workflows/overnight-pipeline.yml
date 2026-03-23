@@ -46,16 +46,31 @@ jobs:
       - name: Validate
         id: validate
         run: |
+          TIER1_FAILURES=0
+
           echo "=== Python syntax check ==="
-          python -m py_compile src/symphonic_cipher/scbe_aethermoore/cpse.py 2>/dev/null || true
+          if ! python -m py_compile src/symphonic_cipher/scbe_aethermoore/cpse.py 2>&1; then
+            echo "::warning::Python syntax check failed"
+            TIER1_FAILURES=$((TIER1_FAILURES+1))
+          fi
 
           echo "=== TypeScript type check ==="
-          npx tsc --noEmit 2>/dev/null || true
+          if ! npx tsc --noEmit 2>&1; then
+            echo "::warning::TypeScript type check failed"
+            TIER1_FAILURES=$((TIER1_FAILURES+1))
+          fi
 
           echo "=== Quick smoke tests ==="
-          python -m pytest tests/ -m "homebrew or unit" -x -q --tb=line 2>&1 || true
+          if ! python -m pytest tests/ -m "homebrew or unit" -x -q --tb=line 2>&1; then
+            echo "::warning::Smoke tests failed"
+            TIER1_FAILURES=$((TIER1_FAILURES+1))
+          fi
 
-          echo "=== Tier 1 complete ==="
+          echo "=== Tier 1 complete (failures: $TIER1_FAILURES) ==="
+          if [ "$TIER1_FAILURES" -gt 0 ]; then
+            echo "::error::Tier 1 had $TIER1_FAILURES failure(s)"
+            exit 1
+          fi
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -93,17 +108,27 @@ jobs:
       - name: Full test suite
         id: test
         run: |
+          mkdir -p artifacts
+          TIER2_FAILURES=0
+
           echo "=== Full pytest ==="
-          python -m pytest tests/ -v --tb=short -x 2>&1 | tee artifacts/tier2_test_results.txt || true
+          if ! python -m pytest tests/ -v --tb=short -x 2>&1 | tee artifacts/tier2_test_results.txt; then
+            echo "::warning::Full pytest suite failed"
+            TIER2_FAILURES=$((TIER2_FAILURES+1))
+          fi
 
           echo "=== Property tests ==="
-          python -m pytest tests/ -m "property" -v --tb=short 2>&1 | tee -a artifacts/tier2_test_results.txt || true
+          if ! python -m pytest tests/ -m "property" -v --tb=short 2>&1 | tee -a artifacts/tier2_test_results.txt; then
+            echo "::warning::Property tests failed"
+            TIER2_FAILURES=$((TIER2_FAILURES+1))
+          fi
 
-          # Check if tests passed
-          if grep -q "passed" artifacts/tier2_test_results.txt; then
-            echo "passed=true" >> $GITHUB_OUTPUT
-          else
+          if [ "$TIER2_FAILURES" -gt 0 ]; then
             echo "passed=false" >> $GITHUB_OUTPUT
+            echo "::error::Tier 2 had $TIER2_FAILURES failure(s)"
+            exit 1
+          else
+            echo "passed=true" >> $GITHUB_OUTPUT
           fi
 
       - uses: actions/upload-artifact@v4
@@ -139,17 +164,38 @@ jobs:
 
       - name: Adversarial attack suite
         run: |
+          mkdir -p artifacts
+          TIER3_FAILURES=0
+
           echo "=== SCBE Adversarial Tests ==="
-          python -m pytest tests/adversarial/ -v --tb=short 2>&1 | tee artifacts/tier3_security_results.txt || true
+          if ! python -m pytest tests/adversarial/ -v --tb=short 2>&1 | tee artifacts/tier3_security_results.txt; then
+            echo "::warning::Adversarial tests failed"
+            TIER3_FAILURES=$((TIER3_FAILURES+1))
+          fi
 
           echo "=== HYDRA spine + ledger ==="
-          python -m pytest tests/hydra/ -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt || true
+          if ! python -m pytest tests/hydra/ -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt; then
+            echo "::warning::HYDRA tests failed"
+            TIER3_FAILURES=$((TIER3_FAILURES+1))
+          fi
 
           echo "=== Tamper detection ==="
-          python -m pytest tests/test_tamper_detection.py -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt || true
+          if ! python -m pytest tests/test_tamper_detection.py -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt; then
+            echo "::warning::Tamper detection tests failed"
+            TIER3_FAILURES=$((TIER3_FAILURES+1))
+          fi
 
           echo "=== Manifold validation ==="
-          python -m pytest tests/ -k "manifold or lattice or harmonic" -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt || true
+          if ! python -m pytest tests/ -k "manifold or lattice or harmonic" -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt; then
+            echo "::warning::Manifold validation tests failed"
+            TIER3_FAILURES=$((TIER3_FAILURES+1))
+          fi
+
+          echo "=== Tier 3 complete (failures: $TIER3_FAILURES) ==="
+          if [ "$TIER3_FAILURES" -gt 0 ]; then
+            echo "::error::Tier 3 had $TIER3_FAILURES security test failure(s)"
+            exit 1
+          fi
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -187,12 +233,22 @@ jobs:
         continue-on-error: true
 
       - name: Build TypeScript
-        run: npm run build 2>/dev/null || npx tsc 2>/dev/null || true
+        run: |
+          if ! npm run build 2>&1; then
+            echo "::warning::npm run build failed, trying npx tsc fallback"
+            if ! npx tsc 2>&1; then
+              echo "::error::TypeScript build failed"
+              exit 1
+            fi
+          fi
 
       - name: Build book EPUB
         run: |
+          mkdir -p artifacts
           pip install pypandoc_binary 2>/dev/null || true
-          python scripts/publish/rebuild_and_stage_kdp.py 2>&1 | tee artifacts/tier4_build_results.txt || true
+          if ! python scripts/publish/rebuild_and_stage_kdp.py 2>&1 | tee artifacts/tier4_build_results.txt; then
+            echo "::warning::EPUB build failed"
+          fi
 
       - name: Generate training data
         env:
@@ -206,7 +262,7 @@ jobs:
           if sft.exists():
               count = sum(1 for _ in open(sft))
               print(f'SFT records: {count}')
-          " 2>&1 | tee -a artifacts/tier4_build_results.txt || true
+          " 2>&1 | tee -a artifacts/tier4_build_results.txt
 
       - name: Generate overnight report
         run: |
@@ -283,7 +339,7 @@ jobs:
           with open('artifacts/training_merged.jsonl', 'w') as f:
               for r in unique:
                   f.write(json.dumps(r) + '\n')
-          " 2>&1 | tee artifacts/tier5_training_results.txt || true
+          " 2>&1 | tee artifacts/tier5_training_results.txt
 
       - name: Validate training data quality
         run: |
@@ -307,7 +363,7 @@ jobs:
           print(f'Valid: {good}')
           print(f'Invalid: {bad}')
           print(f'Quality: {good/(good+bad)*100:.1f}%')
-          " 2>&1 | tee -a artifacts/tier5_training_results.txt || true
+          " 2>&1 | tee -a artifacts/tier5_training_results.txt
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -366,7 +422,7 @@ jobs:
                   print(f'HF push failed: {e}')
           else:
               print('No training data or no token')
-          " 2>&1 | tee artifacts/tier6_colab_results.txt || true
+          " 2>&1 | tee artifacts/tier6_colab_results.txt
 
       - name: Trigger Colab notebook (if configured)
         env:
