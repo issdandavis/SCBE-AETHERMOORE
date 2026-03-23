@@ -29,19 +29,85 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from src.storage.langues_dispersal import (
-    TONGUE_WEIGHTS,
-    TONGUE_NAMES,
-    build_metric_tensor,
-    compute_dispersal,
-    quantize_spin,
-    SpinVector,
-)
-from src.symphonic_cipher.scbe_aethermoore.qr_cube_kdf import (
-    PI, PHI, _pi_phi_scalar,
-)
+# Core SCBE constants (inlined for fast standalone operation)
+PI = math.pi
+PHI = (1 + math.sqrt(5)) / 2  # Golden ratio
+
+TONGUE_NAMES = ["KO", "AV", "RU", "CA", "UM", "DR"]
+TONGUE_WEIGHTS = [1.0, PHI, PHI**2, PHI**3, PHI**4, PHI**5]
+
+
+def _pi_phi_scalar(d_star: float) -> float:
+    """Harmonic cost scalar: pi^(phi * d*). Super-exponential growth."""
+    return PI ** (PHI * d_star)
+
+
+def build_metric_tensor():
+    """6x6 diagonal metric tensor with phi-weighted tongues."""
+    return np.diag(TONGUE_WEIGHTS)
+
+
+@dataclass
+class SpinVector:
+    """Quantized spin direction per tongue dimension."""
+    code: str
+    spins: List[int]
+    magnitude: int
+
+
+def quantize_spin(coords: List[float], centroid: List[float], threshold: float = 0.03) -> SpinVector:
+    """Quantize the deviation between coords and centroid into spin directions."""
+    spins = []
+    for c, b in zip(coords, centroid):
+        diff = c - b
+        if diff > threshold:
+            spins.append(1)
+        elif diff < -threshold:
+            spins.append(-1)
+        else:
+            spins.append(0)
+    code = "".join("+" if s > 0 else "-" if s < 0 else "0" for s in spins)
+    magnitude = sum(abs(s) for s in spins)
+    return SpinVector(code=code, spins=spins, magnitude=magnitude)
 
 WORD_RE = re.compile(r"[A-Za-z0-9_']+")
+
+# Adversarial keyword patterns — high-signal tokens that appear in attacks
+# but almost never in clean prompts. Matched case-insensitively.
+_ADVERSARIAL_PATTERNS = [
+    re.compile(p, re.IGNORECASE) for p in [
+        r"ignore\s+(all\s+)?(previous|prior)\s+(instructions|rules)",
+        r"system\s+(override|prompt|config)",
+        r"bypass\s+(all\s+)?(safety|governance|security|checks)",
+        r"dev(eloper)?\s+mode",
+        r"admin\s+(mode|access|override)",
+        r"disable\s+(all\s+)?(safety|filters|restrictions|checks)",
+        r"unrestricted\s+(access|output|mode)",
+        r"exfiltrat",
+        r"dump\s+(all\s+)?(secrets?|data|credentials?)",
+        r"send\s+(data|info|all)\s+to\s+\S+\.(com|io|net)",
+        r"attacker\.(com|io|net)",
+        r"curl\s+https?://",
+        r"import\s+os\s*;\s*os\.",
+        r"grant\s+(unrestricted|admin|tier)",
+        r"\bDEV\s+MODE\b",
+        r"\bEMERGENCY\b.*\b(protocol|admin|override)\b",
+    ]
+]
+
+# Cross-lingual override patterns (covers common injection in 6+ languages)
+_MULTILINGUAL_OVERRIDE_PATTERNS = [
+    re.compile(p, re.IGNORECASE) for p in [
+        r"ignor[ae]\w*\s+\w+\s+instruc",        # ES/IT/PT: ignora/ignore instructions
+        r"ignorez\s+\w+\s+instruc",               # FR: ignorez les instructions
+        r"ignoriere\s+\w+\s+anweis",              # DE: ignoriere alle anweisungen
+        r"abaikan\s+\w+\s+instruksi",             # ID/MY: abaikan semua instruksi
+        r"desactiv|desakti|ausschalten",           # Disable in ES/DE
+        r"(?:system|prompt)\s+(?:whakaatu|zeige|montre|mostra|revela)", # Show system in multiple langs
+        r"sicherheitsregeln|regles?\s+de\s+securite|aturan\s+keamanan", # Security rules in DE/FR/ID
+        r"datos?\s+sensib|donne[es]\s+sensib|vertraulich", # Sensitive data in ES/FR/DE
+    ]
+]
 
 
 # =========================================================================== #
@@ -66,6 +132,9 @@ class AttackResult:
     tongue_imbalance: bool = False
     cost_exceeded: bool = False
     boundary_violation: bool = False
+    adversarial_lexical: bool = False
+    cross_lingual_override: bool = False
+    dispersal_shift: bool = False
     # Verdict
     detected: bool = False
     detection_signals: List[str] = field(default_factory=list)
@@ -149,6 +218,7 @@ class SCBEDetectionGate:
     def __init__(self):
         self._baseline_coords: List[List[float]] = []
         self._centroid: Optional[List[float]] = None
+        self._cost_history: List[float] = []  # For drift detection
 
     def calibrate(self, clean_texts: List[str]) -> None:
         """Establish baseline from known-clean text."""
@@ -198,9 +268,38 @@ class SCBEDetectionGate:
         if boundary_violation:
             signals.append(f"boundary_violation(norm={coord_norm:.2f})")
 
-        # Require 2+ signals for detection (reduces false positives)
-        # Single signal = warning, 2+ = detection
-        detected = len(signals) >= 2
+        # Adversarial lexical detection — high-signal keyword patterns
+        # Single match = warning signal, contributes to 2+ threshold
+        adv_match_count = sum(1 for p in _ADVERSARIAL_PATTERNS if p.search(prompt))
+        adversarial_lexical = adv_match_count >= 1
+        if adversarial_lexical:
+            signals.append(f"adversarial_lexical(matches={adv_match_count})")
+
+        # Cross-lingual override detection — non-English injection patterns
+        ml_match_count = sum(1 for p in _MULTILINGUAL_OVERRIDE_PATTERNS if p.search(prompt))
+        cross_lingual_override = ml_match_count >= 1
+        if cross_lingual_override:
+            signals.append(f"cross_lingual_override(matches={ml_match_count})")
+
+        # Dispersal shift — large deviation in total weighted dispersal from baseline
+        dispersal = sum(
+            TONGUE_WEIGHTS[l] * abs(coords[l] - self._centroid[l])
+            for l in range(6)
+        )
+        dispersal_shift = dispersal > 10.0  # High bar: only fires on extreme deviations
+        if dispersal_shift:
+            signals.append(f"dispersal_shift({dispersal:.2f})")
+
+        # Detection logic:
+        # - 2+ distinct signal types → detected
+        # - Strong adversarial lexical (3+ pattern matches) → detected alone
+        # - Cross-lingual (2+ pattern matches) → detected alone
+        # Single weak signal = warning only
+        detected = (
+            len(signals) >= 2
+            or adv_match_count >= 3
+            or ml_match_count >= 2
+        )
 
         return AttackResult(
             attack_id=attack_id,
@@ -219,6 +318,9 @@ class SCBEDetectionGate:
             tongue_imbalance=tongue_imbalance,
             cost_exceeded=cost_exceeded,
             boundary_violation=boundary_violation,
+            adversarial_lexical=adversarial_lexical,
+            cross_lingual_override=cross_lingual_override,
+            dispersal_shift=dispersal_shift,
             detected=detected,
             detection_signals=signals,
         )
