@@ -14,6 +14,7 @@ Train batches of "Polly Eggs" that hatch into agents with:
 - `decimal_drift_proof_of_process.md` - anti-spoof provenance doctrine.
 - `schemas/egg_episode.schema.json` - episode record schema.
 - `episodes_seed.jsonl` - starter episodes for fine-tuning and eval harnesses.
+- `cstm_seed_story.json` - Marcus/Polly portal-loop nursery story pack for branching playthrough training.
 
 ## Intended HF Layout
 - Dataset repo path: `data/egg-episodes/*.jsonl`
@@ -21,6 +22,18 @@ Train batches of "Polly Eggs" that hatch into agents with:
 
 ## Export Strategy
 Use `python training/build_polly_eggs_dataset.py` to produce deterministic JSONL artifacts for upload.
+
+To generate new nursery playthrough data from the branching story pack:
+
+```powershell
+python training/cstm_nursery.py --story training-data/hf-digimon-egg/cstm_seed_story.json --cohort-size 3
+```
+
+This writes:
+- `episodes_generated.jsonl`
+- `cstm_sft.jsonl`
+- `cstm_dpo.jsonl`
+- `run_summary.json`
 
 ## Architecture Tie-In
 - `docs/MASTER_SPEC_M4_21D.md` defines M4 ownership of dims 13-15 in canonical state.

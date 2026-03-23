@@ -28,15 +28,7 @@ function secureRandomIntBelow(maxExclusive: number): number {
   if (!Number.isInteger(maxExclusive) || maxExclusive <= 0 || maxExclusive > 0x1_0000_0000) {
     throw new RangeError(`maxExclusive must be an integer in (0, 2^32], got ${maxExclusive}`);
   }
-
-  const domainSize = 0x1_0000_0000;
-  const limit = domainSize - (domainSize % maxExclusive);
-  while (true) {
-    const candidate = crypto.randomBytes(4).readUInt32LE(0);
-    if (candidate < limit) {
-      return candidate % maxExclusive;
-    }
-  }
+  return crypto.randomInt(0, maxExclusive);
 }
 
 /**
@@ -111,7 +103,7 @@ function polyAdd(a: number[], b: number[], q: number): number[] {
   const result: number[] = new Array(n);
 
   for (let i = 0; i < n; i++) {
-    result[i] = (a[i] + b[i]) % q;
+    result[i] = (((a[i] + b[i]) % q) + q) % q;
   }
 
   return result;

@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "SCBE AI Bridge",
+  "version": "0.1.0",
+  "description": "Bridge between Claude Code / Playwright and complex web apps (Colab, Cash App, etc.)",
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "host_permissions": [
+    "https://colab.research.google.com/*",
+    "https://cash.app/*",
+    "https://taxes.cash.app/*",
+    "https://www.perplexity.ai/*",
+    "https://console.perplexity.ai/*",
+    "https://huggingface.co/*",
+    "https://github.com/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://colab.research.google.com/*"],
+      "js": ["bridges/colab.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://cash.app/*", "https://taxes.cash.app/*"],
+      "js": ["bridges/cashapp.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["bridges/universal.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "externally_connectable": {
+    "matches": ["http://localhost/*", "http://127.0.0.1/*"]
+  },
+  "action": {
+    "default_title": "SCBE AI Bridge"
+  }
+}

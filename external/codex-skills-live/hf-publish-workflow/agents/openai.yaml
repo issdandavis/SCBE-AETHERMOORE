@@ -1,0 +1,4 @@
+interface:
+  display_name: "HF Publish Workflow"
+  short_description: "HF auth, card prep, and safe repo publishing"
+  default_prompt: "Use $hf-publish-workflow to authenticate once, refresh README card content, and upload this folder to a Hugging Face repo via direct push or PR."

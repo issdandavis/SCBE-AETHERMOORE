@@ -61,20 +61,23 @@ jobs:
           (inputs.page_id != '' || inputs.config_key != '')
         env:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          INPUT_PAGE_ID: ${{ inputs.page_id }}
+          INPUT_CONFIG_KEY: ${{ inputs.config_key }}
+          INPUT_OUTPUT_PATH: ${{ inputs.output_path }}
         run: |
           set -euo pipefail
           args=()
 
-          if [ -n "${{ inputs.page_id }}" ]; then
-            args+=("--page-id" "${{ inputs.page_id }}")
+          if [ -n "$INPUT_PAGE_ID" ]; then
+            args+=("--page-id" "$INPUT_PAGE_ID")
           fi
 
-          if [ -n "${{ inputs.config_key }}" ]; then
-            args+=("--config-key" "${{ inputs.config_key }}")
+          if [ -n "$INPUT_CONFIG_KEY" ]; then
+            args+=("--config-key" "$INPUT_CONFIG_KEY")
           fi
 
-          if [ -n "${{ inputs.output_path }}" ]; then
-            args+=("--output" "${{ inputs.output_path }}")
+          if [ -n "$INPUT_OUTPUT_PATH" ]; then
+            args+=("--output" "$INPUT_OUTPUT_PATH")
           fi
 
           node scripts/notion-sync.js "${args[@]}"

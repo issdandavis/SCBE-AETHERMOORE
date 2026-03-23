@@ -67,6 +67,10 @@ Clean. Positioned. Patient.
 
 Not the same as Kael's handlers. Different approach. Different methodology. But the same operational signature -- the careful, calibrated positioning of assets in proximity to a target, patient and precise and scrubbed of identifying features.
 
+One detail nagged at Tovak. A detail he had not included in his private archive because he did not yet have language for it. The handler signatures around Kael -- the ones from fourteen months ago, the ones that dissolved simultaneously -- their underlying structure had not been native. Not Dominion-standard, not ancient, not corrupted. Something else. A design philosophy that reminded Tovak of the way Earth refugees built things: modular, efficient, redundant in ways that assumed the system would fail rather than persist. Someone had taught those handlers to move like infrastructure rather than people.
+
+Tovak did not know what that meant. He filed it in the place where things waited to become knowledge.
+
 The Dominion was watching Marcus the way it had watched Kael.
 
 Tovak did not report this. Not yet. Not because the information wasn't urgent, but because UM operated on the principle that premature disclosure compromised both the intelligence and the source. You didn't reveal what you knew until you knew enough to act on it. And you didn't act until the timing turned your knowledge into something useful.

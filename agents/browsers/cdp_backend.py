@@ -18,6 +18,7 @@ import json
 import os
 import platform
 import shutil
+import time
 from typing import Optional, Dict, Any, List
 from .base import BrowserBackend
 
@@ -189,15 +190,37 @@ class CDPBackend(BrowserBackend):
         result = await self._send("Page.navigate", {"url": url})
         self.current_url = url
 
-        # Wait for load
-        await self._send("Page.loadEventFired")
-        await asyncio.sleep(0.5)  # Brief settle time
+        if result.get("errorText"):
+            raise RuntimeError(f"Navigation failed: {result['errorText']}")
+
+        await self._wait_for_ready_state()
 
         return {
             "url": url,
             "frameId": result.get("frameId"),
             "loaderId": result.get("loaderId")
         }
+
+    async def _wait_for_ready_state(self, timeout: float = 10.0, settle_seconds: float = 0.2) -> None:
+        """Wait until the document is interactive/complete after navigation."""
+        deadline = time.monotonic() + timeout
+        last_state = ""
+
+        while time.monotonic() < deadline:
+            try:
+                state = await self.execute_script("document.readyState")
+            except Exception:
+                state = ""
+
+            if isinstance(state, str):
+                last_state = state
+                if state in {"interactive", "complete"}:
+                    await asyncio.sleep(settle_seconds)
+                    return
+
+            await asyncio.sleep(0.1)
+
+        raise TimeoutError(f"Timed out waiting for document readyState. Last observed state: {last_state or 'unknown'}")
 
     async def click(self, selector: str) -> Dict[str, Any]:
         """Click element by CSS selector."""

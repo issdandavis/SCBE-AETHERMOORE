@@ -51,7 +51,7 @@ def hyperbolic_distance_safe(x: np.ndarray, y: np.ndarray, eps: float = 1e-8) ->
     if arg < 1.0:
         return 100.0  # Invalid
 
-    return float(np.arccosh(arg))
+    return float(np.arccosh(max(arg, 1.0)))
 
 
 class HyperpathFinder:

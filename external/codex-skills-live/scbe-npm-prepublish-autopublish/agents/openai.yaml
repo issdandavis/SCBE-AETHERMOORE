@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE NPM Publish Guard"
+  short_description: "NPM prepublish and auto-release guard rails"
+  default_prompt: "Use this skill to clean artifacts, enforce npm pack guards, and wire auto-publish workflow checks in SCBE-AETHERMOORE."

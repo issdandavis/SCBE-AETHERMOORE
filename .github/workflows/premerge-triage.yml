@@ -1,0 +1,45 @@
+name: Premerge Triage
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build repo ordering snapshot
+        run: python scripts/system/repo_ordering.py
+
+      - name: Build workflow audit snapshot
+        run: python scripts/system/github_workflow_audit.py --json
+
+      - name: Build PR merge triage
+        run: python scripts/system/pr_merge_triage.py --json
+
+      - name: Build system card deck
+        run: python scripts/system/system_card_deck.py --json
+
+      - name: Upload triage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: premerge-triage
+          path: |
+            artifacts/system-audit/*.json
+            artifacts/system-cards/*
+          retention-days: 14

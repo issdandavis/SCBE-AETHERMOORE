@@ -1,0 +1,4 @@
+interface:
+  display_name: "Aether Phone Lane"
+  short_description: "Boot, recover, and verify the SCBE phone emulator."
+  default_prompt: "Use $aether-phone-lane-ops to boot or recover the SCBE Android emulator, tune the phone lane, and verify Polly Pad or AetherCode from local evidence."

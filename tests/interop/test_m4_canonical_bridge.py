@@ -1,6 +1,8 @@
 import pytest
 
 torch = pytest.importorskip("torch")
+if not hasattr(torch, "randn"):
+    pytest.skip("torch stub installed without tensor support", allow_module_level=True)
 
 from src.m4mesh.canonical_bridge import run_governance_pipeline
 from src.m4mesh.manifest import FluxManifest

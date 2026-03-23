@@ -1,0 +1,4 @@
+interface:
+  display_name: "AetherBrowser Hugging Face Nav"
+  short_description: "Navigate Hugging Face repos and docs with AetherBrowser"
+  default_prompt: "Use AetherBrowser Hugging Face nav flow."

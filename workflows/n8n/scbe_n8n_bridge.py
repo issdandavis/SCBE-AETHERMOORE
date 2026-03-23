@@ -175,6 +175,33 @@ _AUTOMATION_HUB = AutomationHub(
     allowed_hosts=_AUTOMATION_ALLOWED_HOSTS,
 )
 
+_PUBLIC_SECRET_RE = re.compile(
+    r"(?:ghp_|gho_|ghu_|ghs_|ghr_|hf_|sk-|sk-proj-|xai-|rk_live_|rk_test_|shpat_|AKIA)[A-Za-z0-9_\-]{8,}"
+)
+
+
+def _redact_public_text(value: Any) -> str:
+    text = str(value or "")
+    if not text:
+        return ""
+    return _PUBLIC_SECRET_RE.sub("[REDACTED]", text)
+
+
+def _public_error_detail(
+    code: str,
+    *,
+    upstream_status: int | None = None,
+    detail_text: Any = None,
+) -> Dict[str, Any]:
+    payload: Dict[str, Any] = {"error": code}
+    if upstream_status is not None:
+        payload["upstream_status"] = upstream_status
+    detail = _redact_public_text(detail_text)
+    if detail:
+        payload["detail_present"] = True
+        payload["detail_length"] = len(str(detail_text or ""))
+    return payload
+
 
 def _check_key(api_key: Optional[str] = None):
     if api_key and api_key in _API_KEYS:
@@ -411,17 +438,12 @@ def _http_post_json(
         detail = exc.read().decode("utf-8", errors="replace")
         raise HTTPException(
             status_code=502,
-            detail={
-                "error": "upstream_http_error",
-                "upstream_status": exc.code,
-                "url": url,
-                "body": detail[:1800],
-            },
+            detail=_public_error_detail("upstream_http_error", upstream_status=exc.code, detail_text=detail),
         )
     except urllib_error.URLError as exc:
         raise HTTPException(
             status_code=503,
-            detail=f"Upstream provider unavailable: {exc.reason}",
+            detail=_public_error_detail("upstream_provider_unavailable", detail_text=exc.reason),
         )
 
 
@@ -573,8 +595,8 @@ def _send_zapier_event(event_payload: Dict[str, Any]) -> Dict[str, Any]:
                 "status_code": getattr(resp, "status", 200),
                 "body": body[:800],
             }
-    except Exception as exc:  # noqa: BLE001
-        return {"status": "failed", "error": str(exc)}
+    except Exception:  # noqa: BLE001
+        return {"status": "failed", "error": "zapier_webhook_failed"}
 
 
 @app.get("/v1/llm/providers")
@@ -744,9 +766,12 @@ async def arena_chat(req: ArenaChatRequest):
         }
     except HTTPException:
         raise
-    except Exception as exc:
+    except Exception:
         latency_ms = (time.time() - t0) * 1000
-        raise HTTPException(502, detail=f"{seat} error: {str(exc)[:300]}")
+        raise HTTPException(
+            502,
+            detail={"error": "provider_dispatch_failed", "provider": seat, "latency_ms": latency_ms},
+        )
 
 
 @app.get("/v1/providers")
@@ -839,10 +864,10 @@ async def execute_code(req: CodeExecRequest):
             error_body = json.loads(exc.read().decode("utf-8"))
         except Exception:
             pass
-        stderr = error_body.get("error", str(exc))
+        stderr = "kernel-runner upstream error"
         if error_body.get("blocked"):
-            stderr = f"Governance gate blocked execution: {error_body.get('decision_record', {}).get('reason', stderr)}"
-        return {
+            stderr = "Governance gate blocked execution."
+        result = {
             "stdout": "",
             "stderr": stderr,
             "exit_code": -1,
@@ -850,21 +875,24 @@ async def execute_code(req: CodeExecRequest):
             "duration_ms": duration_ms,
             "sandboxed": True,
         }
-    except urllib_error.URLError as exc:
+        if exc.code:
+            result["upstream_status"] = exc.code
+        return result
+    except urllib_error.URLError:
         duration_ms = round((time.time() - t0) * 1000)
         return {
             "stdout": "",
-            "stderr": f"kernel-runner unreachable at {url}: {exc.reason}",
+            "stderr": "kernel-runner unavailable",
             "exit_code": -1,
             "language": req.language,
             "duration_ms": duration_ms,
             "sandboxed": True,
         }
-    except Exception as exc:
+    except Exception:
         duration_ms = round((time.time() - t0) * 1000)
         return {
             "stdout": "",
-            "stderr": f"kernel-runner request failed: {exc}",
+            "stderr": "kernel-runner request failed",
             "exit_code": -1,
             "language": req.language,
             "duration_ms": duration_ms,
@@ -886,11 +914,11 @@ def _browser_health_check() -> Dict[str, Any]:
                 "health": data,
                 "url": url,
             }
-    except Exception as exc:  # noqa: BLE001
+    except Exception:  # noqa: BLE001
         return {
             "reachable": False,
-            "error": str(exc),
-            "url": url,
+            "error": "browser_service_network_error",
+            "service": "browser_service",
         }
 
 
@@ -913,22 +941,17 @@ def _forward_to_browser_service(payload: Dict[str, Any], bridge_api_key: str) ->
         body = exc.read().decode("utf-8", errors="replace")
         raise HTTPException(
             status_code=502,
-            detail={
-                "error": "browser_service_http_error",
-                "upstream_status": exc.code,
-                "url": url,
-                "body": body[:1500],
-            },
+            detail=_public_error_detail("browser_service_http_error", upstream_status=exc.code, detail_text=body),
         )
     except urllib_error.URLError as exc:
         raise HTTPException(
             status_code=503,
-            detail=f"Browser service unavailable at {_BROWSER_SERVICE_URL}: {exc.reason}",
+            detail=_public_error_detail("browser_service_unavailable", detail_text=exc.reason),
         )
     except json.JSONDecodeError as exc:
         raise HTTPException(
             status_code=502,
-            detail=f"Browser service returned invalid JSON: {exc}",
+            detail=_public_error_detail("browser_service_invalid_json", detail_text=str(exc)),
         )
 
 
@@ -1032,8 +1055,8 @@ async def tongue_encode(req: TongueEncodeRequest, x_api_key: Optional[str] = Hea
                 "token_count": len(env.tokens),
                 "transport": "tongue",
             }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="tongue_encoding_failed")
 
 
 @app.post("/v1/buffer/post")
@@ -1208,8 +1231,8 @@ def _dispatch_single_provider(provider: str, prompt: str, system_prompt: str, ma
             return {"provider": p, "text": _extract_anthropic_response(raw).get("text", ""), "status": "ok"}
         else:
             return {"provider": p, "text": "", "status": "unsupported"}
-    except Exception as exc:
-        return {"provider": p, "text": "", "status": "error", "error": str(exc)[:500]}
+    except Exception:
+        return {"provider": p, "text": "", "status": "error", "error": "provider_dispatch_failed"}
 
 
 @app.post("/v1/council/deliberate")
@@ -1725,7 +1748,7 @@ def _upload_lattice25d_export_to_hf(
             create_pr=create_pr,
         )
     except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=502, detail=f"HF dataset upload failed: {exc}") from exc
+        raise HTTPException(status_code=502, detail="hf_dataset_upload_failed") from exc
 
     return {
         "status": "uploaded",

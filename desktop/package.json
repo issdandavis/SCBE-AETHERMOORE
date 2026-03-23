@@ -1,0 +1,46 @@
+{
+  "name": "aetherbrowser",
+  "version": "0.1.0",
+  "description": "AetherBrowser — AI-governed desktop browser with multi-agent sidepanel",
+  "author": "Issac Daniel Davis <issdandavis@gmail.com>",
+  "license": "MIT",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "vite build --watch & electron .",
+    "dev:electron": "electron .",
+    "dev:vite": "vite build --watch",
+    "build": "vite build",
+    "package": "electron-builder --win",
+    "package:dir": "electron-builder --win --dir"
+  },
+  "build": {
+    "appId": "com.aethermoorgames.aetherbrowser",
+    "productName": "AetherBrowser",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "electron/**/*",
+      "renderer/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "extraResources": [],
+    "win": {
+      "target": "nsis",
+      "icon": "../src/extension/icons/icon128.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "../src/extension/icons/icon128.png",
+      "uninstallerIcon": "../src/extension/icons/icon128.png",
+      "installerHeaderIcon": "../src/extension/icons/icon128.png"
+    }
+  },
+  "devDependencies": {
+    "electron": "^41.0.0",
+    "electron-builder": "^26.0.0",
+    "vite": "^6.0.0"
+  }
+}

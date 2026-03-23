@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Address Bar</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-surface: #161b22;
+      --bg-input: #0d1117;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --border: #30363d;
+      --radius: 8px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg-surface);
+      color: var(--text);
+      overflow: hidden;
+      -webkit-app-region: drag;
+      user-select: none;
+    }
+
+    .address-bar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+      height: 52px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-btn {
+      -webkit-app-region: no-drag;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .nav-btn:disabled:hover {
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .url-input {
+      -webkit-app-region: no-drag;
+      flex: 1;
+      height: 34px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-input);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .url-input:focus {
+      border-color: var(--accent);
+    }
+
+    .url-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .brand {
+      -webkit-app-region: no-drag;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 8px;
+      flex-shrink: 0;
+      cursor: default;
+    }
+
+    .brand-name {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--accent);
+      letter-spacing: 0.03em;
+    }
+  </style>
+</head>
+<body>
+  <div class="address-bar">
+    <div class="brand">
+      <span class="brand-name">AetherBrowser</span>
+    </div>
+
+    <button id="btn-back" class="nav-btn" title="Back (Alt+Left)" disabled>&#8592;</button>
+    <button id="btn-forward" class="nav-btn" title="Forward (Alt+Right)" disabled>&#8594;</button>
+    <button id="btn-reload" class="nav-btn" title="Reload (Ctrl+R)">&#8635;</button>
+
+    <input
+      id="url-input"
+      class="url-input"
+      type="text"
+      placeholder="Search or enter URL..."
+      spellcheck="false"
+      autocomplete="off"
+    >
+  </div>
+
+  <script src="address-bar.js"></script>
+</body>
+</html>

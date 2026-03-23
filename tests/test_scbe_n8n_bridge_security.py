@@ -29,6 +29,20 @@ def test_send_zapier_event_skips_when_no_env_hook(monkeypatch) -> None:
     assert result["status"] == "skipped"
 
 
+def test_send_zapier_event_hides_exception_text(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_ZAPIER_WEBHOOK_URL", "https://hooks.zapier.com/hooks/catch/123/abc")
+
+    def fake_urlopen(*args, **kwargs):
+        raise RuntimeError("secret webhook failure")
+
+    monkeypatch.setattr(bridge.urllib_request, "urlopen", fake_urlopen)
+    result = bridge._send_zapier_event({"event": "llm_dispatch"})
+
+    assert result["status"] == "failed"
+    assert result["error"] == "zapier_webhook_failed"
+    assert "secret webhook failure" not in json.dumps(result)
+
+
 def test_browser_health_check_hides_internal_exception_text(monkeypatch) -> None:
     def fake_urlopen(*args, **kwargs):
         raise urllib_error.URLError("secret host details")

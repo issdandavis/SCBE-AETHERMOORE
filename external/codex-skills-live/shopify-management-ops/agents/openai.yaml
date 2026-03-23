@@ -1,0 +1,4 @@
+interface:
+  display_name: "Shopify Management Ops"
+  short_description: "Run Shopify audit, sync, and publish from terminal"
+  default_prompt: "Run Shopify management ops in audit mode, then publish updates with evidence reports."

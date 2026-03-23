@@ -10,50 +10,28 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: write
-      contents: read
+      models: read
     steps:
-      - name: Summarize and comment on issue
+      - name: Summarize issue with AI
+        uses: actions/ai-inference@v1
+        id: summary
+        with:
+          model: openai/gpt-4o-mini
+          system-prompt: |
+            You are a helpful assistant that analyzes GitHub issues for the SCBE-AETHERMOORE project — a post-quantum cryptographic AI system with a Sacred Tongue protocol, Spiralverse game engine, and multi-modal training pipeline.
+            Summarize the issue in 2-3 sentences. Identify: 1) the component affected (crypto, game, CI, API, docs, etc.), 2) severity (bug/enhancement/question), 3) suggested next steps.
+            Be concise and technical.
+          prompt: "Please summarize this GitHub issue:\n\nTitle: ${{ github.event.issue.title }}\n\nBody: ${{ github.event.issue.body }}"
+      - name: Comment with AI summary
         uses: actions/github-script@v7
+        env:
+          AI_RESPONSE: ${{ steps.summary.outputs.response }}
         with:
           script: |
-            const title = context.payload.issue.title;
-            const body = context.payload.issue.body || '(no body)';
-
-            // Keyword-based component detection
-            const components = [];
-            const text = `${title} ${body}`.toLowerCase();
-            if (text.match(/crypto|pqc|kem|dsa|quantum/)) components.push('crypto');
-            if (text.match(/game|spiralverse|lore|story/)) components.push('game');
-            if (text.match(/ci|workflow|action|deploy|docker/)) components.push('CI/CD');
-            if (text.match(/api|endpoint|gateway|rest/)) components.push('API');
-            if (text.match(/doc|readme|spec|architecture/)) components.push('docs');
-            if (text.match(/harmonic|pipeline|layer|scaling/)) components.push('harmonic');
-            if (text.match(/tongue|langues|token/)) components.push('tongues');
-            if (text.match(/test|vitest|pytest|coverage/)) components.push('testing');
-            if (components.length === 0) components.push('general');
-
-            // Severity detection
-            let severity = 'question';
-            if (text.match(/bug|error|fail|crash|broken|fix/)) severity = 'bug';
-            else if (text.match(/feat|add|enhance|improve|request/)) severity = 'enhancement';
-
-            const component = components.join(', ');
-
-            const comment = [
-              `**Auto-Triage Summary**`,
-              ``,
-              `| Field | Value |`,
-              `|-------|-------|`,
-              `| **Component** | ${component} |`,
-              `| **Type** | ${severity} |`,
-              ``,
-              `---`,
-              `*Generated automatically by the AI Issue Summary workflow*`
-            ].join('\n');
-
-            await github.rest.issues.createComment({
+            const body = `🤖 **AI Issue Summary**\n\n${process.env.AI_RESPONSE}\n\n---\n*Generated automatically by the AI Issue Summary workflow*`;
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: comment
-            });
+              body
+            })

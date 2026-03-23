@@ -1,0 +1,4 @@
+interface:
+  display_name: "Thought To Cash"
+  short_description: "End-to-end monetization execution lane"
+  default_prompt: "Use $scbe-monetization-thought-to-cash to turn one product idea into a launched checkout flow and daily cash-tracking tasks."

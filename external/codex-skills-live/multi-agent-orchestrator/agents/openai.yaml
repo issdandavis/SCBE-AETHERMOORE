@@ -1,0 +1,4 @@
+interface:
+  display_name: "Multi Agent Orchestrator"
+  short_description: "Plan and coordinate parallel agent execution"
+  default_prompt: "Use $multi-agent-orchestrator to split this project into parallel agent work."
