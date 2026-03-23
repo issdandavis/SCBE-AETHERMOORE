@@ -1,0 +1,70 @@
+name: Layer Implementation
+description: Track implementation or improvement of a specific pipeline layer
+title: "[Layer]: "
+labels: ["enhancement"]
+assignees:
+  - issdandavis
+body:
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Target Layer
+      options:
+        - "L1: Complex context encoding"
+        - "L2: Realification"
+        - "L3: Weighted transform"
+        - "L4: Poincare embedding"
+        - "L5: Hyperbolic distance"
+        - "L6: Breathing transform"
+        - "L7: Mobius phase"
+        - "L8: Hamiltonian CFI (multi-well realms)"
+        - "L9: Spectral coherence (FFT)"
+        - "L10: Spin coherence"
+        - "L11: Triadic temporal distance"
+        - "L12: Harmonic wall"
+        - "L13: Risk decision (governance)"
+        - "L14: Audio axis (FFT telemetry)"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: axioms
+    attributes:
+      label: Axiom Coverage
+      description: Which axioms does this layer enforce?
+      options:
+        - label: "A1: Unitarity (norm preservation)"
+        - label: "A2: Locality (spatial bounds)"
+        - label: "A3: Causality (time-ordering)"
+        - label: "A4: Symmetry (gauge invariance)"
+        - label: "A5: Composition (pipeline integrity)"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Implementation Details
+      description: Describe what needs to be implemented or improved
+    validations:
+      required: true
+
+  - type: dropdown
+    id: languages
+    attributes:
+      label: Languages Required
+      options:
+        - TypeScript only
+        - Python only
+        - Both (TS canonical, Python parity)
+    validations:
+      required: true
+
+  - type: textarea
+    id: test-plan
+    attributes:
+      label: Test Plan
+      description: What test tiers should cover this? (L1-basic through L6-adversarial)
+      placeholder: |
+        - L2-unit: Test layer transform in isolation
+        - L4-property: fast-check invariant proofs
+    validations:
+      required: true

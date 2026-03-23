@@ -39,7 +39,6 @@ class TestCommandPlanner:
             ModelProvider.OPUS: False,
             ModelProvider.FLASH: False,
             ModelProvider.GROK: False,
-            ModelProvider.HUGGINGFACE: False,
         })
 
         plan = build_command_plan(

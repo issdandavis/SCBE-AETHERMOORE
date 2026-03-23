@@ -6,6 +6,12 @@ contact_links:
   - name: Discussions
     url: https://github.com/issdandavis/SCBE-AETHERMOORE/discussions
     about: Ask questions and discuss with the community
+  - name: Architecture Discussion
+    url: https://github.com/issdandavis/SCBE-AETHERMOORE/discussions/new?category=architecture
+    about: Discuss pipeline layers, axioms, and system design
+  - name: Research
+    url: https://github.com/issdandavis/SCBE-AETHERMOORE/discussions/new?category=research
+    about: Share research findings related to hyperbolic geometry, PQC, or AI safety
   - name: Security Issue
     url: https://github.com/issdandavis/SCBE-AETHERMOORE/security/advisories/new
     about: Report security vulnerabilities privately

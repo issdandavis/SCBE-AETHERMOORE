@@ -23,8 +23,6 @@ from src.aetherbrowser.command_planner import CommandPlan, build_command_plan
 from src.aetherbrowser.page_analyzer import PageAnalyzer
 from src.aetherbrowser.provider_executor import ProviderExecutor
 from src.aetherbrowser.router import OctoArmorRouter
-from src.aetherbrowser.topology_engine import compute_page_topology
-from src.aetherbrowser.trilane_router import TriLaneRouter
 
 logger = logging.getLogger("aetherbrowser")
 
@@ -43,7 +41,6 @@ squad = AgentSquad(feed)
 analyzer = PageAnalyzer()
 router = OctoArmorRouter()
 executor = ProviderExecutor()
-trilane = TriLaneRouter(enable_shadow_training=True, local_first=True)
 pending_zone_requests: dict[int, "PendingCommandApproval"] = {}
 
 
@@ -62,48 +59,6 @@ def health():
         "providers": router.provider_status_snapshot(),
         "executor": executor.runtime_status_snapshot(),
     }
-
-
-# =============================================================================
-# TriLane REST Endpoints — the "kiosk" API
-# =============================================================================
-
-@app.post("/v1/browse")
-async def trilane_browse(body: dict):
-    """Execute a browser task through the 3-lane router.
-
-    POST /v1/browse
-    Body: {"task": "scrape arxiv.org for AI safety papers"}
-    """
-    task = body.get("task", "")
-    if not task:
-        return {"error": "Missing 'task' field"}
-
-    result = await trilane.execute(task)
-    return result.to_dict()
-
-
-@app.get("/v1/browse/classify")
-def trilane_classify(task: str = ""):
-    """Classify a task without executing it.
-
-    GET /v1/browse/classify?task=scrape+arxiv+papers
-    """
-    if not task:
-        return {"error": "Missing 'task' query param"}
-    intent = trilane.classify_intent(task)
-    lanes = trilane.select_lanes(intent, task)
-    return {
-        "task": task,
-        "intent": intent.value,
-        "lanes": [l.value for l in lanes],
-    }
-
-
-@app.get("/v1/browse/stats")
-def trilane_stats():
-    """Get TriLane router usage statistics."""
-    return trilane.get_stats()
 
 
 @app.websocket("/ws")
@@ -207,7 +162,6 @@ async def _handle_page_context(ws: WebSocket, msg: dict) -> None:
         page_type=payload.get("page_type", "generic"),
         screenshot=payload.get("screenshot", ""),
     )
-    topology = result.get("topology_lens", {})
 
     summary_text = (
         f"Page: {result['title']}\n"
@@ -215,8 +169,6 @@ async def _handle_page_context(ws: WebSocket, msg: dict) -> None:
         f"Topics: {', '.join(result['topics']) or 'General'}\n"
         f"Intent: {result['intent']}\n"
         f"Risk: {result['risk_tier']}\n"
-        f"Topology: {topology.get('zone', 'UNKNOWN')} | Axis: {topology.get('primary_axis', 'General')} | "
-        f"d_H: {topology.get('trust_distance', 'n/a')}\n"
         f"Type: {result['page_type']}\n"
         f"Headings: {result['heading_count']} | Links: {result['link_count']} | Forms: {result['form_count']} | Tabs: {result['tab_count']}\n\n"
         f"{result['summary']}"
@@ -241,21 +193,6 @@ async def _handle_page_context(ws: WebSocket, msg: dict) -> None:
                 payload={"page_analysis": result},
             )
         )
-
-    # Topology visualization (curved browser)
-    try:
-        topology = compute_page_topology(
-            url=url,
-            title=title,
-            text=text,
-            links=payload.get("links") or [],
-            headings=payload.get("headings") or [],
-            topics=result.get("topics") or [],
-            risk_tier=result.get("risk_tier", "low"),
-        )
-        await ws.send_json(feed._base(MsgType.TOPOLOGY, Agent.UM, payload=topology))
-    except Exception as exc:
-        logger.warning(f"Topology computation failed: {exc}")
 
 
 async def _handle_zone_response(ws: WebSocket, msg: dict) -> None:
