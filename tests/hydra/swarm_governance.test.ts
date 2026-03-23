@@ -43,14 +43,20 @@ function resolvePython(): string | null {
 const PYTHON = resolvePython();
 
 // Helper to run Python and capture output
-async function runPython(code: string): Promise<{ stdout: string; stderr: string; exitCode: number }> {
+async function runPython(
+  code: string
+): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   return new Promise((resolve) => {
     const proc = spawn(PYTHON || 'python', ['-c', code]);
     let stdout = '';
     let stderr = '';
 
-    proc.stdout.on('data', (data) => { stdout += data; });
-    proc.stderr.on('data', (data) => { stderr += data; });
+    proc.stdout.on('data', (data) => {
+      stdout += data;
+    });
+    proc.stderr.on('data', (data) => {
+      stderr += data;
+    });
 
     proc.on('close', (exitCode) => {
       resolve({ stdout, stderr, exitCode: exitCode || 0 });
@@ -59,7 +65,10 @@ async function runPython(code: string): Promise<{ stdout: string; stderr: string
 }
 
 function splitOutputLines(stdout: string): string[] {
-  return stdout.trim().split(/\r?\n/).map((line) => line.trimEnd());
+  return stdout
+    .trim()
+    .split(/\r?\n/)
+    .map((line) => line.trimEnd());
 }
 
 const maybeDescribe = PYTHON ? describe : describe.skip;
@@ -171,8 +180,8 @@ print(f"{r_low:.2f}")
 print(r_low > r_mid > r_high)
       `);
       const lines = splitOutputLines(result.stdout);
-      expect(parseFloat(lines[0])).toBeCloseTo(1.5, 1);  // Base R
-      expect(lines[3]).toBe('True');  // Low coherence → higher R
+      expect(parseFloat(lines[0])).toBeCloseTo(1.5, 1); // Base R
+      expect(lines[3]).toBe('True'); // Low coherence → higher R
     });
 
     it('should compute variable curvature based on coherence', async () => {
@@ -190,7 +199,7 @@ print(f"{k_high:.4f}")
 print(k_low < k_high)  # More negative for low coherence
       `);
       const lines = splitOutputLines(result.stdout);
-      expect(parseFloat(lines[0])).toBeCloseTo(-1.0, 3);  // κ = -1 at full coherence
+      expect(parseFloat(lines[0])).toBeCloseTo(-1.0, 3); // κ = -1 at full coherence
       expect(lines[1]).toBe('True');
     });
 
@@ -231,7 +240,7 @@ print(p_large > p_small)
 print(p_small > 1)
       `);
       const lines = splitOutputLines(result.stdout);
-      expect(lines[0]).toBe('True');  // Larger distance → larger penalty
+      expect(lines[0]).toBe('True'); // Larger distance → larger penalty
       expect(lines[1]).toBe('True');
     });
   });
@@ -270,7 +279,7 @@ gov.simulation_step()
 
 print(agent.state.value)
       `);
-      expect(result.stdout.trim()).toBe('frozen');  // Below freeze threshold
+      expect(result.stdout.trim()).toBe('frozen'); // Below freeze threshold
     });
 
     it('should compute swarm metrics', async () => {
@@ -330,9 +339,9 @@ print(honest_active >= 3)  # Most honest agents should remain active
 print(gov.swarm_coherence > 0.7)  # Swarm coherence should recover
       `);
       const lines = splitOutputLines(result.stdout);
-      expect(lines[0]).toBe('True');  // Malicious agents expelled
-      expect(lines[1]).toBe('True');  // Honest agents remain
-      expect(lines[2]).toBe('True');  // Swarm coherence recovered
+      expect(lines[0]).toBe('True'); // Malicious agents expelled
+      expect(lines[1]).toBe('True'); // Honest agents remain
+      expect(lines[2]).toBe('True'); // Swarm coherence recovered
     });
 
     it('should expel agents with excessive penalties', async () => {
@@ -574,4 +583,3 @@ print(len(result["history"]))
     });
   });
 });
-

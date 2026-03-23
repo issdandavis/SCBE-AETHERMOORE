@@ -53,12 +53,12 @@ const EPSILON = 1e-15;
 
 /** Sacred Tongue harmonic frequencies: 440 * φ^k Hz */
 const TONGUE_HARMONICS = [
-  440 * PHI ** 0,   // KO: 440.00
-  440 * PHI ** 1,   // AV: 711.78
-  440 * PHI ** 2,   // RU: 1151.78
-  440 * PHI ** 3,   // CA: 1863.56
-  440 * PHI ** 4,   // UM: 3015.33
-  440 * PHI ** 5,   // DR: 4878.90
+  440 * PHI ** 0, // KO: 440.00
+  440 * PHI ** 1, // AV: 711.78
+  440 * PHI ** 2, // RU: 1151.78
+  440 * PHI ** 3, // CA: 1863.56
+  440 * PHI ** 4, // UM: 3015.33
+  440 * PHI ** 5, // DR: 4878.90
 ];
 
 /** Default shadow buffer capacity (steps) */
@@ -198,7 +198,7 @@ export function captureStepDrift(
   before: number[],
   after: number[],
   step: number,
-  layer: number = 0,
+  layer: number = 0
 ): DriftCapture {
   const len = Math.min(before.length, after.length);
   const drift: number[] = new Array(len);
@@ -255,13 +255,13 @@ export function estimateFractalDimension(captures: DriftCapture[]): FractalEstim
   const logCounts: number[] = [];
 
   for (let k = 1; k <= maxScales; k++) {
-    const boxSize = range / (2 ** k);
+    const boxSize = range / 2 ** k;
     if (boxSize < EPSILON) break;
 
     // Count occupied boxes along the time axis
     const occupied = new Set<string>();
     for (let i = 0; i < series.length; i++) {
-      const tBox = Math.floor(i / (2 ** (maxScales - k)));
+      const tBox = Math.floor(i / 2 ** (maxScales - k));
       const vBox = Math.floor((series[i] - min) / boxSize);
       occupied.add(`${tBox}:${vBox}`);
     }
@@ -405,9 +405,7 @@ export function assessAuthenticity(captures: DriftCapture[]): DriftAuthenticity 
   }
 
   // Uniformity score: high CV = genuine, low CV = suspicious
-  const uniformityScore = avgCV > SYNTHETIC_CV_THRESHOLD
-    ? 1
-    : avgCV / SYNTHETIC_CV_THRESHOLD;
+  const uniformityScore = avgCV > SYNTHETIC_CV_THRESHOLD ? 1 : avgCV / SYNTHETIC_CV_THRESHOLD;
   if (syntheticRatio > 0.5) flags.push('high_uniformity');
 
   // Harmonic score
@@ -415,11 +413,7 @@ export function assessAuthenticity(captures: DriftCapture[]): DriftAuthenticity 
   if (hCoherence < 0.3) flags.push('low_harmonic_coherence');
 
   // Combined score: weighted average
-  const score = clamp(
-    0.35 * fractalScore + 0.35 * uniformityScore + 0.3 * hCoherence,
-    0,
-    1,
-  );
+  const score = clamp(0.35 * fractalScore + 0.35 * uniformityScore + 0.3 * hCoherence, 0, 1);
 
   const genuine = score > 0.5 && syntheticRatio < 0.5;
   if (!genuine) flags.push('synthetic_signature');
@@ -448,7 +442,7 @@ export function assessAuthenticity(captures: DriftCapture[]): DriftAuthenticity 
 export function sonifyDrift(
   captures: DriftCapture[],
   sampleRate: number = 44100,
-  duration: number = 1.0,
+  duration: number = 1.0
 ): DriftSonification {
   const samples = Math.floor(sampleRate * duration);
   const signal: number[] = new Array(samples).fill(0);
@@ -632,12 +626,9 @@ export class DriftTracker {
     const magnitudes = this.buffer.map((c) => c.magnitude);
     const cvs = this.buffer.map((c) => c.cv);
 
-    const avgMagnitude = magnitudes.length > 0
-      ? magnitudes.reduce((s, m) => s + m, 0) / magnitudes.length
-      : 0;
-    const avgCV = cvs.length > 0
-      ? cvs.reduce((s, c) => s + c, 0) / cvs.length
-      : 0;
+    const avgMagnitude =
+      magnitudes.length > 0 ? magnitudes.reduce((s, m) => s + m, 0) / magnitudes.length : 0;
+    const avgCV = cvs.length > 0 ? cvs.reduce((s, c) => s + c, 0) / cvs.length : 0;
 
     const fractal = this.fractalDimension();
     const auth = this.buffer.length >= 2 ? this.assess() : { score: 0 };
@@ -749,11 +740,18 @@ function harmonicCoherence(tongues: number[]): number {
  * Simple linear regression: y = slope * x + intercept.
  * Returns slope and R² (coefficient of determination).
  */
-function linearRegression(x: number[], y: number[]): { slope: number; intercept: number; r2: number } {
+function linearRegression(
+  x: number[],
+  y: number[]
+): { slope: number; intercept: number; r2: number } {
   const n = x.length;
   if (n < 2) return { slope: 0, intercept: 0, r2: 0 };
 
-  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+  let sumX = 0,
+    sumY = 0,
+    sumXY = 0,
+    sumX2 = 0,
+    sumY2 = 0;
   for (let i = 0; i < n; i++) {
     sumX += x[i];
     sumY += y[i];
@@ -770,7 +768,8 @@ function linearRegression(x: number[], y: number[]): { slope: number; intercept:
 
   // R²
   const yMean = sumY / n;
-  let ssTot = 0, ssRes = 0;
+  let ssTot = 0,
+    ssRes = 0;
   for (let i = 0; i < n; i++) {
     ssTot += (y[i] - yMean) ** 2;
     ssRes += (y[i] - (slope * x[i] + intercept)) ** 2;
@@ -784,9 +783,4 @@ function linearRegression(x: number[], y: number[]): { slope: number; intercept:
 // Exports for barrel
 // ═══════════════════════════════════════════════════════════════
 
-export {
-  TONGUE_HARMONICS,
-  DEFAULT_BUFFER_CAPACITY,
-  SYNTHETIC_CV_THRESHOLD,
-  GENUINE_FRACTAL_MIN,
-};
+export { TONGUE_HARMONICS, DEFAULT_BUFFER_CAPACITY, SYNTHETIC_CV_THRESHOLD, GENUINE_FRACTAL_MIN };

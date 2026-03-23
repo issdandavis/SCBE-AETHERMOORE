@@ -28,11 +28,7 @@
  * spatial consensus (3+ neighbors) flags the agent.
  */
 
-import {
-  hyperbolicDistance,
-  phaseDeviation,
-  clampToBall,
-} from './harmonic/hyperbolic.js';
+import { hyperbolicDistance, phaseDeviation, clampToBall } from './harmonic/hyperbolic.js';
 import {
   TONGUE_PHASES,
   SUSPICION_DECAY,

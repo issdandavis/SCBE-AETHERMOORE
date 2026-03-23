@@ -281,7 +281,10 @@ export function applyTransform(
   };
 
   if (oracleResult.valid) {
-    updated.uncertaintyReduced = Math.min(1.0, encounter.uncertaintyReduced + 0.2 + oracleResult.reward * 0.1);
+    updated.uncertaintyReduced = Math.min(
+      1.0,
+      encounter.uncertaintyReduced + 0.2 + oracleResult.reward * 0.1
+    );
     if (updated.uncertaintyReduced >= 1.0) {
       updated.resolved = true;
     }

@@ -1,5 +1,7 @@
 {
-  "_comment": "Issac Davis — TY2025 Federal Return (from ADP W-2)",
+  "_comment": "Issac Davis — TY2025 Federal Return — COMPLETE",
+  "_generated": "2026-03-19 by SCBE Tax Tool + bank statement analysis",
+  "_filing_notes": "Schedule C loss + capital gains combined in other_income. For proper LTCG 0% rate, use IRS Free File.",
   "taxpayer": {
     "first_name": "Issac",
     "last_name": "Davis",
@@ -7,7 +9,7 @@
     "filing_status": "single",
     "age": 30,
     "is_blind": false,
-    "address": "2351 East 5th Avenue",
+    "address": "2361 E 5th Ave",
     "city": "Port Angeles",
     "state": "WA",
     "zip_code": "98362",
@@ -28,8 +30,21 @@
       "state_tax_withheld": 0.00
     }
   ],
-  "income_1099s": [],
-  "other_income": 0.00,
+  "income_1099s": [
+    {
+      "type": "DIV",
+      "payer_name": "Cash App Investing LLC / DriveWealth",
+      "amount": 145.27,
+      "federal_tax_withheld": 0.00
+    }
+  ],
+  "other_income": -2502.77,
+  "_other_income_breakdown": {
+    "schedule_c_net_loss": -3820.88,
+    "schedule_d_short_term_gain": 484.49,
+    "schedule_d_long_term_gain": 833.62,
+    "total": -2502.77
+  },
   "itemized_deductions": null,
   "credits": {
     "child_tax_credit_dependents": 0,

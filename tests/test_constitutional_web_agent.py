@@ -21,7 +21,7 @@ for candidate in (ROOT, ROOT / "src"):
     if candidate.exists() and str(candidate) not in sys.path:
         sys.path.insert(0, str(candidate))
 
-from browser.constitutionalWebAgent import (  # noqa: E402
+from src.browser.constitutionalWebAgent import (  # noqa: E402
     BrowseStep,
     ConstitutionalWebAgent,
     Decision,

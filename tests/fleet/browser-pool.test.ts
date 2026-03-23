@@ -33,23 +33,39 @@ import type { PageObservation } from '../../src/browser/types.js';
 function mockBackend(): BrowserBackend {
   let connected = false;
   return {
-    async initialize() { connected = true; },
+    async initialize() {
+      connected = true;
+    },
     async navigate() {},
     async click() {},
     async type() {},
     async scroll() {},
-    async executeScript<T>(): Promise<T> { return undefined as T; },
-    async screenshot() { return Buffer.from('mock'); },
+    async executeScript<T>(): Promise<T> {
+      return undefined as T;
+    },
+    async screenshot() {
+      return Buffer.from('mock');
+    },
     async observe(): Promise<PageObservation> {
       return {
-        url: 'about:blank', title: 'Mock', readyState: 'complete',
-        viewport: { width: 1280, height: 720 }, scroll: { x: 0, y: 0 },
-        interactiveElements: [], forms: [], dialogs: [],
-        loadTime: 100, timestamp: Date.now(),
+        url: 'about:blank',
+        title: 'Mock',
+        readyState: 'complete',
+        viewport: { width: 1280, height: 720 },
+        scroll: { x: 0, y: 0 },
+        interactiveElements: [],
+        forms: [],
+        dialogs: [],
+        loadTime: 100,
+        timestamp: Date.now(),
       };
     },
-    async close() { connected = false; },
-    isConnected() { return connected; },
+    async close() {
+      connected = false;
+    },
+    isConnected() {
+      return connected;
+    },
   };
 }
 
@@ -277,7 +293,12 @@ describe('D — Memory Budgeting', () => {
   });
 
   it('D4: memory pressure rises with usage', () => {
-    const pool = new BrowserPool({ maxMemoryMB: 600, estimatedInstanceMemoryMB: 150, maxInstances: 10, maxPerAgent: 10 });
+    const pool = new BrowserPool({
+      maxMemoryMB: 600,
+      estimatedInstanceMemoryMB: 150,
+      maxInstances: 10,
+      maxPerAgent: 10,
+    });
     expect(pool.memoryPressure).toBe('low');
 
     pool.acquire('a1', mockBackend()); // 150/600 = 25%
@@ -317,7 +338,12 @@ describe('D — Memory Budgeting', () => {
   });
 
   it('D8: updated memory estimates affect budget checks', () => {
-    const pool = new BrowserPool({ maxMemoryMB: 400, estimatedInstanceMemoryMB: 150, maxInstances: 10, maxPerAgent: 10 });
+    const pool = new BrowserPool({
+      maxMemoryMB: 400,
+      estimatedInstanceMemoryMB: 150,
+      maxInstances: 10,
+      maxPerAgent: 10,
+    });
     const r1 = pool.acquire('a1', mockBackend());
     pool.acquire('a2', mockBackend());
     // 300 MB used, 100 MB available
@@ -454,7 +480,7 @@ describe('F — Warm Reuse', () => {
     expect(r3.instance!.id).toBe(r1.instance!.id);
   });
 
-  it('F3: no reuse when tags don\'t match', () => {
+  it("F3: no reuse when tags don't match", () => {
     const r1 = pool.acquire('a1', mockBackend(), ['domain:a.com']);
     pool.release(r1.instance!.id);
 
@@ -611,7 +637,9 @@ describe('I — Shutdown', () => {
   it('I2: shutdown handles close errors gracefully', async () => {
     const pool = new BrowserPool();
     const failBackend = mockBackend();
-    failBackend.close = async () => { throw new Error('close failed'); };
+    failBackend.close = async () => {
+      throw new Error('close failed');
+    };
     pool.acquire('a1', failBackend);
 
     const closed = await pool.shutdown();

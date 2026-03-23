@@ -35,7 +35,12 @@
  *   - ai_brain/ImmuneResponseSystem → anomaly quarantine
  */
 
-import { CrawlMessageBus, type CrawlMessage, type CrawlChannel, type CrawlEventType } from './crawl-message-bus.js';
+import {
+  CrawlMessageBus,
+  type CrawlMessage,
+  type CrawlChannel,
+  type CrawlEventType,
+} from './crawl-message-bus.js';
 import { CrawlFrontier, type FrontierEntry, type FrontierConfig } from './crawl-frontier.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -61,9 +66,9 @@ export const ROLE_BRAID_MAP: Record<CrawlRole, { primary: -1 | 0 | 1; mirror: -1
 /** Valid role transitions (Chebyshev distance ≤ 1 in braid grid) */
 export const VALID_ROLE_TRANSITIONS: Record<CrawlRole, CrawlRole[]> = {
   scout: ['scout', 'analyzer', 'sentinel', 'reporter'], // (+1,0) → all within distance 1
-  analyzer: ['analyzer', 'scout', 'sentinel'],            // (+1,+1) → adjacent only
+  analyzer: ['analyzer', 'scout', 'sentinel'], // (+1,+1) → adjacent only
   sentinel: ['sentinel', 'scout', 'analyzer', 'reporter'], // (0,+1) → all within distance 1
-  reporter: ['reporter', 'scout', 'sentinel'],             // (0,0) → adjacent only
+  reporter: ['reporter', 'scout', 'sentinel'], // (0,0) → adjacent only
 };
 
 /** Crawl agent descriptor */
@@ -346,7 +351,7 @@ export class CrawlCoordinator {
 
     // Check concurrent limit
     const activeCrawlers = [...this.agents.values()].filter(
-      (a) => a.status === 'crawling' || a.status === 'analyzing',
+      (a) => a.status === 'crawling' || a.status === 'analyzing'
     ).length;
     if (activeCrawlers >= this.config.maxConcurrent) return null;
 
@@ -524,7 +529,7 @@ export class CrawlCoordinator {
   voteOnRoleSwitch(
     requestId: string,
     voterId: string,
-    approve: boolean,
+    approve: boolean
   ): 'approved' | 'denied' | 'pending' | 'not_found' {
     const request = this.roleSwitchRequests.get(requestId);
     if (!request || request.status !== 'pending') return 'not_found';
@@ -674,9 +679,7 @@ export class CrawlCoordinator {
       roleSwitchesDenied: this.roleSwitchesDenied,
       messagesExchanged: busStats.totalPublished,
       averageSafetyScore:
-        agents.length > 0
-          ? agents.reduce((s, a) => s + a.safetyScore, 0) / agents.length
-          : 0,
+        agents.length > 0 ? agents.reduce((s, a) => s + a.safetyScore, 0) / agents.length : 0,
     };
   }
 

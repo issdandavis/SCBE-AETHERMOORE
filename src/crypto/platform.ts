@@ -147,7 +147,7 @@ export function platformRandomBytes(length: number): Uint8Array {
 
   throw new Error(
     'No secure random source available. ' +
-    'Requires Web Crypto API (browser) or Node.js crypto module.',
+      'Requires Web Crypto API (browser) or Node.js crypto module.'
   );
 }
 
@@ -175,7 +175,7 @@ export function platformSHA256(data: string | Uint8Array): string {
   }
 
   throw new Error(
-    'Synchronous SHA-256 not available in this runtime. Use platformSHA256Async instead.',
+    'Synchronous SHA-256 not available in this runtime. Use platformSHA256Async instead.'
   );
 }
 

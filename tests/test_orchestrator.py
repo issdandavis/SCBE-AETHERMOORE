@@ -39,11 +39,11 @@ _orch = _load_module(
 
 
 class TestToolRegistration:
-    """Verify all 24 tools are registered on the unified server."""
+    """Verify all orchestrator tools are registered on the unified server."""
 
     def test_total_tool_count(self):
         tools = _orch.mcp._tool_manager.list_tools()
-        assert len(tools) == 30
+        assert len(tools) == 34
 
     def test_scbe_tools_registered(self):
         names = {t.name for t in _orch.mcp._tool_manager.list_tools()}
@@ -75,6 +75,14 @@ class TestToolRegistration:
         ]
         for n in expected:
             assert n in names, f"Training tool {n} missing"
+
+    def test_governed_web_tools_registered(self):
+        names = {t.name for t in _orch.mcp._tool_manager.list_tools()}
+        expected = [
+            "web_search", "web_fetch", "web_extract", "web_needs_js",
+        ]
+        for n in expected:
+            assert n in names, f"Governed web tool {n} missing"
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -219,6 +227,93 @@ class TestOrchSwarm:
         await _orch.hydra_swarm_launch(dry_run=True)
         result = json.loads(await _orch.hydra_swarm_navigate("https://example.com"))
         assert result["success"] is True
+
+
+class TestOrchGovernedWeb:
+    """Test governed web tools through the unified orchestrator."""
+
+    @pytest.mark.asyncio
+    async def test_web_search(self, monkeypatch):
+        async def fake_search(query: str, *, num_results: int = 8, agent_id: str = "KO"):
+            return {
+                "ok": True,
+                "query": query,
+                "result_count": 1,
+                "zone_counts": {"GREEN": 1, "YELLOW": 0, "RED": 0},
+                "governance": {"decision": "ALLOW", "zone": "YELLOW", "reason": "test", "latency_ms": 1.0},
+                "results": [
+                    {
+                        "title": "Example",
+                        "url": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+                        "snippet": "Repo",
+                        "source": "google",
+                        "zone": "GREEN",
+                        "threat_verdict": "CLEAN",
+                        "threat_risk": 0.0,
+                    }
+                ],
+            }
+
+        monkeypatch.setattr(_orch._gov_web, "search", fake_search)
+        result = json.loads(await _orch.web_search("scbe", num_results=1))
+        assert result["ok"] is True
+        assert result["results"][0]["zone"] == "GREEN"
+
+    @pytest.mark.asyncio
+    async def test_web_fetch_red_zone_quarantined(self, monkeypatch):
+        async def fake_fetch(url: str, *, engine: str = "auto", agent_id: str = "AV"):
+            return {
+                "ok": False,
+                "url": url,
+                "governance": {"decision": "QUARANTINE", "zone": "RED", "reason": "blocked", "latency_ms": 1.0},
+                "status": "quarantined",
+            }
+
+        monkeypatch.setattr(_orch._gov_web, "fetch", fake_fetch)
+        result = json.loads(await _orch.web_fetch("https://evil.example.com"))
+        assert result["ok"] is False
+        assert result["governance"]["zone"] == "RED"
+
+    @pytest.mark.asyncio
+    async def test_web_extract(self, monkeypatch):
+        async def fake_extract(url: str, *, pattern: str, agent_id: str = "AV"):
+            return {
+                "ok": True,
+                "url": url,
+                "pattern": pattern,
+                "governance": {"decision": "ALLOW", "zone": "GREEN", "reason": "ok", "latency_ms": 1.0},
+                "item_count": 1,
+                "threat_scan": {"verdict": "CLEAN", "risk_score": 0.0},
+                "membrane_action": "ALLOW",
+                "items": [{"pattern_name": "email", "value": "a@example.com", "context": "contact a@example.com"}],
+            }
+
+        monkeypatch.setattr(_orch._gov_web, "extract", fake_extract)
+        result = json.loads(await _orch.web_extract("https://example.com", "email"))
+        assert result["ok"] is True
+        assert result["items"][0]["value"] == "a@example.com"
+
+    @pytest.mark.asyncio
+    async def test_web_needs_js(self, monkeypatch):
+        async def fake_needs_js(url: str, *, agent_id: str = "AV"):
+            return {
+                "ok": True,
+                "url": url,
+                "governance": {"decision": "ALLOW", "zone": "GREEN", "reason": "ok", "latency_ms": 1.0},
+                "needs_js": True,
+                "reason": "SPA shell",
+                "content_length": 100,
+                "script_count": 12,
+                "noscript_present": True,
+                "meta_redirect": False,
+                "body_text_length": 10,
+                "elapsed_ms": 4.0,
+            }
+
+        monkeypatch.setattr(_orch._gov_web, "needs_js", fake_needs_js)
+        result = json.loads(await _orch.web_needs_js("https://app.example.com"))
+        assert result["ok"] is True
+        assert result["needs_js"] is True
 
     @pytest.mark.asyncio
     async def test_swarm_execute_task_dry(self):

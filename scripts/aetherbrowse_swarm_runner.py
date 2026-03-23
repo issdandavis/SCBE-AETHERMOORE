@@ -15,11 +15,12 @@ import urllib.error
 import urllib.request
 from urllib.parse import urlsplit
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Tuple
 
 HIGH_RISK = {"click", "type"}
 MAX_MISSION_BATCH = 50
+FOUR_RAIL_KEYS = ("P+", "P-", "D+", "D-")
 
 try:
     from agents.antivirus_membrane import scan_text_for_threats as _scan_text_for_threats
@@ -185,6 +186,64 @@ def _page_lock_id(job: Dict[str, Any]) -> str | None:
     return val if val else None
 
 
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _utc_str(value: datetime | None = None) -> str:
+    stamp = value or _utc_now()
+    return stamp.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _mission_id(job: Dict[str, Any], run_id: str) -> str:
+    explicit = str(job.get("mission_id", "")).strip()
+    if explicit:
+        return explicit
+    workflow_id = str(job.get("workflow_id", "")).strip()
+    if workflow_id:
+        return workflow_id
+    return f"mission-{run_id}"
+
+
+def _worker_id(job: Dict[str, Any], agent_id: str) -> str:
+    explicit = str(job.get("worker_id", "")).strip()
+    return explicit or agent_id
+
+
+def _normalize_lease(job: Dict[str, Any], worker_id: str, claimed_at: datetime | None = None) -> Dict[str, Any] | None:
+    base = dict(job.get("lease", {})) if isinstance(job.get("lease"), dict) else {}
+    raw_seconds = base.get("lease_seconds", job.get("lease_seconds"))
+    if not base and raw_seconds in (None, "", 0, "0"):
+        return None
+    claimed_at_dt = claimed_at or _utc_now()
+    claimed_at_utc = str(base.get("claimed_at_utc", "")).strip() or _utc_str(claimed_at_dt)
+    lease_seconds = int(raw_seconds or 0)
+    expires_at_utc = str(base.get("expires_at_utc", "")).strip()
+    if not expires_at_utc and lease_seconds > 0:
+        expires_at_utc = _utc_str(claimed_at_dt + timedelta(seconds=lease_seconds))
+    provider = str(base.get("provider", job.get("compute_provider", "local"))).strip() or "local"
+    resource_class = str(base.get("resource_class", job.get("resource_class", "browser"))).strip() or "browser"
+    lease_id = str(base.get("lease_id", "")).strip()
+    if not lease_id:
+        lease_seed = {
+            "job_id": str(job.get("job_id", "job")),
+            "worker_id": worker_id,
+            "provider": provider,
+            "resource_class": resource_class,
+            "claimed_at_utc": claimed_at_utc,
+        }
+        lease_id = f"lease-{_sha_t(_j(lease_seed))[:12]}"
+    return {
+        "lease_id": lease_id,
+        "owner": str(base.get("owner", "")).strip() or worker_id,
+        "provider": provider,
+        "resource_class": resource_class,
+        "lease_seconds": lease_seconds,
+        "claimed_at_utc": claimed_at_utc,
+        "expires_at_utc": expires_at_utc or None,
+    }
+
+
 def _canonical_nav_url(url: str) -> str:
     parsed = urlsplit(url.strip())
     scheme = (parsed.scheme or "https").lower()
@@ -316,6 +375,79 @@ def _scr_hashes(resp: Dict[str, Any], outdir: pathlib.Path | None, job_id: str, 
     return rows
 
 
+def _build_packet_rails(
+    job: Dict[str, Any],
+    out: Dict[str, Any],
+    verification: Dict[str, Any],
+    decision: str,
+    trace_hash: str,
+    antivirus_report: Dict[str, Any],
+) -> Dict[str, List[Dict[str, Any]]]:
+    intended = [
+        {
+            "type": "action",
+            "action": action["action"],
+            "target": action["target"],
+            "value_present": "value" in action,
+        }
+        for action in job["actions"]
+    ]
+    friction: List[Dict[str, Any]] = []
+    contradictions: List[Dict[str, Any]] = []
+    if out.get("request_error"):
+        friction.append({"type": "request_error", "message": str(out["request_error"])})
+    blocked_actions = int(out["response"].get("blocked_actions", 0) or 0)
+    if blocked_actions:
+        friction.append({"type": "blocked_actions", "count": blocked_actions})
+    for check in verification.get("checks", []):
+        if not check.get("passed", False):
+            friction.append({"type": "failed_check", "check": check.get("check", "unknown"), "detail": dict(check)})
+            contradictions.append({"type": "verification_mismatch", "check": check.get("check", "unknown")})
+    pqc_audit = out.get("pqc_audit", {})
+    pqc_status = str(pqc_audit.get("status", "")).upper()
+    if pqc_status in {"QUARANTINE", "DENY", "ERROR"}:
+        contradictions.append(
+            {
+                "type": "pqc_audit",
+                "status": pqc_status,
+                "reason": str(pqc_audit.get("reason", "pqc audit flagged job")),
+            }
+        )
+    turnstile_action = str(antivirus_report.get("turnstile_action", "")).upper()
+    if turnstile_action and turnstile_action not in {"ALLOW", "CLEAN"}:
+        contradictions.append({"type": "antivirus_turnstile", "action": turnstile_action})
+    confirmations: List[Dict[str, Any]] = [
+        {"type": "decision", "value": decision},
+        {"type": "verification_score", "value": verification["verification_score"]},
+        {"type": "trace_hash", "value": trace_hash},
+        {"type": "response_status", "value": out["response"].get("status", "unknown")},
+    ]
+    return {"P+": intended, "P-": friction, "D+": confirmations, "D-": contradictions}
+
+
+def _build_layer14_telemetry(
+    response: Dict[str, Any],
+    verification: Dict[str, Any],
+    rails: Dict[str, List[Dict[str, Any]]],
+    decision: str,
+) -> Dict[str, Any]:
+    total_actions = max(int(response.get("total_actions", 0) or 0), 1)
+    executed_actions = int(response.get("executed_actions", 0) or 0)
+    blocked_actions = int(response.get("blocked_actions", 0) or 0)
+    negative_events = len(rails.get("P-", [])) + len(rails.get("D-", []))
+    return {
+        "energy": round(executed_actions / total_actions, 4),
+        "centroid": round(float(verification.get("verification_score", 0.0)), 4),
+        "flux": round(negative_events / max(total_actions, 1), 4),
+        "hf_ratio": round(blocked_actions / total_actions, 4),
+        "stability": round(float(verification["metrics"]["coherence"]), 4),
+        "verification_score": round(float(verification.get("verification_score", 0.0)), 4),
+        "anomaly_ratio": round(len(rails.get("D-", [])) / max(len(rails.get("D+", [])) + len(rails.get("D-", [])), 1), 4),
+        "signal_class": decision.lower(),
+        "channel": "layer14-comms",
+    }
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description="Submit multiple browser jobs to AetherBrowse in parallel.")
     p.add_argument("--jobs-file", required=True)
@@ -378,14 +510,30 @@ def main() -> None:
         job_id = _sid(str(job.get("job_id", f"job-{i+1:03d}")))
         aid = str(job.get("agent_id", f"agent-{i+1}"))
         sid = str(job.get("session_id", f"{aid}-session"))
+        mission_id = _mission_id(job, run_id)
+        worker_id = _worker_id(job, aid)
+        lease = _normalize_lease(job, worker_id)
         tier = _tier(job)
         cap = _cap(job, tier)
-        payload = {"actions": job["actions"], "session_id": sid, "source": job.get("source", "swarm"), "workflow_id": job.get("workflow_id", "swarm-run"), "run_id": job.get("run_id", f"run-{int(time.time())}-{i+1}"), "dry_run": bool(job.get("dry_run", False))}
+        payload = {
+            "actions": job["actions"],
+            "session_id": sid,
+            "mission_id": mission_id,
+            "worker_id": worker_id,
+            "lease": lease,
+            "source": job.get("source", "swarm"),
+            "workflow_id": job.get("workflow_id", "swarm-run"),
+            "run_id": job.get("run_id", f"run-{int(time.time())}-{i+1}"),
+            "dry_run": bool(job.get("dry_run", False)),
+        }
         pqc_result = _pqc_audit(job, payload, tier)
         if pqc_result.get("status") in {"QUARANTINE", "DENY"}:
             cap = {**cap, "valid": False, "reason": f"pqc audit failed: {pqc_result.get('reason', 'quarantine')}"}
         payload_base = {
             "session_id": sid,
+            "mission_id": mission_id,
+            "worker_id": worker_id,
+            "lease": lease,
             "source": job.get("source", "swarm"),
             "workflow_id": job.get("workflow_id", "swarm-run"),
             "run_id": job.get("run_id", f"run-{run_id}-{i+1}"),
@@ -437,7 +585,22 @@ def main() -> None:
         else:
             err = cap["reason"]
             resp = {"status": "blocked_by_policy", "session_id": sid, "results": [], "total_actions": len(job["actions"]), "executed_actions": 0, "blocked_actions": len(job["actions"]), "trace": "policy_gate_blocked"}
-        return i, {"job_id": job_id, "agent_id": aid, "session_id": sid, "risk_tier": tier, "payload": payload, "response": resp, "capability": cap, "verify": job.get("verify", {}), "elapsed_ms": round((time.time() - t0) * 1000.0, 2), "request_error": err, "pqc_audit": pqc_result}
+        return i, {
+            "job_id": job_id,
+            "agent_id": aid,
+            "worker_id": worker_id,
+            "mission_id": mission_id,
+            "session_id": sid,
+            "lease": lease,
+            "risk_tier": tier,
+            "payload": payload,
+            "response": resp,
+            "capability": cap,
+            "verify": job.get("verify", {}),
+            "elapsed_ms": round((time.time() - t0) * 1000.0, 2),
+            "request_error": err,
+            "pqc_audit": pqc_result,
+        }
 
     with ThreadPoolExecutor(max_workers=max(1, a.concurrency)) as pool:
         futs = {pool.submit(run_one, i, j): i for i, j in enumerate(jobs)}
@@ -467,6 +630,8 @@ def main() -> None:
                 "pqc_audit": out.get("pqc_audit", {}),
             }
             trace_hash = _sha_t(_j(trace))
+            rails = _build_packet_rails(jobs[idx], out, v, decision, trace_hash, antivirus_report)
+            layer14 = _build_layer14_telemetry(out["response"], v, rails, decision)
             rec = {
                 "schema_version": "1.0.0",
                 "decision_id": f"{run_id}:{out['job_id']}",
@@ -475,6 +640,8 @@ def main() -> None:
                 "profile_id": a.profile_id,
                 "job_id": out["job_id"],
                 "agent_id": out["agent_id"],
+                "worker_id": out["worker_id"],
+                "mission_id": out["mission_id"],
                 "session_id": out["session_id"],
                 "workflow_id": str(out["payload"].get("workflow_id", "swarm-run")),
                 "runner_run_id": run_id,
@@ -484,8 +651,11 @@ def main() -> None:
                 "risk_tier": out["risk_tier"],
                 "metrics": {"risk": v["metrics"]["risk"], "d_star": v["metrics"]["d_star"], "coherence": v["metrics"]["coherence"], "verification_score": v["verification_score"]},
                 "capability": out["capability"],
+                "lease": out.get("lease"),
                 "pqc_audit": out.get("pqc_audit", {}),
                 "antivirus": antivirus_report,
+                "rails": rails,
+                "layer14": layer14,
                 "trace_hash": trace_hash,
                 "verification": {"score": v["verification_score"], "passed_checks": v["passed_checks"], "total_checks": v["total_checks"], "checks": v["checks"]},
             }
@@ -510,15 +680,26 @@ def main() -> None:
             sh = _scr_hashes(out["response"], shot_dir, out["job_id"], out["session_id"])
             pub = {"status": "noise", "detail": "suppressed by governance policy"} if decision == "NOISE" else out["response"]
             results[idx] = {
-                "job_id": out["job_id"], "agent_id": out["agent_id"], "session_id": out["session_id"], "risk_tier": out["risk_tier"],
+                "job_id": out["job_id"], "agent_id": out["agent_id"], "worker_id": out["worker_id"], "mission_id": out["mission_id"], "session_id": out["session_id"], "risk_tier": out["risk_tier"],
                 "decision": decision, "decision_reason": why, "verification_score": v["verification_score"], "decision_record_path": str(rp),
                 "trace_path": str(tp), "trace_hash": trace_hash, "screenshot_hashes": sh, "elapsed_ms": out["elapsed_ms"],
-                "request_error": out["request_error"], "response_status": out["response"].get("status"), "response": pub, "pqc_audit": out.get("pqc_audit", {}),
+                "request_error": out["request_error"], "response_status": out["response"].get("status"), "response": pub, "lease": out.get("lease"), "rails": rails, "layer14": layer14, "pqc_audit": out.get("pqc_audit", {}),
                 "antivirus": antivirus_report,
             }
             print(f"[job {idx+1}] job_id={out['job_id']} decision={decision} score={v['verification_score']} elapsed_ms={out['elapsed_ms']}")
 
-    summary = {"run_id": run_id, "kernel_version": a.kernel_version, "profile_id": a.profile_id, "total_jobs": len(jobs), "success_jobs": len([r for r in results if r is not None]), "failed_jobs": len(fails), "failures": fails, "results": results}
+    layer14_rows = [r["layer14"] for r in results if r is not None and isinstance(r.get("layer14"), dict)]
+    summary_layer14 = {
+        "channel": "layer14-comms",
+        "job_count": len(layer14_rows),
+        "energy": round(sum(float(row.get("energy", 0.0)) for row in layer14_rows) / max(len(layer14_rows), 1), 4),
+        "centroid": round(sum(float(row.get("centroid", 0.0)) for row in layer14_rows) / max(len(layer14_rows), 1), 4),
+        "flux": round(sum(float(row.get("flux", 0.0)) for row in layer14_rows) / max(len(layer14_rows), 1), 4),
+        "hf_ratio": round(sum(float(row.get("hf_ratio", 0.0)) for row in layer14_rows) / max(len(layer14_rows), 1), 4),
+        "stability": round(sum(float(row.get("stability", 0.0)) for row in layer14_rows) / max(len(layer14_rows), 1), 4),
+        "anomaly_ratio": round(sum(float(row.get("anomaly_ratio", 0.0)) for row in layer14_rows) / max(len(layer14_rows), 1), 4),
+    }
+    summary = {"run_id": run_id, "kernel_version": a.kernel_version, "profile_id": a.profile_id, "total_jobs": len(jobs), "success_jobs": len([r for r in results if r is not None]), "failed_jobs": len(fails), "failures": fails, "layer14": summary_layer14, "results": results}
     op = pathlib.Path(a.output_json) if a.output_json else (root / "summary.json")
     op.parent.mkdir(parents=True, exist_ok=True)
     op.write_text(json.dumps(summary, indent=2), encoding="utf-8")

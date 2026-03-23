@@ -1,6 +1,8 @@
 import pytest
 
 torch = pytest.importorskip("torch")
+if not hasattr(torch, "randn"):
+    pytest.skip("torch stub installed without tensor support", allow_module_level=True)
 
 from src.m4mesh.geometry import BlockGate
 from src.m4mesh.metrics import leakage_sensitivity

@@ -400,12 +400,18 @@ export function getAvailableEvolutions(companion: Companion): EvolutionPath[] {
 
   return paths.filter((path) => {
     // Check stage
-    if (companion.evolutionStage !== path.requiredStage && !isStageAtLeast(companion.evolutionStage, path.requiredStage)) {
+    if (
+      companion.evolutionStage !== path.requiredStage &&
+      !isStageAtLeast(companion.evolutionStage, path.requiredStage)
+    ) {
       return false;
     }
 
     // Check tongue requirements
-    for (const [tongue, minVal] of Object.entries(path.tongueRequirements) as [TongueCode, number][]) {
+    for (const [tongue, minVal] of Object.entries(path.tongueRequirements) as [
+      TongueCode,
+      number,
+    ][]) {
       const idx = TONGUE_CODES.indexOf(tongue);
       if (companion.state.tonguePosition[idx] < minVal) return false;
     }

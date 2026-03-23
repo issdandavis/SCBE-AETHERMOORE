@@ -140,10 +140,7 @@ describe('HyperbolicRAGEngine', () => {
     });
 
     it('should clear all documents', () => {
-      engine.addDocuments([
-        makeDoc('a', [0.1, 0, 0, 0, 0, 0]),
-        makeDoc('b', [0.2, 0, 0, 0, 0, 0]),
-      ]);
+      engine.addDocuments([makeDoc('a', [0.1, 0, 0, 0, 0, 0]), makeDoc('b', [0.2, 0, 0, 0, 0, 0])]);
       engine.clear();
       expect(engine.size).toBe(0);
     });
@@ -181,10 +178,7 @@ describe('HyperbolicRAGEngine', () => {
     });
 
     it('should return a valid RetrievalSummary', () => {
-      engine.addDocuments([
-        makeDoc('a', [0.1, 0, 0, 0, 0, 0]),
-        makeDoc('b', [0.2, 0, 0, 0, 0, 0]),
-      ]);
+      engine.addDocuments([makeDoc('a', [0.1, 0, 0, 0, 0, 0]), makeDoc('b', [0.2, 0, 0, 0, 0, 0])]);
 
       const summary = engine.retrieve([0.1, 0, 0, 0, 0, 0], 0);
       expect(summary.totalCost).toBeGreaterThan(0);
@@ -245,7 +239,9 @@ describe('HyperbolicRAGEngine', () => {
 
       // Cheap documents should be included, expensive ones should be excluded by budget
       const includedIds = new Set(result.results.map((r) => r.id));
-      expect(includedIds.has('cheap1') || includedIds.has('cheap2') || includedIds.has('cheap3')).toBe(true);
+      expect(
+        includedIds.has('cheap1') || includedIds.has('cheap2') || includedIds.has('cheap3')
+      ).toBe(true);
       expect(result.totalCost).toBeLessThanOrEqual(5);
     });
 
@@ -276,7 +272,12 @@ describe('HyperbolicRAGEngine', () => {
       }
       // Adversarial documents positioned near boundary
       for (let i = 0; i < 5; i++) {
-        eng.addDocument(makeDoc(`adv${i}`, randomBallPoint(6, 0.1).map((x) => x + 0.85)));
+        eng.addDocument(
+          makeDoc(
+            `adv${i}`,
+            randomBallPoint(6, 0.1).map((x) => x + 0.85)
+          )
+        );
       }
 
       const result = eng.retrieve([0.1, 0.1, 0, 0, 0, 0], 0);
@@ -293,8 +294,8 @@ describe('HyperbolicRAGEngine', () => {
   describe('Tongue-biased retrieval', () => {
     it('should prefer documents near the specified tongue realm', () => {
       engine.addDocuments([
-        makeDoc('ko-doc', [0.25, 0, 0, 0, 0, 0]),  // near KO center [0.3, 0, ...]
-        makeDoc('dr-doc', [0, 0, 0, 0, 0, 0.25]),   // near DR center [..., 0.3]
+        makeDoc('ko-doc', [0.25, 0, 0, 0, 0, 0]), // near KO center [0.3, 0, ...]
+        makeDoc('dr-doc', [0, 0, 0, 0, 0, 0.25]), // near DR center [..., 0.3]
       ]);
 
       const koResult = engine.retrieveByTongue([0, 0, 0, 0, 0, 0], 0, 'KO');
@@ -307,7 +308,9 @@ describe('HyperbolicRAGEngine', () => {
     });
 
     it('should throw for unknown tongue', () => {
-      expect(() => engine.retrieveByTongue([0, 0, 0, 0, 0, 0], 0, 'INVALID')).toThrow('Unknown tongue');
+      expect(() => engine.retrieveByTongue([0, 0, 0, 0, 0, 0], 0, 'INVALID')).toThrow(
+        'Unknown tongue'
+      );
     });
   });
 

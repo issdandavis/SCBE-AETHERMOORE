@@ -274,10 +274,7 @@ function quantize(value: number, threshold: number): TernaryValue {
  * @param threshold - Quantization threshold
  * @returns Array of dual ternary states
  */
-export function encodeSequence(
-  values: number[],
-  threshold: number = 0.33
-): DualTernaryState[] {
+export function encodeSequence(values: number[], threshold: number = 0.33): DualTernaryState[] {
   const states: DualTernaryState[] = [];
 
   for (let i = 0; i < values.length - 1; i += 2) {
@@ -337,12 +334,8 @@ export function computeSpectrum(
   const mirrorDFT = simpleDFT(mirrorSignal);
 
   // Magnitudes
-  const primaryMagnitudes = primaryDFT.map((c) =>
-    Math.sqrt(c.re * c.re + c.im * c.im)
-  );
-  const mirrorMagnitudes = mirrorDFT.map((c) =>
-    Math.sqrt(c.re * c.re + c.im * c.im)
-  );
+  const primaryMagnitudes = primaryDFT.map((c) => Math.sqrt(c.re * c.re + c.im * c.im));
+  const mirrorMagnitudes = mirrorDFT.map((c) => Math.sqrt(c.re * c.re + c.im * c.im));
 
   // Cross-correlation: conj(P) × M
   const crossCorrelation = primaryDFT.map((p, i) => {
@@ -369,10 +362,7 @@ export function computeSpectrum(
   const totalMirrorEnergy = mirrorMagnitudes.reduce((s, v) => s + v * v, 0);
   const totalCross = crossCorrelation.reduce((s, v) => s + Math.abs(v), 0);
   const totalEnergy = totalPrimaryEnergy + totalMirrorEnergy;
-  const coherence =
-    totalEnergy > BRAIN_EPSILON
-      ? totalCross / (totalEnergy + BRAIN_EPSILON)
-      : 0;
+  const coherence = totalEnergy > BRAIN_EPSILON ? totalCross / (totalEnergy + BRAIN_EPSILON) : 0;
 
   // Phase anomaly: detect sign bias
   // Normal: balanced positive/negative → low anomaly
@@ -466,7 +456,7 @@ export function estimateFractalDimension(
 
   // Hausdorff dimension estimate
   // D = base + sign_entropy_contribution + interaction_term
-  const interactionTerm = selfSimilarity * symmetryBreaking * Math.log(PHI) / Math.log(3);
+  const interactionTerm = (selfSimilarity * symmetryBreaking * Math.log(PHI)) / Math.log(3);
   const hausdorffDimension = baseDimension + signEntropy + interactionTerm;
 
   return {
@@ -485,10 +475,7 @@ export function estimateFractalDimension(
  * (positive vs negative states). Higher sign entropy → higher
  * effective dimension.
  */
-function computeSignEntropy(
-  sequence: DualTernaryState[],
-  config: DualTernaryConfig
-): number {
+function computeSignEntropy(sequence: DualTernaryState[], config: DualTernaryConfig): number {
   // Count sign patterns: (signP, signM) where sign ∈ {-, 0, +}
   const signPatterns = new Array(9).fill(0);
   for (const s of sequence) {
@@ -548,10 +535,7 @@ function computeSymmetryBreaking(sequence: DualTernaryState[]): number {
  * Compares energy distribution at successive halvings of the sequence.
  * True fractal patterns maintain similar statistics at all scales.
  */
-function computeSelfSimilarity(
-  sequence: DualTernaryState[],
-  config: DualTernaryConfig
-): number {
+function computeSelfSimilarity(sequence: DualTernaryState[], config: DualTernaryConfig): number {
   const maxDepth = Math.min(config.mirrorDepth, Math.floor(Math.log2(sequence.length)));
   if (maxDepth < 2) return 0;
 
@@ -656,23 +640,17 @@ export class DualTernarySystem {
     const spectrum = this.analyzeSpectrum();
     const fractal = this.analyzeFractalDimension();
 
-    const phaseAnomalyDetected =
-      spectrum.phaseAnomaly >= this.config.phaseAnomalyThreshold;
+    const phaseAnomalyDetected = spectrum.phaseAnomaly >= this.config.phaseAnomalyThreshold;
 
     // Fractal anomaly: dimension deviates too far from expected
     const expectedDimension = 2.0; // log(9)/log(3)
-    const fractalDeviation = Math.abs(
-      fractal.hausdorffDimension - expectedDimension
-    );
-    const fractalAnomalyDetected =
-      fractalDeviation > this.config.fractalDeviationThreshold;
+    const fractalDeviation = Math.abs(fractal.hausdorffDimension - expectedDimension);
+    const fractalAnomalyDetected = fractalDeviation > this.config.fractalDeviationThreshold;
 
     // Combined threat score
     const threatScore = Math.min(
       1,
-      spectrum.phaseAnomaly * 0.4 +
-        spectrum.ninefoldEnergy * 0.3 +
-        (fractalDeviation / 2) * 0.3
+      spectrum.phaseAnomaly * 0.4 + spectrum.ninefoldEnergy * 0.3 + (fractalDeviation / 2) * 0.3
     );
 
     return {

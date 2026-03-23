@@ -33,10 +33,7 @@ export class ScienceMode extends BaseMode {
     // Persist sample data and hypotheses
   }
 
-  protected doExecuteAction(
-    action: string,
-    params: Record<string, unknown>
-  ): ModeActionResult {
+  protected doExecuteAction(action: string, params: Record<string, unknown>): ModeActionResult {
     switch (action) {
       case 'collect_sample':
         return this.collectSample(params);
@@ -59,7 +56,7 @@ export class ScienceMode extends BaseMode {
   }
 
   private collectSample(params: Record<string, unknown>): ModeActionResult {
-    const location = params.location as string || 'unknown';
+    const location = (params.location as string) || 'unknown';
     const samples = this.stateData.samples as Array<Record<string, unknown>>;
 
     const sample = {
@@ -120,7 +117,7 @@ export class ScienceMode extends BaseMode {
   }
 
   private testHypothesis(params: Record<string, unknown>): ModeActionResult {
-    const hypothesis = params.hypothesis as string || 'unknown';
+    const hypothesis = (params.hypothesis as string) || 'unknown';
     const hypotheses = this.stateData.hypotheses as Array<Record<string, unknown>>;
 
     const result = {
@@ -142,7 +139,7 @@ export class ScienceMode extends BaseMode {
   }
 
   private interpretData(params: Record<string, unknown>): ModeActionResult {
-    const datasetId = params.datasetId as string || 'latest';
+    const datasetId = (params.datasetId as string) || 'latest';
 
     return {
       success: true,

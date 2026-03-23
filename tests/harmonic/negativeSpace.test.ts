@@ -276,10 +276,8 @@ describe('createSignedEmbedding', () => {
 // contrastiveDistance
 // ---------------------------------------------------------------------------
 describe('contrastiveDistance', () => {
-  const makeEmbedding = (
-    features: number[],
-    intent: number,
-  ) => createSignedEmbedding(features, intent);
+  const makeEmbedding = (features: number[], intent: number) =>
+    createSignedEmbedding(features, intent);
 
   describe('basic distance properties', () => {
     it('distance from embedding to itself is zero or near-zero', () => {
@@ -686,7 +684,11 @@ describe('cross-function integration', () => {
     const shadowEmb = createSignedEmbedding([0.5, 0.5, 0.5, 0.5], -0.9);
     const anotherLight = createSignedEmbedding([0.1, 0.2, 0.1, 0.2], 0.8);
 
-    if (lightEmb.realm === 'light' && anotherLight.realm === 'light' && shadowEmb.realm === 'shadow') {
+    if (
+      lightEmb.realm === 'light' &&
+      anotherLight.realm === 'light' &&
+      shadowEmb.realm === 'shadow'
+    ) {
       const sameRealmSim = signedCosineSimilarity(lightEmb.vector, anotherLight.vector);
       const crossRealmSim = signedCosineSimilarity(lightEmb.vector, shadowEmb.vector);
       // Light-light should generally have higher pseudo-similarity than light-shadow

@@ -49,11 +49,7 @@ export {
 export type { HatchResult } from './sacredEggs.js';
 
 // Branching evolution system
-export {
-  getAvailableEvolutions,
-  evolveCompanion,
-  getAllEvolutionTrees,
-} from './evolution.js';
+export { getAvailableEvolutions, evolveCompanion, getAllEvolutionTrees } from './evolution.js';
 export type { EvolutionPath } from './evolution.js';
 
 // Symbiotic network (graph Laplacian topology)
@@ -114,12 +110,7 @@ export type {
 } from './microLedger.js';
 
 // Energy token system (Human Currency → Compute Bridge)
-export {
-  SECONDS_PER_TOKEN,
-  TOKEN_PACKAGES,
-  ACTIVITY_COSTS,
-  EnergyWallet,
-} from './energyToken.js';
+export { SECONDS_PER_TOKEN, TOKEN_PACKAGES, ACTIVITY_COSTS, EnergyWallet } from './energyToken.js';
 export type {
   TokenPackage,
   ActivityCost,

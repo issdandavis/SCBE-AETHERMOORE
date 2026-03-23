@@ -84,4 +84,3 @@ export class VoxelStore {
     return this.merkle(next);
   }
 }
-

@@ -112,9 +112,7 @@ describe('HyperbolicRAG', () => {
     it('should include metadata in results', () => {
       const rag = new HyperbolicRAG({ costThreshold: 100.0 });
       const query = [0.1, 0.1];
-      const candidates = [
-        makeCandidate('a', [0.12, 0.11], undefined, { source: 'doc1' }),
-      ];
+      const candidates = [makeCandidate('a', [0.12, 0.11], undefined, { source: 'doc1' })];
 
       const results = rag.retrieve(query, candidates);
       expect(results.length).toBe(1);

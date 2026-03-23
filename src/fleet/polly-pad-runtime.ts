@@ -172,11 +172,7 @@ export function createPadRuntime(
  *
  * @returns true if promotion is allowed
  */
-export function canPromoteToSafe(
-  pad: PadRuntime,
-  state: UnitState,
-  quorumVotes?: number
-): boolean {
+export function canPromoteToSafe(pad: PadRuntime, state: UnitState, quorumVotes?: number): boolean {
   const decision = scbeDecide(state.dStar, state.coherence, state.hEff, pad.thresholds);
   if (decision !== 'ALLOW') return false;
   if (quorumVotes !== undefined && quorumVotes < 4) return false;

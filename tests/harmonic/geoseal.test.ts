@@ -31,12 +31,7 @@ import { computeMetrics, checkPerformanceThresholds } from '../../src/geosealMet
 // Helpers
 // ═══════════════════════════════════════════════════════════════
 
-function makeAgent(
-  id: string,
-  pos: number[],
-  phase: number | null,
-  tongue?: string
-): Agent {
+function makeAgent(id: string, pos: number[], phase: number | null, tongue?: string): Agent {
   return createAgent(id, pos, phase, tongue, phase !== null ? 1.0 : 0.5);
 }
 
@@ -65,9 +60,7 @@ describe('Hyperbolic distance', () => {
     const origin = [0, 0, 0];
     const near = [0.1, 0, 0];
     const far = [0.5, 0, 0];
-    expect(hyperbolicDistance(origin, near)).toBeLessThan(
-      hyperbolicDistance(origin, far)
-    );
+    expect(hyperbolicDistance(origin, near)).toBeLessThan(hyperbolicDistance(origin, far));
   });
 
   it('returns large distance near boundary', () => {

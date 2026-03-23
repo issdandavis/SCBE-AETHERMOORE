@@ -38,7 +38,7 @@ function safeParams(overrides?: Record<string, unknown>) {
 /** Create tongue results with specific failures */
 function tonguesWithFailures(
   failures: Array<'KO' | 'AV' | 'RU' | 'CA' | 'UM' | 'DR'>,
-  lowConfidence: boolean = false,
+  lowConfidence: boolean = false
 ): ReturnType<typeof allTonguesPassing> {
   const tongues = allTonguesPassing();
   for (const t of tongues) {
@@ -52,9 +52,7 @@ function tonguesWithFailures(
 }
 
 /** Create tongue results where several have low confidence */
-function tonguesWithLowConfidence(
-  count: number,
-): ReturnType<typeof allTonguesPassing> {
+function tonguesWithLowConfidence(count: number): ReturnType<typeof allTonguesPassing> {
   const tongues = allTonguesPassing();
   for (let i = 0; i < count && i < tongues.length; i++) {
     tongues[i]!.confidence = 0.3;
@@ -128,7 +126,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.3,
           tongueResults: tonguesWithFailures(['AV']),
-        }),
+        })
       );
       expect(snap.diagnosticState).toBe('WATCH');
       expect(snap.severity).toBe('advisory');
@@ -153,7 +151,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.5,
           tongueResults: tonguesWithLowConfidence(3),
-        }),
+        })
       );
       expect(snap.diagnosticState).toBe('RETEST');
       expect(snap.recommendedAction).toBe('retest_immediate');
@@ -166,7 +164,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.5,
           tongueResults: tonguesWithLowConfidence(3),
-        }),
+        })
       );
       expect(snap.diagnosticState).toBe('RETEST');
       expect(snap.recommendedAction).toBe('retest_delayed');
@@ -178,7 +176,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.5,
           tongueResults: tonguesWithLowConfidence(3),
-        }),
+        })
       );
       expect(snap0.retestCooldownMs).toBe(30_000);
 
@@ -188,7 +186,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.5,
           tongueResults: tonguesWithLowConfidence(3),
-        }),
+        })
       );
       expect(snap1.retestCooldownMs).toBe(60_000); // 30s * 2^1
 
@@ -197,7 +195,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.5,
           tongueResults: tonguesWithLowConfidence(3),
-        }),
+        })
       );
       expect(snap2.retestCooldownMs).toBe(120_000); // 30s * 2^2
     });
@@ -210,7 +208,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.5,
           tongueResults: tonguesWithLowConfidence(3),
-        }),
+        })
       );
       expect(snap.diagnosticState).toBe('TRIAGE');
       expect(snap.recommendedAction).toBe('human_classify');
@@ -245,7 +243,7 @@ describe('DiagnosticEngine', () => {
           // With default projectionTtlMs = 3600000ms (1hr),
           // projected = 0.5 - 0.001 * 3600 = 0.5 - 3.6 = 0 (clamped)
           // So projectedTrustAtExpiry < 0.15 and riskScore > passThreshold
-        }),
+        })
       );
       expect(snap.diagnosticState).toBe('DEFERRED');
       expect(snap.recommendedAction).toBe('hold_for_window');
@@ -264,7 +262,7 @@ describe('DiagnosticEngine', () => {
           riskScore: 0.35,
           trustScore: 0.8,
           trustVelocity: -0.1, // Below degradedTrustVelocity of -0.05
-        }),
+        })
       );
       expect(snap.diagnosticState).toBe('DEGRADED');
       expect(snap.severity).toBe('advisory');
@@ -277,7 +275,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.1,
           trustVelocity: -0.1,
-        }),
+        })
       );
       // Risk below passThreshold, so DEGRADED check skipped → PASS
       expect(snap.diagnosticState).toBe('PASS');
@@ -294,7 +292,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.5,
           tongueResults: tonguesWithFailures(['KO', 'AV', 'RU', 'CA']),
-        }),
+        })
       );
       // 4 failures → only 2 passing, below isolateTongueThreshold of 3
       expect(snap.diagnosticState).toBe('ISOLATED');
@@ -314,7 +312,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.5,
           tongueResults: tonguesWithFailures(['UM']),
-        }),
+        })
       );
       expect(snap.diagnosticState).toBe('FLAGGED');
       expect(snap.severity).toBe('caution');
@@ -347,7 +345,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.9,
           tongueResults: tonguesWithFailures(['UM']),
-        }),
+        })
       );
       expect(snap.diagnosticState).toBe('REJECTED');
       expect(snap.severity).toBe('critical');
@@ -360,7 +358,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.9,
           tongueResults: tonguesWithFailures(['RU']),
-        }),
+        })
       );
       expect(snap.diagnosticState).toBe('REJECTED');
       expect(snap.legacyDecision).toBe('DENY');
@@ -383,7 +381,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           trustScore: 0.8,
           trustVelocity: -0.01,
-        }),
+        })
       );
       // projected = 0.8 - 0.001 * 3600 = 0.8 - 3.6 = 0 (clamped to 0)
       expect(snap.projectedTrustAtExpiry).toBe(0);
@@ -396,7 +394,7 @@ describe('DiagnosticEngine', () => {
           trustVelocity: 0.01,
           // Default decay: 0.001/s * 3600s = 3.6
           // projected = max(0, 0.95 - 3.6) = 0
-        }),
+        })
       );
       // Even stable actors decay over 1hr projection with 0.001/s rate
       expect(snap.projectedTrustAtExpiry).toBe(0);
@@ -463,7 +461,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.2,
           trustScore: 0.6,
-        }),
+        })
       );
       expect(snap.autoReleaseEligible).toBe(true);
     });
@@ -473,7 +471,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.7,
           trustScore: 0.8,
-        }),
+        })
       );
       expect(snap.autoReleaseEligible).toBe(false);
     });
@@ -483,7 +481,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.2,
           trustScore: 0.2,
-        }),
+        })
       );
       expect(snap.autoReleaseEligible).toBe(false);
     });
@@ -499,7 +497,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.9,
           tongueResults: tonguesWithFailures(['UM', 'RU']),
-        }),
+        })
       );
       const triggered = snap.tongueDiagnostics.filter((t) => t.triggered);
       expect(triggered.length).toBeGreaterThanOrEqual(1);
@@ -552,7 +550,7 @@ describe('DiagnosticEngine', () => {
         safeParams({
           riskScore: 0.5,
           tongueResults: tonguesWithFailures(['AV', 'DR']),
-        }),
+        })
       );
       expect(snap.diagnosticState).toBe('ISOLATED');
     });

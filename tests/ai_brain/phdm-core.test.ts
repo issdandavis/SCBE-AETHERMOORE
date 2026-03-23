@@ -146,12 +146,12 @@ describe('6D Langues Space Decomposition', () => {
     const state21D = [0.9, 0.85, 0.8, 0.75, 0.7, 0.65, ...new Array(15).fill(0)];
     const langues = brainStateToLangues(state21D);
 
-    expect(langues.x1).toBe(0.9);   // KO: deviceTrust
-    expect(langues.x2).toBe(0.85);  // AV: locationTrust
-    expect(langues.x3).toBe(0.8);   // RU: networkTrust
-    expect(langues.x4).toBe(0.75);  // CA: behaviorScore
-    expect(langues.x5).toBe(0.7);   // UM: timeOfDay
-    expect(langues.x6).toBe(0.65);  // DR: intentAlignment
+    expect(langues.x1).toBe(0.9); // KO: deviceTrust
+    expect(langues.x2).toBe(0.85); // AV: locationTrust
+    expect(langues.x3).toBe(0.8); // RU: networkTrust
+    expect(langues.x4).toBe(0.75); // CA: behaviorScore
+    expect(langues.x5).toBe(0.7); // UM: timeOfDay
+    expect(langues.x6).toBe(0.65); // DR: intentAlignment
   });
 
   it('should throw for state with fewer than 6 dimensions', () => {
@@ -240,8 +240,15 @@ describe('Geodesic Monitoring', () => {
   it('should monitor a safe state on the geodesic', () => {
     // Get the centroid of the first polyhedron as a "safe" state
     const centroid = computeCentroid(CANONICAL_POLYHEDRA[0]);
-    const state21D = [centroid.x1, centroid.x2, centroid.x3, centroid.x4, centroid.x5, centroid.x6,
-      ...new Array(15).fill(0)];
+    const state21D = [
+      centroid.x1,
+      centroid.x2,
+      centroid.x3,
+      centroid.x4,
+      centroid.x5,
+      centroid.x6,
+      ...new Array(15).fill(0),
+    ];
 
     const result = core.monitor(state21D, 0);
 
@@ -256,8 +263,15 @@ describe('Geodesic Monitoring', () => {
 
   it('should produce low deviation for on-geodesic states', () => {
     const centroid = computeCentroid(CANONICAL_POLYHEDRA[0]);
-    const state21D = [centroid.x1, centroid.x2, centroid.x3, centroid.x4, centroid.x5, centroid.x6,
-      ...new Array(15).fill(0)];
+    const state21D = [
+      centroid.x1,
+      centroid.x2,
+      centroid.x3,
+      centroid.x4,
+      centroid.x5,
+      centroid.x6,
+      ...new Array(15).fill(0),
+    ];
 
     const result = core.monitor(state21D, 0);
     expect(result.intrusion.deviation).toBeLessThan(0.05);
@@ -301,8 +315,15 @@ describe('Geodesic Monitoring', () => {
 
   it('should build rhythm pattern as 1s and 0s', () => {
     const centroid = computeCentroid(CANONICAL_POLYHEDRA[0]);
-    const safeState = [centroid.x1, centroid.x2, centroid.x3, centroid.x4, centroid.x5, centroid.x6,
-      ...new Array(15).fill(0)];
+    const safeState = [
+      centroid.x1,
+      centroid.x2,
+      centroid.x3,
+      centroid.x4,
+      centroid.x5,
+      centroid.x6,
+      ...new Array(15).fill(0),
+    ];
 
     core.monitor(safeState, 0);
     core.monitor(safeState, 0.05);
@@ -411,8 +432,15 @@ describe('PHDM → Flux Integration', () => {
 
   it('should give high flux for on-geodesic states', () => {
     const centroid = computeCentroid(CANONICAL_POLYHEDRA[0]);
-    const state21D = [centroid.x1, centroid.x2, centroid.x3, centroid.x4, centroid.x5, centroid.x6,
-      ...new Array(15).fill(0)];
+    const state21D = [
+      centroid.x1,
+      centroid.x2,
+      centroid.x3,
+      centroid.x4,
+      centroid.x5,
+      centroid.x6,
+      ...new Array(15).fill(0),
+    ];
 
     const result = core.monitor(state21D, 0);
     const flux = core.applyToFlux(fluxManager, 'agent-safe', result, 'healthy');
@@ -482,8 +510,15 @@ describe('PHDM Snap Threshold False Positive Analysis', () => {
     for (let i = 0; i < totalSteps; i++) {
       const t = i / (totalSteps - 1);
       const centroid = computeCentroid(CANONICAL_POLYHEDRA[i]);
-      const state21D = [centroid.x1, centroid.x2, centroid.x3, centroid.x4, centroid.x5, centroid.x6,
-        ...new Array(15).fill(0)];
+      const state21D = [
+        centroid.x1,
+        centroid.x2,
+        centroid.x3,
+        centroid.x4,
+        centroid.x5,
+        centroid.x6,
+        ...new Array(15).fill(0),
+      ];
 
       const result = core.monitor(state21D, t);
       // Check deviation only — curvature reflects the geodesic's own shape,
@@ -508,8 +543,15 @@ describe('PHDM Snap Threshold False Positive Analysis', () => {
     for (let i = 0; i < 16; i++) {
       const t = i / 15;
       const centroid = computeCentroid(CANONICAL_POLYHEDRA[i]);
-      const state21D = [centroid.x1, centroid.x2, centroid.x3, centroid.x4, centroid.x5, centroid.x6,
-        ...new Array(15).fill(0)];
+      const state21D = [
+        centroid.x1,
+        centroid.x2,
+        centroid.x3,
+        centroid.x4,
+        centroid.x5,
+        centroid.x6,
+        ...new Array(15).fill(0),
+      ];
 
       const result = core.monitor(state21D, t);
       deviations.push(result.intrusion.deviation);
@@ -612,9 +654,10 @@ describe('PHDM-Enabled Brain Integration Pipeline', () => {
 
     expect(pipeline.phdmCore).not.toBeNull();
 
-    const trajectory = generateTrajectory(
-      'honest-phdm-001', AGENT_PROFILES.honest, { ...defaultSimConfig, seed: 999 }
-    );
+    const trajectory = generateTrajectory('honest-phdm-001', AGENT_PROFILES.honest, {
+      ...defaultSimConfig,
+      seed: 999,
+    });
     const assessment = pipeline.processAgent(trajectory);
 
     expect(assessment.phdmResult).toBeDefined();
@@ -629,9 +672,10 @@ describe('PHDM-Enabled Brain Integration Pipeline', () => {
       phdmKyberParams: makeDeterministicParams(),
     });
 
-    const trajectory = generateTrajectory(
-      'mal-phdm-001', AGENT_PROFILES.malicious, { ...defaultSimConfig, seed: 888 }
-    );
+    const trajectory = generateTrajectory('mal-phdm-001', AGENT_PROFILES.malicious, {
+      ...defaultSimConfig,
+      seed: 888,
+    });
     const assessment = pipeline.processAgent(trajectory);
 
     expect(assessment.phdmResult).toBeDefined();
@@ -646,9 +690,10 @@ describe('PHDM-Enabled Brain Integration Pipeline', () => {
 
     expect(pipeline.phdmCore).toBeNull();
 
-    const trajectory = generateTrajectory(
-      'honest-no-phdm', AGENT_PROFILES.honest, { ...defaultSimConfig, seed: 777 }
-    );
+    const trajectory = generateTrajectory('honest-no-phdm', AGENT_PROFILES.honest, {
+      ...defaultSimConfig,
+      seed: 777,
+    });
     const assessment = pipeline.processAgent(trajectory);
 
     expect(assessment.phdmResult).toBeUndefined();

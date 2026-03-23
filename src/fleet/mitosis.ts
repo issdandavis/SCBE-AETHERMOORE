@@ -191,7 +191,9 @@ export class MitosisManager {
     childName?: string,
     specialization?: AgentCapability[],
     now: number = Date.now()
-  ): { record: MitosisRecord; childDefinition: Partial<FleetAgent> } | { record: MitosisRecord; childDefinition: null } {
+  ):
+    | { record: MitosisRecord; childDefinition: Partial<FleetAgent> }
+    | { record: MitosisRecord; childDefinition: null } {
     const eligibility = this.checkEligibility(parent, flux, now);
 
     const recordId = `mitosis-${this.nextId++}`;
@@ -211,16 +213,15 @@ export class MitosisManager {
     }
 
     // PROPHASE: Duplicate state
-    const childTrustVector = parent.trustVector.map(
-      (t) => t * this.config.trustInheritanceFactor
-    );
+    const childTrustVector = parent.trustVector.map((t) => t * this.config.trustInheritanceFactor);
 
     // METAPHASE: Differentiate capabilities
     const childCapabilities = specialization ?? [...parent.capabilities];
 
     // ANAPHASE: Prepare child definition
     const childDepth = parentDepth + 1;
-    const generatedName = childName ?? `${parent.name}-child-${(this.genealogy.get(parent.id)?.length ?? 0) + 1}`;
+    const generatedName =
+      childName ?? `${parent.name}-child-${(this.genealogy.get(parent.id)?.length ?? 0) + 1}`;
 
     const childDefinition: Partial<FleetAgent> = {
       name: generatedName,

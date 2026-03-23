@@ -28,11 +28,11 @@ export interface ServiceConnector {
   zone: Zone;
   baseUrl: string;
   authType: 'bearer' | 'basic' | 'oauth2' | 'apikey' | 'local';
-  envKey: string;           // env var name for the token
-  endpoints: string[];      // allowed API paths
+  envKey: string; // env var name for the token
+  endpoints: string[]; // allowed API paths
   rateLimitPerMin: number;
   basin: 'dropbox' | 'local' | 'both'; // where data lands
-  riverId?: string;         // optional link to Basin access point
+  riverId?: string; // optional link to Basin access point
   accessPolicy?: Partial<ServiceAccessPolicy>;
 }
 
@@ -42,8 +42,8 @@ export interface HyperLaneRequest {
   category?: string;
   path: string;
   payload?: unknown;
-  agentId: string;          // who is asking
-  intent: number;           // 0-1 intent score from governance
+  agentId: string; // who is asking
+  intent: number; // 0-1 intent score from governance
 }
 
 export interface HyperLaneResponse {
@@ -52,7 +52,7 @@ export interface HyperLaneResponse {
   data?: unknown;
   reason: string;
   latencyMs: number;
-  depositPath?: string;     // where the data was stored in the basin
+  depositPath?: string; // where the data was stored in the basin
   accessPointId?: string;
 }
 
@@ -490,11 +490,11 @@ export class HyperLaneRouter {
     dropboxRoot = 'C:/Users/issda/Dropbox',
     trajectoryWindowMs = 10 * 60_000,
     trajectoryMinSamples = 3,
-    trajectoryMaxIntentDrift = 0.15,
+    trajectoryMaxIntentDrift = 0.15
   ) {
     this.registry = new Map(services.map((s) => [s.id, s]));
     this.riverPolicies = new Map(
-      RIVERS.filter((river) => river.policy).map((river) => [river.id, river.policy as RiverPolicy]),
+      RIVERS.filter((river) => river.policy).map((river) => [river.id, river.policy as RiverPolicy])
     );
     this.basinRoot = basinRoot;
     this.dropboxRoot = dropboxRoot;
@@ -544,7 +544,7 @@ export class HyperLaneRouter {
       recentOrbitPoints.map((p) => {
         const parts = p.path.split('/').filter(Boolean);
         return `/${parts.slice(0, Math.min(2, parts.length)).join('/')}`;
-      }),
+      })
     );
     const reqParts = reqPath.split('/').filter(Boolean);
     const reqRoot = `/${reqParts.slice(0, Math.min(2, reqParts.length)).join('/')}`;
@@ -553,7 +553,7 @@ export class HyperLaneRouter {
 
   private evaluateTrajectoryFastPath(
     service: ServiceConnector,
-    req: HyperLaneRequest,
+    req: HyperLaneRequest
   ): Omit<HyperLaneResponse, 'latencyMs'> | null {
     if (service.zone === 'RED') {
       return null;
@@ -636,14 +636,21 @@ export class HyperLaneRouter {
       }
 
       if (riverAllowedActions.length > 0) {
-        merged.allowedActions = merged.allowedActions.filter((action) => riverAllowedActions.includes(action));
+        merged.allowedActions = merged.allowedActions.filter((action) =>
+          riverAllowedActions.includes(action)
+        );
       }
-      if (riverPolicy.allowedCategories.length > 0 && !riverPolicy.allowedCategories.includes('*')) {
+      if (
+        riverPolicy.allowedCategories.length > 0 &&
+        !riverPolicy.allowedCategories.includes('*')
+      ) {
         const riverCategories = riverPolicy.allowedCategories.map((c) => c.toLowerCase());
         if (merged.allowedCategories.includes('*')) {
           merged.allowedCategories = riverPolicy.allowedCategories;
         } else {
-          merged.allowedCategories = merged.allowedCategories.filter((c) => riverCategories.includes(c.toLowerCase()));
+          merged.allowedCategories = merged.allowedCategories.filter((c) =>
+            riverCategories.includes(c.toLowerCase())
+          );
         }
       }
       if (riverPolicy.requireExplicitCategory) {
@@ -656,7 +663,7 @@ export class HyperLaneRouter {
 
   private checkAccessPolicy(
     service: ServiceConnector,
-    req: HyperLaneRequest,
+    req: HyperLaneRequest
   ): Omit<HyperLaneResponse, 'latencyMs'> | null {
     const policy = this.resolveAccessPolicy(service);
     const category = this.normalizeCategory(req.category);
@@ -778,7 +785,7 @@ export class HyperLaneRouter {
    */
   private evaluateZone(
     service: ServiceConnector,
-    req: HyperLaneRequest,
+    req: HyperLaneRequest
   ): Omit<HyperLaneResponse, 'latencyMs'> {
     const { zone } = service;
     const { intent, action } = req;

@@ -86,7 +86,7 @@ export function toBalancedTernary(n: number, minTrits: number = 1): BalancedTern
   // Negate all trits if original was negative
   if (negative) {
     for (let i = 0; i < trits.length; i++) {
-      trits[i] = (-trits[i]) as Trit;
+      trits[i] = -trits[i] as Trit;
     }
   }
 
@@ -174,7 +174,7 @@ export function addBalancedTernary(
  */
 export function negateBalancedTernary(n: BalancedTernaryNumber): BalancedTernaryNumber {
   return {
-    trits: n.trits.map((t) => (-t) as Trit),
+    trits: n.trits.map((t) => -t as Trit),
     value: n.value === 0 ? 0 : -n.value,
   };
 }
@@ -289,9 +289,12 @@ export function dequantizeVector(
  */
 export function governanceToTrit(decision: 'ALLOW' | 'QUARANTINE' | 'ESCALATE' | 'DENY'): Trit {
   switch (decision) {
-    case 'ALLOW': return 1;
-    case 'DENY': return -1;
-    default: return 0;
+    case 'ALLOW':
+      return 1;
+    case 'DENY':
+      return -1;
+    default:
+      return 0;
   }
 }
 

@@ -17,6 +17,13 @@ CANONICAL_BRANCH = "main"
 
 NOTEBOOKS: list[dict[str, Any]] = [
     {
+        "name": "scbe-train-model",
+        "aliases": ["train-model", "legacy-train", "scbe-train-model"],
+        "path": "notebooks/scbe_train_model.ipynb",
+        "category": "training",
+        "summary": "Legacy SCBE model training notebook for pivot knowledge experiments.",
+    },
+    {
         "name": "scbe-pivot-v2",
         "aliases": ["pivot", "pivot-v2", "conversation-pivot"],
         "path": "notebooks/scbe_pivot_training_v2.ipynb",
@@ -59,6 +66,13 @@ NOTEBOOKS: list[dict[str, Any]] = [
         "summary": "Spiralverse federated training notebook spanning multiple model lanes.",
     },
     {
+        "name": "spiralverse-protocol-generator",
+        "aliases": ["spiralverse-protocol", "protocol-generator", "spiralverse-generator"],
+        "path": "notebooks/spiralverse_protocol_training_generator.ipynb",
+        "category": "research",
+        "summary": "Large Spiralverse protocol research and training-data generator notebook.",
+    },
+    {
         "name": "langues-metric",
         "aliases": ["langues", "metric", "langues-metric"],
         "path": "notebooks/scbe_langues_metric_colab.ipynb",
@@ -94,7 +108,7 @@ def _normalize(value: str) -> str:
 
 
 def _github_repo() -> str:
-    return str(Path(CANONICAL_REPO)) if CANONICAL_REPO else "issdandavis/SCBE-AETHERMOORE"
+    return CANONICAL_REPO or "issdandavis/SCBE-AETHERMOORE"
 
 
 def _github_branch() -> str:
@@ -116,6 +130,10 @@ def _record_payload(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def list_notebook_payloads() -> list[dict[str, Any]]:
+    return [_record_payload(row) for row in NOTEBOOKS]
+
+
 def _resolve_notebook(query: str) -> dict[str, Any]:
     term = _normalize(query)
     if not term:
@@ -133,6 +151,10 @@ def _resolve_notebook(query: str) -> dict[str, Any]:
             return row
 
     raise KeyError(f"unknown notebook: {query}")
+
+
+def resolve_notebook_payload(query: str) -> dict[str, Any]:
+    return _record_payload(_resolve_notebook(query))
 
 
 def _print_text_list() -> int:
@@ -157,7 +179,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.action == "list":
-        payload = [_record_payload(row) for row in NOTEBOOKS]
+        payload = list_notebook_payloads()
         if args.json:
             print(json.dumps(payload, indent=2))
             return 0

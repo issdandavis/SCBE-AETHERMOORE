@@ -24,11 +24,7 @@
  * of the HyperspaceCoord.
  */
 
-import {
-  type HyperspaceCoord,
-  HyperDim,
-  distanceFromSafe,
-} from './hyperspace.js';
+import { type HyperspaceCoord, HyperDim, distanceFromSafe } from './hyperspace.js';
 import { type MachineConstants, getGlobalRegistry } from './machine-constants.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -266,7 +262,7 @@ export class PolicyFieldEvaluator {
     const constants = getGlobalRegistry().active;
     if (this._fields.length >= constants.policy.maxActivePolicies) {
       throw new RangeError(
-        `Cannot exceed ${constants.policy.maxActivePolicies} active policy fields`,
+        `Cannot exceed ${constants.policy.maxActivePolicies} active policy fields`
       );
     }
     this._fields.push(field);

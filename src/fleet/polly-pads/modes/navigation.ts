@@ -36,10 +36,7 @@ export class NavigationMode extends BaseMode {
     // Save current position and route state
   }
 
-  protected doExecuteAction(
-    action: string,
-    params: Record<string, unknown>
-  ): ModeActionResult {
+  protected doExecuteAction(action: string, params: Record<string, unknown>): ModeActionResult {
     switch (action) {
       case 'plan_route':
         return this.planRoute(params);
@@ -62,7 +59,7 @@ export class NavigationMode extends BaseMode {
   }
 
   private planRoute(params: Record<string, unknown>): ModeActionResult {
-    const destination = params.destination as Record<string, number> || { x: 100, y: 0, z: 50 };
+    const destination = (params.destination as Record<string, number>) || { x: 100, y: 0, z: 50 };
     const current = this.stateData.currentPosition as Record<string, number>;
 
     const dx = destination.x - current.x;
@@ -90,7 +87,7 @@ export class NavigationMode extends BaseMode {
   }
 
   private analyzeTerrain(params: Record<string, unknown>): ModeActionResult {
-    const area = params.area as string || 'current';
+    const area = (params.area as string) || 'current';
 
     return {
       success: true,

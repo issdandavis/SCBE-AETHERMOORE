@@ -289,9 +289,9 @@ export const RIVERS: River[] = [
 // ---------------------------------------------------------------------------
 
 export interface BasinConfig {
-  intakePath: string;     // where incoming data lands for processing
-  backupPath: string;     // where processed data gets backed up
-  archivePath: string;    // long-term storage
+  intakePath: string; // where incoming data lands for processing
+  backupPath: string; // where processed data gets backed up
+  archivePath: string; // long-term storage
 }
 
 const DEFAULT_BASIN: BasinConfig = {
