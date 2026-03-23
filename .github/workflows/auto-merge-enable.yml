@@ -14,8 +14,7 @@ jobs:
     if: >-
       github.actor == 'dependabot[bot]' ||
       github.actor == 'copilot-swe-agent' ||
-      github.actor == 'issdandavis' ||
-      github.event.pull_request.user.type == 'Bot'
+      github.actor == 'issdandavis'
     steps:
       - name: Enable auto-merge (squash)
         run: gh pr merge --auto --squash "$PR_URL"

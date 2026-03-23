@@ -63,6 +63,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          SHIP_TARGETS: ${{ github.event.inputs.ship_targets || 'hf,github' }}
+          EVENT_NAME: ${{ github.event_name }}
+          SYNC_NOTION: ${{ github.event.inputs.sync_notion }}
+          NO_UPLOAD: ${{ github.event.inputs.no_upload }}
+          ALLOW_QUARANTINE: ${{ github.event.inputs.allow_quarantine }}
+          SHIP_ON_QUARANTINE: ${{ github.event.inputs.ship_on_quarantine }}
         run: |
           set -euo pipefail
 
@@ -70,20 +76,20 @@ jobs:
             "--config" "training/cloud_kernel_pipeline.json"
             "--run-root" "training/runs/cloud_kernel_sync"
             "--keep-runs" "30"
-            "--ship-targets" "${{ github.event.inputs.ship_targets || 'hf,github' }}"
+            "--ship-targets" "$SHIP_TARGETS"
           )
 
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            if [[ "${{ github.event.inputs.sync_notion }}" == "true" ]]; then
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            if [[ "$SYNC_NOTION" == "true" ]]; then
               ARGS+=("--sync-notion")
             fi
-            if [[ "${{ github.event.inputs.no_upload }}" == "true" ]]; then
+            if [[ "$NO_UPLOAD" == "true" ]]; then
               ARGS+=("--no-upload")
             fi
-            if [[ "${{ github.event.inputs.allow_quarantine }}" == "true" ]]; then
+            if [[ "$ALLOW_QUARANTINE" == "true" ]]; then
               ARGS+=("--allow-quarantine")
             fi
-            if [[ "${{ github.event.inputs.ship_on_quarantine }}" == "true" ]]; then
+            if [[ "$SHIP_ON_QUARANTINE" == "true" ]]; then
               ARGS+=("--ship-on-quarantine")
             fi
           fi
