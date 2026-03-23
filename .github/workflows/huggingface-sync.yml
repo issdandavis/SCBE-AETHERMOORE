@@ -30,6 +30,7 @@ jobs:
         run: pip install huggingface_hub
 
       - name: Sync to Primary HF Datacenter
+        id: primary_sync
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
@@ -38,9 +39,12 @@ jobs:
             --repo-type model \
             --include "src/**" "docs/**" "README.md" "package.json" \
             --exclude ".git/**" "node_modules/**" \
-            --token $HF_TOKEN || echo "Primary sync failed, continuing..."
+            --token $HF_TOKEN \
+            && echo "status=success" >> $GITHUB_OUTPUT \
+            || { echo "::error::Primary HF sync failed"; echo "status=failed" >> $GITHUB_OUTPUT; }
 
       - name: Sync to Backup HF Datacenter
+        id: backup_sync
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
@@ -49,16 +53,32 @@ jobs:
             --repo-type model \
             --include "src/**" "docs/**" "README.md" \
             --exclude ".git/**" "node_modules/**" \
-            --token $HF_TOKEN || echo "Backup sync failed, continuing..."
+            --token $HF_TOKEN \
+            && echo "status=success" >> $GITHUB_OUTPUT \
+            || { echo "::error::Backup HF sync failed"; echo "status=failed" >> $GITHUB_OUTPUT; }
 
       - name: Generate Sync Report
         run: |
+          PRIMARY_STATUS="${{ steps.primary_sync.outputs.status }}"
+          BACKUP_STATUS="${{ steps.backup_sync.outputs.status }}"
+          if [ "$PRIMARY_STATUS" = "failed" ] && [ "$BACKUP_STATUS" = "failed" ]; then
+            OVERALL="FAILED (both datacenters)"
+          elif [ "$PRIMARY_STATUS" = "failed" ] || [ "$BACKUP_STATUS" = "failed" ]; then
+            OVERALL="PARTIAL (one datacenter failed)"
+          else
+            OVERALL="SUCCESS"
+          fi
           echo "## HuggingFace Sync Report" >> $GITHUB_STEP_SUMMARY
           echo "- **Date:** $(date -u)" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Primary:** $PRIMARY_HF_REPO" >> $GITHUB_STEP_SUMMARY
-          echo "- **Backup:** $BACKUP_HF_REPO" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status:** Sync completed" >> $GITHUB_STEP_SUMMARY
+          echo "- **Primary:** $PRIMARY_HF_REPO ($PRIMARY_STATUS)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backup:** $BACKUP_HF_REPO ($BACKUP_STATUS)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** $OVERALL" >> $GITHUB_STEP_SUMMARY
+          # Fail the workflow if both syncs failed
+          if [ "$PRIMARY_STATUS" = "failed" ] && [ "$BACKUP_STATUS" = "failed" ]; then
+            echo "::error::Both HF sync targets failed"
+            exit 1
+          fi
 
   health-check:
     runs-on: ubuntu-latest

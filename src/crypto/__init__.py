@@ -20,87 +20,95 @@ import importlib as _importlib
 from typing import TYPE_CHECKING
 
 # ═══════════════════════════════════════════════════════════
-# Eager imports — lightweight modules (numpy, hashlib, math only)
+# Eager imports — truly lightweight modules (hashlib, math only)
+# numpy-dependent modules are lazy-loaded to prevent import
+# failures when numpy is not installed.
 # ═══════════════════════════════════════════════════════════
 
-# Dual Lattice (Kyber/Dilithium + Sacred Tongues)
-from .dual_lattice import (
-    SacredTongue,
-    FluxState,
-    LatticeVector,
-    TongueContext,
-    CrossStitchPattern,
-    KyberTongueEncryptor,
-    DilithiumTongueSigner,
-    DualLatticeCrossStitch,
-    TongueLatticeGovernor,
-    TONGUE_PHASES,
-    TONGUE_WEIGHTS,
-    PHI,
-)
+# All submodules in crypto/ depend on numpy. Wrap all eager imports
+# so that direct submodule imports (e.g. `from crypto.sacred_tongues import ...`)
+# still work when numpy is not installed.
+try:
+    # Dual Lattice (Kyber/Dilithium + Sacred Tongues)
+    from .dual_lattice import (
+        SacredTongue,
+        FluxState,
+        LatticeVector,
+        TongueContext,
+        CrossStitchPattern,
+        KyberTongueEncryptor,
+        DilithiumTongueSigner,
+        DualLatticeCrossStitch,
+        TongueLatticeGovernor,
+        TONGUE_PHASES,
+        TONGUE_WEIGHTS,
+        PHI,
+    )
 
-# Symphonic Cipher (Signed Audio Frequency Mapping)
-from .symphonic_cipher import (
-    SymphonicToken,
-    TonguePolarity,
-    SACRED_TONGUE_VOCAB,
-    BASE_FREQ,
-    FREQ_STEP,
-    token_to_frequency,
-    id_to_frequency,
-    generate_tone,
-    generate_symphonic_sequence,
-    analyze_polarity_balance,
-)
+    # Symphonic Cipher (Signed Audio Frequency Mapping)
+    from .symphonic_cipher import (
+        SymphonicToken,
+        TonguePolarity,
+        SACRED_TONGUE_VOCAB,
+        BASE_FREQ,
+        FREQ_STEP,
+        token_to_frequency,
+        id_to_frequency,
+        generate_tone,
+        generate_symphonic_sequence,
+        analyze_polarity_balance,
+    )
 
-# GeoSeal (Hyperbolic Geometry + Signed Context)
-from .geo_seal import (
-    ContextVector,
-    SecurityPosture,
-    bytes_to_signed_signal,
-    signed_signal_to_bytes,
-    hyperbolic_distance,
-    hyperbolic_midpoint,
-    hyperbolic_angle,
-    compute_triangle_deficit,
-    harmonic_wall_cost,
-    trust_from_position,
-)
+    # GeoSeal (Hyperbolic Geometry + Signed Context)
+    from .geo_seal import (
+        ContextVector,
+        SecurityPosture,
+        bytes_to_signed_signal,
+        signed_signal_to_bytes,
+        hyperbolic_distance,
+        hyperbolic_midpoint,
+        hyperbolic_angle,
+        compute_triangle_deficit,
+        harmonic_wall_cost,
+        trust_from_position,
+    )
 
-# Signed Lattice Bridge (Integration Layer)
-from .signed_lattice_bridge import (
-    SignedGovernanceResult,
-    SignedLatticeBridge,
-)
+    # Signed Lattice Bridge (Integration Layer)
+    from .signed_lattice_bridge import (
+        SignedGovernanceResult,
+        SignedLatticeBridge,
+    )
 
-# Hyperbolic Octree (Sparse Voxel Storage + Spectral Clustering)
-from .octree import (
-    SpectralVoxel,
-    OctreeNode,
-    HyperbolicOctree,
-)
+    # Hyperbolic Octree (Sparse Voxel Storage + Spectral Clustering)
+    from .octree import (
+        SpectralVoxel,
+        OctreeNode,
+        HyperbolicOctree,
+    )
 
-# Hyperpath Finder (A* and Bidirectional A*)
-from .hyperpath_finder import (
-    HyperpathFinder,
-    PathResult,
-    hyperbolic_distance_safe,
-)
+    # Hyperpath Finder (A* and Bidirectional A*)
+    from .hyperpath_finder import (
+        HyperpathFinder,
+        PathResult,
+        hyperbolic_distance_safe,
+    )
 
-# Sacred Eggs (Cryptographic Secret Containers)
-from .sacred_eggs import (
-    SacredEgg,
-    EggCarton,
-    EggRing,
-    SacredRituals,
-    IncubationResult,
-    TriadicBindingResult,
-    RingDescentResult,
-    FailToNoiseResult,
-    flux_state_to_ring,
-    create_session_egg,
-    ring_allows,
-)
+    # Sacred Eggs (Cryptographic Secret Containers)
+    from .sacred_eggs import (
+        SacredEgg,
+        EggCarton,
+        EggRing,
+        SacredRituals,
+        IncubationResult,
+        TriadicBindingResult,
+        RingDescentResult,
+        FailToNoiseResult,
+        flux_state_to_ring,
+        create_session_egg,
+        ring_allows,
+    )
+except ImportError:
+    pass
 
 # ═══════════════════════════════════════════════════════════
 # Lazy imports — heavy modules (scipy, matplotlib)

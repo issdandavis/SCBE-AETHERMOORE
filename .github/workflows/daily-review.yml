@@ -28,11 +28,9 @@ jobs:
           python-version: '3.11'
 
       - name: Install Node dependencies
-        continue-on-error: true
         run: npm ci
 
       - name: Install Python dependencies
-        continue-on-error: true
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then
