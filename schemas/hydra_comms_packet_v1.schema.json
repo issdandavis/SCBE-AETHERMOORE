@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/hydra_comms_packet_v1.schema.json",
+  "title": "HYDRA Parallel Browser Comms Packet v1",
+  "type": "object",
+  "required": [
+    "packet_id",
+    "created_at",
+    "session_id",
+    "mission_id",
+    "worker_id",
+    "sender",
+    "recipient",
+    "intent",
+    "status",
+    "packet_class",
+    "task_id",
+    "summary",
+    "rails",
+    "ledger"
+  ],
+  "properties": {
+    "packet_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "session_id": { "type": "string", "minLength": 1 },
+    "mission_id": { "type": "string", "minLength": 1 },
+    "worker_id": { "type": "string", "minLength": 1 },
+    "codename": { "type": "string" },
+    "sender": { "type": "string", "minLength": 1 },
+    "recipient": { "type": "string", "minLength": 1 },
+    "intent": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "minLength": 1 },
+    "packet_class": {
+      "type": "string",
+      "enum": ["internal", "external", "evidence", "governance"]
+    },
+    "repo": { "type": "string" },
+    "branch": { "type": "string" },
+    "task_id": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string", "minLength": 1 },
+    "proof": { "type": "array" },
+    "next_action": { "type": "string" },
+    "risk": { "type": "string" },
+    "where": { "type": "string" },
+    "why": { "type": "string" },
+    "how": { "type": "string" },
+    "lease": {
+      "type": ["object", "null"],
+      "properties": {
+        "lease_id": { "type": "string" },
+        "owner": { "type": "string" },
+        "provider": { "type": "string" },
+        "resource_class": { "type": "string" },
+        "lease_seconds": { "type": "integer" },
+        "claimed_at_utc": { "type": "string" },
+        "expires_at_utc": { "type": ["string", "null"] }
+      }
+    },
+    "rails": {
+      "type": "object",
+      "required": ["P+", "P-", "D+", "D-"],
+      "properties": {
+        "P+": { "type": "array" },
+        "P-": { "type": "array" },
+        "D+": { "type": "array" },
+        "D-": { "type": "array" },
+        "_extra": { "type": "array" }
+      }
+    },
+    "layer14": {
+      "type": "object",
+      "properties": {
+        "energy": { "type": "number" },
+        "centroid": { "type": "number" },
+        "flux": { "type": "number" },
+        "hf_ratio": { "type": "number" },
+        "stability": { "type": "number" },
+        "verification_score": { "type": "number" },
+        "anomaly_ratio": { "type": "number" },
+        "signal_class": { "type": "string" },
+        "channel": { "type": "string" },
+        "summary": { "type": "string" }
+      }
+    },
+    "ledger": {
+      "type": "object",
+      "required": ["packet_class", "delivery_mode", "lane_targets", "channel"],
+      "properties": {
+        "packet_class": {
+          "type": "string",
+          "enum": ["internal", "external", "evidence", "governance"]
+        },
+        "delivery_mode": { "type": "string" },
+        "lane_targets": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "channel": { "type": "string" },
+        "integrity_hint": { "type": "string" }
+      }
+    },
+    "gates": { "type": "object" },
+    "_integrity": { "type": "string" }
+  }
+}

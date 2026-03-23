@@ -1,0 +1,18 @@
+{
+  "bundle_id": "smoke-bridge-20260318T090000Z",
+  "created_at_utc": "2026-03-18T06:09:49Z",
+  "recommended_skill": "$hugging-face-model-trainer",
+  "dataset_repo": "issdandavis/scbe-aethermoore-training-data",
+  "model_repo": "issdandavis/scbe-research-bridge-qwen-0.5b",
+  "training_method": "sft",
+  "suggested_base_model": "Qwen/Qwen2.5-0.5B",
+  "local_globs": [
+    "training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\research_corpus.jsonl"
+  ],
+  "suggested_local_command": "python scripts/train_hf_longrun_placeholder.py --dataset-repo issdandavis/scbe-aethermoore-training-data --model-repo issdandavis/scbe-research-bridge-qwen-0.5b --local-glob training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\research_corpus.jsonl --run-dir training/runs/huggingface/smoke-bridge-20260318T090000Z --no-push-to-hub",
+  "notes": [
+    "Use the generated research_corpus.jsonl as a source-grounded SFT seed.",
+    "Prefer HF Jobs or the hugging-face-model-trainer skill for real GPU training.",
+    "Review bundle_report.md before publishing any model or dataset card."
+  ]
+}

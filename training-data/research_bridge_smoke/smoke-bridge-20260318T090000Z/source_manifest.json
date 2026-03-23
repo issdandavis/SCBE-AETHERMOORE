@@ -1,0 +1,272 @@
+{
+  "bundle_id": "smoke-bridge-20260318T090000Z",
+  "created_at_utc": "2026-03-18T06:09:49Z",
+  "bundle_dir": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z",
+  "counts": {
+    "records": 35,
+    "arxiv_evidence": 3,
+    "obsidian_notes": 32
+  },
+  "inputs": {
+    "evidence_dir": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\page_evidence",
+    "note_inputs": [
+      "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research",
+      "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\round-table"
+    ]
+  },
+  "outputs": {
+    "corpus": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\research_corpus.jsonl",
+    "hf_training_manifest": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\hf_training_manifest.json",
+    "report": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\bundle_report.md"
+  },
+  "sources": [
+    {
+      "kind": "arxiv_evidence",
+      "title": "",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\page_evidence\\playwriter-arxiv.org-navigate-session1.json",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\page_evidence\\278497839b_playwriter-arxiv.org-navigate-session1.json",
+      "arxiv_id": "2410.01706",
+      "url": "https://arxiv.org/abs/2410.01706"
+    },
+    {
+      "kind": "arxiv_evidence",
+      "title": "[2410.01706] Sable: a Performant, Efficient and Scalable Sequence Model for MARL",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\page_evidence\\playwriter-arxiv.org-snapshot-session1.json",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\page_evidence\\483b5c5192_playwriter-arxiv.org-snapshot-session1.json",
+      "arxiv_id": "2410.01706",
+      "url": "https://arxiv.org/abs/2410.01706"
+    },
+    {
+      "kind": "arxiv_evidence",
+      "title": "[2410.01706] Sable: a Performant, Efficient and Scalable Sequence Model for MARL",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\page_evidence\\playwriter-arxiv.org-title-session1.json",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\page_evidence\\91f567f0a8_playwriter-arxiv.org-title-session1.json",
+      "arxiv_id": "2410.01706",
+      "url": "https://arxiv.org/abs/2410.01706"
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Kindle App Development + Virtual Upload Brief",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-04-kindle-dev-and-virtual-upload-brief.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\38a7e01874_2026-03-04-kindle-dev-and-virtual-upload-brief.md",
+      "char_count": 3214
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "AetherBrowse Improvement Brief (Research + Local Context)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-05-aetherbrowse-improvement-brief.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\901b27f3cc_2026-03-05-aetherbrowse-improvement-brief.md",
+      "char_count": 2311
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Context Capsule Loader (1-5 Windows)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-05-context-capsule-loader.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\3136f58394_2026-03-05-context-capsule-loader.md",
+      "char_count": 1089
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Library Wing v1 \u2014 Multi-Model Round Table + Parallel Worktree Lanes",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-05-library-wing-roundtable.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\2938099efb_2026-03-05-library-wing-roundtable.md",
+      "char_count": 1786
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Open Source Knowledge Connector Deep Research (2026-03-05)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-05-open-source-connector-library.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\2b5d52661d_2026-03-05-open-source-connector-library.md",
+      "char_count": 5617
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "L11 Triadic Temporal Axiom Draft",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-13-l11-triadic-temporal-axiom-draft.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\01de077037_2026-03-13-l11-triadic-temporal-axiom-draft.md",
+      "char_count": 7834
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "ArcKit Dual-Track Scan",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-15-arckit-dual-track.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\632a8ef77d_2026-03-15-arckit-dual-track.md",
+      "char_count": 2620
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Chapter 1 Tandem Audit",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-15-ch01-book-panel-tandem-audit.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\6d9028402c_2026-03-15-ch01-book-panel-tandem-audit.md",
+      "char_count": 7640
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "AetherCode Phone Emulator Research",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-15-phone-emulator-architecture-research.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\00f52cf886_2026-03-15-phone-emulator-architecture-research.md",
+      "char_count": 10557
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Scattercast to SCBE Overlay Note",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-15-scattercast-scbe-overlay-note.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\f16ad2a770_2026-03-15-scattercast-scbe-overlay-note.md",
+      "char_count": 5279
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "How Game Companies Use AI for Complex Tasks",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-16-game-ai-company-patterns.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\813c982818_2026-03-16-game-ai-company-patterns.md",
+      "char_count": 12407
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Phase Control Modulation Matrices",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-16-phase-control-modulation-matrices.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\3f593b0ee4_2026-03-16-phase-control-modulation-matrices.md",
+      "char_count": 1754
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "AetherBrowser Extension Ownership Stack",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-17-aetherbrowser-extension-ownership-stack.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\2cdd46803e_2026-03-17-aetherbrowser-extension-ownership-stack.md",
+      "char_count": 11106
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Global Research Note: Agent Senses, Choice Monitoring, and World Models",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-17-global-agent-senses-choice-monitoring.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\5a7233d0f5_2026-03-17-global-agent-senses-choice-monitoring.md",
+      "char_count": 12678
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Adaptive Training Systems",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-18-adaptive-training-systems.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\1fc153a61a_2026-03-18-adaptive-training-systems.md",
+      "char_count": 28394
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Free Compute Landscape (March 2026)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-18-free-compute-landscape.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\dac790e54d_2026-03-18-free-compute-landscape.md",
+      "char_count": 15187
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Isekai Tower Training Architecture",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-18-tower-training-architecture.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\8eebdc54c5_2026-03-18-tower-training-architecture.md",
+      "char_count": 15981
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Aethermoor Spiral Engine MVP",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\AETHERMOOR_SPIRAL_ENGINE_MVP.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\2b031292e5_aethermoor_spiral_engine_mvp.md",
+      "char_count": 3508
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Multi-Model Modal Matrix (Experimental)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\MULTI_MODEL_MODAL_MATRIX.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\5e50acd2e9_multi_model_modal_matrix.md",
+      "char_count": 6876
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Multimodality Matrix Training (Experimental)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\MULTIMODAL_MATRIX_TRAINING.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\b8437294e1_multimodal_matrix_training.md",
+      "char_count": 1442
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Quasi-Vector Spin Voxels & Magnetics (Research Draft)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\QUASI_VECTOR_SPIN_VOXELS.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\471a15fef5_quasi_vector_spin_voxels.md",
+      "char_count": 3329
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "1. What a Trit Is",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\QUASI_VOXEL_TERNARY_STORAGE.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\951f032c61_quasi_voxel_ternary_storage.md",
+      "char_count": 86417
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Research Documents (Non-Canonical)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\README.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\65ba7135e2_readme.md",
+      "char_count": 572
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Sheaf Consensus Gate",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\SHEAF_CONSENSUS_GATE.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\eddaefd8ac_sheaf_consensus_gate.md",
+      "char_count": 1146
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Signed Multi-Plane Encoding (Prototype)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\SIGNED_MULTIPLANE_ENCODING.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\858f97ac77_signed_multiplane_encoding.md",
+      "char_count": 1904
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Semantic-Weighted Letter Encoding: A Physics-Inspired Framework for Structured Language Representation",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\SWLE_semantic_weighted_letter_encoding.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\efbb69c4ea_swle_semantic_weighted_letter_encoding.md",
+      "char_count": 13727
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "SWLE v0 Dataset Schema and Benchmark Protocol",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\SWLE_V0_DATASET_AND_BENCHMARK.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\71daa199c4_swle_v0_dataset_and_benchmark.md",
+      "char_count": 9605
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Sacred Egg Model Genesis \u2014 Concept Note",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\round-table\\2026-03-17-sacred-egg-model-genesis.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\b6d29f9c26_2026-03-17-sacred-egg-model-genesis.md",
+      "char_count": 3673
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Session Recap \u2014 March 17, 2026 (Night Session)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\round-table\\2026-03-17-session-recap.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\a81cef38bf_2026-03-17-session-recap.md",
+      "char_count": 2649
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Next Session Plan \u2014 March 18, 2026",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\round-table\\2026-03-18-next-session-plan.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\75da135439_2026-03-18-next-session-plan.md",
+      "char_count": 2135
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Automated Research Pipeline \u2014 Concept Note",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\round-table\\2026-03-18-research-pipeline-concept.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\81608a2622_2026-03-18-research-pipeline-concept.md",
+      "char_count": 2953
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "The Round Table \u2014 Multi-Agent Communication Protocol",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\round-table\\ROUND_TABLE.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\smoke-bridge-20260318T090000Z\\sources\\obsidian\\4a8725b33d_round_table.md",
+      "char_count": 7781
+    }
+  ]
+}

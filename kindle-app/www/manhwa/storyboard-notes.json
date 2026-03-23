@@ -1,0 +1,137 @@
+{
+  "ch01": {
+    "chapterTitle": "Chapter 1: Protocol Handshake",
+    "adaptationFocus": "Translate the opening chapter like a film editor: hold Marcus's ordinary burnout details long enough that the white-out feels like reality tearing, then rebuild orientation through stone, crystal, Polly, and the Six Tongues chamber.",
+    "movieCut": "Lonely tech noir -> anomaly recognition -> reality-white rupture -> packet fall -> grounded recovery -> raven authority reveal -> infrastructure thesis.",
+    "whyItWorks": "The chapter lands when it preserves emotional order: tired engineer first, impossible system second. Spectacle only matters because the office details made Marcus feel human.",
+    "visualRules": [
+      "Keep Marcus grounded in office-worker body language and Earth habits before the rupture.",
+      "Stage the white-out in phases so it reads like reality failing instead of a single flash frame.",
+      "Treat the fall as transmission through structured layers, not generic fantasy freefall.",
+      "Polly's raven reveal should read as authority with wit, not mascot comedy.",
+      "The Six Tongues chamber is the first major spectacle anchor, but Marcus should lean toward it like an engineer reading a system."
+    ],
+    "personaCues": [
+      "Marcus leads with observation before emotion. Wonder reads as concentration first.",
+      "Polly audits before she comforts. Care shows up as timing and chosen proximity.",
+      "The library should feel old, alive, and operational, not like random fantasy decor."
+    ],
+    "beats": [
+      {
+        "title": "Office Isolation",
+        "visual": "Cold coffee, triple monitors, dead fluorescent office, Marcus alone at 3:14 AM.",
+        "subtext": "The reader has to feel the cost of his normal life before anything impossible happens."
+      },
+      {
+        "title": "Reality Whites Out",
+        "visual": "Monitor glow spreads into everywhere-white, desk edges dissolve, his mug loses its last shadow.",
+        "subtext": "This is not a screen glitch. It is the world deleting its old framing."
+      },
+      {
+        "title": "Transmission Fall",
+        "visual": "Marcus drops through layers of code, geometry, music, and Sacred Tongue glyphs.",
+        "subtext": "He is being routed, not merely dropped."
+      },
+      {
+        "title": "Stone, Books, Raven",
+        "visual": "Cold floor, warm crystal stacks, humming books, Polly above him in raven form.",
+        "subtext": "Recovery comes before explanation. Polly owns the scene the moment she speaks."
+      },
+      {
+        "title": "Infrastructure Thesis",
+        "visual": "The Six Tongues chamber opens like a cathedral of protocol domains.",
+        "subtext": "Marcus does not meet magic as chaos; he meets it as architecture."
+      }
+    ]
+  },
+  "ch02": {
+    "chapterTitle": "Chapter 2: The Language Barrier",
+    "adaptationFocus": "Reverse-engineer the chapter like a strong prestige adaptation: convert interior translation into visible behavior, architecture, and staged reveals so confusion becomes comprehension on-screen.",
+    "movieCut": "Disoriented corridor -> sensory/body mismatch -> Marcus translates the world -> living door -> Six Tongues cathedral -> KO handshake -> shared realization.",
+    "whyItWorks": "The emotional movement is confusion -> recognition -> wonder. The chamber only lands if the corridor first teaches the reader how this world encodes information.",
+    "visualRules": [
+      "Use corridor geometry to show policy and authorization, not just fantasy prettiness.",
+      "Marcus should brighten through recognition, not heroic posing.",
+      "The door should emerge like documentation crystallizing into architecture.",
+      "The chamber reveal needs breathing room, but Marcus must stay active inside the frame.",
+      "KO contact should feel like clean protocol introspection, not a noisy magic blast."
+    ],
+    "personaCues": [
+      "Marcus regains control by naming systems correctly.",
+      "Polly explains power as procedure because it is ordinary to her.",
+      "Aethermoor should feel legible and maintained, even when it is impossible."
+    ],
+    "beats": [
+      {
+        "title": "Static Corridor",
+        "visual": "Crystal hallway, senses crossing, Marcus tasting static and library dust.",
+        "subtext": "Fear gets converted into diagnostics before he admits he is afraid."
+      },
+      {
+        "title": "Translation Click",
+        "visual": "Marcus names the corridor as mapped process space while Polly keeps walking without hesitation.",
+        "subtext": "Understanding is his first form of control."
+      },
+      {
+        "title": "Door Becoming",
+        "visual": "Blank crystal wall turns into a self-documenting doorway under Polly's touch.",
+        "subtext": "This world is readable because someone built it to be."
+      },
+      {
+        "title": "Six Tongues Chamber",
+        "visual": "Hexagonal cathedral, six pedestals, color logic, Marcus small but leaning in.",
+        "subtext": "Awe and comprehension hit him at the same time."
+      },
+      {
+        "title": "Handshake",
+        "visual": "KO contact, guest pass question, clean inner protocol space.",
+        "subtext": "The system accepts him at the layer where he is most honest."
+      }
+    ]
+  },
+  "ch03": {
+    "chapterTitle": "Chapter 3: Hyperbolic Consequences",
+    "adaptationFocus": "Play the chapter like a training sequence with real comic timing: comfort, onboarding, first failure, then a clean demonstration that the world's math punishes vagueness.",
+    "movieCut": "Essence brew reset -> inhabited refectory -> terrace wonder -> wrong-geometry training hall -> accidental chair -> RU denial -> hyperbolic lesson -> encrypted sleep ward.",
+    "whyItWorks": "The chapter is funny only if the rules are real. The accidental chair, denial gate, and Polly's lecture need to feel like consequences inside a maintained system, not random gag beats.",
+    "visualRules": [
+      "Keep the refectory warm and lived-in instead of empty fantasy tavern energy.",
+      "Make the accidental chair aggressively ordinary.",
+      "The training hall should feel geometrically wrong without turning into a gimmick lens effect.",
+      "RU denial must read instantly and clearly.",
+      "Close on vulnerability, not another spectacle blast."
+    ],
+    "personaCues": [
+      "Marcus reaches for competence fast, but his intent is still noisy.",
+      "Polly's care comes out as instruction, correction, and practical shelter.",
+      "Aethermoor teaches by making consequences visible."
+    ],
+    "beats": [
+      {
+        "title": "Essence Brew",
+        "visual": "Marcus clutching a massive hot mug with both hands like a lifeline.",
+        "subtext": "The world finally offers comfort, but it is engineered comfort."
+      },
+      {
+        "title": "Training Hall",
+        "visual": "A square room pretending to be a circle around an obsidian plinth.",
+        "subtext": "The lesson space itself is already enforcing a rule."
+      },
+      {
+        "title": "Accidental Chair",
+        "visual": "A plain wooden chair appears where focused intent should have gone.",
+        "subtext": "Comedy lands because the system followed his messy request perfectly."
+      },
+      {
+        "title": "RU Denial",
+        "visual": "Guest pass scope exceeded glyph and the ring refusing him.",
+        "subtext": "Different layers have different gates. One success does not mean full access."
+      },
+      {
+        "title": "Hyperbolic Lesson",
+        "visual": "Polly demonstrates tiny drift compounding into unstable structure.",
+        "subtext": "Vagueness is expensive here."
+      }
+    ]
+  }
+}

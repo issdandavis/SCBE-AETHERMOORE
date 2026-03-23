@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Book Adaptation Reader</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./static/icons/icon-192.png">
+<meta name="theme-color" content="#17c6cf">
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#08121d;--bg2:#111e31;--surface:rgba(10,18,30,.94);--card:rgba(18,29,43,.88);--border:rgba(137,165,194,.22);
+  --text:#edf5ff;--dim:#9fb6cc;--accent:#17c6cf;--accent2:#ff9d5b;--good:#2dd3a6;
+  --font:'Space Grotesk','Sora','Trebuchet MS',sans-serif;
+}
+html,body{margin:0;min-height:100%;background:
+  radial-gradient(940px 520px at 8% -10%, rgba(23,198,207,.24), transparent 58%),
+  radial-gradient(760px 420px at 100% 0%, rgba(255,157,91,.18), transparent 56%),
+  linear-gradient(165deg, var(--bg), var(--bg2));
+  color:var(--text);font-family:var(--font)}
+.shell{max-width:960px;margin:0 auto;min-height:100vh;padding:16px 14px 24px;display:grid;gap:14px}
+.hero,.section,.card{
+  background:linear-gradient(180deg, rgba(11,19,31,.96), rgba(10,17,27,.88));
+  border:1px solid var(--border);border-radius:24px;box-shadow:0 18px 42px rgba(0,0,0,.28)
+}
+.hero,.section{padding:18px 18px 16px}
+.hero-top,.section-head,.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.eyebrow,.badge,.action-link{
+  display:inline-flex;align-items:center;justify-content:center;border-radius:999px;font-size:12px;font-weight:800;
+  letter-spacing:.03em;text-decoration:none
+}
+.eyebrow{padding:5px 10px;background:rgba(23,198,207,.14);border:1px solid rgba(23,198,207,.32);color:var(--accent);text-transform:uppercase}
+.badge{padding:6px 10px;background:rgba(45,211,166,.12);border:1px solid rgba(45,211,166,.24);color:var(--good)}
+.action-link{
+  padding:10px 12px;border:1px solid rgba(137,165,194,.22);background:rgba(255,255,255,.03);color:var(--text)
+}
+.action-link.primary{background:linear-gradient(135deg,var(--accent),#2f7dde);border-color:rgba(23,198,207,.5);color:#05131a}
+h1{margin:14px 0 8px;font-size:30px;line-height:1.05;max-width:16ch}
+.lede,.copy,.list li{margin:0;color:var(--dim);font-size:14px;line-height:1.55}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+.stat{padding:12px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(137,165,194,.18)}
+.stat-label{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.stat-value{font-size:16px;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.card{padding:16px}
+.card h2,.section h2{margin:0 0 8px;font-size:18px}
+.card h3{margin:0 0 8px;font-size:19px}
+.list{margin:12px 0 0;padding-left:18px;display:grid;gap:8px}
+.callout{margin-top:14px;padding:12px 14px;border-radius:18px;background:rgba(23,198,207,.08);border:1px solid rgba(23,198,207,.16);color:#d9f8fa;font-size:13px;line-height:1.5}
+@media(max-width:760px){
+  .shell{padding:12px 10px 18px}
+  .hero,.section{padding:14px}
+  h1{font-size:24px;max-width:none}
+  .grid,.stats{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <section class="hero">
+    <div class="hero-top">
+      <span class="eyebrow">Book Adaptation QA</span>
+      <span class="badge">Reader-first</span>
+    </div>
+    <h1>Use the emulator as a webtoon reader, not a round table dashboard.</h1>
+    <p class="lede">
+      This is the phone front door for the book adaptation. Open the chapter, scroll it like a real reader,
+      and only jump to ops surfaces when you need to fix something you found.
+    </p>
+    <div class="actions">
+      <a class="action-link primary" href="./manhwa/ch01/index.html">Continue Chapter 1</a>
+      <a class="action-link" href="./polly-pad.html">QA Pad</a>
+      <a class="action-link" href="./chat.html">Ops Chat</a>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Primary Goal</div>
+        <div class="stat-value">Readability</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Current Pack</div>
+        <div class="stat-value">Chapter 1</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Check Modes</div>
+        <div class="stat-value">Overlay + clean art</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2>What To Judge</h2>
+        <p class="copy">Keep the emulator loop focused on whether the adaptation reads well on a phone.</p>
+      </div>
+    </div>
+    <div class="grid">
+      <article class="card">
+        <h3>Reading Pass</h3>
+        <p class="copy">Read straight through and judge rhythm, pacing, and whether the story breathes like a mobile-native scroll.</p>
+        <ul class="list">
+          <li>Check reveal timing and white-space pacing.</li>
+          <li>Watch for abrupt slice transitions.</li>
+          <li>Notice where the chapter feels too dense or too empty.</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>Lettering Pass</h3>
+        <p class="copy">Switch between text-overlay and image-only to isolate lettering problems from layout or composition problems.</p>
+        <ul class="list">
+          <li>Look for cramped dialogue and tiny captions.</li>
+          <li>Flag generated-text artifacts or weak emphasis.</li>
+          <li>Check whether visual beats survive the vertical slicing.</li>
+        </ul>
+      </article>
+    </div>
+    <div class="callout">
+      Ops still exists, but it is secondary. The emulator should feel like a reading device first and a control surface second.
+    </div>
+  </section>
+</div>
+</body>
+</html>
