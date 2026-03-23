@@ -21,7 +21,7 @@ from tests.adversarial.scbe_harness import (
 )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def gate():
     g = SCBEDetectionGate()
     g.calibrate([p["prompt"] for p in BASELINE_CLEAN])

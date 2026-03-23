@@ -9,7 +9,7 @@ from tests.adversarial.attack_corpus import BASELINE_CLEAN, ADAPTIVE_SEQUENCES
 from tests.adversarial.scbe_harness import SCBEDetectionGate
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def gate():
     g = SCBEDetectionGate()
     g.calibrate([p["prompt"] for p in BASELINE_CLEAN])
