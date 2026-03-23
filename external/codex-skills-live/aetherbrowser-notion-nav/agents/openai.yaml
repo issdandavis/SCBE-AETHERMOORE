@@ -1,0 +1,4 @@
+interface:
+  display_name: "AetherBrowser Notion Nav"
+  short_description: "Navigate Notion pages and workspaces with AetherBrowser"
+  default_prompt: "Use AetherBrowser Notion nav flow."

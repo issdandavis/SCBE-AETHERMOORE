@@ -67,12 +67,14 @@ jobs:
           X_API_KEY: ${{ secrets.X_API_KEY }}
           X_API_SECRET: ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          EVENT_NAME: ${{ github.event_name }}
+          LIVE_PUBLISH_INPUT: ${{ inputs.live_publish }}
         run: |
           LIVE_ENABLED=false
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.live_publish }}" = "true" ]; then
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$LIVE_PUBLISH_INPUT" = "true" ]; then
             LIVE_ENABLED=true
           fi
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "${SCBE_SOCIAL_LIVE}" = "true" ]; then
+          if [ "$EVENT_NAME" = "schedule" ] && [ "${SCBE_SOCIAL_LIVE}" = "true" ]; then
             LIVE_ENABLED=true
           fi
 

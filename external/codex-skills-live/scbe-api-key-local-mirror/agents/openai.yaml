@@ -1,0 +1,4 @@
+interface:
+  display_name: "API Key Local Mirror"
+  short_description: "Secure tokenized local mirror for API keys."
+  default_prompt: "Store, list, and resolve API keys using a secure local tokenized mirror for terminal workflows."

@@ -226,6 +226,23 @@ class OctreeNode:
                 for child in self.children.values():
                     child._collect_voxels(voxels, grid_size)
 
+    def node_count(self) -> int:
+        """Count this node and all descendants."""
+        return 1 + sum(child.node_count() for child in self.children.values())
+
+    def leaf_count(self) -> int:
+        """Count terminal nodes in the sparse tree."""
+        if not self.children:
+            return 1
+        return sum(child.leaf_count() for child in self.children.values())
+
+    def max_depth_used(self) -> int:
+        """Return the deepest occupied node currently allocated."""
+        deepest = self.depth if self.occupied else 0
+        for child in self.children.values():
+            deepest = max(deepest, child.max_depth_used())
+        return deepest
+
 
 class HyperbolicOctree:
     """
@@ -428,6 +445,22 @@ class HyperbolicOctree:
         occupied = len(self.get_occupied_voxels())
         total = self.grid_size ** 3
         return occupied / total
+
+    def stats(self) -> Dict[str, Any]:
+        """Summarize sparse allocation and occupancy behavior."""
+        occupied_voxels = len(self.get_occupied_voxels())
+        spectral_voxels = len(self.get_all_spectral_voxels())
+        return {
+            "grid_size": self.grid_size,
+            "max_depth": self.max_depth,
+            "max_depth_used": self.root.max_depth_used(),
+            "point_count": self._point_count,
+            "occupied_voxels": occupied_voxels,
+            "spectral_voxels": spectral_voxels,
+            "occupancy_ratio": self.occupancy_ratio(),
+            "node_count": self.root.node_count(),
+            "leaf_count": self.root.leaf_count(),
+        }
 
     @property
     def point_count(self) -> int:

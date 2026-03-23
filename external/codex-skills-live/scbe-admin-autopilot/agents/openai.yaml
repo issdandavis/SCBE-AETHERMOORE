@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Admin Autopilot"
+  short_description: "Run SCBE command-center, service, relay, and backup ops."
+  default_prompt: "Operate the SCBE admin stack through the Issac Command Center and verified automation lanes."

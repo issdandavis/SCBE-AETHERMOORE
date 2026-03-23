@@ -1,0 +1,209 @@
+{
+  "generated_at": "2026-03-18T06:11:07Z",
+  "count": 12,
+  "rows": [
+    {
+      "slug": "long-form-work-orchestrator",
+      "name": "long-form-work-orchestrator",
+      "description": "Run long-form engineering work in checkpointed phases with deterministic artifacts, resilience handling, and end-of-run reliability reporting.",
+      "path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\skills\\long-form-work-orchestrator",
+      "categories": [
+        "ops"
+      ],
+      "recommended_tongues": [
+        "KO",
+        "DR"
+      ]
+    },
+    {
+      "slug": "scbe-admin-autopilot",
+      "name": "scbe-admin-autopilot",
+      "description": "Operate SCBE in admin mode through the Issac Command Center, watchdog loops, service launchers, cross-talk relay commands, and verified storage or sync runs. Use when the user asks for always-on agent workflows, command-center automation, repo or system health checks, backup or prune lanes, service bootstrapping, or admin-level orchestration.",
+      "path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\skills\\scbe-admin-autopilot",
+      "categories": [
+        "ops"
+      ],
+      "recommended_tongues": [
+        "KO",
+        "DR"
+      ]
+    },
+    {
+      "slug": "scbe-autonomous-worker-productizer",
+      "name": "scbe-autonomous-worker-productizer",
+      "description": "Turn SCBE automation, autonomous worker, and revenue-system notes into concrete offers, workflow packs, pilot plans, or SaaS-facing product packets. Use when Codex needs to package Notion automation pages into buyer-ready offerings, n8n/Zapier workflow designs, flock-backed worker systems, or implementation roadmaps tied to existing SCBE repo surfaces.",
+      "path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\skills\\scbe-autonomous-worker-productizer",
+      "categories": [
+        "deployment",
+        "dev",
+        "knowledge",
+        "ops"
+      ],
+      "recommended_tongues": [
+        "DR",
+        "UM",
+        "AV",
+        "RU",
+        "KO"
+      ]
+    },
+    {
+      "slug": "scbe-browser-sidepanel-ops",
+      "name": "scbe-browser-sidepanel-ops",
+      "description": "Build, improve, and package the local AetherBrowse browser with an AI sidepanel workflow, governance checks, and app-store-ready Android artifacts.",
+      "path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\skills\\scbe-browser-sidepanel-ops",
+      "categories": [
+        "browser",
+        "dev",
+        "ops",
+        "security"
+      ],
+      "recommended_tongues": [
+        "AV",
+        "CA",
+        "RU",
+        "KO",
+        "DR",
+        "UM"
+      ]
+    },
+    {
+      "slug": "scbe-claim-to-code-evidence",
+      "name": "scbe-claim-to-code-evidence",
+      "description": "Map SCBE Notion technical claims, proof pages, and patent-facing architecture notes to concrete repository evidence such as code paths, tests, demos, and docs. Use when Codex needs to build a due-diligence packet, claim-to-code audit, implementation crosswalk, patent support note, or proof summary from local Notion exports and repo artifacts.",
+      "path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\skills\\scbe-claim-to-code-evidence",
+      "categories": [
+        "deployment",
+        "dev",
+        "knowledge",
+        "research"
+      ],
+      "recommended_tongues": [
+        "DR",
+        "UM",
+        "AV",
+        "RU",
+        "KO"
+      ]
+    },
+    {
+      "slug": "scbe-codebase-orienter",
+      "name": "scbe-codebase-orienter",
+      "description": "Explain the SCBE-AETHERMOORE repo, separate live code from generated or archival material, and route work to the correct entrypoints. Use when Codex needs a fast codebase walkthrough, startup map, module ownership summary, or guidance on whether a feature lives in `src/`, `api/`, `scripts/`, `artifacts/`, or docs.",
+      "path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\skills\\scbe-codebase-orienter",
+      "categories": [
+        "dev"
+      ],
+      "recommended_tongues": [
+        "AV",
+        "RU"
+      ]
+    },
+    {
+      "slug": "scbe-colab-training-ops",
+      "name": "scbe-colab-training-ops",
+      "description": "Operate SCBE Colab notebooks as a daily training and remote-compute lane using the Issac command center, local bridge profiles, notebook catalog, and Hugging Face training scripts. Use when the user wants to run or prepare Colab notebooks, wire local Colab URLs into SCBE, choose the right notebook for SFT or pivot work, or turn browser/compute sessions into repeatable training flows.",
+      "path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\skills\\scbe-colab-training-ops",
+      "categories": [
+        "browser",
+        "ops"
+      ],
+      "recommended_tongues": [
+        "AV",
+        "CA",
+        "KO",
+        "DR"
+      ]
+    },
+    {
+      "slug": "scbe-government-contract-intelligence",
+      "name": "scbe-government-contract-intelligence",
+      "description": "Investigate and prioritize U.S. federal and prime-contractor opportunities for SCBE swarm, autonomy, navigation, and AI-governance technologies. Use when evaluating SAM.gov/DIU/AFWERX/SBIR pathways, validating policy/news claims, producing capture plans, or preparing outreach packets for government-adjacent revenue.",
+      "path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\skills\\scbe-government-contract-intelligence",
+      "categories": [
+        "deployment",
+        "knowledge",
+        "monetization",
+        "security"
+      ],
+      "recommended_tongues": [
+        "DR",
+        "UM",
+        "KO",
+        "RU",
+        "AV"
+      ]
+    },
+    {
+      "slug": "scbe-kernel-external-toolcall-specialist",
+      "name": "scbe-kernel-external-toolcall-specialist",
+      "description": "Kernel engineering and external tool-call orchestration for SCBE-AETHERMOORE. Use when implementing or reviewing SCBE runtime paths that call external systems (Hugging Face, Notion, GitHub, Linear, Zapier, browser automation, MCP connectors), when mapping domain-specific turnstile actions, when enforcing StateVector and DecisionRecord outputs, or when generating deterministic chain scripts/YAML for multi-agent workflows.",
+      "path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\skills\\scbe-kernel-external-toolcall-specialist",
+      "categories": [
+        "browser",
+        "deployment",
+        "dev",
+        "knowledge",
+        "ops"
+      ],
+      "recommended_tongues": [
+        "AV",
+        "CA",
+        "DR",
+        "UM",
+        "RU",
+        "KO"
+      ]
+    },
+    {
+      "slug": "scbe-playwright-ops-extension",
+      "name": "scbe-playwright-ops-extension",
+      "description": "Command-line Playwright extension that combines deterministic HYDRA terminal browsing evidence, Playwright capture, cross-talk packet emission, and handoff packaging with speed-line lane outputs.",
+      "path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\skills\\scbe-playwright-ops-extension",
+      "categories": [
+        "browser",
+        "knowledge",
+        "ops",
+        "research"
+      ],
+      "recommended_tongues": [
+        "AV",
+        "CA",
+        "KO",
+        "RU",
+        "DR"
+      ]
+    },
+    {
+      "slug": "scbe-research-training-bridge",
+      "name": "scbe-research-training-bridge",
+      "description": "Stage arXiv evidence and Obsidian markdown into source-grounded Hugging Face training bundles for research, review, and later SFT runs.",
+      "path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\skills\\scbe-research-training-bridge",
+      "categories": [
+        "knowledge",
+        "ops",
+        "research"
+      ],
+      "recommended_tongues": [
+        "KO",
+        "RU",
+        "DR"
+      ]
+    },
+    {
+      "slug": "scbe-spiralverse-intent-auth",
+      "name": "scbe-spiralverse-intent-auth",
+      "description": "Implement and operate Spiralverse intent-authenticated communication for HYDRA/SCBE using six sacred tongues, governance gates, and signed audit packets.",
+      "path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\skills\\scbe-spiralverse-intent-auth",
+      "categories": [
+        "dev",
+        "security"
+      ],
+      "recommended_tongues": [
+        "AV",
+        "RU",
+        "UM"
+      ]
+    }
+  ]
+}

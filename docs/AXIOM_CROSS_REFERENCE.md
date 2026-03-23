@@ -37,6 +37,19 @@ This project uses three overlapping axiom systems. They are not contradictory; t
 | FA12 | Topological Attack Detection | PA9 | Spectral coherence (PHDM) | QA4: Symmetry | VERIFIED |
 | FA13 | Atomic Rekeying | -- | Not in PA (Claim 5 PQC) | -- | VERIFIED |
 
+### Mar 17, 2026 Reference Split Note
+
+Keep these two Layer 12 lanes distinct when adding tests or writing theorem claims:
+
+- `src/scbe_14layer_reference.py::layer_12_harmonic_scaling` is the current bounded reference score:
+  `H_score = 1 / (1 + d + 2*phase_deviation)`, range `(0, 1]`.
+- Legacy theorem/patent-aligned modules such as `src/symphonic_cipher/qasi_core.py`
+  and related wall-law implementations still use `H(d,R) = R^(d^2)`.
+
+The new focused suite `tests/industry_standard/test_formal_axioms_reference.py`
+keeps this split explicit: FA1-FA3 are checked against the legacy wall law,
+while FA4/FA7/FA9/FA10/FA12 are checked against the live reference pipeline.
+
 ### Pipeline Axioms Not in Formal Axioms
 
 | PA# | Pipeline Axiom | Why No FA Equivalent | Covered By |

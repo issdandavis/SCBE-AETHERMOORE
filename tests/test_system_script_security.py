@@ -19,7 +19,7 @@ _ss_spec = _ilu.spec_from_file_location(
 _ss_mod = _ilu.module_from_spec(_ss_spec)
 _ss_spec.loader.exec_module(_ss_mod)
 _ss_mod.get_secret = lambda key, default="": default
-_ss_mod.set_secret = lambda key, value, note="": None
+_ss_mod.set_secret = lambda key, value, note="", tongue=None: None
 sys.modules["src.security.secret_store"] = _ss_mod
 
 _ORIGINAL_MODULES = {

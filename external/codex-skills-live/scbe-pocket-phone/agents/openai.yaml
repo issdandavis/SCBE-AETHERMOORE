@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Pocket Phone"
+  short_description: "Run the SCBE emulator as an always-on pocket phone"
+  default_prompt: "Use $scbe-pocket-phone to run the SCBE Pixel phone lane as my daily driver for browsing, messaging, workflow, and app handoffs."

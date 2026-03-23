@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cloud Offload Mesh"
+  short_description: "Verify, sort, and offshore files safely."
+  default_prompt: "Use $multi-agent-cloud-offload to inventory files, verify cloud copies, and delete only after verified targets succeed."

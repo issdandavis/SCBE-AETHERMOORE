@@ -1,0 +1,44 @@
+{
+  "speaker": "Polly (Raven)",
+  "text": "Took you long enough.",
+  "tongue_mix": {
+    "KO": 0.08,
+    "AV": 0.14,
+    "RU": 0.09,
+    "CA": 0.18,
+    "UM": 0.12,
+    "DR": 0.39
+  },
+  "timbre": {
+    "warmth": 0.42,
+    "brightness": 0.61,
+    "weight": 0.63,
+    "grain": 0.41,
+    "openness": 0.48,
+    "tension": 0.7,
+    "softness": 0.29,
+    "silence_affinity": 0.24
+  },
+  "breath_plan": [
+    {
+      "index": 0,
+      "kind": "micro",
+      "before_token": "Took",
+      "duration_ms": 110
+    }
+  ],
+  "phase": {
+    "line_phase": 0.67,
+    "pause_skew": 0.18,
+    "stress_bias": "front-loaded"
+  },
+  "render": {
+    "rate": 1.02,
+    "pitch_shift_st": 0.3,
+    "dynamic_range": 0.58,
+    "breath_gain_db": -24.0,
+    "pause_gain": 0.72,
+    "attack_ms": 22,
+    "release_ms": 85
+  }
+}

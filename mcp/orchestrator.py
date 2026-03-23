@@ -58,6 +58,7 @@ from src.symphonic_cipher.scbe_aethermoore.rosetta import (
     LCDAProjector,
     DualEntropicDefenseEngine,
 )
+from src.aetherbrowser.governed_web import GovernedWebTools
 
 # ---------------------------------------------------------------------------
 # Shared instances
@@ -74,6 +75,7 @@ _genesis = GenesisProtocol(_integrator)
 _rosetta = RosettaStone()
 _lcda = LCDAProjector()
 _dede = DualEntropicDefenseEngine()
+_gov_web = GovernedWebTools()
 
 # Swarm singleton
 _swarm: Optional[SwarmBrowser] = None
@@ -525,6 +527,62 @@ async def hydra_swarm_status() -> str:
 # ═══════════════════════════════════════════════════════════════════════════
 # SFT TRAINING TOOLS
 # ═══════════════════════════════════════════════════════════════════════════
+
+
+@mcp.tool()
+async def web_search(query: str, num_results: int = 8, agent_id: str = "KO") -> str:
+    """Run a governed web search with per-result zone annotation."""
+    payload = await _gov_web.search(query, num_results=num_results, agent_id=agent_id)
+    result = json.dumps(payload, default=str)
+    _record_sft(
+        "web_search",
+        {"query": query, "num_results": num_results, "agent_id": agent_id},
+        result,
+        success=payload.get("ok", False),
+    )
+    return result
+
+
+@mcp.tool()
+async def web_fetch(url: str, engine: str = "auto", agent_id: str = "AV") -> str:
+    """Fetch a page through HyperLane governance and membrane scanning."""
+    payload = await _gov_web.fetch(url, engine=engine, agent_id=agent_id)
+    result = json.dumps(payload, default=str)
+    _record_sft(
+        "web_fetch",
+        {"url": url, "engine": engine, "agent_id": agent_id},
+        result,
+        success=payload.get("ok", False),
+    )
+    return result
+
+
+@mcp.tool()
+async def web_extract(url: str, pattern: str, agent_id: str = "AV") -> str:
+    """Extract structured matches from a page through governed read-only access."""
+    payload = await _gov_web.extract(url, pattern=pattern, agent_id=agent_id)
+    result = json.dumps(payload, default=str)
+    _record_sft(
+        "web_extract",
+        {"url": url, "pattern": pattern, "agent_id": agent_id},
+        result,
+        success=payload.get("ok", False),
+    )
+    return result
+
+
+@mcp.tool()
+async def web_needs_js(url: str, agent_id: str = "AV") -> str:
+    """Check whether a page likely requires a browser runtime."""
+    payload = await _gov_web.needs_js(url, agent_id=agent_id)
+    result = json.dumps(payload, default=str)
+    _record_sft(
+        "web_needs_js",
+        {"url": url, "agent_id": agent_id},
+        result,
+        success=payload.get("ok", False),
+    )
+    return result
 
 
 @mcp.tool()

@@ -1,0 +1,38 @@
+chain:
+  id: scbe-ko-pr-compliance
+  name: SCBE KO Compliance PR Router
+  repo: "ISDanDavis2/scbe-aethermoore"
+  steps:
+    - id: fetch_diff
+      type: tool
+      tool: github.pr.get_diff
+      input:
+        repo: "ISDanDavis2/scbe-aethermoore"
+      output_key: pr_diff
+    - id: review_diff
+      type: llm
+      model: claude-opus-4-6
+      input_from: fetch_diff.pr_diff
+      output_key: review_output
+    - id: branch_by_action
+      type: gate
+      condition: "review_output.decision_record.action == 'ALLOW'"
+      on_true: post_pass
+      on_false: route_to_linear
+    - id: post_pass
+      type: tool
+      tool: github.pr.post_comment
+      input:
+        body: "SCBE compliance passed"
+      output_key: comment_result
+    - id: route_to_linear
+      type: tool
+      tool: linear.create_issue
+      input:
+        title: "SCBE compliance DENY/QUARANTINE from KO review"
+        description: "{{ review_output.decision_record.reason }}"
+        tags:
+          - "scbe-compliance"
+          - "agent-review"
+          - "KO"
+      output_key: linear_issue
