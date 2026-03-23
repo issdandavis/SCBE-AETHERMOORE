@@ -1,0 +1,15 @@
+# Gitleaks configuration for SCBE-AETHERMOORE
+# Training data contains synthetic/example API key patterns that are not real secrets
+
+title = "SCBE Gitleaks Config"
+
+[allowlist]
+  description = "Training data and test fixtures contain synthetic API key patterns"
+  paths = [
+    '''training/''',
+    '''training-data/''',
+    '''tests/''',
+    '''artifacts/''',
+    '''content/book/''',
+    '''notes/''',
+  ]
