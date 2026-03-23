@@ -40,6 +40,7 @@ from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
 from src.api.hydra_routes import hydra_router, init_hydra_spine
 from src.api.saas_routes import saas_router
 from src.api.stripe_billing import billing_router
+from src.api.attest_routes import attest_router
 
 try:
     from src.api.mesh_routes import mesh_router
@@ -86,6 +87,9 @@ app.include_router(saas_router)
 
 # Stripe billing — checkout, webhooks, API key provisioning.
 app.include_router(billing_router)
+
+# Attestation verification — metered Sacred Egg validation.
+app.include_router(attest_router)
 
 # ============================================================================
 # RATE LIMITING

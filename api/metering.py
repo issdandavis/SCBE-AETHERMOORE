@@ -13,11 +13,13 @@ from typing import Dict, List, Optional
 GOVERNANCE_EVALUATIONS = "governance_evaluations"
 WORKFLOW_EXECUTIONS = "workflow_executions"
 AUDIT_REPORT_GENERATIONS = "audit_report_generations"
+ATTESTATION_VERIFICATIONS = "attestation_verifications"
 
 BILLABLE_METRICS = {
     GOVERNANCE_EVALUATIONS,
     WORKFLOW_EXECUTIONS,
     AUDIT_REPORT_GENERATIONS,
+    ATTESTATION_VERIFICATIONS,
 }
 
 
