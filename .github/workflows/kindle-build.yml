@@ -54,6 +54,9 @@ jobs:
             npx cap add android
           fi
           npx cap sync android
+  - name: Make gradlew executable
+              working-directory: kindle-app/android
+          run: chmod +x gradlew
 
       - name: Build debug APK
         working-directory: kindle-app/android
