@@ -22,6 +22,7 @@ import secrets
 import time
 import urllib.error
 import urllib.request
+import uuid
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Request
@@ -34,6 +35,15 @@ billing_router = APIRouter(prefix="/billing", tags=["Billing"])
 # ---------------------------------------------------------------------------
 
 PLANS: Dict[str, Dict[str, Any]] = {
+    "free": {
+        "name": "Free",
+        "stripe_price_id": "free",
+        "stripe_product_id": "free",
+        "price_monthly_cents": 0,
+        "description": "100 attestation verifications/mo, 1 flock, 2 agents, 500 governance checks/mo",
+        "limits": {"flocks": 1, "agents": 2, "monthly_governance": 500, "monthly_attestations": 100},
+        "overage_cents_per_check": 0,
+    },
     "starter": {
         "name": "Starter",
         "stripe_price_id": "price_1TBnUmJTF2SuUODIbz41CUFZ",
@@ -160,6 +170,10 @@ def _verify_stripe_signature(payload: bytes, sig_header: str) -> bool:
 # Request models
 # ---------------------------------------------------------------------------
 
+class FreeSignupRequest(BaseModel):
+    email: str = Field(..., min_length=3, max_length=254)
+
+
 class CheckoutRequest(BaseModel):
     plan: str = Field(..., pattern="^(starter|growth|enterprise)$")
     email: Optional[str] = Field(default=None, max_length=254)
@@ -186,6 +200,41 @@ async def list_plans():
             }
             for plan_id, plan in PLANS.items()
         },
+    }
+
+
+@billing_router.post("/free-signup")
+async def free_signup(request: FreeSignupRequest):
+    """Provision a free-tier API key without Stripe checkout.
+
+    Returns an API key with free plan limits (no payment required).
+    """
+    api_key = f"scbe_free_{secrets.token_urlsafe(32)}"
+    now = int(time.time())
+    plan = PLANS["free"]
+
+    record = {
+        "customer_id": f"free_{uuid.uuid4().hex[:12]}",
+        "subscription_id": "",
+        "plan": "free",
+        "email": request.email,
+        "api_key": api_key,
+        "checkout_session_id": "",
+        "created_at": now,
+        "active": True,
+    }
+
+    BILLING_CUSTOMERS[record["customer_id"]] = record
+    BILLING_API_KEYS[api_key] = record
+
+    # Register in SaaS API key store so endpoints accept it
+    from src.api.saas_routes import VALID_API_KEYS
+    VALID_API_KEYS[api_key] = request.email
+
+    return {
+        "api_key": api_key,
+        "plan": "free",
+        "limits": plan["limits"],
     }
 
 

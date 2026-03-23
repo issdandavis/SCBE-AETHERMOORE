@@ -31,6 +31,7 @@ VALID_API_KEYS = {
 }
 
 PLAN_LIMITS: Dict[str, Dict[str, int]] = {
+    "free": {"flocks": 1, "agents": 2, "monthly_governance": 500, "monthly_attestations": 100},
     "starter": {"flocks": 1, "agents": 8, "monthly_governance": 5000},
     "growth": {"flocks": 5, "agents": 40, "monthly_governance": 25000},
     "enterprise": {"flocks": 25, "agents": 250, "monthly_governance": 100000},
@@ -58,6 +59,7 @@ async def verify_saas_api_key(x_api_key: str = Header(...)) -> str:
 
 
 class SaaSPlan(str, Enum):
+    free = "free"
     starter = "starter"
     growth = "growth"
     enterprise = "enterprise"

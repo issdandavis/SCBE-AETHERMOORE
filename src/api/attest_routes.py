@@ -85,6 +85,49 @@ def set_attest_metering_store(store: MeteringStore) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Free tier limit enforcement
+# ---------------------------------------------------------------------------
+
+FREE_TIER_MONTHLY_ATTESTATIONS = 100
+
+
+def _get_tenant_plan(api_key: str) -> Optional[str]:
+    """Return the plan name for a billing API key, or None if not a billing key."""
+    billing = _get_billing_keys()
+    record = billing.get(api_key)
+    if record:
+        return record.get("plan")
+    return None
+
+
+def _get_monthly_attestation_count(tenant_id: str) -> int:
+    """Return the current month's attestation verification count for a tenant."""
+    now = datetime.now(timezone.utc)
+    rows = _attest_metering.export_monthly_usage(now.year, now.month, tenant_id)
+    return sum(r.count for r in rows if r.metric_name == ATTESTATION_VERIFICATIONS)
+
+
+def _check_free_tier_limit(tenant_id: str, api_key: str, additional: int = 1) -> None:
+    """Raise HTTP 429 if the tenant is on the free plan and has exceeded the monthly cap.
+
+    Args:
+        tenant_id: The resolved tenant identifier.
+        api_key: The raw API key (used to look up plan).
+        additional: Number of verifications about to be consumed.
+    """
+    plan = _get_tenant_plan(api_key)
+    if plan != "free":
+        return
+
+    current = _get_monthly_attestation_count(tenant_id)
+    if current + additional > FREE_TIER_MONTHLY_ATTESTATIONS:
+        raise HTTPException(
+            status_code=429,
+            detail="Free tier limit reached (100/mo). Upgrade at /billing/plans",
+        )
+
+
+# ---------------------------------------------------------------------------
 # Pydantic models (mirrors TypeScript EggAttestPacket)
 # ---------------------------------------------------------------------------
 
@@ -313,6 +356,10 @@ async def verify_attestation(
     as one `attestation_verifications` unit.
     """
     tenant_id = _resolve_tenant(x_api_key)
+
+    # Enforce free tier hard cap before metering
+    _check_free_tier_limit(tenant_id, x_api_key)
+
     errors = _validate_packet(packet)
     verification_id = f"av_{uuid.uuid4().hex[:16]}"
 
@@ -365,6 +412,10 @@ async def batch_verify(
     Metered per packet (not per request).
     """
     tenant_id = _resolve_tenant(x_api_key)
+
+    # Enforce free tier hard cap before metering (check full batch size)
+    _check_free_tier_limit(tenant_id, x_api_key, additional=len(body.packets))
+
     results: List[BatchVerifyItem] = []
     passed_count = 0
 
