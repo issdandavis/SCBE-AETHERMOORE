@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scbe.dev/schemas/action_map_v1.schema.json",
+  "title": "SCBE Action Map",
+  "type": "object",
+  "required": ["schema_version", "run_id", "task", "started_at", "workflow_signature", "summary", "timeline"],
+  "properties": {
+    "schema_version": { "const": "action_map_v1" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "task": { "type": "string", "minLength": 1 },
+    "started_at": { "type": "string" },
+    "closed_at": { "type": "string" },
+    "workflow_signature": { "type": "string", "minLength": 16, "maxLength": 16 },
+    "summary": {
+      "type": "object",
+      "required": ["terminal_status", "event_count", "step_count", "status_counts"],
+      "properties": {
+        "terminal_status": { "type": "string" },
+        "event_count": { "type": "integer", "minimum": 1 },
+        "step_count": { "type": "integer", "minimum": 0 },
+        "status_counts": { "type": "object" }
+      },
+      "additionalProperties": true
+    },
+    "timeline": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["event_id", "event_type", "step_index", "timestamp_utc", "summary", "status"],
+        "properties": {
+          "event_id": { "type": "string" },
+          "event_type": { "enum": ["start", "step", "close"] },
+          "step_index": { "type": "integer", "minimum": 0 },
+          "timestamp_utc": { "type": "string" },
+          "summary": { "type": "string" },
+          "status": { "type": "string" },
+          "lane": { "type": "string" },
+          "tool": { "type": "string" },
+          "command": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1.0",
+  "dataset_id": "swle-six-language-pack",
+  "description": "Template manifest for the first six-language SWLE benchmark dataset.",
+  "contact": "issac@example.com",
+  "default_entry_schema": "schemas/swle/swle_lexicon_entry.schema.json",
+  "languages": [
+    {
+      "language_id": "lang1",
+      "language_name": "Language One",
+      "iso_639_3": null,
+      "family": null,
+      "scripts": [
+        "Latin"
+      ],
+      "phoneme_inventory_label": "ipa",
+      "tokenizer_ids": [
+        "tokenizer-lang1-bpe"
+      ],
+      "notes": null
+    }
+  ],
+  "files": [
+    {
+      "language_id": "lang1",
+      "path": "lexicons/rows/lang1.jsonl",
+      "format": "jsonl",
+      "row_count": null,
+      "entry_schema": "schemas/swle/swle_lexicon_entry.schema.json"
+    }
+  ],
+  "label_inventory": {
+    "has_concept_ids": true,
+    "has_translation_sets": true,
+    "has_cognate_classes": false,
+    "has_valence": false,
+    "has_morphology": true
+  }
+}

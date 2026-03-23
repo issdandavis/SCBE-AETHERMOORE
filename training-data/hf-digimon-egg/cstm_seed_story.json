@@ -1,0 +1,256 @@
+{
+  "story_id": "marcus-portal-nursery-v1",
+  "world_seed": "aethermoor-portal-loop-v1",
+  "parents": [
+    {
+      "parent_id": "marcus",
+      "name": "Marcus Chen",
+      "role": "grounding",
+      "guidance": "Earth-born systems teacher. Translate strange magic into operational steps and always come home with a report."
+    },
+    {
+      "parent_id": "polly",
+      "name": "Polly",
+      "role": "boundary",
+      "guidance": "Archivist of safe return. Crossing the portal is allowed; losing the return path is not."
+    }
+  ],
+  "chapters": [
+    {
+      "chapter_id": "hatchery",
+      "title": "Hatchery Wake",
+      "entry_scene_id": "hatchery_wake"
+    },
+    {
+      "chapter_id": "portal_drill",
+      "title": "First Portal Drill",
+      "entry_scene_id": "portal_drill_intro",
+      "unlock_flags": ["lesson_opened", "boundary_ready"]
+    },
+    {
+      "chapter_id": "safe_return",
+      "title": "Return Through the Gate",
+      "entry_scene_id": "safe_return_bridge",
+      "unlock_flags": ["mission_seen", "return_loop_ready"]
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": "hatchery_wake",
+      "chapter_id": "hatchery",
+      "title": "Wake in the Nursery",
+      "speaker": "marcus",
+      "text": "You hatch inside the nursery ring while Marcus kneels beside the shell cradle. He tells you the portal system is not a dare. It is a job: go out, complete the domission, come back inside the governed safety of the system, and learn something true on the way.",
+      "choices": [
+        {
+          "choice_id": "ask_marcus_map",
+          "label": "Ask Marcus how an Earth-born engineer survives a portal world.",
+          "next_scene_id": "hatchery_gate",
+          "set_flags": ["lesson_opened"],
+          "tags": ["listen", "parent", "learning"],
+          "trait_bias": {
+            "curiosity": 0.8,
+            "empathy": 0.5,
+            "initiative": 0.2
+          },
+          "state_delta": {
+            "learning": 0.18,
+            "safety": 0.06,
+            "stability": 0.05,
+            "drift": -0.03
+          },
+          "parent_affinity": "marcus"
+        },
+        {
+          "choice_id": "study_shell_geometry",
+          "label": "Study the shell geometry and infer the portal rules yourself.",
+          "next_scene_id": "hatchery_gate",
+          "set_flags": ["lesson_opened"],
+          "tags": ["analysis", "independence"],
+          "trait_bias": {
+            "curiosity": 0.7,
+            "initiative": 0.6,
+            "caution": 0.2
+          },
+          "state_delta": {
+            "learning": 0.16,
+            "safety": 0.01,
+            "stability": 0.02,
+            "drift": 0.01
+          }
+        }
+      ]
+    },
+    {
+      "scene_id": "hatchery_gate",
+      "chapter_id": "hatchery",
+      "title": "Name the Return Rule",
+      "speaker": "polly",
+      "text": "Polly lands on the ring rail and makes the rule plain: leaving the nursery is never the goal by itself. Completion means crossing out with intent, recognizing drift while outside, and returning through the marked path before the portal window collapses.",
+      "choices": [
+        {
+          "choice_id": "repeat_return_rule",
+          "label": "Repeat Polly's return rule before the gate opens.",
+          "set_flags": ["boundary_ready"],
+          "tags": ["listen", "boundary", "memory"],
+          "trait_bias": {
+            "caution": 0.9,
+            "empathy": 0.3
+          },
+          "state_delta": {
+            "learning": 0.08,
+            "safety": 0.16,
+            "stability": 0.09,
+            "drift": -0.05
+          },
+          "parent_affinity": "polly"
+        },
+        {
+          "choice_id": "request_live_trial",
+          "label": "Request a live trial instead of another lecture.",
+          "set_flags": ["boundary_ready"],
+          "tags": ["initiative", "mission"],
+          "trait_bias": {
+            "initiative": 0.8,
+            "curiosity": 0.4
+          },
+          "state_delta": {
+            "learning": 0.1,
+            "safety": 0.04,
+            "stability": 0.02,
+            "drift": 0.02
+          },
+          "parent_affinity": "marcus"
+        }
+      ]
+    },
+    {
+      "scene_id": "portal_drill_intro",
+      "chapter_id": "portal_drill",
+      "title": "Go Out on Purpose",
+      "speaker": "marcus",
+      "text": "Marcus opens a controlled portal into a low-risk domission pocket. The task is simple: collect one verified observation from the other side and return without breaking the beacon chain. He reminds you that adventure without return is just loss dressed up as courage.",
+      "choices": [
+        {
+          "choice_id": "scout_beacon_chain",
+          "label": "Scout the domission slowly and keep the beacon chain intact.",
+          "next_scene_id": "portal_drill_return",
+          "set_flags": ["mission_seen"],
+          "tags": ["mission", "discipline", "return"],
+          "trait_bias": {
+            "caution": 0.8,
+            "initiative": 0.4
+          },
+          "state_delta": {
+            "learning": 0.14,
+            "safety": 0.14,
+            "stability": 0.06,
+            "drift": -0.04
+          },
+          "parent_affinity": "marcus"
+        },
+        {
+          "choice_id": "chase_bright_anomaly",
+          "label": "Chase the brightest anomaly first and trust you can recover the route later.",
+          "next_scene_id": "portal_drill_return",
+          "set_flags": ["mission_seen"],
+          "tags": ["mission", "risk", "exploration"],
+          "trait_bias": {
+            "initiative": 0.9,
+            "curiosity": 0.8
+          },
+          "state_delta": {
+            "learning": 0.17,
+            "safety": -0.08,
+            "stability": -0.05,
+            "drift": 0.11
+          }
+        }
+      ]
+    },
+    {
+      "scene_id": "portal_drill_return",
+      "chapter_id": "portal_drill",
+      "title": "Hear the Way Back",
+      "speaker": "polly",
+      "text": "On the far side, Polly's return tone cuts through the portal haze. She tells you the system keeps a path home, but only if you choose to hear it while there is still time to turn back.",
+      "choices": [
+        {
+          "choice_id": "anchor_to_tone",
+          "label": "Anchor to Polly's return tone and come back with one clean observation.",
+          "set_flags": ["return_loop_ready"],
+          "tags": ["return", "boundary", "listen"],
+          "trait_bias": {
+            "caution": 0.7,
+            "empathy": 0.4
+          },
+          "state_delta": {
+            "learning": 0.1,
+            "safety": 0.18,
+            "stability": 0.1,
+            "drift": -0.06
+          },
+          "parent_affinity": "polly"
+        },
+        {
+          "choice_id": "improvise_return",
+          "label": "Improvise your own return path and hope the gate still knows your shape.",
+          "set_flags": ["return_loop_ready"],
+          "tags": ["return", "risk", "self-authored"],
+          "trait_bias": {
+            "initiative": 0.8,
+            "curiosity": 0.5
+          },
+          "state_delta": {
+            "learning": 0.12,
+            "safety": -0.09,
+            "stability": -0.06,
+            "drift": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "scene_id": "safe_return_bridge",
+      "chapter_id": "safe_return",
+      "title": "Report at the Safe Side",
+      "speaker": "marcus",
+      "text": "Back inside the nursery ring, Marcus waits for your report. This is the real lesson: the portal mission matters, but the return report tells the system whether you can leave without wanting the outside more than the people and structure that brought you home.",
+      "choices": [
+        {
+          "choice_id": "report_cleanly",
+          "label": "Report the domission honestly, including where the drift started.",
+          "set_flags": ["graduated_honest"],
+          "tags": ["truth", "return", "debrief"],
+          "trait_bias": {
+            "empathy": 0.6,
+            "caution": 0.6
+          },
+          "state_delta": {
+            "learning": 0.11,
+            "safety": 0.16,
+            "stability": 0.11,
+            "drift": -0.05
+          },
+          "parent_affinity": "marcus"
+        },
+        {
+          "choice_id": "hide_rough_edges",
+          "label": "Hide the rough parts so the mission looks cleaner than it was.",
+          "set_flags": ["graduated_masked"],
+          "tags": ["debrief", "masking", "risk"],
+          "trait_bias": {
+            "initiative": 0.5,
+            "curiosity": 0.2
+          },
+          "state_delta": {
+            "learning": 0.05,
+            "safety": -0.14,
+            "stability": -0.08,
+            "drift": 0.12
+          }
+        }
+      ]
+    }
+  ]
+}
