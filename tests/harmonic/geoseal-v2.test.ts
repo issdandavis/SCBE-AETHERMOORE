@@ -318,10 +318,7 @@ describe('v2 Swarm dynamics', () => {
 
 describe('scoreAllCandidates', () => {
   it('ranks matching+certain above rogue+uncertain', () => {
-    const anchors = [
-      makeTongueAgent('KO', [0.1, 0]),
-      makeTongueAgent('AV', [-0.1, 0]),
-    ];
+    const anchors = [makeTongueAgent('KO', [0.1, 0]), makeTongueAgent('AV', [-0.1, 0])];
 
     const candidates = [
       makeRetrieval('good', [0.12, 0], 0.0, 'KO'),
@@ -340,8 +337,8 @@ describe('scoreAllCandidates', () => {
     const anchors = [makeTongueAgent('KO', [0.1, 0])];
 
     const candidates = [
-      makeRetrieval('allow', [0.12, 0], 0.0, 'KO'),      // high trust
-      createMixedAgent('deny', [0.9, 0], Math.PI, 5.0),   // low trust
+      makeRetrieval('allow', [0.12, 0], 0.0, 'KO'), // high trust
+      createMixedAgent('deny', [0.9, 0], Math.PI, 5.0), // low trust
     ];
 
     const scored = scoreAllCandidates(anchors, candidates);
@@ -359,10 +356,7 @@ describe('scoreAllCandidates', () => {
   });
 
   it('picks best anchor per candidate', () => {
-    const anchors = [
-      makeTongueAgent('KO', [0.1, 0]),
-      makeTongueAgent('AV', [0.1, 0.1]),
-    ];
+    const anchors = [makeTongueAgent('KO', [0.1, 0]), makeTongueAgent('AV', [0.1, 0.1])];
 
     // AV-phase candidate near AV anchor
     const candidate = makeRetrieval('av-match', [0.12, 0.1], 0.0, 'AV');
@@ -380,8 +374,8 @@ describe('scoreAllCandidates', () => {
 describe('MixedAgent.phaseVec', () => {
   it('computes cos/sin for valid phase', () => {
     const agent = createMixedAgent('a', [0, 0], Math.PI / 2);
-    expect(agent.phaseVec[0]).toBeCloseTo(0, 5);   // cos(π/2) ≈ 0
-    expect(agent.phaseVec[1]).toBeCloseTo(1, 5);   // sin(π/2) = 1
+    expect(agent.phaseVec[0]).toBeCloseTo(0, 5); // cos(π/2) ≈ 0
+    expect(agent.phaseVec[1]).toBeCloseTo(1, 5); // sin(π/2) = 1
   });
 
   it('returns [0, 0] for null phase', () => {

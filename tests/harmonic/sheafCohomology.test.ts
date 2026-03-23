@@ -99,11 +99,9 @@ describe('A · Complete lattice axioms', () => {
 
     it('meet is minimum, join is maximum', () => {
       expect(RISK_LATTICE.meet(RiskLevel.ESCALATE, RiskLevel.QUARANTINE)).toBe(
-        RiskLevel.QUARANTINE,
+        RiskLevel.QUARANTINE
       );
-      expect(RISK_LATTICE.join(RiskLevel.ESCALATE, RiskLevel.QUARANTINE)).toBe(
-        RiskLevel.ESCALATE,
-      );
+      expect(RISK_LATTICE.join(RiskLevel.ESCALATE, RiskLevel.QUARANTINE)).toBe(RiskLevel.ESCALATE);
     });
 
     it('meet with top is identity', () => {
@@ -538,7 +536,7 @@ describe.skip('I · Policy obstruction detection (pending V1 API export)', () =>
         memory: RiskLevel.ALLOW,
         governance: RiskLevel.ALLOW,
       },
-      { noiseThreshold: 0.2 },
+      { noiseThreshold: 0.2 }
     );
     expect(result.noiseTriggered).toBe(true);
     expect(result.consensus).toBe(RiskLevel.ALLOW);
@@ -567,16 +565,14 @@ describe.skip('I · Policy obstruction detection (pending V1 API export)', () =>
   });
 
   it('twisted sheaf creates obstruction even with close inputs', () => {
-    const twists = new Map<string, EdgeTwist>([
-      ['im-mem', { raise: 2, lower: 0 }],
-    ]);
+    const twists = new Map<string, EdgeTwist>([['im-mem', { raise: 2, lower: 0 }]]);
     const result = detectPolicyObstruction(
       {
         immediate: RiskLevel.ALLOW,
         memory: RiskLevel.ALLOW,
         governance: RiskLevel.ALLOW,
       },
-      { twists },
+      { twists }
     );
     // The twist escalates ALLOW→ESCALATE in the edge, creating mismatch
     // After flow, consensus drops because the twist introduces inconsistency
@@ -659,7 +655,7 @@ describe.skip('K · Braided temporal distance (pending V1 API export)', () => {
     expect(d).toBeGreaterThan(triadic);
   });
 
-  it('symmetric: order doesn\'t matter', () => {
+  it("symmetric: order doesn't matter", () => {
     const d1 = braidedTemporalDistance([0.2, 0.8]);
     const d2 = braidedTemporalDistance([0.8, 0.2]);
     expect(d1).toBeCloseTo(d2, 10);
@@ -778,7 +774,7 @@ describe.skip('N · SCBE governance scenarios (pending V1 API export)', () => {
         memory: RiskLevel.ALLOW,
         governance: RiskLevel.DENY,
       },
-      { noiseThreshold: 0.1 },
+      { noiseThreshold: 0.1 }
     );
     expect(result.noiseTriggered).toBe(true);
     // Generate noise output
@@ -818,7 +814,7 @@ describe.skip('N · SCBE governance scenarios (pending V1 API export)', () => {
         memory: RiskLevel.ALLOW,
         governance: RiskLevel.DENY,
       },
-      { noiseThreshold: 0.3 },
+      { noiseThreshold: 0.3 }
     );
 
     const wall = cohomologicalHarmonicWall(detection.obstruction);
@@ -863,9 +859,7 @@ describe.skip('N · SCBE governance scenarios (pending V1 API export)', () => {
 
 /** Collect cochain values into a sorted array */
 function cochainValues<T>(c: Cochain<T>): T[] {
-  return [...c.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([, v]) => v);
+  return [...c.entries()].sort(([a], [b]) => a - b).map(([, v]) => v);
 }
 
 /** Make a 6D zero vector */
@@ -976,7 +970,7 @@ describe('CompleteLattice implementations', () => {
     });
 
     it('leq = subset', () => {
-      expect(P.leq(0b010, 0b110)).toBe(true);  // {1} ⊆ {1,2}
+      expect(P.leq(0b010, 0b110)).toBe(true); // {1} ⊆ {1,2}
       expect(P.leq(0b110, 0b010)).toBe(false); // {1,2} ⊄ {1}
     });
 
@@ -985,7 +979,9 @@ describe('CompleteLattice implementations', () => {
     });
 
     it('satisfies distributivity', () => {
-      const a = 0b101, b = 0b110, c = 0b011;
+      const a = 0b101,
+        b = 0b110,
+        c = 0b011;
       // a ∧ (b ∨ c) = (a ∧ b) ∨ (a ∧ c)
       expect(P.meet(a, P.join(b, c))).toBe(P.join(P.meet(a, b), P.meet(a, c)));
     });
@@ -1104,7 +1100,11 @@ describe('Galois connections', () => {
 describe('Cell complex builders', () => {
   describe('graphComplex', () => {
     // Triangle graph: 0-1, 1-2, 0-2
-    const G = graphComplex(3, [[0, 1], [1, 2], [0, 2]]);
+    const G = graphComplex(3, [
+      [0, 1],
+      [1, 2],
+      [0, 2],
+    ]);
 
     it('has correct number of cells', () => {
       expect(G.cells(0)).toHaveLength(3); // 3 vertices
@@ -1147,7 +1147,11 @@ describe('Cell complex builders', () => {
     // Single triangle: vertices 0,1,2; edges 0-1, 1-2, 0-2; face [0,1,2]
     const S = simplicialComplex(
       3,
-      [[0, 1], [1, 2], [0, 2]],
+      [
+        [0, 1],
+        [1, 2],
+        [0, 2],
+      ],
       [[0, 1, 2]]
     );
 
@@ -1182,7 +1186,10 @@ describe('Cell complex builders', () => {
 describe('Tarski Laplacian L_k', () => {
   describe('on constant sheaf over path graph', () => {
     // Path graph: 0 -- 1 -- 2
-    const complex = graphComplex(3, [[0, 1], [1, 2]]);
+    const complex = graphComplex(3, [
+      [0, 1],
+      [1, 2],
+    ]);
     const L = IntervalLattice(0, 10);
     const sheaf = constantSheaf(complex, L);
 
@@ -1196,7 +1203,11 @@ describe('Tarski Laplacian L_k', () => {
 
     it('consistent assignment is a fixed point', () => {
       // All vertices = 5 is consistent on constant sheaf
-      const x: Cochain<number> = new Map([[0, 5], [1, 5], [2, 5]]);
+      const x: Cochain<number> = new Map([
+        [0, 5],
+        [1, 5],
+        [2, 5],
+      ]);
       const result = tarskiLaplacian(sheaf, 0, x);
       // Since restriction is identity and all values match,
       // inner meet at each edge = 5, pull back = 5, outer meet = 5
@@ -1207,7 +1218,11 @@ describe('Tarski Laplacian L_k', () => {
 
     it('inconsistent assignment diffuses via meet', () => {
       // Vertex 0 = 3, Vertex 1 = 7, Vertex 2 = 5
-      const x: Cochain<number> = new Map([[0, 3], [1, 7], [2, 5]]);
+      const x: Cochain<number> = new Map([
+        [0, 3],
+        [1, 7],
+        [2, 5],
+      ]);
       const result = tarskiLaplacian(sheaf, 0, x);
 
       // Vertex 0: cofaces = [edge 0], faces of edge 0 = [0, 1]
@@ -1227,12 +1242,24 @@ describe('Tarski Laplacian L_k', () => {
   });
 
   it('is monotone: x ≤ y implies L(x) ≤ L(y)', () => {
-    const complex = graphComplex(3, [[0, 1], [1, 2], [0, 2]]);
+    const complex = graphComplex(3, [
+      [0, 1],
+      [1, 2],
+      [0, 2],
+    ]);
     const L = IntervalLattice(0, 10);
     const sheaf = constantSheaf(complex, L);
 
-    const x: Cochain<number> = new Map([[0, 2], [1, 3], [2, 4]]);
-    const y: Cochain<number> = new Map([[0, 5], [1, 6], [2, 7]]);
+    const x: Cochain<number> = new Map([
+      [0, 2],
+      [1, 3],
+      [2, 4],
+    ]);
+    const y: Cochain<number> = new Map([
+      [0, 5],
+      [1, 6],
+      [2, 7],
+    ]);
 
     const lx = tarskiLaplacian(sheaf, 0, x);
     const ly = tarskiLaplacian(sheaf, 0, y);
@@ -1251,7 +1278,11 @@ describe.skip('Tarski Cohomology TH^k (globalSections not exported)', () => {
   describe('TH^0 = global sections (constant sheaf)', () => {
     it('on connected graph: all cells converge to same value', () => {
       // Complete graph K3
-      const complex = graphComplex(3, [[0, 1], [1, 2], [0, 2]]);
+      const complex = graphComplex(3, [
+        [0, 1],
+        [1, 2],
+        [0, 2],
+      ]);
       const L = IntervalLattice(0, 10);
       const sheaf = constantSheaf(complex, L);
 
@@ -1266,7 +1297,10 @@ describe.skip('Tarski Cohomology TH^k (globalSections not exported)', () => {
 
     it('on disconnected graph: components may differ', () => {
       // Two disconnected edges: 0-1, 2-3
-      const complex = graphComplex(4, [[0, 1], [2, 3]]);
+      const complex = graphComplex(4, [
+        [0, 1],
+        [2, 3],
+      ]);
       const L = IntervalLattice(0, 10);
       const sheaf = constantSheaf(complex, L);
 
@@ -1280,7 +1314,12 @@ describe.skip('Tarski Cohomology TH^k (globalSections not exported)', () => {
 
   describe('convergence properties', () => {
     it('converges within lattice height iterations', () => {
-      const complex = graphComplex(5, [[0, 1], [1, 2], [2, 3], [3, 4]]);
+      const complex = graphComplex(5, [
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 4],
+      ]);
       const L = IntervalLattice(0, 20);
       const sheaf = constantSheaf(complex, L);
 
@@ -1290,7 +1329,10 @@ describe.skip('Tarski Cohomology TH^k (globalSections not exported)', () => {
     });
 
     it('iterating on a fixed point is idempotent', () => {
-      const complex = graphComplex(3, [[0, 1], [1, 2]]);
+      const complex = graphComplex(3, [
+        [0, 1],
+        [1, 2],
+      ]);
       const L = IntervalLattice(0, 10);
       const sheaf = constantSheaf(complex, L);
 
@@ -1307,7 +1349,10 @@ describe.skip('Tarski Cohomology TH^k (globalSections not exported)', () => {
 
   describe('globalSections convenience function', () => {
     it('equals tarskiCohomology at dim 0', () => {
-      const complex = graphComplex(3, [[0, 1], [1, 2]]);
+      const complex = graphComplex(3, [
+        [0, 1],
+        [1, 2],
+      ]);
       const L = IntervalLattice(0, 10);
       const sheaf = constantSheaf(complex, L);
 
@@ -1324,7 +1369,10 @@ describe.skip('Tarski Cohomology TH^k (globalSections not exported)', () => {
 
   describe('threshold sheaf TH^0', () => {
     it('threshold filters low values to bottom', () => {
-      const complex = graphComplex(3, [[0, 1], [1, 2]]);
+      const complex = graphComplex(3, [
+        [0, 1],
+        [1, 2],
+      ]);
       const L = IntervalLattice(0, 10);
       // Threshold at 5: values below 5 get mapped to 0
       const sheaf = thresholdSheaf(complex, L, 5);
@@ -1340,11 +1388,17 @@ describe.skip('Tarski Cohomology TH^k (globalSections not exported)', () => {
 
   describe('twisted sheaf TH^0', () => {
     it('edge scaling affects convergence', () => {
-      const complex = graphComplex(3, [[0, 1], [1, 2]]);
+      const complex = graphComplex(3, [
+        [0, 1],
+        [1, 2],
+      ]);
       const L = UnitIntervalLattice(100);
 
       // Edge 0 has scale 0.5, edge 1 has scale 0.8
-      const edgeScales = new Map<number, number>([[0, 0.5], [1, 0.8]]);
+      const edgeScales = new Map<number, number>([
+        [0, 0.5],
+        [1, 0.8],
+      ]);
       const sheaf = twistedSheaf(complex, L, edgeScales);
 
       const result = tarskiCohomology(sheaf, 0);
@@ -1356,7 +1410,11 @@ describe.skip('Tarski Cohomology TH^k (globalSections not exported)', () => {
 
   describe('Boolean sheaf TH^0', () => {
     it('on complete graph: global section is true', () => {
-      const complex = graphComplex(3, [[0, 1], [1, 2], [0, 2]]);
+      const complex = graphComplex(3, [
+        [0, 1],
+        [1, 2],
+        [0, 2],
+      ]);
       const sheaf = constantSheaf(complex, BooleanLattice);
 
       const result = tarskiCohomology(sheaf, 0);
@@ -1371,7 +1429,11 @@ describe.skip('Tarski Cohomology TH^k (globalSections not exported)', () => {
 
   describe('PowerSet sheaf TH^0', () => {
     it('converges on triangle', () => {
-      const complex = graphComplex(3, [[0, 1], [1, 2], [0, 2]]);
+      const complex = graphComplex(3, [
+        [0, 1],
+        [1, 2],
+        [0, 2],
+      ]);
       const P = PowerSetLattice(4);
       const sheaf = constantSheaf(complex, P);
 
@@ -1391,7 +1453,10 @@ describe.skip('Tarski Cohomology TH^k (globalSections not exported)', () => {
 
 describe('Hodge Cohomology HH^k', () => {
   it('HH^0 converges on path graph', () => {
-    const complex = graphComplex(3, [[0, 1], [1, 2]]);
+    const complex = graphComplex(3, [
+      [0, 1],
+      [1, 2],
+    ]);
     const L = IntervalLattice(0, 10);
     const sheaf = constantSheaf(complex, L);
 
@@ -1401,11 +1466,19 @@ describe('Hodge Cohomology HH^k', () => {
   });
 
   it('up and down Laplacians are dual operators', () => {
-    const complex = graphComplex(3, [[0, 1], [1, 2], [0, 2]]);
+    const complex = graphComplex(3, [
+      [0, 1],
+      [1, 2],
+      [0, 2],
+    ]);
     const L = IntervalLattice(0, 10);
     const sheaf = constantSheaf(complex, L);
 
-    const x: Cochain<number> = new Map([[0, 3], [1, 5], [2, 7]]);
+    const x: Cochain<number> = new Map([
+      [0, 3],
+      [1, 5],
+      [2, 7],
+    ]);
 
     const up = upLaplacian(sheaf, 0, x);
     const down = downLaplacian(sheaf, 0, x);
@@ -1424,11 +1497,18 @@ describe('Hodge Cohomology HH^k', () => {
   });
 
   it('Hodge Laplacian = meet of up and down', () => {
-    const complex = graphComplex(3, [[0, 1], [1, 2]]);
+    const complex = graphComplex(3, [
+      [0, 1],
+      [1, 2],
+    ]);
     const L = IntervalLattice(0, 10);
     const sheaf = constantSheaf(complex, L);
 
-    const x: Cochain<number> = new Map([[0, 4], [1, 6], [2, 8]]);
+    const x: Cochain<number> = new Map([
+      [0, 4],
+      [1, 6],
+      [2, 8],
+    ]);
 
     const up = upLaplacian(sheaf, 0, x);
     const down = downLaplacian(sheaf, 0, x);
@@ -1441,7 +1521,12 @@ describe('Hodge Cohomology HH^k', () => {
   });
 
   it('TH^k and HH^k both converge to fixed points', () => {
-    const complex = graphComplex(4, [[0, 1], [1, 2], [2, 3], [0, 3]]);
+    const complex = graphComplex(4, [
+      [0, 1],
+      [1, 2],
+      [2, 3],
+      [0, 3],
+    ]);
     const L = IntervalLattice(0, 10);
     const sheaf = constantSheaf(complex, L);
 
@@ -1457,11 +1542,13 @@ describe('Hodge Cohomology HH^k', () => {
 
     for (const cell of complex.cells(0)) {
       // TH^0 fixed point: x = x ∧ L_up(x)
-      expect(L.meet(th0.cochains.get(cell.id)!, thReapplied.get(cell.id)!))
-        .toBe(th0.cochains.get(cell.id)!);
+      expect(L.meet(th0.cochains.get(cell.id)!, thReapplied.get(cell.id)!)).toBe(
+        th0.cochains.get(cell.id)!
+      );
       // HH^0 fixed point: x = x ∧ L_hodge(x)
-      expect(L.meet(hh0.cochains.get(cell.id)!, hhReapplied.get(cell.id)!))
-        .toBe(hh0.cochains.get(cell.id)!);
+      expect(L.meet(hh0.cochains.get(cell.id)!, hhReapplied.get(cell.id)!)).toBe(
+        hh0.cochains.get(cell.id)!
+      );
     }
   });
 });
@@ -1502,7 +1589,10 @@ describe('Cochain utilities', () => {
 
 describe('Cohomology diagnostics', () => {
   it('analyseCohomology reports correct Betti number', () => {
-    const complex = graphComplex(3, [[0, 1], [1, 2]]);
+    const complex = graphComplex(3, [
+      [0, 1],
+      [1, 2],
+    ]);
     const L = IntervalLattice(0, 10);
     const sheaf = constantSheaf(complex, L);
 
@@ -1535,33 +1625,55 @@ describe('Cohomology diagnostics', () => {
 
 describe('Obstruction detection', () => {
   it('no obstructions on constant sheaf with uniform assignment', () => {
-    const complex = graphComplex(3, [[0, 1], [1, 2]]);
+    const complex = graphComplex(3, [
+      [0, 1],
+      [1, 2],
+    ]);
     const L = IntervalLattice(0, 10);
     const sheaf = constantSheaf(complex, L);
 
-    const assignment: Cochain<number> = new Map([[0, 5], [1, 5], [2, 5]]);
+    const assignment: Cochain<number> = new Map([
+      [0, 5],
+      [1, 5],
+      [2, 5],
+    ]);
     const obstructions = detectObstructions(sheaf, assignment);
 
     expect(obstructions).toHaveLength(0);
   });
 
   it('no obstructions when all vertices agree (identity restriction)', () => {
-    const complex = graphComplex(3, [[0, 1], [1, 2], [0, 2]]);
+    const complex = graphComplex(3, [
+      [0, 1],
+      [1, 2],
+      [0, 2],
+    ]);
     const L = IntervalLattice(0, 10);
     const sheaf = constantSheaf(complex, L);
 
-    const assignment: Cochain<number> = new Map([[0, 7], [1, 7], [2, 7]]);
+    const assignment: Cochain<number> = new Map([
+      [0, 7],
+      [1, 7],
+      [2, 7],
+    ]);
     const obstructions = detectObstructions(sheaf, assignment);
     expect(obstructions).toHaveLength(0);
   });
 
   it('detects obstructions when vertices disagree', () => {
-    const complex = graphComplex(3, [[0, 1], [1, 2]]);
+    const complex = graphComplex(3, [
+      [0, 1],
+      [1, 2],
+    ]);
     const L = IntervalLattice(0, 10);
     const sheaf = constantSheaf(complex, L);
 
     // Vertices disagree: 3, 7, 5
-    const assignment: Cochain<number> = new Map([[0, 3], [1, 7], [2, 5]]);
+    const assignment: Cochain<number> = new Map([
+      [0, 3],
+      [1, 7],
+      [2, 5],
+    ]);
     const obstructions = detectObstructions(sheaf, assignment);
 
     // Edge 0 (vertices 0, 1): 3 ≠ 7 → obstruction
@@ -1577,11 +1689,17 @@ describe('Obstruction detection', () => {
     const sheaf = constantSheaf(complex, L);
 
     // Small disagreement
-    const small: Cochain<number> = new Map([[0, 5], [1, 6]]);
+    const small: Cochain<number> = new Map([
+      [0, 5],
+      [1, 6],
+    ]);
     const obsSmall = detectObstructions(sheaf, small);
 
     // Large disagreement
-    const large: Cochain<number> = new Map([[0, 0], [1, 10]]);
+    const large: Cochain<number> = new Map([
+      [0, 0],
+      [1, 10],
+    ]);
     const obsLarge = detectObstructions(sheaf, large);
 
     expect(obsSmall).toHaveLength(1);
@@ -1598,7 +1716,10 @@ describe('Obstruction detection', () => {
     const sheaf = twistedSheaf(complex, L, edgeScales);
 
     // Values differ: restriction via scaling won't match
-    const assignment: Cochain<number> = new Map([[0, 0.8], [1, 0.9]]);
+    const assignment: Cochain<number> = new Map([
+      [0, 0.8],
+      [1, 0.9],
+    ]);
     const obstructions = detectObstructions(sheaf, assignment);
 
     // 0.8 * 0.3 = 0.24 vs 0.9 * 0.3 = 0.27 → different restrictions
@@ -1616,7 +1737,11 @@ describe('SheafCohomologyEngine', () => {
       const engine = new SheafCohomologyEngine();
       const v: Vector6D = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1];
       const vectors: Vector6D[] = [v, v, v];
-      const edges: [number, number][] = [[0, 1], [1, 2], [0, 2]];
+      const edges: [number, number][] = [
+        [0, 1],
+        [1, 2],
+        [0, 2],
+      ];
 
       const result = engine.analyseVectorField(vectors, edges);
 
@@ -1628,11 +1753,15 @@ describe('SheafCohomologyEngine', () => {
     it('divergent vectors produce obstructions', () => {
       const engine = new SheafCohomologyEngine();
       const vectors: Vector6D[] = [
-        [0, 0, 0, 0, 0, 0],     // origin (safe)
-        [2, 2, 2, 2, 2, 2],     // far from origin (risky)
+        [0, 0, 0, 0, 0, 0], // origin (safe)
+        [2, 2, 2, 2, 2, 2], // far from origin (risky)
         [0.1, 0.1, 0.1, 0.1, 0.1, 0.1], // near origin (safe)
       ];
-      const edges: [number, number][] = [[0, 1], [1, 2], [0, 2]];
+      const edges: [number, number][] = [
+        [0, 1],
+        [1, 2],
+        [0, 2],
+      ];
 
       const result = engine.analyseVectorField(vectors, edges);
 
@@ -1679,7 +1808,10 @@ describe('SheafCohomologyEngine', () => {
         const t = i / 9;
         return [t, t * 0.5, 0, 0, 0, 0] as Vector6D;
       });
-      const edges: [number, number][] = Array.from({ length: 9 }, (_, i) => [i, i + 1] as [number, number]);
+      const edges: [number, number][] = Array.from(
+        { length: 9 },
+        (_, i) => [i, i + 1] as [number, number]
+      );
 
       const result = engine.analyseVectorField(vectors, edges);
 
@@ -1692,7 +1824,15 @@ describe('SheafCohomologyEngine', () => {
     it('identical vectors are coherent', () => {
       const engine = new SheafCohomologyEngine();
       const v: Vector6D = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2];
-      expect(engine.isCoherent([v, v, v], [[0, 1], [1, 2]])).toBe(true);
+      expect(
+        engine.isCoherent(
+          [v, v, v],
+          [
+            [0, 1],
+            [1, 2],
+          ]
+        )
+      ).toBe(true);
     });
 
     it('very different vectors are incoherent', () => {
@@ -1713,7 +1853,11 @@ describe('SheafCohomologyEngine', () => {
         [0.2, 0, 0, 0, 0, 0],
         [0.3, 0, 0, 0, 0, 0],
       ];
-      const edges: [number, number][] = [[0, 1], [1, 2], [0, 2]];
+      const edges: [number, number][] = [
+        [0, 1],
+        [1, 2],
+        [0, 2],
+      ];
 
       const result = engine.analyseVectorField(vectors, edges);
       const chi = engine.eulerCharacteristic(result);
@@ -1730,7 +1874,10 @@ describe('SheafCohomologyEngine', () => {
 
     it('can analyse a simple field', () => {
       const result = defaultSheafEngine.analyseVectorField(
-        [[0, 0, 0, 0, 0, 0], [0.1, 0.1, 0, 0, 0, 0]],
+        [
+          [0, 0, 0, 0, 0, 0],
+          [0.1, 0.1, 0, 0, 0, 0],
+        ],
         [[0, 1]]
       );
       expect(result.globalSections.converged).toBe(true);
@@ -1741,7 +1888,10 @@ describe('SheafCohomologyEngine', () => {
     it('respects custom latticeSteps', () => {
       const engine = new SheafCohomologyEngine({ latticeSteps: 10 });
       const result = engine.analyseVectorField(
-        [[0, 0, 0, 0, 0, 0], [0.5, 0, 0, 0, 0, 0]],
+        [
+          [0, 0, 0, 0, 0, 0],
+          [0.5, 0, 0, 0, 0, 0],
+        ],
         [[0, 1]]
       );
       expect(result.globalSections.converged).toBe(true);
@@ -1761,7 +1911,9 @@ describe('SheafCohomologyEngine', () => {
       const lenientResult = lenient.analyseVectorField(vectors, edges);
 
       // Strict threshold → more risk amplification (more obstructions qualify)
-      expect(strictResult.riskAmplification).toBeGreaterThanOrEqual(lenientResult.riskAmplification);
+      expect(strictResult.riskAmplification).toBeGreaterThanOrEqual(
+        lenientResult.riskAmplification
+      );
     });
   });
 });
@@ -1843,11 +1995,12 @@ describe.skip('Property-based tests (globalSections not exported)', () => {
     const engine = new SheafCohomologyEngine({ latticeSteps: 10 });
 
     for (let trial = 0; trial < 20; trial++) {
-      const vectors: Vector6D[] = Array.from(
-        { length: 3 },
-        () => randomVec6D(5)
-      );
-      const edges: [number, number][] = [[0, 1], [1, 2], [0, 2]];
+      const vectors: Vector6D[] = Array.from({ length: 3 }, () => randomVec6D(5));
+      const edges: [number, number][] = [
+        [0, 1],
+        [1, 2],
+        [0, 2],
+      ];
 
       const result = engine.analyseVectorField(vectors, edges);
       expect(result.coherenceScore).toBeGreaterThanOrEqual(0);
@@ -1881,7 +2034,11 @@ describe('Edge cases', () => {
   });
 
   it('many parallel edges between same vertices', () => {
-    const complex = graphComplex(2, [[0, 1], [0, 1], [0, 1]]);
+    const complex = graphComplex(2, [
+      [0, 1],
+      [0, 1],
+      [0, 1],
+    ]);
     const L = IntervalLattice(0, 10);
     const sheaf = constantSheaf(complex, L);
 
@@ -1890,7 +2047,15 @@ describe('Edge cases', () => {
   });
 
   it('simplicial complex with triangle', () => {
-    const S = simplicialComplex(3, [[0, 1], [1, 2], [0, 2]], [[0, 1, 2]]);
+    const S = simplicialComplex(
+      3,
+      [
+        [0, 1],
+        [1, 2],
+        [0, 2],
+      ],
+      [[0, 1, 2]]
+    );
     const L = IntervalLattice(0, 10);
     const sheaf = constantSheaf(S, L);
 
@@ -1914,7 +2079,10 @@ describe('Edge cases', () => {
       eq: () => true,
       height: () => 0,
     };
-    const complex = graphComplex(3, [[0, 1], [1, 2]]);
+    const complex = graphComplex(3, [
+      [0, 1],
+      [1, 2],
+    ]);
     const sheaf = constantSheaf(complex, trivial);
 
     const result = tarskiCohomology(sheaf, 0);

@@ -164,12 +164,9 @@ export class OscillatorBus {
     position: Vec,
     trust: number,
     naturalFrequency?: number,
-    initialPhase?: number,
+    initialPhase?: number
   ): OscillatorState {
-    const freq = Math.min(
-      Math.abs(naturalFrequency ?? 3.0),
-      this.config.maxFrequency,
-    );
+    const freq = Math.min(Math.abs(naturalFrequency ?? 3.0), this.config.maxFrequency);
     const phase = normalizePhase(initialPhase ?? Math.random() * 2 * Math.PI);
 
     const state: OscillatorState = {

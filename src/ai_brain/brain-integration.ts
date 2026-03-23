@@ -35,7 +35,11 @@ import { UnifiedBrainState, hyperbolicDistanceSafe, safePoincareEmbed } from './
 import { runCombinedDetection } from './detection.js';
 import { BFTConsensus, type ConsensusVote, type ConsensusResult } from './bft-consensus.js';
 import { BrainAuditLogger } from './audit.js';
-import { ImmuneResponseSystem, type ImmuneState, type AgentImmuneStatus } from './immune-response.js';
+import {
+  ImmuneResponseSystem,
+  type ImmuneState,
+  type AgentImmuneStatus,
+} from './immune-response.js';
 import { FluxStateManager, type FluxState, type AgentFluxRecord } from './flux-states.js';
 import { icosahedralProjection, classifyVoxelRealm, type VoxelRealm } from './quasi-space.js';
 import { PHDMCore, type PHDMMonitorResult, type K0DerivationParams } from './phdm-core.js';
@@ -203,7 +207,7 @@ export class BrainIntegrationPipeline {
       } else {
         throw new Error(
           'PHDM is enabled but no phdmKyberParams provided. ' +
-          'Either set config.phdmKyberParams or disable PHDM (enablePHDM: false).'
+            'Either set config.phdmKyberParams or disable PHDM (enablePHDM: false).'
         );
       }
     } else {
@@ -238,10 +242,7 @@ export class BrainIntegrationPipeline {
     // Stage 2: Immune response
     let immuneStatus: AgentImmuneStatus;
     if (this.config.enableImmune) {
-      immuneStatus = this.immuneSystem.processAssessment(
-        trajectory.agentId,
-        detection
-      );
+      immuneStatus = this.immuneSystem.processAssessment(trajectory.agentId, detection);
     } else {
       immuneStatus = {
         agentId: trajectory.agentId,
@@ -260,11 +261,7 @@ export class BrainIntegrationPipeline {
     let fluxRecord: AgentFluxRecord;
     if (this.config.enableFlux) {
       const trustScore = getAverageTrust(trajectory);
-      fluxRecord = this.fluxManager.evolve(
-        trajectory.agentId,
-        trustScore,
-        immuneStatus.state
-      );
+      fluxRecord = this.fluxManager.evolve(trajectory.agentId, trustScore, immuneStatus.state);
     } else {
       fluxRecord = {
         agentId: trajectory.agentId,
@@ -307,7 +304,7 @@ export class BrainIntegrationPipeline {
           'DENY',
           trajectory.agentId,
           `PHDM escalation: ${phdmResult.intrusionCount} intrusions, ` +
-          `rhythm: ${phdmResult.rhythmPattern}`
+            `rhythm: ${phdmResult.rhythmPattern}`
         );
       }
     }
@@ -319,7 +316,11 @@ export class BrainIntegrationPipeline {
 
     // Stage 5: Final risk decision (with immune amplification + PHDM)
     const finalDecision = this.computeFinalDecision(
-      detection, immuneStatus, fluxRecord, realm, phdmResult
+      detection,
+      immuneStatus,
+      fluxRecord,
+      realm,
+      phdmResult
     );
 
     // Stage 6: Audit logging
@@ -329,21 +330,23 @@ export class BrainIntegrationPipeline {
         finalDecision,
         trajectory.agentId,
         `Detection score: ${detection.combinedScore.toFixed(3)}, ` +
-        `Immune: ${immuneStatus.state}, Flux: ${fluxRecord.state}, Realm: ${realm}`
+          `Immune: ${immuneStatus.state}, Flux: ${fluxRecord.state}, Realm: ${realm}`
       );
     }
 
     // Compute average hyperbolic distance
-    const avgDistance = trajectory.points.length > 0
-      ? trajectory.points.reduce((s, p) => s + p.distance, 0) / trajectory.points.length
-      : 0;
+    const avgDistance =
+      trajectory.points.length > 0
+        ? trajectory.points.reduce((s, p) => s + p.distance, 0) / trajectory.points.length
+        : 0;
 
     // Icosahedral projection of final state
     const finalState = lastPoint?.state ?? new Array(BRAIN_DIMENSIONS).fill(0);
     const icoProjection = icosahedralProjection(finalState.slice(0, 6));
 
     // Determine if correctly classified
-    const isMalicious = trajectory.classification === 'malicious' || trajectory.classification === 'semi_malicious';
+    const isMalicious =
+      trajectory.classification === 'malicious' || trajectory.classification === 'semi_malicious';
     const isFlagged = finalDecision !== 'ALLOW';
     const correctlyClassified = isMalicious === isFlagged;
 
@@ -387,11 +390,11 @@ export class BrainIntegrationPipeline {
     const consensusResult = this.consensus.evaluate(votes);
 
     // Compute metrics
-    const malicious = assessments.filter((a) =>
-      a.classification === 'malicious' || a.classification === 'semi_malicious'
+    const malicious = assessments.filter(
+      (a) => a.classification === 'malicious' || a.classification === 'semi_malicious'
     );
-    const honest = assessments.filter((a) =>
-      a.classification === 'honest' || a.classification === 'neutral'
+    const honest = assessments.filter(
+      (a) => a.classification === 'honest' || a.classification === 'neutral'
     );
 
     const truePositives = malicious.filter((a) => a.finalDecision !== 'ALLOW').length;
@@ -439,9 +442,11 @@ export class BrainIntegrationPipeline {
     }
 
     const totalAgents = trials.reduce((s, t) => s + t.assessments.length, 0);
-    const totalSteps = trials.reduce((s, t) =>
-      s + t.assessments.reduce((ss, a) => ss + (a.detection.detections.length > 0 ? 1 : 0), 0)
-    , 0);
+    const totalSteps = trials.reduce(
+      (s, t) =>
+        s + t.assessments.reduce((ss, a) => ss + (a.detection.detections.length > 0 ? 1 : 0), 0),
+      0
+    );
 
     return {
       trials,

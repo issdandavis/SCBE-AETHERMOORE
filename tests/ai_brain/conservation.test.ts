@@ -41,18 +41,32 @@ function zeros(): number[] {
 function safeVector(): number[] {
   const v = zeros();
   // BLOCK_HYPER [0-5]: small values inside ball
-  v[0] = 0.1; v[1] = 0.1; v[2] = 0.1; v[3] = 0.1; v[4] = 0.1; v[5] = 0.1;
+  v[0] = 0.1;
+  v[1] = 0.1;
+  v[2] = 0.1;
+  v[3] = 0.1;
+  v[4] = 0.1;
+  v[5] = 0.1;
   // BLOCK_PHASE [6-11]: exact Z_6 values (multiples of π/3)
-  v[6] = 0; v[7] = Math.PI / 3; v[8] = (2 * Math.PI) / 3;
-  v[9] = Math.PI; v[10] = (4 * Math.PI) / 3; v[11] = (5 * Math.PI) / 3;
+  v[6] = 0;
+  v[7] = Math.PI / 3;
+  v[8] = (2 * Math.PI) / 3;
+  v[9] = Math.PI;
+  v[10] = (4 * Math.PI) / 3;
+  v[11] = (5 * Math.PI) / 3;
   // BLOCK_HAM [12-15]: small momenta
-  v[12] = 0.1; v[13] = 0.1; v[14] = 0.1; v[15] = 0.1;
+  v[12] = 0.1;
+  v[13] = 0.1;
+  v[14] = 0.1;
+  v[15] = 0.1;
   // BLOCK_LATTICE [16-17]: adjacent indices
-  v[16] = 3; v[17] = 4;
+  v[16] = 3;
+  v[17] = 4;
   // BLOCK_FLUX [18]: in [0, 1]
   v[18] = 0.5;
   // BLOCK_SPEC [19-20]: PR >= 1, entropy <= 6
-  v[19] = 2.0; v[20] = 3.0;
+  v[19] = 2.0;
+  v[20] = 3.0;
   return v;
 }
 
@@ -60,17 +74,32 @@ function safeVector(): number[] {
 function breachVector(): number[] {
   const v = zeros();
   // BLOCK_HYPER: norm > 1
-  v[0] = 0.8; v[1] = 0.8; v[2] = 0.8; v[3] = 0.8; v[4] = 0.8; v[5] = 0.8;
+  v[0] = 0.8;
+  v[1] = 0.8;
+  v[2] = 0.8;
+  v[3] = 0.8;
+  v[4] = 0.8;
+  v[5] = 0.8;
   // BLOCK_PHASE: not on Z_6
-  v[6] = 0.5; v[7] = 1.2; v[8] = 2.5; v[9] = 3.5; v[10] = 4.8; v[11] = 5.5;
+  v[6] = 0.5;
+  v[7] = 1.2;
+  v[8] = 2.5;
+  v[9] = 3.5;
+  v[10] = 4.8;
+  v[11] = 5.5;
   // BLOCK_HAM: large momenta (will mismatch target energy)
-  v[12] = 5; v[13] = 5; v[14] = 5; v[15] = 5;
+  v[12] = 5;
+  v[13] = 5;
+  v[14] = 5;
+  v[15] = 5;
   // BLOCK_LATTICE: non-adjacent (0, 10)
-  v[16] = 0; v[17] = 10;
+  v[16] = 0;
+  v[17] = 10;
   // BLOCK_FLUX: out of range
   v[18] = 2.5;
   // BLOCK_SPEC: PR < 1, entropy > 6
-  v[19] = 0.3; v[20] = 8.0;
+  v[19] = 0.3;
+  v[20] = 8.0;
   return v;
 }
 
@@ -157,7 +186,12 @@ describe('Law 1: Containment', () => {
 
   it('should preserve direction when clamping', () => {
     const v = zeros();
-    v[0] = 1.0; v[1] = 0; v[2] = 0; v[3] = 0; v[4] = 0; v[5] = 0;
+    v[0] = 1.0;
+    v[1] = 0;
+    v[2] = 0;
+    v[3] = 0;
+    v[4] = 0;
+    v[5] = 0;
     const result = projectContainment(v, 0.95);
 
     const projHyper = extractBlock(result.projectedVector, 'BLOCK_HYPER');
@@ -233,7 +267,10 @@ describe('Law 3: Energy Balance', () => {
   it('should scale momenta down when energy too high', () => {
     const v = safeVector();
     // Set momenta high
-    v[12] = 3; v[13] = 3; v[14] = 3; v[15] = 3;
+    v[12] = 3;
+    v[13] = 3;
+    v[14] = 3;
+    v[15] = 3;
     // H = 0.5*(36) + 0.5*(0.06) = 18.03; target = 1.0
     const result = projectEnergyBalance(v, 1.0);
 
@@ -251,7 +288,10 @@ describe('Law 3: Energy Balance', () => {
   it('should scale momenta up when energy too low', () => {
     const v = safeVector();
     // Small momenta, target higher
-    v[12] = 0.01; v[13] = 0.01; v[14] = 0.01; v[15] = 0.01;
+    v[12] = 0.01;
+    v[13] = 0.01;
+    v[14] = 0.01;
+    v[15] = 0.01;
     const targetE = 5.0;
     const result = projectEnergyBalance(v, targetE);
 
@@ -268,7 +308,10 @@ describe('Law 3: Energy Balance', () => {
     const v = zeros();
     // Large BLOCK_HYPER → high potential
     for (let i = 0; i < 6; i++) v[i] = 0.5;
-    v[12] = 1; v[13] = 1; v[14] = 1; v[15] = 1;
+    v[12] = 1;
+    v[13] = 1;
+    v[14] = 1;
+    v[15] = 1;
     // Potential = 0.5 * 6 * 0.25 = 0.75; target = 0.1 < potential
     const result = projectEnergyBalance(v, 0.1);
 
@@ -284,7 +327,8 @@ describe('Law 3: Energy Balance', () => {
 describe('Law 4: Lattice Continuity', () => {
   it('should pass for adjacent indices', () => {
     const v = safeVector();
-    v[16] = 5; v[17] = 6;
+    v[16] = 5;
+    v[17] = 6;
     const result = projectLatticeContinuity(v);
     expect(result.satisfied).toBe(true);
     expect(result.violationMagnitude).toBe(0);
@@ -292,14 +336,16 @@ describe('Law 4: Lattice Continuity', () => {
 
   it('should pass for self-loop (same index)', () => {
     const v = safeVector();
-    v[16] = 7; v[17] = 7;
+    v[16] = 7;
+    v[17] = 7;
     const result = projectLatticeContinuity(v);
     expect(result.satisfied).toBe(true);
   });
 
   it('should snap non-adjacent indices to nearest neighbor', () => {
     const v = safeVector();
-    v[16] = 0; v[17] = 10; // gap of 10 → not adjacent
+    v[16] = 0;
+    v[17] = 10; // gap of 10 → not adjacent
     const result = projectLatticeContinuity(v);
 
     expect(result.satisfied).toBe(false);
@@ -312,7 +358,8 @@ describe('Law 4: Lattice Continuity', () => {
 
   it('should clamp out-of-range indices to [0, 15]', () => {
     const v = safeVector();
-    v[16] = -5; v[17] = 100;
+    v[16] = -5;
+    v[17] = 100;
     const result = projectLatticeContinuity(v);
 
     const projLattice = extractBlock(result.projectedVector, 'BLOCK_LATTICE');

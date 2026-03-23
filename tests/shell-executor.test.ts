@@ -93,10 +93,7 @@ describe('Dangerous Pattern Blocking', () => {
   });
 
   it('blocks fork bombs', () => {
-    const match = matchesBlockedPattern(
-      [':(){ :|:& };:'],
-      DEFAULT_CONFIG.blockedPatterns
-    );
+    const match = matchesBlockedPattern([':(){ :|:& };:'], DEFAULT_CONFIG.blockedPatterns);
     expect(match).not.toBeNull();
   });
 
@@ -118,59 +115,54 @@ describe('Dangerous Pattern Blocking', () => {
   });
 
   it('blocks sudo', () => {
-    const match = matchesBlockedPattern(
-      ['sudo', 'rm', '-rf'],
-      DEFAULT_CONFIG.blockedPatterns
-    );
+    const match = matchesBlockedPattern(['sudo', 'rm', '-rf'], DEFAULT_CONFIG.blockedPatterns);
     expect(match).not.toBeNull();
   });
 
   it('blocks command substitution', () => {
-    const match = matchesBlockedPattern(
-      ['$(whoami)'],
-      DEFAULT_CONFIG.blockedPatterns
-    );
+    const match = matchesBlockedPattern(['$(whoami)'], DEFAULT_CONFIG.blockedPatterns);
     expect(match).not.toBeNull();
   });
 
   it('blocks backtick substitution', () => {
-    const match = matchesBlockedPattern(
-      ['`whoami`'],
-      DEFAULT_CONFIG.blockedPatterns
-    );
+    const match = matchesBlockedPattern(['`whoami`'], DEFAULT_CONFIG.blockedPatterns);
     expect(match).not.toBeNull();
   });
 
   it('blocks chmod 777', () => {
-    const match = matchesBlockedPattern(
-      ['chmod', '777', '/etc'],
-      DEFAULT_CONFIG.blockedPatterns
-    );
+    const match = matchesBlockedPattern(['chmod', '777', '/etc'], DEFAULT_CONFIG.blockedPatterns);
     expect(match).not.toBeNull();
   });
 
   it('blocks pipe to bash', () => {
-    const match = matchesBlockedPattern(
-      ['something', '|', 'bash'],
-      DEFAULT_CONFIG.blockedPatterns
-    );
+    const match = matchesBlockedPattern(['something', '|', 'bash'], DEFAULT_CONFIG.blockedPatterns);
     expect(match).not.toBeNull();
   });
 
   it('allows safe arguments', () => {
-    expect(matchesBlockedPattern(['install', '--save-dev'], DEFAULT_CONFIG.blockedPatterns)).toBeNull();
-    expect(matchesBlockedPattern(['test', '--coverage'], DEFAULT_CONFIG.blockedPatterns)).toBeNull();
+    expect(
+      matchesBlockedPattern(['install', '--save-dev'], DEFAULT_CONFIG.blockedPatterns)
+    ).toBeNull();
+    expect(
+      matchesBlockedPattern(['test', '--coverage'], DEFAULT_CONFIG.blockedPatterns)
+    ).toBeNull();
     expect(matchesBlockedPattern(['status'], DEFAULT_CONFIG.blockedPatterns)).toBeNull();
-    expect(matchesBlockedPattern(['commit', '-m', 'fix: bug'], DEFAULT_CONFIG.blockedPatterns)).toBeNull();
+    expect(
+      matchesBlockedPattern(['commit', '-m', 'fix: bug'], DEFAULT_CONFIG.blockedPatterns)
+    ).toBeNull();
   });
 
   it('blocks shutdown and reboot', () => {
-    expect(matchesBlockedPattern(['shutdown', 'now'], DEFAULT_CONFIG.blockedPatterns)).not.toBeNull();
+    expect(
+      matchesBlockedPattern(['shutdown', 'now'], DEFAULT_CONFIG.blockedPatterns)
+    ).not.toBeNull();
     expect(matchesBlockedPattern(['reboot'], DEFAULT_CONFIG.blockedPatterns)).not.toBeNull();
   });
 
   it('blocks writes to /etc/', () => {
-    expect(matchesBlockedPattern(['>', '/etc/passwd'], DEFAULT_CONFIG.blockedPatterns)).not.toBeNull();
+    expect(
+      matchesBlockedPattern(['>', '/etc/passwd'], DEFAULT_CONFIG.blockedPatterns)
+    ).not.toBeNull();
   });
 });
 

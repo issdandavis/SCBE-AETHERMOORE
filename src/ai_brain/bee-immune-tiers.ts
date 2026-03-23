@@ -59,13 +59,7 @@ import {
  * - undertaker: Removes expelled agents, cleans up resources.
  * - worker: Default role. Processes tasks normally.
  */
-export type AgentCaste =
-  | 'queen'
-  | 'guard'
-  | 'nurse'
-  | 'forager'
-  | 'undertaker'
-  | 'worker';
+export type AgentCaste = 'queen' | 'guard' | 'nurse' | 'forager' | 'undertaker' | 'worker';
 
 /**
  * Caste capabilities and responsibilities
@@ -326,10 +320,7 @@ export class HiveImmuneSystem {
   private pheromone: ColonyPheromoneState;
   private stepCounter: number = 0;
 
-  constructor(
-    config: Partial<HiveImmuneConfig> = {},
-    immuneConfig: Partial<ImmuneConfig> = {}
-  ) {
+  constructor(config: Partial<HiveImmuneConfig> = {}, immuneConfig: Partial<ImmuneConfig> = {}) {
     this.config = { ...DEFAULT_HIVE_CONFIG, ...config };
     this.hemocytes = new ImmuneResponseSystem(immuneConfig);
     this.pheromone = {
@@ -449,10 +440,7 @@ export class HiveImmuneSystem {
     }
 
     // Each dance contributes to alarm pheromone
-    this.pheromone.alarm = Math.min(
-      1,
-      this.pheromone.alarm + confidence * 0.05
-    );
+    this.pheromone.alarm = Math.min(1, this.pheromone.alarm + confidence * 0.05);
 
     return dance;
   }
@@ -514,16 +502,11 @@ export class HiveImmuneSystem {
     this.stepCounter++;
 
     // Natural alarm decay
-    this.pheromone.alarm = Math.max(
-      0,
-      this.pheromone.alarm - this.config.alarmDecayRate
-    );
+    this.pheromone.alarm = Math.max(0, this.pheromone.alarm - this.config.alarmDecayRate);
 
     // Queen calming pheromone
     const hasQueen = this.getAgentsByCaste('queen').length > 0;
-    this.pheromone.calm = hasQueen
-      ? this.config.queenCalmBase
-      : this.config.queenCalmBase * 0.5; // Reduced calming without queen
+    this.pheromone.calm = hasQueen ? this.config.queenCalmBase : this.config.queenCalmBase * 0.5; // Reduced calming without queen
 
     // Compute net posture
     this.pheromone.posture = this.pheromone.alarm - this.pheromone.calm;
@@ -534,16 +517,13 @@ export class HiveImmuneSystem {
 
     if (this.pheromone.feverActive) {
       // Fever ramps up: multiplier = 1 + (maxMultiplier - 1) * (alarm / 1.0)
-      const ramp = (this.pheromone.alarm - this.config.feverThreshold) /
-        (1 - this.config.feverThreshold);
-      this.pheromone.feverMultiplier = 1 + (this.config.maxFeverMultiplier - 1) *
-        Math.min(1, Math.max(0, ramp));
+      const ramp =
+        (this.pheromone.alarm - this.config.feverThreshold) / (1 - this.config.feverThreshold);
+      this.pheromone.feverMultiplier =
+        1 + (this.config.maxFeverMultiplier - 1) * Math.min(1, Math.max(0, ramp));
     } else {
       // Cool down toward 1.0
-      this.pheromone.feverMultiplier = Math.max(
-        1.0,
-        this.pheromone.feverMultiplier - 0.1
-      );
+      this.pheromone.feverMultiplier = Math.max(1.0, this.pheromone.feverMultiplier - 0.1);
     }
 
     // Count active dances
@@ -670,10 +650,7 @@ export class HiveImmuneSystem {
 
     // Caste trust modifier
     const baseTrust = 1 - hemocyte.suspicion;
-    const effectiveTrust = Math.max(
-      0,
-      Math.min(1, baseTrust * profile.trustMultiplier)
-    );
+    const effectiveTrust = Math.max(0, Math.min(1, baseTrust * profile.trustMultiplier));
 
     return {
       agentId,
@@ -711,7 +688,12 @@ export class HiveImmuneSystem {
     step: number;
   } {
     const casteCounts: Record<AgentCaste, number> = {
-      queen: 0, guard: 0, nurse: 0, forager: 0, undertaker: 0, worker: 0,
+      queen: 0,
+      guard: 0,
+      nurse: 0,
+      forager: 0,
+      undertaker: 0,
+      worker: 0,
     };
     for (const caste of this.agentCastes.values()) {
       casteCounts[caste]++;
@@ -756,11 +738,16 @@ function scoreToDecision(score: number): RiskDecision {
 
 function immuneStateToDecision(state: ImmuneState): RiskDecision {
   switch (state) {
-    case 'expelled': return 'DENY';
-    case 'quarantined': return 'QUARANTINE';
-    case 'inflamed': return 'ESCALATE';
-    case 'monitoring': return 'ALLOW';
-    case 'healthy': return 'ALLOW';
+    case 'expelled':
+      return 'DENY';
+    case 'quarantined':
+      return 'QUARANTINE';
+    case 'inflamed':
+      return 'ESCALATE';
+    case 'monitoring':
+      return 'ALLOW';
+    case 'healthy':
+      return 'ALLOW';
   }
 }
 

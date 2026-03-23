@@ -246,8 +246,8 @@ describe('Test B: Triadic Distance', () => {
     const d = triadicDistance(1, 1, 1);
     const expected = Math.sqrt(
       DEFAULT_TRIADIC_WEIGHTS.immediate +
-      DEFAULT_TRIADIC_WEIGHTS.memory +
-      DEFAULT_TRIADIC_WEIGHTS.governance,
+        DEFAULT_TRIADIC_WEIGHTS.memory +
+        DEFAULT_TRIADIC_WEIGHTS.governance
     );
     expect(d).toBeCloseTo(expected, 8);
   });
@@ -662,13 +662,7 @@ describe('Test G: Edge Cases & Numerical Stability', () => {
     });
     const node = lattice.ingest(safeVector(0.5));
     // All three manifold distances should be equal (single sample)
-    expect(node.manifoldDistances.immediate).toBeCloseTo(
-      node.manifoldDistances.memory,
-      10,
-    );
-    expect(node.manifoldDistances.memory).toBeCloseTo(
-      node.manifoldDistances.governance,
-      10,
-    );
+    expect(node.manifoldDistances.immediate).toBeCloseTo(node.manifoldDistances.memory, 10);
+    expect(node.manifoldDistances.memory).toBeCloseTo(node.manifoldDistances.governance, 10);
   });
 });

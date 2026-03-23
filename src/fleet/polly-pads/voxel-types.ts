@@ -23,13 +23,7 @@ import type { TongueCode } from '../../harmonic/sacredTongues.js';
 export type Lang = 'KO' | 'AV' | 'RU' | 'CA' | 'UM' | 'DR';
 
 /** Polly Pad operational mode */
-export type PadMode =
-  | 'ENGINEERING'
-  | 'NAVIGATION'
-  | 'SYSTEMS'
-  | 'SCIENCE'
-  | 'COMMS'
-  | 'MISSION';
+export type PadMode = 'ENGINEERING' | 'NAVIGATION' | 'SYSTEMS' | 'SCIENCE' | 'COMMS' | 'MISSION';
 
 /** SCBE Layer-13 three-tier risk decision */
 export type Decision = 'ALLOW' | 'QUARANTINE' | 'DENY';

@@ -183,10 +183,12 @@ export class ModePad {
     this.switchHistory.push(event);
 
     // Store in memory
-    this.storeMemory(
-      `Switched to ${modeName} mode`,
-      { event: 'mode_switch', from: previousMode, to: modeName, reason }
-    );
+    this.storeMemory(`Switched to ${modeName} mode`, {
+      event: 'mode_switch',
+      from: previousMode,
+      to: modeName,
+      reason,
+    });
   }
 
   /**

@@ -34,11 +34,9 @@ function variance(values: Float64Array): number {
   return acc / values.length;
 }
 
-export function mmx(
-  request: EnforcementRequest,
-  context: EnforcementContext,
-): MMXScalars {
-  const actionEntropy = (request.action.length + request.subject.length + request.object.length) % 101;
+export function mmx(request: EnforcementRequest, context: EnforcementContext): MMXScalars {
+  const actionEntropy =
+    (request.action.length + request.subject.length + request.object.length) % 101;
   const actionSignal = actionEntropy / 100;
 
   if (!context.modality_embeddings || context.modality_embeddings.length === 0) {
@@ -69,4 +67,3 @@ export function mmx(
     wall_cost: wall,
   };
 }
-

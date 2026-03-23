@@ -104,3 +104,50 @@ This follow-up batch targeted the remaining selected alerts after PR `#608` was 
   - `py_compile ok` for the touched Python files
 - `python -c "import yaml, pathlib; ..."`
   - `yaml ok` for [security-checks.yml](C:/Users/issda/SCBE-AETHERMOORE/.github/workflows/security-checks.yml)
+
+## Follow-Up Batch 2 - Final PR #608 Alert Sweep
+
+This batch targeted the remaining live PR alerts after the previous rescan reduced the backlog to a smaller set:
+
+- `#2276` clear-text logging in [colab_n8n_bridge.py](C:/Users/issda/SCBE-AETHERMOORE/external/codex-skills-live/scbe-n8n-colab-bridge/scripts/colab_n8n_bridge.py)
+- `#2275` clear-text storage in [secret_store.py](C:/Users/issda/SCBE-AETHERMOORE/src/security/secret_store.py)
+- `#2274`, `#2273`, `#2272` Hydra browser sanitization issues in [hydra_terminal_browse.mjs](C:/Users/issda/SCBE-AETHERMOORE/external/codex-skills-live/hydra-node-terminal-browsing/scripts/hydra_terminal_browse.mjs)
+- older biased-randomness findings still open on [watermark.ts](C:/Users/issda/SCBE-AETHERMOORE/src/video/watermark.ts) and [aetherlex-seed.ts](C:/Users/issda/SCBE-AETHERMOORE/src/crypto/aetherlex-seed.ts)
+
+### Exact Follow-Up Steps
+
+1. Pulled the live PR `#608` code-scanning alerts from GitHub and reduced the remaining worklist to the bridge, secret-store, Hydra sanitizer, and older RNG findings.
+2. Reworked [secret_store.py](C:/Users/issda/SCBE-AETHERMOORE/src/security/secret_store.py) so `set_secret(...)` no longer writes plaintext values to `.secrets.json`.
+3. Added encrypted-at-rest secret persistence using:
+   - `Fernet` when `SCBE_SECRET_STORE_KEY` is set
+   - Windows DPAPI fallback on this machine when no portable key is provided
+   - process-only fallback metadata when neither encrypted persistence path is available
+4. Kept the existing `get_secret(...)` / `set_secret(...)` interface intact so bridge, router, and workflow callers did not need a second secret API.
+5. Hardened [colab_n8n_bridge.py](C:/Users/issda/SCBE-AETHERMOORE/external/codex-skills-live/scbe-n8n-colab-bridge/scripts/colab_n8n_bridge.py) again so `--env` emits resolver commands that fetch secrets at execution time instead of printing the token into stdout.
+6. Reduced bridge probe output to a public payload only (`ok`, `status`, `api_root`, `error`) and removed preview/body text from the success path.
+7. Replaced the brittle blocked-tag regex lane in [hydra_terminal_browse.mjs](C:/Users/issda/SCBE-AETHERMOORE/external/codex-skills-live/hydra-node-terminal-browsing/scripts/hydra_terminal_browse.mjs) with a small parser-style scanner for `script`, `style`, and `noscript` blocks.
+8. Reordered HTML entity decoding so ampersands are decoded last, eliminating the double-unescape path.
+9. Extended link filtering in that same Hydra script to reject `javascript:`, `data:`, and `vbscript:` schemes.
+10. Exported the Hydra helper functions and guarded CLI execution behind a direct-entry check so the sanitizer lane can be tested as a module.
+11. Replaced the remaining custom bounded-random math in [watermark.ts](C:/Users/issda/SCBE-AETHERMOORE/src/video/watermark.ts) with `crypto.randomInt(...)`.
+12. Replaced the remaining custom bounded-random/global-index sampling in [aetherlex-seed.ts](C:/Users/issda/SCBE-AETHERMOORE/src/crypto/aetherlex-seed.ts) with `randomInt(...)` and bit-split global-index decoding.
+13. Added regression coverage in:
+   - [test_colab_n8n_bridge_security.py](C:/Users/issda/SCBE-AETHERMOORE/tests/test_colab_n8n_bridge_security.py)
+   - [hydra-terminal-browse.test.ts](C:/Users/issda/SCBE-AETHERMOORE/tests/hydra-terminal-browse.test.ts)
+   - [aetherlexSeed.test.ts](C:/Users/issda/SCBE-AETHERMOORE/tests/crypto/aetherlexSeed.test.ts)
+   - [generator.test.ts](C:/Users/issda/SCBE-AETHERMOORE/tests/video/generator.test.ts)
+14. Installed local Node dev dependencies with `npm ci` because the worktree did not have `vitest` / `tsc` available, then reran the targeted TS validation slice.
+
+### Follow-Up Batch 2 Test Evidence
+
+- `python -m pytest tests/test_colab_n8n_bridge_security.py tests/test_sensitive_output_redaction.py tests/test_system_script_security.py -q`
+  - `23 passed`
+- `npm test -- --run tests/hydra-terminal-browse.test.ts tests/crypto/aetherlexSeed.test.ts tests/video/generator.test.ts`
+  - `3 files passed`
+  - `92 tests passed`
+- `npm run typecheck -- --pretty false`
+  - `passed`
+- `node --check external/codex-skills-live/hydra-node-terminal-browsing/scripts/hydra_terminal_browse.mjs`
+  - `passed`
+- `python -m py_compile src/security/secret_store.py external/codex-skills-live/scbe-n8n-colab-bridge/scripts/colab_n8n_bridge.py`
+  - `passed`

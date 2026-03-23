@@ -7,6 +7,9 @@ param(
         "desktop.ini"
     ),
     [string[]]$ExcludeGlobs = @(),
+    [int]$Transfers = 8,
+    [int]$Checkers = 16,
+    [switch]$FastList,
     [switch]$LocalOnly,
     [switch]$DeleteSource
 )
@@ -221,13 +224,16 @@ foreach ($name in $Items) {
             $sourcePath,
             $destPath,
             "-c",
-            "--transfers", "1",
-            "--checkers", "8",
+            "--transfers", $Transfers.ToString(),
+            "--checkers", $Checkers.ToString(),
             "--retries", "1",
             "--low-level-retries", "10",
             "--log-file", $copyLog,
             "--log-level", "INFO"
         )
+        if ($FastList) {
+            $copyArgs += "--fast-list"
+        }
         if ($useManifest) {
             $copyArgs += @("--files-from-raw", $manifestPath)
         }
@@ -240,8 +246,8 @@ foreach ($name in $Items) {
             $sourcePath,
             $destPath,
             "-c",
-            "--transfers", "1",
-            "--checkers", "8",
+            "--transfers", $Transfers.ToString(),
+            "--checkers", $Checkers.ToString(),
             "--retries", "1",
             "--low-level-retries", "10",
             "--log-file", $copyLog,
@@ -261,11 +267,14 @@ foreach ($name in $Items) {
             $destPath,
             "-c",
             "--one-way",
-            "--checkers", "8",
+            "--checkers", $Checkers.ToString(),
             "--combined", $checkCombined,
             "--log-file", $checkLog,
             "--log-level", "INFO"
         )
+        if ($FastList) {
+            $checkArgs += "--fast-list"
+        }
         if ($useManifest) {
             $checkArgs += @("--files-from-raw", $manifestPath)
         }

@@ -69,12 +69,7 @@ export const DEFAULT_POOL_CONFIG: BrowserPoolConfig = {
 };
 
 /** Status of a pooled browser instance */
-export type InstanceStatus =
-  | 'initializing'
-  | 'idle'
-  | 'active'
-  | 'unhealthy'
-  | 'evicting';
+export type InstanceStatus = 'initializing' | 'idle' | 'active' | 'unhealthy' | 'evicting';
 
 /** Pooled browser instance descriptor */
 export interface PooledInstance {
@@ -212,11 +207,7 @@ export class BrowserPool {
    * @param tags - Optional tags for warm reuse matching
    * @returns AcquireResult with instance or failure reason
    */
-  acquire(
-    agentId: string,
-    backend: BrowserBackend,
-    tags: string[] = [],
-  ): AcquireResult {
+  acquire(agentId: string, backend: BrowserBackend, tags: string[] = []): AcquireResult {
     // Check per-agent limit
     const agentInstances = this.getAgentInstances(agentId);
     if (agentInstances.length >= this.config.maxPerAgent) {
@@ -255,7 +246,8 @@ export class BrowserPool {
     const currentMemory = this.totalMemoryMB;
     if (currentMemory + this.config.estimatedInstanceMemoryMB > this.config.maxMemoryMB) {
       // Try evicting to make room
-      const needed = currentMemory + this.config.estimatedInstanceMemoryMB - this.config.maxMemoryMB;
+      const needed =
+        currentMemory + this.config.estimatedInstanceMemoryMB - this.config.maxMemoryMB;
       const freed = this.evictToFree(needed);
       if (freed < needed) {
         return {
@@ -470,8 +462,8 @@ export class BrowserPool {
   get memoryPressure(): MemoryPressure {
     const utilization = this.totalMemoryMB / this.config.maxMemoryMB;
     if (utilization >= 0.95) return 'critical';
-    if (utilization >= 0.80) return 'high';
-    if (utilization >= 0.60) return 'medium';
+    if (utilization >= 0.8) return 'high';
+    if (utilization >= 0.6) return 'medium';
     return 'low';
   }
 

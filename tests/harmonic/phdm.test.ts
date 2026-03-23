@@ -475,7 +475,12 @@ describe('Property-Based Tests', () => {
     CANONICAL_POLYHEDRA.forEach((poly) => {
       expect(poly.family).toBeDefined();
       expect([
-        'platonic', 'archimedean', 'kepler-poinsot', 'toroidal', 'johnson', 'rhombic',
+        'platonic',
+        'archimedean',
+        'kepler-poinsot',
+        'toroidal',
+        'johnson',
+        'rhombic',
       ]).toContain(poly.family);
     });
   });

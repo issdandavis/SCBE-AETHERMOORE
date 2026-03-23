@@ -36,7 +36,7 @@ function makeMetrics(overrides: Partial<PipelineMetrics> = {}): PipelineMetrics 
   return {
     uNorm: 0.45,
     uBreathNorm: 0.42,
-    uFinalNorm: 0.40,
+    uFinalNorm: 0.4,
     cSpin: 0.88,
     sSpec: 0.91,
     tau: 0.5,
@@ -334,11 +334,13 @@ describe('driftDistanceToBaseline', () => {
 
   it('returns large distance for anomalous signature', () => {
     const baselines = Array.from({ length: 10 }, () => computeDriftSignature(makeMetrics()));
-    const anomalous = computeDriftSignature(makeMetrics({
-      uNorm: 10.0,
-      riskPrime: 50.0,
-      H: 0.01,
-    }));
+    const anomalous = computeDriftSignature(
+      makeMetrics({
+        uNorm: 10.0,
+        riskPrime: 50.0,
+        H: 0.01,
+      })
+    );
     const dist = driftDistanceToBaseline(anomalous, baselines);
     expect(dist).toBeGreaterThan(5);
   });
@@ -365,11 +367,9 @@ describe('driftAuthScore', () => {
   it('flags when score < 0.3', () => {
     const input = new Float64Array(50);
     for (let i = 0; i < 50; i++) input[i] = Math.random();
-    const result = driftAuthScore(
-      makeMetrics({ uNorm: 100, riskPrime: 100 }),
-      input,
-      [computeDriftSignature(makeMetrics())],
-    );
+    const result = driftAuthScore(makeMetrics({ uNorm: 100, riskPrime: 100 }), input, [
+      computeDriftSignature(makeMetrics()),
+    ]);
     expect(result.flagged).toBe(result.score < 0.3);
   });
 });
@@ -407,12 +407,7 @@ describe('TriMechanismDetector', () => {
     const d = new TriMechanismDetector();
     const input = new Float64Array(20);
     for (let i = 0; i < 20; i++) input[i] = Math.random();
-    const result = d.detect(
-      input, 0,
-      makePositionHistory(20, 0),
-      makeMetrics(),
-      makeUFinal(0),
-    );
+    const result = d.detect(input, 0, makePositionHistory(20, 0), makeMetrics(), makeUFinal(0));
     expect(result.phase).toBeDefined();
     expect(result.tonic).toBeDefined();
     expect(result.drift).toBeDefined();
@@ -425,12 +420,7 @@ describe('TriMechanismDetector', () => {
     const d = new TriMechanismDetector();
     const input = new Float64Array(20);
     for (let i = 0; i < 20; i++) input[i] = Math.random();
-    const result = d.detect(
-      input, 0,
-      makePositionHistory(20, 0),
-      makeMetrics(),
-      makeUFinal(0),
-    );
+    const result = d.detect(input, 0, makePositionHistory(20, 0), makeMetrics(), makeUFinal(0));
     const expected =
       DEFAULT_CONFIG.wPhase * result.phase.score +
       DEFAULT_CONFIG.wTonic * result.tonic.score +
@@ -442,13 +432,9 @@ describe('TriMechanismDetector', () => {
     const d = new TriMechanismDetector();
     const input = new Float64Array(20);
     for (let i = 0; i < 20; i++) input[i] = Math.random();
-    const result = d.detect(
-      input, 0,
-      makePositionHistory(20, 0),
-      makeMetrics(),
-      makeUFinal(0),
-    );
-    const sum = result.contributions.phase + result.contributions.tonic + result.contributions.drift;
+    const result = d.detect(input, 0, makePositionHistory(20, 0), makeMetrics(), makeUFinal(0));
+    const sum =
+      result.contributions.phase + result.contributions.tonic + result.contributions.drift;
     expect(sum).toBeCloseTo(result.combinedScore, 10);
   });
 
@@ -468,12 +454,7 @@ describe('TriMechanismDetector', () => {
     const d = new TriMechanismDetector();
     const input = new Float64Array(20);
     for (let i = 0; i < 20; i++) input[i] = Math.random();
-    const result = d.detect(
-      input, 0,
-      makePositionHistory(20, 0),
-      makeMetrics(),
-      makeUFinal(0),
-    );
+    const result = d.detect(input, 0, makePositionHistory(20, 0), makeMetrics(), makeUFinal(0));
     if (result.combinedScore > DEFAULT_CONFIG.thresholds.allow) {
       expect(result.decision).toBe('ALLOW');
     } else if (result.combinedScore > DEFAULT_CONFIG.thresholds.quarantine) {
@@ -488,12 +469,7 @@ describe('TriMechanismDetector', () => {
     const before = Date.now();
     const input = new Float64Array(20);
     for (let i = 0; i < 20; i++) input[i] = Math.random();
-    const result = d.detect(
-      input, 0,
-      makePositionHistory(20, 0),
-      makeMetrics(),
-      makeUFinal(0),
-    );
+    const result = d.detect(input, 0, makePositionHistory(20, 0), makeMetrics(), makeUFinal(0));
     expect(result.timestamp).toBeGreaterThanOrEqual(before);
   });
 
@@ -503,10 +479,11 @@ describe('TriMechanismDetector', () => {
       const input = new Float64Array(20);
       for (let i = 0; i < 20; i++) input[i] = Math.random();
       const result = d.detect(
-        input, tongue,
+        input,
+        tongue,
         makePositionHistory(20, tongue),
         makeMetrics(),
-        makeUFinal(tongue),
+        makeUFinal(tongue)
       );
       expect(['ALLOW', 'QUARANTINE', 'DENY']).toContain(result.decision);
     }

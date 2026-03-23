@@ -19,11 +19,7 @@
  * Integration: Uses Poincaré ball primitives from harmonic/hyperbolic.ts.
  */
 
-import {
-  hyperbolicDistance,
-  phaseDeviation,
-  clampToBall,
-} from './harmonic/hyperbolic.js';
+import { hyperbolicDistance, phaseDeviation, clampToBall } from './harmonic/hyperbolic.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Sacred Tongues phase mapping
@@ -161,11 +157,7 @@ export const TRUST_DENOMINATOR = 20.0;
  * Requires 3+ neighbors with suspicion >= 3 for quarantine.
  * Suspicion decays by 0.5 per non-anomalous interaction (filters transient flukes).
  */
-export function updateSuspicion(
-  agent: Agent,
-  neighbor_id: string,
-  is_anomaly: boolean
-): void {
+export function updateSuspicion(agent: Agent, neighbor_id: string, is_anomaly: boolean): void {
   if (is_anomaly) {
     const current = agent.suspicion_count.get(neighbor_id) || 0;
     agent.suspicion_count.set(neighbor_id, current + 1);

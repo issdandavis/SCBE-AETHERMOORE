@@ -14,9 +14,7 @@ function hashLawsPayload(payload: Omit<ImmutableLaws, 'laws_hash'>): Uint8Array 
   return sha512(new TextEncoder().encode(canonicalStringify(payload)));
 }
 
-export function createImmutableLaws(
-  payload: Omit<ImmutableLaws, 'laws_hash'>,
-): ImmutableLaws {
+export function createImmutableLaws(payload: Omit<ImmutableLaws, 'laws_hash'>): ImmutableLaws {
   return {
     ...payload,
     laws_hash: hashLawsPayload(payload),
@@ -36,4 +34,3 @@ export function verifyImmutableLawsHash(laws: ImmutableLaws): boolean {
   for (let i = 0; i < expected.length; i++) diff |= expected[i]! ^ laws.laws_hash[i]!;
   return diff === 0;
 }
-

@@ -46,6 +46,12 @@ REPO_ROOT = Path(__file__).resolve().parent
 FORWARDED_SYSTEM_COMMANDS = {
     "agent": ["agent"],
     "pollypad": ["pollypad"],
+    "doctor": ["doctor"],
+    "use": ["use"],
+    "config": ["config"],
+    "colab": ["colab"],
+    "flow": ["flow"],
+    "workflow": ["workflow"],
     "web": ["web"],
     "antivirus": ["antivirus"],
     "aetherauth": ["aetherauth"],
@@ -699,13 +705,11 @@ def cmd_selftest(_args: argparse.Namespace) -> int:
 
 def _run_system_cli(args: List[str]) -> int:
     script = REPO_ROOT / "scripts" / "scbe-system-cli.py"
-    if not script.exists():
-        print(f"System CLI not found: {script}")
-        return 1
-    return subprocess.run(
-        [sys.executable, str(script), "--repo-root", str(REPO_ROOT), *args],
-        check=False,
-    ).returncode
+    if script.exists():
+        cmd = [sys.executable, str(script), "--repo-root", str(REPO_ROOT), *args]
+    else:
+        cmd = [sys.executable, "-m", "scripts.scbe_system_cli", "--repo-root", str(REPO_ROOT), *args]
+    return subprocess.run(cmd, check=False).returncode
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -753,8 +757,16 @@ Legacy (backward compat):
   scbe cli                          Interactive CLI
   scbe agent                        AI agent
   scbe demo                         Demo mode
+  scbe doctor --json
+  scbe use studio --firebase-project my-project --github-repo issdandavis/SCBE-AETHERMOORE
+  scbe colab list --json
+  scbe colab url scbe-finetune-free
+  scbe colab review --json
+  scbe colab bridge-status --name pivot
+  scbe workflow styleize --name nightly-ops --step "Smoke::python scbe.py selftest"
   scbe pollypad init --agent-id rex --name "Rex"
   scbe run --language python --code "print('SCBE')"
+  scbe flow plan --task "improve CLI swarm"
         """,
     )
     sub = p.add_subparsers(dest="command")
@@ -825,8 +837,14 @@ Legacy (backward compat):
     # ─── top-level ───
     sub.add_parser("status", help="Project status").set_defaults(func=cmd_status)
     sub.add_parser("selftest", help="Self-test suite").set_defaults(func=cmd_selftest)
+    sub.add_parser("doctor", help="Local operator environment checks (forwarded to system CLI)")
+    sub.add_parser("use", help="Set active SCBE operator context (forwarded to system CLI)")
+    sub.add_parser("config", help="Inspect/update CLI context (forwarded to system CLI)")
+    sub.add_parser("colab", help="Inspect the SCBE Colab notebook lane (forwarded to system CLI)")
     sub.add_parser("pollypad", help="Polly Pad storage + app management (forwarded to system CLI)")
     sub.add_parser("run", help="Governed multi-language runtime (forwarded to system CLI)")
+    sub.add_parser("flow", help="Doctrine-backed multi-agent flow planning (forwarded to system CLI)")
+    sub.add_parser("workflow", help="GitHub + n8-style workflow generation (forwarded to system CLI)")
     sub.add_parser("web", help="Web lookup/capture helpers (forwarded to system CLI)")
     sub.add_parser("antivirus", help="Safety scan helpers (forwarded to system CLI)")
     sub.add_parser("aetherauth", help="Context-bound access decisions (forwarded to system CLI)")

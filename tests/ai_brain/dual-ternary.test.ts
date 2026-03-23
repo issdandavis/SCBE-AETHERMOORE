@@ -66,9 +66,7 @@ describe('Full 9-State Space', () => {
     const values: TernaryValue[] = [-1, 0, 1];
     for (const p of values) {
       for (const m of values) {
-        const found = FULL_STATE_SPACE.some(
-          (s) => s.primary === p && s.mirror === m
-        );
+        const found = FULL_STATE_SPACE.some((s) => s.primary === p && s.mirror === m);
         expect(found).toBe(true);
       }
     }
@@ -90,9 +88,7 @@ describe('Full 9-State Space', () => {
   });
 
   it('should allow BOTH positions to have negative state', () => {
-    const negNeg = FULL_STATE_SPACE.find(
-      (s) => s.primary === -1 && s.mirror === -1
-    );
+    const negNeg = FULL_STATE_SPACE.find((s) => s.primary === -1 && s.mirror === -1);
     expect(negNeg).toBeDefined();
   });
 });
@@ -410,9 +406,7 @@ describe('DualTernarySystem', () => {
   it('should NOT detect phase anomaly for diverse patterns', () => {
     // Encode varied states
     for (let i = 0; i < 50; i++) {
-      const state = new Array(21).fill(0).map((_, j) =>
-        Math.sin(i * 0.7 + j * 0.3) * 2
-      );
+      const state = new Array(21).fill(0).map((_, j) => Math.sin(i * 0.7 + j * 0.3) * 2);
       system.encode(state);
     }
     const analysis = system.fullAnalysis();

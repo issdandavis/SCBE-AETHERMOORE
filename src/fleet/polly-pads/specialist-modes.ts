@@ -233,7 +233,7 @@ export class ModeRegistry {
 
   /** Current active mode (full definition) */
   get currentMode(): SpecialistMode | null {
-    return this._currentMode ? this.modes.get(this._currentMode) ?? null : null;
+    return this._currentMode ? (this.modes.get(this._currentMode) ?? null) : null;
   }
 
   /** Full switch history */
