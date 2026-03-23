@@ -31,10 +31,12 @@ from .ledger import Ledger, LedgerEntry, EntryType
 from .switchboard import Switchboard
 
 # Try to import dual lattice governor (optional but recommended)
+# Import directly from the file to avoid triggering src.crypto.__init__.py's
+# heavy import chain (scipy, matplotlib) which hangs on Windows.
 try:
     from src.crypto.dual_lattice import TongueLatticeGovernor, SacredTongue
     DUAL_LATTICE_AVAILABLE = True
-except ImportError:
+except (ImportError, Exception):
     DUAL_LATTICE_AVAILABLE = False
     TongueLatticeGovernor = None
 
