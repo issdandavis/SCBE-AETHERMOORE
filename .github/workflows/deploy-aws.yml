@@ -168,16 +168,18 @@ jobs:
       - name: Create Lambda function (if needed)
         if: steps.check-function.outputs.exists == 'false'
         run: |
-          # Create IAM role if needed
-          aws iam create-role \
-            --role-name scbe-lambda-execution-role \
-            --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"}]}' \
-            2>/dev/null || true
+          # Create IAM role if it doesn't already exist
+          if ! aws iam get-role --role-name scbe-lambda-execution-role 2>/dev/null; then
+            aws iam create-role \
+              --role-name scbe-lambda-execution-role \
+              --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"}]}'
 
-          aws iam attach-role-policy \
-            --role-name scbe-lambda-execution-role \
-            --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole \
-            2>/dev/null || true
+            aws iam attach-role-policy \
+              --role-name scbe-lambda-execution-role \
+              --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+          else
+            echo "IAM role already exists, skipping creation"
+          fi
 
           sleep 10
 
@@ -257,13 +259,17 @@ jobs:
               --auto-deploy
 
             # Add permission
-            aws lambda add-permission \
-              --function-name $FUNCTION_NAME \
-              --statement-id "apigateway-invoke-${API_ID}" \
-              --action lambda:InvokeFunction \
-              --principal apigateway.amazonaws.com \
-              --source-arn "arn:aws:execute-api:${AWS_REGION}:${ACCOUNT_ID}:${API_ID}/*" \
-              2>/dev/null || true
+            # Permission may already exist from a previous deploy — check first
+            if ! aws lambda get-policy --function-name $FUNCTION_NAME 2>/dev/null | grep -q "apigateway-invoke-${API_ID}"; then
+              aws lambda add-permission \
+                --function-name $FUNCTION_NAME \
+                --statement-id "apigateway-invoke-${API_ID}" \
+                --action lambda:InvokeFunction \
+                --principal apigateway.amazonaws.com \
+                --source-arn "arn:aws:execute-api:${AWS_REGION}:${ACCOUNT_ID}:${API_ID}/*"
+            else
+              echo "Lambda permission already exists, skipping"
+            fi
           fi
 
           echo "API_ID=$API_ID" >> $GITHUB_ENV
@@ -273,7 +279,9 @@ jobs:
         run: |
           sleep 5
           echo "Testing health endpoint..."
-          curl -s "${API_URL}/v1/health" | jq . || echo "Health check pending..."
+          if ! curl -sf --max-time 15 "${API_URL}/v1/health" | jq .; then
+            echo "::warning::Health check failed — API may still be starting up"
+          fi
 
       - name: Deployment summary
         run: |
