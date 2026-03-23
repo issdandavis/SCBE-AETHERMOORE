@@ -1,0 +1,16 @@
+# The Governed CLI Is the Product Surface (mastodon)
+
+## 1/4
+The most useful SCBE shift this week is not another architecture diagram. It is the fact that the operator surface is starting to collapse into one governed CLI. That matters because multi-agent systems stop being products when every good idea still requires a manual scavenger hunt through scripts, notes, and half-remembered shell aliases. The product surface has to be the command surface.
+
+## 2/4
+This is grounded in repo paths and live operator commands, not only architecture prose.
+
+## 3/4
+Key files:
+- `scbe.py`
+- `scripts/scbe-system-cli.py`
+- `docs/FAST_ACCESS_GUIDE.md`
+
+## 4/4
+The real test is whether the workflow can be replayed, audited, and promoted into training data.

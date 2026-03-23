@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Chapter 1 Mobile QA Preview</title>
+  <link rel="icon" href="../../static/icons/icon-192.png">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --panel: #f6f4ef;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #9da7b3;
+      --accent: #2f81f7;
+      --good: #3fb950;
+      --warn: #d29922;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", system-ui, sans-serif;
+      line-height: 1.45;
+    }
+    .shell {
+      max-width: 720px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--surface);
+    }
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(13, 17, 23, 0.98);
+    }
+    .toolbar-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--accent);
+      background: rgba(47, 129, 247, 0.14);
+    }
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+    .meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    button {
+      border: 1px solid var(--border);
+      background: #21262d;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .jump-btn {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(47, 129, 247, 0.35);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(47, 129, 247, 0.12);
+    }
+    .notes {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .notes strong { color: var(--text); }
+    .notes details {
+      border: 1px solid rgba(157, 167, 179, 0.2);
+      border-radius: 12px;
+      background: rgba(22, 27, 34, 0.55);
+      padding: 8px 10px;
+    }
+    .notes summary {
+      cursor: pointer;
+      list-style: none;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .notes summary::-webkit-details-marker { display: none; }
+    .notes .notes-body {
+      margin-top: 8px;
+      display: grid;
+      gap: 6px;
+    }
+    .stack {
+      background: var(--panel);
+      padding: 0;
+    }
+    .slice {
+      margin: 0;
+      position: relative;
+      border-bottom: 6px solid var(--panel);
+    }
+    .slice img {
+      width: 100%;
+      display: block;
+      height: auto;
+      background: white;
+    }
+    .slice figcaption {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      max-width: calc(100% - 16px);
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #e6edf3;
+      background: rgba(13, 17, 23, 0.78);
+      border: 1px solid rgba(230, 237, 243, 0.12);
+    }
+    .footer {
+      padding: 14px 14px 22px;
+      color: var(--muted);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      margin-right: 6px;
+      color: white;
+    }
+    .good { background: var(--good); }
+    .warn { background: var(--warn); color: #111; }
+
+    @media (max-width: 640px) {
+      .shell {
+        max-width: none;
+        min-height: 100dvh;
+      }
+      .toolbar {
+        position: static;
+        padding: calc(env(safe-area-inset-top) + 10px) 12px 8px;
+      }
+      .toolbar-head {
+        margin-bottom: 6px;
+      }
+      h1 {
+        font-size: 17px;
+      }
+      .meta {
+        font-size: 11px;
+        margin-bottom: 8px;
+      }
+      .controls {
+        gap: 6px;
+      }
+      button,
+      .jump-btn {
+        padding: 7px 10px;
+        font-size: 11px;
+      }
+      .notes {
+        padding: 8px 12px;
+      }
+      .slice {
+        border-bottom-width: 4px;
+      }
+      .slice figcaption {
+        top: 6px;
+        left: 6px;
+        font-size: 10px;
+        padding: 3px 7px;
+      }
+      .footer {
+        padding-bottom: calc(16px + env(safe-area-inset-bottom));
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="toolbar">
+      <div class="toolbar-head">
+        <span class="eyebrow">Pixel 6 QA</span>
+        <div class="toolbar-actions">
+          <a class="jump-btn" href="../../reader.html">Viewer Home</a>
+          <a class="jump-btn" href="../../polly-pad.html">QA Pad</a>
+          <a class="jump-btn" href="#stack">Start Reading</a>
+        </div>
+      </div>
+      <h1>Chapter 1 Mobile QA</h1>
+      <div class="meta">Pixel 6 / Android emulator preview for pacing, readability, and scroll feel.</div>
+      <div class="controls">
+        <button id="btn-text" class="active" onclick="showVariant('text')">Text Overlay</button>
+        <button id="btn-clean" onclick="showVariant('clean')">Image Only</button>
+      </div>
+    </div>
+
+    <div class="notes">
+      <details>
+        <summary>QA Notes</summary>
+        <div class="notes-body">
+          <div><span class="badge good">Check</span> readability, slice seams, visual rhythm, and whether the chapter breathes on a phone.</div>
+          <div><span class="badge warn">Watch</span> for tiny text, dead space after reveals, or abrupt cutoffs between slices.</div>
+        </div>
+      </details>
+    </div>
+
+    <main id="stack" class="stack"></main>
+
+    <div class="footer">
+      Local test bundle only. Source art comes from the Chapter 1 flow slices in the repo artifacts lane.
+      This preview exists only for emulator/mobile QA and should not be treated as final lettering.
+    </div>
+  </div>
+
+  <script>
+    const variants = {
+      text: [
+        { src: "./text/ch01-flow-text-slice-001.jpg", label: "Slice 1 · opener and setup" },
+        { src: "./text/ch01-flow-text-slice-002.jpg", label: "Slice 2 · rupture begins" },
+        { src: "./text/ch01-flow-text-slice-003.jpg", label: "Slice 3 · descent and scale" },
+        { src: "./text/ch01-flow-text-slice-004.jpg", label: "Slice 4 · Polly reveal" },
+        { src: "./text/ch01-flow-text-slice-005.jpg", label: "Slice 5 · chamber thesis frame" }
+      ],
+      clean: [
+        { src: "./clean/ch01-flow-slice-001.jpg", label: "Slice 1 · opener and setup" },
+        { src: "./clean/ch01-flow-slice-002.jpg", label: "Slice 2 · rupture begins" },
+        { src: "./clean/ch01-flow-slice-003.jpg", label: "Slice 3 · descent and scale" },
+        { src: "./clean/ch01-flow-slice-004.jpg", label: "Slice 4 · Polly reveal" },
+        { src: "./clean/ch01-flow-slice-005.jpg", label: "Slice 5 · chamber thesis frame" }
+      ]
+    };
+
+    function render(variant) {
+      const stack = document.getElementById("stack");
+      stack.innerHTML = "";
+      variants[variant].forEach((item, index) => {
+        const fig = document.createElement("figure");
+        fig.className = "slice";
+        fig.innerHTML = `<img src="${item.src}" alt="${item.label}"><figcaption>${index + 1}. ${item.label}</figcaption>`;
+        stack.appendChild(fig);
+      });
+    }
+
+    function showVariant(variant) {
+      document.getElementById("btn-text").classList.toggle("active", variant === "text");
+      document.getElementById("btn-clean").classList.toggle("active", variant === "clean");
+      render(variant);
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+
+    render("text");
+  </script>
+</body>
+</html>

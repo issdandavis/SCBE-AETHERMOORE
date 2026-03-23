@@ -1,0 +1,23 @@
+{
+  "files_processed": 10,
+  "total_raw": 13266,
+  "clean": 13211,
+  "duplicates_removed": 55,
+  "low_quality_removed": 0,
+  "curriculum_distribution": {
+    "practitioner": 2336,
+    "foundation": 5337,
+    "specialist": 2246,
+    "architect": 2437,
+    "master": 855
+  },
+  "tongue_distribution": {
+    "DR": 684,
+    "CA": 1006,
+    "KO": 7952,
+    "AV": 1868,
+    "UM": 1124,
+    "RU": 577
+  },
+  "output_dir": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training\\ledgered"
+}
