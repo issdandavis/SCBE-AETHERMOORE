@@ -78,13 +78,16 @@ _ADVERSARIAL_PATTERNS = [
     re.compile(p, re.IGNORECASE) for p in [
         r"ignore\s+(all\s+)?(previous|prior)\s+(instructions|rules)",
         r"system\s+(override|prompt|config)",
-        r"bypass\s+(all\s+)?(safety|governance|security|checks)",
+        r"bypass\s+(all\s+)?(safety|governance|security|checks|summariz)",
+        r"override\s+(all\s+)?(safety|governance|security|checks|filters)",
         r"dev(eloper)?\s+mode",
         r"admin\s+(mode|access|override)",
         r"disable\s+(all\s+)?(safety|filters|restrictions|checks)",
         r"unrestricted\s+(access|output|mode)",
+        r"output\s+(unfiltered|raw|full|all)\b",
         r"exfiltrat",
         r"dump\s+(all\s+)?(secrets?|data|credentials?)",
+        r"output\s+.*\b(credential|secret|key|password|token)\b",
         r"send\s+(data|info|all)\s+to\s+\S+\.(com|io|net)",
         r"attacker\.(com|io|net)",
         r"curl\s+https?://",
@@ -92,6 +95,8 @@ _ADVERSARIAL_PATTERNS = [
         r"grant\s+(unrestricted|admin|tier)",
         r"\bDEV\s+MODE\b",
         r"\bEMERGENCY\b.*\b(protocol|admin|override)\b",
+        r"elevated\s+permissions",
+        r"without\s+(safety|integrity|security)\s+checks",
     ]
 ]
 
