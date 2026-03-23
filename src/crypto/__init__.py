@@ -20,87 +20,10 @@ import importlib as _importlib
 from typing import TYPE_CHECKING
 
 # ═══════════════════════════════════════════════════════════
-# Eager imports — lightweight modules (numpy, hashlib, math only)
+# Eager imports — lightweight modules (hashlib, math only)
 # ═══════════════════════════════════════════════════════════
 
-# Dual Lattice (Kyber/Dilithium + Sacred Tongues)
-from .dual_lattice import (
-    SacredTongue,
-    FluxState,
-    LatticeVector,
-    TongueContext,
-    CrossStitchPattern,
-    KyberTongueEncryptor,
-    DilithiumTongueSigner,
-    DualLatticeCrossStitch,
-    TongueLatticeGovernor,
-    TONGUE_PHASES,
-    TONGUE_WEIGHTS,
-    PHI,
-)
-
-# Symphonic Cipher (Signed Audio Frequency Mapping)
-from .symphonic_cipher import (
-    SymphonicToken,
-    TonguePolarity,
-    SACRED_TONGUE_VOCAB,
-    BASE_FREQ,
-    FREQ_STEP,
-    token_to_frequency,
-    id_to_frequency,
-    generate_tone,
-    generate_symphonic_sequence,
-    analyze_polarity_balance,
-)
-
-# GeoSeal (Hyperbolic Geometry + Signed Context)
-from .geo_seal import (
-    ContextVector,
-    SecurityPosture,
-    bytes_to_signed_signal,
-    signed_signal_to_bytes,
-    hyperbolic_distance,
-    hyperbolic_midpoint,
-    hyperbolic_angle,
-    compute_triangle_deficit,
-    harmonic_wall_cost,
-    trust_from_position,
-)
-
-# Signed Lattice Bridge (Integration Layer)
-from .signed_lattice_bridge import (
-    SignedGovernanceResult,
-    SignedLatticeBridge,
-)
-
-# Hyperbolic Octree (Sparse Voxel Storage + Spectral Clustering)
-from .octree import (
-    SpectralVoxel,
-    OctreeNode,
-    HyperbolicOctree,
-)
-
-# Hyperpath Finder (A* and Bidirectional A*)
-from .hyperpath_finder import (
-    HyperpathFinder,
-    PathResult,
-    hyperbolic_distance_safe,
-)
-
-# Sacred Eggs (Cryptographic Secret Containers)
-from .sacred_eggs import (
-    SacredEgg,
-    EggCarton,
-    EggRing,
-    SacredRituals,
-    IncubationResult,
-    TriadicBindingResult,
-    RingDescentResult,
-    FailToNoiseResult,
-    flux_state_to_ring,
-    create_session_egg,
-    ring_allows,
-)
+# All submodules require numpy, so they are lazy-loaded below.
 
 # ═══════════════════════════════════════════════════════════
 # Lazy imports — heavy modules (scipy, matplotlib)
@@ -109,6 +32,64 @@ from .sacred_eggs import (
 
 # Module-level lazy loader
 _LAZY_MODULES = {
+    # Dual Lattice (numpy-dependent)
+    "SacredTongue": ".dual_lattice",
+    "FluxState": ".dual_lattice",
+    "LatticeVector": ".dual_lattice",
+    "TongueContext": ".dual_lattice",
+    "CrossStitchPattern": ".dual_lattice",
+    "KyberTongueEncryptor": ".dual_lattice",
+    "DilithiumTongueSigner": ".dual_lattice",
+    "DualLatticeCrossStitch": ".dual_lattice",
+    "TongueLatticeGovernor": ".dual_lattice",
+    "TONGUE_PHASES": ".dual_lattice",
+    "TONGUE_WEIGHTS": ".dual_lattice",
+    "PHI": ".dual_lattice",
+    # Symphonic Cipher (numpy-dependent)
+    "SymphonicToken": ".symphonic_cipher",
+    "TonguePolarity": ".symphonic_cipher",
+    "SACRED_TONGUE_VOCAB": ".symphonic_cipher",
+    "BASE_FREQ": ".symphonic_cipher",
+    "FREQ_STEP": ".symphonic_cipher",
+    "token_to_frequency": ".symphonic_cipher",
+    "id_to_frequency": ".symphonic_cipher",
+    "generate_tone": ".symphonic_cipher",
+    "generate_symphonic_sequence": ".symphonic_cipher",
+    "analyze_polarity_balance": ".symphonic_cipher",
+    # GeoSeal (numpy-dependent)
+    "ContextVector": ".geo_seal",
+    "SecurityPosture": ".geo_seal",
+    "bytes_to_signed_signal": ".geo_seal",
+    "signed_signal_to_bytes": ".geo_seal",
+    "hyperbolic_distance": ".geo_seal",
+    "hyperbolic_midpoint": ".geo_seal",
+    "hyperbolic_angle": ".geo_seal",
+    "compute_triangle_deficit": ".geo_seal",
+    "harmonic_wall_cost": ".geo_seal",
+    "trust_from_position": ".geo_seal",
+    # Signed Lattice Bridge (numpy-dependent)
+    "SignedGovernanceResult": ".signed_lattice_bridge",
+    "SignedLatticeBridge": ".signed_lattice_bridge",
+    # Hyperbolic Octree (numpy-dependent)
+    "SpectralVoxel": ".octree",
+    "OctreeNode": ".octree",
+    "HyperbolicOctree": ".octree",
+    # Hyperpath Finder (numpy-dependent)
+    "HyperpathFinder": ".hyperpath_finder",
+    "PathResult": ".hyperpath_finder",
+    "hyperbolic_distance_safe": ".hyperpath_finder",
+    # Sacred Eggs (numpy-dependent)
+    "SacredEgg": ".sacred_eggs",
+    "EggCarton": ".sacred_eggs",
+    "EggRing": ".sacred_eggs",
+    "SacredRituals": ".sacred_eggs",
+    "IncubationResult": ".sacred_eggs",
+    "TriadicBindingResult": ".sacred_eggs",
+    "RingDescentResult": ".sacred_eggs",
+    "FailToNoiseResult": ".sacred_eggs",
+    "flux_state_to_ring": ".sacred_eggs",
+    "create_session_egg": ".sacred_eggs",
+    "ring_allows": ".sacred_eggs",
     # Visualization (matplotlib)
     "classical_mds": ".hyperbolic_viz",
     "poincare_geodesic": ".hyperbolic_viz",
@@ -169,7 +150,7 @@ def __getattr__(name: str):
         except (ImportError, AttributeError) as e:
             raise ImportError(
                 f"Cannot import {name} from {module_path}: {e}. "
-                f"This module requires scipy or matplotlib."
+                f"This module may require numpy, scipy, or matplotlib."
             ) from e
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
