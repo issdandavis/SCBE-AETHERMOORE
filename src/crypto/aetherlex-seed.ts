@@ -34,7 +34,7 @@
  *   DR (structure)       → governance and structural keys
  */
 
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes, randomInt } from 'crypto';
 import {
   TONGUES,
   KOR_AELIN,
@@ -448,8 +448,8 @@ export function generatePhrase(tokenCount: number = 12, profile?: SeedProfile): 
   // Fill remaining tokens randomly from entire space
   while (tokens.length < tokenCount) {
     const globalIdx = rejectionSampleGlobal();
-    const tongueIdx = Math.floor(globalIdx / 256);
-    const byte = globalIdx % 256;
+    const tongueIdx = globalIdx >> 8;
+    const byte = globalIdx & 0xff;
     const code = TONGUE_ORDER[tongueIdx];
     const tok = byteToToken(code, byte);
     tokens.push(tok);
@@ -475,29 +475,19 @@ export function generatePhrase(tokenCount: number = 12, profile?: SeedProfile): 
 
 /** Rejection-sample a random byte (0-255) uniformly */
 function rejectionSampleByte(): number {
-  return randomBytes(1)[0];
+  return randomInt(0, 256);
 }
 
 function secureRandomIntBelow(maxExclusive: number): number {
   if (!Number.isInteger(maxExclusive) || maxExclusive <= 0 || maxExclusive > 0x1_0000_0000) {
     throw new RangeError(`maxExclusive must be an integer in (0, 2^32], got ${maxExclusive}`);
   }
-  const domainSize = 0x1_0000_0000;
-  const limit = domainSize - (domainSize % maxExclusive);
-  while (true) {
-    const candidate = randomBytes(4).readUInt32BE(0);
-    if (candidate < limit) return candidate % maxExclusive;
-  }
+  return randomInt(0, maxExclusive);
 }
 
 /** Rejection-sample a global index (0-1535) without modulo bias */
 function rejectionSampleGlobal(): number {
-  // 2048 is next power of 2 ≥ 1536; reject if ≥ 1536
-  while (true) {
-    const buf = randomBytes(2);
-    const val = ((buf[0] & 0x07) << 8) | buf[1]; // 11 bits
-    if (val < TOTAL_TOKENS) return val;
-  }
+  return randomInt(0, TOTAL_TOKENS);
 }
 
 /** Fisher-Yates shuffle (in-place, CSPRNG) */

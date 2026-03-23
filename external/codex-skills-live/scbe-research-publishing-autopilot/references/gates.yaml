@@ -1,0 +1,55 @@
+gates:
+  evidence_gate:
+    require_source: true
+    require_anchor: true
+    block_on_missing_source: true
+    block_on_missing_anchor: true
+
+  lore_code_consistency_gate:
+    require_canonical_terms: true
+    disallow_conflicting_claims: true
+    require_experimental_label_when_uncertain: true
+
+  platform_policy_gate:
+    disallow_spam_patterns: true
+    require_disclosure_for_affiliate_or_commission: true
+    disallow_fabricated_endorsements: true
+
+  revenue_integrity_gate:
+    require_real_offer_path: true
+    disallow_unbounded_income_claims: true
+    require_constraints_for_earnings_language: true
+
+  publish_approval_gate:
+    required_by_default: true
+    require_approved_by: true
+    require_unexpired_approval: true
+    allow_bypass_flag_for_testing_only: true
+
+runtime_defaults:
+  run_hours: 8
+  heartbeat_minutes: 15
+  retrigger_cooldown_minutes: 60
+
+retrigger_rule_examples:
+  - name: low_ctr_x
+    channel: x
+    metric: ctr
+    operator: lt
+    threshold: 0.015
+    cooldown_minutes: 60
+    action: rewrite_hook
+  - name: low_cvr_article
+    channel: article
+    metric: cvr
+    operator: lt
+    threshold: 0.02
+    cooldown_minutes: 120
+    action: tighten_cta
+
+context_of_self:
+  required: true
+  required_inputs:
+    - past_posts.jsonl
+    - datasets_manifest.json
+  output: self_context_pack.json

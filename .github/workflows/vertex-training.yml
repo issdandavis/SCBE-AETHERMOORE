@@ -79,9 +79,9 @@ jobs:
           GCP_REGION: ${{ env.GCP_REGION }}
           HF_MODEL_REPO: ${{ env.HF_MODEL_REPO }}
           GKE_CLUSTER_NAME: ${{ env.GKE_CLUSTER_NAME }}
+          MODE: ${{ github.event.inputs.mode }}
+          CONFIG: ${{ github.event.inputs.config_path }}
         run: |
-          MODE="${{ github.event.inputs.mode }}"
-          CONFIG="${{ github.event.inputs.config_path }}"
           ARGS=""
           if [ "$MODE" = "dry-run" ]; then
             ARGS="--dry-run"

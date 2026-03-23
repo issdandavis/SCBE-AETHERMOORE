@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 
-def _vault_config_path() -> Path:
+def vault_config_path() -> Path:
     appdata = os.environ.get("APPDATA", "")
     if appdata:
         return Path(appdata) / "Obsidian" / "obsidian.json"
@@ -26,7 +26,7 @@ def _to_iso(ts_ms: Any) -> str:
     return datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
 
 
-def _load_vaults(config_path: Path) -> List[Dict[str, Any]]:
+def load_vaults(config_path: Path) -> List[Dict[str, Any]]:
     if not config_path.exists():
         return []
     try:
@@ -47,9 +47,21 @@ def _load_vaults(config_path: Path) -> List[Dict[str, Any]]:
                     "name": Path(raw_path).name if raw_path else "",
                     "ts": meta.get("ts"),
                     "ts_utc": _to_iso(meta.get("ts")),
+                    "open": bool(meta.get("open", False)),
                 }
             )
     return out
+
+
+def active_vault_path(config_path: Path | None = None) -> Path | None:
+    cfg = config_path or vault_config_path()
+    vaults = load_vaults(cfg)
+    if not vaults:
+        return None
+    open_vaults = [row for row in vaults if row.get("open")]
+    candidate = open_vaults[0] if open_vaults else max(vaults, key=lambda row: row.get("ts", 0) or 0)
+    raw_path = str(candidate.get("path", "")).strip()
+    return Path(raw_path) if raw_path else None
 
 
 def main() -> int:
@@ -57,8 +69,8 @@ def main() -> int:
     parser.add_argument("--json", action="store_true", help="Emit JSON output.")
     args = parser.parse_args()
 
-    cfg = _vault_config_path()
-    vaults = _load_vaults(cfg)
+    cfg = vault_config_path()
+    vaults = load_vaults(cfg)
     payload = {
         "config_path": str(cfg),
         "count": len(vaults),

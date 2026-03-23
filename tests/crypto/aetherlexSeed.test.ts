@@ -480,6 +480,14 @@ describe('G – Entropy & Security', () => {
     const b = deriveSeed(phrase, { domain: 'PROTOCOL-B' });
     expect(Buffer.from(a.seed)).not.toEqual(Buffer.from(b.seed));
   });
+
+  it('G7: generated tokens stay inside the canonical global index space', () => {
+    const phrase = generatePhrase(24);
+    for (const token of phrase.tokens) {
+      expect(token.globalIndex).toBeGreaterThanOrEqual(0);
+      expect(token.globalIndex).toBeLessThan(TOTAL_TOKENS);
+    }
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════

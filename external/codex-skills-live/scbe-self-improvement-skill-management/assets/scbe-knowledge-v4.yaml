@@ -1,0 +1,65 @@
+version: "4.0.0"
+framework: "SCBE-AETHERMOORE"
+constants:
+  PHI: 1.618033988749895
+  LWS_WEIGHTS: [1.0, 1.125, 1.25, 1.333, 1.5, 1.667]
+  SACRED_TONGUES: ["KO", "AV", "RU", "CA", "UM", "DR"]
+layers:
+  - number: 1
+    name: "Foundation"
+    function: "13 verified axioms"
+  - number: 2
+    name: "[TODO]"
+    function: "[TODO]"
+  - number: 3
+    name: "[TODO]"
+    function: "[TODO]"
+  - number: 4
+    name: "[TODO]"
+    function: "[TODO]"
+  - number: 5
+    name: "[TODO]"
+    function: "[TODO]"
+  - number: 6
+    name: "[TODO]"
+    function: "[TODO]"
+  - number: 7
+    name: "[TODO]"
+    function: "[TODO]"
+  - number: 8
+    name: "[TODO]"
+    function: "[TODO]"
+  - number: 9
+    name: "[TODO]"
+    function: "[TODO]"
+  - number: 10
+    name: "[TODO]"
+    function: "[TODO]"
+  - number: 11
+    name: "[TODO]"
+    function: "[TODO]"
+  - number: 12
+    name: "[TODO]"
+    function: "[TODO]"
+  - number: 13
+    name: "[TODO]"
+    function: "[TODO]"
+  - number: 14
+    name: "[TODO]"
+    function: "[TODO]"
+formulas:
+  layer12_wall:
+    expression: "R * pi^(phi * d_star)"
+    variables:
+      R:
+        type: "float"
+        domain: "(0, inf)"
+        description: "Realm scale"
+      d_star:
+        type: "float"
+        domain: "[0, inf)"
+        description: "Combined distance"
+    output:
+      type: "float"
+      domain: "(0, inf)"
+    dimensional_check: "passed"

@@ -109,6 +109,30 @@ ROOT_FILE_RULES: dict[str, tuple[str, str]] = {
     "vitest.config.ts": ("canonical", "Root TS test config."),
 }
 
+CATEGORY_POLICY: dict[str, tuple[str, str]] = {
+    "canonical": ("keep-active", "github-monorepo"),
+    "subproject-local": ("keep-scoped", "github-monorepo"),
+    "content-publishing": ("keep-and-publish", "github-monorepo"),
+    "legacy-readonly": ("archive-or-extract", "github-archive-or-cloud"),
+    "archive-snapshot": ("remove-from-active-tree", "cloud-archive"),
+    "external-vendored": ("vendor-or-archive", "cloud-archive"),
+    "research-experimental": ("curate-before-promote", "github-or-huggingface"),
+    "generated-runtime": ("export-and-ignore", "cloud-or-huggingface"),
+    "workspace-meta": ("keep-local-only", "local-workspace"),
+    "unknown": ("manual-review", "undecided"),
+    "root-file": ("manual-review", "github-monorepo"),
+}
+
+ENTRY_POLICY_OVERRIDES: dict[str, tuple[str, str]] = {
+    "artifacts": ("export-and-ignore", "cloud-archive"),
+    "training": ("export-and-ignore", "cloud-archive"),
+    "training-data": ("curate-before-promote", "huggingface-dataset"),
+    "notes": ("keep-and-publish", "github-and-obsidian"),
+    "notebooks": ("curate-before-promote", "github-and-colab"),
+    "external": ("vendor-or-archive", "cloud-archive"),
+    ".n8n_local_iso": ("export-and-ignore", "local-runtime-only"),
+}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Snapshot the SCBE monorepo ordering baseline.")
@@ -235,19 +259,52 @@ def collect_manifests(entry: Path) -> list[str]:
     return sorted(manifests)
 
 
+def approximate_size_bytes(entry: Path) -> int:
+    if entry.is_file():
+        try:
+            return entry.stat().st_size
+        except OSError:
+            return 0
+
+    total = 0
+    try:
+        for child in entry.rglob("*"):
+            if not child.is_file():
+                continue
+            try:
+                total += child.stat().st_size
+            except OSError:
+                continue
+    except OSError:
+        return total
+    return total
+
+
+def policy_for_entry(entry_name: str, category: str) -> tuple[str, str]:
+    if entry_name in ENTRY_POLICY_OVERRIDES:
+        return ENTRY_POLICY_OVERRIDES[entry_name]
+    return CATEGORY_POLICY.get(category, ("manual-review", "undecided"))
+
+
 def collect_root_entries(repo_root: Path, dirty_counts: Counter[str]) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
     for entry in sorted(repo_root.iterdir(), key=lambda item: item.name.lower()):
         if entry.name == ".git":
             continue
         category, reason = classify_root(entry)
+        action, export_target = policy_for_entry(entry.name, category)
+        size_bytes = approximate_size_bytes(entry)
         entries.append(
             {
                 "name": entry.name,
                 "type": "directory" if entry.is_dir() else "file",
                 "category": category,
                 "reason": reason,
+                "recommended_action": action,
+                "recommended_export_target": export_target,
                 "dirty_count": dirty_counts.get(entry.name, 0),
+                "size_bytes": size_bytes,
+                "size_mb": round(size_bytes / (1024 * 1024), 2),
                 "manifests": collect_manifests(entry),
                 "last_modified_utc": datetime.fromtimestamp(entry.stat().st_mtime, timezone.utc).strftime(
                     "%Y-%m-%dT%H:%M:%SZ"
@@ -261,6 +318,16 @@ def build_payload(repo_root: Path) -> dict[str, Any]:
     dirty_counts = collect_dirty_counts(repo_root)
     root_entries = collect_root_entries(repo_root, dirty_counts)
     category_counts = Counter(entry["category"] for entry in root_entries)
+    largest_entries = [
+        {
+            "name": entry["name"],
+            "category": entry["category"],
+            "size_mb": entry["size_mb"],
+            "recommended_action": entry["recommended_action"],
+            "recommended_export_target": entry["recommended_export_target"],
+        }
+        for entry in sorted(root_entries, key=lambda row: row["size_bytes"], reverse=True)[:20]
+    ]
     dirty_hotspots = [
         {"name": name, "dirty_count": count}
         for name, count in dirty_counts.most_common(25)
@@ -282,6 +349,7 @@ def build_payload(repo_root: Path) -> dict[str, Any]:
         "repo_root_commit_count": len(repo_root_commits),
         "repo_root_commits": repo_root_commits,
         "category_counts": dict(category_counts),
+        "largest_entries": largest_entries,
         "dirty_hotspots": dirty_hotspots,
         "worktrees": parse_worktrees(repo_root),
         "root_entries": root_entries,
@@ -311,6 +379,12 @@ def main() -> int:
     print(f"is_shallow_repository={payload['is_shallow_repository']}")
     print(f"head_root_commit_count={payload['head_root_commit_count']}")
     print(f"repo_root_commit_count={payload['repo_root_commit_count']}")
+    print("largest_entries=")
+    for row in payload["largest_entries"][:10]:
+        print(
+            f"  {row['size_mb']:>8.2f} MB  {row['name']}  "
+            f"({row['category']} -> {row['recommended_action']} -> {row['recommended_export_target']})"
+        )
     print("top_dirty_hotspots=")
     for row in payload["dirty_hotspots"][:10]:
         print(f"  {row['dirty_count']:>5}  {row['name']}")

@@ -179,7 +179,7 @@ def hyperbolic_distance(
 
     # Scale by curvature
     c = abs(curvature)
-    return np.arccosh(arg) / np.sqrt(c)
+    return np.arccosh(max(arg, 1.0)) / np.sqrt(c)
 
 
 def hyperbolic_midpoint(x: np.ndarray, y: np.ndarray) -> np.ndarray:

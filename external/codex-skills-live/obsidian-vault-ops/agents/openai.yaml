@@ -1,0 +1,4 @@
+interface:
+  display_name: "Obsidian Vault Ops"
+  short_description: "Vault checks and markdown sync for SCBE workflows."
+  default_prompt: "Use this skill to discover Obsidian vaults, audit markdown metadata, and safely export notes into SCBE training or lore pipelines."

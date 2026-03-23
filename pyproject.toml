@@ -44,12 +44,18 @@ Repository = "https://github.com/issdandavis/SCBE-AETHERMOORE"
 Issues = "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
 
 [project.scripts]
+scbe = "scbe:main"
+scbe-system = "scripts.scbe_system_cli:main"
 scbe-convert-to-sft = "symphonic_cipher.scbe_aethermoore.convert_to_sft:main"
 scbe-code-prism = "code_prism.cli:main"
 
+[tool.setuptools]
+py-modules = ["scbe"]
+
 [tool.setuptools.packages.find]
-where = ["src"]
+where = [".", "src"]
 include = [
+    "scripts*",
     "code_prism*",
     "symphonic_cipher*",
     "api*",

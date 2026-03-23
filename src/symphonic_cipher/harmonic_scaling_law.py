@@ -147,7 +147,7 @@ def hyperbolic_distance_poincare(
     cosh_dist = 1 + 2 * diff_sq / denominator
     cosh_dist = max(cosh_dist, 1.0)  # arcosh domain
 
-    return float(np.arccosh(cosh_dist))
+    return float(np.arccosh(max(cosh_dist, 1.0)))
 
 
 def find_nearest_trusted_realm(

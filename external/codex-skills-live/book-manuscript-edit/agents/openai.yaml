@@ -1,0 +1,4 @@
+interface:
+  display_name: "Book Manuscript Edit"
+  short_description: "Edit, review, sync, and build KDP books"
+  default_prompt: "Use $book-manuscript-edit to edit chapters, rebuild the KDP DOCX, sync LibreOffice changes back to Markdown, and stage the upload flow."

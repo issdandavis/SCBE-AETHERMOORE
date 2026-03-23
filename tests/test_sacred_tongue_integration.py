@@ -28,7 +28,7 @@ from crypto.rwp_v3 import (
     RWPv3Protocol,
     RWPEnvelope,
 )
-from scbe.context_encoder import SCBE_CONTEXT_ENCODER
+from src.scbe.context_encoder import SCBE_CONTEXT_ENCODER
 
 # ============================================================
 # UNIT TESTS: Sacred Tongue Tokenizer

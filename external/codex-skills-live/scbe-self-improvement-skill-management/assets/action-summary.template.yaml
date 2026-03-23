@@ -1,0 +1,14 @@
+version: "1.0.0"
+action_summary:
+  task: "[short task name]"
+  touched_layers: []
+  changed_files: []
+  services_updated: []
+  decisions:
+    - key: "[decision key]"
+      value: "[decision value]"
+      rationale: "[why this decision was made]"
+  handoff:
+    next_skill: "[skill-name]"
+    inputs_required: []
+    risks: []

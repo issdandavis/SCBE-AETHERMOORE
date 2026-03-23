@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Rapid Shell Guidance"
+  short_description: "Fast SCBE PowerShell step coach"
+  default_prompt: "Guide SCBE operations with concise, shell-labeled, copy-paste PowerShell steps and quick success checks."

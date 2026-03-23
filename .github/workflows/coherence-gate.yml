@@ -44,9 +44,10 @@ jobs:
 
       - name: Determine threshold
         id: config
+        env:
+          INPUT_THRESHOLD: ${{ github.event.inputs.threshold || '0.20' }}
         run: |
-          THRESHOLD="${{ github.event.inputs.threshold || '0.20' }}"
-          echo "threshold=$THRESHOLD" >> "$GITHUB_OUTPUT"
+          echo "threshold=$INPUT_THRESHOLD" >> "$GITHUB_OUTPUT"
 
       - name: Run Layer 11 coherence check
         id: coherence

@@ -1,0 +1,29 @@
+version: 1
+name: experimental-safe-integration-gates
+default_decision: QUARANTINE
+
+gates:
+  G0_spec:
+    required:
+      - hypothesis
+      - failure_modes
+      - thresholds
+      - dimension_mapping_21d
+  G1_unit:
+    max_regression_rate: 0.02
+    min_reproducibility: 0.98
+  G2_adversarial:
+    min_redteam_pass_rate: 0.95
+    max_safety_incidents: 0
+  G3_pilot:
+    max_p95_latency_delta_ms: 40
+    max_error_rate_delta: 0.01
+  G4_promotion:
+    min_trust_score: 0.85
+    rollback_required: true
+
+state_invariants:
+  - model_norm_lt_1
+  - no_negative_space_crossing
+  - harmonic_energy_within_budget
+  - composition_inherits_min_trust

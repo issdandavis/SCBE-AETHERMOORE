@@ -738,7 +738,7 @@ def hyperbolic_distance(u: np.ndarray, v: np.ndarray, eps: float = 1e-10) -> flo
     cosh_dist = 1 + 2 * diff_sq / denominator
     cosh_dist = max(cosh_dist, 1.0)
 
-    return float(np.arccosh(cosh_dist))
+    return float(np.arccosh(max(cosh_dist, 1.0)))
 
 
 def triadic_distance(xi1: np.ndarray, xi2: np.ndarray) -> float:
