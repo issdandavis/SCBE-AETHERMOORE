@@ -84,9 +84,6 @@ function renderPlanSection(plan) {
 }
 
 function renderPageAnalysisSection(pageAnalysis) {
-  const topologyLens = pageAnalysis.topology_lens && typeof pageAnalysis.topology_lens === 'object'
-    ? pageAnalysis.topology_lens
-    : null;
   const badges = [
     createBadge('Intent', pageAnalysis.intent || pageAnalysis.page_type),
     createRiskBadge(pageAnalysis.risk_tier),
@@ -114,7 +111,6 @@ function renderPageAnalysisSection(pageAnalysis) {
       ` : ''}
       ${badges.length ? `<div class="ab-pill-row">${badges.join('')}</div>` : ''}
       ${metrics.length ? renderMetricGrid(metrics) : ''}
-      ${topologyLens ? renderTopologySection(topologyLens) : ''}
       ${topics.length ? renderListSection('Topics', topics) : ''}
       ${renderListSection('Next Actions', nextActions, { ordered: true })}
       ${renderListSection('Required Approvals', approvals)}
@@ -148,57 +144,6 @@ function renderMetricGrid(metrics) {
           <div class="ab-metric__label">${escapeHtml(label)}</div>
         </div>
       `).join('')}
-    </div>
-  `;
-}
-
-function renderTopologySection(topologyLens) {
-  const compass = Array.isArray(topologyLens.semantic_compass) ? topologyLens.semantic_compass : [];
-  const signals = normalizeStringList(topologyLens.boundary_signals);
-  const metrics = [
-    ['Zone', topologyLens.zone],
-    ['d_H', topologyLens.trust_distance],
-    ['Radius', topologyLens.radius],
-    ['Curvature', topologyLens.curvature],
-    ['Link Pressure', topologyLens.link_pressure],
-    ['Interaction', topologyLens.interaction_pressure],
-    ['Growth', topologyLens.growth_signal],
-  ].filter(([, value]) => value !== undefined && value !== null && value !== '');
-  const badges = [
-    createBadge('Primary Axis', topologyLens.primary_axis),
-    createBadge('Growth Line', topologyLens.growth_label),
-    topologyLens.zone ? createRiskBadge(topologyLens.zone) : '',
-  ].filter(Boolean);
-
-  return `
-    <div class="ab-structured__section">
-      <div class="ab-structured__section-title">Topology Lens</div>
-      ${topologyLens.summary ? `<div class="ab-structured__summary">${escapeHtml(topologyLens.summary)}</div>` : ''}
-      ${badges.length ? `<div class="ab-pill-row">${badges.join('')}</div>` : ''}
-      ${metrics.length ? renderKeyValueGrid(metrics) : ''}
-      ${compass.length ? `
-        <div class="ab-topology-compass">
-          ${compass.map((axis) => renderCompassAxis(axis)).join('')}
-        </div>
-      ` : ''}
-      ${renderListSection('Boundary Signals', signals)}
-    </div>
-  `;
-}
-
-function renderCompassAxis(axis) {
-  const axisName = typeof axis?.axis === 'string' ? axis.axis : 'Unknown';
-  const score = Math.max(0, Math.min(1, Number(axis?.score || 0)));
-  const hits = Number.isFinite(axis?.hits) ? axis.hits : 0;
-  return `
-    <div class="ab-topology-axis">
-      <div class="ab-topology-axis__header">
-        <span class="ab-topology-axis__name">${escapeHtml(axisName)}</span>
-        <span class="ab-topology-axis__meta">${escapeHtml(`${Math.round(score * 100)}%`)}${hits ? ` | ${escapeHtml(String(hits))} hit${hits === 1 ? '' : 's'}` : ''}</span>
-      </div>
-      <div class="ab-topology-axis__bar">
-        <div class="ab-topology-axis__fill" style="width:${score * 100}%"></div>
-      </div>
     </div>
   `;
 }

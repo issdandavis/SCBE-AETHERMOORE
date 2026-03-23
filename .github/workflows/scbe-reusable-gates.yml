@@ -57,4 +57,4 @@ jobs:
 
       - name: Run core Python checks
         run: |
-          python scripts/system/run_core_python_checks.py --maxfail 1
+          SCBE_FORCE_SKIP_LIBOQS=1 PYTHONPATH=. pytest tests/ -v --ignore=tests/node_modules -x
