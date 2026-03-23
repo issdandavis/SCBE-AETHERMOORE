@@ -15,6 +15,11 @@ All formulas follow the mathematical specification exactly.
 __version__ = "1.0.0"
 __author__ = "Spiralverse RWP v3"
 
+# Variant tag: ROOT package uses exponential cost formula H(d,R) = R^(d²)
+# See CLAUDE.md "Critical Gotcha: Dual symphonic_cipher Packages"
+_IS_SAFETY_SCORE = False
+_VARIANT = "root"
+
 from .core import (
     SymphonicCipher,
     ConlangDictionary,

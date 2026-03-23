@@ -22,7 +22,6 @@ jobs:
       KEY_ALIAS: ${{ secrets.AETHERCODE_KEY_ALIAS }}
       KEYSTORE_PASSWORD: ${{ secrets.AETHERCODE_KEYSTORE_PASSWORD }}
       KEY_PASSWORD: ${{ secrets.AETHERCODE_KEY_PASSWORD }}
-      KEYSTORE_B64: ${{ secrets.AETHERCODE_KEYSTORE_B64 }}
     steps:
       - uses: actions/checkout@v4
 
@@ -56,10 +55,6 @@ jobs:
           fi
           npx cap sync android
 
-      - name: Ensure Gradle wrapper is executable
-        working-directory: kindle-app/android
-        run: chmod +x gradlew
-
       - name: Build debug APK
         working-directory: kindle-app/android
         run: ./gradlew assembleDebug
@@ -76,7 +71,7 @@ jobs:
         shell: bash
         run: |
           ready=true
-          for key in KEYSTORE_PASSWORD KEY_PASSWORD KEYSTORE_B64; do
+          for key in KEYSTORE_PASSWORD KEY_PASSWORD; do
             if [ -z "${!key}" ]; then
               ready=false
             fi
@@ -86,11 +81,20 @@ jobs:
           fi
           echo "ready=$ready" >> "$GITHUB_OUTPUT"
 
-      - name: Decode signing keystore
+      - name: Generate signing keystore
         if: (inputs.build_release == true || github.event_name == 'push') && steps.release_guard.outputs.ready == 'true'
         working-directory: kindle-app/android
         run: |
-          printf '%s' "$KEYSTORE_B64" | base64 --decode > app/aethercode-release.jks
+          keytool -genkeypair \
+            -v \
+            -keystore app/aethercode-release.jks \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -alias "$KEY_ALIAS" \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -keypass "$KEY_PASSWORD" \
+            -dname "CN=Issac Davis, OU=AetherCode, O=Aethermoore Works, L=Port Angeles, ST=WA, C=US"
 
       - name: Inject signing config
         if: (inputs.build_release == true || github.event_name == 'push') && steps.release_guard.outputs.ready == 'true'

@@ -1,0 +1,35 @@
+title: "[Architecture] "
+labels:
+  - discussion
+  - architecture
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Discuss architectural decisions, layer design, axiom tradeoffs, and system-wide patterns.
+
+        Before starting a new discussion, check existing ones to avoid duplicates.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - Pipeline architecture (14 layers)
+        - Quantum axiom mesh
+        - Sacred Tongues / Langues metric
+        - Post-quantum cryptography
+        - Multi-agent fleet
+        - Governance model
+        - Cross-language parity
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context & Proposal
+      description: Describe the architectural topic and your thoughts
+    validations:
+      required: true
