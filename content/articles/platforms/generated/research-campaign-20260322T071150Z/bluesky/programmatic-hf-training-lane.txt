@@ -1,0 +1,16 @@
+# Programmatic Hugging Face Training Needs a Governed Staging Lane (bluesky)
+
+## 1/4
+The biggest practical improvement in the SCBE training lane is not a new model. It is the fact that the repo now has a governed programmatic path from local training records to a package that can be audited, split, and optionally pushed to Hugging Face. That is what turns “we have data everywhere” into an actual training system.
+
+## 2/4
+This is grounded in repo paths and live operator commands, not only architecture prose.
+
+## 3/4
+Key files:
+- `scripts/programmatic_hf_training.py`
+- `scripts/build_offload_sft_records.py`
+- `src/training/auto_ledger.py`
+
+## 4/4
+The real test is whether the workflow can be replayed, audited, and promoted into training data.

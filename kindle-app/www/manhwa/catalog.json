@@ -1,0 +1,860 @@
+[
+  {
+    "id": "ch01",
+    "title": "Chapter 1: Protocol Handshake",
+    "defaultVariant": "generated",
+    "forceDefaultVariant": true,
+    "variants": {
+      "hq": {
+        "label": "Reference Panels",
+        "slices": [
+          "./manhwa/ch01/hq/ch01-hq-p01.png",
+          "./manhwa/ch01/hq/ch01-hq-p02.png",
+          "./manhwa/ch01/hq/ch01-hq-p03.png",
+          "./manhwa/ch01/hq/ch01-hq-p04.png",
+          "./manhwa/ch01/hq/ch01-hq-p05.png",
+          "./manhwa/ch01/hq/ch01-hq-p06.png",
+          "./manhwa/ch01/hq/ch01-hq-p07.png",
+          "./manhwa/ch01/hq/ch01-hq-p08.png",
+          "./manhwa/ch01/hq/ch01-hq-p09.png",
+          "./manhwa/ch01/hq/ch01-hq-p10.png",
+          "./manhwa/ch01/hq/ch01-hq-p11.png",
+          "./manhwa/ch01/hq/ch01-hq-p12.png",
+          "./manhwa/ch01/hq/ch01-hq-p13.png",
+          "./manhwa/ch01/hq/ch01-hq-p14.png",
+          "./manhwa/ch01/hq/ch01-hq-p15.png",
+          "./manhwa/ch01/hq/ch01-hq-p16.png",
+          "./manhwa/ch01/hq/ch01-hq-p17.png",
+          "./manhwa/ch01/hq/ch01-hq-p18.png",
+          "./manhwa/ch01/hq/ch01-hq-p19.png",
+          "./manhwa/ch01/hq/ch01-hq-p20.png"
+        ]
+      },
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch01/gen/ch01-v4-p01.png",
+          "./manhwa/ch01/gen/ch01-v4-p02.png",
+          "./manhwa/ch01/gen/ch01-v4-p03.png",
+          "./manhwa/ch01/gen/ch01-v4-p04.png",
+          "./manhwa/ch01/gen/ch01-v4-p05.png",
+          "./manhwa/ch01/gen/ch01-v4-p06.png",
+          "./manhwa/ch01/gen/ch01-v4-p07.png",
+          "./manhwa/ch01/gen/ch01-v4-p08.png",
+          "./manhwa/ch01/gen/ch01-v4-p09.png",
+          "./manhwa/ch01/gen/ch01-v4-p10.png",
+          "./manhwa/ch01/gen/ch01-v4-p11.png",
+          "./manhwa/ch01/gen/ch01-v4-p12.png",
+          "./manhwa/ch01/gen/ch01-v4-p13.png",
+          "./manhwa/ch01/gen/ch01-v4-p14.png",
+          "./manhwa/ch01/gen/ch01-v4-p15.png",
+          "./manhwa/ch01/gen/ch01-v4-p16.png",
+          "./manhwa/ch01/gen/ch01-v4-p17.png",
+          "./manhwa/ch01/gen/ch01-v4-p18.png",
+          "./manhwa/ch01/gen/ch01-v4-p19.png",
+          "./manhwa/ch01/gen/ch01-v4-p20.png",
+          "./manhwa/ch01/gen/ch01-v4-p21.png",
+          "./manhwa/ch01/gen/ch01-v4-p22.png",
+          "./manhwa/ch01/gen/ch01-v4-p23.png",
+          "./manhwa/ch01/gen/ch01-v4-p24.png",
+          "./manhwa/ch01/gen/ch01-v4-p25.png",
+          "./manhwa/ch01/gen/ch01-v4-p26.png",
+          "./manhwa/ch01/gen/ch01-v4-p27.png",
+          "./manhwa/ch01/gen/ch01-v4-p28.png",
+          "./manhwa/ch01/gen/ch01-v4-p29.png",
+          "./manhwa/ch01/gen/ch01-v4-p30.png",
+          "./manhwa/ch01/gen/ch01-v4-p31.png",
+          "./manhwa/ch01/gen/ch01-v4-p32.png",
+          "./manhwa/ch01/gen/ch01-v4-p33.png",
+          "./manhwa/ch01/gen/ch01-v4-p34.png",
+          "./manhwa/ch01/gen/ch01-v4-p35.png",
+          "./manhwa/ch01/gen/ch01-v4-p36.png",
+          "./manhwa/ch01/gen/ch01-v4-p37.png",
+          "./manhwa/ch01/gen/ch01-v4-p38.png",
+          "./manhwa/ch01/gen/ch01-v4-p39.png",
+          "./manhwa/ch01/gen/ch01-v4-p40.png",
+          "./manhwa/ch01/gen/ch01-v4-p41.png",
+          "./manhwa/ch01/gen/ch01-v4-p42.png",
+          "./manhwa/ch01/gen/ch01-v4-p43.png",
+          "./manhwa/ch01/gen/ch01-v4-p44.png",
+          "./manhwa/ch01/gen/ch01-v4-p45.png",
+          "./manhwa/ch01/gen/ch01-v4-p46.png",
+          "./manhwa/ch01/gen/ch01-v4-p47.png",
+          "./manhwa/ch01/gen/ch01-v4-p48.png",
+          "./manhwa/ch01/gen/ch01-v4-p49.png",
+          "./manhwa/ch01/gen/ch01-v4-p50.png",
+          "./manhwa/ch01/gen/ch01-v4-p51.png",
+          "./manhwa/ch01/gen/ch01-v4-p52.png",
+          "./manhwa/ch01/gen/ch01-v4-p53.png",
+          "./manhwa/ch01/gen/ch01-v4-p54.png",
+          "./manhwa/ch01/gen/ch01-v4-p55.png",
+          "./manhwa/ch01/gen/ch01-v4-p56.png"
+        ]
+      },
+      "text": {
+        "label": "Text Overlay",
+        "slices": [
+          "./manhwa/ch01/text/ch01-flow-text-slice-001.jpg",
+          "./manhwa/ch01/text/ch01-flow-text-slice-002.jpg",
+          "./manhwa/ch01/text/ch01-flow-text-slice-003.jpg",
+          "./manhwa/ch01/text/ch01-flow-text-slice-004.jpg",
+          "./manhwa/ch01/text/ch01-flow-text-slice-005.jpg"
+        ]
+      },
+      "clean": {
+        "label": "Image Only",
+        "slices": [
+          "./manhwa/ch01/clean/ch01-flow-slice-001.jpg",
+          "./manhwa/ch01/clean/ch01-flow-slice-002.jpg",
+          "./manhwa/ch01/clean/ch01-flow-slice-003.jpg",
+          "./manhwa/ch01/clean/ch01-flow-slice-004.jpg",
+          "./manhwa/ch01/clean/ch01-flow-slice-005.jpg"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch02",
+    "title": "Chapter 2: The Language Barrier",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch02/gen/ch02-p01.png",
+          "./manhwa/ch02/gen/ch02-p02.png",
+          "./manhwa/ch02/gen/ch02-p03.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch03",
+    "title": "Chapter 3: Hyperbolic Consequences",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch03/gen/ch03-p01.png",
+          "./manhwa/ch03/gen/ch03-p02.png",
+          "./manhwa/ch03/gen/ch03-p03.png",
+          "./manhwa/ch03/gen/ch03-p04.png",
+          "./manhwa/ch03/gen/ch03-p05.png",
+          "./manhwa/ch03/gen/ch03-p06.png",
+          "./manhwa/ch03/gen/ch03-p07.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch04",
+    "title": "Chapter 4: The Swarm Beneath",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch04/gen/ch04-p01.png",
+          "./manhwa/ch04/gen/ch04-p02.png",
+          "./manhwa/ch04/gen/ch04-p03.png",
+          "./manhwa/ch04/gen/ch04-p04.png",
+          "./manhwa/ch04/gen/ch04-p05.png",
+          "./manhwa/ch04/gen/ch04-p06.png",
+          "./manhwa/ch04/gen/ch04-p07.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch05",
+    "title": "Chapter 5: Intent and Integrity",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch05/gen/ch05-p01.png",
+          "./manhwa/ch05/gen/ch05-p02.png",
+          "./manhwa/ch05/gen/ch05-p03.png",
+          "./manhwa/ch05/gen/ch05-p04.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch06",
+    "title": "Chapter 6: The Harmonic Wall",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch06/gen/ch06-p01.png",
+          "./manhwa/ch06/gen/ch06-p02.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch07",
+    "title": "Chapter 7: Fleet Dynamics",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch07/gen/ch07-p01.png",
+          "./manhwa/ch07/gen/ch07-p02.png",
+          "./manhwa/ch07/gen/ch07-p03.png",
+          "./manhwa/ch07/gen/ch07-p04.png",
+          "./manhwa/ch07/gen/ch07-p05.png",
+          "./manhwa/ch07/gen/ch07-p06.png",
+          "./manhwa/ch07/gen/ch07-p07.png",
+          "./manhwa/ch07/gen/ch07-p08.png",
+          "./manhwa/ch07/gen/ch07-p09.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch08",
+    "title": "Chapter 8: Rogue Signatures",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch08/gen/ch08-p01.png",
+          "./manhwa/ch08/gen/ch08-p02.png",
+          "./manhwa/ch08/gen/ch08-p03.png",
+          "./manhwa/ch08/gen/ch08-p04.png",
+          "./manhwa/ch08/gen/ch08-p05.png",
+          "./manhwa/ch08/gen/ch08-p06.png",
+          "./manhwa/ch08/gen/ch08-p07.png",
+          "./manhwa/ch08/gen/ch08-p08.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch09",
+    "title": "Chapter 9: The Architect's Children",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch09/gen/ch09-p01.png",
+          "./manhwa/ch09/gen/ch09-p02.png",
+          "./manhwa/ch09/gen/ch09-p03.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch10",
+    "title": "Chapter 10: The Dead Author's Code",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch10/gen/ch10-p01.png",
+          "./manhwa/ch10/gen/ch10-p02.png",
+          "./manhwa/ch10/gen/ch10-p03.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch11",
+    "title": "Chapter 11: The Void Seed",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch11/gen/ch11-p01.png",
+          "./manhwa/ch11/gen/ch11-p02.png",
+          "./manhwa/ch11/gen/ch11-p03.png",
+          "./manhwa/ch11/gen/ch11-p04.png",
+          "./manhwa/ch11/gen/ch11-p05.png",
+          "./manhwa/ch11/gen/ch11-p06.png",
+          "./manhwa/ch11/gen/ch11-p07.png",
+          "./manhwa/ch11/gen/ch11-p08.png",
+          "./manhwa/ch11/gen/ch11-p09.png",
+          "./manhwa/ch11/gen/ch11-p10.png",
+          "./manhwa/ch11/gen/ch11-p11.png",
+          "./manhwa/ch11/gen/ch11-p12.png",
+          "./manhwa/ch11/gen/ch11-p13.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch12",
+    "title": "Chapter 12: The Rite of Binding",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch12/gen/ch12-p01.png",
+          "./manhwa/ch12/gen/ch12-p02.png",
+          "./manhwa/ch12/gen/ch12-p03.png",
+          "./manhwa/ch12/gen/ch12-p04.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch13",
+    "title": "Chapter 13: The First Incursion",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch13/gen/ch13-p01.png",
+          "./manhwa/ch13/gen/ch13-p02.png",
+          "./manhwa/ch13/gen/ch13-p03.png",
+          "./manhwa/ch13/gen/ch13-p04.png",
+          "./manhwa/ch13/gen/ch13-p05.png",
+          "./manhwa/ch13/gen/ch13-p06.png",
+          "./manhwa/ch13/gen/ch13-p07.png",
+          "./manhwa/ch13/gen/ch13-p08.png",
+          "./manhwa/ch13/gen/ch13-p09.png",
+          "./manhwa/ch13/gen/ch13-p10.png",
+          "./manhwa/ch13/gen/ch13-p11.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch14",
+    "title": "Chapter 14: Threshold Country",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch14/gen/ch14-p01.png",
+          "./manhwa/ch14/gen/ch14-p02.png",
+          "./manhwa/ch14/gen/ch14-p03.png",
+          "./manhwa/ch14/gen/ch14-p04.png",
+          "./manhwa/ch14/gen/ch14-p05.png",
+          "./manhwa/ch14/gen/ch14-p06.png",
+          "./manhwa/ch14/gen/ch14-p07.png",
+          "./manhwa/ch14/gen/ch14-p08.png",
+          "./manhwa/ch14/gen/ch14-p09.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch15",
+    "title": "Chapter 15: The Fractal Proof",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch15/gen/ch15-p01.png",
+          "./manhwa/ch15/gen/ch15-p02.png",
+          "./manhwa/ch15/gen/ch15-p03.png",
+          "./manhwa/ch15/gen/ch15-p04.png",
+          "./manhwa/ch15/gen/ch15-p05.png",
+          "./manhwa/ch15/gen/ch15-p06.png",
+          "./manhwa/ch15/gen/ch15-p07.png",
+          "./manhwa/ch15/gen/ch15-p08.png",
+          "./manhwa/ch15/gen/ch15-p09.png",
+          "./manhwa/ch15/gen/ch15-p10.png",
+          "./manhwa/ch15/gen/ch15-p11.png",
+          "./manhwa/ch15/gen/ch15-p12.png",
+          "./manhwa/ch15/gen/ch15-p13.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch16",
+    "title": "Chapter 16: The Long Watch",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch16/gen/ch16-p01.png",
+          "./manhwa/ch16/gen/ch16-p02.png",
+          "./manhwa/ch16/gen/ch16-p03.png",
+          "./manhwa/ch16/gen/ch16-p04.png",
+          "./manhwa/ch16/gen/ch16-p05.png",
+          "./manhwa/ch16/gen/ch16-p06.png",
+          "./manhwa/ch16/gen/ch16-p07.png",
+          "./manhwa/ch16/gen/ch16-p08.png",
+          "./manhwa/ch16/gen/ch16-p09.png",
+          "./manhwa/ch16/gen/ch16-p10.png",
+          "./manhwa/ch16/gen/ch16-p11.png",
+          "./manhwa/ch16/gen/ch16-p12.png",
+          "./manhwa/ch16/gen/ch16-p13.png",
+          "./manhwa/ch16/gen/ch16-p14.png",
+          "./manhwa/ch16/gen/ch16-p15.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch17",
+    "title": "Chapter 17: The Outer Ring",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch17/gen/ch17-p01.png",
+          "./manhwa/ch17/gen/ch17-p02.png",
+          "./manhwa/ch17/gen/ch17-p03.png",
+          "./manhwa/ch17/gen/ch17-p04.png",
+          "./manhwa/ch17/gen/ch17-p05.png",
+          "./manhwa/ch17/gen/ch17-p06.png",
+          "./manhwa/ch17/gen/ch17-p07.png",
+          "./manhwa/ch17/gen/ch17-p08.png",
+          "./manhwa/ch17/gen/ch17-p09.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch18",
+    "title": "Chapter 18: The Industrial Hum",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch18/gen/ch18-p01.png",
+          "./manhwa/ch18/gen/ch18-p02.png",
+          "./manhwa/ch18/gen/ch18-p03.png",
+          "./manhwa/ch18/gen/ch18-p04.png",
+          "./manhwa/ch18/gen/ch18-p05.png",
+          "./manhwa/ch18/gen/ch18-p06.png",
+          "./manhwa/ch18/gen/ch18-p07.png",
+          "./manhwa/ch18/gen/ch18-p08.png",
+          "./manhwa/ch18/gen/ch18-p09.png",
+          "./manhwa/ch18/gen/ch18-p10.png",
+          "./manhwa/ch18/gen/ch18-p11.png",
+          "./manhwa/ch18/gen/ch18-p12.png",
+          "./manhwa/ch18/gen/ch18-p13.png",
+          "./manhwa/ch18/gen/ch18-p14.png",
+          "./manhwa/ch18/gen/ch18-p15.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch19",
+    "title": "Chapter 19: The Memory Tithe",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch19/gen/ch19-p01.png",
+          "./manhwa/ch19/gen/ch19-p02.png",
+          "./manhwa/ch19/gen/ch19-p03.png",
+          "./manhwa/ch19/gen/ch19-p04.png",
+          "./manhwa/ch19/gen/ch19-p05.png",
+          "./manhwa/ch19/gen/ch19-p06.png",
+          "./manhwa/ch19/gen/ch19-p07.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch20",
+    "title": "Chapter 20: The Seventh Absence",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch20/gen/ch20-p01.png",
+          "./manhwa/ch20/gen/ch20-p02.png",
+          "./manhwa/ch20/gen/ch20-p03.png",
+          "./manhwa/ch20/gen/ch20-p04.png",
+          "./manhwa/ch20/gen/ch20-p05.png",
+          "./manhwa/ch20/gen/ch20-p06.png",
+          "./manhwa/ch20/gen/ch20-p07.png",
+          "./manhwa/ch20/gen/ch20-p08.png",
+          "./manhwa/ch20/gen/ch20-p09.png",
+          "./manhwa/ch20/gen/ch20-p10.png",
+          "./manhwa/ch20/gen/ch20-p11.png",
+          "./manhwa/ch20/gen/ch20-p12.png",
+          "./manhwa/ch20/gen/ch20-p13.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch21",
+    "title": "Chapter 21: The Earth Thread",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch21/gen/ch21-p01.png",
+          "./manhwa/ch21/gen/ch21-p02.png",
+          "./manhwa/ch21/gen/ch21-p03.png",
+          "./manhwa/ch21/gen/ch21-p04.png",
+          "./manhwa/ch21/gen/ch21-p05.png",
+          "./manhwa/ch21/gen/ch21-p06.png",
+          "./manhwa/ch21/gen/ch21-p07.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch22",
+    "title": "Chapter 22: The Intention Dimension",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch22/gen/ch22-p01.png",
+          "./manhwa/ch22/gen/ch22-p02.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch23",
+    "title": "Chapter 23: The Underroot",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch23/gen/ch23-p01.png",
+          "./manhwa/ch23/gen/ch23-p02.png",
+          "./manhwa/ch23/gen/ch23-p03.png",
+          "./manhwa/ch23/gen/ch23-p04.png",
+          "./manhwa/ch23/gen/ch23-p05.png",
+          "./manhwa/ch23/gen/ch23-p06.png",
+          "./manhwa/ch23/gen/ch23-p07.png",
+          "./manhwa/ch23/gen/ch23-p08.png",
+          "./manhwa/ch23/gen/ch23-p09.png",
+          "./manhwa/ch23/gen/ch23-p10.png",
+          "./manhwa/ch23/gen/ch23-p11.png",
+          "./manhwa/ch23/gen/ch23-p12.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch24",
+    "title": "Chapter 24: The Time Tax",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch24/gen/ch24-p01.png",
+          "./manhwa/ch24/gen/ch24-p02.png",
+          "./manhwa/ch24/gen/ch24-p03.png",
+          "./manhwa/ch24/gen/ch24-p04.png",
+          "./manhwa/ch24/gen/ch24-p05.png",
+          "./manhwa/ch24/gen/ch24-p06.png",
+          "./manhwa/ch24/gen/ch24-p07.png",
+          "./manhwa/ch24/gen/ch24-p08.png",
+          "./manhwa/ch24/gen/ch24-p09.png",
+          "./manhwa/ch24/gen/ch24-p10.png",
+          "./manhwa/ch24/gen/ch24-p11.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch25",
+    "title": "Chapter 25: Ordered Witness",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch25/gen/ch25-p01.png",
+          "./manhwa/ch25/gen/ch25-p02.png",
+          "./manhwa/ch25/gen/ch25-p03.png",
+          "./manhwa/ch25/gen/ch25-p04.png",
+          "./manhwa/ch25/gen/ch25-p05.png",
+          "./manhwa/ch25/gen/ch25-p06.png",
+          "./manhwa/ch25/gen/ch25-p07.png",
+          "./manhwa/ch25/gen/ch25-p08.png",
+          "./manhwa/ch25/gen/ch25-p09.png",
+          "./manhwa/ch25/gen/ch25-p10.png",
+          "./manhwa/ch25/gen/ch25-p11.png",
+          "./manhwa/ch25/gen/ch25-p12.png",
+          "./manhwa/ch25/gen/ch25-p13.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch26",
+    "title": "Chapter 26: The Keys",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch26/gen/ch26-p01.png",
+          "./manhwa/ch26/gen/ch26-p02.png",
+          "./manhwa/ch26/gen/ch26-p03.png",
+          "./manhwa/ch26/gen/ch26-p04.png",
+          "./manhwa/ch26/gen/ch26-p05.png",
+          "./manhwa/ch26/gen/ch26-p06.png",
+          "./manhwa/ch26/gen/ch26-p07.png",
+          "./manhwa/ch26/gen/ch26-p08.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "ch27",
+    "title": "Chapter 27: The Architect",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/ch27/gen/ch27-p01.png",
+          "./manhwa/ch27/gen/ch27-p02.png",
+          "./manhwa/ch27/gen/ch27-p03.png",
+          "./manhwa/ch27/gen/ch27-p04.png",
+          "./manhwa/ch27/gen/ch27-p05.png",
+          "./manhwa/ch27/gen/ch27-p06.png",
+          "./manhwa/ch27/gen/ch27-p07.png",
+          "./manhwa/ch27/gen/ch27-p08.png",
+          "./manhwa/ch27/gen/ch27-p09.png",
+          "./manhwa/ch27/gen/ch27-p10.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "int01",
+    "title": "Interlude: Polly's Vigil",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/int01/gen/int01-p01.png",
+          "./manhwa/int01/gen/int01-p02.png",
+          "./manhwa/int01/gen/int01-p03.png",
+          "./manhwa/int01/gen/int01-p04.png",
+          "./manhwa/int01/gen/int01-p05.png",
+          "./manhwa/int01/gen/int01-p06.png",
+          "./manhwa/int01/gen/int01-p07.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "int02",
+    "title": "Interlude: The Garden Before",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/int02/gen/int02-p01.png",
+          "./manhwa/int02/gen/int02-p02.png",
+          "./manhwa/int02/gen/int02-p03.png",
+          "./manhwa/int02/gen/int02-p04.png",
+          "./manhwa/int02/gen/int02-p05.png",
+          "./manhwa/int02/gen/int02-p06.png",
+          "./manhwa/int02/gen/int02-p07.png",
+          "./manhwa/int02/gen/int02-p08.png",
+          "./manhwa/int02/gen/int02-p09.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "int03",
+    "title": "Interlude: Senna Before Dawn",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/int03/gen/int03-p01.png",
+          "./manhwa/int03/gen/int03-p02.png",
+          "./manhwa/int03/gen/int03-p03.png",
+          "./manhwa/int03/gen/int03-p04.png",
+          "./manhwa/int03/gen/int03-p05.png",
+          "./manhwa/int03/gen/int03-p06.png",
+          "./manhwa/int03/gen/int03-p07.png",
+          "./manhwa/int03/gen/int03-p08.png",
+          "./manhwa/int03/gen/int03-p09.png",
+          "./manhwa/int03/gen/int03-p10.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "int04",
+    "title": "Interlude: Bram's Report",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/int04/gen/int04-p01.png",
+          "./manhwa/int04/gen/int04-p02.png",
+          "./manhwa/int04/gen/int04-p03.png",
+          "./manhwa/int04/gen/int04-p04.png",
+          "./manhwa/int04/gen/int04-p05.png",
+          "./manhwa/int04/gen/int04-p06.png",
+          "./manhwa/int04/gen/int04-p07.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "int05",
+    "title": "Interlude: Alexander Holds",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/int05/gen/int05-p01.png",
+          "./manhwa/int05/gen/int05-p02.png",
+          "./manhwa/int05/gen/int05-p03.png",
+          "./manhwa/int05/gen/int05-p04.png",
+          "./manhwa/int05/gen/int05-p05.png",
+          "./manhwa/int05/gen/int05-p06.png",
+          "./manhwa/int05/gen/int05-p07.png",
+          "./manhwa/int05/gen/int05-p08.png",
+          "./manhwa/int05/gen/int05-p09.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "int06",
+    "title": "Interlude: Jorren Records",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/int06/gen/int06-p01.png",
+          "./manhwa/int06/gen/int06-p02.png",
+          "./manhwa/int06/gen/int06-p03.png",
+          "./manhwa/int06/gen/int06-p04.png",
+          "./manhwa/int06/gen/int06-p05.png",
+          "./manhwa/int06/gen/int06-p06.png",
+          "./manhwa/int06/gen/int06-p07.png",
+          "./manhwa/int06/gen/int06-p08.png",
+          "./manhwa/int06/gen/int06-p09.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "int07",
+    "title": "Interlude: Nadia Runs",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/int07/gen/int07-p01.png",
+          "./manhwa/int07/gen/int07-p02.png",
+          "./manhwa/int07/gen/int07-p03.png",
+          "./manhwa/int07/gen/int07-p04.png",
+          "./manhwa/int07/gen/int07-p05.png",
+          "./manhwa/int07/gen/int07-p06.png",
+          "./manhwa/int07/gen/int07-p07.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "int08",
+    "title": "Interlude: The Pipe",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/int08/gen/int08-p01.png",
+          "./manhwa/int08/gen/int08-p02.png",
+          "./manhwa/int08/gen/int08-p03.png",
+          "./manhwa/int08/gen/int08-p04.png",
+          "./manhwa/int08/gen/int08-p05.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "int09",
+    "title": "Interlude: Tovak Hides",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/int09/gen/int09-p01.png",
+          "./manhwa/int09/gen/int09-p02.png",
+          "./manhwa/int09/gen/int09-p03.png",
+          "./manhwa/int09/gen/int09-p04.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "int10",
+    "title": "Interlude: Aria's Garden",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/int10/gen/int10-p01.png",
+          "./manhwa/int10/gen/int10-p02.png",
+          "./manhwa/int10/gen/int10-p03.png",
+          "./manhwa/int10/gen/int10-p04.png"
+        ]
+      }
+    }
+  },
+  {
+    "id": "rootlight",
+    "title": "Chapter 15: Rootlight",
+    "defaultVariant": "generated",
+    "variants": {
+      "generated": {
+        "label": "AI Draft Panels",
+        "slices": [
+          "./manhwa/rootlight/gen/rootlight-p01.png",
+          "./manhwa/rootlight/gen/rootlight-p02.png",
+          "./manhwa/rootlight/gen/rootlight-p03.png",
+          "./manhwa/rootlight/gen/rootlight-p04.png",
+          "./manhwa/rootlight/gen/rootlight-p05.png",
+          "./manhwa/rootlight/gen/rootlight-p06.png",
+          "./manhwa/rootlight/gen/rootlight-p07.png",
+          "./manhwa/rootlight/gen/rootlight-p08.png",
+          "./manhwa/rootlight/gen/rootlight-p09.png",
+          "./manhwa/rootlight/gen/rootlight-p10.png",
+          "./manhwa/rootlight/gen/rootlight-p11.png"
+        ]
+      }
+    }
+  }
+]

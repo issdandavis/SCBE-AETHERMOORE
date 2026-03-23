@@ -1,0 +1,129 @@
+{
+  "schema_version": "0.1.0",
+  "experiment_id": "swle-v0-six-language-benchmark",
+  "notes": "Starter config for the first SWLE benchmark pass once six language packs are available.",
+  "dataset": {
+    "manifest_path": "lexicons/swle_manifest.json",
+    "min_languages": 6,
+    "primary_unit": "phoneme",
+    "require_concept_alignment": true,
+    "use_tokenizer_views_as_baselines_only": true
+  },
+  "representation": {
+    "feature_set": [
+      "voiced",
+      "sonorant",
+      "continuant",
+      "nasal",
+      "approximant",
+      "lateral",
+      "stop",
+      "fricative",
+      "affricate",
+      "vowel",
+      "place",
+      "manner",
+      "height",
+      "backness",
+      "rounding",
+      "stress",
+      "syllable_role"
+    ],
+    "particle_projection": {
+      "mass": "sigmoid(linear(features))",
+      "charge": "tanh(linear(features))",
+      "spin": "sigmoid(linear(features))",
+      "field": "softmax(linear(features))"
+    }
+  },
+  "model": {
+    "id": "swle_local_energy_v0",
+    "unary_terms": true,
+    "pairwise_adjacent_terms": true,
+    "boundary_terms": true,
+    "cross_word_terms": true,
+    "max_pair_window": 1,
+    "regularization_l2": 0.0001
+  },
+  "baselines": [
+    {
+      "id": "bag_of_char_ngrams"
+    },
+    {
+      "id": "char_cnn"
+    },
+    {
+      "id": "bpe_embedding"
+    },
+    {
+      "id": "phonological_features_only"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "cross_lingual_concept_retrieval",
+      "enabled_if": "concept_id_or_translation_set_id",
+      "primary_metrics": [
+        "mrr_at_10",
+        "recall_at_1",
+        "recall_at_10"
+      ]
+    },
+    {
+      "task_id": "valence_prediction",
+      "enabled_if": "semantic_targets.valence",
+      "primary_metrics": [
+        "spearman",
+        "pearson",
+        "mae"
+      ]
+    },
+    {
+      "task_id": "morphology_prediction",
+      "enabled_if": "morphology_targets.inflectional_features_or_pos",
+      "primary_metrics": [
+        "macro_f1",
+        "exact_match"
+      ]
+    },
+    {
+      "task_id": "cognate_clustering",
+      "enabled_if": "alignment.cognate_class_id_or_etymon_id",
+      "primary_metrics": [
+        "nmi",
+        "ari",
+        "cluster_purity"
+      ]
+    },
+    {
+      "task_id": "semantic_neighbor_quality",
+      "enabled_if": "concept_id_or_manual_relevance",
+      "primary_metrics": [
+        "precision_at_10",
+        "ndcg_at_10"
+      ]
+    }
+  ],
+  "splits": [
+    {
+      "id": "within_language_random",
+      "seed": 42,
+      "train_fraction": 0.8,
+      "dev_fraction": 0.1,
+      "test_fraction": 0.1
+    },
+    {
+      "id": "leave_one_language_out",
+      "seed": 42
+    },
+    {
+      "id": "leave_one_concept_domain_out",
+      "seed": 42
+    }
+  ],
+  "analysis": {
+    "require_error_buckets": true,
+    "require_interpretable_ablation": true,
+    "bootstrap_samples": 1000
+  }
+}
