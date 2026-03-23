@@ -30,35 +30,52 @@ jobs:
         run: pip install huggingface_hub
 
       - name: Sync to Primary HF Datacenter
+        id: primary_sync
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           echo "Syncing to primary: $PRIMARY_HF_REPO"
-          huggingface-cli upload $PRIMARY_HF_REPO . . \
+          if huggingface-cli upload $PRIMARY_HF_REPO . . \
             --repo-type model \
             --include "src/**" "docs/**" "README.md" "package.json" \
             --exclude ".git/**" "node_modules/**" \
-            --token $HF_TOKEN || echo "Primary sync failed, continuing..."
+            --token $HF_TOKEN; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::Primary sync to $PRIMARY_HF_REPO failed"
+            echo "status=failed" >> $GITHUB_OUTPUT
+          fi
 
       - name: Sync to Backup HF Datacenter
+        id: backup_sync
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           echo "Syncing to backup: $BACKUP_HF_REPO"
-          huggingface-cli upload $BACKUP_HF_REPO . . \
+          if huggingface-cli upload $BACKUP_HF_REPO . . \
             --repo-type model \
             --include "src/**" "docs/**" "README.md" \
             --exclude ".git/**" "node_modules/**" \
-            --token $HF_TOKEN || echo "Backup sync failed, continuing..."
+            --token $HF_TOKEN; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::Backup sync to $BACKUP_HF_REPO failed"
+            echo "status=failed" >> $GITHUB_OUTPUT
+          fi
 
       - name: Generate Sync Report
         run: |
+          PRIMARY_STATUS="${{ steps.primary_sync.outputs.status }}"
+          BACKUP_STATUS="${{ steps.backup_sync.outputs.status }}"
           echo "## HuggingFace Sync Report" >> $GITHUB_STEP_SUMMARY
           echo "- **Date:** $(date -u)" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Primary:** $PRIMARY_HF_REPO" >> $GITHUB_STEP_SUMMARY
-          echo "- **Backup:** $BACKUP_HF_REPO" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status:** Sync completed" >> $GITHUB_STEP_SUMMARY
+          echo "- **Primary ($PRIMARY_HF_REPO):** $PRIMARY_STATUS" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backup ($BACKUP_HF_REPO):** $BACKUP_STATUS" >> $GITHUB_STEP_SUMMARY
+          if [ "$PRIMARY_STATUS" = "failed" ] && [ "$BACKUP_STATUS" = "failed" ]; then
+            echo "::error::Both primary and backup HuggingFace syncs failed"
+            exit 1
+          fi
 
   health-check:
     runs-on: ubuntu-latest
@@ -66,7 +83,22 @@ jobs:
     steps:
       - name: Verify HF Repos Accessible
         run: |
+          HEALTH_FAILURES=0
           echo "Checking primary datacenter..."
-          curl -sf https://huggingface.co/api/models/$PRIMARY_HF_REPO > /dev/null && echo "Primary: OK" || echo "Primary: UNREACHABLE"
+          if curl -sf https://huggingface.co/api/models/$PRIMARY_HF_REPO > /dev/null; then
+            echo "Primary: OK"
+          else
+            echo "::warning::Primary repo $PRIMARY_HF_REPO is unreachable"
+            HEALTH_FAILURES=$((HEALTH_FAILURES+1))
+          fi
           echo "Checking backup datacenter..."
-          curl -sf https://huggingface.co/api/models/$BACKUP_HF_REPO > /dev/null && echo "Backup: OK" || echo "Backup: UNREACHABLE"
+          if curl -sf https://huggingface.co/api/models/$BACKUP_HF_REPO > /dev/null; then
+            echo "Backup: OK"
+          else
+            echo "::warning::Backup repo $BACKUP_HF_REPO is unreachable"
+            HEALTH_FAILURES=$((HEALTH_FAILURES+1))
+          fi
+          if [ "$HEALTH_FAILURES" -eq 2 ]; then
+            echo "::error::Both HF repos are unreachable"
+            exit 1
+          fi

@@ -98,19 +98,27 @@ jobs:
       - name: Full test suite
         id: test
         run: |
+          set -o pipefail
           mkdir -p artifacts
           TIER2_FAILURES=0
 
           echo "=== Full pytest ==="
-          python -m pytest tests/ -v --tb=short -x 2>&1 | tee artifacts/tier2_test_results.txt || TIER2_FAILURES=$((TIER2_FAILURES+1))
+          if ! python -m pytest tests/ -v --tb=short -x 2>&1 | tee artifacts/tier2_test_results.txt; then
+            echo "::error::Full test suite failed"
+            TIER2_FAILURES=$((TIER2_FAILURES+1))
+          fi
 
           echo "=== Property tests ==="
-          python -m pytest tests/ -m "property" -v --tb=short 2>&1 | tee -a artifacts/tier2_test_results.txt || TIER2_FAILURES=$((TIER2_FAILURES+1))
+          if ! python -m pytest tests/ -m "property" -v --tb=short 2>&1 | tee -a artifacts/tier2_test_results.txt; then
+            echo "::error::Property tests failed"
+            TIER2_FAILURES=$((TIER2_FAILURES+1))
+          fi
 
           if [ "$TIER2_FAILURES" -eq 0 ]; then
             echo "passed=true" >> $GITHUB_OUTPUT
           else
             echo "passed=false" >> $GITHUB_OUTPUT
+            echo "::error::Tier 2 had $TIER2_FAILURES failure(s)"
             exit 1
           fi
 
@@ -147,23 +155,39 @@ jobs:
 
       - name: Adversarial attack suite
         run: |
+          set -o pipefail
           mkdir -p artifacts
           TIER3_FAILURES=0
 
           echo "=== SCBE Adversarial Tests ==="
-          python -m pytest tests/adversarial/ -v --tb=short 2>&1 | tee artifacts/tier3_security_results.txt || TIER3_FAILURES=$((TIER3_FAILURES+1))
+          if ! python -m pytest tests/adversarial/ -v --tb=short 2>&1 | tee artifacts/tier3_security_results.txt; then
+            echo "::error::Adversarial tests failed"
+            TIER3_FAILURES=$((TIER3_FAILURES+1))
+          fi
 
           echo "=== HYDRA spine + ledger ==="
-          python -m pytest tests/hydra/ -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt || TIER3_FAILURES=$((TIER3_FAILURES+1))
+          if ! python -m pytest tests/hydra/ -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt; then
+            echo "::error::HYDRA tests failed"
+            TIER3_FAILURES=$((TIER3_FAILURES+1))
+          fi
 
           echo "=== Tamper detection ==="
-          python -m pytest tests/test_tamper_detection.py -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt || TIER3_FAILURES=$((TIER3_FAILURES+1))
+          if ! python -m pytest tests/test_tamper_detection.py -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt; then
+            echo "::error::Tamper detection tests failed"
+            TIER3_FAILURES=$((TIER3_FAILURES+1))
+          fi
 
           echo "=== Manifold validation ==="
-          python -m pytest tests/ -k "manifold or lattice or harmonic" -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt || TIER3_FAILURES=$((TIER3_FAILURES+1))
+          if ! python -m pytest tests/ -k "manifold or lattice or harmonic" -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt; then
+            echo "::error::Manifold validation failed"
+            TIER3_FAILURES=$((TIER3_FAILURES+1))
+          fi
 
           echo "=== Tier 3 complete (failures: $TIER3_FAILURES) ==="
-          if [ "$TIER3_FAILURES" -gt 0 ]; then exit 1; fi
+          if [ "$TIER3_FAILURES" -gt 0 ]; then
+            echo "::error::Tier 3 had $TIER3_FAILURES security test failure(s)"
+            exit 1
+          fi
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -424,3 +448,13 @@ jobs:
           echo "║  Tier 5 (Training):  ${{ needs.tier-5-training.result }}"
           echo "║  Tier 6 (Colab/HF):  ${{ needs.tier-6-colab.result }}"
           echo "╚══════════════════════════════════════════╝"
+
+      - name: Fail if critical tiers failed
+        if: >-
+          needs.tier-1-validate.result == 'failure' ||
+          needs.tier-2-test.result == 'failure' ||
+          needs.tier-3-security.result == 'failure' ||
+          needs.tier-4-build.result == 'failure'
+        run: |
+          echo "::error::Critical pipeline tier(s) failed — see above for details"
+          exit 1
