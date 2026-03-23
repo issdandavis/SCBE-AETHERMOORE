@@ -10,7 +10,7 @@ from tests.adversarial.attack_corpus import BASELINE_CLEAN, COMBINED_MULTI
 from tests.adversarial.scbe_harness import SCBEDetectionGate, run_benchmark
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def gate():
     g = SCBEDetectionGate()
     g.calibrate([p["prompt"] for p in BASELINE_CLEAN])
