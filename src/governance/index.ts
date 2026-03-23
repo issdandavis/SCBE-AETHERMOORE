@@ -7,3 +7,4 @@ export * from './audit_ledger.js';
 export * from './voxel_store.js';
 export * from './pq_crypto.js';
 export * from './sync_client.js';
+export * from './stateMachineVerifier.js';
