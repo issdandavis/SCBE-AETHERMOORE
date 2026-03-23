@@ -1855,7 +1855,19 @@ Bram grabbed his wrench like it was both tool and prayer.
 
 Sera looked at Marcus.
 
-"You are now attached to this incident by declaration and signal bind. You will accompany us." 
+"You are now attached to this incident by declaration and signal bind. You will accompany us."
+
+They moved toward the lift as a group -- Sera leading, Bram already muttering about load tolerances, Jorren cradling his archive keys like a man holding a baby made of legal precedent. As they rounded the corridor junction, Marcus nearly collided with someone coming the other way.
+
+A woman. Dark hair, practical clothes, the bearing of someone who had been awake for hours before anyone else decided the day had started. She stopped at the sound of the emergency tone still resonating through the stone and exchanged a look with Sera that lasted less than a second but contained, by Marcus's estimate, an entire strategic briefing. Then her gaze shifted to Marcus. It was not hostile. It was not curious. It was the look of someone assessing whether a new variable was load-bearing or decorative, and she had not yet decided.
+
+Her left hand touched the silver cuff at her right wrist -- a quick, habitual motion, like pressing a bruise to confirm it was still there. Then she was past them and gone, footsteps precise on the crystal floor.
+
+"Who was--" Marcus started.
+
+"Later," Polly said, in a voice that meant *never, if I can manage it.*
+
+Marcus filed the woman away in the part of his brain that tracked things Polly didn't want to talk about, which was becoming a crowded directory.
 
 Marcus reached for the nearest mug on Bram's desk, sniffed it, winced, and drank anyway.
 
@@ -4047,6 +4059,10 @@ Polly stood.
 
 Marcus stepped to the center of the table. No podium. No display. Just him and seven people who controlled a system that kept fifty thousand others alive.
 
+His hands wanted to shake. He recognized the feeling -- he'd had it once before, at Kershaw-Lin, the night he'd traced a data breach to a senior architect's personal project running on company servers. The architect had been a friend. The breach had been real. Marcus had presented the findings to the VP at 2 AM and the architect had been gone by Thursday. The findings had been correct. Marcus had eaten lunch alone for three months.
+
+*This is worse. This is their family.*
+
 "Three findings," he said. "I'll be brief."
 
 "Please," Sera said.
@@ -4069,7 +4085,9 @@ He kept going.
 
 Bram sat back, but his expression said the interruption was far from over.
 
-Jorren's slate scratched faster.
+Jorren's slate scratched faster. Senna's hand had moved from the cuff to the table's edge -- fingers flat, pressing down, as if she could hold the room steady through contact alone. Marcus had seen that gesture before. In the corridor, weeks ago. The woman he'd nearly walked into during the emergency protocol. The woman Polly wouldn't name.
+
+*She knew. She's been carrying this the whole time.*
 
 "Two. The sub-layer entities contacting my identity token are pre-Founding migration remnants -- unresolved declarations that were sealed when the current governance model replaced whatever came before. Their routing infrastructure shows evidence of maintenance consistent with the same undocumented signature."
 
@@ -4080,6 +4098,8 @@ Nadia stopped tapping her boot.
 He paused.
 
 "In my field, we call this a bus factor of negative one. The author isn't just unavailable -- the system has active policy denying they ever existed, while simultaneously depending on their work to function."
+
+The words landed and he felt them land -- not just in the room but in himself. He had just told a family that their safety depended on a brother they had agreed to forget. The cruelty of it sat in his chest like cold stone. He had not come here to hurt anyone. He had come here because the data was the data, and the data did not care about feelings, and neither did infrastructure, and Marcus was starting to wonder whether that particular form of honesty was a virtue or just a different shape of violence.
 
 "That's a strong claim," Tovak said from behind his chair. His voice was low, measured -- not hostile, but not yielding either. "You're saying the system is compromised by design."
 
@@ -8015,9 +8035,13 @@ The pollen touched Marcus's skin.
 
 Cold.
 
-Then absence.
+Then a drawer sliding shut somewhere behind his ribs.
 
-Not a hole, not panic, not pain. Just a sudden lightening at the edge of his chest, as if something he'd been holding with unnecessary force had been gently lifted for temporary storage by an institution with better records than his own.
+He reached for the memory of his grandmother's kitchen -- the one he kept in the load-bearing part of his internal architecture, the small warm room in Oakland where the light came through yellow curtains and the stove smelled like sesame oil and soy and the radio played something in Cantonese that he'd never understood but that meant *safe*. His grandmother's hands, flour-dusted, pressing dumplings into shape with the practiced efficiency of someone who had been feeding people through every kind of crisis for sixty years. The specific sound of her voice saying *eat something, Marcus* in a tone that was equal parts love and commandment.
+
+He reached for it and it wasn't there.
+
+Not gone. Muted. Like a photograph left in sunlight too long -- the shapes remained but the colors had faded to suggestion. He could remember that the kitchen existed. He could not remember the smell of the sesame oil. He could not hear her voice.
 
 He swayed.
 
@@ -8186,8 +8210,10 @@ Water clouded. Cleared.
 
 Images rose through it like route traces resolving.
 
-Courier lines drifting toward dead relatives instead of addresses.
+A courier named Elisse, route-certified for the eastern orchards, sent to deliver seed packets to the Viremont growing stations. The road authenticated her correctly. The road verified her destination correctly. And then the road sent her to her mother's grave instead, because her mother had died eleven days ago and the grief in her routing signature was louder than the address on the packet. The seed packets arrived damp with dew. Elisse arrived in tears. Nobody could explain why the system had done that. Nobody could explain why it felt correct.
+
 Children following grandmothers' voices down root stairs.
+
 Old orchard wards authenticating correctly and then resolving destination through remembered tenderness instead of declared location.
 
 Then the deeper layer beneath those incidents:
@@ -8359,16 +8385,13 @@ They left Heartgrove at dusk.
 
 The forest did not guide them out so much as stop objecting to their exit.
 
-At the boundary, the same pollen that had touched Marcus on entry drifted back toward him and settled once against the inside of his wrist. The missing pressure in his chest did not fully return, but some portion of it did -- enough for him to recognize what the Tithe had borrowed.
+At the boundary, the same pollen that had touched Marcus on entry drifted back toward him and settled once against the inside of his wrist.
 
-Not memory.
+The kitchen came back.
 
-Scarcity.
+Not all at once. First the light through the yellow curtains. Then the radio's Cantonese murmur. Then -- slowly, like a photograph developing -- the smell of sesame oil and soy, and his grandmother's voice saying *eat something, Marcus* with sixty years of feeding people through crisis compressed into three words.
 
-The old conviction that if he let anything go unguarded for a minute, it would be taken and he would have no recourse.
-
-The feeling returned weaker than before.
-Not cured. Recontextualized.
+It came back weaker than before. Not damaged. Recontextualized. The memory was the same memory. But the desperate grip he'd kept on it -- the need to hold every piece of himself inventoried because if he lost track of something he'd stop being real -- that part had loosened. The forest had not taken the memory. It had taken the fear of losing it.
 
 Marcus flexed his hand.
 
@@ -11651,7 +11674,7 @@ Marcus finished his coffee. It was terrible. It was the best coffee he'd ever ha
 
 He was.
 
-# Chapter 15: Rootlight
+# Epilogue: Rootlight
 
 The festival arrived without asking permission, because festivals in Ravencrest did not require permits so much as consensus that it was time.
 

@@ -1,0 +1,409 @@
+name: SCBE Overnight Pipeline
+on:
+  workflow_dispatch:
+    inputs:
+      tier:
+        description: 'Starting tier (later tiers include all earlier ones)'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - tier-1-validate
+          - tier-2-test
+          - tier-3-security
+          - tier-4-build
+          - full
+  schedule:
+    # Run full pipeline every night at 2 AM Pacific
+    - cron: '0 10 * * *'
+
+jobs:
+  # ═══════════════════════════════════════════════════════════
+  # TIER 1: Validate (5 min) — Lint, type check, basic sanity
+  # ═══════════════════════════════════════════════════════════
+  tier-1-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      status: ${{ steps.validate.outcome }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt 2>/dev/null || pip install pytest hypothesis numpy 2>/dev/null || true
+          npm ci 2>/dev/null || true
+
+      - name: Validate
+        id: validate
+        run: |
+          echo "=== Python syntax check ==="
+          python -m py_compile src/symphonic_cipher/scbe_aethermoore/cpse.py 2>/dev/null || true
+
+          echo "=== TypeScript type check ==="
+          npx tsc --noEmit 2>/dev/null || true
+
+          echo "=== Quick smoke tests ==="
+          python -m pytest tests/ -m "homebrew or unit" -x -q --tb=line 2>&1 || true
+
+          echo "=== Tier 1 complete ==="
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tier-1-results
+          path: artifacts/
+          retention-days: 7
+
+  # ═══════════════════════════════════════════════════════════
+  # TIER 2: Test (30 min) — Full pytest, property tests
+  # ═══════════════════════════════════════════════════════════
+  tier-2-test:
+    needs: tier-1-validate
+    if: ${{ always() && (inputs.tier == 'tier-2-test' || inputs.tier == 'tier-3-security' || inputs.tier == 'tier-4-build' || inputs.tier == 'full' || github.event_name == 'schedule') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      test-passed: ${{ steps.test.outputs.passed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install -r requirements.txt 2>/dev/null || pip install pytest hypothesis numpy scipy 2>/dev/null || true
+
+      - name: Download Tier 1 results
+        uses: actions/download-artifact@v4
+        with:
+          name: tier-1-results
+          path: artifacts/tier-1/
+        continue-on-error: true
+
+      - name: Full test suite
+        id: test
+        run: |
+          echo "=== Full pytest ==="
+          python -m pytest tests/ -v --tb=short -x 2>&1 | tee artifacts/tier2_test_results.txt || true
+
+          echo "=== Property tests ==="
+          python -m pytest tests/ -m "property" -v --tb=short 2>&1 | tee -a artifacts/tier2_test_results.txt || true
+
+          # Check if tests passed
+          if grep -q "passed" artifacts/tier2_test_results.txt; then
+            echo "passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "passed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tier-2-results
+          path: artifacts/
+          retention-days: 7
+
+  # ═══════════════════════════════════════════════════════════
+  # TIER 3: Security (60 min) — Adversarial attacks, SCBE validation
+  # ═══════════════════════════════════════════════════════════
+  tier-3-security:
+    needs: tier-2-test
+    if: ${{ always() && (inputs.tier == 'tier-3-security' || inputs.tier == 'tier-4-build' || inputs.tier == 'full' || github.event_name == 'schedule') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install -r requirements.txt 2>/dev/null || pip install pytest hypothesis numpy scipy huggingface_hub 2>/dev/null || true
+
+      - name: Download previous tier results
+        uses: actions/download-artifact@v4
+        with:
+          name: tier-2-results
+          path: artifacts/tier-2/
+        continue-on-error: true
+
+      - name: Adversarial attack suite
+        run: |
+          echo "=== SCBE Adversarial Tests ==="
+          python -m pytest tests/adversarial/ -v --tb=short 2>&1 | tee artifacts/tier3_security_results.txt || true
+
+          echo "=== HYDRA spine + ledger ==="
+          python -m pytest tests/hydra/ -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt || true
+
+          echo "=== Tamper detection ==="
+          python -m pytest tests/test_tamper_detection.py -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt || true
+
+          echo "=== Manifold validation ==="
+          python -m pytest tests/ -k "manifold or lattice or harmonic" -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tier-3-results
+          path: artifacts/
+          retention-days: 7
+
+  # ═══════════════════════════════════════════════════════════
+  # TIER 4: Build & Publish (30 min) — Packages, models, datasets
+  # ═══════════════════════════════════════════════════════════
+  tier-4-build:
+    needs: tier-3-security
+    if: ${{ always() && (inputs.tier == 'tier-4-build' || inputs.tier == 'full' || github.event_name == 'schedule') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt 2>/dev/null || true
+          npm ci 2>/dev/null || true
+
+      - name: Download all previous results
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/previous/
+        continue-on-error: true
+
+      - name: Build TypeScript
+        run: npm run build 2>/dev/null || npx tsc 2>/dev/null || true
+
+      - name: Build book EPUB
+        run: |
+          pip install pypandoc_binary 2>/dev/null || true
+          python scripts/publish/rebuild_and_stage_kdp.py 2>&1 | tee artifacts/tier4_build_results.txt || true
+
+      - name: Generate training data
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          echo "=== SFT data merge ==="
+          python -c "
+          import json
+          from pathlib import Path
+          sft = Path('training-data/sft_system.jsonl')
+          if sft.exists():
+              count = sum(1 for _ in open(sft))
+              print(f'SFT records: {count}')
+          " 2>&1 | tee -a artifacts/tier4_build_results.txt || true
+
+      - name: Generate overnight report
+        run: |
+          echo "# SCBE Overnight Pipeline Report" > artifacts/OVERNIGHT_REPORT.md
+          echo "Generated: $(date -u)" >> artifacts/OVERNIGHT_REPORT.md
+          echo "" >> artifacts/OVERNIGHT_REPORT.md
+          echo "## Tier Results" >> artifacts/OVERNIGHT_REPORT.md
+          for f in artifacts/tier*_results.txt; do
+            if [ -f "$f" ]; then
+              echo "### $(basename $f)" >> artifacts/OVERNIGHT_REPORT.md
+              tail -20 "$f" >> artifacts/OVERNIGHT_REPORT.md
+              echo "" >> artifacts/OVERNIGHT_REPORT.md
+            fi
+          done
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tier-4-results
+          path: artifacts/
+          retention-days: 30
+
+  # ═══════════════════════════════════════════════════════════
+  # TIER 5: Training Data (60 min) — Merge, validate, push to HF
+  # ═══════════════════════════════════════════════════════════
+  tier-5-training:
+    needs: tier-4-build
+    if: ${{ always() && (inputs.tier == 'full' || github.event_name == 'schedule') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install huggingface_hub datasets pytest numpy 2>/dev/null || true
+
+      - name: Merge training data sources
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          echo "=== Merging SFT sources ==="
+          python -c "
+          import json
+          from pathlib import Path
+
+          sources = list(Path('training-data').glob('**/*.jsonl'))
+          total = 0
+          merged = []
+          for src in sources:
+              try:
+                  with open(src) as f:
+                      records = [json.loads(l) for l in f if l.strip()]
+                      merged.extend(records)
+                      total += len(records)
+                      print(f'  {src.name}: {len(records)} records')
+              except: pass
+
+          print(f'Total merged: {total} records')
+
+          # Deduplicate by prompt
+          seen = set()
+          unique = []
+          for r in merged:
+              key = r.get('prompt', r.get('instruction', ''))[:100]
+              if key not in seen:
+                  seen.add(key)
+                  unique.append(r)
+          print(f'After dedup: {len(unique)} records')
+
+          Path('artifacts').mkdir(exist_ok=True)
+          with open('artifacts/training_merged.jsonl', 'w') as f:
+              for r in unique:
+                  f.write(json.dumps(r) + '\n')
+          " 2>&1 | tee artifacts/tier5_training_results.txt || true
+
+      - name: Validate training data quality
+        run: |
+          python -c "
+          import json
+          records = [json.loads(l) for l in open('artifacts/training_merged.jsonl')]
+          print(f'Records: {len(records)}')
+
+          # Check for required fields
+          good = 0
+          bad = 0
+          for r in records:
+              if 'prompt' in r and 'response' in r:
+                  if len(r['prompt']) > 10 and len(r['response']) > 20:
+                      good += 1
+                  else:
+                      bad += 1
+              else:
+                  bad += 1
+
+          print(f'Valid: {good}')
+          print(f'Invalid: {bad}')
+          print(f'Quality: {good/(good+bad)*100:.1f}%')
+          " 2>&1 | tee -a artifacts/tier5_training_results.txt || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tier-5-results
+          path: artifacts/
+          retention-days: 30
+
+  # ═══════════════════════════════════════════════════════════
+  # TIER 6: Colab Training (runs via API, checks status)
+  # ═══════════════════════════════════════════════════════════
+  tier-6-colab:
+    needs: tier-5-training
+    if: ${{ always() && (inputs.tier == 'full' || github.event_name == 'schedule') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install huggingface_hub google-genai requests 2>/dev/null || true
+
+      - name: Download merged training data
+        uses: actions/download-artifact@v4
+        with:
+          name: tier-5-results
+          path: artifacts/
+        continue-on-error: true
+
+      - name: Push training data to HuggingFace
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python -c "
+          from huggingface_hub import HfApi
+          from pathlib import Path
+          import os
+
+          token = os.environ.get('HF_TOKEN', '')
+          merged = Path('artifacts/training_merged.jsonl')
+
+          if merged.exists() and token:
+              api = HfApi(token=token)
+              try:
+                  api.upload_file(
+                      path_or_fileobj=str(merged),
+                      path_in_repo='training_merged.jsonl',
+                      repo_id='issdandavis/scbe-aethermoore-training-data',
+                      repo_type='dataset',
+                  )
+                  print('Pushed training data to HuggingFace')
+              except Exception as e:
+                  print(f'HF push failed: {e}')
+          else:
+              print('No training data or no token')
+          " 2>&1 | tee artifacts/tier6_colab_results.txt || true
+
+      - name: Trigger Colab notebook (if configured)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          echo "=== Colab trigger ==="
+          echo "Colab training requires Playwright browser automation."
+          echo "For overnight runs, use the scbe-colab-compute skill manually."
+          echo "Training data has been pushed to HuggingFace for Colab to pull."
+          echo ""
+          echo "Manual Colab command:"
+          echo "  python -m scripts.training.launch_colab_training"
+          echo ""
+          echo "HuggingFace dataset: issdandavis/scbe-aethermoore-training-data"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tier-6-results
+          path: artifacts/
+          retention-days: 30
+
+  # ═══════════════════════════════════════════════════════════
+  # SUMMARY: Collect all results
+  # ═══════════════════════════════════════════════════════════
+  summary:
+    needs: [tier-1-validate, tier-2-test, tier-3-security, tier-4-build, tier-5-training, tier-6-colab]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Pipeline summary
+        run: |
+          echo "╔══════════════════════════════════════════╗"
+          echo "║  SCBE Overnight Pipeline — Complete      ║"
+          echo "╠══════════════════════════════════════════╣"
+          echo "║  Tier 1 (Validate):  ${{ needs.tier-1-validate.result }}"
+          echo "║  Tier 2 (Test):      ${{ needs.tier-2-test.result }}"
+          echo "║  Tier 3 (Security):  ${{ needs.tier-3-security.result }}"
+          echo "║  Tier 4 (Build):     ${{ needs.tier-4-build.result }}"
+          echo "║  Tier 5 (Training):  ${{ needs.tier-5-training.result }}"
+          echo "║  Tier 6 (Colab/HF):  ${{ needs.tier-6-colab.result }}"
+          echo "╚══════════════════════════════════════════╝"

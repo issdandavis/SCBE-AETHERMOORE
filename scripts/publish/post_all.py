@@ -22,6 +22,8 @@ ARTICLES_DIR = REPO_ROOT / "content" / "articles"
 EVIDENCE_DIR = REPO_ROOT / "artifacts" / "publish_browser"
 POST_TO_X = REPO_ROOT / "scripts" / "publish" / "post_to_x.py"
 POST_TO_BUFFER = REPO_ROOT / "scripts" / "publish" / "post_to_buffer.py"
+POST_TO_DEVTO = REPO_ROOT / "scripts" / "publish" / "post_to_devto.py"
+POST_TO_HUGGINGFACE_DISCUSSION = REPO_ROOT / "scripts" / "publish" / "post_to_huggingface_discussion.py"
 POST_TO_GITHUB_DISCUSSIONS = REPO_ROOT / "scripts" / "publish" / "publish_discussions.py"
 
 PLATFORM_PREFIXES: dict[str, tuple[str, ...]] = {
@@ -30,13 +32,30 @@ PLATFORM_PREFIXES: dict[str, tuple[str, ...]] = {
     "buffer": ("x_thread_", "twitter_thread_", "buffer_"),
     "linkedin": ("linkedin_",),
     "medium": ("medium_",),
+    "substack": ("substack_",),
     "devto": ("devto_",),
+    "huggingface": ("hf_", "huggingface_"),
+    "bluesky": ("bluesky_",),
+    "mastodon": ("mastodon_",),
     "reddit": ("reddit_",),
     "hackernews": ("hackernews_",),
     "github": ("2026-",),
 }
 
-PLATFORM_ORDER = ["x", "buffer", "github", "linkedin", "medium", "devto", "reddit", "hackernews"]
+PLATFORM_ORDER = [
+    "x",
+    "buffer",
+    "github",
+    "huggingface",
+    "linkedin",
+    "medium",
+    "substack",
+    "devto",
+    "reddit",
+    "bluesky",
+    "mastodon",
+    "hackernews",
+]
 
 
 def _normalize_platforms(raw_only: str | None) -> list[str]:
@@ -130,6 +149,68 @@ def _run_buffer_publish(article: Path, dry_run: bool) -> tuple[str, str]:
     return "error", output[-4000:] or "unknown error"
 
 
+def _run_devto_publish(article: Path, dry_run: bool, *, tags: list[str] | None = None, series: str = "") -> tuple[str, str]:
+    if not POST_TO_DEVTO.exists():
+        return "error", f"missing publisher: {POST_TO_DEVTO}"
+    cmd = [sys.executable, str(POST_TO_DEVTO), "--file", str(article)]
+    if tags:
+        cmd.extend(["--tags", ",".join(tags)])
+    if series:
+        cmd.extend(["--series", series])
+    if dry_run:
+        cmd.append("--dry-run")
+
+    proc = subprocess.run(
+        cmd,
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PYTHONPATH": os.environ.get("PYTHONPATH", ".")},
+    )
+    output = ((proc.stdout or "") + "\n" + (proc.stderr or "")).strip()
+    if proc.returncode == 0:
+        return ("dry_run_ready" if dry_run else "posted"), output[-4000:]
+    return "error", output[-4000:] or "unknown error"
+
+
+def _run_hf_publish(
+    article: Path,
+    dry_run: bool,
+    *,
+    repo_id: str,
+    repo_type: str = "model",
+    title: str = "",
+) -> tuple[str, str]:
+    if not POST_TO_HUGGINGFACE_DISCUSSION.exists():
+        return "error", f"missing publisher: {POST_TO_HUGGINGFACE_DISCUSSION}"
+    cmd = [
+        sys.executable,
+        str(POST_TO_HUGGINGFACE_DISCUSSION),
+        "--file",
+        str(article),
+        "--repo-id",
+        repo_id,
+        "--repo-type",
+        repo_type,
+    ]
+    if title:
+        cmd.extend(["--title", title])
+    if dry_run:
+        cmd.append("--dry-run")
+
+    proc = subprocess.run(
+        cmd,
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PYTHONPATH": os.environ.get("PYTHONPATH", ".")},
+    )
+    output = ((proc.stdout or "") + "\n" + (proc.stderr or "")).strip()
+    if proc.returncode == 0:
+        return ("dry_run_ready" if dry_run else "posted"), output[-4000:]
+    return "error", output[-4000:] or "unknown error"
+
+
 def _run_github_publish(dry_run: bool, glob_pattern: str, limit: int) -> tuple[str, str]:
     if not POST_TO_GITHUB_DISCUSSIONS.exists():
         return "error", f"missing publisher: {POST_TO_GITHUB_DISCUSSIONS}"
@@ -157,14 +238,135 @@ def _run_github_publish(dry_run: bool, glob_pattern: str, limit: int) -> tuple[s
     return "error", output[-4000:] or "unknown error"
 
 
+def _run_github_publish_file(
+    article: Path,
+    dry_run: bool,
+    *,
+    owner: str,
+    repo: str,
+    category: str,
+) -> tuple[str, str]:
+    if not POST_TO_GITHUB_DISCUSSIONS.exists():
+        return "error", f"missing publisher: {POST_TO_GITHUB_DISCUSSIONS}"
+    cmd = [
+        sys.executable,
+        str(POST_TO_GITHUB_DISCUSSIONS),
+        "--file",
+        str(article),
+        "--owner",
+        owner,
+        "--repo",
+        repo,
+        "--category",
+        category,
+        "--skip-existing",
+    ]
+    if dry_run:
+        cmd.append("--dry-run")
+    proc = subprocess.run(
+        cmd,
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PYTHONPATH": os.environ.get("PYTHONPATH", ".")},
+    )
+    output = ((proc.stdout or "") + "\n" + (proc.stderr or "")).strip()
+    if proc.returncode == 0:
+        return ("dry_run_ready" if dry_run else "posted"), output[-4000:]
+    return "error", output[-4000:] or "unknown error"
+
+
+def _load_campaign_posts(path: Path) -> list[dict]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(payload, list):
+        return [row for row in payload if isinstance(row, dict)]
+    if isinstance(payload, dict):
+        posts = payload.get("posts", [])
+        if isinstance(posts, list):
+            return [row for row in posts if isinstance(row, dict)]
+    return []
+
+
+def _route_campaign_post(post: dict, *, dry_run: bool, browser_fallback: bool, browser_publish: bool) -> dict:
+    platform = str(post.get("platform", "")).strip().lower()
+    content_file = Path(str(post.get("content_file", "")).strip())
+    article = content_file if content_file.is_absolute() else (REPO_ROOT / content_file)
+    row = {
+        "platform": platform,
+        "site": str(post.get("site", "")).strip(),
+        "post_id": str(post.get("id", "")).strip(),
+        "article": str(article),
+        "status": "skipped",
+        "mode": "dry-run" if dry_run else "live",
+        "browser_fallback": browser_fallback,
+        "browser_publish": browser_publish,
+        "detail": "",
+        "title": str(post.get("title", "")).strip(),
+    }
+    if not article.exists():
+        row["status"] = "no_article"
+        row["detail"] = f"Content file does not exist: {article}"
+        return row
+
+    target = post.get("target", {}) if isinstance(post.get("target"), dict) else {}
+    if platform == "github":
+        status, detail = _run_github_publish_file(
+            article,
+            dry_run=dry_run,
+            owner=str(target.get("owner", "issdandavis")),
+            repo=str(target.get("repo", "SCBE-AETHERMOORE")),
+            category=str(target.get("category", "General")),
+        )
+        row["status"] = status
+        row["detail"] = detail
+        return row
+    if platform == "huggingface":
+        status, detail = _run_hf_publish(
+            article,
+            dry_run=dry_run,
+            repo_id=str(target.get("repo_id", "")),
+            repo_type=str(target.get("repo_type", "model")),
+            title=str(post.get("title", "")),
+        )
+        row["status"] = status
+        row["detail"] = detail
+        return row
+    if platform == "devto":
+        tags = [str(tag).strip() for tag in post.get("tags", []) if str(tag).strip()]
+        status, detail = _run_devto_publish(
+            article,
+            dry_run=dry_run,
+            tags=tags,
+            series=str(post.get("series", "")),
+        )
+        row["status"] = status
+        row["detail"] = detail
+        return row
+    if platform == "x":
+        status, detail = _run_x_publish(article, dry_run=dry_run)
+        row["status"] = status
+        row["detail"] = detail
+        return row
+    if platform == "buffer":
+        status, detail = _run_buffer_publish(article, dry_run=dry_run)
+        row["status"] = status
+        row["detail"] = detail
+        return row
+
+    row["status"] = "staged_manual"
+    row["detail"] = "API publisher not implemented for this platform; staged package is ready for browser/manual posting."
+    return row
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Publish SCBE articles across supported platforms.")
     parser.add_argument("--dry-run", action="store_true", help="Do not publish; report what would be posted.")
     parser.add_argument(
         "--only",
         default="",
-        help="Comma-separated platforms (x,buffer,github,linkedin,medium,devto,reddit,hackernews).",
+        help="Comma-separated platforms (x,buffer,github,huggingface,linkedin,medium,devto,reddit,hackernews).",
     )
+    parser.add_argument("--campaign-posts", default="", help="Path to campaign posts JSON built by build_research_campaign.py")
     parser.add_argument("--browser-fallback", action="store_true", help="Record browser fallback mode in evidence.")
     parser.add_argument("--browser-publish", action="store_true", help="Record browser publish intent in evidence.")
     parser.add_argument(
@@ -192,6 +394,38 @@ def main() -> int:
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
     statuses: list[dict] = []
+    campaign_posts_path = Path(args.campaign_posts).expanduser().resolve() if args.campaign_posts.strip() else None
+    if campaign_posts_path:
+        posts = _load_campaign_posts(campaign_posts_path)
+        for post in posts:
+            platform = str(post.get("platform", "")).strip().lower()
+            if platform and platform in platforms:
+                statuses.append(
+                    _route_campaign_post(
+                        post,
+                        dry_run=args.dry_run,
+                        browser_fallback=bool(args.browser_fallback),
+                        browser_publish=bool(args.browser_publish),
+                    )
+                )
+
+        summary = {
+            "run_id": run_id,
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "dry_run": bool(args.dry_run),
+            "platforms": platforms,
+            "campaign_posts": str(campaign_posts_path),
+            "statuses": statuses,
+        }
+        evidence_path = EVIDENCE_DIR / f"post_all_{run_id}.json"
+        evidence_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+        print(f"[post_all] run_id={run_id}")
+        for row in statuses:
+            label = row.get("site") or row["platform"]
+            print(f"- {label}: {row['status']} :: {row['article'] or '(none)'}")
+        print(f"[post_all] evidence={evidence_path}")
+        return 0
+
     explicit_articles: dict[str, Path] = {}
     if args.x_article.strip():
         resolved_x = Path(args.x_article).expanduser().resolve()
@@ -241,6 +475,10 @@ def main() -> int:
             row["detail"] = detail
         elif platform == "buffer":
             status, detail = _run_buffer_publish(article, dry_run=args.dry_run)
+            row["status"] = status
+            row["detail"] = detail
+        elif platform == "devto":
+            status, detail = _run_devto_publish(article, dry_run=args.dry_run)
             row["status"] = status
             row["detail"] = detail
         else:

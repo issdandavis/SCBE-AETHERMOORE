@@ -1,0 +1,71 @@
+name: Overnight Task Runner
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Task to run overnight'
+        required: true
+        default: 'test-suite'
+        type: choice
+        options:
+          - test-suite
+          - attack-suite
+          - book-review
+          - training-prep
+          - full-pytest
+
+jobs:
+  overnight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r requirements.txt 2>/dev/null || true
+          pip install pytest hypothesis huggingface_hub 2>/dev/null || true
+
+      - name: Run overnight task
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          case "${{ inputs.task }}" in
+            test-suite)
+              echo "Running full test suite..."
+              python -m pytest tests/ -v --tb=short -x 2>&1 | tee artifacts/overnight_test_results.txt || true
+              ;;
+            attack-suite)
+              echo "Running adversarial attack suite..."
+              python -m pytest tests/adversarial/ -v --tb=short 2>&1 | tee artifacts/overnight_attack_results.txt || true
+              ;;
+            book-review)
+              echo "Running book review panel..."
+              python scripts/publish/roundtable_review.py --full 2>&1 | tee artifacts/overnight_book_review.txt || true
+              ;;
+            training-prep)
+              echo "Running training data pipeline..."
+              python -m pytest tests/ -m "not slow" -v --tb=short 2>&1 | tee artifacts/overnight_training_results.txt || true
+              ;;
+            full-pytest)
+              echo "Running ALL pytest tests..."
+              python -m pytest tests/ -v --tb=long 2>&1 | tee artifacts/overnight_full_pytest.txt || true
+              ;;
+          esac
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: overnight-results-${{ github.run_number }}
+          path: artifacts/
+          retention-days: 30

@@ -86,6 +86,48 @@ def _derive_title(path: Path) -> str:
     return path.stem.replace("-", " ").strip()
 
 
+def publish_markdown_file(
+    *,
+    file_path: Path,
+    owner: str,
+    repo: str,
+    category: str,
+    dry_run: bool,
+    skip_existing: bool,
+) -> dict:
+    repo_id, categories = _fetch_repo_and_categories(owner, repo)
+    category_id = categories.get(category)
+    if not category_id:
+        available = ", ".join(sorted(categories.keys())) or "(none)"
+        return {"status": "error", "error": f"Category '{category}' not found. Available: {available}"}
+
+    title = _derive_title(file_path)
+    if skip_existing:
+        existing_titles = _fetch_existing_titles(owner, repo, first=100)
+        if title in existing_titles:
+            return {"status": "exists", "file": str(file_path), "title": title, "detail": "discussion with same title already exists"}
+
+    if dry_run:
+        return {"status": "dry_run_ready", "file": str(file_path), "title": title}
+
+    body = file_path.read_text(encoding="utf-8", errors="replace")
+    created = _create_discussion(repo_id, category_id, title, body)
+    if created.get("ok"):
+        return {
+            "status": "posted",
+            "file": str(file_path),
+            "title": title,
+            "url": created["url"],
+            "number": created["number"],
+        }
+    return {
+        "status": "error",
+        "file": str(file_path),
+        "title": title,
+        "error": created.get("error", "unknown"),
+    }
+
+
 def _create_discussion(repo_id: str, category_id: str, title: str, body: str) -> dict:
     payload = {
         "query": (
@@ -115,53 +157,41 @@ def main() -> int:
     parser.add_argument("--owner", default="issdandavis")
     parser.add_argument("--repo", default="SCBE-AETHERMOORE")
     parser.add_argument("--category", default="General", help="Discussion category name")
+    parser.add_argument("--file", default="", help="Explicit markdown file to publish")
     parser.add_argument("--glob", default="2026-*.md", help="Glob inside content/articles/")
     parser.add_argument("--limit", type=int, default=5, help="Max number of articles to publish")
     parser.add_argument("--skip-existing", action="store_true", help="Skip titles that already exist in Discussions")
     parser.add_argument("--dry-run", action="store_true", help="Only prepare and report, do not publish")
     args = parser.parse_args()
 
-    repo_id, categories = _fetch_repo_and_categories(args.owner, args.repo)
-    category_id = categories.get(args.category)
-    if not category_id:
-        available = ", ".join(sorted(categories.keys())) or "(none)"
-        raise SystemExit(f"Category '{args.category}' not found. Available: {available}")
-
-    selected = _pick_articles(args.glob, args.limit)
-    existing_titles: set[str] = set()
-    if args.skip_existing:
-        existing_titles = _fetch_existing_titles(args.owner, args.repo, first=100)
+    if args.file.strip():
+        selected = [Path(args.file).expanduser().resolve()]
+    else:
+        selected = _pick_articles(args.glob, args.limit)
     EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     results: list[dict] = []
 
     for path in selected:
-        title = _derive_title(path)
-        body = path.read_text(encoding="utf-8", errors="replace")
-        row = {"file": str(path), "title": title, "status": "skipped"}
-        if title in existing_titles:
-            row["status"] = "exists"
-            row["detail"] = "discussion with same title already exists"
-            results.append(row)
+        row = publish_markdown_file(
+            file_path=path,
+            owner=args.owner,
+            repo=args.repo,
+            category=args.category,
+            dry_run=args.dry_run,
+            skip_existing=args.skip_existing,
+        )
+        title = row.get("title", _derive_title(path))
+        if row["status"] == "exists":
             print(f"SKIP (exists): {title}")
-            continue
-        if args.dry_run:
-            row["status"] = "dry_run_ready"
-            results.append(row)
+        elif row["status"] == "dry_run_ready":
             print(f"DRY-RUN: {title}")
-            continue
-        created = _create_discussion(repo_id, category_id, title, body)
-        if created.get("ok"):
-            row["status"] = "posted"
-            row["url"] = created["url"]
-            row["number"] = created["number"]
+        elif row["status"] == "posted":
             print(f"POSTED: {title}")
-            print(f"  {created['url']}")
+            print(f"  {row['url']}")
         else:
-            row["status"] = "error"
-            row["error"] = created.get("error", "unknown")
             print(f"ERROR: {title}")
-            print(f"  {row['error'][:240]}")
+            print(f"  {str(row.get('error', 'unknown'))[:240]}")
         results.append(row)
 
     summary = {
