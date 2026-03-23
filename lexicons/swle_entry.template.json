@@ -1,0 +1,128 @@
+{
+  "schema_version": "0.1.0",
+  "entry_id": "lang1:concept-0001:surface-form",
+  "language": {
+    "language_id": "lang1",
+    "language_name": "Language One",
+    "iso_639_3": null,
+    "family": null,
+    "scripts": [
+      "Latin"
+    ]
+  },
+  "forms": {
+    "surface": "example",
+    "normalized": "example",
+    "transliteration": null,
+    "graphemes": [
+      "e",
+      "x",
+      "a",
+      "m",
+      "p",
+      "l",
+      "e"
+    ],
+    "phonemes_ipa": [
+      "e",
+      "g",
+      "z",
+      "a",
+      "m",
+      "p",
+      "l"
+    ],
+    "phoneme_source": "manual",
+    "stress_pattern": null,
+    "syllables": [
+      {
+        "phonemes": [
+          "e",
+          "g"
+        ],
+        "stress": "primary",
+        "role": "mixed"
+      },
+      {
+        "phonemes": [
+          "z",
+          "a",
+          "m",
+          "p",
+          "l"
+        ],
+        "stress": "unstressed",
+        "role": "mixed"
+      }
+    ],
+    "morphemes": [
+      {
+        "form": "example",
+        "gloss": "example",
+        "role": "root",
+        "bound": false
+      }
+    ]
+  },
+  "concept": {
+    "concept_id": "concept-0001",
+    "translation_set_id": "translation-set-0001",
+    "english_gloss": "example",
+    "glosses": [
+      {
+        "lang": "en",
+        "text": "example"
+      }
+    ],
+    "pos": "noun",
+    "semantic_domain": "artifact",
+    "sense_notes": null
+  },
+  "alignment": {
+    "cognate_class_id": null,
+    "etymon_id": null,
+    "borrowed_from": null
+  },
+  "semantic_targets": {
+    "valence": 0.0,
+    "arousal": 0.5,
+    "concreteness": 0.8,
+    "imageability": 0.7,
+    "frequency_log10": 2.0,
+    "target_source": "manual_seed"
+  },
+  "morphology_targets": {
+    "lemma": "example",
+    "inflectional_features": {
+      "number": "singular"
+    },
+    "derivational_family_id": null
+  },
+  "tokenizations": [
+    {
+      "tokenizer_id": "tokenizer-lang1-bpe",
+      "tokens": [
+        "ex",
+        "ample"
+      ],
+      "token_ids": [
+        101,
+        202
+      ]
+    }
+  ],
+  "splits": {
+    "recommended_split": "train",
+    "heldout_reason": null
+  },
+  "provenance": {
+    "dataset_id": "swle-six-language-pack",
+    "source_label": "manual_seed_entry",
+    "source_record_id": null,
+    "license": "internal",
+    "collector": "Issac Davis",
+    "confidence": 0.8,
+    "citations": []
+  },
+  "notes": null
+}

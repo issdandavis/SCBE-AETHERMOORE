@@ -74,6 +74,7 @@ training/runs/
 # Generated/combined training data (regeneratable via scripts/merge_and_upload.py)
 training-data/sft_combined*.jsonl
 training-data/sft_*_regen*.jsonl
+training-data/mega_*.jsonl
 training/sft_records/sft_combined*
 training/notion_codebase_comparison.json
 
@@ -152,3 +153,15 @@ Microsoft/
 
 # Stray media
 untitled.webm
+
+# Claude session artifacts
+.claude/scheduled_tasks.lock
+.scbe/cli-context.json
+
+# Large binary / generated
+*.docx
+kokoro-v1.0.onnx
+voices-v1.0.bin
+
+# Artifacts temp root
+artifacts/pytest_temp_root/
