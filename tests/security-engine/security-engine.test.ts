@@ -120,7 +120,7 @@ describe('Q16.16 Fixed-Point Arithmetic', () => {
 
   it('should be cross-platform deterministic (same result every time)', () => {
     const a = toQ16(1.618033988749895); // phi
-    const b = toQ16(0.144720);          // tick rate / 1000
+    const b = toQ16(0.14472); // tick rate / 1000
     const result1 = mulQ16(a, b);
     const result2 = mulQ16(a, b);
     expect(result1).toBe(result2); // exact integer equality
@@ -162,13 +162,15 @@ describe('Machine Constants Registry', () => {
     reg.tune({ trust: { allowThreshold: 0.9 } });
     expect(reg.active.trust.allowThreshold).toBe(0.9);
     // Other trust values unchanged
-    expect(reg.active.trust.quarantineThreshold).toBe(0.40);
+    expect(reg.active.trust.quarantineThreshold).toBe(0.4);
   });
 
   it('should notify listeners on swap', () => {
     const reg = getGlobalRegistry();
     let notified = false;
-    reg.onSwap(() => { notified = true; });
+    reg.onSwap(() => {
+      notified = true;
+    });
     reg.tune({ trust: { exileRounds: 5 } });
     expect(notified).toBe(true);
   });
@@ -194,7 +196,9 @@ describe('Machine Constants Registry', () => {
   it('should support unsubscribe', () => {
     const reg = getGlobalRegistry();
     let count = 0;
-    const unsub = reg.onSwap(() => { count++; });
+    const unsub = reg.onSwap(() => {
+      count++;
+    });
     reg.tune({ trust: { exileRounds: 5 } });
     expect(count).toBe(1);
     unsub();
@@ -290,17 +294,21 @@ describe('Hyperspace State Engine', () => {
       behaviorDeviation: 0,
     });
 
-    const p2 = embedInHyperspace('agent-1', {
-      context6D: [0.5, 0, 0, 0, 0, 0],
-      timestampUs: 2_000_000,
-      accumulatedIntent: 0.5,
-      trustScore: 0.8,
-      riskScore: 0.2,
-      spectralEntropy: 0.1,
-      policyPressure: 0,
-      systemLoad: 0.3,
-      behaviorDeviation: 0.1,
-    }, p1);
+    const p2 = embedInHyperspace(
+      'agent-1',
+      {
+        context6D: [0.5, 0, 0, 0, 0, 0],
+        timestampUs: 2_000_000,
+        accumulatedIntent: 0.5,
+        trustScore: 0.8,
+        riskScore: 0.2,
+        spectralEntropy: 0.1,
+        policyPressure: 0,
+        systemLoad: 0.3,
+        behaviorDeviation: 0.1,
+      },
+      p1
+    );
 
     // Velocity should be non-zero since state changed
     const hasNonZeroVelocity = p2.velocity.some((v) => Math.abs(v) > 0);
@@ -337,7 +345,7 @@ describe('Hyperspace State Engine', () => {
 
       expect(manifold.size).toBe(2);
       expect(manifold.distanceFromSafe('agent-1')).toBeLessThan(
-        manifold.distanceFromSafe('agent-2'),
+        manifold.distanceFromSafe('agent-2')
       );
     });
 
@@ -513,9 +521,7 @@ describe('Context-Coupled Security Engine', () => {
     const result = engine.evaluate(request);
 
     expect(result.decision).toBe(SecurityDecision.DENY);
-    expect(result.reasonCodes).toContain(
-      'PQC_INVALID: context-locked crypto failed verification',
-    );
+    expect(result.reasonCodes).toContain('PQC_INVALID: context-locked crypto failed verification');
   });
 
   it('should increase routing cost for suspicious requests', () => {
@@ -530,9 +536,7 @@ describe('Context-Coupled Security Engine', () => {
     const results: number[] = [];
 
     for (let i = 0; i < 10; i++) {
-      const result = engine.evaluate(
-        makeAdversarialRequest(entityId, 1_000_000 + i * 100_000),
-      );
+      const result = engine.evaluate(makeAdversarialRequest(entityId, 1_000_000 + i * 100_000));
       results.push(result.harmonicWallCost);
     }
 
@@ -546,9 +550,7 @@ describe('Context-Coupled Security Engine', () => {
     // Submit many adversarial requests
     let lastResult;
     for (let i = 0; i < 50; i++) {
-      lastResult = engine.evaluate(
-        makeAdversarialRequest(entityId, 1_000_000 + i * 100_000),
-      );
+      lastResult = engine.evaluate(makeAdversarialRequest(entityId, 1_000_000 + i * 100_000));
     }
 
     // After many adversarial rounds, should be denied or trust very low
@@ -804,9 +806,7 @@ describe('Full Integration: Engine + Twin', () => {
     expect(outputs2.threatLevel).toBeGreaterThanOrEqual(0);
 
     // Phase 3: Twin tightens controls, subsequent evaluations are stricter
-    const strictResult = engine.evaluate(
-      makeAdversarialRequest('new-attacker', 3_000_000),
-    );
+    const strictResult = engine.evaluate(makeAdversarialRequest('new-attacker', 3_000_000));
     // With tightened controls, new adversarial requests face higher costs
     expect(strictResult.harmonicWallCost).toBeGreaterThanOrEqual(1.0);
   });

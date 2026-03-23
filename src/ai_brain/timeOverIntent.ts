@@ -23,10 +23,7 @@
  * the other two are renormalized, increasing the temporal penalty.
  */
 
-import {
-  BRAIN_EPSILON,
-  PHI,
-} from './types.js';
+import { BRAIN_EPSILON, PHI } from './types.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Configuration
@@ -133,7 +130,7 @@ export function computeGamma(
   timeDilation: number,
   betaTau: number = DEFAULT_TOI_CONFIG.betaTau,
   gammaMin: number = DEFAULT_TOI_CONFIG.gammaMin,
-  gammaMax: number = DEFAULT_TOI_CONFIG.gammaMax,
+  gammaMax: number = DEFAULT_TOI_CONFIG.gammaMax
 ): number {
   const raw = 1 + betaTau * (timeDilation - 1);
   return Math.max(gammaMin, Math.min(gammaMax, raw));
@@ -148,7 +145,7 @@ export function computeGamma(
  */
 export function computeTriadicWeights(
   gamma: number,
-  baseWeights: [number, number, number] = DEFAULT_TOI_CONFIG.baseTriadicWeights,
+  baseWeights: [number, number, number] = DEFAULT_TOI_CONFIG.baseTriadicWeights
 ): [number, number, number] {
   const [w1, w2, w3] = baseWeights;
   const boostedW3 = w3 * gamma;
@@ -183,7 +180,7 @@ export function positiveKappa(curvature: number): number {
 export function computeEffectiveR(
   curvature: number,
   coherence: number,
-  config: Partial<TimeOverIntentConfig> = {},
+  config: Partial<TimeOverIntentConfig> = {}
 ): number {
   const baseR = config.baseR ?? DEFAULT_TOI_CONFIG.baseR;
   const alphaK = config.alphaKappa ?? DEFAULT_TOI_CONFIG.alphaKappa;
@@ -230,7 +227,7 @@ export function harmonicWallTOI(distance: number, effectiveR: number): number {
  */
 export function triadicDistance(
   weights: [number, number, number],
-  distances: [number, number, number],
+  distances: [number, number, number]
 ): number {
   return weights[0] * distances[0] + weights[1] * distances[1] + weights[2] * distances[2];
 }
@@ -255,7 +252,7 @@ export function triadicDistance(
  */
 export function evaluateTimeOverIntent(
   obs: TemporalObservation,
-  config: Partial<TimeOverIntentConfig> = {},
+  config: Partial<TimeOverIntentConfig> = {}
 ): TimeOverIntentResult {
   const cfg = { ...DEFAULT_TOI_CONFIG, ...config };
 
@@ -314,7 +311,7 @@ export function evaluateTimeOverIntent(
  * @returns Hatch weight W
  */
 export function computeHatchWeight(
-  predicateScores: Array<{ rank: number; score: number }>,
+  predicateScores: Array<{ rank: number; score: number }>
 ): number {
   let W = 0;
   for (const { rank, score } of predicateScores) {
@@ -331,7 +328,7 @@ export function computeHatchWeight(
  */
 export function meetsGenesisThreshold(
   hatchWeight: number,
-  threshold: number = PHI * PHI * PHI,
+  threshold: number = PHI * PHI * PHI
 ): boolean {
   return hatchWeight >= threshold;
 }

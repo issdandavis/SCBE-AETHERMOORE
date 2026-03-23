@@ -17,7 +17,10 @@ type VectorFile = {
 };
 
 function loadVectors(): VectorFile {
-  const vectorPath = path.resolve(__dirname, '../interop/polyglot_vectors/poincare_distance.v1.json');
+  const vectorPath = path.resolve(
+    __dirname,
+    '../interop/polyglot_vectors/poincare_distance.v1.json'
+  );
   const raw = fs.readFileSync(vectorPath, 'utf-8');
   return JSON.parse(raw) as VectorFile;
 }

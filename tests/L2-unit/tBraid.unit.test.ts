@@ -215,7 +215,9 @@ describe('hyperbolicDistance1D', () => {
   });
 
   it('satisfies triangle inequality', () => {
-    const a = 0.1, b = 0.4, c = 0.7;
+    const a = 0.1,
+      b = 0.4,
+      c = 0.7;
     const dab = hyperbolicDistance1D(a, b);
     const dbc = hyperbolicDistance1D(b, c);
     const dac = hyperbolicDistance1D(a, c);
@@ -526,15 +528,15 @@ describe('computeBraid', () => {
 describe('variantsFromClocks', () => {
   it('maps clock values to braid variants', () => {
     const v = variantsFromClocks(
-      0.5,   // fastIntent
-      10,    // memoryTick
-      0.3,   // memoryIntent (unused in variant computation directly)
-      0.2,   // govIntent
-      1.0    // breathingFactor = T
+      0.5, // fastIntent
+      10, // memoryTick
+      0.3, // memoryIntent (unused in variant computation directly)
+      0.2, // govIntent
+      1.0 // breathingFactor = T
     );
-    expect(v.immediate).toBe(0.5);     // T * fastIntent = 1 * 0.5
-    expect(v.governance).toBe(0.2);     // T * govIntent = 1 * 0.2
-    expect(v.predictive).toBeCloseTo(0.1, 6);  // T / t = 1 / 10
+    expect(v.immediate).toBe(0.5); // T * fastIntent = 1 * 0.5
+    expect(v.governance).toBe(0.2); // T * govIntent = 1 * 0.2
+    expect(v.predictive).toBeCloseTo(0.1, 6); // T / t = 1 / 10
   });
 
   it('uses breathing factor as base T', () => {

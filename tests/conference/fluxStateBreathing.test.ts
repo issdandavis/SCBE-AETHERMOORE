@@ -32,7 +32,10 @@ describe('breathingFactor()', () => {
   it('tightens maxStepNorm when b(t) > 1', () => {
     const base = 0.3;
     // At t=15 with omega=2π/60: sin(π/2) = 1, so b(t) = 1 + 0.5 = 1.5
-    const eff = breathingAdjustedMaxStepNorm(base, 15, { amplitude: 0.5, omega: (2 * Math.PI) / 60 });
+    const eff = breathingAdjustedMaxStepNorm(base, 15, {
+      amplitude: 0.5,
+      omega: (2 * Math.PI) / 60,
+    });
     expect(eff).toBeCloseTo(0.2, 5);
   });
 

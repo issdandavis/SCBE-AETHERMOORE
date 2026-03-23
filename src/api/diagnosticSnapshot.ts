@@ -41,32 +41,32 @@ import { createHash } from 'crypto';
  * Ordered from least to most severe. Each state implies an action.
  */
 export type DiagnosticState =
-  | 'PASS'       // Fully verified
-  | 'WATCH'      // Pass with anomaly monitoring
-  | 'RETEST'     // Re-run with fresh context
-  | 'TRIAGE'     // Human classification needed
-  | 'DEFERRED'   // Intentionally postponed
-  | 'DEGRADED'   // Partial capability, still functional
-  | 'ISOLATED'   // Sandbox-only operation
-  | 'FLAGGED'    // Audit trail marker, no block
-  | 'SUSPENDED'  // Blocked pending review
-  | 'REJECTED';  // Hard deny
+  | 'PASS' // Fully verified
+  | 'WATCH' // Pass with anomaly monitoring
+  | 'RETEST' // Re-run with fresh context
+  | 'TRIAGE' // Human classification needed
+  | 'DEFERRED' // Intentionally postponed
+  | 'DEGRADED' // Partial capability, still functional
+  | 'ISOLATED' // Sandbox-only operation
+  | 'FLAGGED' // Audit trail marker, no block
+  | 'SUSPENDED' // Blocked pending review
+  | 'REJECTED'; // Hard deny
 
 /** Severity level for the diagnostic */
 export type DiagnosticSeverity = 'nominal' | 'advisory' | 'caution' | 'warning' | 'critical';
 
 /** Recommended next action for a diagnostic state */
 export type RecommendedAction =
-  | 'proceed'             // Continue normally
-  | 'monitor'             // Continue but log enhanced telemetry
-  | 'retest_immediate'    // Retry the check with fresh data
-  | 'retest_delayed'      // Retry after a cooldown period
-  | 'human_classify'      // Route to human reviewer for classification
-  | 'batch_review'        // Group with similar items for bulk review
-  | 'sandbox_execute'     // Allow in sandboxed environment only
-  | 'hold_for_window'     // Wait for appropriate processing window
-  | 'escalate_to_admin'   // Escalate to security admin
-  | 'block_with_noise'    // Hard block with fail-to-noise payload
+  | 'proceed' // Continue normally
+  | 'monitor' // Continue but log enhanced telemetry
+  | 'retest_immediate' // Retry the check with fresh data
+  | 'retest_delayed' // Retry after a cooldown period
+  | 'human_classify' // Route to human reviewer for classification
+  | 'batch_review' // Group with similar items for bulk review
+  | 'sandbox_execute' // Allow in sandboxed environment only
+  | 'hold_for_window' // Wait for appropriate processing window
+  | 'escalate_to_admin' // Escalate to security admin
+  | 'block_with_noise' // Hard block with fail-to-noise payload
   | 'auto_release_check'; // Check if auto-release conditions are met
 
 // ============================================================================
@@ -293,9 +293,7 @@ export class DiagnosticEngine {
 
     // Auto-release eligibility
     const autoReleaseEligible =
-      riskScore < this.config.watchThreshold &&
-      tonguePassCount >= 5 &&
-      trustScore > 0.4;
+      riskScore < this.config.watchThreshold && tonguePassCount >= 5 && trustScore > 0.4;
 
     // Retest cooldown
     const retestCooldownMs =
@@ -477,7 +475,10 @@ export class DiagnosticEngine {
     }
 
     // ── DEGRADED: Trust trajectory is deteriorating ──
-    if (trustVelocity < this.config.degradedTrustVelocity && riskScore > this.config.passThreshold) {
+    if (
+      trustVelocity < this.config.degradedTrustVelocity &&
+      riskScore > this.config.passThreshold
+    ) {
       return {
         state: 'DEGRADED',
         severity: 'advisory',

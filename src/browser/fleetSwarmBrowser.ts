@@ -444,14 +444,15 @@ export class FleetSwarmBrowser {
     }
 
     // Compute combined trust score
-    const activeAgents = results.map((r) => this.agents.get(r.agentId)).filter(Boolean) as SwarmAgent[];
+    const activeAgents = results
+      .map((r) => this.agents.get(r.agentId))
+      .filter(Boolean) as SwarmAgent[];
     const avgTrust =
       activeAgents.length > 0
         ? activeAgents.reduce((sum, a) => sum + a.trustScore, 0) / activeAgents.length
         : 0;
 
-    const approved =
-      consensusTongues.length >= threshold && approveCount > rejectCount;
+    const approved = consensusTongues.length >= threshold && approveCount > rejectCount;
 
     return {
       approved,

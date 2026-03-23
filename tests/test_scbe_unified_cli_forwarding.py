@@ -78,3 +78,114 @@ def test_scbe_pollypad_forwards_to_system_cli(monkeypatch) -> None:
         "pollypad",
         "list",
     ]]
+
+
+def test_scbe_flow_forwards_to_system_cli(monkeypatch) -> None:
+    captured: list[list[str]] = []
+
+    def fake_run(cmd, check=False):  # noqa: ANN001 - monkeypatched subprocess signature
+        captured.append(cmd)
+        return _Result(0)
+
+    monkeypatch.setattr(scbe_cli.subprocess, "run", fake_run)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["scbe", "flow", "plan", "--task", "improve CLI swarm"],
+    )
+
+    assert scbe_cli.main() == 0
+    assert captured == [[
+        sys.executable,
+        str(ROOT / "scripts" / "scbe-system-cli.py"),
+        "--repo-root",
+        str(ROOT),
+        "flow",
+        "plan",
+        "--task",
+        "improve CLI swarm",
+    ]]
+
+
+def test_scbe_doctor_forwards_to_system_cli(monkeypatch) -> None:
+    captured: list[list[str]] = []
+
+    def fake_run(cmd, check=False):  # noqa: ANN001 - monkeypatched subprocess signature
+        captured.append(cmd)
+        return _Result(0)
+
+    monkeypatch.setattr(scbe_cli.subprocess, "run", fake_run)
+    monkeypatch.setattr(sys, "argv", ["scbe", "doctor", "--json"])
+
+    assert scbe_cli.main() == 0
+    assert captured == [[
+        sys.executable,
+        str(ROOT / "scripts" / "scbe-system-cli.py"),
+        "--repo-root",
+        str(ROOT),
+        "doctor",
+        "--json",
+    ]]
+
+
+def test_scbe_workflow_forwards_to_system_cli(monkeypatch) -> None:
+    captured: list[list[str]] = []
+
+    def fake_run(cmd, check=False):  # noqa: ANN001 - monkeypatched subprocess signature
+        captured.append(cmd)
+        return _Result(0)
+
+    monkeypatch.setattr(scbe_cli.subprocess, "run", fake_run)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "scbe",
+            "workflow",
+            "styleize",
+            "--name",
+            "nightly-ops",
+            "--step",
+            "Smoke::python scbe.py selftest",
+        ],
+    )
+
+    assert scbe_cli.main() == 0
+    assert captured == [[
+        sys.executable,
+        str(ROOT / "scripts" / "scbe-system-cli.py"),
+        "--repo-root",
+        str(ROOT),
+        "workflow",
+        "styleize",
+        "--name",
+        "nightly-ops",
+        "--step",
+        "Smoke::python scbe.py selftest",
+    ]]
+
+
+def test_scbe_colab_forwards_to_system_cli(monkeypatch) -> None:
+    captured: list[list[str]] = []
+
+    def fake_run(cmd, check=False):  # noqa: ANN001 - monkeypatched subprocess signature
+        captured.append(cmd)
+        return _Result(0)
+
+    monkeypatch.setattr(scbe_cli.subprocess, "run", fake_run)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["scbe", "colab", "status", "--json"],
+    )
+
+    assert scbe_cli.main() == 0
+    assert captured == [[
+        sys.executable,
+        str(ROOT / "scripts" / "scbe-system-cli.py"),
+        "--repo-root",
+        str(ROOT),
+        "colab",
+        "status",
+        "--json",
+    ]]

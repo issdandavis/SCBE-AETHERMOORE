@@ -116,9 +116,7 @@ describe('SE-1: Predicate Gating Matrix', () => {
         policyCell: geo ? [0.5, 0.5] : [0.9, 0.9],
 
         // Path: strict descent or non-descent
-        ringHistory: path
-          ? ([4, 3, 2, 1, 0] as RingLevel[])
-          : ([1, 2, 3] as RingLevel[]), // Wrong: ascending
+        ringHistory: path ? ([4, 3, 2, 1, 0] as RingLevel[]) : ([1, 2, 3] as RingLevel[]), // Wrong: ascending
 
         // Quorum: sufficient approvals or none
         approvals: quorum
@@ -325,7 +323,10 @@ describe('SE-3: Wrong-Geometry Key Separation', () => {
 
   it('different policy cell → decryption fails', async () => {
     const policy = createTestPolicy();
-    policy.allowedCells = [[0.5, 0.5], [0.6, 0.6]]; // Allow multiple cells
+    policy.allowedCells = [
+      [0.5, 0.5],
+      [0.6, 0.6],
+    ]; // Allow multiple cells
 
     const validState = createValidState();
     validState.policyCell = [0.5, 0.5];
@@ -377,10 +378,10 @@ describe('SE-3: Wrong-Geometry Key Separation', () => {
 
     // Test each different ring level (1-4, since egg was created with ring 0)
     const testPositions = [
-      [0.3, 0.0, 0.0],  // Ring 1 (0.2 < 0.3 < 0.4)
-      [0.5, 0.0, 0.0],  // Ring 2 (0.4 < 0.5 < 0.6)
-      [0.7, 0.0, 0.0],  // Ring 3 (0.6 < 0.7 < 0.8)
-      [0.9, 0.0, 0.0],  // Ring 4 (0.8 < 0.9 < 0.95)
+      [0.3, 0.0, 0.0], // Ring 1 (0.2 < 0.3 < 0.4)
+      [0.5, 0.0, 0.0], // Ring 2 (0.4 < 0.5 < 0.6)
+      [0.7, 0.0, 0.0], // Ring 3 (0.6 < 0.7 < 0.8)
+      [0.9, 0.0, 0.0], // Ring 4 (0.8 < 0.9 < 0.95)
     ];
 
     for (const pos of testPositions) {

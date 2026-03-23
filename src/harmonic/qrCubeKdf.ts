@@ -60,7 +60,7 @@ function hkdfExpand(prk: Buffer, info: Buffer, length: number): Buffer {
     t = Buffer.from(
       createHmac('sha256', prk)
         .update(Buffer.concat([t, info, Buffer.from([counter])]))
-        .digest(),
+        .digest()
     );
     parts.push(t);
     totalLen += t.length;
@@ -102,11 +102,7 @@ function commitField(domain: string, data: Buffer): Buffer {
   const lenBuf = Buffer.alloc(8);
   lenBuf.writeUInt32LE(data.length, 0); // LE u64 (high 4 bytes stay 0)
   return Buffer.from(
-    createHash('sha256')
-      .update(Buffer.from(domain))
-      .update(lenBuf)
-      .update(data)
-      .digest(),
+    createHash('sha256').update(Buffer.from(domain)).update(lenBuf).update(data).digest()
   );
 }
 

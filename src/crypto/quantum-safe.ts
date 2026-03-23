@@ -159,9 +159,9 @@ export const PQC_ALGORITHMS = {
     family: 'code-based' as PQCFamily,
     nistLevel: 1 as NISTLevel,
     standard: 'NIST Round 4',
-    publicKeySize: 261_120,    // ~255 KB — very large
+    publicKeySize: 261_120, // ~255 KB — very large
     secretKeySize: 6_492,
-    ciphertextSize: 128,       // very compact
+    ciphertextSize: 128, // very compact
     sharedSecretSize: 32,
     productionReady: false,
   },
@@ -208,9 +208,9 @@ export const PQC_ALGORITHMS = {
     family: 'hash-based' as PQCFamily,
     nistLevel: 1 as NISTLevel,
     standard: 'FIPS 205',
-    publicKeySize: 32,          // very compact
+    publicKeySize: 32, // very compact
     secretKeySize: 64,
-    signatureSize: 7_856,       // large signatures
+    signatureSize: 7_856, // large signatures
     productionReady: true,
   },
   'SLH-DSA-256s': {
@@ -281,7 +281,7 @@ export class StubKEM implements QuantumSafeKEM {
     if (publicKey.length !== this.descriptor.publicKeySize) {
       throw new Error(
         `${this.descriptor.name}: invalid public key size ${publicKey.length} ` +
-        `(expected ${this.descriptor.publicKeySize})`
+          `(expected ${this.descriptor.publicKeySize})`
       );
     }
     const rand = randomBytes(32);
@@ -298,13 +298,13 @@ export class StubKEM implements QuantumSafeKEM {
     if (ciphertext.length !== this.descriptor.ciphertextSize) {
       throw new Error(
         `${this.descriptor.name}: invalid ciphertext size ${ciphertext.length} ` +
-        `(expected ${this.descriptor.ciphertextSize})`
+          `(expected ${this.descriptor.ciphertextSize})`
       );
     }
     if (secretKey.length !== this.descriptor.secretKeySize) {
       throw new Error(
         `${this.descriptor.name}: invalid secret key size ${secretKey.length} ` +
-        `(expected ${this.descriptor.secretKeySize})`
+          `(expected ${this.descriptor.secretKeySize})`
       );
     }
     return deriveSecret(secretKey.subarray(0, 32), ciphertext.subarray(0, 32));
@@ -333,7 +333,7 @@ export class StubSignature implements QuantumSafeSignature {
     if (secretKey.length !== this.descriptor.secretKeySize) {
       throw new Error(
         `${this.descriptor.name}: invalid secret key size ${secretKey.length} ` +
-        `(expected ${this.descriptor.secretKeySize})`
+          `(expected ${this.descriptor.secretKeySize})`
       );
     }
     return expandSeed(
@@ -351,19 +351,19 @@ export class StubSignature implements QuantumSafeSignature {
     if (publicKey.length !== this.descriptor.publicKeySize) {
       throw new Error(
         `${this.descriptor.name}: invalid public key size ${publicKey.length} ` +
-        `(expected ${this.descriptor.publicKeySize})`
+          `(expected ${this.descriptor.publicKeySize})`
       );
     }
     if (signature.length !== this.descriptor.signatureSize) {
       throw new Error(
         `${this.descriptor.name}: invalid signature size ${signature.length} ` +
-        `(expected ${this.descriptor.signatureSize})`
+          `(expected ${this.descriptor.signatureSize})`
       );
     }
     // Refuse to verify with a stub — silently returning true is a security vulnerability.
     throw new Error(
       `${this.descriptor.name}: stub verify() is disabled for safety. ` +
-      `Register a real implementation via registerSignature() or install liboqs-node.`
+        `Register a real implementation via registerSignature() or install liboqs-node.`
     );
   }
 }
@@ -399,9 +399,9 @@ export function getKEM(name: string): QuantumSafeKEM {
   if (existing) return existing;
 
   // Look up in catalog and create stub
-  const desc = Object.values(PQC_ALGORITHMS).find(
-    (a) => a.kind === 'kem' && a.name === name
-  ) as KEMDescriptor | undefined;
+  const desc = Object.values(PQC_ALGORITHMS).find((a) => a.kind === 'kem' && a.name === name) as
+    | KEMDescriptor
+    | undefined;
   if (!desc) {
     throw new Error(`Unknown KEM algorithm: ${name}`);
   }
@@ -446,9 +446,7 @@ export function listAlgorithms(): Array<{
     kind: desc.kind,
     family: desc.family,
     nistLevel: desc.nistLevel,
-    registered: desc.kind === 'kem'
-      ? kemRegistry.has(desc.name)
-      : sigRegistry.has(desc.name),
+    registered: desc.kind === 'kem' ? kemRegistry.has(desc.name) : sigRegistry.has(desc.name),
     productionReady: desc.productionReady,
   }));
 }
@@ -695,13 +693,16 @@ export class QuantumSafeEnvelope {
  * Isogeny          | Tiny         | Tiny         | Very slow  | Broken?
  * Multivariate     | Large        | Tiny         | Fast verify| Niche
  */
-export const PQC_FAMILY_TRADEOFFS: Record<PQCFamily, {
-  keySize: string;
-  outputSize: string;
-  speed: string;
-  maturity: string;
-  scbeRecommendation: string;
-}> = {
+export const PQC_FAMILY_TRADEOFFS: Record<
+  PQCFamily,
+  {
+    keySize: string;
+    outputSize: string;
+    speed: string;
+    maturity: string;
+    scbeRecommendation: string;
+  }
+> = {
   lattice: {
     keySize: 'Medium (1-3 KB)',
     outputSize: 'Medium (1-3 KB)',

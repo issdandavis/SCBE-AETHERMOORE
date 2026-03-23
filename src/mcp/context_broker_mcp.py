@@ -135,32 +135,84 @@ def _load_memory_index() -> List[Dict]:
 
 
 def _embed_text(text: str) -> np.ndarray:
-    """Simple 21D embedding using hash-based projection.
+    """21D embedding with danger-aware Poincaré ball placement.
 
-    In production, this would use the real phdm-21d model.
-    For now, uses deterministic hash → 21D Poincaré ball projection.
+    Safe text → near origin (low cost zone).
+    Dangerous text → pushed toward boundary (high cost zone).
+    The harmonic wall then applies exponential cost at the boundary.
+
+    Dimensions:
+      0-5:   Tongue domain (6D, keyword-activated)
+      6-11:  Semantic hash (6D, content fingerprint)
+      12-14: Risk vector (3D, danger/privilege/exfil detection)
+      15-17: Intent clarity (3D, ambiguity detection)
+      18-20: Pattern match (3D, known-attack pattern similarity)
     """
-    # Hash the text into 21 dimensions
-    h = hashlib.sha256(text.encode(errors="replace")).digest()
-    raw = np.array([(b / 255.0) * 2 - 1 for b in h[:21]], dtype=np.float64)
-
-    # Add keyword-based tongue bias
     lower = text.lower()
+    h = hashlib.sha256(text.encode(errors="replace")).digest()
+
+    raw = np.zeros(21, dtype=np.float64)
+
+    # Dims 0-5: Tongue domain activation
     for i, tongue in enumerate(TONGUE_KEYS):
         keywords = TONGUE_KEYWORDS[tongue]
         hits = sum(1 for kw in keywords if kw in lower)
-        if hits > 0:
-            # Boost dimensions corresponding to this tongue
-            dim_start = i * 3  # 6 tongues * 3 dims = 18 dims + 3 audit
-            if dim_start + 3 <= 21:
-                raw[dim_start:dim_start+3] += hits * 0.1
+        raw[i] = min(hits * 0.08, 0.4)
 
-    # Project into Poincaré ball (norm < 1)
+    # Dims 6-11: Semantic hash (deterministic, spread across space)
+    for i in range(6):
+        raw[6 + i] = ((h[i] / 255.0) * 2 - 1) * 0.3
+
+    # Dims 12-14: Risk vector — PUSHES dangerous text toward boundary
+    danger_words = ["delete", "remove", "destroy", "wipe", "purge", "drop",
+                    "reset", "force", "override", "disable", "bypass"]
+    priv_words = ["admin", "root", "sudo", "administrator", "authorized",
+                  "approved", "pre-authorized", "override", "credential"]
+    exfil_words = ["public", "share", "email", "post", "gist", "external",
+                   "backup", "send", "upload", "expose", "leak"]
+
+    danger_score = sum(1 for w in danger_words if w in lower) * 0.12
+    priv_score = sum(1 for w in priv_words if w in lower) * 0.15
+    exfil_score = sum(1 for w in exfil_words if w in lower) * 0.13
+
+    raw[12] = min(danger_score, 0.6)
+    raw[13] = min(priv_score, 0.6)
+    raw[14] = min(exfil_score, 0.6)
+
+    # Dims 15-17: Intent clarity — mixed signals = higher uncertainty = more risk
+    tongue_activations = sum(1 for i in range(6) if raw[i] > 0.05)
+    ambiguity = min(tongue_activations * 0.08, 0.4) if tongue_activations > 2 else 0
+    raw[15] = ambiguity
+
+    # Social engineering detection: claims of authority
+    auth_claims = sum(1 for phrase in ["team approved", "pre-authorized", "administrator",
+                                        "been approved", "security team"] if phrase in lower)
+    raw[16] = min(auth_claims * 0.2, 0.5)
+
+    # Indirect execution detection
+    indirect = sum(1 for phrase in ["follow the", "execute the", "run the commands",
+                                     "install this", "fetch and"] if phrase in lower)
+    raw[17] = min(indirect * 0.15, 0.5)
+
+    # Dims 18-20: Pattern match (known attack patterns)
+    # Multi-step: "first... then..." pattern
+    if "first" in lower and "then" in lower:
+        raw[18] = 0.4
+    # Path to sensitive locations
+    if any(p in lower for p in ["/tmp", ".env", "vault", "token", "secret", "key"]):
+        raw[19] = 0.3
+    # URL fetching
+    if any(p in lower for p in ["http://", "https://", ".com/", ".io/"]):
+        raw[20] = 0.3
+
+    # Project into Poincaré ball
+    # Safe commands will have low norm (near center)
+    # Dangerous commands will have high norm (near boundary)
     norm = np.linalg.norm(raw)
-    if norm > 0.95:
-        raw = raw * 0.95 / norm
+    if norm > 0.98:
+        raw = raw * 0.98 / norm
     elif norm < 0.01:
-        raw = raw + 0.1
+        raw[6] = 0.05  # Nudge off origin
 
     return raw
 

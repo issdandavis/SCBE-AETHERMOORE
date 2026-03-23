@@ -262,7 +262,10 @@ describe('L2-UNIT: renderSliceASCII', () => {
 
   it('should overlay drift path as *', () => {
     const slice = computeSlice(DEFAULT_AXES, 10, [-0.5, 0.5]);
-    const driftPath: [number, number][] = [[0, 0], [0.1, 0.1]];
+    const driftPath: [number, number][] = [
+      [0, 0],
+      [0.1, 0.1],
+    ];
     const ascii = renderSliceASCII(slice, driftPath);
     expect(ascii).toContain('*');
   });

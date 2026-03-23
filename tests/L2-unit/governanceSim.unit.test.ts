@@ -37,10 +37,20 @@ import type { Lang, Decision } from '../../src/harmonic/scbe_voxel_types.js';
 
 const ORIGIN: Point3D = { x: 0, y: 0, z: 0 };
 const BALANCED_WEIGHTS: Record<string, number> = {
-  KO: 1, AV: 1, RU: 1, CA: 1, UM: 1, DR: 1,
+  KO: 1,
+  AV: 1,
+  RU: 1,
+  CA: 1,
+  UM: 1,
+  DR: 1,
 };
 const ALIGNED_PHASES: Record<string, number> = {
-  KO: 0, AV: 0, RU: 0, CA: 0, UM: 0, DR: 0,
+  KO: 0,
+  AV: 0,
+  RU: 0,
+  CA: 0,
+  UM: 0,
+  DR: 0,
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -230,58 +240,96 @@ describe('invMetricFactor', () => {
 describe('bftConsensus', () => {
   it('all ALLOW → ALLOW', () => {
     const votes: Record<string, Decision> = {
-      KO: 'ALLOW', AV: 'ALLOW', RU: 'ALLOW', CA: 'ALLOW', UM: 'ALLOW', DR: 'ALLOW',
+      KO: 'ALLOW',
+      AV: 'ALLOW',
+      RU: 'ALLOW',
+      CA: 'ALLOW',
+      UM: 'ALLOW',
+      DR: 'ALLOW',
     };
     expect(bftConsensus(votes)).toBe('ALLOW');
   });
 
   it('all DENY → DENY', () => {
     const votes: Record<string, Decision> = {
-      KO: 'DENY', AV: 'DENY', RU: 'DENY', CA: 'DENY', UM: 'DENY', DR: 'DENY',
+      KO: 'DENY',
+      AV: 'DENY',
+      RU: 'DENY',
+      CA: 'DENY',
+      UM: 'DENY',
+      DR: 'DENY',
     };
     expect(bftConsensus(votes)).toBe('DENY');
   });
 
   it('1 faulty cant DENY', () => {
     const votes: Record<string, Decision> = {
-      KO: 'DENY', AV: 'ALLOW', RU: 'ALLOW', CA: 'ALLOW', UM: 'ALLOW', DR: 'ALLOW',
+      KO: 'DENY',
+      AV: 'ALLOW',
+      RU: 'ALLOW',
+      CA: 'ALLOW',
+      UM: 'ALLOW',
+      DR: 'ALLOW',
     };
     expect(bftConsensus(votes)).toBe('ALLOW');
   });
 
   it('exactly 4 DENY → DENY', () => {
     const votes: Record<string, Decision> = {
-      KO: 'DENY', AV: 'DENY', RU: 'DENY', CA: 'DENY', UM: 'ALLOW', DR: 'ALLOW',
+      KO: 'DENY',
+      AV: 'DENY',
+      RU: 'DENY',
+      CA: 'DENY',
+      UM: 'ALLOW',
+      DR: 'ALLOW',
     };
     expect(bftConsensus(votes)).toBe('DENY');
   });
 
   it('3 DENY not enough', () => {
     const votes: Record<string, Decision> = {
-      KO: 'DENY', AV: 'DENY', RU: 'DENY', CA: 'ALLOW', UM: 'ALLOW', DR: 'ALLOW',
+      KO: 'DENY',
+      AV: 'DENY',
+      RU: 'DENY',
+      CA: 'ALLOW',
+      UM: 'ALLOW',
+      DR: 'ALLOW',
     };
     expect(bftConsensus(votes)).toBe('ALLOW');
   });
 
   it('4 QUARANTINE → QUARANTINE', () => {
     const votes: Record<string, Decision> = {
-      KO: 'QUARANTINE', AV: 'QUARANTINE', RU: 'QUARANTINE', CA: 'QUARANTINE',
-      UM: 'ALLOW', DR: 'ALLOW',
+      KO: 'QUARANTINE',
+      AV: 'QUARANTINE',
+      RU: 'QUARANTINE',
+      CA: 'QUARANTINE',
+      UM: 'ALLOW',
+      DR: 'ALLOW',
     };
     expect(bftConsensus(votes)).toBe('QUARANTINE');
   });
 
   it('mixed 3D+2Q+1A → ALLOW (neither reaches 4)', () => {
     const votes: Record<string, Decision> = {
-      KO: 'DENY', AV: 'DENY', RU: 'DENY', CA: 'QUARANTINE', UM: 'QUARANTINE', DR: 'ALLOW',
+      KO: 'DENY',
+      AV: 'DENY',
+      RU: 'DENY',
+      CA: 'QUARANTINE',
+      UM: 'QUARANTINE',
+      DR: 'ALLOW',
     };
     expect(bftConsensus(votes)).toBe('ALLOW');
   });
 
   it('DENY takes priority over QUARANTINE', () => {
     const votes: Record<string, Decision> = {
-      KO: 'DENY', AV: 'DENY', RU: 'DENY', CA: 'DENY',
-      UM: 'QUARANTINE', DR: 'QUARANTINE',
+      KO: 'DENY',
+      AV: 'DENY',
+      RU: 'DENY',
+      CA: 'DENY',
+      UM: 'QUARANTINE',
+      DR: 'QUARANTINE',
     };
     expect(bftConsensus(votes)).toBe('DENY');
   });

@@ -318,9 +318,7 @@ const TONGUE_NAMES = ['KO', 'AV', 'RU', 'CA', 'DR', 'UM'] as const;
  * @param position - 6D position in Poincaré ball
  * @returns { tongue, distance } of nearest anchor
  */
-export function nearestTongueAnchor(
-  position: Vector6D
-): { tongue: string; distance: number } {
+export function nearestTongueAnchor(position: Vector6D): { tongue: string; distance: number } {
   let bestTongue = 'KO';
   let bestDist = Infinity;
 
@@ -374,10 +372,7 @@ export function proximityScore(
  * @param queryPhase - Phase vector of the query (or expected alignment)
  * @returns Phase score in [0, 1]
  */
-export function phaseConsistencyScore(
-  chunkPhase: Vector6D,
-  queryPhase: Vector6D
-): number {
+export function phaseConsistencyScore(chunkPhase: Vector6D, queryPhase: Vector6D): number {
   let sum = 0;
   for (let i = 0; i < 6; i++) {
     sum += Math.cos(chunkPhase[i] - queryPhase[i]);
@@ -439,8 +434,7 @@ export function scoreChunk(
   const trustScore = Math.max(0, Math.min(1, raw));
   const anomalyProb = 1 - trustScore;
   const quarantineFlag =
-    trustScore < config.quarantineThreshold ||
-    chunk.uncertainty > config.maxUncertainty;
+    trustScore < config.quarantineThreshold || chunk.uncertainty > config.maxUncertainty;
 
   // Soft attention gating: trust² ensures quarantined chunks get near-zero weight
   const attentionWeight = quarantineFlag ? 0 : trustScore * trustScore;
@@ -557,12 +551,10 @@ export function quarantineReport(
   const trusted = scored.filter((s) => !s.quarantineFlag);
   const quarantined = scored.filter((s) => s.quarantineFlag);
 
-  const avgTrust = scored.length > 0
-    ? scored.reduce((s, t) => s + t.trustScore, 0) / scored.length
-    : 0;
-  const avgAnomaly = scored.length > 0
-    ? scored.reduce((s, t) => s + t.anomalyProb, 0) / scored.length
-    : 0;
+  const avgTrust =
+    scored.length > 0 ? scored.reduce((s, t) => s + t.trustScore, 0) / scored.length : 0;
+  const avgAnomaly =
+    scored.length > 0 ? scored.reduce((s, t) => s + t.anomalyProb, 0) / scored.length : 0;
 
   return {
     trusted,
@@ -668,11 +660,7 @@ export interface RetrievalSummary {
  * @param riskAmplification - Risk scaling factor (default: 1.0)
  * @returns Access cost >= 1
  */
-export function accessCost(
-  d: number,
-  base: number = PHI,
-  riskAmplification: number = 1.0,
-): number {
+export function accessCost(d: number, base: number = PHI, riskAmplification: number = 1.0): number {
   if (d < 0) throw new RangeError('Distance must be non-negative');
   if (d < EPSILON) return 1.0;
 
@@ -821,7 +809,7 @@ export class HyperbolicRAGEngine {
 
     for (const [id, entry] of this.index) {
       // Age filter
-      if (this.config.maxAge > 0 && (now - entry.doc.insertedAt) > this.config.maxAge) {
+      if (this.config.maxAge > 0 && now - entry.doc.insertedAt > this.config.maxAge) {
         filteredOut++;
         continue;
       }
@@ -830,7 +818,13 @@ export class HyperbolicRAGEngine {
       const d = hyperbolicDistance(query, entry.doc.embedding);
 
       // Compute relevance via phase-distance score
-      const relevance = phaseDistanceScore(query, entry.doc.embedding, queryPhase, entry.doc.phase, this.config.phaseWeight);
+      const relevance = phaseDistanceScore(
+        query,
+        entry.doc.embedding,
+        queryPhase,
+        entry.doc.phase,
+        this.config.phaseWeight
+      );
 
       // Filter low relevance
       if (relevance < this.config.minRelevance) {
@@ -902,7 +896,7 @@ export class HyperbolicRAGEngine {
     queryEmbedding: number[],
     queryPhase: number | null,
     tongue: string,
-    tongueInfluence: number = 0.3,
+    tongueInfluence: number = 0.3
   ): RetrievalSummary {
     const center = REALM_CENTERS[tongue];
     if (!center) {
@@ -939,7 +933,10 @@ export class HyperbolicRAGEngine {
    * Find k nearest neighbors by hyperbolic distance (no cost gating).
    * Useful for diagnostics and visualization.
    */
-  kNearest(queryEmbedding: number[], k: number): Array<{ id: string; distance: number; doc: RAGDocument }> {
+  kNearest(
+    queryEmbedding: number[],
+    k: number
+  ): Array<{ id: string; distance: number; doc: RAGDocument }> {
     const query = this.ensureInBall(queryEmbedding);
     const scored: Array<{ id: string; distance: number; doc: RAGDocument }> = [];
 

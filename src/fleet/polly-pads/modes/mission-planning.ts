@@ -33,10 +33,7 @@ export class MissionPlanningMode extends BaseMode {
     // Persist risk and objective state
   }
 
-  protected doExecuteAction(
-    action: string,
-    params: Record<string, unknown>
-  ): ModeActionResult {
+  protected doExecuteAction(action: string, params: Record<string, unknown>): ModeActionResult {
     switch (action) {
       case 'assess_risk':
         return this.assessRisk(params);
@@ -59,7 +56,7 @@ export class MissionPlanningMode extends BaseMode {
   }
 
   private assessRisk(params: Record<string, unknown>): ModeActionResult {
-    const proposal = params.proposal as string || 'unknown';
+    const proposal = (params.proposal as string) || 'unknown';
     const assessments = this.stateData.riskAssessments as Array<Record<string, unknown>>;
 
     // Simplified risk scoring
@@ -107,7 +104,7 @@ export class MissionPlanningMode extends BaseMode {
   }
 
   private validateDecision(params: Record<string, unknown>): ModeActionResult {
-    const decision = params.decision as string || 'unknown';
+    const decision = (params.decision as string) || 'unknown';
     const constraints = (params.constraints as string[]) || [];
 
     const violations: string[] = [];
@@ -135,8 +132,8 @@ export class MissionPlanningMode extends BaseMode {
   }
 
   private updateTimeline(params: Record<string, unknown>): ModeActionResult {
-    const phase = params.phase as string || 'current';
-    const adjustment = params.adjustment as string || 'none';
+    const phase = (params.phase as string) || 'current';
+    const adjustment = (params.adjustment as string) || 'none';
 
     return {
       success: true,

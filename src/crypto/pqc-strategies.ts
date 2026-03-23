@@ -200,7 +200,9 @@ export async function triStitch(
   let classicalUsed = false;
   if (classicalHybrid) {
     const classicalBytes = new Uint8Array(
-      createHash('sha256').update(Buffer.from(crypto.getRandomValues(new Uint8Array(32)))).digest()
+      createHash('sha256')
+        .update(Buffer.from(crypto.getRandomValues(new Uint8Array(32))))
+        .digest()
     );
     for (let i = 0; i < 32; i++) {
       combined[i] ^= classicalBytes[i];

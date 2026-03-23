@@ -46,6 +46,12 @@
         "SWARM_DRY_RUN": "1"
       }
     },
+    "youtube-studio": {
+      "type": "stdio",
+      "command": "youtube-studio-mcp",
+      "args": [],
+      "env": {}
+    },
     "notion-sweep": {
       "type": "stdio",
       "command": "python",

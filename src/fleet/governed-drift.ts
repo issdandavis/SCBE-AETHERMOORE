@@ -128,8 +128,10 @@ export class GovernedDrift {
   /** Per-node drift vectors (persisted between steps for decay) */
   private driftState: Map<string, Vec> = new Map();
   /** Per-node drift history for analysis */
-  private driftHistory: Map<string, Array<{ magnitude: number; zeroed: boolean; timestamp: number }>> =
-    new Map();
+  private driftHistory: Map<
+    string,
+    Array<{ magnitude: number; zeroed: boolean; timestamp: number }>
+  > = new Map();
   /** Max history entries per node */
   private maxHistory: number = 100;
 
@@ -166,7 +168,8 @@ export class GovernedDrift {
     const riskSuppression = Math.exp(-c.riskDecay * clamp01(inputs.risk));
 
     // Raw budget
-    const raw = (uncertaintyContribution + energyContribution + trustContribution) * riskSuppression;
+    const raw =
+      (uncertaintyContribution + energyContribution + trustContribution) * riskSuppression;
 
     // Hard cap
     const budget = Math.min(Math.max(raw, 0), c.maxDriftMagnitude);
@@ -365,7 +368,7 @@ export class GovernedDrift {
    * Get drift history for a node.
    */
   public getHistory(
-    nodeId: string,
+    nodeId: string
   ): ReadonlyArray<{ magnitude: number; zeroed: boolean; timestamp: number }> {
     return this.driftHistory.get(nodeId) ?? [];
   }

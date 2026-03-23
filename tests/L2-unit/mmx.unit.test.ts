@@ -130,7 +130,10 @@ describe('MMX — Governance scalars', () => {
 
   it('changed alignment → drift > 0', () => {
     const features = { a: [1, 0], b: [0, 1] };
-    const prev = [[1.0, 0.9], [0.9, 1.0]];
+    const prev = [
+      [1.0, 0.9],
+      [0.9, 1.0],
+    ];
     const r = computeMMX(features, { prevAlignment: prev });
     expect(r.drift).toBeGreaterThan(0.0);
   });
@@ -154,11 +157,8 @@ describe('MMX — Governance thresholds', () => {
   });
 
   it('fully orthogonal → conflict > 0.60 (DENY zone)', () => {
-    const r = computeMMX(
-      { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] },
-      { agreementFloor: 0.5 },
-    );
-    expect(r.conflict).toBeGreaterThan(0.60);
+    const r = computeMMX({ x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] }, { agreementFloor: 0.5 });
+    expect(r.conflict).toBeGreaterThan(0.6);
   });
 });
 
@@ -237,7 +237,7 @@ describe('MMX — Cross-language parity', () => {
         audio: [4, 5, 6],
         video: [7, 8, 9],
       },
-      { agreementFloor: 0.5 },
+      { agreementFloor: 0.5 }
     );
 
     // Labels sorted: audio(0), text(1), video(2)

@@ -127,3 +127,31 @@ tmp_*.xml
 .scbe/lanes/
 .scbe/packets/
 .scbe/skill_registry/
+
+# Playwright MCP session snapshots (browser automation temp files)
+.playwright-mcp/
+.playwright-cli/
+colab_*.md
+spiralverse_*.md
+!Spiralverse_Game_Design_Bible.md
+pivot_*.md
+train_*.md
+training_cell.md
+cell*_result.md
+new_cell.md
+final_check.md
+upload_dialog.md
+patent_center.md
+patent_search.md
+patent_upload.md
+coherence-report.json
+
+# Stray OS / tool caches
+Microsoft/
+.codex_tmp/
+.codex-plan-check/
+.tmp_hypothesis_paths.txt
+.pytest_tmp_hallpass_review/
+
+# Stray media
+untitled.webm

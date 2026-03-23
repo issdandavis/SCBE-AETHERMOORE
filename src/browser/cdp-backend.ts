@@ -136,11 +136,14 @@ export class CDPBackend implements BrowserBackend {
   private debug: boolean;
 
   private commandId = 0;
-  private pending = new Map<number, {
-    resolve: (result: Record<string, unknown>) => void;
-    reject: (err: Error) => void;
-    timer: ReturnType<typeof setTimeout>;
-  }>();
+  private pending = new Map<
+    number,
+    {
+      resolve: (result: Record<string, unknown>) => void;
+      reject: (err: Error) => void;
+      timer: ReturnType<typeof setTimeout>;
+    }
+  >();
 
   private eventHandlers = new Map<string, ((params: Record<string, unknown>) => void)[]>();
   private connected = false;
@@ -240,10 +243,7 @@ export class CDPBackend implements BrowserBackend {
     }
   }
 
-  async navigate(
-    url: string,
-    options?: { waitUntil?: string; timeout?: number }
-  ): Promise<void> {
+  async navigate(url: string, options?: { waitUntil?: string; timeout?: number }): Promise<void> {
     this.assertConnected();
 
     const timeout = options?.timeout ?? this.commandTimeout;
@@ -260,10 +260,7 @@ export class CDPBackend implements BrowserBackend {
     await this.waitForLoad(waitUntil, timeout);
   }
 
-  async click(
-    selector: string,
-    options?: { position?: { x: number; y: number } }
-  ): Promise<void> {
+  async click(selector: string, options?: { position?: { x: number; y: number } }): Promise<void> {
     this.assertConnected();
 
     let x: number;
@@ -343,10 +340,7 @@ export class CDPBackend implements BrowserBackend {
     }
   }
 
-  async scroll(options: {
-    selector?: string;
-    delta?: { x: number; y: number };
-  }): Promise<void> {
+  async scroll(options: { selector?: string; delta?: { x: number; y: number } }): Promise<void> {
     this.assertConnected();
 
     if (options.selector) {
@@ -391,10 +385,7 @@ export class CDPBackend implements BrowserBackend {
     return evalResult?.value as T;
   }
 
-  async screenshot(options?: {
-    fullPage?: boolean;
-    selector?: string;
-  }): Promise<Buffer> {
+  async screenshot(options?: { fullPage?: boolean; selector?: string }): Promise<Buffer> {
     this.assertConnected();
 
     const params: Record<string, unknown> = { format: 'png' };
@@ -402,8 +393,9 @@ export class CDPBackend implements BrowserBackend {
     if (options?.fullPage) {
       // Get full page metrics for full-page screenshot
       const metrics = await this.send('Page.getLayoutMetrics');
-      const contentSize = metrics.cssContentSize as Record<string, number> ??
-        metrics.contentSize as Record<string, number>;
+      const contentSize =
+        (metrics.cssContentSize as Record<string, number>) ??
+        (metrics.contentSize as Record<string, number>);
 
       if (contentSize) {
         params.clip = {
@@ -573,9 +565,9 @@ export class CDPBackend implements BrowserBackend {
       });
 
       const sensitiveFields = fields.filter((f) => f.sensitivity !== 'none');
-      const sensitiveTypes = [
-        ...new Set(sensitiveFields.map((f) => f.sensitivity)),
-      ].filter((s): s is SensitiveFieldType => s !== 'none');
+      const sensitiveTypes = [...new Set(sensitiveFields.map((f) => f.sensitivity))].filter(
+        (s): s is SensitiveFieldType => s !== 'none'
+      );
 
       return {
         identifier: form.identifier,
@@ -636,7 +628,10 @@ export class CDPBackend implements BrowserBackend {
    * Send a raw CDP command.
    * Exposed for advanced usage beyond BrowserBackend interface.
    */
-  async sendCommand(method: string, params?: Record<string, unknown>): Promise<Record<string, unknown>> {
+  async sendCommand(
+    method: string,
+    params?: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
     return this.send(method, params);
   }
 
@@ -734,7 +729,9 @@ export class CDPBackend implements BrowserBackend {
    */
   async clearCookies(domain?: string): Promise<void> {
     if (domain) {
-      const result = await this.send('Network.getCookies', { urls: [`https://${domain}`, `http://${domain}`] });
+      const result = await this.send('Network.getCookies', {
+        urls: [`https://${domain}`, `http://${domain}`],
+      });
       const cookies = result.cookies as Array<{ name: string; domain: string }>;
       for (const cookie of cookies) {
         await this.send('Network.deleteCookies', {
@@ -899,10 +896,7 @@ export class CDPBackend implements BrowserBackend {
           pending.reject(new Error(`CDP error: ${resp.error.message} (${resp.error.code})`));
         } else {
           if (this.debug) {
-            console.log(
-              `[CDP ←] #${resp.id}`,
-              JSON.stringify(resp.result ?? {}).slice(0, 200)
-            );
+            console.log(`[CDP ←] #${resp.id}`, JSON.stringify(resp.result ?? {}).slice(0, 200));
           }
           pending.resolve(resp.result ?? {});
         }
@@ -1062,10 +1056,7 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function detectFieldSensitivity(
-  name: string,
-  type: string
-): SensitiveFieldType | 'none' {
+function detectFieldSensitivity(name: string, type: string): SensitiveFieldType | 'none' {
   // Check input type first
   if (type === 'password') return 'password';
 

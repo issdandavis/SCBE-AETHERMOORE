@@ -74,16 +74,9 @@ const SIG_KEYPAIR_METHODS: readonly string[] = [
   'keypair',
 ];
 
-const SIG_SIGN_METHODS: readonly string[] = [
-  'sign',
-  'signature',
-  'generate_signature',
-];
+const SIG_SIGN_METHODS: readonly string[] = ['sign', 'signature', 'generate_signature'];
 
-const SIG_VERIFY_METHODS: readonly string[] = [
-  'verify',
-  'verify_signature',
-];
+const SIG_VERIFY_METHODS: readonly string[] = ['verify', 'verify_signature'];
 
 let liboqsModuleCache: { moduleName: string; module: any } | null | undefined = undefined;
 let pqcStatusCache: PQCStatus | null = null;
@@ -127,7 +120,11 @@ function firstMatchingMethod(target: any, candidates: readonly string[]): string
   return null;
 }
 
-async function invokeNativeMethod(target: any, candidates: readonly string[], args: unknown[]): Promise<unknown | null> {
+async function invokeNativeMethod(
+  target: any,
+  candidates: readonly string[],
+  args: unknown[]
+): Promise<unknown | null> {
   const methodName = firstMatchingMethod(target, candidates);
   if (!methodName) {
     return null;
@@ -166,7 +163,10 @@ function getAnyKey(obj: Record<string, unknown>, keys: readonly string[]): unkno
   return undefined;
 }
 
-function parseKeyPair(value: unknown, label: string): { publicKey: Uint8Array; secretKey: Uint8Array } {
+function parseKeyPair(
+  value: unknown,
+  label: string
+): { publicKey: Uint8Array; secretKey: Uint8Array } {
   if (Array.isArray(value) && value.length >= 2) {
     return {
       publicKey: toBytes(value[0], `${label} public key`),
@@ -177,7 +177,13 @@ function parseKeyPair(value: unknown, label: string): { publicKey: Uint8Array; s
   if (value && typeof value === 'object') {
     const obj = value as Record<string, unknown>;
     const publicKey = getAnyKey(obj, ['publicKey', 'pk', 'public_key']);
-    const secretKey = getAnyKey(obj, ['secretKey', 'sk', 'secret_key', 'privateKey', 'private_key']);
+    const secretKey = getAnyKey(obj, [
+      'secretKey',
+      'sk',
+      'secret_key',
+      'privateKey',
+      'private_key',
+    ]);
 
     if (publicKey !== undefined && secretKey !== undefined) {
       return {
@@ -201,7 +207,13 @@ function parseKemEncapsulation(value: unknown): MLKEMEncapsulation {
   if (value && typeof value === 'object') {
     const obj = value as Record<string, unknown>;
     const ciphertext = getAnyKey(obj, ['ciphertext', 'ct', 'encapsulated', 'encapsulation']);
-    const sharedSecret = getAnyKey(obj, ['sharedSecret', 'shared_secret', 'ss', 'sessionKey', 'shared_key']);
+    const sharedSecret = getAnyKey(obj, [
+      'sharedSecret',
+      'shared_secret',
+      'ss',
+      'sessionKey',
+      'shared_key',
+    ]);
 
     if (ciphertext !== undefined && sharedSecret !== undefined) {
       return {
@@ -243,7 +255,14 @@ function parseKemSharedSecret(value: unknown): Uint8Array {
 
   if (value && typeof value === 'object') {
     const obj = value as Record<string, unknown>;
-    const sharedSecret = getAnyKey(obj, ['sharedSecret', 'shared_secret', 'ss', 'sessionKey', 'shared_key', 'key']);
+    const sharedSecret = getAnyKey(obj, [
+      'sharedSecret',
+      'shared_secret',
+      'ss',
+      'sessionKey',
+      'shared_key',
+      'key',
+    ]);
     if (sharedSecret !== undefined) {
       return toBytes(sharedSecret, 'ML-KEM decapsulated shared secret');
     }
@@ -254,7 +273,9 @@ function parseKemSharedSecret(value: unknown): Uint8Array {
     }
   }
 
-  throw new Error('Native backend for ML-KEM returned unsupported decapsulated shared secret shape');
+  throw new Error(
+    'Native backend for ML-KEM returned unsupported decapsulated shared secret shape'
+  );
 }
 
 function parseDsaSignature(value: unknown): Uint8Array {
@@ -477,7 +498,11 @@ export class MLKEM768 {
   async generateKeyPair(): Promise<MLKEMKeyPair> {
     if (this.useNative && this.nativeInstance) {
       try {
-        const output = await invokeNativeMethod(this.nativeInstance.instance, KEM_KEYPAIR_METHODS, []);
+        const output = await invokeNativeMethod(
+          this.nativeInstance.instance,
+          KEM_KEYPAIR_METHODS,
+          []
+        );
         if (output !== null) {
           return parseKeyPair(output, 'ML-KEM-768');
         }
@@ -506,7 +531,11 @@ export class MLKEM768 {
 
     if (this.useNative) {
       try {
-        const output = await invokeNativeMethod(this.nativeInstance!.instance, KEM_ENCAPSULATE_METHODS, [publicKey]);
+        const output = await invokeNativeMethod(
+          this.nativeInstance!.instance,
+          KEM_ENCAPSULATE_METHODS,
+          [publicKey]
+        );
         if (output !== null) {
           return parseKemEncapsulation(output);
         }
@@ -656,7 +685,11 @@ export class MLDSA65 {
   async generateKeyPair(): Promise<MLDSAKeyPair> {
     if (this.useNative) {
       try {
-        const output = await invokeNativeMethod(this.nativeInstance!.instance, SIG_KEYPAIR_METHODS, []);
+        const output = await invokeNativeMethod(
+          this.nativeInstance!.instance,
+          SIG_KEYPAIR_METHODS,
+          []
+        );
         if (output !== null) {
           return parseKeyPair(output, 'ML-DSA-65');
         }
@@ -685,7 +718,10 @@ export class MLDSA65 {
 
     if (this.useNative) {
       try {
-        const output = await invokeNativeMethod(this.nativeInstance!.instance, SIG_SIGN_METHODS, [message, secretKey]);
+        const output = await invokeNativeMethod(this.nativeInstance!.instance, SIG_SIGN_METHODS, [
+          message,
+          secretKey,
+        ]);
         if (output !== null) {
           return parseDsaSignature(output);
         }
@@ -720,11 +756,11 @@ export class MLDSA65 {
 
     if (this.useNative) {
       try {
-        const output = await invokeNativeMethod(
-          this.nativeInstance!.instance,
-          SIG_VERIFY_METHODS,
-          [message, signature, publicKey]
-        );
+        const output = await invokeNativeMethod(this.nativeInstance!.instance, SIG_VERIFY_METHODS, [
+          message,
+          signature,
+          publicKey,
+        ]);
         if (output !== null) {
           return Boolean(output);
         }
@@ -737,7 +773,7 @@ export class MLDSA65 {
     // Silently returning true would be a critical security vulnerability.
     throw new Error(
       'ML-DSA-65 verify() requires native liboqs. Stub verification is disabled for safety. ' +
-      'Install liboqs-node or use registerSignature() to provide a real implementation.'
+        'Install liboqs-node or use registerSignature() to provide a real implementation.'
     );
   }
 

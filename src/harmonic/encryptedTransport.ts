@@ -101,11 +101,7 @@ function fromB64u(s: string): Buffer {
  */
 export function generateTransportKey(domain: string = 'navigation'): VectorTransportKey {
   const key = randomBytes(32);
-  const kid = createHash('sha256')
-    .update(key)
-    .update(domain)
-    .digest('hex')
-    .slice(0, 16);
+  const kid = createHash('sha256').update(key).update(domain).digest('hex').slice(0, 16);
 
   return {
     key,

@@ -194,7 +194,7 @@ export function chladni6D(coords: number[], state: number[]): number {
 export function classifyZone(
   chladniValue: number,
   nodalThreshold: number = NODAL_THRESHOLD,
-  boundaryWidth: number = 0.05,
+  boundaryWidth: number = 0.05
 ): VoxelZone {
   const absVal = Math.abs(chladniValue);
   if (absVal < nodalThreshold) return 'nodal';
@@ -234,7 +234,7 @@ export function dominantTongue(coords: number[]): SacredTongue {
 export function estimateNodalDensity(
   state: number[],
   samples: number = 10000,
-  threshold: number = NODAL_THRESHOLD,
+  threshold: number = NODAL_THRESHOLD
 ): number {
   let nodal = 0;
   for (let s = 0; s < samples; s++) {
@@ -282,11 +282,7 @@ export class CymaticVoxelNet {
   // Propagation history
   private propagationLog: VoxelActivation[] = [];
 
-  constructor(
-    initialState?: number[],
-    initialPosition?: number[],
-    config?: CymaticNetConfig,
-  ) {
+  constructor(initialState?: number[], initialPosition?: number[], config?: CymaticNetConfig) {
     this.state = initialState ?? [1, 2, 3, 2, 1, 3]; // Default mode params
     this.position = initialPosition ?? [0, 0, 0, 0, 0, 0]; // Origin
     this.config = {
@@ -303,7 +299,10 @@ export class CymaticVoxelNet {
    * Does NOT store — just reads the field.
    */
   probe(coords: number[]): CymaticVoxel {
-    const c6 = coords.length >= 6 ? coords.slice(0, 6) : [...coords, ...new Array(6 - coords.length).fill(0)];
+    const c6 =
+      coords.length >= 6
+        ? coords.slice(0, 6)
+        : [...coords, ...new Array(6 - coords.length).fill(0)];
     const chladniValue = chladni6D(c6, this.state);
     const chladniAbs = Math.abs(chladniValue);
     const zone = classifyZone(chladniValue, this.config.nodalThreshold, this.config.boundaryWidth);
@@ -349,9 +348,11 @@ export class CymaticVoxelNet {
   retrieve(
     coords: number[],
     requesterPosition: number[],
-    maxDistance: number = 2.0,
+    maxDistance: number = 2.0
   ): CymaticVoxel | null {
-    const key = this.coordKey(coords.length >= 6 ? coords.slice(0, 6) : [...coords, ...new Array(6 - coords.length).fill(0)]);
+    const key = this.coordKey(
+      coords.length >= 6 ? coords.slice(0, 6) : [...coords, ...new Array(6 - coords.length).fill(0)]
+    );
     const voxel = this.voxels.get(key);
     if (!voxel) return null;
 
@@ -377,11 +378,7 @@ export class CymaticVoxelNet {
    * @param stepSize - Exploration step size (default: 0.1)
    * @returns Array of activated voxels along the propagation path
    */
-  propagate(
-    startCoords: number[],
-    maxHops?: number,
-    stepSize: number = 0.1,
-  ): VoxelActivation[] {
+  propagate(startCoords: number[], maxHops?: number, stepSize: number = 0.1): VoxelActivation[] {
     const hops = maxHops ?? this.config.maxHops;
     const activations: VoxelActivation[] = [];
     let coords = startCoords.slice(0, 6);
@@ -439,7 +436,7 @@ export class CymaticVoxelNet {
     const gNorm = Math.sqrt(gradient.reduce((s, g) => s + g * g, 0));
     if (gNorm < BRAIN_EPSILON) {
       // Already at/near nodal — perturb slightly to explore
-      return coords.map((c, i) => c + (Math.sin((i + 1) * PHI) * stepSize * 0.1));
+      return coords.map((c, i) => c + Math.sin((i + 1) * PHI) * stepSize * 0.1);
     }
 
     // Step against gradient (toward zero)

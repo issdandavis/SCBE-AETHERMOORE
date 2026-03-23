@@ -30,13 +30,7 @@
  *   - phdm.ts: deviation detection pattern (L8)
  */
 
-import {
-  hyperbolicDistance,
-  mobiusAdd,
-  expMap0,
-  logMap0,
-  clampToBall,
-} from './hyperbolic.js';
+import { hyperbolicDistance, mobiusAdd, expMap0, logMap0, clampToBall } from './hyperbolic.js';
 import { harmonicScale } from './harmonicScaling.js';
 import { REALM_CENTERS } from './adaptiveNavigator.js';
 
@@ -144,9 +138,9 @@ export interface EntropicConfig {
   expansionAlarmThreshold: number;
   /** Decision thresholds */
   thresholds: {
-    drifting: number;  // default: 0.3
-    escaping: number;  // default: 0.6
-    chaotic: number;   // default: 0.85
+    drifting: number; // default: 0.3
+    escaping: number; // default: 0.6
+    chaotic: number; // default: 0.85
   };
   /** Dimension of the Poincaré ball (default: 6) */
   dimension: number;
@@ -174,7 +168,7 @@ export function detectEscape(
   current: EntropicSample,
   previous: EntropicSample | null,
   basins: TrustBasin[],
-  escapeVelocityThreshold: number = 2.0,
+  escapeVelocityThreshold: number = 2.0
 ): EscapeResult {
   // Find nearest basin
   let nearestLabel = basins[0]?.label ?? 'unknown';
@@ -182,10 +176,7 @@ export function detectEscape(
   let nearestRadius = 0;
 
   for (const basin of basins) {
-    const d = hyperbolicDistance(
-      padToLength(current.position, basin.center.length),
-      basin.center,
-    );
+    const d = hyperbolicDistance(padToLength(current.position, basin.center.length), basin.center);
     if (d < nearestDist) {
       nearestDist = d;
       nearestLabel = basin.label;
@@ -199,7 +190,7 @@ export function detectEscape(
     const dt = Math.max(current.timestamp - previous.timestamp, 1); // avoid div by zero
     const d = hyperbolicDistance(
       padToLength(current.position, previous.position.length),
-      padToLength(previous.position, current.position.length),
+      padToLength(previous.position, current.position.length)
     );
     velocity = d / (dt / 1000); // convert to per-second
   }
@@ -228,16 +219,11 @@ export function detectEscape(
  * @param bins - Number of bins per dimension (default: 20)
  * @returns Shannon entropy in bits, normalized to [0, 1]
  */
-export function computeLocalEntropy(
-  positions: number[][],
-  bins: number = 20,
-): number {
+export function computeLocalEntropy(positions: number[][], bins: number = 20): number {
   if (positions.length < 2) return 0;
 
   // Compute norms as 1D proxy for radial distribution
-  const norms = positions.map((p) =>
-    Math.sqrt(p.reduce((s, x) => s + x * x, 0)),
-  );
+  const norms = positions.map((p) => Math.sqrt(p.reduce((s, x) => s + x * x, 0)));
 
   const maxNorm = Math.max(...norms, EPSILON);
   const histogram = new Float64Array(bins);
@@ -270,10 +256,7 @@ export function computeLocalEntropy(
  * @param basins - Trust basins
  * @returns Trust density in [0, 1]
  */
-export function computeTrustDensity(
-  positions: number[][],
-  basins: TrustBasin[],
-): number {
+export function computeTrustDensity(positions: number[][], basins: TrustBasin[]): number {
   if (positions.length === 0) return 0;
 
   let trusted = 0;
@@ -312,7 +295,7 @@ export function computeAdaptiveK(
   basins: TrustBasin[],
   kMin: number = 3,
   kMax: number = 21,
-  bins: number = 20,
+  bins: number = 20
 ): AdaptiveKResult {
   const localEntropy = computeLocalEntropy(positions, bins);
   const trustDensity = computeTrustDensity(positions, basins);
@@ -358,7 +341,7 @@ export function computeExpansionRate(samples: EntropicSample[]): number {
   for (let i = 1; i < samples.length; i++) {
     const d = hyperbolicDistance(
       padToLength(samples[i].position, samples[i - 1].position.length),
-      padToLength(samples[i - 1].position, samples[i].position.length),
+      padToLength(samples[i - 1].position, samples[i].position.length)
     );
     const dt = Math.max(samples[i].timestamp - samples[i - 1].timestamp, 1) / 1000;
     displacements.push(d / dt);
@@ -390,10 +373,7 @@ export function computeExpansionRate(samples: EntropicSample[]): number {
  * @param positions - Recent position vectors
  * @param dimension - Ball dimension (default: 6)
  */
-export function estimateReachableVolume(
-  positions: number[][],
-  dimension: number = 6,
-): number {
+export function estimateReachableVolume(positions: number[][], dimension: number = 6): number {
   if (positions.length < 2) return 0;
 
   // Find the centroid and max distance to it
@@ -422,10 +402,7 @@ export function estimateReachableVolume(
  * @param samples - Position history
  * @param dimension - Ball dimension
  */
-export function trackExpansion(
-  samples: EntropicSample[],
-  dimension: number = 6,
-): ExpansionResult {
+export function trackExpansion(samples: EntropicSample[], dimension: number = 6): ExpansionResult {
   const expansionRate = computeExpansionRate(samples);
   const positions = samples.map((s) => s.position);
   const reachableVolume = estimateReachableVolume(positions, dimension);
@@ -510,7 +487,7 @@ export class EntropicMonitor {
       sample,
       previous,
       this.config.basins,
-      this.config.escapeVelocityThreshold,
+      this.config.escapeVelocityThreshold
     );
 
     // 2. Adaptive k
@@ -520,20 +497,26 @@ export class EntropicMonitor {
       this.config.basins,
       this.config.kMin,
       this.config.kMax,
-      this.config.entropyBins,
+      this.config.entropyBins
     );
 
     // 3. Expansion tracking
     const expansion = trackExpansion(this.history, this.config.dimension);
 
     // Combine into entropic score
-    const escapeScore = escape.escaped ? 1.0 : (escape.distanceToCenter / (escape.basinRadius + EPSILON)) * 0.5;
+    const escapeScore = escape.escaped
+      ? 1.0
+      : (escape.distanceToCenter / (escape.basinRadius + EPSILON)) * 0.5;
     const entropyScore = adaptiveK.localEntropy;
-    const expansionScore = Math.min(1.0, Math.abs(expansion.expansionRate) / (this.config.expansionAlarmThreshold + EPSILON));
+    const expansionScore = Math.min(
+      1.0,
+      Math.abs(expansion.expansionRate) / (this.config.expansionAlarmThreshold + EPSILON)
+    );
 
     // Weighted combination: escape has highest weight (it's the most critical)
-    const entropicScore = Math.min(1.0,
-      0.45 * escapeScore + 0.30 * entropyScore + 0.25 * expansionScore,
+    const entropicScore = Math.min(
+      1.0,
+      0.45 * escapeScore + 0.3 * entropyScore + 0.25 * expansionScore
     );
 
     // Decision
@@ -616,7 +599,11 @@ export function defaultBasins(radius: number = 1.0): TrustBasin[] {
  *
  * @returns Array of { name, passed, detail } for each invariant
  */
-export function verifyEntropicInvariants(): Array<{ name: string; passed: boolean; detail: string }> {
+export function verifyEntropicInvariants(): Array<{
+  name: string;
+  passed: boolean;
+  detail: string;
+}> {
   const results: Array<{ name: string; passed: boolean; detail: string }> = [];
 
   // Invariant 1: adaptive-k monotonicity with entropy

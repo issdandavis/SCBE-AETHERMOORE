@@ -42,4 +42,5 @@ def test_show_resolves_alias() -> None:
 def test_url_points_to_colab() -> None:
     out = _run("url", "finetune").strip()
     assert out.startswith("https://colab.research.google.com/github/")
+    assert "\\" not in out
     assert "notebooks/scbe_finetune_colab.ipynb" in out
