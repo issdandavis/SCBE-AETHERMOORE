@@ -1,0 +1,10 @@
+{
+  "run_root": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training\\runs\\multi_agent_offload",
+  "output_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training\\sft_records\\sft_multi_agent_offload.jsonl",
+  "run_files": 12,
+  "raw_rows": 23,
+  "kept_rows": 5,
+  "skipped_short_or_empty": 18,
+  "duplicates_removed": 0,
+  "min_output_chars": 5
+}

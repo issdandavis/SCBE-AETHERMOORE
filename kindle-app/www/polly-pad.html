@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Polly Pad</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./static/icons/icon-192.png">
+<meta name="theme-color" content="#17c6cf">
+<link rel="stylesheet" href="./static/phone-shell.css">
+</head>
+<body>
+<div class="phone-shell">
+  <section class="hero">
+    <div class="hero-top">
+      <span class="eyebrow">Polly Pad Launcher</span>
+      <div class="actions">
+        <a class="btn-link" href="./ops.html">Ops</a>
+        <a class="btn-link" href="./index.html">Classic Shell</a>
+      </div>
+    </div>
+    <h1>Four lanes. One launcher. No fake all-in-one phone page.</h1>
+    <p class="lede">
+      Reader handles webtoon reading. Browse handles human tabs. Test handles AI website runs and artifacts.
+      Ops handles chat, bridge control, and diagnostics. This page only routes you into the right lane.
+    </p>
+    <div class="stats">
+      <div class="card">
+        <div class="small-note">Runtime</div>
+        <h3 id="runtimeLabel">Loading...</h3>
+        <p class="small-note" id="runtimeNote">Resolving device mode.</p>
+      </div>
+      <div class="card">
+        <div class="small-note">Host Alias</div>
+        <h3 id="hostAlias">Loading...</h3>
+        <p class="small-note">Android emulator uses `10.0.2.2`; browser preview uses `127.0.0.1`.</p>
+      </div>
+      <div class="card">
+        <div class="small-note">Lane Count</div>
+        <h3 id="laneCount">0</h3>
+        <p class="small-note">The launcher stays thin even when new lanes are added.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2>Lane Board</h2>
+        <p class="section-copy">Each lane does one job only. If a flow feels crowded, it belongs in another page.</p>
+      </div>
+      <button class="btn" type="button" id="refreshBtn">Refresh</button>
+    </div>
+    <div class="lane-grid" id="laneGrid"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2>Operating Notes</h2>
+        <p class="section-copy">These stay short so the launcher remains a router, not another dashboard.</p>
+      </div>
+    </div>
+    <div class="note-list" id="noteList"></div>
+  </section>
+
+  <p class="footer-note">
+    Launcher content comes from <span class="mono">static/polly-pad-mobile.json</span>.
+    Add lanes there; keep this page thin.
+  </p>
+</div>
+
+<script src="./static/phone-shell.js"></script>
+<script>
+const PAD_MANIFEST_URL = "./static/polly-pad-mobile.json";
+
+function renderLaneAction(action) {
+  const kind = action.kind === "secondary" ? "secondary" : "primary";
+  return `<a class="btn-link ${kind}" href="${PhoneShell.escapeHtml(action.href)}">${PhoneShell.escapeHtml(action.label)}</a>`;
+}
+
+function renderLane(lane) {
+  const checks = Array.isArray(lane.checks) ? lane.checks : [];
+  const actions = Array.isArray(lane.actions) ? lane.actions : [];
+  return `
+    <article class="lane-card">
+      <div class="lane-meta">
+        <span class="lane-zone">${PhoneShell.escapeHtml(lane.zone || "lane")}</span>
+        <span class="status-pill ${lane.status === "live" ? "good" : lane.status === "watch" ? "warn" : ""}">${PhoneShell.escapeHtml(lane.status || "ready")}</span>
+      </div>
+      <div>
+        <h3>${PhoneShell.escapeHtml(lane.title)}</h3>
+        <p class="meta-text">${PhoneShell.escapeHtml(lane.summary || "")}</p>
+      </div>
+      <div class="note-list">
+        ${checks.map((item) => `<div class="card"><div class="small-note">${PhoneShell.escapeHtml(item)}</div></div>`).join("")}
+      </div>
+      <div class="lane-actions">
+        ${actions.map(renderLaneAction).join("")}
+      </div>
+    </article>
+  `;
+}
+
+async function loadLauncher() {
+  const response = await fetch(PAD_MANIFEST_URL, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`manifest unavailable: ${response.status}`);
+  }
+  const config = await response.json();
+  const lanes = Array.isArray(config.lanes) ? config.lanes : [];
+  const notes = Array.isArray(config.notes) ? config.notes : [];
+  document.getElementById("runtimeLabel").textContent = PhoneShell.runtimeLabel();
+  document.getElementById("runtimeNote").textContent = PhoneShell.isKindleApp
+    ? "Capacitor is present. The app can bridge to host services through the emulator alias."
+    : "This is the browser preview. Use it to tune flow before the Android pass.";
+  document.getElementById("hostAlias").textContent = PhoneShell.runtimeHost;
+  document.getElementById("laneCount").textContent = String(lanes.length);
+  document.getElementById("laneGrid").innerHTML = lanes.map(renderLane).join("");
+  document.getElementById("noteList").innerHTML = notes
+    .map((note) => `<article class="card"><div class="small-note">${PhoneShell.escapeHtml(note)}</div></article>`)
+    .join("");
+}
+
+document.getElementById("refreshBtn").addEventListener("click", () => {
+  loadLauncher().catch((error) => {
+    document.getElementById("laneGrid").innerHTML = `<article class="card"><div class="small-note">${PhoneShell.escapeHtml(error.message || String(error))}</div></article>`;
+  });
+});
+
+loadLauncher().catch((error) => {
+  document.getElementById("laneGrid").innerHTML = `<article class="card"><div class="small-note">${PhoneShell.escapeHtml(error.message || String(error))}</div></article>`;
+});
+</script>
+</body>
+</html>

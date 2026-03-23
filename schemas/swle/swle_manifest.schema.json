@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/swle/swle_manifest.schema.json",
+  "title": "SWLE Multilingual Dataset Manifest",
+  "description": "Manifest for a multilingual SWLE dataset package composed of per-language JSONL files.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "dataset_id",
+    "description",
+    "languages",
+    "files"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "dataset_id": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "contact": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "default_entry_schema": {
+      "type": "string",
+      "default": "schemas/swle/swle_lexicon_entry.schema.json"
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "language_id",
+          "language_name"
+        ],
+        "properties": {
+          "language_id": {
+            "type": "string"
+          },
+          "language_name": {
+            "type": "string"
+          },
+          "iso_639_3": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "family": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scripts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "phoneme_inventory_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tokenizer_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "language_id",
+          "path",
+          "format"
+        ],
+        "properties": {
+          "language_id": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "jsonl"
+            ]
+          },
+          "row_count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "entry_schema": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "label_inventory": {
+      "type": "object",
+      "properties": {
+        "has_concept_ids": {
+          "type": "boolean"
+        },
+        "has_translation_sets": {
+          "type": "boolean"
+        },
+        "has_cognate_classes": {
+          "type": "boolean"
+        },
+        "has_valence": {
+          "type": "boolean"
+        },
+        "has_morphology": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

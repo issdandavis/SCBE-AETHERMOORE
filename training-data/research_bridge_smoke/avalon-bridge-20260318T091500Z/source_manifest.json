@@ -1,0 +1,759 @@
+{
+  "bundle_id": "avalon-bridge-20260318T091500Z",
+  "created_at_utc": "2026-03-18T06:19:53Z",
+  "bundle_dir": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z",
+  "counts": {
+    "records": 103,
+    "arxiv_evidence": 3,
+    "obsidian_notes": 100
+  },
+  "inputs": {
+    "evidence_dir": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\page_evidence",
+    "note_inputs": [
+      "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research",
+      "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\round-table",
+      "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research"
+    ],
+    "vault": {
+      "use_active_vault": true,
+      "active_vault_path": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files",
+      "vault_subdirs": [
+        "SCBE Research"
+      ],
+      "added_vault_paths": [
+        "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research"
+      ]
+    }
+  },
+  "outputs": {
+    "corpus": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\research_corpus.jsonl",
+    "hf_training_manifest": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\hf_training_manifest.json",
+    "report": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\bundle_report.md"
+  },
+  "sources": [
+    {
+      "kind": "arxiv_evidence",
+      "title": "",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\page_evidence\\playwriter-arxiv.org-navigate-session1.json",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\page_evidence\\278497839b_playwriter-arxiv.org-navigate-session1.json",
+      "arxiv_id": "2410.01706",
+      "url": "https://arxiv.org/abs/2410.01706"
+    },
+    {
+      "kind": "arxiv_evidence",
+      "title": "[2410.01706] Sable: a Performant, Efficient and Scalable Sequence Model for MARL",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\page_evidence\\playwriter-arxiv.org-snapshot-session1.json",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\page_evidence\\483b5c5192_playwriter-arxiv.org-snapshot-session1.json",
+      "arxiv_id": "2410.01706",
+      "url": "https://arxiv.org/abs/2410.01706"
+    },
+    {
+      "kind": "arxiv_evidence",
+      "title": "[2410.01706] Sable: a Performant, Efficient and Scalable Sequence Model for MARL",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\page_evidence\\playwriter-arxiv.org-title-session1.json",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\page_evidence\\91f567f0a8_playwriter-arxiv.org-title-session1.json",
+      "arxiv_id": "2410.01706",
+      "url": "https://arxiv.org/abs/2410.01706"
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Execution Results - Obsidian Integration",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Agent Ops\\2026-02-23 - Execution Results - Obsidian Integration.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\50091ce4a5_2026-02-23---execution-results---obsidian-integration.md",
+      "char_count": 1304
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Funnel Filter - Grok and Multi-AI Dump",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Agent Ops\\2026-02-23 - Funnel Filter - Grok and Multi-AI Dump.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\ac1c166b93_2026-02-23---funnel-filter---grok-and-multi-ai-dump.md",
+      "char_count": 2337
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Obsidian-First Agent Operating Plan",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Agent Ops\\2026-02-23 - Obsidian-First Agent Operating Plan.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\0b3f1c8071_2026-02-23---obsidian-first-agent-operating-plan.md",
+      "char_count": 1432
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "SCBE vs External Review - Context Comparison",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Agent Ops\\2026-02-23 - SCBE vs External Review - Context Comparison.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\3e1f85f194_2026-02-23---scbe-vs-external-review---context-comparison.md",
+      "char_count": 2494
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Claude-Codex Cross-Talk Handoff",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Agent Ops\\2026-03-01 - Claude-Codex Cross-Talk Handoff.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\efc58d1410_2026-03-01---claude-codex-cross-talk-handoff.md",
+      "char_count": 1455
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Article Posting + Revenue Ops Execution",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Agent Ops\\2026-03-02 - Article Posting + Revenue Ops Execution.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\d25bda8e79_2026-03-02---article-posting-revenue-ops-execution.md",
+      "char_count": 1828
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "2026-03-17 - Browser Mesh and Vault Sync",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Agent Ops\\2026-03-17 - Browser Mesh and Vault Sync.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\5a71d2d770_2026-03-17---browser-mesh-and-vault-sync.md",
+      "char_count": 1681
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Agent Ops Index",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Agent Ops\\Agent Ops Index.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\b56618c833_agent-ops-index.md",
+      "char_count": 645
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "2026-03-09T22:01:12Z | Codex | HALLPASS-GUIDANCE-REVIEW",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Agent Ops\\Cross Talk.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\0a56cf33a2_cross-talk.md",
+      "char_count": 2884
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Artifacts",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Agent Ops\\Sessions\\20260309-220112-codex-handoff.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\d97502f359_20260309-220112-codex-handoff.md",
+      "char_count": 742
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Session Handoff",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Agent Ops\\Sessions\\20260310-011645-codex-handoff.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\509d7b7e4e_20260310-011645-codex-handoff.md",
+      "char_count": 343
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Session Handoff",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Agent Ops\\Sessions\\20260310-011648-codex-handoff.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\9dc389b28c_20260310-011648-codex-handoff.md",
+      "char_count": 384
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Agent Session Template",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Agent Ops\\Templates\\Agent Session Template.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\9b72ed9c26_agent-session-template.md",
+      "char_count": 167
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Agent Work Queue Template",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Agent Ops\\Templates\\Agent Work Queue Template.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\f1740d37de_agent-work-queue-template.md",
+      "char_count": 96
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "14-Layer Architecture",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Architecture\\14-Layer Architecture.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\5613f16550_14-layer-architecture.md",
+      "char_count": 2678
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "21D Canonical State",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Architecture\\21D Canonical State.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\7d6905a364_21d-canonical-state.md",
+      "char_count": 4069
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "codex write probe",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Architecture\\codex-write-probe.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\ccc204d545_codex-write-probe.md",
+      "char_count": 5
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Decimal Drift - Computational Interferometry",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Architecture\\Decimal Drift - Computational Interferometry.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\41f331a252_decimal-drift---computational-interferometry.md",
+      "char_count": 6075
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Dual Lattice Framework",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Architecture\\Dual Lattice Framework.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\3eb64eb29b_dual-lattice-framework.md",
+      "char_count": 1507
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Grand Unified Statement",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Architecture\\Grand Unified Statement.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\95ee49e728_grand-unified-statement.md",
+      "char_count": 1885
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "HallPass Guidance Integration Review - 2026-03-09",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Architecture\\HallPass Guidance Integration Review 2026-03-09.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\e2bbe73cfe_hallpass-guidance-integration-review-2026-03-09.md",
+      "char_count": 2269
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Harmonic Wall",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Architecture\\Harmonic Wall.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\536024e075_harmonic-wall.md",
+      "char_count": 2013
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "M4 - Multimodel Multinode Model Matrix",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Architecture\\M4 - Multimodel Multinode Model Matrix.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\2115be5570_m4---multimodel-multinode-model-matrix.md",
+      "char_count": 6225
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "CDDM Framework",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\CDDM\\CDDM Framework.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\7ca765597b_cddm-framework.md",
+      "char_count": 3655
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Composition Chains",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\CDDM\\Composition Chains.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\2cdb4f1d17_composition-chains.md",
+      "char_count": 1982
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Morphism Catalog",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\CDDM\\Morphism Catalog.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\824ac36c6d_morphism-catalog.md",
+      "char_count": 2942
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Tongue Domain Mappings",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\CDDM\\Tongue Domain Mappings.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\1105025510_tongue-domain-mappings.md",
+      "char_count": 2889
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "2026-02-23 Night Session Mega Update",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Growth Log\\2026-02-23 - Night Session Mega Update.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\7687a1dea2_2026-02-23---night-session-mega-update.md",
+      "char_count": 5383
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Patent Strategy",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Growth Log\\Patent Strategy.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\29f79d61c6_patent-strategy.md",
+      "char_count": 3235
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Research Directions",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Growth Log\\Research Directions.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\364ba5e5b7_research-directions.md",
+      "char_count": 2655
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "System Growth Log",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Growth Log\\System Growth Log.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\e38d0869c1_system-growth-log.md",
+      "char_count": 2503
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "NNOS + Swarm Notes",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\NNOS + Swarm Notes - 2026-02-23.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\c63deb9716_nnos-swarm-notes---2026-02-23.md",
+      "char_count": 683
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Connector Closure To Cash (2026-03-04)",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Ops\\2026-03-04-connector-closure-to-cash.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\edb905d258_2026-03-04-connector-closure-to-cash.md",
+      "char_count": 621
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "System Consolidation Note (2026-03-04)",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Ops\\2026-03-04-system-consolidation-note.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\477ac47d24_2026-03-04-system-consolidation-note.md",
+      "char_count": 1091
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "System Review and Cloud Storage Audit \u2014 2026-03-07",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Ops\\2026-03-07-system-review-and-cloud-audit.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\eae3814175_2026-03-07-system-review-and-cloud-audit.md",
+      "char_count": 4276
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Advanced CSIDE Writing Guide: AI-Powered Interactive Fiction Development",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\References\\Advanced CSIDE Writing Guide.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\b9af1919e2_advanced-cside-writing-guide.md",
+      "char_count": 17470
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Category Theory References",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\References\\Category Theory References.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\a866870ffc_category-theory-references.md",
+      "char_count": 2538
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Character Research - Core Cast",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\References\\Character Research - Core Cast.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\d2d82a6eee_character-research---core-cast.md",
+      "char_count": 5443
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Federated Learning References",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\References\\Federated Learning References.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\6eacaeeed1_federated-learning-references.md",
+      "char_count": 1727
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Hyperbolic Geometry References",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\References\\Hyperbolic Geometry References.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\a37fcb92c0_hyperbolic-geometry-references.md",
+      "char_count": 2422
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Post-Quantum Crypto References",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\References\\Post-Quantum Crypto References.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\250e6327cb_post-quantum-crypto-references.md",
+      "char_count": 2074
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Six Tongues Protocol - 7 Sense Vault",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\References\\Six Tongues Protocol - 7 Sense Vault.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\1c5fe087c5_six-tongues-protocol---7-sense-vault.md",
+      "char_count": 5335
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "SCBE-AETHERMOORE Research Index",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\SCBE-AETHERMOORE Index.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\226ae3a90d_scbe-aethermoore-index.md",
+      "char_count": 2045
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "SCBE A2A Cross-Talk Packet \u2014 B1-HB",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\SCBE_Ai_to_Ai_CrossTalk_B1-HB_20260302.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\c07b865462_scbe_ai_to_ai_crosstalk_b1-hb_20260302.md",
+      "char_count": 685
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "3D Spatial Engine",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Tongues\\3D Spatial Engine.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\fe74b68415_3d-spatial-engine.md",
+      "char_count": 2332
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Evolving Lexicons",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Tongues\\Evolving Lexicons.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\781c1c778f_evolving-lexicons.md",
+      "char_count": 1646
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Sacred Tongues - Emotional Architecture",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Tongues\\Sacred Tongues - Emotional Architecture.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\4a929d4c5e_sacred-tongues---emotional-architecture.md",
+      "char_count": 16967
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Six Sacred Tongues",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Tongues\\Six Sacred Tongues.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\b339c82994_six-sacred-tongues.md",
+      "char_count": 2274
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Tongue Dimension Map",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Tongues\\Tongue Dimension Map.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\2978903d15_tongue-dimension-map.md",
+      "char_count": 1393
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "The Six Tongues Protocol - Project Index",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\00 - Project Index.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\814caf37d6_00---project-index.md",
+      "char_count": 3886
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "The Six Tongues Protocol - 7 Sense Vault",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\01 - 7 Sense Vault.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\31ced7fab4_01---7-sense-vault.md",
+      "char_count": 5339
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "The Six Tongues Protocol - Everweave Timeline",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\02 - Everweave Timeline.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\b32f31da1b_02---everweave-timeline.md",
+      "char_count": 3419
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "The Six Tongues Protocol - Lore Drop Opening Anchors",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\03 - Lore Drop - Pollyoneth Opening Anchors.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\a43ff5a0ef_03---lore-drop---pollyoneth-opening-anchors.md",
+      "char_count": 3054
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "The Six Tongues Protocol - Ame Integration",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\04 - Ame Integration.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\4926c17cc0_04---ame-integration.md",
+      "char_count": 4473
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Children and Sacred Eggs Canon",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\05 - Children and Sacred Eggs Canon.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\c855a3ea11_05---children-and-sacred-eggs-canon.md",
+      "char_count": 4951
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Izack and Aria on Names",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\06 - Izack and Aria on Names.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\7588e598e9_06---izack-and-aria-on-names.md",
+      "char_count": 10669
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Marcus Third Thread System Magic",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\07 - Marcus Third Thread System Magic.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\5a982b115c_07---marcus-third-thread-system-magic.md",
+      "char_count": 3153
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Chapter Cadence and Tropes",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\08 - Chapter Cadence and Tropes.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\fd7cc3465f_08---chapter-cadence-and-tropes.md",
+      "char_count": 18527
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Act Two Spine",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\09 - Act Two Spine.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\f25a41154e_09---act-two-spine.md",
+      "char_count": 6828
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Personality Rubix",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\10 - Personality Rubix.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\345a70b94d_10---personality-rubix.md",
+      "char_count": 22940
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Kael's Fall -- Why He Broke",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\11 - Kael's Fall - Why He Broke.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\24e96aa660_11---kael-s-fall---why-he-broke.md",
+      "char_count": 10317
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Cast Bible",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\12 - Cast Bible.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\693f77c746_12---cast-bible.md",
+      "char_count": 14005
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Handoff: Act II Sibling Expansion",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\13 - AI Handoff - Act II Expansion.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\9789bc3d79_13---ai-handoff---act-ii-expansion.md",
+      "char_count": 26871
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Festival Interlude: Rootlight",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\14 - Festival Interlude - Rootlight.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\e02513edff_14---festival-interlude---rootlight.md",
+      "char_count": 8184
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Geography and Ecology Harvest",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\15 - Geography and Ecology Harvest.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\36e9b9c684_15---geography-and-ecology-harvest.md",
+      "char_count": 7927
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Story Layer Lock",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\16 - Story Layer Lock.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\99b6be6a8e_16---story-layer-lock.md",
+      "char_count": 8294
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "System Import Candidates - HYDRA Octree Tentacles",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\17 - System Import Candidates - HYDRA Octree Tentacles.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\52a5d9d779_17---system-import-candidates---hydra-octree-tentacles.md",
+      "char_count": 9452
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Malz Integration Arc",
+      "source_file": "C:\\Users\\issda\\OneDrive\\Offload\\Documents\\Avalon Files\\SCBE Research\\Writing\\The Six Tongues Protocol\\18 - Malz Integration Arc.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\90ec90d864_18---malz-integration-arc.md",
+      "char_count": 7402
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Kindle App Development + Virtual Upload Brief",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-04-kindle-dev-and-virtual-upload-brief.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\38a7e01874_2026-03-04-kindle-dev-and-virtual-upload-brief.md",
+      "char_count": 3214
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "AetherBrowse Improvement Brief (Research + Local Context)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-05-aetherbrowse-improvement-brief.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\901b27f3cc_2026-03-05-aetherbrowse-improvement-brief.md",
+      "char_count": 2311
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Context Capsule Loader (1-5 Windows)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-05-context-capsule-loader.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\3136f58394_2026-03-05-context-capsule-loader.md",
+      "char_count": 1089
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Library Wing v1 \u2014 Multi-Model Round Table + Parallel Worktree Lanes",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-05-library-wing-roundtable.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\2938099efb_2026-03-05-library-wing-roundtable.md",
+      "char_count": 1786
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Open Source Knowledge Connector Deep Research (2026-03-05)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-05-open-source-connector-library.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\2b5d52661d_2026-03-05-open-source-connector-library.md",
+      "char_count": 5617
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "L11 Triadic Temporal Axiom Draft",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-13-l11-triadic-temporal-axiom-draft.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\01de077037_2026-03-13-l11-triadic-temporal-axiom-draft.md",
+      "char_count": 7834
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "ArcKit Dual-Track Scan",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-15-arckit-dual-track.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\632a8ef77d_2026-03-15-arckit-dual-track.md",
+      "char_count": 2620
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Chapter 1 Tandem Audit",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-15-ch01-book-panel-tandem-audit.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\6d9028402c_2026-03-15-ch01-book-panel-tandem-audit.md",
+      "char_count": 7640
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "AetherCode Phone Emulator Research",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-15-phone-emulator-architecture-research.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\00f52cf886_2026-03-15-phone-emulator-architecture-research.md",
+      "char_count": 10557
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Scattercast to SCBE Overlay Note",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-15-scattercast-scbe-overlay-note.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\f16ad2a770_2026-03-15-scattercast-scbe-overlay-note.md",
+      "char_count": 5279
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "How Game Companies Use AI for Complex Tasks",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-16-game-ai-company-patterns.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\813c982818_2026-03-16-game-ai-company-patterns.md",
+      "char_count": 12407
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Phase Control Modulation Matrices",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-16-phase-control-modulation-matrices.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\3f593b0ee4_2026-03-16-phase-control-modulation-matrices.md",
+      "char_count": 1754
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "AetherBrowser Extension Ownership Stack",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-17-aetherbrowser-extension-ownership-stack.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\2cdd46803e_2026-03-17-aetherbrowser-extension-ownership-stack.md",
+      "char_count": 11106
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Global Research Note: Agent Senses, Choice Monitoring, and World Models",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-17-global-agent-senses-choice-monitoring.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\5a7233d0f5_2026-03-17-global-agent-senses-choice-monitoring.md",
+      "char_count": 12678
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Adaptive Training Systems",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-18-adaptive-training-systems.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\1fc153a61a_2026-03-18-adaptive-training-systems.md",
+      "char_count": 28394
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Free Compute Landscape (March 2026)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-18-free-compute-landscape.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\dac790e54d_2026-03-18-free-compute-landscape.md",
+      "char_count": 15187
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Isekai Tower Training Architecture",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\2026-03-18-tower-training-architecture.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\8eebdc54c5_2026-03-18-tower-training-architecture.md",
+      "char_count": 15981
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Aethermoor Spiral Engine MVP",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\AETHERMOOR_SPIRAL_ENGINE_MVP.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\2b031292e5_aethermoor_spiral_engine_mvp.md",
+      "char_count": 3508
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Multi-Model Modal Matrix (Experimental)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\MULTI_MODEL_MODAL_MATRIX.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\5e50acd2e9_multi_model_modal_matrix.md",
+      "char_count": 6876
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Multimodality Matrix Training (Experimental)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\MULTIMODAL_MATRIX_TRAINING.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\b8437294e1_multimodal_matrix_training.md",
+      "char_count": 1442
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Quasi-Vector Spin Voxels & Magnetics (Research Draft)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\QUASI_VECTOR_SPIN_VOXELS.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\471a15fef5_quasi_vector_spin_voxels.md",
+      "char_count": 3329
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "1. What a Trit Is",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\QUASI_VOXEL_TERNARY_STORAGE.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\951f032c61_quasi_voxel_ternary_storage.md",
+      "char_count": 86417
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Research Documents (Non-Canonical)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\README.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\65ba7135e2_readme.md",
+      "char_count": 572
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Sheaf Consensus Gate",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\SHEAF_CONSENSUS_GATE.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\eddaefd8ac_sheaf_consensus_gate.md",
+      "char_count": 1146
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Signed Multi-Plane Encoding (Prototype)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\SIGNED_MULTIPLANE_ENCODING.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\858f97ac77_signed_multiplane_encoding.md",
+      "char_count": 1904
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Semantic-Weighted Letter Encoding: A Physics-Inspired Framework for Structured Language Representation",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\SWLE_semantic_weighted_letter_encoding.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\efbb69c4ea_swle_semantic_weighted_letter_encoding.md",
+      "char_count": 13727
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "SWLE v0 Dataset Schema and Benchmark Protocol",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\docs\\research\\SWLE_V0_DATASET_AND_BENCHMARK.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\71daa199c4_swle_v0_dataset_and_benchmark.md",
+      "char_count": 9605
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Sacred Egg Model Genesis \u2014 Concept Note",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\round-table\\2026-03-17-sacred-egg-model-genesis.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\b6d29f9c26_2026-03-17-sacred-egg-model-genesis.md",
+      "char_count": 3673
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Session Recap \u2014 March 17, 2026 (Night Session)",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\round-table\\2026-03-17-session-recap.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\a81cef38bf_2026-03-17-session-recap.md",
+      "char_count": 2649
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Next Session Plan \u2014 March 18, 2026",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\round-table\\2026-03-18-next-session-plan.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\75da135439_2026-03-18-next-session-plan.md",
+      "char_count": 2135
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "Automated Research Pipeline \u2014 Concept Note",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\round-table\\2026-03-18-research-pipeline-concept.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\81608a2622_2026-03-18-research-pipeline-concept.md",
+      "char_count": 2953
+    },
+    {
+      "kind": "obsidian_markdown",
+      "title": "The Round Table \u2014 Multi-Agent Communication Protocol",
+      "source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\round-table\\ROUND_TABLE.md",
+      "staged_source_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\research_bridge_smoke\\avalon-bridge-20260318T091500Z\\sources\\obsidian\\4a8725b33d_round_table.md",
+      "char_count": 7781
+    }
+  ]
+}

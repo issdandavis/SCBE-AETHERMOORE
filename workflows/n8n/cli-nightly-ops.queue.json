@@ -1,0 +1,36 @@
+{
+  "schema_version": "scbe_n8_style_queue_v1",
+  "workflow_name": "cli-nightly-ops",
+  "triggers": [
+    "workflow_dispatch"
+  ],
+  "env": {},
+  "items": [
+    {
+      "id": "step_01_smoke",
+      "action": "command",
+      "label": "Smoke",
+      "command": "python scbe.py selftest",
+      "depends_on": [],
+      "metadata": {
+        "order": 1,
+        "source": "scbe workflow styleize",
+        "github_workflow": "C:/Users/issda/SCBE-AETHERMOORE/.github/workflows/cli-nightly-ops.yml"
+      }
+    },
+    {
+      "id": "step_02_doctor",
+      "action": "command",
+      "label": "Doctor",
+      "command": "python scbe.py doctor --json",
+      "depends_on": [
+        "step_01_smoke"
+      ],
+      "metadata": {
+        "order": 2,
+        "source": "scbe workflow styleize",
+        "github_workflow": "C:/Users/issda/SCBE-AETHERMOORE/.github/workflows/cli-nightly-ops.yml"
+      }
+    }
+  ]
+}
