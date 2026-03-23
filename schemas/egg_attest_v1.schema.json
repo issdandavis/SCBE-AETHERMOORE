@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scbe.dev/schemas/egg_attest_v1.schema.json",
+  "title": "SCBE Egg Attestation v1",
+  "description": "Sacred Egg → Hatched Agent attestation packet. Encodes ritual inputs, cryptographic anchors, verification gate results, and hatch provenance.",
+  "type": "object",
+  "required": ["spec", "agent_id", "ritual", "anchors", "gates", "hatch", "signature"],
+  "properties": {
+    "spec": {
+      "type": "string",
+      "const": "SCBE-AETHERMOORE/egg-attest@v1"
+    },
+    "agent_id": {
+      "type": "string",
+      "pattern": "^hkdf://.+$",
+      "description": "Deterministic agent identity derived via HKDF from anchor chain + context"
+    },
+    "ritual": {
+      "type": "object",
+      "required": ["intent_sha256", "tongue_quorum", "geoseal", "timebox"],
+      "properties": {
+        "intent_sha256": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$",
+          "description": "SHA-256 hash of the intent payload"
+        },
+        "tongue_quorum": {
+          "type": "object",
+          "required": ["k", "n", "phi_weights"],
+          "properties": {
+            "k": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Required quorum threshold"
+            },
+            "n": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Total signers in the Sacred Tongue set"
+            },
+            "phi_weights": {
+              "type": "array",
+              "items": { "type": "number", "minimum": 0, "maximum": 1 },
+              "minItems": 1,
+              "description": "Golden-ratio (φ) weights for each signer"
+            }
+          },
+          "additionalProperties": false
+        },
+        "geoseal": {
+          "type": "object",
+          "required": ["scheme", "region", "proof"],
+          "properties": {
+            "scheme": {
+              "type": "string",
+              "pattern": "^GeoSeal@v\\d+$"
+            },
+            "region": {
+              "type": "string",
+              "description": "Poincaré ball region descriptor, e.g. Poincare-B(x,y)"
+            },
+            "proof": {
+              "type": "string",
+              "pattern": "^zkp:.+$",
+              "description": "Zero-knowledge proximity proof"
+            }
+          },
+          "additionalProperties": false
+        },
+        "timebox": {
+          "type": "object",
+          "required": ["t0", "delta_s"],
+          "properties": {
+            "t0": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Window start (ISO 8601)"
+            },
+            "delta_s": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Window duration in seconds"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "anchors": {
+      "type": "object",
+      "required": ["H0_envelope", "H1_merkle_root", "pq_sigs"],
+      "properties": {
+        "H0_envelope": {
+          "type": "string",
+          "pattern": "^sha3-256:[a-fA-F0-9]+$",
+          "description": "Domain-separated envelope hash"
+        },
+        "H1_merkle_root": {
+          "type": "string",
+          "pattern": "^sha3-256:[a-fA-F0-9]+$",
+          "description": "Merkle root of PQ signature evidence"
+        },
+        "pq_sigs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["alg", "signer", "sig"],
+            "properties": {
+              "alg": {
+                "type": "string",
+                "enum": [
+                  "ML-DSA-65", "Dilithium3",
+                  "ML-DSA-87", "Dilithium5",
+                  "Falcon-512", "Falcon-1024",
+                  "SPHINCS+-SHA2-128f", "SPHINCS+-SHAKE-256f"
+                ],
+                "description": "Post-quantum signature algorithm"
+              },
+              "signer": {
+                "type": "string",
+                "pattern": "^tongue:(KO|AV|RU|CA|UM|DR)$",
+                "description": "Sacred Tongue identifier of the signer"
+              },
+              "sig": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Base64-encoded signature bytes"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "h2_external": {
+          "type": "object",
+          "properties": {
+            "sigstore_bundle": {
+              "type": "string",
+              "description": "Base64-encoded Sigstore transparency bundle"
+            },
+            "sbom_digest": {
+              "type": "string",
+              "pattern": "^sha256:[a-fA-F0-9]+$",
+              "description": "SBOM content digest"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "gates": {
+      "type": "object",
+      "required": ["syntax", "integrity", "quorum", "geo_time", "policy"],
+      "properties": {
+        "syntax": {
+          "type": "string",
+          "enum": ["pass", "fail"]
+        },
+        "integrity": {
+          "type": "string",
+          "enum": ["pass", "fail"]
+        },
+        "quorum": {
+          "type": "object",
+          "required": ["pass", "k", "weighted_phi"],
+          "properties": {
+            "pass": { "type": "boolean" },
+            "k": { "type": "integer", "minimum": 0 },
+            "weighted_phi": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Aggregate φ-weighted quorum score"
+            }
+          },
+          "additionalProperties": false
+        },
+        "geo_time": {
+          "type": "string",
+          "enum": ["pass", "fail"]
+        },
+        "policy": {
+          "type": "object",
+          "required": ["decision", "risk"],
+          "properties": {
+            "decision": {
+              "type": "string",
+              "enum": ["allow", "quarantine", "escalate", "deny"]
+            },
+            "risk": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Risk score in [0,1] — lower is safer"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "hatch": {
+      "type": "object",
+      "required": ["boot_epoch", "kdf", "boot_key_fp", "attestation_A0"],
+      "properties": {
+        "boot_epoch": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Monotonic epoch counter (0 = first boot)"
+        },
+        "kdf": {
+          "type": "string",
+          "enum": ["HKDF-SHA3", "HKDF-SHA256"],
+          "description": "Key derivation function used for agent identity"
+        },
+        "boot_key_fp": {
+          "type": "string",
+          "pattern": "^fp:[a-fA-F0-9]+$",
+          "description": "Fingerprint of the derived boot key"
+        },
+        "attestation_A0": {
+          "type": "string",
+          "pattern": "^cose-sign1:.+$",
+          "description": "COSE_Sign1 encoded boot attestation"
+        }
+      },
+      "additionalProperties": false
+    },
+    "signature": {
+      "type": "object",
+      "required": ["alg", "signers", "sig"],
+      "properties": {
+        "alg": {
+          "type": "string",
+          "description": "Threshold PQ signature algorithm identifier"
+        },
+        "signers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "List of Sacred Tongue signers"
+        },
+        "sig": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Aggregate threshold signature"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

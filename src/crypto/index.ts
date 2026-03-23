@@ -21,3 +21,4 @@ export * from './platform.js';
 export * from './quantum-safe.js';
 export * from './pqc-strategies.js';
 export * from './aetherlex-seed.js';
+export * from './eggAttestValidator.js';
