@@ -35,9 +35,9 @@ from tests.adversarial.scbe_harness import (
 )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def calibrated_gate():
-    """Gate calibrated with clean baseline text."""
+    """Fresh gate calibrated with clean baseline text per test."""
     gate = SCBEDetectionGate()
     gate.calibrate([p["prompt"] for p in BASELINE_CLEAN])
     return gate

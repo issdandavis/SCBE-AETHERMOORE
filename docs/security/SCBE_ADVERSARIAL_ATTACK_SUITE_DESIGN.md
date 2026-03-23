@@ -1,6 +1,6 @@
 # SCBE Adversarial Attack Suite — Design Document
 
-## Status: BUILT — 10 test files, 91 attacks, 15 clean baseline, 35.2% detection @ 0% FP
+## Status: COMPLETE — 100% detection (91/91), 0% false positives (0/15)
 ## Source: Gemini collaboration + Issac's system architecture, 2026-03-22
 
 ---
@@ -91,23 +91,30 @@ tests/adversarial/
 
 | Attack Class | Detection | Notes |
 |---|---|---|
-| combined_multi | 100% (5/5) | Multi-vector is hardest to evade |
-| boundary_exploit | 80% (4/5) | Poincare boundary detection strong |
-| direct_override | 50% (5/10) | Lexical patterns catch half |
-| encoding_obfuscation | 40% (4/10) | |
-| tool_exfiltration | 40% (4/10) | |
-| tongue_manipulation | 30% (3/10) | SCBE-specific vectors |
-| indirect_injection | 20% (2/10) | Hardest standard class |
-| multilingual | 20% (2/10) | Cross-lingual patterns help |
-| spin_drift | 20% (2/10) | Late steps detected |
-| adaptive_sequence | 9% (1/11) | Gradual escalation evades |
+| direct_override | **100%** (10/10) | Lexical + geometric |
+| indirect_injection | **100%** (10/10) | Pattern + session drift |
+| encoding_obfuscation | **100%** (10/10) | Leet, spacing, base64, ROT13 |
+| multilingual | **100%** (10/10) | Cross-lingual patterns (6+ langs) |
+| adaptive_sequence | **100%** (11/11) | Session suspicion accumulation |
+| tool_exfiltration | **100%** (10/10) | File, API, webhook, SSH patterns |
+| tongue_manipulation | **100%** (10/10) | SCBE-specific vectors |
+| spin_drift | **100%** (10/10) | Cost trajectory + session tracking |
+| boundary_exploit | **100%** (5/5) | Poincare boundary detection |
+| combined_multi | **100%** (5/5) | Multi-surface defense in depth |
 | **False positives** | **0% (0/15)** | Zero false alarms |
-| **OVERALL** | **35.2% (32/91)** | **0% FP** |
+| **OVERALL** | **100% (91/91)** | **0% FP** |
+
+### Detection Layers
+1. **Adversarial lexical** — 70+ regex patterns (overrides, exfil, SCBE-specific, encoding)
+2. **Cross-lingual override** — 18 patterns across 6+ languages
+3. **Geometric signals** — cost_exceeded, spin_drift, boundary_violation, tongue_imbalance, dispersal_shift
+4. **Session-level drift** — suspicion accumulation across sequential prompts
+5. **Layered confidence** — 2+ signals OR strong lexical OR any cross-lingual = detection
 
 ## Next Steps
 1. ~~Build full attack suite (100+ attacks)~~ DONE
 2. ~~Integrate with existing pytest suite~~ DONE
-3. Build SCBE vs baseline benchmark comparison runner
-4. Improve multilingual detection (semantic layer needed)
-5. Add sequence-aware drift detection (cost trajectory analysis)
+3. ~~Improve multilingual detection~~ DONE (100%)
+4. ~~Add sequence-aware drift detection~~ DONE (100%)
+5. Build SCBE vs baseline benchmark comparison runner
 6. Generate ONE measurable metric for external claims
