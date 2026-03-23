@@ -14,6 +14,9 @@ on:
           - training-prep
           - full-pytest
 
+permissions:
+  contents: read
+
 jobs:
   overnight:
     runs-on: ubuntu-latest
@@ -32,34 +35,35 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install -r requirements.txt 2>/dev/null || true
-          pip install pytest hypothesis huggingface_hub 2>/dev/null || true
+          pip install -r requirements.txt || pip install pytest hypothesis huggingface_hub
 
       - name: Run overnight task
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TASK: ${{ inputs.task }}
         run: |
-          case "${{ inputs.task }}" in
+          mkdir -p artifacts
+          case "$TASK" in
             test-suite)
               echo "Running full test suite..."
-              python -m pytest tests/ -v --tb=short -x 2>&1 | tee artifacts/overnight_test_results.txt || true
+              python -m pytest tests/ -v --tb=short -x 2>&1 | tee artifacts/overnight_test_results.txt
               ;;
             attack-suite)
               echo "Running adversarial attack suite..."
-              python -m pytest tests/adversarial/ -v --tb=short 2>&1 | tee artifacts/overnight_attack_results.txt || true
+              python -m pytest tests/adversarial/ -v --tb=short 2>&1 | tee artifacts/overnight_attack_results.txt
               ;;
             book-review)
               echo "Running book review panel..."
-              python scripts/publish/roundtable_review.py --full 2>&1 | tee artifacts/overnight_book_review.txt || true
+              python scripts/publish/roundtable_review.py --full 2>&1 | tee artifacts/overnight_book_review.txt
               ;;
             training-prep)
               echo "Running training data pipeline..."
-              python -m pytest tests/ -m "not slow" -v --tb=short 2>&1 | tee artifacts/overnight_training_results.txt || true
+              python -m pytest tests/ -m "not slow" -v --tb=short 2>&1 | tee artifacts/overnight_training_results.txt
               ;;
             full-pytest)
               echo "Running ALL pytest tests..."
-              python -m pytest tests/ -v --tb=long 2>&1 | tee artifacts/overnight_full_pytest.txt || true
+              python -m pytest tests/ -v --tb=long 2>&1 | tee artifacts/overnight_full_pytest.txt
               ;;
           esac
 

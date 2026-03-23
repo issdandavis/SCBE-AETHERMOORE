@@ -14,8 +14,7 @@ jobs:
     if: >-
       github.actor == 'dependabot[bot]' ||
       github.actor == 'copilot-swe-agent' ||
-      github.actor == 'issdandavis' ||
-      github.event.pull_request.user.type == 'Bot'
+      github.actor == 'issdandavis'
     steps:
       - name: Approve PR
         uses: hmarr/auto-approve-action@v4

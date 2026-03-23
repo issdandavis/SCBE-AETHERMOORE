@@ -17,6 +17,9 @@ on:
     # Run full pipeline every night at 2 AM Pacific
     - cron: '0 10 * * *'
 
+permissions:
+  contents: read
+
 jobs:
   # ═══════════════════════════════════════════════════════════
   # TIER 1: Validate (5 min) — Lint, type check, basic sanity

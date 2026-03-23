@@ -24,11 +24,14 @@ jobs:
           prompt: "Please summarize this GitHub issue:\n\nTitle: ${{ github.event.issue.title }}\n\nBody: ${{ github.event.issue.body }}"
       - name: Comment with AI summary
         uses: actions/github-script@v7
+        env:
+          AI_RESPONSE: ${{ steps.summary.outputs.response }}
         with:
           script: |
+            const body = `🤖 **AI Issue Summary**\n\n${process.env.AI_RESPONSE}\n\n---\n*Generated automatically by the AI Issue Summary workflow*`;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `🤖 **AI Issue Summary**\n\n${{ steps.summary.outputs.response }}\n\n---\n*Generated automatically by the AI Issue Summary workflow*`
+              body
             })
