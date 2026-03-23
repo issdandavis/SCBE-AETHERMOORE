@@ -1,6 +1,6 @@
 # 🔐 AetherAuth Implementation - Notion & Perplexity Bridge
 
-> last-synced: 2026-03-16T07:37:03.760Z
+> last-synced: 2026-03-23T07:34:56.271Z
 
 # AetherAuth Implementation Guide
 
