@@ -1,0 +1,731 @@
+{
+  "generated_utc": "2026-03-23T13:56:27.993981+00:00",
+  "workspace": "/home/user/SCBE-AETHERMOORE",
+  "totals": {
+    "high": 31,
+    "medium": 22,
+    "low": 4,
+    "total": 57,
+    "workflow_count": 60
+  },
+  "workflows": [
+    {
+      "workflow": "ai-issue-summary.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "arxiv-paper-gen.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "auto-approve-trusted.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "auto-changelog.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "auto-merge-enable.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "auto-merge.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "auto-publish.yml",
+      "issue_count": 1,
+      "issues": [
+        {
+          "workflow": "auto-publish.yml",
+          "rule": "MASKED_ERROR_OR_ECHO (Error masking can hide failures and create false-positive success.)",
+          "severity": "high",
+          "line": 86,
+          "text": "PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo \"\")"
+        }
+      ]
+    },
+    {
+      "workflow": "auto-rebase-prs.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "auto-resolve-conflicts.yml",
+      "issue_count": 2,
+      "issues": [
+        {
+          "workflow": "auto-resolve-conflicts.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 40,
+          "text": "git merge origin/main --no-commit --no-ff 2>/dev/null || true"
+        },
+        {
+          "workflow": "auto-resolve-conflicts.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 45,
+          "text": "git merge --abort 2>/dev/null || true"
+        }
+      ]
+    },
+    {
+      "workflow": "auto-triage.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "ci.yml",
+      "issue_count": 3,
+      "issues": [
+        {
+          "workflow": "ci.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 102,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "ci.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 157,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "ci.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 161,
+          "text": "continue-on-error: true"
+        }
+      ]
+    },
+    {
+      "workflow": "cli-nightly-ops.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "cloud-kernel-data-pipeline.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "code-prism-parity.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "codeql-analysis.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "coherence-gate.yml",
+      "issue_count": 1,
+      "issues": [
+        {
+          "workflow": "coherence-gate.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 54,
+          "text": "continue-on-error: true"
+        }
+      ]
+    },
+    {
+      "workflow": "conflict-marker-guard.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "copilot-setup-steps.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "cross-repo-sync.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "daily-review.yml",
+      "issue_count": 8,
+      "issues": [
+        {
+          "workflow": "daily-review.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 52,
+          "text": "pytest tests/ -v --ignore=tests/node_modules 2>&1 || true"
+        },
+        {
+          "workflow": "daily-review.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 31,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "daily-review.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 35,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "daily-review.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 44,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "daily-review.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 49,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "daily-review.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 59,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "daily-review.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 64,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "daily-review.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 70,
+          "text": "continue-on-error: true"
+        }
+      ]
+    },
+    {
+      "workflow": "daily-social-updates.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "daily_ops.yml",
+      "issue_count": 2,
+      "issues": [
+        {
+          "workflow": "daily_ops.yml",
+          "rule": "SET_PLUS_E_WITHOUT_EXIT_HANDLING (set +e requires explicit status handling to avoid silent failures.)",
+          "severity": "low",
+          "line": 39,
+          "text": "set +e"
+        },
+        {
+          "workflow": "daily_ops.yml",
+          "rule": "SET_PLUS_E_WITHOUT_EXIT_HANDLING (set +e requires explicit status handling to avoid silent failures.)",
+          "severity": "low",
+          "line": 215,
+          "text": "set +e"
+        }
+      ]
+    },
+    {
+      "workflow": "deploy-aws.yml",
+      "issue_count": 5,
+      "issues": [
+        {
+          "workflow": "deploy-aws.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 175,
+          "text": "2>/dev/null || true"
+        },
+        {
+          "workflow": "deploy-aws.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 180,
+          "text": "2>/dev/null || true"
+        },
+        {
+          "workflow": "deploy-aws.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 266,
+          "text": "2>/dev/null || true"
+        },
+        {
+          "workflow": "deploy-aws.yml",
+          "rule": "MASKED_ERROR_OR_ECHO (Error masking can hide failures and create false-positive success.)",
+          "severity": "high",
+          "line": 129,
+          "text": "--query 'FunctionUrl' --output text 2>/dev/null || echo \"\")"
+        },
+        {
+          "workflow": "deploy-aws.yml",
+          "rule": "MASKED_ERROR_OR_ECHO (Error masking can hide failures and create false-positive success.)",
+          "severity": "high",
+          "line": 276,
+          "text": "curl -s \"${API_URL}/v1/health\" | jq . || echo \"Health check pending...\""
+        }
+      ]
+    },
+    {
+      "workflow": "deploy-cloudrun.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "deploy-eks.yml",
+      "issue_count": 3,
+      "issues": [
+        {
+          "workflow": "deploy-eks.yml",
+          "rule": "MASKED_ERROR_OR_ECHO (Error masking can hide failures and create false-positive success.)",
+          "severity": "high",
+          "line": 51,
+          "text": "kubectl apply -f k8s/agent-manifests/ || echo \"Agent manifests applied with warnings\""
+        },
+        {
+          "workflow": "deploy-eks.yml",
+          "rule": "MASKED_ERROR_OR_ECHO (Error masking can hide failures and create false-positive success.)",
+          "severity": "high",
+          "line": 70,
+          "text": "SVC_URL=$(kubectl get svc scbe-aethermoore-service -n scbe-aethermoore -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo \"\")"
+        },
+        {
+          "workflow": "deploy-eks.yml",
+          "rule": "MASKED_ERROR_OR_ECHO (Error masking can hide failures and create false-positive success.)",
+          "severity": "high",
+          "line": 73,
+          "text": "curl -s --max-time 10 \"http://$SVC_URL/\" || echo \"Service not yet reachable (LoadBalancer may need time)\""
+        }
+      ]
+    },
+    {
+      "workflow": "deploy-gke.yml",
+      "issue_count": 1,
+      "issues": [
+        {
+          "workflow": "deploy-gke.yml",
+          "rule": "MASKED_ERROR_OR_ECHO (Error masking can hide failures and create false-positive success.)",
+          "severity": "high",
+          "line": 118,
+          "text": "|| echo \" - Health check pending (service starting)\""
+        }
+      ]
+    },
+    {
+      "workflow": "docker-publish.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "docs.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "greetings.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "huggingface-sync.yml",
+      "issue_count": 4,
+      "issues": [
+        {
+          "workflow": "huggingface-sync.yml",
+          "rule": "MASKED_ERROR_OR_ECHO (Error masking can hide failures and create false-positive success.)",
+          "severity": "high",
+          "line": 41,
+          "text": "--token $HF_TOKEN || echo \"Primary sync failed, continuing...\""
+        },
+        {
+          "workflow": "huggingface-sync.yml",
+          "rule": "MASKED_ERROR_OR_ECHO (Error masking can hide failures and create false-positive success.)",
+          "severity": "high",
+          "line": 52,
+          "text": "--token $HF_TOKEN || echo \"Backup sync failed, continuing...\""
+        },
+        {
+          "workflow": "huggingface-sync.yml",
+          "rule": "MASKED_ERROR_OR_ECHO (Error masking can hide failures and create false-positive success.)",
+          "severity": "high",
+          "line": 70,
+          "text": "curl -sf https://huggingface.co/api/models/$PRIMARY_HF_REPO > /dev/null && echo \"Primary: OK\" || echo \"Primary: UNREACHABLE\""
+        },
+        {
+          "workflow": "huggingface-sync.yml",
+          "rule": "MASKED_ERROR_OR_ECHO (Error masking can hide failures and create false-positive success.)",
+          "severity": "high",
+          "line": 72,
+          "text": "curl -sf https://huggingface.co/api/models/$BACKUP_HF_REPO > /dev/null && echo \"Backup: OK\" || echo \"Backup: UNREACHABLE\""
+        }
+      ]
+    },
+    {
+      "workflow": "interface-pr-ops-runner.yml",
+      "issue_count": 1,
+      "issues": [
+        {
+          "workflow": "interface-pr-ops-runner.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 54,
+          "text": "wc -l pr_queue.jsonl || true"
+        }
+      ]
+    },
+    {
+      "workflow": "issue-triage.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "kindle-build.yml",
+      "issue_count": 2,
+      "issues": [
+        {
+          "workflow": "kindle-build.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 163,
+          "text": "ls kindle-app/android/app/build/outputs/bundle/release/*.aab 2>/dev/null && echo \"- Release AAB: uploaded (Play Store ready)\" >> $GITHUB_STEP_SUMMARY || true"
+        },
+        {
+          "workflow": "kindle-build.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 164,
+          "text": "ls kindle-app/android/app/build/outputs/apk/release/*.apk 2>/dev/null && echo \"- Release APK: uploaded (Amazon ready)\" >> $GITHUB_STEP_SUMMARY || true"
+        }
+      ]
+    },
+    {
+      "workflow": "labeler.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "manual.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "nightly-connector-health.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "nightly-multicloud-training.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "nightly-ops.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "notion-sync.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "notion-to-dataset.yml",
+      "issue_count": 1,
+      "issues": [
+        {
+          "workflow": "notion-to-dataset.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 93,
+          "text": "continue-on-error: true"
+        }
+      ]
+    },
+    {
+      "workflow": "npm-publish.yml",
+      "issue_count": 1,
+      "issues": [
+        {
+          "workflow": "npm-publish.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 71,
+          "text": "last_tag=$(git describe --tags --abbrev=0 2>/dev/null || true)"
+        }
+      ]
+    },
+    {
+      "workflow": "overnight-pipeline.yml",
+      "issue_count": 12,
+      "issues": [
+        {
+          "workflow": "overnight-pipeline.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 43,
+          "text": "pip install -r requirements.txt 2>/dev/null || pip install pytest hypothesis numpy 2>/dev/null || true"
+        },
+        {
+          "workflow": "overnight-pipeline.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 44,
+          "text": "npm ci 2>/dev/null || true"
+        },
+        {
+          "workflow": "overnight-pipeline.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 89,
+          "text": "run: pip install -r requirements.txt 2>/dev/null || pip install pytest hypothesis numpy scipy 2>/dev/null || true"
+        },
+        {
+          "workflow": "overnight-pipeline.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 139,
+          "text": "run: pip install -r requirements.txt 2>/dev/null || pip install pytest hypothesis numpy scipy huggingface_hub 2>/dev/null || true"
+        },
+        {
+          "workflow": "overnight-pipeline.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 194,
+          "text": "pip install -r requirements.txt 2>/dev/null || true"
+        },
+        {
+          "workflow": "overnight-pipeline.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 195,
+          "text": "npm ci 2>/dev/null || true"
+        },
+        {
+          "workflow": "overnight-pipeline.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 261,
+          "text": "run: pip install huggingface_hub datasets pytest numpy 2>/dev/null || true"
+        },
+        {
+          "workflow": "overnight-pipeline.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 348,
+          "text": "run: pip install huggingface_hub google-genai requests 2>/dev/null || true"
+        },
+        {
+          "workflow": "overnight-pipeline.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 96,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "overnight-pipeline.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 146,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "overnight-pipeline.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 201,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "overnight-pipeline.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 355,
+          "text": "continue-on-error: true"
+        }
+      ]
+    },
+    {
+      "workflow": "overnight-runner.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "pages-deploy.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "pqc-python.yml",
+      "issue_count": 1,
+      "issues": [
+        {
+          "workflow": "pqc-python.yml",
+          "rule": "MASKED_ERROR_OR_TRUE (Error masking can hide failing CI checks.)",
+          "severity": "high",
+          "line": 43,
+          "text": "ldconfig -p | grep oqs || true"
+        }
+      ]
+    },
+    {
+      "workflow": "premerge-triage.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "release-and-deploy.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "release.yml",
+      "issue_count": 2,
+      "issues": [
+        {
+          "workflow": "release.yml",
+          "rule": "MASKED_ERROR_OR_ECHO (Error masking can hide failures and create false-positive success.)",
+          "severity": "high",
+          "line": 40,
+          "text": "ls -la packages/ 2>/dev/null || echo \"No packages/ directory\""
+        },
+        {
+          "workflow": "release.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 52,
+          "text": "continue-on-error: true"
+        }
+      ]
+    },
+    {
+      "workflow": "scbe-gates.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "scbe-reusable-gates.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "scbe-tests.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "scbe.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "security-checks.yml",
+      "issue_count": 3,
+      "issues": [
+        {
+          "workflow": "security-checks.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 48,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "security-checks.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 56,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "security-checks.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 62,
+          "text": "continue-on-error: true"
+        }
+      ]
+    },
+    {
+      "workflow": "self-improvement-loop.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "six-tongues-tests.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "stale.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "validate-layer-manifest.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "vertex-training.yml",
+      "issue_count": 0,
+      "issues": []
+    },
+    {
+      "workflow": "weekly-security-audit.yml",
+      "issue_count": 4,
+      "issues": [
+        {
+          "workflow": "weekly-security-audit.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 121,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "weekly-security-audit.yml",
+          "rule": "CONTINUE_ON_ERROR (Non-failing CI jobs can conceal regressions.)",
+          "severity": "medium",
+          "line": 128,
+          "text": "continue-on-error: true"
+        },
+        {
+          "workflow": "weekly-security-audit.yml",
+          "rule": "SET_PLUS_E_WITHOUT_EXIT_HANDLING (set +e requires explicit status handling to avoid silent failures.)",
+          "severity": "low",
+          "line": 28,
+          "text": "set +e"
+        },
+        {
+          "workflow": "weekly-security-audit.yml",
+          "rule": "SET_PLUS_E_WITHOUT_EXIT_HANDLING (set +e requires explicit status handling to avoid silent failures.)",
+          "severity": "low",
+          "line": 94,
+          "text": "set +e"
+        }
+      ]
+    },
+    {
+      "workflow": "workflow-audit.yml",
+      "issue_count": 0,
+      "issues": []
+    }
+  ]
+}
