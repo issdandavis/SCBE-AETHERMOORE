@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Webtoon Viewer</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./static/icons/icon-192.png">
+<meta name="theme-color" content="#0f141b">
+<style>
+:root{
+  --bg:#0a0f15;
+  --panel:#f3efe7;
+  --text:#eef4fb;
+  --dim:rgba(238,244,251,.72);
+  --line:rgba(255,255,255,.14);
+  --accent:#17c6cf;
+  --sheet:rgba(8,12,18,.92);
+  --sheet-border:rgba(255,255,255,.08);
+  --font:"Segoe UI",system-ui,sans-serif;
+}
+
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  min-height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+}
+body{
+  overscroll-behavior-y:none;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+a{color:inherit}
+
+.viewer-app{
+  min-height:100vh;
+  background:var(--bg);
+}
+
+.top-hud{
+  position:fixed;
+  inset:0 0 auto 0;
+  z-index:20;
+  pointer-events:none;
+}
+
+.top-hud::before{
+  content:"";
+  display:block;
+  height:104px;
+  background:linear-gradient(180deg, rgba(0,0,0,.72), rgba(0,0,0,.18), transparent);
+}
+
+.hud-content{
+  position:absolute;
+  inset:0 0 auto 0;
+  padding:calc(env(safe-area-inset-top) + 10px) 12px 0;
+  opacity:1;
+  transform:translateY(0);
+  transition:opacity .18s ease, transform .18s ease;
+}
+
+body.ui-hidden .hud-content{
+  opacity:0;
+  transform:translateY(-8px);
+}
+
+.hud-row{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+  margin-bottom:8px;
+}
+
+.chapter-label{
+  font-size:13px;
+  font-weight:700;
+  line-height:1.3;
+  text-shadow:0 1px 4px rgba(0,0,0,.6);
+}
+
+.progress-label{
+  font-size:11px;
+  color:var(--dim);
+  white-space:nowrap;
+  text-shadow:0 1px 4px rgba(0,0,0,.6);
+}
+
+.variant-note{
+  margin-bottom:8px;
+  font-size:11px;
+  color:var(--dim);
+  text-shadow:0 1px 4px rgba(0,0,0,.6);
+}
+
+.variant-note.warn{
+  color:#ffd6a8;
+}
+
+.progress-track{
+  width:100%;
+  height:3px;
+  border-radius:999px;
+  overflow:hidden;
+  background:rgba(255,255,255,.12);
+}
+
+.progress-fill{
+  width:0%;
+  height:100%;
+  background:linear-gradient(90deg, var(--accent), #83dfff);
+}
+
+.viewer-stack{
+  background:var(--panel);
+  max-width:860px;
+  margin:0 auto;
+}
+
+.viewer-slice{
+  margin:0;
+  border-bottom:6px solid var(--panel);
+  background:#d9d2c7;
+  content-visibility:auto;
+  contain-intrinsic-size:720px 1280px;
+}
+
+.viewer-slice img{
+  display:block;
+  width:100%;
+  height:auto;
+  background:#fff;
+}
+
+.viewer-slice.loading{
+  min-height:220px;
+  position:relative;
+}
+
+.viewer-slice.loading::after{
+  content:"Loading panel...";
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#4e5d73;
+  font-size:12px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+
+.bottom-sheet{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:22;
+  padding:0 10px calc(env(safe-area-inset-bottom) + 12px);
+  pointer-events:none;
+}
+
+.sheet-card{
+  max-width:860px;
+  margin:0 auto;
+  border:1px solid var(--sheet-border);
+  border-radius:20px 20px 0 0;
+  background:var(--sheet);
+  backdrop-filter:blur(18px);
+  box-shadow:0 -14px 34px rgba(0,0,0,.32);
+  transform:translateY(calc(100% + 14px));
+  opacity:0;
+  transition:transform .2s ease, opacity .2s ease;
+  pointer-events:auto;
+}
+
+body.ui-visible .sheet-card{
+  transform:translateY(0);
+  opacity:1;
+}
+
+.sheet-handle{
+  width:42px;
+  height:4px;
+  border-radius:999px;
+  background:rgba(255,255,255,.22);
+  margin:10px auto 12px;
+}
+
+.sheet-body{
+  padding:0 14px 14px;
+}
+
+.sheet-grid{
+  display:grid;
+  grid-template-columns:1.2fr .8fr;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.field{
+  display:grid;
+  gap:6px;
+}
+
+.field label{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--dim);
+}
+
+.field select{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:rgba(255,255,255,.04);
+  color:var(--text);
+  padding:11px 12px;
+  font:inherit;
+}
+
+.sheet-links{
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  align-items:center;
+}
+
+.sheet-links a,
+.sheet-links button{
+  appearance:none;
+  border:0;
+  padding:0;
+  background:transparent;
+  color:var(--text);
+  font:inherit;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:.01em;
+  text-decoration:none;
+  cursor:pointer;
+}
+
+.sheet-links .muted{
+  color:var(--dim);
+}
+
+.tap-hint{
+  position:fixed;
+  left:50%;
+  bottom:calc(env(safe-area-inset-bottom) + 18px);
+  transform:translateX(-50%);
+  z-index:12;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(0,0,0,.44);
+  color:var(--dim);
+  font-size:11px;
+  letter-spacing:.02em;
+  transition:opacity .18s ease, transform .18s ease;
+}
+
+body.ui-visible .tap-hint,
+body.hint-hidden .tap-hint{
+  opacity:0;
+  transform:translateX(-50%) translateY(6px);
+}
+
+.story-toggle{
+  position:fixed;
+  right:12px;
+  bottom:calc(env(safe-area-inset-bottom) + 22px);
+  z-index:24;
+  appearance:none;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:999px;
+  background:rgba(8,12,18,.82);
+  color:var(--text);
+  padding:10px 14px;
+  font:700 12px/1 var(--font);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  box-shadow:0 10px 24px rgba(0,0,0,.24);
+  backdrop-filter:blur(14px);
+  cursor:pointer;
+}
+
+body.ui-visible .story-toggle{
+  bottom:calc(env(safe-area-inset-bottom) + 172px);
+}
+
+.story-drawer{
+  position:fixed;
+  inset:0;
+  z-index:25;
+  pointer-events:none;
+}
+
+.story-scrim{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.38);
+  opacity:0;
+  transition:opacity .2s ease;
+}
+
+.story-panel{
+  position:absolute;
+  top:0;
+  right:0;
+  width:min(380px, calc(100vw - 16px));
+  height:100%;
+  background:rgba(8,12,18,.96);
+  border-left:1px solid rgba(255,255,255,.08);
+  box-shadow:-20px 0 40px rgba(0,0,0,.34);
+  transform:translateX(100%);
+  transition:transform .22s ease;
+  display:flex;
+  flex-direction:column;
+}
+
+body.notes-open .story-drawer{
+  pointer-events:auto;
+}
+
+body.notes-open .story-scrim{
+  opacity:1;
+}
+
+body.notes-open .story-panel{
+  transform:translateX(0);
+}
+
+.story-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  padding:calc(env(safe-area-inset-top) + 16px) 16px 14px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.story-kicker{
+  margin-bottom:6px;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--dim);
+}
+
+.story-title{
+  margin:0;
+  font-size:20px;
+  line-height:1.2;
+}
+
+.story-close{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:999px;
+  background:transparent;
+  color:var(--text);
+  padding:8px 12px;
+  font:700 12px/1 var(--font);
+  cursor:pointer;
+}
+
+.story-scroll{
+  overflow:auto;
+  padding:14px 16px calc(env(safe-area-inset-bottom) + 24px);
+}
+
+.story-lead{
+  margin:0 0 14px;
+  color:var(--dim);
+  font-size:13px;
+  line-height:1.55;
+}
+
+.story-section{
+  margin-bottom:18px;
+}
+
+.story-section h3{
+  margin:0 0 8px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--dim);
+}
+
+.story-section p{
+  margin:0;
+  font-size:14px;
+  line-height:1.6;
+}
+
+.story-list{
+  margin:0;
+  padding:0;
+  list-style:none;
+  display:grid;
+  gap:10px;
+}
+
+.story-list li{
+  padding:12px 12px 11px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  background:rgba(255,255,255,.03);
+}
+
+.story-list strong{
+  display:block;
+  margin-bottom:6px;
+  font-size:13px;
+}
+
+.story-list span{
+  display:block;
+  font-size:12px;
+  line-height:1.55;
+  color:var(--dim);
+}
+
+body.notes-open{
+  overflow:hidden;
+}
+
+@media (max-width:760px){
+  .top-hud::before{
+    height:84px;
+  }
+  .hud-content{
+    padding:calc(env(safe-area-inset-top) + 8px) 10px 0;
+  }
+  .chapter-label{
+    font-size:12px;
+  }
+  .viewer-stack{
+    max-width:none;
+  }
+  .viewer-slice{
+    border-bottom-width:4px;
+  }
+  .bottom-sheet{
+    padding:0 0 calc(env(safe-area-inset-bottom) + 8px);
+  }
+  .sheet-card{
+    border-left:0;
+    border-right:0;
+    border-bottom:0;
+    border-radius:18px 18px 0 0;
+    max-width:none;
+  }
+  .sheet-grid{
+    grid-template-columns:1fr;
+  }
+  .story-toggle{
+    right:10px;
+    padding:10px 13px;
+  }
+  body.ui-visible .story-toggle{
+    bottom:calc(env(safe-area-inset-bottom) + 198px);
+  }
+  .story-panel{
+    top:auto;
+    right:0;
+    left:0;
+    bottom:0;
+    width:auto;
+    height:min(82vh, 760px);
+    border-left:0;
+    border-top:1px solid rgba(255,255,255,.08);
+    border-radius:18px 18px 0 0;
+    box-shadow:0 -18px 40px rgba(0,0,0,.34);
+    transform:translateY(100%);
+  }
+  body.notes-open .story-panel{
+    transform:translateY(0);
+  }
+  .story-header{
+    padding-top:18px;
+  }
+}
+</style>
+</head>
+<body class="ui-hidden">
+<div class="viewer-app" id="viewerApp">
+  <div class="top-hud" id="topHud">
+    <div class="hud-content">
+      <div class="hud-row">
+        <div class="chapter-label" id="chapterLabel">Loading chapter...</div>
+        <div class="progress-label" id="progressLabel">0%</div>
+      </div>
+      <div class="variant-note" id="variantNote">Loading view...</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+  </div>
+
+  <main class="viewer-stack" id="viewerStack"></main>
+
+  <div class="bottom-sheet">
+    <div class="sheet-card" id="sheetCard">
+      <div class="sheet-handle"></div>
+      <div class="sheet-body">
+        <div class="sheet-grid">
+          <div class="field">
+            <label for="chapterSelect">Chapter</label>
+            <select id="chapterSelect"></select>
+          </div>
+          <div class="field">
+            <label for="variantSelect">View</label>
+            <select id="variantSelect">
+              <option value="text">Text Overlay</option>
+              <option value="clean">Image Only</option>
+            </select>
+          </div>
+        </div>
+        <div class="sheet-links">
+          <button type="button" data-action="resume">Resume</button>
+          <button type="button" data-action="top">Top</button>
+          <button type="button" data-action="reset">Reset</button>
+          <button type="button" data-action="story">Story</button>
+          <span class="muted" id="savedLabel">No saved position yet.</span>
+          <a href="./polly-pad.html">Pad</a>
+          <a href="./ops.html">Ops</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tap-hint" id="tapHint">Tap once for controls</div>
+  <button type="button" class="story-toggle" id="storyToggle" aria-expanded="false" aria-controls="storyDrawer">Story</button>
+  <div class="story-drawer" id="storyDrawer" aria-hidden="true">
+    <div class="story-scrim" id="storyScrim"></div>
+    <aside class="story-panel" aria-labelledby="storyTitle">
+      <div class="story-header">
+        <div>
+          <div class="story-kicker">Story Notes</div>
+          <h2 class="story-title" id="storyTitle">Loading...</h2>
+        </div>
+        <button type="button" class="story-close" id="storyClose">Close</button>
+      </div>
+      <div class="story-scroll" id="storyBody">
+        <p class="story-lead">Loading adaptation notes...</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+let CHAPTERS = [];
+let STORY_NOTES = {};
+let viewerObserver = null;
+
+const KEYS = {
+  chapter: "scbe.viewer.chapter.v3",
+  variant: "scbe.viewer.variant.v3",
+  scroll: "scbe.viewer.scroll.v3",
+  uiHidden: "scbe.viewer.uiHidden.v3"
+};
+
+let saveTimer = 0;
+let hideTimer = 0;
+const QUERY = new URLSearchParams(window.location.search);
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("\"", "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function scrollKey(chapterId, variant) {
+  return `${KEYS.scroll}.${chapterId}.${variant}`;
+}
+
+function requestedChapterId() {
+  return QUERY.get("chapter") || "";
+}
+
+function requestedVariantId() {
+  return QUERY.get("variant") || "";
+}
+
+function syncQueryState() {
+  const chapter = activeChapter();
+  const variant = activeVariant();
+  if (!chapter || !variant) return;
+  const next = new URL(window.location.href);
+  next.searchParams.set("chapter", chapter.id);
+  next.searchParams.set("variant", variant);
+  history.replaceState({}, "", next.toString());
+}
+
+function activeChapter() {
+  return CHAPTERS.find((chapter) => chapter.id === document.getElementById("chapterSelect").value) || CHAPTERS[0] || null;
+}
+
+function activeVariant() {
+  const chapter = activeChapter();
+  const select = document.getElementById("variantSelect");
+  if (!chapter) return "";
+  return select.value || chapter.defaultVariant || Object.keys(chapter.variants || {})[0] || "";
+}
+
+function activeVariantConfig() {
+  const chapter = activeChapter();
+  if (!chapter) return null;
+  return chapter.variants?.[activeVariant()] || null;
+}
+
+function activeStoryNote() {
+  const chapter = activeChapter();
+  if (!chapter) return null;
+  return STORY_NOTES?.[chapter.id] || null;
+}
+
+function updateVariantNote() {
+  const note = document.getElementById("variantNote");
+  const variant = activeVariant();
+  const config = activeVariantConfig();
+  if (!note) return;
+  if (!config) {
+    note.textContent = "No active view.";
+    note.classList.remove("warn");
+    return;
+  }
+  if (variant === "hq") {
+    note.textContent = "Reference chapter panels. Use this lane as the working pacing and style anchor.";
+    note.classList.remove("warn");
+    return;
+  }
+  if (variant === "generated") {
+    note.textContent = "AI draft panels. Useful for rough staging, not the locked working pages.";
+    note.classList.add("warn");
+    return;
+  }
+  note.textContent = `${config.label} view`;
+  note.classList.remove("warn");
+}
+
+function renderStoryNotes() {
+  const chapter = activeChapter();
+  const note = activeStoryNote();
+  const titleNode = document.getElementById("storyTitle");
+  const bodyNode = document.getElementById("storyBody");
+  if (!titleNode || !bodyNode) return;
+
+  if (!chapter) {
+    titleNode.textContent = "Story Notes";
+    bodyNode.innerHTML = `<p class="story-lead">No chapter is active.</p>`;
+    return;
+  }
+
+  titleNode.textContent = note?.chapterTitle || chapter.title;
+
+  if (!note) {
+    bodyNode.innerHTML = `
+      <p class="story-lead">No storyboard notes are loaded for this chapter yet. Use this drawer for adaptation intent, pacing, and persona cues once the episode packet is ready.</p>
+    `;
+    return;
+  }
+
+  const visualRules = (note.visualRules || []).map((item) => `
+    <li><strong>${escapeHtml(item)}</strong></li>
+  `).join("");
+
+  const personaCues = (note.personaCues || []).map((item) => `
+    <li><strong>${escapeHtml(item)}</strong></li>
+  `).join("");
+
+  const beats = (note.beats || []).map((beat) => `
+    <li>
+      <strong>${escapeHtml(beat.title || "")}</strong>
+      <span>${escapeHtml(beat.visual || "")}</span>
+      <span>${escapeHtml(beat.subtext || "")}</span>
+    </li>
+  `).join("");
+
+  bodyNode.innerHTML = `
+    <p class="story-lead">${escapeHtml(note.adaptationFocus || "")}</p>
+    <section class="story-section">
+      <h3>Movie Cut</h3>
+      <p>${escapeHtml(note.movieCut || "")}</p>
+    </section>
+    <section class="story-section">
+      <h3>Why This Read Works</h3>
+      <p>${escapeHtml(note.whyItWorks || "")}</p>
+    </section>
+    <section class="story-section">
+      <h3>Working Visual Rules</h3>
+      <ul class="story-list">${visualRules}</ul>
+    </section>
+    <section class="story-section">
+      <h3>Persona Cues</h3>
+      <ul class="story-list">${personaCues}</ul>
+    </section>
+    <section class="story-section">
+      <h3>Beat Map</h3>
+      <ul class="story-list">${beats}</ul>
+    </section>
+  `;
+}
+
+function setStoryOpen(open) {
+  document.body.classList.toggle("notes-open", open);
+  document.getElementById("storyDrawer").setAttribute("aria-hidden", open ? "false" : "true");
+  document.getElementById("storyToggle").setAttribute("aria-expanded", open ? "true" : "false");
+}
+
+function totalScroll() {
+  return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+}
+
+function setUiVisible(visible) {
+  document.body.classList.toggle("ui-visible", visible);
+  document.body.classList.toggle("ui-hidden", !visible);
+  localStorage.setItem(KEYS.uiHidden, visible ? "0" : "1");
+  if (visible) {
+    document.body.classList.add("hint-hidden");
+    window.clearTimeout(hideTimer);
+    hideTimer = window.setTimeout(() => setUiVisible(false), 2600);
+  }
+}
+
+function updateProgress() {
+  const chapter = activeChapter();
+  const variant = activeVariant();
+  if (!chapter || !variant) return;
+  const current = Math.max(0, Math.round(window.scrollY));
+  const saved = Number(localStorage.getItem(scrollKey(chapter.id, variant)) || "0");
+  const pct = Math.max(0, Math.min(100, Math.round((current / totalScroll()) * 100)));
+  const savedPct = Math.max(0, Math.min(100, Math.round((saved / totalScroll()) * 100)));
+  document.getElementById("progressFill").style.width = `${pct}%`;
+  document.getElementById("progressLabel").textContent = `${pct}%`;
+  document.getElementById("savedLabel").textContent = saved > 0
+    ? `Saved ${savedPct}%`
+    : "No saved position yet.";
+}
+
+function savePosition() {
+  const chapter = activeChapter();
+  const variant = activeVariant();
+  if (!chapter || !variant) return;
+  localStorage.setItem(scrollKey(chapter.id, variant), String(Math.round(window.scrollY)));
+  updateProgress();
+}
+
+function showReaderError(message) {
+  document.getElementById("chapterLabel").textContent = "Reader unavailable";
+  document.getElementById("progressLabel").textContent = "--";
+  document.getElementById("variantNote").textContent = "Reader error";
+  document.getElementById("variantNote").classList.add("warn");
+  document.getElementById("savedLabel").textContent = message;
+  document.getElementById("progressFill").style.width = "0%";
+  document.getElementById("viewerStack").innerHTML = `
+    <section style="padding:28px 18px;color:#0f141b;background:#f3efe7;">
+      <h2 style="margin:0 0 10px;font:700 20px/1.2 'Segoe UI',system-ui,sans-serif;">Reader Error</h2>
+      <p style="margin:0;font:400 14px/1.6 'Segoe UI',system-ui,sans-serif;">${escapeHtml(message)}</p>
+    </section>
+  `;
+}
+
+function populateChapterSelect() {
+  document.getElementById("chapterSelect").innerHTML = CHAPTERS
+    .map((chapter) => `<option value="${escapeHtml(chapter.id)}">${escapeHtml(chapter.title)}</option>`)
+    .join("");
+}
+
+function populateVariantSelect(preferredVariant = "") {
+  const chapter = activeChapter();
+  const variantSelect = document.getElementById("variantSelect");
+  if (!chapter) {
+    variantSelect.innerHTML = "";
+    return;
+  }
+
+  const options = Object.entries(chapter.variants || {});
+  variantSelect.innerHTML = options
+    .map(([variantId, variant]) => `<option value="${escapeHtml(variantId)}">${escapeHtml(variant.label || variantId)}</option>`)
+    .join("");
+
+  const storedVariant = localStorage.getItem(KEYS.variant) || "";
+  const canonicalVariant = chapter.defaultVariant || "";
+  const forceDefaultVariant = Boolean(chapter.forceDefaultVariant);
+  const nextVariant =
+    (preferredVariant && chapter.variants[preferredVariant] && preferredVariant)
+    || (
+      !forceDefaultVariant
+      &&
+      storedVariant
+      && chapter.variants[storedVariant]
+      && !(storedVariant === "generated" && canonicalVariant && canonicalVariant !== "generated")
+      && storedVariant
+    )
+    || chapter.defaultVariant
+    || (options[0] && options[0][0])
+    || "";
+
+  variantSelect.value = nextVariant;
+}
+
+function renderViewer() {
+  const chapter = activeChapter();
+  const variant = activeVariant();
+  const variantConfig = activeVariantConfig();
+  if (!chapter || !variantConfig) {
+    showReaderError("No chapter variants are available in the reader catalog.");
+    return;
+  }
+  const slices = variantConfig.slices || [];
+  document.getElementById("chapterLabel").textContent = chapter.title;
+  updateVariantNote();
+  document.getElementById("viewerStack").innerHTML = slices.map((src, index) => `
+    <figure class="viewer-slice loading" data-src="${escapeHtml(src)}">
+      <img alt="${escapeHtml(chapter.title)} slice ${index + 1}" decoding="async">
+    </figure>
+  `).join("");
+  hydrateVisibleSlices();
+  localStorage.setItem(KEYS.chapter, chapter.id);
+  localStorage.setItem(KEYS.variant, variant);
+  syncQueryState();
+  renderStoryNotes();
+  updateProgress();
+}
+
+function hydrateVisibleSlices() {
+  if (viewerObserver) {
+    viewerObserver.disconnect();
+  }
+
+  viewerObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const figure = entry.target;
+      const img = figure.querySelector("img");
+      const src = figure.getAttribute("data-src");
+      if (img && src && !img.getAttribute("src")) {
+        img.setAttribute("src", src);
+        img.setAttribute("loading", "eager");
+        figure.classList.remove("loading");
+      }
+      viewerObserver.unobserve(figure);
+    });
+  }, {
+    root: null,
+    rootMargin: "800px 0px",
+    threshold: 0.01,
+  });
+
+  document.querySelectorAll(".viewer-slice").forEach((node, index) => {
+    if (index < 2) {
+      const img = node.querySelector("img");
+      const src = node.getAttribute("data-src");
+      if (img && src && !img.getAttribute("src")) {
+        img.setAttribute("src", src);
+        img.setAttribute("loading", "eager");
+        node.classList.remove("loading");
+      }
+      return;
+    }
+    viewerObserver.observe(node);
+  });
+}
+
+function resumePosition() {
+  const chapter = activeChapter();
+  const variant = activeVariant();
+  if (!chapter || !variant) return;
+  const saved = Number(localStorage.getItem(scrollKey(chapter.id, variant)) || "0");
+  window.scrollTo({ top: saved, behavior: "smooth" });
+}
+
+function resetPosition() {
+  const chapter = activeChapter();
+  const variant = activeVariant();
+  if (!chapter || !variant) return;
+  localStorage.removeItem(scrollKey(chapter.id, variant));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  updateProgress();
+}
+
+document.getElementById("chapterSelect").addEventListener("change", () => {
+  populateVariantSelect();
+  renderViewer();
+  setUiVisible(true);
+});
+document.getElementById("variantSelect").addEventListener("change", () => {
+  renderViewer();
+  setUiVisible(true);
+});
+
+document.querySelectorAll("[data-action]").forEach((node) => {
+  node.addEventListener("click", (event) => {
+    const action = event.currentTarget.getAttribute("data-action");
+    if (action === "resume") resumePosition();
+    if (action === "top") window.scrollTo({ top: 0, behavior: "smooth" });
+    if (action === "reset") resetPosition();
+    if (action === "story") setStoryOpen(true);
+    setUiVisible(false);
+  });
+});
+
+document.getElementById("storyToggle").addEventListener("click", (event) => {
+  event.stopPropagation();
+  setStoryOpen(!document.body.classList.contains("notes-open"));
+});
+
+document.getElementById("storyClose").addEventListener("click", () => setStoryOpen(false));
+document.getElementById("storyScrim").addEventListener("click", () => setStoryOpen(false));
+
+document.getElementById("viewerApp").addEventListener("click", (event) => {
+  if (event.target.closest(".sheet-card") || event.target.closest(".story-panel") || event.target.closest(".story-toggle")) return;
+  setUiVisible(!document.body.classList.contains("ui-visible"));
+});
+
+window.addEventListener("scroll", () => {
+  window.clearTimeout(saveTimer);
+  updateProgress();
+  saveTimer = window.setTimeout(savePosition, 120);
+}, { passive: true });
+
+window.addEventListener("resize", updateProgress);
+
+async function initViewer() {
+  try {
+    const [catalogResponse, notesResponse] = await Promise.all([
+      fetch("./manhwa/catalog.json?v=20260316-ch01-live", { cache: "no-store" }),
+      fetch("./manhwa/storyboard-notes.json?v=20260316-ch01-live", { cache: "no-store" }).catch(() => null),
+    ]);
+
+    if (!catalogResponse.ok) {
+      throw new Error(`catalog fetch failed: ${catalogResponse.status}`);
+    }
+    CHAPTERS = await catalogResponse.json();
+    if (!Array.isArray(CHAPTERS) || CHAPTERS.length === 0) {
+      throw new Error("catalog is empty");
+    }
+    if (notesResponse && notesResponse.ok) {
+      STORY_NOTES = await notesResponse.json();
+    }
+
+    populateChapterSelect();
+    const savedChapter = localStorage.getItem(KEYS.chapter);
+    const requestedChapter = requestedChapterId();
+    const initialChapter =
+      CHAPTERS.find((chapter) => chapter.id === requestedChapter)?.id
+      || CHAPTERS.find((chapter) => chapter.id === savedChapter)?.id
+      || CHAPTERS[0].id;
+    document.getElementById("chapterSelect").value = initialChapter;
+    populateVariantSelect(requestedVariantId() || "");
+    renderViewer();
+  } catch (error) {
+    console.error(error);
+    showReaderError(error?.message || "Unable to load manhwa catalog.");
+  }
+
+  document.body.classList.toggle("ui-hidden", localStorage.getItem(KEYS.uiHidden) !== "0");
+  document.body.classList.toggle("ui-visible", localStorage.getItem(KEYS.uiHidden) === "0");
+  window.setTimeout(() => document.body.classList.add("hint-hidden"), 2600);
+}
+
+initViewer();
+</script>
+</body>
+</html>

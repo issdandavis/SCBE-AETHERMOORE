@@ -1,0 +1,135 @@
+name: Programmatic HF Training
+
+on:
+  schedule:
+    - cron: '15 8 * * *'
+  workflow_dispatch:
+    inputs:
+      dataset_repo:
+        description: Hugging Face dataset repo
+        required: true
+        default: issdandavis/scbe-aethermoore-knowledge-base
+        type: string
+      backup_dataset_repo:
+        description: Optional backup dataset mirror repo
+        required: true
+        default: issdandavis/scbe-aethermoore-datasets
+        type: string
+      model_repo:
+        description: Hugging Face model repo
+        required: true
+        default: issdandavis/phdm-21d-embedding-next
+        type: string
+      publish_dataset:
+        description: Publish dataset package to the Hub
+        required: true
+        default: false
+        type: boolean
+      mirror_backup:
+        description: Mirror dataset package to backup repo
+        required: true
+        default: false
+        type: boolean
+      train_model:
+        description: Run the local lightweight training lane
+        required: true
+        default: true
+        type: boolean
+      push_model:
+        description: Upload model artifacts to the Hub
+        required: true
+        default: false
+        type: boolean
+      allow_quarantine:
+        description: Allow publish/train even if audit returns QUARANTINE
+        required: true
+        default: false
+        type: boolean
+      refresh_ingestion_pool:
+        description: Refresh the governed code/docs/notes ingestion pool first
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  programmatic-hf-training:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy datasets huggingface_hub pytest
+
+      - name: Run targeted tests
+        run: |
+          python -m pytest tests/test_programmatic_hf_training.py tests/test_push_to_hf.py -q
+
+      - name: Run programmatic training lane
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          set -euo pipefail
+          publish_dataset='${{ inputs.publish_dataset }}'
+          mirror_backup='${{ inputs.mirror_backup }}'
+          train_model='${{ inputs.train_model }}'
+          push_model='${{ inputs.push_model }}'
+          allow_quarantine='${{ inputs.allow_quarantine }}'
+          refresh_ingestion_pool='${{ inputs.refresh_ingestion_pool }}'
+          if [ "${GITHUB_EVENT_NAME}" = "schedule" ]; then
+            publish_dataset='true'
+            mirror_backup='true'
+            train_model='true'
+            push_model='false'
+            allow_quarantine='false'
+            refresh_ingestion_pool='true'
+          fi
+          cmd=(
+            python scripts/programmatic_hf_training.py
+            --dataset-repo "${{ inputs.dataset_repo }}"
+            --backup-dataset-repo "${{ inputs.backup_dataset_repo }}"
+            --model-repo "${{ inputs.model_repo }}"
+          )
+          if [ "$publish_dataset" = "true" ]; then
+            cmd+=(--publish-dataset)
+          fi
+          if [ "$mirror_backup" = "true" ]; then
+            cmd+=(--mirror-backup)
+          fi
+          if [ "$train_model" = "true" ]; then
+            cmd+=(--train-model)
+          fi
+          if [ "$push_model" = "true" ]; then
+            cmd+=(--push-model)
+          fi
+          if [ "$allow_quarantine" = "true" ]; then
+            cmd+=(--allow-quarantine)
+          fi
+          if [ "$refresh_ingestion_pool" != "true" ]; then
+            cmd+=(--skip-ingestion-pool-refresh)
+          fi
+          printf 'Running: %q ' "${cmd[@]}"
+          printf '\n'
+          "${cmd[@]}"
+
+      - name: Upload programmatic training artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: programmatic-hf-training
+          path: |
+            training/runs/programmatic_hf_training/**
+            training/runs/training_ingestion_pool/**
+            training/ingest/**
+            training/sft_records/sft_ingestion_pool.jsonl
+            training/ledgered/**
