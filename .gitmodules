@@ -3,7 +3,7 @@
 	url = https://github.com/issdandavis/aws-lambda-simple-web-app.git
 [submodule "external_repos/Spiralverse-AetherMoore"]
 	path = external_repos/Spiralverse-AetherMoore
-	url = git@github.com:issdandavis/Spiralverse-AetherMoore.git
+	url = https://github.com/issdandavis/Spiralverse-AetherMoore.git
 [submodule "external_repos/aws-lambda-simple-web-app"]
 	path = external_repos/aws-lambda-simple-web-app
 	url = https://github.com/issdandavis/aws-lambda-simple-web-app.git
@@ -27,13 +27,13 @@
 	url = https://github.com/issdandavis/spiralverse-protocol.git
 [submodule "external_repos/ai-workflow-architect"]
 	path = external_repos/ai-workflow-architect
-	url = git@github.com:issdandavis/Kiro_Version_ai-workflow-architect.git
+	url = https://github.com/issdandavis/Kiro_Version_ai-workflow-architect.git
 [submodule "external_repos/visual-computer-kindle-ai"]
 	path = external_repos/visual-computer-kindle-ai
-	url = git@github.com:issdandavis/visual-computer-kindle-ai.git
+	url = https://github.com/issdandavis/visual-computer-kindle-ai.git
 [submodule "external_repos/spiralverse-protocol"]
 	path = external_repos/spiralverse-protocol
-	url = git@github.com:issdandavis/spiralverse-protocol.git
+	url = https://github.com/issdandavis/spiralverse-protocol.git
 
 [submodule "packages/six-tongues-geoseal"]
 	path = packages/six-tongues-geoseal
