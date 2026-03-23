@@ -85,13 +85,22 @@ class Ledger:
         db_path: str = None,
         session_id: str = None
     ):
-        # Default to user's home directory
         if db_path is None:
-            hydra_dir = os.path.join(os.path.expanduser("~"), ".hydra")
-            os.makedirs(hydra_dir, exist_ok=True)
-            db_path = os.path.join(hydra_dir, "ledger.db")
+            db_path = os.environ.get("HYDRA_LEDGER_DB")
+        if db_path is None:
+            hydra_home = os.environ.get("HYDRA_HOME")
+            if hydra_home:
+                db_path = os.path.join(hydra_home, "ledger.db")
+            else:
+                hydra_home = os.path.join(os.path.expanduser("~"), ".hydra")
+                db_path = os.path.join(hydra_home, "ledger.db")
 
-        self.db_path = db_path
+        resolved_db_path = os.path.abspath(db_path)
+        db_dir = os.path.dirname(resolved_db_path)
+        if db_dir:
+            os.makedirs(db_dir, exist_ok=True)
+
+        self.db_path = resolved_db_path
         self.session_id = session_id or self._generate_session_id()
         self._lock = threading.Lock()
         self._secret = hashlib.sha256(f"hydra:{self.session_id}".encode()).hexdigest()

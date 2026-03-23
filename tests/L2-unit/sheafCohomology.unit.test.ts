@@ -15,7 +15,9 @@
 
 import { describe, it, expect } from 'vitest';
 
-describe.skip('Tarski Sheaf Cohomology (pending API exports)', () => { it('placeholder', () => {}); });
+describe.skip('Tarski Sheaf Cohomology (pending API exports)', () => {
+  it('placeholder', () => {});
+});
 /*
 import {
   // Lattices

@@ -32,20 +32,16 @@ import json
 import os
 import sys
 import hashlib
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 CROSSTALK_LANE = REPO_ROOT / "artifacts" / "agent_comm" / "github_lanes" / "cross_talk.jsonl"
 ACK_LANE = REPO_ROOT / "artifacts" / "agent_comm" / "github_lanes" / "cross_talk_acks.jsonl"
-OBSIDIAN_WORKSPACE = Path(
-    os.environ.get(
-        "OBSIDIAN_WORKSPACE",
-        r"C:\Users\issda\OneDrive\Documents\DOCCUMENTS\A follder\AI Workspace",
-    )
-)
-OBSIDIAN_CROSSTALK = OBSIDIAN_WORKSPACE / "Cross Talk.md"
+LEGACY_OBSIDIAN_WORKSPACE = Path(r"C:\Users\issda\OneDrive\Documents\DOCCUMENTS\A follder\AI Workspace")
+PACKET_CLASS_VALUES = {"internal", "external", "evidence", "governance"}
+RAIL_KEYS = ("P+", "P-", "D+", "D-")
 
 
 def _utc_now() -> str:
@@ -84,6 +80,156 @@ def _coalesce_cli_value(value: Optional[str], env_var: str, fallback: str) -> st
     return _default_env(env_var, fallback)
 
 
+def _parse_json_arg(raw: str, field_name: str) -> Dict[str, Any]:
+    cleaned = str(raw).strip()
+    if not cleaned:
+        return {}
+    try:
+        value = json.loads(cleaned)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"{field_name} must be valid JSON") from exc
+    if not isinstance(value, dict):
+        raise ValueError(f"{field_name} must decode to an object")
+    return value
+
+
+def _normalize_packet_class(packet_class: str) -> str:
+    cleaned = str(packet_class or "internal").strip().lower()
+    if cleaned not in PACKET_CLASS_VALUES:
+        allowed = ", ".join(sorted(PACKET_CLASS_VALUES))
+        raise ValueError(f"packet_class must be one of: {allowed}")
+    return cleaned
+
+
+def _normalize_rail_entries(entries: Any) -> List[Dict[str, Any]]:
+    if entries is None:
+        return []
+    if not isinstance(entries, list):
+        raise ValueError("rail entries must be arrays")
+    normalized: List[Dict[str, Any]] = []
+    for idx, entry in enumerate(entries, start=1):
+        if isinstance(entry, dict):
+            normalized.append(dict(entry))
+        elif isinstance(entry, str):
+            normalized.append({"type": "note", "message": entry})
+        else:
+            raise ValueError(f"rail entry {idx} must be object or string")
+    return normalized
+
+
+def _normalize_rails(rails: Optional[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+    raw = rails or {}
+    normalized: Dict[str, List[Dict[str, Any]]] = {}
+    for key in RAIL_KEYS:
+        normalized[key] = _normalize_rail_entries(raw.get(key, []))
+    extra_keys = sorted(k for k in raw.keys() if k not in RAIL_KEYS)
+    if extra_keys:
+        normalized["_extra"] = [{"type": "ignored_keys", "keys": extra_keys}]
+    return normalized
+
+
+def _normalize_lease(lease: Optional[Dict[str, Any]], worker_id: str, created_at: str) -> Optional[Dict[str, Any]]:
+    if not lease:
+        return None
+    owner = str(lease.get("owner", "")).strip() or worker_id
+    provider = str(lease.get("provider", "")).strip() or "local"
+    resource_class = str(lease.get("resource_class", "")).strip() or "browser"
+    lease_id = str(lease.get("lease_id", "")).strip() or f"lease-{_safe_token(owner)}-{_safe_token(provider)}"
+    lease_seconds = int(lease.get("lease_seconds", 0) or 0)
+    claimed_at_utc = str(lease.get("claimed_at_utc", "")).strip() or created_at
+    expires_at_utc = str(lease.get("expires_at_utc", "")).strip()
+    if not expires_at_utc and lease_seconds > 0:
+        claimed_dt = datetime.strptime(claimed_at_utc, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        expires_at_utc = (claimed_dt + timedelta(seconds=lease_seconds)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return {
+        "lease_id": lease_id,
+        "owner": owner,
+        "provider": provider,
+        "resource_class": resource_class,
+        "lease_seconds": lease_seconds,
+        "claimed_at_utc": claimed_at_utc,
+        "expires_at_utc": expires_at_utc or None,
+    }
+
+
+def _normalize_layer14(layer14: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    raw = dict(layer14 or {})
+    numeric_fields = (
+        "energy",
+        "centroid",
+        "flux",
+        "hf_ratio",
+        "stability",
+        "verification_score",
+        "anomaly_ratio",
+    )
+    normalized: Dict[str, Any] = {}
+    for field in numeric_fields:
+        if field in raw and raw[field] is not None:
+            normalized[field] = float(raw[field])
+    for field in ("signal_class", "channel", "summary"):
+        if field in raw and raw[field] is not None:
+            normalized[field] = str(raw[field])
+    return normalized
+
+
+def _normalize_ledger(ledger: Optional[Dict[str, Any]], packet_class: str) -> Dict[str, Any]:
+    raw = dict(ledger or {})
+    lane_targets = raw.get("lane_targets")
+    if not isinstance(lane_targets, list) or not lane_targets:
+        lane_targets = ["dated_json", "jsonl_bus", "obsidian"]
+    return {
+        "packet_class": packet_class,
+        "delivery_mode": str(raw.get("delivery_mode", "all_lanes")),
+        "lane_targets": [str(item) for item in lane_targets],
+        "channel": str(raw.get("channel", "cross_talk")),
+    }
+
+
+def _obsidian_config_path() -> Path:
+    appdata = os.environ.get("APPDATA", "")
+    if appdata:
+        return Path(appdata) / "Obsidian" / "obsidian.json"
+    return Path.home() / "AppData" / "Roaming" / "Obsidian" / "obsidian.json"
+
+
+def _load_obsidian_vaults(config_path: Path) -> List[Path]:
+    if not config_path.exists():
+        return []
+    try:
+        payload = json.loads(config_path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    vaults_obj = payload.get("vaults", {})
+    vault_paths: List[Path] = []
+    if isinstance(vaults_obj, dict):
+        for meta in vaults_obj.values():
+            if not isinstance(meta, dict):
+                continue
+            raw_path = str(meta.get("path", "")).strip()
+            if raw_path:
+                vault_paths.append(Path(raw_path))
+    return vault_paths
+
+
+def _resolve_obsidian_workspace() -> Path:
+    env_workspace = str(os.environ.get("OBSIDIAN_WORKSPACE", "")).strip()
+    if env_workspace:
+        env_path = Path(env_workspace)
+        if env_path.exists():
+            return env_path
+
+    for vault_path in _load_obsidian_vaults(_obsidian_config_path()):
+        if vault_path.exists():
+            return vault_path
+
+    return LEGACY_OBSIDIAN_WORKSPACE
+
+
+def _resolve_obsidian_crosstalk() -> Path:
+    return _resolve_obsidian_workspace() / "Cross Talk.md"
+
+
 # ── Emission ─────────────────────────────────────────────────────────
 
 def emit_packet(
@@ -102,6 +248,13 @@ def emit_packet(
     where: str = "",
     why: str = "",
     how: str = "",
+    packet_class: str = "internal",
+    mission_id: str = "",
+    worker_id: str = "",
+    lease: Optional[Dict[str, Any]] = None,
+    rails: Optional[Dict[str, Any]] = None,
+    layer14: Optional[Dict[str, Any]] = None,
+    ledger: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Emit a cross-talk packet to ALL lanes atomically. Returns delivery report."""
 
@@ -111,16 +264,25 @@ def emit_packet(
     safe_task = _safe_token(task_id, "general")
     safe_sender = _safe_token(sender, "agent")
     packet_id = f"cross-talk-{safe_sender}-{safe_task}-{stamp}"
+    normalized_packet_class = _normalize_packet_class(packet_class)
+    normalized_worker_id = str(worker_id).strip() or (codename or safe_sender)
+    normalized_rails = _normalize_rails(rails)
+    normalized_lease = _normalize_lease(lease, normalized_worker_id, created_at)
+    normalized_layer14 = _normalize_layer14(layer14)
+    normalized_ledger = _normalize_ledger(ledger, normalized_packet_class)
 
     packet = {
         "packet_id": packet_id,
         "created_at": created_at,
         "session_id": session_id or f"sess-{day}",
+        "mission_id": mission_id or task_id,
+        "worker_id": normalized_worker_id,
         "codename": codename or safe_sender,
         "sender": sender,
         "recipient": recipient,
         "intent": intent,
         "status": status,
+        "packet_class": normalized_packet_class,
         "repo": "SCBE-AETHERMOORE",
         "branch": branch,
         "task_id": task_id,
@@ -131,11 +293,16 @@ def emit_packet(
         "where": where,
         "why": why,
         "how": how,
+        "lease": normalized_lease,
+        "rails": normalized_rails,
+        "layer14": normalized_layer14,
+        "ledger": normalized_ledger,
         "gates": {"governance_packet": True, "tests_requested": []},
     }
 
     integrity_hash = _packet_hash(packet)
     packet["_integrity"] = integrity_hash
+    packet["ledger"]["integrity_hint"] = integrity_hash
 
     delivery = {"packet_id": packet_id, "lanes": {}}
 
@@ -160,20 +327,27 @@ def emit_packet(
 
     # Lane 3: Obsidian Cross Talk.md
     try:
-        if OBSIDIAN_CROSSTALK.parent.exists():
+        obsidian_crosstalk = _resolve_obsidian_crosstalk()
+        if obsidian_crosstalk.parent.exists():
             agent_short = sender.replace("agent.", "").capitalize()
             obsidian_entry = (
                 f"\n## {created_at} | {agent_short} | {task_id}\n\n"
                 f"**Status**: {status}\n"
+                f"**Packet Class**: {normalized_packet_class}\n"
                 f"**Intent**: {intent}\n"
+                f"**Mission**: {packet['mission_id']}\n"
+                f"**Worker**: {normalized_worker_id}\n"
                 f"**Summary**: {summary}\n"
                 f"**Proof**: {', '.join(proof or ['none'])}\n"
                 f"**Next**: {next_action or 'none'}\n"
+                f"**Packet ID**: {packet_id}\n"
                 f"**Integrity**: {integrity_hash}\n"
             )
-            with OBSIDIAN_CROSSTALK.open("a", encoding="utf-8") as f:
+            if not obsidian_crosstalk.exists():
+                obsidian_crosstalk.write_text("# Cross Talk\n", encoding="utf-8")
+            with obsidian_crosstalk.open("a", encoding="utf-8") as f:
                 f.write(obsidian_entry)
-            delivery["lanes"]["obsidian"] = {"ok": True, "path": str(OBSIDIAN_CROSSTALK)}
+            delivery["lanes"]["obsidian"] = {"ok": True, "path": str(obsidian_crosstalk)}
         else:
             delivery["lanes"]["obsidian"] = {"ok": False, "error": "Obsidian workspace not found"}
     except Exception as e:
@@ -186,6 +360,9 @@ def emit_packet(
     delivery["total_lanes"] = total_lanes
     delivery["all_delivered"] = ok_count == total_lanes
     delivery["integrity"] = integrity_hash
+    delivery["packet_class"] = normalized_packet_class
+    delivery["mission_id"] = packet["mission_id"]
+    delivery["worker_id"] = normalized_worker_id
 
     return delivery
 
@@ -228,8 +405,9 @@ def verify_packet(packet_id: str) -> Dict[str, Any]:
 
     # Check Obsidian — look for integrity hash or packet_id
     found_obsidian = False
-    if OBSIDIAN_CROSSTALK.exists():
-        content = OBSIDIAN_CROSSTALK.read_text(encoding="utf-8")
+    obsidian_crosstalk = _resolve_obsidian_crosstalk()
+    if obsidian_crosstalk.exists():
+        content = obsidian_crosstalk.read_text(encoding="utf-8")
         # First try packet_id, then try integrity hash from the dated JSON
         if packet_id in content:
             found_obsidian = True
@@ -334,6 +512,8 @@ def health_report() -> Dict[str, Any]:
     # JSONL bus stats
     bus_lines = 0
     latest_packet = None
+    packet_classes: Dict[str, int] = {}
+    mission_counts: Dict[str, int] = {}
     if CROSSTALK_LANE.exists():
         with CROSSTALK_LANE.open("r", encoding="utf-8") as f:
             for line in f:
@@ -343,6 +523,11 @@ def health_report() -> Dict[str, Any]:
                 bus_lines += 1
                 try:
                     latest_packet = json.loads(line)
+                    packet_class = str(latest_packet.get("packet_class", "internal"))
+                    mission = str(latest_packet.get("mission_id", "")).strip()
+                    packet_classes[packet_class] = packet_classes.get(packet_class, 0) + 1
+                    if mission:
+                        mission_counts[mission] = mission_counts.get(mission, 0) + 1
                 except json.JSONDecodeError:
                     pass
     report["lanes"]["jsonl_bus"] = {
@@ -350,6 +535,8 @@ def health_report() -> Dict[str, Any]:
         "total_packets": bus_lines,
         "latest_at": latest_packet.get("created_at", "") if latest_packet else "",
         "latest_task": latest_packet.get("task_id", "") if latest_packet else "",
+        "packet_classes": packet_classes,
+        "recent_missions": dict(sorted(mission_counts.items(), key=lambda item: item[1], reverse=True)[:10]),
     }
 
     # Dated JSON dirs
@@ -368,9 +555,12 @@ def health_report() -> Dict[str, Any]:
     }
 
     # Obsidian
+    obsidian_crosstalk = _resolve_obsidian_crosstalk()
     report["lanes"]["obsidian"] = {
-        "exists": OBSIDIAN_CROSSTALK.exists(),
-        "size_bytes": OBSIDIAN_CROSSTALK.stat().st_size if OBSIDIAN_CROSSTALK.exists() else 0,
+        "workspace": str(obsidian_crosstalk.parent),
+        "path": str(obsidian_crosstalk),
+        "exists": obsidian_crosstalk.exists(),
+        "size_bytes": obsidian_crosstalk.stat().st_size if obsidian_crosstalk.exists() else 0,
     }
 
     # ACK stats
@@ -427,6 +617,13 @@ def main():
     emit_p.add_argument("--where", default="")
     emit_p.add_argument("--why", default="")
     emit_p.add_argument("--how", default="")
+    emit_p.add_argument("--packet-class", default="internal")
+    emit_p.add_argument("--mission-id", default="")
+    emit_p.add_argument("--worker-id", default="")
+    emit_p.add_argument("--lease-json", default="")
+    emit_p.add_argument("--rails-json", default="")
+    emit_p.add_argument("--layer14-json", default="")
+    emit_p.add_argument("--ledger-json", default="")
 
     # verify
     verify_p = sub.add_parser("verify", help="Verify packet on all lanes")
@@ -453,6 +650,10 @@ def main():
         recipient = _coalesce_cli_value(args.recipient, "SCBE_CROSSTALK_RECIPIENT", "agent.claude")
         task_id = _coalesce_cli_value(args.task_id, "SCBE_CROSSTALK_TASK_ID", "NOTE")
         summary = _coalesce_cli_value(args.summary, "SCBE_CROSSTALK_SUMMARY", "Cross-talk note.")
+        lease = _parse_json_arg(args.lease_json, "lease_json")
+        rails = _parse_json_arg(args.rails_json, "rails_json")
+        layer14 = _parse_json_arg(args.layer14_json, "layer14_json")
+        ledger = _parse_json_arg(args.ledger_json, "ledger_json")
         result = emit_packet(
             sender=sender,
             recipient=recipient,
@@ -469,6 +670,13 @@ def main():
             where=args.where,
             why=args.why,
             how=args.how,
+            packet_class=args.packet_class,
+            mission_id=args.mission_id,
+            worker_id=args.worker_id,
+            lease=lease or None,
+            rails=rails or None,
+            layer14=layer14 or None,
+            ledger=ledger or None,
         )
         print(json.dumps(result, indent=2, default=str))
         if not result["all_delivered"]:

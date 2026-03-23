@@ -13,8 +13,15 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { PlaywrightBackend, createPlaywrightBackend } from '../../src/browser/playwright-backend.js';
-import type { BrowserSessionConfig, PageObservation, DOMElementState } from '../../src/browser/types.js';
+import {
+  PlaywrightBackend,
+  createPlaywrightBackend,
+} from '../../src/browser/playwright-backend.js';
+import type {
+  BrowserSessionConfig,
+  PageObservation,
+  DOMElementState,
+} from '../../src/browser/types.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Mock Playwright objects
@@ -185,9 +192,7 @@ describe('PlaywrightBackend', () => {
     it('A1: initialize launches browser with correct config', async () => {
       await backend.initialize(DEFAULT_SESSION_CONFIG);
 
-      expect(mocks.launchFn).toHaveBeenCalledWith(
-        expect.objectContaining({ headless: true })
-      );
+      expect(mocks.launchFn).toHaveBeenCalledWith(expect.objectContaining({ headless: true }));
       expect(mocks.browser.newContext).toHaveBeenCalledWith(
         expect.objectContaining({
           viewport: { width: 1280, height: 720 },
@@ -219,13 +224,9 @@ describe('PlaywrightBackend', () => {
     });
 
     it('A5: methods throw before initialize', async () => {
-      await expect(backend.navigate('https://example.com')).rejects.toThrow(
-        /not initialized/i
-      );
+      await expect(backend.navigate('https://example.com')).rejects.toThrow(/not initialized/i);
       await expect(backend.click('#btn')).rejects.toThrow(/not initialized/i);
-      await expect(backend.type('#input', 'text')).rejects.toThrow(
-        /not initialized/i
-      );
+      await expect(backend.type('#input', 'text')).rejects.toThrow(/not initialized/i);
       await expect(backend.observe()).rejects.toThrow(/not initialized/i);
     });
 
@@ -347,10 +348,9 @@ describe('PlaywrightBackend', () => {
 
     it('E2: scroll to selector uses evaluate with scrollIntoView', async () => {
       await backend.scroll({ selector: '#footer' });
-      expect(mocks.page.evaluate).toHaveBeenCalledWith(
-        expect.stringContaining('scrollIntoView'),
-        ['#footer']
-      );
+      expect(mocks.page.evaluate).toHaveBeenCalledWith(expect.stringContaining('scrollIntoView'), [
+        '#footer',
+      ]);
     });
 
     it('E3: scroll with no options defaults to delta y=300', async () => {

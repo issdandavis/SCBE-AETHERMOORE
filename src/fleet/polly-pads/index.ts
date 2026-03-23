@@ -44,20 +44,11 @@ export {
 } from './capability-store.js';
 
 // Mode Pad
-export {
-  ModePad,
-  type SacredTongue,
-  type ModePadConfig,
-  type MemoryEntry,
-} from './mode-pad.js';
+export { ModePad, type SacredTongue, type ModePadConfig, type MemoryEntry } from './mode-pad.js';
 
 // Specialist Mode Registry (lightweight mode system)
 // Specialist Modes (Dynamic Mode Switching) — legacy registry
-export {
-  ModeRegistry,
-  ALL_MODE_IDS,
-  type SpecialistModeId,
-} from './specialist-modes.js';
+export { ModeRegistry, ALL_MODE_IDS, type SpecialistModeId } from './specialist-modes.js';
 
 // Specialist Modes (Refactored Mode Classes & Types)
 export {
@@ -87,12 +78,7 @@ export {
 } from './mission-coordinator.js';
 
 // Squad Coordination (Byzantine Consensus)
-export {
-  Squad,
-  type ConsensusDecision,
-  type SquadProposal,
-  type SquadConfig,
-} from './squad.js';
+export { Squad, type ConsensusDecision, type SquadProposal, type SquadConfig } from './squad.js';
 
 // Specialist Modes (Class-based implementations)
 export {

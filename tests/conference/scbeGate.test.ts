@@ -24,7 +24,8 @@ function makeTestProject(overrides: Partial<ProjectCapsule> = {}): ProjectCapsul
     creatorId: 'user-1',
     title: 'VibeDB',
     tagline: 'A database for vibes — fast, weird, and beautiful',
-    description: 'VibeDB is a novel database engine that uses hyperbolic embeddings for semantic similarity. It supports real-time vector search with sub-millisecond latency and integrates with modern frontend frameworks.',
+    description:
+      'VibeDB is a novel database engine that uses hyperbolic embeddings for semantic similarity. It supports real-time vector search with sub-millisecond latency and integrates with modern frontend frameworks.',
     techStack: ['TypeScript', 'Rust', 'WebGPU', 'React'],
     repoUrl: 'https://github.com/example/vibedb',
     demoUrl: 'https://vibedb.dev',
@@ -127,7 +128,7 @@ describe('auditProject()', () => {
   it('returns 6 agent reports', () => {
     const result = auditProject(makeTestProject());
     expect(result.agents).toHaveLength(6);
-    const tongues = result.agents.map(a => a.tongue);
+    const tongues = result.agents.map((a) => a.tongue);
     expect(tongues).toEqual(expect.arrayContaining(['KO', 'AV', 'RU', 'CA', 'UM', 'DR']));
   });
 

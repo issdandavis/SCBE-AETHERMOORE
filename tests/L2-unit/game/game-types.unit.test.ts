@@ -149,8 +149,11 @@ describe('Canonical State (21D)', () => {
 describe('Companion System', () => {
   it('creates a companion with correct initial state', () => {
     const comp = createCompanion(
-      'test-1', 'crysling', 'Crysling',
-      'mono_CA', 'processor',
+      'test-1',
+      'crysling',
+      'Crysling',
+      'mono_CA',
+      'processor',
       [0.1, 0.1, 0.1, 0.6, 0.1, 0.1]
     );
     expect(comp.id).toBe('test-1');
@@ -163,7 +166,11 @@ describe('Companion System', () => {
 
   it('derives combat stats from canonical state', () => {
     const comp = createCompanion(
-      't', 'crysling', 'C', 'mono_CA', 'processor',
+      't',
+      'crysling',
+      'C',
+      'mono_CA',
+      'processor',
       [0.1, 0.1, 0.1, 0.6, 0.1, 0.1]
     );
     const stats = comp.derivedStats;
@@ -174,7 +181,11 @@ describe('Companion System', () => {
 
   it('applies tongue experience with unitarity preservation', () => {
     const comp = createCompanion(
-      't', 'crysling', 'C', 'mono_CA', 'processor',
+      't',
+      'crysling',
+      'C',
+      'mono_CA',
+      'processor',
       [0.1, 0.1, 0.1, 0.6, 0.1, 0.1]
     );
     const oldNorm = tongueNorm(comp.state.tonguePosition);
@@ -187,7 +198,11 @@ describe('Companion System', () => {
 
   it('applies combat results correctly (win)', () => {
     const comp = createCompanion(
-      't', 'crysling', 'C', 'mono_CA', 'processor',
+      't',
+      'crysling',
+      'C',
+      'mono_CA',
+      'processor',
       [0.1, 0.1, 0.1, 0.6, 0.1, 0.1]
     );
     const oldRadius = comp.state.radius;
@@ -199,7 +214,11 @@ describe('Companion System', () => {
 
   it('applies combat results correctly (loss)', () => {
     const comp = createCompanion(
-      't', 'crysling', 'C', 'mono_CA', 'processor',
+      't',
+      'crysling',
+      'C',
+      'mono_CA',
+      'processor',
       [0.1, 0.1, 0.1, 0.6, 0.1, 0.1]
     );
     applyCombatResult(comp, false, 5);
@@ -217,7 +236,11 @@ describe('Companion System', () => {
 
   it('detects over-evolution', () => {
     const comp = createCompanion(
-      't', 'crysling', 'C', 'mono_CA', 'processor',
+      't',
+      'crysling',
+      'C',
+      'mono_CA',
+      'processor',
       [0.1, 0.1, 0.1, 0.6, 0.1, 0.1]
     );
     expect(isOverEvolved(comp)).toBe(false);
@@ -227,7 +250,11 @@ describe('Companion System', () => {
 
   it('rest restores seal integrity and reduces drift', () => {
     const comp = createCompanion(
-      't', 'crysling', 'C', 'mono_CA', 'processor',
+      't',
+      'crysling',
+      'C',
+      'mono_CA',
+      'processor',
       [0.1, 0.1, 0.1, 0.6, 0.1, 0.1]
     );
     comp.sealIntegrity = 50;
@@ -276,7 +303,14 @@ describe('Combat System — Cl(4,0) Bivector', () => {
   });
 
   it('formation effectiveness checks λ₂ requirement', () => {
-    const comp = createCompanion('t', 'crysling', 'C', 'mono_CA', 'processor', [0.1, 0.1, 0.1, 0.6, 0.1, 0.1]);
+    const comp = createCompanion(
+      't',
+      'crysling',
+      'C',
+      'mono_CA',
+      'processor',
+      [0.1, 0.1, 0.1, 0.6, 0.1, 0.1]
+    );
     // Web formation requires λ₂ > 0.6
     const result = calculateFormationEffectiveness([comp], 'web', 0.3);
     expect(result.valid).toBe(false);
@@ -286,9 +320,14 @@ describe('Combat System — Cl(4,0) Bivector', () => {
 
   it('SCBE gates transform risk correctly', () => {
     const problem = {
-      problemId: 'test', topic: 'algebra', statement: 'x + 1 = 2',
-      constraints: [], solutionCheck: { type: 'symbolic' as const, expected: 'x=1' },
-      trapSignatures: [], difficulty: 1, tongueAffinity: 'CA' as const,
+      problemId: 'test',
+      topic: 'algebra',
+      statement: 'x + 1 = 2',
+      constraints: [],
+      solutionCheck: { type: 'symbolic' as const, expected: 'x=1' },
+      trapSignatures: [],
+      difficulty: 1,
+      tongueAffinity: 'CA' as const,
     };
     const encounter = createEncounter(problem);
     // Low risk action should be ALLOW
@@ -303,25 +342,53 @@ describe('Combat System — Cl(4,0) Bivector', () => {
 
 describe('Sacred Egg Hatching', () => {
   it('high KO triggers Ember Egg', () => {
-    const tongue = [0.7, 0.1, 0.1, 0.1, 0.1, 0.1] as [number, number, number, number, number, number];
+    const tongue = [0.7, 0.1, 0.1, 0.1, 0.1, 0.1] as [
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+    ];
     const results = checkHatchableEggs(tongue);
     expect(results.some((r) => r.eggType === 'mono_KO')).toBe(true);
   });
 
   it('balanced KO+DR triggers Eclipse Egg', () => {
-    const tongue = [0.45, 0.1, 0.1, 0.1, 0.1, 0.45] as [number, number, number, number, number, number];
+    const tongue = [0.45, 0.1, 0.1, 0.1, 0.1, 0.45] as [
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+    ];
     const results = checkHatchableEggs(tongue);
     expect(results.some((r) => r.eggType === 'hodge_eclipse')).toBe(true);
   });
 
   it('all tongues >= 0.35 triggers Prism Egg', () => {
-    const tongue = [0.4, 0.4, 0.4, 0.4, 0.4, 0.4] as [number, number, number, number, number, number];
+    const tongue = [0.4, 0.4, 0.4, 0.4, 0.4, 0.4] as [
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+    ];
     const results = checkHatchableEggs(tongue);
     expect(results.some((r) => r.eggType === 'omni_prism')).toBe(true);
   });
 
   it('low tongues hatch nothing', () => {
-    const tongue = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1] as [number, number, number, number, number, number];
+    const tongue = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1] as [
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+    ];
     const results = checkHatchableEggs(tongue);
     expect(results).toHaveLength(0);
   });
@@ -343,8 +410,22 @@ describe('Sacred Egg Hatching', () => {
 describe('Symbiotic Network', () => {
   it('computes algebraic connectivity for connected graph', () => {
     const net = new SymbioticNetwork();
-    const comp1 = createCompanion('a', 'crysling', 'A', 'mono_CA', 'processor', [0.6, 0.1, 0.1, 0.1, 0.1, 0.1]);
-    const comp2 = createCompanion('b', 'emberspark', 'B', 'mono_KO', 'amplifier', [0.1, 0.1, 0.1, 0.1, 0.1, 0.6]);
+    const comp1 = createCompanion(
+      'a',
+      'crysling',
+      'A',
+      'mono_CA',
+      'processor',
+      [0.6, 0.1, 0.1, 0.1, 0.1, 0.1]
+    );
+    const comp2 = createCompanion(
+      'b',
+      'emberspark',
+      'B',
+      'mono_KO',
+      'amplifier',
+      [0.1, 0.1, 0.1, 0.1, 0.1, 0.6]
+    );
     net.addCompanion(comp1);
     net.addCompanion(comp2);
     net.addBond('a', 'b', 5);
@@ -356,10 +437,31 @@ describe('Symbiotic Network', () => {
   it('Hodge dual pairs get 30% bond bonus', () => {
     const net = new SymbioticNetwork();
     // KO-dominant and DR-dominant (Hodge dual pair)
-    const compKO = createCompanion('ko', 's1', 'KO', 'mono_KO', 'amplifier', [0.8, 0.0, 0.0, 0.0, 0.0, 0.0]);
-    const compDR = createCompanion('dr', 's2', 'DR', 'mono_DR', 'architect', [0.0, 0.0, 0.0, 0.0, 0.0, 0.8]);
+    const compKO = createCompanion(
+      'ko',
+      's1',
+      'KO',
+      'mono_KO',
+      'amplifier',
+      [0.8, 0.0, 0.0, 0.0, 0.0, 0.0]
+    );
+    const compDR = createCompanion(
+      'dr',
+      's2',
+      'DR',
+      'mono_DR',
+      'architect',
+      [0.0, 0.0, 0.0, 0.0, 0.0, 0.8]
+    );
     // Non-Hodge pair
-    const compAV = createCompanion('av', 's3', 'AV', 'mono_AV', 'scout', [0.0, 0.8, 0.0, 0.0, 0.0, 0.0]);
+    const compAV = createCompanion(
+      'av',
+      's3',
+      'AV',
+      'mono_AV',
+      'scout',
+      [0.0, 0.8, 0.0, 0.0, 0.0, 0.0]
+    );
 
     net.addCompanion(compKO);
     net.addCompanion(compDR);
@@ -374,9 +476,30 @@ describe('Symbiotic Network', () => {
 
   it('network bonuses emerge from graph properties', () => {
     const net = new SymbioticNetwork();
-    const comp1 = createCompanion('a', 's1', 'A', 'mono_KO', 'amplifier', [0.6, 0.1, 0.1, 0.1, 0.1, 0.1]);
-    const comp2 = createCompanion('b', 's2', 'B', 'mono_CA', 'processor', [0.1, 0.1, 0.1, 0.6, 0.1, 0.1]);
-    const comp3 = createCompanion('c', 's3', 'C', 'mono_DR', 'architect', [0.1, 0.1, 0.1, 0.1, 0.1, 0.6]);
+    const comp1 = createCompanion(
+      'a',
+      's1',
+      'A',
+      'mono_KO',
+      'amplifier',
+      [0.6, 0.1, 0.1, 0.1, 0.1, 0.1]
+    );
+    const comp2 = createCompanion(
+      'b',
+      's2',
+      'B',
+      'mono_CA',
+      'processor',
+      [0.1, 0.1, 0.1, 0.6, 0.1, 0.1]
+    );
+    const comp3 = createCompanion(
+      'c',
+      's3',
+      'C',
+      'mono_DR',
+      'architect',
+      [0.1, 0.1, 0.1, 0.1, 0.1, 0.6]
+    );
     net.addCompanion(comp1);
     net.addCompanion(comp2);
     net.addCompanion(comp3);
@@ -392,7 +515,14 @@ describe('Symbiotic Network', () => {
 
   it('artifact governance gates by ds² threshold', () => {
     const net = new SymbioticNetwork();
-    const comp1 = createCompanion('a', 's', 'A', 'mono_CA', 'processor', [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]);
+    const comp1 = createCompanion(
+      'a',
+      's',
+      'A',
+      'mono_CA',
+      'processor',
+      [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+    );
     net.addCompanion(comp1);
 
     // Close to centroid → approved
@@ -404,7 +534,14 @@ describe('Symbiotic Network', () => {
 
   it('serializes and deserializes', () => {
     const net = new SymbioticNetwork();
-    const comp = createCompanion('a', 's', 'A', 'mono_CA', 'processor', [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]);
+    const comp = createCompanion(
+      'a',
+      's',
+      'A',
+      'mono_CA',
+      'processor',
+      [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+    );
     net.addCompanion(comp);
     const json = net.toJSON();
     const restored = SymbioticNetwork.fromJSON(json);
@@ -422,7 +559,14 @@ describe('Player Skill Tree', () => {
   });
 
   it('each path has 4 skills', () => {
-    for (const path of ['command', 'compute', 'entropy', 'structure', 'transport', 'security'] as const) {
+    for (const path of [
+      'command',
+      'compute',
+      'entropy',
+      'structure',
+      'transport',
+      'security',
+    ] as const) {
       expect(getSkillsForPath(path)).toHaveLength(4);
     }
   });
@@ -561,7 +705,14 @@ describe('Codex Terminal', () => {
       timestamp: Date.now(),
       category: 'math_reference' as const,
       query: 'test',
-      playerTongue: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5] as [number, number, number, number, number, number],
+      playerTongue: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5] as [
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+      ],
       playerFloor: 5,
       sessionDuration: 100,
     };

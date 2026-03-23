@@ -155,11 +155,7 @@ describe('createInvestigationWedge', () => {
   });
 
   it('sorts agents by trust (highest first at tip)', () => {
-    const agents = [
-      makeAgent('low', 0.2),
-      makeAgent('high', 0.9),
-      makeAgent('mid', 0.5),
-    ];
+    const agents = [makeAgent('low', 0.2), makeAgent('high', 0.9), makeAgent('mid', 0.5)];
     const f = mgr.createInvestigationWedge(agents, make21D({ 6: 1 }), make21D());
     // Leader should be the highest trust agent
     expect(f.positions[0].role).toBe('leader');
@@ -212,10 +208,7 @@ describe('createConsensusRing', () => {
   });
 
   it('positions vary with trust-weighted angles', () => {
-    const agents = [
-      makeAgent('high', 0.9),
-      makeAgent('low', 0.1),
-    ];
+    const agents = [makeAgent('high', 0.9), makeAgent('low', 0.1)];
     const f = mgr.createConsensusRing(agents, make21D());
     // Higher-trust agent gets more arc space
     // Both should have target positions but they should differ

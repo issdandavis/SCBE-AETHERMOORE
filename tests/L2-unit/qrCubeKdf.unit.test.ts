@@ -61,7 +61,7 @@ describe('π^φ KDF — Core contract', () => {
   });
 
   it('changing coherence changes key', () => {
-    const k1 = derivePiPhiKey(withOverrides({ coherence: 0.90 }));
+    const k1 = derivePiPhiKey(withOverrides({ coherence: 0.9 }));
     const k2 = derivePiPhiKey(withOverrides({ coherence: 0.91 }));
     expect(k1.equals(k2)).toBe(false);
   });
@@ -92,9 +92,7 @@ describe('π^φ KDF — Core contract', () => {
 
   it('changing context changes key (domain separation)', () => {
     const k1 = derivePiPhiKey(withOverrides({ context: Buffer.from('scbe:qr-cube:pi_phi:v1') }));
-    const k2 = derivePiPhiKey(
-      withOverrides({ context: Buffer.from('scbe:sacred-egg:pi_phi:v1') }),
-    );
+    const k2 = derivePiPhiKey(withOverrides({ context: Buffer.from('scbe:sacred-egg:pi_phi:v1') }));
     expect(k1.equals(k2)).toBe(false);
   });
 });
@@ -227,7 +225,7 @@ describe('π^φ KDF — Cross-language parity', () => {
   it('byte-for-byte parity: vector 1 (k32)', () => {
     const key = derivePiPhiKey(withOverrides({ outLen: 32 }));
     expect(key.toString('hex')).toBe(
-      '434715c507c065d3a4943fd5134e36641dd4a12736685caf942f125425eeff5a',
+      '434715c507c065d3a4943fd5134e36641dd4a12736685caf942f125425eeff5a'
     );
   });
 
@@ -237,16 +235,16 @@ describe('π^φ KDF — Cross-language parity', () => {
       '434715c507c065d3a4943fd5134e3664' +
         '1dd4a12736685caf942f125425eeff5a' +
         'ba98bee3e6cf55818708bf232dc457c9' +
-        'c66108d85cfaaead35e5e0790ee9ad53',
+        'c66108d85cfaaead35e5e0790ee9ad53'
     );
   });
 
   it('byte-for-byte parity: vector 2 (different d_star/coherence/cube_id)', () => {
     const key = derivePiPhiKey(
-      withOverrides({ dStar: 1.0, coherence: 0.5, cubeId: 'cube-999', outLen: 32 }),
+      withOverrides({ dStar: 1.0, coherence: 0.5, cubeId: 'cube-999', outLen: 32 })
     );
     expect(key.toString('hex')).toBe(
-      '39627b7e61364c07dbcc9d9cf653d67b3ca5f7ddc105b0bbdf53eedccad78756',
+      '39627b7e61364c07dbcc9d9cf653d67b3ca5f7ddc105b0bbdf53eedccad78756'
     );
   });
 });

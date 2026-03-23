@@ -185,12 +185,12 @@ export const DEFAULT_HARMONIC: HarmonicConstants = {
   tahsBound: 0.01,
   tongueCount: 6,
   tongueWeights: [
-    1.0,               // KO
-    PHI,               // AV  ≈ 1.618
-    PHI * PHI,         // RU  ≈ 2.618
-    PHI ** 3,          // CA  ≈ 4.236
-    PHI ** 4,          // UM  ≈ 6.854
-    PHI ** 5,          // DR  ≈ 11.090
+    1.0, // KO
+    PHI, // AV  ≈ 1.618
+    PHI * PHI, // RU  ≈ 2.618
+    PHI ** 3, // CA  ≈ 4.236
+    PHI ** 4, // UM  ≈ 6.854
+    PHI ** 5, // DR  ≈ 11.090
   ] as const,
 };
 
@@ -205,7 +205,7 @@ export const DEFAULT_TEMPORAL: TemporalConstants = {
 
 export const DEFAULT_TRUST: TrustConstants = {
   allowThreshold: 0.85,
-  quarantineThreshold: 0.40,
+  quarantineThreshold: 0.4,
   exileThreshold: 0.3,
   exileRounds: 10,
   quorumMinSignatures: 3,
@@ -294,14 +294,16 @@ export class MachineConstantsRegistry {
    * Apply a partial override to active constants (merge).
    * Useful for tuning individual parameters without replacing everything.
    */
-  tune(overrides: Partial<{
-    geometric: Partial<GeometricConstants>;
-    harmonic: Partial<HarmonicConstants>;
-    temporal: Partial<TemporalConstants>;
-    trust: Partial<TrustConstants>;
-    policy: Partial<PolicyConstants>;
-    entropy: Partial<EntropyConstants>;
-  }>): void {
+  tune(
+    overrides: Partial<{
+      geometric: Partial<GeometricConstants>;
+      harmonic: Partial<HarmonicConstants>;
+      temporal: Partial<TemporalConstants>;
+      trust: Partial<TrustConstants>;
+      policy: Partial<PolicyConstants>;
+      entropy: Partial<EntropyConstants>;
+    }>
+  ): void {
     const merged: MachineConstants = {
       geometric: { ...this._active.geometric, ...(overrides.geometric ?? {}) },
       harmonic: { ...this._active.harmonic, ...(overrides.harmonic ?? {}) },

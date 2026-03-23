@@ -309,9 +309,7 @@ describe('SwarmGeometry', () => {
     });
 
     it('goal force: robot with goal gets attracted toward it', () => {
-      sg.addRobot(
-        makeRobot({ id: 'r1', position: v(0, 0, 0), goal: v(10, 0, 0) })
-      );
+      sg.addRobot(makeRobot({ id: 'r1', position: v(0, 0, 0), goal: v(10, 0, 0) }));
       const robot = sg.getRobot('r1')!;
       const force = sg.computeGoalForce(robot);
 
@@ -322,18 +320,14 @@ describe('SwarmGeometry', () => {
     });
 
     it('goal force: magnitude is capped at 1 even for far goals', () => {
-      sg.addRobot(
-        makeRobot({ id: 'r1', position: v(0, 0, 0), goal: v(1000, 0, 0) })
-      );
+      sg.addRobot(makeRobot({ id: 'r1', position: v(0, 0, 0), goal: v(1000, 0, 0) }));
       const robot = sg.getRobot('r1')!;
       const force = sg.computeGoalForce(robot);
       expect(vecMag(force)).toBeCloseTo(1.0, 5);
     });
 
     it('goal force: very close to goal yields proportionally smaller force', () => {
-      sg.addRobot(
-        makeRobot({ id: 'r1', position: v(0, 0, 0), goal: v(0.3, 0, 0) })
-      );
+      sg.addRobot(makeRobot({ id: 'r1', position: v(0, 0, 0), goal: v(0.3, 0, 0) }));
       const robot = sg.getRobot('r1')!;
       const force = sg.computeGoalForce(robot);
       // dist = 0.3 < 1.0, so strength = 0.3

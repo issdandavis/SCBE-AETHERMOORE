@@ -105,7 +105,13 @@ describe('A. Algorithm Catalog', () => {
 
 describe('B. PQC Family Tradeoffs', () => {
   it('should cover all five families', () => {
-    const families: PQCFamily[] = ['lattice', 'hash-based', 'code-based', 'isogeny', 'multivariate'];
+    const families: PQCFamily[] = [
+      'lattice',
+      'hash-based',
+      'code-based',
+      'isogeny',
+      'multivariate',
+    ];
     for (const f of families) {
       expect(PQC_FAMILY_TRADEOFFS[f]).toBeDefined();
       expect(PQC_FAMILY_TRADEOFFS[f].scbeRecommendation).toBeTruthy();
@@ -300,8 +306,14 @@ describe('E. Algorithm Registry', () => {
     // Register custom (using another stub as mock)
     const custom: QuantumSafeKEM = {
       descriptor: stub.descriptor,
-      generateKeyPair: async () => ({ publicKey: new Uint8Array(1184), secretKey: new Uint8Array(2400) }),
-      encapsulate: async () => ({ ciphertext: new Uint8Array(1088), sharedSecret: new Uint8Array(32) }),
+      generateKeyPair: async () => ({
+        publicKey: new Uint8Array(1184),
+        secretKey: new Uint8Array(2400),
+      }),
+      encapsulate: async () => ({
+        ciphertext: new Uint8Array(1088),
+        sharedSecret: new Uint8Array(32),
+      }),
       decapsulate: async () => new Uint8Array(32),
     };
     registerKEM(custom);
@@ -315,7 +327,10 @@ describe('E. Algorithm Registry', () => {
     const stub = getSignature('SLH-DSA-128s');
     const custom: QuantumSafeSignature = {
       descriptor: stub.descriptor,
-      generateKeyPair: async () => ({ publicKey: new Uint8Array(32), secretKey: new Uint8Array(64) }),
+      generateKeyPair: async () => ({
+        publicKey: new Uint8Array(32),
+        secretKey: new Uint8Array(64),
+      }),
       sign: async () => new Uint8Array(7856),
       verify: async () => true,
     };
@@ -388,11 +403,9 @@ describe('F. QuantumSafeEnvelope — Default Config', () => {
 
   it('should reject stub verify (no native liboqs)', async () => {
     const est = await env.establish();
-    await expect(env.verify(
-      new TextEncoder().encode(est.bindingHash),
-      est.signature,
-      env.getSignerPublicKey()
-    )).rejects.toThrow('stub verify() is disabled');
+    await expect(
+      env.verify(new TextEncoder().encode(est.bindingHash), est.signature, env.getSignerPublicKey())
+    ).rejects.toThrow('stub verify() is disabled');
   });
 
   it('should decapsulate ciphertext', async () => {

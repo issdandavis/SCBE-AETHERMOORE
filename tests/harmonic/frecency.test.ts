@@ -110,7 +110,14 @@ describe('FrecencyEngine - basic recording and scoring', () => {
     const score = engine.recordAccess('ctx', coherence, now);
 
     // First access: frequency=1, recency=1.0
-    const expected = expectedIncrement(DEFAULT_ALPHA, DEFAULT_BETA, DEFAULT_GAMMA, 1, 1.0, coherence);
+    const expected = expectedIncrement(
+      DEFAULT_ALPHA,
+      DEFAULT_BETA,
+      DEFAULT_GAMMA,
+      1,
+      1.0,
+      coherence
+    );
     expect(score).toBeCloseTo(expected, 8);
   });
 
@@ -551,9 +558,9 @@ describe('FrecencyEngine - maxEntries eviction', () => {
     const t0 = 0;
 
     // Record three entries with different scores by varying coherence
-    engine.recordAccess('low', 0.0, t0);   // lowest score
+    engine.recordAccess('low', 0.0, t0); // lowest score
     engine.recordAccess('mid', 0.5, t0);
-    engine.recordAccess('high', 1.0, t0);  // highest score
+    engine.recordAccess('high', 1.0, t0); // highest score
 
     // Adding a fourth entry should evict 'low'
     engine.recordAccess('new', 0.5, t0);

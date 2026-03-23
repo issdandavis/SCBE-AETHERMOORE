@@ -104,7 +104,7 @@ function reliabilityWeight(vec: readonly number[], eps: number = 1e-8): number {
  */
 export function computeMMX(
   features: Record<string, readonly number[]>,
-  options?: ComputeMMXOptions,
+  options?: ComputeMMXOptions
 ): MMXResult {
   const agreementFloor = options?.agreementFloor ?? 0.5;
   const prevAlignment = options?.prevAlignment ?? null;
@@ -124,7 +124,7 @@ export function computeMMX(
     if (vecs[i].length !== dim) {
       throw new Error(
         `Dimension mismatch: modality '${labels[0]}' has dim=${dim}, ` +
-          `but '${labels[i]}' has dim=${vecs[i].length}`,
+          `but '${labels[i]}' has dim=${vecs[i].length}`
       );
     }
   }

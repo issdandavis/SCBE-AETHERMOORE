@@ -221,9 +221,7 @@ describe('L2-UNIT: SquadSpace', () => {
   it('should compute risk field per unit', () => {
     const squad = new SquadSpace('risk');
     squad.setUnit(createUnitState('safe', 0, 0, 0, { coherence: 0.9, dStar: 0.1, hEff: 10 }));
-    squad.setUnit(
-      createUnitState('danger', 0, 0, 0, { coherence: 0.1, dStar: 5.0, hEff: 1e7 })
-    );
+    squad.setUnit(createUnitState('danger', 0, 0, 0, { coherence: 0.1, dStar: 5.0, hEff: 1e7 }));
     const field = squad.riskField();
     expect(field.get('safe')).toBe('ALLOW');
     expect(field.get('danger')).toBe('DENY');

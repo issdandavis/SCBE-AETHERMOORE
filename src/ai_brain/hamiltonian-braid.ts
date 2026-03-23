@@ -70,27 +70,20 @@ import type { TernaryValue, DualTernaryState } from './dual-ternary.js';
  * Maps 1:1 to the dual ternary {-1,0,+1}² phase diagram.
  */
 export type BraidState =
-  | 'RESONANT_LOCK'      // (+1, +1) — maximum trust, fast path
-  | 'FORWARD_THRUST'     // (+1,  0) — high trust, standard path
+  | 'RESONANT_LOCK' // (+1, +1) — maximum trust, fast path
+  | 'FORWARD_THRUST' // (+1,  0) — high trust, standard path
   | 'CREATIVE_TENSION_A' // (+1, -1) — asymmetric, needs inspection
-  | 'PERPENDICULAR_POS'  // ( 0, +1) — low trust, re-anchor (+)
-  | 'ZERO_GRAVITY'       // ( 0,  0) — consensus hold
-  | 'PERPENDICULAR_NEG'  // ( 0, -1) — low trust, re-anchor (-)
+  | 'PERPENDICULAR_POS' // ( 0, +1) — low trust, re-anchor (+)
+  | 'ZERO_GRAVITY' // ( 0,  0) — consensus hold
+  | 'PERPENDICULAR_NEG' // ( 0, -1) — low trust, re-anchor (-)
   | 'CREATIVE_TENSION_B' // (-1, +1) — asymmetric, needs inspection
-  | 'BACKWARD_CHECK'     // (-1,  0) — audit mode, rollback
+  | 'BACKWARD_CHECK' // (-1,  0) — audit mode, rollback
   | 'COLLAPSE_ATTRACTOR'; // (-1, -1) — hard denial
 
 /**
  * Trust level associated with each braid state.
  */
-export type TrustLevel =
-  | 'maximum'
-  | 'high'
-  | 'medium'
-  | 'consensus'
-  | 'low'
-  | 'audit'
-  | 'block';
+export type TrustLevel = 'maximum' | 'high' | 'medium' | 'consensus' | 'low' | 'audit' | 'block';
 
 /**
  * Security action prescribed by each braid state.
@@ -182,30 +175,44 @@ export function classifyBraidState(primary: TernaryValue, mirror: TernaryValue):
 /** Map braid state to trust level. */
 export function braidTrustLevel(state: BraidState): TrustLevel {
   switch (state) {
-    case 'RESONANT_LOCK': return 'maximum';
-    case 'FORWARD_THRUST': return 'high';
+    case 'RESONANT_LOCK':
+      return 'maximum';
+    case 'FORWARD_THRUST':
+      return 'high';
     case 'CREATIVE_TENSION_A':
-    case 'CREATIVE_TENSION_B': return 'medium';
-    case 'ZERO_GRAVITY': return 'consensus';
+    case 'CREATIVE_TENSION_B':
+      return 'medium';
+    case 'ZERO_GRAVITY':
+      return 'consensus';
     case 'PERPENDICULAR_POS':
-    case 'PERPENDICULAR_NEG': return 'low';
-    case 'BACKWARD_CHECK': return 'audit';
-    case 'COLLAPSE_ATTRACTOR': return 'block';
+    case 'PERPENDICULAR_NEG':
+      return 'low';
+    case 'BACKWARD_CHECK':
+      return 'audit';
+    case 'COLLAPSE_ATTRACTOR':
+      return 'block';
   }
 }
 
 /** Map braid state to security action. */
 export function braidSecurityAction(state: BraidState): SecurityAction {
   switch (state) {
-    case 'RESONANT_LOCK': return 'INSTANT_APPROVE';
-    case 'FORWARD_THRUST': return 'STANDARD_PATH';
+    case 'RESONANT_LOCK':
+      return 'INSTANT_APPROVE';
+    case 'FORWARD_THRUST':
+      return 'STANDARD_PATH';
     case 'CREATIVE_TENSION_A':
-    case 'CREATIVE_TENSION_B': return 'FRACTAL_INSPECT';
-    case 'ZERO_GRAVITY': return 'HOLD_QUORUM';
+    case 'CREATIVE_TENSION_B':
+      return 'FRACTAL_INSPECT';
+    case 'ZERO_GRAVITY':
+      return 'HOLD_QUORUM';
     case 'PERPENDICULAR_POS':
-    case 'PERPENDICULAR_NEG': return 'REANCHOR';
-    case 'BACKWARD_CHECK': return 'ROLLBACK';
-    case 'COLLAPSE_ATTRACTOR': return 'HARD_DENY';
+    case 'PERPENDICULAR_NEG':
+      return 'REANCHOR';
+    case 'BACKWARD_CHECK':
+      return 'ROLLBACK';
+    case 'COLLAPSE_ATTRACTOR':
+      return 'HARD_DENY';
   }
 }
 
@@ -247,10 +254,7 @@ export function mirrorSwap(v: readonly [number, number]): [number, number] {
 export function mirrorShift(v: readonly [number, number], phi: number): [number, number] {
   const c = Math.cos(phi);
   const s = Math.sin(phi);
-  return [
-    v[0] * c + v[1] * s,
-    v[0] * s + v[1] * c,
-  ];
+  return [v[0] * c + v[1] * s, v[0] * s + v[1] * c];
 }
 
 /**
@@ -342,8 +346,8 @@ export function estimateBraidFractalDimension(
   }
 
   // Linear regression in log-log space: log(N) = d * log(1/ε) + c
-  const logEps = counts.map(c => Math.log(1 / c.scale));
-  const logN = counts.map(c => Math.log(c.count));
+  const logEps = counts.map((c) => Math.log(1 / c.scale));
+  const logN = counts.map((c) => Math.log(c.count));
 
   const n = logEps.length;
   const sumX = logEps.reduce((s, x) => s + x, 0);
@@ -369,10 +373,7 @@ export function estimateBraidFractalDimension(
  *
  * This is the geometric "0" from binary — the void where no edge exists.
  */
-export function harmonicTubeCost(
-  distanceFromCenter: number,
-  tubeRadius: number
-): number {
+export function harmonicTubeCost(distanceFromCenter: number, tubeRadius: number): number {
   if (distanceFromCenter <= tubeRadius) return 0;
   const excess = distanceFromCenter - tubeRadius;
   return Math.pow(PHI, excess * excess);
@@ -381,10 +382,7 @@ export function harmonicTubeCost(
 /**
  * Check whether a vector is inside the trust tube.
  */
-export function isInsideTube(
-  v: readonly [number, number],
-  tubeRadius: number
-): boolean {
+export function isInsideTube(v: readonly [number, number], tubeRadius: number): boolean {
   return zeroGravityDistance(v) <= tubeRadius;
 }
 
@@ -438,10 +436,7 @@ export function ternaryCenter(t: TernaryValue, threshold: number = 0.33): number
  * discrete governance region. Small deviation = stable governance;
  * large deviation = near a phase boundary (transition risk).
  */
-export function phaseDeviation(
-  v: readonly [number, number],
-  threshold: number = 0.33
-): number {
+export function phaseDeviation(v: readonly [number, number], threshold: number = 0.33): number {
   const qp = quantize(v[0], threshold);
   const qm = quantize(v[1], threshold);
   const cp = ternaryCenter(qp, threshold);
@@ -459,10 +454,7 @@ export function phaseDeviation(
  * Compute the constraint range for a ternary value.
  * Returns [min, max] for the continuous region consistent with the phase.
  */
-function phaseRange(
-  t: TernaryValue,
-  threshold: number
-): [number, number] {
+function phaseRange(t: TernaryValue, threshold: number): [number, number] {
   if (t === 1) return [threshold, 1.0];
   if (t === -1) return [-1.0, -threshold];
   return [-threshold, threshold];
@@ -599,28 +591,16 @@ export function dBraid(
  *
  * Adjacent transitions include horizontal, vertical, and diagonal moves.
  */
-export function isValidBraidTransition(
-  from: DualTernaryState,
-  to: DualTernaryState
-): boolean {
-  return (
-    Math.abs(from.primary - to.primary) <= 1 &&
-    Math.abs(from.mirror - to.mirror) <= 1
-  );
+export function isValidBraidTransition(from: DualTernaryState, to: DualTernaryState): boolean {
+  return Math.abs(from.primary - to.primary) <= 1 && Math.abs(from.mirror - to.mirror) <= 1;
 }
 
 /**
  * Compute the governance distance between two braid states.
  * Returns Chebyshev distance in the 3×3 ternary grid (0, 1, or 2).
  */
-export function braidStateDistance(
-  from: DualTernaryState,
-  to: DualTernaryState
-): number {
-  return Math.max(
-    Math.abs(from.primary - to.primary),
-    Math.abs(from.mirror - to.mirror)
-  );
+export function braidStateDistance(from: DualTernaryState, to: DualTernaryState): number {
+  return Math.max(Math.abs(from.primary - to.primary), Math.abs(from.mirror - to.mirror));
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -675,8 +655,7 @@ export class AetherBraid {
   } {
     // Spin coherence: dot product for alignment
     const coherence =
-      primaryVector[0] * orthogonalVector[0] +
-      primaryVector[1] * orthogonalVector[1];
+      primaryVector[0] * orthogonalVector[0] + primaryVector[1] * orthogonalVector[1];
 
     // Combined vector for tube check
     const combined: [number, number] = [
@@ -704,10 +683,7 @@ export class AetherBraid {
    * because the golden ratio is the fixed point of the continued fraction
    * expansion, which is exactly what iterated MSR produces.
    */
-  iterateCycle(
-    initial: readonly [number, number],
-    maxSteps?: number
-  ): BraidCycleResult {
+  iterateCycle(initial: readonly [number, number], maxSteps?: number): BraidCycleResult {
     const steps = maxSteps ?? this.config.maxIterations;
     const trajectory: Array<[number, number]> = [[initial[0], initial[1]]];
     let v: [number, number] = [initial[0], initial[1]];
@@ -715,7 +691,7 @@ export class AetherBraid {
 
     for (let i = 0; i < steps; i++) {
       // 1. Mirror shift — golden ratio angle rotation
-      const phi = ((i * PHI) % (Math.PI / 2));
+      const phi = (i * PHI) % (Math.PI / 2);
       v = mirrorShift(v, phi * this.config.shiftScale);
 
       // 2. Zero-gravity convergence check
@@ -775,20 +751,14 @@ export class AetherBraid {
    * Phase-aware projection using the instance's threshold.
    * Projects v onto the constraint manifold for the given (or auto-detected) phase.
    */
-  project(
-    v: readonly [number, number],
-    phase?: DualTernaryState
-  ): [number, number] {
+  project(v: readonly [number, number], phase?: DualTernaryState): [number, number] {
     return phaseAwareProject(v, phase, this.config.quantizeThreshold);
   }
 
   /**
    * Check if a governance transition is topologically valid.
    */
-  isValidTransition(
-    from: readonly [number, number],
-    to: readonly [number, number]
-  ): boolean {
+  isValidTransition(from: readonly [number, number], to: readonly [number, number]): boolean {
     const qFrom = quantizeVector(from, this.config.quantizeThreshold);
     const qTo = quantizeVector(to, this.config.quantizeThreshold);
     return isValidBraidTransition(qFrom, qTo);
@@ -830,13 +800,13 @@ export class AetherBraid {
  * trust level and security action.
  */
 export const BRAID_GOVERNANCE_TABLE: ReadonlyArray<BraidGovernance> = [
-  buildGovernance(1, 1),    // RESONANT_LOCK
-  buildGovernance(1, 0),    // FORWARD_THRUST
-  buildGovernance(1, -1),   // CREATIVE_TENSION_A
-  buildGovernance(0, 1),    // PERPENDICULAR_POS
-  buildGovernance(0, 0),    // ZERO_GRAVITY
-  buildGovernance(0, -1),   // PERPENDICULAR_NEG
-  buildGovernance(-1, 1),   // CREATIVE_TENSION_B
-  buildGovernance(-1, 0),   // BACKWARD_CHECK
-  buildGovernance(-1, -1),  // COLLAPSE_ATTRACTOR
+  buildGovernance(1, 1), // RESONANT_LOCK
+  buildGovernance(1, 0), // FORWARD_THRUST
+  buildGovernance(1, -1), // CREATIVE_TENSION_A
+  buildGovernance(0, 1), // PERPENDICULAR_POS
+  buildGovernance(0, 0), // ZERO_GRAVITY
+  buildGovernance(0, -1), // PERPENDICULAR_NEG
+  buildGovernance(-1, 1), // CREATIVE_TENSION_B
+  buildGovernance(-1, 0), // BACKWARD_CHECK
+  buildGovernance(-1, -1), // COLLAPSE_ATTRACTOR
 ];

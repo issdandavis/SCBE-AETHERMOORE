@@ -243,7 +243,7 @@ describe('Test C: 9-State Phase Diagram', () => {
   });
 
   it('governance table entries should have unique states', () => {
-    const states = BRAID_GOVERNANCE_TABLE.map(g => g.state);
+    const states = BRAID_GOVERNANCE_TABLE.map((g) => g.state);
     expect(new Set(states).size).toBe(9);
   });
 
@@ -792,66 +792,44 @@ describe('Test J: Braid Transition Validation', () => {
 
   it('adjacent transitions are valid', () => {
     // RESONANT_LOCK (1,1) → FORWARD_THRUST (1,0)
-    expect(isValidBraidTransition(
-      { primary: 1, mirror: 1 },
-      { primary: 1, mirror: 0 }
-    )).toBe(true);
+    expect(isValidBraidTransition({ primary: 1, mirror: 1 }, { primary: 1, mirror: 0 })).toBe(true);
 
     // ZERO_GRAVITY (0,0) → RESONANT_LOCK (1,1) — diagonal
-    expect(isValidBraidTransition(
-      { primary: 0, mirror: 0 },
-      { primary: 1, mirror: 1 }
-    )).toBe(true);
+    expect(isValidBraidTransition({ primary: 0, mirror: 0 }, { primary: 1, mirror: 1 })).toBe(true);
 
     // BACKWARD_CHECK (-1,0) → ZERO_GRAVITY (0,0)
-    expect(isValidBraidTransition(
-      { primary: -1, mirror: 0 },
-      { primary: 0, mirror: 0 }
-    )).toBe(true);
+    expect(isValidBraidTransition({ primary: -1, mirror: 0 }, { primary: 0, mirror: 0 })).toBe(
+      true
+    );
   });
 
   it('non-adjacent transitions are invalid', () => {
     // RESONANT_LOCK (1,1) → COLLAPSE_ATTRACTOR (-1,-1) — distance 2
-    expect(isValidBraidTransition(
-      { primary: 1, mirror: 1 },
-      { primary: -1, mirror: -1 }
-    )).toBe(false);
+    expect(isValidBraidTransition({ primary: 1, mirror: 1 }, { primary: -1, mirror: -1 })).toBe(
+      false
+    );
 
     // FORWARD_THRUST (1,0) → BACKWARD_CHECK (-1,0) — distance 2
-    expect(isValidBraidTransition(
-      { primary: 1, mirror: 0 },
-      { primary: -1, mirror: 0 }
-    )).toBe(false);
+    expect(isValidBraidTransition({ primary: 1, mirror: 0 }, { primary: -1, mirror: 0 })).toBe(
+      false
+    );
 
     // PERPENDICULAR_POS (0,1) → PERPENDICULAR_NEG (0,-1) — distance 2
-    expect(isValidBraidTransition(
-      { primary: 0, mirror: 1 },
-      { primary: 0, mirror: -1 }
-    )).toBe(false);
+    expect(isValidBraidTransition({ primary: 0, mirror: 1 }, { primary: 0, mirror: -1 })).toBe(
+      false
+    );
   });
 
   it('braidStateDistance: adjacent = 1, corner-to-corner = 2', () => {
-    expect(braidStateDistance(
-      { primary: 0, mirror: 0 },
-      { primary: 1, mirror: 0 }
-    )).toBe(1);
+    expect(braidStateDistance({ primary: 0, mirror: 0 }, { primary: 1, mirror: 0 })).toBe(1);
 
-    expect(braidStateDistance(
-      { primary: 0, mirror: 0 },
-      { primary: 1, mirror: 1 }
-    )).toBe(1); // diagonal
+    expect(braidStateDistance({ primary: 0, mirror: 0 }, { primary: 1, mirror: 1 })).toBe(1); // diagonal
 
-    expect(braidStateDistance(
-      { primary: 1, mirror: 1 },
-      { primary: -1, mirror: -1 }
-    )).toBe(2);
+    expect(braidStateDistance({ primary: 1, mirror: 1 }, { primary: -1, mirror: -1 })).toBe(2);
   });
 
   it('braidStateDistance: self = 0', () => {
-    expect(braidStateDistance(
-      { primary: 1, mirror: -1 },
-      { primary: 1, mirror: -1 }
-    )).toBe(0);
+    expect(braidStateDistance({ primary: 1, mirror: -1 }, { primary: 1, mirror: -1 })).toBe(0);
   });
 
   it('AetherBraid.isValidTransition: adjacent vectors', () => {

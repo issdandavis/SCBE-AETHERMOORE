@@ -253,9 +253,7 @@ function envelopeDigest(envelope: DecisionEnvelope): string {
  */
 function computeSignature(envelope: DecisionEnvelope, signerKey: string): string {
   const digest = envelopeDigest(envelope);
-  return createHash('sha256')
-    .update(`${signerKey}:${digest}`, 'utf-8')
-    .digest('hex');
+  return createHash('sha256').update(`${signerKey}:${digest}`, 'utf-8').digest('hex');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -379,12 +377,7 @@ export function envelopeDecide(
   // ── Validate envelope ────────────────────────────────────────
   const validation = validateEnvelope(envelope);
   if (!validation.valid) {
-    const scbeResult = scbeDecide(
-      state.dStar,
-      state.coherence,
-      state.hEff,
-      envelope.thresholds,
-    );
+    const scbeResult = scbeDecide(state.dStar, state.coherence, state.hEff, envelope.thresholds);
     return {
       boundary: 'DENY',
       scbeDecision: scbeResult,
@@ -395,12 +388,7 @@ export function envelopeDecide(
   }
 
   // ── Run SCBE pipeline (always — belt + suspenders) ───────────
-  const scbeResult = scbeDecide(
-    state.dStar,
-    state.coherence,
-    state.hEff,
-    envelope.thresholds,
-  );
+  const scbeResult = scbeDecide(state.dStar, state.coherence, state.hEff, envelope.thresholds);
 
   // ── Match action against envelope rules ──────────────────────
   const matchedRule = matchAction(action, envelope.rules);
@@ -567,9 +555,7 @@ export function createEnvelope(params: {
   // Compute emergency key hash if provided
   let emergencyKeyHash: string | undefined;
   if (params.emergencyKey) {
-    emergencyKeyHash = createHash('sha256')
-      .update(params.emergencyKey, 'utf-8')
-      .digest('hex');
+    emergencyKeyHash = createHash('sha256').update(params.emergencyKey, 'utf-8').digest('hex');
   }
 
   // Build the envelope without signature first
@@ -746,7 +732,7 @@ export class EnvelopeManager {
             state.dStar,
             state.coherence,
             state.hEff,
-            this.activeEnvelope.thresholds,
+            this.activeEnvelope.thresholds
           );
           return {
             boundary: matchedRule.boundary,
@@ -767,7 +753,7 @@ export class EnvelopeManager {
       state,
       this.commsState,
       quorumVotes,
-      emergencyKey,
+      emergencyKey
     );
 
     // Track execution count on EXECUTE

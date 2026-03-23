@@ -347,7 +347,13 @@ describe('verifyCertificateSeal', () => {
     if (result.spawned) {
       const tampered = {
         ...result.certificate,
-        predicatesPassed: [false, false, false, false, false] as [boolean, boolean, boolean, boolean, boolean],
+        predicatesPassed: [false, false, false, false, false] as [
+          boolean,
+          boolean,
+          boolean,
+          boolean,
+          boolean,
+        ],
       };
       expect(verifyCertificateSeal(tampered)).toBe(false);
     }

@@ -138,7 +138,7 @@ export function scarcityMultiplier(resource: ResourceMetric): number {
  */
 export function combinedScarcity(
   resources: ResourceState,
-  consumedResources: (keyof ResourceState)[],
+  consumedResources: (keyof ResourceState)[]
 ): number {
   if (consumedResources.length === 0) return 1.0;
 
@@ -179,7 +179,7 @@ export function resourceAwareHarmonicCost(
   dStar: number,
   R: number,
   resources: ResourceState,
-  consumedResources: (keyof ResourceState)[],
+  consumedResources: (keyof ResourceState)[]
 ): number {
   // H_base = R * pi^(phi * d*) — standard Layer 12 wall
   const hBase = harmonicCost(dStar, R);
@@ -216,7 +216,7 @@ export function resourceAwareDecide(
   resources: ResourceState,
   consumedResources: (keyof ResourceState)[],
   R: number = 1.5,
-  thresholds: SCBEThresholds = DEFAULT_THRESHOLDS,
+  thresholds: SCBEThresholds = DEFAULT_THRESHOLDS
 ): ResourceAwareDecisionResult {
   // Compute resource-adjusted harmonic cost
   const scarcity = combinedScarcity(resources, consumedResources);
@@ -412,42 +412,42 @@ export function createDefaultResources(): ResourceState {
       name: 'power',
       current: 1.0,
       criticalThreshold: 0.05,
-      warningThreshold: 0.20,
+      warningThreshold: 0.2,
       ratePerHour: -0.02, // ~50 hours of operation on full charge
     },
     bandwidth: {
       name: 'bandwidth',
       current: 1.0,
       criticalThreshold: 0.05,
-      warningThreshold: 0.20,
+      warningThreshold: 0.2,
       ratePerHour: 0.0, // Bandwidth is usually stable (not consumed)
     },
     thermalMargin: {
       name: 'thermalMargin',
       current: 1.0,
-      criticalThreshold: 0.10,
+      criticalThreshold: 0.1,
       warningThreshold: 0.25,
       ratePerHour: -0.01, // Slow thermal degradation
     },
     mechanicalWear: {
       name: 'mechanicalWear',
       current: 1.0,
-      criticalThreshold: 0.10,
-      warningThreshold: 0.30,
+      criticalThreshold: 0.1,
+      warningThreshold: 0.3,
       ratePerHour: -0.005, // Very slow mechanical wear
     },
     propellant: {
       name: 'propellant',
       current: 1.0,
       criticalThreshold: 0.15,
-      warningThreshold: 0.30,
+      warningThreshold: 0.3,
       ratePerHour: -0.03, // ~33 hours at full burn
     },
     storage: {
       name: 'storage',
       current: 1.0,
       criticalThreshold: 0.05,
-      warningThreshold: 0.20,
+      warningThreshold: 0.2,
       ratePerHour: -0.01, // Gradual storage consumption from telemetry
     },
   };
@@ -467,7 +467,7 @@ export function createDefaultResources(): ResourceState {
 export function createResourceAwareUnit(
   unitId: string,
   position?: [number, number, number],
-  overrides?: Partial<ResourceState>,
+  overrides?: Partial<ResourceState>
 ): ResourceAwareUnitState {
   const [x, y, z] = position ?? [0, 0, 0];
 

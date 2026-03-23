@@ -308,9 +308,9 @@ describe('EncryptedTransport', () => {
       const wrongKey = generateTransportKey('wrong');
 
       const steps = [
-        encryptVector([0.05, 0, 0, 0, 0, 0], key),       // valid
-        encryptVector([0, 0.05, 0, 0, 0, 0], wrongKey),   // invalid
-        encryptVector([0, 0, 0.05, 0, 0, 0], key),        // valid
+        encryptVector([0.05, 0, 0, 0, 0, 0], key), // valid
+        encryptVector([0, 0.05, 0, 0, 0, 0], wrongKey), // invalid
+        encryptVector([0, 0, 0.05, 0, 0, 0], key), // valid
       ];
 
       const result = secureBatchNavigate(start, steps, key);
