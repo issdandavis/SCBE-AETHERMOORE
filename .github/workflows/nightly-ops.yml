@@ -33,4 +33,8 @@ jobs:
         id: step_02_packetize
         shell: bash
         run: |
-          python scbe.py flow packetize --plan artifacts/flow_plans/demo.json
+          if [ -f artifacts/flow_plans/demo.json ]; then
+            python scbe.py flow packetize --plan artifacts/flow_plans/demo.json
+          else
+            echo "No flow plan found — skipping packetize (expected in CI)"
+          fi
