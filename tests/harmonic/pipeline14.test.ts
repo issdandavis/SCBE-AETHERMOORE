@@ -204,6 +204,16 @@ describe('SCBE 14-Layer Pipeline', () => {
       expect(result).toBeLessThanOrEqual(1);
     });
 
+    it('should reflect changes in historical distances', () => {
+      const d1 = 0.5;
+      const d2 = 0.5;
+      const dG = 0.5;
+      const resultBase = layer11TriadicTemporal(d1, d2, dG);
+
+      const resultHigher = layer11TriadicTemporal(d1, 0.8, dG);
+      expect(resultHigher).toBeGreaterThan(resultBase);
+    });
+
     it('should throw if lambdas do not sum to 1', () => {
       expect(() => layer11TriadicTemporal(0.3, 0.3, 0.3, 0.5, 0.5, 0.5)).toThrow(
         'Lambdas must sum to 1'
@@ -296,6 +306,28 @@ describe('SCBE 14-Layer Pipeline', () => {
       const result = scbe14LayerPipeline(t);
 
       expect(result.decision).toBe('ALLOW');
+    });
+
+    it('should reflect historical distances in Layer 11 through the full pipeline', () => {
+      const t = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0, 0, 0, 0, 0, 0];
+      const resultBase = scbe14LayerPipeline(t);
+
+      // Higher historical distance should increase riskPrime
+      const resultHigher = scbe14LayerPipeline(t, { dMidTerm: 0.8 });
+      expect(resultHigher.riskPrime).toBeGreaterThan(resultBase.riskPrime);
+    });
+
+    it('should reflect audio stability in the riskPrime', () => {
+      // Stable audio (sinusoid)
+      const tStable = [0, 0.5, 1, 0.5, 0, -0.5, -1, -0.5, 0, 0.5, 1, 0.5];
+      const resultStable = scbe14LayerPipeline(tStable);
+
+      // Unstable audio (random-ish)
+      const tUnstable = [0.1, -0.8, 0.3, 0.9, -0.2, 0.5, -0.7, 0.4, -0.1, 0.6, -0.4, 0.2];
+      const resultUnstable = scbe14LayerPipeline(tUnstable);
+
+      // Unstable audio should have higher riskPrime
+      expect(resultUnstable.riskPrime).toBeGreaterThan(resultStable.riskPrime);
     });
   });
 

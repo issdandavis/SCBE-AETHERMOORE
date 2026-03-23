@@ -7,20 +7,11 @@ if ((Get-Variable -Scope Script -Name IssacCommandCenterLoaded -ErrorAction Sile
 
 $script:IssacCommandCenterLoaded = $true
 $script:IssacCommandCenterRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$script:IssacHydraArtifactDir = Join-Path $script:IssacCommandCenterRoot "artifacts\hydra"
-$script:IssacHydraLedgerPath = Join-Path $script:IssacHydraArtifactDir "ledger.db"
-if (-not (Test-Path $script:IssacHydraArtifactDir)) {
-    New-Item -ItemType Directory -Path $script:IssacHydraArtifactDir -Force | Out-Null
-}
-if ([string]::IsNullOrWhiteSpace($env:HYDRA_LEDGER_DB)) {
-    $env:HYDRA_LEDGER_DB = $script:IssacHydraLedgerPath
-}
 $script:IssacHydraShim = Join-Path $script:IssacCommandCenterRoot "scripts\hydra.ps1"
 $script:IssacSkillSummary = Join-Path $script:IssacCommandCenterRoot "artifacts\skill_synthesis\summary.md"
 $script:IssacSkillRefreshScript = Join-Path $script:IssacCommandCenterRoot "scripts\system\refresh_universal_skill_synthesis.py"
 $script:IssacSkillStackScript = "C:\Users\issda\.codex\skills\skill-synthesis\scripts\compose_skill_stack.py"
 $script:IssacCrossTalkRelay = Join-Path $script:IssacCommandCenterRoot "scripts\system\crosstalk_relay.py"
-$script:IssacActionMapScript = Join-Path $script:IssacCommandCenterRoot "scripts\system\action_map_protocol.py"
 $script:IssacBrowserService = Join-Path $script:IssacCommandCenterRoot "scripts\run_aetherbrowse_service.ps1"
 $script:IssacHydraTunnel = Join-Path $script:IssacCommandCenterRoot "scripts\system\start_hydra_terminal_tunnel.ps1"
 $script:IssacGoalRaceScript = Join-Path $script:IssacCommandCenterRoot "scripts\system\goal_race_loop.py"
@@ -151,6 +142,24 @@ function Show-IssacJsonFile {
     Get-Content -Path $Path -Raw -Encoding UTF8 | ConvertFrom-Json | ConvertTo-Json -Depth 20
 }
 
+function Show-IssacJsonFallback {
+    param(
+        [string]$Path,
+        [hashtable]$Fallback
+    )
+    if (Test-Path $Path) {
+        Show-IssacJsonFile -Path $Path
+        return
+    }
+    $payload = [ordered]@{}
+    foreach ($key in $Fallback.Keys) {
+        $payload[$key] = $Fallback[$key]
+    }
+    $payload["status"] = "missing"
+    $payload["path"] = $Path
+    $payload | ConvertTo-Json -Depth 20
+}
+
 function Resolve-IssacAgent {
     param([string]$Name)
     if ([string]::IsNullOrWhiteSpace($Name)) {
@@ -263,13 +272,6 @@ SERVICES
   scbe-bridge        Start n8n browser bridge (:8001)
   scbe-api           Start SCBE API (:8000)
   octo-serve         Start OctoArmor gateway (:8400)
-
-ACTION MAP
-  haction-start <task>      Open an action-map workflow run
-  haction-step <run> <msg>  Append one workflow step
-  haction-close <run> <msg> Close a workflow run
-  haction-build <run>       Compile action map + training rows
-  haction-status [run]      Show latest or specific run status
 
 CROSS-TALK
   xtalk-send <to> <msg>  Emit packet to another agent
@@ -844,27 +846,16 @@ function voice-audio-axis {
 }
 
 function voice-manifest {
-    if (-not (Test-Path $script:IssacVoiceManifest)) {
-        [pscustomobject]@{
-            selected_sample = $null
-            status = "missing"
-            path = $script:IssacVoiceManifest
-        } | ConvertTo-Json -Depth 6
-        return
+    Show-IssacJsonFallback -Path $script:IssacVoiceManifest -Fallback @{
+        selected_sample = $null
+        summary = "Voice manifest missing."
     }
-    Show-IssacJsonFile -Path $script:IssacVoiceManifest
 }
 
 function voice-status {
-    if (-not (Test-Path $script:IssacVoiceStatusPacket)) {
-        [pscustomobject]@{
-            summary = "Voice status packet not generated yet."
-            status = "missing"
-            path = $script:IssacVoiceStatusPacket
-        } | ConvertTo-Json -Depth 6
-        return
+    Show-IssacJsonFallback -Path $script:IssacVoiceStatusPacket -Fallback @{
+        summary = "Voice status packet missing."
     }
-    Show-IssacJsonFile -Path $script:IssacVoiceStatusPacket
 }
 
 function voice-gate {
@@ -936,50 +927,6 @@ function octo-serve {
     Invoke-IssacInRepo {
         & python -m uvicorn src.aethercode.gateway:app --host $Host --port $Port
     }
-}
-
-function haction-start {
-    param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Args)
-    $task = Join-IssacText $Args
-    Assert-IssacText $task "Usage: haction-start <task>"
-    Invoke-IssacPythonFile $script:IssacActionMapScript start --task $task --operator "agent.codex" --lane "command-center"
-}
-
-function haction-step {
-    param(
-        [string]$RunId,
-        [Parameter(ValueFromRemainingArguments = $true)][string[]]$Args
-    )
-    $summary = Join-IssacText $Args
-    Assert-IssacText $RunId "Usage: haction-step <run_id> <summary>"
-    Assert-IssacText $summary "Usage: haction-step <run_id> <summary>"
-    Invoke-IssacPythonFile $script:IssacActionMapScript step --run-id $RunId --summary $summary --operator "agent.codex" --lane "command-center"
-}
-
-function haction-close {
-    param(
-        [string]$RunId,
-        [Parameter(ValueFromRemainingArguments = $true)][string[]]$Args
-    )
-    $summary = Join-IssacText $Args
-    Assert-IssacText $RunId "Usage: haction-close <run_id> <summary>"
-    Assert-IssacText $summary "Usage: haction-close <run_id> <summary>"
-    Invoke-IssacPythonFile $script:IssacActionMapScript close --run-id $RunId --summary $summary --status completed --operator "agent.codex" --lane "command-center"
-}
-
-function haction-build {
-    param([string]$RunId)
-    Assert-IssacText $RunId "Usage: haction-build <run_id>"
-    Invoke-IssacPythonFile $script:IssacActionMapScript build --run-id $RunId
-}
-
-function haction-status {
-    param([string]$RunId = "")
-    if ([string]::IsNullOrWhiteSpace($RunId)) {
-        Invoke-IssacPythonFile $script:IssacActionMapScript status
-        return
-    }
-    Invoke-IssacPythonFile $script:IssacActionMapScript status --run-id $RunId
 }
 
 function xtalk-send {

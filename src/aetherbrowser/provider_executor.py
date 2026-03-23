@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from importlib.util import find_spec
 import os
 from dataclasses import dataclass
@@ -61,7 +60,6 @@ _MODEL_ID_DEFAULTS: dict[ModelProvider, tuple[str, str]] = {
     ModelProvider.OPUS: ("AETHERBROWSER_MODEL_OPUS", "claude-opus-4-1-20250805"),
     ModelProvider.FLASH: ("AETHERBROWSER_MODEL_FLASH", "gpt-4o-mini"),
     ModelProvider.GROK: ("AETHERBROWSER_MODEL_GROK", "grok-3-mini"),
-    ModelProvider.HUGGINGFACE: ("AETHERBROWSER_MODEL_HUGGINGFACE", "issdandavis/scbe-pivot-qwen-0.5b"),
 }
 
 
@@ -79,7 +77,6 @@ PROVIDER_PACKAGES: dict[ModelProvider, tuple[str, ...]] = {
     ModelProvider.OPUS: ("anthropic",),
     ModelProvider.FLASH: ("openai",),
     ModelProvider.GROK: ("openai",),
-    ModelProvider.HUGGINGFACE: ("huggingface_hub",),
 }
 
 SYSTEM_PROMPT = (
@@ -104,7 +101,6 @@ class ProviderExecutor:
             ModelProvider.OPUS: self._call_anthropic,
             ModelProvider.FLASH: self._call_openai,
             ModelProvider.GROK: self._call_xai,
-            ModelProvider.HUGGINGFACE: self._call_huggingface,
         }
         if adapters:
             self._adapters.update(adapters)
@@ -319,22 +315,3 @@ class ProviderExecutor:
             ],
         )
         return response.choices[0].message.content or ""
-
-    async def _call_huggingface(self, model_id: str, prompt: str) -> str:
-        try:
-            from huggingface_hub import InferenceClient  # type: ignore[import-untyped]
-        except Exception as exc:  # pragma: no cover - depends on local env
-            raise RuntimeError("huggingface_hub package is not installed") from exc
-
-        token = os.environ.get("HF_TOKEN", "").strip()
-        if not token:
-            raise RuntimeError("HF_TOKEN is not configured")
-
-        client = InferenceClient(model=model_id, token=token)
-        response = await asyncio.to_thread(
-            client.text_generation,
-            prompt,
-            max_new_tokens=700,
-            temperature=0.2,
-        )
-        return response or ""
