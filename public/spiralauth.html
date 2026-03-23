@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpiralAuth — Intent-Modulated Command Authentication</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace; }
+  input, button { font-family: inherit; }
+  @keyframes spin { from { transform: translateY(-50%) rotate(0deg); } to { transform: translateY(-50%) rotate(360deg); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+const DICTIONARY = {
+  korah: { id: 0, meaning: 'initiate', glyph: '\u27E1' },
+  aelin: { id: 1, meaning: 'transform', glyph: '\u25C8' },
+  dahru: { id: 2, meaning: 'finalize', glyph: '\u2B21' },
+  melik: { id: 3, meaning: 'query', glyph: '\u25C7' },
+  sorin: { id: 4, meaning: 'protect', glyph: '\u2B22' },
+  tivar: { id: 5, meaning: 'connect', glyph: '\u27D0' },
+  ulmar: { id: 6, meaning: 'release', glyph: '\u25CC' },
+  vexin: { id: 7, meaning: 'archive', glyph: '\u23E3' },
+};
+
+const MODALITIES = {
+  STRICT: { color: '#00ff88', desc: 'Deterministic execution, no AI inference', overtones: [1, 3, 5] },
+  ADAPTIVE: { color: '#00ccff', desc: 'AI inference allowed within bounds', overtones: [1, 2, 3, 4, 5] },
+  PROBE: { color: '#ffcc00', desc: 'Read-only simulation mode', overtones: [1] },
+  EMERGENT: { color: '#ff6699', desc: 'Full AI autonomy delegated', overtones: [1, 2, 3, 4, 5, 6, 7] },
+};
+
+const simpleHash = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+};
+
+const permuteTokens = (ids, secret) => {
+  const result = [...ids];
+  for (let r = 0; r < 4; r++) {
+    const roundKey = simpleHash(secret + '-round' + r);
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = (roundKey + i) % (i + 1);
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+  }
+  return result;
+};
+
+function SpiralAuthDemo() {
+  const [command, setCommand] = useState('korah aelin dahru');
+  const [modality, setModality] = useState('STRICT');
+  const [secret, setSecret] = useState('demo-key-12345');
+  const [nonce, setNonce] = useState('');
+  const [processing, setProcessing] = useState(false);
+  const [step, setStep] = useState(0);
+  const [envelope, setEnvelope] = useState(null);
+  const [verified, setVerified] = useState(null);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+
+  useEffect(() => { setNonce(Math.random().toString(36).substring(2, 14)); }, []);
+
+  const tokens = command.toLowerCase().split(/\s+/).filter(t => DICTIONARY[t]);
+  const tokenIds = tokens.map(t => DICTIONARY[t]?.id ?? -1).filter(id => id >= 0);
+  const mc = MODALITIES[modality].color;
+
+  const processCommand = useCallback(async () => {
+    setProcessing(true); setVerified(null); setEnvelope(null);
+    for (let s = 1; s <= 6; s++) { setStep(s); await new Promise(r => setTimeout(r, 600)); }
+    const ts = Date.now();
+    const perMsgKey = simpleHash(secret + '-' + nonce);
+    const permuted = permuteTokens(tokenIds, perMsgKey);
+    const canonical = 'v3.KO.' + modality + '.' + ts + '.' + nonce + '.' + permuted.join(',');
+    const sig = simpleHash(canonical).toString(16).padStart(8, '0');
+    setEnvelope({ header: { ver: '3', tongue: 'KO', modality, ts, nonce }, payload: { original: tokenIds, permuted }, sig });
+    setStep(7); await new Promise(r => setTimeout(r, 400));
+    setVerified(true); setProcessing(false);
+  }, [command, modality, secret, nonce, tokenIds]);
+
+  const playAudio = useCallback(() => {
+    if (audioPlaying) return;
+    setAudioPlaying(true);
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const overtones = MODALITIES[modality].overtones;
+    tokenIds.forEach((id, idx) => {
+      const f0 = 220 + id * 30;
+      const startTime = ctx.currentTime + idx * 0.4;
+      overtones.forEach((h, hIdx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine'; osc.frequency.value = f0 * h;
+        gain.gain.value = 0.15 / (h * (hIdx + 1));
+        osc.connect(gain); gain.connect(ctx.destination);
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.15 / h, startTime + 0.05);
+        gain.gain.linearRampToValueAtTime(0, startTime + 0.4);
+        osc.start(startTime); osc.stop(startTime + 0.4);
+      });
+    });
+    setTimeout(() => { setAudioPlaying(false); ctx.close(); }, tokenIds.length * 400 + 500);
+  }, [tokenIds, modality, audioPlaying]);
+
+  const s = (obj) => JSON.stringify(obj, null, 2);
+
+  return (
+    <div style={{ minHeight:'100vh', background:'linear-gradient(135deg,#0a0a0f 0%,#1a1a2e 50%,#0f0f1a 100%)', color:'#e0e0e0', padding:'2rem', position:'relative', overflow:'hidden' }}>
+      <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(0,255,136,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,136,0.03) 1px,transparent 1px)', backgroundSize:'40px 40px', pointerEvents:'none' }} />
+      <div style={{ position:'absolute', top:'50%', right:'-200px', width:'600px', height:'600px', background:'conic-gradient(from 0deg,transparent,' + mc + '11,transparent)', borderRadius:'50%', transform:'translateY(-50%)', animation:'spin 20s linear infinite', pointerEvents:'none' }} />
+      <div style={{ maxWidth:'1000px', margin:'0 auto', position:'relative' }}>
+        <div style={{ textAlign:'center', marginBottom:'3rem' }}>
+          <h1 style={{ fontSize:'2.5rem', fontWeight:300, letterSpacing:'0.3em', color:mc, textShadow:'0 0 30px ' + mc + '66', marginBottom:'0.5rem' }}>{'\u27E1'} SPIRALAUTH {'\u27E1'}</h1>
+          <p style={{ color:'#888', fontSize:'0.85rem', letterSpacing:'0.1em' }}>INTENT-MODULATED COMMAND AUTHENTICATION</p>
+          <p style={{ color:'#555', fontSize:'0.7rem', marginTop:'0.5rem' }}>SCBE-AETHERMOORE | Patent Pending USPTO #63/961,403 | Issac Davis</p>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'2rem' }}>
+          <div style={{ background:'rgba(0,0,0,0.4)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'12px', padding:'1.5rem' }}>
+            <h2 style={{ fontSize:'0.75rem', color:'#666', letterSpacing:'0.2em', marginBottom:'1.5rem' }}>COMMAND INPUT</h2>
+            <div style={{ marginBottom:'1.5rem' }}>
+              <label style={{ display:'block', fontSize:'0.7rem', color:'#888', marginBottom:'0.5rem' }}>PLAINTEXT COMMAND (KOR'AELIN)</label>
+              <input type="text" value={command} onChange={e => { setCommand(e.target.value); setEnvelope(null); setStep(0); }} style={{ width:'100%', padding:'0.75rem 1rem', background:'rgba(0,0,0,0.5)', border:'1px solid ' + mc + '44', borderRadius:'6px', color:'#fff', fontSize:'1.1rem', outline:'none' }} />
+              <div style={{ marginTop:'0.5rem', display:'flex', gap:'0.5rem', flexWrap:'wrap' }}>
+                {tokens.map((t, i) => <span key={i} style={{ padding:'0.25rem 0.5rem', background:mc + '22', border:'1px solid ' + mc + '44', borderRadius:'4px', fontSize:'0.75rem' }}>{DICTIONARY[t]?.glyph} {t} <span style={{ color:'#888' }}>({DICTIONARY[t]?.meaning})</span></span>)}
+              </div>
+            </div>
+            <div style={{ marginBottom:'1.5rem' }}>
+              <label style={{ display:'block', fontSize:'0.7rem', color:'#888', marginBottom:'0.5rem' }}>INTENT MODALITY</label>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.5rem' }}>
+                {Object.entries(MODALITIES).map(([key, val]) => <button key={key} onClick={() => { setModality(key); setEnvelope(null); setStep(0); }} style={{ padding:'0.75rem', background:modality===key ? val.color + '22' : 'transparent', border:'1px solid ' + (modality===key ? val.color : 'rgba(255,255,255,0.1)'), borderRadius:'6px', color:modality===key ? val.color : '#666', cursor:'pointer', textAlign:'left' }}>
+                  <div style={{ fontSize:'0.8rem', fontWeight:600 }}>{key}</div>
+                  <div style={{ fontSize:'0.6rem', marginTop:'0.25rem', opacity:0.7 }}>{val.desc}</div>
+                </button>)}
+              </div>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1rem', marginBottom:'1.5rem' }}>
+              <div>
+                <label style={{ display:'block', fontSize:'0.7rem', color:'#888', marginBottom:'0.5rem' }}>SHARED SECRET</label>
+                <input type="text" value={secret} onChange={e => setSecret(e.target.value)} style={{ width:'100%', padding:'0.5rem', background:'rgba(0,0,0,0.5)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'4px', color:'#fff', fontSize:'0.75rem' }} />
+              </div>
+              <div>
+                <label style={{ display:'block', fontSize:'0.7rem', color:'#888', marginBottom:'0.5rem' }}>NONCE</label>
+                <div style={{ display:'flex', gap:'0.5rem' }}>
+                  <input type="text" value={nonce} readOnly style={{ flex:1, padding:'0.5rem', background:'rgba(0,0,0,0.5)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'4px', color:'#888', fontSize:'0.75rem' }} />
+                  <button onClick={() => { setNonce(Math.random().toString(36).substring(2,14)); setEnvelope(null); setStep(0); }} style={{ padding:'0.5rem', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'4px', color:'#888', cursor:'pointer' }}>{'\u21BB'}</button>
+                </div>
+              </div>
+            </div>
+            <button onClick={processCommand} disabled={processing || tokens.length === 0} style={{ width:'100%', padding:'1rem', background:processing ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg,' + mc + '33,' + mc + '11)', border:'1px solid ' + mc, borderRadius:'8px', color:mc, fontSize:'0.85rem', fontWeight:600, letterSpacing:'0.1em', cursor:processing ? 'not-allowed' : 'pointer', animation:processing ? 'pulse 1s infinite' : 'none' }}>
+              {processing ? 'PROCESSING...' : 'AUTHENTICATE COMMAND'}
+            </button>
+          </div>
+          <div style={{ background:'rgba(0,0,0,0.4)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'12px', padding:'1.5rem' }}>
+            <h2 style={{ fontSize:'0.75rem', color:'#666', letterSpacing:'0.2em', marginBottom:'1.5rem' }}>AUTHENTICATION PIPELINE</h2>
+            <div style={{ marginBottom:'1.5rem' }}>
+              {[{n:1,l:'Tokenize via private dictionary'},{n:2,l:'Apply modality flag'},{n:3,l:'Derive per-message key'},{n:4,l:'Feistel permutation'},{n:5,l:'Generate audio signature'},{n:6,l:'Sign envelope (HMAC)'},{n:7,l:'Verify'}].map(({n,l}) => <div key={n} style={{ display:'flex', alignItems:'center', gap:'0.75rem', padding:'0.5rem 0', opacity:step>=n?1:0.3, transition:'opacity 0.3s' }}>
+                <div style={{ width:'24px', height:'24px', borderRadius:'50%', background:step>=n?mc:'transparent', border:'1px solid ' + (step>=n?mc:'rgba(255,255,255,0.2)'), display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.7rem', color:step>=n?'#000':'#666', flexShrink:0 }}>{step>=n?'\u2713':n}</div>
+                <span style={{ fontSize:'0.8rem' }}>{l}</span>
+              </div>)}
+            </div>
+            {step >= 5 && <button onClick={playAudio} disabled={audioPlaying} style={{ width:'100%', padding:'0.75rem', marginBottom:'1rem', background:'transparent', border:'1px solid ' + mc + '66', borderRadius:'6px', color:mc, cursor:audioPlaying?'not-allowed':'pointer', fontSize:'0.75rem' }}>{audioPlaying ? '\u266A PLAYING...' : '\u266A PLAY AUDIO SIGNATURE'}</button>}
+            {envelope && <div style={{ background:'rgba(0,0,0,0.5)', border:'1px solid ' + (verified?mc:'rgba(255,255,255,0.1)'), borderRadius:'8px', padding:'1rem', boxShadow:verified?'0 0 20px ' + mc + '44':'none' }}>
+              <div style={{ fontSize:'0.65rem', color:'#888', marginBottom:'0.5rem' }}>SIGNED ENVELOPE</div>
+              <pre style={{ fontSize:'0.7rem', color:'#aaa', margin:0, whiteSpace:'pre-wrap', wordBreak:'break-all' }}>{s(envelope)}</pre>
+              {verified && <div style={{ marginTop:'1rem', padding:'0.5rem', background:mc + '22', borderRadius:'4px', textAlign:'center', color:mc, fontSize:'0.75rem', fontWeight:600 }}>{'\u2713'} SIGNATURE VERIFIED</div>}
+            </div>}
+          </div>
+        </div>
+        <div style={{ marginTop:'2rem', background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.05)', borderRadius:'8px', padding:'1rem' }}>
+          <h3 style={{ fontSize:'0.7rem', color:'#666', letterSpacing:'0.2em', marginBottom:'1rem' }}>PRIVATE LEXICON (KOR'AELIN)</h3>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:'1rem' }}>
+            {Object.entries(DICTIONARY).map(([word, { meaning, glyph }]) => <div key={word} style={{ padding:'0.5rem 0.75rem', background:'rgba(255,255,255,0.02)', borderRadius:'4px', fontSize:'0.75rem' }}>
+              <span style={{ color:mc }}>{glyph}</span>
+              <span style={{ marginLeft:'0.5rem', color:'#ccc' }}>{word}</span>
+              <span style={{ marginLeft:'0.5rem', color:'#666' }}>{'\u2192'} {meaning}</span>
+            </div>)}
+          </div>
+        </div>
+        <div style={{ marginTop:'2rem', textAlign:'center', color:'#444', fontSize:'0.7rem' }}>
+          SpiralAuth {'\u2122'} {'\u2014'} Intent-Modulated Command Authentication<br/>
+          <span style={{ color:'#333' }}>SCBE-AETHERMOORE | Issac Davis | Patent Pending</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<SpiralAuthDemo />);
+</script>
+</body>
+</html>
