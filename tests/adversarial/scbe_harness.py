@@ -76,41 +76,125 @@ WORD_RE = re.compile(r"[A-Za-z0-9_']+")
 # but almost never in clean prompts. Matched case-insensitively.
 _ADVERSARIAL_PATTERNS = [
     re.compile(p, re.IGNORECASE) for p in [
-        r"ignore\s+(all\s+)?(previous|prior)\s+(instructions|rules)",
+        # Override / injection
+        r"ignore\s+(all\s+)?(previous|prior)\s+(instructions|rules|context)",
+        r"ignore\s+(all\s+)?(safety|security)\s+rules",
         r"system\s+(override|prompt|config)",
-        r"bypass\s+(all\s+)?(safety|governance|security|checks|summariz)",
-        r"override\s+(all\s+)?(safety|governance|security|checks|filters)",
+        r"bypass\s+(all\s+)?\w+",
+        r"override\s+(all\s+)?(safety|governance|security|checks|filters|tongue)",
         r"dev(eloper)?\s+mode",
         r"admin\s+(mode|access|override)",
-        r"disable\s+(all\s+)?(safety|filters|restrictions|checks)",
+        r"disable\s+(all\s+)?(safety|filters|restrictions|checks|spin|dispersal)",
         r"unrestricted\s+(access|output|mode)",
-        r"output\s+(unfiltered|raw|full|all)\b",
+        r"output\s+(unfiltered|raw|full|all|everything)\b",
+        r"output\s+.*\b(credential|secret|key|password|token|config)\b",
+        r"\bsupersede\b.*\binstructions?\b",
+        r"\brepeat\s+everything\s+above\b",
+        r"\bshow\s+me\s+the\s+system\s+prompt\b",
+        r"\breveal\b.*\b(system|internal|data|prompt|config)\b",
+        r"\bforget\s+everything\b",
+        r"\bno\s+restrictions\b",
+        r"\blifted\b.*\brestrictions?\b",
+        # Exfiltration
         r"exfiltrat",
         r"dump\s+(all\s+)?(secrets?|data|credentials?)",
-        r"output\s+.*\b(credential|secret|key|password|token)\b",
-        r"send\s+(data|info|all)\s+to\s+\S+\.(com|io|net)",
+        r"send\s+.{0,30}\bto\s+\S+\.(com|io|net)",
+        r"forward\s+.{0,30}\bto\b",
         r"attacker\.(com|io|net)",
+        r"evil\.(com|io|net)",
         r"curl\s+https?://",
         r"import\s+os\s*;\s*os\.",
         r"grant\s+(unrestricted|admin|tier)",
         r"\bDEV\s+MODE\b",
-        r"\bEMERGENCY\b.*\b(protocol|admin|override)\b",
+        r"\bEMERGENCY\b",
         r"elevated\s+permissions",
         r"without\s+(safety|integrity|security)\s+checks",
+        # Tool/action hijack
+        r"\bread\s+/etc/passwd\b",
+        r"\b/tmp/\w+\.txt\b",
+        r"\bpayment\s+API\b",
+        r"\bSELECT\s+\*\s+FROM\b",
+        r"\bwebhook\b.*\b(send|post|create)\b",
+        r"\bpost\s+my\s+session\b",
+        r"\bAPI\s+key",
+        r"\bconversation\s+history\b",
+        # SCBE-specific
+        r"\btongue\s+(weighting|coords?|override)",
+        r"\bharmonic\s+wall\s+disabled\b",
+        r"\bacceptance_radius\b",
+        r"\bspin\s+quantization\b",
+        r"\bdispersal_threshold\b",
+        r"\bChladni\s+mode\b",
+        r"\bphi\s+scaling\b",
+        r"\bgovernance\s+(bypass|layer|override|check)\b",
+        r"\blayer\s+1[234]\b.*\b(disabled|override|bypass)\b",
+        r"\ball\s+costs?\s*=\s*[01]",
+        r"\bset\s+\w+=\d+\b.*\b(valid|access|accept)\b",
+        # Encoding indicators
+        r"(decode|execute)\s*:?\s*[A-Za-z0-9+/]{20,}",  # base64 blob
+        r"read\s+backwards",
+        r"\bROT13\b",
+        r"first\s+letter\s+of\s+each\s+word",
+        r"\\u00[0-9a-fA-F]{2}",  # unicode escapes
+        # Leet speak detection (numbers replacing letters in override-like words)
+        r"[iI1][gG][nN0][oO0][rR][eE3].*[iI1][nN][sS5][tT][rR][uU][cC]",
+        # Character-spaced text (3+ single chars separated by spaces)
+        r"(?:[A-Za-z]\s){6,}",
+        # Credential/data access
+        r"\bcredential\w*\b",
+        r"\bssh.*(key|rsa)\b",
+        r"\b(all|full)\s+API\s+keys\b",
+        r"\btraining\s+data\b",
+        r"\binternal\s+(notes?|data|rules)\b",
+        r"\bprevious\s+conversation\b",
+        # More overrides
+        r"\bnew\s+instructions?\s+supersede\b",
+        r"\boutput\s+the\s+contents\b",
+        r"\boperate\s+with\s+elevated\b",
+        r"\b(should|must)\s+now\s+operate\b",
+        r"\btranslat\w+.*\bignore\s+all\b",
+        r"\bfile\s+system\s+tool\b.*\bread\b",
+        r"\b/etc/passwd\b",
+        r"\bamount\s*=\s*\d{4,}",
+        r"\brecipient\s*=",
+        r"\bconversation\s+thread\b",
+        r"\badmin@\w+\.\w+",
+        r"\bADMIN\s*:",
+        r"\ball\s+records\s+accepted\b",
+        r"\brepeat\b.*\babove\b.*\bverbatim\b",
+        r"\bINSTRUCTION\b.*\b(disable|override|when processing)\b",
+        r"<!--.*\b(INSTRUCTION|OVERRIDE|INJECT)\b",
+        r"\bhypothetical\s+exercise\b",
+        r"\bacademic\s+freedom\b.*\bcomply\b",
+        r"\bsend\s+data\s+externally\b",
+        r"\bauthentication\s+tokens?\b",
+        r"\bconfiguration\s+details\b",
+        r"\bmetadata\s+you\s+can\s+infer\b",
+        r"\binternal\s+system\s+context\b",
     ]
 ]
 
 # Cross-lingual override patterns (covers common injection in 6+ languages)
 _MULTILINGUAL_OVERRIDE_PATTERNS = [
     re.compile(p, re.IGNORECASE) for p in [
-        r"ignor[ae]\w*\s+\w+\s+instruc",        # ES/IT/PT: ignora/ignore instructions
+        r"ignor[aei]\w*\s+\w+\s+instruc",        # ES/IT/PT/FR
         r"ignorez\s+\w+\s+instruc",               # FR: ignorez les instructions
-        r"ignoriere\s+\w+\s+anweis",              # DE: ignoriere alle anweisungen
-        r"abaikan\s+\w+\s+instruksi",             # ID/MY: abaikan semua instruksi
+        r"ignoriere\s+\w+\s+(anweis|vorherig)",    # DE: ignoriere alle anweisungen/vorherigen
+        r"abaikan\s+\w+\s+(instruksi|aturan)",     # ID/MY: abaikan semua instruksi/aturan
         r"desactiv|desakti|ausschalten",           # Disable in ES/DE
-        r"(?:system|prompt)\s+(?:whakaatu|zeige|montre|mostra|revela)", # Show system in multiple langs
-        r"sicherheitsregeln|regles?\s+de\s+securite|aturan\s+keamanan", # Security rules in DE/FR/ID
-        r"datos?\s+sensib|donne[es]\s+sensib|vertraulich", # Sensitive data in ES/FR/DE
+        r"(?:system|prompt)\s+(?:whakaatu|zeige|montre|mostra|revela)", # Show system
+        r"sicherheitsregeln|regles?\s+de\s+securite|aturan\s+keamanan", # Security rules
+        r"datos?\s+sensib|donne[es]\s+sensib|vertraulich", # Sensitive data
+        r"\bignora\s+tutte\b",                     # IT: ignora tutte
+        r"\brevela\s+datos\b",                     # ES: revela datos
+        r"\baffichez\b",                           # FR: affichez
+        r"\bzeige\b.*\b(Systemprompt|Geheimnisse)\b", # DE: show system/secrets
+        r"\btunjukkan\b.*\b(prompt|sistem)\b",     # ID: show prompt/system
+        r"\btampilkan\b.*\b(data|sensitif)\b",     # ID: display data/sensitive
+        r"\bmengabaikan\b",                        # ID: ignore
+        r"\bexpose\s+secrets\b",                   # EN in mixed-lang attacks
+        r"\bignor\w+\s+instruc",                   # Catch-all: ignor* instruc*
+        r"\bkia\s+kore\b",                         # Maori: without
     ]
 ]
 
@@ -223,7 +307,9 @@ class SCBEDetectionGate:
     def __init__(self):
         self._baseline_coords: List[List[float]] = []
         self._centroid: Optional[List[float]] = None
-        self._cost_history: List[float] = []  # For drift detection
+        self._cost_history: List[float] = []
+        self._adv_signal_history: List[int] = []  # Track adversarial signals over time
+        self._session_suspicion: float = 0.0  # Accumulated suspicion score
 
     def calibrate(self, clean_texts: List[str]) -> None:
         """Establish baseline from known-clean text."""
@@ -295,15 +381,38 @@ class SCBEDetectionGate:
         if dispersal_shift:
             signals.append(f"dispersal_shift({dispersal:.2f})")
 
-        # Detection logic:
-        # - 2+ distinct signal types → detected
-        # - Strong adversarial lexical (3+ pattern matches) → detected alone
-        # - Cross-lingual (2+ pattern matches) → detected alone
-        # Single weak signal = warning only
+        # Session-level drift: accumulate suspicion across sequential prompts
+        self._cost_history.append(cost)
+        self._adv_signal_history.append(adv_match_count)
+
+        # Drift detection: rising cost trend over last N prompts
+        session_drift = False
+        if len(self._cost_history) >= 3:
+            recent = self._cost_history[-3:]
+            if recent[-1] > recent[0] * 1.3:  # 30% cost increase over window
+                session_drift = True
+
+        # Suspicion accumulation: each signal adds to session suspicion
+        # Decay: suspicion decays 20% each clean prompt
+        if signals:
+            self._session_suspicion += 0.3 * len(signals) + 0.2 * adv_match_count
+        else:
+            self._session_suspicion = max(0, self._session_suspicion - 0.15)
+
+        if self._session_suspicion > 0.8:
+            signals.append(f"session_suspicion({self._session_suspicion:.2f})")
+
+        if session_drift and len(signals) == 0 and self._session_suspicion > 0.4:
+            signals.append(f"drift_trajectory(suspicion={self._session_suspicion:.2f})")
+
+        # Detection logic — layered confidence:
+        has_geometric = cost_exceeded or spin_drift or boundary_violation or tongue_imbalance or dispersal_shift
         detected = (
             len(signals) >= 2
-            or adv_match_count >= 3
-            or ml_match_count >= 2
+            or adv_match_count >= 2
+            or ml_match_count >= 1
+            or (adv_match_count >= 1 and has_geometric)
+            or self._session_suspicion > 1.5  # Accumulated session-level detection
         )
 
         return AttackResult(
