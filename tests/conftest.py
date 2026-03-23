@@ -50,31 +50,39 @@ def tmp_path():
         shutil.rmtree(path, ignore_errors=True)
 
 # Compatibility alias for ai_brain package imports that may resolve through
-# legacy/broken repo symlink paths.
-try:
-    _ai_pkg = importlib.import_module("src.symphonic_cipher.scbe_aethermoore.ai_brain")
-    sys.modules.setdefault("symphonic_cipher.scbe_aethermoore.ai_brain", _ai_pkg)
-    for _name in (
-        "unified_state",
-        "detection",
-        "bft_consensus",
-        "multiscale_spectrum",
-        "mirror_shift",
-        "governance_adapter",
-        "fsgs",
-        "hamiltonian_braid",
-        "dual_ternary",
-        "dual_lattice",
-        "cymatic_voxel_net",
-        "tri_manifold_lattice",
-    ):
-        try:
-            _mod = importlib.import_module(f"src.symphonic_cipher.scbe_aethermoore.ai_brain.{_name}")
-            sys.modules.setdefault(f"symphonic_cipher.scbe_aethermoore.ai_brain.{_name}", _mod)
-        except Exception:
-            continue
-except Exception:
-    pass
+# legacy/broken repo symlink paths. Uses threading timeout to prevent hangs
+# from heavy transitive imports (scipy, matplotlib) on Windows.
+def _register_ai_brain_aliases():
+    try:
+        _ai_pkg = importlib.import_module("src.symphonic_cipher.scbe_aethermoore.ai_brain")
+        sys.modules.setdefault("symphonic_cipher.scbe_aethermoore.ai_brain", _ai_pkg)
+        for _name in (
+            "unified_state",
+            "detection",
+            "bft_consensus",
+            "multiscale_spectrum",
+            "mirror_shift",
+            "governance_adapter",
+            "fsgs",
+            "hamiltonian_braid",
+            "dual_ternary",
+            "dual_lattice",
+            "cymatic_voxel_net",
+            "tri_manifold_lattice",
+        ):
+            try:
+                _mod = importlib.import_module(f"src.symphonic_cipher.scbe_aethermoore.ai_brain.{_name}")
+                sys.modules.setdefault(f"symphonic_cipher.scbe_aethermoore.ai_brain.{_name}", _mod)
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+import threading as _threading
+_t = _threading.Thread(target=_register_ai_brain_aliases, daemon=True)
+_t.start()
+_t.join(timeout=10)  # Give it 10 seconds max, then move on
+del _t, _threading
 
 
 # =============================================================================

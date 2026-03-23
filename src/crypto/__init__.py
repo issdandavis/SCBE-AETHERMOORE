@@ -12,25 +12,28 @@ Modules:
 - geo_seal: Hyperbolic geometry with signed context vectors
 - signed_lattice_bridge: Integration layer connecting all three
 - h_lwe: Hyperbolic LWE vector encryption (Poincaré ball containment)
+
+Heavy modules (scipy, matplotlib) are lazy-loaded to avoid import hangs on Windows.
 """
+
+import importlib as _importlib
+from typing import TYPE_CHECKING
+
+# ═══════════════════════════════════════════════════════════
+# Eager imports — lightweight modules (numpy, hashlib, math only)
+# ═══════════════════════════════════════════════════════════
 
 # Dual Lattice (Kyber/Dilithium + Sacred Tongues)
 from .dual_lattice import (
-    # Core types
     SacredTongue,
     FluxState,
     LatticeVector,
     TongueContext,
-    # Pattern generators
     CrossStitchPattern,
-    # Cryptographic layers
     KyberTongueEncryptor,
     DilithiumTongueSigner,
-    # Complete system
     DualLatticeCrossStitch,
-    # Governance integration
     TongueLatticeGovernor,
-    # Constants
     TONGUE_PHASES,
     TONGUE_WEIGHTS,
     PHI,
@@ -84,96 +87,6 @@ from .hyperpath_finder import (
     hyperbolic_distance_safe,
 )
 
-# Visualization (Poincare Disk + 3D Voxels)
-from .hyperbolic_viz import (
-    classical_mds,
-    poincare_geodesic,
-    visualize_poincare_disk,
-    visualize_3d_voxels,
-)
-
-# Symphonic Waveform Export (Audio Synthesis)
-from .symphonic_waveform import (
-    SymphonicIntent,
-    HarmonicFingerprint,
-    position_to_intent,
-    hyperpath_to_intents,
-    hyperpath_to_waveform,
-    geodesic_to_waveform,
-    export_wav,
-    compute_harmonic_fingerprint,
-    RealTimeRenderer,
-)
-
-# H-LWE (Hyperbolic LWE Vector Encryption)
-# Temporarily commented out due to remaining syntax errors in h_lwe.py
-# (line 578: misplaced import statement, duplicate class definitions at lines 482/492)
-# These issues existed before this PR and are not related to the Sacred Tongue v1.1 update
-# from .h_lwe import (
-#     HLWESymmetric,
-#     HLWECiphertext,
-#     ContainmentBreach,
-#     InvalidVector,
-#     AuthenticationError,
-#     HLWEError,
-#     exp_map_zero,
-#     log_map_zero,
-#     mobius_add,
-#     mobius_neg,
-#     project_to_ball as hlwe_project_to_ball,
-#     key_vector_from_secret,
-# )
-
-# Dual Lattice 14-Layer Integration (requires scipy — lazy import)
-try:
-    from .dual_lattice_integration import (
-        # Layer 1: PQC Gating
-        authorize_pqc_level,
-        build_lattice_point_gated,
-        # Layer 2-4: Projection
-        GeoContext,
-        RealmType,
-        realify_with_sign,
-        project_to_poincare_with_realm,
-        layers_2_4_process,
-        # Layer 5: Governance Distance
-        governance_aware_distance,
-        layer_5_evaluate,
-        # Layer 6-7: Breathing
-        breathing_transform,
-        apply_realm_breathing,
-        # Layer 8: Clustering
-        hierarchical_realm_clustering,
-        layer_8_cluster,
-        # Layer 9-11: Path Validation
-        spectral_coherence,
-        triadic_temporal_distance,
-        validate_hyperpath,
-        # Layer 12-13: Harmonic Scaling
-        harmonic_scaling,
-        compute_path_cost,
-        layer_12_13_evaluate,
-        # Layer 14: Sonification
-        coord_to_frequency,
-        hyperpath_to_audio,
-        layer_14_sonify,
-        # Complete Integrator
-        DualLatticeIntegrator,
-        IntegratedResult,
-        LayerDecision,
-    )
-except ImportError:
-    pass  # scipy not available — dual lattice integration disabled
-
-# Quasicrystal Lattice (Icosahedral 6D -> 3D Verification)
-from .quasicrystal_lattice import (
-    QuasicrystalLattice,
-    LatticePoint,
-    DefectReport,
-    fibonacci_gates,
-    tongue_fibonacci_gates,
-)
-
 # Sacred Eggs (Cryptographic Secret Containers)
 from .sacred_eggs import (
     SacredEgg,
@@ -189,116 +102,76 @@ from .sacred_eggs import (
     ring_allows,
 )
 
-__all__ = [
-    # === Dual Lattice ===
-    "SacredTongue",
-    "FluxState",
-    "LatticeVector",
-    "TongueContext",
-    "CrossStitchPattern",
-    "KyberTongueEncryptor",
-    "DilithiumTongueSigner",
-    "DualLatticeCrossStitch",
-    "TongueLatticeGovernor",
-    "TONGUE_PHASES",
-    "TONGUE_WEIGHTS",
-    "PHI",
-    # === Symphonic Cipher ===
-    "SymphonicToken",
-    "TonguePolarity",
-    "SACRED_TONGUE_VOCAB",
-    "BASE_FREQ",
-    "FREQ_STEP",
-    "token_to_frequency",
-    "id_to_frequency",
-    "generate_tone",
-    "generate_symphonic_sequence",
-    "analyze_polarity_balance",
-    # === GeoSeal ===
-    "ContextVector",
-    "SecurityPosture",
-    "bytes_to_signed_signal",
-    "signed_signal_to_bytes",
-    "hyperbolic_distance",
-    "hyperbolic_midpoint",
-    "hyperbolic_angle",
-    "compute_triangle_deficit",
-    "harmonic_wall_cost",
-    "trust_from_position",
-    # === Signed Lattice Bridge ===
-    "SignedGovernanceResult",
-    "SignedLatticeBridge",
-    # === Hyperbolic Octree ===
-    "SpectralVoxel",
-    "OctreeNode",
-    "HyperbolicOctree",
-    # === Hyperpath Finder ===
-    "HyperpathFinder",
-    "PathResult",
-    "hyperbolic_distance_safe",
-    # === Visualization ===
-    "classical_mds",
-    "poincare_geodesic",
-    "visualize_poincare_disk",
-    "visualize_3d_voxels",
-    # === 14-Layer Integration ===
-    "authorize_pqc_level",
-    "build_lattice_point_gated",
-    "GeoContext",
-    "RealmType",
-    "realify_with_sign",
-    "project_to_poincare_with_realm",
-    "layers_2_4_process",
-    "governance_aware_distance",
-    "layer_5_evaluate",
-    "breathing_transform",
-    "apply_realm_breathing",
-    "hierarchical_realm_clustering",
-    "layer_8_cluster",
-    "spectral_coherence",
-    "triadic_temporal_distance",
-    "validate_hyperpath",
-    "harmonic_scaling",
-    "compute_path_cost",
-    "layer_12_13_evaluate",
-    "coord_to_frequency",
-    "hyperpath_to_audio",
-    "layer_14_sonify",
-    "DualLatticeIntegrator",
-    "IntegratedResult",
-    "LayerDecision",
-    # === H-LWE ===
-    "HLWESymmetric",
-    "HLWECiphertext",
-    "ContainmentBreach",
-    "InvalidVector",
-    "AuthenticationError",
-    "HLWEError",
-    "exp_map_zero",
-    "log_map_zero",
-    "mobius_add",
-    "mobius_neg",
-    "hlwe_project_to_ball",
-    "key_vector_from_secret",
-    # === Sacred Eggs ===
-    "SacredEgg",
-    "EggCarton",
-    "EggRing",
-    "SacredRituals",
-    "IncubationResult",
-    "TriadicBindingResult",
-    "RingDescentResult",
-    "FailToNoiseResult",
-    "flux_state_to_ring",
-    "create_session_egg",
-    "ring_allows",
-    # === Quasicrystal Lattice ===
-    "QuasicrystalLattice",
-    "LatticePoint",
-    "DefectReport",
-    "fibonacci_gates",
-    "tongue_fibonacci_gates",
-]
+# ═══════════════════════════════════════════════════════════
+# Lazy imports — heavy modules (scipy, matplotlib)
+# These are loaded on first access, not at import time.
+# ═══════════════════════════════════════════════════════════
 
-__version__ = "3.3.0"  # Quasicrystal lattice + tri-manifold integration
+# Module-level lazy loader
+_LAZY_MODULES = {
+    # Visualization (matplotlib)
+    "classical_mds": ".hyperbolic_viz",
+    "poincare_geodesic": ".hyperbolic_viz",
+    "visualize_poincare_disk": ".hyperbolic_viz",
+    "visualize_3d_voxels": ".hyperbolic_viz",
+    # Symphonic Waveform (scipy.io.wavfile)
+    "SymphonicIntent": ".symphonic_waveform",
+    "HarmonicFingerprint": ".symphonic_waveform",
+    "position_to_intent": ".symphonic_waveform",
+    "hyperpath_to_intents": ".symphonic_waveform",
+    "hyperpath_to_waveform": ".symphonic_waveform",
+    "geodesic_to_waveform": ".symphonic_waveform",
+    "export_wav": ".symphonic_waveform",
+    "compute_harmonic_fingerprint": ".symphonic_waveform",
+    "RealTimeRenderer": ".symphonic_waveform",
+    # Dual Lattice 14-Layer Integration (scipy.cluster, scipy.spatial)
+    "authorize_pqc_level": ".dual_lattice_integration",
+    "build_lattice_point_gated": ".dual_lattice_integration",
+    "GeoContext": ".dual_lattice_integration",
+    "RealmType": ".dual_lattice_integration",
+    "realify_with_sign": ".dual_lattice_integration",
+    "project_to_poincare_with_realm": ".dual_lattice_integration",
+    "layers_2_4_process": ".dual_lattice_integration",
+    "governance_aware_distance": ".dual_lattice_integration",
+    "layer_5_evaluate": ".dual_lattice_integration",
+    "breathing_transform": ".dual_lattice_integration",
+    "apply_realm_breathing": ".dual_lattice_integration",
+    "hierarchical_realm_clustering": ".dual_lattice_integration",
+    "layer_8_cluster": ".dual_lattice_integration",
+    "spectral_coherence": ".dual_lattice_integration",
+    "triadic_temporal_distance": ".dual_lattice_integration",
+    "validate_hyperpath": ".dual_lattice_integration",
+    "harmonic_scaling": ".dual_lattice_integration",
+    "compute_path_cost": ".dual_lattice_integration",
+    "layer_12_13_evaluate": ".dual_lattice_integration",
+    "coord_to_frequency": ".dual_lattice_integration",
+    "hyperpath_to_audio": ".dual_lattice_integration",
+    "layer_14_sonify": ".dual_lattice_integration",
+    "DualLatticeIntegrator": ".dual_lattice_integration",
+    "IntegratedResult": ".dual_lattice_integration",
+    "LayerDecision": ".dual_lattice_integration",
+    # Quasicrystal Lattice (scipy.fft)
+    "QuasicrystalLattice": ".quasicrystal_lattice",
+    "LatticePoint": ".quasicrystal_lattice",
+    "DefectReport": ".quasicrystal_lattice",
+    "fibonacci_gates": ".quasicrystal_lattice",
+    "tongue_fibonacci_gates": ".quasicrystal_lattice",
+}
 
+
+def __getattr__(name: str):
+    """Lazy-load heavy modules on first attribute access."""
+    if name in _LAZY_MODULES:
+        module_path = _LAZY_MODULES[name]
+        try:
+            mod = _importlib.import_module(module_path, package=__name__)
+            return getattr(mod, name)
+        except (ImportError, AttributeError) as e:
+            raise ImportError(
+                f"Cannot import {name} from {module_path}: {e}. "
+                f"This module requires scipy or matplotlib."
+            ) from e
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+__version__ = "3.3.0"
