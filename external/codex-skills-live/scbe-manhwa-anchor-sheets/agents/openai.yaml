@@ -1,0 +1,4 @@
+interface:
+  display_name: "Manhwa Anchor Sheets"
+  short_description: "Lock cast and environment anchor sheets"
+  default_prompt: "Use $scbe-manhwa-anchor-sheets to build canon-locked character anchor sheets and environment swatches for the next webtoon render pass."

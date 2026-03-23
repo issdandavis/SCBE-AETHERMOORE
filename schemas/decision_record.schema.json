@@ -26,6 +26,8 @@
     "profile_id": { "type": "string" },
     "job_id": { "type": "string" },
     "agent_id": { "type": "string" },
+    "worker_id": { "type": "string" },
+    "mission_id": { "type": "string" },
     "session_id": { "type": "string" },
     "workflow_id": { "type": "string" },
     "runner_run_id": { "type": "string" },
@@ -59,6 +61,41 @@
         "token_id": { "type": ["string", "null"] },
         "reason": { "type": "string" },
         "expires_at_epoch": { "type": ["number", "null"] }
+      }
+    },
+    "lease": {
+      "type": ["object", "null"],
+      "properties": {
+        "lease_id": { "type": "string" },
+        "owner": { "type": "string" },
+        "provider": { "type": "string" },
+        "resource_class": { "type": "string" },
+        "lease_seconds": { "type": "integer" },
+        "claimed_at_utc": { "type": "string" },
+        "expires_at_utc": { "type": ["string", "null"] }
+      }
+    },
+    "rails": {
+      "type": "object",
+      "properties": {
+        "P+": { "type": "array" },
+        "P-": { "type": "array" },
+        "D+": { "type": "array" },
+        "D-": { "type": "array" }
+      }
+    },
+    "layer14": {
+      "type": "object",
+      "properties": {
+        "energy": { "type": "number" },
+        "centroid": { "type": "number" },
+        "flux": { "type": "number" },
+        "hf_ratio": { "type": "number" },
+        "stability": { "type": "number" },
+        "verification_score": { "type": "number" },
+        "anomaly_ratio": { "type": "number" },
+        "signal_class": { "type": "string" },
+        "channel": { "type": "string" }
       }
     },
     "trace_hash": { "type": "string" },

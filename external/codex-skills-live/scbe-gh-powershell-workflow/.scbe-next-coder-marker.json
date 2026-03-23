@@ -1,0 +1,21 @@
+{
+  "assistant": "scbe-gh-powershell-workflow",
+  "modes": [
+    "code-assistant-scan",
+    "workflow-architect-scan",
+    "aethermoore-demo-scan",
+    "llm-training",
+    "ai-nodal-dev-specialist"
+  ],
+  "handoffInstructions": [
+    "Use llm-training and ai-nodal-dev-specialist modes for non-invasive discovery before any dataset or model edits.",
+    "Treat six-language and six-vector signals as source-of-truth only after matching explicit docs; otherwise capture as 'insufficient signal'.",
+    "Keep model training experiments behind explicit checkpoints: schema checks, split hygiene, and safety harness tests.",
+    "Prefer marker file updates over inline prose for next-coder notes."
+  ],
+  "markers": {
+    "nonCode": true,
+    "visibility": "hidden",
+    "purpose": "handoff context + next-step queue"
+  }
+}

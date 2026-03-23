@@ -16,6 +16,16 @@ class TestMessageCreation:
         assert "ts" in msg
         assert "seq" in msg
 
+    def test_create_chat_message_with_structured_payload(self):
+        feed = WsFeed()
+        msg = feed.chat(
+            Agent.KO,
+            "Plan ready",
+            payload={"plan": {"intent": "research", "risk_tier": "low"}},
+        )
+        assert msg["payload"]["text"] == "Plan ready"
+        assert msg["payload"]["plan"]["intent"] == "research"
+
     def test_sequence_increments(self):
         feed = WsFeed()
         m1 = feed.chat(Agent.KO, "first")

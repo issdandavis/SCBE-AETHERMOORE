@@ -57,6 +57,11 @@ except Exception:
     init_billing_db = None
 
 try:
+    from api.github_app.routes import router as github_app_router
+except Exception:
+    github_app_router = None
+
+try:
     from spiralverse_core import EnvelopeCore
 except Exception:
     EnvelopeCore = None
@@ -119,6 +124,10 @@ if mesh_router is not None:
 # Include billing router for checkout + subscription lifecycle
 if billing_router is not None:
     app.include_router(billing_router)
+
+# Include GitHub App webhook router for local/hosted app automation
+if github_app_router is not None:
+    app.include_router(github_app_router)
 
 # API Key authentication
 API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)

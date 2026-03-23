@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Experimental Research"
+  short_description: "Research and integrate safely"
+  default_prompt: "Research an experiment, set hard safety gates, and integrate only after deterministic evidence passes."

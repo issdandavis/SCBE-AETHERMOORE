@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Voice Verification"
+  short_description: "Validate SCBE voice packets and breath plans."
+  default_prompt: "Use canonical tongue ordering and Layer 3/6/7/14 mapping to produce a verifiable voice packet, patch docs or code as needed, and validate the result."

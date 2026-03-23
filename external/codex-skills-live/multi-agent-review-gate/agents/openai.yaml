@@ -1,0 +1,4 @@
+interface:
+  display_name: "Multi Agent Review Gate"
+  short_description: "Review and gate parallel agent outputs safely"
+  default_prompt: "Use $multi-agent-review-gate to validate and merge outputs from multiple agents."

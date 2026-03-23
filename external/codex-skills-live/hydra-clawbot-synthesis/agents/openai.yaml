@@ -1,0 +1,4 @@
+interface:
+  display_name: "HYDRA Clawbot Synthesis"
+  short_description: "Hydra/OpenClaw ops loop with browser and dataset lanes."
+  default_prompt: "Run the synthesis loop: Hydra terminal browse evidence, Playwright smoke, Hydra Armor ingestion from Notion/GitHub, and publish command lanes to Obsidian."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Internet Workflow Synthesis"
+  short_description: "Build and tune end-to-end internet workflows from SCBE templates"
+  default_prompt: "Synthesize an end-to-end internet workflow pipeline from local and GitHub architecture templates, then tune system variables after the first baseline run."

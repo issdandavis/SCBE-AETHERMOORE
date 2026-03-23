@@ -1,0 +1,4 @@
+interface:
+  display_name: "AetherBrowser ArXiv Nav"
+  short_description: "Navigate arXiv research pages with AetherBrowser"
+  default_prompt: "Use AetherBrowser arXiv nav flow."

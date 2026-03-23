@@ -1,0 +1,4 @@
+interface:
+  display_name: "Session Crosstalk Manager"
+  short_description: "Run session-safe AI cross-talk with verification gates."
+  default_prompt: "Run cross-talk session operations in order: start session, emit updates with where/why/how, verify both lanes, and close handoffs."

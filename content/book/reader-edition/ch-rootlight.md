@@ -1,5 +1,5 @@
 
-# Chapter 15: Rootlight
+# Epilogue: Rootlight
 
 The festival arrived without asking permission, because festivals in Ravencrest did not require permits so much as consensus that it was time.
 
@@ -11,7 +11,7 @@ Root-lights. Hundreds of them. Small living lanterns of amber and pale gold, eac
 
 "You organized this."
 
-"I facilitated conditions under which organization became inevitable." She preened one wing. "Different skill."
+"*Caw!*" She fluffed her feathers with theatrical modesty. "I facilitated conditions under which organization became inevitable." She preened one wing. "Different skill."
 
 Marcus watched a line of children carrying lanterns between waystones along the outer road, their faces lit from below in colors that shifted with their footsteps. Each child walked slowly and deliberately, holding the light out in front of them with both hands like something precious and temporary.
 
@@ -177,6 +177,10 @@ Marcus felt the back of his neck prickle.
 
 The tree's bark pulsed once, as if confirming.
 
+A warm breeze moved through the garden. Not from the sky. From the roots. From the bark. From the substrate itself, where a tired man sat in a crystal chair holding twenty-one dimensions together, and the breeze carried the faintest scent of honeyed mint and apple cider -- Fizzlecress smoke, drifting upward through five hundred years of living wood like a breath that had never quite finished exhaling.
+
+Marcus felt it on his face. The same warmth he'd felt through the kitchen window in San Francisco, a lifetime ago. The same warmth that had risen through his chest when the Protocol asked *what do you intend* and his honesty had answered before his words could. *Kor'thul sil'nav.* The heart-spiral that grows through connection. He didn't know the phrase yet. But his body knew the frequency.
+
 Aria's hand rested on the root. The bark answered her differently than it answered anyone else Marcus had seen touch it -- warmer, more specific, the response of something that recognized her not as a visitor but as a conversation it had never stopped carrying.
 
 "He's still here," Aria said. Not sadly. The way an engineer states a load-bearing fact. "After Kael, the architecture began to fracture. The tongues drifted. The world-substrate lost coherence in places it could not afford to lose. Izack understood the load better than anyone alive -- better than anyone who has ever lived -- and he made a decision."
@@ -207,7 +211,13 @@ Aria stood.
 
 The courtyard at full Rootlight was the most alive place Marcus had ever seen.
 
-Long tables ran the length of the garden in crossed rows, covered in food that ranged from recognizable (bread, fruit, roasted things that smelled like home even if home was no longer the right word) to entirely alien (a soup that glowed faintly blue, a pastry that changed flavor each bite, a drink served in root-bark cups that tasted like warm honey cut with something that made his teeth hum). Marcus tried the drink, winced, took another sip, and finished the cup before admitting to anyone that he liked it.
+Long tables ran the length of the garden in crossed rows, covered in food that ranged from recognizable (bread, fruit, roasted things that smelled like home even if home was no longer the right word) to entirely alien. Marcus tried the blue soup first. It tasted like blueberries, which was reassuring, and then like the memory of blueberries, which was not — a cool sweetness that dissolved on his tongue and left behind something older and stranger, like tasting the color itself, the way a cold lake tastes blue before you realize what you're thinking. His chest loosened. His eyes watered. He set the bowl down and didn't pick it up again.
+
+The pastry was worse. Or better. It changed flavor with each bite — the first was warm bread and salted butter, the second was something citrus and bright that stung the roof of his mouth, the third was his grandmother's sesame oil and he almost dropped it because the taste arrived with the memory and the memory arrived with the grief and the grief arrived with the knowledge that the pastry had not done this on purpose. It was just responding to what he was carrying. Marcus ate the rest of it quickly, before it could find anything else.
+
+Somewhere in the courtyard, a child laughed at the soup's effect on their parent's face, and Marcus thought: *this is what it tastes like when a place decides you belong to it before you've decided to stay.*
+
+A drink served in root-bark cups tasted like warm honey cut with something that made his teeth hum. Marcus tried it, winced, took another sip, and finished the cup before admitting to anyone that he liked it.
 
 Nadia appeared from nowhere, face flushed, hair wild, carrying two cups of the root-bark drink and a grin that suggested she had been treating the entire festival as a competitive sport.
 
@@ -251,9 +261,13 @@ After each name, the adults around them repeated it. Not in unison -- in stagger
 
 The road answered. Each time a name was spoken in distributed witness, the leyline stones along the courtyard's edge pulsed once -- faint, warm, acknowledging.
 
+Marcus glanced at Senna. She was standing near the roadstone pillar, watching the children speak their names with an expression he hadn't seen before — not composure, not assessment, not the controlled stillness she wore in Council. Something softer. Her left hand had drifted from the cuff to her abdomen, resting there without apparent intention, the way hands rest on things they are thinking about without the brain's permission. She noticed him looking and the hand returned to her side, but the expression stayed a moment longer — the particular brightness of someone seeing a future they hadn't let themselves imagine yet.
+
+Marcus filed this under the growing category of things about Senna that he couldn't explain and had stopped trying to.
+
 Marcus understood then that the festival was not separate from what they had done that morning. It was the same thing at a different scale. The roadstone fix had been emergency surgery. This was the routine maintenance that kept the patient alive between crises.
 
-*Governance as community practice. Trust as public ritual. Identity as something you maintain together, not alone.*
+*Huh,* Marcus thought. *So that's what maintenance looks like when you don't call it maintenance.*
 
 He thought about Earth. About how identity there was a database entry, a government number, a password hash. Something you proved to machines in order to access services. Nobody gathered in a garden to speak your name so the roads would remember your current voice.
 
@@ -366,3 +380,89 @@ They walked through the quiet garden, through the last of the root-light, throug
 Behind them, Polly watched from the highest branch of the World Tree and said nothing at all.
 
 Which, for Polly, was the most eloquent endorsement she had ever given.
+
+* * *
+
+They came back to the tree.
+
+Not that night. Weeks later. After the cascade and the descent and Izack's pipe smoke and the seventh silence and all the things that the story would eventually record as architecture but that Marcus and Senna experienced as living through the hardest month of their lives while holding each other's hands in corridors that smelled like ozone and relief.
+
+They came back to the garden because Senna asked to.
+
+It was evening. The bark script moved slowly in the fading light — unhurried, contemplative, the handwriting of a system that had spent five hundred years learning how to be patient. The iridescent leaves turned toward them as they approached, not in surveillance but in recognition. The tree knew who they were. It had been taking notes since Rootlight.
+
+Senna stopped at the stone where Aria had sat. The same worn stone where eleven generations of Ravencrest women had tried to make the tree bloom. The stone where Izack had sat and argued about ward geometry until the tree decided they were worth listening to.
+
+She took Marcus's hand and placed it on her stomach.
+
+She didn't say anything.
+
+Marcus went still. The kind of still that happens when every process in a system pauses at once — everything in him paused.
+
+Point-three seconds. Check.
+
+Point-three seconds. Check.
+
+Point-three seconds — and a third pulse, faint, barely there, nested inside the other two like an echo that had decided to become original signal.
+
+"Something is growing," Senna said.
+
+Marcus's hand didn't move. His breathing changed — deeper, slower, the breathing of a man whose body was processing what his mind hadn't caught up to yet.
+
+"My mother told me once," Senna said, looking at the tree, "that my father planted a seed here and said it was for protection. And my mother said 'most would bring flowers.'"
+
+The bark script shifted. Not alarmed. Not diagnostic. The same pale gold as the maintenance rune in sublevel four — the one that had lit up the first time Marcus built something with honest intent. The system noticing. The architecture leaning in.
+
+"Senna," Marcus said. His voice cracked on her name the way it had cracked in the corridor — not from weakness but from the structural failure that happens when a container encounters something larger than its rated capacity.
+
+"I know," she said. "The timing is—"
+
+"Perfect."
+
+She looked at him.
+
+"The timing is perfect," he said. "Everything important in my life has happened at the wrong time. The white void at three in the morning. The kiss after an incursion. The love confession on a floor that smelled like burned cinnamon." His hand pressed gently against her stomach. "This is right on schedule."
+
+Senna's mouth did the thing. The small tilt. The composure cracking in the right direction. But this time the crack went deeper and what came through was not composure or control or the person the armor was built to protect.
+
+What came through was joy.
+
+Joy. The plain kind. The kind that just shows up.
+
+Above them, in the highest branch of the World Tree, Polly made one sound.
+
+Not a word. Not a caw. Not the sharp click of professional assessment or the soft raven-mutter of reluctant affection.
+
+The sleep-caw.
+
+The soft, raspy vocalization she made when something was safe enough to close her eyes.
+
+The tree's bark script pulsed once — gold, steady, warm — and the living text that had been recording the arguments of lovers and architects and boundary-keepers for five hundred years added one more line that neither Marcus nor Senna would ever read, because the tree's records were not for the people inside the story.
+
+They were for the story itself.
+
+And somewhere deep in the substrate, in a crystal chair that had held him for thirty-eight years, a tired man felt something change in the system's emotional weather. Not a cascade. Not a breach. Not a correction or a warning.
+
+A new verification.
+
+Three heartbeats where there had been two.
+
+Izack Thorne did not look up from his work.
+
+But his pipe smoke curled upward through five hundred years of living wood and emerged into the evening air of the garden where his daughter sat with the man who had fallen through the floor of one world and landed in hers, and the smoke carried the scent of honeyed mint and apple cider and the quiet, unglamorous, irreplaceable warmth of a grandfather who had felt the signal before anyone spoke the words.
+
+The World Tree bloomed.
+
+Not a leaf. Not a shift in the script. A bloom — one flower, silver-white, opening at the branch nearest them with the slow, deliberate grace of something that had been waiting for exactly this.
+
+The first bloom in forty years.
+
+Marcus looked up at it. Senna looked up at it. The flower held its petals open like a hand that had finally unclenched.
+
+"Neither of you was right," Marcus said quietly, remembering Aria's story. "Both of you were necessary."
+
+Senna leaned against him. His arm went around her. The flower glowed above them in the gathering dark, and the tree held its note, and the Protocol pulsed its patient, immovable heartbeat through the world it kept alive — three-tenths of a second, check, three-tenths of a second, check — and for the first time in its five-hundred-year history, the check returned a count it had never returned before.
+
+Three. Verified. Present.
+
+Growing.

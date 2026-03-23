@@ -43,9 +43,9 @@ jobs:
 
       - name: Categorize commit
         id: categorize
+        env:
+          MSG: ${{ steps.commit_info.outputs.msg }}
         run: |
-          MSG="${{ steps.commit_info.outputs.msg }}"
-
           if [[ "$MSG" =~ ^feat ]]; then
             echo "category=### Added" >> $GITHUB_OUTPUT
             echo "emoji=✨" >> $GITHUB_OUTPUT
@@ -70,13 +70,12 @@ jobs:
           fi
 
       - name: Update CHANGELOG
+        env:
+          DATE: ${{ steps.commit_info.outputs.date }}
+          EMOJI: ${{ steps.categorize.outputs.emoji }}
+          MSG: ${{ steps.commit_info.outputs.msg }}
+          SHA: ${{ steps.commit_info.outputs.sha }}
         run: |
-          DATE="${{ steps.commit_info.outputs.date }}"
-
-          # Build entry safely - avoid sed interpolation issues with special chars
-          EMOJI="${{ steps.categorize.outputs.emoji }}"
-          MSG="${{ steps.commit_info.outputs.msg }}"
-          SHA="${{ steps.commit_info.outputs.sha }}"
           ENTRY="$EMOJI $MSG (\`$SHA\`)"
 
           if [ ! -f CHANGELOG.md ]; then

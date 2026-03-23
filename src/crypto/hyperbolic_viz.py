@@ -45,7 +45,7 @@ def hyperbolic_distance_safe(x: np.ndarray, y: np.ndarray, eps: float = 1e-8) ->
     if arg < 1.0:
         return 10.0
 
-    return float(np.arccosh(arg))
+    return float(np.arccosh(max(arg, 1.0)))
 
 
 def classical_mds(dist_matrix: np.ndarray, n_dims: int = 2) -> np.ndarray:

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Polyhedral Workflow Mesh"
+  short_description: "Run multi-agent relay and trigger flows"
+  default_prompt: "Use $polyhedral-workflow-mesh to decompose this goal into lanes, relays, automation triggers, and proof-backed handoffs."

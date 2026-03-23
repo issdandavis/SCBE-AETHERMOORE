@@ -62,7 +62,7 @@
     },
     "gdrive": {
       "enabled": true,
-      "base_dir": ""
+      "base_dir": "G:\\My Drive"
     },
     "proton": {
       "enabled": true,

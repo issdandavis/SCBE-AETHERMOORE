@@ -216,7 +216,7 @@ def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
     arg = 1 + 2 * diff_sq / denominator
     arg = max(arg, 1.0)  # arcosh domain: [1, ∞)
 
-    return float(np.arccosh(arg))
+    return float(np.arccosh(max(arg, 1.0)))
 
 
 def verify_mobius_invariance(
@@ -440,11 +440,16 @@ def layer_12_inverse(score: float, R: float = PHI) -> float:
     """
     Inverse of harmonic scaling with phase_deviation=0.
 
-    d = score - 1
+    For the live Layer 12 wall-law:
+        score = R^(d^2)
+
+    So the inverse is:
+        d = sqrt(log_R(score))
     """
     if score < 1.0:
         return 0.0
-    return float(score - 1.0)
+    base = max(float(R), 1.0 + EPS)
+    return float(np.sqrt(np.log(score) / np.log(base)))
 
 
 def verify_monotonicity(n_tests: int = 1000, R: float = PHI) -> Tuple[bool, int]:

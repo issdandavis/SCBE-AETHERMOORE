@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Claude Cross-Talk"
+  short_description: "Codex-Claude packet workflow with audit repair."
+  default_prompt: "Use $scbe-claude-crosstalk-workflow to start a cross-talk session, emit updates, and repair delivery mismatches."

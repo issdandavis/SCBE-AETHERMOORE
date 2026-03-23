@@ -1,0 +1,4 @@
+interface:
+  display_name: "Profit Autopilot"
+  short_description: "Launch and publish monetized products with validation gates"
+  default_prompt: "Run the profit autopilot pipeline with research checks, storefront updates, visual QA, and publish reports."

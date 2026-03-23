@@ -1,0 +1,4 @@
+interface:
+  display_name: "7th Tongue Lore RAG"
+  short_description: "World Anvil lore RAG with Claude-Codex cross-talk packets."
+  default_prompt: "Build or query the 7th Tongue lore index from World Anvil exports and emit cross-talk packets for Claude/Codex handoff."

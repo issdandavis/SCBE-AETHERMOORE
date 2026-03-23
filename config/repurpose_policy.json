@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "description": "Top-level card-sorting rules for non-destructive repo cleanup and cloud replication.",
+  "rules": [
+    {
+      "name": "keep-source-in-git",
+      "patterns": [
+        "src",
+        "api",
+        "python",
+        "agents",
+        "scripts",
+        "tests",
+        "docs",
+        "schemas",
+        "packages",
+        "kindle-app",
+        "public",
+        "app",
+        "services",
+        "deploy",
+        "k8s",
+        ".github"
+      ],
+      "bucket": "keep-in-repo",
+      "destinations": [
+        "github"
+      ],
+      "reason": "Active code, tests, deployment assets, or maintained documentation."
+    },
+    {
+      "name": "repo-metadata-in-git",
+      "patterns": [
+        "README.md",
+        "LICENSE",
+        "NOTICE",
+        "AGENTS.md",
+        "package.json",
+        "package-lock.json",
+        "pyproject.toml",
+        "requirements.txt",
+        "requirements-lock.txt",
+        ".gitignore",
+        ".npmignore",
+        ".prettierignore",
+        ".prettierrc",
+        "pytest.ini",
+        "tsconfig.json",
+        "tsconfig.base.json",
+        "vitest.config.ts"
+      ],
+      "bucket": "keep-in-repo",
+      "destinations": [
+        "github"
+      ],
+      "reason": "Core repo metadata and build configuration."
+    },
+    {
+      "name": "safe-examples-in-git",
+      "patterns": [
+        ".env.example",
+        ".env.gateway.example"
+      ],
+      "bucket": "keep-in-repo",
+      "destinations": [
+        "github"
+      ],
+      "reason": "Template environment files are safe to keep in source control."
+    },
+    {
+      "name": "datasets-and-training-manual-review",
+      "patterns": [
+        "training",
+        "training-data",
+        "notebooks",
+        "lexicons"
+      ],
+      "bucket": "manual-review",
+      "destinations": [
+        "huggingface",
+        "gdrive"
+      ],
+      "reason": "Mixed corpora, runs, notebooks, and training assets should be curated before publishing."
+    },
+    {
+      "name": "notes-and-content-manual-review",
+      "patterns": [
+        "content",
+        "notes",
+        "articles",
+        "paper"
+      ],
+      "bucket": "manual-review",
+      "destinations": [
+        "github",
+        "gdrive"
+      ],
+      "reason": "Human-authored knowledge may belong in Git, cloud archive, or both depending on sensitivity."
+    },
+    {
+      "name": "generated-outputs-to-gdrive",
+      "patterns": [
+        "artifacts",
+        "dist",
+        "test-results",
+        "exports"
+      ],
+      "bucket": "archive-or-cloud",
+      "destinations": [
+        "gdrive"
+      ],
+      "reason": "Generated outputs should be replicated to cloud storage instead of bloating the repo."
+    },
+    {
+      "name": "cache-and-runtime-ignore",
+      "patterns": [
+        ".git",
+        "node_modules",
+        "__pycache__",
+        ".pytest_cache",
+        ".hypothesis",
+        ".benchmarks",
+        ".playwright-cli",
+        ".playwright-mcp",
+        ".codex_tmp",
+        ".codex-plan-check",
+        ".pytest_tmp_hallpass_review",
+        "tmp"
+      ],
+      "bucket": "ignore-or-cache",
+      "destinations": [],
+      "reason": "Runtime caches and local dependency trees should not be exported or pushed."
+    },
+    {
+      "name": "archival-snapshots-to-gdrive",
+      "patterns": [
+        "SCBE-AETHERMOORE-v3.0.0",
+        "backups",
+        "external",
+        "external_repos"
+      ],
+      "bucket": "archive-or-cloud",
+      "destinations": [
+        "gdrive"
+      ],
+      "reason": "Snapshots, mirrors, and backups are better treated as archives than live source."
+    },
+    {
+      "name": "ops-state-manual-review",
+      "patterns": [
+        ".claude",
+        ".kiro",
+        ".scbe",
+        ".mcp.json"
+      ],
+      "bucket": "manual-review",
+      "destinations": [
+        "gdrive"
+      ],
+      "reason": "Agent and local orchestration state may be useful to preserve, but should not be moved blindly."
+    },
+    {
+      "name": "secret-files-security-review",
+      "patterns": [
+        ".env",
+        ".env.*",
+        "*.db"
+      ],
+      "bucket": "security-now",
+      "destinations": [],
+      "reason": "Sensitive local configuration and databases need explicit handling before any export."
+    }
+  ]
+}

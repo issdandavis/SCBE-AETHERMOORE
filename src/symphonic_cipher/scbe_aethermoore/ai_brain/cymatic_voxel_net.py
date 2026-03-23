@@ -214,7 +214,7 @@ def _hyperbolic_dist_6d(u: List[float], v: List[float]) -> float:
     arg = 1 + (2 * diff_sq) / denom
     if arg < 1:
         return 0.0
-    return math.acosh(arg)
+    return math.acosh(max(arg, 1.0))
 
 
 # ═══════════════════════════════════════════════════════════════
