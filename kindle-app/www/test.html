@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Test Lane</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./static/icons/icon-192.png">
+<meta name="theme-color" content="#17c6cf">
+<link rel="stylesheet" href="./static/phone-shell.css">
+</head>
+<body>
+<div class="phone-shell">
+  <section class="hero">
+    <div class="hero-top">
+      <span class="eyebrow">Test Lane</span>
+      <div class="actions">
+        <a class="btn-link" href="./polly-pad.html">Launcher</a>
+        <a class="btn-link" href="./ops.html">Ops</a>
+      </div>
+    </div>
+    <h1>Target, task, run mode, artifacts.</h1>
+    <p class="lede">
+      This lane is for AI website testing. The page captures the intent, calls the browser bridge when available, and keeps the evidence log readable on a phone.
+    </p>
+    <div class="actions">
+      <span class="pill" id="modePill">Mode: mobile_emulation</span>
+      <span class="status-pill" id="statusPill">Idle</span>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2>Run Sheet</h2>
+        <p class="section-copy">The defaults assume the local bridge on port `8001` and the dev key. Change them if your stack differs.</p>
+      </div>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label for="targetInput">Target URL</label>
+        <input id="targetInput" type="text" placeholder="https://example.com">
+      </div>
+      <div class="field">
+        <label for="modeSelect">Run mode</label>
+        <select id="modeSelect">
+          <option value="mobile_emulation">Fast pass · Playwright mobile emulation</option>
+          <option value="android_browser">Real Android browser pass</option>
+          <option value="capacitor_webview">Shipped app pass</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="apiBaseInput">Bridge API base</label>
+        <input id="apiBaseInput" type="text">
+      </div>
+      <div class="field">
+        <label for="apiKeyInput">Bridge API key</label>
+        <input id="apiKeyInput" type="text" placeholder="scbe-dev-key">
+      </div>
+      <div class="field" style="grid-column:1/-1">
+        <label for="promptInput">Task prompt</label>
+        <textarea id="promptInput" placeholder="Describe what the AI should validate, capture, or screenshot."></textarea>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn" type="button" id="healthBtn">Health</button>
+      <button class="btn" type="button" id="integrationBtn">Integration Status</button>
+      <button class="btn primary" type="button" id="runBtn">Run Browser Task</button>
+      <button class="btn secondary" type="button" id="shareBtn">Share Target to Ops</button>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2>Artifacts</h2>
+        <p class="section-copy">Each run is stored locally with mode, target, and returned payload so the emulator stays useful between passes.</p>
+      </div>
+      <button class="btn" type="button" id="clearBtn">Clear Log</button>
+    </div>
+    <div class="artifact-log" id="artifactLog"></div>
+  </section>
+</div>
+
+<script src="./static/phone-shell.js"></script>
+<script>
+const TEST_STATE_KEY = "scbe.testlane.state.v1";
+const ARTIFACTS_KEY = "scbe.testlane.artifacts.v1";
+const defaultBase = PhoneShell.bridgeBase(8001);
+let artifacts = PhoneShell.readStorageJson(ARTIFACTS_KEY, []);
+
+function readState() {
+  return PhoneShell.readStorageJson(TEST_STATE_KEY, {
+    target: "https://example.com",
+    mode: "mobile_emulation",
+    apiBase: defaultBase,
+    apiKey: "scbe-dev-key",
+    prompt: "Capture the hero, the primary CTA, and the first broken layout issue.",
+  });
+}
+
+function writeState() {
+  const state = {
+    target: document.getElementById("targetInput").value.trim(),
+    mode: document.getElementById("modeSelect").value,
+    apiBase: document.getElementById("apiBaseInput").value.trim(),
+    apiKey: document.getElementById("apiKeyInput").value.trim(),
+    prompt: document.getElementById("promptInput").value.trim(),
+  };
+  PhoneShell.writeStorageJson(TEST_STATE_KEY, state);
+  document.getElementById("modePill").textContent = `Mode: ${state.mode}`;
+  return state;
+}
+
+function setStatus(label, tone = "") {
+  const pill = document.getElementById("statusPill");
+  pill.textContent = label;
+  pill.className = `status-pill${tone ? ` ${tone}` : ""}`;
+}
+
+function renderArtifacts() {
+  const target = document.getElementById("artifactLog");
+  if (!artifacts.length) {
+    target.innerHTML = `<article class="card"><div class="small-note">No artifacts yet. Run a health check or browser task to start the log.</div></article>`;
+    return;
+  }
+  target.innerHTML = artifacts.map((entry) => `
+    <article class="card">
+      <div class="meta-row">
+        <span class="pill">${PhoneShell.escapeHtml(entry.kind)}</span>
+        <span class="small-note">${PhoneShell.escapeHtml(entry.at)}</span>
+      </div>
+      <div class="small-note">${PhoneShell.escapeHtml(entry.mode || "")} · ${PhoneShell.escapeHtml(entry.target || "")}</div>
+      <pre class="artifact-pre">${PhoneShell.escapeHtml(JSON.stringify(entry.payload, null, 2))}</pre>
+    </article>
+  `).join("");
+}
+
+function pushArtifact(kind, state, payload) {
+  artifacts.unshift({
+    kind,
+    at: new Date().toISOString(),
+    mode: state.mode,
+    target: state.target,
+    payload,
+  });
+  artifacts = artifacts.slice(0, 12);
+  PhoneShell.writeStorageJson(ARTIFACTS_KEY, artifacts);
+  renderArtifacts();
+}
+
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, options);
+  const payload = await PhoneShell.readJson(response);
+  if (!response.ok) {
+    throw new Error(typeof payload.detail === "string" ? payload.detail : JSON.stringify(payload.detail || payload));
+  }
+  return payload;
+}
+
+async function runHealth() {
+  const state = writeState();
+  setStatus("Checking health...", "warn");
+  try {
+    const payload = await fetchJson(`${state.apiBase}/health`);
+    pushArtifact("health", state, payload);
+    setStatus("Health ok", "good");
+  } catch (error) {
+    pushArtifact("health_error", state, { error: String(error) });
+    setStatus("Health failed", "bad");
+  }
+}
+
+async function runIntegrations() {
+  const state = writeState();
+  setStatus("Checking integrations...", "warn");
+  try {
+    const payload = await fetchJson(`${state.apiBase}/v1/integrations/status`, {
+      headers: { "X-API-Key": state.apiKey },
+    });
+    pushArtifact("integrations", state, payload);
+    setStatus("Integration status captured", "good");
+  } catch (error) {
+    pushArtifact("integration_error", state, { error: String(error) });
+    setStatus("Integration status failed", "bad");
+  }
+}
+
+async function runBrowserTask() {
+  const state = writeState();
+  const target = PhoneShell.normaliseUrl(state.target);
+  if (!target) {
+    setStatus("Target URL required", "bad");
+    return;
+  }
+  setStatus("Running browser task...", "warn");
+  const sessionId = `phone-${Date.now()}`;
+  const actions = [
+    { action: "navigate", target, timeout_ms: 12000 },
+    { action: "extract", target: "h1", timeout_ms: 12000, include_full_data: true },
+    { action: "screenshot", target: "full_page", timeout_ms: 15000 },
+  ];
+  try {
+    const payload = await fetchJson(`${state.apiBase}/v1/integrations/n8n/browse`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": state.apiKey,
+      },
+      body: JSON.stringify({
+        actions,
+        session_id: sessionId,
+        workflow_id: `phone-${state.mode}`,
+        run_id: sessionId,
+        source: "phone-test-lane",
+      }),
+    });
+    pushArtifact("browse_run", state, payload);
+    setStatus("Browser task captured", "good");
+  } catch (error) {
+    pushArtifact("browse_error", state, { error: String(error) });
+    setStatus("Browser task failed", "bad");
+  }
+}
+
+const state = readState();
+document.getElementById("targetInput").value = state.target;
+document.getElementById("modeSelect").value = state.mode;
+document.getElementById("apiBaseInput").value = state.apiBase;
+document.getElementById("apiKeyInput").value = state.apiKey;
+document.getElementById("promptInput").value = state.prompt;
+document.getElementById("modePill").textContent = `Mode: ${state.mode}`;
+document.getElementById("healthBtn").addEventListener("click", runHealth);
+document.getElementById("integrationBtn").addEventListener("click", runIntegrations);
+document.getElementById("runBtn").addEventListener("click", runBrowserTask);
+document.getElementById("shareBtn").addEventListener("click", () => {
+  const current = writeState();
+  PhoneShell.setSharedTarget({
+    url: current.target,
+    title: "Test lane target",
+    note: current.prompt,
+    source: "test",
+  });
+  setStatus("Target shared to Ops", "good");
+});
+document.getElementById("clearBtn").addEventListener("click", () => {
+  artifacts = [];
+  PhoneShell.writeStorageJson(ARTIFACTS_KEY, artifacts);
+  renderArtifacts();
+  setStatus("Artifact log cleared", "warn");
+});
+document.getElementById("modeSelect").addEventListener("change", writeState);
+["targetInput", "apiBaseInput", "apiKeyInput", "promptInput"].forEach((id) => {
+  document.getElementById(id).addEventListener("change", writeState);
+});
+renderArtifacts();
+</script>
+</body>
+</html>

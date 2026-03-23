@@ -1,0 +1,534 @@
+{
+  "ch01": {
+    "panels": [
+      "./manhwa/ch01/ultra/hero-slice-001.jpg",
+      "./manhwa/ch01/ultra/hero-slice-002.jpg",
+      "./manhwa/ch01/ultra/hero-slice-003.jpg",
+      "./manhwa/ch01/ultra/hero-slice-004.jpg"
+    ],
+    "count": 4,
+    "version": "v3-ultra-preview"
+  },
+  "ch02": {
+    "id": "ch02",
+    "panels": [
+      "./manhwa/ch02/gen/ch02-p01.png",
+      "./manhwa/ch02/gen/ch02-p02.png",
+      "./manhwa/ch02/gen/ch02-p03.png"
+    ],
+    "count": 3
+  },
+  "ch03": {
+    "id": "ch03",
+    "panels": [
+      "./manhwa/ch03/gen/ch03-p01.png",
+      "./manhwa/ch03/gen/ch03-p02.png",
+      "./manhwa/ch03/gen/ch03-p03.png",
+      "./manhwa/ch03/gen/ch03-p04.png",
+      "./manhwa/ch03/gen/ch03-p05.png",
+      "./manhwa/ch03/gen/ch03-p06.png",
+      "./manhwa/ch03/gen/ch03-p07.png"
+    ],
+    "count": 7
+  },
+  "ch04": {
+    "id": "ch04",
+    "panels": [
+      "./manhwa/ch04/gen/ch04-p01.png",
+      "./manhwa/ch04/gen/ch04-p02.png",
+      "./manhwa/ch04/gen/ch04-p03.png",
+      "./manhwa/ch04/gen/ch04-p04.png",
+      "./manhwa/ch04/gen/ch04-p05.png",
+      "./manhwa/ch04/gen/ch04-p06.png",
+      "./manhwa/ch04/gen/ch04-p07.png"
+    ],
+    "count": 7
+  },
+  "ch05": {
+    "id": "ch05",
+    "panels": [
+      "./manhwa/ch05/gen/ch05-p01.png",
+      "./manhwa/ch05/gen/ch05-p02.png",
+      "./manhwa/ch05/gen/ch05-p03.png",
+      "./manhwa/ch05/gen/ch05-p04.png"
+    ],
+    "count": 4
+  },
+  "ch06": {
+    "id": "ch06",
+    "panels": [
+      "./manhwa/ch06/gen/ch06-p01.png",
+      "./manhwa/ch06/gen/ch06-p02.png"
+    ],
+    "count": 2
+  },
+  "ch07": {
+    "id": "ch07",
+    "panels": [
+      "./manhwa/ch07/gen/ch07-p01.png",
+      "./manhwa/ch07/gen/ch07-p02.png",
+      "./manhwa/ch07/gen/ch07-p03.png",
+      "./manhwa/ch07/gen/ch07-p04.png",
+      "./manhwa/ch07/gen/ch07-p05.png",
+      "./manhwa/ch07/gen/ch07-p06.png",
+      "./manhwa/ch07/gen/ch07-p07.png",
+      "./manhwa/ch07/gen/ch07-p08.png",
+      "./manhwa/ch07/gen/ch07-p09.png"
+    ],
+    "count": 9
+  },
+  "ch08": {
+    "id": "ch08",
+    "panels": [
+      "./manhwa/ch08/gen/ch08-p01.png",
+      "./manhwa/ch08/gen/ch08-p02.png",
+      "./manhwa/ch08/gen/ch08-p03.png",
+      "./manhwa/ch08/gen/ch08-p04.png",
+      "./manhwa/ch08/gen/ch08-p05.png",
+      "./manhwa/ch08/gen/ch08-p06.png",
+      "./manhwa/ch08/gen/ch08-p07.png",
+      "./manhwa/ch08/gen/ch08-p08.png"
+    ],
+    "count": 8
+  },
+  "ch09": {
+    "id": "ch09",
+    "panels": [
+      "./manhwa/ch09/gen/ch09-p01.png",
+      "./manhwa/ch09/gen/ch09-p02.png",
+      "./manhwa/ch09/gen/ch09-p03.png"
+    ],
+    "count": 3
+  },
+  "ch10": {
+    "id": "ch10",
+    "panels": [
+      "./manhwa/ch10/gen/ch10-p01.png",
+      "./manhwa/ch10/gen/ch10-p02.png",
+      "./manhwa/ch10/gen/ch10-p03.png"
+    ],
+    "count": 3
+  },
+  "ch11": {
+    "id": "ch11",
+    "panels": [
+      "./manhwa/ch11/gen/ch11-p01.png",
+      "./manhwa/ch11/gen/ch11-p02.png",
+      "./manhwa/ch11/gen/ch11-p03.png",
+      "./manhwa/ch11/gen/ch11-p04.png",
+      "./manhwa/ch11/gen/ch11-p05.png",
+      "./manhwa/ch11/gen/ch11-p06.png",
+      "./manhwa/ch11/gen/ch11-p07.png",
+      "./manhwa/ch11/gen/ch11-p08.png",
+      "./manhwa/ch11/gen/ch11-p09.png",
+      "./manhwa/ch11/gen/ch11-p10.png",
+      "./manhwa/ch11/gen/ch11-p11.png",
+      "./manhwa/ch11/gen/ch11-p12.png",
+      "./manhwa/ch11/gen/ch11-p13.png"
+    ],
+    "count": 13
+  },
+  "ch12": {
+    "id": "ch12",
+    "panels": [
+      "./manhwa/ch12/gen/ch12-p01.png",
+      "./manhwa/ch12/gen/ch12-p02.png",
+      "./manhwa/ch12/gen/ch12-p03.png",
+      "./manhwa/ch12/gen/ch12-p04.png"
+    ],
+    "count": 4
+  },
+  "ch13": {
+    "id": "ch13",
+    "panels": [
+      "./manhwa/ch13/gen/ch13-p01.png",
+      "./manhwa/ch13/gen/ch13-p02.png",
+      "./manhwa/ch13/gen/ch13-p03.png",
+      "./manhwa/ch13/gen/ch13-p04.png",
+      "./manhwa/ch13/gen/ch13-p05.png",
+      "./manhwa/ch13/gen/ch13-p06.png",
+      "./manhwa/ch13/gen/ch13-p07.png",
+      "./manhwa/ch13/gen/ch13-p08.png",
+      "./manhwa/ch13/gen/ch13-p09.png",
+      "./manhwa/ch13/gen/ch13-p10.png",
+      "./manhwa/ch13/gen/ch13-p11.png"
+    ],
+    "count": 11
+  },
+  "ch14": {
+    "id": "ch14",
+    "panels": [
+      "./manhwa/ch14/gen/ch14-p01.png",
+      "./manhwa/ch14/gen/ch14-p02.png",
+      "./manhwa/ch14/gen/ch14-p03.png",
+      "./manhwa/ch14/gen/ch14-p04.png",
+      "./manhwa/ch14/gen/ch14-p05.png",
+      "./manhwa/ch14/gen/ch14-p06.png",
+      "./manhwa/ch14/gen/ch14-p07.png",
+      "./manhwa/ch14/gen/ch14-p08.png",
+      "./manhwa/ch14/gen/ch14-p09.png"
+    ],
+    "count": 9
+  },
+  "ch15": {
+    "id": "ch15",
+    "panels": [
+      "./manhwa/ch15/gen/ch15-p01.png",
+      "./manhwa/ch15/gen/ch15-p02.png",
+      "./manhwa/ch15/gen/ch15-p03.png",
+      "./manhwa/ch15/gen/ch15-p04.png",
+      "./manhwa/ch15/gen/ch15-p05.png",
+      "./manhwa/ch15/gen/ch15-p06.png",
+      "./manhwa/ch15/gen/ch15-p07.png",
+      "./manhwa/ch15/gen/ch15-p08.png",
+      "./manhwa/ch15/gen/ch15-p09.png",
+      "./manhwa/ch15/gen/ch15-p10.png",
+      "./manhwa/ch15/gen/ch15-p11.png",
+      "./manhwa/ch15/gen/ch15-p12.png",
+      "./manhwa/ch15/gen/ch15-p13.png"
+    ],
+    "count": 13
+  },
+  "ch16": {
+    "id": "ch16",
+    "panels": [
+      "./manhwa/ch16/gen/ch16-p01.png",
+      "./manhwa/ch16/gen/ch16-p02.png",
+      "./manhwa/ch16/gen/ch16-p03.png",
+      "./manhwa/ch16/gen/ch16-p04.png",
+      "./manhwa/ch16/gen/ch16-p05.png",
+      "./manhwa/ch16/gen/ch16-p06.png",
+      "./manhwa/ch16/gen/ch16-p07.png",
+      "./manhwa/ch16/gen/ch16-p08.png",
+      "./manhwa/ch16/gen/ch16-p09.png",
+      "./manhwa/ch16/gen/ch16-p10.png",
+      "./manhwa/ch16/gen/ch16-p11.png",
+      "./manhwa/ch16/gen/ch16-p12.png",
+      "./manhwa/ch16/gen/ch16-p13.png",
+      "./manhwa/ch16/gen/ch16-p14.png",
+      "./manhwa/ch16/gen/ch16-p15.png"
+    ],
+    "count": 15
+  },
+  "ch17": {
+    "id": "ch17",
+    "panels": [
+      "./manhwa/ch17/gen/ch17-p01.png",
+      "./manhwa/ch17/gen/ch17-p02.png",
+      "./manhwa/ch17/gen/ch17-p03.png",
+      "./manhwa/ch17/gen/ch17-p04.png",
+      "./manhwa/ch17/gen/ch17-p05.png",
+      "./manhwa/ch17/gen/ch17-p06.png",
+      "./manhwa/ch17/gen/ch17-p07.png",
+      "./manhwa/ch17/gen/ch17-p08.png",
+      "./manhwa/ch17/gen/ch17-p09.png"
+    ],
+    "count": 9
+  },
+  "ch18": {
+    "id": "ch18",
+    "panels": [
+      "./manhwa/ch18/gen/ch18-p01.png",
+      "./manhwa/ch18/gen/ch18-p02.png",
+      "./manhwa/ch18/gen/ch18-p03.png",
+      "./manhwa/ch18/gen/ch18-p04.png",
+      "./manhwa/ch18/gen/ch18-p05.png",
+      "./manhwa/ch18/gen/ch18-p06.png",
+      "./manhwa/ch18/gen/ch18-p07.png",
+      "./manhwa/ch18/gen/ch18-p08.png",
+      "./manhwa/ch18/gen/ch18-p09.png",
+      "./manhwa/ch18/gen/ch18-p10.png",
+      "./manhwa/ch18/gen/ch18-p11.png",
+      "./manhwa/ch18/gen/ch18-p12.png",
+      "./manhwa/ch18/gen/ch18-p13.png",
+      "./manhwa/ch18/gen/ch18-p14.png",
+      "./manhwa/ch18/gen/ch18-p15.png"
+    ],
+    "count": 15
+  },
+  "ch19": {
+    "id": "ch19",
+    "panels": [
+      "./manhwa/ch19/gen/ch19-p01.png",
+      "./manhwa/ch19/gen/ch19-p02.png",
+      "./manhwa/ch19/gen/ch19-p03.png",
+      "./manhwa/ch19/gen/ch19-p04.png",
+      "./manhwa/ch19/gen/ch19-p05.png",
+      "./manhwa/ch19/gen/ch19-p06.png",
+      "./manhwa/ch19/gen/ch19-p07.png"
+    ],
+    "count": 7
+  },
+  "ch20": {
+    "id": "ch20",
+    "panels": [
+      "./manhwa/ch20/gen/ch20-p01.png",
+      "./manhwa/ch20/gen/ch20-p02.png",
+      "./manhwa/ch20/gen/ch20-p03.png",
+      "./manhwa/ch20/gen/ch20-p04.png",
+      "./manhwa/ch20/gen/ch20-p05.png",
+      "./manhwa/ch20/gen/ch20-p06.png",
+      "./manhwa/ch20/gen/ch20-p07.png",
+      "./manhwa/ch20/gen/ch20-p08.png",
+      "./manhwa/ch20/gen/ch20-p09.png",
+      "./manhwa/ch20/gen/ch20-p10.png",
+      "./manhwa/ch20/gen/ch20-p11.png",
+      "./manhwa/ch20/gen/ch20-p12.png",
+      "./manhwa/ch20/gen/ch20-p13.png"
+    ],
+    "count": 13
+  },
+  "ch21": {
+    "id": "ch21",
+    "panels": [
+      "./manhwa/ch21/gen/ch21-p01.png",
+      "./manhwa/ch21/gen/ch21-p02.png",
+      "./manhwa/ch21/gen/ch21-p03.png",
+      "./manhwa/ch21/gen/ch21-p04.png",
+      "./manhwa/ch21/gen/ch21-p05.png",
+      "./manhwa/ch21/gen/ch21-p06.png",
+      "./manhwa/ch21/gen/ch21-p07.png"
+    ],
+    "count": 7
+  },
+  "ch22": {
+    "id": "ch22",
+    "panels": [
+      "./manhwa/ch22/gen/ch22-p01.png",
+      "./manhwa/ch22/gen/ch22-p02.png"
+    ],
+    "count": 2
+  },
+  "ch23": {
+    "id": "ch23",
+    "panels": [
+      "./manhwa/ch23/gen/ch23-p01.png",
+      "./manhwa/ch23/gen/ch23-p02.png",
+      "./manhwa/ch23/gen/ch23-p03.png",
+      "./manhwa/ch23/gen/ch23-p04.png",
+      "./manhwa/ch23/gen/ch23-p05.png",
+      "./manhwa/ch23/gen/ch23-p06.png",
+      "./manhwa/ch23/gen/ch23-p07.png",
+      "./manhwa/ch23/gen/ch23-p08.png",
+      "./manhwa/ch23/gen/ch23-p09.png",
+      "./manhwa/ch23/gen/ch23-p10.png",
+      "./manhwa/ch23/gen/ch23-p11.png",
+      "./manhwa/ch23/gen/ch23-p12.png"
+    ],
+    "count": 12
+  },
+  "ch24": {
+    "id": "ch24",
+    "panels": [
+      "./manhwa/ch24/gen/ch24-p01.png",
+      "./manhwa/ch24/gen/ch24-p02.png",
+      "./manhwa/ch24/gen/ch24-p03.png",
+      "./manhwa/ch24/gen/ch24-p04.png",
+      "./manhwa/ch24/gen/ch24-p05.png",
+      "./manhwa/ch24/gen/ch24-p06.png",
+      "./manhwa/ch24/gen/ch24-p07.png",
+      "./manhwa/ch24/gen/ch24-p08.png",
+      "./manhwa/ch24/gen/ch24-p09.png",
+      "./manhwa/ch24/gen/ch24-p10.png",
+      "./manhwa/ch24/gen/ch24-p11.png"
+    ],
+    "count": 11
+  },
+  "ch25": {
+    "id": "ch25",
+    "panels": [
+      "./manhwa/ch25/gen/ch25-p01.png",
+      "./manhwa/ch25/gen/ch25-p02.png",
+      "./manhwa/ch25/gen/ch25-p03.png",
+      "./manhwa/ch25/gen/ch25-p04.png",
+      "./manhwa/ch25/gen/ch25-p05.png",
+      "./manhwa/ch25/gen/ch25-p06.png",
+      "./manhwa/ch25/gen/ch25-p07.png",
+      "./manhwa/ch25/gen/ch25-p08.png",
+      "./manhwa/ch25/gen/ch25-p09.png",
+      "./manhwa/ch25/gen/ch25-p10.png",
+      "./manhwa/ch25/gen/ch25-p11.png",
+      "./manhwa/ch25/gen/ch25-p12.png",
+      "./manhwa/ch25/gen/ch25-p13.png"
+    ],
+    "count": 13
+  },
+  "ch26": {
+    "id": "ch26",
+    "panels": [
+      "./manhwa/ch26/gen/ch26-p01.png",
+      "./manhwa/ch26/gen/ch26-p02.png",
+      "./manhwa/ch26/gen/ch26-p03.png",
+      "./manhwa/ch26/gen/ch26-p04.png",
+      "./manhwa/ch26/gen/ch26-p05.png",
+      "./manhwa/ch26/gen/ch26-p06.png",
+      "./manhwa/ch26/gen/ch26-p07.png",
+      "./manhwa/ch26/gen/ch26-p08.png"
+    ],
+    "count": 8
+  },
+  "ch27": {
+    "id": "ch27",
+    "panels": [
+      "./manhwa/ch27/gen/ch27-p01.png",
+      "./manhwa/ch27/gen/ch27-p02.png",
+      "./manhwa/ch27/gen/ch27-p03.png",
+      "./manhwa/ch27/gen/ch27-p04.png",
+      "./manhwa/ch27/gen/ch27-p05.png",
+      "./manhwa/ch27/gen/ch27-p06.png",
+      "./manhwa/ch27/gen/ch27-p07.png",
+      "./manhwa/ch27/gen/ch27-p08.png",
+      "./manhwa/ch27/gen/ch27-p09.png",
+      "./manhwa/ch27/gen/ch27-p10.png"
+    ],
+    "count": 10
+  },
+  "int01": {
+    "id": "int01",
+    "panels": [
+      "./manhwa/int01/gen/int01-p01.png",
+      "./manhwa/int01/gen/int01-p02.png",
+      "./manhwa/int01/gen/int01-p03.png",
+      "./manhwa/int01/gen/int01-p04.png",
+      "./manhwa/int01/gen/int01-p05.png",
+      "./manhwa/int01/gen/int01-p06.png",
+      "./manhwa/int01/gen/int01-p07.png"
+    ],
+    "count": 7
+  },
+  "int02": {
+    "id": "int02",
+    "panels": [
+      "./manhwa/int02/gen/int02-p01.png",
+      "./manhwa/int02/gen/int02-p02.png",
+      "./manhwa/int02/gen/int02-p03.png",
+      "./manhwa/int02/gen/int02-p04.png",
+      "./manhwa/int02/gen/int02-p05.png",
+      "./manhwa/int02/gen/int02-p06.png",
+      "./manhwa/int02/gen/int02-p07.png",
+      "./manhwa/int02/gen/int02-p08.png",
+      "./manhwa/int02/gen/int02-p09.png"
+    ],
+    "count": 9
+  },
+  "int03": {
+    "id": "int03",
+    "panels": [
+      "./manhwa/int03/gen/int03-p01.png",
+      "./manhwa/int03/gen/int03-p02.png",
+      "./manhwa/int03/gen/int03-p03.png",
+      "./manhwa/int03/gen/int03-p04.png",
+      "./manhwa/int03/gen/int03-p05.png",
+      "./manhwa/int03/gen/int03-p06.png",
+      "./manhwa/int03/gen/int03-p07.png",
+      "./manhwa/int03/gen/int03-p08.png",
+      "./manhwa/int03/gen/int03-p09.png",
+      "./manhwa/int03/gen/int03-p10.png"
+    ],
+    "count": 10
+  },
+  "int04": {
+    "id": "int04",
+    "panels": [
+      "./manhwa/int04/gen/int04-p01.png",
+      "./manhwa/int04/gen/int04-p02.png",
+      "./manhwa/int04/gen/int04-p03.png",
+      "./manhwa/int04/gen/int04-p04.png",
+      "./manhwa/int04/gen/int04-p05.png",
+      "./manhwa/int04/gen/int04-p06.png",
+      "./manhwa/int04/gen/int04-p07.png"
+    ],
+    "count": 7
+  },
+  "int05": {
+    "id": "int05",
+    "panels": [
+      "./manhwa/int05/gen/int05-p01.png",
+      "./manhwa/int05/gen/int05-p02.png",
+      "./manhwa/int05/gen/int05-p03.png",
+      "./manhwa/int05/gen/int05-p04.png",
+      "./manhwa/int05/gen/int05-p05.png",
+      "./manhwa/int05/gen/int05-p06.png",
+      "./manhwa/int05/gen/int05-p07.png",
+      "./manhwa/int05/gen/int05-p08.png",
+      "./manhwa/int05/gen/int05-p09.png"
+    ],
+    "count": 9
+  },
+  "int06": {
+    "id": "int06",
+    "panels": [
+      "./manhwa/int06/gen/int06-p01.png",
+      "./manhwa/int06/gen/int06-p02.png",
+      "./manhwa/int06/gen/int06-p03.png",
+      "./manhwa/int06/gen/int06-p04.png",
+      "./manhwa/int06/gen/int06-p05.png",
+      "./manhwa/int06/gen/int06-p06.png",
+      "./manhwa/int06/gen/int06-p07.png",
+      "./manhwa/int06/gen/int06-p08.png",
+      "./manhwa/int06/gen/int06-p09.png"
+    ],
+    "count": 9
+  },
+  "int07": {
+    "id": "int07",
+    "panels": [
+      "./manhwa/int07/gen/int07-p01.png",
+      "./manhwa/int07/gen/int07-p02.png",
+      "./manhwa/int07/gen/int07-p03.png",
+      "./manhwa/int07/gen/int07-p04.png",
+      "./manhwa/int07/gen/int07-p05.png",
+      "./manhwa/int07/gen/int07-p06.png",
+      "./manhwa/int07/gen/int07-p07.png"
+    ],
+    "count": 7
+  },
+  "int08": {
+    "id": "int08",
+    "panels": [
+      "./manhwa/int08/gen/int08-p01.png",
+      "./manhwa/int08/gen/int08-p02.png",
+      "./manhwa/int08/gen/int08-p03.png",
+      "./manhwa/int08/gen/int08-p04.png",
+      "./manhwa/int08/gen/int08-p05.png"
+    ],
+    "count": 5
+  },
+  "int09": {
+    "id": "int09",
+    "panels": [
+      "./manhwa/int09/gen/int09-p01.png",
+      "./manhwa/int09/gen/int09-p02.png",
+      "./manhwa/int09/gen/int09-p03.png",
+      "./manhwa/int09/gen/int09-p04.png"
+    ],
+    "count": 4
+  },
+  "int10": {
+    "id": "int10",
+    "panels": [
+      "./manhwa/int10/gen/int10-p01.png",
+      "./manhwa/int10/gen/int10-p02.png",
+      "./manhwa/int10/gen/int10-p03.png",
+      "./manhwa/int10/gen/int10-p04.png"
+    ],
+    "count": 4
+  },
+  "rootlight": {
+    "id": "rootlight",
+    "panels": [
+      "./manhwa/rootlight/gen/rootlight-p01.png",
+      "./manhwa/rootlight/gen/rootlight-p02.png",
+      "./manhwa/rootlight/gen/rootlight-p03.png",
+      "./manhwa/rootlight/gen/rootlight-p04.png",
+      "./manhwa/rootlight/gen/rootlight-p05.png",
+      "./manhwa/rootlight/gen/rootlight-p06.png",
+      "./manhwa/rootlight/gen/rootlight-p07.png",
+      "./manhwa/rootlight/gen/rootlight-p08.png",
+      "./manhwa/rootlight/gen/rootlight-p09.png",
+      "./manhwa/rootlight/gen/rootlight-p10.png",
+      "./manhwa/rootlight/gen/rootlight-p11.png"
+    ],
+    "count": 11
+  }
+}

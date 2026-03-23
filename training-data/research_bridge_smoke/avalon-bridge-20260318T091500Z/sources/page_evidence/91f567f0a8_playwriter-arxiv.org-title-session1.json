@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "session_id": "1",
+  "task": "title",
+  "url": "https://arxiv.org/abs/2410.01706",
+  "status_code": "200",
+  "title": "[2410.01706] Sable: a Performant, Efficient and Scalable Sequence Model for MARL",
+  "timestamp": "2026-03-14T08:22:10.196401+00:00"
+}

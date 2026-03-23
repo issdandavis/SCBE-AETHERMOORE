@@ -1,0 +1,131 @@
+{
+  "source_roots": [
+    {
+      "path": "C:/Users/issda/OneDrive",
+      "include": ["**/*"],
+      "exclude": [
+        ".tmp/**",
+        "**/*.tmp",
+        "**/*.part",
+        "**/node_modules/**",
+        "**/__pycache__/**"
+      ]
+    },
+    {
+      "path": "C:/Users/issda/SCBE-AETHERMOORE",
+      "include": ["**/*"],
+      "exclude": [
+        ".git/**",
+        "node_modules/**",
+        "dist/**",
+        "build/**",
+        "training/runs/**",
+        "artifacts/**"
+      ]
+    }
+  ],
+  "selection": {
+    "include_globs": ["**/*"],
+    "exclude_globs": [
+      ".git/**",
+      ".venv/**",
+      "node_modules/**",
+      "**/__pycache__/**",
+      ".pytest_cache/**",
+      ".mypy_cache/**",
+      ".ruff_cache/**",
+      "dist/**",
+      "build/**",
+      "training/runs/**",
+      "*.zip"
+    ],
+    "max_file_bytes": 1073741824
+  },
+  "batch_size": 3,
+  "batch_delay_seconds": 5,
+  "processing": {
+    "snippet_chars": 12000
+  },
+  "lanes": [
+    {
+      "name": "gemini-sorter",
+      "provider": "google",
+      "model": "gemini-2.5-flash",
+      "weight": 2,
+      "temperature": 0.1,
+      "max_tokens": 240
+    },
+    {
+      "name": "claude-sorter",
+      "provider": "anthropic",
+      "model": "claude-3-5-haiku-latest",
+      "weight": 2,
+      "temperature": 0.1,
+      "max_tokens": 240
+    },
+    {
+      "name": "grok-sorter",
+      "provider": "xai",
+      "model": "grok-3-mini",
+      "enabled": false,
+      "weight": 1,
+      "temperature": 0.1,
+      "max_tokens": 240
+    },
+    {
+      "name": "hf-sorter",
+      "provider": "huggingface",
+      "model": "Qwen/Qwen2.5-7B-Instruct",
+      "weight": 1,
+      "temperature": 0.1,
+      "max_tokens": 240
+    }
+  ],
+  "shipping": {
+    "required_verified_targets": 2,
+    "order": [
+      "gdrive_rclone",
+      "github_backup",
+      "hf_dataset",
+      "dropbox_local",
+      "gdrive_local"
+    ],
+    "targets": {
+      "gdrive_rclone": {
+        "enabled": true,
+        "type": "rclone",
+        "remote": "gdrive",
+        "path_prefix": "SCBE_Verified_Offload"
+      },
+      "github_backup": {
+        "enabled": false,
+        "type": "github",
+        "repo": "",
+        "release_prefix": "multi-agent-offload"
+      },
+      "hf_dataset": {
+        "enabled": false,
+        "type": "hf",
+        "repo_id": "",
+        "path_prefix": "multi-agent-offload"
+      },
+      "dropbox_local": {
+        "enabled": false,
+        "type": "local_copy",
+        "provider": "dropbox",
+        "path_prefix": "SCBE/multi-agent-offload",
+        "safe_to_delete": false
+      },
+      "gdrive_local": {
+        "enabled": false,
+        "type": "local_copy",
+        "provider": "gdrive",
+        "path_prefix": "SCBE/multi-agent-offload",
+        "safe_to_delete": false
+      }
+    }
+  },
+  "retention": {
+    "keep_runs": 25
+  }
+}

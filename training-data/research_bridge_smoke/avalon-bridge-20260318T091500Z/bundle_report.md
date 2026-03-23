@@ -1,0 +1,121 @@
+# Research Training Bridge Bundle
+
+- bundle_id: `avalon-bridge-20260318T091500Z`
+- created_at_utc: `2026-03-18T06:19:53Z`
+- records: `103`
+- arxiv_evidence: `3`
+- obsidian_notes: `100`
+- active_vault: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files`
+- corpus: `training-data\research_bridge_smoke\avalon-bridge-20260318T091500Z\research_corpus.jsonl`
+- hf_training_manifest: `training-data\research_bridge_smoke\avalon-bridge-20260318T091500Z\hf_training_manifest.json`
+
+## Source Inputs
+- `arxiv_evidence` :: `` :: `C:\Users\issda\SCBE-AETHERMOORE\artifacts\page_evidence\playwriter-arxiv.org-navigate-session1.json`
+- `arxiv_evidence` :: `[2410.01706] Sable: a Performant, Efficient and Scalable Sequence Model for MARL` :: `C:\Users\issda\SCBE-AETHERMOORE\artifacts\page_evidence\playwriter-arxiv.org-snapshot-session1.json`
+- `arxiv_evidence` :: `[2410.01706] Sable: a Performant, Efficient and Scalable Sequence Model for MARL` :: `C:\Users\issda\SCBE-AETHERMOORE\artifacts\page_evidence\playwriter-arxiv.org-title-session1.json`
+- `obsidian_markdown` :: `Execution Results - Obsidian Integration` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Agent Ops\2026-02-23 - Execution Results - Obsidian Integration.md`
+- `obsidian_markdown` :: `Funnel Filter - Grok and Multi-AI Dump` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Agent Ops\2026-02-23 - Funnel Filter - Grok and Multi-AI Dump.md`
+- `obsidian_markdown` :: `Obsidian-First Agent Operating Plan` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Agent Ops\2026-02-23 - Obsidian-First Agent Operating Plan.md`
+- `obsidian_markdown` :: `SCBE vs External Review - Context Comparison` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Agent Ops\2026-02-23 - SCBE vs External Review - Context Comparison.md`
+- `obsidian_markdown` :: `Claude-Codex Cross-Talk Handoff` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Agent Ops\2026-03-01 - Claude-Codex Cross-Talk Handoff.md`
+- `obsidian_markdown` :: `Article Posting + Revenue Ops Execution` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Agent Ops\2026-03-02 - Article Posting + Revenue Ops Execution.md`
+- `obsidian_markdown` :: `2026-03-17 - Browser Mesh and Vault Sync` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Agent Ops\2026-03-17 - Browser Mesh and Vault Sync.md`
+- `obsidian_markdown` :: `Agent Ops Index` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Agent Ops\Agent Ops Index.md`
+- `obsidian_markdown` :: `2026-03-09T22:01:12Z | Codex | HALLPASS-GUIDANCE-REVIEW` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Agent Ops\Cross Talk.md`
+- `obsidian_markdown` :: `Artifacts` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Agent Ops\Sessions\20260309-220112-codex-handoff.md`
+- `obsidian_markdown` :: `Session Handoff` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Agent Ops\Sessions\20260310-011645-codex-handoff.md`
+- `obsidian_markdown` :: `Session Handoff` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Agent Ops\Sessions\20260310-011648-codex-handoff.md`
+- `obsidian_markdown` :: `Agent Session Template` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Agent Ops\Templates\Agent Session Template.md`
+- `obsidian_markdown` :: `Agent Work Queue Template` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Agent Ops\Templates\Agent Work Queue Template.md`
+- `obsidian_markdown` :: `14-Layer Architecture` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Architecture\14-Layer Architecture.md`
+- `obsidian_markdown` :: `21D Canonical State` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Architecture\21D Canonical State.md`
+- `obsidian_markdown` :: `codex write probe` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Architecture\codex-write-probe.md`
+- `obsidian_markdown` :: `Decimal Drift - Computational Interferometry` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Architecture\Decimal Drift - Computational Interferometry.md`
+- `obsidian_markdown` :: `Dual Lattice Framework` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Architecture\Dual Lattice Framework.md`
+- `obsidian_markdown` :: `Grand Unified Statement` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Architecture\Grand Unified Statement.md`
+- `obsidian_markdown` :: `HallPass Guidance Integration Review - 2026-03-09` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Architecture\HallPass Guidance Integration Review 2026-03-09.md`
+- `obsidian_markdown` :: `Harmonic Wall` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Architecture\Harmonic Wall.md`
+- `obsidian_markdown` :: `M4 - Multimodel Multinode Model Matrix` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Architecture\M4 - Multimodel Multinode Model Matrix.md`
+- `obsidian_markdown` :: `CDDM Framework` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\CDDM\CDDM Framework.md`
+- `obsidian_markdown` :: `Composition Chains` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\CDDM\Composition Chains.md`
+- `obsidian_markdown` :: `Morphism Catalog` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\CDDM\Morphism Catalog.md`
+- `obsidian_markdown` :: `Tongue Domain Mappings` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\CDDM\Tongue Domain Mappings.md`
+- `obsidian_markdown` :: `2026-02-23 Night Session Mega Update` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Growth Log\2026-02-23 - Night Session Mega Update.md`
+- `obsidian_markdown` :: `Patent Strategy` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Growth Log\Patent Strategy.md`
+- `obsidian_markdown` :: `Research Directions` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Growth Log\Research Directions.md`
+- `obsidian_markdown` :: `System Growth Log` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Growth Log\System Growth Log.md`
+- `obsidian_markdown` :: `NNOS + Swarm Notes` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\NNOS + Swarm Notes - 2026-02-23.md`
+- `obsidian_markdown` :: `Connector Closure To Cash (2026-03-04)` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Ops\2026-03-04-connector-closure-to-cash.md`
+- `obsidian_markdown` :: `System Consolidation Note (2026-03-04)` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Ops\2026-03-04-system-consolidation-note.md`
+- `obsidian_markdown` :: `System Review and Cloud Storage Audit — 2026-03-07` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Ops\2026-03-07-system-review-and-cloud-audit.md`
+- `obsidian_markdown` :: `Advanced CSIDE Writing Guide: AI-Powered Interactive Fiction Development` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\References\Advanced CSIDE Writing Guide.md`
+- `obsidian_markdown` :: `Category Theory References` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\References\Category Theory References.md`
+- `obsidian_markdown` :: `Character Research - Core Cast` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\References\Character Research - Core Cast.md`
+- `obsidian_markdown` :: `Federated Learning References` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\References\Federated Learning References.md`
+- `obsidian_markdown` :: `Hyperbolic Geometry References` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\References\Hyperbolic Geometry References.md`
+- `obsidian_markdown` :: `Post-Quantum Crypto References` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\References\Post-Quantum Crypto References.md`
+- `obsidian_markdown` :: `Six Tongues Protocol - 7 Sense Vault` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\References\Six Tongues Protocol - 7 Sense Vault.md`
+- `obsidian_markdown` :: `SCBE-AETHERMOORE Research Index` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\SCBE-AETHERMOORE Index.md`
+- `obsidian_markdown` :: `SCBE A2A Cross-Talk Packet — B1-HB` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\SCBE_Ai_to_Ai_CrossTalk_B1-HB_20260302.md`
+- `obsidian_markdown` :: `3D Spatial Engine` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Tongues\3D Spatial Engine.md`
+- `obsidian_markdown` :: `Evolving Lexicons` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Tongues\Evolving Lexicons.md`
+- `obsidian_markdown` :: `Sacred Tongues - Emotional Architecture` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Tongues\Sacred Tongues - Emotional Architecture.md`
+- `obsidian_markdown` :: `Six Sacred Tongues` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Tongues\Six Sacred Tongues.md`
+- `obsidian_markdown` :: `Tongue Dimension Map` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Tongues\Tongue Dimension Map.md`
+- `obsidian_markdown` :: `The Six Tongues Protocol - Project Index` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\00 - Project Index.md`
+- `obsidian_markdown` :: `The Six Tongues Protocol - 7 Sense Vault` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\01 - 7 Sense Vault.md`
+- `obsidian_markdown` :: `The Six Tongues Protocol - Everweave Timeline` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\02 - Everweave Timeline.md`
+- `obsidian_markdown` :: `The Six Tongues Protocol - Lore Drop Opening Anchors` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\03 - Lore Drop - Pollyoneth Opening Anchors.md`
+- `obsidian_markdown` :: `The Six Tongues Protocol - Ame Integration` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\04 - Ame Integration.md`
+- `obsidian_markdown` :: `Children and Sacred Eggs Canon` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\05 - Children and Sacred Eggs Canon.md`
+- `obsidian_markdown` :: `Izack and Aria on Names` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\06 - Izack and Aria on Names.md`
+- `obsidian_markdown` :: `Marcus Third Thread System Magic` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\07 - Marcus Third Thread System Magic.md`
+- `obsidian_markdown` :: `Chapter Cadence and Tropes` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\08 - Chapter Cadence and Tropes.md`
+- `obsidian_markdown` :: `Act Two Spine` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\09 - Act Two Spine.md`
+- `obsidian_markdown` :: `Personality Rubix` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\10 - Personality Rubix.md`
+- `obsidian_markdown` :: `Kael's Fall -- Why He Broke` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\11 - Kael's Fall - Why He Broke.md`
+- `obsidian_markdown` :: `Cast Bible` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\12 - Cast Bible.md`
+- `obsidian_markdown` :: `Handoff: Act II Sibling Expansion` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\13 - AI Handoff - Act II Expansion.md`
+- `obsidian_markdown` :: `Festival Interlude: Rootlight` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\14 - Festival Interlude - Rootlight.md`
+- `obsidian_markdown` :: `Geography and Ecology Harvest` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\15 - Geography and Ecology Harvest.md`
+- `obsidian_markdown` :: `Story Layer Lock` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\16 - Story Layer Lock.md`
+- `obsidian_markdown` :: `System Import Candidates - HYDRA Octree Tentacles` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\17 - System Import Candidates - HYDRA Octree Tentacles.md`
+- `obsidian_markdown` :: `Malz Integration Arc` :: `C:\Users\issda\OneDrive\Offload\Documents\Avalon Files\SCBE Research\Writing\The Six Tongues Protocol\18 - Malz Integration Arc.md`
+- `obsidian_markdown` :: `Kindle App Development + Virtual Upload Brief` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-04-kindle-dev-and-virtual-upload-brief.md`
+- `obsidian_markdown` :: `AetherBrowse Improvement Brief (Research + Local Context)` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-05-aetherbrowse-improvement-brief.md`
+- `obsidian_markdown` :: `Context Capsule Loader (1-5 Windows)` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-05-context-capsule-loader.md`
+- `obsidian_markdown` :: `Library Wing v1 — Multi-Model Round Table + Parallel Worktree Lanes` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-05-library-wing-roundtable.md`
+- `obsidian_markdown` :: `Open Source Knowledge Connector Deep Research (2026-03-05)` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-05-open-source-connector-library.md`
+- `obsidian_markdown` :: `L11 Triadic Temporal Axiom Draft` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-13-l11-triadic-temporal-axiom-draft.md`
+- `obsidian_markdown` :: `ArcKit Dual-Track Scan` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-15-arckit-dual-track.md`
+- `obsidian_markdown` :: `Chapter 1 Tandem Audit` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-15-ch01-book-panel-tandem-audit.md`
+- `obsidian_markdown` :: `AetherCode Phone Emulator Research` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-15-phone-emulator-architecture-research.md`
+- `obsidian_markdown` :: `Scattercast to SCBE Overlay Note` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-15-scattercast-scbe-overlay-note.md`
+- `obsidian_markdown` :: `How Game Companies Use AI for Complex Tasks` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-16-game-ai-company-patterns.md`
+- `obsidian_markdown` :: `Phase Control Modulation Matrices` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-16-phase-control-modulation-matrices.md`
+- `obsidian_markdown` :: `AetherBrowser Extension Ownership Stack` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-17-aetherbrowser-extension-ownership-stack.md`
+- `obsidian_markdown` :: `Global Research Note: Agent Senses, Choice Monitoring, and World Models` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-17-global-agent-senses-choice-monitoring.md`
+- `obsidian_markdown` :: `Adaptive Training Systems` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-18-adaptive-training-systems.md`
+- `obsidian_markdown` :: `Free Compute Landscape (March 2026)` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-18-free-compute-landscape.md`
+- `obsidian_markdown` :: `Isekai Tower Training Architecture` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\2026-03-18-tower-training-architecture.md`
+- `obsidian_markdown` :: `Aethermoor Spiral Engine MVP` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\AETHERMOOR_SPIRAL_ENGINE_MVP.md`
+- `obsidian_markdown` :: `Multi-Model Modal Matrix (Experimental)` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\MULTI_MODEL_MODAL_MATRIX.md`
+- `obsidian_markdown` :: `Multimodality Matrix Training (Experimental)` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\MULTIMODAL_MATRIX_TRAINING.md`
+- `obsidian_markdown` :: `Quasi-Vector Spin Voxels & Magnetics (Research Draft)` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\QUASI_VECTOR_SPIN_VOXELS.md`
+- `obsidian_markdown` :: `1. What a Trit Is` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\QUASI_VOXEL_TERNARY_STORAGE.md`
+- `obsidian_markdown` :: `Research Documents (Non-Canonical)` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\README.md`
+- `obsidian_markdown` :: `Sheaf Consensus Gate` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\SHEAF_CONSENSUS_GATE.md`
+- `obsidian_markdown` :: `Signed Multi-Plane Encoding (Prototype)` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\SIGNED_MULTIPLANE_ENCODING.md`
+- `obsidian_markdown` :: `Semantic-Weighted Letter Encoding: A Physics-Inspired Framework for Structured Language Representation` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\SWLE_semantic_weighted_letter_encoding.md`
+- `obsidian_markdown` :: `SWLE v0 Dataset Schema and Benchmark Protocol` :: `C:\Users\issda\SCBE-AETHERMOORE\docs\research\SWLE_V0_DATASET_AND_BENCHMARK.md`
+- `obsidian_markdown` :: `Sacred Egg Model Genesis — Concept Note` :: `C:\Users\issda\SCBE-AETHERMOORE\notes\round-table\2026-03-17-sacred-egg-model-genesis.md`
+- `obsidian_markdown` :: `Session Recap — March 17, 2026 (Night Session)` :: `C:\Users\issda\SCBE-AETHERMOORE\notes\round-table\2026-03-17-session-recap.md`
+- `obsidian_markdown` :: `Next Session Plan — March 18, 2026` :: `C:\Users\issda\SCBE-AETHERMOORE\notes\round-table\2026-03-18-next-session-plan.md`
+- `obsidian_markdown` :: `Automated Research Pipeline — Concept Note` :: `C:\Users\issda\SCBE-AETHERMOORE\notes\round-table\2026-03-18-research-pipeline-concept.md`
+- `obsidian_markdown` :: `The Round Table — Multi-Agent Communication Protocol` :: `C:\Users\issda\SCBE-AETHERMOORE\notes\round-table\ROUND_TABLE.md`
+
+## Training Guidance
+- Dataset repo target: `issdandavis/scbe-aethermoore-training-data`
+- Model repo target: `issdandavis/scbe-research-bridge-qwen-0.5b`
+- Review the staged sources before merging this bundle into broader corpora.
+- Keep this bridge source-grounded; do not invent synthetic claims before evidence review.

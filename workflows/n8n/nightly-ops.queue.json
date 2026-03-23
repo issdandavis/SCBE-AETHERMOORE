@@ -1,0 +1,39 @@
+{
+  "schema_version": "scbe_n8_style_queue_v1",
+  "workflow_name": "nightly-ops",
+  "triggers": [
+    "workflow_dispatch",
+    "push"
+  ],
+  "env": {
+    "SCBE_MODE": "ci"
+  },
+  "items": [
+    {
+      "id": "step_01_smoke",
+      "action": "command",
+      "label": "Smoke",
+      "command": "python scbe.py selftest",
+      "depends_on": [],
+      "metadata": {
+        "order": 1,
+        "source": "scbe workflow styleize",
+        "github_workflow": "C:/Users/issda/SCBE-AETHERMOORE/.github/workflows/nightly-ops.yml"
+      }
+    },
+    {
+      "id": "step_02_packetize",
+      "action": "command",
+      "label": "Packetize",
+      "command": "python scbe.py flow packetize --plan artifacts/flow_plans/demo.json",
+      "depends_on": [
+        "step_01_smoke"
+      ],
+      "metadata": {
+        "order": 2,
+        "source": "scbe workflow styleize",
+        "github_workflow": "C:/Users/issda/SCBE-AETHERMOORE/.github/workflows/nightly-ops.yml"
+      }
+    }
+  ]
+}

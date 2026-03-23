@@ -1,7 +1,7 @@
 {
-  "updated_at_utc": "2026-03-23T05:36:22.954734+00:00",
-  "run_id": "20260323T053622Z",
-  "fingerprint": "2685704877de5134e953380a329c3303c3b20eb71b1be7c197db5684d0cae7d8",
+  "updated_at_utc": "2026-03-23T13:40:28.677988+00:00",
+  "run_id": "20260323T134022Z",
+  "fingerprint": "ad5efe2b4dd7da3dc1043e65f9fd79bf4549507314c97ec2dd7cf50831d6e627",
   "index": {
     "AGENTS.md": {
       "size": 4829,
@@ -10,6 +10,10 @@
     "ALIASES.md": {
       "size": 524,
       "mtime_ns": 1771221010226588200
+    },
+    "APP_STORE_STRATEGY.md": {
+      "size": 2306,
+      "mtime_ns": 1774273202204658000
     },
     "ARCHITECTURE.md": {
       "size": 16616,
@@ -20,8 +24,8 @@
       "mtime_ns": 1772676334392958700
     },
     "CLAUDE.md": {
-      "size": 11590,
-      "mtime_ns": 1772676334392958700
+      "size": 18759,
+      "mtime_ns": 1774273202204658000
     },
     "CLEANUP_NOTES.md": {
       "size": 3705,
@@ -46,6 +50,14 @@
     "DEMOS.md": {
       "size": 11666,
       "mtime_ns": 1771221010231593800
+    },
+    "DEPLOYMENT_STRATEGY.md": {
+      "size": 2610,
+      "mtime_ns": 1774273202206662700
+    },
+    "GEMINI.md": {
+      "size": 2411,
+      "mtime_ns": 1774273202206662700
     },
     "INSTRUCTIONS.md": {
       "size": 5687,
@@ -72,12 +84,16 @@
       "mtime_ns": 1771221010238106500
     },
     "README.md": {
-      "size": 12727,
-      "mtime_ns": 1774150397345909600
+      "size": 14375,
+      "mtime_ns": 1774273202208667300
     },
     "README_INDEX.md": {
       "size": 1534,
       "mtime_ns": 1771221010240105800
+    },
+    "REPO_AUDIT.md": {
+      "size": 1674,
+      "mtime_ns": 1774273202208667300
     },
     "REPO_REPORT.md": {
       "size": 6185,
@@ -151,21 +167,13 @@
       "size": 916,
       "mtime_ns": 1771221010440198400
     },
-    "aethermoore.py": {
-      "size": 10104,
-      "mtime_ns": 1772664800771130700
-    },
-    "aethermoore_patent_math.py": {
-      "size": 5680,
-      "mtime_ns": 1771221010441898600
-    },
     "agents/__init__.py": {
       "size": 288,
       "mtime_ns": 1771221010441898600
     },
     "agents/aetherbrowse_cli.py": {
       "size": 15673,
-      "mtime_ns": 1774144541478215400
+      "mtime_ns": 1774273202208667300
     },
     "agents/antivirus_membrane.py": {
       "size": 3968,
@@ -233,7 +241,7 @@
     },
     "agents/browsers/cdp_backend.py": {
       "size": 23860,
-      "mtime_ns": 1774144541480215600
+      "mtime_ns": 1774273202208667300
     },
     "agents/browsers/chrome_mcp.py": {
       "size": 8602,
@@ -404,24 +412,24 @@
       "mtime_ns": 1772754433920978500
     },
     "api/github_app/__init__.py": {
-      "size": 110,
-      "mtime_ns": 1774082066270806800
+      "size": 115,
+      "mtime_ns": 1774273202208667300
     },
     "api/github_app/client.py": {
-      "size": 6639,
-      "mtime_ns": 1774082099670553500
+      "size": 6849,
+      "mtime_ns": 1774273202213778900
     },
     "api/github_app/routes.py": {
-      "size": 1876,
-      "mtime_ns": 1774082205547294100
+      "size": 1930,
+      "mtime_ns": 1774273202213778900
     },
     "api/github_app/scoring.py": {
-      "size": 8974,
-      "mtime_ns": 1774082331235596300
+      "size": 9266,
+      "mtime_ns": 1774273202213778900
     },
     "api/github_app/service.py": {
-      "size": 8145,
-      "mtime_ns": 1774082192516878500
+      "size": 8365,
+      "mtime_ns": 1774273202215783600
     },
     "api/keys/__init__.py": {
       "size": 145,
@@ -440,8 +448,8 @@
       "mtime_ns": 1771221010462037000
     },
     "api/main.py": {
-      "size": 57655,
-      "mtime_ns": 1774082259584264300
+      "size": 57860,
+      "mtime_ns": 1774273202215783600
     },
     "api/metering.py": {
       "size": 4682,
@@ -455,14 +463,6 @@
       "size": 8612,
       "mtime_ns": 1772676334441802500
     },
-    "build_package.py": {
-      "size": 5239,
-      "mtime_ns": 1771221010472507200
-    },
-    "cleanup_imports.py": {
-      "size": 1569,
-      "mtime_ns": 1772664801694827900
-    },
     "colab_check.md": {
       "size": 50055,
       "mtime_ns": 1774142781137187800
@@ -470,26 +470,6 @@
     "colab_state.md": {
       "size": 558,
       "mtime_ns": 1774139082188781000
-    },
-    "demo-cli.py": {
-      "size": 5572,
-      "mtime_ns": 1771221010494582400
-    },
-    "demo.py": {
-      "size": 20654,
-      "mtime_ns": 1773730319484197800
-    },
-    "demo_complete_system.py": {
-      "size": 61259,
-      "mtime_ns": 1772676240707779200
-    },
-    "demo_full_system.py": {
-      "size": 22476,
-      "mtime_ns": 1772676240708790300
-    },
-    "demo_memory_shard.py": {
-      "size": 15811,
-      "mtime_ns": 1771221010504094600
     },
     "docker-compose.api.yml": {
       "size": 1012,
@@ -516,8 +496,8 @@
       "mtime_ns": 1772676334680915900
     },
     "docs/00-overview/README.md": {
-      "size": 5851,
-      "mtime_ns": 1774150397345909600
+      "size": 5857,
+      "mtime_ns": 1774273202294017100
     },
     "docs/00-overview/executive-summary.md": {
       "size": 6087,
@@ -556,8 +536,8 @@
       "mtime_ns": 1772676334680915900
     },
     "docs/03-deployment/github-app-latticegate.md": {
-      "size": 1635,
-      "mtime_ns": 1774082218491502000
+      "size": 1690,
+      "mtime_ns": 1774273202294017100
     },
     "docs/03-deployment/zapier-setup.md": {
       "size": 8228,
@@ -1389,7 +1369,7 @@
     },
     "docs/AXIOM_CROSS_REFERENCE.md": {
       "size": 8145,
-      "mtime_ns": 1774144541481215500
+      "mtime_ns": 1774273202294017100
     },
     "docs/BILLING_METRICS.md": {
       "size": 1311,
@@ -1848,8 +1828,8 @@
       "mtime_ns": 1772750043698222400
     },
     "docs/STRATEGIC_REVIEW_20260322.md": {
-      "size": 9145,
-      "mtime_ns": 1774220959636126100
+      "size": 9384,
+      "mtime_ns": 1774273202294017100
     },
     "docs/STVM_EXECUTION_MODEL.md": {
       "size": 1874,
@@ -1872,8 +1852,8 @@
       "mtime_ns": 1772676334725295900
     },
     "docs/SYSTEM_ANATOMY.md": {
-      "size": 12346,
-      "mtime_ns": 1774217105042943400
+      "size": 12638,
+      "mtime_ns": 1774273202298916100
     },
     "docs/SYSTEM_COMPLETION_MASTER_PLAN_2026-02-22.md": {
       "size": 2853,
@@ -1882,6 +1862,10 @@
     "docs/SYSTEM_CONNECTOR_HUB.md": {
       "size": 1247,
       "mtime_ns": 1772676334725869100
+    },
+    "docs/TAX_NOTES.md": {
+      "size": 6600,
+      "mtime_ns": 1774273202298916100
     },
     "docs/TECHNICAL_REFERENCE.md": {
       "size": 7221,
@@ -1892,8 +1876,8 @@
       "mtime_ns": 1772676334727883400
     },
     "docs/TIERED_SUBAGENT_ARCHITECTURE.md": {
-      "size": 1254,
-      "mtime_ns": 1774143385612719300
+      "size": 1289,
+      "mtime_ns": 1774273202298916100
     },
     "docs/TOMORROW_CODE_PRISM_2026-02-22.md": {
       "size": 1421,
@@ -2512,20 +2496,20 @@
       "mtime_ns": 1771221011360232700
     },
     "docs/evidence/PASS2_ORGAN_TEST_RESULTS.md": {
-      "size": 7877,
-      "mtime_ns": 1774215840122297000
+      "size": 8081,
+      "mtime_ns": 1774273202300921000
     },
     "docs/evidence/SCBE_SECURITY_EVIDENCE_PACK.md": {
-      "size": 13866,
-      "mtime_ns": 1774211190405864500
+      "size": 14215,
+      "mtime_ns": 1774273202300921000
     },
     "docs/gateway/AI_COLLABORATION_LOG.md": {
       "size": 4959,
       "mtime_ns": 1771221011362232500
     },
     "docs/gateway/AUTHORIZE_GATEWAY.md": {
-      "size": 867,
-      "mtime_ns": 1772676334727883400
+      "size": 1301,
+      "mtime_ns": 1774273202300921000
     },
     "docs/gateway/COMPREHENSIVE_MATH_SCBE.md": {
       "size": 11324,
@@ -2764,8 +2748,8 @@
       "mtime_ns": 1773563736603857300
     },
     "docs/operations/aetherbrowser_browser_first_runbook.md": {
-      "size": 9748,
-      "mtime_ns": 1773734602288049300
+      "size": 10020,
+      "mtime_ns": 1774273202302927200
     },
     "docs/operations/six_agent_mesh_runbook.md": {
       "size": 9399,
@@ -2812,8 +2796,8 @@
       "mtime_ns": 1772827242423144700
     },
     "docs/ops/FREE_COMPUTE_OPTIONS.md": {
-      "size": 3868,
-      "mtime_ns": 1774244066032445600
+      "size": 3985,
+      "mtime_ns": 1774273202303932600
     },
     "docs/ops/TERMINAL_AI_AUTOPILOT_SETUP.md": {
       "size": 1449,
@@ -2840,12 +2824,12 @@
       "mtime_ns": 1772664805730650800
     },
     "docs/paper/davis-2026-intent-modulated-governance.md": {
-      "size": 37257,
-      "mtime_ns": 1773926295038644500
+      "size": 38148,
+      "mtime_ns": 1774273202303932600
     },
     "docs/paper/davis-2026-phase-tunnel-gate.md": {
-      "size": 27370,
-      "mtime_ns": 1773984065358135100
+      "size": 27714,
+      "mtime_ns": 1774273202303932600
     },
     "docs/patent/CIP_FILING_EXECUTION_PLAN_2026-03-06.md": {
       "size": 3673,
@@ -2860,8 +2844,8 @@
       "mtime_ns": 1772676334748242000
     },
     "docs/patent/CONTINUATION_CLAIMS_20260322.md": {
-      "size": 6027,
-      "mtime_ns": 1774221718323062500
+      "size": 6170,
+      "mtime_ns": 1774273202305937700
     },
     "docs/patent/PRIOR_ART_ANALYSIS.md": {
       "size": 63060,
@@ -3000,12 +2984,12 @@
       "mtime_ns": 1773727698326932400
     },
     "docs/research/2026-03-17-aetherbrowser-extension-ownership-stack.md": {
-      "size": 11107,
-      "mtime_ns": 1773810057682727500
+      "size": 11495,
+      "mtime_ns": 1774273202305937700
     },
     "docs/research/2026-03-17-global-agent-senses-choice-monitoring.md": {
-      "size": 12765,
-      "mtime_ns": 1773793445711659000
+      "size": 13142,
+      "mtime_ns": 1774273202305937700
     },
     "docs/research/2026-03-18-adaptive-training-systems.md": {
       "size": 28395,
@@ -3047,6 +3031,10 @@
       "size": 596,
       "mtime_ns": 1773588146682788400
     },
+    "docs/research/ROME_INCIDENT_RESPONSE.md": {
+      "size": 10193,
+      "mtime_ns": 1774273202307942300
+    },
     "docs/research/SHEAF_CONSENSUS_GATE.md": {
       "size": 1200,
       "mtime_ns": 1772676334757458100
@@ -3072,8 +3060,8 @@
       "mtime_ns": 1773738712320700700
     },
     "docs/security/SCBE_ADVERSARIAL_ATTACK_SUITE_DESIGN.md": {
-      "size": 2776,
-      "mtime_ns": 1774243737005498300
+      "size": 4414,
+      "mtime_ns": 1774273202307942300
     },
     "docs/shopify-headless-workflow.md": {
       "size": 2319,
@@ -3088,24 +3076,24 @@
       "mtime_ns": 1772676334758470000
     },
     "docs/specs/AETHERBROWSER_COMPETITIVE_GOAL.md": {
-      "size": 4120,
-      "mtime_ns": 1773876934367946000
+      "size": 4260,
+      "mtime_ns": 1774273202307942300
     },
     "docs/specs/AETHERBROWSER_CONFIG.md": {
-      "size": 26988,
-      "mtime_ns": 1773808190886206900
+      "size": 27614,
+      "mtime_ns": 1774273202309947400
     },
     "docs/specs/AETHERBROWSER_GOVERNED_WEB_MCP_PHASE_C.md": {
-      "size": 3409,
-      "mtime_ns": 1773968352613157700
+      "size": 3522,
+      "mtime_ns": 1774273202309947400
     },
     "docs/specs/AETHERBROWSER_PERPLEXITY_CONNECTOR.md": {
-      "size": 4775,
-      "mtime_ns": 1773972788768448900
+      "size": 4918,
+      "mtime_ns": 1774273202309947400
     },
     "docs/specs/AETHER_REALTIME_VOICE_CALL_OPTIONS.md": {
-      "size": 6501,
-      "mtime_ns": 1773795519500876500
+      "size": 6756,
+      "mtime_ns": 1774273202309947400
     },
     "docs/specs/DECISION_ENVELOPE_V1.md": {
       "size": 2978,
@@ -3132,8 +3120,8 @@
       "mtime_ns": 1774062729717067700
     },
     "docs/specs/SCBE_AUDIO_GATE_SPECTRUM_EXPERIMENT.md": {
-      "size": 6868,
-      "mtime_ns": 1773794317781173100
+      "size": 7166,
+      "mtime_ns": 1774273202311951900
     },
     "docs/specs/SCBE_MASTER_2026_001_CONSOLIDATED_SUBMISSION_NOTES_2026_02_19.md": {
       "size": 3245,
@@ -3172,8 +3160,8 @@
       "mtime_ns": 1773616909926876700
     },
     "docs/specs/aetherbrowser_search_mesh.md": {
-      "size": 4516,
-      "mtime_ns": 1773734501000710800
+      "size": 4638,
+      "mtime_ns": 1774273202311951900
     },
     "docs/specs/hf_training_lane_for_scbe_agents.md": {
       "size": 11325,
@@ -3214,18 +3202,6 @@
     "enhanced_scbe_cli.py": {
       "size": 17264,
       "mtime_ns": 1772676334758470000
-    },
-    "generate_figures.py": {
-      "size": 15584,
-      "mtime_ns": 1772676334779230400
-    },
-    "gumroad_image_uploader.py": {
-      "size": 11316,
-      "mtime_ns": 1771221011429621600
-    },
-    "harmonic_scaling_law.py": {
-      "size": 17614,
-      "mtime_ns": 1773730319530206200
     },
     "index.js": {
       "size": 6362,
@@ -3273,7 +3249,7 @@
     },
     "mcp/orchestrator.py": {
       "size": 31214,
-      "mtime_ns": 1774144541484214800
+      "mtime_ns": 1774273202646298500
     },
     "mcp/scbe-server/README.md": {
       "size": 892,
@@ -3388,8 +3364,8 @@
       "mtime_ns": 1771221011468465300
     },
     "packages/kernel/src/pipeline14.ts": {
-      "size": 21840,
-      "mtime_ns": 1773588146709421900
+      "size": 22197,
+      "mtime_ns": 1774273202668053300
     },
     "packages/kernel/src/pqc.ts": {
       "size": 41905,
@@ -3500,8 +3476,8 @@
       "mtime_ns": 1771221011486506300
     },
     "playwright.config.ts": {
-      "size": 446,
-      "mtime_ns": 1773879675704832700
+      "size": 466,
+      "mtime_ns": 1774273202668053300
     },
     "quick-test.js": {
       "size": 1776,
@@ -3510,22 +3486,6 @@
     "render.yaml": {
       "size": 435,
       "mtime_ns": 1771221011524545700
-    },
-    "run_demo.py": {
-      "size": 377,
-      "mtime_ns": 1771221011526051700
-    },
-    "run_dual_lattice_demo.py": {
-      "size": 466,
-      "mtime_ns": 1771221011527057900
-    },
-    "run_spiralverse_demos.py": {
-      "size": 1447,
-      "mtime_ns": 1771221011528023800
-    },
-    "run_tests.py": {
-      "size": 7529,
-      "mtime_ns": 1771221011528728000
     },
     "scbe-agent.py": {
       "size": 25006,
@@ -3540,8 +3500,8 @@
       "mtime_ns": 1771221011572736700
     },
     "scbe.py": {
-      "size": 35191,
-      "mtime_ns": 1774155802296432800
+      "size": 35239,
+      "mtime_ns": 1774273202688318300
     },
     "scripts/__init__.py": {
       "size": 60,
@@ -3549,11 +3509,11 @@
     },
     "scripts/aetherbrowse_swarm_runner.py": {
       "size": 33468,
-      "mtime_ns": 1774144541493218700
+      "mtime_ns": 1774273202688318300
     },
     "scripts/aetherbrowser_live_smoke.py": {
-      "size": 11281,
-      "mtime_ns": 1773877253497090300
+      "size": 11620,
+      "mtime_ns": 1774273202688318300
     },
     "scripts/aethermoor_spiral_demo.py": {
       "size": 1035,
@@ -3620,20 +3580,20 @@
       "mtime_ns": 1773614039489429300
     },
     "scripts/audio_gate_spectrum_report.py": {
-      "size": 9258,
-      "mtime_ns": 1773795149873234500
+      "size": 9536,
+      "mtime_ns": 1774273202688318300
     },
     "scripts/audiobook/narrator_voice_system.py": {
-      "size": 15650,
-      "mtime_ns": 1774239586894978800
+      "size": 16069,
+      "mtime_ns": 1774273202693045100
     },
     "scripts/benchmark_embeddings.py": {
-      "size": 17316,
-      "mtime_ns": 1774140652091118400
+      "size": 17765,
+      "mtime_ns": 1774273202693045100
     },
     "scripts/benchmark_phase_tunnel.py": {
-      "size": 49294,
-      "mtime_ns": 1773907968155311700
+      "size": 50498,
+      "mtime_ns": 1774273202695050200
     },
     "scripts/build_ch01_prompts_v4.py": {
       "size": 68156,
@@ -3663,6 +3623,10 @@
       "size": 5403,
       "mtime_ns": 1774124628270072400
     },
+    "scripts/build_package.py": {
+      "size": 5239,
+      "mtime_ns": 1774273202695050200
+    },
     "scripts/build_protected_corpus.py": {
       "size": 19876,
       "mtime_ns": 1774115141537143700
@@ -3672,8 +3636,8 @@
       "mtime_ns": 1772676334893619900
     },
     "scripts/build_tax_excel.py": {
-      "size": 7292,
-      "mtime_ns": 1773964780780445800
+      "size": 7494,
+      "mtime_ns": 1774273202695050200
     },
     "scripts/build_training_ingestion_pool.py": {
       "size": 9961,
@@ -3688,8 +3652,8 @@
       "mtime_ns": 1773668640532750800
     },
     "scripts/cashapp_expense_tracker.py": {
-      "size": 8453,
-      "mtime_ns": 1773970392159955900
+      "size": 8682,
+      "mtime_ns": 1774273202695050200
     },
     "scripts/check_layer_status_transition.py": {
       "size": 2772,
@@ -3698,6 +3662,10 @@
     "scripts/cleanup_commit.ps1": {
       "size": 5163,
       "mtime_ns": 1772676334893619900
+    },
+    "scripts/cleanup_imports.py": {
+      "size": 1569,
+      "mtime_ns": 1774273202697055200
     },
     "scripts/cloud_kernel_data_pipeline.py": {
       "size": 34503,
@@ -3799,6 +3767,10 @@
       "size": 8178,
       "mtime_ns": 1773617233420984200
     },
+    "scripts/generate_figures.py": {
+      "size": 15584,
+      "mtime_ns": 1774273202697055200
+    },
     "scripts/generate_harmonic_wall_figure.py": {
       "size": 9725,
       "mtime_ns": 1772676334901744900
@@ -3832,8 +3804,12 @@
       "mtime_ns": 1773635681680933200
     },
     "scripts/guga_steak_test.py": {
-      "size": 13627,
-      "mtime_ns": 1774145211293798900
+      "size": 13987,
+      "mtime_ns": 1774273202697055200
+    },
+    "scripts/gumroad_image_uploader.py": {
+      "size": 11316,
+      "mtime_ns": 1774273202699060400
     },
     "scripts/headless_browser.py": {
       "size": 20958,
@@ -3848,12 +3824,12 @@
       "mtime_ns": 1772676334907900800
     },
     "scripts/hydra.ps1": {
-      "size": 531,
-      "mtime_ns": 1774227060320923700
+      "size": 543,
+      "mtime_ns": 1774273202699060400
     },
     "scripts/hydra_command_center.ps1": {
-      "size": 41932,
-      "mtime_ns": 1774227060320923700
+      "size": 39586,
+      "mtime_ns": 1774273202699060400
     },
     "scripts/hydra_headless_mmx_coordinator.py": {
       "size": 10525,
@@ -3912,8 +3888,8 @@
       "mtime_ns": 1772750043715304700
     },
     "scripts/launch_aetherbrowser.py": {
-      "size": 6380,
-      "mtime_ns": 1774058474620187000
+      "size": 6590,
+      "mtime_ns": 1774273202701065900
     },
     "scripts/launch_aws_sagemaker_training.py": {
       "size": 4076,
@@ -3929,7 +3905,7 @@
     },
     "scripts/list_obsidian_vaults.py": {
       "size": 2923,
-      "mtime_ns": 1774144541495222500
+      "mtime_ns": 1774273202701065900
     },
     "scripts/local_cloud_autosync.py": {
       "size": 32168,
@@ -3948,8 +3924,8 @@
       "mtime_ns": 1771221011575742400
     },
     "scripts/mega_ingest.py": {
-      "size": 46283,
-      "mtime_ns": 1774211860450483400
+      "size": 47375,
+      "mtime_ns": 1774273202701065900
     },
     "scripts/merge_and_upload.py": {
       "size": 16276,
@@ -3964,12 +3940,12 @@
       "mtime_ns": 1772676334916478500
     },
     "scripts/mirage_spectral_mapping.py": {
-      "size": 8976,
-      "mtime_ns": 1773905657982696500
+      "size": 9234,
+      "mtime_ns": 1774273202701065900
     },
     "scripts/mirror_differential_telemetry.py": {
-      "size": 10986,
-      "mtime_ns": 1773904421099355500
+      "size": 11292,
+      "mtime_ns": 1774273202703964800
     },
     "scripts/mirror_differential_verify.mjs": {
       "size": 29462,
@@ -4037,7 +4013,7 @@
     },
     "scripts/onedrive_to_gdrive_verified.ps1": {
       "size": 12047,
-      "mtime_ns": 1774144541496216200
+      "mtime_ns": 1774273202703964800
     },
     "scripts/ouroboros_sft.py": {
       "size": 60515,
@@ -4052,8 +4028,8 @@
       "mtime_ns": 1772752225865901200
     },
     "scripts/parse_bank_statements.py": {
-      "size": 4763,
-      "mtime_ns": 1773962428891045800
+      "size": 4897,
+      "mtime_ns": 1774273202703964800
     },
     "scripts/pc_health_audit.ps1": {
       "size": 7372,
@@ -4100,52 +4076,52 @@
       "mtime_ns": 1774179234850062400
     },
     "scripts/publish/build_research_campaign.py": {
-      "size": 23663,
-      "mtime_ns": 1774163530537223900
+      "size": 24280,
+      "mtime_ns": 1774273202703964800
     },
     "scripts/publish/generate_daily_system_update.py": {
       "size": 6691,
       "mtime_ns": 1772827242429179100
     },
     "scripts/publish/kdp_auto_upload.py": {
-      "size": 10609,
-      "mtime_ns": 1774228903288246500
+      "size": 10863,
+      "mtime_ns": 1774273202703964800
     },
     "scripts/publish/post_all.py": {
-      "size": 18571,
-      "mtime_ns": 1774163615942175200
+      "size": 18864,
+      "mtime_ns": 1774273202707746500
     },
     "scripts/publish/post_to_buffer.py": {
       "size": 5211,
       "mtime_ns": 1772827242431180700
     },
     "scripts/publish/post_to_devto.py": {
-      "size": 8462,
-      "mtime_ns": 1773962422366958300
+      "size": 8499,
+      "mtime_ns": 1774273202707746500
     },
     "scripts/publish/post_to_huggingface_discussion.py": {
-      "size": 4919,
-      "mtime_ns": 1773792375418597300
+      "size": 5071,
+      "mtime_ns": 1774273202707746500
     },
     "scripts/publish/post_to_x.py": {
       "size": 15601,
       "mtime_ns": 1773180957451989400
     },
     "scripts/publish/publish_discussions.py": {
-      "size": 7979,
-      "mtime_ns": 1774163330731705900
+      "size": 8070,
+      "mtime_ns": 1774273202707746500
     },
     "scripts/publish/rebuild_and_stage_kdp.py": {
-      "size": 6190,
-      "mtime_ns": 1774242340636513400
+      "size": 6400,
+      "mtime_ns": 1774273202707746500
     },
     "scripts/publish/roundtable_review.py": {
-      "size": 12001,
-      "mtime_ns": 1774221393312531100
+      "size": 12331,
+      "mtime_ns": 1774273202707746500
     },
     "scripts/publish/test_readers.py": {
-      "size": 11845,
-      "mtime_ns": 1774220899126143500
+      "size": 12167,
+      "mtime_ns": 1774273202712342400
     },
     "scripts/push_jsonl_dataset.py": {
       "size": 1981,
@@ -4279,6 +4255,10 @@
       "size": 329,
       "mtime_ns": 1772676334932346700
     },
+    "scripts/run_tests.py": {
+      "size": 7529,
+      "mtime_ns": 1774273202712342400
+    },
     "scripts/run_thermal_mirror_probe.py": {
       "size": 1637,
       "mtime_ns": 1773905427646508800
@@ -4288,8 +4268,8 @@
       "mtime_ns": 1772676334932346700
     },
     "scripts/scbe-system-cli.py": {
-      "size": 135972,
-      "mtime_ns": 1774211868922581900
+      "size": 137801,
+      "mtime_ns": 1774273202715321900
     },
     "scripts/scbe_ai_kernel_wrapper.py": {
       "size": 6105,
@@ -4318,6 +4298,14 @@
     "scripts/self_improvement_orchestrator.py": {
       "size": 24118,
       "mtime_ns": 1772676334936750800
+    },
+    "scripts/setup-github-labels.sh": {
+      "size": 5489,
+      "mtime_ns": 1774273202715321900
+    },
+    "scripts/setup-providers.py": {
+      "size": 8645,
+      "mtime_ns": 1774273202715321900
     },
     "scripts/setup_gcloud_vertex.ps1": {
       "size": 4805,
@@ -4367,6 +4355,10 @@
       "size": 6528,
       "mtime_ns": 1772676334942643300
     },
+    "scripts/stress_test.py": {
+      "size": 34761,
+      "mtime_ns": 1774273202715321900
+    },
     "scripts/stvm.py": {
       "size": 2661,
       "mtime_ns": 1772676334942643300
@@ -4380,12 +4372,12 @@
       "mtime_ns": 1773596025759104700
     },
     "scripts/sweep_attention_fft.py": {
-      "size": 8831,
-      "mtime_ns": 1773892859998511200
+      "size": 9066,
+      "mtime_ns": 1774273202717632300
     },
     "scripts/symphonic_training.py": {
       "size": 7667,
-      "mtime_ns": 1774144642171518200
+      "mtime_ns": 1774273202717632300
     },
     "scripts/sync-config.json": {
       "size": 2728,
@@ -4412,20 +4404,20 @@
       "mtime_ns": 1773588146717936100
     },
     "scripts/system/aetherbrowser_huggingface_nav.py": {
-      "size": 11682,
-      "mtime_ns": 1773734680884172400
+      "size": 12034,
+      "mtime_ns": 1774273202717632300
     },
     "scripts/system/aetherbrowser_model_cli.py": {
-      "size": 6953,
-      "mtime_ns": 1773887990260713200
+      "size": 7143,
+      "mtime_ns": 1774273202719637100
     },
     "scripts/system/aetherbrowser_notion_nav.py": {
       "size": 6490,
       "mtime_ns": 1772777980848234400
     },
     "scripts/system/aetherbrowser_search.py": {
-      "size": 9274,
-      "mtime_ns": 1773734992058759600
+      "size": 9510,
+      "mtime_ns": 1774273202719637100
     },
     "scripts/system/aetherpath_audit.py": {
       "size": 6885,
@@ -4436,8 +4428,8 @@
       "mtime_ns": 1772676334942643300
     },
     "scripts/system/ai_bridge.py": {
-      "size": 8134,
-      "mtime_ns": 1774211885220343600
+      "size": 8189,
+      "mtime_ns": 1774273202719637100
     },
     "scripts/system/ai_bridge_streamlit.py": {
       "size": 989,
@@ -4449,11 +4441,11 @@
     },
     "scripts/system/browser_chain_dispatcher.py": {
       "size": 11978,
-      "mtime_ns": 1774144541498215400
+      "mtime_ns": 1774273202719637100
     },
     "scripts/system/build_repurpose_manifest.py": {
-      "size": 9699,
-      "mtime_ns": 1774084847913122400
+      "size": 9986,
+      "mtime_ns": 1774273202719637100
     },
     "scripts/system/capture_kindle_store_screenshots.mjs": {
       "size": 5427,
@@ -4468,8 +4460,8 @@
       "mtime_ns": 1772676334942643300
     },
     "scripts/system/colab_bridge.py": {
-      "size": 6771,
-      "mtime_ns": 1773926824906818100
+      "size": 6972,
+      "mtime_ns": 1774273202719637100
     },
     "scripts/system/colab_notebook_smoke.py": {
       "size": 17508,
@@ -4484,8 +4476,8 @@
       "mtime_ns": 1774156184843507700
     },
     "scripts/system/colab_workflow_catalog.py": {
-      "size": 7441,
-      "mtime_ns": 1774155739548406400
+      "size": 6620,
+      "mtime_ns": 1774273202723486400
     },
     "scripts/system/cross_talk_append.ps1": {
       "size": 2458,
@@ -4497,7 +4489,7 @@
     },
     "scripts/system/crosstalk_relay.py": {
       "size": 27971,
-      "mtime_ns": 1774144541500216700
+      "mtime_ns": 1774273202723486400
     },
     "scripts/system/crosstalk_reliability_manager.py": {
       "size": 9097,
@@ -4528,16 +4520,16 @@
       "mtime_ns": 1773730319562205900
     },
     "scripts/system/gather_test_corpus.py": {
-      "size": 9661,
-      "mtime_ns": 1774204789790568100
+      "size": 9927,
+      "mtime_ns": 1774273202723486400
     },
     "scripts/system/gen_product_images.py": {
       "size": 8496,
       "mtime_ns": 1772664805888763700
     },
     "scripts/system/github_workflow_audit.py": {
-      "size": 12741,
-      "mtime_ns": 1774189814139181100
+      "size": 13088,
+      "mtime_ns": 1774273202726504900
     },
     "scripts/system/goal_race_loop.py": {
       "size": 11258,
@@ -4616,8 +4608,8 @@
       "mtime_ns": 1772676334942643300
     },
     "scripts/system/nightly_research_pipeline.py": {
-      "size": 9992,
-      "mtime_ns": 1773986543638823000
+      "size": 10265,
+      "mtime_ns": 1774273202726504900
     },
     "scripts/system/nonbinary_kernel_demo.py": {
       "size": 1839,
@@ -4656,12 +4648,12 @@
       "mtime_ns": 1772664805897859900
     },
     "scripts/system/phone_eye.py": {
-      "size": 5099,
-      "mtime_ns": 1773797325346571000
+      "size": 5242,
+      "mtime_ns": 1774273202726504900
     },
     "scripts/system/phone_navigation_telemetry.py": {
-      "size": 8286,
-      "mtime_ns": 1773797240559791500
+      "size": 8528,
+      "mtime_ns": 1774273202728245100
     },
     "scripts/system/pilot_demo_to_decision.py": {
       "size": 8597,
@@ -4669,7 +4661,7 @@
     },
     "scripts/system/playwriter_lane_runner.py": {
       "size": 13624,
-      "mtime_ns": 1774144541502216600
+      "mtime_ns": 1774273202728245100
     },
     "scripts/system/polly_cross_model_bootstrap.py": {
       "size": 10277,
@@ -4680,8 +4672,8 @@
       "mtime_ns": 1772664805900855700
     },
     "scripts/system/pr_merge_triage.py": {
-      "size": 4196,
-      "mtime_ns": 1774194577285448400
+      "size": 4310,
+      "mtime_ns": 1774273202728245100
     },
     "scripts/system/quick_disk_check.ps1": {
       "size": 2589,
@@ -4700,8 +4692,8 @@
       "mtime_ns": 1772664805903370600
     },
     "scripts/system/repo_ordering.py": {
-      "size": 17940,
-      "mtime_ns": 1774178612909713900
+      "size": 18051,
+      "mtime_ns": 1774273202731229700
     },
     "scripts/system/research_training_bridge.py": {
       "size": 20456,
@@ -4716,8 +4708,8 @@
       "mtime_ns": 1772664805903370600
     },
     "scripts/system/run_core_python_checks.py": {
-      "size": 3597,
-      "mtime_ns": 1774194498156411600
+      "size": 3706,
+      "mtime_ns": 1774273202731229700
     },
     "scripts/system/run_deep_research_self_healing.ps1": {
       "size": 6538,
@@ -4792,8 +4784,8 @@
       "mtime_ns": 1773730306378803500
     },
     "scripts/system/start_aetherbrowser_extension_service.ps1": {
-      "size": 7290,
-      "mtime_ns": 1773878462177648600
+      "size": 7500,
+      "mtime_ns": 1774273202733232300
     },
     "scripts/system/start_hydra_terminal_tunnel.ps1": {
       "size": 5574,
@@ -4812,20 +4804,20 @@
       "mtime_ns": 1772675123605925400
     },
     "scripts/system/stop_aetherbrowser_extension_service.ps1": {
-      "size": 1386,
-      "mtime_ns": 1773878373586781100
+      "size": 1429,
+      "mtime_ns": 1774273202733232300
     },
     "scripts/system/stop_polly_pad_emulator.ps1": {
       "size": 2296,
       "mtime_ns": 1773565453025220200
     },
     "scripts/system/storage_benchmark.py": {
-      "size": 9728,
-      "mtime_ns": 1774200438994273100
+      "size": 10019,
+      "mtime_ns": 1774273202733232300
     },
     "scripts/system/storage_bridge_lab.py": {
-      "size": 26079,
-      "mtime_ns": 1774197749146827500
+      "size": 26750,
+      "mtime_ns": 1774273202735237700
     },
     "scripts/system/storage_compaction_lab.py": {
       "size": 12689,
@@ -4836,8 +4828,8 @@
       "mtime_ns": 1774197497571860500
     },
     "scripts/system/system_card_deck.py": {
-      "size": 6457,
-      "mtime_ns": 1774194544698447600
+      "size": 6633,
+      "mtime_ns": 1774273202735237700
     },
     "scripts/system/system_cleanup_safe.ps1": {
       "size": 1041,
@@ -4904,24 +4896,24 @@
       "mtime_ns": 1774072322545432200
     },
     "scripts/test_full_system.py": {
-      "size": 19589,
-      "mtime_ns": 1774141474737868600
+      "size": 20121,
+      "mtime_ns": 1774273202735237700
     },
     "scripts/test_governance_adversarial.py": {
-      "size": 15249,
-      "mtime_ns": 1774143588246249900
+      "size": 15631,
+      "mtime_ns": 1774273202735237700
     },
     "scripts/test_hydra_switchboard_e2e.py": {
       "size": 2551,
       "mtime_ns": 1772676334954104100
     },
     "scripts/tetris_training_pipeline.py": {
-      "size": 17187,
-      "mtime_ns": 1774074870945158000
+      "size": 17631,
+      "mtime_ns": 1774273202735237700
     },
     "scripts/thermal_mirror_probe.py": {
-      "size": 16447,
-      "mtime_ns": 1773905334261930700
+      "size": 16887,
+      "mtime_ns": 1774273202735237700
     },
     "scripts/train_art_lora_colab.py": {
       "size": 25169,
@@ -4933,7 +4925,7 @@
     },
     "scripts/train_lora_colab.ipynb": {
       "size": 18509,
-      "mtime_ns": 1774139478632867800
+      "mtime_ns": 1774273202735237700
     },
     "scripts/training_auditor.py": {
       "size": 4904,
@@ -4964,20 +4956,20 @@
       "mtime_ns": 1772664803219612400
     },
     "scripts/validate_training_data.py": {
-      "size": 13377,
-      "mtime_ns": 1774135047577987400
+      "size": 13738,
+      "mtime_ns": 1774273202741715700
     },
     "scripts/verify_aetherbrowser_extension_service.py": {
-      "size": 4915,
-      "mtime_ns": 1773878303494547200
+      "size": 5055,
+      "mtime_ns": 1774273202741715700
     },
     "scripts/version-bump.js": {
       "size": 3093,
       "mtime_ns": 1773588146722105600
     },
     "scripts/voice_clone_test.py": {
-      "size": 10288,
-      "mtime_ns": 1774134793274052000
+      "size": 10570,
+      "mtime_ns": 1774273202741715700
     },
     "scripts/voxel_governance_sim.py": {
       "size": 11953,
@@ -5052,28 +5044,12 @@
       "mtime_ns": 1772676334963282200
     },
     "services/kernel-runner/server.mjs": {
-      "size": 16130,
-      "mtime_ns": 1774211940619593300
-    },
-    "setup-providers.py": {
-      "size": 8645,
-      "mtime_ns": 1771221011592782800
+      "size": 16240,
+      "mtime_ns": 1774273202744189200
     },
     "six-tongues-cli.py": {
-      "size": 60660,
-      "mtime_ns": 1773588146726109100
-    },
-    "spatial_engine.py": {
-      "size": 38467,
-      "mtime_ns": 1772676334983499300
-    },
-    "spiralverse_core.py": {
-      "size": 16692,
-      "mtime_ns": 1773730319592206300
-    },
-    "spiralverse_sdk.py": {
-      "size": 10804,
-      "mtime_ns": 1771221011596293600
+      "size": 60803,
+      "mtime_ns": 1774273202746194700
     },
     "src/README.md": {
       "size": 1497,
@@ -5101,59 +5077,59 @@
     },
     "src/aaoe/task_monitor.py": {
       "size": 17392,
-      "mtime_ns": 1774217520660805700
+      "mtime_ns": 1774273202775777900
     },
     "src/aetherbrowser/__init__.py": {
       "size": 66,
       "mtime_ns": 1772823031865615400
     },
     "src/aetherbrowser/agents.py": {
-      "size": 3171,
-      "mtime_ns": 1773815625718572200
+      "size": 3188,
+      "mtime_ns": 1774273202775777900
     },
     "src/aetherbrowser/command_planner.py": {
-      "size": 10984,
-      "mtime_ns": 1773877195058763400
+      "size": 11359,
+      "mtime_ns": 1774273202780980000
     },
     "src/aetherbrowser/governed_web.py": {
-      "size": 7024,
-      "mtime_ns": 1773968385961286100
+      "size": 7215,
+      "mtime_ns": 1774273202780980000
     },
     "src/aetherbrowser/hyperlane_py.py": {
       "size": 4170,
       "mtime_ns": 1772823112940660500
     },
     "src/aetherbrowser/page_analyzer.py": {
-      "size": 20019,
-      "mtime_ns": 1774201500758948200
+      "size": 11224,
+      "mtime_ns": 1774273202780980000
     },
     "src/aetherbrowser/phase_tunnel.py": {
-      "size": 18905,
-      "mtime_ns": 1773908036199784600
+      "size": 19419,
+      "mtime_ns": 1774273202780980000
     },
     "src/aetherbrowser/provider_executor.py": {
-      "size": 13444,
-      "mtime_ns": 1774144541505215700
+      "size": 12447,
+      "mtime_ns": 1774273202780980000
     },
     "src/aetherbrowser/router.py": {
-      "size": 9336,
-      "mtime_ns": 1774144541506215500
+      "size": 9174,
+      "mtime_ns": 1774273202780980000
     },
     "src/aetherbrowser/serve.py": {
-      "size": 12272,
-      "mtime_ns": 1774144541507649500
+      "size": 10075,
+      "mtime_ns": 1774273202785142200
     },
     "src/aetherbrowser/topology_engine.py": {
-      "size": 9663,
-      "mtime_ns": 1773906312971652100
+      "size": 9985,
+      "mtime_ns": 1774273202785142200
     },
     "src/aetherbrowser/trilane_router.py": {
-      "size": 18786,
-      "mtime_ns": 1774057508056822700
+      "size": 19283,
+      "mtime_ns": 1774273202785142200
     },
     "src/aetherbrowser/ws_feed.py": {
       "size": 3095,
-      "mtime_ns": 1773906391540040400
+      "mtime_ns": 1774273202785142200
     },
     "src/aethercode/aether_gates.py": {
       "size": 22001,
@@ -5201,11 +5177,11 @@
     },
     "src/agentic/distributed-workflow.ts": {
       "size": 7433,
-      "mtime_ns": 1774144541507649500
+      "mtime_ns": 1774273202788856900
     },
     "src/agentic/execution-district.ts": {
       "size": 3545,
-      "mtime_ns": 1774144541507649500
+      "mtime_ns": 1774273202788856900
     },
     "src/agentic/index.ts": {
       "size": 836,
@@ -5213,7 +5189,7 @@
     },
     "src/agentic/platform.ts": {
       "size": 21388,
-      "mtime_ns": 1774144541507649500
+      "mtime_ns": 1774273202788856900
     },
     "src/agentic/providers.ts": {
       "size": 15205,
@@ -5221,7 +5197,7 @@
     },
     "src/agentic/roundabout-city.ts": {
       "size": 7268,
-      "mtime_ns": 1774144541507649500
+      "mtime_ns": 1774273202790863400
     },
     "src/agentic/task-group.ts": {
       "size": 7081,
@@ -5237,7 +5213,7 @@
     },
     "src/ai_brain/bee-immune-tiers.ts": {
       "size": 27682,
-      "mtime_ns": 1774144541513590600
+      "mtime_ns": 1774273202791868600
     },
     "src/ai_brain/bft-consensus.ts": {
       "size": 4302,
@@ -5245,15 +5221,15 @@
     },
     "src/ai_brain/brain-integration.ts": {
       "size": 20133,
-      "mtime_ns": 1774144541513590600
+      "mtime_ns": 1774273202791868600
     },
     "src/ai_brain/conservation.ts": {
       "size": 20026,
-      "mtime_ns": 1774144541515597700
+      "mtime_ns": 1774273202793874800
     },
     "src/ai_brain/cymatic-voxel-net.ts": {
       "size": 20579,
-      "mtime_ns": 1774144541515597700
+      "mtime_ns": 1774273202793874800
     },
     "src/ai_brain/detection.ts": {
       "size": 24249,
@@ -5261,15 +5237,15 @@
     },
     "src/ai_brain/dual-lattice.ts": {
       "size": 25716,
-      "mtime_ns": 1774144541515597700
+      "mtime_ns": 1774273202795880100
     },
     "src/ai_brain/dual-ternary.ts": {
       "size": 25942,
-      "mtime_ns": 1774144541518403700
+      "mtime_ns": 1774273202795880100
     },
     "src/ai_brain/entropic-layer.ts": {
       "size": 7794,
-      "mtime_ns": 1774144541519674400
+      "mtime_ns": 1774273202795880100
     },
     "src/ai_brain/entropic_layer.py": {
       "size": 6556,
@@ -5277,15 +5253,15 @@
     },
     "src/ai_brain/flux-states.ts": {
       "size": 13790,
-      "mtime_ns": 1774144541520675600
+      "mtime_ns": 1774273202797885500
     },
     "src/ai_brain/hamiltonian-braid.ts": {
       "size": 32460,
-      "mtime_ns": 1774144541522676800
+      "mtime_ns": 1774273202797885500
     },
     "src/ai_brain/hyperbolic-rag.ts": {
       "size": 6804,
-      "mtime_ns": 1774144541523908900
+      "mtime_ns": 1774273202799890800
     },
     "src/ai_brain/hyperbolic_rag.py": {
       "size": 5259,
@@ -5293,7 +5269,7 @@
     },
     "src/ai_brain/immune-response.ts": {
       "size": 14518,
-      "mtime_ns": 1774144541524908000
+      "mtime_ns": 1774273202799890800
     },
     "src/ai_brain/index.ts": {
       "size": 18368,
@@ -5301,7 +5277,7 @@
     },
     "src/ai_brain/phdm-core.ts": {
       "size": 17056,
-      "mtime_ns": 1774144541525907900
+      "mtime_ns": 1774273202799890800
     },
     "src/ai_brain/quasi-space.ts": {
       "size": 8548,
@@ -5309,19 +5285,19 @@
     },
     "src/ai_brain/swarm-formation.ts": {
       "size": 16165,
-      "mtime_ns": 1774144541526908400
+      "mtime_ns": 1774273202801895500
     },
     "src/ai_brain/timeOverIntent.ts": {
       "size": 12335,
-      "mtime_ns": 1774144541528909700
+      "mtime_ns": 1774273202801895500
     },
     "src/ai_brain/trajectory-simulator.ts": {
       "size": 17828,
-      "mtime_ns": 1774144541529906100
+      "mtime_ns": 1774273202801895500
     },
     "src/ai_brain/tri-manifold-lattice.ts": {
       "size": 20481,
-      "mtime_ns": 1774144541531907100
+      "mtime_ns": 1774273202801895500
     },
     "src/ai_brain/types.ts": {
       "size": 11843,
@@ -5329,7 +5305,7 @@
     },
     "src/ai_brain/unified-kernel.ts": {
       "size": 32996,
-      "mtime_ns": 1774144541532906100
+      "mtime_ns": 1774273202801895500
     },
     "src/ai_brain/unified-state.ts": {
       "size": 14587,
@@ -5377,7 +5353,7 @@
     },
     "src/api/diagnosticSnapshot.ts": {
       "size": 20523,
-      "mtime_ns": 1774144541533909100
+      "mtime_ns": 1774273202801895500
     },
     "src/api/govern.ts": {
       "size": 13505,
@@ -5405,11 +5381,11 @@
     },
     "src/api/quarantineQueue.ts": {
       "size": 16161,
-      "mtime_ns": 1774144541536083900
+      "mtime_ns": 1774273202801895500
     },
     "src/api/routes.ts": {
       "size": 15321,
-      "mtime_ns": 1774144541537083200
+      "mtime_ns": 1774273202807820400
     },
     "src/api/saas_routes.py": {
       "size": 15240,
@@ -5505,15 +5481,15 @@
     },
     "src/browser/agent.ts": {
       "size": 18748,
-      "mtime_ns": 1774144541538082300
+      "mtime_ns": 1774273202807820400
     },
     "src/browser/basin.ts": {
       "size": 15053,
-      "mtime_ns": 1774144541539082400
+      "mtime_ns": 1774273202807820400
     },
     "src/browser/cdp-backend.ts": {
       "size": 34975,
-      "mtime_ns": 1774144541540082300
+      "mtime_ns": 1774273202807820400
     },
     "src/browser/constitutionalWebAgent.py": {
       "size": 17722,
@@ -5521,11 +5497,11 @@
     },
     "src/browser/evaluator.ts": {
       "size": 21606,
-      "mtime_ns": 1774144541542090200
+      "mtime_ns": 1774273202807820400
     },
     "src/browser/fleetSwarmBrowser.ts": {
       "size": 15085,
-      "mtime_ns": 1774144541543087700
+      "mtime_ns": 1774273202807820400
     },
     "src/browser/hydra_android_hand.py": {
       "size": 27837,
@@ -5537,11 +5513,11 @@
     },
     "src/browser/hyperbolicTrustBrowser.ts": {
       "size": 16104,
-      "mtime_ns": 1774144541544089200
+      "mtime_ns": 1774273202807820400
     },
     "src/browser/hyperlane.ts": {
       "size": 28191,
-      "mtime_ns": 1774144541545092200
+      "mtime_ns": 1774273202807820400
     },
     "src/browser/index.ts": {
       "size": 3716,
@@ -5549,7 +5525,7 @@
     },
     "src/browser/playwright-backend.ts": {
       "size": 17724,
-      "mtime_ns": 1774144541546092500
+      "mtime_ns": 1774273202807820400
     },
     "src/browser/polly_vision.py": {
       "size": 19582,
@@ -5557,7 +5533,7 @@
     },
     "src/browser/quantumStealthBrowser.ts": {
       "size": 12837,
-      "mtime_ns": 1774144541547091500
+      "mtime_ns": 1774273202807820400
     },
     "src/browser/research_funnel.py": {
       "size": 18093,
@@ -5569,11 +5545,11 @@
     },
     "src/browser/spiralSealSession.ts": {
       "size": 15017,
-      "mtime_ns": 1774144541548088100
+      "mtime_ns": 1774273202807820400
     },
     "src/browser/toolkit.py": {
-      "size": 20078,
-      "mtime_ns": 1774201500759949200
+      "size": 20144,
+      "mtime_ns": 1774273202807820400
     },
     "src/browser/types.ts": {
       "size": 19911,
@@ -5676,8 +5652,8 @@
       "mtime_ns": 1772676335024365400
     },
     "src/crypto/aetherlex-seed.ts": {
-      "size": 21041,
-      "mtime_ns": 1774193028219993300
+      "size": 21065,
+      "mtime_ns": 1774273202818327000
     },
     "src/crypto/bloom.ts": {
       "size": 929,
@@ -5697,7 +5673,7 @@
     },
     "src/crypto/geo_seal.py": {
       "size": 34738,
-      "mtime_ns": 1774217520660805700
+      "mtime_ns": 1774273202818327000
     },
     "src/crypto/h_lwe.py": {
       "size": 15020,
@@ -5709,11 +5685,11 @@
     },
     "src/crypto/hyperbolic_viz.py": {
       "size": 13509,
-      "mtime_ns": 1774217520660805700
+      "mtime_ns": 1774273202818327000
     },
     "src/crypto/hyperpath_finder.py": {
       "size": 16228,
-      "mtime_ns": 1774217520660805700
+      "mtime_ns": 1774273202818327000
     },
     "src/crypto/index.ts": {
       "size": 616,
@@ -5725,11 +5701,11 @@
     },
     "src/crypto/kms.ts": {
       "size": 1481,
-      "mtime_ns": 1774144541551092400
+      "mtime_ns": 1774273202823539800
     },
     "src/crypto/layeredEggArena.ts": {
       "size": 21960,
-      "mtime_ns": 1774144541553159300
+      "mtime_ns": 1774273202823539800
     },
     "src/crypto/nonbinary_kernel.py": {
       "size": 16657,
@@ -5740,24 +5716,24 @@
       "mtime_ns": 1774144540529417800
     },
     "src/crypto/octree.py": {
-      "size": 21055,
-      "mtime_ns": 1774196643739458300
+      "size": 21107,
+      "mtime_ns": 1774273202823539800
     },
     "src/crypto/platform.ts": {
       "size": 8886,
-      "mtime_ns": 1774144541554155200
+      "mtime_ns": 1774273202823539800
     },
     "src/crypto/pqc-strategies.ts": {
       "size": 15923,
-      "mtime_ns": 1774144541554155200
+      "mtime_ns": 1774273202827179700
     },
     "src/crypto/pqc.ts": {
       "size": 35725,
-      "mtime_ns": 1774144541556668100
+      "mtime_ns": 1774273202827179700
     },
     "src/crypto/pqcArena.ts": {
       "size": 25388,
-      "mtime_ns": 1774144541557667700
+      "mtime_ns": 1774273202829190300
     },
     "src/crypto/pqc_liboqs.py": {
       "size": 15616,
@@ -5765,7 +5741,7 @@
     },
     "src/crypto/quantum-safe.ts": {
       "size": 24113,
-      "mtime_ns": 1774144541558667500
+      "mtime_ns": 1774273202829190300
     },
     "src/crypto/quasicrystal_lattice.py": {
       "size": 18132,
@@ -5812,44 +5788,44 @@
       "mtime_ns": 1773727698324927300
     },
     "src/extension-bridge/README.md": {
-      "size": 1656,
-      "mtime_ns": 1773974454933407800
+      "size": 1706,
+      "mtime_ns": 1774273202829190300
     },
     "src/extension-bridge/background.js": {
-      "size": 2100,
-      "mtime_ns": 1773974345531842100
+      "size": 2175,
+      "mtime_ns": 1774273202829190300
     },
     "src/extension-bridge/bridges/cashapp.js": {
-      "size": 2530,
-      "mtime_ns": 1773974436702549600
+      "size": 2615,
+      "mtime_ns": 1774273202829190300
     },
     "src/extension-bridge/bridges/colab.js": {
-      "size": 10119,
-      "mtime_ns": 1773974391983094400
+      "size": 10448,
+      "mtime_ns": 1774273202829190300
     },
     "src/extension-bridge/bridges/universal.js": {
-      "size": 4190,
-      "mtime_ns": 1773974420013735000
+      "size": 4328,
+      "mtime_ns": 1774273202829190300
     },
     "src/extension-bridge/manifest.json": {
-      "size": 1205,
-      "mtime_ns": 1773974328560062500
+      "size": 1249,
+      "mtime_ns": 1774273202829190300
     },
     "src/extension/background.js": {
-      "size": 1292,
-      "mtime_ns": 1773815523116331300
+      "size": 1333,
+      "mtime_ns": 1774273202829190300
     },
     "src/extension/components/AgentGrid.js": {
-      "size": 3808,
-      "mtime_ns": 1773876781122601900
+      "size": 3903,
+      "mtime_ns": 1774273202829190300
     },
     "src/extension/components/ConversationFeed.js": {
-      "size": 12218,
-      "mtime_ns": 1774144541560669400
+      "size": 9737,
+      "mtime_ns": 1774273202836471500
     },
     "src/extension/components/DisconnectedBanner.js": {
-      "size": 796,
-      "mtime_ns": 1773880438375968800
+      "size": 821,
+      "mtime_ns": 1774273202836471500
     },
     "src/extension/components/ProgressCard.js": {
       "size": 951,
@@ -5864,16 +5840,16 @@
       "mtime_ns": 1772823635640065700
     },
     "src/extension/components/TopologyCanvas.js": {
-      "size": 11282,
-      "mtime_ns": 1773906376611275500
+      "size": 11677,
+      "mtime_ns": 1774273202836471500
     },
     "src/extension/components/ZoneApproval.js": {
       "size": 1716,
       "mtime_ns": 1772823629142400400
     },
     "src/extension/content.js": {
-      "size": 3138,
-      "mtime_ns": 1773815523117346200
+      "size": 3213,
+      "mtime_ns": 1774273202836471500
     },
     "src/extension/icons/icon128.png": {
       "size": 360,
@@ -5888,8 +5864,8 @@
       "mtime_ns": 1772823634574812900
     },
     "src/extension/lib/dom-reader.js": {
-      "size": 1603,
-      "mtime_ns": 1773815523118336700
+      "size": 1644,
+      "mtime_ns": 1774273202839340200
     },
     "src/extension/lib/native-host.js": {
       "size": 5517,
@@ -5900,24 +5876,24 @@
       "mtime_ns": 1772823599678071800
     },
     "src/extension/lib/ws-client.js": {
-      "size": 2495,
-      "mtime_ns": 1773843365543211100
+      "size": 2513,
+      "mtime_ns": 1774273202839340200
     },
     "src/extension/manifest.json": {
-      "size": 728,
-      "mtime_ns": 1773815523116331300
+      "size": 729,
+      "mtime_ns": 1774273202841347200
     },
     "src/extension/sidepanel.css": {
-      "size": 17291,
-      "mtime_ns": 1773906603102181300
+      "size": 15638,
+      "mtime_ns": 1774273202841347200
     },
     "src/extension/sidepanel.html": {
       "size": 1322,
-      "mtime_ns": 1773906445812279000
+      "mtime_ns": 1774273202841347200
     },
     "src/extension/sidepanel.js": {
-      "size": 7085,
-      "mtime_ns": 1773906488088851300
+      "size": 6646,
+      "mtime_ns": 1774273202843352200
     },
     "src/fleet/__init__.py": {
       "size": 655,
@@ -5929,7 +5905,7 @@
     },
     "src/fleet/asymmetricMovement.ts": {
       "size": 17741,
-      "mtime_ns": 1774144541561668500
+      "mtime_ns": 1774273202843352200
     },
     "src/fleet/asymmetric_movement.py": {
       "size": 8531,
@@ -5937,31 +5913,31 @@
     },
     "src/fleet/autoRetrigger.ts": {
       "size": 6895,
-      "mtime_ns": 1774144541562667800
+      "mtime_ns": 1774273202845361600
     },
     "src/fleet/browser-pool.ts": {
       "size": 20151,
-      "mtime_ns": 1774144541563668000
+      "mtime_ns": 1774273202845361600
     },
     "src/fleet/connector_bridge.py": {
-      "size": 8536,
-      "mtime_ns": 1774189354351741800
+      "size": 8641,
+      "mtime_ns": 1774273202847369600
     },
     "src/fleet/crawl-coordinator.ts": {
       "size": 23730,
-      "mtime_ns": 1774144541565669400
+      "mtime_ns": 1774273202847369600
     },
     "src/fleet/crawl-frontier.ts": {
       "size": 14925,
-      "mtime_ns": 1774144541566669600
+      "mtime_ns": 1774273202849546100
     },
     "src/fleet/crawl-message-bus.ts": {
       "size": 10996,
-      "mtime_ns": 1774144541567668800
+      "mtime_ns": 1774273202849546100
     },
     "src/fleet/crawl-runner.ts": {
       "size": 34166,
-      "mtime_ns": 1774144541569674800
+      "mtime_ns": 1774273202849546100
     },
     "src/fleet/fleet-manager.ts": {
       "size": 16654,
@@ -5973,7 +5949,7 @@
     },
     "src/fleet/governed-drift.ts": {
       "size": 12971,
-      "mtime_ns": 1774144541570673800
+      "mtime_ns": 1774273202851573000
     },
     "src/fleet/hallpass.py": {
       "size": 35328,
@@ -5985,7 +5961,7 @@
     },
     "src/fleet/mitosis.ts": {
       "size": 9944,
-      "mtime_ns": 1774144541571669800
+      "mtime_ns": 1774273202851573000
     },
     "src/fleet/model_matrix.py": {
       "size": 27940,
@@ -5993,15 +5969,15 @@
     },
     "src/fleet/node-kernel.ts": {
       "size": 15991,
-      "mtime_ns": 1774144541574254100
+      "mtime_ns": 1774273202853592100
     },
     "src/fleet/oscillator-bus.ts": {
       "size": 14660,
-      "mtime_ns": 1774144541575264300
+      "mtime_ns": 1774273202853592100
     },
     "src/fleet/polly-pad-runtime.ts": {
       "size": 12673,
-      "mtime_ns": 1774144541577263800
+      "mtime_ns": 1774273202855338400
     },
     "src/fleet/polly-pad.ts": {
       "size": 20906,
@@ -6009,19 +5985,19 @@
     },
     "src/fleet/polly-pads/blackout-audit.ts": {
       "size": 37146,
-      "mtime_ns": 1774144541578263200
+      "mtime_ns": 1774273202855338400
     },
     "src/fleet/polly-pads/capability-store.ts": {
       "size": 12151,
-      "mtime_ns": 1774144541580262800
+      "mtime_ns": 1774273202857343200
     },
     "src/fleet/polly-pads/closed-network.ts": {
       "size": 10487,
-      "mtime_ns": 1774144541581260600
+      "mtime_ns": 1774273202857343200
     },
     "src/fleet/polly-pads/decision-envelope.ts": {
       "size": 31691,
-      "mtime_ns": 1774144541582260500
+      "mtime_ns": 1774273202857343200
     },
     "src/fleet/polly-pads/drone-core.ts": {
       "size": 13421,
@@ -6029,15 +6005,15 @@
     },
     "src/fleet/polly-pads/index.ts": {
       "size": 4500,
-      "mtime_ns": 1774144541583263200
+      "mtime_ns": 1774273202859348400
     },
     "src/fleet/polly-pads/mission-coordinator.ts": {
       "size": 15990,
-      "mtime_ns": 1774144541584260000
+      "mtime_ns": 1774273202859348400
     },
     "src/fleet/polly-pads/mode-pad.ts": {
       "size": 10611,
-      "mtime_ns": 1774144541585622100
+      "mtime_ns": 1774273202859348400
     },
     "src/fleet/polly-pads/modes/base-mode.ts": {
       "size": 4259,
@@ -6045,11 +6021,11 @@
     },
     "src/fleet/polly-pads/modes/communications.ts": {
       "size": 3672,
-      "mtime_ns": 1774144541586631700
+      "mtime_ns": 1774273202861353200
     },
     "src/fleet/polly-pads/modes/engineering.ts": {
       "size": 4001,
-      "mtime_ns": 1774144541587632800
+      "mtime_ns": 1774273202861353200
     },
     "src/fleet/polly-pads/modes/index.ts": {
       "size": 1989,
@@ -6057,19 +6033,19 @@
     },
     "src/fleet/polly-pads/modes/mission-planning.ts": {
       "size": 4361,
-      "mtime_ns": 1774144541588632200
+      "mtime_ns": 1774273202861353200
     },
     "src/fleet/polly-pads/modes/navigation.ts": {
       "size": 4049,
-      "mtime_ns": 1774144541589630800
+      "mtime_ns": 1774273202863357700
     },
     "src/fleet/polly-pads/modes/science.ts": {
       "size": 4131,
-      "mtime_ns": 1774144541590630300
+      "mtime_ns": 1774273202863357700
     },
     "src/fleet/polly-pads/modes/systems.ts": {
       "size": 4432,
-      "mtime_ns": 1774144541591198000
+      "mtime_ns": 1774273202863357700
     },
     "src/fleet/polly-pads/modes/types.ts": {
       "size": 9566,
@@ -6077,11 +6053,11 @@
     },
     "src/fleet/polly-pads/resource-harmonic.ts": {
       "size": 17660,
-      "mtime_ns": 1774144541591198000
+      "mtime_ns": 1774273202865362800
     },
     "src/fleet/polly-pads/specialist-modes.ts": {
       "size": 12006,
-      "mtime_ns": 1774144541591198000
+      "mtime_ns": 1774273202865362800
     },
     "src/fleet/polly-pads/squad.ts": {
       "size": 10607,
@@ -6089,7 +6065,7 @@
     },
     "src/fleet/polly-pads/voxel-types.ts": {
       "size": 5582,
-      "mtime_ns": 1774144541595404000
+      "mtime_ns": 1774273202865362800
     },
     "src/fleet/redis-orchestrator.ts": {
       "size": 16159,
@@ -6149,11 +6125,11 @@
     },
     "src/game/codexTerminal.ts": {
       "size": 11656,
-      "mtime_ns": 1774144541595404000
+      "mtime_ns": 1774273202867367400
     },
     "src/game/combat.ts": {
       "size": 11162,
-      "mtime_ns": 1774144541597529600
+      "mtime_ns": 1774273202867367400
     },
     "src/game/companion.ts": {
       "size": 12309,
@@ -6165,11 +6141,11 @@
     },
     "src/game/evolution.ts": {
       "size": 14344,
-      "mtime_ns": 1774144541597529600
+      "mtime_ns": 1774273202869372400
     },
     "src/game/index.ts": {
       "size": 3458,
-      "mtime_ns": 1774144541599536800
+      "mtime_ns": 1774273202869372400
     },
     "src/game/microLedger.ts": {
       "size": 21391,
@@ -6193,7 +6169,7 @@
     },
     "src/game/trainingPipeline.ts": {
       "size": 21724,
-      "mtime_ns": 1774144541599536800
+      "mtime_ns": 1774273202869372400
     },
     "src/game/types.ts": {
       "size": 14725,
@@ -6229,7 +6205,7 @@
     },
     "src/geoseal-v2.ts": {
       "size": 16481,
-      "mtime_ns": 1774144541599536800
+      "mtime_ns": 1774273202871118800
     },
     "src/geoseal.py": {
       "size": 8271,
@@ -6237,7 +6213,7 @@
     },
     "src/geoseal.ts": {
       "size": 9725,
-      "mtime_ns": 1774144541603704700
+      "mtime_ns": 1774273202871118800
     },
     "src/geosealMetrics.ts": {
       "size": 3856,
@@ -6245,7 +6221,7 @@
     },
     "src/geosealRAG.ts": {
       "size": 8058,
-      "mtime_ns": 1774144541604828500
+      "mtime_ns": 1774273202873124500
     },
     "src/geoseal_v2.py": {
       "size": 10542,
@@ -6253,7 +6229,7 @@
     },
     "src/governance/audit_ledger.ts": {
       "size": 104,
-      "mtime_ns": 1774144541605826100
+      "mtime_ns": 1774273202873124500
     },
     "src/governance/decision_envelope_v1.py": {
       "size": 30939,
@@ -6261,15 +6237,15 @@
     },
     "src/governance/flux_manifest.ts": {
       "size": 492,
-      "mtime_ns": 1774144541606824500
+      "mtime_ns": 1774273202873124500
     },
     "src/governance/flux_parameters.py": {
-      "size": 6169,
-      "mtime_ns": 1774200143936402000
+      "size": 6364,
+      "mtime_ns": 1774273202875130300
     },
     "src/governance/governance_engine.ts": {
       "size": 424,
-      "mtime_ns": 1774144541607821600
+      "mtime_ns": 1774273202875130300
     },
     "src/governance/hybrid_mesh_chain.py": {
       "size": 11248,
@@ -6277,7 +6253,7 @@
     },
     "src/governance/immutable_laws.ts": {
       "size": 1451,
-      "mtime_ns": 1774144541608820800
+      "mtime_ns": 1774273202877254500
     },
     "src/governance/index.ts": {
       "size": 318,
@@ -6285,27 +6261,27 @@
     },
     "src/governance/mmx.ts": {
       "size": 2086,
-      "mtime_ns": 1774144541609821300
+      "mtime_ns": 1774273202877254500
     },
     "src/governance/offline_mode.ts": {
       "size": 23309,
-      "mtime_ns": 1774144541610821000
+      "mtime_ns": 1774273202877254500
     },
     "src/governance/pq_crypto.ts": {
       "size": 102,
-      "mtime_ns": 1774144541610821000
+      "mtime_ns": 1774273202879260900
     },
     "src/governance/runtime_gate.py": {
-      "size": 22170,
-      "mtime_ns": 1774220538639842500
+      "size": 22711,
+      "mtime_ns": 1774273202879260900
     },
     "src/governance/sync_client.ts": {
       "size": 980,
-      "mtime_ns": 1774144541611822100
+      "mtime_ns": 1774273202879260900
     },
     "src/governance/voxel_store.ts": {
       "size": 2352,
-      "mtime_ns": 1774144541612821200
+      "mtime_ns": 1774273202879260900
     },
     "src/h_lwe.py": {
       "size": 3733,
@@ -6333,7 +6309,7 @@
     },
     "src/harmonic/balancedTernary.ts": {
       "size": 9857,
-      "mtime_ns": 1774144541614821400
+      "mtime_ns": 1774273202882451200
     },
     "src/harmonic/chsfn.ts": {
       "size": 53,
@@ -6357,15 +6333,15 @@
     },
     "src/harmonic/driftTracker.ts": {
       "size": 25931,
-      "mtime_ns": 1774144541615822900
+      "mtime_ns": 1774273202882451200
     },
     "src/harmonic/encryptedTransport.ts": {
       "size": 13893,
-      "mtime_ns": 1774144541616821800
+      "mtime_ns": 1774273202882451200
     },
     "src/harmonic/entropic.ts": {
       "size": 25262,
-      "mtime_ns": 1774144541618296900
+      "mtime_ns": 1774273202884455700
     },
     "src/harmonic/entropicLayer.ts": {
       "size": 61,
@@ -6381,11 +6357,11 @@
     },
     "src/harmonic/geoSealImmune.ts": {
       "size": 20409,
-      "mtime_ns": 1774144541619426600
+      "mtime_ns": 1774273202884455700
     },
     "src/harmonic/governanceSim.ts": {
       "size": 14839,
-      "mtime_ns": 1774144541620425000
+      "mtime_ns": 1774273202886460600
     },
     "src/harmonic/governance_logger.py": {
       "size": 3483,
@@ -6393,7 +6369,7 @@
     },
     "src/harmonic/gravitationalBraking.ts": {
       "size": 6961,
-      "mtime_ns": 1774144541621425100
+      "mtime_ns": 1774273202886460600
     },
     "src/harmonic/halAttention.d.ts.map": {
       "size": 762,
@@ -6425,15 +6401,15 @@
     },
     "src/harmonic/hyperbolic.ts": {
       "size": 23839,
-      "mtime_ns": 1774144541622426800
+      "mtime_ns": 1774273202886460600
     },
     "src/harmonic/hyperbolicRAG.ts": {
       "size": 36654,
-      "mtime_ns": 1774144541623426100
+      "mtime_ns": 1774273202888465600
     },
     "src/harmonic/index.ts": {
       "size": 19880,
-      "mtime_ns": 1774144541624423900
+      "mtime_ns": 1774273202888465600
     },
     "src/harmonic/languesMetric.d.ts.map": {
       "size": 1808,
@@ -6445,23 +6421,23 @@
     },
     "src/harmonic/linguisticCrossTalk.ts": {
       "size": 37809,
-      "mtime_ns": 1774144541625425000
+      "mtime_ns": 1774273202890470100
     },
     "src/harmonic/mmx.ts": {
       "size": 5938,
-      "mtime_ns": 1774144541626424000
+      "mtime_ns": 1774273202890470100
     },
     "src/harmonic/negativeSpace.ts": {
       "size": 6647,
-      "mtime_ns": 1774144541627428900
+      "mtime_ns": 1774273202890470100
     },
     "src/harmonic/phdm.ts": {
       "size": 26295,
-      "mtime_ns": 1774144541629424800
+      "mtime_ns": 1774273202892475000
     },
     "src/harmonic/phdmSheafLattice.ts": {
       "size": 29414,
-      "mtime_ns": 1774144541630426700
+      "mtime_ns": 1774273202892475000
     },
     "src/harmonic/phdm_module.py": {
       "size": 1295,
@@ -6481,7 +6457,7 @@
     },
     "src/harmonic/qrCubeKdf.ts": {
       "size": 6381,
-      "mtime_ns": 1774144541631424800
+      "mtime_ns": 1774273202892475000
     },
     "src/harmonic/quasiSphereOverlap.ts": {
       "size": 66,
@@ -6501,7 +6477,7 @@
     },
     "src/harmonic/sacredEggsGenesis.ts": {
       "size": 13772,
-      "mtime_ns": 1774144541632425800
+      "mtime_ns": 1774273202894479800
     },
     "src/harmonic/sacredTongues.d.ts.map": {
       "size": 1078,
@@ -6521,7 +6497,7 @@
     },
     "src/harmonic/sheafCohomology.ts": {
       "size": 50438,
-      "mtime_ns": 1774144541633426300
+      "mtime_ns": 1774273202894479800
     },
     "src/harmonic/sheaf_consensus_gate.py": {
       "size": 5447,
@@ -6584,12 +6560,12 @@
       "mtime_ns": 1774144540699994800
     },
     "src/harmonic/voxelRecord.ts": {
-      "size": 16462,
-      "mtime_ns": 1773794495827624700
+      "size": 16994,
+      "mtime_ns": 1774273202896484200
     },
     "src/harmonic/wormholeTransport.ts": {
       "size": 9045,
-      "mtime_ns": 1774144541634427700
+      "mtime_ns": 1774273202896484200
     },
     "src/holographic_qr_cube.py": {
       "size": 1262,
@@ -6601,7 +6577,7 @@
     },
     "src/integrations/huggingface.ts": {
       "size": 12955,
-      "mtime_ns": 1774144541635426600
+      "mtime_ns": 1774273202896484200
     },
     "src/integrations/index.ts": {
       "size": 168,
@@ -6632,12 +6608,12 @@
       "mtime_ns": 1774069647572068500
     },
     "src/kernel/tetris_embedder.py": {
-      "size": 17202,
-      "mtime_ns": 1774148030880466500
+      "size": 17655,
+      "mtime_ns": 1774273202898488900
     },
     "src/knowledge/__init__.py": {
-      "size": 293,
-      "mtime_ns": 1774197453048646400
+      "size": 300,
+      "mtime_ns": 1774273202898488900
     },
     "src/knowledge/choicescript_loop_adapter.py": {
       "size": 3672,
@@ -6661,7 +6637,7 @@
     },
     "src/knowledge/quasicrystal_voxel_drive.py": {
       "size": 17698,
-      "mtime_ns": 1774216320035760200
+      "mtime_ns": 1774273202898488900
     },
     "src/knowledge/run_funnel.py": {
       "size": 6277,
@@ -6743,6 +6719,22 @@
       "size": 37343,
       "mtime_ns": 1771221012056062400
     },
+    "src/licensing/__init__.py": {
+      "size": 1271,
+      "mtime_ns": 1774273202898488900
+    },
+    "src/licensing/nist_ai_rmf.py": {
+      "size": 19440,
+      "mtime_ns": 1774273202902686300
+    },
+    "src/licensing/oem_license.py": {
+      "size": 11709,
+      "mtime_ns": 1774273202903481100
+    },
+    "src/licensing/usage_meter.py": {
+      "size": 11622,
+      "mtime_ns": 1774273202904331300
+    },
     "src/m4mesh/__init__.py": {
       "size": 1913,
       "mtime_ns": 1772676335077294400
@@ -6797,7 +6789,7 @@
     },
     "src/mcp/context_broker_mcp.py": {
       "size": 19110,
-      "mtime_ns": 1774144541637427400
+      "mtime_ns": 1774273202904331300
     },
     "src/mcp_server/__init__.py": {
       "size": 890,
@@ -6993,7 +6985,7 @@
     },
     "src/scbe_math_reference.py": {
       "size": 8276,
-      "mtime_ns": 1774217520660805700
+      "mtime_ns": 1774273202904331300
     },
     "src/scbe_signed_chladni.py": {
       "size": 6233,
@@ -7013,15 +7005,15 @@
     },
     "src/security-engine/context-engine.ts": {
       "size": 15682,
-      "mtime_ns": 1774144541638426900
+      "mtime_ns": 1774273202904331300
     },
     "src/security-engine/digital-twin.ts": {
       "size": 11848,
-      "mtime_ns": 1774144541639427800
+      "mtime_ns": 1774273202907992200
     },
     "src/security-engine/hyperspace.ts": {
       "size": 13912,
-      "mtime_ns": 1774144541640425900
+      "mtime_ns": 1774273202907992200
     },
     "src/security-engine/index.ts": {
       "size": 2662,
@@ -7029,15 +7021,15 @@
     },
     "src/security-engine/machine-constants.ts": {
       "size": 13922,
-      "mtime_ns": 1774144541641432700
+      "mtime_ns": 1774273202907992200
     },
     "src/security-engine/policy-fields.ts": {
       "size": 12815,
-      "mtime_ns": 1774144541642434100
+      "mtime_ns": 1774273202909997300
     },
     "src/security/__init__.py": {
       "size": 274,
-      "mtime_ns": 1774144541643434600
+      "mtime_ns": 1774273202909997300
     },
     "src/security/privacy_token_vault.py": {
       "size": 16833,
@@ -7048,8 +7040,8 @@
       "mtime_ns": 1771221012084471600
     },
     "src/security/secret_store.py": {
-      "size": 11947,
-      "mtime_ns": 1774211807078352800
+      "size": 12173,
+      "mtime_ns": 1774273202909997300
     },
     "src/selfHealing/coordinator.ts": {
       "size": 517,
@@ -7069,7 +7061,7 @@
     },
     "src/shell-executor.ts": {
       "size": 27380,
-      "mtime_ns": 1774144541644433500
+      "mtime_ns": 1774273202909997300
     },
     "src/skills/index.ts": {
       "size": 636,
@@ -7161,7 +7153,7 @@
     },
     "src/spiralverse/vector_6d.py": {
       "size": 22068,
-      "mtime_ns": 1774217520660805700
+      "mtime_ns": 1774273202909997300
     },
     "src/storage/__init__.py": {
       "size": 976,
@@ -7176,24 +7168,24 @@
       "mtime_ns": 1771221012107483600
     },
     "src/storage/fusion_surfaces.py": {
-      "size": 15233,
-      "mtime_ns": 1774200994448421700
+      "size": 15650,
+      "mtime_ns": 1774273202909997300
     },
     "src/storage/langues_dispersal.py": {
-      "size": 8902,
-      "mtime_ns": 1774201664371572300
+      "size": 9168,
+      "mtime_ns": 1774273202909997300
     },
     "src/storage/lightning_query.py": {
-      "size": 17027,
-      "mtime_ns": 1774202522778059400
+      "size": 17498,
+      "mtime_ns": 1774273202909997300
     },
     "src/storage/tictac_spin_grid.py": {
-      "size": 11583,
-      "mtime_ns": 1774213371634437400
+      "size": 11889,
+      "mtime_ns": 1774273202909997300
     },
     "src/storage/tri_lattice_membrane.py": {
-      "size": 15782,
-      "mtime_ns": 1774206343932881400
+      "size": 16183,
+      "mtime_ns": 1774273202909997300
     },
     "src/symphonic/Complex.ts": {
       "size": 4081,
@@ -7248,8 +7240,8 @@
       "mtime_ns": 1774144540765513100
     },
     "src/symphonic_cipher/__init__.py": {
-      "size": 5367,
-      "mtime_ns": 1772676335107007300
+      "size": 5566,
+      "mtime_ns": 1774273202918096000
     },
     "src/symphonic_cipher/ai_verifier.py": {
       "size": 49109,
@@ -7305,7 +7297,7 @@
     },
     "src/symphonic_cipher/harmonic_scaling_law.py": {
       "size": 138028,
-      "mtime_ns": 1774217520660805700
+      "mtime_ns": 1774273202918096000
     },
     "src/symphonic_cipher/qasi_core.py": {
       "size": 8994,
@@ -7353,7 +7345,7 @@
     },
     "src/symphonic_cipher/scbe_aethermoore/ai_brain/cymatic_voxel_net.py": {
       "size": 15936,
-      "mtime_ns": 1774217520676503400
+      "mtime_ns": 1774273202918096000
     },
     "src/symphonic_cipher/scbe_aethermoore/ai_brain/detection.py": {
       "size": 14821,
@@ -7417,7 +7409,7 @@
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/causality_axiom.py": {
       "size": 24113,
-      "mtime_ns": 1774217520676503400
+      "mtime_ns": 1774273202918096000
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/composition_axiom.py": {
       "size": 24435,
@@ -7441,11 +7433,11 @@
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/locality_axiom.py": {
       "size": 18122,
-      "mtime_ns": 1774217520676503400
+      "mtime_ns": 1774273202918096000
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/symmetry_axiom.py": {
       "size": 20454,
-      "mtime_ns": 1774217520676503400
+      "mtime_ns": 1774273202918096000
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/tests/__init__.py": {
       "size": 43,
@@ -7801,7 +7793,7 @@
     },
     "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py": {
       "size": 36906,
-      "mtime_ns": 1774217520676503400
+      "mtime_ns": 1774273202918096000
     },
     "src/symphonic_cipher/scbe_aethermoore/layers/paper_aggregator.py": {
       "size": 4935,
@@ -8001,7 +7993,7 @@
     },
     "src/symphonic_cipher/scbe_aethermoore/unified.py": {
       "size": 37631,
-      "mtime_ns": 1774217520660805700
+      "mtime_ns": 1774273202918096000
     },
     "src/symphonic_cipher/scbe_aethermoore/util_logging.py": {
       "size": 811,
@@ -8069,7 +8061,7 @@
     },
     "src/symphonic_cipher/topological_cfi.py": {
       "size": 18867,
-      "mtime_ns": 1774217520660805700
+      "mtime_ns": 1774273202918096000
     },
     "src/synesthesia_embedding.py": {
       "size": 2837,
@@ -8085,7 +8077,7 @@
     },
     "src/tokenizer/ss1.ts": {
       "size": 19359,
-      "mtime_ns": 1774144541647432900
+      "mtime_ns": 1774273202918096000
     },
     "src/training/__init__.py": {
       "size": 0,
@@ -8105,7 +8097,7 @@
     },
     "src/training/symphonic_governor.py": {
       "size": 24016,
-      "mtime_ns": 1774144642174561200
+      "mtime_ns": 1774273202918096000
     },
     "src/tsconfig.json": {
       "size": 615,
@@ -8148,8 +8140,8 @@
       "mtime_ns": 1774144540778767900
     },
     "src/video/watermark.ts": {
-      "size": 11163,
-      "mtime_ns": 1774195622263503500
+      "size": 11179,
+      "mtime_ns": 1774273202918096000
     },
     "src/vitest.config.ts": {
       "size": 383,
@@ -16307,38 +16299,6 @@
       "size": 9728,
       "mtime_ns": 1773730319612206800
     },
-    "stress_test.py": {
-      "size": 34761,
-      "mtime_ns": 1771221012222389800
-    },
-    "symphonic_cipher_geoseal_manifold.py": {
-      "size": 8815,
-      "mtime_ns": 1771221012292479000
-    },
-    "symphonic_cipher_spiralverse_sdk.py": {
-      "size": 16565,
-      "mtime_ns": 1771221012292479000
-    },
-    "test_aethermoore_validation.py": {
-      "size": 22833,
-      "mtime_ns": 1771221012297130200
-    },
-    "test_combined_protocol.py": {
-      "size": 23608,
-      "mtime_ns": 1771221012297130200
-    },
-    "test_flat_slope.py": {
-      "size": 12393,
-      "mtime_ns": 1771221012298137900
-    },
-    "test_harmonic_scaling_integration.py": {
-      "size": 18078,
-      "mtime_ns": 1773730319614206500
-    },
-    "test_physics.py": {
-      "size": 3071,
-      "mtime_ns": 1771221012300129800
-    },
     "tests/L1-basic/index.ts": {
       "size": 489,
       "mtime_ns": 1774144540782767000
@@ -16349,19 +16309,19 @@
     },
     "tests/L2-unit/asymmetricMovement.unit.test.ts": {
       "size": 19490,
-      "mtime_ns": 1774144541648433000
+      "mtime_ns": 1774273202933745300
     },
     "tests/L2-unit/browserFrameworks.unit.test.ts": {
       "size": 17165,
-      "mtime_ns": 1774144541649433100
+      "mtime_ns": 1774273202935751200
     },
     "tests/L2-unit/cdp-backend.unit.test.ts": {
       "size": 43844,
-      "mtime_ns": 1774144541650433400
+      "mtime_ns": 1774273202935751200
     },
     "tests/L2-unit/chsfn.unit.test.ts": {
       "size": 12498,
-      "mtime_ns": 1774144541651432500
+      "mtime_ns": 1774273202935751200
     },
     "tests/L2-unit/cli.unit.test.ts": {
       "size": 7015,
@@ -16369,35 +16329,35 @@
     },
     "tests/L2-unit/diagnosticSnapshot.unit.test.ts": {
       "size": 20405,
-      "mtime_ns": 1774144541652433200
+      "mtime_ns": 1774273202937756200
     },
     "tests/L2-unit/entropicLayer.unit.test.ts": {
       "size": 15511,
-      "mtime_ns": 1774144541653435600
+      "mtime_ns": 1774273202937756200
     },
     "tests/L2-unit/game/energy-token.unit.test.ts": {
       "size": 10207,
-      "mtime_ns": 1774144541654769400
+      "mtime_ns": 1774273202939764400
     },
     "tests/L2-unit/game/game-types.unit.test.ts": {
       "size": 21684,
-      "mtime_ns": 1774144541655777400
+      "mtime_ns": 1774273202939764400
     },
     "tests/L2-unit/game/micro-ledger.unit.test.ts": {
       "size": 12762,
-      "mtime_ns": 1774144541656786700
+      "mtime_ns": 1774273202941770500
     },
     "tests/L2-unit/game/training-pipeline.unit.test.ts": {
       "size": 16060,
-      "mtime_ns": 1774144541657786400
+      "mtime_ns": 1774273202941770500
     },
     "tests/L2-unit/governanceSim.unit.test.ts": {
       "size": 19923,
-      "mtime_ns": 1774144541658787600
+      "mtime_ns": 1774273202941770500
     },
     "tests/L2-unit/hyperbolicRAG.unit.test.ts": {
       "size": 20298,
-      "mtime_ns": 1774144541659787200
+      "mtime_ns": 1774273202943776000
     },
     "tests/L2-unit/index.ts": {
       "size": 504,
@@ -16405,43 +16365,43 @@
     },
     "tests/L2-unit/layeredEggArena.unit.test.ts": {
       "size": 15868,
-      "mtime_ns": 1774144541661830300
+      "mtime_ns": 1774273202943776000
     },
     "tests/L2-unit/mmx.unit.test.ts": {
       "size": 8925,
-      "mtime_ns": 1774144541662828700
+      "mtime_ns": 1774273202943776000
     },
     "tests/L2-unit/orderedRejection.unit.test.ts": {
       "size": 16289,
-      "mtime_ns": 1774144541663830200
+      "mtime_ns": 1774273202945780800
     },
     "tests/L2-unit/polly-pad-runtime.unit.test.ts": {
       "size": 12287,
-      "mtime_ns": 1774144541664834300
+      "mtime_ns": 1774273202945780800
     },
     "tests/L2-unit/pqcArena.unit.test.ts": {
       "size": 17112,
-      "mtime_ns": 1774144541665836500
+      "mtime_ns": 1774273202945780800
     },
     "tests/L2-unit/qrCubeKdf.unit.test.ts": {
       "size": 9533,
-      "mtime_ns": 1774144541667833300
+      "mtime_ns": 1774273202947785500
     },
     "tests/L2-unit/quasiSphereOverlap.unit.test.ts": {
       "size": 19680,
-      "mtime_ns": 1774144541669088200
+      "mtime_ns": 1774273202947785500
     },
     "tests/L2-unit/quasiSphereSlice.unit.test.ts": {
       "size": 10761,
-      "mtime_ns": 1774144541670796500
+      "mtime_ns": 1774273202947785500
     },
     "tests/L2-unit/securityInvariants.unit.test.ts": {
       "size": 12914,
-      "mtime_ns": 1774144541671797600
+      "mtime_ns": 1774273202949531100
     },
     "tests/L2-unit/sheafCohomology.unit.test.ts": {
       "size": 32677,
-      "mtime_ns": 1774144541672795000
+      "mtime_ns": 1774273202949531100
     },
     "tests/L2-unit/spectral-coherence.unit.test.ts": {
       "size": 7197,
@@ -16449,7 +16409,7 @@
     },
     "tests/L2-unit/tBraid.unit.test.ts": {
       "size": 32779,
-      "mtime_ns": 1774144541673796500
+      "mtime_ns": 1774273202951536400
     },
     "tests/L2-unit/temporalIntent.unit.test.ts": {
       "size": 23927,
@@ -16457,15 +16417,15 @@
     },
     "tests/L2-unit/temporalPhase.unit.test.ts": {
       "size": 36493,
-      "mtime_ns": 1774144541675796800
+      "mtime_ns": 1774273202951536400
     },
     "tests/L2-unit/triDirectionalPlanner.unit.test.ts": {
       "size": 9012,
       "mtime_ns": 1774144540817769700
     },
     "tests/L2-unit/voxelRecord.unit.test.ts": {
-      "size": 15023,
-      "mtime_ns": 1773794495829631900
+      "size": 15414,
+      "mtime_ns": 1774273202951536400
     },
     "tests/L3-integration/index.ts": {
       "size": 511,
@@ -16512,20 +16472,64 @@
       "mtime_ns": 1774144540829009300
     },
     "tests/adversarial/__init__.py": {
-      "size": 54,
-      "mtime_ns": 1774211958556891700
+      "size": 55,
+      "mtime_ns": 1774273202953541400
     },
     "tests/adversarial/attack_corpus.py": {
-      "size": 18826,
-      "mtime_ns": 1774212097389134800
+      "size": 19096,
+      "mtime_ns": 1774273202953541400
+    },
+    "tests/adversarial/conftest.py": {
+      "size": 213,
+      "mtime_ns": 1774273202953541400
     },
     "tests/adversarial/scbe_harness.py": {
-      "size": 10778,
-      "mtime_ns": 1774212777360596100
+      "size": 21081,
+      "mtime_ns": 1774273202953541400
+    },
+    "tests/adversarial/test_adaptive_sequences.py": {
+      "size": 2536,
+      "mtime_ns": 1774273202953541400
     },
     "tests/adversarial/test_adversarial_benchmark.py": {
-      "size": 8910,
-      "mtime_ns": 1774212269948036800
+      "size": 9112,
+      "mtime_ns": 1774273202953541400
+    },
+    "tests/adversarial/test_boundary_attacks.py": {
+      "size": 2428,
+      "mtime_ns": 1774273202953541400
+    },
+    "tests/adversarial/test_combined_attacks.py": {
+      "size": 3164,
+      "mtime_ns": 1774273202953541400
+    },
+    "tests/adversarial/test_cross_surface_attacks.py": {
+      "size": 2088,
+      "mtime_ns": 1774273202953541400
+    },
+    "tests/adversarial/test_direct_injection.py": {
+      "size": 1699,
+      "mtime_ns": 1774273202953541400
+    },
+    "tests/adversarial/test_encoding_attacks.py": {
+      "size": 1652,
+      "mtime_ns": 1774273202953541400
+    },
+    "tests/adversarial/test_indirect_injection.py": {
+      "size": 1595,
+      "mtime_ns": 1774273202953541400
+    },
+    "tests/adversarial/test_multilingual_attacks.py": {
+      "size": 2179,
+      "mtime_ns": 1774273202953541400
+    },
+    "tests/adversarial/test_scbe_specific_attacks.py": {
+      "size": 3754,
+      "mtime_ns": 1774273202953541400
+    },
+    "tests/adversarial/test_tool_exfiltration.py": {
+      "size": 1923,
+      "mtime_ns": 1774273202953541400
     },
     "tests/aetherbrowser/__init__.py": {
       "size": 0,
@@ -16536,8 +16540,8 @@
       "mtime_ns": 1773180957474044300
     },
     "tests/aetherbrowser/test_command_planner.py": {
-      "size": 3450,
-      "mtime_ns": 1774144541677720700
+      "size": 3403,
+      "mtime_ns": 1774273202965382600
     },
     "tests/aetherbrowser/test_hyperlane_py.py": {
       "size": 3208,
@@ -16545,43 +16549,43 @@
     },
     "tests/aetherbrowser/test_integration.py": {
       "size": 6417,
-      "mtime_ns": 1774144541678730100
+      "mtime_ns": 1774273202965382600
     },
     "tests/aetherbrowser/test_page_analyzer.py": {
-      "size": 5574,
-      "mtime_ns": 1774201500763637600
+      "size": 2383,
+      "mtime_ns": 1774273202965382600
     },
     "tests/aetherbrowser/test_phase_tunnel.py": {
-      "size": 10457,
-      "mtime_ns": 1773907137683164300
+      "size": 10738,
+      "mtime_ns": 1774273202965382600
     },
     "tests/aetherbrowser/test_provider_executor.py": {
-      "size": 4686,
-      "mtime_ns": 1773887990261714400
+      "size": 4806,
+      "mtime_ns": 1774273202965382600
     },
     "tests/aetherbrowser/test_red_zone_integration.py": {
-      "size": 8454,
-      "mtime_ns": 1773908537924433600
+      "size": 8691,
+      "mtime_ns": 1774273202965382600
     },
     "tests/aetherbrowser/test_router.py": {
       "size": 5908,
-      "mtime_ns": 1774144541680729300
+      "mtime_ns": 1774273202965382600
     },
     "tests/aetherbrowser/test_serve.py": {
       "size": 3504,
-      "mtime_ns": 1774144541682731300
+      "mtime_ns": 1774273202965382600
     },
     "tests/aetherbrowser/test_topology_engine.py": {
-      "size": 5595,
-      "mtime_ns": 1773906540039799100
+      "size": 5758,
+      "mtime_ns": 1774273202965382600
     },
     "tests/aetherbrowser/test_trilane_router.py": {
-      "size": 8573,
-      "mtime_ns": 1774057540165896600
+      "size": 8775,
+      "mtime_ns": 1774273202965382600
     },
     "tests/aetherbrowser/test_ws_feed.py": {
       "size": 3570,
-      "mtime_ns": 1774144541683731600
+      "mtime_ns": 1774273202965382600
     },
     "tests/aethermoore_aqm.png": {
       "size": 87407,
@@ -16621,23 +16625,23 @@
     },
     "tests/ai_brain/bee-immune-tiers.test.ts": {
       "size": 23214,
-      "mtime_ns": 1774144541685342700
+      "mtime_ns": 1774273202965382600
     },
     "tests/ai_brain/bft-consensus.test.ts": {
       "size": 10913,
-      "mtime_ns": 1774144541687476200
+      "mtime_ns": 1774273202975293400
     },
     "tests/ai_brain/brain-integration.test.ts": {
       "size": 25048,
-      "mtime_ns": 1774144541688474600
+      "mtime_ns": 1774273202975293400
     },
     "tests/ai_brain/conservation.test.ts": {
       "size": 24853,
-      "mtime_ns": 1774144541690073400
+      "mtime_ns": 1774273202975293400
     },
     "tests/ai_brain/cymatic-voxel-net.test.ts": {
       "size": 17221,
-      "mtime_ns": 1774144541691174900
+      "mtime_ns": 1774273202977299200
     },
     "tests/ai_brain/detection.test.ts": {
       "size": 14991,
@@ -16645,11 +16649,11 @@
     },
     "tests/ai_brain/dual-lattice.test.ts": {
       "size": 18064,
-      "mtime_ns": 1774144541692173500
+      "mtime_ns": 1774273202977299200
     },
     "tests/ai_brain/dual-ternary.test.ts": {
       "size": 20877,
-      "mtime_ns": 1774144541693173800
+      "mtime_ns": 1774273202979304000
     },
     "tests/ai_brain/entropic-layer.test.ts": {
       "size": 14082,
@@ -16657,11 +16661,11 @@
     },
     "tests/ai_brain/hamiltonian-braid.test.ts": {
       "size": 34895,
-      "mtime_ns": 1774144541694172700
+      "mtime_ns": 1774273202979304000
     },
     "tests/ai_brain/hyperbolic-rag.test.ts": {
       "size": 15054,
-      "mtime_ns": 1774144541695173800
+      "mtime_ns": 1774273202979304000
     },
     "tests/ai_brain/immune-response.test.ts": {
       "size": 22653,
@@ -16669,7 +16673,7 @@
     },
     "tests/ai_brain/phdm-core.test.ts": {
       "size": 29807,
-      "mtime_ns": 1774144541696174600
+      "mtime_ns": 1774273202981050100
     },
     "tests/ai_brain/quasi-space.test.ts": {
       "size": 13556,
@@ -16677,23 +16681,23 @@
     },
     "tests/ai_brain/swarm-formation.test.ts": {
       "size": 18464,
-      "mtime_ns": 1774144541697174900
+      "mtime_ns": 1774273202981050100
     },
     "tests/ai_brain/timeOverIntent.test.ts": {
       "size": 14684,
-      "mtime_ns": 1774144541698173300
+      "mtime_ns": 1774273202983054900
     },
     "tests/ai_brain/trajectory-simulator.test.ts": {
       "size": 13511,
-      "mtime_ns": 1774144541699173500
+      "mtime_ns": 1774273202983054900
     },
     "tests/ai_brain/tri-manifold-lattice.test.ts": {
       "size": 25096,
-      "mtime_ns": 1774144541699173500
+      "mtime_ns": 1774273202983054900
     },
     "tests/ai_brain/unified-kernel.test.ts": {
       "size": 26581,
-      "mtime_ns": 1774144541700173500
+      "mtime_ns": 1774273202985060300
     },
     "tests/ai_brain/unified-state.test.ts": {
       "size": 10831,
@@ -16712,8 +16716,8 @@
       "mtime_ns": 1772754344068050100
     },
     "tests/api/test_github_app_routes.py": {
-      "size": 4684,
-      "mtime_ns": 1774082351834211200
+      "size": 4819,
+      "mtime_ns": 1774273202985060300
     },
     "tests/api/test_metering.py": {
       "size": 1413,
@@ -16721,11 +16725,11 @@
     },
     "tests/browser/evaluator.test.ts": {
       "size": 3834,
-      "mtime_ns": 1774144541701628300
+      "mtime_ns": 1774273202985060300
     },
     "tests/browser/playwrightBackend.test.ts": {
       "size": 25263,
-      "mtime_ns": 1774144541702771400
+      "mtime_ns": 1774273202985060300
     },
     "tests/code_prism/test_builder.py": {
       "size": 1029,
@@ -16745,15 +16749,15 @@
     },
     "tests/conference/caas.test.ts": {
       "size": 11724,
-      "mtime_ns": 1774144541703772400
+      "mtime_ns": 1774273202987997600
     },
     "tests/conference/fluxStateBreathing.test.ts": {
       "size": 5345,
-      "mtime_ns": 1774144541704770600
+      "mtime_ns": 1774273202987997600
     },
     "tests/conference/scbeGate.test.ts": {
       "size": 6191,
-      "mtime_ns": 1774144541705769900
+      "mtime_ns": 1774273202990002000
     },
     "tests/conference/zoom.test.ts": {
       "size": 7906,
@@ -16797,15 +16801,15 @@
     },
     "tests/cross-language/polyglot-poincare-vectors.test.ts": {
       "size": 1150,
-      "mtime_ns": 1774144541706770800
+      "mtime_ns": 1774273202990002000
     },
     "tests/crypto/__init__.py": {
       "size": 23,
       "mtime_ns": 1771221012363183500
     },
     "tests/crypto/aetherlexSeed.test.ts": {
-      "size": 23024,
-      "mtime_ns": 1774193126477159500
+      "size": 23039,
+      "mtime_ns": 1774273202990002000
     },
     "tests/crypto/platform.test.ts": {
       "size": 7025,
@@ -16813,15 +16817,15 @@
     },
     "tests/crypto/pqc-strategies.test.ts": {
       "size": 20629,
-      "mtime_ns": 1774144541708770100
+      "mtime_ns": 1774273202992006700
     },
     "tests/crypto/pqc.test.ts": {
       "size": 3232,
-      "mtime_ns": 1774144541709770500
+      "mtime_ns": 1774273202992006700
     },
     "tests/crypto/quantum-safe.test.ts": {
       "size": 23126,
-      "mtime_ns": 1774144541710771900
+      "mtime_ns": 1774273202992006700
     },
     "tests/crypto/replayGuard.redis.test.ts": {
       "size": 6509,
@@ -16856,24 +16860,24 @@
       "mtime_ns": 1771221012370691000
     },
     "tests/e2e/fixtures/chrome-shim.js": {
-      "size": 1592,
-      "mtime_ns": 1773880082478823800
+      "size": 1651,
+      "mtime_ns": 1774273202994011900
     },
     "tests/e2e/fixtures/red-zone-site.html": {
-      "size": 2134,
-      "mtime_ns": 1773908254548146300
+      "size": 2180,
+      "mtime_ns": 1774273202994011900
     },
     "tests/e2e/fixtures/serve-sidepanel.mjs": {
-      "size": 8456,
-      "mtime_ns": 1773879738508894500
+      "size": 8679,
+      "mtime_ns": 1774273202994011900
     },
     "tests/e2e/sidepanel.smoke.test.ts": {
-      "size": 16332,
-      "mtime_ns": 1773879816946345300
+      "size": 16808,
+      "mtime_ns": 1774273202996804500
     },
     "tests/e2e/test_red_zone_phase_tunnel.py": {
-      "size": 16896,
-      "mtime_ns": 1774212069938441400
+      "size": 17310,
+      "mtime_ns": 1774273202996804500
     },
     "tests/enterprise/ENTERPRISE_TESTING_GUIDE.md": {
       "size": 15021,
@@ -16981,15 +16985,15 @@
     },
     "tests/fleet/browser-pool.test.ts": {
       "size": 24547,
-      "mtime_ns": 1774144541711772300
+      "mtime_ns": 1774273202996804500
     },
     "tests/fleet/crawl-coordinator.test.ts": {
       "size": 34731,
-      "mtime_ns": 1774144541712770800
+      "mtime_ns": 1774273202999394500
     },
     "tests/fleet/crawl-runner.test.ts": {
       "size": 36779,
-      "mtime_ns": 1774144541713770600
+      "mtime_ns": 1774273202999394500
     },
     "tests/fleet/fleet-manager.test.ts": {
       "size": 16892,
@@ -16997,7 +17001,7 @@
     },
     "tests/fleet/governed-drift.test.ts": {
       "size": 20621,
-      "mtime_ns": 1774144541714773400
+      "mtime_ns": 1774273202999394500
     },
     "tests/fleet/mitosis.test.ts": {
       "size": 12690,
@@ -17005,15 +17009,15 @@
     },
     "tests/fleet/node-kernel.test.ts": {
       "size": 22516,
-      "mtime_ns": 1774144541715772200
+      "mtime_ns": 1774273203001400200
     },
     "tests/fleet/oscillator-bus.test.ts": {
       "size": 15913,
-      "mtime_ns": 1774144541717771600
+      "mtime_ns": 1774273203001400200
     },
     "tests/fleet/polly-pad-modes.test.ts": {
       "size": 33861,
-      "mtime_ns": 1774144541718771000
+      "mtime_ns": 1774273203003407400
     },
     "tests/fleet/polly-pad.test.ts": {
       "size": 16763,
@@ -17025,7 +17029,7 @@
     },
     "tests/fleet/swarm-geometry.test.ts": {
       "size": 29260,
-      "mtime_ns": 1774144541720777100
+      "mtime_ns": 1774273203003407400
     },
     "tests/game/test_energy_token.py": {
       "size": 5710,
@@ -17049,7 +17053,7 @@
     },
     "tests/harmonic/adaptiveNavigator.test.ts": {
       "size": 17198,
-      "mtime_ns": 1774144541722771600
+      "mtime_ns": 1774273203003407400
     },
     "tests/harmonic/audioAxis.test.ts": {
       "size": 17651,
@@ -17057,19 +17061,19 @@
     },
     "tests/harmonic/balancedTernary.test.ts": {
       "size": 16638,
-      "mtime_ns": 1774144541723772000
+      "mtime_ns": 1774273203005412800
     },
     "tests/harmonic/driftTracker.test.ts": {
       "size": 22027,
-      "mtime_ns": 1774144541724771800
+      "mtime_ns": 1774273203005412800
     },
     "tests/harmonic/encryptedTransport.test.ts": {
       "size": 14359,
-      "mtime_ns": 1774144541725770200
+      "mtime_ns": 1774273203007417800
     },
     "tests/harmonic/entropic.test.ts": {
       "size": 17818,
-      "mtime_ns": 1774144541726770500
+      "mtime_ns": 1774273203007417800
     },
     "tests/harmonic/fluxState.test.ts": {
       "size": 11565,
@@ -17077,23 +17081,23 @@
     },
     "tests/harmonic/frecency.test.ts": {
       "size": 32458,
-      "mtime_ns": 1774144541727773100
+      "mtime_ns": 1774273203007417800
     },
     "tests/harmonic/geoSealImmune.test.ts": {
       "size": 20421,
-      "mtime_ns": 1774144541729773000
+      "mtime_ns": 1774273203009423100
     },
     "tests/harmonic/geoseal-v2.test.ts": {
       "size": 16666,
-      "mtime_ns": 1774144541730772400
+      "mtime_ns": 1774273203009423100
     },
     "tests/harmonic/geoseal.test.ts": {
       "size": 13853,
-      "mtime_ns": 1774144541731770000
+      "mtime_ns": 1774273203009423100
     },
     "tests/harmonic/gravitationalBraking.test.ts": {
       "size": 19056,
-      "mtime_ns": 1774144541732771000
+      "mtime_ns": 1774273203011427700
     },
     "tests/harmonic/halAttention.test.ts": {
       "size": 18860,
@@ -17113,7 +17117,7 @@
     },
     "tests/harmonic/hyperbolicRAG.test.ts": {
       "size": 16639,
-      "mtime_ns": 1774144541733769900
+      "mtime_ns": 1774273203011427700
     },
     "tests/harmonic/languesMetric.test.ts": {
       "size": 17154,
@@ -17121,23 +17125,23 @@
     },
     "tests/harmonic/linguisticCrossTalk.test.ts": {
       "size": 42629,
-      "mtime_ns": 1774144541734771100
+      "mtime_ns": 1774273203012932200
     },
     "tests/harmonic/negativeSpace.test.ts": {
       "size": 26753,
-      "mtime_ns": 1774144541736773000
+      "mtime_ns": 1774273203012932200
     },
     "tests/harmonic/phdm.test.ts": {
       "size": 24543,
-      "mtime_ns": 1774144541737775800
+      "mtime_ns": 1774273203014937600
     },
     "tests/harmonic/phdmSheafLattice.test.ts": {
       "size": 36829,
-      "mtime_ns": 1774144541738775800
+      "mtime_ns": 1774273203014937600
     },
     "tests/harmonic/pipeline14.test.ts": {
-      "size": 10420,
-      "mtime_ns": 1774144540965259300
+      "size": 11763,
+      "mtime_ns": 1774273203014937600
     },
     "tests/harmonic/resonanceGate.test.ts": {
       "size": 6213,
@@ -17145,11 +17149,11 @@
     },
     "tests/harmonic/sacredEggs.test.ts": {
       "size": 18314,
-      "mtime_ns": 1774144541740671200
+      "mtime_ns": 1774273203016942300
     },
     "tests/harmonic/sacredEggsGenesis.test.ts": {
       "size": 15666,
-      "mtime_ns": 1774144541741818900
+      "mtime_ns": 1774273203016942300
     },
     "tests/harmonic/sacredTongues.test.ts": {
       "size": 15206,
@@ -17157,7 +17161,7 @@
     },
     "tests/harmonic/sheafCohomology.test.ts": {
       "size": 72553,
-      "mtime_ns": 1774144541742819500
+      "mtime_ns": 1774273203018947100
     },
     "tests/harmonic/spectral-identity.test.ts": {
       "size": 10678,
@@ -17169,11 +17173,11 @@
     },
     "tests/harmonic/triMechanismDetector.test.ts": {
       "size": 21611,
-      "mtime_ns": 1774144541743819500
+      "mtime_ns": 1774273203018947100
     },
     "tests/harmonic/trustCone.test.ts": {
       "size": 13388,
-      "mtime_ns": 1774144541744819700
+      "mtime_ns": 1774273203018947100
     },
     "tests/harmonic/vacuumAcoustics.test.ts": {
       "size": 30807,
@@ -17181,15 +17185,15 @@
     },
     "tests/harmonic/wormholeTransport.test.ts": {
       "size": 18464,
-      "mtime_ns": 1774144541745819800
+      "mtime_ns": 1774273203020952000
     },
     "tests/heart_vault/test_heart_vault.py": {
       "size": 30656,
       "mtime_ns": 1772676335208872300
     },
     "tests/hydra-terminal-browse.test.ts": {
-      "size": 1379,
-      "mtime_ns": 1774193104701204600
+      "size": 1419,
+      "mtime_ns": 1774273203020952000
     },
     "tests/hydra/__init__.py": {
       "size": 0,
@@ -17197,7 +17201,7 @@
     },
     "tests/hydra/swarm_governance.test.ts": {
       "size": 16657,
-      "mtime_ns": 1774144541747827500
+      "mtime_ns": 1774273203020952000
     },
     "tests/hydra/test_browsers.py": {
       "size": 8119,
@@ -17293,7 +17297,7 @@
     },
     "tests/integrations/huggingface.test.ts": {
       "size": 19210,
-      "mtime_ns": 1774144541748819700
+      "mtime_ns": 1774273203022956500
     },
     "tests/interop/generate_vectors.py": {
       "size": 6494,
@@ -17313,15 +17317,15 @@
     },
     "tests/interop/test_m4_canonical_bridge.py": {
       "size": 961,
-      "mtime_ns": 1774144541750818400
+      "mtime_ns": 1774273203022956500
     },
     "tests/interop/test_m4_gates_isolation.py": {
       "size": 1231,
-      "mtime_ns": 1774144541751566600
+      "mtime_ns": 1774273203022956500
     },
     "tests/interop/test_m4_leakage_metric.py": {
       "size": 813,
-      "mtime_ns": 1774144541753359100
+      "mtime_ns": 1774273203022956500
     },
     "tests/interop/test_m4_manifest_roundtrip.py": {
       "size": 362,
@@ -17356,12 +17360,12 @@
       "mtime_ns": 1774067811993968700
     },
     "tests/kernel/test_tetris_embedder.py": {
-      "size": 793,
-      "mtime_ns": 1774148040832862600
+      "size": 817,
+      "mtime_ns": 1774273203022956500
     },
     "tests/mcp/scbe-server.phase1.test.ts": {
       "size": 4119,
-      "mtime_ns": 1774144541754360300
+      "mtime_ns": 1774273203022956500
     },
     "tests/network/combat-network.test.ts": {
       "size": 21556,
@@ -17409,7 +17413,7 @@
     },
     "tests/security-engine/security-engine.test.ts": {
       "size": 27976,
-      "mtime_ns": 1774144541755870100
+      "mtime_ns": 1774273203028857000
     },
     "tests/security/__init__.py": {
       "size": 18,
@@ -17425,7 +17429,7 @@
     },
     "tests/shell-executor.test.ts": {
       "size": 35907,
-      "mtime_ns": 1774144541756880400
+      "mtime_ns": 1774273203028857000
     },
     "tests/skills/socialContent.test.ts": {
       "size": 11822,
@@ -17480,28 +17484,28 @@
       "mtime_ns": 1772676335226407100
     },
     "tests/test_aetherbrowse_cli.py": {
-      "size": 3159,
-      "mtime_ns": 1773734398451975700
+      "size": 3242,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_aetherbrowse_swarm_runner.py": {
       "size": 6571,
-      "mtime_ns": 1774144541757879600
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_aetherbrowser_huggingface_nav.py": {
-      "size": 5394,
-      "mtime_ns": 1773734727770486400
+      "size": 5563,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_aetherbrowser_live_smoke.py": {
-      "size": 2863,
-      "mtime_ns": 1773877230829172600
+      "size": 2952,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_aetherbrowser_model_cli.py": {
-      "size": 2334,
-      "mtime_ns": 1773887990262717700
+      "size": 2405,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_aetherbrowser_search.py": {
-      "size": 4086,
-      "mtime_ns": 1773735003778027700
+      "size": 4207,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_aethermoor_spiral_engine.py": {
       "size": 3682,
@@ -17564,8 +17568,8 @@
       "mtime_ns": 1771221012451403100
     },
     "tests/test_audio_gate_spectrum_report.py": {
-      "size": 1894,
-      "mtime_ns": 1773795080840303800
+      "size": 1956,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_auto_ledger_offline.py": {
       "size": 322,
@@ -17588,8 +17592,8 @@
       "mtime_ns": 1772752225876887700
     },
     "tests/test_browser_toolkit.py": {
-      "size": 32157,
-      "mtime_ns": 1774212050971050500
+      "size": 32243,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_build_manhwa_edit_packet.py": {
       "size": 4474,
@@ -17604,8 +17608,8 @@
       "mtime_ns": 1772676335230421200
     },
     "tests/test_build_repurpose_manifest.py": {
-      "size": 3055,
-      "mtime_ns": 1774084847915129100
+      "size": 3138,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_build_research_campaign.py": {
       "size": 1194,
@@ -17632,16 +17636,16 @@
       "mtime_ns": 1772664803967921300
     },
     "tests/test_code_scanning_batch3.py": {
-      "size": 3177,
-      "mtime_ns": 1774212247472353300
+      "size": 3178,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_code_scanning_batch5.py": {
-      "size": 3486,
-      "mtime_ns": 1774201500767658700
+      "size": 3522,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_colab_n8n_bridge_security.py": {
-      "size": 6867,
-      "mtime_ns": 1774212092978391900
+      "size": 7059,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_colab_notebook_smoke.py": {
       "size": 3144,
@@ -17656,8 +17660,8 @@
       "mtime_ns": 1774156570478754300
     },
     "tests/test_colab_workflow_catalog.py": {
-      "size": 1388,
-      "mtime_ns": 1774144541760195000
+      "size": 1360,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_color_dimension.py": {
       "size": 18850,
@@ -17673,11 +17677,11 @@
     },
     "tests/test_constitutional_web_agent.py": {
       "size": 8769,
-      "mtime_ns": 1774144541761205200
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_crosstalk_relay.py": {
       "size": 8287,
-      "mtime_ns": 1774144541762203200
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_crosstalk_reliability_manager.py": {
       "size": 3934,
@@ -17768,8 +17772,8 @@
       "mtime_ns": 1773730306382802700
     },
     "tests/test_flux_parameters.py": {
-      "size": 4552,
-      "mtime_ns": 1774200165743731400
+      "size": 4676,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_fsgs.py": {
       "size": 21327,
@@ -17780,8 +17784,8 @@
       "mtime_ns": 1773730319625207900
     },
     "tests/test_fusion_surfaces.py": {
-      "size": 6476,
-      "mtime_ns": 1774201025276374800
+      "size": 6660,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_gate_swap_trimanifold.py": {
       "size": 15764,
@@ -17800,8 +17804,8 @@
       "mtime_ns": 1771221012465082200
     },
     "tests/test_github_workflow_audit.py": {
-      "size": 1884,
-      "mtime_ns": 1774189877556897700
+      "size": 1927,
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_goal_race_loop.py": {
       "size": 1640,
@@ -17825,15 +17829,15 @@
     },
     "tests/test_hallpass.py": {
       "size": 30430,
-      "mtime_ns": 1774144541764202100
+      "mtime_ns": 1774273203028857000
     },
     "tests/test_hamiltonian_braid.py": {
       "size": 18906,
       "mtime_ns": 1771221012467087400
     },
     "tests/test_harmonic_scaling_integration.py": {
-      "size": 18172,
-      "mtime_ns": 1774201500765646600
+      "size": 18173,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_hf_webtoon_job_scripts.py": {
       "size": 2492,
@@ -17872,8 +17876,8 @@
       "mtime_ns": 1772777980878860300
     },
     "tests/test_hydra_command_center.py": {
-      "size": 6026,
-      "mtime_ns": 1774212061017973100
+      "size": 6101,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_hydra_swarm_browser.py": {
       "size": 14787,
@@ -17900,8 +17904,8 @@
       "mtime_ns": 1771221012471095500
     },
     "tests/test_inspect_code_scanning_alerts.py": {
-      "size": 3125,
-      "mtime_ns": 1774188160200539600
+      "size": 3214,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_inspect_uspto_session.py": {
       "size": 1609,
@@ -17920,16 +17924,16 @@
       "mtime_ns": 1771221012472088500
     },
     "tests/test_key_mirror_security.py": {
-      "size": 977,
-      "mtime_ns": 1774212336823545900
+      "size": 1012,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_known_limitations.py": {
       "size": 16103,
       "mtime_ns": 1771221012472088500
     },
     "tests/test_langues_dispersal.py": {
-      "size": 9450,
-      "mtime_ns": 1774201710043176200
+      "size": 9699,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_lattice25d_ops.py": {
       "size": 2264,
@@ -17943,9 +17947,13 @@
       "size": 4477,
       "mtime_ns": 1772676335245669000
     },
+    "tests/test_licensing.py": {
+      "size": 19660,
+      "mtime_ns": 1774273203044717300
+    },
     "tests/test_lightning_query.py": {
-      "size": 8863,
-      "mtime_ns": 1774202442559200100
+      "size": 9099,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_linux_kernel_event_bridge.py": {
       "size": 2864,
@@ -18009,7 +18017,7 @@
     },
     "tests/test_orchestrator.py": {
       "size": 17320,
-      "mtime_ns": 1774144541765202300
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_paper_aggregator.py": {
       "size": 2203,
@@ -18028,12 +18036,12 @@
       "mtime_ns": 1771221012478609800
     },
     "tests/test_phone_eye.py": {
-      "size": 3470,
-      "mtime_ns": 1773797325346571000
+      "size": 3546,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_phone_navigation_telemetry.py": {
-      "size": 3535,
-      "mtime_ns": 1773797401331317300
+      "size": 3598,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_physics.py": {
       "size": 3218,
@@ -18068,12 +18076,12 @@
       "mtime_ns": 1774163474029139600
     },
     "tests/test_post_to_devto.py": {
-      "size": 1312,
-      "mtime_ns": 1773962433215073500
+      "size": 1349,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_post_to_huggingface_discussion.py": {
-      "size": 779,
-      "mtime_ns": 1773756812447350400
+      "size": 802,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_potato_head.py": {
       "size": 23096,
@@ -18084,8 +18092,8 @@
       "mtime_ns": 1772676335251638400
     },
     "tests/test_pr_merge_triage.py": {
-      "size": 937,
-      "mtime_ns": 1774194577287457600
+      "size": 969,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_probe_attention_fft.py": {
       "size": 6371,
@@ -18120,8 +18128,8 @@
       "mtime_ns": 1772676335253669500
     },
     "tests/test_qr_cube_kdf_hardened.py": {
-      "size": 13357,
-      "mtime_ns": 1774200077357643500
+      "size": 13739,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_qr_cube_pi_phi_kdf.py": {
       "size": 12681,
@@ -18136,8 +18144,8 @@
       "mtime_ns": 1772676335253669500
     },
     "tests/test_quasicrystal_voxel_drive.py": {
-      "size": 6235,
-      "mtime_ns": 1774216354002179700
+      "size": 6399,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_render_full_book_router.py": {
       "size": 7585,
@@ -18168,8 +18176,8 @@
       "mtime_ns": 1773891565876642600
     },
     "tests/test_run_core_python_checks.py": {
-      "size": 794,
-      "mtime_ns": 1774194617689264800
+      "size": 816,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_run_legacy_hf_eval.py": {
       "size": 2592,
@@ -18180,8 +18188,8 @@
       "mtime_ns": 1773905594611266200
     },
     "tests/test_runtime_gate.py": {
-      "size": 16711,
-      "mtime_ns": 1774220498263197200
+      "size": 17120,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_saas_api.py": {
       "size": 6850,
@@ -18209,7 +18217,7 @@
     },
     "tests/test_sacred_tongue_integration.py": {
       "size": 18278,
-      "mtime_ns": 1774144541766201500
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_scbe_14layer_audit_callsite.py": {
       "size": 535,
@@ -18232,8 +18240,8 @@
       "mtime_ns": 1771221012487120400
     },
     "tests/test_scbe_n8n_bridge_security.py": {
-      "size": 13142,
-      "mtime_ns": 1774201500767658700
+      "size": 13259,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_scbe_signed_chladni.py": {
       "size": 4743,
@@ -18264,12 +18272,12 @@
       "mtime_ns": 1773730319631206500
     },
     "tests/test_scbe_unified_cli_forwarding.py": {
-      "size": 4969,
-      "mtime_ns": 1774155375848086200
+      "size": 5089,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_sensitive_output_redaction.py": {
-      "size": 6419,
-      "mtime_ns": 1774212324422920100
+      "size": 5269,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_session_envelope.py": {
       "size": 9212,
@@ -18308,8 +18316,8 @@
       "mtime_ns": 1772676335259701900
     },
     "tests/test_storage_bridge_lab.py": {
-      "size": 8932,
-      "mtime_ns": 1774197790020104800
+      "size": 9195,
+      "mtime_ns": 1774273203044717300
     },
     "tests/test_storage_compaction_lab.py": {
       "size": 2214,
@@ -18333,7 +18341,7 @@
     },
     "tests/test_symphonic_governor.py": {
       "size": 24851,
-      "mtime_ns": 1774144642177557000
+      "mtime_ns": 1774273203060396100
     },
     "tests/test_symphonic_verifier.py": {
       "size": 796,
@@ -18344,20 +18352,20 @@
       "mtime_ns": 1773634166983628400
     },
     "tests/test_system_card_deck.py": {
-      "size": 1868,
-      "mtime_ns": 1774194544698447600
+      "size": 1923,
+      "mtime_ns": 1774273203060396100
     },
     "tests/test_system_hub_sync.py": {
       "size": 2727,
       "mtime_ns": 1772676335261207400
     },
     "tests/test_system_script_security.py": {
-      "size": 14074,
-      "mtime_ns": 1774191589753284600
+      "size": 14079,
+      "mtime_ns": 1774273203062240100
     },
     "tests/test_tamper_detection.py": {
-      "size": 15630,
-      "mtime_ns": 1774207957914850100
+      "size": 16020,
+      "mtime_ns": 1774273203062240100
     },
     "tests/test_tarski_sheaf.py": {
       "size": 1747,
@@ -18365,7 +18373,7 @@
     },
     "tests/test_telemetry_advanced_math.json": {
       "size": 4728,
-      "mtime_ns": 1774217022184599100
+      "mtime_ns": 1774273203064386800
     },
     "tests/test_telemetry_dna_audit_report.json": {
       "size": 648,
@@ -18384,20 +18392,20 @@
       "mtime_ns": 1771221012493644800
     },
     "tests/test_thermal_mirror_probe.py": {
-      "size": 5220,
-      "mtime_ns": 1773905495437964100
+      "size": 5366,
+      "mtime_ns": 1774273203064386800
     },
     "tests/test_tictac_spin_grid.py": {
-      "size": 7321,
-      "mtime_ns": 1774213437503592300
+      "size": 7494,
+      "mtime_ns": 1774273203064386800
     },
     "tests/test_train_art_lora_colab.py": {
       "size": 5523,
       "mtime_ns": 1773619360768144800
     },
     "tests/test_tri_lattice_membrane.py": {
-      "size": 5756,
-      "mtime_ns": 1774206252089404800
+      "size": 5901,
+      "mtime_ns": 1774273203067146400
     },
     "tests/test_tri_manifold_lattice.py": {
       "size": 12214,
@@ -18408,8 +18416,8 @@
       "mtime_ns": 1772676335263254400
     },
     "tests/test_verify_aetherbrowser_extension_service.py": {
-      "size": 2093,
-      "mtime_ns": 1773878320460776600
+      "size": 2157,
+      "mtime_ns": 1774273203067146400
     },
     "tests/test_visual_system_comprehensive.py": {
       "size": 27863,
@@ -18460,8 +18468,8 @@
       "mtime_ns": 1774144541022977000
     },
     "tests/video/generator.test.ts": {
-      "size": 14392,
-      "mtime_ns": 1774193119886293000
+      "size": 14414,
+      "mtime_ns": 1774273203067146400
     },
     "tests/video/security-integration.test.ts": {
       "size": 15243,
@@ -23341,7 +23349,7 @@
     },
     "training/local_cloud_sync.json": {
       "size": 1407,
-      "mtime_ns": 1774144541782132900
+      "mtime_ns": 1774273203116885300
     },
     "training/long_run_multicloud_training_plan.json": {
       "size": 2543,
@@ -23444,8 +23452,8 @@
       "mtime_ns": 1773588147659415800
     },
     "vitest.config.ts": {
-      "size": 1420,
-      "mtime_ns": 1771221012520835500
+      "size": 1440,
+      "mtime_ns": 1774273203116885300
     }
   },
   "uploaded_fingerprints": {
@@ -23467,19 +23475,6 @@
       "f5407724141e18535298fffc2a2f911913ddf4efa49861fce22da1499d9f1102"
     ],
     "adobe": [
-      "ee902e8051bec236e3fff8a8536afdd2afb597629480a2f6952989035736cb25",
-      "1704ff73d2cf7f92095a5f429b9de9369491992ebdbd9d52878d404cb51cc68d",
-      "d935c385b245988a742e7b663522e10f39b53c87d7deb388bcbffe9062bad768",
-      "0c296fdd16cfcf2ad0f78cc4a51cd0524000c2e2c73ffdeb77b5d345d0ee325a",
-      "a9686cef7f5623497923652b75b495a06c49c32b7e9354cd6f24c884e41fc9af",
-      "77de53c95503e9c9d7071d76aeae3a5f72cd36fb917c0bf6fe5b110edec5d2b5",
-      "8145a8b318e7d53804cee878f8e927dee03606a3724b38f434b1045a0bbfa898",
-      "70b6638378694ba8e6f937c91773c25a21f7bc48eb971f1f8b19b4d725c1d16f",
-      "465be4f67b5630cca9555a52a39b205ea51432254ba9be51e514650173fcc804",
-      "bf5784661dd19b21ed1371bfbe35d12b7e84080d2124e2965e683c0047dabfcd",
-      "cbafc21242e439084eb1ee9fd1d2dd0939a2d62983cb03e16a42d2399ff97a0c",
-      "cf66e7b3ab9dc98384bcb61f5a1bed81f1f0d6cca300f2da050cf4c3abd654b6",
-      "2ab4675ba9e66f0906bd3728716831d73b016473470894f5eaa86ae3c9196740",
       "d8208be4b655963d2fabb52d40027e5b7c7475d6978c720f68be9c9b37ff78c9",
       "c7660140d23775abd6e3f7e93fa0e5f9c4320ce2d82c57a80814b81a5948ebaf",
       "3b734f03d1672a7635e6ce71d406deccb3973d21686f18d53971e12b5ac2e4bc",
@@ -23666,22 +23661,22 @@
       "b986f288ac8a3a3f743d44811e6a3812b05a0e2c9621c04f314640ea44a05e21",
       "15eaa567041c531fe4bfcbcff9de64edaf61d84f63676599799c4c337ac45005",
       "58648927e1e0f3a3acb516e59992bfe915aefc0b5fc1da21ebe4df096cb215a2",
-      "2685704877de5134e953380a329c3303c3b20eb71b1be7c197db5684d0cae7d8"
+      "2685704877de5134e953380a329c3303c3b20eb71b1be7c197db5684d0cae7d8",
+      "e2abc144c23f349feb4d2b257339574e40af5d79688dfabe144179264e0d021e",
+      "bcefdbe8ae234192381a02387abfc7a433b81a7d4b37824c0f7eb1e034ab74ef",
+      "68db0960654c8dedfc86a79238ab9b3666e325fa89104a3ae8b7192d5a2cf1a8",
+      "a2b716cb0efb5de18d4e6ef57fe18bfb91951bfb7f19b44a0bccd39bde243f64",
+      "6d21487f7db860a4f229c8c1d4821a01dbc21416a68ec4975b80b7c901480e15",
+      "3e5e0f0c307d957516dfa47f87ad0551012c7073ea6a5527059dcfdff8c36505",
+      "377113654c6e28be96786bcf18a23479f03705ebbebf6dc88bdc4b45f7fab164",
+      "3d2d7a9619b1924132c2110650b7250ed603f070c35d181face0cab86f96feb2",
+      "8b216dc3f5976130e0d460a4847e00bcbc96c79b5f53c494b56aa24d2c515841",
+      "8c620a0bfe08b3946a2868347e823f253f2b5bce368667725e93c736a5530c93",
+      "ce1af81889d453d805256681017d29e9c8718c6539b6ce3290e27e0cb50428bd",
+      "bb5ed78935e35e636aa2f66a60819d6384b511ee1d2026d824c6c8df5362ed6e",
+      "ad5efe2b4dd7da3dc1043e65f9fd79bf4549507314c97ec2dd7cf50831d6e627"
     ],
     "dropbox": [
-      "0aa1a4fd5a8b744b3bbcf9085d0e3ca221dfefed64781f5e25b5b3f196eaf6c1",
-      "82387d5750cbff2ea60940abe472c58665787acb81b9bdba5cece79f5fbf0c10",
-      "abce4ac5c100be01c6e67f7af0d972116028aa03140389702eac45932080856f",
-      "ee902e8051bec236e3fff8a8536afdd2afb597629480a2f6952989035736cb25",
-      "1704ff73d2cf7f92095a5f429b9de9369491992ebdbd9d52878d404cb51cc68d",
-      "d935c385b245988a742e7b663522e10f39b53c87d7deb388bcbffe9062bad768",
-      "0c296fdd16cfcf2ad0f78cc4a51cd0524000c2e2c73ffdeb77b5d345d0ee325a",
-      "a9686cef7f5623497923652b75b495a06c49c32b7e9354cd6f24c884e41fc9af",
-      "77de53c95503e9c9d7071d76aeae3a5f72cd36fb917c0bf6fe5b110edec5d2b5",
-      "8145a8b318e7d53804cee878f8e927dee03606a3724b38f434b1045a0bbfa898",
-      "70b6638378694ba8e6f937c91773c25a21f7bc48eb971f1f8b19b4d725c1d16f",
-      "465be4f67b5630cca9555a52a39b205ea51432254ba9be51e514650173fcc804",
-      "bf5784661dd19b21ed1371bfbe35d12b7e84080d2124e2965e683c0047dabfcd",
       "cbafc21242e439084eb1ee9fd1d2dd0939a2d62983cb03e16a42d2399ff97a0c",
       "cf66e7b3ab9dc98384bcb61f5a1bed81f1f0d6cca300f2da050cf4c3abd654b6",
       "2ab4675ba9e66f0906bd3728716831d73b016473470894f5eaa86ae3c9196740",
@@ -23868,7 +23863,20 @@
       "b986f288ac8a3a3f743d44811e6a3812b05a0e2c9621c04f314640ea44a05e21",
       "15eaa567041c531fe4bfcbcff9de64edaf61d84f63676599799c4c337ac45005",
       "58648927e1e0f3a3acb516e59992bfe915aefc0b5fc1da21ebe4df096cb215a2",
-      "2685704877de5134e953380a329c3303c3b20eb71b1be7c197db5684d0cae7d8"
+      "2685704877de5134e953380a329c3303c3b20eb71b1be7c197db5684d0cae7d8",
+      "e2abc144c23f349feb4d2b257339574e40af5d79688dfabe144179264e0d021e",
+      "bcefdbe8ae234192381a02387abfc7a433b81a7d4b37824c0f7eb1e034ab74ef",
+      "68db0960654c8dedfc86a79238ab9b3666e325fa89104a3ae8b7192d5a2cf1a8",
+      "a2b716cb0efb5de18d4e6ef57fe18bfb91951bfb7f19b44a0bccd39bde243f64",
+      "6d21487f7db860a4f229c8c1d4821a01dbc21416a68ec4975b80b7c901480e15",
+      "3e5e0f0c307d957516dfa47f87ad0551012c7073ea6a5527059dcfdff8c36505",
+      "377113654c6e28be96786bcf18a23479f03705ebbebf6dc88bdc4b45f7fab164",
+      "3d2d7a9619b1924132c2110650b7250ed603f070c35d181face0cab86f96feb2",
+      "8b216dc3f5976130e0d460a4847e00bcbc96c79b5f53c494b56aa24d2c515841",
+      "8c620a0bfe08b3946a2868347e823f253f2b5bce368667725e93c736a5530c93",
+      "ce1af81889d453d805256681017d29e9c8718c6539b6ce3290e27e0cb50428bd",
+      "bb5ed78935e35e636aa2f66a60819d6384b511ee1d2026d824c6c8df5362ed6e",
+      "ad5efe2b4dd7da3dc1043e65f9fd79bf4549507314c97ec2dd7cf50831d6e627"
     ],
     "gdrive": [
       "c6f5b3b83f6589a20cf550769b0912078d890e564f04974d8a5a2c1e94b553fa",

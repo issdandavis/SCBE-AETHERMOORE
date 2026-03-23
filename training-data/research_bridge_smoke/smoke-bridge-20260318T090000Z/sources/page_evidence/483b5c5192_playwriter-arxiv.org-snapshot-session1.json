@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "session_id": "1",
+  "task": "snapshot",
+  "url": "https://arxiv.org/abs/2410.01706",
+  "status_code": "200",
+  "title": "[2410.01706] Sable: a Performant, Efficient and Scalable Sequence Model for MARL",
+  "timestamp": "2026-03-14T08:22:10.197095+00:00",
+  "excerpt": "[2410.01706] Sable: a Performant, Efficient and Scalable Sequence Model for MARL Skip to main content We gratefully acknowledge support from the Simons Foundation, member institutions , and all contributors. Donate &gt; cs &gt; arXiv:2410.01706 Help | Advanced Search All fields Title Author Abstract Comments Journal reference ACM classification MSC classification Report number arXiv identifier DOI ORCID arXiv author ID Help pages Full text Search open search GO open navigation menu quick links Login Help Pages About --> Computer Science > Machine Learning arXiv:2410.01706 (cs) [Submitted on 2 Oct 2024 ( v1 ), last revised 26 May 2025 (this version, v5)] Title: Sable: a Performant, Efficient and Scalable Sequence Model for MARL Authors: Omayma Mahjoub , Sasha Abramowitz , Ruan de Kock , Wiem Khlifi , Simon du Toit , Jemma Daniel , Louay Ben Nessir , Louise Beyers , Claude Formanek , Liam Clark , Arnu Pretorius View a PDF of the paper titled Sable: a Performant, Efficient and Scalable Sequence Model for MARL, by Omayma Mahjoub and 10 other authors View PDF HTML (experimental) Abstract: As multi-agent reinforcement learning (MARL) progresses towards solving larger and more complex pro",
+  "char_count": 1200
+}
