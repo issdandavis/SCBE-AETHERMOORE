@@ -6,6 +6,13 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
+try:
+    from cryptography.fernet import Fernet  # noqa: F401
+except BaseException:
+    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:

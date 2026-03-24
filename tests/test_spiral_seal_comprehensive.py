@@ -19,9 +19,14 @@ import time
 import hashlib
 import secrets
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
-
 import pytest
+
+try:
+    from cryptography.fernet import Fernet  # noqa: F401
+except BaseException:
+    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from hypothesis import given, strategies as st, settings, assume
 
 from symphonic_cipher.scbe_aethermoore.spiral_seal import (
