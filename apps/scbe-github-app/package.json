@@ -1,0 +1,38 @@
+{
+  "name": "scbe-repo-manager",
+  "version": "1.0.0",
+  "description": "GitHub App for automated SCBE-AETHERMOORE repo management — issue triage, PR review checklists, changelog generation, and stale cleanup",
+  "author": "Issac Daniel Davis <issdandavis@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE.git",
+    "directory": "apps/scbe-github-app"
+  },
+  "keywords": [
+    "probot",
+    "github",
+    "github-app",
+    "scbe",
+    "aethermoore",
+    "automation"
+  ],
+  "scripts": {
+    "start": "probot run ./index.js",
+    "dev": "probot run --webhook-proxy $WEBHOOK_PROXY_URL ./index.js",
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "probot": "^13.4.3",
+    "@octokit/rest": "^21.1.1"
+  },
+  "devDependencies": {
+    "nock": "^14.0.1",
+    "smee-client": "^2.0.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
