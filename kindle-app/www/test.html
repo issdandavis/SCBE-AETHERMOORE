@@ -86,6 +86,11 @@
 <script>
 const TEST_STATE_KEY = "scbe.testlane.state.v1";
 const ARTIFACTS_KEY = "scbe.testlane.artifacts.v1";
+
+// Clear legacy session-stored API keys from pre-v3 builds
+const LEGACY_TEST_STATE_SESSION_KEY = "scbe.testlane.state";
+sessionStorage.removeItem(LEGACY_TEST_STATE_SESSION_KEY);
+
 const defaultBase = PhoneShell.bridgeBase(8001);
 let artifacts = PhoneShell.readStorageJson(ARTIFACTS_KEY, []);
 

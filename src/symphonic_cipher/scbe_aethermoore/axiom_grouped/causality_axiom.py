@@ -312,7 +312,6 @@ def quantum_fidelity(q1: complex, q2: complex) -> float:
     For non-identical amplitudes we clamp to [0, 1] for stability.
     """
     inner = np.conj(q1) * q2
-    raw_fidelity = float(np.abs(inner) ** 2)
     fidelity = float(np.abs(inner) ** 2)
 
     # Preserve legacy self-fidelity behavior for unnormalized amplitudes while

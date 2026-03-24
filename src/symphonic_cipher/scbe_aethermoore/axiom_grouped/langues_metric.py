@@ -142,7 +142,7 @@ class LanguesMetric:
         """Compute deviation d_l = |x_l - μ_l| for each dimension."""
         x_vec = x.to_vector()
         mu_vec = self.ideal.to_vector()
-        return [abs(x_vec[l] - mu_vec[l]) for l in range(6)]
+        return [abs(x_vec[lang] - mu_vec[lang]) for lang in range(6)]
 
     def compute(
         self,
@@ -164,18 +164,18 @@ class LanguesMetric:
         deviations = self.compute_deviations(x)
 
         L = 0.0
-        for l in range(6):
-            tongue = TONGUES[l]
+        for lang in range(6):
+            tongue = TONGUES[lang]
 
             # Skip if tongue not active
             if active_tongues and tongue not in active_tongues:
                 continue
 
-            w_l = TONGUE_WEIGHTS[l]
-            beta_l = self.betas[l]
-            omega_l = TONGUE_FREQUENCIES[l]
-            phi_l = TONGUE_PHASES[l]
-            d_l = deviations[l]
+            w_l = TONGUE_WEIGHTS[lang]
+            beta_l = self.betas[lang]
+            omega_l = TONGUE_FREQUENCIES[lang]
+            phi_l = TONGUE_PHASES[lang]
+            d_l = deviations[lang]
 
             # Phase-shifted deviation
             phase_shift = math.sin(omega_l * t + phi_l)
@@ -199,18 +199,18 @@ class LanguesMetric:
         mu_vec = self.ideal.to_vector()
 
         grad = []
-        for l in range(6):
-            w_l = TONGUE_WEIGHTS[l]
-            beta_l = self.betas[l]
-            omega_l = TONGUE_FREQUENCIES[l]
-            phi_l = TONGUE_PHASES[l]
-            d_l = deviations[l]
+        for lang in range(6):
+            w_l = TONGUE_WEIGHTS[lang]
+            beta_l = self.betas[lang]
+            omega_l = TONGUE_FREQUENCIES[lang]
+            phi_l = TONGUE_PHASES[lang]
+            d_l = deviations[lang]
 
             phase_shift = math.sin(omega_l * t + phi_l)
             shifted_d = d_l + 0.1 * phase_shift
 
             # Sign of deviation direction
-            sign = 1.0 if x_vec[l] >= mu_vec[l] else -1.0
+            sign = 1.0 if x_vec[lang] >= mu_vec[lang] else -1.0
 
             # ∂L/∂x_l = w_l * β_l * exp(β_l * d_l) * sign
             grad_l = w_l * beta_l * math.exp(beta_l * shifted_d) * sign
@@ -255,9 +255,9 @@ def langues_distance(
 
     # Weighted sum of squared differences
     d_sq = 0.0
-    for l in range(6):
-        w_l = TONGUE_WEIGHTS[l]
-        diff = v1[l] - v2[l]
+    for lang in range(6):
+        w_l = TONGUE_WEIGHTS[lang]
+        diff = v1[lang] - v2[lang]
         d_sq += w_l * diff**2
 
     return math.sqrt(d_sq)
@@ -394,13 +394,13 @@ class FluxingLanguesMetric:
         mu_vec = self.ideal.to_vector()
 
         L = 0.0
-        for l in range(6):
-            nu_l = self.flux.nu[l]  # Fractional dimension weight
-            w_l = TONGUE_WEIGHTS[l]
-            beta_l = self.betas[l]
-            omega_l = TONGUE_FREQUENCIES[l]
-            phi_l = TONGUE_PHASES[l]
-            d_l = abs(x_vec[l] - mu_vec[l])
+        for lang in range(6):
+            nu_l = self.flux.nu[lang]  # Fractional dimension weight
+            w_l = TONGUE_WEIGHTS[lang]
+            beta_l = self.betas[lang]
+            omega_l = TONGUE_FREQUENCIES[lang]
+            phi_l = TONGUE_PHASES[lang]
+            d_l = abs(x_vec[lang] - mu_vec[lang])
 
             phase_shift = math.sin(omega_l * t + phi_l)
             shifted_d = d_l + 0.1 * phase_shift
@@ -553,9 +553,9 @@ def verify_phase_bounded() -> bool:
     This ensures phase doesn't break monotonicity.
     """
     for t in range(1000):
-        for l in range(6):
-            omega_l = TONGUE_FREQUENCIES[l]
-            phi_l = TONGUE_PHASES[l]
+        for lang in range(6):
+            omega_l = TONGUE_FREQUENCIES[lang]
+            phi_l = TONGUE_PHASES[lang]
             phase = math.sin(omega_l * t + phi_l)
             if abs(phase) > 1.0 + 1e-10:
                 return False
@@ -568,8 +568,8 @@ def verify_tongue_weights() -> bool:
 
     w_{l+1} / w_l = φ for all l.
     """
-    for l in range(5):
-        ratio = TONGUE_WEIGHTS[l + 1] / TONGUE_WEIGHTS[l]
+    for lang in range(5):
+        ratio = TONGUE_WEIGHTS[lang + 1] / TONGUE_WEIGHTS[lang]
         if abs(ratio - PHI) > 1e-10:
             return False
     return True
@@ -582,8 +582,8 @@ def verify_six_fold_symmetry() -> bool:
     φ_{l+1} - φ_l = 60° = π/3 for all l.
     """
     expected_diff = TAU / 6  # 60°
-    for l in range(5):
-        diff = TONGUE_PHASES[l + 1] - TONGUE_PHASES[l]
+    for lang in range(5):
+        diff = TONGUE_PHASES[lang + 1] - TONGUE_PHASES[lang]
         if abs(diff - expected_diff) > 1e-10:
             return False
     return True

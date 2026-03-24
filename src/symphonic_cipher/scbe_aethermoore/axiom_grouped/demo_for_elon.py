@@ -85,7 +85,8 @@ def simulate_attack_scenario():
     print()
     print("-" * 70)
     print(
-        f"{'Time':>6} {'Deviation':>10} {'Coherence':>10} | {'Trad Risk':>10} {'Trad':>10} | {'SCBE Risk':>12} {'SCBE':>10}"
+        f"{'Time':>6} {'Deviation':>10} {'Coherence':>10} | "
+        f"{'Trad Risk':>10} {'Trad':>10} | {'SCBE Risk':>12} {'SCBE':>10}"
     )
     print("-" * 70)
 
@@ -135,7 +136,9 @@ def simulate_attack_scenario():
         attack_marker = " *ATTACK*" if is_attack else ""
 
         print(
-            f"{t:>6} {deviation:>10.3f} {coherence:>10.3f} | {trad_risk:>10.4f} {trad_decision:>10} | {scbe_risk_str:>12} {scbe_decision:>10}{attack_marker}"
+            f"{t:>6} {deviation:>10.3f} {coherence:>10.3f} | "
+            f"{trad_risk:>10.4f} {trad_decision:>10} | "
+            f"{scbe_risk_str:>12} {scbe_decision:>10}{attack_marker}"
         )
 
     print("-" * 70)
@@ -143,7 +146,8 @@ def simulate_attack_scenario():
     print("RESULTS:")
     print(f"  Total attack time steps: {attacks_happened}")
     print(
-        f"  Traditional system caught: {traditional_catches}/{attacks_happened} ({100*traditional_catches/max(1,attacks_happened):.0f}%)"
+        f"  Traditional system caught: {traditional_catches}/{attacks_happened}"
+        f" ({100*traditional_catches/max(1,attacks_happened):.0f}%)"
     )
     print(f"  SCBE system caught: {scbe_catches}/{attacks_happened} ({100*scbe_catches/max(1,attacks_happened):.0f}%)")
     print()

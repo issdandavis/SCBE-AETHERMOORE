@@ -76,7 +76,10 @@ def get_citations(paper_id: str, limit: int = 20) -> list[KnowledgeChunk]:
             source="semantic_scholar",
             category="citations",
             title=paper.get("title", ""),
-            content=f"# {paper.get('title', '')}\n\nAuthors: {', '.join(authors)}\nYear: {paper.get('year', '')}\n\n{paper.get('abstract', '') or ''}",
+            content=(
+                f"# {paper.get('title', '')}\n\nAuthors: {', '.join(authors)}\n"
+                f"Year: {paper.get('year', '')}\n\n{paper.get('abstract', '') or ''}"
+            ),
             url=paper.get("url", ""),
             metadata={
                 "s2_paper_id": paper.get("paperId", ""),
