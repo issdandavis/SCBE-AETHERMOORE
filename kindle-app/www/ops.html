@@ -126,6 +126,11 @@
 const STATE_KEY = "scbe.ops.settings.v1";
 const THREAD_KEY = "scbe.ops.thread.v1";
 const TENTACLE_KEY = "scbe.ops.tentacle.v1";
+
+// Clear legacy session-stored API keys from pre-v3 builds
+const LEGACY_STATE_SESSION_KEY = "scbe.ops.state";
+sessionStorage.removeItem(LEGACY_STATE_SESSION_KEY);
+
 let providers = [];
 let thread = PhoneShell.readStorageJson(THREAD_KEY, []);
 let pending = false;

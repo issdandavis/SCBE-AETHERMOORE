@@ -266,13 +266,13 @@ def compute_composite_risk(
     B = components.behavioral_risk
     d_star = components.d_star
     T = components.time_multi.value
-    I = components.intent_multi.value
+    intent = components.intent_multi.value
 
     # Compute H(d*) per Lemma 13.1
     H = harmonic_H(d_star, harmonic_params)
 
     # Lemma 13.1: Risk' = B × H × T × I
-    risk_prime = B * H * T * I
+    risk_prime = B * H * T * intent
 
     # Property 1: Non-negativity (trivial: all factors ≥ 0)
     assert risk_prime >= 0, "Non-negativity violated"
@@ -305,9 +305,9 @@ def compute_composite_risk(
     # Property 4: Compute gradients for monotonicity verification
     dH_dd = harmonic_derivative(d_star, harmonic_params)
     gradients = {
-        "dRisk_dB": H * T * I,  # > 0
-        "dRisk_dd_star": B * T * I * dH_dd,  # > 0 (via chain rule)
-        "dRisk_dT": B * H * I,  # > 0
+        "dRisk_dB": H * T * intent,  # > 0
+        "dRisk_dd_star": B * T * intent * dH_dd,  # > 0 (via chain rule)
+        "dRisk_dT": B * H * intent,  # > 0
         "dRisk_dI": B * H * T,  # > 0
     }
 
@@ -315,7 +315,7 @@ def compute_composite_risk(
         behavioral_risk=B,
         H=H,
         time_multi=T,
-        intent_multi=I,
+        intent_multi=intent,
         risk_prime=risk_prime,
         risk_normalized=risk_normalized,
         decision=decision,
@@ -324,7 +324,7 @@ def compute_composite_risk(
             "behavioral_risk": B,
             "H_d_star": H,
             "time_multi": T,
-            "intent_multi": I,
+            "intent_multi": intent,
             "d_star": d_star,
         },
         gradients=gradients,

@@ -224,7 +224,10 @@ def validate_movement(
             "human_cost": h_cost["lateral"],
             "ai_cost": ai_cost,
             "moved_axes": moved,
-            "reason": f"Vertical depth {vert_depth:.3f} exceeds auth tier {unit.human.auth_tier} limit {depth_limit:.3f}",
+            "reason": (
+                f"Vertical depth {vert_depth:.3f} exceeds auth tier"
+                f" {unit.human.auth_tier} limit {depth_limit:.3f}"
+            ),
         }
 
     if ai_cost < 0.05:

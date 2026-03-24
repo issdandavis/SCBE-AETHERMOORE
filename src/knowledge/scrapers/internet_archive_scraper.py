@@ -58,7 +58,11 @@ def search_archive(query: str, media_type: str = "texts", limit: int = 25) -> li
             source="internet_archive",
             category=category,
             title=title,
-            content=f"# {title}\n\nCreator: {creator}\nDate: {date}\nDownloads: {downloads}\nSubjects: {', '.join(subjects[:5])}\n\n{str(description)[:3000]}",
+            content=(
+                f"# {title}\n\nCreator: {creator}\nDate: {date}\n"
+                f"Downloads: {downloads}\nSubjects: {', '.join(subjects[:5])}\n\n"
+                f"{str(description)[:3000]}"
+            ),
             url=f"https://archive.org/details/{identifier}",
             metadata={
                 "ia_identifier": identifier,

@@ -172,7 +172,11 @@ class EmotionalIntentVector:
 
     def to_hash_input(self) -> bytes:
         """Convert to bytes for key derivation"""
-        return f"{self.anchor_strength}{self.bridge_strength}{self.cut_strength}{self.paradox_strength}{self.joy_strength}{self.harmony_strength}{self.sender_intent}{self.purpose}{self.method}".encode()
+        return (
+            f"{self.anchor_strength}{self.bridge_strength}{self.cut_strength}"
+            f"{self.paradox_strength}{self.joy_strength}{self.harmony_strength}"
+            f"{self.sender_intent}{self.purpose}{self.method}"
+        ).encode()
 
 
 # ============================================================================
@@ -371,12 +375,13 @@ def test_attack_resistance():
     full_complexity = full_msg.compute_total_complexity()
     print(f"  DNA: {full_msg.dna_encoded}")
     print(f"  Temporal distance: {full_msg.temporal.compute_temporal_distance(TemporalVector(0, 0, 0, 0, 0)):.2f}")
-    print(
-        f"  Emotional distance: {full_msg.emotional.compute_emotional_distance(EmotionalIntentVector(0.5,0.5,0.5,0.5,0.5,0.5,'','','')):.2f}"
+    _neutral_emo = EmotionalIntentVector(
+        0.5, 0.5, 0.5, 0.5, 0.5, 0.5, '', '', ''
     )
-    print(
-        f"  Gravitational force: {full_msg.emotional.compute_gravitational_force(EmotionalIntentVector(0.5,0.5,0.5,0.5,0.5,0.5,'','',''), 1.0):.2e}"
-    )
+    _emo_dist = full_msg.emotional.compute_emotional_distance(_neutral_emo)
+    print(f"  Emotional distance: {_emo_dist:.2f}")
+    _grav = full_msg.emotional.compute_gravitational_force(_neutral_emo, 1.0)
+    print(f"  Gravitational force: {_grav:.2e}")
     print(f"  Total complexity score: {full_complexity:.2e}")
     print(f"  Search space: ~{full_complexity:.2e} operations")
 

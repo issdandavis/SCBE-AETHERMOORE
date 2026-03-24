@@ -316,7 +316,10 @@ class RosettaStone:
             record = {
                 "id": f"rosetta-cjk-{hashlib.md5(char.encode()).hexdigest()[:6]}",
                 "category": "rosetta-cognate",
-                "instruction": f"What are the readings of the CJK character '{char}' across Chinese, Japanese, and Korean?",
+                "instruction": (
+                    f"What are the readings of the CJK character '{char}'"
+                    " across Chinese, Japanese, and Korean?"
+                ),
                 "response": json.dumps(data, ensure_ascii=False),
                 "metadata": {
                     "source": "scbe_aethermoore",

@@ -619,7 +619,8 @@ def run_governance_test(steps: int = 50, verbose: bool = True) -> Dict[str, Any]
         if "QC" in results:
             qc = results["QC"]
             print(
-                f"\n[QC] Quasicrystal: {'✓ VALID' if qc['valid'] else '✗ INVALID'} (crystallinity={qc['crystallinity']:.2f})"
+                f"\n[QC] Quasicrystal: {'✓ VALID' if qc['valid'] else '✗ INVALID'}"
+                f" (crystallinity={qc['crystallinity']:.2f})"
             )
 
         # L13-L14

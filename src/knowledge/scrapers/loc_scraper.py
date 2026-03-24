@@ -53,7 +53,12 @@ def search_loc(query: str, collection: str = "", limit: int = 25) -> list[Knowle
             source="library_of_congress",
             category=category,
             title=title,
-            content=f"# {title}\n\nContributors: {', '.join(contributors[:5]) if contributors else 'N/A'}\nDate: {dates}\nSubjects: {', '.join(subjects[:5])}\n\n{description[:3000]}",
+            content=(
+                f"# {title}\n\nContributors: "
+                f"{', '.join(contributors[:5]) if contributors else 'N/A'}\n"
+                f"Date: {dates}\nSubjects: {', '.join(subjects[:5])}\n\n"
+                f"{description[:3000]}"
+            ),
             url=item_url,
             metadata={
                 "loc_collection": collection,

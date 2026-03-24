@@ -197,7 +197,7 @@ class SymphonicGovernor:
 
     def _compute_deviations(self, x: List[float]) -> List[float]:
         """d_l = |x_l - μ_l| for each of 6 dimensions."""
-        return [abs(x[l] - self.ideal[l]) for l in range(6)]
+        return [abs(x[lang] - self.ideal[lang]) for lang in range(6)]
 
     def _compute_L(self, x: List[float], t: float) -> Tuple[float, List[StringVoice]]:
         """Compute L(x,t) and per-string state.
@@ -208,12 +208,12 @@ class SymphonicGovernor:
         voices: List[StringVoice] = []
         L_total = 0.0
 
-        for l in range(6):
-            w_l = TONGUE_WEIGHTS[l]
-            beta_l = self.betas[l]
-            omega_l = TONGUE_FREQUENCIES[l]
-            phi_l = TONGUE_PHASES[l]
-            d_l = deviations[l]
+        for lang in range(6):
+            w_l = TONGUE_WEIGHTS[lang]
+            beta_l = self.betas[lang]
+            omega_l = TONGUE_FREQUENCIES[lang]
+            phi_l = TONGUE_PHASES[lang]
+            d_l = deviations[lang]
 
             phase_shift = math.sin(omega_l * t + phi_l)
             shifted_d = d_l + 0.1 * phase_shift
@@ -231,8 +231,8 @@ class SymphonicGovernor:
 
             voices.append(
                 StringVoice(
-                    tongue=TONGUES[l],
-                    dimension=DIMENSIONS[l],
+                    tongue=TONGUES[lang],
+                    dimension=DIMENSIONS[lang],
                     weight=w_l,
                     frequency=omega_l,
                     phase=phi_l,

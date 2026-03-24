@@ -326,7 +326,8 @@ def _build_next_actions(
 ) -> list[RankedAction]:
     target_text = targets[0] if targets else "the target surface"
     route_hint = (
-        f"python scripts/system/browser_chain_dispatcher.py --domain {target_text} --task {intent} --engine {preferred_engine}"
+        f"python scripts/system/browser_chain_dispatcher.py"
+        f" --domain {target_text} --task {intent} --engine {preferred_engine}"
         if targets
         else f"Route the task through the dispatcher with {preferred_engine}"
     )
@@ -356,7 +357,10 @@ def _build_next_actions(
         actions.append(
             RankedAction(
                 label="Hold state-changing action for review",
-                reason="The requested action changes state or touches credentials, so it should stay in the deliberate lane.",
+                reason=(
+                    "The requested action changes state or touches credentials,"
+                    " so it should stay in the deliberate lane."
+                ),
                 risk_tier=risk_tier,
                 requires_approval=True,
             )

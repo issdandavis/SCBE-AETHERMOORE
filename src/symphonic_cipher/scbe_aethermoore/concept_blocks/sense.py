@@ -168,9 +168,9 @@ class MultiDimKalmanFilter:
         K = _mat_mul(_mat_mul(self.P, Ht), S_inv)
         y = _mat_sub(z, _mat_mul(self.H, self.x))
         self.x = _mat_add(self.x, _mat_mul(K, y))
-        I = _mat_identity(self.dim)
+        eye = _mat_identity(self.dim)
         KH = _mat_mul(K, self.H)
-        self.P = _mat_mul(_mat_sub(I, KH), self.P)
+        self.P = _mat_mul(_mat_sub(eye, KH), self.P)
         return [row[0] for row in self.x]
 
     def step(self, measurement: List[float]) -> List[float]:

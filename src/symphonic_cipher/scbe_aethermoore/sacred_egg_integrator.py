@@ -30,7 +30,10 @@ import dataclasses
 import hashlib
 import json
 import os
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
+
+if TYPE_CHECKING:
+    from src.symphonic_cipher.scbe_aethermoore.cli_toolkit import CrossTokenizer
 
 
 def _cli_toolkit():

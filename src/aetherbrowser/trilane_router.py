@@ -91,7 +91,7 @@ class TriLaneResult:
         return {
             "task": self.task,
             "intent": self.intent.value,
-            "lanes_used": [l.value for l in self.lanes_used],
+            "lanes_used": [lang.value for lang in self.lanes_used],
             "success": self.success,
             "plan": self.plan,
             "results": [
@@ -408,7 +408,7 @@ class TriLaneRouter:
             "input": json.dumps(
                 {
                     "intent": result.intent.value,
-                    "lanes": [l.value for l in result.lanes_used],
+                    "lanes": [lang.value for lang in result.lanes_used],
                     "risk": result.plan.get("risk_tier") if result.plan else "unknown",
                     "targets": result.plan.get("targets", []) if result.plan else [],
                 }

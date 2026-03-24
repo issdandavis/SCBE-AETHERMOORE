@@ -171,7 +171,8 @@ async def _handle_page_context(ws: WebSocket, msg: dict) -> None:
         f"Intent: {result['intent']}\n"
         f"Risk: {result['risk_tier']}\n"
         f"Type: {result['page_type']}\n"
-        f"Headings: {result['heading_count']} | Links: {result['link_count']} | Forms: {result['form_count']} | Tabs: {result['tab_count']}\n\n"
+        f"Headings: {result['heading_count']} | Links: {result['link_count']}"
+        f" | Forms: {result['form_count']} | Tabs: {result['tab_count']}\n\n"
         f"{result['summary']}"
     )
     await ws.send_json(
