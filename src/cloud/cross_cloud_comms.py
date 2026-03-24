@@ -525,7 +525,7 @@ class CrossCloudCommunicator:
             source_agent=source_agent,
             target_cloud=target_cloud or "",
             target_agent=target_agent,
-            payload=self.encryption.encrypt(payload) if True else payload,
+            payload=self.encryption.encrypt(payload),
             priority=priority,
             expires_at=datetime.now() + timedelta(seconds=ttl_seconds),
             signature=self.encryption.sign(payload)
