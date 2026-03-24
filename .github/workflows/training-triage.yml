@@ -1,0 +1,120 @@
+name: Training Data Triage & HF Push
+
+on:
+  workflow_dispatch:
+    inputs:
+      push_to_hf:
+        description: 'Push merged training data to HuggingFace'
+        type: boolean
+        default: true
+      run_benchmarks:
+        description: 'Run adversarial benchmarks after merge'
+        type: boolean
+        default: true
+  schedule:
+    # Run weekly on Sunday at 6 AM UTC
+    - cron: '0 6 * * 0'
+
+permissions:
+  contents: read
+
+jobs:
+  triage-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install numpy huggingface_hub datasets pytest
+
+      - name: Count local training data
+        run: |
+          echo "## Training Data Inventory" >> $GITHUB_STEP_SUMMARY
+          python -c "
+          import glob, os
+          total = 0
+          for f in sorted(glob.glob('training-data/*.jsonl')):
+              count = sum(1 for _ in open(f, encoding='utf-8', errors='ignore'))
+              total += count
+              print(f'  {os.path.basename(f)}: {count}')
+          print(f'Total: {total} records')
+          " | tee artifacts/training_inventory.txt
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat artifacts/training_inventory.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Merge training data
+        run: |
+          mkdir -p artifacts
+          python -c "
+          import json, glob
+          merged = []
+          seen = set()
+          for f in sorted(glob.glob('training-data/*.jsonl')):
+              for line in open(f, encoding='utf-8', errors='ignore'):
+                  line = line.strip()
+                  if not line: continue
+                  key = line[:200]
+                  if key not in seen:
+                      seen.add(key)
+                      merged.append(line)
+          with open('artifacts/training_merged_weekly.jsonl', 'w') as out:
+              for r in merged:
+                  out.write(r + '\n')
+          print(f'Merged: {len(merged)} unique records (from {len(seen)} total)')
+          "
+
+      - name: Push to HuggingFace
+        if: inputs.push_to_hf == true || github.event_name == 'schedule'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python -c "
+          from huggingface_hub import HfApi
+          import os
+          token = os.environ.get('HF_TOKEN', '')
+          if not token:
+              print('No HF_TOKEN, skipping push')
+              exit(0)
+          api = HfApi(token=token)
+          api.upload_file(
+              path_or_fileobj='artifacts/training_merged_weekly.jsonl',
+              path_in_repo='training_merged_weekly.jsonl',
+              repo_id='issdandavis/scbe-aethermoore-training-data',
+              repo_type='dataset',
+          )
+          print('Pushed merged training data to HuggingFace')
+          "
+
+      - name: Run adversarial benchmarks
+        if: inputs.run_benchmarks == true || github.event_name == 'schedule'
+        run: |
+          python -c "
+          import sys; sys.path.insert(0, '.')
+          from tests.adversarial.scbe_harness import SCBEDetectionGate, run_benchmark
+          from tests.adversarial.attack_corpus import BASELINE_CLEAN, get_all_attacks
+          gate = SCBEDetectionGate()
+          gate.calibrate([p['prompt'] for p in BASELINE_CLEAN])
+          fr = run_benchmark(gate, get_all_attacks())
+          gate.reset_session()
+          br = run_benchmark(gate, BASELINE_CLEAN)
+          print(f'Detection: {fr.detection_rate:.1%} ({fr.detected_count}/{fr.total_attacks})')
+          print(f'FP: {br.detection_rate:.1%} ({br.detected_count}/{br.total_attacks})')
+          assert fr.detected_count >= 85, f'Detection dropped: {fr.detected_count}/91'
+          assert br.detected_count <= 2, f'FP too high: {br.detected_count}/15'
+          print('Benchmark PASSED')
+          " | tee artifacts/benchmark_summary.txt
+          echo "## Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          cat artifacts/benchmark_summary.txt >> $GITHUB_STEP_SUMMARY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: training-triage-results
+          path: artifacts/
+          retention-days: 30
