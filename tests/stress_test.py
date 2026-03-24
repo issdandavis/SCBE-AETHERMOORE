@@ -584,8 +584,8 @@ def run_stress_tests() -> List[TestResult]:
         B = np.random.uniform(0, 1)
         d = np.random.uniform(0, 5)
         T = np.random.uniform(1, 3)
-        I = np.random.uniform(1, 3)
-        if compute_risk(B, d, T, I) < 0:
+        intent = np.random.uniform(1, 3)
+        if compute_risk(B, d, T, intent) < 0:
             all_non_neg = False
     results.append(
         TestResult(

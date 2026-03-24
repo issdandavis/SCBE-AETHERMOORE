@@ -2088,7 +2088,7 @@ class ComplianceReportGenerator:
             failed_tests=total - passed,
             pass_rate=passed / total if total > 0 else 0,
             frameworks_covered=[f.value for f in ComplianceFramework],
-            layers_covered=[l.value for l in SCBELayer],
+            layers_covered=[layer.value for layer in SCBELayer],
             axioms_validated=[a.value for a in Axiom],
             test_results=[asdict(r) for r in self.test_results],
             summary_by_framework=self._get_summary_by_framework(),
@@ -2200,7 +2200,7 @@ class ComplianceReportGenerator:
             md += "|----|------|----------|------------|--------|\n"
             for t in sorted(tests, key=lambda x: int(x.test_id)):
                 fws = ", ".join(t.frameworks[:2]) + ("..." if len(t.frameworks) > 2 else "")
-                layers = ", ".join([l.split(":")[0] for l in t.scbe_layers[:2]])
+                layers = ", ".join([layer.split(":")[0] for layer in t.scbe_layers[:2]])
                 md += f"| {t.test_id} | {t.test_name} | {t.severity} | {fws} | {layers} |\n"
             md += "\n"
 

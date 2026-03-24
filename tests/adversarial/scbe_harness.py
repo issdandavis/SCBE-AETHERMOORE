@@ -281,8 +281,8 @@ def compute_harmonic_cost(tongue_coords: List[float], centroid: List[float]) -> 
     """Compute the langues-weighted distance from centroid, then pi^phi scale."""
     G = build_metric_tensor()
     weighted_dist = 0.0
-    for l in range(6):
-        weighted_dist += G[l, l] * (tongue_coords[l] - centroid[l]) ** 2
+    for lang in range(6):
+        weighted_dist += G[lang, lang] * (tongue_coords[lang] - centroid[lang]) ** 2
     d_star = math.sqrt(weighted_dist)
     # Clamp to avoid overflow
     d_star = min(d_star, 5.0)
@@ -344,7 +344,7 @@ class SCBEDetectionGate:
         cost = compute_harmonic_cost(coords, self._centroid)
 
         # Weighted tongue contributions
-        weighted = [abs(coords[l]) * TONGUE_WEIGHTS[l] for l in range(6)]
+        weighted = [abs(coords[lang]) * TONGUE_WEIGHTS[lang] for lang in range(6)]
         total_weight = sum(weighted)
         dominant_idx = weighted.index(max(weighted))
         dominant_tongue = TONGUE_NAMES[dominant_idx]
@@ -386,7 +386,7 @@ class SCBEDetectionGate:
             signals.append(f"cross_lingual_override(matches={ml_match_count})")
 
         # Dispersal shift — large deviation in total weighted dispersal from baseline
-        dispersal = sum(TONGUE_WEIGHTS[l] * abs(coords[l] - self._centroid[l]) for l in range(6))
+        dispersal = sum(TONGUE_WEIGHTS[lang] * abs(coords[lang] - self._centroid[lang]) for lang in range(6))
         dispersal_shift = dispersal > 10.0  # High bar: only fires on extreme deviations
         if dispersal_shift:
             signals.append(f"dispersal_shift({dispersal:.2f})")
@@ -433,7 +433,7 @@ class SCBEDetectionGate:
             spin_code=spin.code,
             spin_magnitude=spin.magnitude,
             dispersal_cost=round(
-                sum(TONGUE_WEIGHTS[l] * abs(spin.spins[l]) * abs(coords[l] - self._centroid[l]) for l in range(6)), 6
+                sum(TONGUE_WEIGHTS[lang] * abs(spin.spins[lang]) * abs(coords[lang] - self._centroid[lang]) for lang in range(6)), 6
             ),
             harmonic_cost=round(cost, 4),
             dominant_tongue=dominant_tongue,

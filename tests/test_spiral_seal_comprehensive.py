@@ -1538,7 +1538,7 @@ class TestIntegrationStress:
         for _ in range(10):
             try:
                 ss.unseal("invalid_blob", aad="test")
-            except:
+            except Exception:
                 pass
 
         # Should still work after errors

@@ -277,7 +277,7 @@ class TestPoincareIsometries:
             # 0 ⊕ u should equal u
             result = layer_7_phase_transform(u, zero, Q)
 
-            assert np.allclose(result, u, atol=1e-8), f"Möbius identity violated: 0 ⊕ u ≠ u"
+            assert np.allclose(result, u, atol=1e-8), "Möbius identity violated: 0 ⊕ u ≠ u"
 
     def _random_rotation_matrix(self, n: int) -> np.ndarray:
         """Generate a random orthogonal matrix (rotation)."""
@@ -384,7 +384,7 @@ class TestBreathingTransformProperties:
             u_breath = layer_6_breathing_transform(u, b=1.0)
 
             # Should be very close to original
-            assert np.allclose(u, u_breath, atol=1e-6), f"Breathing with b=1 should be identity"
+            assert np.allclose(u, u_breath, atol=1e-6), "Breathing with b=1 should be identity"
 
 
 class TestHyperbolicCurvature:
