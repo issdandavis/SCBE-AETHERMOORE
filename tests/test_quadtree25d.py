@@ -9,7 +9,6 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
-import numpy as np
 
 from hydra.quadtree25d import (
     QuadPoint,
@@ -18,14 +17,10 @@ from hydra.quadtree25d import (
     Quadtree25D,
     SubdivisionCriterion,
     LODQuery,
-    TerrainMesh,
-    TerrainVertex,
-    TerrainTriangle,
     generate_terrain_points,
     sine_hills,
     ridge_terrain,
     flat_with_spikes,
-    lod_select,
     QUADTREE25D_INTEROP,
 )
 

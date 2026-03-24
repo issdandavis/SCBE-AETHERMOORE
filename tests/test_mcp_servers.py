@@ -4,7 +4,6 @@ Tests tool functions directly (bypasses MCP transport) and verifies
 FastMCP tool registration for all three servers.
 """
 
-import asyncio
 import base64
 import importlib.util
 import json

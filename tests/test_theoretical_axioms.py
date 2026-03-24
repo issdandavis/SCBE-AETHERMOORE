@@ -25,9 +25,6 @@ import pytest
 import sys
 import os
 import numpy as np
-import time
-import statistics
-from typing import List, Tuple, Callable
 
 # Use scipy-compatible imports with fallback (stats currently unused but kept for future)
 try:
@@ -43,8 +40,6 @@ try:
         layer_4_poincare_embedding,
         layer_5_hyperbolic_distance,
         layer_6_breathing_transform,
-        layer_7_phase_transform,
-        layer_12_harmonic_scaling,
     )
 
     SCBE_AVAILABLE = True

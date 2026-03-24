@@ -1,4 +1,3 @@
-from src.experimental.phase_control import PHI  # sanity import for src package availability
 from scripts.system.goal_race_loop import build_packets, build_scoreboard
 
 

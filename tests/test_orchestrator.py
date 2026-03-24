@@ -4,7 +4,6 @@ Tests the combined SCBE crypto + HYDRA swarm + SFT training tools.
 Uses importlib to avoid mcp package name collision.
 """
 
-import asyncio
 import base64
 import importlib.util
 import json
