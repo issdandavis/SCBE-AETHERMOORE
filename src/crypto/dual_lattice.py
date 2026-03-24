@@ -686,15 +686,15 @@ class DualLatticeCrossStitch:
         # Reconstruct stitched vector
         stitched = self.cross_stitch.apply_stitch(vector)
 
-        # For demo, assume valid if structure matches
-        is_valid = True
+        # For demo, require the processed bundle to carry the expected sections.
+        required_sections = ("kyber_ciphertext", "dilithium_signature", "security")
+        is_valid = all(section in processed for section in required_sections)
+        if not is_valid:
+            return False, None
 
-        if is_valid:
-            # Reverse cross-stitch to get original
-            original = self.cross_stitch.reverse_stitch(stitched)
-            return True, original
-
-        return False, None
+        # Reverse cross-stitch to get original
+        original = self.cross_stitch.reverse_stitch(stitched)
+        return True, original
 
 
 # =============================================================================

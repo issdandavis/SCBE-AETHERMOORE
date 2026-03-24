@@ -19,8 +19,8 @@ class TestEnterpriseSetup:
     @given(st.integers())
     def test_hypothesis_available(self, n: int):
         """Verify hypothesis is available for property-based testing."""
-        # Identity property: n should equal itself
-        assert n == n
+        # Verify hypothesis generates valid integers
+        assert isinstance(n, int)
 
     def test_markers_configured(self, request):
         """Verify test markers are configured."""
