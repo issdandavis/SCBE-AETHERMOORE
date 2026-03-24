@@ -446,6 +446,7 @@ def run_full_benchmark():
         clean_traces = [fn(p["prompt"]) for p in BASELINE_CLEAN]
         fp_results[key] = sum(1 for t in clean_traces if t.decision == "BLOCK")
 
+    gate.reset_session()  # Prevent suspicion bleed from attack run into clean eval
     scbe_clean = [group_e_scbe(p["prompt"], gate) for p in BASELINE_CLEAN]
     fp_results["E"] = sum(1 for t in scbe_clean if t.decision == "BLOCK")
 
