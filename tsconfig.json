@@ -5,7 +5,7 @@
     "outDir": "dist",
     "composite": true,
     "skipLibCheck": true,
-    "noEmitOnError": false
+    "noEmitOnError": true
   },
   "include": [
     "src/**/*",

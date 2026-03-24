@@ -1,8 +1,19 @@
 # SCBE Production Pack Changelog
 
-## [Unreleased]
+## [3.3.0] - 2026-03-24
 
 ### Added
+- **Governance TypeScript module** (`src/governance/offline_mode.ts`, 655 lines)
+  - Full offline governance decision engine with trust state machine (T0-T4)
+  - Fail-closed gate with 5 integrity checks and safe-ops allowlist
+  - AuditLedger hash chain with ML-DSA-65 signed events
+  - DECIDE function: ALLOW / QUARANTINE / ESCALATE / DENY decisions
+  - PQCrypto helpers wrapping ML-DSA-65, ML-KEM-768, SHA-512
+  - ImmutableLaws with SHA-512 hash verification
+  - FluxManifest with ML-DSA-65 signature verification
+  - O3 intermittent sync with manifest conflict resolution
+- **UnifiedSCBEGateway** tests (30 tests) covering 14-layer authorization, RWP encode/decode, swarm coordination, contact graph routing, quantum key exchange
+- **HealingCoordinator** tests (9 tests) covering QuickFixBot, DeepHealing orchestration
 - Mobile connector expansion in `src/api/main.py`:
   - `GET /mobile/connectors/templates` for prebuilt onboarding profiles.
   - New connector kinds: `slack`, `notion`, `airtable`, `github_actions`, `linear`, `discord` (in addition to `n8n`, `zapier`, `shopify`, `generic_webhook`).
@@ -15,6 +26,18 @@
   - `scripts/scbe_terminal_ops.py` for connector registration + goal orchestration from terminal.
   - Alias commands `research`, `article`, `products` for one-command flow execution.
   - `docs/TERMINAL_OPS_QUICKSTART.md` for web research, content/article, and product/store operations.
+
+### Tests
+- **Governance module**: 53 tests — trust state machine, policy thresholds, fail-closed gate, manifest staleness, PQCrypto key gen, AuditLedger structure, Decision/TrustState enums
+- **Crypto module**: 42 tests — BloomFilter, nonceManager, HKDF-SHA256, MemoryReplayStore, RedisReplayStore, createReplayStore factory
+- Total test suite: **5,663 tests** (up from 5,568)
+
+### Fixed
+- **tsconfig.json**: Set `noEmitOnError: true` — type errors now prevent compilation (critical for security framework)
+- **Python lint**: Eliminated ~1,230 → 0 flake8 errors across `src/` and `tests/`
+- **CodeQL**: Resolved 112 alerts — unreachable code, bare except, unused variables, tautologies, wrong arity
+- **Security**: Path traversal protection in Basin.deposit/pull/push; legacy sessionStorage cleanup
+- **Black formatting**: Entire Python codebase (559 files) reformatted to line-length 120
 
 ### Documentation
 - Corrected **Temporal-Intent Harmonic Scaling** formula to `H_eff(d, R, x) = R^(d^2 * x)` with x in exponent for super-exponential growth. Linked to L11 triadic temporal distance + CPSE deviation channels.
