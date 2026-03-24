@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+import pytest
+
+try:
+    import websockets  # noqa: F401
+except ImportError:
+    pytest.skip("websockets not installed", allow_module_level=True)
+
 from scripts.verify_aetherbrowser_extension_service import build_service_report, classify_cdp_targets
 
 

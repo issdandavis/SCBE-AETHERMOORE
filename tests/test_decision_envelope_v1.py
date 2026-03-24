@@ -2,6 +2,13 @@ from __future__ import annotations
 
 import hashlib
 
+import pytest
+
+try:
+    import google.protobuf  # noqa: F401
+except ImportError:
+    pytest.skip("google.protobuf not installed", allow_module_level=True)
+
 from src.governance.decision_envelope_v1 import AUTO_ALLOW
 from src.governance.decision_envelope_v1 import CRITICAL
 from src.governance.decision_envelope_v1 import DENY
