@@ -149,7 +149,9 @@ def _run_buffer_publish(article: Path, dry_run: bool) -> tuple[str, str]:
     return "error", output[-4000:] or "unknown error"
 
 
-def _run_devto_publish(article: Path, dry_run: bool, *, tags: list[str] | None = None, series: str = "") -> tuple[str, str]:
+def _run_devto_publish(
+    article: Path, dry_run: bool, *, tags: list[str] | None = None, series: str = ""
+) -> tuple[str, str]:
     if not POST_TO_DEVTO.exists():
         return "error", f"missing publisher: {POST_TO_DEVTO}"
     cmd = [sys.executable, str(POST_TO_DEVTO), "--file", str(article)]
@@ -354,7 +356,9 @@ def _route_campaign_post(post: dict, *, dry_run: bool, browser_fallback: bool, b
         return row
 
     row["status"] = "staged_manual"
-    row["detail"] = "API publisher not implemented for this platform; staged package is ready for browser/manual posting."
+    row["detail"] = (
+        "API publisher not implemented for this platform; staged package is ready for browser/manual posting."
+    )
     return row
 
 
@@ -366,7 +370,9 @@ def main() -> int:
         default="",
         help="Comma-separated platforms (x,buffer,github,huggingface,linkedin,medium,devto,reddit,hackernews).",
     )
-    parser.add_argument("--campaign-posts", default="", help="Path to campaign posts JSON built by build_research_campaign.py")
+    parser.add_argument(
+        "--campaign-posts", default="", help="Path to campaign posts JSON built by build_research_campaign.py"
+    )
     parser.add_argument("--browser-fallback", action="store_true", help="Record browser fallback mode in evidence.")
     parser.add_argument("--browser-publish", action="store_true", help="Record browser publish intent in evidence.")
     parser.add_argument(

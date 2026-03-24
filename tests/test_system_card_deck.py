@@ -46,7 +46,13 @@ def test_build_workflow_cards_sorts_red_first():
     workflows = [
         {"name": "ci", "category": "ci", "triage": "yellow", "conclusion": "failure", "fix": "inspect"},
         {"name": "codeql", "category": "security", "triage": "green", "conclusion": "success", "fix": None},
-        {"name": "kindle-build", "category": "deploy", "triage": "red", "conclusion": "failure", "fix": "chmod gradlew"},
+        {
+            "name": "kindle-build",
+            "category": "deploy",
+            "triage": "red",
+            "conclusion": "failure",
+            "fix": "chmod gradlew",
+        },
     ]
 
     cards = build_workflow_cards(workflows)

@@ -203,9 +203,7 @@ class SacredEgg:
             PermissionError: If ring is insufficient
         """
         if not ring_allows(ring, EggRing.CORE):
-            raise PermissionError(
-                f"Yolk access requires CORE ring, caller has {ring.value}"
-            )
+            raise PermissionError(f"Yolk access requires CORE ring, caller has {ring.value}")
         return self._yolk
 
     def derive_albumen(self, label: str, salt: Optional[bytes] = None) -> bytes:
@@ -247,9 +245,7 @@ class SacredEgg:
             KeyError: If label not found
         """
         if not ring_allows(ring, EggRing.INNER):
-            raise PermissionError(
-                f"Albumen access requires INNER ring, caller has {ring.value}"
-            )
+            raise PermissionError(f"Albumen access requires INNER ring, caller has {ring.value}")
         if label not in self.albumen:
             raise KeyError(f"No albumen key for label '{label}'")
         return self.albumen[label]
@@ -328,9 +324,7 @@ class EggCarton:
     @staticmethod
     def create(name: str = "default") -> "EggCarton":
         """Create a new empty carton."""
-        carton_id = hashlib.sha256(
-            f"carton:{name}:{time.time()}".encode()
-        ).hexdigest()[:12]
+        carton_id = hashlib.sha256(f"carton:{name}:{time.time()}".encode()).hexdigest()[:12]
         return EggCarton(carton_id=carton_id)
 
     def add(self, egg: SacredEgg) -> str:
@@ -513,9 +507,7 @@ class SacredRituals:
         # Sort by shell_hash for order-independence
         sorted_shells = sorted([e.shell_hash for e in eggs])
         combined = b"".join(sorted_shells)
-        binding_hash = hashlib.sha256(
-            b"sacred-egg:triadic:v1|" + combined
-        ).hexdigest()
+        binding_hash = hashlib.sha256(b"sacred-egg:triadic:v1|" + combined).hexdigest()
 
         # Compute binding strength from context overlap
         contexts = [e.context for e in eggs]
@@ -664,7 +656,5 @@ def create_session_egg(
     Returns:
         A new SacredEgg bound to the session
     """
-    yolk = hashlib.sha256(
-        f"sacred-egg:session:v1|sid={session_id}".encode()
-    ).digest()
+    yolk = hashlib.sha256(f"sacred-egg:session:v1|sid={session_id}".encode()).digest()
     return SacredEgg.create(context=context, ring=ring, yolk=yolk)

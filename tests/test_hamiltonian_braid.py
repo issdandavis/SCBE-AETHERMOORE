@@ -41,6 +41,7 @@ from symphonic_cipher.scbe_aethermoore.ai_brain.hamiltonian_braid import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_valid_state(seed: int = 0) -> np.ndarray:
     """Create a valid 21D brain state vector."""
     rng = np.random.default_rng(seed)
@@ -80,6 +81,7 @@ def make_simple_rail(n_points: int = 5, seed: int = 0) -> Rail:
 # ---------------------------------------------------------------------------
 # Tests: 9-state phase diagram
 # ---------------------------------------------------------------------------
+
 
 class TestPhaseDiagram:
     """Tests for the 9-state dual ternary phase space."""
@@ -153,6 +155,7 @@ class TestPhaseDiagram:
 # Tests: Phase deviation
 # ---------------------------------------------------------------------------
 
+
 class TestPhaseDeviation:
     """Tests for phase deviation metric."""
 
@@ -182,6 +185,7 @@ class TestPhaseDeviation:
 # ---------------------------------------------------------------------------
 # Tests: Rail and nearest point
 # ---------------------------------------------------------------------------
+
 
 class TestRail:
     """Tests for rail construction and nearest-point lookup."""
@@ -229,6 +233,7 @@ class TestRail:
 # ---------------------------------------------------------------------------
 # Tests: Braid distance
 # ---------------------------------------------------------------------------
+
 
 class TestBraidDistance:
     """Tests for braid-specific hyperbolic distance."""
@@ -278,6 +283,7 @@ class TestBraidDistance:
 # Tests: Harmonic cost φ^(d²)
 # ---------------------------------------------------------------------------
 
+
 class TestHarmonicCost:
     """Tests for the harmonic wall cost function."""
 
@@ -291,11 +297,11 @@ class TestHarmonicCost:
 
     def test_two_distance(self):
         """d = 2 → cost = φ^4."""
-        assert harmonic_cost(2.0) == pytest.approx(PHI ** 4, rel=1e-6)
+        assert harmonic_cost(2.0) == pytest.approx(PHI**4, rel=1e-6)
 
     def test_three_distance(self):
         """d = 3 → cost = φ^9."""
-        assert harmonic_cost(3.0) == pytest.approx(PHI ** 9, rel=1e-6)
+        assert harmonic_cost(3.0) == pytest.approx(PHI**9, rel=1e-6)
 
     def test_monotonic(self):
         """Cost is strictly monotonically increasing for d > 0."""
@@ -323,6 +329,7 @@ class TestHarmonicCost:
 # ---------------------------------------------------------------------------
 # Tests: Constraint manifold projection
 # ---------------------------------------------------------------------------
+
 
 class TestConstraintProjection:
     """Tests for projecting onto the constraint manifold M_constraint."""
@@ -352,7 +359,10 @@ class TestConstraintProjection:
         x = rail.points[0].position.copy()
         # prev_phase = (-1,-1), current tries to jump to (1,1) → invalid
         proj = constraint_project(
-            x, (1, 1), rail, prev_phase=(-1, -1),
+            x,
+            (1, 1),
+            rail,
+            prev_phase=(-1, -1),
         )
         # Should snap to a valid neighbor of (-1,-1)
         assert valid_transition((-1, -1), proj.projected_phase)
@@ -376,6 +386,7 @@ class TestConstraintProjection:
 # ---------------------------------------------------------------------------
 # Tests: Braid step
 # ---------------------------------------------------------------------------
+
 
 class TestBraidStep:
     """Tests for single braid dynamics steps."""
@@ -418,6 +429,7 @@ class TestBraidStep:
 # Tests: Braid trajectory simulation
 # ---------------------------------------------------------------------------
 
+
 class TestBraidSimulation:
     """Tests for full braid trajectory simulation."""
 
@@ -437,7 +449,7 @@ class TestBraidSimulation:
         sim = simulate_braid(x, (0, 0), rail, impulses)
         # Average cost should be near 1 (on-rail)
         avg_cost = sim.total_cost / len(impulses)
-        assert avg_cost < PHI ** 2  # well within safe range
+        assert avg_cost < PHI**2  # well within safe range
 
     def test_mode_counts(self):
         """Mode counts are tracked across simulation."""
@@ -468,6 +480,7 @@ class TestBraidSimulation:
 # ---------------------------------------------------------------------------
 # Tests: Property-based / invariants
 # ---------------------------------------------------------------------------
+
 
 class TestBraidInvariants:
     """Property-based tests for braid invariants."""

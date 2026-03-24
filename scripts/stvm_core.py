@@ -325,4 +325,3 @@ class STVM:
             return
 
         self._trap(f"unknown tongue id={ins.tongue_id}")
-

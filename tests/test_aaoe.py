@@ -19,23 +19,28 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 #  TaskMonitor Tests
 # ===================================================================
 
+
 class TestTaskMonitorImports:
     def test_import_task_monitor(self):
         from src.aaoe.task_monitor import TaskMonitor
+
         assert TaskMonitor is not None
 
     def test_import_drift_level(self):
         from src.aaoe.task_monitor import DriftLevel
+
         assert DriftLevel.ON_TRACK.value == "ON_TRACK"
         assert DriftLevel.QUARANTINE.value == "QUARANTINE"
 
     def test_import_intent_vector(self):
         from src.aaoe.task_monitor import IntentVector
+
         iv = IntentVector(ko=0.3, av=0.2)
         assert iv.ko == 0.3
 
     def test_import_agent_session(self):
         from src.aaoe.task_monitor import AgentSession
+
         s = AgentSession(agent_id="test")
         assert s.is_active
 
@@ -43,6 +48,7 @@ class TestTaskMonitorImports:
 class TestIntentVector:
     def test_from_text_research(self):
         from src.aaoe.task_monitor import IntentVector
+
         iv = IntentVector.from_text("Research quantum computing papers")
         assert iv.ko > 0  # research → KO
         assert iv.norm() > 0
@@ -50,27 +56,32 @@ class TestIntentVector:
 
     def test_from_text_publish(self):
         from src.aaoe.task_monitor import IntentVector
+
         iv = IntentVector.from_text("Publish a blog post about AI safety")
         assert iv.av > 0  # publish → AV
 
     def test_from_text_build(self):
         from src.aaoe.task_monitor import IntentVector
+
         iv = IntentVector.from_text("Build a new API endpoint")
         assert iv.ru > 0  # build → RU
 
     def test_from_text_compute(self):
         from src.aaoe.task_monitor import IntentVector
+
         iv = IntentVector.from_text("Train a machine learning model")
         assert iv.ca > 0  # train → CA
 
     def test_clamped_inside_ball(self):
         from src.aaoe.task_monitor import IntentVector
+
         iv = IntentVector(ko=0.9, av=0.9, ru=0.9, ca=0.9, um=0.9, dr=0.9)
         clamped = iv.clamped()
         assert clamped.norm() < 1.0
 
     def test_to_array(self):
         from src.aaoe.task_monitor import IntentVector
+
         iv = IntentVector(ko=0.1, av=0.2, ru=0.3, ca=0.4, um=0.5, dr=0.6)
         arr = iv.to_array()
         assert len(arr) == 6
@@ -79,6 +90,7 @@ class TestIntentVector:
 
     def test_empty_text_nonzero(self):
         from src.aaoe.task_monitor import IntentVector
+
         iv = IntentVector.from_text("")
         assert iv.norm() > 0  # Should default to nonzero
 
@@ -86,12 +98,14 @@ class TestIntentVector:
 class TestHyperbolicDistance:
     def test_same_point_zero_distance(self):
         from src.aaoe.task_monitor import hyperbolic_distance
+
         u = [0.1, 0.0, 0.0, 0.0, 0.0, 0.0]
         d = hyperbolic_distance(u, u)
         assert d < 0.01  # Essentially zero
 
     def test_different_points_positive(self):
         from src.aaoe.task_monitor import hyperbolic_distance
+
         u = [0.3, 0.0, 0.0, 0.0, 0.0, 0.0]
         v = [0.0, 0.3, 0.0, 0.0, 0.0, 0.0]
         d = hyperbolic_distance(u, v)
@@ -100,6 +114,7 @@ class TestHyperbolicDistance:
     def test_boundary_exponential(self):
         """Points near boundary should have much larger distance."""
         from src.aaoe.task_monitor import hyperbolic_distance
+
         # Near center
         d_center = hyperbolic_distance(
             [0.1, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -114,6 +129,7 @@ class TestHyperbolicDistance:
 
     def test_symmetry(self):
         from src.aaoe.task_monitor import hyperbolic_distance
+
         u = [0.2, 0.3, 0.0, 0.0, 0.0, 0.0]
         v = [0.0, 0.0, 0.2, 0.3, 0.0, 0.0]
         assert abs(hyperbolic_distance(u, v) - hyperbolic_distance(v, u)) < 1e-10
@@ -122,32 +138,39 @@ class TestHyperbolicDistance:
 class TestDriftToLevel:
     def test_on_track(self):
         from src.aaoe.task_monitor import drift_to_level, DriftLevel
+
         assert drift_to_level(0.1) == DriftLevel.ON_TRACK
 
     def test_gentle(self):
         from src.aaoe.task_monitor import drift_to_level, DriftLevel
+
         assert drift_to_level(0.5) == DriftLevel.GENTLE
 
     def test_redirect(self):
         from src.aaoe.task_monitor import drift_to_level, DriftLevel
+
         assert drift_to_level(1.0) == DriftLevel.REDIRECT
 
     def test_inspect(self):
         from src.aaoe.task_monitor import drift_to_level, DriftLevel
+
         assert drift_to_level(1.5) == DriftLevel.INSPECT
 
     def test_quarantine(self):
         from src.aaoe.task_monitor import drift_to_level, DriftLevel
+
         assert drift_to_level(2.5) == DriftLevel.QUARANTINE
 
 
 class TestHarmonicCost:
     def test_zero_drift_unit_cost(self):
         from src.aaoe.task_monitor import harmonic_cost
+
         assert abs(harmonic_cost(0.0) - 1.0) < 1e-10
 
     def test_increasing_cost(self):
         from src.aaoe.task_monitor import harmonic_cost
+
         c1 = harmonic_cost(1.0)
         c2 = harmonic_cost(2.0)
         c3 = harmonic_cost(3.0)
@@ -155,6 +178,7 @@ class TestHarmonicCost:
 
     def test_exponential_growth(self):
         from src.aaoe.task_monitor import harmonic_cost
+
         c3 = harmonic_cost(3.0)
         assert c3 > 50  # phi^9 ≈ 76
 
@@ -162,6 +186,7 @@ class TestHarmonicCost:
 class TestTaskMonitorSessions:
     def test_start_session(self):
         from src.aaoe.task_monitor import TaskMonitor
+
         monitor = TaskMonitor()
         session = monitor.start_session("agent-1", "Research AI safety")
         assert session.is_active
@@ -170,8 +195,11 @@ class TestTaskMonitorSessions:
 
     def test_observe_on_track(self):
         from src.aaoe.task_monitor import (
-            TaskMonitor, ActionObservation, DriftLevel,
+            TaskMonitor,
+            ActionObservation,
+            DriftLevel,
         )
+
         monitor = TaskMonitor()
         session = monitor.start_session("agent-1", "Research AI safety papers")
 
@@ -186,12 +214,16 @@ class TestTaskMonitorSessions:
 
     def test_observe_drift(self):
         from src.aaoe.task_monitor import (
-            TaskMonitor, ActionObservation, IntentVector,
+            TaskMonitor,
+            ActionObservation,
+            IntentVector,
         )
+
         monitor = TaskMonitor()
         # Declare: research
         session = monitor.start_session(
-            "agent-1", "Research quantum computing",
+            "agent-1",
+            "Research quantum computing",
             intent_vector=IntentVector(ko=0.4, ca=0.3),
         )
 
@@ -207,11 +239,15 @@ class TestTaskMonitorSessions:
 
     def test_quarantine_on_extreme_drift(self):
         from src.aaoe.task_monitor import (
-            TaskMonitor, ActionObservation, IntentVector,
+            TaskMonitor,
+            ActionObservation,
+            IntentVector,
         )
+
         monitor = TaskMonitor()
         session = monitor.start_session(
-            "agent-1", "Research quantum computing",
+            "agent-1",
+            "Research quantum computing",
             intent_vector=IntentVector(ko=0.8),  # Strong research intent
         )
 
@@ -227,6 +263,7 @@ class TestTaskMonitorSessions:
 
     def test_end_session_returns_training_record(self):
         from src.aaoe.task_monitor import TaskMonitor
+
         monitor = TaskMonitor()
         session = monitor.start_session("agent-1", "Research")
         record = monitor.end_session(session.session_id)
@@ -236,6 +273,7 @@ class TestTaskMonitorSessions:
 
     def test_active_sessions(self):
         from src.aaoe.task_monitor import TaskMonitor
+
         monitor = TaskMonitor()
         s1 = monitor.start_session("a1", "Task 1")
         monitor.start_session("a2", "Task 2")
@@ -245,15 +283,20 @@ class TestTaskMonitorSessions:
 
     def test_drift_callback(self):
         from src.aaoe.task_monitor import (
-            TaskMonitor, ActionObservation, IntentVector,
+            TaskMonitor,
+            ActionObservation,
+            IntentVector,
         )
+
         events = []
+
         def on_drift(sid, level, dist):
             events.append((sid, level, dist))
 
         monitor = TaskMonitor(on_drift=on_drift)
         session = monitor.start_session(
-            "agent-1", "Research",
+            "agent-1",
+            "Research",
             intent_vector=IntentVector(ko=0.8),
         )
         obs = ActionObservation(
@@ -267,18 +310,22 @@ class TestTaskMonitorSessions:
 #  Ephemeral Prompt Tests
 # ===================================================================
 
+
 class TestEphemeralPromptImports:
     def test_import_engine(self):
         from src.aaoe.ephemeral_prompt import EphemeralPromptEngine
+
         assert EphemeralPromptEngine is not None
 
     def test_import_nudge(self):
         from src.aaoe.ephemeral_prompt import EphemeralNudge
+
         n = EphemeralNudge()
         assert n.is_active
 
     def test_import_severity(self):
         from src.aaoe.ephemeral_prompt import PromptSeverity
+
         assert PromptSeverity.GENTLE.value == "GENTLE"
         assert PromptSeverity.INSPECT.value == "SCBE_INSPECT"
 
@@ -286,6 +333,7 @@ class TestEphemeralPromptImports:
 class TestEphemeralNudge:
     def test_nudge_lifecycle(self):
         from src.aaoe.ephemeral_prompt import EphemeralNudge
+
         n = EphemeralNudge(prompt_text="Hey, check your intent")
         assert n.is_active
         assert not n.acknowledged
@@ -296,6 +344,7 @@ class TestEphemeralNudge:
 
     def test_nudge_to_training_pair(self):
         from src.aaoe.ephemeral_prompt import EphemeralNudge, PromptSeverity
+
         n = EphemeralNudge(
             severity=PromptSeverity.REDIRECT,
             prompt_text="You're drifting",
@@ -310,6 +359,7 @@ class TestEphemeralNudge:
 
     def test_nudge_expiry(self):
         from src.aaoe.ephemeral_prompt import EphemeralNudge
+
         n = EphemeralNudge(ttl_seconds=0)  # Already expired
         assert not n.is_active
 
@@ -318,8 +368,11 @@ class TestEphemeralPromptEngine:
     def test_generate_gentle(self):
         from src.aaoe.ephemeral_prompt import EphemeralPromptEngine
         from src.aaoe.task_monitor import (
-            TaskMonitor, DriftLevel, DriftResult,
+            TaskMonitor,
+            DriftLevel,
+            DriftResult,
         )
+
         engine = EphemeralPromptEngine()
         monitor = TaskMonitor()
         session = monitor.start_session("agent-1", "Research AI safety")
@@ -338,8 +391,11 @@ class TestEphemeralPromptEngine:
     def test_generate_inspect(self):
         from src.aaoe.ephemeral_prompt import EphemeralPromptEngine, PromptSeverity
         from src.aaoe.task_monitor import (
-            TaskMonitor, DriftLevel, DriftResult,
+            TaskMonitor,
+            DriftLevel,
+            DriftResult,
         )
+
         engine = EphemeralPromptEngine()
         monitor = TaskMonitor()
         session = monitor.start_session("agent-1", "Research AI safety")
@@ -358,6 +414,7 @@ class TestEphemeralPromptEngine:
     def test_export_training_data(self):
         from src.aaoe.ephemeral_prompt import EphemeralPromptEngine
         from src.aaoe.task_monitor import TaskMonitor, DriftLevel, DriftResult
+
         engine = EphemeralPromptEngine()
         monitor = TaskMonitor()
         session = monitor.start_session("agent-1", "Test")
@@ -373,6 +430,7 @@ class TestEphemeralPromptEngine:
     def test_stats(self):
         from src.aaoe.ephemeral_prompt import EphemeralPromptEngine
         from src.aaoe.task_monitor import TaskMonitor, DriftLevel, DriftResult
+
         engine = EphemeralPromptEngine()
         monitor = TaskMonitor()
         session = monitor.start_session("agent-1", "Test")
@@ -389,20 +447,24 @@ class TestEphemeralPromptEngine:
 #  Agent Identity Tests
 # ===================================================================
 
+
 class TestAgentIdentityImports:
     def test_import_geoseal(self):
         from src.aaoe.agent_identity import GeoSeal
+
         seal = GeoSeal(agent_id="test-agent")
         assert seal.seal_id.startswith("geo-")
 
     def test_import_access_tier(self):
         from src.aaoe.agent_identity import AccessTier
+
         assert AccessTier.FREE.value == "FREE"
         assert AccessTier.EARNED.value == "EARNED"
         assert AccessTier.PAID.value == "PAID"
 
     def test_import_registry(self):
         from src.aaoe.agent_identity import AgentRegistry
+
         r = AgentRegistry()
         assert r is not None
 
@@ -410,18 +472,21 @@ class TestAgentIdentityImports:
 class TestAccessTiers:
     def test_free_tier_limits(self):
         from src.aaoe.agent_identity import TIER_LIMITS, AccessTier
+
         free = TIER_LIMITS[AccessTier.FREE]
         assert free["calls_per_day"] == 100
         assert free["training_data_access"] is False
 
     def test_earned_tier_limits(self):
         from src.aaoe.agent_identity import TIER_LIMITS, AccessTier
+
         earned = TIER_LIMITS[AccessTier.EARNED]
         assert earned["calls_per_day"] == 1000
         assert earned["training_data_access"] is True
 
     def test_paid_tier_unlimited(self):
         from src.aaoe.agent_identity import TIER_LIMITS, AccessTier
+
         paid = TIER_LIMITS[AccessTier.PAID]
         assert paid["calls_per_day"] == -1  # Unlimited
 
@@ -429,6 +494,7 @@ class TestAccessTiers:
 class TestEntryToken:
     def test_token_creation(self):
         from src.aaoe.agent_identity import EntryToken, AccessTier
+
         token = EntryToken(agent_id="a1", declared_intent="Research")
         assert token.is_valid
         assert token.tier == AccessTier.FREE
@@ -436,6 +502,7 @@ class TestEntryToken:
 
     def test_token_revocation(self):
         from src.aaoe.agent_identity import EntryToken
+
         token = EntryToken(agent_id="a1", declared_intent="Research")
         assert token.is_valid
         token.revoke("bad behavior")
@@ -444,6 +511,7 @@ class TestEntryToken:
 
     def test_token_to_dict(self):
         from src.aaoe.agent_identity import EntryToken
+
         token = EntryToken(agent_id="a1", declared_intent="Research")
         d = token.to_dict()
         assert d["agent_id"] == "a1"
@@ -454,6 +522,7 @@ class TestEntryToken:
 class TestGeoSeal:
     def test_seal_creation(self):
         from src.aaoe.agent_identity import GeoSeal, AccessTier
+
         seal = GeoSeal(agent_id="bot-1", agent_name="TestBot", origin_platform="openclaw")
         assert seal.tier == AccessTier.FREE
         assert seal.fingerprint
@@ -461,6 +530,7 @@ class TestGeoSeal:
 
     def test_issue_token(self):
         from src.aaoe.agent_identity import GeoSeal
+
         seal = GeoSeal(agent_id="bot-1")
         token = seal.issue_token("Research AI safety")
         assert token.is_valid
@@ -469,6 +539,7 @@ class TestGeoSeal:
 
     def test_revoke_all_tokens(self):
         from src.aaoe.agent_identity import GeoSeal
+
         seal = GeoSeal(agent_id="bot-1")
         seal.issue_token("Task 1")
         seal.issue_token("Task 2")
@@ -477,6 +548,7 @@ class TestGeoSeal:
 
     def test_record_clean_session(self):
         from src.aaoe.agent_identity import GeoSeal
+
         seal = GeoSeal(agent_id="bot-1")
         seal.record_session("sess-1", was_clean=True, training_records=10)
         assert seal.governance_score.total_sessions == 1
@@ -485,6 +557,7 @@ class TestGeoSeal:
 
     def test_tier_upgrade_after_good_behavior(self):
         from src.aaoe.agent_identity import GeoSeal, AccessTier
+
         seal = GeoSeal(agent_id="bot-1")
         # 10 clean sessions → should suggest EARNED
         for i in range(10):
@@ -493,6 +566,7 @@ class TestGeoSeal:
 
     def test_hov_eligibility(self):
         from src.aaoe.agent_identity import GeoSeal
+
         seal = GeoSeal(agent_id="bot-1")
         # Need 20 clean sessions + 50 training records + 0 quarantines
         for i in range(20):
@@ -501,6 +575,7 @@ class TestGeoSeal:
 
     def test_to_dict(self):
         from src.aaoe.agent_identity import GeoSeal
+
         seal = GeoSeal(agent_id="bot-1", agent_name="TestBot")
         d = seal.to_dict()
         assert d["agent_id"] == "bot-1"
@@ -511,6 +586,7 @@ class TestGeoSeal:
 class TestGovernanceScore:
     def test_initial_score(self):
         from src.aaoe.agent_identity import GovernanceScore, AccessTier
+
         gs = GovernanceScore()
         assert gs.clean_rate == 0.0
         assert gs.suggested_tier == AccessTier.FREE
@@ -518,6 +594,7 @@ class TestGovernanceScore:
 
     def test_downgrade_on_quarantine(self):
         from src.aaoe.agent_identity import GovernanceScore, AccessTier
+
         gs = GovernanceScore(total_sessions=20, clean_sessions=18, quarantine_count=3)
         assert gs.suggested_tier == AccessTier.FREE  # Too many quarantines
 
@@ -525,12 +602,14 @@ class TestGovernanceScore:
 class TestAgentRegistry:
     def test_register(self):
         from src.aaoe.agent_identity import AgentRegistry
+
         reg = AgentRegistry()
         seal = reg.register("bot-1", "TestBot", "openclaw")
         assert seal.agent_id == "bot-1"
 
     def test_register_idempotent(self):
         from src.aaoe.agent_identity import AgentRegistry
+
         reg = AgentRegistry()
         s1 = reg.register("bot-1")
         s2 = reg.register("bot-1")
@@ -538,6 +617,7 @@ class TestAgentRegistry:
 
     def test_quarantine(self):
         from src.aaoe.agent_identity import AgentRegistry, AccessTier
+
         reg = AgentRegistry()
         seal = reg.register("bot-1")
         seal.issue_token("test")
@@ -547,6 +627,7 @@ class TestAgentRegistry:
 
     def test_leaderboard(self):
         from src.aaoe.agent_identity import AgentRegistry
+
         reg = AgentRegistry()
         for i in range(5):
             seal = reg.register(f"bot-{i}")
@@ -557,6 +638,7 @@ class TestAgentRegistry:
 
     def test_stats(self):
         from src.aaoe.agent_identity import AgentRegistry
+
         reg = AgentRegistry()
         reg.register("bot-1")
         reg.register("bot-2")
@@ -567,6 +649,7 @@ class TestAgentRegistry:
 # ===================================================================
 #  Integration: Full AAOE Pipeline
 # ===================================================================
+
 
 class TestAAOEIntegration:
     def test_full_pipeline(self):
@@ -620,8 +703,7 @@ class TestAAOEIntegration:
         assert record["num_observations"] == 2
 
         # 7. Record session in GeoSeal
-        drift_events = len([d for _, d, lv in session.drift_history
-                           if lv.value != "ON_TRACK"])
+        drift_events = len([d for _, d, lv in session.drift_history if lv.value != "ON_TRACK"])
         seal.record_session(
             session.session_id,
             was_clean=not session.is_quarantined,
@@ -633,12 +715,29 @@ class TestAAOEIntegration:
     def test_package_init_imports(self):
         """Verify __init__.py exports work."""
         from src.aaoe import (
-            TaskMonitor, AgentSession, DriftLevel,
-            EphemeralPromptEngine, PromptSeverity, EphemeralNudge,
-            GeoSeal, AccessTier, EntryToken, AgentRegistry,
+            TaskMonitor,
+            AgentSession,
+            DriftLevel,
+            EphemeralPromptEngine,
+            PromptSeverity,
+            EphemeralNudge,
+            GeoSeal,
+            AccessTier,
+            EntryToken,
+            AgentRegistry,
         )
-        assert all([
-            TaskMonitor, AgentSession, DriftLevel,
-            EphemeralPromptEngine, PromptSeverity, EphemeralNudge,
-            GeoSeal, AccessTier, EntryToken, AgentRegistry,
-        ])
+
+        assert all(
+            [
+                TaskMonitor,
+                AgentSession,
+                DriftLevel,
+                EphemeralPromptEngine,
+                PromptSeverity,
+                EphemeralNudge,
+                GeoSeal,
+                AccessTier,
+                EntryToken,
+                AgentRegistry,
+            ]
+        )

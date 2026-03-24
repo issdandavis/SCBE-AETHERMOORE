@@ -177,14 +177,16 @@ def build_navigation_telemetry(
         "visible_text": _visible_text(nodes),
         "tap_targets": _tap_targets(nodes),
         "scrollables": _scrollables(nodes),
-        "focused_node": {
-            "label": _node_label(focused),
-            "resource_id": focused["resource_id"],
-            "class_name": focused["class_name"],
-            "bounds": focused["bounds"],
-        }
-        if focused
-        else None,
+        "focused_node": (
+            {
+                "label": _node_label(focused),
+                "resource_id": focused["resource_id"],
+                "class_name": focused["class_name"],
+                "bounds": focused["bounds"],
+            }
+            if focused
+            else None
+        ),
         "status": status or {},
     }
     telemetry["summary"] = {
@@ -234,7 +236,16 @@ def main() -> int:
     output_path = Path(args.output) if args.output else _default_output_path(xml_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    print(json.dumps({"output": str(output_path), "route_url": payload["route_url"], "targets": payload["summary"]["tap_target_count"]}, indent=2))
+    print(
+        json.dumps(
+            {
+                "output": str(output_path),
+                "route_url": payload["route_url"],
+                "targets": payload["summary"]["tap_target_count"],
+            },
+            indent=2,
+        )
+    )
     return 0
 
 

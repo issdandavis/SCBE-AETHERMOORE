@@ -188,9 +188,7 @@ def _extract_browser_results(page: Any, surface_type: str, max_results: int) -> 
       return rows;
     }
     """
-    return list(
-        page.evaluate(evaluator, [surface_type, max(1, int(max_results)), sorted(MODEL_RESERVED_ROOTS)])
-    )
+    return list(page.evaluate(evaluator, [surface_type, max(1, int(max_results)), sorted(MODEL_RESERVED_ROOTS)]))
 
 
 def _dedupe_results(results: List[Dict[str, Any]], max_results: int) -> List[Dict[str, Any]]:

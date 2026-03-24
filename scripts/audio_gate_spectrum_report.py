@@ -135,9 +135,7 @@ def compute_audio_features(
     }, spectrum
 
 
-def compute_band_pressures(
-    spectrum: np.ndarray, overall_pressure: float, band_count: int = 6
-) -> list[float]:
+def compute_band_pressures(spectrum: np.ndarray, overall_pressure: float, band_count: int = 6) -> list[float]:
     total_power = float(np.sum(spectrum)) + EPSILON
     max_power = float(np.max(spectrum)) + EPSILON
     band_pressures: list[float] = []

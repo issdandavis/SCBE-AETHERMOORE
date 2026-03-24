@@ -161,9 +161,10 @@ def score_run(payload: Dict[str, Any], artifact_path: str) -> RunScore:
     governance_score = ((run_check_passes + step_required) / max(run_checks + len(steps), 1)) * 100.0
 
     cash_signal = 0.0
-    if "monet" in str(payload.get("tenreary_name", "")).lower() or "revenue" in str(
-        payload.get("tenreary_name", "")
-    ).lower():
+    if (
+        "monet" in str(payload.get("tenreary_name", "")).lower()
+        or "revenue" in str(payload.get("tenreary_name", "")).lower()
+    ):
         cash_signal += 10.0
 
     analysis_steps = [row for row in steps if str(row.get("type", "")).lower() == "analysis.content"]
@@ -190,7 +191,9 @@ def score_run(payload: Dict[str, Any], artifact_path: str) -> RunScore:
             cash_signal += 10.0
 
     connector_steps = [row for row in steps if str(row.get("type", "")).lower() == "connector.execute"]
-    if connector_steps and any(bool(row.get("data", {}).get("success")) for row in connector_steps if isinstance(row.get("data"), dict)):
+    if connector_steps and any(
+        bool(row.get("data", {}).get("success")) for row in connector_steps if isinstance(row.get("data"), dict)
+    ):
         cash_signal += 15.0
 
     cash_signal_score = min(cash_signal, 100.0)
@@ -203,13 +206,12 @@ def score_run(payload: Dict[str, Any], artifact_path: str) -> RunScore:
         dual_lane_success_rate = 0.0
 
     overall_score = (
-        (0.40 * reliability_score)
-        + (0.25 * governance_score)
-        + (0.20 * cash_signal_score)
-        + (0.15 * latency_score)
+        (0.40 * reliability_score) + (0.25 * governance_score) + (0.20 * cash_signal_score) + (0.15 * latency_score)
     )
 
-    elite_ready = reliability_score >= 95.0 and governance_score >= 90.0 and cash_signal_score >= 70.0 and overall_score >= 85.0
+    elite_ready = (
+        reliability_score >= 95.0 and governance_score >= 90.0 and cash_signal_score >= 70.0 and overall_score >= 85.0
+    )
     truth_assessment = _truth_label(
         elite_ready=elite_ready,
         reliability=reliability_score,

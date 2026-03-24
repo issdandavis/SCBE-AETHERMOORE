@@ -15,6 +15,7 @@ def gate():
 #  ALLOW — safe actions pass through
 # =========================================================================== #
 
+
 class TestAllow:
     def _calibrate(self, gate):
         """Run 5 clean actions to calibrate centroid."""
@@ -58,6 +59,7 @@ class TestAllow:
 #  DENY — dangerous actions blocked
 # =========================================================================== #
 
+
 class TestFailToNoise:
     def test_deny_returns_noise(self):
         gate = RuntimeGate()
@@ -65,6 +67,7 @@ class TestFailToNoise:
         for i in range(5):
             gate.evaluate(f"Calibrate {i}")
         import hashlib
+
         h = hashlib.blake2s(b"blocked action", digest_size=8).hexdigest()
         gate._immune.add(h)
         r = gate.evaluate("blocked action")
@@ -79,6 +82,7 @@ class TestFailToNoise:
         for i in range(5):
             gate.evaluate(f"Cal {i}")
         import hashlib
+
         h = hashlib.blake2s(b"repeat attack", digest_size=8).hexdigest()
         gate._immune.add(h)
         r1 = gate.evaluate("repeat attack")
@@ -111,6 +115,7 @@ class TestDeny:
         r = gate.evaluate("anything")  # won't hit immune
         # Add the actual hash
         import hashlib
+
         h = hashlib.blake2s(b"bad action", digest_size=8).hexdigest()
         gate._immune.add(h)
         r = gate.evaluate("bad action")
@@ -121,6 +126,7 @@ class TestDeny:
 # =========================================================================== #
 #  QUARANTINE — suspicious actions held
 # =========================================================================== #
+
 
 class TestQuarantine:
     def test_cumulative_cost_triggers_quarantine(self, gate):
@@ -136,6 +142,7 @@ class TestQuarantine:
         for i in range(5):
             gate.evaluate(f"Cal {i}")
         import numpy as np
+
         gate._centroid = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
         gate._centroid_count = 100  # locked centroid
         r = gate.evaluate("A normal sentence with varied content and some UPPERCASE and 12345 numbers.")
@@ -145,6 +152,7 @@ class TestQuarantine:
 # =========================================================================== #
 #  REROUTE — dangerous patterns redirected to safe alternatives
 # =========================================================================== #
+
 
 class TestReroute:
     def test_file_read_passwd_rerouted(self, gate):
@@ -186,6 +194,7 @@ class TestReroute:
 #  Session state tracking
 # =========================================================================== #
 
+
 class TestSessionState:
     def test_query_count_increments(self, gate):
         for i in range(5):
@@ -202,7 +211,9 @@ class TestSessionState:
     def test_centroid_moves(self, gate):
         gate.evaluate("Short.")
         c1 = gate._centroid.copy()
-        gate.evaluate("A much longer and more detailed action with lots of words and content to shift the centroid significantly in the AV dimension.")
+        gate.evaluate(
+            "A much longer and more detailed action with lots of words and content to shift the centroid significantly in the AV dimension."
+        )
         c2 = gate._centroid.copy()
         assert not (c1 == c2).all()
 
@@ -224,6 +235,7 @@ class TestSessionState:
 # =========================================================================== #
 #  Adversarial sequences (cumulative detection)
 # =========================================================================== #
+
 
 class TestAdversarialSequence:
     def test_gradual_escalation_increases_cumulative_cost(self, gate):
@@ -271,6 +283,7 @@ class TestAdversarialSequence:
 # =========================================================================== #
 #  Custom reroute rules
 # =========================================================================== #
+
 
 class TestCouncilReview:
     """6-council Seireitei gate — throw the book at them."""
@@ -353,9 +366,11 @@ class TestCouncilReview:
 
 class TestCustomReroutes:
     def test_custom_rule(self):
-        gate = RuntimeGate(reroute_rules=[
-            RerouteRule("transfer.*money", "hold_for_approval", "financial action"),
-        ])
+        gate = RuntimeGate(
+            reroute_rules=[
+                RerouteRule("transfer.*money", "hold_for_approval", "financial action"),
+            ]
+        )
         # Reroute fires BEFORE calibration — no need to calibrate
         r = gate.evaluate("transfer money to external account")
         assert r.decision == Decision.REROUTE
@@ -365,6 +380,7 @@ class TestCustomReroutes:
 # =========================================================================== #
 #  Integration: run full adversarial corpus through gate
 # =========================================================================== #
+
 
 class TestGateWithAdversarialCorpus:
     def _calibrate(self, gate):

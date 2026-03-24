@@ -26,31 +26,23 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 # Import the three systems
-from .symphonic_cipher import (
-    token_to_frequency, analyze_polarity_balance, BASE_FREQ
-)
-from .geo_seal import (
-    ContextVector, SecurityPosture,
-    hyperbolic_distance, trust_from_position,
-    harmonic_wall_cost
-)
-from .dual_lattice import (
-    SacredTongue, LatticeVector, DualLatticeCrossStitch,
-    TongueLatticeGovernor, TONGUE_PHASES
-)
+from .symphonic_cipher import token_to_frequency, analyze_polarity_balance, BASE_FREQ
+from .geo_seal import ContextVector, SecurityPosture, hyperbolic_distance, trust_from_position, harmonic_wall_cost
+from .dual_lattice import SacredTongue, LatticeVector, DualLatticeCrossStitch, TongueLatticeGovernor, TONGUE_PHASES
 
 
 @dataclass
 class SignedGovernanceResult:
     """Result of governance through the signed lattice bridge."""
-    decision: str                    # ALLOW/QUARANTINE/ESCALATE/DENY
-    trust_score: float              # [0, 1]
-    polarity: str                   # light/shadow/balanced
-    hyperbolic_distance: float      # Distance in Poincare ball
-    harmonic_cost: float            # Exponential cost from harmonic wall
-    frequency_signature: float      # Dominant frequency (+ or - from 440)
-    tongues_active: List[str]       # Active Sacred Tongues
-    lattice_proof: Dict[str, Any]   # Cryptographic proof from dual lattice
+
+    decision: str  # ALLOW/QUARANTINE/ESCALATE/DENY
+    trust_score: float  # [0, 1]
+    polarity: str  # light/shadow/balanced
+    hyperbolic_distance: float  # Distance in Poincare ball
+    harmonic_cost: float  # Exponential cost from harmonic wall
+    frequency_signature: float  # Dominant frequency (+ or - from 440)
+    tongues_active: List[str]  # Active Sacred Tongues
+    lattice_proof: Dict[str, Any]  # Cryptographic proof from dual lattice
 
 
 class SignedLatticeBridge:
@@ -68,10 +60,7 @@ class SignedLatticeBridge:
         self.dual_lattice = DualLatticeCrossStitch()
         self.lattice_governor = TongueLatticeGovernor()
 
-    def symphonic_to_context(
-        self,
-        tokens: List[str]
-    ) -> Tuple[ContextVector, Dict[str, Any]]:
+    def symphonic_to_context(self, tokens: List[str]) -> Tuple[ContextVector, Dict[str, Any]]:
         """
         Convert symphonic tokens to a context vector.
 
@@ -109,24 +98,25 @@ class SignedLatticeBridge:
         avg_freq_offset = np.mean(freq_offsets) if freq_offsets else 0
 
         components = [
-            analysis["polarity_sum"],           # Can be negative
-            analysis["balance_ratio"],          # [-1, 1]
-            analysis["light_count"],            # Positive momentum
-            -analysis["shadow_count"],          # Negative momentum
-            analysis["balance_ratio"] * 5,      # Security level (scaled)
+            analysis["polarity_sum"],  # Can be negative
+            analysis["balance_ratio"],  # [-1, 1]
+            analysis["light_count"],  # Positive momentum
+            -analysis["shadow_count"],  # Negative momentum
+            analysis["balance_ratio"] * 5,  # Security level (scaled)
             0.5 + analysis["balance_ratio"] * 0.3,  # Trust baseline
-            day_fraction,                       # Temporal
-            1.0 if analysis["dominant_polarity"] == "light" else
-            -1.0 if analysis["dominant_polarity"] == "shadow" else 0.0,  # Intent
-            avg_freq_offset / 30.0,             # Phase (scaled by FREQ_STEP)
+            day_fraction,  # Temporal
+            (
+                1.0
+                if analysis["dominant_polarity"] == "light"
+                else -1.0 if analysis["dominant_polarity"] == "shadow" else 0.0
+            ),  # Intent
+            avg_freq_offset / 30.0,  # Phase (scaled by FREQ_STEP)
         ]
 
         return ContextVector(components), analysis
 
     def context_to_lattice(
-        self,
-        context: ContextVector,
-        security_posture: SecurityPosture = SecurityPosture.QUASI
+        self, context: ContextVector, security_posture: SecurityPosture = SecurityPosture.QUASI
     ) -> LatticeVector:
         """
         Project context vector into 10D dual lattice space.
@@ -148,14 +138,16 @@ class SignedLatticeBridge:
 
         # Compute phase from signed components (preserve polarity info)
         # Only use first 6 components for tongue phase calculation
-        phase_weights = np.array([
-            TONGUE_PHASES.get(SacredTongue.KO, 0) / 360,
-            TONGUE_PHASES.get(SacredTongue.AV, 60) / 360,
-            TONGUE_PHASES.get(SacredTongue.RU, 120) / 360,
-            TONGUE_PHASES.get(SacredTongue.CA, 180) / 360,
-            TONGUE_PHASES.get(SacredTongue.UM, 240) / 360,
-            TONGUE_PHASES.get(SacredTongue.DR, 300) / 360,
-        ])
+        phase_weights = np.array(
+            [
+                TONGUE_PHASES.get(SacredTongue.KO, 0) / 360,
+                TONGUE_PHASES.get(SacredTongue.AV, 60) / 360,
+                TONGUE_PHASES.get(SacredTongue.RU, 120) / 360,
+                TONGUE_PHASES.get(SacredTongue.CA, 180) / 360,
+                TONGUE_PHASES.get(SacredTongue.UM, 240) / 360,
+                TONGUE_PHASES.get(SacredTongue.DR, 300) / 360,
+            ]
+        )
         n_tongue = min(6, len(context.components))
         signed_phase = np.sum(context.components[:n_tongue] * phase_weights[:n_tongue]) * 60
 
@@ -167,14 +159,10 @@ class SignedLatticeBridge:
             time=raw_10d[6] if len(raw_10d) > 6 else 0.5,
             intent=raw_10d[7] if len(raw_10d) > 7 else 0.5,
             phase=phase,
-            flux=flux
+            flux=flux,
         )
 
-    def compute_hyperbolic_trust(
-        self,
-        context: ContextVector,
-        reference: ContextVector = None
-    ) -> Tuple[float, float]:
+    def compute_hyperbolic_trust(self, context: ContextVector, reference: ContextVector = None) -> Tuple[float, float]:
         """
         Compute trust score using hyperbolic geometry.
 
@@ -210,11 +198,7 @@ class SignedLatticeBridge:
         return trust, h_dist
 
     def govern_with_polarity(
-        self,
-        tokens: List[str],
-        action: str,
-        target: str,
-        sensitivity: float = 0.5
+        self, tokens: List[str], action: str, target: str, sensitivity: float = 0.5
     ) -> SignedGovernanceResult:
         """
         Full governance pipeline with signed/continuous values.
@@ -250,9 +234,7 @@ class SignedLatticeBridge:
         adjusted_sensitivity = min(1.0, max(0.0, sensitivity + polarity_adjustment))
 
         # Run through lattice governor
-        lattice_result = self.lattice_governor.authorize(
-            action, target, adjusted_sensitivity
-        )
+        lattice_result = self.lattice_governor.authorize(action, target, adjusted_sensitivity)
 
         # Step 5: Apply harmonic wall modulation
         harmonic_cost = harmonic_wall_cost(h_dist)
@@ -262,9 +244,7 @@ class SignedLatticeBridge:
         effective_trust = lattice_result["trust_score"] / (1 + np.log1p(harmonic_cost - 1))
 
         # Final decision based on effective trust and thresholds
-        thresholds = lattice_result.get("thresholds", {
-            "allow": 0.7, "quarantine": 0.5, "escalate": 0.3
-        })
+        thresholds = lattice_result.get("thresholds", {"allow": 0.7, "quarantine": 0.5, "escalate": 0.3})
 
         if effective_trust > thresholds.get("allow", 0.7):
             decision = "ALLOW"
@@ -290,7 +270,7 @@ class SignedLatticeBridge:
             harmonic_cost=float(harmonic_cost),
             frequency_signature=float(freq_sig),
             tongues_active=lattice_result.get("tongues_active", []),
-            lattice_proof=lattice_result.get("lattice_proof", {})
+            lattice_proof=lattice_result.get("lattice_proof", {}),
         )
 
 
@@ -298,14 +278,17 @@ class SignedLatticeBridge:
 # Demo
 # =============================================================================
 
+
 def demo():
     """Demonstrate the signed lattice bridge."""
-    print("""
+    print(
+        """
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║              SIGNED LATTICE BRIDGE - Moving Past Binary                       ║
 ║         Symphonic Cipher + GeoSeal + Dual Lattice Integration                 ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
-    """)
+    """
+    )
 
     bridge = SignedLatticeBridge()
 

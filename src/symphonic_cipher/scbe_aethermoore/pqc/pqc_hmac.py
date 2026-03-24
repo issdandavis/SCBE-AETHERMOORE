@@ -60,9 +60,7 @@ class PQCKeyMaterial:
         if len(self.hmac_key) != KEY_LEN:
             raise ValueError(f"hmac_key must be {KEY_LEN} bytes")
         if len(self.pqc_shared_secret) != KYBER768_SHARED_SECRET_SIZE:
-            raise ValueError(
-                f"pqc_shared_secret must be {KYBER768_SHARED_SECRET_SIZE} bytes"
-            )
+            raise ValueError(f"pqc_shared_secret must be {KYBER768_SHARED_SECRET_SIZE} bytes")
 
 
 @dataclass
@@ -184,14 +182,10 @@ def pqc_recover_hmac_key(
             info=b"scbe-aethermoore-hmac-hybrid",
         )
     else:
-        return derive_hybrid_key(
-            shared_secret, salt=salt, info=b"scbe-aethermoore-hmac-classical"
-        )
+        return derive_hybrid_key(shared_secret, salt=salt, info=b"scbe-aethermoore-hmac-classical")
 
 
-def pqc_hmac_chain_tag(
-    message: bytes, nonce: bytes, prev_tag: bytes, key_material: PQCKeyMaterial
-) -> bytes:
+def pqc_hmac_chain_tag(message: bytes, nonce: bytes, prev_tag: bytes, key_material: PQCKeyMaterial) -> bytes:
     """
     Compute HMAC chain tag using PQC-derived key.
 
@@ -305,16 +299,12 @@ class PQCHMACChain:
 
         # Generate or use provided key material
         if key_material is None:
-            self._key_material = pqc_derive_hmac_key(
-                self._kem_keypair.public_key, mode=mode
-            )
+            self._key_material = pqc_derive_hmac_key(self._kem_keypair.public_key, mode=mode)
         else:
             self._key_material = key_material
 
     @classmethod
-    def create_new(
-        cls, mode: KeyDerivationMode = KeyDerivationMode.HYBRID
-    ) -> "PQCHMACChain":
+    def create_new(cls, mode: KeyDerivationMode = KeyDerivationMode.HYBRID) -> "PQCHMACChain":
         """Create a new PQC HMAC chain with fresh keys."""
         return cls(mode=mode)
 
@@ -332,9 +322,7 @@ class PQCHMACChain:
 
         Used by the recipient side of key exchange.
         """
-        hmac_key = pqc_recover_hmac_key(
-            kem_keypair.secret_key, ciphertext, salt, classical_component, mode
-        )
+        hmac_key = pqc_recover_hmac_key(kem_keypair.secret_key, ciphertext, salt, classical_component, mode)
 
         # Reconstruct key material
         shared_secret = Kyber768.decapsulate(kem_keypair.secret_key, ciphertext)
@@ -403,9 +391,7 @@ class PQCHMACChain:
             return True
 
         messages, nonces, tags = zip(*self._chain)
-        return pqc_verify_hmac_chain(
-            list(messages), list(nonces), list(tags), self._key_material, self._chain_iv
-        )
+        return pqc_verify_hmac_chain(list(messages), list(nonces), list(tags), self._key_material, self._chain_iv)
 
     def get_entry(self, index: int) -> Optional[Tuple[bytes, bytes, bytes]]:
         """Get a specific chain entry by index."""
@@ -443,10 +429,7 @@ class PQCHMACChain:
         Args:
             chain_data: List of (message_hex, nonce_hex, tag_hex) tuples
         """
-        self._chain = [
-            (bytes.fromhex(m), bytes.fromhex(n), bytes.fromhex(t))
-            for m, n, t in chain_data
-        ]
+        self._chain = [(bytes.fromhex(m), bytes.fromhex(n), bytes.fromhex(t)) for m, n, t in chain_data]
 
     def rotate_key(self) -> PQCKeyMaterial:
         """
@@ -454,9 +437,7 @@ class PQCHMACChain:
 
         Returns the new key material. The chain continues with the new key.
         """
-        self._key_material = pqc_derive_hmac_key(
-            self._kem_keypair.public_key, mode=self._mode
-        )
+        self._key_material = pqc_derive_hmac_key(self._kem_keypair.public_key, mode=self._mode)
         return self._key_material
 
 

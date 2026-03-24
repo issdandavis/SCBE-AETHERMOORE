@@ -166,7 +166,9 @@ def build_packets(goal: str, mode: str, lanes: Sequence[str]) -> List[Packet]:
     return packets
 
 
-def build_scoreboard(goal: str, mode: str, packets: Sequence[Packet], lanes: Sequence[str], run_id: str) -> Dict[str, Any]:
+def build_scoreboard(
+    goal: str, mode: str, packets: Sequence[Packet], lanes: Sequence[str], run_id: str
+) -> Dict[str, Any]:
     lane_states = []
     for lane in lanes:
         owned = [packet.task_id for packet in packets if packet.owner_role == lane]
@@ -178,12 +180,7 @@ def build_scoreboard(goal: str, mode: str, packets: Sequence[Packet], lanes: Seq
                 "completed": 0,
                 "checkpoints": sum(1 for packet in packets if packet.owner_role == lane and packet.checkpoint),
                 "skills": sorted(
-                    {
-                        skill
-                        for packet in packets
-                        if packet.owner_role == lane
-                        for skill in packet.recommended_skills
-                    }
+                    {skill for packet in packets if packet.owner_role == lane for skill in packet.recommended_skills}
                 ),
             }
         )
@@ -251,7 +248,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    lanes = [item.strip() for item in args.lanes.split(",") if item.strip()] or DEFAULT_LANES.get(args.mode, DEFAULT_LANES["custom"])
+    lanes = [item.strip() for item in args.lanes.split(",") if item.strip()] or DEFAULT_LANES.get(
+        args.mode, DEFAULT_LANES["custom"]
+    )
     run_id = f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{_slug(args.goal)}"
     out_dir = args.output_root / run_id
     out_dir.mkdir(parents=True, exist_ok=True)

@@ -75,9 +75,7 @@ def load_eval_records(path: Path) -> list[EvalRecord]:
                     instruction=str(payload.get("instruction", "")).strip(),
                     expected=str(payload.get("expected", "")).strip(),
                     response_should_contain=[
-                        str(item).strip()
-                        for item in payload.get("response_should_contain", [])
-                        if str(item).strip()
+                        str(item).strip() for item in payload.get("response_should_contain", []) if str(item).strip()
                     ],
                     difficulty=str(payload.get("difficulty", "")).strip(),
                     metadata=payload.get("metadata", {}) if isinstance(payload.get("metadata", {}), dict) else {},
@@ -137,9 +135,7 @@ def summarize_results(results: Iterable[EvalResult]) -> dict[str, Any]:
     passed = sum(1 for result in result_list if result.passed)
     matched_terms = sum(len(result.matched_terms) for result in result_list)
     required_terms = sum(len(result.matched_terms) + len(result.missing_terms) for result in result_list)
-    average_term_match_ratio = (
-        sum(result.term_match_ratio for result in result_list) / total if total else 0.0
-    )
+    average_term_match_ratio = sum(result.term_match_ratio for result in result_list) / total if total else 0.0
     partial_hits = sum(1 for result in result_list if result.term_match_ratio > 0.0)
     categories: dict[str, dict[str, Any]] = defaultdict(
         lambda: {

@@ -33,8 +33,10 @@ from typing import Dict, List, Optional, Tuple
 #  Emotion taxonomy
 # ---------------------------------------------------------------------------
 
+
 class EmotionFamily(str, Enum):
     """Plutchik's 8 primary emotion families."""
+
     JOY = "joy"
     TRUST = "trust"
     FEAR = "fear"
@@ -54,11 +56,12 @@ class EmotionIntensity(str, Enum):
 @dataclass(frozen=True)
 class EmotionSpec:
     """A named emotion with circumplex coordinates."""
+
     name: str
     family: EmotionFamily
     intensity: EmotionIntensity
-    valence: float   # [-1, +1]
-    arousal: float   # [-1, +1]
+    valence: float  # [-1, +1]
+    arousal: float  # [-1, +1]
 
 
 # ---------------------------------------------------------------------------
@@ -69,37 +72,37 @@ EMOTION_LIBRARY: Dict[str, EmotionSpec] = {}
 
 _RAW_EMOTIONS: List[Tuple[str, str, str, float, float]] = [
     # --- Joy family ---
-    ("serenity",     "joy",           "low",    0.4,  -0.1),
-    ("joy",          "joy",           "medium", 0.8,   0.3),
-    ("ecstasy",      "joy",           "high",   1.0,   0.7),
+    ("serenity", "joy", "low", 0.4, -0.1),
+    ("joy", "joy", "medium", 0.8, 0.3),
+    ("ecstasy", "joy", "high", 1.0, 0.7),
     # --- Trust family ---
-    ("acceptance",   "trust",         "low",    0.3,  -0.2),
-    ("trust",        "trust",         "medium", 0.5,   0.0),
-    ("admiration",   "trust",         "high",   0.7,   0.3),
+    ("acceptance", "trust", "low", 0.3, -0.2),
+    ("trust", "trust", "medium", 0.5, 0.0),
+    ("admiration", "trust", "high", 0.7, 0.3),
     # --- Fear family ---
-    ("apprehension", "fear",          "low",   -0.3,   0.3),
-    ("fear",         "fear",          "medium",-0.6,   0.6),
-    ("terror",       "fear",          "high",  -0.9,   0.9),
+    ("apprehension", "fear", "low", -0.3, 0.3),
+    ("fear", "fear", "medium", -0.6, 0.6),
+    ("terror", "fear", "high", -0.9, 0.9),
     # --- Surprise family ---
-    ("distraction",  "surprise",      "low",    0.0,   0.2),
-    ("surprise",     "surprise",      "medium", 0.1,   0.6),
-    ("amazement",    "surprise",      "high",   0.2,   0.9),
+    ("distraction", "surprise", "low", 0.0, 0.2),
+    ("surprise", "surprise", "medium", 0.1, 0.6),
+    ("amazement", "surprise", "high", 0.2, 0.9),
     # --- Sadness family ---
-    ("pensiveness",  "sadness",       "low",   -0.3,  -0.3),
-    ("sadness",      "sadness",       "medium",-0.6,  -0.2),
-    ("grief",        "sadness",       "high",  -0.9,  -0.1),
+    ("pensiveness", "sadness", "low", -0.3, -0.3),
+    ("sadness", "sadness", "medium", -0.6, -0.2),
+    ("grief", "sadness", "high", -0.9, -0.1),
     # --- Disgust family ---
-    ("boredom",      "disgust",       "low",   -0.2,  -0.4),
-    ("disgust",      "disgust",       "medium",-0.5,   0.1),
-    ("loathing",     "disgust",       "high",  -0.8,   0.4),
+    ("boredom", "disgust", "low", -0.2, -0.4),
+    ("disgust", "disgust", "medium", -0.5, 0.1),
+    ("loathing", "disgust", "high", -0.8, 0.4),
     # --- Anger family ---
-    ("annoyance",    "anger",         "low",   -0.3,   0.3),
-    ("anger",        "anger",         "medium",-0.6,   0.7),
-    ("rage",         "anger",         "high",  -0.9,   1.0),
+    ("annoyance", "anger", "low", -0.3, 0.3),
+    ("anger", "anger", "medium", -0.6, 0.7),
+    ("rage", "anger", "high", -0.9, 1.0),
     # --- Anticipation family ---
-    ("interest",     "anticipation",  "low",    0.3,   0.3),
-    ("anticipation", "anticipation",  "medium", 0.4,   0.5),
-    ("vigilance",    "anticipation",  "high",   0.5,   0.8),
+    ("interest", "anticipation", "low", 0.3, 0.3),
+    ("anticipation", "anticipation", "medium", 0.4, 0.5),
+    ("vigilance", "anticipation", "high", 0.5, 0.8),
 ]
 
 for _name, _family, _intensity, _v, _a in _RAW_EMOTIONS:
@@ -113,18 +116,18 @@ for _name, _family, _intensity, _v, _a in _RAW_EMOTIONS:
 
 # Composite emotions (adjacent Plutchik primaries)
 _COMPOSITES: List[Tuple[str, str, str, float, float]] = [
-    ("love",         "joy",     "medium",  0.9,   0.5),
-    ("submission",   "trust",   "medium",  0.1,  -0.3),
-    ("awe",          "fear",    "medium", -0.1,   0.7),
-    ("disapproval",  "sadness", "medium", -0.5,   0.1),
-    ("remorse",      "sadness", "medium", -0.7,   0.2),
-    ("contempt",     "disgust", "medium", -0.6,   0.3),
-    ("aggressiveness","anger",  "medium", -0.4,   0.8),
-    ("optimism",     "anticipation","medium", 0.6, 0.4),
-    ("nostalgia",    "sadness", "low",    -0.1,  -0.4),
-    ("hope",         "anticipation","low",  0.5,  0.2),
-    ("anxiety",      "fear",    "low",    -0.4,   0.5),
-    ("guilt",        "sadness", "low",    -0.5,   0.3),
+    ("love", "joy", "medium", 0.9, 0.5),
+    ("submission", "trust", "medium", 0.1, -0.3),
+    ("awe", "fear", "medium", -0.1, 0.7),
+    ("disapproval", "sadness", "medium", -0.5, 0.1),
+    ("remorse", "sadness", "medium", -0.7, 0.2),
+    ("contempt", "disgust", "medium", -0.6, 0.3),
+    ("aggressiveness", "anger", "medium", -0.4, 0.8),
+    ("optimism", "anticipation", "medium", 0.6, 0.4),
+    ("nostalgia", "sadness", "low", -0.1, -0.4),
+    ("hope", "anticipation", "low", 0.5, 0.2),
+    ("anxiety", "fear", "low", -0.4, 0.5),
+    ("guilt", "sadness", "low", -0.5, 0.3),
 ]
 
 for _name, _family, _intensity, _v, _a in _COMPOSITES:
@@ -140,6 +143,7 @@ for _name, _family, _intensity, _v, _a in _COMPOSITES:
 # ---------------------------------------------------------------------------
 #  Poincaré Ball projection
 # ---------------------------------------------------------------------------
+
 
 def _clamp(x: float, lo: float = -1.0, hi: float = 1.0) -> float:
     return max(lo, min(hi, x))

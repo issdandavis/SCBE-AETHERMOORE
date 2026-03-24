@@ -38,6 +38,7 @@ from .negabinary import NegaBinary, negabinary_to_balanced_ternary
 # Gate Tri-Manifold State
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class GateTriState:
     """Tri-manifold governance state derived from a 6-element gate vector.
@@ -50,6 +51,7 @@ class GateTriState:
     Each trit is the Most Significant Digit of the balanced ternary
     representation obtained via the negabinary conversion pipeline.
     """
+
     t1: int = 0  # -1, 0, or +1
     t2: int = 0
     t3: int = 0
@@ -67,6 +69,7 @@ class GateTriState:
 # Federated Node
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class FederatedNode:
     """A federated node with a 6-element gate vector for governance evaluation.
@@ -79,6 +82,7 @@ class FederatedNode:
       dim2 = g2 + g3   (e.g., Policy + Audit)
       dim3 = g4 + g5   (Commit + Sig — integrity)
     """
+
     name: str
     gate_vector: List[int] = field(default_factory=lambda: [0] * 6)
 
@@ -86,6 +90,7 @@ class FederatedNode:
 # ---------------------------------------------------------------------------
 # MSD Extraction
 # ---------------------------------------------------------------------------
+
 
 def _extract_msd(n: int) -> int:
     """Extract the Most Significant Digit from the balanced ternary
@@ -105,6 +110,7 @@ def _extract_msd(n: int) -> int:
 # ---------------------------------------------------------------------------
 # Gate Mapping
 # ---------------------------------------------------------------------------
+
 
 def map_gates_to_trimanifold(gate_vector: List[int]) -> GateTriState:
     """Map a 6-element gate vector to a GateTriState via negabinary pipeline.
@@ -141,6 +147,7 @@ def map_gates_to_trimanifold(gate_vector: List[int]) -> GateTriState:
 # Governance Decision
 # ---------------------------------------------------------------------------
 
+
 def apply_tri_manifold_governance(state: GateTriState) -> str:
     """Apply tri-manifold governance decision based on trit state.
 
@@ -176,6 +183,7 @@ def apply_tri_manifold_governance(state: GateTriState) -> str:
 # ---------------------------------------------------------------------------
 # Convenience: evaluate a FederatedNode end-to-end
 # ---------------------------------------------------------------------------
+
 
 def evaluate_node(node: FederatedNode) -> Tuple[GateTriState, str]:
     """Evaluate a FederatedNode through the full gate-swap governance pipeline.

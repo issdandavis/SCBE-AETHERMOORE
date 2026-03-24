@@ -330,9 +330,7 @@ def upload_to_hf(repo_id: str, sft_path: Path, chat_path: Path) -> None:
     for source_file in SFT_SOURCES:
         source_path = TRAINING_DATA_DIR / source_file
         if source_path.exists():
-            files_to_upload.append(
-                (str(source_path), f"data/sources/{source_path.name}")
-            )
+            files_to_upload.append((str(source_path), f"data/sources/{source_path.name}"))
 
     for local_path, remote_path in files_to_upload:
         if Path(local_path).exists():
@@ -424,9 +422,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Merge all SCBE SFT training data and optionally upload to HuggingFace"
     )
-    parser.add_argument(
-        "--upload", action="store_true", help="Upload to HuggingFace after merging"
-    )
+    parser.add_argument("--upload", action="store_true", help="Upload to HuggingFace after merging")
     parser.add_argument(
         "--repo-id",
         default="issdandavis/scbe-aethermoore-training-data",

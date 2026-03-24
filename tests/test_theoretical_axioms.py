@@ -115,9 +115,7 @@ class TestAxiom5_CInfinitySmoothness:
 
             # Check gradient consistency across scales
             for i in range(1, len(gradients)):
-                rel_diff = np.linalg.norm(gradients[i] - gradients[i - 1]) / (
-                    np.linalg.norm(gradients[i]) + 1e-12
-                )
+                rel_diff = np.linalg.norm(gradients[i] - gradients[i - 1]) / (np.linalg.norm(gradients[i]) + 1e-12)
 
                 if rel_diff > 1e-5:
                     failures.append(
@@ -175,16 +173,12 @@ class TestAxiom5_CInfinitySmoothness:
 
             # Check consistency
             for i in range(1, len(gradients)):
-                rel_diff = np.linalg.norm(gradients[i] - gradients[i - 1]) / (
-                    np.linalg.norm(gradients[i]) + 1e-12
-                )
+                rel_diff = np.linalg.norm(gradients[i] - gradients[i - 1]) / (np.linalg.norm(gradients[i]) + 1e-12)
 
                 if rel_diff > 1e-5:
                     failures.append({"trial": trial, "rel_diff": rel_diff})
 
-        assert (
-            len(failures) == 0
-        ), f"Breathing transform not smooth in {len(failures)}/{n_points} trials"
+        assert len(failures) == 0, f"Breathing transform not smooth in {len(failures)}/{n_points} trials"
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_hyperbolic_distance_smoothness(self):
@@ -227,16 +221,12 @@ class TestAxiom5_CInfinitySmoothness:
 
             # Check consistency
             for i in range(1, len(gradients)):
-                rel_diff = np.linalg.norm(gradients[i] - gradients[i - 1]) / (
-                    np.linalg.norm(gradients[i]) + 1e-12
-                )
+                rel_diff = np.linalg.norm(gradients[i] - gradients[i - 1]) / (np.linalg.norm(gradients[i]) + 1e-12)
 
                 if rel_diff > 1e-5:
                     failures.append({"trial": trial, "rel_diff": rel_diff})
 
-        assert (
-            len(failures) == 0
-        ), f"Hyperbolic distance not smooth in {len(failures)}/{n_points} trials"
+        assert len(failures) == 0, f"Hyperbolic distance not smooth in {len(failures)}/{n_points} trials"
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_second_derivative_boundedness(self):
@@ -372,9 +362,7 @@ class TestAxiom6_LyapunovStability:
                     }
                 )
 
-        assert (
-            len(failures) == 0
-        ), f"No convergence in {len(failures)}/{n_trajectories} trajectories"
+        assert len(failures) == 0, f"No convergence in {len(failures)}/{n_trajectories} trajectories"
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_lyapunov_stability_under_noise(self):
@@ -437,9 +425,7 @@ class TestAxiom6_LyapunovStability:
                         }
                     )
 
-        assert (
-            len(failures) == 0
-        ), f"Instability in {len(failures)}/{n_trajectories} trajectories"
+        assert len(failures) == 0, f"Instability in {len(failures)}/{n_trajectories} trajectories"
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_lyapunov_function_decrease(self):
@@ -495,9 +481,7 @@ class TestAxiom6_LyapunovStability:
                     }
                 )
 
-        assert (
-            len(failures) == 0
-        ), f"Lyapunov function not decreasing in {len(failures)}/{n_trajectories} cases"
+        assert len(failures) == 0, f"Lyapunov function not decreasing in {len(failures)}/{n_trajectories} cases"
 
 
 class TestAxiom11_FractionalDimensionFlux:
@@ -526,9 +510,7 @@ class TestAxiom11_FractionalDimensionFlux:
     - No sudden jumps or discontinuities
     """
 
-    def _box_counting_dimension(
-        self, points: np.ndarray, scales: np.ndarray = None
-    ) -> float:
+    def _box_counting_dimension(self, points: np.ndarray, scales: np.ndarray = None) -> float:
         """
         Compute box-counting fractal dimension.
 
@@ -606,16 +588,12 @@ class TestAxiom11_FractionalDimensionFlux:
         dim_diffs = np.diff(dimensions)
         std_diffs = np.std(dim_diffs)
 
-        assert (
-            std_diffs < 0.15
-        ), f"Dimension flux too jumpy (std={std_diffs:.3f} exceeds 0.15)"
+        assert std_diffs < 0.15, f"Dimension flux too jumpy (std={std_diffs:.3f} exceeds 0.15)"
 
         # Check correlation between consecutive dimensions (relaxed threshold)
         if len(dimensions) > 1:
             corr = np.corrcoef(dimensions[:-1], dimensions[1:])[0, 1]
-            assert (
-                corr > 0.85
-            ), f"Dimension changes not continuous (corr={corr:.3f} below 0.85)"
+            assert corr > 0.85, f"Dimension changes not continuous (corr={corr:.3f} below 0.85)"
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_dimension_estimation_stability(self):
@@ -695,9 +673,7 @@ class TestAxiom11_FractionalDimensionFlux:
             if dim < 0.5 or dim > 6.5:
                 failures.append({"traj_id": traj_id, "dimension": dim})
 
-        assert (
-            len(failures) == 0
-        ), f"Invalid dimensions in {len(failures)}/{n_trajectories} trajectories"
+        assert len(failures) == 0, f"Invalid dimensions in {len(failures)}/{n_trajectories} trajectories"
 
     @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
     def test_dimension_flux_under_perturbation(self):
@@ -755,9 +731,7 @@ class TestAxiom11_FractionalDimensionFlux:
                     }
                 )
 
-        assert (
-            len(failures) == 0
-        ), f"Dimension hypersensitive in {len(failures)}/{n_trials} trials"
+        assert len(failures) == 0, f"Dimension hypersensitive in {len(failures)}/{n_trials} trials"
 
 
 class TestAxiomIntegration:
@@ -905,15 +879,16 @@ class TestLyapunovAntipodeTrajectory:
             violations = [i for i, dv in enumerate(dV) if dv > 1e-10]
 
             if violations:
-                failures.append({
-                    "traj_id": traj_id,
-                    "violations": violations,
-                    "max_increase": max(dV),
-                })
+                failures.append(
+                    {
+                        "traj_id": traj_id,
+                        "violations": violations,
+                        "max_increase": max(dV),
+                    }
+                )
 
         assert len(failures) == 0, (
-            f"Lyapunov violation in {len(failures)}/{n_trajectories} "
-            f"antipodal chains: {failures[:3]}"
+            f"Lyapunov violation in {len(failures)}/{n_trajectories} " f"antipodal chains: {failures[:3]}"
         )
 
     def test_antipode_convergence_to_origin(self):
@@ -939,15 +914,16 @@ class TestLyapunovAntipodeTrajectory:
                     break
             else:
                 final_norm = np.linalg.norm(point)
-                failures.append({
-                    "traj_id": traj_id,
-                    "initial_norm": initial_norm,
-                    "final_norm": final_norm,
-                })
+                failures.append(
+                    {
+                        "traj_id": traj_id,
+                        "initial_norm": initial_norm,
+                        "final_norm": final_norm,
+                    }
+                )
 
         assert len(failures) == 0, (
-            f"No convergence in {len(failures)}/{n_trajectories} "
-            f"trajectories: {failures[:3]}"
+            f"No convergence in {len(failures)}/{n_trajectories} " f"trajectories: {failures[:3]}"
         )
 
     def test_contraction_rate_bounded_by_phi(self):
@@ -972,8 +948,7 @@ class TestLyapunovAntipodeTrajectory:
             expected_bound = (n / (1 + n)) ** self.PHI
 
             assert ratio <= expected_bound + 1e-12, (
-                f"Contraction ratio {ratio:.8f} exceeds bound {expected_bound:.8f} "
-                f"for ||x||={n:.4f}"
+                f"Contraction ratio {ratio:.8f} exceeds bound {expected_bound:.8f} " f"for ||x||={n:.4f}"
             )
 
     def test_lyapunov_under_noise_perturbation(self):
@@ -1001,17 +976,18 @@ class TestLyapunovAntipodeTrajectory:
 
                 # V should never explode beyond 2x initial
                 if V > initial_V * 2.0 + 1.0:
-                    failures.append({
-                        "traj_id": traj_id,
-                        "step": step,
-                        "V": V,
-                        "initial_V": initial_V,
-                    })
+                    failures.append(
+                        {
+                            "traj_id": traj_id,
+                            "step": step,
+                            "V": V,
+                            "initial_V": initial_V,
+                        }
+                    )
                     break
 
         assert len(failures) == 0, (
-            f"Divergence in {len(failures)}/{n_trajectories} "
-            f"noisy trajectories: {failures[:3]}"
+            f"Divergence in {len(failures)}/{n_trajectories} " f"noisy trajectories: {failures[:3]}"
         )
 
 

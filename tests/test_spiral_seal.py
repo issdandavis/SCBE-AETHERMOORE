@@ -78,9 +78,7 @@ class TestSacredTongue:
             for p in prefixes:
                 for s in suffixes:
                     token = f"{p}'{s}"
-                    assert (
-                        token not in tokens
-                    ), f"Duplicate token {token} in {tongue.name}"
+                    assert token not in tokens, f"Duplicate token {token} in {tongue.name}"
                     tokens.add(token)
             assert len(tokens) == 256
 
@@ -149,9 +147,7 @@ class TestSacredTongueTokenizer:
                 expected_suffix_idx = byte_val & 0x0F
                 token = tokenizer.encode_byte(byte_val)
                 # Token format is "prefix'suffix"
-                expected_token = (
-                    f"{prefixes[expected_prefix_idx]}'{suffixes[expected_suffix_idx]}"
-                )
+                expected_token = f"{prefixes[expected_prefix_idx]}'{suffixes[expected_suffix_idx]}"
                 assert token == expected_token
                 # Verify reverse mapping
                 decoded_byte = tokenizer.decode_token(token)
@@ -213,9 +209,7 @@ class TestSpiralSeal:
         assert len(result.tag) == TAG_SIZE
 
         # Decrypt
-        decrypted = seal.unseal(
-            result.salt, result.nonce, result.ciphertext, result.tag
-        )
+        decrypted = seal.unseal(result.salt, result.nonce, result.ciphertext, result.tag)
         assert decrypted == plaintext
 
     def test_seal_with_aad(self, seal):
@@ -228,9 +222,7 @@ class TestSpiralSeal:
         assert result.aad_tokens != ""
 
         # Decrypt with correct AAD
-        decrypted = seal.unseal(
-            result.salt, result.nonce, result.ciphertext, result.tag, aad
-        )
+        decrypted = seal.unseal(result.salt, result.nonce, result.ciphertext, result.tag, aad)
         assert decrypted == plaintext
 
     def test_seal_wrong_aad_fails(self, seal):
@@ -239,9 +231,7 @@ class TestSpiralSeal:
         result = seal.seal(plaintext, aad=b"correct_aad")
 
         with pytest.raises(Exception):  # Could be ValueError or authentication error
-            seal.unseal(
-                result.salt, result.nonce, result.ciphertext, result.tag, b"wrong_aad"
-            )
+            seal.unseal(result.salt, result.nonce, result.ciphertext, result.tag, b"wrong_aad")
 
     def test_tokens_use_correct_tongues(self, seal):
         """Verify each component uses its assigned Sacred Tongue."""
@@ -405,9 +395,7 @@ class TestPQCSpiralSeal:
 
             sig_keys = Dilithium3.generate_keypair()
 
-            seal = PQCSpiralSeal(
-                master_key=os.urandom(32), signing_secret_key=sig_keys.secret_key
-            )
+            seal = PQCSpiralSeal(master_key=os.urandom(32), signing_secret_key=sig_keys.secret_key)
 
             result, signature = seal.seal_signed(b"signed data")
 
@@ -415,13 +403,7 @@ class TestPQCSpiralSeal:
             if seal.pqc_available:
                 assert signature is not None
                 # Verify signature
-                sign_data = (
-                    result.key_id
-                    + result.salt
-                    + result.nonce
-                    + result.ciphertext
-                    + result.tag
-                )
+                sign_data = result.key_id + result.salt + result.nonce + result.ciphertext + result.tag
                 assert Dilithium3.verify(sig_keys.public_key, sign_data, signature)
 
         except ImportError:
@@ -458,9 +440,7 @@ class TestKDFAndAEADTypes:
         result = seal.seal(b"scrypt data")
         assert result.kdf_type == KDFType.SCRYPT
 
-        decrypted = seal.unseal(
-            result.salt, result.nonce, result.ciphertext, result.tag
-        )
+        decrypted = seal.unseal(result.salt, result.nonce, result.ciphertext, result.tag)
         assert decrypted == b"scrypt data"
 
     def test_master_key_instead_of_password(self):
@@ -469,9 +449,7 @@ class TestKDFAndAEADTypes:
         seal = SpiralSeal(master_key=key)
 
         result = seal.seal(b"key data")
-        decrypted = seal.unseal(
-            result.salt, result.nonce, result.ciphertext, result.tag
-        )
+        decrypted = seal.unseal(result.salt, result.nonce, result.ciphertext, result.tag)
         assert decrypted == b"key data"
 
     def test_crypto_backend_info(self):
@@ -493,9 +471,7 @@ class TestEdgeCases:
         seal = SpiralSeal(master_password=b"empty_test")
         result = seal.seal(b"")
 
-        decrypted = seal.unseal(
-            result.salt, result.nonce, result.ciphertext, result.tag
-        )
+        decrypted = seal.unseal(result.salt, result.nonce, result.ciphertext, result.tag)
         assert decrypted == b""
 
     def test_large_plaintext(self):
@@ -504,9 +480,7 @@ class TestEdgeCases:
         plaintext = os.urandom(1024 * 1024)  # 1MB
 
         result = seal.seal(plaintext)
-        decrypted = seal.unseal(
-            result.salt, result.nonce, result.ciphertext, result.tag
-        )
+        decrypted = seal.unseal(result.salt, result.nonce, result.ciphertext, result.tag)
         assert decrypted == plaintext
 
     def test_no_password_or_key_raises(self):
@@ -632,19 +606,11 @@ class TestPQCIntegration:
                 bob_seal = SpiralSeal(master_key=shared_secret)
 
                 # Decrypt
-                decrypted = bob_seal.unseal(
-                    result.salt, result.nonce, result.ciphertext, result.tag
-                )
+                decrypted = bob_seal.unseal(result.salt, result.nonce, result.ciphertext, result.tag)
                 assert decrypted == plaintext
 
                 # Verify Alice's signature
-                sign_data = (
-                    result.key_id
-                    + result.salt
-                    + result.nonce
-                    + result.ciphertext
-                    + result.tag
-                )
+                sign_data = result.key_id + result.salt + result.nonce + result.ciphertext + result.tag
                 assert Dilithium3.verify(alice_sig.public_key, sign_data, signature)
 
         except ImportError:

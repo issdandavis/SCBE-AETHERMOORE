@@ -1,4 +1,5 @@
 """Tests for agent squad orchestration."""
+
 from src.aetherbrowser.agents import AgentSquad, AgentState, TongueRole
 from src.aetherbrowser.ws_feed import WsFeed
 

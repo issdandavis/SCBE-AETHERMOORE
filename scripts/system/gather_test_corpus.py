@@ -143,7 +143,9 @@ def gather(max_per_source: int = 200, sample_seed: int = 42) -> Dict[str, Any]:
         source_counts[source] = len(records)
 
     # 1. Mega ingest SFT (largest curated set)
-    _add(_load_jsonl(REPO_ROOT / "training-data" / "mega_ingest_sft.jsonl", "mega_ingest", max_per_source), "mega_ingest")
+    _add(
+        _load_jsonl(REPO_ROOT / "training-data" / "mega_ingest_sft.jsonl", "mega_ingest", max_per_source), "mega_ingest"
+    )
 
     # 2. Merged SFT
     _add(_load_jsonl(REPO_ROOT / "training-data" / "merged_sft.jsonl", "merged_sft", max_per_source), "merged_sft")
@@ -171,7 +173,10 @@ def gather(max_per_source: int = 200, sample_seed: int = 42) -> Dict[str, Any]:
     _add(game_recs, "game")
 
     # 7. Math sessions
-    _add(_load_jsonl(REPO_ROOT / "training-data" / "math_sessions" / "math_patterns.jsonl", "math", max_per_source), "math")
+    _add(
+        _load_jsonl(REPO_ROOT / "training-data" / "math_sessions" / "math_patterns.jsonl", "math", max_per_source),
+        "math",
+    )
 
     # 8. Architecture sessions
     arch_dir = REPO_ROOT / "training-data" / "architecture_sessions"
@@ -185,7 +190,10 @@ def gather(max_per_source: int = 200, sample_seed: int = 42) -> Dict[str, Any]:
     _add(_load_jsonl(REPO_ROOT / "training-data" / "notion_raw_clean.jsonl", "notion", max_per_source), "notion")
 
     # 10. HF funnel cross-model
-    _add(_load_jsonl(REPO_ROOT / "training-data" / "funnel_cross_model" / "sft_pairs.jsonl", "funnel", max_per_source), "funnel")
+    _add(
+        _load_jsonl(REPO_ROOT / "training-data" / "funnel_cross_model" / "sft_pairs.jsonl", "funnel", max_per_source),
+        "funnel",
+    )
 
     # 11. Knowledge base
     kb_dir = REPO_ROOT / "training-data" / "knowledge-base"
@@ -201,7 +209,10 @@ def gather(max_per_source: int = 200, sample_seed: int = 42) -> Dict[str, Any]:
 
     # 13. OneDrive writing
     onedrive_writing = Path("C:/Users/issda/OneDrive/Lore_and_Writing")
-    _add(_load_text_files(onedrive_writing, "onedrive_writing", max_per_source, {".txt", ".docx", ".pdf"}), "onedrive_writing")
+    _add(
+        _load_text_files(onedrive_writing, "onedrive_writing", max_per_source, {".txt", ".docx", ".pdf"}),
+        "onedrive_writing",
+    )
 
     # 14. Obsidian vault
     obsidian = Path("C:/Users/issda/OneDrive/Dropbox/Izack Realmforge/AI Workspace")

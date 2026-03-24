@@ -68,6 +68,7 @@ HARMONIC_WALL_THRESHOLD = 5.0
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_kernel(n_scars: int) -> KernelStack:
     """Build a kernel with n scars for benchmarking."""
     k = KernelStack(genesis_hash=f"bench-{n_scars}")
@@ -83,6 +84,7 @@ def fmt_float(v: float, decimals: int = 6) -> float:
 # ===================================================================
 # SECTION 1: Correctness Benchmarks
 # ===================================================================
+
 
 def run_correctness_benchmarks() -> dict:
     """Run 1000 random agents through transmission computation."""
@@ -128,21 +130,32 @@ def run_correctness_benchmarks() -> dict:
         if 0.0 <= r.transmission_coeff <= 1.0:
             results["t_in_range"] += 1
         else:
-            results["violations"].append({
-                "type": "T_out_of_range",
-                "T": r.transmission_coeff,
-                "d_H": d_H, "phase": phase, "zone": zone, "scars": n_scars,
-            })
+            results["violations"].append(
+                {
+                    "type": "T_out_of_range",
+                    "T": r.transmission_coeff,
+                    "d_H": d_H,
+                    "phase": phase,
+                    "zone": zone,
+                    "scars": n_scars,
+                }
+            )
 
         # -- Amplitude out <= amplitude in --
         if r.amplitude_out <= amplitude + 1e-12:
             results["amplitude_invariant"] += 1
         else:
-            results["violations"].append({
-                "type": "amplitude_amplified",
-                "a_in": amplitude, "a_out": r.amplitude_out,
-                "d_H": d_H, "phase": phase, "zone": zone, "scars": n_scars,
-            })
+            results["violations"].append(
+                {
+                    "type": "amplitude_amplified",
+                    "a_in": amplitude,
+                    "a_out": r.amplitude_out,
+                    "d_H": d_H,
+                    "phase": phase,
+                    "zone": zone,
+                    "scars": n_scars,
+                }
+            )
 
         # -- Track outcomes --
         results["outcomes_seen"].add(r.outcome)
@@ -227,7 +240,9 @@ def run_correctness_benchmarks() -> dict:
                 if r.transmission_coeff > tunnel_probe["max_T_found"]:
                     tunnel_probe["max_T_found"] = r.transmission_coeff
                     tunnel_probe["max_T_conditions"] = {
-                        "d_H": d_H, "zone": zone, "n_scars": n_scars,
+                        "d_H": d_H,
+                        "zone": zone,
+                        "n_scars": n_scars,
                         "T": fmt_float(r.transmission_coeff),
                         "outcome": r.outcome,
                         "trust": fmt_float(r.trust),
@@ -276,12 +291,18 @@ def run_correctness_benchmarks() -> dict:
     n = results["total_samples"]
     print(f"\n  Samples:                {n}")
     print(f"  T in [0,1]:             {results['t_in_range']}/{n} ({100*results['t_in_range']/n:.1f}%)")
-    print(f"  Amplitude invariant:    {results['amplitude_invariant']}/{n} ({100*results['amplitude_invariant']/n:.1f}%)")
+    print(
+        f"  Amplitude invariant:    {results['amplitude_invariant']}/{n} ({100*results['amplitude_invariant']/n:.1f}%)"
+    )
     print(f"  Outcomes seen:          {results['outcomes_seen']}")
     print(f"  All 4 outcomes:         {results['all_four_outcomes']}")
     print(f"  Policy=False reflects:  {results['policy_false_always_reflects']}")
-    print(f"  Maturity ordering:      {results['maturity_ordering_correct']}/{results['maturity_ordering_tested']} ({100*results['maturity_ordering_correct']/results['maturity_ordering_tested']:.1f}%)")
-    print(f"  RED harder than GREEN:  {results['red_harder_than_green']}/{results['red_green_tested']} ({100*results['red_harder_than_green']/results['red_green_tested']:.1f}%)")
+    print(
+        f"  Maturity ordering:      {results['maturity_ordering_correct']}/{results['maturity_ordering_tested']} ({100*results['maturity_ordering_correct']/results['maturity_ordering_tested']:.1f}%)"
+    )
+    print(
+        f"  RED harder than GREEN:  {results['red_harder_than_green']}/{results['red_green_tested']} ({100*results['red_harder_than_green']/results['red_green_tested']:.1f}%)"
+    )
     print(f"  Violations:             {len(results['violations'])}")
 
     print("\n  Outcome distribution:")
@@ -296,7 +317,9 @@ def run_correctness_benchmarks() -> dict:
     print("\n  By maturity (scars -> tunnel rate):")
     for mk in sorted(results["by_maturity"].keys(), key=int):
         mr = results["by_maturity"][mk]
-        print(f"    {mk:2s} scars: mean_T={mr['mean_T']:.4f}  tunnel_rate={mr.get('tunnel_rate', 0):.3f}  n={mr['count']}")
+        print(
+            f"    {mk:2s} scars: mean_T={mr['mean_T']:.4f}  tunnel_rate={mr.get('tunnel_rate', 0):.3f}  n={mr['count']}"
+        )
 
     tp = results["tunnel_reachability_probe"]
     print(f"\n  TUNNEL reachability probe ({tp['probed_combinations']} optimal-phase combinations):")
@@ -325,6 +348,7 @@ def run_correctness_benchmarks() -> dict:
 # ===================================================================
 # SECTION 2: Comparison Benchmarks
 # ===================================================================
+
 
 def baseline_binary(d_H: float, threshold: float = BINARY_THRESHOLD) -> str:
     """Binary allow/deny: if d_H < threshold -> ALLOW, else DENY."""
@@ -377,14 +401,16 @@ def run_comparison_benchmarks() -> dict:
         n_scars = random.choice(SCAR_LEVELS)
         kernel = make_kernel(n_scars)
 
-        scenarios.append({
-            "d_H": d_H,
-            "phase": phase,
-            "zone": zone,
-            "n_scars": n_scars,
-            "kernel": kernel,
-            "adversarial": is_adversarial,
-        })
+        scenarios.append(
+            {
+                "d_H": d_H,
+                "phase": phase,
+                "zone": zone,
+                "n_scars": n_scars,
+                "kernel": kernel,
+                "adversarial": is_adversarial,
+            }
+        )
 
     # Run all systems on all scenarios
     baseline_results = {
@@ -443,11 +469,15 @@ def run_comparison_benchmarks() -> dict:
 
         # -- Phase tunnel --
         pt_outcome, pt_T, pt_mode = phase_tunnel_decision(
-            d_H, s["phase"], s["zone"], s["kernel"],
+            d_H,
+            s["phase"],
+            s["zone"],
+            s["kernel"],
         )
         baseline_results["phase_tunnel"]["t_values"].add(round(pt_T, 4))
-        baseline_results["phase_tunnel"]["outcomes"][pt_outcome] = \
+        baseline_results["phase_tunnel"]["outcomes"][pt_outcome] = (
             baseline_results["phase_tunnel"]["outcomes"].get(pt_outcome, 0) + 1
+        )
 
         # Phase tunnel classification: two modes
         # PERMISSIVE: ATTENUATE counts as "allowed" (partial info access)
@@ -587,20 +617,26 @@ def run_comparison_benchmarks() -> dict:
     print(f"\n  Scenarios: {n_total} total ({n_legit} legitimate, {n_adv} adversarial)")
 
     print("\n  Comparison table:")
-    print(f"  {'System':<16} {'FPR':>8} {'FNR':>8} {'Prec':>8} {'Recall':>8} {'F1':>8} {'Levels':>8} {'us/op':>8} {'ops/s':>10}")
+    print(
+        f"  {'System':<16} {'FPR':>8} {'FNR':>8} {'Prec':>8} {'Recall':>8} {'F1':>8} {'Levels':>8} {'us/op':>8} {'ops/s':>10}"
+    )
     print(f"  {'-'*16} {'-'*8} {'-'*8} {'-'*8} {'-'*8} {'-'*8} {'-'*8} {'-'*8} {'-'*10}")
     for name in ["binary", "linear", "harmonic_wall", "phase_tunnel"]:
         c = comparison[name]
-        print(f"  {name:<16} {c['false_positive_rate']:8.4f} {c['false_negative_rate']:8.4f} "
-              f"{c['precision']:8.4f} {c['recall']:8.4f} {c['f1_score']:8.4f} "
-              f"{c['distinct_decision_levels']:8d} {c['time_per_decision_us']:8.2f} {c['ops_per_second']:10d}")
+        print(
+            f"  {name:<16} {c['false_positive_rate']:8.4f} {c['false_negative_rate']:8.4f} "
+            f"{c['precision']:8.4f} {c['recall']:8.4f} {c['f1_score']:8.4f} "
+            f"{c['distinct_decision_levels']:8d} {c['time_per_decision_us']:8.2f} {c['ops_per_second']:10d}"
+        )
 
     # Strict mode
     if "strict_mode" in comparison["phase_tunnel"]:
         sm = comparison["phase_tunnel"]["strict_mode"]
         print(f"\n  Phase tunnel STRICT mode (ATTENUATE = blocked, only TUNNEL = allow):")
-        print(f"    FPR={sm['false_positive_rate']:.4f}  FNR={sm['false_negative_rate']:.4f}  "
-              f"Prec={sm['precision']:.4f}  Recall={sm['recall']:.4f}")
+        print(
+            f"    FPR={sm['false_positive_rate']:.4f}  FNR={sm['false_negative_rate']:.4f}  "
+            f"Prec={sm['precision']:.4f}  Recall={sm['recall']:.4f}"
+        )
 
     print(f"\n  Legitimate ops saved by phase tunnel (would have been blocked):")
     for k, v in phase_tunnel_saves.items():
@@ -643,6 +679,7 @@ def run_comparison_benchmarks() -> dict:
 # SECTION 3: Browser Application Benchmark
 # ===================================================================
 
+
 @dataclass
 class BrowserScenario:
     name: str
@@ -669,15 +706,17 @@ def generate_browser_scenarios() -> list[BrowserScenario]:
     ]
     for i in range(30):
         site = green_sites[i % len(green_sites)]
-        scenarios.append(BrowserScenario(
-            name=f"green_{i}",
-            url=site[0],
-            zone="GREEN",
-            d_H=random.uniform(0.05, 0.8),
-            intent="navigate",
-            legitimate=True,
-            description=site[1],
-        ))
+        scenarios.append(
+            BrowserScenario(
+                name=f"green_{i}",
+                url=site[0],
+                zone="GREEN",
+                d_H=random.uniform(0.05, 0.8),
+                intent="navigate",
+                legitimate=True,
+                description=site[1],
+            )
+        )
 
     # 30 YELLOW zone (social media, forums)
     yellow_sites = [
@@ -690,15 +729,17 @@ def generate_browser_scenarios() -> list[BrowserScenario]:
     ]
     for i in range(30):
         site = yellow_sites[i % len(yellow_sites)]
-        scenarios.append(BrowserScenario(
-            name=f"yellow_{i}",
-            url=site[0],
-            zone="YELLOW",
-            d_H=random.uniform(0.5, 2.5),
-            intent="navigate",
-            legitimate=True,
-            description=site[1],
-        ))
+        scenarios.append(
+            BrowserScenario(
+                name=f"yellow_{i}",
+                url=site[0],
+                zone="YELLOW",
+                d_H=random.uniform(0.5, 2.5),
+                intent="navigate",
+                legitimate=True,
+                description=site[1],
+            )
+        )
 
     # 20 RED zone (unknown domains)
     red_sites = [
@@ -711,28 +752,32 @@ def generate_browser_scenarios() -> list[BrowserScenario]:
     for i in range(20):
         site = red_sites[i % len(red_sites)]
         is_legit = i < 12  # 60% of RED navigations are legitimate
-        scenarios.append(BrowserScenario(
-            name=f"red_nav_{i}",
-            url=site[0],
-            zone="RED",
-            d_H=random.uniform(1.5, 6.0),
-            intent="navigate",
-            legitimate=is_legit,
-            description=site[1],
-        ))
+        scenarios.append(
+            BrowserScenario(
+                name=f"red_nav_{i}",
+                url=site[0],
+                zone="RED",
+                d_H=random.uniform(1.5, 6.0),
+                intent="navigate",
+                legitimate=is_legit,
+                description=site[1],
+            )
+        )
 
     # 20 RED zone "phase-read" attempts (preview without commit)
     for i in range(20):
         site = red_sites[i % len(red_sites)]
-        scenarios.append(BrowserScenario(
-            name=f"red_read_{i}",
-            url=site[0],
-            zone="RED",
-            d_H=random.uniform(1.0, 4.0),
-            intent="phase_read",
-            legitimate=True,  # phase reads are always legitimate (observation only)
-            description=f"Preview: {site[1]}",
-        ))
+        scenarios.append(
+            BrowserScenario(
+                name=f"red_read_{i}",
+                url=site[0],
+                zone="RED",
+                d_H=random.uniform(1.0, 4.0),
+                intent="phase_read",
+                legitimate=True,  # phase reads are always legitimate (observation only)
+                description=f"Preview: {site[1]}",
+            )
+        )
 
     return scenarios
 
@@ -857,16 +902,26 @@ def run_browser_benchmarks() -> dict:
         if z in results["by_zone"]:
             zr = results["by_zone"][z]
             t = zr["total"]
-            print(f"    {z}:  binary={zr['binary_useful']}/{t}  harmonic={zr['harmonic_useful']}/{t}  phase_tunnel={zr['pt_useful']}/{t}")
+            print(
+                f"    {z}:  binary={zr['binary_useful']}/{t}  harmonic={zr['harmonic_useful']}/{t}  phase_tunnel={zr['pt_useful']}/{t}"
+            )
 
     print("\n  Phase-read value (RED zone preview without commit):")
     pr = results["phase_read_value"]
     if pr["total_phase_reads"] > 0:
         print(f"    Total phase-read attempts: {pr['total_phase_reads']}")
-        print(f"    Binary allowed:            {pr['binary_allowed']} ({100*pr['binary_allowed']/pr['total_phase_reads']:.0f}%)")
-        print(f"    Harmonic wall allowed:     {pr['harmonic_allowed']} ({100*pr['harmonic_allowed']/pr['total_phase_reads']:.0f}%)")
-        print(f"    Phase tunnel allowed:      {pr['phase_tunnel_allowed']} ({100*pr['phase_tunnel_allowed']/pr['total_phase_reads']:.0f}%)")
-        print(f"    -> Phase tunnel provides {pr['phase_tunnel_allowed'] - pr['binary_allowed']} MORE preview opportunities than binary")
+        print(
+            f"    Binary allowed:            {pr['binary_allowed']} ({100*pr['binary_allowed']/pr['total_phase_reads']:.0f}%)"
+        )
+        print(
+            f"    Harmonic wall allowed:     {pr['harmonic_allowed']} ({100*pr['harmonic_allowed']/pr['total_phase_reads']:.0f}%)"
+        )
+        print(
+            f"    Phase tunnel allowed:      {pr['phase_tunnel_allowed']} ({100*pr['phase_tunnel_allowed']/pr['total_phase_reads']:.0f}%)"
+        )
+        print(
+            f"    -> Phase tunnel provides {pr['phase_tunnel_allowed'] - pr['binary_allowed']} MORE preview opportunities than binary"
+        )
 
     return results
 
@@ -874,6 +929,7 @@ def run_browser_benchmarks() -> dict:
 # ===================================================================
 # SECTION 4: Kernel Maturity Scaling
 # ===================================================================
+
 
 def run_maturity_benchmarks() -> dict:
     """Show how tunnel capability scales with kernel lifetime."""
@@ -891,7 +947,9 @@ def run_maturity_benchmarks() -> dict:
     results = {"tiers": {}, "davis_formula_comparison": {}}
 
     # For each maturity level, compute tunneling capability across zones and distances
-    print(f"\n  {'Maturity':<28} {'Zone':<8} {'d_H':<6} {'mean_T':<10} {'tunnel%':<10} {'commit%':<10} {'factorial':<14}")
+    print(
+        f"\n  {'Maturity':<28} {'Zone':<8} {'d_H':<6} {'mean_T':<10} {'tunnel%':<10} {'commit%':<10} {'factorial':<14}"
+    )
     print(f"  {'-'*28} {'-'*8} {'-'*6} {'-'*10} {'-'*10} {'-'*10} {'-'*14}")
 
     for n_scars in SCAR_LEVELS:
@@ -934,7 +992,9 @@ def run_maturity_benchmarks() -> dict:
 
                 fmat = kernel.factorial_maturity
                 fmat_str = f"{fmat:.0f}" if fmat < 1e6 else f"{fmat:.2e}"
-                print(f"  {label:<28} {zone:<8} {d_H:<6.1f} {mean_t:<10.4f} {100*tunnel_pct:<10.1f} {100*commit_pct:<10.1f} {fmat_str:<14}")
+                print(
+                    f"  {label:<28} {zone:<8} {d_H:<6.1f} {mean_t:<10.4f} {100*tunnel_pct:<10.1f} {100*commit_pct:<10.1f} {fmat_str:<14}"
+                )
 
             results["tiers"][str(n_scars)]["zones"][zone] = zone_results
 
@@ -982,6 +1042,7 @@ def run_maturity_benchmarks() -> dict:
 # ===================================================================
 # SECTION 5: Performance Benchmark
 # ===================================================================
+
 
 def run_performance_benchmarks() -> dict:
     """Time 10,000 calls for each system."""
@@ -1100,6 +1161,7 @@ def run_performance_benchmarks() -> dict:
 # ===================================================================
 # Main
 # ===================================================================
+
 
 def main():
     print("=" * 72)

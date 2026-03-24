@@ -96,9 +96,7 @@ class TestTimingAttackResistance:
 
         variation = (max_mean - min_mean) / min_mean
 
-        assert (
-            variation < 0.05
-        ), f"Timing variation {variation:.2%} exceeds 5% - not constant-time"
+        assert variation < 0.05, f"Timing variation {variation:.2%} exceeds 5% - not constant-time"
 
     @pytest.mark.skipif(not CRYPTO_AVAILABLE, reason="Crypto module not available")
     def test_constant_time_key_operations(self):
@@ -133,9 +131,7 @@ class TestTimingAttackResistance:
         # Coefficient of variation should be low (<10%)
         cv = stdev_time / mean_time
 
-        assert (
-            cv < 0.10
-        ), f"Decapsulation timing CV {cv:.2%} exceeds 10% - potential timing leak"
+        assert cv < 0.10, f"Decapsulation timing CV {cv:.2%} exceeds 10% - potential timing leak"
 
     @pytest.mark.skipif(not CRYPTO_AVAILABLE, reason="Crypto module not available")
     def test_hyperbolic_distance_timing(self):
@@ -242,9 +238,7 @@ class TestPowerAnalysisResistance:
 
         cv = stdev_ops / mean_ops
 
-        assert (
-            cv < 0.05
-        ), f"Operation count CV {cv:.2%} exceeds 5% - potential power leak"
+        assert cv < 0.05, f"Operation count CV {cv:.2%} exceeds 5% - potential power leak"
 
     @pytest.mark.skipif(not CRYPTO_AVAILABLE, reason="Crypto module not available")
     def test_no_conditional_branches_on_secrets(self):
@@ -305,9 +299,7 @@ class TestCacheTimingResistance:
 
         variation = (max_time - min_time) / min_time
 
-        assert (
-            variation < 0.10
-        ), f"Memory access timing variation {variation:.2%} exceeds 10% - cache leak"
+        assert variation < 0.10, f"Memory access timing variation {variation:.2%} exceeds 10% - cache leak"
 
     @pytest.mark.skipif(not CRYPTO_AVAILABLE, reason="Crypto module not available")
     def test_no_secret_dependent_addressing(self):
@@ -355,9 +347,7 @@ class TestFaultInjectionResistance:
         faulty_signature = bytes(faulty_signature)
 
         # Verification with fault detection
-        result = pqc_core.mldsa65_verify_with_fault_detection(
-            message, faulty_signature, pk
-        )
+        result = pqc_core.mldsa65_verify_with_fault_detection(message, faulty_signature, pk)
 
         assert result["valid"] is False, "Faulty signature passed verification"
         assert result["fault_detected"] is True, "Fault not detected"

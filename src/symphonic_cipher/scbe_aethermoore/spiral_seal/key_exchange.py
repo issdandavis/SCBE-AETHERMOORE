@@ -157,12 +157,8 @@ def get_pqc_status() -> dict:
         "available": PQC_AVAILABLE,
         "backend": PQC_BACKEND,
         "algorithm": "Kyber768",
-        "security_level": (
-            "NIST Level 3 (~AES-192)" if PQC_AVAILABLE else "FALLBACK (NOT PQ-SECURE)"
-        ),
+        "security_level": ("NIST Level 3 (~AES-192)" if PQC_AVAILABLE else "FALLBACK (NOT PQ-SECURE)"),
         "warning": (
-            None
-            if PQC_AVAILABLE
-            else "Using classical fallback! Install liboqs-python for post-quantum security."
+            None if PQC_AVAILABLE else "Using classical fallback! Install liboqs-python for post-quantum security."
         ),
     }

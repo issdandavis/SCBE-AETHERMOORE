@@ -48,21 +48,21 @@ DIM = 6  # 6D tongue-space (KO, AV, RU, CA, UM, DR)
 # Sacred Tongue weights (phi-scaled)
 TONGUE_WEIGHTS = {
     "KO": 1.0,
-    "AV": PHI ** 1,
-    "RU": PHI ** 2,
-    "CA": PHI ** 3,
-    "UM": PHI ** 4,
-    "DR": PHI ** 5,
+    "AV": PHI**1,
+    "RU": PHI**2,
+    "CA": PHI**3,
+    "UM": PHI**4,
+    "DR": PHI**5,
 }
 
 # Default personality facets with tongue alignments
 DEFAULT_FACETS = {
-    "curiosity":  {"tongue": "KO", "desc": "Explorer's drive, flow of discovery"},
-    "empathy":    {"tongue": "AV", "desc": "Emotional understanding, context reading"},
-    "wisdom":     {"tongue": "RU", "desc": "Deep knowledge, ancestral memory"},
-    "wit":        {"tongue": "CA", "desc": "Humor, wordplay, computational cleverness"},
-    "vigilance":  {"tongue": "UM", "desc": "Protective caution, threat awareness"},
-    "resolve":    {"tongue": "DR", "desc": "Structural integrity, mission commitment"},
+    "curiosity": {"tongue": "KO", "desc": "Explorer's drive, flow of discovery"},
+    "empathy": {"tongue": "AV", "desc": "Emotional understanding, context reading"},
+    "wisdom": {"tongue": "RU", "desc": "Deep knowledge, ancestral memory"},
+    "wit": {"tongue": "CA", "desc": "Humor, wordplay, computational cleverness"},
+    "vigilance": {"tongue": "UM", "desc": "Protective caution, threat awareness"},
+    "resolve": {"tongue": "DR", "desc": "Structural integrity, mission commitment"},
 }
 
 
@@ -80,8 +80,8 @@ def _hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
     d_H = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2)))
     """
     diff_sq = float(np.sum((u - v) ** 2))
-    u_sq = float(np.sum(u ** 2))
-    v_sq = float(np.sum(v ** 2))
+    u_sq = float(np.sum(u**2))
+    v_sq = float(np.sum(v**2))
     denom = (1 - u_sq) * (1 - v_sq)
     if denom <= 0:
         return 30.0  # Boundary = infinite cost
@@ -96,8 +96,8 @@ def _mobius_add(a: np.ndarray, b: np.ndarray) -> np.ndarray:
               (1 + 2<a,b> + ||a||^2 * ||b||^2)
     """
     a_dot_b = float(np.dot(a, b))
-    a_sq = float(np.sum(a ** 2))
-    b_sq = float(np.sum(b ** 2))
+    a_sq = float(np.sum(a**2))
+    b_sq = float(np.sum(b**2))
     denom = 1 + 2 * a_dot_b + a_sq * b_sq
     if abs(denom) < 1e-10:
         return _poincare_project(a)
@@ -154,6 +154,7 @@ class PersonalityFacet:
 @dataclass
 class PropagationEvent:
     """Record of personality propagation for training data."""
+
     source_facet: str
     target_facet: str
     strength: float
@@ -197,7 +198,12 @@ class PersonalityManifold:
     def _init_facets(self, facet_defs: Dict[str, Dict[str, str]]) -> None:
         """Initialize personality facets with tongue-aligned positions."""
         tongue_axes = {
-            "KO": 0, "AV": 1, "RU": 2, "CA": 3, "UM": 4, "DR": 5,
+            "KO": 0,
+            "AV": 1,
+            "RU": 2,
+            "CA": 3,
+            "UM": 4,
+            "DR": 5,
         }
 
         for name, info in facet_defs.items():
@@ -287,7 +293,8 @@ class PersonalityManifold:
         if rho_e >= self.rho_e_threshold:
             logger.warning(
                 "L12 personality propagation blocked: rho_e=%.2f >= %.2f",
-                rho_e, self.rho_e_threshold,
+                rho_e,
+                self.rho_e_threshold,
             )
             return self.get_activations()
 
@@ -300,27 +307,27 @@ class PersonalityManifold:
             # Propagation strength = connection_weight * bridge_strengths * decay
             source_bridge = primary.compute_bridge()
             target_bridge = target.compute_bridge()
-            prop_strength = (
-                weight
-                * source_bridge
-                * target_bridge
-                * self.propagation_decay
-                * intensity
-            )
+            prop_strength = weight * source_bridge * target_bridge * self.propagation_decay * intensity
 
             # Update target activation (additive, clamped)
             target.activation = min(1.0, target.activation * 0.7 + prop_strength * 0.3)
 
-            self.history.append(PropagationEvent(
-                source_facet=facet_name,
-                target_facet=target_name,
-                strength=prop_strength,
-                context=context,
-            ))
+            self.history.append(
+                PropagationEvent(
+                    source_facet=facet_name,
+                    target_facet=target_name,
+                    strength=prop_strength,
+                    context=context,
+                )
+            )
 
             logger.debug(
                 "Propagated %s -> %s: strength=%.3f (bridge_s=%.3f, bridge_t=%.3f)",
-                facet_name, target_name, prop_strength, source_bridge, target_bridge,
+                facet_name,
+                target_name,
+                prop_strength,
+                source_bridge,
+                target_bridge,
             )
 
         return self.get_activations()
@@ -387,8 +394,7 @@ class PersonalityManifold:
         Returns something like: "[curiosity:0.8|wisdom:0.6|wit:0.3]"
         """
         active = sorted(
-            [(name, f.activation) for name, f in self.facets.items()
-             if f.activation > 0.2],
+            [(name, f.activation) for name, f in self.facets.items() if f.activation > 0.2],
             key=lambda x: -x[1],
         )
         if not active:
@@ -401,9 +407,7 @@ class PersonalityManifold:
         return {
             "facets": {name: f.to_dict() for name, f in self.facets.items()},
             "personality_tag": self.get_personality_tag(),
-            "personality_vector_norm": round(
-                float(np.linalg.norm(self.get_personality_vector())), 4
-            ),
+            "personality_vector_norm": round(float(np.linalg.norm(self.get_personality_vector())), 4),
             "total_propagation_events": len(self.history),
         }
 
@@ -420,8 +424,11 @@ class PersonalityManifold:
 
         # Get top active facets for description
         active = sorted(
-            [(f.name, f.activation, f.description, f.bridge_strength)
-             for f in self.facets.values() if f.activation > 0.2],
+            [
+                (f.name, f.activation, f.description, f.bridge_strength)
+                for f in self.facets.values()
+                if f.activation > 0.2
+            ],
             key=lambda x: -x[1],
         )
 
@@ -450,12 +457,14 @@ class PersonalityManifold:
         """Export propagation history as training-format records."""
         records = []
         for event in self.history:
-            records.append({
-                "type": "personality_propagation",
-                "source": event.source_facet,
-                "target": event.target_facet,
-                "strength": round(event.strength, 4),
-                "context": event.context,
-            })
+            records.append(
+                {
+                    "type": "personality_propagation",
+                    "source": event.source_facet,
+                    "target": event.target_facet,
+                    "strength": round(event.strength, 4),
+                    "context": event.context,
+                }
+            )
         self.history.clear()
         return records

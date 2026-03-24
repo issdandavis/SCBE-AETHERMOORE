@@ -36,8 +36,10 @@ from src.kernel.agentic_sphere_grid import AgenticSphereGrid
 SEP = "=" * 70
 SUBSEP = "-" * 50
 
+
 def header(text):
     print(f"\n{SEP}\n{text}\n{SEP}")
+
 
 def subheader(text):
     print(f"\n{SUBSEP}\n{text}\n{SUBSEP}")
@@ -91,8 +93,7 @@ def main():
         elapsed = (time.time() - t0) * 1000
 
         has_relevant = any(
-            any(kw.lower() in r.title.lower() or kw.lower() in r.content[:300].lower()
-                for kw in expected_keywords)
+            any(kw.lower() in r.title.lower() or kw.lower() in r.content[:300].lower() for kw in expected_keywords)
             for r in results
         )
 
@@ -101,7 +102,7 @@ def main():
         check(
             f"RAG: '{query[:50]}...'",
             has_relevant and len(results) > 0,
-            f"top='{top_title}' trust={top_trust:.3f} ({elapsed:.1f}ms)"
+            f"top='{top_title}' trust={top_trust:.3f} ({elapsed:.1f}ms)",
         )
 
     # =====================================================================
@@ -113,11 +114,7 @@ def main():
     octree_results = grid.query_octree("code generation and testing", top_k=5)
     elapsed = (time.time() - t0) * 1000
 
-    check(
-        "Octree returns results",
-        len(octree_results) > 0,
-        f"{len(octree_results)} results in {elapsed:.1f}ms"
-    )
+    check("Octree returns results", len(octree_results) > 0, f"{len(octree_results)} results in {elapsed:.1f}ms")
     if octree_results:
         for r in octree_results[:3]:
             print(f"    [{r.tongue}] {r.title} (trust={r.trust_score:.3f}, dist={r.distance:.4f})")
@@ -131,15 +128,11 @@ def main():
     fused = grid.query_multi_method("How do agents grow through computational necessity?", top_k=5)
     elapsed = (time.time() - t0) * 1000
 
-    check(
-        "Fused retrieval returns results",
-        len(fused) > 0,
-        f"{len(fused)} results in {elapsed:.1f}ms"
-    )
+    check("Fused retrieval returns results", len(fused) > 0, f"{len(fused)} results in {elapsed:.1f}ms")
     check(
         "Fused results are deduplicated",
         len(set(r.doc_id for r in fused)) == len(fused),
-        f"{len(fused)} unique doc IDs"
+        f"{len(fused)} unique doc IDs",
     )
 
     print("  Top 5 fused results:")
@@ -154,11 +147,7 @@ def main():
     for tongue in ["CA", "UM", "DR"]:
         results = grid.query_rag("skill patterns and training", top_k=3, tongue_filter=tongue)
         all_match = all(r.tongue == tongue for r in results)
-        check(
-            f"Tongue filter {tongue}",
-            all_match and len(results) > 0,
-            f"{len(results)} results, all tongue={tongue}"
-        )
+        check(f"Tongue filter {tongue}", all_match and len(results) > 0, f"{len(results)} results, all tongue={tongue}")
 
     # =====================================================================
     # TEST 5: Memory Layer Tests
@@ -167,32 +156,27 @@ def main():
 
     # Check session memory (most docs should be here)
     session_docs = grid.query_memory("session", limit=5)
-    check(
-        "Session memory populated",
-        len(session_docs) > 0,
-        f"{len(session_docs)} docs in session layer"
-    )
+    check("Session memory populated", len(session_docs) > 0, f"{len(session_docs)} docs in session layer")
 
     # Check identity memory (concepts + MOC)
     identity_docs = grid.query_memory("identity")
-    check(
-        "Identity memory has concepts",
-        len(identity_docs) > 0,
-        f"{len(identity_docs)} permanent docs"
-    )
+    check("Identity memory has concepts", len(identity_docs) > 0, f"{len(identity_docs)} permanent docs")
 
     # Store and retrieve a custom memory
     grid.store(
-        "test_reflex_1", "Attack Pattern: SQL Injection",
+        "test_reflex_1",
+        "Attack Pattern: SQL Injection",
         "DROP TABLE; --; SELECT * FROM users WHERE 1=1",
-        tongue="UM", tier=2, doc_type="immune",
-        memory_layer="immune"
+        tongue="UM",
+        tier=2,
+        doc_type="immune",
+        memory_layer="immune",
     )
     immune_docs = grid.query_memory("immune")
     check(
         "Immune memory stores attack patterns",
         len(immune_docs) == 1 and "SQL" in immune_docs[0].title,
-        f"stored: '{immune_docs[0].title}'"
+        f"stored: '{immune_docs[0].title}'",
     )
 
     # =====================================================================
@@ -202,18 +186,12 @@ def main():
 
     # All CA skills
     ca_skills = grid.query_hierarchy(tongue="CA", doc_type="skill-sphere")
-    check(
-        "CA skill spheres",
-        len(ca_skills) == 4,
-        f"found {len(ca_skills)} (expected 4: T1-T4)"
-    )
+    check("CA skill spheres", len(ca_skills) == 4, f"found {len(ca_skills)} (expected 4: T1-T4)")
 
     # All tier 1 skills across all tongues
     t1_skills = grid.query_hierarchy(tier=1, doc_type="skill-sphere")
     check(
-        "Tier 1 skills across all tongues",
-        len(t1_skills) == 6,
-        f"found {len(t1_skills)} (expected 6: one per tongue)"
+        "Tier 1 skills across all tongues", len(t1_skills) == 6, f"found {len(t1_skills)} (expected 6: one per tongue)"
     )
 
     # Training data notes
@@ -221,7 +199,7 @@ def main():
     check(
         "Training data notes",
         len(training_notes) == 24,
-        f"found {len(training_notes)} (expected 24: one per skill sphere)"
+        f"found {len(training_notes)} (expected 24: one per skill sphere)",
     )
 
     # =====================================================================
@@ -247,7 +225,7 @@ def main():
         check(
             f"Agent {agent_id} retrieves {expected_tongue} content",
             len(results) > 0 and all(r.tongue == expected_tongue for r in results),
-            f"top='{results[0].title}'" if results else "no results"
+            f"top='{results[0].title}'" if results else "no results",
         )
 
         # Agent earns AP from the query (simulating work)
@@ -257,11 +235,7 @@ def main():
     # Check agent growth
     for agent_id in agent_queries:
         state = sphere.agents[agent_id]
-        check(
-            f"Agent {agent_id} earned AP",
-            state.ap_lifetime > 0,
-            f"AP={state.ap_lifetime:.1f}"
-        )
+        check(f"Agent {agent_id} earned AP", state.ap_lifetime > 0, f"AP={state.ap_lifetime:.1f}")
 
     # =====================================================================
     # TEST 8: Hash Chain Verification
@@ -269,11 +243,7 @@ def main():
     subheader("TEST 8: Hash Chain Verification")
 
     chain_ok = grid.verify_chain()
-    check(
-        "Hash chain intact",
-        chain_ok,
-        f"{len(grid.documents)} documents, all hashes unique"
-    )
+    check("Hash chain intact", chain_ok, f"{len(grid.documents)} documents, all hashes unique")
 
     # =====================================================================
     # TEST 9: Grid Statistics
@@ -311,7 +281,7 @@ def main():
         check(
             "HF generation produced output",
             len(answer) > 20 and "[" not in answer[:5],  # Not an error message
-            f"{len(answer)} chars in {gen_time:.1f}s"
+            f"{len(answer)} chars in {gen_time:.1f}s",
         )
         print(f"\n  GENERATED ANSWER:\n  {answer[:500]}")
     else:

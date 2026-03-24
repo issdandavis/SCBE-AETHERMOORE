@@ -6,6 +6,7 @@ from src.aetherbrowser.provider_executor import ProviderExecutionResult
 
 client = TestClient(serve_module.app)
 
+
 class TestHealthEndpoint:
     def test_health_returns_ok(self):
         r = client.get("/health")
@@ -22,6 +23,7 @@ class TestHealthEndpoint:
         r = client.get("/health")
         data = r.json()
         assert len(data["agents"]) == 6
+
 
 class TestWebSocket:
     def test_ws_connect_and_command(self):
@@ -40,18 +42,23 @@ class TestWebSocket:
         with client.websocket_connect("/ws") as ws:
             ws.send_json({"type": "command", "agent": "user", "payload": {"text": "Hello"}})
             messages = [ws.receive_json() for _ in range(7)]
-            assert any(msg["type"] == "chat" and msg["payload"].get("execution", {}).get("model_id") == "test-local" for msg in messages)
+            assert any(
+                msg["type"] == "chat" and msg["payload"].get("execution", {}).get("model_id") == "test-local"
+                for msg in messages
+            )
             assert any(msg["type"] == "agent_status" and msg["payload"]["state"] == "done" for msg in messages)
         serve_module.executor = original
 
     def test_ws_high_risk_command_requests_zone_approval(self):
         serve_module.pending_zone_requests.clear()
         with client.websocket_connect("/ws") as ws:
-            ws.send_json({
-                "type": "command",
-                "agent": "user",
-                "payload": {"text": "Open the browser tab, fill the login form, and submit it"},
-            })
+            ws.send_json(
+                {
+                    "type": "command",
+                    "agent": "user",
+                    "payload": {"text": "Open the browser tab, fill the login form, and submit it"},
+                }
+            )
             messages = [ws.receive_json() for _ in range(4)]
             assert messages[0]["type"] == "agent_status"
             assert messages[1]["type"] == "chat"
@@ -63,15 +70,17 @@ class TestWebSocket:
 
     def test_ws_page_context(self):
         with client.websocket_connect("/ws") as ws:
-            ws.send_json({
-                "type": "page_context",
-                "agent": "user",
-                "payload": {
-                    "url": "https://example.com",
-                    "title": "Example",
-                    "text": "This is a test page about AI safety and governance.",
-                },
-            })
+            ws.send_json(
+                {
+                    "type": "page_context",
+                    "agent": "user",
+                    "payload": {
+                        "url": "https://example.com",
+                        "title": "Example",
+                        "text": "This is a test page about AI safety and governance.",
+                    },
+                }
+            )
             response = ws.receive_json()
             assert response["type"] in ("chat", "agent_status")
 

@@ -156,10 +156,15 @@ class TestManifest:
         assert any("Manifest hash mismatch" in e for e in errors)
 
     def test_verify_detects_missing_file(self):
-        docs = [{"id": "fake", "filename": "nonexistent.md",
-                 "content_hash": "sha256:" + "0" * 64,
-                 "category": "reference", "verification": {"status": "unverified",
-                 "consensus_required": 3, "verified_by": []}}]
+        docs = [
+            {
+                "id": "fake",
+                "filename": "nonexistent.md",
+                "content_hash": "sha256:" + "0" * 64,
+                "category": "reference",
+                "verification": {"status": "unverified", "consensus_required": 3, "verified_by": []},
+            }
+        ]
         manifest = build_manifest(docs)
         errors = verify_manifest(manifest)
         assert any("Missing file" in e for e in errors)

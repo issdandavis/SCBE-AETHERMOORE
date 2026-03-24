@@ -462,9 +462,7 @@ class PQCManager:
         encrypted_payload = bytes(a ^ b for a, b in zip(payload, expanded_key))
 
         # Sign the envelope contents (Claim 3)
-        sign_data = (
-            kem_ciphertext + context_commitment + intent_fingerprint + encrypted_payload
-        )
+        sign_data = kem_ciphertext + context_commitment + intent_fingerprint + encrypted_payload
         signature = self.sig.sign(sender_sig_secret, sign_data)
 
         envelope = PQCEnvelope(
@@ -496,10 +494,7 @@ class PQCManager:
         """
         # Verify signature first (Claim 3)
         sign_data = (
-            envelope.kem_ciphertext
-            + envelope.context_commitment
-            + envelope.intent_fingerprint
-            + envelope.payload
+            envelope.kem_ciphertext + envelope.context_commitment + envelope.intent_fingerprint + envelope.payload
         )
 
         if not self.sig.verify(sender_sig_public, sign_data, envelope.signature):
@@ -617,13 +612,9 @@ def self_test() -> Dict[str, Any]:
         context = hashlib.sha256(b"context").digest()
         intent = hashlib.sha256(b"intent").digest()
 
-        envelope, ss = manager.create_envelope(
-            keypair.kem_public, keypair.sig_secret, payload, context, intent
-        )
+        envelope, ss = manager.create_envelope(keypair.kem_public, keypair.sig_secret, payload, context, intent)
 
-        decrypted, _ = manager.open_envelope(
-            envelope, keypair.kem_secret, keypair.sig_public
-        )
+        decrypted, _ = manager.open_envelope(envelope, keypair.kem_secret, keypair.sig_public)
 
         if decrypted == payload:
             passed += 1
@@ -640,9 +631,7 @@ def self_test() -> Dict[str, Any]:
         algos = manager.algorithms
         if "kem" in algos and "signature" in algos:
             passed += 1
-            results["algorithm_names"] = (
-                f"✓ PASS (KEM={algos['kem']}, Sig={algos['signature']})"
-            )
+            results["algorithm_names"] = f"✓ PASS (KEM={algos['kem']}, Sig={algos['signature']})"
         else:
             results["algorithm_names"] = "✗ FAIL (missing algorithm info)"
     except Exception as e:

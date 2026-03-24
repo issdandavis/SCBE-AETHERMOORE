@@ -101,14 +101,16 @@ def run_sweep(
                 print(f"    SKIP mode={mode}: {exc}")
                 continue
 
-            results.append({
-                "prompt_key": prompt_key,
-                "prompt_text": prompt_text,
-                "mode": mode,
-                "sequence_length": seq_len,
-                "total_layers": n_layers,
-                "analysis": analysis,
-            })
+            results.append(
+                {
+                    "prompt_key": prompt_key,
+                    "prompt_text": prompt_text,
+                    "mode": mode,
+                    "sequence_length": seq_len,
+                    "total_layers": n_layers,
+                    "analysis": analysis,
+                }
+            )
 
     # Aggregate across semantic vs control prompts
     semantic_s_specs = []
@@ -204,7 +206,9 @@ def main() -> int:
     parser.add_argument("--model-id", default=DEFAULT_MODEL_ID)
     parser.add_argument("--max-layers", type=int, default=None, help="Limit layers (None = all)")
     parser.add_argument("--max-heads", type=int, default=None, help="Limit heads per layer (None = all)")
-    parser.add_argument("--output", default="", help="Output JSON path (default: artifacts/attention_fft/sweep_report.json)")
+    parser.add_argument(
+        "--output", default="", help="Output JSON path (default: artifacts/attention_fft/sweep_report.json)"
+    )
     args = parser.parse_args()
 
     report = run_sweep(
@@ -214,7 +218,10 @@ def main() -> int:
     )
 
     output_path = args.output or str(
-        PROJECT_ROOT / "artifacts" / "attention_fft" / f"sweep-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.json"
+        PROJECT_ROOT
+        / "artifacts"
+        / "attention_fft"
+        / f"sweep-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.json"
     )
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     Path(output_path).write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -226,7 +233,9 @@ def main() -> int:
     if report["layer_summary"]:
         print(f"  Layers analyzed: {len(report['layer_summary'])}")
         for layer_key, stats in report["layer_summary"].items():
-            print(f"    {layer_key}: mean={stats['mean_s_spec']:.4f} std={stats['std_s_spec']:.4f} range=[{stats['min_s_spec']:.4f}, {stats['max_s_spec']:.4f}]")
+            print(
+                f"    {layer_key}: mean={stats['mean_s_spec']:.4f} std={stats['std_s_spec']:.4f} range=[{stats['min_s_spec']:.4f}, {stats['max_s_spec']:.4f}]"
+            )
 
     return 0
 

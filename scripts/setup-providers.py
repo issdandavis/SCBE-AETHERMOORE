@@ -62,12 +62,14 @@ ENV_EXAMPLE = Path(__file__).parent / ".env.example"
 
 
 def print_banner():
-    print("""
+    print(
+        """
 ╔═══════════════════════════════════════════════════════════╗
 ║        SCBE-AETHERMOORE Provider Setup                    ║
 ║        One-click configuration for AI providers           ║
 ╚═══════════════════════════════════════════════════════════╝
-    """)
+    """
+    )
 
 
 def load_env():
@@ -113,9 +115,14 @@ def save_env(env):
 
     # Other config (preserve existing)
     other_keys = [
-        "SCBE_ENV", "SCBE_KMS_KID", "SCBE_KMS_URI",
-        "REDIS_URL", "REDIS_PASSWORD",
-        "SCBE_METRICS_BACKEND", "SCBE_API_KEYS", "SCBE_CORS_ORIGINS"
+        "SCBE_ENV",
+        "SCBE_KMS_KID",
+        "SCBE_KMS_URI",
+        "REDIS_URL",
+        "REDIS_PASSWORD",
+        "SCBE_METRICS_BACKEND",
+        "SCBE_API_KEYS",
+        "SCBE_CORS_ORIGINS",
     ]
     has_other = False
     for key in other_keys:

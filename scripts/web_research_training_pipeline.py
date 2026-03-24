@@ -207,9 +207,7 @@ def build_training_rows(
         sha256 = str(content.get("sha256", "") or "")
         length = int(content.get("length", 0) or 0)
         matrix = row.get("matrix", {}) if isinstance(row.get("matrix"), dict) else {}
-        matrix_decision = (
-            matrix.get("decision", {}) if isinstance(matrix.get("decision"), dict) else {}
-        )
+        matrix_decision = matrix.get("decision", {}) if isinstance(matrix.get("decision"), dict) else {}
         matrix_conf = float(matrix_decision.get("confidence", row.get("decision_confidence", 0.0)) or 0.0)
 
         training_row = {
@@ -231,9 +229,7 @@ def build_training_rows(
         }
 
         unsafe = (
-            decision in {"DENY", "QUARANTINE"}
-            or threat_verdict in {"SUSPICIOUS", "MALICIOUS"}
-            or threat_risk >= 0.55
+            decision in {"DENY", "QUARANTINE"} or threat_verdict in {"SUSPICIOUS", "MALICIOUS"} or threat_risk >= 0.55
         )
         if unsafe:
             quarantine.append(training_row)

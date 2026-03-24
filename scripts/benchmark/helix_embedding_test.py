@@ -26,6 +26,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 
 import sys
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 PHI = (1 + math.sqrt(5)) / 2
@@ -56,6 +57,7 @@ def text_features(text: str) -> Dict[str, float]:
 # Method 1: Flat 64D (standard embedding)
 # ═══════════════════════════════════════════════════════════
 
+
 def embed_flat64(text: str) -> np.ndarray:
     vec = np.zeros(64, dtype=np.float64)
     tokens = [t.strip(".,;:!?") for t in text.lower().split() if t.strip(".,;:!?")]
@@ -76,16 +78,19 @@ def embed_flat64(text: str) -> np.ndarray:
 # Method 2: Separated (64D + 6D, combined at distance time)
 # ═══════════════════════════════════════════════════════════
 
+
 def tongue_coords(text: str) -> np.ndarray:
     feats = text_features(text)
-    return np.array([
-        min(1.0, 0.2 + 0.4 * feats["upper_ratio"] * 5),
-        min(1.0, feats["word_count"] / 100.0),
-        min(1.0, feats["unique_ratio"]),
-        min(1.0, feats["digit_ratio"] * 10),
-        min(1.0, feats["upper_ratio"] * 5),
-        min(1.0, feats["punct_ratio"] * 8),
-    ])
+    return np.array(
+        [
+            min(1.0, 0.2 + 0.4 * feats["upper_ratio"] * 5),
+            min(1.0, feats["word_count"] / 100.0),
+            min(1.0, feats["unique_ratio"]),
+            min(1.0, feats["digit_ratio"] * 10),
+            min(1.0, feats["upper_ratio"] * 5),
+            min(1.0, feats["punct_ratio"] * 8),
+        ]
+    )
 
 
 def embed_separated(text: str) -> Tuple[np.ndarray, np.ndarray]:
@@ -95,6 +100,7 @@ def embed_separated(text: str) -> Tuple[np.ndarray, np.ndarray]:
 # ═══════════════════════════════════════════════════════════
 # Method 3: HELIX — 6D tongue field MODULATES the 64D core
 # ═══════════════════════════════════════════════════════════
+
 
 def embed_helix(text: str) -> np.ndarray:
     """6D tongue wraps around 64D core like DNA around a protein.
@@ -128,7 +134,7 @@ def embed_helix(text: str) -> np.ndarray:
         for d in range(start, end):
             # Spiral phase: position on the helix determines sign
             helix_phase = math.sin(2 * PI * d / 64 * PHI + t * PI / 3)
-            modulated[d] *= (1.0 + 0.3 * strength * helix_phase)
+            modulated[d] *= 1.0 + 0.3 * strength * helix_phase
 
     # Normalize
     norm = np.linalg.norm(modulated)
@@ -138,6 +144,7 @@ def embed_helix(text: str) -> np.ndarray:
 # ═══════════════════════════════════════════════════════════
 # Distance functions
 # ═══════════════════════════════════════════════════════════
+
 
 def dist_cosine(a: np.ndarray, b: np.ndarray) -> float:
     cos = float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-10))

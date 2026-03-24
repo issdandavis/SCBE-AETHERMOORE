@@ -38,18 +38,19 @@ from typing import Any, Dict, List, Literal, Optional
 TONGUE_NAMES: List[str] = ["KO", "AV", "RU", "CA", "UM", "DR"]
 
 TONGUE_ROLES: Dict[str, str] = {
-    "KO": "intent",          # flow orientation — intent analysis
-    "AV": "creative",        # boundary condition — creative/narrative
-    "RU": "security",        # constraint field — security/audit
-    "CA": "compute",         # active operator — compute/optimisation
-    "UM": "governance",      # entropic sink — governance/policy
-    "DR": "architecture",    # structural tensor — structure/architecture
+    "KO": "intent",  # flow orientation — intent analysis
+    "AV": "creative",  # boundary condition — creative/narrative
+    "RU": "security",  # constraint field — security/audit
+    "CA": "compute",  # active operator — compute/optimisation
+    "UM": "governance",  # entropic sink — governance/policy
+    "DR": "architecture",  # structural tensor — structure/architecture
 }
 
 
 # ═══════════════════════════════════════════════════════════════
 # Enums & Data Classes
 # ═══════════════════════════════════════════════════════════════
+
 
 class ModelProvider(str, Enum):
     """Supported LLM backend providers."""
@@ -72,10 +73,10 @@ class ModelConfig:
 
     provider: ModelProvider
     model_id: str
-    api_key_env: str = ""        # env-var name (never the raw key)
+    api_key_env: str = ""  # env-var name (never the raw key)
     temperature: float = 0.7
     max_tokens: int = 1024
-    role: str = "general"        # e.g. "reasoner", "coder", "critic", "researcher"
+    role: str = "general"  # e.g. "reasoner", "coder", "critic", "researcher"
 
     @property
     def api_key(self) -> Optional[str]:
@@ -90,7 +91,7 @@ class ModelNode:
     """A single tongue-aligned node hosting one or more models."""
 
     node_id: str
-    tongue: str                          # KO / AV / RU / CA / UM / DR
+    tongue: str  # KO / AV / RU / CA / UM / DR
     models: List[ModelConfig] = field(default_factory=list)
     consensus_strategy: ConsensusStrategy = "majority"
 
@@ -105,7 +106,7 @@ class NodeBundle:
 
     bundle_id: str
     nodes: List[ModelNode] = field(default_factory=list)
-    cohesion_score: float = 0.0          # [0, 1]
+    cohesion_score: float = 0.0  # [0, 1]
     interaction_count: int = 0
     history: List[Dict[str, Any]] = field(default_factory=list)
 
@@ -113,6 +114,7 @@ class NodeBundle:
 # ═══════════════════════════════════════════════════════════════
 # Provider Adapters
 # ═══════════════════════════════════════════════════════════════
+
 
 async def _call_claude(config: ModelConfig, prompt: str, context: Optional[str] = None) -> str:
     """Query Anthropic Claude. Falls back to mock if SDK unavailable."""
@@ -174,15 +176,17 @@ async def _call_ollama(config: ModelConfig, prompt: str, context: Optional[str] 
     try:
         import urllib.request
 
-        payload = json.dumps({
-            "model": config.model_id,
-            "prompt": f"{context}\n\n{prompt}" if context else prompt,
-            "stream": False,
-            "options": {
-                "temperature": config.temperature,
-                "num_predict": config.max_tokens,
-            },
-        }).encode()
+        payload = json.dumps(
+            {
+                "model": config.model_id,
+                "prompt": f"{context}\n\n{prompt}" if context else prompt,
+                "stream": False,
+                "options": {
+                    "temperature": config.temperature,
+                    "num_predict": config.max_tokens,
+                },
+            }
+        ).encode()
 
         req = urllib.request.Request(
             "http://localhost:11434/api/generate",
@@ -243,8 +247,8 @@ def _mock(provider: str, config: ModelConfig, prompt: str, *, note: str = "") ->
 _PROVIDER_DISPATCH = {
     ModelProvider.CLAUDE: _call_claude,
     ModelProvider.GEMINI: _call_gemini,
-    ModelProvider.LLAMA: _call_ollama,      # Llama via Ollama
-    ModelProvider.MISTRAL: _call_ollama,    # Mistral via Ollama
+    ModelProvider.LLAMA: _call_ollama,  # Llama via Ollama
+    ModelProvider.MISTRAL: _call_ollama,  # Mistral via Ollama
     ModelProvider.HUGGINGFACE: _call_huggingface,
     ModelProvider.LOCAL: _call_local,
     ModelProvider.OLLAMA: _call_ollama,
@@ -254,6 +258,7 @@ _PROVIDER_DISPATCH = {
 # ═══════════════════════════════════════════════════════════════
 # Consensus Strategies
 # ═══════════════════════════════════════════════════════════════
+
 
 def _consensus_majority(responses: List[str]) -> str:
     """Pick the most common response. Ties go to the first seen."""
@@ -301,6 +306,7 @@ _CONSENSUS = {
 # ═══════════════════════════════════════════════════════════════
 # ModelMatrix
 # ═══════════════════════════════════════════════════════════════
+
 
 class ModelMatrix:
     """Top-level orchestrator for multi-model, multi-node bundles.
@@ -399,17 +405,12 @@ class ModelMatrix:
             raise KeyError(f"Unknown bundle: {bundle_id}")
 
         # Query all nodes concurrently
-        node_tasks = [
-            self.query_node(n.node_id, prompt, context)
-            for n in bundle.nodes
-        ]
+        node_tasks = [self.query_node(n.node_id, prompt, context) for n in bundle.nodes]
         node_results: List[Dict[str, Any]] = await asyncio.gather(*node_tasks)
 
         # Merge: collect all consensus outputs
         consensuses = [r["consensus"] for r in node_results]
-        merged = "\n\n".join(
-            f"[{r['tongue']}] {r['consensus']}" for r in node_results
-        )
+        merged = "\n\n".join(f"[{r['tongue']}] {r['consensus']}" for r in node_results)
 
         # Update cohesion based on agreement
         self._update_cohesion(bundle_id, consensuses)
@@ -424,11 +425,13 @@ class ModelMatrix:
         }
 
         # Persist in bundle history (keep last 100)
-        bundle.history.append({
-            "prompt_hash": hashlib.sha256(prompt.encode()).hexdigest()[:16],
-            "cohesion": bundle.cohesion_score,
-            "timestamp": result["timestamp"],
-        })
+        bundle.history.append(
+            {
+                "prompt_hash": hashlib.sha256(prompt.encode()).hexdigest()[:16],
+                "cohesion": bundle.cohesion_score,
+                "timestamp": result["timestamp"],
+            }
+        )
         if len(bundle.history) > 100:
             bundle.history = bundle.history[-100:]
 
@@ -467,8 +470,7 @@ class ModelMatrix:
                     "tongue": n.tongue,
                     "model_count": len(n.models),
                     "models": [
-                        {"provider": m.provider.value, "model_id": m.model_id, "role": m.role}
-                        for m in n.models
+                        {"provider": m.provider.value, "model_id": m.model_id, "role": m.role} for m in n.models
                     ],
                     "consensus": n.consensus_strategy,
                 }
@@ -535,17 +537,20 @@ class ModelMatrix:
             node = bundle.nodes[spin_idx % len(bundle.nodes)]
             neighbors = _TOPIC_GRAPH.get(current_topic, ["ai_safety"])
             import random as _rng
+
             next_topic = _rng.choice(neighbors)
 
-            chain.append({
-                "spin": spin_idx + 1,
-                "tongue": node.tongue,
-                "node_id": node.node_id,
-                "from_topic": current_topic,
-                "to_topic": next_topic,
-                "prompt": f"[{node.tongue}] As {TONGUE_ROLES[node.tongue]} specialist, "
-                          f"connect '{current_topic}' to '{next_topic}' and explain the implications.",
-            })
+            chain.append(
+                {
+                    "spin": spin_idx + 1,
+                    "tongue": node.tongue,
+                    "node_id": node.node_id,
+                    "from_topic": current_topic,
+                    "to_topic": next_topic,
+                    "prompt": f"[{node.tongue}] As {TONGUE_ROLES[node.tongue]} specialist, "
+                    f"connect '{current_topic}' to '{next_topic}' and explain the implications.",
+                }
+            )
             current_topic = next_topic
 
         return chain

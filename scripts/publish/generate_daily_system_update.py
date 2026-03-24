@@ -87,10 +87,7 @@ def render_x_thread(date_iso: str, points: list[str]) -> str:
     slots = [
         f"SCBE daily update ({date_iso})\n\nWe shipped governed workflow and reliability improvements.",
         "Highlights:\n" + "\n".join(f"- {point}" for point in compact_points[:2]),
-        (
-            "Why it matters:\n"
-            "Deterministic evidence + safer multi-agent routing means faster deployment decisions."
-        ),
+        ("Why it matters:\n" "Deterministic evidence + safer multi-agent routing means faster deployment decisions."),
         "Next: pilot conversion pipeline + daily system update automation. Follow for build logs.",
     ]
     lines = [f"# SCBE X Thread - {date_iso}", ""]
@@ -143,7 +140,9 @@ def main() -> int:
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     today_compact = today.replace("-", "_")
 
-    commits = collect_recent_commits(repo_root=repo_root, since_hours=max(1, int(args.since_hours)), limit=max(1, int(args.commit_limit)))
+    commits = collect_recent_commits(
+        repo_root=repo_root, since_hours=max(1, int(args.since_hours)), limit=max(1, int(args.commit_limit))
+    )
     points = build_summary_points(commits=commits, max_points=max(1, int(args.point_limit)))
 
     github_path = ARTICLES_DIR / f"{today}-system-update.md"

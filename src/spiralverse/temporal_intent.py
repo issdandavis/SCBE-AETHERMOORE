@@ -73,13 +73,15 @@ TRUST_EXILE_ROUNDS = 10
 # Intent State
 # =============================================================================
 
+
 class IntentState(Enum):
     """Classification of agent's temporal intent."""
-    BENIGN = "benign"           # x < 0.5 - consistently safe
-    NEUTRAL = "neutral"         # 0.5 <= x < 1.0 - normal operation
-    DRIFTING = "drifting"       # 1.0 <= x < 2.0 - concerning pattern
-    ADVERSARIAL = "adversarial" # x >= 2.0 - sustained adversarial behavior
-    EXILED = "exiled"           # Null-space exile triggered
+
+    BENIGN = "benign"  # x < 0.5 - consistently safe
+    NEUTRAL = "neutral"  # 0.5 <= x < 1.0 - normal operation
+    DRIFTING = "drifting"  # 1.0 <= x < 2.0 - concerning pattern
+    ADVERSARIAL = "adversarial"  # x >= 2.0 - sustained adversarial behavior
+    EXILED = "exiled"  # Null-space exile triggered
 
 
 @dataclass
@@ -89,25 +91,26 @@ class IntentSample:
 
     Integrates L5 (hyperbolic distance), L11 (triadic temporal), and CPSE z-vector.
     """
+
     timestamp: float
-    distance: float        # d in Poincare ball (0 to ~1) from L5
-    velocity: float        # rate of change of distance
-    harmony: float         # CHARM value (-1 to 1)
+    distance: float  # d in Poincare ball (0 to ~1) from L5
+    velocity: float  # rate of change of distance
+    harmony: float  # CHARM value (-1 to 1)
 
     # CPSE z-vector deviation channels
-    chaosdev: float = 0.0    # Lyapunov-based chaos deviation
+    chaosdev: float = 0.0  # Lyapunov-based chaos deviation
     fractaldev: float = 0.0  # Fractal dimension deviation
-    energydev: float = 0.0   # Energy channel deviation
+    energydev: float = 0.0  # Energy channel deviation
 
     # Triadic temporal components (L11)
-    d_tri_immediate: float = 0.0   # Immediate behavior
-    d_tri_medium: float = 0.0      # Medium-term pattern
-    d_tri_long: float = 0.0        # Long-term trajectory
+    d_tri_immediate: float = 0.0  # Immediate behavior
+    d_tri_medium: float = 0.0  # Medium-term pattern
+    d_tri_long: float = 0.0  # Long-term trajectory
 
     @property
     def d_tri(self) -> float:
         """Triadic temporal distance (L11) - geometric mean of time scales."""
-        return (abs(self.d_tri_immediate) * abs(self.d_tri_medium) * abs(self.d_tri_long)) ** (1/3)
+        return (abs(self.d_tri_immediate) * abs(self.d_tri_medium) * abs(self.d_tri_long)) ** (1 / 3)
 
     @property
     def raw_intent(self) -> float:
@@ -120,7 +123,7 @@ class IntentSample:
         velocity_factor = max(0, self.velocity) * 2.0
 
         # Distance contribution (further out = more suspicious)
-        distance_factor = self.distance ** 2
+        distance_factor = self.distance**2
 
         # Harmony dampening (high harmony reduces intent score)
         harmony_dampening = (1 - self.harmony) / 2  # 0 to 1
@@ -144,6 +147,7 @@ class IntentHistory:
 
     Uses sliding window to accumulate intent, with decay for old samples.
     """
+
     agent_id: str
     samples: deque = field(default_factory=lambda: deque(maxlen=1000))
     accumulated_intent: float = 0.0
@@ -156,12 +160,7 @@ class IntentHistory:
         """Add a new intent sample and update accumulation."""
         now = time.time()
 
-        sample = IntentSample(
-            timestamp=now,
-            distance=distance,
-            velocity=velocity,
-            harmony=harmony
-        )
+        sample = IntentSample(timestamp=now, distance=distance, velocity=velocity, harmony=harmony)
         self.samples.append(sample)
 
         # Apply decay to accumulated intent
@@ -302,11 +301,12 @@ class OmegaLockVector:
 # Extended Harmonic Wall
 # =============================================================================
 
+
 def harmonic_wall_basic(d: float, R: float = R_HARMONIC) -> float:
     """
     Original Harmonic Wall: H(d, R) = R^(d²)
     """
-    return R ** (d ** 2)
+    return R ** (d**2)
 
 
 def harmonic_wall_temporal(d: float, x: float, R: float = R_HARMONIC) -> float:
@@ -321,7 +321,7 @@ def harmonic_wall_temporal(d: float, x: float, R: float = R_HARMONIC) -> float:
     Returns:
         Security cost multiplier (grows superexponentially with sustained drift)
     """
-    return R ** (d ** 2 * x)
+    return R ** (d**2 * x)
 
 
 def compare_scaling(d: float, x: float) -> Dict[str, float]:
@@ -336,13 +336,14 @@ def compare_scaling(d: float, x: float) -> Dict[str, float]:
         "x_factor": x,
         "H_basic": basic,
         "H_temporal": temporal,
-        "amplification": temporal / basic if basic > 0 else float('inf')
+        "amplification": temporal / basic if basic > 0 else float("inf"),
     }
 
 
 # =============================================================================
 # Security Gate Integration
 # =============================================================================
+
 
 @dataclass
 class TemporalSecurityGate:
@@ -354,6 +355,7 @@ class TemporalSecurityGate:
 
     The temporal intent scaling modifies harm_score via H(d,R)^x.
     """
+
     histories: Dict[str, IntentHistory] = field(default_factory=dict)
 
     # Decision thresholds from AC-2.3.4
@@ -366,23 +368,13 @@ class TemporalSecurityGate:
             self.histories[agent_id] = IntentHistory(agent_id=agent_id)
         return self.histories[agent_id]
 
-    def record_observation(
-        self,
-        agent_id: str,
-        distance: float,
-        velocity: float = 0.0,
-        harmony: float = 0.0
-    ):
+    def record_observation(self, agent_id: str, distance: float, velocity: float = 0.0, harmony: float = 0.0):
         """Record an observation for an agent."""
         history = self.get_or_create_history(agent_id)
         history.add_sample(distance, velocity, harmony)
 
     def compute_omega(
-        self,
-        agent_id: str,
-        pqc_valid: bool = True,
-        triadic_stable: float = 1.0,
-        spectral_score: float = 1.0
+        self, agent_id: str, pqc_valid: bool = True, triadic_stable: float = 1.0, spectral_score: float = 1.0
     ) -> Tuple[float, str]:
         """
         Backward-compatible wrapper returning (omega, decision).
@@ -508,6 +500,7 @@ class TemporalSecurityGate:
 # Demo
 # =============================================================================
 
+
 def demo():
     """Demonstrate temporal intent scaling."""
     print("=" * 70)
@@ -523,20 +516,22 @@ def demo():
     print("-" * 60)
 
     test_cases = [
-        (0.3, 0.5),   # Low distance, brief deviation (forgiving)
-        (0.3, 1.0),   # Low distance, normal
-        (0.3, 2.0),   # Low distance, sustained intent
-        (0.6, 0.5),   # Medium distance, brief
-        (0.6, 1.0),   # Medium distance, normal
-        (0.6, 2.0),   # Medium distance, sustained
-        (0.9, 0.5),   # High distance, brief
-        (0.9, 1.0),   # High distance, normal
-        (0.9, 2.0),   # High distance, sustained (catastrophic)
+        (0.3, 0.5),  # Low distance, brief deviation (forgiving)
+        (0.3, 1.0),  # Low distance, normal
+        (0.3, 2.0),  # Low distance, sustained intent
+        (0.6, 0.5),  # Medium distance, brief
+        (0.6, 1.0),  # Medium distance, normal
+        (0.6, 2.0),  # Medium distance, sustained
+        (0.9, 0.5),  # High distance, brief
+        (0.9, 1.0),  # High distance, normal
+        (0.9, 2.0),  # High distance, sustained (catastrophic)
     ]
 
     for d, x in test_cases:
         result = compare_scaling(d, x)
-        print(f"  {d:>8.2f} {x:>8.2f} {result['H_basic']:>12.2f} {result['H_temporal']:>12.2f} {result['amplification']:>10.2f}x")
+        print(
+            f"  {d:>8.2f} {x:>8.2f} {result['H_basic']:>12.2f} {result['H_temporal']:>12.2f} {result['amplification']:>10.2f}x"
+        )
     print()
 
     # Demo 2: Simulate agent behavior over time
@@ -550,21 +545,27 @@ def demo():
     for i in range(10):
         gate.record_observation("benign", distance=0.1 + 0.05 * (i % 3), harmony=0.8)
     status = gate.get_status("benign")
-    print(f"    State: {status['state']}, x={status['x_factor']:.2f}, Omega={status['omega']:.3f} -> {status['decision']}")
+    print(
+        f"    State: {status['state']}, x={status['x_factor']:.2f}, Omega={status['omega']:.3f} -> {status['decision']}"
+    )
 
     # Simulate drifting agent
     print("  Drifting Agent (gradually moves toward boundary):")
     for i in range(15):
         gate.record_observation("drifter", distance=0.2 + 0.04 * i, velocity=0.04, harmony=0.3)
     status = gate.get_status("drifter")
-    print(f"    State: {status['state']}, x={status['x_factor']:.2f}, Omega={status['omega']:.3f} -> {status['decision']}")
+    print(
+        f"    State: {status['state']}, x={status['x_factor']:.2f}, Omega={status['omega']:.3f} -> {status['decision']}"
+    )
 
     # Simulate adversarial agent
     print("  Adversarial Agent (sustained boundary approach):")
     for i in range(20):
         gate.record_observation("adversary", distance=0.7 + 0.01 * i, velocity=0.1, harmony=-0.5)
     status = gate.get_status("adversary")
-    print(f"    State: {status['state']}, x={status['x_factor']:.2f}, Omega={status['omega']:.3f} -> {status['decision']}")
+    print(
+        f"    State: {status['state']}, x={status['x_factor']:.2f}, Omega={status['omega']:.3f} -> {status['decision']}"
+    )
 
     # Simulate recovered agent (was drifting, came back)
     print("  Recovered Agent (drifted then returned):")
@@ -573,7 +574,9 @@ def demo():
     for i in range(15):
         gate.record_observation("recovered", distance=0.8 - 0.04 * i, velocity=-0.04, harmony=0.7)
     status = gate.get_status("recovered")
-    print(f"    State: {status['state']}, x={status['x_factor']:.2f}, Omega={status['omega']:.3f} -> {status['decision']}")
+    print(
+        f"    State: {status['state']}, x={status['x_factor']:.2f}, Omega={status['omega']:.3f} -> {status['decision']}"
+    )
 
     print()
 

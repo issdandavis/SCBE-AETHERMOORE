@@ -41,6 +41,7 @@ try:
         MemoryTier,
         MemoryEvictionEngine,
     )
+
     HIVE_AVAILABLE = True
 except ImportError:
     # Hive Memory not available - create minimal stubs
@@ -48,6 +49,7 @@ except ImportError:
 
     class MemoryBlock:
         """Stub for when Hive Memory is not available."""
+
         def __init__(self, **kwargs):
             for k, v in kwargs.items():
                 setattr(self, k, v)
@@ -64,22 +66,22 @@ except ImportError:
 
 # CHARM priorities for different decision types
 DECISION_CHARM = {
-    Decision.ALLOW: 0.3,      # Normal operations, lower retention priority
-    Decision.WARN: 0.5,       # Moderate priority
-    Decision.REVIEW: 0.7,     # Higher priority - needs human attention
-    Decision.DENY: 0.85,      # High priority - security event
-    Decision.REJECT: 0.9,     # Very high priority
-    Decision.SNAP: 0.95,      # Critical - noise injection event
+    Decision.ALLOW: 0.3,  # Normal operations, lower retention priority
+    Decision.WARN: 0.5,  # Moderate priority
+    Decision.REVIEW: 0.7,  # Higher priority - needs human attention
+    Decision.DENY: 0.85,  # High priority - security event
+    Decision.REJECT: 0.9,  # Very high priority
+    Decision.SNAP: 0.95,  # Critical - noise injection event
 }
 
 # Tongue codes for decision types
 DECISION_TONGUE = {
-    Decision.ALLOW: "CA",     # Computation - normal flow
-    Decision.WARN: "AV",      # I/O warning
-    Decision.REVIEW: "KO",    # Control flow - human review
-    Decision.DENY: "UM",      # Security - blocked
-    Decision.REJECT: "UM",    # Security - rejected
-    Decision.SNAP: "DR",      # Types - noise injection
+    Decision.ALLOW: "CA",  # Computation - normal flow
+    Decision.WARN: "AV",  # I/O warning
+    Decision.REVIEW: "KO",  # Control flow - human review
+    Decision.DENY: "UM",  # Security - blocked
+    Decision.REJECT: "UM",  # Security - rejected
+    Decision.SNAP: "DR",  # Types - noise injection
 }
 
 
@@ -87,11 +89,13 @@ DECISION_TONGUE = {
 # DECISION RECORD
 # =============================================================================
 
+
 @dataclass
 class DecisionRecord:
     """
     Serializable record of a Layer 13 decision for Hive storage.
     """
+
     record_id: str
     timestamp: datetime
     agent_id: str
@@ -117,28 +121,29 @@ class DecisionRecord:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to JSON-serializable dict."""
         d = asdict(self)
-        d['timestamp'] = self.timestamp.isoformat()
+        d["timestamp"] = self.timestamp.isoformat()
         return d
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'DecisionRecord':
+    def from_dict(cls, data: Dict[str, Any]) -> "DecisionRecord":
         """Reconstruct from dict."""
-        data['timestamp'] = datetime.fromisoformat(data['timestamp'])
+        data["timestamp"] = datetime.fromisoformat(data["timestamp"])
         return cls(**data)
 
     def to_bytes(self) -> bytes:
         """Serialize to bytes for Hive storage."""
-        return json.dumps(self.to_dict()).encode('utf-8')
+        return json.dumps(self.to_dict()).encode("utf-8")
 
     @classmethod
-    def from_bytes(cls, data: bytes) -> 'DecisionRecord':
+    def from_bytes(cls, data: bytes) -> "DecisionRecord":
         """Deserialize from bytes."""
-        return cls.from_dict(json.loads(data.decode('utf-8')))
+        return cls.from_dict(json.loads(data.decode("utf-8")))
 
 
 # =============================================================================
 # HIVE-INTEGRATED LAYER 13
 # =============================================================================
+
 
 class HiveIntegratedLayer13:
     """
@@ -282,15 +287,13 @@ class HiveIntegratedLayer13:
         """Evict low-priority decisions from hot memory."""
         if not HIVE_AVAILABLE or not self._eviction_engine:
             # Simple eviction: remove oldest
-            self._hot_memory = self._hot_memory[-self.max_history:]
+            self._hot_memory = self._hot_memory[-self.max_history :]
             return
 
         # Convert records to MemoryBlocks for eviction engine
         blocks = []
         for record in self._hot_memory:
-            charm = DECISION_CHARM.get(
-                Decision(record.decision), 0.5
-            )
+            charm = DECISION_CHARM.get(Decision(record.decision), 0.5)
             block = MemoryBlock(
                 block_id=record.record_id,
                 data=record.to_bytes(),
@@ -350,10 +353,7 @@ class HiveIntegratedLayer13:
         if self._total_decisions == 0:
             return {"total": 0, "rates": {}, "patterns": {}}
 
-        rates = {
-            k: v / self._total_decisions
-            for k, v in self._decision_counts.items()
-        }
+        rates = {k: v / self._total_decisions for k, v in self._decision_counts.items()}
 
         # Compute recent pattern (last 100 decisions)
         recent = self._hot_memory[-100:] if self._hot_memory else []
@@ -364,10 +364,9 @@ class HiveIntegratedLayer13:
             "counts": self._decision_counts.copy(),
             "rates": rates,
             "deny_rate": (
-                self._decision_counts["DENY"] +
-                self._decision_counts["REJECT"] +
-                self._decision_counts["SNAP"]
-            ) / self._total_decisions,
+                self._decision_counts["DENY"] + self._decision_counts["REJECT"] + self._decision_counts["SNAP"]
+            )
+            / self._total_decisions,
             "recent_risk_mean": sum(recent_risks) / len(recent_risks) if recent_risks else 0,
             "recent_risk_max": max(recent_risks) if recent_risks else 0,
             "session_id": self.session_id,
@@ -432,16 +431,12 @@ class HiveIntegratedLayer13:
         total_weight = 0
 
         for record, sim_score in similar:
-            decision_weights[record.decision] = (
-                decision_weights.get(record.decision, 0) + sim_score
-            )
+            decision_weights[record.decision] = decision_weights.get(record.decision, 0) + sim_score
             total_weight += sim_score
 
         # Normalize
         if total_weight > 0:
-            decision_weights = {
-                k: v / total_weight for k, v in decision_weights.items()
-            }
+            decision_weights = {k: v / total_weight for k, v in decision_weights.items()}
 
         # Predict most likely decision
         predicted = max(decision_weights.items(), key=lambda x: x[1])
@@ -474,7 +469,7 @@ class HiveIntegratedLayer13:
 
         return MemoryBlock(
             block_id=f"layer13-{self.agent_id}-{self.session_id}",
-            data=json.dumps(state).encode('utf-8'),
+            data=json.dumps(state).encode("utf-8"),
             timestamp=datetime.utcnow(),
             tongue="KO",  # Control flow
             charm=0.8,  # High retention priority
@@ -486,10 +481,8 @@ class HiveIntegratedLayer13:
 # CONVENIENCE FUNCTIONS
 # =============================================================================
 
-def create_layer13_with_hive(
-    agent_id: str,
-    **kwargs
-) -> HiveIntegratedLayer13:
+
+def create_layer13_with_hive(agent_id: str, **kwargs) -> HiveIntegratedLayer13:
     """
     Factory function to create Hive-integrated Layer 13.
 
@@ -520,12 +513,14 @@ def batch_evaluate_with_history(
     results = []
     for components in requests:
         response, record = layer13.execute_with_history(components)
-        results.append({
-            "decision": response.decision.value,
-            "risk_prime": response.risk.risk_prime,
-            "action": response.action,
-            "record_id": record.record_id,
-        })
+        results.append(
+            {
+                "decision": response.decision.value,
+                "risk_prime": response.risk.risk_prime,
+                "action": response.action,
+                "record_id": record.record_id,
+            }
+        )
 
     return {
         "total": len(requests),

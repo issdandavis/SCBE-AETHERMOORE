@@ -94,7 +94,11 @@ def run_lock_packet(
             )
             result["ok"] = True
         except Exception as exc:  # pragma: no cover - runtime network path
-            if backend != fallback_backend and available_backends.get(fallback_backend, False) and should_retry_with_fallback(exc):
+            if (
+                backend != fallback_backend
+                and available_backends.get(fallback_backend, False)
+                and should_retry_with_fallback(exc)
+            ):
                 try:
                     generate(
                         backend=fallback_backend,

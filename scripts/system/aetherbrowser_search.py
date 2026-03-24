@@ -73,7 +73,9 @@ def _resolve_vault_path(vault: Optional[str], save_to_live_vault: bool) -> Optio
     return None
 
 
-def _search_huggingface_api(query: str, max_results: int = 5, save_to_vault: Optional[str] = None) -> List[Dict[str, Any]]:
+def _search_huggingface_api(
+    query: str, max_results: int = 5, save_to_vault: Optional[str] = None
+) -> List[Dict[str, Any]]:
     import urllib.parse
     import urllib.request
 
@@ -119,7 +121,9 @@ def _search_huggingface_api(query: str, max_results: int = 5, save_to_vault: Opt
     return results
 
 
-def _search_web_via_playwriter(query: str, max_results: int = 5, save_to_vault: Optional[str] = None) -> List[Dict[str, Any]]:
+def _search_web_via_playwriter(
+    query: str, max_results: int = 5, save_to_vault: Optional[str] = None
+) -> List[Dict[str, Any]]:
     runner_path = SCRIPTS_DIR / "playwriter_lane_runner.py"
     session_id = f"ab-search-{abs(hash(query)) % 100000}"
     command = [
@@ -208,7 +212,11 @@ def main() -> int:
     parser.add_argument("--max", type=int, default=5, help="Max results")
     parser.add_argument("--browser", action="store_true", help="Prefer Playwright browser mode when available")
     parser.add_argument("--vault", default="", help="Explicit Obsidian vault path for result notes")
-    parser.add_argument("--save-to-live-vault", action="store_true", help="Resolve the currently open Obsidian vault and save a note there")
+    parser.add_argument(
+        "--save-to-live-vault",
+        action="store_true",
+        help="Resolve the currently open Obsidian vault and save a note there",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON only")
     args = parser.parse_args()
 

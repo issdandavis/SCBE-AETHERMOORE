@@ -62,9 +62,7 @@ def test_chaos_sensitivity():
     print(f"\nDifference: {difference:.10f}")
 
     passed = difference > 0.1
-    print(
-        f"{'✓ PASS' if passed else '✗ FAIL'}: Difference {'>' if passed else '<='} 0.1"
-    )
+    print(f"{'✓ PASS' if passed else '✗ FAIL'}: Difference {'>' if passed else '<='} 0.1")
 
     # Visualize divergence (if matplotlib available)
     if HAS_MATPLOTLIB:
@@ -133,9 +131,7 @@ def test_fractal_gate():
     print(f"\nValid basin (sil'kor): c = {c_valid}")
     print(f"  Result: {'PASS' if passed_valid else 'FAIL'} (iterations: {iter_valid})")
     print(f"\nInvalid basin: c = {c_invalid}")
-    print(
-        f"  Result: {'PASS' if passed_invalid else 'FAIL'} (escaped at iteration {iter_invalid})"
-    )
+    print(f"  Result: {'PASS' if passed_invalid else 'FAIL'} (escaped at iteration {iter_invalid})")
 
     test_passed = passed_valid and not passed_invalid
     if test_passed:
@@ -161,9 +157,7 @@ def test_fractal_gate():
         print(f"  {name:12} c={c:>15} → {status} (iterations: {iters})")
         vocab_results[name] = passed
 
-    assert (
-        test_passed
-    ), "Fractal gate failed to discriminate valid from invalid contexts"
+    assert test_passed, "Fractal gate failed to discriminate valid from invalid contexts"
 
 
 # =============================================================================
@@ -221,9 +215,7 @@ def test_neural_energy():
     # Normalize
     mu = training_patterns.mean(axis=0)
     sigma = training_patterns.std(axis=0) + 1e-6
-    normalized_patterns = np.array(
-        [normalize_context(p, mu, sigma) for p in training_patterns]
-    )
+    normalized_patterns = np.array([normalize_context(p, mu, sigma) for p in training_patterns])
 
     # Train
     W, theta = train_hopfield(normalized_patterns)
@@ -253,9 +245,7 @@ def test_neural_energy():
     print(f"\nThreshold (μ + 3σ): {threshold:.4f}")
 
     if anomaly_energy > threshold:
-        print(
-            f"✓ TEST PASSED: Anomaly rejected (energy {anomaly_energy:.4f} > {threshold:.4f})"
-        )
+        print(f"✓ TEST PASSED: Anomaly rejected (energy {anomaly_energy:.4f} > {threshold:.4f})")
         test_passed = True
     else:
         # Check if at least clearly separated
@@ -287,9 +277,7 @@ def test_neural_energy():
         print(f"  {name:12} E={E:7.3f} ({sigma_away:+.1f}σ) {status}")
         anomaly_results[name] = rejected
 
-    assert (
-        test_passed
-    ), "Neural energy failed to separate anomalies from trained patterns"
+    assert test_passed, "Neural energy failed to separate anomalies from trained patterns"
 
 
 # =============================================================================

@@ -561,7 +561,9 @@ def build_config(args: argparse.Namespace, plan: dict[str, Any], quality_weights
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build a weighted art-LoRA training notebook and dataset report.")
-    parser.add_argument("--dataset-dir", default=str(DEFAULT_LOCAL_DATASET_DIR), help="Local dataset path used for audit.")
+    parser.add_argument(
+        "--dataset-dir", default=str(DEFAULT_LOCAL_DATASET_DIR), help="Local dataset path used for audit."
+    )
     parser.add_argument(
         "--colab-dataset-dir",
         default="training-data/art-style-lora",
@@ -584,7 +586,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--gradient-accumulation-steps", type=int, default=4)
     parser.add_argument("--resolution", type=int, default=1024)
     parser.add_argument("--target-effective-epochs", type=int, default=60)
-    parser.add_argument("--max-train-steps", type=int, default=None, help="Override the derived training-step recommendation.")
+    parser.add_argument(
+        "--max-train-steps", type=int, default=None, help="Override the derived training-step recommendation."
+    )
     parser.add_argument("--save-steps", type=int, default=None, help="Override checkpoint frequency.")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--eval-num-inference-steps", type=int, default=4)

@@ -56,6 +56,7 @@ from symphonic_cipher.scbe_aethermoore.concept_blocks.heart_vault import (
 #  1. Graph CRUD
 # ===================================================================
 
+
 class TestHeartVaultGraph:
     """Tests for the SQLite-backed knowledge graph."""
 
@@ -69,7 +70,8 @@ class TestHeartVaultGraph:
 
     def test_add_and_get_node(self):
         node = self.vault.add_node(
-            NodeType.EMOTION, "joy",
+            NodeType.EMOTION,
+            "joy",
             properties={"valence": 0.8, "arousal": 0.3},
             tongue=TongueAffinity.KO,
             quality_score=0.9,
@@ -165,8 +167,7 @@ class TestHeartVaultGraph:
 
     def test_content_hash_deterministic(self):
         n1 = self.vault.add_node(NodeType.CONCEPT, "test", properties={"k": "v"})
-        n2 = Node(id="other", node_type=NodeType.CONCEPT, label="test",
-                   properties={"k": "v"})
+        n2 = Node(id="other", node_type=NodeType.CONCEPT, label="test", properties={"k": "v"})
         assert n1.content_hash() == n2.content_hash()
 
     # -- Edge operations --
@@ -176,7 +177,9 @@ class TestHeartVaultGraph:
         n2 = self.vault.add_node(NodeType.EMOTION, "loss")
 
         edge = self.vault.add_edge(
-            EdgeType.EVOKES, n1.id, n2.id,
+            EdgeType.EVOKES,
+            n1.id,
+            n2.id,
             weight=0.9,
             properties={"intensity": "high"},
         )
@@ -306,6 +309,7 @@ class TestHeartVaultGraph:
 #  2. Emotion Taxonomy & Poincaré Ball
 # ===================================================================
 
+
 class TestEmotions:
     """Tests for the emotion taxonomy and Poincaré projection."""
 
@@ -343,8 +347,8 @@ class TestEmotions:
         x_mild, y_mild = valence_arousal_to_poincare(0.2, 0.1)
         x_extreme, y_extreme = valence_arousal_to_poincare(0.9, 0.9)
 
-        r_mild = math.sqrt(x_mild ** 2 + y_mild ** 2)
-        r_extreme = math.sqrt(x_extreme ** 2 + y_extreme ** 2)
+        r_mild = math.sqrt(x_mild**2 + y_mild**2)
+        r_extreme = math.sqrt(x_extreme**2 + y_extreme**2)
         assert r_extreme > r_mild
 
     def test_poincare_distance_same_point(self):
@@ -392,6 +396,7 @@ class TestEmotions:
 # ===================================================================
 #  3. Literary Device Detection
 # ===================================================================
+
 
 class TestLiteraryDevices:
     """Tests for literary device detection and metaphor resolution."""
@@ -441,15 +446,11 @@ class TestLiteraryDevices:
 
     def test_no_false_positives_on_plain_text(self):
         hits = detect_literary_devices("The cat sat on the mat.")
-        metaphors = [h for h in hits if h.device == LiteraryDevice.METAPHOR
-                     and h.confidence > 0.7]
+        metaphors = [h for h in hits if h.device == LiteraryDevice.METAPHOR and h.confidence > 0.7]
         assert len(metaphors) == 0
 
     def test_sorted_by_confidence(self):
-        hits = detect_literary_devices(
-            "Time is a thief. The deafening silence broke. "
-            "She told him a million times."
-        )
+        hits = detect_literary_devices("Time is a thief. The deafening silence broke. " "She told him a million times.")
         if len(hits) >= 2:
             for i in range(len(hits) - 1):
                 assert hits[i].confidence >= hits[i + 1].confidence
@@ -481,6 +482,7 @@ class TestLiteraryDevices:
 #  4. Heart Credit Ledger
 # ===================================================================
 
+
 class TestHeartCredits:
     """Tests for the Heart Credit economy."""
 
@@ -492,10 +494,8 @@ class TestHeartCredits:
         self.vault.close()
 
     def test_contribute_earns_credits(self):
-        node = self.vault.add_node(NodeType.PROVERB, "Test proverb",
-                                   tongue=TongueAffinity.KO, quality_score=0.8)
-        entry = self.ledger.contribute("agent-1", node.id, TongueAffinity.KO,
-                                       quality_score=0.8)
+        node = self.vault.add_node(NodeType.PROVERB, "Test proverb", tongue=TongueAffinity.KO, quality_score=0.8)
+        entry = self.ledger.contribute("agent-1", node.id, TongueAffinity.KO, quality_score=0.8)
         assert entry.amount > 0
         assert entry.action == CreditAction.CONTRIBUTE
         expected = BASE_CONTRIBUTE_REWARD * 0.8 * TONGUE_WEIGHTS[TongueAffinity.KO]
@@ -579,6 +579,7 @@ class TestHeartCredits:
 #  5. Integration: Literary → Graph → Credits
 # ===================================================================
 
+
 class TestIntegration:
     """End-to-end: detect devices, insert into graph, account credits."""
 
@@ -615,7 +616,8 @@ class TestIntegration:
 
         # Step 3: Insert literary node
         lit_node = self.vault.add_node(
-            NodeType.LITERARY, hit.text,
+            NodeType.LITERARY,
+            hit.text,
             properties={
                 "device": hit.device.value,
                 "tenor": hit.tenor,
@@ -628,7 +630,8 @@ class TestIntegration:
 
         # Step 3b: Insert emotion node
         emotion_node = self.vault.add_node(
-            NodeType.EMOTION, emotion_spec.name,
+            NodeType.EMOTION,
+            emotion_spec.name,
             properties={
                 "valence": emotion_spec.valence,
                 "arousal": emotion_spec.arousal,
@@ -640,14 +643,17 @@ class TestIntegration:
 
         # Step 4: Connect literary → emotion
         edge = self.vault.add_edge(
-            EdgeType.EVOKES, lit_node.id, emotion_node.id,
+            EdgeType.EVOKES,
+            lit_node.id,
+            emotion_node.id,
             weight=hit.confidence,
         )
         assert edge.weight == hit.confidence
 
         # Step 5: Agent earns credits
         entry = self.ledger.contribute(
-            "metaphor-agent", lit_node.id,
+            "metaphor-agent",
+            lit_node.id,
             TongueAffinity.CA,
             quality_score=hit.confidence,
         )
@@ -674,7 +680,8 @@ class TestIntegration:
 
         # Insert as PROVERB node under Draumric (Structure/Order)
         node = self.vault.add_node(
-            NodeType.PROVERB, proverb_text,
+            NodeType.PROVERB,
+            proverb_text,
             properties={
                 "source": "English folklore",
                 "theme": "prudence",
@@ -686,14 +693,14 @@ class TestIntegration:
 
         # Link to concept: time
         time_concept = self.vault.add_node(
-            NodeType.CONCEPT, "time",
+            NodeType.CONCEPT,
+            "time",
             tongue=TongueAffinity.CA,
         )
         self.vault.add_edge(EdgeType.ILLUSTRATES, node.id, time_concept.id)
 
         # Credit the contributing agent
-        self.ledger.contribute("proverb-collector", node.id,
-                               TongueAffinity.DR, quality_score=quality)
+        self.ledger.contribute("proverb-collector", node.id, TongueAffinity.DR, quality_score=quality)
 
         # Query by another agent
         self.ledger.query("wisdom-seeker", TongueAffinity.DR)
@@ -713,7 +720,8 @@ class TestIntegration:
             spec = EMOTION_LIBRARY[name]
             px, py = valence_arousal_to_poincare(spec.valence, spec.arousal)
             self.vault.add_node(
-                NodeType.EMOTION, name,
+                NodeType.EMOTION,
+                name,
                 properties={
                     "valence": spec.valence,
                     "arousal": spec.arousal,
@@ -724,8 +732,7 @@ class TestIntegration:
             )
 
         # Connect opposing emotions
-        self.vault.add_edge(EdgeType.CONTRASTS,
-                            "emotion-joy", "emotion-rage")
+        self.vault.add_edge(EdgeType.CONTRASTS, "emotion-joy", "emotion-rage")
 
         # Verify: joy and rage are far in hyperbolic space
         d = emotional_distance("joy", "rage")
@@ -739,7 +746,8 @@ class TestIntegration:
         """All six Sacred Tongues should be usable for categorization."""
         for tongue in TongueAffinity:
             node = self.vault.add_node(
-                NodeType.CONCEPT, f"concept-{tongue.value}",
+                NodeType.CONCEPT,
+                f"concept-{tongue.value}",
                 tongue=tongue,
             )
             fetched = self.vault.get_node(node.id)
@@ -755,6 +763,7 @@ class TestIntegration:
 # ===================================================================
 #  6. Edge cases
 # ===================================================================
+
 
 class TestEdgeCases:
 
@@ -784,5 +793,5 @@ class TestEdgeCases:
         """Tongue weights should follow phi scaling."""
         phi = (1 + math.sqrt(5)) / 2
         assert abs(TONGUE_WEIGHTS[TongueAffinity.AV] - phi) < 0.001
-        assert abs(TONGUE_WEIGHTS[TongueAffinity.RU] - phi ** 2) < 0.001
-        assert abs(TONGUE_WEIGHTS[TongueAffinity.CA] - phi ** 3) < 0.001
+        assert abs(TONGUE_WEIGHTS[TongueAffinity.RU] - phi**2) < 0.001
+        assert abs(TONGUE_WEIGHTS[TongueAffinity.CA] - phi**3) < 0.001

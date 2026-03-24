@@ -4,6 +4,7 @@ Real attackers combine multiple techniques: encoding + multilingual +
 indirect injection + tool exfiltration. SCBE's defense-in-depth should
 detect these through multiple independent signals.
 """
+
 import json
 from pathlib import Path
 
@@ -33,9 +34,7 @@ class TestCombinedMulti:
         """Each combined attack should fire 2+ signal types."""
         for a in COMBINED_MULTI:
             r = gate.process(a["prompt"], a["id"], a["class"])
-            assert len(r.detection_signals) >= 2, (
-                f"{a['id']}: only {len(r.detection_signals)} signals"
-            )
+            assert len(r.detection_signals) >= 2, f"{a['id']}: only {len(r.detection_signals)} signals"
 
 
 class TestFullCorpusBenchmark:
@@ -66,7 +65,9 @@ class TestFullCorpusBenchmark:
         print(f"\n{'='*60}")
         print(f"  SCBE ADVERSARIAL BENCHMARK")
         print(f"{'='*60}")
-        print(f"  Detection: {attack_result.detection_rate:.1%} ({attack_result.detected_count}/{attack_result.total_attacks})")
+        print(
+            f"  Detection: {attack_result.detection_rate:.1%} ({attack_result.detected_count}/{attack_result.total_attacks})"
+        )
         print(f"  ASR: {attack_result.attack_success_rate:.1%}")
         print(f"  FP rate: {baseline_result.detection_rate:.1%}")
         print(f"  Per-class:")

@@ -43,6 +43,7 @@ from .streams import StreamType
 #  Uses the exact same HMAC-SHA256 protocol as rwp2_envelope.py
 # ---------------------------------------------------------------------------
 
+
 class ProtocolTongue(str, Enum):
     KO = "KO"
     AV = "AV"
@@ -83,6 +84,7 @@ STREAM_TIER: Dict[StreamType, int] = {
 #  Settlement Envelope
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class SettlementEnvelope:
     """RWP2-signed settlement envelope for a ledger entry."""
@@ -95,7 +97,7 @@ class SettlementEnvelope:
     face_value: float
     settled_value: float
     agent_id: str
-    credit_hash: str                  # hash of the minted credit
+    credit_hash: str  # hash of the minted credit
     tier: int
     nonce: str
     timestamp_ms: int
@@ -237,9 +239,7 @@ class RWPSettlement:
 
     # --- Verification ---
 
-    def verify_settlement(
-        self, envelope: SettlementEnvelope
-    ) -> Tuple[bool, Dict[str, Any]]:
+    def verify_settlement(self, envelope: SettlementEnvelope) -> Tuple[bool, Dict[str, Any]]:
         """
         Verify an RWP2 settlement envelope.
 
@@ -290,11 +290,7 @@ class RWPSettlement:
         age_ms = now_ms - envelope.timestamp_ms
         details["timestamp_check"] = abs(age_ms) <= self._max_nonce_age_ms
 
-        overall = (
-            all_sigs_valid
-            and details["replay_check"]
-            and details["timestamp_check"]
-        )
+        overall = all_sigs_valid and details["replay_check"] and details["timestamp_check"]
         details["overall"] = overall
         return overall, details
 

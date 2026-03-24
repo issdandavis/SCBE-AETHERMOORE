@@ -41,7 +41,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--user-data-dir", default="", help="Persistent profile directory")
     parser.add_argument("--headless", action="store_true", help="Run headless")
     parser.add_argument("--timeout-ms", type=int, default=60000, help="Navigation timeout")
-    parser.add_argument("--screenshot-dir", default="artifacts/playwright-both-side", help="Screenshot/report output dir")
+    parser.add_argument(
+        "--screenshot-dir", default="artifacts/playwright-both-side", help="Screenshot/report output dir"
+    )
     parser.add_argument("--left-name", default="left", help="Name label for left side")
     parser.add_argument("--right-name", default="right", help="Name label for right side")
     parser.add_argument("--keep-open", action="store_true", help="Keep browser open until Enter")
@@ -54,7 +56,9 @@ def main() -> int:
     try:
         from playwright.sync_api import sync_playwright  # type: ignore
     except ImportError as exc:  # pragma: no cover
-        raise RuntimeError("Playwright not installed. Run: pip install playwright && playwright install chromium") from exc
+        raise RuntimeError(
+            "Playwright not installed. Run: pip install playwright && playwright install chromium"
+        ) from exc
 
     out_dir = Path(args.screenshot_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

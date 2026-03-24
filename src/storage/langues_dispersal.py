@@ -44,7 +44,7 @@ PHI = (1 + math.sqrt(5)) / 2
 
 # Langues metric tensor: diagonal with φ^k weights
 TONGUE_NAMES = ("KO", "AV", "RU", "CA", "UM", "DR")
-TONGUE_WEIGHTS = tuple(PHI ** k for k in range(6))
+TONGUE_WEIGHTS = tuple(PHI**k for k in range(6))
 
 # Tongue phases: 60° apart
 TONGUE_PHASES = tuple(2.0 * math.pi * k / 6 for k in range(6))
@@ -62,9 +62,11 @@ def build_metric_tensor() -> np.ndarray:
 #  6D Spin Quantization
 # =========================================================================== #
 
+
 @dataclass(frozen=True)
 class SpinVector:
     """6D spin triplet: one trit per tongue dimension."""
+
     spins: Tuple[int, ...]  # length 6, each in {-1, 0, +1}
 
     @property
@@ -79,10 +81,7 @@ class SpinVector:
 
     def metric_weighted_norm(self) -> float:
         """||s||_G = sqrt(Σ G_ll · s_l²)."""
-        return math.sqrt(sum(
-            TONGUE_WEIGHTS[l] * self.spins[l] ** 2
-            for l in range(6)
-        ))
+        return math.sqrt(sum(TONGUE_WEIGHTS[l] * self.spins[l] ** 2 for l in range(6)))
 
 
 def quantize_spin(
@@ -116,14 +115,16 @@ def quantize_spin(
 #  Dispersal Rate
 # =========================================================================== #
 
+
 @dataclass
 class DispersalReport:
     """Results of dispersal analysis over a set of records."""
+
     record_count: int
     centroid: List[float]
-    dispersal_rate: float       # D — metric-weighted spread
-    spin_entropy: float         # H — entropy of spin code distribution [0, 1]
-    dominant_tongue: str        # which tongue has highest weighted deviation
+    dispersal_rate: float  # D — metric-weighted spread
+    spin_entropy: float  # H — entropy of spin code distribution [0, 1]
+    dominant_tongue: str  # which tongue has highest weighted deviation
     spin_distribution: Dict[str, int]  # spin code → count
     tongue_dispersals: Dict[str, float]  # per-tongue dispersal contribution
     effective_dimension: float  # how many tongues are "active" (non-zero spin)
@@ -142,9 +143,13 @@ def compute_dispersal(
     n = len(tongue_vectors)
     if n == 0:
         return DispersalReport(
-            record_count=0, centroid=[0.0] * 6, dispersal_rate=0.0,
-            spin_entropy=0.0, dominant_tongue="KO",
-            spin_distribution={}, tongue_dispersals={},
+            record_count=0,
+            centroid=[0.0] * 6,
+            dispersal_rate=0.0,
+            spin_entropy=0.0,
+            dominant_tongue="KO",
+            spin_distribution={},
+            tongue_dispersals={},
             effective_dimension=0.0,
         )
 
@@ -168,10 +173,7 @@ def compute_dispersal(
     dispersal_rate = dispersal_sum / n
 
     # Per-tongue dispersal
-    tongue_dispersals = {
-        TONGUE_NAMES[l]: round(tongue_sums[l] / n, 6)
-        for l in range(6)
-    }
+    tongue_dispersals = {TONGUE_NAMES[l]: round(tongue_sums[l] / n, 6) for l in range(6)}
 
     # Dominant tongue: highest per-tongue dispersal
     dominant_idx = tongue_sums.index(max(tongue_sums))
@@ -199,9 +201,7 @@ def compute_dispersal(
         for l in range(6):
             if sv.spins[l] != 0:
                 tongue_active_counts[l] += 1
-    effective_dimension = sum(
-        c / n for c in tongue_active_counts
-    )
+    effective_dimension = sum(c / n for c in tongue_active_counts)
 
     return DispersalReport(
         record_count=n,
@@ -218,6 +218,7 @@ def compute_dispersal(
 # =========================================================================== #
 #  Dispersal-Routed Insert
 # =========================================================================== #
+
 
 def dispersal_route(
     tongue_coords: List[float],
@@ -236,10 +237,7 @@ def dispersal_route(
     G = build_metric_tensor()
 
     # Per-record dispersal cost
-    cost = sum(
-        G[l, l] * abs(sv.spins[l]) * abs(tongue_coords[l] - centroid[l])
-        for l in range(6)
-    )
+    cost = sum(G[l, l] * abs(sv.spins[l]) * abs(tongue_coords[l] - centroid[l]) for l in range(6))
 
     # Route decision: high magnitude → cone, low → hemisphere
     if sv.magnitude >= 4:
@@ -250,10 +248,7 @@ def dispersal_route(
         zone = "cone" if cost > 0.5 else "hemisphere"
 
     # Dominant tongue: highest weighted spin deviation
-    weighted_devs = [
-        TONGUE_WEIGHTS[l] * abs(sv.spins[l]) * abs(tongue_coords[l] - centroid[l])
-        for l in range(6)
-    ]
+    weighted_devs = [TONGUE_WEIGHTS[l] * abs(sv.spins[l]) * abs(tongue_coords[l] - centroid[l]) for l in range(6)]
     dominant_idx = weighted_devs.index(max(weighted_devs))
 
     return {

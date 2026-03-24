@@ -52,9 +52,14 @@ def _merge_prompt_avoidances(prompt: str, negative_prompt: str | None) -> str:
 
 
 # ── Backend: Google Imagen ──────────────────────────────────────
-def gen_imagen(prompt: str, output: str, model: str = "imagen-4.0-generate-001",
-               aspect: str = "3:4", reference: str | None = None,
-               negative_prompt: str | None = None) -> str:
+def gen_imagen(
+    prompt: str,
+    output: str,
+    model: str = "imagen-4.0-generate-001",
+    aspect: str = "3:4",
+    reference: str | None = None,
+    negative_prompt: str | None = None,
+) -> str:
     try:
         from google import genai
         from google.genai import types
@@ -92,9 +97,14 @@ def gen_imagen(prompt: str, output: str, model: str = "imagen-4.0-generate-001",
 
 
 # ── Backend: HuggingFace Inference API ──────────────────────────
-def gen_hf_inference(prompt: str, output: str, model: str = "black-forest-labs/FLUX.1-schnell",
-                     negative_prompt: str | None = None, width: int | None = None,
-                     height: int | None = None) -> str:
+def gen_hf_inference(
+    prompt: str,
+    output: str,
+    model: str = "black-forest-labs/FLUX.1-schnell",
+    negative_prompt: str | None = None,
+    width: int | None = None,
+    height: int | None = None,
+) -> str:
     import requests
 
     token = os.environ.get("HF_TOKEN")
@@ -135,8 +145,9 @@ def gen_hf_inference(prompt: str, output: str, model: str = "black-forest-labs/F
 
 
 # ── Backend: HuggingFace Z-Image Turbo (MCP) ───────────────────
-def gen_zimage(prompt: str, output: str, negative_prompt: str | None = None,
-               width: int | None = None, height: int | None = None) -> str:
+def gen_zimage(
+    prompt: str, output: str, negative_prompt: str | None = None, width: int | None = None, height: int | None = None
+) -> str:
     """Uses the HF Z-Image Turbo endpoint if available."""
     import requests
 
@@ -207,16 +218,37 @@ def pick_best_backend(preference: str | None = None) -> str:
     sys.exit("No image generation backend available. Set GEMINI_API_KEY or HF_TOKEN.")
 
 
-def generate(backend: str, prompt: str, output: str, aspect: str = "3:4",
-             reference: str | None = None, negative_prompt: str | None = None,
-             width: int | None = None, height: int | None = None) -> str:
+def generate(
+    backend: str,
+    prompt: str,
+    output: str,
+    aspect: str = "3:4",
+    reference: str | None = None,
+    negative_prompt: str | None = None,
+    width: int | None = None,
+    height: int | None = None,
+) -> str:
     """Route to the correct backend."""
     if reference and backend not in {"imagen", "imagen-ultra"}:
         sys.exit(f"--reference is not implemented for backend '{backend}'")
     if backend == "imagen":
-        return gen_imagen(prompt, output, model="imagen-4.0-generate-001", aspect=aspect, reference=reference, negative_prompt=negative_prompt)
+        return gen_imagen(
+            prompt,
+            output,
+            model="imagen-4.0-generate-001",
+            aspect=aspect,
+            reference=reference,
+            negative_prompt=negative_prompt,
+        )
     elif backend == "imagen-ultra":
-        return gen_imagen(prompt, output, model="imagen-4.0-ultra-generate-001", aspect=aspect, reference=reference, negative_prompt=negative_prompt)
+        return gen_imagen(
+            prompt,
+            output,
+            model="imagen-4.0-ultra-generate-001",
+            aspect=aspect,
+            reference=reference,
+            negative_prompt=negative_prompt,
+        )
     elif backend == "hf":
         return gen_hf_inference(prompt, output, negative_prompt=negative_prompt, width=width, height=height)
     elif backend == "zimage":

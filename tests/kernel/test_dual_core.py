@@ -17,6 +17,7 @@ from src.kernel.dual_core import (
 # KernelStack Tests
 # =============================================================================
 
+
 class TestKernelStack:
     def test_create(self):
         ks = KernelStack.create("test-genesis")
@@ -49,6 +50,7 @@ class TestKernelStack:
 # MemoryEntry Tests
 # =============================================================================
 
+
 class TestMemoryEntry:
     def test_hash_chain(self):
         e1 = MemoryEntry(content="first", layer=MemoryLayer.SESSION, prev_hash="genesis")
@@ -72,6 +74,7 @@ class TestMemoryEntry:
 # =============================================================================
 # MemoryLattice Tests
 # =============================================================================
+
 
 class TestMemoryLattice:
     def test_store_and_query(self):
@@ -136,6 +139,7 @@ class TestMemoryLattice:
 # GeoKernel Tests
 # =============================================================================
 
+
 class TestGeoKernel:
     def test_reflex_miss(self):
         identity = KernelStack.create("test")
@@ -198,6 +202,7 @@ class TestGeoKernel:
 # Quasi-Lattice Bridge Tests
 # =============================================================================
 
+
 class TestQuasiLattice:
     def test_icosahedral_matrix_shape(self):
         assert ICO_MATRIX.shape == (6, 6)
@@ -226,7 +231,7 @@ class TestQuasiLattice:
         """Different inputs should produce non-repeating outputs."""
         results = []
         for i in range(100):
-            signal = np.array([float(i), float(i+1), float(i+2), 0, 0, 0])
+            signal = np.array([float(i), float(i + 1), float(i + 2), 0, 0, 0])
             results.append(tuple(quasi_project(signal)))
         # All outputs should be unique (aperiodic)
         assert len(set(results)) == 100
@@ -235,6 +240,7 @@ class TestQuasiLattice:
 # =============================================================================
 # DualCoreKernel Integration Tests
 # =============================================================================
+
 
 class TestDualCoreKernel:
     def test_boot_without_phdm(self):

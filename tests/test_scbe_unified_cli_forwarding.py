@@ -41,18 +41,20 @@ def test_scbe_run_forwards_to_system_runtime(monkeypatch) -> None:
     )
 
     assert scbe_cli.main() == 0
-    assert captured == [[
-        sys.executable,
-        str(ROOT / "scripts" / "scbe-system-cli.py"),
-        "--repo-root",
-        str(ROOT),
-        "runtime",
-        "run",
-        "--language",
-        "python",
-        "--code",
-        "print('x')",
-    ]]
+    assert captured == [
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "scbe-system-cli.py"),
+            "--repo-root",
+            str(ROOT),
+            "runtime",
+            "run",
+            "--language",
+            "python",
+            "--code",
+            "print('x')",
+        ]
+    ]
 
 
 def test_scbe_pollypad_forwards_to_system_cli(monkeypatch) -> None:
@@ -70,14 +72,16 @@ def test_scbe_pollypad_forwards_to_system_cli(monkeypatch) -> None:
     )
 
     assert scbe_cli.main() == 0
-    assert captured == [[
-        sys.executable,
-        str(ROOT / "scripts" / "scbe-system-cli.py"),
-        "--repo-root",
-        str(ROOT),
-        "pollypad",
-        "list",
-    ]]
+    assert captured == [
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "scbe-system-cli.py"),
+            "--repo-root",
+            str(ROOT),
+            "pollypad",
+            "list",
+        ]
+    ]
 
 
 def test_scbe_flow_forwards_to_system_cli(monkeypatch) -> None:
@@ -95,16 +99,18 @@ def test_scbe_flow_forwards_to_system_cli(monkeypatch) -> None:
     )
 
     assert scbe_cli.main() == 0
-    assert captured == [[
-        sys.executable,
-        str(ROOT / "scripts" / "scbe-system-cli.py"),
-        "--repo-root",
-        str(ROOT),
-        "flow",
-        "plan",
-        "--task",
-        "improve CLI swarm",
-    ]]
+    assert captured == [
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "scbe-system-cli.py"),
+            "--repo-root",
+            str(ROOT),
+            "flow",
+            "plan",
+            "--task",
+            "improve CLI swarm",
+        ]
+    ]
 
 
 def test_scbe_doctor_forwards_to_system_cli(monkeypatch) -> None:
@@ -118,14 +124,16 @@ def test_scbe_doctor_forwards_to_system_cli(monkeypatch) -> None:
     monkeypatch.setattr(sys, "argv", ["scbe", "doctor", "--json"])
 
     assert scbe_cli.main() == 0
-    assert captured == [[
-        sys.executable,
-        str(ROOT / "scripts" / "scbe-system-cli.py"),
-        "--repo-root",
-        str(ROOT),
-        "doctor",
-        "--json",
-    ]]
+    assert captured == [
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "scbe-system-cli.py"),
+            "--repo-root",
+            str(ROOT),
+            "doctor",
+            "--json",
+        ]
+    ]
 
 
 def test_scbe_workflow_forwards_to_system_cli(monkeypatch) -> None:
@@ -151,18 +159,20 @@ def test_scbe_workflow_forwards_to_system_cli(monkeypatch) -> None:
     )
 
     assert scbe_cli.main() == 0
-    assert captured == [[
-        sys.executable,
-        str(ROOT / "scripts" / "scbe-system-cli.py"),
-        "--repo-root",
-        str(ROOT),
-        "workflow",
-        "styleize",
-        "--name",
-        "nightly-ops",
-        "--step",
-        "Smoke::python scbe.py selftest",
-    ]]
+    assert captured == [
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "scbe-system-cli.py"),
+            "--repo-root",
+            str(ROOT),
+            "workflow",
+            "styleize",
+            "--name",
+            "nightly-ops",
+            "--step",
+            "Smoke::python scbe.py selftest",
+        ]
+    ]
 
 
 def test_scbe_colab_forwards_to_system_cli(monkeypatch) -> None:
@@ -180,12 +190,14 @@ def test_scbe_colab_forwards_to_system_cli(monkeypatch) -> None:
     )
 
     assert scbe_cli.main() == 0
-    assert captured == [[
-        sys.executable,
-        str(ROOT / "scripts" / "scbe-system-cli.py"),
-        "--repo-root",
-        str(ROOT),
-        "colab",
-        "status",
-        "--json",
-    ]]
+    assert captured == [
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "scbe-system-cli.py"),
+            "--repo-root",
+            str(ROOT),
+            "colab",
+            "status",
+            "--json",
+        ]
+    ]

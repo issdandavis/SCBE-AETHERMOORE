@@ -76,7 +76,7 @@ class ConnectorBridge:
                 },
                 configured=True,
                 description="Local automation hub bridge",
-            )
+            ),
         }
 
     def list_connectors(self) -> list[ConnectorInfo]:
@@ -129,9 +129,7 @@ class ConnectorBridge:
             elif platform == "automations":
                 result = await self._execute_automations(action, payload)
             else:
-                return ConnectorResult(
-                    success=False, error=f"Unknown platform: {platform}", platform=platform
-                )
+                return ConnectorResult(success=False, error=f"Unknown platform: {platform}", platform=platform)
         except Exception as exc:  # noqa: BLE001
             result = ConnectorResult(success=False, error=str(exc), platform=platform)
         result.platform = platform

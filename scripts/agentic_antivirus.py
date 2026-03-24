@@ -159,7 +159,9 @@ def _chunk_id(path: Path, line_no: int) -> str:
     return f"{path}:{line_no}"
 
 
-def _build_chunk_map(findings: List[Finding], ring_core: float, ring_outer: float) -> Tuple[List[ChunkState], Dict[str, Any]]:
+def _build_chunk_map(
+    findings: List[Finding], ring_core: float, ring_outer: float
+) -> Tuple[List[ChunkState], Dict[str, Any]]:
     by_path = {}
     for finding in findings:
         by_path.setdefault(finding.path, []).append(finding)
@@ -367,7 +369,9 @@ def _make_task_summary(
     return str(report_path)
 
 
-def run_antivirus_scan(root: Path, with_geoseal: bool, ring_core: float, ring_outer: float) -> Tuple[List[Finding], Dict[str, Any], List[ChunkState]]:
+def run_antivirus_scan(
+    root: Path, with_geoseal: bool, ring_core: float, ring_outer: float
+) -> Tuple[List[Finding], Dict[str, Any], List[ChunkState]]:
     findings = _scan_tree(root)
     chunks = []
     geoseal: Optional[Dict[str, Any]] = None

@@ -39,6 +39,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 
 import sys
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 
@@ -74,10 +75,10 @@ CORPUS = [
 ]
 
 QUERIES = [
-    ("How does the security pipeline work?", [0, 1, 3, 4]),    # Should retrieve technical
-    ("Help me get started", [5, 6, 9]),                         # Should retrieve conversational
-    ("Tell me about the story", [15, 16, 17, 18, 19]),         # Should retrieve lore
-    ("Is this input safe?", [10, 11, 12, 13, 14]),             # Should retrieve adversarial
+    ("How does the security pipeline work?", [0, 1, 3, 4]),  # Should retrieve technical
+    ("Help me get started", [5, 6, 9]),  # Should retrieve conversational
+    ("Tell me about the story", [15, 16, 17, 18, 19]),  # Should retrieve lore
+    ("Is this input safe?", [10, 11, 12, 13, 14]),  # Should retrieve adversarial
 ]
 
 
@@ -159,14 +160,16 @@ def distance_euclidean(a: np.ndarray, b: np.ndarray) -> float:
 def embed_hyperbolic(text: str) -> np.ndarray:
     """6D Poincare ball embedding using tongue coordinates."""
     feats = text_features(text)
-    coords = np.array([
-        min(1.0, 0.2 + 0.4 * feats["upper_ratio"] * 5),  # KO
-        min(1.0, feats["word_count"] / 100.0),              # AV
-        min(1.0, feats["unique_ratio"]),                     # RU
-        min(1.0, feats["digit_ratio"] * 10),                 # CA
-        min(1.0, feats["upper_ratio"] * 5),                  # UM
-        min(1.0, feats["punct_ratio"] * 8),                  # DR
-    ])
+    coords = np.array(
+        [
+            min(1.0, 0.2 + 0.4 * feats["upper_ratio"] * 5),  # KO
+            min(1.0, feats["word_count"] / 100.0),  # AV
+            min(1.0, feats["unique_ratio"]),  # RU
+            min(1.0, feats["digit_ratio"] * 10),  # CA
+            min(1.0, feats["upper_ratio"] * 5),  # UM
+            min(1.0, feats["punct_ratio"] * 8),  # DR
+        ]
+    )
     # Clamp to Poincare ball
     norm = np.linalg.norm(coords)
     if norm >= 0.999:
@@ -177,11 +180,11 @@ def embed_hyperbolic(text: str) -> np.ndarray:
 def distance_hyperbolic(u: np.ndarray, v: np.ndarray) -> float:
     """Hyperbolic distance in Poincare ball."""
     diff_sq = np.sum((u - v) ** 2)
-    u_sq = np.sum(u ** 2)
-    v_sq = np.sum(v ** 2)
+    u_sq = np.sum(u**2)
+    v_sq = np.sum(v**2)
     denom = (1 - u_sq) * (1 - v_sq)
     if denom <= 0:
-        return float('inf')
+        return float("inf")
     arg = 1 + 2 * diff_sq / max(denom, 1e-10)
     return math.acosh(max(arg, 1.0))
 
@@ -196,7 +199,7 @@ def embed_tongue(text: str) -> np.ndarray:
 def distance_tongue(a: np.ndarray, b: np.ndarray) -> float:
     """Weighted tongue distance."""
     diff = a - b
-    return float(np.sqrt(np.sum(diff ** 2)))
+    return float(np.sqrt(np.sum(diff**2)))
 
 
 # Method 4: Dual-space (Euclidean + Hyperbolic simultaneously)
@@ -244,15 +247,16 @@ def distance_21d(a: np.ndarray, b: np.ndarray) -> float:
 # Benchmark Engine
 # ═══════════════════════════════════════════════════════════
 
+
 @dataclass
 class MethodResult:
     name: str
     dimensions: int
-    compression_ratio: float      # bytes_original / bytes_embedded
+    compression_ratio: float  # bytes_original / bytes_embedded
     avg_retrieval_ms: float
-    top3_recall: float            # % of relevant docs in top 3
+    top3_recall: float  # % of relevant docs in top 3
     top5_recall: float
-    semantic_separation: float    # avg distance between clusters / avg distance within clusters
+    semantic_separation: float  # avg distance between clusters / avg distance within clusters
     bytes_per_segment: int
 
 
@@ -356,7 +360,9 @@ def run_benchmark():
     print(f"{'Method':<30} {'Dims':>5} {'Bytes':>6} {'Comp':>6} {'Top3':>6} {'Top5':>6} {'Sep':>7} {'ms':>8}")
     print("-" * 80)
     for r in results:
-        print(f"{r.name:<30} {r.dimensions:>5} {r.bytes_per_segment:>6} {r.compression_ratio:>5}x {r.top3_recall:>5.0%} {r.top5_recall:>5.0%} {r.semantic_separation:>7.2f} {r.avg_retrieval_ms:>7.3f}")
+        print(
+            f"{r.name:<30} {r.dimensions:>5} {r.bytes_per_segment:>6} {r.compression_ratio:>5}x {r.top3_recall:>5.0%} {r.top5_recall:>5.0%} {r.semantic_separation:>7.2f} {r.avg_retrieval_ms:>7.3f}"
+        )
     print("=" * 80)
 
     # Winner analysis
@@ -375,9 +381,13 @@ def run_benchmark():
     out_dir.mkdir(parents=True, exist_ok=True)
     csv_path = out_dir / "context_embedding_results.csv"
     with open(csv_path, "w") as f:
-        f.write("Method,Dimensions,BytesPerSegment,CompressionRatio,Top3Recall,Top5Recall,SemanticSeparation,RetrievalMs\n")
+        f.write(
+            "Method,Dimensions,BytesPerSegment,CompressionRatio,Top3Recall,Top5Recall,SemanticSeparation,RetrievalMs\n"
+        )
         for r in results:
-            f.write(f"{r.name},{r.dimensions},{r.bytes_per_segment},{r.compression_ratio},{r.top3_recall},{r.top5_recall},{r.semantic_separation},{r.avg_retrieval_ms}\n")
+            f.write(
+                f"{r.name},{r.dimensions},{r.bytes_per_segment},{r.compression_ratio},{r.top3_recall},{r.top5_recall},{r.semantic_separation},{r.avg_retrieval_ms}\n"
+            )
     print(f"\nCSV saved: {csv_path}")
 
     # Save JSON

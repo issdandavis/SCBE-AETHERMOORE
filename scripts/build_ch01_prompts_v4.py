@@ -1160,7 +1160,9 @@ def write_review_html(packet: dict[str, Any]) -> None:
         html_lines.append(f"<div class='beat'>{panel['beat']}</div>")
         html_lines.append(f"<div><strong>Sequence:</strong> {panel['sequence_title']}</div>")
         html_lines.append(f"<div><strong>Role:</strong> {panel['sequence_role']}</div>")
-        html_lines.append(f"<div><strong>Camera:</strong> {(panel.get('style_metadata') or {}).get('camera_angle', camera_angle_for_panel(panel))}</div>")
+        html_lines.append(
+            f"<div><strong>Camera:</strong> {(panel.get('style_metadata') or {}).get('camera_angle', camera_angle_for_panel(panel))}</div>"
+        )
         html_lines.append(f"<div><strong>Story job:</strong> {panel['story_job']}</div>")
         html_lines.append("</div></div>")
     html_lines.append("</div></body></html>")

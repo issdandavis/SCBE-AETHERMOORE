@@ -40,8 +40,14 @@ class TestBrowserBackendABC:
 
     def test_required_abstract_methods(self):
         expected = {
-            "initialize", "navigate", "click", "type_text",
-            "screenshot", "scroll", "get_page_content", "close",
+            "initialize",
+            "navigate",
+            "click",
+            "type_text",
+            "screenshot",
+            "scroll",
+            "get_page_content",
+            "close",
         }
         abstract = set()
         for name in expected:
@@ -77,20 +83,32 @@ class TestPlaywrightBackend:
     def test_implements_all_abstract_methods(self):
         """All abstract methods from BrowserBackend are implemented."""
         required = {
-            "initialize", "navigate", "click", "type_text",
-            "screenshot", "scroll", "get_page_content", "close",
+            "initialize",
+            "navigate",
+            "click",
+            "type_text",
+            "screenshot",
+            "scroll",
+            "get_page_content",
+            "close",
         }
         for method_name in required:
             method = getattr(PlaywrightBackend, method_name, None)
             assert method is not None, f"Missing method: {method_name}"
-            assert not getattr(method, "__isabstractmethod__", False), (
-                f"{method_name} is still abstract"
-            )
+            assert not getattr(method, "__isabstractmethod__", False), f"{method_name} is still abstract"
 
     def test_all_methods_are_async(self):
         """All interface methods should be coroutines."""
-        for name in ["initialize", "navigate", "click", "type_text",
-                      "screenshot", "scroll", "get_page_content", "close"]:
+        for name in [
+            "initialize",
+            "navigate",
+            "click",
+            "type_text",
+            "screenshot",
+            "scroll",
+            "get_page_content",
+            "close",
+        ]:
             method = getattr(PlaywrightBackend, name)
             assert asyncio.iscoroutinefunction(method), f"{name} should be async"
 
@@ -117,8 +135,14 @@ class TestSeleniumBackend:
 
     def test_implements_all_abstract_methods(self):
         required = {
-            "initialize", "navigate", "click", "type_text",
-            "screenshot", "scroll", "get_page_content", "close",
+            "initialize",
+            "navigate",
+            "click",
+            "type_text",
+            "screenshot",
+            "scroll",
+            "get_page_content",
+            "close",
         }
         for method_name in required:
             method = getattr(SeleniumBackend, method_name, None)
@@ -126,8 +150,16 @@ class TestSeleniumBackend:
             assert not getattr(method, "__isabstractmethod__", False)
 
     def test_all_methods_are_async(self):
-        for name in ["initialize", "navigate", "click", "type_text",
-                      "screenshot", "scroll", "get_page_content", "close"]:
+        for name in [
+            "initialize",
+            "navigate",
+            "click",
+            "type_text",
+            "screenshot",
+            "scroll",
+            "get_page_content",
+            "close",
+        ]:
             method = getattr(SeleniumBackend, name)
             assert asyncio.iscoroutinefunction(method), f"{name} should be async"
 
@@ -155,8 +187,14 @@ class TestCDPBackend:
 
     def test_implements_all_abstract_methods(self):
         required = {
-            "initialize", "navigate", "click", "type_text",
-            "screenshot", "scroll", "get_page_content", "close",
+            "initialize",
+            "navigate",
+            "click",
+            "type_text",
+            "screenshot",
+            "scroll",
+            "get_page_content",
+            "close",
         }
         for method_name in required:
             method = getattr(CDPBackend, method_name, None)
@@ -164,8 +202,16 @@ class TestCDPBackend:
             assert not getattr(method, "__isabstractmethod__", False)
 
     def test_all_methods_are_async(self):
-        for name in ["initialize", "navigate", "click", "type_text",
-                      "screenshot", "scroll", "get_page_content", "close"]:
+        for name in [
+            "initialize",
+            "navigate",
+            "click",
+            "type_text",
+            "screenshot",
+            "scroll",
+            "get_page_content",
+            "close",
+        ]:
             method = getattr(CDPBackend, name)
             assert asyncio.iscoroutinefunction(method), f"{name} should be async"
 
@@ -180,16 +226,20 @@ class TestBackendConsistency:
 
     BACKENDS = [PlaywrightBackend, SeleniumBackend, CDPBackend]
     INTERFACE = [
-        "initialize", "navigate", "click", "type_text",
-        "screenshot", "scroll", "get_page_content", "close",
+        "initialize",
+        "navigate",
+        "click",
+        "type_text",
+        "screenshot",
+        "scroll",
+        "get_page_content",
+        "close",
     ]
 
     def test_all_backends_have_same_methods(self):
         for cls in self.BACKENDS:
             for method_name in self.INTERFACE:
-                assert hasattr(cls, method_name), (
-                    f"{cls.__name__} missing {method_name}"
-                )
+                assert hasattr(cls, method_name), f"{cls.__name__} missing {method_name}"
 
     def test_navigate_takes_url_param(self):
         """navigate(self, url) signature across all backends."""

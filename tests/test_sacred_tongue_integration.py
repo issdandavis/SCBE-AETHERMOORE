@@ -42,9 +42,7 @@ class TestSacredTongueTokenizer:
         for tongue_code in TONGUES.keys():
             for byte_val in range(256):
                 # Encode byte → token
-                tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(
-                    tongue_code, bytes([byte_val])
-                )
+                tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(tongue_code, bytes([byte_val]))
                 assert len(tokens) == 1, f"Expected 1 token, got {len(tokens)}"
 
                 # Decode token → byte
@@ -58,14 +56,10 @@ class TestSacredTongueTokenizer:
         for tongue_code, spec in TONGUES.items():
             tokens = set()
             for byte_val in range(256):
-                token_list = SACRED_TONGUE_TOKENIZER.encode_bytes(
-                    tongue_code, bytes([byte_val])
-                )
+                token_list = SACRED_TONGUE_TOKENIZER.encode_bytes(tongue_code, bytes([byte_val]))
                 tokens.add(token_list[0])
 
-            assert (
-                len(tokens) == 256
-            ), f"Tongue {tongue_code} has {len(tokens)} unique tokens (expected 256)"
+            assert len(tokens) == 256, f"Tongue {tongue_code} has {len(tokens)} unique tokens (expected 256)"
 
     def test_harmonic_fingerprint_determinism(self):
         """Verify harmonic fingerprint is deterministic"""
@@ -148,9 +142,7 @@ class TestRWPv3Protocol:
         try:
             decrypted = rwp_decrypt_message(password2, envelope, enable_pqc=False)
             # If no exception, verify decryption returned garbage (not original message)
-            assert (
-                decrypted != message
-            ), "Decryption with wrong password should not return original message"
+            assert decrypted != message, "Decryption with wrong password should not return original message"
         except (ValueError, UnicodeDecodeError):
             # Expected - authentication or decode failure
             pass
@@ -166,9 +158,7 @@ class TestRWPv3Protocol:
 
         # Verify all fields match
         for key in ["aad", "salt", "nonce", "ct", "tag"]:
-            assert (
-                envelope_dict[key] == envelope_dict2[key]
-            ), f"Field {key} mismatch after serialization round-trip"
+            assert envelope_dict[key] == envelope_dict2[key], f"Field {key} mismatch after serialization round-trip"
 
 
 # ============================================================
@@ -184,11 +174,7 @@ class TestSCBEContextEncoder:
         message = "Test message"
         envelope = rwp_encrypt_message("password", message, enable_pqc=False)
 
-        section_tokens = {
-            k: v
-            for k, v in envelope.items()
-            if k in ["aad", "salt", "nonce", "ct", "tag"]
-        }
+        section_tokens = {k: v for k, v in envelope.items() if k in ["aad", "salt", "nonce", "ct", "tag"]}
 
         c = SCBE_CONTEXT_ENCODER.tokens_to_complex_context(section_tokens)
 
@@ -201,9 +187,7 @@ class TestSCBEContextEncoder:
         x = SCBE_CONTEXT_ENCODER.complex_to_real_embedding(c)
 
         assert x.shape == (12,), f"Expected shape (12,), got {x.shape}"
-        assert (
-            x.dtype == float or x.dtype == np.float64
-        ), f"Expected float dtype, got {x.dtype}"
+        assert x.dtype == float or x.dtype == np.float64, f"Expected float dtype, got {x.dtype}"
 
         # Verify concatenation: [Re(c[0]), Re(c[1]), ..., Im(c[0]), Im(c[1]), ...]
         expected_real = np.array([1, 3, 5, 7, 9, 11], dtype=float)
@@ -272,9 +256,7 @@ class TestIntegration:
         # Validate original envelope
         for section in ["aad", "salt", "nonce", "ct", "tag"]:
             tokens = envelope[section]
-            is_valid = SACRED_TONGUE_TOKENIZER.validate_section_integrity(
-                section, tokens
-            )
+            is_valid = SACRED_TONGUE_TOKENIZER.validate_section_integrity(section, tokens)
             assert is_valid, f"Section {section} failed integrity check"
 
         # Swap ct ↔ tag tokens (attack simulation)
@@ -285,9 +267,7 @@ class TestIntegration:
         )
 
         # Verify ct section now fails integrity check
-        is_valid_ct = SACRED_TONGUE_TOKENIZER.validate_section_integrity(
-            "ct", envelope_tampered["ct"]
-        )
+        is_valid_ct = SACRED_TONGUE_TOKENIZER.validate_section_integrity("ct", envelope_tampered["ct"])
         assert not is_valid_ct, "Tampered ct section should fail integrity check"
 
     def test_governance_integration(self):
@@ -403,9 +383,7 @@ class TestProperties:
             try:
                 decrypted = rwp_decrypt_message(password2, envelope, enable_pqc=False)
                 # If no exception, verify decryption returned garbage
-                assert (
-                    decrypted != message
-                ), "Decryption with wrong password should not return original message"
+                assert decrypted != message, "Decryption with wrong password should not return original message"
             except (ValueError, UnicodeDecodeError):
                 # Expected - authentication or decode failure
                 pass
@@ -428,9 +406,7 @@ except ImportError:
     BENCHMARK_AVAILABLE = False
 
 
-@pytest.mark.skipif(
-    not BENCHMARK_AVAILABLE, reason="pytest-benchmark not installed (optional)"
-)
+@pytest.mark.skipif(not BENCHMARK_AVAILABLE, reason="pytest-benchmark not installed (optional)")
 @pytest.mark.benchmark
 class TestPerformance:
     """

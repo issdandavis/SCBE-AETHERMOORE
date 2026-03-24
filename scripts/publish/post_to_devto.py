@@ -87,7 +87,7 @@ def _extract_title(body: str) -> tuple[str, str]:
     for i, line in enumerate(lines):
         if line.startswith("# "):
             title = line.lstrip("# ").strip()
-            remaining = "\n".join(lines[:i] + lines[i + 1:]).strip()
+            remaining = "\n".join(lines[:i] + lines[i + 1 :]).strip()
             return title, remaining
     return "", body
 

@@ -64,6 +64,7 @@ PENALTY_AMOUNT = 15.0
 #  Credit action types
 # ---------------------------------------------------------------------------
 
+
 class CreditAction(str, Enum):
     CONTRIBUTE = "CONTRIBUTE"
     QUERY = "QUERY"
@@ -75,9 +76,11 @@ class CreditAction(str, Enum):
 #  Heart Credit record
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class HeartCreditEntry:
     """A single credit transaction in the Heart Vault."""
+
     id: str
     agent_id: str
     action: CreditAction
@@ -90,6 +93,7 @@ class HeartCreditEntry:
 # ---------------------------------------------------------------------------
 #  Heart Credit Ledger
 # ---------------------------------------------------------------------------
+
 
 class HeartCreditLedger:
     """
@@ -205,9 +209,7 @@ class HeartCreditLedger:
 
         Penalty = -PENALTY_AMOUNT (flat)
         """
-        return self._record(
-            agent_id, CreditAction.PENALTY, -PENALTY_AMOUNT, tongue, node_id
-        )
+        return self._record(agent_id, CreditAction.PENALTY, -PENALTY_AMOUNT, tongue, node_id)
 
     def balance(self, agent_id: str) -> float:
         """Get the net credit balance for an agent."""
@@ -254,10 +256,7 @@ class HeartCreditLedger:
                LIMIT ?""",
             (limit,),
         ).fetchall()
-        return [
-            {"agent_id": r[0], "balance": r[1], "transactions": r[2]}
-            for r in rows
-        ]
+        return [{"agent_id": r[0], "balance": r[1], "transactions": r[2]} for r in rows]
 
     def stats(self) -> Dict[str, Any]:
         """Summary statistics for the Heart Credit economy."""

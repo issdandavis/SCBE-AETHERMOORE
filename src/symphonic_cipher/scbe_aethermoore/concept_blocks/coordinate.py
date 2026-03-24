@@ -27,6 +27,7 @@ from .base import BlockResult, BlockStatus, ConceptBlock
 @dataclass
 class SwarmNode:
     """A participant in the consensus protocol."""
+
     node_id: str
     state: Dict[str, Any] = field(default_factory=dict)
     trust_score: float = 1.0
@@ -79,6 +80,7 @@ class BFTConsensus:
 
 
 # -- concept block wrapper ---------------------------------------------------
+
 
 class CoordinateBlock(ConceptBlock):
     """Concept block wrapping BFT swarm consensus.

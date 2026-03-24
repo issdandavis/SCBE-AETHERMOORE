@@ -31,7 +31,7 @@ def run_tests(
     fast: bool = False,
     verbose: bool = True,
     stop_on_fail: bool = False,
-    preflight: bool = False
+    preflight: bool = False,
 ):
     """Run tests at the specified tier level."""
 
@@ -195,52 +195,43 @@ TEST FILES:
 def main():
     parser = argparse.ArgumentParser(
         description="SCBE Test Runner - Run tests at different tier levels",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
     parser.add_argument(
         "tier",
         nargs="?",
         default="all",
-        choices=["all", "homebrew", "professional", "enterprise", "integration", "property", "api", "crypto", "math", "release"],
-        help="Test tier to run (default: all)"
+        choices=[
+            "all",
+            "homebrew",
+            "professional",
+            "enterprise",
+            "integration",
+            "property",
+            "api",
+            "crypto",
+            "math",
+            "release",
+        ],
+        help="Test tier to run (default: all)",
     )
 
-    parser.add_argument(
-        "--coverage", "-c",
-        action="store_true",
-        help="Generate coverage report"
-    )
+    parser.add_argument("--coverage", "-c", action="store_true", help="Generate coverage report")
 
-    parser.add_argument(
-        "--fast", "-f",
-        action="store_true",
-        help="Skip slow tests"
-    )
+    parser.add_argument("--fast", "-f", action="store_true", help="Skip slow tests")
 
-    parser.add_argument(
-        "--quiet", "-q",
-        action="store_true",
-        help="Reduce verbosity"
-    )
+    parser.add_argument("--quiet", "-q", action="store_true", help="Reduce verbosity")
 
-    parser.add_argument(
-        "--stop-on-fail", "-x",
-        action="store_true",
-        help="Stop on first failure"
-    )
+    parser.add_argument("--stop-on-fail", "-x", action="store_true", help="Stop on first failure")
 
     parser.add_argument(
         "--preflight",
         action="store_true",
-        help="Run syntax preflight (py_compile) for key training scripts before pytest"
+        help="Run syntax preflight (py_compile) for key training scripts before pytest",
     )
 
-    parser.add_argument(
-        "--help-tiers",
-        action="store_true",
-        help="Show detailed help about test tiers"
-    )
+    parser.add_argument("--help-tiers", action="store_true", help="Show detailed help about test tiers")
 
     args = parser.parse_args()
 
@@ -254,7 +245,7 @@ def main():
         fast=args.fast,
         verbose=not args.quiet,
         stop_on_fail=args.stop_on_fail,
-        preflight=args.preflight
+        preflight=args.preflight,
     )
 
 

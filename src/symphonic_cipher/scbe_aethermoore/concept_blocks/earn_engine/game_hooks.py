@@ -156,9 +156,9 @@ class GameHooks:
         stage_values = {
             "Rookie": 1.0,
             "Champion": PHI,
-            "Ultimate": PHI ** 2,
-            "Mega": PHI ** 3,
-            "Ultra": PHI ** 4,
+            "Ultimate": PHI**2,
+            "Mega": PHI**3,
+            "Ultra": PHI**4,
         }
         stage_mult = stage_values.get(to_stage, 1.0)
         reward = base * stage_mult

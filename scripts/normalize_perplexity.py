@@ -169,9 +169,7 @@ def normalize_thread(path: Path, min_message_chars: int = 3) -> list[dict[str, A
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Normalize raw Perplexity thread JSON into structured JSONL."
-    )
+    parser = argparse.ArgumentParser(description="Normalize raw Perplexity thread JSON into structured JSONL.")
     parser.add_argument("--raw-dir", default=DEFAULT_RAW_DIR)
     parser.add_argument("--output-jsonl", default=DEFAULT_OUTPUT_JSONL)
     parser.add_argument("--output-stats", default=DEFAULT_OUTPUT_STATS)

@@ -80,9 +80,7 @@ def main() -> int:
             continue
 
         if STATUS_ORDER[curr_status] < STATUS_ORDER[base_status]:
-            errors.append(
-                f"Downgrade blocked for {layer_id}: {base_status} -> {curr_status}"
-            )
+            errors.append(f"Downgrade blocked for {layer_id}: {base_status} -> {curr_status}")
 
     if errors:
         print("Layer status transition check failed:")

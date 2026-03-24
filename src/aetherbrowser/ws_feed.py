@@ -4,6 +4,7 @@ WebSocket message protocol for the AetherBrowser sidebar.
 All messages follow a single schema:
   { type, agent, model, zone, payload, ts, seq }
 """
+
 from __future__ import annotations
 
 import json

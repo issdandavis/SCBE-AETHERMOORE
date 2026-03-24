@@ -19,6 +19,7 @@ def router():
 # Intent Classification
 # =============================================================================
 
+
 class TestIntentClassification:
     def test_scrape_intent(self, router):
         assert router.classify_intent("scrape the top 50 arXiv papers") == TaskIntent.SCRAPE
@@ -72,6 +73,7 @@ class TestIntentClassification:
 # Lane Selection
 # =============================================================================
 
+
 class TestLaneSelection:
     def test_scrape_uses_headless(self, router):
         lanes = router.select_lanes(TaskIntent.SCRAPE, "scrape pages")
@@ -108,6 +110,7 @@ class TestLaneSelection:
 # SFT Shadow Training
 # =============================================================================
 
+
 class TestShadowTraining:
     def test_sft_pair_structure(self, router):
         result = TriLaneResult(
@@ -133,6 +136,7 @@ class TestShadowTraining:
 # =============================================================================
 # TriLaneResult
 # =============================================================================
+
 
 class TestTriLaneResult:
     def test_success_when_any_lane_succeeds(self):
@@ -177,6 +181,7 @@ class TestTriLaneResult:
 # =============================================================================
 # Router Stats
 # =============================================================================
+
 
 class TestRouterStats:
     def test_empty_stats(self, router):

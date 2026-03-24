@@ -59,12 +59,7 @@ def traditional_risk(context_deviation, spin_coherence, spectral_coherence, trus
     Traditional linear risk model (what most systems use).
     """
     # Simple weighted average
-    risk = (
-        0.25 * context_deviation
-        + 0.25 * (1 - spin_coherence)
-        + 0.25 * (1 - spectral_coherence)
-        + 0.25 * (1 - trust)
-    )
+    risk = 0.25 * context_deviation + 0.25 * (1 - spin_coherence) + 0.25 * (1 - spectral_coherence) + 0.25 * (1 - trust)
 
     if risk < 0.33:
         return risk, "ALLOW"
@@ -125,9 +120,7 @@ def simulate_attack_scenario():
         trust = 0.8  # Trust score (from behavioral model)
 
         # Calculate risks
-        trad_risk, trad_decision = traditional_risk(
-            deviation, coherence, coherence, trust
-        )
+        trad_risk, trad_decision = traditional_risk(deviation, coherence, coherence, trust)
         scbe_risk_val, scbe_decision = scbe_risk(deviation, coherence, coherence, trust)
 
         # Count catches
@@ -138,9 +131,7 @@ def simulate_attack_scenario():
                 scbe_catches += 1
 
         # Format output
-        scbe_risk_str = (
-            f"{scbe_risk_val:.2f}" if scbe_risk_val < 1e6 else f"{scbe_risk_val:.1e}"
-        )
+        scbe_risk_str = f"{scbe_risk_val:.2f}" if scbe_risk_val < 1e6 else f"{scbe_risk_val:.1e}"
         attack_marker = " *ATTACK*" if is_attack else ""
 
         print(
@@ -154,15 +145,11 @@ def simulate_attack_scenario():
     print(
         f"  Traditional system caught: {traditional_catches}/{attacks_happened} ({100*traditional_catches/max(1,attacks_happened):.0f}%)"
     )
-    print(
-        f"  SCBE system caught: {scbe_catches}/{attacks_happened} ({100*scbe_catches/max(1,attacks_happened):.0f}%)"
-    )
+    print(f"  SCBE system caught: {scbe_catches}/{attacks_happened} ({100*scbe_catches/max(1,attacks_happened):.0f}%)")
     print()
 
     if scbe_catches > traditional_catches:
-        improvement = (
-            (scbe_catches - traditional_catches) / max(1, attacks_happened) * 100
-        )
+        improvement = (scbe_catches - traditional_catches) / max(1, attacks_happened) * 100
         print(f"  SCBE ADVANTAGE: +{improvement:.0f}% detection rate")
         print()
         print("  KEY INSIGHT: The Harmonic Wall (H = exp(d²)) creates an")

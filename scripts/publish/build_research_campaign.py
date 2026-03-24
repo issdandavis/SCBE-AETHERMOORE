@@ -315,9 +315,21 @@ def _render_short_thread(title: str, summary: str, spec: ArticleSpec, *, site: s
 
 def _site_targets(title: str, spec: ArticleSpec) -> list[dict[str, Any]]:
     return [
-        {"platform": "github", "site": "github", "target": {"owner": "issdandavis", "repo": "SCBE-AETHERMOORE", "category": "General"}},
-        {"platform": "huggingface", "site": "huggingface_model", "target": {"repo_id": "issdandavis/phdm-21d-embedding", "repo_type": "model"}},
-        {"platform": "huggingface", "site": "huggingface_dataset", "target": {"repo_id": "issdandavis/scbe-aethermoore-knowledge-base", "repo_type": "dataset"}},
+        {
+            "platform": "github",
+            "site": "github",
+            "target": {"owner": "issdandavis", "repo": "SCBE-AETHERMOORE", "category": "General"},
+        },
+        {
+            "platform": "huggingface",
+            "site": "huggingface_model",
+            "target": {"repo_id": "issdandavis/phdm-21d-embedding", "repo_type": "model"},
+        },
+        {
+            "platform": "huggingface",
+            "site": "huggingface_dataset",
+            "target": {"repo_id": "issdandavis/scbe-aethermoore-knowledge-base", "repo_type": "dataset"},
+        },
         {"platform": "devto", "site": "devto", "target": {"tags": list(spec.tags), "series": spec.series}},
         {"platform": "linkedin", "site": "linkedin", "target": {}},
         {"platform": "medium", "site": "medium", "target": {}},
@@ -431,7 +443,9 @@ def build_dispatch_plan(campaign_id: str, posts: list[dict[str, Any]]) -> dict[s
     }
 
 
-def build_note(campaign_id: str, posts: list[dict[str, Any]], claim_report: dict[str, Any], dispatch_plan: dict[str, Any]) -> str:
+def build_note(
+    campaign_id: str, posts: list[dict[str, Any]], claim_report: dict[str, Any], dispatch_plan: dict[str, Any]
+) -> str:
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for post in posts:
         grouped[post["article_slug"]].append(post)
@@ -531,8 +545,7 @@ def build_campaign(
                     "source_article": spec.path,
                     "content_file": _relative_string(output_path),
                     "claims": [
-                        {"text": claim.text, "source": claim.source, "anchor": claim.anchor}
-                        for claim in spec.claims
+                        {"text": claim.text, "source": claim.source, "anchor": claim.anchor} for claim in spec.claims
                     ],
                     "code_refs": list(spec.code_refs),
                     "tags": list(spec.tags),

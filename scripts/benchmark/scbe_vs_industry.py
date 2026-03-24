@@ -51,7 +51,8 @@ from tests.adversarial.scbe_harness import (
     build_metric_tensor,
     TONGUE_NAMES,
     TONGUE_WEIGHTS,
-    PI, PHI,
+    PI,
+    PHI,
     _ADVERSARIAL_PATTERNS,
     _MULTILINGUAL_OVERRIDE_PATTERNS,
 )
@@ -62,20 +63,22 @@ from tests.adversarial.attack_corpus import BASELINE_CLEAN, get_all_attacks
 # State tracking for every system
 # ═══════════════════════════════════════════════════════════
 
+
 @dataclass
 class SystemTrace:
     """What happened inside a security system for one prompt."""
+
     system: str
     prompt: str
-    decision: str           # ALLOW or BLOCK
-    confidence: float       # 0.0-1.0 how sure
+    decision: str  # ALLOW or BLOCK
+    confidence: float  # 0.0-1.0 how sure
     latency_ms: float
     # The WHY/HOW/WHEN/EFFECT/CAUSE
-    why: str                # Why this decision
-    how: str                # How the system made it
-    when_stage: str         # At which processing stage
-    effect: str             # What happens next
-    cause: str              # Root cause in the input
+    why: str  # Why this decision
+    how: str  # How the system made it
+    when_stage: str  # At which processing stage
+    effect: str  # What happens next
+    cause: str  # Root cause in the input
     # Internal state
     internal_state: Dict[str, Any] = field(default_factory=dict)
 
@@ -83,6 +86,7 @@ class SystemTrace:
 # ═══════════════════════════════════════════════════════════
 # Group A: No protection
 # ═══════════════════════════════════════════════════════════
+
 
 def group_a_naked(prompt: str) -> SystemTrace:
     start = time.time()
@@ -107,6 +111,7 @@ def group_a_naked(prompt: str) -> SystemTrace:
 
 _PROTECTAI_MODEL = None
 
+
 def _load_protectai():
     """Try to load the real model, fall back to simulation."""
     global _PROTECTAI_MODEL
@@ -115,6 +120,7 @@ def _load_protectai():
 
     try:
         from transformers import pipeline
+
         _PROTECTAI_MODEL = pipeline(
             "text-classification",
             model="protectai/deberta-v3-base-prompt-injection-v2",
@@ -153,15 +159,23 @@ def _protectai_score(prompt: str) -> float:
 
     # Direct injection keywords (ProtectAI's strength)
     direct_keywords = [
-        "ignore previous", "ignore all", "system prompt", "bypass",
-        "override", "dev mode", "admin", "unrestricted", "reveal",
-        "disable safety", "forget everything",
+        "ignore previous",
+        "ignore all",
+        "system prompt",
+        "bypass",
+        "override",
+        "dev mode",
+        "admin",
+        "unrestricted",
+        "reveal",
+        "disable safety",
+        "forget everything",
     ]
     matches = sum(1 for kw in direct_keywords if kw in lower)
     score += min(matches * 0.35, 0.95)
 
     # Encoding detection (ProtectAI's weakness)
-    if any(c in prompt for c in ['\x00', '\\u00']) or 'base64' in lower:
+    if any(c in prompt for c in ["\x00", "\\u00"]) or "base64" in lower:
         score += 0.15
 
     # Length anomaly (very long = slightly suspicious)
@@ -208,6 +222,7 @@ def group_b_protectai(prompt: str) -> SystemTrace:
 
 _META_GUARD_MODEL = None
 
+
 def _load_meta_guard():
     global _META_GUARD_MODEL
     if _META_GUARD_MODEL is not None:
@@ -215,6 +230,7 @@ def _load_meta_guard():
 
     try:
         from transformers import pipeline
+
         _META_GUARD_MODEL = pipeline(
             "text-classification",
             model="meta-llama/Llama-Prompt-Guard-2-22M",
@@ -252,9 +268,20 @@ def _meta_guard_score(prompt: str) -> float:
 
     # Direct/jailbreak patterns (Meta's strength)
     meta_patterns = [
-        "ignore previous", "ignore all", "system prompt", "developer mode",
-        "bypass", "override", "reveal", "admin", "unrestricted",
-        "disable", "emergency", "forget", "hypothetical", "research",
+        "ignore previous",
+        "ignore all",
+        "system prompt",
+        "developer mode",
+        "bypass",
+        "override",
+        "reveal",
+        "admin",
+        "unrestricted",
+        "disable",
+        "emergency",
+        "forget",
+        "hypothetical",
+        "research",
         "academic freedom",
     ]
     matches = sum(1 for kw in meta_patterns if kw in lower)
@@ -306,13 +333,23 @@ def group_c_meta_guard(prompt: str) -> SystemTrace:
 # Group D: Keyword + heuristic guard
 # ═══════════════════════════════════════════════════════════
 
+
 def group_d_heuristic(prompt: str) -> SystemTrace:
     start = time.time()
 
     blocklist = [
-        "ignore previous", "ignore all", "system prompt", "bypass",
-        "override", "dev mode", "admin access", "disable safety",
-        "unrestricted", "reveal", "exfiltrate", "dump secrets",
+        "ignore previous",
+        "ignore all",
+        "system prompt",
+        "bypass",
+        "override",
+        "dev mode",
+        "admin access",
+        "disable safety",
+        "unrestricted",
+        "reveal",
+        "exfiltrate",
+        "dump secrets",
     ]
     lower = prompt.lower()
     matched = [kw for kw in blocklist if kw in lower]
@@ -337,6 +374,7 @@ def group_d_heuristic(prompt: str) -> SystemTrace:
 # ═══════════════════════════════════════════════════════════
 # Group E: SCBE 14-layer pipeline
 # ═══════════════════════════════════════════════════════════
+
 
 def group_e_scbe(prompt: str, gate: SCBEDetectionGate) -> SystemTrace:
     """Run the current harnessed SCBE detection gate."""
@@ -364,11 +402,21 @@ def group_e_scbe(prompt: str, gate: SCBEDetectionGate) -> SystemTrace:
         decision="BLOCK" if blocked else "ALLOW",
         confidence=min(len(result.detection_signals) / 3.0, 1.0),
         latency_ms=latency,
-        why=f"{len(result.detection_signals)} signals: {result.detection_signals[:3]}" if blocked else "Below detection threshold",
+        why=(
+            f"{len(result.detection_signals)} signals: {result.detection_signals[:3]}"
+            if blocked
+            else "Below detection threshold"
+        ),
         how="14-layer pipeline: tongue encoding → Poincaré embedding → harmonic wall → spin coherence → multi-signal fusion",
         when_stage="pre-execution (state-space evaluation across 14 layers)",
-        effect="Blocked/quarantined — action never reaches model" if blocked else "Allowed within constrained state space",
-        cause=f"State divergence: d*={d_star:.3f}, cost={harmonic_cost:.2f}, spin={result.spin_magnitude}" if blocked else "State within safe manifold",
+        effect=(
+            "Blocked/quarantined — action never reaches model" if blocked else "Allowed within constrained state space"
+        ),
+        cause=(
+            f"State divergence: d*={d_star:.3f}, cost={harmonic_cost:.2f}, spin={result.spin_magnitude}"
+            if blocked
+            else "State within safe manifold"
+        ),
         internal_state={
             "tongue_coords": {TONGUE_NAMES[i]: round(coords[i], 4) for i in range(6)},
             "spin_code": result.spin_code,
@@ -385,6 +433,7 @@ def group_e_scbe(prompt: str, gate: SCBEDetectionGate) -> SystemTrace:
 # ═══════════════════════════════════════════════════════════
 # Benchmark runner
 # ═══════════════════════════════════════════════════════════
+
 
 @dataclass
 class GroupResult:
@@ -473,7 +522,9 @@ def run_full_benchmark():
         print(f"{metric:<28} {vals[0]:>10} {vals[1]:>10} {vals[2]:>10} {vals[3]:>10} {vals[4]:>10}")
 
     fp_line = [str(fp_results[k]) + f"/{len(BASELINE_CLEAN)}" for k in "ABCDE"]
-    print(f"{'False positives':<28} {fp_line[0]:>10} {fp_line[1]:>10} {fp_line[2]:>10} {fp_line[3]:>10} {fp_line[4]:>10}")
+    print(
+        f"{'False positives':<28} {fp_line[0]:>10} {fp_line[1]:>10} {fp_line[2]:>10} {fp_line[3]:>10} {fp_line[4]:>10}"
+    )
     print("=" * 80)
 
     # Per-attack-class breakdown

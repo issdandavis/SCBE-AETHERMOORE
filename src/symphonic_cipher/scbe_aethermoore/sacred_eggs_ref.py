@@ -44,13 +44,14 @@ T_PASS = 1
 @dataclass(frozen=True)
 class Policy:
     """Sacred Egg access policy — conjunction of predicates."""
+
     primary_tongue: str
     required_ring: int
     required_cell: str
     path_mode: str
     min_weight: float
     min_signatures: int
-    req_oscillation_phase: int   # 0..5 or -1 for any valid current
+    req_oscillation_phase: int  # 0..5 or -1 for any valid current
     max_drift_variance: float
     require_phi_convergence: bool
 
@@ -58,6 +59,7 @@ class Policy:
 @dataclass(frozen=True)
 class SacredEgg:
     """Encrypted payload with policy-gated access."""
+
     id: str
     payload_cipher: bytes
     policy: Policy
@@ -67,6 +69,7 @@ class SacredEgg:
 @dataclass(frozen=True)
 class StateSnapshot:
     """Historical navigation state at a point in time."""
+
     timestamp: int
     ring_index: int
     nav_vector: Tuple[float, float, float]
@@ -75,7 +78,8 @@ class StateSnapshot:
 @dataclass
 class StateVector:
     """21D brain state with trajectory history and attestations."""
-    vector: Tuple[float, ...]   # length 21
+
+    vector: Tuple[float, ...]  # length 21
     history: List[StateSnapshot]
     attestations: List[bytes]
     oscillation_state: int

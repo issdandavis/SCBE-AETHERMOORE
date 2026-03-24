@@ -734,7 +734,9 @@ def run_call(args: argparse.Namespace) -> int:
 
             tier_cfg = cfg.get("tiers", {}).get(tier, {})
             if not isinstance(tier_cfg, dict):
-                attempts.append({"provider": provider, "tier": tier, "status": "skipped", "reason": "tier_not_configured"})
+                attempts.append(
+                    {"provider": provider, "tier": tier, "status": "skipped", "reason": "tier_not_configured"}
+                )
                 continue
 
             model = str(tier_cfg.get("model", "")).strip()
