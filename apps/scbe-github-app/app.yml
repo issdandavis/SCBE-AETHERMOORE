@@ -1,0 +1,50 @@
+# ──────────────────────────────────────────────────────────────
+# GitHub App Manifest for SCBE Repo Manager
+# ──────────────────────────────────────────────────────────────
+# Use this manifest to register the app at:
+#   https://github.com/settings/apps/new
+#
+# Or use manifest-based registration:
+#   https://docs.github.com/en/apps/sharing-github-apps/registering-a-github-app-from-a-manifest
+# ──────────────────────────────────────────────────────────────
+
+name: SCBE Repo Manager
+description: >
+  Automated repository management for SCBE-AETHERMOORE.
+  Triages issues, reviews PRs, generates changelogs, and keeps
+  the repo clean with stale-issue sweeps.
+url: https://github.com/issdandavis/SCBE-AETHERMOORE
+
+# ── Webhook ──────────────────────────────────────────────────
+# Set this to your deployment URL or smee.io proxy during dev
+# webhook_url: https://your-server.example.com/webhook
+# webhook_secret: <set in .env>
+
+# ── Permissions ──────────────────────────────────────────────
+default_permissions:
+  # Read + write issues (triage labels, comments, close stale)
+  issues: write
+
+  # Read + write pull requests (review checklists, labels)
+  pull_requests: write
+
+  # Read + write repo contents (update CHANGELOG.md on push)
+  contents: write
+
+  # Read check suites / runs (detect passing CI)
+  checks: read
+
+  # Read basic repo metadata (required by most events)
+  metadata: read
+
+# ── Subscribed Events ────────────────────────────────────────
+default_events:
+  - issues
+  - pull_request
+  - push
+  - check_suite
+
+# ── Visibility ───────────────────────────────────────────────
+# "internal" = only installable on the owner's repos
+# Change to "public" if you want others to install it
+public: false
