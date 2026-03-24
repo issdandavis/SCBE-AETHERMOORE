@@ -136,10 +136,8 @@ class PersistentQueue:
         queue_file = self.storage_path / "queue.json"
         if queue_file.exists():
             try:
-                with open(queue_file, 'r') as f:
-                    data = json.load(f)
-                    # Restore workflows (simplified - would need proper deserialization)
-                    self.queue = {}
+                # Restore workflows (simplified - would need proper deserialization)
+                self.queue = {}
             except Exception:
                 pass
 
@@ -369,7 +367,7 @@ class EscalationManager:
             if handler:
                 try:
                     await handler(event)
-                except Exception as e:
+                except Exception:
                     # Log but don't fail escalation
                     pass
 
@@ -480,7 +478,7 @@ class AutonomousWorkflowEngine:
 
                 await asyncio.sleep(1)  # Check every second
 
-            except Exception as e:
+            except Exception:
                 # Log error but keep running
                 await asyncio.sleep(5)
 

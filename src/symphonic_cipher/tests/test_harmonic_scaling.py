@@ -1875,14 +1875,14 @@ class TestGrandUnifiedSymphonicCipher:
         modes = np.array([1, 1, 0, 1, 1, 1])  # Dimension 2 frozen
         guscf = GrandUnifiedSymphonicCipher(n_dims=6, dimension_modes=modes)
 
-        theta_origin = np.zeros(6)
+        theta_origin = np.zeros(6)  # noqa: F841
         theta_violate = np.array(
             [0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
         )  # Only moves frozen dim
         r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
 
         # Using theta_violate as reference means we measure distance that crosses frozen dim
-        coherence = guscf.compute_coherence_score(theta_violate, r)
+        guscf.compute_coherence_score(theta_violate, r)
         # This won't trigger frozen violation since we compare to origin by default
 
     def test_latex_formula_output(self):
@@ -2668,7 +2668,7 @@ class TestPolyhedralHamiltonianDefense:
         result = phdm.detect_intrusion(states, timestamps)
 
         # SHOULD detect intrusion
-        assert result["intrusion_detected"] == True
+        assert result["intrusion_detected"] is True
         assert result["intrusion_count"] >= 1
 
     def test_rhythm_pattern_format(self):
@@ -2704,7 +2704,7 @@ class TestPolyhedralHamiltonianDefense:
         assert "detection_details" in result
 
         # Large deviation should be detected
-        assert result["attack_detected"] == True
+        assert result["attack_detected"] is True
 
     def test_attack_simulation_skip(self):
         """Test skip attack simulation."""
@@ -2742,7 +2742,7 @@ class TestPolyhedralHamiltonianDefense:
         # Verify with same seed
         result = phdm.verify_chain_integrity(chain, initial_key=b"integrity_test")
 
-        assert result["valid"] == True
+        assert result["valid"] is True
         assert result["integrity_ratio"] == 1.0
 
     def test_key_chain_integrity_tampered(self):
@@ -2761,7 +2761,7 @@ class TestPolyhedralHamiltonianDefense:
             tampered_chain, initial_key=b"integrity_test"
         )
 
-        assert result["valid"] == False
+        assert result["valid"] is False
         assert result["integrity_ratio"] < 1.0
 
     def test_path_summary(self):

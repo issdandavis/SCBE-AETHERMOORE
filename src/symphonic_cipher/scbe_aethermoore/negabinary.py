@@ -318,7 +318,7 @@ def analyze_gate_stability(values: Sequence[int]) -> GateStabilityReport:
     total_binary = 0
     total_ternary = 0
     total_negabinary = 0
-    entropy_binary = 0.0
+    _ = 0.0
     entropy_ternary = 0.0
     entropy_negabinary = 0.0
     n = len(values)

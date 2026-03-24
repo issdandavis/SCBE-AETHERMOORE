@@ -249,7 +249,7 @@ def search_arxiv(
     try:
         with urlopen(req, timeout=20) as response:
             xml_data = response.read().decode("utf-8")
-    except (URLError, TimeoutError) as e:
+    except (URLError, TimeoutError):
         return []
 
     return _parse_atom_feed(xml_data)

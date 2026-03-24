@@ -471,7 +471,7 @@ def verify_weight_normalization() -> Tuple[bool, Dict[str, Any]]:
         results[name] = {"risk": risk, "weight_entropy": entropy}
 
     # Equal weights should have highest entropy
-    equal_entropy = results["equal"]["weight_entropy"]
+    equal_entropy = results["equal"]["weight_entropy"]  # noqa: F841
     max_entropy_scheme = max(results.keys(), key=lambda k: results[k]["weight_entropy"])
 
     passed = max_entropy_scheme == "equal"

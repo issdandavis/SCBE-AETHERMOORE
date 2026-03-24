@@ -672,7 +672,7 @@ class MCPServer:
                 sys.stdout.flush()
             except KeyboardInterrupt:
                 break
-            except Exception as e:
+            except Exception:
                 logger.exception("Server error")
 
 

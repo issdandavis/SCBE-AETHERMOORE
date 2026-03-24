@@ -241,8 +241,7 @@ def demo():
     # 1️⃣ permutation
     perm_ids = feistel_perm(ids, msg_key)
 
-    # 2️⃣ generate both modalities
-    bin_fp = fingerprint(square_wave(perm_ids))
+    # 2️⃣ generate adaptive modality
     ada_fp = fingerprint(adaptive_wave(perm_ids))
 
     # 3️⃣ envelope (use Adaptive as the "good" path)

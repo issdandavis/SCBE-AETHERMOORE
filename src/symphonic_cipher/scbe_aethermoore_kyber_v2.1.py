@@ -261,7 +261,7 @@ class L2_PhaseVerifier:
     def verify(self) -> Tuple[bool, float]:
         """Check phase alignment score."""
         tau = self.agent.tau
-        breath = np.sin(tau)
+        _ = np.sin(tau)
         phase = np.angle(self.agent.quantum)
         alignment = np.abs(np.cos(phase - tau))
         return alignment > 0.5, float(alignment)

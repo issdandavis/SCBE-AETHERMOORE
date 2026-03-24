@@ -343,7 +343,7 @@ class SCBEAethermooreVerifier:
         Full 13-layer verification pipeline.
         Returns: (is_accept, reason, final_state)
         """
-        tag = self.hmac_chain.tag(payload)
+        self.hmac_chain.tag(payload)
 
         trust_vec = context[:2] if len(context) >= 2 else np.zeros(2)
         d_H = hyperbolic_distance(trust_vec, np.array([0.0, 0.0]))
@@ -351,26 +351,26 @@ class SCBEAethermooreVerifier:
         entropy_delta = np.linalg.norm(intent) - np.mean(context)
         risk = harmonic_scaling(d_H, entropy_delta)
 
-        g = langues_metric(context)
+        langues_metric(context)
 
         self.torus.advance(risk * 0.1)
 
         traj = np.array([context, context + 0.1, context - 0.1])
         D_f = fractal_dimension(traj)
 
-        lambda_L = lyapunov_exponent(traj)
+        lyapunov_exponent(traj)
 
         valid_topo = self.phdm.is_valid_poincare()
 
-        coh = spectral_coherence(context, intent)
+        spectral_coherence(context, intent)
 
-        ent = fft_entropy(context)
+        fft_entropy(context)
 
         intent_pad = np.pad(intent, (0, max(0, 256 - len(intent))), "constant")[:256]
         hopfield_accept = self.hopfield.accept(intent_pad)
         hopfield_conf = self.hopfield.confidence(intent_pad)
 
-        enc_payload = self.feistel.encrypt(payload)
+        self.feistel.encrypt(payload)
 
         aether_state = AethermooreState(
             u1=trust_vec[0], u2=trust_vec[1], phi=self.torus.theta, S=0.5

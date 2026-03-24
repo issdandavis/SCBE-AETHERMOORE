@@ -803,8 +803,8 @@ class FourteenLayerPipeline:
             },
         )
 
-        # Verify Theorem A: d_H preserved
-        d_H_after_breath = layer_5_hyperbolic_distance(
+        # Verify Theorem A: d_H preserved (compute but result not used in this path)
+        layer_5_hyperbolic_distance(
             layer_6_breathing(u, t), layer_6_breathing(ref_u, t)
         )
 
@@ -1012,8 +1012,6 @@ def verify_theorem_C_risk_monotonicity(
     The harmonic scaling function is strictly monotonically increasing.
     """
     results = {"passed": 0, "failed": 0, "violations": []}
-
-    R = R_BASE
 
     for _ in range(n_tests):
         d1 = np.random.rand() * 3

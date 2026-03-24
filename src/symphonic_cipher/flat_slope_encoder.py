@@ -550,7 +550,7 @@ def resonance_refractor(
 
     duration_ms = 100.0
     num_samples = int((duration_ms / 1000.0) * SAMPLE_RATE)
-    t = np.linspace(0, duration_ms / 1000.0, num_samples)
+    np.linspace(0, duration_ms / 1000.0, num_samples)
 
     # Synthesize each token
     token_waves = []

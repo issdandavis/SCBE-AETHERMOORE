@@ -320,8 +320,7 @@ def _handle_subscription_updated(subscription: Dict[str, Any]) -> None:
     if not record:
         return
 
-    # Check for plan change via metadata or items
-    items = subscription.get("items", {}).get("data", [])
+    # Check for plan change via metadata
     new_plan = subscription.get("metadata", {}).get("scbe_plan")
     if new_plan and new_plan in PLANS:
         record["plan"] = new_plan
