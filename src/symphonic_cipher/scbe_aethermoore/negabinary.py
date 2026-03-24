@@ -374,12 +374,12 @@ def analyze_gate_stability(values: Sequence[int]) -> GateStabilityReport:
 # Cross-conversion
 # ---------------------------------------------------------------------------
 
-def negabinary_to_balanced_ternary(nb: NegaBinary) -> "BalancedTernary":
+def negabinary_to_balanced_ternary(nb: NegaBinary) -> "BalancedTernary":  # noqa: F821
     """Convert negabinary to balanced ternary (through integer)."""
     from .trinary import BalancedTernary
     return BalancedTernary.from_int(nb.to_int())
 
 
-def balanced_ternary_to_negabinary(bt: "BalancedTernary") -> NegaBinary:
+def balanced_ternary_to_negabinary(bt: "BalancedTernary") -> NegaBinary:  # noqa: F821
     """Convert balanced ternary to negabinary (through integer)."""
     return NegaBinary.from_int(bt.to_int())

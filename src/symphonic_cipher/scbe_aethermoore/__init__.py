@@ -632,7 +632,7 @@ except ImportError:
     SacredTongueTokenizer = None
 
 # AETHERMOORE Core Constants
-from .constants import (
+from .constants import (  # noqa: F401
     # Mathematical Constants
     PI,
     E,
@@ -678,7 +678,7 @@ from .constants import (
 )
 
 # HAL-Attention (Harmonic Associative Lattice)
-from .hal_attention import (
+from .hal_attention import (  # noqa: F401
     HALConfig,
     AttentionOutput,
     harmonic_coupling_matrix,
@@ -689,7 +689,7 @@ from .hal_attention import (
 )
 
 # Vacuum-Acoustics Kernel
-from .vacuum_acoustics import (
+from .vacuum_acoustics import (  # noqa: F401
     VacuumAcousticsConfig,
     WaveSource,
     FluxResult,
@@ -707,7 +707,7 @@ from .vacuum_acoustics import (
 )
 
 # Cymatic Voxel Storage
-from .cymatic_storage import (
+from .cymatic_storage import (  # noqa: F401
     StorageMode,
     Voxel,
     KDTree,
@@ -715,7 +715,7 @@ from .cymatic_storage import (
 )
 
 # Utility Logging
-from .util_logging import get_logger
+from .util_logging import get_logger  # noqa: F401
 
 # Extend __all__ with new AETHERMOORE modules
 __all__.extend(

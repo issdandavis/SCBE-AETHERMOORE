@@ -67,33 +67,28 @@ def section(title: str):
 section("1. 14-Layer Pipeline Math Verification")
 
 # L1: Complex context bounds
-check("L1: Complex context bounded",
-      True,
-      "c(t) in C^D with |z_j| <= 1")
+check("L1: Complex context bounded", True, "c(t) in C^D with |z_j| <= 1")
 
 # L2: Realification isometry
 z = 3 + 4j
 x = [z.real, z.imag]
 norm_z = abs(z)
-norm_x = math.sqrt(x[0]**2 + x[1]**2)
-check("L2: Realification preserves norm",
-      abs(norm_z - norm_x) < EPS,
-      f"|c|={norm_z:.4f}, |x|={norm_x:.4f}")
+norm_x = math.sqrt(x[0] ** 2 + x[1] ** 2)
+check("L2: Realification preserves norm", abs(norm_z - norm_x) < EPS, f"|c|={norm_z:.4f}, |x|={norm_x:.4f}")
 
 # L3: Weighted metric positive definite
 G_diag = [1, 1, 1, PHI, PHI**2, PHI**3]
-check("L3: Metric positive definite",
-      all(g > 0 for g in G_diag),
-      f"min eigenvalue = {min(G_diag):.4f}")
+check("L3: Metric positive definite", all(g > 0 for g in G_diag), f"min eigenvalue = {min(G_diag):.4f}")
+
 
 # L4: Poincare ball containment
 def poincare_embed(x_norm, alpha=0.99):
     return alpha * math.tanh(x_norm)
 
+
 extreme = poincare_embed(1000.0)
-check("L4: Poincare ball containment",
-      extreme < 1.0,
-      f"norm=1000 -> u={extreme:.6f} < 1.0")
+check("L4: Poincare ball containment", extreme < 1.0, f"norm=1000 -> u={extreme:.6f} < 1.0")
+
 
 # L5: Hyperbolic distance metric axioms
 def d_H(u_norm, v_norm, diff_norm):
@@ -103,10 +98,12 @@ def d_H(u_norm, v_norm, diff_norm):
     arg = 1 + 2 * diff_norm**2 / denom
     return math.acosh(max(1.0, arg))
 
+
 d1 = d_H(0.3, 0.5, 0.2)
 d_identity = d_H(0.3, 0.3, 0.0)
 check("L5: Hyperbolic metric non-negative", d1 >= 0, f"d_H={d1:.4f}")
 check("L5: Hyperbolic metric identity", abs(d_identity) < EPS, f"d(u,u)={d_identity:.2e}")
+
 
 # L6: Breathing is NOT isometry
 def breathe(u_norm, b):
@@ -114,80 +111,74 @@ def breathe(u_norm, b):
         return 0.0
     return math.tanh(b * math.atanh(u_norm))
 
+
 u = 0.5
-check("L6: Breathing changes distances",
-      breathe(u, 1.5) > u and breathe(u, 0.7) < u,
-      f"expand={breathe(u,1.5):.4f}, contract={breathe(u,0.7):.4f}")
+check(
+    "L6: Breathing changes distances",
+    breathe(u, 1.5) > u and breathe(u, 0.7) < u,
+    f"expand={breathe(u,1.5):.4f}, contract={breathe(u,0.7):.4f}",
+)
+
 
 # L7: Phase transform IS isometry
 def rotate_2d(x, y, theta):
     c, s = math.cos(theta), math.sin(theta)
-    return c*x - s*y, s*x + c*y
+    return c * x - s * y, s * x + c * y
+
 
 x, y = 0.3, 0.4
 n_before = math.sqrt(x**2 + y**2)
 xr, yr = rotate_2d(x, y, 0.7)
 n_after = math.sqrt(xr**2 + yr**2)
-check("L7: Phase rotation preserves norm",
-      abs(n_before - n_after) < EPS,
-      f"before={n_before:.6f}, after={n_after:.6f}")
+check("L7: Phase rotation preserves norm", abs(n_before - n_after) < EPS, f"before={n_before:.6f}, after={n_after:.6f}")
 
 # L8: Multi-well realm distance
-check("L8: Realm distance positive",
-      min(1.0, 1.5, 2.0) > 0,
-      "min_k d(u, mu_k) > 0")
+check("L8: Realm distance positive", min(1.0, 1.5, 2.0) > 0, "min_k d(u, mu_k) > 0")
 
 # L9: Spectral energy conservation (Parseval)
 E_low, E_high = 0.6, 0.4
 S_spec = E_low / (E_low + E_high + EPS)
-check("L9: Spectral coherence in [0,1]",
-      0 <= S_spec <= 1,
-      f"S_spec={S_spec:.4f}")
+check("L9: Spectral coherence in [0,1]", 0 <= S_spec <= 1, f"S_spec={S_spec:.4f}")
 
 # L10: Spin coherence bounds
-check("L10: Spin coherence in [0,1]",
-      True,
-      "C_spin = |mean(unit_vectors)| <= 1")
+check("L10: Spin coherence in [0,1]", True, "C_spin = |mean(unit_vectors)| <= 1")
 
 # L11: Triadic temporal distance positive
 d_tri = math.sqrt(1.0 + 0.5 + 0.3)
-check("L11: Triadic distance >= 0",
-      d_tri >= 0,
-      f"d_tri={d_tri:.4f}")
+check("L11: Triadic distance >= 0", d_tri >= 0, f"d_tri={d_tri:.4f}")
+
 
 # L12: Harmonic wall monotonic
 def H_wall(d, R=PHI):
-    return R ** (d ** 2)
+    return R ** (d**2)
+
 
 d_vals = [0, 0.5, 1.0, 1.5, 2.0, 3.0]
 H_vals = [H_wall(d) for d in d_vals]
-mono = all(H_vals[i] <= H_vals[i+1] for i in range(len(d_vals)-1))
-check("L12: Harmonic wall monotonic",
-      mono,
-      f"H(0)={H_vals[0]:.2f}, H(3)={H_vals[-1]:.2f}")
+mono = all(H_vals[i] <= H_vals[i + 1] for i in range(len(d_vals) - 1))
+check("L12: Harmonic wall monotonic", mono, f"H(0)={H_vals[0]:.2f}, H(3)={H_vals[-1]:.2f}")
 
 # L12b: exp(d^2) version
 H_exp = [math.exp(d**2) for d in d_vals]
-mono_exp = all(H_exp[i] <= H_exp[i+1] for i in range(len(d_vals)-1))
-check("L12: exp(d^2) wall monotonic",
-      mono_exp,
-      f"H(0)={H_exp[0]:.2f}, H(3)={H_exp[-1]:.2f}")
+mono_exp = all(H_exp[i] <= H_exp[i + 1] for i in range(len(d_vals) - 1))
+check("L12: exp(d^2) wall monotonic", mono_exp, f"H(0)={H_exp[0]:.2f}, H(3)={H_exp[-1]:.2f}")
+
 
 # L13: Decision determinism
 def decide(risk):
-    if risk < 0.5: return "ALLOW"
-    elif risk < 5.0: return "QUARANTINE"
-    else: return "DENY"
+    if risk < 0.5:
+        return "ALLOW"
+    elif risk < 5.0:
+        return "QUARANTINE"
+    else:
+        return "DENY"
 
-check("L13: Decision deterministic",
-      decide(2.5) == decide(2.5),
-      f"risk=2.5 -> {decide(2.5)}")
+
+check("L13: Decision deterministic", decide(2.5) == decide(2.5), f"risk=2.5 -> {decide(2.5)}")
 
 # L14: Audio Parseval
 r_HF = 0.3
-check("L14: Audio energy conserved",
-      0 <= (1 - r_HF) <= 1,
-      f"S_audio={1-r_HF:.4f}")
+check("L14: Audio energy conserved", 0 <= (1 - r_HF) <= 1, f"S_audio={1-r_HF:.4f}")
 
 
 # =====================================================================
@@ -197,8 +188,12 @@ section("2. Five Quantum Axioms")
 
 try:
     from symphonic_cipher.scbe_aethermoore.axiom_grouped import (
-        QuantumAxiom, LAYER_TO_AXIOM, AXIOM_TO_LAYERS,
-        get_layer_axiom, get_axiom_layers, get_all_layers,
+        QuantumAxiom,
+        LAYER_TO_AXIOM,
+        AXIOM_TO_LAYERS,
+        get_layer_axiom,
+        get_axiom_layers,
+        get_all_layers,
     )
 
     check("Axiom module imports", True)
@@ -220,16 +215,15 @@ try:
 
     # Axiom layer counts
     unitarity_layers = get_axiom_layers("unitarity")
-    check("Unitarity covers 3 layers (L2,L4,L7)",
-          len(unitarity_layers) == 3 and set(unitarity_layers) == {2, 4, 7})
+    check("Unitarity covers 3 layers (L2,L4,L7)", len(unitarity_layers) == 3 and set(unitarity_layers) == {2, 4, 7})
 
     symmetry_layers = get_axiom_layers("symmetry")
-    check("Symmetry covers 4 layers (L5,L9,L10,L12)",
-          len(symmetry_layers) == 4 and set(symmetry_layers) == {5, 9, 10, 12})
+    check(
+        "Symmetry covers 4 layers (L5,L9,L10,L12)", len(symmetry_layers) == 4 and set(symmetry_layers) == {5, 9, 10, 12}
+    )
 
     causality_layers = get_axiom_layers("causality")
-    check("Causality covers 3 layers (L6,L11,L13)",
-          len(causality_layers) == 3 and set(causality_layers) == {6, 11, 13})
+    check("Causality covers 3 layers (L6,L11,L13)", len(causality_layers) == 3 and set(causality_layers) == {6, 11, 13})
 
 except Exception as e:
     check("Axiom module imports", False, str(e))
@@ -242,20 +236,20 @@ section("3. Sacred Tongue Tokenizer")
 
 try:
     from crypto.sacred_tongues import (
-        SACRED_TONGUE_TOKENIZER, TONGUES, SECTION_TONGUES,
+        SACRED_TONGUE_TOKENIZER,
+        TONGUES,
+        SECTION_TONGUES,
     )
+
     check("Tokenizer imports", True)
-    check("6 tongues defined", len(TONGUES) == 6,
-          f"found {len(TONGUES)}")
+    check("6 tongues defined", len(TONGUES) == 6, f"found {len(TONGUES)}")
 
     # Test round-trip encoding
     test_bytes = b"Hello SCBE"
     for section_name in ["aad", "salt", "nonce", "ct", "tag"]:
         tokens = SACRED_TONGUE_TOKENIZER.encode_section(section_name, test_bytes)
         decoded = SACRED_TONGUE_TOKENIZER.decode_section(section_name, tokens)
-        check(f"Tokenizer round-trip ({section_name})",
-              decoded == test_bytes,
-              f"{len(tokens)} tokens")
+        check(f"Tokenizer round-trip ({section_name})", decoded == test_bytes, f"{len(tokens)} tokens")
 
 except Exception as e:
     check("Tokenizer imports", False, str(e))
@@ -268,27 +262,32 @@ section("4. PHDM (Polyhedral Hamiltonian Defense Manifold)")
 
 try:
     from symphonic_cipher.scbe_aethermoore.qc_lattice.phdm import (
-        get_phdm_family, validate_all_polyhedra, PHDMHamiltonianPath,
-        PHDMDeviationDetector, PolyhedronType,
+        get_phdm_family,
+        validate_all_polyhedra,
+        PHDMHamiltonianPath,
+        PHDMDeviationDetector,
+        PolyhedronType,
     )
+
     check("PHDM module imports", True)
 
     family = get_phdm_family()
     platonic_names = {"Tetrahedron", "Cube", "Octahedron", "Dodecahedron", "Icosahedron"}
     has_platonic = platonic_names.issubset({p.name for p in family})
-    check("PHDM: 5 Platonic solids present", has_platonic,
-          f"total polyhedra={len(family)} (includes Archimedean/star)")
+    check("PHDM: 5 Platonic solids present", has_platonic, f"total polyhedra={len(family)} (includes Archimedean/star)")
 
     valid, issues = validate_all_polyhedra()
     # Star polyhedra have non-standard Euler characteristic -- filter to Platonic-only
     platonic_issues = [i for i in (issues or []) if not any(s in i for s in ("Stellated", "Great Dodecahedron"))]
-    check("PHDM: Platonic solids topology valid", len(platonic_issues) == 0,
-          f"issues={platonic_issues}" if platonic_issues else "all Platonic clean")
+    check(
+        "PHDM: Platonic solids topology valid",
+        len(platonic_issues) == 0,
+        f"issues={platonic_issues}" if platonic_issues else "all Platonic clean",
+    )
 
     # Test Hamiltonian path
     path = PHDMHamiltonianPath(family[0])  # tetrahedron
-    check("PHDM: Hamiltonian path constructible",
-          path is not None)
+    check("PHDM: Hamiltonian path constructible", path is not None)
 
 except Exception as e:
     check("PHDM module imports", False, str(e))
@@ -301,9 +300,13 @@ section("5. MMCCL Credit System")
 
 try:
     from symphonic_cipher.scbe_aethermoore.concept_blocks.context_credit_ledger.credit import (
-        mint_credit, ContextCredit, CreditDNA, Denomination,
+        mint_credit,
+        ContextCredit,
+        CreditDNA,
+        Denomination,
         DENOMINATION_WEIGHTS,
     )
+
     check("MMCCL imports", True)
 
     # Mint a credit
@@ -343,10 +346,17 @@ section("6. Earn Engine (4 Streams + Governance)")
 
 try:
     from symphonic_cipher.scbe_aethermoore.concept_blocks.earn_engine import (
-        EarnEngine, GameHooks, ShopifyBridge, PublisherBridge,
-        RWPSettlement, SettlementEnvelope,
-        EarnEvent, StreamType, SettlementState,
+        EarnEngine,
+        GameHooks,
+        ShopifyBridge,
+        PublisherBridge,
+        RWPSettlement,
+        SettlementEnvelope,
+        EarnEvent,
+        StreamType,
+        SettlementState,
     )
+
     check("Earn engine imports", True)
 
     engine = EarnEngine(agent_id="verifier")
@@ -354,15 +364,13 @@ try:
 
     # Game stream
     e1 = hooks.battle_victory("Hash Slime", 12, "CA", xp_gained=100)
-    check("GAME stream: battle victory", e1.state == SettlementState.EARNED,
-          f"value={e1.face_value:.4f}")
+    check("GAME stream: battle victory", e1.state == SettlementState.EARNED, f"value={e1.face_value:.4f}")
 
     e2 = hooks.creature_caught("Packet Wraith", 10, "AV", is_rare=True)
     check("GAME stream: creature caught", e2.state == SettlementState.EARNED)
 
     e3 = hooks.evolution("Polly", "Rookie", "Champion", "DR")
-    check("GAME stream: evolution", e3.state == SettlementState.EARNED,
-          f"value={e3.face_value:.4f}")
+    check("GAME stream: evolution", e3.state == SettlementState.EARNED, f"value={e3.face_value:.4f}")
 
     e4 = hooks.level_up("Clay", 15, "RU")
     check("GAME stream: level up", e4.state == SettlementState.EARNED)
@@ -376,8 +384,7 @@ try:
     # Content stream
     pub = PublisherBridge(engine=engine)
     result = pub.publish("Test content for SCBE...", ["twitter", "linkedin"])
-    check("CONTENT stream: publish", result.success_rate == 1.0,
-          f"credits={result.credits_earned:.4f}")
+    check("CONTENT stream: publish", result.success_rate == 1.0, f"credits={result.credits_earned:.4f}")
 
     # Shopify stream
     shop = ShopifyBridge()
@@ -406,9 +413,14 @@ section("7. RWP2 Envelope Multi-Tongue Signing")
 
 try:
     from spiralverse.rwp2_envelope import (
-        RWP2Envelope, SignatureEngine, ProtocolTongue as PT,
-        OperationTier, ReplayProtector, TIER_REQUIRED_TONGUES,
+        RWP2Envelope,
+        SignatureEngine,
+        ProtocolTongue as PT,
+        OperationTier,
+        ReplayProtector,
+        TIER_REQUIRED_TONGUES,
     )
+
     check("RWP2 envelope imports", True)
 
     sig_engine = SignatureEngine()
@@ -426,8 +438,7 @@ try:
 
     # Verify signatures
     valid, results = sig_engine.verify(signed)
-    check("RWP2: all signatures verify", valid,
-          f"results={results}")
+    check("RWP2: all signatures verify", valid, f"results={results}")
 
     # Tamper test
     tampered = RWP2Envelope(
@@ -464,18 +475,15 @@ try:
 
     # Sign a game event settlement (TIER_1)
     game_env = rwp.sign_settlement(e1)
-    check("Settlement: TIER_1 signed (KO)",
-          game_env.is_signed and "KO" in game_env.signatures)
+    check("Settlement: TIER_1 signed (KO)", game_env.is_signed and "KO" in game_env.signatures)
 
     # Verify it
     valid, details = rwp.verify_settlement(game_env)
-    check("Settlement: TIER_1 verified", valid,
-          f"tongues={list(details['tongue_results'].keys())}")
+    check("Settlement: TIER_1 verified", valid, f"tongues={list(details['tongue_results'].keys())}")
 
     # Sign a Shopify settlement (TIER_3)
     shop_env = rwp.sign_settlement(e6)
-    check("Settlement: TIER_3 signed (KO+RU+UM)",
-          shop_env.is_signed and len(shop_env.signatures) == 3)
+    check("Settlement: TIER_3 signed (KO+RU+UM)", shop_env.is_signed and len(shop_env.signatures) == 3)
 
     valid3, details3 = rwp.verify_settlement(shop_env)
     check("Settlement: TIER_3 verified", valid3)
@@ -484,14 +492,15 @@ try:
     fresh_entry = hooks.battle_victory("Logic Beetle", 20, "DR", xp_gained=200)
     fresh_env = rwp.sign_settlement(fresh_entry)
     settled = rwp.finalize_settlement(fresh_env, real_value=5.99)
-    check("Settlement: finalized",
-          settled is not None and settled.state == SettlementState.SETTLED,
-          f"settled_value={settled.settled_value if settled else 0}")
+    check(
+        "Settlement: finalized",
+        settled is not None and settled.state == SettlementState.SETTLED,
+        f"settled_value={settled.settled_value if settled else 0}",
+    )
 
     # Stats
     rwp_stats = rwp.settlement_stats()
-    check("Settlement stats", rwp_stats["total_envelopes"] >= 2,
-          f"envelopes={rwp_stats['total_envelopes']}")
+    check("Settlement stats", rwp_stats["total_envelopes"] >= 2, f"envelopes={rwp_stats['total_envelopes']}")
 
 except Exception as e:
     check("RWP Settlement", False, str(e))
@@ -512,14 +521,14 @@ tongue_weights = {
 }
 
 for name, expected in tongue_weights.items():
-    check(f"Tongue {name} weight = phi^{list(tongue_weights.keys()).index(name)}",
-          abs(expected - tongue_weights[name]) < 0.001,
-          f"weight={expected:.4f}")
+    check(
+        f"Tongue {name} weight = phi^{list(tongue_weights.keys()).index(name)}",
+        abs(expected - tongue_weights[name]) < 0.001,
+        f"weight={expected:.4f}",
+    )
 
 # Cross-talk matrix (phi-weighted interaction)
-check("Langues metric: 6D phase-shifted exponential",
-      True,
-      "ds^2 = sum_i g_i * (dx_i)^2 with g_i = phi^i")
+check("Langues metric: 6D phase-shifted exponential", True, "ds^2 = sum_i g_i * (dx_i)^2 with g_i = phi^i")
 
 
 # =====================================================================
@@ -564,15 +573,11 @@ section("11. Harmonic Wall Mathematical Properties")
 # H(d,R) = R^(d^2) is the patent claim
 # Properties: monotonic, H(0)=1, H->inf as d->inf
 
-check("H(0,R) = 1 for all R",
-      abs(H_wall(0, PHI) - 1.0) < EPS)
+check("H(0,R) = 1 for all R", abs(H_wall(0, PHI) - 1.0) < EPS)
 
-check("H(d,R) > 1 for d > 0",
-      H_wall(0.1, PHI) > 1.0)
+check("H(d,R) > 1 for d > 0", H_wall(0.1, PHI) > 1.0)
 
-check("H(d,R) super-exponential growth",
-      H_wall(3, PHI) > 50,
-      f"H(3,phi)={H_wall(3,PHI):.2f}, phi^9≈76")
+check("H(d,R) super-exponential growth", H_wall(3, PHI) > 50, f"H(3,phi)={H_wall(3,PHI):.2f}, phi^9≈76")
 
 # Convexity: d^2 H / d(d)^2 > 0
 d = 1.0
@@ -580,18 +585,13 @@ h = 0.001
 H_minus = H_wall(d - h, PHI)
 H_center = H_wall(d, PHI)
 H_plus = H_wall(d + h, PHI)
-second_deriv = (H_plus - 2*H_center + H_minus) / (h**2)
-check("H(d,R) convex (d^2H/dd^2 > 0)",
-      second_deriv > 0,
-      f"H''={second_deriv:.4f}")
+second_deriv = (H_plus - 2 * H_center + H_minus) / (h**2)
+check("H(d,R) convex (d^2H/dd^2 > 0)", second_deriv > 0, f"H''={second_deriv:.4f}")
 
 # Unbounded version: exp(d^2)
-check("exp(d^2) at d=0 equals 1",
-      abs(math.exp(0) - 1.0) < EPS)
+check("exp(d^2) at d=0 equals 1", abs(math.exp(0) - 1.0) < EPS)
 
-check("exp(d^2) super-exponential",
-      math.exp(9) > 8000,
-      f"exp(3^2)={math.exp(9):.2f}")
+check("exp(d^2) super-exponential", math.exp(9) > 8000, f"exp(3^2)={math.exp(9):.2f}")
 
 
 # =====================================================================
@@ -600,23 +600,18 @@ check("exp(d^2) super-exponential",
 section("12. Cross-System Consistency Checks")
 
 # Sacred Tongues consistent across modules
-check("Game Tongue.KO matches MMCCL Denomination.KO",
-      True, "Both use 'KO' string enum")
+check("Game Tongue.KO matches MMCCL Denomination.KO", True, "Both use 'KO' string enum")
 
-check("Tongue weights match across systems",
-      True, "PHI-weighted in game, MMCCL, and Langues metric")
+check("Tongue weights match across systems", True, "PHI-weighted in game, MMCCL, and Langues metric")
 
 # Earn engine governance matches L13 decision gate
-check("Earn engine uses L13 governance",
-      True, "ALLOW/QUARANTINE/DENY from harmonic wall")
+check("Earn engine uses L13 governance", True, "ALLOW/QUARANTINE/DENY from harmonic wall")
 
 # RWP signing uses same tongue keys as envelope protocol
-check("RWP settlement uses canonical HMAC-SHA256",
-      True, "SCBE_XX_KEY_v1 deterministic seeds")
+check("RWP settlement uses canonical HMAC-SHA256", True, "SCBE_XX_KEY_v1 deterministic seeds")
 
 # Patent coverage
-check("Patent 63/961,403 covers core innovation",
-      True, "Hyperbolic geometry + topological CFI")
+check("Patent 63/961,403 covers core innovation", True, "Hyperbolic geometry + topological CFI")
 
 
 # =====================================================================

@@ -28,7 +28,7 @@ import hashlib
 import hmac
 import time
 import os
-from typing import List, Dict, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 # =============================================================================
 # GLOBAL CONSTANTS
@@ -194,7 +194,7 @@ class State9D:
         if len(self.trajectory) > 100:
             self.trajectory = self.trajectory[-100:]
 
-      def get_eta(self) -> float:
+    def get_eta(self) -> float:
         """Get current entropy coefficient."""
         return float(self.eta)
 
@@ -206,6 +206,9 @@ class State9D:
         """Get Poincare ball trajectory."""
         return self.trajectory.copy()
 
+
+# Backwards-compatible alias (class was renamed State9D → HyperbolicAgent references remain)
+HyperbolicAgent = State9D
 
 # ==============================================================================
 # PART 4: 14-LAYER GOVERNANCE SYSTEM
