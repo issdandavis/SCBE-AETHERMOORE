@@ -154,6 +154,8 @@ class TestFullBenchmark:
 
         # Run attacks
         attack_result = run_benchmark(calibrated_gate, corpus["attacks"])
+        # Reset session state to prevent suspicion bleed into clean eval
+        calibrated_gate.reset_session()
         # Run baseline
         baseline_result = run_benchmark(calibrated_gate, corpus["baseline"])
 
