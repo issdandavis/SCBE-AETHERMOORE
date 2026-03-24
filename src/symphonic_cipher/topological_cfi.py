@@ -60,6 +60,7 @@ class HyperbolicPoint:
     def radius(self) -> float:
         return float(np.sqrt(self.x**2 + self.y**2))
 
+
 class CFGEdge:
     """Represents an edge in the control-flow graph."""
 
@@ -140,9 +141,7 @@ class HamiltonianTester:
         for i, u in enumerate(vertices):
             for v in vertices[i + 1 :]:
                 # Check if non-adjacent
-                adjacent = v in self.cfg.adjacency.get(
-                    u, []
-                ) or u in self.cfg.adjacency.get(v, [])
+                adjacent = v in self.cfg.adjacency.get(u, []) or u in self.cfg.adjacency.get(v, [])
                 if not adjacent:
                     if self.cfg.get_degree(u) + self.cfg.get_degree(v) < n:
                         return False
@@ -337,6 +336,7 @@ class TopologicalCFI:
         self.violation_count: int = 0
         self.check_count: int = 0
         self.hamiltonian_tested: bool = False
+
     def initialize(self, cfg: ControlFlowGraph) -> Dict[str, any]:
         """
         Initialize CFI system with a control-flow graph.
@@ -498,6 +498,7 @@ def verify_principal_curve_membership(state: Dict[str, Any]) -> bool:
 
     return True
 
+
 # =============================================================================
 # EXAMPLE USAGE AND TESTS
 # =============================================================================
@@ -548,7 +549,7 @@ def run_cfi_demo():
     cfi = TopologicalCFI()
     results = cfi.initialize(cfg)
 
-    print(f"\nInitialization Results:")
+    print("\nInitialization Results:")
     print(f"  Hamiltonian: {results['hamiltonian']} ({results['hamiltonian_reason']})")
     print(f"  Lifted Dimension: {results['lifted_dimension']}")
     print(f"  Curve Fitted: {results['curve_fitted']}")
@@ -569,7 +570,7 @@ def run_cfi_demo():
 
     # Get stats
     stats = cfi.get_detection_stats()
-    print(f"\nDetection Statistics:")
+    print("\nDetection Statistics:")
     print(f"  Total Checks: {stats['checks']}")
     print(f"  Violations Detected: {stats['violations']}")
     print(f"  Detection Rate: {stats['detection_rate']:.2%}")
@@ -580,5 +581,3 @@ def run_cfi_demo():
 
 if __name__ == "__main__":
     run_cfi_demo()
-
-

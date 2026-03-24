@@ -92,4 +92,3 @@ def run_governance_pipeline(
     if validate:
         out["validation"] = validate_canonical_state(canonical_states)
     return out
-

@@ -64,6 +64,7 @@ from .fsgs import (
 )
 from .hamiltonian_braid import (
     PHASE_STATES,
+    EPS as BRAID_EPS,
     phase_label,
     valid_transition,
     valid_neighbors,
@@ -76,6 +77,7 @@ from .hamiltonian_braid import (
     braid_distance,
     harmonic_cost,
     harmonic_cost_gradient,
+    ConstraintProjection,
     constraint_project,
     braid_step,
     simulate_braid,
@@ -110,28 +112,6 @@ from .dual_lattice import (
     lattice_norm_6d,
     lattice_distance_3d,
 )
-from .hamiltonian_braid import (
-    EPS as BRAID_EPS,
-    phase_label,
-    valid_transition,
-    valid_neighbors,
-    transition_matrix,
-    phase_deviation,
-    RailPoint,
-    Rail,
-    make_rail_from_trajectory,
-    nearest_rail_point,
-    braid_distance,
-    harmonic_cost,
-    harmonic_cost_gradient,
-    ConstraintProjection,
-    constraint_project,
-    BraidStepResult,
-    braid_step,
-    BraidTrajectory,
-    simulate_braid,
-)
-
 from .circuit_flow import (
     PolyDidacticCircuit,
     CircuitNode,

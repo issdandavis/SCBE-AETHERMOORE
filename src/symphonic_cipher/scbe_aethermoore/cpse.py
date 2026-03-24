@@ -833,7 +833,7 @@ def demo():
         network_load=0.2,
     )
 
-    print(f"\nAuthorized query:")
+    print("\nAuthorized query:")
     print(f"  Gravity delay:    {state.gravity_delay:.6f}s")
     print(f"  Gamma factor:     {state.gamma_factor:.4f}")
     print(f"  Soliton stable:   {state.soliton_stable}")
@@ -842,7 +842,7 @@ def demo():
 
     # Map to SCBE
     scbe_adj = engine.map_to_scbe(state)
-    print(f"\nSCBE Adjustments:")
+    print("\nSCBE Adjustments:")
     for key, val in scbe_adj.items():
         print(f"  {key}: {val:.6f}")
     print()

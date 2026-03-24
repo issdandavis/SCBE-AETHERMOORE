@@ -49,7 +49,6 @@ from .layers.fourteen_layer_pipeline import (
     layer_9_spectral_coherence,
     layer_10_spin_coherence,
     layer_12_harmonic_scaling,
-    R_BASE,
     ALPHA_EMBED,
     EPS,
 )

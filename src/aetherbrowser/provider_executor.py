@@ -10,7 +10,6 @@ from typing import Awaitable, Callable
 from src.aetherbrowser.command_planner import CommandPlan
 from src.aetherbrowser.router import ModelProvider, PROVIDER_ENV_VARS, PROVIDER_FAMILY
 
-
 ProviderAdapter = Callable[[str, str], Awaitable[str]]
 
 
@@ -65,10 +64,8 @@ _MODEL_ID_DEFAULTS: dict[ModelProvider, tuple[str, str]] = {
 
 def _resolve_model_ids() -> dict[ModelProvider, str]:
     """Resolve model IDs at call time so env vars set after import are picked up."""
-    return {
-        provider: os.environ.get(env_var, default)
-        for provider, (env_var, default) in _MODEL_ID_DEFAULTS.items()
-    }
+    return {provider: os.environ.get(env_var, default) for provider, (env_var, default) in _MODEL_ID_DEFAULTS.items()}
+
 
 PROVIDER_PACKAGES: dict[ModelProvider, tuple[str, ...]] = {
     ModelProvider.LOCAL: (),
@@ -110,16 +107,10 @@ class ProviderExecutor:
         return {**_resolve_model_ids(), **self._model_id_overrides}
 
     def runtime_status(self) -> dict[ModelProvider, ProviderRuntimeStatus]:
-        return {
-            provider: self._provider_runtime_status(provider)
-            for provider in ModelProvider
-        }
+        return {provider: self._provider_runtime_status(provider) for provider in ModelProvider}
 
     def runtime_status_snapshot(self) -> dict[str, dict[str, object]]:
-        return {
-            provider.value: status.to_dict()
-            for provider, status in self.runtime_status().items()
-        }
+        return {provider.value: status.to_dict() for provider, status in self.runtime_status().items()}
 
     async def execute(self, plan: CommandPlan) -> ProviderExecutionResult:
         prompt = self._build_prompt(plan)

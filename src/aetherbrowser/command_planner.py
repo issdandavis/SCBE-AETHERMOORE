@@ -9,7 +9,6 @@ from typing import Any
 from src.aetherbrowser.agents import AgentSquad
 from src.aetherbrowser.router import ModelProvider, OctoArmorRouter, TaskComplexity
 
-
 _BROWSER_ACTION_KEYWORDS = {
     "browser",
     "click",
@@ -175,6 +174,7 @@ class CommandPlan:
             ],
         }
 
+
 def build_command_plan(
     *,
     text: str,
@@ -213,9 +213,7 @@ def build_command_plan(
         allow_fallback=auto_cascade,
     )
     provider_status = router.provider_status_snapshot()
-    escalation_ready = any(
-        meta["available"] is True and name != "local" for name, meta in provider_status.items()
-    )
+    escalation_ready = any(meta["available"] is True and name != "local" for name, meta in provider_status.items())
     approval_required = bool(required_approvals)
     review_zone = _review_zone_for_risk(risk_tier) if approval_required else None
     next_actions = _build_next_actions(

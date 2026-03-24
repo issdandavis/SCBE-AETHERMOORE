@@ -329,15 +329,15 @@ def demo():
 
         result = bridge.govern_with_polarity(tokens, action, target, sensitivity)
 
-        print(f"\n  Polarity Analysis:")
+        print("\n  Polarity Analysis:")
         print(f"    Dominant: {result.polarity.upper()}")
         print(f"    Frequency Signature: {result.frequency_signature:+.1f} Hz from 440")
 
-        print(f"\n  Hyperbolic Geometry:")
+        print("\n  Hyperbolic Geometry:")
         print(f"    Distance: {result.hyperbolic_distance:.3f}")
         print(f"    Harmonic Cost: {result.harmonic_cost:.3f}")
 
-        print(f"\n  Lattice Governance:")
+        print("\n  Lattice Governance:")
         print(f"    Trust Score: {result.trust_score:.3f}")
         print(f"    Active Tongues: {', '.join(result.tongues_active)}")
         print(f"    DECISION: {result.decision}")

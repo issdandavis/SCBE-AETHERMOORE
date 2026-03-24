@@ -14,12 +14,14 @@ _FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in 
     "yes",
 }
 
+
 class SCBEKyber:
     """
     Implements PQC key encapsulation/decapsulation using Kyber.
     Used for securing communication channels between clusters (AWS, GCP)
     and agents (Polly Pads).
     """
+
     def __init__(self):
         self.kem: Optional[Any] = None
         self.public_key: Optional[bytes] = None
@@ -29,6 +31,7 @@ class SCBEKyber:
             return
         try:
             from oqs import KeyEncapsulation  # local import avoids module import side effects
+
             self.kem = KeyEncapsulation(KYBER_ALG_NAME)
             print(f"PQC module initialized: {KYBER_ALG_NAME}")
         except BaseException as e:
@@ -54,6 +57,7 @@ class SCBEKyber:
         if self.kem is None or self.secret_key is None:
             raise RuntimeError("Kyber module not initialized or missing secret key.")
         return self.kem.decaps(ciphertext)
+
 
 # Quick test to verify module loading and basic functionality
 if __name__ == "__main__":

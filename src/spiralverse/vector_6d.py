@@ -603,7 +603,7 @@ def demo():
 
     # ALPHA and BETA should be docking-eligible (very close)
     eligibility_ab = docking.check_docking_eligibility(agents["ALPHA"], agents["BETA"])
-    print(f"  ALPHA <-> BETA eligibility:")
+    print("  ALPHA <-> BETA eligibility:")
     print(f"    Velocity delta: {eligibility_ab['velocity_delta']:.2f} m/s (ok={eligibility_ab['velocity_ok']})")
     print(f"    Security delta: {eligibility_ab['security_delta']} (ok={eligibility_ab['security_ok']})")
     print(f"    Spatial distance: {eligibility_ab['spatial_distance']:.2f}m (ok={eligibility_ab['spatial_ok']})")
@@ -616,7 +616,7 @@ def demo():
     # Attempt dock
     lock = docking.attempt_dock(agents["ALPHA"], agents["EPSILON"])
     if lock:
-        print(f"  DOCKING LOCK ESTABLISHED!")
+        print("  DOCKING LOCK ESTABLISHED!")
         print(f"    Token: {lock.lock_token}")
         print(f"    Expiry: {lock.expiry}")
     print()

@@ -18,14 +18,13 @@ when these dependencies are not installed.
 """
 
 import importlib as _importlib
-from typing import TYPE_CHECKING
 
 # ═══════════════════════════════════════════════════════════
 # Eager imports — modules with no heavy dependencies
 # ═══════════════════════════════════════════════════════════
 
 # Sacred Eggs (Cryptographic Secret Containers — no numpy)
-from .sacred_eggs import (
+from .sacred_eggs import (  # noqa: F401
     SacredEgg,
     EggCarton,
     EggRing,

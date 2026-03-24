@@ -212,7 +212,7 @@ def demo():
 
     # Cryptographic strength example
     print("Cryptographic Strength Example:")
-    print(f"Base: 128-bit AES")
+    print("Base: 128-bit AES")
     for d in range(1, 7):
         strength = hsl.cryptographic_strength(d, base_bits=128)
         print(f"  d={d}: {strength:.1f} effective bits")
