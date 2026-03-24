@@ -28,6 +28,7 @@ Usage:
 @component Six Tongues + GeoSeal CLI
 @version 1.0.0
 """
+from __future__ import annotations
 
 import argparse
 import base64
