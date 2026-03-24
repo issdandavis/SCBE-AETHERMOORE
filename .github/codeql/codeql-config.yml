@@ -21,3 +21,15 @@ paths-ignore:
   - kindle-app/android/capacitor-cordova-android-plugins/**
   - .n8n_local_iso/**
   - SCBE-AETHERMOORE-v3.0.0/**
+  # Exclude test files (intentional patterns, not production)
+  - tests/harmonic/sheafCohomology.test.ts
+  - tests/fleet/**
+  - tests/adversarial/test_tool_exfiltration.py
+  - tests/test_notebooklm_connecto*
+  - tests/test_scbe_system_cli_ope*
+  # Exclude Kindle app client-side code
+  - kindle-app/www/**
+  # Exclude generated/demo scripts
+  - scripts/benchmark_embeddings.py
+  - demo/**
+  - notebooks/**
