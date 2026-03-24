@@ -38,4 +38,3 @@ def test_unsupported_route_returns_issue():
     assert not rust.valid
     assert rust.issues
     assert rust.issues[0].code == "unsupported_route"
-

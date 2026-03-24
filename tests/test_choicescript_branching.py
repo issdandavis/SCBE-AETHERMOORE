@@ -7,7 +7,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "workflows", "n
 from choicescript_branching_engine import (
     BranchingEngine,
     Choice,
-    ExploreResult,
     ExploreStrategy,
     NodeType,
     SafeContextEval,

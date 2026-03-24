@@ -9,10 +9,7 @@ Run: python -m pytest tests/test_aaoe.py -v
 
 import sys
 import os
-import math
-import time
 
-import pytest
 
 # Ensure project root is on path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -173,7 +170,7 @@ class TestTaskMonitorSessions:
 
     def test_observe_on_track(self):
         from src.aaoe.task_monitor import (
-            TaskMonitor, ActionObservation, IntentVector, DriftLevel,
+            TaskMonitor, ActionObservation, DriftLevel,
         )
         monitor = TaskMonitor()
         session = monitor.start_session("agent-1", "Research AI safety papers")
@@ -189,7 +186,7 @@ class TestTaskMonitorSessions:
 
     def test_observe_drift(self):
         from src.aaoe.task_monitor import (
-            TaskMonitor, ActionObservation, IntentVector, DriftLevel,
+            TaskMonitor, ActionObservation, IntentVector,
         )
         monitor = TaskMonitor()
         # Declare: research
@@ -210,7 +207,7 @@ class TestTaskMonitorSessions:
 
     def test_quarantine_on_extreme_drift(self):
         from src.aaoe.task_monitor import (
-            TaskMonitor, ActionObservation, IntentVector, DriftLevel,
+            TaskMonitor, ActionObservation, IntentVector,
         )
         monitor = TaskMonitor()
         session = monitor.start_session(
@@ -248,7 +245,7 @@ class TestTaskMonitorSessions:
 
     def test_drift_callback(self):
         from src.aaoe.task_monitor import (
-            TaskMonitor, ActionObservation, IntentVector, DriftLevel,
+            TaskMonitor, ActionObservation, IntentVector,
         )
         events = []
         def on_drift(sid, level, dist):
@@ -321,7 +318,7 @@ class TestEphemeralPromptEngine:
     def test_generate_gentle(self):
         from src.aaoe.ephemeral_prompt import EphemeralPromptEngine
         from src.aaoe.task_monitor import (
-            TaskMonitor, ActionObservation, IntentVector, DriftLevel, DriftResult,
+            TaskMonitor, DriftLevel, DriftResult,
         )
         engine = EphemeralPromptEngine()
         monitor = TaskMonitor()
@@ -575,7 +572,7 @@ class TestAAOEIntegration:
     def test_full_pipeline(self):
         """Test the complete AAOE flow: register → token → monitor → drift → nudge → record."""
         from src.aaoe.agent_identity import AgentRegistry
-        from src.aaoe.task_monitor import TaskMonitor, ActionObservation, IntentVector
+        from src.aaoe.task_monitor import TaskMonitor, ActionObservation
         from src.aaoe.ephemeral_prompt import EphemeralPromptEngine
 
         # 1. Register agent

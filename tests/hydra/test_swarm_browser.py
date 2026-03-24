@@ -13,7 +13,6 @@ Covers:
 - Consensus check for high-sensitivity actions
 """
 
-import asyncio
 import pytest
 import sys
 import os

@@ -28,47 +28,30 @@ Test Categories:
 
 import sys
 import os
-import hashlib
-import hmac
 import time
-import math
 import threading
-import queue
-import json
-import struct
-from typing import Tuple, List, Dict, Any, Optional
+from typing import Tuple, List, Dict, Any
 from dataclasses import dataclass
 from enum import Enum
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import warnings
 
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import pytest
-import numpy as np
 
 # Import SpiralSeal components
 from symphonic_cipher.scbe_aethermoore.spiral_seal import (
     SpiralSealSS1,
-    SacredTongueTokenizer,
-    encode_to_spelltext,
-    decode_from_spelltext,
 )
 from symphonic_cipher.scbe_aethermoore.spiral_seal.sacred_tongues import (
-    TONGUES,
     format_ss1_blob,
     parse_ss1_blob,
 )
-from symphonic_cipher.scbe_aethermoore.spiral_seal.seal import seal, unseal
 from symphonic_cipher.scbe_aethermoore.spiral_seal.utils import (
-    aes_gcm_encrypt,
-    aes_gcm_decrypt,
     derive_key,
     get_random,
-    sha256,
     sha256_hex,
-    constant_time_compare,
 )
 from symphonic_cipher.scbe_aethermoore.spiral_seal.key_exchange import (
     kyber_keygen,

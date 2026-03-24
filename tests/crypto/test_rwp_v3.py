@@ -9,8 +9,6 @@ Target: 95%+ coverage
 import pytest
 import json
 import secrets
-import hashlib
-from typing import Dict, Any
 
 # Import with fallback for missing dependencies
 try:
@@ -31,7 +29,7 @@ except ImportError:
     CHACHA_AVAILABLE = False
     OQS_AVAILABLE = False
 
-from src.crypto.sacred_tongues import SECTION_TONGUES, SACRED_TONGUE_TOKENIZER
+from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
 
 
 # Skip all tests if dependencies not available

@@ -44,4 +44,3 @@ def test_compute_ds_squared_grows_near_boundary_for_same_euclidean_step():
 
     assert edge["hyperbolic_squared"] > center["hyperbolic_squared"]
     assert edge["hyperbolic_scaled_squared"] > center["hyperbolic_scaled_squared"]
-
