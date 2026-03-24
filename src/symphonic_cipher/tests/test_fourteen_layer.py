@@ -356,7 +356,7 @@ class TestLayer11TriadicDistance:
         d_q_opposite = layer_11_triadic_distance(
             u, u, 1.0, 1.0, 4.0, 4.0, 1 + 0j, -1 + 0j
         )
-        assert d_q_opposite > d_q, f"Opposite phases should have larger distance"
+        assert d_q_opposite > d_q, "Opposite phases should have larger distance"
 
 
 class TestLayer12HarmonicScaling:

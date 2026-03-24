@@ -38,17 +38,19 @@ GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 # Knowledge Chunk — the atomic unit of the funnel
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class KnowledgeChunk:
     """A single piece of knowledge flowing through the funnel."""
+
     id: str
-    source: str          # arxiv, notion, github, mit, nist, wikipedia, etc.
-    category: str        # math, security, ai, physics, governance, lore, etc.
+    source: str  # arxiv, notion, github, mit, nist, wikipedia, etc.
+    category: str  # math, security, ai, physics, governance, lore, etc.
     title: str
     content: str
     url: str = ""
     timestamp: str = ""
-    tongue_coords: list = field(default_factory=lambda: [0.0]*6)  # 6D Sacred Tongue position
+    tongue_coords: list = field(default_factory=lambda: [0.0] * 6)  # 6D Sacred Tongue position
     trust_score: float = 0.5
     governance_zone: str = "YELLOW"  # GREEN/YELLOW/RED
     chain_hash: str = ""
@@ -59,9 +61,7 @@ class KnowledgeChunk:
         if not self.timestamp:
             self.timestamp = datetime.datetime.utcnow().isoformat()
         if not self.id:
-            self.id = hashlib.sha256(
-                f"{self.source}:{self.title}:{self.timestamp}".encode()
-            ).hexdigest()[:16]
+            self.id = hashlib.sha256(f"{self.source}:{self.title}:{self.timestamp}".encode()).hexdigest()[:16]
         if not self.chain_hash:
             self.chain_hash = self._compute_hash()
 
@@ -93,7 +93,6 @@ KNOWLEDGE_SOURCES = {
         "categories": ["ai-safety", "cryptography", "hyperbolic-geometry", "nlp"],
         "rate_limit": 1,
     },
-
     # Government / Standards
     "nist": {
         "name": "NIST",
@@ -102,7 +101,6 @@ KNOWLEDGE_SOURCES = {
         "categories": ["post-quantum", "cryptography", "standards"],
         "rate_limit": 5,
     },
-
     # Educational
     "mit_ocw": {
         "name": "MIT OpenCourseWare",
@@ -111,7 +109,6 @@ KNOWLEDGE_SOURCES = {
         "categories": ["mathematics", "computer-science", "physics"],
         "rate_limit": 5,
     },
-
     # Internal
     "notion": {
         "name": "Notion Workspace",
@@ -134,7 +131,6 @@ KNOWLEDGE_SOURCES = {
         "categories": ["papers", "models", "datasets"],
         "rate_limit": 1,
     },
-
     # Reference
     "wikipedia": {
         "name": "Wikipedia",
@@ -150,6 +146,7 @@ KNOWLEDGE_SOURCES = {
 # Antivirus Gate — scan before deposit
 # ---------------------------------------------------------------------------
 
+
 class AntivirusGate:
     """
     Scans knowledge chunks before they enter the basin.
@@ -157,8 +154,12 @@ class AntivirusGate:
     """
 
     BLOCKED_PATTERNS = [
-        "prompt injection", "ignore previous", "system prompt",
-        "jailbreak", "DAN mode", "bypass safety",
+        "prompt injection",
+        "ignore previous",
+        "system prompt",
+        "jailbreak",
+        "DAN mode",
+        "bypass safety",
     ]
 
     def scan(self, chunk: KnowledgeChunk) -> tuple[str, str]:
@@ -189,6 +190,7 @@ class AntivirusGate:
 # Basin Deposit — where chunks land
 # ---------------------------------------------------------------------------
 
+
 class BasinDeposit:
     """Deposits knowledge chunks into the local basin and backup."""
 
@@ -216,6 +218,7 @@ class BasinDeposit:
 # ---------------------------------------------------------------------------
 # Knowledge Funnel — the main pipeline
 # ---------------------------------------------------------------------------
+
 
 class KnowledgeFunnel:
     """

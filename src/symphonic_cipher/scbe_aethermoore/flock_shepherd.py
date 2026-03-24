@@ -422,11 +422,11 @@ class Flock:
             f"Total Agents: {h['total']}",
             f"  Active: {h['active']}  Idle: {h['idle']}  Busy: {h['busy']}",
             f"  Isolated: {h['isolated']}  Frozen: {h['frozen']}",
-            f"",
+            "",
             f"Average Coherence: {h['avg_coherence']:.3f}",
             f"Healthy: {h['healthy_ratio']}",
             f"BFT Tolerance: f={h['bft_tolerance']}",
-            f"",
+            "",
             "Tracks:",
         ]
         for track_name, info in h["tracks"].items():

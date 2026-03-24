@@ -33,7 +33,6 @@ from typing import Any, Optional
 
 import numpy as np
 
-
 # =============================================================================
 # Constants
 # =============================================================================
@@ -41,21 +40,26 @@ import numpy as np
 PHI = 1.618033988749895
 MEMORY_DIR = Path(__file__).resolve().parent.parent.parent / "artifacts" / "kernel_memory"
 
+
 # Icosahedral projection matrix (6x6, from quasi-space.ts)
 def _icosahedral_matrix() -> np.ndarray:
     phi = PHI
     phi_inv = 1.0 / phi
-    raw = np.array([
-        [1, phi, 0, phi_inv, 0, 0],
-        [0, 1, phi, 0, phi_inv, 0],
-        [0, 0, 1, phi, 0, phi_inv],
-        [phi_inv, 0, 0, 1, phi, 0],
-        [0, phi_inv, 0, 0, 1, phi],
-        [phi, 0, phi_inv, 0, 0, 1],
-    ], dtype=np.float64)
+    raw = np.array(
+        [
+            [1, phi, 0, phi_inv, 0, 0],
+            [0, 1, phi, 0, phi_inv, 0],
+            [0, 0, 1, phi, 0, phi_inv],
+            [phi_inv, 0, 0, 1, phi, 0],
+            [0, phi_inv, 0, 0, 1, phi],
+            [phi, 0, phi_inv, 0, 0, 1],
+        ],
+        dtype=np.float64,
+    )
     # Normalize each row
     norms = np.linalg.norm(raw, axis=1, keepdims=True)
     return raw / norms
+
 
 ICO_MATRIX = _icosahedral_matrix()
 
@@ -64,28 +68,31 @@ ICO_MATRIX = _icosahedral_matrix()
 # Memory Layer Enum
 # =============================================================================
 
+
 class MemoryLayer(int, Enum):
-    WORKING = 0   # seconds
-    SESSION = 1   # hours
-    MISSION = 2   # days
+    WORKING = 0  # seconds
+    SESSION = 1  # hours
+    MISSION = 2  # days
     IDENTITY = 3  # permanent
-    REFLEX = 4    # learned fast-paths
-    IMMUNE = 5    # attack patterns
-    DREAM = 6     # offline consolidation
+    REFLEX = 4  # learned fast-paths
+    IMMUNE = 5  # attack patterns
+    DREAM = 6  # offline consolidation
 
 
 # =============================================================================
 # KernelStack (Identity - Layer 3)
 # =============================================================================
 
+
 @dataclass
 class KernelStack:
     """Immutable identity core. Like DNA — defines who the agent IS."""
-    genesis: str             # creation record (immutable)
-    scars: list[str]         # survival log (append-only)
-    parents: list[str]       # authority chain (immutable)
-    nursery_depth: int       # generation depth
-    state: np.ndarray        # current 9D state vector
+
+    genesis: str  # creation record (immutable)
+    scars: list[str]  # survival log (append-only)
+    parents: list[str]  # authority chain (immutable)
+    nursery_depth: int  # generation depth
+    state: np.ndarray  # current 9D state vector
 
     def add_scar(self, scar: str) -> None:
         self.scars.append(f"{time.time():.0f}:{scar}")
@@ -114,9 +121,11 @@ class KernelStack:
 # Memory Entry
 # =============================================================================
 
+
 @dataclass
 class MemoryEntry:
     """A single memory across any layer."""
+
     content: str
     layer: MemoryLayer
     timestamp: float = field(default_factory=time.time)
@@ -150,12 +159,13 @@ class MemoryEntry:
 # PHDM Classifier (wraps your HuggingFace model)
 # =============================================================================
 
+
 class PHDMClassifier:
     """Lightweight wrapper around the issdandavis/phdm-21d-embedding model."""
 
     def __init__(self, weights: np.ndarray, bias: np.ndarray, label_map: dict[str, int]):
-        self.w = weights   # shape: (83, 256)
-        self.b = bias      # shape: (83,)
+        self.w = weights  # shape: (83, 256)
+        self.b = bias  # shape: (83,)
         self.label_map = label_map
         self.reverse_map = {v: k for k, v in label_map.items()}
 
@@ -164,6 +174,7 @@ class PHDMClassifier:
         """Load from HuggingFace hub."""
         import os
         from huggingface_hub import hf_hub_download
+
         token = os.environ.get("HF_TOKEN")
         repo = "issdandavis/phdm-21d-embedding"
         w_path = hf_hub_download(repo, f"training_runs/{run_id}/model_weights.npz", token=token)
@@ -213,6 +224,7 @@ class PHDMClassifier:
 # GeoKernel (Core 1 — The Brainstem)
 # =============================================================================
 
+
 class GeoKernel:
     """
     Fast governance core. Handles reflexes, known threats, and identity.
@@ -222,8 +234,8 @@ class GeoKernel:
     def __init__(self, identity: KernelStack, classifier: PHDMClassifier | None = None):
         self.identity = identity
         self.classifier = classifier
-        self.reflex_table: dict[str, str] = {}       # Layer 4: hash → action
-        self.immune_signatures: set[str] = set()      # Layer 5: known attack hashes
+        self.reflex_table: dict[str, str] = {}  # Layer 4: hash → action
+        self.immune_signatures: set[str] = set()  # Layer 5: known attack hashes
         self._reflex_hit_count: dict[str, int] = {}
 
     def check_reflex(self, text: str) -> str | None:
@@ -295,6 +307,7 @@ class GeoKernel:
 # MemoryLattice (Core 2 — The Spinal Cord)
 # =============================================================================
 
+
 class MemoryLattice:
     """
     Persistent memory with 7 layers. Hash-chained, tamper-evident.
@@ -302,15 +315,17 @@ class MemoryLattice:
     """
 
     def __init__(self):
-        self.layers: dict[MemoryLayer, list[MemoryEntry]] = {
-            layer: [] for layer in MemoryLayer
-        }
-        self._last_hash: dict[MemoryLayer, str] = {
-            layer: "genesis" for layer in MemoryLayer
-        }
+        self.layers: dict[MemoryLayer, list[MemoryEntry]] = {layer: [] for layer in MemoryLayer}
+        self._last_hash: dict[MemoryLayer, str] = {layer: "genesis" for layer in MemoryLayer}
 
-    def store(self, content: str, layer: MemoryLayer, category: str = "general",
-              embedding: np.ndarray | None = None, metadata: dict | None = None) -> MemoryEntry:
+    def store(
+        self,
+        content: str,
+        layer: MemoryLayer,
+        category: str = "general",
+        embedding: np.ndarray | None = None,
+        metadata: dict | None = None,
+    ) -> MemoryEntry:
         """Store a memory entry with hash chaining."""
         entry = MemoryEntry(
             content=content,
@@ -373,10 +388,7 @@ class MemoryLattice:
         }
 
     def stats(self) -> dict:
-        return {
-            layer.name: len(entries)
-            for layer, entries in self.layers.items()
-        }
+        return {layer.name: len(entries) for layer, entries in self.layers.items()}
 
     def total_memories(self) -> int:
         return sum(len(e) for e in self.layers.values())
@@ -386,12 +398,13 @@ class MemoryLattice:
 # Quasi-Lattice Bridge (connects the two cores)
 # =============================================================================
 
+
 def quasi_project(signal: np.ndarray) -> np.ndarray:
     """Project a 6D signal through the icosahedral matrix.
     Creates aperiodic (unpredictable) communication between cores."""
     if len(signal) < 6:
         padded = np.zeros(6)
-        padded[:len(signal)] = signal
+        padded[: len(signal)] = signal
         signal = padded
     elif len(signal) > 6:
         signal = signal[:6]
@@ -401,6 +414,7 @@ def quasi_project(signal: np.ndarray) -> np.ndarray:
 # =============================================================================
 # DualCoreKernel (The Complete System)
 # =============================================================================
+
 
 class DualCoreKernel:
     """
@@ -512,8 +526,11 @@ class DualCoreKernel:
         key = hashlib.sha256(text.encode()).hexdigest()[:16]
         # Count occurrences in session memory
         top_cat = self.geo.classify(text)[0][0] if self.geo.classifier else "unknown"
-        similar = [e for e in self.memory.layers[MemoryLayer.SESSION]
-                   if e.metadata.get("decision") == decision and e.category == top_cat]
+        similar = [
+            e
+            for e in self.memory.layers[MemoryLayer.SESSION]
+            if e.metadata.get("decision") == decision and e.category == top_cat
+        ]
         if len(similar) >= 5 and key not in self.geo.reflex_table:
             self.geo.add_reflex(text, decision)
 

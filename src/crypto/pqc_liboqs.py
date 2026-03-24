@@ -81,6 +81,7 @@ def _select_sig_algorithm() -> str:
 _KEM_ALG = _select_kem_algorithm()
 _SIG_ALG = _select_sig_algorithm()
 
+
 def _enabled_signature_mechanisms() -> set[str]:
     """Return enabled liboqs signature mechanisms when available."""
     if not LIBOQS_AVAILABLE:
@@ -98,6 +99,7 @@ def _select_mldsa_algorithm() -> Optional[str]:
         if candidate in enabled:
             return candidate
     return None
+
 
 def is_liboqs_available() -> bool:
     """Check if real liboqs is available."""
@@ -343,6 +345,7 @@ class MLDSA65:
 
         return instance
 
+
 # =============================================================================
 # DUAL LATTICE CONSENSUS HELPERS
 # =============================================================================
@@ -370,9 +373,7 @@ def create_dual_lattice_keys(seed: Optional[bytes] = None) -> Tuple[MLKEM768, ML
     return MLKEM768(kem_seed), MLDSA65(dsa_seed)
 
 
-def compute_consensus_hash(
-    kem_shared_secret: bytes, dsa_signature: bytes, context: bytes = b""
-) -> bytes:
+def compute_consensus_hash(kem_shared_secret: bytes, dsa_signature: bytes, context: bytes = b"") -> bytes:
     """
     Compute dual lattice consensus hash.
 
@@ -446,5 +447,3 @@ def run_pqc_diagnostics():
 
 if __name__ == "__main__":
     run_pqc_diagnostics()
-
-

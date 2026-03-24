@@ -529,7 +529,7 @@ class CharmHandler(DomainHandler):
                     ctx.emit(f"[CHARM] Balanced: {balanced}")
                     return balanced
                 except (ValueError, TypeError):
-                    ctx.emit(f"[CHARM] Cannot balance non-numeric values")
+                    ctx.emit("[CHARM] Cannot balance non-numeric values")
                     return None
 
         # PRIORITY command
@@ -803,7 +803,7 @@ class AethercodeInterpreter:
                 ctx.emit(f"[ERROR] Line {verse.line_number}: {e}")
 
         ctx.emit("")
-        ctx.emit(f"=== Execution Complete ===")
+        ctx.emit("=== Execution Complete ===")
         ctx.emit(f"Verses executed: {len(ctx.trace)}")
 
         return ctx

@@ -480,11 +480,6 @@ class PollyPad:
 
     @property
     def tongue(self) -> Lang:
-        """Sacred Tongue for this pad's mode namespace."""
-    thr: Thresholds = Thresholds()
-
-    @property
-    def tongue(self) -> Lang:
         """Sacred Tongue for this pad's namespace."""
         return PAD_MODE_TONGUE[self.mode]
 

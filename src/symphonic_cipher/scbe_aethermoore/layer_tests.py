@@ -21,22 +21,10 @@ from typing import Dict, List, Any, Optional
 from .production_v2_1 import (
     # Constants
     PHI,
-    R,
-    EPSILON,
-    TAU_COH,
-    ETA_TARGET,
-    ETA_MIN,
-    ETA_MAX,
-    D,
-    GROK_THRESHOLD_LOW,
-    GROK_THRESHOLD_HIGH,
-    GROK_WEIGHT,
     CARRIER_FREQ,
     SAMPLE_RATE,
     DURATION,
-    KEY_LEN,
     TONGUE_WEIGHTS,
-    CONLANG,
     # QASI Core (L1-L8)
     realify,
     apply_spd_weights,
@@ -47,24 +35,16 @@ from .production_v2_1 import (
     breathing_transform,
     realm_distance,
     clamp_ball,
-    safe_arcosh,
-    _norm,
     # Quasicrystal (L3.5)
     QuasicrystalLattice,
-    QUASICRYSTAL,
     # CPSE Physics (Section 1.6)
     lorentz_factor,
-    compute_latency_delay,
     SolitonPacket,
     soliton_evolve,
     soliton_key_from_secret,
     spin_rotation_matrix,
     apply_spin,
     flux_jitter,
-    CPSEThrottler,
-    RHO_CRITICAL,
-    SOLITON_ALPHA,
-    SOLITON_BETA,
     # Coherence (L9-L10)
     spectral_stability,
     spin_coherence,
@@ -75,20 +55,7 @@ from .production_v2_1 import (
     risk_base,
     risk_prime,
     # State & Cipher
-    State9D,
-    generate_9d_state,
-    generate_context,
-    compute_entropy,
     phase_modulated_intent,
-    extract_phase,
-    tau_dot,
-    # Governance
-    Polyhedron,
-    governance_pipeline,
-    call_grok,
-    GrokResult,
-    # Swarm
-    simulate_byzantine_attack,
 )
 
 # =============================================================================
@@ -268,7 +235,7 @@ def test_L3_spd_weighting() -> List[LayerTestResult]:
             test_id=2,
             test_name="phi_weights",
             passed=passed,
-            input_summary=f"x=ones(6), g=PHI^k",
+            input_summary="x=ones(6), g=PHI^k",
             output_summary=f"x_G={x_G2[:3]}...",
             expected=f"x_G[0]={expected[0]:.6f}",
             actual=f"x_G[0]={x_G2[0]:.6f}",
@@ -711,7 +678,7 @@ def test_L5_hyperbolic_distance() -> List[LayerTestResult]:
             test_id=2,
             test_name="symmetry",
             passed=passed,
-            input_summary=f"u,v in ball",
+            input_summary="u,v in ball",
             output_summary=f"d(u,v)={d_uv:.12f}, d(v,u)={d_vu:.12f}",
             expected="d(u,v) = d(v,u)",
             actual=f"diff = {abs(d_uv - d_vu):.15e}",
@@ -838,7 +805,7 @@ def test_L7_phase_transform() -> List[LayerTestResult]:
             test_id=1,
             test_name="isometry_approx",
             passed=passed,
-            input_summary=f"u in ball, a shift",
+            input_summary="u in ball, a shift",
             output_summary=f"d_before={d_before:.6f}, d_after={d_after:.6f}",
             expected="distances approximately preserved",
             actual=f"diff = {abs(d_before - d_after):.6f}",
@@ -916,7 +883,7 @@ def test_L8_breathing_transform() -> List[LayerTestResult]:
             test_id=1,
             test_name="identity_at_b1",
             passed=passed,
-            input_summary=f"u=[0.3,0.2,0.1,...], b=1.0",
+            input_summary="u=[0.3,0.2,0.1,...], b=1.0",
             output_summary=f"v={v1[:3]}...",
             expected="B_1(u) ≈ u",
             actual=f"max_diff = {np.max(np.abs(v1 - u1)):.10f}",
@@ -1294,7 +1261,7 @@ def test_L13_risk_aggregation() -> List[LayerTestResult]:
             test_id=3,
             test_name="risk_prime_amplification",
             passed=passed,
-            input_summary=f"rb=0.5, d*=2, R=PHI",
+            input_summary="rb=0.5, d*=2, R=PHI",
             output_summary=f"risk' = {rp3['risk_prime']:.6f}",
             expected=f"risk' = 0.5 * PHI^4 = {expected_rp:.6f}",
             actual=f"risk' = {rp3['risk_prime']:.6f}",
@@ -1777,6 +1744,6 @@ if __name__ == "__main__":
     drift = run_drift_analysis(verbose=True)
 
     # Summary
-    print(f"\nFinal Summary:")
+    print("\nFinal Summary:")
     print(f"  Layer Tests: {suite.passed}/{suite.total}")
     print(f"  Drift Analysis: {len(drift)} layers tracked")

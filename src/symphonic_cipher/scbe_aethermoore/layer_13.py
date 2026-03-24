@@ -713,7 +713,7 @@ def self_test() -> Dict[str, Any]:
         )
         if monotonic:
             passed += 1
-            results["monotonic_d_star"] = f"✓ PASS (Risk' ↑ as d* ↑)"
+            results["monotonic_d_star"] = "✓ PASS (Risk' ↑ as d* ↑)"
         else:
             results["monotonic_d_star"] = "✗ FAIL (not monotonic in d*)"
     except Exception as e:

@@ -41,7 +41,6 @@ class SymmetryViolation(Exception):
     """Raised when an operation violates gauge invariance."""
 
 
-
 class SymmetryGroup(Enum):
     """Common symmetry groups for gauge invariance."""
 
@@ -306,9 +305,7 @@ def layer_9_spectral_coherence(x: np.ndarray) -> float:
     return float(S_spec)
 
 
-def verify_rotation_invariance(
-    x: np.ndarray, n_tests: int = 10, tolerance: float = 0.8
-) -> Tuple[bool, float]:
+def verify_rotation_invariance(x: np.ndarray, n_tests: int = 10, tolerance: float = 0.8) -> Tuple[bool, float]:
     """
     Verify that spectral coherence is approximately rotation-invariant.
 
@@ -368,9 +365,7 @@ def layer_10_spin_coherence(q: complex) -> float:
     return float(2 * amplitude_sq - 1)
 
 
-def verify_phase_invariance(
-    q: complex, n_tests: int = 100, tolerance: float = 1e-10
-) -> Tuple[bool, float]:
+def verify_phase_invariance(q: complex, n_tests: int = 100, tolerance: float = 1e-10) -> Tuple[bool, float]:
     """
     Verify that spin coherence is exactly U(1) phase-invariant.
     """
@@ -395,9 +390,7 @@ def verify_phase_invariance(
 
 
 @symmetry_check(group=SymmetryGroup.SCALE, tolerance=0.0)
-def layer_12_harmonic_scaling(
-    d: float, R: float = PHI, phase_deviation: float = 0.0
-) -> float:
+def layer_12_harmonic_scaling(d: float, R: float = PHI, phase_deviation: float = 0.0) -> float:
     """
     Layer 12: Harmonic Scaling (Cost Form)
 
@@ -488,9 +481,7 @@ class GaugeField:
     connection: Optional[np.ndarray]  # Gauge connection (if applicable)
 
 
-def compute_gauge_covariant_derivative(
-    field: np.ndarray, connection: np.ndarray, direction: int
-) -> np.ndarray:
+def compute_gauge_covariant_derivative(field: np.ndarray, connection: np.ndarray, direction: int) -> np.ndarray:
     """
     Compute gauge-covariant derivative.
 
@@ -639,6 +630,3 @@ def get_symmetry_layer(layer_num: int) -> dict:
 def list_symmetry_layers() -> list:
     """List all layers satisfying the symmetry axiom."""
     return list(SYMMETRY_LAYERS.keys())
-
-
-

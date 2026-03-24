@@ -24,7 +24,10 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from src.fleet.skill_card_forge import SkillCard, Deck, SynergyType, CardType
 from src.fleet.skill_deck_engine import (
-    DeckOptimizer, SynergyEngine, WorkflowCompiler, classify_permissions,
+    DeckOptimizer,
+    SynergyEngine,
+    WorkflowCompiler,
+    classify_permissions,
 )
 
 PHI = (1 + math.sqrt(5)) / 2  # Golden ratio ~1.618
@@ -34,14 +37,16 @@ PHI = (1 + math.sqrt(5)) / 2  # Golden ratio ~1.618
 # PHDM Polyhedra — the 16 cognitive nodes
 # ============================================================
 
+
 @dataclass(frozen=True)
 class Polyhedron:
     """A PHDM polyhedral node with energy cost and position."""
+
     id: int
     name: str
-    category: str        # platonic, archimedean, kepler, toroidal, rhombic, johnson
-    faces: int           # number of geometric faces
-    energy_base: float   # base energy cost to visit
+    category: str  # platonic, archimedean, kepler, toroidal, rhombic, johnson
+    faces: int  # number of geometric faces
+    energy_base: float  # base energy cost to visit
     position_6d: Tuple[float, ...]  # position in tongue-space (KO,AV,RU,CA,UM,DR)
 
 
@@ -115,6 +120,7 @@ TONGUE_PHASES = {
 # Skill → Polyhedron Mapping
 # ============================================================
 
+
 def map_card_to_polyhedron(card: SkillCard) -> Polyhedron:
     """Map a SkillCard to a PHDM polyhedron based on synergy, type, and power.
 
@@ -137,31 +143,31 @@ def map_card_to_polyhedron(card: SkillCard) -> Polyhedron:
     if card_type == CardType.WORKFLOW.value:
         return POLYHEDRA[12] if power < 400 else POLYHEDRA[13]  # Rhombic
     if card_type == CardType.DEFENSE.value:
-        return POLYHEDRA[5] if power < 400 else POLYHEDRA[6]    # Archimedean
+        return POLYHEDRA[5] if power < 400 else POLYHEDRA[6]  # Archimedean
     if card_type == CardType.RESEARCH.value:
         return POLYHEDRA[14] if power < 400 else POLYHEDRA[15]  # Johnson
 
     # Synergy rules for Skill/Tool types
     if synergy == SynergyType.ARCANE.value:
-        return POLYHEDRA[8] if power < 500 else POLYHEDRA[9]    # Kepler
+        return POLYHEDRA[8] if power < 500 else POLYHEDRA[9]  # Kepler
 
     if synergy == SynergyType.ORCHESTRATOR.value:
-        return POLYHEDRA[7]                                      # Snub Dodecahedron
+        return POLYHEDRA[7]  # Snub Dodecahedron
 
     if synergy == SynergyType.DEFENSIVE.value:
-        return POLYHEDRA[5]                                      # Truncated Icosahedron
+        return POLYHEDRA[5]  # Truncated Icosahedron
 
     # Offensive/Utility/Support → Platonic, scaled by power
     if power < 150:
-        return POLYHEDRA[0]   # Tetrahedron
+        return POLYHEDRA[0]  # Tetrahedron
     elif power < 250:
-        return POLYHEDRA[1]   # Cube
+        return POLYHEDRA[1]  # Cube
     elif power < 350:
-        return POLYHEDRA[2]   # Octahedron
+        return POLYHEDRA[2]  # Octahedron
     elif power < 500:
-        return POLYHEDRA[3]   # Dodecahedron
+        return POLYHEDRA[3]  # Dodecahedron
     else:
-        return POLYHEDRA[4]   # Icosahedron
+        return POLYHEDRA[4]  # Icosahedron
 
 
 def get_edge_penalty(from_poly: Polyhedron, to_poly: Polyhedron) -> float:
@@ -174,6 +180,7 @@ def get_edge_penalty(from_poly: Polyhedron, to_poly: Polyhedron) -> float:
 # ============================================================
 # Hamiltonian Path Finder
 # ============================================================
+
 
 def compute_path_cost(path: List[Polyhedron]) -> float:
     """Total energy cost for a path through polyhedra."""
@@ -228,6 +235,7 @@ def find_hamiltonian_path(
 # Face Projection — context funneling
 # ============================================================
 
+
 def classify_tongue_phase(task_description: str) -> int:
     """Determine which tongue phase a task operates in (0-5).
 
@@ -251,15 +259,16 @@ def classify_tongue_phase(task_description: str) -> int:
 @dataclass
 class FaceProjection:
     """A skill projected to a single polyhedron face."""
+
     card_id: str
     card_name: str
     polyhedron_id: int
     polyhedron_name: str
-    face_index: int            # which of 6 tongue faces (0-5)
-    face_code: str             # KO, AV, RU, CA, UM, DR
-    full_token_cost: int       # cost if loading entire skill
+    face_index: int  # which of 6 tongue faces (0-5)
+    face_code: str  # KO, AV, RU, CA, UM, DR
+    full_token_cost: int  # cost if loading entire skill
     projected_token_cost: int  # cost of just this face
-    phase_angle: float         # hexa-phase position
+    phase_angle: float  # hexa-phase position
 
     @property
     def savings_pct(self) -> float:
@@ -304,6 +313,7 @@ def project_to_face(card: SkillCard, tongue_phase: int) -> FaceProjection:
 
 TUBE_RADIUS = 0.15  # from Hamiltonian Braid Specification
 
+
 def harmonic_wall_cost(distance: float) -> float:
     """Barrier cost: phi^(d^2). Zero inside tube, exponential outside.
 
@@ -313,7 +323,7 @@ def harmonic_wall_cost(distance: float) -> float:
     """
     if distance <= TUBE_RADIUS:
         return 0.0
-    return PHI ** (distance ** 2)
+    return PHI ** (distance**2)
 
 
 def hyperbolic_distance_approx(pos_a: Tuple[float, ...], pos_b: Tuple[float, ...]) -> float:
@@ -322,8 +332,8 @@ def hyperbolic_distance_approx(pos_a: Tuple[float, ...], pos_b: Tuple[float, ...
     Uses the Poincare ball metric: d = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2)))
     """
     diff_sq = sum((a - b) ** 2 for a, b in zip(pos_a, pos_b))
-    norm_a_sq = sum(a ** 2 for a in pos_a)
-    norm_b_sq = sum(b ** 2 for b in pos_b)
+    norm_a_sq = sum(a**2 for a in pos_a)
+    norm_b_sq = sum(b**2 for b in pos_b)
 
     denom = (1.0 - min(norm_a_sq, 0.99)) * (1.0 - min(norm_b_sq, 0.99))
     if denom <= 0:
@@ -336,6 +346,7 @@ def hyperbolic_distance_approx(pos_a: Tuple[float, ...], pos_b: Tuple[float, ...
 # ============================================================
 # HallPass — the guidance corridor
 # ============================================================
+
 
 def infer_branch_policy(task_description: str) -> str:
     """Infer a routing policy for the corridor overlay."""
@@ -381,6 +392,7 @@ def infer_switchboard_role(card_type: str, workflow_role: str) -> str:
 @dataclass
 class HallPassNode:
     """One node in the hall pass guidance corridor."""
+
     order: int
     card_id: str
     card_name: str
@@ -389,10 +401,10 @@ class HallPassNode:
     polyhedron_id: int
     polyhedron_name: str
     face: FaceProjection
-    node_energy: float              # polyhedron base energy
-    edge_penalty: float             # penalty from previous node (0 for first)
-    cumulative_energy: float        # total energy up to this point
-    permissions: List[str]          # legacy compatibility; treated as hints only
+    node_energy: float  # polyhedron base energy
+    edge_penalty: float  # penalty from previous node (0 for first)
+    cumulative_energy: float  # total energy up to this point
+    permissions: List[str]  # legacy compatibility; treated as hints only
     latency_ms: int
     risk_level: float
     slot_start_ms: int
@@ -437,18 +449,19 @@ class HallPass:
 
     Authorization remains external to this object.
     """
+
     pass_id: str
     workflow_name: str
-    tongue_phase: int                  # which dimension (0-5)
-    tongue_code: str                   # KO, AV, RU, CA, UM, DR
-    corridor: List[HallPassNode]       # the Hamiltonian path
-    total_energy: float                # sum of all node + edge costs
-    total_projected_tokens: int        # context cost after face projection
-    total_full_tokens: int             # what it would cost without projection
-    context_savings_pct: float         # how much context we saved
-    permissions: List[str]             # legacy compatibility; capability hints only
-    trust_tube_radius: float           # epsilon
-    max_barrier_cost: float            # phi^(epsilon^2) at tube boundary
+    tongue_phase: int  # which dimension (0-5)
+    tongue_code: str  # KO, AV, RU, CA, UM, DR
+    corridor: List[HallPassNode]  # the Hamiltonian path
+    total_energy: float  # sum of all node + edge costs
+    total_projected_tokens: int  # context cost after face projection
+    total_full_tokens: int  # what it would cost without projection
+    context_savings_pct: float  # how much context we saved
+    permissions: List[str]  # legacy compatibility; capability hints only
+    trust_tube_radius: float  # epsilon
+    max_barrier_cost: float  # phi^(epsilon^2) at tube boundary
     lane_id: str
     corridor_graph_id: str
     branch_policy: str
@@ -513,8 +526,7 @@ class HallPass:
             f"(saved {self.context_savings_pct:.0%} from {self.total_full_tokens})",
             f"Guidance: lane={self.lane_id} | branch={self.branch_policy} | ttl={self.ttl_ms}ms",
             f"Authorization: external | capability hints={', '.join(self.capability_hints) or '(none)'}",
-            f"Trust Tube: epsilon={self.trust_tube_radius}, "
-            f"barrier at boundary={self.max_barrier_cost:.4f}",
+            f"Trust Tube: epsilon={self.trust_tube_radius}, " f"barrier at boundary={self.max_barrier_cost:.4f}",
             "",
         ]
         for node in self.corridor:
@@ -535,6 +547,7 @@ class HallPass:
 # ============================================================
 # HallPassCompiler — builds passes from tasks
 # ============================================================
+
 
 class HallPassCompiler:
     """Compiles a task description into a HallPass corridor.
@@ -632,24 +645,26 @@ class HallPassCompiler:
             expected_step_order.append(card.card_id)
             reservation_windows.append((slot_start, slot_end))
 
-            corridor.append(HallPassNode(
-                order=i,
-                card_id=card.card_id,
-                card_name=card.name,
-                card_type=card.card_type,
-                workflow_role=workflow_role,
-                polyhedron_id=poly.id,
-                polyhedron_name=poly.name,
-                face=face,
-                node_energy=poly.energy_base,
-                edge_penalty=edge_penalty,
-                cumulative_energy=cumulative_energy,
-                permissions=sorted(perms.granted),
-                latency_ms=perms.latency_ms,
-                risk_level=perms.risk_level,
-                slot_start_ms=slot_start,
-                slot_end_ms=slot_end,
-            ))
+            corridor.append(
+                HallPassNode(
+                    order=i,
+                    card_id=card.card_id,
+                    card_name=card.name,
+                    card_type=card.card_type,
+                    workflow_role=workflow_role,
+                    polyhedron_id=poly.id,
+                    polyhedron_name=poly.name,
+                    face=face,
+                    node_energy=poly.energy_base,
+                    edge_penalty=edge_penalty,
+                    cumulative_energy=cumulative_energy,
+                    permissions=sorted(perms.granted),
+                    latency_ms=perms.latency_ms,
+                    risk_level=perms.risk_level,
+                    slot_start_ms=slot_start,
+                    slot_end_ms=slot_end,
+                )
+            )
 
         # Step 6: Bundle into HallPass
         name = workflow_name or f"hallpass-{task[:30].replace(' ', '-')}"
@@ -707,14 +722,16 @@ class HallPassCompiler:
 # HallPassDispatcher — dispatch corridor to Switchboard
 # ============================================================
 
+
 @dataclass
 class DispatchResult:
     """Result of dispatching a hall pass to the switchboard."""
+
     pass_id: str
-    dispatched: int           # number of tasks enqueued
-    task_ids: List[str]       # switchboard task IDs in corridor order
-    role_channel: str         # role channel for this corridor
-    corridor_order: List[str] # card names in execution order
+    dispatched: int  # number of tasks enqueued
+    task_ids: List[str]  # switchboard task IDs in corridor order
+    role_channel: str  # role channel for this corridor
+    corridor_order: List[str]  # card names in execution order
 
     def to_dict(self) -> dict:
         return {
@@ -761,6 +778,7 @@ class HallPassDispatcher:
     def switchboard(self):
         if self._switchboard is None:
             from hydra.switchboard import Switchboard
+
             self._switchboard = Switchboard()
         return self._switchboard
 

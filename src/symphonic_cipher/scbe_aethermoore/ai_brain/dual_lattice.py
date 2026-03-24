@@ -28,15 +28,18 @@ from .unified_state import PHI, BRAIN_EPSILON
 # Types
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class Lattice6D:
     """A point in the 6D hyperspace lattice."""
+
     components: Tuple[float, float, float, float, float, float]
 
 
 @dataclass(frozen=True)
 class Lattice3D:
     """A point in 3D projected space."""
+
     x: float
     y: float
     z: float
@@ -45,6 +48,7 @@ class Lattice3D:
 @dataclass(frozen=True)
 class PhasonShift:
     """A phason shift vector in 6D perpendicular space."""
+
     perp_shift: Tuple[float, float, float]
     magnitude: float
     phase: float
@@ -53,6 +57,7 @@ class PhasonShift:
 @dataclass
 class StaticProjectionResult:
     """Result from static lattice projection (6D -> 3D)."""
+
     point_3d: Lattice3D
     perp_component: Tuple[float, float, float]
     accepted: bool
@@ -63,6 +68,7 @@ class StaticProjectionResult:
 @dataclass
 class DynamicTransformResult:
     """Result from dynamic lattice transform (3D -> 6D -> 3D)."""
+
     lifted_6d: Lattice6D
     shifted_6d: Lattice6D
     projected_3d: Lattice3D
@@ -74,6 +80,7 @@ class DynamicTransformResult:
 @dataclass
 class DualLatticeResult:
     """Combined result from both lattice modes."""
+
     static: StaticProjectionResult
     dynamic: DynamicTransformResult
     coherence: float
@@ -84,6 +91,7 @@ class DualLatticeResult:
 @dataclass
 class DualLatticeConfig:
     """Configuration for dual lattice system."""
+
     acceptance_radius: float = 1.0 / PHI
     phason_coupling: float = 0.1
     interference_threshold: float = 0.3
@@ -97,6 +105,7 @@ DEFAULT_DUAL_LATTICE_CONFIG = DualLatticeConfig()
 # ---------------------------------------------------------------------------
 # Icosahedral Projection Matrices (6x3)
 # ---------------------------------------------------------------------------
+
 
 def _build_parallel_projection() -> List[List[float]]:
     """Build the 6x3 physical projection matrix (E_parallel)."""
@@ -125,6 +134,7 @@ E_PERP = _build_perp_projection()
 # ---------------------------------------------------------------------------
 # Projection Helpers
 # ---------------------------------------------------------------------------
+
 
 def _project_6d_to_3d(vec6: Tuple[float, ...], matrix: List[List[float]]) -> Lattice3D:
     """Project a 6D vector to 3D using projection matrix."""
@@ -184,6 +194,7 @@ def _lift_3d_to_6d(point: Lattice3D) -> Lattice6D:
 # Static Lattice (6D -> 3D)
 # ---------------------------------------------------------------------------
 
+
 def static_projection(
     point_6d: Lattice6D,
     config: Optional[DualLatticeConfig] = None,
@@ -196,7 +207,7 @@ def static_projection(
     perp = _project_6d_to_3d(vec, E_PERP)
     perp_component = (perp.x, perp.y, perp.z)
 
-    perp_norm = math.sqrt(perp.x ** 2 + perp.y ** 2 + perp.z ** 2)
+    perp_norm = math.sqrt(perp.x**2 + perp.y**2 + perp.z**2)
     accepted = perp_norm <= config.acceptance_radius
     boundary_distance = max(0.0, config.acceptance_radius - perp_norm)
 
@@ -234,6 +245,7 @@ def generate_aperiodic_mesh(
 # ---------------------------------------------------------------------------
 # Dynamic Lattice (3D -> 6D -> 3D)
 # ---------------------------------------------------------------------------
+
 
 def apply_phason_shift(point_6d: Lattice6D, phason: PhasonShift) -> Lattice6D:
     """Apply a phason shift to a 6D lattice point."""
@@ -285,9 +297,7 @@ def dynamic_transform(
     dz = projected_3d.z - point_3d.z
     displacement = math.sqrt(dx * dx + dy * dy + dz * dz)
 
-    interference_value = _compute_triple_frequency_interference(
-        lifted_6d, shifted_6d, point_3d
-    )
+    interference_value = _compute_triple_frequency_interference(lifted_6d, shifted_6d, point_3d)
     structure_preserved = phason.magnitude <= config.max_phason_amplitude
 
     return DynamicTransformResult(
@@ -303,6 +313,7 @@ def dynamic_transform(
 # ---------------------------------------------------------------------------
 # Fractal Dimension (Box-counting)
 # ---------------------------------------------------------------------------
+
 
 def estimate_fractal_dimension(
     points: List[Lattice3D],
@@ -358,6 +369,7 @@ def lattice_distance_3d(a: Lattice3D, b: Lattice3D) -> float:
 # Dual Lattice System
 # ---------------------------------------------------------------------------
 
+
 class DualLatticeSystem:
     """Dual Lattice System - both projection modes operating simultaneously."""
 
@@ -409,9 +421,7 @@ class DualLatticeSystem:
             validated=validated,
         )
 
-    def create_threat_phason(
-        self, threat_level: float, anomaly_dimensions: Optional[List[int]] = None
-    ) -> PhasonShift:
+    def create_threat_phason(self, threat_level: float, anomaly_dimensions: Optional[List[int]] = None) -> PhasonShift:
         """Create a security-responsive phason shift based on threat level."""
         clamped = max(0.0, min(1.0, threat_level))
         magnitude = clamped * self.config.max_phason_amplitude * self.config.phason_coupling
@@ -451,12 +461,7 @@ class DualLatticeSystem:
         acceptance_score = 1.0 if static_result.accepted else 0.3
         interference_score = 1.0 - abs(dynamic_result.interference_value) * 0.5
 
-        return (
-            displacement_score * 0.35
-            + structure_score * 0.25
-            + acceptance_score * 0.25
-            + interference_score * 0.15
-        )
+        return displacement_score * 0.35 + structure_score * 0.25 + acceptance_score * 0.25 + interference_score * 0.15
 
     @property
     def step(self) -> int:

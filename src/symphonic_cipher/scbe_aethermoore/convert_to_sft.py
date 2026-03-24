@@ -13,6 +13,7 @@ Usage:
     python scripts/convert_to_sft.py input.jsonl --chat  # chat-style messages format
     cat raw.jsonl | python scripts/convert_to_sft.py -    # read from stdin
 """
+
 import argparse
 import json
 import re
@@ -101,7 +102,6 @@ def infer_track(category: str) -> str:
     return "system"
 
 
-
 def generate_instruction(title: str, text: str, category: str) -> str:
     """Generate an instruction prompt from the title and content."""
     # Strip emoji and special chars from title
@@ -179,15 +179,14 @@ def convert_to_chat(record: dict) -> dict:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Convert raw Notion JSONL to SCBE SFT training format"
-    )
+    parser = argparse.ArgumentParser(description="Convert raw Notion JSONL to SCBE SFT training format")
     parser.add_argument(
         "input",
         help="Input JSONL file (use '-' for stdin)",
     )
     parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         default=None,
         help="Output JSONL file (default: stdout)",
     )
@@ -279,7 +278,7 @@ def main():
             print(json.dumps(record, ensure_ascii=False))
 
     # Summary
-    print(f"\n--- Conversion Summary ---", file=sys.stderr)
+    print("\n--- Conversion Summary ---", file=sys.stderr)
     print(f"Input records:     {len(records)}", file=sys.stderr)
     print(f"Converted:         {len(converted)}", file=sys.stderr)
     print(f"Skipped (too short): {skipped}", file=sys.stderr)
@@ -295,11 +294,10 @@ def main():
         cat = r.get("category", "unknown")
         cats[cat] = cats.get(cat, 0) + 1
     if cats:
-        print(f"\nCategory breakdown:", file=sys.stderr)
+        print("\nCategory breakdown:", file=sys.stderr)
         for cat, count in sorted(cats.items(), key=lambda x: -x[1]):
             print(f"  {cat}: {count}", file=sys.stderr)
 
 
 if __name__ == "__main__":
     main()
-

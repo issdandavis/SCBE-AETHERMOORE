@@ -639,7 +639,7 @@ def run_governance_test(steps: int = 50, verbose: bool = True) -> Dict[str, Any]
 
         # Summary
         status = system.get_status()
-        print(f"\n[Final State]")
+        print("\n[Final State]")
         print(f"  eta (entropy): {status['eta']:.4f}")
         print(f"  quantum coherence: {status['coherence']:.4f}")
         print(f"  poincare position: {status['position']}")

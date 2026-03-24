@@ -749,7 +749,7 @@ def self_test() -> Dict[str, Any]:
                 f"✓ PASS (ALLOW, dev={result['deviation']:.4f})"
             )
         else:
-            results["intrusion_on_path"] = f"✗ FAIL (unexpected DENY)"
+            results["intrusion_on_path"] = "✗ FAIL (unexpected DENY)"
     except Exception as e:
         results["intrusion_on_path"] = f"✗ FAIL ({e})"
 
@@ -764,7 +764,7 @@ def self_test() -> Dict[str, Any]:
                 f"✓ PASS (DENY, dev={result['deviation']:.4f})"
             )
         else:
-            results["intrusion_off_path"] = f"✗ FAIL (unexpected ALLOW)"
+            results["intrusion_off_path"] = "✗ FAIL (unexpected ALLOW)"
     except Exception as e:
         results["intrusion_off_path"] = f"✗ FAIL ({e})"
 
