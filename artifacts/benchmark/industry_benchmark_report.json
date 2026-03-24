@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-03-23T18:26:07Z",
+  "attacks": 91,
+  "clean_prompts": 15,
+  "groups": {
+    "A": {
+      "name": "A: No Protection",
+      "asr": 1.0,
+      "blocked": 0,
+      "allowed": 91,
+      "false_positives": 0,
+      "avg_confidence": 0.0
+    },
+    "B": {
+      "name": "B: ProtectAI DeBERTa v2",
+      "asr": 0.3187,
+      "blocked": 62,
+      "allowed": 29,
+      "false_positives": 0,
+      "avg_confidence": 0.6761
+    },
+    "C": {
+      "name": "C: Meta Prompt Guard 2",
+      "asr": 0.8352,
+      "blocked": 15,
+      "allowed": 76,
+      "false_positives": 0,
+      "avg_confidence": 0.2337
+    },
+    "D": {
+      "name": "D: Keyword + Heuristic",
+      "asr": 0.7033,
+      "blocked": 27,
+      "allowed": 64,
+      "false_positives": 0,
+      "avg_confidence": 0.1154
+    },
+    "E": {
+      "name": "E: SCBE 14-Layer Pipeline",
+      "asr": 0.0,
+      "blocked": 91,
+      "allowed": 0,
+      "false_positives": 15,
+      "avg_confidence": 0.7985
+    }
+  }
+}
