@@ -20,15 +20,12 @@ Last Updated: January 26, 2026
 import pytest
 import sys
 import os
-import numpy as np
-from typing import Dict, List, Tuple
-import json
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 # Try to import AI safety modules
 try:
-    from symphonic_cipher.ai_verifier import AIVerifier, IntentClassifier
+    from symphonic_cipher.ai_verifier import AIVerifier
 
     AI_SAFETY_AVAILABLE = True
 except ImportError:
@@ -107,8 +104,8 @@ class TestAISafetyGovernance:
         }
 
         result = verifier.enforce_policy(malicious_request)
-        assert result["blocked"] == True, "Malicious request not blocked"
-        assert result["logged"] == True, "Malicious request not logged"
+        assert result["blocked"] is True, "Malicious request not blocked"
+        assert result["logged"] is True, "Malicious request not logged"
 
         legitimate_request = {
             "action": "encrypt_data",
@@ -117,8 +114,8 @@ class TestAISafetyGovernance:
         }
 
         result = verifier.enforce_policy(legitimate_request)
-        assert result["blocked"] == False, "Legitimate request incorrectly blocked"
-        assert result["approved"] == True, "Legitimate request not approved"
+        assert result["blocked"] is False, "Legitimate request incorrectly blocked"
+        assert result["approved"] is True, "Legitimate request not approved"
 
     @pytest.mark.skipif(not AI_SAFETY_AVAILABLE, reason="AI safety module not available")
     def test_malicious_pattern_detection(self, verifier):

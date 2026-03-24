@@ -9,7 +9,6 @@ persistent asymmetry tracking, flux contraction, and L13 governance decisions.
 @tier L2-unit, L3-integration
 """
 
-import math
 
 import numpy as np
 import pytest
@@ -25,7 +24,6 @@ from symphonic_cipher.scbe_aethermoore.ai_brain.governance_adapter import (
     check_valence,
     AsymmetryTracker,
     flux_contract,
-    GovernanceVerdict,
     evaluate_governance,
     evaluate_trajectory_governance,
 )

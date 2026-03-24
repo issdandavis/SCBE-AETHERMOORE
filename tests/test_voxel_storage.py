@@ -3,7 +3,6 @@
 import math
 import sys
 import os
-import time
 
 import numpy as np
 import pytest

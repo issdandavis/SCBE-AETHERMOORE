@@ -14,7 +14,6 @@ Output: tests/interop/test_vectors.json
 """
 
 import json
-import hashlib
 from pathlib import Path
 
 # Add src to path

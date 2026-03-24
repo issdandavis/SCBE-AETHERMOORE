@@ -5,9 +5,8 @@ Tests ALL variables with their constants under extreme conditions.
 """
 
 import numpy as np
-import time
 from dataclasses import dataclass
-from typing import List, Tuple, Dict, Any
+from typing import List, Any
 import sys
 
 # ═══════════════════════════════════════════════════════════════════════════════

@@ -7,7 +7,6 @@ pytest markers: unit, game
 
 from __future__ import annotations
 
-import math
 import sys
 from pathlib import Path
 
@@ -28,14 +27,9 @@ from symphonic_cipher.scbe_aethermoore.game.types import (
     tongue_distance,
     tongue_norm,
     dominant_tongue,
-    zero_tongue_vector,
-    EVOLUTION_THRESHOLDS,
-    OVER_EVOLUTION_THRESHOLD,
 )
 from symphonic_cipher.scbe_aethermoore.game.companion import (
-    Companion,
     create_companion,
-    derive_combat_stats,
     apply_tongue_experience,
     apply_combat_result,
     current_evolution_stage,
@@ -47,7 +41,6 @@ from symphonic_cipher.scbe_aethermoore.game.combat import (
 )
 from symphonic_cipher.scbe_aethermoore.game.sacred_eggs import (
     check_hatchable_eggs,
-    can_hatch_egg,
     egg_starting_tongue,
 )
 from symphonic_cipher.scbe_aethermoore.game.symbiotic_network import SymbioticNetwork

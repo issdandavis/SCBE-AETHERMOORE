@@ -11,7 +11,6 @@ determinism, and measurable machine effect.
 
 Author: Issac Davis
 """
-import math
 import pytest
 import sys
 import os

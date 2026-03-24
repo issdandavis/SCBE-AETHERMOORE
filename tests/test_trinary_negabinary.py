@@ -1,6 +1,7 @@
 """Tests for balanced ternary and negabinary encoding systems."""
 
-import sys, os
+import sys
+import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
@@ -13,7 +14,6 @@ from symphonic_cipher.scbe_aethermoore.trinary import (
     trit_or,
     trit_consensus,
     decision_to_trit,
-    trit_to_decision,
 )
 from symphonic_cipher.scbe_aethermoore.negabinary import (
     NegaBinary,

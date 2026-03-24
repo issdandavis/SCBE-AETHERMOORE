@@ -9,10 +9,7 @@ Run: python -m pytest tests/test_aaoe.py -v
 
 import sys
 import os
-import math
-import time
 
-import pytest
 
 # Ensure project root is on path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -200,7 +197,6 @@ class TestTaskMonitorSessions:
         from src.aaoe.task_monitor import (
             TaskMonitor,
             ActionObservation,
-            IntentVector,
             DriftLevel,
         )
 
@@ -221,7 +217,6 @@ class TestTaskMonitorSessions:
             TaskMonitor,
             ActionObservation,
             IntentVector,
-            DriftLevel,
         )
 
         monitor = TaskMonitor()
@@ -247,7 +242,6 @@ class TestTaskMonitorSessions:
             TaskMonitor,
             ActionObservation,
             IntentVector,
-            DriftLevel,
         )
 
         monitor = TaskMonitor()
@@ -292,7 +286,6 @@ class TestTaskMonitorSessions:
             TaskMonitor,
             ActionObservation,
             IntentVector,
-            DriftLevel,
         )
 
         events = []
@@ -376,8 +369,6 @@ class TestEphemeralPromptEngine:
         from src.aaoe.ephemeral_prompt import EphemeralPromptEngine
         from src.aaoe.task_monitor import (
             TaskMonitor,
-            ActionObservation,
-            IntentVector,
             DriftLevel,
             DriftResult,
         )
@@ -664,7 +655,7 @@ class TestAAOEIntegration:
     def test_full_pipeline(self):
         """Test the complete AAOE flow: register → token → monitor → drift → nudge → record."""
         from src.aaoe.agent_identity import AgentRegistry
-        from src.aaoe.task_monitor import TaskMonitor, ActionObservation, IntentVector
+        from src.aaoe.task_monitor import TaskMonitor, ActionObservation
         from src.aaoe.ephemeral_prompt import EphemeralPromptEngine
 
         # 1. Register agent

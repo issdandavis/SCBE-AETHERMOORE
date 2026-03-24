@@ -14,14 +14,11 @@ Comprehensive tests for:
 Run with: pytest tests/test_multi_cloud_agents.py -v
 """
 
-import asyncio
 import pytest
 
 # Configure pytest-asyncio
 pytestmark = pytest.mark.asyncio(loop_scope="function")
-import json
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import datetime
 
 # Import modules to test
 import sys
@@ -33,9 +30,6 @@ from src.cloud.multi_cloud_agents import (
     AgentHealth,
     DeploymentStatus,
     CloudConfig,
-    AgentMetrics,
-    HealthCheckResult,
-    CloudAgent,
     SecurityTesterAgent,
     PerformanceMonitorAgent,
     HallucinationDetectorAgent,
@@ -43,26 +37,12 @@ from src.cloud.multi_cloud_agents import (
     AgentFactory,
 )
 
-from src.cloud.cross_cloud_comms import (
-    MessagePriority,
-    MessageStatus,
-    CircuitState,
-    CloudEndpoint,
-    CrossCloudMessage,
-    ServiceRegistry,
-    CircuitBreaker,
-    MessageQueue,
-    MessageEncryption,
-    CrossCloudRouter,
-    CrossCloudCommunicator,
-)
+from src.cloud.cross_cloud_comms import CircuitState, CloudEndpoint, ServiceRegistry, CircuitBreaker, MessageEncryption
 
 from src.cloud.monitoring_dashboard import (
     AlertSeverity,
     AlertStatus,
-    Alert,
     MetricsCollector,
-    HealthChecker,
     AlertManager,
     MonitoringDashboard,
 )
@@ -603,7 +583,7 @@ class TestServiceRegistry:
         service_registry.update_health("ep_001", False, 100.5)
 
         updated = service_registry.get("ep_001")
-        assert updated.healthy == False
+        assert updated.healthy is False
         assert updated.latency_ms == 100.5
 
 
@@ -617,7 +597,7 @@ class TestCircuitBreaker:
 
     def test_can_execute_when_closed(self, circuit_breaker):
         """Test execution allowed when closed."""
-        assert circuit_breaker.can_execute("test_circuit") == True
+        assert circuit_breaker.can_execute("test_circuit") is True
 
     def test_opens_after_failures(self, circuit_breaker):
         """Test circuit opens after threshold failures."""
@@ -632,7 +612,7 @@ class TestCircuitBreaker:
         for _ in range(3):
             circuit_breaker.record_failure("test_circuit")
 
-        assert circuit_breaker.can_execute("test_circuit") == False
+        assert circuit_breaker.can_execute("test_circuit") is False
 
     def test_success_closes_half_open(self, circuit_breaker):
         """Test success closes half-open circuit."""
@@ -674,7 +654,7 @@ class TestMessageEncryption:
         data = {"message": "hello"}
 
         signature = encryption.sign(data)
-        assert encryption.verify(data, signature) == True
+        assert encryption.verify(data, signature) is True
 
     def test_verify_tampered_fails(self):
         """Test verification fails for tampered data."""
@@ -684,7 +664,7 @@ class TestMessageEncryption:
         signature = encryption.sign(data)
         tampered = {"message": "goodbye"}
 
-        assert encryption.verify(tampered, signature) == False
+        assert encryption.verify(tampered, signature) is False
 
 
 # =============================================================================

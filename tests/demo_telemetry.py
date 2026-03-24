@@ -21,7 +21,6 @@ from typing import Dict, List
 from scbe_14layer_reference import (
     layer_4_poincare_embedding,
     layer_5_hyperbolic_distance,
-    layer_2_realification,
     layer_12_harmonic_scaling,
     layer_9_spectral_coherence,
     layer_10_spin_coherence,

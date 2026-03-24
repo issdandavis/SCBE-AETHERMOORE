@@ -7,7 +7,6 @@ Tests for the document verification pipeline (Round Table consensus).
 """
 
 import hashlib
-import json
 import sys
 from pathlib import Path
 

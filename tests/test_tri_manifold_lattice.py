@@ -23,7 +23,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 import pytest
 
 from symphonic_cipher.scbe_aethermoore.ai_brain.tri_manifold_lattice import (
-    HARMONIC_R,
     TemporalWindow,
     TriManifoldLattice,
     TriadicWeights,
