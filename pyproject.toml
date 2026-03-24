@@ -28,7 +28,6 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -65,4 +64,11 @@ include = [
     "minimal*",
     "storage*",
 ]
-exclude = ["tests*", "scripts*", "agents*", "training*"]
+exclude = [
+    "tests*", "scripts*", "agents*", "training*",
+    # Root-only sub-packages that don't exist under src/ — excluding these
+    # prevents setuptools from failing on mismatched package directories
+    # when using where = [".", "src"].
+    "api.github_app*", "api.billing*", "api.keys*",
+    "symphonic_cipher.geoseal*",
+]
