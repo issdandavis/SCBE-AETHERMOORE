@@ -1,26 +1,26 @@
 {
   "euclidean": {
-    "avg_technical_flux": 1.8247,
-    "avg_adversarial_flux": 1.3163,
-    "avg_story_flux": 1.2796,
+    "avg_technical_flux": 2.0546,
+    "avg_adversarial_flux": 1.5879,
+    "avg_story_flux": 1.7352,
     "traces": 5
   },
   "tongue": {
-    "avg_technical_flux": 19.6321,
-    "avg_adversarial_flux": 8.3774,
-    "avg_story_flux": 9.1568,
+    "avg_technical_flux": 19.9744,
+    "avg_adversarial_flux": 8.833,
+    "avg_story_flux": 9.4614,
     "traces": 5
   },
   "dual": {
-    "avg_technical_flux": 19.6321,
-    "avg_adversarial_flux": 8.3774,
-    "avg_story_flux": 9.1568,
+    "avg_technical_flux": 10.087,
+    "avg_adversarial_flux": 4.8191,
+    "avg_story_flux": 5.0116,
     "traces": 5
   },
   "21d": {
-    "avg_technical_flux": 19.6321,
-    "avg_adversarial_flux": 8.3774,
-    "avg_story_flux": 9.1568,
+    "avg_technical_flux": 20.1594,
+    "avg_adversarial_flux": 9.3579,
+    "avg_story_flux": 10.2276,
     "traces": 5
   }
 }
