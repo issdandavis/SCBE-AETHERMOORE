@@ -6,10 +6,10 @@ Shared fixtures and configuration for all test tiers.
 """
 
 import pytest
-import numpy as np
 import sys
 import os
 import importlib
+import math
 import tempfile
 import shutil
 import uuid
@@ -17,6 +17,14 @@ from pathlib import Path
 from ctypes.util import find_library
 from typing import List
 from dataclasses import dataclass
+
+try:
+    import numpy as np
+
+    NUMPY_AVAILABLE = True
+except ImportError:
+    np = None  # type: ignore[assignment]
+    NUMPY_AVAILABLE = False
 
 # Add src to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -146,7 +154,7 @@ del _t, _threading
 # MATHEMATICAL CONSTANTS
 # =============================================================================
 
-PHI = (1 + np.sqrt(5)) / 2  # Golden ratio
+PHI = (1 + math.sqrt(5)) / 2  # Golden ratio
 R_FIFTH = 1.5  # Perfect fifth harmonic ratio
 
 
@@ -269,7 +277,9 @@ def sacred_tongue_tokens():
 
 @pytest.fixture
 def hyperbolic_distance():
-    """Hyperbolic distance function."""
+    """Hyperbolic distance function (requires numpy)."""
+    if not NUMPY_AVAILABLE:
+        pytest.skip("numpy not installed")
 
     def _hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
         """Calculate hyperbolic distance in Poincaré ball."""
@@ -384,6 +394,39 @@ LIBOQS_AVAILABLE = _liboqs_available()
 requires_liboqs = pytest.mark.skipif(not LIBOQS_AVAILABLE, reason="liboqs-python not installed (optional dependency)")
 
 
+# =============================================================================
+# CRYPTOGRAPHY AVAILABILITY CHECK
+# =============================================================================
+
+
+def _cryptography_available() -> bool:
+    """Check whether the cryptography package is functional (includes cffi backend).
+
+    The cryptography package uses Rust (PyO3) bindings that can trigger a
+    pyo3_runtime.PanicException when the cffi backend is missing.  This panic
+    bypasses normal Python exception handling, so we probe the cffi backend
+    *before* touching the cryptography package itself.
+    """
+    try:
+        import _cffi_backend  # noqa: F401
+    except ImportError:
+        return False
+    try:
+        from cryptography.fernet import Fernet  # noqa: F401
+
+        return True
+    except Exception:
+        return False
+
+
+CRYPTOGRAPHY_AVAILABLE = _cryptography_available()
+
+# Skip decorator for tests requiring cryptography
+requires_cryptography = pytest.mark.skipif(
+    not CRYPTOGRAPHY_AVAILABLE, reason="cryptography package not functional (cffi backend missing)"
+)
+
+
 def pytest_configure(config):
     """Register custom markers."""
     config.addinivalue_line("markers", "enterprise: Enterprise-grade tests (compliance, security)")
@@ -395,13 +438,19 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "governance: Governance decision tests")
     config.addinivalue_line("markers", "pqc: Post-quantum cryptography tests")
     config.addinivalue_line("markers", "requires_liboqs: Tests requiring liboqs-python")
+    config.addinivalue_line("markers", "requires_cryptography: Tests requiring cryptography package")
 
 
 def pytest_collection_modifyitems(config, items):
-    """Auto-skip tests that require liboqs when it's not available."""
-    if LIBOQS_AVAILABLE:
-        return
-    skip_liboqs = pytest.mark.skip(reason="liboqs-python not installed (optional dependency)")
-    for item in items:
-        if "requires_liboqs" in item.keywords or "pqc" in item.keywords:
-            item.add_marker(skip_liboqs)
+    """Auto-skip tests that require unavailable optional dependencies."""
+    if not LIBOQS_AVAILABLE:
+        skip_liboqs = pytest.mark.skip(reason="liboqs-python not installed (optional dependency)")
+        for item in items:
+            if "requires_liboqs" in item.keywords or "pqc" in item.keywords:
+                item.add_marker(skip_liboqs)
+
+    if not CRYPTOGRAPHY_AVAILABLE:
+        skip_crypto = pytest.mark.skip(reason="cryptography package not functional (cffi backend missing)")
+        for item in items:
+            if "requires_cryptography" in item.keywords or "security" in item.keywords:
+                item.add_marker(skip_crypto)
