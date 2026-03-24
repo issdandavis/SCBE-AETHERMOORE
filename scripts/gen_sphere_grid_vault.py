@@ -34,24 +34,48 @@ if BASE.exists():
 BASE.mkdir(parents=True)
 
 TONGUES = {
-    "KO": {"name": "Command", "weight": 1.0, "angle": 0,
-            "desc": "Orchestration, coordination, task dispatch",
-            "geometry": "Hexagonal: 6-fold symmetry, hub-spoke topology"},
-    "AV": {"name": "Transport", "weight": PHI, "angle": 60,
-            "desc": "Navigation, browsing, data movement",
-            "geometry": "Spiral: phi-spiral paths, expanding search radius"},
-    "RU": {"name": "Entropy", "weight": PHI**2, "angle": 120,
-            "desc": "Research, chaos testing, exploration",
-            "geometry": "Fractal: self-similar branching, Mandelbrot zoom"},
-    "CA": {"name": "Compute", "weight": PHI**3, "angle": 180,
-            "desc": "Code generation, training, execution",
-            "geometry": "Cubic: 3D grid, structured build layers"},
-    "UM": {"name": "Security", "weight": PHI**4, "angle": 240,
-            "desc": "Scanning, auditing, governance enforcement",
-            "geometry": "Icosahedral: 20 faces of defense, triangulated trust"},
-    "DR": {"name": "Structure", "weight": PHI**5, "angle": 300,
-            "desc": "Architecture, documentation, healing",
-            "geometry": "Dodecahedral: 12 faces of design, pentagonal harmony"},
+    "KO": {
+        "name": "Command",
+        "weight": 1.0,
+        "angle": 0,
+        "desc": "Orchestration, coordination, task dispatch",
+        "geometry": "Hexagonal: 6-fold symmetry, hub-spoke topology",
+    },
+    "AV": {
+        "name": "Transport",
+        "weight": PHI,
+        "angle": 60,
+        "desc": "Navigation, browsing, data movement",
+        "geometry": "Spiral: phi-spiral paths, expanding search radius",
+    },
+    "RU": {
+        "name": "Entropy",
+        "weight": PHI**2,
+        "angle": 120,
+        "desc": "Research, chaos testing, exploration",
+        "geometry": "Fractal: self-similar branching, Mandelbrot zoom",
+    },
+    "CA": {
+        "name": "Compute",
+        "weight": PHI**3,
+        "angle": 180,
+        "desc": "Code generation, training, execution",
+        "geometry": "Cubic: 3D grid, structured build layers",
+    },
+    "UM": {
+        "name": "Security",
+        "weight": PHI**4,
+        "angle": 240,
+        "desc": "Scanning, auditing, governance enforcement",
+        "geometry": "Icosahedral: 20 faces of defense, triangulated trust",
+    },
+    "DR": {
+        "name": "Structure",
+        "weight": PHI**5,
+        "angle": 300,
+        "desc": "Architecture, documentation, healing",
+        "geometry": "Dodecahedral: 12 faces of design, pentagonal harmony",
+    },
 }
 
 TONGUE_KEYS = list(TONGUES.keys())
@@ -59,136 +83,280 @@ TONGUE_KEYS = list(TONGUES.keys())
 # Skills: (tier_id, name, desc, pattern_summary, training_pairs, concepts)
 SKILLS = {
     "KO": [
-        ("T1", "Task Dispatch", "Route tasks to appropriate agents",
-         "Match intent to capability, phi-weighted priority",
-         [("Route code review to right agent", "Match to builder (CA), check activation >= 0.3"),
-          ("Distribute 5 tasks across 3 agents", "Load-balance by AP bank and activation coverage")],
-         ["Parse intent structure", "Capability matching algorithm", "Priority queue with tongue weights"]),
-        ("T2", "Formation Swap", "Reorganize fleet mid-task without state loss",
-         "Checkpoint-swap-restore for zero-downtime rotation",
-         [("Code review found security issues", "Swap builder for guardian, preserve context"),
-          ("Research hit dead end", "Swap researcher for scout, hand off queries")],
-         ["State checkpointing", "Role reassignment protocol", "Zero-downtime rotation"]),
-        ("T3", "Rally Coordination", "Boost fleet performance by 15%",
-         "Amplified adjacency ripple across all fleet members",
-         [("Fleet behind on deadline", "Rally all agents, 15% boost, focus bottleneck"),
-          ("Three agents coordinating", "Rally + formation swap for max coherence")],
-         ["Fleet-wide broadcast", "Performance multiplier stacking", "Hodge combo amplification"]),
-        ("T4", "Sovereign Command", "Full fleet orchestration authority",
-         "Atomic fleet commands with governance gate approval",
-         [("Full codebase refactor", "Scout maps, builder refactors, guardian audits, teacher docs"),
-          ("Production incident", "Healer diagnoses, builder patches, guardian monitors")],
-         ["Governance approval flow", "Atomic fleet execution", "Rollback on partial failure"]),
+        (
+            "T1",
+            "Task Dispatch",
+            "Route tasks to appropriate agents",
+            "Match intent to capability, phi-weighted priority",
+            [
+                ("Route code review to right agent", "Match to builder (CA), check activation >= 0.3"),
+                ("Distribute 5 tasks across 3 agents", "Load-balance by AP bank and activation coverage"),
+            ],
+            ["Parse intent structure", "Capability matching algorithm", "Priority queue with tongue weights"],
+        ),
+        (
+            "T2",
+            "Formation Swap",
+            "Reorganize fleet mid-task without state loss",
+            "Checkpoint-swap-restore for zero-downtime rotation",
+            [
+                ("Code review found security issues", "Swap builder for guardian, preserve context"),
+                ("Research hit dead end", "Swap researcher for scout, hand off queries"),
+            ],
+            ["State checkpointing", "Role reassignment protocol", "Zero-downtime rotation"],
+        ),
+        (
+            "T3",
+            "Rally Coordination",
+            "Boost fleet performance by 15%",
+            "Amplified adjacency ripple across all fleet members",
+            [
+                ("Fleet behind on deadline", "Rally all agents, 15% boost, focus bottleneck"),
+                ("Three agents coordinating", "Rally + formation swap for max coherence"),
+            ],
+            ["Fleet-wide broadcast", "Performance multiplier stacking", "Hodge combo amplification"],
+        ),
+        (
+            "T4",
+            "Sovereign Command",
+            "Full fleet orchestration authority",
+            "Atomic fleet commands with governance gate approval",
+            [
+                ("Full codebase refactor", "Scout maps, builder refactors, guardian audits, teacher docs"),
+                ("Production incident", "Healer diagnoses, builder patches, guardian monitors"),
+            ],
+            ["Governance approval flow", "Atomic fleet execution", "Rollback on partial failure"],
+        ),
     ],
     "AV": [
-        ("T1", "Web Search", "Find and retrieve web content with governance",
-         "Every search result governance-scanned before return",
-         [("Search transformer papers", "Query arxiv + semantic scholar, scan results"),
-          ("Find library docs", "Official docs first, community second, scan for injection")],
-         ["Governed search pipeline", "Source ranking", "Injection detection"]),
-        ("T2", "Navigation", "Multi-step browser traversal with state tracking",
-         "SENSE-PLAN-STEER-DECIDE loop",
-         [("Navigate to settings page", "SENSE structure, PLAN clicks, STEER, DECIDE"),
-          ("Multi-step form fill", "Track state across pages, validate before submit")],
-         ["State machine navigation", "Backtracking on failure", "Session persistence"]),
-        ("T3", "Site Mapping", "Map full site structure and extract content",
-         "BFS crawl with governance scanning per page",
-         [("Map documentation site", "BFS from root, extract API docs, build graph"),
-          ("Inventory blog posts", "Map /blog path, extract metadata, return catalog")],
-         ["BFS/DFS crawl strategies", "Content extraction", "Link graph analysis"]),
-        ("T4", "Fleet Transport", "Move data between agents and systems at scale",
-         "Spiral Seal encrypted transport with tongue routing",
-         [("Ship training data to HuggingFace", "Scan, seal with RU+CA, push via API"),
-          ("Sync agent state across fleet", "Checkpoint, transport via bus, verify")],
-         ["Sealed transport protocol", "Tongue-routed delivery", "Integrity verification"]),
+        (
+            "T1",
+            "Web Search",
+            "Find and retrieve web content with governance",
+            "Every search result governance-scanned before return",
+            [
+                ("Search transformer papers", "Query arxiv + semantic scholar, scan results"),
+                ("Find library docs", "Official docs first, community second, scan for injection"),
+            ],
+            ["Governed search pipeline", "Source ranking", "Injection detection"],
+        ),
+        (
+            "T2",
+            "Navigation",
+            "Multi-step browser traversal with state tracking",
+            "SENSE-PLAN-STEER-DECIDE loop",
+            [
+                ("Navigate to settings page", "SENSE structure, PLAN clicks, STEER, DECIDE"),
+                ("Multi-step form fill", "Track state across pages, validate before submit"),
+            ],
+            ["State machine navigation", "Backtracking on failure", "Session persistence"],
+        ),
+        (
+            "T3",
+            "Site Mapping",
+            "Map full site structure and extract content",
+            "BFS crawl with governance scanning per page",
+            [
+                ("Map documentation site", "BFS from root, extract API docs, build graph"),
+                ("Inventory blog posts", "Map /blog path, extract metadata, return catalog"),
+            ],
+            ["BFS/DFS crawl strategies", "Content extraction", "Link graph analysis"],
+        ),
+        (
+            "T4",
+            "Fleet Transport",
+            "Move data between agents and systems at scale",
+            "Spiral Seal encrypted transport with tongue routing",
+            [
+                ("Ship training data to HuggingFace", "Scan, seal with RU+CA, push via API"),
+                ("Sync agent state across fleet", "Checkpoint, transport via bus, verify"),
+            ],
+            ["Sealed transport protocol", "Tongue-routed delivery", "Integrity verification"],
+        ),
     ],
     "RU": [
-        ("T1", "Hypothesis Generation", "Generate testable claims from patterns",
-         "Turn observations into ranked testable hypotheses",
-         [("Attention clusters at phi=0.5", "Hypothesis: resonance point in phase tunnel"),
-          ("Loss plateaus at epoch 50", "Hypothesis: LR schedule needs warmup")],
-         ["Knowledge gap detection", "Prior probability estimation", "Testability ranking"]),
-        ("T2", "Data Collection", "Gather and structure data from diverse sources",
-         "Schema-driven multi-source extraction with dedup",
-         [("Collect SCBE mentions in papers", "Search arxiv/scholar, extract citations"),
-          ("Gather training from game logs", "Parse Everweave logs, structure as SFT")],
-         ["Collection schema design", "Multi-source extraction", "Deduplication"]),
-        ("T3", "Chaos Testing", "Stress-test with randomized inputs and faults",
-         "Controlled destruction for resilience discovery",
-         [("Chaos test governance gate", "Inject malformed 9D vectors, verify DENY"),
-          ("Stress test fleet transport", "Simultaneous sends, verify no data loss")],
-         ["Adversarial input generation", "Fault injection", "Resilience scoring"]),
-        ("T4", "Entropy Oracle", "Predict failures from entropy patterns",
-         "Ornstein-Uhlenbeck analysis on system entropy history",
-         [("Entropy spiking in layer 7", "Check OU params, alert if diverging"),
-          ("Predict next bottleneck", "Analyze entropy trends across 14 layers")],
-         ["OU process analysis", "Anomaly detection (spectral)", "Failure prediction"]),
+        (
+            "T1",
+            "Hypothesis Generation",
+            "Generate testable claims from patterns",
+            "Turn observations into ranked testable hypotheses",
+            [
+                ("Attention clusters at phi=0.5", "Hypothesis: resonance point in phase tunnel"),
+                ("Loss plateaus at epoch 50", "Hypothesis: LR schedule needs warmup"),
+            ],
+            ["Knowledge gap detection", "Prior probability estimation", "Testability ranking"],
+        ),
+        (
+            "T2",
+            "Data Collection",
+            "Gather and structure data from diverse sources",
+            "Schema-driven multi-source extraction with dedup",
+            [
+                ("Collect SCBE mentions in papers", "Search arxiv/scholar, extract citations"),
+                ("Gather training from game logs", "Parse Everweave logs, structure as SFT"),
+            ],
+            ["Collection schema design", "Multi-source extraction", "Deduplication"],
+        ),
+        (
+            "T3",
+            "Chaos Testing",
+            "Stress-test with randomized inputs and faults",
+            "Controlled destruction for resilience discovery",
+            [
+                ("Chaos test governance gate", "Inject malformed 9D vectors, verify DENY"),
+                ("Stress test fleet transport", "Simultaneous sends, verify no data loss"),
+            ],
+            ["Adversarial input generation", "Fault injection", "Resilience scoring"],
+        ),
+        (
+            "T4",
+            "Entropy Oracle",
+            "Predict failures from entropy patterns",
+            "Ornstein-Uhlenbeck analysis on system entropy history",
+            [
+                ("Entropy spiking in layer 7", "Check OU params, alert if diverging"),
+                ("Predict next bottleneck", "Analyze entropy trends across 14 layers"),
+            ],
+            ["OU process analysis", "Anomaly detection (spectral)", "Failure prediction"],
+        ),
     ],
     "CA": [
-        ("T1", "Code Generation", "Write functional tested code from specs",
-         "Read existing patterns, write implementation, write tests",
-         [("Implement Poincare distance", "Write function with arcosh, add property test"),
-          ("Add Sacred Tongue to tokenizer", "Follow existing pattern, update TONGUE_KEYS")],
-         ["Pattern-following implementation", "Test-first development", "Convention adherence"]),
-        ("T2", "Test Writing", "Comprehensive test suites with property testing",
-         "Property tests prove correctness across ALL inputs",
-         [("Test governance gate", "L2: unit verdicts, L4: random 9D vectors, L5: bypass"),
-          ("Test fleet transport", "L3: end-to-end delivery, L6: payload injection")],
-         ["Tiered testing (L1-L6)", "Property-based testing", "Adversarial test design"]),
-        ("T3", "Training Pipeline", "Full ML pipeline from data to deployment",
-         "Data prep, governance scan, train, eval, push to HF",
-         [("Train on Sacred Tongue corpus", "SFT from tokenizer data, LoRA, eval accuracy"),
-          ("Fine-tune governance classifier", "ALLOW/DENY as labels, DPO training")],
-         ["SFT/DPO/GRPO training", "Quality gate scanning", "HuggingFace integration"]),
-        ("T4", "Model Deployment", "Deploy models with health monitoring",
-         "Blue-green canary deploy with rollback",
-         [("Deploy new tokenizer model", "Canary to staging, monitor accuracy, promote"),
-          ("Rollback broken deployment", "Identify regression, activate rollback")],
-         ["Canary deployment", "Health monitoring", "Automated rollback"]),
+        (
+            "T1",
+            "Code Generation",
+            "Write functional tested code from specs",
+            "Read existing patterns, write implementation, write tests",
+            [
+                ("Implement Poincare distance", "Write function with arcosh, add property test"),
+                ("Add Sacred Tongue to tokenizer", "Follow existing pattern, update TONGUE_KEYS"),
+            ],
+            ["Pattern-following implementation", "Test-first development", "Convention adherence"],
+        ),
+        (
+            "T2",
+            "Test Writing",
+            "Comprehensive test suites with property testing",
+            "Property tests prove correctness across ALL inputs",
+            [
+                ("Test governance gate", "L2: unit verdicts, L4: random 9D vectors, L5: bypass"),
+                ("Test fleet transport", "L3: end-to-end delivery, L6: payload injection"),
+            ],
+            ["Tiered testing (L1-L6)", "Property-based testing", "Adversarial test design"],
+        ),
+        (
+            "T3",
+            "Training Pipeline",
+            "Full ML pipeline from data to deployment",
+            "Data prep, governance scan, train, eval, push to HF",
+            [
+                ("Train on Sacred Tongue corpus", "SFT from tokenizer data, LoRA, eval accuracy"),
+                ("Fine-tune governance classifier", "ALLOW/DENY as labels, DPO training"),
+            ],
+            ["SFT/DPO/GRPO training", "Quality gate scanning", "HuggingFace integration"],
+        ),
+        (
+            "T4",
+            "Model Deployment",
+            "Deploy models with health monitoring",
+            "Blue-green canary deploy with rollback",
+            [
+                ("Deploy new tokenizer model", "Canary to staging, monitor accuracy, promote"),
+                ("Rollback broken deployment", "Identify regression, activate rollback"),
+            ],
+            ["Canary deployment", "Health monitoring", "Automated rollback"],
+        ),
     ],
     "UM": [
-        ("T1", "Governance Scan", "Check content against SCBE governance rules",
-         "9D state vector risk computation on every piece of content",
-         [("Scan web content for injection", "Check script tags, SQL patterns, prompt injection"),
-          ("Validate training data", "Scan for duplicates, toxic content, poisoning")],
-         ["9D risk computation", "Content classification", "Threshold tuning"]),
-        ("T2", "Threat Detection", "Detect adversarial patterns before they succeed",
-         "Pattern matching + anomaly detection + behavioral analysis",
-         [("Unusual API access pattern", "Compare to immune memory, check credential stuffing"),
-          ("Agent behavior diverging", "Compute drift distance, quarantine if threshold")],
-         ["Immune memory matching", "Anomaly detection", "Drift measurement"]),
-        ("T3", "Audit Trail", "Verifiable audit records with hash chains",
-         "Immutable hash-chained governance-stamped records",
-         [("Audit trail for deployment", "Record every step, hash-chain all"),
-          ("Verify trail integrity", "Walk hash chain, verify each record")],
-         ["Hash chain construction", "Governance stamping", "Tamper detection"]),
-        ("T4", "Seal Enforcement", "Sacred Seal cryptographic proofs on all actions",
-         "Argon2id + XChaCha20 + 6-tongue cross-threading",
-         [("Seal governance decision", "KDF from tongue seed, encrypt, cross-thread, anchor"),
-          ("Verify sealed artifact", "Decode AEAD, verify threading, check chain")],
-         ["Argon2id KDF", "XChaCha20-Poly1305 AEAD", "Cross-tongue threading"]),
+        (
+            "T1",
+            "Governance Scan",
+            "Check content against SCBE governance rules",
+            "9D state vector risk computation on every piece of content",
+            [
+                ("Scan web content for injection", "Check script tags, SQL patterns, prompt injection"),
+                ("Validate training data", "Scan for duplicates, toxic content, poisoning"),
+            ],
+            ["9D risk computation", "Content classification", "Threshold tuning"],
+        ),
+        (
+            "T2",
+            "Threat Detection",
+            "Detect adversarial patterns before they succeed",
+            "Pattern matching + anomaly detection + behavioral analysis",
+            [
+                ("Unusual API access pattern", "Compare to immune memory, check credential stuffing"),
+                ("Agent behavior diverging", "Compute drift distance, quarantine if threshold"),
+            ],
+            ["Immune memory matching", "Anomaly detection", "Drift measurement"],
+        ),
+        (
+            "T3",
+            "Audit Trail",
+            "Verifiable audit records with hash chains",
+            "Immutable hash-chained governance-stamped records",
+            [
+                ("Audit trail for deployment", "Record every step, hash-chain all"),
+                ("Verify trail integrity", "Walk hash chain, verify each record"),
+            ],
+            ["Hash chain construction", "Governance stamping", "Tamper detection"],
+        ),
+        (
+            "T4",
+            "Seal Enforcement",
+            "Sacred Seal cryptographic proofs on all actions",
+            "Argon2id + XChaCha20 + 6-tongue cross-threading",
+            [
+                ("Seal governance decision", "KDF from tongue seed, encrypt, cross-thread, anchor"),
+                ("Verify sealed artifact", "Decode AEAD, verify threading, check chain"),
+            ],
+            ["Argon2id KDF", "XChaCha20-Poly1305 AEAD", "Cross-tongue threading"],
+        ),
     ],
     "DR": [
-        ("T1", "Documentation", "Generate structured docs from code and systems",
-         "Translate code to human understanding with cross-links",
-         [("Document sphere grid API", "Overview, reference, examples, gotchas"),
-          ("Write agent onboarding", "Archetype selection, AP system, first unlock")],
-         ["Audience-aware writing", "Structure patterns", "Cross-linking"]),
-        ("T2", "Debugging", "Systematic diagnosis and fix of system issues",
-         "Reproduce, isolate, trace, fix, verify",
-         [("AssertionError in tests", "Read assertion, check expected vs actual, trace"),
-          ("Governance returning DENY", "Check 9D vector, verify bounds, log path")],
-         ["Reproduction methods", "Root cause analysis", "Minimal fix principle"]),
-        ("T3", "Self Healing", "Automatic error recovery without human intervention",
-         "Monitor-diagnose-fix loop with governance approval",
-         [("Agent crashed mid-task", "Restore from checkpoint, retry, log recovery"),
-          ("Memory pressure warning", "Compact L0, archive L1 to L2, continue")],
-         ["Checkpoint/restore", "Graduated response", "Recovery verification"]),
-        ("T4", "Architecture", "Design and validate system architecture at scale",
-         "Constraints, primitives, composition, validation, docs",
-         [("Design fleet comms", "Sacred Tongue transport, governance scanning, audit"),
-          ("Architect training pipeline", "Data funnel, gate, train, eval, deploy cycle")],
-         ["Constraint analysis", "Primitive selection", "Composition validation"]),
+        (
+            "T1",
+            "Documentation",
+            "Generate structured docs from code and systems",
+            "Translate code to human understanding with cross-links",
+            [
+                ("Document sphere grid API", "Overview, reference, examples, gotchas"),
+                ("Write agent onboarding", "Archetype selection, AP system, first unlock"),
+            ],
+            ["Audience-aware writing", "Structure patterns", "Cross-linking"],
+        ),
+        (
+            "T2",
+            "Debugging",
+            "Systematic diagnosis and fix of system issues",
+            "Reproduce, isolate, trace, fix, verify",
+            [
+                ("AssertionError in tests", "Read assertion, check expected vs actual, trace"),
+                ("Governance returning DENY", "Check 9D vector, verify bounds, log path"),
+            ],
+            ["Reproduction methods", "Root cause analysis", "Minimal fix principle"],
+        ),
+        (
+            "T3",
+            "Self Healing",
+            "Automatic error recovery without human intervention",
+            "Monitor-diagnose-fix loop with governance approval",
+            [
+                ("Agent crashed mid-task", "Restore from checkpoint, retry, log recovery"),
+                ("Memory pressure warning", "Compact L0, archive L1 to L2, continue"),
+            ],
+            ["Checkpoint/restore", "Graduated response", "Recovery verification"],
+        ),
+        (
+            "T4",
+            "Architecture",
+            "Design and validate system architecture at scale",
+            "Constraints, primitives, composition, validation, docs",
+            [
+                ("Design fleet comms", "Sacred Tongue transport, governance scanning, audit"),
+                ("Architect training pipeline", "Data funnel, gate, train, eval, deploy cycle"),
+            ],
+            ["Constraint analysis", "Primitive selection", "Composition validation"],
+        ),
     ],
 }
 
@@ -220,7 +388,9 @@ for tongue_code, tongue_info in TONGUES.items():
     adj_cw = TONGUE_KEYS[(TONGUE_KEYS.index(tongue_code) + 1) % 6]
     adj_ccw = TONGUE_KEYS[(TONGUE_KEYS.index(tongue_code) - 1) % 6]
 
-    write_note(tdir / f"{tongue_code}-Domain.md", f"""---
+    write_note(
+        tdir / f"{tongue_code}-Domain.md",
+        f"""---
 type: tongue-sphere
 tongue: "{tongue_code}"
 name: "{tname}"
@@ -250,7 +420,8 @@ Adjacent domains:
 - Counter-clockwise: [[{adj_ccw}-{TONGUES[adj_ccw]["name"]}/{adj_ccw}-Domain|{adj_ccw}]]
 
 #sphere-grid #tongue #{tongue_code}
-""")
+""",
+    )
 
     # Skill spheres (mini-vaults)
     for tier_id, name, desc, pattern_summary, pairs, concepts in SKILLS[tongue_code]:
@@ -280,7 +451,9 @@ Adjacent domains:
         rel_prefix = f"{tongue_code}-{tname}/{tier_id}-{safe_name}"
 
         # _sphere.md
-        write_note(sdir / "_sphere.md", f"""---
+        write_note(
+            sdir / "_sphere.md",
+            f"""---
 type: skill-sphere
 tongue: "{tongue_code}"
 tier: {tier_num}
@@ -320,11 +493,14 @@ phi: {phi:.2f}
 - [[computational-necessity]] can ACCELERATE this sphere
 
 #sphere-grid #{tongue_code} #tier-{tier_num}
-""")
+""",
+        )
 
         # pattern.md
         concept_list = "\n".join(f"- {c}" for c in concepts)
-        write_note(sdir / "pattern.md", f"""---
+        write_note(
+            sdir / "pattern.md",
+            f"""---
 type: pattern
 parent: "{name}"
 tongue: "{tongue_code}"
@@ -350,11 +526,14 @@ An agent at MASTERED (0.90+) executes optimally and can [[teach]] it.
 - Results feed into [[{rel_prefix}/training-pairs|training pairs]]
 
 #sphere-grid #pattern #{tongue_code}
-""")
+""",
+        )
 
         # training-pairs.md
         pair_rows = "\n".join(f"| {instr} | {resp} |" for instr, resp in pairs)
-        write_note(sdir / "training-pairs.md", f"""---
+        write_note(
+            sdir / "training-pairs.md",
+            f"""---
 type: training-data
 parent: "{name}"
 tongue: "{tongue_code}"
@@ -383,14 +562,16 @@ format: "sft"
 - [[chaos-testing]] outcomes
 
 #sphere-grid #training-data #{tongue_code}
-""")
+""",
+        )
 
         # concepts.md
         concept_sections = "\n\n".join(
-            f"### {i+1}. {c}\n\nEssential for {name} at tier {tier_num}."
-            for i, c in enumerate(concepts)
+            f"### {i+1}. {c}\n\nEssential for {name} at tier {tier_num}." for i, c in enumerate(concepts)
         )
-        write_note(sdir / "concepts.md", f"""---
+        write_note(
+            sdir / "concepts.md",
+            f"""---
 type: concepts
 parent: "{name}"
 tongue: "{tongue_code}"
@@ -408,7 +589,8 @@ tongue: "{tongue_code}"
 4. At MASTERED (0.90): can teach and generate examples
 
 #sphere-grid #concepts #{tongue_code}
-""")
+""",
+        )
 
 
 # ============================================================
@@ -416,7 +598,9 @@ tongue: "{tongue_code}"
 # ============================================================
 (BASE / "geometry").mkdir(exist_ok=True)
 
-write_note(BASE / "geometry" / "sacred-flows.md", """---
+write_note(
+    BASE / "geometry" / "sacred-flows.md",
+    """---
 type: sacred-geometry
 ---
 
@@ -453,9 +637,12 @@ T1 at 0, T2 at phi, T3 at 2*phi, T4 at 3*phi.
 Natural spacing matches governance cost scaling.
 
 #sphere-grid #geometry
-""")
+""",
+)
 
-write_note(BASE / "geometry" / "phi-spiral.md", f"""---
+write_note(
+    BASE / "geometry" / "phi-spiral.md",
+    f"""---
 type: sacred-geometry
 ---
 
@@ -482,33 +669,44 @@ Optimal packing: spheres never overlap, cost curve is smooth.
 30 total nodes = edges of an icosahedron.
 
 #sphere-grid #geometry #phi
-""")
+""",
+)
 
 
 # ============================================================
 # Concept notes
 # ============================================================
 for cname, cdesc in [
-    ("computational-necessity",
-     "The system discovers what it needs by trying and failing.\n\n"
-     "Need pressure accumulates on missing skills (+0.15 per failure).\n"
-     "At pressure >= 0.5, governance reviews: ACCELERATE if genuine need, DENY if risky.\n"
-     "Growth is organic and non-optimal -- agents develop what they USE."),
-    ("adjacency-ripple",
-     "When a skill activates, adjacent skills get 10% free boost.\n\n"
-     "Adjacent = same tongue within 1 tier, or Hodge partner tongue.\n"
-     "Creates organic growth bleed -- mastering code gen makes testing slightly easier."),
-    ("teach",
-     "MASTERED (0.90+) agents share knowledge with the fleet.\n\n"
-     "Student gets 20% of remaining gap for free.\n"
-     "Teacher earns 7 AP. No cost to student.\n"
-     "Cooperative fleet growth -- specialists bootstrap others."),
-    ("fleet-coverage",
-     "The fleet as a whole has capabilities no single agent has.\n\n"
-     "Coverage = % of skills at PARTIAL+ across all agents per tongue.\n"
-     "6 archetypes cover ~70% naturally. 100% requires sustained cooperative work."),
+    (
+        "computational-necessity",
+        "The system discovers what it needs by trying and failing.\n\n"
+        "Need pressure accumulates on missing skills (+0.15 per failure).\n"
+        "At pressure >= 0.5, governance reviews: ACCELERATE if genuine need, DENY if risky.\n"
+        "Growth is organic and non-optimal -- agents develop what they USE.",
+    ),
+    (
+        "adjacency-ripple",
+        "When a skill activates, adjacent skills get 10% free boost.\n\n"
+        "Adjacent = same tongue within 1 tier, or Hodge partner tongue.\n"
+        "Creates organic growth bleed -- mastering code gen makes testing slightly easier.",
+    ),
+    (
+        "teach",
+        "MASTERED (0.90+) agents share knowledge with the fleet.\n\n"
+        "Student gets 20% of remaining gap for free.\n"
+        "Teacher earns 7 AP. No cost to student.\n"
+        "Cooperative fleet growth -- specialists bootstrap others.",
+    ),
+    (
+        "fleet-coverage",
+        "The fleet as a whole has capabilities no single agent has.\n\n"
+        "Coverage = % of skills at PARTIAL+ across all agents per tongue.\n"
+        "6 archetypes cover ~70% naturally. 100% requires sustained cooperative work.",
+    ),
 ]:
-    write_note(BASE / f"{cname}.md", f"""---
+    write_note(
+        BASE / f"{cname}.md",
+        f"""---
 type: concept
 ---
 
@@ -517,7 +715,8 @@ type: concept
 {cdesc}
 
 #sphere-grid #concept
-""")
+""",
+    )
 
 
 # ============================================================
@@ -534,7 +733,9 @@ for hname, ta, tb, hdesc in [
     ("Compute Command", "CA", "KO", "Compute + Command = sovereign automation"),
 ]:
     fname = hname.lower().replace(" ", "-")
-    write_note(BASE / "hodge" / f"{fname}.md", f"""---
+    write_note(
+        BASE / "hodge" / f"{fname}.md",
+        f"""---
 type: hodge-combo
 tongue_a: "{ta}"
 tongue_b: "{tb}"
@@ -551,7 +752,8 @@ multiplier: 1.3
 Emerges when both domains have T3 skills at CAPABLE (0.60+).
 
 #sphere-grid #hodge #{ta} #{tb}
-""")
+""",
+    )
 
 
 # ============================================================
@@ -567,7 +769,9 @@ for arch, atongue, adesc in [
     ("teacher", "KO", "Knowledge transfer and documentation"),
     ("healer", "DR", "Debugging and self-healing"),
 ]:
-    write_note(BASE / "agents" / f"{arch}.md", f"""---
+    write_note(
+        BASE / "agents" / f"{arch}.md",
+        f"""---
 type: agent-archetype
 archetype: "{arch}"
 tongue: "{atongue}"
@@ -584,7 +788,8 @@ Specialization emerges from usage -- not from the archetype.
 Can [[teach]] skills once they reach MASTERED (0.90+).
 
 #sphere-grid #archetype #{arch}
-""")
+""",
+    )
 
 
 # ============================================================
@@ -597,7 +802,9 @@ tongue_links = "\n".join(
     for t in TONGUE_KEYS
 )
 
-write_note(BASE / "Agentic Sphere Grid.md", f"""---
+write_note(
+    BASE / "Agentic Sphere Grid.md",
+    f"""---
 type: moc
 ---
 
@@ -661,7 +868,8 @@ MASTERED --> Teach others --> Fleet grows cooperatively
 ```
 
 #sphere-grid #moc
-""")
+""",
+)
 
 # ============================================================
 # Report

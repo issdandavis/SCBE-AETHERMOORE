@@ -70,7 +70,11 @@ def _iter_packet_paths(day: str) -> Iterable[Path]:
     if not day_dir.exists():
         return []
     return sorted(
-        [p for p in day_dir.glob("*.json") if "monetization-swarm-status-" not in p.name and "crosstalk-reliability-report-" not in p.name],
+        [
+            p
+            for p in day_dir.glob("*.json")
+            if "monetization-swarm-status-" not in p.name and "crosstalk-reliability-report-" not in p.name
+        ],
         key=lambda p: p.stat().st_mtime,
     )
 

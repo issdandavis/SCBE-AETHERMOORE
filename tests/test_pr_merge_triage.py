@@ -18,7 +18,14 @@ def test_classify_pr_respects_needs_rebase_label():
 
 def test_build_triage_orders_merge_ready_first():
     prs = [
-        {"number": 2, "title": "blocked", "headRefName": "blocked", "isDraft": False, "labels": [{"name": "needs-rebase"}], "url": "x"},
+        {
+            "number": 2,
+            "title": "blocked",
+            "headRefName": "blocked",
+            "isDraft": False,
+            "labels": [{"name": "needs-rebase"}],
+            "url": "x",
+        },
         {"number": 1, "title": "ready", "headRefName": "ready", "isDraft": False, "labels": [], "url": "y"},
     ]
     checks = {

@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from src.storage.tictac_spin_grid import (
-    SpinBoard, encode_spin_stack, stack_distance,
+    SpinBoard,
+    encode_spin_stack,
+    stack_distance,
 )
 
 

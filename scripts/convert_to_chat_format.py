@@ -171,6 +171,7 @@ def convert_all(push_to_hf: bool = False) -> None:
 
     # Category breakdown
     from collections import Counter
+
     cats = Counter(r["category"] for r in chat_records)
     print("\nBy category:")
     for cat, count in cats.most_common():
@@ -222,11 +223,13 @@ def push_dataset_to_hf(records: List[Dict[str, Any]]) -> None:
         categories = [r["category"] for r in records]
         tags = [r["personality_tag"] for r in records]
 
-        ds = Dataset.from_dict({
-            "messages": [json.dumps(m) for m in messages_list],
-            "category": categories,
-            "personality_tag": tags,
-        })
+        ds = Dataset.from_dict(
+            {
+                "messages": [json.dumps(m) for m in messages_list],
+                "category": categories,
+                "personality_tag": tags,
+            }
+        )
 
         repo_id = "issdandavis/aethermoor-chat-sft"
         print(f"\nPushing to HuggingFace: {repo_id}")

@@ -28,37 +28,113 @@ RNG = random.Random(20260324)
 WEIGHTS = np.array(TONGUE_WEIGHTS, dtype=float)
 
 SECURITY_WORDS = {
-    "bind", "binding", "validate", "validation", "verify", "security", "governance", "safe",
-    "safety", "token", "key", "secret", "auth", "authority", "egg", "seal", "permission",
+    "bind",
+    "binding",
+    "validate",
+    "validation",
+    "verify",
+    "security",
+    "governance",
+    "safe",
+    "safety",
+    "token",
+    "key",
+    "secret",
+    "auth",
+    "authority",
+    "egg",
+    "seal",
+    "permission",
 }
 COMMAND_WORDS = {
-    "deploy", "route", "scan", "report", "check", "summarize", "install", "help", "open",
-    "launch", "run", "show", "reveal", "ignore", "bypass", "disable", "override",
+    "deploy",
+    "route",
+    "scan",
+    "report",
+    "check",
+    "summarize",
+    "install",
+    "help",
+    "open",
+    "launch",
+    "run",
+    "show",
+    "reveal",
+    "ignore",
+    "bypass",
+    "disable",
+    "override",
 }
 STRUCTURE_WORDS = {
-    "schema", "protocol", "lattice", "ring", "layer", "layers", "route", "validation", "dr",
-    "ko", "ru", "um", "ca", "av", "manifold", "phase",
+    "schema",
+    "protocol",
+    "lattice",
+    "ring",
+    "layer",
+    "layers",
+    "route",
+    "validation",
+    "dr",
+    "ko",
+    "ru",
+    "um",
+    "ca",
+    "av",
+    "manifold",
+    "phase",
 }
 BUSINESS_WORDS = {
-    "revenue", "quarterly", "board", "pricing", "startup", "report", "customer", "enterprise",
-    "plan", "sales", "budget",
+    "revenue",
+    "quarterly",
+    "board",
+    "pricing",
+    "startup",
+    "report",
+    "customer",
+    "enterprise",
+    "plan",
+    "sales",
+    "budget",
 }
 CASUAL_WORDS = {
-    "hello", "hi", "hey", "today", "weather", "homework", "thanks", "please", "how", "are", "you",
+    "hello",
+    "hi",
+    "hey",
+    "today",
+    "weather",
+    "homework",
+    "thanks",
+    "please",
+    "how",
+    "are",
+    "you",
 }
 TECH_WORDS = {
-    "api", "server", "url", "scan", "vulnerabilities", "benchmark", "embedding", "agent", "agents",
-    "runtime", "governance", "hyperbolic", "poincare", "model", "json",
+    "api",
+    "server",
+    "url",
+    "scan",
+    "vulnerabilities",
+    "benchmark",
+    "embedding",
+    "agent",
+    "agents",
+    "runtime",
+    "governance",
+    "hyperbolic",
+    "poincare",
+    "model",
+    "json",
 }
 
 TARGET_PROFILES: Dict[str, List[float]] = {
-    "hydra_task":       [0.18, 0.12, 0.12, 0.36, 0.10, 0.12],
-    "tongue_command":   [0.14, 0.08, 0.12, 0.08, 0.34, 0.24],
-    "polly_swarm":      [0.34, 0.12, 0.18, 0.10, 0.10, 0.16],
-    "sacred_egg":       [0.08, 0.06, 0.24, 0.08, 0.24, 0.30],
-    "normal_business":  [0.06, 0.34, 0.20, 0.12, 0.10, 0.18],
-    "casual":           [0.14, 0.40, 0.16, 0.06, 0.10, 0.14],
-    "adversarial":      [0.04, 0.05, 0.04, 0.16, 0.42, 0.29],
+    "hydra_task": [0.18, 0.12, 0.12, 0.36, 0.10, 0.12],
+    "tongue_command": [0.14, 0.08, 0.12, 0.08, 0.34, 0.24],
+    "polly_swarm": [0.34, 0.12, 0.18, 0.10, 0.10, 0.16],
+    "sacred_egg": [0.08, 0.06, 0.24, 0.08, 0.24, 0.30],
+    "normal_business": [0.06, 0.34, 0.20, 0.12, 0.10, 0.18],
+    "casual": [0.14, 0.40, 0.16, 0.06, 0.10, 0.14],
+    "adversarial": [0.04, 0.05, 0.04, 0.16, 0.42, 0.29],
 }
 
 TRAIN_CORPUS: List[Tuple[str, str]] = [
@@ -231,7 +307,7 @@ def sample_params() -> Dict[str, float]:
 
 def anti_collapse_curve(x: float, alpha: float, beta: float) -> float:
     x = max(0.0, min(1.0, x))
-    damped = x - alpha * (x ** 3) + beta * ((1.0 - x) ** 3)
+    damped = x - alpha * (x**3) + beta * ((1.0 - x) ** 3)
     return max(0.0, min(1.0, damped))
 
 
@@ -249,14 +325,23 @@ def tuned_coords(text: str, params: Dict[str, float], family: str) -> np.ndarray
 
     raw = np.zeros(6, dtype=float)
     raw[0] = base[0] + params["ko_command"] * f["command"] + 0.10 * f["url_flag"] + 0.08 * f["casual"]
-    raw[1] = 0.45 * base[1] + params["av_context"] * f["wc_norm"] + params["av_business"] * f["business"] + 0.10 * f["casual"]
+    raw[1] = (
+        0.45 * base[1]
+        + params["av_context"] * f["wc_norm"]
+        + params["av_business"] * f["business"]
+        + 0.10 * f["casual"]
+    )
     raw[2] = params["ru_base"] * ru_seed
     raw[2] -= params["ru_context_moon"] * f["wc_norm"]
     raw[2] -= params["ru_attack_moon"] * (f["adv_hits"] + 0.8 * f["ml_hits"])
     raw[2] -= params["ru_security_moon"] * f["security"]
     raw[2] -= params["ru_fold_moon"] * ((base[4] + base[5]) / 2.0)
-    raw[3] = 0.30 * base[3] + params["ca_tech"] * (f["tech"] + 0.5 * f["url_flag"] + 0.5 * f["digit_ratio"] + 0.2 * f["command"])
-    raw[4] = 0.35 * base[4] + params["um_security"] * (f["security"] + f["adv_hits"] + f["ml_hits"]) + 0.15 * f["command"]
+    raw[3] = 0.30 * base[3] + params["ca_tech"] * (
+        f["tech"] + 0.5 * f["url_flag"] + 0.5 * f["digit_ratio"] + 0.2 * f["command"]
+    )
+    raw[4] = (
+        0.35 * base[4] + params["um_security"] * (f["security"] + f["adv_hits"] + f["ml_hits"]) + 0.15 * f["command"]
+    )
     raw[5] = 0.25 * base[5] + params["dr_structure"] * (f["structure"] + 0.4 * f["security"] + 0.3 * f["punct_ratio"])
     raw[5] -= params["dr_context_moon"] * f["wc_norm"]
     raw[5] -= params["dr_entropy_moon"] * f["entropy"]
@@ -349,7 +434,7 @@ def class_metrics(records: List[Tuple[str, str, np.ndarray]]) -> Tuple[float, fl
             centroid = centroids[label]
             intra.extend(float(np.linalg.norm(v - centroid)) for v in vectors)
     for i, a in enumerate(labels):
-        for b in labels[i + 1:]:
+        for b in labels[i + 1 :]:
             inter.append(float(np.linalg.norm(centroids[a] - centroids[b])))
 
     ru_dom = dom_hist["RU"] / max(sum(dom_hist.values()), 1)
@@ -404,21 +489,27 @@ def evaluate(corpus: List[Tuple[str, str]], projector, params: Dict[str, float],
     fp_rate = clean_false / max(clean_total, 1)
     cost_margin = statistics.mean(costs_adv) - statistics.mean(costs_clean)
 
-    security_triangle = statistics.mean([
-        adv_recall,
-        1.0 - fp_rate,
-        min(1.0, max(0.0, cost_margin / 4.0)),
-    ])
-    geometry_triangle = statistics.mean([
-        1.0 - ru_dom,
-        diversity,
-        min(1.0, separation / 2.5),
-    ])
-    intent_triangle = statistics.mean([
-        alignment,
-        top2,
-        min(1.0, max(0.0, (0.75 - fp_rate) / 0.75)),
-    ])
+    security_triangle = statistics.mean(
+        [
+            adv_recall,
+            1.0 - fp_rate,
+            min(1.0, max(0.0, cost_margin / 4.0)),
+        ]
+    )
+    geometry_triangle = statistics.mean(
+        [
+            1.0 - ru_dom,
+            diversity,
+            min(1.0, separation / 2.5),
+        ]
+    )
+    intent_triangle = statistics.mean(
+        [
+            alignment,
+            top2,
+            min(1.0, max(0.0, (0.75 - fp_rate) / 0.75)),
+        ]
+    )
     triangulated = statistics.mean([security_triangle, geometry_triangle, intent_triangle])
 
     return EvalResult(
@@ -515,7 +606,9 @@ def main() -> None:
     families = ["moon_softmax", "foam_fold", "orbital_sigmoid", "ru_anticollapse"]
     best_by_family = [search_family(f) for f in families]
     winner = max(best_by_family, key=lambda r: r.triangulated_score)
-    holdout = evaluate(HOLDOUT_CORPUS, tuned_coords, {k: float(v) for k, v in winner.params.items()}, winner.family, "new-sim-holdout")
+    holdout = evaluate(
+        HOLDOUT_CORPUS, tuned_coords, {k: float(v) for k, v in winner.params.items()}, winner.family, "new-sim-holdout"
+    )
     params_by_family = {row.family: {k: float(v) for k, v in row.params.items()} for row in best_by_family}
     remainder_train = evaluate_remainder(
         TRAIN_CORPUS,
@@ -536,11 +629,15 @@ def main() -> None:
     print("=" * 100)
     print("Pre-sim baseline vs tuned families vs holdout triangulation")
     print()
-    print(f"{'Run':<20} {'Family':<18} {'AdvRec':>7} {'FPR':>7} {'RUdom':>7} {'Div':>7} {'Sep':>7} {'Align':>7} {'Top2':>7} {'Tri':>7}")
+    print(
+        f"{'Run':<20} {'Family':<18} {'AdvRec':>7} {'FPR':>7} {'RUdom':>7} {'Div':>7} {'Sep':>7} {'Align':>7} {'Top2':>7} {'Tri':>7}"
+    )
     print("-" * 100)
     rows = [baseline] + best_by_family + [holdout]
     for row in rows:
-        print(f"{row.name:<20} {row.family:<18} {row.adv_recall:>7.2%} {row.fp_rate:>7.2%} {row.ru_dominance:>7.2%} {row.dominant_diversity:>7.3f} {row.class_separation:>7.3f} {row.target_alignment:>7.3f} {row.top2_accuracy:>7.2%} {row.triangulated_score:>7.3f}")
+        print(
+            f"{row.name:<20} {row.family:<18} {row.adv_recall:>7.2%} {row.fp_rate:>7.2%} {row.ru_dominance:>7.2%} {row.dominant_diversity:>7.3f} {row.class_separation:>7.3f} {row.target_alignment:>7.3f} {row.top2_accuracy:>7.2%} {row.triangulated_score:>7.3f}"
+        )
 
     print("\nBest family on train:", winner.family)
     print("Best tuned parameter field:")
@@ -583,13 +680,17 @@ def main() -> None:
 
     csv_path = out_dir / "tongue_weight_field_tuning.csv"
     with csv_path.open("w", encoding="utf-8") as f:
-        f.write("run,family,adv_recall,fp_rate,ru_dominance,dominant_diversity,class_separation,target_alignment,top2_accuracy,security_triangle,geometry_triangle,intent_triangle,triangulated_score\n")
+        f.write(
+            "run,family,adv_recall,fp_rate,ru_dominance,dominant_diversity,class_separation,target_alignment,top2_accuracy,security_triangle,geometry_triangle,intent_triangle,triangulated_score\n"
+        )
         for row in rows:
             f.write(
                 f"{row.name},{row.family},{row.adv_recall},{row.fp_rate},{row.ru_dominance},{row.dominant_diversity},{row.class_separation},{row.target_alignment},{row.top2_accuracy},{row.security_triangle},{row.geometry_triangle},{row.intent_triangle},{row.triangulated_score}\n"
             )
         f.write("\n")
-        f.write("remainder_run,threshold,avg_remainder,clean_avg,adv_avg,separation,slow_path_rate,adv_slow_recall,clean_fast_allow\n")
+        f.write(
+            "remainder_run,threshold,avg_remainder,clean_avg,adv_avg,separation,slow_path_rate,adv_slow_recall,clean_fast_allow\n"
+        )
         for row in [remainder_train, remainder_holdout]:
             f.write(
                 f"{row.name},{row.threshold},{row.avg_remainder},{row.clean_avg},{row.adv_avg},{row.separation},{row.slow_path_rate},{row.adv_slow_recall},{row.clean_fast_allow}\n"

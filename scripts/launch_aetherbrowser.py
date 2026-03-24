@@ -97,10 +97,13 @@ def start_server(port: int = 8002) -> subprocess.Popen:
 
     args = [
         sys.executable,
-        "-m", "uvicorn",
+        "-m",
+        "uvicorn",
         "src.aetherbrowser.serve:app",
-        "--host", "127.0.0.1",
-        "--port", str(port),
+        "--host",
+        "127.0.0.1",
+        "--port",
+        str(port),
     ]
 
     print(f"[LAUNCH] Starting AetherBrowser server on port {port}")
@@ -117,6 +120,7 @@ def start_server(port: int = 8002) -> subprocess.Popen:
 def check_server(port: int = 8002) -> bool:
     """Check if the server is healthy."""
     import urllib.request
+
     try:
         resp = urllib.request.urlopen(f"http://127.0.0.1:{port}/health", timeout=5)
         return resp.status == 200
@@ -192,6 +196,7 @@ def main():
         if args.open_docs and chrome_proc:
             try:
                 import webbrowser
+
                 webbrowser.open(f"http://127.0.0.1:{args.port}/docs")
             except Exception:
                 pass

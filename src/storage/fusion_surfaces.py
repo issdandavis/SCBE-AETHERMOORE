@@ -42,6 +42,7 @@ TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 #  Shared helpers
 # =========================================================================== #
 
+
 def _chladni_keystream(n: int, m: int, length: int, epoch: int = 0) -> bytes:
     """Generate Chladni-mode XOR keystream (from QC drive pattern)."""
     seed = hashlib.sha256(f"chladni:{n}:{m}:{epoch}".encode()).digest()
@@ -55,7 +56,7 @@ def _chladni_keystream(n: int, m: int, length: int, epoch: int = 0) -> bytes:
 
 def _tongue_from_coords(tongue_coords: List[float]) -> str:
     """Pick dominant tongue from 6D coordinates."""
-    weights = [PHI ** i for i in range(6)]
+    weights = [PHI**i for i in range(6)]
     weighted = [abs(c) * w for c, w in zip(tongue_coords, weights)]
     idx = weighted.index(max(weighted))
     return TONGUES[idx]
@@ -70,9 +71,11 @@ def _intent_distance(coord_3d: np.ndarray) -> float:
 #  Fusion 1: CymaticCone (Octree + Chladni access control)
 # =========================================================================== #
 
+
 @dataclass
 class CymaticLeaf:
     """Octree leaf with Chladni-encoded content."""
+
     record_id: str
     realm: str
     chladni_n: int
@@ -180,6 +183,7 @@ class CymaticCone:
 #  Fusion 2: SemiSphereCone (Lattice hemisphere + Octree cone)
 # =========================================================================== #
 
+
 class SemiSphereCone:
     """Fusion: HyperbolicLattice25D (hemisphere) + HyperbolicOctree (cone).
 
@@ -231,8 +235,11 @@ class SemiSphereCone:
         if radius < self.radius_threshold:
             # Hemisphere: lattice storage
             self.lattice.insert_bundle(
-                x=x, y=y, phase_rad=phase_rad,
-                tongue=tongue, authority=authority,
+                x=x,
+                y=y,
+                phase_rad=phase_rad,
+                tongue=tongue,
+                authority=authority,
                 intent_vector=intent_vector or [0.5, 0.5, 0.5],
                 intent_label=record_id[:48],
                 bundle_id=record_id,
@@ -250,15 +257,22 @@ class SemiSphereCone:
             return "cone"
 
     def query_nearest(
-        self, x: float, y: float, phase_rad: float,
+        self,
+        x: float,
+        y: float,
+        phase_rad: float,
         intent_vector: Optional[List[float]] = None,
-        tongue: str = "KO", top_k: int = 5,
+        tongue: str = "KO",
+        top_k: int = 5,
     ) -> list:
         """Query nearest in the hemisphere zone (lattice)."""
         return self.lattice.query_nearest(
-            x=x, y=y, phase_rad=phase_rad,
+            x=x,
+            y=y,
+            phase_rad=phase_rad,
             intent_vector=intent_vector or [0.5, 0.5, 0.5],
-            tongue=tongue, top_k=top_k,
+            tongue=tongue,
+            top_k=top_k,
         )
 
     def query_spatial(self, coord_3d: np.ndarray) -> Optional[str]:
@@ -286,15 +300,14 @@ class SemiSphereCone:
             "total_nodes": total_nodes,
             "node_explosion": round(total_nodes / max(1, total), 4),
             "compaction_score": round(total / max(1, total_nodes), 6),
-            "lattice_overlap_heat": round(
-                len(self.lattice.overlapping_cells()) / max(1, hemisphere_nodes), 4
-            ),
+            "lattice_overlap_heat": round(len(self.lattice.overlapping_cells()) / max(1, hemisphere_nodes), 4),
         }
 
 
 # =========================================================================== #
 #  Fusion 3: TongueRouter (Sphere pre-filter + Lattice query)
 # =========================================================================== #
+
 
 class TongueRouter:
     """Fusion: ScatteredAttentionSphere + HyperbolicLattice25D.
@@ -332,8 +345,11 @@ class TongueRouter:
         authority: str = "public",
     ) -> None:
         self.lattice.insert_bundle(
-            x=x, y=y, phase_rad=phase_rad,
-            tongue=tongue, authority=authority,
+            x=x,
+            y=y,
+            phase_rad=phase_rad,
+            tongue=tongue,
+            authority=authority,
             intent_vector=intent_vector,
             intent_label=record_id[:48],
             bundle_id=record_id,
@@ -372,7 +388,9 @@ class TongueRouter:
         """Route through sphere then query lattice with tongue hint."""
         dominant_tongue = self.route_tongue(phi_wall)
         return self.lattice.query_nearest(
-            x=x, y=y, phase_rad=phase_rad,
+            x=x,
+            y=y,
+            phase_rad=phase_rad,
             intent_vector=intent_vector,
             tongue=dominant_tongue,
             top_k=top_k,
@@ -409,8 +427,6 @@ class TongueRouter:
             "sphere_points": sph_points,
             "total_nodes": lat_nodes + sph_points,
             "node_explosion": round((lat_nodes + sph_points) / max(1, self._record_count), 4),
-            "lattice_compaction": round(
-                self._record_count / max(1, lat_nodes), 6
-            ),
+            "lattice_compaction": round(self._record_count / max(1, lat_nodes), 6),
             "tongue_evenness": round(tongue_evenness, 4),
         }

@@ -119,9 +119,7 @@ def flat_slope_adaptive_encode(
     phases = derive_phases(token_id, key, nonce)
 
     # Seed RNG with key+nonce for reproducible jitter (receiver can verify)
-    rng_seed = int.from_bytes(
-        hmac.new(key, b"jitter" + nonce, hashlib.sha256).digest()[:4], "big"
-    )
+    rng_seed = int.from_bytes(hmac.new(key, b"jitter" + nonce, hashlib.sha256).digest()[:4], "big")
     rng = np.random.default_rng(seed=rng_seed)
 
     signal = np.zeros(N_SAMPLES)
@@ -307,9 +305,7 @@ def verify_envelope(env: Dict, max_age_ms: int = 60_000) -> bool:
         return False
 
     # Recompute signature
-    canon = (
-        f"v3.{hdr['tongue']}.{hdr['mode']}.{hdr['ts']}.{hdr['nonce']}.{env['payload']}"
-    )
+    canon = f"v3.{hdr['tongue']}.{hdr['mode']}.{hdr['ts']}.{hdr['nonce']}.{env['payload']}"
     expected = hmac.new(MASTER_KEY, canon.encode(), hashlib.sha256).hexdigest()
 
     return hmac.compare_digest(expected, env["sig"])
@@ -370,9 +366,7 @@ def test_phase_nonce_dependency():
     print(f"  Different waveform: {different_waveform}")
 
     passed = same_harmonics and different_waveform
-    print(
-        f"\n  {'✓ PASS' if passed else '✗ FAIL'}: Nonce changes waveform while preserving harmonics"
-    )
+    print(f"\n  {'✓ PASS' if passed else '✗ FAIL'}: Nonce changes waveform while preserving harmonics")
     return passed
 
 
@@ -426,12 +420,8 @@ def test_attacker_resistance():
     # Adaptive should have LOWER correlation than binary
     better_resistance = avg_corr < binary_avg_corr * 0.5
 
-    print(
-        f"\n  Adaptive mode {'✓ BETTER' if better_resistance else '✗ SIMILAR'} than binary"
-    )
-    print(
-        f"  {'✓ PASS' if better_resistance else '✗ FAIL'}: Phase randomization defeats correlation"
-    )
+    print(f"\n  Adaptive mode {'✓ BETTER' if better_resistance else '✗ SIMILAR'} than binary")
+    print(f"  {'✓ PASS' if better_resistance else '✗ FAIL'}: Phase randomization defeats correlation")
     return better_resistance
 
 
@@ -568,9 +558,7 @@ def test_binary_vs_adaptive_entropy():
     # Adaptive should have higher entropy
     higher_entropy = adaptive_fp["entropy"] > binary_fp["entropy"] * 0.9
 
-    print(
-        f"\n  {'✓ PASS' if higher_entropy else '✗ FAIL'}: Adaptive has sufficient entropy"
-    )
+    print(f"\n  {'✓ PASS' if higher_entropy else '✗ FAIL'}: Adaptive has sufficient entropy")
     return higher_entropy
 
 

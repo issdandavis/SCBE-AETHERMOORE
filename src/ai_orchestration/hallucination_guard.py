@@ -29,17 +29,19 @@ import json
 
 class HallucinationType(Enum):
     """Types of hallucinations detected."""
-    FACTUAL_ERROR = "factual_error"           # Incorrect facts
-    FABRICATED_SOURCE = "fabricated_source"   # Made-up citations
+
+    FACTUAL_ERROR = "factual_error"  # Incorrect facts
+    FABRICATED_SOURCE = "fabricated_source"  # Made-up citations
     LOGICAL_CONTRADICTION = "logical_contradiction"  # Self-contradicting
     TEMPORAL_IMPOSSIBILITY = "temporal_impossibility"  # Time paradox
-    ENTITY_CONFUSION = "entity_confusion"     # Wrong entity attributes
+    ENTITY_CONFUSION = "entity_confusion"  # Wrong entity attributes
     CONFIDENCE_INFLATION = "confidence_inflation"  # Overclaiming certainty
-    UNSUPPORTED_CLAIM = "unsupported_claim"   # No evidence provided
+    UNSUPPORTED_CLAIM = "unsupported_claim"  # No evidence provided
 
 
 class VerificationStatus(Enum):
     """Status of output verification."""
+
     VERIFIED = "verified"
     UNCERTAIN = "uncertain"
     REJECTED = "rejected"
@@ -49,6 +51,7 @@ class VerificationStatus(Enum):
 @dataclass
 class VerificationResult:
     """Result of hallucination check."""
+
     status: VerificationStatus
     confidence_score: float  # 0.0 - 1.0
     hallucinations_detected: List[Dict[str, Any]]
@@ -61,6 +64,7 @@ class VerificationResult:
 @dataclass
 class FactClaim:
     """A claim that can be verified."""
+
     text: str
     claim_type: str  # factual, numerical, temporal, causal
     entities: List[str]
@@ -118,11 +122,7 @@ class KnowledgeGrounder:
 
     def add_verified_fact(self, fact_id: str, fact: Dict[str, Any], source: str):
         """Add a verified fact from external validation."""
-        self.verified_facts[fact_id] = {
-            **fact,
-            "source": source,
-            "verified_at": datetime.now().isoformat()
-        }
+        self.verified_facts[fact_id] = {**fact, "source": source, "verified_at": datetime.now().isoformat()}
 
 
 class SemanticConsistencyChecker:
@@ -160,12 +160,9 @@ class SemanticConsistencyChecker:
 
                 # Check direct negation
                 if self._is_negation(stmt1, stmt2):
-                    contradictions.append({
-                        "type": "direct_negation",
-                        "statement_1": stmt1,
-                        "statement_2": stmt2,
-                        "confidence": 0.9
-                    })
+                    contradictions.append(
+                        {"type": "direct_negation", "statement_1": stmt1, "statement_2": stmt2, "confidence": 0.9}
+                    )
 
                 # Check pattern-based contradictions
                 for pos_pattern, neg_pattern in self.CONTRADICTION_PATTERNS:
@@ -173,13 +170,15 @@ class SemanticConsistencyChecker:
                     match2 = re.search(neg_pattern, stmt2, re.IGNORECASE)
 
                     if match1 and match2:
-                        contradictions.append({
-                            "type": "pattern_contradiction",
-                            "pattern": pos_pattern,
-                            "statement_1": stmt1,
-                            "statement_2": stmt2,
-                            "confidence": 0.7
-                        })
+                        contradictions.append(
+                            {
+                                "type": "pattern_contradiction",
+                                "pattern": pos_pattern,
+                                "statement_1": stmt1,
+                                "statement_2": stmt2,
+                                "confidence": 0.7,
+                            }
+                        )
 
         return contradictions
 
@@ -211,14 +210,30 @@ class ConfidenceCalibrator:
 
     # Words indicating high certainty
     HIGH_CERTAINTY_MARKERS = [
-        "definitely", "certainly", "absolutely", "always", "never",
-        "impossible", "guaranteed", "100%", "proven", "fact"
+        "definitely",
+        "certainly",
+        "absolutely",
+        "always",
+        "never",
+        "impossible",
+        "guaranteed",
+        "100%",
+        "proven",
+        "fact",
     ]
 
     # Words indicating appropriate uncertainty
     UNCERTAINTY_MARKERS = [
-        "probably", "likely", "possibly", "might", "could",
-        "suggests", "indicates", "appears", "seems", "may"
+        "probably",
+        "likely",
+        "possibly",
+        "might",
+        "could",
+        "suggests",
+        "indicates",
+        "appears",
+        "seems",
+        "may",
     ]
 
     def __init__(self, confidence_threshold: float = 0.7):
@@ -234,14 +249,8 @@ class ConfidenceCalibrator:
         text_lower = text.lower()
 
         # Count certainty markers
-        high_certainty_count = sum(
-            1 for marker in self.HIGH_CERTAINTY_MARKERS
-            if marker in text_lower
-        )
-        uncertainty_count = sum(
-            1 for marker in self.UNCERTAINTY_MARKERS
-            if marker in text_lower
-        )
+        high_certainty_count = sum(1 for marker in self.HIGH_CERTAINTY_MARKERS if marker in text_lower)
+        uncertainty_count = sum(1 for marker in self.UNCERTAINTY_MARKERS if marker in text_lower)
 
         # Flag overclaiming
         if high_certainty_count > 2 and claimed_confidence < 0.9:
@@ -274,24 +283,21 @@ class CrossValidator:
         self.validation_cache: Dict[str, List[Dict[str, Any]]] = {}
 
     def submit_validation(
-        self,
-        claim_hash: str,
-        agent_id: str,
-        is_valid: bool,
-        confidence: float,
-        evidence: Optional[str] = None
+        self, claim_hash: str, agent_id: str, is_valid: bool, confidence: float, evidence: Optional[str] = None
     ):
         """Submit a validation vote from an agent."""
         if claim_hash not in self.validation_cache:
             self.validation_cache[claim_hash] = []
 
-        self.validation_cache[claim_hash].append({
-            "agent_id": agent_id,
-            "is_valid": is_valid,
-            "confidence": confidence,
-            "evidence": evidence,
-            "timestamp": datetime.now().isoformat()
-        })
+        self.validation_cache[claim_hash].append(
+            {
+                "agent_id": agent_id,
+                "is_valid": is_valid,
+                "confidence": confidence,
+                "evidence": evidence,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
 
     def get_consensus(self, claim_hash: str) -> Tuple[VerificationStatus, float]:
         """
@@ -307,9 +313,7 @@ class CrossValidator:
 
         # Calculate weighted consensus
         total_weight = sum(v["confidence"] for v in validations)
-        positive_weight = sum(
-            v["confidence"] for v in validations if v["is_valid"]
-        )
+        positive_weight = sum(v["confidence"] for v in validations if v["is_valid"])
 
         if total_weight == 0:
             return (VerificationStatus.UNCERTAIN, 0.0)
@@ -337,7 +341,7 @@ class HallucinationGuard:
         confidence_threshold: float = 0.7,
         require_sources: bool = True,
         cross_validation_enabled: bool = True,
-        min_validators: int = 2
+        min_validators: int = 2,
     ):
         self.confidence_threshold = confidence_threshold
         self.require_sources = require_sources
@@ -349,20 +353,14 @@ class HallucinationGuard:
         self.cross_validator = CrossValidator(min_validators) if cross_validation_enabled else None
 
         # Statistics
-        self.stats = {
-            "total_checks": 0,
-            "verified": 0,
-            "rejected": 0,
-            "needs_review": 0,
-            "hallucinations_detected": 0
-        }
+        self.stats = {"total_checks": 0, "verified": 0, "rejected": 0, "needs_review": 0, "hallucinations_detected": 0}
 
     def extract_claims(self, text: str) -> List[FactClaim]:
         """Extract verifiable claims from text."""
         claims = []
 
         # Split into sentences
-        sentences = re.split(r'[.!?]', text)
+        sentences = re.split(r"[.!?]", text)
 
         for sentence in sentences:
             sentence = sentence.strip()
@@ -371,31 +369,26 @@ class HallucinationGuard:
 
             # Detect claim type
             claim_type = "factual"
-            if re.search(r'\d+', sentence):
+            if re.search(r"\d+", sentence):
                 claim_type = "numerical"
-            if re.search(r'(before|after|when|during|since|until)', sentence, re.I):
+            if re.search(r"(before|after|when|during|since|until)", sentence, re.I):
                 claim_type = "temporal"
-            if re.search(r'(because|therefore|thus|hence|causes)', sentence, re.I):
+            if re.search(r"(because|therefore|thus|hence|causes)", sentence, re.I):
                 claim_type = "causal"
 
             # Extract entities (simple noun phrase extraction)
-            entities = re.findall(r'[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*', sentence)
+            entities = re.findall(r"[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*", sentence)
 
-            claims.append(FactClaim(
-                text=sentence,
-                claim_type=claim_type,
-                entities=entities,
-                confidence=0.5  # Default, will be adjusted
-            ))
+            claims.append(
+                FactClaim(
+                    text=sentence, claim_type=claim_type, entities=entities, confidence=0.5  # Default, will be adjusted
+                )
+            )
 
         return claims
 
     def verify_output(
-        self,
-        agent_id: str,
-        output: str,
-        context: Optional[Dict[str, Any]] = None,
-        claimed_confidence: float = 0.8
+        self, agent_id: str, output: str, context: Optional[Dict[str, Any]] = None, claimed_confidence: float = 0.8
     ) -> VerificationResult:
         """
         Verify an agent's output for hallucinations.
@@ -413,16 +406,12 @@ class HallucinationGuard:
         claims = self.extract_claims(output)
 
         # 1. Confidence Calibration
-        calibrated_confidence, confidence_warnings = self.calibrator.calibrate(
-            output, claimed_confidence
-        )
+        calibrated_confidence, confidence_warnings = self.calibrator.calibrate(output, claimed_confidence)
 
         for warning in confidence_warnings:
-            hallucinations.append({
-                "type": HallucinationType.CONFIDENCE_INFLATION.value,
-                "description": warning,
-                "severity": "low"
-            })
+            hallucinations.append(
+                {"type": HallucinationType.CONFIDENCE_INFLATION.value, "description": warning, "severity": "low"}
+            )
 
         # 2. Fact Grounding
         for claim in claims:
@@ -435,37 +424,39 @@ class HallucinationGuard:
             else:
                 if ground_confidence < 0.2:
                     # Claim contradicts known facts
-                    hallucinations.append({
-                        "type": HallucinationType.FACTUAL_ERROR.value,
-                        "claim": claim.text,
-                        "conflicting_source": source,
-                        "severity": "high"
-                    })
+                    hallucinations.append(
+                        {
+                            "type": HallucinationType.FACTUAL_ERROR.value,
+                            "claim": claim.text,
+                            "conflicting_source": source,
+                            "severity": "high",
+                        }
+                    )
                 else:
                     unverified_claims.append(claim.text)
 
         # 3. Check source attribution if required
         if self.require_sources:
-            source_pattern = r'\[[\d\w]+\]|\(.*?\d{4}.*?\)|according to|source:|ref:'
+            source_pattern = r"\[[\d\w]+\]|\(.*?\d{4}.*?\)|according to|source:|ref:"
             has_sources = bool(re.search(source_pattern, output, re.I))
 
             if not has_sources and len(claims) > 2:
-                hallucinations.append({
-                    "type": HallucinationType.UNSUPPORTED_CLAIM.value,
-                    "description": "Multiple claims without source attribution",
-                    "severity": "medium"
-                })
+                hallucinations.append(
+                    {
+                        "type": HallucinationType.UNSUPPORTED_CLAIM.value,
+                        "description": "Multiple claims without source attribution",
+                        "severity": "medium",
+                    }
+                )
 
         # 4. Semantic Consistency Check
         claim_texts = [c.text for c in claims]
         contradictions = self.consistency_checker.check_consistency(claim_texts)
 
         for contradiction in contradictions:
-            hallucinations.append({
-                "type": HallucinationType.LOGICAL_CONTRADICTION.value,
-                "details": contradiction,
-                "severity": "high"
-            })
+            hallucinations.append(
+                {"type": HallucinationType.LOGICAL_CONTRADICTION.value, "details": contradiction, "severity": "high"}
+            )
 
         # 5. Cross-validation (if enabled and claims need verification)
         cross_validation_pending = False
@@ -477,12 +468,14 @@ class HallucinationGuard:
                 if status == VerificationStatus.NEEDS_REVIEW:
                     cross_validation_pending = True
                 elif status == VerificationStatus.REJECTED:
-                    hallucinations.append({
-                        "type": HallucinationType.FACTUAL_ERROR.value,
-                        "claim": claim,
-                        "cross_validation_consensus": consensus,
-                        "severity": "high"
-                    })
+                    hallucinations.append(
+                        {
+                            "type": HallucinationType.FACTUAL_ERROR.value,
+                            "claim": claim,
+                            "cross_validation_consensus": consensus,
+                            "severity": "high",
+                        }
+                    )
 
         # Determine final status
         if len(hallucinations) == 0:
@@ -510,44 +503,33 @@ class HallucinationGuard:
                 "original_confidence": claimed_confidence,
                 "calibrated_confidence": calibrated_confidence,
                 "total_claims": len(claims),
-                "checked_at": datetime.now().isoformat()
-            }
+                "checked_at": datetime.now().isoformat(),
+            },
         )
 
     def register_knowledge(self, domain: str, facts: Dict[str, Any]):
         """Register domain knowledge for fact-checking."""
         self.grounder.register_ground_truth(domain, facts)
 
-    def submit_cross_validation(
-        self,
-        claim: str,
-        agent_id: str,
-        is_valid: bool,
-        confidence: float
-    ):
+    def submit_cross_validation(self, claim: str, agent_id: str, is_valid: bool, confidence: float):
         """Submit a cross-validation vote."""
         if self.cross_validator:
             claim_hash = hashlib.sha256(claim.encode()).hexdigest()[:16]
-            self.cross_validator.submit_validation(
-                claim_hash, agent_id, is_valid, confidence
-            )
+            self.cross_validator.submit_validation(claim_hash, agent_id, is_valid, confidence)
 
     def get_stats(self) -> Dict[str, Any]:
         """Get hallucination detection statistics."""
         return {
             **self.stats,
-            "rejection_rate": (
-                self.stats["rejected"] / max(1, self.stats["total_checks"])
-            ),
-            "hallucination_rate": (
-                self.stats["hallucinations_detected"] / max(1, self.stats["total_checks"])
-            )
+            "rejection_rate": (self.stats["rejected"] / max(1, self.stats["total_checks"])),
+            "hallucination_rate": (self.stats["hallucinations_detected"] / max(1, self.stats["total_checks"])),
         }
 
 
 # =============================================================================
 # INTEGRATION WITH ORCHESTRATOR
 # =============================================================================
+
 
 class GuardedAgentWrapper:
     """
@@ -570,36 +552,25 @@ class GuardedAgentWrapper:
         output_text = json.dumps(result) if isinstance(result, dict) else str(result)
 
         # Verify output
-        verification = self.guard.verify_output(
-            agent_id=self.agent.id,
-            output=output_text,
-            context=task_data
-        )
+        verification = self.guard.verify_output(agent_id=self.agent.id, output=output_text, context=task_data)
 
         # Handle based on status
         if verification.status == VerificationStatus.VERIFIED:
-            return {
-                **result,
-                "_verification": {
-                    "status": "verified",
-                    "confidence": verification.confidence_score
-                }
-            }
+            return {**result, "_verification": {"status": "verified", "confidence": verification.confidence_score}}
         elif verification.status == VerificationStatus.REJECTED:
-            self.rejection_log.append({
-                "task": task_data,
-                "output": result,
-                "verification": verification.hallucinations_detected,
-                "timestamp": datetime.now().isoformat()
-            })
+            self.rejection_log.append(
+                {
+                    "task": task_data,
+                    "output": result,
+                    "verification": verification.hallucinations_detected,
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
 
             return {
                 "error": "Output rejected due to detected hallucinations",
                 "hallucinations": verification.hallucinations_detected,
-                "_verification": {
-                    "status": "rejected",
-                    "confidence": verification.confidence_score
-                }
+                "_verification": {"status": "rejected", "confidence": verification.confidence_score},
             }
         else:
             # Uncertain - include warning
@@ -609,7 +580,8 @@ class GuardedAgentWrapper:
                     "status": "uncertain",
                     "confidence": verification.confidence_score,
                     "unverified_claims": verification.unverified_claims,
-                    "warnings": [h["description"] for h in verification.hallucinations_detected
-                                if h.get("severity") == "low"]
-                }
+                    "warnings": [
+                        h["description"] for h in verification.hallucinations_detected if h.get("severity") == "low"
+                    ],
+                },
             }

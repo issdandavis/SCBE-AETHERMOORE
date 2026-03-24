@@ -23,6 +23,7 @@ from .base import BlockResult, BlockStatus, ConceptBlock
 
 # -- scalar Kalman filter ----------------------------------------------------
 
+
 class SimpleKalmanFilter:
     """1D Kalman filter for scalar signals."""
 
@@ -44,7 +45,7 @@ class SimpleKalmanFilter:
         # Update
         k = self.p / (self.p + self.r)
         self.x += k * (measurement - self.x)
-        self.p *= (1.0 - k)
+        self.p *= 1.0 - k
         return self.x
 
     @property
@@ -57,6 +58,7 @@ class SimpleKalmanFilter:
 
 
 # -- multi-dim Kalman filter (pure Python, no numpy) -------------------------
+
 
 def _mat_zeros(rows: int, cols: int) -> List[List[float]]:
     return [[0.0] * cols for _ in range(rows)]
@@ -146,11 +148,11 @@ class MultiDimKalmanFilter:
     ) -> None:
         self.dim = dim
         self.x = [[0.0] for _ in range(dim)]  # state column vector
-        self.P = _mat_identity(dim)            # error covariance
+        self.P = _mat_identity(dim)  # error covariance
         self.Q = [[process_noise if i == j else 0.0 for j in range(dim)] for i in range(dim)]
         self.R = [[measurement_noise if i == j else 0.0 for j in range(dim)] for i in range(dim)]
-        self.F = _mat_identity(dim)            # state transition (identity default)
-        self.H = _mat_identity(dim)            # observation (identity default)
+        self.F = _mat_identity(dim)  # state transition (identity default)
+        self.H = _mat_identity(dim)  # observation (identity default)
 
     def predict(self) -> List[float]:
         self.x = _mat_mul(self.F, self.x)
@@ -181,6 +183,7 @@ class MultiDimKalmanFilter:
 
 
 # -- concept block wrapper ---------------------------------------------------
+
 
 class SenseBlock(ConceptBlock):
     """Concept block wrapping Kalman-filter state estimation.

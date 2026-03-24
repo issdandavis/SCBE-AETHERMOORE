@@ -79,7 +79,9 @@ async def _playwright_capture(url: str, output_dir: Path, timeout_ms: int = 3000
         title = await page.title()
         text = (await page.locator("body").inner_text()).strip()
         links: List[Dict[str, str]] = []
-        for entry in await page.locator("a[href]").evaluate_all("els => els.slice(0, 20).map(e => ({ href: e.href, text: e.textContent }))"):
+        for entry in await page.locator("a[href]").evaluate_all(
+            "els => els.slice(0, 20).map(e => ({ href: e.href, text: e.textContent }))"
+        ):
             href = str(entry.get("href", "")).strip()
             text_value = str(entry.get("text", "") or "").strip()
             if href:
@@ -132,7 +134,9 @@ def _search_duckduckgo(query: str, max_results: int = 8) -> List[Dict[str, str]]
 
     # Best effort HTML parsing, no dependency on external parsers.
     results: List[Dict[str, str]] = []
-    for match in re.finditer(r'<a[^>]+class="[^"]*\bresult__a\b[^"]*"[^>]+href="([^"]+)"[^>]*>(.*?)</a>', html, flags=re.I | re.S):
+    for match in re.finditer(
+        r'<a[^>]+class="[^"]*\bresult__a\b[^"]*"[^>]+href="([^"]+)"[^>]*>(.*?)</a>', html, flags=re.I | re.S
+    ):
         link = match.group(1)
         title = html_to_text(match.group(2))
         results.append({"title": title, "url": link})

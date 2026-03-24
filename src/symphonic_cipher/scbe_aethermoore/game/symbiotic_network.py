@@ -63,10 +63,7 @@ class SymbioticNetwork:
     def _is_hodge_dual(self, a: TongueVector, b: TongueVector) -> bool:
         dom_a = self._dominant_tongue(a)
         dom_b = self._dominant_tongue(b)
-        return any(
-            (dom_a == x and dom_b == y) or (dom_a == y and dom_b == x)
-            for x, y in HODGE_DUAL_PAIRS
-        )
+        return any((dom_a == x and dom_b == y) or (dom_a == y and dom_b == x) for x, y in HODGE_DUAL_PAIRS)
 
     # -- Node ops --
 

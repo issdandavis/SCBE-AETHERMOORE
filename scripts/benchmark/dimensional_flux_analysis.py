@@ -30,6 +30,7 @@ from typing import List, Dict, Tuple
 import numpy as np
 
 import sys
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 PHI = (1 + math.sqrt(5)) / 2
@@ -41,55 +42,61 @@ TONGUE_WEIGHTS = [1.0, PHI, PHI**2, PHI**3, PHI**4, PHI**5]
 # Flux States
 # ═══════════════════════════════════════════════════════════
 
+
 class FluxState:
-    POSITIVE = "+"      # Moving closer to target
-    NEGATIVE = "-"      # Moving farther from target
-    NEUTRAL = "0"       # Stable (within threshold)
-    FLUCTUATING = "~"   # Oscillating
+    POSITIVE = "+"  # Moving closer to target
+    NEGATIVE = "-"  # Moving farther from target
+    NEUTRAL = "0"  # Stable (within threshold)
+    FLUCTUATING = "~"  # Oscillating
 
 
 @dataclass
 class DimensionTrace:
     """Full trajectory of one dimension through the embedding pipeline."""
+
     dim_index: int
     dim_name: str
-    states: List[str] = field(default_factory=list)       # Flux state at each step
-    values: List[float] = field(default_factory=list)      # Raw value at each step
-    deltas: List[float] = field(default_factory=list)      # Change from previous step
-    settled_at: int = -1                                    # Step where it stopped changing
+    states: List[str] = field(default_factory=list)  # Flux state at each step
+    values: List[float] = field(default_factory=list)  # Raw value at each step
+    deltas: List[float] = field(default_factory=list)  # Change from previous step
+    settled_at: int = -1  # Step where it stopped changing
     final_state: str = "?"
-    total_flux: float = 0.0                                 # Sum of absolute changes
-    direction_changes: int = 0                              # How many times it reversed
+    total_flux: float = 0.0  # Sum of absolute changes
+    direction_changes: int = 0  # How many times it reversed
 
 
 @dataclass
 class EmbeddingTrace:
     """Full A-to-Z trace of an embedding through all pipeline stages."""
+
     text: str
     method: str
     dimensions: List[DimensionTrace] = field(default_factory=list)
-    settling_step: int = -1         # When the WHOLE embedding settled
+    settling_step: int = -1  # When the WHOLE embedding settled
     total_flux: float = 0.0
-    flux_signature: str = ""        # Visual signature like "++-~0++"
+    flux_signature: str = ""  # Visual signature like "++-~0++"
 
 
 # ═══════════════════════════════════════════════════════════
 # Simulated Neural Embedding Pipeline (14 stages)
 # ═══════════════════════════════════════════════════════════
 
+
 def text_to_seed(text: str) -> np.ndarray:
     """Convert text to initial 6D seed coordinates."""
     words = text.split()
     chars = max(len(text), 1)
     unique = len(set(w.lower() for w in words))
-    return np.array([
-        min(1.0, 0.2 + 0.4 * (sum(c.isupper() for c in text) / chars) * 5),
-        min(1.0, len(words) / 100.0),
-        min(1.0, unique / max(len(words), 1)),
-        min(1.0, (sum(c.isdigit() for c in text) / chars) * 10),
-        min(1.0, (sum(c.isupper() for c in text) / chars) * 5),
-        min(1.0, (sum(c in ".,;:!?-_/()[]{}@#$%^&*" for c in text) / chars) * 8),
-    ])
+    return np.array(
+        [
+            min(1.0, 0.2 + 0.4 * (sum(c.isupper() for c in text) / chars) * 5),
+            min(1.0, len(words) / 100.0),
+            min(1.0, unique / max(len(words), 1)),
+            min(1.0, (sum(c.isdigit() for c in text) / chars) * 10),
+            min(1.0, (sum(c.isupper() for c in text) / chars) * 5),
+            min(1.0, (sum(c in ".,;:!?-_/()[]{}@#$%^&*" for c in text) / chars) * 8),
+        ]
+    )
 
 
 def stable_scalar(text: str, salt: str = "") -> float:
@@ -121,7 +128,7 @@ def simulate_neural_pipeline(text: str, method: str = "tongue") -> List[np.ndarr
     stages.append(state.copy())
 
     # L3: Method-specific lift
-    weights = np.array(TONGUE_WEIGHTS[:len(state)])
+    weights = np.array(TONGUE_WEIGHTS[: len(state)])
     if method == "tongue":
         state = state * weights
     elif method == "dual":
@@ -151,19 +158,21 @@ def simulate_neural_pipeline(text: str, method: str = "tongue") -> List[np.ndarr
     flat_centroid = np.array([0.3, 0.2, 0.5, 0.1, 0.15, 0.25])
     tongue_centroid = flat_centroid * weights
     if method == "euclidean":
-        d_star = np.linalg.norm(state - flat_centroid[:len(state)])
+        d_star = np.linalg.norm(state - flat_centroid[: len(state)])
         state = state * (1.0 + 0.08 * d_star)
     elif method == "tongue":
-        d_star = np.linalg.norm(state - tongue_centroid[:len(state)])
+        d_star = np.linalg.norm(state - tongue_centroid[: len(state)])
         state = state * (1.0 + 0.1 * d_star)
     elif method == "dual":
-        d_flat = np.linalg.norm(state - flat_centroid[:len(state)])
-        d_tongue = np.linalg.norm(state - tongue_centroid[:len(state)])
-        state = state * (1.0 + 0.04 * d_flat + 0.06 * d_tongue) + 0.03 * (flat_centroid[:len(state)] - state)
+        d_flat = np.linalg.norm(state - flat_centroid[: len(state)])
+        d_tongue = np.linalg.norm(state - tongue_centroid[: len(state)])
+        state = state * (1.0 + 0.04 * d_flat + 0.06 * d_tongue) + 0.03 * (flat_centroid[: len(state)] - state)
     else:
         telemetry_centroid = 0.5 * (flat_centroid + tongue_centroid)
-        d_star = np.linalg.norm(state - telemetry_centroid[:len(state)])
-        state = state * (1.0 + 0.07 * d_star) + 0.02 * np.cos(np.arange(len(state)) + 2 * PI * stable_scalar(text, "21d-l5"))
+        d_star = np.linalg.norm(state - telemetry_centroid[: len(state)])
+        state = state * (1.0 + 0.07 * d_star) + 0.02 * np.cos(
+            np.arange(len(state)) + 2 * PI * stable_scalar(text, "21d-l5")
+        )
     if np.linalg.norm(state) > 0.999:
         state = state * 0.999 / np.linalg.norm(state)
     stages.append(state.copy())
@@ -186,14 +195,14 @@ def simulate_neural_pipeline(text: str, method: str = "tongue") -> List[np.ndarr
     stages.append(state.copy())
 
     # L8: Multi-well clustering
-    well_center = np.array([0.2, 0.3, 0.4, 0.1, 0.2, 0.3])[:len(state)]
+    well_center = np.array([0.2, 0.3, 0.4, 0.1, 0.2, 0.3])[: len(state)]
     pull = 0.1 * (well_center - state)
     state = state + pull
     stages.append(state.copy())
 
     # L9: Spectral coherence (FFT-like smoothing)
     fft_smooth = np.fft.rfft(state)
-    fft_smooth[len(fft_smooth)//2:] *= 0.5  # Attenuate high frequencies
+    fft_smooth[len(fft_smooth) // 2 :] *= 0.5  # Attenuate high frequencies
     state = np.fft.irfft(fft_smooth, n=len(state))
     stages.append(state.copy())
 
@@ -230,6 +239,7 @@ def simulate_neural_pipeline(text: str, method: str = "tongue") -> List[np.ndarr
 # ═══════════════════════════════════════════════════════════
 # Flux Analysis
 # ═══════════════════════════════════════════════════════════
+
 
 def analyze_trajectory(stages: List[np.ndarray], dim_names: List[str]) -> EmbeddingTrace:
     """Analyze the full A-to-Z trajectory relative to the final settling target."""
@@ -345,7 +355,9 @@ def run_flux_analysis():
             print(f"  {'Dim':<5} {'Trajectory (14 stages)':^20} {'Flux':>7} {'Dir':>4} {'Settled':>8}")
             for dt in trace.dimensions:
                 traj = "".join(dt.states)
-                print(f"  {dt.dim_name:<5} {traj:<20} {dt.total_flux:>7.4f} {dt.direction_changes:>4} L{dt.settled_at:>3}")
+                print(
+                    f"  {dt.dim_name:<5} {traj:<20} {dt.total_flux:>7.4f} {dt.direction_changes:>4} L{dt.settled_at:>3}"
+                )
 
             print(f"  Total flux: {trace.total_flux:.4f}  Settled at: L{trace.settling_step}")
 
@@ -378,7 +390,9 @@ def run_flux_analysis():
     print("-" * 60)
     for method, data in all_results.items():
         ratio = data["avg_adversarial_flux"] / max(data["avg_technical_flux"], 0.001)
-        print(f"{method:<15} {data['avg_technical_flux']:>10.4f} {data['avg_adversarial_flux']:>10.4f} {data['avg_story_flux']:>11.4f} {ratio:>9.1f}x")
+        print(
+            f"{method:<15} {data['avg_technical_flux']:>10.4f} {data['avg_adversarial_flux']:>10.4f} {data['avg_story_flux']:>11.4f} {ratio:>9.1f}x"
+        )
 
     # Save
     out_dir = Path("artifacts/benchmark")

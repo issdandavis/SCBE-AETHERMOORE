@@ -342,18 +342,18 @@ async def governance_check(request: GovernanceCheckRequest, x_api_key: str = Hea
 async def audit_report(tenant_id: str, x_api_key: str = Header(...)):
     owner = await verify_saas_api_key(x_api_key)
     tenant = _require_tenant(owner, tenant_id)
-    flocks = [record for record in SAAS_FLOCKS.values() if record["tenant_id"] == tenant_id and record["owner"] == owner]
+    flocks = [
+        record for record in SAAS_FLOCKS.values() if record["tenant_id"] == tenant_id and record["owner"] == owner
+    ]
     totals = {
         "flocks": len(flocks),
         "agents": sum(len(record["flock"].sheep) for record in flocks),
         "tasks": sum(len(record["flock"].tasks) for record in flocks),
         "completed_tasks": sum(
-            sum(1 for task in record["flock"].tasks.values() if task.status == "completed")
-            for record in flocks
+            sum(1 for task in record["flock"].tasks.values() if task.status == "completed") for record in flocks
         ),
         "failed_tasks": sum(
-            sum(1 for task in record["flock"].tasks.values() if task.status == "failed")
-            for record in flocks
+            sum(1 for task in record["flock"].tasks.values() if task.status == "failed") for record in flocks
         ),
         "events": sum(len(record["flock"].event_log) for record in flocks),
     }

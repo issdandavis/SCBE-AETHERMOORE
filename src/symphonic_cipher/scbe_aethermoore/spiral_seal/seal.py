@@ -301,9 +301,7 @@ class SpiralSealSS1:
 # =============================================================================
 
 
-def seal(
-    plaintext: bytes, master_secret: bytes, aad: str = "", kid: str = "k01"
-) -> str:
+def seal(plaintext: bytes, master_secret: bytes, aad: str = "", kid: str = "k01") -> str:
     """
     One-shot seal function.
 
@@ -396,9 +394,7 @@ class VeiledSeal(SpiralSealSS1):
     selectively redacted without revealing the underlying data.
     """
 
-    def seal_veiled(
-        self, plaintext: bytes, aad: str = "", redactable: bool = True
-    ) -> VeiledSealResult:
+    def seal_veiled(self, plaintext: bytes, aad: str = "", redactable: bool = True) -> VeiledSealResult:
         """Seal with optional redaction support."""
         blob = self.seal(plaintext, aad=aad)
         redaction_key = get_random(32) if redactable else b""

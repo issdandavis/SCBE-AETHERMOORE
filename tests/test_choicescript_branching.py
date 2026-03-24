@@ -2,6 +2,7 @@
 
 import sys
 import os
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "workflows", "n8n"))
 
 from choicescript_branching_engine import (
@@ -29,10 +30,13 @@ class TestSceneGraph:
     def test_add_choices(self):
         g = SceneGraph("test")
         g.add_scene("start")
-        g.add_choice("start", [
-            Choice("a", condition="True"),
-            Choice("b", condition="x > 5"),
-        ])
+        g.add_choice(
+            "start",
+            [
+                Choice("a", condition="True"),
+                Choice("b", condition="x > 5"),
+            ],
+        )
         assert len(g.scenes["start"].choices) == 2
         assert g.scenes["start"].node_type == NodeType.CHOICE
 
@@ -149,10 +153,13 @@ class TestBranchingEngine:
         g.add_scene("start")
         g.add_scene("yes_path", action="noop")
         g.add_scene("no_path", action="noop")
-        g.add_choice("start", [
-            Choice("yes_path", condition="x > 5"),
-            Choice("no_path", condition="x <= 5"),
-        ])
+        g.add_choice(
+            "start",
+            [
+                Choice("yes_path", condition="x > 5"),
+                Choice("no_path", condition="x <= 5"),
+            ],
+        )
         g.add_finish("yes_path")
         g.add_finish("no_path")
 
@@ -174,10 +181,13 @@ class TestBranchingEngine:
         g.add_scene("start")
         g.add_scene("low", action="noop")
         g.add_scene("high", action="noop")
-        g.add_choice("start", [
-            Choice("low", weight=1.0),
-            Choice("high", weight=10.0),
-        ])
+        g.add_choice(
+            "start",
+            [
+                Choice("low", weight=1.0),
+                Choice("high", weight=10.0),
+            ],
+        )
         g.add_finish("low")
         g.add_finish("high")
 
@@ -232,4 +242,5 @@ class TestPrebuiltGraphs:
 
 if __name__ == "__main__":
     import pytest
+
     pytest.main([__file__, "-v"])

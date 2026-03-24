@@ -8,8 +8,8 @@ def fix_imports():
     print(" Fixing import paths across source modules...")
 
     # Define search paths for .py files, excluding tests and virtual environments
-    source_dirs = ['src']
-    exclude_dirs = ['tests', '.venv', 'node_modules']
+    source_dirs = ["src"]
+    exclude_dirs = ["tests", ".venv", "node_modules"]
     files = []
     for directory in source_dirs:
         for root, dirs, filenames in os.walk(directory):
@@ -28,7 +28,7 @@ def fix_imports():
 
     fixed_count = 0
     for filepath in files:
-        with open(filepath, 'r', encoding='utf-8') as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             content = f.read()
 
         original_content = content
@@ -36,7 +36,7 @@ def fix_imports():
             content = re.sub(search, replace, content)
 
         if original_content != content:
-            with open(filepath, 'w', encoding='utf-8') as f:
+            with open(filepath, "w", encoding="utf-8") as f:
                 f.write(content)
             fixed_count += 1
 

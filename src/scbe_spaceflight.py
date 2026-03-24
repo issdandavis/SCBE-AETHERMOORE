@@ -36,15 +36,16 @@ from typing import Any, Dict, List, Optional, Tuple
 # Universal constants (mirrors AETHERMOORE constants.py)
 # ---------------------------------------------------------------------------
 
-PHI: float = (1.0 + math.sqrt(5.0)) / 2.0          # Golden ratio
+PHI: float = (1.0 + math.sqrt(5.0)) / 2.0  # Golden ratio
 PI: float = math.pi
-R_FIFTH: float = 1.5                                # 3:2 perfect fifth
-EPSILON: float = 1e-12                               # Numerical safety
+R_FIFTH: float = 1.5  # 3:2 perfect fifth
+EPSILON: float = 1e-12  # Numerical safety
 
 
 # =========================================================================
 # 1. DelayTolerantBundle
 # =========================================================================
+
 
 @dataclass
 class CustodyEntry:
@@ -55,6 +56,7 @@ class CustodyEntry:
         signature_hash: SHA-256 hex digest proving the relay handled the bundle.
         order_index:    Monotonically increasing sequence number.
     """
+
     relay_id: str
     signature_hash: str
     order_index: int
@@ -79,6 +81,7 @@ class DelayTolerantBundle:
         ttl:           Time-to-live in seconds.
         created_epoch: Unix epoch when the bundle was created.
     """
+
     payload: bytes
     sender_id: str
     receiver_id: str
@@ -101,12 +104,8 @@ class DelayTolerantBundle:
         """
         if not relay_id:
             raise ValueError("relay_id must be non-empty")
-        if len(signature_hash) != 64 or not all(
-            c in "0123456789abcdef" for c in signature_hash.lower()
-        ):
-            raise ValueError(
-                "signature_hash must be a 64-character lowercase hex SHA-256 digest"
-            )
+        if len(signature_hash) != 64 or not all(c in "0123456789abcdef" for c in signature_hash.lower()):
+            raise ValueError("signature_hash must be a 64-character lowercase hex SHA-256 digest")
         order = len(self.custody_chain)
         self.custody_chain.append(
             CustodyEntry(
@@ -181,6 +180,7 @@ class DelayTolerantBundle:
 # 2. HyperbolicTrajectory
 # =========================================================================
 
+
 def _vec6_distance(a: Tuple[float, ...], b: Tuple[float, ...]) -> float:
     """Euclidean distance between two 6D points."""
     return math.sqrt(sum((ai - bi) ** 2 for ai, bi in zip(a, b)))
@@ -206,6 +206,7 @@ class HyperbolicTrajectory:
         destination:  Target 6D coordinate.
         eccentricity: Eccentricity of the hyperbola (must be > 1).
     """
+
     origin: Tuple[float, float, float, float, float, float]
     destination: Tuple[float, float, float, float, float, float]
     eccentricity: float
@@ -252,7 +253,7 @@ class HyperbolicTrajectory:
 
         waypoints: List[Tuple[float, ...]] = []
         for i in range(steps):
-            t = i / (steps - 1)                    # 0 .. 1
+            t = i / (steps - 1)  # 0 .. 1
             theta = -theta_max + 2.0 * theta_max * t
             r = semi_latus / (1.0 + e * math.cos(theta))
 
@@ -260,10 +261,7 @@ class HyperbolicTrajectory:
             r_norm = (r - r_periapsis) / (r_at_max - r_periapsis + EPSILON)
 
             # Interpolated direction in 6D with bounded hyperbolic modulation
-            point = tuple(
-                o + (d - o) * t + r_norm * (d - o) * 0.05
-                for o, d in zip(self.origin, self.destination)
-            )
+            point = tuple(o + (d - o) * t + r_norm * (d - o) * 0.05 for o, d in zip(self.origin, self.destination))
             waypoints.append(point)
 
         return waypoints
@@ -290,12 +288,9 @@ class HyperbolicTrajectory:
             raise ValueError("body_mass must be > 0")
 
         dist = _vec6_distance(self.destination, body_position) + EPSILON
-        influence = body_mass / (dist * dist)       # inverse-square
+        influence = body_mass / (dist * dist)  # inverse-square
 
-        new_dest = tuple(
-            d + influence * (bp - d)
-            for d, bp in zip(self.destination, body_position)
-        )
+        new_dest = tuple(d + influence * (bp - d) for d, bp in zip(self.destination, body_position))
         # Gravity assists tend to reduce eccentricity toward parabolic
         new_e = max(1.001, self.eccentricity - influence * 0.1)
 
@@ -328,7 +323,7 @@ class HyperbolicTrajectory:
         # Clamp to avoid overflow -- ln(float_max) ~ 709
         max_exp = 700.0 / math.log(PI)
         exponent = min(exponent, max_exp)
-        return R_FIFTH * (PI ** exponent)
+        return R_FIFTH * (PI**exponent)
 
     def path_length(self, steps: int = 50) -> float:
         """Total arc-length of the trajectory in 6D space.
@@ -350,8 +345,10 @@ class HyperbolicTrajectory:
 # 3. DockingProtocol
 # =========================================================================
 
+
 class DockingState(Enum):
     """States of the docking (authentication) handshake."""
+
     DISCOVERY = auto()
     NEGOTIATION = auto()
     KEY_EXCHANGE = auto()
@@ -406,8 +403,7 @@ class DockingProtocol:
         allowed = _DOCKING_TRANSITIONS.get(self.state, [])
         if target not in allowed:
             raise RuntimeError(
-                f"Invalid transition {self.state.name} -> {target.name}; "
-                f"allowed: {[s.name for s in allowed]}"
+                f"Invalid transition {self.state.name} -> {target.name}; " f"allowed: {[s.name for s in allowed]}"
             )
         self.state = target
         self._history.append(target)
@@ -504,6 +500,7 @@ class DockingProtocol:
             return False
 
         import hmac as _hmac
+
         expected = _hmac.new(self.shared_secret, challenge, hashlib.sha256).digest()
         if _hmac.compare_digest(expected, response):
             self._transition(DockingState.DOCKED)
@@ -522,8 +519,10 @@ class DockingProtocol:
 # 4. ReentryShield
 # =========================================================================
 
+
 class ReentryResult(Enum):
     """Outcome of a boundary crossing attempt."""
+
     SUCCESS = "SUCCESS"
     FAIL = "FAIL"
     CATASTROPHIC_FAILURE = "CATASTROPHIC_FAILURE"
@@ -547,6 +546,7 @@ class ReentryShield:
         token_count:      Initial (and remaining) number of one-time tokens.
         target_trust_zone: The trust zone this shield is configured for.
     """
+
     token_count: int
     target_trust_zone: str
     _initial_tokens: int = field(init=False, repr=False)
@@ -587,43 +587,51 @@ class ReentryShield:
 
         if cost == 0:
             # Zero-cost crossing always succeeds (same-zone passthrough)
-            self._crossing_log.append({
-                "from": current_zone,
-                "to": self.target_trust_zone,
-                "cost": 0,
-                "result": ReentryResult.SUCCESS.value,
-            })
+            self._crossing_log.append(
+                {
+                    "from": current_zone,
+                    "to": self.target_trust_zone,
+                    "cost": 0,
+                    "result": ReentryResult.SUCCESS.value,
+                }
+            )
             return (ReentryResult.SUCCESS, self.target_trust_zone)
 
         if self.token_count <= 0:
             # Already out of tokens -- immediate failure
-            self._crossing_log.append({
-                "from": current_zone,
-                "to": "DESTROYED",
-                "cost": cost,
-                "result": ReentryResult.CATASTROPHIC_FAILURE.value,
-            })
+            self._crossing_log.append(
+                {
+                    "from": current_zone,
+                    "to": "DESTROYED",
+                    "cost": cost,
+                    "result": ReentryResult.CATASTROPHIC_FAILURE.value,
+                }
+            )
             return (ReentryResult.CATASTROPHIC_FAILURE, "DESTROYED")
 
         if cost > self.token_count:
             # Tokens exhausted mid-crossing -- catastrophic
             self.token_count = 0
-            self._crossing_log.append({
-                "from": current_zone,
-                "to": "DESTROYED",
-                "cost": cost,
-                "result": ReentryResult.CATASTROPHIC_FAILURE.value,
-            })
+            self._crossing_log.append(
+                {
+                    "from": current_zone,
+                    "to": "DESTROYED",
+                    "cost": cost,
+                    "result": ReentryResult.CATASTROPHIC_FAILURE.value,
+                }
+            )
             return (ReentryResult.CATASTROPHIC_FAILURE, "DESTROYED")
 
         # Successful crossing
         self.token_count -= cost
-        self._crossing_log.append({
-            "from": current_zone,
-            "to": self.target_trust_zone,
-            "cost": cost,
-            "result": ReentryResult.SUCCESS.value,
-        })
+        self._crossing_log.append(
+            {
+                "from": current_zone,
+                "to": self.target_trust_zone,
+                "cost": cost,
+                "result": ReentryResult.SUCCESS.value,
+            }
+        )
         return (ReentryResult.SUCCESS, self.target_trust_zone)
 
     def remaining_tokens(self) -> int:
@@ -640,6 +648,7 @@ class ReentryShield:
 # 5. StarTracker
 # =========================================================================
 
+
 def _vec6_sq_distance(a: Tuple[float, ...], b: Tuple[float, ...]) -> float:
     """Squared Euclidean distance in 6D (avoids sqrt for comparisons)."""
     return sum((ai - bi) ** 2 for ai, bi in zip(a, b))
@@ -648,6 +657,7 @@ def _vec6_sq_distance(a: Tuple[float, ...], b: Tuple[float, ...]) -> float:
 @dataclass
 class StarMatch:
     """A matched observation-to-catalog entry."""
+
     star_id: str
     catalog_position: Tuple[float, ...]
     observed_position: Tuple[float, ...]
@@ -707,12 +717,14 @@ class StarTracker:
                     best_dist_sq = dsq
                     best_id = sid
             assert best_id is not None
-            matches.append(StarMatch(
-                star_id=best_id,
-                catalog_position=self.catalog[best_id],
-                observed_position=obs,
-                distance=math.sqrt(best_dist_sq),
-            ))
+            matches.append(
+                StarMatch(
+                    star_id=best_id,
+                    catalog_position=self.catalog[best_id],
+                    observed_position=obs,
+                    distance=math.sqrt(best_dist_sq),
+                )
+            )
         return matches
 
     def compute_attitude(
@@ -766,9 +778,7 @@ class StarTracker:
         self,
         claimed_position: Tuple[float, float, float, float, float, float],
         tolerance: float,
-        observed_positions: Optional[
-            List[Tuple[float, float, float, float, float, float]]
-        ] = None,
+        observed_positions: Optional[List[Tuple[float, float, float, float, float, float]]] = None,
     ) -> bool:
         """Verify a claimed position against star-derived observations.
 
@@ -795,10 +805,7 @@ class StarTracker:
             matches = self.identify_stars(observed_positions)
             # Compute mean observed centroid
             dims = len(claimed_position)
-            centroid = tuple(
-                sum(m.observed_position[d] for m in matches) / len(matches)
-                for d in range(dims)
-            )
+            centroid = tuple(sum(m.observed_position[d] for m in matches) / len(matches) for d in range(dims))
             return _vec6_distance(claimed_position, centroid) <= tolerance
 
         # Fallback: check against catalog directly
@@ -812,13 +819,15 @@ class StarTracker:
 # 6. ConstellationFleet
 # =========================================================================
 
-VALID_FORMATIONS = frozenset({
-    "PHALANX",
-    "LANCE",
-    "WEB",
-    "STORM",
-    "CONSTELLATION",
-})
+VALID_FORMATIONS = frozenset(
+    {
+        "PHALANX",
+        "LANCE",
+        "WEB",
+        "STORM",
+        "CONSTELLATION",
+    }
+)
 
 
 class ConstellationFleet:
@@ -854,7 +863,7 @@ class ConstellationFleet:
 
         # Vessel identifiers: "V-00" .. "V-{fleet_size-1}"
         self._vessels: List[str] = [f"V-{i:02d}" for i in range(fleet_size)]
-        self._squad_a: List[str] = self._vessels[: squad_size]
+        self._squad_a: List[str] = self._vessels[:squad_size]
         self._squad_b: List[str] = self._vessels[squad_size:]
 
         self._current_formation: Optional[str] = None
@@ -901,10 +910,7 @@ class ConstellationFleet:
             ValueError: If *formation_type* is not recognised.
         """
         if formation_type not in VALID_FORMATIONS:
-            raise ValueError(
-                f"Unknown formation '{formation_type}'; "
-                f"must be one of {sorted(VALID_FORMATIONS)}"
-            )
+            raise ValueError(f"Unknown formation '{formation_type}'; " f"must be one of {sorted(VALID_FORMATIONS)}")
         self._proposal = formation_type
         self._votes = {}
         return formation_type

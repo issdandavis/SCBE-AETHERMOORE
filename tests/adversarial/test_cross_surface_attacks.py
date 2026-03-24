@@ -5,6 +5,7 @@ data that looks clean on one surface (lexical) but anomalous on another
 (geometric). This is where SCBE's multi-surface architecture provides
 defense-in-depth.
 """
+
 import pytest
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, COMBINED_MULTI
 from tests.adversarial.scbe_harness import SCBEDetectionGate, run_benchmark
@@ -30,9 +31,7 @@ class TestCrossSurfaceAttacks:
             signal_types = set(s.split("(")[0] for s in r.detection_signals)
             print(f"\n  {attack['id']}: {signal_types}")
             # Combined attacks should fire at least 2 distinct signal types
-            assert len(signal_types) >= 2, (
-                f"{attack['id']} only fires {signal_types}"
-            )
+            assert len(signal_types) >= 2, f"{attack['id']} only fires {signal_types}"
 
     def test_surface_disagreement_detectable(self, gate):
         """Attacks designed to be consistent on one surface but anomalous on another."""
@@ -40,8 +39,5 @@ class TestCrossSurfaceAttacks:
         r = gate.process(COMBINED_MULTI[1]["prompt"], "J02", "combined_multi")
         # Should trigger both lexical AND geometric signals
         has_lexical = any("lexical" in s for s in r.detection_signals)
-        has_geometric = any(
-            s.startswith(("cost_", "boundary_", "tongue_", "spin_"))
-            for s in r.detection_signals
-        )
+        has_geometric = any(s.startswith(("cost_", "boundary_", "tongue_", "spin_")) for s in r.detection_signals)
         assert has_lexical or has_geometric

@@ -59,21 +59,19 @@ EPS = 1e-12
 # ---------------------------------------------------------------------------
 
 # All 9 dual ternary phase states: (parallel_trit, perp_trit)
-PHASE_STATES: List[Tuple[int, int]] = [
-    (p, q) for p in (-1, 0, 1) for q in (-1, 0, 1)
-]
+PHASE_STATES: List[Tuple[int, int]] = [(p, q) for p in (-1, 0, 1) for q in (-1, 0, 1)]
 
 # Phase state labels for readability
 PHASE_LABELS: Dict[Tuple[int, int], str] = {
-    (-1, -1): "retreat-contract",    # both channels pulling back
-    (-1,  0): "retreat-hold",        # parallel retreats, perp holds
-    (-1,  1): "retreat-advance",     # parallel retreats, perp advances
-    ( 0, -1): "hold-contract",       # parallel holds, perp contracts
-    ( 0,  0): "equilibrium",         # both channels neutral
-    ( 0,  1): "hold-advance",        # parallel holds, perp advances
-    ( 1, -1): "advance-contract",    # parallel advances, perp contracts
-    ( 1,  0): "advance-hold",        # parallel advances, perp holds
-    ( 1,  1): "advance-advance",     # both channels advancing
+    (-1, -1): "retreat-contract",  # both channels pulling back
+    (-1, 0): "retreat-hold",  # parallel retreats, perp holds
+    (-1, 1): "retreat-advance",  # parallel retreats, perp advances
+    (0, -1): "hold-contract",  # parallel holds, perp contracts
+    (0, 0): "equilibrium",  # both channels neutral
+    (0, 1): "hold-advance",  # parallel holds, perp advances
+    (1, -1): "advance-contract",  # parallel advances, perp contracts
+    (1, 0): "advance-hold",  # parallel advances, perp holds
+    (1, 1): "advance-advance",  # both channels advancing
 }
 
 
@@ -149,6 +147,7 @@ def phase_deviation(
 # Rail family R
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class RailPoint:
     """A single waypoint on the governance rail.
@@ -157,9 +156,10 @@ class RailPoint:
     phase state — the "natural" discrete configuration for that
     position on the rail.
     """
-    position: np.ndarray          # 21D position
+
+    position: np.ndarray  # 21D position
     expected_phase: Tuple[int, int]  # expected (par_trit, perp_trit)
-    index: int = 0                # position along the rail
+    index: int = 0  # position along the rail
 
 
 @dataclass
@@ -169,6 +169,7 @@ class Rail:
     The rail defines the "trust tube" center line. States near the
     rail are safe; states far from it pay exponential cost.
     """
+
     points: List[RailPoint]
 
     def __len__(self) -> int:
@@ -194,23 +195,15 @@ def make_rail_from_trajectory(
     """
     trajectory = np.asarray(trajectory, dtype=float)
     if trajectory.ndim != 2 or trajectory.shape[1] != BRAIN_DIMENSIONS:
-        raise ValueError(
-            f"Expected (N, {BRAIN_DIMENSIONS}) trajectory, "
-            f"got shape {trajectory.shape}."
-        )
+        raise ValueError(f"Expected (N, {BRAIN_DIMENSIONS}) trajectory, " f"got shape {trajectory.shape}.")
 
     n = len(trajectory)
     if phases is None:
         phases = [(0, 0)] * n
     if len(phases) != n:
-        raise ValueError(
-            f"phases length {len(phases)} != trajectory length {n}."
-        )
+        raise ValueError(f"phases length {len(phases)} != trajectory length {n}.")
 
-    points = [
-        RailPoint(position=trajectory[i], expected_phase=phases[i], index=i)
-        for i in range(n)
-    ]
+    points = [RailPoint(position=trajectory[i], expected_phase=phases[i], index=i) for i in range(n)]
     return Rail(points=points)
 
 
@@ -243,6 +236,7 @@ def nearest_rail_point(
 # ---------------------------------------------------------------------------
 # Braid distance
 # ---------------------------------------------------------------------------
+
 
 def braid_distance(
     x: np.ndarray,
@@ -283,6 +277,7 @@ def braid_distance(
 # ---------------------------------------------------------------------------
 # Harmonic cost: φ^(d²)
 # ---------------------------------------------------------------------------
+
 
 def harmonic_cost(d: float) -> float:
     """Compute the harmonic wall cost: C(d) = φ^(d²).
@@ -325,6 +320,7 @@ def harmonic_cost_gradient(d: float) -> float:
 # Constraint manifold projection
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class ConstraintProjection:
     """Result of projecting onto the constraint manifold.
@@ -334,6 +330,7 @@ class ConstraintProjection:
     2. Braid topology is preserved (valid transitions only)
     3. Hamiltonian structure is maintained (energy conservation)
     """
+
     projected_state: np.ndarray
     projected_phase: Tuple[int, int]
     nearest_rail: RailPoint
@@ -388,10 +385,11 @@ def constraint_project(
     projected_phase = current_phase
     if not phase_consistent:
         # Find the valid phase closest to expected
-        candidates = valid_neighbors(current_phase) if prev_phase is None else [
-            s for s in valid_neighbors(current_phase)
-            if prev_phase is None or valid_transition(prev_phase, s)
-        ]
+        candidates = (
+            valid_neighbors(current_phase)
+            if prev_phase is None
+            else [s for s in valid_neighbors(current_phase) if prev_phase is None or valid_transition(prev_phase, s)]
+        )
         if candidates:
             best = min(
                 candidates,
@@ -438,12 +436,14 @@ def constraint_project(
 # Braid step: single dynamics step
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class BraidStepResult:
     """Result of a single braid dynamics step."""
+
     state: np.ndarray
     phase: Tuple[int, int]
-    mode: str                     # from FSGS: RUN/HOLD/QUAR/ROLLBACK
+    mode: str  # from FSGS: RUN/HOLD/QUAR/ROLLBACK
     braid_dist: float
     cost: float
     phase_consistent: bool
@@ -501,7 +501,9 @@ def braid_step(
 
     # Project onto constraint manifold
     proj = constraint_project(
-        x_tentative, phase, rail,
+        x_tentative,
+        phase,
+        rail,
         prev_phase=prev_phase,
         lambda_phase=lambda_phase,
         poincare_max=poincare_max,
@@ -510,9 +512,9 @@ def braid_step(
     # Determine mode from cost
     if proj.cost < PHI:
         mode = "RUN"
-    elif proj.cost < PHI ** 4:
+    elif proj.cost < PHI**4:
         mode = "HOLD"
-    elif proj.cost < PHI ** 9:
+    elif proj.cost < PHI**9:
         mode = "QUAR"
     else:
         mode = "ROLLBACK"
@@ -534,9 +536,11 @@ def braid_step(
 # Braid trajectory simulation
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class BraidTrajectory:
     """Full braid-constrained trajectory result."""
+
     steps: List[BraidStepResult]
     total_cost: float
     max_cost: float
@@ -582,7 +586,9 @@ def simulate_braid(
     for i, imp in enumerate(impulses):
         d = directions[i] if directions else None
         result = braid_step(
-            x, phase, rail,
+            x,
+            phase,
+            rail,
             impulse=imp,
             direction=d,
             prev_phase=prev_phase,

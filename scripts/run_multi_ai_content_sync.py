@@ -37,9 +37,7 @@ LATEST_POINTER = "training/ingest/latest_multi_ai_sync.txt"
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Offline/online content sync pipeline for SCBE multi-AI coordination."
-    )
+    parser = argparse.ArgumentParser(description="Offline/online content sync pipeline for SCBE multi-AI coordination.")
     parser.add_argument(
         "--run-root",
         default=DEFAULT_RUN_ROOT,
@@ -261,4 +259,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

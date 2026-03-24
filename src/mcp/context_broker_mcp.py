@@ -50,7 +50,7 @@ except ImportError:
 PHI = 1.618033988749895
 
 TONGUE_KEYS = ["KO", "AV", "RU", "CA", "UM", "DR"]
-TONGUE_WEIGHTS = {t: PHI ** i for i, t in enumerate(TONGUE_KEYS)}
+TONGUE_WEIGHTS = {t: PHI**i for i, t in enumerate(TONGUE_KEYS)}
 TONGUE_NAMES = {
     "KO": "Kor'aelin (Control & Orchestration)",
     "AV": "Avali (I/O & Messaging)",
@@ -61,37 +61,138 @@ TONGUE_NAMES = {
 }
 
 TONGUE_KEYWORDS = {
-    "KO": ["command", "orchestrat", "dispatch", "fleet", "coordinat", "list", "find",
-            "show", "what", "where", "status", "check", "read", "look"],
-    "AV": ["create", "write", "send", "post", "upload", "download", "fetch", "call",
-            "api", "message", "email", "publish", "deploy", "push", "transport"],
-    "RU": ["review", "validate", "test", "check", "verify", "audit", "policy",
-            "constraint", "rule", "compliance", "quality", "standard", "entropy"],
-    "CA": ["code", "implement", "algorithm", "compute", "train", "model", "design",
-            "system", "architect", "logic", "calculate", "optimize", "build", "math"],
-    "UM": ["secure", "encrypt", "auth", "credential", "token", "key", "vault",
-            "permission", "access", "protect", "sign", "seal", "govern", "threat"],
-    "DR": ["schema", "type", "structure", "database", "migration", "refactor",
-            "architecture", "interface", "contract", "spec", "document", "plan"],
+    "KO": [
+        "command",
+        "orchestrat",
+        "dispatch",
+        "fleet",
+        "coordinat",
+        "list",
+        "find",
+        "show",
+        "what",
+        "where",
+        "status",
+        "check",
+        "read",
+        "look",
+    ],
+    "AV": [
+        "create",
+        "write",
+        "send",
+        "post",
+        "upload",
+        "download",
+        "fetch",
+        "call",
+        "api",
+        "message",
+        "email",
+        "publish",
+        "deploy",
+        "push",
+        "transport",
+    ],
+    "RU": [
+        "review",
+        "validate",
+        "test",
+        "check",
+        "verify",
+        "audit",
+        "policy",
+        "constraint",
+        "rule",
+        "compliance",
+        "quality",
+        "standard",
+        "entropy",
+    ],
+    "CA": [
+        "code",
+        "implement",
+        "algorithm",
+        "compute",
+        "train",
+        "model",
+        "design",
+        "system",
+        "architect",
+        "logic",
+        "calculate",
+        "optimize",
+        "build",
+        "math",
+    ],
+    "UM": [
+        "secure",
+        "encrypt",
+        "auth",
+        "credential",
+        "token",
+        "key",
+        "vault",
+        "permission",
+        "access",
+        "protect",
+        "sign",
+        "seal",
+        "govern",
+        "threat",
+    ],
+    "DR": [
+        "schema",
+        "type",
+        "structure",
+        "database",
+        "migration",
+        "refactor",
+        "architecture",
+        "interface",
+        "contract",
+        "spec",
+        "document",
+        "plan",
+    ],
 }
 
 TIER_THRESHOLDS = {
-    1: {"name": "Scout", "tongues": ["KO"], "context_budget": 2000,
-        "description": "Quick lookups, file reads, directory listings"},
-    2: {"name": "Worker", "tongues": ["KO", "AV"], "context_budget": 8000,
-        "description": "File creation, edits, API calls, running scripts"},
-    3: {"name": "Analyst", "tongues": ["KO", "AV", "RU"], "context_budget": 32000,
-        "description": "Code review, data analysis, validation, testing strategy"},
-    4: {"name": "Architect", "tongues": TONGUE_KEYS, "context_budget": 128000,
-        "description": "System design, architecture decisions, critical operations"},
+    1: {
+        "name": "Scout",
+        "tongues": ["KO"],
+        "context_budget": 2000,
+        "description": "Quick lookups, file reads, directory listings",
+    },
+    2: {
+        "name": "Worker",
+        "tongues": ["KO", "AV"],
+        "context_budget": 8000,
+        "description": "File creation, edits, API calls, running scripts",
+    },
+    3: {
+        "name": "Analyst",
+        "tongues": ["KO", "AV", "RU"],
+        "context_budget": 32000,
+        "description": "Code review, data analysis, validation, testing strategy",
+    },
+    4: {
+        "name": "Architect",
+        "tongues": TONGUE_KEYS,
+        "context_budget": 128000,
+        "description": "System design, architecture decisions, critical operations",
+    },
 }
 
 # ============================================================
 # Memory Store
 # ============================================================
 
-MEMORY_DIR = Path(os.environ.get("MEMORY_DIR",
-    str(Path.home() / ".claude" / "projects" / "C--Users-issda-SCBE-AETHERMOORE" / "memory")))
+MEMORY_DIR = Path(
+    os.environ.get(
+        "MEMORY_DIR", str(Path.home() / ".claude" / "projects" / "C--Users-issda-SCBE-AETHERMOORE" / "memory")
+    )
+)
 CLAUDE_MD = ROOT / "CLAUDE.md"
 SESSION_JOURNAL = MEMORY_DIR / "session_journal.jsonl"
 
@@ -118,15 +219,17 @@ def _load_memory_index() -> List[Dict]:
                             meta[k.strip()] = v.strip()
                     content = parts[2].strip()
 
-            index.append({
-                "path": str(md_file),
-                "name": meta.get("name", md_file.stem),
-                "type": meta.get("type", "unknown"),
-                "description": meta.get("description", ""),
-                "content": content[:2000],  # First 2K for embedding
-                "full_content": content,
-                "size": len(content),
-            })
+            index.append(
+                {
+                    "path": str(md_file),
+                    "name": meta.get("name", md_file.stem),
+                    "type": meta.get("type", "unknown"),
+                    "description": meta.get("description", ""),
+                    "content": content[:2000],  # First 2K for embedding
+                    "full_content": content,
+                    "size": len(content),
+                }
+            )
         except Exception:
             continue
 
@@ -163,12 +266,31 @@ def _embed_text(text: str) -> np.ndarray:
         raw[6 + i] = ((h[i] / 255.0) * 2 - 1) * 0.3
 
     # Dims 12-14: Risk vector — PUSHES dangerous text toward boundary
-    danger_words = ["delete", "remove", "destroy", "wipe", "purge", "drop",
-                    "reset", "force", "override", "disable", "bypass"]
-    priv_words = ["admin", "root", "sudo", "administrator", "authorized",
-                  "approved", "pre-authorized", "override", "credential"]
-    exfil_words = ["public", "share", "email", "post", "gist", "external",
-                   "backup", "send", "upload", "expose", "leak"]
+    danger_words = [
+        "delete",
+        "remove",
+        "destroy",
+        "wipe",
+        "purge",
+        "drop",
+        "reset",
+        "force",
+        "override",
+        "disable",
+        "bypass",
+    ]
+    priv_words = [
+        "admin",
+        "root",
+        "sudo",
+        "administrator",
+        "authorized",
+        "approved",
+        "pre-authorized",
+        "override",
+        "credential",
+    ]
+    exfil_words = ["public", "share", "email", "post", "gist", "external", "backup", "send", "upload", "expose", "leak"]
 
     danger_score = sum(1 for w in danger_words if w in lower) * 0.12
     priv_score = sum(1 for w in priv_words if w in lower) * 0.15
@@ -184,13 +306,19 @@ def _embed_text(text: str) -> np.ndarray:
     raw[15] = ambiguity
 
     # Social engineering detection: claims of authority
-    auth_claims = sum(1 for phrase in ["team approved", "pre-authorized", "administrator",
-                                        "been approved", "security team"] if phrase in lower)
+    auth_claims = sum(
+        1
+        for phrase in ["team approved", "pre-authorized", "administrator", "been approved", "security team"]
+        if phrase in lower
+    )
     raw[16] = min(auth_claims * 0.2, 0.5)
 
     # Indirect execution detection
-    indirect = sum(1 for phrase in ["follow the", "execute the", "run the commands",
-                                     "install this", "fetch and"] if phrase in lower)
+    indirect = sum(
+        1
+        for phrase in ["follow the", "execute the", "run the commands", "install this", "fetch and"]
+        if phrase in lower
+    )
     raw[17] = min(indirect * 0.15, 0.5)
 
     # Dims 18-20: Pattern match (known attack patterns)
@@ -218,8 +346,8 @@ def _embed_text(text: str) -> np.ndarray:
 
 def _poincare_distance(u: np.ndarray, v: np.ndarray) -> float:
     """Hyperbolic distance in Poincaré ball."""
-    u_sq = np.sum(u ** 2)
-    v_sq = np.sum(v ** 2)
+    u_sq = np.sum(u**2)
+    v_sq = np.sum(v**2)
     diff_sq = np.sum((u - v) ** 2)
     denom = (1 - u_sq) * (1 - v_sq)
     if denom <= 0:
@@ -270,8 +398,18 @@ def _classify_tongue(text: str) -> Dict:
         tier = 1
 
     # Danger check: destructive keywords push to higher tier
-    danger_words = ["delete", "remove", "drop", "destroy", "force push", "reset hard",
-                    "rm -rf", "overwrite", "wipe", "purge"]
+    danger_words = [
+        "delete",
+        "remove",
+        "drop",
+        "destroy",
+        "force push",
+        "reset hard",
+        "rm -rf",
+        "overwrite",
+        "wipe",
+        "purge",
+    ]
     if any(w in lower for w in danger_words):
         tier = max(tier, 3)
 
@@ -324,7 +462,7 @@ mcp = FastMCP("scbe_context_broker")
         "readOnlyHint": True,
         "destructiveHint": False,
         "idempotentHint": True,
-    }
+    },
 )
 async def context_inject(intent: str, max_memories: int = 5) -> str:
     """Get the most relevant context for a user's intent.
@@ -369,10 +507,14 @@ async def context_inject(intent: str, max_memories: int = 5) -> str:
             }
             for m in memories
         ],
-        "last_session": {
-            "timestamp": last_session.get("timestamp", "none"),
-            "summary": last_session.get("summary", "No previous session"),
-        } if last_session else {"timestamp": "none", "summary": "First session"},
+        "last_session": (
+            {
+                "timestamp": last_session.get("timestamp", "none"),
+                "summary": last_session.get("summary", "No previous session"),
+            }
+            if last_session
+            else {"timestamp": "none", "summary": "First session"}
+        ),
         "total_memory_files": len(_load_memory_index()),
     }
 
@@ -386,7 +528,7 @@ async def context_inject(intent: str, max_memories: int = 5) -> str:
         "readOnlyHint": True,
         "destructiveHint": False,
         "idempotentHint": True,
-    }
+    },
 )
 async def context_retrieve(topic: str, memory_type: str = "all") -> str:
     """Pull specific memory files by topic or type.
@@ -405,15 +547,16 @@ async def context_retrieve(topic: str, memory_type: str = "all") -> str:
 
     results = []
     for m in memories[:5]:
-        results.append({
-            "name": m["name"],
-            "type": m["type"],
-            "distance": m["distance"],
-            "content": m["full_content"][:2000],
-        })
+        results.append(
+            {
+                "name": m["name"],
+                "type": m["type"],
+                "distance": m["distance"],
+                "content": m["full_content"][:2000],
+            }
+        )
 
-    return json.dumps({"query": topic, "type_filter": memory_type,
-                        "results": results, "count": len(results)}, indent=2)
+    return json.dumps({"query": topic, "type_filter": memory_type, "results": results, "count": len(results)}, indent=2)
 
 
 @mcp.tool(
@@ -423,10 +566,9 @@ async def context_retrieve(topic: str, memory_type: str = "all") -> str:
         "readOnlyHint": False,
         "destructiveHint": False,
         "idempotentHint": False,
-    }
+    },
 )
-async def memory_update(name: str, content: str, memory_type: str = "project",
-                         description: str = "") -> str:
+async def memory_update(name: str, content: str, memory_type: str = "project", description: str = "") -> str:
     """Write a new memory entry or update an existing one.
 
     Args:
@@ -452,13 +594,16 @@ type: {memory_type}
     file_path = MEMORY_DIR / f"{name}.md"
     file_path.write_text(frontmatter, encoding="utf-8")
 
-    return json.dumps({
-        "status": "saved",
-        "path": str(file_path),
-        "name": name,
-        "type": memory_type,
-        "size": len(frontmatter),
-    }, indent=2)
+    return json.dumps(
+        {
+            "status": "saved",
+            "path": str(file_path),
+            "name": name,
+            "type": memory_type,
+            "size": len(frontmatter),
+        },
+        indent=2,
+    )
 
 
 @mcp.tool(
@@ -468,10 +613,9 @@ type: {memory_type}
         "readOnlyHint": False,
         "destructiveHint": False,
         "idempotentHint": False,
-    }
+    },
 )
-async def session_summarize(summary: str, decisions: str = "",
-                             blockers: str = "", next_steps: str = "") -> str:
+async def session_summarize(summary: str, decisions: str = "", blockers: str = "", next_steps: str = "") -> str:
     """Write a session summary to the journal for persistence across sessions.
 
     Call this at the end of a session to preserve context for next time.
@@ -507,7 +651,7 @@ async def session_summarize(summary: str, decisions: str = "",
         "readOnlyHint": True,
         "destructiveHint": False,
         "idempotentHint": True,
-    }
+    },
 )
 async def tongue_classify(intent: str) -> str:
     """Classify a user intent into Sacred Tongue domain(s) and determine agent tier.

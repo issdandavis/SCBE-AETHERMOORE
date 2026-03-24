@@ -7,6 +7,7 @@ Tests for the new browser modules:
 These tests are unit-level and don't require Playwright or network access.
 They verify data structures, logic, and module integration.
 """
+
 import hashlib
 import json
 import sys
@@ -21,22 +22,26 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 # ── PollyVision Tests ─────────────────────────────────────────────────
 
+
 class TestPollyVisionImports:
     """Verify polly_vision module loads and exports correctly."""
 
     def test_import_polly_vision(self):
         from src.browser.polly_vision import PollyVision, ObservationTier
+
         assert PollyVision is not None
         assert ObservationTier is not None
 
     def test_observation_tiers(self):
         from src.browser.polly_vision import ObservationTier
+
         assert ObservationTier.TIER_1.value == "accessibility_only"
         assert ObservationTier.TIER_2.value == "accessibility_plus"
         assert ObservationTier.TIER_3.value == "full_visual"
 
     def test_tier_is_string_enum(self):
         from src.browser.polly_vision import ObservationTier
+
         assert isinstance(ObservationTier.TIER_1, str)
         assert ObservationTier.TIER_1 == "accessibility_only"
 
@@ -46,10 +51,8 @@ class TestInteractiveElement:
 
     def test_create_element(self):
         from src.browser.polly_vision import InteractiveElement
-        el = InteractiveElement(
-            ref_id=1, role="button", name="Submit",
-            tag="button", selector="#submit-btn"
-        )
+
+        el = InteractiveElement(ref_id=1, role="button", name="Submit", tag="button", selector="#submit-btn")
         assert el.ref_id == 1
         assert el.role == "button"
         assert el.name == "Submit"
@@ -58,19 +61,17 @@ class TestInteractiveElement:
 
     def test_element_with_state(self):
         from src.browser.polly_vision import InteractiveElement
+
         el = InteractiveElement(
-            ref_id=5, role="checkbox", name="Agree",
-            tag="input", selector="#agree", state="checked"
+            ref_id=5, role="checkbox", name="Agree", tag="input", selector="#agree", state="checked"
         )
         assert el.state == "checked"
 
     def test_element_with_bbox(self):
         from src.browser.polly_vision import InteractiveElement
+
         bbox = {"x": 10, "y": 20, "width": 100, "height": 30}
-        el = InteractiveElement(
-            ref_id=2, role="link", name="Home",
-            tag="a", selector="a.home", bounding_box=bbox
-        )
+        el = InteractiveElement(ref_id=2, role="link", name="Home", tag="a", selector="a.home", bounding_box=bbox)
         assert el.bounding_box["width"] == 100
 
 
@@ -79,6 +80,7 @@ class TestPageObservation:
 
     def _make_observation(self, **kwargs):
         from src.browser.polly_vision import PageObservation, ObservationTier, InteractiveElement
+
         defaults = dict(
             url="https://example.com",
             title="Example",
@@ -130,9 +132,12 @@ class TestPageObservation:
 
     def test_compact_repr_includes_state(self):
         from src.browser.polly_vision import InteractiveElement
+
         obs = self._make_observation(
             interactive_elements=[
-                InteractiveElement(ref_id=1, role="checkbox", name="Agree", tag="input", selector="#a", state="checked"),
+                InteractiveElement(
+                    ref_id=1, role="checkbox", name="Agree", tag="input", selector="#a", state="checked"
+                ),
             ]
         )
         text = obs.compact_repr()
@@ -144,6 +149,7 @@ class TestPollyVisionEngine:
 
     def test_default_init(self):
         from src.browser.polly_vision import PollyVision, ObservationTier
+
         v = PollyVision()
         assert v.tier == ObservationTier.TIER_2
         assert v.viewport_width == 1280
@@ -152,11 +158,13 @@ class TestPollyVisionEngine:
 
     def test_custom_tier(self):
         from src.browser.polly_vision import PollyVision, ObservationTier
+
         v = PollyVision(tier=ObservationTier.TIER_1)
         assert v.tier == ObservationTier.TIER_1
 
     def test_session_stats_initial(self):
         from src.browser.polly_vision import PollyVision
+
         v = PollyVision()
         stats = v.session_stats
         assert stats["observations"] == 0
@@ -165,17 +173,20 @@ class TestPollyVisionEngine:
 
     def test_estimate_tokens_text_only(self):
         from src.browser.polly_vision import PollyVision
+
         tokens = PollyVision._estimate_tokens("Hello world test", None)
         assert tokens == len("Hello world test") // 4
 
     def test_estimate_tokens_with_screenshot(self):
         from src.browser.polly_vision import PollyVision
+
         tokens = PollyVision._estimate_tokens("Hello world test", b"\x89PNG")
         text_tokens = len("Hello world test") // 4
         assert tokens == text_tokens + 200
 
     def test_generate_summary(self):
         from src.browser.polly_vision import PollyVision, InteractiveElement
+
         elements = [
             InteractiveElement(ref_id=1, role="button", name="Go", tag="button", selector="#go"),
             InteractiveElement(ref_id=2, role="button", name="Stop", tag="button", selector="#stop"),
@@ -188,17 +199,20 @@ class TestPollyVisionEngine:
 
     def test_generate_summary_empty(self):
         from src.browser.polly_vision import PollyVision
+
         summary = PollyVision._generate_summary("Empty", "https://x.com", [])
         assert summary == "Empty"
 
 
 # ── Research Funnel Tests ─────────────────────────────────────────────
 
+
 class TestResearchFunnelImports:
     """Verify research_funnel module loads."""
 
     def test_import_funnel(self):
         from src.browser.research_funnel import ResearchFunnel, FunnelReceipt
+
         assert ResearchFunnel is not None
         assert FunnelReceipt is not None
 
@@ -208,6 +222,7 @@ class TestFunnelReceipt:
 
     def test_default_receipt(self):
         from src.browser.research_funnel import FunnelReceipt
+
         r = FunnelReceipt(run_id="20260227T120000Z")
         assert r.run_id == "20260227T120000Z"
         assert r.records_written == 0
@@ -333,15 +348,18 @@ class TestResearchFunnelPush:
 
 # ── HydraHand Integration Tests ──────────────────────────────────────
 
+
 class TestHydraHandImports:
     """Verify hydra_hand module loads with PollyVision integration."""
 
     def test_import_hydra_hand(self):
         from src.browser.hydra_hand import HydraHand
+
         assert HydraHand is not None
 
     def test_tongue_enum(self):
         from src.browser.hydra_hand import Tongue
+
         assert Tongue.KO.value == "KO"
         assert Tongue.AV.value == "AV"
         assert Tongue.DR.value == "DR"
@@ -361,12 +379,14 @@ class TestFingerVision:
 
     def test_finger_vision_default_none(self):
         from src.browser.hydra_hand import Finger, Tongue
+
         f = Finger(tongue=Tongue.AV)
         assert f.vision is None
 
     @pytest.mark.asyncio
     async def test_finger_observe_no_vision(self):
         from src.browser.hydra_hand import Finger, Tongue
+
         f = Finger(tongue=Tongue.CA)
         result = await f.observe()
         assert result is None
@@ -375,6 +395,7 @@ class TestFingerVision:
     async def test_finger_observe_no_page(self):
         from src.browser.hydra_hand import Finger, Tongue
         from src.browser.polly_vision import PollyVision
+
         f = Finger(tongue=Tongue.CA, vision=PollyVision())
         result = await f.observe()
         assert result is None
@@ -406,11 +427,13 @@ class TestHydraHandVisionInit:
 
     def test_hand_has_six_fingers(self):
         from src.browser.hydra_hand import HydraHand
+
         hand = HydraHand()
         assert len(hand.fingers) == 6
 
     def test_hand_status(self):
         from src.browser.hydra_hand import HydraHand
+
         hand = HydraHand(head_id="status-test")
         status = hand.status()
         assert status["head_id"] == "status-test"
@@ -419,6 +442,7 @@ class TestHydraHandVisionInit:
 
     def test_hand_research_and_funnel_method_exists(self):
         from src.browser.hydra_hand import HydraHand
+
         hand = HydraHand()
         assert hasattr(hand, "research_and_funnel")
         assert callable(hand.research_and_funnel)
@@ -429,18 +453,21 @@ class TestDomainSafety:
 
     def test_trusted_domain(self):
         from src.browser.hydra_hand import check_domain_safety
+
         decision, risk = check_domain_safety("https://github.com/openclaw")
         assert decision == "ALLOW"
         assert risk == 0.0
 
     def test_blocked_domain(self):
         from src.browser.hydra_hand import check_domain_safety
+
         decision, risk = check_domain_safety("https://malware.com/payload")
         assert decision == "DENY"
         assert risk == 1.0
 
     def test_unknown_domain(self):
         from src.browser.hydra_hand import check_domain_safety
+
         decision, risk = check_domain_safety("https://random-site-xyz.com")
         assert decision == "QUARANTINE"
         assert risk == 0.5
@@ -451,6 +478,7 @@ class TestTongueWeights:
 
     def test_phi_weights(self):
         from src.browser.hydra_hand import TONGUE_WEIGHT, Tongue
+
         phi = 1.618033988749895
 
         assert TONGUE_WEIGHT[Tongue.KO] == pytest.approx(1.0, abs=0.01)
@@ -460,6 +488,7 @@ class TestTongueWeights:
 
     def test_weight_ordering(self):
         from src.browser.hydra_hand import TONGUE_WEIGHT, Tongue
+
         weights = [TONGUE_WEIGHT[t] for t in [Tongue.KO, Tongue.AV, Tongue.RU, Tongue.CA, Tongue.UM, Tongue.DR]]
         assert weights == sorted(weights), "Tongue weights should be in ascending phi order"
 
@@ -469,11 +498,13 @@ class TestProximityMapping:
 
     def test_all_tongues_have_proximity(self):
         from src.browser.hydra_hand import TONGUE_PROXIMITY, Tongue
+
         for t in Tongue:
             assert t in TONGUE_PROXIMITY
 
     def test_throttle_delays(self):
         from src.browser.hydra_hand import HydraHand, Proximity
+
         assert HydraHand._throttle_delay(Proximity.ROCK) == 0.0
         assert HydraHand._throttle_delay(Proximity.OWL) == 1.0
         assert HydraHand._throttle_delay(Proximity.VOICE) == 0.05

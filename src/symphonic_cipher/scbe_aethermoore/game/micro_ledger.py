@@ -44,9 +44,16 @@ def exchange_rate(from_denom: Denomination, to_denom: Denomination) -> float:
 # ---------------------------------------------------------------------------
 
 ServiceType = Literal[
-    "healing", "formation_buff", "scouting", "transform_assist",
-    "evolution_catalyst", "drift_cleanse", "codex_query", "escort",
-    "training", "governance_vote",
+    "healing",
+    "formation_buff",
+    "scouting",
+    "transform_assist",
+    "evolution_catalyst",
+    "drift_cleanse",
+    "codex_query",
+    "escort",
+    "training",
+    "governance_vote",
 ]
 
 SERVICE_BASE_COSTS: Dict[ServiceType, float] = {
@@ -91,11 +98,18 @@ class CreditDNA:
         return 1.0 / (1.0 + self.hamiltonian_d + 2.0 * self.hamiltonian_pd)
 
     def _sha(self) -> str:
-        return _sha256(json.dumps({
-            "a": self.agent_id, "s": self.species_id,
-            "t": list(self.tongue_snapshot),
-            "d": self.hamiltonian_d, "pd": self.hamiltonian_pd,
-        }, sort_keys=True))[:16]
+        return _sha256(
+            json.dumps(
+                {
+                    "a": self.agent_id,
+                    "s": self.species_id,
+                    "t": list(self.tongue_snapshot),
+                    "d": self.hamiltonian_d,
+                    "pd": self.hamiltonian_pd,
+                },
+                sort_keys=True,
+            )
+        )[:16]
 
 
 # ---------------------------------------------------------------------------
@@ -124,16 +138,19 @@ class ContextCredit:
 
     @property
     def block_hash(self) -> str:
-        data = json.dumps({
-            "id": self.credit_id,
-            "denom": self.denomination,
-            "payload": self.payload_hash,
-            "parents": list(self.parent_credits),
-            "ts": self.timestamp,
-            "nonce": self.nonce,
-            "dna_hash": self.dna._sha(),
-            "value": round(self.face_value, 8),
-        }, sort_keys=True)
+        data = json.dumps(
+            {
+                "id": self.credit_id,
+                "denom": self.denomination,
+                "payload": self.payload_hash,
+                "parents": list(self.parent_credits),
+                "ts": self.timestamp,
+                "nonce": self.nonce,
+                "dna_hash": self.dna._sha(),
+                "value": round(self.face_value, 8),
+            },
+            sort_keys=True,
+        )
         return _sha256(data)
 
 
@@ -244,16 +261,19 @@ class Block:
 
     @property
     def block_hash(self) -> str:
-        data = json.dumps({
-            "index": self.index,
-            "ts": self.timestamp,
-            "merkle": self.merkle_root_hash,
-            "prev": self.previous_hash,
-            "validator": self.validator_id,
-            "value": round(self.total_value, 8),
-            "energy": round(self.total_energy, 8),
-            "count": self.credit_count,
-        }, sort_keys=True)
+        data = json.dumps(
+            {
+                "index": self.index,
+                "ts": self.timestamp,
+                "merkle": self.merkle_root_hash,
+                "prev": self.previous_hash,
+                "validator": self.validator_id,
+                "value": round(self.total_value, 8),
+                "energy": round(self.total_energy, 8),
+                "count": self.credit_count,
+            },
+            sort_keys=True,
+        )
         return _sha256(data)
 
 
@@ -269,8 +289,11 @@ class ContextLedger:
 
     def __init__(self) -> None:
         genesis = Block(
-            index=0, timestamp=time.time(), credits=[],
-            previous_hash=GENESIS_HASH, validator_id="genesis",
+            index=0,
+            timestamp=time.time(),
+            credits=[],
+            previous_hash=GENESIS_HASH,
+            validator_id="genesis",
         )
         self._chain: List[Block] = [genesis]
         self._pending: List[ContextCredit] = []

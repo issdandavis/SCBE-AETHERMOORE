@@ -3,6 +3,7 @@
 Verifies that the natural sieve produces meaningfully different scores
 for different input classes — the core property the old SHA-256 scorer broke.
 """
+
 from __future__ import annotations
 
 import importlib.machinery
@@ -61,9 +62,7 @@ class TestScoreDiscrimination:
 
     def test_repeated_char_vs_diverse(self) -> None:
         repeated = pipeline_quick_score("a" * 200)
-        diverse = pipeline_quick_score(
-            "The fox jumped over the lazy dog while birds sang overhead."
-        )
+        diverse = pipeline_quick_score("The fox jumped over the lazy dog while birds sang overhead.")
         assert repeated["d_star"] > diverse["d_star"], "repetition further from normal"
 
     def test_no_two_classes_identical(self) -> None:
@@ -142,8 +141,7 @@ class TestOutputContract:
 
     def test_required_fields(self) -> None:
         result = pipeline_quick_score("test")
-        required = {"input_len", "d_star", "x_poincare", "H_eff",
-                     "phase_deviation", "decision", "digest_hex"}
+        required = {"input_len", "d_star", "x_poincare", "H_eff", "phase_deviation", "decision", "digest_hex"}
         assert required <= set(result.keys())
 
     def test_h_eff_bounded(self) -> None:
@@ -179,6 +177,7 @@ class TestPerformance:
 
     def test_1mb_input(self) -> None:
         import time
+
         big = "x" * 1_000_000
         t0 = time.time()
         result = pipeline_quick_score(big)
@@ -188,6 +187,7 @@ class TestPerformance:
 
     def test_empty_fast(self) -> None:
         import time
+
         t0 = time.time()
         for _ in range(1000):
             pipeline_quick_score("")

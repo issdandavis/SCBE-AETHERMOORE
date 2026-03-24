@@ -94,10 +94,7 @@ class HyperbolicRAG:
 
             raw_trust = 1.0 / (1.0 + dist + self.config.phase_weight * phase_dev)
 
-            gated = (
-                dist > self.config.cost_threshold
-                or p_score < self.config.min_phase_alignment
-            )
+            gated = dist > self.config.cost_threshold or p_score < self.config.min_phase_alignment
 
             scored.append(
                 RAGResult(
@@ -139,10 +136,7 @@ class HyperbolicRAG:
             phase_dev = phase_deviation(query_phase, cand_phase)
             p_score = 1.0 - phase_dev
             raw_trust = 1.0 / (1.0 + dist + self.config.phase_weight * phase_dev)
-            gated = (
-                dist > self.config.cost_threshold
-                or p_score < self.config.min_phase_alignment
-            )
+            gated = dist > self.config.cost_threshold or p_score < self.config.min_phase_alignment
             scored.append(
                 RAGResult(
                     id=c.id,

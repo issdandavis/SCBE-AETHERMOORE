@@ -72,6 +72,7 @@ TONGUE_INDEX = {"KO": 0, "AV": 1, "RU": 2, "CA": 3, "UM": 4, "DR": 5}
 # 1. Tongue Bracket Algebra
 # =====================================================================
 
+
 def tongue_bracket(tongue_a: str, tongue_b: str) -> np.ndarray:
     """Compute the Lie bracket [T_a, T_b] using Langues metric.
 
@@ -134,6 +135,7 @@ def bracket_matrix() -> np.ndarray:
 # =====================================================================
 # 2. Personality Clusters (not points)
 # =====================================================================
+
 
 @dataclass
 class PersonalityCluster:
@@ -209,6 +211,7 @@ class PersonalityCluster:
 # 3. Drift Capture (conversations replayed for years)
 # =====================================================================
 
+
 @dataclass
 class DriftEvent:
     """A personality drift observation.
@@ -216,6 +219,7 @@ class DriftEvent:
     Like a human replaying a conversation in their head --
     the AI notices its personality shifted and records the delta.
     """
+
     timestamp: float
     facet: str
     old_activation: float
@@ -243,10 +247,7 @@ class DriftEvent:
             return {}
 
         return {
-            "prompt": (
-                f"Your {self.facet} shifted by {self.drift_magnitude:.3f} "
-                f"in context: {self.context}"
-            ),
+            "prompt": (f"Your {self.facet} shifted by {self.drift_magnitude:.3f} " f"in context: {self.context}"),
             "response": (
                 f"Drift resolved after {self.resolution_time - self.timestamp:.0f}s. "
                 f"Activation moved from {self.old_activation:.2f} to "
@@ -265,6 +266,7 @@ class DriftEvent:
 # =====================================================================
 # 4. Decimal Drift Provenance (antivirus for personality)
 # =====================================================================
+
 
 def compute_personality_watermark(state_vector: np.ndarray) -> float:
     """Compute the decimal drift watermark for a personality state.
@@ -286,7 +288,7 @@ def compute_personality_watermark(state_vector: np.ndarray) -> float:
     # Pack as float64, check byte-level entropy
     byte_entropy = 0.0
     for val in state_vector:
-        packed = struct.pack('d', float(val))
+        packed = struct.pack("d", float(val))
         # Count unique bytes in the representation
         unique = len(set(packed))
         byte_entropy += unique / 8.0
@@ -309,7 +311,10 @@ def validate_personality_provenance(
 
     # Rule: sigma_decimal > 2 * baseline => ALERT (from Decimal Drift spec)
     if watermark > tolerance * sigma_baseline:
-        return False, f"Decimal drift anomaly: watermark={watermark:.4f} > {tolerance * sigma_baseline:.4f} (possible injection)"
+        return (
+            False,
+            f"Decimal drift anomaly: watermark={watermark:.4f} > {tolerance * sigma_baseline:.4f} (possible injection)",
+        )
 
     if watermark < 0.01:
         return False, f"Suspiciously clean state: watermark={watermark:.6f} (synthetic/manufactured)"
@@ -320,6 +325,7 @@ def validate_personality_provenance(
 # =====================================================================
 # 5. Multi-Plane Superposition
 # =====================================================================
+
 
 @dataclass
 class ManifoldPlane:
@@ -333,6 +339,7 @@ class ManifoldPlane:
     Each plane has its own copy of the personality clusters,
     rotated by different angles (superposition).
     """
+
     name: str
     rotation_angle: float  # Radians -- how this plane is tilted
     scale: float  # How coarse/fine this plane's view is
@@ -356,6 +363,7 @@ class ManifoldPlane:
 # 6. Portal System (isolated merge channels)
 # =====================================================================
 
+
 @dataclass
 class Portal:
     """A governed merge channel between isolated personality subsystems.
@@ -363,6 +371,7 @@ class Portal:
     Like the isekai where characters only meet on missions --
     personality facets run in isolation, sharing only through portals.
     """
+
     name: str
     source_cluster: str
     target_cluster: str
@@ -388,7 +397,9 @@ class Portal:
         if self.governance_gated and rho_e >= rho_e_threshold:
             logger.warning(
                 "Portal %s blocked: rho_e=%.2f >= %.2f",
-                self.name, rho_e, rho_e_threshold,
+                self.name,
+                rho_e,
+                rho_e_threshold,
             )
             return None
 
@@ -402,6 +413,7 @@ class Portal:
 # =====================================================================
 # 7. Main: PersonalityClusterLattice
 # =====================================================================
+
 
 class PersonalityClusterLattice:
     """Full personality system with clusters, brackets, drift, and portals.
@@ -538,7 +550,8 @@ class PersonalityClusterLattice:
             projected = plane.project_to_plane(new_particle)
             if cluster_name not in plane.clusters:
                 plane.clusters[cluster_name] = PersonalityCluster(
-                    name=cluster_name, tongue=cluster.tongue,
+                    name=cluster_name,
+                    tongue=cluster.tongue,
                 )
             plane.clusters[cluster_name].add_particle(projected, spin)
 
@@ -551,9 +564,7 @@ class PersonalityClusterLattice:
                 if transferred is not None:
                     # Add transferred particle to target cluster
                     target_name = (
-                        portal.target_cluster
-                        if portal.source_cluster == cluster_name
-                        else portal.source_cluster
+                        portal.target_cluster if portal.source_cluster == cluster_name else portal.source_cluster
                     )
                     target = self.clusters.get(target_name)
                     if target:
@@ -622,13 +633,17 @@ class PersonalityClusterLattice:
                     training_pairs.append(pair)
                 logger.info(
                     "Drift resolved: %s (%.1fs, magnitude=%.3f)",
-                    drift.facet, age, drift.drift_magnitude,
+                    drift.facet,
+                    age,
+                    drift.drift_magnitude,
                 )
             elif age > self.drift_timeout:
                 # Timed out -- unresolved, flag it
                 logger.warning(
                     "Drift timeout: %s (%.1fs, still shifting by %.3f)",
-                    drift.facet, age, delta,
+                    drift.facet,
+                    age,
+                    delta,
                 )
                 self.resolved_drifts.append(drift)  # Archive even if unresolved
             else:
@@ -689,9 +704,7 @@ class PersonalityClusterLattice:
 
         # Add cluster info
         active_clusters = sorted(
-            [(name, c.coherence(), c.dominant_spin())
-             for name, c in self.clusters.items()
-             if c.coherence() > 0.3],
+            [(name, c.coherence(), c.dominant_spin()) for name, c in self.clusters.items() if c.coherence() > 0.3],
             key=lambda x: -x[1],
         )
 

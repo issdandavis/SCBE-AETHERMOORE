@@ -179,15 +179,9 @@ def verify_theorem_3_1() -> Tuple[bool, Dict]:
     norm_scaled = np.sqrt((alpha * x).T @ G @ (alpha * x))
     results["homogeneity"] = np.isclose(norm_scaled, np.abs(alpha) * norm_G)
 
-    results["valid_norm"] = (
-        results["norm_nonnegative"]
-        and results["zero_has_zero_norm"]
-        and results["homogeneity"]
-    )
+    results["valid_norm"] = results["norm_nonnegative"] and results["zero_has_zero_norm"] and results["homogeneity"]
 
-    all_passed = (
-        results["symmetric"] and results["positive_definite"] and results["valid_norm"]
-    )
+    all_passed = results["symmetric"] and results["positive_definite"] and results["valid_norm"]
     return all_passed, results
 
 
@@ -292,10 +286,7 @@ def verify_theorem_5_1(n_tests: int = 50) -> Tuple[bool, Dict]:
         else:
             results["triangle"]["failed"] += 1
 
-    all_passed = all(
-        results[prop]["failed"] == 0
-        for prop in ["non_negativity", "identity", "symmetry", "triangle"]
-    )
+    all_passed = all(results[prop]["failed"] == 0 for prop in ["non_negativity", "identity", "symmetry", "triangle"])
     return all_passed, results
 
 
@@ -647,27 +638,19 @@ def verify_all_theorems() -> Dict[str, TheoremResult]:
 
     # Theorem 1.1
     passed, details = verify_theorem_1_1()
-    theorems["1.1"] = TheoremResult(
-        "1.1", "Polar Decomposition Uniqueness", passed, details
-    )
+    theorems["1.1"] = TheoremResult("1.1", "Polar Decomposition Uniqueness", passed, details)
 
     # Theorem 2.1
     passed, details = verify_theorem_2_1()
-    theorems["2.1"] = TheoremResult(
-        "2.1", "Isometric Realification ||c||_ℂ = ||Φ₁(c)||_ℝ", passed, details
-    )
+    theorems["2.1"] = TheoremResult("2.1", "Isometric Realification ||c||_ℂ = ||Φ₁(c)||_ℝ", passed, details)
 
     # Theorem 3.1
     passed, details = verify_theorem_3_1()
-    theorems["3.1"] = TheoremResult(
-        "3.1", "SPD Weighted Inner Product", passed, details
-    )
+    theorems["3.1"] = TheoremResult("3.1", "SPD Weighted Inner Product", passed, details)
 
     # Theorem 4.1
     passed, details = verify_theorem_4_1()
-    theorems["4.1"] = TheoremResult(
-        "4.1", "Poincaré Embedding Maps ℝⁿ → 𝔹ⁿ", passed, details
-    )
+    theorems["4.1"] = TheoremResult("4.1", "Poincaré Embedding Maps ℝⁿ → 𝔹ⁿ", passed, details)
 
     # Theorem 5.1
     passed, details = verify_theorem_5_1()
@@ -675,51 +658,35 @@ def verify_all_theorems() -> Dict[str, TheoremResult]:
 
     # Theorem 6.1
     passed, details = verify_theorem_6_1()
-    theorems["6.1"] = TheoremResult(
-        "6.1", "Breathing Preserves Ball Constraint", passed, details
-    )
+    theorems["6.1"] = TheoremResult("6.1", "Breathing Preserves Ball Constraint", passed, details)
 
     # Theorem 7.1
     passed, details = verify_theorem_7_1()
-    theorems["7.1"] = TheoremResult(
-        "7.1", "Möbius Addition Ball Closure", passed, details
-    )
+    theorems["7.1"] = TheoremResult("7.1", "Möbius Addition Ball Closure", passed, details)
 
     # Theorem 7.2
     passed, details = verify_theorem_7_2()
-    theorems["7.2"] = TheoremResult(
-        "7.2", "Phase Transform is Isometry", passed, details
-    )
+    theorems["7.2"] = TheoremResult("7.2", "Phase Transform is Isometry", passed, details)
 
     # Theorem 8.1
     passed, details = verify_theorem_8_1()
-    theorems["8.1"] = TheoremResult(
-        "8.1", "Realm Distance is 1-Lipschitz", passed, details
-    )
+    theorems["8.1"] = TheoremResult("8.1", "Realm Distance is 1-Lipschitz", passed, details)
 
     # Theorem 9.1
     passed, details = verify_theorem_9_1()
-    theorems["9.1"] = TheoremResult(
-        "9.1", "Spectral Coherence Bounded [0,1]", passed, details
-    )
+    theorems["9.1"] = TheoremResult("9.1", "Spectral Coherence Bounded [0,1]", passed, details)
 
     # Theorem 10.1
     passed, details = verify_theorem_10_1()
-    theorems["10.1"] = TheoremResult(
-        "10.1", "Spin Coherence Bounded [-1,1]", passed, details
-    )
+    theorems["10.1"] = TheoremResult("10.1", "Spin Coherence Bounded [-1,1]", passed, details)
 
     # Theorem 12.1
     passed, details = verify_theorem_12_1()
-    theorems["12.1"] = TheoremResult(
-        "12.1", "Harmonic Scaling Monotonicity", passed, details
-    )
+    theorems["12.1"] = TheoremResult("12.1", "Harmonic Scaling Monotonicity", passed, details)
 
     # Theorem 15.2
     passed, details = verify_theorem_15_2()
-    theorems["15.2"] = TheoremResult(
-        "15.2", "Metric Invariance Under Phase Transform", passed, details
-    )
+    theorems["15.2"] = TheoremResult("15.2", "Metric Invariance Under Phase Transform", passed, details)
 
     return theorems
 
@@ -746,9 +713,7 @@ def print_verification_report(theorems: Dict[str, TheoremResult]):
         if "max_norm" in result.details:
             print(f"  Max norm: {result.details['max_norm']:.6f}")
         if "passed" in result.details and "failed" in result.details:
-            print(
-                f"  Tests: {result.details['passed']} passed, {result.details['failed']} failed"
-            )
+            print(f"  Tests: {result.details['passed']} passed, {result.details['failed']} failed")
         print()
 
     print("=" * 80)

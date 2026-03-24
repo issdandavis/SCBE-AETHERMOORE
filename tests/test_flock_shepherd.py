@@ -17,6 +17,7 @@ from symphonic_cipher.scbe_aethermoore.flock_shepherd import (
 #  Spawn & Lifecycle
 # ═══════════════════════════════════════════════════
 
+
 class TestSpawn:
     def test_spawn_agent(self):
         flock = Flock()
@@ -71,6 +72,7 @@ class TestSpawn:
 # ═══════════════════════════════════════════════════
 #  Health & Coherence
 # ═══════════════════════════════════════════════════
+
 
 class TestHealth:
     def test_initial_coherence(self):
@@ -131,6 +133,7 @@ class TestHealth:
 # ═══════════════════════════════════════════════════
 #  Task Distribution
 # ═══════════════════════════════════════════════════
+
 
 class TestTaskDistribution:
     def test_add_task(self):
@@ -207,6 +210,7 @@ class TestTaskDistribution:
 #  Governance Voting
 # ═══════════════════════════════════════════════════
 
+
 class TestGovernanceVoting:
     def test_vote_all_healthy(self):
         flock = Flock()
@@ -248,6 +252,7 @@ class TestGovernanceVoting:
 #  BFT Tolerance
 # ═══════════════════════════════════════════════════
 
+
 class TestBFTTolerance:
     def test_bft_empty(self):
         flock = Flock()
@@ -285,6 +290,7 @@ class TestBFTTolerance:
 #  Status Dashboard
 # ═══════════════════════════════════════════════════
 
+
 class TestStatusDashboard:
     def test_empty_flock(self):
         flock = Flock()
@@ -315,6 +321,7 @@ class TestStatusDashboard:
 # ═══════════════════════════════════════════════════
 #  Event Log
 # ═══════════════════════════════════════════════════
+
 
 class TestEventLog:
     def test_spawn_logged(self):

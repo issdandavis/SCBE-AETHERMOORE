@@ -75,9 +75,7 @@ class TelemetryCollector:
             test_dict = asdict(t)
             # Ensure all values are JSON-serializable
             test_dict["passed"] = bool(test_dict["passed"])
-            test_dict["metrics"] = {
-                k: float(v) for k, v in test_dict["metrics"].items()
-            }
+            test_dict["metrics"] = {k: float(v) for k, v in test_dict["metrics"].items()}
             tests_data.append(test_dict)
 
         data = {
@@ -117,10 +115,7 @@ class TelemetryCollector:
 
         for cat, stats in categories.items():
             total_cat = stats["passed"] + stats["failed"]
-            print(
-                f"  {cat}: {stats['passed']}/{total_cat} passed "
-                f"({stats['total_ms']:.2f}ms total)"
-            )
+            print(f"  {cat}: {stats['passed']}/{total_cat} passed " f"({stats['total_ms']:.2f}ms total)")
 
         print("=" * 80)
 
@@ -153,8 +148,7 @@ def test_poincare_ball_containment(collector: TelemetryCollector):
     telem.complete(passed)
 
     print(
-        f"✓ {telem.test_name}: {'PASS' if passed else 'FAIL'} "
-        f"({telem.duration_ms:.2f}ms, {iterations} iterations)"
+        f"✓ {telem.test_name}: {'PASS' if passed else 'FAIL'} " f"({telem.duration_ms:.2f}ms, {iterations} iterations)"
     )
     return passed
 
@@ -185,8 +179,7 @@ def test_triangle_inequality(collector: TelemetryCollector):
     telem.complete(passed)
 
     print(
-        f"✓ {telem.test_name}: {'PASS' if passed else 'FAIL'} "
-        f"({telem.duration_ms:.2f}ms, {iterations} iterations)"
+        f"✓ {telem.test_name}: {'PASS' if passed else 'FAIL'} " f"({telem.duration_ms:.2f}ms, {iterations} iterations)"
     )
     return passed
 
@@ -215,8 +208,7 @@ def test_harmonic_scaling_monotonicity(collector: TelemetryCollector):
     telem.complete(passed)
 
     print(
-        f"✓ {telem.test_name}: {'PASS' if passed else 'FAIL'} "
-        f"({telem.duration_ms:.2f}ms, {iterations} iterations)"
+        f"✓ {telem.test_name}: {'PASS' if passed else 'FAIL'} " f"({telem.duration_ms:.2f}ms, {iterations} iterations)"
     )
     return passed
 
@@ -250,10 +242,7 @@ def test_coherence_bounds(collector: TelemetryCollector):
     passed = violations == 0
     telem.complete(passed)
 
-    print(
-        f"✓ {telem.test_name}: {'PASS' if passed else 'FAIL'} "
-        f"({telem.duration_ms:.2f}ms, {iterations*3} checks)"
-    )
+    print(f"✓ {telem.test_name}: {'PASS' if passed else 'FAIL'} " f"({telem.duration_ms:.2f}ms, {iterations*3} checks)")
     return passed
 
 

@@ -42,11 +42,11 @@ function addAuditEntry(entry: AuditEntry): void {
 // ============================================================================
 
 /** Request logging */
-function requestLogger(req: Request, res: Response, next: NextFunction): void {
+function requestLogger(_req: Request, res: Response, next: NextFunction): void {
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
-    console.log(`${req.method} ${req.path} ${res.statusCode} ${duration}ms`);
+    console.log('request_complete %d %dms', res.statusCode, duration);
   });
   next();
 }

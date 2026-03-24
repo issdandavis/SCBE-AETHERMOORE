@@ -84,11 +84,13 @@ class TestProviderExecutor:
         async def win_adapter(_model_id: str, _prompt: str) -> str:
             return "fallback answer"
 
-        executor = ProviderExecutor(adapters={
-            ModelProvider.SONNET: fail_adapter,
-            ModelProvider.HAIKU: fail_adapter,
-            ModelProvider.LOCAL: win_adapter,
-        })
+        executor = ProviderExecutor(
+            adapters={
+                ModelProvider.SONNET: fail_adapter,
+                ModelProvider.HAIKU: fail_adapter,
+                ModelProvider.LOCAL: win_adapter,
+            }
+        )
         result = await executor.execute(_plan())
 
         assert result.provider == "local"

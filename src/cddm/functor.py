@@ -62,10 +62,7 @@ class CompositionChain:
         if self.steps:
             last = self.steps[-1]
             if last.dst.name != morphism.src.name:
-                raise MorphismError(
-                    f"Chain break: last dst={last.dst.name} "
-                    f"!= new src={morphism.src.name}"
-                )
+                raise MorphismError(f"Chain break: last dst={last.dst.name} " f"!= new src={morphism.src.name}")
         self.steps.append(morphism)
         return self
 
@@ -121,9 +118,7 @@ class CompositionChain:
     def __repr__(self) -> str:
         if not self.steps:
             return "CompositionChain(empty)"
-        path = " -> ".join(
-            [self.steps[0].src.name] + [s.dst.name for s in self.steps]
-        )
+        path = " -> ".join([self.steps[0].src.name] + [s.dst.name for s in self.steps])
         return f"CompositionChain({path})"
 
 

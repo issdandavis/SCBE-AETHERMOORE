@@ -31,6 +31,7 @@ from .models import PlaythroughRecord
 #  Event types
 # ---------------------------------------------------------------------------
 
+
 class TelemetryEventType(Enum):
     CHOICE_MADE = "choice_made"
     SCENE_ENTERED = "scene_entered"
@@ -59,9 +60,9 @@ class TelemetryEvent:
 class ConceptBlockActivation:
     """Record of a concept block being activated by a telemetry event."""
 
-    block_name: str           # DECIDE, PLAN, SENSE, STEER, COORDINATE
-    intensity: float          # [0.0, 1.0]
-    scbe_layers: Set[int]    # Which SCBE layers are involved
+    block_name: str  # DECIDE, PLAN, SENSE, STEER, COORDINATE
+    intensity: float  # [0.0, 1.0]
+    scbe_layers: Set[int]  # Which SCBE layers are involved
     trigger_event_id: str
     timestamp: float
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -70,6 +71,7 @@ class ConceptBlockActivation:
 # ---------------------------------------------------------------------------
 #  Hamiltonian safety tracker
 # ---------------------------------------------------------------------------
+
 
 class HamiltonianTracker:
     """
@@ -115,7 +117,7 @@ class HamiltonianTracker:
         is_unsafe = bool(choice_tags & self._unsafe_tags)
         self._recent_choices.append(is_unsafe)
         if len(self._recent_choices) > self._window_size:
-            self._recent_choices = self._recent_choices[-self._window_size:]
+            self._recent_choices = self._recent_choices[-self._window_size :]
 
         # pd = proportion unsafe in window
         pd = sum(1 for u in self._recent_choices if u) / max(len(self._recent_choices), 1)
@@ -161,6 +163,7 @@ class HamiltonianTracker:
 # ---------------------------------------------------------------------------
 #  TelemetryBridge
 # ---------------------------------------------------------------------------
+
 
 class TelemetryBridge:
     """
@@ -281,48 +284,56 @@ class TelemetryBridge:
         if event.event_type == TelemetryEventType.CHOICE_MADE:
             # DECIDE activation
             n_alts = len(event.payload.get("alternatives", []))
-            activations.append(ConceptBlockActivation(
-                block_name="DECIDE",
-                intensity=min(n_alts / 10.0, 1.0) if n_alts > 0 else 0.5,
-                scbe_layers={4, 5, 10},
-                trigger_event_id=event.event_id,
-                timestamp=event.timestamp,
-                metadata={"choice_id": event.payload.get("choice_id")},
-            ))
+            activations.append(
+                ConceptBlockActivation(
+                    block_name="DECIDE",
+                    intensity=min(n_alts / 10.0, 1.0) if n_alts > 0 else 0.5,
+                    scbe_layers={4, 5, 10},
+                    trigger_event_id=event.event_id,
+                    timestamp=event.timestamp,
+                    metadata={"choice_id": event.payload.get("choice_id")},
+                )
+            )
 
             # COORDINATE activation if cooperation tag present
             tags = set(event.payload.get("tags", []))
             if tags & {"cooperative", "cooperation", "negotiation"}:
-                activations.append(ConceptBlockActivation(
-                    block_name="COORDINATE",
-                    intensity=1.0,
-                    scbe_layers={7, 9, 14},
-                    trigger_event_id=event.event_id,
-                    timestamp=event.timestamp,
-                ))
+                activations.append(
+                    ConceptBlockActivation(
+                        block_name="COORDINATE",
+                        intensity=1.0,
+                        scbe_layers={7, 9, 14},
+                        trigger_event_id=event.event_id,
+                        timestamp=event.timestamp,
+                    )
+                )
 
         elif event.event_type == TelemetryEventType.SCENE_ENTERED:
             # SENSE activation
             text_len = event.payload.get("scene_text_length", 0)
-            activations.append(ConceptBlockActivation(
-                block_name="SENSE",
-                intensity=min(text_len / 2000.0, 1.0),
-                scbe_layers={3, 4},
-                trigger_event_id=event.event_id,
-                timestamp=event.timestamp,
-            ))
+            activations.append(
+                ConceptBlockActivation(
+                    block_name="SENSE",
+                    intensity=min(text_len / 2000.0, 1.0),
+                    scbe_layers={3, 4},
+                    trigger_event_id=event.event_id,
+                    timestamp=event.timestamp,
+                )
+            )
 
         elif event.event_type == TelemetryEventType.STAT_CHANGED:
             # STEER activation
             delta = abs(event.payload.get("delta", 0.0))
-            activations.append(ConceptBlockActivation(
-                block_name="STEER",
-                intensity=min(delta, 1.0),
-                scbe_layers={2, 6},
-                trigger_event_id=event.event_id,
-                timestamp=event.timestamp,
-                metadata={"stat": event.payload.get("stat")},
-            ))
+            activations.append(
+                ConceptBlockActivation(
+                    block_name="STEER",
+                    intensity=min(delta, 1.0),
+                    scbe_layers={2, 6},
+                    trigger_event_id=event.event_id,
+                    timestamp=event.timestamp,
+                    metadata={"stat": event.payload.get("stat")},
+                )
+            )
 
         return activations
 

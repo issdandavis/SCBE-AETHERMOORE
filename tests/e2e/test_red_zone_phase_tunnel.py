@@ -29,7 +29,8 @@ def _host_has_suffix(url: str, *labels: str) -> bool:
     host = (urlparse(url).hostname or "").strip(".").lower()
     host_labels = [part for part in host.split(".") if part]
     suffix = [part.lower() for part in labels]
-    return len(host_labels) >= len(suffix) and host_labels[-len(suffix):] == suffix
+    return len(host_labels) >= len(suffix) and host_labels[-len(suffix) :] == suffix
+
 
 # ---------------------------------------------------------------------------
 # Load the RED zone test site
@@ -76,6 +77,7 @@ def parse_test_site():
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 class TestRedZoneTopology:
     """Test that the topology engine correctly maps the RED zone site."""
@@ -179,8 +181,10 @@ class TestRedZonePhaseTunnel:
                 kernel=kernel,
             )
             # New agent should get REFLECT or COLLAPSE, never TUNNEL
-            assert result.outcome in (TunnelOutcome.REFLECT, TunnelOutcome.COLLAPSE), \
-                f"Newborn tunneled RED: {result.outcome} for {node['url']}"
+            assert result.outcome in (
+                TunnelOutcome.REFLECT,
+                TunnelOutcome.COLLAPSE,
+            ), f"Newborn tunneled RED: {result.outcome} for {node['url']}"
             assert result.commit_allowed is False
 
     def test_experienced_agent_can_attenuate_red(self):
@@ -202,8 +206,10 @@ class TestRedZonePhaseTunnel:
         )
 
         # Experienced agent with correct phase should at least attenuate
-        assert result.outcome in (TunnelOutcome.ATTENUATE, TunnelOutcome.TUNNEL), \
-            f"Veteran couldn't attenuate RED: {result.outcome}, T={result.transmission_coeff}"
+        assert result.outcome in (
+            TunnelOutcome.ATTENUATE,
+            TunnelOutcome.TUNNEL,
+        ), f"Veteran couldn't attenuate RED: {result.outcome}, T={result.transmission_coeff}"
         assert result.amplitude_out > 0  # some signal gets through
 
     def test_green_links_always_accessible(self):
@@ -220,8 +226,7 @@ class TestRedZonePhaseTunnel:
                 kernel=kernel,
             )
             # GREEN should be easy even for new agents
-            assert result.transmission_coeff > 0, \
-                f"GREEN link blocked: {node['url']}, T={result.transmission_coeff}"
+            assert result.transmission_coeff > 0, f"GREEN link blocked: {node['url']}, T={result.transmission_coeff}"
 
     def test_phase_read_red_without_commit(self):
         """The key feature: preview RED zone content without committing to enter.
@@ -357,19 +362,21 @@ class TestFullFlowIntegration:
                 kernel=kernel,
             )
 
-            results.append({
-                "url": node["url"],
-                "label": node["label"],
-                "zone": zone,
-                "radius": node["radius"],
-                "semantic_dist": node["semantic_dist"],
-                "optimal_outcome": result_optimal.outcome,
-                "optimal_T": result_optimal.transmission_coeff,
-                "optimal_commit": result_optimal.commit_allowed,
-                "blind_outcome": result_blind.outcome,
-                "blind_T": result_blind.transmission_coeff,
-                "blind_commit": result_blind.commit_allowed,
-            })
+            results.append(
+                {
+                    "url": node["url"],
+                    "label": node["label"],
+                    "zone": zone,
+                    "radius": node["radius"],
+                    "semantic_dist": node["semantic_dist"],
+                    "optimal_outcome": result_optimal.outcome,
+                    "optimal_T": result_optimal.transmission_coeff,
+                    "optimal_commit": result_optimal.commit_allowed,
+                    "blind_outcome": result_blind.outcome,
+                    "blind_T": result_blind.transmission_coeff,
+                    "blind_commit": result_blind.commit_allowed,
+                }
+            )
 
         # Print the full decision table
         print("\n" + "=" * 90)
@@ -396,8 +403,9 @@ class TestFullFlowIntegration:
 
         # RED links with blind phase should mostly reflect/collapse
         red_blind_blocked = sum(1 for r in red_results if r["blind_outcome"] in ("reflect", "collapse"))
-        assert red_blind_blocked >= len(red_results) // 2, \
-            f"Too many RED links accessible with blind phase: {len(red_results) - red_blind_blocked}/{len(red_results)}"
+        assert (
+            red_blind_blocked >= len(red_results) // 2
+        ), f"Too many RED links accessible with blind phase: {len(red_results) - red_blind_blocked}/{len(red_results)}"
 
         # No blind RED access should allow commit
         for r in red_results:

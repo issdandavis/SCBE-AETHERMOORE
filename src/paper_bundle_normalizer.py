@@ -46,9 +46,7 @@ def normalize_bundle(
         norm_ratio = point.distance_to_window / max(lattice.acceptance_radius, 1e-9)
         cost = _bounded_cost(norm_ratio)
 
-        is_quarantine = (
-            result.status != ValidationStatus.VALID or norm_ratio > norm_threshold
-        )
+        is_quarantine = result.status != ValidationStatus.VALID or norm_ratio > norm_threshold
         if is_quarantine:
             quarantined.append(key)
 
@@ -60,9 +58,7 @@ def normalize_bundle(
             "cost": cost,
         }
 
-    bundle_hash = hashlib.sha256(
-        json.dumps(bundle, sort_keys=True, default=str).encode("utf-8")
-    ).hexdigest()
+    bundle_hash = hashlib.sha256(json.dumps(bundle, sort_keys=True, default=str).encode("utf-8")).hexdigest()
 
     return {
         "status": "QUARANTINE" if quarantined else "ALLOW",

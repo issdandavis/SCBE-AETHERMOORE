@@ -22,28 +22,24 @@ class TestConstant1HarmonicScaling:
     def test_growth_table_verification(self):
         """Verify harmonic scaling matches theoretical values"""
         expected = {
-            0: 1.0,        # 1/(1+0) = 1.0
-            1: 0.5,        # 1/(1+1) = 0.5
-            2: 1.0/3.0,    # 1/(1+2) ≈ 0.333
-            3: 0.25,       # 1/(1+3) = 0.25
-            4: 0.2,        # 1/(1+4) = 0.2
-            5: 1.0/6.0,    # 1/(1+5) ≈ 0.167
+            0: 1.0,  # 1/(1+0) = 1.0
+            1: 0.5,  # 1/(1+1) = 0.5
+            2: 1.0 / 3.0,  # 1/(1+2) ≈ 0.333
+            3: 0.25,  # 1/(1+3) = 0.25
+            4: 0.2,  # 1/(1+4) = 0.2
+            5: 1.0 / 6.0,  # 1/(1+5) ≈ 0.167
         }
 
         for d, expected_value in expected.items():
             actual = self.harmonic_scaling_law(d)
-            assert (
-                abs(actual - expected_value) < 0.001
-            ), f"d={d}: expected {expected_value}, got {actual}"
+            assert abs(actual - expected_value) < 0.001, f"d={d}: expected {expected_value}, got {actual}"
 
     def test_monotone_decreasing(self):
         """Verify monotone decreasing pattern (more distance = lower safety)"""
         values = [self.harmonic_scaling_law(d) for d in range(0, 7)]
 
         for i in range(len(values) - 1):
-            assert (
-                values[i] > values[i + 1]
-            ), f"Not monotone decreasing at d={i}"
+            assert values[i] > values[i + 1], f"Not monotone decreasing at d={i}"
 
     @given(d=st.integers(min_value=0, max_value=100))
     def test_property_bounded_positive(self, d):
@@ -66,9 +62,7 @@ class TestConstant1HarmonicScaling:
 class TestConstant2CymaticVoxel:
     """Constant 2: Cymatic Voxel Storage - Chladni Nodal Lines"""
 
-    def cymatic_voxel_storage(
-        self, n: int, m: int, x: np.ndarray, y: np.ndarray
-    ) -> np.ndarray:
+    def cymatic_voxel_storage(self, n: int, m: int, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         """cos(n·π·x)·cos(m·π·y) - cos(m·π·x)·cos(n·π·y) = 0"""
         term1 = np.cos(n * np.pi * x) * np.cos(m * np.pi * y)
         term2 = np.cos(m * np.pi * x) * np.cos(n * np.pi * y)
@@ -128,9 +122,7 @@ class TestConstant2CymaticVoxel:
 
         Z = self.cymatic_voxel_storage(n, m, X, Y)
 
-        assert np.all(Z >= -2.0) and np.all(
-            Z <= 2.0
-        ), f"Output not bounded for n={n}, m={m}"
+        assert np.all(Z >= -2.0) and np.all(Z <= 2.0), f"Output not bounded for n={n}, m={m}"
 
 
 class TestConstant3FluxInteraction:
@@ -160,9 +152,7 @@ class TestConstant3FluxInteraction:
         for d, Base in test_cases:
             f, f_inv, product = self.flux_interaction(d, Base)
 
-            assert (
-                abs(product - 1.0) < 1e-10
-            ), f"Duality violated for d={d}, Base={Base}: product={product}"
+            assert abs(product - 1.0) < 1e-10, f"Duality violated for d={d}, Base={Base}: product={product}"
 
     def test_phase_cancellation(self):
         """Verify H(d) × H_inv(d) = 1 at all dimensions"""
@@ -196,9 +186,7 @@ class TestConstant3FluxInteraction:
 class TestConstant4StellarOctave:
     """Constant 4: Stellar-to-Human Octave Mapping"""
 
-    def stellar_to_human_octave(
-        self, f_stellar: float, target_freq: float = 262.0
-    ) -> tuple:
+    def stellar_to_human_octave(self, f_stellar: float, target_freq: float = 262.0) -> tuple:
         """
         f_human = f_stellar × 2^n
         where n ≈ 17 for Middle C (262 Hz) from Sun's 3 mHz
@@ -247,9 +235,7 @@ class TestConstant4StellarOctave:
             n, f_human = self.stellar_to_human_octave(f_stellar)
 
             # Should be in audible range (20 Hz - 20 kHz)
-            assert (
-                20.0 <= f_human <= 20000.0
-            ), f"Frequency {f_human} Hz out of audible range"
+            assert 20.0 <= f_human <= 20000.0, f"Frequency {f_human} Hz out of audible range"
 
     def test_entropy_regulation_alignment(self):
         """Verify alignment with stellar p-modes"""

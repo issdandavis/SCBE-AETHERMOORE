@@ -18,6 +18,7 @@ import datetime
 from pathlib import Path
 
 import sys
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -62,8 +63,13 @@ def pull_notion_to_datasheet(
         result = funnel.ingest(chunk)
         if result["decision"] == "ALLOW":
             graph.add_chunk(
-                chunk.id, chunk.title, chunk.category, chunk.content,
-                chunk.source, chunk.chain_hash, chunk.parent_hash,
+                chunk.id,
+                chunk.title,
+                chunk.category,
+                chunk.content,
+                chunk.source,
+                chunk.chain_hash,
+                chunk.parent_hash,
             )
             allowed.append(chunk)
 
@@ -76,27 +82,29 @@ def pull_notion_to_datasheet(
         coords = node.coords if node else [0.0] * 6
         edge_count = len(node.edges) if node else 0
 
-        rows.append({
-            "id": chunk.id,
-            "title": chunk.title,
-            "category": chunk.category,
-            "source": chunk.source,
-            "url": chunk.url,
-            "timestamp": chunk.timestamp,
-            "trust_score": chunk.trust_score,
-            "governance_zone": chunk.governance_zone,
-            "chain_hash": chunk.chain_hash[:12],
-            "content_length": len(chunk.content),
-            "content_preview": chunk.content[:200].replace("\n", " "),
-            "tongue_KO": round(coords[0], 4),
-            "tongue_AV": round(coords[1], 4),
-            "tongue_RU": round(coords[2], 4),
-            "tongue_CA": round(coords[3], 4),
-            "tongue_UM": round(coords[4], 4),
-            "tongue_DR": round(coords[5], 4),
-            "edge_count": edge_count,
-            "notion_id": chunk.metadata.get("notion_id", ""),
-        })
+        rows.append(
+            {
+                "id": chunk.id,
+                "title": chunk.title,
+                "category": chunk.category,
+                "source": chunk.source,
+                "url": chunk.url,
+                "timestamp": chunk.timestamp,
+                "trust_score": chunk.trust_score,
+                "governance_zone": chunk.governance_zone,
+                "chain_hash": chunk.chain_hash[:12],
+                "content_length": len(chunk.content),
+                "content_preview": chunk.content[:200].replace("\n", " "),
+                "tongue_KO": round(coords[0], 4),
+                "tongue_AV": round(coords[1], 4),
+                "tongue_RU": round(coords[2], 4),
+                "tongue_CA": round(coords[3], 4),
+                "tongue_UM": round(coords[4], 4),
+                "tongue_DR": round(coords[5], 4),
+                "edge_count": edge_count,
+                "notion_id": chunk.metadata.get("notion_id", ""),
+            }
+        )
 
     # 4. Export
     timestamp = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M")
@@ -180,27 +188,29 @@ def _push_to_airtable(rows: list[dict]):
 
     # Airtable accepts max 10 records per batch
     for i in range(0, len(rows), 10):
-        batch = rows[i:i+10]
+        batch = rows[i : i + 10]
         records = []
         for row in batch:
-            records.append({
-                "fields": {
-                    "Title": row["title"][:256],
-                    "Category": row["category"],
-                    "Source": row["source"],
-                    "URL": row["url"],
-                    "Trust Score": row["trust_score"],
-                    "Zone": row["governance_zone"],
-                    "Content Length": row["content_length"],
-                    "Tongue KO": row["tongue_KO"],
-                    "Tongue AV": row["tongue_AV"],
-                    "Tongue RU": row["tongue_RU"],
-                    "Tongue CA": row["tongue_CA"],
-                    "Tongue UM": row["tongue_UM"],
-                    "Tongue DR": row["tongue_DR"],
-                    "Edge Count": row["edge_count"],
+            records.append(
+                {
+                    "fields": {
+                        "Title": row["title"][:256],
+                        "Category": row["category"],
+                        "Source": row["source"],
+                        "URL": row["url"],
+                        "Trust Score": row["trust_score"],
+                        "Zone": row["governance_zone"],
+                        "Content Length": row["content_length"],
+                        "Tongue KO": row["tongue_KO"],
+                        "Tongue AV": row["tongue_AV"],
+                        "Tongue RU": row["tongue_RU"],
+                        "Tongue CA": row["tongue_CA"],
+                        "Tongue UM": row["tongue_UM"],
+                        "Tongue DR": row["tongue_DR"],
+                        "Edge Count": row["edge_count"],
+                    }
                 }
-            })
+            )
 
         body = json.dumps({"records": records}).encode()
         req = Request(url, data=body, headers=headers, method="POST")

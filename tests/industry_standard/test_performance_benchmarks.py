@@ -201,12 +201,8 @@ class TestPrimitiveBenchmarks:
         }
         save_evidence("layer4_poincare_embedding", evidence)
 
-        assert (
-            mean_time < 1.0
-        ), f"Poincaré embedding mean time {mean_time:.3f}ms exceeds 1ms"
-        assert (
-            p95_time < 2.0
-        ), f"Poincaré embedding p95 time {p95_time:.3f}ms exceeds 2ms"
+        assert mean_time < 1.0, f"Poincaré embedding mean time {mean_time:.3f}ms exceeds 1ms"
+        assert p95_time < 2.0, f"Poincaré embedding p95 time {p95_time:.3f}ms exceeds 2ms"
 
     def test_layer5_hyperbolic_distance_performance(self):
         """
@@ -240,12 +236,8 @@ class TestPrimitiveBenchmarks:
         }
         save_evidence("layer5_hyperbolic_distance", evidence)
 
-        assert (
-            mean_time < 0.1
-        ), f"Hyperbolic distance mean time {mean_time:.4f}ms exceeds 0.1ms"
-        assert (
-            p95_time < 0.2
-        ), f"Hyperbolic distance p95 time {p95_time:.4f}ms exceeds 0.2ms"
+        assert mean_time < 0.1, f"Hyperbolic distance mean time {mean_time:.4f}ms exceeds 0.1ms"
+        assert p95_time < 0.2, f"Hyperbolic distance p95 time {p95_time:.4f}ms exceeds 0.2ms"
 
     def test_layer6_breathing_transform_performance(self):
         """
@@ -270,9 +262,7 @@ class TestPrimitiveBenchmarks:
         evidence = {"mean_ms": mean_time, "p95_ms": p95_time, "n_trials": n_trials}
         save_evidence("layer6_breathing_transform", evidence)
 
-        assert (
-            mean_time < 1.0
-        ), f"Breathing transform mean time {mean_time:.3f}ms exceeds 1ms"
+        assert mean_time < 1.0, f"Breathing transform mean time {mean_time:.3f}ms exceeds 1ms"
 
     def test_layer14_audio_axis_performance(self):
         """
@@ -349,9 +339,7 @@ class TestSystemBenchmarks:
         }
         save_evidence("memory_footprint", evidence)
 
-        assert (
-            memory_increase_mb < 50.0
-        ), f"Memory increase {memory_increase_mb:.1f}MB exceeds 50MB"
+        assert memory_increase_mb < 50.0, f"Memory increase {memory_increase_mb:.1f}MB exceeds 50MB"
 
     def test_concurrent_operations_process_pool(self):
         """
@@ -443,9 +431,7 @@ class TestPQCBenchmarks:
         evidence = {"mean_ms": mean_time, "p95_ms": p95_time, "n_trials": n_trials}
         save_evidence("mlkem768_keygen", evidence)
 
-        assert (
-            mean_time < 100.0
-        ), f"ML-KEM-768 keygen mean time {mean_time:.2f}ms exceeds 100ms"
+        assert mean_time < 100.0, f"ML-KEM-768 keygen mean time {mean_time:.2f}ms exceeds 100ms"
 
 
 if __name__ == "__main__":

@@ -96,7 +96,10 @@ def normalize_record(record: dict, source_file: Path) -> dict | None:
 
     # Merge in any extra top-level fields as metadata (exclude prompt/response/metadata)
     extra_keys = set(record.keys()) - {
-        "prompt", "instruction", "response", "metadata",
+        "prompt",
+        "instruction",
+        "response",
+        "metadata",
     }
     extras = {k: record[k] for k in extra_keys}
     if extras:
@@ -258,17 +261,17 @@ def print_report(stats: dict, output_path: Path, dry_run: bool) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Merge and deduplicate SCBE-AETHERMOORE training JSONL files."
-    )
+    parser = argparse.ArgumentParser(description="Merge and deduplicate SCBE-AETHERMOORE training JSONL files.")
     parser.add_argument(
-        "--output", "-o",
+        "--output",
+        "-o",
         type=Path,
         default=DEFAULT_OUTPUT,
         help=f"Output path for merged JSONL (default: {DEFAULT_OUTPUT})",
     )
     parser.add_argument(
-        "--input-dir", "-i",
+        "--input-dir",
+        "-i",
         type=Path,
         default=TRAINING_DATA_DIR,
         help=f"Input directory to scan (default: {TRAINING_DATA_DIR})",

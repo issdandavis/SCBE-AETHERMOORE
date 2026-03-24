@@ -379,8 +379,7 @@ class AuditLogger:
             lines = ["id,timestamp,level,category,source,message"]
             for e in entries:
                 lines.append(
-                    f"{e.id},{e.timestamp.isoformat()},{e.level.name},"
-                    f'{e.category.value},{e.source},"{e.message}"'
+                    f"{e.id},{e.timestamp.isoformat()},{e.level.name}," f'{e.category.value},{e.source},"{e.message}"'
                 )
             return "\n".join(lines)
         else:
@@ -407,9 +406,7 @@ class AuditLogger:
                 f.write(data)
 
         # Sign the file
-        signature = hmac.new(
-            self.signing_key, data.encode(), hashlib.sha256
-        ).hexdigest()
+        signature = hmac.new(self.signing_key, data.encode(), hashlib.sha256).hexdigest()
 
         sig_path = self.storage_path / f"{filename}.sig"
         with open(sig_path, "w") as f:
@@ -525,9 +522,7 @@ class WorkflowTracker:
         workflow["status"] = status
         workflow["completed_at"] = datetime.now()
         workflow["final_result"] = final_result
-        workflow["duration_seconds"] = (
-            workflow["completed_at"] - workflow["started_at"]
-        ).total_seconds()
+        workflow["duration_seconds"] = (workflow["completed_at"] - workflow["started_at"]).total_seconds()
 
         self.completed_workflows.append(workflow)
         del self.active_workflows[workflow_id]

@@ -53,11 +53,7 @@ def render_weighted_context(context_text: str, *, label: str, weight: float) -> 
     cleaned = context_text.strip()
     if not cleaned:
         return ""
-    return (
-        f"[weighted-context label={label} weight={weight:.2f}]\n"
-        f"{cleaned}\n"
-        "[/weighted-context]"
-    )
+    return f"[weighted-context label={label} weight={weight:.2f}]\n" f"{cleaned}\n" "[/weighted-context]"
 
 
 def build_logged_input(text: str, context_block: str) -> str:
@@ -120,14 +116,16 @@ async def execute_request(
         "requested_model_id": model_id or executor._model_ids[provider],
         "text": text,
         "logged_input": logged_input,
-        "context": context_summary(
-            context_text,
-            label=context_label,
-            weight=context_weight,
-            store_text=False,
-        )
-        if context_text
-        else {},
+        "context": (
+            context_summary(
+                context_text,
+                label=context_label,
+                weight=context_weight,
+                store_text=False,
+            )
+            if context_text
+            else {}
+        ),
         "metadata": metadata or {},
         "plan": plan.to_dict(),
         "execution": execution.to_dict(),
@@ -145,7 +143,9 @@ def write_artifact(record: dict[str, Any]) -> Path:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run an AetherBrowser command through a chosen model provider.")
     parser.add_argument("text", help="User request to route through the AetherBrowser planner.")
-    parser.add_argument("--provider", default="huggingface", help="Model provider (huggingface|hf|local|haiku|sonnet|opus|flash|grok)")
+    parser.add_argument(
+        "--provider", default="huggingface", help="Model provider (huggingface|hf|local|haiku|sonnet|opus|flash|grok)"
+    )
     parser.add_argument("--model-id", default="", help="Optional explicit model ID override for the chosen provider.")
     parser.add_argument("--context-file", default="", help="Optional UTF-8 file with extra operator context.")
     parser.add_argument("--context", default="", help="Optional inline context to weight with the request.")

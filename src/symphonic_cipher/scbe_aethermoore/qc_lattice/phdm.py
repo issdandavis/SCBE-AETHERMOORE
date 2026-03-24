@@ -115,9 +115,7 @@ class Polyhedron:
 
 def create_tetrahedron_coords() -> np.ndarray:
     """Generate tetrahedron vertex coordinates."""
-    return np.array(
-        [[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]], dtype=float
-    ) / np.sqrt(3)
+    return np.array([[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]], dtype=float) / np.sqrt(3)
 
 
 def create_cube_coords() -> np.ndarray:
@@ -403,9 +401,7 @@ class PHDMHamiltonianPath:
             data = poly.serialize() + str(i).encode() + prev_tag
             tag = hmac.new(self.key, data, hashlib.sha256).digest()
 
-            node = HamiltonianNode(
-                polyhedron=poly, position=i, hmac_tag=tag, prev_tag=prev_tag
-            )
+            node = HamiltonianNode(polyhedron=poly, position=i, hmac_tag=tag, prev_tag=prev_tag)
             self._path.append(node)
             prev_tag = tag
 
@@ -516,12 +512,8 @@ class PHDMDeviationDetector:
             self.path.compute_path()
 
         # Build expected metrics
-        self._expected_euler_sum = sum(
-            node.polyhedron.euler_characteristic() for node in self.path._path
-        )
-        self._expected_vertex_total = sum(
-            node.polyhedron.vertices for node in self.path._path
-        )
+        self._expected_euler_sum = sum(node.polyhedron.euler_characteristic() for node in self.path._path)
+        self._expected_vertex_total = sum(node.polyhedron.vertices for node in self.path._path)
 
     def check_topological_integrity(self) -> Tuple[bool, List[str]]:
         """
@@ -536,15 +528,12 @@ class PHDMDeviationDetector:
             poly = node.polyhedron
             if not poly.is_valid_topology():
                 errors.append(
-                    f"{poly.name}: Euler χ={poly.euler_characteristic()} "
-                    f"expected {poly.expected_euler()}"
+                    f"{poly.name}: Euler χ={poly.euler_characteristic()} " f"expected {poly.expected_euler()}"
                 )
 
         return len(errors) == 0, errors
 
-    def detect_manifold_deviation(
-        self, observed_vertices: int, observed_euler: int
-    ) -> float:
+    def detect_manifold_deviation(self, observed_vertices: int, observed_euler: int) -> float:
         """
         Detect deviation from expected manifold structure.
 
@@ -590,9 +579,7 @@ class PHDMDeviationDetector:
 
     def get_curvature_profile(self) -> np.ndarray:
         """Get curvature values along the entire path."""
-        return np.array(
-            [self.compute_curvature_at_node(i) for i in range(len(self.path._path))]
-        )
+        return np.array([self.compute_curvature_at_node(i) for i in range(len(self.path._path))])
 
 
 # =============================================================================

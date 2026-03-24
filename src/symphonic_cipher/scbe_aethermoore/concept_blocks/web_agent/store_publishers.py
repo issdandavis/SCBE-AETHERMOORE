@@ -34,6 +34,7 @@ from typing import Any, Dict, List, Optional
 
 try:
     import requests
+
     HAS_REQUESTS = True
 except ImportError:
     HAS_REQUESTS = False
@@ -43,6 +44,7 @@ except ImportError:
 #  Shared types
 # ---------------------------------------------------------------------------
 
+
 class StoreType(str, Enum):
     GUMROAD = "gumroad"
     SHOPIFY = "shopify"
@@ -51,6 +53,7 @@ class StoreType(str, Enum):
 @dataclass
 class StoreResult:
     """Result from a store API call."""
+
     success: bool
     store: str
     action: str
@@ -64,12 +67,13 @@ class StoreResult:
 @dataclass
 class ProductSpec:
     """Universal product specification that maps to any store."""
+
     name: str
-    price_cents: int                          # Price in cents (4999 = $49.99)
+    price_cents: int  # Price in cents (4999 = $49.99)
     description: str = ""
     tags: List[str] = field(default_factory=list)
-    images: List[str] = field(default_factory=list)   # URLs or file paths
-    files: List[str] = field(default_factory=list)     # Digital download files
+    images: List[str] = field(default_factory=list)  # URLs or file paths
+    files: List[str] = field(default_factory=list)  # Digital download files
     sku: Optional[str] = None
     category: Optional[str] = None
     is_digital: bool = True
@@ -83,6 +87,7 @@ class ProductSpec:
 # ---------------------------------------------------------------------------
 #  Gumroad Publisher
 # ---------------------------------------------------------------------------
+
 
 class GumroadPublisher:
     """
@@ -171,8 +176,11 @@ class GumroadPublisher:
         success = data.get("success", False)
         product = data.get("product", {})
         return StoreResult(
-            success=success, store="gumroad", action="update_product",
-            product_id=product_id, data=product,
+            success=success,
+            store="gumroad",
+            action="update_product",
+            product_id=product_id,
+            data=product,
             error=data.get("message") if not success else None,
             duration_ms=(time.time() - t0) * 1000,
         )
@@ -182,8 +190,10 @@ class GumroadPublisher:
         t0 = time.time()
         data = self._request("DELETE", f"/products/{product_id}")
         return StoreResult(
-            success=data.get("success", False), store="gumroad",
-            action="delete_product", product_id=product_id,
+            success=data.get("success", False),
+            store="gumroad",
+            action="delete_product",
+            product_id=product_id,
             error=data.get("message") if not data.get("success") else None,
             duration_ms=(time.time() - t0) * 1000,
         )
@@ -193,14 +203,14 @@ class GumroadPublisher:
         t0 = time.time()
         data = self._request("GET", "/products")
         return StoreResult(
-            success=data.get("success", False), store="gumroad",
+            success=data.get("success", False),
+            store="gumroad",
             action="list_products",
             data=data.get("products", []),
             duration_ms=(time.time() - t0) * 1000,
         )
 
-    def get_sales(self, product_id: Optional[str] = None,
-                  page: int = 1) -> StoreResult:
+    def get_sales(self, product_id: Optional[str] = None, page: int = 1) -> StoreResult:
         """Get sales data."""
         t0 = time.time()
         params = {"page": page}
@@ -208,8 +218,10 @@ class GumroadPublisher:
             params["product_id"] = product_id
         data = self._request("GET", "/sales", params=params)
         return StoreResult(
-            success=data.get("success", False), store="gumroad",
-            action="get_sales", data=data.get("sales", []),
+            success=data.get("success", False),
+            store="gumroad",
+            action="get_sales",
+            data=data.get("sales", []),
             duration_ms=(time.time() - t0) * 1000,
         )
 
@@ -227,6 +239,7 @@ class GumroadPublisher:
 # ---------------------------------------------------------------------------
 #  Shopify Publisher
 # ---------------------------------------------------------------------------
+
 
 class ShopifyPublisher:
     """
@@ -256,8 +269,7 @@ class ShopifyPublisher:
         self.token = access_token or os.environ.get("SHOPIFY_ACCESS_TOKEN", "")
         if not self.shop or not self.token:
             raise ValueError(
-                "Shopify shop name and access token required. "
-                "Set SHOPIFY_SHOP and SHOPIFY_ACCESS_TOKEN env vars."
+                "Shopify shop name and access token required. " "Set SHOPIFY_SHOP and SHOPIFY_ACCESS_TOKEN env vars."
             )
 
     @property
@@ -311,8 +323,7 @@ class ShopifyPublisher:
         if images:
             product_data["images"] = images
 
-        data = self._request("POST", "/products.json",
-                             json={"product": product_data})
+        data = self._request("POST", "/products.json", json={"product": product_data})
         product = data.get("product", {})
         success = "_status_code" in data and data["_status_code"] in (200, 201)
 
@@ -330,12 +341,16 @@ class ShopifyPublisher:
     def update_product(self, product_id: str, **updates) -> StoreResult:
         """Update an existing product."""
         t0 = time.time()
-        data = self._request("PUT", f"/products/{product_id}.json",
-                             json={"product": {"id": int(product_id), **updates}})
+        data = self._request(
+            "PUT", f"/products/{product_id}.json", json={"product": {"id": int(product_id), **updates}}
+        )
         success = data.get("_status_code") in (200, 201)
         return StoreResult(
-            success=success, store="shopify", action="update_product",
-            product_id=product_id, data=data.get("product", {}),
+            success=success,
+            store="shopify",
+            action="update_product",
+            product_id=product_id,
+            data=data.get("product", {}),
             error=str(data.get("errors", "")) if not success else None,
             duration_ms=(time.time() - t0) * 1000,
         )
@@ -346,7 +361,9 @@ class ShopifyPublisher:
         data = self._request("DELETE", f"/products/{product_id}.json")
         success = data.get("_status_code") == 200
         return StoreResult(
-            success=success, store="shopify", action="delete_product",
+            success=success,
+            store="shopify",
+            action="delete_product",
             product_id=product_id,
             duration_ms=(time.time() - t0) * 1000,
         )
@@ -356,8 +373,10 @@ class ShopifyPublisher:
         t0 = time.time()
         data = self._request("GET", f"/products.json?limit={limit}")
         return StoreResult(
-            success=data.get("_status_code") == 200, store="shopify",
-            action="list_products", data=data.get("products", []),
+            success=data.get("_status_code") == 200,
+            store="shopify",
+            action="list_products",
+            data=data.get("products", []),
             duration_ms=(time.time() - t0) * 1000,
         )
 
@@ -366,8 +385,10 @@ class ShopifyPublisher:
         t0 = time.time()
         data = self._request("GET", f"/products/{product_id}.json")
         return StoreResult(
-            success=data.get("_status_code") == 200, store="shopify",
-            action="get_product", product_id=product_id,
+            success=data.get("_status_code") == 200,
+            store="shopify",
+            action="get_product",
+            product_id=product_id,
             data=data.get("product", {}),
             duration_ms=(time.time() - t0) * 1000,
         )
@@ -389,13 +410,13 @@ class ShopifyPublisher:
         if image_url:
             collection_data["image"] = {"src": image_url}
 
-        data = self._request("POST", "/custom_collections.json",
-                             json={"custom_collection": collection_data})
+        data = self._request("POST", "/custom_collections.json", json={"custom_collection": collection_data})
         collection = data.get("custom_collection", {})
         success = data.get("_status_code") in (200, 201)
 
         return StoreResult(
-            success=success, store="shopify",
+            success=success,
+            store="shopify",
             action="create_collection",
             product_id=str(collection.get("id", "")),
             data=collection,
@@ -409,8 +430,10 @@ class ShopifyPublisher:
         t0 = time.time()
         data = self._request("GET", f"/orders.json?status={status}&limit={limit}")
         return StoreResult(
-            success=data.get("_status_code") == 200, store="shopify",
-            action="list_orders", data=data.get("orders", []),
+            success=data.get("_status_code") == 200,
+            store="shopify",
+            action="list_orders",
+            data=data.get("orders", []),
             duration_ms=(time.time() - t0) * 1000,
         )
 
@@ -421,8 +444,10 @@ class ShopifyPublisher:
         t0 = time.time()
         data = self._request("GET", "/themes.json")
         return StoreResult(
-            success=data.get("_status_code") == 200, store="shopify",
-            action="list_themes", data=data.get("themes", []),
+            success=data.get("_status_code") == 200,
+            store="shopify",
+            action="list_themes",
+            data=data.get("themes", []),
             duration_ms=(time.time() - t0) * 1000,
         )
 
@@ -449,6 +474,7 @@ class ShopifyPublisher:
 # ---------------------------------------------------------------------------
 #  Multi-Store Publisher — publish to both with one call
 # ---------------------------------------------------------------------------
+
 
 class MultiStorePublisher:
     """
@@ -480,7 +506,8 @@ class MultiStorePublisher:
 
         try:
             self.stores["shopify"] = ShopifyPublisher(
-                shop=shopify_shop, access_token=shopify_token,
+                shop=shopify_shop,
+                access_token=shopify_token,
             )
         except (ValueError, RuntimeError):
             pass  # Credentials not configured
@@ -497,7 +524,9 @@ class MultiStorePublisher:
                 results[name] = store.create_from_spec(spec)
             except Exception as e:
                 results[name] = StoreResult(
-                    success=False, store=name, action="create_from_spec",
+                    success=False,
+                    store=name,
+                    action="create_from_spec",
                     error=str(e),
                 )
         return results
@@ -510,7 +539,9 @@ class MultiStorePublisher:
                 results[name] = store.list_products()
             except Exception as e:
                 results[name] = StoreResult(
-                    success=False, store=name, action="list_products",
+                    success=False,
+                    store=name,
+                    action="list_products",
                     error=str(e),
                 )
         return results
@@ -519,6 +550,7 @@ class MultiStorePublisher:
 # ---------------------------------------------------------------------------
 #  Selftest
 # ---------------------------------------------------------------------------
+
 
 def _selftest():
     """Quick smoke test — tests structure only (no live API calls)."""
@@ -539,8 +571,11 @@ def _selftest():
 
     # Test 2: StoreResult
     result = StoreResult(
-        success=True, store="gumroad", action="create",
-        product_id="abc123", product_url="https://gumroad.com/l/abc123",
+        success=True,
+        store="gumroad",
+        action="create",
+        product_id="abc123",
+        product_url="https://gumroad.com/l/abc123",
     )
     assert result.success
     assert result.product_id == "abc123"

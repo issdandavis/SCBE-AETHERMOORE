@@ -23,6 +23,7 @@ from symphonic_cipher.scbe_aethermoore.multimodal.mmx import compute_mmx
 # HELPERS
 # =============================================================================
 
+
 def _eye_alignment(k: int) -> list:
     """Return a K×K identity alignment (all pairs = 1.0)."""
     return [[1.0 if i == j else 1.0 for i in range(k)] for j in range(k)]
@@ -31,6 +32,7 @@ def _eye_alignment(k: int) -> list:
 # =============================================================================
 # BASIC FUNCTIONALITY
 # =============================================================================
+
 
 class TestBasicMMX:
     """Core compute_mmx behaviour."""
@@ -92,6 +94,7 @@ class TestBasicMMX:
 # RELIABILITY WEIGHTS
 # =============================================================================
 
+
 class TestReliabilityWeights:
     """Per-modality reliability weights."""
 
@@ -121,6 +124,7 @@ class TestReliabilityWeights:
 # =============================================================================
 # GOVERNANCE SCALARS
 # =============================================================================
+
 
 class TestGovernanceScalars:
     """Coherence, conflict, drift."""
@@ -169,6 +173,7 @@ class TestGovernanceScalars:
 # GOVERNANCE THRESHOLD TESTS
 # =============================================================================
 
+
 class TestGovernanceThresholds:
     """Verify conflict thresholds match governance rules."""
 
@@ -205,6 +210,7 @@ class TestGovernanceThresholds:
 # ERROR HANDLING
 # =============================================================================
 
+
 class TestErrors:
     """Input validation."""
 
@@ -227,6 +233,7 @@ class TestErrors:
 # =============================================================================
 # EDGE CASES
 # =============================================================================
+
 
 class TestEdgeCases:
     """Boundary and degenerate inputs."""
@@ -279,6 +286,7 @@ class TestEdgeCases:
 # CROSS-LANGUAGE PARITY
 # =============================================================================
 
+
 class TestCrossLanguageParity:
     """Deterministic numeric values for cross-language validation with TS port."""
 
@@ -288,7 +296,7 @@ class TestCrossLanguageParity:
         Use this test vector for TS port validation.
         """
         features = {
-            "text":  [1.0, 2.0, 3.0],
+            "text": [1.0, 2.0, 3.0],
             "audio": [4.0, 5.0, 6.0],
             "video": [7.0, 8.0, 9.0],
         }

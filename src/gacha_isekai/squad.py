@@ -34,6 +34,7 @@ PHI = (1 + math.sqrt(5)) / 2
 
 class TernaryAlignment(Enum):
     """Ternary alignment state for squad members."""
+
     LEADER = (1, 1)
     FOLLOWER_ACTIVE = (1, 0)
     FOLLOWER_PASSIVE = (0, 1)
@@ -43,12 +44,13 @@ class TernaryAlignment(Enum):
 
 class TongueRole(Enum):
     """6-Tongue squad roles mapped to combat style."""
-    KO = "Scout"        # Navigation, map awareness, first strike
-    AV = "Sniper"       # Long-range sensor, threat detection
-    RU = "Support"      # Healing, buffs, resource routing
-    CA = "Tank"         # Encryption shield, defense
-    UM = "Assassin"     # Stealth, veil, ambush
-    DR = "Adjutant"     # Validation, judgment, command relay
+
+    KO = "Scout"  # Navigation, map awareness, first strike
+    AV = "Sniper"  # Long-range sensor, threat detection
+    RU = "Support"  # Healing, buffs, resource routing
+    CA = "Tank"  # Encryption shield, defense
+    UM = "Assassin"  # Stealth, veil, ambush
+    DR = "Adjutant"  # Validation, judgment, command relay
 
 
 # Default follower states per tongue role
@@ -56,23 +58,24 @@ TONGUE_FOLLOWER_STATE: Dict[str, TernaryAlignment] = {
     "KO": TernaryAlignment.FOLLOWER_ACTIVE,
     "AV": TernaryAlignment.FOLLOWER_PASSIVE,
     "RU": TernaryAlignment.FOLLOWER_ACTIVE,
-    "CA": TernaryAlignment.LEADER,         # Tank mirrors leader
+    "CA": TernaryAlignment.LEADER,  # Tank mirrors leader
     "UM": TernaryAlignment.FOLLOWER_PASSIVE,
-    "DR": TernaryAlignment.LEADER,         # Adjutant mirrors leader
+    "DR": TernaryAlignment.LEADER,  # Adjutant mirrors leader
 }
 
 
 @dataclass
 class SquadMember:
     """A squad member (follower model) orbiting the leader in M4 manifold."""
+
     name: str
-    tongue: str                       # KO, AV, RU, CA, UM, DR
+    tongue: str  # KO, AV, RU, CA, UM, DR
     role: TongueRole
-    position: np.ndarray              # 3D position in M4 manifold
-    loyalty: float = 0.5             # 0.0 to 1.0
+    position: np.ndarray  # 3D position in M4 manifold
+    loyalty: float = 0.5  # 0.0 to 1.0
     alignment: TernaryAlignment = TernaryAlignment.FOLLOWER_ACTIVE
-    rarity: int = 3                  # 1-5 stars
-    training_pairs: int = 0          # Accumulated training data
+    rarity: int = 3  # 1-5 stars
+    training_pairs: int = 0  # Accumulated training data
 
     @property
     def is_active(self) -> bool:
@@ -91,6 +94,7 @@ class GachaSquad:
     The leader's manifold position attracts squad members — you don't
     train each member separately, the leader shapes the whole squad.
     """
+
     leader_name: str
     leader_position: np.ndarray = field(default_factory=lambda: np.array([0.5, 0.5, 0.5]))
     members: List[SquadMember] = field(default_factory=list)
@@ -106,7 +110,9 @@ class GachaSquad:
         self.members.append(member)
         logger.info(
             "Squad member added: %s (%s, %d-star)",
-            member.name, member.tongue, member.rarity,
+            member.name,
+            member.tongue,
+            member.rarity,
         )
         return True
 
@@ -155,7 +161,10 @@ class GachaSquad:
 
         logger.info(
             "Gacha pull: %s (%d-star %s, d=%.3f from leader)",
-            member.name, stars, rarity, d,
+            member.name,
+            stars,
+            rarity,
+            d,
         )
         return member
 
@@ -172,7 +181,7 @@ class GachaSquad:
                 continue
 
             # Gravitational strength: phi^(-d^2) — closer = stronger
-            gravity = PHI ** (-(distance ** 2))
+            gravity = PHI ** (-(distance**2))
 
             # Move toward leader (bounded by loyalty)
             step = direction * gravity * member.loyalty

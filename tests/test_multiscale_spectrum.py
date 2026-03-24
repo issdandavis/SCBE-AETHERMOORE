@@ -43,15 +43,14 @@ from symphonic_cipher.scbe_aethermoore.ai_brain.multiscale_spectrum import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_constant_trajectory(T: int = 100, D: int = 21) -> np.ndarray:
     """Trajectory that stays constant (replay attack simulation)."""
     state = np.array([0.5] * D)
     return np.tile(state, (T, 1))
 
 
-def make_random_trajectory(
-    T: int = 100, D: int = 21, seed: int = 42
-) -> np.ndarray:
+def make_random_trajectory(T: int = 100, D: int = 21, seed: int = 42) -> np.ndarray:
     """Trajectory with random walk (chaotic probing simulation)."""
     rng = np.random.default_rng(seed)
     X = np.zeros((T, D))
@@ -61,9 +60,7 @@ def make_random_trajectory(
     return X
 
 
-def make_drifting_trajectory(
-    T: int = 100, D: int = 21, seed: int = 99
-) -> np.ndarray:
+def make_drifting_trajectory(T: int = 100, D: int = 21, seed: int = 99) -> np.ndarray:
     """Trajectory that slowly drifts in one direction."""
     rng = np.random.default_rng(seed)
     drift = rng.normal(0, 0.01, D)
@@ -74,19 +71,19 @@ def make_drifting_trajectory(
     return X
 
 
-def make_normal_trajectory(
-    T: int = 100, D: int = 21, seed: int = 7
-) -> np.ndarray:
+def make_normal_trajectory(T: int = 100, D: int = 21, seed: int = 7) -> np.ndarray:
     """Trajectory with structured but non-adversarial dynamics."""
     rng = np.random.default_rng(seed)
     X = np.zeros((T, D))
-    X[0] = np.concatenate([
-        rng.random(6) * 0.8 + 0.1,   # SCBE: trust scores near center
-        rng.normal(0, 0.1, 6),         # Navigation: small movements
-        rng.normal(0, 0.05, 3),        # Cognitive: stable
-        np.array([2.0, 1.5, 3.0]),     # Semantic: fixed tongue/phase
-        np.array([0.7, 0.0, 0.8]),     # Swarm: healthy
-    ])
+    X[0] = np.concatenate(
+        [
+            rng.random(6) * 0.8 + 0.1,  # SCBE: trust scores near center
+            rng.normal(0, 0.1, 6),  # Navigation: small movements
+            rng.normal(0, 0.05, 3),  # Cognitive: stable
+            np.array([2.0, 1.5, 3.0]),  # Semantic: fixed tongue/phase
+            np.array([0.7, 0.0, 0.8]),  # Swarm: healthy
+        ]
+    )
     for t in range(1, T):
         noise = rng.normal(0, 0.01, D)
         # Oscillate navigation dims
@@ -99,6 +96,7 @@ def make_normal_trajectory(
 # ---------------------------------------------------------------------------
 # Tests: math primitives
 # ---------------------------------------------------------------------------
+
 
 class TestMathPrimitives:
     """Tests for participation ratio, spectral entropy, effective rank."""
@@ -148,6 +146,7 @@ class TestMathPrimitives:
 # Tests: increments and covariance
 # ---------------------------------------------------------------------------
 
+
 class TestIncrementsAndCovariance:
     """Tests for compute_increments and covariance_spectrum."""
 
@@ -195,6 +194,7 @@ class TestIncrementsAndCovariance:
 # Tests: scale analysis
 # ---------------------------------------------------------------------------
 
+
 class TestScaleAnalysis:
     """Tests for single-scale and multi-scale analysis."""
 
@@ -231,6 +231,7 @@ class TestScaleAnalysis:
 # ---------------------------------------------------------------------------
 # Tests: anomaly detection
 # ---------------------------------------------------------------------------
+
 
 class TestAnomalyDetection:
     """Tests for replay, chaos, and drift anomaly scores."""
@@ -282,6 +283,7 @@ class TestAnomalyDetection:
 # Tests: subsystem analysis
 # ---------------------------------------------------------------------------
 
+
 class TestSubsystemAnalysis:
     """Tests for per-subsystem slice analysis."""
 
@@ -325,6 +327,7 @@ class TestSubsystemAnalysis:
 # ---------------------------------------------------------------------------
 # Tests: sliding window
 # ---------------------------------------------------------------------------
+
 
 class TestSlidingWindow:
     """Tests for sliding window analysis."""

@@ -38,11 +38,11 @@ from .scbe_core import (
 
 __version__ = "1.0.0"
 __all__ = [
-    'SCBEGate',
-    'SCBEConfig',
-    'Decision',
-    'RiskResult',
-    'SacredTonguesEncoder',
-    'RWPEnvelope',
-    'validate_action',
+    "SCBEGate",
+    "SCBEConfig",
+    "Decision",
+    "RiskResult",
+    "SacredTonguesEncoder",
+    "RWPEnvelope",
+    "validate_action",
 ]

@@ -76,7 +76,9 @@ def load_inputs(args: argparse.Namespace) -> tuple[list[dict[str, Any]], dict[in
     if args.prs_json:
         prs = json.loads(Path(args.prs_json).read_text(encoding="utf-8"))
     else:
-        prs = run_gh(["pr", "list", "--state", "open", "--limit", "30", "--json", "number,title,headRefName,isDraft,labels,url"])
+        prs = run_gh(
+            ["pr", "list", "--state", "open", "--limit", "30", "--json", "number,title,headRefName,isDraft,labels,url"]
+        )
 
     if args.checks_json:
         raw_checks = json.loads(Path(args.checks_json).read_text(encoding="utf-8"))

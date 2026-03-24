@@ -205,7 +205,17 @@ def main() -> int:
 
     summary_path = output_dir / "github_sweep_latest.json"
     summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
-    print(json.dumps({"ok": True, "summary_path": str(summary_path), "dirty_entries": dirty_entries, "formation": formation["formation"]}, indent=2))
+    print(
+        json.dumps(
+            {
+                "ok": True,
+                "summary_path": str(summary_path),
+                "dirty_entries": dirty_entries,
+                "formation": formation["formation"],
+            },
+            indent=2,
+        )
+    )
     return 0
 
 

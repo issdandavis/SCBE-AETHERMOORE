@@ -18,6 +18,7 @@ from pathlib import Path
 
 # Add src to path
 import sys
+
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.crypto.sacred_tongues import (
@@ -45,13 +46,15 @@ def generate_sacred_tongue_vectors():
     for tongue_code in TONGUES.keys():
         for i, data in enumerate(test_patterns):
             tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(tongue_code, data)
-            vectors.append({
-                "type": "sacred_tongue_encode",
-                "tongue": tongue_code,
-                "input_hex": data.hex(),
-                "expected_tokens": tokens,
-                "description": f"Tongue {tongue_code}, pattern {i}",
-            })
+            vectors.append(
+                {
+                    "type": "sacred_tongue_encode",
+                    "tongue": tongue_code,
+                    "input_hex": data.hex(),
+                    "expected_tokens": tokens,
+                    "description": f"Tongue {tongue_code}, pattern {i}",
+                }
+            )
 
     return vectors
 
@@ -64,14 +67,16 @@ def generate_section_mapping_vectors():
 
     for section, tongue_code in SECTION_TONGUES.items():
         tokens = SACRED_TONGUE_TOKENIZER.encode_section(section, test_data)
-        vectors.append({
-            "type": "section_encode",
-            "section": section,
-            "expected_tongue": tongue_code,
-            "input_hex": test_data.hex(),
-            "expected_tokens": tokens,
-            "description": f"Section {section} → Tongue {tongue_code}",
-        })
+        vectors.append(
+            {
+                "type": "section_encode",
+                "section": section,
+                "expected_tongue": tongue_code,
+                "input_hex": test_data.hex(),
+                "expected_tokens": tokens,
+                "description": f"Section {section} → Tongue {tongue_code}",
+            }
+        )
 
     return vectors
 
@@ -87,14 +92,16 @@ def generate_bijectivity_vectors():
             tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(tongue_code, data)
             decoded = SACRED_TONGUE_TOKENIZER.decode_tokens(tongue_code, tokens)
 
-            vectors.append({
-                "type": "bijectivity",
-                "tongue": tongue_code,
-                "byte_value": b,
-                "token": tokens[0],
-                "roundtrip_hex": decoded.hex(),
-                "is_equal": data == decoded,
-            })
+            vectors.append(
+                {
+                    "type": "bijectivity",
+                    "tongue": tongue_code,
+                    "byte_value": b,
+                    "token": tokens[0],
+                    "roundtrip_hex": decoded.hex(),
+                    "is_equal": data == decoded,
+                }
+            )
 
     return vectors
 
@@ -105,20 +112,22 @@ def generate_token_format_vectors():
 
     for tongue_code, spec in TONGUES.items():
         # Document the tongue specification
-        vectors.append({
-            "type": "tongue_spec",
-            "tongue": tongue_code,
-            "name": spec.name,
-            "domain": spec.domain,
-            "prefix_count": len(spec.prefixes),
-            "suffix_count": len(spec.suffixes),
-            "first_prefix": spec.prefixes[0],
-            "last_prefix": spec.prefixes[15],
-            "first_suffix": spec.suffixes[0],
-            "last_suffix": spec.suffixes[15],
-            "sample_token_0x00": f"{spec.prefixes[0]}'{spec.suffixes[0]}",
-            "sample_token_0xFF": f"{spec.prefixes[15]}'{spec.suffixes[15]}",
-        })
+        vectors.append(
+            {
+                "type": "tongue_spec",
+                "tongue": tongue_code,
+                "name": spec.name,
+                "domain": spec.domain,
+                "prefix_count": len(spec.prefixes),
+                "suffix_count": len(spec.suffixes),
+                "first_prefix": spec.prefixes[0],
+                "last_prefix": spec.prefixes[15],
+                "first_suffix": spec.suffixes[0],
+                "last_suffix": spec.suffixes[15],
+                "sample_token_0x00": f"{spec.prefixes[0]}'{spec.suffixes[0]}",
+                "sample_token_0xFF": f"{spec.prefixes[15]}'{spec.suffixes[15]}",
+            }
+        )
 
     return vectors
 
@@ -137,17 +146,19 @@ def generate_pbkdf2_vectors():
 
     for password, salt in test_cases:
         # Match TypeScript PBKDF2 parameters
-        key = hashlib.pbkdf2_hmac('sha256', password, salt, 100000, dklen=32)
+        key = hashlib.pbkdf2_hmac("sha256", password, salt, 100000, dklen=32)
 
-        vectors.append({
-            "type": "pbkdf2",
-            "password_hex": password.hex(),
-            "salt_hex": salt.hex(),
-            "iterations": 100000,
-            "key_length": 32,
-            "expected_key_hex": key.hex(),
-            "description": f"PBKDF2-SHA256 with password len={len(password)}",
-        })
+        vectors.append(
+            {
+                "type": "pbkdf2",
+                "password_hex": password.hex(),
+                "salt_hex": salt.hex(),
+                "iterations": 100000,
+                "key_length": 32,
+                "expected_key_hex": key.hex(),
+                "description": f"PBKDF2-SHA256 with password len={len(password)}",
+            }
+        )
 
     return vectors
 

@@ -141,17 +141,32 @@ class TestMintIdentityCube:
     def test_mint_produces_cube(self, integrator, key_pair, interior_context):
         pk, sk = key_pair
         egg = integrator.create_egg(
-            b"init data", "KO", "cube", {"path": "interior"},
-            interior_context, pk, sk,
+            b"init data",
+            "KO",
+            "cube",
+            {"path": "interior"},
+            interior_context,
+            pk,
+            sk,
         )
         result = integrator.hatch_egg(
-            egg, interior_context, "KO", sk, pk, ritual_mode="solitary",
+            egg,
+            interior_context,
+            "KO",
+            sk,
+            pk,
+            ritual_mode="solitary",
         )
         assert result.success
 
         offset = (0.01, -0.02, 0.03, -0.01, 0.02, -0.03)
         cube = mint_identity_cube(
-            egg, result, "batch_001", 0, offset, interior_context,
+            egg,
+            result,
+            "batch_001",
+            0,
+            offset,
+            interior_context,
         )
         assert len(cube.cube_id) == 16
         assert cube.tongue_affinity == "KO"
@@ -163,18 +178,38 @@ class TestMintIdentityCube:
     def test_different_offsets_different_cubes(self, integrator, key_pair, interior_context):
         pk, sk = key_pair
         egg = integrator.create_egg(
-            b"data", "AV", "g", {"path": "interior"},
-            interior_context, pk, sk,
+            b"data",
+            "AV",
+            "g",
+            {"path": "interior"},
+            interior_context,
+            pk,
+            sk,
         )
         result = integrator.hatch_egg(
-            egg, interior_context, "AV", sk, pk, ritual_mode="solitary",
+            egg,
+            interior_context,
+            "AV",
+            sk,
+            pk,
+            ritual_mode="solitary",
         )
 
         cube1 = mint_identity_cube(
-            egg, result, "batch", 0, (0.1, 0.1, 0.1, 0.1, 0.1, 0.1), interior_context,
+            egg,
+            result,
+            "batch",
+            0,
+            (0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
+            interior_context,
         )
         cube2 = mint_identity_cube(
-            egg, result, "batch", 1, (-0.1, -0.1, -0.1, -0.1, -0.1, -0.1), interior_context,
+            egg,
+            result,
+            "batch",
+            1,
+            (-0.1, -0.1, -0.1, -0.1, -0.1, -0.1),
+            interior_context,
         )
         assert cube1.cube_id != cube2.cube_id
         assert cube1.cube_vector != cube2.cube_vector
@@ -186,7 +221,11 @@ class TestGenesisProtocol:
         pk, sk = key_pair
         payloads = [b"ai_0", b"ai_1", b"ai_2"]
         batch_id, eggs = protocol.create_batch(
-            payloads, "RU", interior_context, pk, sk,
+            payloads,
+            "RU",
+            interior_context,
+            pk,
+            sk,
         )
         assert len(batch_id) == 12
         assert len(eggs) == 3
@@ -198,12 +237,21 @@ class TestGenesisProtocol:
         pk, sk = key_pair
         payloads = [b"ai_0", b"ai_1", b"ai_2", b"ai_3"]
         batch_id, eggs = protocol.create_batch(
-            payloads, "KO", interior_context, pk, sk,
+            payloads,
+            "KO",
+            interior_context,
+            pk,
+            sk,
             hatch_condition={"path": "interior"},
         )
 
         cubes = protocol.hatch_batch(
-            batch_id, eggs, interior_context, "KO", sk, pk,
+            batch_id,
+            eggs,
+            interior_context,
+            "KO",
+            sk,
+            pk,
             batch_seed=b"test_seed_" + b"\x00" * 22,
         )
         assert len(cubes) == 4
@@ -216,11 +264,20 @@ class TestGenesisProtocol:
         pk, sk = key_pair
         payloads = [f"ai_{i}".encode() for i in range(6)]
         batch_id, eggs = protocol.create_batch(
-            payloads, "DR", interior_context, pk, sk,
+            payloads,
+            "DR",
+            interior_context,
+            pk,
+            sk,
             hatch_condition={"path": "interior"},
         )
         cubes = protocol.hatch_batch(
-            batch_id, eggs, interior_context, "DR", sk, pk,
+            batch_id,
+            eggs,
+            interior_context,
+            "DR",
+            sk,
+            pk,
         )
         cube_ids = [c.cube_id for c in cubes if c is not None]
         assert len(set(cube_ids)) == 6  # all unique
@@ -228,23 +285,41 @@ class TestGenesisProtocol:
     def test_failed_hatch_returns_none(self, protocol, key_pair, interior_context):
         pk, sk = key_pair
         batch_id, eggs = protocol.create_batch(
-            [b"data"], "KO", interior_context, pk, sk,
+            [b"data"],
+            "KO",
+            interior_context,
+            pk,
+            sk,
             hatch_condition={"path": "interior"},
         )
         # Hatch with wrong tongue
         cubes = protocol.hatch_batch(
-            batch_id, eggs, interior_context, "DR", sk, pk,
+            batch_id,
+            eggs,
+            interior_context,
+            "DR",
+            sk,
+            pk,
         )
         assert cubes[0] is None
 
     def test_verify_cube(self, protocol, key_pair, interior_context):
         pk, sk = key_pair
         batch_id, eggs = protocol.create_batch(
-            [b"verify_me"], "UM", interior_context, pk, sk,
+            [b"verify_me"],
+            "UM",
+            interior_context,
+            pk,
+            sk,
             hatch_condition={"path": "interior"},
         )
         cubes = protocol.hatch_batch(
-            batch_id, eggs, interior_context, "UM", sk, pk,
+            batch_id,
+            eggs,
+            interior_context,
+            "UM",
+            sk,
+            pk,
         )
         cube = cubes[0]
         assert cube is not None
@@ -253,26 +328,45 @@ class TestGenesisProtocol:
     def test_tampered_cube_fails_verification(self, protocol, key_pair, interior_context):
         pk, sk = key_pair
         batch_id, eggs = protocol.create_batch(
-            [b"tamper"], "CA", interior_context, pk, sk,
+            [b"tamper"],
+            "CA",
+            interior_context,
+            pk,
+            sk,
             hatch_condition={"path": "interior"},
         )
         cubes = protocol.hatch_batch(
-            batch_id, eggs, interior_context, "CA", sk, pk,
+            batch_id,
+            eggs,
+            interior_context,
+            "CA",
+            sk,
+            pk,
         )
         cube = cubes[0]
         # Tamper with batch_index
         import dataclasses
+
         tampered = dataclasses.replace(cube, batch_index=999)
         assert protocol.verify_cube(tampered) is False
 
     def test_cubes_in_same_batch(self, protocol, key_pair, interior_context):
         pk, sk = key_pair
         batch_id, eggs = protocol.create_batch(
-            [b"a", b"b"], "KO", interior_context, pk, sk,
+            [b"a", b"b"],
+            "KO",
+            interior_context,
+            pk,
+            sk,
             hatch_condition={"path": "interior"},
         )
         cubes = protocol.hatch_batch(
-            batch_id, eggs, interior_context, "KO", sk, pk,
+            batch_id,
+            eggs,
+            interior_context,
+            "KO",
+            sk,
+            pk,
         )
         assert protocol.cubes_in_same_batch(cubes)
 
@@ -282,11 +376,20 @@ class TestGenesisProtocol:
         all_cubes = []
         for tongue in TONGUES:
             batch_id, eggs = protocol.create_batch(
-                [f"init_{tongue}".encode()], tongue, interior_context, pk, sk,
+                [f"init_{tongue}".encode()],
+                tongue,
+                interior_context,
+                pk,
+                sk,
                 hatch_condition={"path": "interior"},
             )
             cubes = protocol.hatch_batch(
-                batch_id, eggs, interior_context, tongue, sk, pk,
+                batch_id,
+                eggs,
+                interior_context,
+                tongue,
+                sk,
+                pk,
             )
             assert cubes[0] is not None
             assert cubes[0].tongue_affinity == tongue

@@ -11,6 +11,7 @@ import time
 from urllib.request import urlopen, Request
 
 import sys
+
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[3]))
 from src.knowledge.funnel import KnowledgeChunk
 
@@ -121,13 +122,9 @@ def _extract_block_text(block: dict) -> str:
     block_data = block.get(block_type, {})
 
     if "rich_text" in block_data:
-        return "".join(
-            rt.get("plain_text", "") for rt in block_data["rich_text"]
-        )
+        return "".join(rt.get("plain_text", "") for rt in block_data["rich_text"])
     elif block_type == "code":
-        code_text = "".join(
-            rt.get("plain_text", "") for rt in block_data.get("rich_text", [])
-        )
+        code_text = "".join(rt.get("plain_text", "") for rt in block_data.get("rich_text", []))
         lang = block_data.get("language", "")
         return f"```{lang}\n{code_text}\n```"
     elif block_type == "equation":
@@ -141,10 +138,7 @@ def _extract_title(page: dict) -> str:
     props = page.get("properties", {})
     for prop in props.values():
         if prop.get("type") == "title":
-            return "".join(
-                rt.get("plain_text", "")
-                for rt in prop.get("title", [])
-            )
+            return "".join(rt.get("plain_text", "") for rt in prop.get("title", []))
     return "Untitled"
 
 

@@ -51,6 +51,7 @@ def _safe_norm(v: List[float]) -> float:
 #  Decision Event — the canonical telemetry record
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class DecisionEvent:
     """Complete state vector emitted per governance decision.
@@ -61,8 +62,8 @@ class DecisionEvent:
 
     # -- Identity --
     timestamp: float
-    decision_path: str              # "governance_adapter" | "grand_unified" | "mmx_reducer"
-    decision: str                   # ALLOW | QUARANTINE | ESCALATE | DENY
+    decision_path: str  # "governance_adapter" | "grand_unified" | "mmx_reducer"
+    decision: str  # ALLOW | QUARANTINE | ESCALATE | DENY
     rationale: str
 
     # -- 21D Brain State (B^21 Poincare ball) --
@@ -77,14 +78,14 @@ class DecisionEvent:
     tongue_log_weights: List[float] = field(default_factory=lambda: list(TONGUE_LOG_WEIGHTS))
 
     # -- Derived Radial Coordinate --
-    radial_r: float = 0.0          # ||embed(xi)|| — derived, not independent
+    radial_r: float = 0.0  # ||embed(xi)|| — derived, not independent
     boundary_distance: float = 0.0  # 1.0 - r
 
     # -- Polyhedral Assignment --
     archetype_id: str = ""
     polyhedron: str = ""
     radial_zone: Tuple[float, float] = (0.0, 1.0)
-    symmetry_order: int = 0         # |Sym(polyhedron)|
+    symmetry_order: int = 0  # |Sym(polyhedron)|
 
     # -- MMX Signals (multi-model, when available) --
     mmx_agreement: Optional[Dict[str, float]] = None
@@ -121,8 +122,7 @@ class DecisionEvent:
         if self.brain_poincare_21d is not None:
             d["poincare_21d"] = [round(x, 6) for x in self.brain_poincare_21d]
         if self.governance_9d is not None:
-            d["gov_9d"] = [round(float(x.real) if hasattr(x, 'real') else float(x), 6)
-                           for x in self.governance_9d]
+            d["gov_9d"] = [round(float(x.real) if hasattr(x, "real") else float(x), 6) for x in self.governance_9d]
         if self.tongue_phases_6d is not None:
             d["tongue_6d"] = [round(x, 6) for x in self.tongue_phases_6d]
         d["tongue_log_weights"] = self.tongue_log_weights
@@ -195,6 +195,7 @@ POLYHEDRON_SYMMETRY: Dict[str, int] = {
 #  Decision Log — append-only ring buffer
 # ---------------------------------------------------------------------------
 
+
 class DecisionLog:
     """Append-only log of DecisionEvents with query API."""
 
@@ -206,7 +207,7 @@ class DecisionLog:
         """Append a decision event."""
         self._events.append(event)
         if len(self._events) > self._max:
-            self._events = self._events[-self._max:]
+            self._events = self._events[-self._max :]
 
     def query(
         self,
@@ -271,6 +272,7 @@ def _get_bridge() -> Any:
     if _BRIDGE is None:
         try:
             from .concept_blocks.matrix_catalog_bridge import MatrixCatalogBridge
+
             _BRIDGE = MatrixCatalogBridge()
         except Exception:
             _BRIDGE = False  # disable on import failure
@@ -292,6 +294,7 @@ def _enrich_and_emit(event: DecisionEvent) -> DecisionEvent:
 # ---------------------------------------------------------------------------
 #  Emitter helpers — one per decision path
 # ---------------------------------------------------------------------------
+
 
 def emit_from_governance_adapter(
     verdict_decision: str,
@@ -317,7 +320,7 @@ def emit_from_governance_adapter(
         decision_path="governance_adapter",
         decision=verdict_decision,
         rationale=f"combined={combined_score:.3f} mirror={mirror_asymmetry:.3f} "
-                  f"fractal={fractal_anomaly:.3f} charge={charge_imbalance:.3f}",
+        f"fractal={fractal_anomaly:.3f} charge={charge_imbalance:.3f}",
         brain_state_21d=list(brain_state_vector),
         brain_poincare_21d=list(poincare_point),
         tongue_phases_6d=list(tongue_phases),
@@ -355,7 +358,7 @@ def emit_from_grand_unified(
     # Extract real parts for radial calculation
     real_vals = []
     for x in xi_9d:
-        if hasattr(x, 'real'):
+        if hasattr(x, "real"):
             real_vals.append(float(x.real))
         else:
             real_vals.append(float(x))

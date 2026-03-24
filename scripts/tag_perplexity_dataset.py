@@ -102,9 +102,7 @@ def tag_dataset(input_jsonl: Path, output_jsonl: Path, output_stats: Path) -> di
     rows_out = 0
     tag_counts: dict[str, int] = {}
 
-    with input_jsonl.open("r", encoding="utf-8") as src, output_jsonl.open(
-        "w", encoding="utf-8", newline="\n"
-    ) as dst:
+    with input_jsonl.open("r", encoding="utf-8") as src, output_jsonl.open("w", encoding="utf-8", newline="\n") as dst:
         for line in src:
             line = line.strip()
             if not line:
@@ -154,4 +152,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     main()
-

@@ -40,9 +40,9 @@ PHI = (1 + math.sqrt(5)) / 2
 POINCARE_RADIUS = 1.0  # Unit ball
 
 # Drift thresholds (hyperbolic distance)
-DRIFT_GENTLE = 0.3      # "Hey, just checking..."
-DRIFT_REDIRECT = 0.7    # "You're off track, recalibrating..."
-DRIFT_INSPECT = 1.2     # "SCBE governance scan required"
+DRIFT_GENTLE = 0.3  # "Hey, just checking..."
+DRIFT_REDIRECT = 0.7  # "You're off track, recalibrating..."
+DRIFT_INSPECT = 1.2  # "SCBE governance scan required"
 DRIFT_QUARANTINE = 2.0  # "Access revoked, under review"
 
 # Observation window (seconds)
@@ -53,22 +53,26 @@ DEFAULT_WINDOW = 300  # 5 minutes
 #  Drift Levels
 # ---------------------------------------------------------------------------
 
+
 class DriftLevel(str, Enum):
     """How far an agent has drifted from declared intent."""
-    ON_TRACK = "ON_TRACK"        # d_H < 0.3
-    GENTLE = "GENTLE"            # 0.3 <= d_H < 0.7
-    REDIRECT = "REDIRECT"        # 0.7 <= d_H < 1.2
-    INSPECT = "SCBE_INSPECT"     # 1.2 <= d_H < 2.0
-    QUARANTINE = "QUARANTINE"    # d_H >= 2.0
+
+    ON_TRACK = "ON_TRACK"  # d_H < 0.3
+    GENTLE = "GENTLE"  # 0.3 <= d_H < 0.7
+    REDIRECT = "REDIRECT"  # 0.7 <= d_H < 1.2
+    INSPECT = "SCBE_INSPECT"  # 1.2 <= d_H < 2.0
+    QUARANTINE = "QUARANTINE"  # d_H >= 2.0
 
 
 # ---------------------------------------------------------------------------
 #  Intent Vector — the "declared destination" in Poincaré space
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class IntentVector:
     """6D intent vector in Poincaré ball, one dim per Sacred Tongue."""
+
     ko: float = 0.0  # Knowledge/Intent
     av: float = 0.0  # Diplomacy/Communication
     ru: float = 0.0  # Binding/Chaos
@@ -125,14 +129,16 @@ class IntentVector:
 #  Action Observation — a single observed action from an agent
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ActionObservation:
     """A single observed action from an agent."""
+
     action_id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
     timestamp: float = field(default_factory=time.time)
-    action_type: str = ""         # "web_navigate", "api_call", "file_write", etc.
-    target: str = ""              # URL, file path, API endpoint
-    description: str = ""         # Human-readable description
+    action_type: str = ""  # "web_navigate", "api_call", "file_write", etc.
+    target: str = ""  # URL, file path, API endpoint
+    description: str = ""  # Human-readable description
     intent_vector: Optional[IntentVector] = None  # Inferred from action
     metadata: Dict[str, Any] = field(default_factory=dict)
 
@@ -149,9 +155,11 @@ class ActionObservation:
 #  Agent Session — a monitored task session
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class AgentSession:
     """A monitored agent task session with drift tracking."""
+
     session_id: str = field(default_factory=lambda: uuid.uuid4().hex[:16])
     agent_id: str = ""
     declared_intent: str = ""
@@ -187,10 +195,7 @@ class AgentSession:
             "declared_intent": self.declared_intent,
             "intent_vector": self.intent_vector.to_array(),
             "num_observations": len(self.observations),
-            "drift_history": [
-                {"time": t, "distance": d, "level": lv.value}
-                for t, d, lv in self.drift_history
-            ],
+            "drift_history": [{"time": t, "distance": d, "level": lv.value} for t, d, lv in self.drift_history],
             "duration_s": round(self.duration, 2),
             "was_quarantined": self.is_quarantined,
             "credits_earned": round(self.total_credits_earned, 6),
@@ -202,6 +207,7 @@ class AgentSession:
 # ---------------------------------------------------------------------------
 #  Hyperbolic Distance — the core math (L5)
 # ---------------------------------------------------------------------------
+
 
 def hyperbolic_distance(u: List[float], v: List[float]) -> float:
     """
@@ -247,6 +253,7 @@ def drift_to_level(d_H: float) -> DriftLevel:
 #  Harmonic Cost — exponential cost of drift (L12)
 # ---------------------------------------------------------------------------
 
+
 def harmonic_cost(d_H: float, R: float = PHI) -> float:
     """
     H(d,R) = R^(d²)
@@ -256,12 +263,13 @@ def harmonic_cost(d_H: float, R: float = PHI) -> float:
     At d=2: cost = phi^4 ≈ 6.854
     At d=3: cost = phi^9 ≈ 76.01
     """
-    return R ** (d_H ** 2)
+    return R ** (d_H**2)
 
 
 # ---------------------------------------------------------------------------
 #  TaskMonitor — the core monitoring engine
 # ---------------------------------------------------------------------------
+
 
 class TaskMonitor:
     """
@@ -403,8 +411,7 @@ class TaskMonitor:
         # At INSPECT/QUARANTINE level, prompt every 3 observations
         if current_level in (DriftLevel.INSPECT, DriftLevel.QUARANTINE):
             inspect_count = sum(
-                1 for _, _, lv in session.drift_history[-6:]
-                if lv in (DriftLevel.INSPECT, DriftLevel.QUARANTINE)
+                1 for _, _, lv in session.drift_history[-6:] if lv in (DriftLevel.INSPECT, DriftLevel.QUARANTINE)
             )
             return inspect_count % 3 == 0
         return False
@@ -414,9 +421,11 @@ class TaskMonitor:
 #  DriftResult — returned from observe()
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class DriftResult:
     """Result of a drift observation."""
+
     drift_distance: float
     drift_level: DriftLevel
     should_prompt: bool
@@ -438,6 +447,7 @@ class DriftResult:
 # ---------------------------------------------------------------------------
 #  Helpers
 # ---------------------------------------------------------------------------
+
 
 def _drift_message(level: DriftLevel, d_H: float) -> str:
     messages = {

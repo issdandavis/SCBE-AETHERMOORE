@@ -177,14 +177,11 @@ class PromptSanitizer:
     def __init__(self, config: Optional[SecurityConfig] = None):
         self.config = config or SecurityConfig()
         self.compiled_patterns = [
-            (re.compile(pattern, re.IGNORECASE), threat_type)
-            for pattern, threat_type in self.INJECTION_PATTERNS
+            (re.compile(pattern, re.IGNORECASE), threat_type) for pattern, threat_type in self.INJECTION_PATTERNS
         ]
         self.events: List[SecurityEvent] = []
 
-    def sanitize(
-        self, input_text: str, source_agent: str = "unknown"
-    ) -> Tuple[str, List[SecurityEvent]]:
+    def sanitize(self, input_text: str, source_agent: str = "unknown") -> Tuple[str, List[SecurityEvent]]:
         """
         Sanitize input text and return cleaned version with security events.
 
@@ -273,9 +270,7 @@ class PromptSanitizer:
         self.events.extend(events)
         return sanitized, events
 
-    def _assess_threat_level(
-        self, threat_type: ThreatType, match_count: int
-    ) -> ThreatLevel:
+    def _assess_threat_level(self, threat_type: ThreatType, match_count: int) -> ThreatLevel:
         """Assess threat level based on type and frequency."""
         base_levels = {
             ThreatType.PROMPT_INJECTION: ThreatLevel.HIGH,
@@ -307,9 +302,7 @@ class PromptSanitizer:
             r"<prompt>",
         ]
 
-        count = sum(
-            1 for marker in prompt_markers if re.search(marker, text, re.IGNORECASE)
-        )
+        count = sum(1 for marker in prompt_markers if re.search(marker, text, re.IGNORECASE))
         return count >= 2
 
 
@@ -342,13 +335,10 @@ class OutputValidator:
     def __init__(self, config: Optional[SecurityConfig] = None):
         self.config = config or SecurityConfig()
         self.compiled_patterns = [
-            (re.compile(pattern, re.IGNORECASE), name)
-            for pattern, name in self.SENSITIVE_PATTERNS
+            (re.compile(pattern, re.IGNORECASE), name) for pattern, name in self.SENSITIVE_PATTERNS
         ]
 
-    def validate(
-        self, output: str, context: Optional[Dict[str, Any]] = None
-    ) -> Tuple[bool, List[str]]:
+    def validate(self, output: str, context: Optional[Dict[str, Any]] = None) -> Tuple[bool, List[str]]:
         """
         Validate output for safety.
 
@@ -359,9 +349,7 @@ class OutputValidator:
 
         # Length check
         if len(output) > self.config.max_output_length:
-            issues.append(
-                f"Output exceeds max length ({len(output)} > {self.config.max_output_length})"
-            )
+            issues.append(f"Output exceeds max length ({len(output)} > {self.config.max_output_length})")
 
         # Check for sensitive data
         for pattern, data_type in self.compiled_patterns:
@@ -374,9 +362,7 @@ class OutputValidator:
 
         return len(issues) == 0, issues
 
-    def _check_prompt_leakage(
-        self, output: str, context: Optional[Dict[str, Any]]
-    ) -> bool:
+    def _check_prompt_leakage(self, output: str, context: Optional[Dict[str, Any]]) -> bool:
         """Check if output contains system prompt content."""
         if not context or "system_prompt" not in context:
             return False
@@ -418,9 +404,7 @@ class SecurityGate:
         self.blocked_agents: Set[str] = set()
         self.signing_key = secrets.token_bytes(32)
 
-    def check_input(
-        self, input_text: str, agent_id: str
-    ) -> Tuple[bool, str, List[SecurityEvent]]:
+    def check_input(self, input_text: str, agent_id: str) -> Tuple[bool, str, List[SecurityEvent]]:
         """
         Check input through all security layers.
 
@@ -472,16 +456,13 @@ class SecurityGate:
         sanitized, events = self.sanitizer.sanitize(input_text, agent_id)
 
         # Check for critical events
-        critical_events = [
-            e for e in events if e.threat_level.value >= ThreatLevel.HIGH.value
-        ]
+        critical_events = [e for e in events if e.threat_level.value >= ThreatLevel.HIGH.value]
         if critical_events:
             # Block agent after multiple critical events
             agent_critical_count = sum(
                 1
                 for e in self.sanitizer.events
-                if e.source_agent == agent_id
-                and e.threat_level.value >= ThreatLevel.HIGH.value
+                if e.source_agent == agent_id and e.threat_level.value >= ThreatLevel.HIGH.value
             )
             if agent_critical_count >= 3:
                 self.blocked_agents.add(agent_id)
@@ -490,9 +471,7 @@ class SecurityGate:
 
         return True, sanitized, events
 
-    def check_output(
-        self, output: str, context: Optional[Dict[str, Any]] = None
-    ) -> Tuple[bool, str, List[str]]:
+    def check_output(self, output: str, context: Optional[Dict[str, Any]] = None) -> Tuple[bool, str, List[str]]:
         """
         Check output through validation layers.
 
@@ -517,9 +496,7 @@ class SecurityGate:
             self.rate_limits[agent_id] = []
 
         # Clean old entries
-        self.rate_limits[agent_id] = [
-            t for t in self.rate_limits[agent_id] if t > window_start
-        ]
+        self.rate_limits[agent_id] = [t for t in self.rate_limits[agent_id] if t > window_start]
 
         # Check limit
         if len(self.rate_limits[agent_id]) >= self.config.rate_limit_per_minute:
@@ -532,9 +509,7 @@ class SecurityGate:
         """Sign a message for authenticated communication."""
         timestamp = str(int(time.time()))
         payload = f"{agent_id}:{timestamp}:{message}"
-        signature = hmac.new(
-            self.signing_key, payload.encode(), hashlib.sha256
-        ).hexdigest()
+        signature = hmac.new(self.signing_key, payload.encode(), hashlib.sha256).hexdigest()
         return f"{signature}:{timestamp}:{message}"
 
     def verify_message(self, signed_message: str, agent_id: str) -> Tuple[bool, str]:
@@ -558,9 +533,7 @@ class SecurityGate:
 
             # Verify signature
             payload = f"{agent_id}:{timestamp}:{message}"
-            expected_sig = hmac.new(
-                self.signing_key, payload.encode(), hashlib.sha256
-            ).hexdigest()
+            expected_sig = hmac.new(self.signing_key, payload.encode(), hashlib.sha256).hexdigest()
 
             if hmac.compare_digest(signature, expected_sig):
                 return True, message
@@ -574,14 +547,8 @@ class SecurityGate:
         events = self.sanitizer.events
         return {
             "total_events": len(events),
-            "events_by_type": {
-                t.value: sum(1 for e in events if e.threat_type == t)
-                for t in ThreatType
-            },
-            "events_by_level": {
-                l.name: sum(1 for e in events if e.threat_level == l)
-                for l in ThreatLevel
-            },
+            "events_by_type": {t.value: sum(1 for e in events if e.threat_type == t) for t in ThreatType},
+            "events_by_level": {l.name: sum(1 for e in events if e.threat_level == l) for l in ThreatLevel},
             "blocked_events": sum(1 for e in events if e.blocked),
             "blocked_agents": list(self.blocked_agents),
             "recent_events": [

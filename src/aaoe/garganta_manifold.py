@@ -82,26 +82,26 @@ from .task_monitor import (
 #  Constants
 # ---------------------------------------------------------------------------
 
-R_MAX = 1.0              # Maximum tunnel radius (normalized)
-R_BASE = PHI             # Harmonic base (golden ratio)
+R_MAX = 1.0  # Maximum tunnel radius (normalized)
+R_BASE = PHI  # Harmonic base (golden ratio)
 SACRED_TONGUES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 
 # Tongue weights (phi-scaled)
 TONGUE_WEIGHTS = {
     "KO": 1.000,
     "AV": PHI,
-    "RU": PHI ** 2,
-    "CA": PHI ** 3,
-    "UM": PHI ** 4,
-    "DR": PHI ** 5,
+    "RU": PHI**2,
+    "CA": PHI**3,
+    "UM": PHI**4,
+    "DR": PHI**5,
 }
 
 # Zone colors
 ZONE_COLORS = {
-    DriftLevel.ON_TRACK:   (0.2, 0.4, 0.9, 0.8),
-    DriftLevel.GENTLE:     (0.2, 0.8, 0.4, 0.7),
-    DriftLevel.REDIRECT:   (0.9, 0.8, 0.2, 0.6),
-    DriftLevel.INSPECT:    (0.9, 0.3, 0.1, 0.5),
+    DriftLevel.ON_TRACK: (0.2, 0.4, 0.9, 0.8),
+    DriftLevel.GENTLE: (0.2, 0.8, 0.4, 0.7),
+    DriftLevel.REDIRECT: (0.9, 0.8, 0.2, 0.6),
+    DriftLevel.INSPECT: (0.9, 0.3, 0.1, 0.5),
     DriftLevel.QUARANTINE: (0.3, 0.0, 0.3, 0.3),
 }
 
@@ -120,17 +120,17 @@ PORTAL_REALMS = {
 #  Core Multi-D Functions
 # ---------------------------------------------------------------------------
 
+
 def tunnel_radius(d: float, R: float = R_BASE, r_max: float = R_MAX) -> float:
     """
     3D tunnel radius at drift distance d.
     r(d) = r_max / R^(d²)
     """
-    cost = R ** (d ** 2)
+    cost = R ** (d**2)
     return r_max / cost
 
 
-def tunnel_radius_4d(d: float, t: float, decay_rate: float = 0.01,
-                     R: float = R_BASE, r_max: float = R_MAX) -> float:
+def tunnel_radius_4d(d: float, t: float, decay_rate: float = 0.01, R: float = R_BASE, r_max: float = R_MAX) -> float:
     """
     4D tunnel radius — includes time decay.
     r(d,t) = r_max / R^(d²) * exp(-λt)
@@ -146,8 +146,7 @@ def tunnel_radius_4d(d: float, t: float, decay_rate: float = 0.01,
     return spatial * temporal
 
 
-def fiber_volume(d: float, t: float = 0.0, n_tongue: int = 6,
-                 R: float = R_BASE, r_max: float = R_MAX) -> float:
+def fiber_volume(d: float, t: float = 0.0, n_tongue: int = 6, R: float = R_BASE, r_max: float = R_MAX) -> float:
     """
     Volume of the N-dimensional fiber at (d, t).
 
@@ -165,7 +164,7 @@ def fiber_volume(d: float, t: float = 0.0, n_tongue: int = 6,
     half_n = n / 2.0
     # Γ(n/2 + 1) using math.gamma
     gamma_val = math.gamma(half_n + 1)
-    vol = (math.pi ** half_n) / gamma_val * (r ** n)
+    vol = (math.pi**half_n) / gamma_val * (r**n)
     return vol
 
 
@@ -185,17 +184,19 @@ def freedom_percentage(d: float, t: float = 0.0, R: float = R_BASE) -> float:
 #  Wall Portal — a connection point to another realm
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class WallPortal:
     """A portal on the tunnel wall connecting to a Sacred Tongue realm."""
-    tongue: str              # KO, AV, RU, CA, UM, DR
-    realm_name: str          # Human-readable realm name
-    d_position: float        # Drift distance where this portal sits
-    t_position: float        # Time when this portal exists
-    tunnel_radius: float     # Tunnel radius at this point
-    access_cost: float       # MMCCL credits to enter
-    is_accessible: bool      # Whether agent can use this portal
-    portal_size: float       # How "open" the portal is (0-1)
+
+    tongue: str  # KO, AV, RU, CA, UM, DR
+    realm_name: str  # Human-readable realm name
+    d_position: float  # Drift distance where this portal sits
+    t_position: float  # Time when this portal exists
+    tunnel_radius: float  # Tunnel radius at this point
+    access_cost: float  # MMCCL credits to enter
+    is_accessible: bool  # Whether agent can use this portal
+    portal_size: float  # How "open" the portal is (0-1)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -228,7 +229,7 @@ def compute_portals(
     """
     zone = _d_to_level(d)
     tr = tunnel_radius_4d(d, t, R=R, r_max=r_max) if t > 0 else tunnel_radius(d, R, r_max)
-    cost_base = R ** (d ** 2)  # Harmonic wall
+    cost_base = R ** (d**2)  # Harmonic wall
 
     portals = []
     for tongue in SACRED_TONGUES:
@@ -255,16 +256,18 @@ def compute_portals(
             portal_size = min(1.0, portal_size * 1.5)
             cost *= 0.7  # 30% discount
 
-        portals.append(WallPortal(
-            tongue=tongue,
-            realm_name=realm["name"],
-            d_position=d,
-            t_position=t,
-            tunnel_radius=tr,
-            access_cost=round(cost, 4),
-            is_accessible=accessible,
-            portal_size=round(portal_size, 4),
-        ))
+        portals.append(
+            WallPortal(
+                tongue=tongue,
+                realm_name=realm["name"],
+                d_position=d,
+                t_position=t,
+                tunnel_radius=tr,
+                access_cost=round(cost, 4),
+                is_accessible=accessible,
+                portal_size=round(portal_size, 4),
+            )
+        )
 
     return portals
 
@@ -273,18 +276,20 @@ def compute_portals(
 #  Temporal Slice — the tunnel at a moment in time
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TemporalSlice:
     """A snapshot of the tunnel at a specific time."""
+
     t: float
-    d: float                  # Agent's current drift
-    tunnel_r: float           # Current tunnel radius
-    fiber_vol: float          # N-D fiber volume
-    freedom_pct: float        # Freedom percentage
+    d: float  # Agent's current drift
+    tunnel_r: float  # Current tunnel radius
+    fiber_vol: float  # N-D fiber volume
+    freedom_pct: float  # Freedom percentage
     zone: DriftLevel
     portals: List[WallPortal]
     agent_position: Tuple[float, float, float]  # (x, y, z) in tunnel
-    wall_proximity: float     # 0 = center, 1 = touching wall
+    wall_proximity: float  # 0 = center, 1 = touching wall
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -322,8 +327,14 @@ def compute_temporal_slice(
     wp = min(d / DRIFT_QUARANTINE, 1.0) if d > 0 else 0.0
 
     return TemporalSlice(
-        t=t, d=d, tunnel_r=tr, fiber_vol=fv, freedom_pct=fp,
-        zone=zone, portals=portals, agent_position=agent_pos,
+        t=t,
+        d=d,
+        tunnel_r=tr,
+        fiber_vol=fv,
+        freedom_pct=fp,
+        zone=zone,
+        portals=portals,
+        agent_position=agent_pos,
         wall_proximity=wp,
     )
 
@@ -332,9 +343,11 @@ def compute_temporal_slice(
 #  Agent Journey — the full 4D trajectory
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class JourneyFrame:
     """A single frame of an agent's journey through the Garganta."""
+
     frame_id: int
     t: float
     d: float
@@ -389,17 +402,19 @@ def simulate_journey(
         portals = compute_portals(d, t, agent_tier, governance_score, R)
         available = [p for p in portals if p.is_accessible]
 
-        frames.append(JourneyFrame(
-            frame_id=i,
-            t=t,
-            d=d,
-            tunnel_r=tr,
-            freedom_pct=fp,
-            zone=zone,
-            portals_available=len(available),
-            portal_names=[p.tongue for p in available],
-            event=event,
-        ))
+        frames.append(
+            JourneyFrame(
+                frame_id=i,
+                t=t,
+                d=d,
+                tunnel_r=tr,
+                freedom_pct=fp,
+                zone=zone,
+                portals_available=len(available),
+                portal_names=[p.tongue for p in available],
+                event=event,
+            )
+        )
 
     return frames
 
@@ -407,6 +422,7 @@ def simulate_journey(
 # ---------------------------------------------------------------------------
 #  Helpers
 # ---------------------------------------------------------------------------
+
 
 def _d_to_level(d: float) -> DriftLevel:
     if d < DRIFT_GENTLE:
@@ -424,6 +440,7 @@ def _d_to_level(d: float) -> DriftLevel:
 # ---------------------------------------------------------------------------
 #  ASCII Visualization — tunnel cross-section at a point in time
 # ---------------------------------------------------------------------------
+
 
 def ascii_tunnel_slice(
     d: float,
@@ -461,7 +478,7 @@ def ascii_tunnel_slice(
     lines.append("")
 
     for row in range(width // 2):
-        y = (row - half // 2)
+        y = row - half // 2
         row_chars = []
         for col in range(width):
             x = col - half
@@ -483,10 +500,7 @@ def ascii_tunnel_slice(
         lines.append("  " + "".join(row_chars))
 
     lines.append("")
-    lines.append("  Portals: " + " ".join(
-        f"[{p.tongue}]" if p.is_accessible else f" {p.tongue} "
-        for p in ts.portals
-    ))
+    lines.append("  Portals: " + " ".join(f"[{p.tongue}]" if p.is_accessible else f" {p.tongue} " for p in ts.portals))
 
     return "\n".join(lines)
 
@@ -494,6 +508,7 @@ def ascii_tunnel_slice(
 # ---------------------------------------------------------------------------
 #  Full Journey ASCII — the tunnel narrowing over time
 # ---------------------------------------------------------------------------
+
 
 def ascii_journey(
     drift_sequence: List[Tuple[float, str]],
@@ -589,6 +604,7 @@ def ascii_journey(
 #  Matplotlib 3D Visualization
 # ---------------------------------------------------------------------------
 
+
 def render_3d_tunnel(
     save_path: Optional[str] = None,
     length: float = 3.5,
@@ -625,8 +641,7 @@ def render_3d_tunnel(
 
     # --- 3D tunnel ---
     ax1 = fig.add_subplot(121, projection="3d")
-    ax1.plot_surface(X_grid, Y_grid, Z_grid, facecolors=colors,
-                     shade=True, alpha=0.5, edgecolors="none")
+    ax1.plot_surface(X_grid, Y_grid, Z_grid, facecolors=colors, shade=True, alpha=0.5, edgecolors="none")
 
     # Agent path
     if agent_drifts:
@@ -636,20 +651,23 @@ def render_3d_tunnel(
         ax_path = ar * np.cos(at)
         ay_path = ar * np.sin(at)
         ax1.plot(ax_path, ay_path, az, color="white", linewidth=2.5, label="Agent path")
-        ax1.scatter([ax_path[-1]], [ay_path[-1]], [az[-1]],
-                    color="red", s=100, zorder=5, label="Now")
+        ax1.scatter([ax_path[-1]], [ay_path[-1]], [az[-1]], color="red", s=100, zorder=5, label="Now")
 
     # Zone rings
     for d_b in [DRIFT_GENTLE, DRIFT_REDIRECT, DRIFT_INSPECT, DRIFT_QUARANTINE]:
         if d_b <= length:
             br = tunnel_radius(d_b)
             btheta = np.linspace(0, 2 * np.pi, 64)
-            ax1.plot(br * np.cos(btheta), br * np.sin(btheta),
-                     np.full(64, d_b), color="white", linewidth=0.8, alpha=0.4)
+            ax1.plot(
+                br * np.cos(btheta), br * np.sin(btheta), np.full(64, d_b), color="white", linewidth=0.8, alpha=0.4
+            )
 
-    ax1.set_xlabel("X"); ax1.set_ylabel("Y"); ax1.set_zlabel("Drift (d)")
+    ax1.set_xlabel("X")
+    ax1.set_ylabel("Y")
+    ax1.set_zlabel("Drift (d)")
     ax1.set_title("GARGANTA MANIFOLD\nMulti-D Harmonic Tunnel", color="white")
-    ax1.set_xlim(-1.1, 1.1); ax1.set_ylim(-1.1, 1.1)
+    ax1.set_xlim(-1.1, 1.1)
+    ax1.set_ylim(-1.1, 1.1)
     if agent_drifts:
         ax1.legend(fontsize=8, loc="upper left")
 
@@ -662,14 +680,16 @@ def render_3d_tunnel(
     zone_bounds = [0, DRIFT_GENTLE, DRIFT_REDIRECT, DRIFT_INSPECT, DRIFT_QUARANTINE, length]
     zone_names = ["ON_TRACK", "GENTLE", "REDIRECT", "INSPECT", "QUARANTINE"]
     zone_rgba = [
-        (0.2, 0.4, 0.9, 0.3), (0.2, 0.8, 0.4, 0.3),
-        (0.9, 0.8, 0.2, 0.3), (0.9, 0.3, 0.1, 0.3), (0.3, 0.0, 0.3, 0.3),
+        (0.2, 0.4, 0.9, 0.3),
+        (0.2, 0.8, 0.4, 0.3),
+        (0.9, 0.8, 0.2, 0.3),
+        (0.9, 0.3, 0.1, 0.3),
+        (0.3, 0.0, 0.3, 0.3),
     ]
     for idx in range(len(zone_names)):
         lo, hi = zone_bounds[idx], zone_bounds[idx + 1]
         mask = (d_line >= lo) & (d_line <= hi)
-        ax2.fill_between(d_line[mask], -r_line[mask], r_line[mask],
-                         color=zone_rgba[idx], label=zone_names[idx])
+        ax2.fill_between(d_line[mask], -r_line[mask], r_line[mask], color=zone_rgba[idx], label=zone_names[idx])
 
     ax2.plot(d_line, r_line, color="cyan", linewidth=2)
     ax2.plot(d_line, -r_line, color="cyan", linewidth=2)
@@ -679,16 +699,20 @@ def render_3d_tunnel(
     if agent_drifts:
         ax2.plot(agent_drifts[-1], 0, "ro", markersize=10, label="Agent")
 
-    ax2.set_xlabel("Drift (d)"); ax2.set_ylabel("Tunnel radius")
+    ax2.set_xlabel("Drift (d)")
+    ax2.set_ylabel("Tunnel radius")
     ax2.set_title("TUNNEL PROFILE: r(d) = 1/φ^(d²)", color="white")
     ax2.set_facecolor("#0a0a1a")
-    ax2.legend(fontsize=8); ax2.grid(True, alpha=0.2)
+    ax2.legend(fontsize=8)
+    ax2.grid(True, alpha=0.2)
     ax2.tick_params(colors="white")
-    ax2.xaxis.label.set_color("white"); ax2.yaxis.label.set_color("white")
+    ax2.xaxis.label.set_color("white")
+    ax2.yaxis.label.set_color("white")
 
     fig.patch.set_facecolor("#0a0a1a")
     ax1.tick_params(colors="white")
-    ax1.xaxis.label.set_color("white"); ax1.yaxis.label.set_color("white")
+    ax1.xaxis.label.set_color("white")
+    ax1.yaxis.label.set_color("white")
     ax1.zaxis.label.set_color("white")
 
     plt.tight_layout()
