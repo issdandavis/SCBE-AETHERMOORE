@@ -332,7 +332,7 @@ class TestVacuumAcoustics:
 
         # Total energy out should equal input
         # Energy at corners comes from canceled center energy
-        total_corner_energy = sum(result.corner_energies)
+        _ = sum(result.corner_energies)
         # Total should equal the original amplitude squared
         assert result.total_energy > 0
         assert result.canceled_energy >= 0
@@ -677,7 +677,7 @@ class TestAethermoorIntegration:
         """Test cymatic storage with PQC-derived keys."""
         # Create a PQC session for key material
         alice = HarmonicKyberOrchestrator(dimension=4)
-        bob = HarmonicKyberOrchestrator(dimension=4)
+        HarmonicKyberOrchestrator(dimension=4)
 
         alice_pub, _ = alice.get_public_keys()
         bob_pub, alice_sig_pub = alice.get_public_keys()

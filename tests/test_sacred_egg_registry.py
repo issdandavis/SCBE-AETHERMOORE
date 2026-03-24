@@ -96,7 +96,7 @@ class TestRegisterAndRetrieve:
         egg2 = integrator.create_egg(b"v2", "AV", "b", {}, context, pk, sk)
         # Force same egg_id for testing overwrite
         import dataclasses
-        egg2_same_id = dataclasses.replace(
+        dataclasses.replace(
             egg2, egg_id=egg1.egg_id,
         ) if not hasattr(egg2, '_replace') else egg2
         # Register twice with same ID

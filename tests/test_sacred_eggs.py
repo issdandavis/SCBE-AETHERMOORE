@@ -622,8 +622,7 @@ class TestFailToNoise:
         SacredRituals.fail_to_noise(core_egg)
 
         # Old and new shells should be completely unrelated
-        new_shell = core_egg.shell_hash.hex()
-        # XOR comparison — should be high entropy (many differing bits)
+        # XOR comparison — old vs new shell should be high entropy (many differing bits)
         old_bytes = bytes.fromhex(old_shell)
         new_bytes = core_egg.shell_hash
         xor = bytes(a ^ b for a, b in zip(old_bytes, new_bytes))

@@ -125,7 +125,7 @@ class TestTimingAttackResistance:
 
             # Measure decapsulation time
             start = time.perf_counter()
-            ss_dec = pqc_core.mlkem768_decapsulate(ct, sk)
+            pqc_core.mlkem768_decapsulate(ct, sk)
             decap_times.append(time.perf_counter() - start)
 
         # Check timing consistency
@@ -173,7 +173,7 @@ class TestTimingAttackResistance:
             v_near = v_near / (np.linalg.norm(v_near) + 1.1)
 
             start = time.perf_counter()
-            d_near = layer_5_hyperbolic_distance(u_near, v_near)
+            layer_5_hyperbolic_distance(u_near, v_near)
             times_near.append(time.perf_counter() - start)
 
             # Far points (large distance)
@@ -183,7 +183,7 @@ class TestTimingAttackResistance:
             v_far = v_far / (np.linalg.norm(v_far) + 1.1)
 
             start = time.perf_counter()
-            d_far = layer_5_hyperbolic_distance(u_far, v_far)
+            layer_5_hyperbolic_distance(u_far, v_far)
             times_far.append(time.perf_counter() - start)
 
         # Timing should be similar
@@ -232,7 +232,7 @@ class TestPowerAnalysisResistance:
             # Perform cryptographic operation
             pk, sk = pqc_core.generate_mlkem768_keypair()
             ct, ss = pqc_core.mlkem768_encapsulate(pk)
-            ss_dec = pqc_core.mlkem768_decapsulate(ct, sk)
+            pqc_core.mlkem768_decapsulate(ct, sk)
 
             # Get operation count (proxy for power consumption)
             ops = pqc_core.get_operation_count()
@@ -295,7 +295,7 @@ class TestCacheTimingResistance:
         for _ in range(n_trials):
             for index in range(256):
                 start = time.perf_counter()
-                value = pqc_core.constant_time_lookup(table, index)
+                pqc_core.constant_time_lookup(table, index)
                 times_by_index[index].append(time.perf_counter() - start)
 
         # Calculate mean time for each index
