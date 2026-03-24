@@ -10,15 +10,12 @@ fail-to-noise determinism, BFT quorum rule, and boundary/fuzz cases.
 @component Sacred Eggs Reference Validation
 """
 
-import math
 import random
 import pytest
-import numpy as np
 
 from src.symphonic_cipher.scbe_aethermoore.sacred_eggs_ref import (
     Policy,
     SacredEgg,
-    StateSnapshot,
     StateVector,
     compute_box_counting_dimension,
     bucket_ring,
@@ -33,9 +30,7 @@ from src.symphonic_cipher.scbe_aethermoore.sacred_eggs_ref import (
     build_domain_separation_tag,
     norm3,
     T_PASS,
-    T_HOLD,
     T_FAIL,
-    PHI,
 )
 
 

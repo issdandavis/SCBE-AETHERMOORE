@@ -19,13 +19,11 @@ import os
 # Ensure src/ is on the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
-import pytest
 
 from symphonic_cipher.scbe_aethermoore.concept_blocks.heart_vault import (
     # Graph
     HeartVaultGraph,
     Node,
-    Edge,
     NodeType,
     EdgeType,
     TongueAffinity,
@@ -33,7 +31,6 @@ from symphonic_cipher.scbe_aethermoore.concept_blocks.heart_vault import (
     EMOTION_LIBRARY,
     EmotionFamily,
     EmotionIntensity,
-    EmotionSpec,
     classify_emotion,
     emotion_to_poincare,
     emotional_distance,
@@ -42,12 +39,9 @@ from symphonic_cipher.scbe_aethermoore.concept_blocks.heart_vault import (
     # Literary
     METAPHOR_MAP,
     LiteraryDevice,
-    LiteraryHit,
-    MetaphorMapping,
     detect_literary_devices,
     resolve_metaphor,
     # Heart Credits
-    HeartCreditEntry,
     HeartCreditLedger,
     CreditAction,
     TONGUE_WEIGHTS,

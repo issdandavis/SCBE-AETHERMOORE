@@ -17,7 +17,6 @@ Covers:
 
 import math
 import pytest
-import numpy as np
 
 from hydra.octree_sphere_grid import (
     morton_encode_3d,
@@ -38,7 +37,6 @@ from hydra.octree_sphere_grid import (
     FACE_PLANES,
     INTEROP_MATRIX,
 )
-from hydra.color_dimension import PHI
 
 
 # ===================================================================

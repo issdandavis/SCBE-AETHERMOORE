@@ -1,7 +1,6 @@
 """Tests for the Dual-Core Memory Kernel."""
 
 import numpy as np
-import pytest
 from src.kernel.dual_core import (
     DualCoreKernel,
     GeoKernel,
@@ -9,7 +8,6 @@ from src.kernel.dual_core import (
     MemoryLayer,
     MemoryEntry,
     KernelStack,
-    PHDMClassifier,
     quasi_project,
     ICO_MATRIX,
 )

@@ -12,7 +12,6 @@ Covers:
 - Edge cases: NaN / Infinity / negative inputs
 """
 
-import math
 import pytest
 import sys
 import os
@@ -23,7 +22,6 @@ from hydra.turnstile import (
     resolve_turnstile,
     compute_antibody_load,
     compute_membrane_stress,
-    TurnstileOutcome,
 )
 
 

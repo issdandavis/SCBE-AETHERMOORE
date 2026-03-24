@@ -51,14 +51,12 @@ from crypto.dual_lattice_integration import (
     harmonic_scaling,
     compute_path_cost,
     layer_12_13_evaluate,
-    HARMONIC_BASE_R,
     # Layer 14
     coord_to_frequency,
     hyperpath_to_audio,
     layer_14_sonify,
     # Integration
     DualLatticeIntegrator,
-    LayerDecision,
 )
 
 from crypto.dual_lattice import SacredTongue, FluxState

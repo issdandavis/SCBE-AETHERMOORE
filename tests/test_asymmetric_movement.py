@@ -6,7 +6,6 @@ Tests for the Asymmetric Movement Model (Human vs AI navigation).
 @version 3.2.4
 """
 
-import math
 import sys
 from pathlib import Path
 

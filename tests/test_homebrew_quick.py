@@ -41,7 +41,7 @@ except (ImportError, RuntimeError):
     RWP_AVAILABLE = False
 
 try:
-    from src.crypto.sacred_tongues import SacredTongueTokenizer
+    pass
 
     TONGUES_AVAILABLE = True
 except ImportError:

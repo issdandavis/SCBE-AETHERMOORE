@@ -22,8 +22,6 @@ import sys
 import os
 import numpy as np
 import time
-import hashlib
-from typing import List, Tuple
 import statistics
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
@@ -351,8 +349,8 @@ class TestFaultInjectionResistance:
         # Verification with fault detection
         result = pqc_core.mldsa65_verify_with_fault_detection(message, faulty_signature, pk)
 
-        assert result["valid"] == False, "Faulty signature passed verification"
-        assert result["fault_detected"] == True, "Fault not detected"
+        assert result["valid"] is False, "Faulty signature passed verification"
+        assert result["fault_detected"] is True, "Fault not detected"
 
     @pytest.mark.skipif(not CRYPTO_AVAILABLE, reason="Crypto module not available")
     def test_redundant_computation_verification(self):
@@ -374,7 +372,7 @@ class TestFaultInjectionResistance:
         # Verify results match
         verified = pqc_core.redundant_verify(result1, result2)
 
-        assert verified == True, "Redundant computation results don't match"
+        assert verified is True, "Redundant computation results don't match"
 
 
 class TestElectromagneticAnalysisResistance:

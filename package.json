@@ -86,7 +86,7 @@
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "format:python": "black src/ tests/",
     "lint": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "lint:python": "flake8 src/ tests/ --max-line-length=120",
+    "lint:python": "flake8 src/ tests/ --max-line-length=120 --extend-ignore=E203,W503",
     "cli": "python scbe-cli.py",
     "codeprism:build": "python scripts/code_prism_build.py",
     "codeprism:mesh": "python scripts/code_mesh_build.py",

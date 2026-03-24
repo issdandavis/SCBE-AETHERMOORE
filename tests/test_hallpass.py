@@ -24,10 +24,7 @@ from src.fleet.hallpass import (
     EDGE_PENALTIES,
     TONGUE_PHASES,
     TUBE_RADIUS,
-    Polyhedron,
-    FaceProjection,
     HallPass,
-    HallPassNode,
     HallPassCompiler,
     HallPassDispatcher,
     DispatchResult,
@@ -40,8 +37,7 @@ from src.fleet.hallpass import (
     harmonic_wall_cost,
     hyperbolic_distance_approx,
 )
-from src.fleet.skill_card_forge import SkillCard, CardType, SynergyType, Deck, DeckBuilder
-from src.fleet.skill_deck_engine import classify_permissions
+from src.fleet.skill_card_forge import SkillCard, Deck
 
 
 _CARD_TEMPLATES = [
