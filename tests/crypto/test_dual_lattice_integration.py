@@ -14,9 +14,18 @@ Tests cover all 14 layers of the integration:
 """
 
 import pytest
-import numpy as np
 import sys
 import os
+
+try:
+    import numpy as np
+except ImportError:
+    pytest.skip("numpy not installed", allow_module_level=True)
+
+try:
+    import scipy  # noqa: F401
+except ImportError:
+    pytest.skip("scipy not installed", allow_module_level=True)
 
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
