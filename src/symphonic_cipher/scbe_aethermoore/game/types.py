@@ -154,13 +154,9 @@ RiskDecision = Literal["ALLOW", "QUARANTINE", "ESCALATE", "DENY"]
 #  Companion enums
 # ---------------------------------------------------------------------------
 
-DisciplineTrait = Literal[
-    "careful_verifier", "fast_heuristic", "collaborative", "solo", "risk_tolerant", "guardian"
-]
+DisciplineTrait = Literal["careful_verifier", "fast_heuristic", "collaborative", "solo", "risk_tolerant", "guardian"]
 
-EmotionalState = Literal[
-    "content", "excited", "anxious", "determined", "exhausted", "corrupted", "transcendent"
-]
+EmotionalState = Literal["content", "excited", "anxious", "determined", "exhausted", "corrupted", "transcendent"]
 
 FormationRole = Literal["storm", "phalanx", "lance", "web"]
 
@@ -181,13 +177,29 @@ OVER_EVOLUTION_THRESHOLD: float = 0.95
 # ---------------------------------------------------------------------------
 
 EggType = Literal[
-    "mono_KO", "mono_AV", "mono_RU", "mono_CA", "mono_UM", "mono_DR",
-    "hodge_eclipse", "hodge_storm", "hodge_paradox", "omni_prism",
+    "mono_KO",
+    "mono_AV",
+    "mono_RU",
+    "mono_CA",
+    "mono_UM",
+    "mono_DR",
+    "hodge_eclipse",
+    "hodge_storm",
+    "hodge_paradox",
+    "omni_prism",
 ]
 
 BondType = Literal[
-    "amplifier", "scout", "disruptor", "processor", "guardian",
-    "architect", "harmonizer", "balancer", "synthesizer", "nexus",
+    "amplifier",
+    "scout",
+    "disruptor",
+    "processor",
+    "guardian",
+    "architect",
+    "harmonizer",
+    "balancer",
+    "synthesizer",
+    "nexus",
 ]
 
 # ---------------------------------------------------------------------------
@@ -195,9 +207,17 @@ BondType = Literal[
 # ---------------------------------------------------------------------------
 
 TransformAction = Literal[
-    "normalize", "substitute", "complete_square", "factor", "bound",
-    "invariant_check", "case_split", "contradiction_probe",
-    "differentiate", "integrate", "apply_theorem",
+    "normalize",
+    "substitute",
+    "complete_square",
+    "factor",
+    "bound",
+    "invariant_check",
+    "case_split",
+    "contradiction_probe",
+    "differentiate",
+    "integrate",
+    "apply_theorem",
 ]
 
 TRANSFORM_RISK: Dict[TransformAction, Literal["low", "medium", "high"]] = {

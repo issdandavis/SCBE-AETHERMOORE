@@ -325,10 +325,14 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Render storyboard packets through the live grok image router.")
     parser.add_argument("--packet", required=True, help="Path to a storyboard packet JSON file.")
     parser.add_argument("--output-root", default=None, help="Optional output root override.")
-    parser.add_argument("--backend", choices=list(BACKENDS.keys()), default=None, help="Force one backend for all panels.")
+    parser.add_argument(
+        "--backend", choices=list(BACKENDS.keys()), default=None, help="Force one backend for all panels."
+    )
     parser.add_argument("--only", action="append", default=[], help="Render only specific panel ids.")
     parser.add_argument("--limit", type=int, default=None, help="Limit the number of panels.")
-    parser.add_argument("--dry-run", action="store_true", help="Compile prompts and routing manifest without rendering.")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Compile prompts and routing manifest without rendering."
+    )
     return parser.parse_args()
 
 

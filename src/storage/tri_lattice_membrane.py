@@ -59,18 +59,20 @@ TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 #  Record types
 # =========================================================================== #
 
+
 @dataclass
 class TriRecord:
     """A record flowing through the tri-lattice membrane."""
+
     record_id: str
     tongue_coords: List[float]  # 6D
     intent_vector: List[float]  # 3D
     tongue: str
     content: bytes
     # Routing metadata (filled during insert)
-    accepted_by: str = ""           # which lattice accepted it
+    accepted_by: str = ""  # which lattice accepted it
     rejected_by: List[str] = field(default_factory=list)
-    feedback_hops: int = 0          # how many times it circled through membrane
+    feedback_hops: int = 0  # how many times it circled through membrane
     spin: Optional[SpinVector] = None
     qc_valid: Optional[bool] = None
 
@@ -78,6 +80,7 @@ class TriRecord:
 @dataclass
 class TriStats:
     """Stats from the tri-lattice membrane experiment."""
+
     total_records: int
     lattice25d_accepted: int
     quasicrystal_accepted: int
@@ -96,6 +99,7 @@ class TriStats:
 # =========================================================================== #
 #  Polyhedral Fallback (always accepts, never fails)
 # =========================================================================== #
+
 
 class PolyhedralFallback:
     """Simple dict store. The reliable backup that always works."""
@@ -116,6 +120,7 @@ class PolyhedralFallback:
 # =========================================================================== #
 #  Tri-Lattice Sphere Membrane
 # =========================================================================== #
+
 
 class TriLatticeMembrane:
     """Three lattices inscribed in a spherical membrane with circular feedback.
@@ -188,10 +193,7 @@ class TriLatticeMembrane:
             self._centroid_count = 1
         else:
             n = self._centroid_count + 1
-            self._centroid = [
-                (c * self._centroid_count + t) / n
-                for c, t in zip(self._centroid, tongue_coords)
-            ]
+            self._centroid = [(c * self._centroid_count + t) / n for c, t in zip(self._centroid, tongue_coords)]
             self._centroid_count = n
 
     def _try_lattice25d(self, record: TriRecord, index: int) -> bool:
@@ -205,7 +207,9 @@ class TriLatticeMembrane:
             phase = sum(record.tongue_coords[:3]) % (2 * math.pi)
 
             self.lattice25d.insert_bundle(
-                x=x, y=y, phase_rad=phase,
+                x=x,
+                y=y,
+                phase_rad=phase,
                 tongue=record.tongue,
                 authority="public",
                 intent_vector=record.intent_vector,
@@ -384,9 +388,7 @@ class TriLatticeMembrane:
             sphere_feedback=self._feedback_count,
             polyhedral_fallback=self._fallback_count,
             rejection_count=self._rejection_count,
-            avg_feedback_hops=round(
-                sum(r.feedback_hops for r in self._records.values()) / max(1, total), 2
-            ),
+            avg_feedback_hops=round(sum(r.feedback_hops for r in self._records.values()) / max(1, total), 2),
             frustration_count=self._frustration_count,
             lattice25d_stats=self.lattice25d.stats(),
             quasicrystal_stats={"type": "quasicrystal", "points_tested": self._qc_count + self._rejection_count},

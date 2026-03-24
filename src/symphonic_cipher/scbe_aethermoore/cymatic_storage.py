@@ -250,9 +250,7 @@ class KDTree:
 
         return best[0].voxel if best[0] else None
 
-    def _nearest_recursive(
-        self, node: KDNode, target: Vector6D, depth: int, best: List
-    ) -> None:
+    def _nearest_recursive(self, node: KDNode, target: Vector6D, depth: int, best: List) -> None:
         """Recursive nearest neighbor search."""
         if node is None:
             return
@@ -384,9 +382,7 @@ class HolographicQRCube:
         self._created = time.time()
 
         # Vacuum acoustics config for resonance checks
-        self._vac_config = VacuumAcousticsConfig(
-            L=self.config.L, R=self.config.R, v_reference=self.config.v_reference
-        )
+        self._vac_config = VacuumAcousticsConfig(L=self.config.L, R=self.config.R, v_reference=self.config.v_reference)
 
     @property
     def voxel_count(self) -> int:
@@ -445,9 +441,7 @@ class HolographicQRCube:
 
         return voxel
 
-    def scan(
-        self, agent_vector: Vector6D, tolerance: Optional[float] = None
-    ) -> Optional[bytes]:
+    def scan(self, agent_vector: Vector6D, tolerance: Optional[float] = None) -> Optional[bytes]:
         """
         Retrieve data using agent's vector for access control.
 
@@ -478,18 +472,14 @@ class HolographicQRCube:
         elif nearest.storage_mode == StorageMode.RESONANCE:
             # Check cymatic resonance
             target_pos = (nearest.position[0], nearest.position[1])  # x, y plane
-            if check_cymatic_resonance(
-                agent_vector, target_pos, tolerance, self._vac_config
-            ):
+            if check_cymatic_resonance(agent_vector, target_pos, tolerance, self._vac_config):
                 data = nearest.data
             else:
                 return None
         else:
             # ENCRYPTED mode - resonance required, data still encrypted
             target_pos = (nearest.position[0], nearest.position[1])
-            if check_cymatic_resonance(
-                agent_vector, target_pos, tolerance, self._vac_config
-            ):
+            if check_cymatic_resonance(agent_vector, target_pos, tolerance, self._vac_config):
                 data = nearest.data  # Caller must decrypt
             else:
                 return None
@@ -501,9 +491,7 @@ class HolographicQRCube:
 
         return data
 
-    def scan_all_resonant(
-        self, agent_vector: Vector6D, tolerance: Optional[float] = None
-    ) -> List[Tuple[Voxel, bytes]]:
+    def scan_all_resonant(self, agent_vector: Vector6D, tolerance: Optional[float] = None) -> List[Tuple[Voxel, bytes]]:
         """
         Find all voxels that resonate with the agent vector.
 
@@ -524,9 +512,7 @@ class HolographicQRCube:
                 results.append((voxel, voxel.data))
             else:
                 target_pos = (voxel.position[0], voxel.position[1])
-                if check_cymatic_resonance(
-                    agent_vector, target_pos, tolerance, self._vac_config
-                ):
+                if check_cymatic_resonance(agent_vector, target_pos, tolerance, self._vac_config):
                     if not self.config.auto_verify or voxel.verify_integrity():
                         results.append((voxel, voxel.data))
 

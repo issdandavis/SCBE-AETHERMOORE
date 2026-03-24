@@ -28,6 +28,7 @@ from .credit import ContextCredit
 #  Merkle Tree
 # ---------------------------------------------------------------------------
 
+
 def _merkle_hash(a: str, b: str) -> str:
     return hashlib.sha256((a + b).encode()).hexdigest()
 
@@ -57,6 +58,7 @@ def merkle_root(hashes: List[str]) -> str:
 #  Block
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Block:
     """A block in the context credit blockchain."""
@@ -84,17 +86,20 @@ class Block:
     @property
     def block_hash(self) -> str:
         """Hash of this block (includes merkle root + previous hash)."""
-        data = json.dumps({
-            "index": self.index,
-            "ts": self.timestamp,
-            "merkle": self.merkle_root,
-            "prev": self.previous_hash,
-            "nonce": self.nonce,
-            "validator": self.validator_id,
-            "value": round(self.total_value, 8),
-            "energy": round(self.total_energy, 8),
-            "count": self.credit_count,
-        }, sort_keys=True)
+        data = json.dumps(
+            {
+                "index": self.index,
+                "ts": self.timestamp,
+                "merkle": self.merkle_root,
+                "prev": self.previous_hash,
+                "nonce": self.nonce,
+                "validator": self.validator_id,
+                "value": round(self.total_value, 8),
+                "energy": round(self.total_energy, 8),
+                "count": self.credit_count,
+            },
+            sort_keys=True,
+        )
         return hashlib.sha256(data.encode()).hexdigest()
 
     def to_dict(self) -> Dict[str, Any]:
@@ -228,33 +233,19 @@ class ContextLedger:
 
     def total_supply(self) -> float:
         """Total face value of all credits in the chain."""
-        return sum(
-            c.face_value
-            for block in self._chain
-            for c in block.credits
-        )
+        return sum(c.face_value for block in self._chain for c in block.credits)
 
     def total_energy_spent(self) -> float:
         """Total Hamiltonian energy consumed across all credits."""
-        return sum(
-            c.dna.energy_cost
-            for block in self._chain
-            for c in block.credits
-        )
+        return sum(c.dna.energy_cost for block in self._chain for c in block.credits)
 
     def credits_by_agent(self, agent_id: str) -> List[ContextCredit]:
         """All credits minted by a specific agent."""
-        return [
-            c for c in self._credit_index.values()
-            if c.dna.agent_id == agent_id
-        ]
+        return [c for c in self._credit_index.values() if c.dna.agent_id == agent_id]
 
     def credits_by_denomination(self, denom: str) -> List[ContextCredit]:
         """All credits of a specific denomination."""
-        return [
-            c for c in self._credit_index.values()
-            if c.denomination.value == denom
-        ]
+        return [c for c in self._credit_index.values() if c.denomination.value == denom]
 
     def balance(self, agent_id: str) -> float:
         """Total value of credits owned by an agent."""

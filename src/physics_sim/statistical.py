@@ -121,9 +121,7 @@ def vibrational_partition_function(nu: float, T: float) -> float:
     return 1 / (1 - math.exp(-x))
 
 
-def electronic_partition_function(
-    degeneracies: List[int], energies: List[float], T: float
-) -> float:
+def electronic_partition_function(degeneracies: List[int], energies: List[float], T: float) -> float:
     """
     Calculate electronic partition function.
 

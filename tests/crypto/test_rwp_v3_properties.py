@@ -28,6 +28,7 @@ try:
         ARGON2_AVAILABLE,
         CHACHA_AVAILABLE,
     )
+
     RWP_AVAILABLE = ARGON2_AVAILABLE and CHACHA_AVAILABLE
 except ImportError:
     RWP_AVAILABLE = False
@@ -39,8 +40,7 @@ from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
 
 # Skip all tests if dependencies not available
 pytestmark = pytest.mark.skipif(
-    not RWP_AVAILABLE,
-    reason="RWP v3.0 dependencies not installed (argon2-cffi, pycryptodome)"
+    not RWP_AVAILABLE, reason="RWP v3.0 dependencies not installed (argon2-cffi, pycryptodome)"
 )
 
 # Hypothesis settings for thorough testing
@@ -155,9 +155,7 @@ class TestWrongPasswordFails:
         byte_position=st.integers(min_value=0),
     )
     @settings(max_examples=100, deadline=None)
-    def test_bit_flipped_password_fails(
-        self, password: bytes, plaintext: bytes, bit_position: int, byte_position: int
-    ):
+    def test_bit_flipped_password_fails(self, password: bytes, plaintext: bytes, bit_position: int, byte_position: int):
         """Single bit flip in password should fail."""
         protocol = RWPv3Protocol(enable_pqc=False)
         envelope = protocol.encrypt(password, plaintext)
@@ -165,7 +163,7 @@ class TestWrongPasswordFails:
         # Flip a bit in the password
         byte_pos = byte_position % len(password)
         password_list = list(password)
-        password_list[byte_pos] ^= (1 << bit_position)
+        password_list[byte_pos] ^= 1 << bit_position
         wrong_password = bytes(password_list)
 
         assume(wrong_password != password)
@@ -183,9 +181,7 @@ class TestTamperedCiphertextFails:
         token_index=st.integers(min_value=0),
     )
     @settings(max_examples=100, deadline=None)
-    def test_modified_ct_token_fails(
-        self, password: bytes, plaintext: bytes, token_index: int
-    ):
+    def test_modified_ct_token_fails(self, password: bytes, plaintext: bytes, token_index: int):
         """Modifying any ciphertext token should fail."""
         protocol = RWPv3Protocol(enable_pqc=False)
         envelope = protocol.encrypt(password, plaintext)
@@ -210,9 +206,7 @@ class TestTamperedTagFails:
         token_index=st.integers(min_value=0),
     )
     @settings(max_examples=100, deadline=None)
-    def test_modified_tag_token_fails(
-        self, password: bytes, plaintext: bytes, token_index: int
-    ):
+    def test_modified_tag_token_fails(self, password: bytes, plaintext: bytes, token_index: int):
         """Modifying any tag token should fail."""
         protocol = RWPv3Protocol(enable_pqc=False)
         envelope = protocol.encrypt(password, plaintext)
@@ -340,9 +334,7 @@ class TestEnvelopeSerialization:
         plaintext=st.binary(min_size=1, max_size=256),
     )
     @settings(max_examples=50, deadline=None)
-    def test_json_roundtrip_preserves_decryption(
-        self, password: bytes, plaintext: bytes
-    ):
+    def test_json_roundtrip_preserves_decryption(self, password: bytes, plaintext: bytes):
         """Envelope should decrypt after JSON roundtrip."""
         protocol = RWPv3Protocol(enable_pqc=False)
         envelope = protocol.encrypt(password, plaintext)
@@ -369,9 +361,7 @@ class TestAADIntegrity:
         aad=st.binary(min_size=1, max_size=128),
     )
     @settings(max_examples=50, deadline=None)
-    def test_aad_modification_fails(
-        self, password: bytes, plaintext: bytes, aad: bytes
-    ):
+    def test_aad_modification_fails(self, password: bytes, plaintext: bytes, aad: bytes):
         """Modifying AAD after encryption should fail."""
         protocol = RWPv3Protocol(enable_pqc=False)
         envelope = protocol.encrypt(password, plaintext, aad=aad)

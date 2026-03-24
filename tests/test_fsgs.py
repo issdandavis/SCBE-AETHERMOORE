@@ -41,6 +41,7 @@ from symphonic_cipher.scbe_aethermoore.ai_brain.fsgs import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_valid_state(seed: int = 0) -> np.ndarray:
     """Create a valid 21D brain state vector with safe Poincaré radius."""
     rng = np.random.default_rng(seed)
@@ -70,6 +71,7 @@ def make_hybrid_state(seed: int = 0) -> HybridState:
 # ---------------------------------------------------------------------------
 # Tests: 4-symbol algebra
 # ---------------------------------------------------------------------------
+
 
 class TestGovernanceSymbol:
     """Tests for the 4-state governance symbol {+1, -1, +0, -0}."""
@@ -132,6 +134,7 @@ class TestGovernanceSymbol:
 # Tests: Governance modes
 # ---------------------------------------------------------------------------
 
+
 class TestGovernanceMode:
     """Tests for the 4-mode discrete automaton."""
 
@@ -145,6 +148,7 @@ class TestGovernanceMode:
 # ---------------------------------------------------------------------------
 # Tests: Mode transitions δ(q, σ, x)
 # ---------------------------------------------------------------------------
+
 
 class TestModeTransition:
     """Tests for the mode transition function."""
@@ -186,6 +190,7 @@ class TestModeTransition:
 # ---------------------------------------------------------------------------
 # Tests: Direction field and gain
 # ---------------------------------------------------------------------------
+
 
 class TestDirectionAndGain:
     """Tests for direction field d(x) and gain α(x)."""
@@ -234,6 +239,7 @@ class TestDirectionAndGain:
 # Tests: Trust tube projection
 # ---------------------------------------------------------------------------
 
+
 class TestTubeProject:
     """Tests for trust tube projection Π_T."""
 
@@ -256,6 +262,7 @@ class TestTubeProject:
 # ---------------------------------------------------------------------------
 # Tests: Hybrid step
 # ---------------------------------------------------------------------------
+
 
 class TestHybridStep:
     """Tests for the core hybrid step function."""
@@ -291,8 +298,10 @@ class TestHybridStep:
         """(-0) doesn't move state but triggers re-anchoring."""
         state = make_hybrid_state(0)
         result = hybrid_step(
-            state, GovernanceSymbol.MINUS_ZERO,
-            base_alpha=0.1, risk_score=0.3,
+            state,
+            GovernanceSymbol.MINUS_ZERO,
+            base_alpha=0.1,
+            risk_score=0.3,
         )
         assert result.impulse_magnitude == 0.0
         assert result.re_anchored
@@ -303,8 +312,10 @@ class TestHybridStep:
         """(-0) with high risk transitions to QUAR mode."""
         state = make_hybrid_state(0)
         result = hybrid_step(
-            state, GovernanceSymbol.MINUS_ZERO,
-            base_alpha=0.1, risk_score=0.8,
+            state,
+            GovernanceSymbol.MINUS_ZERO,
+            base_alpha=0.1,
+            risk_score=0.8,
         )
         assert result.state.q == GovernanceMode.QUAR
         assert result.re_anchored
@@ -329,6 +340,7 @@ class TestHybridStep:
 # Tests: Verdict → symbol mapping
 # ---------------------------------------------------------------------------
 
+
 class TestVerdictMapping:
     """Tests for mapping L13 governance decisions to FSGS symbols."""
 
@@ -351,6 +363,7 @@ class TestVerdictMapping:
 # ---------------------------------------------------------------------------
 # Tests: Control sequence analysis
 # ---------------------------------------------------------------------------
+
 
 class TestControlSequenceAnalysis:
     """Tests for analyzing control symbol sequences."""
@@ -385,11 +398,7 @@ class TestControlSequenceAnalysis:
     def test_dwell_times_computed(self):
         """Mode dwell times are correctly computed."""
         # 3x RUN, 2x HOLD, 3x RUN
-        symbols = (
-            [GovernanceSymbol.PLUS_ONE] * 3
-            + [GovernanceSymbol.MINUS_ZERO] * 2
-            + [GovernanceSymbol.PLUS_ONE] * 3
-        )
+        symbols = [GovernanceSymbol.PLUS_ONE] * 3 + [GovernanceSymbol.MINUS_ZERO] * 2 + [GovernanceSymbol.PLUS_ONE] * 3
         stats = analyze_control_sequence(symbols)
         # Should have multiple dwell periods
         total_dwells = sum(len(v) for v in stats.mode_dwell_times.values())
@@ -397,20 +406,14 @@ class TestControlSequenceAnalysis:
 
     def test_hold_ratio_correct(self):
         """Hold ratio reflects time in HOLD/QUAR modes."""
-        symbols = (
-            [GovernanceSymbol.PLUS_ONE] * 5
-            + [GovernanceSymbol.MINUS_ZERO] * 5
-        )
+        symbols = [GovernanceSymbol.PLUS_ONE] * 5 + [GovernanceSymbol.MINUS_ZERO] * 5
         stats = analyze_control_sequence(symbols)
         # Last 5 steps should be in HOLD → hold_ratio = 5/10 = 0.5
         assert stats.hold_ratio == pytest.approx(0.5, abs=0.01)
 
     def test_rollback_ratio_correct(self):
         """Rollback ratio reflects time in ROLLBACK mode."""
-        symbols = (
-            [GovernanceSymbol.PLUS_ONE] * 5
-            + [GovernanceSymbol.MINUS_ONE] * 5
-        )
+        symbols = [GovernanceSymbol.PLUS_ONE] * 5 + [GovernanceSymbol.MINUS_ONE] * 5
         stats = analyze_control_sequence(symbols)
         assert stats.rollback_ratio == pytest.approx(0.5, abs=0.01)
 
@@ -418,6 +421,7 @@ class TestControlSequenceAnalysis:
 # ---------------------------------------------------------------------------
 # Tests: Full trajectory simulation
 # ---------------------------------------------------------------------------
+
 
 class TestTrajectorySimulation:
     """Tests for running FSGS over a full trajectory."""
@@ -454,11 +458,11 @@ class TestTrajectorySimulation:
         """RUN → HOLD → RUN pattern: re-anchoring then recovery."""
         state = make_hybrid_state(0)
         symbols = [
-            GovernanceSymbol.PLUS_ONE,   # RUN
-            GovernanceSymbol.PLUS_ONE,   # RUN
-            GovernanceSymbol.MINUS_ZERO, # HOLD (re-anchor)
-            GovernanceSymbol.MINUS_ZERO, # HOLD (re-anchor)
-            GovernanceSymbol.PLUS_ONE,   # back to RUN
+            GovernanceSymbol.PLUS_ONE,  # RUN
+            GovernanceSymbol.PLUS_ONE,  # RUN
+            GovernanceSymbol.MINUS_ZERO,  # HOLD (re-anchor)
+            GovernanceSymbol.MINUS_ZERO,  # HOLD (re-anchor)
+            GovernanceSymbol.PLUS_ONE,  # back to RUN
         ]
         sim = simulate_trajectory(state, symbols)
         modes = [s.state.q for s in sim.steps]
@@ -481,8 +485,10 @@ class TestTrajectorySimulation:
         # Custom direction: always push dim 0
         custom_dir = lambda x: np.eye(BRAIN_DIMENSIONS)[0]
         result = hybrid_step(
-            state, GovernanceSymbol.PLUS_ONE,
-            direction_fn=custom_dir, base_alpha=0.5,
+            state,
+            GovernanceSymbol.PLUS_ONE,
+            direction_fn=custom_dir,
+            base_alpha=0.5,
         )
         # Dim 0 should have changed more than others
         diff = result.state.x - state.x
@@ -492,6 +498,7 @@ class TestTrajectorySimulation:
 # ---------------------------------------------------------------------------
 # Tests: Integration with governance adapter
 # ---------------------------------------------------------------------------
+
 
 class TestFSGSIntegration:
     """Integration tests connecting FSGS to governance adapter."""

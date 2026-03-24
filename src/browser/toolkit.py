@@ -85,9 +85,11 @@ class _VisibleTextParser(HTMLParser):
 
 # ── Data Classes ─────────────────────────────────────────────────────
 
+
 @dataclass
 class SearchResult:
     """A single search engine result."""
+
     title: str
     url: str
     snippet: str
@@ -97,6 +99,7 @@ class SearchResult:
 @dataclass
 class PageDiff:
     """Changes detected between two fetches of the same URL."""
+
     url: str
     interval_seconds: float
     added_links: List[str] = field(default_factory=list)
@@ -111,6 +114,7 @@ class PageDiff:
 @dataclass
 class ExtractedItem:
     """A single extracted data point from a page."""
+
     pattern_name: str
     value: str
     context: str = ""  # surrounding text for reference
@@ -119,6 +123,7 @@ class ExtractedItem:
 @dataclass
 class JSDetectionResult:
     """Result of JavaScript dependency detection."""
+
     url: str
     needs_js: bool
     reason: str
@@ -143,6 +148,7 @@ BUILTIN_PATTERNS: Dict[str, str] = {
 
 
 # ── Internal Helpers ─────────────────────────────────────────────────
+
 
 def _build_client(**kwargs) -> httpx.AsyncClient:
     """Create an httpx client with sane defaults."""
@@ -186,6 +192,7 @@ def _extract_links_from_html(html: str, base_url: str) -> Set[str]:
 
 # ── 1. Google Search ─────────────────────────────────────────────────
 
+
 def _parse_google_results(html: str) -> List[SearchResult]:
     """Parse Google search HTML into SearchResult list.
 
@@ -197,8 +204,7 @@ def _parse_google_results(html: str) -> List[SearchResult]:
     # Pattern: links that look like organic results (not google internal)
     # Google wraps results in <a href="/url?q=ACTUAL_URL&..."> or direct links
     link_pattern = re.compile(
-        r'<a\s[^>]*href="(/url\?q=([^"&]+)&[^"]*|https?://(?!www\.google\.com)[^"]+)"[^>]*>'
-        r'.*?<h3[^>]*>(.*?)</h3>',
+        r'<a\s[^>]*href="(/url\?q=([^"&]+)&[^"]*|https?://(?!www\.google\.com)[^"]+)"[^>]*>' r".*?<h3[^>]*>(.*?)</h3>",
         re.DOTALL | re.IGNORECASE,
     )
 
@@ -223,18 +229,20 @@ def _parse_google_results(html: str) -> List[SearchResult]:
         # Try to find a snippet near this result
         snippet = ""
         # Look for text in the next few hundred chars after the match
-        after = html[match.end():match.end() + 500]
+        after = html[match.end() : match.end() + 500]
         # Snippet is often in a <span> or <div> after the link
         snippet_match = re.search(r'<(?:span|div)[^>]*class="[^"]*"[^>]*>(.*?)</(?:span|div)>', after, re.DOTALL)
         if snippet_match:
             snippet = _extract_text_from_html(snippet_match.group(1)).strip()
 
-        results.append(SearchResult(
-            title=title,
-            url=url,
-            snippet=snippet[:300],
-            source="google",
-        ))
+        results.append(
+            SearchResult(
+                title=title,
+                url=url,
+                snippet=snippet[:300],
+                source="google",
+            )
+        )
 
     return results
 
@@ -260,20 +268,23 @@ def _parse_duckduckgo_results(html: str) -> List[SearchResult]:
 
         # Look for snippet
         snippet = ""
-        after = html[match.end():match.end() + 500]
+        after = html[match.end() : match.end() + 500]
         snippet_match = re.search(
             r'<a[^>]*class="[^"]*result__snippet[^"]*"[^>]*>(.*?)</a>',
-            after, re.DOTALL | re.IGNORECASE,
+            after,
+            re.DOTALL | re.IGNORECASE,
         )
         if snippet_match:
             snippet = _extract_text_from_html(snippet_match.group(1)).strip()
 
-        results.append(SearchResult(
-            title=title,
-            url=url,
-            snippet=snippet[:300],
-            source="duckduckgo",
-        ))
+        results.append(
+            SearchResult(
+                title=title,
+                url=url,
+                snippet=snippet[:300],
+                source="duckduckgo",
+            )
+        )
 
     return results
 
@@ -324,6 +335,7 @@ async def search(
 
 # ── 2. Page Diff ─────────────────────────────────────────────────────
 
+
 async def diff(
     url: str,
     interval: float = 60.0,
@@ -354,6 +366,7 @@ async def diff(
 
         # Wait
         import asyncio
+
         await asyncio.sleep(interval)
 
         # Second fetch
@@ -395,6 +408,7 @@ async def diff(
 
 
 # ── 3. Smart Extract ─────────────────────────────────────────────────
+
 
 async def extract(
     url: str,
@@ -449,16 +463,19 @@ async def extract(
         end = min(len(text), match.end() + context_chars)
         context = text[start:end].strip()
 
-        items.append(ExtractedItem(
-            pattern_name=pattern_name,
-            value=value,
-            context=context,
-        ))
+        items.append(
+            ExtractedItem(
+                pattern_name=pattern_name,
+                value=value,
+                context=context,
+            )
+        )
 
     return items
 
 
 # ── 4. JavaScript Detection ─────────────────────────────────────────
+
 
 async def needs_js(
     url: str,
@@ -508,10 +525,13 @@ async def needs_js(
             noscript_present = True
 
     # Check for meta redirect
-    meta_redirect = bool(re.search(
-        r'<meta[^>]*http-equiv=["\']refresh["\'][^>]*>',
-        html, re.IGNORECASE,
-    ))
+    meta_redirect = bool(
+        re.search(
+            r'<meta[^>]*http-equiv=["\']refresh["\'][^>]*>',
+            html,
+            re.IGNORECASE,
+        )
+    )
 
     # Extract body text
     body_match = re.search(r"<body[^>]*>(.*?)</body>", html, re.DOTALL | re.IGNORECASE)
@@ -522,7 +542,8 @@ async def needs_js(
     # Check for SPA framework root markers
     spa_markers = re.findall(
         r'id=["\'](?:root|app|__next|__nuxt|__svelte)["\']',
-        html, re.IGNORECASE,
+        html,
+        re.IGNORECASE,
     )
 
     # ── Decision logic ──────────────────────────────────────────

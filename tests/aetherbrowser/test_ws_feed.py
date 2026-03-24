@@ -1,4 +1,5 @@
 """Tests for the WebSocket message protocol."""
+
 import json
 import time
 import pytest
@@ -42,10 +43,7 @@ class TestMessageCreation:
     def test_create_zone_request(self):
         feed = WsFeed()
         msg = feed.zone_request(
-            Agent.RU, Zone.YELLOW,
-            url="https://api.example.com",
-            action="write",
-            description="Post to external API"
+            Agent.RU, Zone.YELLOW, url="https://api.example.com", action="write", description="Post to external API"
         )
         assert msg["type"] == "zone_request"
         assert msg["zone"] == "YELLOW"
@@ -65,11 +63,13 @@ class TestMessageCreation:
         assert msg["payload"]["reason"] == "Connection failed"
 
     def test_parse_command(self):
-        raw = json.dumps({
-            "type": "command",
-            "agent": "user",
-            "payload": {"text": "Research hyperbolic competitors"},
-        })
+        raw = json.dumps(
+            {
+                "type": "command",
+                "agent": "user",
+                "payload": {"text": "Research hyperbolic competitors"},
+            }
+        )
         msg = WsFeed.parse(raw)
         assert msg["type"] == "command"
         assert msg["agent"] == "user"
@@ -87,11 +87,13 @@ class TestMessageCreation:
     def test_zone_response_roundtrip(self):
         feed = WsFeed()
         req = feed.zone_request(Agent.RU, Zone.RED, url="https://bank.com", action="read", description="Financial site")
-        resp_raw = json.dumps({
-            "type": "zone_response",
-            "agent": "user",
-            "payload": {"request_seq": req["seq"], "decision": "deny"},
-        })
+        resp_raw = json.dumps(
+            {
+                "type": "zone_response",
+                "agent": "user",
+                "payload": {"request_seq": req["seq"], "decision": "deny"},
+            }
+        )
         resp = WsFeed.parse(resp_raw)
         assert resp["type"] == "zone_response"
         assert resp["payload"]["decision"] == "deny"

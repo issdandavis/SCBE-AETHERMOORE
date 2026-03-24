@@ -131,9 +131,7 @@ def harmonic_scale_inverse(d: int, R: float = HARMONIC_R) -> float:
     return (1.0 / R) ** (d * d)
 
 
-def harmonic_scale_table(
-    max_d: int, R: float = HARMONIC_R
-) -> List[Dict[str, float]]:
+def harmonic_scale_table(max_d: int, R: float = HARMONIC_R) -> List[Dict[str, float]]:
     """Harmonic scaling table for dimensions 1..max_d."""
     table = []
     for d in range(1, max_d + 1):

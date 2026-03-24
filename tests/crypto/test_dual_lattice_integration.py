@@ -19,7 +19,7 @@ import sys
 import os
 
 # Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 from crypto.dual_lattice_integration import (
     # Layer 1
@@ -58,7 +58,7 @@ from crypto.dual_lattice_integration import (
     layer_14_sonify,
     # Integration
     DualLatticeIntegrator,
-    LayerDecision
+    LayerDecision,
 )
 
 from crypto.dual_lattice import SacredTongue, FluxState
@@ -97,7 +97,7 @@ class TestLayer1PQCGating:
             intent=0.7,
             flux_state=FluxState.POLLY,
             kyber_level=3,
-            dilithium_level=3
+            dilithium_level=3,
         )
         assert vector is not None
         assert decision.layer == 1
@@ -106,11 +106,7 @@ class TestLayer1PQCGating:
     def test_build_lattice_point_gated_fail(self):
         """Reject lattice point with weak PQC."""
         vector, decision = build_lattice_point_gated(
-            tongues={SacredTongue.KO: 0.9},
-            intent=0.5,
-            flux_state=FluxState.QUASI,
-            kyber_level=1,
-            dilithium_level=2
+            tongues={SacredTongue.KO: 0.9}, intent=0.5, flux_state=FluxState.QUASI, kyber_level=1, dilithium_level=2
         )
         assert vector is None
         assert decision.decision == "DENY"
@@ -122,10 +118,7 @@ class TestLayers2to4Projection:
     def test_realify_positive_intent(self):
         """Positive intent should be preserved."""
         context = GeoContext(
-            location=np.array([0.1, 0.2, 0.3]),
-            intent_strength=0.8,
-            temporal_offset=0.0,
-            semantic_weight=1.0
+            location=np.array([0.1, 0.2, 0.3]), intent_strength=0.8, temporal_offset=0.0, semantic_weight=1.0
         )
         real_vec = realify_with_sign(context)
         assert real_vec[3] == 0.8  # Intent at index 3
@@ -133,10 +126,7 @@ class TestLayers2to4Projection:
     def test_realify_negative_intent(self):
         """Negative intent for shadows should be preserved."""
         context = GeoContext(
-            location=np.array([0.0, 0.0, 0.0]),
-            intent_strength=-0.5,
-            temporal_offset=0.1,
-            semantic_weight=0.8
+            location=np.array([0.0, 0.0, 0.0]), intent_strength=-0.5, temporal_offset=0.1, semantic_weight=0.8
         )
         real_vec = realify_with_sign(context)
         assert real_vec[3] == -0.5
@@ -163,10 +153,7 @@ class TestLayers2to4Projection:
     def test_layers_2_4_full_process(self):
         """Full processing through layers 2-4."""
         context = GeoContext(
-            location=np.array([0.2, 0.3, 0.1]),
-            intent_strength=0.7,
-            temporal_offset=0.05,
-            semantic_weight=1.0
+            location=np.array([0.2, 0.3, 0.1]), intent_strength=0.7, temporal_offset=0.05, semantic_weight=1.0
         )
         projected, realm, decision = layers_2_4_process(context)
         assert realm == RealmType.LIGHT

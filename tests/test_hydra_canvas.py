@@ -2,6 +2,7 @@
 
 import sys
 import os
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from hydra.canvas import (
@@ -118,8 +119,7 @@ class TestCanvasOrchestrator:
     def test_roundabout_execution(self):
         steps = [
             CanvasStep("draft", StepType.DRAFT),
-            CanvasStep("check", StepType.ROUNDABOUT, depends_on=["draft"],
-                       params={"min_quality": 0.5}),
+            CanvasStep("check", StepType.ROUNDABOUT, depends_on=["draft"], params={"min_quality": 0.5}),
         ]
         orch = CanvasOrchestrator(available_providers=["claude"])
         orch.execute_recipe(steps, topic="test")
@@ -182,4 +182,5 @@ class TestRunRecipe:
 
 if __name__ == "__main__":
     import pytest
+
     pytest.main([__file__, "-v"])

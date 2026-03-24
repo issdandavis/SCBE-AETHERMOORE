@@ -277,11 +277,15 @@ def main() -> None:
     output_path = args.output
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(build_uv_job_script(chapters), encoding="utf-8")
-    print(json.dumps({
-        "output": str(output_path),
-        "chapters": len(chapters),
-        "panels": total_panels,
-    }))
+    print(
+        json.dumps(
+            {
+                "output": str(output_path),
+                "chapters": len(chapters),
+                "panels": total_panels,
+            }
+        )
+    )
 
 
 if __name__ == "__main__":

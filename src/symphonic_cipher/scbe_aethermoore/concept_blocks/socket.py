@@ -41,12 +41,14 @@ from .telemetry import TelemetryLog, TelemetryRecord
 # Sacred Egg ring levels (access control tiers)
 # ---------------------------------------------------------------------------
 
+
 class EggRing(Enum):
     """Access rings from sacred_eggs.py — determines attachment permission."""
-    CORE = 0       # Innermost: full pipeline access
-    INNER = 1      # Trusted: layers 1-12
-    OUTER = 2      # Limited: layers 1-8 only
-    CA = 3         # Certificate Authority: read-only telemetry
+
+    CORE = 0  # Innermost: full pipeline access
+    INNER = 1  # Trusted: layers 1-12
+    OUTER = 2  # Limited: layers 1-8 only
+    CA = 3  # Certificate Authority: read-only telemetry
 
 
 # ---------------------------------------------------------------------------
@@ -54,12 +56,12 @@ class EggRing(Enum):
 # ---------------------------------------------------------------------------
 
 TONGUE_PHASES: Dict[str, float] = {
-    "KO": 0.0,                    # Kor'aelin — Control/orchestration
-    "AV": math.pi / 3,            # Avali — Initialization/transport
-    "RU": 2 * math.pi / 3,        # Runethic — Policy/authorization
-    "CA": math.pi,                 # Cassisivadan — Encryption/compute
-    "UM": 4 * math.pi / 3,        # Umbroth — Redaction/privacy
-    "DR": 5 * math.pi / 3,        # Draumric — Authentication/integrity
+    "KO": 0.0,  # Kor'aelin — Control/orchestration
+    "AV": math.pi / 3,  # Avali — Initialization/transport
+    "RU": 2 * math.pi / 3,  # Runethic — Policy/authorization
+    "CA": math.pi,  # Cassisivadan — Encryption/compute
+    "UM": 4 * math.pi / 3,  # Umbroth — Redaction/privacy
+    "DR": 5 * math.pi / 3,  # Draumric — Authentication/integrity
 }
 
 
@@ -67,16 +69,17 @@ TONGUE_PHASES: Dict[str, float] = {
 # Socket definition
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class SocketSpec:
     """Defines a slot on the PotatoHead body where a block can attach."""
 
     name: str
-    layer: int                       # Pipeline layer (1-14)
-    min_ring: EggRing                # Minimum ring required to attach
-    tongue: str                      # Which Sacred Tongue governs this slot
-    required: bool = False           # Is this socket mandatory for operation?
-    max_blocks: int = 1              # How many blocks can attach here (usually 1)
+    layer: int  # Pipeline layer (1-14)
+    min_ring: EggRing  # Minimum ring required to attach
+    tongue: str  # Which Sacred Tongue governs this slot
+    required: bool = False  # Is this socket mandatory for operation?
+    max_blocks: int = 1  # How many blocks can attach here (usually 1)
 
     @property
     def phase(self) -> float:
@@ -92,7 +95,7 @@ class AttachmentRecord:
     socket_name: str
     ring: EggRing
     attached_at: float = field(default_factory=time.time)
-    egg_hash: str = ""               # SHA-256 of the Sacred Egg that authorized this
+    egg_hash: str = ""  # SHA-256 of the Sacred Egg that authorized this
 
     @property
     def age_seconds(self) -> float:
@@ -102,6 +105,7 @@ class AttachmentRecord:
 # ---------------------------------------------------------------------------
 # Eigenvalue guard — non-negative eigenvalues only
 # ---------------------------------------------------------------------------
+
 
 def _eigenvalue_check(state_vector: List[float]) -> Tuple[bool, float]:
     """Verify all eigenvalues of the state autocorrelation are non-negative.
@@ -127,6 +131,7 @@ def _eigenvalue_check(state_vector: List[float]) -> Tuple[bool, float]:
 # Sacred Egg authorization stub
 # ---------------------------------------------------------------------------
 
+
 def _compute_egg_hash(block_name: str, socket_name: str, ring: EggRing) -> str:
     """Derive a deterministic egg hash for an attachment.
 
@@ -143,12 +148,12 @@ def _compute_egg_hash(block_name: str, socket_name: str, ring: EggRing) -> str:
 
 # Default socket layout maps the 6 existing concept blocks + the new 6th sense
 DEFAULT_SOCKETS: List[SocketSpec] = [
-    SocketSpec("sense",      layer=9,  min_ring=EggRing.OUTER, tongue="KO"),
-    SocketSpec("plan",       layer=6,  min_ring=EggRing.OUTER, tongue="AV"),
-    SocketSpec("decide",     layer=7,  min_ring=EggRing.INNER, tongue="RU"),
-    SocketSpec("steer",      layer=8,  min_ring=EggRing.INNER, tongue="CA"),
-    SocketSpec("coordinate", layer=12, min_ring=EggRing.CORE,  tongue="UM"),
-    SocketSpec("proximity",  layer=14, min_ring=EggRing.CORE,  tongue="DR", required=True),
+    SocketSpec("sense", layer=9, min_ring=EggRing.OUTER, tongue="KO"),
+    SocketSpec("plan", layer=6, min_ring=EggRing.OUTER, tongue="AV"),
+    SocketSpec("decide", layer=7, min_ring=EggRing.INNER, tongue="RU"),
+    SocketSpec("steer", layer=8, min_ring=EggRing.INNER, tongue="CA"),
+    SocketSpec("coordinate", layer=12, min_ring=EggRing.CORE, tongue="UM"),
+    SocketSpec("proximity", layer=14, min_ring=EggRing.CORE, tongue="DR", required=True),
 ]
 
 
@@ -181,7 +186,7 @@ class PotatoHead:
         self._telemetry = TelemetryLog()
         self._tick_count = 0
 
-        for spec in (sockets or DEFAULT_SOCKETS):
+        for spec in sockets or DEFAULT_SOCKETS:
             self._sockets[spec.name] = spec
             self._attachments[spec.name] = []
 
@@ -195,11 +200,7 @@ class PotatoHead:
     @property
     def attached_blocks(self) -> Dict[str, List[str]]:
         """Map of socket_name -> list of attached block names."""
-        return {
-            name: [rec.block.name for rec in recs]
-            for name, recs in self._attachments.items()
-            if recs
-        }
+        return {name: [rec.block.name for rec in recs] for name, recs in self._attachments.items() if recs}
 
     @property
     def empty_sockets(self) -> List[str]:
@@ -209,10 +210,7 @@ class PotatoHead:
     @property
     def missing_required(self) -> List[str]:
         """Required sockets that have no block attached."""
-        return [
-            name for name, spec in self._sockets.items()
-            if spec.required and not self._attachments[name]
-        ]
+        return [name for name, spec in self._sockets.items() if spec.required and not self._attachments[name]]
 
     # -- attach / detach -----------------------------------------------------
 
@@ -246,9 +244,7 @@ class PotatoHead:
         # Capacity check
         current = self._attachments[socket_name]
         if len(current) >= spec.max_blocks:
-            raise ValueError(
-                f"Socket '{socket_name}' is full ({spec.max_blocks} block(s) max)"
-            )
+            raise ValueError(f"Socket '{socket_name}' is full ({spec.max_blocks} block(s) max)")
 
         egg_hash = _compute_egg_hash(block.name, socket_name, ring)
         record = AttachmentRecord(
@@ -259,12 +255,14 @@ class PotatoHead:
         )
         current.append(record)
 
-        self._telemetry.append(TelemetryRecord(
-            block_name=f"socket:{socket_name}",
-            inputs={"action": "attach", "block": block.name, "ring": ring.name},
-            outputs={"egg_hash": egg_hash},
-            status="ok",
-        ))
+        self._telemetry.append(
+            TelemetryRecord(
+                block_name=f"socket:{socket_name}",
+                inputs={"action": "attach", "block": block.name, "ring": ring.name},
+                outputs={"egg_hash": egg_hash},
+                status="ok",
+            )
+        )
 
         return record
 
@@ -299,12 +297,14 @@ class PotatoHead:
         # Reset detached blocks to prevent phantom state
         for rec in removed:
             rec.block.reset()
-            self._telemetry.append(TelemetryRecord(
-                block_name=f"socket:{socket_name}",
-                inputs={"action": "detach", "block": rec.block.name},
-                outputs={"age_s": rec.age_seconds},
-                status="ok",
-            ))
+            self._telemetry.append(
+                TelemetryRecord(
+                    block_name=f"socket:{socket_name}",
+                    inputs={"action": "detach", "block": rec.block.name},
+                    outputs={"age_s": rec.age_seconds},
+                    status="ok",
+                )
+            )
 
         return len(removed) > 0
 
@@ -348,10 +348,7 @@ class PotatoHead:
 
     def capabilities(self) -> Dict[str, bool]:
         """Report which capabilities this agent currently has."""
-        return {
-            name: len(self._attachments[name]) > 0
-            for name in self._sockets
-        }
+        return {name: len(self._attachments[name]) > 0 for name in self._sockets}
 
     def health_check(self) -> Dict[str, Any]:
         """Run eigenvalue guard and report overall health."""
@@ -375,9 +372,7 @@ class PotatoHead:
             "empty_sockets": self.empty_sockets,
             "eigenvalue_ok": ev_ok,
             "min_eigenvalue": min_ev,
-            "total_attachments": sum(
-                len(recs) for recs in self._attachments.values()
-            ),
+            "total_attachments": sum(len(recs) for recs in self._attachments.values()),
         }
 
     def __repr__(self) -> str:

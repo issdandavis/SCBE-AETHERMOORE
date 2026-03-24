@@ -57,15 +57,17 @@ EPS = 1e-12
 # 4-symbol control alphabet
 # ---------------------------------------------------------------------------
 
+
 class GovernanceSymbol(enum.Enum):
     """Four-state governance symbol (m, s) ∈ {0,1}².
 
     Avoids IEEE-754 signed-zero dependence by encoding
     as an explicit (magnitude, sign) pair.
     """
-    PLUS_ONE = (1, 1)    # +1: forward impulse → RUN
-    MINUS_ONE = (1, 0)   # -1: reverse impulse → ROLLBACK
-    PLUS_ZERO = (0, 1)   # +0: no impulse, continue
+
+    PLUS_ONE = (1, 1)  # +1: forward impulse → RUN
+    MINUS_ONE = (1, 0)  # -1: reverse impulse → ROLLBACK
+    PLUS_ZERO = (0, 1)  # +0: no impulse, continue
     MINUS_ZERO = (0, 0)  # -0: no impulse, hold/quarantine + re-anchor
 
     @property
@@ -91,8 +93,10 @@ class GovernanceSymbol(enum.Enum):
 
     def __repr__(self) -> str:
         labels = {
-            (1, 1): "+1", (1, 0): "-1",
-            (0, 1): "+0", (0, 0): "-0",
+            (1, 1): "+1",
+            (1, 0): "-1",
+            (0, 1): "+0",
+            (0, 0): "-0",
         }
         return f"GovernanceSymbol({labels[self.value]})"
 
@@ -106,6 +110,7 @@ def symbol_from_bits(m: int, s: int) -> GovernanceSymbol:
 # Governance modes (discrete automaton states)
 # ---------------------------------------------------------------------------
 
+
 class GovernanceMode(enum.Enum):
     """Discrete governance mode in the hybrid automaton.
 
@@ -114,6 +119,7 @@ class GovernanceMode(enum.Enum):
     QUAR:     Quarantined, restricted operations
     ROLLBACK: Reverse thrust / audit mode (triggered by -1)
     """
+
     RUN = "RUN"
     HOLD = "HOLD"
     QUAR = "QUAR"
@@ -124,6 +130,7 @@ class GovernanceMode(enum.Enum):
 # Hybrid state
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class HybridState:
     """Combined continuous + discrete state of the hybrid automaton.
@@ -133,6 +140,7 @@ class HybridState:
         q: Discrete governance mode.
         step: Current timestep.
     """
+
     x: np.ndarray
     q: GovernanceMode = GovernanceMode.RUN
     step: int = 0
@@ -144,6 +152,7 @@ class HybridState:
 # ---------------------------------------------------------------------------
 # Mode transition function δ(q, σ, x)
 # ---------------------------------------------------------------------------
+
 
 def mode_transition(
     q: GovernanceMode,
@@ -186,6 +195,7 @@ def mode_transition(
 # ---------------------------------------------------------------------------
 # Direction field d(x) and gain α(x)
 # ---------------------------------------------------------------------------
+
 
 def default_direction_field(
     x: np.ndarray,
@@ -241,6 +251,7 @@ def poincare_gain(
 # Trust tube projection Π_T
 # ---------------------------------------------------------------------------
 
+
 def tube_project(
     x: np.ndarray,
     poincare_max: float = 0.95,
@@ -272,9 +283,11 @@ def tube_project(
 # Hybrid step: the core update rule
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class StepResult:
     """Result of a single hybrid step."""
+
     state: HybridState
     symbol: GovernanceSymbol
     prev_mode: GovernanceMode
@@ -364,6 +377,7 @@ def hybrid_step(
 # Verdict → symbol mapping
 # ---------------------------------------------------------------------------
 
+
 def verdict_to_symbol(decision: str, combined_score: float = 0.0) -> GovernanceSymbol:
     """Map L13 governance decision to FSGS symbol.
 
@@ -392,6 +406,7 @@ def verdict_to_symbol(decision: str, combined_score: float = 0.0) -> GovernanceS
 # Control sequence analysis
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class ControlSequenceStats:
     """Statistics of a governance control sequence σ_t.
@@ -399,6 +414,7 @@ class ControlSequenceStats:
     Tracks mode dwell times, transition rates, and symbol
     distribution — the "spectral signature" of the control channel.
     """
+
     length: int
     symbol_counts: Dict[str, int]
     mode_dwell_times: Dict[str, List[int]]
@@ -462,7 +478,10 @@ def analyze_control_sequence(
 
     # Mode dwell times
     dwell_times: Dict[str, List[int]] = {
-        "RUN": [], "HOLD": [], "QUAR": [], "ROLLBACK": [],
+        "RUN": [],
+        "HOLD": [],
+        "QUAR": [],
+        "ROLLBACK": [],
     }
     if mode_seq:
         current_mode = mode_seq[0]
@@ -477,10 +496,7 @@ def analyze_control_sequence(
         dwell_times[current_mode.value].append(current_dwell)
 
     # Transition count
-    transitions = sum(
-        1 for i in range(1, len(mode_seq))
-        if mode_seq[i] != mode_seq[i - 1]
-    )
+    transitions = sum(1 for i in range(1, len(mode_seq)) if mode_seq[i] != mode_seq[i - 1])
 
     # Mode ratios
     mode_counts = {m.value: 0 for m in GovernanceMode}
@@ -506,9 +522,11 @@ def analyze_control_sequence(
 # Full trajectory simulation
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TrajectorySimulation:
     """Result of running FSGS over a full trajectory."""
+
     steps: List[StepResult]
     control_stats: ControlSequenceStats
     final_state: HybridState
@@ -542,7 +560,8 @@ def simulate_trajectory(
     for i, sigma in enumerate(symbols):
         risk = risk_scores[i] if risk_scores else 0.0
         result = hybrid_step(
-            state, sigma,
+            state,
+            sigma,
             direction_fn=direction_fn,
             base_alpha=base_alpha,
             risk_score=risk,

@@ -70,7 +70,11 @@ def main() -> int:
     parser.add_argument("--scan-limit", type=int, default=50)
     args = parser.parse_args()
 
-    switchboard_db = str((ROOT / args.switchboard_db).resolve()) if not Path(args.switchboard_db).is_absolute() else args.switchboard_db
+    switchboard_db = (
+        str((ROOT / args.switchboard_db).resolve())
+        if not Path(args.switchboard_db).is_absolute()
+        else args.switchboard_db
+    )
     pad_db = str((ROOT / args.pad_db).resolve()) if not Path(args.pad_db).is_absolute() else args.pad_db
 
     board = Switchboard(switchboard_db)

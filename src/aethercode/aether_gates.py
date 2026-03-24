@@ -41,6 +41,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
 # ── Sacred Tongue Affinity ───────────────────────────────────────────
 
+
 class Tongue(str, Enum):
     KO = "KO"  # Authority / Control
     AV = "AV"  # Transport / Messaging
@@ -52,12 +53,13 @@ class Tongue(str, Enum):
 
 # ── Privilege Tiers ──────────────────────────────────────────────────
 
+
 class PrivilegeTier(str, Enum):
-    OBSERVER = "observer"      # Read-only, monitoring (Rath tier)
-    SCOUT = "scout"            # Read + limited external calls
-    OPERATOR = "operator"      # Read + write + external calls
-    ARCHITECT = "architect"    # Full access, can modify gates
-    ADMIN = "admin"            # Izack tier — all permissions
+    OBSERVER = "observer"  # Read-only, monitoring (Rath tier)
+    SCOUT = "scout"  # Read + limited external calls
+    OPERATOR = "operator"  # Read + write + external calls
+    ARCHITECT = "architect"  # Full access, can modify gates
+    ADMIN = "admin"  # Izack tier — all permissions
 
 
 TIER_PERMISSIONS = {
@@ -143,9 +145,11 @@ def check_permission(agent_id: str, permission: str) -> bool:
 
 # ── Gate Definition ──────────────────────────────────────────────────
 
+
 @dataclass
 class AetherGate:
     """A controlled portal to an external API realm."""
+
     name: str
     tongue: Tongue
     endpoint: str
@@ -178,7 +182,6 @@ GATE_REGISTRY: Dict[str, AetherGate] = {
         description="Reveal the caller's external identity",
         lore="The Mirror of Authority reflects your true network identity.",
     ),
-
     # ── AV: Transport / Geographic Gates ──
     "av-geocode": AetherGate(
         name="Cartographer's Gate",
@@ -204,7 +207,6 @@ GATE_REGISTRY: Dict[str, AetherGate] = {
         lore="The complete atlas maintained by AV Transport scribes.",
         params={"fields": "name,capital,population,region,flags"},
     ),
-
     # ── RU: Policy / Knowledge Gates ──
     "ru-hackernews-top": AetherGate(
         name="Chronicle Gate",
@@ -236,7 +238,6 @@ GATE_REGISTRY: Dict[str, AetherGate] = {
         lore="Test your knowledge at Aria's Scholar Trial — random questions from all domains.",
         params={"amount": "5", "type": "multiple"},
     ),
-
     # ── CA: Compute / Finance Gates ──
     "ca-bitcoin-price": AetherGate(
         name="Crypto Oracle",
@@ -267,7 +268,6 @@ GATE_REGISTRY: Dict[str, AetherGate] = {
         description="Random mathematical facts",
         lore="Zara consults the Number Oracle for mathematical truths.",
     ),
-
     # ── UM: Security / Intel Gates ──
     "um-ip-geolocation": AetherGate(
         name="Shadow Scanner",
@@ -291,7 +291,6 @@ GATE_REGISTRY: Dict[str, AetherGate] = {
         lore="The Name Resolver traces domain names to their true addresses.",
         params={"type": "A"},
     ),
-
     # ── DR: Schema / Random Data Gates ──
     "dr-random-quote": AetherGate(
         name="Wisdom Gate",
@@ -333,9 +332,11 @@ GATE_REGISTRY: Dict[str, AetherGate] = {
 
 # ── Rath: The Observer Agent ─────────────────────────────────────────
 
+
 @dataclass
 class RathObservation:
     """A single observation by Rath, the Observer Agent."""
+
     timestamp: str
     gate_name: str
     agent_id: str
@@ -374,9 +375,7 @@ class RathObserver:
         if agent_id not in self._rate_counters:
             self._rate_counters[agent_id] = []
         # Prune old entries
-        self._rate_counters[agent_id] = [
-            t for t in self._rate_counters[agent_id] if now - t < window
-        ]
+        self._rate_counters[agent_id] = [t for t in self._rate_counters[agent_id] if now - t < window]
         if len(self._rate_counters[agent_id]) >= max_rpm:
             return False
         self._rate_counters[agent_id].append(now)
@@ -419,6 +418,7 @@ rath = RathObserver()
 
 
 # ── Gate Invocation Engine ───────────────────────────────────────────
+
 
 async def invoke_gate(
     gate_id: str,
@@ -573,16 +573,18 @@ def list_gates(tongue: Optional[str] = None) -> List[Dict[str, Any]]:
     for gid, gate in GATE_REGISTRY.items():
         if tongue and gate.tongue.value != tongue.upper():
             continue
-        gates.append({
-            "id": gid,
-            "name": gate.name,
-            "tongue": gate.tongue.value,
-            "endpoint": gate.endpoint,
-            "description": gate.description,
-            "lore": gate.lore,
-            "min_tier": gate.min_tier.value,
-            "active": gate.active,
-        })
+        gates.append(
+            {
+                "id": gid,
+                "name": gate.name,
+                "tongue": gate.tongue.value,
+                "endpoint": gate.endpoint,
+                "description": gate.description,
+                "lore": gate.lore,
+                "min_tier": gate.min_tier.value,
+                "active": gate.active,
+            }
+        )
     return gates
 
 

@@ -167,10 +167,9 @@ def compute_delta(
     for rel_s in sorted(curr_paths & prev_paths):
         prev_meta = previous_index.get(rel_s, {})
         curr_meta = current_index.get(rel_s, {})
-        if (
-            int(prev_meta.get("size", -1)) != int(curr_meta.get("size", -2))
-            or int(prev_meta.get("mtime_ns", -1)) != int(curr_meta.get("mtime_ns", -2))
-        ):
+        if int(prev_meta.get("size", -1)) != int(curr_meta.get("size", -2)) or int(
+            prev_meta.get("mtime_ns", -1)
+        ) != int(curr_meta.get("mtime_ns", -2)):
             modified.append(rel_s)
 
     changed = sorted(set(added + modified))
@@ -477,9 +476,7 @@ def upload_to_adobe_cloud(run_id: str, base_dir: str, files: List[Path]) -> Dict
         root = detect_adobe_sync_dir()
 
     if root is None:
-        raise RuntimeError(
-            "Adobe Cloud sync folder not found. Set shipping.adobe.base_dir or ADOBE_CLOUD_SYNC_DIR."
-        )
+        raise RuntimeError("Adobe Cloud sync folder not found. Set shipping.adobe.base_dir or ADOBE_CLOUD_SYNC_DIR.")
 
     return upload_to_local_sync_folder(root, run_id, files)
 
@@ -510,9 +507,7 @@ def detect_gdrive_sync_dir() -> Path | None:
 def upload_to_gdrive(run_id: str, base_dir: str, files: List[Path]) -> Dict[str, Any]:
     root: Path | None = Path(base_dir).expanduser() if base_dir.strip() else detect_gdrive_sync_dir()
     if root is None:
-        raise RuntimeError(
-            "Google Drive sync folder not found. Set shipping.gdrive.base_dir or GOOGLE_DRIVE_SYNC_DIR."
-        )
+        raise RuntimeError("Google Drive sync folder not found. Set shipping.gdrive.base_dir or GOOGLE_DRIVE_SYNC_DIR.")
     return upload_to_local_sync_folder(root, run_id, files)
 
 
@@ -540,9 +535,7 @@ def detect_proton_drive_dir() -> Path | None:
 def upload_to_proton(run_id: str, base_dir: str, files: List[Path]) -> Dict[str, Any]:
     root: Path | None = Path(base_dir).expanduser() if base_dir.strip() else detect_proton_drive_dir()
     if root is None:
-        raise RuntimeError(
-            "Proton Drive sync folder not found. Set shipping.proton.base_dir or PROTON_DRIVE_SYNC_DIR."
-        )
+        raise RuntimeError("Proton Drive sync folder not found. Set shipping.proton.base_dir or PROTON_DRIVE_SYNC_DIR.")
     return upload_to_local_sync_folder(root, run_id, files)
 
 
@@ -646,9 +639,11 @@ def run_sync_cycle(
     upload_files = [archive_path, manifest_path, index_path]
 
     ship_config = dict(config.get("shipping", {}))
-    selected_targets = parse_ship_targets(args.ship_targets) if args.ship_targets else {
-        key for key, value in ship_config.items() if isinstance(value, dict) and bool(value.get("enabled"))
-    }
+    selected_targets = (
+        parse_ship_targets(args.ship_targets)
+        if args.ship_targets
+        else {key for key, value in ship_config.items() if isinstance(value, dict) and bool(value.get("enabled"))}
+    )
     shipping_results: Dict[str, Any] = {}
     shipping_errors: Dict[str, str] = {}
 

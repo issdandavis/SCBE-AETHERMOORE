@@ -112,16 +112,17 @@ def _tier_distance(a: ComplexityTier, b: ComplexityTier) -> int:
 #  Archetype Scoring
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ArchetypeMatch:
     """Result of matching a governance decision to a catalog archetype."""
 
     archetype: TaskArchetype
-    score: float               # Total match score (higher = better)
-    radial_r: float            # Radial coordinate used for matching
-    radial_fit: float          # How well r fits the archetype's zone [0,1]
-    complexity_fit: float      # Complexity tier alignment [0,1]
-    modality_fit: float        # Modality tag overlap [0,1]
+    score: float  # Total match score (higher = better)
+    radial_r: float  # Radial coordinate used for matching
+    radial_fit: float  # How well r fits the archetype's zone [0,1]
+    complexity_fit: float  # Complexity tier alignment [0,1]
+    modality_fit: float  # Modality tag overlap [0,1]
     decision_compatible: bool  # Does the decision meet min_governance_verdict?
 
     def to_dict(self) -> Dict[str, Any]:
@@ -199,12 +200,7 @@ def _score_archetype(
     compat_bonus = 1.0 if decision_compatible else 0.0
 
     # Weighted total
-    score = (
-        0.4 * radial_fit
-        + 0.3 * complexity_fit
-        + 0.2 * modality_fit
-        + 0.1 * compat_bonus
-    )
+    score = 0.4 * radial_fit + 0.3 * complexity_fit + 0.2 * modality_fit + 0.1 * compat_bonus
 
     return ArchetypeMatch(
         archetype=archetype,
@@ -220,6 +216,7 @@ def _score_archetype(
 # ---------------------------------------------------------------------------
 #  Public API — The Bridge
 # ---------------------------------------------------------------------------
+
 
 class MatrixCatalogBridge:
     """Bridges governance decisions to Context Catalog archetypes.
@@ -370,9 +367,7 @@ class MatrixCatalogBridge:
         event.archetype_id = match.archetype.archetype_id
         event.polyhedron = match.archetype.polyhedron.value
         event.radial_zone = match.archetype.radial_zone
-        event.symmetry_order = POLYHEDRON_SYMMETRY.get(
-            match.archetype.polyhedron.value, 0
-        )
+        event.symmetry_order = POLYHEDRON_SYMMETRY.get(match.archetype.polyhedron.value, 0)
 
         # If we computed a better radial, update the event
         if match.radial_r > 0 and event.radial_r == 0:

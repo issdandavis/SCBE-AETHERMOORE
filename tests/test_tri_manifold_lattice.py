@@ -319,9 +319,7 @@ class TestTriManifoldLattice:
         assert lat.temporal_resonance() > 0.95
 
     def test_temporal_resonance_drops_on_shift(self):
-        lat = TriManifoldLattice(
-            window_immediate=3, window_memory=10, window_governance=30
-        )
+        lat = TriManifoldLattice(window_immediate=3, window_memory=10, window_governance=30)
         for _ in range(50):
             lat.ingest(ORIGIN)
         steady = lat.temporal_resonance()

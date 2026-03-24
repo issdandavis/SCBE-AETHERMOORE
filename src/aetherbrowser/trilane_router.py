@@ -26,20 +26,20 @@ from src.aetherbrowser.router import OctoArmorRouter
 
 
 class BrowserLane(str, Enum):
-    HEADLESS = "headless"      # CDP/Playwright — bulk, parallel, fast
-    MCP = "mcp"                # Claude-in-Chrome — interactive, real tabs
-    VISUAL = "visual"          # Screenshot + multimodal — "see" the page
-    COMBINED = "combined"      # Multiple lanes for complex tasks
+    HEADLESS = "headless"  # CDP/Playwright — bulk, parallel, fast
+    MCP = "mcp"  # Claude-in-Chrome — interactive, real tabs
+    VISUAL = "visual"  # Screenshot + multimodal — "see" the page
+    COMBINED = "combined"  # Multiple lanes for complex tasks
 
 
 class TaskIntent(str, Enum):
-    SCRAPE = "scrape"          # Extract data from pages
-    RESEARCH = "research"      # Search + read + summarize
-    INTERACT = "interact"      # Fill forms, click, navigate
-    VERIFY = "verify"          # Check if something looks right
-    POST = "post"              # Publish content somewhere
-    MONITOR = "monitor"        # Watch for changes
-    TRAIN = "train"            # Capture interactions for model training
+    SCRAPE = "scrape"  # Extract data from pages
+    RESEARCH = "research"  # Search + read + summarize
+    INTERACT = "interact"  # Fill forms, click, navigate
+    VERIFY = "verify"  # Check if something looks right
+    POST = "post"  # Publish content somewhere
+    MONITOR = "monitor"  # Watch for changes
+    TRAIN = "train"  # Capture interactions for model training
 
 
 # Lane selection rules
@@ -61,6 +61,7 @@ _TRAIN_KEYWORDS = {"train", "learn", "shadow", "capture", "record", "log", "sft"
 @dataclass
 class LaneResult:
     """Result from a single lane execution."""
+
     lane: BrowserLane
     success: bool
     data: dict[str, Any] = field(default_factory=dict)
@@ -73,6 +74,7 @@ class LaneResult:
 @dataclass
 class TriLaneResult:
     """Combined result from all lanes used."""
+
     task: str
     intent: TaskIntent
     lanes_used: list[BrowserLane]
@@ -122,8 +124,8 @@ class TriLaneRouter:
     def __init__(
         self,
         *,
-        headless_backend: str = "cdp",   # "cdp" or "playwright"
-        mcp_backend: str = "chrome",      # "chrome" or "playwright-mcp"
+        headless_backend: str = "cdp",  # "cdp" or "playwright"
+        mcp_backend: str = "chrome",  # "chrome" or "playwright-mcp"
         enable_shadow_training: bool = True,
         shadow_model_id: str = "issdandavis/scbe-unified-governance",
         local_first: bool = True,
@@ -195,6 +197,7 @@ class TriLaneRouter:
             from src.aetherbrowser.command_planner import build_command_plan
             from src.aetherbrowser.agents import AgentSquad
             from src.aetherbrowser.ws_feed import WsFeed
+
             if self._squad is None:
                 feed = WsFeed()
                 self._squad = AgentSquad(feed)
@@ -255,9 +258,11 @@ class TriLaneRouter:
         # Import the appropriate backend
         if self._headless_backend == "cdp":
             from agents.browsers.cdp_backend import CDPBackend
+
             backend = CDPBackend()
         else:
             from agents.browsers.playwright_backend import PlaywrightBackend
+
             backend = PlaywrightBackend()
 
         targets = plan.get("targets", []) or []
@@ -321,12 +326,14 @@ class TriLaneRouter:
             if isinstance(action, dict):
                 mcp_actions.append(action)
             else:
-                mcp_actions.append({
-                    "label": getattr(action, "label", str(action)),
-                    "risk_tier": getattr(action, "risk_tier", "unknown"),
-                    "requires_approval": getattr(action, "requires_approval", False),
-                    "command_hint": getattr(action, "command_hint", None),
-                })
+                mcp_actions.append(
+                    {
+                        "label": getattr(action, "label", str(action)),
+                        "risk_tier": getattr(action, "risk_tier", "unknown"),
+                        "requires_approval": getattr(action, "requires_approval", False),
+                        "command_hint": getattr(action, "command_hint", None),
+                    }
+                )
 
         result_data["mcp_actions"] = mcp_actions
         result_data["targets"] = plan.get("targets", [])
@@ -354,9 +361,11 @@ class TriLaneRouter:
             # Use headless backend to capture screenshot
             if self._headless_backend == "cdp":
                 from agents.browsers.cdp_backend import CDPBackend
+
                 backend = CDPBackend()
             else:
                 from agents.browsers.playwright_backend import PlaywrightBackend
+
                 backend = PlaywrightBackend()
 
             targets = plan.get("targets", []) or []
@@ -396,20 +405,23 @@ class TriLaneRouter:
         """Build an SFT training pair from this execution for shadow model training."""
         return {
             "instruction": result.task,
-            "input": json.dumps({
-                "intent": result.intent.value,
-                "lanes": [l.value for l in result.lanes_used],
-                "risk": result.plan.get("risk_tier") if result.plan else "unknown",
-                "targets": result.plan.get("targets", []) if result.plan else [],
-            }),
-            "output": json.dumps({
-                "success": result.success,
-                "lane_results": [
-                    {"lane": r.lane.value, "success": r.success, "actions": r.actions_taken}
-                    for r in result.results
-                ],
-                "governance": result.plan.get("review_zone") if result.plan else None,
-            }),
+            "input": json.dumps(
+                {
+                    "intent": result.intent.value,
+                    "lanes": [l.value for l in result.lanes_used],
+                    "risk": result.plan.get("risk_tier") if result.plan else "unknown",
+                    "targets": result.plan.get("targets", []) if result.plan else [],
+                }
+            ),
+            "output": json.dumps(
+                {
+                    "success": result.success,
+                    "lane_results": [
+                        {"lane": r.lane.value, "success": r.success, "actions": r.actions_taken} for r in result.results
+                    ],
+                    "governance": result.plan.get("review_zone") if result.plan else None,
+                }
+            ),
             "label": f"browser_routing_{result.intent.value}",
             "model": self._shadow_model,
             "timestamp": time.time(),
@@ -444,6 +456,7 @@ class TriLaneRouter:
 # =============================================================================
 # CLI Interface — the "kiosk" entry point
 # =============================================================================
+
 
 async def kiosk_mode():
     """Interactive kiosk mode — type commands, get browser actions."""

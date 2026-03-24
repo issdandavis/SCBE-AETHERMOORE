@@ -55,9 +55,7 @@ def _mk_state(nav=(0.1, 0.1, 0.1), osc=0, history=None):
     vec[3], vec[4], vec[5] = nav
     if history is None:
         history = []
-    return StateVector(
-        vector=tuple(vec), history=history, attestations=[], oscillation_state=osc
-    )
+    return StateVector(vector=tuple(vec), history=history, attestations=[], oscillation_state=osc)
 
 
 def _mk_policy(**overrides):
@@ -267,7 +265,7 @@ class TestHatchGate:
         policy = _mk_policy(required_ring=0, required_cell=cell)
         return SacredEgg(
             id="test",
-            payload_cipher=b"\xAA" * 64 + b"\xBB" * 16,
+            payload_cipher=b"\xaa" * 64 + b"\xbb" * 16,
             policy=policy,
             mac=b"",
         )

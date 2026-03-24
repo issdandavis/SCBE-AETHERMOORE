@@ -1,4 +1,5 @@
 """Tests for hydra/color_dimension.py — Frequency-Based Flow Isolation."""
+
 import math
 import pytest
 import sys
@@ -32,6 +33,7 @@ from hydra.color_dimension import (
 
 
 # ── ColorChannel ──────────────────────────────────────────────────
+
 
 class TestColorChannel:
     def test_frequency_from_wavelength(self):
@@ -115,6 +117,7 @@ class TestColorChannel:
 
 # ── ColorBand & Lookups ──────────────────────────────────────────
 
+
 class TestColorBands:
     def test_all_bands_have_centers(self):
         for band in ColorBand:
@@ -145,6 +148,7 @@ class TestColorBands:
 
 # ── MultiColorTag ─────────────────────────────────────────────────
 
+
 class TestMultiColorTag:
     def test_empty_tag(self):
         tag = MultiColorTag()
@@ -161,19 +165,23 @@ class TestMultiColorTag:
         assert "gpt" in tag.all_tags
 
     def test_dominant_channel(self):
-        tag = MultiColorTag([
-            channel_for_provider("claude"),  # 400nm, highest freq
-            channel_for_provider("hf"),      # 700nm, lowest freq
-        ])
+        tag = MultiColorTag(
+            [
+                channel_for_provider("claude"),  # 400nm, highest freq
+                channel_for_provider("hf"),  # 700nm, lowest freq
+            ]
+        )
         dom = tag.dominant_channel
         assert dom is not None
         assert dom.wavelength_nm == 400.0  # shortest wl = highest freq
 
     def test_average_wavelength_weighted(self):
-        tag = MultiColorTag([
-            ColorChannel(wavelength_nm=400.0, tongue="KO"),  # weight 1.0
-            ColorChannel(wavelength_nm=700.0, tongue="KO"),  # weight 1.0
-        ])
+        tag = MultiColorTag(
+            [
+                ColorChannel(wavelength_nm=400.0, tongue="KO"),  # weight 1.0
+                ColorChannel(wavelength_nm=700.0, tongue="KO"),  # weight 1.0
+            ]
+        )
         assert abs(tag.average_wavelength - 550.0) < 1.0  # simple average
 
     def test_composite_rgb(self):
@@ -193,6 +201,7 @@ class TestMultiColorTag:
 
 
 # ── ColorNode ─────────────────────────────────────────────────────
+
 
 class TestColorNode:
     def test_empty_node_accepts(self):
@@ -244,6 +253,7 @@ class TestColorNode:
 
 # ── SpectrumAllocator ─────────────────────────────────────────────
 
+
 class TestSpectrumAllocator:
     def test_allocate_preferred(self):
         alloc = SpectrumAllocator()
@@ -288,13 +298,14 @@ class TestSpectrumAllocator:
 
 # ── Sorting & Grouping ───────────────────────────────────────────
 
+
 class TestSortingGrouping:
     def test_disorganized_order_monotonic(self):
         items = [
-            MultiColorTag([channel_for_task("debate")]),     # 617nm
-            MultiColorTag([channel_for_task("research")]),   # 500nm
-            MultiColorTag([channel_for_task("draft")]),      # 455nm
-            MultiColorTag([channel_for_task("govern")]),     # 400nm
+            MultiColorTag([channel_for_task("debate")]),  # 617nm
+            MultiColorTag([channel_for_task("research")]),  # 500nm
+            MultiColorTag([channel_for_task("draft")]),  # 455nm
+            MultiColorTag([channel_for_task("govern")]),  # 400nm
         ]
         sorted_items = sort_by_disorganized_order(items)
         wavelengths = [it.average_wavelength for it in sorted_items]
@@ -303,8 +314,8 @@ class TestSortingGrouping:
     def test_group_by_color_band(self):
         items = [
             MultiColorTag([channel_for_task("research")]),  # cyan
-            MultiColorTag([channel_for_task("draft")]),     # blue
-            MultiColorTag([channel_for_task("embed")]),     # red
+            MultiColorTag([channel_for_task("draft")]),  # blue
+            MultiColorTag([channel_for_task("embed")]),  # red
         ]
         groups = group_by_color_band(items)
         assert len(groups["cyan"]) == 1
@@ -322,6 +333,7 @@ class TestSortingGrouping:
 
 # ── Sacred Tongue Weights ─────────────────────────────────────────
 
+
 class TestTongueWeights:
     def test_phi_scaling(self):
         weights = list(TONGUE_WEIGHTS.values())
@@ -338,6 +350,7 @@ class TestTongueWeights:
 
 
 # ── Audio-to-Visible Bridge ──────────────────────────────────────
+
 
 class TestAudioVisibleBridge:
     def test_tongue_wavelengths_in_visible_range(self):
@@ -383,6 +396,7 @@ class TestAudioVisibleBridge:
 
 
 # ── Spectral Flow Router ─────────────────────────────────────────
+
 
 class TestSpectralFlowRouter:
     @staticmethod

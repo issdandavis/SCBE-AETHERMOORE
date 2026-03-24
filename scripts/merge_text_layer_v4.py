@@ -28,39 +28,75 @@ OUTPUT_PATH = ROOT / "artifacts" / "webtoon" / "panel_prompts" / "ch01_prompts_v
 TEXT_OVERLAYS: dict[str, list[dict]] = {
     # Seq 1: Late-Night Office Isolation
     "ch01-v4-p01": [
-        {"type": "narration", "text": "The smell of stale coffee sat on Marcus Chen\u2019s tongue like a warning he refused to read.", "position": "top"},
+        {
+            "type": "narration",
+            "text": "The smell of stale coffee sat on Marcus Chen\u2019s tongue like a warning he refused to read.",
+            "position": "top",
+        },
     ],
     "ch01-v4-p02": [
-        {"type": "narration", "text": "Sixteen hours into a voluntary shift, and the only thing in his life that made complete sense was a blinking cursor on a black screen.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "Sixteen hours into a voluntary shift, and the only thing in his life that made complete sense was a blinking cursor on a black screen.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p03": [
-        {"type": "narration", "text": "Three hours cold. He could tell by the way it had gone from bitter to something more geological.", "position": "top"},
+        {
+            "type": "narration",
+            "text": "Three hours cold. He could tell by the way it had gone from bitter to something more geological.",
+            "position": "top",
+        },
     ],
     "ch01-v4-p04": [
-        {"type": "narration", "text": "His apartment was twelve miles south. He hadn\u2019t been home since Thursday. His manager had stopped asking why.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "His apartment was twelve miles south. He hadn\u2019t been home since Thursday. His manager had stopped asking why.",
+            "position": "bottom",
+        },
     ],
     # Seq 2: The Anomaly in the Logs
     "ch01-v4-p05": [
         {"type": "narration", "text": "Something was wrong with the logs, annoyingly so.", "position": "top"},
-        {"type": "narration", "text": "The kind that sat in the back of your skull like a splinter, not quite painful enough to demand action but impossible to ignore.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "The kind that sat in the back of your skull like a splinter, not quite painful enough to demand action but impossible to ignore.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p06": [
-        {"type": "narration", "text": "Marcus leaned forward, scrolling through authentication records with the focused intensity of a man who had replaced most of his social life with packet analysis.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "Marcus leaned forward, scrolling through authentication records with the focused intensity of a man who had replaced most of his social life with packet analysis.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p07": [
         {"type": "dialogue", "text": "There. Line 4,847.", "position": "top"},
         {"type": "impact", "text": "Gotchu.", "position": "center"},
     ],
     "ch01-v4-p08": [
-        {"type": "narration", "text": "Not a backdoor, exactly. More like a hallway that had always been there, behind a wall nobody had thought to knock on.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "Not a backdoor, exactly. More like a hallway that had always been there, behind a wall nobody had thought to knock on.",
+            "position": "bottom",
+        },
     ],
     # Seq 3: Tracing the Unauthorized Channel
     "ch01-v4-p09": [
         {"type": "thought", "text": "This wasn\u2019t malicious. That was what bothered him.", "position": "top"},
-        {"type": "narration", "text": "Like a jazz musician plays between the notes \u2014 not wrong, just outside.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "Like a jazz musician plays between the notes \u2014 not wrong, just outside.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p10": [
-        {"type": "narration", "text": "The taste of late nights and bad decisions, but how could he not? It is the taste of his actual life.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "The taste of late nights and bad decisions, but how could he not? It is the taste of his actual life.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p11": [
         {"type": "dialogue", "text": "Found you.", "position": "center"},
@@ -71,39 +107,75 @@ TEXT_OVERLAYS: dict[str, list[dict]] = {
         {"type": "narration", "text": "The screen went white.", "position": "center"},
     ],
     "ch01-v4-p14": [
-        {"type": "narration", "text": "As if someone had deleted the color channel from reality and left only the brightness slider cranked to maximum.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "As if someone had deleted the color channel from reality and left only the brightness slider cranked to maximum.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p15": [
-        {"type": "narration", "text": "The chair was gone. The desk was gone. The floor was a concept rather than a surface.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "The chair was gone. The desk was gone. The floor was a concept rather than a surface.",
+            "position": "bottom",
+        },
     ],
     # Seq 5: Transmission Through the Membrane
     "ch01-v4-p16": [
-        {"type": "narration", "text": "Every ambient noise folded inward, compressing into a single sustained tone. A frequency he felt in his molars, in the bones behind his eyes.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "Every ambient noise folded inward, compressing into a single sustained tone. A frequency he felt in his molars, in the bones behind his eyes.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p17": [
         {"type": "impact", "text": "What do you intend?", "position": "center"},
     ],
     "ch01-v4-p18": [
-        {"type": "thought", "text": "I intend to go home. I intend to find out what\u2019s happening. I intend to not die in whatever this is \u2014", "position": "top"},
+        {
+            "type": "thought",
+            "text": "I intend to go home. I intend to find out what\u2019s happening. I intend to not die in whatever this is \u2014",
+            "position": "top",
+        },
         {"type": "narration", "text": "But the words dissolved before they could organize.", "position": "bottom"},
     ],
     "ch01-v4-p19": [
-        {"type": "narration", "text": "He fell. Not through a hole. Not off an edge. Through the floor of what was real.", "position": "top"},
+        {
+            "type": "narration",
+            "text": "He fell. Not through a hole. Not off an edge. Through the floor of what was real.",
+            "position": "top",
+        },
         {"type": "thought", "text": "He was a packet. He was being transmitted.", "position": "bottom"},
     ],
     # Seq 6: Stone and Crystal Library
     "ch01-v4-p20": [
         {"type": "impact", "text": "STONE.", "position": "center"},
-        {"type": "narration", "text": "Cold. Hard. The specific cold-and-hard of natural stone that hasn\u2019t seen sunlight in a very long time.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "Cold. Hard. The specific cold-and-hard of natural stone that hasn\u2019t seen sunlight in a very long time.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p21": [
-        {"type": "thought", "text": "Can I move my fingers? Yes. Toes? Yes. Any pain beyond the general everything-hurts? No. Okay. Good.", "position": "center"},
+        {
+            "type": "thought",
+            "text": "Can I move my fingers? Yes. Toes? Yes. Any pain beyond the general everything-hurts? No. Okay. Good.",
+            "position": "center",
+        },
     ],
     "ch01-v4-p22": [
-        {"type": "narration", "text": "Old books. Not the polite, nostalgic old-bookstore smell. This was deeper \u2014 leather and vellum and something organic, like the books themselves were alive.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "Old books. Not the polite, nostalgic old-bookstore smell. This was deeper \u2014 leather and vellum and something organic, like the books themselves were alive.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p23": [
-        {"type": "narration", "text": "Each book on a slightly different frequency. Thousands of them, harmonizing into something too vast to hear as music, but that his body recognized the way it recognized heat or pressure.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "Each book on a slightly different frequency. Thousands of them, harmonizing into something too vast to hear as music, but that his body recognized the way it recognized heat or pressure.",
+            "position": "bottom",
+        },
     ],
     # Seq 7: The Books Hum Back
     "ch01-v4-p24": [],  # let the image breathe
@@ -114,105 +186,197 @@ TEXT_OVERLAYS: dict[str, list[dict]] = {
     # Seq 8: Polly in Raven Form
     "ch01-v4-p27": [
         {"type": "dialogue", "text": "You\u2019re finally awake.", "position": "top"},
-        {"type": "narration", "text": "The voice carried the specific exhausted annoyance of someone who\u2019d been waiting longer than they thought they\u2019d have to.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "The voice carried the specific exhausted annoyance of someone who\u2019d been waiting longer than they thought they\u2019d have to.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p28": [],  # let the character entrance land visually
     "ch01-v4-p29": [
-        {"type": "narration", "text": "A raven in academic regalia. Looking at him like he was a student who\u2019d shown up twenty minutes late to her seminar.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "A raven in academic regalia. Looking at him like he was a student who\u2019d shown up twenty minutes late to her seminar.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p30": [
         {"type": "dialogue", "text": "Took you long enough.", "position": "top"},
     ],
     # Seq 9: Orientation by Raven
     "ch01-v4-p31": [
-        {"type": "narration", "text": "In a language Marcus did not know. And yet he understood every syllable perfectly.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "In a language Marcus did not know. And yet he understood every syllable perfectly.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p32": [
-        {"type": "dialogue", "text": "I\u2019m Polly, Fifth Circle Keeper of the Archives. You\u2019re Marcus Chen, systems engineer, age thirty-two, last known location: San Francisco, Earth. Correct?", "position": "bottom"},
+        {
+            "type": "dialogue",
+            "text": "I\u2019m Polly, Fifth Circle Keeper of the Archives. You\u2019re Marcus Chen, systems engineer, age thirty-two, last known location: San Francisco, Earth. Correct?",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p33": [
-        {"type": "thought", "text": "Armed? Talons, beak, unknown capability. Exits? One doorway, behind her shelf. Hostiles? One entity, avian, sentient, dressed better than me.", "position": "overlay"},
+        {
+            "type": "thought",
+            "text": "Armed? Talons, beak, unknown capability. Exits? One doorway, behind her shelf. Hostiles? One entity, avian, sentient, dressed better than me.",
+            "position": "overlay",
+        },
     ],
     "ch01-v4-p34": [
-        {"type": "dialogue", "text": "The Protocol told us you were coming. It always does. You\u2019re not the first, won\u2019t be the last.", "position": "top"},
+        {
+            "type": "dialogue",
+            "text": "The Protocol told us you were coming. It always does. You\u2019re not the first, won\u2019t be the last.",
+            "position": "top",
+        },
         {"type": "dialogue", "text": "Welcome to Aethermoor.", "position": "bottom"},
     ],
     "ch01-v4-p35": [
-        {"type": "dialogue", "text": "This is a hallucination. I\u2019ve been awake for twenty-two hours. That coffee was three hours past drinkable.", "position": "top"},
-        {"type": "dialogue", "text": "Occam\u2019s Razor would suggest you\u2019ve been isekai\u2019d to a fantasy world where magic is actually cryptographic protocol architecture, but sure, go with \u2018psychotic break\u2019 if it helps you process.", "position": "bottom"},
+        {
+            "type": "dialogue",
+            "text": "This is a hallucination. I\u2019ve been awake for twenty-two hours. That coffee was three hours past drinkable.",
+            "position": "top",
+        },
+        {
+            "type": "dialogue",
+            "text": "Occam\u2019s Razor would suggest you\u2019ve been isekai\u2019d to a fantasy world where magic is actually cryptographic protocol architecture, but sure, go with \u2018psychotic break\u2019 if it helps you process.",
+            "position": "bottom",
+        },
     ],
     # Seq 10: Polly Transforms
     "ch01-v4-p36": [
-        {"type": "dialogue", "text": "Come on. If you\u2019re going to survive here, you need to learn the Six Sacred Tongues.", "position": "bottom"},
+        {
+            "type": "dialogue",
+            "text": "Come on. If you\u2019re going to survive here, you need to learn the Six Sacred Tongues.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p37": [
-        {"type": "dialogue", "text": "Survive? That implies I could not survive. What kills me here?", "position": "top"},
+        {
+            "type": "dialogue",
+            "text": "Survive? That implies I could not survive. What kills me here?",
+            "position": "top",
+        },
     ],
     "ch01-v4-p38": [
         {"type": "narration", "text": "It was fear. Not fear of him. Fear for him.", "position": "bottom"},
     ],
     "ch01-v4-p39": [
-        {"type": "narration", "text": "One moment she was a raven. The next, she was unfolding \u2014 feathers flowing upward like ink in water, shape stretching and reorganizing with the casual efficiency of a window being resized.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "One moment she was a raven. The next, she was unfolding \u2014 feathers flowing upward like ink in water, shape stretching and reorganizing with the casual efficiency of a window being resized.",
+            "position": "bottom",
+        },
     ],
     # Seq 11: Hands Are Useful
     "ch01-v4-p40": [
-        {"type": "narration", "text": "But the eyes hadn\u2019t changed at all. Polished obsidian, smooth and reflective and too bright.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "But the eyes hadn\u2019t changed at all. Polished obsidian, smooth and reflective and too bright.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p41": [
         {"type": "dialogue", "text": "Easier this way. Hands are useful.", "position": "center"},
     ],
     "ch01-v4-p42": [
-        {"type": "narration", "text": "It was warm. Solid. Real in a way that the white void and the falling and the stone floor hadn\u2019t been \u2014 real the way another person\u2019s touch is real.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "It was warm. Solid. Real in a way that the white void and the falling and the stone floor hadn\u2019t been \u2014 real the way another person\u2019s touch is real.",
+            "position": "bottom",
+        },
     ],
     # Seq 12: Guest Pass and Danger
     "ch01-v4-p43": [
         {"type": "dialogue", "text": "What are the Six Sacred Tongues?", "position": "top"},
-        {"type": "narration", "text": "Because when the world stops making sense, you start with definitions.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "Because when the world stops making sense, you start with definitions.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p44": [
         {"type": "dialogue", "text": "Domain-separated authorization channels.", "position": "top"},
-        {"type": "narration", "text": "When his eyebrows did the thing \u2014 the specific eyebrow-raise of an engineer who just heard a familiar concept in an impossible context \u2014 she grinned. Wide and sharp and delighted.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "When his eyebrows did the thing \u2014 the specific eyebrow-raise of an engineer who just heard a familiar concept in an impossible context \u2014 she grinned. Wide and sharp and delighted.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p45": [
         {"type": "dialogue", "text": "Buddy \u2014 this is a serious universe.", "position": "top"},
         {"type": "impact", "text": "We have INFRASTRUCTURE.", "position": "center"},
     ],
     "ch01-v4-p46": [
-        {"type": "dialogue", "text": "Your existence is verified by the Protocol every zero-point-three seconds. It\u2019s a heartbeat check. Pass, and you exist. Fail...", "position": "center"},
+        {
+            "type": "dialogue",
+            "text": "Your existence is verified by the Protocol every zero-point-three seconds. It\u2019s a heartbeat check. Pass, and you exist. Fail...",
+            "position": "center",
+        },
     ],
     "ch01-v4-p47": [
-        {"type": "narration", "text": "You flicker. Fail hard enough, and you cease. Not die. Cease. Like a process that gets killed \u2014 no graceful shutdown, no error log, no memory. Just... gone.", "position": "center"},
+        {
+            "type": "narration",
+            "text": "You flicker. Fail hard enough, and you cease. Not die. Cease. Like a process that gets killed \u2014 no graceful shutdown, no error log, no memory. Just... gone.",
+            "position": "center",
+        },
     ],
     "ch01-v4-p48": [
         {"type": "dialogue", "text": "No more Marcus Chen.", "position": "center"},
     ],
     # Seq 13: First Look Outside
     "ch01-v4-p49": [
-        {"type": "narration", "text": "Somewhere inside the crystal there was a soft ticking, as if the place were keeping time by consensus.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "Somewhere inside the crystal there was a soft ticking, as if the place were keeping time by consensus.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p50": [
         {"type": "narration", "text": "Outside was impossible.", "position": "top"},
     ],
     "ch01-v4-p51": [
-        {"type": "thought", "text": "Rivers flowing sideways. Mountains that hover. Grass growing upside down. This isn\u2019t a building. This is a planet someone built inside a snow globe and forgot to include the laws of physics.", "position": "bottom"},
+        {
+            "type": "thought",
+            "text": "Rivers flowing sideways. Mountains that hover. Grass growing upside down. This isn\u2019t a building. This is a planet someone built inside a snow globe and forgot to include the laws of physics.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p52": [
-        {"type": "dialogue", "text": "Don\u2019t stare. You\u2019ll have time for the existential landscape crisis later. Right now you\u2019re on a clock.", "position": "top"},
+        {
+            "type": "dialogue",
+            "text": "Don\u2019t stare. You\u2019ll have time for the existential landscape crisis later. Right now you\u2019re on a clock.",
+            "position": "top",
+        },
     ],
     # Seq 14: Follow Polly Into the Impossible
     "ch01-v4-p53": [
-        {"type": "narration", "text": "His legs moved on autopilot while his brain ran triage on the last five minutes of his life.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "His legs moved on autopilot while his brain ran triage on the last five minutes of his life.",
+            "position": "bottom",
+        },
     ],
     "ch01-v4-p54": [
         {"type": "dialogue", "text": "So... do you have coffee here?", "position": "top"},
         {"type": "dialogue", "text": "Caw-fee?", "position": "bottom"},
     ],
     "ch01-v4-p55": [
-        {"type": "dialogue", "text": "Coffee. Hot bean water. The thing that keeps engineers from lying down on the floor and accepting death.", "position": "top"},
+        {
+            "type": "dialogue",
+            "text": "Coffee. Hot bean water. The thing that keeps engineers from lying down on the floor and accepting death.",
+            "position": "top",
+        },
         {"type": "dialogue", "text": "Is it... a weapon?", "position": "bottom"},
     ],
     "ch01-v4-p56": [
-        {"type": "narration", "text": "Then he followed Polly into the impossible, wishing he had a hot cup of coffee and a biscuit for the bird.", "position": "bottom"},
+        {
+            "type": "narration",
+            "text": "Then he followed Polly into the impossible, wishing he had a hot cup of coffee and a biscuit for the bird.",
+            "position": "bottom",
+        },
     ],
 }
 
@@ -250,7 +414,11 @@ TEXT_ONLY_PANELS: list[dict] = [
             "story_job": "The quiet admission before the trace.",
             "render_tier": "text-only",
             "text_overlay": [
-                {"type": "narration", "text": "Almost beautiful, actually. If it weren\u2019t deeply, fundamentally unauthorized.", "position": "center"},
+                {
+                    "type": "narration",
+                    "text": "Almost beautiful, actually. If it weren\u2019t deeply, fundamentally unauthorized.",
+                    "position": "center",
+                },
             ],
             "w": 800,
             "h": 400,
@@ -272,7 +440,11 @@ TEXT_ONLY_PANELS: list[dict] = [
             "story_job": "The relief of solid ground.",
             "render_tier": "text-only",
             "text_overlay": [
-                {"type": "narration", "text": "He was somewhere real. Or at least somewhere solid.", "position": "center"},
+                {
+                    "type": "narration",
+                    "text": "He was somewhere real. Or at least somewhere solid.",
+                    "position": "center",
+                },
             ],
             "w": 800,
             "h": 400,
@@ -294,7 +466,11 @@ TEXT_ONLY_PANELS: list[dict] = [
             "story_job": "Marcus's survival instinct dressed as curiosity.",
             "render_tier": "text-only",
             "text_overlay": [
-                {"type": "thought", "text": "When the world stops making sense, you start with definitions. That was his nature. His training. His survival instinct, dressed up as curiosity.", "position": "center"},
+                {
+                    "type": "thought",
+                    "text": "When the world stops making sense, you start with definitions. That was his nature. His training. His survival instinct, dressed up as curiosity.",
+                    "position": "center",
+                },
             ],
             "w": 800,
             "h": 400,
@@ -355,9 +531,9 @@ SCROLL_GAPS: list[dict] = [
 # ── Tier upgrades ───────────────────────────────────────────────────────────
 
 TIER_UPGRADES: dict[str, str] = {
-    "ch01-v4-p03": "hero",   # wide establishing — the book cover shot
-    "ch01-v4-p45": "hero",   # "We have INFRASTRUCTURE" — thesis statement
-    "ch01-v4-p47": "hero",   # the cease explanation — existential weight
+    "ch01-v4-p03": "hero",  # wide establishing — the book cover shot
+    "ch01-v4-p45": "hero",  # "We have INFRASTRUCTURE" — thesis statement
+    "ch01-v4-p47": "hero",  # the cease explanation — existential weight
 }
 
 
@@ -424,7 +600,9 @@ def merge() -> dict:
         "scroll_gaps": sum(1 for p in panels if p.get("render_tier") == "gap"),
         "hero_panels": sum(1 for p in panels if p.get("render_tier") == "hero"),
         "panels_with_text": sum(1 for p in panels if p.get("text_overlay")),
-        "silent_panels": sum(1 for p in panels if not p.get("text_overlay") and p.get("render_tier") not in ("text-only", "gap")),
+        "silent_panels": sum(
+            1 for p in panels if not p.get("text_overlay") and p.get("render_tier") not in ("text-only", "gap")
+        ),
     }
 
     return packet

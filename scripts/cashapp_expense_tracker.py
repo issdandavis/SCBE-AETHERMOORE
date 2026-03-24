@@ -8,6 +8,7 @@ Usage:
     python scripts/cashapp_expense_tracker.py --csv path/to/cashapp_report.csv --since 2026-01-01
     python scripts/cashapp_expense_tracker.py --csv path/to/cashapp_report.csv --month 2026-03
 """
+
 import argparse
 import csv
 import json
@@ -112,17 +113,19 @@ def parse_cashapp_csv(csv_path, since=None, month=None):
 
             category, sched_c_line, matched_keyword = classify_transaction(notes, name)
 
-            transactions.append({
-                "date": date_str[:10],
-                "amount": amount,
-                "notes": notes.strip()[:60],
-                "name": name.strip(),
-                "category": category,
-                "schedule_c_line": sched_c_line,
-                "matched_keyword": matched_keyword,
-                "is_business": category is not None,
-                "type": row.get("Transaction Type", ""),
-            })
+            transactions.append(
+                {
+                    "date": date_str[:10],
+                    "amount": amount,
+                    "notes": notes.strip()[:60],
+                    "name": name.strip(),
+                    "category": category,
+                    "schedule_c_line": sched_c_line,
+                    "matched_keyword": matched_keyword,
+                    "is_business": category is not None,
+                    "type": row.get("Transaction Type", ""),
+                }
+            )
 
     return transactions
 
@@ -171,19 +174,19 @@ def generate_report(transactions, output_dir, label=""):
     # Save CSV
     csv_path = os.path.join(output_dir, f"expense_tracker_{label or 'latest'}.csv")
     with open(csv_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=[
-            "date", "amount", "notes", "category", "schedule_c_line", "type"
-        ])
+        writer = csv.DictWriter(f, fieldnames=["date", "amount", "notes", "category", "schedule_c_line", "type"])
         writer.writeheader()
         for t in sorted(biz + refunds, key=lambda x: x["date"]):
-            writer.writerow({
-                "date": t["date"],
-                "amount": abs(t["amount"]) if t["amount"] < 0 else -abs(t["amount"]),
-                "notes": t["notes"],
-                "category": t["category"],
-                "schedule_c_line": t["schedule_c_line"],
-                "type": "Expense" if t["amount"] < 0 else "Refund",
-            })
+            writer.writerow(
+                {
+                    "date": t["date"],
+                    "amount": abs(t["amount"]) if t["amount"] < 0 else -abs(t["amount"]),
+                    "notes": t["notes"],
+                    "category": t["category"],
+                    "schedule_c_line": t["schedule_c_line"],
+                    "type": "Expense" if t["amount"] < 0 else "Refund",
+                }
+            )
 
     # Save JSON summary
     summary = {
@@ -208,9 +211,7 @@ def generate_report(transactions, output_dir, label=""):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Cash App Monthly Expense Tracker for Schedule C"
-    )
+    parser = argparse.ArgumentParser(description="Cash App Monthly Expense Tracker for Schedule C")
     parser.add_argument("--csv", required=True, help="Path to Cash App CSV export")
     parser.add_argument("--since", help="Only include transactions after this date (YYYY-MM-DD)")
     parser.add_argument("--month", help="Only include transactions from this month (YYYY-MM)")

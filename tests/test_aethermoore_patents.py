@@ -36,7 +36,7 @@ from aethermoore_patent_math import (
 # -------------------------
 def test_patent1_example_value_matches_expected_order():
     val = harmonic_security_scaling(6, 1.5)
-    assert val == pytest.approx(1.5 ** 36, rel=0, abs=0)
+    assert val == pytest.approx(1.5**36, rel=0, abs=0)
     assert 2_000_000 <= val <= 2_400_000
 
 

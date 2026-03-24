@@ -36,8 +36,10 @@ import secrets
 # Constants and Parameters
 # =============================================================================
 
+
 class SacredTongue(str, Enum):
     """The 6 Sacred Tongues - each a dimension in the lattice."""
+
     KO = "KO"  # Korean - Intent/Purpose
     AV = "AV"  # Avestan - Context/Wisdom
     RU = "RU"  # Russian - Binding/Structure
@@ -48,22 +50,23 @@ class SacredTongue(str, Enum):
 
 class FluxState(str, Enum):
     """Flux states from SCBE - breathing dimensions."""
-    POLLY = "polly"      # ν ≥ 0.9 - Full engagement
-    QUASI = "quasi"      # 0.5 ≤ ν < 0.9 - Partial
-    DEMI = "demi"        # 0.1 ≤ ν < 0.5 - Minimal
+
+    POLLY = "polly"  # ν ≥ 0.9 - Full engagement
+    QUASI = "quasi"  # 0.5 ≤ ν < 0.9 - Partial
+    DEMI = "demi"  # 0.1 ≤ ν < 0.5 - Minimal
     COLLAPSED = "collapsed"  # ν < 0.1 - Dormant
 
 
 # Kyber-768 parameters
-KYBER_N = 256          # Polynomial degree
-KYBER_K = 3            # Module rank for Kyber-768
-KYBER_Q = 3329         # Modulus
-KYBER_ETA1 = 2         # Noise parameter
+KYBER_N = 256  # Polynomial degree
+KYBER_K = 3  # Module rank for Kyber-768
+KYBER_Q = 3329  # Modulus
+KYBER_ETA1 = 2  # Noise parameter
 KYBER_ETA2 = 2
 
 # Dilithium-3 parameters (ML-DSA-65)
 DILITHIUM_N = 256
-DILITHIUM_K = 6        # Module rank
+DILITHIUM_K = 6  # Module rank
 DILITHIUM_L = 5
 DILITHIUM_Q = 8380417  # Modulus
 DILITHIUM_GAMMA1 = 2**19
@@ -84,18 +87,19 @@ TONGUE_PHASES = {
 
 # Tongue weights (golden ratio based)
 TONGUE_WEIGHTS = {
-    SacredTongue.KO: PHI ** 0,  # 1.000
-    SacredTongue.AV: PHI ** 1,  # 1.618
-    SacredTongue.RU: PHI ** 2,  # 2.618
-    SacredTongue.CA: PHI ** 3,  # 4.236
-    SacredTongue.UM: PHI ** 4,  # 6.854
-    SacredTongue.DR: PHI ** 5,  # 11.090
+    SacredTongue.KO: PHI**0,  # 1.000
+    SacredTongue.AV: PHI**1,  # 1.618
+    SacredTongue.RU: PHI**2,  # 2.618
+    SacredTongue.CA: PHI**3,  # 4.236
+    SacredTongue.UM: PHI**4,  # 6.854
+    SacredTongue.DR: PHI**5,  # 11.090
 }
 
 
 # =============================================================================
 # Lattice Vector Representation
 # =============================================================================
+
 
 @dataclass
 class LatticeVector:
@@ -109,6 +113,7 @@ class LatticeVector:
     - phase: Phase angle (0-360)
     - flux: Flux state value (0-1)
     """
+
     tongues: np.ndarray  # 6 coefficients
     time: float
     intent: float
@@ -122,21 +127,12 @@ class LatticeVector:
 
     def to_array(self) -> np.ndarray:
         """Convert to 10D numpy array."""
-        return np.concatenate([
-            self.tongues,
-            np.array([self.time, self.intent, self.phase, self.flux])
-        ])
+        return np.concatenate([self.tongues, np.array([self.time, self.intent, self.phase, self.flux])])
 
     @classmethod
-    def from_array(cls, arr: np.ndarray) -> 'LatticeVector':
+    def from_array(cls, arr: np.ndarray) -> "LatticeVector":
         """Create from 10D numpy array."""
-        return cls(
-            tongues=arr[:6],
-            time=float(arr[6]),
-            intent=float(arr[7]),
-            phase=float(arr[8]),
-            flux=float(arr[9])
-        )
+        return cls(tongues=arr[:6], time=float(arr[6]), intent=float(arr[7]), phase=float(arr[8]), flux=float(arr[9]))
 
     def norm(self) -> float:
         """Compute L2 norm."""
@@ -154,31 +150,35 @@ class LatticeVector:
         - Flux: Already [0,1]
         """
         # Normalize phase from degrees to [0,1]
-        normalized_arr = np.array([
-            self.tongues[0],
-            self.tongues[1],
-            self.tongues[2],
-            self.tongues[3],
-            self.tongues[4],
-            self.tongues[5],
-            self.time,
-            self.intent,
-            self.phase / 360.0,  # Normalize degrees to [0,1]
-            self.flux,
-        ])
+        normalized_arr = np.array(
+            [
+                self.tongues[0],
+                self.tongues[1],
+                self.tongues[2],
+                self.tongues[3],
+                self.tongues[4],
+                self.tongues[5],
+                self.time,
+                self.intent,
+                self.phase / 360.0,  # Normalize degrees to [0,1]
+                self.flux,
+            ]
+        )
 
-        weights = np.array([
-            TONGUE_WEIGHTS[SacredTongue.KO],
-            TONGUE_WEIGHTS[SacredTongue.AV],
-            TONGUE_WEIGHTS[SacredTongue.RU],
-            TONGUE_WEIGHTS[SacredTongue.CA],
-            TONGUE_WEIGHTS[SacredTongue.UM],
-            TONGUE_WEIGHTS[SacredTongue.DR],
-            1.0,  # time weight
-            2.0,  # intent weight (important for governance)
-            0.5,  # phase weight (auxiliary)
-            1.0,  # flux weight
-        ])
+        weights = np.array(
+            [
+                TONGUE_WEIGHTS[SacredTongue.KO],
+                TONGUE_WEIGHTS[SacredTongue.AV],
+                TONGUE_WEIGHTS[SacredTongue.RU],
+                TONGUE_WEIGHTS[SacredTongue.CA],
+                TONGUE_WEIGHTS[SacredTongue.UM],
+                TONGUE_WEIGHTS[SacredTongue.DR],
+                1.0,  # time weight
+                2.0,  # intent weight (important for governance)
+                0.5,  # phase weight (auxiliary)
+                1.0,  # flux weight
+            ]
+        )
         return np.linalg.norm(normalized_arr * weights)
 
 
@@ -192,24 +192,21 @@ class TongueContext:
     - A phase shift for cross-stitch pattern
     - A weight for importance scaling
     """
+
     tongue: SacredTongue
     coefficient: float
     phase: float
     weight: float
 
     @classmethod
-    def create(cls, tongue: SacredTongue, value: float = 1.0) -> 'TongueContext':
-        return cls(
-            tongue=tongue,
-            coefficient=value,
-            phase=TONGUE_PHASES[tongue],
-            weight=TONGUE_WEIGHTS[tongue]
-        )
+    def create(cls, tongue: SacredTongue, value: float = 1.0) -> "TongueContext":
+        return cls(tongue=tongue, coefficient=value, phase=TONGUE_PHASES[tongue], weight=TONGUE_WEIGHTS[tongue])
 
 
 # =============================================================================
 # Cross-Stitch Pattern Generator
 # =============================================================================
+
 
 class CrossStitchPattern:
     """
@@ -225,9 +222,7 @@ class CrossStitchPattern:
 
     def __init__(self, seed: bytes = None):
         self.seed = seed or secrets.token_bytes(32)
-        self._rng = np.random.default_rng(
-            int.from_bytes(hashlib.sha256(self.seed).digest()[:8], 'big')
-        )
+        self._rng = np.random.default_rng(int.from_bytes(hashlib.sha256(self.seed).digest()[:8], "big"))
 
     def generate_stitch_matrix(self, n: int = 10) -> np.ndarray:
         """
@@ -291,6 +286,7 @@ class CrossStitchPattern:
 # =============================================================================
 # Kyber Integration (Encryption Layer)
 # =============================================================================
+
 
 class KyberTongueEncryptor:
     """
@@ -391,10 +387,10 @@ class KyberTongueEncryptor:
             "v": v.tobytes(),
             "metadata": {
                 "tongues_active": [t.value for t in SacredTongue if vector.tongues[list(SacredTongue).index(t)] > 0.5],
-                "time_hash": hashlib.sha256(struct.pack('d', vector.time)).hexdigest()[:16],
+                "time_hash": hashlib.sha256(struct.pack("d", vector.time)).hexdigest()[:16],
                 "intent_level": vector.intent,
                 "flux_state": self._classify_flux(vector.flux),
-            }
+            },
         }
 
     def _classify_flux(self, flux: float) -> str:
@@ -412,6 +408,7 @@ class KyberTongueEncryptor:
 # =============================================================================
 # Dilithium Integration (Signature Layer)
 # =============================================================================
+
 
 class DilithiumTongueSigner:
     """
@@ -463,15 +460,15 @@ class DilithiumTongueSigner:
             weight = TONGUE_WEIGHTS[tongue]
 
             # Pack: coefficient (8 bytes) + phase (2 bytes) + weight (8 bytes)
-            data += struct.pack('<d', coeff)
-            data += struct.pack('<H', int(phase))
-            data += struct.pack('<d', weight)
+            data += struct.pack("<d", coeff)
+            data += struct.pack("<H", int(phase))
+            data += struct.pack("<d", weight)
 
         # Add T, I, phase, flux
-        data += struct.pack('<d', vector.time)
-        data += struct.pack('<d', vector.intent)
-        data += struct.pack('<d', vector.phase)
-        data += struct.pack('<d', vector.flux)
+        data += struct.pack("<d", vector.time)
+        data += struct.pack("<d", vector.intent)
+        data += struct.pack("<d", vector.phase)
+        data += struct.pack("<d", vector.flux)
 
         # Hash with SHA3-256
         return hashlib.sha3_256(data).digest()
@@ -505,7 +502,7 @@ class DilithiumTongueSigner:
             },
             "temporal_binding": {
                 "time": vector.time,
-                "time_hash": hashlib.sha256(struct.pack('<d', vector.time)).hexdigest()[:16],
+                "time_hash": hashlib.sha256(struct.pack("<d", vector.time)).hexdigest()[:16],
             },
             "intent_binding": {
                 "level": vector.intent,
@@ -558,6 +555,7 @@ class DilithiumTongueSigner:
 # Dual Lattice Cross-Stitch Processor
 # =============================================================================
 
+
 class DualLatticeCrossStitch:
     """
     The complete dual lattice cross-stitch system.
@@ -577,10 +575,7 @@ class DualLatticeCrossStitch:
         self.dilithium = DilithiumTongueSigner(security_level)
 
     def create_context_vector(
-        self,
-        tongues: Dict[SacredTongue, float],
-        intent: float,
-        flux_state: FluxState = FluxState.POLLY
+        self, tongues: Dict[SacredTongue, float], intent: float, flux_state: FluxState = FluxState.POLLY
     ) -> LatticeVector:
         """
         Create a lattice vector from context.
@@ -594,14 +589,16 @@ class DualLatticeCrossStitch:
             LatticeVector ready for processing
         """
         # Build tongue array
-        tongue_arr = np.array([
-            tongues.get(SacredTongue.KO, 0.0),
-            tongues.get(SacredTongue.AV, 0.0),
-            tongues.get(SacredTongue.RU, 0.0),
-            tongues.get(SacredTongue.CA, 0.0),
-            tongues.get(SacredTongue.UM, 0.0),
-            tongues.get(SacredTongue.DR, 0.0),
-        ])
+        tongue_arr = np.array(
+            [
+                tongues.get(SacredTongue.KO, 0.0),
+                tongues.get(SacredTongue.AV, 0.0),
+                tongues.get(SacredTongue.RU, 0.0),
+                tongues.get(SacredTongue.CA, 0.0),
+                tongues.get(SacredTongue.UM, 0.0),
+                tongues.get(SacredTongue.DR, 0.0),
+            ]
+        )
 
         # Normalize time to [0, 1] based on current day
         now = datetime.now(timezone.utc)
@@ -609,9 +606,7 @@ class DualLatticeCrossStitch:
         time_normalized = day_seconds / 86400.0
 
         # Compute phase from active tongues
-        active_phases = [
-            TONGUE_PHASES[t] for t, v in tongues.items() if v > 0.5
-        ]
+        active_phases = [TONGUE_PHASES[t] for t, v in tongues.items() if v > 0.5]
         phase = np.mean(active_phases) if active_phases else 0.0
 
         # Map flux state to value
@@ -623,13 +618,7 @@ class DualLatticeCrossStitch:
         }
         flux = flux_values.get(flux_state, 0.5)
 
-        return LatticeVector(
-            tongues=tongue_arr,
-            time=time_normalized,
-            intent=intent,
-            phase=phase,
-            flux=flux
-        )
+        return LatticeVector(tongues=tongue_arr, time=time_normalized, intent=intent, phase=phase, flux=flux)
 
     def process(self, vector: LatticeVector) -> Dict[str, Any]:
         """
@@ -669,13 +658,11 @@ class DualLatticeCrossStitch:
                 "dilithium_level": f"ML-DSA-{self.dilithium.k}{self.dilithium.l}",
                 "post_quantum": True,
                 "dimensions": 10,
-            }
+            },
         }
 
     def verify_and_decrypt(
-        self,
-        processed: Dict[str, Any],
-        vector: LatticeVector
+        self, processed: Dict[str, Any], vector: LatticeVector
     ) -> Tuple[bool, Optional[LatticeVector]]:
         """
         Verify signature and decrypt.
@@ -701,6 +688,7 @@ class DualLatticeCrossStitch:
 # Integration with HYDRA/SCBE
 # =============================================================================
 
+
 class TongueLatticeGovernor:
     """
     Integrates dual lattice with SCBE governance.
@@ -716,12 +704,7 @@ class TongueLatticeGovernor:
         self.lattice = DualLatticeCrossStitch()
         self.scbe_url = scbe_url
 
-    def encode_action(
-        self,
-        action: str,
-        target: str,
-        sensitivity: float = 0.5
-    ) -> LatticeVector:
+    def encode_action(self, action: str, target: str, sensitivity: float = 0.5) -> LatticeVector:
         """
         Encode an action into the tongue lattice.
 
@@ -749,18 +732,9 @@ class TongueLatticeGovernor:
         else:
             flux = FluxState.DEMI
 
-        return self.lattice.create_context_vector(
-            tongues=tongues,
-            intent=sensitivity,
-            flux_state=flux
-        )
+        return self.lattice.create_context_vector(tongues=tongues, intent=sensitivity, flux_state=flux)
 
-    def authorize(
-        self,
-        action: str,
-        target: str,
-        sensitivity: float = 0.5
-    ) -> Dict[str, Any]:
+    def authorize(self, action: str, target: str, sensitivity: float = 0.5) -> Dict[str, Any]:
         """
         Authorize an action through the dual lattice.
 
@@ -783,11 +757,11 @@ class TongueLatticeGovernor:
         # Tongue weights: 1, 1.618, 2.618, 4.236, 6.854, 11.090
         # Other weights: T=1, I=2, φ=0.5, ν=1
         max_weighted_norm = np.sqrt(
-            sum(w**2 for w in TONGUE_WEIGHTS.values()) +  # Tongue dimensions
-            1.0**2 +  # Time
-            2.0**2 +  # Intent (weighted higher)
-            0.5**2 +  # Phase (auxiliary)
-            1.0**2    # Flux
+            sum(w**2 for w in TONGUE_WEIGHTS.values())  # Tongue dimensions
+            + 1.0**2  # Time
+            + 2.0**2  # Intent (weighted higher)
+            + 0.5**2  # Phase (auxiliary)
+            + 1.0**2  # Flux
         )
         normalized_norm = weighted_norm / max_weighted_norm
 
@@ -802,9 +776,9 @@ class TongueLatticeGovernor:
         trust_score = np.clip(raw_trust, 0.0, 1.0)
 
         # Higher sensitivity = stricter thresholds (shifted decision boundaries)
-        allow_threshold = 0.7 - (sensitivity * 0.2)      # 0.7 → 0.5
-        quarantine_threshold = 0.5 - (sensitivity * 0.15) # 0.5 → 0.35
-        escalate_threshold = 0.3 - (sensitivity * 0.1)   # 0.3 → 0.2
+        allow_threshold = 0.7 - (sensitivity * 0.2)  # 0.7 → 0.5
+        quarantine_threshold = 0.5 - (sensitivity * 0.15)  # 0.5 → 0.35
+        escalate_threshold = 0.3 - (sensitivity * 0.1)  # 0.3 → 0.2
 
         # Determine decision
         if trust_score > allow_threshold:
@@ -828,10 +802,7 @@ class TongueLatticeGovernor:
                 "quarantine": float(quarantine_threshold),
                 "escalate": float(escalate_threshold),
             },
-            "tongues_active": [
-                t.value for i, t in enumerate(SacredTongue)
-                if vector.tongues[i] > 0.5
-            ],
+            "tongues_active": [t.value for i, t in enumerate(SacredTongue) if vector.tongues[i] > 0.5],
         }
 
 
@@ -839,14 +810,17 @@ class TongueLatticeGovernor:
 # Demo
 # =============================================================================
 
+
 def demo():
     """Demonstrate the dual lattice cross-stitch system."""
-    print("""
+    print(
+        """
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                    DUAL LATTICE CROSS-STITCH DEMO                             ║
 ║            Kyber + Dilithium + Sacred Tongues + Time + Intent                 ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
-    """)
+    """
+    )
 
     # Create governor
     governor = TongueLatticeGovernor()
@@ -871,7 +845,9 @@ def demo():
         print(f"  Active Tongues: {', '.join(result['tongues_active'])}")
         print(f"  Vector Norm: {result['vector_norm']:.3f} (normalized: {result['normalized_norm']:.3f})")
         print(f"  Trust Score: {result['trust_score']:.3f}")
-        print(f"  Thresholds: ALLOW>{result['thresholds']['allow']:.2f} | QUAR>{result['thresholds']['quarantine']:.2f} | ESC>{result['thresholds']['escalate']:.2f}")
+        print(
+            f"  Thresholds: ALLOW>{result['thresholds']['allow']:.2f} | QUAR>{result['thresholds']['quarantine']:.2f} | ESC>{result['thresholds']['escalate']:.2f}"
+        )
         print(f"  Decision: {result['decision']}")
         print(f"  Kyber Level: {result['lattice_proof']['security']['kyber_level']}")
         print(f"  Dilithium Level: {result['lattice_proof']['security']['dilithium_level']}")
@@ -899,7 +875,8 @@ def demo():
 
     print("       └" + "─" * 50 + "┘")
 
-    print("""
+    print(
+        """
 
   Legend:
   ────────
@@ -908,7 +885,8 @@ def demo():
   • KO-I coupling: Strongest (intent binds to purpose)
   • Tongue-Phase: Sinusoidal based on phase angles
   • Flux (ν): Modulates all couplings
-    """)
+    """
+    )
 
 
 if __name__ == "__main__":

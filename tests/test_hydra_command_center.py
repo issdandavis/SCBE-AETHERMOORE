@@ -165,10 +165,10 @@ def test_publish_and_media_commands_surface_real_assets() -> None:
     assert "AI Video Prompt Kit" in prompts
 
     voice_manifest = _run_powershell("voice-manifest")
-    assert "\"selected_sample\"" in voice_manifest
+    assert '"selected_sample"' in voice_manifest
 
     voice_status = _run_powershell("voice-status")
-    assert "\"summary\"" in voice_status
+    assert '"summary"' in voice_status
 
 
 def test_colab_catalog_commands_surface_repo_notebooks() -> None:
@@ -177,7 +177,7 @@ def test_colab_catalog_commands_surface_repo_notebooks() -> None:
     assert "scbe_finetune_colab.ipynb" in catalog
 
     show = _run_powershell("colab-show pivot -Json")
-    assert "\"name\": \"scbe-pivot-v2\"" in show
+    assert '"name": "scbe-pivot-v2"' in show
 
     url = _run_powershell("colab-url pivot")
     assert _host_equals(url, "colab.research.google.com")

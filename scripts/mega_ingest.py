@@ -47,34 +47,141 @@ sys.path.insert(0, str(ROOT))
 TONGUE_KEYS = ["KO", "AV", "RU", "CA", "UM", "DR"]
 
 TONGUE_KEYWORDS = {
-    "KO": ["command", "orchestrat", "dispatch", "fleet", "coordinat", "intent",
-            "govern", "decision", "leader", "polly", "raven", "archive"],
-    "AV": ["transport", "navigat", "brows", "search", "web", "music", "art",
-            "spirit", "aria", "melody", "song", "tongue", "language", "lexicon"],
-    "RU": ["research", "hypothes", "entropy", "chaos", "explor", "clay",
-            "golem", "dream", "emotion", "memory", "binding", "ancient"],
-    "CA": ["code", "compute", "train", "deploy", "test", "implement", "math",
-            "algorithm", "kael", "cipher", "lattice", "quantum", "formula"],
-    "UM": ["secur", "govern", "audit", "threat", "scan", "seal", "shadow",
-            "encrypt", "vault", "ward", "protect", "shield", "zara"],
-    "DR": ["structur", "architect", "document", "debug", "heal", "eldrin",
-            "tree", "root", "branch", "layer", "pipeline", "foundation"],
+    "KO": [
+        "command",
+        "orchestrat",
+        "dispatch",
+        "fleet",
+        "coordinat",
+        "intent",
+        "govern",
+        "decision",
+        "leader",
+        "polly",
+        "raven",
+        "archive",
+    ],
+    "AV": [
+        "transport",
+        "navigat",
+        "brows",
+        "search",
+        "web",
+        "music",
+        "art",
+        "spirit",
+        "aria",
+        "melody",
+        "song",
+        "tongue",
+        "language",
+        "lexicon",
+    ],
+    "RU": [
+        "research",
+        "hypothes",
+        "entropy",
+        "chaos",
+        "explor",
+        "clay",
+        "golem",
+        "dream",
+        "emotion",
+        "memory",
+        "binding",
+        "ancient",
+    ],
+    "CA": [
+        "code",
+        "compute",
+        "train",
+        "deploy",
+        "test",
+        "implement",
+        "math",
+        "algorithm",
+        "kael",
+        "cipher",
+        "lattice",
+        "quantum",
+        "formula",
+    ],
+    "UM": [
+        "secur",
+        "govern",
+        "audit",
+        "threat",
+        "scan",
+        "seal",
+        "shadow",
+        "encrypt",
+        "vault",
+        "ward",
+        "protect",
+        "shield",
+        "zara",
+    ],
+    "DR": [
+        "structur",
+        "architect",
+        "document",
+        "debug",
+        "heal",
+        "eldrin",
+        "tree",
+        "root",
+        "branch",
+        "layer",
+        "pipeline",
+        "foundation",
+    ],
 }
 
 # Chapter-level tongue mapping for Six Tongues Protocol
 STP_TONGUE_MAP = {
-    "ch01": "KO", "ch02": "AV", "ch03": "RU", "ch04": "CA", "ch05": "UM",
-    "ch06": "DR", "ch07": "KO", "ch08": "AV", "ch09": "RU", "ch10": "CA",
-    "ch11": "UM", "ch12": "DR", "ch13": "KO", "ch14": "AV", "ch15": "RU",
-    "ch16": "CA", "ch17": "UM", "ch18": "DR", "ch19": "KO", "ch20": "AV",
-    "ch21": "RU", "ch22": "CA", "ch23": "UM", "ch24": "DR", "ch25": "KO",
-    "ch26": "AV", "ch27": "RU",
-    "ch-ground-level": "DR", "ch-rootlight": "AV", "ch-the-deep-shelf": "UM",
-    "ch-the-relay": "CA", "ch-tongue-and-tooth": "KO",
-    "interlude-01": "AV", "interlude-02": "RU", "interlude-03": "CA",
-    "interlude-04": "UM", "interlude-05": "DR", "interlude-06": "KO",
-    "interlude-07": "AV", "interlude-08": "RU", "interlude-09": "CA",
-    "interlude-10": "UM", "interlude-11": "DR",
+    "ch01": "KO",
+    "ch02": "AV",
+    "ch03": "RU",
+    "ch04": "CA",
+    "ch05": "UM",
+    "ch06": "DR",
+    "ch07": "KO",
+    "ch08": "AV",
+    "ch09": "RU",
+    "ch10": "CA",
+    "ch11": "UM",
+    "ch12": "DR",
+    "ch13": "KO",
+    "ch14": "AV",
+    "ch15": "RU",
+    "ch16": "CA",
+    "ch17": "UM",
+    "ch18": "DR",
+    "ch19": "KO",
+    "ch20": "AV",
+    "ch21": "RU",
+    "ch22": "CA",
+    "ch23": "UM",
+    "ch24": "DR",
+    "ch25": "KO",
+    "ch26": "AV",
+    "ch27": "RU",
+    "ch-ground-level": "DR",
+    "ch-rootlight": "AV",
+    "ch-the-deep-shelf": "UM",
+    "ch-the-relay": "CA",
+    "ch-tongue-and-tooth": "KO",
+    "interlude-01": "AV",
+    "interlude-02": "RU",
+    "interlude-03": "CA",
+    "interlude-04": "UM",
+    "interlude-05": "DR",
+    "interlude-06": "KO",
+    "interlude-07": "AV",
+    "interlude-08": "RU",
+    "interlude-09": "CA",
+    "interlude-10": "UM",
+    "interlude-11": "DR",
 }
 
 
@@ -125,7 +232,7 @@ def infer_tongue(text: str) -> str:
 
 def chunk_text(text: str, max_chars: int = 1500, overlap: int = 200) -> list[str]:
     """Split text into overlapping chunks, breaking at paragraph boundaries."""
-    paragraphs = re.split(r'\n\s*\n', text)
+    paragraphs = re.split(r"\n\s*\n", text)
     chunks = []
     current = ""
     for para in paragraphs:
@@ -143,8 +250,7 @@ def chunk_text(text: str, max_chars: int = 1500, overlap: int = 200) -> list[str
     return chunks
 
 
-def text_to_sft_pairs(text: str, source: str, tongue: str = "",
-                      chapter: str = "", max_chars: int = 1500) -> list[dict]:
+def text_to_sft_pairs(text: str, source: str, tongue: str = "", chapter: str = "", max_chars: int = 1500) -> list[dict]:
     """Convert a text document into SFT instruction/response pairs."""
     chunks = chunk_text(text, max_chars=max_chars)
     pairs = []
@@ -153,34 +259,37 @@ def text_to_sft_pairs(text: str, source: str, tongue: str = "",
             continue
         t = tongue or infer_tongue(chunk)
         # Generate instruction from first sentence or title
-        first_line = chunk.split('\n')[0][:200].strip()
-        if first_line.startswith('#'):
-            first_line = first_line.lstrip('#').strip()
+        first_line = chunk.split("\n")[0][:200].strip()
+        if first_line.startswith("#"):
+            first_line = first_line.lstrip("#").strip()
 
         instruction = f"Explain or continue the following from the {source}"
         if chapter:
             instruction += f" ({chapter})"
         instruction += f": {first_line}"
 
-        pairs.append({
-            "instruction": instruction,
-            "response": chunk,
-            "metadata": {
-                "source": source,
-                "tongue": t,
-                "chapter": chapter,
-                "chunk_index": i,
-                "type": "mega_ingest",
-            },
-            "encoding_tongue": t,
-            "timestamp": time.time(),
-        })
+        pairs.append(
+            {
+                "instruction": instruction,
+                "response": chunk,
+                "metadata": {
+                    "source": source,
+                    "tongue": t,
+                    "chapter": chapter,
+                    "chunk_index": i,
+                    "type": "mega_ingest",
+                },
+                "encoding_tongue": t,
+                "timestamp": time.time(),
+            }
+        )
     return pairs
 
 
 # ============================================================
 # SOURCE LOADERS
 # ============================================================
+
 
 def load_all_repo_jsonl() -> list[dict]:
     """Load ALL JSONL files from training-data/ and training/."""
@@ -206,8 +315,7 @@ def load_all_repo_jsonl() -> list[dict]:
                         try:
                             rec = json.loads(line)
                             if isinstance(rec, dict) and (
-                                rec.get("instruction") or rec.get("prompt") or
-                                rec.get("response") or rec.get("text")
+                                rec.get("instruction") or rec.get("prompt") or rec.get("response") or rec.get("text")
                             ):
                                 rec.setdefault("metadata", {})
                                 if isinstance(rec["metadata"], str):
@@ -234,10 +342,7 @@ def load_six_tongues_protocol() -> list[dict]:
             continue
         tongue = STP_TONGUE_MAP.get(stem, infer_tongue(md_file.read_text(encoding="utf-8")[:500]))
         text = md_file.read_text(encoding="utf-8")
-        chapter_pairs = text_to_sft_pairs(
-            text, source="Six Tongues Protocol",
-            tongue=tongue, chapter=stem
-        )
+        chapter_pairs = text_to_sft_pairs(text, source="Six Tongues Protocol", tongue=tongue, chapter=stem)
         pairs.extend(chapter_pairs)
     return pairs
 
@@ -250,9 +355,7 @@ def load_reincarnated_novel() -> list[dict]:
         path = novel_dir / name
         if path.exists():
             text = path.read_text(encoding="utf-8")
-            pairs.extend(text_to_sft_pairs(
-                text, source="Reincarnated Novel", chapter=name
-            ))
+            pairs.extend(text_to_sft_pairs(text, source="Reincarnated Novel", chapter=name))
             break  # Use the best version
     return pairs
 
@@ -261,12 +364,18 @@ def load_everweave_text() -> list[dict]:
     """Load Everweave API text dump and other raw text exports."""
     pairs = []
     text_sources = [
-        (HOME / "OneDrive" / "Books" / "Avalon_Reference_Pack" / "Exports" / "everweave_api_fullpdf.txt",
-         "Everweave API"),
-        (HOME / "OneDrive" / "Books" / "Avalon_Reference_Pack" / "Exports" / "Entire chat log big boy.txt",
-         "ChatGPT Avalon Log"),
-        (HOME / "OneDrive" / "Books" / "Avalon_Reference_Pack" / "Exports" / "Entire chat log.txt",
-         "ChatGPT Avalon Log"),
+        (
+            HOME / "OneDrive" / "Books" / "Avalon_Reference_Pack" / "Exports" / "everweave_api_fullpdf.txt",
+            "Everweave API",
+        ),
+        (
+            HOME / "OneDrive" / "Books" / "Avalon_Reference_Pack" / "Exports" / "Entire chat log big boy.txt",
+            "ChatGPT Avalon Log",
+        ),
+        (
+            HOME / "OneDrive" / "Books" / "Avalon_Reference_Pack" / "Exports" / "Entire chat log.txt",
+            "ChatGPT Avalon Log",
+        ),
     ]
 
     # Also check alternate locations
@@ -274,8 +383,7 @@ def load_everweave_text() -> list[dict]:
         HOME / "OneDrive" / "Lore_Drafts_and_Chat_Exports",
         HOME / "OneDrive" / "Imports" / "issdandavis7795@gmail.com - Dropbox" / "AvalonBook STUFF",
     ]:
-        for name in ["httpsstory.everweave.aiapifullpdffa.txt",
-                      "Entire chat log big boy.txt", "Entire chat log.txt"]:
+        for name in ["httpsstory.everweave.aiapifullpdffa.txt", "Entire chat log big boy.txt", "Entire chat log.txt"]:
             p = alt_dir / name
             if p.exists():
                 src = "Everweave API" if "everweave" in name.lower() else "ChatGPT Avalon Log"
@@ -318,13 +426,17 @@ def load_lore_drafts() -> list[dict]:
         # Books folder
         (HOME / "OneDrive" / "Books" / "Book_Needs_Editing.docx", "Book Needs Editing"),
         (HOME / "OneDrive" / "Books" / "Review_Sheet.docx", "Review Sheet"),
-        (HOME / "OneDrive" / "Books" / "FUCKING BOOK" / "Reincarnated Into Another World to Be a God.docx",
-         "Reincarnated DOCX"),
+        (
+            HOME / "OneDrive" / "Books" / "FUCKING BOOK" / "Reincarnated Into Another World to Be a God.docx",
+            "Reincarnated DOCX",
+        ),
         # Lore Drafts
         (HOME / "OneDrive" / "Lore_Drafts_and_Chat_Exports" / "MASTER DOC.docx", "Master Doc"),
         (HOME / "OneDrive" / "Lore_Drafts_and_Chat_Exports" / "full game logs new 20205.docx", "Game Logs 2025"),
-        (HOME / "OneDrive" / "Lore_Drafts_and_Chat_Exports" / "# The Spiral of Pollyoneth full lengths.txt",
-         "Spiral of Pollyoneth"),
+        (
+            HOME / "OneDrive" / "Lore_Drafts_and_Chat_Exports" / "# The Spiral of Pollyoneth full lengths.txt",
+            "Spiral of Pollyoneth",
+        ),
         (HOME / "OneDrive" / "Lore_Drafts_and_Chat_Exports" / "Narrative framewor docs.txt", "Narrative Framework"),
         (HOME / "OneDrive" / "Lore_Drafts_and_Chat_Exports" / "Market overview.txt", "Market Overview"),
         # Documents
@@ -335,11 +447,15 @@ def load_lore_drafts() -> list[dict]:
         (HOME / "OneDrive" / "Documents" / "NOTES FR SYSTEM.txt", "System Notes"),
         # Avalon Reference Pack
         (HOME / "OneDrive" / "Books" / "Avalon_Reference_Pack" / "Guides" / "foreshadowing.txt", "Foreshadowing Guide"),
-        (HOME / "OneDrive" / "Books" / "Avalon_Reference_Pack" / "Guides" / "narrative_framework_docs.txt",
-         "Narrative Framework Ref"),
+        (
+            HOME / "OneDrive" / "Books" / "Avalon_Reference_Pack" / "Guides" / "narrative_framework_docs.txt",
+            "Narrative Framework Ref",
+        ),
         # Archive
-        (HOME / "OneDrive" / "Documents" / "GitHub" / "Avalon" / "archive" / "700000 characters.txt",
-         "700K Characters Archive"),
+        (
+            HOME / "OneDrive" / "Documents" / "GitHub" / "Avalon" / "archive" / "700000 characters.txt",
+            "700K Characters Archive",
+        ),
     ]
 
     seen_hashes = set()
@@ -355,6 +471,7 @@ def load_lore_drafts() -> list[dict]:
             # For binary formats, try python-docx or skip with note
             try:
                 import docx
+
                 doc = docx.Document(str(path))
                 text = "\n\n".join(p.text for p in doc.paragraphs if p.text.strip())
             except ImportError:
@@ -385,9 +502,7 @@ def load_choicescript() -> list[dict]:
         text = scene.read_text(encoding="utf-8", errors="replace")
         if len(text) < 100:
             continue
-        pairs.extend(text_to_sft_pairs(
-            text, source="ChoiceScript Game", chapter=scene.stem
-        ))
+        pairs.extend(text_to_sft_pairs(text, source="ChoiceScript Game", chapter=scene.stem))
     return pairs
 
 
@@ -401,9 +516,7 @@ def load_obsidian_vault() -> list[dict]:
         text = md.read_text(encoding="utf-8", errors="replace")
         if len(text) < 100:
             continue
-        pairs.extend(text_to_sft_pairs(
-            text, source="Obsidian Vault", chapter=md.stem
-        ))
+        pairs.extend(text_to_sft_pairs(text, source="Obsidian Vault", chapter=md.stem))
     return pairs
 
 
@@ -423,14 +536,20 @@ def load_notion_knowledge() -> list[dict]:
                     content = "\n".join(str(c) for c in content)
                 if content and len(str(content)) > 50:
                     tongue = infer_tongue(str(content))
-                    pairs.append({
-                        "instruction": f"Describe the {title} concept from the SCBE Notion workspace.",
-                        "response": str(content)[:2000],
-                        "metadata": {"source": "notion_knowledge", "tongue": tongue,
-                                     "file": jf.name, "type": "mega_ingest"},
-                        "encoding_tongue": tongue,
-                        "timestamp": time.time(),
-                    })
+                    pairs.append(
+                        {
+                            "instruction": f"Describe the {title} concept from the SCBE Notion workspace.",
+                            "response": str(content)[:2000],
+                            "metadata": {
+                                "source": "notion_knowledge",
+                                "tongue": tongue,
+                                "file": jf.name,
+                                "type": "mega_ingest",
+                            },
+                            "encoding_tongue": tongue,
+                            "timestamp": time.time(),
+                        }
+                    )
         except Exception:
             continue
     return pairs
@@ -439,9 +558,13 @@ def load_notion_knowledge() -> list[dict]:
 def load_notion_zip() -> list[dict]:
     """Try to unpack and load the Notion workspace export ZIP."""
     pairs = []
-    zip_path = (HOME / "OneDrive" / "Downloads" /
-                "91fc3693-09c4-4ff5-b481-a7902c21431b_Export-d3f8086e-07e0-444f-9291-10b7fe375b22" /
-                "Export-d3f8086e-07e0-444f-9291-10b7fe375b22-Part-1.zip")
+    zip_path = (
+        HOME
+        / "OneDrive"
+        / "Downloads"
+        / "91fc3693-09c4-4ff5-b481-a7902c21431b_Export-d3f8086e-07e0-444f-9291-10b7fe375b22"
+        / "Export-d3f8086e-07e0-444f-9291-10b7fe375b22-Part-1.zip"
+    )
     if not zip_path.exists():
         return pairs
 
@@ -449,7 +572,7 @@ def load_notion_zip() -> list[dict]:
     if not extract_dir.exists():
         try:
             extract_dir.mkdir(parents=True, exist_ok=True)
-            with zipfile.ZipFile(zip_path, 'r') as zf:
+            with zipfile.ZipFile(zip_path, "r") as zf:
                 zf.extractall(extract_dir)
         except Exception as e:
             print(f"  Notion ZIP extract error: {e}")
@@ -461,9 +584,7 @@ def load_notion_zip() -> list[dict]:
             text = md.read_text(encoding="utf-8", errors="replace")
             if len(text) < 100:
                 continue
-            pairs.extend(text_to_sft_pairs(
-                text, source="Notion Export", chapter=md.stem
-            ))
+            pairs.extend(text_to_sft_pairs(text, source="Notion Export", chapter=md.stem))
         except Exception:
             continue
     for csv_f in sorted(extract_dir.rglob("*.csv")):
@@ -472,18 +593,24 @@ def load_notion_zip() -> list[dict]:
             if len(text) < 100:
                 continue
             # Convert CSV rows to descriptive text
-            lines = text.strip().split('\n')
+            lines = text.strip().split("\n")
             if len(lines) > 1:
                 header = lines[0]
                 for row in lines[1:]:
-                    pairs.append({
-                        "instruction": f"What does this Notion record describe? Headers: {header}",
-                        "response": row,
-                        "metadata": {"source": "notion_csv", "tongue": infer_tongue(row),
-                                     "file": csv_f.name, "type": "mega_ingest"},
-                        "encoding_tongue": infer_tongue(row),
-                        "timestamp": time.time(),
-                    })
+                    pairs.append(
+                        {
+                            "instruction": f"What does this Notion record describe? Headers: {header}",
+                            "response": row,
+                            "metadata": {
+                                "source": "notion_csv",
+                                "tongue": infer_tongue(row),
+                                "file": csv_f.name,
+                                "type": "mega_ingest",
+                            },
+                            "encoding_tongue": infer_tongue(row),
+                            "timestamp": time.time(),
+                        }
+                    )
         except Exception:
             continue
     return pairs
@@ -548,8 +675,17 @@ def load_grok_drop() -> list[dict]:
 def load_spiralverse_mega() -> list[dict]:
     """Load the 16.8MB Spiralverse Mega Document from phone backup."""
     pairs = []
-    mega_path = (HOME / "OneDrive" / "Organized" / "PhoneBackups" / "CrossDevice" /
-                 "Issac's S24+ (1)" / "storage" / "Download" / "Spiralverse_Mega_Document.txt")
+    mega_path = (
+        HOME
+        / "OneDrive"
+        / "Organized"
+        / "PhoneBackups"
+        / "CrossDevice"
+        / "Issac's S24+ (1)"
+        / "storage"
+        / "Download"
+        / "Spiralverse_Mega_Document.txt"
+    )
     if mega_path.exists():
         text = mega_path.read_text(encoding="utf-8", errors="replace")
         pairs.extend(text_to_sft_pairs(text, source="Spiralverse Mega Document", max_chars=2000))
@@ -559,8 +695,9 @@ def load_spiralverse_mega() -> list[dict]:
 def load_phone_backup_lore() -> list[dict]:
     """Load lore files from phone backup in OneDrive/Organized."""
     pairs = []
-    phone_dir = (HOME / "OneDrive" / "Organized" / "PhoneBackups" / "CrossDevice" /
-                 "Issac's S24+ (1)" / "storage" / "Download")
+    phone_dir = (
+        HOME / "OneDrive" / "Organized" / "PhoneBackups" / "CrossDevice" / "Issac's S24+ (1)" / "storage" / "Download"
+    )
     if not phone_dir.exists():
         return pairs
 
@@ -600,8 +737,15 @@ def load_phone_backup_lore() -> list[dict]:
 def load_dropbox_story_series() -> list[dict]:
     """Load story chapters from Dropbox live sync."""
     pairs = []
-    story_dir = (HOME / "Dropbox" / "local-workspace-sync (Selective Sync Conflict)" /
-                 "SCBE-AETHERMOORE-live-sync" / "content" / "articles" / "story_series")
+    story_dir = (
+        HOME
+        / "Dropbox"
+        / "local-workspace-sync (Selective Sync Conflict)"
+        / "SCBE-AETHERMOORE-live-sync"
+        / "content"
+        / "articles"
+        / "story_series"
+    )
     if not story_dir.exists():
         return pairs
 
@@ -624,12 +768,18 @@ def load_dropbox_story_series() -> list[dict]:
 def load_dropbox_stp_editorial() -> list[dict]:
     """Load Six Tongues Protocol editorial + reference from Dropbox/Izack Realmforge."""
     pairs = []
-    stp_dir = (HOME / "OneDrive" / "Dropbox" / "Izack Realmforge" / "Story Files" /
-               "The Six Tongues Protocol")
+    stp_dir = HOME / "OneDrive" / "Dropbox" / "Izack Realmforge" / "Story Files" / "The Six Tongues Protocol"
     if not stp_dir.exists():
         # Try alternate
-        stp_dir = (HOME / "OneDrive" / "Imports" / "issdandavis7795@gmail.com - Dropbox" /
-                   "Izack Realmforge" / "Story Files" / "The Six Tongues Protocol")
+        stp_dir = (
+            HOME
+            / "OneDrive"
+            / "Imports"
+            / "issdandavis7795@gmail.com - Dropbox"
+            / "Izack Realmforge"
+            / "Story Files"
+            / "The Six Tongues Protocol"
+        )
     if not stp_dir.exists():
         return pairs
 
@@ -643,11 +793,17 @@ def load_dropbox_stp_editorial() -> list[dict]:
 def load_dropbox_spiral_chapters() -> list[dict]:
     """Load Spiral of Pollyoneth chapter files from Dropbox/Izack Realmforge."""
     pairs = []
-    spiral_dir = (HOME / "OneDrive" / "Dropbox" / "Izack Realmforge" / "Story Files" /
-                  "Spiral of Pollyoneth")
+    spiral_dir = HOME / "OneDrive" / "Dropbox" / "Izack Realmforge" / "Story Files" / "Spiral of Pollyoneth"
     if not spiral_dir.exists():
-        spiral_dir = (HOME / "OneDrive" / "Imports" / "issdandavis7795@gmail.com - Dropbox" /
-                      "Izack Realmforge" / "Story Files" / "Spiral of Pollyoneth")
+        spiral_dir = (
+            HOME
+            / "OneDrive"
+            / "Imports"
+            / "issdandavis7795@gmail.com - Dropbox"
+            / "Izack Realmforge"
+            / "Story Files"
+            / "Spiral of Pollyoneth"
+        )
     if not spiral_dir.exists():
         return pairs
 
@@ -661,8 +817,9 @@ def load_dropbox_spiral_chapters() -> list[dict]:
 def load_scbe_archive_docs() -> list[dict]:
     """Load large SCBE documentation from Dropbox live sync."""
     pairs = []
-    docs_dir = (HOME / "Dropbox" / "local-workspace-sync (Selective Sync Conflict)" /
-                "SCBE-AETHERMOORE-live-sync" / "docs")
+    docs_dir = (
+        HOME / "Dropbox" / "local-workspace-sync (Selective Sync Conflict)" / "SCBE-AETHERMOORE-live-sync" / "docs"
+    )
     if not docs_dir.exists():
         return pairs
 
@@ -681,8 +838,7 @@ def load_izack_realmforge() -> list[dict]:
     pairs = []
     base = HOME / "OneDrive" / "Dropbox" / "Izack Realmforge"
     if not base.exists():
-        base = (HOME / "OneDrive" / "Imports" / "issdandavis7795@gmail.com - Dropbox" /
-                "Izack Realmforge")
+        base = HOME / "OneDrive" / "Imports" / "issdandavis7795@gmail.com - Dropbox" / "Izack Realmforge"
     if not base.exists():
         return pairs
 
@@ -719,8 +875,10 @@ def load_dropbox_mega_texts() -> list[dict]:
         (HOME / "OneDrive" / "Documents" / "The Spiral of Avalon.VERY GOOD.1st draft.txt", "Spiral 1st Draft"),
         (HOME / "OneDrive" / "Documents" / "#DarkSetting, Happy Ending.txt", "Dark Setting"),
         (HOME / "OneDrive" / "Lore_Drafts_and_Chat_Exports" / "full game logs new 20205.odt", "Game Logs ODT"),
-        (HOME / "OneDrive" / "FINAL DRAFTS" / "Architecture and the bulindg of the Relams of Pollyoneth.rtf",
-         "Architecture RTF"),
+        (
+            HOME / "OneDrive" / "FINAL DRAFTS" / "Architecture and the bulindg of the Relams of Pollyoneth.rtf",
+            "Architecture RTF",
+        ),
     ]
 
     seen = set()
@@ -733,6 +891,7 @@ def load_dropbox_mega_texts() -> list[dict]:
             elif path.suffix in (".docx",):
                 try:
                     import docx
+
                     doc = docx.Document(str(path))
                     text = "\n\n".join(p.text for p in doc.paragraphs if p.text.strip())
                 except ImportError:
@@ -740,8 +899,8 @@ def load_dropbox_mega_texts() -> list[dict]:
             elif path.suffix == ".rtf":
                 # Basic RTF text extraction
                 raw = path.read_text(encoding="utf-8", errors="replace")
-                text = re.sub(r'\\[a-z]+\d*\s?', '', raw)
-                text = re.sub(r'[{}]', '', text)
+                text = re.sub(r"\\[a-z]+\d*\s?", "", raw)
+                text = re.sub(r"[{}]", "", text)
             elif path.suffix == ".odt":
                 continue  # Skip ODT unless we add odfpy
             else:
@@ -826,14 +985,20 @@ def load_arxiv_metadata() -> list[dict]:
             abstract = data.get("abstract", data.get("summary", ""))
             if title and abstract:
                 tongue = infer_tongue(title + " " + abstract)
-                pairs.append({
-                    "instruction": f"Summarize this research paper: {title}",
-                    "response": abstract[:1500],
-                    "metadata": {"source": "arxiv", "tongue": tongue,
-                                 "arxiv_id": data.get("id", ""), "type": "mega_ingest"},
-                    "encoding_tongue": tongue,
-                    "timestamp": time.time(),
-                })
+                pairs.append(
+                    {
+                        "instruction": f"Summarize this research paper: {title}",
+                        "response": abstract[:1500],
+                        "metadata": {
+                            "source": "arxiv",
+                            "tongue": tongue,
+                            "arxiv_id": data.get("id", ""),
+                            "type": "mega_ingest",
+                        },
+                        "encoding_tongue": tongue,
+                        "timestamp": time.time(),
+                    }
+                )
         except Exception:
             continue
     return pairs
@@ -845,8 +1010,11 @@ def load_six_tongues_wiki() -> list[dict]:
     raw_dir = ROOT / "training" / "raw"
     if not raw_dir.exists():
         return pairs
-    for name in ["six_tongues_enhanced_v2.md", "six_tongues_full_wiki_20260218.md",
-                 "spiralverse_canonical_linguistic_codex_v1_seed_20260218.md"]:
+    for name in [
+        "six_tongues_enhanced_v2.md",
+        "six_tongues_full_wiki_20260218.md",
+        "spiralverse_canonical_linguistic_codex_v1_seed_20260218.md",
+    ]:
         path = raw_dir / name
         if path.exists():
             text = path.read_text(encoding="utf-8", errors="replace")
@@ -858,15 +1026,13 @@ def load_six_tongues_wiki() -> list[dict]:
 # DEDUPLICATION
 # ============================================================
 
+
 def deduplicate(records: list[dict]) -> list[dict]:
     """Deduplicate by content hash of instruction+response."""
     seen = set()
     deduped = []
     for rec in records:
-        key_text = (
-            rec.get("instruction", rec.get("prompt", "")) +
-            rec.get("response", rec.get("text", ""))
-        )
+        key_text = rec.get("instruction", rec.get("prompt", "")) + rec.get("response", rec.get("text", ""))
         h = hashlib.md5(key_text.encode(errors="replace")).hexdigest()
         if h not in seen:
             seen.add(h)
@@ -878,6 +1044,7 @@ def deduplicate(records: list[dict]) -> list[dict]:
 # TONGUE BALANCE REPORT
 # ============================================================
 
+
 def tongue_report(records: list[dict]) -> dict:
     """Count tongue distribution and flag imbalances."""
     counts = {t: 0 for t in TONGUE_KEYS}
@@ -887,9 +1054,7 @@ def tongue_report(records: list[dict]) -> dict:
             meta = {}
         tongue = meta.get("tongue", rec.get("encoding_tongue", ""))
         if tongue not in TONGUE_KEYS:
-            tongue = infer_tongue(
-                rec.get("instruction", "") + " " + rec.get("response", "")
-            )
+            tongue = infer_tongue(rec.get("instruction", "") + " " + rec.get("response", ""))
         counts[tongue] = counts.get(tongue, 0) + 1
 
     total = sum(counts.values())
@@ -906,6 +1071,7 @@ def tongue_report(records: list[dict]) -> dict:
 # ============================================================
 # MAIN
 # ============================================================
+
 
 def main():
     parser = argparse.ArgumentParser(description="Mega Ingest Pipeline — ALL sources")
@@ -925,27 +1091,27 @@ def main():
     t_total = time.time()
 
     loaders = [
-        ("repo_jsonl",           "ALL repo JSONL files",                load_all_repo_jsonl),
-        ("six_tongues_protocol", "Six Tongues Protocol book",           load_six_tongues_protocol),
-        ("six_tongues_wiki",     "Six Tongues Wiki + Codex",            load_six_tongues_wiki),
-        ("reincarnated",         "Reincarnated novel",                  load_reincarnated_novel),
-        ("everweave_text",       "Everweave corpus + ChatGPT logs",     load_everweave_text),
-        ("theory_doc",           "500-page theory document",            load_theory_doc),
-        ("spiralverse_mega",     "Spiralverse Mega Document (16.8MB)",  load_spiralverse_mega),
-        ("phone_backup",         "Phone backup lore + ChoiceScript",    load_phone_backup_lore),
-        ("lore_drafts",          "Lore drafts + manuscripts (DOCX)",    load_lore_drafts),
-        ("dropbox_mega_texts",   "Dropbox mega text dumps",             load_dropbox_mega_texts),
-        ("dropbox_story_series", "Dropbox story series chapters",       load_dropbox_story_series),
-        ("stp_editorial",        "STP editorial + reference notes",     load_dropbox_stp_editorial),
-        ("spiral_chapters",      "Spiral of Pollyoneth chapters",       load_dropbox_spiral_chapters),
-        ("izack_realmforge",     "Izack Realmforge workspace",          load_izack_realmforge),
-        ("avalon_ref_pack",      "Avalon Reference Pack (lore+guides)", load_avalon_reference_pack),
-        ("avalon_github",        "Avalon GitHub archive + drafts",      load_avalon_github_archive),
-        ("aethermoore_protocol", "Aethermoore Protocol patent specs",   load_aethermoore_protocol),
-        ("scbe_archive_docs",    "SCBE Docs Archive (Dropbox sync)",    load_scbe_archive_docs),
-        ("choicescript",         "ChoiceScript game scenes",            load_choicescript),
-        ("obsidian",             "Obsidian vault notes",                load_obsidian_vault),
-        ("arxiv",                "arXiv paper metadata",                load_arxiv_metadata),
+        ("repo_jsonl", "ALL repo JSONL files", load_all_repo_jsonl),
+        ("six_tongues_protocol", "Six Tongues Protocol book", load_six_tongues_protocol),
+        ("six_tongues_wiki", "Six Tongues Wiki + Codex", load_six_tongues_wiki),
+        ("reincarnated", "Reincarnated novel", load_reincarnated_novel),
+        ("everweave_text", "Everweave corpus + ChatGPT logs", load_everweave_text),
+        ("theory_doc", "500-page theory document", load_theory_doc),
+        ("spiralverse_mega", "Spiralverse Mega Document (16.8MB)", load_spiralverse_mega),
+        ("phone_backup", "Phone backup lore + ChoiceScript", load_phone_backup_lore),
+        ("lore_drafts", "Lore drafts + manuscripts (DOCX)", load_lore_drafts),
+        ("dropbox_mega_texts", "Dropbox mega text dumps", load_dropbox_mega_texts),
+        ("dropbox_story_series", "Dropbox story series chapters", load_dropbox_story_series),
+        ("stp_editorial", "STP editorial + reference notes", load_dropbox_stp_editorial),
+        ("spiral_chapters", "Spiral of Pollyoneth chapters", load_dropbox_spiral_chapters),
+        ("izack_realmforge", "Izack Realmforge workspace", load_izack_realmforge),
+        ("avalon_ref_pack", "Avalon Reference Pack (lore+guides)", load_avalon_reference_pack),
+        ("avalon_github", "Avalon GitHub archive + drafts", load_avalon_github_archive),
+        ("aethermoore_protocol", "Aethermoore Protocol patent specs", load_aethermoore_protocol),
+        ("scbe_archive_docs", "SCBE Docs Archive (Dropbox sync)", load_scbe_archive_docs),
+        ("choicescript", "ChoiceScript game scenes", load_choicescript),
+        ("obsidian", "Obsidian vault notes", load_obsidian_vault),
+        ("arxiv", "arXiv paper metadata", load_arxiv_metadata),
     ]
 
     total_loaders = len(loaders) + 2  # +2 for notion and ai_exports
@@ -1041,6 +1207,7 @@ def main():
             print(f"\nTETRIS EMBEDDING...")
             os.environ["TOKENIZERS_PARALLELISM"] = "false"
             from src.kernel.tetris_embedder import TetrisEmbedder
+
             tetris = TetrisEmbedder("all-MiniLM-L6-v2")
             tetris_out = ROOT / "training-data" / "mega_tetris_enriched_sft.jsonl"
 
@@ -1048,11 +1215,13 @@ def main():
             sys.path.insert(0, str(ROOT / "scripts"))
             from tetris_training_pipeline import export_tetris_sft, benchmark_embeddings, infer_tongue as tt_infer
 
-            texts = [(r.get("instruction", r.get("prompt", "")) + " " +
-                      r.get("response", ""))[:500] for r in all_records]
+            texts = [
+                (r.get("instruction", r.get("prompt", "")) + " " + r.get("response", ""))[:500] for r in all_records
+            ]
             tongues = [tt_infer(r) for r in all_records]
-            tiers = [r.get("metadata", {}).get("tier", 1) if isinstance(r.get("metadata"), dict) else 1
-                     for r in all_records]
+            tiers = [
+                r.get("metadata", {}).get("tier", 1) if isinstance(r.get("metadata"), dict) else 1 for r in all_records
+            ]
 
             # Benchmark a sample
             sample_n = min(500, len(texts))
@@ -1069,6 +1238,7 @@ def main():
             if args.push_hf:
                 print(f"\nPUSHING TO HUGGINGFACE...")
                 from tetris_training_pipeline import push_to_hf, load_hf_token
+
                 hf_token = load_hf_token()
                 repo_id = "issdandavis/scbe-aethermoore-training-data"
                 if hf_token:

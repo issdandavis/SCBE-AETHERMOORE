@@ -24,10 +24,10 @@ from typing import Optional
 class DEDESignal:
     """Output signal from the dual entropy engine."""
 
-    h_behavioral: float     # Shannon entropy of behavioral distribution
-    h_governance: float     # Entropy of governance decision distribution
-    regime: str             # "normal", "anomalous", "governance_gap", "critical"
-    action: str             # "allow", "sandbox", "escalate", "block"
+    h_behavioral: float  # Shannon entropy of behavioral distribution
+    h_governance: float  # Entropy of governance decision distribution
+    regime: str  # "normal", "anomalous", "governance_gap", "critical"
+    action: str  # "allow", "sandbox", "escalate", "block"
     timestamp: float = field(default_factory=time.time)
 
     def to_dict(self) -> dict:

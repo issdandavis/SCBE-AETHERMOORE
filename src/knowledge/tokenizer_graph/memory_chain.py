@@ -34,31 +34,25 @@ CATEGORY_TONGUE_MAP = {
     "architecture": [0.7, 0.2, 0.2, 0.3, 0.1, 0.1],
     "hydra": [0.6, 0.3, 0.2, 0.2, 0.1, 0.2],
     "swarm": [0.6, 0.3, 0.1, 0.2, 0.1, 0.3],
-
     # AV-dominant (transport/initialization)
     "deployment": [0.2, 0.7, 0.1, 0.3, 0.1, 0.2],
     "demo": [0.3, 0.6, 0.1, 0.2, 0.1, 0.1],
-
     # RU-dominant (policy/authorization)
     "patent": [0.2, 0.1, 0.8, 0.1, 0.2, 0.2],
     "axioms": [0.3, 0.1, 0.7, 0.2, 0.1, 0.2],
     "theorems": [0.2, 0.1, 0.7, 0.3, 0.1, 0.1],
-
     # CA-dominant (encryption/compute)
     "security": [0.2, 0.1, 0.2, 0.8, 0.2, 0.3],
     "math": [0.1, 0.1, 0.3, 0.7, 0.1, 0.1],
     "quantum": [0.1, 0.1, 0.2, 0.8, 0.1, 0.2],
     "geometry": [0.2, 0.1, 0.2, 0.7, 0.1, 0.1],
-
     # UM-dominant (redaction/privacy)
     "sacred-eggs": [0.2, 0.2, 0.2, 0.2, 0.7, 0.3],
     "geoseal": [0.2, 0.1, 0.3, 0.3, 0.6, 0.3],
-
     # DR-dominant (authentication/integrity)
     "tongues": [0.2, 0.2, 0.2, 0.2, 0.2, 0.8],
     "geoseed": [0.2, 0.2, 0.1, 0.3, 0.2, 0.7],
     "lore": [0.1, 0.3, 0.1, 0.1, 0.2, 0.7],
-
     # Mixed
     "ai": [0.3, 0.2, 0.2, 0.4, 0.1, 0.2],
     "nlp": [0.2, 0.3, 0.1, 0.4, 0.1, 0.3],
@@ -74,6 +68,7 @@ CATEGORY_TONGUE_MAP = {
 @dataclass
 class MemoryNode:
     """A node in the 6D memory graph."""
+
     chunk_id: str
     coords: list  # 6D Sacred Tongue coordinates
     chain_hash: str
@@ -88,6 +83,7 @@ class MemoryNode:
 @dataclass
 class HyperCord:
     """An edge in the memory graph — a semantic link between chunks."""
+
     source_id: str
     target_id: str
     weight: float
@@ -98,6 +94,7 @@ class HyperCord:
 @dataclass
 class MemoryScene:
     """A cluster of related memory nodes — like a DNA codon."""
+
     scene_id: str
     node_ids: list
     centroid: list  # 6D centroid
@@ -121,7 +118,7 @@ class TokenizerGraph:
 
     def compute_tongue_coords(self, category: str, content: str = "") -> list[float]:
         """Compute 6D Sacred Tongue coordinates for a chunk."""
-        base = CATEGORY_TONGUE_MAP.get(category, [0.2]*6)
+        base = CATEGORY_TONGUE_MAP.get(category, [0.2] * 6)
         coords = [b * w for b, w in zip(base, TONGUE_WEIGHTS)]
 
         # Content-based adjustment: keyword boosting
@@ -146,8 +143,9 @@ class TokenizerGraph:
 
         return coords
 
-    def add_chunk(self, chunk_id: str, title: str, category: str, content: str,
-                  source: str, chain_hash: str, parent_hash: str) -> MemoryNode:
+    def add_chunk(
+        self, chunk_id: str, title: str, category: str, content: str, source: str, chain_hash: str, parent_hash: str
+    ) -> MemoryNode:
         """Add a knowledge chunk to the graph."""
         coords = self.compute_tongue_coords(category, content)
 
@@ -196,10 +194,9 @@ class TokenizerGraph:
 
     def _tongue_distance(self, a: list, b: list) -> float:
         """Weighted distance in 6D tongue space."""
-        return math.sqrt(sum(
-            (ai - bi)**2 * TONGUE_WEIGHTS[i]
-            for i, (ai, bi) in enumerate(zip(a, b))
-        )) / sum(TONGUE_WEIGHTS)
+        return math.sqrt(sum((ai - bi) ** 2 * TONGUE_WEIGHTS[i] for i, (ai, bi) in enumerate(zip(a, b)))) / sum(
+            TONGUE_WEIGHTS
+        )
 
     def _dominant_tongue(self, a: list, b: list) -> str:
         """Find which tongue dimension has the strongest connection."""
@@ -240,21 +237,27 @@ class TokenizerGraph:
     def export_graph(self, output_path: str) -> str:
         """Export the graph as JSON for visualization or HF upload."""
         data = {
-            "nodes": {nid: {
-                "coords": n.coords,
-                "title": n.title,
-                "source": n.source,
-                "category": n.category,
-                "chain_hash": n.chain_hash,
-                "edges": n.edges,
-                "scene_id": n.scene_id,
-            } for nid, n in self.nodes.items()},
-            "cords": [{
-                "source": c.source_id,
-                "target": c.target_id,
-                "weight": c.weight,
-                "tongue": c.dominant_tongue,
-            } for c in self.cords],
+            "nodes": {
+                nid: {
+                    "coords": n.coords,
+                    "title": n.title,
+                    "source": n.source,
+                    "category": n.category,
+                    "chain_hash": n.chain_hash,
+                    "edges": n.edges,
+                    "scene_id": n.scene_id,
+                }
+                for nid, n in self.nodes.items()
+            },
+            "cords": [
+                {
+                    "source": c.source_id,
+                    "target": c.target_id,
+                    "weight": c.weight,
+                    "tongue": c.dominant_tongue,
+                }
+                for c in self.cords
+            ],
             "stats": {
                 "total_nodes": len(self.nodes),
                 "total_cords": len(self.cords),

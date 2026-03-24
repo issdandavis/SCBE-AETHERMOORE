@@ -276,9 +276,7 @@ def _call_with_context(fn: Any, **context: Any) -> Any:
         return fn()
 
     kwargs: dict[str, Any] = {}
-    accepts_kwargs = any(
-        p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()
-    )
+    accepts_kwargs = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values())
 
     for param in sig.parameters.values():
         if param.name in {"self", "cls"}:
@@ -370,8 +368,7 @@ def _is_success(result: Any) -> bool:
 def _has_explicit_status(result: Any) -> bool:
     if isinstance(result, dict):
         return any(
-            key in result
-            for key in ("ok", "success", "allowed", "bound", "sealed", "verified", "accepted", "status")
+            key in result for key in ("ok", "success", "allowed", "bound", "sealed", "verified", "accepted", "status")
         )
     return any(
         hasattr(result, attr)
@@ -619,9 +616,7 @@ def test_ring_descent_rejects_negative_target_ring(egg_api: SacredEggAPI) -> Non
         INF_MANIFOLD,
     ],
 )
-def test_manifold_binding_rejects_invalid_points(
-    egg_api: SacredEggAPI, manifold: tuple[float, ...]
-) -> None:
+def test_manifold_binding_rejects_invalid_points(egg_api: SacredEggAPI, manifold: tuple[float, ...]) -> None:
     assert_rejected(
         lambda: egg_api.ritual(
             "manifold_binding",
@@ -635,9 +630,7 @@ def test_manifold_binding_rejects_invalid_points(
 
 
 @pytest.mark.parametrize("wrong_manifold", [PERTURBED_MANIFOLD, PERMUTED_MANIFOLD])
-def test_manifold_binding_breaks_on_coordinate_change(
-    egg_api: SacredEggAPI, wrong_manifold: tuple[float, ...]
-) -> None:
+def test_manifold_binding_breaks_on_coordinate_change(egg_api: SacredEggAPI, wrong_manifold: tuple[float, ...]) -> None:
     binding = egg_api.ritual(
         "manifold_binding",
         MANIFOLD_RITUAL_ALIASES,
@@ -720,6 +713,5 @@ def test_fail_to_noise_never_leaks_raw_payload(egg_api: SacredEggAPI) -> None:
     assert_no_payload_leak(result, PAYLOAD)
     if _has_explicit_status(result):
         assert not _is_success(result), (
-            "Invalid manifold + duplicate binders should not surface a success status; "
-            f"got {result!r}"
+            "Invalid manifold + duplicate binders should not surface a success status; " f"got {result!r}"
         )

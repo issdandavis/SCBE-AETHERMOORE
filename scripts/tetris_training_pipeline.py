@@ -58,20 +58,40 @@ def generate_spin_conversations(n_sessions: int = 5) -> list[dict]:
 
     TOPICS = {
         "CORE": [
-            ("philosophy", "KO"), ("mathematics", "CA"), ("physics", "CA"),
-            ("psychology", "RU"), ("history", "DR"), ("culture", "AV"),
+            ("philosophy", "KO"),
+            ("mathematics", "CA"),
+            ("physics", "CA"),
+            ("psychology", "RU"),
+            ("history", "DR"),
+            ("culture", "AV"),
         ],
         "INNER": [
-            ("programming", "CA"), ("astronomy", "RU"), ("chemistry", "CA"),
-            ("music", "AV"), ("cooking", "DR"), ("economics", "KO"),
-            ("art", "AV"), ("politics", "KO"), ("technology", "CA"),
-            ("emotions", "RU"), ("creativity", "AV"), ("time", "UM"),
+            ("programming", "CA"),
+            ("astronomy", "RU"),
+            ("chemistry", "CA"),
+            ("music", "AV"),
+            ("cooking", "DR"),
+            ("economics", "KO"),
+            ("art", "AV"),
+            ("politics", "KO"),
+            ("technology", "CA"),
+            ("emotions", "RU"),
+            ("creativity", "AV"),
+            ("time", "UM"),
         ],
         "OUTER": [
-            ("algorithms", "CA"), ("databases", "DR"), ("web_development", "AV"),
-            ("AI", "CA"), ("cybersecurity", "UM"), ("nutrition", "DR"),
-            ("food_science", "RU"), ("dreams", "RU"), ("linguistics", "AV"),
-            ("game_theory", "KO"), ("cryptography", "UM"), ("ecology", "DR"),
+            ("algorithms", "CA"),
+            ("databases", "DR"),
+            ("web_development", "AV"),
+            ("AI", "CA"),
+            ("cybersecurity", "UM"),
+            ("nutrition", "DR"),
+            ("food_science", "RU"),
+            ("dreams", "RU"),
+            ("linguistics", "AV"),
+            ("game_theory", "KO"),
+            ("cryptography", "UM"),
+            ("ecology", "DR"),
         ],
     }
     RING_ORDER = ["CORE", "INNER", "OUTER"]
@@ -117,21 +137,27 @@ def generate_spin_conversations(n_sessions: int = 5) -> list[dict]:
             topic, topic_tongue = rng.choice(TOPICS[ring])
             tongue_seq.append(topic_tongue)
 
-            pairs.append({
-                "instruction": (
-                    f"{npc_prompt} The player asks about {topic} in the "
-                    f"context of {prev_topic}. Respond in character, connecting "
-                    f"these topics through the {topic_tongue} Sacred Tongue domain."
-                ),
-                "response": response,
-                "metadata": {
-                    "npc": npc_name, "tongue": topic_tongue,
-                    "type": "spin_conversation", "ring": ring,
-                    "move": move, "pivot_depth": step, "session": session,
-                },
-                "encoding_tongue": topic_tongue,
-                "timestamp": time.time(),
-            })
+            pairs.append(
+                {
+                    "instruction": (
+                        f"{npc_prompt} The player asks about {topic} in the "
+                        f"context of {prev_topic}. Respond in character, connecting "
+                        f"these topics through the {topic_tongue} Sacred Tongue domain."
+                    ),
+                    "response": response,
+                    "metadata": {
+                        "npc": npc_name,
+                        "tongue": topic_tongue,
+                        "type": "spin_conversation",
+                        "ring": ring,
+                        "move": move,
+                        "pivot_depth": step,
+                        "session": session,
+                    },
+                    "encoding_tongue": topic_tongue,
+                    "timestamp": time.time(),
+                }
+            )
     return pairs
 
 
@@ -168,8 +194,7 @@ def infer_tongue(record: dict) -> str:
         return tongue
 
     # Infer from content keywords
-    text = (record.get("instruction", "") + " " + record.get("prompt", "") +
-            " " + record.get("response", "")).lower()
+    text = (record.get("instruction", "") + " " + record.get("prompt", "") + " " + record.get("response", "")).lower()
 
     tongue_keywords = {
         "KO": ["command", "orchestrat", "dispatch", "fleet", "coordinat"],
@@ -191,8 +216,7 @@ def infer_tongue(record: dict) -> str:
     return best_tongue
 
 
-def benchmark_embeddings(tetris: TetrisEmbedder, texts: list[str],
-                         tongues: list[str], tiers: list[int]) -> dict:
+def benchmark_embeddings(tetris: TetrisEmbedder, texts: list[str], tongues: list[str], tiers: list[int]) -> dict:
     """Compute embedding quality metrics."""
     results = tetris.embed_batch(texts, tongues, tiers)
     embs = np.array([r.rotated_embedding for r in results])
@@ -238,8 +262,7 @@ def benchmark_embeddings(tetris: TetrisEmbedder, texts: list[str],
     }
 
 
-def export_tetris_sft(records: list[dict], tetris: TetrisEmbedder,
-                      output_path: Path) -> int:
+def export_tetris_sft(records: list[dict], tetris: TetrisEmbedder, output_path: Path) -> int:
     """
     Export SFT records with Tetris embeddings as enriched JSONL.
 
@@ -277,9 +300,7 @@ def export_tetris_sft(records: list[dict], tetris: TetrisEmbedder,
                 "tier": emb.tier,
                 "tongue_coords": emb.tongue_coords.tolist(),
                 "spatial_coords": emb.spatial_coords.tolist(),
-                "embedding_hash": hashlib.md5(
-                    emb.rotated_embedding.tobytes()
-                ).hexdigest()[:16],
+                "embedding_hash": hashlib.md5(emb.rotated_embedding.tobytes()).hexdigest()[:16],
             }
             f.write(json.dumps(enriched, ensure_ascii=False, default=str) + "\n")
             written += 1
@@ -291,6 +312,7 @@ def push_to_hf(file_path: Path, repo_id: str, hf_token: str) -> bool:
     """Push enriched JSONL to HuggingFace."""
     try:
         from huggingface_hub import upload_file
+
         upload_file(
             path_or_fileobj=str(file_path),
             path_in_repo=f"data/{file_path.name}",
@@ -343,11 +365,14 @@ def main():
     print(f"  Loaded {len(existing_sft)} existing SFT pairs")
 
     sphere_docs = load_obsidian_vault(ROOT / "notes" / "sphere-grid")
-    sphere_sft = [{
-        "instruction": f"Explain the {d['title']} concept from the SCBE sphere grid.",
-        "response": d["content"][:600],
-        "metadata": {"tongue": d["tongue"], "tier": d.get("tier", 1), "source": "sphere-grid"},
-    } for d in sphere_docs]
+    sphere_sft = [
+        {
+            "instruction": f"Explain the {d['title']} concept from the SCBE sphere grid.",
+            "response": d["content"][:600],
+            "metadata": {"tongue": d["tongue"], "tier": d.get("tier", 1), "source": "sphere-grid"},
+        }
+        for d in sphere_docs
+    ]
     print(f"  Loaded {len(sphere_sft)} sphere grid curriculum notes")
 
     # ================================================================
@@ -361,8 +386,7 @@ def main():
     deduped = []
     for rec in all_records:
         key = hashlib.md5(
-            (rec.get("instruction", rec.get("prompt", "")) +
-             rec.get("response", "")).encode()
+            (rec.get("instruction", rec.get("prompt", "")) + rec.get("response", "")).encode()
         ).hexdigest()
         if key not in seen:
             seen.add(key)
@@ -375,11 +399,9 @@ def main():
     # ================================================================
     print("\nPHASE 4: Tetris embedding + benchmark...")
 
-    texts = [(r.get("instruction", r.get("prompt", "")) + " " +
-              r.get("response", ""))[:500] for r in deduped]
+    texts = [(r.get("instruction", r.get("prompt", "")) + " " + r.get("response", ""))[:500] for r in deduped]
     tongues = [infer_tongue(r) for r in deduped]
-    tiers = [r.get("metadata", {}).get("tier", 1) if isinstance(r.get("metadata"), dict) else 1
-             for r in deduped]
+    tiers = [r.get("metadata", {}).get("tier", 1) if isinstance(r.get("metadata"), dict) else 1 for r in deduped]
 
     t0 = time.time()
     metrics = benchmark_embeddings(tetris, texts, tongues, tiers)

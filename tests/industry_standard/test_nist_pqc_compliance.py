@@ -46,9 +46,7 @@ class TestMLKEMFIPS203Compliance:
     These tests verify ACTUAL compliance, not approximations.
     """
 
-    @pytest.mark.xfail(
-        reason="Requires liboqs for full NIST FIPS 203 compliance - using fallback implementation"
-    )
+    @pytest.mark.xfail(reason="Requires liboqs for full NIST FIPS 203 compliance - using fallback implementation")
     @pytest.mark.skipif(not PQC_AVAILABLE, reason="PQC module not available")
     def test_mlkem768_parameter_compliance(self):
         """
@@ -69,35 +67,17 @@ class TestMLKEMFIPS203Compliance:
         if hasattr(pqc_core, "ML_KEM_768_PARAMS"):
             params = pqc_core.ML_KEM_768_PARAMS
 
-            assert (
-                params["n"] == 256
-            ), f"FIPS 203 violation: n must be 256, got {params['n']}"
-            assert (
-                params["k"] == 3
-            ), f"FIPS 203 violation: k must be 3, got {params['k']}"
-            assert (
-                params["q"] == 3329
-            ), f"FIPS 203 violation: q must be 3329, got {params['q']}"
-            assert (
-                params["eta1"] == 2
-            ), f"FIPS 203 violation: η₁ must be 2, got {params['eta1']}"
-            assert (
-                params["eta2"] == 2
-            ), f"FIPS 203 violation: η₂ must be 2, got {params['eta2']}"
-            assert (
-                params["du"] == 10
-            ), f"FIPS 203 violation: d_u must be 10, got {params['du']}"
-            assert (
-                params["dv"] == 4
-            ), f"FIPS 203 violation: d_v must be 4, got {params['dv']}"
+            assert params["n"] == 256, f"FIPS 203 violation: n must be 256, got {params['n']}"
+            assert params["k"] == 3, f"FIPS 203 violation: k must be 3, got {params['k']}"
+            assert params["q"] == 3329, f"FIPS 203 violation: q must be 3329, got {params['q']}"
+            assert params["eta1"] == 2, f"FIPS 203 violation: η₁ must be 2, got {params['eta1']}"
+            assert params["eta2"] == 2, f"FIPS 203 violation: η₂ must be 2, got {params['eta2']}"
+            assert params["du"] == 10, f"FIPS 203 violation: d_u must be 10, got {params['du']}"
+            assert params["dv"] == 4, f"FIPS 203 violation: d_v must be 4, got {params['dv']}"
         else:
-            pytest.fail(
-                "ML-KEM-768 parameters not exposed - cannot verify FIPS 203 compliance"
-            )
+            pytest.fail("ML-KEM-768 parameters not exposed - cannot verify FIPS 203 compliance")
 
-    @pytest.mark.xfail(
-        reason="Requires liboqs for full NIST FIPS 203 compliance - using fallback implementation"
-    )
+    @pytest.mark.xfail(reason="Requires liboqs for full NIST FIPS 203 compliance - using fallback implementation")
     @pytest.mark.skipif(not PQC_AVAILABLE, reason="PQC module not available")
     def test_mlkem_key_sizes(self):
         """
@@ -114,18 +94,12 @@ class TestMLKEMFIPS203Compliance:
         if hasattr(pqc_core, "generate_mlkem768_keypair"):
             pk, sk = pqc_core.generate_mlkem768_keypair()
 
-            assert (
-                len(pk) == 1184
-            ), f"FIPS 203 violation: ML-KEM-768 public key must be 1184 bytes, got {len(pk)}"
-            assert (
-                len(sk) == 2400
-            ), f"FIPS 203 violation: ML-KEM-768 secret key must be 2400 bytes, got {len(sk)}"
+            assert len(pk) == 1184, f"FIPS 203 violation: ML-KEM-768 public key must be 1184 bytes, got {len(pk)}"
+            assert len(sk) == 2400, f"FIPS 203 violation: ML-KEM-768 secret key must be 2400 bytes, got {len(sk)}"
         else:
             pytest.fail("ML-KEM-768 key generation not implemented")
 
-    @pytest.mark.xfail(
-        reason="Requires liboqs for full NIST FIPS 203 compliance - using fallback implementation"
-    )
+    @pytest.mark.xfail(reason="Requires liboqs for full NIST FIPS 203 compliance - using fallback implementation")
     @pytest.mark.skipif(not PQC_AVAILABLE, reason="PQC module not available")
     def test_mlkem_encapsulation_decapsulation(self):
         """
@@ -150,21 +124,15 @@ class TestMLKEMFIPS203Compliance:
             ct, ss1 = pqc_core.mlkem768_encapsulate(pk)
 
             # Verify ciphertext size
-            assert (
-                len(ct) == 1088
-            ), f"FIPS 203 violation: ML-KEM-768 ciphertext must be 1088 bytes, got {len(ct)}"
-            assert (
-                len(ss1) == 32
-            ), f"FIPS 203 violation: Shared secret must be 32 bytes, got {len(ss1)}"
+            assert len(ct) == 1088, f"FIPS 203 violation: ML-KEM-768 ciphertext must be 1088 bytes, got {len(ct)}"
+            assert len(ss1) == 32, f"FIPS 203 violation: Shared secret must be 32 bytes, got {len(ss1)}"
 
             # Decapsulate
             if hasattr(pqc_core, "mlkem768_decapsulate"):
                 ss2 = pqc_core.mlkem768_decapsulate(ct, sk)
 
                 # Verify shared secrets match
-                assert (
-                    ss1 == ss2
-                ), "FIPS 203 violation: Shared secrets don't match after decapsulation"
+                assert ss1 == ss2, "FIPS 203 violation: Shared secrets don't match after decapsulation"
             else:
                 pytest.fail("ML-KEM-768 decapsulation not implemented")
         else:
@@ -189,16 +157,10 @@ class TestMLKEMFIPS203Compliance:
         pk1, sk1 = pqc_core.generate_mlkem768_keypair_from_seed(seed)
         pk2, sk2 = pqc_core.generate_mlkem768_keypair_from_seed(seed)
 
-        assert (
-            pk1 == pk2
-        ), "FIPS 203 violation: Key generation not deterministic (public key)"
-        assert (
-            sk1 == sk2
-        ), "FIPS 203 violation: Key generation not deterministic (secret key)"
+        assert pk1 == pk2, "FIPS 203 violation: Key generation not deterministic (public key)"
+        assert sk1 == sk2, "FIPS 203 violation: Key generation not deterministic (secret key)"
 
-    @pytest.mark.xfail(
-        reason="Requires liboqs for full NIST FIPS 203 compliance - using fallback implementation"
-    )
+    @pytest.mark.xfail(reason="Requires liboqs for full NIST FIPS 203 compliance - using fallback implementation")
     @pytest.mark.skipif(not PQC_AVAILABLE, reason="PQC module not available")
     def test_mlkem_security_level(self):
         """
@@ -223,9 +185,7 @@ class TestMLKEMFIPS203Compliance:
                 security["nist_level"] == 3
             ), f"FIPS 203 violation: ML-KEM-768 must be NIST Level 3, got {security['nist_level']}"
         else:
-            pytest.fail(
-                "Security level not documented - cannot verify FIPS 203 compliance"
-            )
+            pytest.fail("Security level not documented - cannot verify FIPS 203 compliance")
 
 
 class TestMLDSAFIPS204Compliance:
@@ -239,9 +199,7 @@ class TestMLDSAFIPS204Compliance:
     These tests verify ACTUAL compliance with FIPS 204.
     """
 
-    @pytest.mark.xfail(
-        reason="Requires liboqs for full NIST FIPS 204 compliance - using fallback implementation"
-    )
+    @pytest.mark.xfail(reason="Requires liboqs for full NIST FIPS 204 compliance - using fallback implementation")
     @pytest.mark.skipif(not PQC_AVAILABLE, reason="PQC module not available")
     def test_mldsa65_parameter_compliance(self):
         """
@@ -262,35 +220,17 @@ class TestMLDSAFIPS204Compliance:
         if hasattr(pqc_core, "ML_DSA_65_PARAMS"):
             params = pqc_core.ML_DSA_65_PARAMS
 
-            assert (
-                params["n"] == 256
-            ), f"FIPS 204 violation: n must be 256, got {params['n']}"
-            assert (
-                params["q"] == 8380417
-            ), f"FIPS 204 violation: q must be 8380417, got {params['q']}"
-            assert (
-                params["d"] == 13
-            ), f"FIPS 204 violation: d must be 13, got {params['d']}"
-            assert (
-                params["tau"] == 49
-            ), f"FIPS 204 violation: τ must be 49, got {params['tau']}"
-            assert (
-                params["gamma1"] == 2**19
-            ), f"FIPS 204 violation: γ₁ must be 2^19, got {params['gamma1']}"
-            assert (
-                params["k"] == 6
-            ), f"FIPS 204 violation: k must be 6, got {params['k']}"
-            assert (
-                params["l"] == 5
-            ), f"FIPS 204 violation: l must be 5, got {params['l']}"
+            assert params["n"] == 256, f"FIPS 204 violation: n must be 256, got {params['n']}"
+            assert params["q"] == 8380417, f"FIPS 204 violation: q must be 8380417, got {params['q']}"
+            assert params["d"] == 13, f"FIPS 204 violation: d must be 13, got {params['d']}"
+            assert params["tau"] == 49, f"FIPS 204 violation: τ must be 49, got {params['tau']}"
+            assert params["gamma1"] == 2**19, f"FIPS 204 violation: γ₁ must be 2^19, got {params['gamma1']}"
+            assert params["k"] == 6, f"FIPS 204 violation: k must be 6, got {params['k']}"
+            assert params["l"] == 5, f"FIPS 204 violation: l must be 5, got {params['l']}"
         else:
-            pytest.fail(
-                "ML-DSA-65 parameters not exposed - cannot verify FIPS 204 compliance"
-            )
+            pytest.fail("ML-DSA-65 parameters not exposed - cannot verify FIPS 204 compliance")
 
-    @pytest.mark.xfail(
-        reason="Requires liboqs for full NIST FIPS 204 compliance - using fallback implementation"
-    )
+    @pytest.mark.xfail(reason="Requires liboqs for full NIST FIPS 204 compliance - using fallback implementation")
     @pytest.mark.skipif(not PQC_AVAILABLE, reason="PQC module not available")
     def test_mldsa_signature_sizes(self):
         """
@@ -306,18 +246,12 @@ class TestMLDSAFIPS204Compliance:
         if hasattr(pqc_core, "generate_mldsa65_keypair"):
             pk, sk = pqc_core.generate_mldsa65_keypair()
 
-            assert (
-                len(pk) == 1952
-            ), f"FIPS 204 violation: ML-DSA-65 public key must be 1952 bytes, got {len(pk)}"
-            assert (
-                len(sk) == 4032
-            ), f"FIPS 204 violation: ML-DSA-65 secret key must be 4032 bytes, got {len(sk)}"
+            assert len(pk) == 1952, f"FIPS 204 violation: ML-DSA-65 public key must be 1952 bytes, got {len(pk)}"
+            assert len(sk) == 4032, f"FIPS 204 violation: ML-DSA-65 secret key must be 4032 bytes, got {len(sk)}"
         else:
             pytest.fail("ML-DSA-65 key generation not implemented")
 
-    @pytest.mark.xfail(
-        reason="Requires liboqs for full NIST FIPS 204 compliance - using fallback implementation"
-    )
+    @pytest.mark.xfail(reason="Requires liboqs for full NIST FIPS 204 compliance - using fallback implementation")
     @pytest.mark.skipif(not PQC_AVAILABLE, reason="PQC module not available")
     def test_mldsa_sign_verify(self):
         """
@@ -355,9 +289,7 @@ class TestMLDSAFIPS204Compliance:
                 # Test with wrong message
                 wrong_message = b"Wrong message"
                 invalid = pqc_core.mldsa65_verify(wrong_message, signature, pk)
-                assert (
-                    not invalid
-                ), "FIPS 204 violation: Signature verified with wrong message"
+                assert not invalid, "FIPS 204 violation: Signature verified with wrong message"
             else:
                 pytest.fail("ML-DSA-65 verification not implemented")
         else:
@@ -383,9 +315,7 @@ class TestMLDSAFIPS204Compliance:
         sig1 = pqc_core.mldsa65_sign_deterministic(message, sk)
         sig2 = pqc_core.mldsa65_sign_deterministic(message, sk)
 
-        assert (
-            sig1 == sig2
-        ), "FIPS 204 violation: Deterministic signing produced different signatures"
+        assert sig1 == sig2, "FIPS 204 violation: Deterministic signing produced different signatures"
 
 
 class TestQuantumSecurityLevel:
@@ -402,9 +332,7 @@ class TestQuantumSecurityLevel:
     These tests verify ACTUAL security levels, not claims.
     """
 
-    @pytest.mark.xfail(
-        reason="Requires liboqs for full NIST compliance - using fallback implementation"
-    )
+    @pytest.mark.xfail(reason="Requires liboqs for full NIST compliance - using fallback implementation")
     @pytest.mark.skipif(not PQC_AVAILABLE, reason="PQC module not available")
     def test_mlkem768_nist_level_3(self):
         """
@@ -418,15 +346,11 @@ class TestQuantumSecurityLevel:
         """
         if hasattr(pqc_core, "get_mlkem768_security_level"):
             level = pqc_core.get_mlkem768_security_level()
-            assert (
-                level >= 3
-            ), f"ML-KEM-768 must provide NIST Level 3, got Level {level}"
+            assert level >= 3, f"ML-KEM-768 must provide NIST Level 3, got Level {level}"
         else:
             pytest.fail("Security level not documented - cannot verify compliance")
 
-    @pytest.mark.xfail(
-        reason="Requires liboqs for full NIST compliance - using fallback implementation"
-    )
+    @pytest.mark.xfail(reason="Requires liboqs for full NIST compliance - using fallback implementation")
     @pytest.mark.skipif(not PQC_AVAILABLE, reason="PQC module not available")
     def test_mldsa65_nist_level_3(self):
         """
@@ -453,9 +377,7 @@ class TestLatticeHardnessAssumptions:
     These tests verify the hardness assumptions are met.
     """
 
-    @pytest.mark.xfail(
-        reason="Requires liboqs for full NIST compliance - parameters not exposed in fallback"
-    )
+    @pytest.mark.xfail(reason="Requires liboqs for full NIST compliance - parameters not exposed in fallback")
     @pytest.mark.skipif(not PQC_AVAILABLE, reason="PQC module not available")
     def test_lwe_dimension_mlkem768(self):
         """
@@ -469,9 +391,7 @@ class TestLatticeHardnessAssumptions:
             params = pqc_core.ML_KEM_768_PARAMS
             dimension = params["n"] * params["k"]  # n * k = 256 * 3 = 768
 
-            assert (
-                dimension >= 768
-            ), f"LWE dimension must be ≥768 for NIST Level 3, got {dimension}"
+            assert dimension >= 768, f"LWE dimension must be ≥768 for NIST Level 3, got {dimension}"
         else:
             pytest.fail("Cannot verify LWE dimension - parameters not exposed")
 
@@ -562,15 +482,9 @@ class TestImplementationSecurity:
 
         # Times should be similar (within 10% tolerance)
         avg_time = (time1 + time2 + time3) / 3
-        assert (
-            abs(time1 - avg_time) / avg_time < 0.1
-        ), "Timing variation suggests non-constant-time comparison"
-        assert (
-            abs(time2 - avg_time) / avg_time < 0.1
-        ), "Timing variation suggests non-constant-time comparison"
-        assert (
-            abs(time3 - avg_time) / avg_time < 0.1
-        ), "Timing variation suggests non-constant-time comparison"
+        assert abs(time1 - avg_time) / avg_time < 0.1, "Timing variation suggests non-constant-time comparison"
+        assert abs(time2 - avg_time) / avg_time < 0.1, "Timing variation suggests non-constant-time comparison"
+        assert abs(time3 - avg_time) / avg_time < 0.1, "Timing variation suggests non-constant-time comparison"
 
     @pytest.mark.skipif(not PQC_AVAILABLE, reason="PQC module not available")
     def test_no_secret_dependent_branches(self):

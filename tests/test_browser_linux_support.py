@@ -78,9 +78,7 @@ def test_playwright_wrapper_respects_explicit_channel_over_linux_detection(monke
     monkeypatch.setattr(module.platform, "system", lambda: "Linux")
     monkeypatch.setattr(module.shutil, "which", lambda _name: "/usr/bin/google-chrome")
 
-    wrapper = module.PlaywrightWrapper(
-        module.BrowserConfig(headless=False, browser_channel="chrome")
-    )
+    wrapper = module.PlaywrightWrapper(module.BrowserConfig(headless=False, browser_channel="chrome"))
     options = wrapper._build_launch_options()
 
     assert options == {"headless": False, "channel": "chrome"}

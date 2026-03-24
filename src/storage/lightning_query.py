@@ -57,12 +57,13 @@ import numpy as np
 
 PHI = 1.618033988749895
 TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
-TONGUE_WEIGHTS = tuple(PHI ** k for k in range(6))
+TONGUE_WEIGHTS = tuple(PHI**k for k in range(6))
 
 
 # =========================================================================== #
 #  Bloom Filter (lightweight pre-ionization)
 # =========================================================================== #
+
 
 class TongueBloom:
     """Tiny bloom filter per zone — pre-screens which tongues are present."""
@@ -77,7 +78,7 @@ class TongueBloom:
 
     def add(self, tongue: str) -> None:
         for salt in range(3):  # 3 hash functions
-            self.bits |= (1 << self._hash(tongue, salt))
+            self.bits |= 1 << self._hash(tongue, salt)
 
     def might_contain(self, tongue: str) -> bool:
         for salt in range(3):
@@ -94,9 +95,11 @@ class TongueBloom:
 #  Stepped Leader — Pre-ionized routing structure
 # =========================================================================== #
 
+
 @dataclass
 class LeaderCharge:
     """Charge deposited by records in a zone during ingest."""
+
     zone_id: str
     tongue_bloom: TongueBloom
     tongue_affinity: Dict[str, float]  # tongue → accumulated weight
@@ -125,6 +128,7 @@ class LeaderCharge:
 @dataclass
 class ProbeResult:
     """Result from one branch of the lightning probe."""
+
     zone_id: str
     records_found: List[Tuple[str, float]]  # (record_id, distance)
     probe_time_us: int
@@ -135,6 +139,7 @@ class ProbeResult:
 @dataclass
 class StrokeResult:
     """Full lightning query result after return stroke."""
+
     query_tongue: str
     best_matches: List[Tuple[str, float]]  # (record_id, distance)
     branches_probed: int
@@ -147,6 +152,7 @@ class StrokeResult:
 # =========================================================================== #
 #  Lightning Query Engine
 # =========================================================================== #
+
 
 class LightningQuery:
     """Dielectric breakdown search engine.
@@ -290,8 +296,11 @@ class LightningQuery:
         if not zone_entries:
             elapsed = (time.perf_counter_ns() - t0) // 1000
             return ProbeResult(
-                zone_id=zone_id, records_found=[], probe_time_us=elapsed,
-                hit=False, branch_depth=1,
+                zone_id=zone_id,
+                records_found=[],
+                probe_time_us=elapsed,
+                hit=False,
+                branch_depth=1,
             )
 
         # Vectorized: stack all zone vectors, compute weighted distances in one shot
@@ -446,9 +455,7 @@ class LightningQuery:
         total_records = len(self.records)
         total_zones = len(self.leaders)
         total_charge = sum(l.effective_charge for l in self.leaders.values())
-        avg_conductivity = (
-            sum(l.conductivity for l in self.leaders.values()) / max(1, total_zones)
-        )
+        avg_conductivity = sum(l.conductivity for l in self.leaders.values()) / max(1, total_zones)
         penalized_zones = sum(1 for l in self.leaders.values() if l.penalty > 0.01)
 
         return {
@@ -461,10 +468,6 @@ class LightningQuery:
             "queries_executed": self._query_count,
             "total_probes": self._total_probes,
             "total_pruned": self._total_pruned,
-            "avg_probes_per_query": round(
-                self._total_probes / max(1, self._query_count), 2
-            ),
-            "prune_rate": round(
-                self._total_pruned / max(1, self._total_probes), 4
-            ),
+            "avg_probes_per_query": round(self._total_probes / max(1, self._query_count), 2),
+            "prune_rate": round(self._total_pruned / max(1, self._total_probes), 4),
         }

@@ -200,7 +200,9 @@ def _render_mermaid(tasks: List[Dict[str, Any]]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _render_html(tasks: List[Dict[str, Any]], messages: List[Dict[str, Any]], stats: Dict[str, Any], mermaid_text: str) -> str:
+def _render_html(
+    tasks: List[Dict[str, Any]], messages: List[Dict[str, Any]], stats: Dict[str, Any], mermaid_text: str
+) -> str:
     status_counts = Counter(str(t.get("status", "unknown")) for t in tasks)
     roles = ["planner", "coder", "reviewer", "memory"]
 
@@ -297,7 +299,9 @@ def main() -> int:
 
     db_path = (ROOT / args.db).resolve() if not Path(args.db).is_absolute() else Path(args.db).resolve()
     out_dir = (ROOT / args.out_dir).resolve() if not Path(args.out_dir).is_absolute() else Path(args.out_dir).resolve()
-    workspace = (ROOT / args.workspace).resolve() if not Path(args.workspace).is_absolute() else Path(args.workspace).resolve()
+    workspace = (
+        (ROOT / args.workspace).resolve() if not Path(args.workspace).is_absolute() else Path(args.workspace).resolve()
+    )
 
     out_dir.mkdir(parents=True, exist_ok=True)
     db_path.parent.mkdir(parents=True, exist_ok=True)

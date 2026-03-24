@@ -79,9 +79,8 @@ class SignedModeAddress:
 
     def raw_field(self, x: float, y: float) -> float:
         n, m = self.magnitudes
-        return (
-            math.cos(n * math.pi * x) * math.cos(m * math.pi * y)
-            - math.cos(m * math.pi * x) * math.cos(n * math.pi * y)
+        return math.cos(n * math.pi * x) * math.cos(m * math.pi * y) - math.cos(m * math.pi * x) * math.cos(
+            n * math.pi * y
         )
 
     def readout(self, x: float, y: float) -> float:
@@ -108,10 +107,7 @@ def derive_binding_token(
     n, m = mode.magnitudes
     qn, qm = mode.quadrant
 
-    body = (
-        f"binding|realm={realm}|n={n}|m={m}|qn={qn}|qm={qm}|"
-        f"manifold={_format_manifold(M)}"
-    ).encode("utf-8")
+    body = (f"binding|realm={realm}|n={n}|m={m}|qn={qn}|qm={qm}|" f"manifold={_format_manifold(M)}").encode("utf-8")
 
     return hashlib.blake2b(body, key=secret_key, digest_size=32).hexdigest()
 
@@ -139,9 +135,7 @@ def seal_egg(
         realm=realm,
     )
 
-    body = (
-        f"seal|realm={realm}|payload={payload_hash}|binding={binding_token}"
-    ).encode("utf-8")
+    body = (f"seal|realm={realm}|payload={payload_hash}|binding={binding_token}").encode("utf-8")
     seal = hashlib.blake2b(body, key=secret_key, digest_size=32).hexdigest()
 
     return EggSeal(
@@ -194,8 +188,7 @@ def derive_separator_token(
 
     M = _canonical_manifold(manifold)
     body = (
-        f"separator|src={source.signed_label()}|dst={target.signed_label()}|"
-        f"manifold={_format_manifold(M)}"
+        f"separator|src={source.signed_label()}|dst={target.signed_label()}|" f"manifold={_format_manifold(M)}"
     ).encode("utf-8")
 
     return hashlib.blake2b(body, key=secret_key, digest_size=32).hexdigest()

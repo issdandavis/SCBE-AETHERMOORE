@@ -250,9 +250,7 @@ class TestHarmonicSynthesizer:
         # Check that we have odd harmonics (440, 1320, 2200)
         for h in [1, 3, 5]:
             expected = BASE_FREQ * h
-            assert any(
-                abs(p - expected) < 5 for p in peaks
-            ), f"Missing harmonic {h} at {expected} Hz"
+            assert any(abs(p - expected) < 5 for p in peaks), f"Missing harmonic {h} at {expected} Hz"
 
     def test_frequency_mapping(self):
         """Test that token IDs map to correct frequencies."""
@@ -270,9 +268,7 @@ class TestHarmonicSynthesizer:
             peak_freq = freqs[peak_idx]
 
             expected_freq = BASE_FREQ + token_id * FREQ_STEP
-            assert (
-                abs(peak_freq - expected_freq) < 2.0
-            ), f"Token {token_id}: expected {expected_freq}, got {peak_freq}"
+            assert abs(peak_freq - expected_freq) < 2.0, f"Token {token_id}: expected {expected_freq}, got {peak_freq}"
 
 
 class TestRWPEnvelope:
@@ -361,9 +357,7 @@ class TestRWPEnvelope:
         payload = b"test payload"
         old_timestamp = int((time.time() - 120) * 1000)  # 2 minutes ago
 
-        env = envelope_gen.create(
-            payload, "KO", Modality.ADAPTIVE, timestamp=old_timestamp
-        )
+        env = envelope_gen.create(payload, "KO", Modality.ADAPTIVE, timestamp=old_timestamp)
 
         success, message = envelope_gen.verify(env, audio_check=False)
         assert not success
@@ -378,9 +372,7 @@ class TestSymphonicCipher:
         cipher = SymphonicCipher()
 
         phrase = "korah aelin dahru"
-        envelope, components = cipher.encode(
-            phrase, modality=Modality.ADAPTIVE, return_components=True
-        )
+        envelope, components = cipher.encode(phrase, modality=Modality.ADAPTIVE, return_components=True)
 
         assert envelope is not None
         assert components["original_ids"] == [0, 1, 2]

@@ -157,7 +157,7 @@ def _distance_to_reference(current: List[float], reference: List[float]) -> floa
     if len(current) > 6:
         current = current[:6]
 
-    return sum((a - b) ** 2 for a, b in zip(current, reference)) ** 0.5 / (6 ** 0.5)
+    return sum((a - b) ** 2 for a, b in zip(current, reference)) ** 0.5 / (6**0.5)
 
 
 def _ring_class(risk_radius: float, core_max: float, outer_max: float) -> str:
@@ -308,10 +308,7 @@ def evaluate_access(
     else:
         reason = f"signature_state={signature_state}"
 
-    noisy = (
-        secrets.token_hex(32) if decision == "DENY"
-        else ""
-    )
+    noisy = secrets.token_hex(32) if decision == "DENY" else ""
 
     trust = round(1.0 - risk, 4)
     return AetherAuthDecision(
@@ -349,14 +346,36 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--time-ms", type=int, default=None, help="Unix epoch milliseconds")
     parser.add_argument("--latitude", type=float, default=None, help="Optional location latitude")
     parser.add_argument("--longitude", type=float, default=None, help="Optional location longitude")
-    parser.add_argument("--reference-latitude", type=float, default=None, help="Reference latitude for geospatial matching")
-    parser.add_argument("--reference-longitude", type=float, default=None, help="Reference longitude for geospatial matching")
-    parser.add_argument("--trusted-radius-km", type=float, default=DEFAULT_TRUSTED_RADIUS_KM, help="GeoSeal trusted radius in km")
-    parser.add_argument("--location-core-radius-km", type=float, default=DEFAULT_LOCATION_CORE_RADIUS_KM, help="GeoSeal location core-radius in km")
-    parser.add_argument("--location-outer-radius-km", type=float, default=DEFAULT_LOCATION_OUTER_RADIUS_KM, help="GeoSeal location outer-radius in km")
-    parser.add_argument("--location-core-max", type=float, default=LOCATION_DEFAULT_CORE_MAX, help="Location core ring max risk")
-    parser.add_argument("--location-outer-max", type=float, default=LOCATION_DEFAULT_OUTER_MAX, help="Location outer ring max risk")
-    parser.add_argument("--enforce-location", action="store_true", help="Reject requests when location is missing/unusable")
+    parser.add_argument(
+        "--reference-latitude", type=float, default=None, help="Reference latitude for geospatial matching"
+    )
+    parser.add_argument(
+        "--reference-longitude", type=float, default=None, help="Reference longitude for geospatial matching"
+    )
+    parser.add_argument(
+        "--trusted-radius-km", type=float, default=DEFAULT_TRUSTED_RADIUS_KM, help="GeoSeal trusted radius in km"
+    )
+    parser.add_argument(
+        "--location-core-radius-km",
+        type=float,
+        default=DEFAULT_LOCATION_CORE_RADIUS_KM,
+        help="GeoSeal location core-radius in km",
+    )
+    parser.add_argument(
+        "--location-outer-radius-km",
+        type=float,
+        default=DEFAULT_LOCATION_OUTER_RADIUS_KM,
+        help="GeoSeal location outer-radius in km",
+    )
+    parser.add_argument(
+        "--location-core-max", type=float, default=LOCATION_DEFAULT_CORE_MAX, help="Location core ring max risk"
+    )
+    parser.add_argument(
+        "--location-outer-max", type=float, default=LOCATION_DEFAULT_OUTER_MAX, help="Location outer ring max risk"
+    )
+    parser.add_argument(
+        "--enforce-location", action="store_true", help="Reject requests when location is missing/unusable"
+    )
     parser.add_argument("--cpu", type=float, default=None, help="CPU utilization / memory pressure metric")
     parser.add_argument("--memory", type=float, default=None, help="Memory pressure metric")
     parser.add_argument("--intent", type=float, default=None, help="Intent score (-1..1)")
@@ -406,7 +425,11 @@ def _write_summary(path: Path, decision: AetherAuthDecision) -> None:
 
 def main() -> int:
     args = parse_args()
-    reference_vector = _build_context_vector(context_vector=args.reference_vector) if args.reference_vector else [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    reference_vector = (
+        _build_context_vector(context_vector=args.reference_vector)
+        if args.reference_vector
+        else [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    )
     context_vector = _build_context_vector(
         context_json=args.context_json or None,
         context_vector=args.context_vector or None,

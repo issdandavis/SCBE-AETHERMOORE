@@ -135,7 +135,6 @@ from .aethercode import (
 __all__ = [
     # Version
     "__version__",
-
     # === Hive Memory ===
     "MemoryTier",
     "EvictionPriority",
@@ -147,7 +146,6 @@ __all__ = [
     "AgentMemorySystem",
     "AutoSaveWorker",
     "OfflineResilience",
-
     # === Polyglot Alphabet ===
     "TongueID",
     "TongueAlphabet",
@@ -166,7 +164,6 @@ __all__ = [
     "decompose_polyglot_message",
     "PolyglotSDK",
     "calculate_cipher_strength",
-
     # === 6D Vector Navigation ===
     "Axis",
     "AXIS_INFO",
@@ -178,7 +175,6 @@ __all__ = [
     "DockingSystem",
     "SwarmFormation",
     "ConvergenceDetector",
-
     # === Proximity Optimization ===
     "ProtocolLevel",
     "DISTANCE_THRESHOLDS",
@@ -191,7 +187,6 @@ __all__ = [
     "BandwidthStats",
     "BandwidthMonitor",
     "FormationOptimizer",
-
     # === RWP2 Envelope ===
     "ProtocolTongue",
     "TONGUE_KEYS",
@@ -205,7 +200,6 @@ __all__ = [
     "SignatureEngine",
     "ReplayProtector",
     "EnvelopeFactory",
-
     # === Temporal Intent Scaling ===
     "IntentState",
     "IntentSample",
@@ -217,7 +211,6 @@ __all__ = [
     "R_HARMONIC",
     "INTENT_DECAY_RATE",
     "MAX_INTENT_ACCUMULATION",
-
     # === Aethercode Interpreter ===
     "AetherVerse",
     "AetherProgram",

@@ -40,7 +40,7 @@ class TestPiPhiScalar:
         assert _pi_phi_scalar(0.0) == pytest.approx(1.0, abs=1e-15)
 
     def test_at_one_matches_formula(self):
-        expected = PI ** PHI  # ~5.047
+        expected = PI**PHI  # ~5.047
         assert _pi_phi_scalar(1.0) == pytest.approx(expected, rel=1e-14)
 
     def test_at_two_matches_formula(self):
@@ -66,7 +66,7 @@ class TestPiPhiScalar:
         # ratio at d=2 vs d=1 should equal π^φ
         r1 = _pi_phi_scalar(2.0) / _pi_phi_scalar(1.0)
         r2 = _pi_phi_scalar(3.0) / _pi_phi_scalar(2.0)
-        expected_ratio = PI ** PHI
+        expected_ratio = PI**PHI
         assert r1 == pytest.approx(expected_ratio, rel=1e-13)
         assert r2 == pytest.approx(expected_ratio, rel=1e-13)
 
@@ -184,29 +184,49 @@ class TestKDFEdgeCases:
 
     def test_empty_salt_is_accepted(self):
         key = derive_pi_phi_key(
-            d_star=0.25, coherence=0.5, cube_id="c", aad=b"a", nonce=b"\x01" * 12,
-            salt=b"", out_len=32,
+            d_star=0.25,
+            coherence=0.5,
+            cube_id="c",
+            aad=b"a",
+            nonce=b"\x01" * 12,
+            salt=b"",
+            out_len=32,
         )
         assert isinstance(key, bytes) and len(key) == 32
 
     def test_empty_aad_is_accepted(self):
         key = derive_pi_phi_key(
-            d_star=0.25, coherence=0.5, cube_id="c", aad=b"", nonce=b"\x01" * 12,
-            salt=b"\x02" * 32, out_len=32,
+            d_star=0.25,
+            coherence=0.5,
+            cube_id="c",
+            aad=b"",
+            nonce=b"\x01" * 12,
+            salt=b"\x02" * 32,
+            out_len=32,
         )
         assert isinstance(key, bytes) and len(key) == 32
 
     def test_out_len_64_multi_block(self):
         key = derive_pi_phi_key(
-            d_star=0.25, coherence=0.5, cube_id="cube-edge",
-            aad=b"aad", nonce=b"\x01" * 12, salt=b"\x02" * 32, out_len=64,
+            d_star=0.25,
+            coherence=0.5,
+            cube_id="cube-edge",
+            aad=b"aad",
+            nonce=b"\x01" * 12,
+            salt=b"\x02" * 32,
+            out_len=64,
         )
         assert len(key) == 64
 
     def test_out_len_1_single_byte(self):
         key = derive_pi_phi_key(
-            d_star=0.25, coherence=0.5, cube_id="cube-edge",
-            aad=b"aad", nonce=b"\x01" * 12, salt=b"\x02" * 32, out_len=1,
+            d_star=0.25,
+            coherence=0.5,
+            cube_id="cube-edge",
+            aad=b"aad",
+            nonce=b"\x01" * 12,
+            salt=b"\x02" * 32,
+            out_len=1,
         )
         assert len(key) == 1
 
@@ -229,8 +249,12 @@ class TestCrossFormula:
 
     def test_d_star_zero_and_nonzero_produce_different_keys(self):
         base = dict(
-            coherence=0.5, cube_id="c", aad=b"a", nonce=b"\x01" * 12,
-            salt=b"\x02" * 32, out_len=32,
+            coherence=0.5,
+            cube_id="c",
+            aad=b"a",
+            nonce=b"\x01" * 12,
+            salt=b"\x02" * 32,
+            out_len=32,
         )
         k0 = derive_pi_phi_key(d_star=0.0, **base)
         k1 = derive_pi_phi_key(d_star=1.0, **base)
@@ -239,8 +263,12 @@ class TestCrossFormula:
     def test_small_d_star_change_is_detectable(self):
         """Even 1e-10 shift in d* must produce a different key (input sensitivity)."""
         base = dict(
-            coherence=0.5, cube_id="c", aad=b"a", nonce=b"\x01" * 12,
-            salt=b"\x02" * 32, out_len=32,
+            coherence=0.5,
+            cube_id="c",
+            aad=b"a",
+            nonce=b"\x01" * 12,
+            salt=b"\x02" * 32,
+            out_len=32,
         )
         k1 = derive_pi_phi_key(d_star=0.5, **base)
         k2 = derive_pi_phi_key(d_star=0.5 + 1e-10, **base)
@@ -249,8 +277,12 @@ class TestCrossFormula:
     def test_symmetric_d_star_values_produce_different_keys(self):
         """d*=+1 and d*=-1 must produce different keys (cost is different)."""
         base = dict(
-            coherence=0.5, cube_id="c", aad=b"a", nonce=b"\x01" * 12,
-            salt=b"\x02" * 32, out_len=32,
+            coherence=0.5,
+            cube_id="c",
+            aad=b"a",
+            nonce=b"\x01" * 12,
+            salt=b"\x02" * 32,
+            out_len=32,
         )
         kp = derive_pi_phi_key(d_star=1.0, **base)
         kn = derive_pi_phi_key(d_star=-1.0, **base)
@@ -329,7 +361,7 @@ class TestTernaryTritSurface:
     def test_phase_incoherent_attacker_breaks_correlation(self):
         """Small d* + high pd → H_score drops while wall/exp stay safe."""
         d_star = 0.2  # H_wall ≈ 1.42 (<1.5 → trit +1)
-        pd = 2.0      # H_score = 1/(1+0.2+4.0) ≈ 0.19 → trit -1
+        pd = 2.0  # H_score = 1/(1+0.2+4.0) ≈ 0.19 → trit -1
 
         t_score = _score_trit(_h_score(d_star, pd=pd))
         t_wall = _wall_trit(_h_wall(d_star))

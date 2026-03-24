@@ -9,6 +9,7 @@ GREEN  = trusted (GitHub, HuggingFace, Notion, localhost) -> auto-allow
 YELLOW = semi-trusted (AI APIs, social) -> quarantine writes for user approval
 RED    = unknown/financial -> quarantine everything for user approval
 """
+
 from __future__ import annotations
 
 import time
@@ -39,12 +40,18 @@ class HyperLaneResult:
 
 
 _GREEN_DOMAINS = [
-    "github.com", "api.github.com",
-    "huggingface.co", "hf.co",
-    "api.notion.com", "notion.so",
-    "localhost", "127.0.0.1",
-    "airtable.com", "api.airtable.com",
-    "dropbox.com", "api.dropboxapi.com",
+    "github.com",
+    "api.github.com",
+    "huggingface.co",
+    "hf.co",
+    "api.notion.com",
+    "notion.so",
+    "localhost",
+    "127.0.0.1",
+    "airtable.com",
+    "api.airtable.com",
+    "dropbox.com",
+    "api.dropboxapi.com",
 ]
 
 _YELLOW_DOMAINS = [
@@ -52,15 +59,19 @@ _YELLOW_DOMAINS = [
     "api.openai.com",
     "generativelanguage.googleapis.com",
     "api.x.ai",
-    "api.twitter.com", "api.x.com",
+    "api.twitter.com",
+    "api.x.com",
     "api.linkedin.com",
-    "slack.com", "api.slack.com",
-    "discord.com", "discord.gg",
+    "slack.com",
+    "api.slack.com",
+    "discord.com",
+    "discord.gg",
 ]
 
 _RED_DOMAINS = [
     "api.stripe.com",
-    "paypal.com", "api.paypal.com",
+    "paypal.com",
+    "api.paypal.com",
     "plaid.com",
 ]
 
@@ -102,7 +113,8 @@ class HyperLanePy:
         zone = self.classify_zone(url)
         if not self._check_rate_limit(agent_id):
             return HyperLaneResult(
-                decision=Decision.DENY, zone=zone,
+                decision=Decision.DENY,
+                zone=zone,
                 reason=f"Rate limit exceeded for agent {agent_id}",
                 latency_ms=(time.monotonic() - start) * 1000,
             )
@@ -121,6 +133,8 @@ class HyperLanePy:
             decision = Decision.QUARANTINE
             reason = "RED zone: all actions require user approval"
         return HyperLaneResult(
-            decision=decision, zone=zone, reason=reason,
+            decision=decision,
+            zone=zone,
+            reason=reason,
             latency_ms=(time.monotonic() - start) * 1000,
         )

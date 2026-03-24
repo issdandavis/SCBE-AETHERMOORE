@@ -72,9 +72,7 @@ class SCBEContextEncoder:
         weights = np.array([1.0, 1.1, 1.25, 1.33, 1.5, 1.66] * 2)
         return weights[: len(x)] * x
 
-    def embed_to_poincare_ball(
-        self, x_weighted: np.ndarray, alpha: float = 1.5
-    ) -> np.ndarray:
+    def embed_to_poincare_ball(self, x_weighted: np.ndarray, alpha: float = 1.5) -> np.ndarray:
         """
         Layer 4: Embed into Poincare ball.
         """
@@ -96,9 +94,7 @@ class SCBEContextEncoder:
         Complete Layer 1-4 pipeline: RWP envelope -> Poincare ball embedding.
         """
         section_tokens = {
-            k: v
-            for k, v in envelope_dict.items()
-            if k in ["aad", "salt", "nonce", "ct", "tag", "redact"]
+            k: v for k, v in envelope_dict.items() if k in ["aad", "salt", "nonce", "ct", "tag", "redact"]
         }
 
         if "redact" not in section_tokens and envelope_dict.get("ml_kem_ct"):

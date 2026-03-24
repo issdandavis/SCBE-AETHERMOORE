@@ -144,17 +144,10 @@ def _load_orders(path: pathlib.Path) -> List[Dict[str, Any]]:
     return normalized
 
 
-
 def _normalize_action_set(values: Any) -> List[str]:
     if not isinstance(values, list):
         return []
-    out = sorted(
-        {
-            str(v).strip().lower()
-            for v in values
-            if isinstance(v, (str, int, float)) and str(v).strip()
-        }
-    )
+    out = sorted({str(v).strip().lower() for v in values if isinstance(v, (str, int, float)) and str(v).strip()})
     return out
 
 
@@ -181,7 +174,7 @@ def _load_risk_contract(contract_ref: str, repo_root: pathlib.Path) -> Dict[str,
     else:
         candidate = pathlib.Path(ref).expanduser()
         if not candidate.is_absolute():
-            candidate = (repo_root / candidate)
+            candidate = repo_root / candidate
         contract_path = candidate.resolve()
 
     if not contract_path.exists():
@@ -205,9 +198,7 @@ def _load_risk_contract(contract_ref: str, repo_root: pathlib.Path) -> Dict[str,
     normalized["blocked_actions"] = _normalize_action_set(contract.get("blocked_actions"))
     normalized["require_human_for_actions"] = _normalize_action_set(contract.get("require_human_for_actions"))
     normalized["require_context_keys"] = [
-        str(x).strip()
-        for x in contract.get("require_context_keys", [])
-        if str(x).strip()
+        str(x).strip() for x in contract.get("require_context_keys", []) if str(x).strip()
     ]
     normalized["max_clays"] = int(contract.get("max_clays", 4) or 4)
     normalized["max_actions_per_request"] = int(contract.get("max_actions_per_request", 8) or 8)
@@ -305,6 +296,8 @@ def _route_orders_with_contract(
         routed.append((order_index, prepared))
 
     return routed, blocked_results
+
+
 def _chunk(actions: List[Dict[str, Any]], max_actions: int) -> List[List[Dict[str, Any]]]:
     if max_actions <= 0:
         return [actions]
@@ -564,11 +557,7 @@ def _run_order(
 
     needs_human, reasons = _response_needs_human(aggregated, human_on=human_on, request_error=request_error)
 
-    contract_reasons = [
-        str(x).strip()
-        for x in order.get("_contract_hitl_reasons", [])
-        if str(x).strip()
-    ]
+    contract_reasons = [str(x).strip() for x in order.get("_contract_hitl_reasons", []) if str(x).strip()]
     if contract_reasons:
         needs_human = True
         reasons.extend(contract_reasons)
@@ -595,6 +584,7 @@ def _run_order(
         "hitl_snapshot": hitl_snapshot,
         "elapsed_ms": elapsed_ms,
     }
+
 
 def _write_hitl_artifacts(
     items: List[Dict[str, Any]],
@@ -672,9 +662,7 @@ def _run_once(
     results: List[Dict[str, Any]] = list(blocked_by_contract)
     lock = threading.Lock()
 
-    fetch_hitl_snapshot = bool(
-        risk_contract.get("hitl", {}).get("require_snapshot_on_escalation", True)
-    )
+    fetch_hitl_snapshot = bool(risk_contract.get("hitl", {}).get("require_snapshot_on_escalation", True))
 
     def worker(worker_idx: int) -> None:
         clay_id = f"clay-{worker_idx:02d}"
@@ -740,6 +728,7 @@ def _run_once(
     output_json.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     return summary
 
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Polly+Clay governed browser squad")
     parser.add_argument("--orders-file", required=True, help="JSON file containing orders[]")
@@ -777,9 +766,7 @@ def main() -> int:
 
     contract_max_actions = int(risk_contract.get("max_actions_per_request", 8) or 8)
     max_actions_per_request = (
-        int(args.max_actions_per_request)
-        if args.max_actions_per_request is not None
-        else contract_max_actions
+        int(args.max_actions_per_request) if args.max_actions_per_request is not None else contract_max_actions
     )
     if max_actions_per_request <= 0:
         raise ValueError("max-actions-per-request must be > 0")
@@ -792,10 +779,7 @@ def main() -> int:
             f"requested={args.clays} effective={effective_clays}"
         )
 
-    open_hitl_browser = bool(
-        args.open_hitl_browser
-        or risk_contract.get("hitl", {}).get("auto_open_browser", False)
-    )
+    open_hitl_browser = bool(args.open_hitl_browser or risk_contract.get("hitl", {}).get("auto_open_browser", False))
 
     service_proc: Optional[subprocess.Popen[str]] = None
     if args.start_local_service:
@@ -877,4 +861,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

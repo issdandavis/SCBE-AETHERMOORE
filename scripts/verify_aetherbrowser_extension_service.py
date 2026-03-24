@@ -40,9 +40,7 @@ def fetch_cdp_targets(port: int, timeout: float = 5.0) -> list[dict[str, Any]]:
 def classify_cdp_targets(targets: list[dict[str, Any]]) -> dict[str, Any]:
     pages = [target for target in targets if target.get("type") == "page"]
     workers = [target for target in targets if target.get("type") == "service_worker"]
-    extension_workers = [
-        target for target in workers if str(target.get("url", "")).startswith("chrome-extension://")
-    ]
+    extension_workers = [target for target in workers if str(target.get("url", "")).startswith("chrome-extension://")]
     extension_ids = sorted(
         {
             str(target.get("url", "")).split("/")[2]
@@ -81,14 +79,10 @@ def build_service_report(
 ) -> dict[str, Any]:
     executor = health.get("executor", {}) if isinstance(health, dict) else {}
     ready_providers = sorted(
-        provider
-        for provider, meta in executor.items()
-        if isinstance(meta, dict) and meta.get("available") is True
+        provider for provider, meta in executor.items() if isinstance(meta, dict) and meta.get("available") is True
     )
     blocked_providers = sorted(
-        provider
-        for provider, meta in executor.items()
-        if isinstance(meta, dict) and meta.get("available") is False
+        provider for provider, meta in executor.items() if isinstance(meta, dict) and meta.get("available") is False
     )
     return {
         "status": health.get("status"),

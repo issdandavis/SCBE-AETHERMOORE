@@ -43,8 +43,8 @@ def main() -> int:
         browser = p.chromium.launch(headless=False)
         page = browser.new_page()
         page.goto(LOGIN_URL)
-        page.fill('#username', user)
-        page.fill('#password', password)
+        page.fill("#username", user)
+        page.fill("#password", password)
         page.click('button[type="submit"]')
 
         page.goto(SUBMIT_URL)

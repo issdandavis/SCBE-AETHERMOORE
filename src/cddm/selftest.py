@@ -22,11 +22,15 @@ if _src not in sys.path:
 from cddm.domain import Domain, DomainError
 from cddm.morphism import Morphism, MorphismError
 from cddm.functor import (
-    CompositionChain, DomainGraph, GraphIsomorphism,
-    compose, identity_morphism,
+    CompositionChain,
+    DomainGraph,
+    GraphIsomorphism,
+    compose,
+    identity_morphism,
 )
 from cddm.tongue_domains import (
-    CROSS_DOMAIN_MAP, tongue_domain,
+    CROSS_DOMAIN_MAP,
+    tongue_domain,
     all_tongue_morphisms,
 )
 

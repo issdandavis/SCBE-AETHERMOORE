@@ -45,7 +45,7 @@ _SMART_APOSTROPHES = {
     "\u2019": "'",  # right single quotation mark
     "\u2018": "'",  # left single quotation mark
     "\u201b": "'",  # single high-reversed-9 quotation mark
-    "`": "'",       # grave accent
+    "`": "'",  # grave accent
     "\u00b4": "'",  # acute accent
     "\u02bb": "'",  # modifier letter turned comma
     "\u02bc": "'",  # modifier letter apostrophe
@@ -113,9 +113,7 @@ class Lexicons:
         inv = self.by_tok[tongue]
         key = canon_token(token)
         if key not in inv:
-            raise KeyError(
-                f"unknown token in {tongue}: {token!r} (canonical: {key!r})"
-            )
+            raise KeyError(f"unknown token in {tongue}: {token!r} (canonical: {key!r})")
         return inv[key]
 
     # ── Canonical Sacred Tongues v1.1 (from sacredTongues.ts) ──────────
@@ -127,77 +125,240 @@ class Lexicons:
             "name": "Kor'aelin",
             "domain": "nonce/flow/intent",
             "prefixes": [
-                "kor", "ael", "lin", "dah", "ru", "mel", "ik", "sor",
-                "in", "tiv", "ar", "ul", "mar", "vex", "yn", "zha",
+                "kor",
+                "ael",
+                "lin",
+                "dah",
+                "ru",
+                "mel",
+                "ik",
+                "sor",
+                "in",
+                "tiv",
+                "ar",
+                "ul",
+                "mar",
+                "vex",
+                "yn",
+                "zha",
             ],
             "suffixes": [
-                "ah", "el", "in", "or", "ru", "ik", "mel", "sor",
-                "tiv", "ul", "vex", "zha", "dah", "lin", "yn", "mar",
+                "ah",
+                "el",
+                "in",
+                "or",
+                "ru",
+                "ik",
+                "mel",
+                "sor",
+                "tiv",
+                "ul",
+                "vex",
+                "zha",
+                "dah",
+                "lin",
+                "yn",
+                "mar",
             ],
         },
         "AV": {
             "name": "Avali",
             "domain": "aad/header/metadata",
             "prefixes": [
-                "saina", "talan", "vessa", "maren", "oriel", "serin",
-                "nurel", "lirea", "kiva", "lumen", "calma", "ponte",
-                "verin", "nava", "sela", "tide",
+                "saina",
+                "talan",
+                "vessa",
+                "maren",
+                "oriel",
+                "serin",
+                "nurel",
+                "lirea",
+                "kiva",
+                "lumen",
+                "calma",
+                "ponte",
+                "verin",
+                "nava",
+                "sela",
+                "tide",
             ],
             "suffixes": [
-                "a", "e", "i", "o", "u", "y", "la", "re",
-                "na", "sa", "to", "mi", "ve", "ri", "en", "ul",
+                "a",
+                "e",
+                "i",
+                "o",
+                "u",
+                "y",
+                "la",
+                "re",
+                "na",
+                "sa",
+                "to",
+                "mi",
+                "ve",
+                "ri",
+                "en",
+                "ul",
             ],
         },
         "RU": {
             "name": "Runethic",
             "domain": "salt/binding",
             "prefixes": [
-                "khar", "drath", "bront", "vael", "ur", "mem", "krak",
-                "tharn", "groth", "basalt", "rune", "sear", "oath",
-                "gnarl", "rift", "iron",
+                "khar",
+                "drath",
+                "bront",
+                "vael",
+                "ur",
+                "mem",
+                "krak",
+                "tharn",
+                "groth",
+                "basalt",
+                "rune",
+                "sear",
+                "oath",
+                "gnarl",
+                "rift",
+                "iron",
             ],
             "suffixes": [
-                "ak", "eth", "ik", "ul", "or", "ar", "um", "on",
-                "ir", "esh", "nul", "vek", "dra", "kh", "va", "th",
+                "ak",
+                "eth",
+                "ik",
+                "ul",
+                "or",
+                "ar",
+                "um",
+                "on",
+                "ir",
+                "esh",
+                "nul",
+                "vek",
+                "dra",
+                "kh",
+                "va",
+                "th",
             ],
         },
         "CA": {
             "name": "Cassisivadan",
             "domain": "ciphertext/bitcraft",
             "prefixes": [
-                "bip", "bop", "klik", "loopa", "ifta", "thena", "elsa",
-                "spira", "rythm", "quirk", "fizz", "gear", "pop",
-                "zip", "mix", "chass",
+                "bip",
+                "bop",
+                "klik",
+                "loopa",
+                "ifta",
+                "thena",
+                "elsa",
+                "spira",
+                "rythm",
+                "quirk",
+                "fizz",
+                "gear",
+                "pop",
+                "zip",
+                "mix",
+                "chass",
             ],
             "suffixes": [
-                "a", "e", "i", "o", "u", "y", "ta", "na",
-                "sa", "ra", "lo", "mi", "ki", "zi", "qwa", "sh",
+                "a",
+                "e",
+                "i",
+                "o",
+                "u",
+                "y",
+                "ta",
+                "na",
+                "sa",
+                "ra",
+                "lo",
+                "mi",
+                "ki",
+                "zi",
+                "qwa",
+                "sh",
             ],
         },
         "UM": {
             "name": "Umbroth",
             "domain": "redaction/veil",
             "prefixes": [
-                "veil", "zhur", "nar", "shul", "math", "hollow",
-                "hush", "thorn", "dusk", "echo", "ink", "wisp",
-                "bind", "ache", "null", "shade",
+                "veil",
+                "zhur",
+                "nar",
+                "shul",
+                "math",
+                "hollow",
+                "hush",
+                "thorn",
+                "dusk",
+                "echo",
+                "ink",
+                "wisp",
+                "bind",
+                "ache",
+                "null",
+                "shade",
             ],
             "suffixes": [
-                "a", "e", "i", "o", "u", "ae", "sh", "th",
-                "ak", "ul", "or", "ir", "en", "on", "vek", "nul",
+                "a",
+                "e",
+                "i",
+                "o",
+                "u",
+                "ae",
+                "sh",
+                "th",
+                "ak",
+                "ul",
+                "or",
+                "ir",
+                "en",
+                "on",
+                "vek",
+                "nul",
             ],
         },
         "DR": {
             "name": "Draumric",
             "domain": "tag/structure",
             "prefixes": [
-                "anvil", "tharn", "mek", "grond", "draum", "ektal",
-                "temper", "forge", "stone", "steam", "oath", "seal",
-                "frame", "pillar", "rivet", "ember",
+                "anvil",
+                "tharn",
+                "mek",
+                "grond",
+                "draum",
+                "ektal",
+                "temper",
+                "forge",
+                "stone",
+                "steam",
+                "oath",
+                "seal",
+                "frame",
+                "pillar",
+                "rivet",
+                "ember",
             ],
             "suffixes": [
-                "a", "e", "i", "o", "u", "ae", "rak", "mek",
-                "tharn", "grond", "vek", "ul", "or", "ar", "en", "on",
+                "a",
+                "e",
+                "i",
+                "o",
+                "u",
+                "ae",
+                "rak",
+                "mek",
+                "tharn",
+                "grond",
+                "vek",
+                "ul",
+                "or",
+                "ar",
+                "en",
+                "on",
             ],
         },
     }
@@ -223,12 +384,40 @@ class Lexicons:
     def _demo_lexicons() -> Dict[str, Dict[str, str]]:
         """Legacy placeholder lexicons (deprecated — use canon)."""
         HI = [
-            "ka", "ke", "ki", "ko", "ku", "sa", "se", "si",
-            "so", "su", "ra", "re", "ri", "ro", "ru", "za",
+            "ka",
+            "ke",
+            "ki",
+            "ko",
+            "ku",
+            "sa",
+            "se",
+            "si",
+            "so",
+            "su",
+            "ra",
+            "re",
+            "ri",
+            "ro",
+            "ru",
+            "za",
         ]
         LO = [
-            "na", "ne", "ni", "no", "nu", "la", "le", "li",
-            "lo", "lu", "ta", "te", "ti", "to", "tu", "ma",
+            "na",
+            "ne",
+            "ni",
+            "no",
+            "nu",
+            "la",
+            "le",
+            "li",
+            "lo",
+            "lu",
+            "ta",
+            "te",
+            "ti",
+            "to",
+            "tu",
+            "ma",
         ]
 
         def gen(prefix: str) -> Dict[str, str]:
@@ -273,6 +462,7 @@ class TongueTokenizer:
 
 
 # ---------- Cross-tokenization ----------
+
 
 @dataclasses.dataclass
 class XlateAttestation:
@@ -341,32 +531,19 @@ class CrossTokenizer:
         sha = hashlib.sha256(b).hexdigest()
         phase_delta = (self.PHASE[dst_tg] - self.PHASE[src_tg]) % (2 * math.pi)
         weight_ratio = self.WEIGHT[dst_tg] / self.WEIGHT[src_tg]
-        msg = (
-            f"{src_tg}->{dst_tg}|{mode}|{sha}|{phase_delta:.6f}"
-            f"|{weight_ratio:.6f}|{int(time.time())}"
-        ).encode()
-        h = base64.b64encode(
-            hmac.new(
-                attest_key or b"aether-attest-default", msg, hashlib.sha256
-            ).digest()
-        ).decode()
-        attest = XlateAttestation(
-            src_tg, dst_tg, mode, time.time(), phase_delta, weight_ratio, sha, h
-        )
+        msg = (f"{src_tg}->{dst_tg}|{mode}|{sha}|{phase_delta:.6f}" f"|{weight_ratio:.6f}|{int(time.time())}").encode()
+        h = base64.b64encode(hmac.new(attest_key or b"aether-attest-default", msg, hashlib.sha256).digest()).decode()
+        attest = XlateAttestation(src_tg, dst_tg, mode, time.time(), phase_delta, weight_ratio, sha, h)
         return out_tokens, attest
 
-    def blend(
-        self, pattern: List[str], data: bytes
-    ) -> List[Tuple[str, str]]:
+    def blend(self, pattern: List[str], data: bytes) -> List[Tuple[str, str]]:
         out: List[Tuple[str, str]] = []
         for i, byte in enumerate(data):
             tg = pattern[i % len(pattern)]
             out.append((tg, self.tok.lex.token_of(tg, byte)))
         return out
 
-    def unblend(
-        self, pattern: List[str], pairs: List[Tuple[str, str]]
-    ) -> bytes:
+    def unblend(self, pattern: List[str], pairs: List[Tuple[str, str]]) -> bytes:
         arr = bytearray()
         for i, (tg, tok) in enumerate(pairs):
             expected = pattern[i % len(pattern)]
@@ -377,6 +554,7 @@ class CrossTokenizer:
 
 
 # ---------- GeoSeal minimal reference (unchanged API) ----------
+
 
 def _zscore(xs: List[float]) -> List[float]:
     mu = sum(xs) / len(xs)
@@ -393,10 +571,7 @@ def project_to_sphere(ctx: List[float]) -> List[float]:
 
 
 def project_to_cube(ctx: List[float], m: int = 6) -> List[float]:
-    arr = [
-        (math.tanh(x / 5) + 1) / 2
-        for x in (ctx[:m] if len(ctx) >= m else ctx + [0] * (m - len(ctx)))
-    ]
+    arr = [(math.tanh(x / 5) + 1) / 2 for x in (ctx[:m] if len(ctx) >= m else ctx + [0] * (m - len(ctx)))]
     return [min(1.0, max(0.0, x)) for x in arr]
 
 
@@ -419,11 +594,7 @@ def potentials(u: List[float], v: List[float]) -> Tuple[float, float]:
 
 
 def classify(h: str, z: str, P: float, margin: float) -> str:
-    return (
-        "interior"
-        if ("S" in h and "C" in z and P < 0.6 and margin > 0.05)
-        else "exterior"
-    )
+    return "interior" if ("S" in h and "C" in z and P < 0.6 and margin > 0.05) else "exterior"
 
 
 class ConcentricRingPolicy:
@@ -450,6 +621,7 @@ class ConcentricRingPolicy:
 
 # ---------- Envelope crypto (demo/mocked PQC) ----------
 
+
 def hkdf(key: bytes, info: str) -> bytes:
     return hmac.new(key, info.encode(), hashlib.sha256).digest()
 
@@ -469,12 +641,11 @@ def dsa_sign(sk: bytes, msg: bytes) -> bytes:
 
 
 def dsa_verify(pk: bytes, msg: bytes, sig: bytes) -> bool:
-    return hmac.compare_digest(
-        hmac.new(pk, msg, hashlib.sha256).digest(), sig
-    )
+    return hmac.compare_digest(hmac.new(pk, msg, hashlib.sha256).digest(), sig)
 
 
 # ---------- GeoSeal encrypt/decrypt ----------
+
 
 def geoseal_encrypt(
     plaintext_b64: str,
@@ -510,9 +681,7 @@ def geoseal_encrypt(
     }
     sig = dsa_sign(
         base64.b64decode(sk_dsa_b64),
-        hashlib.sha256(
-            json.dumps(attest, sort_keys=True).encode() + ct_spec
-        ).digest(),
+        hashlib.sha256(json.dumps(attest, sort_keys=True).encode() + ct_spec).digest(),
     )
     return {
         "ct_k": base64.b64encode(ct_k).decode(),
@@ -528,27 +697,13 @@ def geoseal_decrypt(
     sk_kem_b64: str,
     pk_dsa_b64: str,
 ) -> Tuple[bool, bytes | None]:
-    ct_k = (
-        base64.b64decode(env["ct_k"])
-        if isinstance(env["ct_k"], str)
-        else env["ct_k"]
-    )
-    ct_spec = (
-        base64.b64decode(env["ct_spec"])
-        if isinstance(env["ct_spec"], str)
-        else env["ct_spec"]
-    )
+    ct_k = base64.b64decode(env["ct_k"]) if isinstance(env["ct_k"], str) else env["ct_k"]
+    ct_spec = base64.b64decode(env["ct_spec"]) if isinstance(env["ct_spec"], str) else env["ct_spec"]
     attest = env["attest"]
-    sig = (
-        base64.b64decode(env["sig"])
-        if isinstance(env["sig"], str)
-        else env["sig"]
-    )
+    sig = base64.b64decode(env["sig"]) if isinstance(env["sig"], str) else env["sig"]
     if not dsa_verify(
         base64.b64decode(pk_dsa_b64),
-        hashlib.sha256(
-            json.dumps(attest, sort_keys=True).encode() + ct_spec
-        ).digest(),
+        hashlib.sha256(json.dumps(attest, sort_keys=True).encode() + ct_spec).digest(),
         sig,
     ):
         return False, None
@@ -649,21 +804,12 @@ def derive_seed(
     token_bits = encode_token_indices(indices)
 
     # Weight header: sum of weights for all tokens
-    weights = (
-        CrossTokenizer.WEIGHT_LWS if weight_system == "lws"
-        else CrossTokenizer.WEIGHT_PHDM
-    )
+    weights = CrossTokenizer.WEIGHT_LWS if weight_system == "lws" else CrossTokenizer.WEIGHT_PHDM
     total_weight = sum(weights[tg] for tg, _ in parsed)
     weight_bytes = struct.pack(">f", total_weight)
 
     # Domain-separated input
-    preimage = (
-        SEED_DOMAIN
-        + SEED_SEPARATOR
-        + weight_bytes
-        + SEED_SEPARATOR
-        + token_bits
-    )
+    preimage = SEED_DOMAIN + SEED_SEPARATOR + weight_bytes + SEED_SEPARATOR + token_bits
     if supplemental:
         preimage += SEED_SEPARATOR + supplemental
 
@@ -697,6 +843,7 @@ def split_for_mldsa(seed: bytes) -> bytes:
 
 # ---------- CLI ----------
 
+
 def load_lexicons(path: str | None) -> Lexicons:
     if not path:
         return Lexicons()
@@ -708,11 +855,7 @@ def load_lexicons(path: str | None) -> Lexicons:
 def cmd_encode(args):
     lex = load_lexicons(args.lexicons)
     tok = TongueTokenizer(lex)
-    data = (
-        sys.stdin.buffer.read()
-        if not args.infile
-        else open(args.infile, "rb").read()
-    )
+    data = sys.stdin.buffer.read() if not args.infile else open(args.infile, "rb").read()
     tokens = tok.encode_bytes(args.tongue, data)
     out = (" ".join(tokens) + "\n").encode()
     if not args.outfile:
@@ -724,11 +867,7 @@ def cmd_encode(args):
 def cmd_decode(args):
     lex = load_lexicons(args.lexicons)
     tok = TongueTokenizer(lex)
-    text = (
-        sys.stdin.read()
-        if not args.infile
-        else open(args.infile, "r", encoding="utf-8").read()
-    )
+    text = sys.stdin.read() if not args.infile else open(args.infile, "r", encoding="utf-8").read()
     tokens = tok.normalize_token_stream(text)
     data = tok.decode_tokens(args.tongue, tokens)
     if not args.outfile:
@@ -741,19 +880,13 @@ def cmd_xlate(args):
     lex = load_lexicons(args.lexicons)
     tok = TongueTokenizer(lex)
     xt = CrossTokenizer(tok)
-    text = (
-        sys.stdin.read()
-        if not args.infile
-        else open(args.infile, "r", encoding="utf-8").read()
-    )
+    text = sys.stdin.read() if not args.infile else open(args.infile, "r", encoding="utf-8").read()
     out_tokens, attest = xt.retokenize(
         args.src,
         args.dst,
         text,
         mode=args.mode,
-        attest_key=(
-            base64.b64decode(args.attest_key) if args.attest_key else None
-        ),
+        attest_key=(base64.b64decode(args.attest_key) if args.attest_key else None),
     )
     bundle = {
         "tokens": " ".join(out_tokens),
@@ -770,16 +903,10 @@ def cmd_blend(args):
     lex = load_lexicons(args.lexicons)
     tok = TongueTokenizer(lex)
     xt = CrossTokenizer(tok)
-    data = (
-        sys.stdin.buffer.read()
-        if not args.infile
-        else open(args.infile, "rb").read()
-    )
+    data = sys.stdin.buffer.read() if not args.infile else open(args.infile, "rb").read()
     pattern = []
     for seg in args.pattern.split(","):
-        name, count = (
-            seg.split(":") if ":" in seg else (seg, "1")
-        )
+        name, count = seg.split(":") if ":" in seg else (seg, "1")
         for _ in range(int(count)):
             pattern.append(name)
     pairs = xt.blend(pattern, data)
@@ -794,11 +921,7 @@ def cmd_unblend(args):
     lex = load_lexicons(args.lexicons)
     tok = TongueTokenizer(lex)
     xt = CrossTokenizer(tok)
-    js = json.load(
-        sys.stdin
-        if not args.infile
-        else open(args.infile, "r", encoding="utf-8")
-    )
+    js = json.load(sys.stdin if not args.infile else open(args.infile, "r", encoding="utf-8"))
     pattern = js["pattern"]
     pairs = [(tg, t) for tg, t in js["pairs"]]
     data = xt.unblend(pattern, pairs)
@@ -809,20 +932,14 @@ def cmd_unblend(args):
 
 
 def cmd_gencore(args):
-    pt_b64 = (
-        sys.stdin.read().strip()
-        if args.plaintext_b64 is None
-        else args.plaintext_b64
-    )
+    pt_b64 = sys.stdin.read().strip() if args.plaintext_b64 is None else args.plaintext_b64
     ctx = json.loads(args.context)
     env = geoseal_encrypt(pt_b64, ctx, args.kem_key, args.dsa_key)
     print(json.dumps(env))
 
 
 def cmd_gendec(args):
-    env = json.load(
-        sys.stdin if not args.env else open(args.env, "r")
-    )
+    env = json.load(sys.stdin if not args.env else open(args.env, "r"))
     ctx = json.loads(args.context)
     ok, pt = geoseal_decrypt(env, ctx, args.kem_key, args.dsa_pk)
     if not ok:
@@ -834,6 +951,7 @@ def cmd_egg_create(args):
     from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
         SacredEggIntegrator,
     )
+
     lex = Lexicons()
     tok = TongueTokenizer(lex)
     xt = CrossTokenizer(tok)
@@ -844,8 +962,13 @@ def cmd_egg_create(args):
     hatch_cond = json.loads(args.hatch_condition)
 
     egg = integrator.create_egg(
-        payload, args.primary_tongue, args.glyph,
-        hatch_cond, ctx, args.kem_key, args.dsa_key,
+        payload,
+        args.primary_tongue,
+        args.glyph,
+        hatch_cond,
+        ctx,
+        args.kem_key,
+        args.dsa_key,
     )
     out = integrator.to_json(egg)
     if not args.outfile:
@@ -858,6 +981,7 @@ def cmd_egg_hatch(args):
     from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
         SacredEggIntegrator,
     )
+
     lex = load_lexicons(getattr(args, "lexicons", None))
     tok = TongueTokenizer(lex)
     xt = CrossTokenizer(tok)
@@ -870,7 +994,11 @@ def cmd_egg_hatch(args):
     history = json.loads(args.path_history)
 
     result = integrator.hatch_egg(
-        egg, ctx, args.agent_tongue, args.kem_key, args.dsa_pk,
+        egg,
+        ctx,
+        args.agent_tongue,
+        args.kem_key,
+        args.dsa_pk,
         ritual_mode=args.ritual_mode,
         additional_tongues=additional or None,
         path_history=history or None,
@@ -890,6 +1018,7 @@ def cmd_egg_paint(args):
     from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
         SacredEggIntegrator,
     )
+
     lex = Lexicons()
     tok = TongueTokenizer(lex)
     xt = CrossTokenizer(tok)
@@ -925,9 +1054,7 @@ def cmd_seed(args):
         "seed_hex": seed.hex(),
         "seed_b64": base64.b64encode(seed).decode(),
         "length_bytes": len(seed),
-        "entropy_bits": round(
-            len(phrase.split()) * BITS_PER_TOKEN, 2
-        ),
+        "entropy_bits": round(len(phrase.split()) * BITS_PER_TOKEN, 2),
         "weight_system": args.weights,
     }
     if args.split == "mlkem":
@@ -941,6 +1068,7 @@ def cmd_seed(args):
 
 
 # ---------- Selftest ----------
+
 
 def selftest() -> int:
     lex = Lexicons()
@@ -972,21 +1100,14 @@ def selftest() -> int:
         toks = tok.encode_bytes(tg, payload)
         noisy = [
             (
-                t.upper().replace("'", "\u2019")
-                + ("," if i % 7 == 0 else "")
-            )
-            if i % 2 == 0
-            else (
-                t.replace("'", "\u02bc")
-                + (";" if i % 11 == 0 else "")
+                (t.upper().replace("'", "\u2019") + ("," if i % 7 == 0 else ""))
+                if i % 2 == 0
+                else (t.replace("'", "\u02bc") + (";" if i % 11 == 0 else ""))
             )
             for i, t in enumerate(toks)
         ]
         assert tok.decode_tokens(tg, noisy) == payload
-        assert (
-            tok.decode_tokens(tg, tok.normalize_token_stream(" ".join(noisy)))
-            == payload
-        )
+        assert tok.decode_tokens(tg, tok.normalize_token_stream(" ".join(noisy))) == payload
 
     # ── Canonical-collision guard ──
     try:
@@ -1002,15 +1123,11 @@ def selftest() -> int:
     for s in TONGUES:
         for d in TONGUES:
             ttext = " ".join(tok.encode_bytes(s, payload))
-            out_tokens, attest = xt.retokenize(
-                s, d, ttext, attest_key=b"k"
-            )
+            out_tokens, attest = xt.retokenize(s, d, ttext, attest_key=b"k")
             back = tok.decode_tokens(d, out_tokens)
             assert back == payload
             assert isinstance(attest.hmac_attest, str)
-            out_tokens2, _ = xt.retokenize(
-                s, d, ttext, mode="semantic", attest_key=b"k"
-            )
+            out_tokens2, _ = xt.retokenize(s, d, ttext, mode="semantic", attest_key=b"k")
             assert tok.decode_tokens(d, out_tokens2) == payload
 
     # ── Blend/unblend ──
@@ -1096,6 +1213,7 @@ def selftest() -> int:
 
 # ---------- Entry ----------
 
+
 def build_cli():
     p = argparse.ArgumentParser(
         prog="aethermoore",
@@ -1128,9 +1246,7 @@ def build_cli():
     px.set_defaults(func=cmd_xlate)
 
     pb = sub.add_parser("blend")
-    pb.add_argument(
-        "--pattern", required=True, help="e.g. KO:2,AV:1,DR:1"
-    )
+    pb.add_argument("--pattern", required=True, help="e.g. KO:2,AV:1,DR:1")
     pb.add_argument("--lexicons")
     pb.add_argument("--in", dest="infile")
     pb.add_argument("--out", dest="outfile")

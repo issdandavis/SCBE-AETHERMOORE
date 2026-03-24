@@ -39,8 +39,10 @@ from .trinary import BalancedTernary
 # Agent Definitions
 # ---------------------------------------------------------------------------
 
+
 class SheepRole(str, Enum):
     """Roles an agent can take in the flock."""
+
     LEADER = "leader"
     VALIDATOR = "validator"
     EXECUTOR = "executor"
@@ -49,16 +51,18 @@ class SheepRole(str, Enum):
 
 class SheepState(str, Enum):
     """Operational states."""
+
     ACTIVE = "active"
     IDLE = "idle"
     BUSY = "busy"
-    ISOLATED = "isolated"    # Quarantined — low coherence
-    FROZEN = "frozen"        # Suspended — attack detected
-    SHEARING = "shearing"    # Extracting artifacts
+    ISOLATED = "isolated"  # Quarantined — low coherence
+    FROZEN = "frozen"  # Suspended — attack detected
+    SHEARING = "shearing"  # Extracting artifacts
 
 
 class TrainingTrack(str, Enum):
     """Training specialization."""
+
     SYSTEM = "system"
     GOVERNANCE = "governance"
     FUNCTIONS = "functions"
@@ -80,18 +84,20 @@ ROLE_TONGUE_MAP = {
 }
 
 # Coherence thresholds
-COHERENCE_ISOLATE = 0.30   # Below this -> quarantine
-COHERENCE_WARN = 0.50      # Below this -> warning
-COHERENCE_HEALTHY = 0.70   # Above this -> healthy
+COHERENCE_ISOLATE = 0.30  # Below this -> quarantine
+COHERENCE_WARN = 0.50  # Below this -> warning
+COHERENCE_HEALTHY = 0.70  # Above this -> healthy
 
 
 # ---------------------------------------------------------------------------
 # Sheep (Individual Agent)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Sheep:
     """A single agent in the flock."""
+
     sheep_id: str
     name: str
     role: SheepRole = SheepRole.VALIDATOR
@@ -99,8 +105,8 @@ class Sheep:
     track: TrainingTrack = TrainingTrack.SYSTEM
 
     # Health metrics
-    coherence: float = 1.0       # 0.0 to 1.0
-    error_rate: float = 0.0      # 0.0 to 1.0
+    coherence: float = 1.0  # 0.0 to 1.0
+    error_rate: float = 0.0  # 0.0 to 1.0
     tasks_completed: int = 0
     tasks_failed: int = 0
 
@@ -162,24 +168,24 @@ class Sheep:
             self.tasks_failed += 1
             self.degrade()
         self.current_task = None
-        self.error_rate = (
-            self.tasks_failed / max(1, self.tasks_completed + self.tasks_failed)
-        )
+        self.error_rate = self.tasks_failed / max(1, self.tasks_completed + self.tasks_failed)
 
 
 # ---------------------------------------------------------------------------
 # Flock Task
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class FlockTask:
     """A task to be distributed across the flock."""
+
     task_id: str
     description: str
     track: TrainingTrack = TrainingTrack.SYSTEM
-    priority: int = 5          # 1 (highest) to 10 (lowest)
+    priority: int = 5  # 1 (highest) to 10 (lowest)
     owner: Optional[str] = None  # sheep_id
-    status: str = "pending"    # pending, active, completed, failed, orphaned
+    status: str = "pending"  # pending, active, completed, failed, orphaned
     result: Optional[Any] = None
     created_at: float = field(default_factory=time.time)
 
@@ -187,6 +193,7 @@ class FlockTask:
 # ---------------------------------------------------------------------------
 # Flock (The Fleet)
 # ---------------------------------------------------------------------------
+
 
 class Flock:
     """The managed AI agent fleet.
@@ -292,10 +299,7 @@ class Flock:
 
     def _select_best_agent(self, track: TrainingTrack) -> Optional[Sheep]:
         """Select the best available agent for a track."""
-        candidates = [
-            s for s in self.sheep.values()
-            if s.is_available and s.track == track
-        ]
+        candidates = [s for s in self.sheep.values() if s.is_available and s.track == track]
         if not candidates:
             # Fallback: any available agent
             candidates = [s for s in self.sheep.values() if s.is_available]
@@ -322,10 +326,7 @@ class Flock:
 
         Returns consensus decision and vote breakdown.
         """
-        validators = [
-            s for s in self.sheep.values()
-            if s.role == SheepRole.VALIDATOR and s.state == SheepState.ACTIVE
-        ]
+        validators = [s for s in self.sheep.values() if s.role == SheepRole.VALIDATOR and s.state == SheepState.ACTIVE]
 
         if not validators:
             return {
@@ -381,10 +382,7 @@ class Flock:
         isolated = sum(1 for s in self.sheep.values() if s.state == SheepState.ISOLATED)
         frozen = sum(1 for s in self.sheep.values() if s.state == SheepState.FROZEN)
 
-        avg_coherence = (
-            sum(s.coherence for s in self.sheep.values()) / total
-            if total > 0 else 0.0
-        )
+        avg_coherence = sum(s.coherence for s in self.sheep.values()) / total if total > 0 else 0.0
 
         healthy_count = sum(1 for s in self.sheep.values() if s.is_healthy)
 
@@ -394,10 +392,7 @@ class Flock:
             agents = [s for s in self.sheep.values() if s.track == track]
             tracks[track.value] = {
                 "count": len(agents),
-                "avg_coherence": (
-                    sum(a.coherence for a in agents) / len(agents)
-                    if agents else 0.0
-                ),
+                "avg_coherence": (sum(a.coherence for a in agents) / len(agents) if agents else 0.0),
             }
 
         return {
@@ -430,8 +425,7 @@ class Flock:
             "Tracks:",
         ]
         for track_name, info in h["tracks"].items():
-            lines.append(f"  {track_name}: {info['count']} agents, "
-                        f"coherence={info['avg_coherence']:.3f}")
+            lines.append(f"  {track_name}: {info['count']} agents, " f"coherence={info['avg_coherence']:.3f}")
 
         # Per-agent detail
         if self.sheep:
@@ -457,12 +451,14 @@ class Flock:
     # ── Logging ──
 
     def _log_event(self, event_type: str, agent_id: str, message: str) -> None:
-        self._log.append({
-            "time": time.time(),
-            "event": event_type,
-            "agent": agent_id,
-            "message": message,
-        })
+        self._log.append(
+            {
+                "time": time.time(),
+                "event": event_type,
+                "agent": agent_id,
+                "message": message,
+            }
+        )
 
     @property
     def event_log(self) -> List[Dict[str, Any]]:

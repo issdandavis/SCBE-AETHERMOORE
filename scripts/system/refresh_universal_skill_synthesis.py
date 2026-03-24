@@ -281,7 +281,9 @@ def write_outputs(
         )
     summary_lines += ["", "## Top Skills"]
     for row in matrix["rows"][:20]:
-        summary_lines.append(f"- {row['slug']} -> tongues={','.join(row['recommended_tongues'])} categories={','.join(row['categories'])}")
+        summary_lines.append(
+            f"- {row['slug']} -> tongues={','.join(row['recommended_tongues'])} categories={','.join(row['categories'])}"
+        )
     summary_lines.append("")
     summary_path.write_text("\n".join(summary_lines), encoding="utf-8")
 
@@ -295,7 +297,9 @@ def write_outputs(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Refresh universal skill synthesis references.")
-    parser.add_argument("--skills-root", default=str(DEFAULT_SKILLS_ROOT), help="Root directory that contains installed skill folders")
+    parser.add_argument(
+        "--skills-root", default=str(DEFAULT_SKILLS_ROOT), help="Root directory that contains installed skill folders"
+    )
     parser.add_argument(
         "--output-dir",
         default=str(DEFAULT_SKILLS_ROOT / "scbe-universal-synthesis" / "references"),

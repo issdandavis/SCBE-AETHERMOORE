@@ -131,9 +131,7 @@ class SpectralIdentityGenerator:
             Complete spectral identity
         """
         if len(trust_vector) != 6:
-            raise ValueError(
-                "Trust vector must have 6 dimensions (one per Sacred Tongue)"
-            )
+            raise ValueError("Trust vector must have 6 dimensions (one per Sacred Tongue)")
 
         # Normalize trust vector to [0, 1]
         normalized = [max(0.0, min(1.0, v)) for v in trust_vector]
@@ -169,9 +167,7 @@ class SpectralIdentityGenerator:
             timestamp=time.time(),
         )
 
-    def _generate_spectrum(
-        self, trust_vector: List[float], layer_scores: Optional[List[float]] = None
-    ) -> List[float]:
+    def _generate_spectrum(self, trust_vector: List[float], layer_scores: Optional[List[float]] = None) -> List[float]:
         """Generate 7-band spectrum from trust vector"""
         spectrum: List[float] = []
 
@@ -186,15 +182,11 @@ class SpectralIdentityGenerator:
             # Modulate with layer scores if available
             if layer_scores and len(layer_scores) >= 14:
                 band_layers = SPECTRAL_BANDS[band].layers
-                layer_avg = sum(layer_scores[l - 1] for l in band_layers) / len(
-                    band_layers
-                )
+                layer_avg = sum(layer_scores[l - 1] for l in band_layers) / len(band_layers)
                 intensity = (intensity + layer_avg) / 2
 
             # Apply golden ratio modulation for uniqueness
-            intensity = intensity * (
-                1 + 0.1 * math.sin(band * self.GOLDEN_RATIO * math.pi)
-            )
+            intensity = intensity * (1 + 0.1 * math.sin(band * self.GOLDEN_RATIO * math.pi))
 
             spectrum.append(max(0.0, min(1.0, intensity)))
 
@@ -260,9 +252,7 @@ class SpectralIdentityGenerator:
             b=round(b / total_weight),
         )
 
-    def _generate_spectral_hash(
-        self, entity_id: str, trust_vector: List[float], spectrum: List[float]
-    ) -> str:
+    def _generate_spectral_hash(self, entity_id: str, trust_vector: List[float], spectrum: List[float]) -> str:
         """Generate unique spectral hash"""
         # Create deterministic hash from all inputs
         data = ":".join(

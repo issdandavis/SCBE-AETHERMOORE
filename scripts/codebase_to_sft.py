@@ -37,9 +37,7 @@ GOVERNANCE_CATEGORIES = {
     "safety",
 }
 
-LEGACY_SOURCE_PREFIXES = (
-    "src/symphonic_cipher/",
-)
+LEGACY_SOURCE_PREFIXES = ("src/symphonic_cipher/",)
 
 FUNCTION_SOURCE_PREFIXES = (
     "src/",
@@ -91,46 +89,129 @@ PY_SOURCES = [
 
 CATEGORY_KEYWORDS = {
     "math": [
-        "axiom", "theorem", "proof", "formula", "equation", "convex",
-        "monoton", "metric", "isometry", "lipschitz", "arcosh", "tanh",
-        "d_H", "H(d", "R^(d", "eigenvalue", "norm", "gradient",
-        "diffeomorphism", "gyrovector", "mobius", "poincare", "hyperbolic distance",
+        "axiom",
+        "theorem",
+        "proof",
+        "formula",
+        "equation",
+        "convex",
+        "monoton",
+        "metric",
+        "isometry",
+        "lipschitz",
+        "arcosh",
+        "tanh",
+        "d_H",
+        "H(d",
+        "R^(d",
+        "eigenvalue",
+        "norm",
+        "gradient",
+        "diffeomorphism",
+        "gyrovector",
+        "mobius",
+        "poincare",
+        "hyperbolic distance",
     ],
     "architecture": [
-        "14-layer", "pipeline", "layer 1", "layer 2", "system architecture",
-        "data flow", "component", "module", "implementation structure",
-        "project structure", "source index",
+        "14-layer",
+        "pipeline",
+        "layer 1",
+        "layer 2",
+        "system architecture",
+        "data flow",
+        "component",
+        "module",
+        "implementation structure",
+        "project structure",
+        "source index",
     ],
     "governance": [
-        "governance", "decision", "allow", "quarantine", "deny", "risk",
-        "policy", "roundtable", "consensus", "constitutional", "escalat",
-        "authorization", "tier",
+        "governance",
+        "decision",
+        "allow",
+        "quarantine",
+        "deny",
+        "risk",
+        "policy",
+        "roundtable",
+        "consensus",
+        "constitutional",
+        "escalat",
+        "authorization",
+        "tier",
     ],
     "crypto": [
-        "kyber", "dilithium", "pqc", "post-quantum", "aes-256", "hkdf",
-        "sha-256", "hmac", "encrypt", "signature", "dual-lattice",
-        "ml-kem", "ml-dsa", "key exchange", "nonce", "replay",
+        "kyber",
+        "dilithium",
+        "pqc",
+        "post-quantum",
+        "aes-256",
+        "hkdf",
+        "sha-256",
+        "hmac",
+        "encrypt",
+        "signature",
+        "dual-lattice",
+        "ml-kem",
+        "ml-dsa",
+        "key exchange",
+        "nonce",
+        "replay",
     ],
     "layers": [
-        "realification", "breathing transform", "phase transform",
-        "spectral coherence", "spin coherence", "triadic", "harmonic wall",
-        "audio axis", "realm distance", "multi-well",
+        "realification",
+        "breathing transform",
+        "phase transform",
+        "spectral coherence",
+        "spin coherence",
+        "triadic",
+        "harmonic wall",
+        "audio axis",
+        "realm distance",
+        "multi-well",
     ],
     "topology": [
-        "topolog", "hamiltonian path", "control-flow integrity", "cfi",
-        "euler characteristic", "manifold", "quasicrystal", "phdm",
-        "polyhedr", "icosahedral",
+        "topolog",
+        "hamiltonian path",
+        "control-flow integrity",
+        "cfi",
+        "euler characteristic",
+        "manifold",
+        "quasicrystal",
+        "phdm",
+        "polyhedr",
+        "icosahedral",
     ],
     "constants": [
-        "constant", "phi_aether", "lambda_isaac", "omega_spiral",
-        "golden ratio", "phi =", "sacred tongue", "six tongue",
-        "langues", "weight profile", "kor'aelin", "avali", "runethic",
-        "cassisivadan", "umbroth", "draumric",
+        "constant",
+        "phi_aether",
+        "lambda_isaac",
+        "omega_spiral",
+        "golden ratio",
+        "phi =",
+        "sacred tongue",
+        "six tongue",
+        "langues",
+        "weight profile",
+        "kor'aelin",
+        "avali",
+        "runethic",
+        "cassisivadan",
+        "umbroth",
+        "draumric",
     ],
     "safety": [
-        "ai safety", "verifier", "ai_verifier", "intent classif",
-        "malicious", "anomaly", "detect", "constitutional check",
-        "audit", "compliance",
+        "ai safety",
+        "verifier",
+        "ai_verifier",
+        "intent classif",
+        "malicious",
+        "anomaly",
+        "detect",
+        "constitutional check",
+        "audit",
+        "compliance",
     ],
 }
 
@@ -237,6 +318,7 @@ def select_templates(category: str, count: int, seed: int) -> List[str]:
 # Markdown parsing
 # ---------------------------------------------------------------------------
 
+
 def split_md_sections(text: str) -> List[Tuple[str, str]]:
     """Split markdown text into (heading, content) pairs by ## headers.
 
@@ -249,7 +331,7 @@ def split_md_sections(text: str) -> List[Tuple[str, str]]:
 
     for line in lines:
         # Match ## or # headers
-        header_match = re.match(r'^(#{1,3})\s+(.+)$', line)
+        header_match = re.match(r"^(#{1,3})\s+(.+)$", line)
         if header_match:
             # Save previous section
             content = "\n".join(current_lines).strip()
@@ -271,11 +353,11 @@ def split_md_sections(text: str) -> List[Tuple[str, str]]:
 def extract_topic_from_heading(heading: str) -> str:
     """Extract a clean topic phrase from a markdown heading."""
     # Remove numbering like "1.2", "3.1", "Part 1:"
-    topic = re.sub(r'^\d+[\.\d]*\s*', '', heading)
-    topic = re.sub(r'^Part\s+\d+:\s*', '', topic, flags=re.IGNORECASE)
-    topic = re.sub(r'^Appendix\s+[A-Z]:\s*', '', topic, flags=re.IGNORECASE)
+    topic = re.sub(r"^\d+[\.\d]*\s*", "", heading)
+    topic = re.sub(r"^Part\s+\d+:\s*", "", topic, flags=re.IGNORECASE)
+    topic = re.sub(r"^Appendix\s+[A-Z]:\s*", "", topic, flags=re.IGNORECASE)
     # Remove parenthetical annotations
-    topic = re.sub(r'\s*\([^)]*\)\s*', ' ', topic).strip()
+    topic = re.sub(r"\s*\([^)]*\)\s*", " ", topic).strip()
     # Clean up
     topic = topic.strip(" :#*-")
     if not topic:
@@ -289,7 +371,7 @@ def clean_response(content: str) -> str:
     Preserves structure but normalizes whitespace.
     """
     # Collapse triple+ newlines into double
-    content = re.sub(r'\n{3,}', '\n\n', content)
+    content = re.sub(r"\n{3,}", "\n\n", content)
     # Strip trailing whitespace per line
     content = "\n".join(line.rstrip() for line in content.split("\n"))
     return content.strip()
@@ -298,6 +380,7 @@ def clean_response(content: str) -> str:
 # ---------------------------------------------------------------------------
 # Python docstring extraction
 # ---------------------------------------------------------------------------
+
 
 def extract_py_docstrings(filepath: Path) -> List[Tuple[str, str]]:
     """Extract module-level and class/function docstrings from Python file."""
@@ -334,6 +417,7 @@ def extract_py_docstrings(filepath: Path) -> List[Tuple[str, str]]:
 # ---------------------------------------------------------------------------
 # SFT pair generation
 # ---------------------------------------------------------------------------
+
 
 def determine_pair_count(content: str) -> int:
     """Determine how many SFT pairs to generate from section content."""
@@ -418,6 +502,7 @@ def generate_pairs_from_section(
 # Main pipeline
 # ---------------------------------------------------------------------------
 
+
 def process_md_file(filepath: Path, rel_path: str, start_id: int) -> Tuple[List[Dict], int]:
     """Process a single markdown file into SFT pairs."""
     pairs = []
@@ -458,9 +543,7 @@ def process_py_file(filepath: Path, rel_path: str, start_id: int) -> Tuple[List[
             continue
         section_count += 1
         source_type = "legacy_docstring" if is_legacy_source(rel_path) else "docstring"
-        new_pairs, start_id = generate_pairs_from_section(
-            heading, content, rel_path, start_id, source_type=source_type
-        )
+        new_pairs, start_id = generate_pairs_from_section(heading, content, rel_path, start_id, source_type=source_type)
         pairs.extend(new_pairs)
 
     print(f"  [OK] {rel_path}: {section_count} docstrings -> {len(pairs)} pairs")
