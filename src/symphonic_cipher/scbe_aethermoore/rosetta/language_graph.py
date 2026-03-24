@@ -177,5 +177,5 @@ class LanguageGraph:
             current = related.get(other, 0.0)
             related[other] = max(current, e.strength)
 
-        filtered = [(l, s) for l, s in related.items() if s >= min_strength]
+        filtered = [(lang, s) for lang, s in related.items() if s >= min_strength]
         return sorted(filtered, key=lambda x: x[1], reverse=True)

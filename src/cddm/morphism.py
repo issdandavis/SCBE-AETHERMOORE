@@ -120,12 +120,18 @@ class Morphism:
                 )
 
         f1, f2 = self.func, other.func
-        composed_func = lambda x: f2(f1(x))
+
+        def composed_func(x):
+            return f2(f1(x))
 
         inv = None
         if self.invertible and other.invertible:
             g1, g2 = self.inverse_func, other.inverse_func
-            inv = lambda y: g1(g2(y))
+
+            def _inv(y):
+                return g1(g2(y))
+
+            inv = _inv
 
         return Morphism(
             src=self.src,

@@ -88,13 +88,13 @@ except ImportError:
             c.append(c[-1] * (q - k + 1) / (k * (2 * q - k + 1)))
 
         # Compute U and V for Padé approximant
-        I = np.eye(n)
+        eye = np.eye(n)
         A2 = A_scaled @ A_scaled
 
-        U = c[1] * I
-        V = c[0] * I
+        U = c[1] * eye
+        V = c[0] * eye
 
-        A_power = I
+        A_power = eye
         for k in range(1, q // 2 + 1):
             A_power = A_power @ A2
             U = U + c[2 * k + 1] * A_power

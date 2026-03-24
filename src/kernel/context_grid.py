@@ -553,7 +553,10 @@ class FederatedContextGrid:
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are an AI agent in the SCBE-AETHERMOORE sphere grid. Answer using ONLY the provided context. Be concise.",
+                        "content": (
+                            "You are an AI agent in the SCBE-AETHERMOORE sphere grid."
+                            " Answer using ONLY the provided context. Be concise."
+                        ),
                     },
                     {"role": "user", "content": f"Context:\n{context_str}\n\nQuestion: {query}"},
                 ],
