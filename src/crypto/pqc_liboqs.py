@@ -272,11 +272,6 @@ class MLDSA65:
                 self._secret_key = self._sig.export_secret_key()
 
         if not self._using_real:
-            # Use real liboqs
-            self._sig = oqs.Signature(_SIG_ALG)
-            self._public_key = self._sig.generate_keypair()
-            self._secret_key = self._sig.export_secret_key()
-        else:
             # Fallback: deterministic key derivation from seed
             self._public_key = hashlib.sha256(self._seed + b"mldsa65_pk").digest()
             self._public_key = self._public_key + os.urandom(MLDSA65_PK_LEN - 32)
@@ -345,7 +340,6 @@ class MLDSA65:
                 instance._using_real = False
             else:
                 instance._sig = oqs.Signature(instance._algorithm)
-            instance._sig = oqs.Signature(_SIG_ALG)
 
         return instance
 
