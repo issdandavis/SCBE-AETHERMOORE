@@ -23,4 +23,3 @@ def test_build_readme_contains_core_fields(tmp_path: Path) -> None:
     assert "issda/aethermore-perplexity" in readme
     assert "Rows: `12`" in readme
     assert "`thread_id`" in readme
-

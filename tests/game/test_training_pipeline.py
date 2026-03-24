@@ -11,13 +11,10 @@ import json
 import sys
 from pathlib import Path
 
-import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
 
 from symphonic_cipher.scbe_aethermoore.game.training_pipeline import (
-    AUTO_APPROVE_THRESHOLD,
-    QUARANTINE_THRESHOLD,
     MIN_QUALITY_SCORE,
     FINE_TUNE_THRESHOLD,
     TrainingPipeline,

@@ -15,7 +15,6 @@ Validates:
 10. End-to-end circuit trace integrity
 """
 
-import hashlib
 import math
 import sys
 import os
@@ -29,11 +28,8 @@ sys.path.insert(0, os.path.join(
 
 from circuit_flow import (
     PolyDidacticCircuit,
-    CircuitNode,
-    CircuitTrace,
     Zone,
     FluxGate,
-    GovernanceAction,
     harmonic_wall_cost,
     classify_trust_ring,
     classify_intent_tongue,
@@ -393,7 +389,7 @@ class TestEndToEnd:
 # ============================================================================
 
 if __name__ == "__main__":
-    import traceback
+    pass
 
     test_classes = [
         TestRegistry, TestTopology, TestHarmonicWall, TestTrustRing,

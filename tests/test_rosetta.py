@@ -26,20 +26,15 @@ if _PROJECT_ROOT not in sys.path:
 
 from src.symphonic_cipher.scbe_aethermoore.rosetta import (
     RosettaStone,
-    RosettaConcept,
-    LanguageSystem,
     LCDAProjector,
     LCDADimension,
     DualEntropicDefenseEngine,
-    DEDESignal,
     LanguageGraph,
 )
 from src.symphonic_cipher.scbe_aethermoore.rosetta.seed_data import (
     NSM_PRIMES,
     CJK_COGNATES,
     TOKIPONA_MAP,
-    ESPERANTO_MAP,
-    LOJBAN_MAP,
     SACRED_TONGUE_PRIMES,
     TAM_PROFILES,
 )

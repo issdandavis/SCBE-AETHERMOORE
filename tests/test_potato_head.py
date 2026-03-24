@@ -13,7 +13,6 @@ Covers:
 import sys
 import os
 import math
-import time
 import pytest
 
 # Ensure src/ is on the path
@@ -21,7 +20,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from symphonic_cipher.scbe_aethermoore.concept_blocks import (
     Action,
-    Blackboard,
     BlockResult,
     BlockStatus,
     ConceptBlock,
@@ -34,7 +32,6 @@ from symphonic_cipher.scbe_aethermoore.concept_blocks import (
 from symphonic_cipher.scbe_aethermoore.concept_blocks.socket import (
     EggRing,
     PotatoHead,
-    SocketSpec,
     _eigenvalue_check,
     _compute_egg_hash,
 )
@@ -52,7 +49,6 @@ from symphonic_cipher.scbe_aethermoore.concept_blocks.aperiodic_phase import (
     AperiodicPhaseController,
     GateVector,
     fibonacci_word,
-    fibonacci_word_char,
     penrose_intervals,
 )
 

@@ -11,7 +11,6 @@ import pytest
 from tests.adversarial.attack_corpus import (
     BASELINE_CLEAN,
     COMBINED_MULTI,
-    get_all_attacks,
     get_full_corpus,
 )
 from tests.adversarial.scbe_harness import SCBEDetectionGate, run_benchmark

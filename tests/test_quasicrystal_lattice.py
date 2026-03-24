@@ -8,7 +8,6 @@ Tests:
 - Crystalline defect detection (periodic vs aperiodic inputs)
 """
 
-import math
 import sys
 import os
 
@@ -21,7 +20,6 @@ from symphonic_cipher.scbe_aethermoore.quasicrystal_lattice import (
     QuasicrystalLattice,
     LatticePoint,
     DefectAnalysis,
-    PHI,
 )
 
 

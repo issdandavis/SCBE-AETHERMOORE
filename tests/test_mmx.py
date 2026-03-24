@@ -10,14 +10,13 @@ Covers:
   - Dimension mismatch errors
 """
 
-import math
 import sys
 import os
 import pytest
 
 # Ensure the source is on the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
-from symphonic_cipher.scbe_aethermoore.multimodal.mmx import compute_mmx, MMXResult
+from symphonic_cipher.scbe_aethermoore.multimodal.mmx import compute_mmx
 
 
 # =============================================================================

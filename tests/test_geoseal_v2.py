@@ -15,13 +15,10 @@ from src.geoseal_v2 import (
     score_certainty,
     fuse_scores,
     compute_repel_force_v2,
-    swarm_step_v2,
     run_swarm_v2,
     score_all_candidates,
-    update_suspicion_v2,
     QUARANTINE_TRUST_THRESHOLD,
     MEMORY_WRITE_THRESHOLD,
-    DEFAULT_WEIGHTS,
 )
 from src.geoseal import TONGUE_PHASES
 

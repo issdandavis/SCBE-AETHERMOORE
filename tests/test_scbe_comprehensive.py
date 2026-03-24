@@ -21,10 +21,8 @@ Covers:
 import sys
 import os
 import hashlib
-import hmac
 import time
 import math
-from typing import Tuple, List
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -37,7 +35,6 @@ from symphonic_cipher.scbe_aethermoore.spiral_seal import (
     SpiralSealSS1,
     SacredTongueTokenizer,
     encode_to_spelltext,
-    decode_from_spelltext,
 )
 from symphonic_cipher.scbe_aethermoore.spiral_seal.sacred_tongues import (
     TONGUES,
@@ -59,7 +56,6 @@ from symphonic_cipher.scbe_aethermoore.spiral_seal.key_exchange import (
     kyber_encaps,
     kyber_decaps,
     get_pqc_status,
-    KyberKeyPair,
 )
 from symphonic_cipher.scbe_aethermoore.spiral_seal.signatures import (
     dilithium_keygen,

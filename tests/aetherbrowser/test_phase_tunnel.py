@@ -1,16 +1,13 @@
 """Tests for phase tunneling through governance walls."""
 
 import math
-import time
 
 import pytest
 
 from src.aetherbrowser.phase_tunnel import (
     KernelStack,
-    TransmissionResult,
     TunnelGovernor,
     TunnelOutcome,
-    TunnelPermit,
     can_tunnel,
     compute_transmission,
     compute_transparency_frequency,
