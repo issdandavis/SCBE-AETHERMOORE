@@ -14,8 +14,7 @@ Based on established statistical mechanics.
 """
 
 import math
-from typing import Dict, Any, Tuple, Optional, Callable, List
-from dataclasses import dataclass
+from typing import Dict, Any, List
 
 # =============================================================================
 # CONSTANTS

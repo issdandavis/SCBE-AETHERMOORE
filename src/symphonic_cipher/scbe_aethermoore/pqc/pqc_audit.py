@@ -12,26 +12,21 @@ import hmac
 import os
 import time
 from dataclasses import dataclass, field
-from typing import Tuple, Optional, List, Dict, Any, Union
+from typing import Tuple, Optional, List, Dict, Any
 from enum import Enum
 
 from .pqc_core import (
     Dilithium3,
     DilithiumKeyPair,
-    Kyber768,
     KyberKeyPair,
-    derive_hybrid_key,
     get_backend,
     PQCBackend,
-    DILITHIUM3_SIGNATURE_SIZE,
 )
 from .pqc_hmac import (
     PQCHMACChain,
-    PQCKeyMaterial,
     KeyDerivationMode,
     pqc_hmac_chain_tag,
     NONCE_BYTES,
-    KEY_LEN,
     AUDIT_CHAIN_IV,
 )
 

@@ -336,7 +336,6 @@ def check_fractal_predicate(
 
 class DecryptionError(Exception):
     """AEAD decryption failure."""
-    pass
 
 
 def toy_aead_decrypt(key: bytes, ciphertext: bytes, aad: bytes) -> bytes:

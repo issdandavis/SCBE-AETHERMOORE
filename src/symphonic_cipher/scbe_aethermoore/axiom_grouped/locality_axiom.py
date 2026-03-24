@@ -22,7 +22,6 @@ import functools
 import numpy as np
 from typing import Callable, TypeVar, Any, Optional, Tuple, List
 from dataclasses import dataclass
-from enum import Enum
 
 # Type variables for generic decorators
 T = TypeVar("T")
@@ -37,7 +36,6 @@ N_REALMS = 5
 class LocalityViolation(Exception):
     """Raised when an operation violates the locality axiom."""
 
-    pass
 
 
 @dataclass

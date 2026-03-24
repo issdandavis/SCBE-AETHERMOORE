@@ -14,8 +14,7 @@ All methods designed for physics applications.
 """
 
 import math
-from typing import Dict, Any, Tuple, Optional, Callable, List, Union
-from dataclasses import dataclass
+from typing import Dict, Any, Tuple, Callable, List
 import random
 
 # =============================================================================

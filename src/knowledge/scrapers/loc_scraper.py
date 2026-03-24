@@ -8,7 +8,7 @@ No API key needed. Rate limit: be polite (~1 req/sec).
 import time
 import json
 from urllib.request import urlopen, Request
-from urllib.parse import urlencode, quote
+from urllib.parse import urlencode
 
 import sys
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[3]))

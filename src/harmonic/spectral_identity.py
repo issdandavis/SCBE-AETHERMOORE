@@ -25,7 +25,7 @@ Sacred Tongue Color Associations:
 @module harmonic/spectral_identity
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Optional, Tuple, Dict
 import math
 import time

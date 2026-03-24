@@ -22,8 +22,7 @@ from __future__ import annotations
 
 import numpy as np
 from dataclasses import dataclass, field
-from typing import Dict, List, Tuple, Optional, Any
-import hashlib
+from typing import Dict, List, Tuple, Any
 
 # =============================================================================
 # TEST 1: CHAOS SENSITIVITY (Claim 4)
@@ -715,7 +714,7 @@ def test_aethermoore_integration() -> Dict[str, Any]:
     Validates that SCBE claims align with AETHERMOORE's H(d,R) = R^(d²)
     """
     try:
-        from .production_v2_1 import harmonic_scaling, risk_prime, PHI
+        from .production_v2_1 import harmonic_scaling, PHI
 
         # Test harmonic scaling formula
         d_values = [0.0, 1.0, 2.0, 3.0]

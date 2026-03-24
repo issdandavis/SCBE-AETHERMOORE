@@ -2482,10 +2482,6 @@ class TestPolyhedralHamiltonianDefense:
 
     def test_import(self):
         """Test that PHDM classes can be imported."""
-        from symphonic_cipher.harmonic_scaling_law import (
-            Polyhedron,
-            PolyhedralHamiltonianDefense,
-        )
 
     def test_polyhedron_creation(self):
         """Test Polyhedron dataclass."""

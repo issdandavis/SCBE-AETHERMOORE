@@ -40,7 +40,6 @@ PHI = (1 + np.sqrt(5)) / 2  # Golden ratio
 class SymmetryViolation(Exception):
     """Raised when an operation violates gauge invariance."""
 
-    pass
 
 
 class SymmetryGroup(Enum):

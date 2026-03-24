@@ -17,24 +17,21 @@ Settlement states:
 from __future__ import annotations
 
 import json
-import math
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 from ..context_credit_ledger.credit import (
     ContextCredit,
-    Denomination,
     DENOMINATION_WEIGHTS,
     mint_credit,
 )
 from .streams import (
     EarnEvent,
     GovernanceVerdict,
-    StreamConfig,
     StreamType,
     STREAM_CONFIGS,
 )

@@ -34,26 +34,21 @@ Method: mix everything → run → strip to bits → reassemble best version.
 
 from __future__ import annotations
 
-import hashlib
 import math
-import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
 from hydra.octree_sphere_grid import HyperbolicLattice25D
 from src.crypto.quasicrystal_lattice import (
     QuasicrystalLattice,
-    LatticePoint as QCLatticePoint,
 )
-from src.kernel.scattered_sphere import ScatteredAttentionSphere, TONGUE_KEYS
+from src.kernel.scattered_sphere import ScatteredAttentionSphere
 from src.storage.langues_dispersal import (
     TONGUE_WEIGHTS,
-    TONGUE_NAMES,
     quantize_spin,
     SpinVector,
-    build_metric_tensor,
 )
 
 PHI = 1.618033988749895

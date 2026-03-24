@@ -21,25 +21,22 @@ The integration flow:
 """
 
 import numpy as np
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, List, Tuple
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
 # Import the three systems
 from .symphonic_cipher import (
-    SymphonicToken, TonguePolarity, SACRED_TONGUE_VOCAB,
-    token_to_frequency, analyze_polarity_balance,
-    generate_symphonic_sequence, BASE_FREQ
+    token_to_frequency, analyze_polarity_balance, BASE_FREQ
 )
 from .geo_seal import (
     ContextVector, SecurityPosture,
     hyperbolic_distance, trust_from_position,
-    harmonic_wall_cost, compute_triangle_deficit
+    harmonic_wall_cost
 )
 from .dual_lattice import (
-    SacredTongue, FluxState, LatticeVector,
-    DualLatticeCrossStitch, TongueLatticeGovernor,
-    TONGUE_PHASES, TONGUE_WEIGHTS, PHI
+    SacredTongue, LatticeVector, DualLatticeCrossStitch,
+    TongueLatticeGovernor, TONGUE_PHASES
 )
 
 

@@ -20,7 +20,7 @@ from enum import Enum
 import random
 from typing import Dict, List, Tuple
 
-from .temporal_intent import TemporalSecurityGate, IntentState, MAX_INTENT_ACCUMULATION
+from .temporal_intent import TemporalSecurityGate, MAX_INTENT_ACCUMULATION
 from ..harmonic.tarski_sheaf import (
     TemporalSheaf,
     make_temporal_sheaf,

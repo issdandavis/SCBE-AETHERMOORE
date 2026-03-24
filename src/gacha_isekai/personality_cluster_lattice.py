@@ -43,8 +43,6 @@ Layers:
 
 from __future__ import annotations
 
-import hashlib
-import json
 import logging
 import math
 import struct
@@ -59,10 +57,8 @@ from src.gacha_isekai.personality_manifold import (
     DIM,
     PHI,
     TONGUE_WEIGHTS,
-    PersonalityFacet,
     PersonalityManifold,
     _hyperbolic_distance,
-    _mobius_add,
     _poincare_project,
 )
 

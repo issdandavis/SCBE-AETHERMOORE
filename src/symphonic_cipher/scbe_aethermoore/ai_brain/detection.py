@@ -14,7 +14,7 @@ Multi-Vectored Detection Mechanisms - Python Reference Implementation
 
 import math
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Tuple, Any
 
 from .unified_state import BRAIN_DIMENSIONS, PHI, TrajectoryPoint
 

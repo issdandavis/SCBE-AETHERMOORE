@@ -15,7 +15,7 @@ Phase-shifting between modes allows:
 from __future__ import annotations
 
 import numpy as np
-from typing import Tuple, Optional, Callable, Dict, Any
+from typing import Tuple, Optional, Dict, Any
 from dataclasses import dataclass
 from enum import Enum
 

@@ -32,9 +32,9 @@ import struct
 from .dual_lattice import (
     LatticeVector, SacredTongue, FluxState,
     DualLatticeCrossStitch, TongueLatticeGovernor,
-    TONGUE_PHASES, TONGUE_WEIGHTS, PHI
+    TONGUE_WEIGHTS
 )
-from .octree import HyperbolicOctree, SpectralVoxel
+from .octree import HyperbolicOctree
 from .hyperpath_finder import HyperpathFinder, PathResult, hyperbolic_distance_safe
 
 

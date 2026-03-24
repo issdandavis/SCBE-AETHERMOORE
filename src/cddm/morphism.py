@@ -15,7 +15,6 @@ Morphisms are the arrows in our category. They can be:
 
 from __future__ import annotations
 
-import math
 from typing import Callable, List, Optional, Tuple
 
 from .domain import Domain, DomainError
@@ -23,7 +22,6 @@ from .domain import Domain, DomainError
 
 class MorphismError(Exception):
     """Raised when morphism application or validation fails."""
-    pass
 
 
 class Morphism:

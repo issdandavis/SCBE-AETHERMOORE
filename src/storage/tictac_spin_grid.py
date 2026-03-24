@@ -37,7 +37,6 @@ import re
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
-import numpy as np
 
 PHI = 1.618033988749895
 TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")

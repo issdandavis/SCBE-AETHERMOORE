@@ -35,7 +35,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 from src.scbe_14layer_reference import scbe_14layer_pipeline
 from src.crypto.rwp_v3 import RWPv3Protocol, RWPEnvelope
-from src.crypto.sacred_tongues import SacredTongueTokenizer
 from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
 from src.api.hydra_routes import hydra_router, init_hydra_spine
 from src.api.saas_routes import saas_router

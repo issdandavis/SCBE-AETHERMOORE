@@ -13,8 +13,7 @@ install the official liboqs-python bindings.
 
 import os
 import hashlib
-import hmac
-from typing import Tuple, Optional
+from typing import Tuple
 
 # Try to import post-quantum library
 _FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
