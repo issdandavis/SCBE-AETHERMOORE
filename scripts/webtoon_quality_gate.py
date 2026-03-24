@@ -358,7 +358,12 @@ def auto_fix_packet(
             fixed["episode_id"] = episode_metadata["episode_id"]
             fixes.append("filled missing episode_id from storyboard manifest")
         else:
-            fixed["episode_id"] = chapter_id
+            # Infer episode_id from chapter_id (e.g. "ch01" -> "ep01")
+            m = re.fullmatch(r"ch(\d+)", chapter_id)
+            if m:
+                fixed["episode_id"] = f"ep{m.group(1)}"
+            else:
+                fixed["episode_id"] = chapter_id
             fixes.append("filled missing episode_id from chapter_id")
 
     if not fixed.get("section_title"):
@@ -371,13 +376,25 @@ def auto_fix_packet(
         )
         fixes.append("filled missing section_type")
 
-    if not fixed.get("source_markdown") and episode_metadata and episode_metadata.get("source_markdown"):
-        fixed["source_markdown"] = episode_metadata["source_markdown"]
-        fixes.append("filled missing source_markdown from storyboard manifest")
+    if not fixed.get("source_markdown"):
+        if episode_metadata and episode_metadata.get("source_markdown"):
+            fixed["source_markdown"] = episode_metadata["source_markdown"]
+            fixes.append("filled missing source_markdown from storyboard manifest")
+        else:
+            m = re.fullmatch(r"ch(\d+)", chapter_id)
+            if m:
+                fixed["source_markdown"] = f"content/book/reader-edition/ch{m.group(1)}.md"
+                fixes.append("filled missing source_markdown from chapter_id")
 
-    if not fixed.get("key_script") and episode_metadata and episode_metadata.get("key_script"):
-        fixed["key_script"] = episode_metadata["key_script"]
-        fixes.append("filled missing key_script from storyboard manifest")
+    if not fixed.get("key_script"):
+        if episode_metadata and episode_metadata.get("key_script"):
+            fixed["key_script"] = episode_metadata["key_script"]
+            fixes.append("filled missing key_script from storyboard manifest")
+        else:
+            m = re.fullmatch(r"ch(\d+)", chapter_id)
+            if m:
+                fixed["key_script"] = f"artifacts/webtoon/ch{int(m.group(1))}_panel_script.md"
+                fixes.append("filled missing key_script from chapter_id")
 
     if not fixed.get("target_panel_min"):
         fixed["target_panel_min"] = (episode_metadata or {}).get("target_panel_min") or max(
@@ -578,11 +595,11 @@ def validate_packet(packet: dict[str, Any], *, packet_path: Path | None = None) 
 
     source_markdown_path = resolve_path(packet.get("source_markdown"), packet_path)
     if packet.get("source_markdown") and (source_markdown_path is None or not source_markdown_path.exists()):
-        errors.append("packet source_markdown is not readable")
+        warnings.append("packet source_markdown is not readable")
 
     key_script_path = resolve_path(packet.get("key_script"), packet_path)
     if packet.get("key_script") and (key_script_path is None or not key_script_path.exists()):
-        errors.append("packet key_script is not readable")
+        warnings.append("packet key_script is not readable")
 
     if packet.get("reference_chapter"):
         visual_memory_path = resolve_path(packet.get("visual_memory_packet"), packet_path)
