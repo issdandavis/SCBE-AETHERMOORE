@@ -188,7 +188,7 @@ class MirrorShiftRefactor:
 
         # Build refactor projector Π (projects onto first trust_dim dims)
         self._Pi = np.zeros((dim, dim))
-        for d in range(min(trust_dim, dim)):
+        for d in range(min(self.trust_dim, dim)):
             self._Pi[d, d] = 1.0
 
     # ---- Generators ----

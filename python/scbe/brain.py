@@ -276,9 +276,10 @@ class PHDMLattice:
 
     def restrict_to_core(self):
         """Emergency mode - only Platonic solids accessible"""
+        registry = self.registry or []
         self.active_polyhedra = {
-            name for name, props in POLYHEDRA.items()
-            if props["type"] == "platonic"
+            p.name for p in registry
+            if p.family == "platonic" or getattr(p, "type", None) == "platonic"
         }
         logger.warning("DEMI mode: restricted to Platonic solids only")
     @property
@@ -616,7 +617,7 @@ class AetherBrain:
         x_21d = embed_vector_to_21d(intent_vector, context)
 
         # 2. Early boundary check via Poincaré distance
-        ring = self.skull.get_trust_ring(u)
+        ring = self.skull.get_trust_ring(x_21d)
         if ring == TrustRing.WALL:
             return self._fail_to_noise("Event Horizon Reached", ring, start_time)
 
@@ -629,7 +630,7 @@ class AetherBrain:
             return self._trace_to_result(trace, ring, start_time)
 
         # Fallback: legacy path (circuit flow not available)
-        return self._think_legacy(u, ring, context, start_time)
+        return self._think_legacy(x_21d, ring, context, start_time)
 
     def _trace_to_result(
         self,
@@ -744,6 +745,8 @@ class AetherBrain:
 
         self.energy_consumed += energy_cost
         elapsed_ms = (time.time() - start_time) * 1000 + base_latency
+        governance_mode = context.get("governance_mode", "standard")
+        phase_state = context.get("phase_state", "nominal")
         audit_id = self._log_audit(
             "ALLOWED", f"Ring={ring.value}, cost={energy_cost:.2e} (legacy)", ring, energy_cost
         )
@@ -757,7 +760,7 @@ class AetherBrain:
             phase_state=phase_state,
             path_nodes=path_info["nodes"],
             tongue=path_info["tongue"],
-            embedding_21d=x_21d,
+            embedding_21d=u,
             result={
                 "path": path_info["nodes"],
                 "tongue": path_info["tongue"],
