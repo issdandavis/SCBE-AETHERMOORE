@@ -433,7 +433,11 @@ class SCBEDetectionGate:
             spin_code=spin.code,
             spin_magnitude=spin.magnitude,
             dispersal_cost=round(
-                sum(TONGUE_WEIGHTS[lang] * abs(spin.spins[lang]) * abs(coords[lang] - self._centroid[lang]) for lang in range(6)), 6
+                sum(
+                    TONGUE_WEIGHTS[lang] * abs(spin.spins[lang]) * abs(coords[lang] - self._centroid[lang])
+                    for lang in range(6)
+                ),
+                6
             ),
             harmonic_cost=round(cost, 4),
             dominant_tongue=dominant_tongue,

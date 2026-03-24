@@ -13,7 +13,10 @@ def write_lock_packet(path: Path) -> None:
         "shot_label": "CH01-011",
         "preferred_backend": "imagen-ultra",
         "fallback_backend": "hf",
-        "prompt": "single vertical Korean webtoon panel. Character lock: marcus: Asian-American man early 30s Close on Marcus in green light.",
+        "prompt": (
+            "single vertical Korean webtoon panel. Character lock: marcus:"
+            " Asian-American man early 30s Close on Marcus in green light."
+        ),
         "negative_prompt": "speech bubbles, white man, text overlays",
         "width": 720,
         "height": 1280,

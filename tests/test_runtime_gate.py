@@ -212,7 +212,8 @@ class TestSessionState:
         gate.evaluate("Short.")
         c1 = gate._centroid.copy()
         gate.evaluate(
-            "A much longer and more detailed action with lots of words and content to shift the centroid significantly in the AV dimension."
+            "A much longer and more detailed action with lots of words and content"
+            " to shift the centroid significantly in the AV dimension."
         )
         c2 = gate._centroid.copy()
         assert not (c1 == c2).all()
