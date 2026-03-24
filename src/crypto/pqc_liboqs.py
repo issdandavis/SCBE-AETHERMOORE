@@ -53,6 +53,18 @@ else:
     LIBOQS_AVAILABLE = False
     _LIBOQS_VERSION = None
 
+# Tier 2: Pure Python PQC (kyber-py + dilithium-py)
+# No C compiler needed — just pip install kyber-py dilithium-py
+PURE_PQC_AVAILABLE = False
+try:
+    from kyber_py.ml_kem import ML_KEM_768 as _KyberPure
+    from dilithium_py.ml_dsa import ML_DSA_65 as _DilithiumPure
+
+    PURE_PQC_AVAILABLE = True
+except ImportError:
+    _KyberPure = None
+    _DilithiumPure = None
+
 
 def _select_kem_algorithm() -> str:
     """Select the best available KEM algorithm name for the installed liboqs."""
@@ -153,17 +165,20 @@ class MLKEM768:
             seed: 32-byte seed for deterministic key generation (optional)
         """
         self._using_real = LIBOQS_AVAILABLE
+        self._using_pure = not LIBOQS_AVAILABLE and PURE_PQC_AVAILABLE
         self._seed = seed or os.urandom(32)
 
         if self._using_real:
-            # Use real liboqs
+            # Tier 1: Real liboqs (C library, fastest)
             self._kem = oqs.KeyEncapsulation(_KEM_ALG)
             self._public_key = self._kem.generate_keypair()
             self._secret_key = self._kem.export_secret_key()
+        elif self._using_pure:
+            # Tier 2: Pure Python PQC (kyber-py, real crypto, no C needed)
+            self._public_key, self._secret_key = _KyberPure.keygen()
         else:
-            # Fallback: deterministic key derivation from seed
+            # Tier 3: Simulation fallback (NOT quantum-resistant, testing only)
             self._public_key = hashlib.sha256(self._seed + b"mlkem768_pk").digest()
-            # Pad to approximate real key size for wire format compatibility
             self._public_key = self._public_key + os.urandom(MLKEM768_PK_LEN - 32)
             self._secret_key = hashlib.sha256(self._seed + b"mlkem768_sk").digest()
             self._secret_key = self._secret_key + os.urandom(MLKEM768_SK_LEN - 32)
@@ -191,15 +206,18 @@ class MLKEM768:
         pk = public_key or self._public_key
 
         if self._using_real:
-            # Use real liboqs encapsulation
+            # Tier 1: Real liboqs encapsulation
             kem = oqs.KeyEncapsulation(_KEM_ALG)
             ct, ss = kem.encap_secret(pk)
             return ct, ss
+        elif self._using_pure:
+            # Tier 2: Pure Python ML-KEM-768
+            ss, ct = _KyberPure.encaps(pk)
+            return ct, ss
         else:
-            # Fallback: simulate encapsulation with SHA-256
+            # Tier 3: Simulation (NOT quantum-resistant)
             ephemeral = os.urandom(32)
             ct_core = hashlib.sha256(pk[:32] + ephemeral).digest()
-            # Pad ciphertext to approximate real size
             ct = ct_core + os.urandom(MLKEM768_CT_LEN - 32)
             ss = hashlib.sha256(ct_core + self._secret_key[:32] + ephemeral).digest()
             return ct, ss
@@ -216,8 +234,11 @@ class MLKEM768:
         """
         if self._using_real:
             return self._kem.decap_secret(ciphertext)
+        elif self._using_pure:
+            # Tier 2: Pure Python ML-KEM-768
+            return _KyberPure.decaps(self._secret_key, ciphertext)
         else:
-            # Fallback: derive shared secret from ciphertext
+            # Tier 3: Simulation
             return hashlib.sha256(ciphertext[:32] + self._secret_key[:32]).digest()
 
     @classmethod
@@ -260,11 +281,12 @@ class MLDSA65:
             seed: 32-byte seed for deterministic key generation (optional)
         """
         self._using_real = LIBOQS_AVAILABLE
+        self._using_pure = not LIBOQS_AVAILABLE and PURE_PQC_AVAILABLE
         self._seed = seed or os.urandom(32)
         self._algorithm: Optional[str] = None
 
         if self._using_real:
-            # Use real liboqs (ML-DSA-65 preferred, Dilithium3 fallback).
+            # Tier 1: Real liboqs
             self._algorithm = _select_mldsa_algorithm()
             if self._algorithm is None:
                 self._using_real = False
@@ -273,8 +295,11 @@ class MLDSA65:
                 self._public_key = self._sig.generate_keypair()
                 self._secret_key = self._sig.export_secret_key()
 
-        if not self._using_real:
-            # Fallback: deterministic key derivation from seed
+        if not self._using_real and self._using_pure:
+            # Tier 2: Pure Python ML-DSA-65
+            self._public_key, self._secret_key = _DilithiumPure.keygen()
+        elif not self._using_real:
+            # Tier 3: Simulation (NOT quantum-resistant)
             self._public_key = hashlib.sha256(self._seed + b"mldsa65_pk").digest()
             self._public_key = self._public_key + os.urandom(MLDSA65_PK_LEN - 32)
             self._secret_key = hashlib.sha256(self._seed + b"mldsa65_sk").digest()
@@ -302,10 +327,12 @@ class MLDSA65:
         """
         if self._using_real:
             return self._sig.sign(message)
+        elif self._using_pure:
+            # Tier 2: Pure Python ML-DSA-65
+            return _DilithiumPure.sign(self._secret_key, message)
 
-        # Fallback: HMAC-SHA512 signature simulation
+        # Tier 3: HMAC-SHA512 simulation (NOT quantum-resistant)
         sig_core = hmac.new(self._secret_key[:32], message, hashlib.sha512).digest()
-        # Pad to approximate real signature size
         return sig_core + os.urandom(MLDSA65_SIG_LEN - 64)
 
     def verify(self, message: bytes, signature: bytes) -> bool:
@@ -321,8 +348,11 @@ class MLDSA65:
         """
         if self._using_real:
             return self._sig.verify(message, signature, self._public_key)
+        elif self._using_pure:
+            # Tier 2: Pure Python ML-DSA-65
+            return _DilithiumPure.verify(self._public_key, message, signature)
 
-        # Fallback: verify HMAC-SHA512 signature
+        # Tier 3: HMAC-SHA512 simulation
         expected_core = hmac.new(self._secret_key[:32], message, hashlib.sha512).digest()
         return hmac.compare_digest(expected_core, signature[:64])
 
