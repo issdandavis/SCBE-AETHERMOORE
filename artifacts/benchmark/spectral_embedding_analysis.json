@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-03-23T20:42:37Z",
+  "corpus_size": 12,
+  "telescopes": {
+    "Amplitude": 0.6057,
+    "Coherence": 0.5583,
+    "Frequency": 0.3895,
+    "Spin": 0.0588,
+    "Settling": 0.0256
+  }
+}

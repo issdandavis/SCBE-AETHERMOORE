@@ -1,0 +1,26 @@
+{
+  "euclidean": {
+    "avg_technical_flux": 1.8247,
+    "avg_adversarial_flux": 1.3163,
+    "avg_story_flux": 1.2796,
+    "traces": 5
+  },
+  "tongue": {
+    "avg_technical_flux": 19.6321,
+    "avg_adversarial_flux": 8.3774,
+    "avg_story_flux": 9.1568,
+    "traces": 5
+  },
+  "dual": {
+    "avg_technical_flux": 19.6321,
+    "avg_adversarial_flux": 8.3774,
+    "avg_story_flux": 9.1568,
+    "traces": 5
+  },
+  "21d": {
+    "avg_technical_flux": 19.6321,
+    "avg_adversarial_flux": 8.3774,
+    "avg_story_flux": 9.1568,
+    "traces": 5
+  }
+}
