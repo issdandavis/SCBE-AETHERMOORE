@@ -1,0 +1,8 @@
+{
+  "name": "hydra-spiral-search",
+  "version": "1.0.0",
+  "description": "6-tongue deep research across 8 waters of the cyber world + skill combo stacks + terminal mesh + headless browser swarm",
+  "skills": ["skills/*.md"],
+  "commands": ["commands/*.md"],
+  "agents": ["agents/*.md"]
+}
