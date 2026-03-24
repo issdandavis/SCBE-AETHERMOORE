@@ -85,27 +85,71 @@ class Ledger:
         db_path: str = None,
         session_id: str = None
     ):
-        if db_path is None:
-            db_path = os.environ.get("HYDRA_LEDGER_DB")
-        if db_path is None:
-            hydra_home = os.environ.get("HYDRA_HOME")
-            if hydra_home:
-                db_path = os.path.join(hydra_home, "ledger.db")
-            else:
-                hydra_home = os.path.join(os.path.expanduser("~"), ".hydra")
-                db_path = os.path.join(hydra_home, "ledger.db")
-
-        resolved_db_path = os.path.abspath(db_path)
-        db_dir = os.path.dirname(resolved_db_path)
-        if db_dir:
-            os.makedirs(db_dir, exist_ok=True)
-
-        self.db_path = resolved_db_path
+        self.db_path = self._resolve_db_path(db_path)
         self.session_id = session_id or self._generate_session_id()
         self._lock = threading.Lock()
         self._secret = hashlib.sha256(f"hydra:{self.session_id}".encode()).hexdigest()
 
         self._init_db()
+
+    # ------------------------------------------------------------------
+    # Path resolution helpers (CI / sandbox safety)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _repo_fallback_db() -> str:
+        """Return a repo-local fallback path for the ledger DB."""
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        return os.path.join(repo_root, "artifacts", "runtime", "hydra", "ledger.db")
+
+    @staticmethod
+    def _default_db_path() -> str:
+        """Return the user's preferred DB path from env or ~/.hydra/."""
+        env_path = os.environ.get("HYDRA_LEDGER_DB")
+        if env_path:
+            return env_path
+        hydra_home = os.environ.get("HYDRA_HOME")
+        if hydra_home:
+            return os.path.join(hydra_home, "ledger.db")
+        return os.path.join(os.path.expanduser("~"), ".hydra", "ledger.db")
+
+    @staticmethod
+    def _can_write_path(directory: str) -> bool:
+        """Probe whether *directory* is writable by creating a temp file."""
+        try:
+            os.makedirs(directory, exist_ok=True)
+            probe = os.path.join(directory, ".hydra_write_probe")
+            with open(probe, "w") as f:
+                f.write("ok")
+            os.remove(probe)
+            return True
+        except OSError:
+            return False
+
+    @classmethod
+    def _resolve_db_path(cls, requested: str = None) -> str:
+        """Resolve to the requested path, falling back to repo-local if unwritable."""
+        path = os.path.abspath(requested) if requested else cls._default_db_path()
+        path = os.path.abspath(path)
+        db_dir = os.path.dirname(path)
+        if cls._can_write_path(db_dir):
+            return path
+        fallback = cls._repo_fallback_db()
+        fb_dir = os.path.dirname(fallback)
+        os.makedirs(fb_dir, exist_ok=True)
+        return fallback
+
+    def _connect(self) -> sqlite3.Connection:
+        """Open a SQLite connection with readonly-recovery fallback."""
+        try:
+            return sqlite3.connect(self.db_path)
+        except sqlite3.OperationalError as exc:
+            msg = str(exc).lower()
+            if "readonly" in msg or "unable to open" in msg:
+                self.db_path = self._repo_fallback_db()
+                os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+                return sqlite3.connect(self.db_path)
+            raise
 
     def _generate_session_id(self) -> str:
         """Generate unique session ID."""
@@ -116,7 +160,7 @@ class Ledger:
     def _init_db(self) -> None:
         """Initialize database schema."""
         with self._lock:
-            conn = sqlite3.connect(self.db_path)
+            conn = self._connect()
             cursor = conn.cursor()
 
             # Main ledger table
@@ -200,7 +244,7 @@ class Ledger:
 
     def _get_conn(self) -> sqlite3.Connection:
         """Get database connection."""
-        conn = sqlite3.connect(self.db_path)
+        conn = self._connect()
         conn.row_factory = sqlite3.Row
         return conn
 
