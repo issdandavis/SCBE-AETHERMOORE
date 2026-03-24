@@ -292,9 +292,15 @@ describe('Video Generator', () => {
         errorBound: 2,
       });
 
-      expect(publicKey[0].every((coeff) => Number.isInteger(coeff) && coeff >= 0 && coeff < 97)).toBe(true);
-      expect(publicKey[1].every((coeff) => Number.isInteger(coeff) && coeff >= 0 && coeff < 97)).toBe(true);
-      expect(secretKey.every((coeff) => Number.isInteger(coeff) && coeff >= -2 && coeff <= 2)).toBe(true);
+      expect(
+        publicKey[0].every((coeff) => Number.isInteger(coeff) && coeff >= 0 && coeff < 97)
+      ).toBe(true);
+      expect(
+        publicKey[1].every((coeff) => Number.isInteger(coeff) && coeff >= 0 && coeff < 97)
+      ).toBe(true);
+      expect(secretKey.every((coeff) => Number.isInteger(coeff) && coeff >= -2 && coeff <= 2)).toBe(
+        true
+      );
     });
 
     it('should create watermark chain', () => {
