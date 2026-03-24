@@ -21,13 +21,12 @@ from __future__ import annotations
 import math
 import numpy as np
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple, Any
-from enum import Enum
+from typing import Dict, List, Optional, Any
 
 # Spiralverse imports
 try:
-    from ...spiralverse.vector_6d import Position6D, Axis, AXIS_INFO
-    from ...spiralverse.aethercode import AetherContext, TongueID, TONGUE_DOMAINS
+    from ...spiralverse.vector_6d import Position6D
+    from ...spiralverse.aethercode import AetherContext
     SPIRALVERSE_AVAILABLE = True
 except ImportError:
     SPIRALVERSE_AVAILABLE = False

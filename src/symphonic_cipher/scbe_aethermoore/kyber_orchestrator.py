@@ -12,16 +12,14 @@ This is the production orchestrator for the complete SCBE system.
 
 import numpy as np
 import hashlib
-import hmac
 import time
 import os
 from typing import List, Dict, Tuple, Any, Optional
-from dataclasses import dataclass
 from enum import Enum
 
 # Import real PQC if available
 try:
-    from .pqc import Kyber768, Dilithium3, is_liboqs_available
+    from .pqc import Kyber768
 
     _PQC_AVAILABLE = True
 except ImportError:
@@ -29,7 +27,7 @@ except ImportError:
 
 # Import Quasicrystal if available
 try:
-    from .qc_lattice import QuasicrystalLattice, quick_validate
+    from .qc_lattice import QuasicrystalLattice
 
     _QC_AVAILABLE = True
 except ImportError:

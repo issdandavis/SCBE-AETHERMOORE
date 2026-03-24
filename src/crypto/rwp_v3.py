@@ -20,14 +20,12 @@ Dependencies:
 import os
 import secrets
 import hashlib
-from typing import Dict, List, Optional, Tuple, Any
-from dataclasses import dataclass, asdict
-import struct
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass
 import json
 
 # Crypto primitives
 try:
-    from argon2 import PasswordHasher
     from argon2.low_level import Type as Argon2Type, hash_secret_raw
 
     ARGON2_AVAILABLE = True
@@ -78,7 +76,7 @@ def _select_sig_algorithm() -> str:
 _KEM_ALG = _select_kem_algorithm()
 _SIG_ALG = _select_sig_algorithm()
 
-from .sacred_tongues import SACRED_TONGUE_TOKENIZER, SECTION_TONGUES
+from .sacred_tongues import SACRED_TONGUE_TOKENIZER
 
 # ============================================================
 # RFC 9106 ARGON2ID PARAMETERS (Production-grade)

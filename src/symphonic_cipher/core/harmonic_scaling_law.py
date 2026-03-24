@@ -10,7 +10,7 @@ Application: Cryptographic security scaling with super-exponential growth
 """
 
 import numpy as np
-from typing import Union, List
+from typing import List
 from dataclasses import dataclass
 
 

@@ -33,8 +33,6 @@ Integration:
 
 from __future__ import annotations
 
-import hashlib
-import math
 import time
 from dataclasses import dataclass, field
 from enum import Enum
@@ -44,12 +42,9 @@ import numpy as np
 
 from src.kernel.scattered_sphere import (
     ScatteredAttentionSphere,
-    LatticePoint,
-    BandResult,
     TONGUE_KEYS,
     TONGUE_LONGITUDES,
     TONGUE_WEIGHTS,
-    PHI,
 )
 
 

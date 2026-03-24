@@ -27,7 +27,7 @@ Research Validation:
 - Proof sketch: Generalized Poincaré metric supports κ ≠ -1 with scaled radius
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 import math
 import numpy as np

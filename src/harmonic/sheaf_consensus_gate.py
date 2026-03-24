@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 from pathlib import Path
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Tuple
 
 from .tarski_sheaf import (
     TemporalSheaf,

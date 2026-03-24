@@ -21,13 +21,12 @@ Federated: local embeddings + shared knowledge base.
 from __future__ import annotations
 
 import hashlib
-import json
 import math
 import os
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 import numpy as np
 

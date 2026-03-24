@@ -26,7 +26,7 @@ Patent Claims: A (phase+distance), E (drift auth), F (anti-replay chirp)
 from __future__ import annotations
 
 import numpy as np
-from typing import List, Tuple, Optional, Dict, Any, NamedTuple
+from typing import List, Optional, Dict, Any
 from dataclasses import dataclass, field
 
 # =============================================================================

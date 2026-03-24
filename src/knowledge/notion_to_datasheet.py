@@ -21,8 +21,8 @@ import sys
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.knowledge.funnel import KnowledgeFunnel, BASIN_ROOT
-from src.knowledge.scrapers.notion_scraper import scrape_workspace, categorize_page
+from src.knowledge.funnel import KnowledgeFunnel
+from src.knowledge.scrapers.notion_scraper import scrape_workspace
 from src.knowledge.tokenizer_graph.memory_chain import TokenizerGraph
 
 DATASHEET_DIR = PROJECT_ROOT / "training-data" / "datasheets"

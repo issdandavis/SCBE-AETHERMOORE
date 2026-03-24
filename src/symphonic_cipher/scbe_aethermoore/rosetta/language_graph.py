@@ -8,7 +8,7 @@ as a weighted graph with shortest-path and similarity queries.
 from __future__ import annotations
 
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 import heapq
 

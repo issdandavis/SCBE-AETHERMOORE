@@ -11,7 +11,7 @@ Transposes stellar frequencies to audible range via octave doubling
 """
 
 import numpy as np
-from typing import Tuple, List, Optional
+from typing import List, Optional
 from dataclasses import dataclass
 
 
@@ -79,7 +79,6 @@ class StellarOctaveMapping:
 
     def __init__(self):
         """Initialize Stellar Octave Mapping"""
-        pass
 
     def transpose(
         self, f_stellar: float, target_freq: Optional[float] = None

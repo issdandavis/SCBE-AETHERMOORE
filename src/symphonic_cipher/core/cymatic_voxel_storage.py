@@ -10,7 +10,7 @@ Application: Secure 6D data storage with vector-based access control
 """
 
 import numpy as np
-from typing import Tuple, Optional
+from typing import Tuple
 from dataclasses import dataclass
 
 

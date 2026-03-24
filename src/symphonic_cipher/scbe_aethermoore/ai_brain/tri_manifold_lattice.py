@@ -26,14 +26,13 @@ Mathematical Properties:
 import math
 import time
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 # Import from sibling modules
 from .unified_state import (
     BRAIN_DIMENSIONS,
     BRAIN_EPSILON,
-    PHI,
     hyperbolic_distance_safe,
     safe_poincare_embed,
     _vec_norm as vector_norm,

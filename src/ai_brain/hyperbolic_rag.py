@@ -11,14 +11,14 @@ k-NN search via hyperbolic distance (arcosh metric) with:
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import Dict, List, Literal, Optional, Tuple, Any
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Any
 
 import sys
 import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-from src.geoseal import hyperbolic_distance, phase_deviation, clamp_to_ball, TONGUE_PHASES
+from src.geoseal import hyperbolic_distance, phase_deviation, TONGUE_PHASES
 
 
 # ---------------------------------------------------------------------------

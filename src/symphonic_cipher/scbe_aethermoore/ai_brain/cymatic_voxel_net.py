@@ -27,8 +27,8 @@ Architecture:
 
 import math
 import random
-from dataclasses import dataclass, field
-from typing import Dict, List, Literal, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, List, Literal, Optional
 
 from .unified_state import BRAIN_EPSILON, PHI
 from .tri_manifold_lattice import harmonic_scale, HARMONIC_R

@@ -43,10 +43,9 @@ everything axiom-safe with Layer 11 (Triadic Temporal) and CPSE z-vector tests.
 import math
 import time
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Tuple
 from enum import Enum
 from collections import deque
-import hashlib
 
 
 # =============================================================================

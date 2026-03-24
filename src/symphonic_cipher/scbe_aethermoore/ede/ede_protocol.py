@@ -27,14 +27,12 @@ import hmac
 import struct
 import time
 from dataclasses import dataclass, field
-from typing import Optional, Tuple, Dict, Any, List
+from typing import Optional, Tuple, Dict, Any
 from enum import Enum
 
 from .spiral_ring import (
     SpiralRing,
     RingConfig,
-    SynchronizedRingPair,
-    mars_light_delay,
     MARS_LIGHT_TIME_MIN,
     MARS_LIGHT_TIME_MAX,
     LIGHT_SPEED,
@@ -42,7 +40,7 @@ from .spiral_ring import (
 
 # Import PQC for quantum resistance
 try:
-    from ..pqc import Kyber768, Dilithium3
+    pass
 
     PQC_AVAILABLE = True
 except ImportError:

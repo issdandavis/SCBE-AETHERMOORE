@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import math
 import cmath
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Tuple, Optional, Dict, Any, NamedTuple
 
 from .constants import (
@@ -26,10 +26,7 @@ from .constants import (
     C_LIGHT,
     DEFAULT_L,
     DEFAULT_TOLERANCE,
-    DEFAULT_R,
     harmonic_scale,
-    harmonic_distance,
-    CONSTANTS,
 )
 
 

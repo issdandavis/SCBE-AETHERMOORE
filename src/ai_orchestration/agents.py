@@ -18,10 +18,8 @@ Version: 1.0.0
 """
 
 import uuid
-import time
 import json
-import hashlib
-from typing import Dict, List, Optional, Any, Callable, Set
+from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime
@@ -185,7 +183,6 @@ class Agent(ABC):
     @abstractmethod
     async def process_task(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
         """Process a task. Must be implemented by subclasses."""
-        pass
 
     def get_status(self) -> Dict[str, Any]:
         """Get agent status."""

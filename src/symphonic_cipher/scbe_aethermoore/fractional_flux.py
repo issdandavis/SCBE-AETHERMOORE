@@ -44,7 +44,7 @@ try:
     from scipy.integrate import solve_ivp
 except ImportError:
     from ._scipy_compat import solve_ivp
-from typing import Tuple, Dict, Any, Optional, List, Callable
+from typing import Tuple, Dict, Any, Optional, List
 from enum import Enum
 
 # =============================================================================

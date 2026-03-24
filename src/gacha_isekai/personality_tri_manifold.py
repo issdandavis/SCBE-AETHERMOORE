@@ -88,8 +88,6 @@ Layers:
 from __future__ import annotations
 
 import logging
-import math
-import struct
 import time
 from dataclasses import dataclass, field
 from enum import IntEnum
@@ -101,9 +99,6 @@ import numpy as np
 from src.gacha_isekai.evolution import compute_rho_e
 from src.gacha_isekai.personality_manifold import (
     DIM,
-    PHI,
-    TONGUE_WEIGHTS,
-    PersonalityFacet,
     PersonalityManifold,
     _hyperbolic_distance,
     _mobius_add,
@@ -113,7 +108,6 @@ from src.gacha_isekai.personality_cluster_lattice import (
     PersonalityCluster,
     DriftEvent,
     tongue_bracket,
-    compute_personality_watermark,
     validate_personality_provenance,
 )
 from src.symphonic_cipher.scbe_aethermoore.trinary import (
@@ -121,9 +115,7 @@ from src.symphonic_cipher.scbe_aethermoore.trinary import (
     Trit,
     trit_and,
     trit_or,
-    trit_not,
     trit_consensus,
-    decision_to_trit,
     trit_to_decision,
 )
 

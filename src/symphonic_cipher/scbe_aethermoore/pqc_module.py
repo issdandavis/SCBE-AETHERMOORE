@@ -50,47 +50,39 @@ class KEMInterface(ABC):
     @abstractmethod
     def keygen(self) -> Tuple[bytes, bytes]:
         """Generate keypair (public_key, secret_key)."""
-        pass
 
     @abstractmethod
     def encaps(self, public_key: bytes) -> Tuple[bytes, bytes]:
         """Encapsulate: returns (shared_secret, ciphertext)."""
-        pass
 
     @abstractmethod
     def decaps(self, secret_key: bytes, ciphertext: bytes) -> bytes:
         """Decapsulate: returns shared_secret."""
-        pass
 
     @property
     @abstractmethod
     def name(self) -> str:
         """Algorithm name."""
-        pass
 
     @property
     @abstractmethod
     def public_key_size(self) -> int:
         """Size of public key in bytes."""
-        pass
 
     @property
     @abstractmethod
     def secret_key_size(self) -> int:
         """Size of secret key in bytes."""
-        pass
 
     @property
     @abstractmethod
     def ciphertext_size(self) -> int:
         """Size of ciphertext in bytes."""
-        pass
 
     @property
     @abstractmethod
     def shared_secret_size(self) -> int:
         """Size of shared secret in bytes."""
-        pass
 
 
 class SignatureInterface(ABC):
@@ -99,23 +91,19 @@ class SignatureInterface(ABC):
     @abstractmethod
     def keygen(self) -> Tuple[bytes, bytes]:
         """Generate keypair (public_key, secret_key)."""
-        pass
 
     @abstractmethod
     def sign(self, secret_key: bytes, message: bytes) -> bytes:
         """Sign message, returns signature."""
-        pass
 
     @abstractmethod
     def verify(self, public_key: bytes, message: bytes, signature: bytes) -> bool:
         """Verify signature, returns True if valid."""
-        pass
 
     @property
     @abstractmethod
     def name(self) -> str:
         """Algorithm name."""
-        pass
 
 
 # =============================================================================

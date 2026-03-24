@@ -14,8 +14,7 @@ Based on established wave physics.
 """
 
 import math
-from typing import Dict, Any, Tuple, Optional, List
-from dataclasses import dataclass
+from typing import Dict, Any, Tuple
 
 # =============================================================================
 # CONSTANTS

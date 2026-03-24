@@ -11,7 +11,6 @@ from typing import Tuple
 # Try to use PyCryptodome, fall back to cryptography
 try:
     from Crypto.Cipher import AES
-    from Crypto.Random import get_random_bytes
 
     CRYPTO_BACKEND = "pycryptodome"
 except ImportError:

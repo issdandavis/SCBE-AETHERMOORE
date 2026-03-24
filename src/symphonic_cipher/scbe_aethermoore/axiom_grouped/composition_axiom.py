@@ -29,9 +29,6 @@ from typing import (
     Tuple,
     List,
     Dict,
-    Generic,
-    Union,
-    Protocol,
 )
 from dataclasses import dataclass, field
 from enum import Enum
@@ -52,7 +49,6 @@ CARRIER_FREQ = 440.0  # Hz (concert A)
 class CompositionViolation(Exception):
     """Raised when layer composition rules are violated."""
 
-    pass
 
 
 class LayerType(Enum):

@@ -14,7 +14,7 @@ Each stage is a deterministic, mathematically defined transform.
 """
 
 import numpy as np
-from typing import Optional, Tuple, List, Union
+from typing import Optional, Tuple, List
 from dataclasses import dataclass
 from enum import Enum
 

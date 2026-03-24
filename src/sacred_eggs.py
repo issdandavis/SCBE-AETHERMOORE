@@ -16,7 +16,7 @@ import base64
 import hashlib
 import os
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, Optional, Tuple
 
 _GOOD_NOISE = b"fail-to-noise"
 

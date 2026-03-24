@@ -13,9 +13,7 @@ from .core import (
     thermodynamics,
     relativity,
     lambda_handler,
-    PLANCK,
     C,
-    G,
     ELECTRON_MASS,
     ELEMENTARY_CHARGE,
 )

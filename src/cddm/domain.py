@@ -15,13 +15,11 @@ Domains are the objects in our category. Morphisms are the arrows.
 
 from __future__ import annotations
 
-import math
 from typing import Tuple
 
 
 class DomainError(Exception):
     """Raised when domain validation fails."""
-    pass
 
 
 class Domain:

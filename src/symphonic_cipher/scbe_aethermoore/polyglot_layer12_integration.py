@@ -25,15 +25,13 @@ import hashlib
 import math
 import numpy as np
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple, Any, Set
+from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
 
 # Polyglot imports
 try:
     from ...spiralverse.polyglot_alphabet import (
-        TongueID, TongueAlphabet, TONGUE_ALPHABETS,
-        SIGNATURE_TO_TONGUE, compose_polyglot_message,
-        decompose_polyglot_message, identify_tongue
+        TongueID, TONGUE_ALPHABETS
     )
     POLYGLOT_AVAILABLE = True
 except ImportError:

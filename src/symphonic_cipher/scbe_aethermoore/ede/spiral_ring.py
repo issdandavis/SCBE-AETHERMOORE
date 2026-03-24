@@ -29,10 +29,7 @@ from enum import Enum
 from ..constants import (
     PHI,
     R_FIFTH,
-    PHI_AETHER,
-    LAMBDA_ISAAC,
     harmonic_scale,
-    DEFAULT_R,
 )
 
 

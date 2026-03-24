@@ -20,7 +20,7 @@ import time
 import hashlib
 import numpy as np
 from dataclasses import dataclass
-from typing import List, Tuple, Dict, Any
+from typing import List, Dict, Any
 
 # =============================================================================
 # TEST CONFIGURATION

@@ -17,8 +17,7 @@ and VF2-lite isomorphism directly.
 
 from __future__ import annotations
 
-import itertools
-from typing import Callable, Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from .domain import Domain
 from .morphism import Morphism, MorphismError

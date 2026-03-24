@@ -21,7 +21,7 @@ import math
 import random
 import time
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple, Dict, Any, Callable
+from typing import List, Tuple, Dict, Any
 from enum import Enum
 
 # Import AETHERMOORE constants
@@ -29,7 +29,6 @@ from ..constants import (
     PHI,
     R_FIFTH,
     harmonic_scale,
-    DEFAULT_R,
 )
 
 

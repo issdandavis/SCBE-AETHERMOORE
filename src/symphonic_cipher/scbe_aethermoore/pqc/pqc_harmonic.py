@@ -21,23 +21,19 @@ from __future__ import annotations
 import hashlib
 import math
 import secrets
-from dataclasses import dataclass, field
-from typing import Optional, Tuple, List, Dict, Any
+from dataclasses import dataclass
+from typing import Optional, Tuple, Dict, Any
 from enum import Enum
 
 # Import AETHERMOORE constants
 from ..constants import (
-    PHI,
-    R_FIFTH,
     PHI_AETHER,
     LAMBDA_ISAAC,
     OMEGA_SPIRAL,
     DEFAULT_R,
     DEFAULT_D_MAX,
-    DEFAULT_BASE_BITS,
     harmonic_scale,
     security_bits,
-    security_level,
     harmonic_distance,
 )
 
@@ -45,10 +41,8 @@ from ..constants import (
 from .pqc_core import (
     Kyber768,
     KyberKeyPair,
-    EncapsulationResult,
     Dilithium3,
     DilithiumKeyPair,
-    derive_hybrid_key,
 )
 
 

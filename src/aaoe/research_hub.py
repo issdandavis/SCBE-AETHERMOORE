@@ -24,22 +24,20 @@ arXiv API: https://info.arxiv.org/help/api/index.html
 
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import os
 import time
-import uuid
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 from urllib.parse import quote_plus
 from urllib.request import Request, urlopen
 from urllib.error import URLError
 
-from .task_monitor import PHI, hyperbolic_distance, IntentVector
+from .task_monitor import PHI, hyperbolic_distance
 
 
 # ---------------------------------------------------------------------------

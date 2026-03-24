@@ -27,19 +27,11 @@ import hashlib
 import struct
 import time
 from dataclasses import dataclass, field
-from typing import Optional, Tuple, Dict, Any, Union
+from typing import Optional, Tuple, Dict, Any
 from enum import Enum
 
 from .sacred_tongues import (
-    SacredTongue,
-    SacredTongueTokenizer,
-    Token,
-    TONGUE_WORDLISTS,
-    DOMAIN_TONGUE_MAP,
-    get_tongue_for_domain,
     get_tokenizer,
-    get_combined_alphabet,
-    get_magical_signature,
 )
 
 
@@ -63,7 +55,6 @@ except (ImportError, Exception):
 
 # Argon2 (preferred KDF)
 try:
-    import argon2
     from argon2.low_level import hash_secret_raw, Type
 
     _ARGON2_AVAILABLE = True
@@ -1070,7 +1061,7 @@ class SpiralSealSS1:
         # Check PQC availability
         pqc_available = False
         try:
-            from ..pqc import Kyber768, Dilithium3
+            pass
 
             pqc_available = True
         except ImportError:

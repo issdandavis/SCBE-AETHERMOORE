@@ -25,9 +25,7 @@ from __future__ import annotations
 
 import json
 import time
-import uuid
 from typing import Any, Dict, List, Optional
-from urllib.parse import urljoin
 
 import httpx
 

@@ -26,14 +26,13 @@ Integration points:
 
 from __future__ import annotations
 
-import math
 import time
 import uuid
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional
 
-from .trinary import BalancedTernary, Trit, decision_to_trit
+from .trinary import BalancedTernary
 
 
 # ---------------------------------------------------------------------------

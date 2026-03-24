@@ -24,12 +24,10 @@ Usage:
     plaintext = ss.unseal(sealed, aad="service=openai;env=prod")
 """
 
-import os
-import hashlib
-from typing import Dict, Optional, Tuple
+from typing import Optional
 from dataclasses import dataclass
 
-from .key_exchange import kyber_keygen, kyber_encaps, kyber_decaps, get_pqc_status
+from .key_exchange import kyber_keygen, kyber_encaps, get_pqc_status
 from .signatures import (
     dilithium_keygen,
     dilithium_sign,
@@ -41,14 +39,10 @@ from .utils import (
     aes_gcm_decrypt,
     derive_key,
     get_random,
-    sha256,
-    sha256_hex,
 )
 from .sacred_tongues import (
     format_ss1_blob,
     parse_ss1_blob,
-    encode_to_spelltext,
-    decode_from_spelltext,
 )
 
 

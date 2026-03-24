@@ -16,14 +16,12 @@ All visualizations respect hyperbolic geometry:
 
 import sys
 import numpy as np
-from typing import List, Tuple, Optional, Dict, Any
-from datetime import datetime
+from typing import List, Tuple, Dict, Any
 
 # Try to import matplotlib (optional for headless systems)
 try:
     import matplotlib.pyplot as plt
     from matplotlib.patches import Circle
-    from mpl_toolkits.mplot3d import Axes3D
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False

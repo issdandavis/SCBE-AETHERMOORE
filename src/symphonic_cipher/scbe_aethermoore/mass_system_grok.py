@@ -26,7 +26,7 @@ import hmac
 import os
 import time
 from dataclasses import dataclass
-from typing import Tuple, List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 import numpy as np
 

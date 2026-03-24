@@ -29,24 +29,19 @@ Features:
 "Invitation over Command, Connection over Control"
 """
 
-import asyncio
 import hashlib
 import re
 import struct
 import numpy as np
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Any, Callable, Set
-from enum import Enum
+from typing import Dict, List, Optional, Tuple, Any, Set
 from datetime import datetime, timezone
-import io
-import os
 
 # Internal imports
 from .polyglot_alphabet import (
-    TongueID, TONGUE_ALPHABETS, SIGNATURE_TO_TONGUE,
-    compose_polyglot_message, decompose_polyglot_message
+    TongueID, TONGUE_ALPHABETS, SIGNATURE_TO_TONGUE
 )
-from .vector_6d import Position6D, euclidean_distance_6d
+from .vector_6d import Position6D
 from .rwp2_envelope import (
     ProtocolTongue, RWP2Envelope, EnvelopeFactory,
     OperationTier, TONGUE_KEYS
