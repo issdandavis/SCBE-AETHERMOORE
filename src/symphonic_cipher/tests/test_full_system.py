@@ -66,7 +66,7 @@ class TestSCBEFullSystem:
         system = SCBEFullSystem()
 
         # Cold start
-        r1 = system.evaluate_intent("user", "action1")
+        system.evaluate_intent("user", "action1")
 
         # Subsequent - should have entropy zone classification
         r2 = system.evaluate_intent("user", "action2")
@@ -232,8 +232,8 @@ class TestIntegration:
         assert r1.decision == GovernanceDecision.ALLOW
 
         # 2. Normal operations
-        r2 = system.evaluate_intent("alice", "read_document")
-        r3 = system.evaluate_intent("alice", "write_document")
+        system.evaluate_intent("alice", "read_document")
+        system.evaluate_intent("alice", "write_document")
 
         # 3. Check audit chain
         assert system.verify_audit_chain()

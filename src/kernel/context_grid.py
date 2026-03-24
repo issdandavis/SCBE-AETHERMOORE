@@ -509,14 +509,6 @@ class FederatedContextGrid:
             )
         context_str = "\n\n".join(context_parts)
 
-        prompt = (
-            f"You are an AI agent operating within the SCBE-AETHERMOORE sphere grid. "
-            f"Answer the question using ONLY the retrieved context below.\n\n"
-            f"## Retrieved Context\n\n{context_str}\n\n"
-            f"## Question\n\n{query}\n\n"
-            f"## Answer\n\n"
-        )
-
         client = InferenceClient(token=token)
         try:
             response = client.chat_completion(

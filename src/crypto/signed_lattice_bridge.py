@@ -242,7 +242,7 @@ class SignedLatticeBridge:
             posture = SecurityPosture.POLLY
 
         # Step 4: Convert to lattice and govern
-        lattice_vec = self.context_to_lattice(context, posture)
+        self.context_to_lattice(context, posture)
 
         # Adjust sensitivity based on polarity
         # Shadow-dominant = higher sensitivity (more scrutiny)

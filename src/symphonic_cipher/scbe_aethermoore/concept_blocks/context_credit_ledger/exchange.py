@@ -360,7 +360,7 @@ class ComputeExchange:
 
         # Unlock and retrieve credits
         try:
-            credit_data = vault.unlock(owner_id=tx.offer.offerer_id)
+            vault.unlock(owner_id=tx.offer.offerer_id)
         except (PermissionError, ValueError):
             tx.state = ExchangeState.DISPUTED
             return

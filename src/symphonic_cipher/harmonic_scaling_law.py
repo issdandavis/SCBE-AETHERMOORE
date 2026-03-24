@@ -2801,7 +2801,7 @@ class DifferentialCryptographyFramework:
         h = 1e-5
         hessian = np.zeros((n, n))
 
-        omega_0 = guscf.compute_omega(theta, langues_r)
+        guscf.compute_omega(theta, langues_r)
 
         for i in range(n):
             for j in range(i, n):

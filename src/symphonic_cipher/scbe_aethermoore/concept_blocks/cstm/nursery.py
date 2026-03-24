@@ -111,7 +111,7 @@ class Cohort:
         pairs = 0
         for i in range(n):
             for j in range(i + 1, n):
-                vi = active[i].agent.personality.vector
+                _ = active[i].agent.personality.vector
                 vj = active[j].agent.personality.vector
                 total_dist += active[i].agent.personality.cosine_distance_from(vj)
                 pairs += 1
@@ -252,7 +252,7 @@ class GraduationCriteria:
         Safety = H(d, pd) where d = deviation from center,
         pd = proportion of risky choices.
         """
-        pv = record.agent.personality.vector
+        _ = record.agent.personality.vector
         # d = cosine distance from center (0.5 in all dims)
         center = [0.5] * 21
         d = record.agent.personality.cosine_distance_from(center)

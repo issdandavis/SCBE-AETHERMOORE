@@ -463,7 +463,7 @@ def test_langues_metric() -> Dict[str, Any]:
 
     # Test coupling effects (r=0 should give baseline)
     r_zero = np.zeros(6)
-    G_L_zero = build_langues_metric_tensor(r_zero)
+    _ = build_langues_metric_tensor(r_zero)
     G_0 = np.diag([1, 1, 1, PHI, PHI**2, PHI**3])
 
     # With r=0 and ε→0, should approach G_0

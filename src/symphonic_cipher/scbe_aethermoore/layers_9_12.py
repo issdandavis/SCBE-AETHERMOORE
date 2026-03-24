@@ -142,7 +142,7 @@ def spectral_stability(
         return analysis.s_spec
 
     # Cross-spectral coherence
-    ref_analysis = compute_spectral_coherence(reference)
+    compute_spectral_coherence(reference)
 
     fft1 = np.fft.rfft(signal)
     fft2 = np.fft.rfft(reference)
@@ -533,7 +533,6 @@ def risk_gradient(
     )
 
     # Numerical gradient (small perturbation)
-    eps = 1e-6
     gradients = {}
 
     for name, val, w in [

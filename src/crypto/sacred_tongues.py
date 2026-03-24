@@ -443,7 +443,6 @@ class SacredTongueTokenizer:
         Layer 9 spectral validation: Check if tokens match expected tongue signature.
         """
         tongue_code = SECTION_TONGUES[section]
-        spec = self.tongues[tongue_code]
 
         # All tokens must exist in tongue vocabulary
         valid_tokens = set(self.byte_to_token[tongue_code])

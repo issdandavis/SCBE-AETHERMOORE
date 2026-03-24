@@ -277,7 +277,7 @@ def verify_flux_sensitivity() -> bool:
 
     # Steady tone
     tone = [math.sin(2 * math.pi * 440 * i / 44100) for i in range(N_FFT)]
-    f1 = axis.process_frame(tone)
+    axis.process_frame(tone)
     f2 = axis.process_frame(tone)  # Same signal
 
     # Sudden change

@@ -281,8 +281,6 @@ class SymphonicGovernor:
         Modulates at the transposed solar p-mode frequency.
         Returns a factor in [1 - depth, 1 + depth].
         """
-        # Transpose 3mHz to audible range via octave doubling
-        n_octaves = math.log2(STELLAR_OCTAVE_TARGET / SUN_P_MODE_HZ)
         # Use the slow envelope (not the audible frequency)
         envelope = math.sin(TAU * SUN_P_MODE_HZ * t * (2**16))
         return 1.0 + STELLAR_MODULATION_DEPTH * envelope
