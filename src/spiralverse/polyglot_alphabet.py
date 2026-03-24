@@ -473,7 +473,7 @@ def demo():
     print("[ENCODE] Single-tongue message (AXIOM):")
     sdk = PolyglotSDK()
     msg1 = sdk.encode("HELLO", [TongueID.AXIOM])
-    print(f"  Input:  'HELLO'")
+    print("  Input:  'HELLO'")
     print(f"  Output: '{msg1}'")
     print(f"  Decode: '{sdk.decode(msg1)}'")
     print()
@@ -482,7 +482,7 @@ def demo():
     print("[ENCODE] Multi-tongue message (AXIOM + CHARM + LEDGER):")
     tongues = [TongueID.AXIOM, TongueID.CHARM, TongueID.LEDGER]
     msg2 = sdk.encode("SECRET", tongues)
-    print(f"  Input:   'SECRET'")
+    print("  Input:   'SECRET'")
     print(f"  Tongues: {[t.value for t in tongues]}")
     print(f"  Output:  '{msg2}'")
     print(f"  Decode:  '{sdk.decode(msg2)}'")

@@ -559,7 +559,7 @@ if __name__ == "__main__":
         polarity='balanced'
     )
     neighbors = octree.find_spectral_neighbors(target, max_distance=0.8, max_results=5)
-    print(f"    Target: centroid=450Hz, dominant=440Hz, polarity=balanced")
+    print("    Target: centroid=450Hz, dominant=440Hz, polarity=balanced")
     print(f"    Found {len(neighbors)} spectral neighbors:")
     for pos, voxel, dist in neighbors:
         print(f"      - pos={pos.round(2)}, centroid={voxel.spectral_centroid:.0f}Hz, dist={dist:.3f}")

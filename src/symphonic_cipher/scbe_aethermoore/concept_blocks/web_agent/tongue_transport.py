@@ -31,6 +31,7 @@ from typing import Any, Dict, List, Optional
 # Walk up from this file until we find six-tongues-cli.py
 import importlib.util as _ilu
 
+
 def _find_cli():
     """Search upward for six-tongues-cli.py."""
     d = os.path.dirname(os.path.abspath(__file__))
@@ -43,6 +44,7 @@ def _find_cli():
             break
         d = parent
     raise FileNotFoundError("Cannot find six-tongues-cli.py in any parent directory")
+
 
 _cli_path = _find_cli()
 _cli_spec = _ilu.spec_from_file_location("six_tongues_cli", _cli_path)
@@ -65,22 +67,21 @@ from .buffer_integration import (
     PostContent,
 )
 
-
 # ---------------------------------------------------------------------------
 #  Tongue encoding modes
 # ---------------------------------------------------------------------------
 
 TONGUE_PLATFORM_MAP: Dict[str, str] = {
     # Default tongue per platform (domain separation)
-    "twitter": "KO",     # Flow/intent — short posts
-    "linkedin": "AV",    # Diplomacy/context — professional
-    "bluesky": "RU",     # Binding — decentralized protocol
-    "mastodon": "CA",    # Bitcraft — federated tech
-    "wordpress": "DR",   # Structure — long-form
-    "medium": "DR",      # Structure — articles
-    "github": "CA",      # Bitcraft — code
-    "huggingface": "UM", # Veil — model cards
-    "custom": "KO",      # Default
+    "twitter": "KO",  # Flow/intent — short posts
+    "linkedin": "AV",  # Diplomacy/context — professional
+    "bluesky": "RU",  # Binding — decentralized protocol
+    "mastodon": "CA",  # Bitcraft — federated tech
+    "wordpress": "DR",  # Structure — long-form
+    "medium": "DR",  # Structure — articles
+    "github": "CA",  # Bitcraft — code
+    "huggingface": "UM",  # Veil — model cards
+    "custom": "KO",  # Default
 }
 
 
@@ -99,6 +100,7 @@ class TongueEnvelope:
 # ---------------------------------------------------------------------------
 #  TongueTransport — encode/decode/seal messages
 # ---------------------------------------------------------------------------
+
 
 class TongueTransport:
     """
@@ -167,10 +169,13 @@ class TongueTransport:
         """Cross-translate tokens from one tongue to another."""
         src, dst = src.upper(), dst.upper()
         out_tokens, attest = self._xtok.retokenize(
-            src, dst, token_text,
+            src,
+            dst,
+            token_text,
             attest_key=attest_key or b"scbe-transport",
         )
         import dataclasses as dc
+
         return TongueEnvelope(
             tongue=dst,
             tokens=out_tokens,

@@ -139,7 +139,7 @@ def pull_notion_to_datasheet(
     stats["datasheet_rows"] = len(rows)
 
     print(f"\n{'=' * 60}")
-    print(f"DATASHEET STATS:")
+    print("DATASHEET STATS:")
     print(f"  Rows:        {len(rows)}")
     print(f"  Categories:  {len(set(r['category'] for r in rows))}")
     print(f"  Graph nodes: {stats['graph_nodes']}")

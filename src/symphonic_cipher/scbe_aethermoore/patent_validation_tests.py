@@ -766,35 +766,35 @@ if __name__ == "__main__":
 
     # Test 1 details
     t1 = results["tests"]["Chaos Sensitivity"]
-    print(f"\nTest 1: Chaos Sensitivity")
+    print("\nTest 1: Chaos Sensitivity")
     print(f"  Δr = {t1['delta_r']} → divergence = {t1['divergence']:.4f}")
     print(f"  Amplification: {t1['amplification']:.0f}×")
     print(f"  Lyapunov estimate: λ ≈ {t1['lyapunov_estimate']:.2f}")
 
     # Test 2 details
     t2 = results["tests"]["Fractal Gate"]
-    print(f"\nTest 2: Fractal Gate")
+    print("\nTest 2: Fractal Gate")
     for name, basin in t2["basin_results"].items():
         status = "bounded" if basin["bounded"] else f"escaped@{basin['escape_iter']}"
         print(f"  {name}: {status}")
 
     # Test 3 details
     t3 = results["tests"]["Neural Energy"]
-    print(f"\nTest 3: Neural Energy")
+    print("\nTest 3: Neural Energy")
     print(f"  Trained avg energy: {t3['avg_trained_energy']:.4f}")
     print(f"  Novel energy: {t3['novel_energy']:.4f}")
     print(f"  Separation: {t3['energy_separation']:.4f}")
 
     # Test 4 details
     t4 = results["tests"]["Trajectory Coherence"]
-    print(f"\nTest 4: Trajectory Coherence")
+    print("\nTest 4: Trajectory Coherence")
     for name, res in t4["results"].items():
         status = "ACCEPT" if res["accepted"] else "REJECT"
         print(f"  {name}: d_geo={res['d_geo']:.3f} → {status}")
 
     # Test 5 details
     t5 = results["tests"]["Swarm Auto-Exclusion"]
-    print(f"\nTest 5: Swarm Auto-Exclusion")
+    print("\nTest 5: Swarm Auto-Exclusion")
     print(f"  Normal nodes final trust: {t5['final_normal_avg']:.3f}")
     print(f"  Rogue node final trust: {t5['final_rogue_trust']:.3f}")
     print(f"  Rogue excluded: {t5['rogue_excluded']}")

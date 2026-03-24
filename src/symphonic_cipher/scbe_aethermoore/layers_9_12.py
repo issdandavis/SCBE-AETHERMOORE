@@ -649,7 +649,7 @@ def self_test() -> Dict[str, Any]:
                     f"✓ PASS (tone={analysis.s_spec:.3f}, noise={noise_analysis.s_spec:.3f})"
                 )
             else:
-                results["spectral_bounds"] = f"✗ FAIL (tone should be more coherent)"
+                results["spectral_bounds"] = "✗ FAIL (tone should be more coherent)"
         else:
             results["spectral_bounds"] = "✗ FAIL (out of bounds)"
     except Exception as e:
@@ -673,7 +673,7 @@ def self_test() -> Dict[str, Any]:
                     f"✓ PASS (aligned={aligned_analysis.c_spin:.3f}, random={random_analysis.c_spin:.3f})"
                 )
             else:
-                results["spin_bounds"] = f"✗ FAIL (aligned should be more coherent)"
+                results["spin_bounds"] = "✗ FAIL (aligned should be more coherent)"
         else:
             results["spin_bounds"] = "✗ FAIL (out of bounds)"
     except Exception as e:
@@ -688,9 +688,9 @@ def self_test() -> Dict[str, Any]:
         diffs = np.diff(tri_values)
         if np.all(diffs >= -EPSILON):
             passed += 1
-            results["triadic_monotone"] = f"✓ PASS (d_tri monotonic in d_H)"
+            results["triadic_monotone"] = "✓ PASS (d_tri monotonic in d_H)"
         else:
-            results["triadic_monotone"] = f"✗ FAIL (not monotonic)"
+            results["triadic_monotone"] = "✗ FAIL (not monotonic)"
     except Exception as e:
         results["triadic_monotone"] = f"✗ FAIL ({e})"
 
@@ -705,9 +705,9 @@ def self_test() -> Dict[str, Any]:
         diffs = np.diff(risk_values)
         if np.all(diffs >= -EPSILON):
             passed += 1
-            results["risk_monotone_d"] = f"✓ PASS (R̂ monotonic in d*)"
+            results["risk_monotone_d"] = "✓ PASS (R̂ monotonic in d*)"
         else:
-            results["risk_monotone_d"] = f"✗ FAIL (not monotonic)"
+            results["risk_monotone_d"] = "✗ FAIL (not monotonic)"
     except Exception as e:
         results["risk_monotone_d"] = f"✗ FAIL ({e})"
 
@@ -720,9 +720,9 @@ def self_test() -> Dict[str, Any]:
         diffs = np.diff(risk_values)
         if np.all(diffs <= EPSILON):  # Should decrease
             passed += 1
-            results["risk_monotone_s"] = f"✓ PASS (R̂ decreasing in s_spec)"
+            results["risk_monotone_s"] = "✓ PASS (R̂ decreasing in s_spec)"
         else:
-            results["risk_monotone_s"] = f"✗ FAIL (not decreasing)"
+            results["risk_monotone_s"] = "✗ FAIL (not decreasing)"
     except Exception as e:
         results["risk_monotone_s"] = f"✗ FAIL ({e})"
 
@@ -741,7 +741,7 @@ def self_test() -> Dict[str, Any]:
                     f"✓ PASS (good={good_risk.r_hat:.3f}, bad={bad_risk.r_hat:.3f})"
                 )
             else:
-                results["risk_bounds"] = f"✗ FAIL (good should be less risky)"
+                results["risk_bounds"] = "✗ FAIL (good should be less risky)"
         else:
             results["risk_bounds"] = "✗ FAIL (out of bounds)"
     except Exception as e:
@@ -780,7 +780,7 @@ def self_test() -> Dict[str, Any]:
                 f"✓ PASS (Vertical Wall: H(0)={h0:.2f}, H(1)={h1:.2f}, H(2)={h2:.2f})"
             )
         else:
-            results["harmonic_scaling"] = f"✗ FAIL (H not matching exp(d*²))"
+            results["harmonic_scaling"] = "✗ FAIL (H not matching exp(d*²))"
     except Exception as e:
         results["harmonic_scaling"] = f"✗ FAIL ({e})"
 
@@ -830,7 +830,7 @@ def self_test() -> Dict[str, Any]:
             passed += 1
             results["no_false_allow"] = f"✓ PASS (bad signals → {bad_result.decision})"
         else:
-            results["no_false_allow"] = f"✗ FAIL (bad signals incorrectly ALLOWED)"
+            results["no_false_allow"] = "✗ FAIL (bad signals incorrectly ALLOWED)"
     except Exception as e:
         results["no_false_allow"] = f"✗ FAIL ({e})"
 

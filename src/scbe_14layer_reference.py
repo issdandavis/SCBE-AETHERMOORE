@@ -904,10 +904,10 @@ if __name__ == "__main__":
     print(f"\nDecision: {result['decision']}")
     print(f"Risk (base):  {result['risk_base']:.6f}")
     print(f"Risk (prime): {result['risk_prime']:.6f}")
-    print(f"\nCoherence Metrics:")
+    print("\nCoherence Metrics:")
     for k, v in result["coherence"].items():
         print(f"  {k}: {v:.6f}")
-    print(f"\nGeometry:")
+    print("\nGeometry:")
     for k, v in result["geometry"].items():
         print(f"  {k}: {v:.6f}")
 

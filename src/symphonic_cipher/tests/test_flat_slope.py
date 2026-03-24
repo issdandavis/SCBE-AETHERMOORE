@@ -24,7 +24,6 @@ from symphonic_cipher.flat_slope_encoder import (
     analyze_frequency_attack_resistance,
     compare_steep_vs_flat,
     # Data classes
-    HarmonicFingerprint,
     EncodedMessage,
     ModalityMask,
     # Constants

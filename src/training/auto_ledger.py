@@ -28,8 +28,6 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-
-
 # =============================================================================
 # Quality Thresholds
 # =============================================================================
@@ -45,13 +43,15 @@ DUPLICATE_HASH_SET: set[str] = set()
 # Curriculum Levels
 # =============================================================================
 
+
 class CurriculumLevel:
     """Progressive learning levels — the model advances through these."""
-    FOUNDATION = "foundation"    # Basic Q&A, simple governance
+
+    FOUNDATION = "foundation"  # Basic Q&A, simple governance
     PRACTITIONER = "practitioner"  # Multi-step tasks, tongue encoding
-    SPECIALIST = "specialist"    # Domain-specific (crypto, browser, lore)
-    ARCHITECT = "architect"      # System-level decisions, cross-domain
-    MASTER = "master"           # Novel situations, creative synthesis
+    SPECIALIST = "specialist"  # Domain-specific (crypto, browser, lore)
+    ARCHITECT = "architect"  # System-level decisions, cross-domain
+    MASTER = "master"  # Novel situations, creative synthesis
 
 
 # Complexity scoring keywords
@@ -80,9 +80,11 @@ TONGUE_DOMAIN_KEYWORDS = {
 # Data Entry (ledgered SFT pair)
 # =============================================================================
 
+
 @dataclass
 class LedgerEntry:
     """A fully audited, encoded SFT training pair."""
+
     instruction: str
     output: str
     label: str
@@ -129,14 +131,16 @@ class LedgerEntry:
     def to_full_dict(self) -> dict:
         """Full metadata for audit trail."""
         d = self.to_training_dict()
-        d.update({
-            "instruction_length": self.instruction_length,
-            "output_length": self.output_length,
-            "is_duplicate": self.is_duplicate,
-            "phdm_confidence": round(self.phdm_confidence, 3),
-            "tongue_scores": {k: round(v, 3) for k, v in self.tongue_scores.items()},
-            "source_file": self.source_file,
-        })
+        d.update(
+            {
+                "instruction_length": self.instruction_length,
+                "output_length": self.output_length,
+                "is_duplicate": self.is_duplicate,
+                "phdm_confidence": round(self.phdm_confidence, 3),
+                "tongue_scores": {k: round(v, 3) for k, v in self.tongue_scores.items()},
+                "source_file": self.source_file,
+            }
+        )
         return d
 
 
@@ -146,6 +150,7 @@ class LedgerEntry:
 
 _phdm_classifier = None
 
+
 def get_phdm_classifier():
     """Lazy-load PHDM classifier."""
     global _phdm_classifier
@@ -154,6 +159,7 @@ def get_phdm_classifier():
     if _phdm_classifier is None:
         try:
             from src.kernel.dual_core import PHDMClassifier
+
             _phdm_classifier = PHDMClassifier.from_hub()
         except Exception as e:
             print(f"[LEDGER] PHDM not available: {e}")
@@ -163,6 +169,7 @@ def get_phdm_classifier():
 # =============================================================================
 # Pipeline Steps
 # =============================================================================
+
 
 def audit_quality(instruction: str, output: str) -> tuple[float, list[str]]:
     """Step 1: Quality audit. Returns (score, issues)."""
@@ -269,8 +276,8 @@ def assign_curriculum(instruction: str, output: str) -> tuple[str, float]:
 # Main Pipeline
 # =============================================================================
 
-def process_pair(instruction: str, output: str, label: str = "general",
-                 source_file: str = "") -> LedgerEntry | None:
+
+def process_pair(instruction: str, output: str, label: str = "general", source_file: str = "") -> LedgerEntry | None:
     """Run a single SFT pair through the full pipeline."""
 
     # Step 1: Quality audit
@@ -373,10 +380,16 @@ def run_pipeline(sft_dir: Path | None = None, push_to_hf: bool = False) -> dict:
             f.write(json.dumps(entry.to_full_dict()) + "\n")
 
     # Per-curriculum splits
-    for level in [CurriculumLevel.FOUNDATION, CurriculumLevel.PRACTITIONER,
-                  CurriculumLevel.SPECIALIST, CurriculumLevel.ARCHITECT, CurriculumLevel.MASTER]:
-        level_entries = [e for e in all_entries if e.curriculum_level == level
-                        and e.quality_score >= 0.5 and not e.is_duplicate]
+    for level in [
+        CurriculumLevel.FOUNDATION,
+        CurriculumLevel.PRACTITIONER,
+        CurriculumLevel.SPECIALIST,
+        CurriculumLevel.ARCHITECT,
+        CurriculumLevel.MASTER,
+    ]:
+        level_entries = [
+            e for e in all_entries if e.curriculum_level == level and e.quality_score >= 0.5 and not e.is_duplicate
+        ]
         if level_entries:
             level_file = out_dir / f"sft_{level}.jsonl"
             with open(level_file, "w", encoding="utf-8") as f:
@@ -385,8 +398,9 @@ def run_pipeline(sft_dir: Path | None = None, push_to_hf: bool = False) -> dict:
 
     # Per-tongue splits
     for tongue in ["KO", "AV", "RU", "CA", "UM", "DR"]:
-        tongue_entries = [e for e in all_entries if e.primary_tongue == tongue
-                         and e.quality_score >= 0.5 and not e.is_duplicate]
+        tongue_entries = [
+            e for e in all_entries if e.primary_tongue == tongue and e.quality_score >= 0.5 and not e.is_duplicate
+        ]
         if tongue_entries:
             tongue_file = out_dir / f"sft_tongue_{tongue}.jsonl"
             with open(tongue_file, "w", encoding="utf-8") as f:
@@ -424,6 +438,7 @@ def run_pipeline(sft_dir: Path | None = None, push_to_hf: bool = False) -> dict:
     if push_to_hf:
         try:
             from huggingface_hub import HfApi
+
             api = HfApi(token=os.environ.get("HF_TOKEN"))
             api.upload_file(
                 path_or_fileobj=str(train_file),
@@ -444,6 +459,7 @@ def run_pipeline(sft_dir: Path | None = None, push_to_hf: bool = False) -> dict:
 
 if __name__ == "__main__":
     import sys
+
     args = sys.argv[1:]
     push = "--push" in args
 

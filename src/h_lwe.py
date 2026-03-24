@@ -7,15 +7,17 @@ import numpy as np
 from typing import Tuple, Dict
 
 # Constants for LWE parameters (Kyber-like parameters for consistency)
-N_DIM = 6 # Dimensions of the vector to encrypt/decrypt
+N_DIM = 6  # Dimensions of the vector to encrypt/decrypt
 Q = 3329  # Modulo q (prime number)
-CHI = 2   # Error distribution bound for small errors
+CHI = 2  # Error distribution bound for small errors
+
 
 class HyperbolicLWE:
     """
     Implements a simplified LWE scheme adapted for a hyperbolic space,
     used to secure 6D state vectors transmitted between agents.
     """
+
     def __init__(self, dim: int = N_DIM, q: int = Q, chi: int = CHI):
         self.dim = dim
         self.q = q
@@ -32,8 +34,8 @@ class HyperbolicLWE:
         # Public key vector b = s @ A + e (1 x n)
         b = (s @ A + e) % self.q
 
-        public_key = {'A': A, 'b': b}
-        secret_key = {'s': s}
+        public_key = {"A": A, "b": b}
+        secret_key = {"s": s}
         return public_key, secret_key
 
     def encrypt_vector(self, vector: np.ndarray, public_key: dict) -> Dict:
@@ -51,19 +53,19 @@ class HyperbolicLWE:
         e2 = np.random.randint(-self.chi, self.chi + 1)
 
         # Ciphertext component u = A @ r + e1
-        u = (public_key['A'] @ r + e1) % self.q
+        u = (public_key["A"] @ r + e1) % self.q
         # Ciphertext component v = b @ r + e2 + message_vector
         # Quantize vector message into integer space: scale by q/4
         message_scaled = (vector * (self.q // 4)).astype(int)
-        v = (public_key['b'] @ r + e2 + message_scaled) % self.q
+        v = (public_key["b"] @ r + e2 + message_scaled) % self.q
 
-        return {'u': u.tolist(), 'v': v.tolist()}
+        return {"u": u.tolist(), "v": v.tolist()}
 
     def decrypt_vector(self, ciphertext: dict, secret_key: dict) -> np.ndarray:
         """Decrypt and return 6D vector from ciphertext components."""
-        s = secret_key['s']
-        u = np.array(ciphertext['u'])
-        v = np.array(ciphertext['v'])
+        s = secret_key["s"]
+        u = np.array(ciphertext["u"])
+        v = np.array(ciphertext["v"])
 
         # Decryption calculation: pt = v - s @ u
         pt = (v - s @ u) % self.q
@@ -72,6 +74,7 @@ class HyperbolicLWE:
         vector = (pt / (self.q // 4)).astype(float)
 
         return vector
+
 
 # Quick test to verify module loading and basic functionality
 if __name__ == "__main__":

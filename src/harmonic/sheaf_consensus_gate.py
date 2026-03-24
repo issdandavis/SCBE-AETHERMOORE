@@ -183,4 +183,3 @@ def run_jsonl(
             handle.write(json.dumps(out, ensure_ascii=True) + "\n")
 
     return counts
-

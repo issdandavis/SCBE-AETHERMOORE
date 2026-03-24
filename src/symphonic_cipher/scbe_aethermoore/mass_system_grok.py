@@ -574,25 +574,25 @@ def demo():
     intent = 0.75
     wave = phase_modulated_intent(intent)
     recovered = extract_phase(wave)
-    print(f"\nPhase encoding:")
+    print("\nPhase encoding:")
     print(f"  Original intent: {intent}")
     print(f"  Recovered phase: {recovered:.4f}")
 
     # Topology
     poly = Polyhedron(V=6, E=9, F=5)
     chi = poly.euler_characteristic()
-    print(f"\nTopology (PHDM):")
+    print("\nTopology (PHDM):")
     print(f"  Euler characteristic: {chi}")
     print(f"  Valid: {phdm_validate(poly)}")
 
     # Governance with Grok
     result = governance(state, intent, poly)
-    print(f"\nGovernance result:")
+    print("\nGovernance result:")
     print(f"  Decision: {result.decision}")
     print(f"  Risk base: {result.risk_base:.4f}")
     print(f"  Risk amplified: {result.risk_amplified:.4f}")
     print(f"  Risk final: {result.risk_final:.4f}")
-    print(f"\nGrok oracle:")
+    print("\nGrok oracle:")
     print(f"  Invoked: {result.grok_result.invoked}")
     print(f"  Truth score: {result.grok_result.truth_score:.4f}")
     print(f"  Confidence: {result.grok_result.confidence:.4f}")

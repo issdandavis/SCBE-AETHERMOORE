@@ -202,7 +202,7 @@ def test_hyperbolic_distance_properties():
 
         # Identity of indiscernibles
         if hyperbolic_distance(u, u) > 1e-10:
-            return False, f"d(u,u) != 0"
+            return False, "d(u,u) != 0"
 
         # Symmetry
         if abs(hyperbolic_distance(u, v) - hyperbolic_distance(v, u)) > 1e-10:

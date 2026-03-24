@@ -549,7 +549,7 @@ class SCBEFullSystem:
                 return (
                     GovernanceDecision.QUARANTINE,
                     confidence * 0.6,
-                    f"QUARANTINE (HEIGHTENED): Medium risk",
+                    "QUARANTINE (HEIGHTENED): Medium risk",
                 )
 
         # Check for any violations

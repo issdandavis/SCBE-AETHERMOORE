@@ -522,7 +522,7 @@ def run_benchmark():
     )
     linear_rate = linear_detection / max(1, linear_total) * 100
 
-    print(f"  DETECTION RATES:")
+    print("  DETECTION RATES:")
     print(f"    SCBE Hyperbolic:     {scbe_rate:.1f}%")
     print(f"    ML Anomaly:          {ml_rate:.1f}%")
     print(f"    Linear Threshold:    {linear_rate:.1f}%")

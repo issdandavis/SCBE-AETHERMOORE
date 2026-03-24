@@ -594,14 +594,14 @@ def demo_pipeline():
         audio_frame=audio,
     )
 
-    print(f"\nPipeline Result:")
+    print("\nPipeline Result:")
     print(f"  Risk (base):  {result['risk_base']:.6f}")
     print(f"  Risk (prime): {result['risk_prime']:.6f}")
     print(f"  Decision:     {result['decision']}")
-    print(f"\nCoherence Signals:")
+    print("\nCoherence Signals:")
     for k, v in result["coherence"].items():
         print(f"  {k}: {v:.6f}")
-    print(f"\nGeometric State:")
+    print("\nGeometric State:")
     print(f"  d*:           {result['d_star']:.6f}")
     print(f"  d_tri_norm:   {result['d_tri_norm']:.6f}")
     print(f"  ||u_final||:  {result['u_final_norm']:.6f}")
