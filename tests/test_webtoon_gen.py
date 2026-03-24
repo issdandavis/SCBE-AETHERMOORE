@@ -45,7 +45,10 @@ def test_compile_panel_prompt_includes_character_lock_and_story_context() -> Non
         "characters": ["marcus"],
         "style_metadata": {
             "camera_angle": "tight three-quarter close-up",
-            "character_anchor": "Asian-American man early 30s, short dark messy hair, tired eyes, lean desk-worker build.",
+            "character_anchor": (
+                "Asian-American man early 30s, short dark messy hair,"
+                " tired eyes, lean desk-worker build."
+            ),
         },
     }
 

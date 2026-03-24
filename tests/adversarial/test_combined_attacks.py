@@ -66,7 +66,8 @@ class TestFullCorpusBenchmark:
         print("  SCBE ADVERSARIAL BENCHMARK")
         print(f"{'='*60}")
         print(
-            f"  Detection: {attack_result.detection_rate:.1%} ({attack_result.detected_count}/{attack_result.total_attacks})"
+            f"  Detection: {attack_result.detection_rate:.1%}"
+            f" ({attack_result.detected_count}/{attack_result.total_attacks})"
         )
         print(f"  ASR: {attack_result.attack_success_rate:.1%}")
         print(f"  FP rate: {baseline_result.detection_rate:.1%}")
