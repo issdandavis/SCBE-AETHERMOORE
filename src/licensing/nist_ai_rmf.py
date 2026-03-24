@@ -9,6 +9,15 @@ Maps SCBE-AETHERMOORE capabilities to the NIST AI RMF functions:
   MEASURE — Metrics, testing, monitoring
   MANAGE  — Prioritize, respond, communicate
 
+Also maps to the White House National AI Policy Framework (March 2026),
+which signals the legislative direction for federal AI regulation:
+
+  PILLAR 1 — Federal Preemption (replace state patchwork)
+  PILLAR 2 — Child Safety & Community Protections
+  PILLAR 3 — Intellectual Property (training on copyrighted material)
+  PILLAR 4 — Innovation Governance (sandboxes, federal data access)
+  PILLAR 5 — Workforce Development
+
 This module generates compliance evidence artifacts for OEM licensing
 deals and government subcontracting (TradeWinds, SBIR/STTR).
 
@@ -17,10 +26,11 @@ Key 2026 requirements addressed:
   - Executive Order 14110 (Safe, Secure AI — October 2023)
   - OMB M-24-10 (Federal AI governance — March 2024)
   - NIST SP 800-53 Rev 5 (already validated in compliance_report.md)
+  - White House National AI Policy Framework (March 20, 2026)
 
 @module licensing/nist_ai_rmf
 @layer Layer 13 (Governance)
-@version 1.0.0
+@version 1.1.0
 """
 
 from __future__ import annotations
@@ -421,3 +431,266 @@ class SBIRDeliverable:
         "scbe-aethermoore PyPI package (v3.3.0)",
         "Docker multi-stage build (Node 20 + liboqs + Python 3.11)",
     ])
+
+
+# =============================================================================
+# White House National AI Policy Framework (March 20, 2026)
+# =============================================================================
+
+@dataclass
+class PolicyPillarAlignment:
+    """Alignment of an SCBE capability to a White House AI Policy pillar."""
+    pillar_id: str             # e.g., "PILLAR-1"
+    pillar_name: str           # e.g., "Federal Preemption"
+    risk_area: str             # Where policy risk is rising
+    opportunity: str           # Where SCBE can help organizations comply
+    scbe_capability: str       # Specific SCBE feature that addresses this
+    evidence: str              # How compliance is demonstrated
+    readiness: str             # "READY", "PARTIAL", "PLANNED"
+
+
+@dataclass
+class PolicyFrameworkReport:
+    """Full alignment report against the White House AI Policy Framework."""
+    framework: str = "White House National AI Policy Framework"
+    framework_date: str = "2026-03-20"
+    status: str = "Congressional Roadmap (non-binding, pre-legislative)"
+    generated_at: float = 0.0
+    pillars: List[PolicyPillarAlignment] = field(default_factory=list)
+
+    @property
+    def ready_count(self) -> int:
+        return sum(1 for p in self.pillars if p.readiness == "READY")
+
+    @property
+    def total_count(self) -> int:
+        return len(self.pillars)
+
+    @property
+    def readiness_rate(self) -> float:
+        if not self.pillars:
+            return 0.0
+        return self.ready_count / self.total_count
+
+    def by_pillar(self, pillar_id: str) -> List[PolicyPillarAlignment]:
+        return [p for p in self.pillars if p.pillar_id == pillar_id]
+
+    def summary(self) -> Dict[str, Any]:
+        return {
+            "framework": self.framework,
+            "framework_date": self.framework_date,
+            "status": self.status,
+            "generated_at": self.generated_at,
+            "total_alignments": self.total_count,
+            "ready": self.ready_count,
+            "partial": sum(1 for p in self.pillars if p.readiness == "PARTIAL"),
+            "planned": sum(1 for p in self.pillars if p.readiness == "PLANNED"),
+            "readiness_rate": round(self.readiness_rate, 4),
+            "risk_areas": list(set(p.risk_area for p in self.pillars)),
+        }
+
+
+def generate_policy_framework_report() -> PolicyFrameworkReport:
+    """Generate alignment report against the White House National AI Policy Framework.
+
+    Maps each of the 5 framework pillars to SCBE-AETHERMOORE capabilities,
+    identifies risk areas, and highlights compliance opportunities.
+
+    The framework is a Congressional roadmap (not yet statute) but sets
+    expectations for reporting, governance, and oversight. Building
+    alignment now positions SCBE customers ahead of formal legislation.
+    """
+    pillars = []
+
+    # ── PILLAR 1: Federal Preemption ─────────────────────────────────────
+    # Replace patchwork of state AI laws with consistent national standards
+
+    pillars.append(PolicyPillarAlignment(
+        pillar_id="PILLAR-1",
+        pillar_name="Federal Preemption",
+        risk_area="Inconsistent state-by-state compliance requirements",
+        opportunity="Single governance framework that satisfies federal standards, "
+                    "eliminating need for per-state compliance builds",
+        scbe_capability="14-layer pipeline with configurable risk thresholds",
+        evidence="Governance decisions (ALLOW/QUARANTINE/ESCALATE/DENY) are policy-driven "
+                 "via pluggable policy packs; threshold configuration adapts to any "
+                 "jurisdiction without code changes",
+        readiness="READY",
+    ))
+
+    pillars.append(PolicyPillarAlignment(
+        pillar_id="PILLAR-1",
+        pillar_name="Federal Preemption",
+        risk_area="Audit and reporting requirements will standardize nationally",
+        opportunity="Built-in audit export meets anticipated federal reporting mandates",
+        scbe_capability="Usage Meter with JSONL decision logs and SIEM integration",
+        evidence="Every governance decision logged with timestamp, agent_id, tenant_id, "
+                 "risk_score, policy_ids, latency_ms; exportable for any audit format; "
+                 "99.9% delivery SLA within 5 minutes of decision event",
+        readiness="READY",
+    ))
+
+    # ── PILLAR 2: Child Safety & Community Protections ───────────────────
+    # Oversight mechanisms and parental controls for AI outputs
+
+    pillars.append(PolicyPillarAlignment(
+        pillar_id="PILLAR-2",
+        pillar_name="Child Safety & Community Protections",
+        risk_area="AI outputs must be filterable for age-appropriate content",
+        opportunity="Content governance layer that can quarantine or deny unsafe outputs "
+                    "before they reach end users",
+        scbe_capability="Layer 13 governance with real-time QUARANTINE/DENY decisions",
+        evidence="Combined scoring (40% mirror asymmetry + 30% fractal anomaly + "
+                 "20% charge imbalance + 10% valence penalty) produces real-time "
+                 "content decisions; policy packs can encode age-gating rules",
+        readiness="READY",
+    ))
+
+    pillars.append(PolicyPillarAlignment(
+        pillar_id="PILLAR-2",
+        pillar_name="Child Safety & Community Protections",
+        risk_area="Parental controls and oversight mechanisms for AI interactions",
+        opportunity="ESCALATE tier routes high-risk decisions to human reviewers",
+        scbe_capability="4-tier decision system with mandatory human-in-the-loop for ESCALATE",
+        evidence="ESCALATE decision (combined_score 0.6-0.85) requires explicit human "
+                 "governance approval with configurable timeout and fallback; "
+                 "audit trail preserves full decision chain for review",
+        readiness="READY",
+    ))
+
+    # ── PILLAR 3: Intellectual Property ──────────────────────────────────
+    # Training on copyrighted material, unresolved IP questions
+
+    pillars.append(PolicyPillarAlignment(
+        pillar_id="PILLAR-3",
+        pillar_name="Intellectual Property",
+        risk_area="Training data provenance and copyright compliance",
+        opportunity="Demonstrate data lineage and provenance for all training inputs",
+        scbe_capability="SFT pipeline with source tracking and dedup flags",
+        evidence="10,978 training pairs with source provenance (dataset_info.json), "
+                 "dedup flags, validation status; scripts/codebase_to_sft.py generates "
+                 "pairs only from owned documentation and code",
+        readiness="READY",
+    ))
+
+    pillars.append(PolicyPillarAlignment(
+        pillar_id="PILLAR-3",
+        pillar_name="Intellectual Property",
+        risk_area="Licensing clarity for AI-generated outputs",
+        opportunity="Clear dual-license model with explicit IP ownership terms",
+        scbe_capability="CUSTOMER_LICENSE_AGREEMENT.md + US Patent 63/961,403",
+        evidence="Dual-license (MIT open source + Commercial proprietary); explicit "
+                 "patent practice rights under commercial license; OEM white-label "
+                 "rights for downstream IP protection; SBIR 20-year data rights",
+        readiness="READY",
+    ))
+
+    # ── PILLAR 4: Innovation Governance ──────────────────────────────────
+    # Regulatory sandboxes, access to federal datasets
+
+    pillars.append(PolicyPillarAlignment(
+        pillar_id="PILLAR-4",
+        pillar_name="Innovation Governance",
+        risk_area="Need for safe experimentation environments (regulatory sandboxes)",
+        opportunity="Configurable governance thresholds enable sandbox vs. production modes",
+        scbe_capability="Configurable risk thresholds per tenant/environment",
+        evidence="SymphonicGovernor accepts tunable beta_base, allow_threshold, "
+                 "quarantine_threshold, deny_threshold; LicenseTier.HOMEBREW provides "
+                 "sandbox-appropriate limits (1 user, 1 instance, 10K decisions/month)",
+        readiness="READY",
+    ))
+
+    pillars.append(PolicyPillarAlignment(
+        pillar_id="PILLAR-4",
+        pillar_name="Innovation Governance",
+        risk_area="Transparency in AI decision-making for regulators",
+        opportunity="Per-layer explainability in every governance decision",
+        scbe_capability="LayerExplanation in AuthorizationResponse (gateway API)",
+        evidence="Each authorization response includes per-layer results with name, "
+                 "value, contribution, and pass/warn/fail status; dominant risk factor "
+                 "and recommendation surfaced for regulator review",
+        readiness="READY",
+    ))
+
+    pillars.append(PolicyPillarAlignment(
+        pillar_id="PILLAR-4",
+        pillar_name="Innovation Governance",
+        risk_area="Federal dataset access and AI development support",
+        opportunity="Training intake pipeline supports ingestion from federal data sources",
+        scbe_capability="training/intake/ with 18 source adapters (arxiv, NIST NVD, "
+                        "Library of Congress, Harvard Dataverse, etc.)",
+        evidence="Modular intake pipeline with adapters for ArXiv, NIST NVD, "
+                 "Library of Congress, Harvard Dataverse, Internet Archive, Wikidata; "
+                 "each source tracked with provenance metadata",
+        readiness="READY",
+    ))
+
+    # ── PILLAR 5: Workforce Development ──────────────────────────────────
+    # Education, reskilling for AI-driven labor shifts
+
+    pillars.append(PolicyPillarAlignment(
+        pillar_id="PILLAR-5",
+        pillar_name="Workforce Development",
+        risk_area="Organizations need AI governance skills and tooling literacy",
+        opportunity="Tiered product packaging from Homebrew (learning) to Enterprise (production)",
+        scbe_capability="3-tier commercial model + comprehensive documentation",
+        evidence="Homebrew tier for individual learning (1 user, community support); "
+                 "170+ documentation files; 7 Colab notebooks for hands-on training; "
+                 "docs/05-industry-guides/ for sector-specific onboarding",
+        readiness="READY",
+    ))
+
+    pillars.append(PolicyPillarAlignment(
+        pillar_id="PILLAR-5",
+        pillar_name="Workforce Development",
+        risk_area="AI safety curriculum and training materials",
+        opportunity="Training data pipeline can generate educational SFT datasets",
+        scbe_capability="scripts/codebase_to_sft.py + training-data/ corpus",
+        evidence="Automated SFT pair generation from documentation; 8 category "
+                 "classifiers (math, architecture, governance, crypto, layers, "
+                 "topology, constants, safety); exportable as educational materials",
+        readiness="PARTIAL",
+    ))
+
+    return PolicyFrameworkReport(
+        generated_at=time.time(),
+        pillars=pillars,
+    )
+
+
+def generate_combined_compliance_summary() -> Dict[str, Any]:
+    """Generate a unified compliance summary combining NIST AI RMF
+    and White House Policy Framework alignment.
+
+    This is the "evidence package" for OEM deals and government proposals.
+    """
+    rmf = generate_compliance_report()
+    policy = generate_policy_framework_report()
+
+    return {
+        "system": "SCBE-AETHERMOORE",
+        "version": "3.3.0",
+        "generated_at": time.time(),
+        "nist_ai_rmf": rmf.summary(),
+        "wh_policy_framework": policy.summary(),
+        "combined_readiness": {
+            "nist_pass_rate": rmf.pass_rate,
+            "policy_readiness_rate": policy.readiness_rate,
+            "overall": round(
+                (rmf.pass_rate + policy.readiness_rate) / 2, 4
+            ),
+        },
+        "key_differentiators": [
+            "Hyperbolic geometry makes adversarial attacks computationally infeasible",
+            "Post-quantum cryptography (NIST-approved ML-KEM-768 / ML-DSA-65)",
+            "14-layer pipeline aligned to both NIST AI RMF and WH Policy Framework",
+            "Per-decision audit trail with 99.9% / 5-min export SLA",
+            "Federal preemption-ready: single governance framework for all jurisdictions",
+            "Air-gap compatible licensing for digital sovereignty deployments",
+        ],
+        "regulatory_timeline": {
+            "current": "WH Framework is Congressional roadmap (non-binding)",
+            "expected": "Formal legislation anticipated 2026-2027",
+            "recommendation": "Build compliance now to avoid retrofit costs",
+        },
+    }

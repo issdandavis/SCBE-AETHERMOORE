@@ -39,6 +39,10 @@ from .nist_ai_rmf import (
     generate_compliance_report,
     TradeWindsProfile,
     SBIRDeliverable,
+    PolicyPillarAlignment,
+    PolicyFrameworkReport,
+    generate_policy_framework_report,
+    generate_combined_compliance_summary,
 )
 
 __all__ = [
@@ -57,4 +61,8 @@ __all__ = [
     "generate_compliance_report",
     "TradeWindsProfile",
     "SBIRDeliverable",
+    "PolicyPillarAlignment",
+    "PolicyFrameworkReport",
+    "generate_policy_framework_report",
+    "generate_combined_compliance_summary",
 ]

@@ -45,6 +45,10 @@ from src.licensing.nist_ai_rmf import (
     generate_compliance_report,
     TradeWindsProfile,
     SBIRDeliverable,
+    PolicyPillarAlignment,
+    PolicyFrameworkReport,
+    generate_policy_framework_report,
+    generate_combined_compliance_summary,
 )
 
 
@@ -529,3 +533,103 @@ class TestSBIRDeliverable:
     def test_technical_data_includes_pqc(self):
         sbir = SBIRDeliverable()
         assert any("quantum" in item.lower() for item in sbir.technical_data_items)
+
+
+# ============================================================================
+# White House National AI Policy Framework Tests
+# ============================================================================
+
+class TestPolicyFrameworkReport:
+    """Test alignment to White House National AI Policy Framework (March 2026)."""
+
+    @pytest.fixture
+    def report(self):
+        return generate_policy_framework_report()
+
+    def test_report_generated(self, report):
+        assert report.framework == "White House National AI Policy Framework"
+        assert report.framework_date == "2026-03-20"
+        assert report.generated_at > 0
+
+    def test_all_five_pillars_covered(self, report):
+        pillar_ids = set(p.pillar_id for p in report.pillars)
+        assert pillar_ids == {"PILLAR-1", "PILLAR-2", "PILLAR-3", "PILLAR-4", "PILLAR-5"}
+
+    def test_pillar_1_federal_preemption(self, report):
+        p1 = report.by_pillar("PILLAR-1")
+        assert len(p1) >= 2
+        assert all(p.pillar_name == "Federal Preemption" for p in p1)
+        # Should address audit/reporting standardization
+        assert any("audit" in p.opportunity.lower() for p in p1)
+
+    def test_pillar_2_child_safety(self, report):
+        p2 = report.by_pillar("PILLAR-2")
+        assert len(p2) >= 2
+        assert all(p.pillar_name == "Child Safety & Community Protections" for p in p2)
+        # Should reference content governance decisions
+        all_evidence = " ".join(p.evidence + " " + p.scbe_capability for p in p2).lower()
+        assert "quarantine" in all_evidence or "deny" in all_evidence or "governance" in all_evidence
+
+    def test_pillar_3_intellectual_property(self, report):
+        p3 = report.by_pillar("PILLAR-3")
+        assert len(p3) >= 2
+        assert all(p.pillar_name == "Intellectual Property" for p in p3)
+        # Should reference patent and licensing
+        assert any("patent" in p.evidence.lower() or "license" in p.evidence.lower() for p in p3)
+
+    def test_pillar_4_innovation_governance(self, report):
+        p4 = report.by_pillar("PILLAR-4")
+        assert len(p4) >= 2
+        assert all(p.pillar_name == "Innovation Governance" for p in p4)
+
+    def test_pillar_5_workforce_development(self, report):
+        p5 = report.by_pillar("PILLAR-5")
+        assert len(p5) >= 1
+        assert all(p.pillar_name == "Workforce Development" for p in p5)
+
+    def test_high_readiness_rate(self, report):
+        """Most alignments should be READY (not PLANNED)."""
+        assert report.readiness_rate >= 0.8
+
+    def test_each_alignment_has_evidence(self, report):
+        for p in report.pillars:
+            assert p.evidence != "", f"{p.pillar_id} missing evidence"
+            assert p.scbe_capability != "", f"{p.pillar_id} missing SCBE capability"
+
+    def test_summary_structure(self, report):
+        summary = report.summary()
+        assert "framework" in summary
+        assert "readiness_rate" in summary
+        assert "risk_areas" in summary
+        assert len(summary["risk_areas"]) >= 5
+
+    def test_total_alignment_count(self, report):
+        assert report.total_count >= 11
+
+
+class TestCombinedComplianceSummary:
+    """Test the unified compliance evidence package."""
+
+    def test_combined_summary_structure(self):
+        summary = generate_combined_compliance_summary()
+        assert summary["system"] == "SCBE-AETHERMOORE"
+        assert "nist_ai_rmf" in summary
+        assert "wh_policy_framework" in summary
+        assert "combined_readiness" in summary
+        assert "key_differentiators" in summary
+        assert "regulatory_timeline" in summary
+
+    def test_combined_readiness_high(self):
+        summary = generate_combined_compliance_summary()
+        assert summary["combined_readiness"]["overall"] >= 0.9
+
+    def test_key_differentiators_include_preemption(self):
+        summary = generate_combined_compliance_summary()
+        assert any("preemption" in d.lower() for d in summary["key_differentiators"])
+
+    def test_regulatory_timeline_present(self):
+        summary = generate_combined_compliance_summary()
+        timeline = summary["regulatory_timeline"]
+        assert "current" in timeline
+        assert "expected" in timeline
+        assert "recommendation" in timeline
