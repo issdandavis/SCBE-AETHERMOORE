@@ -479,7 +479,10 @@ class TestTrajectorySimulation:
         """Custom direction function is used for impulse."""
         state = make_hybrid_state(0)
         # Custom direction: always push dim 0
-        custom_dir = lambda x: np.eye(BRAIN_DIMENSIONS)[0]
+
+        def custom_dir(x):
+            return np.eye(BRAIN_DIMENSIONS)[0]
+
         result = hybrid_step(
             state,
             GovernanceSymbol.PLUS_ONE,

@@ -34,17 +34,18 @@ def test_capture_writes_stable_latest_files(tmp_path, monkeypatch):
     screenshot = tmp_path / "raw.png"
     screenshot.write_bytes(b"x" * 1200)
     ui_dump = tmp_path / "raw.xml"
-    ui_dump.write_text(
-        """<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-<hierarchy rotation="0">
-  <node index="0" text="" resource-id="" class="android.widget.FrameLayout" package="com.android.chrome" clickable="false" enabled="true" focused="false" scrollable="false" bounds="[0,0][540,1200]">
-    <node index="0" text="Webtoon Viewer" resource-id="" class="android.webkit.WebView" package="com.android.chrome" clickable="false" enabled="true" focused="true" scrollable="true" bounds="[0,275][540,1139]" />
-    <node index="1" text="10.0.2.2:8088/polly-pad.html" resource-id="com.android.chrome:id/url_bar" class="android.widget.EditText" package="com.android.chrome" clickable="true" enabled="true" focused="false" scrollable="false" bounds="[210,136][267,267]" />
-  </node>
-</hierarchy>
-""",
+    # fmt: off
+    ui_dump.write_text(  # noqa: E501
+        '<?xml version=\'1.0\' encoding=\'UTF-8\' standalone=\'yes\' ?>\n'
+        '<hierarchy rotation="0">\n'
+        '  <node index="0" text="" resource-id="" class="android.widget.FrameLayout" package="com.android.chrome" clickable="false" enabled="true" focused="false" scrollable="false" bounds="[0,0][540,1200]">\n'  # noqa: E501
+        '    <node index="0" text="Webtoon Viewer" resource-id="" class="android.webkit.WebView" package="com.android.chrome" clickable="false" enabled="true" focused="true" scrollable="true" bounds="[0,275][540,1139]" />\n'  # noqa: E501
+        '    <node index="1" text="10.0.2.2:8088/polly-pad.html" resource-id="com.android.chrome:id/url_bar" class="android.widget.EditText" package="com.android.chrome" clickable="true" enabled="true" focused="false" scrollable="false" bounds="[210,136][267,267]" />\n'  # noqa: E501
+        '  </node>\n'
+        '</hierarchy>\n',
         encoding="utf-8",
     )
+    # fmt: on
 
     class FakeHand:
         def __init__(self, serial: str = ""):

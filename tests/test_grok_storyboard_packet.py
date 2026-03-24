@@ -106,7 +106,7 @@ def test_build_render_jobs_routes_hero_and_batch_panels(tmp_path: Path, monkeypa
     assert jobs[1]["aspect"] == "9:16"
     assert (
         jobs[1]["negative_prompt"]
-        == "speech bubbles, text overlays, white man, caucasian, blond hair, white fantasy princess, pin-up posing, low detail, inconsistent character design"
+        == "speech bubbles, text overlays, white man, caucasian, blond hair, white fantasy princess, pin-up posing, low detail, inconsistent character design"  # noqa: E501
     )
     assert "hero panel of Marcus in white light" in jobs[0]["prompt"]
     assert "Character lock: marcus: Asian-American man early 30s" in jobs[0]["prompt"]

@@ -58,7 +58,10 @@ def test_builder_masks_sensitive_strings_and_writes_manifest(monkeypatch, tmp_pa
                 json.dumps(
                     {
                         "instruction": "Email alice@example.com and call +1 (415) 555-0199.",
-                        "input": "Use account id: USER-1234567 and bearer Authorization: Bearer secretBearerToken123456",
+                        "input": (
+                            "Use account id: USER-1234567 and bearer"
+                            " Authorization: Bearer secretBearerToken123456"
+                        ),
                         "output": "API key sk-test-abcdef0123456789 and SSN 123-45-6789 plus card 4111 1111 1111 1111.",
                         "messages": [
                             {"role": "user", "content": "Visit https://example.com/api from 10.0.0.5"},
