@@ -8,7 +8,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { createImmutableLaws, verifyImmutableLawsHash } from '../../src/governance/immutable_laws.js';
+import {
+  createImmutableLaws,
+  verifyImmutableLawsHash,
+} from '../../src/governance/immutable_laws.js';
 
 function samplePayload() {
   return {
