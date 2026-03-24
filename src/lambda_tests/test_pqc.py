@@ -11,10 +11,8 @@ Tests cover:
 """
 
 import pytest
-import hashlib
 import os
 import time
-import secrets
 
 # Import PQC module
 from symphonic_cipher.scbe_aethermoore.pqc import (

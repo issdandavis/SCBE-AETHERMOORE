@@ -16,8 +16,8 @@ Integration: feeds into Layer 12 (harmonic wall) and Layer 13 (risk decision).
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
+from dataclasses import dataclass
+from typing import List, Optional, Any
 
 
 # ---------------------------------------------------------------------------

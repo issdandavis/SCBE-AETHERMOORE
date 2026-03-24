@@ -14,9 +14,8 @@ Based on established celestial mechanics.
 """
 
 import math
-from typing import Dict, Any, Tuple, Optional, List
+from typing import Dict, Any
 from dataclasses import dataclass
-import numpy as np
 
 # =============================================================================
 # GRAVITATIONAL CONSTANTS

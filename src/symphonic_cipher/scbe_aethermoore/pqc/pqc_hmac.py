@@ -18,7 +18,6 @@ from enum import Enum
 from .pqc_core import (
     Kyber768,
     KyberKeyPair,
-    EncapsulationResult,
     derive_hybrid_key,
     get_backend,
     PQCBackend,

@@ -11,7 +11,7 @@ import json
 import math
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
+from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 TONGUES: tuple[str, ...] = ("KO", "AV", "RU", "CA", "UM", "DR")
 DEFAULT_BASE_WEIGHTS: tuple[float, ...] = (1.00, 1.62, 2.62, 4.24, 6.85, 11.09)

@@ -20,7 +20,7 @@ import hashlib
 import json
 import os
 import time
-from typing import Tuple, Dict, Optional, Any
+from typing import Tuple, Dict, Any
 from dataclasses import dataclass
 from enum import Enum
 
@@ -33,7 +33,6 @@ from crypto.pqc_liboqs import (
     MLDSA65,
     is_liboqs_available,
     get_pqc_backend,
-    compute_consensus_hash,
 )
 
 # Constants

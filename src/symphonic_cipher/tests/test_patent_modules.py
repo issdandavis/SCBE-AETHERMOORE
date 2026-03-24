@@ -12,7 +12,6 @@ import pytest
 import numpy as np
 import sys
 import os
-import hashlib
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -27,8 +26,6 @@ from topological_cfi import (
 )
 from dual_lattice_consensus import (
     DualLatticeConsensus,
-    create_authorization_token,
-    verify_token,
 )
 
 

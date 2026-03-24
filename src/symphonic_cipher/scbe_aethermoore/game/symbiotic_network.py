@@ -11,8 +11,8 @@ A5: Pipeline integrity via graph connectivity.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Tuple
+from dataclasses import dataclass
+from typing import Dict, List, Set, Tuple
 
 from .types import (
     HODGE_DUAL_PAIRS,

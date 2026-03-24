@@ -18,10 +18,8 @@ FEATURES:
 Version: 1.0.0
 """
 
-import os
-import sys
 import json
-from typing import Dict, List, Optional, Any, Callable
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -310,7 +308,7 @@ Choose a setup option to continue:
 
         # Import pack info
         try:
-            from ..science_packs import SCIENCE_PACKS, get_pack_info
+            from ..science_packs import SCIENCE_PACKS
 
             all_packs = []
             for category, packs in SCIENCE_PACKS.items():

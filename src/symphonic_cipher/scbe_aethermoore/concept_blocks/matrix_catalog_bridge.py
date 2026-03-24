@@ -43,13 +43,11 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from .context_catalog.catalog import (
-    ARCHETYPE_REGISTRY,
     ComplexityTier,
     ContextCatalog,
-    PolyhedronType,
     TaskArchetype,
 )
 from ..ai_brain.unified_state import (

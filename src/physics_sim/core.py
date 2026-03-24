@@ -7,8 +7,7 @@ No pseudoscience - only textbook physics.
 
 import json
 import math
-import cmath
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 
 # =============================================================================
 # PHYSICAL CONSTANTS (CODATA 2018 values)

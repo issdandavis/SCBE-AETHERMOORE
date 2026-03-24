@@ -29,14 +29,11 @@ Modality masks: STRICT [1,3,5], ADAPTIVE [1..5], PROBE [1]
 from __future__ import annotations
 
 import hashlib
-import hmac
 import time
-import os
-import base64
-from typing import Tuple, Dict, Any, List
+from typing import Tuple, Dict, Any
 
 import numpy as np
-from scipy.fft import fft, fftfreq
+from scipy.fft import fft
 
 from ..decision_telemetry import emit_from_grand_unified
 

@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import functools
 import numpy as np
-from typing import Callable, TypeVar, Any, Optional, Tuple, List
+from typing import Callable, TypeVar, Any, Tuple, List
 from dataclasses import dataclass
 from enum import Enum
 import time as time_module
@@ -41,7 +41,6 @@ THETA_2 = 2.0  # High risk threshold
 class CausalityViolation(Exception):
     """Raised when a transform violates the causality axiom."""
 
-    pass
 
 
 class RiskLevel(Enum):

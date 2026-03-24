@@ -16,7 +16,7 @@ Integration with Dual Lattice:
 """
 
 import numpy as np
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List
 from dataclasses import dataclass
 from enum import Enum
 

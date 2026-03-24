@@ -19,10 +19,10 @@ at 3x frequencies, natural for icosahedral/phi-based symmetry.
 """
 
 import math
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import List, Optional, Tuple
 
-from .unified_state import PHI, BRAIN_EPSILON, POINCARE_MAX_NORM
+from .unified_state import PHI, BRAIN_EPSILON
 
 # ---------------------------------------------------------------------------
 # Types

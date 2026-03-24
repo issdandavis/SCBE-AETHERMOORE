@@ -17,7 +17,6 @@ Usage:
 """
 
 import functools
-from typing import Any, Callable
 
 _PATCH_APPLIED = False
 
@@ -103,7 +102,6 @@ def verify_patch() -> dict:
     try:
         from google.protobuf import json_format
         from google.protobuf import any_pb2
-        from google.protobuf import struct_pb2
 
         # Create a deeply nested structure that would bypass the original limit
         def create_nested_any(depth: int) -> dict:

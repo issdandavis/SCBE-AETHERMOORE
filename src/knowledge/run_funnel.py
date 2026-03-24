@@ -9,7 +9,6 @@ Usage:
 """
 
 import sys
-import json
 import argparse
 import datetime
 from pathlib import Path
@@ -18,7 +17,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.knowledge.funnel import KnowledgeFunnel, KnowledgeChunk, BASIN_ROOT
+from src.knowledge.funnel import KnowledgeFunnel, BASIN_ROOT
 from src.knowledge.tokenizer_graph.memory_chain import TokenizerGraph
 
 

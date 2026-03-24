@@ -21,8 +21,7 @@ Integration: RWP v3.0 protocol with Argon2id → ML-KEM-768 → XChaCha20-Poly13
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Tuple, Optional
-import secrets
+from typing import Dict, List, Tuple
 import hashlib
 
 # ============================================================

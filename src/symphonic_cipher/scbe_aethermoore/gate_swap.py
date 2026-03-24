@@ -32,7 +32,6 @@ from dataclasses import dataclass, field
 from typing import List, Tuple
 
 from .negabinary import NegaBinary, negabinary_to_balanced_ternary
-from .trinary import BalancedTernary, Trit
 
 
 # ---------------------------------------------------------------------------

@@ -22,10 +22,10 @@ import json
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
-from .models import Choice, Curriculum, CurriculumPhase, PlaythroughRecord
-from .player_agent import DIM_NAMES, PersonalityVector
+from .models import Choice, PlaythroughRecord
+from .player_agent import DIM_NAMES
 
 
 # ---------------------------------------------------------------------------

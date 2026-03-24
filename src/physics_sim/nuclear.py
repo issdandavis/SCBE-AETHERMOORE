@@ -14,7 +14,7 @@ Based on established nuclear physics.
 """
 
 import math
-from typing import Dict, Any, Tuple, Optional, List
+from typing import Dict, Any, Tuple, Optional
 from dataclasses import dataclass
 
 # =============================================================================

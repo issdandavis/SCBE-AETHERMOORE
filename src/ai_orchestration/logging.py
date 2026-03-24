@@ -12,15 +12,14 @@ Comprehensive logging system for AI orchestration with:
 Version: 1.0.0
 """
 
-import os
 import json
 import hashlib
 import hmac
 import gzip
 import threading
-from typing import Dict, List, Optional, Any, Callable
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from enum import Enum
 import secrets

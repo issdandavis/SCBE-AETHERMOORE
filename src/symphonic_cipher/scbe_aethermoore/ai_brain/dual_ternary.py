@@ -18,7 +18,7 @@ Energy model: E(p, m) = p^2 + m^2 + p*m
 """
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
 from .unified_state import PHI, BRAIN_EPSILON

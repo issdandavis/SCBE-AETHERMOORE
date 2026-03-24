@@ -18,15 +18,13 @@ Version: 1.0.0
 """
 
 import asyncio
-import hashlib
-import json
 import time
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, Type, Union
+from typing import Any, Dict, List, Optional
 import logging
 
 logger = logging.getLogger(__name__)
@@ -132,7 +130,6 @@ class Tool(ABC):
     @abstractmethod
     async def execute(self, parameters: Dict[str, Any], context: Dict[str, Any]) -> Any:
         """Execute the tool with given parameters."""
-        pass
 
     def validate_parameters(self, parameters: Dict[str, Any]) -> List[str]:
         """Validate parameters against definition."""

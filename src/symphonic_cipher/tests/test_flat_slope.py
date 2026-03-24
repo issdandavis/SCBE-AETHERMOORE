@@ -11,8 +11,6 @@ Security Tests:
 
 import pytest
 import numpy as np
-import hashlib
-import hmac
 
 from symphonic_cipher.flat_slope_encoder import (
     # Core functions

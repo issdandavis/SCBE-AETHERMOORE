@@ -7,7 +7,7 @@ Mirrors src/game/regions.ts. Six tongue regions + 100-floor manhwa tower.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Optional, Tuple
 
 from .types import TongueCode
 

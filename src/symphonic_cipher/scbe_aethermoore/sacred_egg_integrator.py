@@ -29,17 +29,13 @@ import copy
 import dataclasses
 import hashlib
 import json
-import math
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 # Import from cli_toolkit (the canonical Six-Tongues + GeoSeal module)
 from src.symphonic_cipher.scbe_aethermoore.cli_toolkit import (
     CrossTokenizer,
     ConcentricRingPolicy,
-    TongueTokenizer,
-    Lexicons,
-    XlateAttestation,
     geoseal_encrypt,
     geoseal_decrypt,
     project_to_sphere,
