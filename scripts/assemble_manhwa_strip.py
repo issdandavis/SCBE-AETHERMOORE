@@ -25,7 +25,7 @@ except ImportError:  # pragma: no cover - import path fallback for tests
     from scripts.webtoon_quality_gate import load_quality_report
 
 try:
-    from PIL import Image, ImageDraw
+    from PIL import Image
 except ImportError:
     sys.exit("Pillow required: pip install Pillow")
 

@@ -72,15 +72,15 @@ class TestCryptoLimitations:
             start = time.perf_counter()
             try:
                 ss.unseal(sealed, aad="ctx")
-            except:
-                pass
+            except Exception:
+                pass  # Intentionally swallowed — measuring timing
             times_correct.append(time.perf_counter() - start)
 
             start = time.perf_counter()
             try:
                 ss.unseal(sealed, aad="wrong")
-            except:
-                pass
+            except Exception:
+                pass  # Intentionally swallowed — measuring timing
             times_wrong.append(time.perf_counter() - start)
 
         # If timing differs significantly, side-channel exists

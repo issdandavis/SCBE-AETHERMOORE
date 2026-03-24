@@ -1538,8 +1538,8 @@ class TestIntegrationStress:
         for _ in range(10):
             try:
                 ss.unseal("invalid_blob", aad="test")
-            except:
-                pass
+            except Exception:
+                pass  # Intentionally swallowed — testing error recovery
 
         # Should still work after errors
         sealed = ss.seal(b"test after errors")
