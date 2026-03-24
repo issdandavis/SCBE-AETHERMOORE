@@ -13,7 +13,6 @@ Markers: @pytest.mark.crypto, @pytest.mark.unit
 """
 
 import hashlib
-import hmac
 import secrets
 import pytest
 

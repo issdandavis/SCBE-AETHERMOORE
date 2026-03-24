@@ -29,12 +29,9 @@ import pytest
 
 from symphonic_cipher.scbe_aethermoore.ai_brain.mirror_shift import (
     BRAIN_DIMENSIONS,
-    CONSTRAINT_BOUNDS,
     PARALLEL_DIMS,
     PERP_DIMS,
-    AlignmentResult,
     MirrorAnalysis,
-    MirrorShiftResult,
     analyze_transition,
     compute_dual_ternary,
     dual_ternary_trajectory,

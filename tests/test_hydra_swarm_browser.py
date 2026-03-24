@@ -14,8 +14,6 @@ Tests cover:
 @component HYDRA Swarm Browser Tests
 """
 
-import asyncio
-import json
 import os
 import sys
 
@@ -257,7 +255,6 @@ class TestCLISwarm:
 
     def test_argparse_dry_run(self):
         """Verify argparse accepts --dry-run."""
-        import argparse
         from hydra.cli_swarm import main
 
         # We can't easily test main() without launching,

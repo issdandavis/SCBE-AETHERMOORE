@@ -13,16 +13,12 @@ Tests cover:
 
 import pytest
 import os
-import time
-import hashlib
 
 from symphonic_cipher.scbe_aethermoore.spiral_seal import (
     # Sacred Tongues
     SacredTongue,
     SacredTongueTokenizer,
-    Token,
     TONGUE_WORDLISTS,
-    DOMAIN_TONGUE_MAP,
     get_tongue_for_domain,
     get_tokenizer,
     get_combined_alphabet,
@@ -34,12 +30,10 @@ from symphonic_cipher.scbe_aethermoore.spiral_seal import (
     SpiralSealResult,
     VeiledSealResult,
     KDFType,
-    AEADType,
     quick_seal,
     quick_unseal,
     get_crypto_backend_info,
     # Constants
-    SS1_VERSION,
     SALT_SIZE,
     TAG_SIZE,
 )

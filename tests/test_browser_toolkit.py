@@ -11,7 +11,7 @@ import re
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import httpx
 import pytest

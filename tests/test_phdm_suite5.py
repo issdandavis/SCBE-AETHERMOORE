@@ -19,8 +19,8 @@ Uses a MockAetherBrain that simulates the geometric routing logic
 
 import pytest
 import numpy as np
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional
+from dataclasses import dataclass
+from typing import List, Dict
 
 
 # ==============================================================================

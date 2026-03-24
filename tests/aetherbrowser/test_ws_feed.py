@@ -1,9 +1,8 @@
 """Tests for the WebSocket message protocol."""
 
 import json
-import time
 import pytest
-from src.aetherbrowser.ws_feed import WsFeed, MsgType, Agent, Zone
+from src.aetherbrowser.ws_feed import WsFeed, Agent, Zone
 
 
 class TestMessageCreation:

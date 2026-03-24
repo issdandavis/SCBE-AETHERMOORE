@@ -19,9 +19,7 @@ import pytest
 matplotlib = pytest.importorskip("matplotlib", reason="matplotlib not installed")
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from typing import Tuple, List
 from dataclasses import dataclass
-import struct
 
 from src.aethermoore import adaptive_wave, feistel_perm, fingerprint, square_wave
 

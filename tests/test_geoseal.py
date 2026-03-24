@@ -12,13 +12,11 @@ from src.geoseal import (
     Agent,
     TONGUE_PHASES,
     SUSPICION_THRESHOLD,
-    QUARANTINE_CONSENSUS,
     hyperbolic_distance,
     phase_deviation,
     clamp_to_ball,
     compute_repel_force,
     update_suspicion,
-    swarm_step,
     run_swarm,
     compute_metrics,
 )

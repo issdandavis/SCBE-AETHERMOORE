@@ -1,6 +1,5 @@
 """Tests for the Python port of HyperLane governance."""
 
-import pytest
 from src.aetherbrowser.hyperlane_py import HyperLanePy, Zone, Decision
 
 

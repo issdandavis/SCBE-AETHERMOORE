@@ -5,7 +5,6 @@ import pytest
 
 from scripts.thermal_mirror_probe import (
     TEMPERATURE_SOURCES,
-    SpectralMeasurement,
     ThermalProbeResult,
     analyze_thermal,
     spectral_measure_2d,

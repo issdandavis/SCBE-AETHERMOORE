@@ -10,8 +10,6 @@ import pytest
 from src.storage.langues_dispersal import (
     PHI,
     TONGUE_NAMES,
-    TONGUE_WEIGHTS,
-    DispersalReport,
     SpinVector,
     build_metric_tensor,
     compute_dispersal,

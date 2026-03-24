@@ -1,6 +1,5 @@
 """Tests for the 'This Page' analyzer."""
 
-import pytest
 from src.aetherbrowser.page_analyzer import PageAnalyzer
 
 
