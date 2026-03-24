@@ -139,7 +139,7 @@ class WebSocketManager:
 
     def __init__(
         self,
-        spine: 'HydraSpine',
+        spine: 'HydraSpine',  # noqa: F821
         auth_required: bool = True,
         heartbeat_interval: float = 30.0,
         max_clients: int = 100,
@@ -917,7 +917,7 @@ class WebSocketManager:
 # =============================================================================
 
 def create_websocket_manager(
-    spine: 'HydraSpine',
+    spine: 'HydraSpine',  # noqa: F821
     **kwargs
 ) -> WebSocketManager:
     """

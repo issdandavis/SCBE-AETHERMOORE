@@ -56,18 +56,14 @@ class TestSCBE14Layers:
         # Test 2: Zero phases → real output
         t_real = np.concatenate([np.ones(self.D), np.zeros(self.D)])
         c_real = layer_1_complex_state(t_real, self.D)
-        self.assert_test(
-            np.allclose(np.imag(c_real), 0), "Zero phases produce real values"
-        )
+        self.assert_test(np.allclose(np.imag(c_real), 0), "Zero phases produce real values")
 
         # Test 3: Amplitude encoding
         amplitudes = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
         phases = np.zeros(self.D)
         t = np.concatenate([amplitudes, phases])
         c = layer_1_complex_state(t, self.D)
-        self.assert_test(
-            np.allclose(np.abs(c), amplitudes), "Amplitudes correctly encoded"
-        )
+        self.assert_test(np.allclose(np.abs(c), amplitudes), "Amplitudes correctly encoded")
 
     def test_layer_2_realification(self):
         """Test Layer 2: Realification."""
@@ -90,9 +86,7 @@ class TestSCBE14Layers:
         real_part = x[: self.D]
         imag_part = x[self.D :]
         c_recovered = real_part + 1j * imag_part
-        self.assert_test(
-            np.allclose(c, c_recovered), "Invertible: can recover complex state"
-        )
+        self.assert_test(np.allclose(c, c_recovered), "Invertible: can recover complex state")
 
     def test_layer_3_weighted_transform(self):
         """Test Layer 3: Weighted transform."""
@@ -109,9 +103,7 @@ class TestSCBE14Layers:
         # Test 3: Custom SPD matrix
         G = np.eye(self.n)
         x_G_identity = layer_3_weighted_transform(x, G)
-        self.assert_test(
-            np.allclose(x, x_G_identity), "Identity matrix → identity transform"
-        )
+        self.assert_test(np.allclose(x, x_G_identity), "Identity matrix → identity transform")
 
         # Test 4: Linearity
         x1 = np.random.randn(self.n)
@@ -131,9 +123,7 @@ class TestSCBE14Layers:
 
         # Test 2: Clamping to compact sub-ball
         max_norm = 1.0 - self.eps_ball
-        self.assert_test(
-            np.linalg.norm(u) <= max_norm, f"Clamped to ||u|| ≤ {max_norm}"
-        )
+        self.assert_test(np.linalg.norm(u) <= max_norm, f"Clamped to ||u|| ≤ {max_norm}")
 
         # Test 3: Zero input → zero output
         u_zero = layer_4_poincare_embedding(np.zeros(self.n))
@@ -182,9 +172,7 @@ class TestSCBE14Layers:
 
         # Test 3: b < 1 contracts radius
         u_contract = layer_6_breathing_transform(u, b=0.7)
-        self.assert_test(
-            np.linalg.norm(u_contract) < np.linalg.norm(u), "b < 1 contracts"
-        )
+        self.assert_test(np.linalg.norm(u_contract) < np.linalg.norm(u), "b < 1 contracts")
 
         # Test 4: b = 1 approximately identity
         u_identity = layer_6_breathing_transform(u, b=1.0)
@@ -196,9 +184,7 @@ class TestSCBE14Layers:
         u_b = layer_6_breathing_transform(u, b=1.5)
         v_b = layer_6_breathing_transform(v, b=1.5)
         d_after = layer_5_hyperbolic_distance(u_b, v_b)
-        self.assert_test(
-            not np.isclose(d_before, d_after), "NOT isometry (distance changes)"
-        )
+        self.assert_test(not np.isclose(d_before, d_after), "NOT isometry (distance changes)")
 
     def test_layer_7_phase_transform(self):
         """Test Layer 7: Phase transform (isometry)."""
@@ -311,9 +297,7 @@ class TestSCBE14Layers:
 
         # Test 2: Weights sum to 1 (validated internally)
         try:
-            d_tri = layer_11_triadic_temporal(
-                0.1, 0.2, 0.3, lambda1=0.33, lambda2=0.33, lambda3=0.34
-            )
+            d_tri = layer_11_triadic_temporal(0.1, 0.2, 0.3, lambda1=0.33, lambda2=0.33, lambda3=0.34)
             self.assert_test(True, "Weights sum to 1 validation passes")
         except AssertionError:
             self.assert_test(False, "Weights sum to 1 validation passes")
