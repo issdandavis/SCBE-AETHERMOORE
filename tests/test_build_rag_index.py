@@ -111,4 +111,3 @@ def test_query_rag_index_returns_relevant_doc(tmp_path: Path) -> None:
     assert len(results) == 2
     assert results[0]["id"].startswith("hyper")
     assert results[0]["score"] >= results[1]["score"]
-

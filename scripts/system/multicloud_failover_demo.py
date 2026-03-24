@@ -37,12 +37,17 @@ def main() -> int:
     }
 
     result = router.route(action_kind=args.kind, payload=payload)
-    print(json.dumps({
-        "selected": result.selected,
-        "fallback_used": result.fallback_used,
-        "latency_ms": round(result.latency_ms, 3),
-        "response": result.response,
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "selected": result.selected,
+                "fallback_used": result.fallback_used,
+                "latency_ms": round(result.latency_ms, 3),
+                "response": result.response,
+            },
+            indent=2,
+        )
+    )
     return 0
 
 

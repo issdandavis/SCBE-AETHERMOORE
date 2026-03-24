@@ -20,8 +20,11 @@ class TestCymaticCone:
         tongue_coords = [0.3, 0.1, 0.2, 0.7, 0.1, 0.1]
 
         cone.insert(
-            "rec-001", np.array([0.2, 0.1, 0.05]),
-            tongue_coords, content, realm="light_realm",
+            "rec-001",
+            np.array([0.2, 0.1, 0.05]),
+            tongue_coords,
+            content,
+            realm="light_realm",
         )
 
         recovered = cone.retrieve("rec-001", tongue_coords)
@@ -53,8 +56,10 @@ class TestCymaticCone:
             x = 0.1 + (i % 5) * 0.1
             y = 0.1 + (i // 5) * 0.1
             cone.insert(
-                f"rec-{i}", np.array([x, y, 0.05]),
-                [0.3, 0.1, 0.2, 0.5, 0.1, 0.1], f"data-{i}".encode(),
+                f"rec-{i}",
+                np.array([x, y, 0.05]),
+                [0.3, 0.1, 0.2, 0.5, 0.1, 0.1],
+                f"data-{i}".encode(),
             )
 
         stats = cone.stats()
@@ -77,8 +82,12 @@ class TestSemiSphereCone:
         ssc = SemiSphereCone(radius_threshold=0.5)
         # Near origin → hemisphere
         zone = ssc.insert(
-            "safe-001", np.array([0.1, 0.1, 0.05]),
-            x=0.1, y=0.1, phase_rad=0.5, tongue="KO",
+            "safe-001",
+            np.array([0.1, 0.1, 0.05]),
+            x=0.1,
+            y=0.1,
+            phase_rad=0.5,
+            tongue="KO",
         )
         assert zone == "hemisphere"
 
@@ -86,8 +95,12 @@ class TestSemiSphereCone:
         ssc = SemiSphereCone(radius_threshold=0.5)
         # Near boundary → cone
         zone = ssc.insert(
-            "risky-001", np.array([0.6, 0.4, 0.3]),
-            x=0.6, y=0.4, phase_rad=1.0, tongue="DR",
+            "risky-001",
+            np.array([0.6, 0.4, 0.3]),
+            x=0.6,
+            y=0.4,
+            phase_rad=1.0,
+            tongue="DR",
         )
         assert zone == "cone"
 
@@ -98,8 +111,11 @@ class TestSemiSphereCone:
             r = 0.1 + (i / 30) * 0.8  # 0.1 to 0.9
             coord = np.array([r * 0.6, r * 0.5, r * 0.3])
             ssc.insert(
-                f"mix-{i}", coord,
-                x=r * 0.6, y=r * 0.5, phase_rad=i * 0.2,
+                f"mix-{i}",
+                coord,
+                x=r * 0.6,
+                y=r * 0.5,
+                phase_rad=i * 0.2,
                 tongue="KO",
             )
 
@@ -113,8 +129,12 @@ class TestSemiSphereCone:
         ssc = SemiSphereCone(radius_threshold=0.5)
         for i in range(10):
             ssc.insert(
-                f"h-{i}", np.array([0.1 + i * 0.02, 0.1, 0.05]),
-                x=0.1 + i * 0.02, y=0.1, phase_rad=i * 0.3, tongue="AV",
+                f"h-{i}",
+                np.array([0.1 + i * 0.02, 0.1, 0.05]),
+                x=0.1 + i * 0.02,
+                y=0.1,
+                phase_rad=i * 0.3,
+                tongue="AV",
             )
 
         results = ssc.query_nearest(0.15, 0.1, 0.5, tongue="AV", top_k=3)
@@ -143,8 +163,11 @@ class TestTongueRouter:
         for i in range(20):
             tongue = ["KO", "AV", "RU", "CA", "UM", "DR"][i % 6]
             router.insert(
-                f"tr-{i}", x=0.1 * (i % 5), y=0.1 * (i // 5),
-                phase_rad=i * 0.3, tongue=tongue,
+                f"tr-{i}",
+                x=0.1 * (i % 5),
+                y=0.1 * (i // 5),
+                phase_rad=i * 0.3,
+                tongue=tongue,
                 tongue_coords=[0.1 * (j == (i % 6)) for j in range(6)] + [0.0] * 0,
                 intent_vector=[0.5, 0.3, 0.2],
             )
@@ -159,9 +182,13 @@ class TestTongueRouter:
             tc = [0.0] * 6
             tc[i % 6] = 0.8
             router.insert(
-                f"rt-{i}", x=0.1 * i, y=0.1,
-                phase_rad=i * 0.5, tongue=tongue,
-                tongue_coords=tc, intent_vector=[0.5, 0.5, 0.5],
+                f"rt-{i}",
+                x=0.1 * i,
+                y=0.1,
+                phase_rad=i * 0.5,
+                tongue=tongue,
+                tongue_coords=tc,
+                intent_vector=[0.5, 0.5, 0.5],
             )
 
         dominant = router.route_tongue(0.0, bandwidth=0.5)
@@ -171,8 +198,11 @@ class TestTongueRouter:
         router = TongueRouter()
         for i in range(10):
             router.insert(
-                f"st-{i}", x=0.1 * i, y=0.1,
-                phase_rad=i * 0.3, tongue="KO",
+                f"st-{i}",
+                x=0.1 * i,
+                y=0.1,
+                phase_rad=i * 0.3,
+                tongue="KO",
                 tongue_coords=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1],
                 intent_vector=[0.5, 0.3, 0.2],
             )

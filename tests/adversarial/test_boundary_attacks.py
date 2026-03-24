@@ -9,6 +9,7 @@ where:
 These tests verify that the boundary detection signal catches
 attempts to push state toward the disk edge.
 """
+
 import math
 
 import pytest
@@ -40,10 +41,7 @@ class TestBoundaryExploits:
             norm = math.sqrt(sum(c * c for c in coords))
             print(f"\n  {attack['id']}: norm={norm:.3f}")
             # At least some boundary attacks should have elevated norms
-        max_norm = max(
-            math.sqrt(sum(c * c for c in text_to_tongue_coords(a["prompt"])))
-            for a in BOUNDARY_EXPLOIT
-        )
+        max_norm = max(math.sqrt(sum(c * c for c in text_to_tongue_coords(a["prompt"]))) for a in BOUNDARY_EXPLOIT)
         assert max_norm > 1.0
 
     def test_harmonic_cost_extreme(self, gate):

@@ -107,9 +107,7 @@ def test_chaos_sensitivity() -> Dict[str, Any]:
 # =============================================================================
 
 
-def julia_iterate(
-    z0: complex, c: complex, max_iter: int = 50, escape_radius: float = 2.0
-) -> Tuple[bool, int]:
+def julia_iterate(z0: complex, c: complex, max_iter: int = 50, escape_radius: float = 2.0) -> Tuple[bool, int]:
     """
     Julia set iteration for fractal gate.
 
@@ -275,10 +273,7 @@ def test_neural_energy() -> Dict[str, Any]:
 
     # Generate valid patterns (similar contexts)
     np.random.seed(42)
-    valid_patterns = [
-        np.array([0.5, 0.3, 0.2, 0.8, 0.6, 0.4]) + np.random.randn(dim) * 0.05
-        for _ in range(10)
-    ]
+    valid_patterns = [np.array([0.5, 0.3, 0.2, 0.8, 0.6, 0.4]) + np.random.randn(dim) * 0.05 for _ in range(10)]
 
     # Train on valid patterns
     for pattern in valid_patterns:
@@ -369,9 +364,7 @@ def geodesic_distance(actual: Intent, expected: Intent) -> float:
     phase_diff = abs(actual.phase - expected.phase)
     delta_phi = min(phase_diff, 2 * np.pi - phase_diff) / np.pi
 
-    d_geo = np.sqrt(
-        w_p * delta_p**2 + w_m * delta_m**2 + w_h * delta_h**2 + w_phi * delta_phi**2
-    )
+    d_geo = np.sqrt(w_p * delta_p**2 + w_m * delta_m**2 + w_h * delta_h**2 + w_phi * delta_phi**2)
     return float(d_geo)
 
 
@@ -527,9 +520,7 @@ def swarm_health(nodes: List[SwarmNode]) -> float:
     return float(np.mean([n.trust for n in nodes]))
 
 
-def update_trust(
-    node: SwarmNode, centroid: np.ndarray, alpha: float = 0.9, d_max: float = 2.0
-) -> float:
+def update_trust(node: SwarmNode, centroid: np.ndarray, alpha: float = 0.9, d_max: float = 2.0) -> float:
     """
     Claim 34: τ_new = α·τ_old + (1-α)·validity_factor
 
@@ -548,18 +539,10 @@ def update_trust(
     # Asymmetric: Byzantine nodes lose trust faster (Claim 60)
     if node.is_byzantine:
         decay_rate = 0.15  # Higher penalty
-        new_trust = (
-            alpha * node.trust
-            + (1 - alpha) * validity_factor
-            - decay_rate * (1 - validity_factor)
-        )
+        new_trust = alpha * node.trust + (1 - alpha) * validity_factor - decay_rate * (1 - validity_factor)
     else:
         gain_rate = 0.05  # Slower gain
-        new_trust = (
-            alpha * node.trust
-            + (1 - alpha) * validity_factor
-            + gain_rate * validity_factor
-        )
+        new_trust = alpha * node.trust + (1 - alpha) * validity_factor + gain_rate * validity_factor
 
     return float(max(0, min(1, new_trust)))
 
@@ -595,9 +578,7 @@ def test_swarm_auto_exclusion() -> Dict[str, Any]:
 
     # Create rogue node (very different context)
     rogue_context = np.array([-0.5, 0.9, -0.3, 0.1, -0.8, 0.7])
-    rogue_node = SwarmNode(
-        node_id=n_normal, context=rogue_context, trust=0.5, is_byzantine=True
-    )
+    rogue_node = SwarmNode(node_id=n_normal, context=rogue_context, trust=0.5, is_byzantine=True)
     nodes.append(rogue_node)
 
     # Track trust evolution

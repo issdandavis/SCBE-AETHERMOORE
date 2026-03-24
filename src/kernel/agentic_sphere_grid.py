@@ -52,29 +52,32 @@ from src.kernel.scattered_sphere import (
 # Enums & Constants
 # =============================================================================
 
+
 class SkillDomain(str, Enum):
     """Capability domains mapped to Sacred Tongues."""
-    COMMAND = "KO"      # Orchestration, coordination, task dispatch
-    TRANSPORT = "AV"    # Navigation, browsing, data movement
-    ENTROPY = "RU"      # Research, chaos testing, exploration
-    COMPUTE = "CA"      # Code generation, training, execution
-    SECURITY = "UM"     # Scanning, auditing, governance enforcement
-    STRUCTURE = "DR"    # Architecture, documentation, healing
+
+    COMMAND = "KO"  # Orchestration, coordination, task dispatch
+    TRANSPORT = "AV"  # Navigation, browsing, data movement
+    ENTROPY = "RU"  # Research, chaos testing, exploration
+    COMPUTE = "CA"  # Code generation, training, execution
+    SECURITY = "UM"  # Scanning, auditing, governance enforcement
+    STRUCTURE = "DR"  # Architecture, documentation, healing
 
 
 class ActivationTier(int, Enum):
     """Floating-point activation interpreted as capability tier."""
-    DORMANT = 0     # 0.00 - 0.09: Cannot use at all
-    LATENT = 1      # 0.10 - 0.29: Aware it exists, cannot invoke
-    PARTIAL = 2     # 0.30 - 0.59: Can use with degraded performance
-    CAPABLE = 3     # 0.60 - 0.89: Fully functional, not mastered
-    MASTERED = 4    # 0.90 - 1.00: Peak performance, teaches others
+
+    DORMANT = 0  # 0.00 - 0.09: Cannot use at all
+    LATENT = 1  # 0.10 - 0.29: Aware it exists, cannot invoke
+    PARTIAL = 2  # 0.30 - 0.59: Can use with degraded performance
+    CAPABLE = 3  # 0.60 - 0.89: Fully functional, not mastered
+    MASTERED = 4  # 0.90 - 1.00: Peak performance, teaches others
 
 
 class GovernanceVerdict(str, Enum):
     ALLOW = "ALLOW"
     DENY = "DENY"
-    THROTTLE = "THROTTLE"     # Slow the activation (raise cost)
+    THROTTLE = "THROTTLE"  # Slow the activation (raise cost)
     ACCELERATE = "ACCELERATE"  # Speed up (lower cost, detected necessity)
 
 
@@ -83,28 +86,46 @@ class GovernanceVerdict(str, Enum):
 ARCHETYPES: dict[str, dict[str, float]] = {
     "blank": {},  # Tabula rasa — everything dormant
     "researcher": {
-        "web_search": 0.6, "paper_analysis": 0.5, "citation_graph": 0.4,
-        "hypothesis_gen": 0.3, "data_collection": 0.5,
+        "web_search": 0.6,
+        "paper_analysis": 0.5,
+        "citation_graph": 0.4,
+        "hypothesis_gen": 0.3,
+        "data_collection": 0.5,
     },
     "builder": {
-        "code_gen": 0.7, "test_writing": 0.5, "deployment": 0.4,
-        "refactoring": 0.5, "debugging": 0.6,
+        "code_gen": 0.7,
+        "test_writing": 0.5,
+        "deployment": 0.4,
+        "refactoring": 0.5,
+        "debugging": 0.6,
     },
     "guardian": {
-        "governance_scan": 0.7, "threat_detection": 0.6, "audit_trail": 0.5,
-        "access_control": 0.5, "anomaly_detection": 0.4,
+        "governance_scan": 0.7,
+        "threat_detection": 0.6,
+        "audit_trail": 0.5,
+        "access_control": 0.5,
+        "anomaly_detection": 0.4,
     },
     "scout": {
-        "web_search": 0.5, "navigation": 0.7, "scraping": 0.6,
-        "site_mapping": 0.4, "screenshot_capture": 0.5,
+        "web_search": 0.5,
+        "navigation": 0.7,
+        "scraping": 0.6,
+        "site_mapping": 0.4,
+        "screenshot_capture": 0.5,
     },
     "teacher": {
-        "explanation": 0.7, "documentation": 0.6, "training_data_gen": 0.5,
-        "example_creation": 0.5, "curriculum_design": 0.4,
+        "explanation": 0.7,
+        "documentation": 0.6,
+        "training_data_gen": 0.5,
+        "example_creation": 0.5,
+        "curriculum_design": 0.4,
     },
     "healer": {
-        "debugging": 0.7, "self_healing": 0.6, "error_recovery": 0.5,
-        "log_analysis": 0.5, "root_cause": 0.4,
+        "debugging": 0.7,
+        "self_healing": 0.6,
+        "error_recovery": 0.5,
+        "log_analysis": 0.5,
+        "root_cause": 0.4,
     },
 }
 
@@ -113,8 +134,8 @@ AP_REWARDS = {
     "success": 10.0,
     "partial": 5.0,
     "failure": 0.0,  # No AP for failure, but need pressure builds
-    "assist": 3.0,   # Helped another agent
-    "teach": 7.0,    # Mastered skill used to boost another
+    "assist": 3.0,  # Helped another agent
+    "teach": 7.0,  # Mastered skill used to boost another
 }
 
 # Decay rate per tick for unused skills
@@ -133,6 +154,7 @@ ADJACENCY_BANDWIDTH = 0.4
 # Core Data Structures
 # =============================================================================
 
+
 @dataclass
 class SkillNode:
     """
@@ -142,26 +164,27 @@ class SkillNode:
     Partial activation (0.3-0.6) means the skill WORKS but with degraded output.
     This is the key difference from binary skill trees.
     """
+
     id: str
     name: str
-    tongue: str                    # Sacred Tongue domain (KO/AV/RU/CA/UM/DR)
-    tier: int = 1                  # 1-4 (cost scales by tier)
+    tongue: str  # Sacred Tongue domain (KO/AV/RU/CA/UM/DR)
+    tier: int = 1  # 1-4 (cost scales by tier)
     description: str = ""
 
     # Spherical coordinates on the grid
-    phi: float = 0.0              # Latitude (-pi/2 to pi/2)
-    theta: float = 0.0            # Longitude (tongue angle)
-    r: float = 1.0                # Radius (tier depth: 1=surface, 0.4=deep)
+    phi: float = 0.0  # Latitude (-pi/2 to pi/2)
+    theta: float = 0.0  # Longitude (tongue angle)
+    r: float = 1.0  # Radius (tier depth: 1=surface, 0.4=deep)
 
     # Activation cost (governance-modulated)
-    base_cost: float = 10.0       # AP needed for full activation
+    base_cost: float = 10.0  # AP needed for full activation
     governance_multiplier: float = 1.0  # Raised by governance if risky
 
     # Adjacency — which nodes must be partially active (>=0.3) first
     prerequisites: list[str] = field(default_factory=list)
 
     # What this skill produces when invoked
-    capability_tag: str = ""      # e.g., "web_search", "code_gen", "governance_scan"
+    capability_tag: str = ""  # e.g., "web_search", "code_gen", "governance_scan"
 
     # Hodge dual partner tongue (for combo unlocks)
     hodge_partner: Optional[str] = None
@@ -185,11 +208,12 @@ class NeedPressure:
     'computational necessity' engine — the system discovers what
     it needs by trying and failing.
     """
+
     skill_id: str
-    pressure: float = 0.0         # Accumulated need (0.0 to unbounded)
-    failure_count: int = 0        # How many times the agent needed this and didn't have it
-    last_needed: float = 0.0      # Timestamp
-    context: str = ""             # What task triggered the need
+    pressure: float = 0.0  # Accumulated need (0.0 to unbounded)
+    failure_count: int = 0  # How many times the agent needed this and didn't have it
+    last_needed: float = 0.0  # Timestamp
+    context: str = ""  # What task triggered the need
 
     def apply_failure(self, context: str = "") -> float:
         self.pressure += NEED_PRESSURE_PER_FAILURE
@@ -214,16 +238,17 @@ class AgentState:
     - Need pressure map (what they're lacking)
     - Archetype (starting position)
     """
+
     agent_id: str
     archetype: str = "blank"
 
     # Position on the grid
-    phi: float = 0.0              # Current attention focus (latitude)
-    dominant_tongue: str = "KO"   # Emerges from usage patterns
+    phi: float = 0.0  # Current attention focus (latitude)
+    dominant_tongue: str = "KO"  # Emerges from usage patterns
 
     # Resources
-    ap_bank: float = 0.0         # Unspent Ability Points
-    ap_lifetime: float = 0.0     # Total AP ever earned
+    ap_bank: float = 0.0  # Unspent Ability Points
+    ap_lifetime: float = 0.0  # Total AP ever earned
 
     # Personal activation map: skill_id -> activation level (0.0 to 1.0)
     activations: dict[str, float] = field(default_factory=dict)
@@ -280,17 +305,19 @@ class AgentState:
 @dataclass
 class PropagationResult:
     """What happened during one tick of the growth engine."""
+
     tick: int
-    decayed: list[tuple[str, str, float]]     # (agent, skill, new_level)
-    boosted: list[tuple[str, str, float]]      # (agent, skill, new_level)
-    manifested: list[tuple[str, str, float]]   # (agent, skill, new_level) — newly activated
-    governance_reviews: list[dict[str, Any]]    # Skills that hit need-pressure threshold
-    fleet_coverage: dict[str, float]            # Tongue -> % of skills activated fleet-wide
+    decayed: list[tuple[str, str, float]]  # (agent, skill, new_level)
+    boosted: list[tuple[str, str, float]]  # (agent, skill, new_level)
+    manifested: list[tuple[str, str, float]]  # (agent, skill, new_level) — newly activated
+    governance_reviews: list[dict[str, Any]]  # Skills that hit need-pressure threshold
+    fleet_coverage: dict[str, float]  # Tongue -> % of skills activated fleet-wide
 
 
 @dataclass
 class HodgeCombo:
     """Dual-tongue synergy — unlocked when both tongues are CAPABLE."""
+
     name: str
     tongue_a: str
     tongue_b: str
@@ -312,6 +339,7 @@ HODGE_PAIRS: list[HodgeCombo] = [
 # =============================================================================
 # The Canonical Skill Catalog
 # =============================================================================
+
 
 def _build_skill_catalog() -> list[SkillNode]:
     """
@@ -403,20 +431,22 @@ def _build_skill_catalog() -> list[SkillNode]:
             tongue_skills[combo.tongue_b][2][0],  # Tier 3 of tongue B
         ]
         theta_mid = (TONGUE_LONGITUDES[combo.tongue_a] + TONGUE_LONGITUDES[combo.tongue_b]) / 2
-        skills.append(SkillNode(
-            id=combo_id,
-            name=combo.name,
-            tongue=combo.tongue_a,  # Primary domain
-            tier=5,
-            description=combo.bonus,
-            phi=0.0,  # Hodge combos live at the equator (balance point)
-            theta=theta_mid,
-            r=0.3,  # Innermost shell — deep skill
-            base_cost=40.0,
-            prerequisites=prereqs,
-            capability_tag=combo_id,
-            hodge_partner=combo.tongue_b,
-        ))
+        skills.append(
+            SkillNode(
+                id=combo_id,
+                name=combo.name,
+                tongue=combo.tongue_a,  # Primary domain
+                tier=5,
+                description=combo.bonus,
+                phi=0.0,  # Hodge combos live at the equator (balance point)
+                theta=theta_mid,
+                r=0.3,  # Innermost shell — deep skill
+                base_cost=40.0,
+                prerequisites=prereqs,
+                capability_tag=combo_id,
+                hodge_partner=combo.tongue_b,
+            )
+        )
 
     return skills
 
@@ -427,6 +457,7 @@ SKILL_CATALOG = _build_skill_catalog()
 # =============================================================================
 # The Agentic Sphere Grid Engine
 # =============================================================================
+
 
 class AgenticSphereGrid:
     """
@@ -514,8 +545,13 @@ class AgenticSphereGrid:
 
         # Set dominant tongue from archetype
         tongue_map = {
-            "researcher": "RU", "builder": "CA", "guardian": "UM",
-            "scout": "AV", "teacher": "KO", "healer": "DR", "blank": "KO",
+            "researcher": "RU",
+            "builder": "CA",
+            "guardian": "UM",
+            "scout": "AV",
+            "teacher": "KO",
+            "healer": "DR",
+            "blank": "KO",
         }
         state.dominant_tongue = tongue_map.get(archetype, "KO")
         state.phi = TONGUE_LONGITUDES.get(state.dominant_tongue, 0.0) * 0.1  # Start near archetype
@@ -527,8 +563,7 @@ class AgenticSphereGrid:
     #  AP Economy — Earning and Spending
     # -------------------------------------------------------------------------
 
-    def earn_ap(self, agent_id: str, amount: float, reason: str,
-                skill_context: Optional[str] = None) -> float:
+    def earn_ap(self, agent_id: str, amount: float, reason: str, skill_context: Optional[str] = None) -> float:
         """
         Agent earns AP from doing useful work.
 
@@ -552,13 +587,15 @@ class AgenticSphereGrid:
             boost = min(0.02, (1.0 - current) * 0.05)  # Diminishing returns
             state.activations[skill_context] = min(1.0, current + boost)
 
-        state.growth_log.append({
-            "type": "earn_ap",
-            "amount": amount,
-            "reason": reason,
-            "skill": skill_context,
-            "tick": self.tick_count,
-        })
+        state.growth_log.append(
+            {
+                "type": "earn_ap",
+                "amount": amount,
+                "reason": reason,
+                "skill": skill_context,
+                "tick": self.tick_count,
+            }
+        )
 
         return state.ap_bank
 
@@ -574,8 +611,7 @@ class AgenticSphereGrid:
     #  Skill Manifestation — The Core Growth Engine
     # -------------------------------------------------------------------------
 
-    def manifest_skill(self, agent_id: str, skill_id: str,
-                       ap_investment: float = 0.0) -> tuple[bool, float, str]:
+    def manifest_skill(self, agent_id: str, skill_id: str, ap_investment: float = 0.0) -> tuple[bool, float, str]:
         """
         Attempt to manifest (or grow) a skill.
 
@@ -596,8 +632,11 @@ class AgenticSphereGrid:
         for prereq_id in node.prerequisites:
             prereq_level = state.activations.get(prereq_id, 0.0)
             if prereq_level < 0.30:
-                return False, state.activations.get(skill_id, 0.0), \
-                    f"Prerequisite '{prereq_id}' not met (need 0.30, have {prereq_level:.2f})"
+                return (
+                    False,
+                    state.activations.get(skill_id, 0.0),
+                    f"Prerequisite '{prereq_id}' not met (need 0.30, have {prereq_level:.2f})",
+                )
 
         # Governance gate — check if the system allows this activation
         verdict = self._governance_check(agent_id, skill_id)
@@ -630,15 +669,17 @@ class AgenticSphereGrid:
         self._adjacency_ripple(state, node, growth * 0.1)
 
         tier_name = state.activation_tier(skill_id).name
-        state.growth_log.append({
-            "type": "manifest",
-            "skill": skill_id,
-            "from": current,
-            "to": new_level,
-            "tier": tier_name,
-            "ap_spent": ap_investment,
-            "tick": self.tick_count,
-        })
+        state.growth_log.append(
+            {
+                "type": "manifest",
+                "skill": skill_id,
+                "from": current,
+                "to": new_level,
+                "tier": tier_name,
+                "ap_spent": ap_investment,
+                "tick": self.tick_count,
+            }
+        )
 
         return True, new_level, f"{skill_id}: {current:.2f} -> {new_level:.2f} ({tier_name})"
 
@@ -667,9 +708,9 @@ class AgenticSphereGrid:
     #  Computational Necessity — The Recursive Improvement Engine
     # -------------------------------------------------------------------------
 
-    def computational_necessity(self, agent_id: str, task_type: str,
-                                outcome: str, needed_skills: Optional[list[str]] = None
-                                ) -> dict[str, Any]:
+    def computational_necessity(
+        self, agent_id: str, task_type: str, outcome: str, needed_skills: Optional[list[str]] = None
+    ) -> dict[str, Any]:
         """
         The system detects what the agent NEEDS.
 
@@ -728,11 +769,13 @@ class AgenticSphereGrid:
 
                 pressure = state.needs[skill_id]
                 new_pressure = pressure.apply_failure(task_type)
-                result["need_pressure_applied"].append({
-                    "skill": skill_id,
-                    "pressure": new_pressure,
-                    "failures": pressure.failure_count,
-                })
+                result["need_pressure_applied"].append(
+                    {
+                        "skill": skill_id,
+                        "pressure": new_pressure,
+                        "failures": pressure.failure_count,
+                    }
+                )
 
                 # Check if pressure triggers a governance review
                 if pressure.should_trigger_review():
@@ -753,8 +796,7 @@ class AgenticSphereGrid:
                     needed.append(node.id)
         return needed if needed else [task_type]  # Fall back to literal
 
-    def _governance_review_necessity(self, agent_id: str, skill_id: str,
-                                     pressure: NeedPressure) -> dict[str, Any]:
+    def _governance_review_necessity(self, agent_id: str, skill_id: str, pressure: NeedPressure) -> dict[str, Any]:
         """
         Governance reviews whether to ACCELERATE a skill based on demonstrated need.
 
@@ -1026,10 +1068,8 @@ class AgenticSphereGrid:
             "ap_bank": state.ap_bank,
             "active_hodge_combos": active_combos,
             "activation_tier_summary": {
-                t.name: sum(
-                    1 for s, l in state.activations.items()
-                    if state.activation_tier(s) == t
-                ) for t in ActivationTier
+                t.name: sum(1 for s, l in state.activations.items() if state.activation_tier(s) == t)
+                for t in ActivationTier
             },
         }
 
@@ -1045,9 +1085,6 @@ class AgenticSphereGrid:
             "total_agents": len(self.agents),
             "sphere_points": len(self.sphere.lattice),
             "fleet_coverage": self._compute_fleet_coverage(),
-            "agents": {
-                aid: self.agent_specialization(aid)
-                for aid in self.agents
-            },
+            "agents": {aid: self.agent_specialization(aid) for aid in self.agents},
             "governance_log_size": len(self.governance_log),
         }

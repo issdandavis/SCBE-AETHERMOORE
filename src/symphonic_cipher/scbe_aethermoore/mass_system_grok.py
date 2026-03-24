@@ -207,9 +207,7 @@ def extract_phase(wave: np.ndarray) -> float:
 
 def derive_harmonic_mask(token_id: int, secret_key: bytes) -> List[int]:
     """Flat slope - key-derived harmonics, fixed base frequency."""
-    mask_seed = hmac.new(
-        secret_key, f"mask:{token_id}".encode(), hashlib.sha256
-    ).digest()
+    mask_seed = hmac.new(secret_key, f"mask:{token_id}".encode(), hashlib.sha256).digest()
     K = 16
     harmonics = [h for h in range(1, K + 1) if mask_seed[h % 32] > 128]
     if 1 not in harmonics:
@@ -248,9 +246,7 @@ def resonance_refractor(token_ids: List[int], secret_key: bytes) -> np.ndarray:
     t = np.linspace(0, DURATION * len(token_ids), total_len)
     signal = np.zeros_like(t)
     for i, token_id in enumerate(token_ids):
-        phase_seed = hmac.new(
-            secret_key, f"phase:{token_id}".encode(), hashlib.sha256
-        ).digest()
+        phase_seed = hmac.new(secret_key, f"phase:{token_id}".encode(), hashlib.sha256).digest()
         phase = (phase_seed[0] / 255) * 2 * np.pi
         harmonics = derive_harmonic_mask(token_id, secret_key)
         for h in harmonics:
@@ -409,9 +405,7 @@ def governance(state: State9D, intent: float, poly: Polyhedron) -> GovernanceRes
     risk_amplified = risk_base * (R ** (1 + d_tri**2))
 
     # Determine if Grok should be invoked
-    grok_result = GrokResult(
-        truth_score=1.0, reasoning="Not invoked", confidence=1.0, invoked=False
-    )
+    grok_result = GrokResult(truth_score=1.0, reasoning="Not invoked", confidence=1.0, invoked=False)
 
     marginal_coherence = TAU_COH * 0.8 < coh < TAU_COH * 1.2
     marginal_risk = GROK_THRESHOLD_LOW < risk_amplified < GROK_THRESHOLD_HIGH
@@ -479,9 +473,7 @@ def hmac_chain(messages: List[str], master_key: bytes) -> str:
     return T
 
 
-def verify_hmac_chain(
-    messages: List[str], master_key: bytes, expected_tag: str
-) -> bool:
+def verify_hmac_chain(messages: List[str], master_key: bytes, expected_tag: str) -> bool:
     """Verify HMAC chain matches expected tag."""
     return hmac_chain(messages, master_key) == expected_tag
 

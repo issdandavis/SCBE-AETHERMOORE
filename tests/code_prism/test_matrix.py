@@ -13,4 +13,3 @@ def test_matrix_loads_and_has_core_languages():
 def test_matrix_file_exists():
     matrix_path = Path("config/code_prism/interoperability_matrix.json")
     assert matrix_path.exists()
-

@@ -103,9 +103,7 @@ def test_json_projection_round_trips_to_same_signed_proto_bytes() -> None:
     signed = sign_envelope_hmac(env, b"unit-test-signing-key")
 
     original_proto = signed.SerializeToString(deterministic=True)
-    projection = envelope_to_json_projection(
-        signed, include_jsonld=True, include_proto_payload=True
-    )
+    projection = envelope_to_json_projection(signed, include_jsonld=True, include_proto_payload=True)
     restored = json_projection_to_envelope(projection)
     restored_proto = restored.SerializeToString(deterministic=True)
 
@@ -246,4 +244,3 @@ def test_harmonic_wall_cost_monotonic_with_resource_scarcity() -> None:
         thermal_max=85.0,
     )
     assert high_scarcity > low_scarcity
-

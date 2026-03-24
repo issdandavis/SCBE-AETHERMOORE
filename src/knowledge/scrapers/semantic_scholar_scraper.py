@@ -10,6 +10,7 @@ from urllib.request import urlopen, Request
 from urllib.parse import urlencode
 
 import sys
+
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[3]))
 from src.knowledge.funnel import KnowledgeChunk
 
@@ -17,7 +18,9 @@ S2_API = "https://api.semanticscholar.org/graph/v1"
 RATE_LIMIT = 1
 
 
-def search_papers(query: str, limit: int = 20, fields: str = "title,abstract,authors,year,url,citationCount") -> list[KnowledgeChunk]:
+def search_papers(
+    query: str, limit: int = 20, fields: str = "title,abstract,authors,year,url,citationCount"
+) -> list[KnowledgeChunk]:
     """Search Semantic Scholar for papers."""
     params = urlencode({"query": query, "limit": limit, "fields": fields})
     url = f"{S2_API}/paper/search?{params}"

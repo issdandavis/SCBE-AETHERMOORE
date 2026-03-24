@@ -42,15 +42,20 @@ def search_notion_api(query: str, max_results: int = 10, page_size: int = 20) ->
 
     token = _get_notion_token()
     if not token:
-        print("Warning: No NOTION_TOKEN found. Set it in env or config/connector_oauth/.env.connector.oauth", file=sys.stderr)
+        print(
+            "Warning: No NOTION_TOKEN found. Set it in env or config/connector_oauth/.env.connector.oauth",
+            file=sys.stderr,
+        )
         return []
 
     url = "https://api.notion.com/v1/search"
-    payload = json.dumps({
-        "query": query,
-        "page_size": min(page_size, 100),
-        "sort": {"direction": "descending", "timestamp": "last_edited_time"},
-    }).encode("utf-8")
+    payload = json.dumps(
+        {
+            "query": query,
+            "page_size": min(page_size, 100),
+            "sort": {"direction": "descending", "timestamp": "last_edited_time"},
+        }
+    ).encode("utf-8")
 
     req = urllib.request.Request(
         url=url,
@@ -86,20 +91,24 @@ def search_notion_api(query: str, max_results: int = 10, page_size: int = 20) ->
                 title_arr = item.get("title", [])
                 title = "".join(t.get("plain_text", "") for t in title_arr)
 
-            results.append({
-                "id": item.get("id", ""),
-                "type": obj_type,
-                "title": title or "Untitled",
-                "url": item.get("url", ""),
-                "last_edited": item.get("last_edited_time", ""),
-            })
+            results.append(
+                {
+                    "id": item.get("id", ""),
+                    "type": obj_type,
+                    "title": title or "Untitled",
+                    "url": item.get("url", ""),
+                    "last_edited": item.get("last_edited_time", ""),
+                }
+            )
     except Exception as exc:
         print(f"Notion API error: {exc}", file=sys.stderr)
 
     return results
 
 
-def nav_notion_playwright(query: str, max_results: int = 5, save_to_vault: Optional[str] = None) -> List[Dict[str, Any]]:
+def nav_notion_playwright(
+    query: str, max_results: int = 5, save_to_vault: Optional[str] = None
+) -> List[Dict[str, Any]]:
     """Navigate Notion via Playwright (requires login)."""
     try:
         from playwright.sync_api import sync_playwright

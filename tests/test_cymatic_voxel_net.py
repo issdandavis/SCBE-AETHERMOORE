@@ -68,9 +68,8 @@ class TestChladni6D:
     def test_sums_three_paired_terms(self):
         coords = [0.5, 0.3, 0.0, 0.0, 0.0, 0.0]
         state = [2, 3, 0, 0, 0, 0]  # Only first pair nonzero
-        expected = (
-            math.cos(2 * math.pi * 0.5) * math.cos(3 * math.pi * 0.3)
-            - math.cos(3 * math.pi * 0.5) * math.cos(2 * math.pi * 0.3)
+        expected = math.cos(2 * math.pi * 0.5) * math.cos(3 * math.pi * 0.3) - math.cos(3 * math.pi * 0.5) * math.cos(
+            2 * math.pi * 0.3
         )
         assert chladni_6d(coords, state) == pytest.approx(expected, abs=1e-8)
 

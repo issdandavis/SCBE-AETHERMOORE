@@ -8,6 +8,7 @@ Usage:
     python scripts/gen_full_book_panels.py --prompts-only     # Just write prompts, no generation
     python scripts/gen_full_book_panels.py --start ch05       # Start from chapter 5
 """
+
 import os
 import sys
 import json
@@ -375,7 +376,7 @@ def create_panel_prompts_from_chapter(
         if len(lines) > 10 and panel_num < target_panels:
             # Dialogue panel from middle of scene
             mid = len(lines) // 2
-            dialogue_lines = [l for l in lines[mid:mid+5] if '"' in l or l.startswith("*")]
+            dialogue_lines = [l for l in lines[mid : mid + 5] if '"' in l or l.startswith("*")]
             if dialogue_lines:
                 panel_num += 1
                 panels.append(
@@ -416,7 +417,9 @@ def create_panel_prompts_from_chapter(
         "episode_id": (episode_metadata or {}).get("episode_id", chapter_id),
         "title": title,
         "section_title": (episode_metadata or {}).get("title", title),
-        "section_type": (episode_metadata or {}).get("section_type", "interlude" if chapter_id.startswith("int") else "chapter"),
+        "section_type": (episode_metadata or {}).get(
+            "section_type", "interlude" if chapter_id.startswith("int") else "chapter"
+        ),
         "source_markdown": (episode_metadata or {}).get("source_markdown", source_markdown),
         "key_script": (episode_metadata or {}).get("key_script"),
         "target_panel_min": (episode_metadata or {}).get("target_panel_min", max(1, target_panels - 2)),
@@ -449,7 +452,9 @@ def generate_panels(chapter_data, pipe=None):
             continue
 
         t0 = time.time()
-        print(f"  [{i+1}/{len(chapter_data['panels'])}] {p['id']} ({p['w']}x{p['h']}) {p['type']}...", end=" ", flush=True)
+        print(
+            f"  [{i+1}/{len(chapter_data['panels'])}] {p['id']} ({p['w']}x{p['h']}) {p['type']}...", end=" ", flush=True
+        )
 
         image = pipe(
             prompt=p["prompt"],
@@ -470,12 +475,16 @@ def generate_panels(chapter_data, pipe=None):
     # Save manifest
     manifest = out_dir / "manifest.json"
     with open(manifest, "w") as f:
-        json.dump({
-            "chapter": ch_id,
-            "title": chapter_data["title"],
-            "panels": results,
-            "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        }, f, indent=2)
+        json.dump(
+            {
+                "chapter": ch_id,
+                "title": chapter_data["title"],
+                "panels": results,
+                "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            },
+            f,
+            indent=2,
+        )
 
     return results
 
@@ -505,7 +514,9 @@ def main():
     parser.add_argument("--start", "-s", help="Start from this chapter (e.g., ch05)")
     parser.add_argument("--prompts-only", action="store_true", help="Just write prompts, don't generate images")
     parser.add_argument("--panels", "-n", type=int, default=15, help="Target panels per chapter (default: 15)")
-    parser.add_argument("--source-dir", default=str(DEFAULT_SOURCE_DIR), help="Source manuscript directory (default: reader-edition)")
+    parser.add_argument(
+        "--source-dir", default=str(DEFAULT_SOURCE_DIR), help="Source manuscript directory (default: reader-edition)"
+    )
     args = parser.parse_args()
 
     source_dir = Path(args.source_dir).resolve()

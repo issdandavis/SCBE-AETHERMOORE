@@ -35,10 +35,12 @@ class TestHFProviderRegistration:
 
     def test_class_importable(self):
         from hydra.llm_providers import HuggingFaceProvider
+
         assert HuggingFaceProvider is not None
 
     def test_is_llm_provider_subclass(self):
         from hydra.llm_providers import HuggingFaceProvider
+
         assert issubclass(HuggingFaceProvider, LLMProvider)
 
     def test_registered_as_huggingface(self):
@@ -51,8 +53,7 @@ class TestHFProviderRegistration:
         assert _PROVIDER_MAP["hf"] is _PROVIDER_MAP["huggingface"]
 
     def test_all_expected_providers_in_map(self):
-        expected = {"claude", "anthropic", "gpt", "openai", "gemini", "google",
-                    "huggingface", "hf", "local"}
+        expected = {"claude", "anthropic", "gpt", "openai", "gemini", "google", "huggingface", "hf", "local"}
         assert expected.issubset(set(_PROVIDER_MAP.keys()))
 
 
@@ -72,6 +73,7 @@ class TestCreateProviderFactory:
         try:
             provider = create_provider("hf")
             from hydra.llm_providers import HuggingFaceProvider
+
             assert isinstance(provider, HuggingFaceProvider)
         except ImportError:
             pytest.skip("huggingface_hub not installed")
@@ -80,6 +82,7 @@ class TestCreateProviderFactory:
         try:
             provider = create_provider("huggingface")
             from hydra.llm_providers import HuggingFaceProvider
+
             assert isinstance(provider, HuggingFaceProvider)
         except ImportError:
             pytest.skip("huggingface_hub not installed")
@@ -92,6 +95,7 @@ class TestCreateProviderFactory:
         """Sanity check: local provider still works."""
         provider = create_provider("local")
         from hydra.llm_providers import LocalProvider
+
         assert isinstance(provider, LocalProvider)
 
 
@@ -144,24 +148,27 @@ class TestHFProviderInterface:
 
     def test_has_complete_method(self):
         from hydra.llm_providers import HuggingFaceProvider
+
         assert hasattr(HuggingFaceProvider, "complete")
 
     def test_has_stream_method(self):
         from hydra.llm_providers import HuggingFaceProvider
+
         assert hasattr(HuggingFaceProvider, "stream")
 
     def test_complete_is_async(self):
         import asyncio
         from hydra.llm_providers import HuggingFaceProvider
+
         assert asyncio.iscoroutinefunction(HuggingFaceProvider.complete)
 
     def test_stream_is_async(self):
         import asyncio
         import inspect
         from hydra.llm_providers import HuggingFaceProvider
+
         # stream() may be an async generator (yields tokens) rather than a coroutine
-        is_async = (
-            asyncio.iscoroutinefunction(HuggingFaceProvider.stream)
-            or inspect.isasyncgenfunction(HuggingFaceProvider.stream)
+        is_async = asyncio.iscoroutinefunction(HuggingFaceProvider.stream) or inspect.isasyncgenfunction(
+            HuggingFaceProvider.stream
         )
         assert is_async

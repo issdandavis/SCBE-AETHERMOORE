@@ -89,8 +89,16 @@ def assemble_line(tokens: List[str], labels: Dict[str, int]) -> Instr:
 
     # Generic raw path for explicit sacred token opcodes not mapped in phase-1 ISA.
     if spec is None:
-        a = parse_reg(args[0]) if len(args) >= 1 and args[0].lower().startswith("r") else (parse_int(args[0]) if len(args) >= 1 else 0)
-        b = parse_reg(args[1]) if len(args) >= 2 and args[1].lower().startswith("r") else (parse_int(args[1]) if len(args) >= 2 else 0)
+        a = (
+            parse_reg(args[0])
+            if len(args) >= 1 and args[0].lower().startswith("r")
+            else (parse_int(args[0]) if len(args) >= 1 else 0)
+        )
+        b = (
+            parse_reg(args[1])
+            if len(args) >= 2 and args[1].lower().startswith("r")
+            else (parse_int(args[1]) if len(args) >= 2 else 0)
+        )
         imm = resolve_label_or_int(args[2], labels) if len(args) >= 3 else 0
         return Instr(tid, op, a & 0xFF, b & 0xFF, imm)
 
@@ -192,4 +200,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

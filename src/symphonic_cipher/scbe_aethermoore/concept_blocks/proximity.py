@@ -60,14 +60,12 @@ PHI: float = (1.0 + math.sqrt(5.0)) / 2.0
 EPSILON: float = 1e-15
 
 # Sacred Tongue harmonic frequencies: 440 * φ^k Hz
-TONGUE_HARMONICS: List[float] = [
-    440.0 * PHI ** k for k in range(6)
-]
+TONGUE_HARMONICS: List[float] = [440.0 * PHI**k for k in range(6)]
 
 # Proximity alert thresholds
-CLEAR_THRESHOLD: float = 0.5       # Drift divergence > this → CLEAR
-ADVISORY_THRESHOLD: float = 0.1    # Drift stable within this band
-WARNING_THRESHOLD: float = 0.01    # Drift converging below this
+CLEAR_THRESHOLD: float = 0.5  # Drift divergence > this → CLEAR
+ADVISORY_THRESHOLD: float = 0.1  # Drift stable within this band
+WARNING_THRESHOLD: float = 0.01  # Drift converging below this
 CRITICAL_THRESHOLD: float = 0.001  # Drift collapsed → collision imminent
 
 # Minimum samples for reliable proximity detection
@@ -81,22 +79,25 @@ DRIFT_BUFFER_SIZE: int = 128
 # Types
 # ---------------------------------------------------------------------------
 
+
 class ProximityLevel(Enum):
     """Proximity alert levels — the 6th sense output."""
-    CLEAR = "CLEAR"           # Separating — no concern
-    ADVISORY = "ADVISORY"     # Parallel paths — monitor
-    WARNING = "WARNING"       # Converging — prepare evasion
-    CRITICAL = "CRITICAL"     # Collision imminent — act now
-    UNKNOWN = "UNKNOWN"       # Insufficient data
+
+    CLEAR = "CLEAR"  # Separating — no concern
+    ADVISORY = "ADVISORY"  # Parallel paths — monitor
+    WARNING = "WARNING"  # Converging — prepare evasion
+    CRITICAL = "CRITICAL"  # Collision imminent — act now
+    UNKNOWN = "UNKNOWN"  # Insufficient data
 
 
 @dataclass
 class DriftSample:
     """A single decimal-drift measurement from a pipeline step."""
+
     timestamp: float
-    values: List[float]      # Per-dimension drift magnitudes
-    magnitude: float         # L2 norm of drift vector
-    layer: int               # Pipeline layer that produced this (1-14)
+    values: List[float]  # Per-dimension drift magnitudes
+    magnitude: float  # L2 norm of drift vector
+    layer: int  # Pipeline layer that produced this (1-14)
 
     @property
     def cv(self) -> float:
@@ -113,19 +114,21 @@ class DriftSample:
 @dataclass
 class ProximityReading:
     """Result of a proximity field evaluation between two agents."""
+
     level: ProximityLevel
-    drift_distance: float          # L2 distance between drift signatures
-    convergence_rate: float        # Negative = approaching, positive = separating
-    time_to_contact: float         # Estimated seconds to zero distance (-1 if separating)
-    phase_angle: float             # Phase relationship in Sacred Tongue space
-    eigenvalue_floor: float        # Minimum eigenvalue (must be >= 0 for valid reading)
-    confidence: float              # 0.0 - 1.0 based on sample count
-    aperiodic_modulation: float    # Current phason shift applied to thresholds
+    drift_distance: float  # L2 distance between drift signatures
+    convergence_rate: float  # Negative = approaching, positive = separating
+    time_to_contact: float  # Estimated seconds to zero distance (-1 if separating)
+    phase_angle: float  # Phase relationship in Sacred Tongue space
+    eigenvalue_floor: float  # Minimum eigenvalue (must be >= 0 for valid reading)
+    confidence: float  # 0.0 - 1.0 based on sample count
+    aperiodic_modulation: float  # Current phason shift applied to thresholds
 
 
 # ---------------------------------------------------------------------------
 # Drift Shadow Buffer
 # ---------------------------------------------------------------------------
+
 
 class DriftShadowBuffer:
     """Circular buffer of drift samples for a single agent.
@@ -237,6 +240,7 @@ class DriftShadowBuffer:
 # Aperiodic threshold modulation
 # ---------------------------------------------------------------------------
 
+
 def _phason_modulation(tick: int) -> float:
     """Aperiodic modulation factor using golden-ratio phase shifts.
 
@@ -260,6 +264,7 @@ def _phason_modulation(tick: int) -> float:
 # ---------------------------------------------------------------------------
 # Proximity field computation
 # ---------------------------------------------------------------------------
+
 
 def compute_drift_distance(sig_a: List[float], sig_b: List[float]) -> float:
     """L2 distance between two drift signatures in Poincaré-amplified space.
@@ -340,6 +345,7 @@ def classify_proximity(
 # Non-negative eigenvalue enforcement
 # ---------------------------------------------------------------------------
 
+
 def eigenvalue_floor(signature: List[float]) -> float:
     """Minimum eigenvalue of the signature autocorrelation.
 
@@ -357,6 +363,7 @@ def eigenvalue_floor(signature: List[float]) -> float:
 # ---------------------------------------------------------------------------
 # ProximityBlock — the 6th sense concept block
 # ---------------------------------------------------------------------------
+
 
 class ProximityBlock(ConceptBlock):
     """6th sense: decimal-drift proximity field.
@@ -482,7 +489,7 @@ class ProximityBlock(ConceptBlock):
                 "own_signature_dims": len(own_sig),
             },
             message=f"Proximity: {nearest_level.value} (d={nearest_distance:.6f}, "
-                    f"conv={convergence:.6f}, ttc={ttc:.2f}s)",
+            f"conv={convergence:.6f}, ttc={ttc:.2f}s)",
         )
 
     def _do_configure(self, params: Dict[str, Any]) -> None:

@@ -110,9 +110,9 @@ NEWS_SOURCES = {
 # Spin data semantic field dynamics
 SEMANTIC_FIELD_CONFIG = {
     "adjacency_radius": 2,  # How many hops in the topic graph
-    "time_decay": 0.85,     # How fast old topics fade (per hour)
+    "time_decay": 0.85,  # How fast old topics fade (per hour)
     "cross_field_weight": 0.3,  # Weight for cross-discipline connections
-    "min_relevance": 0.4,   # Minimum semantic similarity to include
+    "min_relevance": 0.4,  # Minimum semantic similarity to include
 }
 
 
@@ -220,10 +220,9 @@ def run_phase(phase_name, dry_run=False):
             "phase": "research",
             "timestamp": now.isoformat(),
             "sources": ["arXiv", "Semantic Scholar", "HuggingFace"],
-            "arxiv_categories": list(set(
-                cat for config in RESEARCH_CATEGORIES.values()
-                for cat in config.get("arxiv_categories", [])
-            )),
+            "arxiv_categories": list(
+                set(cat for config in RESEARCH_CATEGORIES.values() for cat in config.get("arxiv_categories", []))
+            ),
             "status": "planned",
         }
         plan_path = output_dir / "research_plan.json"
@@ -251,8 +250,12 @@ def run_phase(phase_name, dry_run=False):
 
 def main():
     parser = argparse.ArgumentParser(description="SCBE Nightly Research Pipeline")
-    parser.add_argument("--phase", choices=["foreign", "american", "categories", "research", "synthesis", "all"],
-                       default="all", help="Which phase to run")
+    parser.add_argument(
+        "--phase",
+        choices=["foreign", "american", "categories", "research", "synthesis", "all"],
+        default="all",
+        help="Which phase to run",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Print plan without executing")
     args = parser.parse_args()
 

@@ -27,6 +27,7 @@ if _PROJECT_ROOT not in sys.path:
 # with the installed `mcp` package.
 # ---------------------------------------------------------------------------
 
+
 def _load_module(name: str, path: str):
     """Load a Python module from an absolute file path."""
     spec = importlib.util.spec_from_file_location(name, path)
@@ -190,15 +191,17 @@ class TestSCBEServer:
         dsa = base64.b64encode(b"dsa-key-32bytes-demo____").decode()
 
         payloads = [base64.b64encode(f"ai-{i}".encode()).decode() for i in range(3)]
-        result = json.loads(_scbe_mod.cube_mint(
-            payloads_b64=payloads,
-            tongue="KO",
-            context=ctx,
-            pk_kem_b64=kem,
-            sk_dsa_b64=dsa,
-            sk_kem_b64=kem,
-            pk_dsa_b64=dsa,
-        ))
+        result = json.loads(
+            _scbe_mod.cube_mint(
+                payloads_b64=payloads,
+                tongue="KO",
+                context=ctx,
+                pk_kem_b64=kem,
+                sk_dsa_b64=dsa,
+                sk_kem_b64=kem,
+                pk_dsa_b64=dsa,
+            )
+        )
         assert result["total"] == 3
         assert result["batch_id"]
 
@@ -210,10 +213,18 @@ class TestSCBEServer:
     def test_tool_registration(self):
         tool_names = [t.name for t in _scbe_mod.mcp._tool_manager.list_tools()]
         expected = [
-            "tongue_encode", "tongue_decode", "cross_tokenize",
-            "geoseal_seal", "geoseal_unseal", "ring_classify",
-            "egg_create", "egg_hatch", "egg_paint", "egg_register",
-            "cube_mint", "cube_verify",
+            "tongue_encode",
+            "tongue_decode",
+            "cross_tokenize",
+            "geoseal_seal",
+            "geoseal_unseal",
+            "ring_classify",
+            "egg_create",
+            "egg_hatch",
+            "egg_paint",
+            "egg_register",
+            "cube_mint",
+            "cube_verify",
         ]
         for name in expected:
             assert name in tool_names, f"Tool {name} not registered"
@@ -266,8 +277,11 @@ class TestNotionServer:
     def test_tool_registration(self):
         tool_names = [t.name for t in _notion_mod.mcp._tool_manager.list_tools()]
         expected = [
-            "notion_search", "notion_fetch_page", "notion_list_pages",
-            "notion_gap_analysis", "notion_refresh_index",
+            "notion_search",
+            "notion_fetch_page",
+            "notion_list_pages",
+            "notion_gap_analysis",
+            "notion_refresh_index",
         ]
         for name in expected:
             assert name in tool_names, f"Tool {name} not registered"
@@ -323,9 +337,14 @@ class TestSwarmServer:
     def test_tool_registration(self):
         tool_names = [t.name for t in _swarm_mod.mcp._tool_manager.list_tools()]
         expected = [
-            "swarm_launch", "swarm_execute_task", "swarm_navigate",
-            "swarm_screenshot", "swarm_get_content", "swarm_click",
-            "swarm_type", "swarm_status",
+            "swarm_launch",
+            "swarm_execute_task",
+            "swarm_navigate",
+            "swarm_screenshot",
+            "swarm_get_content",
+            "swarm_click",
+            "swarm_type",
+            "swarm_status",
         ]
         for name in expected:
             assert name in tool_names, f"Tool {name} not registered"

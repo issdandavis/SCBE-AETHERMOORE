@@ -137,9 +137,7 @@ def build_records(repo_root: Path, manifest: dict, max_chars: int) -> list[dict]
             response = truncate(body, max_chars)
             if len(response) < 120:
                 continue
-            instruction = (
-                f"Explain the kernel component '{title}' and how it contributes to the SCBE core pipeline."
-            )
+            instruction = f"Explain the kernel component '{title}' and how it contributes to the SCBE core pipeline."
             records.append(
                 {
                     "id": f"sft-kernel-{idx:04d}",
@@ -199,4 +197,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

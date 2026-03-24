@@ -46,14 +46,14 @@ EPS = 1e-12
 # 21D dimension layout
 # ---------------------------------------------------------------------------
 
-SCBE_DIMS = list(range(0, 6))       # SCBE Context
-NAV_DIMS = list(range(6, 12))       # Dual Lattice Navigation
-COG_DIMS = list(range(12, 15))      # PHDM Cognitive Position
-SEM_DIMS = list(range(15, 18))      # Sacred Tongues Semantic Phase
-SWARM_DIMS = list(range(18, 21))    # Swarm Coordination
+SCBE_DIMS = list(range(0, 6))  # SCBE Context
+NAV_DIMS = list(range(6, 12))  # Dual Lattice Navigation
+COG_DIMS = list(range(12, 15))  # PHDM Cognitive Position
+SEM_DIMS = list(range(15, 18))  # Sacred Tongues Semantic Phase
+SWARM_DIMS = list(range(18, 21))  # Swarm Coordination
 
 # "Parallel" channel: structure/geometry (Navigation + Cognitive)
-PARALLEL_DIMS = NAV_DIMS + COG_DIMS   # 9D
+PARALLEL_DIMS = NAV_DIMS + COG_DIMS  # 9D
 # "Perpendicular" channel: intent/governance (SCBE + Semantic + Swarm)
 PERP_DIMS = SCBE_DIMS + SEM_DIMS + SWARM_DIMS  # 12D
 
@@ -62,9 +62,8 @@ PERP_DIMS = SCBE_DIMS + SEM_DIMS + SWARM_DIMS  # 12D
 # Ternary quantization
 # ---------------------------------------------------------------------------
 
-def quantize_ternary(
-    z: np.ndarray, epsilon: float = 0.01
-) -> np.ndarray:
+
+def quantize_ternary(z: np.ndarray, epsilon: float = 0.01) -> np.ndarray:
     """
     Quantize continuous deltas to ternary {-1, 0, +1}.
 
@@ -129,10 +128,7 @@ def dual_ternary_trajectory(
     """
     trajectory = np.asarray(trajectory, dtype=float)
     if trajectory.ndim != 2 or trajectory.shape[1] < BRAIN_DIMENSIONS:
-        raise ValueError(
-            f"Expected (T, {BRAIN_DIMENSIONS}) trajectory, "
-            f"got shape {trajectory.shape}."
-        )
+        raise ValueError(f"Expected (T, {BRAIN_DIMENSIONS}) trajectory, " f"got shape {trajectory.shape}.")
 
     T = len(trajectory)
     par_list = []
@@ -148,9 +144,11 @@ def dual_ternary_trajectory(
 # Mirror shift operator
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class MirrorShiftResult:
     """Result of applying the mirror shift operator."""
+
     shifted_parallel: np.ndarray
     shifted_perp: np.ndarray
     asymmetry_score: float
@@ -245,12 +243,12 @@ def mirror_asymmetry_score(
 # Format: (dimension_index, min_value, max_value)
 CONSTRAINT_BOUNDS: List[Tuple[int, float, float]] = [
     # SCBE Context: all [0, 1]
-    (0, 0.0, 1.0),   # device_trust
-    (1, 0.0, 1.0),   # location_trust
-    (2, 0.0, 1.0),   # network_trust
-    (3, 0.0, 1.0),   # behavior_score
-    (4, 0.0, 1.0),   # time_of_day
-    (5, 0.0, 1.0),   # intent_alignment
+    (0, 0.0, 1.0),  # device_trust
+    (1, 0.0, 1.0),  # location_trust
+    (2, 0.0, 1.0),  # network_trust
+    (3, 0.0, 1.0),  # behavior_score
+    (4, 0.0, 1.0),  # time_of_day
+    (5, 0.0, 1.0),  # intent_alignment
     # Navigation: x, y, z unconstrained; time >= 0; priority, confidence [0, 1]
     (10, 0.0, 1.0),  # priority
     (11, 0.0, 1.0),  # confidence
@@ -332,6 +330,7 @@ def _poincare_containment(x: np.ndarray, max_norm: float = 0.95) -> np.ndarray:
 @dataclass(frozen=True)
 class AlignmentResult:
     """Result of refactor alignment."""
+
     aligned_state: np.ndarray
     corrections_applied: int
     max_correction: float
@@ -365,9 +364,7 @@ def refactor_align(
     """
     x = np.asarray(x, dtype=float).copy()
     if len(x) != BRAIN_DIMENSIONS:
-        raise ValueError(
-            f"Expected {BRAIN_DIMENSIONS}D vector, got {len(x)}D."
-        )
+        raise ValueError(f"Expected {BRAIN_DIMENSIONS}D vector, got {len(x)}D.")
 
     _ = x.copy()
     corrections = 0
@@ -430,9 +427,11 @@ def refactor_align(
 # Combined adapter: state -> dual ternary + scores
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class MirrorAnalysis:
     """Complete mirror shift analysis of a state transition."""
+
     parallel_ternary: np.ndarray
     perp_ternary: np.ndarray
     asymmetry_score: float
@@ -478,9 +477,7 @@ def analyze_transition(
     par, perp = compute_dual_ternary(x_curr, x_prev, epsilon)
 
     # Asymmetry
-    asym = mirror_asymmetry_score(
-        par.reshape(1, -1), perp.reshape(1, -1)
-    )
+    asym = mirror_asymmetry_score(par.reshape(1, -1), perp.reshape(1, -1))
 
     # Complexity: ratio of nonzero entries to total
     total_entries = len(par) + len(perp)

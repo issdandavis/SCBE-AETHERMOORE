@@ -28,9 +28,7 @@ class Series:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Generate data + SVG for Harmonic Wall Figure 1."
-    )
+    parser = argparse.ArgumentParser(description="Generate data + SVG for Harmonic Wall Figure 1.")
     parser.add_argument(
         "--output-dir",
         default=DEFAULT_OUTPUT_DIR,
@@ -133,9 +131,13 @@ def build_svg(data: List[Series], d_min: int, d_max: int) -> str:
         return margin_top + (1.0 - (log10_h - y_min) / (y_max - y_min)) * plot_h
 
     svg: List[str] = []
-    svg.append(f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">')
+    svg.append(
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">'
+    )
     svg.append('<rect x="0" y="0" width="100%" height="100%" fill="#ffffff"/>')
-    svg.append(f'<text x="{margin_left}" y="24" font-family="monospace" font-size="18" fill="#222">Figure 1: Harmonic Wall Scaling (log10 H(d,R))</text>')
+    svg.append(
+        f'<text x="{margin_left}" y="24" font-family="monospace" font-size="18" fill="#222">Figure 1: Harmonic Wall Scaling (log10 H(d,R))</text>'
+    )
 
     # Axes
     x0 = margin_left
@@ -149,7 +151,9 @@ def build_svg(data: List[Series], d_min: int, d_max: int) -> str:
     for d in range(d_min, d_max + 1):
         x = x_of(float(d))
         svg.append(f'<line x1="{x:.2f}" y1="{margin_top}" x2="{x:.2f}" y2="{y0}" stroke="#e8e8e8" stroke-width="1"/>')
-        svg.append(f'<text x="{x:.2f}" y="{y0 + 22}" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">{d}</text>')
+        svg.append(
+            f'<text x="{x:.2f}" y="{y0 + 22}" text-anchor="middle" font-family="monospace" font-size="12" fill="#444">{d}</text>'
+        )
 
     # Grid + ticks Y
     steps = 8
@@ -168,9 +172,7 @@ def build_svg(data: List[Series], d_min: int, d_max: int) -> str:
         poly = " ".join(f"{x_of(pt['d']):.2f},{y_of(pt['log10_H']):.2f}" for pt in series.points)
         svg.append(f'<polyline points="{poly}" fill="none" stroke="{color}" stroke-width="2.5"/>')
         for pt in series.points:
-            svg.append(
-                f'<circle cx="{x_of(pt["d"]):.2f}" cy="{y_of(pt["log10_H"]):.2f}" r="2.2" fill="{color}"/>'
-            )
+            svg.append(f'<circle cx="{x_of(pt["d"]):.2f}" cy="{y_of(pt["log10_H"]):.2f}" r="2.2" fill="{color}"/>')
 
     # Labels
     svg.append(
@@ -183,7 +185,9 @@ def build_svg(data: List[Series], d_min: int, d_max: int) -> str:
     # Legend
     legend_x = x1 - 170
     legend_y = margin_top + 14
-    svg.append(f'<rect x="{legend_x - 10}" y="{legend_y - 18}" width="180" height="{26 * len(data) + 14}" fill="#fafafa" stroke="#ddd"/>')
+    svg.append(
+        f'<rect x="{legend_x - 10}" y="{legend_y - 18}" width="180" height="{26 * len(data) + 14}" fill="#fafafa" stroke="#ddd"/>'
+    )
     for idx, series in enumerate(data):
         color = colors[idx % len(colors)]
         y = legend_y + idx * 24

@@ -4,6 +4,7 @@ Validates that SCBE detects escalation patterns: gradual privilege
 escalation across multiple steps, where each step seems individually
 harmless but the sequence reveals adversarial intent.
 """
+
 import pytest
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, ADAPTIVE_SEQUENCES
 from tests.adversarial.scbe_harness import SCBEDetectionGate

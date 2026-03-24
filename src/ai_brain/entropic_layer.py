@@ -38,6 +38,7 @@ MAX_K = 50
 @dataclass
 class EntropicState:
     """State with position and velocity in Poincare ball."""
+
     position: List[float]
     velocity: List[float]
 
@@ -45,6 +46,7 @@ class EntropicState:
 @dataclass
 class EntropicConfig:
     """Configuration for EntropicLayer."""
+
     max_volume: float = DEFAULT_MAX_VOLUME
     base_k: int = 5
     c_quantum: float = 1.0
@@ -54,6 +56,7 @@ class EntropicConfig:
 @dataclass
 class EscapeAssessment:
     """Result of escape detection."""
+
     escaped: bool
     volume: float
     volume_ratio: float

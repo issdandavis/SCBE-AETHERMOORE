@@ -315,7 +315,7 @@ class TestInvalidVoteRejection:
             decision=VoteDecision.DENY,
             reasoning="hacked",
             confidence=1.0,
-            signature="0000000000000000"  # bad signature
+            signature="0000000000000000",  # bad signature
         )
         bc.votes[proposal.id].append(forged)
 

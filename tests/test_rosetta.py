@@ -389,10 +389,7 @@ class TestDEDE:
     def test_critical_regime(self, dede):
         # Many diverse actions AND high governance uncertainty
         for i in range(50):
-            dede.observe_action(
-                f"action_{i % 20}",
-                {"allow": 0.3, "deny": 0.3, "quarantine": 0.2, "escalate": 0.2}
-            )
+            dede.observe_action(f"action_{i % 20}", {"allow": 0.3, "deny": 0.3, "quarantine": 0.2, "escalate": 0.2})
         signal = dede.compute_signal()
         # Both entropies should be high
         assert signal.h_behavioral > 1.5
@@ -400,10 +397,7 @@ class TestDEDE:
 
     def test_should_block_when_critical(self, dede):
         for i in range(50):
-            dede.observe_action(
-                f"action_{i % 20}",
-                {"allow": 0.25, "deny": 0.25, "quarantine": 0.25, "escalate": 0.25}
-            )
+            dede.observe_action(f"action_{i % 20}", {"allow": 0.25, "deny": 0.25, "quarantine": 0.25, "escalate": 0.25})
         assert dede.should_block() or dede.should_sandbox()
 
     def test_signal_to_dict(self, dede):
@@ -529,8 +523,7 @@ class TestSeedData:
     def test_sacred_tongue_primes_have_all_tongues(self):
         expected_tongues = {"KO", "AV", "RU", "CA", "UM", "DR"}
         for concept_id, tongues in SACRED_TONGUE_PRIMES.items():
-            assert set(tongues.keys()) == expected_tongues, \
-                f"Sacred prime {concept_id} missing tongues"
+            assert set(tongues.keys()) == expected_tongues, f"Sacred prime {concept_id} missing tongues"
 
     def test_tam_profiles_core_languages(self):
         for lang in ["EN", "ZH", "JA", "KO"]:

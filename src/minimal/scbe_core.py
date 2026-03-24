@@ -33,6 +33,7 @@ import math
 
 class Decision(Enum):
     """Gate decisions"""
+
     ALLOW = "ALLOW"
     QUARANTINE = "QUARANTINE"
     DENY = "DENY"
@@ -41,6 +42,7 @@ class Decision(Enum):
 @dataclass
 class RiskResult:
     """Result of risk assessment"""
+
     decision: Decision
     risk_score: float
     distance: float
@@ -52,8 +54,9 @@ class RiskResult:
 @dataclass
 class SCBEConfig:
     """Configuration for SCBE gate"""
+
     # Thresholds
-    allow_threshold: float = 0.3      # Below this = ALLOW
+    allow_threshold: float = 0.3  # Below this = ALLOW
     quarantine_threshold: float = 0.7  # Below this = QUARANTINE, above = DENY
 
     # Geometry (for future use - currently Euclidean performs equivalently)
@@ -102,12 +105,12 @@ class SCBEGate:
         if norm_u_sq >= 1.0:
             scale = 0.999 / math.sqrt(norm_u_sq)
             u = [x * scale for x in u]
-            norm_u_sq = 0.999 ** 2
+            norm_u_sq = 0.999**2
 
         if norm_v_sq >= 1.0:
             scale = 0.999 / math.sqrt(norm_v_sq)
             v = [x * scale for x in v]
-            norm_v_sq = 0.999 ** 2
+            norm_v_sq = 0.999**2
 
         diff_norm_sq = sum((a - b) ** 2 for a, b in zip(u, v))
         denom = (1 - norm_u_sq) * (1 - norm_v_sq) + eps
@@ -120,7 +123,7 @@ class SCBEGate:
         Apply harmonic scaling: H(d) = R^(d^2)
         This amplifies risk for large distances.
         """
-        return self.config.harmonic_ratio ** (distance ** 2)
+        return self.config.harmonic_ratio ** (distance**2)
 
     def _compute_distance(self, context: List[float]) -> float:
         """Compute distance from trust centroid"""
@@ -155,10 +158,7 @@ class SCBEGate:
         return 1.0
 
     def evaluate(
-        self,
-        context: List[float],
-        action: str = "default",
-        metadata: Optional[Dict[str, Any]] = None
+        self, context: List[float], action: str = "default", metadata: Optional[Dict[str, Any]] = None
     ) -> RiskResult:
         """
         Evaluate an action in the given context.
@@ -209,7 +209,7 @@ class SCBEGate:
             distance=distance,
             confidence=confidence,
             reason=reason,
-            processing_time_ms=processing_time
+            processing_time_ms=processing_time,
         )
 
 
@@ -234,18 +234,138 @@ class SacredTonguesEncoder:
 
     # Syllable sets for each tongue (simplified for demo)
     SYLLABLES = {
-        "KO": ["ka", "ki", "ku", "ke", "ko", "ga", "gi", "gu", "ge", "go",
-               "sa", "si", "su", "se", "so", "za", "zi", "zu", "ze", "zo"],
-        "AV": ["va", "vi", "vu", "ve", "vo", "fa", "fi", "fu", "fe", "fo",
-               "la", "li", "lu", "le", "lo", "ra", "ri", "ru", "re", "ro"],
-        "RU": ["ra", "ri", "ru", "re", "ro", "ta", "ti", "tu", "te", "to",
-               "na", "ni", "nu", "ne", "no", "ha", "hi", "hu", "he", "ho"],
-        "CA": ["ca", "ci", "cu", "ce", "co", "ma", "mi", "mu", "me", "mo",
-               "pa", "pi", "pu", "pe", "po", "ba", "bi", "bu", "be", "bo"],
-        "UM": ["um", "am", "em", "im", "om", "un", "an", "en", "in", "on",
-               "ul", "al", "el", "il", "ol", "ur", "ar", "er", "ir", "or"],
-        "DR": ["da", "di", "du", "de", "do", "ja", "ji", "ju", "je", "jo",
-               "wa", "wi", "wu", "we", "wo", "ya", "yi", "yu", "ye", "yo"],
+        "KO": [
+            "ka",
+            "ki",
+            "ku",
+            "ke",
+            "ko",
+            "ga",
+            "gi",
+            "gu",
+            "ge",
+            "go",
+            "sa",
+            "si",
+            "su",
+            "se",
+            "so",
+            "za",
+            "zi",
+            "zu",
+            "ze",
+            "zo",
+        ],
+        "AV": [
+            "va",
+            "vi",
+            "vu",
+            "ve",
+            "vo",
+            "fa",
+            "fi",
+            "fu",
+            "fe",
+            "fo",
+            "la",
+            "li",
+            "lu",
+            "le",
+            "lo",
+            "ra",
+            "ri",
+            "ru",
+            "re",
+            "ro",
+        ],
+        "RU": [
+            "ra",
+            "ri",
+            "ru",
+            "re",
+            "ro",
+            "ta",
+            "ti",
+            "tu",
+            "te",
+            "to",
+            "na",
+            "ni",
+            "nu",
+            "ne",
+            "no",
+            "ha",
+            "hi",
+            "hu",
+            "he",
+            "ho",
+        ],
+        "CA": [
+            "ca",
+            "ci",
+            "cu",
+            "ce",
+            "co",
+            "ma",
+            "mi",
+            "mu",
+            "me",
+            "mo",
+            "pa",
+            "pi",
+            "pu",
+            "pe",
+            "po",
+            "ba",
+            "bi",
+            "bu",
+            "be",
+            "bo",
+        ],
+        "UM": [
+            "um",
+            "am",
+            "em",
+            "im",
+            "om",
+            "un",
+            "an",
+            "en",
+            "in",
+            "on",
+            "ul",
+            "al",
+            "el",
+            "il",
+            "ol",
+            "ur",
+            "ar",
+            "er",
+            "ir",
+            "or",
+        ],
+        "DR": [
+            "da",
+            "di",
+            "du",
+            "de",
+            "do",
+            "ja",
+            "ji",
+            "ju",
+            "je",
+            "jo",
+            "wa",
+            "wi",
+            "wu",
+            "we",
+            "wo",
+            "ya",
+            "yi",
+            "yu",
+            "ye",
+            "yo",
+        ],
     }
 
     def __init__(self, tongue: str = "KO"):
@@ -278,7 +398,7 @@ class SacredTonguesEncoder:
                 break
 
             high_idx = self.syllables.index(syllables[i]) if syllables[i] in self.syllables else 0
-            low_idx = self.syllables.index(syllables[i+1]) if syllables[i+1] in self.syllables else 0
+            low_idx = self.syllables.index(syllables[i + 1]) if syllables[i + 1] in self.syllables else 0
 
             byte = ((high_idx & 0x0F) << 4) | (low_idx & 0x0F)
             result.append(byte)
@@ -349,11 +469,7 @@ class RWPEnvelope:
         return json.loads(payload_json)
 
 
-def validate_action(
-    context: List[float],
-    action: str = "default",
-    config: Optional[SCBEConfig] = None
-) -> RiskResult:
+def validate_action(context: List[float], action: str = "default", config: Optional[SCBEConfig] = None) -> RiskResult:
     """
     Simple one-function API for risk validation.
 
@@ -376,13 +492,13 @@ def validate_action(
 
 # Convenience exports
 __all__ = [
-    'SCBEGate',
-    'SCBEConfig',
-    'Decision',
-    'RiskResult',
-    'SacredTonguesEncoder',
-    'RWPEnvelope',
-    'validate_action',
+    "SCBEGate",
+    "SCBEConfig",
+    "Decision",
+    "RiskResult",
+    "SacredTonguesEncoder",
+    "RWPEnvelope",
+    "validate_action",
 ]
 
 
@@ -435,7 +551,7 @@ if __name__ == "__main__":
     print(f"   Verified: {verified}")
 
     # Test fail-to-noise
-    sealed['sig'] = 'tampered'
+    sealed["sig"] = "tampered"
     failed = RWPEnvelope.verify(sealed, key)
     print(f"   Tampered: {failed} (silent failure)")
 

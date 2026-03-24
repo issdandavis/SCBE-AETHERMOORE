@@ -1,9 +1,11 @@
 """Tests for hydra/quadtree25d.py — 2.5D adaptive quadtree with octree/lattice bridge."""
+
 from __future__ import annotations
 
 import math
 import sys
 import os
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import pytest
@@ -31,6 +33,7 @@ from hydra.quadtree25d import (
 # ---------------------------------------------------------------------------
 # QuadPoint
 # ---------------------------------------------------------------------------
+
 
 class TestQuadPoint:
     def test_auto_id(self):
@@ -60,6 +63,7 @@ class TestQuadPoint:
 # ---------------------------------------------------------------------------
 # QuadBounds
 # ---------------------------------------------------------------------------
+
 
 class TestQuadBounds:
     def test_center(self):
@@ -103,6 +107,7 @@ class TestQuadBounds:
 # ---------------------------------------------------------------------------
 # QuadNode
 # ---------------------------------------------------------------------------
+
 
 class TestQuadNode:
     def test_empty_leaf(self):
@@ -194,6 +199,7 @@ class TestQuadNode:
 # Quadtree25D
 # ---------------------------------------------------------------------------
 
+
 class TestQuadtree25D:
     def test_basic_insert(self):
         qt = Quadtree25D()
@@ -279,6 +285,7 @@ class TestQuadtree25D:
 # Terrain mesh
 # ---------------------------------------------------------------------------
 
+
 class TestTerrainMesh:
     def test_mesh_generation(self):
         qt = Quadtree25D(max_points=4)
@@ -312,6 +319,7 @@ class TestTerrainMesh:
 # DEM grid
 # ---------------------------------------------------------------------------
 
+
 class TestDEMGrid:
     def test_dem_shape(self):
         qt = Quadtree25D()
@@ -332,6 +340,7 @@ class TestDEMGrid:
 # ---------------------------------------------------------------------------
 # LOD
 # ---------------------------------------------------------------------------
+
 
 class TestLOD:
     def test_lod_returns_nodes(self):
@@ -358,6 +367,7 @@ class TestLOD:
 # Octree bridge
 # ---------------------------------------------------------------------------
 
+
 class TestOctreeBridge:
     def test_project_to_octree(self):
         qt = Quadtree25D()
@@ -376,6 +386,7 @@ class TestOctreeBridge:
 # ---------------------------------------------------------------------------
 # Lattice bridge
 # ---------------------------------------------------------------------------
+
 
 class TestLatticeBridge:
     def test_project_to_lattice(self):
@@ -398,6 +409,7 @@ class TestLatticeBridge:
 # ---------------------------------------------------------------------------
 # Terrain generators
 # ---------------------------------------------------------------------------
+
 
 class TestTerrainGenerators:
     def test_sine_hills_range(self):
@@ -430,10 +442,18 @@ class TestTerrainGenerators:
 # Interop matrix
 # ---------------------------------------------------------------------------
 
+
 class TestInteropMatrix:
     def test_all_concepts_present(self):
-        expected = {"QuadPoint", "QuadNode", "variance_subdivision",
-                    "terrain_mesh", "lod_select", "octree_bridge", "lattice_bridge"}
+        expected = {
+            "QuadPoint",
+            "QuadNode",
+            "variance_subdivision",
+            "terrain_mesh",
+            "lod_select",
+            "octree_bridge",
+            "lattice_bridge",
+        }
         assert expected == set(QUADTREE25D_INTEROP.keys())
 
     def test_python_in_all(self):
@@ -448,6 +468,7 @@ class TestInteropMatrix:
 # ---------------------------------------------------------------------------
 # Integration: full pipeline
 # ---------------------------------------------------------------------------
+
 
 class TestFullPipeline:
     def test_terrain_to_octree_to_lattice(self):

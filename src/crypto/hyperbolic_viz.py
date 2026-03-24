@@ -22,6 +22,7 @@ from typing import List, Tuple, Dict, Any
 try:
     import matplotlib.pyplot as plt
     from matplotlib.patches import Circle
+
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
@@ -69,7 +70,7 @@ def classical_mds(dist_matrix: np.ndarray, n_dims: int = 2) -> np.ndarray:
     H = np.eye(n) - np.ones((n, n)) / n
 
     # Double-centered Gram matrix
-    B = -0.5 * H @ (dist_matrix ** 2) @ H
+    B = -0.5 * H @ (dist_matrix**2) @ H
 
     # Eigendecomposition
     eigvals, eigvecs = np.linalg.eigh(B)
@@ -100,17 +101,13 @@ def classical_mds(dist_matrix: np.ndarray, n_dims: int = 2) -> np.ndarray:
     return Y
 
 
-def poincare_geodesic(
-    u: np.ndarray,
-    v: np.ndarray,
-    t: float,
-    eps: float = 1e-8
-) -> np.ndarray:
+def poincare_geodesic(u: np.ndarray, v: np.ndarray, t: float, eps: float = 1e-8) -> np.ndarray:
     """
     Compute point on geodesic from u to v at parameter t in [0,1].
 
     Uses Mobius addition for exact Poincare ball geodesics.
     """
+
     def mobius_add(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         xy = np.dot(x, y)
         xx = np.dot(x, x)
@@ -149,7 +146,7 @@ def visualize_poincare_disk(
     points: np.ndarray,
     labels: List[str],
     filename: str = "poincare_disk_projection.png",
-    title: str = "Poincare Disk Projection"
+    title: str = "Poincare Disk Projection",
 ) -> bool:
     """
     Visualize lattice points in 2D Poincare disk.
@@ -208,44 +205,45 @@ def visualize_poincare_disk(
     # Colors by realm
     colors = []
     for label in labels:
-        if 'light' in label.lower():
-            colors.append('gold')
-        elif 'shadow' in label.lower():
-            colors.append('purple')
+        if "light" in label.lower():
+            colors.append("gold")
+        elif "shadow" in label.lower():
+            colors.append("purple")
         else:
-            colors.append('cyan')
+            colors.append("cyan")
 
     # Plot
     fig, ax = plt.subplots(figsize=(10, 10))
-    ax.set_facecolor('black')
+    ax.set_facecolor("black")
 
     # Unit disk boundary
-    disk = Circle((0, 0), 1.0, edgecolor='white', facecolor='none',
-                  linewidth=2, linestyle='--')
+    disk = Circle((0, 0), 1.0, edgecolor="white", facecolor="none", linewidth=2, linestyle="--")
     ax.add_patch(disk)
 
     # Origin
-    ax.plot(0, 0, 'o', color='white', markersize=8)
+    ax.plot(0, 0, "o", color="white", markersize=8)
 
     # Points
-    ax.scatter(coords_2d[:, 0], coords_2d[:, 1],
-               c=colors, s=150, edgecolors='white', linewidth=1, alpha=0.9)
+    ax.scatter(coords_2d[:, 0], coords_2d[:, 1], c=colors, s=150, edgecolors="white", linewidth=1, alpha=0.9)
 
     # Labels
     for i, label in enumerate(labels):
-        ax.text(coords_2d[i, 0] + 0.02, coords_2d[i, 1] + 0.02,
-                f"{i}", color='white', fontsize=8)
+        ax.text(coords_2d[i, 0] + 0.02, coords_2d[i, 1] + 0.02, f"{i}", color="white", fontsize=8)
 
     ax.set_xlim(-1.1, 1.1)
     ax.set_ylim(-1.1, 1.1)
-    ax.set_aspect('equal')
-    ax.axis('off')
+    ax.set_aspect("equal")
+    ax.axis("off")
 
-    plt.title(f"{title}\nGold = Light Realm | Purple = Shadow Realm | Boundary = Hyperbolic Infinity",
-              color='white', fontsize=12, pad=20)
+    plt.title(
+        f"{title}\nGold = Light Realm | Purple = Shadow Realm | Boundary = Hyperbolic Infinity",
+        color="white",
+        fontsize=12,
+        pad=20,
+    )
 
     plt.tight_layout()
-    plt.savefig(filename, dpi=300, facecolor='black')
+    plt.savefig(filename, dpi=300, facecolor="black")
     plt.close()
 
     print(f"[VIZ] Poincare disk saved: {filename}", file=sys.stderr)
@@ -256,7 +254,7 @@ def visualize_3d_voxels(
     octree,
     paths: List[Tuple[np.ndarray, np.ndarray]] = None,
     filename_prefix: str = "poincare_voxels",
-    views: List[Tuple[int, int]] = None
+    views: List[Tuple[int, int]] = None,
 ) -> bool:
     """
     Render 3D voxel visualization from octree.
@@ -287,12 +285,12 @@ def visualize_3d_voxels(
 
     # Color mapping
     color_map = {
-        'gold': (1.0, 0.84, 0.0, 0.6),
-        'purple': (0.5, 0.0, 0.5, 0.6),
-        'cyan': (0.0, 1.0, 1.0, 0.9),
-        'red': (1.0, 0.0, 0.0, 0.8),
-        'magenta': (1.0, 0.0, 1.0, 0.8),
-        'white': (1.0, 1.0, 1.0, 0.9),
+        "gold": (1.0, 0.84, 0.0, 0.6),
+        "purple": (0.5, 0.0, 0.5, 0.6),
+        "cyan": (0.0, 1.0, 1.0, 0.9),
+        "red": (1.0, 0.0, 0.0, 0.8),
+        "magenta": (1.0, 0.0, 1.0, 0.8),
+        "white": (1.0, 1.0, 1.0, 0.9),
     }
 
     for idx in np.argwhere(occupied):
@@ -306,11 +304,11 @@ def visualize_3d_voxels(
 
     view_names = ["perspective", "front", "top", "side"]
 
-    for (elev, azim), view_name in zip(views, view_names[:len(views)]):
+    for (elev, azim), view_name in zip(views, view_names[: len(views)]):
         fig = plt.figure(figsize=(12, 10))
-        ax = fig.add_subplot(111, projection='3d')
+        ax = fig.add_subplot(111, projection="3d")
 
-        ax.voxels(occupied, facecolors=facecolors, edgecolor='k', linewidth=0.1)
+        ax.voxels(occupied, facecolors=facecolors, edgecolor="k", linewidth=0.1)
 
         # Unit ball wireframe (scaled to grid)
         u = np.linspace(0, 2 * np.pi, 30)
@@ -321,10 +319,10 @@ def visualize_3d_voxels(
         x = half + half * np.outer(np.cos(u), np.sin(v))
         y = half + half * np.outer(np.sin(u), np.sin(v))
         z = half + half * np.outer(np.ones_like(u), np.cos(v))
-        ax.plot_wireframe(x, y, z, color='white', alpha=0.15, rstride=5, cstride=5)
+        ax.plot_wireframe(x, y, z, color="white", alpha=0.15, rstride=5, cstride=5)
 
         # Origin
-        ax.scatter([half], [half], [half], color='white', s=100)
+        ax.scatter([half], [half], [half], color="white", s=100)
 
         # Geodesic paths as lines
         if paths:
@@ -333,26 +331,27 @@ def visualize_3d_voxels(
                 for t in np.linspace(0, 1, 50):
                     pt = poincare_geodesic(start[:3], end[:3], t)
                     # Convert to grid space
-                    grid_pt = ((pt + 1.0) / 2.0 * (grid_size - 1))
+                    grid_pt = (pt + 1.0) / 2.0 * (grid_size - 1)
                     path_coords.append(grid_pt)
                 path_coords = np.array(path_coords)
-                ax.plot(path_coords[:, 0], path_coords[:, 1], path_coords[:, 2],
-                        color='white', linewidth=3, alpha=0.9)
+                ax.plot(path_coords[:, 0], path_coords[:, 1], path_coords[:, 2], color="white", linewidth=3, alpha=0.9)
 
         ax.set_xlim(0, grid_size)
         ax.set_ylim(0, grid_size)
         ax.set_zlim(0, grid_size)
-        ax.axis('off')
+        ax.axis("off")
         ax.view_init(elev=elev, azim=azim)
-        ax.set_facecolor('black')
-        fig.patch.set_facecolor('black')
+        ax.set_facecolor("black")
+        fig.patch.set_facecolor("black")
 
-        plt.title(f"3D Poincare Ball Voxels - {view_name.capitalize()}\n"
-                  "Gold=Light | Purple=Shadow | Cyan=Paths",
-                  color='white', fontsize=12)
+        plt.title(
+            f"3D Poincare Ball Voxels - {view_name.capitalize()}\n" "Gold=Light | Purple=Shadow | Cyan=Paths",
+            color="white",
+            fontsize=12,
+        )
 
         filename = f"{filename_prefix}_{view_name}.png"
-        plt.savefig(filename, dpi=300, facecolor='black')
+        plt.savefig(filename, dpi=300, facecolor="black")
         plt.close()
 
     print(f"[VIZ] 3D voxel renders saved: {filename_prefix}_*.png", file=sys.stderr)
@@ -384,15 +383,15 @@ def generate_demo_visualization(output_dir: str = ".") -> Dict[str, Any]:
         norm = np.linalg.norm(point)
         if norm > 0:
             point = point / norm * min(0.4, norm)
-        octree.insert(point, 'light_realm')
-        labels.append('light_realm')
+        octree.insert(point, "light_realm")
+        labels.append("light_realm")
 
     # Shadow realm points (near boundary)
     for _ in range(30):
         point = np.random.randn(3)
         point = point / np.linalg.norm(point) * 0.85
-        octree.insert(point, 'shadow_realm')
-        labels.append('shadow_realm')
+        octree.insert(point, "shadow_realm")
+        labels.append("shadow_realm")
 
     # Collect points for 2D viz
     points = []

@@ -32,26 +32,29 @@ logger = logging.getLogger(__name__)
 
 class ToolCategory(Enum):
     """Categories of tools."""
-    DATA_RETRIEVAL = "data_retrieval"      # Read-only data access
-    DATA_MUTATION = "data_mutation"         # Write operations
-    EXTERNAL_API = "external_api"           # Third-party APIs
-    SYSTEM_COMMAND = "system_command"       # OS-level operations
-    NETWORK = "network"                     # Network operations
-    CRYPTO = "crypto"                       # Cryptographic operations
-    AI_MODEL = "ai_model"                   # AI/ML model calls
+
+    DATA_RETRIEVAL = "data_retrieval"  # Read-only data access
+    DATA_MUTATION = "data_mutation"  # Write operations
+    EXTERNAL_API = "external_api"  # Third-party APIs
+    SYSTEM_COMMAND = "system_command"  # OS-level operations
+    NETWORK = "network"  # Network operations
+    CRYPTO = "crypto"  # Cryptographic operations
+    AI_MODEL = "ai_model"  # AI/ML model calls
 
 
 class PermissionLevel(Enum):
     """Permission levels for tool access."""
-    NONE = 0        # No access
-    READ = 1        # Read-only
-    WRITE = 2       # Read + Write
-    EXECUTE = 3     # Full execution
-    ADMIN = 4       # Administrative access
+
+    NONE = 0  # No access
+    READ = 1  # Read-only
+    WRITE = 2  # Read + Write
+    EXECUTE = 3  # Full execution
+    ADMIN = 4  # Administrative access
 
 
 class ExecutionStatus(Enum):
     """Tool execution status."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -64,6 +67,7 @@ class ExecutionStatus(Enum):
 @dataclass
 class ToolParameter:
     """Definition of a tool parameter."""
+
     name: str
     type: str  # string, int, float, bool, list, dict
     description: str
@@ -75,6 +79,7 @@ class ToolParameter:
 @dataclass
 class ToolDefinition:
     """Definition of a callable tool."""
+
     id: str
     name: str
     description: str
@@ -98,18 +103,19 @@ class ToolDefinition:
                     p.name: {
                         "type": p.type,
                         "description": p.description,
-                        **({"default": p.default} if p.default is not None else {})
+                        **({"default": p.default} if p.default is not None else {}),
                     }
                     for p in self.parameters
                 },
-                "required": [p.name for p in self.parameters if p.required]
-            }
+                "required": [p.name for p in self.parameters if p.required],
+            },
         }
 
 
 @dataclass
 class ToolExecutionResult:
     """Result of tool execution."""
+
     execution_id: str
     tool_id: str
     status: ExecutionStatus
@@ -142,14 +148,7 @@ class Tool(ABC):
             if param.name in parameters:
                 value = parameters[param.name]
                 # Type checking
-                type_map = {
-                    "string": str,
-                    "int": int,
-                    "float": (int, float),
-                    "bool": bool,
-                    "list": list,
-                    "dict": dict
-                }
+                type_map = {"string": str, "int": int, "float": (int, float), "bool": bool, "list": list, "dict": dict}
                 expected_type = type_map.get(param.type)
                 if expected_type and not isinstance(value, expected_type):
                     errors.append(f"Parameter {param.name} expected {param.type}, got {type(value).__name__}")
@@ -168,10 +167,7 @@ class RateLimiter:
         now = time.time()
 
         if key not in self.buckets:
-            self.buckets[key] = {
-                "tokens": limit - 1,
-                "last_refill": now
-            }
+            self.buckets[key] = {"tokens": limit - 1, "last_refill": now}
             return True
 
         bucket = self.buckets[key]
@@ -215,12 +211,7 @@ class PermissionManager:
             self.role_permissions[role] = {}
         self.role_permissions[role][tool_id] = level
 
-    def check_permission(
-        self,
-        agent_id: str,
-        agent_role: str,
-        tool: ToolDefinition
-    ) -> bool:
+    def check_permission(self, agent_id: str, agent_role: str, tool: ToolDefinition) -> bool:
         """Check if agent has permission to use tool."""
         required = tool.required_permission
 
@@ -256,7 +247,7 @@ class AuditLogger:
         tool_id: str,
         parameters: Dict[str, Any],
         result: ToolExecutionResult,
-        context: Dict[str, Any]
+        context: Dict[str, Any],
     ):
         """Log a tool execution."""
         # Sanitize sensitive data
@@ -271,7 +262,7 @@ class AuditLogger:
             "error": result.error,
             "execution_time_ms": result.execution_time_ms,
             "timestamp": datetime.now().isoformat(),
-            "context": context
+            "context": context,
         }
 
         self.logs.append(entry)
@@ -297,7 +288,7 @@ class AuditLogger:
         agent_id: Optional[str] = None,
         tool_id: Optional[str] = None,
         status: Optional[ExecutionStatus] = None,
-        limit: int = 100
+        limit: int = 100,
     ) -> List[Dict[str, Any]]:
         """Query execution logs."""
         results = self.logs
@@ -351,7 +342,8 @@ class ToolRegistry:
         """Search tools by name or description."""
         query_lower = query.lower()
         return [
-            d for d in self.definitions.values()
+            d
+            for d in self.definitions.values()
             if query_lower in d.name.lower() or query_lower in d.description.lower()
         ]
 
@@ -371,7 +363,7 @@ class ToolExecutor:
         registry: ToolRegistry,
         permission_manager: PermissionManager,
         rate_limiter: RateLimiter,
-        audit_logger: AuditLogger
+        audit_logger: AuditLogger,
     ):
         self.registry = registry
         self.permissions = permission_manager
@@ -385,7 +377,7 @@ class ToolExecutor:
         agent_role: str,
         tool_id: str,
         parameters: Dict[str, Any],
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
     ) -> ToolExecutionResult:
         """Execute a tool call."""
         execution_id = str(uuid.uuid4())
@@ -398,7 +390,7 @@ class ToolExecutor:
                 execution_id=execution_id,
                 tool_id=tool_id,
                 status=ExecutionStatus.FAILED,
-                error=f"Tool not found: {tool_id}"
+                error=f"Tool not found: {tool_id}",
             )
 
         definition = tool.definition
@@ -406,10 +398,7 @@ class ToolExecutor:
         # Check permission
         if not self.permissions.check_permission(agent_id, agent_role, definition):
             result = ToolExecutionResult(
-                execution_id=execution_id,
-                tool_id=tool_id,
-                status=ExecutionStatus.DENIED,
-                error="Permission denied"
+                execution_id=execution_id, tool_id=tool_id, status=ExecutionStatus.DENIED, error="Permission denied"
             )
             self.audit.log_execution(execution_id, agent_id, tool_id, parameters, result, context)
             return result
@@ -421,7 +410,7 @@ class ToolExecutor:
                 execution_id=execution_id,
                 tool_id=tool_id,
                 status=ExecutionStatus.RATE_LIMITED,
-                error=f"Rate limit exceeded: {definition.rate_limit}/min"
+                error=f"Rate limit exceeded: {definition.rate_limit}/min",
             )
             self.audit.log_execution(execution_id, agent_id, tool_id, parameters, result, context)
             return result
@@ -433,7 +422,7 @@ class ToolExecutor:
                 execution_id=execution_id,
                 tool_id=tool_id,
                 status=ExecutionStatus.FAILED,
-                error=f"Parameter validation failed: {validation_errors}"
+                error=f"Parameter validation failed: {validation_errors}",
             )
             self.audit.log_execution(execution_id, agent_id, tool_id, parameters, result, context)
             return result
@@ -445,13 +434,13 @@ class ToolExecutor:
                 "tool_id": tool_id,
                 "parameters": parameters,
                 "context": context,
-                "created_at": datetime.now()
+                "created_at": datetime.now(),
             }
             return ToolExecutionResult(
                 execution_id=execution_id,
                 tool_id=tool_id,
                 status=ExecutionStatus.PENDING,
-                metadata={"requires_confirmation": True}
+                metadata={"requires_confirmation": True},
             )
 
         # Execute tool
@@ -464,27 +453,18 @@ class ToolExecutor:
                 execution_id=execution_id,
                 tool_id="unknown",
                 status=ExecutionStatus.FAILED,
-                error="Execution not found or already processed"
+                error="Execution not found or already processed",
             )
 
         pending = self.pending_confirmations.pop(execution_id)
         tool = self.registry.get(pending["tool_id"])
 
         return await self._execute_tool(
-            execution_id,
-            pending["agent_id"],
-            tool,
-            pending["parameters"],
-            pending["context"]
+            execution_id, pending["agent_id"], tool, pending["parameters"], pending["context"]
         )
 
     async def _execute_tool(
-        self,
-        execution_id: str,
-        agent_id: str,
-        tool: Tool,
-        parameters: Dict[str, Any],
-        context: Dict[str, Any]
+        self, execution_id: str, agent_id: str, tool: Tool, parameters: Dict[str, Any], context: Dict[str, Any]
     ) -> ToolExecutionResult:
         """Actually execute the tool."""
         started_at = datetime.now()
@@ -492,8 +472,7 @@ class ToolExecutor:
         try:
             # Execute with timeout
             result_data = await asyncio.wait_for(
-                tool.execute(parameters, context),
-                timeout=tool.definition.timeout_seconds
+                tool.execute(parameters, context), timeout=tool.definition.timeout_seconds
             )
 
             completed_at = datetime.now()
@@ -506,7 +485,7 @@ class ToolExecutor:
                 result=result_data,
                 started_at=started_at,
                 completed_at=completed_at,
-                execution_time_ms=execution_time
+                execution_time_ms=execution_time,
             )
 
         except asyncio.TimeoutError:
@@ -516,7 +495,7 @@ class ToolExecutor:
                 status=ExecutionStatus.TIMEOUT,
                 error=f"Execution timed out after {tool.definition.timeout_seconds}s",
                 started_at=started_at,
-                completed_at=datetime.now()
+                completed_at=datetime.now(),
             )
 
         except Exception as e:
@@ -526,7 +505,7 @@ class ToolExecutor:
                 status=ExecutionStatus.FAILED,
                 error=str(e),
                 started_at=started_at,
-                completed_at=datetime.now()
+                completed_at=datetime.now(),
             )
 
         self.audit.log_execution(execution_id, agent_id, tool.definition.id, parameters, result, context)
@@ -537,27 +516,30 @@ class ToolExecutor:
 # BUILT-IN TOOLS
 # =============================================================================
 
+
 class HTTPRequestTool(Tool):
     """Tool for making HTTP requests."""
 
     def __init__(self):
-        super().__init__(ToolDefinition(
-            id="http_request",
-            name="HTTP Request",
-            description="Make HTTP requests to external APIs",
-            category=ToolCategory.EXTERNAL_API,
-            parameters=[
-                ToolParameter("url", "string", "The URL to request"),
-                ToolParameter("method", "string", "HTTP method (GET, POST, etc.)", default="GET"),
-                ToolParameter("headers", "dict", "Request headers", required=False),
-                ToolParameter("body", "dict", "Request body for POST/PUT", required=False),
-                ToolParameter("timeout", "int", "Request timeout in seconds", required=False, default=30)
-            ],
-            return_type="dict",
-            required_permission=PermissionLevel.EXECUTE,
-            rate_limit=60,
-            timeout_seconds=60
-        ))
+        super().__init__(
+            ToolDefinition(
+                id="http_request",
+                name="HTTP Request",
+                description="Make HTTP requests to external APIs",
+                category=ToolCategory.EXTERNAL_API,
+                parameters=[
+                    ToolParameter("url", "string", "The URL to request"),
+                    ToolParameter("method", "string", "HTTP method (GET, POST, etc.)", default="GET"),
+                    ToolParameter("headers", "dict", "Request headers", required=False),
+                    ToolParameter("body", "dict", "Request body for POST/PUT", required=False),
+                    ToolParameter("timeout", "int", "Request timeout in seconds", required=False, default=30),
+                ],
+                return_type="dict",
+                required_permission=PermissionLevel.EXECUTE,
+                rate_limit=60,
+                timeout_seconds=60,
+            )
+        )
 
     async def execute(self, parameters: Dict[str, Any], context: Dict[str, Any]) -> Any:
         import aiohttp
@@ -570,38 +552,32 @@ class HTTPRequestTool(Tool):
 
         async with aiohttp.ClientSession() as session:
             async with session.request(
-                method,
-                url,
-                headers=headers,
-                json=body if body else None,
-                timeout=aiohttp.ClientTimeout(total=timeout)
+                method, url, headers=headers, json=body if body else None, timeout=aiohttp.ClientTimeout(total=timeout)
             ) as response:
-                return {
-                    "status": response.status,
-                    "headers": dict(response.headers),
-                    "body": await response.text()
-                }
+                return {"status": response.status, "headers": dict(response.headers), "body": await response.text()}
 
 
 class DatabaseQueryTool(Tool):
     """Tool for querying databases."""
 
     def __init__(self, connection_string: str = ""):
-        super().__init__(ToolDefinition(
-            id="database_query",
-            name="Database Query",
-            description="Execute read-only database queries",
-            category=ToolCategory.DATA_RETRIEVAL,
-            parameters=[
-                ToolParameter("query", "string", "SQL query to execute"),
-                ToolParameter("database", "string", "Database name"),
-                ToolParameter("limit", "int", "Maximum rows to return", required=False, default=100)
-            ],
-            return_type="list",
-            required_permission=PermissionLevel.READ,
-            rate_limit=30,
-            timeout_seconds=30
-        ))
+        super().__init__(
+            ToolDefinition(
+                id="database_query",
+                name="Database Query",
+                description="Execute read-only database queries",
+                category=ToolCategory.DATA_RETRIEVAL,
+                parameters=[
+                    ToolParameter("query", "string", "SQL query to execute"),
+                    ToolParameter("database", "string", "Database name"),
+                    ToolParameter("limit", "int", "Maximum rows to return", required=False, default=100),
+                ],
+                return_type="list",
+                required_permission=PermissionLevel.READ,
+                rate_limit=30,
+                timeout_seconds=30,
+            )
+        )
         self.connection_string = connection_string
 
     async def execute(self, parameters: Dict[str, Any], context: Dict[str, Any]) -> Any:
@@ -615,31 +591,29 @@ class DatabaseQueryTool(Tool):
             if keyword in query_upper:
                 raise ValueError(f"Query contains forbidden keyword: {keyword}")
 
-        return {
-            "rows": [],
-            "query": query,
-            "message": "Database query simulated"
-        }
+        return {"rows": [], "query": query, "message": "Database query simulated"}
 
 
 class FileSystemTool(Tool):
     """Tool for file system operations."""
 
     def __init__(self, allowed_paths: List[str] = None):
-        super().__init__(ToolDefinition(
-            id="filesystem",
-            name="File System",
-            description="Read files from allowed directories",
-            category=ToolCategory.DATA_RETRIEVAL,
-            parameters=[
-                ToolParameter("operation", "string", "Operation: read, list, exists"),
-                ToolParameter("path", "string", "File or directory path"),
-            ],
-            return_type="dict",
-            required_permission=PermissionLevel.READ,
-            rate_limit=100,
-            timeout_seconds=10
-        ))
+        super().__init__(
+            ToolDefinition(
+                id="filesystem",
+                name="File System",
+                description="Read files from allowed directories",
+                category=ToolCategory.DATA_RETRIEVAL,
+                parameters=[
+                    ToolParameter("operation", "string", "Operation: read, list, exists"),
+                    ToolParameter("path", "string", "File or directory path"),
+                ],
+                return_type="dict",
+                required_permission=PermissionLevel.READ,
+                rate_limit=100,
+                timeout_seconds=10,
+            )
+        )
         self.allowed_paths = allowed_paths or []
 
     async def execute(self, parameters: Dict[str, Any], context: Dict[str, Any]) -> Any:
@@ -658,7 +632,7 @@ class FileSystemTool(Tool):
             raise ValueError("Path traversal not allowed")
 
         if operation == "read":
-            with open(path, 'r') as f:
+            with open(path, "r") as f:
                 return {"content": f.read()}
         elif operation == "list":
             return {"files": os.listdir(path)}
@@ -672,6 +646,7 @@ class FileSystemTool(Tool):
 # TOOL CALLING FACADE
 # =============================================================================
 
+
 class ToolCallingSystem:
     """
     Main facade for the tool calling system.
@@ -683,12 +658,7 @@ class ToolCallingSystem:
         self.permissions = PermissionManager()
         self.rate_limiter = RateLimiter()
         self.audit = AuditLogger()
-        self.executor = ToolExecutor(
-            self.registry,
-            self.permissions,
-            self.rate_limiter,
-            self.audit
-        )
+        self.executor = ToolExecutor(self.registry, self.permissions, self.rate_limiter, self.audit)
 
         # Register built-in tools
         self._register_builtin_tools()
@@ -717,12 +687,10 @@ class ToolCallingSystem:
         agent_role: str,
         tool_name: str,
         parameters: Dict[str, Any],
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
     ) -> ToolExecutionResult:
         """Call a tool."""
-        return await self.executor.execute(
-            agent_id, agent_role, tool_name, parameters, context
-        )
+        return await self.executor.execute(agent_id, agent_role, tool_name, parameters, context)
 
     def get_available_tools(self, agent_id: str, agent_role: str) -> List[Dict[str, Any]]:
         """Get tools available to an agent."""

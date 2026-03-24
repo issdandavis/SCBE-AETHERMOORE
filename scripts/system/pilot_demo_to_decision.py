@@ -45,7 +45,9 @@ class Step:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run SCBE pilot demo and emit decision artifacts.")
     parser.add_argument("--repo-root", default="", help="Repository root path (auto-detected if omitted).")
-    parser.add_argument("--output-dir", default="artifacts/pilot_demo", help="Artifact directory relative to repo root.")
+    parser.add_argument(
+        "--output-dir", default="artifacts/pilot_demo", help="Artifact directory relative to repo root."
+    )
     parser.add_argument("--sample-count", type=int, default=16, help="Count for lattice25d sample command.")
     parser.add_argument("--max-notes", type=int, default=24, help="Max notes for lattice25d notes command.")
     parser.add_argument("--notes-glob", default="docs/**/*.md", help="Glob pattern for lattice notes import.")
@@ -221,10 +223,7 @@ def main() -> int:
         "repo_root": str(repo_root),
         "run_dir": str(run_dir),
         "steps_dir": str(step_dir),
-        "steps": [
-            {k: v for k, v in step.items() if k != "parsed_payload"}
-            for step in step_results
-        ],
+        "steps": [{k: v for k, v in step.items() if k != "parsed_payload"} for step in step_results],
         "key_metrics": collect_metrics(step_results),
     }
 

@@ -51,7 +51,9 @@ class CVLFuser(torch.nn.Module):
         for p in self.Q.parameters():
             p.requires_grad_(False)
 
-    def forward(self, C: torch.Tensor, K: torch.Tensor, tie_kb: TIEKB | None, top_k: int, temperature: float) -> torch.Tensor:
+    def forward(
+        self, C: torch.Tensor, K: torch.Tensor, tie_kb: TIEKB | None, top_k: int, temperature: float
+    ) -> torch.Tensor:
         n = C.shape[0]
         device = C.device
 
@@ -64,9 +66,12 @@ class CVLFuser(torch.nn.Module):
                 t_list.append(retrieve_tie(tie_kb, q, top_k=top_k, temperature=temperature))
             T = torch.stack(t_list, dim=0)
 
-        fused = torch.cat([
-            self.alpha_C * C,
-            self.alpha_K * K,
-            self.alpha_T * T,
-        ], dim=1)
+        fused = torch.cat(
+            [
+                self.alpha_C * C,
+                self.alpha_K * K,
+                self.alpha_T * T,
+            ],
+            dim=1,
+        )
         return self.act(fused)

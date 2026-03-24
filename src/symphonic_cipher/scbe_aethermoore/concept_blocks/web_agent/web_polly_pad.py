@@ -44,7 +44,12 @@ from .semantic_antivirus import SemanticAntivirus, ContentVerdict
 PadMode = Literal["ENGINEERING", "NAVIGATION", "SYSTEMS", "SCIENCE", "COMMS", "MISSION"]
 
 PAD_MODES: Tuple[PadMode, ...] = (
-    "ENGINEERING", "NAVIGATION", "SYSTEMS", "SCIENCE", "COMMS", "MISSION",
+    "ENGINEERING",
+    "NAVIGATION",
+    "SYSTEMS",
+    "SCIENCE",
+    "COMMS",
+    "MISSION",
 )
 
 
@@ -75,15 +80,16 @@ class RecoveryStrategy(str, Enum):
 #  BrowserAction
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class BrowserAction:
     """A single browser action to execute."""
 
     action_type: ActionType
-    target: str = ""                    # URL, CSS selector, XPath, text
-    data: Optional[str] = None          # Text to type, option to select
+    target: str = ""  # URL, CSS selector, XPath, text
+    data: Optional[str] = None  # Text to type, option to select
     timeout_ms: int = 10000
-    fallback_target: Optional[str] = None   # Alternative selector if primary fails
+    fallback_target: Optional[str] = None  # Alternative selector if primary fails
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     @property
@@ -112,7 +118,7 @@ class ActionResult:
     success: bool
     action: BrowserAction
     duration_ms: float = 0.0
-    data: Optional[Any] = None          # Extracted text, screenshot bytes, etc.
+    data: Optional[Any] = None  # Extracted text, screenshot bytes, etc.
     error: Optional[str] = None
     governance_decision: str = "ALLOW"
     recovery_used: Optional[RecoveryStrategy] = None
@@ -121,6 +127,7 @@ class ActionResult:
 # ---------------------------------------------------------------------------
 #  WebPollyPad
 # ---------------------------------------------------------------------------
+
 
 class WebPollyPad:
     """
@@ -185,7 +192,10 @@ class WebPollyPad:
         # Check action sensitivity vs current session risk
         session_risk = self._antivirus.session_stats["mean_risk"]
         if action.sensitivity > 0.6 and session_risk > 0.3:
-            return "QUARANTINE", f"High-sensitivity action ({action.sensitivity}) in elevated-risk session ({session_risk:.2f})"
+            return (
+                "QUARANTINE",
+                f"High-sensitivity action ({action.sensitivity}) in elevated-risk session ({session_risk:.2f})",
+            )
 
         # Loop detection
         if action.action_type == ActionType.NAVIGATE:

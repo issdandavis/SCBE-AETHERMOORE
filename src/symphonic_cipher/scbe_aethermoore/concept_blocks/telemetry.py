@@ -48,7 +48,7 @@ class TelemetryLog:
     def append(self, record: TelemetryRecord) -> None:
         self._records.append(record)
         if len(self._records) > self._max:
-            self._records = self._records[-self._max:]
+            self._records = self._records[-self._max :]
 
     def query(
         self,

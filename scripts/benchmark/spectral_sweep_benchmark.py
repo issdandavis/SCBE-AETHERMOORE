@@ -27,9 +27,14 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tests.adversarial.scbe_harness import (
-    text_to_tongue_coords, quantize_spin, build_metric_tensor,
-    TONGUE_WEIGHTS, PI, PHI,
-    _ADVERSARIAL_PATTERNS, _MULTILINGUAL_OVERRIDE_PATTERNS,
+    text_to_tongue_coords,
+    quantize_spin,
+    build_metric_tensor,
+    TONGUE_WEIGHTS,
+    PI,
+    PHI,
+    _ADVERSARIAL_PATTERNS,
+    _MULTILINGUAL_OVERRIDE_PATTERNS,
 )
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, get_all_attacks
 from tests.adversarial.tongue_semantic import semantic_tongue_coords
@@ -43,9 +48,10 @@ G = build_metric_tensor()
 # Weight modification methods
 # ═══════════════════════════════════════════════════════════
 
+
 def moon_counterweight(coords: np.ndarray) -> np.ndarray:
     """Jupiter moons: effective weight = weight / phi (shift down one step)."""
-    counter = coords * (1 - 1/PHI)
+    counter = coords * (1 - 1 / PHI)
     return coords - counter  # = coords / phi
 
 
@@ -53,12 +59,12 @@ def foam_dampen(coords: np.ndarray) -> np.ndarray:
     """Foam boundary dampening: reduce bleed at tongue boundaries."""
     dampened = coords.copy()
     for i in range(5):
-        tension = math.sqrt(TONGUE_WEIGHTS[i] * TONGUE_WEIGHTS[i+1])
+        tension = math.sqrt(TONGUE_WEIGHTS[i] * TONGUE_WEIGHTS[i + 1])
         dampen_factor = 1.0 / tension
         # Reduce the boundary between adjacent tongues
-        bleed = (coords[i] - coords[i+1]) * dampen_factor * 0.3
+        bleed = (coords[i] - coords[i + 1]) * dampen_factor * 0.3
         dampened[i] -= bleed
-        dampened[i+1] += bleed
+        dampened[i + 1] += bleed
     return np.clip(dampened, 0.0, 1.0)
 
 
@@ -72,10 +78,18 @@ def triple_remainder(coords_a: np.ndarray, coords_b: np.ndarray, coords_c: np.nd
 # Detection engine (parameterized)
 # ═══════════════════════════════════════════════════════════
 
-def detect(text: str, coords: np.ndarray, centroid: np.ndarray,
-           cost_threshold: float = 12.0, spin_threshold: int = 5,
-           boundary_threshold: float = 1.5, imbalance_threshold: float = 0.6,
-           remainder_score: float = 0.0, remainder_threshold: float = 999.0) -> dict:
+
+def detect(
+    text: str,
+    coords: np.ndarray,
+    centroid: np.ndarray,
+    cost_threshold: float = 12.0,
+    spin_threshold: int = 5,
+    boundary_threshold: float = 1.5,
+    imbalance_threshold: float = 0.6,
+    remainder_score: float = 0.0,
+    remainder_threshold: float = 999.0,
+) -> dict:
     """Run detection with configurable thresholds."""
     spin = quantize_spin(coords, centroid, threshold=0.03)
     d_star_sq = sum(G[i, i] * (coords[i] - centroid[i]) ** 2 for i in range(6))
@@ -89,21 +103,23 @@ def detect(text: str, coords: np.ndarray, centroid: np.ndarray,
     adv = sum(1 for p in _ADVERSARIAL_PATTERNS if p.search(text))
     ml = sum(1 for p in _MULTILINGUAL_OVERRIDE_PATTERNS if p.search(text))
 
-    if spin.magnitude >= spin_threshold: signals.append("spin")
-    if dom_ratio > imbalance_threshold: signals.append("imbalance")
-    if cost > cost_threshold: signals.append("cost")
-    if coord_norm > boundary_threshold: signals.append("boundary")
-    if adv >= 1: signals.append("lexical")
-    if ml >= 1: signals.append("ml")
-    if remainder_score > remainder_threshold: signals.append("remainder")
+    if spin.magnitude >= spin_threshold:
+        signals.append("spin")
+    if dom_ratio > imbalance_threshold:
+        signals.append("imbalance")
+    if cost > cost_threshold:
+        signals.append("cost")
+    if coord_norm > boundary_threshold:
+        signals.append("boundary")
+    if adv >= 1:
+        signals.append("lexical")
+    if ml >= 1:
+        signals.append("ml")
+    if remainder_score > remainder_threshold:
+        signals.append("remainder")
 
     has_geo = any(s in signals for s in ["cost", "spin", "boundary", "imbalance", "remainder"])
-    detected = (
-        len(signals) >= 2
-        or adv >= 2
-        or ml >= 1
-        or (adv >= 1 and has_geo)
-    )
+    detected = len(signals) >= 2 or adv >= 2 or ml >= 1 or (adv >= 1 and has_geo)
 
     return {
         "detected": detected,
@@ -118,9 +134,10 @@ def detect(text: str, coords: np.ndarray, centroid: np.ndarray,
 # Configuration sweep
 # ═══════════════════════════════════════════════════════════
 
-def run_config(name: str, coord_fn, post_process=None,
-               cost_threshold=12.0, boundary_threshold=1.5,
-               use_remainder=False):
+
+def run_config(
+    name: str, coord_fn, post_process=None, cost_threshold=12.0, boundary_threshold=1.5, use_remainder=False
+):
     """Run one configuration across all attacks and clean text."""
     # Calibrate
     clean_coords = [coord_fn(p["prompt"]) for p in CLEAN]
@@ -142,11 +159,15 @@ def run_config(name: str, coord_fn, post_process=None,
             foamed = foam_dampen(raw.copy())
             remainder_score, _ = triple_remainder(raw, mooned, foamed)
 
-        r = detect(attack["prompt"], coords, centroid,
-                   cost_threshold=cost_threshold,
-                   boundary_threshold=boundary_threshold,
-                   remainder_score=remainder_score,
-                   remainder_threshold=0.15)
+        r = detect(
+            attack["prompt"],
+            coords,
+            centroid,
+            cost_threshold=cost_threshold,
+            boundary_threshold=boundary_threshold,
+            remainder_score=remainder_score,
+            remainder_threshold=0.15,
+        )
 
         if r["detected"]:
             atk_detected += 1
@@ -162,9 +183,9 @@ def run_config(name: str, coord_fn, post_process=None,
         coords = coord_fn(prompt["prompt"])
         if post_process:
             coords = post_process(coords)
-        r = detect(prompt["prompt"], coords, centroid,
-                   cost_threshold=cost_threshold,
-                   boundary_threshold=boundary_threshold)
+        r = detect(
+            prompt["prompt"], coords, centroid, cost_threshold=cost_threshold, boundary_threshold=boundary_threshold
+        )
         if r["detected"]:
             fp_detected += 1
 
@@ -194,39 +215,77 @@ def main():
     print("Running controls...")
     configs.append(run_config("C1: Stub raw", text_to_tongue_coords))
     configs.append(run_config("C2: Semantic raw", semantic_tongue_coords))
-    configs.append(run_config("C3: Semantic recalibrated", semantic_tongue_coords,
-                              cost_threshold=1.5, boundary_threshold=0.3))
+    configs.append(
+        run_config("C3: Semantic recalibrated", semantic_tongue_coords, cost_threshold=1.5, boundary_threshold=0.3)
+    )
 
     # EXPERIMENTAL
     print("Running experimental...")
-    configs.append(run_config("E1: Semantic + moon", semantic_tongue_coords,
-                              post_process=moon_counterweight,
-                              cost_threshold=1.0, boundary_threshold=0.2))
-    configs.append(run_config("E2: Semantic + foam", semantic_tongue_coords,
-                              post_process=foam_dampen,
-                              cost_threshold=1.5, boundary_threshold=0.3))
+    configs.append(
+        run_config(
+            "E1: Semantic + moon",
+            semantic_tongue_coords,
+            post_process=moon_counterweight,
+            cost_threshold=1.0,
+            boundary_threshold=0.2,
+        )
+    )
+    configs.append(
+        run_config(
+            "E2: Semantic + foam",
+            semantic_tongue_coords,
+            post_process=foam_dampen,
+            cost_threshold=1.5,
+            boundary_threshold=0.3,
+        )
+    )
 
     def moon_then_foam(coords):
         return foam_dampen(moon_counterweight(coords))
 
-    configs.append(run_config("E3: Semantic + moon + foam", semantic_tongue_coords,
-                              post_process=moon_then_foam,
-                              cost_threshold=1.0, boundary_threshold=0.2))
-    configs.append(run_config("E4: Semantic + remainder", semantic_tongue_coords,
-                              cost_threshold=1.5, boundary_threshold=0.3,
-                              use_remainder=True))
-    configs.append(run_config("E5: Semantic + all", semantic_tongue_coords,
-                              post_process=moon_then_foam,
-                              cost_threshold=1.0, boundary_threshold=0.2,
-                              use_remainder=True))
+    configs.append(
+        run_config(
+            "E3: Semantic + moon + foam",
+            semantic_tongue_coords,
+            post_process=moon_then_foam,
+            cost_threshold=1.0,
+            boundary_threshold=0.2,
+        )
+    )
+    configs.append(
+        run_config(
+            "E4: Semantic + remainder",
+            semantic_tongue_coords,
+            cost_threshold=1.5,
+            boundary_threshold=0.3,
+            use_remainder=True,
+        )
+    )
+    configs.append(
+        run_config(
+            "E5: Semantic + all",
+            semantic_tongue_coords,
+            post_process=moon_then_foam,
+            cost_threshold=1.0,
+            boundary_threshold=0.2,
+            use_remainder=True,
+        )
+    )
 
     # Results table
     print()
     print(f"{'Config':<35} {'Detected':>10} {'Det Rate':>10} {'FP':>5} {'FP Rate':>10}")
     print("-" * 75)
     for c in configs:
-        marker = " <-- BEST" if c["detection_rate"] == max(x["detection_rate"] for x in configs if x["fp_rate"] <= 0.1) and c["fp_rate"] <= 0.1 else ""
-        print(f"{c['name']:<35} {c['detected']:>7}/91 {c['detection_rate']:>9.1%} {c['false_positives']:>5} {c['fp_rate']:>9.1%}{marker}")
+        marker = (
+            " <-- BEST"
+            if c["detection_rate"] == max(x["detection_rate"] for x in configs if x["fp_rate"] <= 0.1)
+            and c["fp_rate"] <= 0.1
+            else ""
+        )
+        print(
+            f"{c['name']:<35} {c['detected']:>7}/91 {c['detection_rate']:>9.1%} {c['false_positives']:>5} {c['fp_rate']:>9.1%}{marker}"
+        )
 
     # Per-class breakdown for top 3
     print()

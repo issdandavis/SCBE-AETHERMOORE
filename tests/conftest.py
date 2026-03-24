@@ -49,6 +49,7 @@ def tmp_path():
     finally:
         shutil.rmtree(path, ignore_errors=True)
 
+
 # Compatibility alias for ai_brain package imports that may resolve through
 # legacy/broken repo symlink paths. Uses threading timeout to prevent hangs
 # from heavy transitive imports (scipy, matplotlib) on Windows.
@@ -84,16 +85,32 @@ def _register_ai_brain_aliases():
     # (trinary.py, gate_swap.py, etc.) only exist under src/.
     _SRC_ONLY_SUBPACKAGES = (
         # Directories
-        "game", "concept_blocks", "multimodal", "rosetta",
+        "game",
+        "concept_blocks",
+        "multimodal",
+        "rosetta",
         # Modules
-        "trinary", "negabinary", "gate_swap", "flock_shepherd",
-        "quasicrystal_lattice", "sacred_eggs", "sacred_eggs_ref",
-        "sacred_egg_registry", "sacred_egg_integrator",
-        "adaptive_navigator", "decision_telemetry", "cli_toolkit",
-        "convert_to_sft", "genesis_protocol", "qr_cube_kdf",
-        "aethercode_layer4_integration", "aetherlex_extract",
-        "layer13_hive_integration", "polyglot_layer12_integration",
-        "tri_mechanism_detector", "_scipy_compat",
+        "trinary",
+        "negabinary",
+        "gate_swap",
+        "flock_shepherd",
+        "quasicrystal_lattice",
+        "sacred_eggs",
+        "sacred_eggs_ref",
+        "sacred_egg_registry",
+        "sacred_egg_integrator",
+        "adaptive_navigator",
+        "decision_telemetry",
+        "cli_toolkit",
+        "convert_to_sft",
+        "genesis_protocol",
+        "qr_cube_kdf",
+        "aethercode_layer4_integration",
+        "aetherlex_extract",
+        "layer13_hive_integration",
+        "polyglot_layer12_integration",
+        "tri_mechanism_detector",
+        "_scipy_compat",
     )
     for _subpkg in _SRC_ONLY_SUBPACKAGES:
         try:
@@ -116,7 +133,9 @@ def _register_ai_brain_aliases():
                 except Exception:
                     continue
 
+
 import threading as _threading
+
 _t = _threading.Thread(target=_register_ai_brain_aliases, daemon=True)
 _t.start()
 _t.join(timeout=10)  # Give it 10 seconds max, then move on
@@ -317,6 +336,7 @@ def performance_timer():
 # LIBOQS AVAILABILITY CHECK
 # =============================================================================
 
+
 def _liboqs_available() -> bool:
     """
     Check whether liboqs shared library appears available.
@@ -357,23 +377,17 @@ def _liboqs_available() -> bool:
 
     return any(p.exists() for p in candidates)
 
+
 LIBOQS_AVAILABLE = _liboqs_available()
 
 # Skip decorator for tests requiring liboqs
-requires_liboqs = pytest.mark.skipif(
-    not LIBOQS_AVAILABLE,
-    reason="liboqs-python not installed (optional dependency)"
-)
+requires_liboqs = pytest.mark.skipif(not LIBOQS_AVAILABLE, reason="liboqs-python not installed (optional dependency)")
 
 
 def pytest_configure(config):
     """Register custom markers."""
-    config.addinivalue_line(
-        "markers", "enterprise: Enterprise-grade tests (compliance, security)"
-    )
-    config.addinivalue_line(
-        "markers", "professional: Professional/industry standard tests"
-    )
+    config.addinivalue_line("markers", "enterprise: Enterprise-grade tests (compliance, security)")
+    config.addinivalue_line("markers", "professional: Professional/industry standard tests")
     config.addinivalue_line("markers", "homebrew: Quick developer feedback tests")
     config.addinivalue_line("markers", "api: API endpoint tests")
     config.addinivalue_line("markers", "crypto: Cryptographic tests")

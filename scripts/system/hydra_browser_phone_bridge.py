@@ -98,14 +98,23 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--url", default=DEFAULT_READER_ROUTE, help="Target URL for host browser and/or phone browser.")
     parser.add_argument("--host-engine", default="playwriter", help="Dispatcher engine label for host lane assignment.")
     parser.add_argument("--host-backend", default="cdp", help="Actual backend for AetherBrowse CLI execution.")
-    parser.add_argument("--phone-target", choices=["app", "browser"], default="app", help="Preview inside the app shell or phone browser.")
+    parser.add_argument(
+        "--phone-target",
+        choices=["app", "browser"],
+        default="app",
+        help="Preview inside the app shell or phone browser.",
+    )
     parser.add_argument("--serial", default="", help="ADB serial for the phone/emulator target.")
     parser.add_argument("--steps", type=int, default=3, help="Number of phone preview captures.")
     parser.add_argument("--settle-ms", type=int, default=500, help="Delay after each phone swipe.")
     parser.add_argument("--execute-host", action="store_true", help="Run the host-side AetherBrowse action script.")
     parser.add_argument("--audit-only", action="store_true", help="Validate host actions without executing them.")
-    parser.add_argument("--headless", action="store_true", help="Run host browser backend headless when executing host actions.")
-    parser.add_argument("--skip-phone-launch", action="store_true", help="Do not relaunch the phone app/browser before capturing.")
+    parser.add_argument(
+        "--headless", action="store_true", help="Run host browser backend headless when executing host actions."
+    )
+    parser.add_argument(
+        "--skip-phone-launch", action="store_true", help="Do not relaunch the phone app/browser before capturing."
+    )
     return parser
 
 

@@ -21,6 +21,7 @@ from dataclasses import asdict, dataclass, field
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TopologyNode:
     id: str
@@ -57,25 +58,39 @@ ZONE_GREEN_MAX = 0.33
 ZONE_YELLOW_MAX = 0.66
 
 # Langues Metric weights (phi-scaled, 6 tongues)
-LANGUES_WEIGHTS = [PHI ** i for i in range(6)]
+LANGUES_WEIGHTS = [PHI**i for i in range(6)]
 LANGUES_BETA_BASE = 0.5
 
 # Known safe domains (reuse from hyperlane concept)
 GREEN_DOMAINS = {
-    "github.com", "huggingface.co", "arxiv.org", "notion.so",
-    "google.com", "stackoverflow.com", "wikipedia.org",
-    "docs.python.org", "developer.mozilla.org", "npmjs.com",
+    "github.com",
+    "huggingface.co",
+    "arxiv.org",
+    "notion.so",
+    "google.com",
+    "stackoverflow.com",
+    "wikipedia.org",
+    "docs.python.org",
+    "developer.mozilla.org",
+    "npmjs.com",
 }
 
 YELLOW_DOMAINS = {
-    "reddit.com", "twitter.com", "x.com", "medium.com",
-    "dev.to", "linkedin.com", "youtube.com", "discord.com",
+    "reddit.com",
+    "twitter.com",
+    "x.com",
+    "medium.com",
+    "dev.to",
+    "linkedin.com",
+    "youtube.com",
+    "discord.com",
 }
 
 
 # ---------------------------------------------------------------------------
 # Semantic distance (lightweight, no model needed)
 # ---------------------------------------------------------------------------
+
 
 def _tokenize(text: str) -> set[str]:
     """Extract lowercase word tokens."""
@@ -106,6 +121,7 @@ def semantic_distance(page_text: str, link_text: str, link_url: str = "") -> flo
 # ---------------------------------------------------------------------------
 # Zone classification
 # ---------------------------------------------------------------------------
+
 
 def classify_zone(url: str) -> str:
     """Classify a URL into GREEN/YELLOW/RED trust zone."""
@@ -146,6 +162,7 @@ def zone_to_risk(zone: str) -> str:
 # Poincare disk projection
 # ---------------------------------------------------------------------------
 
+
 def project_to_disk(distance: float, angle: float) -> tuple[float, float]:
     """Map semantic distance to Poincare ball radius, then to (x, y).
 
@@ -162,6 +179,7 @@ def project_to_disk(distance: float, angle: float) -> tuple[float, float]:
 # ---------------------------------------------------------------------------
 # Angular layout with topic clustering
 # ---------------------------------------------------------------------------
+
 
 def angular_layout(links: list[dict], topics: list[str]) -> list[float]:
     """Distribute link angles around the circle.
@@ -196,6 +214,7 @@ def angular_layout(links: list[dict], topics: list[str]) -> list[float]:
 # Langues Metric cost gradient
 # ---------------------------------------------------------------------------
 
+
 def compute_langues_cost_gradient(n_samples: int = 20) -> list[dict]:
     """Compute the Langues Metric cost at sampled radii for gradient rendering.
 
@@ -210,16 +229,15 @@ def compute_langues_cost_gradient(n_samples: int = 20) -> list[dict]:
         d_h = 2 * math.atanh(clamped_r) if clamped_r > 0 else 0
 
         # Langues metric cost
-        cost = sum(
-            LANGUES_WEIGHTS[l] * math.exp(LANGUES_BETA_BASE * PHI ** (l * 0.5) * min(d_h, 10))
-            for l in range(6)
-        )
+        cost = sum(LANGUES_WEIGHTS[l] * math.exp(LANGUES_BETA_BASE * PHI ** (l * 0.5) * min(d_h, 10)) for l in range(6))
 
-        stops.append({
-            "radius": round(r, 3),
-            "hyperbolic_distance": round(d_h, 4),
-            "cost": round(cost, 4),
-        })
+        stops.append(
+            {
+                "radius": round(r, 3),
+                "hyperbolic_distance": round(d_h, 4),
+                "cost": round(cost, 4),
+            }
+        )
 
     return stops
 
@@ -227,6 +245,7 @@ def compute_langues_cost_gradient(n_samples: int = 20) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Main computation
 # ---------------------------------------------------------------------------
+
 
 def compute_page_topology(
     url: str,
@@ -246,11 +265,13 @@ def compute_page_topology(
     topics = topics or []
 
     # Build page text corpus for semantic comparison
-    page_corpus = " ".join([
-        title,
-        text[:2000],  # First 2000 chars of body
-        " ".join(h.get("text", "") for h in headings),
-    ])
+    page_corpus = " ".join(
+        [
+            title,
+            text[:2000],  # First 2000 chars of body
+            " ".join(h.get("text", "") for h in headings),
+        ]
+    )
 
     # Limit links
     links_trimmed = links[:max_nodes]

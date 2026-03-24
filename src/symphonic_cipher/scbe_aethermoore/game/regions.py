@@ -36,42 +36,54 @@ class TowerFloor:
 
 REGIONS: Tuple[TongueRegion, ...] = (
     TongueRegion(
-        "ember_reach", "Ember Reach", "KO",
+        "ember_reach",
+        "Ember Reach",
+        "KO",
         ("#DC503C", "#E8963C", "#FFD080"),
         "Spiral-roof shrines, war temples, forge halls",
         (1, 20),
         "The command heartland. Where the first Tongue was spoken.",
     ),
     TongueRegion(
-        "aerial_expanse", "Aerial Expanse", "AV",
+        "aerial_expanse",
+        "Aerial Expanse",
+        "AV",
         ("#5CB8E0", "#3C9090", "#E0F0FF"),
         "Wind-bridges, sky platforms, transit hubs",
         (11, 30),
         "The transport network. Wind carries the Tongue.",
     ),
     TongueRegion(
-        "null_vale", "Null Vale", "RU",
+        "null_vale",
+        "Null Vale",
+        "RU",
         ("#8040C0", "#606080", "#C0A0E0"),
         "Broken symmetry ruins, glitch terrain, entropy vents",
         (21, 50),
         "Where order breaks down. The bold find power here.",
     ),
     TongueRegion(
-        "glass_drift", "Glass Drift", "CA",
+        "glass_drift",
+        "Glass Drift",
+        "CA",
         ("#3CD8D8", "#D8C040", "#FFFFFF"),
         "Geometric lattice cities, crystal processors, data towers",
         (31, 60),
         "The compute core. Logic made manifest.",
     ),
     TongueRegion(
-        "ward_sanctum", "Ward Sanctum", "UM",
+        "ward_sanctum",
+        "Ward Sanctum",
+        "UM",
         ("#40B870", "#F0F0E0", "#006830"),
         "Crystal ward pylons, sealed vaults, cleansing pools",
         (41, 80),
         "The security bastion. Nothing corrupted survives.",
     ),
     TongueRegion(
-        "bastion_fields", "Bastion Fields", "DR",
+        "bastion_fields",
+        "Bastion Fields",
+        "DR",
         ("#909080", "#D89898", "#C0C0D0"),
         "Floating fractal towers, verification gates",
         (51, 100),
@@ -80,9 +92,17 @@ REGIONS: Tuple[TongueRegion, ...] = (
 )
 
 _RANKS = [
-    (10, "F"), (20, "E"), (30, "D"), (40, "C"), (50, "B"),
-    (60, "A"), (70, "S"), (80, "SS"), (90, "SSS"),
-    (99, "Transcendent"), (100, "Millennium"),
+    (10, "F"),
+    (20, "E"),
+    (30, "D"),
+    (40, "C"),
+    (50, "B"),
+    (60, "A"),
+    (70, "S"),
+    (80, "SS"),
+    (90, "SSS"),
+    (99, "Transcendent"),
+    (100, "Millennium"),
 ]
 
 _DOMAINS = [
@@ -100,8 +120,12 @@ _DOMAINS = [
 ]
 
 _FLOOR_REGIONS = [
-    (15, "ember_reach"), (25, "aerial_expanse"), (40, "null_vale"),
-    (55, "glass_drift"), (75, "ward_sanctum"), (100, "bastion_fields"),
+    (15, "ember_reach"),
+    (25, "aerial_expanse"),
+    (40, "null_vale"),
+    (55, "glass_drift"),
+    (75, "ward_sanctum"),
+    (100, "bastion_fields"),
 ]
 
 

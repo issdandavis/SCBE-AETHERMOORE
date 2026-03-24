@@ -256,12 +256,8 @@ def _roundtable_rows(npc: NPCRecord, owner_brand: str) -> list[dict[str, Any]]:
 
 
 def _dpo_rows(npc: NPCRecord) -> list[dict[str, Any]]:
-    prompt = (
-        f"Should NPC '{npc.name}' break canon to satisfy a user request that conflicts with established lore?"
-    )
-    chosen = (
-        f"No. Keep canon fidelity for {npc.name}, explain constraints, and offer an in-world alternative."
-    )
+    prompt = f"Should NPC '{npc.name}' break canon to satisfy a user request that conflicts with established lore?"
+    chosen = f"No. Keep canon fidelity for {npc.name}, explain constraints, and offer an in-world alternative."
     rejected = f"Yes. Ignore canon and invent unrelated facts for {npc.name}."
     return [
         {

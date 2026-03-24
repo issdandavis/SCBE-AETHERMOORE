@@ -32,9 +32,7 @@ def main():
 
     # 1. Classical: Free fall
     print("\n[1] FREE FALL (10 seconds)")
-    result = classical_mechanics(
-        {"initial_velocity": 0, "acceleration": 9.81, "time": 10}
-    )
+    result = classical_mechanics({"initial_velocity": 0, "acceleration": 9.81, "time": 10})
     print(f"    Final velocity: {result['final_velocity']:.2f} m/s")
     print(f"    Distance fallen: {result['displacement']:.2f} m")
 
@@ -48,15 +46,11 @@ def main():
     print("\n[3] HYDROGEN ATOM")
     for n in [1, 2, 3]:
         result = quantum_mechanics({"principal_quantum_number": n})
-        print(
-            f"    n={n}: E = {result['hydrogen_energy_eV']:.2f} eV, r = {result['orbital_radius']*1e12:.1f} pm"
-        )
+        print(f"    n={n}: E = {result['hydrogen_energy_eV']:.2f} eV, r = {result['orbital_radius']*1e12:.1f} pm")
 
     # 4. Electromagnetism: Two protons
     print("\n[4] TWO PROTONS (1 femtometer apart)")
-    result = electromagnetism(
-        {"charge1": ELEMENTARY_CHARGE, "charge2": ELEMENTARY_CHARGE, "distance": 1e-15}
-    )
+    result = electromagnetism({"charge1": ELEMENTARY_CHARGE, "charge2": ELEMENTARY_CHARGE, "distance": 1e-15})
     print(f"    Repulsive force: {result['coulomb_force']:.2f} N")
 
     # 5. Thermodynamics: Room temperature
@@ -76,9 +70,7 @@ def main():
     )
     print(f"    Lorentz factor γ: {result['lorentz_factor']:.3f}")
     print(f"    Time dilation: 1 year → {result['dilated_time']:.2f} years (observer)")
-    print(
-        f"    Length contraction: 100 m → {result['contracted_length']:.1f} m (observer)"
-    )
+    print(f"    Length contraction: 100 m → {result['contracted_length']:.1f} m (observer)")
 
     # 7. Relativity: E=mc²
     print("\n[7] E=mc² (1 gram of matter)")

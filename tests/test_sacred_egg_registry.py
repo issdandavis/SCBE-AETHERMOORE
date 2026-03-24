@@ -67,8 +67,13 @@ def registry(tmp_path):
 def sample_egg(integrator, key_pair, context):
     pk, sk = key_pair
     return integrator.create_egg(
-        b"test payload", "KO", "star", {"path": "interior"},
-        context, pk, sk,
+        b"test payload",
+        "KO",
+        "star",
+        {"path": "interior"},
+        context,
+        pk,
+        sk,
     )
 
 
@@ -96,9 +101,15 @@ class TestRegisterAndRetrieve:
         egg2 = integrator.create_egg(b"v2", "AV", "b", {}, context, pk, sk)
         # Force same egg_id for testing overwrite
         import dataclasses
-        dataclasses.replace(
-            egg2, egg_id=egg1.egg_id,
-        ) if not hasattr(egg2, '_replace') else egg2
+
+        (
+            dataclasses.replace(
+                egg2,
+                egg_id=egg1.egg_id,
+            )
+            if not hasattr(egg2, "_replace")
+            else egg2
+        )
         # Register twice with same ID
         registry.register(egg1)
         registry.register(egg1)  # should not error

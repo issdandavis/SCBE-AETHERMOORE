@@ -11,6 +11,7 @@ from urllib.request import urlopen, Request
 from urllib.parse import urlencode
 
 import sys
+
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[3]))
 from src.knowledge.funnel import KnowledgeChunk
 
@@ -99,6 +100,7 @@ def scrape_all_categories(query: str, max_per_cat: int = 10) -> list[KnowledgeCh
 
 if __name__ == "__main__":
     import sys
+
     query = sys.argv[1] if len(sys.argv) > 1 else "hyperbolic geometry AI safety"
     chunks = scrape_all_categories(query, max_per_cat=5)
     print(f"\nFound {len(chunks)} papers across all categories")

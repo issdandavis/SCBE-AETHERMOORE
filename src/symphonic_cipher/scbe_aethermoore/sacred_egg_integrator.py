@@ -32,20 +32,13 @@ import json
 import os
 from typing import Dict, List, Optional
 
-# Import from cli_toolkit (the canonical Six-Tongues + GeoSeal module)
-from src.symphonic_cipher.scbe_aethermoore.cli_toolkit import (
-    CrossTokenizer,
-    ConcentricRingPolicy,
-    geoseal_encrypt,
-    geoseal_decrypt,
-    project_to_sphere,
-    project_to_cube,
-    healpix_id,
-    morton_id,
-    potentials,
-    classify,
-    TONGUES,
-)
+
+def _cli_toolkit():
+    """Lazy-load cli_toolkit to avoid import cycles with CLI entrypoints."""
+    from src.symphonic_cipher.scbe_aethermoore import cli_toolkit
+
+    return cli_toolkit
+
 
 # Ring ordering for ring_descent validation
 _RING_ORDER: Dict[str, int] = {
@@ -83,6 +76,7 @@ class SacredEgg:
                           - min_weight: minimum cumulative phi-weight for triadic
         yolk_ct:         GeoSeal envelope dict (ct_k, ct_spec, attest, sig)
     """
+
     egg_id: str
     primary_tongue: str
     glyph: str
@@ -135,6 +129,7 @@ class HatchResult:
     The reason field is always either "hatched" or "sealed" — no specifics
     about which condition failed (oracle safety).
     """
+
     success: bool
     tokens: Optional[List[str]]
     attestation: Optional[dict]
@@ -152,14 +147,13 @@ def context_radius(ctx: List[float]) -> float:
     Uses the cube projection (tanh normalization) averaged across dimensions
     to produce a stable scalar in [0, 1).
     """
-    v = project_to_cube(ctx, m=6)
+    toolkit = _cli_toolkit()
+    v = toolkit.project_to_cube(ctx, m=6)
     r = sum(v) / len(v)
     return min(0.999999, max(0.0, float(r)))
 
 
-def _sealed_noise_tokens(
-    xt: CrossTokenizer, tongue: str, nbytes: int
-) -> List[str]:
+def _sealed_noise_tokens(xt: CrossTokenizer, tongue: str, nbytes: int) -> List[str]:
     """Generate random noise tokens of exact byte-length.
 
     The output is indistinguishable from real token output to an observer
@@ -194,7 +188,7 @@ class SacredEggIntegrator:
 
     def __init__(self, xt: CrossTokenizer):
         self.xt = xt
-        self.ring_policy = ConcentricRingPolicy()
+        self.ring_policy = _cli_toolkit().ConcentricRingPolicy()
 
     def create_egg(
         self,
@@ -220,14 +214,13 @@ class SacredEggIntegrator:
         Returns:
             A sealed SacredEgg
         """
-        if primary_tongue not in TONGUES:
+        toolkit = _cli_toolkit()
+        if primary_tongue not in toolkit.TONGUES:
             raise ValueError(f"Unknown tongue: {primary_tongue}")
 
         pt_b64 = base64.b64encode(payload).decode()
-        env = geoseal_encrypt(pt_b64, context, pk_kem_b64, sk_dsa_b64)
-        egg_id = hashlib.sha256(
-            json.dumps(env, sort_keys=True).encode()
-        ).hexdigest()[:16]
+        env = toolkit.geoseal_encrypt(pt_b64, context, pk_kem_b64, sk_dsa_b64)
+        egg_id = hashlib.sha256(json.dumps(env, sort_keys=True).encode()).hexdigest()[:16]
 
         return SacredEgg(
             egg_id=egg_id,
@@ -271,12 +264,13 @@ class SacredEggIntegrator:
         ring_info = self.ring_policy.classify(r)
         current_ring = ring_info.get("ring", "beyond")
 
-        u = project_to_sphere(current_context)
-        v = project_to_cube(current_context)
-        h = healpix_id(u, 2)
-        z = morton_id(v, 2)
-        P, margin = potentials(u, v)
-        path = classify(h, z, P, margin)
+        toolkit = _cli_toolkit()
+        u = toolkit.project_to_sphere(current_context)
+        v = toolkit.project_to_cube(current_context)
+        h = toolkit.healpix_id(u, 2)
+        z = toolkit.morton_id(v, 2)
+        P, margin = toolkit.potentials(u, v)
+        path = toolkit.classify(h, z, P, margin)
 
         # Pre-compute noise output length for consistent fail-to-noise
         ct_spec_b64 = egg.yolk_ct.get("ct_spec", "")
@@ -304,9 +298,7 @@ class SacredEggIntegrator:
             min_tongues = int(egg.hatch_condition.get("min_tongues", 3))
             if len(tongues) < min_tongues:
                 return HatchResult(False, fail_tokens, None, "sealed")
-            weight_sum = sum(
-                self.xt.WEIGHT.get(t, 0.0) for t in tongues
-            )
+            weight_sum = sum(self.xt.WEIGHT.get(t, 0.0) for t in tongues)
             min_weight = float(egg.hatch_condition.get("min_weight", 10.0))
             if weight_sum < min_weight:
                 return HatchResult(False, fail_tokens, None, "sealed")
@@ -333,9 +325,7 @@ class SacredEggIntegrator:
 
         # --- Context-bound GeoSeal decrypt ---
 
-        ok, yolk_bytes = geoseal_decrypt(
-            egg.yolk_ct, current_context, sk_kem_b64, pk_dsa_b64
-        )
+        ok, yolk_bytes = toolkit.geoseal_decrypt(egg.yolk_ct, current_context, sk_kem_b64, pk_dsa_b64)
         if not ok or yolk_bytes is None:
             return HatchResult(False, fail_tokens, None, "sealed")
 
@@ -348,9 +338,7 @@ class SacredEggIntegrator:
 
         if agent_tongue != egg.primary_tongue:
             token_text = " ".join(tokens_primary)
-            tokens_dst, xlate_attest = self.xt.retokenize(
-                egg.primary_tongue, agent_tongue, token_text
-            )
+            tokens_dst, xlate_attest = self.xt.retokenize(egg.primary_tongue, agent_tongue, token_text)
             attest_out["xlate"] = dataclasses.asdict(xlate_attest)
             return HatchResult(True, tokens_dst, attest_out, "hatched")
 
@@ -379,10 +367,7 @@ class SacredEggIntegrator:
             egg_id=egg.egg_id,
             primary_tongue=egg.primary_tongue,
             glyph=glyph if glyph is not None else egg.glyph,
-            hatch_condition=(
-                dict(hatch_condition) if hatch_condition is not None
-                else dict(egg.hatch_condition)
-            ),
+            hatch_condition=(dict(hatch_condition) if hatch_condition is not None else dict(egg.hatch_condition)),
             yolk_ct=egg.yolk_ct,
         )
 

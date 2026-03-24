@@ -84,8 +84,8 @@ def haversine_km(
 
 def geoid(lat: float, lon: float, grid: float = 0.01) -> str:
     """Return a deterministic geospatial identity string for audit/logging."""
-    lat_q = round(_coerce_lat_lon(lat), int(max(0, -math.floor(math.log10(grid))) ) )
-    lon_q = round(_coerce_lat_lon(lon), int(max(0, -math.floor(math.log10(grid))) ) )
+    lat_q = round(_coerce_lat_lon(lat), int(max(0, -math.floor(math.log10(grid)))))
+    lon_q = round(_coerce_lat_lon(lon), int(max(0, -math.floor(math.log10(grid)))))
     payload = f"{lat_q:.5f}|{lon_q:.5f}|{grid:.5f}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
 
@@ -167,7 +167,9 @@ def evaluate_geoseal_location(
         distance_score *= 0.7
 
     # Combine distance score with a bounded trust radius.
-    risk_radius = min(1.0, 0.85 * distance_score + 0.15 * (0.0 if distance_km is None else distance_km / max(outer_radius_km, 1.0)))
+    risk_radius = min(
+        1.0, 0.85 * distance_score + 0.15 * (0.0 if distance_km is None else distance_km / max(outer_radius_km, 1.0))
+    )
     trust = round(1.0 - risk_radius, 4)
 
     if risk_radius <= core_max:

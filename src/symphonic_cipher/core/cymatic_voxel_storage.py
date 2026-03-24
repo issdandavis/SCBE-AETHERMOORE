@@ -142,9 +142,7 @@ class CymaticVoxelStorage:
 
         return encoded
 
-    def decode(
-        self, encoded: np.ndarray, vector: VoxelAccessVector, threshold: float = 0.1
-    ) -> np.ndarray:
+    def decode(self, encoded: np.ndarray, vector: VoxelAccessVector, threshold: float = 0.1) -> np.ndarray:
         """
         Decode data using cymatic voxel storage
 
@@ -157,9 +155,7 @@ class CymaticVoxelStorage:
             Decoded data (accurate only with correct vector)
         """
         if encoded.shape != (self.resolution, self.resolution):
-            raise ValueError(
-                f"Encoded data must be {self.resolution}x{self.resolution}"
-            )
+            raise ValueError(f"Encoded data must be {self.resolution}x{self.resolution}")
 
         n, m = vector.to_nm_pair()
 
@@ -224,9 +220,7 @@ class CymaticVoxelStorage:
 
         return pattern_norm
 
-    def security_analysis(
-        self, n_correct: int, m_correct: int, n_attempts: int = 100
-    ) -> dict:
+    def security_analysis(self, n_correct: int, m_correct: int, n_attempts: int = 100) -> dict:
         """
         Analyze security: how many random vectors yield correct decoding?
 
@@ -267,11 +261,7 @@ class CymaticVoxelStorage:
             "total_attempts": n_attempts,
             "successful_decodes": successful_decodes,
             "security_rate": 1.0 - (successful_decodes / n_attempts),
-            "effective_bits": (
-                -np.log2(successful_decodes / n_attempts)
-                if successful_decodes > 0
-                else np.inf
-            ),
+            "effective_bits": (-np.log2(successful_decodes / n_attempts) if successful_decodes > 0 else np.inf),
         }
 
 
@@ -299,9 +289,7 @@ def demo():
     print()
 
     # Encode and decode
-    decoded_correct, decoded_wrong = cvs.access_control_demo(
-        data, correct_vector, wrong_vector
-    )
+    decoded_correct, decoded_wrong = cvs.access_control_demo(data, correct_vector, wrong_vector)
 
     # Compute errors
     error_correct = np.mean((data - decoded_correct) ** 2)

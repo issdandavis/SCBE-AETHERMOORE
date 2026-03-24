@@ -41,9 +41,7 @@ from typing import Dict, List, Literal, Optional, Tuple
 # Type aliases
 # ---------------------------------------------------------------------------
 
-PadMode = Literal[
-    "ENGINEERING", "NAVIGATION", "SYSTEMS", "SCIENCE", "COMMS", "MISSION"
-]
+PadMode = Literal["ENGINEERING", "NAVIGATION", "SYSTEMS", "SCIENCE", "COMMS", "MISSION"]
 Decision = Literal["ALLOW", "QUARANTINE", "DENY"]
 CodeZone = Literal["HOT", "SAFE"]
 Lang = Literal["KO", "AV", "RU", "CA", "UM", "DR"]
@@ -124,6 +122,7 @@ PHI: float = (1 + math.sqrt(5)) / 2
 @dataclass(frozen=True)
 class Thresholds:
     """SCBE Layer-12/13 decision thresholds for risk governance."""
+
     """SCBE governance thresholds for risk decision."""
 
     allow_max_cost: float = 1e3
@@ -164,11 +163,7 @@ def scbe_decide(
         return "DENY"
     if d_star > thr.quarantine_max_drift:
         return "DENY"
-    if (
-        coherence >= thr.allow_min_coherence
-        and h_eff <= thr.allow_max_cost
-        and d_star <= thr.allow_max_drift
-    ):
+    if coherence >= thr.allow_min_coherence and h_eff <= thr.allow_max_cost and d_star <= thr.allow_max_drift:
         return "ALLOW"
     return "QUARANTINE"
 
@@ -229,9 +224,7 @@ def cube_id(
     return hashlib.sha256(raw).hexdigest()
 
 
-def pad_namespace_key(
-    unit_id: str, pad_mode: PadMode, lang: Lang, epoch: int
-) -> str:
+def pad_namespace_key(unit_id: str, pad_mode: PadMode, lang: Lang, epoch: int) -> str:
     """Generate voxel namespace key for a pad's memory.
 
     Args:
@@ -254,6 +247,7 @@ def pad_namespace_key(
 @dataclass
 class UnitState:
     """Position and governance snapshot for a single unit/drone."""
+
     """Physical + governance state of a single unit/drone."""
 
     unit_id: str
@@ -278,9 +272,7 @@ def dist(a: UnitState, b: UnitState) -> float:
     Returns:
         Euclidean distance.
     """
-    return math.sqrt(
-        (a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2
-    )
+    return math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2)
 
 
 # ---------------------------------------------------------------------------
@@ -375,9 +367,7 @@ class SquadSpace:
                     out[b.unit_id].append(a.unit_id)
         return out
 
-    def quorum_ok(
-        self, votes: int, n: int = 6, threshold: int = 4
-    ) -> bool:
+    def quorum_ok(self, votes: int, n: int = 6, threshold: int = 4) -> bool:
         """Check Byzantine quorum: n=6, f=1, threshold=4 (BFT: 3f+1).
 
         Args:
@@ -389,15 +379,9 @@ class SquadSpace:
             True if quorum is satisfied.
         """
         f = (n - 1) // 3
-        return (
-            votes >= threshold
-            and n >= 3 * f + 1
-            and threshold >= 2 * f + 1
-        )
+        return votes >= threshold and n >= 3 * f + 1 and threshold >= 2 * f + 1
 
-    def commit_voxel(
-        self, record: VoxelRecord, quorum_votes: int = 0
-    ) -> bool:
+    def commit_voxel(self, record: VoxelRecord, quorum_votes: int = 0) -> bool:
         """Commit a voxel record to squad memory if quorum is met.
 
         Args:
@@ -435,13 +419,9 @@ class SquadSpace:
         """
         if not self.units:
             return 0.0
-        return sum(
-            s.coherence for s in self.units.values()
-        ) / len(self.units)
+        return sum(s.coherence for s in self.units.values()) / len(self.units)
 
-    def risk_field(
-        self, thr: Thresholds = Thresholds()
-    ) -> Dict[str, Decision]:
+    def risk_field(self, thr: Thresholds = Thresholds()) -> Dict[str, Decision]:
         """Compute SCBE decision for each unit.
 
         Args:
@@ -450,10 +430,7 @@ class SquadSpace:
         Returns:
             Mapping from unit_id to SCBE decision.
         """
-        return {
-            uid: scbe_decide(s.d_star, s.coherence, s.h_eff, thr)
-            for uid, s in self.units.items()
-        }
+        return {uid: scbe_decide(s.d_star, s.coherence, s.h_eff, thr) for uid, s in self.units.items()}
 
 
 # ---------------------------------------------------------------------------
@@ -495,9 +472,7 @@ class PollyPad:
 
     # -- Zone promotion --
 
-    def can_promote_to_safe(
-        self, state: UnitState, quorum_votes: Optional[int] = None
-    ) -> bool:
+    def can_promote_to_safe(self, state: UnitState, quorum_votes: Optional[int] = None) -> bool:
         """Check whether HOT -> SAFE promotion is allowed.
 
         Requires SCBE decision == ALLOW and optional 4/6 quorum.
@@ -509,18 +484,14 @@ class PollyPad:
         Returns:
             True if promotion is permitted.
         """
-        decision = scbe_decide(
-            state.d_star, state.coherence, state.h_eff, self.thr
-        )
+        decision = scbe_decide(state.d_star, state.coherence, state.h_eff, self.thr)
         if decision != "ALLOW":
             return False
         if quorum_votes is not None and quorum_votes < 4:
             return False
         return True
 
-    def promote(
-        self, state: UnitState, quorum_votes: Optional[int] = None
-    ) -> bool:
+    def promote(self, state: UnitState, quorum_votes: Optional[int] = None) -> bool:
         """Attempt to promote HOT -> SAFE.
 
         Args:
@@ -569,26 +540,17 @@ class PollyPad:
             if task_kind not in self.all_mode_tools:
                 return "DENY: Tool not allowed in mode"
 
-            if (
-                task_kind == "proximity_track"
-                and self.mode == "NAVIGATION"
-            ):
+            if task_kind == "proximity_track" and self.mode == "NAVIGATION":
                 nbrs = squad.neighbors(radius=10.0)
                 return f"Neighbors: {nbrs.get(self.unit_id, [])}"
 
             if task_kind == "ide_draft" and self.mode == "ENGINEERING":
                 return "HOT: Code draft generated"
 
-            if (
-                task_kind == "code_exec_safe"
-                and self.mode == "ENGINEERING"
-            ):
+            if task_kind == "code_exec_safe" and self.mode == "ENGINEERING":
                 return "SAFE: Exec with security envelope"
 
-            if (
-                task_kind == "build_deploy"
-                and self.mode == "ENGINEERING"
-            ):
+            if task_kind == "build_deploy" and self.mode == "ENGINEERING":
                 return "SAFE: Build and deploy initiated"
 
             return "ALLOW: Task routed"
@@ -597,9 +559,7 @@ class PollyPad:
 
     # -- Per-pad AI assistance --
 
-    def assist(
-        self, query: str, state: UnitState, squad: SquadSpace
-    ) -> str:
+    def assist(self, query: str, state: UnitState, squad: SquadSpace) -> str:
         """Per-pad AI code assistance scoped to mode and zone.
 
         Parses the query, routes subtasks through the pad's toolset,
@@ -637,11 +597,7 @@ class PollyPad:
         if "goal" in q and self.mode == "MISSION":
             return self.route_task("goal_set", state, squad)
 
-        squad_ctx = (
-            next(iter(squad.voxels.values()), None)
-            if squad.voxels
-            else None
-        )
+        squad_ctx = next(iter(squad.voxels.values()), None) if squad.voxels else None
         return f"Assist in {self.mode}: {query} (context: {squad_ctx})"
 
 
@@ -714,11 +670,7 @@ def triadic_temporal_distance(
         Triadic temporal distance.
     """
     eps = 1e-10
-    s = (
-        lambda1 * max(d1, eps) ** PHI
-        + lambda2 * max(d2, eps) ** PHI
-        + lambda3 * max(d_g, eps) ** PHI
-    )
+    s = lambda1 * max(d1, eps) ** PHI + lambda2 * max(d2, eps) ** PHI + lambda3 * max(d_g, eps) ** PHI
     return s ** (1.0 / PHI)
 
 
@@ -810,13 +762,9 @@ def plan_tri_directional(
         TriDirectionalResult with traces, distance, and decision.
     """
     directions: List[TraceDirection] = ["STRUCTURE", "CONFLICT", "TIME"]
-    traces = [
-        plan_trace(d, state, d_star, checkpoints) for d in directions
-    ]
+    traces = [plan_trace(d, state, d_star, checkpoints) for d in directions]
 
-    triadic_dist = triadic_temporal_distance(
-        traces[0].cost, traces[1].cost, traces[2].cost
-    )
+    triadic_dist = triadic_temporal_distance(traces[0].cost, traces[1].cost, traces[2].cost)
     valid_count = sum(1 for t in traces if t.result == "VALID")
 
     total_jaccard = 0.0
@@ -882,9 +830,7 @@ def cymatic_field_6d(
     return total
 
 
-def hyperbolic_distance_6d(
-    u: Tuple[float, ...], v: Tuple[float, ...]
-) -> float:
+def hyperbolic_distance_6d(u: Tuple[float, ...], v: Tuple[float, ...]) -> float:
     """Hyperbolic distance in 6D Poincare ball.
 
     d_H(u,v) = acosh(1 + 2||u-v||^2 / ((1 - ||u||^2)(1 - ||v||^2)))

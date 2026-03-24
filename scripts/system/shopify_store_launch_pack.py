@@ -268,7 +268,9 @@ def build_records(products: List[Dict[str, Any]], out_dir: Path) -> List[Product
     return records
 
 
-def upload_images_live(bridge: ShopifyCLIBridge, sync_summary: Dict[str, Any], records: List[ProductMediaRecord]) -> Dict[str, Any]:
+def upload_images_live(
+    bridge: ShopifyCLIBridge, sync_summary: Dict[str, Any], records: List[ProductMediaRecord]
+) -> Dict[str, Any]:
     sku_to_id: Dict[str, int] = {}
     for result in sync_summary.get("results", []):
         action = str(result.get("action", ""))
@@ -338,7 +340,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", default="artifacts/shopify-launch-pack", help="Output directory root")
     parser.add_argument("--run-both-side-test", action="store_true", help="Run storefront/admin Playwright smoke test")
     parser.add_argument("--publish-live", action="store_true", help="Publish products and upload generated images")
-    parser.add_argument("--emit-crosstalk", action="store_true", help="Emit cross-talk packet via terminal emitter script")
+    parser.add_argument(
+        "--emit-crosstalk", action="store_true", help="Emit cross-talk packet via terminal emitter script"
+    )
     parser.add_argument("--session-tag", default="shopify-launch-pack", help="Task/session tag for artifacts")
     return parser.parse_args()
 
@@ -451,8 +455,7 @@ def main() -> int:
         crosstalk_result = emit_crosstalk(
             task_id="SHOPIFY-LAUNCH-PACK",
             summary=(
-                f"Generated Shopify launch pack for {args.store}: "
-                f"{len(records)} assets, avg score {avg_score}"
+                f"Generated Shopify launch pack for {args.store}: " f"{len(records)} assets, avg score {avg_score}"
             ),
             next_action="Disable storefront password and run live publish once token is configured.",
         )
@@ -480,4 +483,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

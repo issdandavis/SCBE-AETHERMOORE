@@ -12,6 +12,7 @@ PHI_SPEC = 1.618033988749895
 # Discovery: locate derivation fn
 # -----------------------------
 
+
 def _load_pi_phi_deriver():
     """
     Attempts to locate a callable pi^phi derivation function across likely modules.
@@ -21,7 +22,10 @@ def _load_pi_phi_deriver():
         ("src.scbe_14layer_reference", ["pi_phi_key_derivation", "derive_pi_phi_key", "pi_phi_wall", "harmonic_wall"]),
         ("src.holographic_qr_cube", ["pi_phi_key_derivation", "derive_pi_phi_key", "pi_phi_wall", "harmonic_wall"]),
         ("src.qr_cube", ["pi_phi_key_derivation", "derive_pi_phi_key", "pi_phi_wall", "harmonic_wall"]),
-        ("src.layer12_harmonic_scaling", ["pi_phi_key_derivation", "derive_pi_phi_key", "pi_phi_wall", "harmonic_wall"]),
+        (
+            "src.layer12_harmonic_scaling",
+            ["pi_phi_key_derivation", "derive_pi_phi_key", "pi_phi_wall", "harmonic_wall"],
+        ),
         ("src.kernel.harmonic_scaling", ["pi_phi_key_derivation", "derive_pi_phi_key", "pi_phi_wall", "harmonic_wall"]),
     ]
 
@@ -54,6 +58,7 @@ def pi_phi_deriver():
 # -----------------------------
 # Helpers
 # -----------------------------
+
 
 def _expected_scalar(R: float, d_star: float, phi: float = PHI_SPEC) -> float:
     # Spec: H(d*,R) = R * pi^(phi*d*)
@@ -114,6 +119,7 @@ def _hash_bytes(x: bytes) -> bytes:
 # -----------------------------
 # Tests
 # -----------------------------
+
 
 def test_phi_constant_if_exposed_matches_spec(pi_phi_deriver):
     _, _, _, mod = pi_phi_deriver

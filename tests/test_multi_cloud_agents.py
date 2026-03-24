@@ -25,7 +25,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 # Import modules to test
 import sys
-sys.path.insert(0, '.')
+
+sys.path.insert(0, ".")
 
 from src.cloud.multi_cloud_agents import (
     CloudProvider,
@@ -39,7 +40,7 @@ from src.cloud.multi_cloud_agents import (
     PerformanceMonitorAgent,
     HallucinationDetectorAgent,
     MultiCloudOrchestratorAgent,
-    AgentFactory
+    AgentFactory,
 )
 
 from src.cloud.cross_cloud_comms import (
@@ -53,7 +54,7 @@ from src.cloud.cross_cloud_comms import (
     MessageQueue,
     MessageEncryption,
     CrossCloudRouter,
-    CrossCloudCommunicator
+    CrossCloudCommunicator,
 )
 
 from src.cloud.monitoring_dashboard import (
@@ -63,7 +64,7 @@ from src.cloud.monitoring_dashboard import (
     MetricsCollector,
     HealthChecker,
     AlertManager,
-    MonitoringDashboard
+    MonitoringDashboard,
 )
 
 
@@ -71,26 +72,17 @@ from src.cloud.monitoring_dashboard import (
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def aws_config():
     """AWS cloud configuration."""
-    return CloudConfig(
-        provider=CloudProvider.AWS,
-        region="us-west-2",
-        memory_mb=512,
-        timeout_seconds=300
-    )
+    return CloudConfig(provider=CloudProvider.AWS, region="us-west-2", memory_mb=512, timeout_seconds=300)
 
 
 @pytest.fixture
 def gcp_config():
     """GCP cloud configuration."""
-    return CloudConfig(
-        provider=CloudProvider.GCP,
-        region="us-central1",
-        memory_mb=512,
-        timeout_seconds=300
-    )
+    return CloudConfig(provider=CloudProvider.GCP, region="us-central1", memory_mb=512, timeout_seconds=300)
 
 
 @pytest.fixture
@@ -145,6 +137,7 @@ def alert_manager():
 # AGENT FACTORY TESTS
 # =============================================================================
 
+
 class TestAgentFactory:
     """Tests for AgentFactory."""
 
@@ -192,6 +185,7 @@ class TestAgentFactory:
 # SECURITY TESTER AGENT TESTS
 # =============================================================================
 
+
 class TestSecurityTesterAgent:
     """Tests for SecurityTesterAgent."""
 
@@ -205,11 +199,9 @@ class TestSecurityTesterAgent:
     @pytest.mark.asyncio
     async def test_vulnerability_scan(self, security_agent):
         """Test vulnerability scanning."""
-        result = await security_agent.process({
-            "type": "vulnerability_scan",
-            "target": "https://example.com",
-            "depth": "basic"
-        }, {})
+        result = await security_agent.process(
+            {"type": "vulnerability_scan", "target": "https://example.com", "depth": "basic"}, {}
+        )
 
         assert "scan_id" in result
         assert "vulnerabilities" in result
@@ -219,11 +211,9 @@ class TestSecurityTesterAgent:
     @pytest.mark.asyncio
     async def test_api_security_test(self, security_agent):
         """Test API security testing."""
-        result = await security_agent.process({
-            "type": "api_security_test",
-            "endpoint": "/api/v1/users",
-            "method": "POST"
-        }, {})
+        result = await security_agent.process(
+            {"type": "api_security_test", "endpoint": "/api/v1/users", "method": "POST"}, {}
+        )
 
         assert result["endpoint"] == "/api/v1/users"
         assert result["method"] == "POST"
@@ -233,10 +223,7 @@ class TestSecurityTesterAgent:
     @pytest.mark.asyncio
     async def test_auth_test(self, security_agent):
         """Test authentication testing."""
-        result = await security_agent.process({
-            "type": "auth_test",
-            "target": "https://example.com/login"
-        }, {})
+        result = await security_agent.process({"type": "auth_test", "target": "https://example.com/login"}, {})
 
         assert "tests" in result
         assert "all_passed" in result
@@ -244,11 +231,7 @@ class TestSecurityTesterAgent:
     @pytest.mark.asyncio
     async def test_rate_limit_test(self, security_agent):
         """Test rate limit testing."""
-        result = await security_agent.process({
-            "type": "rate_limit_test",
-            "endpoint": "/api/v1/data",
-            "rps": 100
-        }, {})
+        result = await security_agent.process({"type": "rate_limit_test", "endpoint": "/api/v1/data", "rps": 100}, {})
 
         assert result["endpoint"] == "/api/v1/data"
         assert "rate_limit_detected" in result
@@ -256,10 +239,7 @@ class TestSecurityTesterAgent:
     @pytest.mark.asyncio
     async def test_input_validation_test(self, security_agent):
         """Test input validation testing."""
-        result = await security_agent.process({
-            "type": "input_validation_test",
-            "endpoint": "/api/v1/submit"
-        }, {})
+        result = await security_agent.process({"type": "input_validation_test", "endpoint": "/api/v1/submit"}, {})
 
         assert "payloads_tested" in result
         assert "all_blocked" in result
@@ -276,6 +256,7 @@ class TestSecurityTesterAgent:
 # PERFORMANCE MONITOR AGENT TESTS
 # =============================================================================
 
+
 class TestPerformanceMonitorAgent:
     """Tests for PerformanceMonitorAgent."""
 
@@ -288,11 +269,9 @@ class TestPerformanceMonitorAgent:
     @pytest.mark.asyncio
     async def test_collect_metrics(self, performance_agent):
         """Test metrics collection."""
-        result = await performance_agent.process({
-            "type": "collect_metrics",
-            "target": "api-server",
-            "metrics": ["latency", "throughput", "errors"]
-        }, {})
+        result = await performance_agent.process(
+            {"type": "collect_metrics", "target": "api-server", "metrics": ["latency", "throughput", "errors"]}, {}
+        )
 
         assert result["target"] == "api-server"
         assert "metrics" in result
@@ -302,11 +281,7 @@ class TestPerformanceMonitorAgent:
     @pytest.mark.asyncio
     async def test_check_latency(self, performance_agent):
         """Test latency checking."""
-        result = await performance_agent.process({
-            "type": "check_latency",
-            "endpoint": "/api/health",
-            "samples": 5
-        }, {})
+        result = await performance_agent.process({"type": "check_latency", "endpoint": "/api/health", "samples": 5}, {})
 
         assert result["samples"] == 5
         assert "avg_ms" in result
@@ -315,11 +290,9 @@ class TestPerformanceMonitorAgent:
     @pytest.mark.asyncio
     async def test_check_throughput(self, performance_agent):
         """Test throughput checking."""
-        result = await performance_agent.process({
-            "type": "check_throughput",
-            "endpoint": "/api/data",
-            "duration": 5
-        }, {})
+        result = await performance_agent.process(
+            {"type": "check_throughput", "endpoint": "/api/data", "duration": 5}, {}
+        )
 
         assert "requests_per_second" in result
         assert "bytes_transferred" in result
@@ -329,15 +302,9 @@ class TestPerformanceMonitorAgent:
         """Test anomaly detection."""
         # First collect some metrics
         for _ in range(10):
-            await performance_agent.process({
-                "type": "collect_metrics",
-                "target": "test",
-                "metrics": ["latency"]
-            }, {})
+            await performance_agent.process({"type": "collect_metrics", "target": "test", "metrics": ["latency"]}, {})
 
-        result = await performance_agent.process({
-            "type": "detect_anomalies"
-        }, {})
+        result = await performance_agent.process({"type": "detect_anomalies"}, {})
 
         assert "anomalies" in result
         assert "anomaly_count" in result
@@ -345,10 +312,7 @@ class TestPerformanceMonitorAgent:
     @pytest.mark.asyncio
     async def test_generate_report(self, performance_agent):
         """Test report generation."""
-        result = await performance_agent.process({
-            "type": "generate_report",
-            "period": "1h"
-        }, {})
+        result = await performance_agent.process({"type": "generate_report", "period": "1h"}, {})
 
         assert result["period"] == "1h"
         assert "summary" in result
@@ -357,11 +321,7 @@ class TestPerformanceMonitorAgent:
     @pytest.mark.asyncio
     async def test_set_threshold(self, performance_agent):
         """Test threshold setting."""
-        result = await performance_agent.process({
-            "type": "set_threshold",
-            "metric": "latency_ms",
-            "value": 500
-        }, {})
+        result = await performance_agent.process({"type": "set_threshold", "metric": "latency_ms", "value": 500}, {})
 
         assert result["metric"] == "latency_ms"
         assert result["new_value"] == 500
@@ -370,6 +330,7 @@ class TestPerformanceMonitorAgent:
 # =============================================================================
 # HALLUCINATION DETECTOR AGENT TESTS
 # =============================================================================
+
 
 class TestHallucinationDetectorAgent:
     """Tests for HallucinationDetectorAgent."""
@@ -383,12 +344,15 @@ class TestHallucinationDetectorAgent:
     @pytest.mark.asyncio
     async def test_verify_output(self, hallucination_agent):
         """Test output verification."""
-        result = await hallucination_agent.process({
-            "type": "verify_output",
-            "output": "The sky is blue. Water boils at 100 degrees Celsius.",
-            "source_agent": "agent_1",
-            "confidence": 0.9
-        }, {})
+        result = await hallucination_agent.process(
+            {
+                "type": "verify_output",
+                "output": "The sky is blue. Water boils at 100 degrees Celsius.",
+                "source_agent": "agent_1",
+                "confidence": 0.9,
+            },
+            {},
+        )
 
         assert "verification_id" in result
         assert "claims_analyzed" in result
@@ -397,13 +361,9 @@ class TestHallucinationDetectorAgent:
     @pytest.mark.asyncio
     async def test_register_facts(self, hallucination_agent):
         """Test fact registration."""
-        result = await hallucination_agent.process({
-            "type": "register_facts",
-            "facts": {
-                "water_boiling_point": "100°C",
-                "earth_circumference": "40075 km"
-            }
-        }, {})
+        result = await hallucination_agent.process(
+            {"type": "register_facts", "facts": {"water_boiling_point": "100°C", "earth_circumference": "40075 km"}}, {}
+        )
 
         assert result["facts_added"] == 2
         assert result["status"] == "success"
@@ -412,28 +372,31 @@ class TestHallucinationDetectorAgent:
     async def test_verify_with_known_facts(self, hallucination_agent):
         """Test verification against known facts."""
         # Register a fact
-        await hallucination_agent.process({
-            "type": "register_facts",
-            "facts": {"python_version": "3.11"}
-        }, {})
+        await hallucination_agent.process({"type": "register_facts", "facts": {"python_version": "3.11"}}, {})
 
         # Verify claim that matches
-        result = await hallucination_agent.process({
-            "type": "verify_output",
-            "output": "Python version 3.11 is the latest stable release.",
-            "source_agent": "agent_1"
-        }, {})
+        result = await hallucination_agent.process(
+            {
+                "type": "verify_output",
+                "output": "Python version 3.11 is the latest stable release.",
+                "source_agent": "agent_1",
+            },
+            {},
+        )
 
         assert result["claims_analyzed"] >= 1
 
     @pytest.mark.asyncio
     async def test_cross_validate(self, hallucination_agent):
         """Test cross-validation."""
-        result = await hallucination_agent.process({
-            "type": "cross_validate",
-            "output": "This is a test statement.",
-            "validators": ["validator_1", "validator_2", "validator_3"]
-        }, {})
+        result = await hallucination_agent.process(
+            {
+                "type": "cross_validate",
+                "output": "This is a test statement.",
+                "validators": ["validator_1", "validator_2", "validator_3"],
+            },
+            {},
+        )
 
         assert result["validators"] == 3
         assert "agreement_rate" in result
@@ -453,6 +416,7 @@ class TestHallucinationDetectorAgent:
 # MULTI-CLOUD ORCHESTRATOR AGENT TESTS
 # =============================================================================
 
+
 class TestMultiCloudOrchestratorAgent:
     """Tests for MultiCloudOrchestratorAgent."""
 
@@ -465,13 +429,16 @@ class TestMultiCloudOrchestratorAgent:
     @pytest.mark.asyncio
     async def test_register_agent(self, orchestrator_agent):
         """Test agent registration."""
-        result = await orchestrator_agent.process({
-            "type": "register_agent",
-            "agent_id": "agent_001",
-            "agent_type": "security_tester",
-            "cloud": "aws",
-            "endpoint": "https://lambda.aws.com/agent_001"
-        }, {})
+        result = await orchestrator_agent.process(
+            {
+                "type": "register_agent",
+                "agent_id": "agent_001",
+                "agent_type": "security_tester",
+                "cloud": "aws",
+                "endpoint": "https://lambda.aws.com/agent_001",
+            },
+            {},
+        )
 
         assert result["agent_id"] == "agent_001"
         assert result["status"] == "registered"
@@ -481,20 +448,21 @@ class TestMultiCloudOrchestratorAgent:
     async def test_route_request(self, orchestrator_agent):
         """Test request routing."""
         # First register an agent
-        await orchestrator_agent.process({
-            "type": "register_agent",
-            "agent_id": "agent_001",
-            "agent_type": "security_tester",
-            "cloud": "aws",
-            "endpoint": "https://example.com"
-        }, {})
+        await orchestrator_agent.process(
+            {
+                "type": "register_agent",
+                "agent_id": "agent_001",
+                "agent_type": "security_tester",
+                "cloud": "aws",
+                "endpoint": "https://example.com",
+            },
+            {},
+        )
 
         # Then route a request
-        result = await orchestrator_agent.process({
-            "type": "route_request",
-            "target_agent": "agent_001",
-            "payload": {"action": "scan"}
-        }, {})
+        result = await orchestrator_agent.process(
+            {"type": "route_request", "target_agent": "agent_001", "payload": {"action": "scan"}}, {}
+        )
 
         assert result["routed_to"] == "agent_001"
         assert "endpoint" in result
@@ -503,25 +471,29 @@ class TestMultiCloudOrchestratorAgent:
     async def test_check_cloud_health(self, orchestrator_agent):
         """Test cloud health checking."""
         # Register agents on both clouds
-        await orchestrator_agent.process({
-            "type": "register_agent",
-            "agent_id": "aws_agent",
-            "agent_type": "monitor",
-            "cloud": "aws",
-            "endpoint": "https://aws.example.com"
-        }, {})
+        await orchestrator_agent.process(
+            {
+                "type": "register_agent",
+                "agent_id": "aws_agent",
+                "agent_type": "monitor",
+                "cloud": "aws",
+                "endpoint": "https://aws.example.com",
+            },
+            {},
+        )
 
-        await orchestrator_agent.process({
-            "type": "register_agent",
-            "agent_id": "gcp_agent",
-            "agent_type": "monitor",
-            "cloud": "gcp",
-            "endpoint": "https://gcp.example.com"
-        }, {})
+        await orchestrator_agent.process(
+            {
+                "type": "register_agent",
+                "agent_id": "gcp_agent",
+                "agent_type": "monitor",
+                "cloud": "gcp",
+                "endpoint": "https://gcp.example.com",
+            },
+            {},
+        )
 
-        result = await orchestrator_agent.process({
-            "type": "check_cloud_health"
-        }, {})
+        result = await orchestrator_agent.process({"type": "check_cloud_health"}, {})
 
         assert "clouds" in result
         assert "aws" in result["clouds"]
@@ -531,19 +503,18 @@ class TestMultiCloudOrchestratorAgent:
     async def test_execute_failover(self, orchestrator_agent):
         """Test failover execution."""
         # Register an AWS agent
-        await orchestrator_agent.process({
-            "type": "register_agent",
-            "agent_id": "aws_agent",
-            "agent_type": "monitor",
-            "cloud": "aws",
-            "endpoint": "https://aws.example.com"
-        }, {})
+        await orchestrator_agent.process(
+            {
+                "type": "register_agent",
+                "agent_id": "aws_agent",
+                "agent_type": "monitor",
+                "cloud": "aws",
+                "endpoint": "https://aws.example.com",
+            },
+            {},
+        )
 
-        result = await orchestrator_agent.process({
-            "type": "failover",
-            "from_cloud": "aws",
-            "to_cloud": "gcp"
-        }, {})
+        result = await orchestrator_agent.process({"type": "failover", "from_cloud": "aws", "to_cloud": "gcp"}, {})
 
         assert result["from_cloud"] == "aws"
         assert result["to_cloud"] == "gcp"
@@ -552,9 +523,7 @@ class TestMultiCloudOrchestratorAgent:
     @pytest.mark.asyncio
     async def test_get_topology(self, orchestrator_agent):
         """Test topology retrieval."""
-        result = await orchestrator_agent.process({
-            "type": "get_topology"
-        }, {})
+        result = await orchestrator_agent.process({"type": "get_topology"}, {})
 
         assert "total_agents" in result
         assert "by_cloud" in result
@@ -563,10 +532,7 @@ class TestMultiCloudOrchestratorAgent:
     @pytest.mark.asyncio
     async def test_balance_load(self, orchestrator_agent):
         """Test load balancing."""
-        result = await orchestrator_agent.process({
-            "type": "balance_load",
-            "strategy": "round_robin"
-        }, {})
+        result = await orchestrator_agent.process({"type": "balance_load", "strategy": "round_robin"}, {})
 
         assert result["strategy"] == "round_robin"
         assert "aws_agents" in result
@@ -578,6 +544,7 @@ class TestMultiCloudOrchestratorAgent:
 # CROSS-CLOUD COMMUNICATION TESTS
 # =============================================================================
 
+
 class TestServiceRegistry:
     """Tests for ServiceRegistry."""
 
@@ -588,7 +555,7 @@ class TestServiceRegistry:
             cloud="aws",
             region="us-west-2",
             url="https://lambda.aws.com/ep_001",
-            agent_type="security_tester"
+            agent_type="security_tester",
         )
 
         result = service_registry.register(endpoint)
@@ -604,7 +571,7 @@ class TestServiceRegistry:
                 cloud="aws" if i % 2 == 0 else "gcp",
                 region="us-west-2",
                 url=f"https://example.com/ep_{i}",
-                agent_type="security_tester" if i < 2 else "monitor"
+                agent_type="security_tester" if i < 2 else "monitor",
             )
             service_registry.register(endpoint)
 
@@ -619,7 +586,7 @@ class TestServiceRegistry:
                 cloud=cloud,
                 region="us-west-2",
                 url=f"https://example.com/ep_{i}",
-                agent_type="monitor"
+                agent_type="monitor",
             )
             service_registry.register(endpoint)
 
@@ -629,11 +596,7 @@ class TestServiceRegistry:
     def test_update_health(self, service_registry):
         """Test health status update."""
         endpoint = CloudEndpoint(
-            endpoint_id="ep_001",
-            cloud="aws",
-            region="us-west-2",
-            url="https://example.com",
-            agent_type="monitor"
+            endpoint_id="ep_001", cloud="aws", region="us-west-2", url="https://example.com", agent_type="monitor"
         )
         service_registry.register(endpoint)
 
@@ -679,6 +642,7 @@ class TestCircuitBreaker:
 
         # Wait for recovery timeout (set to 1 second in fixture)
         import time
+
         time.sleep(1.1)
 
         # Should be half-open now
@@ -726,6 +690,7 @@ class TestMessageEncryption:
 # =============================================================================
 # MONITORING DASHBOARD TESTS
 # =============================================================================
+
 
 class TestMetricsCollector:
     """Tests for MetricsCollector."""
@@ -775,15 +740,13 @@ class TestMetricsCollector:
 
 class TestAlertManager:
     """Tests for AlertManager."""
+
     pytestmark = []  # sync tests — override module-level asyncio mark
 
     def test_create_alert(self, alert_manager):
         """Test creating an alert."""
         alert = alert_manager.create_alert(
-            severity=AlertSeverity.WARNING,
-            title="High CPU Usage",
-            message="CPU usage exceeded 80%",
-            source="agent_001"
+            severity=AlertSeverity.WARNING, title="High CPU Usage", message="CPU usage exceeded 80%", source="agent_001"
         )
 
         assert alert.alert_id is not None
@@ -792,12 +755,7 @@ class TestAlertManager:
 
     def test_acknowledge_alert(self, alert_manager):
         """Test acknowledging an alert."""
-        alert = alert_manager.create_alert(
-            severity=AlertSeverity.ERROR,
-            title="Test",
-            message="Test",
-            source="test"
-        )
+        alert = alert_manager.create_alert(severity=AlertSeverity.ERROR, title="Test", message="Test", source="test")
 
         alert_manager.acknowledge(alert.alert_id)
         assert alert.status == AlertStatus.ACKNOWLEDGED
@@ -805,12 +763,7 @@ class TestAlertManager:
 
     def test_resolve_alert(self, alert_manager):
         """Test resolving an alert."""
-        alert = alert_manager.create_alert(
-            severity=AlertSeverity.ERROR,
-            title="Test",
-            message="Test",
-            source="test"
-        )
+        alert = alert_manager.create_alert(severity=AlertSeverity.ERROR, title="Test", message="Test", source="test")
 
         alert_manager.resolve(alert.alert_id)
         assert alert.status == AlertStatus.RESOLVED
@@ -832,11 +785,7 @@ class TestAlertManager:
     def test_add_alerting_rule(self, alert_manager):
         """Test adding alerting rule."""
         alert_manager.add_rule(
-            name="High CPU",
-            metric_name="cpu_percent",
-            condition="gt",
-            threshold=80,
-            severity=AlertSeverity.WARNING
+            name="High CPU", metric_name="cpu_percent", condition="gt", threshold=80, severity=AlertSeverity.WARNING
         )
 
         assert len(alert_manager.rules) == 1
@@ -851,7 +800,7 @@ class TestAlertManager:
             condition="gt",
             threshold=100,
             severity=AlertSeverity.WARNING,
-            cooldown_seconds=0
+            cooldown_seconds=0,
         )
 
         # Record metric that triggers rule
@@ -866,6 +815,7 @@ class TestAlertManager:
 # =============================================================================
 # INTEGRATION TESTS
 # =============================================================================
+
 
 class TestIntegration:
     """Integration tests for the complete system."""
@@ -882,10 +832,7 @@ class TestIntegration:
         assert health.status in [AgentHealth.HEALTHY, AgentHealth.DEGRADED, AgentHealth.UNHEALTHY]
 
         # Process request
-        result = await agent.process({
-            "type": "vulnerability_scan",
-            "target": "https://example.com"
-        }, {})
+        result = await agent.process({"type": "vulnerability_scan", "target": "https://example.com"}, {})
 
         assert agent.invocation_count == 1
         assert "vulnerabilities" in result
@@ -905,21 +852,27 @@ class TestIntegration:
         orchestrator = AgentFactory.create("multi_cloud_orchestrator", aws_config)
 
         # Register agents
-        await orchestrator.process({
-            "type": "register_agent",
-            "agent_id": aws_agent.agent_id,
-            "agent_type": "security_tester",
-            "cloud": "aws",
-            "endpoint": "https://aws.example.com"
-        }, {})
+        await orchestrator.process(
+            {
+                "type": "register_agent",
+                "agent_id": aws_agent.agent_id,
+                "agent_type": "security_tester",
+                "cloud": "aws",
+                "endpoint": "https://aws.example.com",
+            },
+            {},
+        )
 
-        await orchestrator.process({
-            "type": "register_agent",
-            "agent_id": gcp_agent.agent_id,
-            "agent_type": "performance_monitor",
-            "cloud": "gcp",
-            "endpoint": "https://gcp.example.com"
-        }, {})
+        await orchestrator.process(
+            {
+                "type": "register_agent",
+                "agent_id": gcp_agent.agent_id,
+                "agent_type": "performance_monitor",
+                "cloud": "gcp",
+                "endpoint": "https://gcp.example.com",
+            },
+            {},
+        )
 
         # Check topology
         topology = await orchestrator.process({"type": "get_topology"}, {})

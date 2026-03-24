@@ -60,6 +60,7 @@ def _client(headers: Optional[Dict[str, str]] = None, timeout: float = _DEFAULT_
 #  Twitter / X  (v2 API)
 # ---------------------------------------------------------------------------
 
+
 class TwitterPublisher(PlatformPublisher):
     """
     Post tweets via Twitter API v2.
@@ -158,6 +159,7 @@ class TwitterPublisher(PlatformPublisher):
 #  LinkedIn  (UGC Posts API v2)
 # ---------------------------------------------------------------------------
 
+
 class LinkedInPublisher(PlatformPublisher):
     """
     Post to LinkedIn via UGC Posts API.
@@ -192,11 +194,13 @@ class LinkedInPublisher(PlatformPublisher):
         if content.link:
             share = body["specificContent"]["com.linkedin.ugc.ShareContent"]
             share["shareMediaCategory"] = "ARTICLE"
-            share["media"] = [{
-                "status": "READY",
-                "originalUrl": content.link,
-                "title": {"text": content.title or content.link},
-            }]
+            share["media"] = [
+                {
+                    "status": "READY",
+                    "originalUrl": content.link,
+                    "title": {"text": content.title or content.link},
+                }
+            ]
 
         with _client({"Authorization": f"Bearer {self._token}"}) as client:
             try:
@@ -227,6 +231,7 @@ class LinkedInPublisher(PlatformPublisher):
 # ---------------------------------------------------------------------------
 #  Bluesky  (AT Protocol)
 # ---------------------------------------------------------------------------
+
 
 class BlueskyPublisher(PlatformPublisher):
     """
@@ -279,16 +284,20 @@ class BlueskyPublisher(PlatformPublisher):
             if content.link:
                 byte_start = text.find(content.link)
                 if byte_start >= 0:
-                    record["facets"] = [{
-                        "index": {
-                            "byteStart": byte_start,
-                            "byteEnd": byte_start + len(content.link),
-                        },
-                        "features": [{
-                            "$type": "app.bsky.richtext.facet#link",
-                            "uri": content.link,
-                        }],
-                    }]
+                    record["facets"] = [
+                        {
+                            "index": {
+                                "byteStart": byte_start,
+                                "byteEnd": byte_start + len(content.link),
+                            },
+                            "features": [
+                                {
+                                    "$type": "app.bsky.richtext.facet#link",
+                                    "uri": content.link,
+                                }
+                            ],
+                        }
+                    ]
 
             body = {
                 "repo": self._session["did"],
@@ -336,6 +345,7 @@ class BlueskyPublisher(PlatformPublisher):
 # ---------------------------------------------------------------------------
 #  Mastodon  (ActivityPub REST API)
 # ---------------------------------------------------------------------------
+
 
 class MastodonPublisher(PlatformPublisher):
     """
@@ -416,6 +426,7 @@ class MastodonPublisher(PlatformPublisher):
 #  WordPress  (REST API with Application Password)
 # ---------------------------------------------------------------------------
 
+
 class WordPressPublisher(PlatformPublisher):
     """
     Post to WordPress via REST API.
@@ -478,6 +489,7 @@ class WordPressPublisher(PlatformPublisher):
 # ---------------------------------------------------------------------------
 #  Medium  (Integration Token API)
 # ---------------------------------------------------------------------------
+
 
 class MediumPublisher(PlatformPublisher):
     """
@@ -558,6 +570,7 @@ class MediumPublisher(PlatformPublisher):
 # ---------------------------------------------------------------------------
 #  GitHub  (Issues, Comments, Releases)
 # ---------------------------------------------------------------------------
+
 
 class GitHubPublisher(PlatformPublisher):
     """
@@ -687,6 +700,7 @@ class GitHubPublisher(PlatformPublisher):
 #  HuggingFace  (Hub API)
 # ---------------------------------------------------------------------------
 
+
 class HuggingFacePublisher(PlatformPublisher):
     """
     Post to HuggingFace Hub (model cards, dataset cards, Space READMEs).
@@ -720,10 +734,12 @@ class HuggingFacePublisher(PlatformPublisher):
 
         _ = {
             "summary": commit_message,
-            "files": [{
-                "path": "README.md",
-                "content": readme_content,
-            }],
+            "files": [
+                {
+                    "path": "README.md",
+                    "content": readme_content,
+                }
+            ],
         }
 
         with _client(headers) as client:
@@ -741,10 +757,7 @@ class HuggingFacePublisher(PlatformPublisher):
                     )
 
                 # Upload README via the git-based API
-                upload_url = (
-                    f"https://huggingface.co/api/{self._repo_type}s/{self._repo_id}"
-                    f"/upload/main/README.md"
-                )
+                upload_url = f"https://huggingface.co/api/{self._repo_type}s/{self._repo_id}" f"/upload/main/README.md"
                 resp = client.put(
                     upload_url,
                     content=readme_content.encode("utf-8"),
@@ -784,6 +797,7 @@ class HuggingFacePublisher(PlatformPublisher):
 # ---------------------------------------------------------------------------
 #  Custom REST API
 # ---------------------------------------------------------------------------
+
 
 class CustomAPIPublisher(PlatformPublisher):
     """

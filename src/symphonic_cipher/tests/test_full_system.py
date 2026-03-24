@@ -183,9 +183,7 @@ class TestContextHandling:
         system = SCBEFullSystem()
 
         for tongue in ["KO", "AV", "RU", "CA", "UM", "DR"]:
-            result = system.evaluate_intent(
-                identity="user", intent="action", tongue=tongue
-            )
+            result = system.evaluate_intent(identity="user", intent="action", tongue=tongue)
             assert result.decision is not None
 
 
@@ -208,9 +206,7 @@ class TestEdgeCases:
     def test_special_characters(self):
         """Special characters in input should be handled."""
         system = SCBEFullSystem()
-        result = system.evaluate_intent(
-            identity="user@domain.com", intent="action with 日本語 and émojis 🚀"
-        )
+        result = system.evaluate_intent(identity="user@domain.com", intent="action with 日本語 and émojis 🚀")
         assert result.decision is not None
 
     def test_numeric_identity(self):

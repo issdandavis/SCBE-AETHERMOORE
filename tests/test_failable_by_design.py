@@ -62,11 +62,7 @@ class TestCryptographicBoundaryViolations:
         sealed_bytes = bytearray(sealed.encode() if isinstance(sealed, str) else sealed)
         if len(sealed_bytes) > 50:
             sealed_bytes[50] ^= 0x01
-        tampered = (
-            bytes(sealed_bytes).decode()
-            if isinstance(sealed, str)
-            else bytes(sealed_bytes)
-        )
+        tampered = bytes(sealed_bytes).decode() if isinstance(sealed, str) else bytes(sealed_bytes)
 
         with pytest.raises(Exception):
             self.ss.unseal(tampered, aad="context")
@@ -80,11 +76,7 @@ class TestCryptographicBoundaryViolations:
         sealed_bytes = bytearray(sealed.encode() if isinstance(sealed, str) else sealed)
         if len(sealed_bytes) > 10:
             sealed_bytes[-5] ^= 0xFF
-        tampered = (
-            bytes(sealed_bytes).decode("latin-1")
-            if isinstance(sealed, str)
-            else bytes(sealed_bytes)
-        )
+        tampered = bytes(sealed_bytes).decode("latin-1") if isinstance(sealed, str) else bytes(sealed_bytes)
 
         with pytest.raises(Exception):
             self.ss.unseal(tampered, aad="context")
@@ -154,9 +146,7 @@ class TestGeometricConstraintViolations:
 
             u_breath = breathing_transform(u, b)
 
-            assert (
-                np.linalg.norm(u_breath) < 1.0
-            ), f"Breathing b={b} pushed point outside ball"
+            assert np.linalg.norm(u_breath) < 1.0, f"Breathing b={b} pushed point outside ball"
 
     def test_F12_harmonic_scale_must_be_positive(self):
         """F12: Harmonic scale H(d*) MUST be positive and bounded in (0, 1]."""
@@ -377,9 +367,7 @@ class TestDecisionBoundaryViolations:
         from scbe_14layer_reference import scbe_14layer_pipeline
 
         # Create high-risk scenario (chaotic signals)
-        t = np.array(
-            [0.1, 0.9, 0.2, 0.8, 0.3, 0.7, 0.0, np.pi, 0.5, np.pi / 2, 0.1, np.pi / 4]
-        )
+        t = np.array([0.1, 0.9, 0.2, 0.8, 0.3, 0.7, 0.0, np.pi, 0.5, np.pi / 2, 0.1, np.pi / 4])
         telemetry = np.random.randn(256) * 10  # High variance
         audio = np.random.randn(512) * 10
 
@@ -393,9 +381,7 @@ class TestDecisionBoundaryViolations:
 
         # Very high risk should deny
         if result["risk_prime"] > 1.0:
-            assert (
-                result["decision"] == "DENY"
-            ), f"High risk {result['risk_prime']} should DENY"
+            assert result["decision"] == "DENY", f"High risk {result['risk_prime']} should DENY"
 
     def test_F26_zero_coherence_must_not_allow(self):
         """F26: Zero coherence MUST NOT result in ALLOW."""
@@ -475,9 +461,7 @@ class TestMalformedInputViolations:
 
         for case in unicode_cases:
             try:
-                sealed = self.ss.seal(
-                    case.encode("utf-8", errors="replace"), aad="unicode-test"
-                )
+                sealed = self.ss.seal(case.encode("utf-8", errors="replace"), aad="unicode-test")
                 self.ss.unseal(sealed, aad="unicode-test")
                 # Should roundtrip or fail gracefully
             except Exception:

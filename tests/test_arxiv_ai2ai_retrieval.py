@@ -84,10 +84,12 @@ def test_arxiv_client_search_parses_atom_feed() -> None:
 
 def test_arxiv_client_fetch_by_ids_normalizes_id_input() -> None:
     client = _FakeArxivClient(SAMPLE_FEED)
-    papers = client.fetch_by_ids([
-        "2501.00001v1",
-        "https://arxiv.org/abs/2501.00002",
-    ])
+    papers = client.fetch_by_ids(
+        [
+            "2501.00001v1",
+            "https://arxiv.org/abs/2501.00002",
+        ]
+    )
 
     assert client.last_params["id_list"] == "2501.00001v1,2501.00002"
     assert len(papers) == 2

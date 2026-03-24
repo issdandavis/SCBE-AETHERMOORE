@@ -26,16 +26,17 @@ class SpectralVoxel:
     Stores both the realm color and harmonic fingerprint,
     enabling spectral similarity queries across the octree.
     """
+
     color: str
     fingerprint_hash: Optional[str] = None
     spectral_centroid: Optional[float] = None
     dominant_freq: Optional[float] = None
     polarity: Optional[str] = None
 
-    def spectral_distance(self, other: 'SpectralVoxel') -> float:
+    def spectral_distance(self, other: "SpectralVoxel") -> float:
         """Compute spectral distance between two voxels."""
         if self.spectral_centroid is None or other.spectral_centroid is None:
-            return float('inf')
+            return float("inf")
 
         # Weighted sum of spectral differences
         centroid_diff = abs(self.spectral_centroid - other.spectral_centroid) / 1000.0
@@ -56,13 +57,7 @@ class OctreeNode:
     Leaf nodes store a color/realm label.
     """
 
-    def __init__(
-        self,
-        bounds_min: np.ndarray,
-        bounds_max: np.ndarray,
-        depth: int,
-        max_depth: int = 6
-    ):
+    def __init__(self, bounds_min: np.ndarray, bounds_max: np.ndarray, depth: int, max_depth: int = 6):
         self.bounds_min = bounds_min
         self.bounds_max = bounds_max
         self.center = (bounds_min + bounds_max) / 2.0
@@ -70,15 +65,10 @@ class OctreeNode:
         self.max_depth = max_depth
         self.color: Optional[str] = None  # leaf color if occupied
         self.voxel: Optional[SpectralVoxel] = None  # spectral metadata
-        self.children: Dict[int, 'OctreeNode'] = {}  # 0-7 octants
+        self.children: Dict[int, "OctreeNode"] = {}  # 0-7 octants
         self.occupied = False
 
-    def insert(
-        self,
-        coord_3d: np.ndarray,
-        color: str,
-        voxel: Optional[SpectralVoxel] = None
-    ):
+    def insert(self, coord_3d: np.ndarray, color: str, voxel: Optional[SpectralVoxel] = None):
         """Insert a point with given color and optional spectral metadata."""
         # Leaf case - maximum depth reached
         if self.depth == self.max_depth:
@@ -114,10 +104,7 @@ class OctreeNode:
             else:
                 child_max[2] = self.center[2]
 
-            self.children[octant] = OctreeNode(
-                child_min, child_max,
-                self.depth + 1, self.max_depth
-            )
+            self.children[octant] = OctreeNode(child_min, child_max, self.depth + 1, self.max_depth)
 
         self.children[octant].insert(coord_3d, color, voxel)
         self.occupied = True
@@ -198,11 +185,11 @@ class OctreeNode:
                 k_max = int((self.bounds_max[2] + 1.0) / 2.0 * (grid_size - 1))
 
                 # Clamp to valid range
-                i_min, i_max = max(0, i_min), min(grid_size-1, i_max)
-                j_min, j_max = max(0, j_min), min(grid_size-1, j_max)
-                k_min, k_max = max(0, k_min), min(grid_size-1, k_max)
+                i_min, i_max = max(0, i_min), min(grid_size - 1, i_max)
+                j_min, j_max = max(0, j_min), min(grid_size - 1, j_max)
+                k_min, k_max = max(0, k_min), min(grid_size - 1, k_max)
 
-                colors[i_min:i_max+1, j_min:j_max+1, k_min:k_max+1] = self.color
+                colors[i_min : i_max + 1, j_min : j_max + 1, k_min : k_max + 1] = self.color
             else:
                 for child in self.children.values():
                     child._fill_dense(colors, grid_size)
@@ -259,25 +246,21 @@ class HyperbolicOctree:
     def __init__(self, grid_size: int = 64, max_depth: int = 6):
         self.grid_size = grid_size
         self.max_depth = max_depth
-        self.root = OctreeNode(
-            np.array([-1.0, -1.0, -1.0]),
-            np.array([1.0, 1.0, 1.0]),
-            0, max_depth
-        )
+        self.root = OctreeNode(np.array([-1.0, -1.0, -1.0]), np.array([1.0, 1.0, 1.0]), 0, max_depth)
         self._point_count = 0
 
     def _realm_to_color(self, realm: str) -> str:
         """Map realm label to color."""
-        if realm in ('light_realm', 'light'):
-            return 'gold'
-        elif realm in ('shadow_realm', 'shadow'):
-            return 'purple'
-        elif realm in ('path', 'geodesic'):
-            return 'cyan'
-        elif realm == 'red':
-            return 'red'
-        elif realm == 'magenta':
-            return 'magenta'
+        if realm in ("light_realm", "light"):
+            return "gold"
+        elif realm in ("shadow_realm", "shadow"):
+            return "purple"
+        elif realm in ("path", "geodesic"):
+            return "cyan"
+        elif realm == "red":
+            return "red"
+        elif realm == "magenta":
+            return "magenta"
         return realm  # Use as-is if already a color
 
     def insert(self, coord_3d: np.ndarray, realm: str):
@@ -303,7 +286,7 @@ class HyperbolicOctree:
         fingerprint_hash: str,
         spectral_centroid: float,
         dominant_freq: float,
-        polarity: str
+        polarity: str,
     ):
         """
         Insert a point with harmonic fingerprint for spectral clustering.
@@ -324,7 +307,7 @@ class HyperbolicOctree:
                 fingerprint_hash=fingerprint_hash,
                 spectral_centroid=spectral_centroid,
                 dominant_freq=dominant_freq,
-                polarity=polarity
+                polarity=polarity,
             )
             self.root.insert(coord_3d, color, voxel)
             self._point_count += 1
@@ -342,10 +325,7 @@ class HyperbolicOctree:
         return self.root.collect_spectral_voxels()
 
     def find_spectral_neighbors(
-        self,
-        target_voxel: SpectralVoxel,
-        max_distance: float = 0.5,
-        max_results: int = 10
+        self, target_voxel: SpectralVoxel, max_distance: float = 0.5, max_results: int = 10
     ) -> List[Tuple[np.ndarray, SpectralVoxel, float]]:
         """
         Find spectrally similar voxels.
@@ -380,24 +360,23 @@ class HyperbolicOctree:
             Dictionary mapping polarity -> list of (position, voxel) tuples
         """
         clusters: Dict[str, List[Tuple[np.ndarray, SpectralVoxel]]] = {
-            'light': [],
-            'shadow': [],
-            'balanced': [],
-            'unknown': []
+            "light": [],
+            "shadow": [],
+            "balanced": [],
+            "unknown": [],
         }
 
         for pos, voxel in self.get_all_spectral_voxels():
-            polarity = voxel.polarity or 'unknown'
+            polarity = voxel.polarity or "unknown"
             if polarity in clusters:
                 clusters[polarity].append((pos, voxel))
             else:
-                clusters['unknown'].append((pos, voxel))
+                clusters["unknown"].append((pos, voxel))
 
         return clusters
 
     def cluster_by_frequency_band(
-        self,
-        bands: List[Tuple[float, float]] = None
+        self, bands: List[Tuple[float, float]] = None
     ) -> Dict[str, List[Tuple[np.ndarray, SpectralVoxel]]]:
         """
         Cluster voxels by dominant frequency band.
@@ -410,19 +389,16 @@ class HyperbolicOctree:
             Dictionary mapping band name -> list of (position, voxel) tuples
         """
         if bands is None:
-            bands = [(0, 300), (300, 600), (600, float('inf'))]
+            bands = [(0, 300), (300, 600), (600, float("inf"))]
 
-        band_names = [f"{int(lo)}-{int(hi) if hi != float('inf') else 'inf'}Hz"
-                      for lo, hi in bands]
+        band_names = [f"{int(lo)}-{int(hi) if hi != float('inf') else 'inf'}Hz" for lo, hi in bands]
 
-        clusters: Dict[str, List[Tuple[np.ndarray, SpectralVoxel]]] = {
-            name: [] for name in band_names
-        }
-        clusters['unknown'] = []
+        clusters: Dict[str, List[Tuple[np.ndarray, SpectralVoxel]]] = {name: [] for name in band_names}
+        clusters["unknown"] = []
 
         for pos, voxel in self.get_all_spectral_voxels():
             if voxel.dominant_freq is None:
-                clusters['unknown'].append((pos, voxel))
+                clusters["unknown"].append((pos, voxel))
                 continue
 
             for (lo, hi), name in zip(bands, band_names):
@@ -443,7 +419,7 @@ class HyperbolicOctree:
     def occupancy_ratio(self) -> float:
         """Compute fraction of voxels occupied."""
         occupied = len(self.get_occupied_voxels())
-        total = self.grid_size ** 3
+        total = self.grid_size**3
         return occupied / total
 
     def stats(self) -> Dict[str, Any]:
@@ -489,11 +465,12 @@ if __name__ == "__main__":
         point = point / (np.linalg.norm(point) + 0.1) * 0.4
         fp_hash = hashlib.md5(f"light_{i}".encode()).hexdigest()[:16]
         octree.insert_with_fingerprint(
-            point, 'light_realm',
+            point,
+            "light_realm",
             fingerprint_hash=fp_hash,
             spectral_centroid=650.0 + np.random.randn() * 50,
             dominant_freq=500.0 + np.random.randn() * 30,
-            polarity='light'
+            polarity="light",
         )
 
     # Insert shadow realm points with fingerprints (near boundary, low freq)
@@ -503,11 +480,12 @@ if __name__ == "__main__":
         point = point / np.linalg.norm(point) * 0.85
         fp_hash = hashlib.md5(f"shadow_{i}".encode()).hexdigest()[:16]
         octree.insert_with_fingerprint(
-            point, 'shadow_realm',
+            point,
+            "shadow_realm",
             fingerprint_hash=fp_hash,
             spectral_centroid=280.0 + np.random.randn() * 40,
             dominant_freq=220.0 + np.random.randn() * 20,
-            polarity='shadow'
+            polarity="shadow",
         )
 
     # Insert some balanced/path points
@@ -519,11 +497,12 @@ if __name__ == "__main__":
             point = point / norm * min(0.7, norm)
         fp_hash = hashlib.md5(f"path_{i}".encode()).hexdigest()[:16]
         octree.insert_with_fingerprint(
-            point, 'path',
+            point,
+            "path",
             fingerprint_hash=fp_hash,
             spectral_centroid=440.0 + np.random.randn() * 30,
             dominant_freq=440.0 + np.random.randn() * 50,
-            polarity='balanced'
+            polarity="balanced",
         )
 
     print()
@@ -552,12 +531,7 @@ if __name__ == "__main__":
     # Test spectral neighbor search
     print()
     print("[SEARCH] Finding spectrally similar voxels...")
-    target = SpectralVoxel(
-        color='cyan',
-        spectral_centroid=450.0,
-        dominant_freq=440.0,
-        polarity='balanced'
-    )
+    target = SpectralVoxel(color="cyan", spectral_centroid=450.0, dominant_freq=440.0, polarity="balanced")
     neighbors = octree.find_spectral_neighbors(target, max_distance=0.8, max_results=5)
     print("    Target: centroid=450Hz, dominant=440Hz, polarity=balanced")
     print(f"    Found {len(neighbors)} spectral neighbors:")

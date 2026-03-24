@@ -42,7 +42,9 @@ def find_obsidian_vaults(root_dirs: Optional[List[str]] = None, max_depth: int =
                 continue
 
             # Skip hidden/system dirs
-            dirnames[:] = [d for d in dirnames if not d.startswith(".") and d not in {"node_modules", "__pycache__", ".git"}]
+            dirnames[:] = [
+                d for d in dirnames if not d.startswith(".") and d not in {"node_modules", "__pycache__", ".git"}
+            ]
 
             if ".obsidian" in os.listdir(dirpath):
                 vault_path = os.path.abspath(dirpath)
@@ -62,11 +64,13 @@ def find_obsidian_vaults(root_dirs: Optional[List[str]] = None, max_depth: int =
                     except (json.JSONDecodeError, OSError):
                         pass
 
-                vaults.append({
-                    "name": name,
-                    "path": vault_path,
-                    "note_count": note_count,
-                })
+                vaults.append(
+                    {
+                        "name": name,
+                        "path": vault_path,
+                        "note_count": note_count,
+                    }
+                )
 
     return vaults
 

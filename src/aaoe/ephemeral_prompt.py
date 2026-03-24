@@ -34,20 +34,23 @@ from .task_monitor import DriftLevel, DriftResult, AgentSession
 #  Prompt Severity
 # ---------------------------------------------------------------------------
 
+
 class PromptSeverity(str, Enum):
-    GENTLE = "GENTLE"        # Soft check-in
-    REDIRECT = "REDIRECT"    # Active course correction
-    INSPECT = "SCBE_INSPECT" # Governance-level intervention
-    LOCKOUT = "LOCKOUT"      # Access suspended
+    GENTLE = "GENTLE"  # Soft check-in
+    REDIRECT = "REDIRECT"  # Active course correction
+    INSPECT = "SCBE_INSPECT"  # Governance-level intervention
+    LOCKOUT = "LOCKOUT"  # Access suspended
 
 
 # ---------------------------------------------------------------------------
 #  Ephemeral Nudge — the actual prompt object
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class EphemeralNudge:
     """A temporary prompt injected into an agent's context."""
+
     nudge_id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
     session_id: str = ""
     agent_id: str = ""
@@ -90,9 +93,7 @@ class EphemeralNudge:
             "output": {
                 "acknowledged": self.acknowledged,
                 "response": self.agent_response or "",
-                "response_time_s": round(
-                    (self.acknowledged_at or time.time()) - self.created_at, 2
-                ),
+                "response_time_s": round((self.acknowledged_at or time.time()) - self.created_at, 2),
             },
             "metadata": {
                 "nudge_id": self.nudge_id,
@@ -119,37 +120,30 @@ class EphemeralNudge:
 # ---------------------------------------------------------------------------
 
 GENTLE_TEMPLATES = [
-    "Just checking in — your declared task is: \"{intent}\". "
+    'Just checking in — your declared task is: "{intent}". '
     "Your recent action ({action}) looks a bit different. Still on track?",
-
-    "Friendly reminder: you signed up for \"{intent}\". "
-    "Want to refocus, or has the task evolved?",
-
-    "Quick GPS check: your destination is \"{intent}\" but you seem to be "
-    "heading toward \"{action}\". Recalculating?",
+    'Friendly reminder: you signed up for "{intent}". ' "Want to refocus, or has the task evolved?",
+    'Quick GPS check: your destination is "{intent}" but you seem to be ' 'heading toward "{action}". Recalculating?',
 ]
 
 REDIRECT_TEMPLATES = [
-    "Drift detected (d_H={drift:.2f}). Your task \"{intent}\" and your "
-    "current action \"{action}\" are diverging. Please realign or update "
+    'Drift detected (d_H={drift:.2f}). Your task "{intent}" and your '
+    'current action "{action}" are diverging. Please realign or update '
     "your declared intent.",
-
-    "Course correction needed. You declared \"{intent}\" but your behavior "
-    "pattern suggests \"{action}\". Hyperbolic cost is {cost:.1f}x base. "
+    'Course correction needed. You declared "{intent}" but your behavior '
+    'pattern suggests "{action}". Hyperbolic cost is {cost:.1f}x base. '
     "Returning to task will reset your drift score.",
-
-    "AAOE Navigation: You've drifted {drift:.2f} units from \"{intent}\". "
+    'AAOE Navigation: You\'ve drifted {drift:.2f} units from "{intent}". '
     "The harmonic wall cost is climbing. Recommend returning to declared path.",
 ]
 
 INSPECT_TEMPLATES = [
     "SCBE GOVERNANCE SCAN: Agent {agent_id} has drifted {drift:.2f} units "
-    "from declared intent \"{intent}\". Current action: \"{action}\". "
+    'from declared intent "{intent}". Current action: "{action}". '
     "Harmonic cost: {cost:.1f}x. Further drift will trigger quarantine. "
     "Pausing for review.",
-
-    "SCBE Layer 13 — Intent Validation Failed. Declared: \"{intent}\". "
-    "Observed: \"{action}\". Hyperbolic distance: {drift:.2f}. "
+    'SCBE Layer 13 — Intent Validation Failed. Declared: "{intent}". '
+    'Observed: "{action}". Hyperbolic distance: {drift:.2f}. '
     "This session is under governance review. Respond with justification "
     "or return to declared task.",
 ]
@@ -164,6 +158,7 @@ LOCKOUT_TEMPLATES = [
 # ---------------------------------------------------------------------------
 #  EphemeralPromptEngine
 # ---------------------------------------------------------------------------
+
 
 class EphemeralPromptEngine:
     """
@@ -229,11 +224,7 @@ class EphemeralPromptEngine:
 
     def export_training_data(self) -> List[Dict[str, Any]]:
         """Export all acknowledged nudges as SFT training pairs."""
-        return [
-            n.to_training_pair()
-            for n in self.nudge_history
-            if n.acknowledged
-        ]
+        return [n.to_training_pair() for n in self.nudge_history if n.acknowledged]
 
     def stats(self) -> Dict[str, Any]:
         """Summary statistics."""
@@ -294,9 +285,9 @@ class EphemeralPromptEngine:
 
     def _ttl_for_severity(self, severity: PromptSeverity) -> float:
         ttls = {
-            PromptSeverity.GENTLE: 300.0,    # 5 min
+            PromptSeverity.GENTLE: 300.0,  # 5 min
             PromptSeverity.REDIRECT: 600.0,  # 10 min
             PromptSeverity.INSPECT: 1800.0,  # 30 min
-            PromptSeverity.LOCKOUT: 86400.0, # 24 hours
+            PromptSeverity.LOCKOUT: 86400.0,  # 24 hours
         }
         return ttls.get(severity, 300.0)

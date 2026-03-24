@@ -90,9 +90,7 @@ class TestPoincareMetricProperties:
             d_uv = layer_5_hyperbolic_distance(u, v)
             d_vu = layer_5_hyperbolic_distance(v, u)
 
-            assert (
-                abs(d_uv - d_vu) < 1e-10
-            ), f"Metric violation: d(u,v) = {d_uv} ≠ d(v,u) = {d_vu}"
+            assert abs(d_uv - d_vu) < 1e-10, f"Metric violation: d(u,v) = {d_uv} ≠ d(v,u) = {d_vu}"
 
     def test_triangle_inequality(self):
         """
@@ -166,9 +164,7 @@ class TestPoincareMetricProperties:
             d_formula = np.arccosh(max(arg, 1.0))
 
             # They must match exactly (within numerical precision)
-            assert (
-                abs(d_impl - d_formula) < 1e-10
-            ), f"Distance formula mismatch: impl={d_impl}, formula={d_formula}"
+            assert abs(d_impl - d_formula) < 1e-10, f"Distance formula mismatch: impl={d_impl}, formula={d_formula}"
 
     def test_distance_to_origin(self):
         """
@@ -199,9 +195,7 @@ class TestPoincareMetricProperties:
             d_formula = 2.0 * np.arctanh(min(u_norm, 0.9999))
 
             # Must match
-            assert (
-                abs(d_impl - d_formula) < 1e-8
-            ), f"Distance to origin mismatch: impl={d_impl}, formula={d_formula}"
+            assert abs(d_impl - d_formula) < 1e-8, f"Distance to origin mismatch: impl={d_impl}, formula={d_formula}"
 
 
 class TestPoincareIsometries:
@@ -286,9 +280,7 @@ class TestPoincareIsometries:
             # 0 ⊕ u should equal u
             result = layer_7_phase_transform(u, zero, Q)
 
-            assert np.allclose(
-                result, u, atol=1e-8
-            ), f"Möbius identity violated: 0 ⊕ u ≠ u"
+            assert np.allclose(result, u, atol=1e-8), f"Möbius identity violated: 0 ⊕ u ≠ u"
 
     def _random_rotation_matrix(self, n: int) -> np.ndarray:
         """Generate a random orthogonal matrix (rotation)."""
@@ -378,9 +370,7 @@ class TestBreathingTransformProperties:
                 distance_changed = True
                 break
 
-        assert (
-            distance_changed
-        ), "Breathing transform didn't change distances - should not be an isometry"
+        assert distance_changed, "Breathing transform didn't change distances - should not be an isometry"
 
     def test_breathing_identity(self):
         """
@@ -397,9 +387,7 @@ class TestBreathingTransformProperties:
             u_breath = layer_6_breathing_transform(u, b=1.0)
 
             # Should be very close to original
-            assert np.allclose(
-                u, u_breath, atol=1e-6
-            ), f"Breathing with b=1 should be identity"
+            assert np.allclose(u, u_breath, atol=1e-6), f"Breathing with b=1 should be identity"
 
 
 class TestHyperbolicCurvature:

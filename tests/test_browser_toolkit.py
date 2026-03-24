@@ -39,6 +39,7 @@ from src.browser.toolkit import (
 
 # ── Helpers ──────────────────────────────────────────────────────────
 
+
 def _has_exact_url(urls: list[str], expected: str) -> bool:
     expected_parts = urlparse(expected)
     expected_host = (expected_parts.hostname or "").lower()
@@ -58,7 +59,7 @@ def _host_has_suffix(url: str, *labels: str) -> bool:
     host = (urlparse(str(url)).hostname or "").strip(".").lower()
     host_labels = [part for part in host.split(".") if part]
     suffix = [part.lower() for part in labels]
-    return len(host_labels) >= len(suffix) and host_labels[-len(suffix):] == suffix
+    return len(host_labels) >= len(suffix) and host_labels[-len(suffix) :] == suffix
 
 
 def _make_response(text: str, status_code: int = 200) -> httpx.Response:
@@ -99,27 +100,33 @@ class MockTransport(httpx.AsyncBaseTransport):
 
 # ── Import / Dataclass Tests ────────────────────────────────────────
 
+
 class TestImports:
     """Verify module loads and exports all public symbols."""
 
     def test_import_search(self):
         from src.browser.toolkit import search
+
         assert callable(search)
 
     def test_import_diff(self):
         from src.browser.toolkit import diff
+
         assert callable(diff)
 
     def test_import_extract(self):
         from src.browser.toolkit import extract
+
         assert callable(extract)
 
     def test_import_needs_js(self):
         from src.browser.toolkit import needs_js
+
         assert callable(needs_js)
 
     def test_import_dataclasses(self):
         from src.browser.toolkit import SearchResult, PageDiff, ExtractedItem, JSDetectionResult
+
         assert SearchResult is not None
         assert PageDiff is not None
         assert ExtractedItem is not None
@@ -162,6 +169,7 @@ class TestJSDetectionResultDataclass:
 
 
 # ── Internal Helper Tests ────────────────────────────────────────────
+
 
 class TestExtractTextFromHtml:
     """Test the crude HTML-to-text extractor."""
@@ -218,11 +226,11 @@ class TestExtractLinksFromHtml:
         assert len(links) == 0
 
     def test_multiple_links(self):
-        html = '''
+        html = """
         <a href="https://a.com">A</a>
         <a href="https://b.com">B</a>
         <a href="/c">C</a>
-        '''
+        """
         links = _extract_links_from_html(html, "https://example.com")
         assert _has_exact_url(links, "https://a.com")
         assert _has_exact_url(links, "https://b.com")
@@ -236,18 +244,19 @@ class TestExtractLinksFromHtml:
 
 # ── Google Parser Tests ──────────────────────────────────────────────
 
+
 class TestParseGoogleResults:
     """Test Google HTML result parsing."""
 
     def test_parses_results_with_h3(self):
-        html = '''
+        html = """
         <div>
             <a href="/url?q=https://example.com/page&sa=U">
                 <h3>Example Page Title</h3>
             </a>
             <div><span class="snippet">This is the snippet text</span></div>
         </div>
-        '''
+        """
         results = _parse_google_results(html)
         assert len(results) >= 1
         assert results[0].title == "Example Page Title"
@@ -255,20 +264,20 @@ class TestParseGoogleResults:
         assert results[0].source == "google"
 
     def test_skips_google_internal_links(self):
-        html = '''
+        html = """
         <a href="https://www.google.com/preferences"><h3>Settings</h3></a>
         <a href="/url?q=https://real-site.com&sa=U"><h3>Real Site</h3></a>
-        '''
+        """
         results = _parse_google_results(html)
         urls = [r.url for r in results]
         assert not any(_host_has_suffix(u, "google", "com") for u in urls)
 
     def test_does_not_reject_non_google_urls_with_google_substring(self):
-        html = '''
+        html = """
         <a href="/url?q=https://evil.example.com/path/google.com-marker&sa=U">
             <h3>Mirror Result</h3>
         </a>
-        '''
+        """
         results = _parse_google_results(html)
         assert len(results) == 1
         assert results[0].url == "https://evil.example.com/path/google.com-marker"
@@ -283,16 +292,17 @@ class TestParseGoogleResults:
 
 # ── DuckDuckGo Parser Tests ─────────────────────────────────────────
 
+
 class TestParseDuckDuckGoResults:
     """Test DuckDuckGo HTML result parsing."""
 
     def test_parses_ddg_results(self):
-        html = '''
+        html = """
         <div class="result results_links">
             <a class="result__a" href="https://example.com/ddg">DDG Result Title</a>
             <a class="result__snippet" href="#">This is the DDG snippet</a>
         </div>
-        '''
+        """
         results = _parse_duckduckgo_results(html)
         assert len(results) >= 1
         assert results[0].title == "DDG Result Title"
@@ -309,12 +319,13 @@ class TestParseDuckDuckGoResults:
 
 # ── Search Function Tests ────────────────────────────────────────────
 
+
 class TestSearch:
     """Test the search() function with mocked HTTP."""
 
     @pytest.mark.asyncio
     async def test_search_returns_google_results(self):
-        google_html = '''
+        google_html = """
         <a href="/url?q=https://example.com/result1&sa=U">
             <h3>Result One</h3>
         </a>
@@ -322,10 +333,8 @@ class TestSearch:
         <a href="/url?q=https://example.com/result2&sa=U">
             <h3>Result Two</h3>
         </a>
-        '''
-        transport = MockTransport(
-            responses={"google.com": _make_response(google_html)}
-        )
+        """
+        transport = MockTransport(responses={"google.com": _make_response(google_html)})
         with patch("src.browser.toolkit._build_client") as mock_build:
             mock_build.return_value = httpx.AsyncClient(transport=transport)
             results = await search("test query", num_results=5)
@@ -337,10 +346,10 @@ class TestSearch:
     @pytest.mark.asyncio
     async def test_search_falls_back_to_duckduckgo(self):
         """If Google returns no parseable results, falls back to DDG."""
-        ddg_html = '''
+        ddg_html = """
         <a class="result__a" href="https://ddg-result.com/page">DDG Fallback</a>
         <a class="result__snippet" href="#">DDG snippet</a>
-        '''
+        """
 
         call_count = 0
 
@@ -387,6 +396,7 @@ class TestSearch:
 
 
 # ── Diff Function Tests ──────────────────────────────────────────────
+
 
 class TestDiff:
     """Test the diff() function with mocked HTTP."""
@@ -436,8 +446,7 @@ class TestDiff:
                 return _make_response('<html><body><a href="https://a.com">A</a></body></html>')
             else:
                 return _make_response(
-                    '<html><body><a href="https://a.com">A</a>'
-                    '<a href="https://b.com">B</a></body></html>'
+                    '<html><body><a href="https://a.com">A</a>' '<a href="https://b.com">B</a></body></html>'
                 )
 
         with patch("httpx.AsyncClient.get", new=mock_get):
@@ -455,8 +464,7 @@ class TestDiff:
             call_count += 1
             if call_count == 1:
                 return _make_response(
-                    '<html><body><a href="https://a.com">A</a>'
-                    '<a href="https://b.com">B</a></body></html>'
+                    '<html><body><a href="https://a.com">A</a>' '<a href="https://b.com">B</a></body></html>'
                 )
             else:
                 return _make_response('<html><body><a href="https://a.com">A</a></body></html>')
@@ -487,6 +495,7 @@ class TestDiff:
 
 
 # ── Extract Function Tests ───────────────────────────────────────────
+
 
 class TestExtract:
     """Test the extract() function with mocked HTTP."""
@@ -605,6 +614,7 @@ class TestExtract:
 
 # ── Builtin Patterns Tests ───────────────────────────────────────────
 
+
 class TestBuiltinPatterns:
     """Verify all builtin regex patterns are valid and match expected inputs."""
 
@@ -641,6 +651,7 @@ class TestBuiltinPatterns:
 
 
 # ── needs_js Tests ───────────────────────────────────────────────────
+
 
 class TestNeedsJS:
     """Test the needs_js() JavaScript detection function."""
@@ -801,6 +812,7 @@ class TestNeedsJS:
 
 
 # ── Constants Tests ──────────────────────────────────────────────────
+
 
 class TestConstants:
     """Verify module-level constants."""

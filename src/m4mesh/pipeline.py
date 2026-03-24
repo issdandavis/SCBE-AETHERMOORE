@@ -53,7 +53,9 @@ class M4Subsystem:
         if self.manifest.projection != "tanh_ball_v1":
             raise ValueError(f"Unknown projection {self.manifest.projection}")
 
-        z0 = blockwise_tanh_ball_projection(fused, self.layout.D_C, self.layout.D_K, self.layout.D_T, c=self.manifest.curvature_c)
+        z0 = blockwise_tanh_ball_projection(
+            fused, self.layout.D_C, self.layout.D_K, self.layout.D_T, c=self.manifest.curvature_c
+        )
 
         zT = damped_wave(
             z0=z0,

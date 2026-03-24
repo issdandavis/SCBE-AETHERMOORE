@@ -241,13 +241,15 @@ def encode_voxel_key(
     Format: qr:{D}:{X}:{Y}:{Z}:{V}:{P}:{S}
     where {D} = first char of decision (A/Q/D).
     """
-    return ":".join([
-        "qr",
-        decision[0],
-        _b36(base.get("X", 0)),
-        _b36(base.get("Y", 0)),
-        _b36(base.get("Z", 0)),
-        _b36(base.get("V", 0)),
-        _b36(base.get("P", 0)),
-        _b36(base.get("S", 0)),
-    ])
+    return ":".join(
+        [
+            "qr",
+            decision[0],
+            _b36(base.get("X", 0)),
+            _b36(base.get("Y", 0)),
+            _b36(base.get("Z", 0)),
+            _b36(base.get("V", 0)),
+            _b36(base.get("P", 0)),
+            _b36(base.get("S", 0)),
+        ]
+    )

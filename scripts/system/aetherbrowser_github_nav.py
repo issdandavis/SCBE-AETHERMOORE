@@ -62,12 +62,14 @@ def nav_github_playwright(
                     desc_el = item.query_selector("p, span.topic-tag")
                     desc = desc_el.inner_text().strip() if desc_el else ""
 
-                    results.append({
-                        "title": title,
-                        "description": desc[:300],
-                        "link": href,
-                        "type": search_type,
-                    })
+                    results.append(
+                        {
+                            "title": title,
+                            "description": desc[:300],
+                            "link": href,
+                            "type": search_type,
+                        }
+                    )
             else:
                 # Generic extraction for other types
                 links = page.query_selector_all("a.Link--primary")
@@ -76,12 +78,14 @@ def nav_github_playwright(
                     title = link_el.inner_text().strip()
                     if not href.startswith("http"):
                         href = "https://github.com" + href
-                    results.append({
-                        "title": title,
-                        "description": "",
-                        "link": href,
-                        "type": search_type,
-                    })
+                    results.append(
+                        {
+                            "title": title,
+                            "description": "",
+                            "link": href,
+                            "type": search_type,
+                        }
+                    )
 
         except Exception as exc:
             print(f"Browser error: {exc}", file=sys.stderr)
@@ -107,18 +111,22 @@ def nav_github_api_fallback(
     results: List[Dict[str, Any]] = []
 
     try:
-        req = urllib.request.Request(url, headers={"Accept": "application/vnd.github.v3+json", "User-Agent": "HYDRA-AetherBrowser/1.0"})
+        req = urllib.request.Request(
+            url, headers={"Accept": "application/vnd.github.v3+json", "User-Agent": "HYDRA-AetherBrowser/1.0"}
+        )
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode("utf-8"))
 
         for item in data.get("items", [])[:max_results]:
-            results.append({
-                "title": item.get("full_name", ""),
-                "description": (item.get("description") or "")[:300],
-                "link": item.get("html_url", ""),
-                "stars": item.get("stargazers_count", 0),
-                "type": search_type,
-            })
+            results.append(
+                {
+                    "title": item.get("full_name", ""),
+                    "description": (item.get("description") or "")[:300],
+                    "link": item.get("html_url", ""),
+                    "stars": item.get("stargazers_count", 0),
+                    "type": search_type,
+                }
+            )
     except Exception as exc:
         print(f"API error: {exc}", file=sys.stderr)
 

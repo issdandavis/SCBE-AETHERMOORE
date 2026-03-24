@@ -32,7 +32,7 @@ import numpy as np
 
 PHI = 1.618033988749895
 TONGUE_KEYS = ["KO", "AV", "RU", "CA", "UM", "DR"]
-TONGUE_WEIGHTS = {t: PHI ** i for i, t in enumerate(TONGUE_KEYS)}
+TONGUE_WEIGHTS = {t: PHI**i for i, t in enumerate(TONGUE_KEYS)}
 
 
 # =========================================================================
@@ -76,6 +76,7 @@ def augment_text(text: str, tongue: str, tier: int = 1) -> str:
 # =========================================================================
 #  2. Sacred Geometry Rotation Matrices
 # =========================================================================
+
 
 @lru_cache(maxsize=None)
 def _build_rotation_matrix(tongue: str, dim: int = 384) -> np.ndarray:
@@ -130,6 +131,7 @@ def sacred_rotate(embedding: np.ndarray, tongue: str) -> np.ndarray:
 # =========================================================================
 #  3. Phi-Weighted Coordinate Expansion
 # =========================================================================
+
 
 def phi_expand_tongue_coords(raw_coords: np.ndarray, tongue: str) -> np.ndarray:
     """
@@ -202,9 +204,9 @@ def harmonic_wall_cost(point: np.ndarray, R: float = 14.0) -> float:
     """
     d_h = hyperbolic_distance_from_origin(point)
     # Scale factor: d_H=2.2 (norm 0.8) should give cost ≈ R
-    scale = 2.2 ** 2  # ≈ 4.84
-    exponent = d_h ** 2 / scale
-    return float(R ** exponent)
+    scale = 2.2**2  # ≈ 4.84
+    exponent = d_h**2 / scale
+    return float(R**exponent)
 
 
 def phi_expand_spatial_coords(raw_spatial: np.ndarray, tongue: str) -> np.ndarray:
@@ -214,11 +216,13 @@ def phi_expand_spatial_coords(raw_spatial: np.ndarray, tongue: str) -> np.ndarra
     tongue_idx = TONGUE_KEYS.index(tongue)
 
     # Offset each tongue to a different octant
-    offset = np.array([
-        0.5 * math.cos(tongue_idx * math.pi / 3),
-        0.5 * math.sin(tongue_idx * math.pi / 3),
-        0.3 * math.cos(tongue_idx * math.pi / 3 + math.pi / 4),
-    ])
+    offset = np.array(
+        [
+            0.5 * math.cos(tongue_idx * math.pi / 3),
+            0.5 * math.sin(tongue_idx * math.pi / 3),
+            0.3 * math.cos(tongue_idx * math.pi / 3 + math.pi / 4),
+        ]
+    )
 
     expanded = raw_spatial * 5.0 + offset
     # Clamp to [-0.99, 0.99]
@@ -229,6 +233,7 @@ def phi_expand_spatial_coords(raw_spatial: np.ndarray, tongue: str) -> np.ndarra
 # =========================================================================
 #  4. Sacred Egg Genesis — Birth Sequence for Embeddings
 # =========================================================================
+
 
 def sacred_egg_genesis(tongue: str, tier: int = 1, payload: bytes = b"") -> np.ndarray:
     """
@@ -289,18 +294,20 @@ def sacred_egg_genesis(tongue: str, tier: int = 1, payload: bytes = b"") -> np.n
 #  5. Full Tetris Pipeline
 # =========================================================================
 
+
 @dataclass
 class TetrisEmbedding:
     """A fully optimized embedding from the Tetris pipeline."""
-    raw_embedding: np.ndarray       # Original 384D
-    rotated_embedding: np.ndarray   # Sacred-rotated 384D
-    tongue_coords: np.ndarray       # Expanded 6D tongue coords
-    spatial_coords: np.ndarray      # Expanded 3D octree coords
-    augmented_text: str             # Text with tongue/tier prefix
+
+    raw_embedding: np.ndarray  # Original 384D
+    rotated_embedding: np.ndarray  # Sacred-rotated 384D
+    tongue_coords: np.ndarray  # Expanded 6D tongue coords
+    spatial_coords: np.ndarray  # Expanded 3D octree coords
+    augmented_text: str  # Text with tongue/tier prefix
     tongue: str
     tier: int
-    genesis_manifold: np.ndarray    # Innate 6D from Sacred Egg
-    harmonic_cost: float            # H(x) at final position
+    genesis_manifold: np.ndarray  # Innate 6D from Sacred Egg
+    harmonic_cost: float  # H(x) at final position
 
 
 class TetrisEmbedder:
@@ -323,17 +330,21 @@ class TetrisEmbedder:
     def _build_ico_matrix(self) -> np.ndarray:
         phi = PHI
         phi_inv = 1.0 / phi
-        raw = np.array([
-            [1, phi, 0, phi_inv, 0, 0],
-            [0, 1, phi, 0, phi_inv, 0],
-            [0, 0, 1, phi, 0, phi_inv],
-        ], dtype=np.float64)
+        raw = np.array(
+            [
+                [1, phi, 0, phi_inv, 0, 0],
+                [0, 1, phi, 0, phi_inv, 0],
+                [0, 0, 1, phi, 0, phi_inv],
+            ],
+            dtype=np.float64,
+        )
         norms = np.linalg.norm(raw, axis=1, keepdims=True)
         return raw / norms
 
     def _load_model(self):
         if self._model is None:
             from sentence_transformers import SentenceTransformer
+
             self._model = SentenceTransformer(self._model_name)
         return self._model
 
@@ -368,7 +379,7 @@ class TetrisEmbedder:
         chunk = dim // 6
         raw_tc = np.zeros(6)
         for i in range(6):
-            raw_tc[i] = np.mean(rotated[i * chunk:(i + 1) * chunk]) * TONGUE_WEIGHTS[TONGUE_KEYS[i]]
+            raw_tc[i] = np.mean(rotated[i * chunk : (i + 1) * chunk]) * TONGUE_WEIGHTS[TONGUE_KEYS[i]]
 
         # Blend: 70% learned (from text) + 30% innate (from egg)
         blended_tc = raw_tc * 0.7 + genesis * 0.3
@@ -393,20 +404,19 @@ class TetrisEmbedder:
             harmonic_cost=cost,
         )
 
-    def embed_batch(self, texts: list[str], tongues: list[str],
-                    tiers: list[int] | None = None) -> list[TetrisEmbedding]:
+    def embed_batch(
+        self, texts: list[str], tongues: list[str], tiers: list[int] | None = None
+    ) -> list[TetrisEmbedding]:
         """Batch Tetris pipeline — efficient for many documents."""
         model = self._load_model()
         if tiers is None:
             tiers = [1] * len(texts)
 
         # Step 1: Augment all texts
-        augmented = [augment_text(t, tongue, tier)
-                     for t, tongue, tier in zip(texts, tongues, tiers)]
+        augmented = [augment_text(t, tongue, tier) for t, tongue, tier in zip(texts, tongues, tiers)]
 
         # Step 2: Batch embed
-        raw_embs = model.encode(augmented, normalize_embeddings=True,
-                                show_progress_bar=len(texts) > 20)
+        raw_embs = model.encode(augmented, normalize_embeddings=True, show_progress_bar=len(texts) > 20)
 
         results = []
         for i in range(len(texts)):
@@ -424,7 +434,7 @@ class TetrisEmbedder:
             chunk = dim // 6
             raw_tc = np.zeros(6)
             for d in range(6):
-                raw_tc[d] = np.mean(rotated[d * chunk:(d + 1) * chunk]) * TONGUE_WEIGHTS[TONGUE_KEYS[d]]
+                raw_tc[d] = np.mean(rotated[d * chunk : (d + 1) * chunk]) * TONGUE_WEIGHTS[TONGUE_KEYS[d]]
 
             # Blend: 70% learned + 30% innate
             blended_tc = raw_tc * 0.7 + genesis * 0.3
@@ -437,16 +447,18 @@ class TetrisEmbedder:
             # Step 6: Harmonic cost
             cost = harmonic_wall_cost(tc)
 
-            results.append(TetrisEmbedding(
-                raw_embedding=raw_embs[i],
-                rotated_embedding=rotated,
-                tongue_coords=tc,
-                spatial_coords=sc,
-                augmented_text=augmented[i],
-                tongue=tongue,
-                tier=tier,
-                genesis_manifold=genesis,
-                harmonic_cost=cost,
-            ))
+            results.append(
+                TetrisEmbedding(
+                    raw_embedding=raw_embs[i],
+                    rotated_embedding=rotated,
+                    tongue_coords=tc,
+                    spatial_coords=sc,
+                    augmented_text=augmented[i],
+                    tongue=tongue,
+                    tier=tier,
+                    genesis_manifold=genesis,
+                    harmonic_cost=cost,
+                )
+            )
 
         return results

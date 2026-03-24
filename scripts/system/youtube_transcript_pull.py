@@ -68,9 +68,7 @@ def fetch_transcript(video_id: str, languages: list[str]) -> list[dict[str, Any]
     try:
         from youtube_transcript_api import YouTubeTranscriptApi
     except ImportError as exc:  # pragma: no cover - exercised via error path in main
-        raise RuntimeError(
-            "youtube_transcript_api is not installed. Install it to enable transcript pulls."
-        ) from exc
+        raise RuntimeError("youtube_transcript_api is not installed. Install it to enable transcript pulls.") from exc
 
     segments: Any
     if hasattr(YouTubeTranscriptApi, "get_transcript"):

@@ -173,7 +173,9 @@ def _emit_dataset(records: list[dict[str, Any]], out_path: Path, state: Validati
     return count
 
 
-def _write_manifest(manifest_path: Path, records: list[dict[str, Any]], output_path: Path, state: ValidationState, dataset_info: str) -> None:
+def _write_manifest(
+    manifest_path: Path, records: list[dict[str, Any]], output_path: Path, state: ValidationState, dataset_info: str
+) -> None:
     manifest = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "source_file": str(state.source_path),
@@ -220,7 +222,9 @@ def _upload_hf(file_path: Path, repo_id: str) -> None:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Convert Gumroad automation logs to HF-ready JSONL")
-    parser.add_argument("--source", default=str(Path("training") / "aethermoore_ops_training.jsonl"), help="Source jsonl log")
+    parser.add_argument(
+        "--source", default=str(Path("training") / "aethermoore_ops_training.jsonl"), help="Source jsonl log"
+    )
     parser.add_argument("--out-dir", default=str(Path("training-data") / "gumroad-automation"), help="Output directory")
     parser.add_argument("--dataset", default="gumroad_automation", help="Dataset name used in output metadata")
     parser.add_argument("--run-id", default=None, help="Optional filter for specific run_id")
@@ -257,16 +261,21 @@ def main() -> int:
 
     if args.verify_only:
         _write_manifest(manifest_path, filtered, out_file, state, args.dataset)
-        print(json.dumps({
-            "verify_only": True,
-            "source": str(source),
-            "input_records": len(filtered),
-            "valid_events": state.valid_events,
-            "invalid_lines": state.invalid_lines,
-            "missing_fields": state.missing_fields,
-            "unknown_events": state.unknown_events,
-            "manifest": str(manifest_path),
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "verify_only": True,
+                    "source": str(source),
+                    "input_records": len(filtered),
+                    "valid_events": state.valid_events,
+                    "invalid_lines": state.invalid_lines,
+                    "missing_fields": state.missing_fields,
+                    "unknown_events": state.unknown_events,
+                    "manifest": str(manifest_path),
+                },
+                indent=2,
+            )
+        )
         return 0 if (state.invalid_lines == 0 and state.missing_fields == 0) else 1
 
     _emit_dataset(filtered, out_file, state)

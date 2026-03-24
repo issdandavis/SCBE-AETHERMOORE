@@ -63,11 +63,14 @@ def simulate_discrete_euler(N0, k, dt, steps):
 # =============================================================================
 
 
-@pytest.mark.parametrize("N0,C,k,expect_escape", [
-    (1e4, 0.5, 0.0029, False),   # below: threshold = 2*0.5/sqrt(1e4) = 0.01
-    (1e4, 0.5, 0.0100, False),   # at threshold: strict > means NOT escaped
-    (1e4, 0.5, 0.0200, True),    # above threshold
-])
+@pytest.mark.parametrize(
+    "N0,C,k,expect_escape",
+    [
+        (1e4, 0.5, 0.0029, False),  # below: threshold = 2*0.5/sqrt(1e4) = 0.01
+        (1e4, 0.5, 0.0100, False),  # at threshold: strict > means NOT escaped
+        (1e4, 0.5, 0.0200, True),  # above threshold
+    ],
+)
 def test_entropic_escape_param_sweep(N0, C, k, expect_escape):
     """Sweep k below/at/above the escape velocity threshold."""
     assert escape_condition(k, C, N0) == expect_escape

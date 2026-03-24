@@ -72,8 +72,13 @@ def _out(safety_score: float = 0.95, success: bool = True, **kw) -> EventOutcome
 
 def _event(safety: float = 0.95, success: bool = True) -> GameEvent:
     return create_game_event(
-        "session-1", "player-1", "comp-1", "combat_action",
-        _ctx(), _act(), _out(safety, success),
+        "session-1",
+        "player-1",
+        "comp-1",
+        "combat_action",
+        _ctx(),
+        _act(),
+        _out(safety, success),
     )
 
 
@@ -96,11 +101,13 @@ class TestIngestion:
 
     def test_ingest_session(self):
         p = _pipeline()
-        result = p.ingest_session([
-            _event(0.95),  # approved
-            _event(0.6),   # quarantined
-            _event(0.1),   # rejected
-        ])
+        result = p.ingest_session(
+            [
+                _event(0.95),  # approved
+                _event(0.6),  # quarantined
+                _event(0.1),  # rejected
+            ]
+        )
         assert result["approved"] == 1
         assert result["quarantined"] == 1
         assert result["rejected"] == 1

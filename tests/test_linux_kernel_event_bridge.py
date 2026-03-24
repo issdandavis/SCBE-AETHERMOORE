@@ -82,4 +82,3 @@ def test_default_host_when_missing():
     payload = {"output_fields": {"evt.type": "open", "proc.pid": 1, "proc.name": "init"}}
     event = map_falco_event_to_kernel_event(payload, host_default="linux-host-default")
     assert event.host == "linux-host-default"
-

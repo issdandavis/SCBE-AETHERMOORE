@@ -72,6 +72,7 @@ logger = logging.getLogger("hydra-hand")
 
 # ── Tongue Roles ─────────────────────────────────────────────────────
 
+
 class Tongue(str, Enum):
     KO = "KO"  # Command / Orchestrate
     AV = "AV"  # Navigate / Scout
@@ -83,9 +84,10 @@ class Tongue(str, Enum):
 
 class Proximity(str, Enum):
     """How 'close' an event feels — maps to urgency."""
-    OWL = "owl"      # Async background (email)
+
+    OWL = "owl"  # Async background (email)
     KNOCK = "knock"  # Sync request (text message)
-    ROCK = "rock"    # Interrupt/alert (repeated ping)
+    ROCK = "rock"  # Interrupt/alert (repeated ping)
     GHOST = "ghost"  # Silent observation
     FORGE = "forge"  # Building/constructing
     VOICE = "voice"  # Command decision
@@ -113,9 +115,11 @@ TONGUE_WEIGHT = {
 
 # ── Finger (Single Browser Instance) ────────────────────────────────
 
+
 @dataclass
 class BrowsingResult:
     """Result from a single finger's action."""
+
     tongue: Tongue
     url: str
     title: str = ""
@@ -131,9 +135,10 @@ class BrowsingResult:
 @dataclass
 class Finger:
     """One headless browser instance with a tongue role."""
+
     tongue: Tongue
     browser: Any = None  # Playwright browser instance
-    page: Any = None     # Current page
+    page: Any = None  # Current page
     active: bool = False
     action_count: int = 0
     blocked_count: int = 0
@@ -160,11 +165,13 @@ class Finger:
 
         # UM (Shadow) gets extra stealth
         if self.tongue == Tongue.UM:
-            launch_args["args"].extend([
-                "--disable-blink-features=AutomationControlled",
-                "--disable-extensions",
-                "--incognito",
-            ])
+            launch_args["args"].extend(
+                [
+                    "--disable-blink-features=AutomationControlled",
+                    "--disable-extensions",
+                    "--incognito",
+                ]
+            )
 
         self.browser = await playwright_instance.chromium.launch(**launch_args)
 
@@ -225,8 +232,7 @@ class Finger:
         """Extract all links from current page."""
         try:
             links = await self.page.eval_on_selector_all(
-                "a[href]",
-                "els => els.map(e => e.href).filter(h => h.startsWith('http'))"
+                "a[href]", "els => els.map(e => e.href).filter(h => h.startsWith('http'))"
             )
             return links[:100]  # Cap at 100
         except Exception:
@@ -258,20 +264,29 @@ class Finger:
 
 # Blocked domains (RU finger checks these)
 BLOCKED_DOMAINS = {
-    "malware.com", "phishing.example", "evil.corp",
+    "malware.com",
+    "phishing.example",
+    "evil.corp",
 }
 
 # Trusted domains (bypass deep scanning)
 TRUSTED_DOMAINS = {
-    "github.com", "huggingface.co", "arxiv.org", "scholar.google.com",
-    "stackoverflow.com", "docs.python.org", "pypi.org",
-    "en.wikipedia.org", "developer.mozilla.org",
+    "github.com",
+    "huggingface.co",
+    "arxiv.org",
+    "scholar.google.com",
+    "stackoverflow.com",
+    "docs.python.org",
+    "pypi.org",
+    "en.wikipedia.org",
+    "developer.mozilla.org",
 }
 
 
 def check_domain_safety(url: str) -> tuple[str, float]:
     """Quick domain check. Returns (decision, risk_score)."""
     from urllib.parse import urlparse
+
     domain = urlparse(url).netloc.lower()
 
     if any(blocked in domain for blocked in BLOCKED_DOMAINS):
@@ -283,6 +298,7 @@ def check_domain_safety(url: str) -> tuple[str, float]:
 
 
 # ── The Hand (Squad of 5 Fingers + Thumb) ────────────────────────────
+
 
 class HydraHand:
     """
@@ -300,9 +316,7 @@ class HydraHand:
     def __init__(self, head_id: str = "default", vision_tier: ObservationTier = ObservationTier.TIER_2):
         self.head_id = head_id
         self.vision_tier = vision_tier
-        self.fingers: Dict[Tongue, Finger] = {
-            t: Finger(tongue=t, vision=PollyVision(tier=vision_tier)) for t in Tongue
-        }
+        self.fingers: Dict[Tongue, Finger] = {t: Finger(tongue=t, vision=PollyVision(tier=vision_tier)) for t in Tongue}
         self._playwright = None
         self._open = False
 
@@ -312,24 +326,19 @@ class HydraHand:
             from playwright.async_api import async_playwright
         except ImportError:
             raise RuntimeError(
-                "Playwright not installed. Run:\n"
-                "  pip install playwright && playwright install chromium"
+                "Playwright not installed. Run:\n" "  pip install playwright && playwright install chromium"
             )
 
         self._playwright = await async_playwright().__aenter__()
 
         # Open all fingers in parallel
-        await asyncio.gather(*[
-            f.open(self._playwright) for f in self.fingers.values()
-        ])
+        await asyncio.gather(*[f.open(self._playwright) for f in self.fingers.values()])
         self._open = True
         logger.info("[%s] Hand opened — 6 fingers active", self.head_id)
 
     async def close(self):
         """Close all fingers."""
-        await asyncio.gather(*[
-            f.close() for f in self.fingers.values()
-        ])
+        await asyncio.gather(*[f.close() for f in self.fingers.values()])
         if self._playwright:
             await self._playwright.__aexit__(None, None, None)
             self._playwright = None
@@ -385,13 +394,22 @@ class HydraHand:
 
         # Filter to likely-useful links (skip google internals, etc.)
         candidate_urls = [
-            link for link in all_links
-            if not any(skip in link for skip in [
-                "google.com/search", "accounts.google",
-                "support.google", "maps.google",
-                "translate.google", "webcache.google",
-            ])
-        ][:max_urls * 2]  # Get extras in case some are blocked
+            link
+            for link in all_links
+            if not any(
+                skip in link
+                for skip in [
+                    "google.com/search",
+                    "accounts.google",
+                    "support.google",
+                    "maps.google",
+                    "translate.google",
+                    "webcache.google",
+                ]
+            )
+        ][
+            : max_urls * 2
+        ]  # Get extras in case some are blocked
 
         report["urls_discovered"] = candidate_urls
 
@@ -419,26 +437,30 @@ class HydraHand:
                 # Use PollyVision observation when available (structured perception)
                 obs = await ca.observe(reason=f"research:{query[:40]}")
                 if obs:
-                    extractions.append({
-                        "url": url,
-                        "title": obs.title or nav_result.title,
-                        "text": obs.accessibility_tree[:2000],
-                        "page_summary": obs.page_summary,
-                        "element_count": obs.element_count,
-                        "has_screenshot": obs.has_screenshot,
-                        "content_hash": obs.content_hash,
-                        "token_estimate": obs.token_estimate,
-                        "elapsed_ms": nav_result.elapsed_ms + obs.elapsed_ms,
-                    })
+                    extractions.append(
+                        {
+                            "url": url,
+                            "title": obs.title or nav_result.title,
+                            "text": obs.accessibility_tree[:2000],
+                            "page_summary": obs.page_summary,
+                            "element_count": obs.element_count,
+                            "has_screenshot": obs.has_screenshot,
+                            "content_hash": obs.content_hash,
+                            "token_estimate": obs.token_estimate,
+                            "elapsed_ms": nav_result.elapsed_ms + obs.elapsed_ms,
+                        }
+                    )
                 else:
                     # Fallback: blind text extraction
                     text = await ca.extract_text()
-                    extractions.append({
-                        "url": url,
-                        "title": nav_result.title,
-                        "text": text[:2000],
-                        "elapsed_ms": nav_result.elapsed_ms,
-                    })
+                    extractions.append(
+                        {
+                            "url": url,
+                            "title": nav_result.title,
+                            "text": text[:2000],
+                            "elapsed_ms": nav_result.elapsed_ms,
+                        }
+                    )
 
         report["extractions"] = extractions
 
@@ -450,24 +472,28 @@ class HydraHand:
                 if nav_result.title:
                     obs = await um.observe(reason="stealth-quarantined")
                     if obs:
-                        extractions.append({
-                            "url": url,
-                            "title": obs.title or nav_result.title,
-                            "text": obs.accessibility_tree[:1000],
-                            "page_summary": obs.page_summary,
-                            "source": "stealth",
-                            "content_hash": obs.content_hash,
-                            "elapsed_ms": nav_result.elapsed_ms + obs.elapsed_ms,
-                        })
+                        extractions.append(
+                            {
+                                "url": url,
+                                "title": obs.title or nav_result.title,
+                                "text": obs.accessibility_tree[:1000],
+                                "page_summary": obs.page_summary,
+                                "source": "stealth",
+                                "content_hash": obs.content_hash,
+                                "elapsed_ms": nav_result.elapsed_ms + obs.elapsed_ms,
+                            }
+                        )
                     else:
                         text = await um.extract_text()
-                        extractions.append({
-                            "url": url,
-                            "title": nav_result.title,
-                            "text": text[:1000],
-                            "source": "stealth",
-                            "elapsed_ms": nav_result.elapsed_ms,
-                        })
+                        extractions.append(
+                            {
+                                "url": url,
+                                "title": nav_result.title,
+                                "text": text[:1000],
+                                "source": "stealth",
+                                "elapsed_ms": nav_result.elapsed_ms,
+                            }
+                        )
 
         # Step 5: DR structures into knowledge-ready format
         structured = {
@@ -480,21 +506,20 @@ class HydraHand:
         for ext in extractions:
             # Create a mesh-ready node descriptor
             node_hash = hashlib.sha256(ext["url"].encode()).hexdigest()[:12]
-            structured["mesh_nodes"].append({
-                "id": f"research_{node_hash}",
-                "label": ext["title"][:100] if ext["title"] else ext["url"][:100],
-                "content": ext["text"][:500],
-                "source_url": ext["url"],
-                "node_type": "SOURCE",
-            })
+            structured["mesh_nodes"].append(
+                {
+                    "id": f"research_{node_hash}",
+                    "label": ext["title"][:100] if ext["title"] else ext["url"][:100],
+                    "content": ext["text"][:500],
+                    "source_url": ext["url"],
+                    "node_type": "SOURCE",
+                }
+            )
 
         report["structured"] = structured
         report["elapsed_ms"] = (time.monotonic() - start) * 1000
 
-        logger.info(
-            "[%s] Research complete: %d sources, %.0fms",
-            self.head_id, len(extractions), report["elapsed_ms"]
-        )
+        logger.info("[%s] Research complete: %d sources, %.0fms", self.head_id, len(extractions), report["elapsed_ms"])
         return report
 
     async def research_and_funnel(
@@ -559,12 +584,12 @@ class HydraHand:
             OWL    -> 1.0s   (async background, gentle)
         """
         return {
-            Proximity.ROCK:  0.0,
+            Proximity.ROCK: 0.0,
             Proximity.VOICE: 0.05,
             Proximity.KNOCK: 0.15,
             Proximity.GHOST: 0.3,
             Proximity.FORGE: 0.5,
-            Proximity.OWL:   1.0,
+            Proximity.OWL: 1.0,
         }.get(proximity, 0.2)
 
     # ── Multi-Action Dispatch ─────────────────────────────────────────
@@ -677,11 +702,13 @@ class HydraHand:
                     tongue = Tongue(tongue_str)
                 except ValueError:
                     tongue = Tongue.CA
-                final.append(BrowsingResult(
-                    tongue=tongue,
-                    url=tasks[i].get("url", ""),
-                    metadata={"error": str(r)},
-                ))
+                final.append(
+                    BrowsingResult(
+                        tongue=tongue,
+                        url=tasks[i].get("url", ""),
+                        metadata={"error": str(r)},
+                    )
+                )
             else:
                 final.append(r)
 
@@ -737,6 +764,7 @@ class HydraHand:
         if mesh is None:
             try:
                 from src.mcp_server.semantic_mesh import SemanticMesh
+
                 mesh = SemanticMesh(db_path)
             except ImportError:
                 logger.warning("SemanticMesh not available; skipping ingest")
@@ -750,23 +778,27 @@ class HydraHand:
         items_to_ingest = []
 
         for node in mesh_nodes:
-            items_to_ingest.append({
-                "content": node.get("content", ""),
-                "label": node.get("label", ""),
-                "source_url": node.get("source_url", ""),
-                "node_type": node.get("node_type", "SOURCE"),
-            })
+            items_to_ingest.append(
+                {
+                    "content": node.get("content", ""),
+                    "label": node.get("label", ""),
+                    "source_url": node.get("source_url", ""),
+                    "node_type": node.get("node_type", "SOURCE"),
+                }
+            )
 
         # Also ingest any extractions not already represented
         existing_urls = {item["source_url"] for item in items_to_ingest}
         for ext in extractions:
             if ext.get("url") not in existing_urls:
-                items_to_ingest.append({
-                    "content": ext.get("text", "")[:500],
-                    "label": ext.get("title", ext.get("url", ""))[:100],
-                    "source_url": ext.get("url", ""),
-                    "node_type": "SOURCE",
-                })
+                items_to_ingest.append(
+                    {
+                        "content": ext.get("text", "")[:500],
+                        "label": ext.get("title", ext.get("url", ""))[:100],
+                        "source_url": ext.get("url", ""),
+                        "node_type": "SOURCE",
+                    }
+                )
 
         # Collect node IDs for cross-linking
         created_ids = []
@@ -782,22 +814,27 @@ class HydraHand:
                 )
                 node_id = result.get("node_id", "")
                 created_ids.append(node_id)
-                ingested.append({
-                    "node_id": node_id,
-                    "label": item["label"],
-                    "source_url": item["source_url"],
-                })
+                ingested.append(
+                    {
+                        "node_id": node_id,
+                        "label": item["label"],
+                        "source_url": item["source_url"],
+                    }
+                )
             except Exception as e:
                 logger.warning("Mesh ingest failed for %s: %s", item["label"][:30], e)
 
         logger.info(
             "[%s] Mesh ingest: %d nodes created from %d items",
-            self.head_id, len(ingested), len(items_to_ingest),
+            self.head_id,
+            len(ingested),
+            len(items_to_ingest),
         )
         return ingested
 
 
 # ── Hand-to-Limb Adapter (for HydraSpine integration) ────────────────
+
 
 class _HandLimbAdapter:
     """Thin adapter that lets a HydraHand register as a HydraLimb.
@@ -871,6 +908,7 @@ class _HandLimbAdapter:
 
 # ── Swarm Research (multi-hand coordination) ──────────────────────────
 
+
 async def swarm_research(
     hands: List[HydraHand],
     queries: List[str],
@@ -921,13 +959,15 @@ async def swarm_research(
                 r = await hand.research(q, max_urls=max_urls_per_query)
                 results.append(r)
             except Exception as e:
-                results.append({
-                    "query": q,
-                    "head_id": hand.head_id,
-                    "error": str(e),
-                    "extractions": [],
-                    "structured": {"mesh_nodes": []},
-                })
+                results.append(
+                    {
+                        "query": q,
+                        "head_id": hand.head_id,
+                        "error": str(e),
+                        "extractions": [],
+                        "structured": {"mesh_nodes": []},
+                    }
+                )
         return results
 
     all_tasks = []
@@ -985,7 +1025,10 @@ async def swarm_research(
 
     logger.info(
         "swarm_research complete: %d queries across %d hands, %d sources, %.0fms",
-        len(queries), len(hands), len(all_extractions), elapsed,
+        len(queries),
+        len(hands),
+        len(all_extractions),
+        elapsed,
     )
 
     return {
@@ -1000,6 +1043,7 @@ async def swarm_research(
 
 
 # ── CLI Demo ─────────────────────────────────────────────────────────
+
 
 async def _demo():
     """Quick demo of the HYDRA Hand."""

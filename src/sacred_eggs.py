@@ -96,7 +96,9 @@ class SacredEgg:
             return self.fail_to_noise(**kwargs)
         return {"ok": False, "status": "rejected", "error": "unknown_ritual"}
 
-    def solitary_incubation(self, actor: Optional[str] = None, participants: Optional[Iterable[str]] = None, **_: Any) -> Dict[str, Any]:
+    def solitary_incubation(
+        self, actor: Optional[str] = None, participants: Optional[Iterable[str]] = None, **_: Any
+    ) -> Dict[str, Any]:
         member_list = list(participants) if participants is not None else ([actor] if actor else [])
         if len(member_list) != 1:
             return {"ok": False, "status": "rejected", "error": "requires_one_invoker"}

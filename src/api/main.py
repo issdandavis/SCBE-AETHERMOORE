@@ -59,13 +59,17 @@ app = FastAPI(
 
 # CORS — restrict to known origins; override via SCBE_CORS_ORIGINS env (comma-sep)
 _cors_env = os.getenv("SCBE_CORS_ORIGINS", "").strip()
-_allowed_origins = [o.strip() for o in _cors_env.split(",") if o.strip()] if _cors_env else [
-    "http://localhost:3000",
-    "http://localhost:8000",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:8000",
-    "https://aethermore-works.myshopify.com",
-]
+_allowed_origins = (
+    [o.strip() for o in _cors_env.split(",") if o.strip()]
+    if _cors_env
+    else [
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8000",
+        "https://aethermore-works.myshopify.com",
+    ]
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,
@@ -104,9 +108,7 @@ class RateLimiter:
         window_start = now - self.window_seconds
 
         # Clean old requests
-        self.requests[key] = [
-            req_time for req_time in self.requests[key] if req_time > window_start
-        ]
+        self.requests[key] = [req_time for req_time in self.requests[key] if req_time > window_start]
 
         # Check limit
         if len(self.requests[key]) >= self.max_requests:
@@ -189,13 +191,9 @@ CONNECTOR_STORE: Dict[str, Dict[str, Any]] = {}
 
 class SealRequest(BaseModel):
     plaintext: str = Field(..., max_length=4096, description="Data to seal (max 4KB)")
-    agent: str = Field(
-        ..., min_length=1, max_length=256, description="Agent identifier"
-    )
+    agent: str = Field(..., min_length=1, max_length=256, description="Agent identifier")
     topic: str = Field(..., min_length=1, max_length=256, description="Topic/category")
-    position: List[int] = Field(
-        ..., min_length=6, max_length=6, description="6D position vector"
-    )
+    position: List[int] = Field(..., min_length=6, max_length=6, description="6D position vector")
 
     @field_validator("position")
     @classmethod
@@ -495,6 +493,7 @@ def _sign_connector_payload(payload: Dict[str, Any]) -> tuple[str, str]:
     body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     if not signing_key:
         import logging
+
         logging.getLogger("scbe.api").warning("SCBE_CONNECTOR_SIGNING_KEY not set — connector payloads are unsigned")
         return ts, ""
     sig = hmac.new(signing_key, ts.encode("utf-8") + b"." + body, hashlib.sha256).hexdigest()
@@ -635,9 +634,19 @@ def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Di
             resp.read().decode("utf-8", errors="replace")
             if 200 <= status < 300:
                 return {"ok": True, "status": status, "detail": "connector request completed"}
-            return {"ok": False, "code": "connector_http_status", "status": status, "detail": "connector returned non-success status"}
+            return {
+                "ok": False,
+                "code": "connector_http_status",
+                "status": status,
+                "detail": "connector returned non-success status",
+            }
     except HTTPError as exc:
-        return {"ok": False, "code": "connector_http_error", "status": int(exc.code), "detail": "connector request failed"}
+        return {
+            "ok": False,
+            "code": "connector_http_error",
+            "status": int(exc.code),
+            "detail": "connector request failed",
+        }
     except URLError:
         return {"ok": False, "code": "connector_network_error", "detail": "connector network error"}
     except Exception:
@@ -705,9 +714,7 @@ async def seal_memory(request: SealRequest, user: str = Depends(verify_api_key))
 
 
 @app.post("/retrieve-memory", tags=["Core"])
-async def retrieve_memory(
-    request: RetrieveRequest, user: str = Depends(verify_api_key)
-):
+async def retrieve_memory(request: RetrieveRequest, user: str = Depends(verify_api_key)):
     """
     ## Retrieve Memory
 
@@ -729,9 +736,7 @@ async def retrieve_memory(
         }
 
         # Run SCBE pipeline with context-aware weights
-        result = scbe_14layer_pipeline(
-            t=position_array, D=6, **context_params[request.context]
-        )
+        result = scbe_14layer_pipeline(t=position_array, D=6, **context_params[request.context])
 
         # Record metrics
         denied = result["decision"] == "DENY"
@@ -778,9 +783,7 @@ async def retrieve_memory(
             "governance_result": result["decision"],
             "risk_score": float(result["risk_base"]),
             "risk_prime": float(result["risk_prime"]),
-            "coherence_metrics": {
-                k: float(v) for k, v in result["coherence"].items()
-            },
+            "coherence_metrics": {k: float(v) for k, v in result["coherence"].items()},
         }
         if result.get("mmx") is not None:
             resp_data["mmx"] = result["mmx"]
@@ -829,9 +832,7 @@ async def governance_check(
         }
 
         # Run SCBE pipeline
-        result = scbe_14layer_pipeline(
-            t=np.array(position, dtype=float), D=6, **context_params[context]
-        )
+        result = scbe_14layer_pipeline(t=np.array(position, dtype=float), D=6, **context_params[context])
 
         gov_data = {
             "decision": result["decision"],
@@ -839,9 +840,7 @@ async def governance_check(
             "risk_prime": float(result["risk_prime"]),
             "harmonic_factor": float(result["H"]),
             "reason": f"Context: {context}, d*={result['d_star']:.3f}, Risk={result['risk_base']:.3f}",
-            "coherence_metrics": {
-                k: float(v) for k, v in result["coherence"].items()
-            },
+            "coherence_metrics": {k: float(v) for k, v in result["coherence"].items()},
             "geometry": {k: float(v) for k, v in result["geometry"].items()},
         }
         if result.get("mmx") is not None:
@@ -898,9 +897,7 @@ async def simulate_attack(request: SimulateAttackRequest):
                 f"Layer 12: Harmonic amplification H={result['H']:.4f}",
                 f"Layer 13: Risk' = {result['risk_prime']:.4f} → {result['decision']}",
             ],
-            "coherence_breakdown": {
-                k: float(v) for k, v in result["coherence"].items()
-            },
+            "coherence_breakdown": {k: float(v) for k, v in result["coherence"].items()},
         }
         if result.get("mmx") is not None:
             sim_data["mmx"] = result["mmx"]
@@ -917,9 +914,7 @@ async def simulate_attack(request: SimulateAttackRequest):
 
 
 @app.post("/mobile/connectors", tags=["Mobile Autonomy"])
-async def register_mobile_connector(
-    request: ConnectorRegisterRequest, user: str = Depends(verify_api_key)
-):
+async def register_mobile_connector(request: ConnectorRegisterRequest, user: str = Depends(verify_api_key)):
     """
     ## Register Connector
 
@@ -1019,9 +1014,7 @@ async def delete_mobile_connector(connector_id: str, user: str = Depends(verify_
 
 
 @app.post("/mobile/goals", tags=["Mobile Autonomy"])
-async def create_mobile_goal(
-    request: MobileGoalRequest, user: str = Depends(verify_api_key)
-):
+async def create_mobile_goal(request: MobileGoalRequest, user: str = Depends(verify_api_key)):
     """
     ## Create Mobile Goal
 
@@ -1133,9 +1126,7 @@ async def approve_mobile_goal(
         raise HTTPException(404, "Goal not found")
     record["approved_high_risk"] = True
     record["updated_at"] = int(time.time())
-    record["events"].append(
-        {"ts": record["updated_at"], "event": "high_risk_approved", "detail": request.note}
-    )
+    record["events"].append({"ts": record["updated_at"], "event": "high_risk_approved", "detail": request.note})
     if record["status"] == GoalStatus.review_required.value:
         record["status"] = GoalStatus.running.value
     return {"status": "ok", "data": _goal_view(record)}
@@ -1170,11 +1161,7 @@ async def advance_mobile_goal(
     step = record["steps"][idx]
     record["current_step_index"] = idx
 
-    if (
-        step["risk"] == "high"
-        and record["require_human_for_high_risk"]
-        and not record["approved_high_risk"]
-    ):
+    if step["risk"] == "high" and record["require_human_for_high_risk"] and not record["approved_high_risk"]:
         record["status"] = GoalStatus.review_required.value
         record["updated_at"] = int(time.time())
         record["events"].append(
