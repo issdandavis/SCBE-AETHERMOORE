@@ -51,7 +51,7 @@ BASE_STYLE_TAGS = [
 ]
 
 COMPACT_BASE_STYLE_TAGS = [
-    "single vertical Korean webtoon panel",
+    "manhwa webtoon panel",
     "hand-drawn digital illustration",
     "subtle line variation",
     "natural facial acting",
