@@ -43,12 +43,19 @@ except ImportError:
     AI2AIRetrievalService = None  # type: ignore[assignment,misc]
     ArxivAPIError = None  # type: ignore[assignment,misc]
 from .ledger import Ledger, LedgerEntry, EntryType
-from .spectral import (
-    GraphFourierAnalyzer,
-    ByzantineDetector,
-    SpectralAnomaly,
-    analyze_hydra_system,
-)
+try:
+    from .spectral import (
+        GraphFourierAnalyzer,
+        ByzantineDetector,
+        SpectralAnomaly,
+        analyze_hydra_system,
+    )
+except ImportError:
+    # numpy may not be installed; spectral analysis is optional
+    GraphFourierAnalyzer = None  # type: ignore[assignment,misc]
+    ByzantineDetector = None  # type: ignore[assignment,misc]
+    SpectralAnomaly = None  # type: ignore[assignment,misc]
+    analyze_hydra_system = None  # type: ignore[assignment,misc]
 from .consensus import (
     ByzantineConsensus,
     RoundtableConsensus,
@@ -77,13 +84,21 @@ from .swarm_governance import (
     simulate_swarm_attack,
 )
 from .switchboard import Switchboard
-from .research import (
-    ResearchOrchestrator,
-    ResearchConfig,
-    ResearchReport,
-    ResearchSubTask,
-    ResearchSource,
-)
+try:
+    from .research import (
+        ResearchOrchestrator,
+        ResearchConfig,
+        ResearchReport,
+        ResearchSubTask,
+        ResearchSource,
+    )
+except ImportError:
+    # httpx may not be installed; research orchestrator is optional
+    ResearchOrchestrator = None  # type: ignore[assignment,misc]
+    ResearchConfig = None  # type: ignore[assignment,misc]
+    ResearchReport = None  # type: ignore[assignment,misc]
+    ResearchSubTask = None  # type: ignore[assignment,misc]
+    ResearchSource = None  # type: ignore[assignment,misc]
 from .llm_providers import (
     LLMProvider,
     LLMResponse,
