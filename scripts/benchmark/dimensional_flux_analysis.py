@@ -6,8 +6,8 @@ Standard benchmarks show: input → output (A → B)
 This shows: input → every intermediate state → settling point (A → Z)
 
 For each embedding dimension, tracks:
-- Positive flux: dimension moving toward target
-- Negative flux: dimension moving away from target
+- Positive flux: dimension moving closer to the final settling target
+- Negative flux: dimension moving farther from the final settling target
 - Neutral: dimension stable (within threshold)
 - Fluctuating: dimension oscillating before settling
 
@@ -42,8 +42,8 @@ TONGUE_WEIGHTS = [1.0, PHI, PHI**2, PHI**3, PHI**4, PHI**5]
 # ═══════════════════════════════════════════════════════════
 
 class FluxState:
-    POSITIVE = "+"      # Moving toward target
-    NEGATIVE = "-"      # Moving away from target
+    POSITIVE = "+"      # Moving closer to target
+    NEGATIVE = "-"      # Moving farther from target
     NEUTRAL = "0"       # Stable (within threshold)
     FLUCTUATING = "~"   # Oscillating
 
@@ -92,6 +92,14 @@ def text_to_seed(text: str) -> np.ndarray:
     ])
 
 
+def stable_scalar(text: str, salt: str = "") -> float:
+    """Deterministic scalar in [0, 1) for reproducible synthetic trajectories."""
+    import hashlib
+
+    digest = hashlib.sha256(f"{salt}|{text}".encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "big") / float(1 << 64)
+
+
 def simulate_neural_pipeline(text: str, method: str = "tongue") -> List[np.ndarray]:
     """Simulate 14 processing stages, capturing state at each.
 
@@ -112,9 +120,25 @@ def simulate_neural_pipeline(text: str, method: str = "tongue") -> List[np.ndarr
     state = np.abs(state)
     stages.append(state.copy())
 
-    # L3: Tongue weighting
-    if method in ("tongue", "dual", "21d"):
-        state = state * np.array(TONGUE_WEIGHTS[:len(state)])
+    # L3: Method-specific lift
+    weights = np.array(TONGUE_WEIGHTS[:len(state)])
+    if method == "tongue":
+        state = state * weights
+    elif method == "dual":
+        state = 0.55 * state + 0.45 * (state * weights)
+    elif method == "21d":
+        phase_bias = 0.08 * np.sin(2 * PI * stable_scalar(text, "21d-l3") + np.arange(len(state)) * PHI)
+        telemetry_bias = 0.04 * np.array(
+            [
+                np.mean(state),
+                np.std(state),
+                np.max(state),
+                np.min(state),
+                len(text) / 200.0,
+                len(set(text.lower().split())) / max(len(text.split()), 1),
+            ]
+        )
+        state = state * weights + phase_bias + telemetry_bias
     stages.append(state.copy())
 
     # L4: Poincare projection (clamp to ball)
@@ -124,17 +148,28 @@ def simulate_neural_pipeline(text: str, method: str = "tongue") -> List[np.ndarr
     stages.append(state.copy())
 
     # L5: Hyperbolic distance scaling
-    centroid = np.array([0.3, 0.2, 0.5, 0.1, 0.15, 0.25])
-    if method in ("tongue", "dual", "21d"):
-        centroid = centroid * np.array(TONGUE_WEIGHTS[:len(centroid)])
-    d_star = np.linalg.norm(state - centroid[:len(state)])
-    state = state * (1.0 + 0.1 * d_star)
+    flat_centroid = np.array([0.3, 0.2, 0.5, 0.1, 0.15, 0.25])
+    tongue_centroid = flat_centroid * weights
+    if method == "euclidean":
+        d_star = np.linalg.norm(state - flat_centroid[:len(state)])
+        state = state * (1.0 + 0.08 * d_star)
+    elif method == "tongue":
+        d_star = np.linalg.norm(state - tongue_centroid[:len(state)])
+        state = state * (1.0 + 0.1 * d_star)
+    elif method == "dual":
+        d_flat = np.linalg.norm(state - flat_centroid[:len(state)])
+        d_tongue = np.linalg.norm(state - tongue_centroid[:len(state)])
+        state = state * (1.0 + 0.04 * d_flat + 0.06 * d_tongue) + 0.03 * (flat_centroid[:len(state)] - state)
+    else:
+        telemetry_centroid = 0.5 * (flat_centroid + tongue_centroid)
+        d_star = np.linalg.norm(state - telemetry_centroid[:len(state)])
+        state = state * (1.0 + 0.07 * d_star) + 0.02 * np.cos(np.arange(len(state)) + 2 * PI * stable_scalar(text, "21d-l5"))
     if np.linalg.norm(state) > 0.999:
         state = state * 0.999 / np.linalg.norm(state)
     stages.append(state.copy())
 
     # L6: Breathing transform (oscillation!)
-    t = hash(text) % 1000 / 1000.0
+    t = stable_scalar(text, f"{method}-breath")
     breath = 0.05 * np.sin(2 * PI * t + np.arange(len(state)) * PI / 3)
     state = state + breath
     state = np.clip(state, -0.999, 0.999)
@@ -142,6 +177,10 @@ def simulate_neural_pipeline(text: str, method: str = "tongue") -> List[np.ndarr
 
     # L7: Phase modulation
     phase_shift = 0.03 * np.cos(np.arange(len(state)) * PHI * t)
+    if method == "dual":
+        phase_shift = phase_shift + 0.02 * np.sin(np.arange(len(state)) * 2 * PI * t)
+    elif method == "21d":
+        phase_shift = phase_shift + 0.025 * np.cos(np.arange(len(state)) * PI * stable_scalar(text, "21d-phase"))
     state = state + phase_shift
     state = np.clip(state, -0.999, 0.999)
     stages.append(state.copy())
@@ -165,7 +204,10 @@ def simulate_neural_pipeline(text: str, method: str = "tongue") -> List[np.ndarr
 
     # L11: Temporal aggregation (weighted average with history)
     if len(stages) >= 3:
-        state = 0.6 * state + 0.3 * stages[-2] + 0.1 * stages[-3]
+        if method == "21d":
+            state = 0.5 * state + 0.3 * stages[-2] + 0.2 * stages[-3]
+        else:
+            state = 0.6 * state + 0.3 * stages[-2] + 0.1 * stages[-3]
     stages.append(state.copy())
 
     # L12: Harmonic wall (cost scaling)
@@ -178,7 +220,8 @@ def simulate_neural_pipeline(text: str, method: str = "tongue") -> List[np.ndarr
     state = state / (np.linalg.norm(state) + 1e-10) * 0.8
     stages.append(state.copy())
 
-    # L14: Final output
+    # L14: Final output projection (distinct from L13)
+    state = np.tanh(state * 1.1) * 0.8
     stages.append(state.copy())
 
     return stages
@@ -189,17 +232,18 @@ def simulate_neural_pipeline(text: str, method: str = "tongue") -> List[np.ndarr
 # ═══════════════════════════════════════════════════════════
 
 def analyze_trajectory(stages: List[np.ndarray], dim_names: List[str]) -> EmbeddingTrace:
-    """Analyze the full A-to-Z trajectory of each dimension."""
+    """Analyze the full A-to-Z trajectory relative to the final settling target."""
     n_dims = len(stages[0])
     n_stages = len(stages)
     threshold = 0.005  # Below this = neutral
+    target = stages[-1]
 
     dim_traces = []
     for d in range(n_dims):
         name = dim_names[d] if d < len(dim_names) else f"D{d}"
         trace = DimensionTrace(dim_index=d, dim_name=name)
 
-        prev_delta = 0.0
+        prev_progress = 0.0
         for s in range(n_stages):
             val = float(stages[s][d])
             trace.values.append(round(val, 6))
@@ -208,23 +252,26 @@ def analyze_trajectory(stages: List[np.ndarray], dim_names: List[str]) -> Embedd
                 trace.deltas.append(0.0)
                 trace.states.append(FluxState.NEUTRAL)
             else:
-                delta = val - stages[s-1][d]
+                prev_val = float(stages[s - 1][d])
+                target_val = float(target[d])
+                delta = val - prev_val
+                progress = abs(prev_val - target_val) - abs(val - target_val)
                 trace.deltas.append(round(float(delta), 6))
 
-                if abs(delta) < threshold:
+                if abs(progress) < threshold:
                     trace.states.append(FluxState.NEUTRAL)
-                elif delta > 0 and prev_delta < -threshold:
+                elif progress > 0 and prev_progress < -threshold:
                     trace.states.append(FluxState.FLUCTUATING)
                     trace.direction_changes += 1
-                elif delta < 0 and prev_delta > threshold:
+                elif progress < 0 and prev_progress > threshold:
                     trace.states.append(FluxState.FLUCTUATING)
                     trace.direction_changes += 1
-                elif delta > 0:
+                elif progress > 0:
                     trace.states.append(FluxState.POSITIVE)
                 else:
                     trace.states.append(FluxState.NEGATIVE)
 
-                prev_delta = delta
+                prev_progress = progress
 
             trace.total_flux += abs(trace.deltas[-1])
 
