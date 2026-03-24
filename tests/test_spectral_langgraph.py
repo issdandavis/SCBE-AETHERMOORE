@@ -16,7 +16,7 @@ from hydra.spectral_langgraph import (
     build_article_graph,
     build_research_graph,
 )
-from hydra.color_dimension import ColorBand, TONGUE_WEIGHTS
+from hydra.color_dimension import ColorBand
 
 
 # ── SpectralMixer (FNet) ─────────────────────────────────────────

@@ -11,17 +11,23 @@ Hardcoded seed data:
 
 from __future__ import annotations
 
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 # 65 NSM Semantic Primes (Wierzbicka / Goddard canonical set)
 # Each maps concept_id -> {lang_code: [surface_forms]}
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 
 NSM_PRIMES: dict[str, dict[str, list[str]]] = {
     # ── Substantives ──
     "I":        {"EN": ["I", "me"], "ZH": ["我"], "JA": ["私", "わたし"], "KO": ["나", "저"]},
     "YOU":      {"EN": ["you"], "ZH": ["你"], "JA": ["あなた"], "KO": ["너", "당신"]},
-    "SOMEONE":  {"EN": ["someone", "person"], "ZH": ["某人", "人"], "JA": ["誰か", "人"], "KO": ["누군가", "사람"]},
-    "SOMETHING":{"EN": ["something", "thing"], "ZH": ["某事", "东西"], "JA": ["何か", "もの"], "KO": ["무언가", "것"]},
+    "SOMEONE": {
+        "EN": ["someone", "person"], "ZH": ["某人", "人"],
+        "JA": ["誰か", "人"], "KO": ["누군가", "사람"],
+    },
+    "SOMETHING": {
+        "EN": ["something", "thing"], "ZH": ["某事", "东西"],
+        "JA": ["何か", "もの"], "KO": ["무언가", "것"],
+    },
     "PEOPLE":   {"EN": ["people"], "ZH": ["人们"], "JA": ["人々"], "KO": ["사람들"]},
     "BODY":     {"EN": ["body"], "ZH": ["身体"], "JA": ["体", "からだ"], "KO": ["몸"]},
     # ── Relational substantives ──
@@ -35,7 +41,10 @@ NSM_PRIMES: dict[str, dict[str, list[str]]] = {
     "ONE":      {"EN": ["one"], "ZH": ["一"], "JA": ["一つ", "ひとつ"], "KO": ["하나"]},
     "TWO":      {"EN": ["two"], "ZH": ["二", "两"], "JA": ["二つ", "ふたつ"], "KO": ["둘"]},
     "SOME":     {"EN": ["some"], "ZH": ["一些"], "JA": ["いくつか"], "KO": ["몇몇"]},
-    "ALL":      {"EN": ["all", "every"], "ZH": ["所有", "每"], "JA": ["すべて", "全部"], "KO": ["모두", "전부"]},
+    "ALL": {
+        "EN": ["all", "every"], "ZH": ["所有", "每"],
+        "JA": ["すべて", "全部"], "KO": ["모두", "전부"],
+    },
     "MUCH":     {"EN": ["much", "many"], "ZH": ["多", "很多"], "JA": ["多い", "たくさん"], "KO": ["많은"]},
     # ── Evaluators ──
     "GOOD":     {"EN": ["good"], "ZH": ["好"], "JA": ["良い", "いい"], "KO": ["좋은"]},
@@ -65,7 +74,10 @@ NSM_PRIMES: dict[str, dict[str, list[str]]] = {
     "LIVE":     {"EN": ["live"], "ZH": ["活", "生活"], "JA": ["生きる"], "KO": ["살다"]},
     "DIE":      {"EN": ["die"], "ZH": ["死"], "JA": ["死ぬ"], "KO": ["죽다"]},
     # ── Time ──
-    "WHEN":     {"EN": ["when", "time"], "ZH": ["什么时候", "时间"], "JA": ["いつ", "時"], "KO": ["언제", "때"]},
+    "WHEN": {
+        "EN": ["when", "time"], "ZH": ["什么时候", "时间"],
+        "JA": ["いつ", "時"], "KO": ["언제", "때"],
+    },
     "NOW":      {"EN": ["now"], "ZH": ["现在"], "JA": ["今"], "KO": ["지금"]},
     "BEFORE":   {"EN": ["before"], "ZH": ["之前", "以前"], "JA": ["前"], "KO": ["전에"]},
     "AFTER":    {"EN": ["after"], "ZH": ["之后", "以后"], "JA": ["後"], "KO": ["후에"]},
@@ -74,7 +86,10 @@ NSM_PRIMES: dict[str, dict[str, list[str]]] = {
     "FOR_SOME_TIME": {"EN": ["for some time"], "ZH": ["一段时间"], "JA": ["しばらく"], "KO": ["한동안"]},
     "MOMENT":   {"EN": ["moment"], "ZH": ["一瞬", "瞬间"], "JA": ["瞬間"], "KO": ["순간"]},
     # ── Space ──
-    "WHERE":    {"EN": ["where", "place"], "ZH": ["哪里", "地方"], "JA": ["どこ", "場所"], "KO": ["어디", "장소"]},
+    "WHERE": {
+        "EN": ["where", "place"], "ZH": ["哪里", "地方"],
+        "JA": ["どこ", "場所"], "KO": ["어디", "장소"],
+    },
     "HERE":     {"EN": ["here"], "ZH": ["这里"], "JA": ["ここ"], "KO": ["여기"]},
     "ABOVE":    {"EN": ["above"], "ZH": ["上面"], "JA": ["上"], "KO": ["위"]},
     "BELOW":    {"EN": ["below"], "ZH": ["下面"], "JA": ["下"], "KO": ["아래"]},
@@ -97,20 +112,27 @@ NSM_PRIMES: dict[str, dict[str, list[str]]] = {
     # ── Extended (governance / SCBE-relevant) ──
     "DANGER":   {"EN": ["danger", "dangerous"], "ZH": ["危险"], "JA": ["危険", "きけん"], "KO": ["위험"]},
     "SAFE":     {"EN": ["safe", "safety"], "ZH": ["安全"], "JA": ["安全"], "KO": ["안전"]},
-    "RULE":     {"EN": ["rule", "law"], "ZH": ["规则", "法律"], "JA": ["規則", "ルール"], "KO": ["규칙", "법"]},
+    "RULE": {
+        "EN": ["rule", "law"], "ZH": ["规则", "法律"],
+        "JA": ["規則", "ルール"], "KO": ["규칙", "법"],
+    },
     "TRUST":    {"EN": ["trust"], "ZH": ["信任"], "JA": ["信頼"], "KO": ["신뢰"]},
     "POWER":    {"EN": ["power", "authority"], "ZH": ["权力"], "JA": ["権力", "力"], "KO": ["권력", "힘"]},
 }
 
 
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 # Top 100 CJK Cognates (shared Hanzi / Kanji / Hanja)
 # Semantic drift noted where meanings diverge across languages
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 
 CJK_COGNATES: dict[str, dict[str, str]] = {
     "学":   {"ZH": "xué (study)", "JA": "gaku (study)", "KO": "hak (study)", "EN": "study/learn"},
-    "先生": {"ZH": "xiānshēng (mister)", "JA": "sensei (teacher)", "KO": "seonsaeng (teacher)", "EN": "teacher/mister", "drift": "ZH broadened to general honorific"},
+    "先生": {
+        "ZH": "xiānshēng (mister)", "JA": "sensei (teacher)",
+        "KO": "seonsaeng (teacher)", "EN": "teacher/mister",
+        "drift": "ZH broadened to general honorific",
+    },
     "危険": {"ZH": "wēixiǎn (danger)", "JA": "kiken (danger)", "KO": "wiheom (danger)", "EN": "danger"},
     "安全": {"ZH": "ānquán (safety)", "JA": "anzen (safety)", "KO": "anjeon (safety)", "EN": "safety"},
     "人":   {"ZH": "rén (person)", "JA": "hito/jin (person)", "KO": "in (person)", "EN": "person"},
@@ -131,7 +153,11 @@ CJK_COGNATES: dict[str, dict[str, str]] = {
     "目":   {"ZH": "mù (eye)", "JA": "moku/me (eye)", "KO": "mok (eye)", "EN": "eye"},
     "口":   {"ZH": "kǒu (mouth)", "JA": "kō/kuchi (mouth)", "KO": "gu (mouth)", "EN": "mouth"},
     "力":   {"ZH": "lì (power)", "JA": "ryoku/chikara (power)", "KO": "ryeok (power)", "EN": "power/force"},
-    "気":   {"ZH": "qì (energy/air)", "JA": "ki (spirit/energy)", "KO": "gi (energy)", "EN": "energy/spirit", "drift": "JA emphasizes mental/spiritual energy"},
+    "気": {
+        "ZH": "qì (energy/air)", "JA": "ki (spirit/energy)",
+        "KO": "gi (energy)", "EN": "energy/spirit",
+        "drift": "JA emphasizes mental/spiritual energy",
+    },
     "道":   {"ZH": "dào (way/path)", "JA": "dō/michi (way)", "KO": "do (way)", "EN": "way/path/Tao"},
     "国":   {"ZH": "guó (country)", "JA": "koku/kuni (country)", "KO": "guk (country)", "EN": "country"},
     "時":   {"ZH": "shí (time)", "JA": "ji/toki (time)", "KO": "si (time)", "EN": "time"},
@@ -211,10 +237,10 @@ CJK_COGNATES: dict[str, dict[str, str]] = {
 }
 
 
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 # Toki Pona → NSM prime mappings
 # Toki Pona has ~120 words; most map cleanly to NSM primes
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 
 TOKIPONA_MAP: dict[str, str] = {
     "GOOD": "pona",       # pona = good/simple/fix
@@ -273,9 +299,9 @@ TOKIPONA_MAP: dict[str, str] = {
 }
 
 
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 # Esperanto → NSM primes (subset)
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 
 ESPERANTO_MAP: dict[str, str] = {
     "I": "mi", "YOU": "vi", "SOMEONE": "iu", "SOMETHING": "io",
@@ -290,9 +316,9 @@ ESPERANTO_MAP: dict[str, str] = {
 }
 
 
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 # Lojban → NSM primes (subset)
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 
 LOJBAN_MAP: dict[str, str] = {
     "I": "mi", "YOU": "do", "SOMEONE": "da", "SOMETHING": "da poi dacti",
@@ -307,11 +333,11 @@ LOJBAN_MAP: dict[str, str] = {
 }
 
 
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 # Sacred Tongue → NSM prime bridge
 # Maps NSM primes to Sacred Tongue tokens (semantic, not byte encoding)
 # Uses the 6 Sacred Tongues: KO, AV, RU, CA, UM, DR
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 
 SACRED_TONGUE_PRIMES: dict[str, dict[str, str]] = {
     "I":        {"KO": "tharn-kel", "AV": "sel-vari", "RU": "mir-ash", "CA": "nen-sul", "UM": "oth-ren", "DR": "vael-kin"},
@@ -334,9 +360,9 @@ SACRED_TONGUE_PRIMES: dict[str, dict[str, str]] = {
 }
 
 
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 # TAM (Tense / Aspect / Mood) Profiles per language
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 
 TAM_PROFILES: dict[str, dict[str, str]] = {
     "EN": {
@@ -398,9 +424,9 @@ TAM_PROFILES: dict[str, dict[str, str]] = {
 }
 
 
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 # Language metadata
-# ─────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────
 
 LANGUAGE_METADATA: dict[str, dict] = {
     "EN":       {"name": "English", "family": "germanic", "script": "latin", "vocab_size": 50000},

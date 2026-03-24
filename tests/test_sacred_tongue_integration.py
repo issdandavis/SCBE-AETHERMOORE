@@ -21,11 +21,10 @@ from hypothesis import given, strategies as st, settings
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER, TONGUES, SECTION_TONGUES
+from crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER, TONGUES
 from crypto.rwp_v3 import (
     rwp_encrypt_message,
     rwp_decrypt_message,
-    RWPv3Protocol,
     RWPEnvelope,
 )
 from src.scbe.context_encoder import SCBE_CONTEXT_ENCODER
@@ -422,7 +421,7 @@ class TestProperties:
 
 # Check if pytest-benchmark is available
 try:
-    import pytest_benchmark
+    pass
 
     BENCHMARK_AVAILABLE = True
 except ImportError:

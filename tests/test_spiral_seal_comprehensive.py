@@ -18,8 +18,6 @@ import os
 import time
 import hashlib
 import secrets
-import struct
-from typing import List, Tuple
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
@@ -30,7 +28,6 @@ from symphonic_cipher.scbe_aethermoore.spiral_seal import (
     SpiralSealSS1,
     SacredTongueTokenizer,
     encode_to_spelltext,
-    decode_from_spelltext,
 )
 from symphonic_cipher.scbe_aethermoore.spiral_seal.sacred_tongues import (
     TONGUES,
@@ -43,7 +40,6 @@ from symphonic_cipher.scbe_aethermoore.spiral_seal.utils import (
     aes_gcm_decrypt,
     derive_key,
     get_random,
-    sha256,
     constant_time_compare,
 )
 from symphonic_cipher.scbe_aethermoore.spiral_seal.key_exchange import (
@@ -1170,9 +1166,9 @@ class TestSecurityProperties:
         b_diff_end = b"secret_value_123456789X"
 
         # All comparisons should work correctly
-        assert constant_time_compare(a, b_same) == True
-        assert constant_time_compare(a, b_diff_start) == False
-        assert constant_time_compare(a, b_diff_end) == False
+        assert constant_time_compare(a, b_same) is True
+        assert constant_time_compare(a, b_diff_start) is False
+        assert constant_time_compare(a, b_diff_end) is False
 
     # Test 92: Fail-to-noise policy
     def test_92_fail_to_noise_policy(self):

@@ -4,7 +4,6 @@ Dual ternary full-flux tests.
 
 from __future__ import annotations
 
-import math
 import random
 
 from src.symphonic_cipher.scbe_aethermoore.ai_brain.dual_ternary import (
@@ -14,7 +13,6 @@ from src.symphonic_cipher.scbe_aethermoore.ai_brain.dual_ternary import (
     compute_spectrum,
     compute_state_energy,
     encode_sequence,
-    encode_to_dual_ternary,
     estimate_fractal_dimension,
     state_from_index,
     state_index,

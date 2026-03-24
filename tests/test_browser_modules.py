@@ -12,7 +12,6 @@ import json
 import sys
 import tempfile
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -26,7 +25,7 @@ class TestPollyVisionImports:
     """Verify polly_vision module loads and exports correctly."""
 
     def test_import_polly_vision(self):
-        from src.browser.polly_vision import PollyVision, ObservationTier, PageObservation, InteractiveElement
+        from src.browser.polly_vision import PollyVision, ObservationTier
         assert PollyVision is not None
         assert ObservationTier is not None
 
@@ -130,7 +129,7 @@ class TestPageObservation:
         assert "@2 link: Home" in text
 
     def test_compact_repr_includes_state(self):
-        from src.browser.polly_vision import InteractiveElement, ObservationTier, PageObservation
+        from src.browser.polly_vision import InteractiveElement
         obs = self._make_observation(
             interactive_elements=[
                 InteractiveElement(ref_id=1, role="checkbox", name="Agree", tag="input", selector="#a", state="checked"),
@@ -338,7 +337,7 @@ class TestHydraHandImports:
     """Verify hydra_hand module loads with PollyVision integration."""
 
     def test_import_hydra_hand(self):
-        from src.browser.hydra_hand import HydraHand, Tongue, Finger, BrowsingResult
+        from src.browser.hydra_hand import HydraHand
         assert HydraHand is not None
 
     def test_tongue_enum(self):
@@ -385,7 +384,7 @@ class TestHydraHandVisionInit:
     """Test HydraHand creates PollyVision per finger."""
 
     def test_hand_default_vision_tier(self):
-        from src.browser.hydra_hand import HydraHand, Tongue
+        from src.browser.hydra_hand import HydraHand
         from src.browser.polly_vision import ObservationTier
 
         hand = HydraHand(head_id="test")

@@ -26,7 +26,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.training.symphonic_governor import (
     SymphonicGovernor,
-    ResonanceReport,
     TrainingBatchResult,
     run_control_and_test_batches,
     PHI,

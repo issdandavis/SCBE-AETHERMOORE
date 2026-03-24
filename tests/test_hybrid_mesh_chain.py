@@ -111,4 +111,3 @@ def test_hash_linked_ledger_detects_tamper() -> None:
     tampered = chain[1]
     tampered.payload["decision"] = "DENY"
     assert not verify_ledger(chain)
-

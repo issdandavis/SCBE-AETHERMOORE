@@ -12,7 +12,7 @@ Test questions:
 import numpy as np
 import hmac
 import hashlib
-from typing import List, Tuple, Set
+from typing import Tuple, Set
 from collections import Counter
 
 # Constants

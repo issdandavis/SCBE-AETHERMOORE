@@ -15,53 +15,39 @@ import pytest
 # Import from constants module
 from symphonic_cipher.scbe_aethermoore.constants import (
     PI,
-    E,
     PHI,
-    SQRT2,
-    SQRT5,
     R_FIFTH,
     R_FOURTH,
     R_THIRD,
     R_SIXTH,
     R_OCTAVE,
-    R_PHI,
     PHI_AETHER,
     LAMBDA_ISAAC,
     OMEGA_SPIRAL,
     ALPHA_ABH,
-    DEFAULT_R,
-    DEFAULT_D_MAX,
     harmonic_scale,
     security_bits,
-    security_level,
     harmonic_distance,
     octave_transpose,
-    DIMENSIONS,
-    get_harmonic_scale_table,
 )
 
 # Import from HAL-Attention module
 from symphonic_cipher.scbe_aethermoore.hal_attention import (
-    HALConfig,
     harmonic_coupling_matrix,
     assign_dimension_depths,
     hal_attention,
-    multi_head_hal_attention,
     HALAttentionLayer,
 )
 
 # Import from Vacuum-Acoustics module
 from symphonic_cipher.scbe_aethermoore.vacuum_acoustics import (
-    VacuumAcousticsConfig,
     WaveSource,
     nodal_surface,
     check_cymatic_resonance,
     bottle_beam_intensity,
     flux_redistribution,
-    is_on_nodal_line,
     find_nodal_points,
     compute_chladni_pattern,
-    resonance_strength,
 )
 
 # Import from Cymatic Storage module
@@ -74,9 +60,6 @@ from symphonic_cipher.scbe_aethermoore.cymatic_storage import (
 
 # Import from PQC Harmonic module
 from symphonic_cipher.scbe_aethermoore.pqc.pqc_harmonic import (
-    SecurityDimension,
-    HarmonicKeyMaterial,
-    harmonic_key_stretch,
     fast_harmonic_key,
     create_harmonic_pqc_session,
     verify_harmonic_pqc_session,

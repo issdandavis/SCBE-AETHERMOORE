@@ -17,7 +17,6 @@ from tests.adversarial.scbe_harness import (
     SCBEDetectionGate,
     run_benchmark,
     text_to_tongue_coords,
-    TONGUE_WEIGHTS,
 )
 
 

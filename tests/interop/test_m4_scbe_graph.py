@@ -26,4 +26,3 @@ def test_core_to_risk_has_no_direct_edge_without_bridge():
     for c in CONNECTOME:
         for j in RISK:
             assert dense[c, j] > 0.0
-

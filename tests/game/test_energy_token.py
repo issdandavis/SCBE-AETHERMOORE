@@ -14,7 +14,6 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
 
 from symphonic_cipher.scbe_aethermoore.game.energy_token import (
-    SECONDS_PER_TOKEN,
     TOKEN_PACKAGES,
     ACTIVITY_COSTS,
     EnergyWallet,

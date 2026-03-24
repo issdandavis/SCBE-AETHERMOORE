@@ -21,10 +21,8 @@ Usage:
     python tests/test_full_system_verification.py
 """
 
-import hashlib
 import math
 import sys
-import time
 from pathlib import Path
 
 # Add src to path
@@ -188,12 +186,9 @@ section("2. Five Quantum Axioms")
 
 try:
     from symphonic_cipher.scbe_aethermoore.axiom_grouped import (
-        QuantumAxiom,
         LAYER_TO_AXIOM,
-        AXIOM_TO_LAYERS,
         get_layer_axiom,
         get_axiom_layers,
-        get_all_layers,
     )
 
     check("Axiom module imports", True)
@@ -238,7 +233,6 @@ try:
     from crypto.sacred_tongues import (
         SACRED_TONGUE_TOKENIZER,
         TONGUES,
-        SECTION_TONGUES,
     )
 
     check("Tokenizer imports", True)
@@ -265,8 +259,6 @@ try:
         get_phdm_family,
         validate_all_polyhedra,
         PHDMHamiltonianPath,
-        PHDMDeviationDetector,
-        PolyhedronType,
     )
 
     check("PHDM module imports", True)
@@ -302,7 +294,6 @@ try:
     from symphonic_cipher.scbe_aethermoore.concept_blocks.context_credit_ledger.credit import (
         mint_credit,
         ContextCredit,
-        CreditDNA,
         Denomination,
         DENOMINATION_WEIGHTS,
     )
@@ -351,9 +342,6 @@ try:
         ShopifyBridge,
         PublisherBridge,
         RWPSettlement,
-        SettlementEnvelope,
-        EarnEvent,
-        StreamType,
         SettlementState,
     )
 
@@ -418,7 +406,6 @@ try:
         ProtocolTongue as PT,
         OperationTier,
         ReplayProtector,
-        TIER_REQUIRED_TONGUES,
     )
 
     check("RWP2 envelope imports", True)
@@ -540,7 +527,6 @@ try:
     from symphonic_cipher.scbe_aethermoore.concept_blocks.earn_engine.engine import EarnEngine
     from symphonic_cipher.scbe_aethermoore.concept_blocks.earn_engine.game_hooks import GameHooks
     from symphonic_cipher.scbe_aethermoore.game.regions import REGIONS, get_region_by_tongue, get_tower_floor
-    from symphonic_cipher.scbe_aethermoore.game.types import TongueCode
 
     check("Game integration imports", True)
     check("6 tongue regions defined", len(REGIONS) == 6)

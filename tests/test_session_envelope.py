@@ -7,10 +7,8 @@ from __future__ import annotations
 
 import json
 import subprocess
-import sys
 from pathlib import Path
 
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 ENVELOPE_JS = ROOT / "src" / "word-addin" / "session_envelope.js"

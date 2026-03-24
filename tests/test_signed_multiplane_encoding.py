@@ -1,6 +1,5 @@
 import math
 
-import numpy as np
 
 from experiments.signed_multiplane_encoding_demo import (
     SignedBit,

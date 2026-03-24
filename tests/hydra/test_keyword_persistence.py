@@ -12,7 +12,6 @@ Covers:
 - Librarian keyword index populated after remember()
 """
 
-import json
 import pytest
 import sys
 import os

@@ -59,4 +59,3 @@ def test_run_jsonl_writes_gate_results(tmp_path: Path) -> None:
     lines = [x for x in out.read_text(encoding="utf-8").splitlines() if x.strip()]
     assert len(lines) == 2
     assert sum(counts.values()) == 2
-

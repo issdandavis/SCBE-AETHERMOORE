@@ -8,12 +8,10 @@ This is the real test: can the curved browser let you SEE what's behind
 a RED zone link without CLICKING through?
 """
 
-import json
 import math
 from pathlib import Path
 from urllib.parse import urlparse
 
-import pytest
 
 from src.aetherbrowser.phase_tunnel import (
     KernelStack,
@@ -23,9 +21,7 @@ from src.aetherbrowser.phase_tunnel import (
     compute_transparency_frequency,
 )
 from src.aetherbrowser.topology_engine import (
-    classify_zone,
     compute_page_topology,
-    semantic_distance,
 )
 
 

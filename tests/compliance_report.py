@@ -15,15 +15,11 @@ Output formats: JSON, Markdown, HTML
 """
 
 import json
-import time
-import subprocess
-import sys
 import os
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Optional
 from dataclasses import dataclass, field, asdict
 from enum import Enum
-from pathlib import Path
 
 
 # =============================================================================
@@ -2136,8 +2132,8 @@ class ComplianceReportGenerator:
 
         md = f"""# SCBE-AETHERMOORE Compliance Report
 
-**Generated:** {report.generated_at}  
-**Version:** {report.scbe_version}  
+**Generated:** {report.generated_at}
+**Version:** {report.scbe_version}
 **Pass Rate:** {report.pass_rate*100:.1f}% ({report.passed_tests}/{report.total_tests})
 
 ---
@@ -2259,7 +2255,7 @@ class ComplianceReportGenerator:
             <p class="text-gray-300">Generated: {report.generated_at}</p>
             <p class="text-gray-300">Version: {report.scbe_version}</p>
         </header>
-        
+
         <section class="glass rounded-2xl p-8 mb-8 border border-white/10">
             <h2 class="text-2xl font-bold mb-6">Executive Summary</h2>
             <div class="grid grid-cols-4 gap-4">
@@ -2281,7 +2277,7 @@ class ComplianceReportGenerator:
                 </div>
             </div>
         </section>
-        
+
         <section class="glass rounded-2xl p-8 mb-8 border border-white/10">
             <h2 class="text-2xl font-bold mb-6">Compliance Framework Coverage</h2>
             <div class="overflow-x-auto">
@@ -2315,7 +2311,7 @@ class ComplianceReportGenerator:
                 </table>
             </div>
         </section>
-        
+
         <section class="glass rounded-2xl p-8 mb-8 border border-white/10">
             <h2 class="text-2xl font-bold mb-6">Multi-Dimensional Lattice Coverage</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -2329,7 +2325,7 @@ class ComplianceReportGenerator:
 
         html += """            </div>
         </section>
-        
+
         <footer class="text-center text-gray-500 text-sm mt-12">
             <p>SCBE-AETHERMOORE v3.0 | USPTO Application #63/961,403 | Patent Pending</p>
         </footer>
