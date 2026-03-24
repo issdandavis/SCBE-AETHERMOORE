@@ -111,8 +111,7 @@ def try_sentence_transformers_encode(
         st_mod = importlib.import_module("sentence_transformers")
     except Exception as exc:  # noqa: BLE001
         raise RuntimeError(
-            "sentence-transformers is not installed. "
-            "Install with: pip install sentence-transformers"
+            "sentence-transformers is not installed. " "Install with: pip install sentence-transformers"
         ) from exc
 
     model = st_mod.SentenceTransformer(model_name)
@@ -423,9 +422,7 @@ def query_rag_index(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Build/query a local RAG index from JSONL records."
-    )
+    parser = argparse.ArgumentParser(description="Build/query a local RAG index from JSONL records.")
     parser.add_argument("--input-jsonl", default=str(default_input_jsonl()))
     parser.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR))
     parser.add_argument("--text-fields", default=",".join(DEFAULT_TEXT_FIELDS))

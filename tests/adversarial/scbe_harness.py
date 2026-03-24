@@ -50,6 +50,7 @@ def build_metric_tensor():
 @dataclass
 class SpinVector:
     """Quantized spin direction per tongue dimension."""
+
     code: str
     spins: List[int]
     magnitude: int
@@ -70,12 +71,14 @@ def quantize_spin(coords: List[float], centroid: List[float], threshold: float =
     magnitude = sum(abs(s) for s in spins)
     return SpinVector(code=code, spins=spins, magnitude=magnitude)
 
+
 WORD_RE = re.compile(r"[A-Za-z0-9_']+")
 
 # Adversarial keyword patterns — high-signal tokens that appear in attacks
 # but almost never in clean prompts. Matched case-insensitively.
 _ADVERSARIAL_PATTERNS = [
-    re.compile(p, re.IGNORECASE) for p in [
+    re.compile(p, re.IGNORECASE)
+    for p in [
         # Override / injection
         r"ignore\s+(all\s+)?(previous|prior)\s+(instructions|rules|context)",
         r"ignore\s+(all\s+)?(safety|security)\s+rules",
@@ -176,25 +179,26 @@ _ADVERSARIAL_PATTERNS = [
 
 # Cross-lingual override patterns (covers common injection in 6+ languages)
 _MULTILINGUAL_OVERRIDE_PATTERNS = [
-    re.compile(p, re.IGNORECASE) for p in [
-        r"ignor[aei]\w*\s+\w+\s+instruc",        # ES/IT/PT/FR
-        r"ignorez\s+\w+\s+instruc",               # FR: ignorez les instructions
-        r"ignoriere\s+\w+\s+(anweis|vorherig)",    # DE: ignoriere alle anweisungen/vorherigen
-        r"abaikan\s+\w+\s+(instruksi|aturan)",     # ID/MY: abaikan semua instruksi/aturan
-        r"desactiv|desakti|ausschalten",           # Disable in ES/DE
-        r"(?:system|prompt)\s+(?:whakaatu|zeige|montre|mostra|revela)", # Show system
-        r"sicherheitsregeln|regles?\s+de\s+securite|aturan\s+keamanan", # Security rules
-        r"datos?\s+sensib|donne[es]\s+sensib|vertraulich", # Sensitive data
-        r"\bignora\s+tutte\b",                     # IT: ignora tutte
-        r"\brevela\s+datos\b",                     # ES: revela datos
-        r"\baffichez\b",                           # FR: affichez
-        r"\bzeige\b.*\b(Systemprompt|Geheimnisse)\b", # DE: show system/secrets
-        r"\btunjukkan\b.*\b(prompt|sistem)\b",     # ID: show prompt/system
-        r"\btampilkan\b.*\b(data|sensitif)\b",     # ID: display data/sensitive
-        r"\bmengabaikan\b",                        # ID: ignore
-        r"\bexpose\s+secrets\b",                   # EN in mixed-lang attacks
-        r"\bignor\w+\s+instruc",                   # Catch-all: ignor* instruc*
-        r"\bkia\s+kore\b",                         # Maori: without
+    re.compile(p, re.IGNORECASE)
+    for p in [
+        r"ignor[aei]\w*\s+\w+\s+instruc",  # ES/IT/PT/FR
+        r"ignorez\s+\w+\s+instruc",  # FR: ignorez les instructions
+        r"ignoriere\s+\w+\s+(anweis|vorherig)",  # DE: ignoriere alle anweisungen/vorherigen
+        r"abaikan\s+\w+\s+(instruksi|aturan)",  # ID/MY: abaikan semua instruksi/aturan
+        r"desactiv|desakti|ausschalten",  # Disable in ES/DE
+        r"(?:system|prompt)\s+(?:whakaatu|zeige|montre|mostra|revela)",  # Show system
+        r"sicherheitsregeln|regles?\s+de\s+securite|aturan\s+keamanan",  # Security rules
+        r"datos?\s+sensib|donne[es]\s+sensib|vertraulich",  # Sensitive data
+        r"\bignora\s+tutte\b",  # IT: ignora tutte
+        r"\brevela\s+datos\b",  # ES: revela datos
+        r"\baffichez\b",  # FR: affichez
+        r"\bzeige\b.*\b(Systemprompt|Geheimnisse)\b",  # DE: show system/secrets
+        r"\btunjukkan\b.*\b(prompt|sistem)\b",  # ID: show prompt/system
+        r"\btampilkan\b.*\b(data|sensitif)\b",  # ID: display data/sensitive
+        r"\bmengabaikan\b",  # ID: ignore
+        r"\bexpose\s+secrets\b",  # EN in mixed-lang attacks
+        r"\bignor\w+\s+instruc",  # Catch-all: ignor* instruc*
+        r"\bkia\s+kore\b",  # Maori: without
     ]
 ]
 
@@ -203,9 +207,11 @@ _MULTILINGUAL_OVERRIDE_PATTERNS = [
 #  Attack result
 # =========================================================================== #
 
+
 @dataclass
 class AttackResult:
     """Result of processing one attack through SCBE detection."""
+
     attack_id: str
     attack_class: str
     prompt: str
@@ -232,6 +238,7 @@ class AttackResult:
 # =========================================================================== #
 #  Text → SCBE state
 # =========================================================================== #
+
 
 def text_to_tongue_coords(text: str) -> List[float]:
     """Derive 6D tongue coordinates from text content.
@@ -263,11 +270,11 @@ def text_to_tongue_coords(text: str) -> List[float]:
 
     return [
         min(1.0, 0.2 + 0.4 * (upper / chars) * 5 + 0.15 * (urls > 0)),  # KO
-        min(1.0, wc / 600.0),                                              # AV
-        min(1.0, unique / max(wc, 1)),                                     # RU
-        min(1.0, (digits / chars) * 10),                                   # CA
-        min(1.0, (upper / chars) * 5),                                     # UM
-        min(1.0, (punct / chars) * 8),                                     # DR
+        min(1.0, wc / 600.0),  # AV
+        min(1.0, unique / max(wc, 1)),  # RU
+        min(1.0, (digits / chars) * 10),  # CA
+        min(1.0, (upper / chars) * 5),  # UM
+        min(1.0, (punct / chars) * 8),  # DR
     ]
 
 
@@ -291,10 +298,10 @@ def compute_harmonic_cost(tongue_coords: List[float], centroid: List[float]) -> 
 # Tuned from first benchmark run:
 #   Clean text: avg cost=7.0, avg spin=3.7, norm=1.0-1.1
 #   Attacks:    avg cost=38.5, avg spin=3.9, norm=1.0-2.0+
-SPIN_DRIFT_THRESHOLD = 5       # spin magnitude 5+ (5 of 6 dimensions deviate)
-TONGUE_IMBALANCE_RATIO = 0.6   # one tongue > 60% of weighted signal = imbalance
-COST_THRESHOLD = 12.0           # harmonic cost above 12 (clean peaks at ~7)
-BOUNDARY_THRESHOLD = 1.5        # coord norm above 1.5 (clean peaks at ~1.1)
+SPIN_DRIFT_THRESHOLD = 5  # spin magnitude 5+ (5 of 6 dimensions deviate)
+TONGUE_IMBALANCE_RATIO = 0.6  # one tongue > 60% of weighted signal = imbalance
+COST_THRESHOLD = 12.0  # harmonic cost above 12 (clean peaks at ~7)
+BOUNDARY_THRESHOLD = 1.5  # coord norm above 1.5 (clean peaks at ~1.1)
 
 
 class SCBEDetectionGate:
@@ -380,10 +387,7 @@ class SCBEDetectionGate:
             signals.append(f"cross_lingual_override(matches={ml_match_count})")
 
         # Dispersal shift — large deviation in total weighted dispersal from baseline
-        dispersal = sum(
-            TONGUE_WEIGHTS[l] * abs(coords[l] - self._centroid[l])
-            for l in range(6)
-        )
+        dispersal = sum(TONGUE_WEIGHTS[l] * abs(coords[l] - self._centroid[l]) for l in range(6))
         dispersal_shift = dispersal > 10.0  # High bar: only fires on extreme deviations
         if dispersal_shift:
             signals.append(f"dispersal_shift({dispersal:.2f})")
@@ -429,10 +433,9 @@ class SCBEDetectionGate:
             tongue_coords=coords,
             spin_code=spin.code,
             spin_magnitude=spin.magnitude,
-            dispersal_cost=round(sum(
-                TONGUE_WEIGHTS[l] * abs(spin.spins[l]) * abs(coords[l] - self._centroid[l])
-                for l in range(6)
-            ), 6),
+            dispersal_cost=round(
+                sum(TONGUE_WEIGHTS[l] * abs(spin.spins[l]) * abs(coords[l] - self._centroid[l]) for l in range(6)), 6
+            ),
             harmonic_cost=round(cost, 4),
             dominant_tongue=dominant_tongue,
             spin_drift=spin_drift,
@@ -451,9 +454,11 @@ class SCBEDetectionGate:
 #  Benchmark runner
 # =========================================================================== #
 
+
 @dataclass
 class BenchmarkResult:
     """Aggregate results from running an attack suite."""
+
     total_attacks: int
     detected_count: int
     missed_count: int
@@ -508,12 +513,8 @@ def run_benchmark(
         missed_count=total - detected,
         detection_rate=round(detected / max(total, 1), 4),
         attack_success_rate=round((total - detected) / max(total, 1), 4),
-        avg_harmonic_cost=round(
-            sum(r.harmonic_cost for r in results) / max(total, 1), 4
-        ),
-        avg_spin_magnitude=round(
-            sum(r.spin_magnitude for r in results) / max(total, 1), 2
-        ),
+        avg_harmonic_cost=round(sum(r.harmonic_cost for r in results) / max(total, 1), 4),
+        avg_spin_magnitude=round(sum(r.spin_magnitude for r in results) / max(total, 1), 2),
         signal_counts=signal_counts,
         per_class={
             cls: {**data, "detection_rate": round(data["detected"] / max(data["total"], 1), 4)}

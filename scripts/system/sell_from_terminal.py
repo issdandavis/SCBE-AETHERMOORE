@@ -138,9 +138,7 @@ def _sanitize_report_for_disk(report: dict[str, Any]) -> dict[str, Any]:
     """Strip sensitive key names from secret_summary before writing to disk."""
     clean = dict(report)
     if "secret_summary" in clean:
-        clean["secret_summary"] = {
-            _mask_value(k): v for k, v in clean["secret_summary"].items()
-        }
+        clean["secret_summary"] = {_mask_value(k): v for k, v in clean["secret_summary"].items()}
     return clean
 
 
@@ -252,17 +250,10 @@ def main() -> int:
     env_count = sum(1 for value in secret_summary.values() if value == "env")
     stored_count = sum(1 for value in secret_summary.values() if value == "stored")
     missing_count = sum(1 for value in secret_summary.values() if value == "missing")
-    print(
-        "secret_summary:"
-        f" env={env_count}"
-        f" secret_store={stored_count}"
-        f" missing={missing_count}"
-    )
+    print("secret_summary:" f" env={env_count}" f" secret_store={stored_count}" f" missing={missing_count}")
 
     # Build a separate action summary list to avoid taint from secret_summary in report.
-    action_summaries = [
-        (str(a.get("name", "")), a.get("result", {})) for a in report["actions"]
-    ]
+    action_summaries = [(str(a.get("name", "")), a.get("result", {})) for a in report["actions"]]
     for action_name, action_result in action_summaries:
         if action_name in {"dry_run"}:
             print(f"action={action_name} status=ok")

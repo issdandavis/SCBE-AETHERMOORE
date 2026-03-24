@@ -105,7 +105,12 @@ def publish_markdown_file(
     if skip_existing:
         existing_titles = _fetch_existing_titles(owner, repo, first=100)
         if title in existing_titles:
-            return {"status": "exists", "file": str(file_path), "title": title, "detail": "discussion with same title already exists"}
+            return {
+                "status": "exists",
+                "file": str(file_path),
+                "title": title,
+                "detail": "discussion with same title already exists",
+            }
 
     if dry_run:
         return {"status": "dry_run_ready", "file": str(file_path), "title": title}

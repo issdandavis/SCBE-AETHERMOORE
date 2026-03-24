@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 class MessagePriority(Enum):
     """Message priority levels."""
+
     CRITICAL = 0
     HIGH = 1
     NORMAL = 2
@@ -41,6 +42,7 @@ class MessagePriority(Enum):
 
 class MessageStatus(Enum):
     """Message delivery status."""
+
     PENDING = "pending"
     SENT = "sent"
     DELIVERED = "delivered"
@@ -50,14 +52,16 @@ class MessageStatus(Enum):
 
 class CircuitState(Enum):
     """Circuit breaker states."""
-    CLOSED = "closed"      # Normal operation
-    OPEN = "open"          # Failing, reject requests
+
+    CLOSED = "closed"  # Normal operation
+    OPEN = "open"  # Failing, reject requests
     HALF_OPEN = "half_open"  # Testing if recovered
 
 
 @dataclass
 class CloudEndpoint:
     """Represents a cloud service endpoint."""
+
     endpoint_id: str
     cloud: str  # aws, gcp
     region: str
@@ -72,6 +76,7 @@ class CloudEndpoint:
 @dataclass
 class CrossCloudMessage:
     """Message for cross-cloud communication."""
+
     message_id: str
     source_cloud: str
     source_agent: str
@@ -121,10 +126,7 @@ class ServiceRegistry:
         del self.endpoints[endpoint_id]
 
     def discover(
-        self,
-        agent_type: Optional[str] = None,
-        cloud: Optional[str] = None,
-        healthy_only: bool = True
+        self, agent_type: Optional[str] = None, cloud: Optional[str] = None, healthy_only: bool = True
     ) -> List[CloudEndpoint]:
         """Discover endpoints matching criteria."""
         results = list(self.endpoints.values())
@@ -161,12 +163,7 @@ class CircuitBreaker:
     Prevents cascading failures across clouds.
     """
 
-    def __init__(
-        self,
-        failure_threshold: int = 5,
-        recovery_timeout: int = 30,
-        half_open_max_calls: int = 3
-    ):
+    def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 30, half_open_max_calls: int = 3):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.half_open_max_calls = half_open_max_calls
@@ -180,7 +177,7 @@ class CircuitBreaker:
                 "state": CircuitState.CLOSED,
                 "failures": 0,
                 "last_failure": None,
-                "half_open_calls": 0
+                "half_open_calls": 0,
             }
 
         circuit = self.circuits[circuit_id]
@@ -230,7 +227,7 @@ class CircuitBreaker:
                 "state": CircuitState.CLOSED,
                 "failures": 0,
                 "last_failure": None,
-                "half_open_calls": 0
+                "half_open_calls": 0,
             }
 
         circuit = self.circuits[circuit_id]
@@ -320,6 +317,7 @@ class MessageEncryption:
     def _generate_key(self) -> bytes:
         """Generate encryption key."""
         import secrets
+
         return secrets.token_bytes(32)
 
     def encrypt(self, data: Dict[str, Any]) -> str:
@@ -330,12 +328,7 @@ class MessageEncryption:
             from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
             # Derive key
-            kdf = PBKDF2HMAC(
-                algorithm=hashes.SHA256(),
-                length=32,
-                salt=b'scbe_cross_cloud',
-                iterations=100000
-            )
+            kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b"scbe_cross_cloud", iterations=100000)
             key = base64.urlsafe_b64encode(kdf.derive(self.shared_key))
 
             f = Fernet(key)
@@ -353,12 +346,7 @@ class MessageEncryption:
             from cryptography.hazmat.primitives import hashes
             from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-            kdf = PBKDF2HMAC(
-                algorithm=hashes.SHA256(),
-                length=32,
-                salt=b'scbe_cross_cloud',
-                iterations=100000
-            )
+            kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b"scbe_cross_cloud", iterations=100000)
             key = base64.urlsafe_b64encode(kdf.derive(self.shared_key))
 
             f = Fernet(key)
@@ -372,9 +360,7 @@ class MessageEncryption:
     def sign(self, data: Dict[str, Any]) -> str:
         """Sign message for integrity."""
         content = json.dumps(data, sort_keys=True)
-        signature = hashlib.sha256(
-            (content + self.shared_key.hex()).encode()
-        ).hexdigest()
+        signature = hashlib.sha256((content + self.shared_key.hex()).encode()).hexdigest()
         return signature
 
     def verify(self, data: Dict[str, Any], signature: str) -> bool:
@@ -388,27 +374,17 @@ class CrossCloudRouter:
     Intelligent message router for cross-cloud communication.
     """
 
-    def __init__(
-        self,
-        registry: ServiceRegistry,
-        circuit_breaker: CircuitBreaker,
-        encryption: MessageEncryption
-    ):
+    def __init__(self, registry: ServiceRegistry, circuit_breaker: CircuitBreaker, encryption: MessageEncryption):
         self.registry = registry
         self.circuit_breaker = circuit_breaker
         self.encryption = encryption
         self.routing_stats: Dict[str, Dict[str, int]] = {}
 
-    async def route(
-        self,
-        message: CrossCloudMessage,
-        prefer_same_cloud: bool = True
-    ) -> Optional[CloudEndpoint]:
+    async def route(self, message: CrossCloudMessage, prefer_same_cloud: bool = True) -> Optional[CloudEndpoint]:
         """Route message to best endpoint."""
         # Find target endpoints
         endpoints = self.registry.discover(
-            agent_type=message.target_agent.split(":")[0] if ":" in message.target_agent else None,
-            healthy_only=True
+            agent_type=message.target_agent.split(":")[0] if ":" in message.target_agent else None, healthy_only=True
         )
 
         if not endpoints:
@@ -464,11 +440,7 @@ class CrossCloudCommunicator:
         self.registry = ServiceRegistry()
         self.circuit_breaker = CircuitBreaker()
         self.encryption = MessageEncryption(shared_key)
-        self.router = CrossCloudRouter(
-            self.registry,
-            self.circuit_breaker,
-            self.encryption
-        )
+        self.router = CrossCloudRouter(self.registry, self.circuit_breaker, self.encryption)
         self.queue = MessageQueue()
         self._running = False
         self._processor_task: Optional[asyncio.Task] = None
@@ -491,20 +463,11 @@ class CrossCloudCommunicator:
         logger.info("Cross-cloud communicator stopped")
 
     def register_endpoint(
-        self,
-        cloud: str,
-        region: str,
-        url: str,
-        agent_type: str,
-        endpoint_id: Optional[str] = None
+        self, cloud: str, region: str, url: str, agent_type: str, endpoint_id: Optional[str] = None
     ) -> str:
         """Register a cloud endpoint."""
         endpoint = CloudEndpoint(
-            endpoint_id=endpoint_id or str(uuid.uuid4()),
-            cloud=cloud,
-            region=region,
-            url=url,
-            agent_type=agent_type
+            endpoint_id=endpoint_id or str(uuid.uuid4()), cloud=cloud, region=region, url=url, agent_type=agent_type
         )
         return self.registry.register(endpoint)
 
@@ -516,7 +479,7 @@ class CrossCloudCommunicator:
         payload: Dict[str, Any],
         target_cloud: Optional[str] = None,
         priority: MessagePriority = MessagePriority.NORMAL,
-        ttl_seconds: int = 300
+        ttl_seconds: int = 300,
     ) -> str:
         """Send a cross-cloud message."""
         message = CrossCloudMessage(
@@ -528,17 +491,13 @@ class CrossCloudCommunicator:
             payload=self.encryption.encrypt(payload),
             priority=priority,
             expires_at=datetime.now() + timedelta(seconds=ttl_seconds),
-            signature=self.encryption.sign(payload)
+            signature=self.encryption.sign(payload),
         )
 
         await self.queue.enqueue(message)
         return message.message_id
 
-    async def receive(
-        self,
-        agent_id: str,
-        timeout: float = 30
-    ) -> Optional[Dict[str, Any]]:
+    async def receive(self, agent_id: str, timeout: float = 30) -> Optional[Dict[str, Any]]:
         """Receive messages for an agent."""
         message = await self.queue.dequeue(agent_id, timeout)
 
@@ -554,7 +513,7 @@ class CrossCloudCommunicator:
                 "source_agent": message.source_agent,
                 "payload": payload,
                 "priority": message.priority.value,
-                "created_at": message.created_at.isoformat()
+                "created_at": message.created_at.isoformat(),
             }
         except Exception as e:
             logger.error(f"Failed to decrypt message: {e}")
@@ -616,17 +575,9 @@ class CrossCloudCommunicator:
             "endpoints": {
                 "total": len(self.registry.endpoints),
                 "healthy": len([e for e in self.registry.endpoints.values() if e.healthy]),
-                "by_cloud": {
-                    cloud: len(endpoints)
-                    for cloud, endpoints in self.registry.by_cloud.items()
-                }
+                "by_cloud": {cloud: len(endpoints) for cloud, endpoints in self.registry.by_cloud.items()},
             },
             "routing": self.router.routing_stats,
-            "circuits": {
-                cid: circuit["state"].value
-                for cid, circuit in self.circuit_breaker.circuits.items()
-            },
-            "queue": {
-                "pending": len(self.queue.message_store)
-            }
+            "circuits": {cid: circuit["state"].value for cid, circuit in self.circuit_breaker.circuits.items()},
+            "queue": {"pending": len(self.queue.message_store)},
         }

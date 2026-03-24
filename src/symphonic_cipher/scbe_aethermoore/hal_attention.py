@@ -56,9 +56,7 @@ class HALConfig:
 
     def __post_init__(self):
         if self.d_model % self.n_heads != 0:
-            raise ValueError(
-                f"d_model ({self.d_model}) must be divisible by n_heads ({self.n_heads})"
-            )
+            raise ValueError(f"d_model ({self.d_model}) must be divisible by n_heads ({self.n_heads})")
         self.d_k = self.d_model // self.n_heads
 
 
@@ -77,9 +75,7 @@ class AttentionOutput:
 # =============================================================================
 
 
-def harmonic_coupling_matrix(
-    d_Q: List[float], d_K: List[float], R: float = R_FIFTH, normalize: bool = True
-) -> Matrix:
+def harmonic_coupling_matrix(d_Q: List[float], d_K: List[float], R: float = R_FIFTH, normalize: bool = True) -> Matrix:
     """
     Compute the harmonic coupling matrix Λ.
 
@@ -183,9 +179,7 @@ def assign_dimension_depths(
         # Linear scaling: position 0 → 1, position N-1 → d_max
         if sequence_length == 1:
             return [1.0]
-        return [
-            1 + (d_max - 1) * i / (sequence_length - 1) for i in range(sequence_length)
-        ]
+        return [1 + (d_max - 1) * i / (sequence_length - 1) for i in range(sequence_length)]
 
     elif method == "uniform":
         # Same depth for all positions
@@ -219,10 +213,7 @@ def assign_dimension_depths(
         max_imp = max(importance)
         if max_imp == min_imp:
             return [d_max / 2] * sequence_length
-        return [
-            1 + (d_max - 1) * (imp - min_imp) / (max_imp - min_imp)
-            for imp in importance
-        ]
+        return [1 + (d_max - 1) * (imp - min_imp) / (max_imp - min_imp) for imp in importance]
 
     else:
         raise ValueError(f"Unknown method: {method}")
@@ -491,9 +482,7 @@ def multi_head_hal_attention(
             d_max=config.d_max,
             normalize=config.normalize,
         )
-        result = hal_attention(
-            Q_heads[h], K_heads[h], V_heads[h], d_Q, d_K, head_config
-        )
+        result = hal_attention(Q_heads[h], K_heads[h], V_heads[h], d_Q, d_K, head_config)
         head_outputs.append(result.output)
         all_weights.append(result.attention_weights)
         if coupling is None:
@@ -554,9 +543,7 @@ class HALAttentionLayer:
             normalize: Apply overflow prevention
             depth_method: How to assign dimension depths
         """
-        self.config = HALConfig(
-            d_model=d_model, n_heads=n_heads, R=R, d_max=d_max, normalize=normalize
-        )
+        self.config = HALConfig(d_model=d_model, n_heads=n_heads, R=R, d_max=d_max, normalize=normalize)
         self.depth_method = depth_method
 
     def __call__(
@@ -581,13 +568,9 @@ class HALAttentionLayer:
             AttentionOutput
         """
         if d_Q is None:
-            d_Q = assign_dimension_depths(
-                len(query), self.depth_method, self.config.d_max
-            )
+            d_Q = assign_dimension_depths(len(query), self.depth_method, self.config.d_max)
         if d_K is None:
-            d_K = assign_dimension_depths(
-                len(key), self.depth_method, self.config.d_max
-            )
+            d_K = assign_dimension_depths(len(key), self.depth_method, self.config.d_max)
 
         return multi_head_hal_attention(query, key, value, d_Q, d_K, self.config)
 
@@ -602,9 +585,7 @@ class HALAttentionLayer:
             Dict with coupling statistics
         """
         depths = assign_dimension_depths(seq_len, self.depth_method, self.config.d_max)
-        coupling = harmonic_coupling_matrix(
-            depths, depths, self.config.R, self.config.normalize
-        )
+        coupling = harmonic_coupling_matrix(depths, depths, self.config.R, self.config.normalize)
 
         return {
             "seq_len": seq_len,

@@ -7,12 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = (
-    ROOT
-    / "skills"
-    / "codex-mirror"
-    / "scbe-code-scanning-ops"
-    / "scripts"
-    / "inspect_code_scanning_alerts.py"
+    ROOT / "skills" / "codex-mirror" / "scbe-code-scanning-ops" / "scripts" / "inspect_code_scanning_alerts.py"
 )
 
 
@@ -32,7 +27,11 @@ def test_summarize_alerts_groups_rule_and_path_counts() -> None:
             "number": 2261,
             "state": "open",
             "tool": {"name": "CodeQL"},
-            "rule": {"id": "py/incomplete-url-substring-sanitization", "name": "Incomplete URL substring sanitization", "security_severity_level": "high"},
+            "rule": {
+                "id": "py/incomplete-url-substring-sanitization",
+                "name": "Incomplete URL substring sanitization",
+                "security_severity_level": "high",
+            },
             "most_recent_instance": {"location": {"path": "src/aetherbrowser/page_analyzer.py", "start_line": 152}},
             "html_url": "https://example.test/2261",
         },
@@ -40,7 +39,11 @@ def test_summarize_alerts_groups_rule_and_path_counts() -> None:
             "number": 2258,
             "state": "open",
             "tool": {"name": "CodeQL"},
-            "rule": {"id": "py/incomplete-url-substring-sanitization", "name": "Incomplete URL substring sanitization", "security_severity_level": "high"},
+            "rule": {
+                "id": "py/incomplete-url-substring-sanitization",
+                "name": "Incomplete URL substring sanitization",
+                "security_severity_level": "high",
+            },
             "most_recent_instance": {"location": {"path": "src/browser/toolkit.py", "start_line": 189}},
             "html_url": "https://example.test/2258",
         },

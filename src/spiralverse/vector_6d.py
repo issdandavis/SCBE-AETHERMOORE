@@ -37,16 +37,18 @@ from datetime import datetime
 # Axis Definitions
 # =============================================================================
 
+
 class Axis(Enum):
     """The six orthogonal axes of the navigation space."""
+
     # Physical axes (spatial)
-    AXIOM = 0   # X: Forward/backward
-    FLOW = 1    # Y: Lateral/sideways
-    GLYPH = 2   # Z: Vertical/altitude
+    AXIOM = 0  # X: Forward/backward
+    FLOW = 1  # Y: Lateral/sideways
+    GLYPH = 2  # Z: Vertical/altitude
 
     # Extended axes (operational)
     ORACLE = 3  # V: Velocity magnitude
-    CHARM = 4   # H: Priority/harmony
+    CHARM = 4  # H: Priority/harmony
     LEDGER = 5  # S: Security level
 
 
@@ -56,43 +58,43 @@ AXIS_INFO = {
         "name": "AXIOM",
         "symbol": "X",
         "unit": "meters",
-        "range": (-float('inf'), float('inf')),
-        "description": "Forward/backward position"
+        "range": (-float("inf"), float("inf")),
+        "description": "Forward/backward position",
     },
     Axis.FLOW: {
         "name": "FLOW",
         "symbol": "Y",
         "unit": "meters",
-        "range": (-float('inf'), float('inf')),
-        "description": "Lateral position"
+        "range": (-float("inf"), float("inf")),
+        "description": "Lateral position",
     },
     Axis.GLYPH: {
         "name": "GLYPH",
         "symbol": "Z",
         "unit": "meters",
-        "range": (-float('inf'), float('inf')),
-        "description": "Vertical position (altitude)"
+        "range": (-float("inf"), float("inf")),
+        "description": "Vertical position (altitude)",
     },
     Axis.ORACLE: {
         "name": "ORACLE",
         "symbol": "V",
         "unit": "m/s",
-        "range": (0.0, float('inf')),
-        "description": "Velocity magnitude"
+        "range": (0.0, float("inf")),
+        "description": "Velocity magnitude",
     },
     Axis.CHARM: {
         "name": "CHARM",
         "symbol": "H",
         "unit": "coefficient",
         "range": (-1.0, 1.0),
-        "description": "Priority/harmony index"
+        "description": "Priority/harmony index",
     },
     Axis.LEDGER: {
         "name": "LEDGER",
         "symbol": "S",
         "unit": "level",
         "range": (0, 255),
-        "description": "Security clearance level"
+        "description": "Security clearance level",
     },
 }
 
@@ -101,6 +103,7 @@ AXIS_INFO = {
 # 6D Position
 # =============================================================================
 
+
 @dataclass
 class Position6D:
     """
@@ -108,15 +111,16 @@ class Position6D:
 
     Combines spatial coordinates with operational parameters.
     """
+
     # Physical space
-    axiom: float = 0.0   # X: meters forward
-    flow: float = 0.0    # Y: meters lateral
-    glyph: float = 0.0   # Z: meters altitude
+    axiom: float = 0.0  # X: meters forward
+    flow: float = 0.0  # Y: meters lateral
+    glyph: float = 0.0  # Z: meters altitude
 
     # Operational space
     oracle: float = 0.0  # V: velocity (m/s)
-    charm: float = 0.0   # H: harmony coefficient [-1, 1]
-    ledger: int = 0      # S: security level [0, 255]
+    charm: float = 0.0  # H: harmony coefficient [-1, 1]
+    ledger: int = 0  # S: security level [0, 255]
 
     # Metadata
     timestamp: datetime = field(default_factory=datetime.utcnow)
@@ -141,13 +145,10 @@ class Position6D:
     @property
     def full_vector(self) -> np.ndarray:
         """Get complete 6D vector."""
-        return np.array([
-            self.axiom, self.flow, self.glyph,
-            self.oracle, self.charm, self.ledger
-        ])
+        return np.array([self.axiom, self.flow, self.glyph, self.oracle, self.charm, self.ledger])
 
     @classmethod
-    def from_array(cls, arr: np.ndarray, agent_id: str = "") -> 'Position6D':
+    def from_array(cls, arr: np.ndarray, agent_id: str = "") -> "Position6D":
         """Create from numpy array."""
         if len(arr) != 6:
             raise ValueError(f"Expected 6 elements, got {len(arr)}")
@@ -158,25 +159,25 @@ class Position6D:
             oracle=float(arr[3]),
             charm=float(arr[4]),
             ledger=int(arr[5]),
-            agent_id=agent_id
+            agent_id=agent_id,
         )
 
-    def distance_to(self, other: 'Position6D') -> float:
+    def distance_to(self, other: "Position6D") -> float:
         """Euclidean distance in 6D space."""
         return float(np.linalg.norm(self.full_vector - other.full_vector))
 
-    def spatial_distance_to(self, other: 'Position6D') -> float:
+    def spatial_distance_to(self, other: "Position6D") -> float:
         """Euclidean distance in spatial (XYZ) space only."""
         return float(np.linalg.norm(self.spatial - other.spatial))
 
     def to_bytes(self) -> bytes:
         """Serialize to bytes (48 bytes: 6 doubles)."""
-        return struct.pack('6d', *self.full_vector)
+        return struct.pack("6d", *self.full_vector)
 
     @classmethod
-    def from_bytes(cls, data: bytes, agent_id: str = "") -> 'Position6D':
+    def from_bytes(cls, data: bytes, agent_id: str = "") -> "Position6D":
         """Deserialize from bytes."""
-        values = struct.unpack('6d', data[:48])
+        values = struct.unpack("6d", data[:48])
         return cls.from_array(np.array(values), agent_id)
 
 
@@ -184,16 +185,13 @@ class Position6D:
 # Distance Calculations
 # =============================================================================
 
+
 def euclidean_distance_6d(a: Position6D, b: Position6D) -> float:
     """Standard Euclidean distance in 6D."""
     return a.distance_to(b)
 
 
-def weighted_distance_6d(
-    a: Position6D,
-    b: Position6D,
-    weights: Optional[np.ndarray] = None
-) -> float:
+def weighted_distance_6d(a: Position6D, b: Position6D, weights: Optional[np.ndarray] = None) -> float:
     """
     Weighted distance where each axis has different importance.
 
@@ -231,13 +229,13 @@ def hyperbolic_distance_6d(a: Position6D, b: Position6D, curvature: float = -1.0
     nv = np.dot(v, v)
 
     if nu >= 1.0 or nv >= 1.0:
-        return float('inf')
+        return float("inf")
 
     diff_sq = np.dot(u - v, u - v)
     denom = (1 - nu) * (1 - nv)
 
     if denom <= 0:
-        return float('inf')
+        return float("inf")
 
     arg = 1 + 2 * diff_sq / denom
     if arg < 1.0:
@@ -250,6 +248,7 @@ def hyperbolic_distance_6d(a: Position6D, b: Position6D, curvature: float = -1.0
 # Docking System
 # =============================================================================
 
+
 @dataclass
 class DockingLock:
     """
@@ -257,6 +256,7 @@ class DockingLock:
 
     Generated when ORACLE (velocity) and LEDGER (security) converge.
     """
+
     agent_a_id: str
     agent_b_id: str
     lock_token: str
@@ -284,9 +284,9 @@ class DockingSystem:
     """
 
     # Convergence thresholds
-    VELOCITY_THRESHOLD = 0.5     # m/s relative velocity
-    SECURITY_THRESHOLD = 10      # Security level delta
-    SPATIAL_THRESHOLD = 2.0      # meters (must be close)
+    VELOCITY_THRESHOLD = 0.5  # m/s relative velocity
+    SECURITY_THRESHOLD = 10  # Security level delta
+    SPATIAL_THRESHOLD = 2.0  # meters (must be close)
 
     # Lock parameters
     LOCK_DURATION_SECONDS = 3600  # 1 hour default
@@ -349,9 +349,9 @@ class DockingSystem:
             lock_token=lock_token,
             timestamp=now,
             expiry=datetime(now.year, now.month, now.day, now.hour, now.minute, now.second)
-                   + __import__('datetime').timedelta(seconds=self.LOCK_DURATION_SECONDS),
+            + __import__("datetime").timedelta(seconds=self.LOCK_DURATION_SECONDS),
             velocity_delta=eligibility["velocity_delta"],
-            security_delta=eligibility["security_delta"]
+            security_delta=eligibility["security_delta"],
         )
 
         # Register lock
@@ -387,11 +387,13 @@ class DockingSystem:
 # Swarm/Formation Management
 # =============================================================================
 
+
 @dataclass
 class SwarmFormation:
     """
     Collection of agents in formation.
     """
+
     formation_id: str
     agents: Dict[str, Position6D] = field(default_factory=dict)
     target: Optional[Position6D] = None
@@ -451,7 +453,7 @@ class SwarmFormation:
         dot_sum = 0.0
         count = 0
         for i, v1 in enumerate(velocities):
-            for v2 in velocities[i+1:]:
+            for v2 in velocities[i + 1 :]:
                 n1, n2 = np.linalg.norm(v1), np.linalg.norm(v2)
                 if n1 > 0 and n2 > 0:
                     dot_sum += np.dot(v1, v2) / (n1 * n2)
@@ -463,13 +465,13 @@ class SwarmFormation:
     def min_separation(self) -> float:
         """Minimum distance between any two agents (collision avoidance)."""
         if len(self.agents) < 2:
-            return float('inf')
+            return float("inf")
 
         positions = list(self.agents.values())
-        min_dist = float('inf')
+        min_dist = float("inf")
 
         for i, p1 in enumerate(positions):
-            for p2 in positions[i+1:]:
+            for p2 in positions[i + 1 :]:
                 dist = p1.distance_to(p2)
                 min_dist = min(min_dist, dist)
 
@@ -496,6 +498,7 @@ class SwarmFormation:
 # =============================================================================
 # Convergence Detection
 # =============================================================================
+
 
 class ConvergenceDetector:
     """
@@ -552,7 +555,7 @@ class ConvergenceDetector:
             return None
 
         # Calculate average rate of approach
-        distance_changes = [distances[i+1] - distances[i] for i in range(len(distances)-1)]
+        distance_changes = [distances[i + 1] - distances[i] for i in range(len(distances) - 1)]
         avg_rate = sum(distance_changes) / len(distance_changes)
 
         if avg_rate >= 0:  # Not approaching
@@ -567,6 +570,7 @@ class ConvergenceDetector:
 # =============================================================================
 # Demo
 # =============================================================================
+
 
 def demo():
     """Demonstrate 6D vector navigation system."""
@@ -586,8 +590,10 @@ def demo():
     }
 
     for name, pos in agents.items():
-        print(f"  {name}: X={pos.axiom:.1f}, Y={pos.flow:.1f}, Z={pos.glyph:.1f}, "
-              f"V={pos.oracle:.1f}, H={pos.charm:.2f}, S={pos.ledger}")
+        print(
+            f"  {name}: X={pos.axiom:.1f}, Y={pos.flow:.1f}, Z={pos.glyph:.1f}, "
+            f"V={pos.oracle:.1f}, H={pos.charm:.2f}, S={pos.ledger}"
+        )
     print()
 
     # Distance calculations

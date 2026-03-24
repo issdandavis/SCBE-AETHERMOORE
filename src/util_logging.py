@@ -16,12 +16,12 @@ LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── Tongue colors (for console formatting) ──
 TONGUE_ANSI = {
-    "KO": "\033[94m",   # blue
-    "AV": "\033[33m",   # yellow
-    "RU": "\033[91m",   # red
-    "CA": "\033[92m",   # green
-    "UM": "\033[95m",   # magenta
-    "DR": "\033[37m",   # white/silver
+    "KO": "\033[94m",  # blue
+    "AV": "\033[33m",  # yellow
+    "RU": "\033[91m",  # red
+    "CA": "\033[92m",  # green
+    "UM": "\033[95m",  # magenta
+    "DR": "\033[37m",  # white/silver
 }
 RESET = "\033[0m"
 

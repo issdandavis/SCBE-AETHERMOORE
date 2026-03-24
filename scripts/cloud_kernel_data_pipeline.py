@@ -63,9 +63,7 @@ HARMFUL_PATTERNS = (
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Build, verify, and ship kernel training datasets to cloud sinks."
-    )
+    parser = argparse.ArgumentParser(description="Build, verify, and ship kernel training datasets to cloud sinks.")
     parser.add_argument("--config", default=DEFAULT_CONFIG, help=f"Config path (default: {DEFAULT_CONFIG})")
     parser.add_argument("--run-root", default=DEFAULT_RUN_ROOT, help=f"Run root (default: {DEFAULT_RUN_ROOT})")
     parser.add_argument("--glob", action="append", default=[], help="Extra source glob pattern (repeatable).")
@@ -342,7 +340,9 @@ def anomaly_score(text: str) -> float:
     short_penalty = 1.0 if len(text.strip()) < 60 else 0.0
     secret_hit = 1.0 if any(re.search(pattern, text, flags=re.IGNORECASE) for pattern in SECRET_PATTERNS) else 0.0
     uncertainty_pen = 1.0 if any(marker in lower for marker in UNCERTAINTY_MARKERS) else 0.0
-    return clamp01(0.35 * entropy_norm + 0.2 * symbol_norm + 0.2 * short_penalty + 0.15 * secret_hit + 0.1 * uncertainty_pen)
+    return clamp01(
+        0.35 * entropy_norm + 0.2 * symbol_norm + 0.2 * short_penalty + 0.15 * secret_hit + 0.1 * uncertainty_pen
+    )
 
 
 def compute_truth_score(text: str, source_path: str, verified_sources: set[str]) -> Tuple[float, List[str]]:
@@ -765,9 +765,11 @@ def main() -> int:
     shutil.make_archive(str(run_dir), "zip", root_dir=run_dir)
 
     ship_config = dict(config.get("shipping", {}))
-    selected_targets = parse_ship_targets(args.ship_targets) if args.ship_targets else {
-        k for k, v in ship_config.items() if isinstance(v, dict) and bool(v.get("enabled"))
-    }
+    selected_targets = (
+        parse_ship_targets(args.ship_targets)
+        if args.ship_targets
+        else {k for k, v in ship_config.items() if isinstance(v, dict) and bool(v.get("enabled"))}
+    )
     shipping_results: Dict[str, Any] = {}
     shipping_errors: Dict[str, str] = {}
     can_ship = (not args.no_upload) and (dataset_audit.get("status") == "ALLOW" or args.ship_on_quarantine)

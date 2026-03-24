@@ -35,7 +35,6 @@ _T_EVAL_TOLERANCE = 1e-9
 
 try:
     from scipy.fft import fft, fftfreq, ifft
-    from scipy.fftpack import fft as fft_pack, fftfreq as fftfreq_pack
 
     SCIPY_AVAILABLE = True
 except ImportError:
@@ -43,8 +42,6 @@ except ImportError:
     fft = np.fft.fft
     ifft = np.fft.ifft
     fftfreq = np.fft.fftfreq
-    fft_pack = np.fft.fft
-    fftfreq_pack = np.fft.fftfreq
 
 # =============================================================================
 # Linear Algebra Functions

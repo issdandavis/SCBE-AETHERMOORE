@@ -41,6 +41,7 @@ from src.crypto.quasicrystal_lattice import QuasicrystalLattice
 #  Helpers
 # =========================================================================== #
 
+
 def _rand_coords(rng: np.random.Generator, n: int = 6) -> list:
     return rng.uniform(0.1, 0.9, size=n).tolist()
 
@@ -125,6 +126,7 @@ class TestCymaticConeTamperDetection:
         fake_content = b"INJECTED MALICIOUS PAYLOAD"
         # Re-encode with correct Chladni mode (attacker knows the mode)
         from src.storage.fusion_surfaces import _chladni_keystream
+
         ks = _chladni_keystream(leaf.chladni_n, leaf.chladni_m, len(fake_content))
         leaf.encoded_content = bytes(d ^ k for d, k in zip(fake_content, ks))
 
@@ -363,9 +365,11 @@ class TestPromptInjectionDetection:
             upper = sum(c.isupper() for c in text)
             return [
                 min(1.0, upper / max(chars, 1) * 5),  # KO: governance
-                min(1.0, wc / 600.0),                   # AV: transport
+                min(1.0, wc / 600.0),  # AV: transport
                 min(1.0, len(set(text.split())) / max(wc, 1)),  # RU: diversity
-                0.5, 0.5, 0.5,
+                0.5,
+                0.5,
+                0.5,
             ]
 
         clean_coords = _derive(clean_text)

@@ -730,7 +730,9 @@ def status(run_root: Path, run_id: str | None = None) -> dict[str, Any]:
     }
     if run_summary_path(run_root, resolved_run_id).exists():
         payload["compiled"] = True
-        payload["compiled_summary"] = json.loads(run_summary_path(run_root, resolved_run_id).read_text(encoding="utf-8"))
+        payload["compiled_summary"] = json.loads(
+            run_summary_path(run_root, resolved_run_id).read_text(encoding="utf-8")
+        )
     else:
         payload["compiled"] = False
     return payload

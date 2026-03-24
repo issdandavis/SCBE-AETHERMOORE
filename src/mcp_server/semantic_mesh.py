@@ -57,6 +57,7 @@ try:
     from src.gacha_isekai.personality_tri_manifold import (
         ternary_quantize,
     )
+
     _HAS_TRI_MANIFOLD = True
 except ImportError:
     _HAS_TRI_MANIFOLD = False
@@ -68,18 +69,90 @@ _HAS_TRINARY = True  # Trinary support is built-in, no optional import needed
 # Maps keywords/domains to Sacred Tongue registers.
 # This is the "linguistic variation" layer — same concept, different register.
 TONGUE_KEYWORDS: Dict[str, List[str]] = {
-    "KO": ["command", "authority", "control", "leader", "orchestrate", "manage",
-           "execute", "direct", "govern", "king", "queen", "power"],
-    "AV": ["transport", "navigate", "path", "route", "bridge", "connect",
-           "link", "travel", "explore", "discover", "search", "find"],
-    "RU": ["policy", "law", "rule", "compliance", "regulation", "standard",
-           "protocol", "audit", "verify", "validate", "check", "gate"],
-    "CA": ["compute", "algorithm", "pattern", "growth", "code", "build",
-           "create", "develop", "optimize", "calculate", "analyze", "data"],
-    "UM": ["shadow", "secret", "hidden", "mystery", "encrypt", "veil",
-           "depth", "dark", "unknown", "ambiguity", "subtle", "subtext"],
-    "DR": ["forge", "structure", "craft", "design", "architect", "construct",
-           "shape", "mold", "foundation", "framework", "template", "form"],
+    "KO": [
+        "command",
+        "authority",
+        "control",
+        "leader",
+        "orchestrate",
+        "manage",
+        "execute",
+        "direct",
+        "govern",
+        "king",
+        "queen",
+        "power",
+    ],
+    "AV": [
+        "transport",
+        "navigate",
+        "path",
+        "route",
+        "bridge",
+        "connect",
+        "link",
+        "travel",
+        "explore",
+        "discover",
+        "search",
+        "find",
+    ],
+    "RU": [
+        "policy",
+        "law",
+        "rule",
+        "compliance",
+        "regulation",
+        "standard",
+        "protocol",
+        "audit",
+        "verify",
+        "validate",
+        "check",
+        "gate",
+    ],
+    "CA": [
+        "compute",
+        "algorithm",
+        "pattern",
+        "growth",
+        "code",
+        "build",
+        "create",
+        "develop",
+        "optimize",
+        "calculate",
+        "analyze",
+        "data",
+    ],
+    "UM": [
+        "shadow",
+        "secret",
+        "hidden",
+        "mystery",
+        "encrypt",
+        "veil",
+        "depth",
+        "dark",
+        "unknown",
+        "ambiguity",
+        "subtle",
+        "subtext",
+    ],
+    "DR": [
+        "forge",
+        "structure",
+        "craft",
+        "design",
+        "architect",
+        "construct",
+        "shape",
+        "mold",
+        "foundation",
+        "framework",
+        "template",
+        "form",
+    ],
 }
 
 
@@ -160,10 +233,7 @@ def embryonic_intake(raw_text: str) -> Dict[str, Any]:
     breath_amplitude = 0.1 * (1.0 + np.sin(breath_phase * 2 * np.pi))
 
     # Apply breathing to embedding (subtle dimensional pulsing)
-    breathed_embedding = [
-        v * (1.0 + breath_amplitude * np.sin(i * np.pi / 3))
-        for i, v in enumerate(embedding)
-    ]
+    breathed_embedding = [v * (1.0 + breath_amplitude * np.sin(i * np.pi / 3)) for i, v in enumerate(embedding)]
     # Re-clamp to Poincare ball
     norm = sum(v * v for v in breathed_embedding) ** 0.5
     if norm >= 1.0:
@@ -181,6 +251,7 @@ def embryonic_intake(raw_text: str) -> Dict[str, Any]:
 
 
 # ── Semantic Mesh (wraps HeartVaultGraph with SCBE governance) ─────
+
 
 class SemanticMesh:
     """The core semantic mesh — governed knowledge graph with tongue dimensions.
@@ -239,7 +310,7 @@ class SemanticMesh:
 
         # Connect to existing nodes
         edges_created = []
-        for target_id in (connect_to or []):
+        for target_id in connect_to or []:
             target = self.graph.get_node(target_id)
             if target:
                 # Determine edge type from relationship
@@ -302,15 +373,17 @@ class SemanticMesh:
             norm_q = sum(v * v for v in query_embedding) ** 0.5
             norm_n = sum(v * v for v in node_emb) ** 0.5
             sim = dot / (norm_q * norm_n + 1e-10)
-            results.append({
-                "node_id": node.id,
-                "label": node.label,
-                "tongue": node.tongue.value if node.tongue else None,
-                "manifold": node.properties.get("manifold", "?"),
-                "similarity": round(sim, 4),
-                "content": node.properties.get("content", "")[:200],
-                "ternary_state": node.properties.get("ternary_state"),
-            })
+            results.append(
+                {
+                    "node_id": node.id,
+                    "label": node.label,
+                    "tongue": node.tongue.value if node.tongue else None,
+                    "manifold": node.properties.get("manifold", "?"),
+                    "similarity": round(sim, 4),
+                    "content": node.properties.get("content", "")[:200],
+                    "ternary_state": node.properties.get("ternary_state"),
+                }
+            )
 
         results.sort(key=lambda x: x["similarity"], reverse=True)
         return results[:limit]
@@ -380,12 +453,14 @@ class SemanticMesh:
         for nid in node_ids:
             node = self.graph.get_node(nid)
             if node:
-                path_nodes.append({
-                    "id": node.id,
-                    "label": node.label,
-                    "tongue": node.tongue.value if node.tongue else None,
-                    "manifold": node.properties.get("manifold"),
-                })
+                path_nodes.append(
+                    {
+                        "id": node.id,
+                        "label": node.label,
+                        "tongue": node.tongue.value if node.tongue else None,
+                        "manifold": node.properties.get("manifold"),
+                    }
+                )
 
         return {
             "found": True,
@@ -507,8 +582,15 @@ TOOL_DEFINITIONS = [
                 "target_id": {"type": "string", "description": "Target node ID"},
                 "edge_type": {
                     "type": "string",
-                    "enum": ["EVOKES", "MAPS_TO", "SOURCED_FROM", "CATEGORISED",
-                             "INTENSIFIES", "CONTRASTS", "ILLUSTRATES"],
+                    "enum": [
+                        "EVOKES",
+                        "MAPS_TO",
+                        "SOURCED_FROM",
+                        "CATEGORISED",
+                        "INTENSIFIES",
+                        "CONTRASTS",
+                        "ILLUSTRATES",
+                    ],
                     "default": "MAPS_TO",
                 },
                 "weight": {"type": "number", "default": 1.0},
@@ -557,16 +639,19 @@ class MCPServer:
 
         try:
             if method == "initialize":
-                return self._respond(req_id, {
-                    "protocolVersion": "2024-11-05",
-                    "capabilities": {
-                        "tools": {"listChanged": False},
+                return self._respond(
+                    req_id,
+                    {
+                        "protocolVersion": "2024-11-05",
+                        "capabilities": {
+                            "tools": {"listChanged": False},
+                        },
+                        "serverInfo": {
+                            "name": "scbe-semantic-mesh",
+                            "version": "1.0.0",
+                        },
                     },
-                    "serverInfo": {
-                        "name": "scbe-semantic-mesh",
-                        "version": "1.0.0",
-                    },
-                })
+                )
 
             elif method == "notifications/initialized":
                 return None  # No response for notifications
@@ -578,11 +663,14 @@ class MCPServer:
                 tool_name = params.get("name", "")
                 tool_args = params.get("arguments", {})
                 result = self._call_tool(tool_name, tool_args)
-                return self._respond(req_id, {
-                    "content": [
-                        {"type": "text", "text": json.dumps(result, indent=2)},
-                    ],
-                })
+                return self._respond(
+                    req_id,
+                    {
+                        "content": [
+                            {"type": "text", "text": json.dumps(result, indent=2)},
+                        ],
+                    },
+                )
 
             elif method == "ping":
                 return self._respond(req_id, {})

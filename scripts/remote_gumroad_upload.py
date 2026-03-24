@@ -29,7 +29,9 @@ DEFAULT_TARGETS = [
     "WorldForge duplicate",
 ]
 
-DEFAULT_UPLOADER = Path.home() / ".codex" / "skills" / "gumroad-upload-management" / "scripts" / "gumroad_image_uploader.py"
+DEFAULT_UPLOADER = (
+    Path.home() / ".codex" / "skills" / "gumroad-upload-management" / "scripts" / "gumroad_image_uploader.py"
+)
 RUNNER_DEFAULTS = {
     "debugger_port": 9222,
     "products_url": "https://app.gumroad.com/products",
@@ -109,7 +111,9 @@ def _wait_for_debugger_ready(address: str, timeout_seconds: int = 20, interval_s
     raise TimeoutError(f"Debugger endpoint not ready at {endpoint}")
 
 
-def _start_remote_chrome(chrome_path: str | None, port: int, products_url: str, user_data_dir: str | None) -> subprocess.Popen:
+def _start_remote_chrome(
+    chrome_path: str | None, port: int, products_url: str, user_data_dir: str | None
+) -> subprocess.Popen:
     chrome_binary = _resolve_chrome_binary(chrome_path)
     args = [
         chrome_binary,
@@ -204,7 +208,15 @@ def _parse_gumroad_log(path: Path) -> tuple[list[dict[str, Any]], dict[str, int]
     return events, metrics
 
 
-def _append_training_records(path: Path, run_id: str, image_dir: Path, targets: list[str], run_index: int, events: list[dict[str, Any]], extra: dict[str, Any]) -> None:
+def _append_training_records(
+    path: Path,
+    run_id: str,
+    image_dir: Path,
+    targets: list[str],
+    run_index: int,
+    events: list[dict[str, Any]],
+    extra: dict[str, Any],
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     created_at = datetime.now(timezone.utc).isoformat()
     with path.open("a", encoding="utf-8") as f:
@@ -371,20 +383,31 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--targets", nargs="+", default=DEFAULT_TARGETS, help="Product names to target")
     parser.add_argument("--dry-run", action="store_true", help="Preview matches without uploading")
     parser.add_argument("--timeout", type=int, default=30, help="Per-page timeout for Selenium actions")
-    parser.add_argument("--debugger-port", type=int, default=RUNNER_DEFAULTS["debugger_port"], help="Remote Chrome debug port")
+    parser.add_argument(
+        "--debugger-port", type=int, default=RUNNER_DEFAULTS["debugger_port"], help="Remote Chrome debug port"
+    )
     parser.add_argument("--debugger-address", default=None, help="Attach to existing Chrome remote debugger host:port")
     parser.add_argument("--chrome-path", default=None, help="Optional Chrome executable path")
-    parser.add_argument("--chrome-profile-dir", default=None, help="Optional Chrome --user-data-dir for persistent login")
+    parser.add_argument(
+        "--chrome-profile-dir", default=None, help="Optional Chrome --user-data-dir for persistent login"
+    )
     parser.add_argument("--products-url", default=RUNNER_DEFAULTS["products_url"], help="Gumroad products page URL")
-    parser.add_argument("--training-log", default=str(Path("training") / "aethermoore_ops_training.jsonl"), help="Output JSONL training log")
+    parser.add_argument(
+        "--training-log",
+        default=str(Path("training") / "aethermoore_ops_training.jsonl"),
+        help="Output JSONL training log",
+    )
     parser.add_argument("--uploader-script", default=str(DEFAULT_UPLOADER), help="Path to gumroad_image_uploader.py")
     parser.add_argument("--headless", action="store_true", help="Run browser with headless mode")
     parser.add_argument("--passes", type=int, default=1, help="How many full passes to run")
     parser.add_argument("--timeout-step", type=int, default=0, help="Increase timeout per pass (for deeper retries)")
     parser.add_argument("--pause-between-passes", type=float, default=3.0, help="Seconds to wait between passes")
-    parser.add_argument("--start-chrome", action=argparse.BooleanOptionalAction, default=True, help="Start Chrome with remote debugging")
+    parser.add_argument(
+        "--start-chrome", action=argparse.BooleanOptionalAction, default=True, help="Start Chrome with remote debugging"
+    )
     parser.add_argument("--verify-only", action="store_true", help="Run local content verification only (no browser)")
     return parser.parse_args()
+
 
 def _resolve_debug_port_and_host(debugger_address: str | None, debugger_port: int) -> tuple[str, int]:
     if debugger_address:

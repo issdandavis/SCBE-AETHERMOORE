@@ -128,11 +128,13 @@ TONGUE_INDEX = {"KO": 0, "AV": 1, "RU": 2, "CA": 3, "UM": 4, "DR": 5}
 # 1. Manifold Space Definitions
 # =====================================================================
 
+
 class ManifoldID(IntEnum):
     """Which of the three manifold spaces a datum lives in."""
-    NEGATIVE = -1   # M-: Shadow / depth / latent
-    EMERGENT = 0    # M0: Born from bracket [M+, M-]
-    POSITIVE = 1    # M+: Expressed / surface
+
+    NEGATIVE = -1  # M-: Shadow / depth / latent
+    EMERGENT = 0  # M0: Born from bracket [M+, M-]
+    POSITIVE = 1  # M+: Expressed / surface
 
 
 @dataclass(frozen=True)
@@ -142,6 +144,7 @@ class TernaryPairState:
     Represents an inter-manifold interaction channel.
     source and target each ∈ {-1, 0, +1}.
     """
+
     source: int  # -1, 0, or +1
     target: int  # -1, 0, or +1
 
@@ -181,9 +184,10 @@ class TriManifoldAddress:
     (pair_state, spin) uniquely identifies the interaction context.
     This is the balanced ternary 3-digit word.
     """
-    source: int     # Trit: which manifold the signal comes from
-    target: int     # Trit: which manifold the signal goes to
-    spin: int       # Trit: intent direction {-1, 0, +1}
+
+    source: int  # Trit: which manifold the signal comes from
+    target: int  # Trit: which manifold the signal goes to
+    spin: int  # Trit: intent direction {-1, 0, +1}
 
     @property
     def pair_state(self) -> TernaryPairState:
@@ -211,14 +215,13 @@ class TriManifoldAddress:
 
     def __repr__(self) -> str:
         names = {1: "+", 0: "0", -1: "-"}
-        return (
-            f"Addr({names[self.source]}{names[self.target]}{names[self.spin]})"
-        )
+        return f"Addr({names[self.source]}{names[self.target]}{names[self.spin]})"
 
 
 # =====================================================================
 # 2. All 9 Pair-States + 27 Full Addresses
 # =====================================================================
+
 
 def enumerate_pair_states() -> List[TernaryPairState]:
     """Generate all 9 ternary pair-states.
@@ -238,10 +241,7 @@ def enumerate_full_addresses() -> List[TriManifoldAddress]:
     9 pair-states x 3 spins = 27 total personality interaction states.
     """
     trits = [1, 0, -1]
-    return [
-        TriManifoldAddress(s, t, spin)
-        for s, t, spin in product(trits, repeat=3)
-    ]
+    return [TriManifoldAddress(s, t, spin) for s, t, spin in product(trits, repeat=3)]
 
 
 # Precompute the canonical sets
@@ -269,11 +269,14 @@ ALL_ADDRESSES = enumerate_full_addresses()
 # Diagonal channels (sum to 15) are perfectly balanced.
 # Off-diagonal asymmetry = potential information leak.
 
-LO_SHU_MATRIX = np.array([
-    [4, 9, 2],
-    [3, 5, 7],
-    [8, 1, 6],
-], dtype=int)
+LO_SHU_MATRIX = np.array(
+    [
+        [4, 9, 2],
+        [3, 5, 7],
+        [8, 1, 6],
+    ],
+    dtype=int,
+)
 
 # Map (source_trit, target_trit) -> Lo Shu weight
 _TRIT_TO_ROW = {1: 0, 0: 1, -1: 2}
@@ -305,7 +308,7 @@ def lo_shu_symmetry_check(channels: Dict[Tuple[int, int], Any]) -> float:
     """
     asymmetry = 0.0
     count = 0
-    for (s, t) in channels:
+    for s, t in channels:
         mirror = (t, s)
         if mirror in channels and s != t:
             ch = channels[(s, t)]
@@ -322,6 +325,7 @@ def lo_shu_symmetry_check(channels: Dict[Tuple[int, int], Any]) -> float:
 # =====================================================================
 # 2c. Ternary Quantization (from 21D Brain State spec)
 # =====================================================================
+
 
 def ternary_quantize(
     value: float,
@@ -429,6 +433,7 @@ def dual_ternary_mirror_score(
 # 3. Binary -> Ternary Intake Pipeline
 # =====================================================================
 
+
 @dataclass
 class BinaryTernaryConverter:
     """Converts binary input to balanced ternary personality encoding.
@@ -442,6 +447,7 @@ class BinaryTernaryConverter:
 
     "Pseudo-binary deferred to ternary then run as code."
     """
+
     window_size: int = 3  # Bits per chunk (3 bits -> up to 7 -> fits in 2 trits)
 
     def binary_to_ternary(self, bits: List[int]) -> List[Trit]:
@@ -455,7 +461,7 @@ class BinaryTernaryConverter:
 
         # Process in chunks
         for i in range(0, len(bits), self.window_size):
-            chunk = bits[i:i + self.window_size]
+            chunk = bits[i : i + self.window_size]
             # Pad short chunks
             while len(chunk) < self.window_size:
                 chunk.append(0)
@@ -477,9 +483,7 @@ class BinaryTernaryConverter:
 
         return trits
 
-    def trits_to_manifold_assignments(
-        self, trits: List[Trit]
-    ) -> List[ManifoldID]:
+    def trits_to_manifold_assignments(self, trits: List[Trit]) -> List[ManifoldID]:
         """Map trits to manifold assignments.
 
         +1 -> M+ (Positive / Expressed)
@@ -502,6 +506,7 @@ class BinaryTernaryConverter:
 # 4. Manifold Space (one of three)
 # =====================================================================
 
+
 @dataclass
 class ManifoldSpace:
     """One of the three manifold spaces in the tri-manifold system.
@@ -509,6 +514,7 @@ class ManifoldSpace:
     Each space is a region of the Poincare ball with its own clusters,
     center of mass, and interaction rules.
     """
+
     manifold_id: ManifoldID
     name: str
 
@@ -546,6 +552,7 @@ class ManifoldSpace:
 # =====================================================================
 # 5. Emergent Manifold Computation
 # =====================================================================
+
 
 def compute_emergent_point(
     positive_point: np.ndarray,
@@ -606,11 +613,7 @@ def compute_emergent_cluster(
 
         # Emergent spin = consensus of positive and negative spins
         p_spin = pos_cluster.spins[i] if i < len(pos_cluster.spins) else 0
-        n_spin = (
-            neg_cluster.spins[min(i, len(neg_cluster.spins) - 1)]
-            if neg_cluster.spins
-            else 0
-        )
+        n_spin = neg_cluster.spins[min(i, len(neg_cluster.spins) - 1)] if neg_cluster.spins else 0
         e_spin_val = trit_consensus(
             Trit(max(-1, min(1, p_spin))),
             Trit(max(-1, min(1, n_spin))),
@@ -624,6 +627,7 @@ def compute_emergent_cluster(
 # 6. 9-State Interaction Matrix
 # =====================================================================
 
+
 @dataclass
 class InteractionChannel:
     """A channel between two manifold spaces carrying personality signal.
@@ -633,6 +637,7 @@ class InteractionChannel:
     - Transfer function (how the signal transforms in transit)
     - Governance gate (SCBE rho_e threshold)
     """
+
     pair_state: TernaryPairState
     coupling: float = 0.5
     transfer_count: int = 0
@@ -660,7 +665,9 @@ class InteractionChannel:
             self.blocked_count += 1
             logger.warning(
                 "Channel %s blocked: rho_e=%.2f >= %.2f",
-                self.name, rho_e, rho_e_threshold,
+                self.name,
+                rho_e,
+                rho_e_threshold,
             )
             return None
 
@@ -720,6 +727,7 @@ def build_interaction_matrix(
 # 7. Main: TriManifoldPersonality
 # =====================================================================
 
+
 class TriManifoldPersonality:
     """Tri-manifold personality system: M+, M0, M-.
 
@@ -748,13 +756,16 @@ class TriManifoldPersonality:
         # Three manifold spaces
         self.spaces: Dict[ManifoldID, ManifoldSpace] = {
             ManifoldID.POSITIVE: ManifoldSpace(
-                ManifoldID.POSITIVE, "Expressed",
+                ManifoldID.POSITIVE,
+                "Expressed",
             ),
             ManifoldID.EMERGENT: ManifoldSpace(
-                ManifoldID.EMERGENT, "Emergent",
+                ManifoldID.EMERGENT,
+                "Emergent",
             ),
             ManifoldID.NEGATIVE: ManifoldSpace(
-                ManifoldID.NEGATIVE, "Depth",
+                ManifoldID.NEGATIVE,
+                "Depth",
             ),
         }
 
@@ -805,8 +816,10 @@ class TriManifoldPersonality:
 
             # M0: Emergent cluster computed from bracket [M+, M-]
             emergent = compute_emergent_cluster(
-                pos_cluster, neg_cluster,
-                facet.tongue, facet.tongue,
+                pos_cluster,
+                neg_cluster,
+                facet.tongue,
+                facet.tongue,
             )
             self.spaces[ManifoldID.EMERGENT].add_cluster(name, emergent)
 
@@ -868,7 +881,9 @@ class TriManifoldPersonality:
 
             # Transfer through channel
             transferred = channel.transfer(
-                new_particle, rho_e, self.rho_e_threshold,
+                new_particle,
+                rho_e,
+                self.rho_e_threshold,
             )
             if transferred is not None:
                 target_manifold = ManifoldID(tgt)
@@ -945,7 +960,10 @@ class TriManifoldPersonality:
 
         tongue = self.base.facets[facet_name].tongue
         new_emergent = compute_emergent_cluster(
-            pos_cluster, neg_cluster, tongue, tongue,
+            pos_cluster,
+            neg_cluster,
+            tongue,
+            tongue,
         )
         emg_space.clusters[facet_name] = new_emergent
 
@@ -1084,22 +1102,26 @@ class TriManifoldPersonality:
         surface, emergence, and shadow are all tightly coupled.
         """
         d_pe = self.inter_manifold_distance(
-            facet_name, ManifoldID.POSITIVE, ManifoldID.EMERGENT,
+            facet_name,
+            ManifoldID.POSITIVE,
+            ManifoldID.EMERGENT,
         )
         d_en = self.inter_manifold_distance(
-            facet_name, ManifoldID.EMERGENT, ManifoldID.NEGATIVE,
+            facet_name,
+            ManifoldID.EMERGENT,
+            ManifoldID.NEGATIVE,
         )
         d_pn = self.inter_manifold_distance(
-            facet_name, ManifoldID.POSITIVE, ManifoldID.NEGATIVE,
+            facet_name,
+            ManifoldID.POSITIVE,
+            ManifoldID.NEGATIVE,
         )
 
         return {
             "pos_emg": round(float(np.exp(-d_pe)), 4),
             "emg_neg": round(float(np.exp(-d_en)), 4),
             "pos_neg": round(float(np.exp(-d_pn)), 4),
-            "tri_coupling": round(
-                float(np.exp(-(d_pe + d_en + d_pn) / 3)), 4
-            ),
+            "tri_coupling": round(float(np.exp(-(d_pe + d_en + d_pn) / 3)), 4),
         }
 
     # -----------------------------------------------------------------
@@ -1107,7 +1129,8 @@ class TriManifoldPersonality:
     # -----------------------------------------------------------------
 
     def governance_from_address(
-        self, address: TriManifoldAddress,
+        self,
+        address: TriManifoldAddress,
     ) -> Dict[str, Any]:
         """Compute governance decision from a ternary address.
 
@@ -1193,7 +1216,8 @@ class TriManifoldPersonality:
                 "clusters": cluster_data,
                 "energy": round(space.compute_energy(), 4),
                 "center_norm": round(
-                    float(np.linalg.norm(space.center)), 4,
+                    float(np.linalg.norm(space.center)),
+                    4,
                 ),
             }
 
@@ -1213,7 +1237,7 @@ class TriManifoldPersonality:
 
         # Lo Shu weights for each channel
         lo_shu = {}
-        for (src, tgt) in self.channels:
+        for src, tgt in self.channels:
             ps = TernaryPairState(src, tgt)
             lo_shu[ps.label] = lo_shu_weight(src, tgt)
 
@@ -1245,8 +1269,7 @@ class TriManifoldPersonality:
 
         # Compute tri-bridge report for top facets
         active_facets = sorted(
-            [(name, f.activation) for name, f in self.base.facets.items()
-             if f.activation > 0.2],
+            [(name, f.activation) for name, f in self.base.facets.items() if f.activation > 0.2],
             key=lambda x: -x[1],
         )[:3]
 
@@ -1255,11 +1278,7 @@ class TriManifoldPersonality:
             bridges = self.tri_bridge_strength(name)
             tri_coupling = bridges["tri_coupling"]
             depth_word = (
-                "deeply integrated"
-                if tri_coupling > 0.3
-                else "developing"
-                if tri_coupling > 0.1
-                else "nascent"
+                "deeply integrated" if tri_coupling > 0.3 else "developing" if tri_coupling > 0.1 else "nascent"
             )
             tri_lines.append(
                 f"  {name}: {depth_word} "
@@ -1273,11 +1292,7 @@ class TriManifoldPersonality:
         e_emg = self.spaces[ManifoldID.EMERGENT].compute_energy()
         e_neg = self.spaces[ManifoldID.NEGATIVE].compute_energy()
         total = e_pos + e_emg + e_neg + 1e-8
-        balance = (
-            f"Expression={e_pos / total:.0%}, "
-            f"Emergence={e_emg / total:.0%}, "
-            f"Depth={e_neg / total:.0%}"
-        )
+        balance = f"Expression={e_pos / total:.0%}, " f"Emergence={e_emg / total:.0%}, " f"Depth={e_neg / total:.0%}"
 
         if tri_lines:
             base_prompt += (
@@ -1304,13 +1319,15 @@ class TriManifoldPersonality:
         """
         records = []
         for entry in self.interaction_log:
-            records.append({
-                "type": "tri_manifold_interaction",
-                "ternary_word": entry.get("ternary_word", ""),
-                "governance_vote": entry.get("governance_vote", ""),
-                "facet": entry.get("facet", ""),
-                "manifold": entry.get("manifold", ""),
-                "spin": entry.get("spin", 0),
-                "coherence": entry.get("coherence", {}),
-            })
+            records.append(
+                {
+                    "type": "tri_manifold_interaction",
+                    "ternary_word": entry.get("ternary_word", ""),
+                    "governance_vote": entry.get("governance_vote", ""),
+                    "facet": entry.get("facet", ""),
+                    "manifold": entry.get("manifold", ""),
+                    "spin": entry.get("spin", 0),
+                    "coherence": entry.get("coherence", {}),
+                }
+            )
         return records

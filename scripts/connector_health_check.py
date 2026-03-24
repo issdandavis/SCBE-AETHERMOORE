@@ -218,7 +218,9 @@ def parse_args() -> argparse.Namespace:
         default=list(VALID_CHECKS),
         help="Checks to run (default: github notion drive).",
     )
-    parser.add_argument("--github-repo", default="issdandavis/SCBE-AETHERMOORE", help="Repository for GitHub route test.")
+    parser.add_argument(
+        "--github-repo", default="issdandavis/SCBE-AETHERMOORE", help="Repository for GitHub route test."
+    )
     parser.add_argument("--notion-page-id", default="", help="Optional Notion page id for read-access validation.")
     parser.add_argument(
         "--strict",
@@ -247,7 +249,7 @@ def run() -> int:
     summary = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "strict_mode": args.strict,
-        "checks": [{ "name": c.name, "status": c.status, "detail": c.detail } for c in checks],
+        "checks": [{"name": c.name, "status": c.status, "detail": c.detail} for c in checks],
     }
     summary["counts"] = {
         "ok": sum(1 for c in checks if c.status == "ok"),

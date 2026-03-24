@@ -112,7 +112,9 @@ def test_process_packet_writes_governed_packet_before_render(tmp_path: Path, mon
     ) -> Path:
         packet = json.loads(Path(packet_path_arg).read_text(encoding="utf-8"))
         chapter_id = str(packet.get("chapter_id") or "packet")
-        manifest_path = Path(output_root or tmp_path / "out") / chapter_id / f"{Path(packet_path_arg).stem}_router_manifest.json"
+        manifest_path = (
+            Path(output_root or tmp_path / "out") / chapter_id / f"{Path(packet_path_arg).stem}_router_manifest.json"
+        )
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         manifest_path.write_text(
             json.dumps(
@@ -194,7 +196,9 @@ def test_source_stage_falls_back_to_direct_reader_source_and_title_matched_key_s
     monkeypatch.setattr(render_full_book_router, "READER_EDITION_DIR", root / "content" / "book" / "reader-edition")
     monkeypatch.setattr(render_full_book_router, "lookup_episode_metadata", lambda **_: None)
 
-    resolved_packet, report = render_full_book_router.source_stage(json.loads(packet_path.read_text(encoding="utf-8")), packet_path)
+    resolved_packet, report = render_full_book_router.source_stage(
+        json.loads(packet_path.read_text(encoding="utf-8")), packet_path
+    )
 
     assert report["ok"] is True
     assert resolved_packet["source_markdown"] == "content/book/reader-edition/ch14.md"

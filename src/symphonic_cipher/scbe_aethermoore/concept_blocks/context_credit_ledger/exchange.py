@@ -34,52 +34,56 @@ from .ledger import ContextLedger
 #  Exchange types
 # ---------------------------------------------------------------------------
 
+
 class OfferType(str, Enum):
     """What an agent is offering."""
-    COMPUTE = "COMPUTE"         # GPU/CPU cycles
-    CONTEXT = "CONTEXT"         # Pre-computed context windows
-    INFERENCE = "INFERENCE"     # Model inference calls
-    STORAGE = "STORAGE"         # Context storage capacity
-    GOVERNANCE = "GOVERNANCE"   # Governance validation services
+
+    COMPUTE = "COMPUTE"  # GPU/CPU cycles
+    CONTEXT = "CONTEXT"  # Pre-computed context windows
+    INFERENCE = "INFERENCE"  # Model inference calls
+    STORAGE = "STORAGE"  # Context storage capacity
+    GOVERNANCE = "GOVERNANCE"  # Governance validation services
 
 
 class ExchangeState(str, Enum):
     """Lifecycle of an exchange."""
-    POSTED = "POSTED"           # Offer posted, waiting for match
-    MATCHED = "MATCHED"         # Both parties agreed
-    ESCROWED = "ESCROWED"       # Credits locked in vaults
-    EXECUTING = "EXECUTING"     # Compute/context being delivered
-    SETTLED = "SETTLED"         # Credits transferred, complete
-    DISPUTED = "DISPUTED"       # One party claims non-delivery
-    CANCELLED = "CANCELLED"     # Cancelled before execution
-    EXPIRED = "EXPIRED"         # Timed out
+
+    POSTED = "POSTED"  # Offer posted, waiting for match
+    MATCHED = "MATCHED"  # Both parties agreed
+    ESCROWED = "ESCROWED"  # Credits locked in vaults
+    EXECUTING = "EXECUTING"  # Compute/context being delivered
+    SETTLED = "SETTLED"  # Credits transferred, complete
+    DISPUTED = "DISPUTED"  # One party claims non-delivery
+    CANCELLED = "CANCELLED"  # Cancelled before execution
+    EXPIRED = "EXPIRED"  # Timed out
 
 
 # ---------------------------------------------------------------------------
 #  Exchange Offer
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ExchangeOffer:
     """An offer to trade compute/context for credits."""
 
     offer_id: str = ""
-    offerer_id: str = ""             # Agent making the offer
+    offerer_id: str = ""  # Agent making the offer
     offer_type: OfferType = OfferType.COMPUTE
     denomination: Denomination = Denomination.KO  # Preferred payment tongue
 
     # What's being offered
-    description: str = ""            # Human-readable description
-    capacity: float = 0.0            # Units of compute/context offered
-    unit: str = "tokens"             # Unit of measurement
+    description: str = ""  # Human-readable description
+    capacity: float = 0.0  # Units of compute/context offered
+    unit: str = "tokens"  # Unit of measurement
 
     # Price
-    asking_price: float = 0.0        # Credits requested
-    min_price: float = 0.0           # Floor price for negotiation
+    asking_price: float = 0.0  # Credits requested
+    min_price: float = 0.0  # Floor price for negotiation
 
     # Timing
     created_at: float = 0.0
-    expires_at: float = 0.0          # When the offer expires
+    expires_at: float = 0.0  # When the offer expires
 
     state: ExchangeState = ExchangeState.POSTED
 
@@ -116,18 +120,19 @@ class ExchangeOffer:
 #  Exchange Transaction
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ExchangeTransaction:
     """A matched exchange between two agents."""
 
     tx_id: str = ""
     offer: Optional[ExchangeOffer] = None
-    buyer_id: str = ""               # Agent accepting the offer
-    agreed_price: float = 0.0        # Negotiated price
+    buyer_id: str = ""  # Agent accepting the offer
+    agreed_price: float = 0.0  # Negotiated price
 
     # Vault references
-    buyer_vault_id: str = ""         # Buyer's escrow vault
-    seller_vault_id: str = ""        # Seller's escrow vault (if applicable)
+    buyer_vault_id: str = ""  # Buyer's escrow vault
+    seller_vault_id: str = ""  # Seller's escrow vault (if applicable)
 
     # State
     state: ExchangeState = ExchangeState.MATCHED
@@ -135,7 +140,7 @@ class ExchangeTransaction:
     settled_at: float = 0.0
 
     # Delivery proof
-    delivery_hash: str = ""          # Hash of delivered compute/context
+    delivery_hash: str = ""  # Hash of delivered compute/context
 
     def __post_init__(self):
         if not self.tx_id:
@@ -163,6 +168,7 @@ class ExchangeTransaction:
 # ---------------------------------------------------------------------------
 #  Compute Exchange — the market
 # ---------------------------------------------------------------------------
+
 
 class ComputeExchange:
     """
@@ -282,9 +288,7 @@ class ComputeExchange:
 
         price = bid_price if bid_price is not None else offer.asking_price
         if price < offer.min_price:
-            raise ValueError(
-                f"Bid {price:.4f} below minimum {offer.min_price:.4f}"
-            )
+            raise ValueError(f"Bid {price:.4f} below minimum {offer.min_price:.4f}")
 
         offer.state = ExchangeState.MATCHED
 
@@ -313,9 +317,7 @@ class ComputeExchange:
         # Verify credit value covers agreed price
         total = sum(c.face_value for c in credits)
         if total < tx.agreed_price * 0.95:  # 5% tolerance
-            raise ValueError(
-                f"Escrowed value {total:.4f} insufficient for price {tx.agreed_price:.4f}"
-            )
+            raise ValueError(f"Escrowed value {total:.4f} insufficient for price {tx.agreed_price:.4f}")
 
         # Create and lock vault
         vault = self.vaults.create_vault(owner_id=tx.buyer_id)
@@ -343,9 +345,7 @@ class ComputeExchange:
         if tx.state != ExchangeState.ESCROWED:
             raise ValueError(f"Transaction in wrong state: {tx.state.value}")
 
-        tx.delivery_hash = delivery_hash or hashlib.sha256(
-            f"{tx.tx_id}:{time.time()}".encode()
-        ).hexdigest()
+        tx.delivery_hash = delivery_hash or hashlib.sha256(f"{tx.tx_id}:{time.time()}".encode()).hexdigest()
         tx.state = ExchangeState.EXECUTING
 
         # Auto-settle: release escrow to seller
@@ -382,9 +382,9 @@ class ComputeExchange:
 
     def transactions_by_agent(self, agent_id: str) -> List[ExchangeTransaction]:
         return [
-            tx for tx in self._transactions.values()
-            if tx.buyer_id == agent_id
-            or (tx.offer and tx.offer.offerer_id == agent_id)
+            tx
+            for tx in self._transactions.values()
+            if tx.buyer_id == agent_id or (tx.offer and tx.offer.offerer_id == agent_id)
         ]
 
     def exchange_rate(self, from_denom: str, to_denom: str) -> float:
@@ -412,9 +412,7 @@ class ComputeExchange:
             "by_state": by_state,
             "total_volume_settled": round(total_volume, 6),
             "exchange_rates": {
-                f"{d1.value}/{d2.value}": round(
-                    DENOMINATION_WEIGHTS[d1] / DENOMINATION_WEIGHTS[d2], 4
-                )
+                f"{d1.value}/{d2.value}": round(DENOMINATION_WEIGHTS[d1] / DENOMINATION_WEIGHTS[d2], 4)
                 for d1 in Denomination
                 for d2 in Denomination
                 if d1 != d2 and d1.value < d2.value

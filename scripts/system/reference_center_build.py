@@ -134,7 +134,11 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).expanduser().resolve() if args.repo_root else repo_root_from_script()
-    out_dir = Path(args.out_dir).expanduser().resolve() if args.out_dir else (repo_root / "artifacts" / "agent_reference_center")
+    out_dir = (
+        Path(args.out_dir).expanduser().resolve()
+        if args.out_dir
+        else (repo_root / "artifacts" / "agent_reference_center")
+    )
     out_dir.mkdir(parents=True, exist_ok=True)
 
     agents = args.agent or ["agent.mini.research", "agent.mini.writer", "agent.mini.qa"]
@@ -147,7 +151,11 @@ def main() -> int:
     ]
 
     card_paths = [
-        str(build_agent_card(agent=agent, out_dir=out_dir, mission=args.mission, references=references, packets=packets).resolve())
+        str(
+            build_agent_card(
+                agent=agent, out_dir=out_dir, mission=args.mission, references=references, packets=packets
+            ).resolve()
+        )
         for agent in agents
     ]
     queue_path = build_task_queue(out_dir, args.task, agents)

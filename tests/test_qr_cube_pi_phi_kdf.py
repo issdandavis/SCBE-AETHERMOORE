@@ -75,6 +75,7 @@ def _resolve_kdf():
 # Helpers
 # -----------------------------------------------------------------------------
 
+
 @pytest.fixture(scope="module")
 def derive_pi_phi_key():
     fn, _mod = _resolve_kdf()
@@ -116,6 +117,7 @@ def _rand_bytes(n: int) -> bytes:
 # -----------------------------------------------------------------------------
 # Core tests
 # -----------------------------------------------------------------------------
+
 
 class TestPiPhiKDFContract:
     def test_returns_bytes_and_expected_length(self, derive_pi_phi_key):
@@ -333,6 +335,7 @@ class TestPiPhiKDFContract:
 # -----------------------------------------------------------------------------
 # Fuzz-ish: basic avalanche expectation (not statistical, just smoke)
 # -----------------------------------------------------------------------------
+
 
 class TestPiPhiKDFAvalancheSmoke:
     def test_small_bitflip_in_aad_changes_key(self, derive_pi_phi_key):

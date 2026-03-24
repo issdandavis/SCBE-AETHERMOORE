@@ -10,6 +10,7 @@ Every model can play any role. Routing is a preference, not a lock.
 4. If rate-limited, cascade to next model
 5. Sacred Tongue -> model mapping is configurable
 """
+
 from __future__ import annotations
 
 import os

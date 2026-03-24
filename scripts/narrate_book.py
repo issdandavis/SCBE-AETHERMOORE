@@ -59,11 +59,11 @@ def extract_narration_text(md_path: Path) -> str:
 
     # Remove markdown formatting
     text = re.sub(r"\*\*(.+?)\*\*", r"\1", text)  # bold
-    text = re.sub(r"\*(.+?)\*", r"\1", text)       # italic
-    text = re.sub(r"`(.+?)`", r"\1", text)          # code
-    text = re.sub(r"\[(.+?)\]\(.+?\)", r"\1", text) # links
+    text = re.sub(r"\*(.+?)\*", r"\1", text)  # italic
+    text = re.sub(r"`(.+?)`", r"\1", text)  # code
+    text = re.sub(r"\[(.+?)\]\(.+?\)", r"\1", text)  # links
     text = re.sub(r"^[-*]\s+", "", text, flags=re.MULTILINE)  # bullets
-    text = re.sub(r"^>\s+", "", text, flags=re.MULTILINE)     # blockquotes
+    text = re.sub(r"^>\s+", "", text, flags=re.MULTILINE)  # blockquotes
 
     # Clean up whitespace
     text = re.sub(r"\n{3,}", "\n\n", text)
@@ -151,7 +151,7 @@ def narrate_chapter(label: str, md_path: Path, voice: str = VOICE, speed: float 
 
 def split_text(text: str, max_chars: int = 500) -> list[str]:
     """Split text into chunks at sentence boundaries."""
-    sentences = re.split(r'(?<=[.!?])\s+', text)
+    sentences = re.split(r"(?<=[.!?])\s+", text)
     chunks = []
     current = ""
 
@@ -202,8 +202,11 @@ def main():
         chapters = [(l, p) for l, p in chapters if "interlude" in l]
     else:
         # Skip chapters before --start
-        chapters = [(l, p) for l, p in chapters
-                     if not re.match(r"ch(\d+)", l) or int(re.match(r"ch(\d+)", l).group(1)) >= args.start]
+        chapters = [
+            (l, p)
+            for l, p in chapters
+            if not re.match(r"ch(\d+)", l) or int(re.match(r"ch(\d+)", l).group(1)) >= args.start
+        ]
 
     print(f"Narrating {len(chapters)} chapters with voice={args.voice}, speed={args.speed}")
     print(f"Output: {OUTPUT_DIR}")

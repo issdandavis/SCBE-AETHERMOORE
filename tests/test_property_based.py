@@ -59,9 +59,7 @@ position_6d = st.lists(
 )
 
 # Point inside Poincaré ball (||x|| < 1)
-poincare_point = st.lists(
-    st.floats(min_value=-0.49, max_value=0.49), min_size=6, max_size=6
-)
+poincare_point = st.lists(st.floats(min_value=-0.49, max_value=0.49), min_size=6, max_size=6)
 
 # Valid API request
 api_request = st.fixed_dictionaries(
@@ -77,9 +75,7 @@ api_request = st.fixed_dictionaries(
             max_size=50,
             alphabet=st.characters(whitelist_categories=("L", "N")),
         ),
-        "position": st.lists(
-            st.integers(min_value=0, max_value=100), min_size=6, max_size=6
-        ),
+        "position": st.lists(st.integers(min_value=0, max_value=100), min_size=6, max_size=6),
     }
 )
 
@@ -239,9 +235,7 @@ class TestPipelineProperties:
         """Pipeline always produces a valid decision."""
         pos_array = np.array(position)
         # Weights must sum to 1.0
-        result = scbe_14layer_pipeline(
-            t=pos_array, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
-        )
+        result = scbe_14layer_pipeline(t=pos_array, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2)
 
         assert result["decision"] in ["ALLOW", "QUARANTINE", "DENY"]
 
@@ -251,9 +245,7 @@ class TestPipelineProperties:
         """risk_base is always non-negative (may exceed 1 due to geometry)."""
         pos_array = np.array(position)
         # Weights must sum to 1.0
-        result = scbe_14layer_pipeline(
-            t=pos_array, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
-        )
+        result = scbe_14layer_pipeline(t=pos_array, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2)
 
         # risk_base is non-negative (may exceed 1 in extreme cases)
         assert result["risk_base"] >= 0
@@ -264,9 +256,7 @@ class TestPipelineProperties:
         """Harmonic factor H is always positive."""
         pos_array = np.array(position)
         # Weights must sum to 1.0
-        result = scbe_14layer_pipeline(
-            t=pos_array, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
-        )
+        result = scbe_14layer_pipeline(t=pos_array, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2)
 
         assert result["H"] > 0
 
@@ -276,9 +266,7 @@ class TestPipelineProperties:
         """Coherence metrics are always in [0, 1]."""
         pos_array = np.array(position)
         # Weights must sum to 1.0
-        result = scbe_14layer_pipeline(
-            t=pos_array, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
-        )
+        result = scbe_14layer_pipeline(t=pos_array, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2)
 
         for key, value in result["coherence"].items():
             assert 0 <= value <= 1, f"Coherence {key} out of bounds: {value}"
@@ -290,12 +278,8 @@ class TestPipelineProperties:
         pos_array = np.array(position)
 
         # Both runs need weights summing to 1.0
-        result_low = scbe_14layer_pipeline(
-            t=pos_array, D=6, w_d=0.1, w_c=0.3, w_s=0.3, w_tau=0.2, w_a=0.1
-        )
-        result_high = scbe_14layer_pipeline(
-            t=pos_array, D=6, w_d=0.5, w_c=0.2, w_s=0.15, w_tau=0.1, w_a=0.05
-        )
+        result_low = scbe_14layer_pipeline(t=pos_array, D=6, w_d=0.1, w_c=0.3, w_s=0.3, w_tau=0.2, w_a=0.1)
+        result_high = scbe_14layer_pipeline(t=pos_array, D=6, w_d=0.5, w_c=0.2, w_s=0.15, w_tau=0.1, w_a=0.05)
 
         # Higher weight should generally result in same or higher risk
         # (not strictly true due to other factors, so we just check it's valid)

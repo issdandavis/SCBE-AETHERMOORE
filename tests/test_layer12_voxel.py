@@ -240,7 +240,14 @@ class TestBFTConsensus:
         assert bft_consensus(votes) == "ALLOW"
 
     def test_quarantine_threshold(self):
-        votes = {"KO": "QUARANTINE", "AV": "QUARANTINE", "RU": "QUARANTINE", "CA": "QUARANTINE", "UM": "ALLOW", "DR": "ALLOW"}
+        votes = {
+            "KO": "QUARANTINE",
+            "AV": "QUARANTINE",
+            "RU": "QUARANTINE",
+            "CA": "QUARANTINE",
+            "UM": "ALLOW",
+            "DR": "ALLOW",
+        }
         assert bft_consensus(votes) == "QUARANTINE"
 
     def test_mixed_deny_quarantine(self):

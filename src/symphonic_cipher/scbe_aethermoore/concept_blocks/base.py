@@ -25,6 +25,7 @@ from .telemetry import TelemetryLog, TelemetryRecord
 
 class BlockStatus(Enum):
     """Outcome of a single tick."""
+
     SUCCESS = "success"
     FAILURE = "failure"
     RUNNING = "running"
@@ -33,6 +34,7 @@ class BlockStatus(Enum):
 @dataclass
 class BlockResult:
     """Value returned by every block tick."""
+
     status: BlockStatus
     output: Dict[str, Any] = field(default_factory=dict)
     message: str = ""
@@ -54,13 +56,15 @@ class ConceptBlock(ABC):
         result = self._do_tick(inputs)
         dur = (time.perf_counter() - t0) * 1000.0
         self._tick_count += 1
-        self._telemetry.append(TelemetryRecord(
-            block_name=self.name,
-            inputs=inputs,
-            outputs=result.output,
-            status=result.status.value,
-            duration_ms=dur,
-        ))
+        self._telemetry.append(
+            TelemetryRecord(
+                block_name=self.name,
+                inputs=inputs,
+                outputs=result.output,
+                status=result.status.value,
+                duration_ms=dur,
+            )
+        )
         return result
 
     def configure(self, params: Dict[str, Any]) -> None:
@@ -79,8 +83,7 @@ class ConceptBlock(ABC):
     # -- subclass hooks ------------------------------------------------------
 
     @abstractmethod
-    def _do_tick(self, inputs: Dict[str, Any]) -> BlockResult:
-        ...
+    def _do_tick(self, inputs: Dict[str, Any]) -> BlockResult: ...
 
     def _do_configure(self, params: Dict[str, Any]) -> None:
         """Override to accept runtime parameter changes."""

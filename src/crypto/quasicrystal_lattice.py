@@ -40,10 +40,12 @@ import numpy as np
 
 try:
     from scipy.fft import fft, fftfreq
+
     SCIPY_AVAILABLE = True
 except ImportError:
     # Fallback to numpy FFT
     from numpy.fft import fft, fftfreq
+
     SCIPY_AVAILABLE = False
 
 PHI = (1 + np.sqrt(5)) / 2
@@ -53,7 +55,7 @@ TAU = 2 * np.pi
 TONGUE_GATE_INDEX = {"KO": 0, "AV": 1, "RU": 2, "CA": 3, "UM": 4, "DR": 5}
 
 # Phi-scaled tongue weights (from Langues metric)
-TONGUE_WEIGHTS = [PHI ** i for i in range(6)]
+TONGUE_WEIGHTS = [PHI**i for i in range(6)]
 # [1.0, 1.618, 2.618, 4.236, 6.854, 11.09]
 
 
@@ -61,30 +63,34 @@ TONGUE_WEIGHTS = [PHI ** i for i in range(6)]
 # Data Structures
 # =====================================================================
 
+
 @dataclass
 class LatticePoint:
     """A point in the quasicrystal with both physical and internal projections."""
-    gate_vector: List[int]       # 6D integer input (Sacred Tongue gates)
-    r_physical: np.ndarray       # 3D physical space projection ("the key")
+
+    gate_vector: List[int]  # 6D integer input (Sacred Tongue gates)
+    r_physical: np.ndarray  # 3D physical space projection ("the key")
     r_perpendicular: np.ndarray  # 3D internal space projection ("validation")
-    is_valid: bool               # Within acceptance window?
-    distance_to_window: float    # Distance from phason-shifted window center
+    is_valid: bool  # Within acceptance window?
+    distance_to_window: float  # Distance from phason-shifted window center
 
 
 @dataclass
 class DefectReport:
     """Results of crystalline defect detection."""
-    defect_score: float          # 0.0 = aperiodic (safe), 1.0 = periodic (attack)
-    dominant_frequency: float    # Strongest frequency component
-    dominant_power: float        # Power of dominant frequency
-    total_power: float           # Total spectral power
-    is_suspicious: bool          # Defect score above threshold?
-    recommendation: str          # ALLOW / QUARANTINE / DENY
+
+    defect_score: float  # 0.0 = aperiodic (safe), 1.0 = periodic (attack)
+    dominant_frequency: float  # Strongest frequency component
+    dominant_power: float  # Power of dominant frequency
+    total_power: float  # Total spectral power
+    is_suspicious: bool  # Defect score above threshold?
+    recommendation: str  # ALLOW / QUARANTINE / DENY
 
 
 # =====================================================================
 # Quasicrystal Lattice
 # =====================================================================
+
 
 class QuasicrystalLattice:
     """Icosahedral quasicrystal verification for SCBE 6-gate authentication.
@@ -129,27 +135,37 @@ class QuasicrystalLattice:
         symmetry IS phi-symmetric — same reason the Sacred Tongues
         use phi-scaled weights.
         """
-        norm = 1 / np.sqrt(1 + PHI ** 2)
+        norm = 1 / np.sqrt(1 + PHI**2)
 
         # E_parallel basis: cyclic permutations of (1, PHI, 0)
-        e_par = np.array([
-            [1, PHI, 0],
-            [-1, PHI, 0],
-            [0, 1, PHI],
-            [0, -1, PHI],
-            [PHI, 0, 1],
-            [PHI, 0, -1],
-        ]).T * norm  # Shape (3, 6)
+        e_par = (
+            np.array(
+                [
+                    [1, PHI, 0],
+                    [-1, PHI, 0],
+                    [0, 1, PHI],
+                    [0, -1, PHI],
+                    [PHI, 0, 1],
+                    [PHI, 0, -1],
+                ]
+            ).T
+            * norm
+        )  # Shape (3, 6)
 
         # E_perp basis: Galois conjugation (PHI -> -1/PHI)
-        e_perp = np.array([
-            [1, -1 / PHI, 0],
-            [-1, -1 / PHI, 0],
-            [0, 1, -1 / PHI],
-            [0, -1, -1 / PHI],
-            [-1 / PHI, 0, 1],
-            [-1 / PHI, 0, -1],
-        ]).T * norm  # Shape (3, 6)
+        e_perp = (
+            np.array(
+                [
+                    [1, -1 / PHI, 0],
+                    [-1, -1 / PHI, 0],
+                    [0, 1, -1 / PHI],
+                    [0, -1, -1 / PHI],
+                    [-1 / PHI, 0, 1],
+                    [-1 / PHI, 0, -1],
+                ]
+            ).T
+            * norm
+        )  # Shape (3, 6)
 
         return e_par, e_perp
 
@@ -224,11 +240,13 @@ class QuasicrystalLattice:
         """
         h = hashlib.sha256(entropy_seed).digest()
         # Map hash to 3 float values in [-1, 1]
-        v = np.array([
-            int.from_bytes(h[0:4], "big") / (2 ** 32) * 2 - 1,
-            int.from_bytes(h[4:8], "big") / (2 ** 32) * 2 - 1,
-            int.from_bytes(h[8:12], "big") / (2 ** 32) * 2 - 1,
-        ])
+        v = np.array(
+            [
+                int.from_bytes(h[0:4], "big") / (2**32) * 2 - 1,
+                int.from_bytes(h[4:8], "big") / (2**32) * 2 - 1,
+                int.from_bytes(h[8:12], "big") / (2**32) * 2 - 1,
+            ]
+        )
         # Scale to ensure meaningful shift
         self.phason_strain = v * self.acceptance_radius * 2.0
         return self.phason_strain
@@ -287,8 +305,8 @@ class QuasicrystalLattice:
         xf = fftfreq(N, 1.0)
 
         # Power spectrum (positive frequencies, skip DC)
-        power = np.abs(yf[1:N // 2]) ** 2
-        freqs = xf[1:N // 2]
+        power = np.abs(yf[1 : N // 2]) ** 2
+        freqs = xf[1 : N // 2]
 
         total_power = float(np.sum(power))
         if total_power == 0 or len(power) == 0:
@@ -376,10 +394,7 @@ class QuasicrystalLattice:
         # Scale by phi-weights: trit * phi^i
         # This makes higher tongues (UM, DR) contribute more to the
         # projection, matching the Langues metric weighting
-        scaled = [
-            int(round(trit * weight))
-            for trit, weight in zip(ternary_trits, TONGUE_WEIGHTS)
-        ]
+        scaled = [int(round(trit * weight)) for trit, weight in zip(ternary_trits, TONGUE_WEIGHTS)]
 
         return self.map_gates(scaled)
 
@@ -428,7 +443,8 @@ class QuasicrystalLattice:
             "acceptance_radius": self.acceptance_radius,
             "phason_strain": self.phason_strain.tolist(),
             "phason_magnitude": round(
-                float(np.linalg.norm(self.phason_strain)), 4,
+                float(np.linalg.norm(self.phason_strain)),
+                4,
             ),
             "history_length": len(self.gate_history),
             "defect_score": report.defect_score,
@@ -440,6 +456,7 @@ class QuasicrystalLattice:
 # =====================================================================
 # Convenience: Fibonacci Gate Resonance
 # =====================================================================
+
 
 def fibonacci_gates(n: int = 6) -> List[int]:
     """Generate Fibonacci sequence gate values.

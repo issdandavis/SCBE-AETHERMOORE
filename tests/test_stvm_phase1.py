@@ -30,4 +30,3 @@ start:
     assert vm.last_error is None
     assert vm.regs[0] == 5
     assert any("send ch=1 value=5" in e for e in vm.events)
-

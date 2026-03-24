@@ -37,8 +37,7 @@ class TestTriLatticeMembrane:
 
     def test_batch_insert(self):
         membrane = TriLatticeMembrane()
-        records = [_make_record(i, tongue=["KO", "AV", "RU", "CA", "UM", "DR"][i % 6])
-                   for i in range(30)]
+        records = [_make_record(i, tongue=["KO", "AV", "RU", "CA", "UM", "DR"][i % 6]) for i in range(30)]
         count = membrane.insert_batch(records)
         assert count == 30
 
@@ -47,8 +46,7 @@ class TestTriLatticeMembrane:
         records = [_make_record(i) for i in range(50)]
         membrane.insert_batch(records)
         stats = membrane.stats()
-        total_placed = (stats.lattice25d_accepted + stats.quasicrystal_accepted
-                        + stats.polyhedral_fallback)
+        total_placed = stats.lattice25d_accepted + stats.quasicrystal_accepted + stats.polyhedral_fallback
         assert total_placed == 50
 
     def test_stats_have_required_fields(self):
@@ -67,11 +65,13 @@ class TestTriLatticeMembrane:
     def test_varied_tongue_coords_route_differently(self):
         membrane = TriLatticeMembrane()
         # Near-centroid records
-        safe = [TriRecord(f"safe-{i}", [0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
-                          [0.5, 0.5, 0.5], "KO", b"safe") for i in range(10)]
+        safe = [
+            TriRecord(f"safe-{i}", [0.5, 0.5, 0.5, 0.5, 0.5, 0.5], [0.5, 0.5, 0.5], "KO", b"safe") for i in range(10)
+        ]
         # Far-from-centroid records
-        risky = [TriRecord(f"risky-{i}", [0.9, 0.1, 0.9, 0.1, 0.9, 0.1],
-                           [0.9, 0.1, 0.9], "DR", b"risky") for i in range(10)]
+        risky = [
+            TriRecord(f"risky-{i}", [0.9, 0.1, 0.9, 0.1, 0.9, 0.1], [0.9, 0.1, 0.9], "DR", b"risky") for i in range(10)
+        ]
         membrane.insert_batch(safe + risky)
         stats = membrane.stats()
         # Both types should be accepted somewhere
@@ -127,13 +127,15 @@ class TestTriLatticeIntegration:
                     min(1.0, sum(c.isupper() for c in text) / max(len(text), 1) * 5),
                     min(1.0, sum(c in ".,;:!?" for c in text) / max(len(text), 1) * 8),
                 ]
-                records.append(TriRecord(
-                    record_id=obj["id"],
-                    tongue_coords=tc,
-                    intent_vector=[0.5, 0.3, 0.2],
-                    tongue=tongue,
-                    content=text[:500].encode("utf-8", errors="replace"),
-                ))
+                records.append(
+                    TriRecord(
+                        record_id=obj["id"],
+                        tongue_coords=tc,
+                        intent_vector=[0.5, 0.3, 0.2],
+                        tongue=tongue,
+                        content=text[:500].encode("utf-8", errors="replace"),
+                    )
+                )
 
         membrane = TriLatticeMembrane()
         membrane.insert_batch(records)

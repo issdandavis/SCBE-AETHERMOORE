@@ -20,19 +20,31 @@ Pure stdlib. No external dependencies.
 from .domain import Domain, DomainError
 from .morphism import Morphism, MorphismError
 from .functor import (
-    CompositionChain, DomainGraph, GraphIsomorphism,
-    compose, identity_morphism,
+    CompositionChain,
+    DomainGraph,
+    GraphIsomorphism,
+    compose,
+    identity_morphism,
 )
 from .tongue_domains import (
-    TONGUE_DOMAINS, CROSS_DOMAIN_MAP,
-    tongue_domain, all_tongue_morphisms,
+    TONGUE_DOMAINS,
+    CROSS_DOMAIN_MAP,
+    tongue_domain,
+    all_tongue_morphisms,
 )
 
 __all__ = [
-    "Domain", "DomainError",
-    "Morphism", "MorphismError",
-    "CompositionChain", "DomainGraph", "GraphIsomorphism",
-    "compose", "identity_morphism",
-    "TONGUE_DOMAINS", "CROSS_DOMAIN_MAP",
-    "tongue_domain", "all_tongue_morphisms",
+    "Domain",
+    "DomainError",
+    "Morphism",
+    "MorphismError",
+    "CompositionChain",
+    "DomainGraph",
+    "GraphIsomorphism",
+    "compose",
+    "identity_morphism",
+    "TONGUE_DOMAINS",
+    "CROSS_DOMAIN_MAP",
+    "tongue_domain",
+    "all_tongue_morphisms",
 ]

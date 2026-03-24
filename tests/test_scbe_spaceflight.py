@@ -45,6 +45,7 @@ from scbe_spaceflight import (
 # Helpers
 # -------------------------------------------------------------------------
 
+
 def _sha256_hex(data: str) -> str:
     """Return a valid 64-char hex SHA-256 digest."""
     return hashlib.sha256(data.encode()).hexdigest()
@@ -57,6 +58,7 @@ DEST_6D = (1.0, 2.0, 3.0, 0.5, 0.8, 1.0)
 # =========================================================================
 # 1. DelayTolerantBundle tests
 # =========================================================================
+
 
 class TestDelayTolerantBundle:
     """Tests for store-and-forward message bundles."""
@@ -77,36 +79,30 @@ class TestDelayTolerantBundle:
 
     def test_empty_chain_fails_verification(self):
         """An empty custody chain does not verify."""
-        bundle = DelayTolerantBundle(
-            payload=b"empty", sender_id="A", receiver_id="B"
-        )
+        bundle = DelayTolerantBundle(payload=b"empty", sender_id="A", receiver_id="B")
         assert bundle.verify_custody_chain() is False
 
     def test_duplicate_relay_fails_verification(self):
         """A chain with duplicate relay IDs (loop) is rejected."""
-        bundle = DelayTolerantBundle(
-            payload=b"dup", sender_id="A", receiver_id="B"
-        )
+        bundle = DelayTolerantBundle(payload=b"dup", sender_id="A", receiver_id="B")
         sig = _sha256_hex("sig1")
         bundle.add_custody("relay-1", sig)
         # Force duplicate by directly appending
-        bundle.custody_chain.append(
-            CustodyEntry(relay_id="relay-1", signature_hash=sig, order_index=1)
-        )
+        bundle.custody_chain.append(CustodyEntry(relay_id="relay-1", signature_hash=sig, order_index=1))
         assert bundle.verify_custody_chain() is False
 
     def test_invalid_signature_rejected_on_add(self):
         """add_custody rejects a malformed signature hash."""
-        bundle = DelayTolerantBundle(
-            payload=b"bad", sender_id="A", receiver_id="B"
-        )
+        bundle = DelayTolerantBundle(payload=b"bad", sender_id="A", receiver_id="B")
         with pytest.raises(ValueError, match="64-character"):
             bundle.add_custody("relay-x", "not-a-valid-hash")
 
     def test_compute_bundle_hash_deterministic(self):
         """The bundle hash is deterministic given the same content."""
         bundle = DelayTolerantBundle(
-            payload=b"determinism", sender_id="A", receiver_id="B",
+            payload=b"determinism",
+            sender_id="A",
+            receiver_id="B",
             created_epoch=0.0,
         )
         bundle.add_custody("relay-0", _sha256_hex("r0"))
@@ -118,8 +114,11 @@ class TestDelayTolerantBundle:
     def test_is_expired(self):
         """Bundles respect their TTL."""
         bundle = DelayTolerantBundle(
-            payload=b"ttl", sender_id="A", receiver_id="B",
-            ttl=10.0, created_epoch=100.0,
+            payload=b"ttl",
+            sender_id="A",
+            receiver_id="B",
+            ttl=10.0,
+            created_epoch=100.0,
         )
         assert bundle.is_expired(now=105.0) is False
         assert bundle.is_expired(now=111.0) is True
@@ -129,13 +128,16 @@ class TestDelayTolerantBundle:
 # 2. HyperbolicTrajectory tests
 # =========================================================================
 
+
 class TestHyperbolicTrajectory:
     """Tests for hyperbolic trajectories through 6D protocol space."""
 
     def test_compute_path_length(self):
         """compute_path returns the requested number of waypoints."""
         traj = HyperbolicTrajectory(
-            origin=ORIGIN_6D, destination=DEST_6D, eccentricity=1.5,
+            origin=ORIGIN_6D,
+            destination=DEST_6D,
+            eccentricity=1.5,
         )
         path = traj.compute_path(steps=50)
         assert len(path) == 50
@@ -193,6 +195,7 @@ class TestHyperbolicTrajectory:
 # 3. DockingProtocol tests
 # =========================================================================
 
+
 class TestDockingProtocol:
     """Tests for the docking (authentication) state machine."""
 
@@ -216,8 +219,11 @@ class TestDockingProtocol:
         dp = self._full_dock()
         assert dp.state == DockingState.DOCKED
         assert dp.history == [
-            "DISCOVERY", "NEGOTIATION", "KEY_EXCHANGE",
-            "VERIFICATION", "DOCKED",
+            "DISCOVERY",
+            "NEGOTIATION",
+            "KEY_EXCHANGE",
+            "VERIFICATION",
+            "DOCKED",
         ]
 
     def test_no_common_suite_fails(self):
@@ -265,6 +271,7 @@ class TestDockingProtocol:
 # =========================================================================
 # 4. ReentryShield tests
 # =========================================================================
+
 
 class TestReentryShield:
     """Tests for ablative token boundary crossing."""
@@ -326,14 +333,15 @@ class TestReentryShield:
 # 5. StarTracker tests
 # =========================================================================
 
+
 class TestStarTracker:
     """Tests for star-catalog certificate verification."""
 
     CATALOG = {
         "Polaris": (0.0, 0.0, 100.0, 0.0, 0.0, 0.0),
-        "Sirius":  (10.0, 5.0, 50.0, 0.1, 0.2, 0.3),
-        "Vega":    (-5.0, 8.0, 70.0, 0.0, 0.5, 0.1),
-        "Deneb":   (20.0, -3.0, 90.0, 0.0, 0.0, 1.0),
+        "Sirius": (10.0, 5.0, 50.0, 0.1, 0.2, 0.3),
+        "Vega": (-5.0, 8.0, 70.0, 0.0, 0.5, 0.1),
+        "Deneb": (20.0, -3.0, 90.0, 0.0, 0.0, 1.0),
     }
 
     def test_identify_nearest_star(self):
@@ -349,9 +357,9 @@ class TestStarTracker:
         """Multiple observations match their respective nearest stars."""
         tracker = StarTracker(self.CATALOG)
         obs = [
-            (0.1, 0.1, 100.1, 0.0, 0.0, 0.0),   # Polaris
-            (10.1, 5.1, 50.1, 0.1, 0.2, 0.3),    # Sirius
-            (-5.1, 8.1, 70.1, 0.0, 0.5, 0.1),    # Vega
+            (0.1, 0.1, 100.1, 0.0, 0.0, 0.0),  # Polaris
+            (10.1, 5.1, 50.1, 0.1, 0.2, 0.3),  # Sirius
+            (-5.1, 8.1, 70.1, 0.0, 0.5, 0.1),  # Vega
         ]
         matches = tracker.identify_stars(obs)
         ids = [m.star_id for m in matches]
@@ -403,13 +411,9 @@ class TestStarTracker:
         """Without observations, position is checked against the catalog."""
         tracker = StarTracker(self.CATALOG)
         # Exactly at Polaris
-        assert tracker.verify_position(
-            (0.0, 0.0, 100.0, 0.0, 0.0, 0.0), tolerance=0.1
-        )
+        assert tracker.verify_position((0.0, 0.0, 100.0, 0.0, 0.0, 0.0), tolerance=0.1)
         # Nowhere near any star
-        assert not tracker.verify_position(
-            (999.0, 999.0, 999.0, 0.0, 0.0, 0.0), tolerance=1.0
-        )
+        assert not tracker.verify_position((999.0, 999.0, 999.0, 0.0, 0.0, 0.0), tolerance=1.0)
 
     def test_empty_catalog_raises(self):
         """An empty catalog is rejected."""
@@ -420,6 +424,7 @@ class TestStarTracker:
 # =========================================================================
 # 6. ConstellationFleet tests
 # =========================================================================
+
 
 class TestConstellationFleet:
     """Tests for BFT consensus across a multi-vessel formation."""
@@ -517,6 +522,7 @@ class TestConstellationFleet:
 # =========================================================================
 # Cross-cutting SCBE invariant tests
 # =========================================================================
+
 
 class TestSCBEInvariants:
     """Tests that verify architectural invariants from SCBE-AETHERMOORE."""

@@ -71,9 +71,7 @@ class Polyhedron:
         if self.poly_type in [PolyhedronType.PLATONIC, PolyhedronType.ARCHIMEDEAN]:
             expected_euler = 2
             actual_euler = self.vertices - self.edges + self.faces
-            assert (
-                actual_euler == expected_euler
-            ), f"{self.name}: V-E+F={actual_euler}, expected {expected_euler}"
+            assert actual_euler == expected_euler, f"{self.name}: V-E+F={actual_euler}, expected {expected_euler}"
 
 
 # Golden ratio for icosahedral symmetry
@@ -299,9 +297,7 @@ def verify_hamiltonian_path() -> bool:
 # =============================================================================
 
 
-def hmac_key_chain(
-    shared_secret: bytes, polyhedra_order: List[int] = None
-) -> List[bytes]:
+def hmac_key_chain(shared_secret: bytes, polyhedra_order: List[int] = None) -> List[bytes]:
     """
     Sequential HMAC chain through polyhedra (Claim 63(b)).
 
@@ -448,9 +444,7 @@ class GeodesicCurve:
         return float(kappa)
 
 
-def create_golden_path(
-    shared_secret: bytes, total_duration: float = 60.0
-) -> GeodesicCurve:
+def create_golden_path(shared_secret: bytes, total_duration: float = 60.0) -> GeodesicCurve:
     """
     Create the "golden path" geodesic through all polyhedra.
 
@@ -563,9 +557,7 @@ class IntrusionDetector:
 # =============================================================================
 
 
-def compute_phdm_subscore(
-    detector: IntrusionDetector, state: np.ndarray, t: float
-) -> float:
+def compute_phdm_subscore(detector: IntrusionDetector, state: np.ndarray, t: float) -> float:
     """
     Compute s_phdm subscore for unified energy function Ω.
 
@@ -596,9 +588,7 @@ def compute_phdm_subscore(
 # =============================================================================
 
 
-def integrate_with_layer1(
-    context_vector: np.ndarray, golden_path: GeodesicCurve, t: float
-) -> np.ndarray:
+def integrate_with_layer1(context_vector: np.ndarray, golden_path: GeodesicCurve, t: float) -> np.ndarray:
     """
     Layer 0.5: Inject polyhedra centroids into context before Layer 1.
 
@@ -616,9 +606,7 @@ def integrate_with_layer1(
         return context_vector
 
 
-def integrate_with_layer7_swarm(
-    golden_path: GeodesicCurve, node_states: List[np.ndarray], t: float
-) -> float:
+def integrate_with_layer7_swarm(golden_path: GeodesicCurve, node_states: List[np.ndarray], t: float) -> float:
     """
     Layer 7: Swarm nodes use γ(t) as expected trajectory.
 
@@ -634,9 +622,7 @@ def integrate_with_layer7_swarm(
     return float(consensus)
 
 
-def integrate_with_layer13_risk(
-    kappa: float, base_risk: float, kappa_weight: float = 0.3
-) -> float:
+def integrate_with_layer13_risk(kappa: float, base_risk: float, kappa_weight: float = 0.3) -> float:
     """
     Layer 13: Risk function incorporates κ(t) for curvature-based scaling.
 
@@ -745,9 +731,7 @@ def self_test() -> Dict[str, Any]:
         result = detector.check_state(on_path_state, 30.0)
         if result["decision"] == "ALLOW":
             passed += 1
-            results["intrusion_on_path"] = (
-                f"✓ PASS (ALLOW, dev={result['deviation']:.4f})"
-            )
+            results["intrusion_on_path"] = f"✓ PASS (ALLOW, dev={result['deviation']:.4f})"
         else:
             results["intrusion_on_path"] = "✗ FAIL (unexpected DENY)"
     except Exception as e:
@@ -760,9 +744,7 @@ def self_test() -> Dict[str, Any]:
         result = detector.check_state(off_path_state, 30.0)
         if result["decision"] == "DENY":
             passed += 1
-            results["intrusion_off_path"] = (
-                f"✓ PASS (DENY, dev={result['deviation']:.4f})"
-            )
+            results["intrusion_off_path"] = f"✓ PASS (DENY, dev={result['deviation']:.4f})"
         else:
             results["intrusion_off_path"] = "✗ FAIL (unexpected ALLOW)"
     except Exception as e:
@@ -775,9 +757,7 @@ def self_test() -> Dict[str, Any]:
         off_path_score = compute_phdm_subscore(detector, off_path_state, 30.0)
         if on_path_score > off_path_score:
             passed += 1
-            results["phdm_subscore"] = (
-                f"✓ PASS (on={on_path_score:.3f} > off={off_path_score:.3f})"
-            )
+            results["phdm_subscore"] = f"✓ PASS (on={on_path_score:.3f} > off={off_path_score:.3f})"
         else:
             results["phdm_subscore"] = "✗ FAIL (scores inverted)"
     except Exception as e:

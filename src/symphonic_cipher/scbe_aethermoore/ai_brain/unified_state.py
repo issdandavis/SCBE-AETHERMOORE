@@ -198,12 +198,27 @@ class UnifiedBrainState:
         swm = self.swarm_coordination
 
         return [
-            ctx.device_trust, ctx.location_trust, ctx.network_trust,
-            ctx.behavior_score, ctx.time_of_day, ctx.intent_alignment,
-            nav.x, nav.y, nav.z, nav.time, nav.priority, nav.confidence,
-            cog.px, cog.py, cog.pz,
-            sem.active_tongue, sem.phase_angle, sem.tongue_weight,
-            swm.trust_score, swm.byzantine_votes, swm.spectral_coherence,
+            ctx.device_trust,
+            ctx.location_trust,
+            ctx.network_trust,
+            ctx.behavior_score,
+            ctx.time_of_day,
+            ctx.intent_alignment,
+            nav.x,
+            nav.y,
+            nav.z,
+            nav.time,
+            nav.priority,
+            nav.confidence,
+            cog.px,
+            cog.py,
+            cog.pz,
+            sem.active_tongue,
+            sem.phase_angle,
+            sem.tongue_weight,
+            swm.trust_score,
+            swm.byzantine_votes,
+            swm.spectral_coherence,
         ]
 
     def to_weighted_vector(self) -> List[float]:
@@ -216,9 +231,7 @@ class UnifiedBrainState:
 
     def distance_to(self, other: "UnifiedBrainState") -> float:
         """Compute hyperbolic distance to another brain state."""
-        return hyperbolic_distance_safe(
-            self.to_poincare_point(), other.to_poincare_point()
-        )
+        return hyperbolic_distance_safe(self.to_poincare_point(), other.to_poincare_point())
 
     def distance_from_origin(self) -> float:
         """Compute distance from the safe origin (center of Poincare ball)."""
@@ -233,6 +246,7 @@ class UnifiedBrainState:
     def to_trajectory_point(self, step: int) -> TrajectoryPoint:
         """Create a trajectory point from the current state."""
         import time as time_mod
+
         vec = self.to_vector()
         embedded = self.to_poincare_point()
         return TrajectoryPoint(
@@ -252,23 +266,34 @@ class UnifiedBrainState:
 
         return cls(
             scbe_context=SCBEContext(
-                device_trust=vector[0], location_trust=vector[1],
-                network_trust=vector[2], behavior_score=vector[3],
-                time_of_day=vector[4], intent_alignment=vector[5],
+                device_trust=vector[0],
+                location_trust=vector[1],
+                network_trust=vector[2],
+                behavior_score=vector[3],
+                time_of_day=vector[4],
+                intent_alignment=vector[5],
             ),
             navigation=NavigationVector(
-                x=vector[6], y=vector[7], z=vector[8],
-                time=vector[9], priority=vector[10], confidence=vector[11],
+                x=vector[6],
+                y=vector[7],
+                z=vector[8],
+                time=vector[9],
+                priority=vector[10],
+                confidence=vector[11],
             ),
             cognitive_position=CognitivePosition(
-                px=vector[12], py=vector[13], pz=vector[14],
+                px=vector[12],
+                py=vector[13],
+                pz=vector[14],
             ),
             semantic_phase=SemanticPhase(
-                active_tongue=vector[15], phase_angle=vector[16],
+                active_tongue=vector[15],
+                phase_angle=vector[16],
                 tongue_weight=vector[17],
             ),
             swarm_coordination=SwarmCoordination(
-                trust_score=vector[18], byzantine_votes=vector[19],
+                trust_score=vector[18],
+                byzantine_votes=vector[19],
                 spectral_coherence=vector[20],
             ),
         )
@@ -278,8 +303,12 @@ class UnifiedBrainState:
         """Create a safe origin state (center of manifold)."""
         return cls(
             scbe_context=SCBEContext(
-                device_trust=1, location_trust=1, network_trust=1,
-                behavior_score=1, time_of_day=0.5, intent_alignment=1,
+                device_trust=1,
+                location_trust=1,
+                network_trust=1,
+                behavior_score=1,
+                time_of_day=0.5,
+                intent_alignment=1,
             ),
             navigation=NavigationVector(x=0, y=0, z=0, time=0, priority=0.5, confidence=1),
             cognitive_position=CognitivePosition(px=0, py=0, pz=0),

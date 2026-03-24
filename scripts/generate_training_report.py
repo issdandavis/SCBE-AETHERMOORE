@@ -125,17 +125,28 @@ def main() -> None:
             "files_uploaded": [
                 {"path": "data/merged_sft.jsonl", "records": 5188, "description": "Main merged SFT dataset"},
                 {"path": "data/sft/api_usage_pairs.jsonl", "records": 37, "description": "API usage instruction pairs"},
-                {"path": "data/npc_roundtable_sessions/npc_roundtable_sft.jsonl", "records": 48, "description": "NPC roundtable SFT data"},
-                {"path": "data/npc_roundtable_sessions/npc_roundtable_dpo.jsonl", "records": 8, "description": "NPC roundtable DPO data"},
-                {"path": "data/npc_roundtable_sessions/npc_cards.jsonl", "records": 8, "description": "NPC character cards"},
+                {
+                    "path": "data/npc_roundtable_sessions/npc_roundtable_sft.jsonl",
+                    "records": 48,
+                    "description": "NPC roundtable SFT data",
+                },
+                {
+                    "path": "data/npc_roundtable_sessions/npc_roundtable_dpo.jsonl",
+                    "records": 8,
+                    "description": "NPC roundtable DPO data",
+                },
+                {
+                    "path": "data/npc_roundtable_sessions/npc_cards.jsonl",
+                    "records": 8,
+                    "description": "NPC character cards",
+                },
             ],
         },
         "training_data_inventory": {
             "total_jsonl_files": total_files,
             "total_records": total_records,
             "directories": {
-                k: {"files": v["files"], "records": v["records"]}
-                for k, v in sorted(datasets_by_dir.items())
+                k: {"files": v["files"], "records": v["records"]} for k, v in sorted(datasets_by_dir.items())
             },
         },
         "top_datasets_by_size": sorted(

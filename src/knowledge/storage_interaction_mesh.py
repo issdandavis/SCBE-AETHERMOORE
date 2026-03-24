@@ -76,7 +76,9 @@ def _select_tongue(preferred: str, index: int, seed: str) -> str:
     return TONGUES[(index + offset) % len(TONGUES)]
 
 
-def _position_for_record(note_id: str, *, phase_rad: float | None = None, radius: float = 0.72) -> tuple[float, float, float]:
+def _position_for_record(
+    note_id: str, *, phase_rad: float | None = None, radius: float = 0.72
+) -> tuple[float, float, float]:
     angle = 2.0 * math.pi * _hash_unit(f"{note_id}|angle")
     radial = 0.08 + radius * _hash_unit(f"{note_id}|radius")
     x = math.cos(angle) * radial
@@ -96,7 +98,9 @@ def _qc_coords_from_state(x: float, y: float, phase_rad: float, signed_intent: l
     return _normalize_ball(coords, limit=0.93)
 
 
-def _octree_point_from_state(x: float, y: float, phase_rad: float, signed_intent: list[float]) -> tuple[float, float, float]:
+def _octree_point_from_state(
+    x: float, y: float, phase_rad: float, signed_intent: list[float]
+) -> tuple[float, float, float]:
     z = _clip(math.sin(phase_rad) * 0.82 + signed_intent[2] * 0.12, -0.94, 0.94)
     point = _normalize_ball((x, y, z), limit=0.94)
     return (point[0], point[1], point[2])
@@ -191,7 +195,9 @@ class StorageInteractionMesh:
                 velocity=[signed_intent[0], signed_intent[1], signed_intent[2], 0.0, 0.0, 0.0],
             )
             entropic_assessment = self.entropic_layer.detect_escape(entropic_state)
-            adaptive_k = self.entropic_layer.adaptive_k(_clip(sum(positive_intent) / max(1, len(positive_intent)), 0.0, 1.0))
+            adaptive_k = self.entropic_layer.adaptive_k(
+                _clip(sum(positive_intent) / max(1, len(positive_intent)), 0.0, 1.0)
+            )
 
             focus_delta = _cyclic_phase_distance(phase_rad, self.focus_phase_rad)
             record = MeshRecord(

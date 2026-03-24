@@ -80,7 +80,9 @@ def test_build_ch01_v4_packet_has_expected_density() -> None:
     assert packet["generation_profile"]["trigger_phrases"] == ["sixtongues_ch01_pilot"]
     assert packet["generation_profile"]["style_adapter"]["trigger_word"] == "sixtongues_ch01_pilot"
     assert packet["character_anchors"]["patrol_creature"].startswith("many-legged patrol creature")
-    assert next(panel for panel in packet["panels"] if panel["id"] == "ch01-v4-p51")["characters"] == ["patrol_creature"]
+    assert next(panel for panel in packet["panels"] if panel["id"] == "ch01-v4-p51")["characters"] == [
+        "patrol_creature"
+    ]
     assert packet["panels"][-1]["sequence_id"] == "ch01-seq14"
 
 
@@ -102,7 +104,10 @@ def test_build_render_jobs_routes_hero_and_batch_panels(tmp_path: Path, monkeypa
     assert jobs[0]["negative_prompt"] == "speech bubbles, text overlays, white man, caucasian, blond hair"
     assert jobs[1]["backend"] == "imagen"
     assert jobs[1]["aspect"] == "9:16"
-    assert jobs[1]["negative_prompt"] == "speech bubbles, text overlays, white man, caucasian, blond hair, white fantasy princess, pin-up posing, low detail, inconsistent character design"
+    assert (
+        jobs[1]["negative_prompt"]
+        == "speech bubbles, text overlays, white man, caucasian, blond hair, white fantasy princess, pin-up posing, low detail, inconsistent character design"
+    )
     assert "hero panel of Marcus in white light" in jobs[0]["prompt"]
     assert "Character lock: marcus: Asian-American man early 30s" in jobs[0]["prompt"]
     assert "STALE PROMPT SHOULD NOT WIN" not in jobs[0]["prompt"]

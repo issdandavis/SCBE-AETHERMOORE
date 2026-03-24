@@ -36,7 +36,9 @@ def _load_sync_playwright():
     try:
         from playwright.sync_api import sync_playwright  # type: ignore
     except ImportError as exc:  # pragma: no cover
-        raise RuntimeError("Playwright not installed. Run: pip install playwright && playwright install chromium") from exc
+        raise RuntimeError(
+            "Playwright not installed. Run: pip install playwright && playwright install chromium"
+        ) from exc
     return sync_playwright
 
 
@@ -249,7 +251,18 @@ def provision_colab_worker(
         worker_id=worker_id,
         lease=lease,
         rails={"P+": [{"type": "claim_lease", "notebook": notebook["name"]}], "P-": [], "D+": [], "D-": []},
-        layer14={"energy": 0.2, "centroid": 0.2, "flux": 0.0, "hf_ratio": 0.0, "stability": 1.0, "verification_score": 1.0, "anomaly_ratio": 0.0, "signal_class": "lease_claimed", "channel": "layer14-comms", "summary": notebook["colab_url"]},
+        layer14={
+            "energy": 0.2,
+            "centroid": 0.2,
+            "flux": 0.0,
+            "hf_ratio": 0.0,
+            "stability": 1.0,
+            "verification_score": 1.0,
+            "anomaly_ratio": 0.0,
+            "signal_class": "lease_claimed",
+            "channel": "layer14-comms",
+            "summary": notebook["colab_url"],
+        },
         proof=[notebook["path"]],
         next_action="Launch persistent Chromium context for Colab.",
     )
@@ -368,14 +381,18 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--session-id", default="", help="Session identifier.")
     parser.add_argument("--recipient", default="agent.claude", help="Cross-talk recipient.")
     parser.add_argument("--sender", default="agent.codex", help="Cross-talk sender.")
-    parser.add_argument("--profile-dir", default=str(DEFAULT_PROFILE_DIR), help="Persistent Chromium profile directory.")
+    parser.add_argument(
+        "--profile-dir", default=str(DEFAULT_PROFILE_DIR), help="Persistent Chromium profile directory."
+    )
     parser.add_argument("--artifact-root", default=str(ARTIFACT_ROOT), help="Artifact root directory.")
     parser.add_argument("--lease-seconds", type=int, default=3600, help="Lease duration in seconds.")
     parser.add_argument("--timeout-ms", type=int, default=90000, help="Page load timeout.")
     parser.add_argument("--headless", action="store_true", help="Launch browser headless.")
     parser.add_argument("--no-headless", dest="headless", action="store_false", help="Launch browser with UI.")
     parser.add_argument("--keep-open", action="store_true", help="Keep the browser open until Enter is pressed.")
-    parser.add_argument("--dry-run", action="store_true", help="Resolve notebook and emit packets without launching the browser.")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Resolve notebook and emit packets without launching the browser."
+    )
     parser.set_defaults(headless=False)
     return parser
 

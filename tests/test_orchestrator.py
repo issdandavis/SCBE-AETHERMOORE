@@ -50,10 +50,18 @@ class TestToolRegistration:
     def test_scbe_tools_registered(self):
         names = {t.name for t in _orch.mcp._tool_manager.list_tools()}
         expected = [
-            "tongue_encode", "tongue_decode", "cross_tokenize",
-            "geoseal_seal", "geoseal_unseal", "ring_classify",
-            "scbe_sacred_egg_create", "scbe_sacred_egg_hatch",
-            "egg_paint", "egg_register", "cube_mint", "cube_verify",
+            "tongue_encode",
+            "tongue_decode",
+            "cross_tokenize",
+            "geoseal_seal",
+            "geoseal_unseal",
+            "ring_classify",
+            "scbe_sacred_egg_create",
+            "scbe_sacred_egg_hatch",
+            "egg_paint",
+            "egg_register",
+            "cube_mint",
+            "cube_verify",
         ]
         for n in expected:
             assert n in names, f"SCBE tool {n} missing"
@@ -61,10 +69,14 @@ class TestToolRegistration:
     def test_hydra_tools_registered(self):
         names = {t.name for t in _orch.mcp._tool_manager.list_tools()}
         expected = [
-            "hydra_swarm_launch", "hydra_swarm_run_task",
-            "hydra_swarm_navigate", "hydra_swarm_screenshot",
-            "hydra_swarm_get_content", "hydra_swarm_click",
-            "hydra_swarm_type", "hydra_swarm_status",
+            "hydra_swarm_launch",
+            "hydra_swarm_run_task",
+            "hydra_swarm_navigate",
+            "hydra_swarm_screenshot",
+            "hydra_swarm_get_content",
+            "hydra_swarm_click",
+            "hydra_swarm_type",
+            "hydra_swarm_status",
         ]
         for n in expected:
             assert n in names, f"HYDRA tool {n} missing"
@@ -72,8 +84,10 @@ class TestToolRegistration:
     def test_training_tools_registered(self):
         names = {t.name for t in _orch.mcp._tool_manager.list_tools()}
         expected = [
-            "training_append_sft_record", "training_daily_summary",
-            "training_list_waves", "training_export_dataset",
+            "training_append_sft_record",
+            "training_daily_summary",
+            "training_list_waves",
+            "training_export_dataset",
         ]
         for n in expected:
             assert n in names, f"Training tool {n} missing"
@@ -81,7 +95,10 @@ class TestToolRegistration:
     def test_governed_web_tools_registered(self):
         names = {t.name for t in _orch.mcp._tool_manager.list_tools()}
         expected = [
-            "web_search", "web_fetch", "web_extract", "web_needs_js",
+            "web_search",
+            "web_fetch",
+            "web_extract",
+            "web_needs_js",
         ]
         for n in expected:
             assert n in names, f"Governed web tool {n} missing"
@@ -151,9 +168,12 @@ class TestOrchEggs:
         dsa = base64.b64encode(b"dsa-key-32bytes-demo____").decode()
         egg_json = _orch.scbe_sacred_egg_create(
             payload_b64=base64.b64encode(payload).decode(),
-            primary_tongue=tongue, glyph=glyph,
+            primary_tongue=tongue,
+            glyph=glyph,
             hatch_condition_json="{}",
-            context=ctx, pk_kem_b64=kem, sk_dsa_b64=dsa,
+            context=ctx,
+            pk_kem_b64=kem,
+            sk_dsa_b64=dsa,
         )
         return egg_json, ctx, kem, dsa
 
@@ -341,12 +361,14 @@ class TestOrchTraining:
         assert "tongue_encode" in summary["by_tool"]
 
     def test_manual_sft_record(self):
-        result = json.loads(_orch.training_append_sft_record(
-            tool_name="test_tool",
-            instruction="What is SCBE?",
-            response="SCBE is a governance framework",
-            score=0.95,
-        ))
+        result = json.loads(
+            _orch.training_append_sft_record(
+                tool_name="test_tool",
+                instruction="What is SCBE?",
+                response="SCBE is a governance framework",
+                score=0.95,
+            )
+        )
         assert result["recorded"] is True
 
     def test_training_list_waves(self):

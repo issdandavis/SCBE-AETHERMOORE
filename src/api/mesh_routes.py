@@ -33,11 +33,10 @@ def _get_mesh():
     if _mesh is None:
         from src.mcp_server.semantic_mesh import SemanticMesh
 
-        db_path = os.environ.get(
-            "SEMANTIC_MESH_DB_PATH", "data/semantic_mesh.db"
-        )
+        db_path = os.environ.get("SEMANTIC_MESH_DB_PATH", "data/semantic_mesh.db")
         # Ensure parent directory exists
         import pathlib
+
         pathlib.Path(db_path).parent.mkdir(parents=True, exist_ok=True)
         _mesh = SemanticMesh(db_path)
         logger.info("Semantic mesh initialized: %s", db_path)
@@ -45,6 +44,7 @@ def _get_mesh():
 
 
 # ── Pydantic Models ─────────────────────────────────────────────────
+
 
 class IngestRequest(BaseModel):
     content: str = Field(..., description="The concept/knowledge to ingest")

@@ -35,6 +35,7 @@ from symphonic_cipher.scbe_aethermoore.ai_brain.governance_adapter import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_valid_state(seed: int = 0) -> np.ndarray:
     """Create a valid 21D brain state vector."""
     rng = np.random.default_rng(seed)
@@ -91,6 +92,7 @@ def make_trajectory(n_steps: int = 50, seed: int = 0) -> np.ndarray:
 # ---------------------------------------------------------------------------
 # Tests: MicroStateCensus (6-state particle algebra)
 # ---------------------------------------------------------------------------
+
 
 class TestMicroStateCensus:
     """Tests for the 6-state micro-state census."""
@@ -161,14 +163,19 @@ class TestMicroStateCensus:
 # Tests: Valence rules
 # ---------------------------------------------------------------------------
 
+
 class TestValenceRules:
     """Tests for chemistry-inspired valence checking."""
 
     def test_neutral_balanced_passes(self):
         """Neutral balanced census passes all valence rules."""
         census = MicroStateCensus(
-            par_activate=2, par_neutral=5, par_inhibit=2,
-            perp_activate=3, perp_neutral=6, perp_inhibit=3,
+            par_activate=2,
+            par_neutral=5,
+            par_inhibit=2,
+            perp_activate=3,
+            perp_neutral=6,
+            perp_inhibit=3,
         )
         ok, violations = check_valence(census)
         assert ok
@@ -177,8 +184,12 @@ class TestValenceRules:
     def test_charge_excess_fails(self):
         """Too much net charge triggers charge_excess violation."""
         census = MicroStateCensus(
-            par_activate=8, par_neutral=1, par_inhibit=0,
-            perp_activate=10, perp_neutral=2, perp_inhibit=0,
+            par_activate=8,
+            par_neutral=1,
+            par_inhibit=0,
+            perp_activate=10,
+            perp_neutral=2,
+            perp_inhibit=0,
         )
         ok, violations = check_valence(census)
         assert not ok
@@ -187,8 +198,12 @@ class TestValenceRules:
     def test_channel_imbalance_fails(self):
         """Extreme channel imbalance triggers violation."""
         census = MicroStateCensus(
-            par_activate=5, par_neutral=4, par_inhibit=0,
-            perp_activate=0, perp_neutral=12, perp_inhibit=0,
+            par_activate=5,
+            par_neutral=4,
+            par_inhibit=0,
+            perp_activate=0,
+            perp_neutral=12,
+            perp_inhibit=0,
         )
         ok, violations = check_valence(census)
         assert not ok
@@ -197,8 +212,12 @@ class TestValenceRules:
     def test_static_fails(self):
         """Zero activity triggers static violation (replay attack)."""
         census = MicroStateCensus(
-            par_activate=0, par_neutral=9, par_inhibit=0,
-            perp_activate=0, perp_neutral=12, perp_inhibit=0,
+            par_activate=0,
+            par_neutral=9,
+            par_inhibit=0,
+            perp_activate=0,
+            perp_neutral=12,
+            perp_inhibit=0,
         )
         ok, violations = check_valence(census)
         assert not ok
@@ -207,8 +226,12 @@ class TestValenceRules:
     def test_overactive_fails(self):
         """Almost all dimensions active triggers overactive violation."""
         census = MicroStateCensus(
-            par_activate=5, par_neutral=0, par_inhibit=4,
-            perp_activate=6, perp_neutral=0, perp_inhibit=6,
+            par_activate=5,
+            par_neutral=0,
+            par_inhibit=4,
+            perp_activate=6,
+            perp_neutral=0,
+            perp_inhibit=6,
         )
         ok, violations = check_valence(census)
         assert not ok
@@ -218,6 +241,7 @@ class TestValenceRules:
 # ---------------------------------------------------------------------------
 # Tests: AsymmetryTracker
 # ---------------------------------------------------------------------------
+
 
 class TestAsymmetryTracker:
     """Tests for sliding-window asymmetry persistence detection."""
@@ -294,6 +318,7 @@ class TestAsymmetryTracker:
 # Tests: Flux contraction
 # ---------------------------------------------------------------------------
 
+
 class TestFluxContraction:
     """Tests for flux contraction toward safe origin."""
 
@@ -338,6 +363,7 @@ class TestFluxContraction:
 # ---------------------------------------------------------------------------
 # Tests: Governance decisions (ALLOW / QUARANTINE / ESCALATE / DENY)
 # ---------------------------------------------------------------------------
+
 
 class TestGovernanceDecisions:
     """Tests for L13 risk decision logic."""
@@ -402,6 +428,7 @@ class TestGovernanceDecisions:
 # Tests: Persistent asymmetry -> flux contraction -> escalation
 # ---------------------------------------------------------------------------
 
+
 class TestPersistentAsymmetry:
     """Tests for the asymmetry -> contraction -> escalation pipeline."""
 
@@ -416,7 +443,9 @@ class TestPersistentAsymmetry:
             x_curr = origin.copy()
             x_curr[6:9] += 0.3 * (i + 1)  # big navigation changes
             verdict = evaluate_governance(
-                x_curr, x_prev, tracker=tracker,
+                x_curr,
+                x_prev,
+                tracker=tracker,
                 contraction_strength=0.3,
             )
             x_prev = x_curr
@@ -437,7 +466,9 @@ class TestPersistentAsymmetry:
             if i % 2 == 0:
                 x[6:9] += 0.3  # parallel push
             verdict = evaluate_governance(
-                x, origin, tracker=tracker,
+                x,
+                origin,
+                tracker=tracker,
             )
 
         assert not verdict.flux_contracted
@@ -453,7 +484,10 @@ class TestPersistentAsymmetry:
 
         x = make_valid_state(5)
         verdict = evaluate_governance(
-            x, origin, tracker=tracker, contraction_strength=0.5,
+            x,
+            origin,
+            tracker=tracker,
+            contraction_strength=0.5,
         )
         assert verdict.flux_contracted
         d_original = np.linalg.norm(x - origin)
@@ -464,6 +498,7 @@ class TestPersistentAsymmetry:
 # ---------------------------------------------------------------------------
 # Tests: Trajectory governance
 # ---------------------------------------------------------------------------
+
 
 class TestTrajectoryGovernance:
     """Tests for evaluate_trajectory_governance."""
@@ -510,7 +545,9 @@ class TestTrajectoryGovernance:
             traj[t, 6:9] += 0.05 * t
 
         verdicts = evaluate_trajectory_governance(
-            traj, tracker=tracker, epsilon=0.001,
+            traj,
+            tracker=tracker,
+            epsilon=0.001,
         )
         # Persistence should grow over time
         last_persistence = verdicts[-1].persistence_count
@@ -520,6 +557,7 @@ class TestTrajectoryGovernance:
 # ---------------------------------------------------------------------------
 # Tests: Integration with other ai_brain modules
 # ---------------------------------------------------------------------------
+
 
 class TestIntegration:
     """Integration tests with mirror_shift and multiscale_spectrum."""
@@ -546,16 +584,15 @@ class TestIntegration:
         from symphonic_cipher.scbe_aethermoore.ai_brain.mirror_shift import (
             compute_dual_ternary,
         )
+
         x_prev = make_valid_state(0)
         x_curr = make_valid_state(1)
         par, perp = compute_dual_ternary(x_curr, x_prev, epsilon=0.01)
         census = census_from_ternary(par, perp)
 
         # Verify counts add up
-        assert (census.par_activate + census.par_neutral + census.par_inhibit
-                == len(par))
-        assert (census.perp_activate + census.perp_neutral + census.perp_inhibit
-                == len(perp))
+        assert census.par_activate + census.par_neutral + census.par_inhibit == len(par)
+        assert census.perp_activate + census.perp_neutral + census.perp_inhibit == len(perp)
 
     def test_brain_state_roundtrip(self):
         """GovernanceVerdict.updated_state can be fed back to UnifiedBrainState."""
@@ -565,6 +602,4 @@ class TestIntegration:
         state = UnifiedBrainState.from_vector(verdict.updated_state.tolist())
         assert state is not None
         reconstructed = np.array(state.to_vector())
-        np.testing.assert_allclose(
-            reconstructed, verdict.updated_state, atol=1e-10
-        )
+        np.testing.assert_allclose(reconstructed, verdict.updated_state, atol=1e-10)

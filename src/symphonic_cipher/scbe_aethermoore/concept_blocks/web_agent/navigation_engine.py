@@ -29,7 +29,10 @@ from ..steer import SteerBlock
 
 from .semantic_antivirus import SemanticAntivirus
 from .web_polly_pad import (
-    ActionType, BrowserAction, WebPollyPad, RecoveryStrategy,
+    ActionType,
+    BrowserAction,
+    WebPollyPad,
+    RecoveryStrategy,
 )
 
 
@@ -37,19 +40,20 @@ from .web_polly_pad import (
 #  Page understanding
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PageUnderstanding:
     """Semantic understanding of a web page."""
 
     url: str
     title: str = ""
-    text_summary: str = ""          # First N chars of visible text
+    text_summary: str = ""  # First N chars of visible text
     links: List[Dict[str, str]] = field(default_factory=list)  # [{text, href}]
     forms: List[Dict[str, Any]] = field(default_factory=list)  # [{action, fields}]
     buttons: List[str] = field(default_factory=list)
-    page_type: str = "unknown"      # search, article, form, login, error, results
+    page_type: str = "unknown"  # search, article, form, login, error, results
     content_length: int = 0
-    fingerprint: str = ""           # Hash of key content for change detection
+    fingerprint: str = ""  # Hash of key content for change detection
 
     @staticmethod
     def from_content(url: str, title: str, text: str, links: List[Dict[str, str]]) -> "PageUnderstanding":
@@ -88,6 +92,7 @@ def _classify_page(url: str, title: str, text: str) -> str:
 # ---------------------------------------------------------------------------
 #  URL graph adapter for A* planning
 # ---------------------------------------------------------------------------
+
 
 class URLGraph:
     """URL graph for A* path planning (standalone, not extending ABC)."""
@@ -131,6 +136,7 @@ class URLGraph:
 #  NavigationState
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class NavigationState:
     """Current state of the navigation engine."""
@@ -166,6 +172,7 @@ class NavigationState:
 # ---------------------------------------------------------------------------
 #  NavigationEngine
 # ---------------------------------------------------------------------------
+
 
 class NavigationEngine:
     """
@@ -259,6 +266,7 @@ class NavigationEngine:
     def handle_result(self, success: bool, error: Optional[str] = None) -> Optional[RecoveryStrategy]:
         """Process the result of executing an action."""
         from .web_polly_pad import ActionResult
+
         if self._state.current_page is None:
             return None
 
@@ -281,11 +289,13 @@ class NavigationEngine:
             return 0.0
         raw_progress = self._state.route_index / max(len(self._state.planned_route), 1)
         # Feed through Kalman filter for smooth estimate
-        sense_result = self._sense.tick({
-            "measurement": raw_progress,
-            "process_noise": 0.01,
-            "measurement_noise": 0.1,
-        })
+        sense_result = self._sense.tick(
+            {
+                "measurement": raw_progress,
+                "process_noise": 0.01,
+                "measurement_noise": 0.1,
+            }
+        )
         return sense_result.output.get("estimate", raw_progress)
 
     def _replan(self) -> None:
@@ -295,6 +305,7 @@ class NavigationEngine:
 
         # Simple BFS since URLGraph is dynamically built
         from collections import deque
+
         start = self._state.current_url
         goal = self._state.goal_url
         if start == goal:

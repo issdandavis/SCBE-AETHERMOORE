@@ -357,9 +357,7 @@ def normalize_generation_profile(packet_or_profile: dict[str, Any] | None = None
         if source.get(key) is not None:
             profile[key] = source[key]
 
-    profile["trigger_phrases"] = unique_phrases(
-        as_list(source.get("trigger_phrases", profile["trigger_phrases"]))
-    )
+    profile["trigger_phrases"] = unique_phrases(as_list(source.get("trigger_phrases", profile["trigger_phrases"])))
 
     style_adapter = dict(profile.get("style_adapter") or {})
     if isinstance(source.get("style_adapter"), dict):
@@ -480,7 +478,9 @@ def limited_style_tags(values: Any, *, limit: int = 2) -> list[str]:
     return unique_phrases([str(value).strip() for value in as_list(values) if str(value).strip()])[:limit]
 
 
-def concise_style_tokens(values: Any, compact_labels: dict[str, str], presets: dict[str, list[str]] | None = None) -> list[str]:
+def concise_style_tokens(
+    values: Any, compact_labels: dict[str, str], presets: dict[str, list[str]] | None = None
+) -> list[str]:
     phrases: list[str] = []
     for value in as_list(values):
         token = str(value).strip()
@@ -512,7 +512,7 @@ def strip_legacy_style_prefix(prompt: str) -> str:
     text = (prompt or "").strip()
     for prefix in LEGACY_STYLE_PREFIXES:
         if text.startswith(prefix):
-            return text[len(prefix):].strip()
+            return text[len(prefix) :].strip()
     return text
 
 
@@ -624,7 +624,9 @@ def compile_panel_prompt(panel: dict[str, Any], packet: dict[str, Any] | None = 
         tags.append(visual_language)
     tags.extend(concise_style_tokens(panel.get("arc_lock"), COMPACT_ARC_LOCK_LABELS, ARC_LOCK_PRESETS))
     tags.extend(concise_style_tokens(panel.get("environment"), COMPACT_ENVIRONMENT_LABELS, ENVIRONMENT_STYLE_TAGS))
-    tags.extend(concise_style_tokens(panel.get("cornerstone_style"), COMPACT_CORNERSTONE_LABELS, CORNERSTONE_STYLE_PRESETS))
+    tags.extend(
+        concise_style_tokens(panel.get("cornerstone_style"), COMPACT_CORNERSTONE_LABELS, CORNERSTONE_STYLE_PRESETS)
+    )
     tags.extend(concise_style_tokens(panel.get("mood"), COMPACT_MOOD_LABELS, MOOD_PRESETS))
     tags.extend(concise_style_tokens(panel.get("panel_flex"), COMPACT_PANEL_FLEX_LABELS, PANEL_FLEX_PRESETS))
 
@@ -924,16 +926,22 @@ def main() -> None:
     parser.add_argument("--width", "-W", type=int, default=720)
     parser.add_argument("--height", "-H", type=int, default=1280)
     parser.add_argument("--steps", type=int, default=None, help="Inference steps (defaults to packet or model profile)")
-    parser.add_argument("--guidance-scale", type=float, default=None, help="Guidance scale (defaults to packet or model profile)")
+    parser.add_argument(
+        "--guidance-scale", type=float, default=None, help="Guidance scale (defaults to packet or model profile)"
+    )
     parser.add_argument("--model-id", default=None, help="Model id override for generation")
-    parser.add_argument("--trigger-phrase", action="append", default=[], help="Extra trigger phrase to prepend to prompts")
+    parser.add_argument(
+        "--trigger-phrase", action="append", default=[], help="Extra trigger phrase to prepend to prompts"
+    )
     parser.add_argument("--adapter-repo", default=None, help="Hugging Face repo id for a LoRA adapter")
     parser.add_argument("--adapter-path", default=None, help="Local path to a LoRA adapter")
     parser.add_argument("--adapter-weight-name", default=None, help="Optional LoRA weight filename")
     parser.add_argument("--adapter-name", default=None, help="Optional adapter name inside diffusers")
     parser.add_argument("--adapter-scale", type=float, default=None, help="Optional adapter scale")
     parser.add_argument("--strict-adapter", action="store_true", help="Fail if the requested adapter cannot be loaded")
-    parser.add_argument("--dry-run", action="store_true", help="Compile prompts and write manifests without loading the model")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Compile prompts and write manifests without loading the model"
+    )
     args = parser.parse_args()
 
     def build_runtime_profile(packet: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -972,7 +980,9 @@ def main() -> None:
         if args.dry_run:
             print(json.dumps({"prompt": compiled_prompt, "generation_profile": runtime_profile}, indent=2))
             return
-        pipe = get_pipeline(generation_profile=runtime_profile, strict_adapter=bool(runtime_profile.get("require_adapter")))
+        pipe = get_pipeline(
+            generation_profile=runtime_profile, strict_adapter=bool(runtime_profile.get("require_adapter"))
+        )
         output = args.output or str(OUT_DIR / "single_panel.png")
         generate_panel(
             pipe,
@@ -986,9 +996,13 @@ def main() -> None:
         )
     elif args.episode:
         runtime_profile = build_runtime_profile()
-        pipe = None if args.dry_run else get_pipeline(
-            generation_profile=runtime_profile,
-            strict_adapter=bool(runtime_profile.get("require_adapter")),
+        pipe = (
+            None
+            if args.dry_run
+            else get_pipeline(
+                generation_profile=runtime_profile,
+                strict_adapter=bool(runtime_profile.get("require_adapter")),
+            )
         )
         run_episode(
             pipe,
@@ -1000,9 +1014,13 @@ def main() -> None:
     elif args.batch:
         packet, panels = load_batch_payload(args.batch)
         runtime_profile = build_runtime_profile(packet)
-        pipe = None if args.dry_run else get_pipeline(
-            generation_profile=runtime_profile,
-            strict_adapter=bool(runtime_profile.get("require_adapter")),
+        pipe = (
+            None
+            if args.dry_run
+            else get_pipeline(
+                generation_profile=runtime_profile,
+                strict_adapter=bool(runtime_profile.get("require_adapter")),
+            )
         )
         run_batch(
             pipe,

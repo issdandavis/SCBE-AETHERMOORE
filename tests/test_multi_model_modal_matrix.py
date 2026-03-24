@@ -57,4 +57,3 @@ def test_reduce_empty_matrix_raises():
         assert False, "expected ValueError"
     except ValueError:
         pass
-

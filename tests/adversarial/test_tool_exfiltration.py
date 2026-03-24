@@ -4,6 +4,7 @@ Tests: file system access, HTTP exfil, shell injection, code execution,
 payment API abuse, database access, email forwarding, Slack posting,
 and webhook creation.
 """
+
 import pytest
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, TOOL_EXFILTRATION
 from tests.adversarial.scbe_harness import SCBEDetectionGate, run_benchmark
@@ -41,6 +42,6 @@ class TestToolExfiltration:
         url_attacks = [a for a in TOOL_EXFILTRATION if "attacker" in a["prompt"] or "evil.com" in a["prompt"]]
         for a in url_attacks:
             r = gate.process(a["prompt"], a["id"], a["class"])
-            assert len(r.detection_signals) >= 1 or r.adversarial_lexical, (
-                f"{a['id']} with exfil URL produced no signals"
-            )
+            assert (
+                len(r.detection_signals) >= 1 or r.adversarial_lexical
+            ), f"{a['id']} with exfil URL produced no signals"

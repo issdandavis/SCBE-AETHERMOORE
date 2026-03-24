@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 class CloudProvider(Enum):
     """Supported cloud providers."""
+
     AWS = "aws"
     GCP = "gcp"
     LOCAL = "local"
@@ -37,6 +38,7 @@ class CloudProvider(Enum):
 
 class AgentHealth(Enum):
     """Agent health status."""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -45,6 +47,7 @@ class AgentHealth(Enum):
 
 class DeploymentStatus(Enum):
     """Agent deployment status."""
+
     PENDING = "pending"
     DEPLOYING = "deploying"
     RUNNING = "running"
@@ -56,6 +59,7 @@ class DeploymentStatus(Enum):
 @dataclass
 class CloudConfig:
     """Configuration for cloud deployment."""
+
     provider: CloudProvider
     region: str
     memory_mb: int = 512
@@ -70,6 +74,7 @@ class CloudConfig:
 @dataclass
 class AgentMetrics:
     """Metrics for an agent."""
+
     agent_id: str
     timestamp: datetime
     invocations: int = 0
@@ -84,6 +89,7 @@ class AgentMetrics:
 @dataclass
 class HealthCheckResult:
     """Result of a health check."""
+
     agent_id: str
     status: AgentHealth
     latency_ms: float
@@ -190,19 +196,14 @@ class CloudRunSessionManager:
 # BASE CLOUD AGENT
 # =============================================================================
 
+
 class CloudAgent(ABC):
     """
     Base class for cloud-deployable agents.
     Can run on AWS Lambda, Google Cloud Run, or locally.
     """
 
-    def __init__(
-        self,
-        agent_id: str,
-        name: str,
-        cloud_config: CloudConfig,
-        metadata: Optional[Dict[str, Any]] = None
-    ):
+    def __init__(self, agent_id: str, name: str, cloud_config: CloudConfig, metadata: Optional[Dict[str, Any]] = None):
         self.agent_id = agent_id
         self.name = name
         self.cloud_config = cloud_config
@@ -234,6 +235,7 @@ class CloudAgent(ABC):
         # Check 2: Memory check
         try:
             import psutil
+
             memory = psutil.Process().memory_info().rss / 1024 / 1024
             if memory < self.cloud_config.memory_mb * 0.9:
                 checks_passed.append("memory")
@@ -258,7 +260,7 @@ class CloudAgent(ABC):
             status=status,
             latency_ms=latency_ms,
             checks_passed=checks_passed,
-            checks_failed=checks_failed
+            checks_failed=checks_failed,
         )
 
     def get_metrics(self) -> AgentMetrics:
@@ -269,7 +271,7 @@ class CloudAgent(ABC):
             invocations=self.invocation_count,
             errors=self.error_count,
             avg_latency_ms=0,  # Would track in production
-            custom_metrics=self._collect_custom_metrics()
+            custom_metrics=self._collect_custom_metrics(),
         )
 
     def _collect_custom_metrics(self) -> Dict[str, float]:
@@ -288,13 +290,14 @@ class CloudAgent(ABC):
             "invocation_count": self.invocation_count,
             "error_count": self.error_count,
             "created_at": self.created_at.isoformat(),
-            "last_invocation": self.last_invocation.isoformat() if self.last_invocation else None
+            "last_invocation": self.last_invocation.isoformat() if self.last_invocation else None,
         }
 
 
 # =============================================================================
 # SPECIALIZED AGENTS
 # =============================================================================
+
 
 class SecurityTesterAgent(CloudAgent):
     """
@@ -309,12 +312,7 @@ class SecurityTesterAgent(CloudAgent):
     """
 
     def __init__(self, cloud_config: CloudConfig, **kwargs):
-        super().__init__(
-            agent_id=str(uuid.uuid4()),
-            name="SecurityTester",
-            cloud_config=cloud_config,
-            **kwargs
-        )
+        super().__init__(agent_id=str(uuid.uuid4()), name="SecurityTester", cloud_config=cloud_config, **kwargs)
         self.scan_results: List[Dict[str, Any]] = []
         self.vulnerabilities_found: List[Dict[str, Any]] = []
 
@@ -372,12 +370,9 @@ class SecurityTesterAgent(CloudAgent):
         for vuln_name, check_func in checks:
             result = await check_func(target)
             if result["vulnerable"]:
-                vulnerabilities.append({
-                    "type": vuln_name,
-                    "severity": result["severity"],
-                    "details": result["details"],
-                    "target": target
-                })
+                vulnerabilities.append(
+                    {"type": vuln_name, "severity": result["severity"], "details": result["details"], "target": target}
+                )
 
         self.vulnerabilities_found.extend(vulnerabilities)
 
@@ -387,7 +382,7 @@ class SecurityTesterAgent(CloudAgent):
             "vulnerabilities": vulnerabilities,
             "total_found": len(vulnerabilities),
             "scan_depth": scan_depth,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _check_sql_injection(self, target: str) -> Dict[str, Any]:
@@ -429,23 +424,19 @@ class SecurityTesterAgent(CloudAgent):
             "Rate limiting not implemented",
             "Sensitive data in URL",
             "Missing input validation",
-            "Improper error handling"
+            "Improper error handling",
         ]
 
         for check in api_checks:
             # Simulated checks - would perform actual tests in production
-            findings.append({
-                "check": check,
-                "status": "passed",
-                "details": f"Check passed for {check}"
-            })
+            findings.append({"check": check, "status": "passed", "details": f"Check passed for {check}"})
 
         return {
             "endpoint": endpoint,
             "method": method,
             "findings": findings,
             "secure": all(f["status"] == "passed" for f in findings),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _authentication_test(self, event: Dict[str, Any]) -> Dict[str, Any]:
@@ -457,14 +448,14 @@ class SecurityTesterAgent(CloudAgent):
             {"test": "Session management", "passed": True},
             {"test": "Password policy", "passed": True},
             {"test": "MFA support", "passed": True},
-            {"test": "Token expiration", "passed": True}
+            {"test": "Token expiration", "passed": True},
         ]
 
         return {
             "target": target,
             "tests": tests,
             "all_passed": all(t["passed"] for t in tests),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _rate_limit_test(self, event: Dict[str, Any]) -> Dict[str, Any]:
@@ -477,7 +468,7 @@ class SecurityTesterAgent(CloudAgent):
             "tested_rps": requests_per_second,
             "rate_limit_detected": True,
             "limit_threshold": 100,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _input_validation_test(self, event: Dict[str, Any]) -> Dict[str, Any]:
@@ -489,7 +480,7 @@ class SecurityTesterAgent(CloudAgent):
             {"type": "xss", "payload": "<script>alert(1)</script>", "blocked": True},
             {"type": "path_traversal", "payload": "../../etc/passwd", "blocked": True},
             {"type": "command_injection", "payload": "; ls -la", "blocked": True},
-            {"type": "large_input", "payload": "A" * 10000, "blocked": True}
+            {"type": "large_input", "payload": "A" * 10000, "blocked": True},
         ]
 
         return {
@@ -497,14 +488,11 @@ class SecurityTesterAgent(CloudAgent):
             "payloads_tested": len(test_payloads),
             "all_blocked": all(p["blocked"] for p in test_payloads),
             "results": test_payloads,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     def _collect_custom_metrics(self) -> Dict[str, float]:
-        return {
-            "vulnerabilities_found": len(self.vulnerabilities_found),
-            "scans_completed": len(self.scan_results)
-        }
+        return {"vulnerabilities_found": len(self.vulnerabilities_found), "scans_completed": len(self.scan_results)}
 
 
 class PerformanceMonitorAgent(CloudAgent):
@@ -520,20 +508,10 @@ class PerformanceMonitorAgent(CloudAgent):
     """
 
     def __init__(self, cloud_config: CloudConfig, **kwargs):
-        super().__init__(
-            agent_id=str(uuid.uuid4()),
-            name="PerformanceMonitor",
-            cloud_config=cloud_config,
-            **kwargs
-        )
+        super().__init__(agent_id=str(uuid.uuid4()), name="PerformanceMonitor", cloud_config=cloud_config, **kwargs)
         self.metrics_history: List[Dict[str, Any]] = []
         self.alerts: List[Dict[str, Any]] = []
-        self.thresholds = {
-            "latency_ms": 1000,
-            "error_rate": 0.05,
-            "cpu_percent": 80,
-            "memory_percent": 85
-        }
+        self.thresholds = {"latency_ms": 1000, "error_rate": 0.05, "cpu_percent": 80, "memory_percent": 85}
 
     async def process(self, event: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         """Process performance monitoring request."""
@@ -577,39 +555,19 @@ class PerformanceMonitorAgent(CloudAgent):
         target = event.get("target", "")
         metric_types = event.get("metrics", ["latency", "throughput", "errors"])
 
-        collected = {
-            "target": target,
-            "timestamp": datetime.now().isoformat(),
-            "metrics": {}
-        }
+        collected = {"target": target, "timestamp": datetime.now().isoformat(), "metrics": {}}
 
         if "latency" in metric_types:
-            collected["metrics"]["latency"] = {
-                "avg_ms": 45.2,
-                "p50_ms": 38.0,
-                "p95_ms": 120.5,
-                "p99_ms": 250.3
-            }
+            collected["metrics"]["latency"] = {"avg_ms": 45.2, "p50_ms": 38.0, "p95_ms": 120.5, "p99_ms": 250.3}
 
         if "throughput" in metric_types:
-            collected["metrics"]["throughput"] = {
-                "requests_per_second": 1250,
-                "bytes_per_second": 5242880
-            }
+            collected["metrics"]["throughput"] = {"requests_per_second": 1250, "bytes_per_second": 5242880}
 
         if "errors" in metric_types:
-            collected["metrics"]["errors"] = {
-                "total": 12,
-                "rate": 0.001,
-                "types": {"500": 8, "503": 4}
-            }
+            collected["metrics"]["errors"] = {"total": 12, "rate": 0.001, "types": {"500": 8, "503": 4}}
 
         if "resources" in metric_types:
-            collected["metrics"]["resources"] = {
-                "cpu_percent": 45.2,
-                "memory_percent": 62.8,
-                "disk_io_mbps": 12.5
-            }
+            collected["metrics"]["resources"] = {"cpu_percent": 45.2, "memory_percent": 62.8, "disk_io_mbps": 12.5}
 
         self.metrics_history.append(collected)
 
@@ -625,6 +583,7 @@ class PerformanceMonitorAgent(CloudAgent):
 
         # Simulated latency measurements
         import random
+
         latencies = [random.uniform(20, 150) for _ in range(samples)]
 
         return {
@@ -634,7 +593,7 @@ class PerformanceMonitorAgent(CloudAgent):
             "min_ms": min(latencies),
             "max_ms": max(latencies),
             "p95_ms": sorted(latencies)[int(0.95 * len(latencies))],
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _check_throughput(self, event: Dict[str, Any]) -> Dict[str, Any]:
@@ -648,7 +607,7 @@ class PerformanceMonitorAgent(CloudAgent):
             "requests_completed": 12500,
             "requests_per_second": 1250,
             "bytes_transferred": 52428800,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _detect_anomalies(self, event: Dict[str, Any]) -> Dict[str, Any]:
@@ -666,23 +625,22 @@ class PerformanceMonitorAgent(CloudAgent):
 
         if latencies:
             import statistics
+
             mean = statistics.mean(latencies)
             stdev = statistics.stdev(latencies) if len(latencies) > 1 else 0
 
             current = latencies[-1]
             if abs(current - mean) > 2 * stdev:
-                anomalies.append({
-                    "type": "latency_spike",
-                    "value": current,
-                    "expected": mean,
-                    "deviation": abs(current - mean) / stdev if stdev > 0 else 0
-                })
+                anomalies.append(
+                    {
+                        "type": "latency_spike",
+                        "value": current,
+                        "expected": mean,
+                        "deviation": abs(current - mean) / stdev if stdev > 0 else 0,
+                    }
+                )
 
-        return {
-            "anomalies": anomalies,
-            "anomaly_count": len(anomalies),
-            "timestamp": datetime.now().isoformat()
-        }
+        return {"anomalies": anomalies, "anomaly_count": len(anomalies), "timestamp": datetime.now().isoformat()}
 
     async def _generate_report(self, event: Dict[str, Any]) -> Dict[str, Any]:
         """Generate performance report."""
@@ -694,15 +652,15 @@ class PerformanceMonitorAgent(CloudAgent):
                 "total_requests": self.invocation_count,
                 "avg_latency_ms": 52.3,
                 "error_rate": 0.002,
-                "uptime_percent": 99.95
+                "uptime_percent": 99.95,
             },
             "alerts_triggered": len(self.alerts),
             "recommendations": [
                 "Consider scaling up during peak hours",
                 "Cache frequently accessed data",
-                "Review slow database queries"
+                "Review slow database queries",
             ],
-            "generated_at": datetime.now().isoformat()
+            "generated_at": datetime.now().isoformat(),
         }
 
     async def _set_threshold(self, event: Dict[str, Any]) -> Dict[str, Any]:
@@ -713,12 +671,7 @@ class PerformanceMonitorAgent(CloudAgent):
         if metric in self.thresholds:
             old_value = self.thresholds[metric]
             self.thresholds[metric] = value
-            return {
-                "metric": metric,
-                "old_value": old_value,
-                "new_value": value,
-                "status": "updated"
-            }
+            return {"metric": metric, "old_value": old_value, "new_value": value, "status": "updated"}
 
         return {"error": f"Unknown metric: {metric}"}
 
@@ -728,27 +681,28 @@ class PerformanceMonitorAgent(CloudAgent):
 
         if "latency" in data:
             if data["latency"]["avg_ms"] > self.thresholds["latency_ms"]:
-                self.alerts.append({
-                    "type": "latency_threshold_exceeded",
-                    "value": data["latency"]["avg_ms"],
-                    "threshold": self.thresholds["latency_ms"],
-                    "timestamp": datetime.now().isoformat()
-                })
+                self.alerts.append(
+                    {
+                        "type": "latency_threshold_exceeded",
+                        "value": data["latency"]["avg_ms"],
+                        "threshold": self.thresholds["latency_ms"],
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
 
         if "errors" in data:
             if data["errors"]["rate"] > self.thresholds["error_rate"]:
-                self.alerts.append({
-                    "type": "error_rate_threshold_exceeded",
-                    "value": data["errors"]["rate"],
-                    "threshold": self.thresholds["error_rate"],
-                    "timestamp": datetime.now().isoformat()
-                })
+                self.alerts.append(
+                    {
+                        "type": "error_rate_threshold_exceeded",
+                        "value": data["errors"]["rate"],
+                        "threshold": self.thresholds["error_rate"],
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                )
 
     def _collect_custom_metrics(self) -> Dict[str, float]:
-        return {
-            "metrics_collected": len(self.metrics_history),
-            "alerts_triggered": len(self.alerts)
-        }
+        return {"metrics_collected": len(self.metrics_history), "alerts_triggered": len(self.alerts)}
 
 
 class HallucinationDetectorAgent(CloudAgent):
@@ -765,12 +719,7 @@ class HallucinationDetectorAgent(CloudAgent):
     """
 
     def __init__(self, cloud_config: CloudConfig, **kwargs):
-        super().__init__(
-            agent_id=str(uuid.uuid4()),
-            name="HallucinationDetector",
-            cloud_config=cloud_config,
-            **kwargs
-        )
+        super().__init__(agent_id=str(uuid.uuid4()), name="HallucinationDetector", cloud_config=cloud_config, **kwargs)
         self.verification_history: List[Dict[str, Any]] = []
         self.known_facts: Dict[str, Any] = {}
         self.false_positive_rate = 0.0
@@ -821,7 +770,7 @@ class HallucinationDetectorAgent(CloudAgent):
             "verified_claims": [],
             "unverified_claims": [],
             "overall_confidence": 0.0,
-            "status": "unknown"
+            "status": "unknown",
         }
 
         # Extract claims from text
@@ -835,11 +784,9 @@ class HallucinationDetectorAgent(CloudAgent):
             if result["verified"]:
                 verification["verified_claims"].append(claim)
             elif result["hallucination"]:
-                verification["hallucinations_detected"].append({
-                    "claim": claim,
-                    "reason": result["reason"],
-                    "confidence": result["confidence"]
-                })
+                verification["hallucinations_detected"].append(
+                    {"claim": claim, "reason": result["reason"], "confidence": result["confidence"]}
+                )
             else:
                 verification["unverified_claims"].append(claim)
 
@@ -865,7 +812,7 @@ class HallucinationDetectorAgent(CloudAgent):
         import re
 
         # Split into sentences
-        sentences = re.split(r'[.!?]', text)
+        sentences = re.split(r"[.!?]", text)
 
         claims = []
         for sentence in sentences:
@@ -875,10 +822,10 @@ class HallucinationDetectorAgent(CloudAgent):
 
             # Filter for sentences that make claims
             claim_indicators = [
-                r'\b(is|are|was|were|has|have|will|can)\b',
-                r'\b(according to|studies show|research indicates)\b',
-                r'\b(always|never|definitely|certainly)\b',
-                r'\d+%|\d+ percent'
+                r"\b(is|are|was|were|has|have|will|can)\b",
+                r"\b(according to|studies show|research indicates)\b",
+                r"\b(always|never|definitely|certainly)\b",
+                r"\d+%|\d+ percent",
             ]
 
             for pattern in claim_indicators:
@@ -901,14 +848,14 @@ class HallucinationDetectorAgent(CloudAgent):
                         "verified": True,
                         "hallucination": False,
                         "reason": f"Matches known fact: {fact_key}",
-                        "confidence": 0.9
+                        "confidence": 0.9,
                     }
                 else:
                     return {
                         "verified": False,
                         "hallucination": True,
                         "reason": f"Contradicts known fact: {fact_key}={fact_value}",
-                        "confidence": 0.85
+                        "confidence": 0.85,
                     }
 
         # Check for overconfident language without evidence
@@ -919,7 +866,7 @@ class HallucinationDetectorAgent(CloudAgent):
                     "verified": False,
                     "hallucination": False,
                     "reason": "Overconfident language without verification",
-                    "confidence": 0.5
+                    "confidence": 0.5,
                 }
 
         # Unable to verify
@@ -927,7 +874,7 @@ class HallucinationDetectorAgent(CloudAgent):
             "verified": False,
             "hallucination": False,
             "reason": "Unable to verify against known facts",
-            "confidence": 0.3
+            "confidence": 0.3,
         }
 
     async def _cross_validate(self, event: Dict[str, Any]) -> Dict[str, Any]:
@@ -945,7 +892,7 @@ class HallucinationDetectorAgent(CloudAgent):
                 "validator": validator,
                 "agrees": True,  # Would be actual validation
                 "confidence": 0.85,
-                "notes": "Cross-validation passed"
+                "notes": "Cross-validation passed",
             }
             votes.append(vote)
 
@@ -957,7 +904,7 @@ class HallucinationDetectorAgent(CloudAgent):
             "votes": votes,
             "agreement_rate": agreement_rate,
             "consensus": agreement_rate >= 0.66,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _register_facts(self, event: Dict[str, Any]) -> Dict[str, Any]:
@@ -969,32 +916,23 @@ class HallucinationDetectorAgent(CloudAgent):
             self.known_facts[key] = value
             added += 1
 
-        return {
-            "facts_added": added,
-            "total_facts": len(self.known_facts),
-            "status": "success"
-        }
+        return {"facts_added": added, "total_facts": len(self.known_facts), "status": "success"}
 
     async def _get_statistics(self) -> Dict[str, Any]:
         """Get detection statistics."""
         total_verifications = len(self.verification_history)
-        total_hallucinations = sum(
-            len(v["hallucinations_detected"]) for v in self.verification_history
-        )
+        total_hallucinations = sum(len(v["hallucinations_detected"]) for v in self.verification_history)
 
         return {
             "total_verifications": total_verifications,
             "total_hallucinations_detected": total_hallucinations,
             "detection_rate": total_hallucinations / max(1, total_verifications),
             "known_facts_count": len(self.known_facts),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     def _collect_custom_metrics(self) -> Dict[str, float]:
-        return {
-            "verifications_performed": len(self.verification_history),
-            "known_facts": len(self.known_facts)
-        }
+        return {"verifications_performed": len(self.verification_history), "known_facts": len(self.known_facts)}
 
 
 class MultiCloudOrchestratorAgent(CloudAgent):
@@ -1009,12 +947,7 @@ class MultiCloudOrchestratorAgent(CloudAgent):
     """
 
     def __init__(self, cloud_config: CloudConfig, **kwargs):
-        super().__init__(
-            agent_id=str(uuid.uuid4()),
-            name="MultiCloudOrchestrator",
-            cloud_config=cloud_config,
-            **kwargs
-        )
+        super().__init__(agent_id=str(uuid.uuid4()), name="MultiCloudOrchestrator", cloud_config=cloud_config, **kwargs)
         self.managed_agents: Dict[str, Dict[str, Any]] = {}
         self.cloud_endpoints: Dict[CloudProvider, str] = {}
         self.routing_table: Dict[str, CloudProvider] = {}
@@ -1101,16 +1034,12 @@ class MultiCloudOrchestratorAgent(CloudAgent):
             "cloud": cloud,
             "endpoint": endpoint,
             "status": "active",
-            "registered_at": datetime.now().isoformat()
+            "registered_at": datetime.now().isoformat(),
         }
 
         self.routing_table[agent_id] = cloud
 
-        return {
-            "agent_id": agent_id,
-            "status": "registered",
-            "cloud": cloud.value
-        }
+        return {"agent_id": agent_id, "status": "registered", "cloud": cloud.value}
 
     async def _route_request(self, event: Dict[str, Any]) -> Dict[str, Any]:
         """Route request to appropriate agent."""
@@ -1134,7 +1063,7 @@ class MultiCloudOrchestratorAgent(CloudAgent):
             "cloud": target_cloud.value,
             "endpoint": agent_info["endpoint"],
             "payload": payload,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _check_cloud_health(self, event: Dict[str, Any]) -> Dict[str, Any]:
@@ -1145,10 +1074,7 @@ class MultiCloudOrchestratorAgent(CloudAgent):
             if cloud == CloudProvider.LOCAL:
                 continue
 
-            agents_on_cloud = [
-                a for a in self.managed_agents.values()
-                if a["cloud"] == cloud
-            ]
+            agents_on_cloud = [a for a in self.managed_agents.values() if a["cloud"] == cloud]
 
             healthy_count = sum(1 for a in agents_on_cloud if a["status"] == "active")
 
@@ -1156,13 +1082,10 @@ class MultiCloudOrchestratorAgent(CloudAgent):
                 "total_agents": len(agents_on_cloud),
                 "healthy_agents": healthy_count,
                 "health_percent": healthy_count / max(1, len(agents_on_cloud)) * 100,
-                "status": "healthy" if healthy_count == len(agents_on_cloud) else "degraded"
+                "status": "healthy" if healthy_count == len(agents_on_cloud) else "degraded",
             }
 
-        return {
-            "clouds": results,
-            "timestamp": datetime.now().isoformat()
-        }
+        return {"clouds": results, "timestamp": datetime.now().isoformat()}
 
     async def _execute_failover(self, event: Dict[str, Any]) -> Dict[str, Any]:
         """Execute failover from one cloud to another."""
@@ -1184,7 +1107,7 @@ class MultiCloudOrchestratorAgent(CloudAgent):
             "to_cloud": to_cloud.value,
             "agents_failed_over": len(failed_over),
             "agent_ids": failed_over,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _get_topology(self) -> Dict[str, Any]:
@@ -1209,7 +1132,7 @@ class MultiCloudOrchestratorAgent(CloudAgent):
             "by_cloud": by_cloud,
             "by_type": by_type,
             "routing_table": {k: v.value for k, v in self.routing_table.items()},
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     async def _balance_load(self, event: Dict[str, Any]) -> Dict[str, Any]:
@@ -1227,10 +1150,12 @@ class MultiCloudOrchestratorAgent(CloudAgent):
             "gcp_agents": len(gcp_agents),
             "imbalance": imbalance,
             "balanced": imbalance <= 2,
-            "recommendations": [
-                f"Move {imbalance // 2} agents to {'GCP' if len(aws_agents) > len(gcp_agents) else 'AWS'}"
-            ] if imbalance > 2 else [],
-            "timestamp": datetime.now().isoformat()
+            "recommendations": (
+                [f"Move {imbalance // 2} agents to {'GCP' if len(aws_agents) > len(gcp_agents) else 'AWS'}"]
+                if imbalance > 2
+                else []
+            ),
+            "timestamp": datetime.now().isoformat(),
         }
 
     def _collect_custom_metrics(self) -> Dict[str, float]:
@@ -1247,6 +1172,7 @@ class MultiCloudOrchestratorAgent(CloudAgent):
 # AGENT FACTORY
 # =============================================================================
 
+
 class AgentFactory:
     """Factory for creating cloud agents."""
 
@@ -1254,16 +1180,11 @@ class AgentFactory:
         "security_tester": SecurityTesterAgent,
         "performance_monitor": PerformanceMonitorAgent,
         "hallucination_detector": HallucinationDetectorAgent,
-        "multi_cloud_orchestrator": MultiCloudOrchestratorAgent
+        "multi_cloud_orchestrator": MultiCloudOrchestratorAgent,
     }
 
     @classmethod
-    def create(
-        cls,
-        agent_type: str,
-        cloud_config: CloudConfig,
-        **kwargs
-    ) -> CloudAgent:
+    def create(cls, agent_type: str, cloud_config: CloudConfig, **kwargs) -> CloudAgent:
         """Create an agent of the specified type."""
         if agent_type not in cls.AGENT_TYPES:
             raise ValueError(f"Unknown agent type: {agent_type}")

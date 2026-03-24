@@ -35,8 +35,10 @@ from typing import List, Sequence, Tuple
 # Trit
 # ---------------------------------------------------------------------------
 
+
 class Trit(IntEnum):
     """A single balanced ternary digit."""
+
     MINUS = -1  # T (negative)
     ZERO = 0
     PLUS = 1
@@ -103,12 +105,14 @@ def trit_to_decision(t: Trit) -> str:
 # BalancedTernary
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class BalancedTernary:
     """Balanced ternary number: a sequence of trits (LSB first internally).
 
     External display is MSB-first (most significant trit on the left).
     """
+
     _trits: Tuple[Trit, ...]  # LSB first
 
     @staticmethod
@@ -137,7 +141,7 @@ class BalancedTernary:
         """Convert balanced ternary back to integer."""
         result = 0
         for i, t in enumerate(self._trits):
-            result += t.value * (3 ** i)
+            result += t.value * (3**i)
         return result
 
     @staticmethod
@@ -204,16 +208,12 @@ class BalancedTernary:
     def trit_and(self, other: BalancedTernary) -> BalancedTernary:
         """Apply Kleene AND trit-by-trit."""
         a, b = _pad_equal(self, other)
-        return BalancedTernary(tuple(
-            Trit(min(at.value, bt.value)) for at, bt in zip(a._trits, b._trits)
-        ))
+        return BalancedTernary(tuple(Trit(min(at.value, bt.value)) for at, bt in zip(a._trits, b._trits)))
 
     def trit_or(self, other: BalancedTernary) -> BalancedTernary:
         """Apply Kleene OR trit-by-trit."""
         a, b = _pad_equal(self, other)
-        return BalancedTernary(tuple(
-            Trit(max(at.value, bt.value)) for at, bt in zip(a._trits, b._trits)
-        ))
+        return BalancedTernary(tuple(Trit(max(at.value, bt.value)) for at, bt in zip(a._trits, b._trits)))
 
     # ── Governance ──
 
@@ -274,6 +274,7 @@ class BalancedTernary:
 # Internal arithmetic helpers
 # ---------------------------------------------------------------------------
 
+
 def _pad_equal(a: BalancedTernary, b: BalancedTernary) -> Tuple[BalancedTernary, BalancedTernary]:
     """Zero-pad both numbers to equal width (LSB-first)."""
     max_len = max(len(a._trits), len(b._trits))
@@ -331,6 +332,7 @@ def _bt_mul(a: BalancedTernary, b: BalancedTernary) -> BalancedTernary:
 # ---------------------------------------------------------------------------
 # Utility: parse string representation
 # ---------------------------------------------------------------------------
+
 
 def parse_bt(s: str) -> BalancedTernary:
     """Parse a balanced ternary string like 'T10T1' (MSB-first).

@@ -36,6 +36,7 @@ from .streams import EarnEvent, StreamType
 
 try:
     import httpx
+
     HAS_HTTPX = True
 except ImportError:
     HAS_HTTPX = False
@@ -66,15 +67,17 @@ PLATFORM_CREDIT_VALUES: Dict[str, float] = {
 #  Publish Result
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PublishResult:
     """Result of a content publish attempt."""
+
     publish_id: str
     text_preview: str
     platforms_attempted: List[str]
     platforms_succeeded: List[str]
     platforms_failed: List[str]
-    governance_verdict: str            # ALLOW/QUARANTINE/DENY
+    governance_verdict: str  # ALLOW/QUARANTINE/DENY
     credits_earned: float
     ledger_entries: List[LedgerEntry]
     timestamp: float = field(default_factory=time.time)
@@ -89,6 +92,7 @@ class PublishResult:
 # ---------------------------------------------------------------------------
 #  Publisher Bridge
 # ---------------------------------------------------------------------------
+
 
 class PublisherBridge:
     """

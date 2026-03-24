@@ -185,7 +185,10 @@ def _run_goal_until_terminal(
                 time.sleep(poll_seconds)
                 continue
             print("Goal requires human approval. Run:", file=sys.stderr)
-            print(f"  python scripts/scbe_terminal_ops.py --api-key <key> goal approve --goal-id {goal_id}", file=sys.stderr)
+            print(
+                f"  python scripts/scbe_terminal_ops.py --api-key <key> goal approve --goal-id {goal_id}",
+                file=sys.stderr,
+            )
             return 2
 
         if goal_status in {"completed", "failed"}:
@@ -320,7 +323,9 @@ def build_parser() -> argparse.ArgumentParser:
             "generic_webhook",
         ],
     )
-    sp_conn_add.add_argument("--endpoint-url", default="", help="Endpoint URL (optional for shopify if shop_domain set)")
+    sp_conn_add.add_argument(
+        "--endpoint-url", default="", help="Endpoint URL (optional for shopify if shop_domain set)"
+    )
     sp_conn_add.add_argument("--http-method", default="POST", choices=["POST", "PUT", "PATCH", "DELETE", "GET"])
     sp_conn_add.add_argument("--connector-timeout", type=int, default=8)
     sp_conn_add.add_argument(
@@ -340,9 +345,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp_goal_create = sp_goal_sub.add_parser("create", help="Create a goal")
     sp_goal_create.add_argument("--goal", required=True)
-    sp_goal_create.add_argument("--channel", default="store_ops", choices=["store_ops", "web_research", "content_ops", "custom"])
+    sp_goal_create.add_argument(
+        "--channel", default="store_ops", choices=["store_ops", "web_research", "content_ops", "custom"]
+    )
     sp_goal_create.add_argument("--priority", default="normal", choices=["low", "normal", "high", "critical"])
-    sp_goal_create.add_argument("--execution-mode", default="simulate", choices=["simulate", "hydra_headless", "connector"])
+    sp_goal_create.add_argument(
+        "--execution-mode", default="simulate", choices=["simulate", "hydra_headless", "connector"]
+    )
     sp_goal_create.add_argument("--connector-id", default="")
     sp_goal_create.add_argument("--targets", default="", help="Comma-separated URLs/targets")
     sp_goal_create.add_argument("--no-human-gate", action="store_true", help="Disable high-risk approval gate")

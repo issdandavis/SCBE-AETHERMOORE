@@ -26,6 +26,7 @@ from dataclasses import dataclass
 @dataclass
 class PathResult:
     """Result of hyperpath search."""
+
     path: Optional[List[np.ndarray]]
     cost: float
     nodes_expanded: int
@@ -117,9 +118,7 @@ class HyperpathFinder:
 
                     ni, nj, nk = i + di, j + dj, k + dk
 
-                    if (0 <= ni < self.grid_size and
-                        0 <= nj < self.grid_size and
-                        0 <= nk < self.grid_size):
+                    if 0 <= ni < self.grid_size and 0 <= nj < self.grid_size and 0 <= nk < self.grid_size:
                         if (ni, nj, nk) in self.occupied:
                             neighbors.append((ni, nj, nk))
 
@@ -129,11 +128,7 @@ class HyperpathFinder:
     # A* (Single Direction)
     # =========================================================================
 
-    def a_star(
-        self,
-        start_coord: np.ndarray,
-        goal_coord: np.ndarray
-    ) -> PathResult:
+    def a_star(self, start_coord: np.ndarray, goal_coord: np.ndarray) -> PathResult:
         """
         A* pathfinding with hyperbolic distance heuristic.
 
@@ -152,20 +147,17 @@ class HyperpathFinder:
             # Find nearest occupied voxel to start
             start_idx = self._find_nearest_occupied(start_idx)
             if start_idx is None:
-                return PathResult(None, float('inf'), 0, False)
+                return PathResult(None, float("inf"), 0, False)
 
         if goal_idx not in self.occupied:
             goal_idx = self._find_nearest_occupied(goal_idx)
             if goal_idx is None:
-                return PathResult(None, float('inf'), 0, False)
+                return PathResult(None, float("inf"), 0, False)
 
         # A* data structures
         # Priority queue: (f_score, g_score, node)
         frontier = []
-        h_start = hyperbolic_distance_safe(
-            self.idx_to_coord(start_idx),
-            self.idx_to_coord(goal_idx)
-        )
+        h_start = hyperbolic_distance_safe(self.idx_to_coord(start_idx), self.idx_to_coord(goal_idx))
         heapq.heappush(frontier, (h_start, 0.0, start_idx))
 
         came_from: Dict[Tuple, Tuple] = {}
@@ -182,7 +174,7 @@ class HyperpathFinder:
                 return PathResult(path, current_g, nodes_expanded, True)
 
             # Skip if we've found a better path
-            if current_g > g_score.get(current, float('inf')):
+            if current_g > g_score.get(current, float("inf")):
                 continue
 
             current_coord = self.idx_to_coord(current)
@@ -194,7 +186,7 @@ class HyperpathFinder:
                 edge_cost = hyperbolic_distance_safe(current_coord, neighbor_coord)
                 tentative_g = current_g + edge_cost
 
-                if tentative_g < g_score.get(neighbor, float('inf')):
+                if tentative_g < g_score.get(neighbor, float("inf")):
                     g_score[neighbor] = tentative_g
                     came_from[neighbor] = current
 
@@ -204,17 +196,13 @@ class HyperpathFinder:
 
                     heapq.heappush(frontier, (f, tentative_g, neighbor))
 
-        return PathResult(None, float('inf'), nodes_expanded, False)
+        return PathResult(None, float("inf"), nodes_expanded, False)
 
     # =========================================================================
     # Bidirectional A* (Dual-Time)
     # =========================================================================
 
-    def bidirectional_a_star(
-        self,
-        start_coord: np.ndarray,
-        goal_coord: np.ndarray
-    ) -> PathResult:
+    def bidirectional_a_star(self, start_coord: np.ndarray, goal_coord: np.ndarray) -> PathResult:
         """
         Bidirectional A* ("Dual-Time") pathfinding.
 
@@ -236,12 +224,12 @@ class HyperpathFinder:
         if start_idx not in self.occupied:
             start_idx = self._find_nearest_occupied(start_idx)
             if start_idx is None:
-                return PathResult(None, float('inf'), 0, False)
+                return PathResult(None, float("inf"), 0, False)
 
         if goal_idx not in self.occupied:
             goal_idx = self._find_nearest_occupied(goal_idx)
             if goal_idx is None:
-                return PathResult(None, float('inf'), 0, False)
+                return PathResult(None, float("inf"), 0, False)
 
         start_coord_actual = self.idx_to_coord(start_idx)
         goal_coord_actual = self.idx_to_coord(goal_idx)
@@ -260,7 +248,7 @@ class HyperpathFinder:
         back_g: Dict[Tuple, float] = {goal_idx: 0.0}
 
         meeting_node = None
-        best_cost = float('inf')
+        best_cost = float("inf")
         nodes_expanded = 0
 
         while front_frontier and back_frontier:
@@ -319,19 +307,16 @@ class HyperpathFinder:
             # Early termination check
             if meeting_node is not None:
                 # Verify we can't do better
-                min_front = front_frontier[0][0] if front_frontier else float('inf')
-                min_back = back_frontier[0][0] if back_frontier else float('inf')
+                min_front = front_frontier[0][0] if front_frontier else float("inf")
+                min_back = back_frontier[0][0] if back_frontier else float("inf")
                 if min_front + min_back >= best_cost:
                     break
 
         if meeting_node is None:
-            return PathResult(None, float('inf'), nodes_expanded, False)
+            return PathResult(None, float("inf"), nodes_expanded, False)
 
         # Reconstruct path from both directions
-        path = self._reconstruct_bidirectional_path(
-            front_came, back_came,
-            start_idx, goal_idx, meeting_node
-        )
+        path = self._reconstruct_bidirectional_path(front_came, back_came, start_idx, goal_idx, meeting_node)
 
         return PathResult(path, best_cost, nodes_expanded, True)
 
@@ -345,6 +330,7 @@ class HyperpathFinder:
             return None
 
         from collections import deque
+
         visited = {idx}
         queue = deque([idx])
 
@@ -361,21 +347,18 @@ class HyperpathFinder:
                         ni, nj, nk = i + di, j + dj, k + dk
                         neighbor = (ni, nj, nk)
 
-                        if (0 <= ni < self.grid_size and
-                            0 <= nj < self.grid_size and
-                            0 <= nk < self.grid_size and
-                            neighbor not in visited):
+                        if (
+                            0 <= ni < self.grid_size
+                            and 0 <= nj < self.grid_size
+                            and 0 <= nk < self.grid_size
+                            and neighbor not in visited
+                        ):
                             visited.add(neighbor)
                             queue.append(neighbor)
 
         return None
 
-    def _reconstruct_path(
-        self,
-        came_from: Dict[Tuple, Tuple],
-        start_idx: Tuple,
-        goal_idx: Tuple
-    ) -> List[np.ndarray]:
+    def _reconstruct_path(self, came_from: Dict[Tuple, Tuple], start_idx: Tuple, goal_idx: Tuple) -> List[np.ndarray]:
         """Reconstruct path from A* came_from dict."""
         path = []
         current = goal_idx
@@ -394,7 +377,7 @@ class HyperpathFinder:
         back_came: Dict[Tuple, Optional[Tuple]],
         start_idx: Tuple,
         goal_idx: Tuple,
-        meeting: Tuple
+        meeting: Tuple,
     ) -> List[np.ndarray]:
         """Reconstruct path from bidirectional search."""
         # Forward path: start -> meeting
@@ -419,7 +402,7 @@ class HyperpathFinder:
 
 def g_score_get(g_dict: Dict, key: Tuple) -> float:
     """Safe g-score lookup with infinity default."""
-    return g_dict.get(key, float('inf'))
+    return g_dict.get(key, float("inf"))
 
 
 # =============================================================================

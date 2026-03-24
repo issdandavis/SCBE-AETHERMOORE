@@ -140,7 +140,9 @@ def build_report(steps: int, period: int) -> Dict[str, Any]:
     return {
         "run_id": datetime.now(timezone.utc).strftime("phase_control_%Y%m%dT%H%M%SZ"),
         "tongues": list(TONGUES),
-        "canonical_phase_degrees": {tongue: round(math.degrees(angle), 3) for tongue, angle in canonical_tongue_phases().items()},
+        "canonical_phase_degrees": {
+            tongue: round(math.degrees(angle), 3) for tongue, angle in canonical_tongue_phases().items()
+        },
         "experiment": {
             "steps": steps,
             "period": period,

@@ -73,10 +73,7 @@ def ensure_path_fragment(value: str) -> str:
 
 
 def sample_links(page: Any, limit: int = 8) -> list[str]:
-    script = (
-        "els => els.map(e => e.href || '').filter(Boolean).slice(0, "
-        f"{max(limit, 1)})"
-    )
+    script = "els => els.map(e => e.href || '').filter(Boolean).slice(0, " f"{max(limit, 1)})"
     try:
         values = page.eval_on_selector_all("a[href]", script)
         return [str(v) for v in values]
@@ -257,7 +254,9 @@ def main() -> int:
     try:
         from playwright.sync_api import sync_playwright  # type: ignore
     except ImportError as exc:  # pragma: no cover
-        raise RuntimeError("Playwright not installed. Run: pip install playwright && playwright install chromium") from exc
+        raise RuntimeError(
+            "Playwright not installed. Run: pip install playwright && playwright install chromium"
+        ) from exc
 
     store_domain = normalize_store_domain(args.store_domain)
     admin_url = args.admin_url or f"https://{store_domain}{ensure_path_fragment(args.admin_path)}"
@@ -299,7 +298,9 @@ def main() -> int:
             admin_page.screenshot(path=str(admin_png), full_page=True)
             admin_report.screenshot = str(admin_png)
         except Exception as exc:
-            admin_report.issue = (admin_report.issue + " | " if admin_report.issue else "") + f"Admin screenshot failed: {exc}"
+            admin_report.issue = (
+                admin_report.issue + " | " if admin_report.issue else ""
+            ) + f"Admin screenshot failed: {exc}"
         try:
             storefront_page.screenshot(path=str(storefront_png), full_page=True)
             storefront_report.screenshot = str(storefront_png)
@@ -312,12 +313,16 @@ def main() -> int:
                 app_page.screenshot(path=str(app_png), full_page=True)
                 app_report.screenshot = str(app_png)
             except Exception as exc:
-                app_report.issue = (app_report.issue + " | " if app_report.issue else "") + f"App screenshot failed: {exc}"
+                app_report.issue = (
+                    app_report.issue + " | " if app_report.issue else ""
+                ) + f"App screenshot failed: {exc}"
 
         if admin_report.status != "error":
             admin_report = evaluate_admin_page(admin_page, admin_report, args.expect_admin_text)
         if storefront_report.status != "error":
-            storefront_report = evaluate_storefront_page(storefront_page, storefront_report, args.expect_storefront_text)
+            storefront_report = evaluate_storefront_page(
+                storefront_page, storefront_report, args.expect_storefront_text
+            )
         if app_page and app_report is not None and app_report.status != "error":
             app_report = evaluate_app_page(app_page, app_report, args.expect_app_text)
 
@@ -337,7 +342,9 @@ def main() -> int:
 
         print(f"[shopify-both-side] store={store_domain}")
         print(f"[shopify-both-side] admin_status={admin_report.status} url={admin_report.final_url or admin_url}")
-        print(f"[shopify-both-side] storefront_status={storefront_report.status} url={storefront_report.final_url or storefront_url}")
+        print(
+            f"[shopify-both-side] storefront_status={storefront_report.status} url={storefront_report.final_url or storefront_url}"
+        )
         if app_report is not None:
             print(f"[shopify-both-side] app_status={app_report.status} url={app_report.final_url or args.app_url}")
         print(f"[shopify-both-side] report={report_path}")

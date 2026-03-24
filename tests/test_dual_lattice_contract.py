@@ -58,10 +58,7 @@ class TestDynamicTransform:
         p3 = Lattice3D(x=1.0, y=0.5, z=-0.3)
         ph = PhasonShift(perp_shift=(1.0, 0.0, 0.0), magnitude=0.5, phase=0.0)
         out = dynamic_transform(p3, ph)
-        diff = sum(
-            (out.shifted_6d.components[i] - out.lifted_6d.components[i]) ** 2
-            for i in range(6)
-        )
+        diff = sum((out.shifted_6d.components[i] - out.lifted_6d.components[i]) ** 2 for i in range(6))
         assert diff > 0.01
         assert -1.0 <= out.interference_value <= 1.0
 

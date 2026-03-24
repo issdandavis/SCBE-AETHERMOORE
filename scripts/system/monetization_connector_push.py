@@ -143,7 +143,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Push latest leads + offers to n8n/Zapier monetization connectors.")
     parser.add_argument("--leads-json", default="", help="Optional leads JSON file path.")
     parser.add_argument("--top-leads", type=int, default=10, help="Number of leads to include in connector payload.")
-    parser.add_argument("--include-gumroad", action="store_true", help="Attempt to enrich offers with Gumroad live URLs.")
+    parser.add_argument(
+        "--include-gumroad", action="store_true", help="Attempt to enrich offers with Gumroad live URLs."
+    )
 
     parser.add_argument("--route-n8n", dest="route_n8n", action="store_true")
     parser.add_argument("--no-route-n8n", dest="route_n8n", action="store_false")
@@ -226,4 +228,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -195,9 +195,7 @@ def test_compare_summary_picks_winners():
     report = lab.compare()
 
     assert report["summary"]["best_compaction"] in ("octree", "lattice25d", "qc_drive")
-    assert report["summary"]["lowest_node_explosion"] in (
-        "octree", "lattice25d", "qc_drive", "sphere"
-    )
+    assert report["summary"]["lowest_node_explosion"] in ("octree", "lattice25d", "qc_drive", "sphere")
 
 
 # --------------------------------------------------------------------------- #
@@ -257,7 +255,4 @@ def test_different_configs_produce_different_metrics():
     r_deep = lab_deep.compare()
 
     # Deeper octree should have more nodes
-    assert (
-        r_deep["surfaces"]["octree"]["node_count"]
-        >= r_shallow["surfaces"]["octree"]["node_count"]
-    )
+    assert r_deep["surfaces"]["octree"]["node_count"] >= r_shallow["surfaces"]["octree"]["node_count"]

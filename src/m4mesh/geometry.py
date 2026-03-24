@@ -39,9 +39,21 @@ class BlockGate:
 
     def mask(self, device=None, dtype=torch.float32) -> torch.Tensor:
         parts = [
-            torch.ones(self.D_C, device=device, dtype=dtype) if self.keep_C else torch.zeros(self.D_C, device=device, dtype=dtype),
-            torch.ones(self.D_K, device=device, dtype=dtype) if self.keep_K else torch.zeros(self.D_K, device=device, dtype=dtype),
-            torch.ones(self.D_T, device=device, dtype=dtype) if self.keep_T else torch.zeros(self.D_T, device=device, dtype=dtype),
+            (
+                torch.ones(self.D_C, device=device, dtype=dtype)
+                if self.keep_C
+                else torch.zeros(self.D_C, device=device, dtype=dtype)
+            ),
+            (
+                torch.ones(self.D_K, device=device, dtype=dtype)
+                if self.keep_K
+                else torch.zeros(self.D_K, device=device, dtype=dtype)
+            ),
+            (
+                torch.ones(self.D_T, device=device, dtype=dtype)
+                if self.keep_T
+                else torch.zeros(self.D_T, device=device, dtype=dtype)
+            ),
         ]
         return torch.cat(parts, dim=0)
 

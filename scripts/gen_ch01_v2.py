@@ -3,6 +3,7 @@ Chapter 1 Panel Generation Script v2
 Source of truth: artifacts/webtoon/ch01_adaptation_script_v2.md
 Generates 13 panels (9 NEW + 4 REGENERATE) using Imagen 4.0
 """
+
 import os
 import sys
 import time
@@ -12,7 +13,7 @@ from pathlib import Path
 from google import genai
 from google.genai import types
 
-client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 OUT_DIR = Path("C:/Users/issda/SCBE-AETHERMOORE/artifacts/webtoon/ch01/v2")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -225,6 +226,7 @@ PANELS = {
     },
 }
 
+
 def generate_panel(panel_id, panel_data):
     """Generate a single panel using Imagen 4.0."""
     out_path = OUT_DIR / f"{panel_id}.png"
@@ -282,9 +284,11 @@ def main():
     log_path = OUT_DIR / "generation_log.json"
     log = {
         "model": MODEL,
-        "panels": {pid: {"title": PANELS[pid]["title"], "status": PANELS[pid]["status"],
-                         "result": results.get(pid, "SKIPPED")}
-                   for pid in targets if pid in PANELS}
+        "panels": {
+            pid: {"title": PANELS[pid]["title"], "status": PANELS[pid]["status"], "result": results.get(pid, "SKIPPED")}
+            for pid in targets
+            if pid in PANELS
+        },
     }
     with open(log_path, "w") as f:
         json.dump(log, f, indent=2)

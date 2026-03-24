@@ -377,7 +377,9 @@ def _evaluate_metadata(metadata: Dict[str, Any], tasks: List[Dict[str, Any]]) ->
             pass
 
 
-def _build_summary(tasks: List[Dict[str, Any]], records: List[Dict[str, Any]], metadata: Dict[str, Any]) -> Dict[str, Any]:
+def _build_summary(
+    tasks: List[Dict[str, Any]], records: List[Dict[str, Any]], metadata: Dict[str, Any]
+) -> Dict[str, Any]:
     by_priority = {}
     for task in tasks:
         by_priority[task["priority"]] = by_priority.get(task["priority"], 0) + 1

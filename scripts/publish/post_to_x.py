@@ -62,7 +62,9 @@ def _pct(value: str) -> str:
     return urllib.parse.quote(value, safe="~-._")
 
 
-def _build_oauth1_auth_header(method: str, url: str, consumer_key: str, consumer_secret: str, token: str, token_secret: str) -> str:
+def _build_oauth1_auth_header(
+    method: str, url: str, consumer_key: str, consumer_secret: str, token: str, token_secret: str
+) -> str:
     parsed = urllib.parse.urlparse(url)
     base_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
     query_params = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
@@ -82,20 +84,20 @@ def _build_oauth1_auth_header(method: str, url: str, consumer_key: str, consumer
     sig_pairs.sort(key=lambda kv: (_pct(kv[0]), _pct(kv[1])))
 
     parameter_string = "&".join(f"{_pct(k)}={_pct(v)}" for k, v in sig_pairs)
-    signature_base = "&".join([
-        method.upper(),
-        _pct(base_url),
-        _pct(parameter_string),
-    ])
+    signature_base = "&".join(
+        [
+            method.upper(),
+            _pct(base_url),
+            _pct(parameter_string),
+        ]
+    )
     signing_key = f"{_pct(consumer_secret)}&{_pct(token_secret)}"
     oauth_signature = base64.b64encode(
         hmac.new(signing_key.encode("utf-8"), signature_base.encode("utf-8"), hashlib.sha1).digest()
     ).decode("ascii")
 
     oauth_params["oauth_signature"] = oauth_signature
-    parts = ", ".join(
-        f'{_pct(k)}="{_pct(v)}"' for k, v in sorted(oauth_params.items(), key=lambda kv: kv[0])
-    )
+    parts = ", ".join(f'{_pct(k)}="{_pct(v)}"' for k, v in sorted(oauth_params.items(), key=lambda kv: kv[0]))
     return f"OAuth {parts}"
 
 
@@ -166,11 +168,13 @@ def refresh_access_token(refresh_token):
     if not client_id:
         return None
 
-    data = urllib.parse.urlencode({
-        "grant_type": "refresh_token",
-        "refresh_token": refresh_token,
-        "client_id": client_id,
-    }).encode("utf-8")
+    data = urllib.parse.urlencode(
+        {
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+            "client_id": client_id,
+        }
+    ).encode("utf-8")
 
     req = urllib.request.Request(TOKEN_URL, data=data, method="POST")
     req.add_header("Content-Type", "application/x-www-form-urlencoded")
@@ -255,13 +259,15 @@ def do_auth():
     print(f"  Got authorization code: {auth_code[0][:10]}...")
 
     # Exchange code for tokens
-    data = urllib.parse.urlencode({
-        "grant_type": "authorization_code",
-        "code": auth_code[0],
-        "redirect_uri": REDIRECT_URI,
-        "client_id": client_id,
-        "code_verifier": code_verifier,
-    }).encode("utf-8")
+    data = urllib.parse.urlencode(
+        {
+            "grant_type": "authorization_code",
+            "code": auth_code[0],
+            "redirect_uri": REDIRECT_URI,
+            "client_id": client_id,
+            "code_verifier": code_verifier,
+        }
+    ).encode("utf-8")
 
     req = urllib.request.Request(TOKEN_URL, data=data, method="POST")
     req.add_header("Content-Type", "application/x-www-form-urlencoded")

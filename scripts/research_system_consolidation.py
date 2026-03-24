@@ -41,9 +41,7 @@ class StepResult:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Run SCBE deep research consolidation and cloud automation chain."
-    )
+    parser = argparse.ArgumentParser(description="Run SCBE deep research consolidation and cloud automation chain.")
     parser.add_argument("--config", default=DEFAULT_CONFIG, help=f"Config path (default: {DEFAULT_CONFIG})")
     parser.add_argument("--run-root", default=DEFAULT_RUN_ROOT, help=f"Run root (default: {DEFAULT_RUN_ROOT})")
     parser.add_argument(

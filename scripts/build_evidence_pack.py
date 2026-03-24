@@ -20,7 +20,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--url", default=None)
     parser.add_argument("--kernel-version", default="scbe-kernel-v1")
     parser.add_argument("--profile-id", default="default-safe")
-    parser.add_argument("--training-run-dir", default=None, help="Optional training run dir with hf_training_metrics.json")
+    parser.add_argument(
+        "--training-run-dir", default=None, help="Optional training run dir with hf_training_metrics.json"
+    )
     return parser.parse_args()
 
 
@@ -149,4 +151,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

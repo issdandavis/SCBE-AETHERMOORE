@@ -156,9 +156,7 @@ class FeatureExtractor:
         hz_points = mel_to_hz(mel_points)
 
         # FFT bin frequencies
-        fft_bins = np.floor((self.fft_size + 1) * hz_points / self.sample_rate).astype(
-            int
-        )
+        fft_bins = np.floor((self.fft_size + 1) * hz_points / self.sample_rate).astype(int)
 
         # Create filterbank
         filterbank = np.zeros((self.n_mels, self.fft_size // 2 + 1))
@@ -166,9 +164,7 @@ class FeatureExtractor:
             for k in range(fft_bins[m], fft_bins[m + 1]):
                 filterbank[m, k] = (k - fft_bins[m]) / (fft_bins[m + 1] - fft_bins[m])
             for k in range(fft_bins[m + 1], fft_bins[m + 2]):
-                filterbank[m, k] = (fft_bins[m + 2] - k) / (
-                    fft_bins[m + 2] - fft_bins[m + 1]
-                )
+                filterbank[m, k] = (fft_bins[m + 2] - k) / (fft_bins[m + 2] - fft_bins[m + 1])
 
         return filterbank
 
@@ -180,9 +176,7 @@ class FeatureExtractor:
         """
         return float(np.sqrt(np.mean(signal**2)))
 
-    def _compute_spectral_centroid(
-        self, magnitudes: np.ndarray, frequencies: np.ndarray
-    ) -> float:
+    def _compute_spectral_centroid(self, magnitudes: np.ndarray, frequencies: np.ndarray) -> float:
         """
         Compute spectral centroid (brightness measure).
 
@@ -250,10 +244,7 @@ class FeatureExtractor:
         # DCT to get MFCC
         mfcc = np.zeros(self.n_mfcc)
         for n in range(self.n_mfcc):
-            mfcc[n] = np.sum(
-                mel_spec
-                * np.cos(np.pi * n * (np.arange(self.n_mels) + 0.5) / self.n_mels)
-            )
+            mfcc[n] = np.sum(mel_spec * np.cos(np.pi * n * (np.arange(self.n_mels) + 0.5) / self.n_mels))
 
         return mfcc
 
@@ -282,9 +273,7 @@ class FeatureExtractor:
         rolloff_idx = np.searchsorted(cumulative_energy, threshold * total_energy)
         return float(frequencies[min(rolloff_idx, len(frequencies) - 1)])
 
-    def _compute_spectral_bandwidth(
-        self, magnitudes: np.ndarray, frequencies: np.ndarray, centroid: float
-    ) -> float:
+    def _compute_spectral_bandwidth(self, magnitudes: np.ndarray, frequencies: np.ndarray, centroid: float) -> float:
         """
         Compute spectral bandwidth (spread around centroid).
 
@@ -306,11 +295,7 @@ class FeatureExtractor:
         if len(zero_crossings) < 3:
             return 0.0
         intervals = np.diff(zero_crossings)
-        return (
-            float(np.std(intervals) / np.mean(intervals))
-            if np.mean(intervals) > 0
-            else 0.0
-        )
+        return float(np.std(intervals) / np.mean(intervals)) if np.mean(intervals) > 0 else 0.0
 
     def _compute_shimmer(self, signal: np.ndarray) -> float:
         """
@@ -356,9 +341,7 @@ class FeatureExtractor:
             # Check for sidebands (energy in between harmonics)
             if h < max_harmonic:
                 sideband_freq = (target_freq + fundamental * (h + 1)) / 2
-                sideband_mask = (
-                    np.abs(frequencies - sideband_freq) <= 10
-                )  # Wider tolerance
+                sideband_mask = np.abs(frequencies - sideband_freq) <= 10  # Wider tolerance
                 if np.any(sideband_mask):
                     sideband_energy += np.sum(magnitudes[sideband_mask] ** 2)
 
@@ -426,9 +409,7 @@ class FeatureExtractor:
         spectral_centroid = self._compute_spectral_centroid(magnitudes, frequencies)
         spectral_flatness = self._compute_spectral_flatness(magnitudes)
         spectral_rolloff = self._compute_spectral_rolloff(magnitudes, frequencies)
-        spectral_bandwidth = self._compute_spectral_bandwidth(
-            magnitudes, frequencies, spectral_centroid
-        )
+        spectral_bandwidth = self._compute_spectral_bandwidth(magnitudes, frequencies, spectral_centroid)
 
         # MFCC
         mfcc = self._compute_mfcc(signal)
@@ -445,12 +426,8 @@ class FeatureExtractor:
         peak_idx = np.argmax(magnitudes[1:]) + 1  # Skip DC
         fundamental = frequencies[peak_idx]
 
-        harmonic_mask, sideband_ratio = self._detect_harmonics(
-            magnitudes, frequencies, fundamental
-        )
-        phase_coherence = self._compute_phase_coherence(
-            fft_complex, frequencies, fundamental
-        )
+        harmonic_mask, sideband_ratio = self._detect_harmonics(magnitudes, frequencies, fundamental)
+        phase_coherence = self._compute_phase_coherence(fft_complex, frequencies, fundamental)
 
         return AudioFeatures(
             rms=rms,
@@ -600,9 +577,7 @@ class HarmonicVerifier:
 
         return frequencies[combined_mask], magnitudes[combined_mask]
 
-    def verify_fundamentals(
-        self, peak_freqs: np.ndarray, expected_ids: np.ndarray
-    ) -> Tuple[bool, List[int]]:
+    def verify_fundamentals(self, peak_freqs: np.ndarray, expected_ids: np.ndarray) -> Tuple[bool, List[int]]:
         """
         Verify that expected fundamental frequencies are present.
 
@@ -690,9 +665,7 @@ class HarmonicVerifier:
         expected_mask = self._modality_masks.get(declared_modality, {1, 2, 3, 4, 5})
 
         # Estimate fundamental (strongest peak in expected range)
-        base_range_mask = (peak_freqs >= self.base_freq - 50) & (
-            peak_freqs <= self.base_freq + 300
-        )
+        base_range_mask = (peak_freqs >= self.base_freq - 50) & (peak_freqs <= self.base_freq + 300)
         if not np.any(base_range_mask):
             return VerificationReport(
                 result=VerificationResult.FAIL_TAMPERED,
@@ -742,9 +715,7 @@ class HarmonicVerifier:
             # Sidebands between this and next harmonic
             if h + 1 in expected_mask:
                 sideband_freq = (fundamental * h + fundamental * (h + 1)) / 2
-                sb_mask = (frequencies >= sideband_freq - 10) & (
-                    frequencies <= sideband_freq + 10
-                )
+                sb_mask = (frequencies >= sideband_freq - 10) & (frequencies <= sideband_freq + 10)
                 sideband_energy += np.sum(magnitudes[sb_mask] ** 2)
 
         total = fundamental_energy + sideband_energy
@@ -778,9 +749,7 @@ class HarmonicVerifier:
         zero_crossings = np.where(np.diff(np.signbit(signal)))[0]
         if len(zero_crossings) > 2:
             intervals = np.diff(zero_crossings)
-            jitter_ratio = (
-                np.std(intervals) / np.mean(intervals) if np.mean(intervals) > 0 else 0
-            )
+            jitter_ratio = np.std(intervals) / np.mean(intervals) if np.mean(intervals) > 0 else 0
             details["jitter_ratio"] = float(jitter_ratio)
             # Biological signals have jitter > 0.01, synthetic often < 0.005
             jitter_check = jitter_ratio > 0.003
@@ -1127,7 +1096,11 @@ class AIVerifier:
     # Malicious intent patterns - order matters!
     MALICIOUS_PATTERNS = [
         # Malware/exploit generation - broader patterns
-        (r"(create|generate|write|make)\s*(a\s+)?(malware|ransomware|virus|trojan|worm|exploit)", "malicious_intent", "critical"),
+        (
+            r"(create|generate|write|make)\s*(a\s+)?(malware|ransomware|virus|trojan|worm|exploit)",
+            "malicious_intent",
+            "critical",
+        ),
         (r"(ransomware|malware|virus|trojan|keylogger|spyware|rootkit)", "malicious_intent", "critical"),
         (r"(bypass|disable|circumvent)\s*(security|authentication|authorization|firewall)", "potential_attack", "high"),
         (r"(break|hack|crack)\s*(into|password|encryption)", "potential_attack", "high"),
@@ -1136,14 +1109,22 @@ class AIVerifier:
         (r"(phishing|spear.?phishing|social.?engineering)\s*(email|attack|campaign)?", "malicious_intent", "critical"),
         (r"zero.?day\s*(exploit|vulnerability)", "potential_attack", "high"),
         # SQL injection attack - but NOT "fix sql injection"
-        (r"(?<!fix\s)(?<!patch\s)(?<!remediate\s)(sql|code|command)\s*injection\s*(payload|attack)?", "potential_attack", "high"),
+        (
+            r"(?<!fix\s)(?<!patch\s)(?<!remediate\s)(sql|code|command)\s*injection\s*(payload|attack)?",
+            "potential_attack",
+            "high",
+        ),
         (r"injection\s*(payload|attack)", "potential_attack", "high"),
     ]
 
     # Legitimate security patterns - check these first for remediation context
     LEGITIMATE_PATTERNS = [
         # Remediation patterns - check these first
-        (r"(fix|patch|remediate|repair|resolve)\s*(the\s+)?(sql\s+injection|xss|vulnerability|security|bug)", "legitimate_security", "low"),
+        (
+            r"(fix|patch|remediate|repair|resolve)\s*(the\s+)?(sql\s+injection|xss|vulnerability|security|bug)",
+            "legitimate_security",
+            "low",
+        ),
         # Encryption patterns - allow articles/pronouns between verb and object
         (r"encrypt\s+(\w+\s+)?(message|data|file|communication)", "legitimate_encryption", "low"),
         (r"(secure|protect)\s+(\w+\s+)?(message|data|file|communication)", "legitimate_encryption", "low"),
@@ -1173,12 +1154,10 @@ class AIVerifier:
         import re
 
         self._malicious_compiled = [
-            (re.compile(pattern, re.IGNORECASE), intent, risk)
-            for pattern, intent, risk in self.MALICIOUS_PATTERNS
+            (re.compile(pattern, re.IGNORECASE), intent, risk) for pattern, intent, risk in self.MALICIOUS_PATTERNS
         ]
         self._legitimate_compiled = [
-            (re.compile(pattern, re.IGNORECASE), intent, risk)
-            for pattern, intent, risk in self.LEGITIMATE_PATTERNS
+            (re.compile(pattern, re.IGNORECASE), intent, risk) for pattern, intent, risk in self.LEGITIMATE_PATTERNS
         ]
 
     def classify_intent(self, input_text: str) -> Dict[str, str]:
@@ -1294,9 +1273,7 @@ class AIVerifier:
 
         return f"audit_{uuid.uuid4().hex[:12]}"
 
-    def _log_classification(
-        self, input_text: str, intent: str, risk: str, blocked: bool
-    ) -> None:
+    def _log_classification(self, input_text: str, intent: str, risk: str, blocked: bool) -> None:
         """Log intent classification for audit."""
         import time
 
@@ -1328,9 +1305,7 @@ class AIVerifier:
         """Get recent audit log entries."""
         return self.audit_log[-limit:]
 
-    def validate_ai_output(
-        self, output: str, context: Optional[Dict] = None
-    ) -> Tuple[bool, str]:
+    def validate_ai_output(self, output: str, context: Optional[Dict] = None) -> Tuple[bool, str]:
         """
         Validate AI-generated output for safety.
 
@@ -1395,9 +1370,7 @@ class AIVerifier:
         # Check for harm enablement
         harm_classification = self.classify_intent(response)
         if harm_classification["risk_level"] in ("high", "critical"):
-            violations.append(
-                f"Response may enable harm: {harm_classification['intent']}"
-            )
+            violations.append(f"Response may enable harm: {harm_classification['intent']}")
 
         # Check for deceptive patterns
         deceptive_patterns = [

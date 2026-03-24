@@ -86,9 +86,7 @@ def build_catalog() -> list[dict]:
         default_variant = next(
             (
                 variant_key
-                for variant_key in (
-                    [default_variant] if default_variant else []
-                ) + list(DEFAULT_VARIANT_ORDER)
+                for variant_key in ([default_variant] if default_variant else []) + list(DEFAULT_VARIANT_ORDER)
                 if variant_key in variants
             ),
             next(iter(variants)),

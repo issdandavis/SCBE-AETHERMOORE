@@ -12,4 +12,3 @@ def test_pipeline_emits_state21_audit_event():
     assert len(result["state21_v1"]) == 21
     assert result["audit_event"]["schema"] == "state21_v1"
     assert result["audit_event"]["decision"] in {"ALLOW", "QUARANTINE", "DENY"}
-

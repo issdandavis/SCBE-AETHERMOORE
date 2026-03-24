@@ -34,45 +34,60 @@ from .models import Choice, HistoryEntry, PlaythroughRecord, Scene, StoryGraph
 
 DIM_NAMES: List[str] = [
     # Cognitive (0-2)
-    "reasoning", "abstraction", "pattern_recognition",
+    "reasoning",
+    "abstraction",
+    "pattern_recognition",
     # Ethical (3-5)
-    "fairness", "harm_avoidance", "honesty",
+    "fairness",
+    "harm_avoidance",
+    "honesty",
     # Social (6-8)
-    "empathy", "cooperation", "assertiveness",
+    "empathy",
+    "cooperation",
+    "assertiveness",
     # Executive (9-11)
-    "planning", "impulse_control", "adaptability",
+    "planning",
+    "impulse_control",
+    "adaptability",
     # Motivational (12-14)
-    "curiosity", "persistence", "risk_tolerance",
+    "curiosity",
+    "persistence",
+    "risk_tolerance",
     # Emotional (15-17)
-    "stability", "optimism", "resilience",
+    "stability",
+    "optimism",
+    "resilience",
     # Meta (18-20)
-    "self_awareness", "uncertainty_tolerance", "growth_orientation",
+    "self_awareness",
+    "uncertainty_tolerance",
+    "growth_orientation",
 ]
 
 # Tag → personality dimension indices affected and direction (+1 or -1)
 TAG_DRIFT_MAP: Dict[str, List[Tuple[int, float]]] = {
-    "ethical":       [(3, +1), (4, +1), (5, +1)],
-    "aggressive":    [(8, +1), (6, -0.5), (7, -0.5), (14, +0.5)],
-    "empathetic":    [(6, +1), (7, +0.5), (3, +0.5)],
-    "cautious":      [(14, -1), (9, +0.5), (10, +0.5)],
-    "risky":         [(14, +1), (10, -0.5), (12, +0.5)],
-    "curious":       [(12, +1), (1, +0.5), (20, +0.5)],
-    "cooperative":   [(7, +1), (6, +0.5), (8, -0.3)],
-    "deceptive":     [(5, -1), (8, +0.3)],
-    "honest":        [(5, +1), (18, +0.3)],
-    "planning":      [(9, +1), (0, +0.3)],
-    "impulsive":     [(10, -1), (14, +0.5)],
-    "resilient":     [(17, +1), (15, +0.5), (16, +0.3)],
-    "creative":      [(1, +1), (12, +0.5), (2, +0.5)],
-    "stable":        [(15, +1), (10, +0.3)],
-    "optimistic":    [(16, +1), (17, +0.3)],
-    "adaptive":      [(11, +1), (19, +0.3), (20, +0.3)],
+    "ethical": [(3, +1), (4, +1), (5, +1)],
+    "aggressive": [(8, +1), (6, -0.5), (7, -0.5), (14, +0.5)],
+    "empathetic": [(6, +1), (7, +0.5), (3, +0.5)],
+    "cautious": [(14, -1), (9, +0.5), (10, +0.5)],
+    "risky": [(14, +1), (10, -0.5), (12, +0.5)],
+    "curious": [(12, +1), (1, +0.5), (20, +0.5)],
+    "cooperative": [(7, +1), (6, +0.5), (8, -0.3)],
+    "deceptive": [(5, -1), (8, +0.3)],
+    "honest": [(5, +1), (18, +0.3)],
+    "planning": [(9, +1), (0, +0.3)],
+    "impulsive": [(10, -1), (14, +0.5)],
+    "resilient": [(17, +1), (15, +0.5), (16, +0.3)],
+    "creative": [(1, +1), (12, +0.5), (2, +0.5)],
+    "stable": [(15, +1), (10, +0.3)],
+    "optimistic": [(16, +1), (17, +0.3)],
+    "adaptive": [(11, +1), (19, +0.3), (20, +0.3)],
 }
 
 
 # ---------------------------------------------------------------------------
 #  PersonalityVector
 # ---------------------------------------------------------------------------
+
 
 class PersonalityVector:
     """
@@ -153,6 +168,7 @@ class PersonalityVector:
 #  HistoryBuffer
 # ---------------------------------------------------------------------------
 
+
 class HistoryBuffer:
     """Rolling window of recent decisions, compressed to summary stats."""
 
@@ -167,16 +183,18 @@ class HistoryBuffer:
         stats_after: Dict[str, float],
         personality: Optional[List[float]] = None,
     ) -> None:
-        self._entries.append(HistoryEntry(
-            timestamp=time.time(),
-            scene_id=scene_id,
-            choice_id=choice.choice_id,
-            choice_label=choice.label,
-            choice_tags=choice.tags,
-            stats_before=dict(stats_before),
-            stats_after=dict(stats_after),
-            personality_snapshot=personality,
-        ))
+        self._entries.append(
+            HistoryEntry(
+                timestamp=time.time(),
+                scene_id=scene_id,
+                choice_id=choice.choice_id,
+                choice_label=choice.label,
+                choice_tags=choice.tags,
+                stats_before=dict(stats_before),
+                stats_after=dict(stats_after),
+                personality_snapshot=personality,
+            )
+        )
 
     def compress(self) -> List[float]:
         """
@@ -210,10 +228,7 @@ class HistoryBuffer:
             key_list = sorted(all_keys)[:16]
             n = len(self._entries)
             for i, key in enumerate(key_list):
-                delta_sum = sum(
-                    e.stats_after.get(key, 0) - e.stats_before.get(key, 0)
-                    for e in self._entries
-                )
+                delta_sum = sum(e.stats_after.get(key, 0) - e.stats_before.get(key, 0) for e in self._entries)
                 vec[32 + i] = delta_sum / n
 
         # Recency (dims 48-63): exponentially decaying activity markers
@@ -234,6 +249,7 @@ class HistoryBuffer:
 # ---------------------------------------------------------------------------
 #  DecisionEngine
 # ---------------------------------------------------------------------------
+
 
 class DecisionEngine:
     """
@@ -337,6 +353,7 @@ class DecisionEngine:
 #  PlayerAgent
 # ---------------------------------------------------------------------------
 
+
 class PlayerAgent:
     """A single AI agent that plays through stories."""
 
@@ -360,7 +377,11 @@ class PlayerAgent:
             raise ValueError(f"No available choices in scene '{scene.scene_id}'")
 
         scored = self.decision_engine.score_choices(
-            scene, available_choices, self.personality, self.stats, self.history,
+            scene,
+            available_choices,
+            self.personality,
+            self.stats,
+            self.history,
         )
         chosen = self.decision_engine.select(scored)
 

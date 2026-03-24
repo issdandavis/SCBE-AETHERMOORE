@@ -30,9 +30,8 @@ from enum import Enum
 
 # Polyglot imports
 try:
-    from ...spiralverse.polyglot_alphabet import (
-        TongueID, TONGUE_ALPHABETS
-    )
+    from ...spiralverse.polyglot_alphabet import TongueID, TONGUE_ALPHABETS
+
     POLYGLOT_AVAILABLE = True
 except ImportError:
     POLYGLOT_AVAILABLE = False
@@ -54,10 +53,10 @@ PHI = (1 + math.sqrt(5)) / 2  # Golden ratio ≈ 1.618
 
 # Phase angles for each tongue (evenly distributed around circle)
 TONGUE_PHASES = {
-    TongueID.AXIOM: 0.0,          # 0°
-    TongueID.FLOW: math.pi / 3,   # 60°
+    TongueID.AXIOM: 0.0,  # 0°
+    TongueID.FLOW: math.pi / 3,  # 60°
     TongueID.GLYPH: 2 * math.pi / 3,  # 120°
-    TongueID.ORACLE: math.pi,     # 180°
+    TongueID.ORACLE: math.pi,  # 180°
     TongueID.CHARM: 4 * math.pi / 3,  # 240°
     TongueID.LEDGER: 5 * math.pi / 3,  # 300°
 }
@@ -77,6 +76,7 @@ TONGUE_SIGNATURES = {
 # SEMANTIC ENCODING
 # =============================================================================
 
+
 @dataclass
 class SemanticVector:
     """
@@ -85,6 +85,7 @@ class SemanticVector:
     Each tongue contributes an amplitude (encoding strength) and
     phase (semantic angle), creating a 6D complex semantic space.
     """
+
     # Per-tongue amplitudes (encoding strength)
     amplitudes: Dict[TongueID, float]
 
@@ -157,10 +158,7 @@ def analyze_text_by_tongue(text: str) -> Dict[TongueID, float]:
     return {t: count / total_chars for t, count in tongue_counts.items()}
 
 
-def compute_semantic_phases(
-    text: str,
-    base_phases: Optional[Dict[TongueID, float]] = None
-) -> Dict[TongueID, float]:
+def compute_semantic_phases(text: str, base_phases: Optional[Dict[TongueID, float]] = None) -> Dict[TongueID, float]:
     """
     Compute semantic phase angles for text.
 
@@ -181,10 +179,10 @@ def compute_semantic_phases(
 
     # Compute text hash for phase modulation (deterministic)
     # Add domain-specific salt to prevent hash manipulation
-    text_bytes = b'polyglot_phase_v1:' + text.encode('utf-8')
+    text_bytes = b"polyglot_phase_v1:" + text.encode("utf-8")
     # Use 16 hex chars (64 bits) for better distribution and lower collision probability
     text_hash = int(hashlib.sha256(text_bytes).hexdigest()[:16], 16)
-    hash_factor = (text_hash / (2 ** 64)) * math.pi / 6  # ±30° variation
+    hash_factor = (text_hash / (2**64)) * math.pi / 6  # ±30° variation
 
     phases = {}
     for tongue in TongueID:
@@ -213,11 +211,7 @@ def encode_text_semantic(text: str) -> SemanticVector:
     phases = compute_semantic_phases(text)
 
     # Identify dominant tongues (top 3 by amplitude)
-    sorted_tongues = sorted(
-        amplitudes.items(),
-        key=lambda x: x[1],
-        reverse=True
-    )
+    sorted_tongues = sorted(amplitudes.items(), key=lambda x: x[1], reverse=True)
     dominant = [t for t, _ in sorted_tongues[:3] if amplitudes[t] > 0]
 
     return SemanticVector(
@@ -232,10 +226,8 @@ def encode_text_semantic(text: str) -> SemanticVector:
 # LAYER 1: COMPLEX STATE CONSTRUCTION
 # =============================================================================
 
-def layer1_complex_state_from_semantic(
-    semantic: SemanticVector,
-    D: int = 6
-) -> Tuple[np.ndarray, np.ndarray]:
+
+def layer1_complex_state_from_semantic(semantic: SemanticVector, D: int = 6) -> Tuple[np.ndarray, np.ndarray]:
     """
     Layer 1: Construct complex state from semantic encoding.
 
@@ -266,10 +258,7 @@ def layer1_complex_state_from_semantic(
     return real, imag
 
 
-def layer1_complex_state_from_text(
-    text: str,
-    D: int = 6
-) -> Tuple[np.ndarray, np.ndarray]:
+def layer1_complex_state_from_text(text: str, D: int = 6) -> Tuple[np.ndarray, np.ndarray]:
     """
     Layer 1: Construct complex state directly from text.
 
@@ -289,6 +278,7 @@ def layer1_complex_state_from_text(
 # =============================================================================
 # LAYER 2: REALIFICATION
 # =============================================================================
+
 
 def layer2_realification(complex_state: Tuple[np.ndarray, np.ndarray]) -> np.ndarray:
     """
@@ -313,11 +303,13 @@ def layer2_realification(complex_state: Tuple[np.ndarray, np.ndarray]) -> np.nda
 # COMPLETE PIPELINE
 # =============================================================================
 
+
 @dataclass
 class SemanticPipelineResult:
     """
     Result of processing text through Layers 1-2.
     """
+
     # Input
     source_text: str
     semantic: SemanticVector
@@ -406,11 +398,7 @@ class PolyglotLayer12Pipeline:
         """
         return [self.process(text) for text in texts]
 
-    def compare_semantic_similarity(
-        self,
-        text1: str,
-        text2: str
-    ) -> float:
+    def compare_semantic_similarity(self, text1: str, text2: str) -> float:
         """
         Compare semantic similarity of two texts.
 
@@ -440,6 +428,7 @@ class PolyglotLayer12Pipeline:
 # =============================================================================
 # CONVENIENCE FUNCTIONS
 # =============================================================================
+
 
 def encode_text_for_pipeline(text: str) -> np.ndarray:
     """
@@ -502,12 +491,12 @@ def identify_message_intent(text: str) -> Dict[str, Any]:
     intents = [intent_map.get(t, "unknown") for t in semantic.dominant_tongues]
 
     return {
-        'dominant_tongues': [t.value for t in semantic.dominant_tongues],
-        'intents': intents,
-        'primary_intent': intents[0] if intents else "neutral",
-        'semantic_strength': semantic.total_amplitude,
-        'amplitudes': {t.value: a for t, a in semantic.amplitudes.items()},
-        'complexity': float(np.var(semantic.phase_vector)),
+        "dominant_tongues": [t.value for t in semantic.dominant_tongues],
+        "intents": intents,
+        "primary_intent": intents[0] if intents else "neutral",
+        "semantic_strength": semantic.total_amplitude,
+        "amplitudes": {t.value: a for t, a in semantic.amplitudes.items()},
+        "complexity": float(np.var(semantic.phase_vector)),
     }
 
 
@@ -515,10 +504,8 @@ def identify_message_intent(text: str) -> Dict[str, Any]:
 # INTEGRATION WITH LAYER 3
 # =============================================================================
 
-def prepare_for_layer3(
-    text: str,
-    include_weights: bool = True
-) -> Dict[str, Any]:
+
+def prepare_for_layer3(text: str, include_weights: bool = True) -> Dict[str, Any]:
     """
     Prepare semantic encoding for Layer 3 weighted transform.
 
@@ -533,17 +520,17 @@ def prepare_for_layer3(
     result = pipeline.process(text)
 
     output = {
-        'realified': result.realified,
-        'dimension': len(result.realified),
-        'semantic': result.semantic.amplitudes,
-        'dominant_tongues': [t.value for t in result.dominant_tongues],
+        "realified": result.realified,
+        "dimension": len(result.realified),
+        "semantic": result.semantic.amplitudes,
+        "dominant_tongues": [t.value for t in result.dominant_tongues],
     }
 
     if include_weights:
         # Golden ratio weights for 6 tongues
         D = pipeline.dimension
-        weights = np.array([PHI ** k for k in range(D)])
+        weights = np.array([PHI**k for k in range(D)])
         weights = weights / np.sum(weights)
-        output['weights'] = weights
+        output["weights"] = weights
 
     return output

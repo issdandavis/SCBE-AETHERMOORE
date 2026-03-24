@@ -43,7 +43,14 @@ def test_step_produces_valid_decision_and_progress_fields() -> None:
     assert 0.0 <= out.omega <= 1.0
     assert out.permission_color in {"green", "amber", "red"}
     assert out.friction_multiplier >= 1.0
-    assert out.weakest_lock in {"pqc_factor", "harm_score", "drift_factor", "triadic_stable", "spectral_score", "trust_exile"}
+    assert out.weakest_lock in {
+        "pqc_factor",
+        "harm_score",
+        "drift_factor",
+        "triadic_stable",
+        "spectral_score",
+        "trust_exile",
+    }
     assert isinstance(out.lock_vector, dict)
     assert "harm_score" in out.lock_vector
     assert len(out.voxel_key.split(":")) == 6

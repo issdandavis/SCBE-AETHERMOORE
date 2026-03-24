@@ -200,6 +200,7 @@ def run_mirror_analysis(
         model = AutoModel.from_pretrained(model_id, **kwargs)
     except Exception:
         from transformers import AutoModelForCausalLM
+
         model = AutoModelForCausalLM.from_pretrained(model_id, **kwargs)
 
     model.eval()
@@ -214,10 +215,7 @@ def run_mirror_analysis(
     if not sample_weights:
         raise RuntimeError(f"Could not find Q/K/V weights in {model_id}")
     sample_shape = list(sample_weights.values())[0].shape
-    noise_baseline = float(np.mean([
-        spectral_coherence_2d(np.random.randn(*sample_shape)).s_spec
-        for _ in range(10)
-    ]))
+    noise_baseline = float(np.mean([spectral_coherence_2d(np.random.randn(*sample_shape)).s_spec for _ in range(10)]))
 
     print(f"Weight shape: {sample_shape}, Noise baseline: {noise_baseline:.6f}")
     print()
@@ -246,7 +244,9 @@ def run_mirror_analysis(
         summary[wtype] = {
             "count": len(subset),
             "mean_s_spec": float(np.mean([r.original.s_spec for r in subset])),
-            "mean_s_spec_vs_noise": float(np.mean([r.original.s_spec for r in subset])) / noise_baseline if noise_baseline > 0 else 0,
+            "mean_s_spec_vs_noise": (
+                float(np.mean([r.original.s_spec for r in subset])) / noise_baseline if noise_baseline > 0 else 0
+            ),
             "mean_edge_s_spec": float(np.mean([r.mirror_edge.s_spec for r in subset])),
             "mean_signal_s_spec": float(np.mean([r.mirror_signal.s_spec for r in subset])),
             "mean_delta_we": float(np.mean([r.delta_whole_edge.delta_s_spec for r in subset])),
@@ -278,6 +278,7 @@ def main() -> int:
     args = parser.parse_args()
 
     import os
+
     token = os.environ.get(args.token_env, "").strip() or None
 
     result = run_mirror_analysis(
@@ -294,7 +295,9 @@ def main() -> int:
 
     print(f"\nMirror Differential Telemetry complete: {output_path}")
     for wtype, stats in result["summary"].items():
-        print(f"  {wtype}: S_spec={stats['mean_s_spec']:.4f} ({stats['mean_s_spec_vs_noise']:.2f}x noise), D_we={stats['mean_delta_we']:.4f}, iso={'YES' if stats['all_isometries_preserved'] else 'NO'}")
+        print(
+            f"  {wtype}: S_spec={stats['mean_s_spec']:.4f} ({stats['mean_s_spec_vs_noise']:.2f}x noise), D_we={stats['mean_delta_we']:.4f}, iso={'YES' if stats['all_isometries_preserved'] else 'NO'}"
+        )
 
     if args.json:
         print(json.dumps(result, indent=2))

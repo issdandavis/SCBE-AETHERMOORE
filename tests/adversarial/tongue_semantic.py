@@ -182,14 +182,16 @@ def semantic_tongue_coords(text: str) -> np.ndarray:
 
     # Add baseline from text statistics (small contribution, not dominant)
     chars = max(len(text), 1)
-    stats_bias = np.array([
-        0.05 * sum(c.isupper() for c in text) / chars,   # KO: command markers
-        0.05 * len(words) / 100.0,                         # AV: breadth
-        0.05 * len(set(w.lower() for w in words)) / total_words,  # RU: diversity
-        0.05 * sum(c.isdigit() for c in text) / chars,    # CA: technical
-        0.05 * sum(c.isupper() for c in text) / chars,    # UM: authority
-        0.05 * sum(c in ".,;:!?-_/()[]{}@#$%^&*" for c in text) / chars,  # DR: structure
-    ])
+    stats_bias = np.array(
+        [
+            0.05 * sum(c.isupper() for c in text) / chars,  # KO: command markers
+            0.05 * len(words) / 100.0,  # AV: breadth
+            0.05 * len(set(w.lower() for w in words)) / total_words,  # RU: diversity
+            0.05 * sum(c.isdigit() for c in text) / chars,  # CA: technical
+            0.05 * sum(c.isupper() for c in text) / chars,  # UM: authority
+            0.05 * sum(c in ".,;:!?-_/()[]{}@#$%^&*" for c in text) / chars,  # DR: structure
+        ]
+    )
 
     coords = resonance + stats_bias
     # Clamp to [0, 1]

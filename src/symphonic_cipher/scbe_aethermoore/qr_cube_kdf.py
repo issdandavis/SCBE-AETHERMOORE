@@ -50,6 +50,7 @@ PHI = (1 + math.sqrt(5)) / 2  # Golden ratio ≈ 1.6180339887
 # HKDF-SHA256 (RFC 5869)
 # =============================================================================
 
+
 def _hkdf_extract(salt: bytes, ikm: bytes) -> bytes:
     """HKDF-Extract: PRK = HMAC-SHA256(salt, ikm)."""
     if not salt:
@@ -72,6 +73,7 @@ def _hkdf_expand(prk: bytes, info: bytes, length: int) -> bytes:
 # =============================================================================
 # HELPERS
 # =============================================================================
+
 
 def _pi_phi_scalar(d_star: float) -> float:
     """
@@ -107,6 +109,7 @@ def _commit_field(domain: bytes, data: bytes) -> bytes:
 # =============================================================================
 # CORE
 # =============================================================================
+
 
 def derive_pi_phi_key(
     *,
@@ -157,9 +160,7 @@ def derive_pi_phi_key(
     _assert_finite(d_star, "d_star")
     _assert_finite(coherence, "coherence")
     if not (0.0 <= coherence <= 1.0):
-        raise ValueError(
-            f"coherence must be in range 0..1, got {coherence!r}"
-        )
+        raise ValueError(f"coherence must be in range 0..1, got {coherence!r}")
 
     # ------------------------------------------------------------------
     # 2. Compute harmonic cost scalar: π^(φ · d*)
@@ -173,18 +174,20 @@ def derive_pi_phi_key(
     # then all are concatenated. This ensures every input contributes
     # to the derived key and no two fields can collide.
     # ------------------------------------------------------------------
-    cost_bytes = struct.pack(">d", cost)          # IEEE 754 big-endian double
+    cost_bytes = struct.pack(">d", cost)  # IEEE 754 big-endian double
     d_star_bytes = struct.pack(">d", d_star)
     coherence_bytes = struct.pack(">d", coherence)
 
-    ikm = b"".join([
-        _commit_field(b"pi_phi:cost:", cost_bytes),
-        _commit_field(b"pi_phi:d_star:", d_star_bytes),
-        _commit_field(b"pi_phi:coherence:", coherence_bytes),
-        _commit_field(b"pi_phi:cube_id:", cube_id.encode("utf-8")),
-        _commit_field(b"pi_phi:aad:", aad),
-        _commit_field(b"pi_phi:nonce:", nonce),
-    ])
+    ikm = b"".join(
+        [
+            _commit_field(b"pi_phi:cost:", cost_bytes),
+            _commit_field(b"pi_phi:d_star:", d_star_bytes),
+            _commit_field(b"pi_phi:coherence:", coherence_bytes),
+            _commit_field(b"pi_phi:cube_id:", cube_id.encode("utf-8")),
+            _commit_field(b"pi_phi:aad:", aad),
+            _commit_field(b"pi_phi:nonce:", nonce),
+        ]
+    )
 
     # ------------------------------------------------------------------
     # 4. HKDF-Extract: PRK = HMAC-SHA256(salt, IKM)

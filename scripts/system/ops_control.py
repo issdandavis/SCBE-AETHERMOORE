@@ -38,9 +38,7 @@ AGENTS_DIR = REPO_ROOT / "agents"
 SCBE_DIR = REPO_ROOT / ".scbe"
 SESSION_SIGNONS = AGENT_COMM / "session_signons.jsonl"
 OBSIDIAN_DEFAULT_FILE = Path.home() / ".codex" / "obsidian_default_path.txt"
-LEGACY_OBSIDIAN_WORKSPACE = Path(
-    r"C:\Users\issda\OneDrive\Documents\DOCCUMENTS\A follder\AI Workspace"
-)
+LEGACY_OBSIDIAN_WORKSPACE = Path(r"C:\Users\issda\OneDrive\Documents\DOCCUMENTS\A follder\AI Workspace")
 FALLBACK_OBSIDIAN_WORKSPACES = [
     Path.home() / "Documents" / "Avalon Files" / "SCBE Research" / "Agent Ops",
     Path.home() / "Documents" / "Avalon Files" / "SCBE Research",
@@ -154,6 +152,7 @@ def build_packet(args) -> dict:
 
 # ---- Surface Writers ----
 
+
 def write_json_packet(packet: dict) -> tuple[bool, str]:
     """Surface 1: JSON file in artifacts/agent_comm/{date}/"""
     try:
@@ -263,18 +262,24 @@ def deliver_to_all(packet: dict, workspace_override: str = "") -> dict:
 
 # ---- Commands ----
 
+
 def cmd_send(args):
     packet = build_packet(args)
     delivery = deliver_to_all(packet, workspace_override=args.workspace)
 
     successes = sum(1 for v in delivery.values() if v["ok"])
     if args.json_output:
-        print(json.dumps({
-            "packet": packet,
-            "delivery": delivery,
-            "successes": successes,
-            "workspace": str(resolve_obsidian_workspace(args.workspace) or ""),
-        }, indent=2))
+        print(
+            json.dumps(
+                {
+                    "packet": packet,
+                    "delivery": delivery,
+                    "successes": successes,
+                    "workspace": str(resolve_obsidian_workspace(args.workspace) or ""),
+                },
+                indent=2,
+            )
+        )
         if successes < 4:
             sys.exit(1)
         return
@@ -339,7 +344,9 @@ def cmd_status(args):
     print(f"Packets today ({today}): {len(packets)}")
     for p in packets[-10:]:
         ack_tag = " [ACK-NEEDED]" if p.get("ack_required") and p.get("intent") != "ack" else ""
-        print(f"  {p.get('created_at','')} {p.get('from','')} -> {p.get('to','')} | {p.get('intent','')} | {p.get('status','')}{ack_tag}")
+        print(
+            f"  {p.get('created_at','')} {p.get('from','')} -> {p.get('to','')} | {p.get('intent','')} | {p.get('status','')}{ack_tag}"
+        )
         print(f"    {p.get('summary','')[:100]}")
 
     # JSONL lane tail
@@ -351,7 +358,9 @@ def cmd_status(args):
         for line in recent:
             try:
                 d = json.loads(line)
-                print(f"  {d.get('created_at','')} {d.get('from','')} -> {d.get('to','')} | {d.get('intent', d.get('type',''))}")
+                print(
+                    f"  {d.get('created_at','')} {d.get('from','')} -> {d.get('to','')} | {d.get('intent', d.get('type',''))}"
+                )
             except Exception:
                 pass
 
@@ -363,7 +372,9 @@ def cmd_status(args):
         for line in recent:
             try:
                 d = json.loads(line)
-                print(f"  {d.get('timestamp_utc','')} {d.get('agent','')} ({d.get('callsign','')}) — {d.get('status','')}")
+                print(
+                    f"  {d.get('timestamp_utc','')} {d.get('agent','')} ({d.get('callsign','')}) — {d.get('status','')}"
+                )
             except Exception:
                 pass
 
@@ -437,7 +448,9 @@ def cmd_roster(args):
         for aid, info in agents.items():
             enabled = info.get("enabled", True)
             tag = "ACTIVE" if enabled else "DISABLED"
-            print(f"  [{tag}] {aid}: {info.get('display_name',aid)} ({info.get('provider','?')}/{info.get('model','?')})")
+            print(
+                f"  [{tag}] {aid}: {info.get('display_name',aid)} ({info.get('provider','?')}/{info.get('model','?')})"
+            )
     else:
         print("No agent_squad.json found.")
 
@@ -479,6 +492,7 @@ def cmd_health(args):
 
 # ---- CLI ----
 
+
 def main():
     parser = argparse.ArgumentParser(description="SCBE Ops Control — Multi-Agent Bus")
     sub = parser.add_subparsers(dest="command")
@@ -487,11 +501,12 @@ def main():
     p_send = sub.add_parser("send", help="Send cross-talk to all surfaces")
     p_send.add_argument("--from", dest="from_agent", required=True)
     p_send.add_argument("--to", required=True)
-    p_send.add_argument("--intent", required=True,
-                        choices=["handoff", "ack", "sync", "lane_claim",
-                                 "status_update", "smoke", "asset_drop"])
-    p_send.add_argument("--status", required=True,
-                        choices=["done", "in_progress", "pending", "blocked"])
+    p_send.add_argument(
+        "--intent",
+        required=True,
+        choices=["handoff", "ack", "sync", "lane_claim", "status_update", "smoke", "asset_drop"],
+    )
+    p_send.add_argument("--status", required=True, choices=["done", "in_progress", "pending", "blocked"])
     p_send.add_argument("--summary", required=True)
     p_send.add_argument("--artifacts", default="", help="Comma-separated file paths")
     p_send.add_argument("--next", dest="next_action", default="")

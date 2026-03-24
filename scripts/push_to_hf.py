@@ -68,22 +68,16 @@ def load_hf_libs() -> tuple[Any, Any]:
     try:
         from datasets import load_dataset
     except Exception as exc:  # noqa: BLE001
-        raise RuntimeError(
-            "datasets package is required. Install with: pip install datasets"
-        ) from exc
+        raise RuntimeError("datasets package is required. Install with: pip install datasets") from exc
     try:
         from huggingface_hub import HfApi
     except Exception as exc:  # noqa: BLE001
-        raise RuntimeError(
-            "huggingface_hub package is required. Install with: pip install huggingface_hub"
-        ) from exc
+        raise RuntimeError("huggingface_hub package is required. Install with: pip install huggingface_hub") from exc
     return load_dataset, HfApi
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Push normalized Perplexity dataset JSONL to Hugging Face."
-    )
+    parser = argparse.ArgumentParser(description="Push normalized Perplexity dataset JSONL to Hugging Face.")
     parser.add_argument("--data-path", default=DEFAULT_DATA_PATH)
     parser.add_argument("--repo-id", default=os.getenv("HF_REPO", DEFAULT_HF_REPO))
     parser.add_argument("--token", default=os.getenv("HF_TOKEN"))

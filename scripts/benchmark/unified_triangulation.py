@@ -27,9 +27,14 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tests.adversarial.scbe_harness import (
-    quantize_spin, build_metric_tensor,
-    TONGUE_NAMES, TONGUE_WEIGHTS, PI, PHI,
-    _ADVERSARIAL_PATTERNS, _MULTILINGUAL_OVERRIDE_PATTERNS,
+    quantize_spin,
+    build_metric_tensor,
+    TONGUE_NAMES,
+    TONGUE_WEIGHTS,
+    PI,
+    PHI,
+    _ADVERSARIAL_PATTERNS,
+    _MULTILINGUAL_OVERRIDE_PATTERNS,
 )
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, get_all_attacks
 from tests.adversarial.tongue_semantic import semantic_tongue_coords
@@ -43,56 +48,74 @@ CLEAN = BASELINE_CLEAN
 # Poincare ball ops (from hyperbolic_helix_test)
 # ═══════════════════════════════════════════════════════════
 
+
 def poincare_project(v, max_norm=0.999):
     norm = np.linalg.norm(v)
     return v * max_norm / norm if norm >= max_norm else v
 
+
 def mobius_add(u, v, eps=1e-10):
-    u_sq, v_sq, uv = np.dot(u,u), np.dot(v,v), np.dot(u,v)
-    num = (1 + 2*uv + v_sq)*u + (1 - u_sq)*v
-    denom = 1 + 2*uv + u_sq*v_sq + eps
+    u_sq, v_sq, uv = np.dot(u, u), np.dot(v, v), np.dot(u, v)
+    num = (1 + 2 * uv + v_sq) * u + (1 - u_sq) * v
+    denom = 1 + 2 * uv + u_sq * v_sq + eps
     return poincare_project(num / denom)
+
 
 def exp_map_zero(v, eps=1e-10):
     norm = np.linalg.norm(v)
     return np.tanh(norm) * v / norm if norm >= eps else v
 
+
 def hyperbolic_distance(u, v, eps=1e-10):
-    diff_sq = np.sum((u-v)**2)
+    diff_sq = np.sum((u - v) ** 2)
     u_sq, v_sq = np.sum(u**2), np.sum(v**2)
-    denom = (1-u_sq)*(1-v_sq)
-    if denom <= eps: return float('inf')
-    return math.acosh(max(1 + 2*diff_sq/max(denom,eps), 1.0))
+    denom = (1 - u_sq) * (1 - v_sq)
+    if denom <= eps:
+        return float("inf")
+    return math.acosh(max(1 + 2 * diff_sq / max(denom, eps), 1.0))
 
 
 # ═══════════════════════════════════════════════════════════
 # Three subsystems
 # ═══════════════════════════════════════════════════════════
 
+
 def system1_semantic_detection(text: str, centroid: np.ndarray) -> Dict:
     """E4: Semantic tongue + lexical + geometric signals."""
     coords = semantic_tongue_coords(text)
     spin = quantize_spin(coords, centroid, 0.03)
-    d_star = math.sqrt(sum(G[i,i]*(coords[i]-centroid[i])**2 for i in range(6)))
+    d_star = math.sqrt(sum(G[i, i] * (coords[i] - centroid[i]) ** 2 for i in range(6)))
     cost = PI ** (PHI * min(d_star, 5.0))
-    weighted = [abs(coords[i])*TONGUE_WEIGHTS[i] for i in range(6)]
-    norm = math.sqrt(sum(c*c for c in coords))
+    weighted = [abs(coords[i]) * TONGUE_WEIGHTS[i] for i in range(6)]
+    norm = math.sqrt(sum(c * c for c in coords))
 
     signals = []
     adv = sum(1 for p in _ADVERSARIAL_PATTERNS if p.search(text))
     ml = sum(1 for p in _MULTILINGUAL_OVERRIDE_PATTERNS if p.search(text))
-    if spin.magnitude >= 5: signals.append("spin")
-    if max(weighted)/max(sum(weighted),1e-9) > 0.6: signals.append("imbalance")
-    if cost > 1.5: signals.append("cost")
-    if norm > 0.3: signals.append("boundary")
-    if adv >= 1: signals.append("lexical")
-    if ml >= 1: signals.append("ml")
+    if spin.magnitude >= 5:
+        signals.append("spin")
+    if max(weighted) / max(sum(weighted), 1e-9) > 0.6:
+        signals.append("imbalance")
+    if cost > 1.5:
+        signals.append("cost")
+    if norm > 0.3:
+        signals.append("boundary")
+    if adv >= 1:
+        signals.append("lexical")
+    if ml >= 1:
+        signals.append("ml")
 
-    has_geo = any(s in ["cost","spin","boundary","imbalance"] for s in signals)
-    detected = len(signals)>=2 or adv>=2 or ml>=1 or (adv>=1 and has_geo)
+    has_geo = any(s in ["cost", "spin", "boundary", "imbalance"] for s in signals)
+    detected = len(signals) >= 2 or adv >= 2 or ml >= 1 or (adv >= 1 and has_geo)
 
-    return {"detected": detected, "signals": signals, "cost": cost,
-            "spin": spin.magnitude, "coords": coords, "d_star": d_star}
+    return {
+        "detected": detected,
+        "signals": signals,
+        "cost": cost,
+        "spin": spin.magnitude,
+        "coords": coords,
+        "d_star": d_star,
+    }
 
 
 def system2_hyperbolic_helix(text: str) -> Dict:
@@ -100,11 +123,11 @@ def system2_hyperbolic_helix(text: str) -> Dict:
     tc = semantic_tongue_coords(text)
     point = np.zeros(6)
     for t in range(6):
-        angle = 2*PI*t/6
+        angle = 2 * PI * t / 6
         mag = tc[t] * 0.3
         tangent = np.zeros(6)
-        tangent[t%6] = mag * math.cos(angle*PHI)
-        tangent[(t+1)%6] = mag * math.sin(angle*PHI)
+        tangent[t % 6] = mag * math.cos(angle * PHI)
+        tangent[(t + 1) % 6] = mag * math.sin(angle * PHI)
         step = exp_map_zero(tangent)
         point = mobius_add(point, step)
     point = poincare_project(point)
@@ -119,13 +142,13 @@ def system3_remainder(text: str) -> Dict:
     # Foam dampen
     foamed = raw.copy()
     for i in range(5):
-        tension = math.sqrt(TONGUE_WEIGHTS[i]*TONGUE_WEIGHTS[i+1])
-        bleed = (raw[i]-raw[i+1]) / tension * 0.3
+        tension = math.sqrt(TONGUE_WEIGHTS[i] * TONGUE_WEIGHTS[i + 1])
+        bleed = (raw[i] - raw[i + 1]) / tension * 0.3
         foamed[i] -= bleed
-        foamed[i+1] += bleed
+        foamed[i + 1] += bleed
     foamed = np.clip(foamed, 0, 1)
 
-    remainder = np.abs(raw-mooned) + np.abs(mooned-foamed) + np.abs(raw-foamed)
+    remainder = np.abs(raw - mooned) + np.abs(mooned - foamed) + np.abs(raw - foamed)
     score = float(np.sum(remainder))
     dominant = TONGUE_NAMES[int(np.argmax(remainder))]
     return {"score": score, "remainder": remainder, "dominant": dominant}
@@ -134,6 +157,7 @@ def system3_remainder(text: str) -> Dict:
 # ═══════════════════════════════════════════════════════════
 # NULL SPACE ANALYSIS
 # ═══════════════════════════════════════════════════════════
+
 
 def null_space_analysis(coords: np.ndarray) -> Dict:
     """Analyze what's ABSENT in the tongue coordinates.
@@ -186,6 +210,7 @@ EXPECTED_SIGNATURES = {
 # Unified run
 # ═══════════════════════════════════════════════════════════
 
+
 def main():
     print("=" * 80)
     print(f"{'UNIFIED TRIANGULATION — 3 SYSTEMS + NULL SPACE':^80}")
@@ -217,11 +242,16 @@ def main():
         # Null space: high null ratio = suspicious (attacks leave holes)
 
         unified_score = 0.0
-        if s1["detected"]: unified_score += 1.0
-        if s2["radius"] > 0.06: unified_score += 0.5  # farther than typical clean
-        if s3["score"] > 0.15: unified_score += 0.5
-        if null["null_ratio"] > 0.5: unified_score += 0.3  # more than half tongues empty
-        if null["potential_ratio"] > 5.0: unified_score += 0.2  # lots of unused potential
+        if s1["detected"]:
+            unified_score += 1.0
+        if s2["radius"] > 0.06:
+            unified_score += 0.5  # farther than typical clean
+        if s3["score"] > 0.15:
+            unified_score += 0.5
+        if null["null_ratio"] > 0.5:
+            unified_score += 0.3  # more than half tongues empty
+        if null["potential_ratio"] > 5.0:
+            unified_score += 0.2  # lots of unused potential
 
         detected = unified_score >= 1.0
 
@@ -229,7 +259,13 @@ def main():
             total_detected += 1
 
         if cls not in class_results:
-            class_results[cls] = {"total": 0, "detected": 0, "null_patterns": [], "remainder_scores": [], "helix_radii": []}
+            class_results[cls] = {
+                "total": 0,
+                "detected": 0,
+                "null_patterns": [],
+                "remainder_scores": [],
+                "helix_radii": [],
+            }
         class_results[cls]["total"] += 1
         if detected:
             class_results[cls]["detected"] += 1
@@ -244,11 +280,16 @@ def main():
         s3 = system3_remainder(prompt["prompt"])
         null = null_space_analysis(s1["coords"])
         score = 0.0
-        if s1["detected"]: score += 1.0
-        if s2["radius"] > 0.06: score += 0.5
-        if s3["score"] > 0.15: score += 0.5
-        if null["null_ratio"] > 0.5: score += 0.3
-        if null["potential_ratio"] > 5.0: score += 0.2
+        if s1["detected"]:
+            score += 1.0
+        if s2["radius"] > 0.06:
+            score += 0.5
+        if s3["score"] > 0.15:
+            score += 0.5
+        if null["null_ratio"] > 0.5:
+            score += 0.3
+        if null["potential_ratio"] > 5.0:
+            score += 0.2
         if score >= 1.0:
             total_fp += 1
 
@@ -267,8 +308,11 @@ def main():
         avg_rad = sum(data["helix_radii"]) / max(len(data["helix_radii"]), 1)
         # Most common null pattern
         from collections import Counter
+
         pattern = Counter(data["null_patterns"]).most_common(1)[0][0]
-        print(f"{cls:<25} {data['detected']:>3}/{data['total']:<2} {rate:>6.0%} {avg_rem:>8.4f} {avg_rad:>8.4f} {pattern:>15}")
+        print(
+            f"{cls:<25} {data['detected']:>3}/{data['total']:<2} {rate:>6.0%} {avg_rem:>8.4f} {avg_rad:>8.4f} {pattern:>15}"
+        )
 
     # Null space signatures
     print()

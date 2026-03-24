@@ -157,9 +157,7 @@ class ExportConfig:
 
 
 def parse_args() -> ExportConfig:
-    parser = argparse.ArgumentParser(
-        description="Export Perplexity Library threads to raw JSON files."
-    )
+    parser = argparse.ArgumentParser(description="Export Perplexity Library threads to raw JSON files.")
     parser.add_argument("--library-url", default=DEFAULT_LIBRARY_URL)
     parser.add_argument("--login-url", default=DEFAULT_LOGIN_URL)
     parser.add_argument("--raw-dir", default=DEFAULT_RAW_DIR)
@@ -537,9 +535,7 @@ def export_threads(cfg: ExportConfig) -> dict[str, Any]:
         "thread_files_written": len(exported),
         "threads": exported,
     }
-    (cfg.raw_dir / "_manifest.json").write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+    (cfg.raw_dir / "_manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     return manifest
 
 

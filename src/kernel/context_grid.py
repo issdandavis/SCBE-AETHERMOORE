@@ -33,24 +33,46 @@ import numpy as np
 # Sacred Tongue constants
 PHI = 1.618033988749895
 TONGUE_KEYS = ["KO", "AV", "RU", "CA", "UM", "DR"]
-TONGUE_WEIGHTS = {t: PHI ** i for i, t in enumerate(TONGUE_KEYS)}
+TONGUE_WEIGHTS = {t: PHI**i for i, t in enumerate(TONGUE_KEYS)}
 TONGUE_ANGLES = {t: i * math.pi / 3 for i, t in enumerate(TONGUE_KEYS)}
 
 # Category -> tongue mapping for automatic classification
 CATEGORY_TONGUE_MAP = {
-    "command": "KO", "orchestration": "KO", "dispatch": "KO", "coordination": "KO",
-    "transport": "AV", "navigation": "AV", "search": "AV", "browsing": "AV",
-    "entropy": "RU", "research": "RU", "chaos": "RU", "hypothesis": "RU",
-    "compute": "CA", "code": "CA", "training": "CA", "deployment": "CA",
-    "security": "UM", "governance": "UM", "audit": "UM", "threat": "UM",
-    "structure": "DR", "documentation": "DR", "debugging": "DR", "architecture": "DR",
-    "concept": "KO", "geometry": "DR", "hodge-combo": "CA", "agent-archetype": "KO",
+    "command": "KO",
+    "orchestration": "KO",
+    "dispatch": "KO",
+    "coordination": "KO",
+    "transport": "AV",
+    "navigation": "AV",
+    "search": "AV",
+    "browsing": "AV",
+    "entropy": "RU",
+    "research": "RU",
+    "chaos": "RU",
+    "hypothesis": "RU",
+    "compute": "CA",
+    "code": "CA",
+    "training": "CA",
+    "deployment": "CA",
+    "security": "UM",
+    "governance": "UM",
+    "audit": "UM",
+    "threat": "UM",
+    "structure": "DR",
+    "documentation": "DR",
+    "debugging": "DR",
+    "architecture": "DR",
+    "concept": "KO",
+    "geometry": "DR",
+    "hodge-combo": "CA",
+    "agent-archetype": "KO",
 }
 
 
 @dataclass
 class ContextDocument:
     """A document stored in the context grid."""
+
     doc_id: str
     title: str
     content: str
@@ -73,6 +95,7 @@ class ContextDocument:
 @dataclass
 class RetrievalResult:
     """A result from a context grid query."""
+
     doc_id: str
     title: str
     content: str
@@ -86,6 +109,7 @@ class RetrievalResult:
 @dataclass
 class GridStats:
     """Statistics about the context grid."""
+
     total_documents: int
     tongue_distribution: dict
     memory_layers: dict
@@ -123,12 +147,12 @@ class FederatedContextGrid:
 
         # Memory layers (simplified in-process version of MemoryLattice)
         self.memory: dict[str, list[ContextDocument]] = {
-            "working": [],    # Current session
-            "session": [],    # Today
-            "mission": [],    # This week
-            "identity": [],   # Permanent
-            "reflex": [],     # Fast-path lookups
-            "immune": [],     # Known bad patterns
+            "working": [],  # Current session
+            "session": [],  # Today
+            "mission": [],  # This week
+            "identity": [],  # Permanent
+            "reflex": [],  # Fast-path lookups
+            "immune": [],  # Known bad patterns
         }
 
         # Hash chain for tamper detection
@@ -145,11 +169,14 @@ class FederatedContextGrid:
         """Icosahedral projection matrix (6D -> 3D)."""
         phi = PHI
         phi_inv = 1.0 / phi
-        raw = np.array([
-            [1, phi, 0, phi_inv, 0, 0],
-            [0, 1, phi, 0, phi_inv, 0],
-            [0, 0, 1, phi, 0, phi_inv],
-        ], dtype=np.float64)
+        raw = np.array(
+            [
+                [1, phi, 0, phi_inv, 0, 0],
+                [0, 1, phi, 0, phi_inv, 0],
+                [0, 0, 1, phi, 0, phi_inv],
+            ],
+            dtype=np.float64,
+        )
         norms = np.linalg.norm(raw, axis=1, keepdims=True)
         return raw / norms
 
@@ -157,6 +184,7 @@ class FederatedContextGrid:
         """Lazy load sentence-transformers model."""
         if self._model is None:
             from sentence_transformers import SentenceTransformer
+
             self._model = SentenceTransformer(self._model_name)
         return self._model
 
@@ -219,10 +247,18 @@ class FederatedContextGrid:
     #  Store
     # =========================================================================
 
-    def store(self, doc_id: str, title: str, content: str,
-              tongue: str = "KO", tier: int = 1, doc_type: str = "note",
-              source_path: str = "", metadata: dict | None = None,
-              memory_layer: str = "session") -> ContextDocument:
+    def store(
+        self,
+        doc_id: str,
+        title: str,
+        content: str,
+        tongue: str = "KO",
+        tier: int = 1,
+        doc_type: str = "note",
+        source_path: str = "",
+        metadata: dict | None = None,
+        memory_layer: str = "session",
+    ) -> ContextDocument:
         """
         Store a document in the federated context grid.
 
@@ -322,8 +358,7 @@ class FederatedContextGrid:
     #  Retrieve — Multiple Methods
     # =========================================================================
 
-    def query_rag(self, query: str, top_k: int = 5,
-                  tongue_filter: str | None = None) -> list[RetrievalResult]:
+    def query_rag(self, query: str, top_k: int = 5, tongue_filter: str | None = None) -> list[RetrievalResult]:
         """
         RAG retrieval: embed query, cosine similarity, Poincare distance ranking.
 
@@ -341,9 +376,7 @@ class FederatedContextGrid:
         similarities = emb_matrix @ query_emb
 
         # Poincare distance boost: project to tongue space, compute hyperbolic distance
-        query_tongue_coords = self._compute_tongue_coords(
-            tongue_filter or "KO", query_emb
-        )
+        query_tongue_coords = self._compute_tongue_coords(tongue_filter or "KO", query_emb)
 
         results = []
         for i, doc_id in enumerate(self._doc_ids):
@@ -374,16 +407,18 @@ class FederatedContextGrid:
             # Trust score: combine cosine sim and hyperbolic distance
             trust = cos_sim / (1 + 0.3 * hyp_dist)
 
-            results.append(RetrievalResult(
-                doc_id=doc_id,
-                title=doc.title,
-                content=doc.content,
-                distance=1 - cos_sim,
-                trust_score=trust,
-                tongue=doc.tongue,
-                retrieval_method="rag",
-                metadata=doc.metadata,
-            ))
+            results.append(
+                RetrievalResult(
+                    doc_id=doc_id,
+                    title=doc.title,
+                    content=doc.content,
+                    distance=1 - cos_sim,
+                    trust_score=trust,
+                    tongue=doc.tongue,
+                    retrieval_method="rag",
+                    metadata=doc.metadata,
+                )
+            )
 
         # Sort by trust score descending
         results.sort(key=lambda r: r.trust_score, reverse=True)
@@ -393,8 +428,7 @@ class FederatedContextGrid:
 
         return results[:top_k]
 
-    def query_octree(self, query: str, radius: int = 1,
-                     top_k: int = 5) -> list[RetrievalResult]:
+    def query_octree(self, query: str, radius: int = 1, top_k: int = 5) -> list[RetrievalResult]:
         """
         Octree spatial retrieval: find documents in nearby buckets.
 
@@ -421,24 +455,25 @@ class FederatedContextGrid:
             if doc.spatial_coords is not None and doc.embedding is not None:
                 spatial_dist = float(np.linalg.norm(query_sc - doc.spatial_coords))
                 cos_sim = float(np.dot(query_emb, doc.embedding))
-                results.append(RetrievalResult(
-                    doc_id=doc_id,
-                    title=doc.title,
-                    content=doc.content,
-                    distance=spatial_dist,
-                    trust_score=cos_sim,
-                    tongue=doc.tongue,
-                    retrieval_method="octree",
-                    metadata=doc.metadata,
-                ))
+                results.append(
+                    RetrievalResult(
+                        doc_id=doc_id,
+                        title=doc.title,
+                        content=doc.content,
+                        distance=spatial_dist,
+                        trust_score=cos_sim,
+                        tongue=doc.tongue,
+                        retrieval_method="octree",
+                        metadata=doc.metadata,
+                    )
+                )
 
         results.sort(key=lambda r: r.trust_score, reverse=True)
         elapsed = (time.time() - t0) * 1000
         self._retrieval_times.append(elapsed)
         return results[:top_k]
 
-    def query_memory(self, layer: str, category: str | None = None,
-                     limit: int = 10) -> list[ContextDocument]:
+    def query_memory(self, layer: str, category: str | None = None, limit: int = 10) -> list[ContextDocument]:
         """
         Memory layer retrieval: get documents from a specific memory tier.
         """
@@ -447,8 +482,9 @@ class FederatedContextGrid:
             docs = [d for d in docs if d.tongue == category or d.doc_type == category]
         return docs[-limit:]
 
-    def query_hierarchy(self, tongue: str | None = None, tier: int | None = None,
-                        doc_type: str | None = None) -> list[ContextDocument]:
+    def query_hierarchy(
+        self, tongue: str | None = None, tier: int | None = None, doc_type: str | None = None
+    ) -> list[ContextDocument]:
         """
         Hierarchical retrieval: filter by tongue -> tier -> type.
         The sphere grid's natural traversal order.
@@ -462,8 +498,7 @@ class FederatedContextGrid:
             results = [d for d in results if d.doc_type == doc_type]
         return results
 
-    def query_multi_method(self, query: str, top_k: int = 5,
-                           tongue_filter: str | None = None) -> list[RetrievalResult]:
+    def query_multi_method(self, query: str, top_k: int = 5, tongue_filter: str | None = None) -> list[RetrievalResult]:
         """
         Fused multi-method retrieval: RAG + octree + dedup + rerank.
 
@@ -486,9 +521,13 @@ class FederatedContextGrid:
     #  Generation (HF Inference)
     # =========================================================================
 
-    def generate_answer(self, query: str, context_docs: list[RetrievalResult],
-                        hf_token: str | None = None,
-                        model: str = "meta-llama/Llama-3.1-8B-Instruct") -> str:
+    def generate_answer(
+        self,
+        query: str,
+        context_docs: list[RetrievalResult],
+        hf_token: str | None = None,
+        model: str = "meta-llama/Llama-3.1-8B-Instruct",
+    ) -> str:
         """
         Generate an answer using HF Inference API with retrieved context.
 
@@ -504,8 +543,7 @@ class FederatedContextGrid:
         context_parts = []
         for i, r in enumerate(context_docs[:5]):
             context_parts.append(
-                f"[{i+1}] {r.title} ({r.tongue} domain, trust={r.trust_score:.3f}):\n"
-                f"{r.content[:400]}"
+                f"[{i+1}] {r.title} ({r.tongue} domain, trust={r.trust_score:.3f}):\n" f"{r.content[:400]}"
             )
         context_str = "\n\n".join(context_parts)
 
@@ -513,7 +551,10 @@ class FederatedContextGrid:
         try:
             response = client.chat_completion(
                 messages=[
-                    {"role": "system", "content": "You are an AI agent in the SCBE-AETHERMOORE sphere grid. Answer using ONLY the provided context. Be concise."},
+                    {
+                        "role": "system",
+                        "content": "You are an AI agent in the SCBE-AETHERMOORE sphere grid. Answer using ONLY the provided context. Be concise.",
+                    },
                     {"role": "user", "content": f"Context:\n{context_str}\n\nQuestion: {query}"},
                 ],
                 model=model,
@@ -558,6 +599,7 @@ class FederatedContextGrid:
 # =========================================================================
 #  Obsidian Vault Loader
 # =========================================================================
+
 
 def load_obsidian_vault(vault_path: str | Path) -> list[dict]:
     """
@@ -613,16 +655,18 @@ def load_obsidian_vault(vault_path: str | Path) -> list[dict]:
 
         doc_id = hashlib.md5(rel_path.encode()).hexdigest()[:12]
 
-        docs.append({
-            "doc_id": doc_id,
-            "title": title,
-            "content": body,
-            "tongue": tongue,
-            "tier": tier,
-            "doc_type": doc_type,
-            "source_path": rel_path,
-            "metadata": metadata,
-            "memory_layer": "identity" if doc_type in ("concept", "moc") else "session",
-        })
+        docs.append(
+            {
+                "doc_id": doc_id,
+                "title": title,
+                "content": body,
+                "tongue": tongue,
+                "tier": tier,
+                "doc_type": doc_type,
+                "source_path": rel_path,
+                "metadata": metadata,
+                "memory_layer": "identity" if doc_type in ("concept", "moc") else "session",
+            }
+        )
 
     return docs

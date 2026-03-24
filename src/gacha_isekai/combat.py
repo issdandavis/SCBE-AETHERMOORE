@@ -30,6 +30,7 @@ PHI = (1 + math.sqrt(5)) / 2
 
 class DebugAction(Enum):
     """Combat actions = debugging operations."""
+
     ASSERT_STATE = "assert_state"
     SANITIZE_INPUT = "sanitize_input"
     LOCK_THREAD = "lock_thread"
@@ -44,22 +45,34 @@ class DebugAction(Enum):
 # Higher = more effective (1.0 = neutral, 1.5 = strong, 0.5 = weak)
 ACTION_VS_BUG: Dict[str, Dict[str, float]] = {
     "null_pointer": {
-        "assert_state": 1.5, "sanitize_input": 1.2, "rollback": 0.8,
+        "assert_state": 1.5,
+        "sanitize_input": 1.2,
+        "rollback": 0.8,
     },
     "float_precision": {
-        "flush_cache": 1.5, "recompile": 1.3, "assert_state": 0.7,
+        "flush_cache": 1.5,
+        "recompile": 1.3,
+        "assert_state": 0.7,
     },
     "race_condition": {
-        "lock_thread": 1.5, "isolate_process": 1.3, "recompile": 0.8,
+        "lock_thread": 1.5,
+        "isolate_process": 1.3,
+        "recompile": 0.8,
     },
     "memory_leak": {
-        "flush_cache": 1.5, "isolate_process": 1.2, "lock_thread": 0.7,
+        "flush_cache": 1.5,
+        "isolate_process": 1.2,
+        "lock_thread": 0.7,
     },
     "forked_state": {
-        "rollback": 1.5, "refactor": 1.3, "sanitize_input": 0.8,
+        "rollback": 1.5,
+        "refactor": 1.3,
+        "sanitize_input": 0.8,
     },
     "cross_boundary_exploit": {
-        "sanitize_input": 1.5, "assert_state": 1.3, "flush_cache": 0.7,
+        "sanitize_input": 1.5,
+        "assert_state": 1.3,
+        "flush_cache": 0.7,
     },
 }
 
@@ -71,8 +84,9 @@ class MathMonster:
     Boss fights are math problems: the quadratic coefficients (a, b, c)
     define the Hamiltonian path the bug traverses. Solving = winning.
     """
+
     name: str
-    bug_type: str          # Key into MONSTER_BUG_MAP
+    bug_type: str  # Key into MONSTER_BUG_MAP
     floor: int
     hp: int = 100
     max_hp: int = 100
@@ -93,12 +107,13 @@ class MathMonster:
 
     def discriminant(self) -> float:
         """Quadratic discriminant — determines solvability."""
-        return self.b ** 2 - 4 * self.a * self.c
+        return self.b**2 - 4 * self.a * self.c
 
 
 @dataclass
 class CombatResult:
     """Result of a squad combat encounter."""
+
     victory: bool
     damage_dealt: int = 0
     damage_taken: int = 0
@@ -170,7 +185,8 @@ class GachaSquadCombat:
             if ds2 > self.DS_SQUARED_THRESHOLD:
                 logger.warning(
                     "Layer 11 squad path broken: ds2=%.2f > threshold=%.2f",
-                    ds2, self.DS_SQUARED_THRESHOLD,
+                    ds2,
+                    self.DS_SQUARED_THRESHOLD,
                 )
                 return False, ds2
 
@@ -243,10 +259,10 @@ class GachaSquadCombat:
         # Step 5: Generate training pair
         training_pair = {
             "prompt": f"Floor {monster.floor}: {action.value} vs {monster.bug_type} "
-                     f"(a={monster.a:.1f}, b={monster.b:.1f}, c={monster.c:.1f})",
+            f"(a={monster.a:.1f}, b={monster.b:.1f}, c={monster.c:.1f})",
             "response": f"Dealt {damage} damage (eff={effectiveness:.1f}, "
-                       f"math={'solved' if math_solved else 'unsolved'}). "
-                       f"Monster HP: {monster.hp}/{monster.max_hp}",
+            f"math={'solved' if math_solved else 'unsolved'}). "
+            f"Monster HP: {monster.hp}/{monster.max_hp}",
             "provenance": "gacha_combat_v1",
         }
 
@@ -261,18 +277,23 @@ class GachaSquadCombat:
             ds_squared=max_ds2,
         )
 
-        self.combat_log.append({
-            "floor": monster.floor,
-            "bug_type": monster.bug_type,
-            "action": action.value,
-            "damage": damage,
-            "effectiveness": effectiveness,
-            "victory": result.victory,
-        })
+        self.combat_log.append(
+            {
+                "floor": monster.floor,
+                "bug_type": monster.bug_type,
+                "action": action.value,
+                "damage": damage,
+                "effectiveness": effectiveness,
+                "victory": result.victory,
+            }
+        )
 
         logger.info(
             "Layer 11 combat: %s vs %s — %d dmg (eff=%.1f, math=%s)",
-            action.value, monster.name, damage, effectiveness,
+            action.value,
+            monster.name,
+            damage,
+            effectiveness,
             "solved" if math_solved else "unsolved",
         )
         return result

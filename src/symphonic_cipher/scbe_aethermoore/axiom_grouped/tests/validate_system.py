@@ -223,12 +223,8 @@ class SCBEValidator:
         H_b_values = [H_bounded(d) for d in d_values]
         H_u_values = [H_unbounded(d) for d in d_values]
 
-        mono_b = all(
-            H_b_values[i] <= H_b_values[i + 1] for i in range(len(d_values) - 1)
-        )
-        mono_u = all(
-            H_u_values[i] <= H_u_values[i + 1] for i in range(len(d_values) - 1)
-        )
+        mono_b = all(H_b_values[i] <= H_b_values[i + 1] for i in range(len(d_values) - 1))
+        mono_u = all(H_u_values[i] <= H_u_values[i + 1] for i in range(len(d_values) - 1))
 
         passed = mono_b and mono_u
         return passed, f"Both modes monotonic: bounded={mono_b}, unbounded={mono_u}"
@@ -289,8 +285,7 @@ class SCBEValidator:
             f"Passed: {passed}",
             f"Issues: {len(self.issues)}",
             "",
-            "VERDICT: "
-            + ("READY FOR REVIEW" if len(self.issues) <= 2 else "NEEDS WORK"),
+            "VERDICT: " + ("READY FOR REVIEW" if len(self.issues) <= 2 else "NEEDS WORK"),
         ]
 
         if self.issues:

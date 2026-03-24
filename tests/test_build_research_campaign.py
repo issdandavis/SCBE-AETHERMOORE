@@ -31,4 +31,3 @@ def test_build_campaign_default_outputs(tmp_path: Path):
     assert len(manifest["platforms"]) >= 6
     assert len(posts["posts"]) >= 18
     assert claim_report["summary"]["pass"] is True
-

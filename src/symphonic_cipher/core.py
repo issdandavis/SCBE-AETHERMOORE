@@ -468,9 +468,7 @@ class HarmonicSynthesizer:
             f_i = self.base_freq + int(token_id) * self.freq_step
 
             if f_i <= 0:
-                raise ValueError(
-                    f"Token ID {token_id} produces non-positive frequency {f_i} Hz"
-                )
+                raise ValueError(f"Token ID {token_id} produces non-positive frequency {f_i} Hz")
 
             # Time slice for this token
             start = i * slice_len
@@ -705,9 +703,7 @@ class RWPEnvelope:
             ]
         )
 
-        expected_sig = hmac.new(
-            self.master_key, canonical.encode(), hashlib.sha256
-        ).hexdigest()
+        expected_sig = hmac.new(self.master_key, canonical.encode(), hashlib.sha256).hexdigest()
 
         if not hmac.compare_digest(expected_sig, sig):
             return False, "MAC verification failed"
@@ -808,14 +804,10 @@ class SymphonicCipher:
         permuted_ids = self.feistel.permute(ids, msg_key)
 
         # Step 4: Synthesize audio
-        waveform = self.synthesizer.synthesize(
-            permuted_ids, modality, self.modality_encoder
-        )
+        waveform = self.synthesizer.synthesize(permuted_ids, modality, self.modality_encoder)
 
         # Step 5: Create envelope
-        envelope = self.envelope.create(
-            payload=waveform.tobytes(), tongue=tongue, modality=modality, nonce=nonce
-        )
+        envelope = self.envelope.create(payload=waveform.tobytes(), tongue=tongue, modality=modality, nonce=nonce)
 
         if return_components:
             components = {
@@ -830,9 +822,7 @@ class SymphonicCipher:
 
         return envelope
 
-    def decode(
-        self, envelope: Dict, expected_modality: Optional[Modality] = None
-    ) -> Tuple[bool, Optional[str], str]:
+    def decode(self, envelope: Dict, expected_modality: Optional[Modality] = None) -> Tuple[bool, Optional[str], str]:
         """
         Verify and decode an envelope.
 
@@ -844,9 +834,7 @@ class SymphonicCipher:
             Tuple of (success, decoded_phrase or None, message).
         """
         # Verify envelope
-        success, message = self.envelope.verify(
-            envelope, audio_check=True, expected_modality=expected_modality
-        )
+        success, message = self.envelope.verify(envelope, audio_check=True, expected_modality=expected_modality)
 
         if not success:
             return False, None, message

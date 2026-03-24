@@ -22,12 +22,15 @@ from enum import Enum
 # Use scipy-compatible imports with fallback
 try:
     import scipy.linalg
+
     _expm = scipy.linalg.expm
 except ImportError:
     from .._scipy_compat import expm as _expm
+
     # Create mock scipy.linalg module for compatibility
     class _ScipyLinalgCompat:
         expm = staticmethod(_expm)
+
     scipy_linalg = _ScipyLinalgCompat()
 
 # Constants
@@ -114,9 +117,7 @@ def harmonic_scaling_dual(
 # ============================================================================
 
 
-def build_coupling_matrix(
-    k: int, n: int = 6, epsilon: float = EPSILON_COUPLING
-) -> np.ndarray:
+def build_coupling_matrix(k: int, n: int = 6, epsilon: float = EPSILON_COUPLING) -> np.ndarray:
     """
     Build coupling matrix A_k for langues operator.
 
@@ -203,9 +204,7 @@ def build_langues_metric_tensor(
     return G_L
 
 
-def langues_distance(
-    x: np.ndarray, mu: np.ndarray, r: np.ndarray, epsilon: float = EPSILON_COUPLING
-) -> float:
+def langues_distance(x: np.ndarray, mu: np.ndarray, r: np.ndarray, epsilon: float = EPSILON_COUPLING) -> float:
     """
     Compute distance using the Langues Metric.
 
@@ -235,9 +234,7 @@ def langues_distance(
     return float(np.sqrt(max(0, d_sq)))
 
 
-def verify_langues_positive_definite(
-    r: np.ndarray, epsilon: float = EPSILON_COUPLING
-) -> Tuple[bool, float]:
+def verify_langues_positive_definite(r: np.ndarray, epsilon: float = EPSILON_COUPLING) -> Tuple[bool, float]:
     """
     Verify that G_L(r) is positive definite.
 
@@ -299,13 +296,7 @@ def calculate_risk_dual_mode(
         config = DualModeConfig()
 
     # A12: Base Risk (weighted sum of coherence failures)
-    R_base = (
-        0.2 * (1 - C_spin)
-        + 0.2 * (1 - S_spec)
-        + 0.2 * (1 - tau)
-        + 0.2 * (1 - S_audio)
-        + 0.2 * np.tanh(d_star)
-    )
+    R_base = 0.2 * (1 - C_spin) + 0.2 * (1 - S_spec) + 0.2 * (1 - tau) + 0.2 * (1 - S_audio) + 0.2 * np.tanh(d_star)
 
     # Calculate BOTH harmonic scalings
     H_bounded = harmonic_scaling_bounded(d_star)
@@ -567,14 +558,8 @@ def run_all_tests() -> Dict[str, Any]:
     print("\n[2] Testing Langues Metric with Coupling...")
     langues_results = test_langues_metric()
     all_results["langues_metric"] = langues_results
-    pd_passed = sum(
-        1
-        for t in langues_results["positive_definite_tests"]
-        if t["is_positive_definite"]
-    )
-    print(
-        f"    Positive definite tests: {pd_passed}/{len(langues_results['positive_definite_tests'])}"
-    )
+    pd_passed = sum(1 for t in langues_results["positive_definite_tests"] if t["is_positive_definite"])
+    print(f"    Positive definite tests: {pd_passed}/{len(langues_results['positive_definite_tests'])}")
     print(f"    All passed: {langues_results['all_passed']}")
 
     # Test 3: Dual-Mode Risk
@@ -586,11 +571,7 @@ def run_all_tests() -> Dict[str, Any]:
 
     # Summary
     print("\n" + "=" * 60)
-    overall_passed = (
-        harmonic_results["all_passed"]
-        and langues_results["all_passed"]
-        and risk_results["all_passed"]
-    )
+    overall_passed = harmonic_results["all_passed"] and langues_results["all_passed"] and risk_results["all_passed"]
     all_results["overall_passed"] = overall_passed
     print(f"OVERALL: {'PASS ✓' if overall_passed else 'FAIL ✗'}")
     print("=" * 60)
@@ -606,11 +587,7 @@ def run_all_tests() -> Dict[str, Any]:
         H_u = comp["H_unbounded"]
         ratio = comp["ratio"]
         H_b_str = f"{H_b:.6f}" if H_b < 1e10 else f"{H_b:.2e}"
-        H_u_str = (
-            f"{H_u:.6f}"
-            if H_u < 1e10 and not np.isinf(H_u)
-            else "inf" if np.isinf(H_u) else f"{H_u:.2e}"
-        )
+        H_u_str = f"{H_u:.6f}" if H_u < 1e10 and not np.isinf(H_u) else "inf" if np.isinf(H_u) else f"{H_u:.2e}"
         ratio_str = f"{ratio:.4f}" if ratio < 1e6 and not np.isinf(ratio) else "inf"
         print(f"{d:>8.1f} {H_b_str:>15} {H_u_str:>15} {ratio_str:>10}")
     print("-" * 60)
@@ -654,13 +631,9 @@ class DualModeAxiomCore:
         """Apply harmonic scaling in current mode."""
         return harmonic_scaling_dual(d, self.mode)
 
-    def calculate_risk(
-        self, d_star: float, C_spin: float, S_spec: float, **kwargs
-    ) -> DualModeRiskResult:
+    def calculate_risk(self, d_star: float, C_spin: float, S_spec: float, **kwargs) -> DualModeRiskResult:
         """Calculate risk in current mode."""
-        return calculate_risk_dual_mode(
-            d_star, C_spin, S_spec, mode=self.mode, config=self.config, **kwargs
-        )
+        return calculate_risk_dual_mode(d_star, C_spin, S_spec, mode=self.mode, config=self.config, **kwargs)
 
     def langues_distance(self, x: np.ndarray, mu: np.ndarray, r: np.ndarray) -> float:
         """Calculate langues-weighted distance."""

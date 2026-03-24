@@ -119,8 +119,11 @@ class TestCanonicalState:
 class TestCompanionSystem:
     def test_create_companion(self):
         comp = create_companion(
-            "test-1", "crysling", "Crysling",
-            "mono_CA", "processor",
+            "test-1",
+            "crysling",
+            "Crysling",
+            "mono_CA",
+            "processor",
             (0.1, 0.1, 0.1, 0.6, 0.1, 0.1),
         )
         assert comp.id == "test-1"
@@ -131,7 +134,11 @@ class TestCompanionSystem:
 
     def test_derived_stats(self):
         comp = create_companion(
-            "t", "crysling", "C", "mono_CA", "processor",
+            "t",
+            "crysling",
+            "C",
+            "mono_CA",
+            "processor",
             (0.1, 0.1, 0.1, 0.6, 0.1, 0.1),
         )
         stats = comp.derived_stats
@@ -140,7 +147,11 @@ class TestCompanionSystem:
 
     def test_tongue_experience(self):
         comp = create_companion(
-            "t", "crysling", "C", "mono_CA", "processor",
+            "t",
+            "crysling",
+            "C",
+            "mono_CA",
+            "processor",
             (0.1, 0.1, 0.1, 0.6, 0.1, 0.1),
         )
         old_norm = tongue_norm(comp.state.tongue_position)
@@ -151,7 +162,11 @@ class TestCompanionSystem:
 
     def test_combat_result_win(self):
         comp = create_companion(
-            "t", "crysling", "C", "mono_CA", "processor",
+            "t",
+            "crysling",
+            "C",
+            "mono_CA",
+            "processor",
             (0.1, 0.1, 0.1, 0.6, 0.1, 0.1),
         )
         old_radius = comp.state.radius
@@ -162,7 +177,11 @@ class TestCompanionSystem:
 
     def test_combat_result_loss(self):
         comp = create_companion(
-            "t", "crysling", "C", "mono_CA", "processor",
+            "t",
+            "crysling",
+            "C",
+            "mono_CA",
+            "processor",
             (0.1, 0.1, 0.1, 0.6, 0.1, 0.1),
         )
         apply_combat_result(comp, False, 5)
@@ -178,7 +197,11 @@ class TestCompanionSystem:
 
     def test_over_evolution(self):
         comp = create_companion(
-            "t", "crysling", "C", "mono_CA", "processor",
+            "t",
+            "crysling",
+            "C",
+            "mono_CA",
+            "processor",
             (0.1, 0.1, 0.1, 0.6, 0.1, 0.1),
         )
         assert not is_over_evolved(comp)
@@ -249,8 +272,16 @@ class TestSacredEggs:
 
     def test_starting_tongues_are_valid(self):
         for egg_type in [
-            "mono_KO", "mono_AV", "mono_RU", "mono_CA", "mono_UM", "mono_DR",
-            "hodge_eclipse", "hodge_storm", "hodge_paradox", "omni_prism",
+            "mono_KO",
+            "mono_AV",
+            "mono_RU",
+            "mono_CA",
+            "mono_UM",
+            "mono_DR",
+            "hodge_eclipse",
+            "hodge_storm",
+            "hodge_paradox",
+            "omni_prism",
         ]:
             start = egg_starting_tongue(egg_type)  # type: ignore[arg-type]
             assert len(start) == 6

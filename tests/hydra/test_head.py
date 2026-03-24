@@ -194,17 +194,14 @@ class TestPollyPad:
             "loadout": [
                 {"id": "code_review", "name": "Code Review"},
                 {"id": "web_search", "name": "Web Search"},
-            ]
+            ],
         }
         head.equip_polly_pad(pad)
         assert head._polly_pad == pad
 
     def test_get_loadout(self):
         head = HydraHead()
-        head.equip_polly_pad({
-            "id": "pad-001",
-            "loadout": [{"id": "code_review", "name": "Code Review"}]
-        })
+        head.equip_polly_pad({"id": "pad-001", "loadout": [{"id": "code_review", "name": "Code Review"}]})
         loadout = head.get_loadout()
         assert len(loadout) == 1
         assert loadout[0]["id"] == "code_review"
@@ -215,13 +212,15 @@ class TestPollyPad:
 
     def test_has_capability(self):
         head = HydraHead()
-        head.equip_polly_pad({
-            "id": "pad-001",
-            "loadout": [
-                {"id": "code_review", "name": "Code Review"},
-                {"id": "web_search", "name": "Web Search"},
-            ]
-        })
+        head.equip_polly_pad(
+            {
+                "id": "pad-001",
+                "loadout": [
+                    {"id": "code_review", "name": "Code Review"},
+                    {"id": "web_search", "name": "Web Search"},
+                ],
+            }
+        )
         assert head.has_capability("code_review") is True
         assert head.has_capability("web_search") is True
         assert head.has_capability("teleport") is False

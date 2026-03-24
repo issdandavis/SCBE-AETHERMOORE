@@ -144,9 +144,7 @@ def group_velocity(d_omega_dk: float) -> float:
 # =============================================================================
 
 
-def wave_displacement(
-    A: float, k: float, x: float, omega: float, t: float, phi: float = 0
-) -> float:
+def wave_displacement(A: float, k: float, x: float, omega: float, t: float, phi: float = 0) -> float:
     """
     Calculate wave displacement at position x and time t.
 
@@ -166,9 +164,7 @@ def wave_displacement(
     return A * math.sin(k * x - omega * t + phi)
 
 
-def wave_intensity(
-    amplitude: float, velocity: float, density: float, omega: float
-) -> float:
+def wave_intensity(amplitude: float, velocity: float, density: float, omega: float) -> float:
     """
     Calculate wave intensity (power per unit area).
 
@@ -224,9 +220,7 @@ def inverse_square_law(I0: float, r0: float, r: float) -> float:
 # =============================================================================
 
 
-def two_source_interference(
-    A1: float, A2: float, phi1: float, phi2: float
-) -> Tuple[float, float]:
+def two_source_interference(A1: float, A2: float, phi1: float, phi2: float) -> Tuple[float, float]:
     """
     Calculate resultant amplitude from two-source interference.
 
@@ -512,9 +506,7 @@ def brewsters_angle(n1: float, n2: float) -> float:
     return math.atan(n2 / n1)
 
 
-def thin_lens_equation(
-    f: float, d_o: float = None, d_i: float = None
-) -> Dict[str, float]:
+def thin_lens_equation(f: float, d_o: float = None, d_i: float = None) -> Dict[str, float]:
     """
     Calculate image properties using thin lens equation.
 
@@ -583,9 +575,7 @@ def lensmakers_equation(n: float, R1: float, R2: float, n_medium: float = 1.0) -
     return 1 / inv_f
 
 
-def spherical_mirror_equation(
-    R: float, d_o: float = None, d_i: float = None
-) -> Dict[str, float]:
+def spherical_mirror_equation(R: float, d_o: float = None, d_i: float = None) -> Dict[str, float]:
     """
     Calculate image properties for spherical mirror.
 
@@ -673,9 +663,7 @@ def sound_speed_medium(bulk_modulus: float, density: float) -> float:
     return math.sqrt(bulk_modulus / density)
 
 
-def doppler_shift_moving_source(
-    f_source: float, v_source: float, v_sound: float, approaching: bool = True
-) -> float:
+def doppler_shift_moving_source(f_source: float, v_source: float, v_sound: float, approaching: bool = True) -> float:
     """
     Calculate Doppler shifted frequency (moving source).
 
@@ -975,9 +963,7 @@ def waves_optics(params: Dict[str, Any]) -> Dict[str, Any]:
         lam = params["wavelength"]
 
         results["first_minimum_angle_rad"] = single_slit_minima(lam, a, 1)
-        results["first_minimum_angle_deg"] = math.degrees(
-            results["first_minimum_angle_rad"]
-        )
+        results["first_minimum_angle_deg"] = math.degrees(results["first_minimum_angle_rad"])
 
     # Double slit
     if "slit_separation" in params and "wavelength" in params:

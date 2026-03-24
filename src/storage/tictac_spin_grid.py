@@ -40,7 +40,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 PHI = 1.618033988749895
 TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
-TONGUE_WEIGHTS = tuple(PHI ** k for k in range(6))
+TONGUE_WEIGHTS = tuple(PHI**k for k in range(6))
 WORD_RE = re.compile(r"[A-Za-z0-9_']+")
 
 
@@ -48,9 +48,11 @@ WORD_RE = re.compile(r"[A-Za-z0-9_']+")
 #  Single board
 # =========================================================================== #
 
+
 @dataclass(frozen=True)
 class SpinBoard:
     """One 3x3 tic-tac-toe board filled with trits."""
+
     tongue: str
     cells: Tuple[int, ...]  # 9 values, each in {-1, 0, +1}
 
@@ -97,21 +99,25 @@ class SpinBoard:
     def has_line(self, value: int) -> bool:
         """Check if there's a winning line of the given value."""
         lines = [
-            (0, 1, 2), (3, 4, 5), (6, 7, 8),  # rows
-            (0, 3, 6), (1, 4, 7), (2, 5, 8),  # cols
-            (0, 4, 8), (2, 4, 6),              # diagonals
+            (0, 1, 2),
+            (3, 4, 5),
+            (6, 7, 8),  # rows
+            (0, 3, 6),
+            (1, 4, 7),
+            (2, 5, 8),  # cols
+            (0, 4, 8),
+            (2, 4, 6),  # diagonals
         ]
-        return any(
-            all(self.cells[i] == value for i in line)
-            for line in lines
-        )
+        return any(all(self.cells[i] == value for i in line) for line in lines)
 
     def rotation_invariant_hash(self) -> str:
         """Hash that's the same for all 4 rotations of the board."""
         rotations = [self.cells]
+
         # 90° rotation: (r,c) → (c, 2-r)
         def rotate(cells):
             return tuple(cells[6 - 3 * (i % 3) + i // 3] for i in range(9))
+
         current = self.cells
         for _ in range(3):
             current = rotate(current)
@@ -125,9 +131,11 @@ class SpinBoard:
 #  Six-board stack
 # =========================================================================== #
 
+
 @dataclass(frozen=True)
 class SpinStack:
     """6 boards stacked = full 6D spin state encoded as patterns."""
+
     boards: Tuple[SpinBoard, ...]  # 6 boards, one per tongue
 
     @property
@@ -189,6 +197,7 @@ class SpinStack:
 #  Encoder: text → spin stack
 # =========================================================================== #
 
+
 def _quantize(value: float, centroid: float, threshold: float = 0.05) -> int:
     """Quantize a single value to trit relative to centroid."""
     diff = value - centroid
@@ -207,15 +216,15 @@ def text_to_features(text: str) -> Dict[str, float]:
     unique = len(set(w.lower() for w in words))
 
     return {
-        "length": min(1.0, chars / 2000.0),                              # cell 0
-        "density": min(1.0, wc / 400.0),                                 # cell 1
-        "diversity": unique / max(wc, 1),                                 # cell 2
-        "numeric": min(1.0, sum(c.isdigit() for c in text) / chars * 8), # cell 3
+        "length": min(1.0, chars / 2000.0),  # cell 0
+        "density": min(1.0, wc / 400.0),  # cell 1
+        "diversity": unique / max(wc, 1),  # cell 2
+        "numeric": min(1.0, sum(c.isdigit() for c in text) / chars * 8),  # cell 3
         "centroid": 0.5,  # placeholder — filled per tongue               # cell 4
-        "uppercase": min(1.0, sum(c.isupper() for c in text) / chars * 4),# cell 5
+        "uppercase": min(1.0, sum(c.isupper() for c in text) / chars * 4),  # cell 5
         "punctuation": min(1.0, sum(c in ".,;:!?-_/()" for c in text) / chars * 6),  # cell 6
-        "urls": min(1.0, len(re.findall(r"https?://", text)) * 0.3),     # cell 7
-        "entropy": _text_entropy(text),                                    # cell 8
+        "urls": min(1.0, len(re.findall(r"https?://", text)) * 0.3),  # cell 7
+        "entropy": _text_entropy(text),  # cell 8
     }
 
 
@@ -243,8 +252,17 @@ def encode_spin_stack(
     different boards because each tongue amplifies different aspects.
     """
     features = text_to_features(text)
-    feature_keys = ["length", "density", "diversity", "numeric", "centroid",
-                    "uppercase", "punctuation", "urls", "entropy"]
+    feature_keys = [
+        "length",
+        "density",
+        "diversity",
+        "numeric",
+        "centroid",
+        "uppercase",
+        "punctuation",
+        "urls",
+        "entropy",
+    ]
     feature_values = [features[k] for k in feature_keys]
 
     if centroid_features is None:
@@ -259,10 +277,9 @@ def encode_spin_stack(
         for cell_idx in range(9):
             if cell_idx == 4:
                 # Center cell: weighted distance from centroid across ALL features
-                weighted_dist = sum(
-                    abs(feature_values[j] - centroid_values[j]) * (1.0 if j != 4 else 0.0)
-                    for j in range(9)
-                ) / 8.0
+                weighted_dist = (
+                    sum(abs(feature_values[j] - centroid_values[j]) * (1.0 if j != 4 else 0.0) for j in range(9)) / 8.0
+                )
                 # Scale by tongue weight — higher tongues are more sensitive
                 scaled = weighted_dist * weight
                 cells.append(_quantize(scaled, 0.3 * weight, threshold=threshold * weight))
@@ -280,6 +297,7 @@ def encode_spin_stack(
 # =========================================================================== #
 #  Comparison: detect tampering via board pattern changes
 # =========================================================================== #
+
 
 def board_distance(a: SpinBoard, b: SpinBoard) -> int:
     """Hamming distance between two boards (count differing cells)."""

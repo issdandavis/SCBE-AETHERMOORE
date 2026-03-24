@@ -31,7 +31,10 @@ def synthesize_latex(bundle: dict, title: str, author: str) -> str:
     docs = bundle.get("documents", [])
     overview = " ".join((d.get("content", "")[:1200] for d in docs[:6]))
     abstract_lines = _extract_sentences(overview, limit=3)
-    abstract = " ".join(abstract_lines) or "This paper presents a governed AI runtime that combines hyperbolic geometry, multi-agent coordination, and post-quantum security controls."
+    abstract = (
+        " ".join(abstract_lines)
+        or "This paper presents a governed AI runtime that combines hyperbolic geometry, multi-agent coordination, and post-quantum security controls."
+    )
 
     refs = "\n".join(f"\\item \\texttt{{{d.get('path', 'unknown')}}}" for d in docs[:20])
 
