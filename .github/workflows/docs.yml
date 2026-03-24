@@ -46,6 +46,17 @@ jobs:
       - name: Ensure docs-build directory exists
         run: mkdir -p docs-build/api docs-build/demo
 
+      - name: Copy static docs surfaces
+        run: |
+          if [ -d "docs/research" ]; then
+            mkdir -p docs-build/research
+            cp -R docs/research/. docs-build/research/
+          fi
+          if [ -d "docs/demos" ]; then
+            mkdir -p docs-build/demos
+            cp -R docs/demos/. docs-build/demos/
+          fi
+
       - name: Copy demo files
         run: |
           if [ -f "demo/index.html" ]; then
