@@ -108,7 +108,10 @@ PHYSICAL_SCIENCES = {
     "physics_sim": SciencePack(
         name="Physics Simulation Engine",
         category="Physical Sciences",
-        description="Classical mechanics, quantum mechanics, thermodynamics, electromagnetism, relativity, and numerical methods",
+        description=(
+            "Classical mechanics, quantum mechanics, thermodynamics,"
+            " electromagnetism, relativity, and numerical methods"
+        ),
         version="2.0.0",
         status=PackStatus.INSTALLED,
         size_mb=2.5,

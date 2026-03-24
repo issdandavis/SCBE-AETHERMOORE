@@ -182,7 +182,7 @@ class SpectralIdentityGenerator:
             # Modulate with layer scores if available
             if layer_scores and len(layer_scores) >= 14:
                 band_layers = SPECTRAL_BANDS[band].layers
-                layer_avg = sum(layer_scores[l - 1] for l in band_layers) / len(band_layers)
+                layer_avg = sum(layer_scores[lang - 1] for lang in band_layers) / len(band_layers)
                 intensity = (intensity + layer_avg) / 2
 
             # Apply golden ratio modulation for uniqueness
@@ -319,10 +319,10 @@ class SpectralIdentityGenerator:
         """Convert HSL to RGB"""
         h = hsl.h / 360
         s = hsl.s / 100
-        l = hsl.l / 100
+        lum = hsl.l / 100
 
         if s == 0:
-            r = g = b = l
+            r = g = b = lum
         else:
 
             def hue2rgb(p: float, q: float, t: float) -> float:
@@ -338,8 +338,8 @@ class SpectralIdentityGenerator:
                     return p + (q - p) * (2 / 3 - t) * 6
                 return p
 
-            q = l * (1 + s) if l < 0.5 else l + s - l * s
-            p = 2 * l - q
+            q = lum * (1 + s) if lum < 0.5 else lum + s - lum * s
+            p = 2 * lum - q
             r = hue2rgb(p, q, h + 1 / 3)
             g = hue2rgb(p, q, h)
             b = hue2rgb(p, q, h - 1 / 3)

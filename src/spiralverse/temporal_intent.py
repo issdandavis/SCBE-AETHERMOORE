@@ -47,7 +47,6 @@ from typing import Dict, Tuple
 from enum import Enum
 from collections import deque
 
-
 # =============================================================================
 # Constants
 # =============================================================================

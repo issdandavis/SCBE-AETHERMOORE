@@ -337,7 +337,8 @@ class DriftSimulationEngine:
         print(f"   Elegance Score: {magic['elegance_score']:.2f}")
         print("\n📊 Formula:")
         print(
-            f"   vD = {magic['base_drift']} + 0.001×time^{magic['time_exponent']} + 0.001×dist^{magic['distance_exponent']}"
+            f"   vD = {magic['base_drift']} + 0.001×time^{magic['time_exponent']}"
+            f" + 0.001×dist^{magic['distance_exponent']}"
         )
 
         # Check if it's 'elegant' like E=mc²

@@ -182,8 +182,8 @@ class RuntimeGate:
             centroid = self._centroid.tolist()
 
         spins = []
-        for l in range(6):
-            diff = coords[l] - centroid[l]
+        for lang in range(6):
+            diff = coords[lang] - centroid[lang]
             if diff > threshold:
                 spins.append(1)
             elif diff < -threshold:

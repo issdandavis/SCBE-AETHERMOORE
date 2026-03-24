@@ -29,7 +29,6 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
-
 # ── AI RMF Functions ─────────────────────────────────────────────────────────
 
 
@@ -133,7 +132,10 @@ def generate_compliance_report() -> ComplianceReport:
             category="Policies",
             description="Legal and regulatory requirements are understood and inform AI risk management",
             scbe_mapping="CUSTOMER_LICENSE_AGREEMENT.md, docs/05-industry-guides/",
-            evidence="Dual-license model with explicit regulatory mapping for banking, healthcare, defense, SaaS verticals",
+            evidence=(
+                "Dual-license model with explicit regulatory mapping"
+                " for banking, healthcare, defense, SaaS verticals"
+            ),
         )
     )
 
@@ -155,7 +157,10 @@ def generate_compliance_report() -> ComplianceReport:
             category="Accountability",
             description="Roles and responsibilities for AI risk management are defined",
             scbe_mapping="src/governance/, src/fleet/ (shepherd/flock roles)",
-            evidence="Layer 13 governance with ALLOW/QUARANTINE/ESCALATE/DENY decisions requiring explicit authorization",
+            evidence=(
+                "Layer 13 governance with ALLOW/QUARANTINE/ESCALATE/DENY"
+                " decisions requiring explicit authorization"
+            ),
         )
     )
 
@@ -166,7 +171,10 @@ def generate_compliance_report() -> ComplianceReport:
             category="Risk Tolerance",
             description="Risk tolerance is determined and documented",
             scbe_mapping="src/symphonic_cipher/scbe_aethermoore/axiom_grouped/langues_metric.py",
-            evidence="Quantified risk thresholds: LOW (L<1.5×L_base→ALLOW), MEDIUM (→QUARANTINE), HIGH (→REVIEW), CRITICAL (→DENY)",
+            evidence=(
+                "Quantified risk thresholds: LOW (L<1.5×L_base→ALLOW),"
+                " MEDIUM (→QUARANTINE), HIGH (→REVIEW), CRITICAL (→DENY)"
+            ),
         )
     )
 
@@ -177,7 +185,10 @@ def generate_compliance_report() -> ComplianceReport:
             category="Oversight",
             description="Mechanisms are in place for human oversight of AI",
             scbe_mapping="src/symphonic_cipher/scbe_aethermoore/ai_brain/governance_adapter.py",
-            evidence="ESCALATE decision tier requires human governance approval; flux contraction pulls state toward safe origin",
+            evidence=(
+                "ESCALATE decision tier requires human governance approval;"
+                " flux contraction pulls state toward safe origin"
+            ),
         )
     )
 
@@ -213,7 +224,10 @@ def generate_compliance_report() -> ComplianceReport:
             category="Risk Categorization",
             description="AI risks are identified and categorized",
             scbe_mapping="14-layer pipeline (L1-L14), docs/CORE_AXIOMS_CANONICAL_INDEX.md",
-            evidence="ROME-Class Failure taxonomy; adversarial intent mapped to Poincare ball with exponential cost scaling",
+            evidence=(
+                "ROME-Class Failure taxonomy; adversarial intent mapped to"
+                " Poincare ball with exponential cost scaling"
+            ),
         )
     )
 
@@ -246,7 +260,10 @@ def generate_compliance_report() -> ComplianceReport:
             category="Third-Party Components",
             description="Third-party AI components and their risks are identified",
             scbe_mapping="package.json (dependencies), src/pyproject.toml",
-            evidence="Explicit dependency list with PQC libraries (@noble/post-quantum), MCP SDK, and crypto primitives",
+            evidence=(
+                "Explicit dependency list with PQC libraries"
+                " (@noble/post-quantum), MCP SDK, and crypto primitives"
+            ),
         )
     )
 
@@ -260,7 +277,10 @@ def generate_compliance_report() -> ComplianceReport:
             category="Performance Metrics",
             description="AI system performance is measured against stated objectives",
             scbe_mapping="docs/archive/compliance_report.md (150/150 tests)",
-            evidence="Coverage: HIPAA(23), NIST-800-53(74), FIPS-140-3(31), PCI-DSS(5), SOX(6), GDPR(5), ISO-27001(3), SOC2(17)",
+            evidence=(
+                "Coverage: HIPAA(23), NIST-800-53(74), FIPS-140-3(31),"
+                " PCI-DSS(5), SOX(6), GDPR(5), ISO-27001(3), SOC2(17)"
+            ),
         )
     )
 
