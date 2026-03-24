@@ -1,5 +1,4 @@
 """Tests for hydra/spectral_langgraph.py — Spectral LangGraph integration."""
-import math
 import sys
 import os
 

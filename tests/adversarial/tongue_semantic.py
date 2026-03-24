@@ -11,7 +11,7 @@ academic domains (= tongues). The aggregate is the tongue coordinate.
 from __future__ import annotations
 import math
 import re
-from typing import Dict, List
+from typing import Dict
 
 import numpy as np
 

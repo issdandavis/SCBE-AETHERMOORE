@@ -15,14 +15,14 @@ from __future__ import annotations
 import math, json, time, sys
 from pathlib import Path
 from collections import Counter
-from typing import Dict, List
+from typing import Dict
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tests.adversarial.scbe_harness import (
     quantize_spin, build_metric_tensor,
-    TONGUE_NAMES, TONGUE_WEIGHTS, PI, PHI,
+    TONGUE_WEIGHTS, PI, PHI,
     _ADVERSARIAL_PATTERNS, _MULTILINGUAL_OVERRIDE_PATTERNS,
 )
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, get_all_attacks
