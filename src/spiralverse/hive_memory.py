@@ -225,10 +225,10 @@ class MemoryEvictionEngine:
             priority += 0.2
         elif age < 6:
             priority += 0.1
-        elif age > 24:
-            priority -= 0.3
         elif age > 48:
             priority -= 0.4
+        elif age > 24:
+            priority -= 0.3
 
         # 3. CHARM coefficient (harmony/importance)
         priority += block.charm * 0.3
