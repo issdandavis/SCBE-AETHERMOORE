@@ -1,3 +1,10 @@
+import pytest
+
+try:
+    import stripe  # noqa: F401
+except ImportError:
+    pytest.skip("stripe not installed", allow_module_level=True)
+
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 

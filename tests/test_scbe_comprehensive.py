@@ -24,10 +24,16 @@ import hashlib
 import time
 import math
 
+import pytest
+
+try:
+    from cryptography.fernet import Fernet  # noqa: F401
+except BaseException:
+    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-import pytest
 import numpy as np
 
 # Import SpiralSeal components
