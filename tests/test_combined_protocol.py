@@ -353,9 +353,9 @@ def test_phase_nonce_dependency():
     # Compute correlation
     correlation = np.corrcoef(sig1, sig2)[0, 1]
 
-    print(f"  Same token, different nonces:")
+    print("  Same token, different nonces:")
     print(f"    Correlation: {correlation:.4f}")
-    print(f"    (1.0 = identical, 0.0 = uncorrelated)")
+    print("    (1.0 = identical, 0.0 = uncorrelated)")
 
     # Check that the KEY-derived harmonics are the same (not FFT-detected ones)
     same_harmonics = harmonics1 == harmonics2
@@ -399,7 +399,7 @@ def test_attacker_resistance():
 
     avg_corr = np.mean(correlations)
     print(f"  Average correlation between transmissions: {avg_corr:.4f}")
-    print(f"  (High = easy to correlate, Low = hard to correlate)")
+    print("  (High = easy to correlate, Low = hard to correlate)")
 
     # Compare BINARY (no phase randomization) as control
     print("\n  Control: Binary mode (no randomization)")
@@ -455,7 +455,7 @@ def test_envelope_verification():
     dummy_fingerprint = b"test_fingerprint_data_here"
     env = make_envelope(dummy_fingerprint, mode="ADAPTIVE", tongue="KO")
 
-    print(f"  Envelope created:")
+    print("  Envelope created:")
     print(f"    Version: {env['header']['ver']}")
     print(f"    Tongue:  {env['header']['tongue']}")
     print(f"    Mode:    {env['header']['mode']}")
@@ -545,12 +545,12 @@ def test_binary_vs_adaptive_entropy():
     binary_fp = extract_fingerprint(binary_sig)
     adaptive_fp = extract_fingerprint(adaptive_sig)
 
-    print(f"  Binary mode:")
+    print("  Binary mode:")
     print(f"    Entropy: {binary_fp['entropy']:.2f} bits")
     print(f"    Jitter:  {binary_fp['jitter']:.4f}")
     print(f"    Shimmer: {binary_fp['shimmer']:.4f}")
 
-    print(f"\n  Adaptive mode:")
+    print("\n  Adaptive mode:")
     print(f"    Entropy: {adaptive_fp['entropy']:.2f} bits")
     print(f"    Jitter:  {adaptive_fp['jitter']:.4f}")
     print(f"    Shimmer: {adaptive_fp['shimmer']:.4f}")

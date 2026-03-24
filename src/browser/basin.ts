@@ -371,7 +371,11 @@ export class Basin {
    */
   private assertNoTraversal(value: string, label: string): void {
     const normalized = path.normalize(value);
-    if (normalized.startsWith('..') || normalized.includes(`..${path.sep}`) || path.isAbsolute(normalized)) {
+    if (
+      normalized.startsWith('..') ||
+      normalized.includes(`..${path.sep}`) ||
+      path.isAbsolute(normalized)
+    ) {
       throw new Error(`Path traversal detected in ${label}: ${value}`);
     }
   }

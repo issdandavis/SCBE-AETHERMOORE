@@ -20,7 +20,23 @@ if sys.platform == "win32":
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import numpy as np
-from scbe_14layer_reference import *
+from scbe_14layer_reference import (
+    layer_1_complex_state,
+    layer_2_realification,
+    layer_3_weighted_transform,
+    layer_4_poincare_embedding,
+    layer_5_hyperbolic_distance,
+    layer_6_breathing_transform,
+    layer_7_phase_transform,
+    layer_8_realm_distance,
+    layer_9_spectral_coherence,
+    layer_10_spin_coherence,
+    layer_11_triadic_temporal,
+    layer_12_harmonic_scaling,
+    layer_13_risk_decision,
+    layer_14_audio_axis,
+    scbe_14layer_pipeline,
+)
 
 
 class TestSCBE14Layers:

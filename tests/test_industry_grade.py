@@ -644,7 +644,7 @@ class TestMedicalAICommunication:
         try:
             # This will fail due to AAD mismatch (different patient hash)
             channel.receive_phi(sealed, MedicalDataType.DIAGNOSTIC, "PAT-002")
-        except:
+        except Exception:
             pass
 
         audit = channel.get_audit_trail()
@@ -1089,7 +1089,7 @@ class TestAdversarialAttackResistance:
             start = time.perf_counter()
             try:
                 ss.unseal(sealed, aad="test")
-            except:
+            except Exception:
                 pass
             correct_times.append(time.perf_counter() - start)
 
@@ -1107,7 +1107,7 @@ class TestAdversarialAttackResistance:
             start = time.perf_counter()
             try:
                 ss.unseal(tampered, aad="test")
-            except:
+            except Exception:
                 pass
             incorrect_times.append(time.perf_counter() - start)
 
@@ -1625,7 +1625,7 @@ class TestChaosEngineeringFaultInjection:
                 result = ss.unseal(sealed, aad="test")
                 if result == plaintext:
                     success_count += 1
-            except:
+            except Exception:
                 pass
 
         assert success_count == 5

@@ -253,7 +253,7 @@ def test_quantum_resistant_binding() -> bool:
         print("  [X] PQ binding not enforced when required")
     except ValueError as e:
         binding_required_ok = "commitment required" in str(e)
-        print(f"  [+] PQ binding enforced: [error message redacted]")
+        print("  [+] PQ binding enforced: [error message redacted]")
     all_passed &= binding_required_ok
 
     # Test 2: Valid commitment accepted
@@ -274,7 +274,7 @@ def test_quantum_resistant_binding() -> bool:
         print("  [X] Invalid commitment size accepted")
     except ValueError as e:
         invalid_size_ok = "size" in str(e).lower()
-        print(f"  [+] Invalid size rejected: [error message redacted]")
+        print("  [+] Invalid size rejected: [error message redacted]")
     all_passed &= invalid_size_ok
 
     # Test 4: Context commitment creation

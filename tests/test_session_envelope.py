@@ -223,7 +223,7 @@ class TestEditLogging:
 class TestSessionId:
     def test_generates_unique_ids(self, tmp_path: Path) -> None:
         result = _run_node(
-            f"""
+            """
             const {{ generateSessionId }} = require("./src/word-addin/session_envelope");
             const ids = new Set();
             for (let i = 0; i < 100; i++) ids.add(generateSessionId());
@@ -235,7 +235,7 @@ class TestSessionId:
 
     def test_id_format(self, tmp_path: Path) -> None:
         result = _run_node(
-            f"""
+            """
             const {{ generateSessionId }} = require("./src/word-addin/session_envelope");
             console.log(generateSessionId());
         """
