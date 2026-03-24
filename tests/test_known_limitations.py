@@ -72,14 +72,14 @@ class TestCryptoLimitations:
             start = time.perf_counter()
             try:
                 ss.unseal(sealed, aad="ctx")
-            except:
+            except Exception:
                 pass
             times_correct.append(time.perf_counter() - start)
 
             start = time.perf_counter()
             try:
                 ss.unseal(sealed, aad="wrong")
-            except:
+            except Exception:
                 pass
             times_wrong.append(time.perf_counter() - start)
 

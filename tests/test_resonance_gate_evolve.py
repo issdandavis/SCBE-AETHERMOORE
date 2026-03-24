@@ -45,8 +45,8 @@ class ResonanceGateEvolvable:
     def tongue_wave(self, t, phase_offset=0.0):
         total_weight = sum(self.tongue_weights)
         s = sum(
-            self.tongue_weights[l] * math.cos(2 * math.pi * self.f0 * PHI**l * t + self.tongue_phases[l] + phase_offset)
-            for l in range(6)
+            self.tongue_weights[lang] * math.cos(2 * math.pi * self.f0 * PHI**lang * t + self.tongue_phases[lang] + phase_offset)
+            for lang in range(6)
         )
         return s / total_weight if total_weight > 0 else 0
 
@@ -246,7 +246,7 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
 
     # Final evaluation
     print(f"\n{'=' * 60}")
-    print(f"  EVOLUTION COMPLETE")
+    print("  EVOLUTION COMPLETE")
     print(f"  Initial fitness: {initial_fitness:.2f}")
     print(f"  Final fitness:   {best_fitness:.2f}")
     print(f"  Improvement:     {((best_fitness/max(initial_fitness,1))-1)*100:.1f}%")
@@ -254,7 +254,7 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
     print(f"{'=' * 60}")
 
     # Run the diagnostic tests with the best parameters
-    print(f"\n  Running diagnostics with evolved parameters...")
+    print("\n  Running diagnostics with evolved parameters...")
 
     # Test 1: Safe origin
     origin_passes = sum(1 for i in range(1000) if best.gate(0.0, t=i * 0.0003)["decision"] == "PASS")

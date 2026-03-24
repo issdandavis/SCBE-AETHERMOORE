@@ -66,7 +66,7 @@ def _resolve_kdf():
     raise AssertionError(
         "derive_pi_phi_key(...) not found.\n"
         "Implement it in one of these modules (or update CANDIDATE_IMPORTS):\n"
-        f"  - " + "\n  - ".join(CANDIDATE_IMPORTS) + "\n\n"
+        "  - " + "\n  - ".join(CANDIDATE_IMPORTS) + "\n\n"
         f"Last import error: {repr(last_err)}"
     )
 

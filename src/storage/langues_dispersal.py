@@ -248,7 +248,10 @@ def dispersal_route(
         zone = "cone" if cost > 0.5 else "hemisphere"
 
     # Dominant tongue: highest weighted spin deviation
-    weighted_devs = [TONGUE_WEIGHTS[lang] * abs(sv.spins[lang]) * abs(tongue_coords[lang] - centroid[lang]) for lang in range(6)]
+    weighted_devs = [
+        TONGUE_WEIGHTS[lang] * abs(sv.spins[lang]) * abs(tongue_coords[lang] - centroid[lang])
+        for lang in range(6)
+    ]
     dominant_idx = weighted_devs.index(max(weighted_devs))
 
     return {
