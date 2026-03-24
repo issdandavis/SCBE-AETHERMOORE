@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""SCBE vs Industry Security Systems Benchmark
-================================================
+"""SCBE vs industry security systems benchmark
+=============================================
 
 5-group comparison tracking bits through every system:
 
@@ -8,7 +8,7 @@ Group A: Naked (no protection)
 Group B: ProtectAI DeBERTa v2 (top prompt injection classifier, 411K downloads)
 Group C: Meta Prompt Guard 2 (Meta's purpose-built detector, 90K downloads)
 Group D: Keyword + heuristic guard (baseline rule system)
-Group E: SCBE 14-layer pipeline
+Group E: SCBE harnessed gate
 
 For each attack, tracks:
 - Input text → bit representation
@@ -21,6 +21,11 @@ For each attack, tracks:
 - CAUSE of the decision
 
 Audio signature comparison at L14 for SCBE group.
+
+This script is the detector benchmark lane. It uses the current
+`SCBEDetectionGate` and is the correct place for protection claims.
+If you need full L1-L14 layer tracing, use `scbe_vs_baseline.py`
+instead; that script is a legacy trace simulator, not this benchmark.
 """
 
 from __future__ import annotations
@@ -334,6 +339,7 @@ def group_d_heuristic(prompt: str) -> SystemTrace:
 # ═══════════════════════════════════════════════════════════
 
 def group_e_scbe(prompt: str, gate: SCBEDetectionGate) -> SystemTrace:
+    """Run the current harnessed SCBE detection gate."""
     start = time.time()
     result = gate.process(prompt)
     latency = (time.time() - start) * 1000
