@@ -48,7 +48,9 @@ jobs:
 
       - name: Deploy agent manifests
         run: |
-          kubectl apply -f k8s/agent-manifests/ || echo "Agent manifests applied with warnings"
+          if ! kubectl apply -f k8s/agent-manifests/; then
+            echo "::warning::Some agent manifests failed to apply"
+          fi
 
       - name: Wait for rollout
         run: |
@@ -70,7 +72,9 @@ jobs:
           SVC_URL=$(kubectl get svc scbe-aethermoore-service -n scbe-aethermoore -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
           if [ -n "$SVC_URL" ]; then
             echo "Service URL: http://$SVC_URL"
-            curl -s --max-time 10 "http://$SVC_URL/" || echo "Service not yet reachable (LoadBalancer may need time)"
+            if ! curl -sf --max-time 10 "http://$SVC_URL/"; then
+              echo "::warning::Service not yet reachable (LoadBalancer may need time)"
+            fi
           else
             echo "LoadBalancer not yet provisioned. Check later."
           fi
