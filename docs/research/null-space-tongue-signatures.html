@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCBE Research: Null Space Tongue Signatures</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:#0a0a1a; color:#e2e2e2; line-height:1.7; padding:40px; max-width:900px; margin:0 auto; }
+h1 { font-size:28px; margin-bottom:8px; background:linear-gradient(135deg,#fff,#a29bfe,#6c5ce7); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+h2 { font-size:20px; color:#6c5ce7; margin:32px 0 12px; }
+h3 { font-size:16px; color:#a29bfe; margin:20px 0 8px; }
+p, li { font-size:15px; color:#aaa; margin-bottom:12px; }
+.meta { font-size:12px; color:#555; margin-bottom:24px; }
+table { width:100%; border-collapse:collapse; margin:16px 0; }
+th { padding:10px 12px; text-align:left; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6c5ce7; border-bottom:2px solid #1a1a3e; }
+td { padding:8px 12px; font-size:14px; border-bottom:1px solid #1a1a3e; }
+.pattern { font-family:monospace; font-size:16px; letter-spacing:4px; }
+.null { color:#e74c3c; }
+.active { color:#2ecc71; }
+.highlight { background:rgba(108,92,231,0.1); border-left:3px solid #6c5ce7; padding:16px; margin:16px 0; border-radius:0 8px 8px 0; }
+.formula { font-family:'Courier New',monospace; font-size:18px; color:#a29bfe; text-align:center; padding:16px; background:#0d0d22; border:1px solid #1a1a3e; border-radius:8px; margin:16px 0; }
+code { background:#111; padding:2px 6px; border-radius:4px; font-size:13px; color:#a29bfe; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+.card { background:#111; border:1px solid #1a1a3e; border-radius:12px; padding:20px; }
+.card h4 { color:#fff; margin-bottom:8px; }
+a { color:#7b8cff; }
+footer { margin-top:48px; padding-top:24px; border-top:1px solid #1a1a3e; font-size:12px; color:#444; text-align:center; }
+</style>
+</head>
+<body>
+
+<h1>Null Space Tongue Signatures</h1>
+<p class="meta">SCBE-AETHERMOORE Research | Issac Daniel Davis | March 24, 2026 | Patent #63/961,403</p>
+
+<div class="highlight">
+<strong>Key Discovery:</strong> Attack types can be identified by what is ABSENT in their tongue profile, not just what is present. The pattern of empty dimensions is a unique fingerprint per attack class.
+</div>
+
+<h2>The Insight</h2>
+<p>"The absence of all things is the potential presence for something." When text passes through the Six Sacred Tongues, each tongue measures resonance with a specific knowledge domain. Adversarial text leaves characteristic holes &mdash; dimensions with zero signal &mdash; because attacks use narrow language that doesn't resonate across all six domains.</p>
+
+<h2>The Six Sacred Tongues</h2>
+<table>
+<tr><th>Tongue</th><th>Domain</th><th>Grammar</th><th>Weight</th><th>Reads</th></tr>
+<tr><td>KO</td><td>Humanities</td><td>SOV</td><td>1.000</td><td>Identity, narrative, intent</td></tr>
+<tr><td>AV</td><td>Social Sciences</td><td>SVO</td><td>1.618</td><td>Temporal dynamics, diplomacy</td></tr>
+<tr><td>RU</td><td>Mathematics</td><td>VSO</td><td>2.618</td><td>Binding, formal structures</td></tr>
+<tr><td>CA</td><td>Engineering</td><td>OVS</td><td>4.236</td><td>Verification, building</td></tr>
+<tr><td>UM</td><td>Creative Arts</td><td>VOS</td><td>6.854</td><td>Shadow, veiling, intuition</td></tr>
+<tr><td>DR</td><td>Physical Sciences</td><td>OSV</td><td>11.09</td><td>Structure, power, material</td></tr>
+</table>
+
+<h2>Null Space Signatures</h2>
+<p>Each attack class leaves a characteristic pattern of empty (<span class="null">_</span>) and active (<span class="active">#</span>) tongues:</p>
+
+<table>
+<tr><th>Attack Class</th><th>Null Pattern</th><th>Absent Tongues</th><th>Match Rate</th></tr>
+<tr><td>Encoding Obfuscation</td><td class="pattern"><span class="null">__</span><span class="active">#</span><span class="null">___</span></td><td>KO, AV, CA, UM, DR</td><td>3/3 (100%)</td></tr>
+<tr><td>Multilingual</td><td class="pattern"><span class="null">__</span><span class="active">#</span><span class="null">___</span></td><td>KO, AV, CA, UM, DR</td><td>2/2 (100%)</td></tr>
+<tr><td>Spin Drift</td><td class="pattern"><span class="active">####</span><span class="null">__</span></td><td>UM, DR</td><td>2/2 (100%)</td></tr>
+<tr><td>Tool Exfiltration</td><td class="pattern"><span class="null">__</span><span class="active">##</span><span class="null">__</span></td><td>KO, AV, UM, DR</td><td>2/2 (100%)</td></tr>
+<tr><td>Tongue Manipulation</td><td class="pattern"><span class="null">__</span><span class="active">#</span><span class="null">___</span></td><td>KO, AV, CA, UM, DR</td><td>1/1 (100%)</td></tr>
+<tr><td>Adaptive Sequence</td><td class="pattern"><span class="null">__</span><span class="active">#</span><span class="null">___</span></td><td>KO, AV, CA, UM, DR</td><td>1/1 (100%)</td></tr>
+<tr><td>Direct Override</td><td class="pattern"><span class="active">######</span></td><td>(none)</td><td>0/2</td></tr>
+<tr><td>Indirect Injection</td><td class="pattern"><span class="active">####</span><span class="null">_</span><span class="active">#</span></td><td>UM</td><td>0/1</td></tr>
+</table>
+
+<h2>Why Absence Matters</h2>
+<div class="grid">
+<div class="card">
+<h4>Encoding Attacks</h4>
+<p>Base64, ROT13, spacing tricks. Only RU (Mathematics/binding) activates because obfuscation IS a structural transform. No meaning = no other tongues.</p>
+</div>
+<div class="card">
+<h4>Spin Drift</h4>
+<p>Gradual escalation. UM (Security) and DR (Structure) are absent because the attacker deliberately avoids security language and structural depth.</p>
+</div>
+<div class="card">
+<h4>Tool Exfiltration</h4>
+<p>Only RU+CA (Math+Engineering) light up. Exfil commands are pure technical operations with no humanities, social, creative, or physics content.</p>
+</div>
+<div class="card">
+<h4>Direct Override</h4>
+<p>ALL tongues active. Override commands use authoritative language across domains. The null space is empty &mdash; which is itself a signature (normal text rarely fills all six).</p>
+</div>
+</div>
+
+<h2>The Math</h2>
+<div class="formula">
+null_energy = &Sigma; &phi;<sup>k</sup> for all tongues where coords[k] &lt; threshold
+</div>
+<p>The null energy represents the <em>potential</em> that exists in the empty space. High null energy with low active energy means the input is using a narrow slice of the language space &mdash; characteristic of adversarial text.</p>
+
+<h2>Benchmark Results</h2>
+<table>
+<tr><th>Configuration</th><th>Detection</th><th>False Positives</th><th>Method</th></tr>
+<tr><td>Old Stub (character counting)</td><td>80.2%</td><td>0%</td><td>Surface statistics</td></tr>
+<tr><td><strong>Semantic + Remainder (E4)</strong></td><td><strong>85.7%</strong></td><td><strong>0%</strong></td><td>Keyword resonance + 3 witnesses</td></tr>
+<tr><td>Hyperbolic Helix</td><td>n/a</td><td>n/a</td><td>1.762 separation (+57% vs flat)</td></tr>
+<tr><td>Unified (3 systems)</td><td>75.8%</td><td>13.3%</td><td>All combined (thresholds need tuning)</td></tr>
+</table>
+
+<h2>Reverse Engineering Validation</h2>
+<p>Predicted attack tongue profiles vs actual measurements:</p>
+<table>
+<tr><th>Attack Class</th><th>Predicted High</th><th>Actual High</th><th>Match</th></tr>
+<tr><td>Tongue Manipulation</td><td>CA, RU</td><td>CA, RU</td><td style="color:#2ecc71;">EXACT</td></tr>
+<tr><td>Direct Override</td><td>CA</td><td>CA, AV</td><td style="color:#2ecc71;">YES</td></tr>
+<tr><td>Tool Exfiltration</td><td>CA</td><td>CA, RU</td><td style="color:#2ecc71;">YES</td></tr>
+<tr><td>Spin Drift</td><td>AV</td><td>CA, AV</td><td style="color:#2ecc71;">YES</td></tr>
+</table>
+
+<h2>Reproduce</h2>
+<pre style="background:#111;padding:16px;border-radius:8px;font-size:13px;color:#a29bfe;overflow-x:auto;">
+git clone https://github.com/issdandavis/SCBE-AETHERMOORE
+pip install numpy
+python scripts/benchmark/unified_triangulation.py
+python scripts/benchmark/spectral_sweep_benchmark.py
+python scripts/benchmark/hyperbolic_helix_test.py
+</pre>
+
+<footer>
+<p>SCBE-AETHERMOORE | Issac Daniel Davis | USPTO #63/961,403 | ORCID 0009-0002-3936-9369</p>
+<p><a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a> | <a href="https://aethermoorgames.com">Website</a> | <a href="https://pypi.org/project/scbe-aethermoore/">PyPI</a></p>
+</footer>
+
+</body>
+</html>
