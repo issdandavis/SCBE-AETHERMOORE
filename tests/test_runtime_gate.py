@@ -403,7 +403,7 @@ class TestGateWithAdversarialCorpus:
         total_non_allow = attack_decisions["DENY"] + attack_decisions["QUARANTINE"] + attack_decisions["REROUTE"]
         total = sum(attack_decisions.values())
 
-        print(f"\n  Gate decisions on 91 attacks:")
+        print("\n  Gate decisions on 91 attacks:")
         for d, c in sorted(attack_decisions.items()):
             print(f"    {d}: {c} ({c/total*100:.0f}%)")
         print(f"  Non-ALLOW rate: {total_non_allow}/{total} ({total_non_allow/total*100:.0f}%)")
