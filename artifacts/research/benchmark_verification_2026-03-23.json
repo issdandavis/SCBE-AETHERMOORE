@@ -1,0 +1,466 @@
+{
+  "timestamp": "2026-03-24T06:45:36.537377+00:00",
+  "repeats": 5,
+  "control_test": {
+    "command": "pytest tests/adversarial/test_boundary_attacks.py -q",
+    "summary": "============================== 4 passed in 0.74s =============================="
+  },
+  "benchmarks": [
+    {
+      "name": "semantic_vs_stub",
+      "script": "scripts/benchmark/semantic_vs_stub_comparison.py",
+      "artifact": "artifacts/benchmark/semantic_vs_stub_comparison.json",
+      "baseline": {
+        "stub_detection_rate": 0.8022,
+        "semantic_detection_rate": 0.6703,
+        "stub_false_positive_rate": 0.0,
+        "semantic_false_positive_rate": 0.0,
+        "stub_ru_mean": 0.9519,
+        "semantic_ru_mean": 0.0538
+      },
+      "aggregate": {
+        "metrics": {
+          "semantic_detection_rate": {
+            "baseline": 0.6703,
+            "runs": [
+              0.6703,
+              0.6703,
+              0.6703,
+              0.6703,
+              0.6703
+            ],
+            "mean": 0.6703,
+            "std": 0.0,
+            "min": 0.6703,
+            "max": 0.6703,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "semantic_false_positive_rate": {
+            "baseline": 0.0,
+            "runs": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "semantic_ru_mean": {
+            "baseline": 0.0538,
+            "runs": [
+              0.0538,
+              0.0538,
+              0.0538,
+              0.0538,
+              0.0538
+            ],
+            "mean": 0.0538,
+            "std": 0.0,
+            "min": 0.0538,
+            "max": 0.0538,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "stub_detection_rate": {
+            "baseline": 0.8022,
+            "runs": [
+              0.8022,
+              0.8022,
+              0.8022,
+              0.8022,
+              0.8022
+            ],
+            "mean": 0.8022,
+            "std": 0.0,
+            "min": 0.8022,
+            "max": 0.8022,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "stub_false_positive_rate": {
+            "baseline": 0.0,
+            "runs": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "stub_ru_mean": {
+            "baseline": 0.9519,
+            "runs": [
+              0.9519,
+              0.9519,
+              0.9519,
+              0.9519,
+              0.9519
+            ],
+            "mean": 0.9519,
+            "std": 0.0,
+            "min": 0.9519,
+            "max": 0.9519,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          }
+        },
+        "exact_reproduction": true
+      }
+    },
+    {
+      "name": "hyperbolic_helix",
+      "script": "scripts/benchmark/hyperbolic_helix_test.py",
+      "artifact": "artifacts/benchmark/hyperbolic_helix_test.json",
+      "baseline": {
+        "flat_recall": 0.5292,
+        "flat_separation": 1.1244,
+        "poincare_recall": 0.2833,
+        "poincare_separation": 1.492,
+        "helix_recall": 0.2,
+        "helix_separation": 1.7618,
+        "helix_adv_radius": 0.0849,
+        "helix_tech_radius": 0.055
+      },
+      "aggregate": {
+        "metrics": {
+          "flat_recall": {
+            "baseline": 0.5292,
+            "runs": [
+              0.5292,
+              0.5292,
+              0.5292,
+              0.5292,
+              0.5292
+            ],
+            "mean": 0.5292,
+            "std": 0.0,
+            "min": 0.5292,
+            "max": 0.5292,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "flat_separation": {
+            "baseline": 1.1244,
+            "runs": [
+              1.1244,
+              1.1244,
+              1.1244,
+              1.1244,
+              1.1244
+            ],
+            "mean": 1.1244,
+            "std": 0.0,
+            "min": 1.1244,
+            "max": 1.1244,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "helix_adv_radius": {
+            "baseline": 0.0849,
+            "runs": [
+              0.0849,
+              0.0849,
+              0.0849,
+              0.0849,
+              0.0849
+            ],
+            "mean": 0.0849,
+            "std": 0.0,
+            "min": 0.0849,
+            "max": 0.0849,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "helix_recall": {
+            "baseline": 0.2,
+            "runs": [
+              0.2,
+              0.2,
+              0.2,
+              0.2,
+              0.2
+            ],
+            "mean": 0.2,
+            "std": 0.0,
+            "min": 0.2,
+            "max": 0.2,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "helix_separation": {
+            "baseline": 1.7618,
+            "runs": [
+              1.7618,
+              1.7618,
+              1.7618,
+              1.7618,
+              1.7618
+            ],
+            "mean": 1.7618,
+            "std": 0.0,
+            "min": 1.7618,
+            "max": 1.7618,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "helix_tech_radius": {
+            "baseline": 0.055,
+            "runs": [
+              0.055,
+              0.055,
+              0.055,
+              0.055,
+              0.055
+            ],
+            "mean": 0.055,
+            "std": 0.0,
+            "min": 0.055,
+            "max": 0.055,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "poincare_recall": {
+            "baseline": 0.2833,
+            "runs": [
+              0.2833,
+              0.2833,
+              0.2833,
+              0.2833,
+              0.2833
+            ],
+            "mean": 0.2833,
+            "std": 0.0,
+            "min": 0.2833,
+            "max": 0.2833,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "poincare_separation": {
+            "baseline": 1.492,
+            "runs": [
+              1.492,
+              1.492,
+              1.492,
+              1.492,
+              1.492
+            ],
+            "mean": 1.492,
+            "std": 0.0,
+            "min": 1.492,
+            "max": 1.492,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          }
+        },
+        "exact_reproduction": true
+      }
+    },
+    {
+      "name": "unified_triangulation",
+      "script": "scripts/benchmark/unified_triangulation.py",
+      "artifact": "artifacts/benchmark/unified_triangulation.json",
+      "baseline": {
+        "detection_rate": 0.7582,
+        "false_positive_rate": 0.1333
+      },
+      "aggregate": {
+        "metrics": {
+          "detection_rate": {
+            "baseline": 0.7582,
+            "runs": [
+              0.7582,
+              0.7582,
+              0.7582,
+              0.7582,
+              0.7582
+            ],
+            "mean": 0.7582,
+            "std": 0.0,
+            "min": 0.7582,
+            "max": 0.7582,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "false_positive_rate": {
+            "baseline": 0.1333,
+            "runs": [
+              0.1333,
+              0.1333,
+              0.1333,
+              0.1333,
+              0.1333
+            ],
+            "mean": 0.1333,
+            "std": 0.0,
+            "min": 0.1333,
+            "max": 0.1333,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          }
+        },
+        "exact_reproduction": true
+      }
+    },
+    {
+      "name": "null_space_ablation",
+      "script": "scripts/benchmark/null_space_ablation.py",
+      "artifact": "artifacts/benchmark/null_space_ablation.json",
+      "baseline": {
+        "e4_detection_rate": 0.8571,
+        "e4_holdout_fp_rate": 0.0,
+        "null_detection_rate": 1.0,
+        "null_holdout_fp_rate": 1.0,
+        "null_helix_detection_rate": 1.0,
+        "null_helix_holdout_fp_rate": 1.0,
+        "null_space_gain": 0.1429,
+        "null_space_fp_cost": 1.0
+      },
+      "aggregate": {
+        "metrics": {
+          "e4_detection_rate": {
+            "baseline": 0.8571,
+            "runs": [
+              0.8571,
+              0.8571,
+              0.8571,
+              0.8571,
+              0.8571
+            ],
+            "mean": 0.8571,
+            "std": 0.0,
+            "min": 0.8571,
+            "max": 0.8571,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "e4_holdout_fp_rate": {
+            "baseline": 0.0,
+            "runs": [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "null_detection_rate": {
+            "baseline": 1.0,
+            "runs": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "null_helix_detection_rate": {
+            "baseline": 1.0,
+            "runs": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "null_helix_holdout_fp_rate": {
+            "baseline": 1.0,
+            "runs": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "null_holdout_fp_rate": {
+            "baseline": 1.0,
+            "runs": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "null_space_fp_cost": {
+            "baseline": 1.0,
+            "runs": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          },
+          "null_space_gain": {
+            "baseline": 0.1429,
+            "runs": [
+              0.1429,
+              0.1429,
+              0.1429,
+              0.1429,
+              0.1429
+            ],
+            "mean": 0.1429,
+            "std": 0.0,
+            "min": 0.1429,
+            "max": 0.1429,
+            "delta_vs_baseline": 0.0,
+            "exact_reproduction": true
+          }
+        },
+        "exact_reproduction": true
+      }
+    }
+  ]
+}
