@@ -352,7 +352,8 @@ class TestEggCarton:
         egg = SacredEgg.create()
         carton.add(egg)
 
-        assert carton.remove(egg.egg_id) is True
+        removed = carton.remove(egg.egg_id)
+        assert removed is True
         assert carton.get(egg.egg_id) is None
         assert carton.count() == 0
 

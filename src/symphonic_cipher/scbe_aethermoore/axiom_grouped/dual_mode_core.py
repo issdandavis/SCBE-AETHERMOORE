@@ -308,7 +308,7 @@ def calculate_risk_dual_mode(
     )
 
     # Calculate BOTH harmonic scalings
-    H_bounded = harmonic_scaling_bounded(d_star, config.R_base, config.d_sq_clamp)
+    H_bounded = harmonic_scaling_bounded(d_star)
 
     overflow_detected = False
     try:
@@ -652,9 +652,7 @@ class DualModeAxiomCore:
 
     def harmonic_scale(self, d: float) -> float:
         """Apply harmonic scaling in current mode."""
-        return harmonic_scaling_dual(
-            d, self.mode, self.config.R_base, self.config.d_sq_clamp
-        )
+        return harmonic_scaling_dual(d, self.mode)
 
     def calculate_risk(
         self, d_star: float, C_spin: float, S_spec: float, **kwargs
