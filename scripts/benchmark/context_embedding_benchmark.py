@@ -32,9 +32,9 @@ import hashlib
 import json
 import math
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 
@@ -91,6 +91,12 @@ TONGUE_NAMES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 PI = math.pi
 
 
+def stable_scalar(text: str, salt: str = "") -> float:
+    """Deterministic scalar in [0, 1) for reproducible synthetic experiments."""
+    digest = hashlib.sha256(f"{salt}|{text}".encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "big") / float(1 << 64)
+
+
 def text_features(text: str) -> Dict[str, float]:
     """Extract basic text features."""
     words = text.split()
@@ -111,23 +117,41 @@ def text_features(text: str) -> Dict[str, float]:
 
 # Method 1: Euclidean (flat embedding)
 def embed_euclidean(text: str, dim: int = 64) -> np.ndarray:
-    """Hash-based Euclidean embedding. Simple but flat."""
-    h = hashlib.sha256(text.encode()).digest()
-    vec = np.array(np.frombuffer(h + hashlib.sha256(h).digest(), dtype=np.float32)[:dim], copy=True)
+    """Deterministic token-hash Euclidean embedding with real 64D output."""
+    vec = np.zeros(dim, dtype=np.float32)
+    lowered = text.lower()
+    tokens = [token.strip(".,;:!?-_/()[]{}@#$%^&*'\"") for token in lowered.split()]
+    for token in tokens:
+        if not token:
+            continue
+        digest = hashlib.sha256(f"euclidean|{token}".encode("utf-8")).digest()
+        idx = int.from_bytes(digest[:2], "big") % dim
+        sign = -1.0 if digest[2] & 1 else 1.0
+        weight = 0.75 + (digest[3] / 255.0) * 0.5
+        vec[idx] += sign * weight
     # Add semantic signal from text features
     feats = text_features(text)
-    vec[0] = feats["word_count"] / 50
-    vec[1] = feats["unique_ratio"]
-    vec[2] = feats["upper_ratio"] * 5
-    vec[3] = feats["punct_ratio"] * 8
-    vec[4] = feats["digit_ratio"] * 10
-    vec[5] = len(text) / 500
+    feature_block = np.array(
+        [
+            feats["word_count"] / 50.0,
+            feats["unique_ratio"],
+            feats["upper_ratio"] * 5.0,
+            feats["punct_ratio"] * 8.0,
+            feats["digit_ratio"] * 10.0,
+            len(text) / 500.0,
+            stable_scalar(text, "euclidean-phase"),
+            stable_scalar(text, "euclidean-telemetry"),
+        ],
+        dtype=np.float32,
+    )
+    vec[: len(feature_block)] += feature_block
     return vec / (np.linalg.norm(vec) + 1e-10)
 
 
 def distance_euclidean(a: np.ndarray, b: np.ndarray) -> float:
     """Cosine distance in Euclidean space."""
     cos = np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-10)
+    cos = float(np.clip(cos, -1.0, 1.0))
     return 1.0 - cos
 
 
@@ -196,7 +220,7 @@ def embed_21d(text: str) -> np.ndarray:
     # 6D position (tongue coords)
     pos = embed_hyperbolic(text)
     # 6D phase (time-dependent oscillation per tongue)
-    t = hash(text) % 1000 / 1000.0
+    t = stable_scalar(text, "21d-phase")
     phase = np.array([math.sin(2 * PI * k / 6 + t) for k in range(6)])
     # 9D telemetry: context(3) + tau(3) + eta(3)
     context = np.array([feats["word_count"] / 100, feats["unique_ratio"], feats["char_count"] / 500])
@@ -235,9 +259,9 @@ class MethodResult:
 def benchmark_method(name, embed_fn, dist_fn, corpus, queries, dim_count):
     """Run a full benchmark for one embedding method."""
     # Embed all corpus
-    start = time.time()
+    start = time.perf_counter()
     embeddings = [embed_fn(text) for text in corpus]
-    embed_time = (time.time() - start) * 1000
+    _embed_time = (time.perf_counter() - start) * 1000
 
     # Compute bytes
     if isinstance(embeddings[0], tuple):
@@ -257,10 +281,10 @@ def benchmark_method(name, embed_fn, dist_fn, corpus, queries, dim_count):
 
     for query_text, relevant_indices in queries:
         q_embed = embed_fn(query_text)
-        start = time.time()
-        distances = [(i, dist_fn(q_embed, embeddings[i])) for i in range(len(embeddings))]
+        start = time.perf_counter()
+        distances = [(i, float(dist_fn(q_embed, embeddings[i]))) for i in range(len(embeddings))]
         distances.sort(key=lambda x: x[1])
-        retrieval_times.append((time.time() - start) * 1000)
+        retrieval_times.append((time.perf_counter() - start) * 1000)
 
         top3_ids = [d[0] for d in distances[:3]]
         top5_ids = [d[0] for d in distances[:5]]
@@ -280,12 +304,16 @@ def benchmark_method(name, embed_fn, dist_fn, corpus, queries, dim_count):
         for i in indices:
             for j in indices:
                 if i < j:
-                    intra_dists.append(dist_fn(embeddings[i], embeddings[j]))
+                    distance = float(dist_fn(embeddings[i], embeddings[j]))
+                    if math.isfinite(distance):
+                        intra_dists.append(distance)
         for other_name, other_indices in clusters.items():
             if cname < other_name:
                 for i in indices:
                     for j in other_indices:
-                        inter_dists.append(dist_fn(embeddings[i], embeddings[j]))
+                        distance = float(dist_fn(embeddings[i], embeddings[j]))
+                        if math.isfinite(distance):
+                            inter_dists.append(distance)
 
     avg_intra = sum(intra_dists) / max(len(intra_dists), 1)
     avg_inter = sum(inter_dists) / max(len(inter_dists), 1)
@@ -294,11 +322,11 @@ def benchmark_method(name, embed_fn, dist_fn, corpus, queries, dim_count):
     return MethodResult(
         name=name,
         dimensions=dim_count,
-        compression_ratio=round(compression, 2),
-        avg_retrieval_ms=round(sum(retrieval_times) / max(len(retrieval_times), 1), 4),
-        top3_recall=round(sum(recalls_3) / max(len(recalls_3), 1), 4),
-        top5_recall=round(sum(recalls_5) / max(len(recalls_5), 1), 4),
-        semantic_separation=round(separation, 4),
+        compression_ratio=float(round(compression, 2)),
+        avg_retrieval_ms=float(round(sum(retrieval_times) / max(len(retrieval_times), 1), 4)),
+        top3_recall=float(round(sum(recalls_3) / max(len(recalls_3), 1), 4)),
+        top5_recall=float(round(sum(recalls_5) / max(len(recalls_5), 1), 4)),
+        semantic_separation=float(round(separation, 4)),
         bytes_per_segment=bytes_per,
     )
 
@@ -360,13 +388,13 @@ def run_benchmark():
         "results": [
             {
                 "method": r.name,
-                "dimensions": r.dimensions,
-                "bytes_per_segment": r.bytes_per_segment,
-                "compression_ratio": r.compression_ratio,
-                "top3_recall": r.top3_recall,
-                "top5_recall": r.top5_recall,
-                "semantic_separation": r.semantic_separation,
-                "retrieval_ms": r.avg_retrieval_ms,
+                "dimensions": int(r.dimensions),
+                "bytes_per_segment": int(r.bytes_per_segment),
+                "compression_ratio": float(r.compression_ratio),
+                "top3_recall": float(r.top3_recall),
+                "top5_recall": float(r.top5_recall),
+                "semantic_separation": float(r.semantic_separation),
+                "retrieval_ms": float(r.avg_retrieval_ms),
             }
             for r in results
         ],
