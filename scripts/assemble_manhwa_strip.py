@@ -27,7 +27,8 @@ except ImportError:  # pragma: no cover - import path fallback for tests
 try:
     from PIL import Image, ImageDraw
 except ImportError:
-    sys.exit("Pillow required: pip install Pillow")
+    Image = None  # type: ignore[assignment]
+    ImageDraw = None  # type: ignore[assignment]
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_WIDTH = 800
@@ -68,6 +69,11 @@ def require_approved_packet(report_path: Path, chapter: str, panel_count: int | 
     return report
 
 
+def _require_pillow() -> None:
+    if Image is None:
+        raise ImportError("Pillow required: pip install Pillow")
+
+
 def assemble_strip(
     panels: list[Path],
     width: int = DEFAULT_WIDTH,
@@ -75,6 +81,7 @@ def assemble_strip(
     bg_color: tuple = DEFAULT_BG,
 ) -> Image.Image:
     """Assemble panels into a single vertical strip."""
+    _require_pillow()
     resized = []
     for p in panels:
         img = Image.open(p).convert("RGB")
