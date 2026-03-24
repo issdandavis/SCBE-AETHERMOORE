@@ -19,15 +19,13 @@ import hashlib
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple, Dict, Any, Union
+from typing import List, Optional, Tuple, Dict, Any
 from enum import Enum
 
 from .constants import (
     R_FIFTH,
-    PHI,
     DEFAULT_L,
     DEFAULT_TOLERANCE,
-    DEFAULT_R,
     harmonic_distance,
     harmonic_scale,
     CONSTANTS,
@@ -35,8 +33,6 @@ from .constants import (
 from .vacuum_acoustics import (
     check_cymatic_resonance,
     extract_mode_parameters,
-    nodal_surface,
-    is_on_nodal_line,
     VacuumAcousticsConfig,
 )
 

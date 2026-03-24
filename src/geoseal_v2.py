@@ -23,7 +23,6 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Literal, Optional, Tuple
 
 from src.geoseal import (
-    TONGUE_PHASES,
     SUSPICION_DECAY,
     SUSPICION_THRESHOLD,
     QUARANTINE_CONSENSUS,

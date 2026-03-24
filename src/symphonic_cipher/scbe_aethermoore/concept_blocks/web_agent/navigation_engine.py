@@ -19,18 +19,13 @@ Integrates personality kernel from CSTM for navigation style.
 from __future__ import annotations
 
 import hashlib
-import math
-import re
 import time
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-from ..plan import PlanBlock, a_star_search
+from ..plan import PlanBlock
 from ..sense import SenseBlock
 from ..steer import SteerBlock
-from ..decide import DecideBlock, Action, Condition, Sequence, Selector, Blackboard
-from ..base import BlockStatus
 
 from .semantic_antivirus import SemanticAntivirus
 from .web_polly_pad import (

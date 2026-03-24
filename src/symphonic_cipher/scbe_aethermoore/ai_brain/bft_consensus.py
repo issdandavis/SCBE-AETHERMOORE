@@ -11,7 +11,7 @@ This is majority voting with BFT guarantees, NOT full PBFT.
 @version 1.1.0
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 

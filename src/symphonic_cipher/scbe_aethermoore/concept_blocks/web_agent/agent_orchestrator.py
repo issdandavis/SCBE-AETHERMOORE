@@ -24,7 +24,7 @@ import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from .semantic_antivirus import SemanticAntivirus
 from .web_polly_pad import WebPollyPad, PadMode

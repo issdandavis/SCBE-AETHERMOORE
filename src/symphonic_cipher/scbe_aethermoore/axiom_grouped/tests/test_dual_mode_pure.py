@@ -7,7 +7,7 @@ without external dependencies (no numpy/scipy).
 """
 
 import math
-from typing import Tuple, List, Dict, Any
+from typing import List
 
 
 # Constants

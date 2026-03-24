@@ -30,16 +30,13 @@ Integration points:
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Sequence, Tuple
+from dataclasses import dataclass
+from typing import List, Tuple
 
 import numpy as np
 
 from .unified_state import (
     BRAIN_DIMENSIONS,
-    BRAIN_EPSILON,
-    POINCARE_MAX_NORM,
-    UnifiedBrainState,
     safe_poincare_embed,
 )
 

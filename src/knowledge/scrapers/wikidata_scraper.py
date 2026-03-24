@@ -8,7 +8,7 @@ Free, no key needed. Rate limit: ~5 req/min for SPARQL.
 import time
 import json
 from urllib.request import urlopen, Request
-from urllib.parse import urlencode, quote
+from urllib.parse import urlencode
 
 import sys
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[3]))

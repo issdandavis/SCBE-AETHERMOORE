@@ -7,11 +7,11 @@ Task decomposition assigns agents based on task type and content.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
-from src.aetherbrowser.ws_feed import WsFeed, Agent
+from src.aetherbrowser.ws_feed import WsFeed
 
 
 class TongueRole(str, Enum):

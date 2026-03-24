@@ -35,13 +35,13 @@ Patent Claim: 61 (The Flux - Dynamic Geometry)
 from __future__ import annotations
 
 import numpy as np
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 # Use scipy-compatible imports with fallback
 try:
-    from scipy.linalg import expm, sqrtm
+    from scipy.linalg import expm
 except ImportError:
-    from ._scipy_compat import expm, sqrtm
+    from ._scipy_compat import expm
 from typing import Tuple, Dict, Any, Optional, List
 from enum import Enum
 

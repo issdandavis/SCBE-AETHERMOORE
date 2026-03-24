@@ -51,16 +51,16 @@ import hashlib
 import hmac
 import os
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Tuple, List, Dict, Any, Optional
 
 import numpy as np
 
 # Try scipy.fft first, fall back to numpy.fft
 try:
-    from scipy.fft import fft, fftfreq
+    from scipy.fft import fft
 except ImportError:
-    from numpy.fft import fft, fftfreq
+    from numpy.fft import fft
 
 
 # =============================================================================

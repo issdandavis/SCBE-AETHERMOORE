@@ -7,9 +7,8 @@ Companions are 21D canonical state vectors with behavioral evolution.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List
 
 from .types import (
     BondType,
@@ -24,7 +23,6 @@ from .types import (
     TongueCode,
     TongueVector,
     TONGUE_CODES,
-    default_canonical_state,
     tongue_norm,
 )
 

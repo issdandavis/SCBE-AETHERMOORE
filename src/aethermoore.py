@@ -9,7 +9,11 @@ AetherMoore – Full‑stack reference implementation
 * Verification routine
 """
 
-import os, time, json, base64, hmac, hashlib
+import os
+import time
+import base64
+import hmac
+import hashlib
 import numpy as np
 import matplotlib
 

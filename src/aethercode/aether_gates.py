@@ -20,7 +20,6 @@ Gate Registry:
   DR (Schema)     → Random data, quotes & schema generation gates
 """
 
-import asyncio
 import json
 import logging
 import time

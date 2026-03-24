@@ -16,8 +16,7 @@ from __future__ import annotations
 
 import numpy as np
 from dataclasses import dataclass, field
-from typing import Dict, List, Tuple, Any, Optional
-import time
+from typing import Dict, List, Any, Optional
 
 from .production_v2_1 import (
     # Constants

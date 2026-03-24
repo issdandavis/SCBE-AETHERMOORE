@@ -376,7 +376,7 @@ class PQCQuasicrystalLattice(QuasicrystalLattice):
 
         # Try to import PQC module
         try:
-            from ..pqc import Kyber768, Dilithium3, is_liboqs_available
+            from ..pqc import Kyber768, Dilithium3
 
             self._Kyber768 = Kyber768
             self._Dilithium3 = Dilithium3

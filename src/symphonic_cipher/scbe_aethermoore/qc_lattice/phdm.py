@@ -17,8 +17,8 @@ HMAC chaining for cryptographic binding.
 
 import numpy as np
 import hashlib
-from dataclasses import dataclass, field
-from typing import List, Dict, Tuple, Optional, Any, Set
+from dataclasses import dataclass
+from typing import List, Dict, Tuple, Optional, Any
 from enum import Enum
 import hmac
 

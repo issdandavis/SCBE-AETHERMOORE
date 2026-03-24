@@ -5,7 +5,7 @@ Validates all 14 layers with consistency checks.
 """
 
 import math
-from typing import Dict, List, Tuple, Any
+from typing import Dict, Tuple, Any
 
 PHI = (1 + math.sqrt(5)) / 2
 EPS = 1e-10

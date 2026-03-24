@@ -36,7 +36,6 @@ import hashlib
 import hmac
 import math
 import struct
-from typing import Optional
 
 
 # =============================================================================

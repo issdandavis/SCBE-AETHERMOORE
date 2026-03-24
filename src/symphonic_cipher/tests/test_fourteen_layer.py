@@ -36,7 +36,6 @@ from scbe_aethermoore.layers import (
     verify_theorem_B_continuity,
     verify_theorem_C_risk_monotonicity,
     verify_theorem_D_diffeomorphism,
-    PHI,
     R_BASE,
     EPS,
 )

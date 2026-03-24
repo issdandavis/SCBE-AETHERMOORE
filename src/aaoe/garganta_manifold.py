@@ -64,9 +64,7 @@ The VISUAL METAPHOR (for the ephemeral browser):
 from __future__ import annotations
 
 import math
-import time as _time
-from dataclasses import dataclass, field
-from enum import Enum
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
 from .task_monitor import (
@@ -77,8 +75,6 @@ from .task_monitor import (
     DRIFT_QUARANTINE,
     EPSILON,
     PHI,
-    POINCARE_RADIUS,
-    hyperbolic_distance,
 )
 
 

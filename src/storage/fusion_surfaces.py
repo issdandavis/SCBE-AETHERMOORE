@@ -25,15 +25,14 @@ from __future__ import annotations
 
 import hashlib
 import math
-import time
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from src.crypto.octree import HyperbolicOctree, SpectralVoxel
+from src.crypto.octree import HyperbolicOctree
 from hydra.octree_sphere_grid import HyperbolicLattice25D
-from src.kernel.scattered_sphere import ScatteredAttentionSphere, TONGUE_LONGITUDES, TONGUE_KEYS
+from src.kernel.scattered_sphere import ScatteredAttentionSphere
 
 PHI = 1.618033988749895
 TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")

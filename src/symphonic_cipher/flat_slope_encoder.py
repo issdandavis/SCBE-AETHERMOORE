@@ -40,7 +40,7 @@ import hmac
 import hashlib
 import numpy as np
 from dataclasses import dataclass
-from typing import List, Set, Tuple, Optional
+from typing import List, Set, Tuple
 from enum import Enum
 
 

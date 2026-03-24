@@ -16,18 +16,14 @@ AGENT TYPES:
 Version: 1.0.0
 """
 
-import asyncio
-import hashlib
-import json
 import logging
-import os
 import time
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -221,7 +217,6 @@ class CloudAgent(ABC):
     @abstractmethod
     async def process(self, event: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         """Process an event. Override in subclasses."""
-        pass
 
     async def health_check(self) -> HealthCheckResult:
         """Perform health check."""

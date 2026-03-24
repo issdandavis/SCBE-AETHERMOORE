@@ -12,7 +12,7 @@ import hashlib
 import os
 import secrets
 from dataclasses import dataclass
-from typing import Tuple, Optional, Union
+from typing import Tuple, Optional
 from enum import Enum
 
 # Constants

@@ -29,13 +29,9 @@ from enum import Enum
 from .layer_13 import (
     Decision,
     RiskComponents,
-    CompositeRisk,
     DecisionResponse,
     HarmonicParams,
-    TimeMultiplier,
-    IntentMultiplier,
     execute_decision,
-    compute_composite_risk,
 )
 
 # Hive Memory imports (use relative import with fallback)
@@ -43,9 +39,7 @@ try:
     from ...spiralverse.hive_memory import (
         MemoryBlock,
         MemoryTier,
-        EvictionPriority,
         MemoryEvictionEngine,
-        AgentSnapshot,
     )
     HIVE_AVAILABLE = True
 except ImportError:

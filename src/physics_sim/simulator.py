@@ -18,19 +18,15 @@ import math
 from typing import Dict, Any, Tuple, Optional, List, Callable
 from dataclasses import dataclass, field
 from enum import Enum
-import json
 
 # Import numerical methods
 from .numerical import (
     euler_step,
     rk4_step,
-    verlet_step,
-    leapfrog_step,
     vec_add,
     vec_sub,
     vec_scale,
     vec_norm,
-    vec_cross_3d,
     vec_dot,
 )
 

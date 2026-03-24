@@ -16,10 +16,10 @@ Section: 4 (HAL-Attention Mathematics)
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import List, Optional, Tuple, Dict, Any, Union
+from dataclasses import dataclass
+from typing import List, Optional, Dict, Any
 
-from .constants import R_FIFTH, PHI, DEFAULT_D_MAX, DEFAULT_R, harmonic_scale, CONSTANTS
+from .constants import R_FIFTH, PHI, DEFAULT_D_MAX, harmonic_scale, CONSTANTS
 
 
 # =============================================================================

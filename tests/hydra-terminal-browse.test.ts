@@ -35,6 +35,8 @@ describe('hydra_terminal_browse', () => {
     expect(isBlockedHref('javascript:alert(1)')).toBe(true);
     expect(isBlockedHref('data:text/html,<p>x</p>')).toBe(true);
     expect(isBlockedHref('vbscript:msgbox(1)')).toBe(true);
-    expect(extractLinks(html, 'https://example.com/base', 10)).toEqual(['https://example.com/safe']);
+    expect(extractLinks(html, 'https://example.com/base', 10)).toEqual([
+      'https://example.com/safe',
+    ]);
   });
 });

@@ -43,8 +43,7 @@ import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
-from typing import Any, Dict, Generator, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Generator, List, Optional, Tuple
 
 
 # ---------------------------------------------------------------------------
