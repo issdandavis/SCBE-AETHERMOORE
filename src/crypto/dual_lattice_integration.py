@@ -1041,7 +1041,6 @@ class DualLatticeIntegrator:
         phase_point = _phase_signature_point(breathed_point, phase, realm)
 
         path = self.recent_points[-2:] + [projected_point, breathed_point, phase_point]
-        path_realms = self.recent_realms[-2:] + [realm, realm, realm]
 
         self.recent_points.extend([breathed_point, phase_point])
         self.recent_realms.extend([realm, realm])

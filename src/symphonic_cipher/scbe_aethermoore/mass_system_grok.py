@@ -199,7 +199,7 @@ def extract_phase(wave: np.ndarray) -> float:
     """Demodulates phase via FFT."""
     N = len(wave)
     yf = fft(wave)
-    xf = fftfreq(N, 1 / SAMPLE_RATE)[: N // 2]
+    fftfreq(N, 1 / SAMPLE_RATE)[: N // 2]
     peak_idx = np.argmax(np.abs(yf[: N // 2]))
     phase = np.angle(yf[peak_idx])
     return float((phase % (2 * np.pi)) / (2 * np.pi))
@@ -384,7 +384,6 @@ def governance(state: State9D, intent: float, poly: Polyhedron) -> GovernanceRes
     Integrates all 9 dimensions + topology + Grok truth-score.
     """
     # Extract state components
-    c = state.context
     tau = state.tau
     eta = state.eta
     q = state.q
@@ -394,11 +393,8 @@ def governance(state: State9D, intent: float, poly: Polyhedron) -> GovernanceRes
     d_tri = 0.3  # Placeholder - triadic distance
     h_d = 5.0  # Placeholder - harmonic value
     chi = poly.euler_characteristic()
-    kappa_max = 0.05
-    lambda_bound = 0.001
     dot_tau = tau_dot(tau)
     f_q = min(1.0, abs(q) ** 2)
-    s_q = max(0.0, -np.real(q * np.log(q + 1e-9)) if abs(q) > 1e-10 else 0.0)
 
     # Base risk calculation (weighted sum of deviation terms)
     risk_base = (

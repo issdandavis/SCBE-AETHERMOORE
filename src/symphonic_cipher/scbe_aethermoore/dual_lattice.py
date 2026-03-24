@@ -202,7 +202,7 @@ class SimulatedDilithium:
     ) -> DilithiumResult:
         """Verify signature."""
         # Simulated verification
-        expected = hmac.new(public_key[:32], message, hashlib.sha3_256).digest()
+        hmac.new(public_key[:32], message, hashlib.sha3_256).digest()
 
         # In real impl, this uses lattice verification
         valid = len(signature) == 32  # Simplified check

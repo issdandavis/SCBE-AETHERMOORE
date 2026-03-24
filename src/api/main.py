@@ -632,13 +632,13 @@ def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Di
     try:
         with urlrequest.urlopen(req, timeout=int(record.get("timeout_seconds", 8))) as resp:
             status = int(getattr(resp, "status", 200))
-            text = resp.read().decode("utf-8", errors="replace")
+            resp.read().decode("utf-8", errors="replace")
             if 200 <= status < 300:
                 return {"ok": True, "status": status, "detail": "connector request completed"}
             return {"ok": False, "code": "connector_http_status", "status": status, "detail": "connector returned non-success status"}
     except HTTPError as exc:
         return {"ok": False, "code": "connector_http_error", "status": int(exc.code), "detail": "connector request failed"}
-    except URLError as exc:
+    except URLError:
         return {"ok": False, "code": "connector_network_error", "detail": "connector network error"}
     except Exception:
         return {"ok": False, "code": "connector_dispatch_error", "detail": "connector dispatch failed"}

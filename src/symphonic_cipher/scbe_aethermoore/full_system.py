@@ -225,7 +225,7 @@ class SCBEFullSystem:
         # Hash identity and intent to numeric values
         identity_hash = self._stable_hash(identity)
         intent_hash = self._stable_hash(intent)
-        context_hash = self._stable_hash(str(context))
+        self._stable_hash(str(context))
 
         # Create complex intent encoding
         intent_complex = np.exp(1j * intent_hash)
@@ -507,9 +507,7 @@ class SCBEFullSystem:
         # Note: The harmonic scaling H(d,R) = R^(d²) is very aggressive
         # For d > 3.5, H > 100 which triggers CRITICAL
         # We use the raw d* (distance to nearest realm) as a more stable metric
-        d_star = (
-            risk_assessment.raw_risk
-        )  # This is actually H(d), need d_star from realm
+        # d_star = risk_assessment.raw_risk  # H(d), need d_star from realm
 
         # Use scaled_risk which incorporates coherence and realm weight
         # CRITICAL only if truly anomalous (not just large triadic distance)

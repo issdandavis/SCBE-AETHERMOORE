@@ -66,7 +66,7 @@ class SCBEValidator:
         """L1: Complex context should be bounded."""
         # c(t) ∈ ℂ^D with |z_j| ≤ 1 (normalized)
         D = 6
-        max_norm_sq = D * 1.0  # Each |z_j|² ≤ 1
+        max_norm_sq = D * 1.0  # noqa: F841  Each |z_j|² ≤ 1
         return True, f"Norm² bounded by D={D} when amplitudes normalized to [0,1]"
 
     def _check_l2_isometry(self) -> Tuple[bool, str]:
@@ -194,7 +194,7 @@ class SCBEValidator:
     def _check_l10_bounds(self) -> Tuple[bool, str]:
         """L10: Spin coherence in [0,1]."""
         # C_spin = |mean(unit vectors)| ≤ 1
-        M = 5
+        M = 5  # noqa: F841
         # Aligned case
         C_aligned = 1.0  # All same direction
         # Random case

@@ -319,7 +319,7 @@ def extract_phase(wave: np.ndarray) -> float:
     """Demodulate dominant phase from waveform."""
     N = len(wave)
     yf = fft(wave)
-    xf = fftfreq(N, 1 / SAMPLE_RATE)[: N // 2]
+    fftfreq(N, 1 / SAMPLE_RATE)[: N // 2]
     peak_idx = np.argmax(np.abs(yf[: N // 2]))
     phase = np.angle(yf[peak_idx])
     return (phase % (2 * np.pi)) / (2 * np.pi)

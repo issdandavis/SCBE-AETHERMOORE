@@ -443,7 +443,7 @@ class MonitoringDashboard:
         current: Dict[str, Any]
     ):
         """Handle health status changes."""
-        if current.get("healthy") == False and previous.get("healthy") == True:
+        if current.get("healthy") is False and previous.get("healthy") is True:
             # Agent became unhealthy
             self.alert_manager.create_alert(
                 severity=AlertSeverity.ERROR,
@@ -451,7 +451,7 @@ class MonitoringDashboard:
                 message=f"Agent {agent_id} health check failed",
                 source=agent_id
             )
-        elif current.get("healthy") == True and previous.get("healthy") == False:
+        elif current.get("healthy") is True and previous.get("healthy") is False:
             # Agent recovered
             self.alert_manager.create_alert(
                 severity=AlertSeverity.INFO,

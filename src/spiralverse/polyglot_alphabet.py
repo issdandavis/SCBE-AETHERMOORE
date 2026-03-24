@@ -431,9 +431,6 @@ def calculate_cipher_strength(tongues: List[TongueID]) -> Dict[str, any]:
     # XOR chain length
     xor_depth = n
 
-    # Brute force complexity (simplified)
-    brute_force_ops = keyspace * n
-
     return {
         "tongue_count": n,
         "tongues": [t.value for t in tongues],
