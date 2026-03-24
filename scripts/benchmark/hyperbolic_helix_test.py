@@ -16,7 +16,7 @@ Like an astronaut playing basketball AND doing spacewalks.
 from __future__ import annotations
 import hashlib, math, json, time
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import Dict, Tuple
 import numpy as np
 
 import sys
