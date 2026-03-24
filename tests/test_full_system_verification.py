@@ -43,7 +43,7 @@ total = 0
 def check(name: str, condition: bool, detail: str = ""):
     global passed, failed, total
     total += 1
-    status = "PASS" if condition else "FAIL"
+    # status: "PASS" if condition else "FAIL"
     if condition:
         passed += 1
     else:
@@ -73,7 +73,7 @@ check("L1: Complex context bounded", True, "c(t) in C^D with |z_j| <= 1")
 z = 3 + 4j
 x = [z.real, z.imag]
 norm_z = abs(z)
-norm_x = math.sqrt(x[0] ** 2 + x[1] ** 2)
+norm_x = math.hypot(x[0], x[1])
 check("L2: Realification preserves norm", abs(norm_z - norm_x) < EPS, f"|c|={norm_z:.4f}, |x|={norm_x:.4f}")
 
 # L3: Weighted metric positive definite
@@ -127,9 +127,9 @@ def rotate_2d(x, y, theta):
 
 
 x, y = 0.3, 0.4
-n_before = math.sqrt(x**2 + y**2)
+n_before = math.hypot(x, y)
 xr, yr = rotate_2d(x, y, 0.7)
-n_after = math.sqrt(xr**2 + yr**2)
+n_after = math.hypot(xr, yr)
 check("L7: Phase rotation preserves norm", abs(n_before - n_after) < EPS, f"before={n_before:.6f}, after={n_after:.6f}")
 
 # L8: Multi-well realm distance

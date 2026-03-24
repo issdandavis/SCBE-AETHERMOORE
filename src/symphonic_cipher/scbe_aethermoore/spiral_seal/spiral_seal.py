@@ -50,8 +50,8 @@ try:
     import nacl.utils
 
     _NACL_AVAILABLE = True
-except (ImportError, Exception):
-    pass
+except ImportError:
+    _NACL_AVAILABLE = False  # Optional: PyNaCl not installed
 
 # Argon2 (preferred KDF)
 try:
@@ -1061,11 +1061,10 @@ class SpiralSealSS1:
         # Check PQC availability
         pqc_available = False
         try:
-            pass
-
+            from src.crypto import pqc_liboqs  # noqa: F401
             pqc_available = True
         except ImportError:
-            pass
+            pqc_available = False
 
         return {
             "version": "SS1",

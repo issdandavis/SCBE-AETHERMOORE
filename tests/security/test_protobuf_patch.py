@@ -40,7 +40,7 @@ class TestProtobufPatch:
         from src.security import protobuf_patch
 
         # May already be applied from previous test
-        result = protobuf_patch.apply()
+        protobuf_patch.apply()
         assert protobuf_patch.is_applied() is True
 
     def test_patch_blocks_nested_any_bypass(self):
@@ -115,7 +115,7 @@ class TestProtobufPatch:
         """Applying patch multiple times should be safe."""
         from src.security import protobuf_patch
 
-        result1 = protobuf_patch.apply()
+        protobuf_patch.apply()
         result2 = protobuf_patch.apply()
         result3 = protobuf_patch.apply()
 

@@ -143,22 +143,18 @@ def causality_check(require_time_param: bool = True, allow_acausal: bool = False
             time_ordering_preserved = True
             future_dependency = False
             message = "OK"
+            if last_time["value"] is not None and current_time < last_time["value"]:
+                if explicit_time and not strict_time_order:
+                    # Explicit rewinds are treated as a new sequence origin.
+                    message = f"Time sequence reset: {current_time:.4f} < " f"{last_time['value']:.4f}"
+                else:
+                    if not explicit_time or strict_time_order:
+                        time_ordering_preserved = False
+                        if not allow_acausal:
+                            future_dependency = True
 
-            if last_time["value"] is not None:
-                if current_time < last_time["value"]:
-                    if explicit_time:
-                        # Explicit rewinds are treated as a new sequence origin.
-                        message = f"Time sequence reset: {current_time:.4f} < " f"{last_time['value']:.4f}"
-                    else:
-                        time_ordering_preserved = False
-                        message = f"Time went backwards: {current_time:.4f} < {last_time['value']:.4f}"
-                        if not allow_acausal:
-                            future_dependency = True
                     if strict_time_order:
-                        time_ordering_preserved = False
                         message = f"Time went backwards: {current_time:.4f} < " f"{last_time['value']:.4f}"
-                        if not allow_acausal:
-                            future_dependency = True
                     else:
                         # Treat backwards time as a new independent sequence.
                         # This avoids stale cross-test/cross-call temporal state.
@@ -325,11 +321,6 @@ def quantum_fidelity(q1: complex, q2: complex) -> float:
         return fidelity
 
     return min(1.0, fidelity)
-
-    if bool(np.isclose(q1, q2)):
-        return raw_fidelity
-
-    return float(min(1.0, max(0.0, raw_fidelity)))
 
 
 def hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:

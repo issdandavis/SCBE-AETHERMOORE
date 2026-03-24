@@ -307,7 +307,7 @@ class TestPQCMode:
         # Generate keypair
         public_key = protocol.kem.generate_keypair()
 
-        envelope = protocol.encrypt(
+        protocol.encrypt(
             password=b"password",
             plaintext=b"message",
             ml_kem_public_key=public_key,

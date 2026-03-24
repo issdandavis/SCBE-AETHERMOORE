@@ -42,8 +42,8 @@ class TestCryptoLimitations:
         ss = SpiralSealSS1(master_secret=key, kid="test")
 
         # Seal some data
-        sealed1 = ss.seal(b"past data 1", aad="ctx")
-        sealed2 = ss.seal(b"past data 2", aad="ctx")
+        ss.seal(b"past data 1", aad="ctx")
+        ss.seal(b"past data 2", aad="ctx")
 
         # If key is compromised later, ALL past data is exposed
         # System has no ephemeral key exchange
@@ -125,7 +125,7 @@ class TestGeometricLimitations:
         audio = np.random.randn(512)
 
         start = time.time()
-        result = scbe_14layer_pipeline(
+        scbe_14layer_pipeline(
             t=t,
             D=D,
             breathing_factor=1.0,
@@ -217,7 +217,7 @@ class TestScaleLimitations:
         start = time.time()
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             futures = [executor.submit(run_pipeline) for _ in range(100)]
-            results = [f.result() for f in futures]
+            [f.result() for f in futures]
         parallel_time = time.time() - start
 
         # Run 100 sequential

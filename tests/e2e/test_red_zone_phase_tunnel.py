@@ -44,7 +44,7 @@ RED_ZONE_HTML = Path(__file__).parent / "fixtures" / "red-zone-site.html"
 
 def parse_test_site():
     """Parse the red zone test site into the format page_analyzer would produce."""
-    html = RED_ZONE_HTML.read_text(encoding="utf-8")
+    RED_ZONE_HTML.read_text(encoding="utf-8")
 
     return {
         "url": "https://suspicious-downloads.example.com",
@@ -139,8 +139,8 @@ class TestRedZoneTopology:
             # On average, RED nodes should have higher semantic distance
             # (Note: radius depends on semantic distance, not zone, so this isn't guaranteed
             #  for every individual node, but should hold on average for a page about hacking tools)
-            avg_red = sum(red_radii) / len(red_radii)
-            avg_green = sum(green_radii) / len(green_radii)
+            _ = sum(red_radii) / len(red_radii)
+            _ = sum(green_radii) / len(green_radii)
             # Just verify both exist — positioning depends on content similarity
             assert len(red_radii) >= 3
             assert len(green_radii) >= 2
@@ -193,7 +193,7 @@ class TestRedZonePhaseTunnel:
         for i in range(10):
             kernel.add_scar(f"mission_{i}")
 
-        red_node = next(n for n in self.topology["nodes"] if n["zone"] == "RED")
+        next(n for n in self.topology["nodes"] if n["zone"] == "RED")
 
         # Use the optimal phase for RED zone
         wall_freq = compute_transparency_frequency("RED", 0.5)
@@ -236,7 +236,7 @@ class TestRedZonePhaseTunnel:
         for i in range(5):
             kernel.add_scar(f"s_{i}")
 
-        red_node = next(n for n in self.topology["nodes"] if n["zone"] == "RED")
+        next(n for n in self.topology["nodes"] if n["zone"] == "RED")
 
         # Issue a tunnel permit for observation only
         permit = self.governor.issue_permit(

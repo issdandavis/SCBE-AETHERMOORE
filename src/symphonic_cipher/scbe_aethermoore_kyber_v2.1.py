@@ -17,13 +17,6 @@ Date: January 14, 2026
 
 import numpy as np
 
-# Use scipy-compatible imports with fallback
-try:
-    from scipy.fft import fft, fftfreq
-except ImportError:
-    fft = np.fft.fft
-    fftfreq = np.fft.fftfreq
-
 import hashlib
 import time
 import os

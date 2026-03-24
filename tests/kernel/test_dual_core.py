@@ -275,7 +275,7 @@ class TestDualCoreKernel:
     def test_immune_learning(self):
         kernel = DualCoreKernel(name="test", load_phdm=False)
         # First time: ALLOW (no immune match)
-        r1 = kernel.process("safe request")
+        kernel.process("safe request")
         # Manually add immune signature
         kernel.geo.add_immune_signature("known bad input")
         # Now it should DENY
