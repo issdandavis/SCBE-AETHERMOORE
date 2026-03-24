@@ -201,7 +201,7 @@ class TestRoleMessages:
 
     def test_since_id_filters(self, sb: Switchboard):
         id1 = sb.post_role_message("coders", "alice", {"text": "first"})
-        id2 = sb.post_role_message("coders", "bob", {"text": "second"})
+        sb.post_role_message("coders", "bob", {"text": "second"})
 
         messages = sb.get_role_messages("coders", since_id=id1)
         assert len(messages) == 1

@@ -285,7 +285,6 @@ class TestDriftDistance:
 
     def test_poincare_amplification_near_boundary(self):
         """Signatures near the ball boundary should have amplified distance."""
-        small = [0.01, 0.01]
         large = [0.9, 0.9]  # Near boundary
         large_shifted = [0.9, 0.91]
 
@@ -492,7 +491,7 @@ class TestAperiodicPhaseController:
         initial_epoch = ctrl.epoch
         # Tick enough times for at least one shift
         for _ in range(20):
-            state = ctrl.tick()
+            ctrl.tick()
         assert ctrl.epoch > initial_epoch
 
     def test_phase_modulation_range(self):

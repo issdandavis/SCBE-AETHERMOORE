@@ -129,7 +129,7 @@ class TestExecute:
         await head.connect(spine)
 
         # We can observe the final state; BUSY is transient
-        result = await head.execute({"action": "recall", "key": "x"})
+        await head.execute({"action": "recall", "key": "x"})
         assert head.status == HeadStatus.CONNECTED
 
 

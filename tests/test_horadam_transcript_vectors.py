@@ -324,7 +324,7 @@ def generate_triadic_vectors():
     salt = b"SCBE-session-v1"
     prk = hkdf_extract(salt, mock_secret)
 
-    tongue_names = ["KO", "AV", "RU"]
+    # tongue_names: KO, AV, RU
     perturbation = 0.01
 
     print("=" * 80)

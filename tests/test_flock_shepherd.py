@@ -224,7 +224,7 @@ class TestGovernanceVoting:
 
     def test_vote_mixed_health(self):
         flock = Flock()
-        healthy = flock.spawn("Healthy", TrainingTrack.GOVERNANCE)
+        flock.spawn("Healthy", TrainingTrack.GOVERNANCE)
         warn = flock.spawn("Warn", TrainingTrack.GOVERNANCE)
         warn.coherence = 0.6  # below HEALTHY, above WARN
         sick = flock.spawn("Sick", TrainingTrack.GOVERNANCE)

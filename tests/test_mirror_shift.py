@@ -155,7 +155,6 @@ class TestDualTernary:
 
     def test_trajectory_output_shape(self):
         """Trajectory dual ternary has correct shapes."""
-        rng = np.random.default_rng(0)
         T = 50
         trajectory = np.stack([make_valid_state(i) for i in range(T)])
         par_stream, perp_stream = dual_ternary_trajectory(trajectory)
