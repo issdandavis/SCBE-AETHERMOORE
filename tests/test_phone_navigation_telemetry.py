@@ -7,20 +7,23 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 
-SAMPLE_XML = """<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-<hierarchy rotation="0">
-  <node index="0" text="" resource-id="" class="android.widget.FrameLayout" package="com.android.chrome" clickable="false" enabled="true" focused="false" scrollable="false" bounds="[0,0][540,1200]">
-    <node index="0" text="Webtoon Viewer" resource-id="" class="android.webkit.WebView" package="com.android.chrome" clickable="false" enabled="true" focused="true" scrollable="true" bounds="[0,275][540,1139]">
-      <node index="0" text="Chapter 1: Protocol Handshake" resource-id="" class="android.widget.TextView" package="com.android.chrome" clickable="false" enabled="true" focused="false" scrollable="false" bounds="[23,275][446,359]" />
-      <node index="1" text="Tap once for controls" resource-id="" class="android.widget.TextView" package="com.android.chrome" clickable="false" enabled="true" focused="false" scrollable="false" bounds="[133,1007][406,1109]" />
-      <node index="2" text="STORY" resource-id="" class="android.widget.Button" package="com.android.chrome" clickable="true" enabled="true" focused="false" scrollable="false" bounds="[336,991][517,1083]" />
-    </node>
-    <node index="1" text="10.0.2.2:8088/reader.html?chapter=ch01&amp;variant=generated" resource-id="com.android.chrome:id/url_bar" class="android.widget.EditText" package="com.android.chrome" clickable="true" enabled="true" focused="false" scrollable="false" bounds="[210,136][267,267]" />
-    <node index="2" text="" resource-id="com.android.chrome:id/home_button" class="android.widget.ImageButton" package="com.android.chrome" content-desc="Open the home page" clickable="true" enabled="true" focused="false" scrollable="false" bounds="[0,128][126,275]" />
-    <node index="3" text="Ghost" resource-id="" class="android.widget.Button" package="com.android.chrome" clickable="true" enabled="true" focused="false" scrollable="false" bounds="[0,0][0,0]" />
-  </node>
-</hierarchy>
-"""
+# fmt: off
+SAMPLE_XML = (
+    '<?xml version=\'1.0\' encoding=\'UTF-8\' standalone=\'yes\' ?>\n'
+    '<hierarchy rotation="0">\n'
+    '  <node index="0" text="" resource-id="" class="android.widget.FrameLayout" package="com.android.chrome" clickable="false" enabled="true" focused="false" scrollable="false" bounds="[0,0][540,1200]">\n'  # noqa: E501
+    '    <node index="0" text="Webtoon Viewer" resource-id="" class="android.webkit.WebView" package="com.android.chrome" clickable="false" enabled="true" focused="true" scrollable="true" bounds="[0,275][540,1139]">\n'  # noqa: E501
+    '      <node index="0" text="Chapter 1: Protocol Handshake" resource-id="" class="android.widget.TextView" package="com.android.chrome" clickable="false" enabled="true" focused="false" scrollable="false" bounds="[23,275][446,359]" />\n'  # noqa: E501
+    '      <node index="1" text="Tap once for controls" resource-id="" class="android.widget.TextView" package="com.android.chrome" clickable="false" enabled="true" focused="false" scrollable="false" bounds="[133,1007][406,1109]" />\n'  # noqa: E501
+    '      <node index="2" text="STORY" resource-id="" class="android.widget.Button" package="com.android.chrome" clickable="true" enabled="true" focused="false" scrollable="false" bounds="[336,991][517,1083]" />\n'  # noqa: E501
+    '    </node>\n'
+    '    <node index="1" text="10.0.2.2:8088/reader.html?chapter=ch01&amp;variant=generated" resource-id="com.android.chrome:id/url_bar" class="android.widget.EditText" package="com.android.chrome" clickable="true" enabled="true" focused="false" scrollable="false" bounds="[210,136][267,267]" />\n'  # noqa: E501
+    '    <node index="2" text="" resource-id="com.android.chrome:id/home_button" class="android.widget.ImageButton" package="com.android.chrome" content-desc="Open the home page" clickable="true" enabled="true" focused="false" scrollable="false" bounds="[0,128][126,275]" />\n'  # noqa: E501
+    '    <node index="3" text="Ghost" resource-id="" class="android.widget.Button" package="com.android.chrome" clickable="true" enabled="true" focused="false" scrollable="false" bounds="[0,0][0,0]" />\n'  # noqa: E501
+    '  </node>\n'
+    '</hierarchy>\n'
+)
+# fmt: on
 
 
 def test_parse_bounds_extracts_geometry():

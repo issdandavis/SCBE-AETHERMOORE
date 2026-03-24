@@ -386,7 +386,8 @@ class TestSystemBenchmarks:
 
         # Report metrics, don't assert (hardware-dependent)
         print(
-            f"\n[Concurrency] Sequential: {sequential_time:.2f}s, Concurrent: {concurrent_time:.2f}s, Speedup: {speedup:.2f}x"
+            f"\n[Concurrency] Sequential: {sequential_time:.2f}s,"
+            f" Concurrent: {concurrent_time:.2f}s, Speedup: {speedup:.2f}x"
         )
 
 

@@ -492,7 +492,8 @@ def run_stress_tests() -> List[TestResult]:
     print(f"  Initial ν = 0.5, target ν̄ = {CONSTANTS['NU_BAR']}")
     print(f"  After 100 steps: ν = {trajectory[-1]:.4f}")
     print(
-        f"  [{'OK' if converged else 'FAIL'}] Converges toward target: |ν - ν̄| = {abs(trajectory[-1] - CONSTANTS['NU_BAR']):.4f}"
+        f"  [{'OK' if converged else 'FAIL'}] Converges toward target:"
+        f" |ν - ν̄| = {abs(trajectory[-1] - CONSTANTS['NU_BAR']):.4f}"
     )
 
     # Check bounded oscillation
