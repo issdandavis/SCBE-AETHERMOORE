@@ -7,7 +7,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { nextNonce, deriveNoncePrefix, resetSessionCounter } from '../../src/crypto/nonceManager.js';
+import {
+  nextNonce,
+  deriveNoncePrefix,
+  resetSessionCounter,
+} from '../../src/crypto/nonceManager.js';
 
 describe('nonceManager', () => {
   describe('nextNonce', () => {
