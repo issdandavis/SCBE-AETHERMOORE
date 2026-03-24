@@ -318,10 +318,10 @@ def electromagnetism(params: Dict[str, Any]) -> Dict[str, Any]:
 
     # Magnetic field from long straight wire: B = μ₀I/(2πr)
     if "current" in params and "distance" in params:
-        I = params["current"]
+        current = params["current"]
         r = params["distance"]
         if r > 0:
-            B = VACUUM_PERMEABILITY * I / (2 * math.pi * r)
+            B = VACUUM_PERMEABILITY * current / (2 * math.pi * r)
             results["magnetic_field_from_wire"] = B
 
     # Electromagnetic wave: c = fλ, E = cB

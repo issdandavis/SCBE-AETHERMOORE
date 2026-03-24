@@ -180,10 +180,10 @@ class SCBEHyperbolicDefense:
         mu = [0.0, 0.0, 0.9, 0.9, 0.1, 0.1]
 
         L = 0.0
-        for l in range(6):
-            w_l = TONGUE_WEIGHTS[l]
-            d_l = abs(x[l] - mu[l])
-            phi_l = TONGUE_PHASES[l]
+        for lang in range(6):
+            w_l = TONGUE_WEIGHTS[lang]
+            d_l = abs(x[lang] - mu[lang])
+            phi_l = TONGUE_PHASES[lang]
             beta_l = 1.0 + 0.1 * math.cos(phi_l)
 
             # Phase-shifted deviation
@@ -435,7 +435,8 @@ def run_benchmark():
             }
 
             print(
-                f"  {defense.name:40} | Caught: {caught:2}/{total_attacks:2} ({detection_rate:5.1f}%) | FP: {false_positives}"
+                f"  {defense.name:40} | Caught: {caught:2}/{total_attacks:2}"
+                f" ({detection_rate:5.1f}%) | FP: {false_positives}"
             )
 
     # Summary

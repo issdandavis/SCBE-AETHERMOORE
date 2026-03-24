@@ -707,20 +707,20 @@ def doppler_shift_moving_observer(
         return f_source * (v_sound - v_observer) / v_sound
 
 
-def sound_intensity_level(I: float, I_ref: float = 1e-12) -> float:
+def sound_intensity_level(intensity: float, intensity_ref: float = 1e-12) -> float:
     """
     Calculate sound intensity level in decibels.
 
     β = 10 * log₁₀(I/I₀)
 
     Args:
-        I: Sound intensity (W/m²)
-        I_ref: Reference intensity (default 1e-12 W/m², threshold of hearing)
+        intensity: Sound intensity (W/m²)
+        intensity_ref: Reference intensity (default 1e-12 W/m², threshold of hearing)
 
     Returns:
         Sound level (dB)
     """
-    return 10 * math.log10(I / I_ref)
+    return 10 * math.log10(intensity / intensity_ref)
 
 
 def beat_frequency(f1: float, f2: float) -> float:
@@ -841,20 +841,20 @@ def em_field_ratio(n: float = 1) -> float:
     return C / n
 
 
-def radiation_pressure(I: float, reflectivity: float = 0) -> float:
+def radiation_pressure(intensity: float, reflectivity: float = 0) -> float:
     """
     Calculate radiation pressure.
 
     P = I/c (absorbed) or P = 2I/c (reflected)
 
     Args:
-        I: Intensity (W/m²)
+        intensity: Intensity (W/m²)
         reflectivity: Fraction reflected (0 to 1)
 
     Returns:
         Radiation pressure (Pa)
     """
-    return I / C * (1 + reflectivity)
+    return intensity / C * (1 + reflectivity)
 
 
 def wavelength_to_frequency(wavelength: float) -> float:

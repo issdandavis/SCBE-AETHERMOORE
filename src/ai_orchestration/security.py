@@ -548,7 +548,7 @@ class SecurityGate:
         return {
             "total_events": len(events),
             "events_by_type": {t.value: sum(1 for e in events if e.threat_type == t) for t in ThreatType},
-            "events_by_level": {l.name: sum(1 for e in events if e.threat_level == l) for l in ThreatLevel},
+            "events_by_level": {lang.name: sum(1 for e in events if e.threat_level == lang) for lang in ThreatLevel},
             "blocked_events": sum(1 for e in events if e.blocked),
             "blocked_agents": list(self.blocked_agents),
             "recent_events": [

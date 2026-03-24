@@ -49,7 +49,11 @@ def search_datasets(query: str, limit: int = 20) -> list[KnowledgeChunk]:
             source="harvard_dataverse",
             category=category,
             title=name,
-            content=f"# {name}\n\nAuthors: {', '.join(authors[:5])}\nPublished: {published_at}\nSubjects: {', '.join(subjects[:5])}\nDOI: {global_id}\n\n{description[:3000]}\n\nCitation: {citation}",
+            content=(
+                f"# {name}\n\nAuthors: {', '.join(authors[:5])}\n"
+                f"Published: {published_at}\nSubjects: {', '.join(subjects[:5])}\n"
+                f"DOI: {global_id}\n\n{description[:3000]}\n\nCitation: {citation}"
+            ),
             url=url_val,
             metadata={
                 "dataverse_id": global_id,

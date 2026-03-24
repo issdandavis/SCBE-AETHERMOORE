@@ -294,11 +294,11 @@ class AuditLogger:
         results = self.logs
 
         if agent_id:
-            results = [l for l in results if l["agent_id"] == agent_id]
+            results = [log for log in results if log["agent_id"] == agent_id]
         if tool_id:
-            results = [l for l in results if l["tool_id"] == tool_id]
+            results = [log for log in results if log["tool_id"] == tool_id]
         if status:
-            results = [l for l in results if l["status"] == status.value]
+            results = [log for log in results if log["status"] == status.value]
 
         return results[-limit:]
 

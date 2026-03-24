@@ -639,16 +639,16 @@ def cubic_spline_coefficients(x_data: List[float], y_data: List[float]) -> List[
     for i in range(1, n):
         alpha[i] = 3 / h[i] * (y_data[i + 1] - y_data[i]) - 3 / h[i - 1] * (y_data[i] - y_data[i - 1])
 
-    l = [1.0] + [0.0] * n
+    diag = [1.0] + [0.0] * n
     mu = [0.0] * (n + 1)
     z = [0.0] * (n + 1)
 
     for i in range(1, n):
-        l[i] = 2 * (x_data[i + 1] - x_data[i - 1]) - h[i - 1] * mu[i - 1]
-        mu[i] = h[i] / l[i]
-        z[i] = (alpha[i] - h[i - 1] * z[i - 1]) / l[i]
+        diag[i] = 2 * (x_data[i + 1] - x_data[i - 1]) - h[i - 1] * mu[i - 1]
+        mu[i] = h[i] / diag[i]
+        z[i] = (alpha[i] - h[i - 1] * z[i - 1]) / diag[i]
 
-    l[n] = 1.0
+    diag[n] = 1.0
     z[n] = 0.0
     c = [0.0] * (n + 1)
 
@@ -875,8 +875,11 @@ def numerical_methods(params: Dict[str, Any]) -> Dict[str, Any]:
 
     if method == "root_finding":
         # Example: find root of x² - 2 (i.e., √2)
-        f = lambda x: x**2 - 2
-        df = lambda x: 2 * x
+        def f(x):
+            return x**2 - 2
+
+        def df(x):
+            return 2 * x
 
         root, iters = bisection(f, 1, 2)
         results["bisection_root"] = root
@@ -901,7 +904,9 @@ def numerical_methods(params: Dict[str, Any]) -> Dict[str, Any]:
         # Simple harmonic oscillator: x'' = -ω²x
         # State: [x, v], derivatives: [v, -ω²x]
         omega = params.get("omega", 1.0)
-        f = lambda t, y: [y[1], -(omega**2) * y[0]]
+
+        def f(t, y):
+            return [y[1], -(omega**2) * y[0]]
 
         y0 = [1.0, 0.0]  # x=1, v=0
         t_span = (0, 2 * math.pi / omega)  # One period

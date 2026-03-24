@@ -72,7 +72,11 @@ def search_cves(keyword: str, limit: int = 20) -> list[KnowledgeChunk]:
             source="nist_nvd",
             category="security",
             title=f"{cve_id} — CVSS {cvss_score} ({severity})",
-            content=f"# {cve_id}\n\nCVSS Score: {cvss_score} ({severity})\nPublished: {published}\nCWEs: {', '.join(cwes)}\n\n{en_desc}\n\nReferences: {', '.join(ref_urls)}",
+            content=(
+                f"# {cve_id}\n\nCVSS Score: {cvss_score} ({severity})\n"
+                f"Published: {published}\nCWEs: {', '.join(cwes)}\n\n"
+                f"{en_desc}\n\nReferences: {', '.join(ref_urls)}"
+            ),
             url=f"https://nvd.nist.gov/vuln/detail/{cve_id}",
             metadata={
                 "cve_id": cve_id,

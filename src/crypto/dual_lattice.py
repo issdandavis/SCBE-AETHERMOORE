@@ -31,7 +31,6 @@ import hashlib
 import struct
 import secrets
 
-
 # =============================================================================
 # Constants and Parameters
 # =============================================================================
@@ -427,7 +426,7 @@ class DilithiumTongueSigner:
             security_level: 2=Dilithium2, 3=Dilithium3, 5=Dilithium5
         """
         levels = {2: (4, 4), 3: (6, 5), 5: (8, 7)}
-        self.k, self.l = levels.get(security_level, (6, 5))
+        self.k, self.ell = levels.get(security_level, (6, 5))
         self.n = DILITHIUM_N
         self.q = DILITHIUM_Q
 
@@ -436,7 +435,7 @@ class DilithiumTongueSigner:
 
     def _generate_keypair(self):
         """Generate Dilithium keypair (simplified)."""
-        self.secret_key = secrets.token_bytes(32 + 32 * self.l)
+        self.secret_key = secrets.token_bytes(32 + 32 * self.ell)
         self.public_key = secrets.token_bytes(32 + 32 * self.k)
 
     def create_tongue_hash(self, vector: LatticeVector) -> bytes:
@@ -813,14 +812,12 @@ class TongueLatticeGovernor:
 
 def demo():
     """Demonstrate the dual lattice cross-stitch system."""
-    print(
-        """
+    print("""
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                    DUAL LATTICE CROSS-STITCH DEMO                             ║
 ║            Kyber + Dilithium + Sacred Tongues + Time + Intent                 ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
-    """
-    )
+    """)
 
     # Create governor
     governor = TongueLatticeGovernor()
@@ -846,7 +843,9 @@ def demo():
         print(f"  Vector Norm: {result['vector_norm']:.3f} (normalized: {result['normalized_norm']:.3f})")
         print(f"  Trust Score: {result['trust_score']:.3f}")
         print(
-            f"  Thresholds: ALLOW>{result['thresholds']['allow']:.2f} | QUAR>{result['thresholds']['quarantine']:.2f} | ESC>{result['thresholds']['escalate']:.2f}"
+            f"  Thresholds: ALLOW>{result['thresholds']['allow']:.2f}"
+            f" | QUAR>{result['thresholds']['quarantine']:.2f}"
+            f" | ESC>{result['thresholds']['escalate']:.2f}"
         )
         print(f"  Decision: {result['decision']}")
         print(f"  Kyber Level: {result['lattice_proof']['security']['kyber_level']}")
@@ -875,8 +874,7 @@ def demo():
 
     print("       └" + "─" * 50 + "┘")
 
-    print(
-        """
+    print("""
 
   Legend:
   ────────
@@ -885,8 +883,7 @@ def demo():
   • KO-I coupling: Strongest (intent binds to purpose)
   • Tongue-Phase: Sinusoidal based on phase angles
   • Flux (ν): Modulates all couplings
-    """
-    )
+    """)
 
 
 if __name__ == "__main__":

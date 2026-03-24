@@ -532,7 +532,10 @@ All data is stored securely using SCBE encryption.
                 "portfolio_import": self.profile.portfolio_path is not None,
                 "cloud_backup": self.profile.cloud_backup,
             },
-            "estimated_disk_usage": f"{sum([5, 10, 15][['minimal', 'standard', 'maximum'].index(self.profile.security_level)])} MB base + packs",
+            "estimated_disk_usage": (
+                f"{sum([5, 10, 15][['minimal', 'standard', 'maximum'].index(self.profile.security_level)])}"
+                " MB base + packs"
+            ),
             "ready_to_install": True,
         }
 

@@ -454,9 +454,9 @@ class LightningQuery:
     def stats(self) -> Dict[str, Any]:
         total_records = len(self.records)
         total_zones = len(self.leaders)
-        total_charge = sum(l.effective_charge for l in self.leaders.values())
-        avg_conductivity = sum(l.conductivity for l in self.leaders.values()) / max(1, total_zones)
-        penalized_zones = sum(1 for l in self.leaders.values() if l.penalty > 0.01)
+        total_charge = sum(leader.effective_charge for leader in self.leaders.values())
+        avg_conductivity = sum(leader.conductivity for leader in self.leaders.values()) / max(1, total_zones)
+        penalized_zones = sum(1 for leader in self.leaders.values() if leader.penalty > 0.01)
 
         return {
             "type": "LightningQuery",

@@ -175,7 +175,7 @@ class CymaticCone:
             "compaction_score": round(
                 self._record_count / max(1, oct_stats["node_count"] + oct_stats["leaf_count"]), 6
             ),
-            "unique_chladni_modes": len({(l.chladni_n, l.chladni_m) for l in self.leaves.values()}),
+            "unique_chladni_modes": len({(leaf.chladni_n, leaf.chladni_m) for leaf in self.leaves.values()}),
         }
 
 
