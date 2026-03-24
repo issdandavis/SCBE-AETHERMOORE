@@ -13,12 +13,6 @@ from src.crypto.sacred_tongues import (
     SACRED_TONGUE_TOKENIZER,
     TONGUES,
     SECTION_TONGUES,
-    KOR_AELIN,
-    AVALI,
-    RUNETHIC,
-    CASSISIVADAN,
-    UMBROTH,
-    DRAUMRIC,
 )
 
 

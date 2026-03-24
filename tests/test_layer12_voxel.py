@@ -18,11 +18,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from scbe_governance_math import (
-    DANGER_QUORUM,
-    PHI,
     Point3,
     bft_consensus,
-    clamp,
     coherence_from_phases,
     drift_star,
     encode_voxel_key,

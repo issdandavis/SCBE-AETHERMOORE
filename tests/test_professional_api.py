@@ -13,13 +13,10 @@ Run: pytest tests/test_professional_api.py -v -m professional
 """
 
 import pytest
-import numpy as np
-import json
 import time
 import sys
 import os
-from typing import Dict, Any
-from unittest.mock import Mock, patch, AsyncMock
+from unittest.mock import Mock
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 

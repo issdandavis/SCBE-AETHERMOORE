@@ -26,7 +26,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 import pytest
 
 from symphonic_cipher.scbe_aethermoore.ai_brain.cymatic_voxel_net import (
-    NODAL_THRESHOLD,
     REALM_CENTERS,
     SACRED_TONGUES,
     TONGUE_DIMENSION_MAP,

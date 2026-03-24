@@ -11,17 +11,15 @@ Covers:
 - Switchboard integration actions via execute()
 """
 
-import asyncio
 import pytest
 import sys
 import os
-from unittest.mock import MagicMock, AsyncMock, patch
-from dataclasses import dataclass
+from unittest.mock import MagicMock
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-from hydra.spine import HydraSpine, Workflow, WorkflowPhase
-from hydra.head import HydraHead, HeadStatus
+from hydra.spine import HydraSpine
+from hydra.head import HydraHead
 from hydra.ledger import Ledger
 
 

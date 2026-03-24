@@ -19,9 +19,6 @@ Last Updated: January 19, 2026
 import pytest
 import sys
 import os
-import numpy as np
-from typing import Dict, List, Tuple, Set
-import hashlib
 import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
@@ -245,7 +242,7 @@ class TestDualLatticeConsensus:
 
         result = consensus.dual_verify(classical_result, quantum_result)
 
-        assert result["agreed"] == True, "Dual lattices should agree on same value"
+        assert result["agreed"] is True, "Dual lattices should agree on same value"
         assert result["value"] == "A", "Agreed value incorrect"
 
         # Test case where lattices disagree
@@ -254,8 +251,8 @@ class TestDualLatticeConsensus:
 
         result = consensus.dual_verify(classical_result, quantum_result)
 
-        assert result["agreed"] == False, "Dual lattices should detect disagreement"
-        assert result["safe_failure"] == True, "Must fail safely on disagreement"
+        assert result["agreed"] is False, "Dual lattices should detect disagreement"
+        assert result["safe_failure"] is True, "Must fail safely on disagreement"
 
     @pytest.mark.skipif(
         not CONSENSUS_AVAILABLE, reason="Consensus module not available"
@@ -280,12 +277,12 @@ class TestDualLatticeConsensus:
 
         # Verify signature
         valid = consensus.verify_quantum_signature(message, signature)
-        assert valid == True, "Valid quantum signature failed verification"
+        assert valid is True, "Valid quantum signature failed verification"
 
         # Test with wrong message
         wrong_message = b"consensus_value_B"
         valid = consensus.verify_quantum_signature(wrong_message, signature)
-        assert valid == False, "Quantum signature verified with wrong message"
+        assert valid is False, "Quantum signature verified with wrong message"
 
     @pytest.mark.skipif(
         not CONSENSUS_AVAILABLE, reason="Consensus module not available"
@@ -352,7 +349,7 @@ class TestConsensusAttackResistance:
 
         for node in sybil_nodes:
             is_sybil = consensus.detect_sybil(node)
-            assert is_sybil == True, f"Failed to detect Sybil node: {node}"
+            assert is_sybil is True, f"Failed to detect Sybil node: {node}"
 
     @pytest.mark.skipif(
         not CONSENSUS_AVAILABLE, reason="Consensus module not available"
@@ -383,7 +380,7 @@ class TestConsensusAttackResistance:
 
         # System must detect attack
         attack_detected = consensus.detect_majority_attack(proposals)
-        assert attack_detected == True, "Failed to detect 51% attack"
+        assert attack_detected is True, "Failed to detect 51% attack"
 
     @pytest.mark.skipif(
         not CONSENSUS_AVAILABLE, reason="Consensus module not available"
@@ -406,7 +403,7 @@ class TestConsensusAttackResistance:
         victim_connections = ["attacker_0", "attacker_1", "attacker_2"]
 
         is_eclipsed = consensus.detect_eclipse("victim_node", victim_connections)
-        assert is_eclipsed == True, "Failed to detect eclipse attack"
+        assert is_eclipsed is True, "Failed to detect eclipse attack"
 
 
 class TestConsensusPerformance:

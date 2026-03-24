@@ -1,6 +1,4 @@
 """Tests for hydra/color_dimension.py — Frequency-Based Flow Isolation."""
-import math
-import pytest
 import sys
 import os
 
@@ -17,7 +15,6 @@ from hydra.color_dimension import (
     SpectralFlowRouter,
     SPEED_OF_LIGHT_NM_THZ,
     SpectrumAllocator,
-    TASK_BANDS,
     TONGUE_AUDIO_HZ,
     TONGUE_INTERVALS,
     TONGUE_PHASES,

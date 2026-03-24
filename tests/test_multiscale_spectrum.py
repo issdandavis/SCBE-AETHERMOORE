@@ -24,8 +24,6 @@ import numpy as np
 import pytest
 
 from symphonic_cipher.scbe_aethermoore.ai_brain.multiscale_spectrum import (
-    BRAIN_DIMENSIONS,
-    DEFAULT_SCALES,
     MultiscaleReport,
     ScaleFeatures,
     analyze_scale,

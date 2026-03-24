@@ -26,7 +26,6 @@ from src.polly_pads_runtime import (
     LANGS,
     PHI,
     # Governance
-    Thresholds,
     scbe_decide,
     harmonic_cost,
     # Addressing
@@ -36,7 +35,6 @@ from src.polly_pads_runtime import (
     UnitState,
     dist,
     # Voxel records
-    QuorumProof,
     SacredEggSeal,
     VoxelRecord,
     # Squad space
@@ -52,8 +50,6 @@ from src.polly_pads_runtime import (
     triadic_temporal_distance,
     plan_trace,
     plan_tri_directional,
-    TraceOutput,
-    TriDirectionalResult,
     STANDARD_CHECKPOINTS,
     DIRECTION_WEIGHTS,
 )

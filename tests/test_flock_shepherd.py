@@ -7,14 +7,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from symphonic_cipher.scbe_aethermoore.flock_shepherd import (
     Flock,
-    Sheep,
     SheepRole,
     SheepState,
     TrainingTrack,
-    FlockTask,
-    COHERENCE_ISOLATE,
-    COHERENCE_WARN,
-    COHERENCE_HEALTHY,
 )
 
 

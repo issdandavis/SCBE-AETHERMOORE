@@ -22,7 +22,6 @@ Covers:
 import sys
 import os
 import base64
-import json
 import math
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))

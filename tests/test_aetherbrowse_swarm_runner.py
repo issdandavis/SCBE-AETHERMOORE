@@ -184,4 +184,3 @@ def test_build_layer14_telemetry_projects_verification_state() -> None:
     assert layer14["hf_ratio"] == 0.25
     assert layer14["stability"] == 0.9
     assert layer14["signal_class"] == "quarantine"
-

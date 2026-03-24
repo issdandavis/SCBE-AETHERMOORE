@@ -13,9 +13,6 @@ Version: 1.0.0
 """
 
 import pytest
-import asyncio
-from datetime import datetime
-from typing import Dict, Any
 
 # Import modules to test
 import sys
@@ -26,20 +23,12 @@ from ai_orchestration.security import (
     SecurityGate,
     PromptSanitizer,
     OutputValidator,
-    ThreatLevel,
     ThreatType,
-    SecurityConfig,
 )
 from ai_orchestration.agents import (
-    Agent,
     AgentRole,
     AgentStatus,
-    AgentConfig,
     SecurityAgent,
-    ResearchAgent,
-    BusinessAgent,
-    EngineerAgent,
-    CoordinatorAgent,
     create_agent,
 )
 from ai_orchestration.tasks import (
@@ -49,11 +38,9 @@ from ai_orchestration.tasks import (
     TaskPriority,
     TaskResult,
     TaskQueue,
-    WorkflowExecutor,
 )
 from ai_orchestration.logging import (
     AuditLogger,
-    WorkflowTracker,
     SecureStorage,
     LogLevel,
     LogCategory,
@@ -353,7 +340,7 @@ class TestSecurityAgentTasks:
         assert "findings" in result
         assert "compliance" in result
         # Should flag brute force attempt
-        assert result["compliance"] == False or len(result["findings"]) > 0
+        assert result["compliance"] is False or len(result["findings"]) > 0
 
     @pytest.mark.asyncio
     async def test_generate_report(self, security_agent):
@@ -501,7 +488,7 @@ class TestAuditLogger:
             logger.log(LogLevel.INFO, LogCategory.SYSTEM, "test", f"Message {i}")
 
         result = logger.verify_chain_integrity()
-        assert result["chain_intact"] == True
+        assert result["chain_intact"] is True
         assert result["verified_entries"] == 5
         assert len(result["issues"]) == 0
 

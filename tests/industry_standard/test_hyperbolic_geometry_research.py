@@ -20,13 +20,10 @@ import pytest
 import sys
 import os
 import numpy as np
-from typing import Tuple, List
-import math
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 
 from scbe_14layer_reference import (
-    layer_4_poincare_embedding,
     layer_5_hyperbolic_distance,
     layer_6_breathing_transform,
     layer_7_phase_transform,

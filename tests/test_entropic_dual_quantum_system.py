@@ -34,7 +34,7 @@ import math
 import random
 import hashlib
 import time
-from typing import Tuple, List, Dict, Optional
+from typing import Tuple, List, Optional
 from dataclasses import dataclass
 
 
@@ -466,7 +466,6 @@ class TestThreeSystemBreachSimulation:
             # S3: Entropic
 
             # For this simulation, we just verify the relative ordering
-            pass
 
         # Entropic should have fewest breaches
         # (In practice, with 256-bit, all should be zero)
@@ -538,14 +537,14 @@ class TestMars0RTTProtocol:
 
         # First use should succeed
         nonce1 = b"unique-nonce-1"
-        assert verify_anti_replay(nonce1, seen_nonces) == True
+        assert verify_anti_replay(nonce1, seen_nonces) is True
 
         # Replay should fail
-        assert verify_anti_replay(nonce1, seen_nonces) == False
+        assert verify_anti_replay(nonce1, seen_nonces) is False
 
         # New nonce should succeed
         nonce2 = b"unique-nonce-2"
-        assert verify_anti_replay(nonce2, seen_nonces) == True
+        assert verify_anti_replay(nonce2, seen_nonces) is True
 
 
 class TestForwardSecureRatchet:

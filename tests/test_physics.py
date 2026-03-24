@@ -16,12 +16,8 @@ from physics_sim.core import (
     electromagnetism,
     thermodynamics,
     relativity,
-    PLANCK,
     C,
-    G,
-    ELECTRON_MASS,
     ELEMENTARY_CHARGE,
-    BOLTZMANN,
 )
 
 

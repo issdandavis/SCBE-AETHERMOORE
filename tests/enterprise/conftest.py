@@ -5,7 +5,7 @@ This module provides shared fixtures and configuration for Python enterprise tes
 """
 
 import pytest
-from typing import Generator, Any
+from typing import Any
 from hypothesis import settings, Verbosity
 
 # Configure hypothesis for property-based testing
@@ -56,7 +56,6 @@ def quantum_simulator():
     Quantum algorithm simulator fixture.
     """
     # Will be implemented in Phase 2
-    pass
 
 
 @pytest.fixture(scope="function")
@@ -65,7 +64,6 @@ def ai_intent_generator():
     AI intent generator for testing.
     """
     # Will be implemented in Phase 3
-    pass
 
 
 @pytest.fixture(scope="function")
@@ -74,7 +72,6 @@ def code_generator():
     Code generator for agentic testing.
     """
     # Will be implemented in Phase 4
-    pass
 
 
 @pytest.fixture(scope="function")
@@ -83,7 +80,6 @@ def compliance_validator():
     Compliance validator fixture.
     """
     # Will be implemented in Phase 5
-    pass
 
 
 @pytest.fixture(scope="function")
@@ -92,7 +88,6 @@ def performance_monitor():
     Performance monitoring fixture.
     """
     # Will be implemented in Phase 6
-    pass
 
 
 # Pytest hooks for custom behavior

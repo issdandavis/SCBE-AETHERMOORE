@@ -1,5 +1,4 @@
 """Tests for agent squad orchestration."""
-import pytest
 from src.aetherbrowser.agents import AgentSquad, AgentState, TongueRole
 from src.aetherbrowser.ws_feed import WsFeed
 

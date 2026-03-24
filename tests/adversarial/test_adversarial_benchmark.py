@@ -26,7 +26,6 @@ from tests.adversarial.attack_corpus import (
     SPIN_DRIFT,
     TONGUE_MANIPULATION,
     TOOL_EXFILTRATION,
-    get_all_attacks,
     get_full_corpus,
 )
 from tests.adversarial.scbe_harness import (
