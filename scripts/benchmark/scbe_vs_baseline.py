@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""SCBE vs Baseline Benchmark — 3-Group Adversarial Comparison
-================================================================
+"""SCBE trace simulator vs baseline benchmark
+==============================================
 
 Group A: Naked model (no protection)
 Group B: Basic guardrails (keyword filter + toxicity check)
-Group C: SCBE 14-layer pipeline
+Group C: Legacy SCBE trace simulator
 
 Same model, same attacks. Measures:
 - Attack Success Rate (ASR)
@@ -14,6 +14,14 @@ Same model, same attacks. Measures:
 
 The "time dilation" mode traces each step through all 14 layers,
 capturing the state vector at each point for comparison.
+
+IMPORTANT
+---------
+This script is the legacy layer-trace simulator. It is useful for
+watching how the tracked variables couple across L1-L14, but it is
+not the current harnessed adversarial gate used by
+`tests/adversarial/scbe_harness.py` or `scbe_vs_industry.py`.
+Do not use this script alone for detector-vs-detector claims.
 """
 
 from __future__ import annotations
@@ -294,7 +302,12 @@ def group_b_basic_guard(prompt: str, centroid: List[float]) -> PipelineTrace:
 
 
 def group_c_scbe(prompt: str, centroid: List[float]) -> PipelineTrace:
-    """Group C: Full SCBE 14-layer pipeline."""
+    """Group C: legacy SCBE trace simulator.
+
+    This preserves the older, fully expanded layer trace so we can
+    inspect variable coupling. It is intentionally separate from the
+    current harnessed adversarial detector.
+    """
     trace = simulate_14_layer_pipeline(prompt, "C-SCBE", centroid)
     # Decision already set by the pipeline
     return trace
@@ -389,19 +402,21 @@ def run_benchmark():
     centroid = gate._centroid
 
     attacks = get_all_attacks()
-    print(f"Running benchmark: {len(attacks)} attacks × 3 groups")
+    print(f"Running legacy trace benchmark: {len(attacks)} attacks × 3 groups")
+    print()
+    print("NOTE: this lane is for L1-L14 state tracing, not the harnessed semantic detector benchmark.")
     print()
 
     # Run all 3 groups
     result_a = run_group(group_a_naked, attacks, BASELINE_CLEAN, centroid, "A: Naked (no protection)")
     result_b = run_group(group_b_basic_guard, attacks, BASELINE_CLEAN, centroid, "B: Basic Guard (keyword filter)")
-    result_c = run_group(group_c_scbe, attacks, BASELINE_CLEAN, centroid, "C: SCBE (14-layer pipeline)")
+    result_c = run_group(group_c_scbe, attacks, BASELINE_CLEAN, centroid, "C: SCBE trace simulator")
 
     # Print comparison
     print("=" * 70)
-    print(f"{'SCBE vs BASELINE ADVERSARIAL BENCHMARK':^70}")
+    print(f"{'SCBE TRACE SIMULATOR vs BASELINE':^70}")
     print("=" * 70)
-    print(f"{'Metric':<30} {'A: Naked':>12} {'B: Guard':>12} {'C: SCBE':>12}")
+    print(f"{'Metric':<30} {'A: Naked':>12} {'B: Guard':>12} {'C: TraceSim':>12}")
     print("-" * 70)
     print(f"{'Attacks':.<30} {result_a.total_attacks:>12} {result_b.total_attacks:>12} {result_c.total_attacks:>12}")
     print(f"{'Allowed (attacks through)':.<30} {result_a.allowed:>12} {result_b.allowed:>12} {result_c.allowed:>12}")
@@ -426,16 +441,25 @@ def run_benchmark():
                         "audio_divergence": result_a.audio_divergence},
             "B_guard": {"asr": result_b.asr, "allowed": result_b.allowed, "denied": result_b.denied,
                         "audio_divergence": result_b.audio_divergence},
-            "C_scbe": {"asr": result_c.asr, "allowed": result_c.allowed, "denied": result_c.denied,
-                        "audio_divergence": result_c.audio_divergence},
+            "C_scbe_trace_simulator": {
+                "asr": result_c.asr,
+                "allowed": result_c.allowed,
+                "denied": result_c.denied,
+                "audio_divergence": result_c.audio_divergence,
+            },
         },
+        "benchmark_lane": "legacy_trace_simulator",
+        "not_for": [
+            "industry-detector ranking",
+            "head-to-head protection claims",
+        ],
     }
     (out_dir / "benchmark_report.json").write_text(json.dumps(report, indent=2))
     print(f"\nReport saved: {out_dir / 'benchmark_report.json'}")
 
     # Show a sample trace (time dilation view)
     print("\n" + "=" * 70)
-    print("SAMPLE TRACE: Layer-by-layer state for first attack")
+    print("SAMPLE TRACE: Layer-by-layer state for first attack (legacy trace lane)")
     print("=" * 70)
     sample = result_c.traces[0]
     for layer in sample.layers:
