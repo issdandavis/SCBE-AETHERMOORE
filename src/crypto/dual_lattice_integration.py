@@ -1195,7 +1195,7 @@ def demo():
         print(f"  Trust Score: {result.trust_score:.3f}")
         print(f"  Path Cost: {result.path_cost:.3f}")
 
-        print(f"\n  Layer Decisions:")
+        print("\n  Layer Decisions:")
         for d in result.decisions:
             print(f"    L{d.layer:2d}: {d.decision:12s} (score: {d.score:.3f})")
 

@@ -5,10 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Set
 
-
-DEFAULT_MATRIX_PATH = (
-    Path(__file__).resolve().parents[2] / "config" / "code_prism" / "interoperability_matrix.json"
-)
+DEFAULT_MATRIX_PATH = Path(__file__).resolve().parents[2] / "config" / "code_prism" / "interoperability_matrix.json"
 
 
 @dataclass(frozen=True)
@@ -42,4 +39,3 @@ def load_interoperability_matrix(path: Path | None = None) -> InteroperabilityMa
         conlang_routes=payload.get("conlang_routes", {}),
         safe_subset=payload.get("safe_subset", {}),
     )
-

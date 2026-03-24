@@ -181,7 +181,6 @@ from .qasi_core import (
     phase_transform,
     breathing_transform,
     realm_distance,
-    spectral_stability,
     spin_coherence,
     harmonic_scaling as qasi_harmonic_scaling,
     risk_base,

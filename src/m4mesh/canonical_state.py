@@ -110,7 +110,7 @@ def embed_gacha_floor(
     # Tongue phase — floor-dependent oscillation
     phase = torch.zeros(6)
     for i in range(6):
-        phase[i] = math.sin(floor_id * PHI ** i) * 0.5
+        phase[i] = math.sin(floor_id * PHI**i) * 0.5
 
     # Telemetry dims [12-20] — 9 dimensions total
     # dim 12: intent signal (floor difficulty normalized)
@@ -133,7 +133,9 @@ def embed_gacha_floor(
     bug_type = monster_bug.get("type", "unknown")
     logger.info(
         "Layer 4 floor %d embedded: norm=%.3f, bug_type=%s",
-        floor_id, float(u_norm), bug_type,
+        floor_id,
+        float(u_norm),
+        bug_type,
     )
     return vector
 
@@ -214,4 +216,3 @@ def validate_canonical_state(states: torch.Tensor, eps: float = 1e-6) -> Dict[st
         "max_radial_abs_err": float(torch.max(radial_err).item()),
         "max_harmonic_abs_err": float(torch.max(harmonic_err).item()),
     }
-

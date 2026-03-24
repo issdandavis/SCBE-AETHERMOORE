@@ -418,17 +418,17 @@ def demo():
               f"phase={cell.phase} viscosity={cell.viscosity:.3f}")
 
     # Retrieve with correct coords
-    print(f"\nRetrieve with correct vector:")
+    print("\nRetrieve with correct vector:")
     data = drive.retrieve("chunk-001", [0.3, 0.1, 0.2, 0.7, 0.1, 0.1])
     print(f"  chunk-001: {data[:50]}..." if data else "  FAILED")
 
     # Retrieve with wrong coords (should be noise)
-    print(f"\nRetrieve with wrong vector:")
+    print("\nRetrieve with wrong vector:")
     noise = drive.retrieve("chunk-001", [0.9, 0.9, 0.9, 0.1, 0.1, 0.1])
     print(f"  chunk-001: {noise[:50]}..." if noise else "  FAILED")
 
     # Query nearby
-    print(f"\nQuery near math region [0.2, 0.1, 0.2, 0.7, 0.1, 0.1]:")
+    print("\nQuery near math region [0.2, 0.1, 0.2, 0.7, 0.1, 0.1]:")
     nearby = drive.query_nearby([0.2, 0.1, 0.2, 0.7, 0.1, 0.1], radius=0.5)
     for nid in nearby:
         print(f"  {nid}: {drive.cells[nid].category}")
@@ -438,7 +438,7 @@ def demo():
     print(f"\nExported: {path}")
 
     stats = drive.stats()
-    print(f"\nDrive Stats:")
+    print("\nDrive Stats:")
     print(f"  Total cells: {stats['total_cells']}")
     print(f"  Total bytes: {stats['total_content_bytes']}")
     print(f"  Max depth: {stats['max_depth']}")

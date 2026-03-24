@@ -34,7 +34,6 @@ class UnitarityViolation(Exception):
     """Raised when a transform violates the unitarity axiom."""
 
 
-
 @dataclass
 class UnitarityCheckResult:
     """Result of a unitarity axiom check."""
@@ -56,9 +55,7 @@ class UnitarityCheckResult:
         )
 
 
-def unitarity_check(
-    tolerance: float = 1e-6, norm_type: str = "euclidean", strict: bool = False
-) -> Callable[[F], F]:
+def unitarity_check(tolerance: float = 1e-6, norm_type: str = "euclidean", strict: bool = False) -> Callable[[F], F]:
     """
     Decorator that verifies a transform preserves norms (unitarity axiom).
 
@@ -314,9 +311,7 @@ def rotation_matrix_2d(angle: float) -> np.ndarray:
     return np.array([[c, -s], [s, c]])
 
 
-def rotation_nd(
-    v: np.ndarray, angle: float, plane: Tuple[int, int] = (0, 1)
-) -> np.ndarray:
+def rotation_nd(v: np.ndarray, angle: float, plane: Tuple[int, int] = (0, 1)) -> np.ndarray:
     """
     Apply rotation in specified plane of n-dimensional space.
 
@@ -340,9 +335,7 @@ def rotation_nd(
 
 
 @unitarity_check(tolerance=1e-8, norm_type="euclidean")
-def layer_7_phase(
-    u: np.ndarray, phase_angle: float, translation: Optional[np.ndarray] = None
-) -> np.ndarray:
+def layer_7_phase(u: np.ndarray, phase_angle: float, translation: Optional[np.ndarray] = None) -> np.ndarray:
     """
     Layer 7: Phase Transform (Möbius Translation + Rotation)
 
@@ -383,9 +376,7 @@ def layer_7_phase(
     return rotated
 
 
-def layer_7_inverse(
-    u: np.ndarray, phase_angle: float, translation: Optional[np.ndarray] = None
-) -> np.ndarray:
+def layer_7_inverse(u: np.ndarray, phase_angle: float, translation: Optional[np.ndarray] = None) -> np.ndarray:
     """
     Inverse of Layer 7: Reverse rotation then Möbius subtract.
 
@@ -524,4 +515,3 @@ def get_unitarity_layer(layer_num: int) -> dict:
 def list_unitarity_layers() -> list:
     """List all layers satisfying the unitarity axiom."""
     return list(UNITARITY_LAYERS.keys())
-

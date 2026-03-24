@@ -17,7 +17,9 @@ def parse_python_to_ir(source: str, module_name: str = "module") -> PrismModule:
         args = [arg.arg for arg in node.args.args]
         docstring = ast.get_docstring(node)
         body_lines = [
-            ast.unparse(stmt) for stmt in node.body if not isinstance(stmt, ast.Expr) or not isinstance(stmt.value, ast.Constant)
+            ast.unparse(stmt)
+            for stmt in node.body
+            if not isinstance(stmt, ast.Expr) or not isinstance(stmt.value, ast.Constant)
         ]
         if not body_lines:
             body_lines = ["pass"]
@@ -81,4 +83,3 @@ def parse_source_to_ir(source: str, source_language: str, module_name: str = "mo
     if lang in {"typescript", "ts"}:
         return parse_typescript_to_ir(source, module_name=module_name)
     raise ValueError(f"Unsupported source language: {source_language}")
-

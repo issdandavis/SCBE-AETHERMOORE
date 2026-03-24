@@ -328,14 +328,14 @@ class DriftSimulationEngine:
 
         magic = valid_results[0]
 
-        print(f"\n✨ MAGIC NUMBER FOUND!")
+        print("\n✨ MAGIC NUMBER FOUND!")
         print(f"   Base Drift: {magic['base_drift']}")
         print(f"   Time Exponent: {magic['time_exponent']} (time^{magic['time_exponent']})")
         print(f"   Distance Exponent: {magic['distance_exponent']} (dist^{magic['distance_exponent']})")
         print(f"   Mean Drift: {magic['mean_drift']:.6f}")
         print(f"   Std Drift: {magic['std_drift']:.6f}")
         print(f"   Elegance Score: {magic['elegance_score']:.2f}")
-        print(f"\n📊 Formula:")
+        print("\n📊 Formula:")
         print(
             f"   vD = {magic['base_drift']} + 0.001×time^{magic['time_exponent']} + 0.001×dist^{magic['distance_exponent']}"
         )
@@ -366,13 +366,13 @@ if __name__ == "__main__":
         print("\n" + "=" * 80)
         print("INTEGRATION WITH EXISTING SYSTEMS")
         print("=" * 80)
-        print(f"\nThis magic number replaces the guessed 2.6%:")
-        print(f"  OLD: vD ≈ 0.026 (guessed)")
+        print("\nThis magic number replaces the guessed 2.6%:")
+        print("  OLD: vD ≈ 0.026 (guessed)")
         print(f"  NEW: vD ≈ {magic_params['mean_drift']:.6f} (simulation-optimized)")
-        print(f"\nThis should be added to:")
-        print(f"  - SIX_SACRED_TONGUES_CODEX.md (drift tolerance section)")
-        print(f"  - test_entropic_quantum_system.py (drift calculation)")
-        print(f"  - DNA_MULTI_LAYER_ENCODING_TEST.py (complexity formula)")
+        print("\nThis should be added to:")
+        print("  - SIX_SACRED_TONGUES_CODEX.md (drift tolerance section)")
+        print("  - test_entropic_quantum_system.py (drift calculation)")
+        print("  - DNA_MULTI_LAYER_ENCODING_TEST.py (complexity formula)")
 
         print("\n✅ WHAT WE LEARNED:")
         print("   1. The magic number ISN'T arbitrary - it emerges from simulation")

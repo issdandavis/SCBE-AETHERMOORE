@@ -24,7 +24,6 @@ from typing import Dict, List
 from .domain import Domain
 from .morphism import Morphism
 
-
 # ═══════════════════════════════════════════════════════════════
 # Sacred Tongue Domains
 # ═══════════════════════════════════════════════════════════════
@@ -34,27 +33,22 @@ TONGUE_DOMAINS: Dict[str, Domain] = {
     "KO": Domain("Energy", units=("Joule",), bounds=(0, 1e6)),
     "KO_narrative": Domain("Authority", units=("AuthLevel",), bounds=(0, 10)),
     "KO_governance": Domain("CommandForce", units=("CmdUnit",), bounds=(0, 100)),
-
     # AV — Transport: Momentum, Flow, Communication
     "AV": Domain("Momentum", units=("kg*m/s",), bounds=(0, 1e5)),
     "AV_narrative": Domain("Communication", units=("CommFlow",), bounds=(0, 10)),
     "AV_governance": Domain("DataFlow", units=("Mbps",), bounds=(0, 1e4)),
-
     # RU — Policy: Entropy, Order, Governance
     "RU": Domain("Entropy", units=("J/K",), bounds=(0, 1e3)),
     "RU_narrative": Domain("PlotChaos", units=("ChaosLevel",), bounds=(0, 10)),
     "RU_governance": Domain("PolicyBreakdown", units=("BreakdownIdx",), bounds=(0, 100)),
-
     # CA — Compute: Complexity, Processing, Logic
     "CA": Domain("Complexity", units=("FLOP",), bounds=(0, 1e12)),
     "CA_narrative": Domain("Intrigue", units=("IntrigueLevel",), bounds=(0, 10)),
     "CA_governance": Domain("ComputeLoad", units=("TFLOP",), bounds=(0, 1e3)),
-
     # UM — Security: Risk, Threat, Protection
     "UM": Domain("Risk", units=("RiskScore",), bounds=(0, 1)),
     "UM_narrative": Domain("Danger", units=("DangerLevel",), bounds=(0, 10)),
     "UM_governance": Domain("ThreatIndex", units=("ThreatIdx",), bounds=(0, 100)),
-
     # DR — Schema: Structure, Pattern, Memory
     "DR": Domain("Structure", units=("ShannonBit",), bounds=(0, 1e6)),
     "DR_narrative": Domain("WorldComplexity", units=("ComplexityLevel",), bounds=(0, 10)),
@@ -66,24 +60,33 @@ TONGUE_DOMAINS: Dict[str, Domain] = {
 # Cross-Domain Morphisms
 # ═══════════════════════════════════════════════════════════════
 
+
 def _linear(scale: float, offset: float = 0.0):
     """Create a linear mapping function."""
+
     def f(x: float) -> float:
         return x * scale + offset
+
     return f
+
 
 def _log_scale(base: float, cap: float):
     """Logarithmic scaling with cap."""
+
     def f(x: float) -> float:
         if x <= 0:
             return 0.0
         return min(cap, math.log(x + 1) / math.log(base))
+
     return f
+
 
 def _sigmoid(midpoint: float, steepness: float, out_scale: float):
     """Sigmoid mapping centered at midpoint."""
+
     def f(x: float) -> float:
         return out_scale / (1 + math.exp(-steepness * (x - midpoint)))
+
     return f
 
 
@@ -96,7 +99,6 @@ CROSS_DOMAIN_MAP: Dict[str, Morphism] = {
         name="Energy->Authority",
         inverse_func=lambda y: (1e6 ** (y / 10.0)) - 1 if y > 0 else 0.0,
     ),
-
     # KO: Energy -> CommandForce (linear: 1MJ -> 100 CmdUnit)
     "energy_to_command": Morphism(
         src=TONGUE_DOMAINS["KO"],
@@ -105,7 +107,6 @@ CROSS_DOMAIN_MAP: Dict[str, Morphism] = {
         name="Energy->Command",
         inverse_func=_linear(1e6 / 100),
     ),
-
     # AV: Momentum -> Communication (log scale)
     "momentum_to_comm": Morphism(
         src=TONGUE_DOMAINS["AV"],
@@ -113,7 +114,6 @@ CROSS_DOMAIN_MAP: Dict[str, Morphism] = {
         func=_log_scale(1e5, 10.0),
         name="Momentum->Communication",
     ),
-
     # AV: Momentum -> DataFlow (linear)
     "momentum_to_dataflow": Morphism(
         src=TONGUE_DOMAINS["AV"],
@@ -122,7 +122,6 @@ CROSS_DOMAIN_MAP: Dict[str, Morphism] = {
         name="Momentum->DataFlow",
         inverse_func=_linear(1e5 / 1e4),
     ),
-
     # RU: Entropy -> PlotChaos (sigmoid: mid=500 J/K, steep=0.01)
     "entropy_to_chaos": Morphism(
         src=TONGUE_DOMAINS["RU"],
@@ -130,7 +129,6 @@ CROSS_DOMAIN_MAP: Dict[str, Morphism] = {
         func=_sigmoid(500, 0.01, 10.0),
         name="Entropy->PlotChaos",
     ),
-
     # RU: Entropy -> PolicyBreakdown (linear)
     "entropy_to_breakdown": Morphism(
         src=TONGUE_DOMAINS["RU"],
@@ -139,7 +137,6 @@ CROSS_DOMAIN_MAP: Dict[str, Morphism] = {
         name="Entropy->PolicyBreakdown",
         inverse_func=_linear(1e3 / 100),
     ),
-
     # CA: Complexity -> Intrigue (log)
     "complexity_to_intrigue": Morphism(
         src=TONGUE_DOMAINS["CA"],
@@ -147,7 +144,6 @@ CROSS_DOMAIN_MAP: Dict[str, Morphism] = {
         func=_log_scale(1e12, 10.0),
         name="Complexity->Intrigue",
     ),
-
     # UM: Risk -> Danger (linear scale: [0,1] -> [0,10])
     "risk_to_danger": Morphism(
         src=TONGUE_DOMAINS["UM"],
@@ -156,7 +152,6 @@ CROSS_DOMAIN_MAP: Dict[str, Morphism] = {
         name="Risk->Danger",
         inverse_func=_linear(0.1),
     ),
-
     # UM: Risk -> ThreatIndex (linear: [0,1] -> [0,100])
     "risk_to_threat": Morphism(
         src=TONGUE_DOMAINS["UM"],
@@ -165,7 +160,6 @@ CROSS_DOMAIN_MAP: Dict[str, Morphism] = {
         name="Risk->ThreatIndex",
         inverse_func=_linear(0.01),
     ),
-
     # DR: Structure -> WorldComplexity (log)
     "structure_to_world": Morphism(
         src=TONGUE_DOMAINS["DR"],
@@ -173,7 +167,6 @@ CROSS_DOMAIN_MAP: Dict[str, Morphism] = {
         func=_log_scale(1e6, 10.0),
         name="Structure->WorldComplexity",
     ),
-
     # DR: Structure -> SchemaIntegrity (inverse: more structure = higher integrity)
     "structure_to_integrity": Morphism(
         src=TONGUE_DOMAINS["DR"],
@@ -181,7 +174,6 @@ CROSS_DOMAIN_MAP: Dict[str, Morphism] = {
         func=lambda x: min(100.0, 100.0 * (1 - math.exp(-x / 1e5))),
         name="Structure->SchemaIntegrity",
     ),
-
     # Cross-tongue: Authority -> Danger (KO_narrative -> UM_narrative)
     "authority_to_danger": Morphism(
         src=TONGUE_DOMAINS["KO_narrative"],
@@ -190,7 +182,6 @@ CROSS_DOMAIN_MAP: Dict[str, Morphism] = {
         name="Authority->Danger",
         inverse_func=lambda y: 10.0 - y,
     ),
-
     # Cross-tongue: PlotChaos -> Intrigue (RU_narrative -> CA_narrative)
     "chaos_to_intrigue": Morphism(
         src=TONGUE_DOMAINS["RU_narrative"],

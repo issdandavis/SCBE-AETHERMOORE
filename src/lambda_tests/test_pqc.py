@@ -54,7 +54,6 @@ from symphonic_cipher.scbe_aethermoore.pqc import (
     # Audit
     AuditDecision,
     PQCAuditEntry,
-    AuditChainVerification,
     PQCAuditChain,
     create_audit_entry_signature,
     verify_audit_entry_signature,

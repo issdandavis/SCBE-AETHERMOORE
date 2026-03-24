@@ -973,7 +973,7 @@ def extract_phase(wave: np.ndarray) -> float:
 
     Returns intent ∈ [0, 1].
     """
-    from scipy.fft import fft, fftfreq
+    from scipy.fft import fft
 
     N = len(wave)
     yf = fft(wave)
@@ -1163,7 +1163,7 @@ def demo():
     decision, msg, metrics = system.evaluate(intent=0.75)
     print(f"Decision: {decision.value}")
     print(f"Message:  {msg}")
-    print(f"Key metrics:")
+    print("Key metrics:")
     print(f"  - Coherence:  {metrics['coherence']:.4f}")
     print(f"  - d_tri:      {metrics['d_tri']:.4f}")
     print(f"  - Euler χ:    {metrics['euler_chi']}")

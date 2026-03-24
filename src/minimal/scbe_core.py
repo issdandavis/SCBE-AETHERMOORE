@@ -396,27 +396,27 @@ if __name__ == "__main__":
 
     # Safe action
     result1 = gate.evaluate([0.1, 0.1, 0.1, 0.1, 0.1, 0.1], "read_data")
-    print(f"\n1. Safe action (read_data, low context):")
+    print("\n1. Safe action (read_data, low context):")
     print(f"   Decision: {result1.decision.value}")
     print(f"   Risk: {result1.risk_score:.4f}")
     print(f"   Time: {result1.processing_time_ms:.3f}ms")
 
     # Risky action
     result2 = gate.evaluate([0.8, 0.9, 0.7, 0.8, 0.9, 0.85], "delete_database")
-    print(f"\n2. Risky action (delete_database, high context):")
+    print("\n2. Risky action (delete_database, high context):")
     print(f"   Decision: {result2.decision.value}")
     print(f"   Risk: {result2.risk_score:.4f}")
     print(f"   Time: {result2.processing_time_ms:.3f}ms")
 
     # Moderate action
     result3 = gate.evaluate([0.4, 0.5, 0.3, 0.4, 0.5, 0.45], "update_config")
-    print(f"\n3. Moderate action (update_config, medium context):")
+    print("\n3. Moderate action (update_config, medium context):")
     print(f"   Decision: {result3.decision.value}")
     print(f"   Risk: {result3.risk_score:.4f}")
     print(f"   Time: {result3.processing_time_ms:.3f}ms")
 
     # Test Sacred Tongues
-    print(f"\n4. Sacred Tongues Encoding:")
+    print("\n4. Sacred Tongues Encoding:")
     encoder = SacredTonguesEncoder("KO")
     test_data = b"Hello SCBE"
     encoded = encoder.encode(test_data)
@@ -426,7 +426,7 @@ if __name__ == "__main__":
     print(f"   Roundtrip: {decoded == test_data}")
 
     # Test RWP Envelope
-    print(f"\n5. RWP Envelope:")
+    print("\n5. RWP Envelope:")
     key = b"test_secret_key_32bytes_long!!"
     envelope = RWPEnvelope("KO", "test-agent", {"action": "test", "value": 42})
     sealed = envelope.seal(key)

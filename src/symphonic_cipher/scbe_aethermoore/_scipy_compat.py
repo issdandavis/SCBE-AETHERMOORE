@@ -36,6 +36,7 @@ _T_EVAL_TOLERANCE = 1e-9
 try:
     from scipy.fft import fft, fftfreq, ifft
     from scipy.fftpack import fft as fft_pack, fftfreq as fftfreq_pack
+
     SCIPY_AVAILABLE = True
 except ImportError:
     # Numpy fallback for FFT
@@ -51,9 +52,11 @@ except ImportError:
 
 try:
     from scipy.linalg import expm as _scipy_expm, sqrtm as _scipy_sqrtm
+
     expm = _scipy_expm
     sqrtm = _scipy_sqrtm
 except ImportError:
+
     def expm(A: np.ndarray, q: int = 7) -> np.ndarray:
         """
         Matrix exponential using Padé approximation.
@@ -80,7 +83,7 @@ except ImportError:
         # Scale matrix to reduce norm
         norm_A = np.linalg.norm(A, ord=np.inf)
         s = max(0, int(np.ceil(np.log2(norm_A + 1))))
-        A_scaled = A / (2 ** s)
+        A_scaled = A / (2**s)
 
         # Padé coefficients
         c = [1.0]
@@ -141,7 +144,7 @@ except ImportError:
             Y_new = 0.5 * (Y + np.linalg.inv(Z))
             Z_new = 0.5 * (Z + np.linalg.inv(Y))
 
-            if np.linalg.norm(Y_new - Y, ord='fro') < tol:
+            if np.linalg.norm(Y_new - Y, ord="fro") < tol:
                 return Y_new
 
             Y, Z = Y_new, Z_new
@@ -149,16 +152,20 @@ except ImportError:
         warnings.warn(f"sqrtm: Did not converge in {max_iter} iterations")
         return Y
 
+
 # =============================================================================
 # ODE Solver
 # =============================================================================
 
 try:
     from scipy.integrate import solve_ivp as _scipy_solve_ivp
+
     solve_ivp = _scipy_solve_ivp
 except ImportError:
+
     class OdeResult:
         """Container for ODE solution results (scipy-compatible)."""
+
         def __init__(self, t: np.ndarray, y: np.ndarray, success: bool = True):
             self.t = t
             self.y = y
@@ -169,12 +176,12 @@ except ImportError:
         fun: Callable,
         t_span: Tuple[float, float],
         y0: np.ndarray,
-        method: str = 'RK45',
+        method: str = "RK45",
         t_eval: Optional[np.ndarray] = None,
         dense_output: bool = False,
         events: Any = None,
         vectorized: bool = False,
-        **options
+        **options,
     ) -> OdeResult:
         """
         Solve initial value problem using RK4 method.
@@ -203,7 +210,7 @@ except ImportError:
         t0, tf = t_span
 
         # Determine step size
-        max_step = options.get('max_step', (tf - t0) / 100)
+        max_step = options.get("max_step", (tf - t0) / 100)
         n_steps = max(int(np.ceil((tf - t0) / max_step)), 10)
 
         if t_eval is None:
@@ -232,21 +239,18 @@ except ImportError:
                 h = min(max_step, t_next - t)
 
                 k1 = np.asarray(fun(t, y))
-                k2 = np.asarray(fun(t + h/2, y + h*k1/2))
-                k3 = np.asarray(fun(t + h/2, y + h*k2/2))
-                k4 = np.asarray(fun(t + h, y + h*k3))
+                k2 = np.asarray(fun(t + h / 2, y + h * k1 / 2))
+                k3 = np.asarray(fun(t + h / 2, y + h * k2 / 2))
+                k4 = np.asarray(fun(t + h, y + h * k3))
 
-                y = y + h * (k1 + 2*k2 + 2*k3 + k4) / 6
+                y = y + h * (k1 + 2 * k2 + 2 * k3 + k4) / 6
                 t = t + h
 
             t_values.append(t)
             y_values.append(y.copy())
 
-        return OdeResult(
-            t=np.array(t_values),
-            y=np.array(y_values).T,
-            success=True
-        )
+        return OdeResult(t=np.array(t_values), y=np.array(y_values).T, success=True)
+
 
 # =============================================================================
 # Signal Processing
@@ -254,8 +258,10 @@ except ImportError:
 
 try:
     from scipy.signal import hilbert as _scipy_hilbert
+
     hilbert = _scipy_hilbert
 except ImportError:
+
     def hilbert(x: np.ndarray, N: Optional[int] = None) -> np.ndarray:
         """
         Compute analytic signal using Hilbert transform.
@@ -279,17 +285,20 @@ except ImportError:
         h = np.zeros(N)
         if N % 2 == 0:
             h[0] = h[N // 2] = 1
-            h[1:N // 2] = 2
+            h[1 : N // 2] = 2
         else:
             h[0] = 1
-            h[1:(N + 1) // 2] = 2
+            h[1 : (N + 1) // 2] = 2
 
         return np.fft.ifft(Xf * h)
 
+
 try:
     from scipy.signal import lfilter as _scipy_lfilter
+
     lfilter = _scipy_lfilter
 except ImportError:
+
     def lfilter(b: np.ndarray, a: np.ndarray, x: np.ndarray) -> np.ndarray:
         """
         Filter data with IIR or FIR filter.
@@ -330,11 +339,14 @@ except ImportError:
 
         return y
 
+
 try:
     from scipy.signal import fftconvolve as _scipy_fftconvolve
+
     fftconvolve = _scipy_fftconvolve
 except ImportError:
-    def fftconvolve(in1: np.ndarray, in2: np.ndarray, mode: str = 'full') -> np.ndarray:
+
+    def fftconvolve(in1: np.ndarray, in2: np.ndarray, mode: str = "full") -> np.ndarray:
         """
         Convolve two arrays using FFT.
 
@@ -358,28 +370,28 @@ except ImportError:
         result = np.fft.ifft(np.fft.fft(in1, fft_size) * np.fft.fft(in2, fft_size))
         result = np.real(result[:n])
 
-        if mode == 'full':
+        if mode == "full":
             return result
-        elif mode == 'same':
+        elif mode == "same":
             start = (n2 - 1) // 2
-            return result[start:start + n1]
-        elif mode == 'valid':
-            return result[n2 - 1:n1]
+            return result[start : start + n1]
+        elif mode == "valid":
+            return result[n2 - 1 : n1]
         else:
             raise ValueError(f"Unknown mode: {mode}")
+
 
 # =============================================================================
 # Utility
 # =============================================================================
 
+
 def check_scipy_available() -> bool:
     """Check if scipy is available."""
     return SCIPY_AVAILABLE
 
+
 def require_scipy(feature: str = "this feature"):
     """Raise ImportError if scipy is not available."""
     if not SCIPY_AVAILABLE:
-        raise ImportError(
-            f"scipy is required for {feature}. "
-            "Install with: pip install scipy"
-        )
+        raise ImportError(f"scipy is required for {feature}. " "Install with: pip install scipy")

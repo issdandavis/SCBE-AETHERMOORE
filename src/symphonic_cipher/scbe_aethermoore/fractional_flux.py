@@ -501,7 +501,7 @@ def self_test() -> Dict[str, Any]:
             passed += 1
             results["D_f_range"] = f"✓ PASS (D_f ∈ [{D_f_min:.2f}, {D_f_max:.2f}])"
         else:
-            results["D_f_range"] = f"✗ FAIL (D_f out of range)"
+            results["D_f_range"] = "✗ FAIL (D_f out of range)"
     except Exception as e:
         results["D_f_range"] = f"✗ FAIL ({e})"
 
@@ -652,7 +652,7 @@ def self_test() -> Dict[str, Any]:
             passed += 1
             results["oscillation"] = f"✓ PASS (ν[0] variance={variance:.4f})"
         else:
-            results["oscillation"] = f"✗ FAIL (no oscillation detected)"
+            results["oscillation"] = "✗ FAIL (no oscillation detected)"
     except Exception as e:
         results["oscillation"] = f"✗ FAIL ({e})"
 
@@ -677,7 +677,7 @@ def self_test() -> Dict[str, Any]:
                 f"✓ PASS (ε(D=6)={eps_6:.3f}, ε(D=3)={eps_3:.3f})"
             )
         else:
-            results["formula_verification"] = f"✗ FAIL (formula mismatch)"
+            results["formula_verification"] = "✗ FAIL (formula mismatch)"
     except Exception as e:
         results["formula_verification"] = f"✗ FAIL ({e})"
 
