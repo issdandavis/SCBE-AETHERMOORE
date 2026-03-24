@@ -341,7 +341,6 @@ class KyberTongueEncryptor:
 
         for i, tongue in enumerate(SacredTongue):
             start = i * segment_size
-            end = start + segment_size
 
             # Scale coefficient to lattice range
             base_value = int(vector.tongues[i] * self.q / 4)
@@ -686,14 +685,6 @@ class DualLatticeCrossStitch:
         """
         # Reconstruct stitched vector
         stitched = self.cross_stitch.apply_stitch(vector)
-
-        # Verify Dilithium signature
-        sig = {
-            "signature": bytes.fromhex(processed["dilithium_signature"]["sig_hash"] * 4),  # Simplified
-            "msg_hash": hashlib.sha3_256(
-                struct.pack('<' + 'd' * 10, *stitched.to_array())
-            ).hexdigest(),
-        }
 
         # For demo, assume valid if structure matches
         is_valid = True

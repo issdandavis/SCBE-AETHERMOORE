@@ -275,7 +275,7 @@ def visualize_3d_voxels(
         return False
 
     colors = octree.to_dense()
-    occupied = colors != None
+    occupied = colors is not None
 
     if not np.any(occupied):
         print("[VIZ] No occupied voxels to render", file=sys.stderr)

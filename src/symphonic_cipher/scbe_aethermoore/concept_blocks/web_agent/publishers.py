@@ -714,11 +714,11 @@ class HuggingFacePublisher(PlatformPublisher):
         readme_content = content.text
 
         # Use the Hub API to create a commit
-        url = f"{self.API_BASE}/repos/{self._repo_id}/commit/main"
+        _ = f"{self.API_BASE}/repos/{self._repo_id}/commit/main"
         if self._repo_type != "model":
-            url = f"{self.API_BASE}/repos/{self._repo_type}s/{self._repo_id}/commit/main"
+            _ = f"{self.API_BASE}/repos/{self._repo_type}s/{self._repo_id}/commit/main"
 
-        payload = {
+        _ = {
             "summary": commit_message,
             "files": [{
                 "path": "README.md",

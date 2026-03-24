@@ -255,7 +255,6 @@ class SelfHealingOrchestrator:
             return False, None, healing_actions
 
         # Attempt operation with retries
-        last_error = None
         for attempt in range(self.max_retries + 1):
             try:
                 result = operation(*args, **kwargs)
@@ -278,7 +277,6 @@ class SelfHealingOrchestrator:
                 return True, result, healing_actions
 
             except Exception as e:
-                last_error = e
                 error_type = type(e).__name__
                 healing_actions.append(f"attempt_{attempt}_{error_type}")
 

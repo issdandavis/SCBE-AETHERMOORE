@@ -190,10 +190,6 @@ def hyperbolic_midpoint(x: np.ndarray, y: np.ndarray) -> np.ndarray:
     """
     # Mobius addition: x (+) y = ((1 + 2<x,y> + ||y||^2)x + (1 - ||x||^2)y) /
     #                           (1 + 2<x,y> + ||x||^2||y||^2)
-    xy = np.dot(x, y)
-    nx = np.dot(x, x)
-    ny = np.dot(y, y)
-
     # Midpoint is (x (+) y) / 2 in Mobius sense
     # Simplified: scale the Euclidean midpoint back into the ball
     euclidean_mid = (x + y) / 2

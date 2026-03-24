@@ -492,7 +492,6 @@ class RuntimeGate:
 
         # --- Council Deliberation ---
         fail_count = sum(1 for _, passed, _ in reviews if not passed)
-        fail_details = [(name, reason) for name, passed, reason in reviews if not passed]
 
         signals = [f"council_{name}={'PASS' if passed else 'FAIL'}({reason})"
                    for name, passed, reason in reviews]

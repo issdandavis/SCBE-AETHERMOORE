@@ -242,9 +242,8 @@ class SpiralRing:
         if self.config.use_harmonic_scaling:
             # Use AETHERMOORE harmonic scaling
             depth_factor = min(6, 1 + int(math.log2(step + 1)))
-            h_scale = harmonic_scale(depth_factor, self.config.spiral_r)
+            harmonic_scale(depth_factor, self.config.spiral_r)
         else:
-            h_scale = 1.0
             depth_factor = 1
 
         new_positions = []

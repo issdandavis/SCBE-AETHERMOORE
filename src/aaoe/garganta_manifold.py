@@ -550,7 +550,6 @@ def ascii_journey(
         # Portal markers on walls
         if frame.portals_available > 0:
             for idx, tongue in enumerate(frame.portal_names[:3]):
-                pos = left - 1 - idx if left > idx + 1 else 0
                 # Show on the right wall
                 rpos = right + 1 + idx
                 if rpos < width:

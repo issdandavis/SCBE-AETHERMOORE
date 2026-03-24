@@ -230,10 +230,8 @@ def governance_9d(xi: np.ndarray, intent_val: float, poly_topology: Dict[str, in
     # eta(t): 7
     # q(t): 8
 
-    c = xi[:6]
     tau_val = xi[6]
     eta_val = xi[7]
-    q_val = xi[8]
 
     # Ensure eta_val is treated as a float, as entropy must be real.
     # It might be complex due to numpy array dtype propagation.
@@ -253,17 +251,8 @@ def governance_9d(xi: np.ndarray, intent_val: float, poly_topology: Dict[str, in
     # Euler Characteristic (Topology)
     chi = poly_topology['V'] - poly_topology['E'] + poly_topology['F']
 
-    # Curvature & Lyapunov
-    kappa_max = 0.05
-    lambda_bound = 0.0001
-
     # Time Dynamics
     dot_tau = tau_dot(tau_val)
-    delta_tau = 1.0
-    kappa_tau = 0.01
-
-    # Entropy Dynamics
-    kappa_eta = 0.01
 
     # Quantum Fidelity & Entropy
     f_q = 0.95 # Fidelity
