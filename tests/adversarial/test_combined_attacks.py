@@ -44,6 +44,7 @@ class TestFullCorpusBenchmark:
         """Run full corpus and produce a JSON benchmark report."""
         corpus = get_full_corpus()
         attack_result = run_benchmark(gate, corpus["attacks"])
+        gate.reset_session()  # Prevent suspicion bleed into clean eval
         baseline_result = run_benchmark(gate, corpus["baseline"])
 
         report = {
