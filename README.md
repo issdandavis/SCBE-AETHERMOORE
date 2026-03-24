@@ -213,6 +213,16 @@ curl -X POST https://YOUR_API/v1/authorize \
 }
 ```
 
+### Export Signed Audit Bundle
+```bash
+curl -G https://YOUR_API/audit/export \
+  -H "SCBE_api_key: your-key" \
+  --data-urlencode "from=2026-01-01T00:00:00Z" \
+  --data-urlencode "to=2026-01-31T23:59:59Z"
+```
+
+Returns a signed bundle (`bundle`) plus detached hash manifest (`manifest`) that auditors can verify offline. See `docs/audit-export-offline-verification.md` for verification steps.
+
 ### Run Fleet Scenario
 ```bash
 curl -X POST https://YOUR_API/v1/fleet/run-scenario \

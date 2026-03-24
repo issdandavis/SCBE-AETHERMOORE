@@ -27,7 +27,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException, Header, Depends, Security
+from fastapi import FastAPI, HTTPException, Header, Depends, Query, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
@@ -38,6 +38,7 @@ from api.metering import (
     export_monthly_billable_usage,
     metering_store,
 )
+from api.audit_export import build_signed_bundle, canonical_json, filter_records_by_range, sha256_hex
 
 # Import persistence layer
 try:
@@ -100,6 +101,8 @@ VALID_API_KEYS = _load_api_keys()
 AGENTS_STORE: Dict[str, dict] = {}
 DECISIONS_STORE: Dict[str, dict] = {}
 CONSENSUS_STORE: Dict[str, dict] = {}
+TENANT_CHAIN_HEAD: Dict[str, str] = {}
+POLICY_VERSION = os.getenv("SCBE_POLICY_VERSION", "scbe-policy-v1")
 
 # =============================================================================
 # Models
@@ -177,6 +180,11 @@ class HealthResponse(BaseModel):
     version: str
     timestamp: str
     checks: Dict[str, str]
+
+
+class AuditExportResponse(BaseModel):
+    bundle: Dict[str, Any]
+    manifest: Dict[str, Any]
 
 
 # =============================================================================
@@ -358,6 +366,40 @@ async def authorize(
         expires_at = (datetime.utcnow() + timedelta(minutes=5)).isoformat() + "Z"
 
     # Store decision for audit
+    input_material = {
+        "tenant": tenant,
+        "agent_id": request.agent_id,
+        "action": request.action,
+        "target": request.target,
+        "context": request.context or {},
+    }
+    decision_input_digest = sha256_hex(canonical_json(input_material))
+
+    layer_score_summary = {
+        "layer_01_context_integrity": round(float(trust_score), 3),
+        "layer_04_hyperbolic_embedding": round(float(explanation.get("distance", 0.0)), 3),
+        "layer_12_harmonic_score": round(float(score), 3),
+        "layer_13_risk_factor": round(float(explanation.get("risk_factor", 0.0)), 3),
+    }
+    reason_codes = [
+        f"DECISION_{decision.value}",
+        f"RISK_{'LOW' if score > 0.6 else ('MEDIUM' if score > 0.3 else 'HIGH')}",
+        f"ACTION_{request.action.upper()}",
+    ]
+
+    previous_chain_hash = TENANT_CHAIN_HEAD.get(tenant, "GENESIS")
+    chain_payload = {
+        "decision_id": decision_id,
+        "tenant": tenant,
+        "timestamp": datetime.utcnow().isoformat(),
+        "decision_input_digest": decision_input_digest,
+        "final_decision": decision.value,
+        "reason_codes": reason_codes,
+        "previous_chain_hash": previous_chain_hash,
+    }
+    chain_hash = sha256_hex(canonical_json(chain_payload))
+    TENANT_CHAIN_HEAD[tenant] = chain_hash
+
     DECISIONS_STORE[decision_id] = {
         "decision_id": decision_id,
         "tenant": tenant,
@@ -367,8 +409,15 @@ async def authorize(
         "decision": decision.value,
         "score": round(score, 3),
         "explanation": explanation,
-        "timestamp": datetime.utcnow().isoformat(),
-        "latency_ms": round((time.time() - start_time) * 1000, 2)
+        "timestamp": chain_payload["timestamp"],
+        "latency_ms": round((time.time() - start_time) * 1000, 2),
+        "decision_input_digest": decision_input_digest,
+        "policy_version": POLICY_VERSION,
+        "layer_score_summary": layer_score_summary,
+        "final_decision": decision.value,
+        "reason_codes": reason_codes,
+        "previous_chain_hash": previous_chain_hash,
+        "chain_hash": chain_hash,
     }
 
     # Update agent stats
@@ -773,6 +822,35 @@ async def list_audit_logs(
         limit=limit
     )
     return {"count": len(logs), "logs": logs}
+
+
+@app.get("/audit/export", response_model=AuditExportResponse, tags=["Audit"])
+async def export_audit_bundle(
+    from_: str = Query(..., alias="from"),
+    to: str = Query(...),
+    tenant: str = Depends(verify_api_key),
+):
+    """Export a signed audit bundle for a tenant and UTC time range."""
+    signing_key = os.getenv("SCBE_AUDIT_EXPORT_SIGNING_KEY")
+    if not signing_key:
+        raise HTTPException(
+            status_code=503,
+            detail="SCBE_AUDIT_EXPORT_SIGNING_KEY is not configured",
+        )
+
+    tenant_records = [
+        record for record in DECISIONS_STORE.values() if record.get("tenant") == tenant
+    ]
+    filtered_records = filter_records_by_range(tenant_records, from_ts=from_, to_ts=to)
+
+    bundle, manifest = build_signed_bundle(
+        tenant_id=tenant,
+        from_ts=from_,
+        to_ts=to,
+        records=filtered_records,
+        signing_key=signing_key,
+    )
+    return AuditExportResponse(bundle=bundle, manifest=manifest)
 
 
 # =============================================================================
