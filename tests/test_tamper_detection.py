@@ -269,12 +269,9 @@ class TestDispersalTamperDetection:
     def test_metric_weighted_tamper_costs_more_in_dr(self):
         """Tampering high-weight tongues (DR) should cost more than low-weight (KO)."""
         G = build_metric_tensor()
-        centroid = [0.5] * 6
 
         # Same magnitude shift in KO vs DR
         shift = 0.3
-        ko_tampered = [0.5 + shift, 0.5, 0.5, 0.5, 0.5, 0.5]
-        dr_tampered = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5 + shift]
 
         ko_cost = G[0, 0] * shift  # phi^0 * 0.3 = 0.3
         dr_cost = G[5, 5] * shift  # phi^5 * 0.3 = 3.33

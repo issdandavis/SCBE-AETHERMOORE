@@ -281,7 +281,6 @@ class TestHybridStep:
     def test_plus_zero_no_movement(self):
         """(+0) doesn't move the continuous state (no impulse)."""
         state = make_hybrid_state(0)
-        x_before = state.x.copy()
         result = hybrid_step(state, GovernanceSymbol.PLUS_ZERO, base_alpha=0.1)
         # m=0 so impulse_magnitude should be 0
         assert result.impulse_magnitude == 0.0

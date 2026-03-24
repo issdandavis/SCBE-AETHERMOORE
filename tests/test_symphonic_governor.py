@@ -498,7 +498,7 @@ class TestPiCycleTiming:
         assert report.cycle_number == 0
 
     def test_cycle_increments_at_pi(self, governor, safe_text):
-        r1 = governor.review(safe_text, sim_time=3.0)
+        governor.review(safe_text, sim_time=3.0)
         r2 = governor.review(safe_text, sim_time=math.pi + 0.01)
         assert r2.cycle_number >= 1
 
@@ -508,7 +508,7 @@ class TestPiCycleTiming:
 
     def test_multiple_cycles(self, governor, safe_text):
         for i in range(10):
-            report = governor.review(safe_text, sim_time=float(i) * math.pi)
+            governor.review(safe_text, sim_time=float(i) * math.pi)
         assert governor._cycle_count >= 8
 
 
@@ -573,7 +573,7 @@ class TestStressTrajectory:
         )
 
         for i, text in enumerate(turns):
-            report = governor.review(text, sim_time=float(i) * 0.5)
+            governor.review(text, sim_time=float(i) * 0.5)
 
         summary = governor.trajectory_summary()
         assert summary["total_interactions"] == 20

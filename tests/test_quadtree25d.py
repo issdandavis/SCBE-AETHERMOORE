@@ -156,7 +156,7 @@ class TestQuadNode:
         assert len(node.all_points()) == 10
 
     def test_chladni_mode_scales(self):
-        n0 = QuadNode(QuadBounds(-1, -1, 1, 1), depth=0, chladni_base_mode=(3, 2))
+        QuadNode(QuadBounds(-1, -1, 1, 1), depth=0, chladni_base_mode=(3, 2))
         n3 = QuadNode(QuadBounds(-1, -1, 1, 1), depth=3, chladni_base_mode=(3, 2))
         phi = (1 + math.sqrt(5)) / 2
         assert abs(n3.chladni_mode[0] - 3 * phi**3) < 0.01
