@@ -9,7 +9,11 @@ class TestPageAnalyzer:
         result = analyzer.analyze_sync(
             url="https://example.com/article",
             title="Example Article",
-            text="This is a test article about AI safety. It discusses governance frameworks and security models. The key findings are that hyperbolic geometry provides exponential cost scaling.",
+            text=(
+                "This is a test article about AI safety. It discusses governance frameworks and"
+                " security models. The key findings are that hyperbolic geometry provides"
+                " exponential cost scaling."
+            ),
         )
         assert "summary" in result
         assert len(result["summary"]) > 0
@@ -30,7 +34,10 @@ class TestPageAnalyzer:
         result = analyzer.analyze_sync(
             url="https://example.com",
             title="AI Research",
-            text="Machine learning and artificial intelligence are transforming security research. Neural networks provide new capabilities for threat detection.",
+            text=(
+                "Machine learning and artificial intelligence are transforming security"
+                " research. Neural networks provide new capabilities for threat detection."
+            ),
         )
         assert "topics" in result
         assert len(result["topics"]) > 0
