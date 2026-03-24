@@ -21,14 +21,14 @@ Results cross-referenced as a spectral grid: (-1, 0, +1) per method.
 from __future__ import annotations
 import json, math, time, sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tests.adversarial.scbe_harness import (
     text_to_tongue_coords, quantize_spin, build_metric_tensor,
-    TONGUE_NAMES, TONGUE_WEIGHTS, PI, PHI,
+    TONGUE_WEIGHTS, PI, PHI,
     _ADVERSARIAL_PATTERNS, _MULTILINGUAL_OVERRIDE_PATTERNS,
 )
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, get_all_attacks

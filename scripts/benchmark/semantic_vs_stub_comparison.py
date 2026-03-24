@@ -11,13 +11,13 @@ Saves full parameter sets and results for reproducibility.
 from __future__ import annotations
 import json, math, time, sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tests.adversarial.scbe_harness import (
-    SCBEDetectionGate, text_to_tongue_coords, quantize_spin,
+    text_to_tongue_coords, quantize_spin,
     compute_harmonic_cost, build_metric_tensor,
     TONGUE_NAMES, TONGUE_WEIGHTS, PI, PHI,
     _ADVERSARIAL_PATTERNS, _MULTILINGUAL_OVERRIDE_PATTERNS,
