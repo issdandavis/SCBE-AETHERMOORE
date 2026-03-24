@@ -365,7 +365,7 @@ class SCBEAethermooreVerifier:
         Returns: (is_accept, reason, final_state)
         """
         # 1. HMAC
-        tag = self.hmac_chain.tag(payload)
+        self.hmac_chain.tag(payload)
 
         # 2. Hyperbolic
         trust_vec = context[:2] if len(context) >= 2 else np.zeros(2)
@@ -376,7 +376,7 @@ class SCBEAethermooreVerifier:
         risk = harmonic_scaling(d_H, entropy_delta)
 
         # 4. Langues
-        g = langues_metric(context)
+        langues_metric(context)
 
         # 5. Torus
         self.torus.advance(risk * 0.1)
@@ -386,16 +386,16 @@ class SCBEAethermooreVerifier:
         D_f = fractal_dimension(traj)
 
         # 7. Lyapunov
-        lambda_L = lyapunov_exponent(traj)
+        lyapunov_exponent(traj)
 
         # 8. PHDM
         valid_topo = self.phdm.is_valid_poincare()
 
         # 9. Coherence
-        coh = spectral_coherence(context, intent)
+        spectral_coherence(context, intent)
 
         # 10. DSP
-        ent = fft_entropy(context)
+        fft_entropy(context)
 
         # 11. AI
         intent_pad = np.pad(intent, (0, max(0, 256 - len(intent))), "constant")[:256]
@@ -403,7 +403,7 @@ class SCBEAethermooreVerifier:
         hopfield_conf = self.hopfield.confidence(intent_pad)
 
         # 12. Cipher (Encryption Claim)
-        enc_payload = self.feistel.encrypt(payload)
+        self.feistel.encrypt(payload)
 
         # 13. Aethermoore
         aether_state = AethermooreState(

@@ -226,7 +226,7 @@ class CloudAgent(ABC):
 
         # Check 1: Basic responsiveness
         try:
-            test_result = await self.process({"type": "health_check"}, {})
+            await self.process({"type": "health_check"}, {})
             checks_passed.append("responsiveness")
         except Exception as e:
             checks_failed.append(f"responsiveness: {str(e)}")
@@ -811,7 +811,6 @@ class HallucinationDetectorAgent(CloudAgent):
         """Verify AI output for hallucinations."""
         output_text = event.get("output", "")
         source_agent = event.get("source_agent", "unknown")
-        claimed_confidence = event.get("confidence", 0.8)
 
         verification = {
             "verification_id": str(uuid.uuid4()),

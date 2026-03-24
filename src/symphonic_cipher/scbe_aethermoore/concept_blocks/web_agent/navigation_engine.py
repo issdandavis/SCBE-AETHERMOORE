@@ -70,7 +70,7 @@ def _classify_page(url: str, title: str, text: str) -> str:
     """Heuristic page type classification."""
     low_url = url.lower()
     low_title = (title or "").lower()
-    low_text = (text or "").lower()[:500]
+    _ = (text or "").lower()[:500]
 
     if "login" in low_url or "signin" in low_url or "login" in low_title:
         return "login"
@@ -229,7 +229,7 @@ class NavigationEngine:
         page = self._state.current_page
 
         # SENSE: estimate where we are relative to goal
-        progress = self._estimate_progress()
+        self._estimate_progress()
 
         # PLAN: find route if we don't have one or we've drifted
         if not self._state.planned_route or self._is_off_route():

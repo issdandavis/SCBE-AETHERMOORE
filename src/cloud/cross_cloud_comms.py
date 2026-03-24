@@ -580,7 +580,7 @@ class CrossCloudCommunicator:
             self.registry.update_health(endpoint_id, True, latency)
             return True
 
-        except Exception as e:
+        except Exception:
             self.registry.update_health(endpoint_id, False)
             return False
 

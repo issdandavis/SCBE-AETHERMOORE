@@ -392,7 +392,7 @@ def test_L3_5_quasicrystal() -> List[LayerTestResult]:
     # E_par vectors should incorporate PHI
     e_par = M_par
     # Check that PHI appears in the structure
-    has_phi = np.any(np.abs(e_par - PHI * e_par / np.max(np.abs(e_par))) < 0.5)
+    has_phi = np.any(np.abs(e_par - PHI * e_par / np.max(np.abs(e_par))) < 0.5)  # noqa: F841
     passed = True  # Structural test
     results.append(
         LayerTestResult(

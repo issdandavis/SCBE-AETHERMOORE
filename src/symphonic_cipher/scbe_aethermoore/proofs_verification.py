@@ -554,8 +554,6 @@ def verify_theorem_12_1(n_tests: int = 100) -> Tuple[bool, Dict]:
     """
     results = {"passed": 0, "failed": 0, "violations": []}
 
-    R = R_BASE  # φ ≈ 1.618
-
     for _ in range(n_tests):
         d1 = np.random.uniform(0.01, 3)
         d2 = d1 + np.random.uniform(0.01, 2)  # d2 > d1
@@ -607,8 +605,8 @@ def verify_theorem_15_2(n_tests: int = 50) -> Tuple[bool, Dict]:
         u_transformed = layer_7_phase(layer_6_breathing(u, t), phi, a)
         v_transformed = layer_7_phase(layer_6_breathing(v, t), phi, a)
 
-        # New distance
-        d_transformed = layer_5_hyperbolic_distance(u_transformed, v_transformed)
+        # New distance (computed but not compared; only phase distance is tested below)
+        layer_5_hyperbolic_distance(u_transformed, v_transformed)
 
         # Note: Breathing is NOT an isometry - it's a radial scaling
         # Only the PHASE transform (Möbius + rotation) preserves d_H

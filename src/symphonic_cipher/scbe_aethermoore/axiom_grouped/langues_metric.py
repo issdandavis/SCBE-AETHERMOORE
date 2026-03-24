@@ -459,7 +459,7 @@ def verify_flux_bounded() -> bool:
     """
     flux = DimensionFlux.default()
     metric = FluxingLanguesMetric(flux=flux)
-    x = HyperspacePoint()
+    HyperspacePoint()
 
     for _ in range(1000):
         metric.update_flux(dt=0.01)
@@ -478,7 +478,7 @@ def verify_dimension_conservation() -> bool:
     """
     flux = DimensionFlux.default()
     metric = FluxingLanguesMetric(flux=flux)
-    x = HyperspacePoint()
+    HyperspacePoint()
 
     D_f_sum = 0.0
     steps = 1000

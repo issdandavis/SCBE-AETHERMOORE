@@ -859,7 +859,7 @@ class SymphonicCipher:
             nonce_b64 = header["nonce"]
             nonce = self.envelope._b64url_decode(nonce_b64)
 
-            msg_key = derive_msg_key(self.master_key, nonce)
+            derive_msg_key(self.master_key, nonce)
 
             # Extract permuted IDs from audio (simplified - in practice use FFT)
             # This is a placeholder for demonstration

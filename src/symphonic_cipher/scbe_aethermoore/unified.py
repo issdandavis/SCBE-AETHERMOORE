@@ -818,7 +818,6 @@ def governance_9d(
     Returns: (decision, message, metrics)
     """
     # Extract state components
-    context = xi[:6]
     tau = float(xi[6])
     eta = float(xi[7])
     q = complex(xi[8])
@@ -978,8 +977,6 @@ def extract_phase(wave: np.ndarray) -> float:
 
     N = len(wave)
     yf = fft(wave)
-    xf = fftfreq(N, 1 / SAMPLE_RATE)[: N // 2]
-
     # Find carrier frequency peak
     peak_idx = np.argmax(np.abs(yf[: N // 2]))
     phase = np.angle(yf[peak_idx])
@@ -1122,7 +1119,7 @@ class SCBEAethermoore:
         """
         # Phase encode
         intent = stable_hash(message) / (2 * np.pi)
-        wave = phase_modulated_intent(intent)
+        phase_modulated_intent(intent)
 
         # Create HMAC entry
         msg_bytes = message.encode()

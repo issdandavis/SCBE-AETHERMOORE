@@ -274,7 +274,7 @@ class TriLaneRouter:
             # Execute based on plan
             for target in targets:
                 url = f"https://{target}" if not target.startswith("http") else target
-                nav_result = await backend.navigate(url)
+                await backend.navigate(url)
                 actions += 1
                 content = await backend.get_page_content()
                 result_data[target] = {

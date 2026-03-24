@@ -369,7 +369,7 @@ def refactor_align(
             f"Expected {BRAIN_DIMENSIONS}D vector, got {len(x)}D."
         )
 
-    original = x.copy()
+    _ = x.copy()
     corrections = 0
     max_corr = 0.0
 

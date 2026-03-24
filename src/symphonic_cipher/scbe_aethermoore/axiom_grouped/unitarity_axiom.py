@@ -193,7 +193,7 @@ def layer_2_inverse(x: np.ndarray) -> np.ndarray:
     Returns:
         Complex D-dimensional vector
     """
-    n = len(x) // 2
+    _ = len(x) // 2
     return x[0::2] + 1j * x[1::2]
 
 

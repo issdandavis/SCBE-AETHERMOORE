@@ -331,7 +331,7 @@ class _LiboqsDilithium:
     @staticmethod
     def generate_keypair() -> DilithiumKeyPair:
         """Generate a Dilithium3 keypair using liboqs."""
-        algorithm = _LiboqsDilithium._algorithm()
+        _LiboqsDilithium._algorithm()
         with _oqs.Signature(_SIG_ALG) as sig:
             public_key = sig.generate_keypair()
             secret_key = sig.export_secret_key()

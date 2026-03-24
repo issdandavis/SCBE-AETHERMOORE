@@ -226,7 +226,7 @@ class SpiralSealSS1:
         try:
             plaintext = aes_gcm_decrypt(k_enc, nonce, ciphertext, tag, aad_bytes)
             return plaintext
-        except ValueError as e:
+        except ValueError:
             # Fail-to-noise: don't expose details
             raise ValueError("Authentication failed") from None
 
