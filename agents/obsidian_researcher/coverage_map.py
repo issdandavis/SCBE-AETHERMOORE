@@ -86,7 +86,7 @@ class CoverageMap:
     # Update from ingestion
     # ------------------------------------------------------------------
 
-    def update(self, result: "IngestionResult", links: List["WikiLink"]) -> None:
+    def update(self, result: "IngestionResult", links: List["WikiLink"]) -> None:  # noqa: F821
         """Increment coverage counters for concepts found in *links*.
 
         Each link whose ``target`` matches a tracked concept is counted.
