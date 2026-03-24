@@ -280,8 +280,8 @@ def compute_spectrum(
     primary_dft = _simple_dft(primary_signal)
     mirror_dft = _simple_dft(mirror_signal)
 
-    primary_mag = [math.sqrt(re * re + im * im) for re, im in primary_dft]
-    mirror_mag = [math.sqrt(re * re + im * im) for re, im in mirror_dft]
+    primary_mag = [math.hypot(re, im) for re, im in primary_dft]
+    mirror_mag = [math.hypot(re, im) for re, im in mirror_dft]
     cross = [primary_dft[i][0] * mirror_dft[i][0] + primary_dft[i][1] * mirror_dft[i][1] for i in range(n)]
 
     # 9-fold symmetry energy
