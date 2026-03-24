@@ -78,4 +78,3 @@ def emit_from_ir(module: PrismModule, target_language: str) -> str:
     if lang == "go":
         return emit_go(module)
     raise ValueError(f"Unsupported target language: {target_language}")
-

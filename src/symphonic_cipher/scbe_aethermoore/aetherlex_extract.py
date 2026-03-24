@@ -619,14 +619,14 @@ def selftest():
     assert len(RUNES_24) == 24, f"Expected 24 runes, got {len(RUNES_24)}"
     assert len(PARTICLES_14) == 14, f"Expected 14 particles, got {len(PARTICLES_14)}"
     assert len(TONGUES) == 6, f"Expected 6 tongues, got {len(TONGUES)}"
-    print(f"  [OK] Codex integrity: 24 runes, 14 particles, 6 tongues")
+    print("  [OK] Codex integrity: 24 runes, 14 particles, 6 tongues")
 
     # 2. Golden ratio weights
     for code in TONGUE_CODES:
         expected = PHI ** TONGUES[code]["phi_n"]
         actual = TONGUES[code]["weight"]
         assert abs(expected - actual) < 1e-6, f"{code} weight mismatch"
-    print(f"  [OK] Golden ratio weights verified (φ^0 through φ^5)")
+    print("  [OK] Golden ratio weights verified (φ^0 through φ^5)")
 
     # 3. Deterministic hashing
     test_phrases = [
@@ -648,18 +648,18 @@ def selftest():
         process_phrase(p2)
         assert p.seed_hex == p2.seed_hex, f"Non-deterministic seed for: {text[:40]}..."
 
-    print(f"  [OK] Deterministic hashing: 5 phrases regenerable")
+    print("  [OK] Deterministic hashing: 5 phrases regenerable")
 
     # 4. Seed uniqueness
     assert len(set(seeds)) == len(seeds), "Seed collision detected!"
-    print(f"  [OK] Seed uniqueness: 5/5 unique seeds")
+    print("  [OK] Seed uniqueness: 5/5 unique seeds")
 
     # 5. Entropy check (should be > 5.0 bits/byte for SHAKE-256 output)
     for text in test_phrases:
         p = ExtractedPhrase(text=text, speaker="DM", page=1, line_start=0, tongue_bias="")
         process_phrase(p)
         assert p.entropy_bpb > 4.5, f"Low entropy {p.entropy_bpb} for: {text[:40]}..."
-    print(f"  [OK] Entropy check: all seeds > 4.5 bits/byte")
+    print("  [OK] Entropy check: all seeds > 4.5 bits/byte")
 
     # 6. Tongue classification sanity
     binding = ExtractedPhrase(
@@ -675,20 +675,20 @@ def selftest():
         speaker="DM", page=1, line_start=0, tongue_bias="")
     shadow.tongue_bias = classify_tongue(shadow)
     assert shadow.tongue_bias == "UM", f"Expected UM, got {shadow.tongue_bias}"
-    print(f"  [OK] Tongue classification: shadow phrase → UM")
+    print("  [OK] Tongue classification: shadow phrase → UM")
 
     forge = ExtractedPhrase(
         text="gather materials, driftwood and stone, to construct a shelter",
         speaker="DM", page=1, line_start=0, tongue_bias="")
     forge.tongue_bias = classify_tongue(forge)
     assert forge.tongue_bias == "DR", f"Expected DR, got {forge.tongue_bias}"
-    print(f"  [OK] Tongue classification: forge phrase → DR")
+    print("  [OK] Tongue classification: forge phrase → DR")
 
     # 7. Pack/unpack round-trip (packed data is deterministic)
     packed1 = pack_tokens("KO", [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4], 1)
     packed2 = pack_tokens("KO", [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4], 1)
     assert packed1 == packed2, "Non-deterministic packing"
-    print(f"  [OK] Deterministic packing: identical inputs → identical bytes")
+    print("  [OK] Deterministic packing: identical inputs → identical bytes")
 
     print(f"\n=== selftest ok ({7 - errors} checks passed) ===")
     return errors == 0
@@ -721,7 +721,7 @@ def cmd_extract(args):
     stats = corpus_stats(corpus)
     print(f"Unique seeds: {stats['unique_seeds']}/{stats['total_phrases']}")
     print(f"Avg entropy: {stats['avg_entropy_bpb']:.4f} bits/byte")
-    print(f"Tongue distribution:")
+    print("Tongue distribution:")
     for code, count in stats.get("tongue_distribution", {}).items():
         pct = 100 * count / stats["total_phrases"]
         name = TONGUES[code]["name"]
@@ -757,7 +757,7 @@ def cmd_extract(args):
 
     # Print first 5 as sample
     if args.verbose:
-        print(f"\n--- Sample (first 5 phrases) ---")
+        print("\n--- Sample (first 5 phrases) ---")
         for p in corpus[:5]:
             print(f"\n  [{p.tongue_bias}] p.{p.page} ({p.speaker})")
             print(f"  Text: {p.text[:80]}...")
@@ -814,7 +814,7 @@ def cmd_stats(args):
     print(f"Collision rate: {stats.get('collision_rate', 0):.6f}")
     print(f"Avg entropy: {stats.get('avg_entropy_bpb', 0):.4f} bpb")
     print(f"Avg phrase length: {stats.get('avg_phrase_length', 0):.1f} chars")
-    print(f"Tongue distribution:")
+    print("Tongue distribution:")
     for code, count in stats.get("tongue_distribution", {}).items():
         pct = 100 * count / max(stats.get("total_phrases", 1), 1)
         print(f"  {code}: {count} ({pct:.1f}%)")

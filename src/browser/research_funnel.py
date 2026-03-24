@@ -42,6 +42,7 @@ logger = logging.getLogger("research-funnel")
 
 # ── Project root detection ────────────────────────────────────────────
 
+
 def _find_project_root() -> Path:
     """Walk up from this file to find the repo root (has package.json)."""
     here = Path(__file__).resolve().parent
@@ -57,9 +58,11 @@ INTAKE_DIR = PROJECT_ROOT / "training" / "intake" / "web_research"
 
 # ── Receipt ───────────────────────────────────────────────────────────
 
+
 @dataclass
 class FunnelReceipt:
     """What happened when we pushed research to cloud storage."""
+
     run_id: str
     records_written: int = 0
     local_path: Optional[str] = None
@@ -70,6 +73,7 @@ class FunnelReceipt:
 
 
 # ── Funnel ────────────────────────────────────────────────────────────
+
 
 class ResearchFunnel:
     """
@@ -96,9 +100,7 @@ class ResearchFunnel:
         self.notion_token = notion_token or os.getenv("NOTION_TOKEN")
         self.notion_parent_id = notion_parent_id or os.getenv("NOTION_HUB_PAGE_ID")
         self.hf_token = hf_token or os.getenv("HF_TOKEN")
-        self.hf_repo = hf_repo or os.getenv(
-            "HF_DATASET_REPO", "issdandavis/scbe-aethermoore-training-data"
-        )
+        self.hf_repo = hf_repo or os.getenv("HF_DATASET_REPO", "issdandavis/scbe-aethermoore-training-data")
 
     # ── Main entry point ──────────────────────────────────────────────
 
@@ -198,32 +200,32 @@ class ResearchFunnel:
             threat = ext.get("threat_verdict", "CLEAN")
             risk = ext.get("threat_risk", 0.05)
 
-            records.append({
-                "event_type": "web_research_chunk",
-                "dataset": "scbe_web_research_intake",
-                "run_id": run_id,
-                "chunk_index": i,
-                "source_system": "web",
-                "source_url": url,
-                "source_title": title,
-                "topics": topics,
-                "content_length": len(text),
-                "content_sha256": content_hash,
-                "decision": decision,
-                "decision_confidence": confidence,
-                "threat_verdict": threat,
-                "threat_risk": risk,
-                "generated_at_utc": now.isoformat(),
-                # Store first 500 chars of text as preview
-                "content_preview": text[:500] if text else "",
-            })
+            records.append(
+                {
+                    "event_type": "web_research_chunk",
+                    "dataset": "scbe_web_research_intake",
+                    "run_id": run_id,
+                    "chunk_index": i,
+                    "source_system": "web",
+                    "source_url": url,
+                    "source_title": title,
+                    "topics": topics,
+                    "content_length": len(text),
+                    "content_sha256": content_hash,
+                    "decision": decision,
+                    "decision_confidence": confidence,
+                    "threat_verdict": threat,
+                    "threat_risk": risk,
+                    "generated_at_utc": now.isoformat(),
+                    # Store first 500 chars of text as preview
+                    "content_preview": text[:500] if text else "",
+                }
+            )
         return records
 
     # ── Local JSONL ───────────────────────────────────────────────────
 
-    def _write_local_jsonl(
-        self, records: List[Dict[str, Any]], run_id: str
-    ) -> Path:
+    def _write_local_jsonl(self, records: List[Dict[str, Any]], run_id: str) -> Path:
         """Write records to training/intake/web_research/ as timestamped JSONL."""
         filename = f"web_research_{run_id}.jsonl"
         path = self.intake_dir / filename
@@ -257,17 +259,20 @@ class ResearchFunnel:
             {
                 "object": "block",
                 "type": "heading_2",
-                "heading_2": {
-                    "rich_text": [{"type": "text", "text": {"content": f"Run {run_id} | {date_str}"}}]
-                },
+                "heading_2": {"rich_text": [{"type": "text", "text": {"content": f"Run {run_id} | {date_str}"}}]},
             },
             {
                 "object": "block",
                 "type": "paragraph",
                 "paragraph": {
-                    "rich_text": [{"type": "text", "text": {
-                        "content": f"Sources: {len(records)} | Topics: {', '.join(records[0].get('topics', []))}"
-                    }}]
+                    "rich_text": [
+                        {
+                            "type": "text",
+                            "text": {
+                                "content": f"Sources: {len(records)} | Topics: {', '.join(records[0].get('topics', []))}"
+                            },
+                        }
+                    ]
                 },
             },
             {
@@ -283,35 +288,34 @@ class ResearchFunnel:
             preview = rec.get("content_preview", "")[:300]
             verdict = rec.get("threat_verdict", "CLEAN")
 
-            children.append({
-                "object": "block",
-                "type": "toggle",
-                "toggle": {
-                    "rich_text": [{"type": "text", "text": {
-                        "content": f"[{verdict}] {source_title[:80]}"
-                    }}],
-                    "children": [
-                        {
-                            "object": "block",
-                            "type": "paragraph",
-                            "paragraph": {
-                                "rich_text": [{"type": "text", "text": {
-                                    "content": f"URL: {rec.get('source_url', 'N/A')}\n\n{preview}"
-                                }}]
-                            },
-                        }
-                    ],
-                },
-            })
+            children.append(
+                {
+                    "object": "block",
+                    "type": "toggle",
+                    "toggle": {
+                        "rich_text": [{"type": "text", "text": {"content": f"[{verdict}] {source_title[:80]}"}}],
+                        "children": [
+                            {
+                                "object": "block",
+                                "type": "paragraph",
+                                "paragraph": {
+                                    "rich_text": [
+                                        {
+                                            "type": "text",
+                                            "text": {"content": f"URL: {rec.get('source_url', 'N/A')}\n\n{preview}"},
+                                        }
+                                    ]
+                                },
+                            }
+                        ],
+                    },
+                }
+            )
 
         # Create the page
         page = notion.pages.create(
             parent={"page_id": self.notion_parent_id},
-            properties={
-                "title": {
-                    "title": [{"type": "text", "text": {"content": title}}]
-                }
-            },
+            properties={"title": {"title": [{"type": "text", "text": {"content": title}}]}},
             children=children,
         )
 
@@ -319,9 +323,7 @@ class ResearchFunnel:
 
     # ── HuggingFace ───────────────────────────────────────────────────
 
-    def _push_to_huggingface(
-        self, records: List[Dict[str, Any]], run_id: str
-    ) -> bool:
+    def _push_to_huggingface(self, records: List[Dict[str, Any]], run_id: str) -> bool:
         """Append records as a new JSONL file in the HF dataset repo."""
         try:
             from huggingface_hub import HfApi
@@ -345,9 +347,7 @@ class ResearchFunnel:
 
     # ── Batch push from existing JSONL files ──────────────────────────
 
-    async def push_existing_intake(
-        self, max_files: int = 5
-    ) -> List[FunnelReceipt]:
+    async def push_existing_intake(self, max_files: int = 5) -> List[FunnelReceipt]:
         """
         Push existing local JSONL intake files to Notion + HuggingFace.
 
@@ -399,6 +399,7 @@ class ResearchFunnel:
 
 # ── CLI runner ────────────────────────────────────────────────────────
 
+
 async def _main():
     """CLI entry point for backfilling existing intake to cloud."""
     import argparse
@@ -406,10 +407,8 @@ async def _main():
     logging.basicConfig(level=logging.INFO, format="%(name)s | %(message)s")
 
     parser = argparse.ArgumentParser(description="Push research findings to cloud storage")
-    parser.add_argument("--backfill", type=int, default=0,
-                        help="Push N most recent local JSONL files to Notion/HF")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Print what would be pushed without pushing")
+    parser.add_argument("--backfill", type=int, default=0, help="Push N most recent local JSONL files to Notion/HF")
+    parser.add_argument("--dry-run", action="store_true", help="Print what would be pushed without pushing")
     args = parser.parse_args()
 
     funnel = ResearchFunnel()
@@ -417,7 +416,7 @@ async def _main():
     if args.backfill > 0:
         if args.dry_run:
             files = sorted(funnel.intake_dir.glob("web_research_*.jsonl"))
-            for f in files[-args.backfill:]:
+            for f in files[-args.backfill :]:
                 count = sum(1 for _ in open(f))
                 print(f"  [DRY] {f.name} ({count} records)")
             return
@@ -442,4 +441,5 @@ async def _main():
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(_main())

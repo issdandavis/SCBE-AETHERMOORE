@@ -294,8 +294,8 @@ def demo():
     wrong_vector = VoxelAccessVector(2, 0, 0, 4, 0, 0)  # n=2, m=4
 
     print("Access Control Demonstration:")
-    print(f"Correct vector: n=3, m=5")
-    print(f"Wrong vector:   n=2, m=4")
+    print("Correct vector: n=3, m=5")
+    print("Wrong vector:   n=2, m=4")
     print()
 
     # Encode and decode

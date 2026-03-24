@@ -509,8 +509,8 @@ def ascii_journey(
     lines = []
     lines.append("  GARGANTA JOURNEY — Multi-D Harmonic Tunnel")
     lines.append("  " + "═" * (width + 20))
-    lines.append(f"  r(d,t) = r_max / φ^(d²) · e^(-λt)")
-    lines.append(f"  Fiber: S⁵ × r(d,t)  |  6 portal dimensions (KO/AV/RU/CA/UM/DR)")
+    lines.append("  r(d,t) = r_max / φ^(d²) · e^(-λt)")
+    lines.append("  Fiber: S⁵ × r(d,t)  |  6 portal dimensions (KO/AV/RU/CA/UM/DR)")
     lines.append("")
 
     zone_fill = {

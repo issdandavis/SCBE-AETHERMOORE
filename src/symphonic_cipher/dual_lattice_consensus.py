@@ -100,9 +100,7 @@ class DualLatticeConsensus:
         self._kem_compromised = False
         self._dsa_compromised = False
 
-    def _create_context_token(
-        self, context: AuthorizationContext, decision: str
-    ) -> Dict[str, Any]:
+    def _create_context_token(self, context: AuthorizationContext, decision: str) -> Dict[str, Any]:
         """Original context-object API retained for backward compatibility."""
         ct, session_key = self.kem.encapsulate()
 
@@ -126,9 +124,7 @@ class DualLatticeConsensus:
             "session_key_id": hashlib.sha256(session_key).hexdigest()[:16],
         }
 
-    def _create_identity_token(
-        self, identity: str, intent: str, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _create_identity_token(self, identity: str, intent: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """Compatibility API expected by the patent module tests."""
         now_ms = int(time.time() * 1000)
         ct, session_key = self.kem.encapsulate()
@@ -136,11 +132,7 @@ class DualLatticeConsensus:
         self.last_kem_result = "ALLOW" if not self._kem_compromised else "COMPROMISED"
         self.last_dsa_result = "ALLOW" if not self._dsa_compromised else "COMPROMISED"
 
-        decision = (
-            "ALLOW"
-            if self.last_kem_result == "ALLOW" and self.last_dsa_result == "ALLOW"
-            else "REVIEW"
-        )
+        decision = "ALLOW" if self.last_kem_result == "ALLOW" and self.last_dsa_result == "ALLOW" else "REVIEW"
 
         msg_payload = {
             "identity": identity,
@@ -207,9 +199,7 @@ class DualLatticeConsensus:
 
         return self._create_identity_token(str(identity), str(intent), context)
 
-    def verify_authorization_token(
-        self, token: Dict[str, Any]
-    ) -> Tuple[ConsensusResult, str]:
+    def verify_authorization_token(self, token: Dict[str, Any]) -> Tuple[ConsensusResult, str]:
         """Verify original context-object token format."""
         try:
             ts = token["payload"]["timestamp"]
@@ -283,9 +273,7 @@ class DualLatticeConsensus:
         except Exception as exc:
             return False, f"INVALID_TOKEN: {exc}"
 
-    def verify_token_with_context(
-        self, token: Dict[str, Any], context: Dict[str, Any]
-    ) -> Tuple[bool, str]:
+    def verify_token_with_context(self, token: Dict[str, Any], context: Dict[str, Any]) -> Tuple[bool, str]:
         """Verify token and enforce context binding."""
         if token.get("context") != context:
             return False, "CONTEXT_MISMATCH"
@@ -343,7 +331,7 @@ def run_dual_lattice_demo():
 
     # Initialize consensus system
     dlc = DualLatticeConsensus()
-    print(f"\nInitialized with shared seed")
+    print("\nInitialized with shared seed")
     print(f"  KEM Public Key: {dlc.kem.public_key.hex()[:32]}...")
     print(f"  DSA Public Key: {dlc.dsa.public_key.hex()[:32]}...")
     print(f"  Using liboqs: {is_liboqs_available()}")
@@ -356,14 +344,14 @@ def run_dual_lattice_demo():
         session_nonce=os.urandom(NONCE_LEN),
         threat_level=0.2,
     )
-    print(f"\nAuthorization Context:")
+    print("\nAuthorization Context:")
     print(f"  User: {context.user_id}")
     print(f"  Device: {context.device_fingerprint}")
     print(f"  Threat Level: {context.threat_level}")
 
     # Create token
     token = dlc.create_authorization_token(context, "ALLOW")
-    print(f"\nCreated Authorization Token:")
+    print("\nCreated Authorization Token:")
     print(f"  Decision: {token['payload']['decision']}")
     print(f"  Consensus Hash: {token['consensus_hash']}")
     print(f"  Session Key ID: {token['session_key_id']}")
@@ -390,4 +378,3 @@ def run_dual_lattice_demo():
 
 if __name__ == "__main__":
     run_dual_lattice_demo()
-

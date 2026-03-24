@@ -182,7 +182,7 @@ def test_harmonic_modes():
     print(f"Overflow detected at d = {overflow_point}")
     print(f"Bounded monotonic (within clamp): {all_monotonic_b}")
     print(f"Unbounded monotonic: {all_monotonic_u}")
-    print(f"Bounded clamp point: d = √50 ≈ 7.07 (H plateaus at φ^50)")
+    print("Bounded clamp point: d = √50 ≈ 7.07 (H plateaus at φ^50)")
 
     # Verify key properties
     assert harmonic_bounded(0) == 1.0, "H_bounded(0) should be 1"
@@ -321,12 +321,12 @@ def test_phase_shift():
     R_unbounded = risk_unbounded(d_test, C_spin, S_spec)
 
     print(f"Test parameters: d={d_test}, C_spin={C_spin}, S_spec={S_spec}")
-    print(f"\nBOUNDED mode:")
+    print("\nBOUNDED mode:")
     print(f"  H(d) = {harmonic_bounded(d_test):.6f}")
     print(f"  Risk = {R_bounded:.6f}")
     print(f"  Decision = {decide(R_bounded)}")
 
-    print(f"\nUNBOUNDED mode:")
+    print("\nUNBOUNDED mode:")
     H_u = harmonic_unbounded(d_test)
     print(f"  H(d) = {'inf' if math.isinf(H_u) else f'{H_u:.6f}'}")
     print(f"  Risk = {'inf' if math.isinf(R_unbounded) else f'{R_unbounded:.6f}'}")

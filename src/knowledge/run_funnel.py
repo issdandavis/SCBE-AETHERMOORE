@@ -153,7 +153,7 @@ def main():
     # Print stats
     stats = funnel.get_stats()
     print(f"\n{'=' * 60}")
-    print(f"FUNNEL STATS:")
+    print("FUNNEL STATS:")
     print(f"  Total chunks processed: {stats['total']}")
     print(f"  Allowed:     {stats['allowed']}")
     print(f"  Quarantined: {stats['quarantined']}")

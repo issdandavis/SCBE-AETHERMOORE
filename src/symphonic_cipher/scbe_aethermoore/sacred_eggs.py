@@ -308,14 +308,14 @@ def self_test():
     result = unseal_egg(egg, 'ko', pt, path, shares[:3])
     assert result == secret, f"Correct predicates failed: {result}"
     passed += 1
-    print(f"  [PASS] Correct predicates → decrypt")
+    print("  [PASS] Correct predicates → decrypt")
 
     # Test 2: Wrong tongue fails
     total += 1
     result = unseal_egg(egg, 'dr', pt, path, shares[:3])
     assert result is None, "Wrong tongue should fail"
     passed += 1
-    print(f"  [PASS] Wrong tongue → None")
+    print("  [PASS] Wrong tongue → None")
 
     # Test 3: Wrong geometry fails
     total += 1
@@ -323,7 +323,7 @@ def self_test():
     result = unseal_egg(egg, 'ko', wrong_pt, path, shares[:3])
     assert result is None, "Wrong geometry should fail"
     passed += 1
-    print(f"  [PASS] Wrong geometry → None")
+    print("  [PASS] Wrong geometry → None")
 
     # Test 4: Wrong path fails
     total += 1
@@ -331,7 +331,7 @@ def self_test():
     result = unseal_egg(egg, 'ko', pt, wrong_path, shares[:3])
     assert result is None, "Wrong path should fail"
     passed += 1
-    print(f"  [PASS] Wrong path → None")
+    print("  [PASS] Wrong path → None")
 
     # Test 5: Wrong quorum fails
     total += 1
@@ -339,14 +339,14 @@ def self_test():
     result = unseal_egg(egg, 'ko', pt, path, wrong_shares)
     assert result is None, "Wrong quorum should fail"
     passed += 1
-    print(f"  [PASS] Wrong quorum → None")
+    print("  [PASS] Wrong quorum → None")
 
     # Test 6: Geometry proximity check
     total += 1
     within, dist = check_geometry_proximity(egg, pt)
     assert within and dist < 0.001, f"Same point should be within threshold: d={dist}"
     passed += 1
-    print(f"  [PASS] Geometry proximity check")
+    print("  [PASS] Geometry proximity check")
 
     print(f"\n  {passed}/{total} tests passed")
     return passed == total

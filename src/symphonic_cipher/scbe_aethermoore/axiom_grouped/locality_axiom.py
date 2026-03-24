@@ -37,7 +37,6 @@ class LocalityViolation(Exception):
     """Raised when an operation violates the locality axiom."""
 
 
-
 @dataclass
 class LocalityCheckResult:
     """Result of a locality axiom check."""
@@ -91,11 +90,7 @@ def locality_check(
             else:
                 # For general functions, use output bounds as proxy
                 output = result[0] if isinstance(result, tuple) else result
-                radius = (
-                    float(np.max(np.abs(output)))
-                    if isinstance(output, np.ndarray)
-                    else 0
-                )
+                radius = float(np.max(np.abs(output))) if isinstance(output, np.ndarray) else 0
                 sparsity = 0.0
                 bandwidth = None
 
@@ -109,7 +104,7 @@ def locality_check(
                 sparsity=sparsity,
                 bandwidth=bandwidth,
                 layer_name=func.__name__,
-                max_radius=max_radius
+                max_radius=max_radius,
             )
             wrapper.last_check = check_result
 
@@ -124,6 +119,8 @@ def locality_check(
         return wrapper
 
     return decorator
+
+
 def _analyze_locality(matrix: np.ndarray) -> Tuple[float, float, Optional[int]]:
     """
     Analyze locality properties of an operator matrix.
@@ -237,9 +234,7 @@ def layer_3_weighted(x: np.ndarray, G: Optional[np.ndarray] = None) -> np.ndarra
     return G_sqrt @ x
 
 
-def layer_3_inverse(
-    x_weighted: np.ndarray, G: Optional[np.ndarray] = None
-) -> np.ndarray:
+def layer_3_inverse(x_weighted: np.ndarray, G: Optional[np.ndarray] = None) -> np.ndarray:
     """
     Inverse of Layer 3: Remove weighting.
 
@@ -346,9 +341,7 @@ def hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
 
 
 @locality_check(max_radius=5.0)
-def layer_8_multi_well(
-    u: np.ndarray, realms: Optional[List[RealmInfo]] = None
-) -> Tuple[float, int, RealmInfo]:
+def layer_8_multi_well(u: np.ndarray, realms: Optional[List[RealmInfo]] = None) -> Tuple[float, int, RealmInfo]:
     """
     Layer 8: Multi-Well Realm Detection
 
@@ -382,9 +375,7 @@ def layer_8_multi_well(
         center = realm.center
         if len(center) != dim:
             center = np.zeros(dim)
-            center[: min(len(realm.center), dim)] = realm.center[
-                : min(len(realm.center), dim)
-            ]
+            center[: min(len(realm.center), dim)] = realm.center[: min(len(realm.center), dim)]
 
         distance = hyperbolic_distance(u, center)
 
@@ -396,9 +387,7 @@ def layer_8_multi_well(
     return min_distance, nearest_realm_idx, nearest_realm
 
 
-def layer_8_potential(
-    u: np.ndarray, realms: Optional[List[RealmInfo]] = None, well_depth: float = 1.0
-) -> float:
+def layer_8_potential(u: np.ndarray, realms: Optional[List[RealmInfo]] = None, well_depth: float = 1.0) -> float:
     """
     Compute the multi-well potential at a point.
 
@@ -426,9 +415,7 @@ def layer_8_potential(
         center = realm.center
         if len(center) != dim:
             center = np.zeros(dim)
-            center[: min(len(realm.center), dim)] = realm.center[
-                : min(len(realm.center), dim)
-            ]
+            center[: min(len(realm.center), dim)] = realm.center[: min(len(realm.center), dim)]
 
         d = hyperbolic_distance(u, center)
         potential -= well_depth * realm.weight * np.exp(-(d**2) / (2 * sigma_sq))
@@ -599,6 +586,3 @@ def get_locality_layer(layer_num: int) -> dict:
 def list_locality_layers() -> list:
     """List all layers satisfying the locality axiom."""
     return list(LOCALITY_LAYERS.keys())
-
-
-

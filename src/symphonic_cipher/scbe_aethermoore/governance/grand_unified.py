@@ -42,40 +42,37 @@ from ..decision_telemetry import emit_from_grand_unified
 # =============================================================================
 
 PHI = (1 + np.sqrt(5)) / 2  # Golden Ratio
-R = PHI                     # Harmonic Base
-EPSILON = 1.5               # Geometric Snap Threshold
-TAU_COH = 0.9               # Coherence Threshold
-ETA_TARGET = 4.0            # Target Entropy
-BETA = 0.1                  # Entropy Decay Rate
-KAPPA_MAX = 0.1             # Max Curvature
-LAMBDA_BOUND = 0.001        # Max Lyapunov Exponent
-H_MAX = 10.0                # Max Harmonic Cost
-DOT_TAU_MIN = 0.0           # Causality Constraint (Time must flow forward)
-ETA_MIN = 2.0               # Min Entropy
-ETA_MAX = 6.0               # Max Entropy
-KAPPA_ETA_MAX = 0.1         # Max Entropy Curvature
-DELTA_DRIFT_MAX = 0.5       # Max Time Drift
-OMEGA_TIME = 2 * np.pi / 60 # Time Cycle Frequency
-CARRIER_FREQ = 440.0        # Base Frequency (A4)
-SAMPLE_RATE = 44100         # Audio Sample Rate
-DURATION = 0.5              # Waveform Duration
-NONCE_BYTES = 12            # standard nonce size
-KEY_LEN = 32                # standard key size
+R = PHI  # Harmonic Base
+EPSILON = 1.5  # Geometric Snap Threshold
+TAU_COH = 0.9  # Coherence Threshold
+ETA_TARGET = 4.0  # Target Entropy
+BETA = 0.1  # Entropy Decay Rate
+KAPPA_MAX = 0.1  # Max Curvature
+LAMBDA_BOUND = 0.001  # Max Lyapunov Exponent
+H_MAX = 10.0  # Max Harmonic Cost
+DOT_TAU_MIN = 0.0  # Causality Constraint (Time must flow forward)
+ETA_MIN = 2.0  # Min Entropy
+ETA_MAX = 6.0  # Max Entropy
+KAPPA_ETA_MAX = 0.1  # Max Entropy Curvature
+DELTA_DRIFT_MAX = 0.5  # Max Time Drift
+OMEGA_TIME = 2 * np.pi / 60  # Time Cycle Frequency
+CARRIER_FREQ = 440.0  # Base Frequency (A4)
+SAMPLE_RATE = 44100  # Audio Sample Rate
+DURATION = 0.5  # Waveform Duration
+NONCE_BYTES = 12  # standard nonce size
+KEY_LEN = 32  # standard key size
 
 # Six Sacred Tongues (Domain Separation)
 TONGUES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 TONGUE_WEIGHTS = [PHI**k for k in range(6)]
 
 # Modality Masks (Harmonic Overtones)
-MODALITY_MASKS = {
-    "STRICT": [1, 3, 5],
-    "ADAPTIVE": list(range(1, 6)),
-    "PROBE": [1]
-}
+MODALITY_MASKS = {"STRICT": [1, 3, 5], "ADAPTIVE": list(range(1, 6)), "PROBE": [1]}
 
 # =============================================================================
 # MANIFOLD CONTROLLER (GEOMETRIC GOVERNANCE)
 # =============================================================================
+
 
 class ManifoldController:
     """
@@ -91,7 +88,7 @@ class ManifoldController:
     def stable_hash(self, data: str) -> float:
         """Maps data to a stable angle [0, 2pi]."""
         if isinstance(data, (int, float)):
-             data = str(data)
+            data = str(data)
         hash_int = int(hashlib.sha256(data.encode()).hexdigest(), 16)
         return hash_int / (2**256 - 1) * 2 * np.pi
 
@@ -118,9 +115,9 @@ class ManifoldController:
         d_phi = self.delta_angle(phi1, phi2)
 
         g_phi_phi = (self.R + self.r * np.cos(avg_theta)) ** 2
-        g_theta_theta = self.r ** 2
+        g_theta_theta = self.r**2
 
-        squared_distance = g_phi_phi * (d_phi ** 2) + g_theta_theta * (d_theta ** 2)
+        squared_distance = g_phi_phi * (d_phi**2) + g_theta_theta * (d_theta**2)
         return np.sqrt(squared_distance)
 
     def validate_write(self, previous_fact: Dict[str, Any], new_fact: Dict[str, Any]) -> Dict[str, Any]:
@@ -128,11 +125,11 @@ class ManifoldController:
         Validates if a state transition is geometrically permissible (the 'Snap' Protocol).
         """
         if not previous_fact:
-            p_new = self.map_interaction(new_fact['domain'], new_fact['content'])
+            p_new = self.map_interaction(new_fact["domain"], new_fact["content"])
             return {"status": "WRITE_SUCCESS", "distance": 0.0, "coordinates": p_new}
 
-        p_prev = (previous_fact['theta'], previous_fact['phi'])
-        p_new = self.map_interaction(new_fact['domain'], new_fact['content'])
+        p_prev = (previous_fact["theta"], previous_fact["phi"])
+        p_new = self.map_interaction(new_fact["domain"], new_fact["content"])
 
         distance = self.geometric_divergence(p_prev, p_new)
 
@@ -143,12 +140,14 @@ class ManifoldController:
                 "status": "WRITE_FAIL",
                 "error": "GEOMETRIC_SNAP_DETECTED",
                 "divergence": distance,
-                "threshold": self.epsilon
+                "threshold": self.epsilon,
             }
+
 
 # =============================================================================
 # 9D STATE GENERATION & DYNAMICS
 # =============================================================================
+
 
 def generate_context(t: float) -> np.ndarray:
     """Generates the 6D Context Vector c(t)."""
@@ -167,6 +166,7 @@ def generate_context(t: float) -> np.ndarray:
 
     return np.array([v1, v2, v3, v4, v5, v6], dtype=object)
 
+
 def phase_modulated_intent(intent: float) -> np.ndarray:
     """Generates an audio waveform encoded with phase-based intent."""
     t = np.linspace(0, DURATION, int(SAMPLE_RATE * DURATION))
@@ -176,15 +176,17 @@ def phase_modulated_intent(intent: float) -> np.ndarray:
     noise = np.random.normal(0, 0.1, wave.shape)
     return wave + noise
 
+
 def extract_phase(wave: np.ndarray) -> float:
     """Demodulates the intent phase from the waveform using FFT."""
     N = len(wave)
     yf = fft(wave)
     # Only need positive frequencies
-    peak_idx = np.argmax(np.abs(yf[:N//2]))
+    peak_idx = np.argmax(np.abs(yf[: N // 2]))
     phase = np.angle(yf[peak_idx])
     # Normalize phase to [0, 1]
     return (phase % (2 * np.pi)) / (2 * np.pi)
+
 
 def compute_entropy(context_vector: np.ndarray) -> float:
     """Computes Shannon entropy of the context state."""
@@ -200,24 +202,29 @@ def compute_entropy(context_vector: np.ndarray) -> float:
     hist = hist[hist > 0]
     return -np.sum(hist * np.log2(hist + 1e-9))
 
+
 def tau_dot(t: float) -> float:
     """Calculates time dilation/flow rate (7th dimension)."""
     # 1.0 is normal flow. < 1.0 is dilation.
     return 1.0 + DELTA_DRIFT_MAX * np.sin(OMEGA_TIME * t)
+
 
 def eta_dot(eta: float, t: float) -> float:
     """Calculates entropy flow (8th dimension)."""
     # Ornstein-Uhlenbeck process drift
     return BETA * (ETA_TARGET - eta) + 0.1 * np.sin(t)
 
+
 def quantum_evolution(q0: complex, t: float, H: float = 1.0) -> complex:
     """Evolves the quantum state q(t) (9th dimension)."""
     # U(t) = e^(-iHt)
     return q0 * np.exp(-1j * H * t)
 
+
 # =============================================================================
 # GRAND UNIFIED GOVERNANCE LOGIC
 # =============================================================================
+
 
 def governance_9d(xi: np.ndarray, intent_val: float, poly_topology: Dict[str, int]) -> Tuple[str, str]:
     """
@@ -249,13 +256,13 @@ def governance_9d(xi: np.ndarray, intent_val: float, poly_topology: Dict[str, in
     h_d = 5.0
 
     # Euler Characteristic (Topology)
-    chi = poly_topology['V'] - poly_topology['E'] + poly_topology['F']
+    chi = poly_topology["V"] - poly_topology["E"] + poly_topology["F"]
 
     # Time Dynamics
     dot_tau = tau_dot(tau_val)
 
     # Quantum Fidelity & Entropy
-    f_q = 0.95 # Fidelity
+    f_q = 0.95  # Fidelity
     s_q = 0.1  # Von Neumann Entropy
 
     # --- The Equation G ---
@@ -298,9 +305,11 @@ def governance_9d(xi: np.ndarray, intent_val: float, poly_topology: Dict[str, in
 
     return decision, output
 
+
 # =============================================================================
 # DEMO EXECUTION
 # =============================================================================
+
 
 def demo():
     print("\n=== SCBE-AETHERMOORE SYSTEM STARTUP ===\n")
@@ -321,7 +330,7 @@ def demo():
     # 3. State Evolution (Time, Entropy, Quantum)
     tau_val = t
     eta_val = compute_entropy(c_vec)
-    q_val = quantum_evolution(1+0j, t)
+    q_val = quantum_evolution(1 + 0j, t)
 
     # 4. Construct 9D State Vector xi
     xi = np.append(c_vec, [tau_val, eta_val, q_val])
@@ -330,25 +339,26 @@ def demo():
     print(f"    Quantum (q): {q_val:.2f}")
 
     # 5. Geometric Validation (Write Check)
-    prev_fact = {'theta': 1.0, 'phi': 1.0}
-    new_fact = {'domain': 'KO_TONGUE', 'content': 'AUTH_REQUEST_001'}
+    prev_fact = {"theta": 1.0, "phi": 1.0}
+    new_fact = {"domain": "KO_TONGUE", "content": "AUTH_REQUEST_001"}
     write_result = mc.validate_write(prev_fact, new_fact)
 
-    if write_result['status'] == 'WRITE_SUCCESS':
-        distance_val = write_result['distance']
+    if write_result["status"] == "WRITE_SUCCESS":
+        distance_val = write_result["distance"]
     else:
-        distance_val = write_result['divergence']
+        distance_val = write_result["divergence"]
 
     print(f"[4] Manifold Write Validation: {write_result['status']} (d={distance_val:.4f})")
 
     # 6. Final Governance Decision
     # Simulating a closed polyhedral topology (e.g. Cube: V=8, E=12, F=6 -> 8-12+6 = 2)
-    poly = {'V': 8, 'E': 12, 'F': 6}
+    poly = {"V": 8, "E": 12, "F": 6}
 
     decision, output = governance_9d(xi, recovered_intent, poly)
     print(f"\n[5] GOVERNANCE DECISION: {decision}")
     print(f"    Reason: {output}")
     print("\n=== SYSTEM SHUTDOWN ===")
+
 
 if __name__ == "__main__":
     demo()

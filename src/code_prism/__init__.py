@@ -17,4 +17,3 @@ __all__ = [
     "TranslationArtifact",
     "load_interoperability_matrix",
 ]
-

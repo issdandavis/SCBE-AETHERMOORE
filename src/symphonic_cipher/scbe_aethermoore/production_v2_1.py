@@ -1500,7 +1500,7 @@ def simulate_byzantine_attack(
 
     if verbose:
         print(f"\n{'='*60}")
-        print(f"BYZANTINE ATTACK SIMULATION")
+        print("BYZANTINE ATTACK SIMULATION")
         print(f"{'='*60}")
         print(f"  Agents: {n_agents} ({n_honest} honest, {n_byzantine} Byzantine)")
         print(
@@ -1672,7 +1672,7 @@ def demo():
     intent = 0.75
     wave = phase_modulated_intent(intent)
     recovered = extract_phase(wave)
-    print(f"\n[2] Harmonic Cipher")
+    print("\n[2] Harmonic Cipher")
     print(f"    Intent: {intent} → Recovered: {recovered:.4f}")
 
     secret_key = os.urandom(KEY_LEN)
@@ -1686,13 +1686,13 @@ def demo():
     poly = Polyhedron(V=6, E=9, F=5)
     chi = poly.euler_characteristic()
     valid = phdm_validate(poly)
-    print(f"\n[3] PHDM Topology")
+    print("\n[3] PHDM Topology")
     print(f"    Euler characteristic: χ = {chi}")
     print(f"    Valid: {'✓' if valid else '✗'}")
 
     # Full governance pipeline
     result = governance_pipeline(state, intent, poly)
-    print(f"\n[4] Governance Pipeline (L1-L14)")
+    print("\n[4] Governance Pipeline (L1-L14)")
     print(f"    Hyperbolic state ||u|| = {np.linalg.norm(result.hyperbolic_state):.6f}")
     print(f"    d* (realm distance): {result.metrics['d_star']:.4f}")
     print(f"    C_spin: {result.metrics['C_spin']:.4f}")
@@ -1700,7 +1700,7 @@ def demo():
     print(f"    Risk_base: {result.risk_base:.4f}")
     print(f"    Risk' (amplified): {result.risk_amplified:.4f}")
     print(f"    Risk'' (final): {result.risk_final:.4f}")
-    print(f"\n[5] Grok Oracle")
+    print("\n[5] Grok Oracle")
     print(f"    Invoked: {result.grok_result.invoked}")
     print(f"    Truth score: {result.grok_result.truth_score:.4f}")
     print(f"    Reasoning: {result.grok_result.reasoning}")
@@ -1711,12 +1711,12 @@ def demo():
     # HMAC chain
     messages = ["cmd1", "cmd2", "cmd3"]
     chain_tag = hmac_chain(messages, secret_key)
-    print(f"\n[7] HMAC Chain")
+    print("\n[7] HMAC Chain")
     print(f"    Messages: {messages}")
     print(f"    Tag: {chain_tag[:32]}...")
 
     # Byzantine simulation
-    print(f"\n[8] Byzantine Attack Simulation")
+    print("\n[8] Byzantine Attack Simulation")
     simulate_byzantine_attack(50, 0.33, verbose=True)
 
     print("=" * 70)

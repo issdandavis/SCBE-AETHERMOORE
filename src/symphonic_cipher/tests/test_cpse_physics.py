@@ -236,7 +236,7 @@ def test_neural_energy():
     mean_train_energy = np.mean(train_energies)
     std_train_energy = np.std(train_energies)
 
-    print(f"\nTraining set energies:")
+    print("\nTraining set energies:")
     print(f"  Mean: {mean_train_energy:.4f}")
     print(f"  Std:  {std_train_energy:.4f}")
 

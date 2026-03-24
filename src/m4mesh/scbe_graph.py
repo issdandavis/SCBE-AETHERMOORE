@@ -55,4 +55,3 @@ def build_phdm_mesh_ops(device=None) -> MeshOps:
     a_norm = row_stochastic(a)
     l_norm = normalized_laplacian(a_norm)
     return MeshOps(A_norm=a_norm, L_norm=l_norm, N=16)
-

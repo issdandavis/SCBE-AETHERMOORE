@@ -91,9 +91,9 @@ class AgentSquad:
         descs = {
             TongueRole.KO: f"Orchestrate and synthesize: {text}",
             TongueRole.AV: f"Scout and discover URLs for: {text}",
-            TongueRole.RU: f"Check safety of discovered URLs",
-            TongueRole.CA: f"Extract content from approved URLs",
-            TongueRole.UM: f"Shadow observation (stealth mode)",
-            TongueRole.DR: f"Structure findings into summary",
+            TongueRole.RU: "Check safety of discovered URLs",
+            TongueRole.CA: "Extract content from approved URLs",
+            TongueRole.UM: "Shadow observation (stealth mode)",
+            TongueRole.DR: "Structure findings into summary",
         }
         return descs.get(role, text)

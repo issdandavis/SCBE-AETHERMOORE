@@ -30,19 +30,18 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
 
-
-
 # ---------------------------------------------------------------------------
 #  Product Categories (mapped to Sacred Tongues)
 # ---------------------------------------------------------------------------
 
+
 class ProductTongue(str, Enum):
-    KO = "KO"   # Authority Packs
-    AV = "AV"   # Transport Bundles
-    RU = "RU"   # Policy Scrolls
-    CA = "CA"   # Compute Crystals
-    UM = "UM"   # Shadow Keys
-    DR = "DR"   # Schema Tomes
+    KO = "KO"  # Authority Packs
+    AV = "AV"  # Transport Bundles
+    RU = "RU"  # Policy Scrolls
+    CA = "CA"  # Compute Crystals
+    UM = "UM"  # Shadow Keys
+    DR = "DR"  # Schema Tomes
 
 
 TONGUE_PRODUCT_NAMES: Dict[ProductTongue, str] = {
@@ -59,9 +58,11 @@ TONGUE_PRODUCT_NAMES: Dict[ProductTongue, str] = {
 #  Shop Product (what the game displays)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ShopProduct:
     """A product available in the in-game Shopify shop."""
+
     product_id: str
     name: str
     description: str
@@ -69,7 +70,7 @@ class ShopProduct:
     currency: str = "USD"
     tongue: ProductTongue = ProductTongue.CA
     image_url: str = ""
-    shopify_variant_id: str = ""      # Shopify GID for checkout
+    shopify_variant_id: str = ""  # Shopify GID for checkout
     in_game_effects: Dict[str, Any] = field(default_factory=dict)
 
     @property
@@ -82,9 +83,11 @@ class ShopProduct:
 #  Checkout Session
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CheckoutSession:
     """Tracks a Shopify checkout initiated from the game."""
+
     session_id: str
     product: ShopProduct
     checkout_url: str
@@ -169,6 +172,7 @@ MOCK_CATALOG: List[ShopProduct] = [
 #  Shopify Bridge
 # ---------------------------------------------------------------------------
 
+
 class ShopifyBridge:
     """
     Bridge between the in-game shop and Shopify Storefront API.
@@ -250,11 +254,13 @@ class ShopifyBridge:
 
     def _create_mock_checkout(self, product: ShopProduct, session_id: str) -> str:
         """Generate a mock checkout URL for testing."""
-        params = urlencode({
-            "product": product.product_id,
-            "session": session_id,
-            "price": product.price_cents,
-        })
+        params = urlencode(
+            {
+                "product": product.product_id,
+                "session": session_id,
+                "price": product.price_cents,
+            }
+        )
         return f"https://mock-shop.aethermoore.local/checkout?{params}"
 
     def _create_live_checkout(self, product: ShopProduct) -> str:

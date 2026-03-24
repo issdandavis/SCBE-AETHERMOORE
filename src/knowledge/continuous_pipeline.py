@@ -813,7 +813,7 @@ def run_cycle(
 
     # HYDRA research phase — use HYDRA CLI for deeper research
     if request_count < MAX_REQUESTS_PER_CYCLE:
-        print(f"\n  --- HYDRA Research Phase ---")
+        print("\n  --- HYDRA Research Phase ---")
         for topic in HYDRA_RESEARCH_TOPICS:
             if request_count >= MAX_REQUESTS_PER_CYCLE:
                 break
@@ -885,7 +885,7 @@ def run_cycle(
     }
 
     print(f"\n{'=' * 60}")
-    print(f"CYCLE COMPLETE")
+    print("CYCLE COMPLETE")
     print(f"  Requests this cycle: {request_count}")
     print(f"  New chunks allowed:  {len(all_allowed)}")
     print(f"  Total ever scraped:  {dedup.total_scraped()}")

@@ -213,7 +213,9 @@ def compute_agent_decision(
     abs_state = [abs(x) for x in _vec6(state.tongue_state, name="tongue_state")]
     denom = max(1e-9, sum(weights))
     activation = sum(w * x for w, x in zip(weights, abs_state)) / denom
-    risk_input = (1.4 * activation) + (1.2 * float(state.drift)) + (1.1 * float(state.conflict)) - (1.5 * float(state.coherence))
+    risk_input = (
+        (1.4 * activation) + (1.2 * float(state.drift)) + (1.1 * float(state.conflict)) - (1.5 * float(state.coherence))
+    )
     risk = _sigmoid(risk_input)
 
     reasons: List[str] = []
@@ -221,7 +223,11 @@ def compute_agent_decision(
     if float(state.conflict) > 0.75 or float(state.drift) > 0.80:
         decision = "DENY"
         reasons.append("hard_gate_conflict_or_drift")
-    elif float(state.conflict) > 0.45 or float(state.drift) > cfg.sync_drift_max or float(state.coherence) < cfg.sync_coherence_min:
+    elif (
+        float(state.conflict) > 0.45
+        or float(state.drift) > cfg.sync_drift_max
+        or float(state.coherence) < cfg.sync_coherence_min
+    ):
         decision = "QUARANTINE"
         reasons.append("sync_guard_violated")
     elif risk >= cfg.risk_deny:
@@ -344,4 +350,3 @@ __all__ = [
     "verify_ledger",
     "run_hybrid_tick",
 ]
-

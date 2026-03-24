@@ -42,7 +42,6 @@ class CausalityViolation(Exception):
     """Raised when a transform violates the causality axiom."""
 
 
-
 class RiskLevel(Enum):
     """Risk levels for governance decisions."""
 
@@ -102,9 +101,7 @@ class TemporalState:
         return [(t, s) for t, s in self.history if t >= cutoff]
 
 
-def causality_check(
-    require_time_param: bool = True, allow_acausal: bool = False
-) -> Callable[[F], F]:
+def causality_check(require_time_param: bool = True, allow_acausal: bool = False) -> Callable[[F], F]:
     """
     Decorator that verifies a transform respects causality.
 
@@ -151,10 +148,7 @@ def causality_check(
                 if current_time < last_time["value"]:
                     if explicit_time:
                         # Explicit rewinds are treated as a new sequence origin.
-                        message = (
-                            f"Time sequence reset: {current_time:.4f} < "
-                            f"{last_time['value']:.4f}"
-                        )
+                        message = f"Time sequence reset: {current_time:.4f} < " f"{last_time['value']:.4f}"
                     else:
                         time_ordering_preserved = False
                         message = f"Time went backwards: {current_time:.4f} < {last_time['value']:.4f}"
@@ -162,10 +156,7 @@ def causality_check(
                             future_dependency = True
                     if strict_time_order:
                         time_ordering_preserved = False
-                        message = (
-                            f"Time went backwards: {current_time:.4f} < "
-                            f"{last_time['value']:.4f}"
-                        )
+                        message = f"Time went backwards: {current_time:.4f} < " f"{last_time['value']:.4f}"
                         if not allow_acausal:
                             future_dependency = True
                     else:
@@ -205,14 +196,14 @@ def causality_check(
         return wrapper
 
     return decorator
+
+
 # ============================================================================
 # Layer 6: Breathing Transform
 # ============================================================================
 
 
-def breathing_factor(
-    t: float, b_max: float = B_BREATH_MAX, omega: float = OMEGA_BREATH
-) -> float:
+def breathing_factor(t: float, b_max: float = B_BREATH_MAX, omega: float = OMEGA_BREATH) -> float:
     """
     Compute the breathing factor at time t.
 
@@ -339,6 +330,8 @@ def quantum_fidelity(q1: complex, q2: complex) -> float:
         return raw_fidelity
 
     return float(min(1.0, max(0.0, raw_fidelity)))
+
+
 def hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
     """
     Compute hyperbolic distance in the Poincaré ball.
@@ -573,9 +566,7 @@ class CausalPipeline:
         self.execution_log.append((self.temporal_state.t, "layer_6", result.copy()))
         return result
 
-    def execute_layer_11(
-        self, u: np.ndarray, ref_u: np.ndarray, q: complex, ref_q: complex
-    ) -> float:
+    def execute_layer_11(self, u: np.ndarray, ref_u: np.ndarray, q: complex, ref_q: complex) -> float:
         """Execute triadic distance with temporal state."""
         result = layer_11_triadic_distance(
             u=u,
@@ -590,13 +581,9 @@ class CausalPipeline:
         self.execution_log.append((self.temporal_state.t, "layer_11", result))
         return result
 
-    def execute_layer_13(
-        self, d_star: float, coherence: float, realm_index: int
-    ) -> RiskAssessment:
+    def execute_layer_13(self, d_star: float, coherence: float, realm_index: int) -> RiskAssessment:
         """Execute decision layer."""
-        result = layer_13_decision(
-            d_star=d_star, coherence=coherence, realm_index=realm_index
-        )
+        result = layer_13_decision(d_star=d_star, coherence=coherence, realm_index=realm_index)
         self.execution_log.append((self.temporal_state.t, "layer_13", result))
         return result
 
@@ -623,9 +610,7 @@ class CausalPipeline:
 # ============================================================================
 
 
-def verify_layer_causality(
-    layer_func: Callable, n_tests: int = 100, verbose: bool = False
-) -> Tuple[bool, dict]:
+def verify_layer_causality(layer_func: Callable, n_tests: int = 100, verbose: bool = False) -> Tuple[bool, dict]:
     """
     Verify that a layer respects causality over multiple invocations.
 
@@ -703,6 +688,8 @@ def verify_layer_causality(
         "violations": violations,
         "violation_rate": violations / n_tests,
     }
+
+
 # ============================================================================
 # Axiom Layer Registry
 # ============================================================================
@@ -742,7 +729,3 @@ def get_causality_layer(layer_num: int) -> dict:
 def list_causality_layers() -> list:
     """List all layers satisfying the causality axiom."""
     return list(CAUSALITY_LAYERS.keys())
-
-
-
-

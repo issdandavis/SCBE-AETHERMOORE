@@ -27,16 +27,19 @@ from .unified_state import PHI, BRAIN_EPSILON
 # Types
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class DualTernaryState:
     """A single dual ternary state: primary x mirror in {-1, 0, 1}^2."""
+
     primary: int  # {-1, 0, 1}
-    mirror: int   # {-1, 0, 1}
+    mirror: int  # {-1, 0, 1}
 
 
 @dataclass
 class StateEnergy:
     """Energy properties of a dual ternary state."""
+
     energy: float
     primary_energy: float
     mirror_energy: float
@@ -47,6 +50,7 @@ class StateEnergy:
 @dataclass
 class DualTernarySpectrum:
     """Spectral signature of a dual ternary sequence."""
+
     primary_magnitudes: List[float]
     mirror_magnitudes: List[float]
     cross_correlation: List[float]
@@ -58,6 +62,7 @@ class DualTernarySpectrum:
 @dataclass
 class FractalDimensionResult:
     """Fractal dimension estimate for dual ternary state sequences."""
+
     base_dimension: float
     sign_entropy: float
     hausdorff_dimension: float
@@ -68,6 +73,7 @@ class FractalDimensionResult:
 @dataclass
 class DualTernaryConfig:
     """Configuration for the Dual Ternary system."""
+
     min_sequence_length: int = 8
     phase_anomaly_threshold: float = 0.7
     fractal_deviation_threshold: float = 0.5
@@ -98,6 +104,7 @@ FULL_STATE_SPACE: List[DualTernaryState] = [
 # ---------------------------------------------------------------------------
 # State Energy & Phase Classification
 # ---------------------------------------------------------------------------
+
 
 def compute_state_energy(state: DualTernaryState) -> StateEnergy:
     """Compute the energy E(p, m) = p^2 + m^2 + p*m."""
@@ -142,6 +149,7 @@ def state_from_index(index: int) -> DualTernaryState:
 # State Transitions
 # ---------------------------------------------------------------------------
 
+
 def _clip(value: int) -> int:
     """Clip a value to ternary set {-1, 0, 1}."""
     if value >= 1:
@@ -163,6 +171,7 @@ def transition(current: DualTernaryState, delta_p: int, delta_m: int) -> DualTer
 # Encoding: Continuous -> Dual Ternary
 # ---------------------------------------------------------------------------
 
+
 def _quantize(value: float, threshold: float) -> int:
     """Quantize continuous value to ternary."""
     if value > threshold:
@@ -172,9 +181,7 @@ def _quantize(value: float, threshold: float) -> int:
     return 0
 
 
-def encode_to_dual_ternary(
-    amplitude: float, phase: float, threshold: float = 0.33
-) -> DualTernaryState:
+def encode_to_dual_ternary(amplitude: float, phase: float, threshold: float = 0.33) -> DualTernaryState:
     """Encode continuous values into a dual ternary state."""
     return DualTernaryState(
         primary=_quantize(amplitude, threshold),
@@ -197,6 +204,7 @@ def encode_sequence(values: List[float], threshold: float = 0.33) -> List[DualTe
 # ---------------------------------------------------------------------------
 # DFT (Discrete Fourier Transform)
 # ---------------------------------------------------------------------------
+
 
 def _simple_dft(signal: List[float]) -> List[Tuple[float, float]]:
     """Simple DFT returning list of (re, im) pairs."""
@@ -223,6 +231,7 @@ def _next_pow2(n: int) -> int:
 # ---------------------------------------------------------------------------
 # Spectral Analysis
 # ---------------------------------------------------------------------------
+
 
 def _compute_phase_anomaly(sequence: List[DualTernaryState]) -> float:
     """Detect phase anomalies from sign distribution bias via Shannon entropy."""
@@ -273,19 +282,14 @@ def compute_spectrum(
 
     primary_mag = [math.sqrt(re * re + im * im) for re, im in primary_dft]
     mirror_mag = [math.sqrt(re * re + im * im) for re, im in mirror_dft]
-    cross = [
-        primary_dft[i][0] * mirror_dft[i][0] + primary_dft[i][1] * mirror_dft[i][1]
-        for i in range(n)
-    ]
+    cross = [primary_dft[i][0] * mirror_dft[i][0] + primary_dft[i][1] * mirror_dft[i][1] for i in range(n)]
 
     # 9-fold symmetry energy
     histogram = [0] * 9
     for s in sequence:
         histogram[state_index(s)] += 1
     ideal = len(sequence) / 9.0
-    chi_squared = sum(
-        (c - ideal) ** 2 / max(ideal, BRAIN_EPSILON) for c in histogram
-    )
+    chi_squared = sum((c - ideal) ** 2 / max(ideal, BRAIN_EPSILON) for c in histogram)
     ninefold_energy = 1.0 - 1.0 / (1.0 + chi_squared / len(sequence))
 
     # Spectral coherence
@@ -311,9 +315,8 @@ def compute_spectrum(
 # Fractal Dimension
 # ---------------------------------------------------------------------------
 
-def _compute_sign_entropy(
-    sequence: List[DualTernaryState], config: DualTernaryConfig
-) -> float:
+
+def _compute_sign_entropy(sequence: List[DualTernaryState], config: DualTernaryConfig) -> float:
     """Sign entropy contribution to fractal dimension."""
     sign_patterns = [0] * 9
     for s in sequence:
@@ -352,9 +355,7 @@ def _compute_symmetry_breaking(sequence: List[DualTernaryState]) -> float:
     return min(1.0, divergence / math.log(2))
 
 
-def _compute_self_similarity(
-    sequence: List[DualTernaryState], config: DualTernaryConfig
-) -> float:
+def _compute_self_similarity(sequence: List[DualTernaryState], config: DualTernaryConfig) -> float:
     """Self-similarity across scales via energy comparison."""
     max_depth = min(config.mirror_depth, int(math.log2(len(sequence))) if len(sequence) > 1 else 0)
     if max_depth < 2:
@@ -425,6 +426,7 @@ def estimate_fractal_dimension(
 # Dual Ternary System
 # ---------------------------------------------------------------------------
 
+
 class DualTernarySystem:
     """Dual Ternary Encoding System with full negative state flux.
 
@@ -464,9 +466,7 @@ class DualTernarySystem:
 
         threat_score = min(
             1.0,
-            spectrum.phase_anomaly * 0.4
-            + spectrum.ninefold_energy * 0.3
-            + (fractal_deviation / 2.0) * 0.3,
+            spectrum.phase_anomaly * 0.4 + spectrum.ninefold_energy * 0.3 + (fractal_deviation / 2.0) * 0.3,
         )
 
         return {

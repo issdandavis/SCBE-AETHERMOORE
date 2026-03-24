@@ -635,7 +635,7 @@ def self_test() -> Dict[str, Any]:
             passed += 1
             results["pressure_states"] = "✓ PASS (all state thresholds correct)"
         else:
-            results["pressure_states"] = f"✗ FAIL (state threshold mismatch)"
+            results["pressure_states"] = "✗ FAIL (state threshold mismatch)"
     except Exception as e:
         results["pressure_states"] = f"✗ FAIL ({e})"
 
@@ -658,7 +658,7 @@ def self_test() -> Dict[str, Any]:
 
         if result_high.stiffness > result_low.stiffness:
             passed += 1
-            results["layer13_integration"] = f"✓ PASS (risk→pressure→stiffness)"
+            results["layer13_integration"] = "✓ PASS (risk→pressure→stiffness)"
         else:
             results["layer13_integration"] = "✗ FAIL (integration failed)"
     except Exception as e:
@@ -744,7 +744,7 @@ if __name__ == "__main__":
     # Anti-fragile summary
     print("\n" + "-" * 70)
     analysis = verify_antifragile(engine, intent)
-    print(f"ANTI-FRAGILE ANALYSIS:")
+    print("ANTI-FRAGILE ANALYSIS:")
     print(f"  Calm energy:    {analysis.calm_energy:.2f}")
     print(f"  Stress energy:  {analysis.stress_energy:.2f}")
     print(f"  Expansion:      {analysis.expansion_ratio:.2f}x")

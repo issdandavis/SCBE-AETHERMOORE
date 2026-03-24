@@ -380,7 +380,7 @@ def test_harmonic_modes() -> Dict[str, Any]:
         try:
             H_u = harmonic_scaling_unbounded(d)
             overflow = np.isinf(H_u) or np.isnan(H_u)
-        except:
+        except (OverflowError, ValueError, FloatingPointError):
             H_u = float("inf")
             overflow = True
 

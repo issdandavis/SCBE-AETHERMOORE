@@ -72,7 +72,7 @@ Usage:
 from __future__ import annotations
 
 from enum import Enum
-from typing import Dict, List, Callable, Any, Optional
+from typing import Dict, List, Callable, Optional
 from dataclasses import dataclass
 
 # Import axiom modules
