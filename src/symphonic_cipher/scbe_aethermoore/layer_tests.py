@@ -91,7 +91,6 @@ from .production_v2_1 import (
     simulate_byzantine_attack,
 )
 
-
 # =============================================================================
 # DECIMAL TRACKING
 # =============================================================================
@@ -110,9 +109,7 @@ class DecimalTracker:
 
     def compute_metrics(self):
         """Compute precision and drift metrics."""
-        if isinstance(self.input_val, (int, float)) and isinstance(
-            self.output_val, (int, float)
-        ):
+        if isinstance(self.input_val, (int, float)) and isinstance(self.output_val, (int, float)):
             if self.input_val != 0:
                 self.drift = abs(self.output_val - self.input_val) / abs(self.input_val)
             # Count matching decimal places
@@ -125,9 +122,7 @@ class DecimalTracker:
                 else:
                     break
             self.decimals_preserved = match_count
-        elif isinstance(self.input_val, np.ndarray) and isinstance(
-            self.output_val, np.ndarray
-        ):
+        elif isinstance(self.input_val, np.ndarray) and isinstance(self.output_val, np.ndarray):
             in_norm = np.linalg.norm(self.input_val)
             out_norm = np.linalg.norm(self.output_val)
             if in_norm > 0:
@@ -277,9 +272,7 @@ def test_L3_spd_weighting() -> List[LayerTestResult]:
             output_summary=f"x_G={x_G2[:3]}...",
             expected=f"x_G[0]={expected[0]:.6f}",
             actual=f"x_G[0]={x_G2[0]:.6f}",
-            drift_metrics={
-                "weight_ratio": float(x_G2[-1] / x_G2[0]) if x_G2[0] > 0 else 0
-            },
+            drift_metrics={"weight_ratio": float(x_G2[-1] / x_G2[0]) if x_G2[0] > 0 else 0},
         )
     )
 
@@ -690,9 +683,7 @@ def test_L5_hyperbolic_distance() -> List[LayerTestResult]:
     u1 = np.array([0.5, 0, 0, 0, 0, 0])
     origin = np.zeros(6)
     d1 = hyperbolic_distance(u1, origin)
-    expected_d1 = np.arccosh(
-        1 + 2 * 0.25 / (1 - 0.25)
-    )  # arcosh(1 + 2*||u||^2/(1-||u||^2))
+    expected_d1 = np.arccosh(1 + 2 * 0.25 / (1 - 0.25))  # arcosh(1 + 2*||u||^2/(1-||u||^2))
     passed = abs(d1 - expected_d1) < 1e-10
     results.append(
         LayerTestResult(
@@ -1343,9 +1334,7 @@ def test_L14_audio_coherence() -> List[LayerTestResult]:
 
     # Test 2: Amplitude modulated → lower coherence
     t = np.linspace(0, DURATION, int(SAMPLE_RATE * DURATION))
-    am_signal = np.cos(2 * np.pi * CARRIER_FREQ * t) * (
-        1 + 0.5 * np.cos(2 * np.pi * 10 * t)
-    )
+    am_signal = np.cos(2 * np.pi * CARRIER_FREQ * t) * (1 + 0.5 * np.cos(2 * np.pi * 10 * t))
     s_audio2 = audio_envelope_coherence(am_signal)
     passed = s_audio2 < s_audio1  # AM has less stable envelope
     results.append(
@@ -1735,16 +1724,12 @@ def run_all_tests(verbose: bool = True) -> TestSuiteResult:
                 print(f"      In:  {r.input_summary}")
                 print(f"      Out: {r.output_summary}")
                 if r.drift_metrics:
-                    metrics_str = ", ".join(
-                        f"{k}={v:.6g}" for k, v in r.drift_metrics.items()
-                    )
+                    metrics_str = ", ".join(f"{k}={v:.6g}" for k, v in r.drift_metrics.items())
                     print(f"      Drift: {metrics_str}")
 
     if verbose:
         print("\n" + "=" * 80)
-        print(
-            f"TOTAL: {suite.passed}/{suite.total} passed ({100*suite.passed/suite.total:.1f}%)"
-        )
+        print(f"TOTAL: {suite.passed}/{suite.total} passed ({100*suite.passed/suite.total:.1f}%)")
         if suite.failed > 0:
             print(f"FAILED: {suite.failed} tests")
         print("=" * 80)
@@ -1774,12 +1759,8 @@ def run_drift_analysis(verbose: bool = True) -> Dict[str, Dict[str, float]]:
 
         if verbose:
             print(f"\n{layer}:")
-            print(
-                f"  Range: [{analysis[layer]['min']:.6g}, {analysis[layer]['max']:.6g}]"
-            )
-            print(
-                f"  Mean ± Std: {analysis[layer]['mean']:.6g} ± {analysis[layer]['std']:.6g}"
-            )
+            print(f"  Range: [{analysis[layer]['min']:.6g}, {analysis[layer]['max']:.6g}]")
+            print(f"  Mean ± Std: {analysis[layer]['mean']:.6g} ± {analysis[layer]['std']:.6g}")
             print(f"  Spread: {analysis[layer]['range']:.6g}")
 
     if verbose:

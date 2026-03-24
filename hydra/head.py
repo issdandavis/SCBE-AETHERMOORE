@@ -77,7 +77,7 @@ class HydraHead:
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     # Runtime state (set after connection)
-    _spine: 'HydraSpine' = field(default=None, repr=False)
+    _spine: 'HydraSpine' = field(default=None, repr=False)  # noqa: F821
     _polly_pad: Optional[Dict] = field(default=None, repr=False)
     _provider: Optional[LLMProvider] = field(default=None, repr=False)
 
@@ -221,7 +221,7 @@ class HydraHead:
 
         return actions
 
-    async def connect(self, spine: 'HydraSpine') -> bool:
+    async def connect(self, spine: 'HydraSpine') -> bool:  # noqa: F821
         """
         Connect this head to a HYDRA Spine.
 

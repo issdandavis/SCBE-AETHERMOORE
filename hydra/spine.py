@@ -102,8 +102,8 @@ class HydraSpine:
         self.scbe_url = scbe_url
 
         # Connected components
-        self.heads: Dict[str, 'HydraHead'] = {}
-        self.limbs: Dict[str, 'HydraLimb'] = {}
+        self.heads: Dict[str, 'HydraHead'] = {}  # noqa: F821
+        self.limbs: Dict[str, 'HydraLimb'] = {}  # noqa: F821
 
         # Active workflows
         self.workflows: Dict[str, Workflow] = {}
@@ -780,7 +780,7 @@ class HydraSpine:
     # Head/Limb Management
     # =========================================================================
 
-    def connect_head(self, head: 'HydraHead') -> str:
+    def connect_head(self, head: 'HydraHead') -> str:  # noqa: F821
         """Connect an AI head to the spine."""
         self.heads[head.head_id] = head
         self.message_queues[head.head_id] = asyncio.Queue()
@@ -824,7 +824,7 @@ class HydraSpine:
 
             print(f"[SPINE] Head disconnected: {head_id}")
 
-    def connect_limb(self, limb: 'HydraLimb') -> str:
+    def connect_limb(self, limb: 'HydraLimb') -> str:  # noqa: F821
         """Connect an execution limb."""
         self.limbs[limb.limb_id] = limb
         self.ledger.register_limb(limb.limb_id, limb.limb_type, getattr(limb, 'tab_id', None))
