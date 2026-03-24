@@ -334,7 +334,7 @@ class TestEntropicEscapeVelocity:
         """System with k < k_min should eventually be breached."""
         # Use a much smaller keyspace and shorter time for testability
         n0_small = 2**32  # Small enough to breach
-        k = 0.0  # No expansion (static keyspace)
+        # k = 0.0: No expansion (static keyspace)
 
         # With static keyspace, quantum search should find it
         time_1y = 1 * SECONDS_PER_YEAR
@@ -457,11 +457,9 @@ class TestThreeSystemBreachSimulation:
         iterations = 1000  # Reduced for faster tests
         time_horizon = 100 * SECONDS_PER_YEAR
 
-        results = {"S1": 0, "S2": 0, "S3": 0}
-
         for _ in range(iterations):
             # Simulate random attack timing within the horizon
-            attack_time = random.uniform(0, time_horizon)
+            random.uniform(0, time_horizon)
 
             # S1: Classical (never breached for 256-bit)
             # S2: Quantum (use smaller keyspace for testability)

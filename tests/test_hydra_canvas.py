@@ -85,7 +85,7 @@ class TestCanvasOrchestrator:
     def test_multi_provider_execution(self):
         steps = recipe_article("test")
         orch = CanvasOrchestrator(available_providers=["claude", "gpt", "gemini", "grok"])
-        canvas = orch.execute_recipe(steps, topic="test")
+        orch.execute_recipe(steps, topic="test")
         summary = orch.summary()
         assert summary["completed"] == summary["total_steps"]
         # Should use multiple colors

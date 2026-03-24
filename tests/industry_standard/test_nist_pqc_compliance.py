@@ -543,21 +543,21 @@ class TestImplementationSecurity:
         b = b"\x00" * 32
 
         start = time.perf_counter()
-        result1 = pqc_core.constant_time_compare(a, b)
+        pqc_core.constant_time_compare(a, b)
         time1 = time.perf_counter() - start
 
         # Test with non-matching strings (first byte different)
         c = b"\x01" + b"\x00" * 31
 
         start = time.perf_counter()
-        result2 = pqc_core.constant_time_compare(a, c)
+        pqc_core.constant_time_compare(a, c)
         time2 = time.perf_counter() - start
 
         # Test with non-matching strings (last byte different)
         d = b"\x00" * 31 + b"\x01"
 
         start = time.perf_counter()
-        result3 = pqc_core.constant_time_compare(a, d)
+        pqc_core.constant_time_compare(a, d)
         time3 = time.perf_counter() - start
 
         # Times should be similar (within 10% tolerance)

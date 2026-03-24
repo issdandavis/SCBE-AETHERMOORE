@@ -372,7 +372,7 @@ class TestConsensusAttackResistance:
         consensus = DualLatticeConsensus(n_nodes=10)
 
         # Attacker controls 6/10 nodes (60%)
-        attacker_nodes = [f"attacker_{i}" for i in range(6)]
+        # Attacker controls 6/10 nodes (60%)
 
         # Attacker tries to force malicious value
         proposals = {}
@@ -444,7 +444,7 @@ class TestConsensusPerformance:
         proposals = {f"node_{i}": f"value_{i % 3}" for i in range(10)}
 
         start_time = time.time()
-        decisions = consensus.reach_consensus(proposals)
+        consensus.reach_consensus(proposals)
         latency = time.time() - start_time
 
         assert latency < 1.0, f"Consensus latency {latency:.3f}s exceeds 1.0s target"
@@ -474,7 +474,7 @@ class TestConsensusPerformance:
 
         for round_num in range(n_rounds):
             proposals = {f"node_{i}": f"value_{round_num}_{i}" for i in range(7)}
-            decisions = consensus.reach_consensus(proposals)
+            consensus.reach_consensus(proposals)
 
         elapsed = time.time() - start_time
         throughput = n_rounds / elapsed

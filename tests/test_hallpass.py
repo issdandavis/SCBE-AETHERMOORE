@@ -673,7 +673,7 @@ class TestHallPassDispatcher:
 
     def test_dispatch_task_payload_has_hallpass_metadata(self, tmp_switchboard, sample_hallpass):
         dispatcher = HallPassDispatcher(switchboard=tmp_switchboard)
-        result = dispatcher.dispatch(sample_hallpass)
+        dispatcher.dispatch(sample_hallpass)
         # Claim the first task and inspect its payload
         claimed = tmp_switchboard.claim_task("test-worker", ["skill", "agent", "workflow", "tool", "defense"])
         assert claimed is not None

@@ -737,7 +737,7 @@ class TestMedicalAICommunication:
 
         # Different data types should have different AAD
         diag_sealed = channel.send_phi(b"diag", MedicalDataType.DIAGNOSTIC, "PAT-001")
-        treat_sealed = channel.send_phi(b"treat", MedicalDataType.TREATMENT, "PAT-001")
+        channel.send_phi(b"treat", MedicalDataType.TREATMENT, "PAT-001")
 
         # Cross-type access should fail
         with pytest.raises(ValueError):
@@ -1911,7 +1911,7 @@ class TestComplianceAudit:
 
         # Different data types should be isolated
         diag = channel.send_phi(b"diagnostic", MedicalDataType.DIAGNOSTIC, "PAT-001")
-        treat = channel.send_phi(b"treatment", MedicalDataType.TREATMENT, "PAT-001")
+        channel.send_phi(b"treatment", MedicalDataType.TREATMENT, "PAT-001")
 
         # Cross-type access should fail
         with pytest.raises(ValueError):
@@ -2167,12 +2167,12 @@ class TestAItoAIMultiAgent:
         sealed1 = imaging_ai.send_phi(scan_data, MedicalDataType.DIAGNOSTIC, patient_id)
 
         # Step 2: Analysis AI receives and processes
-        received1 = imaging_ai.receive_phi(sealed1, MedicalDataType.DIAGNOSTIC, patient_id)
+        imaging_ai.receive_phi(sealed1, MedicalDataType.DIAGNOSTIC, patient_id)
         analysis_result = b'{"findings": "nodule_detected", "size_mm": 8, "location": "RUL"}'
         sealed2 = analysis_ai.send_phi(analysis_result, MedicalDataType.DIAGNOSTIC, patient_id)
 
         # Step 3: Diagnosis AI receives and diagnoses
-        received2 = analysis_ai.receive_phi(sealed2, MedicalDataType.DIAGNOSTIC, patient_id)
+        analysis_ai.receive_phi(sealed2, MedicalDataType.DIAGNOSTIC, patient_id)
         diagnosis = b'{"diagnosis": "suspicious_nodule", "recommendation": "biopsy"}'
         sealed3 = diagnosis_ai.send_phi(diagnosis, MedicalDataType.DIAGNOSTIC, patient_id)
 
@@ -2279,7 +2279,7 @@ class TestAItoAIMultiAgent:
         sealed1 = primary.send_phi(case, MedicalDataType.DIAGNOSTIC, patient_id)
 
         # Second opinion AI receives
-        received = primary.receive_phi(sealed1, MedicalDataType.DIAGNOSTIC, patient_id)
+        primary.receive_phi(sealed1, MedicalDataType.DIAGNOSTIC, patient_id)
 
         # Second opinion responds
         opinion = b'{"concur": true, "confidence": 0.91, "notes": "Agree with staging"}'

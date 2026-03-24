@@ -222,7 +222,7 @@ class TestDispersalFusionIntegration:
         cone_count = 0
         for g in geos:
             route = dispersal_route(g["tongue_coords"], centroid)
-            radius = float(np.linalg.norm(g["coord_3d"]))
+            float(np.linalg.norm(g["coord_3d"]))
             if route["zone"] == "hemisphere":
                 hemisphere_count += 1
             else:

@@ -241,7 +241,7 @@ class TestTaskMonitorSessions:
         from src.aaoe.task_monitor import TaskMonitor
         monitor = TaskMonitor()
         s1 = monitor.start_session("a1", "Task 1")
-        s2 = monitor.start_session("a2", "Task 2")
+        monitor.start_session("a2", "Task 2")
         assert len(monitor.active_sessions()) == 2
         monitor.end_session(s1.session_id)
         assert len(monitor.active_sessions()) == 1
@@ -597,7 +597,7 @@ class TestAAOEIntegration:
             target="https://arxiv.org/list/quant-ph",
             description="browsing quantum physics papers",
         )
-        result1 = monitor.observe(session.session_id, obs1)
+        monitor.observe(session.session_id, obs1)
 
         # 4. Agent starts drifting
         obs2 = ActionObservation(
