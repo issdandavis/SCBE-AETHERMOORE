@@ -366,7 +366,7 @@ export class AuditLedger {
       const recomputed = PQCrypto.hash(concatBytes(expected_prev, evt.event_data));
       if (!bytesEqual(recomputed, evt.event_hash)) return false;
       if (!PQCrypto.verify(signerPublicKey, evt.event_hash, evt.signature)) return false;
-      expected_prev = evt.event_hash;
+      expected_prev = new Uint8Array(evt.event_hash);
     }
     return true;
   }
