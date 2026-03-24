@@ -560,7 +560,8 @@ class TestSecureStorage:
     def test_delete(self, storage):
         """Data should be deletable."""
         storage.store("delete_me", b"temporary")
-        assert storage.delete("delete_me")
+        deleted = storage.delete("delete_me")
+        assert deleted
         assert storage.retrieve("delete_me") is None
 
 
