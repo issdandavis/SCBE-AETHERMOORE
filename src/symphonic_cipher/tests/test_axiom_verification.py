@@ -264,10 +264,7 @@ def verify_audio_robustness() -> Tuple[bool, Dict[str, Any]]:
     bounds_ok = all(0 <= s <= 1 for s in [s_low, s_high, s_mixed])
 
     # 2. S_audio = 1 - r_HF (by definition)
-    definition_ok = all(
-        abs((1 - r) - s) < 1e-10
-        for s, r in [(s_low, r_low), (s_high, r_high), (s_mixed, r_mixed)]
-    )
+    definition_ok = all(abs((1 - r) - s) < 1e-10 for s, r in [(s_low, r_low), (s_high, r_high), (s_mixed, r_mixed)])
 
     # 3. Higher r_HF → lower S_audio (monotonic in r_HF)
     monotonic_ok = (r_high > r_low) == (s_high < s_low)
@@ -339,9 +336,7 @@ def verify_adaptive_realm_convergence() -> Tuple[bool, Dict[str, Any]]:
     Returns (passed, details)
     """
 
-    def adaptive_realm_update(
-        mu: np.ndarray, u: np.ndarray, alpha: float = 0.1
-    ) -> np.ndarray:
+    def adaptive_realm_update(mu: np.ndarray, u: np.ndarray, alpha: float = 0.1) -> np.ndarray:
         """Update realm center toward observed point."""
         diff = u - mu
         norm_diff = np.linalg.norm(diff) + 1e-9

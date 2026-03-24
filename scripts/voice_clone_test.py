@@ -46,11 +46,11 @@ def load_hf_token() -> str:
 def convert_m4a_to_wav(m4a_path: Path, wav_path: Path) -> bool:
     """Convert M4A to WAV using ffmpeg."""
     try:
-        subprocess.run([
-            "ffmpeg", "-y", "-i", str(m4a_path),
-            "-acodec", "pcm_s16le", "-ar", "24000", "-ac", "1",
-            str(wav_path)
-        ], capture_output=True, check=True)
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", str(m4a_path), "-acodec", "pcm_s16le", "-ar", "24000", "-ac", "1", str(wav_path)],
+            capture_output=True,
+            check=True,
+        )
         return True
     except Exception as e:
         print(f"  FFmpeg error: {e}")
@@ -85,12 +85,23 @@ def generate_kokoro_baseline(text: str, output_path: Path) -> bool:
 def analyze_voice(wav_path: Path) -> dict:
     """Basic voice analysis using ffprobe."""
     try:
-        result = subprocess.run([
-            "ffprobe", "-v", "quiet",
-            "-show_entries", "format=duration,size,bit_rate",
-            "-show_entries", "stream=codec_name,sample_rate,channels",
-            "-of", "json", str(wav_path)
-        ], capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            [
+                "ffprobe",
+                "-v",
+                "quiet",
+                "-show_entries",
+                "format=duration,size,bit_rate",
+                "-show_entries",
+                "stream=codec_name,sample_rate,channels",
+                "-of",
+                "json",
+                str(wav_path),
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
         data = json.loads(result.stdout)
         return {
             "duration": float(data.get("format", {}).get("duration", 0)),
@@ -123,7 +134,7 @@ def attempt_hf_voice_clone(reference_wav: Path, text: str, output_path: Path, hf
                 "inputs": text,
                 "parameters": {
                     "language": "en",
-                }
+                },
             },
             timeout=120,
         )
@@ -145,14 +156,19 @@ def get_test_text() -> str:
     if ch1.exists():
         text = ch1.read_text(encoding="utf-8")
         # Get first meaningful paragraph (skip markdown headers)
-        paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()
-                      and not p.strip().startswith("#") and len(p.strip()) > 100]
+        paragraphs = [
+            p.strip()
+            for p in text.split("\n\n")
+            if p.strip() and not p.strip().startswith("#") and len(p.strip()) > 100
+        ]
         if paragraphs:
             return paragraphs[0][:500]
-    return ("The Six Tongues Protocol was not a language you spoke. "
-            "It was a language that spoke you. Marcus Chen learned this "
-            "the hard way, standing at the edge of the Resonance Chamber "
-            "with nothing but a borrowed key and a raven who wouldn't stop talking.")
+    return (
+        "The Six Tongues Protocol was not a language you spoke. "
+        "It was a language that spoke you. Marcus Chen learned this "
+        "the hard way, standing at the edge of the Resonance Chamber "
+        "with nothing but a borrowed key and a raven who wouldn't stop talking."
+    )
 
 
 def main():
@@ -163,7 +179,7 @@ def main():
     hf_token = load_hf_token()
     test_text = get_test_text()
     print(f"\nTest text ({len(test_text)} chars):")
-    print(f"  \"{test_text[:150]}...\"")
+    print(f'  "{test_text[:150]}..."')
 
     # ============================================================
     # STEP 1: Convert reference audio
@@ -181,8 +197,10 @@ def main():
             ok = convert_m4a_to_wav(m4a, wav_path)
             if ok:
                 info = analyze_voice(wav_path)
-                print(f"  {wav_name}: {info.get('duration', 0):.1f}s, "
-                      f"{info.get('sample_rate', '?')}Hz, {info.get('size_kb', 0)}KB")
+                print(
+                    f"  {wav_name}: {info.get('duration', 0):.1f}s, "
+                    f"{info.get('sample_rate', '?')}Hz, {info.get('size_kb', 0)}KB"
+                )
                 ref_wavs.append(wav_path)
             else:
                 print(f"  FAILED: {m4a.name}")
@@ -193,14 +211,27 @@ def main():
     if len(ref_wavs) == 2:
         combined = VOICE_DIR / "combined_reference.wav"
         try:
-            subprocess.run([
-                "ffmpeg", "-y",
-                "-i", str(ref_wavs[0]),
-                "-i", str(ref_wavs[1]),
-                "-filter_complex", "[0:a][1:a]concat=n=2:v=0:a=1",
-                "-acodec", "pcm_s16le", "-ar", "24000", "-ac", "1",
-                str(combined)
-            ], capture_output=True, check=True)
+            subprocess.run(
+                [
+                    "ffmpeg",
+                    "-y",
+                    "-i",
+                    str(ref_wavs[0]),
+                    "-i",
+                    str(ref_wavs[1]),
+                    "-filter_complex",
+                    "[0:a][1:a]concat=n=2:v=0:a=1",
+                    "-acodec",
+                    "pcm_s16le",
+                    "-ar",
+                    "24000",
+                    "-ac",
+                    "1",
+                    str(combined),
+                ],
+                capture_output=True,
+                check=True,
+            )
             info = analyze_voice(combined)
             print(f"  combined_reference.wav: {info.get('duration', 0):.1f}s total")
             ref_wavs.append(combined)
@@ -216,8 +247,10 @@ def main():
     ok = generate_kokoro_baseline(test_text, kokoro_out)
     if ok:
         info = analyze_voice(kokoro_out)
-        print(f"  kokoro_baseline.wav: {info.get('duration', 0):.1f}s, "
-              f"{info.get('size_kb', 0)}KB ({time.time()-t0:.1f}s)")
+        print(
+            f"  kokoro_baseline.wav: {info.get('duration', 0):.1f}s, "
+            f"{info.get('size_kb', 0)}KB ({time.time()-t0:.1f}s)"
+        )
     else:
         print("  FAILED — Kokoro model files may not be present")
 
@@ -244,9 +277,11 @@ def main():
     for wav in ref_wavs + [kokoro_out]:
         if wav.exists():
             info = analyze_voice(wav)
-            print(f"  {wav.name}: dur={info.get('duration', 0):.1f}s "
-                  f"rate={info.get('sample_rate', '?')}Hz "
-                  f"size={info.get('size_kb', 0)}KB")
+            print(
+                f"  {wav.name}: dur={info.get('duration', 0):.1f}s "
+                f"rate={info.get('sample_rate', '?')}Hz "
+                f"size={info.get('size_kb', 0)}KB"
+            )
 
     # ============================================================
     # STEP 5: Summary & next steps

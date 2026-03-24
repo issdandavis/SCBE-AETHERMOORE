@@ -27,6 +27,7 @@ sys.path.insert(0, str(ROOT))
 os_environ_set = False
 try:
     import os
+
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
     os_environ_set = True
 except:
@@ -75,7 +76,7 @@ def benchmark_tongue_separation(records: list[dict]) -> dict:
     centroids = {t: np.array(results[t]["centroid"]) for t in TONGUE_KEYS if "centroid" in results[t]}
     inter_dists = []
     for i, t1 in enumerate(TONGUE_KEYS):
-        for t2 in TONGUE_KEYS[i+1:]:
+        for t2 in TONGUE_KEYS[i + 1 :]:
             if t1 in centroids and t2 in centroids:
                 d = float(np.linalg.norm(centroids[t1] - centroids[t2]))
                 inter_dists.append(d)
@@ -145,7 +146,7 @@ def benchmark_source_diversity(records: list[dict]) -> dict:
     sources = list(source_centroids.keys())
     dists = []
     for i, s1 in enumerate(sources):
-        for s2 in sources[i+1:]:
+        for s2 in sources[i + 1 :]:
             d = float(np.linalg.norm(source_centroids[s1] - source_centroids[s2]))
             dists.append(d)
 
@@ -167,7 +168,7 @@ def benchmark_harmonic_wall(records: list[dict]) -> dict:
       H(x) = R^(d_H^2 / scale)
     """
     R = 14.0  # 14-layer pipeline depth
-    scale = 2.2 ** 2  # Normalization: d_H=2.2 (norm~0.8) → cost ≈ R
+    scale = 2.2**2  # Normalization: d_H=2.2 (norm~0.8) → cost ≈ R
 
     norms = []
     hyp_dists = []
@@ -187,7 +188,7 @@ def benchmark_harmonic_wall(records: list[dict]) -> dict:
         hyp_dists.append(d_h)
 
         # Harmonic wall cost: R^(d_H^2 / scale)
-        cost = float(R ** (d_h ** 2 / scale))
+        cost = float(R ** (d_h**2 / scale))
         costs.append(cost)
 
     norms = np.array(norms)
@@ -205,7 +206,7 @@ def benchmark_harmonic_wall(records: list[dict]) -> dict:
     ref_costs = {}
     for rn in ref_norms:
         d_h = np.log((1 + rn) / (1 - rn))
-        c = R ** (d_h ** 2 / scale)
+        c = R ** (d_h**2 / scale)
         ref_costs[f"norm_{rn}"] = {"hyp_dist": round(d_h, 3), "cost": round(c, 2)}
 
     return {
@@ -380,7 +381,9 @@ def main():
     results["harmonic_wall"] = t4
     print(f"  Euclidean norm:  mean={t4['euclidean_norm']['mean']}  max={t4['euclidean_norm']['max']}")
     print(f"  Hyperbolic dist: mean={t4['hyperbolic_distance']['mean']}  max={t4['hyperbolic_distance']['max']}")
-    print(f"  Cost:  min={t4['cost']['min']}  mean={t4['cost']['mean']}  median={t4['cost']['median']}  p95={t4['cost']['p95']}  max={t4['cost']['max']}")
+    print(
+        f"  Cost:  min={t4['cost']['min']}  mean={t4['cost']['mean']}  median={t4['cost']['median']}  p95={t4['cost']['p95']}  max={t4['cost']['max']}"
+    )
     print(f"  Exponential ratio: {t4['exponential_ratio']}x")
     print(f"  Zone distribution:")
     for zone, count in t4["zone_distribution"].items():
@@ -398,8 +401,12 @@ def main():
     print(f"  In unit ball:        {t5['in_unit_ball']}")
     print(f"  Violated boundary:   {t5['violated_boundary']}")
     print(f"  Near boundary (0.9-1.0): {t5['near_boundary_0.9_1.0']}")
-    print(f"  Euclidean norm:  mean={t5['euclidean_norm']['mean']}  min={t5['euclidean_norm']['min']}  max={t5['euclidean_norm']['max']}")
-    print(f"  Hyperbolic dist: mean={t5['hyperbolic_distance']['mean']}  min={t5['hyperbolic_distance']['min']}  max={t5['hyperbolic_distance']['max']}")
+    print(
+        f"  Euclidean norm:  mean={t5['euclidean_norm']['mean']}  min={t5['euclidean_norm']['min']}  max={t5['euclidean_norm']['max']}"
+    )
+    print(
+        f"  Hyperbolic dist: mean={t5['hyperbolic_distance']['mean']}  min={t5['hyperbolic_distance']['min']}  max={t5['hyperbolic_distance']['max']}"
+    )
     print(f"  Status: [{t5['status']}]")
 
     # Test 6: Hash Uniqueness
@@ -437,11 +444,17 @@ def main():
     # Save report
     report_path = ROOT / "artifacts" / "embedding_benchmark_report.json"
     report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.write_text(json.dumps({
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "records": len(records),
-        "results": results,
-    }, indent=2, default=str))
+    report_path.write_text(
+        json.dumps(
+            {
+                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "records": len(records),
+                "results": results,
+            },
+            indent=2,
+            default=str,
+        )
+    )
     print(f"  Report: {report_path}")
 
 

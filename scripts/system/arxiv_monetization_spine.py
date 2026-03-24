@@ -330,7 +330,9 @@ def _build_markdown_report(
     lines.append("## Summary")
     lines.append(f"- Papers analyzed: {papers_count}")
     lines.append(f"- Leads generated: {len(leads)}")
-    lines.append(f"- Lane: {lane_assignment.get('tentacle_id', 'n/a')} via {lane_assignment.get('execution_engine', 'n/a')}")
+    lines.append(
+        f"- Lane: {lane_assignment.get('tentacle_id', 'n/a')} via {lane_assignment.get('execution_engine', 'n/a')}"
+    )
 
     n8n_status = str((route_results.get("n8n") or {}).get("status", "skipped"))
     zapier_status = str((route_results.get("zapier") or {}).get("status", "skipped"))

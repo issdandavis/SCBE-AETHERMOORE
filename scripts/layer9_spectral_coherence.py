@@ -56,7 +56,8 @@ def spectral_coherence_demo():
     print(f"Cutoff frequency: {f_cutoff} Hz")
 
     print(f"\n--- CORRECT PROOF ---")
-    print(f"""
+    print(
+        f"""
 Key Property: Energy partition is invariant (Parseval's theorem)
 
 Detailed Proof:
@@ -78,7 +79,8 @@ Detailed Proof:
    not on phase (|X[k]|^2 discards phase information)
 
 5. Stability: epsilon prevents division by zero for silent signals
-""")
+"""
+    )
 
     print(f"\n--- NUMERICAL VERIFICATION ---")
     print(f"E_low  = {E_low:.4f}")
@@ -98,9 +100,7 @@ Detailed Proof:
     # Phase invariance check
     print(f"\n--- PHASE INVARIANCE CHECK ---")
     # Shift signal phase
-    signal_shifted = np.sin(2 * np.pi * low_freq * t + np.pi / 3) + 0.3 * np.sin(
-        2 * np.pi * high_freq * t + np.pi / 2
-    )
+    signal_shifted = np.sin(2 * np.pi * low_freq * t + np.pi / 3) + 0.3 * np.sin(2 * np.pi * high_freq * t + np.pi / 2)
     X_shifted = fft(signal_shifted)
     P_shifted = np.abs(X_shifted[: N // 2]) ** 2
 
@@ -156,14 +156,16 @@ def stft_coherence():
             f"({'low freq dominant' if S_audio[i] > 0.5 else 'high freq dominant'})"
         )
 
-    print(f"""
+    print(
+        f"""
 Proof (Parseval for STFT):
 - STFT: X[m,k] = Sum x[n] w[n-m] e^(-i2pi*k*n/N)
 - Per-frame energy: Sum_k |X[m,k]|^2 = Sum_n |x[n] w[n-m]|^2 (Parseval)
 - Overlap-add reconstruction preserves total energy
 - r_HF = (high-freq energy) / (total energy) in [0,1]
 - S_audio = 1 - r_HF in [0,1], decreases as signal shifts to high frequencies
-""")
+"""
+    )
 
 
 def compute_spectral_coherence(signal: np.ndarray, fs: float, f_cutoff: float) -> float:

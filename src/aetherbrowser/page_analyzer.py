@@ -6,6 +6,7 @@ Analyzes the current tab's content when the user clicks 'This Page'.
 Uses local heuristics first (zero API cost), then optionally enriches
 with a model call via OctoArmor routing.
 """
+
 from __future__ import annotations
 
 import re
@@ -123,7 +124,7 @@ class PageAnalyzer:
         }
 
     def _extractive_summary(self, text: str, max_sentences: int = 3) -> str:
-        sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+        sentences = re.split(r"(?<=[.!?])\s+", text.strip())
         if not sentences:
             return ""
         word_freq = Counter(text.lower().split())

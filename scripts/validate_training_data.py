@@ -59,13 +59,20 @@ def validate_schema(records: list[dict]) -> dict:
         if r.get("_parse_error"):
             results["parse_errors"] += 1
             continue
-        if r.get("instruction"): results["has_instruction"] += 1
-        if r.get("response"): results["has_response"] += 1
-        if r.get("prompt"): results["has_prompt"] += 1
-        if r.get("text"): results["has_text"] += 1
-        if r.get("metadata"): results["has_metadata"] += 1
-        if r.get("tongue"): results["has_tongue"] += 1
-        if r.get("encoding_tongue"): results["has_encoding_tongue"] += 1
+        if r.get("instruction"):
+            results["has_instruction"] += 1
+        if r.get("response"):
+            results["has_response"] += 1
+        if r.get("prompt"):
+            results["has_prompt"] += 1
+        if r.get("text"):
+            results["has_text"] += 1
+        if r.get("metadata"):
+            results["has_metadata"] += 1
+        if r.get("tongue"):
+            results["has_tongue"] += 1
+        if r.get("encoding_tongue"):
+            results["has_encoding_tongue"] += 1
 
         # Trainable if it has some input + output
         has_input = bool(r.get("instruction") or r.get("prompt") or r.get("text"))
@@ -132,8 +139,7 @@ def validate_tongue_distribution(records: list[dict]) -> dict:
         meta = r.get("metadata", {})
         if isinstance(meta, str):
             meta = {}
-        tongue = (r.get("tongue") or meta.get("tongue") or
-                  r.get("encoding_tongue") or "UNK")
+        tongue = r.get("tongue") or meta.get("tongue") or r.get("encoding_tongue") or "UNK"
         counts[tongue] += 1
 
     total = sum(counts.values())
@@ -154,8 +160,9 @@ def validate_tongue_distribution(records: list[dict]) -> dict:
         "distribution": distribution,
         "most_common": counts.most_common(3),
         "least_common": counts.most_common()[-3:] if len(counts) >= 3 else counts.most_common(),
-        "balance_score": round(min(counts.get(t, 0) for t in TONGUE_KEYS) /
-                               max(1, max(counts.get(t, 0) for t in TONGUE_KEYS)) * 100),
+        "balance_score": round(
+            min(counts.get(t, 0) for t in TONGUE_KEYS) / max(1, max(counts.get(t, 0) for t in TONGUE_KEYS)) * 100
+        ),
     }
 
 
@@ -172,9 +179,12 @@ def validate_tetris_embeddings(records: list[dict]) -> dict:
         sc = r.get("spatial_coords")
         eh = r.get("embedding_hash")
 
-        if tc: has_tongue_coords += 1
-        if sc: has_spatial_coords += 1
-        if eh: has_embedding_hash += 1
+        if tc:
+            has_tongue_coords += 1
+        if sc:
+            has_spatial_coords += 1
+        if eh:
+            has_embedding_hash += 1
 
         if tc and sc:
             coord_dims[f"{len(tc)}D+{len(sc)}D"] += 1
@@ -223,8 +233,7 @@ def sample_records(records: list[dict], n_per_tongue: int = 2) -> dict:
         meta = r.get("metadata", {})
         if isinstance(meta, str):
             meta = {}
-        tongue = (r.get("tongue") or meta.get("tongue") or
-                  r.get("encoding_tongue") or "UNK")
+        tongue = r.get("tongue") or meta.get("tongue") or r.get("encoding_tongue") or "UNK"
         by_tongue[tongue].append(r)
 
     samples = {}
@@ -239,11 +248,13 @@ def sample_records(records: list[dict], n_per_tongue: int = 2) -> dict:
             meta = p.get("metadata", {})
             if isinstance(meta, str):
                 meta = {}
-            samples[tongue].append({
-                "instruction_preview": inst,
-                "response_preview": resp,
-                "source": meta.get("source", "unknown"),
-            })
+            samples[tongue].append(
+                {
+                    "instruction_preview": inst,
+                    "response_preview": resp,
+                    "source": meta.get("source", "unknown"),
+                }
+            )
     return samples
 
 
@@ -336,8 +347,8 @@ def main():
         for tongue, recs in samples.items():
             for s in recs:
                 print(f"\n  [{tongue}] Source: {s['source']}")
-                q = s['instruction_preview'].encode('ascii', 'replace').decode()
-                a = s['response_preview'][:120].encode('ascii', 'replace').decode()
+                q = s["instruction_preview"].encode("ascii", "replace").decode()
+                a = s["response_preview"][:120].encode("ascii", "replace").decode()
                 print(f"    Q: {q}")
                 print(f"    A: {a}...")
 

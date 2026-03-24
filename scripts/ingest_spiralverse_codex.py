@@ -43,9 +43,7 @@ def parse_args() -> argparse.Namespace:
 
 def split_sections(text: str) -> List[Tuple[str, str]]:
     """Split by roman numeral section headers and chapter markers when present."""
-    section_re = re.compile(
-        r"(?im)^\s*(?:##\s+)?((?:[IVX]+)\.\s+[^\n]+|Chapter\s+\d+\s*:\s*[^\n]+)\s*$"
-    )
+    section_re = re.compile(r"(?im)^\s*(?:##\s+)?((?:[IVX]+)\.\s+[^\n]+|Chapter\s+\d+\s*:\s*[^\n]+)\s*$")
     matches = list(section_re.finditer(text))
     if not matches:
         return [("Full text", text.strip())]
@@ -169,15 +167,9 @@ def main() -> None:
             }
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
-    (ingest_dir / "latest_lore_verbatim.txt").write_text(
-        str(verbatim_path).replace("\\", "/"), encoding="utf-8"
-    )
-    (ingest_dir / "latest_lore_drop.txt").write_text(
-        str(compact_path).replace("\\", "/"), encoding="utf-8"
-    )
-    (ingest_dir / "latest_lore_source.txt").write_text(
-        str(source).replace("\\", "/"), encoding="utf-8"
-    )
+    (ingest_dir / "latest_lore_verbatim.txt").write_text(str(verbatim_path).replace("\\", "/"), encoding="utf-8")
+    (ingest_dir / "latest_lore_drop.txt").write_text(str(compact_path).replace("\\", "/"), encoding="utf-8")
+    (ingest_dir / "latest_lore_source.txt").write_text(str(source).replace("\\", "/"), encoding="utf-8")
 
     print(f"Source: {source}")
     print(f"Verbatim JSONL: {verbatim_path}")
@@ -186,4 +178,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

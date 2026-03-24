@@ -30,4 +30,3 @@ def test_run_governance_pipeline_emits_21d_state():
     assert isinstance(out["manifest_hash"], str) and len(out["manifest_hash"]) == 64
     assert "validation" in out
     assert out["validation"]["max_u_norm"] < 1.0
-

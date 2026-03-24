@@ -54,6 +54,7 @@ def _utc_stamp() -> str:
 
 def _safe_token(value: str, fallback: str = "unknown") -> str:
     import re
+
     token = re.sub(r"[^a-z0-9]+", "-", value.lower().strip()).strip("-")
     return token or fallback
 
@@ -232,6 +233,7 @@ def _resolve_obsidian_crosstalk() -> Path:
 
 # ── Emission ─────────────────────────────────────────────────────────
 
+
 def emit_packet(
     sender: str,
     recipient: str,
@@ -369,6 +371,7 @@ def emit_packet(
 
 # ── Verification ─────────────────────────────────────────────────────
 
+
 def verify_packet(packet_id: str) -> Dict[str, Any]:
     """Verify that a packet exists on all lanes."""
     result: Dict[str, Any] = {"packet_id": packet_id, "lanes": {}}
@@ -434,6 +437,7 @@ def verify_packet(packet_id: str) -> Dict[str, Any]:
 
 # ── Consumption ACK ──────────────────────────────────────────────────
 
+
 def ack_packet(packet_id: str, agent: str, notes: str = "") -> Dict[str, Any]:
     """Mark a packet as consumed by an agent. Appends to ACK lane."""
     ack_record = {
@@ -471,6 +475,7 @@ def get_acks(packet_id: Optional[str] = None) -> List[Dict[str, Any]]:
 
 # ── Pending Packets ──────────────────────────────────────────────────
 
+
 def pending_for_agent(agent: str, limit: int = 50) -> List[Dict[str, Any]]:
     """List packets addressed to an agent that haven't been ACK'd."""
     if not CROSSTALK_LANE.exists():
@@ -504,6 +509,7 @@ def pending_for_agent(agent: str, limit: int = 50) -> List[Dict[str, Any]]:
 
 
 # ── Health Report ────────────────────────────────────────────────────
+
 
 def health_report() -> Dict[str, Any]:
     """Cross-talk system health report."""
@@ -595,6 +601,7 @@ def health_report() -> Dict[str, Any]:
 
 
 # ── CLI ──────────────────────────────────────────────────────────────
+
 
 def main():
     parser = argparse.ArgumentParser(description="Cross-Talk Relay — reliable multi-lane AI comms")

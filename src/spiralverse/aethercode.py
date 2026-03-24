@@ -38,14 +38,9 @@ from typing import Dict, List, Optional, Tuple, Any, Set
 from datetime import datetime, timezone
 
 # Internal imports
-from .polyglot_alphabet import (
-    TongueID, TONGUE_ALPHABETS, SIGNATURE_TO_TONGUE
-)
+from .polyglot_alphabet import TongueID, TONGUE_ALPHABETS, SIGNATURE_TO_TONGUE
 from .vector_6d import Position6D
-from .rwp2_envelope import (
-    ProtocolTongue, RWP2Envelope, EnvelopeFactory,
-    OperationTier, TONGUE_KEYS
-)
+from .rwp2_envelope import ProtocolTongue, RWP2Envelope, EnvelopeFactory, OperationTier, TONGUE_KEYS
 
 
 # =============================================================================
@@ -54,22 +49,22 @@ from .rwp2_envelope import (
 
 # Each tongue maps to a frequency band for polyphonic synthesis
 TONGUE_FREQUENCIES: Dict[TongueID, Tuple[float, float]] = {
-    TongueID.AXIOM:  (440.0, 523.25),   # A4 to C5 - Command register
-    TongueID.FLOW:   (329.63, 392.0),   # E4 to G4 - Flow register
-    TongueID.GLYPH:  (261.63, 311.13),  # C4 to Eb4 - Structure register
+    TongueID.AXIOM: (440.0, 523.25),  # A4 to C5 - Command register
+    TongueID.FLOW: (329.63, 392.0),  # E4 to G4 - Flow register
+    TongueID.GLYPH: (261.63, 311.13),  # C4 to Eb4 - Structure register
     TongueID.ORACLE: (493.88, 587.33),  # B4 to D5 - Oracle register
-    TongueID.CHARM:  (369.99, 440.0),   # F#4 to A4 - Harmony register
-    TongueID.LEDGER: (220.0, 261.63),   # A3 to C4 - Ledger register (bass)
+    TongueID.CHARM: (369.99, 440.0),  # F#4 to A4 - Harmony register
+    TongueID.LEDGER: (220.0, 261.63),  # A3 to C4 - Ledger register (bass)
 }
 
 # Tongue to technical language mapping
 TONGUE_DOMAINS: Dict[TongueID, str] = {
-    TongueID.AXIOM:  "execution",    # Direct execution, commands
-    TongueID.FLOW:   "control",      # Branching, loops, transitions
-    TongueID.GLYPH:  "structure",    # Data definitions, hierarchies
-    TongueID.ORACLE: "temporal",     # Async, events, scheduling
-    TongueID.CHARM:  "harmony",      # Priority negotiation, balance
-    TongueID.LEDGER: "record",       # Proofs, authentication, logging
+    TongueID.AXIOM: "execution",  # Direct execution, commands
+    TongueID.FLOW: "control",  # Branching, loops, transitions
+    TongueID.GLYPH: "structure",  # Data definitions, hierarchies
+    TongueID.ORACLE: "temporal",  # Async, events, scheduling
+    TongueID.CHARM: "harmony",  # Priority negotiation, balance
+    TongueID.LEDGER: "record",  # Proofs, authentication, logging
 }
 
 SAMPLE_RATE = 44100
@@ -79,6 +74,7 @@ SAMPLE_RATE = 44100
 # Verse Parsing
 # =============================================================================
 
+
 @dataclass
 class AetherVerse:
     """
@@ -87,6 +83,7 @@ class AetherVerse:
     Format: signature:content
     Example: a3f7c2e1:INVOKE greet WITH "Hello"
     """
+
     tongue_id: TongueID
     signature: str
     content: str
@@ -107,6 +104,7 @@ class AetherProgram:
     """
     Complete Aethercode program - a composition of verses.
     """
+
     verses: List[AetherVerse]
     title: str = "Untitled Composition"
     author: str = "Anonymous"
@@ -133,10 +131,10 @@ def parse_verse(line: str, line_number: int = 0) -> Optional[AetherVerse]:
     indent_level = (len(line) - len(stripped)) // 2
 
     # Check for signature prefix
-    if ':' not in stripped:
+    if ":" not in stripped:
         return None
 
-    parts = stripped.split(':', 1)
+    parts = stripped.split(":", 1)
     signature = parts[0].strip()
     content = parts[1].strip() if len(parts) > 1 else ""
 
@@ -146,11 +144,7 @@ def parse_verse(line: str, line_number: int = 0) -> Optional[AetherVerse]:
         return None
 
     return AetherVerse(
-        tongue_id=tongue_id,
-        signature=signature,
-        content=content,
-        line_number=line_number,
-        indent_level=indent_level
+        tongue_id=tongue_id, signature=signature, content=content, line_number=line_number, indent_level=indent_level
     )
 
 
@@ -164,9 +158,9 @@ def parse_program(source: str, title: str = "Untitled") -> AetherProgram:
     """
     verses = []
 
-    for i, line in enumerate(source.split('\n'), start=1):
+    for i, line in enumerate(source.split("\n"), start=1):
         # Skip empty lines and comments
-        if not line.strip() or line.strip().startswith('#'):
+        if not line.strip() or line.strip().startswith("#"):
             continue
 
         verse = parse_verse(line, i)
@@ -180,6 +174,7 @@ def parse_program(source: str, title: str = "Untitled") -> AetherProgram:
 # Execution Context
 # =============================================================================
 
+
 @dataclass
 class AetherContext:
     """
@@ -191,6 +186,7 @@ class AetherContext:
     - Execution trace for proofs
     - Output buffer for results
     """
+
     variables: Dict[str, Any] = field(default_factory=dict)
     position: Position6D = field(default_factory=lambda: Position6D(0, 0, 0, 0, 0, 0))
     trace: List[Dict[str, Any]] = field(default_factory=list)
@@ -198,9 +194,7 @@ class AetherContext:
     audio_segments: List[np.ndarray] = field(default_factory=list)
 
     # Tongue-specific state
-    tongue_state: Dict[TongueID, Dict[str, Any]] = field(
-        default_factory=lambda: {t: {} for t in TongueID}
-    )
+    tongue_state: Dict[TongueID, Dict[str, Any]] = field(default_factory=lambda: {t: {} for t in TongueID})
 
     # Control flow
     call_stack: List[str] = field(default_factory=list)
@@ -225,18 +219,21 @@ class AetherContext:
 
     def record_trace(self, verse: AetherVerse, result: Any):
         """Record execution trace for proofs."""
-        self.trace.append({
-            "line": verse.line_number,
-            "tongue": verse.tongue_id.value,
-            "content": verse.content,
-            "result": str(result),
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        })
+        self.trace.append(
+            {
+                "line": verse.line_number,
+                "tongue": verse.tongue_id.value,
+                "content": verse.content,
+                "result": str(result),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+        )
 
 
 # =============================================================================
 # Domain Handlers (One per Tongue)
 # =============================================================================
+
 
 class DomainHandler:
     """Base class for tongue domain handlers."""
@@ -274,7 +271,7 @@ class AxiomHandler(DomainHandler):
 
         # INVOKE command
         if content.startswith("INVOKE"):
-            match = re.match(r'INVOKE\s+(\w+)(?:\s+WITH\s+(.+))?', content)
+            match = re.match(r"INVOKE\s+(\w+)(?:\s+WITH\s+(.+))?", content)
             if match:
                 func_name = match.group(1)
                 args_str = match.group(2) or ""
@@ -296,7 +293,7 @@ class AxiomHandler(DomainHandler):
 
         # DECLARE command
         if content.startswith("DECLARE"):
-            match = re.match(r'DECLARE\s+(\w+)\s+AS\s+(.+)', content)
+            match = re.match(r"DECLARE\s+(\w+)\s+AS\s+(.+)", content)
             if match:
                 name = match.group(1)
                 value = self._eval_value(match.group(2), ctx)
@@ -306,7 +303,7 @@ class AxiomHandler(DomainHandler):
 
         # EMIT command
         if content.startswith("EMIT"):
-            message = content[4:].strip().strip('"\'')
+            message = content[4:].strip().strip("\"'")
             # Variable interpolation
             for var, val in ctx.variables.items():
                 message = message.replace(f"${{{var}}}", str(val))
@@ -344,7 +341,7 @@ class AxiomHandler(DomainHandler):
 
         # Number
         try:
-            if '.' in expr:
+            if "." in expr:
                 return float(expr)
             return int(expr)
         except ValueError:
@@ -374,7 +371,7 @@ class FlowHandler(DomainHandler):
 
         # LOOP command
         if content.startswith("LOOP"):
-            match = re.match(r'LOOP\s+(\d+)\s+TIMES', content)
+            match = re.match(r"LOOP\s+(\d+)\s+TIMES", content)
             if match:
                 iterations = int(match.group(1))
                 ctx.loop_counter = iterations
@@ -383,7 +380,7 @@ class FlowHandler(DomainHandler):
 
         # IF command (simplified - checks variable truthiness)
         if content.startswith("IF"):
-            match = re.match(r'IF\s+(\w+)\s+THEN', content)
+            match = re.match(r"IF\s+(\w+)\s+THEN", content)
             if match:
                 var_name = match.group(1)
                 value = ctx.get_var(var_name)
@@ -419,7 +416,7 @@ class GlyphHandler(DomainHandler):
 
         # DEFINE command
         if content.startswith("DEFINE"):
-            match = re.match(r'DEFINE\s+(\w+)\s+AS\s+(\w+)', content)
+            match = re.match(r"DEFINE\s+(\w+)\s+AS\s+(\w+)", content)
             if match:
                 name = match.group(1)
                 type_name = match.group(2)
@@ -429,7 +426,7 @@ class GlyphHandler(DomainHandler):
 
         # STRUCTURE command
         if content.startswith("STRUCTURE"):
-            match = re.match(r'STRUCTURE\s+(\w+)', content)
+            match = re.match(r"STRUCTURE\s+(\w+)", content)
             if match:
                 name = match.group(1)
                 ctx.set_var("__current_structure", name, self.tongue)
@@ -439,7 +436,7 @@ class GlyphHandler(DomainHandler):
 
         # FIELD command
         if content.startswith("FIELD"):
-            match = re.match(r'FIELD\s+(\w+)\s*:\s*(\w+)', content)
+            match = re.match(r"FIELD\s+(\w+)\s*:\s*(\w+)", content)
             if match:
                 field_name = match.group(1)
                 field_type = match.group(2)
@@ -473,7 +470,7 @@ class OracleHandler(DomainHandler):
 
         # AWAIT command
         if content.startswith("AWAIT"):
-            match = re.match(r'AWAIT\s+(\d+(?:\.\d+)?)\s*(\w+)?', content)
+            match = re.match(r"AWAIT\s+(\d+(?:\.\d+)?)\s*(\w+)?", content)
             if match:
                 duration = float(match.group(1))
                 unit = match.group(2) or "ms"
@@ -491,7 +488,7 @@ class OracleHandler(DomainHandler):
 
         # SCHEDULE command
         if content.startswith("SCHEDULE"):
-            match = re.match(r'SCHEDULE\s+(\w+)\s+AT\s+(.+)', content)
+            match = re.match(r"SCHEDULE\s+(\w+)\s+AT\s+(.+)", content)
             if match:
                 event_name = match.group(1)
                 time_spec = match.group(2)
@@ -520,7 +517,7 @@ class CharmHandler(DomainHandler):
 
         # BALANCE command
         if content.startswith("BALANCE"):
-            match = re.match(r'BALANCE\s+(\w+)\s+WITH\s+(\w+)', content)
+            match = re.match(r"BALANCE\s+(\w+)\s+WITH\s+(\w+)", content)
             if match:
                 a = ctx.get_var(match.group(1)) or 0
                 b = ctx.get_var(match.group(2)) or 0
@@ -534,12 +531,16 @@ class CharmHandler(DomainHandler):
 
         # PRIORITY command
         if content.startswith("PRIORITY"):
-            match = re.match(r'PRIORITY\s+(\d+)', content)
+            match = re.match(r"PRIORITY\s+(\d+)", content)
             if match:
                 level = int(match.group(1))
                 ctx.position = Position6D(
-                    ctx.position.axiom, ctx.position.flow, ctx.position.glyph,
-                    ctx.position.oracle, level, ctx.position.ledger
+                    ctx.position.axiom,
+                    ctx.position.flow,
+                    ctx.position.glyph,
+                    ctx.position.oracle,
+                    level,
+                    ctx.position.ledger,
                 )
                 ctx.emit(f"[CHARM] Priority set to {level}")
                 return level
@@ -574,7 +575,7 @@ class LedgerHandler(DomainHandler):
 
         # RECORD command
         if content.startswith("RECORD"):
-            data = content[6:].strip().strip('"\'')
+            data = content[6:].strip().strip("\"'")
             hash_val = hashlib.sha256(data.encode()).hexdigest()[:16]
             record = {"data": data, "hash": hash_val, "timestamp": datetime.now(timezone.utc).isoformat()}
             ctx.trace.append({"ledger_record": record})
@@ -583,7 +584,7 @@ class LedgerHandler(DomainHandler):
 
         # SIGN command
         if content.startswith("SIGN"):
-            message = content[4:].strip().strip('"\'')
+            message = content[4:].strip().strip("\"'")
             # Simple HMAC-like signature
             key = TONGUE_KEYS.get(ProtocolTongue.DR, b"default")
             sig_input = f"{message}:{key.hex()}"
@@ -593,14 +594,14 @@ class LedgerHandler(DomainHandler):
 
         # PROOF command
         if content.startswith("PROOF"):
-            statement = content[5:].strip().strip('"\'')
+            statement = content[5:].strip().strip("\"'")
             # Generate proof from execution trace
             trace_hash = hashlib.sha256(str(ctx.trace).encode()).hexdigest()[:16]
             proof = {
                 "statement": statement,
                 "trace_hash": trace_hash,
                 "verse_count": len(ctx.trace),
-                "timestamp": datetime.now(timezone.utc).isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
             ctx.emit(f"[LEDGER] Proof generated: {trace_hash}")
             return proof
@@ -618,6 +619,7 @@ class LedgerHandler(DomainHandler):
 # =============================================================================
 # Polyphonic Chant Synthesis
 # =============================================================================
+
 
 class ChantSynthesizer:
     """
@@ -647,9 +649,9 @@ class ChantSynthesizer:
 
         # Add harmonic based on tongue
         harmonic_mult = {
-            TongueID.AXIOM: 2.0,   # Bright overtone
-            TongueID.FLOW: 1.5,    # Subtle fifth
-            TongueID.GLYPH: 3.0,   # Structural third
+            TongueID.AXIOM: 2.0,  # Bright overtone
+            TongueID.FLOW: 1.5,  # Subtle fifth
+            TongueID.GLYPH: 3.0,  # Structural third
             TongueID.ORACLE: 2.5,  # Ethereal
             TongueID.CHARM: 1.25,  # Warm harmony
             TongueID.LEDGER: 4.0,  # Deep bass harmonic
@@ -710,25 +712,25 @@ class ChantSynthesizer:
         # Write WAV file
         try:
             n_samples = len(int16_samples)
-            with open(filename, 'wb') as f:
+            with open(filename, "wb") as f:
                 # RIFF header
-                f.write(b'RIFF')
-                f.write(struct.pack('<I', 36 + n_samples * 2))
-                f.write(b'WAVE')
+                f.write(b"RIFF")
+                f.write(struct.pack("<I", 36 + n_samples * 2))
+                f.write(b"WAVE")
 
                 # fmt chunk
-                f.write(b'fmt ')
-                f.write(struct.pack('<I', 16))
-                f.write(struct.pack('<H', 1))  # PCM
-                f.write(struct.pack('<H', 1))  # Mono
-                f.write(struct.pack('<I', self.sample_rate))
-                f.write(struct.pack('<I', self.sample_rate * 2))
-                f.write(struct.pack('<H', 2))
-                f.write(struct.pack('<H', 16))
+                f.write(b"fmt ")
+                f.write(struct.pack("<I", 16))
+                f.write(struct.pack("<H", 1))  # PCM
+                f.write(struct.pack("<H", 1))  # Mono
+                f.write(struct.pack("<I", self.sample_rate))
+                f.write(struct.pack("<I", self.sample_rate * 2))
+                f.write(struct.pack("<H", 2))
+                f.write(struct.pack("<H", 16))
 
                 # data chunk
-                f.write(b'data')
-                f.write(struct.pack('<I', n_samples * 2))
+                f.write(b"data")
+                f.write(struct.pack("<I", n_samples * 2))
                 f.write(int16_samples.tobytes())
 
             return True
@@ -740,6 +742,7 @@ class ChantSynthesizer:
 # =============================================================================
 # Aethercode Interpreter
 # =============================================================================
+
 
 class AethercodeInterpreter:
     """
@@ -822,7 +825,7 @@ class AethercodeInterpreter:
             "verses": len(ctx.trace),
             "output_hash": hashlib.sha256("\n".join(ctx.output).encode()).hexdigest()[:16],
             "trace_hash": hashlib.sha256(str(ctx.trace).encode()).hexdigest()[:16],
-            "timestamp": datetime.now(timezone.utc).isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
         payload = str(proof_data).encode()
@@ -830,9 +833,8 @@ class AethercodeInterpreter:
         # Create envelope with all tongues used
         factory = EnvelopeFactory()
         tongues_used = [
-            ProtocolTongue[t.value[:2].upper()] if hasattr(ProtocolTongue, t.value[:2].upper())
-            else ProtocolTongue.KO
-            for t in set(tv.tongue_id for tv in ctx.trace if hasattr(tv, 'tongue_id'))
+            ProtocolTongue[t.value[:2].upper()] if hasattr(ProtocolTongue, t.value[:2].upper()) else ProtocolTongue.KO
+            for t in set(tv.tongue_id for tv in ctx.trace if hasattr(tv, "tongue_id"))
         ] or [ProtocolTongue.KO]
 
         # Default to highest tier if multiple tongues
@@ -843,7 +845,7 @@ class AethercodeInterpreter:
             payload=payload,
             origin_tongue=ProtocolTongue.KO,  # Primary tongue
             tier=tier,
-            aad=f"verses={len(ctx.trace)}"
+            aad=f"verses={len(ctx.trace)}",
         )
 
         return envelope
@@ -927,6 +929,7 @@ a3f7c2e1:EMIT "The Spiralverse awaits your next invocation."
 # =============================================================================
 # Demo
 # =============================================================================
+
 
 def demo():
     """Demonstrate the Aethercode interpreter."""

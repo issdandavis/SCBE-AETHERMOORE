@@ -3,6 +3,7 @@ Resonance Gate — Evolutionary Optimization (1000 iterations).
 Each iteration tests, diagnoses, and tunes the gate parameters.
 By iteration 1000, the system should be 10x better than iteration 1.
 """
+
 import math
 import sys
 import os
@@ -27,9 +28,9 @@ class ResonanceGateEvolvable:
         self.pass_threshold = 0.7
         self.reject_threshold = 0.3
         self.geometry_decay = PHI  # exp(-decay * d*)
-        self.wave_power = 1.0     # how much wave matters vs geometry
+        self.wave_power = 1.0  # how much wave matters vs geometry
         self.tongue_weights = [1.0, PHI, PHI**2, PHI**3, PHI**4, PHI**5]
-        self.tongue_phases = [0, math.pi/3, 2*math.pi/3, math.pi, 4*math.pi/3, 5*math.pi/3]
+        self.tongue_phases = [0, math.pi / 3, 2 * math.pi / 3, math.pi, 4 * math.pi / 3, 5 * math.pi / 3]
         self.f0 = F0
         self.geometry_floor = 0.0  # minimum geometry alignment
 
@@ -44,9 +45,7 @@ class ResonanceGateEvolvable:
     def tongue_wave(self, t, phase_offset=0.0):
         total_weight = sum(self.tongue_weights)
         s = sum(
-            self.tongue_weights[l] * math.cos(
-                2 * math.pi * self.f0 * PHI**l * t + self.tongue_phases[l] + phase_offset
-            )
+            self.tongue_weights[l] * math.cos(2 * math.pi * self.f0 * PHI**l * t + self.tongue_phases[l] + phase_offset)
             for l in range(6)
         )
         return s / total_weight if total_weight > 0 else 0
@@ -62,7 +61,7 @@ class ResonanceGateEvolvable:
         geometry_alignment = max(self.geometry_floor, geo)
 
         # Blend wave and geometry with tunable power
-        rho = max(0, min(1, (wave_alignment ** self.wave_power) * geometry_alignment))
+        rho = max(0, min(1, (wave_alignment**self.wave_power) * geometry_alignment))
         barrier_cost = envelope / max(rho, 1e-6)
 
         if rho >= self.pass_threshold:
@@ -118,8 +117,8 @@ class ResonanceGateEvolvable:
 
         # 4. Gradient smoothness at mid-range (weight: 15%)
         mid_rhos = [self.gate(d * 0.01, t=0)["rho"] for d in range(100)]
-        jumps = sum(abs(mid_rhos[i+1] - mid_rhos[i]) for i in range(len(mid_rhos)-1))
-        avg_jump = jumps / max(len(mid_rhos)-1, 1)
+        jumps = sum(abs(mid_rhos[i + 1] - mid_rhos[i]) for i in range(len(mid_rhos) - 1))
+        avg_jump = jumps / max(len(mid_rhos) - 1, 1)
         smoothness = max(0, 1 - avg_jump * 10)
         score += 15 * smoothness
 
@@ -206,7 +205,7 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
         scored.sort(key=lambda x: x[1], reverse=True)
 
         # Keep top half
-        survivors = [s[0] for s in scored[:population_size // 2]]
+        survivors = [s[0] for s in scored[: population_size // 2]]
 
         # Best of generation
         gen_best = scored[0][0]
@@ -239,9 +238,11 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
                 "elapsed_s": round(elapsed, 1),
             }
             checkpoints.append(checkpoint)
-            print(f"  Gen {gen:4d}: fitness={best_fitness:.2f} (+{improvement*100:.1f}%), "
-                  f"decay={best.geometry_decay:.3f}, wave_pow={best.wave_power:.3f}, "
-                  f"floor={best.geometry_floor:.3f}")
+            print(
+                f"  Gen {gen:4d}: fitness={best_fitness:.2f} (+{improvement*100:.1f}%), "
+                f"decay={best.geometry_decay:.3f}, wave_pow={best.wave_power:.3f}, "
+                f"floor={best.geometry_floor:.3f}"
+            )
 
     # Final evaluation
     print(f"\n{'=' * 60}")
@@ -256,17 +257,19 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
     print(f"\n  Running diagnostics with evolved parameters...")
 
     # Test 1: Safe origin
-    origin_passes = sum(1 for i in range(1000) if best.gate(0.0, t=i*0.0003)["decision"] == "PASS")
+    origin_passes = sum(1 for i in range(1000) if best.gate(0.0, t=i * 0.0003)["decision"] == "PASS")
     print(f"  Safe origin pass rate: {origin_passes/1000:.1%}")
 
     # Test 2: High distance rejection
-    far_rejects = sum(1 for i in range(1000) if best.gate(2.0, t=i*0.0003)["decision"] == "REJECT")
+    far_rejects = sum(1 for i in range(1000) if best.gate(2.0, t=i * 0.0003)["decision"] == "REJECT")
     print(f"  Adversarial reject rate: {far_rejects/1000:.1%}")
 
     # Test 3: Phase discrimination
-    base_avg = sum(best.gate(0.3, t=i*0.0003, phase_offset=0)["rho"] for i in range(1000)) / 1000
-    shift_avg = sum(best.gate(0.3, t=i*0.0003, phase_offset=math.pi)["rho"] for i in range(1000)) / 1000
-    print(f"  Phase discrimination: base={base_avg:.4f} vs shifted={shift_avg:.4f} (delta={abs(base_avg-shift_avg):.4f})")
+    base_avg = sum(best.gate(0.3, t=i * 0.0003, phase_offset=0)["rho"] for i in range(1000)) / 1000
+    shift_avg = sum(best.gate(0.3, t=i * 0.0003, phase_offset=math.pi)["rho"] for i in range(1000)) / 1000
+    print(
+        f"  Phase discrimination: base={base_avg:.4f} vs shifted={shift_avg:.4f} (delta={abs(base_avg-shift_avg):.4f})"
+    )
 
     # Test 4: Barrier cost ratio
     cost_0 = best.gate(0.0, t=0)["barrier_cost"]
@@ -277,7 +280,7 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
     report = {
         "initial_fitness": round(initial_fitness, 2),
         "final_fitness": round(best_fitness, 2),
-        "improvement_pct": round(((best_fitness/max(initial_fitness,1))-1)*100, 1),
+        "improvement_pct": round(((best_fitness / max(initial_fitness, 1)) - 1) * 100, 1),
         "best_params": best.get_params(),
         "checkpoints": checkpoints,
         "final_diagnostics": {
@@ -285,7 +288,7 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
             "adversarial_reject_rate": far_rejects / 1000,
             "phase_discrimination": abs(base_avg - shift_avg),
             "barrier_cost_ratio": cost_3 / max(cost_0, 1e-10),
-        }
+        },
     }
     report_path = os.path.join(os.path.dirname(__file__), "..", "artifacts", "resonance_gate_evolution_report.json")
     os.makedirs(os.path.dirname(report_path), exist_ok=True)

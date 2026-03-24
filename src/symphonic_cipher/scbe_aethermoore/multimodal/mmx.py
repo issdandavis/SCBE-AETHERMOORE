@@ -33,20 +33,23 @@ from typing import Dict, List, Optional, Sequence
 # TYPES
 # =============================================================================
 
+
 @dataclass(frozen=True)
 class MMXResult:
     """Output of compute_mmx()."""
-    alignment: List[List[float]]     # K×K cosine-similarity matrix
-    weights: List[float]             # per-modality reliability weights
-    coherence: float                 # mean pairwise cosine similarity
-    conflict: float                  # fraction of pairs below agreement floor
-    drift: float                     # max delta vs previous snapshot
-    modality_labels: List[str]       # names of each modality
+
+    alignment: List[List[float]]  # K×K cosine-similarity matrix
+    weights: List[float]  # per-modality reliability weights
+    coherence: float  # mean pairwise cosine similarity
+    conflict: float  # fraction of pairs below agreement floor
+    drift: float  # max delta vs previous snapshot
+    modality_labels: List[str]  # names of each modality
 
 
 # =============================================================================
 # HELPERS
 # =============================================================================
+
 
 def _cosine_similarity(a: Sequence[float], b: Sequence[float]) -> float:
     """Cosine similarity between two vectors. Returns 0.0 on degenerate input."""
@@ -75,6 +78,7 @@ def _reliability_weight(vec: Sequence[float], *, eps: float = 1e-8) -> float:
 # =============================================================================
 # CORE
 # =============================================================================
+
 
 def compute_mmx(
     features: Dict[str, Sequence[float]],
@@ -124,8 +128,7 @@ def compute_mmx(
     for i, v in enumerate(vecs):
         if len(v) != dim:
             raise ValueError(
-                f"Dimension mismatch: modality '{labels[0]}' has dim={dim}, "
-                f"but '{labels[i]}' has dim={len(v)}"
+                f"Dimension mismatch: modality '{labels[0]}' has dim={dim}, " f"but '{labels[i]}' has dim={len(v)}"
             )
 
     # ---- Alignment matrix (K×K) ----

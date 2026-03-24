@@ -48,10 +48,11 @@ PHI = (1 + math.sqrt(5)) / 2
 #  Access Tiers
 # ---------------------------------------------------------------------------
 
+
 class AccessTier(str, Enum):
-    FREE = "FREE"       # Entry level — prove yourself
-    EARNED = "EARNED"   # Good behavior unlocks this
-    PAID = "PAID"       # Commercial license
+    FREE = "FREE"  # Entry level — prove yourself
+    EARNED = "EARNED"  # Good behavior unlocks this
+    PAID = "PAID"  # Commercial license
 
 
 # Numeric rank for tier comparison
@@ -87,14 +88,16 @@ TIER_LIMITS = {
 #  Governance Score — your "driving record"
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class GovernanceScore:
     """Behavioral score that determines tier progression."""
+
     total_sessions: int = 0
-    clean_sessions: int = 0         # Completed without quarantine
-    drift_events: int = 0           # Total drift events
-    quarantine_count: int = 0       # Times quarantined
-    total_training_records: int = 0 # Training data contributed
+    clean_sessions: int = 0  # Completed without quarantine
+    drift_events: int = 0  # Total drift events
+    quarantine_count: int = 0  # Times quarantined
+    total_training_records: int = 0  # Training data contributed
     total_credits_earned: float = 0.0
 
     @property
@@ -140,9 +143,11 @@ class GovernanceScore:
 #  Entry Token — the "learner's permit"
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class EntryToken:
     """Token issued when an agent enters the AAOE."""
+
     token_id: str = field(default_factory=lambda: uuid.uuid4().hex)
     agent_id: str = ""
     declared_intent: str = ""
@@ -192,6 +197,7 @@ class EntryToken:
 #  GeoSeal — the agent's full identity
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class GeoSeal:
     """
@@ -203,10 +209,11 @@ class GeoSeal:
     - Behavior (how they've acted)
     - Access (what they can do)
     """
+
     seal_id: str = field(default_factory=lambda: f"geo-{uuid.uuid4().hex[:12]}")
     agent_id: str = ""
     agent_name: str = ""
-    origin_platform: str = ""    # "openclaw", "langchain", "autogpt", "custom"
+    origin_platform: str = ""  # "openclaw", "langchain", "autogpt", "custom"
     created_at: float = field(default_factory=time.time)
     tier: AccessTier = AccessTier.FREE
     governance_score: GovernanceScore = field(default_factory=GovernanceScore)
@@ -294,6 +301,7 @@ class GeoSeal:
 #  Agent Registry — manages all GeoSeals
 # ---------------------------------------------------------------------------
 
+
 class AgentRegistry:
     """
     Central registry for all agents in the AAOE.
@@ -359,10 +367,7 @@ class AgentRegistry:
         for tier in AccessTier:
             by_tier[tier.value] = sum(1 for s in self.seals.values() if s.tier == tier)
         hov = sum(1 for s in self.seals.values() if s.governance_score.hov_eligible)
-        quarantined = sum(
-            1 for s in self.seals.values()
-            if s.governance_score.quarantine_count > 0
-        )
+        quarantined = sum(1 for s in self.seals.values() if s.governance_score.quarantine_count > 0)
         return {
             "total_agents": total,
             "by_tier": by_tier,

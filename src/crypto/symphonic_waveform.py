@@ -33,6 +33,7 @@ import struct
 # Try scipy for .wav export, fallback to pure numpy
 try:
     from scipy.io import wavfile
+
     SCIPY_AVAILABLE = True
 except ImportError:
     SCIPY_AVAILABLE = False
@@ -43,26 +44,28 @@ except ImportError:
 # Constants
 # =============================================================================
 
-SAMPLE_RATE = 44100      # CD quality
-BASE_FREQ = 440.0        # A4 = 440 Hz
-FREQ_STEP = 30.0         # Hz per token ID unit
-MAX_FREQ = 880.0         # Upper bound (A5)
-MIN_FREQ = 220.0         # Lower bound (A3)
+SAMPLE_RATE = 44100  # CD quality
+BASE_FREQ = 440.0  # A4 = 440 Hz
+FREQ_STEP = 30.0  # Hz per token ID unit
+MAX_FREQ = 880.0  # Upper bound (A5)
+MIN_FREQ = 220.0  # Lower bound (A3)
 
 
 # =============================================================================
 # Position to Intent Mapping
 # =============================================================================
 
+
 @dataclass
 class SymphonicIntent:
     """Intent derived from Poincaré ball position."""
-    position: np.ndarray       # 3D position in ball
-    polarity: str              # "light", "shadow", "balanced"
-    intensity: float           # 0-1, derived from distance to origin
-    frequency: float           # Hz
-    token_id: int              # Signed token ID
-    phase: float               # Phase angle (radians)
+
+    position: np.ndarray  # 3D position in ball
+    polarity: str  # "light", "shadow", "balanced"
+    intensity: float  # 0-1, derived from distance to origin
+    frequency: float  # Hz
+    token_id: int  # Signed token ID
+    phase: float  # Phase angle (radians)
 
 
 def position_to_intent(point: np.ndarray) -> SymphonicIntent:
@@ -116,12 +119,7 @@ def position_to_intent(point: np.ndarray) -> SymphonicIntent:
         phase = 0.0
 
     return SymphonicIntent(
-        position=point,
-        polarity=polarity,
-        intensity=intensity,
-        frequency=frequency,
-        token_id=token_id,
-        phase=phase
+        position=point, polarity=polarity, intensity=intensity, frequency=frequency, token_id=token_id, phase=phase
     )
 
 
@@ -134,12 +132,9 @@ def hyperpath_to_intents(path: List[np.ndarray]) -> List[SymphonicIntent]:
 # Waveform Generation
 # =============================================================================
 
+
 def generate_tone(
-    frequency: float,
-    duration: float,
-    sample_rate: int = SAMPLE_RATE,
-    amplitude: float = 0.5,
-    phase: float = 0.0
+    frequency: float, duration: float, sample_rate: int = SAMPLE_RATE, amplitude: float = 0.5, phase: float = 0.0
 ) -> np.ndarray:
     """Generate a pure sine tone."""
     t = np.linspace(0, duration, int(sample_rate * duration), dtype=np.float32)
@@ -152,7 +147,7 @@ def apply_envelope(
     decay: float = 0.05,
     sustain: float = 0.7,
     release: float = 0.05,
-    sample_rate: int = SAMPLE_RATE
+    sample_rate: int = SAMPLE_RATE,
 ) -> np.ndarray:
     """Apply ADSR envelope to samples."""
     n = len(samples)
@@ -170,12 +165,14 @@ def apply_envelope(
         envelope[-fade_samples:] = np.linspace(1, 0, fade_samples)
         return samples * envelope
 
-    envelope = np.concatenate([
-        np.linspace(0, 1, attack_samples),                    # Attack
-        np.linspace(1, sustain, decay_samples),               # Decay
-        np.full(sustain_samples, sustain),                    # Sustain
-        np.linspace(sustain, 0, release_samples)              # Release
-    ])
+    envelope = np.concatenate(
+        [
+            np.linspace(0, 1, attack_samples),  # Attack
+            np.linspace(1, sustain, decay_samples),  # Decay
+            np.full(sustain_samples, sustain),  # Sustain
+            np.linspace(sustain, 0, release_samples),  # Release
+        ]
+    )
 
     # Ensure same length
     if len(envelope) != n:
@@ -189,7 +186,7 @@ def add_harmonics(
     frequency: float,
     duration: float,
     harmonics: List[Tuple[int, float]] = None,
-    sample_rate: int = SAMPLE_RATE
+    sample_rate: int = SAMPLE_RATE,
 ) -> np.ndarray:
     """Add harmonic overtones to fundamental."""
     if harmonics is None:
@@ -216,12 +213,13 @@ def add_harmonics(
 # Hyperpath to Waveform
 # =============================================================================
 
+
 def hyperpath_to_waveform(
     path: List[np.ndarray],
     note_duration: float = 0.3,
     crossfade: float = 0.02,
     include_harmonics: bool = True,
-    sample_rate: int = SAMPLE_RATE
+    sample_rate: int = SAMPLE_RATE,
 ) -> Tuple[np.ndarray, List[SymphonicIntent]]:
     """
     Convert a hyperpath traversal to a symphonic waveform.
@@ -253,7 +251,7 @@ def hyperpath_to_waveform(
             note_duration,
             sample_rate,
             amplitude=0.5 + intent.intensity * 0.3,  # Louder when intense
-            phase=intent.phase
+            phase=intent.phase,
         )
 
         # Add harmonics for richer sound
@@ -303,11 +301,8 @@ def hyperpath_to_waveform(
 # Waveform Export
 # =============================================================================
 
-def export_wav(
-    samples: np.ndarray,
-    filename: str,
-    sample_rate: int = SAMPLE_RATE
-) -> bool:
+
+def export_wav(samples: np.ndarray, filename: str, sample_rate: int = SAMPLE_RATE) -> bool:
     """
     Export waveform to .wav file.
 
@@ -340,25 +335,25 @@ def _export_wav_numpy(samples: np.ndarray, filename: str, sample_rate: int) -> b
         block_align = n_channels * bits_per_sample // 8
         data_size = n_samples * block_align
 
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             # RIFF header
-            f.write(b'RIFF')
-            f.write(struct.pack('<I', 36 + data_size))  # File size - 8
-            f.write(b'WAVE')
+            f.write(b"RIFF")
+            f.write(struct.pack("<I", 36 + data_size))  # File size - 8
+            f.write(b"WAVE")
 
             # fmt chunk
-            f.write(b'fmt ')
-            f.write(struct.pack('<I', 16))  # Chunk size
-            f.write(struct.pack('<H', 1))   # Audio format (PCM)
-            f.write(struct.pack('<H', n_channels))
-            f.write(struct.pack('<I', sample_rate))
-            f.write(struct.pack('<I', byte_rate))
-            f.write(struct.pack('<H', block_align))
-            f.write(struct.pack('<H', bits_per_sample))
+            f.write(b"fmt ")
+            f.write(struct.pack("<I", 16))  # Chunk size
+            f.write(struct.pack("<H", 1))  # Audio format (PCM)
+            f.write(struct.pack("<H", n_channels))
+            f.write(struct.pack("<I", sample_rate))
+            f.write(struct.pack("<I", byte_rate))
+            f.write(struct.pack("<H", block_align))
+            f.write(struct.pack("<H", bits_per_sample))
 
             # data chunk
-            f.write(b'data')
-            f.write(struct.pack('<I', data_size))
+            f.write(b"data")
+            f.write(struct.pack("<I", data_size))
             f.write(samples.tobytes())
 
         return True
@@ -371,9 +366,11 @@ def _export_wav_numpy(samples: np.ndarray, filename: str, sample_rate: int) -> b
 # Harmonic Fingerprint (for Octree Storage)
 # =============================================================================
 
+
 @dataclass
 class HarmonicFingerprint:
     """Spectral fingerprint for octree node storage."""
+
     dominant_freq: float
     polarity: str
     intensity: float
@@ -382,10 +379,7 @@ class HarmonicFingerprint:
     hash: str
 
 
-def compute_harmonic_fingerprint(
-    samples: np.ndarray,
-    sample_rate: int = SAMPLE_RATE
-) -> HarmonicFingerprint:
+def compute_harmonic_fingerprint(samples: np.ndarray, sample_rate: int = SAMPLE_RATE) -> HarmonicFingerprint:
     """
     Compute harmonic fingerprint from waveform segment.
 
@@ -423,7 +417,7 @@ def compute_harmonic_fingerprint(
         spectral_centroid = BASE_FREQ
 
     # Energy
-    energy = np.sum(samples ** 2) / n
+    energy = np.sum(samples**2) / n
 
     # Intensity from energy
     intensity = min(1.0, np.sqrt(energy) * 10)
@@ -438,7 +432,7 @@ def compute_harmonic_fingerprint(
         intensity=intensity,
         spectral_centroid=spectral_centroid,
         energy=energy,
-        hash=hash_val
+        hash=hash_val,
     )
 
 
@@ -446,8 +440,10 @@ def compute_harmonic_fingerprint(
 # Geodesic Traversal Integration
 # =============================================================================
 
+
 def poincare_geodesic(u: np.ndarray, v: np.ndarray, t: float, eps: float = 1e-8) -> np.ndarray:
     """Point on geodesic from u to v at parameter t ∈ [0,1]."""
+
     def mobius_add(x, y):
         xy = np.dot(x, y)
         xx = np.dot(x, x)
@@ -486,11 +482,7 @@ def poincare_geodesic(u: np.ndarray, v: np.ndarray, t: float, eps: float = 1e-8)
 
 
 def geodesic_to_waveform(
-    start: np.ndarray,
-    end: np.ndarray,
-    n_points: int = 20,
-    note_duration: float = 0.25,
-    sample_rate: int = SAMPLE_RATE
+    start: np.ndarray, end: np.ndarray, n_points: int = 20, note_duration: float = 0.25, sample_rate: int = SAMPLE_RATE
 ) -> Tuple[np.ndarray, List[SymphonicIntent], str]:
     """
     Generate waveform from geodesic traversal between two points.
@@ -506,9 +498,7 @@ def geodesic_to_waveform(
         path.append(point)
 
     # Generate waveform
-    samples, intents = hyperpath_to_waveform(
-        path, note_duration, sample_rate=sample_rate
-    )
+    samples, intents = hyperpath_to_waveform(path, note_duration, sample_rate=sample_rate)
 
     # Generate filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -520,6 +510,7 @@ def geodesic_to_waveform(
 # =============================================================================
 # Real-Time Rendering Support
 # =============================================================================
+
 
 class RealTimeRenderer:
     """
@@ -546,11 +537,7 @@ class RealTimeRenderer:
 
         # Generate tone
         tone = generate_tone(
-            intent.frequency,
-            duration,
-            self.sample_rate,
-            amplitude=0.5 + intent.intensity * 0.3,
-            phase=intent.phase
+            intent.frequency, duration, self.sample_rate, amplitude=0.5 + intent.intensity * 0.3, phase=intent.phase
         )
 
         # Simple envelope
@@ -564,8 +551,8 @@ class RealTimeRenderer:
     def get_chunk(self) -> Optional[np.ndarray]:
         """Get next audio chunk if available."""
         if len(self.buffer) >= self.chunk_size:
-            chunk = self.buffer[:self.chunk_size]
-            self.buffer = self.buffer[self.chunk_size:]
+            chunk = self.buffer[: self.chunk_size]
+            self.buffer = self.buffer[self.chunk_size :]
             return chunk
         return None
 
@@ -579,6 +566,7 @@ class RealTimeRenderer:
 # =============================================================================
 # Demo
 # =============================================================================
+
 
 def demo():
     """Demonstrate hyperpath to waveform export."""
@@ -638,8 +626,8 @@ def demo():
     # Demo 3: Cross-realm traversal (light -> shadow)
     print("  Demo 3: Cross-Realm Traversal (Light -> Shadow)")
     print("  " + "-" * 60)
-    start_cross = np.array([0.2, 0.2, 0.1])   # Light
-    end_cross = np.array([-0.8, -0.3, 0.0])   # Shadow
+    start_cross = np.array([0.2, 0.2, 0.1])  # Light
+    end_cross = np.array([-0.8, -0.3, 0.0])  # Shadow
 
     samples_cross, intents_cross, filename_cross = geodesic_to_waveform(
         start_cross, end_cross, n_points=25, note_duration=0.2

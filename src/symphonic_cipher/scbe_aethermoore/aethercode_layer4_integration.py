@@ -27,6 +27,7 @@ from typing import Dict, List, Optional, Any
 try:
     from ...spiralverse.vector_6d import Position6D
     from ...spiralverse.aethercode import AetherContext
+
     SPIRALVERSE_AVAILABLE = True
 except ImportError:
     SPIRALVERSE_AVAILABLE = False
@@ -43,10 +44,7 @@ except ImportError:
 
         @property
         def full_vector(self):
-            return np.array([
-                self.axiom, self.flow, self.glyph,
-                self.oracle, self.charm, self.ledger
-            ])
+            return np.array([self.axiom, self.flow, self.glyph, self.oracle, self.charm, self.ledger])
 
 
 # =============================================================================
@@ -57,22 +55,22 @@ PHI = (1 + math.sqrt(5)) / 2  # Golden ratio ≈ 1.618
 
 # Normalization ranges for each axis (based on AXIS_INFO)
 AXIS_NORMALIZATION = {
-    0: {'name': 'AXIOM', 'scale': 1000.0},   # Spatial: normalize to ±1000m
-    1: {'name': 'FLOW', 'scale': 1000.0},    # Spatial
-    2: {'name': 'GLYPH', 'scale': 1000.0},   # Spatial
-    3: {'name': 'ORACLE', 'scale': 100.0},   # Velocity: 0-100 m/s
-    4: {'name': 'CHARM', 'scale': 1.0},      # Already [-1, 1]
-    5: {'name': 'LEDGER', 'scale': 255.0},   # Security: 0-255
+    0: {"name": "AXIOM", "scale": 1000.0},  # Spatial: normalize to ±1000m
+    1: {"name": "FLOW", "scale": 1000.0},  # Spatial
+    2: {"name": "GLYPH", "scale": 1000.0},  # Spatial
+    3: {"name": "ORACLE", "scale": 100.0},  # Velocity: 0-100 m/s
+    4: {"name": "CHARM", "scale": 1.0},  # Already [-1, 1]
+    5: {"name": "LEDGER", "scale": 255.0},  # Security: 0-255
 }
 
 # Tongue weights for Layer 3 weighting (golden ratio powers)
 TONGUE_WEIGHTS = {
-    'AXIOM': PHI ** 0,   # 1.0
-    'FLOW': PHI ** 1,    # 1.618
-    'GLYPH': PHI ** 2,   # 2.618
-    'ORACLE': PHI ** 3,  # 4.236
-    'CHARM': PHI ** 4,   # 6.854
-    'LEDGER': PHI ** 5,  # 11.09
+    "AXIOM": PHI**0,  # 1.0
+    "FLOW": PHI**1,  # 1.618
+    "GLYPH": PHI**2,  # 2.618
+    "ORACLE": PHI**3,  # 4.236
+    "CHARM": PHI**4,  # 6.854
+    "LEDGER": PHI**5,  # 11.09
 }
 
 
@@ -80,11 +78,8 @@ TONGUE_WEIGHTS = {
 # POINCARÉ EMBEDDING (Layer 4)
 # =============================================================================
 
-def poincare_embedding(
-    x: np.ndarray,
-    alpha: float = 1.0,
-    eps_ball: float = 0.01
-) -> np.ndarray:
+
+def poincare_embedding(x: np.ndarray, alpha: float = 1.0, eps_ball: float = 0.01) -> np.ndarray:
     """
     Layer 4: Poincaré Ball Embedding with Clamping.
 
@@ -120,11 +115,7 @@ def poincare_embedding(
     return u
 
 
-def hyperbolic_distance(
-    u: np.ndarray,
-    v: np.ndarray,
-    eps: float = 1e-5
-) -> float:
+def hyperbolic_distance(u: np.ndarray, v: np.ndarray, eps: float = 1e-5) -> float:
     """
     Layer 5: Poincaré Ball Metric.
 
@@ -139,8 +130,8 @@ def hyperbolic_distance(
         Hyperbolic distance
     """
     diff_norm_sq = np.sum((u - v) ** 2)
-    u_norm_sq = np.sum(u ** 2)
-    v_norm_sq = np.sum(v ** 2)
+    u_norm_sq = np.sum(u**2)
+    v_norm_sq = np.sum(v**2)
 
     # Clamp to ensure we stay inside the ball
     u_norm_sq = min(u_norm_sq, 1.0 - eps)
@@ -160,11 +151,13 @@ def hyperbolic_distance(
 # POSITION6D → LAYER 4 INTEGRATION
 # =============================================================================
 
+
 @dataclass
 class PoincarePosition:
     """
     Result of embedding a Position6D into the Poincaré ball.
     """
+
     # Original position
     original: np.ndarray
     normalized: np.ndarray
@@ -177,7 +170,7 @@ class PoincarePosition:
     norm_in_ball: float  # ||embedded|| < 1
     axis_contributions: Dict[str, float]  # Per-axis contribution
 
-    def distance_to(self, other: 'PoincarePosition') -> float:
+    def distance_to(self, other: "PoincarePosition") -> float:
         """Hyperbolic distance to another embedded position."""
         return hyperbolic_distance(self.embedded, other.embedded)
 
@@ -242,7 +235,7 @@ class AethercodeLayer4Bridge:
         normalized = np.zeros(6)
 
         for i, val in enumerate(vec):
-            scale = AXIS_NORMALIZATION[i]['scale']
+            scale = AXIS_NORMALIZATION[i]["scale"]
             # Normalize to [-1, 1] using tanh for smooth clamping
             normalized[i] = np.tanh(val / scale)
 
@@ -285,8 +278,8 @@ class AethercodeLayer4Bridge:
 
         # Compute axis contributions
         contributions = {}
-        axes = ['AXIOM', 'FLOW', 'GLYPH', 'ORACLE', 'CHARM', 'LEDGER']
-        total = np.sum(embedded ** 2)
+        axes = ["AXIOM", "FLOW", "GLYPH", "ORACLE", "CHARM", "LEDGER"]
+        total = np.sum(embedded**2)
         for i, axis in enumerate(axes):
             contributions[axis] = float(embedded[i] ** 2 / total) if total > 0 else 0.0
 
@@ -299,11 +292,7 @@ class AethercodeLayer4Bridge:
             axis_contributions=contributions,
         )
 
-    def compute_distance(
-        self,
-        pos1: Position6D,
-        pos2: Position6D
-    ) -> float:
+    def compute_distance(self, pos1: Position6D, pos2: Position6D) -> float:
         """
         Compute hyperbolic distance between two 6D positions.
 
@@ -335,7 +324,7 @@ class AethercodeLayer4Bridge:
         origin = np.zeros(6)
         return hyperbolic_distance(emb.embedded, origin)
 
-    def embed_context(self, ctx: 'AetherContext') -> Optional[PoincarePosition]:
+    def embed_context(self, ctx: "AetherContext") -> Optional[PoincarePosition]:
         """
         Embed an Aethercode execution context's position.
 
@@ -348,7 +337,7 @@ class AethercodeLayer4Bridge:
         if not SPIRALVERSE_AVAILABLE:
             return None
 
-        if hasattr(ctx, 'position'):
+        if hasattr(ctx, "position"):
             return self.embed_position(ctx.position)
         return None
 
@@ -356,6 +345,7 @@ class AethercodeLayer4Bridge:
 # =============================================================================
 # CONVENIENCE FUNCTIONS
 # =============================================================================
+
 
 def create_bridge(**kwargs) -> AethercodeLayer4Bridge:
     """Factory function to create the bridge."""
@@ -386,23 +376,13 @@ def embed_position_simple(
     Returns:
         6D point in Poincaré ball
     """
-    pos = Position6D(
-        axiom=axiom,
-        flow=flow,
-        glyph=glyph,
-        oracle=oracle,
-        charm=charm,
-        ledger=int(ledger)
-    )
+    pos = Position6D(axiom=axiom, flow=flow, glyph=glyph, oracle=oracle, charm=charm, ledger=int(ledger))
     bridge = AethercodeLayer4Bridge(alpha=alpha)
     result = bridge.embed_position(pos)
     return result.embedded
 
 
-def position_risk_score(
-    pos: Position6D,
-    safe_position: Optional[Position6D] = None
-) -> Dict[str, Any]:
+def position_risk_score(pos: Position6D, safe_position: Optional[Position6D] = None) -> Dict[str, Any]:
     """
     Compute risk score based on position in Poincaré ball.
 
@@ -434,18 +414,19 @@ def position_risk_score(
     risk_normalized = 1.0 - np.exp(-risk_raw / 2.0)  # Maps to [0, 1)
 
     return {
-        'distance_from_origin': dist_origin,
-        'distance_from_safe': dist_safe,
-        'risk_score': float(risk_normalized),
-        'norm_in_ball': emb.norm_in_ball,
-        'axis_contributions': emb.axis_contributions,
-        'is_near_boundary': emb.norm_in_ball > 0.9,
+        "distance_from_origin": dist_origin,
+        "distance_from_safe": dist_safe,
+        "risk_score": float(risk_normalized),
+        "norm_in_ball": emb.norm_in_ball,
+        "axis_contributions": emb.axis_contributions,
+        "is_near_boundary": emb.norm_in_ball > 0.9,
     }
 
 
 # =============================================================================
 # PIPELINE INTEGRATION
 # =============================================================================
+
 
 class Layer4PositionPipeline:
     """
@@ -490,12 +471,12 @@ class Layer4PositionPipeline:
         risk = position_risk_score(pos)
 
         return {
-            'layer_3_weighted': embedded.weighted.tolist(),
-            'layer_4_embedded': embedded.embedded.tolist(),
-            'layer_5_distance': dist_origin,
-            'velocity': velocity,
-            'risk': risk,
-            'valid': embedded.is_valid,
+            "layer_3_weighted": embedded.weighted.tolist(),
+            "layer_4_embedded": embedded.embedded.tolist(),
+            "layer_5_distance": dist_origin,
+            "velocity": velocity,
+            "risk": risk,
+            "valid": embedded.is_valid,
         }
 
     def get_trajectory(self) -> List[np.ndarray]:

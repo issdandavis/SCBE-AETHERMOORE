@@ -71,7 +71,9 @@ for pf in prompt_files:
             continue
 
         t0 = time.time()
-        print(f"  [{i+1}/{len(chapter_data['panels'])}] {panel['id']} ({panel['w']}x{panel['h']})...", end=" ", flush=True)
+        print(
+            f"  [{i+1}/{len(chapter_data['panels'])}] {panel['id']} ({panel['w']}x{panel['h']})...", end=" ", flush=True
+        )
 
         image = pipe(
             prompt=panel["prompt"],
@@ -94,12 +96,16 @@ for pf in prompt_files:
     # Save chapter manifest
     manifest = ch_dir / "manifest.json"
     with open(manifest, "w") as f:
-        json.dump({
-            "chapter": ch_id,
-            "title": chapter_data.get("title", ""),
-            "panels": results,
-            "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        }, f, indent=2)
+        json.dump(
+            {
+                "chapter": ch_id,
+                "title": chapter_data.get("title", ""),
+                "panels": results,
+                "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            },
+            f,
+            indent=2,
+        )
 
 elapsed_total = time.time() - t0_global
 print(f"\n{'='*50}")
@@ -112,6 +118,7 @@ print(f"{'='*50}")
 
 # Cell 5: Zip for download
 import shutil
+
 shutil.make_archive("six_tongues_panels", "zip", OUTPUT_DIR)
 print(f"Download: six_tongues_panels.zip ({os.path.getsize('six_tongues_panels.zip')/1024/1024:.1f} MB)")
 

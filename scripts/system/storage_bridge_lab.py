@@ -53,6 +53,7 @@ ARTIFACT_DIR = REPO_ROOT / "artifacts" / "system_audit" / "storage_bridge_lab"
 #  Hypothesis Deck
 # --------------------------------------------------------------------------- #
 
+
 @dataclass(frozen=True)
 class HypothesisCard:
     """One tunable knob in the experiment deck."""
@@ -153,6 +154,7 @@ def get_hypothesis_deck() -> list[dict[str, Any]]:
 #  Shared geometry derivation
 # --------------------------------------------------------------------------- #
 
+
 def _blake2_unit(seed: str) -> float:
     """Deterministic hash → [0, 1)."""
     digest = hashlib.blake2s(seed.encode("utf-8"), digest_size=8).digest()
@@ -203,11 +205,11 @@ def _note_to_geometry(note: NoteRecord, index: int) -> dict[str, Any]:
     # KO=governance, AV=transport (word density), RU=policy (unique ratio),
     # CA=compute (digit ratio), UM=redaction (uppercase ratio), DR=integrity (punctuation)
     tongue_coords = [
-        float(np.clip(intent[0], 0, 1)),                         # KO
-        float(np.clip(metrics["word_count"] / 600.0, 0, 1)),     # AV
-        float(np.clip(metrics["unique_ratio"], 0, 1)),            # RU
-        float(np.clip(metrics["digit_ratio"] * 10, 0, 1)),       # CA
-        float(np.clip(metrics["uppercase_ratio"] * 5, 0, 1)),    # UM
+        float(np.clip(intent[0], 0, 1)),  # KO
+        float(np.clip(metrics["word_count"] / 600.0, 0, 1)),  # AV
+        float(np.clip(metrics["unique_ratio"], 0, 1)),  # RU
+        float(np.clip(metrics["digit_ratio"] * 10, 0, 1)),  # CA
+        float(np.clip(metrics["uppercase_ratio"] * 5, 0, 1)),  # UM
         float(np.clip(metrics["punctuation_ratio"] * 8, 0, 1)),  # DR
     ]
 
@@ -261,9 +263,11 @@ def _mirror_coord(coord_3d: np.ndarray, intent: list[float]) -> Optional[np.ndar
 #  Storage Bridge Lab
 # --------------------------------------------------------------------------- #
 
+
 @dataclass
 class SurfaceReceipt:
     """What one surface returned for one record."""
+
     surface: str
     note_id: str
     stored: bool
@@ -274,6 +278,7 @@ class SurfaceReceipt:
 @dataclass
 class BridgeConfig:
     """Tunable knobs for the bridge lab."""
+
     # Octree
     octree_max_depth: int = 3
     octree_grid_size: int = 64
@@ -352,11 +357,15 @@ class StorageBridgeLab:
         t0 = time.perf_counter_ns()
         self.octree.insert(geo["coord_3d"], geo["realm"])
         elapsed = (time.perf_counter_ns() - t0) // 1000
-        receipts.append(SurfaceReceipt(
-            surface="octree", note_id=geo["note_id"], stored=True,
-            elapsed_us=elapsed,
-            extra={"realm": geo["realm"], "coord_3d": geo["coord_3d"].tolist()},
-        ))
+        receipts.append(
+            SurfaceReceipt(
+                surface="octree",
+                note_id=geo["note_id"],
+                stored=True,
+                elapsed_us=elapsed,
+                extra={"realm": geo["realm"], "coord_3d": geo["coord_3d"].tolist()},
+            )
+        )
 
         # Optional negative-vector fold
         if self.config.negative_fold:
@@ -366,11 +375,15 @@ class StorageBridgeLab:
                 self.octree.insert(mirrored, "shadow_realm")
                 elapsed_fold = (time.perf_counter_ns() - t0) // 1000
                 self._fold_count += 1
-                receipts.append(SurfaceReceipt(
-                    surface="octree_fold", note_id=geo["note_id"], stored=True,
-                    elapsed_us=elapsed_fold,
-                    extra={"mirrored_coord": mirrored.tolist()},
-                ))
+                receipts.append(
+                    SurfaceReceipt(
+                        surface="octree_fold",
+                        note_id=geo["note_id"],
+                        stored=True,
+                        elapsed_us=elapsed_fold,
+                        extra={"mirrored_coord": mirrored.tolist()},
+                    )
+                )
 
         # ---- 2. HyperbolicLattice25D ----
         t0 = time.perf_counter_ns()
@@ -386,11 +399,15 @@ class StorageBridgeLab:
             wavelength_nm=550.0,
         )
         elapsed = (time.perf_counter_ns() - t0) // 1000
-        receipts.append(SurfaceReceipt(
-            surface="lattice25d", note_id=geo["note_id"], stored=True,
-            elapsed_us=elapsed,
-            extra={"bundle_id": bundle.bundle_id, "tongue": bundle.tongue},
-        ))
+        receipts.append(
+            SurfaceReceipt(
+                surface="lattice25d",
+                note_id=geo["note_id"],
+                stored=True,
+                elapsed_us=elapsed,
+                extra={"bundle_id": bundle.bundle_id, "tongue": bundle.tongue},
+            )
+        )
 
         # ---- 3. QuasiCrystalVoxelDrive ----
         t0 = time.perf_counter_ns()
@@ -401,26 +418,34 @@ class StorageBridgeLab:
             category=geo["realm"],
         )
         elapsed = (time.perf_counter_ns() - t0) // 1000
-        receipts.append(SurfaceReceipt(
-            surface="qc_drive", note_id=geo["note_id"], stored=True,
-            elapsed_us=elapsed,
-            extra={
-                "cell_id": cell.cell_id,
-                "chladni_mode": list(cell.chladni_mode),
-                "phase": cell.phase,
-            },
-        ))
+        receipts.append(
+            SurfaceReceipt(
+                surface="qc_drive",
+                note_id=geo["note_id"],
+                stored=True,
+                elapsed_us=elapsed,
+                extra={
+                    "cell_id": cell.cell_id,
+                    "chladni_mode": list(cell.chladni_mode),
+                    "phase": cell.phase,
+                },
+            )
+        )
 
         # ---- 4. ScatteredAttentionSphere (accumulate feature row) ----
         # The sphere takes 2D matrices. We accumulate a feature row per note
         # and scatter the batch when compare() is called.
         feature_row = list(geo["tongue_coords"]) + list(geo["intent_vector"])
         self._feature_rows.append(feature_row)
-        receipts.append(SurfaceReceipt(
-            surface="sphere", note_id=geo["note_id"], stored=True,
-            elapsed_us=0,  # deferred until scatter
-            extra={"feature_dim": len(feature_row)},
-        ))
+        receipts.append(
+            SurfaceReceipt(
+                surface="sphere",
+                note_id=geo["note_id"],
+                stored=True,
+                elapsed_us=0,  # deferred until scatter
+                extra={"feature_dim": len(feature_row)},
+            )
+        )
 
         self._receipts.extend(receipts)
         return receipts
@@ -474,14 +499,17 @@ class StorageBridgeLab:
 
         # Governance trace: can we look up a random ingested record in each surface?
         trace_hits = {"octree": 0, "lattice25d": 0, "qc_drive": 0}
-        for geo in self._ingested[:min(20, n)]:
+        for geo in self._ingested[: min(20, n)]:
             if self.octree.query(geo["coord_3d"]) is not None:
                 trace_hits["octree"] += 1
             # Lattice: query_nearest returns results if stored
             nearest = self.lattice.query_nearest(
-                geo["x"], geo["y"], geo["phase_rad"],
+                geo["x"],
+                geo["y"],
+                geo["phase_rad"],
                 intent_vector=list(geo["intent_vector"]),
-                tongue=geo["tongue"], top_k=1,
+                tongue=geo["tongue"],
+                top_k=1,
             )
             if nearest:
                 trace_hits["lattice25d"] += 1
@@ -492,10 +520,7 @@ class StorageBridgeLab:
                 trace_hits["qc_drive"] += 1
 
         trace_sample = min(20, n)
-        trace_rate = {
-            surface: hits / max(1, trace_sample)
-            for surface, hits in trace_hits.items()
-        }
+        trace_rate = {surface: hits / max(1, trace_sample) for surface, hits in trace_hits.items()}
 
         # Sphere: band sweep for tongue distribution
         sweep_results = self.sphere.sweep(steps=6) if sphere_stats.get("total_points", 0) > 0 else []
@@ -546,9 +571,7 @@ class StorageBridgeLab:
                     "total_points": sphere_stats.get("total_points", 0),
                     "scattered_points": sphere_stats.get("scattered_points", 0),
                     "tongue_evenness": round(tongue_evenness, 4),
-                    "node_explosion": round(
-                        sphere_stats.get("total_points", 0) / n, 4
-                    ),
+                    "node_explosion": round(sphere_stats.get("total_points", 0) / n, 4),
                 },
             },
             "governance_trace_rate": trace_rate,
@@ -566,9 +589,7 @@ class StorageBridgeLab:
                     ("sphere", sphere_stats.get("total_points", 0) / n),
                     key=lambda pair: pair[1],
                 )[0],
-                "best_governance_trace": max(
-                    trace_rate.items(), key=lambda pair: pair[1]
-                )[0] if trace_rate else "none",
+                "best_governance_trace": max(trace_rate.items(), key=lambda pair: pair[1])[0] if trace_rate else "none",
             },
         }
 
@@ -591,6 +612,7 @@ class StorageBridgeLab:
 # --------------------------------------------------------------------------- #
 #  Workload generators
 # --------------------------------------------------------------------------- #
+
 
 def build_bridge_workload(
     seed: int = 42,
@@ -624,15 +646,17 @@ def build_bridge_workload(
         if idx % 7 == 0:
             text += f" NUMERIC DATA: {rng.random():.6f} {rng.randint(100, 999)}"
 
-        notes.append(NoteRecord(
-            note_id=f"bridge-{seed}-{idx:04d}",
-            text=text,
-            tags=("bridge-lab", f"batch-{seed}"),
-            source="bridge-lab",
-            authority=authorities[idx % len(authorities)],
-            tongue=tongues[idx % len(tongues)],
-            phase_rad=(idx * 0.52) % (2.0 * math.pi),
-        ))
+        notes.append(
+            NoteRecord(
+                note_id=f"bridge-{seed}-{idx:04d}",
+                text=text,
+                tags=("bridge-lab", f"batch-{seed}"),
+                source="bridge-lab",
+                authority=authorities[idx % len(authorities)],
+                tongue=tongues[idx % len(tongues)],
+                phase_rad=(idx * 0.52) % (2.0 * math.pi),
+            )
+        )
 
     return notes
 
@@ -641,12 +665,11 @@ def build_bridge_workload(
 #  CLI
 # --------------------------------------------------------------------------- #
 
+
 def main(argv: Sequence[str] | None = None) -> int:
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Run multi-surface storage bridge comparison."
-    )
+    parser = argparse.ArgumentParser(description="Run multi-surface storage bridge comparison.")
     parser.add_argument("--count", type=int, default=24, help="Number of notes to ingest")
     parser.add_argument("--seed", type=int, default=42, help="Workload seed")
     parser.add_argument("--no-fold", action="store_true", help="Disable negative-vector fold")

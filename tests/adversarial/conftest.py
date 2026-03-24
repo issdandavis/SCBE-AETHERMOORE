@@ -1,4 +1,5 @@
 """Adversarial test suite conftest — minimal, no heavy imports."""
+
 import os
 import sys
 

@@ -60,12 +60,14 @@ def nav_arxiv_playwright(query: str, max_results: int = 5, save_to_vault: Option
                 if link:
                     arxiv_id = link.split("/abs/")[-1] if "/abs/" in link else ""
 
-                results.append({
-                    "arxiv_id": arxiv_id,
-                    "title": title,
-                    "abstract": abstract[:500],
-                    "link": link,
-                })
+                results.append(
+                    {
+                        "arxiv_id": arxiv_id,
+                        "title": title,
+                        "abstract": abstract[:500],
+                        "link": link,
+                    }
+                )
         except Exception as exc:
             print(f"Browser error: {exc}", file=sys.stderr)
         finally:
@@ -77,7 +79,9 @@ def nav_arxiv_playwright(query: str, max_results: int = 5, save_to_vault: Option
     return results
 
 
-def nav_arxiv_api_fallback(query: str, max_results: int = 5, save_to_vault: Optional[str] = None) -> List[Dict[str, Any]]:
+def nav_arxiv_api_fallback(
+    query: str, max_results: int = 5, save_to_vault: Optional[str] = None
+) -> List[Dict[str, Any]]:
     """Fallback: use arXiv API (no Playwright needed)."""
     import urllib.request
     import xml.etree.ElementTree as ET
@@ -105,12 +109,14 @@ def nav_arxiv_api_fallback(query: str, max_results: int = 5, save_to_vault: Opti
 
             arxiv_id = link.split("/abs/")[-1] if "/abs/" in link else ""
 
-            results.append({
-                "arxiv_id": arxiv_id,
-                "title": title,
-                "abstract": abstract[:500],
-                "link": link,
-            })
+            results.append(
+                {
+                    "arxiv_id": arxiv_id,
+                    "title": title,
+                    "abstract": abstract[:500],
+                    "link": link,
+                }
+            )
     except Exception as exc:
         print(f"API error: {exc}", file=sys.stderr)
 

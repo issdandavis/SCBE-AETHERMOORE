@@ -4,8 +4,12 @@ from __future__ import annotations
 
 import pytest
 from src.storage.tictac_spin_grid import (
-    SpinBoard, SpinStack, encode_spin_stack, stack_distance,
-    board_distance, text_to_features,
+    SpinBoard,
+    SpinStack,
+    encode_spin_stack,
+    stack_distance,
+    board_distance,
+    text_to_features,
 )
 
 

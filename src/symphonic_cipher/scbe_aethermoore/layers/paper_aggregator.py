@@ -138,9 +138,7 @@ def aggregate_sources(
         bundle["npm"] = npm_fetcher(npm_url)
     except Exception as exc:  # noqa: BLE001
         bundle["npm"] = {}
-        bundle["fetch_errors"].append(
-            {"source": "npm", "target": npm_package, "error": str(exc)}
-        )
+        bundle["fetch_errors"].append({"source": "npm", "target": npm_package, "error": str(exc)})
 
     for file_name in space_files:
         bundle["space"].append({"file": file_name, "content": "external-export-placeholder"})

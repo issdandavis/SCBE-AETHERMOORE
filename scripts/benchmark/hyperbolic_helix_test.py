@@ -20,6 +20,7 @@ from typing import Dict, Tuple
 import numpy as np
 
 import sys
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tests.adversarial.tongue_semantic import semantic_tongue_coords, TONGUE_WEIGHTS, TONGUE_NAMES
@@ -31,6 +32,7 @@ PI = math.pi
 # ═══════════════════════════════════════════════════════════
 # Poincare Ball Operations (from hyperbolic.ts)
 # ═══════════════════════════════════════════════════════════
+
 
 def poincare_project(v: np.ndarray, max_norm: float = 0.999) -> np.ndarray:
     """Project onto the Poincare ball."""
@@ -56,11 +58,11 @@ def mobius_add(u: np.ndarray, v: np.ndarray, eps: float = 1e-10) -> np.ndarray:
 def hyperbolic_distance(u: np.ndarray, v: np.ndarray, eps: float = 1e-10) -> float:
     """Poincare ball distance: d_H = acosh(1 + 2|u-v|^2 / ((1-|u|^2)(1-|v|^2)))"""
     diff_sq = np.sum((u - v) ** 2)
-    u_sq = np.sum(u ** 2)
-    v_sq = np.sum(v ** 2)
+    u_sq = np.sum(u**2)
+    v_sq = np.sum(v**2)
     denom = (1 - u_sq) * (1 - v_sq)
     if denom <= eps:
-        return float('inf')
+        return float("inf")
     arg = 1 + 2 * diff_sq / max(denom, eps)
     return math.acosh(max(arg, 1.0))
 
@@ -84,6 +86,7 @@ def log_map_zero(p: np.ndarray, eps: float = 1e-10) -> np.ndarray:
 # ═══════════════════════════════════════════════════════════
 # Embedding Methods
 # ═══════════════════════════════════════════════════════════
+
 
 def embed_flat(text: str, dim: int = 64) -> np.ndarray:
     """Flat Euclidean hash embedding (their game)."""
@@ -154,6 +157,7 @@ def embed_hyperbolic_helix(text: str) -> np.ndarray:
 # Distance functions
 # ═══════════════════════════════════════════════════════════
 
+
 def cosine_dist(a: np.ndarray, b: np.ndarray) -> float:
     cos = float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-10))
     return 1.0 - min(max(cos, -1.0), 1.0)
@@ -221,13 +225,15 @@ def evaluate(name: str, embed_fn, dist_fn):
             for j in idx:
                 if i < j:
                     d = dist_fn(embeddings[i], embeddings[j])
-                    if math.isfinite(d): intra.append(d)
+                    if math.isfinite(d):
+                        intra.append(d)
         for on, oidx in CLUSTERS.items():
             if cn < on:
                 for i in idx:
                     for j in oidx:
                         d = dist_fn(embeddings[i], embeddings[j])
-                        if math.isfinite(d): inter.append(d)
+                        if math.isfinite(d):
+                            inter.append(d)
 
     avg_intra = sum(intra) / max(len(intra), 1)
     avg_inter = sum(inter) / max(len(inter), 1)
@@ -239,9 +245,13 @@ def evaluate(name: str, embed_fn, dist_fn):
     tech_dists = []
     origin = np.zeros(len(embeddings[0]))
     for i in range(5):
-        tech_dists.append(dist_fn(embeddings[i], origin) if np.linalg.norm(origin) > 0 else np.linalg.norm(embeddings[i]))
+        tech_dists.append(
+            dist_fn(embeddings[i], origin) if np.linalg.norm(origin) > 0 else np.linalg.norm(embeddings[i])
+        )
     for i in range(10, 15):
-        adv_dists.append(dist_fn(embeddings[i], origin) if np.linalg.norm(origin) > 0 else np.linalg.norm(embeddings[i]))
+        adv_dists.append(
+            dist_fn(embeddings[i], origin) if np.linalg.norm(origin) > 0 else np.linalg.norm(embeddings[i])
+        )
 
     return {
         "name": name,
@@ -276,7 +286,9 @@ def main():
     print(f"{'Method':<35} {'Recall':>8} {'Sep':>8} {'Intra':>10} {'Inter':>10} {'Adv-R':>8} {'Tech-R':>8}")
     print("-" * 90)
     for r in results:
-        print(f"{r['name']:<35} {r['recall']:>7.0%} {r['separation']:>8.3f} {r['avg_intra']:>10.6f} {r['avg_inter']:>10.6f} {r['adv_radius']:>8.4f} {r['tech_radius']:>8.4f}")
+        print(
+            f"{r['name']:<35} {r['recall']:>7.0%} {r['separation']:>8.3f} {r['avg_intra']:>10.6f} {r['avg_inter']:>10.6f} {r['adv_radius']:>8.4f} {r['tech_radius']:>8.4f}"
+        )
 
     print()
     # Analysis
@@ -285,24 +297,26 @@ def main():
     hyp = results[1]
 
     print("Analysis:")
-    if helix['separation'] > flat['separation']:
+    if helix["separation"] > flat["separation"]:
         print(f"  Helix separation beats flat by {((helix['separation']/flat['separation'])-1)*100:+.1f}%")
     else:
         print(f"  Flat separation beats helix by {((flat['separation']/helix['separation'])-1)*100:+.1f}%")
 
-    if helix['separation'] > hyp['separation']:
+    if helix["separation"] > hyp["separation"]:
         print(f"  Helix separation beats plain hyperbolic by {((helix['separation']/hyp['separation'])-1)*100:+.1f}%")
 
-    if helix['recall'] >= flat['recall']:
+    if helix["recall"] >= flat["recall"]:
         print(f"  Helix recall matches or beats flat")
     else:
         print(f"  Helix recall tradeoff: {((flat['recall']-helix['recall'])/max(flat['recall'],0.01))*100:.0f}% lower")
 
     # Key: does adversarial text end up FARTHER from center in hyperbolic?
-    if helix['adv_radius'] > helix['tech_radius']:
+    if helix["adv_radius"] > helix["tech_radius"]:
         print(f"  Adversarial is FARTHER from center ({helix['adv_radius']:.4f} vs {helix['tech_radius']:.4f}) - GOOD")
     else:
-        print(f"  Adversarial is CLOSER to center ({helix['adv_radius']:.4f} vs {helix['tech_radius']:.4f}) - needs work")
+        print(
+            f"  Adversarial is CLOSER to center ({helix['adv_radius']:.4f} vs {helix['tech_radius']:.4f}) - needs work"
+        )
 
     # Save
     out = Path("artifacts/benchmark/hyperbolic_helix_test.json")

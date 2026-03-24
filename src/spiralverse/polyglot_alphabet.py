@@ -28,13 +28,15 @@ from enum import Enum
 # Tongue Definitions
 # =============================================================================
 
+
 class TongueID(Enum):
     """The Six Sacred Tongues as protocol domains."""
-    AXIOM = "AXIOM"    # X-axis: Forward/Command
-    FLOW = "FLOW"      # Y-axis: Lateral/Transition
-    GLYPH = "GLYPH"    # Z-axis: Vertical/Structure
+
+    AXIOM = "AXIOM"  # X-axis: Forward/Command
+    FLOW = "FLOW"  # Y-axis: Lateral/Transition
+    GLYPH = "GLYPH"  # Z-axis: Vertical/Structure
     ORACLE = "ORACLE"  # V-axis: Velocity/Time
-    CHARM = "CHARM"    # H-axis: Harmony/Priority
+    CHARM = "CHARM"  # H-axis: Harmony/Priority
     LEDGER = "LEDGER"  # S-axis: Security/Record
 
 
@@ -46,6 +48,7 @@ class TongueAlphabet:
     Each alphabet contains 6-8 unique symbols plus their Unicode encodings
     and a cryptographic signature (first 8 hex chars of SHA-256).
     """
+
     tongue_id: TongueID
     symbols: List[str]
     encoding: Dict[str, int]
@@ -84,104 +87,104 @@ class TongueAlphabet:
 
 AXIOM_ALPHABET = TongueAlphabet(
     tongue_id=TongueID.AXIOM,
-    symbols=['A', 'X', 'I', 'O', 'M', '\u0394', '\u2192', '\u2234'],  # A X I O M Delta Arrow Therefore
+    symbols=["A", "X", "I", "O", "M", "\u0394", "\u2192", "\u2234"],  # A X I O M Delta Arrow Therefore
     encoding={
-        'A': 0x41,       # Assert/Affirmative
-        'X': 0x58,       # Execute
-        'I': 0x49,       # Initiate
-        'O': 0x4F,       # Objective
-        'M': 0x4D,       # Manifest
-        '\u0394': 0x0394,  # Delta/Change
-        '\u2192': 0x2192,  # Direction vector (->)
-        '\u2234': 0x2234,  # Therefore
+        "A": 0x41,  # Assert/Affirmative
+        "X": 0x58,  # Execute
+        "I": 0x49,  # Initiate
+        "O": 0x4F,  # Objective
+        "M": 0x4D,  # Manifest
+        "\u0394": 0x0394,  # Delta/Change
+        "\u2192": 0x2192,  # Direction vector (->)
+        "\u2234": 0x2234,  # Therefore
     },
     role="Directives and forward momentum",
-    signature="a3f7c2e1"
+    signature="a3f7c2e1",
 )
 
 FLOW_ALPHABET = TongueAlphabet(
     tongue_id=TongueID.FLOW,
-    symbols=['F', 'L', 'W', 'Y', '~', '\u21C4', '\u221E', '\u25CA'],  # F L W Y ~ Bidirectional Infinity Diamond
+    symbols=["F", "L", "W", "Y", "~", "\u21c4", "\u221e", "\u25ca"],  # F L W Y ~ Bidirectional Infinity Diamond
     encoding={
-        'F': 0x46,       # Flux
-        'L': 0x4C,       # Lateral
-        'W': 0x57,       # Wave
-        'Y': 0x59,       # Yield/Bifurcate
-        '~': 0x007E,     # Oscillation
-        '\u21C4': 0x21C4,  # Bidirectional
-        '\u221E': 0x221E,  # Infinite loop
-        '\u25CA': 0x25CA,  # Decision node (diamond)
+        "F": 0x46,  # Flux
+        "L": 0x4C,  # Lateral
+        "W": 0x57,  # Wave
+        "Y": 0x59,  # Yield/Bifurcate
+        "~": 0x007E,  # Oscillation
+        "\u21c4": 0x21C4,  # Bidirectional
+        "\u221e": 0x221E,  # Infinite loop
+        "\u25ca": 0x25CA,  # Decision node (diamond)
     },
     role="Transitions and lateral coordination",
-    signature="b8e4d9c3"
+    signature="b8e4d9c3",
 )
 
 GLYPH_ALPHABET = TongueAlphabet(
     tongue_id=TongueID.GLYPH,
-    symbols=['G', 'H', 'P', 'Z', '|', '\u2195', '\u22A5', '\u22A4'],  # G H P Z | UpDown Bottom Top
+    symbols=["G", "H", "P", "Z", "|", "\u2195", "\u22a5", "\u22a4"],  # G H P Z | UpDown Bottom Top
     encoding={
-        'G': 0x47,       # Gravity/Ground
-        'H': 0x48,       # Height
-        'P': 0x50,       # Peak
-        'Z': 0x5A,       # Zenith
-        '|': 0x007C,     # Vertical bar
-        '\u2195': 0x2195,  # Vertical arrow
-        '\u22A5': 0x22A5,  # Bottom/Base
-        '\u22A4': 0x22A4,  # Top/Apex
+        "G": 0x47,  # Gravity/Ground
+        "H": 0x48,  # Height
+        "P": 0x50,  # Peak
+        "Z": 0x5A,  # Zenith
+        "|": 0x007C,  # Vertical bar
+        "\u2195": 0x2195,  # Vertical arrow
+        "\u22a5": 0x22A5,  # Bottom/Base
+        "\u22a4": 0x22A4,  # Top/Apex
     },
     role="Hierarchies and vertical structure",
-    signature="c1d5a7f2"
+    signature="c1d5a7f2",
 )
 
 ORACLE_ALPHABET = TongueAlphabet(
     tongue_id=TongueID.ORACLE,
-    symbols=['R', 'C', 'E', 'T', 'V', '\u26A1', '\u23F1', '\u25C9'],  # R C E T V Lightning Stopwatch Target
+    symbols=["R", "C", "E", "T", "V", "\u26a1", "\u23f1", "\u25c9"],  # R C E T V Lightning Stopwatch Target
     encoding={
-        'R': 0x52,       # Rate
-        'C': 0x43,       # Chronos/Clock
-        'E': 0x45,       # Event
-        'T': 0x54,       # Time
-        'V': 0x56,       # Velocity
-        '\u26A1': 0x26A1,  # Instant/Lightning
-        '\u23F1': 0x23F1,  # Stopwatch
-        '\u25C9': 0x25C9,  # Target/Destination
+        "R": 0x52,  # Rate
+        "C": 0x43,  # Chronos/Clock
+        "E": 0x45,  # Event
+        "T": 0x54,  # Time
+        "V": 0x56,  # Velocity
+        "\u26a1": 0x26A1,  # Instant/Lightning
+        "\u23f1": 0x23F1,  # Stopwatch
+        "\u25c9": 0x25C9,  # Target/Destination
     },
     role="Temporal dynamics and velocity",
-    signature="d9a2b6e8"
+    signature="d9a2b6e8",
 )
 
 CHARM_ALPHABET = TongueAlphabet(
     tongue_id=TongueID.CHARM,
-    symbols=['S', 'N', 'U', 'K', '\u266A', '\u2696', '\u262F', '\u2727'],  # S N U K Note Balance YinYang Star
+    symbols=["S", "N", "U", "K", "\u266a", "\u2696", "\u262f", "\u2727"],  # S N U K Note Balance YinYang Star
     encoding={
-        'S': 0x53,       # Sync
-        'N': 0x4E,       # Negotiate
-        'U': 0x55,       # Unity
-        'K': 0x4B,       # Kinship
-        '\u266A': 0x266A,  # Musical note/Resonance
-        '\u2696': 0x2696,  # Balance/Fairness
-        '\u262F': 0x262F,  # Yin-yang/Harmony
-        '\u2727': 0x2727,  # Sparkle/Priority star
+        "S": 0x53,  # Sync
+        "N": 0x4E,  # Negotiate
+        "U": 0x55,  # Unity
+        "K": 0x4B,  # Kinship
+        "\u266a": 0x266A,  # Musical note/Resonance
+        "\u2696": 0x2696,  # Balance/Fairness
+        "\u262f": 0x262F,  # Yin-yang/Harmony
+        "\u2727": 0x2727,  # Sparkle/Priority star
     },
     role="Priority negotiation and harmony",
-    signature="e4f1c8d7"
+    signature="e4f1c8d7",
 )
 
 LEDGER_ALPHABET = TongueAlphabet(
     tongue_id=TongueID.LEDGER,
-    symbols=['D', 'B', 'J', 'Q', '#', '\U0001F512', '\u2211', '\u26BF'],  # D B J Q # Lock Sigma Key
+    symbols=["D", "B", "J", "Q", "#", "\U0001f512", "\u2211", "\u26bf"],  # D B J Q # Lock Sigma Key
     encoding={
-        'D': 0x44,       # Document
-        'B': 0x42,       # Block/Barrier
-        'J': 0x4A,       # Journal
-        'Q': 0x51,       # Query/Question
-        '#': 0x0023,     # Hash/Number
-        '\U0001F512': 0x1F512,  # Lock emoji
-        '\u2211': 0x2211,  # Summation/Checksum
-        '\u26BF': 0x26BF,  # Squared key
+        "D": 0x44,  # Document
+        "B": 0x42,  # Block/Barrier
+        "J": 0x4A,  # Journal
+        "Q": 0x51,  # Query/Question
+        "#": 0x0023,  # Hash/Number
+        "\U0001f512": 0x1F512,  # Lock emoji
+        "\u2211": 0x2211,  # Summation/Checksum
+        "\u26bf": 0x26BF,  # Squared key
     },
     role="Authentication and record-keeping",
-    signature="f7b3e5a9"
+    signature="f7b3e5a9",
 )
 
 # All alphabets indexed by tongue
@@ -195,14 +198,13 @@ TONGUE_ALPHABETS: Dict[TongueID, TongueAlphabet] = {
 }
 
 # Signature lookup
-SIGNATURE_TO_TONGUE: Dict[str, TongueID] = {
-    alph.signature: alph.tongue_id for alph in TONGUE_ALPHABETS.values()
-}
+SIGNATURE_TO_TONGUE: Dict[str, TongueID] = {alph.signature: alph.tongue_id for alph in TONGUE_ALPHABETS.values()}
 
 
 # =============================================================================
 # Universal Alphabet Assembly
 # =============================================================================
+
 
 def get_universal_letters() -> List[str]:
     """
@@ -240,6 +242,7 @@ UNIVERSAL_SYMBOLS = get_universal_symbols()
 # Signature Verification
 # =============================================================================
 
+
 def verify_tongue_signature(alphabet: TongueAlphabet, message: str) -> bool:
     """
     Verify that a message uses only symbols from the specified tongue
@@ -253,10 +256,10 @@ def verify_tongue_signature(alphabet: TongueAlphabet, message: str) -> bool:
         True if valid, False otherwise
     """
     # Check signature prefix
-    if ':' not in message:
+    if ":" not in message:
         return False
 
-    sig_part, content = message.split(':', 1)
+    sig_part, content = message.split(":", 1)
     if sig_part != alphabet.signature:
         return False
 
@@ -279,16 +282,17 @@ def identify_tongue(message: str) -> Optional[TongueID]:
     Returns:
         TongueID if identified, None otherwise
     """
-    if ':' not in message:
+    if ":" not in message:
         return None
 
-    sig_part = message.split(':')[0]
+    sig_part = message.split(":")[0]
     return SIGNATURE_TO_TONGUE.get(sig_part)
 
 
 # =============================================================================
 # Polyglot Message Composition
 # =============================================================================
+
 
 def compose_polyglot_message(tongues: List[TongueID], content: str) -> str:
     """
@@ -312,7 +316,7 @@ def compose_polyglot_message(tongues: List[TongueID], content: str) -> str:
         encoded = _apply_tongue_cipher(encoded, alphabet)
 
     # Prepend all tongue signatures
-    signatures = '.'.join([TONGUE_ALPHABETS[t].signature for t in tongues])
+    signatures = ".".join([TONGUE_ALPHABETS[t].signature for t in tongues])
     return f"{signatures}:{encoded}"
 
 
@@ -331,7 +335,7 @@ def _apply_tongue_cipher(text: str, alphabet: TongueAlphabet) -> str:
         cipher_code = code ^ (sig_int % 256)
         result.append(chr(cipher_code % 0x10000))  # Keep in Unicode range
 
-    return ''.join(result)
+    return "".join(result)
 
 
 def decompose_polyglot_message(message: str) -> Tuple[List[TongueID], str]:
@@ -344,11 +348,11 @@ def decompose_polyglot_message(message: str) -> Tuple[List[TongueID], str]:
     Returns:
         Tuple of (tongues used, decoded content)
     """
-    if ':' not in message:
+    if ":" not in message:
         raise ValueError("Invalid polyglot message format")
 
-    sig_part, encoded = message.split(':', 1)
-    signatures = sig_part.split('.')
+    sig_part, encoded = message.split(":", 1)
+    signatures = sig_part.split(".")
 
     # Identify tongues (in reverse order for decoding)
     tongues = []
@@ -371,6 +375,7 @@ def decompose_polyglot_message(message: str) -> Tuple[List[TongueID], str]:
 # Cross-Language SDK Interface
 # =============================================================================
 
+
 @dataclass
 class PolyglotSDK:
     """
@@ -378,6 +383,7 @@ class PolyglotSDK:
 
     Provides a clean interface for encoding, decoding, and verification.
     """
+
     default_tongue: TongueID = TongueID.AXIOM
 
     def encode(self, content: str, tongues: Optional[List[TongueID]] = None) -> str:
@@ -414,6 +420,7 @@ class PolyglotSDK:
 # Cipher Strength Analysis
 # =============================================================================
 
+
 def calculate_cipher_strength(tongues: List[TongueID]) -> Dict[str, any]:
     """
     Calculate the cryptographic strength of a tongue combination.
@@ -438,13 +445,14 @@ def calculate_cipher_strength(tongues: List[TongueID]) -> Dict[str, any]:
         "keyspace_size": keyspace,
         "xor_depth": xor_depth,
         "brute_force_complexity": f"O(2^{bits_per_tongue * n} * {n})",
-        "security_rating": "LOW" if n == 1 else "MEDIUM" if n <= 3 else "HIGH" if n <= 5 else "MAXIMUM"
+        "security_rating": "LOW" if n == 1 else "MEDIUM" if n <= 3 else "HIGH" if n <= 5 else "MAXIMUM",
     }
 
 
 # =============================================================================
 # Demo
 # =============================================================================
+
 
 def demo():
     """Demonstrate the polyglot alphabet system."""
@@ -457,7 +465,7 @@ def demo():
     print("[ALPHABETS] The Six Sacred Tongues:")
     print("-" * 60)
     for tongue_id, alphabet in TONGUE_ALPHABETS.items():
-        symbols_display = ' '.join(alphabet.symbols)
+        symbols_display = " ".join(alphabet.symbols)
         print(f"  {tongue_id.value:8s} | sig={alphabet.signature} | {symbols_display}")
         print(f"           | {alphabet.role}")
     print()

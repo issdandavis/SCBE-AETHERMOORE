@@ -13,7 +13,9 @@ def test_aggregate_collects_documents(tmp_path: Path) -> None:
     (repo / "README.md").write_text("# Title\nA long enough sentence for extraction.", encoding="utf-8")
     docs = repo / "docs"
     docs.mkdir()
-    (docs / "A.md").write_text("Doc body with sufficient narrative length to be included in synthesis.", encoding="utf-8")
+    (docs / "A.md").write_text(
+        "Doc body with sufficient narrative length to be included in synthesis.", encoding="utf-8"
+    )
 
     out = aggregate(root=repo, include=["README.md", "docs"], max_chars=10000)
     assert out["doc_count"] == 2
@@ -25,7 +27,10 @@ def test_aggregate_collects_documents(tmp_path: Path) -> None:
 def test_synthesize_outputs_latex() -> None:
     bundle_obj = {
         "documents": [
-            {"path": "README.md", "content": "This architecture defines long horizon mission control and governance records."}
+            {
+                "path": "README.md",
+                "content": "This architecture defines long horizon mission control and governance records.",
+            }
         ]
     }
     tex = synthesize_latex(bundle=bundle_obj, title="X", author="Y")

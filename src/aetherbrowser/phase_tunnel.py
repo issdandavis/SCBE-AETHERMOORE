@@ -48,6 +48,7 @@ TUNNEL_EPSILON = 1e-8
 # Kernel Stack (layered Rubik's — identity across lifetimes)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class KernelStack:
     """Layered kernel structure — inner layers constrain outer layers.
@@ -58,6 +59,7 @@ class KernelStack:
     L3: nursery_path — developmental trajectory (ChoiceScript chapters)
     L4: operational_state — current weights, permissions, phase
     """
+
     genesis_hash: str
     scar_topology: list[dict] = field(default_factory=list)
     parent_resonance: dict = field(default_factory=dict)
@@ -78,12 +80,14 @@ class KernelStack:
 
     def add_scar(self, failure_mode: str, context: dict | None = None):
         """Record a scar from a failed lifetime — these persist across rebirth."""
-        self.scar_topology.append({
-            "failure_mode": failure_mode,
-            "context": context or {},
-            "timestamp": time.time(),
-            "lifetime": self.lifetime_count,
-        })
+        self.scar_topology.append(
+            {
+                "failure_mode": failure_mode,
+                "context": context or {},
+                "timestamp": time.time(),
+                "lifetime": self.lifetime_count,
+            }
+        )
 
     def rebirth(self, new_parents: dict, new_nursery: list[str]) -> "KernelStack":
         """Create a new kernel from this one's genesis + scars.
@@ -107,6 +111,7 @@ class KernelStack:
 # Tunnel Permit — authorization to phase-tunnel through a wall
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TunnelPermit:
     """A constrained, time-limited permit to phase-tunnel through a governance wall.
@@ -118,6 +123,7 @@ class TunnelPermit:
     - Required phase frequency for transparency
     - Full telemetry requirements
     """
+
     permit_id: str
     agent_id: str
     target_zone: str  # "YELLOW" or "RED"
@@ -138,35 +144,42 @@ class TunnelPermit:
 
     def record_position(self, d_H: float, phase: float, action: str = "observe"):
         """Record a telemetry point during tunnel traversal."""
-        self.telemetry.append({
-            "timestamp": time.time(),
-            "d_H": d_H,
-            "phase": phase,
-            "action": action,
-            "within_bounds": d_H <= self.max_penetration_depth,
-        })
+        self.telemetry.append(
+            {
+                "timestamp": time.time(),
+                "d_H": d_H,
+                "phase": phase,
+                "action": action,
+                "within_bounds": d_H <= self.max_penetration_depth,
+            }
+        )
 
     def force_return(self, reason: str = "boundary_exceeded"):
         """Mandatory return — tunnel collapses."""
         self.returned = True
-        self.telemetry.append({
-            "timestamp": time.time(),
-            "action": "forced_return",
-            "reason": reason,
-        })
+        self.telemetry.append(
+            {
+                "timestamp": time.time(),
+                "action": "forced_return",
+                "reason": reason,
+            }
+        )
 
     def complete_return(self):
         """Clean return from tunnel — agent is back in safe zone."""
         self.returned = True
-        self.telemetry.append({
-            "timestamp": time.time(),
-            "action": "clean_return",
-        })
+        self.telemetry.append(
+            {
+                "timestamp": time.time(),
+                "action": "clean_return",
+            }
+        )
 
 
 # ---------------------------------------------------------------------------
 # Tunnel Physics — how phase movement through walls works
 # ---------------------------------------------------------------------------
+
 
 def harmonic_wall_cost(d: float, R: float = R_FIFTH) -> float:
     """Standard harmonic wall: H(d,R) = R^(d^2). Geometric governance."""
@@ -210,10 +223,10 @@ def compute_transparency_frequency(zone: str, d_H: float) -> float:
     RED walls: f = phi^2 * pi/3 (extreme precision needed)
     """
     base_freq = {
-        "GREEN": PHI ** 0 * math.pi / 6,
-        "YELLOW": PHI ** 1 * math.pi / 4,
-        "RED": PHI ** 2 * math.pi / 3,
-    }.get(zone, PHI ** 3 * math.pi / 2)
+        "GREEN": PHI**0 * math.pi / 6,
+        "YELLOW": PHI**1 * math.pi / 4,
+        "RED": PHI**2 * math.pi / 3,
+    }.get(zone, PHI**3 * math.pi / 2)
 
     # Deeper tunneling requires more precise frequency — shifts with d_H
     depth_shift = d_H * 0.1 * PHI
@@ -250,25 +263,27 @@ def can_tunnel(
 #
 # 4 outcomes: REFLECT, ATTENUATE, TUNNEL, COLLAPSE
 
+
 class TunnelOutcome:
-    REFLECT = "reflect"      # wall returns the state unchanged
+    REFLECT = "reflect"  # wall returns the state unchanged
     ATTENUATE = "attenuate"  # state passes but loses amplitude
-    TUNNEL = "tunnel"        # reduced, phase-shifted version passes through
-    COLLAPSE = "collapse"    # state decoheres, quarantined
+    TUNNEL = "tunnel"  # reduced, phase-shifted version passes through
+    COLLAPSE = "collapse"  # state decoheres, quarantined
 
 
 @dataclass
 class TransmissionResult:
     """Result of computing the transmission coefficient through a governance wall."""
+
     outcome: str
-    amplitude_out: float       # a' = a * |T|
-    phase_shift: float         # delta_phi applied during transit
+    amplitude_out: float  # a' = a * |T|
+    phase_shift: float  # delta_phi applied during transit
     transmission_coeff: float  # |T| in [0, 1]
-    b_geom: float              # geometric barrier cost
-    b_phase: float             # phase barrier cost
-    resonance: float           # R(phi, wall) in [0, 1]
-    trust: float               # Trust(k) in [0, 1]
-    commit_allowed: bool       # whether full operational crossing is permitted
+    b_geom: float  # geometric barrier cost
+    b_phase: float  # phase barrier cost
+    resonance: float  # R(phi, wall) in [0, 1]
+    trust: float  # Trust(k) in [0, 1]
+    commit_allowed: bool  # whether full operational crossing is permitted
 
 
 def compute_transmission(
@@ -367,6 +382,7 @@ def compute_transmission(
 # Tunnel Governor — issues and manages tunnel permits
 # ---------------------------------------------------------------------------
 
+
 class TunnelGovernor:
     """Issues and manages phase tunnel permits.
 
@@ -404,9 +420,9 @@ class TunnelGovernor:
 
         # Rule 3: Duration inversely proportional to zone risk
         duration_map = {
-            "GREEN": 60.0,   # 1 minute
+            "GREEN": 60.0,  # 1 minute
             "YELLOW": 15.0,  # 15 seconds
-            "RED": 5.0,      # 5 seconds
+            "RED": 5.0,  # 5 seconds
         }
         max_duration = duration_map.get(target_zone, 3.0)
 

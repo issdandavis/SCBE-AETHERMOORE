@@ -7,6 +7,7 @@ FastAPI + WebSocket entry point. The Chrome extension connects here.
 Start:
     python -m uvicorn src.aetherbrowser.serve:app --host 127.0.0.1 --port 8002
 """
+
 from __future__ import annotations
 
 import json

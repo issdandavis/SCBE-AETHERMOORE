@@ -32,9 +32,37 @@ SKIP_DIRS = {
 }
 
 TEXT_EXTENSIONS = {
-    ".md", ".txt", ".rst", ".py", ".ts", ".tsx", ".js", ".jsx", ".json", ".jsonl", ".yaml", ".yml",
-    ".toml", ".ini", ".cfg", ".ps1", ".sh", ".bat", ".cmd", ".mjs", ".cjs", ".html", ".css", ".svg",
-    ".csv", ".sql", ".ipynb", ".tex", ".spec", ".lock", ".env.example",
+    ".md",
+    ".txt",
+    ".rst",
+    ".py",
+    ".ts",
+    ".tsx",
+    ".js",
+    ".jsx",
+    ".json",
+    ".jsonl",
+    ".yaml",
+    ".yml",
+    ".toml",
+    ".ini",
+    ".cfg",
+    ".ps1",
+    ".sh",
+    ".bat",
+    ".cmd",
+    ".mjs",
+    ".cjs",
+    ".html",
+    ".css",
+    ".svg",
+    ".csv",
+    ".sql",
+    ".ipynb",
+    ".tex",
+    ".spec",
+    ".lock",
+    ".env.example",
 }
 
 ACTIVE_LANE_DESCRIPTIONS = {
@@ -152,9 +180,21 @@ def classify_aspect(path: Path) -> str:
 
 def classify_lane(aspect: str) -> str:
     if aspect.startswith("src/"):
-        return "core" if aspect in {
-            "src/harmonic", "src/crypto", "src/governance", "src/tokenizer", "src/tongues", "src/symphonic", "src/symphonic_cipher", "src/ai_brain",
-        } else "runtime"
+        return (
+            "core"
+            if aspect
+            in {
+                "src/harmonic",
+                "src/crypto",
+                "src/governance",
+                "src/tokenizer",
+                "src/tongues",
+                "src/symphonic",
+                "src/symphonic_cipher",
+                "src/ai_brain",
+            }
+            else "runtime"
+        )
     if aspect == "api":
         return "runtime"
     if aspect == "scripts":
@@ -178,8 +218,13 @@ def extract_summary(text: str) -> str:
         if stripped.startswith("#"):
             return stripped.lstrip("#").strip()[:200]
         if stripped.startswith('"""') or stripped.startswith("'''"):
-            return stripped.strip('"\' ')[:200]
-        if stripped.startswith("//") or stripped.startswith("/*") or stripped.startswith("*") or stripped.startswith("--"):
+            return stripped.strip("\"' ")[:200]
+        if (
+            stripped.startswith("//")
+            or stripped.startswith("/*")
+            or stripped.startswith("*")
+            or stripped.startswith("--")
+        ):
             return stripped.lstrip("/*- ")[:200]
         return stripped[:200]
     return ""
@@ -284,42 +329,54 @@ def format_table(rows: list[tuple[str, int, int, int, str]]) -> str:
 
 def write_outputs(records: list[FileRecord], stats: dict[str, dict[str, object]]) -> None:
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
-    JSON_PATH.write_text(json.dumps({
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "repo_root": str(REPO_ROOT),
-        "file_count": len(records),
-        "records": [asdict(record) for record in records],
-    }, indent=2), encoding="utf-8")
+    JSON_PATH.write_text(
+        json.dumps(
+            {
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "repo_root": str(REPO_ROOT),
+                "file_count": len(records),
+                "records": [asdict(record) for record in records],
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
 
     with CSV_PATH.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.writer(handle)
-        writer.writerow(["path", "aspect", "lane", "state", "extension", "bytes", "lines", "text", "sha16", "summary", "symbols"])
+        writer.writerow(
+            ["path", "aspect", "lane", "state", "extension", "bytes", "lines", "text", "sha16", "summary", "symbols"]
+        )
         for record in records:
-            writer.writerow([
-                record.path,
-                record.aspect,
-                record.lane,
-                record.state,
-                record.extension,
-                record.bytes,
-                record.lines,
-                str(record.text),
-                record.sha16,
-                record.summary,
-                "; ".join(record.symbols),
-            ])
+            writer.writerow(
+                [
+                    record.path,
+                    record.aspect,
+                    record.lane,
+                    record.state,
+                    record.extension,
+                    record.bytes,
+                    record.lines,
+                    str(record.text),
+                    record.sha16,
+                    record.summary,
+                    "; ".join(record.symbols),
+                ]
+            )
 
     LANE_JSON_PATH.write_text(json.dumps(stats, indent=2), encoding="utf-8")
 
     aspect_rows = []
     for aspect, data in sorted(stats.items(), key=lambda item: item[1]["lines"], reverse=True)[:30]:
-        aspect_rows.append((
-            aspect,
-            int(data["files"]),
-            int(data["lines"]),
-            int(data["bytes"]),
-            str(data["description"]),
-        ))
+        aspect_rows.append(
+            (
+                aspect,
+                int(data["files"]),
+                int(data["lines"]),
+                int(data["bytes"]),
+                str(data["description"]),
+            )
+        )
 
     largest_text = sorted((r for r in records if r.text), key=lambda item: item.lines, reverse=True)[:25]
     by_lane = Counter(record.lane for record in records)
@@ -331,7 +388,9 @@ def write_outputs(records: list[FileRecord], stats: dict[str, dict[str, object]]
     report.append("")
     report.append("## Scope")
     report.append("")
-    report.append("This report is the repo-wide map for `SCBE-AETHERMOORE` generated from a full file scan. It covers every file under the repository root except VCS internals and transient caches such as `.git`, `node_modules`, and `__pycache__`.")
+    report.append(
+        "This report is the repo-wide map for `SCBE-AETHERMOORE` generated from a full file scan. It covers every file under the repository root except VCS internals and transient caches such as `.git`, `node_modules`, and `__pycache__`."
+    )
     report.append("")
     report.append("The goal is two-layered:")
     report.append("")
@@ -340,7 +399,9 @@ def write_outputs(records: list[FileRecord], stats: dict[str, dict[str, object]]
     report.append("")
     report.append("## Repo Identity")
     report.append("")
-    report.append("SCBE-AETHERMOORE is a hybrid monorepo spanning a TypeScript governance and crypto core, Python API/runtime services, operator scripts, dataset and artifact lanes, and extensive documentation/research surfaces.")
+    report.append(
+        "SCBE-AETHERMOORE is a hybrid monorepo spanning a TypeScript governance and crypto core, Python API/runtime services, operator scripts, dataset and artifact lanes, and extensive documentation/research surfaces."
+    )
     report.append("")
     report.append("## Totals")
     report.append("")
@@ -391,11 +452,19 @@ def write_outputs(records: list[FileRecord], stats: dict[str, dict[str, object]]
     report.append("")
     report.append("## Research Conclusions")
     report.append("")
-    report.append("1. The repo is not one product surface; it is a mesh of core math, runtime services, operator control, research, and content pipelines.")
-    report.append("2. The TypeScript core and Python runtime lanes coexist rather than cleanly replacing one another; both must be mapped when making claims about the system.")
+    report.append(
+        "1. The repo is not one product surface; it is a mesh of core math, runtime services, operator control, research, and content pipelines."
+    )
+    report.append(
+        "2. The TypeScript core and Python runtime lanes coexist rather than cleanly replacing one another; both must be mapped when making claims about the system."
+    )
     report.append("3. `scripts/` is a real operational control plane, not just glue code.")
-    report.append("4. `docs/`, `artifacts/`, and `training-data/` are substantial parts of system knowledge, but they should be separated from proof of runtime behavior.")
-    report.append("5. Any future benchmark or architecture claim should cite both the canonical core lane and the exact runtime lane used.")
+    report.append(
+        "4. `docs/`, `artifacts/`, and `training-data/` are substantial parts of system knowledge, but they should be separated from proof of runtime behavior."
+    )
+    report.append(
+        "5. Any future benchmark or architecture claim should cite both the canonical core lane and the exact runtime lane used."
+    )
     report.append("")
     report.append("## Exhaustive Inventory Artifacts")
     report.append("")

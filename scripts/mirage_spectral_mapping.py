@@ -80,9 +80,10 @@ def apply_thermodynamic_mirage(W: np.ndarray, alpha: float = 1.0, sigma: float =
     if gaussian_filter is None:
         # Fallback: use a simple box blur
         from scipy.signal import fftconvolve
+
         kernel_size = max(1, int(sigma * 3))
-        kernel = np.ones((kernel_size, kernel_size)) / (kernel_size ** 2)
-        heat = fftconvolve(np.abs(W), kernel, mode='same')
+        kernel = np.ones((kernel_size, kernel_size)) / (kernel_size**2)
+        heat = fftconvolve(np.abs(W), kernel, mode="same")
     else:
         heat = gaussian_filter(np.abs(W), sigma=sigma)
 
@@ -159,9 +160,11 @@ def run_mirage_sweep(
     kwargs = {"token": token} if token else {}
     try:
         from transformers import AutoModelForCausalLM
+
         model = AutoModelForCausalLM.from_pretrained(model_id, **kwargs)
     except Exception:
         from transformers import AutoModel
+
         model = AutoModel.from_pretrained(model_id, **kwargs)
 
     model.eval()
@@ -181,15 +184,17 @@ def run_mirage_sweep(
             s_mirage = spectral_coherence_complex(W_mirage)
             survival = (s_mirage / s_orig * 100) if s_orig > EPSILON else 0.0
 
-            results.append(MirageResult(
-                layer=layer_idx,
-                weight_type=wtype,
-                s_spec_original=s_orig,
-                s_spec_mirage=s_mirage,
-                survival_percent=survival,
-                alpha=alpha,
-                sigma=sigma,
-            ))
+            results.append(
+                MirageResult(
+                    layer=layer_idx,
+                    weight_type=wtype,
+                    s_spec_original=s_orig,
+                    s_spec_mirage=s_mirage,
+                    survival_percent=survival,
+                    alpha=alpha,
+                    sigma=sigma,
+                )
+            )
 
             print(f"  L{layer_idx} {wtype}: orig={s_orig:.2f} mirage={s_mirage:.2f} survival={survival:.1f}%")
 
@@ -228,6 +233,7 @@ def main() -> int:
     args = parser.parse_args()
 
     import os
+
     token = os.environ.get(args.token_env, "").strip() or None
 
     result = run_mirage_sweep(
@@ -246,7 +252,9 @@ def main() -> int:
 
     print(f"\nMirage Spectral Mapping complete: {output_path}")
     for wtype, stats in result["summary"].items():
-        print(f"  {wtype}: orig={stats['mean_original']:.2f} mirage={stats['mean_mirage']:.2f} survival={stats['mean_survival']:.1f}%")
+        print(
+            f"  {wtype}: orig={stats['mean_original']:.2f} mirage={stats['mean_mirage']:.2f} survival={stats['mean_survival']:.1f}%"
+        )
 
     if args.json:
         print(json.dumps(result, indent=2))

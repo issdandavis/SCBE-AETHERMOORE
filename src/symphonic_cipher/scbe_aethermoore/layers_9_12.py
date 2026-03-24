@@ -78,9 +78,7 @@ def compute_spectral_coherence(
         - Low S_spec = noisy/chaotic signal
     """
     if len(signal) < 4:
-        return SpectralAnalysis(
-            s_spec=1.0, r_hf=0.0, total_power=0.0, dominant_freq=0, bandwidth=0.0
-        )
+        return SpectralAnalysis(s_spec=1.0, r_hf=0.0, total_power=0.0, dominant_freq=0, bandwidth=0.0)
 
     # Apply window function
     if window == "hann":
@@ -98,9 +96,7 @@ def compute_spectral_coherence(
 
     total_power = np.sum(power)
     if total_power < EPSILON:
-        return SpectralAnalysis(
-            s_spec=0.5, r_hf=0.5, total_power=0.0, dominant_freq=0, bandwidth=0.0
-        )
+        return SpectralAnalysis(s_spec=0.5, r_hf=0.5, total_power=0.0, dominant_freq=0, bandwidth=0.0)
 
     # High-frequency ratio
     cutoff_bin = int(len(power) * hf_cutoff)
@@ -127,9 +123,7 @@ def compute_spectral_coherence(
     )
 
 
-def spectral_stability(
-    signal: np.ndarray, reference: Optional[np.ndarray] = None
-) -> float:
+def spectral_stability(signal: np.ndarray, reference: Optional[np.ndarray] = None) -> float:
     """
     Compute spectral stability relative to reference.
 
@@ -196,9 +190,7 @@ def compute_spin_coherence(phases: np.ndarray) -> SpinAnalysis:
         - C_spin = 0: phases uniformly distributed
     """
     if len(phases) == 0:
-        return SpinAnalysis(
-            c_spin=1.0, mean_phase=0.0, phase_variance=0.0, alignment_vector=(1.0, 0.0)
-        )
+        return SpinAnalysis(c_spin=1.0, mean_phase=0.0, phase_variance=0.0, alignment_vector=(1.0, 0.0))
 
     # Convert to unit vectors on complex plane
     phasors = np.exp(1j * phases)
@@ -233,9 +225,7 @@ def compute_spin_from_signal(signal: np.ndarray, hop_size: int = 256) -> SpinAna
     Uses STFT to get instantaneous phases.
     """
     if len(signal) < hop_size * 2:
-        return SpinAnalysis(
-            c_spin=1.0, mean_phase=0.0, phase_variance=0.0, alignment_vector=(1.0, 0.0)
-        )
+        return SpinAnalysis(c_spin=1.0, mean_phase=0.0, phase_variance=0.0, alignment_vector=(1.0, 0.0))
 
     # Short-time Fourier transform (simplified)
     n_frames = (len(signal) - hop_size) // hop_size
@@ -314,11 +304,7 @@ def compute_triadic_distance(
         weights = TriadicWeights()
 
     # Weighted L2 norm (Axiom A11)
-    d_tri_sq = (
-        weights.lambda_1 * d_hyperbolic**2
-        + weights.lambda_2 * d_auth**2
-        + weights.lambda_3 * d_config**2
-    )
+    d_tri_sq = weights.lambda_1 * d_hyperbolic**2 + weights.lambda_2 * d_auth**2 + weights.lambda_3 * d_config**2
     d_tri = np.sqrt(d_tri_sq)
 
     # Normalized to [0,1]
@@ -377,9 +363,7 @@ class RiskWeights:
 
     def __post_init__(self):
         # Normalize
-        total = (
-            self.w_spectral + self.w_spin + self.w_triadic + self.w_trust + self.w_audio
-        )
+        total = self.w_spectral + self.w_spin + self.w_triadic + self.w_trust + self.w_audio
         if total > EPSILON:
             self.w_spectral /= total
             self.w_spin /= total
@@ -400,9 +384,7 @@ class RiskAnalysis:
     components: Dict[str, float]  # Individual risk contributions
 
 
-def harmonic_scaling(
-    d_star: float, phase_deviation: float = 0.0, **_kwargs
-) -> float:
+def harmonic_scaling(d_star: float, phase_deviation: float = 0.0, **_kwargs) -> float:
     """
     Compute harmonic scaling score (bounded).
 
@@ -528,9 +510,7 @@ def risk_gradient(
         weights = RiskWeights()
 
     # Current risk
-    analysis = compute_risk(
-        s_spec, c_spin, d_tri_norm, tau, s_audio, d_star, weights, R
-    )
+    analysis = compute_risk(s_spec, c_spin, d_tri_norm, tau, s_audio, d_star, weights, R)
 
     # Numerical gradient (small perturbation)
     gradients = {}
@@ -645,9 +625,7 @@ def self_test() -> Dict[str, Any]:
         if 0 <= analysis.s_spec <= 1 and 0 <= noise_analysis.s_spec <= 1:
             if analysis.s_spec > noise_analysis.s_spec:
                 passed += 1
-                results["spectral_bounds"] = (
-                    f"✓ PASS (tone={analysis.s_spec:.3f}, noise={noise_analysis.s_spec:.3f})"
-                )
+                results["spectral_bounds"] = f"✓ PASS (tone={analysis.s_spec:.3f}, noise={noise_analysis.s_spec:.3f})"
             else:
                 results["spectral_bounds"] = "✗ FAIL (tone should be more coherent)"
         else:
@@ -698,9 +676,7 @@ def self_test() -> Dict[str, Any]:
     total += 1
     try:
         d_star_values = np.linspace(0, 2, 20)
-        risk_values = [
-            compute_risk(0.8, 0.8, 0.3, 0.9, 0.9, d).r_hat for d in d_star_values
-        ]
+        risk_values = [compute_risk(0.8, 0.8, 0.3, 0.9, 0.9, d).r_hat for d in d_star_values]
 
         diffs = np.diff(risk_values)
         if np.all(diffs >= -EPSILON):
@@ -737,9 +713,7 @@ def self_test() -> Dict[str, Any]:
         if 0 <= good_risk.r_hat <= 1 and 0 <= bad_risk.r_hat <= 1:
             if good_risk.r_hat < bad_risk.r_hat:
                 passed += 1
-                results["risk_bounds"] = (
-                    f"✓ PASS (good={good_risk.r_hat:.3f}, bad={bad_risk.r_hat:.3f})"
-                )
+                results["risk_bounds"] = f"✓ PASS (good={good_risk.r_hat:.3f}, bad={bad_risk.r_hat:.3f})"
             else:
                 results["risk_bounds"] = "✗ FAIL (good should be less risky)"
         else:
@@ -755,13 +729,9 @@ def self_test() -> Dict[str, Any]:
 
         if allow.decision == "ALLOW" and deny.decision == "DENY":
             passed += 1
-            results["decision_thresholds"] = (
-                f"✓ PASS (allow={allow.r_hat:.3f}→ALLOW, deny={deny.r_hat:.3f}→DENY)"
-            )
+            results["decision_thresholds"] = f"✓ PASS (allow={allow.r_hat:.3f}→ALLOW, deny={deny.r_hat:.3f}→DENY)"
         else:
-            results["decision_thresholds"] = (
-                f"✗ FAIL (wrong decisions: {allow.decision}, {deny.decision})"
-            )
+            results["decision_thresholds"] = f"✗ FAIL (wrong decisions: {allow.decision}, {deny.decision})"
     except Exception as e:
         results["decision_thresholds"] = f"✗ FAIL ({e})"
 
@@ -776,9 +746,7 @@ def self_test() -> Dict[str, Any]:
         # H(0) = exp(0) = 1, H(1) = exp(1) = e, H(2) = exp(4) ≈ 54.6
         if abs(h0 - 1.0) < 0.01 and abs(h1 - np.e) < 0.01 and h2 > h1:
             passed += 1
-            results["harmonic_scaling"] = (
-                f"✓ PASS (Vertical Wall: H(0)={h0:.2f}, H(1)={h1:.2f}, H(2)={h2:.2f})"
-            )
+            results["harmonic_scaling"] = f"✓ PASS (Vertical Wall: H(0)={h0:.2f}, H(1)={h1:.2f}, H(2)={h2:.2f})"
         else:
             results["harmonic_scaling"] = "✗ FAIL (H not matching exp(d*²))"
     except Exception as e:
@@ -803,13 +771,9 @@ def self_test() -> Dict[str, Any]:
 
         if aggregated.risk.decision == "ALLOW":
             passed += 1
-            results["full_pipeline"] = (
-                f"✓ PASS (R̂={aggregated.risk.r_hat:.3f}→{aggregated.risk.decision})"
-            )
+            results["full_pipeline"] = f"✓ PASS (R̂={aggregated.risk.r_hat:.3f}→{aggregated.risk.decision})"
         else:
-            results["full_pipeline"] = (
-                f"✗ FAIL (expected ALLOW, got {aggregated.risk.decision})"
-            )
+            results["full_pipeline"] = f"✗ FAIL (expected ALLOW, got {aggregated.risk.decision})"
     except Exception as e:
         results["full_pipeline"] = f"✗ FAIL ({e})"
 

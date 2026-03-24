@@ -1,5 +1,7 @@
 """Generate ASCII figures for SCBE-AETHERMOORE patent application."""
+
 import math
+
 
 def figure1():
     print("=" * 80)
@@ -185,17 +187,17 @@ def figure4():
         "   DR (300 deg)           |           AV (60 deg)",
         "   w = 11.090             |           w = 1.618",
         "   Authority              |           Diplomacy",
-        '          \\               |               /',
-        '           \\              |              /',
-        '            \\             |             /',
-        '             \\            |            /',
-        '              \\           |           /',
+        "          \\               |               /",
+        "           \\              |              /",
+        "            \\             |             /",
+        "             \\            |            /",
+        "              \\           |           /",
         "               +----------+----------+",
-        '              /           |           \\',
-        '             /            |            \\',
-        '            /             |             \\',
-        '           /              |              \\',
-        '          /               |               \\',
+        "              /           |           \\",
+        "             /            |            \\",
+        "            /             |             \\",
+        "           /              |              \\",
+        "          /               |               \\",
         "   UM (240 deg)           |           RU (120 deg)",
         "   w = 6.854              |           w = 2.618",
         "   Concealment            |           Temporal",

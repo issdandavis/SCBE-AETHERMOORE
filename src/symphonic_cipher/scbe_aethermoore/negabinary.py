@@ -41,6 +41,7 @@ from typing import Dict, List, Sequence, Tuple
 # NegaBinary
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class NegaBinary:
     """Negabinary (base -2) number.
@@ -48,6 +49,7 @@ class NegaBinary:
     Stored as a tuple of bits (0 or 1), LSB first internally.
     Display is MSB-first.
     """
+
     _bits: Tuple[int, ...]  # LSB first, each 0 or 1
 
     @staticmethod
@@ -150,8 +152,11 @@ class NegaBinary:
             "negative_bits": negative_bits,
             "positive_weight": positive_weight,
             "negative_weight": negative_weight,
-            "polarity": "positive" if positive_bits > negative_bits
-                        else ("negative" if negative_bits > positive_bits else "balanced"),
+            "polarity": (
+                "positive"
+                if positive_bits > negative_bits
+                else ("negative" if negative_bits > positive_bits else "balanced")
+            ),
         }
 
     def bit_entropy(self) -> float:
@@ -206,6 +211,7 @@ class NegaBinary:
 # Negabinary Addition
 # ---------------------------------------------------------------------------
 
+
 def _nb_add(a: NegaBinary, b: NegaBinary) -> NegaBinary:
     """Add two negabinary numbers.
 
@@ -227,17 +233,23 @@ def _nb_add(a: NegaBinary, b: NegaBinary) -> NegaBinary:
     for i in range(max_len):
         s = a_bits[i] + b_bits[i] + carry
         if s == 0:
-            result.append(0); carry = 0
+            result.append(0)
+            carry = 0
         elif s == 1:
-            result.append(1); carry = 0
+            result.append(1)
+            carry = 0
         elif s == 2:
-            result.append(0); carry = -1
+            result.append(0)
+            carry = -1
         elif s == -1:
-            result.append(1); carry = 1
+            result.append(1)
+            carry = 1
         elif s == 3:
-            result.append(1); carry = -1
+            result.append(1)
+            carry = -1
         elif s == -2:
-            result.append(0); carry = 1
+            result.append(0)
+            carry = 1
         else:
             # Shouldn't happen, but safety
             result.append(s % 2)
@@ -249,13 +261,17 @@ def _nb_add(a: NegaBinary, b: NegaBinary) -> NegaBinary:
         if s == 0:
             break
         elif s == 1:
-            result.append(1); carry = 0
+            result.append(1)
+            carry = 0
         elif s == -1:
-            result.append(1); carry = 1
+            result.append(1)
+            carry = 1
         elif s == 2:
-            result.append(0); carry = -1
+            result.append(0)
+            carry = -1
         elif s == -2:
-            result.append(0); carry = 1
+            result.append(0)
+            carry = 1
         else:
             result.append(abs(s) % 2)
             carry = -(s // -2) if s > 0 else ((-s) // 2)
@@ -288,9 +304,11 @@ def _nb_mul(a: NegaBinary, b: NegaBinary) -> NegaBinary:
 # Gate Stability Analysis: Binary vs Ternary
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class GateStabilityReport:
     """Compare binary (2-gate) vs ternary (3-gate) stability for a value range."""
+
     values: List[int]
     binary_total_bits: int
     ternary_total_trits: int
@@ -374,9 +392,11 @@ def analyze_gate_stability(values: Sequence[int]) -> GateStabilityReport:
 # Cross-conversion
 # ---------------------------------------------------------------------------
 
+
 def negabinary_to_balanced_ternary(nb: NegaBinary) -> "BalancedTernary":  # noqa: F821
     """Convert negabinary to balanced ternary (through integer)."""
     from .trinary import BalancedTernary
+
     return BalancedTernary.from_int(nb.to_int())
 
 

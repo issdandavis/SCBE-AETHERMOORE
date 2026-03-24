@@ -38,11 +38,11 @@ import numpy as np
 
 # 21D brain state dimension layout
 BRAIN_DIMENSIONS = 21
-SCBE_SLICE = slice(0, 6)       # SCBE Context
-NAV_SLICE = slice(6, 12)       # Dual Lattice Navigation
-COG_SLICE = slice(12, 15)      # PHDM Cognitive Position
-SEM_SLICE = slice(15, 18)      # Sacred Tongues Semantic Phase
-SWARM_SLICE = slice(18, 21)    # Swarm Coordination
+SCBE_SLICE = slice(0, 6)  # SCBE Context
+NAV_SLICE = slice(6, 12)  # Dual Lattice Navigation
+COG_SLICE = slice(12, 15)  # PHDM Cognitive Position
+SEM_SLICE = slice(15, 18)  # Sacred Tongues Semantic Phase
+SWARM_SLICE = slice(18, 21)  # Swarm Coordination
 
 DEFAULT_SCALES = (1, 2, 4, 8, 16)
 EPS = 1e-12
@@ -52,9 +52,11 @@ EPS = 1e-12
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class ScaleFeatures:
     """Spectral features at a single scale."""
+
     scale: int
     participation_ratio: float
     spectral_entropy: float
@@ -66,6 +68,7 @@ class ScaleFeatures:
 @dataclass(frozen=True)
 class MultiscaleReport:
     """Complete multiscale analysis report for a trajectory."""
+
     scale_features: List[ScaleFeatures]
     anomaly_score: float
     replay_score: float
@@ -79,9 +82,8 @@ class MultiscaleReport:
 # Core analysis
 # ---------------------------------------------------------------------------
 
-def compute_increments(
-    X: np.ndarray, scale: int
-) -> np.ndarray:
+
+def compute_increments(X: np.ndarray, scale: int) -> np.ndarray:
     """
     Compute scale-s increments: dX[t] = X[t+s] - X[t].
 
@@ -95,9 +97,7 @@ def compute_increments(
     if scale <= 0:
         raise ValueError("Scale must be positive.")
     if len(X) <= scale:
-        raise ValueError(
-            f"Trajectory length {len(X)} too short for scale {scale}."
-        )
+        raise ValueError(f"Trajectory length {len(X)} too short for scale {scale}.")
     return X[scale:] - X[:-scale]
 
 
@@ -174,9 +174,7 @@ def effective_rank(evals: np.ndarray) -> float:
     return math.exp(spectral_entropy(evals))
 
 
-def analyze_scale(
-    X: np.ndarray, scale: int, top_k: int = 5
-) -> ScaleFeatures:
+def analyze_scale(X: np.ndarray, scale: int, top_k: int = 5) -> ScaleFeatures:
     """
     Compute spectral features at a single scale.
 
@@ -238,6 +236,7 @@ def multiscale_spectrum_features(
 # ---------------------------------------------------------------------------
 # Anomaly scoring
 # ---------------------------------------------------------------------------
+
 
 def _replay_score(features: List[ScaleFeatures]) -> float:
     """
@@ -351,6 +350,7 @@ def analyze_trajectory(
 # Subsystem analysis (analyze specific 21D slices)
 # ---------------------------------------------------------------------------
 
+
 def analyze_subsystem(
     X: np.ndarray,
     subsystem: str,
@@ -375,10 +375,7 @@ def analyze_subsystem(
         "swarm": SWARM_SLICE,
     }
     if subsystem not in slices:
-        raise ValueError(
-            f"Unknown subsystem '{subsystem}'. "
-            f"Choose from: {list(slices.keys())}"
-        )
+        raise ValueError(f"Unknown subsystem '{subsystem}'. " f"Choose from: {list(slices.keys())}")
     X = np.asarray(X, dtype=float)
     return analyze_trajectory(X[:, slices[subsystem]], scales)
 
@@ -386,6 +383,7 @@ def analyze_subsystem(
 # ---------------------------------------------------------------------------
 # Sliding window analysis (for real-time monitoring)
 # ---------------------------------------------------------------------------
+
 
 def sliding_window_analysis(
     X: np.ndarray,

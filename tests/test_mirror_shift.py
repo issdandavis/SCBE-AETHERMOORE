@@ -52,6 +52,7 @@ from symphonic_cipher.scbe_aethermoore.ai_brain.unified_state import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_valid_state(seed: int = 0) -> np.ndarray:
     """Create a valid 21D brain state vector that satisfies all constraints.
 
@@ -83,12 +84,12 @@ def make_valid_state(seed: int = 0) -> np.ndarray:
 def make_invalid_state() -> np.ndarray:
     """Create a state with constraint violations."""
     x = np.zeros(BRAIN_DIMENSIONS)
-    x[0] = 1.5    # device_trust > 1
-    x[1] = -0.3   # location_trust < 0
-    x[5] = 2.0    # intent_alignment > 1
-    x[15] = 3.7   # active_tongue not integer
-    x[16] = 8.0   # phase_angle > 2*pi
-    x[18] = 1.2   # trust_score > 1
+    x[0] = 1.5  # device_trust > 1
+    x[1] = -0.3  # location_trust < 0
+    x[5] = 2.0  # intent_alignment > 1
+    x[15] = 3.7  # active_tongue not integer
+    x[16] = 8.0  # phase_angle > 2*pi
+    x[18] = 1.2  # trust_score > 1
     x[20] = -0.1  # spectral_coherence < 0
     return x
 
@@ -96,6 +97,7 @@ def make_invalid_state() -> np.ndarray:
 # ---------------------------------------------------------------------------
 # Tests: ternary quantization
 # ---------------------------------------------------------------------------
+
 
 class TestTernaryQuantization:
     """Tests for quantize_ternary."""
@@ -135,6 +137,7 @@ class TestTernaryQuantization:
 # Tests: dual ternary channels
 # ---------------------------------------------------------------------------
 
+
 class TestDualTernary:
     """Tests for compute_dual_ternary and dual_ternary_trajectory."""
 
@@ -144,7 +147,7 @@ class TestDualTernary:
         x_prev = make_valid_state(2)
         par, perp = compute_dual_ternary(x_curr, x_prev)
         assert len(par) == len(PARALLEL_DIMS)  # 9
-        assert len(perp) == len(PERP_DIMS)     # 12
+        assert len(perp) == len(PERP_DIMS)  # 12
 
     def test_identical_states_zero_channels(self):
         """Identical states produce all-zero ternary channels."""
@@ -178,6 +181,7 @@ class TestDualTernary:
 # Tests: mirror shift operator
 # ---------------------------------------------------------------------------
 
+
 class TestMirrorShift:
     """Tests for the mirror shift operator."""
 
@@ -195,12 +199,8 @@ class TestMirrorShift:
         perp = np.array([0.0, 0.0, 1.0])
         result = mirror_shift(par, perp, phi=math.pi / 2)
         # sin(pi/2)=1, cos(pi/2)=0 -> a' = b, b' = a
-        np.testing.assert_allclose(
-            result.shifted_parallel, perp, atol=1e-10
-        )
-        np.testing.assert_allclose(
-            result.shifted_perp, par, atol=1e-10
-        )
+        np.testing.assert_allclose(result.shifted_parallel, perp, atol=1e-10)
+        np.testing.assert_allclose(result.shifted_perp, par, atol=1e-10)
 
     def test_asymmetry_score_balanced(self):
         """Equal-energy channels have low asymmetry."""
@@ -226,6 +226,7 @@ class TestMirrorShift:
 # Tests: mirror asymmetry score
 # ---------------------------------------------------------------------------
 
+
 class TestMirrorAsymmetry:
     """Tests for mirror_asymmetry_score on streams."""
 
@@ -249,6 +250,7 @@ class TestMirrorAsymmetry:
 # ---------------------------------------------------------------------------
 # Tests: refactor align
 # ---------------------------------------------------------------------------
+
 
 class TestRefactorAlign:
     """Tests for POCS-style constraint projection."""
@@ -276,8 +278,8 @@ class TestRefactorAlign:
         """Non-integer tongue index is snapped to nearest int."""
         x = np.zeros(BRAIN_DIMENSIONS)
         x[0:6] = 0.5  # valid SCBE
-        x[15] = 2.7   # Should snap to 3
-        x[17] = 1.0   # tongue weight
+        x[15] = 2.7  # Should snap to 3
+        x[17] = 1.0  # tongue weight
         result = refactor_align(x)
         assert result.aligned_state[15] == 3.0
 
@@ -309,9 +311,7 @@ class TestRefactorAlign:
         result1 = refactor_align(x)
         result2 = refactor_align(result1.aligned_state)
         # The aligned state should be stable (same output on second pass)
-        np.testing.assert_allclose(
-            result1.aligned_state, result2.aligned_state, atol=1e-6
-        )
+        np.testing.assert_allclose(result1.aligned_state, result2.aligned_state, atol=1e-6)
 
     def test_wrong_dimension_raises(self):
         """Non-21D vector raises ValueError."""
@@ -331,6 +331,7 @@ class TestRefactorAlign:
 # ---------------------------------------------------------------------------
 # Tests: combined transition analysis
 # ---------------------------------------------------------------------------
+
 
 class TestTransitionAnalysis:
     """Tests for the analyze_transition adapter."""
@@ -389,6 +390,7 @@ class TestTransitionAnalysis:
 # Tests: integration with UnifiedBrainState
 # ---------------------------------------------------------------------------
 
+
 class TestUnifiedBrainStateIntegration:
     """Tests that mirror shift works with UnifiedBrainState objects."""
 
@@ -402,12 +404,8 @@ class TestUnifiedBrainStateIntegration:
         state1 = UnifiedBrainState.safe_origin()
         state2 = UnifiedBrainState.safe_origin()
         # Modify navigation directly on the dataclass
-        state2.navigation = NavigationVector(
-            x=0.1, y=-0.05, z=0.0, time=0.0, priority=0.5, confidence=1.0
-        )
-        state2.swarm_coordination = SwarmCoordination(
-            trust_score=0.3, byzantine_votes=0.0, spectral_coherence=1.0
-        )
+        state2.navigation = NavigationVector(x=0.1, y=-0.05, z=0.0, time=0.0, priority=0.5, confidence=1.0)
+        state2.swarm_coordination = SwarmCoordination(trust_score=0.3, byzantine_votes=0.0, spectral_coherence=1.0)
 
         v1 = np.array(state1.to_vector())
         v2 = np.array(state2.to_vector())
@@ -425,6 +423,4 @@ class TestUnifiedBrainStateIntegration:
         assert state is not None
         # Reconstructed vector should match aligned state
         reconstructed = np.array(state.to_vector())
-        np.testing.assert_allclose(
-            reconstructed, result.aligned_state, atol=1e-10
-        )
+        np.testing.assert_allclose(reconstructed, result.aligned_state, atol=1e-10)

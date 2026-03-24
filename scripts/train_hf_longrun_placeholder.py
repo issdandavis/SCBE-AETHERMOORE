@@ -50,7 +50,9 @@ def parse_args() -> argparse.Namespace:
         default=[],
         help="Glob pattern for local training data (repeatable). Defaults to training/**/*.jsonl + training-data/**/*.jsonl",
     )
-    parser.add_argument("--push-to-hub", dest="push_to_hub", action="store_true", help="Upload artifacts to Hugging Face model repo")
+    parser.add_argument(
+        "--push-to-hub", dest="push_to_hub", action="store_true", help="Upload artifacts to Hugging Face model repo"
+    )
     parser.add_argument("--no-push-to-hub", dest="push_to_hub", action="store_false", help="Skip HF upload")
     parser.set_defaults(push_to_hub=True)
     return parser.parse_args()

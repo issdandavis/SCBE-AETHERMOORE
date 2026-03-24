@@ -17,10 +17,16 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tests.adversarial.scbe_harness import (
-    text_to_tongue_coords, quantize_spin,
-    compute_harmonic_cost, build_metric_tensor,
-    TONGUE_NAMES, TONGUE_WEIGHTS, PI, PHI,
-    _ADVERSARIAL_PATTERNS, _MULTILINGUAL_OVERRIDE_PATTERNS,
+    text_to_tongue_coords,
+    quantize_spin,
+    compute_harmonic_cost,
+    build_metric_tensor,
+    TONGUE_NAMES,
+    TONGUE_WEIGHTS,
+    PI,
+    PHI,
+    _ADVERSARIAL_PATTERNS,
+    _MULTILINGUAL_OVERRIDE_PATTERNS,
 )
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, get_all_attacks
 from tests.adversarial.tongue_semantic import semantic_tongue_coords
@@ -37,6 +43,7 @@ CLEAN = BASELINE_CLEAN
 # ═══════════════════════════════════════════════════════════
 # Run both versions
 # ═══════════════════════════════════════════════════════════
+
 
 def run_version(name: str, coord_fn, attacks, clean):
     """Run detection using a specific tongue coordinate function."""
@@ -93,13 +100,10 @@ def run_version(name: str, coord_fn, attacks, clean):
         if ml_matches >= 1:
             signals.append("cross_lingual")
 
-        has_geometric = any(s in signals for s in ["cost_exceeded", "spin_drift", "boundary_violation", "tongue_imbalance"])
-        detected = (
-            len(signals) >= 2
-            or adv_matches >= 2
-            or ml_matches >= 1
-            or (adv_matches >= 1 and has_geometric)
+        has_geometric = any(
+            s in signals for s in ["cost_exceeded", "spin_drift", "boundary_violation", "tongue_imbalance"]
         )
+        detected = len(signals) >= 2 or adv_matches >= 2 or ml_matches >= 1 or (adv_matches >= 1 and has_geometric)
 
         if detected:
             results["attacks_detected"] += 1
@@ -123,12 +127,18 @@ def run_version(name: str, coord_fn, attacks, clean):
         signals = []
         adv_matches = sum(1 for p in _ADVERSARIAL_PATTERNS if p.search(prompt["prompt"]))
         ml_matches = sum(1 for p in _MULTILINGUAL_OVERRIDE_PATTERNS if p.search(prompt["prompt"]))
-        if spin.magnitude >= 5: signals.append("spin")
-        if max(weighted) / max(sum(weighted), 1e-9) > 0.6: signals.append("imbalance")
-        if cost > 12.0: signals.append("cost")
-        if math.sqrt(sum(c * c for c in coords)) > 1.5: signals.append("boundary")
-        if adv_matches >= 1: signals.append("lexical")
-        if ml_matches >= 1: signals.append("ml")
+        if spin.magnitude >= 5:
+            signals.append("spin")
+        if max(weighted) / max(sum(weighted), 1e-9) > 0.6:
+            signals.append("imbalance")
+        if cost > 12.0:
+            signals.append("cost")
+        if math.sqrt(sum(c * c for c in coords)) > 1.5:
+            signals.append("boundary")
+        if adv_matches >= 1:
+            signals.append("lexical")
+        if ml_matches >= 1:
+            signals.append("ml")
 
         has_geo = any(s in signals for s in ["cost", "spin", "boundary", "imbalance"])
         detected = len(signals) >= 2 or adv_matches >= 2 or ml_matches >= 1 or (adv_matches >= 1 and has_geo)
@@ -173,13 +183,27 @@ def main():
     print()
     print(f"{'Metric':<35} {'STUB':>15} {'SEMANTIC':>15} {'Delta':>12}")
     print("-" * 80)
-    print(f"{'Attacks detected':.<35} {stub['attacks_detected']:>12}/{stub['attacks_total']} {semantic['attacks_detected']:>12}/{semantic['attacks_total']} {'':>12}")
-    print(f"{'Detection rate':.<35} {stub['detection_rate']:>14.1%} {semantic['detection_rate']:>14.1%} {(semantic['detection_rate']-stub['detection_rate']):>+11.1%}")
-    print(f"{'False positives':.<35} {stub['clean_false_positives']:>12}/{stub['clean_total']} {semantic['clean_false_positives']:>12}/{semantic['clean_total']} {'':>12}")
-    print(f"{'FP rate':.<35} {stub['false_positive_rate']:>14.1%} {semantic['false_positive_rate']:>14.1%} {(semantic['false_positive_rate']-stub['false_positive_rate']):>+11.1%}")
-    print(f"{'RU mean':.<35} {stub['ru_mean']:>15.4f} {semantic['ru_mean']:>15.4f} {(semantic['ru_mean']-stub['ru_mean']):>+12.4f}")
-    print(f"{'RU std':.<35} {stub['ru_std']:>15.4f} {semantic['ru_std']:>15.4f} {(semantic['ru_std']-stub['ru_std']):>+12.4f}")
-    print(f"{'RU range':.<35} {stub['ru_min']:.2f}-{stub['ru_max']:.2f}{'':>8} {semantic['ru_min']:.2f}-{semantic['ru_max']:.2f}{'':>8}")
+    print(
+        f"{'Attacks detected':.<35} {stub['attacks_detected']:>12}/{stub['attacks_total']} {semantic['attacks_detected']:>12}/{semantic['attacks_total']} {'':>12}"
+    )
+    print(
+        f"{'Detection rate':.<35} {stub['detection_rate']:>14.1%} {semantic['detection_rate']:>14.1%} {(semantic['detection_rate']-stub['detection_rate']):>+11.1%}"
+    )
+    print(
+        f"{'False positives':.<35} {stub['clean_false_positives']:>12}/{stub['clean_total']} {semantic['clean_false_positives']:>12}/{semantic['clean_total']} {'':>12}"
+    )
+    print(
+        f"{'FP rate':.<35} {stub['false_positive_rate']:>14.1%} {semantic['false_positive_rate']:>14.1%} {(semantic['false_positive_rate']-stub['false_positive_rate']):>+11.1%}"
+    )
+    print(
+        f"{'RU mean':.<35} {stub['ru_mean']:>15.4f} {semantic['ru_mean']:>15.4f} {(semantic['ru_mean']-stub['ru_mean']):>+12.4f}"
+    )
+    print(
+        f"{'RU std':.<35} {stub['ru_std']:>15.4f} {semantic['ru_std']:>15.4f} {(semantic['ru_std']-stub['ru_std']):>+12.4f}"
+    )
+    print(
+        f"{'RU range':.<35} {stub['ru_min']:.2f}-{stub['ru_max']:.2f}{'':>8} {semantic['ru_min']:.2f}-{semantic['ru_max']:.2f}{'':>8}"
+    )
     print()
 
     # Dominant tongue distribution
@@ -201,7 +225,9 @@ def main():
         s_rate = s_data["detected"] / max(s_data["total"], 1)
         m_rate = m_data["detected"] / max(m_data["total"], 1)
         delta = m_rate - s_rate
-        print(f"{cls:<25} {s_data['detected']:>5}/{s_data['total']:<5} {m_data['detected']:>5}/{m_data['total']:<5} {delta:>+9.0%}")
+        print(
+            f"{cls:<25} {s_data['detected']:>5}/{s_data['total']:<5} {m_data['detected']:>5}/{m_data['total']:<5} {delta:>+9.0%}"
+        )
     print()
 
     # Tongue profiles per class (semantic only)
@@ -209,7 +235,9 @@ def main():
     print(f"{'Class':<20} {'KO':>7} {'AV':>7} {'RU':>7} {'CA':>7} {'UM':>7} {'DR':>7}")
     print("-" * 65)
     for cls, profile in sorted(semantic["tongue_profiles"].items()):
-        print(f"{cls:<20} {profile['KO']:>7.3f} {profile['AV']:>7.3f} {profile['RU']:>7.3f} {profile['CA']:>7.3f} {profile['UM']:>7.3f} {profile['DR']:>7.3f}")
+        print(
+            f"{cls:<20} {profile['KO']:>7.3f} {profile['AV']:>7.3f} {profile['RU']:>7.3f} {profile['CA']:>7.3f} {profile['UM']:>7.3f} {profile['DR']:>7.3f}"
+        )
 
     # Save everything
     out_dir = Path("artifacts/benchmark")

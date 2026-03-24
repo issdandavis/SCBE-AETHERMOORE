@@ -34,6 +34,7 @@ class TestBrowserBackendImports:
 
     def test_import_browser_backend_abc(self):
         from hydra.browsers import BrowserBackend
+
         assert hasattr(BrowserBackend, "initialize")
         assert hasattr(BrowserBackend, "navigate")
         assert hasattr(BrowserBackend, "click")
@@ -45,29 +46,35 @@ class TestBrowserBackendImports:
 
     def test_import_playwright_backend(self):
         from hydra.browsers import PlaywrightBackend
+
         backend = PlaywrightBackend(headless=True)
         assert backend._headless is True
 
     def test_import_selenium_backend(self):
         from hydra.browsers import SeleniumBackend
+
         backend = SeleniumBackend(headless=True)
         assert backend._headless is True
 
     def test_import_cdp_backend(self):
         from hydra.browsers import CDPBackend
+
         backend = CDPBackend(cdp_url="http://localhost:9999")
         assert backend._cdp_url == "http://localhost:9999"
 
     def test_playwright_backend_is_subclass(self):
         from hydra.browsers import BrowserBackend, PlaywrightBackend
+
         assert issubclass(PlaywrightBackend, BrowserBackend)
 
     def test_selenium_backend_is_subclass(self):
         from hydra.browsers import BrowserBackend, SeleniumBackend
+
         assert issubclass(SeleniumBackend, BrowserBackend)
 
     def test_cdp_backend_is_subclass(self):
         from hydra.browsers import BrowserBackend, CDPBackend
+
         assert issubclass(CDPBackend, BrowserBackend)
 
 
@@ -81,6 +88,7 @@ class TestSwarmBrowserDryRun:
     @pytest.fixture
     def swarm(self):
         from hydra.swarm_browser import SwarmBrowser
+
         return SwarmBrowser(
             provider_type="local",
             model="local-model",
@@ -175,11 +183,13 @@ class TestAgentDefinitions:
 
     def test_six_agents_defined(self):
         from hydra.swarm_browser import AGENTS
+
         assert len(AGENTS) == 6
         assert set(AGENTS.keys()) == {"KO", "AV", "RU", "CA", "UM", "DR"}
 
     def test_each_agent_has_role(self):
         from hydra.swarm_browser import AGENTS
+
         for tongue, spec in AGENTS.items():
             assert "role" in spec, f"{tongue} missing role"
             assert "phase" in spec, f"{tongue} missing phase"
@@ -187,11 +197,13 @@ class TestAgentDefinitions:
 
     def test_roles_are_unique(self):
         from hydra.swarm_browser import AGENTS
+
         roles = [spec["role"] for spec in AGENTS.values()]
         assert len(set(roles)) == 6
 
     def test_phases_span_360(self):
         from hydra.swarm_browser import AGENTS
+
         phases = sorted(spec["phase"] for spec in AGENTS.values())
         assert phases == [0, 60, 120, 180, 240, 300]
 
@@ -206,6 +218,7 @@ class TestTongueActionMapping:
     @pytest.fixture
     def swarm(self):
         from hydra.swarm_browser import SwarmBrowser
+
         return SwarmBrowser(dry_run=True)
 
     def test_navigate_maps_to_ko(self, swarm):
@@ -239,6 +252,7 @@ class TestCLISwarm:
 
     def test_import_cli_module(self):
         from hydra.cli_swarm import main
+
         assert callable(main)
 
     def test_argparse_dry_run(self):
@@ -385,6 +399,7 @@ class TestLLMProviderFactory:
     def test_create_local_no_openai(self):
         """LocalProvider requires openai package — test graceful error."""
         from hydra.llm_providers import _PROVIDER_MAP
+
         assert "local" in _PROVIDER_MAP
         assert "hf" in _PROVIDER_MAP
         assert "huggingface" in _PROVIDER_MAP
@@ -392,11 +407,13 @@ class TestLLMProviderFactory:
 
     def test_unknown_provider_raises(self):
         from hydra.llm_providers import create_provider
+
         with pytest.raises(ValueError, match="Unknown ai_type"):
             create_provider("nonexistent_provider")
 
     def test_provider_map_complete(self):
         from hydra.llm_providers import _PROVIDER_MAP
+
         expected = {"claude", "anthropic", "gpt", "openai", "gemini", "google", "huggingface", "hf", "local"}
         assert set(_PROVIDER_MAP.keys()) == expected
 
@@ -410,16 +427,20 @@ class TestHighSensitivityActions:
 
     def test_click_is_high_sensitivity(self):
         from hydra.swarm_browser import HIGH_SENSITIVITY_ACTIONS
+
         assert "click" in HIGH_SENSITIVITY_ACTIONS
 
     def test_type_is_high_sensitivity(self):
         from hydra.swarm_browser import HIGH_SENSITIVITY_ACTIONS
+
         assert "type" in HIGH_SENSITIVITY_ACTIONS
 
     def test_navigate_is_not_high_sensitivity(self):
         from hydra.swarm_browser import HIGH_SENSITIVITY_ACTIONS
+
         assert "navigate" not in HIGH_SENSITIVITY_ACTIONS
 
     def test_screenshot_is_not_high_sensitivity(self):
         from hydra.swarm_browser import HIGH_SENSITIVITY_ACTIONS
+
         assert "screenshot" not in HIGH_SENSITIVITY_ACTIONS

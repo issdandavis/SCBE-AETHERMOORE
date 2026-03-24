@@ -35,7 +35,10 @@ SECRET_STORE_KEY_SALT_ENV = "SCBE_SECRET_STORE_KEY_SALT"
 
 _SENSITIVE_TEXT_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"Authorization:\s*Bearer\s+[^\s]+", re.IGNORECASE), "Authorization: Bearer [redacted]"),
-    (re.compile(r"\b(api[_-]?key|token|secret|password)\s*[:=]\s*['\"]?[^'\"\s]+['\"]?", re.IGNORECASE), r"\1=[redacted]"),
+    (
+        re.compile(r"\b(api[_-]?key|token|secret|password)\s*[:=]\s*['\"]?[^'\"\s]+['\"]?", re.IGNORECASE),
+        r"\1=[redacted]",
+    ),
     (re.compile(r"\bsk-[A-Za-z0-9_-]{8,}\b"), "[redacted]"),
     (re.compile(r"\bhf_[A-Za-z0-9_-]{8,}\b"), "[redacted]"),
     (re.compile(r"\bghp_[A-Za-z0-9_-]{8,}\b"), "[redacted]"),
@@ -269,7 +272,9 @@ def redact_sensitive_text(text: str | None) -> str:
     return value
 
 
-def sensitive_fingerprint(value: str, *, salt_env: str = "SCBE_METADATA_HASH_KEY", salt_default: str = "scbe-metadata") -> str:
+def sensitive_fingerprint(
+    value: str, *, salt_env: str = "SCBE_METADATA_HASH_KEY", salt_default: str = "scbe-metadata"
+) -> str:
     """PBKDF2 fingerprint for audit without exposing the actual value."""
     salt = os.getenv(salt_env, salt_default).encode("utf-8")
     derived = hashlib.pbkdf2_hmac("sha256", value.encode("utf-8"), salt, SENSITIVE_METADATA_ITERATIONS)
@@ -317,9 +322,22 @@ def write_json(path: Path, payload: Any, *, sanitize: bool = True) -> None:
 def sanitize_for_report(payload: Any) -> Any:
     """Recursively strip sensitive key values from a dict/list for disk or stdout."""
     sensitive_fragments = {
-        "api_key", "content", "prompt", "token", "secret", "authorization",
-        "x-api-key", "stdout", "stderr", "response", "response_excerpt",
-        "raw", "key_value", "alias_value", "password", "credential",
+        "api_key",
+        "content",
+        "prompt",
+        "token",
+        "secret",
+        "authorization",
+        "x-api-key",
+        "stdout",
+        "stderr",
+        "response",
+        "response_excerpt",
+        "raw",
+        "key_value",
+        "alias_value",
+        "password",
+        "credential",
     }
     if isinstance(payload, dict):
         clean: dict[str, Any] = {}

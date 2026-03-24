@@ -45,9 +45,16 @@ class TestDenominationSystem:
 class TestServiceCosts:
     def test_all_services_have_cost(self):
         services = [
-            "healing", "formation_buff", "scouting", "transform_assist",
-            "evolution_catalyst", "drift_cleanse", "codex_query", "escort",
-            "training", "governance_vote",
+            "healing",
+            "formation_buff",
+            "scouting",
+            "transform_assist",
+            "evolution_catalyst",
+            "drift_cleanse",
+            "codex_query",
+            "escort",
+            "training",
+            "governance_vote",
         ]
         for svc in services:
             assert SERVICE_BASE_COSTS[svc] > 0

@@ -64,7 +64,9 @@ def main() -> None:
     p.add_argument("--max-actions-per-request", type=int, default=5)
     p.add_argument("--seed", type=int, default=1000)
     p.add_argument("--run-id", default="mission1000-seeded")
-    p.add_argument("--url", default=os.getenv("SCBE_BROWSER_WEBHOOK_URL", "http://127.0.0.1:8001/v1/integrations/n8n/browse"))
+    p.add_argument(
+        "--url", default=os.getenv("SCBE_BROWSER_WEBHOOK_URL", "http://127.0.0.1:8001/v1/integrations/n8n/browse")
+    )
     p.add_argument("--api-key", default=os.getenv("SCBE_API_KEY", "mission-synthetic-key"))
     a = p.parse_args()
 

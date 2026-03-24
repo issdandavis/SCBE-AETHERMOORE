@@ -29,23 +29,22 @@ N = TypeVar("N", bound=Hashable)
 
 # -- graph adapter -----------------------------------------------------------
 
+
 class GraphAdapter(ABC, Generic[N]):
     """Interface that A* needs from any graph."""
 
     @abstractmethod
-    def neighbours(self, node: N) -> List[N]:
-        ...
+    def neighbours(self, node: N) -> List[N]: ...
 
     @abstractmethod
-    def cost(self, current: N, neighbour: N) -> float:
-        ...
+    def cost(self, current: N, neighbour: N) -> float: ...
 
     @abstractmethod
-    def heuristic(self, node: N, goal: N) -> float:
-        ...
+    def heuristic(self, node: N, goal: N) -> float: ...
 
 
 # -- grid adapter (spatial navigation) --------------------------------------
+
 
 class GridAdapter(GraphAdapter[tuple]):
     """2D grid where nodes are (row, col) tuples."""
@@ -85,6 +84,7 @@ class GridAdapter(GraphAdapter[tuple]):
 
 # -- URL graph adapter (web navigation) -------------------------------------
 
+
 class URLGraphAdapter(GraphAdapter[str]):
     """Graph where nodes are URLs and edges are hyperlinks.
 
@@ -112,6 +112,7 @@ class URLGraphAdapter(GraphAdapter[str]):
 
 
 # -- A* search ---------------------------------------------------------------
+
 
 def a_star_search(
     graph: GraphAdapter[N],
@@ -152,6 +153,7 @@ def a_star_search(
 
 
 # -- concept block wrapper ---------------------------------------------------
+
 
 class PlanBlock(ConceptBlock):
     """Concept block wrapping A* path-finding.

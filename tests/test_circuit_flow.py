@@ -22,10 +22,17 @@ import os
 
 # Add the circuit_flow module's parent to path (direct import, avoids __init__.py
 # which pulls in hamiltonian_braid.py containing a pre-existing unicode issue)
-sys.path.insert(0, os.path.join(
-    os.path.dirname(__file__), "..", "src",
-    "symphonic_cipher", "scbe_aethermoore", "ai_brain",
-))
+sys.path.insert(
+    0,
+    os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "src",
+        "symphonic_cipher",
+        "scbe_aethermoore",
+        "ai_brain",
+    ),
+)
 
 from circuit_flow import (
     PolyDidacticCircuit,
@@ -50,6 +57,7 @@ PHI = (1 + math.sqrt(5)) / 2
 # ============================================================================
 # 1. Registry: 16 Polyhedra
 # ============================================================================
+
 
 class TestRegistry:
 
@@ -82,6 +90,7 @@ class TestRegistry:
 # ============================================================================
 # 2. Topology Validation (Zone-Dependent χ)
 # ============================================================================
+
 
 class TestTopology:
 
@@ -133,6 +142,7 @@ class TestTopology:
 # 3. Harmonic Wall Energy
 # ============================================================================
 
+
 class TestHarmonicWall:
 
     def test_zero_distance_zero_cost(self):
@@ -161,6 +171,7 @@ class TestHarmonicWall:
 # 4. Trust Ring Classification
 # ============================================================================
 
+
 class TestTrustRing:
 
     def test_core_ring(self):
@@ -188,6 +199,7 @@ class TestTrustRing:
 # 5. Tongue Classification
 # ============================================================================
 
+
 class TestTongueClassification:
 
     def test_context_override_urgent(self):
@@ -214,6 +226,7 @@ class TestTongueClassification:
 # ============================================================================
 # 6. FluxState Filtering
 # ============================================================================
+
 
 class TestFluxGate:
 
@@ -244,6 +257,7 @@ class TestFluxGate:
 # 7. Hamiltonian Path
 # ============================================================================
 
+
 class TestHamiltonianPath:
 
     def test_polly_visits_all_16(self):
@@ -272,6 +286,7 @@ class TestHamiltonianPath:
 # 8. Governance Gating
 # ============================================================================
 
+
 class TestGovernance:
 
     def test_core_nodes_get_run(self):
@@ -285,8 +300,10 @@ class TestGovernance:
         trace = circuit.route(b"risk test")
         risk_steps = [s for s in trace.steps if s.zone == "risk"]
         for step in risk_steps:
-            assert step.mode in ("QUAR", "ROLLBACK"), \
-                f"Risk node {step.node}: expected QUAR or ROLLBACK, got {step.mode}"
+            assert step.mode in (
+                "QUAR",
+                "ROLLBACK",
+            ), f"Risk node {step.node}: expected QUAR or ROLLBACK, got {step.mode}"
 
     def test_final_governance_reflects_worst(self):
         circuit = PolyDidacticCircuit(flux=FluxGate.POLLY)
@@ -300,6 +317,7 @@ class TestGovernance:
 # ============================================================================
 # 9. Didactic Audit Trail
 # ============================================================================
+
 
 class TestAuditTrail:
 
@@ -341,6 +359,7 @@ class TestAuditTrail:
 # ============================================================================
 # 10. End-to-End Integration
 # ============================================================================
+
 
 class TestEndToEnd:
 
@@ -396,9 +415,16 @@ if __name__ == "__main__":
     import traceback
 
     test_classes = [
-        TestRegistry, TestTopology, TestHarmonicWall, TestTrustRing,
-        TestTongueClassification, TestFluxGate, TestHamiltonianPath,
-        TestGovernance, TestAuditTrail, TestEndToEnd,
+        TestRegistry,
+        TestTopology,
+        TestHarmonicWall,
+        TestTrustRing,
+        TestTongueClassification,
+        TestFluxGate,
+        TestHamiltonianPath,
+        TestGovernance,
+        TestAuditTrail,
+        TestEndToEnd,
     ]
 
     total = 0

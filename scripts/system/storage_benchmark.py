@@ -48,6 +48,7 @@ ARTIFACT_DIR = REPO_ROOT / "artifacts" / "system_audit" / "storage_benchmark"
 #  Baselines
 # =========================================================================== #
 
+
 class DictBaseline:
     """Flat dict — the simplest possible storage. O(1) insert, O(n) query."""
 
@@ -97,17 +98,18 @@ class BruteForceKNN:
 #  Benchmark runner
 # =========================================================================== #
 
+
 @dataclass
 class BenchResult:
     surface: str
     n_records: int
     ingest_ms: float
-    query_10_ms: float       # 10 nearest-neighbor queries
-    total_nodes: int          # storage units allocated
-    node_explosion: float     # nodes / records
-    compaction_score: float   # records / nodes
-    recall_at_5: float        # fraction of true top-5 found (vs brute force)
-    memory_proxy_kb: float    # rough memory estimate
+    query_10_ms: float  # 10 nearest-neighbor queries
+    total_nodes: int  # storage units allocated
+    node_explosion: float  # nodes / records
+    compaction_score: float  # records / nodes
+    recall_at_5: float  # fraction of true top-5 found (vs brute force)
+    memory_proxy_kb: float  # rough memory estimate
 
 
 def _time_ms(fn) -> tuple:
@@ -140,10 +142,14 @@ def benchmark_bridge(
     def _query_lattice():
         for qg in query_geos[:10]:
             lab.lattice.query_nearest(
-                qg["x"], qg["y"], qg["phase_rad"],
+                qg["x"],
+                qg["y"],
+                qg["phase_rad"],
                 intent_vector=list(qg["intent_vector"]),
-                tongue=qg["tongue"], top_k=5,
+                tongue=qg["tongue"],
+                top_k=5,
             )
+
     _, query_ms = _time_ms(_query_lattice)
 
     report = lab.compare()
@@ -164,14 +170,17 @@ def benchmark_bridge(
 
     # ---- 2. Dict baseline ----
     db = DictBaseline()
+
     def _ingest_dict():
         for g in geos:
             db.insert(g["note_id"], g["coord_3d"])
+
     _, dict_ingest_ms = _time_ms(_ingest_dict)
 
     def _query_dict():
         for qg in query_geos[:10]:
             db.query_nearest(qg["coord_3d"], top_k=5)
+
     _, dict_query_ms = _time_ms(_query_dict)
 
     results["dict_baseline"] = BenchResult(
@@ -188,16 +197,19 @@ def benchmark_bridge(
 
     # ---- 3. Brute force kNN ----
     bf = BruteForceKNN()
+
     def _ingest_bf():
         for g in geos:
             vec = np.concatenate([g["coord_3d"], g["tongue_coords"], g["intent_vector"]])
             bf.insert(g["note_id"], vec)
+
     _, bf_ingest_ms = _time_ms(_ingest_bf)
 
     def _query_bf():
         for qg in query_geos[:10]:
             vec = np.concatenate([qg["coord_3d"], qg["tongue_coords"], qg["intent_vector"]])
             bf.query_nearest(vec, top_k=5)
+
     _, bf_query_ms = _time_ms(_query_bf)
 
     results["brute_force_knn"] = BenchResult(
@@ -239,16 +251,18 @@ def run_benchmark(
         for surface_name, result in bench.items():
             if surface_name not in all_results:
                 all_results[surface_name] = []
-            all_results[surface_name].append({
-                "n": n,
-                "ingest_ms": result.ingest_ms,
-                "query_10_ms": result.query_10_ms,
-                "total_nodes": result.total_nodes,
-                "node_explosion": result.node_explosion,
-                "compaction_score": result.compaction_score,
-                "recall_at_5": result.recall_at_5,
-                "memory_proxy_kb": result.memory_proxy_kb,
-            })
+            all_results[surface_name].append(
+                {
+                    "n": n,
+                    "ingest_ms": result.ingest_ms,
+                    "query_10_ms": result.query_10_ms,
+                    "total_nodes": result.total_nodes,
+                    "node_explosion": result.node_explosion,
+                    "compaction_score": result.compaction_score,
+                    "recall_at_5": result.recall_at_5,
+                    "memory_proxy_kb": result.memory_proxy_kb,
+                }
+            )
 
     return {
         "benchmark": "scbe_storage_surfaces",

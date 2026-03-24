@@ -42,9 +42,7 @@ def test_dataclass_wrapper_matches_direct_call() -> None:
         context_dimensions=4,
         drift=0.25,
     )
-    assert davis_security_score_from_inputs(inputs) == pytest.approx(
-        davis_security_score(9.0, 1.5, 4, 0.25)
-    )
+    assert davis_security_score_from_inputs(inputs) == pytest.approx(davis_security_score(9.0, 1.5, 4, 0.25))
 
 
 @pytest.mark.parametrize(

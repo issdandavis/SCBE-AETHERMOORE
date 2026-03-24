@@ -328,10 +328,7 @@ def build_payload(repo_root: Path) -> dict[str, Any]:
         }
         for entry in sorted(root_entries, key=lambda row: row["size_bytes"], reverse=True)[:20]
     ]
-    dirty_hotspots = [
-        {"name": name, "dirty_count": count}
-        for name, count in dirty_counts.most_common(25)
-    ]
+    dirty_hotspots = [{"name": name, "dirty_count": count} for name, count in dirty_counts.most_common(25)]
 
     branch = run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=repo_root).strip()
     shallow = run(["git", "rev-parse", "--is-shallow-repository"], cwd=repo_root).strip() == "true"

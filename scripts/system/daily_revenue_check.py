@@ -49,6 +49,7 @@ VALID_CHECKS = ("stripe", "downloads", "github", "sponsors", "all")
 # Credential loading
 # ---------------------------------------------------------------------------
 
+
 def _load_env_file() -> None:
     """Load credentials from connector oauth file if not already in env."""
     env_files = [
@@ -84,6 +85,7 @@ def _get_env(*names: str) -> str:
 # HTTP helpers
 # ---------------------------------------------------------------------------
 
+
 def _get_json(
     url: str,
     headers: dict[str, str] | None = None,
@@ -118,6 +120,7 @@ def _get_json(
 # ---------------------------------------------------------------------------
 # Stripe
 # ---------------------------------------------------------------------------
+
 
 def check_stripe() -> dict[str, Any]:
     """Check Stripe balance, active subscriptions, and recent charges."""
@@ -175,6 +178,7 @@ def check_stripe() -> dict[str, Any]:
 # npm
 # ---------------------------------------------------------------------------
 
+
 def check_npm() -> dict[str, Any]:
     """Check npm weekly downloads for the package."""
     url = f"https://api.npmjs.org/downloads/point/last-week/{NPM_PACKAGE}"
@@ -200,6 +204,7 @@ def check_npm() -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # PyPI
 # ---------------------------------------------------------------------------
+
 
 def check_pypi() -> dict[str, Any]:
     """Check PyPI recent downloads via pypistats API."""
@@ -229,6 +234,7 @@ def check_pypi() -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # GitHub
 # ---------------------------------------------------------------------------
+
 
 def check_github() -> dict[str, Any]:
     """Check GitHub repo stars, forks, issues, watchers."""
@@ -267,14 +273,16 @@ def check_github() -> dict[str, Any]:
 # GitHub Sponsors
 # ---------------------------------------------------------------------------
 
+
 def check_sponsors() -> dict[str, Any]:
     """Check GitHub Sponsors count via GraphQL API."""
     token = _get_env("GITHUB_TOKEN", "GH_TOKEN")
     if not token:
         return {"status": "skipped", "reason": "GITHUB_TOKEN not set"}
 
-    query = json.dumps({
-        "query": """{
+    query = json.dumps(
+        {
+            "query": """{
             viewer {
                 sponsorsListing { isPublic }
                 sponsors(first: 20) {
@@ -288,7 +296,8 @@ def check_sponsors() -> dict[str, Any]:
                 }
             }
         }"""
-    })
+        }
+    )
 
     req = urllib.request.Request(
         "https://api.github.com/graphql",
@@ -339,6 +348,7 @@ def check_sponsors() -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Summary builder
 # ---------------------------------------------------------------------------
+
 
 def _format_dollars(cents: int) -> str:
     """Format cents as $X.XX."""
@@ -400,6 +410,7 @@ def build_summary_line(report: dict[str, Any]) -> str:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(

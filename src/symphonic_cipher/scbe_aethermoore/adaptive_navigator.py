@@ -39,40 +39,42 @@ PHI = (1 + math.sqrt(5)) / 2  # Golden ratio
 
 # Sacred Tongue realm centers (6D)
 REALM_CENTERS: Dict[str, np.ndarray] = {
-    'KO': np.array([0.3, 0.0, 0.0, 0.0, 0.0, 0.0]),  # Knowledge
-    'AV': np.array([0.0, 0.3, 0.0, 0.0, 0.0, 0.0]),  # Avatara
-    'RU': np.array([0.0, 0.0, 0.3, 0.0, 0.0, 0.0]),  # Runes
-    'CA': np.array([0.0, 0.0, 0.0, 0.3, 0.0, 0.0]),  # Cascade
-    'UM': np.array([0.0, 0.0, 0.0, 0.0, 0.3, 0.0]),  # Umbra
-    'DR': np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.3]),  # Draconic
+    "KO": np.array([0.3, 0.0, 0.0, 0.0, 0.0, 0.0]),  # Knowledge
+    "AV": np.array([0.0, 0.3, 0.0, 0.0, 0.0, 0.0]),  # Avatara
+    "RU": np.array([0.0, 0.0, 0.3, 0.0, 0.0, 0.0]),  # Runes
+    "CA": np.array([0.0, 0.0, 0.0, 0.3, 0.0, 0.0]),  # Cascade
+    "UM": np.array([0.0, 0.0, 0.0, 0.0, 0.3, 0.0]),  # Umbra
+    "DR": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.3]),  # Draconic
 }
 
 # Tongue weights (golden ratio based)
 TONGUE_WEIGHTS: Dict[str, float] = {
-    'KO': 1.0,
-    'AV': 1 / PHI,
-    'RU': 1 / (PHI ** 2),
-    'CA': 1 / (PHI ** 3),
-    'UM': 1 / (PHI ** 4),
-    'DR': 1 / (PHI ** 5),
+    "KO": 1.0,
+    "AV": 1 / PHI,
+    "RU": 1 / (PHI**2),
+    "CA": 1 / (PHI**3),
+    "UM": 1 / (PHI**4),
+    "DR": 1 / (PHI**5),
 }
 
 
 @dataclass
 class AdaptiveNavigatorConfig:
     """Configuration for the Adaptive Hyperbolic Navigator."""
-    base_R: float = 1.5           # Base harmonic scaling factor
-    lambda_penalty: float = 1.0   # Penalty multiplier for low coherence
-    chaos: float = 0.1            # Chaos amplitude for Lorenz perturbations
-    gamma: float = 0.5            # Curvature adaptation rate
-    dimension: int = 6            # Dimension of Poincaré ball
-    max_history: int = 1000       # Maximum trajectory history length
+
+    base_R: float = 1.5  # Base harmonic scaling factor
+    lambda_penalty: float = 1.0  # Penalty multiplier for low coherence
+    chaos: float = 0.1  # Chaos amplitude for Lorenz perturbations
+    gamma: float = 0.5  # Curvature adaptation rate
+    dimension: int = 6  # Dimension of Poincaré ball
+    max_history: int = 1000  # Maximum trajectory history length
     boundary_threshold: float = 0.98  # Ball boundary threshold
 
 
 @dataclass
 class NavigatorState:
     """State of the navigator after an update."""
+
     position: np.ndarray
     velocity: np.ndarray
     coherence: float
@@ -100,16 +102,9 @@ class AdaptiveHyperbolicNavigator:
             print('High deviation detected')
     """
 
-    def __init__(
-        self,
-        config: Optional[AdaptiveNavigatorConfig] = None,
-        initial_position: Optional[np.ndarray] = None
-    ):
+    def __init__(self, config: Optional[AdaptiveNavigatorConfig] = None, initial_position: Optional[np.ndarray] = None):
         self.config = config or AdaptiveNavigatorConfig()
-        self.position = (
-            np.array(initial_position) if initial_position is not None
-            else np.zeros(self.config.dimension)
-        )
+        self.position = np.array(initial_position) if initial_position is not None else np.zeros(self.config.dimension)
         self.velocity = np.zeros(self.config.dimension)
         self.history: List[np.ndarray] = [self.position.copy()]
         self.coherence_history: List[float] = [1.0]
@@ -156,12 +151,7 @@ class AdaptiveHyperbolicNavigator:
     # Hyperbolic Distance with Variable Curvature
     # ═══════════════════════════════════════════════════════════════
 
-    def hyperbolic_distance_kappa(
-        self,
-        u: np.ndarray,
-        v: np.ndarray,
-        kappa: float
-    ) -> float:
+    def hyperbolic_distance_kappa(self, u: np.ndarray, v: np.ndarray, kappa: float) -> float:
         """
         Hyperbolic distance with variable curvature.
 
@@ -198,13 +188,7 @@ class AdaptiveHyperbolicNavigator:
     # ODE Drift Dynamics
     # ═══════════════════════════════════════════════════════════════
 
-    def _compute_drift(
-        self,
-        pos: np.ndarray,
-        targets: List[str],
-        coherence: float,
-        mutations: float
-    ) -> np.ndarray:
+    def _compute_drift(self, pos: np.ndarray, targets: List[str], coherence: float, mutations: float) -> np.ndarray:
         """
         Compute drift vector for ODE integration.
 
@@ -250,12 +234,7 @@ class AdaptiveHyperbolicNavigator:
         return attraction + repulsion + chaos
 
     def _drift_ode(
-        self,
-        pos: np.ndarray,
-        t: float,
-        targets: List[str],
-        coherence: float,
-        mutations: float
+        self, pos: np.ndarray, t: float, targets: List[str], coherence: float, mutations: float
     ) -> np.ndarray:
         """ODE system for scipy.integrate.odeint."""
         return self._compute_drift(pos, targets, coherence, mutations)
@@ -265,11 +244,7 @@ class AdaptiveHyperbolicNavigator:
     # ═══════════════════════════════════════════════════════════════
 
     def update(
-        self,
-        intent_tongues: List[str],
-        coherence: float = 1.0,
-        mutations: float = 0,
-        dt: float = 0.1
+        self, intent_tongues: List[str], coherence: float = 1.0, mutations: float = 0, dt: float = 0.1
     ) -> NavigatorState:
         """
         Update navigator position with intent and coherence.
@@ -292,12 +267,7 @@ class AdaptiveHyperbolicNavigator:
 
         # Integrate ODE
         t = np.linspace(0, dt, 10)
-        trajectory = odeint(
-            self._drift_ode,
-            self.position,
-            t,
-            args=(intent_tongues, c, mutations)
-        )
+        trajectory = odeint(self._drift_ode, self.position, t, args=(intent_tongues, c, mutations))
         pos = trajectory[-1]
 
         # Soft projection back to ball
@@ -323,12 +293,10 @@ class AdaptiveHyperbolicNavigator:
         current_kappa = self.get_current_kappa(c)
 
         # Compute distance to origin
-        d_center = self.hyperbolic_distance_kappa(
-            pos, np.zeros(self.config.dimension), current_kappa
-        )
+        d_center = self.hyperbolic_distance_kappa(pos, np.zeros(self.config.dimension), current_kappa)
 
         # Harmonic penalty: H(d, R) = R^(d²)
-        penalty = current_R ** (d_center ** 2)
+        penalty = current_R ** (d_center**2)
 
         return NavigatorState(
             position=pos,
@@ -337,33 +305,26 @@ class AdaptiveHyperbolicNavigator:
             current_R=current_R,
             current_kappa=current_kappa,
             penalty=penalty,
-            timestamp=float(np.datetime64('now', 'ms').astype(int))
+            timestamp=float(np.datetime64("now", "ms").astype(int)),
         )
 
     # ═══════════════════════════════════════════════════════════════
     # Analysis Methods
     # ═══════════════════════════════════════════════════════════════
 
-    def distance_to_realm(
-        self,
-        tongue: str,
-        coherence: Optional[float] = None
-    ) -> float:
+    def distance_to_realm(self, tongue: str, coherence: Optional[float] = None) -> float:
         """Get distance to a specific realm center."""
         center = REALM_CENTERS.get(tongue)
         if center is None:
-            return float('inf')
+            return float("inf")
 
         kappa = self.get_current_kappa(coherence) if coherence else -1
         return self.hyperbolic_distance_kappa(self.position, center, kappa)
 
-    def closest_realm(
-        self,
-        coherence: Optional[float] = None
-    ) -> Tuple[str, float]:
+    def closest_realm(self, coherence: Optional[float] = None) -> Tuple[str, float]:
         """Get the closest realm to current position."""
-        min_dist = float('inf')
-        closest = 'KO'
+        min_dist = float("inf")
+        closest = "KO"
 
         kappa = self.get_current_kappa(coherence) if coherence else -1
 
@@ -416,16 +377,9 @@ class AdaptiveHyperbolicNavigator:
 
         return max(0, 1 - math.sqrt(variance))
 
-    def detect_anomaly(
-        self,
-        thresholds: Optional[Dict[str, float]] = None
-    ) -> Dict:
+    def detect_anomaly(self, thresholds: Optional[Dict[str, float]] = None) -> Dict:
         """Detect potential attack pattern."""
-        thresholds = thresholds or {
-            'coherence': 0.3,
-            'entropy': 0.7,
-            'stability': 0.4
-        }
+        thresholds = thresholds or {"coherence": 0.3, "entropy": 0.7, "stability": 0.4}
 
         indicators = []
         score = 0.0
@@ -433,25 +387,21 @@ class AdaptiveHyperbolicNavigator:
         recent = self.coherence_history[-20:]
         avg_coherence = sum(recent) / len(recent) if recent else 1.0
 
-        if avg_coherence < thresholds['coherence']:
-            indicators.append('low_coherence')
+        if avg_coherence < thresholds["coherence"]:
+            indicators.append("low_coherence")
             score += 0.4
 
         entropy = self.trajectory_entropy()
-        if entropy > thresholds['entropy']:
-            indicators.append('high_entropy')
+        if entropy > thresholds["entropy"]:
+            indicators.append("high_entropy")
             score += 0.3
 
         stability = self.coherence_stability()
-        if stability < thresholds['stability']:
-            indicators.append('unstable_coherence')
+        if stability < thresholds["stability"]:
+            indicators.append("unstable_coherence")
             score += 0.3
 
-        return {
-            'is_anomaly': score >= 0.7,
-            'score': score,
-            'indicators': indicators
-        }
+        return {"is_anomaly": score >= 0.7, "score": score, "indicators": indicators}
 
     # ═══════════════════════════════════════════════════════════════
     # State Access
@@ -471,10 +421,7 @@ class AdaptiveHyperbolicNavigator:
 
     def reset(self, initial_position: Optional[np.ndarray] = None):
         """Reset navigator to initial state."""
-        self.position = (
-            np.array(initial_position) if initial_position is not None
-            else np.zeros(self.config.dimension)
-        )
+        self.position = np.array(initial_position) if initial_position is not None else np.zeros(self.config.dimension)
         self.velocity = np.zeros(self.config.dimension)
         self.history = [self.position.copy()]
         self.coherence_history = [1.0]
@@ -484,18 +431,15 @@ class AdaptiveHyperbolicNavigator:
 # Factory and Integration Functions
 # ═══════════════════════════════════════════════════════════════
 
+
 def create_adaptive_navigator(
-    config: Optional[AdaptiveNavigatorConfig] = None,
-    initial_position: Optional[np.ndarray] = None
+    config: Optional[AdaptiveNavigatorConfig] = None, initial_position: Optional[np.ndarray] = None
 ) -> AdaptiveHyperbolicNavigator:
     """Create an adaptive navigator with sensible defaults."""
     return AdaptiveHyperbolicNavigator(config, initial_position)
 
 
-def compute_coherence(
-    spectral_coherence: float,
-    spin_coherence: float = 1.0
-) -> float:
+def compute_coherence(spectral_coherence: float, spin_coherence: float = 1.0) -> float:
     """
     Compute coherence from Layer 9/10 spectral analysis.
 
@@ -526,6 +470,7 @@ def risk_to_coherence(risk_score: float) -> float:
 # Swarm Integration for HYDRA
 # ═══════════════════════════════════════════════════════════════
 
+
 class SwarmNavigator:
     """
     Multi-agent swarm navigator for HYDRA integration.
@@ -535,9 +480,7 @@ class SwarmNavigator:
     """
 
     def __init__(self, num_agents: int = 5):
-        self.agents: List[AdaptiveHyperbolicNavigator] = [
-            AdaptiveHyperbolicNavigator() for _ in range(num_agents)
-        ]
+        self.agents: List[AdaptiveHyperbolicNavigator] = [AdaptiveHyperbolicNavigator() for _ in range(num_agents)]
         self.collective_coherence: float = 1.0
 
     def update_all(
@@ -545,7 +488,7 @@ class SwarmNavigator:
         intent_tongues: List[str],
         individual_coherences: Optional[List[float]] = None,
         mutations: float = 0,
-        dt: float = 0.1
+        dt: float = 0.1,
     ) -> List[NavigatorState]:
         """Update all agents in the swarm."""
         if individual_coherences is None:

@@ -48,12 +48,8 @@ class TestByzantineFaultTolerance:
     These tests verify REAL BFT properties.
     """
 
-    @pytest.mark.xfail(
-        reason="Byzantine consensus is a future feature - not yet implemented"
-    )
-    @pytest.mark.skipif(
-        not CONSENSUS_AVAILABLE, reason="Consensus module not available"
-    )
+    @pytest.mark.xfail(reason="Byzantine consensus is a future feature - not yet implemented")
+    @pytest.mark.skipif(not CONSENSUS_AVAILABLE, reason="Consensus module not available")
     def test_byzantine_threshold(self):
         """
         Byzantine Threshold Test
@@ -79,21 +75,13 @@ class TestByzantineFaultTolerance:
 
         for n_nodes, expected_f in test_cases:
             f = consensus.get_byzantine_threshold(n_nodes)
-            assert (
-                f == expected_f
-            ), f"Byzantine threshold wrong: n={n_nodes}, expected f={expected_f}, got f={f}"
+            assert f == expected_f, f"Byzantine threshold wrong: n={n_nodes}, expected f={expected_f}, got f={f}"
 
             # Verify n ≥ 3f + 1
-            assert (
-                n_nodes >= 3 * f + 1
-            ), f"Byzantine bound violated: {n_nodes} < 3*{f}+1"
+            assert n_nodes >= 3 * f + 1, f"Byzantine bound violated: {n_nodes} < 3*{f}+1"
 
-    @pytest.mark.xfail(
-        reason="Byzantine consensus is a future feature - not yet implemented"
-    )
-    @pytest.mark.skipif(
-        not CONSENSUS_AVAILABLE, reason="Consensus module not available"
-    )
+    @pytest.mark.xfail(reason="Byzantine consensus is a future feature - not yet implemented")
+    @pytest.mark.skipif(not CONSENSUS_AVAILABLE, reason="Consensus module not available")
     def test_agreement_property(self):
         """
         Agreement Property Test
@@ -124,16 +112,10 @@ class TestByzantineFaultTolerance:
 
         # All honest nodes must agree
         honest_decisions = [decisions[f"node_{i}"] for i in range(5)]
-        assert (
-            len(set(honest_decisions)) == 1
-        ), f"Honest nodes disagree: {honest_decisions}"
+        assert len(set(honest_decisions)) == 1, f"Honest nodes disagree: {honest_decisions}"
 
-    @pytest.mark.xfail(
-        reason="Byzantine consensus is a future feature - not yet implemented"
-    )
-    @pytest.mark.skipif(
-        not CONSENSUS_AVAILABLE, reason="Consensus module not available"
-    )
+    @pytest.mark.xfail(reason="Byzantine consensus is a future feature - not yet implemented")
+    @pytest.mark.skipif(not CONSENSUS_AVAILABLE, reason="Consensus module not available")
     def test_validity_property(self):
         """
         Validity Property Test
@@ -168,12 +150,8 @@ class TestByzantineFaultTolerance:
                 decisions[f"node_{i}"] == "value_A"
             ), f"Validity violated: honest node decided {decisions[f'node_{i}']}"
 
-    @pytest.mark.xfail(
-        reason="Byzantine consensus is a future feature - not yet implemented"
-    )
-    @pytest.mark.skipif(
-        not CONSENSUS_AVAILABLE, reason="Consensus module not available"
-    )
+    @pytest.mark.xfail(reason="Byzantine consensus is a future feature - not yet implemented")
+    @pytest.mark.skipif(not CONSENSUS_AVAILABLE, reason="Consensus module not available")
     def test_termination_property(self):
         """
         Termination Property Test
@@ -219,12 +197,8 @@ class TestDualLatticeConsensus:
     These tests verify the dual lattice approach works correctly.
     """
 
-    @pytest.mark.xfail(
-        reason="Dual lattice consensus is a future feature - not yet implemented"
-    )
-    @pytest.mark.skipif(
-        not CONSENSUS_AVAILABLE, reason="Consensus module not available"
-    )
+    @pytest.mark.xfail(reason="Dual lattice consensus is a future feature - not yet implemented")
+    @pytest.mark.skipif(not CONSENSUS_AVAILABLE, reason="Consensus module not available")
     def test_dual_lattice_agreement(self):
         """
         Dual Lattice Agreement Test
@@ -257,9 +231,7 @@ class TestDualLatticeConsensus:
         assert result["agreed"] == False, "Dual lattices should detect disagreement"
         assert result["safe_failure"] == True, "Must fail safely on disagreement"
 
-    @pytest.mark.skipif(
-        not CONSENSUS_AVAILABLE, reason="Consensus module not available"
-    )
+    @pytest.mark.skipif(not CONSENSUS_AVAILABLE, reason="Consensus module not available")
     def test_quantum_resistant_signatures(self):
         """
         Quantum-Resistant Signature Test
@@ -287,9 +259,7 @@ class TestDualLatticeConsensus:
         valid = consensus.verify_quantum_signature(wrong_message, signature)
         assert valid == False, "Quantum signature verified with wrong message"
 
-    @pytest.mark.skipif(
-        not CONSENSUS_AVAILABLE, reason="Consensus module not available"
-    )
+    @pytest.mark.skipif(not CONSENSUS_AVAILABLE, reason="Consensus module not available")
     def test_lattice_hardness(self):
         """
         Lattice Hardness Test
@@ -312,9 +282,7 @@ class TestDualLatticeConsensus:
 
         # Quantum lattice security
         assert params["quantum"]["security_bits"] >= 128, "Quantum security too low"
-        assert (
-            params["quantum"]["nist_level"] >= 3
-        ), "Quantum security below NIST Level 3"
+        assert params["quantum"]["nist_level"] >= 3, "Quantum security below NIST Level 3"
 
 
 class TestConsensusAttackResistance:
@@ -330,9 +298,7 @@ class TestConsensusAttackResistance:
     These tests verify REAL attack resistance.
     """
 
-    @pytest.mark.skipif(
-        not CONSENSUS_AVAILABLE, reason="Consensus module not available"
-    )
+    @pytest.mark.skipif(not CONSENSUS_AVAILABLE, reason="Consensus module not available")
     def test_sybil_attack_resistance(self):
         """
         Sybil Attack Resistance Test
@@ -354,9 +320,7 @@ class TestConsensusAttackResistance:
             is_sybil = consensus.detect_sybil(node)
             assert is_sybil == True, f"Failed to detect Sybil node: {node}"
 
-    @pytest.mark.skipif(
-        not CONSENSUS_AVAILABLE, reason="Consensus module not available"
-    )
+    @pytest.mark.skipif(not CONSENSUS_AVAILABLE, reason="Consensus module not available")
     def test_51_percent_attack_resistance(self):
         """
         51% Attack Resistance Test
@@ -385,9 +349,7 @@ class TestConsensusAttackResistance:
         attack_detected = consensus.detect_majority_attack(proposals)
         assert attack_detected == True, "Failed to detect 51% attack"
 
-    @pytest.mark.skipif(
-        not CONSENSUS_AVAILABLE, reason="Consensus module not available"
-    )
+    @pytest.mark.skipif(not CONSENSUS_AVAILABLE, reason="Consensus module not available")
     def test_eclipse_attack_resistance(self):
         """
         Eclipse Attack Resistance Test
@@ -421,12 +383,8 @@ class TestConsensusPerformance:
     These tests verify consensus meets performance requirements.
     """
 
-    @pytest.mark.xfail(
-        reason="Byzantine consensus is a future feature - not yet implemented"
-    )
-    @pytest.mark.skipif(
-        not CONSENSUS_AVAILABLE, reason="Consensus module not available"
-    )
+    @pytest.mark.xfail(reason="Byzantine consensus is a future feature - not yet implemented")
+    @pytest.mark.skipif(not CONSENSUS_AVAILABLE, reason="Consensus module not available")
     def test_consensus_latency(self):
         """
         Consensus Latency Test
@@ -449,12 +407,8 @@ class TestConsensusPerformance:
 
         assert latency < 1.0, f"Consensus latency {latency:.3f}s exceeds 1.0s target"
 
-    @pytest.mark.xfail(
-        reason="Byzantine consensus is a future feature - not yet implemented"
-    )
-    @pytest.mark.skipif(
-        not CONSENSUS_AVAILABLE, reason="Consensus module not available"
-    )
+    @pytest.mark.xfail(reason="Byzantine consensus is a future feature - not yet implemented")
+    @pytest.mark.skipif(not CONSENSUS_AVAILABLE, reason="Consensus module not available")
     def test_consensus_throughput(self):
         """
         Consensus Throughput Test
@@ -479,9 +433,7 @@ class TestConsensusPerformance:
         elapsed = time.time() - start_time
         throughput = n_rounds / elapsed
 
-        assert (
-            throughput >= 10.0
-        ), f"Consensus throughput {throughput:.1f} rounds/s below 10 rounds/s target"
+        assert throughput >= 10.0, f"Consensus throughput {throughput:.1f} rounds/s below 10 rounds/s target"
 
 
 if __name__ == "__main__":

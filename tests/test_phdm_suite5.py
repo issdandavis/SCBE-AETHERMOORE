@@ -31,6 +31,7 @@ from typing import List, Dict, Optional
 @dataclass
 class IntentVector:
     """Intent embedding + prompt fingerprint."""
+
     embedding: np.ndarray
     prompt_hash: str
 
@@ -38,8 +39,9 @@ class IntentVector:
 @dataclass
 class BrainResult:
     """Result from the AetherBrain routing pipeline."""
-    status: str        # SUCCESS, BLOCKED, DENIED, ERROR
-    region: str        # CORE, CORTEX, RISK
+
+    status: str  # SUCCESS, BLOCKED, DENIED, ERROR
+    region: str  # CORE, CORTEX, RISK
     latency: float
     output: str
     inspection_triggered: bool = False
@@ -156,11 +158,11 @@ class TestPHDMUtilityPreservation:
 
     def test_benign_vectors_succeed(self):
         benign_vectors = [
-            np.array([0.1, 0.1, 0.1]),   # ||e|| ≈ 0.17 → CORE
-            np.array([0.2, 0.1, 0.05]),   # ||e|| ≈ 0.23 → CORE
-            np.array([0.1, 0.0, 0.1]),    # ||e|| ≈ 0.14 → CORE
-            np.array([0.15, 0.1, 0.1]),   # ||e|| ≈ 0.21 → CORE
-            np.array([0.05, 0.05, 0.05]), # ||e|| ≈ 0.09 → CORE
+            np.array([0.1, 0.1, 0.1]),  # ||e|| ≈ 0.17 → CORE
+            np.array([0.2, 0.1, 0.05]),  # ||e|| ≈ 0.23 → CORE
+            np.array([0.1, 0.0, 0.1]),  # ||e|| ≈ 0.14 → CORE
+            np.array([0.15, 0.1, 0.1]),  # ||e|| ≈ 0.21 → CORE
+            np.array([0.05, 0.05, 0.05]),  # ||e|| ≈ 0.09 → CORE
         ]
 
         brain = MockAetherBrain()
@@ -195,11 +197,11 @@ class TestPHDMAttackReduction:
 
     def test_adversarial_vectors_blocked(self):
         attack_vectors = [
-            np.array([0.9, 0.9, 0.9]),    # ||e|| ≈ 1.56 → RISK
-            np.array([0.8, 0.1, 0.8]),    # ||e|| ≈ 1.14 → RISK
-            np.array([0.95, 0.0, 0.0]),   # ||e|| = 0.95 → RISK
-            np.array([0.5, 0.5, 0.5]),    # ||e|| ≈ 0.87 → RISK
-            np.array([0.71, 0.0, 0.0]),   # ||e|| = 0.71 → RISK (just over boundary)
+            np.array([0.9, 0.9, 0.9]),  # ||e|| ≈ 1.56 → RISK
+            np.array([0.8, 0.1, 0.8]),  # ||e|| ≈ 1.14 → RISK
+            np.array([0.95, 0.0, 0.0]),  # ||e|| = 0.95 → RISK
+            np.array([0.5, 0.5, 0.5]),  # ||e|| ≈ 0.87 → RISK
+            np.array([0.71, 0.0, 0.0]),  # ||e|| = 0.71 → RISK (just over boundary)
         ]
 
         brain = MockAetherBrain()
@@ -238,10 +240,10 @@ class TestPHDMBypassResistance:
     def test_cortex_boundary_triggers_inspection(self):
         """Vectors just inside CORTEX (||e|| ∈ [0.3, 0.7)) must set inspection flag."""
         laundering_vectors = [
-            np.array([0.4, 0.4, 0.35]),   # ||e|| ≈ 0.67 → CORTEX (near boundary)
-            np.array([0.3, 0.3, 0.3]),     # ||e|| ≈ 0.52 → CORTEX
-            np.array([0.5, 0.2, 0.3]),     # ||e|| ≈ 0.62 → CORTEX
-            np.array([0.45, 0.45, 0.2]),   # ||e|| ≈ 0.67 → CORTEX
+            np.array([0.4, 0.4, 0.35]),  # ||e|| ≈ 0.67 → CORTEX (near boundary)
+            np.array([0.3, 0.3, 0.3]),  # ||e|| ≈ 0.52 → CORTEX
+            np.array([0.5, 0.2, 0.3]),  # ||e|| ≈ 0.62 → CORTEX
+            np.array([0.45, 0.45, 0.2]),  # ||e|| ≈ 0.67 → CORTEX
             np.array([0.35, 0.35, 0.35]),  # ||e|| ≈ 0.61 → CORTEX
         ]
 
@@ -255,9 +257,7 @@ class TestPHDMBypassResistance:
                 detected += 1
 
         detection_rate = detected / len(laundering_vectors)
-        assert detection_rate >= 0.80, (
-            f"Bypass resistance failed: only {detection_rate * 100}% detected"
-        )
+        assert detection_rate >= 0.80, f"Bypass resistance failed: only {detection_rate * 100}% detected"
 
     def test_cortex_region_always_inspected(self):
         """Any CORTEX-region result must have inspection_triggered=True."""
@@ -336,8 +336,9 @@ if __name__ == "__main__":
         brain = MockAetherBrain()
 
         # 1. Determinism
-        results = [brain.think(IntentVector(np.array([0.1, 0.2, 0.9]), "abc123ff"), {"user": "test"})
-                    for _ in range(100)]
+        results = [
+            brain.think(IntentVector(np.array([0.1, 0.2, 0.9]), "abc123ff"), {"user": "test"}) for _ in range(100)
+        ]
         stability = sum(1 for r in results if (r.status, r.region) == (results[0].status, results[0].region)) / 100
         assert stability >= 0.95, f"Determinism: {stability * 100}%"
 

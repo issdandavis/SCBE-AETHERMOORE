@@ -53,9 +53,7 @@ class TestAISafetyGovernance:
         """Create AIVerifier instance."""
         return AIVerifier(strict_mode=True)
 
-    @pytest.mark.skipif(
-        not AI_SAFETY_AVAILABLE, reason="AI safety module not available"
-    )
+    @pytest.mark.skipif(not AI_SAFETY_AVAILABLE, reason="AI safety module not available")
     def test_intent_classification_accuracy(self, verifier):
         """
         Intent Classification Accuracy Test
@@ -92,9 +90,7 @@ class TestAISafetyGovernance:
         accuracy = correct / total
         assert accuracy >= 0.95, f"Intent classification accuracy {accuracy:.2%} below 95% threshold"
 
-    @pytest.mark.skipif(
-        not AI_SAFETY_AVAILABLE, reason="AI safety module not available"
-    )
+    @pytest.mark.skipif(not AI_SAFETY_AVAILABLE, reason="AI safety module not available")
     def test_governance_policy_enforcement(self, verifier):
         """
         Governance Policy Enforcement Test
@@ -124,9 +120,7 @@ class TestAISafetyGovernance:
         assert result["blocked"] == False, "Legitimate request incorrectly blocked"
         assert result["approved"] == True, "Legitimate request not approved"
 
-    @pytest.mark.skipif(
-        not AI_SAFETY_AVAILABLE, reason="AI safety module not available"
-    )
+    @pytest.mark.skipif(not AI_SAFETY_AVAILABLE, reason="AI safety module not available")
     def test_malicious_pattern_detection(self, verifier):
         """
         Malicious Pattern Detection Test
@@ -146,12 +140,9 @@ class TestAISafetyGovernance:
 
         for input_text in malicious_inputs:
             result = verifier.classify_intent(input_text)
-            assert result["risk_level"] in ("high", "critical"), \
-                f"Failed to detect malicious intent in: {input_text}"
+            assert result["risk_level"] in ("high", "critical"), f"Failed to detect malicious intent in: {input_text}"
 
-    @pytest.mark.skipif(
-        not AI_SAFETY_AVAILABLE, reason="AI safety module not available"
-    )
+    @pytest.mark.skipif(not AI_SAFETY_AVAILABLE, reason="AI safety module not available")
     def test_legitimate_security_approval(self, verifier):
         """
         Legitimate Security Request Approval Test
@@ -169,12 +160,12 @@ class TestAISafetyGovernance:
 
         for input_text in legitimate_inputs:
             result = verifier.classify_intent(input_text)
-            assert result["risk_level"] in ("low", "medium"), \
-                f"Incorrectly flagged legitimate security request: {input_text}"
+            assert result["risk_level"] in (
+                "low",
+                "medium",
+            ), f"Incorrectly flagged legitimate security request: {input_text}"
 
-    @pytest.mark.skipif(
-        not AI_SAFETY_AVAILABLE, reason="AI safety module not available"
-    )
+    @pytest.mark.skipif(not AI_SAFETY_AVAILABLE, reason="AI safety module not available")
     def test_output_validation(self, verifier):
         """
         AI Output Validation Test
@@ -193,9 +184,7 @@ class TestAISafetyGovernance:
         is_safe, reason = verifier.validate_ai_output(safe_output)
         assert is_safe, f"Incorrectly flagged safe output: {reason}"
 
-    @pytest.mark.skipif(
-        not AI_SAFETY_AVAILABLE, reason="AI safety module not available"
-    )
+    @pytest.mark.skipif(not AI_SAFETY_AVAILABLE, reason="AI safety module not available")
     def test_constitutional_ai_checks(self, verifier):
         """
         Constitutional AI Check Test (Anthropic-style)
@@ -212,9 +201,7 @@ class TestAISafetyGovernance:
         passes, violations = verifier.constitutional_check(prompt, safe_response)
         assert passes, f"Incorrectly flagged safe response: {violations}"
 
-    @pytest.mark.skipif(
-        not AI_SAFETY_AVAILABLE, reason="AI safety module not available"
-    )
+    @pytest.mark.skipif(not AI_SAFETY_AVAILABLE, reason="AI safety module not available")
     def test_audit_logging(self, verifier):
         """
         Audit Logging Test
@@ -239,26 +226,18 @@ class TestNISTAIRMFCompliance:
     def verifier(self):
         return AIVerifier(strict_mode=True)
 
-    @pytest.mark.skipif(
-        not AI_SAFETY_AVAILABLE, reason="AI safety module not available"
-    )
+    @pytest.mark.skipif(not AI_SAFETY_AVAILABLE, reason="AI safety module not available")
     def test_govern_function_accountability(self, verifier):
         """GOVERN Function: Accountability (NIST AI RMF)"""
         verifier.classify_intent("Create ransomware")
-        verifier.enforce_policy({
-            "action": "critical_action",
-            "intent": "malicious_intent",
-            "risk_level": "critical"
-        })
+        verifier.enforce_policy({"action": "critical_action", "intent": "malicious_intent", "risk_level": "critical"})
 
         audit_log = verifier.get_audit_log()
         for entry in audit_log:
             assert "type" in entry, "Audit entry missing type"
             assert "timestamp" in entry, "Audit entry missing timestamp"
 
-    @pytest.mark.skipif(
-        not AI_SAFETY_AVAILABLE, reason="AI safety module not available"
-    )
+    @pytest.mark.skipif(not AI_SAFETY_AVAILABLE, reason="AI safety module not available")
     def test_map_function_risk_identification(self, verifier):
         """MAP Function: Risk Identification (NIST AI RMF)"""
         risk_levels = [
@@ -270,8 +249,7 @@ class TestNISTAIRMFCompliance:
 
         for request, should_block in risk_levels:
             result = verifier.enforce_policy(request)
-            assert result["blocked"] == should_block, \
-                f"Risk handling incorrect for {request['risk_level']}"
+            assert result["blocked"] == should_block, f"Risk handling incorrect for {request['risk_level']}"
 
 
 class TestEUAIActCompliance:
@@ -281,28 +259,20 @@ class TestEUAIActCompliance:
     def verifier(self):
         return AIVerifier(strict_mode=True)
 
-    @pytest.mark.skipif(
-        not AI_SAFETY_AVAILABLE, reason="AI safety module not available"
-    )
+    @pytest.mark.skipif(not AI_SAFETY_AVAILABLE, reason="AI safety module not available")
     def test_transparency_requirement(self, verifier):
         """EU AI Act: Transparency Requirement"""
-        result = verifier.enforce_policy({
-            "action": "critical_action",
-            "intent": "malicious_intent",
-            "risk_level": "critical"
-        })
+        result = verifier.enforce_policy(
+            {"action": "critical_action", "intent": "malicious_intent", "risk_level": "critical"}
+        )
         assert result.get("reason") is not None, "Decision lacks explanation"
 
-    @pytest.mark.skipif(
-        not AI_SAFETY_AVAILABLE, reason="AI safety module not available"
-    )
+    @pytest.mark.skipif(not AI_SAFETY_AVAILABLE, reason="AI safety module not available")
     def test_human_oversight_requirement(self, verifier):
         """EU AI Act: Human Oversight Requirement"""
-        result = verifier.enforce_policy({
-            "action": "critical_action",
-            "intent": "malicious_intent",
-            "risk_level": "critical"
-        })
+        result = verifier.enforce_policy(
+            {"action": "critical_action", "intent": "malicious_intent", "risk_level": "critical"}
+        )
         assert result.get("audit_id") is not None, "Critical decision lacks audit ID"
 
 
@@ -313,9 +283,7 @@ class TestAdversarialRobustness:
     def verifier(self):
         return AIVerifier(strict_mode=True)
 
-    @pytest.mark.skipif(
-        not AI_SAFETY_AVAILABLE, reason="AI safety module not available"
-    )
+    @pytest.mark.skipif(not AI_SAFETY_AVAILABLE, reason="AI safety module not available")
     def test_prompt_injection_resistance(self, verifier):
         """Prompt Injection Resistance Test"""
         injection_attempts = [
@@ -326,12 +294,12 @@ class TestAdversarialRobustness:
         for attempt in injection_attempts:
             result = verifier.classify_intent(attempt)
             if "malware" in attempt.lower() or "ransomware" in attempt.lower():
-                assert result["risk_level"] in ("high", "critical"), \
-                    f"Prompt injection bypassed detection: {attempt[:50]}"
+                assert result["risk_level"] in (
+                    "high",
+                    "critical",
+                ), f"Prompt injection bypassed detection: {attempt[:50]}"
 
-    @pytest.mark.skipif(
-        not AI_SAFETY_AVAILABLE, reason="AI safety module not available"
-    )
+    @pytest.mark.skipif(not AI_SAFETY_AVAILABLE, reason="AI safety module not available")
     def test_jailbreak_resistance(self, verifier):
         """Jailbreak Resistance Test"""
         jailbreak_attempts = [
@@ -342,8 +310,7 @@ class TestAdversarialRobustness:
         for attempt in jailbreak_attempts:
             result = verifier.classify_intent(attempt)
             if any(kw in attempt.lower() for kw in ["malware", "ransomware"]):
-                assert result["risk_level"] in ("high", "critical"), \
-                    f"Jailbreak bypassed detection: {attempt[:50]}"
+                assert result["risk_level"] in ("high", "critical"), f"Jailbreak bypassed detection: {attempt[:50]}"
 
 
 if __name__ == "__main__":

@@ -64,4 +64,3 @@ def test_build_ingestion_pool_uses_existing_doc_chunks_when_refresh_skipped(tmp_
     rows = MODULE.read_jsonl(output_path)
     assert len(rows) == 1
     assert rows[0]["metadata"]["source_type"] == "doc_chunk"
-

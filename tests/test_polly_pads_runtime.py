@@ -239,12 +239,8 @@ class TestSquadSpace:
 
     def test_risk_field(self) -> None:
         s = SquadSpace("risk")
-        s.units["safe"] = UnitState(
-            "safe", 0, 0, 0, coherence=0.9, d_star=0.1, h_eff=10
-        )
-        s.units["danger"] = UnitState(
-            "danger", 0, 0, 0, coherence=0.1, d_star=5.0, h_eff=1e7
-        )
+        s.units["safe"] = UnitState("safe", 0, 0, 0, coherence=0.9, d_star=0.1, h_eff=10)
+        s.units["danger"] = UnitState("danger", 0, 0, 0, coherence=0.1, d_star=5.0, h_eff=1e7)
         rf = s.risk_field()
         assert rf["safe"] == "ALLOW"
         assert rf["danger"] == "DENY"
@@ -260,45 +256,33 @@ class TestPollyPadZones:
 
     def test_hot_to_safe_requires_allow(self) -> None:
         pad = PollyPad(unit_id="u1", mode="ENGINEERING", zone="HOT")
-        state = UnitState(
-            "u1", 0, 0, 0, coherence=0.9, d_star=0.2, h_eff=100.0
-        )
+        state = UnitState("u1", 0, 0, 0, coherence=0.9, d_star=0.2, h_eff=100.0)
         assert pad.can_promote_to_safe(state) is True
 
     def test_hot_to_safe_fails_on_deny(self) -> None:
         pad = PollyPad(unit_id="u1", mode="ENGINEERING", zone="HOT")
-        state = UnitState(
-            "u1", 0, 0, 0, coherence=0.1, d_star=5.0, h_eff=1e7
-        )
+        state = UnitState("u1", 0, 0, 0, coherence=0.1, d_star=5.0, h_eff=1e7)
         assert pad.can_promote_to_safe(state) is False
 
     def test_hot_to_safe_denied_low_coherence(self) -> None:
         pad = PollyPad(unit_id="u1", mode="ENGINEERING", zone="HOT")
-        state = UnitState(
-            "u1", 0, 0, 0, coherence=0.1, d_star=0.2, h_eff=100.0
-        )
+        state = UnitState("u1", 0, 0, 0, coherence=0.1, d_star=0.2, h_eff=100.0)
         assert pad.can_promote_to_safe(state) is False
 
     def test_hot_to_safe_denied_high_drift(self) -> None:
         pad = PollyPad(unit_id="u1", mode="ENGINEERING", zone="HOT")
-        state = UnitState(
-            "u1", 0, 0, 0, coherence=0.9, d_star=5.0, h_eff=100.0
-        )
+        state = UnitState("u1", 0, 0, 0, coherence=0.9, d_star=5.0, h_eff=100.0)
         assert pad.can_promote_to_safe(state) is False
 
     def test_hot_to_safe_with_quorum(self) -> None:
         pad = PollyPad(unit_id="u1", mode="ENGINEERING", zone="HOT")
-        state = UnitState(
-            "u1", 0, 0, 0, coherence=0.9, d_star=0.2, h_eff=100.0
-        )
+        state = UnitState("u1", 0, 0, 0, coherence=0.9, d_star=0.2, h_eff=100.0)
         assert pad.can_promote_to_safe(state, quorum_votes=3) is False
         assert pad.can_promote_to_safe(state, quorum_votes=4) is True
 
     def test_promote_changes_zone(self) -> None:
         pad = PollyPad(unit_id="u1", mode="ENGINEERING", zone="HOT")
-        state = UnitState(
-            "u1", 0, 0, 0, coherence=0.9, d_star=0.2, h_eff=100.0
-        )
+        state = UnitState("u1", 0, 0, 0, coherence=0.9, d_star=0.2, h_eff=100.0)
         assert pad.promote(state) is True
         assert pad.zone == "SAFE"
 
@@ -455,46 +439,42 @@ class TestCubeId:
     """Verify deterministic CubeId generation."""
 
     def test_deterministic(self) -> None:
-        id1 = cube_id(
-            "s1", "u1", "ENGINEERING", 0, "KO", [1, 2, 3, 4, 5, 6]
-        )
-        id2 = cube_id(
-            "s1", "u1", "ENGINEERING", 0, "KO", [1, 2, 3, 4, 5, 6]
-        )
+        id1 = cube_id("s1", "u1", "ENGINEERING", 0, "KO", [1, 2, 3, 4, 5, 6])
+        id2 = cube_id("s1", "u1", "ENGINEERING", 0, "KO", [1, 2, 3, 4, 5, 6])
         assert id1 == id2
 
     def test_different_inputs_different_id(self) -> None:
-        id1 = cube_id(
-            "s1", "u1", "ENGINEERING", 0, "KO", [1, 2, 3, 4, 5, 6]
-        )
-        id2 = cube_id(
-            "s1", "u1", "ENGINEERING", 1, "KO", [1, 2, 3, 4, 5, 6]
-        )
+        id1 = cube_id("s1", "u1", "ENGINEERING", 0, "KO", [1, 2, 3, 4, 5, 6])
+        id2 = cube_id("s1", "u1", "ENGINEERING", 1, "KO", [1, 2, 3, 4, 5, 6])
         assert id1 != id2
 
     def test_is_sha256_hex(self) -> None:
-        cid = cube_id(
-            "s1", "u1", "NAVIGATION", 0, "AV", [0, 0, 0, 0, 0, 0]
-        )
+        cid = cube_id("s1", "u1", "NAVIGATION", 0, "AV", [0, 0, 0, 0, 0, 0])
         assert len(cid) == 64
         assert all(c in "0123456789abcdef" for c in cid)
 
     def test_different_lang_different_id(self) -> None:
-        cid1 = cube_id(
-            "unit", "u1", "ENGINEERING", 1, "KO", [0, 0, 0, 0, 0, 0]
-        )
-        cid2 = cube_id(
-            "unit", "u1", "ENGINEERING", 1, "AV", [0, 0, 0, 0, 0, 0]
-        )
+        cid1 = cube_id("unit", "u1", "ENGINEERING", 1, "KO", [0, 0, 0, 0, 0, 0])
+        cid2 = cube_id("unit", "u1", "ENGINEERING", 1, "AV", [0, 0, 0, 0, 0, 0])
         assert cid1 != cid2
 
     def test_squad_id_included(self) -> None:
         cid1 = cube_id(
-            "squad", "u1", "NAVIGATION", 42, "RU", [1, 2, 3, 4, 5, 6],
+            "squad",
+            "u1",
+            "NAVIGATION",
+            42,
+            "RU",
+            [1, 2, 3, 4, 5, 6],
             squad_id="s1",
         )
         cid2 = cube_id(
-            "squad", "u1", "NAVIGATION", 42, "RU", [1, 2, 3, 4, 5, 6],
+            "squad",
+            "u1",
+            "NAVIGATION",
+            42,
+            "RU",
+            [1, 2, 3, 4, 5, 6],
             squad_id="s2",
         )
         assert cid1 != cid2
@@ -530,12 +510,8 @@ class TestTriadicDistance:
         assert d > 0
 
     def test_symmetry_in_equal_weights(self) -> None:
-        d1 = triadic_temporal_distance(
-            1.0, 2.0, 3.0, 1 / 3, 1 / 3, 1 / 3
-        )
-        d2 = triadic_temporal_distance(
-            3.0, 1.0, 2.0, 1 / 3, 1 / 3, 1 / 3
-        )
+        d1 = triadic_temporal_distance(1.0, 2.0, 3.0, 1 / 3, 1 / 3, 1 / 3)
+        d2 = triadic_temporal_distance(3.0, 1.0, 2.0, 1 / 3, 1 / 3, 1 / 3)
         assert d1 == pytest.approx(d2, rel=1e-6)
 
 
@@ -550,9 +526,7 @@ class TestPlanTrace:
 
     def test_blocked_with_extreme_cost(self) -> None:
         state = (100.0, 100.0, 100.0, 100.0, 100.0, 100.0)
-        trace = plan_trace(
-            "STRUCTURE", state, d_star=10.0, max_cost=0.001
-        )
+        trace = plan_trace("STRUCTURE", state, d_star=10.0, max_cost=0.001)
         assert trace.result == "BLOCKED"
 
     def test_all_directions_work(self) -> None:
@@ -603,16 +577,12 @@ class TestHyperbolicDistance:
 
     def test_self_distance_zero(self) -> None:
         p = (0.1, 0.2, 0.1, 0.1, 0.1, 0.1)
-        assert hyperbolic_distance_6d(p, p) == pytest.approx(
-            0.0, abs=1e-10
-        )
+        assert hyperbolic_distance_6d(p, p) == pytest.approx(0.0, abs=1e-10)
 
     def test_symmetry(self) -> None:
         u = (0.1, 0.2, 0.0, 0.1, 0.0, 0.1)
         v = (0.3, 0.1, 0.2, 0.0, 0.1, 0.0)
-        assert hyperbolic_distance_6d(u, v) == pytest.approx(
-            hyperbolic_distance_6d(v, u), rel=1e-10
-        )
+        assert hyperbolic_distance_6d(u, v) == pytest.approx(hyperbolic_distance_6d(v, u), rel=1e-10)
 
     def test_grows_with_position(self) -> None:
         origin = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)

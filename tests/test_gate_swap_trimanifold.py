@@ -44,6 +44,7 @@ from symphonic_cipher.scbe_aethermoore.trinary import BalancedTernary
 #  MSD Extraction (the fixed function)
 # ═══════════════════════════════════════════════════
 
+
 class TestMSDExtraction:
     """Verify the negabinary -> balanced ternary -> MSD pipeline."""
 
@@ -108,6 +109,7 @@ class TestMSDExtraction:
 # ═══════════════════════════════════════════════════
 #  Canonical Node Tests (simulation lock-in)
 # ═══════════════════════════════════════════════════
+
 
 class TestNodeFibonacci:
     """Node_Fibonacci: [1, 2, 3, 5, 8, 13] -> ALLOWED.
@@ -255,6 +257,7 @@ class TestNodeAlternating:
 #  Governance Decision Logic
 # ═══════════════════════════════════════════════════
 
+
 class TestGovernanceDecisionLogic:
     """Test the decision function across all governance boundaries."""
 
@@ -299,22 +302,19 @@ class TestGovernanceDecisionLogic:
                     s = t1 + t2 + t3
 
                     if t3 == -1:
-                        assert decision == "DENY", \
-                            f"({t1},{t2},{t3}): t3=-1 should DENY, got {decision}"
+                        assert decision == "DENY", f"({t1},{t2},{t3}): t3=-1 should DENY, got {decision}"
                     elif s < 0:
-                        assert decision == "DENY", \
-                            f"({t1},{t2},{t3}): sum={s}<0 should DENY, got {decision}"
+                        assert decision == "DENY", f"({t1},{t2},{t3}): sum={s}<0 should DENY, got {decision}"
                     elif s == 0:
-                        assert decision == "QUARANTINE", \
-                            f"({t1},{t2},{t3}): sum=0 should QUARANTINE, got {decision}"
+                        assert decision == "QUARANTINE", f"({t1},{t2},{t3}): sum=0 should QUARANTINE, got {decision}"
                     else:
-                        assert decision == "ALLOW", \
-                            f"({t1},{t2},{t3}): sum={s}>0 should ALLOW, got {decision}"
+                        assert decision == "ALLOW", f"({t1},{t2},{t3}): sum={s}>0 should ALLOW, got {decision}"
 
 
 # ═══════════════════════════════════════════════════
 #  Edge Cases & Validation
 # ═══════════════════════════════════════════════════
+
 
 class TestEdgeCases:
     """Edge cases for the gate swap pipeline."""
@@ -356,6 +356,7 @@ class TestEdgeCases:
 #  Negabinary Pipeline Integrity
 # ═══════════════════════════════════════════════════
 
+
 class TestNegabinaryPipelineIntegrity:
     """Verify the negabinary -> balanced ternary -> MSD pipeline
     preserves sign information correctly (the core of the MSD fix)."""
@@ -377,17 +378,16 @@ class TestNegabinaryPipelineIntegrity:
                 continue
             msd = _extract_msd(n)
             expected_sign = 1 if n > 0 else -1
-            assert msd == expected_sign, \
-                f"MSD of {n} is {msd}, expected {expected_sign}"
+            assert msd == expected_sign, f"MSD of {n} is {msd}, expected {expected_sign}"
 
     def test_fibonacci_aggregates(self):
         """The specific values from the Fibonacci node simulation."""
-        assert _extract_msd(3) == 1   # 1 + 2
-        assert _extract_msd(8) == 1   # 3 + 5
+        assert _extract_msd(3) == 1  # 1 + 2
+        assert _extract_msd(8) == 1  # 3 + 5
         assert _extract_msd(21) == 1  # 8 + 13
 
     def test_high_entropy_aggregates(self):
         """The specific values from the High Entropy node simulation."""
-        assert _extract_msd(355) == 1   # 100 + 255
+        assert _extract_msd(355) == 1  # 100 + 255
         assert _extract_msd(1101) == 1  # 1024 + 77
-        assert _extract_msd(51) == 1    # 42 + 9
+        assert _extract_msd(51) == 1  # 42 + 9

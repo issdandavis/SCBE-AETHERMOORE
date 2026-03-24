@@ -89,9 +89,7 @@ class Domain:
     def validate(self, value: float) -> None:
         """Raise DomainError if value is out of bounds."""
         if not self.contains(value):
-            raise DomainError(
-                f"Value {value} out of {self.name} bounds [{self.bounds[0]}, {self.bounds[1]}]"
-            )
+            raise DomainError(f"Value {value} out of {self.name} bounds [{self.bounds[0]}, {self.bounds[1]}]")
 
     def compatible(self, other: Domain) -> bool:
         """Check if two domains have the same unit signature."""

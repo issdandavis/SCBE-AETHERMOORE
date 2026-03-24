@@ -1,4 +1,5 @@
 """Tests for hydra/spectral_langgraph.py — Spectral LangGraph integration."""
+
 import sys
 import os
 
@@ -20,6 +21,7 @@ from hydra.color_dimension import ColorBand, TONGUE_WEIGHTS
 
 
 # ── SpectralMixer (FNet) ─────────────────────────────────────────
+
 
 class TestSpectralMixer:
     def test_text_to_signal_length(self):
@@ -80,7 +82,7 @@ class TestSpectralMixer:
         """Time-domain energy should equal frequency-domain energy (rfft normalization)."""
         n = 128
         sig = SpectralMixer.text_to_signal("Parseval test signal", length=n)
-        time_energy = float(np.sum(sig ** 2))
+        time_energy = float(np.sum(sig**2))
         # Use full FFT for clean Parseval check
         spec_full = np.fft.fft(sig)
         freq_energy = float(np.sum(np.abs(spec_full) ** 2)) / n
@@ -88,6 +90,7 @@ class TestSpectralMixer:
 
 
 # ── SpectralStateGraph ────────────────────────────────────────────
+
 
 class TestSpectralStateGraph:
     def test_add_node(self):
@@ -117,8 +120,8 @@ class TestSpectralStateGraph:
         # Different positions
         assert pos_a != pos_b
         # Inside unit disk
-        assert pos_a[0]**2 + pos_a[1]**2 < 1.0
-        assert pos_b[0]**2 + pos_b[1]**2 < 1.0
+        assert pos_a[0] ** 2 + pos_a[1] ** 2 < 1.0
+        assert pos_b[0] ** 2 + pos_b[1] ** 2 < 1.0
 
     def test_spectrum_report(self):
         g = SpectralStateGraph(SpectralState)
@@ -139,6 +142,7 @@ class TestSpectralStateGraph:
 
 
 # ── End-to-End Execution ──────────────────────────────────────────
+
 
 class TestEndToEnd:
     @staticmethod

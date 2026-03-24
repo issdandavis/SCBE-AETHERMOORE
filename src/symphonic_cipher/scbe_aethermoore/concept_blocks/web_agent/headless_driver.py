@@ -28,9 +28,11 @@ from typing import Any, Dict, List, Optional
 
 try:
     from playwright.async_api import async_playwright, Browser, BrowserContext, Page
+
     HAS_PLAYWRIGHT = True
     try:
         from playwright_stealth import Stealth
+
         HAS_STEALTH = True
     except ImportError:
         HAS_STEALTH = False
@@ -42,10 +44,12 @@ except ImportError:
 #  Configuration
 # ---------------------------------------------------------------------------
 
-PROFILES_DIR = Path(os.environ.get(
-    "SCBE_BROWSER_PROFILES",
-    os.path.expanduser("~/.scbe/browser_profiles"),
-))
+PROFILES_DIR = Path(
+    os.environ.get(
+        "SCBE_BROWSER_PROFILES",
+        os.path.expanduser("~/.scbe/browser_profiles"),
+    )
+)
 PROFILES_DIR.mkdir(parents=True, exist_ok=True)
 
 DEFAULT_VIEWPORT = {"width": 1366, "height": 768}
@@ -86,6 +90,7 @@ class ActionResult:
 @dataclass
 class SessionProfile:
     """Persistent browser session for a platform."""
+
     platform: str
     profile_dir: str
     cookies_file: str
@@ -96,6 +101,7 @@ class SessionProfile:
 # ---------------------------------------------------------------------------
 #  Main Driver
 # ---------------------------------------------------------------------------
+
 
 class HeadlessBrowserDriver:
     """
@@ -119,9 +125,7 @@ class HeadlessBrowserDriver:
         fast_mode: bool = False,
     ):
         if not HAS_PLAYWRIGHT:
-            raise RuntimeError(
-                "Playwright not installed. Run: pip install playwright && playwright install chromium"
-            )
+            raise RuntimeError("Playwright not installed. Run: pip install playwright && playwright install chromium")
         self.mode = mode
         self.stealth = stealth
         self.slow_mo = 0 if fast_mode else slow_mo
@@ -269,8 +273,7 @@ class HeadlessBrowserDriver:
                 duration_ms=(time.time() - t0) * 1000,
             )
         except Exception as e:
-            return ActionResult(success=False, action="navigate", error=str(e),
-                                duration_ms=(time.time() - t0) * 1000)
+            return ActionResult(success=False, action="navigate", error=str(e), duration_ms=(time.time() - t0) * 1000)
 
     async def click(self, selector: str, platform: str = "default") -> ActionResult:
         """Click an element."""
@@ -280,15 +283,15 @@ class HeadlessBrowserDriver:
             await self._human_delay()
             await page.click(selector, timeout=10000)
             await self._human_delay(300, 800)
-            return ActionResult(success=True, action="click",
-                                data={"selector": selector},
-                                duration_ms=(time.time() - t0) * 1000)
+            return ActionResult(
+                success=True, action="click", data={"selector": selector}, duration_ms=(time.time() - t0) * 1000
+            )
         except Exception as e:
-            return ActionResult(success=False, action="click", error=str(e),
-                                duration_ms=(time.time() - t0) * 1000)
+            return ActionResult(success=False, action="click", error=str(e), duration_ms=(time.time() - t0) * 1000)
 
-    async def type_text(self, selector: str, text: str, platform: str = "default",
-                        human_like: bool = True) -> ActionResult:
+    async def type_text(
+        self, selector: str, text: str, platform: str = "default", human_like: bool = True
+    ) -> ActionResult:
         """Type text into an element."""
         t0 = time.time()
         try:
@@ -297,15 +300,18 @@ class HeadlessBrowserDriver:
                 await self._human_type(page, selector, text)
             else:
                 await page.fill(selector, text)
-            return ActionResult(success=True, action="type",
-                                data={"selector": selector, "length": len(text)},
-                                duration_ms=(time.time() - t0) * 1000)
+            return ActionResult(
+                success=True,
+                action="type",
+                data={"selector": selector, "length": len(text)},
+                duration_ms=(time.time() - t0) * 1000,
+            )
         except Exception as e:
-            return ActionResult(success=False, action="type", error=str(e),
-                                duration_ms=(time.time() - t0) * 1000)
+            return ActionResult(success=False, action="type", error=str(e), duration_ms=(time.time() - t0) * 1000)
 
-    async def screenshot(self, path: Optional[str] = None, platform: str = "default",
-                         full_page: bool = False) -> ActionResult:
+    async def screenshot(
+        self, path: Optional[str] = None, platform: str = "default", full_page: bool = False
+    ) -> ActionResult:
         """Take a screenshot."""
         t0 = time.time()
         try:
@@ -313,12 +319,15 @@ class HeadlessBrowserDriver:
             if not path:
                 path = str(self.profiles_dir / f"screenshot_{int(time.time())}.png")
             await page.screenshot(path=path, full_page=full_page)
-            return ActionResult(success=True, action="screenshot",
-                                data={"path": path}, screenshot_path=path,
-                                duration_ms=(time.time() - t0) * 1000)
+            return ActionResult(
+                success=True,
+                action="screenshot",
+                data={"path": path},
+                screenshot_path=path,
+                duration_ms=(time.time() - t0) * 1000,
+            )
         except Exception as e:
-            return ActionResult(success=False, action="screenshot", error=str(e),
-                                duration_ms=(time.time() - t0) * 1000)
+            return ActionResult(success=False, action="screenshot", error=str(e), duration_ms=(time.time() - t0) * 1000)
 
     async def extract_text(self, selector: str = "body", platform: str = "default") -> ActionResult:
         """Extract text content from an element."""
@@ -326,12 +335,14 @@ class HeadlessBrowserDriver:
         try:
             page = await self.get_page(platform)
             text = await page.locator(selector).inner_text(timeout=10000)
-            return ActionResult(success=True, action="extract",
-                                data={"text": text[:5000], "full_length": len(text)},
-                                duration_ms=(time.time() - t0) * 1000)
+            return ActionResult(
+                success=True,
+                action="extract",
+                data={"text": text[:5000], "full_length": len(text)},
+                duration_ms=(time.time() - t0) * 1000,
+            )
         except Exception as e:
-            return ActionResult(success=False, action="extract", error=str(e),
-                                duration_ms=(time.time() - t0) * 1000)
+            return ActionResult(success=False, action="extract", error=str(e), duration_ms=(time.time() - t0) * 1000)
 
     async def evaluate(self, script: str, platform: str = "default") -> ActionResult:
         """Run JavaScript on the page."""
@@ -339,26 +350,21 @@ class HeadlessBrowserDriver:
         try:
             page = await self.get_page(platform)
             result = await page.evaluate(script)
-            return ActionResult(success=True, action="evaluate",
-                                data=result,
-                                duration_ms=(time.time() - t0) * 1000)
+            return ActionResult(success=True, action="evaluate", data=result, duration_ms=(time.time() - t0) * 1000)
         except Exception as e:
-            return ActionResult(success=False, action="evaluate", error=str(e),
-                                duration_ms=(time.time() - t0) * 1000)
+            return ActionResult(success=False, action="evaluate", error=str(e), duration_ms=(time.time() - t0) * 1000)
 
-    async def wait_for(self, selector: str, platform: str = "default",
-                       timeout: int = 10000) -> ActionResult:
+    async def wait_for(self, selector: str, platform: str = "default", timeout: int = 10000) -> ActionResult:
         """Wait for an element to appear."""
         t0 = time.time()
         try:
             page = await self.get_page(platform)
             await page.wait_for_selector(selector, timeout=timeout)
-            return ActionResult(success=True, action="wait",
-                                data={"selector": selector},
-                                duration_ms=(time.time() - t0) * 1000)
+            return ActionResult(
+                success=True, action="wait", data={"selector": selector}, duration_ms=(time.time() - t0) * 1000
+            )
         except Exception as e:
-            return ActionResult(success=False, action="wait", error=str(e),
-                                duration_ms=(time.time() - t0) * 1000)
+            return ActionResult(success=False, action="wait", error=str(e), duration_ms=(time.time() - t0) * 1000)
 
     # -- Platform-Specific Posting -------------------------------------------
 
@@ -375,7 +381,9 @@ class HeadlessBrowserDriver:
         await self._human_delay(1000, 2000)
 
         # Click "Start a post"
-        r = await self.click('button:has-text("Start a post"), [data-test-id="share-box-feed-entry__trigger"]', platform)
+        r = await self.click(
+            'button:has-text("Start a post"), [data-test-id="share-box-feed-entry__trigger"]', platform
+        )
         if not r.success:
             # Try alternate selector
             r = await self.click('[role="button"]:has-text("Start a post")', platform)
@@ -392,7 +400,7 @@ class HeadlessBrowserDriver:
             await self._human_delay(300, 600)
 
             # Type with human-like delays
-            for line in text.split('\n'):
+            for line in text.split("\n"):
                 await page.keyboard.type(line, delay=random.randint(20, 60))
                 await page.keyboard.press("Enter")
                 await self._human_delay(100, 300)
@@ -466,8 +474,9 @@ class HeadlessBrowserDriver:
 
     # -- Batch Operations ----------------------------------------------------
 
-    async def multi_platform_post(self, text: str, platforms: List[str],
-                                  title: Optional[str] = None) -> Dict[str, ActionResult]:
+    async def multi_platform_post(
+        self, text: str, platforms: List[str], title: Optional[str] = None
+    ) -> Dict[str, ActionResult]:
         """Post to multiple platforms in sequence."""
         results = {}
         for plat in platforms:
@@ -477,8 +486,9 @@ class HeadlessBrowserDriver:
                 results[plat] = await self.post_to_devto(title, text)
             else:
                 results[plat] = ActionResult(
-                    success=False, action=f"post_{plat}",
-                    error=f"Platform {plat} not yet supported for headless posting"
+                    success=False,
+                    action=f"post_{plat}",
+                    error=f"Platform {plat} not yet supported for headless posting",
                 )
             # Brief pause between platforms
             await self._human_delay(2000, 5000)
@@ -519,6 +529,7 @@ class HeadlessBrowserDriver:
 # ---------------------------------------------------------------------------
 #  CLI entry point for quick testing
 # ---------------------------------------------------------------------------
+
 
 async def _selftest():
     """Quick smoke test."""

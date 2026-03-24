@@ -235,9 +235,7 @@ def render_markdown(manifest: dict[str, Any]) -> str:
     bucket_counts = summary["bucket_counts"]
     bucket_bytes = summary["bucket_bytes"]
     for bucket in sorted(bucket_counts):
-        lines.append(
-            f"| {bucket} | {bucket_counts[bucket]} | {human_bytes(int(bucket_bytes.get(bucket, 0)))} |"
-        )
+        lines.append(f"| {bucket} | {bucket_counts[bucket]} | {human_bytes(int(bucket_bytes.get(bucket, 0)))} |")
 
     lines.extend(
         [
@@ -252,9 +250,7 @@ def render_markdown(manifest: dict[str, Any]) -> str:
     for entry in manifest["entries"][:25]:
         destinations = ", ".join(entry["destinations"]) if entry["destinations"] else "none"
         changes = entry["git"]["changed_paths"]
-        lines.append(
-            f"| `{entry['name']}` | {entry['bucket']} | {destinations} | {entry['human_size']} | {changes} |"
-        )
+        lines.append(f"| `{entry['name']}` | {entry['bucket']} | {destinations} | {entry['human_size']} | {changes} |")
 
     return "\n".join(lines) + "\n"
 

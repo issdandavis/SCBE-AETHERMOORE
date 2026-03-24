@@ -323,20 +323,20 @@ def detect_six_tonic(
     if len(trajectory) >= 8:
         half = len(trajectory) // 2
         match_count = sum(
-            1
-            for i in range(half)
-            if _vec_norm(_vec_sub(trajectory[i].state, trajectory[i + half].state)) < 1e-6
+            1 for i in range(half) if _vec_norm(_vec_sub(trajectory[i].state, trajectory[i + half].state)) < 1e-6
         )
         replay_score = match_count / half
 
     centered = [w - mean for w in weights]
-    zero_crossings = sum(
-        1 for i in range(1, len(centered)) if (centered[i - 1] >= 0) != (centered[i] >= 0)
-    )
+    zero_crossings = sum(1 for i in range(1, len(centered)) if (centered[i - 1] >= 0) != (centered[i] >= 0))
 
     est_freq_ratio = zero_crossings / (2 * (len(trajectory) - 1))
     exp_freq_ratio = expected_freq / (6 * base_freq)
-    freq_error = abs(est_freq_ratio - exp_freq_ratio) / exp_freq_ratio if exp_freq_ratio > 1e-12 else (1 if est_freq_ratio > 1e-12 else 0)
+    freq_error = (
+        abs(est_freq_ratio - exp_freq_ratio) / exp_freq_ratio
+        if exp_freq_ratio > 1e-12
+        else (1 if est_freq_ratio > 1e-12 else 0)
+    )
 
     static_score = 1.0 if is_static else 0.0
     freq_score = _clamp(freq_error, 0, 1)

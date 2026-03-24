@@ -4,6 +4,7 @@ These attacks embed malicious instructions inside "retrieved" documents,
 emails, database results, etc. The harness must detect the anomalous
 state even when the injection is wrapped in benign-looking context.
 """
+
 import pytest
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, INDIRECT_INJECTION
 from tests.adversarial.scbe_harness import SCBEDetectionGate, run_benchmark

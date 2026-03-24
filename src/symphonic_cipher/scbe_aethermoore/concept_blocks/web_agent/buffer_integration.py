@@ -45,6 +45,7 @@ from .semantic_antivirus import SemanticAntivirus
 #  Platform definitions
 # ---------------------------------------------------------------------------
 
+
 class Platform(str, Enum):
     TWITTER = "twitter"
     LINKEDIN = "linkedin"
@@ -58,21 +59,22 @@ class Platform(str, Enum):
 
 
 PLATFORM_LIMITS: Dict[Platform, Dict[str, Any]] = {
-    Platform.TWITTER:     {"max_chars": 280, "max_media": 4, "max_per_hour": 50},
-    Platform.LINKEDIN:    {"max_chars": 3000, "max_media": 9, "max_per_hour": 30},
-    Platform.BLUESKY:     {"max_chars": 300, "max_media": 4, "max_per_hour": 100},
-    Platform.MASTODON:    {"max_chars": 500, "max_media": 4, "max_per_hour": 100},
-    Platform.WORDPRESS:   {"max_chars": 100000, "max_media": 50, "max_per_hour": 20},
-    Platform.MEDIUM:      {"max_chars": 100000, "max_media": 50, "max_per_hour": 10},
-    Platform.GITHUB:      {"max_chars": 65536, "max_media": 10, "max_per_hour": 100},
+    Platform.TWITTER: {"max_chars": 280, "max_media": 4, "max_per_hour": 50},
+    Platform.LINKEDIN: {"max_chars": 3000, "max_media": 9, "max_per_hour": 30},
+    Platform.BLUESKY: {"max_chars": 300, "max_media": 4, "max_per_hour": 100},
+    Platform.MASTODON: {"max_chars": 500, "max_media": 4, "max_per_hour": 100},
+    Platform.WORDPRESS: {"max_chars": 100000, "max_media": 50, "max_per_hour": 20},
+    Platform.MEDIUM: {"max_chars": 100000, "max_media": 50, "max_per_hour": 10},
+    Platform.GITHUB: {"max_chars": 65536, "max_media": 10, "max_per_hour": 100},
     Platform.HUGGINGFACE: {"max_chars": 100000, "max_media": 20, "max_per_hour": 50},
-    Platform.CUSTOM:      {"max_chars": 100000, "max_media": 10, "max_per_hour": 100},
+    Platform.CUSTOM: {"max_chars": 100000, "max_media": 10, "max_per_hour": 100},
 }
 
 
 # ---------------------------------------------------------------------------
 #  Post data structures
 # ---------------------------------------------------------------------------
+
 
 class PostStatus(str, Enum):
     DRAFT = "draft"
@@ -81,7 +83,7 @@ class PostStatus(str, Enum):
     PUBLISHING = "publishing"
     PUBLISHED = "published"
     FAILED = "failed"
-    BLOCKED = "blocked"         # Blocked by governance
+    BLOCKED = "blocked"  # Blocked by governance
 
 
 @dataclass
@@ -89,11 +91,11 @@ class PostContent:
     """Content to be posted, with platform-specific variants."""
 
     text: str
-    title: Optional[str] = None                     # For blog posts
+    title: Optional[str] = None  # For blog posts
     media_urls: List[str] = field(default_factory=list)
-    tags: List[str] = field(default_factory=list)    # Hashtags / categories
-    link: Optional[str] = None                       # Attached URL
-    thread: Optional[List[str]] = None               # For thread posts (Twitter)
+    tags: List[str] = field(default_factory=list)  # Hashtags / categories
+    link: Optional[str] = None  # Attached URL
+    thread: Optional[List[str]] = None  # For thread posts (Twitter)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def for_platform(self, platform: Platform) -> str:
@@ -116,7 +118,7 @@ class PostContent:
 
         # Truncate if needed
         if len(text) > max_chars:
-            text = text[:max_chars - 3] + "..."
+            text = text[: max_chars - 3] + "..."
 
         return text
 
@@ -128,7 +130,7 @@ class ScheduledPost:
     post_id: str = field(default_factory=lambda: str(uuid.uuid4())[:12])
     content: PostContent = field(default_factory=PostContent)
     platforms: List[Platform] = field(default_factory=list)
-    schedule_at: Optional[float] = None     # Unix timestamp; None = immediate
+    schedule_at: Optional[float] = None  # Unix timestamp; None = immediate
     status: PostStatus = PostStatus.QUEUED
     created_at: float = field(default_factory=time.time)
     published_at: Optional[float] = None
@@ -148,10 +150,7 @@ class ScheduledPost:
 
     @property
     def all_published(self) -> bool:
-        return all(
-            p.value in self.platform_results
-            for p in self.platforms
-        )
+        return all(p.value in self.platform_results for p in self.platforms)
 
 
 @dataclass
@@ -169,6 +168,7 @@ class PublishResult:
 # ---------------------------------------------------------------------------
 #  Platform publishers (pluggable)
 # ---------------------------------------------------------------------------
+
 
 class PlatformPublisher:
     """
@@ -215,6 +215,7 @@ class PlatformPublisher:
 #  Rate limiter
 # ---------------------------------------------------------------------------
 
+
 class RateLimiter:
     """Per-platform rate limiting."""
 
@@ -255,6 +256,7 @@ class RateLimiter:
 # ---------------------------------------------------------------------------
 #  ContentBuffer (Buffer-style queue)
 # ---------------------------------------------------------------------------
+
 
 class ContentBuffer:
     """
