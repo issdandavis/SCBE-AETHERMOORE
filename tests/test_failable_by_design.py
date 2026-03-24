@@ -478,7 +478,7 @@ class TestMalformedInputViolations:
                 sealed = self.ss.seal(
                     case.encode("utf-8", errors="replace"), aad="unicode-test"
                 )
-                result = self.ss.unseal(sealed, aad="unicode-test")
+                self.ss.unseal(sealed, aad="unicode-test")
                 # Should roundtrip or fail gracefully
             except Exception:
                 # Rejection is acceptable for invalid unicode
