@@ -1,0 +1,24 @@
+# Triggers the SCBE Repo Manager GitHub App's daily maintenance tasks.
+# Sends a repository_dispatch event that the Probot app listens for.
+name: Scheduled Maintenance Dispatch
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # Daily at 08:00 UTC
+  workflow_dispatch: {}    # Manual trigger
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Send repository_dispatch
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: scheduled-maintenance
