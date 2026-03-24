@@ -21,12 +21,12 @@ from __future__ import annotations
 import hashlib
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from .credit import ContextCredit, Denomination, DENOMINATION_WEIGHTS
-from .bitlocker import BitLockerVault, VaultRegistry, VaultState
+from .bitlocker import VaultRegistry
 from .ledger import ContextLedger
 
 

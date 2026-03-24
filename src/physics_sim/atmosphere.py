@@ -14,7 +14,7 @@ Features:
 """
 
 import math
-from typing import Dict, Any, Tuple, Optional
+from typing import Dict, Any, Tuple
 from dataclasses import dataclass
 
 # =============================================================================

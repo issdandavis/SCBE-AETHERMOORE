@@ -37,16 +37,14 @@ Integration:
 from __future__ import annotations
 
 import enum
-import math
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Sequence, Tuple
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
 from .unified_state import (
     BRAIN_DIMENSIONS,
     UnifiedBrainState,
-    safe_poincare_embed,
 )
 from .mirror_shift import (
     PARALLEL_DIMS,
@@ -54,11 +52,9 @@ from .mirror_shift import (
     compute_dual_ternary,
     mirror_asymmetry_score,
     refactor_align,
-    AlignmentResult,
 )
 from .multiscale_spectrum import (
     analyze_trajectory,
-    MultiscaleReport,
 )
 
 EPS = 1e-12

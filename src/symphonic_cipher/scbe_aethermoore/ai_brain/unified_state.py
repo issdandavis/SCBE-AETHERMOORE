@@ -10,7 +10,7 @@ Unified Brain State - Python Reference Implementation
 """
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Optional
 
 # Constants

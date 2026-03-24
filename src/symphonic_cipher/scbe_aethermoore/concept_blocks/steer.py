@@ -18,7 +18,6 @@ the correction output back.
 
 from __future__ import annotations
 
-import math
 from typing import Any, Dict
 
 from .base import BlockResult, BlockStatus, ConceptBlock

@@ -10,7 +10,6 @@ Run: python -m cddm.selftest  (from src/)
   or: python src/cddm/selftest.py
 """
 
-import math
 import sys
 import os
 
@@ -27,8 +26,8 @@ from cddm.functor import (
     compose, identity_morphism,
 )
 from cddm.tongue_domains import (
-    TONGUE_DOMAINS, CROSS_DOMAIN_MAP,
-    tongue_domain, all_tongue_morphisms,
+    CROSS_DOMAIN_MAP, tongue_domain,
+    all_tongue_morphisms,
 )
 
 

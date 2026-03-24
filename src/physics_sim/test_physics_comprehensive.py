@@ -268,7 +268,6 @@ def test_statistical():
         fermi_energy_3d,
         maxwell_boltzmann_speed_distribution,
         statistical_mechanics,
-        BOLTZMANN,
     )
 
     # Test 1: Maxwell-Boltzmann speeds for N2 at 300K
@@ -332,7 +331,6 @@ def test_waves_optics():
         young_fringe_spacing,
         sound_speed_air,
         doppler_shift_moving_source,
-        waves_optics,
     )
 
     # Test 1: Snell's law (air to glass)
@@ -446,7 +444,6 @@ def test_simulator():
         create_orbital_simulation,
         PhysicsSimulator,
         SimulationConfig,
-        IntegrationMethod,
         Particle,
         GravityCalculator,
     )
@@ -516,7 +513,6 @@ def test_core_physics():
         electromagnetism,
         thermodynamics,
         relativity,
-        C,
         ELECTRON_MASS,
         ELEMENTARY_CHARGE,
     )

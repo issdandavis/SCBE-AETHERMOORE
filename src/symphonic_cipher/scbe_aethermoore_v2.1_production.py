@@ -28,7 +28,7 @@ import hashlib
 import hmac
 import time
 import os
-from typing import Tuple, List, Dict, Optional
+from typing import List, Dict
 
 # =============================================================================
 # SECTION 1: CONSTANTS (Unified from both systems)

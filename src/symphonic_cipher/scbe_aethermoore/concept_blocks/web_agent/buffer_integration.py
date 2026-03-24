@@ -32,15 +32,13 @@ Integrates with:
 
 from __future__ import annotations
 
-import hashlib
-import json
 import time
 import uuid
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
-from .semantic_antivirus import SemanticAntivirus, ContentVerdict
+from .semantic_antivirus import SemanticAntivirus
 
 
 # ---------------------------------------------------------------------------

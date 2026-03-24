@@ -25,23 +25,18 @@ Purpose: Patent demonstration / Security validation
 from __future__ import annotations
 
 import numpy as np
-import time
 from dataclasses import dataclass
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, List, Tuple
 from enum import Enum
 
 # Import SCBE components
 from .living_metric import (
     LivingMetricEngine,
     ShockAbsorberParams,
-    verify_antifragile,
-    PressureState,
 )
 from .fractional_flux import (
     FractionalFluxEngine,
-    FluxParams,
     detect_snap,
-    ParticipationState,
 )
 from .layer_13 import (
     RiskComponents,

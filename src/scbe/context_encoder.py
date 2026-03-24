@@ -17,7 +17,7 @@ Integration: Enables SCBE governance validation of RWP v3.0 envelopes
 """
 
 import numpy as np
-from typing import List, Dict, Optional
+from typing import List, Dict
 import sys
 import os
 

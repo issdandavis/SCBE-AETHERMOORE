@@ -16,7 +16,7 @@ Metaphor: Biological immune system → Computational antibody response
 
 import numpy as np
 from dataclasses import dataclass, field
-from typing import List, Dict, Tuple, Optional, Callable
+from typing import List, Dict, Tuple
 from enum import Enum
 import hashlib
 import time

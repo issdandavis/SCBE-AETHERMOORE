@@ -19,7 +19,7 @@ Features:
 """
 
 import hashlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Set, Optional, Tuple
 from enum import Enum
 

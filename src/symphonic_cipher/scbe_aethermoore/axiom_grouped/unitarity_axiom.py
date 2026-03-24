@@ -20,7 +20,6 @@ import functools
 import numpy as np
 from typing import Callable, TypeVar, Any, Optional, Tuple
 from dataclasses import dataclass
-from enum import Enum
 
 # Type variables for generic decorators
 T = TypeVar("T")
@@ -34,7 +33,6 @@ ALPHA_EMBED = 0.99  # Poincaré embedding scale
 class UnitarityViolation(Exception):
     """Raised when a transform violates the unitarity axiom."""
 
-    pass
 
 
 @dataclass

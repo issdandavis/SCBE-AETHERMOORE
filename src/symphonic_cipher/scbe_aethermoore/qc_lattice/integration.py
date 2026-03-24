@@ -29,7 +29,6 @@ from .phdm import (
     PHDMHamiltonianPath,
     PHDMDeviationDetector,
     HamiltonianNode,
-    get_phdm_family,
 )
 
 

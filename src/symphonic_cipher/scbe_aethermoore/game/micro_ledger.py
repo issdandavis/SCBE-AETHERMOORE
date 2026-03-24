@@ -17,15 +17,12 @@ from __future__ import annotations
 import hashlib
 import json
 import time
-import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Literal, Optional, Tuple
 
 from .types import (
-    TONGUE_CODES,
     TONGUE_WEIGHTS,
     TongueCode,
-    TongueVector,
     RiskDecision,
 )
 

@@ -10,7 +10,7 @@ A4: Symmetry — [F_A, F_B] = -[F_B, F_A].
 from __future__ import annotations
 
 import math
-from typing import List, Tuple
+from typing import List
 
 from .types import TongueCode, TongueVector, TONGUE_CODES
 

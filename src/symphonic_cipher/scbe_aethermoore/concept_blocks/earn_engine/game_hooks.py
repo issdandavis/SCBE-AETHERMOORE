@@ -32,7 +32,7 @@ Usage from game code::
 from __future__ import annotations
 
 import math
-from typing import Any, Callable, Dict, List, Optional
+from typing import Dict, Optional
 
 from ..context_credit_ledger.credit import Denomination
 from .engine import EarnEngine, LedgerEntry

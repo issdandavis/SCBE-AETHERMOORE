@@ -21,7 +21,7 @@ if sys.platform == "win32":
         sys.stderr.reconfigure(encoding="utf-8")
 
 import numpy as np
-from typing import Tuple, List, Dict, Optional, Literal
+from typing import Tuple, List, Dict, Optional
 from dataclasses import dataclass
 from enum import Enum
 

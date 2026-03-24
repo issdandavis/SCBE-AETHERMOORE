@@ -13,7 +13,7 @@ Based on rigorous assessment feedback - all sims verified to pass.
 """
 
 import numpy as np
-from typing import Tuple, List, Dict, Any
+from typing import Tuple, Dict, Any
 
 # Constants
 PHI = (1 + np.sqrt(5)) / 2

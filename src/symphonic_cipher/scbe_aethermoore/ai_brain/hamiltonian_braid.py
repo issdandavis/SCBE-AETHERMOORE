@@ -36,7 +36,7 @@ Integration:
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
@@ -44,15 +44,11 @@ import numpy as np
 from .unified_state import (
     BRAIN_DIMENSIONS,
     PHI,
-    UnifiedBrainState,
     safe_poincare_embed,
     hyperbolic_distance_safe,
 )
 from .mirror_shift import (
-    PARALLEL_DIMS,
-    PERP_DIMS,
     refactor_align,
-    AlignmentResult,
 )
 
 EPS = 1e-12

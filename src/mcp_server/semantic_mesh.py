@@ -32,12 +32,8 @@ import json
 import hashlib
 import logging
 import sys
-import time
-import uuid
-from dataclasses import asdict, dataclass
-from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -49,8 +45,6 @@ if str(PROJECT_ROOT) not in sys.path:
 # ── SCBE imports ────────────────────────────────────────────────────
 from src.symphonic_cipher.scbe_aethermoore.concept_blocks.heart_vault.graph import (
     HeartVaultGraph,
-    Node,
-    Edge,
     NodeType,
     EdgeType,
     TongueAffinity,
@@ -61,8 +55,6 @@ logger = logging.getLogger("semantic_mesh")
 # ── Optional SCBE extensions ────────────────────────────────────────
 try:
     from src.gacha_isekai.personality_tri_manifold import (
-        TriManifoldPersonality,
-        ManifoldID,
         ternary_quantize,
     )
     _HAS_TRI_MANIFOLD = True
@@ -70,9 +62,6 @@ except ImportError:
     _HAS_TRI_MANIFOLD = False
 
 try:
-    from src.symphonic_cipher.scbe_aethermoore.trinary import (
-        BalancedTernary,
-    )
     _HAS_TRINARY = True
 except ImportError:
     _HAS_TRINARY = False

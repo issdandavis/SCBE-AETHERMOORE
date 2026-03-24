@@ -3,7 +3,6 @@ Tests for the Full SCBE-AETHERMOORE Governance System.
 """
 
 import pytest
-import numpy as np
 import sys
 import os
 
@@ -12,7 +11,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from scbe_aethermoore import (
     SCBEFullSystem,
     GovernanceMode,
-    GovernanceMetrics,
     GovernanceDecision,
     quick_evaluate,
     verify_all_theorems,
