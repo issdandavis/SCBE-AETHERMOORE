@@ -66,7 +66,9 @@ class LibraryWingRoundTable:
         source_boost = 1.5 if item.get("source", "").startswith("capsule") else 1.0
         return source_boost * (2.0 * role_overlap + 1.25 * prompt_overlap + 0.1)
 
-    def _synthesize(self, perspective: Perspective, prompt: str, context_items: list[dict[str, Any]], round_index: int) -> LaneNote:
+    def _synthesize(
+        self, perspective: Perspective, prompt: str, context_items: list[dict[str, Any]], round_index: int
+    ) -> LaneNote:
         role_terms = set(self._tokenize(perspective.role))
         prompt_terms = set(self._tokenize(prompt))
         ranked = sorted(
@@ -103,7 +105,9 @@ class LibraryWingRoundTable:
             score=round(avg_score, 4),
         )
 
-    def run(self, prompt: str, context_items: list[dict[str, Any]], rounds: int = 2, max_workers: int = 5) -> dict[str, Any]:
+    def run(
+        self, prompt: str, context_items: list[dict[str, Any]], rounds: int = 2, max_workers: int = 5
+    ) -> dict[str, Any]:
         now = dt.datetime.now(dt.UTC).isoformat()
         notes: list[LaneNote] = []
 

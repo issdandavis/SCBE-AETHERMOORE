@@ -206,9 +206,7 @@ def build_webtoon_preview_plan(
     start_y = max(1, int(height * 0.78))
     end_y = max(1, int(height * 0.32))
 
-    tasks: List[Dict[str, Any]] = [
-        {"tongue": "CA", "action": "screencap", "name": f"{capture_prefix}_00"}
-    ]
+    tasks: List[Dict[str, Any]] = [{"tongue": "CA", "action": "screencap", "name": f"{capture_prefix}_00"}]
     for index in range(1, steps):
         tasks.append(
             {
@@ -221,9 +219,7 @@ def build_webtoon_preview_plan(
                 "duration_ms": swipe_duration_ms,
             }
         )
-        tasks.append(
-            {"tongue": "CA", "action": "screencap", "name": f"{capture_prefix}_{index:02d}"}
-        )
+        tasks.append({"tongue": "CA", "action": "screencap", "name": f"{capture_prefix}_{index:02d}"})
     return tasks
 
 

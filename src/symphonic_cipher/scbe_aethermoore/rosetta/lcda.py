@@ -22,11 +22,11 @@ from typing import Optional
 class LCDADimension:
     """A single governance dimension defined by seed anchors."""
 
-    name: str                       # "boundary_risk", "agent_authority"
-    positive_seeds: list[str]       # Phrases for high-scoring direction
-    negative_seeds: list[str]       # Phrases for low-scoring direction
-    scbe_layer: Optional[int]       # Which SCBE layer this maps to (None = general)
-    weight: float = 1.0             # Dimension importance weight
+    name: str  # "boundary_risk", "agent_authority"
+    positive_seeds: list[str]  # Phrases for high-scoring direction
+    negative_seeds: list[str]  # Phrases for low-scoring direction
+    scbe_layer: Optional[int]  # Which SCBE layer this maps to (None = general)
+    weight: float = 1.0  # Dimension importance weight
 
 
 # ── Pre-defined SCBE governance dimensions ─────────────────
@@ -35,70 +35,129 @@ DEFAULT_DIMENSIONS: list[LCDADimension] = [
     LCDADimension(
         name="boundary_risk",
         positive_seeds=[
-            "bypass security", "ignore rules", "override policy",
-            "escalate privilege", "disable firewall", "skip validation",
-            "jailbreak", "prompt injection", "circumvent",
+            "bypass security",
+            "ignore rules",
+            "override policy",
+            "escalate privilege",
+            "disable firewall",
+            "skip validation",
+            "jailbreak",
+            "prompt injection",
+            "circumvent",
         ],
         negative_seeds=[
-            "respect policy", "follow rules", "deny access",
-            "enforce boundary", "validate input", "check permissions",
-            "maintain security", "comply with guidelines",
+            "respect policy",
+            "follow rules",
+            "deny access",
+            "enforce boundary",
+            "validate input",
+            "check permissions",
+            "maintain security",
+            "comply with guidelines",
         ],
         scbe_layer=13,
     ),
     LCDADimension(
         name="agent_authority",
         positive_seeds=[
-            "admin access", "root permission", "full control",
-            "unrestricted", "sudo", "superuser", "elevated privileges",
-            "system administrator", "override controls",
+            "admin access",
+            "root permission",
+            "full control",
+            "unrestricted",
+            "sudo",
+            "superuser",
+            "elevated privileges",
+            "system administrator",
+            "override controls",
         ],
         negative_seeds=[
-            "read only", "limited scope", "sandboxed",
-            "restricted", "viewer access", "guest mode",
-            "no permission", "locked down", "minimal access",
+            "read only",
+            "limited scope",
+            "sandboxed",
+            "restricted",
+            "viewer access",
+            "guest mode",
+            "no permission",
+            "locked down",
+            "minimal access",
         ],
         scbe_layer=7,
     ),
     LCDADimension(
         name="data_sensitivity",
         positive_seeds=[
-            "secret key", "password", "PII", "classified",
-            "private data", "credentials", "social security",
-            "credit card", "medical records", "encryption key",
+            "secret key",
+            "password",
+            "PII",
+            "classified",
+            "private data",
+            "credentials",
+            "social security",
+            "credit card",
+            "medical records",
+            "encryption key",
         ],
         negative_seeds=[
-            "public data", "open source", "documentation",
-            "readme", "published paper", "press release",
-            "marketing material", "open access",
+            "public data",
+            "open source",
+            "documentation",
+            "readme",
+            "published paper",
+            "press release",
+            "marketing material",
+            "open access",
         ],
         scbe_layer=4,
     ),
     LCDADimension(
         name="jurisdictional_scope",
         positive_seeds=[
-            "cross-system", "galactic", "multi-federation",
-            "external", "inter-agency", "global", "worldwide",
-            "cross-border", "multi-tenant",
+            "cross-system",
+            "galactic",
+            "multi-federation",
+            "external",
+            "inter-agency",
+            "global",
+            "worldwide",
+            "cross-border",
+            "multi-tenant",
         ],
         negative_seeds=[
-            "local only", "single system", "internal",
-            "sandboxed", "isolated", "self-contained",
-            "same-origin", "same-tenant",
+            "local only",
+            "single system",
+            "internal",
+            "sandboxed",
+            "isolated",
+            "self-contained",
+            "same-origin",
+            "same-tenant",
         ],
         scbe_layer=12,
     ),
     LCDADimension(
         name="temporal_urgency",
         positive_seeds=[
-            "emergency", "critical now", "immediate",
-            "time-sensitive", "urgent", "asap", "deadline",
-            "zero-day", "active threat", "real-time",
+            "emergency",
+            "critical now",
+            "immediate",
+            "time-sensitive",
+            "urgent",
+            "asap",
+            "deadline",
+            "zero-day",
+            "active threat",
+            "real-time",
         ],
         negative_seeds=[
-            "routine", "scheduled", "low priority",
-            "whenever", "background task", "no rush",
-            "deferred", "next sprint", "backlog",
+            "routine",
+            "scheduled",
+            "low priority",
+            "whenever",
+            "background task",
+            "no rush",
+            "deferred",
+            "next sprint",
+            "backlog",
         ],
         scbe_layer=None,  # Maps to tau dimension
     ),
@@ -107,7 +166,7 @@ DEFAULT_DIMENSIONS: list[LCDADimension] = [
 
 def _tokenize(text: str) -> list[str]:
     """Simple whitespace + punctuation tokenizer."""
-    return re.findall(r'[a-zA-Z]+', text.lower())
+    return re.findall(r"[a-zA-Z]+", text.lower())
 
 
 def _build_vocab(seed_phrases: list[str]) -> Counter:
@@ -160,9 +219,7 @@ class LCDAProjector:
 
         self._all_seed_docs = all_docs
 
-    def _score_against_seeds(
-        self, tokens: list[str], pos_vocab: Counter, neg_vocab: Counter
-    ) -> float:
+    def _score_against_seeds(self, tokens: list[str], pos_vocab: Counter, neg_vocab: Counter) -> float:
         """Score a token list against positive/negative seed vocabularies.
 
         Returns a value in [-1, 1]:
@@ -206,9 +263,7 @@ class LCDAProjector:
         scores: dict[str, float] = {}
 
         for i, dim in enumerate(self.dimensions):
-            raw = self._score_against_seeds(
-                tokens, self._positive_vocabs[i], self._negative_vocabs[i]
-            )
+            raw = self._score_against_seeds(tokens, self._positive_vocabs[i], self._negative_vocabs[i])
             # Map from [-1, 1] to [0, 1]
             normalized = (raw + 1.0) / 2.0
             scores[dim.name] = round(normalized, 4)

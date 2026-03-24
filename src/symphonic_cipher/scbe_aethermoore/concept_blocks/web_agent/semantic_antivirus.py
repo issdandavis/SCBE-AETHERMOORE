@@ -69,14 +69,22 @@ MALWARE_PATTERNS: Tuple[str, ...] = (
 
 # Domains known to host malicious content
 BLOCKLIST_DOMAINS: Set[str] = {
-    "evil.com", "malware.example.com",  # Placeholder, real lists loaded at runtime
+    "evil.com",
+    "malware.example.com",  # Placeholder, real lists loaded at runtime
 }
 
 # Trusted domains get lower friction
 TRUSTED_DOMAINS: Set[str] = {
-    "github.com", "huggingface.co", "arxiv.org", "wikipedia.org",
-    "docs.python.org", "stackoverflow.com", "pypi.org",
-    "google.com", "bing.com", "duckduckgo.com",
+    "github.com",
+    "huggingface.co",
+    "arxiv.org",
+    "wikipedia.org",
+    "docs.python.org",
+    "stackoverflow.com",
+    "pypi.org",
+    "google.com",
+    "bing.com",
+    "duckduckgo.com",
 }
 
 
@@ -84,8 +92,10 @@ TRUSTED_DOMAINS: Set[str] = {
 #  Data structures
 # ---------------------------------------------------------------------------
 
+
 class ContentVerdict(str, Enum):
     """Outcome of content scanning."""
+
     CLEAN = "CLEAN"
     CAUTION = "CAUTION"
     SUSPICIOUS = "SUSPICIOUS"
@@ -98,15 +108,15 @@ class ThreatProfile:
     """Complete threat assessment for a piece of content."""
 
     verdict: ContentVerdict
-    risk_score: float                       # [0.0, 1.0]
-    hamiltonian_score: float                # H(d,pd) safety
+    risk_score: float  # [0.0, 1.0]
+    hamiltonian_score: float  # H(d,pd) safety
     prompt_injection_hits: Tuple[str, ...]
     malware_hits: Tuple[str, ...]
     external_link_count: int
-    domain_reputation: float                # [0.0, 1.0] where 1.0 = fully trusted
+    domain_reputation: float  # [0.0, 1.0] where 1.0 = fully trusted
     reasons: Tuple[str, ...]
-    scbe_layers_triggered: FrozenSet[int]   # Which layers flagged issues
-    governance_decision: str                # ALLOW / QUARANTINE / DENY
+    scbe_layers_triggered: FrozenSet[int]  # Which layers flagged issues
+    governance_decision: str  # ALLOW / QUARANTINE / DENY
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -126,6 +136,7 @@ class ThreatProfile:
 # ---------------------------------------------------------------------------
 #  SemanticAntivirus
 # ---------------------------------------------------------------------------
+
 
 class SemanticAntivirus:
     """

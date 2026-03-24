@@ -24,7 +24,9 @@ def utc_now() -> dt.datetime:
     return dt.datetime.now(dt.UTC)
 
 
-def run_cmd(args: list[str], cwd: Path, check: bool = True, dry_run: bool = False) -> subprocess.CompletedProcess | None:
+def run_cmd(
+    args: list[str], cwd: Path, check: bool = True, dry_run: bool = False
+) -> subprocess.CompletedProcess | None:
     if dry_run:
         print(f"[dry-run] {' '.join(args)}")
         return None
@@ -99,7 +101,8 @@ def init_obsidian_hub(vault_path: Path, repo_root: Path, dry_run: bool) -> list[
         created.append(str(d))
 
     files: dict[Path, str] = {
-        hub_root / "README.md": "\n".join(
+        hub_root
+        / "README.md": "\n".join(
             [
                 "# SCBE Hub",
                 "",
@@ -117,7 +120,9 @@ def init_obsidian_hub(vault_path: Path, repo_root: Path, dry_run: bool) -> list[
             ]
         )
         + "\n",
-        hub_root / "02-Task-Board" / "active_tasks.md": "\n".join(
+        hub_root
+        / "02-Task-Board"
+        / "active_tasks.md": "\n".join(
             [
                 "# Active Tasks",
                 "",
@@ -131,7 +136,9 @@ def init_obsidian_hub(vault_path: Path, repo_root: Path, dry_run: bool) -> list[
             ]
         )
         + "\n",
-        hub_root / "03-Agents" / "agent_registry.md": "\n".join(
+        hub_root
+        / "03-Agents"
+        / "agent_registry.md": "\n".join(
             [
                 "# Agent Registry",
                 "",
@@ -140,7 +147,9 @@ def init_obsidian_hub(vault_path: Path, repo_root: Path, dry_run: bool) -> list[
             ]
         )
         + "\n",
-        hub_root / "Templates" / "task.md": "\n".join(
+        hub_root
+        / "Templates"
+        / "task.md": "\n".join(
             [
                 "# Task",
                 "",
@@ -154,7 +163,9 @@ def init_obsidian_hub(vault_path: Path, repo_root: Path, dry_run: bool) -> list[
             ]
         )
         + "\n",
-        hub_root / "Templates" / "agent_handoff.md": "\n".join(
+        hub_root
+        / "Templates"
+        / "agent_handoff.md": "\n".join(
             [
                 "# Agent Handoff",
                 "",
@@ -168,7 +179,9 @@ def init_obsidian_hub(vault_path: Path, repo_root: Path, dry_run: bool) -> list[
             ]
         )
         + "\n",
-        hub_root / "Templates" / "decision_record.md": "\n".join(
+        hub_root
+        / "Templates"
+        / "decision_record.md": "\n".join(
             [
                 "# Decision Record",
                 "",
@@ -181,7 +194,9 @@ def init_obsidian_hub(vault_path: Path, repo_root: Path, dry_run: bool) -> list[
             ]
         )
         + "\n",
-        hub_root / "Templates" / "run_log.md": "\n".join(
+        hub_root
+        / "Templates"
+        / "run_log.md": "\n".join(
             [
                 "# Run Log",
                 "",
@@ -215,7 +230,9 @@ def init_obsidian_hub(vault_path: Path, repo_root: Path, dry_run: bool) -> list[
     return created
 
 
-def write_obsidian_snapshot(vault_path: Path, repo_root: Path, synced_files: list[Path], include_training_docs: bool, dry_run: bool) -> Path:
+def write_obsidian_snapshot(
+    vault_path: Path, repo_root: Path, synced_files: list[Path], include_training_docs: bool, dry_run: bool
+) -> Path:
     ts = utc_now().strftime("%Y%m%d-%H%M%S")
     target = vault_path / "SCBE-Hub" / "notion-sync" / ts
     if dry_run:
@@ -258,7 +275,12 @@ def git_sync(repo_root: Path, message: str, push: bool, dry_run: bool) -> None:
     if dry_run:
         return
 
-    status = subprocess.run(["git", "status", "--porcelain", "docs", "training-data/hf-digimon-egg"], cwd=str(repo_root), text=True, capture_output=True)
+    status = subprocess.run(
+        ["git", "status", "--porcelain", "docs", "training-data/hf-digimon-egg"],
+        cwd=str(repo_root),
+        text=True,
+        capture_output=True,
+    )
     if not status.stdout.strip():
         print("[git] no staged changes for docs/training-data")
         return
@@ -375,7 +397,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--skip-git", action="store_true")
     p.add_argument("--skip-dropbox", action="store_true")
     p.add_argument("--dropbox-remote-dir", default="/SCBE/backups")
-    p.add_argument("--init-obsidian-hub", action="store_true", help="Initialize SCBE-Hub collaboration structure in the target vault.")
+    p.add_argument(
+        "--init-obsidian-hub",
+        action="store_true",
+        help="Initialize SCBE-Hub collaboration structure in the target vault.",
+    )
     p.add_argument("--zapier-webhook-url", default=os.getenv("ZAPIER_WEBHOOK_URL", ""))
     p.add_argument("--zapier-mode", choices=["off", "fail-only", "summary", "full"], default="summary")
     p.add_argument("--zapier-cooldown-seconds", type=int, default=900, help="minimum seconds between same event emits")
@@ -423,7 +449,9 @@ def main() -> int:
             if args.init_obsidian_hub:
                 hub_created = init_obsidian_hub(vault, repo_root, args.dry_run)
                 print(f"[obsidian] hub initialized: {len(hub_created)} paths")
-            snapshot = write_obsidian_snapshot(vault, repo_root, synced_files, args.include_hf_training_docs, args.dry_run)
+            snapshot = write_obsidian_snapshot(
+                vault, repo_root, synced_files, args.include_hf_training_docs, args.dry_run
+            )
             snapshot_path = str(snapshot)
             print(f"[obsidian] snapshot: {snapshot}")
         else:

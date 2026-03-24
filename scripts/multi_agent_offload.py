@@ -307,10 +307,7 @@ def choose_lane(file_row: dict[str, Any], lanes: list[dict[str, Any]], salt: str
     if not weighted:
         raise RuntimeError("No enabled lanes configured.")
 
-    key = (
-        f"{salt}|{file_row['source_root']}|{file_row['relative_path']}|"
-        f"{file_row['size']}|{file_row['mtime_ns']}"
-    )
+    key = f"{salt}|{file_row['source_root']}|{file_row['relative_path']}|" f"{file_row['size']}|{file_row['mtime_ns']}"
     bucket = int(hashlib.sha256(key.encode("utf-8")).hexdigest()[:16], 16) % total_weight
     cursor = bucket
     for weight, lane in weighted:
@@ -364,7 +361,11 @@ def call_openai_like(provider: str, lane: dict[str, Any], prompt: str, api_key: 
     endpoint = str(
         lane.get(
             "endpoint",
-            "https://api.x.ai/v1/chat/completions" if provider == "xai" else "https://api.openai.com/v1/chat/completions",
+            (
+                "https://api.x.ai/v1/chat/completions"
+                if provider == "xai"
+                else "https://api.openai.com/v1/chat/completions"
+            ),
         )
     ).strip()
     payload = {
@@ -433,7 +434,9 @@ def call_google(lane: dict[str, Any], prompt: str, api_key: str) -> dict[str, An
         content = candidates[0].get("content", {}) if isinstance(candidates[0], dict) else {}
         parts = content.get("parts", []) if isinstance(content, dict) else []
         text = "\n".join(
-            str(part.get("text", "")).strip() for part in parts if isinstance(part, dict) and str(part.get("text", "")).strip()
+            str(part.get("text", "")).strip()
+            for part in parts
+            if isinstance(part, dict) and str(part.get("text", "")).strip()
         ).strip()
     return {"text": text, "raw": response}
 
@@ -513,7 +516,9 @@ def run_lane(lane: dict[str, Any], prompt: str, no_process: bool) -> dict[str, A
     }
 
 
-def run_lane_with_fallback(primary_lane: dict[str, Any], all_lanes: list[dict[str, Any]], prompt: str, no_process: bool) -> dict[str, Any]:
+def run_lane_with_fallback(
+    primary_lane: dict[str, Any], all_lanes: list[dict[str, Any]], prompt: str, no_process: bool
+) -> dict[str, Any]:
     ordered: list[dict[str, Any]] = [dict(primary_lane)]
     primary_name = str(primary_lane.get("name", "")).strip()
     for lane in all_lanes:
@@ -638,7 +643,9 @@ def ship_with_rclone(bundle_zip: Path, target_cfg: dict[str, Any], run_id: str, 
 def ship_with_local_copy(bundle_zip: Path, target_cfg: dict[str, Any], run_id: str, lane_name: str) -> dict[str, Any]:
     provider = str(target_cfg.get("provider", "")).strip().lower()
     base_dir = str(target_cfg.get("base_dir", "")).strip()
-    resolved = auto_detect_sync_dir(provider, base_dir) if provider else (Path(base_dir).expanduser() if base_dir else None)
+    resolved = (
+        auto_detect_sync_dir(provider, base_dir) if provider else (Path(base_dir).expanduser() if base_dir else None)
+    )
     if resolved is None or not resolved.exists():
         raise RuntimeError(f"Local target directory not found for provider={provider or 'custom'}")
 
@@ -697,7 +704,9 @@ def ship_with_hf(bundle_zip: Path, target_cfg: dict[str, Any], run_id: str, lane
     }
 
 
-def publish_run_artifacts_to_hf(run_id: str, run_dir: Path, target_cfg: dict[str, Any], files: list[Path]) -> dict[str, Any]:
+def publish_run_artifacts_to_hf(
+    run_id: str, run_dir: Path, target_cfg: dict[str, Any], files: list[Path]
+) -> dict[str, Any]:
     repo_id = str(target_cfg.get("repo_id", "")).strip()
     if not repo_id:
         raise RuntimeError("HF target missing repo_id")
@@ -789,7 +798,18 @@ def ship_with_github(bundle_zip: Path, target_cfg: dict[str, Any], run_id: str) 
     )
     if view.returncode != 0:
         gh_command(
-            ["gh", "release", "create", tag, "--repo", repo, "--title", f"Multi Agent Offload {run_id}", "--notes", "Automated file offload bundle."],
+            [
+                "gh",
+                "release",
+                "create",
+                tag,
+                "--repo",
+                repo,
+                "--title",
+                f"Multi Agent Offload {run_id}",
+                "--notes",
+                "Automated file offload bundle.",
+            ],
             env,
         )
     gh_command(["gh", "release", "upload", tag, "--repo", repo, "--clobber", str(bundle_zip)], env)
@@ -804,7 +824,9 @@ def ship_with_github(bundle_zip: Path, target_cfg: dict[str, Any], run_id: str) 
     }
 
 
-def ship_bundle(bundle_zip: Path, shipping_cfg: dict[str, Any], target_name: str, run_id: str, lane_name: str) -> dict[str, Any]:
+def ship_bundle(
+    bundle_zip: Path, shipping_cfg: dict[str, Any], target_name: str, run_id: str, lane_name: str
+) -> dict[str, Any]:
     targets = shipping_cfg.get("targets", {})
     target_cfg = dict(targets.get(target_name, {})) if isinstance(targets, dict) else {}
     if not target_cfg or not bool(target_cfg.get("enabled", True)):
@@ -861,7 +883,9 @@ def main() -> int:
     processing_cfg = dict(config.get("processing", {}))
     snippet_chars = int(processing_cfg.get("snippet_chars", 12000))
     shipping_cfg = dict(config.get("shipping", {}))
-    target_order = parse_csv(args.targets) if args.targets else ensure_list(shipping_cfg.get("order"), ["gdrive_rclone"])
+    target_order = (
+        parse_csv(args.targets) if args.targets else ensure_list(shipping_cfg.get("order"), ["gdrive_rclone"])
+    )
     keep_runs = int(dict(config.get("retention", {})).get("keep_runs", 25))
 
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -905,7 +929,9 @@ def main() -> int:
 
                 snippet = read_snippet(source_path, snippet_chars)
                 prompt = build_processing_prompt(file_row, snippet)
-                lane_result = run_lane_with_fallback(lane, [x for x in lanes if isinstance(x, dict)], prompt, args.no_process)
+                lane_result = run_lane_with_fallback(
+                    lane, [x for x in lanes if isinstance(x, dict)], prompt, args.no_process
+                )
 
                 bundle_meta = {
                     "run_id": run_id,
@@ -1053,7 +1079,11 @@ def main() -> int:
     write_json(run_dir / "run_summary.json", summary)
 
     hf_publish_result: dict[str, Any] | None = None
-    hf_target_cfg = dict(shipping_cfg.get("targets", {}).get("hf_dataset", {})) if isinstance(shipping_cfg.get("targets"), dict) else {}
+    hf_target_cfg = (
+        dict(shipping_cfg.get("targets", {}).get("hf_dataset", {}))
+        if isinstance(shipping_cfg.get("targets"), dict)
+        else {}
+    )
     if hf_target_cfg and bool(hf_target_cfg.get("enabled")) and not args.dry_run:
         try:
             hf_publish_result = publish_run_artifacts_to_hf(

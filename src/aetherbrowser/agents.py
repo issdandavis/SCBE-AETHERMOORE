@@ -5,6 +5,7 @@ Agent Squad Orchestration
 Manages the 6 Sacred Tongue agents. KO leads, others specialize.
 Task decomposition assigns agents based on task type and content.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -41,8 +42,8 @@ class AgentInfo:
 
 _TASK_ROLES: dict[str, list[TongueRole]] = {
     "research": [TongueRole.KO, TongueRole.AV, TongueRole.CA, TongueRole.RU, TongueRole.DR],
-    "page":     [TongueRole.KO, TongueRole.CA, TongueRole.DR],
-    "default":  [TongueRole.KO, TongueRole.AV, TongueRole.CA],
+    "page": [TongueRole.KO, TongueRole.CA, TongueRole.DR],
+    "default": [TongueRole.KO, TongueRole.AV, TongueRole.CA],
 }
 
 _RESEARCH_KEYWORDS = {"research", "find", "search", "compare", "investigate", "competitors", "analyze"}
@@ -52,9 +53,7 @@ _PAGE_KEYWORDS = {"page", "summarize", "extract", "this"}
 class AgentSquad:
     def __init__(self, feed: WsFeed):
         self.feed = feed
-        self.agents: dict[TongueRole, AgentInfo] = {
-            role: AgentInfo(role=role) for role in TongueRole
-        }
+        self.agents: dict[TongueRole, AgentInfo] = {role: AgentInfo(role=role) for role in TongueRole}
 
     def set_state(self, role: TongueRole, state: AgentState, model: str | None = None) -> None:
         self.agents[role].state = state
@@ -73,10 +72,12 @@ class AgentSquad:
         roles = _TASK_ROLES.get(task_type, _TASK_ROLES["default"])
         assignments = []
         for role in roles:
-            assignments.append({
-                "role": role,
-                "task": self._role_task_description(role, text),
-            })
+            assignments.append(
+                {
+                    "role": role,
+                    "task": self._role_task_description(role, text),
+                }
+            )
         return assignments
 
     def infer_task_type(self, text: str) -> str:

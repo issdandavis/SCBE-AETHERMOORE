@@ -55,9 +55,7 @@ def scan_json_packets(since: datetime) -> list[dict]:
             continue
         # Quick date filter on directory name
         try:
-            dir_date = datetime.strptime(date_dir.name, "%Y%m%d").replace(
-                tzinfo=timezone.utc
-            )
+            dir_date = datetime.strptime(date_dir.name, "%Y%m%d").replace(tzinfo=timezone.utc)
             if dir_date.date() < since.date() - timedelta(days=1):
                 continue
         except ValueError:
@@ -269,21 +267,15 @@ def render_text_report(
     lines = []
     lines.append("=" * 72)
     lines.append(f"  SITREP — Last {hours:.0f} hours")
-    lines.append(
-        f"  Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}"
-    )
-    lines.append(
-        f"  Packets: {total_raw} raw -> {total_deduped} unique tasks"
-    )
+    lines.append(f"  Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}")
+    lines.append(f"  Packets: {total_raw} raw -> {total_deduped} unique tasks")
     lines.append("=" * 72)
 
     # Active sessions
     if sessions:
         lines.append(f"\n## Active Sessions ({len(sessions)})")
         for s in sessions:
-            lines.append(
-                f"  {s.get('callsign', '?')} | {s.get('agent', '?')} | signed on {s.get('signed_on', '?')}"
-            )
+            lines.append(f"  {s.get('callsign', '?')} | {s.get('agent', '?')} | signed on {s.get('signed_on', '?')}")
 
     # BLOCKED — highest priority
     if buckets["blocked"]:
@@ -341,18 +333,14 @@ def render_json_report(
         return cp
 
     report = {
-        "generated_at": datetime.now(timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        ),
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "window_hours": hours,
         "packets_raw": total_raw,
         "packets_deduped": total_deduped,
         "sessions": sessions,
         "blocked": [clean_packet(s, p) for s, p in buckets["blocked"]],
         "needs_ack": [clean_packet(s, p) for s, p in buckets["needs_ack"]],
-        "in_progress": [
-            clean_packet(s, p) for s, p in buckets["in_progress"]
-        ],
+        "in_progress": [clean_packet(s, p) for s, p in buckets["in_progress"]],
         "done": [clean_packet(s, p) for s, p in buckets["done"]],
         "commits": commits[:15],
     }
@@ -360,21 +348,15 @@ def render_json_report(
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="SCBE Situation Report Generator"
-    )
+    parser = argparse.ArgumentParser(description="SCBE Situation Report Generator")
     parser.add_argument(
         "--hours",
         type=float,
         default=24,
         help="Look back N hours (default: 24)",
     )
-    parser.add_argument(
-        "--since", type=str, help="Look back to specific date (YYYY-MM-DD)"
-    )
-    parser.add_argument(
-        "--json", action="store_true", help="Output JSON instead of text"
-    )
+    parser.add_argument("--since", type=str, help="Look back to specific date (YYYY-MM-DD)")
+    parser.add_argument("--json", action="store_true", help="Output JSON instead of text")
     parser.add_argument(
         "--output",
         type=str,
@@ -383,9 +365,7 @@ def main():
     args = parser.parse_args()
 
     if args.since:
-        since = datetime.strptime(args.since, "%Y-%m-%d").replace(
-            tzinfo=timezone.utc
-        )
+        since = datetime.strptime(args.since, "%Y-%m-%d").replace(tzinfo=timezone.utc)
         hours = (datetime.now(timezone.utc) - since).total_seconds() / 3600
     else:
         hours = args.hours
@@ -406,13 +386,9 @@ def main():
 
     # Render
     if args.json:
-        output = render_json_report(
-            buckets, commits, sessions, total_raw, total_deduped, hours
-        )
+        output = render_json_report(buckets, commits, sessions, total_raw, total_deduped, hours)
     else:
-        output = render_text_report(
-            buckets, commits, sessions, total_raw, total_deduped, hours
-        )
+        output = render_text_report(buckets, commits, sessions, total_raw, total_deduped, hours)
 
     if args.output:
         Path(args.output).parent.mkdir(parents=True, exist_ok=True)

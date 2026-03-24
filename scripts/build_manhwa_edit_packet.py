@@ -65,15 +65,21 @@ def preserve_notes(panel: dict[str, Any]) -> list[str]:
     notes: list[str] = []
     characters = set(as_list(panel.get("characters")))
     if "marcus" in characters:
-        notes.append("Preserve Marcus as early-30s Asian-American, tired, lean, dark messy hair, rumpled office-worker silhouette.")
+        notes.append(
+            "Preserve Marcus as early-30s Asian-American, tired, lean, dark messy hair, rumpled office-worker silhouette."
+        )
     if "polly_raven" in characters:
         notes.append("Preserve Polly raven form: oversized raven, obsidian eyes, grad cap, monocle, black bowtie.")
     if "polly_human" in characters:
-        notes.append("Preserve Polly human form: feather-hair, wings, obsidian eyes, formal dark robes, precise posture.")
+        notes.append(
+            "Preserve Polly human form: feather-hair, wings, obsidian eyes, formal dark robes, precise posture."
+        )
 
     environment = str(panel.get("environment") or "")
     if environment == "earth_office":
-        notes.append("Keep Earth office grounded: green terminal glow, dead fluorescents, late-night corporate realism.")
+        notes.append(
+            "Keep Earth office grounded: green terminal glow, dead fluorescents, late-night corporate realism."
+        )
     elif environment in {"crystal_library", "crystal_corridor"}:
         notes.append("Keep crystal spaces physical and architectural, not generic fantasy fog.")
     elif environment == "aethermoor_exterior":

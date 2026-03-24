@@ -1,5 +1,7 @@
 """Tests for the Python port of HyperLane governance."""
+
 from src.aetherbrowser.hyperlane_py import HyperLanePy, Zone, Decision
+
 
 class TestZoneClassification:
     def test_github_is_green(self):
@@ -34,6 +36,7 @@ class TestZoneClassification:
         hl = HyperLanePy()
         assert hl.classify_zone("https://api.stripe.com/v1/charges") == Zone.RED
 
+
 class TestDecisionMaking:
     def test_green_read_allows(self):
         hl = HyperLanePy()
@@ -58,6 +61,7 @@ class TestDecisionMaking:
         d = hl.evaluate("http://localhost:8001/v1/training/ingest", action="write", agent_id="DR")
         assert d.decision == Decision.ALLOW
 
+
 class TestRateLimiting:
     def test_rate_limit_after_burst(self):
         hl = HyperLanePy(rate_limit_per_min=3)
@@ -66,6 +70,7 @@ class TestRateLimiting:
         d = hl.evaluate("https://github.com/test", action="read", agent_id="AV")
         assert d.decision == Decision.DENY
         assert "rate" in d.reason.lower()
+
 
 class TestCustomZones:
     def test_add_domain_to_green(self):

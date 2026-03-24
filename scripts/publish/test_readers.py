@@ -44,67 +44,80 @@ MODELS = [
 SCENES = {
     "opening": {
         "file": "ch01.md",
-        "start": 0, "end": 60,
+        "start": 0,
+        "end": 60,
         "desc": "Chapter 1: Marcus at 3AM, the warm breeze, Bryce's photo, the white void, Polly appears",
     },
     "polly_vigil": {
         "file": "interlude-01-pollys-vigil.md",
-        "start": 0, "end": 50,
+        "start": 0,
+        "end": 50,
         "desc": "Polly watches Marcus sleep, remembers Izack, the sleep-caw",
     },
     "swarm": {
         "file": "ch04.md",
-        "start": 120, "end": 200,
+        "start": 120,
+        "end": 200,
         "desc": "The routing basement, SOS mesh, Bram with wrench, HELP packets",
     },
     "kiss": {
         "file": "ch13.md",
-        "start": 370, "end": 500,
+        "start": 370,
+        "end": 500,
         "desc": "Senna's breakdown, the cuff off, circles on her back, the confession, the kiss",
     },
     "fizzle": {
         "file": "ch16b-the-fizzlecress-incident.md",
-        "start": 0, "end": 60,
+        "start": 0,
+        "end": 60,
         "desc": "Drunk on a roof, missing Earth, Dax calls him out about Senna",
     },
     "fizzle_globe": {
         "file": "ch16b-the-fizzlecress-incident.md",
-        "start": 110, "end": 200,
+        "start": 110,
+        "end": 200,
         "desc": "Waking up 4 inches tall in Fizzle's globe, Coff-three, living coffee",
     },
     "memory_tithe": {
         "file": "ch19.md",
-        "start": 120, "end": 180,
+        "start": 120,
+        "end": 180,
         "desc": "The forest takes grandmother's kitchen, sesame oil fading",
     },
     "moonflower": {
         "file": "ch11.md",
-        "start": 180, "end": 220,
+        "start": 180,
+        "end": 220,
         "desc": "Tovak's moonflower spirit, bass-drum hit, the Void Seed aftermath",
     },
     "rootlight": {
         "file": "ch-rootlight.md",
-        "start": 210, "end": 300,
+        "start": 210,
+        "end": 300,
         "desc": "Festival food, blue soup, grief pastry, Senna laughing, the walk home",
     },
     "wardrobe": {
         "file": "ch12.md",
-        "start": 398, "end": 420,
+        "start": 398,
+        "end": 420,
         "desc": "Marcus gets Aethermoor clothes after the Binding, keeps the hoodie",
     },
     "age_joke": {
         "file": "ch14.md",
-        "start": 204, "end": 260,
+        "start": 204,
+        "end": 260,
         "desc": "Marcus asks Senna's age at Ravencrest garden, she's 146, printing press joke",
     },
     "senna_after": {
         "file": "ch21b-senna-after.md",
-        "start": 0, "end": 200,
+        "start": 0,
+        "end": 200,
         "desc": "Senna's perspective lying on Marcus's chest, implicit magic, two heartbeats",
     },
     "pregnancy": {
         "file": "ch-rootlight.md",
-        "start": 377, "end": 460,
+        "start": 377,
+        "end": 460,
         "desc": "Pregnancy announcement under World Tree, three heartbeats, tree blooms",
     },
 }
@@ -119,7 +132,6 @@ PROMPTS = {
 5. What single sensory detail is BEST? Quote it.
 6. What sensory detail is MISSING that should be there?
 Overall sensory score 1-10.""",
-
     "emotional": """You are a book reviewer focused on EMOTIONAL AUTHENTICITY. Read this scene and rate:
 1. Do the characters feel like real people? (1-10)
 2. Does the scene TRY TOO HARD to be emotional, or does it let the moment breathe? (1-10, where 10 = perfect restraint)
@@ -127,7 +139,6 @@ Overall sensory score 1-10.""",
 4. Is there a line that is PERFECT — shows not tells? Quote it.
 5. Would a real person behave this way in this situation? (1-10)
 Overall emotional authenticity 1-10.""",
-
     "general": """You are a professional book reviewer. Read this scene from a portal fantasy novel and rate:
 1. Prose quality (1-10)
 2. Character voice distinctiveness (1-10)
@@ -140,12 +151,13 @@ Overall rating 1-10.""",
 
 def get_token():
     """Get HF token from environment."""
-    token = os.environ.get('HF_TOKEN', '')
+    token = os.environ.get("HF_TOKEN", "")
     if not token:
         try:
             from dotenv import load_dotenv
-            load_dotenv(str(REPO / 'config' / 'connector_oauth' / '.env.connector.oauth'))
-            token = os.environ.get('HF_TOKEN', '')
+
+            load_dotenv(str(REPO / "config" / "connector_oauth" / ".env.connector.oauth"))
+            token = os.environ.get("HF_TOKEN", "")
         except ImportError:
             pass
     return token
@@ -160,10 +172,10 @@ def load_scene(scene_name):
 
     cfg = SCENES[scene_name]
     path = READER_DIR / cfg["file"]
-    with open(path, 'r', encoding='utf-8') as f:
+    with open(path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    excerpt = ''.join(lines[cfg["start"]:cfg["end"]]).strip()
+    excerpt = "".join(lines[cfg["start"] : cfg["end"]]).strip()
     return excerpt, cfg["desc"]
 
 
@@ -202,7 +214,7 @@ SCENE ({desc}):
 {excerpt}"""
 
     # Select models based on reader count
-    selected = MODELS[:min(num_readers, len(MODELS))]
+    selected = MODELS[: min(num_readers, len(MODELS))]
 
     results = []
     for model_id, name, tier in selected:
@@ -212,12 +224,14 @@ SCENE ({desc}):
             print(f"FAILED")
         else:
             print(f"OK ({len(response)} chars)")
-        results.append({
-            "model": name,
-            "model_id": model_id,
-            "tier": tier,
-            "response": response,
-        })
+        results.append(
+            {
+                "model": name,
+                "model_id": model_id,
+                "tier": tier,
+                "response": response,
+            }
+        )
         # Small delay to avoid rate limits
         time.sleep(1)
 
@@ -240,7 +254,7 @@ def save_report(scene_name, prompt_type, results):
         "results": results,
     }
 
-    with open(path, 'w', encoding='utf-8') as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)
 
     return path
@@ -250,21 +264,22 @@ def print_summary(results):
     """Print a quick summary table."""
     print(f"\n{'='*60}")
     print("PANEL SUMMARY")
-    print('='*60)
+    print("=" * 60)
     for r in results:
         status = "OK" if not r["response"].startswith("ERROR") else "FAIL"
         # Try to extract a rating from the response
         rating = "?"
-        for line in r["response"].split('\n'):
-            if 'overall' in line.lower() and '/10' in line.lower():
+        for line in r["response"].split("\n"):
+            if "overall" in line.lower() and "/10" in line.lower():
                 # Extract number before /10
                 import re
-                match = re.search(r'(\d+\.?\d*)\s*/\s*10', line)
+
+                match = re.search(r"(\d+\.?\d*)\s*/\s*10", line)
                 if match:
                     rating = match.group(1)
                     break
-            elif line.strip().startswith(('Overall', 'Rating', 'Score')):
-                match = re.search(r'(\d+\.?\d*)', line)
+            elif line.strip().startswith(("Overall", "Rating", "Score")):
+                match = re.search(r"(\d+\.?\d*)", line)
                 if match:
                     rating = match.group(1)
                     break
@@ -273,17 +288,13 @@ def print_summary(results):
 
 def main():
     parser = argparse.ArgumentParser(description="Automated Test Reader Panel")
-    parser.add_argument("--scene", default="kiss",
-                        help="Scene to test (or 'all')")
-    parser.add_argument("--prompt", default="emotional",
-                        choices=["sensory", "emotional", "general"],
-                        help="Review prompt type")
-    parser.add_argument("--readers", type=int, default=3,
-                        help="Number of reader models (1-7)")
-    parser.add_argument("--list-scenes", action="store_true",
-                        help="List available scenes")
-    parser.add_argument("--list-models", action="store_true",
-                        help="List available models")
+    parser.add_argument("--scene", default="kiss", help="Scene to test (or 'all')")
+    parser.add_argument(
+        "--prompt", default="emotional", choices=["sensory", "emotional", "general"], help="Review prompt type"
+    )
+    parser.add_argument("--readers", type=int, default=3, help="Number of reader models (1-7)")
+    parser.add_argument("--list-scenes", action="store_true", help="List available scenes")
+    parser.add_argument("--list-models", action="store_true", help="List available models")
 
     args = parser.parse_args()
 
@@ -310,7 +321,7 @@ def main():
         print(f"\n{'#'*60}")
         print(f"SCENE: {scene} ({SCENES[scene]['desc']})")
         print(f"PROMPT: {args.prompt} | READERS: {args.readers}")
-        print('#'*60)
+        print("#" * 60)
 
         results = run_panel(scene, args.prompt, args.readers, token)
         report_path = save_report(scene, args.prompt, results)

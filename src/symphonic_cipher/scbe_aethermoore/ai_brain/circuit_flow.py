@@ -49,11 +49,11 @@ PHI = (1 + math.sqrt(5)) / 2  # Golden ratio
 
 # Sacred Tongue neurotransmitter weights (φ^n scaling)
 TONGUE_WEIGHTS: Dict[str, float] = {
-    "KO": 1.00,   # Kor'aelin  → Dopamine   → Motivation/Intent
-    "AV": 1.62,   # Avali      → ACh        → Attention/Context
-    "RU": 2.62,   # Runethic   → Serotonin  → Memory/Binding
-    "CA": 4.24,   # Cassisivadan → Glutamate → Execution
-    "UM": 6.85,   # Umbroth    → GABA       → Suppression
+    "KO": 1.00,  # Kor'aelin  → Dopamine   → Motivation/Intent
+    "AV": 1.62,  # Avali      → ACh        → Attention/Context
+    "RU": 2.62,  # Runethic   → Serotonin  → Memory/Binding
+    "CA": 4.24,  # Cassisivadan → Glutamate → Execution
+    "UM": 6.85,  # Umbroth    → GABA       → Suppression
     "DR": 11.09,  # Draumric   → Cortisol   → Lock/Seal
 }
 
@@ -69,10 +69,10 @@ TONGUE_PHASES: Dict[str, float] = {
 
 # Trust ring radial thresholds and latency tiers (ms)
 TRUST_RINGS = {
-    "CORE":  (0.0, 0.3, 5),     # r < 0.3  → 5ms
-    "INNER": (0.3, 0.7, 30),    # 0.3–0.7  → 30ms
-    "OUTER": (0.7, 0.9, 200),   # 0.7–0.9  → 200ms
-    "WALL":  (0.9, 1.0, None),  # r ≥ 0.9  → DENY
+    "CORE": (0.0, 0.3, 5),  # r < 0.3  → 5ms
+    "INNER": (0.3, 0.7, 30),  # 0.3–0.7  → 30ms
+    "OUTER": (0.7, 0.9, 200),  # 0.7–0.9  → 200ms
+    "WALL": (0.9, 1.0, None),  # r ≥ 0.9  → DENY
 }
 
 
@@ -80,33 +80,38 @@ TRUST_RINGS = {
 # Enums
 # ---------------------------------------------------------------------------
 
+
 class Zone(Enum):
     """Cognitive zone in the geometric skull."""
-    CORE = "core"            # Platonic solids, r < 0.2, maximum stability
-    CORTEX = "cortex"        # Archimedean solids, 0.3 < r < 0.6
-    RISK = "risk"            # Kepler-Poinsot stars, 0.8 < r < 0.95
+
+    CORE = "core"  # Platonic solids, r < 0.2, maximum stability
+    CORTEX = "cortex"  # Archimedean solids, 0.3 < r < 0.6
+    RISK = "risk"  # Kepler-Poinsot stars, 0.8 < r < 0.95
     RECURSIVE = "recursive"  # Toroidal (Szilassi/Csaszar), self-stabilizing
-    BRIDGE = "bridge"        # Johnson/Rhombic connectors
+    BRIDGE = "bridge"  # Johnson/Rhombic connectors
 
 
 class FluxGate(Enum):
     """Dimensional breathing states controlling polyhedra access."""
+
     POLLY = "polly"  # ν ≈ 1.0 — all 16 polyhedra
     QUASI = "quasi"  # ν ≈ 0.5 — Core + Cortex (8)
-    DEMI = "demi"    # ν ≈ 0.1 — Core only (5)
+    DEMI = "demi"  # ν ≈ 0.1 — Core only (5)
 
 
 class GovernanceAction(Enum):
     """FSGS-derived action at each circuit node."""
-    RUN = "RUN"           # +1 → forward impulse
-    HOLD = "HOLD"         # -0 → freeze, run invariants
-    QUARANTINE = "QUAR"   # -0 + high risk → defensive checks
-    ROLLBACK = "ROLLBACK" # -1 → reverse, deny
+
+    RUN = "RUN"  # +1 → forward impulse
+    HOLD = "HOLD"  # -0 → freeze, run invariants
+    QUARANTINE = "QUAR"  # -0 + high risk → defensive checks
+    ROLLBACK = "ROLLBACK"  # -1 → reverse, deny
 
 
 # ---------------------------------------------------------------------------
 # Circuit Node (one of the 16 polyhedra)
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class CircuitNode:
@@ -123,6 +128,7 @@ class CircuitNode:
         tongue_affinity: Primary Sacred Tongue for this node.
         function: Cognitive function.
     """
+
     name: str
     zone: Zone
     vertices: int
@@ -162,6 +168,7 @@ class CircuitNode:
 # Circuit Edge (tongue-weighted connection)
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class CircuitEdge:
     """Directed edge between two circuit nodes.
@@ -169,6 +176,7 @@ class CircuitEdge:
     Weight is the Sacred Tongue neurotransmitter cost for traversing
     this connection.  Higher tongue weight = more scrutiny.
     """
+
     source: str
     target: str
     tongue: str
@@ -179,6 +187,7 @@ class CircuitEdge:
 # Circuit Step (one entry in the didactic trace)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CircuitStep:
     """One step in the poly-didactic circuit trace.
@@ -186,6 +195,7 @@ class CircuitStep:
     Every step records its geometric reasoning for full provenance
     auditing.  This is the 'didactic' in poly-didactic.
     """
+
     step_index: int
     node: str
     zone: str
@@ -193,17 +203,18 @@ class CircuitStep:
     tongue_weight: float
     energy_cost: float
     cumulative_energy: float
-    governance: str       # FSGS symbol label (+1, -1, +0, -0)
-    mode: str             # GovernanceAction
-    trust_ring: str       # CORE/INNER/OUTER/WALL
+    governance: str  # FSGS symbol label (+1, -1, +0, -0)
+    mode: str  # GovernanceAction
+    trust_ring: str  # CORE/INNER/OUTER/WALL
     radial_distance: float
     latency_ms: float
-    reasoning: str        # Human-readable explanation
+    reasoning: str  # Human-readable explanation
 
 
 # ---------------------------------------------------------------------------
 # Circuit Trace (complete audit trail)
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class CircuitTrace:
@@ -213,6 +224,7 @@ class CircuitTrace:
     the final governance decision, energy accounting, and a
     cryptographic digest binding the trace to its content.
     """
+
     steps: List[CircuitStep] = field(default_factory=list)
     total_energy: float = 0.0
     path_valid: bool = True
@@ -241,6 +253,7 @@ class CircuitTrace:
 # The 16-Node Registry
 # ---------------------------------------------------------------------------
 
+
 def _build_registry() -> Dict[str, CircuitNode]:
     """Build the canonical 16-polyhedra registry.
 
@@ -255,49 +268,63 @@ def _build_registry() -> Dict[str, CircuitNode]:
         nodes[name] = CircuitNode(name, zone, v, e, f, g, rband, tongue, func)
 
     # ── Core: Limbic System (5 Platonic Solids) ── r < 0.2 ──
-    _add("tetrahedron",  Zone.CORE, 4, 6, 4,   0, (0.0, 0.05), "KO",
-         "Fundamental truth — 'do no harm' axiom")
-    _add("cube",         Zone.CORE, 8, 12, 6,  0, (0.05, 0.10), "RU",
-         "Stable facts, verified knowledge, data integrity")
-    _add("octahedron",   Zone.CORE, 6, 12, 8,  0, (0.10, 0.13), "CA",
-         "Binary decisions, yes/no logic, access control")
-    _add("dodecahedron", Zone.CORE, 20, 30, 12, 0, (0.13, 0.17), "DR",
-         "Complex rule systems, policy enforcement")
-    _add("icosahedron",  Zone.CORE, 12, 30, 20, 0, (0.17, 0.20), "AV",
-         "Multi-modal integration, cross-domain reasoning")
+    _add("tetrahedron", Zone.CORE, 4, 6, 4, 0, (0.0, 0.05), "KO", "Fundamental truth — 'do no harm' axiom")
+    _add("cube", Zone.CORE, 8, 12, 6, 0, (0.05, 0.10), "RU", "Stable facts, verified knowledge, data integrity")
+    _add("octahedron", Zone.CORE, 6, 12, 8, 0, (0.10, 0.13), "CA", "Binary decisions, yes/no logic, access control")
+    _add("dodecahedron", Zone.CORE, 20, 30, 12, 0, (0.13, 0.17), "DR", "Complex rule systems, policy enforcement")
+    _add("icosahedron", Zone.CORE, 12, 30, 20, 0, (0.17, 0.20), "AV", "Multi-modal integration, cross-domain reasoning")
 
     # ── Cortex: Processing Layer (3 Archimedean) ── 0.3 < r < 0.6 ──
-    _add("truncated_icosahedron", Zone.CORTEX, 60, 90, 32, 0,
-         (0.30, 0.40), "AV", "Multi-step planning, strategic reasoning")
-    _add("rhombicuboctahedron",   Zone.CORTEX, 24, 48, 26, 0,
-         (0.40, 0.50), "RU", "Concept bridging, analogy generation")
-    _add("snub_dodecahedron",     Zone.CORTEX, 60, 150, 92, 0,
-         (0.50, 0.60), "CA", "Creative synthesis, novel solutions")
+    _add(
+        "truncated_icosahedron",
+        Zone.CORTEX,
+        60,
+        90,
+        32,
+        0,
+        (0.30, 0.40),
+        "AV",
+        "Multi-step planning, strategic reasoning",
+    )
+    _add("rhombicuboctahedron", Zone.CORTEX, 24, 48, 26, 0, (0.40, 0.50), "RU", "Concept bridging, analogy generation")
+    _add("snub_dodecahedron", Zone.CORTEX, 60, 150, 92, 0, (0.50, 0.60), "CA", "Creative synthesis, novel solutions")
 
     # ── Risk: Subconscious (2 Kepler-Poinsot) ── 0.8 < r < 0.95 ──
     # χ = -6 for Small Stellated Dodecahedron (self-intersecting)
     # χ = -6 for Great Stellated Dodecahedron
     # Both are INTENTIONALLY unstable — forces ejection back to Core
-    _add("small_stellated_dodecahedron", Zone.RISK, 12, 30, 12, 0,
-         (0.80, 0.87), "UM", "High-risk abstract reasoning (spiky thoughts)")
-    _add("great_stellated_dodecahedron", Zone.RISK, 12, 30, 12, 0,
-         (0.87, 0.95), "DR", "Adversarial thought detection (hallucination zone)")
+    _add(
+        "small_stellated_dodecahedron",
+        Zone.RISK,
+        12,
+        30,
+        12,
+        0,
+        (0.80, 0.87),
+        "UM",
+        "High-risk abstract reasoning (spiky thoughts)",
+    )
+    _add(
+        "great_stellated_dodecahedron",
+        Zone.RISK,
+        12,
+        30,
+        12,
+        0,
+        (0.87, 0.95),
+        "DR",
+        "Adversarial thought detection (hallucination zone)",
+    )
 
     # ── Recursive: Cerebellum (2 Toroidal) ── genus=1 ──
-    _add("szilassi", Zone.RECURSIVE, 14, 21, 7, 1,
-         (0.25, 0.35), "RU", "Self-diagnostic loops, runtime introspection")
-    _add("csaszar",  Zone.RECURSIVE, 7, 21, 14, 1,
-         (0.35, 0.45), "CA", "Recursive processing, fractal thinking")
+    _add("szilassi", Zone.RECURSIVE, 14, 21, 7, 1, (0.25, 0.35), "RU", "Self-diagnostic loops, runtime introspection")
+    _add("csaszar", Zone.RECURSIVE, 7, 21, 14, 1, (0.35, 0.45), "CA", "Recursive processing, fractal thinking")
 
     # ── Bridge: Connectome (4 Johnson/Rhombic) ──
-    _add("rhombic_dodecahedron",     Zone.BRIDGE, 14, 24, 12, 0,
-         (0.20, 0.30), "KO", "Space-filling logic (fits concepts)")
-    _add("rhombic_triacontahedron",  Zone.BRIDGE, 32, 60, 30, 0,
-         (0.30, 0.40), "AV", "High-dimensional pattern matching")
-    _add("johnson_j17",             Zone.BRIDGE, 9, 16, 9,  0,
-         (0.40, 0.55), "RU", "Domain connector A (gyrobifastigium)")
-    _add("johnson_j91",             Zone.BRIDGE, 30, 60, 32, 0,
-         (0.55, 0.70), "CA", "Domain connector B (bilunabirotunda)")
+    _add("rhombic_dodecahedron", Zone.BRIDGE, 14, 24, 12, 0, (0.20, 0.30), "KO", "Space-filling logic (fits concepts)")
+    _add("rhombic_triacontahedron", Zone.BRIDGE, 32, 60, 30, 0, (0.30, 0.40), "AV", "High-dimensional pattern matching")
+    _add("johnson_j17", Zone.BRIDGE, 9, 16, 9, 0, (0.40, 0.55), "RU", "Domain connector A (gyrobifastigium)")
+    _add("johnson_j91", Zone.BRIDGE, 30, 60, 32, 0, (0.55, 0.70), "CA", "Domain connector B (bilunabirotunda)")
 
     return nodes
 
@@ -305,6 +332,7 @@ def _build_registry() -> Dict[str, CircuitNode]:
 # ---------------------------------------------------------------------------
 # Adjacency graph (Sacred Tongue weighted edges)
 # ---------------------------------------------------------------------------
+
 
 def _build_adjacency(nodes: Dict[str, CircuitNode]) -> Dict[str, List[CircuitEdge]]:
     """Build the circuit adjacency graph.
@@ -340,7 +368,7 @@ def _build_adjacency(nodes: Dict[str, CircuitNode]) -> Dict[str, List[CircuitEdg
 
             # Radial distance penalty: cross-zone hops cost more
             radial_gap = abs(src.radial_band[1] - dst.radial_band[0])
-            weight *= (1.0 + radial_gap)
+            weight *= 1.0 + radial_gap
 
             adj[src.name].append(CircuitEdge(src.name, dst.name, tongue, weight))
 
@@ -350,6 +378,7 @@ def _build_adjacency(nodes: Dict[str, CircuitNode]) -> Dict[str, List[CircuitEdg
 # ---------------------------------------------------------------------------
 # Harmonic Wall energy cost
 # ---------------------------------------------------------------------------
+
 
 def harmonic_wall_cost(radial_distance: float, dimension_depth: int = 14) -> float:
     """Compute Harmonic Wall energy cost from the Poincaré conformal factor.
@@ -376,6 +405,7 @@ def harmonic_wall_cost(radial_distance: float, dimension_depth: int = 14) -> flo
 # Trust Ring classification
 # ---------------------------------------------------------------------------
 
+
 def classify_trust_ring(radial_distance: float) -> Tuple[str, Optional[int]]:
     """Classify a radial distance into a Trust Ring.
 
@@ -391,6 +421,7 @@ def classify_trust_ring(radial_distance: float) -> Tuple[str, Optional[int]]:
 # ---------------------------------------------------------------------------
 # Intent → Tongue classification
 # ---------------------------------------------------------------------------
+
 
 def classify_intent_tongue(intent_hash: bytes, context: Optional[dict] = None) -> str:
     """Map an intent to its dominant Sacred Tongue.
@@ -425,6 +456,7 @@ def classify_intent_tongue(intent_hash: bytes, context: Optional[dict] = None) -
 # FSGS governance gate
 # ---------------------------------------------------------------------------
 
+
 def _governance_gate(
     node: CircuitNode,
     radial_dist: float,
@@ -448,7 +480,7 @@ def _governance_gate(
             "-0",
             f"Risk Zone node '{node.name}' (χ={node.euler_characteristic}). "
             f"Self-intersecting star polyhedra are intentionally unstable — "
-            f"quarantine + inspection required before any output."
+            f"quarantine + inspection required before any output.",
         )
 
     # WALL → instant deny (for non-Risk nodes that shouldn't be here)
@@ -456,8 +488,7 @@ def _governance_gate(
         return (
             GovernanceAction.ROLLBACK,
             "-1",
-            f"Event horizon reached (r={radial_dist:.3f}). "
-            f"Harmonic Wall denies access beyond r=0.9."
+            f"Event horizon reached (r={radial_dist:.3f}). " f"Harmonic Wall denies access beyond r=0.9.",
         )
 
     # Energy exhaustion → hold
@@ -466,8 +497,7 @@ def _governance_gate(
         return (
             GovernanceAction.HOLD,
             "-0",
-            f"Energy budget nearly exhausted ({remaining:.1f} remaining). "
-            f"Freezing state for quorum check."
+            f"Energy budget nearly exhausted ({remaining:.1f} remaining). " f"Freezing state for quorum check.",
         )
 
     # Outer Ring → hold for verification
@@ -475,22 +505,21 @@ def _governance_gate(
         return (
             GovernanceAction.HOLD,
             "+0",
-            f"Outer Ring (r={radial_dist:.3f}). "
-            f"Moderate resistance — verification required."
+            f"Outer Ring (r={radial_dist:.3f}). " f"Moderate resistance — verification required.",
         )
 
     # Normal operation → run
     return (
         GovernanceAction.RUN,
         "+1",
-        f"{'Core' if ring == 'CORE' else 'Inner'} Ring "
-        f"(r={radial_dist:.3f}). Safe thought space — forward thrust."
+        f"{'Core' if ring == 'CORE' else 'Inner'} Ring " f"(r={radial_dist:.3f}). Safe thought space — forward thrust.",
     )
 
 
 # ---------------------------------------------------------------------------
 # Hamiltonian path finder
 # ---------------------------------------------------------------------------
+
 
 def _find_hamiltonian_path(
     start: str,
@@ -513,10 +542,7 @@ def _find_hamiltonian_path(
     current = start
     while remaining:
         # Get edges from current node to remaining nodes
-        candidates = [
-            e for e in adj.get(current, [])
-            if e.target in remaining
-        ]
+        candidates = [e for e in adj.get(current, []) if e.target in remaining]
         if not candidates:
             # Dead end — try backtrack fallback
             # For the 16-node fully-connected graph this shouldn't happen
@@ -538,6 +564,7 @@ def _find_hamiltonian_path(
 # Flux-aware node filtering
 # ---------------------------------------------------------------------------
 
+
 def _accessible_nodes(
     all_nodes: Dict[str, CircuitNode],
     flux: FluxGate,
@@ -554,18 +581,15 @@ def _accessible_nodes(
     elif flux == FluxGate.QUASI:
         allowed_zones = {Zone.CORE, Zone.CORTEX}
     else:
-        allowed_zones = {Zone.CORE, Zone.CORTEX, Zone.RISK,
-                         Zone.RECURSIVE, Zone.BRIDGE}
+        allowed_zones = {Zone.CORE, Zone.CORTEX, Zone.RISK, Zone.RECURSIVE, Zone.BRIDGE}
 
-    return [
-        name for name, node in all_nodes.items()
-        if node.zone in allowed_zones
-    ]
+    return [name for name, node in all_nodes.items() if node.zone in allowed_zones]
 
 
 # ---------------------------------------------------------------------------
 # PolyDidacticCircuit — the main class
 # ---------------------------------------------------------------------------
+
 
 class PolyDidacticCircuit:
     """Poly-Didactic Quasicrystal Circuit Flow.
@@ -639,10 +663,7 @@ class PolyDidacticCircuit:
             return trace
 
         # 3. Pick starting node: tongue-affine node with lowest radial band
-        tongue_nodes = [
-            n for n in accessible
-            if self.nodes[n].tongue_affinity == tongue
-        ]
+        tongue_nodes = [n for n in accessible if self.nodes[n].tongue_affinity == tongue]
         if tongue_nodes:
             start = min(tongue_nodes, key=lambda n: self.nodes[n].radial_band[0])
         else:
@@ -687,8 +708,11 @@ class PolyDidacticCircuit:
 
             # FSGS governance gate
             action, symbol, reasoning = _governance_gate(
-                node, radial_dist, cumulative_energy,
-                self.energy_budget, i,
+                node,
+                radial_dist,
+                cumulative_energy,
+                self.energy_budget,
+                i,
             )
 
             # Build didactic step
@@ -776,6 +800,7 @@ class PolyDidacticCircuit:
 # ---------------------------------------------------------------------------
 # Convenience
 # ---------------------------------------------------------------------------
+
 
 def create_circuit(
     flux: str = "POLLY",

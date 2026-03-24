@@ -60,41 +60,46 @@ logger = logging.getLogger("polly-vision")
 
 # ── Observation Tiers ─────────────────────────────────────────────────
 
+
 class ObservationTier(str, Enum):
     """How much visual context each Polly bot gets."""
-    TIER_1 = "accessibility_only"    # Fast, cheap, text-based
-    TIER_2 = "accessibility_plus"    # Default: a11y + screenshots when stuck
-    TIER_3 = "full_visual"           # Every step gets a screenshot + SoM overlay
+
+    TIER_1 = "accessibility_only"  # Fast, cheap, text-based
+    TIER_2 = "accessibility_plus"  # Default: a11y + screenshots when stuck
+    TIER_3 = "full_visual"  # Every step gets a screenshot + SoM overlay
 
 
 # ── Data Structures ───────────────────────────────────────────────────
 
+
 @dataclass
 class InteractiveElement:
     """A clickable/typeable element on the page."""
-    ref_id: int               # Set-of-Marks number (e.g. [1], [2])
-    role: str                 # button, link, textbox, etc.
-    name: str                 # Accessible name
-    tag: str                  # HTML tag
-    selector: str             # CSS selector for Playwright
+
+    ref_id: int  # Set-of-Marks number (e.g. [1], [2])
+    role: str  # button, link, textbox, etc.
+    name: str  # Accessible name
+    tag: str  # HTML tag
+    selector: str  # CSS selector for Playwright
     bounding_box: Optional[Dict[str, float]] = None  # {x, y, width, height}
-    state: str = ""           # disabled, checked, expanded, etc.
+    state: str = ""  # disabled, checked, expanded, etc.
 
 
 @dataclass
 class PageObservation:
     """Complete observation of a page — what a Polly bot 'sees'."""
+
     url: str
     title: str
-    accessibility_tree: str              # Compact text representation
+    accessibility_tree: str  # Compact text representation
     interactive_elements: List[InteractiveElement]
-    screenshot_bytes: Optional[bytes]    # PNG bytes (None for Tier 1)
-    screenshot_b64: Optional[str]        # Base64 encoded (for LLM APIs)
-    page_summary: str                    # One-line description
+    screenshot_bytes: Optional[bytes]  # PNG bytes (None for Tier 1)
+    screenshot_b64: Optional[str]  # Base64 encoded (for LLM APIs)
+    page_summary: str  # One-line description
     observation_tier: ObservationTier
-    content_hash: str                    # SHA-256 of a11y tree
+    content_hash: str  # SHA-256 of a11y tree
     elapsed_ms: float
-    token_estimate: int                  # Estimated LLM tokens for this observation
+    token_estimate: int  # Estimated LLM tokens for this observation
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     @property
@@ -122,6 +127,7 @@ class PageObservation:
 
 
 # ── Polly Vision Engine ──────────────────────────────────────────────
+
 
 class PollyVision:
     """
@@ -217,7 +223,11 @@ class PollyVision:
 
         logger.debug(
             "observe: %s | %d elements | screenshot=%s | %.0fms | ~%d tokens",
-            title[:40], len(elements), take_screenshot, elapsed, token_est
+            title[:40],
+            len(elements),
+            take_screenshot,
+            elapsed,
+            token_est,
         )
 
         return PageObservation(
@@ -256,9 +266,7 @@ class PollyVision:
 
     # ── Accessibility Tree ────────────────────────────────────────────
 
-    async def _get_accessibility_snapshot(
-        self, page
-    ) -> tuple[str, List[InteractiveElement]]:
+    async def _get_accessibility_snapshot(self, page) -> tuple[str, List[InteractiveElement]]:
         """Extract accessibility tree and interactive elements."""
         elements: List[InteractiveElement] = []
         tree_lines: List[str] = []
@@ -266,8 +274,16 @@ class PollyVision:
         try:
             # Get all interactive elements via Playwright's locator API
             interactive_roles = [
-                "link", "button", "textbox", "checkbox", "radio",
-                "combobox", "menuitem", "tab", "switch", "searchbox",
+                "link",
+                "button",
+                "textbox",
+                "checkbox",
+                "radio",
+                "combobox",
+                "menuitem",
+                "tab",
+                "switch",
+                "searchbox",
             ]
 
             ref_id = 1
@@ -298,7 +314,7 @@ class PollyVision:
                             elif el_id:
                                 selector = f"#{el_id}"
                             else:
-                                selector = f'role={role} >> nth={i}'
+                                selector = f"role={role} >> nth={i}"
 
                             # Get bounding box if visible
                             bbox = None
@@ -306,8 +322,10 @@ class PollyVision:
                                 box = await el.bounding_box()
                                 if box:
                                     bbox = {
-                                        "x": box["x"], "y": box["y"],
-                                        "width": box["width"], "height": box["height"],
+                                        "x": box["x"],
+                                        "y": box["y"],
+                                        "width": box["width"],
+                                        "height": box["height"],
                                     }
                             except Exception:
                                 pass
@@ -337,9 +355,7 @@ class PollyVision:
                             )
                             elements.append(element)
                             state_str = f" [{element.state}]" if element.state else ""
-                            tree_lines.append(
-                                f"@{ref_id} {role}: {element.name}{state_str}"
-                            )
+                            tree_lines.append(f"@{ref_id} {role}: {element.name}{state_str}")
                             ref_id += 1
                         except Exception:
                             continue
@@ -420,9 +436,7 @@ class PollyVision:
     async def _remove_som_overlay(self, page) -> None:
         """Remove Set-of-Marks overlay labels."""
         try:
-            await page.evaluate(
-                "() => document.querySelectorAll('.polly-som-label').forEach(e => e.remove())"
-            )
+            await page.evaluate("() => document.querySelectorAll('.polly-som-label').forEach(e => e.remove())")
         except Exception:
             pass
 
@@ -438,9 +452,7 @@ class PollyVision:
         return text_tokens + image_tokens
 
     @staticmethod
-    def _generate_summary(
-        title: str, url: str, elements: List[InteractiveElement]
-    ) -> str:
+    def _generate_summary(title: str, url: str, elements: List[InteractiveElement]) -> str:
         """One-line page summary."""
         roles = {}
         for el in elements:
@@ -457,7 +469,5 @@ class PollyVision:
             "screenshots": self._screenshot_count,
             "total_tokens_est": self._total_tokens,
             "tier": self.tier.value,
-            "screenshot_rate": (
-                self._screenshot_count / max(self._observation_count, 1)
-            ),
+            "screenshot_rate": (self._screenshot_count / max(self._observation_count, 1)),
         }

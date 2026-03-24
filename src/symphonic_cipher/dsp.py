@@ -139,9 +139,7 @@ class MicPatternFilter:
         self.axis_angle = axis_angle
         self.a = self.PATTERN_COEFFICIENTS[pattern]
 
-    def process(
-        self, signal: np.ndarray, source_angles: Optional[np.ndarray] = None
-    ) -> np.ndarray:
+    def process(self, signal: np.ndarray, source_angles: Optional[np.ndarray] = None) -> np.ndarray:
         """
         Apply directional weighting to signal.
 
@@ -322,9 +320,7 @@ class ParametricEQ:
         self._state = np.zeros(2)  # Filter state [x[n-1], x[n-2]]
         self._output_state = np.zeros(2)  # [y[n-1], y[n-2]]
 
-    def calculate_peak_coefficients(
-        self, center_freq: float, gain_db: float, q: float
-    ) -> BiquadCoefficients:
+    def calculate_peak_coefficients(self, center_freq: float, gain_db: float, q: float) -> BiquadCoefficients:
         """
         Calculate biquad coefficients for peaking EQ.
 
@@ -348,13 +344,9 @@ class ParametricEQ:
         a2 = 1 - alpha / A
 
         # Normalize by a0
-        return BiquadCoefficients(
-            b0=b0 / a0, b1=b1 / a0, b2=b2 / a0, a0=1.0, a1=a1 / a0, a2=a2 / a0
-        )
+        return BiquadCoefficients(b0=b0 / a0, b1=b1 / a0, b2=b2 / a0, a0=1.0, a1=a1 / a0, a2=a2 / a0)
 
-    def calculate_lowpass_coefficients(
-        self, cutoff_freq: float, q: float = 0.707
-    ) -> BiquadCoefficients:
+    def calculate_lowpass_coefficients(self, cutoff_freq: float, q: float = 0.707) -> BiquadCoefficients:
         """Calculate biquad coefficients for lowpass filter."""
         omega = 2 * np.pi * cutoff_freq / self.sample_rate
         alpha = np.sin(omega) / (2 * q)
@@ -367,13 +359,9 @@ class ParametricEQ:
         a1 = -2 * cos_omega
         a2 = 1 - alpha
 
-        return BiquadCoefficients(
-            b0=b0 / a0, b1=b1 / a0, b2=b2 / a0, a0=1.0, a1=a1 / a0, a2=a2 / a0
-        )
+        return BiquadCoefficients(b0=b0 / a0, b1=b1 / a0, b2=b2 / a0, a0=1.0, a1=a1 / a0, a2=a2 / a0)
 
-    def calculate_highpass_coefficients(
-        self, cutoff_freq: float, q: float = 0.707
-    ) -> BiquadCoefficients:
+    def calculate_highpass_coefficients(self, cutoff_freq: float, q: float = 0.707) -> BiquadCoefficients:
         """Calculate biquad coefficients for highpass filter."""
         omega = 2 * np.pi * cutoff_freq / self.sample_rate
         alpha = np.sin(omega) / (2 * q)
@@ -386,9 +374,7 @@ class ParametricEQ:
         a1 = -2 * cos_omega
         a2 = 1 - alpha
 
-        return BiquadCoefficients(
-            b0=b0 / a0, b1=b1 / a0, b2=b2 / a0, a0=1.0, a1=a1 / a0, a2=a2 / a0
-        )
+        return BiquadCoefficients(b0=b0 / a0, b1=b1 / a0, b2=b2 / a0, a0=1.0, a1=a1 / a0, a2=a2 / a0)
 
     def set_peak(self, center_freq: float, gain_db: float, q: float) -> None:
         """Configure as peaking EQ."""

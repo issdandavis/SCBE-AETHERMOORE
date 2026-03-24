@@ -35,22 +35,23 @@ from typing import Optional
 # Golden Ratio — fundamental to icosahedral symmetry
 PHI = (1 + np.sqrt(5)) / 2
 TONGUE_NAMES = ["KO", "AV", "RU", "CA", "UM", "DR"]
-TONGUE_WEIGHTS = [PHI ** i for i in range(6)]
+TONGUE_WEIGHTS = [PHI**i for i in range(6)]
 
 # Viscosity per tongue (from Octagonal Octree research note 114)
 TONGUE_VISCOSITY = {
-    "KO": 1 / (1 + 1.0 * PHI),    # Very low — high fluidity
-    "AV": 1 / (1 + 0.8 * PHI),    # Low — flows easily
-    "RU": 1 / (1 + 0.3 * PHI),    # High — slows waves
-    "CA": 1 / (1 + 0.4 * PHI),    # Medium-high — shapes under pressure
-    "UM": 0.5,                      # Variable — emulsifier
-    "DR": 0.5,                      # Variable — emulsifier
+    "KO": 1 / (1 + 1.0 * PHI),  # Very low — high fluidity
+    "AV": 1 / (1 + 0.8 * PHI),  # Low — flows easily
+    "RU": 1 / (1 + 0.3 * PHI),  # High — slows waves
+    "CA": 1 / (1 + 0.4 * PHI),  # Medium-high — shapes under pressure
+    "UM": 0.5,  # Variable — emulsifier
+    "DR": 0.5,  # Variable — emulsifier
 }
 
 
 @dataclass
 class VoxelCell:
     """A single cell in the 6D tensor array."""
+
     cell_id: str
     tongue_index: list  # 6D integer index in the tensor
     tongue_coords: list  # 6D float coordinates (Sacred Tongue)
@@ -71,6 +72,7 @@ class VoxelCell:
 @dataclass
 class TensorSlab:
     """A slice of the 6D tensor along one tongue dimension."""
+
     tongue: str
     tongue_index: int
     cells: dict  # cell_id -> VoxelCell
@@ -105,8 +107,7 @@ class QuasiCrystalVoxelDrive:
         # Storage
         self.cells: dict[str, VoxelCell] = {}
         self.tensor_slabs: dict[str, TensorSlab] = {
-            name: TensorSlab(tongue=name, tongue_index=i, cells={})
-            for i, name in enumerate(TONGUE_NAMES)
+            name: TensorSlab(tongue=name, tongue_index=i, cells={}) for i, name in enumerate(TONGUE_NAMES)
         }
         self.depth_trees: dict[str, list] = {}
         self.content_store: dict[str, bytes] = {}  # cell_id -> encoded bytes
@@ -116,21 +117,37 @@ class QuasiCrystalVoxelDrive:
 
     def _build_projection_matrices(self):
         """Build 6D -> 3D icosahedral projection matrices."""
-        norm = 1 / np.sqrt(1 + PHI ** 2)
+        norm = 1 / np.sqrt(1 + PHI**2)
 
         # Physical space basis (E_parallel)
-        e_par = np.array([
-            [1, PHI, 0], [-1, PHI, 0],
-            [0, 1, PHI], [0, -1, PHI],
-            [PHI, 0, 1], [PHI, 0, -1],
-        ]).T * norm
+        e_par = (
+            np.array(
+                [
+                    [1, PHI, 0],
+                    [-1, PHI, 0],
+                    [0, 1, PHI],
+                    [0, -1, PHI],
+                    [PHI, 0, 1],
+                    [PHI, 0, -1],
+                ]
+            ).T
+            * norm
+        )
 
         # Perpendicular/validation space (E_perp) — Galois conjugation
-        e_perp = np.array([
-            [1, -1/PHI, 0], [-1, -1/PHI, 0],
-            [0, 1, -1/PHI], [0, -1, -1/PHI],
-            [-1/PHI, 0, 1], [-1/PHI, 0, -1],
-        ]).T * norm
+        e_perp = (
+            np.array(
+                [
+                    [1, -1 / PHI, 0],
+                    [-1, -1 / PHI, 0],
+                    [0, 1, -1 / PHI],
+                    [0, -1, -1 / PHI],
+                    [-1 / PHI, 0, 1],
+                    [-1 / PHI, 0, -1],
+                ]
+            ).T
+            * norm
+        )
 
         return e_par, e_perp
 
@@ -163,7 +180,7 @@ class QuasiCrystalVoxelDrive:
             key_stream.extend(block)
 
         # XOR encode
-        encoded = bytes(d ^ k for d, k in zip(data, key_stream[:len(data)]))
+        encoded = bytes(d ^ k for d, k in zip(data, key_stream[: len(data)]))
         return encoded
 
     def _dominant_tongue(self, coords: list) -> tuple:
@@ -176,13 +193,11 @@ class QuasiCrystalVoxelDrive:
 
     def _tensor_index(self, coords: list) -> list:
         """Convert float coords to integer tensor indices."""
-        return [
-            max(0, min(self.resolution - 1, int((c + 1) / 2 * self.resolution)))
-            for c in coords
-        ]
+        return [max(0, min(self.resolution - 1, int((c + 1) / 2 * self.resolution))) for c in coords]
 
-    def store(self, chunk_id: str, content: bytes, tongue_coords: list,
-              category: str = "general", parent_id: str = "") -> VoxelCell:
+    def store(
+        self, chunk_id: str, content: bytes, tongue_coords: list, category: str = "general", parent_id: str = ""
+    ) -> VoxelCell:
         """
         Store a knowledge chunk in the 6D tensor drive.
 
@@ -291,11 +306,17 @@ class QuasiCrystalVoxelDrive:
     def phason_rekey(self, entropy: bytes):
         """Apply phason shift — atomically invalidates previous access window."""
         h = hashlib.sha256(entropy).digest()
-        self._phason_strain = np.array([
-            int.from_bytes(h[0:4], "big") / (2**32) * 2 - 1,
-            int.from_bytes(h[4:8], "big") / (2**32) * 2 - 1,
-            int.from_bytes(h[8:12], "big") / (2**32) * 2 - 1,
-        ]) * self.acceptance_radius * 2.0
+        self._phason_strain = (
+            np.array(
+                [
+                    int.from_bytes(h[0:4], "big") / (2**32) * 2 - 1,
+                    int.from_bytes(h[4:8], "big") / (2**32) * 2 - 1,
+                    int.from_bytes(h[8:12], "big") / (2**32) * 2 - 1,
+                ]
+            )
+            * self.acceptance_radius
+            * 2.0
+        )
         self._phason_epoch += 1
 
     def get_slab(self, tongue: str) -> dict:
@@ -315,10 +336,9 @@ class QuasiCrystalVoxelDrive:
         """Find cells near a point in 6D tongue space."""
         results = []
         for cell_id, cell in self.cells.items():
-            dist = math.sqrt(sum(
-                (a - b) ** 2 * w
-                for a, b, w in zip(coords, cell.tongue_coords, TONGUE_WEIGHTS)
-            )) / sum(TONGUE_WEIGHTS)
+            dist = math.sqrt(
+                sum((a - b) ** 2 * w for a, b, w in zip(coords, cell.tongue_coords, TONGUE_WEIGHTS))
+            ) / sum(TONGUE_WEIGHTS)
             if dist < radius:
                 results.append((cell_id, dist))
         results.sort(key=lambda x: x[1])
@@ -338,15 +358,31 @@ class QuasiCrystalVoxelDrive:
                 }
                 for name, slab in self.tensor_slabs.items()
             },
-            "categories": dict(sorted(
-                {cat: sum(1 for c in self.cells.values() if c.category == cat)
-                 for cat in {c.category for c in self.cells.values()}}.items()
-            )) if self.cells else {},
+            "categories": (
+                dict(
+                    sorted(
+                        {
+                            cat: sum(1 for c in self.cells.values() if c.category == cat)
+                            for cat in {c.category for c in self.cells.values()}
+                        }.items()
+                    )
+                )
+                if self.cells
+                else {}
+            ),
             "max_depth": max((c.depth for c in self.cells.values()), default=0),
-            "phase_distribution": dict(sorted(
-                {ph: sum(1 for c in self.cells.values() if c.phase == ph)
-                 for ph in {c.phase for c in self.cells.values()}}.items()
-            )) if self.cells else {},
+            "phase_distribution": (
+                dict(
+                    sorted(
+                        {
+                            ph: sum(1 for c in self.cells.values() if c.phase == ph)
+                            for ph in {c.phase for c in self.cells.values()}
+                        }.items()
+                    )
+                )
+                if self.cells
+                else {}
+            ),
         }
 
     def export(self, path: str) -> str:
@@ -402,20 +438,38 @@ def demo():
 
     # Store some test chunks
     test_data = [
-        ("chunk-001", b"Hyperbolic geometry provides exponential cost scaling for adversarial behavior",
-         [0.3, 0.1, 0.2, 0.7, 0.1, 0.1], "math"),
-        ("chunk-002", b"Post-quantum lattice-based cryptography resists Shor's algorithm",
-         [0.2, 0.1, 0.2, 0.8, 0.2, 0.3], "security"),
-        ("chunk-003", b"Multi-agent governance consensus using Byzantine fault tolerance",
-         [0.8, 0.1, 0.3, 0.1, 0.1, 0.2], "governance"),
-        ("chunk-004", b"Sacred Tongue tokenizer maps 6 languages to phi-weighted dimensions",
-         [0.2, 0.2, 0.2, 0.2, 0.2, 0.8], "tongues"),
+        (
+            "chunk-001",
+            b"Hyperbolic geometry provides exponential cost scaling for adversarial behavior",
+            [0.3, 0.1, 0.2, 0.7, 0.1, 0.1],
+            "math",
+        ),
+        (
+            "chunk-002",
+            b"Post-quantum lattice-based cryptography resists Shor's algorithm",
+            [0.2, 0.1, 0.2, 0.8, 0.2, 0.3],
+            "security",
+        ),
+        (
+            "chunk-003",
+            b"Multi-agent governance consensus using Byzantine fault tolerance",
+            [0.8, 0.1, 0.3, 0.1, 0.1, 0.2],
+            "governance",
+        ),
+        (
+            "chunk-004",
+            b"Sacred Tongue tokenizer maps 6 languages to phi-weighted dimensions",
+            [0.2, 0.2, 0.2, 0.2, 0.2, 0.8],
+            "tongues",
+        ),
     ]
 
     for cid, content, coords, cat in test_data:
         cell = drive.store(cid, content, coords, category=cat)
-        print(f"  Stored {cid}: Chladni({cell.chladni_mode[0]},{cell.chladni_mode[1]}) "
-              f"phase={cell.phase} viscosity={cell.viscosity:.3f}")
+        print(
+            f"  Stored {cid}: Chladni({cell.chladni_mode[0]},{cell.chladni_mode[1]}) "
+            f"phase={cell.phase} viscosity={cell.viscosity:.3f}"
+        )
 
     # Retrieve with correct coords
     print("\nRetrieve with correct vector:")

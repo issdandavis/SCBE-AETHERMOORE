@@ -95,9 +95,7 @@ class TestSacredTongueSystem:
         t = 1.0  # Time point
         frequencies = [1.0, 1.618, 2.618, 4.236, 6.854, 11.090]  # Harmonic frequencies
 
-        resonance = sum(
-            self.PHI**i * math.cos(2 * math.pi * frequencies[i] * t) for i in range(6)
-        )
+        resonance = sum(self.PHI**i * math.cos(2 * math.pi * frequencies[i] * t) for i in range(6))
 
         # Resonance should be a valid number
         assert not math.isnan(resonance), "Harmonic resonance calculation failed"
@@ -136,9 +134,7 @@ class TestSacredTongueSystem:
         tongues = ["KO", "AV", "RU", "CA", "UM", "DR"]
 
         for i, tongue in enumerate(tongues):
-            assert (
-                self.SACRED_TONGUES[tongue]["tier"] == tier_order[i]
-            ), f"{tongue} should have tier {tier_order[i]}"
+            assert self.SACRED_TONGUES[tongue]["tier"] == tier_order[i], f"{tongue} should have tier {tier_order[i]}"
 
 
 # =============================================================================
@@ -277,10 +273,7 @@ class TestEntropicDefenseEngine:
         # Calculate composite resonance
         total_weight = sum(1.618**i for i in range(6))
         weighted_resonance = (
-            sum(
-                scan_results[g]["resonance"] * (1.618**i)
-                for i, g in enumerate(["KO", "AV", "RU", "CA", "UM", "DR"])
-            )
+            sum(scan_results[g]["resonance"] * (1.618**i) for i, g in enumerate(["KO", "AV", "RU", "CA", "UM", "DR"]))
             / total_weight
         )
 
@@ -315,9 +308,7 @@ class TestEntropicDefenseEngine:
 
                 # Angle change indicates curvature
                 if np.linalg.norm(v1) > 0 and np.linalg.norm(v2) > 0:
-                    cos_angle = np.dot(v1, v2) / (
-                        np.linalg.norm(v1) * np.linalg.norm(v2)
-                    )
+                    cos_angle = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
                     cos_angle = np.clip(cos_angle, -1, 1)
                     curvatures.append(abs(np.arccos(cos_angle)))
 
@@ -337,9 +328,7 @@ class TestEntropicDefenseEngine:
         ]
 
         anomalous_curvature = calculate_curvature(anomalous_trajectory)
-        assert (
-            anomalous_curvature > 0.5
-        ), "Anomalous trajectory should have high curvature"
+        assert anomalous_curvature > 0.5, "Anomalous trajectory should have high curvature"
 
     def test_tier3_quantum_lattice_verification(self):
         """Tier 3: LWE/SVP lattice-based verification."""
@@ -653,9 +642,7 @@ class TestSecurityStackIntegration:
             for layer in self.SECURITY_LAYERS:
                 # Each layer contributes to risk score
                 # Using 0.02 base to keep total risk below 0.3 for normal requests
-                layer_risk = 0.02 * (
-                    1 - 0.01 * layer["id"]
-                )  # Decreasing risk per layer
+                layer_risk = 0.02 * (1 - 0.01 * layer["id"])  # Decreasing risk per layer
                 result["risk_score"] += layer_risk
                 result["layers_passed"].append(layer["id"])
 
@@ -683,9 +670,7 @@ class TestSecurityStackIntegration:
     def test_quantum_layers_present(self):
         """Verify quantum-resistant layers are present."""
         quantum_layers = [
-            layer
-            for layer in self.SECURITY_LAYERS
-            if "Quantum" in layer["name"] or "PQC" in layer["name"]
+            layer for layer in self.SECURITY_LAYERS if "Quantum" in layer["name"] or "PQC" in layer["name"]
         ]
         assert len(quantum_layers) >= 2, "Must have at least 2 quantum-related layers"
 

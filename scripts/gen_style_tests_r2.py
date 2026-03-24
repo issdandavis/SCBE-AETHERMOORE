@@ -1,4 +1,5 @@
 """Style consistency tests - Round 2: aspect ratios, two-character, macro, transformation."""
+
 import argparse
 from google import genai
 from google.genai import types
@@ -40,8 +41,7 @@ POLLY_RAVEN = (
 tests = {
     "test07_tall_fall": {
         "prompt": (
-            STYLE
-            + "TALL VERTICAL composition, portrait orientation. "
+            STYLE + "TALL VERTICAL composition, portrait orientation. "
             "Color palette: shifting rainbow geometric layers dissolving into warm amber. "
             + MARCUS
             + "Scene: Marcus falling headfirst through layers of abstract space. "
@@ -57,8 +57,7 @@ tests = {
     },
     "test08_wide_whiteout": {
         "prompt": (
-            STYLE
-            + "WIDE LANDSCAPE composition, compressed height for impact. "
+            STYLE + "WIDE LANDSCAPE composition, compressed height for impact. "
             "Color palette: draining from dark office blues to overwhelming pure white. "
             + MARCUS
             + "Scene: Marcus half-rising from his office chair, palms up, bracing against nothing. "
@@ -90,8 +89,7 @@ tests = {
     },
     "test10_macro_coffee": {
         "prompt": (
-            STYLE
-            + "MACRO CLOSE-UP composition, tight crop on a single object. "
+            STYLE + "MACRO CLOSE-UP composition, tight crop on a single object. "
             "Color palette: cool blues, dark greens, green terminal glow reflection. "
             "Scene: Extreme close-up of a white ceramic coffee mug on a dark office desk. "
             "The mug has a visible brown residue RING marking the tidal line of the last sip. "
@@ -106,8 +104,7 @@ tests = {
     },
     "test11_transformation": {
         "prompt": (
-            STYLE
-            + "TWO-BEAT VERTICAL panel composition, split into top and bottom halves. "
+            STYLE + "TWO-BEAT VERTICAL panel composition, split into top and bottom halves. "
             "Color palette: warm amber crystal light. "
             "TOP HALF: A large raven with black-violet feathers mid-transformation, "
             "feathers flowing UPWARD like ink dispersing in water. Shape stretching upward. "

@@ -32,7 +32,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.knowledge.funnel import KnowledgeFunnel, KnowledgeChunk, BASIN_ROOT
 from src.knowledge.tokenizer_graph.memory_chain import (
-    TokenizerGraph, TONGUE_WEIGHTS, TONGUE_NAMES, PHI,
+    TokenizerGraph,
+    TONGUE_WEIGHTS,
+    TONGUE_NAMES,
+    PHI,
 )
 
 # ---------------------------------------------------------------------------
@@ -51,6 +54,7 @@ HF_DATASET = "issdandavis/scbe-aethermoore-knowledge-base"
 # ---------------------------------------------------------------------------
 # Dedup Registry — never scrape the same thing twice
 # ---------------------------------------------------------------------------
+
 
 class DedupRegistry:
     """Tracks every query+source combo we've already run."""
@@ -99,6 +103,7 @@ class DedupRegistry:
 # Fibonacci Sphere Grid — 6D node placement
 # ---------------------------------------------------------------------------
 
+
 class FibonacciSphereGrid:
     """
     6D Fibonacci sphere grid. Each knowledge chunk gets placed on a point
@@ -131,25 +136,43 @@ class FibonacciSphereGrid:
         coords[1] = r * math.sin(angles[0]) * math.cos(angles[1])
         coords[2] = r * math.sin(angles[0]) * math.sin(angles[1]) * math.cos(angles[2])
         coords[3] = r * math.sin(angles[0]) * math.sin(angles[1]) * math.sin(angles[2]) * math.cos(angles[3])
-        coords[4] = r * math.sin(angles[0]) * math.sin(angles[1]) * math.sin(angles[2]) * math.sin(angles[3]) * math.cos(angles[4])
-        coords[5] = r * math.sin(angles[0]) * math.sin(angles[1]) * math.sin(angles[2]) * math.sin(angles[3]) * math.sin(angles[4])
+        coords[4] = (
+            r
+            * math.sin(angles[0])
+            * math.sin(angles[1])
+            * math.sin(angles[2])
+            * math.sin(angles[3])
+            * math.cos(angles[4])
+        )
+        coords[5] = (
+            r
+            * math.sin(angles[0])
+            * math.sin(angles[1])
+            * math.sin(angles[2])
+            * math.sin(angles[3])
+            * math.sin(angles[4])
+        )
 
         return coords
 
-    def add_node(self, chunk_id: str, title: str, category: str,
-                 tongue_coords: list[float], content_hash: str,
-                 depth: int = 0, parent_id: str = "") -> dict:
+    def add_node(
+        self,
+        chunk_id: str,
+        title: str,
+        category: str,
+        tongue_coords: list[float],
+        content_hash: str,
+        depth: int = 0,
+        parent_id: str = "",
+    ) -> dict:
         """Place a knowledge chunk on the grid."""
         fib_coords = self.fibonacci_6d_point(self.n)
 
         # Blend Fibonacci placement with tongue coords (content-aware placement)
-        blended = [
-            0.6 * f + 0.4 * t
-            for f, t in zip(fib_coords, tongue_coords)
-        ]
+        blended = [0.6 * f + 0.4 * t for f, t in zip(fib_coords, tongue_coords)]
 
         # Normalize back to ball
-        norm = math.sqrt(sum(c ** 2 for c in blended))
+        norm = math.sqrt(sum(c**2 for c in blended))
         if norm > 0:
             blended = [c / norm * 0.95 for c in blended]
 
@@ -197,20 +220,19 @@ class FibonacciSphereGrid:
         distances.sort(key=lambda x: x[1])
         for target_id, dist in distances[:max_connections]:
             if dist < 0.5:  # Only connect if reasonably close
-                node["connections"].append({
-                    "target": target_id,
-                    "distance": round(dist, 4),
-                    "tongue": self._dominant_dimension(
-                        node["coords_6d"], self.nodes[target_id]["coords_6d"]
-                    ),
-                })
+                node["connections"].append(
+                    {
+                        "target": target_id,
+                        "distance": round(dist, 4),
+                        "tongue": self._dominant_dimension(node["coords_6d"], self.nodes[target_id]["coords_6d"]),
+                    }
+                )
 
     @staticmethod
     def _distance(a: list, b: list) -> float:
-        return math.sqrt(sum(
-            (ai - bi) ** 2 * TONGUE_WEIGHTS[i]
-            for i, (ai, bi) in enumerate(zip(a, b))
-        )) / sum(TONGUE_WEIGHTS)
+        return math.sqrt(sum((ai - bi) ** 2 * TONGUE_WEIGHTS[i] for i, (ai, bi) in enumerate(zip(a, b)))) / sum(
+            TONGUE_WEIGHTS
+        )
 
     @staticmethod
     def _dominant_dimension(a: list, b: list) -> str:
@@ -251,12 +273,17 @@ class FibonacciSphereGrid:
 # Multi-Angle Analyzer — find connections from different perspectives
 # ---------------------------------------------------------------------------
 
+
 class MultiAngleAnalyzer:
     """Analyze the knowledge graph from multiple perspectives to find connections."""
 
     ANGLES = [
         ("security_vs_math", ["security", "math", "quantum"], "Where does security meet mathematics?"),
-        ("ai_vs_governance", ["ai", "governance", "swarm"], "How does AI governance intersect with swarm intelligence?"),
+        (
+            "ai_vs_governance",
+            ["ai", "governance", "swarm"],
+            "How does AI governance intersect with swarm intelligence?",
+        ),
         ("nlp_vs_geometry", ["nlp", "geometry", "math"], "Language models and geometric embeddings"),
         ("lore_vs_research", ["lore", "research", "tongues"], "Narrative patterns in research structures"),
         ("cross_domain", None, "Highest-connected nodes across all categories"),
@@ -268,10 +295,7 @@ class MultiAngleAnalyzer:
 
         for angle_name, categories, description in self.ANGLES:
             if categories:
-                relevant = {
-                    nid: n for nid, n in grid.nodes.items()
-                    if n["category"] in categories
-                }
+                relevant = {nid: n for nid, n in grid.nodes.items() if n["category"] in categories}
             else:
                 # Cross-domain: top connected nodes
                 relevant = dict(
@@ -291,21 +315,25 @@ class MultiAngleAnalyzer:
                     if target:
                         connected_cats.add(target["category"])
                 if len(connected_cats) >= 2:
-                    bridges.append({
-                        "id": nid,
-                        "title": node["title"],
-                        "category": node["category"],
-                        "bridges_to": list(connected_cats),
-                        "connection_count": len(node["connections"]),
-                    })
+                    bridges.append(
+                        {
+                            "id": nid,
+                            "title": node["title"],
+                            "category": node["category"],
+                            "bridges_to": list(connected_cats),
+                            "connection_count": len(node["connections"]),
+                        }
+                    )
 
-            reports.append({
-                "angle": angle_name,
-                "description": description,
-                "nodes_analyzed": len(relevant),
-                "bridges_found": len(bridges),
-                "top_bridges": sorted(bridges, key=lambda x: x["connection_count"], reverse=True)[:5],
-            })
+            reports.append(
+                {
+                    "angle": angle_name,
+                    "description": description,
+                    "nodes_analyzed": len(relevant),
+                    "bridges_found": len(bridges),
+                    "top_bridges": sorted(bridges, key=lambda x: x["connection_count"], reverse=True)[:5],
+                }
+            )
 
         return reports
 
@@ -313,6 +341,7 @@ class MultiAngleAnalyzer:
 # ---------------------------------------------------------------------------
 # Category Exporter — split datasets for different website backends
 # ---------------------------------------------------------------------------
+
 
 class CategoryExporter:
     """Export datasets split by category for different website backends."""
@@ -335,25 +364,27 @@ class CategoryExporter:
             site_dir.mkdir(parents=True, exist_ok=True)
 
             site_chunks = [c for c in chunks if c.category in categories]
-            site_nodes = {
-                nid: n for nid, n in grid.nodes.items()
-                if n["category"] in categories
-            }
+            site_nodes = {nid: n for nid, n in grid.nodes.items() if n["category"] in categories}
 
             # Dataset JSON
             dataset_path = site_dir / "dataset.json"
-            dataset_path.write_text(json.dumps([
-                {
-                    "id": c.id,
-                    "title": c.title,
-                    "category": c.category,
-                    "source": c.source,
-                    "url": c.url,
-                    "content_preview": c.content[:500],
-                    "trust_score": c.trust_score,
-                }
-                for c in site_chunks
-            ], indent=2))
+            dataset_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "id": c.id,
+                            "title": c.title,
+                            "category": c.category,
+                            "source": c.source,
+                            "url": c.url,
+                            "content_preview": c.content[:500],
+                            "trust_score": c.trust_score,
+                        }
+                        for c in site_chunks
+                    ],
+                    indent=2,
+                )
+            )
 
             # Grid nodes JSON (for 3D visualization)
             grid_path = site_dir / "grid_nodes.json"
@@ -361,13 +392,18 @@ class CategoryExporter:
 
             # Index HTML snippet
             index_path = site_dir / "index.json"
-            index_path.write_text(json.dumps({
-                "site": site_name,
-                "total_items": len(site_chunks),
-                "categories": categories,
-                "grid_nodes": len(site_nodes),
-                "updated": datetime.datetime.now(datetime.UTC).isoformat(),
-            }, indent=2))
+            index_path.write_text(
+                json.dumps(
+                    {
+                        "site": site_name,
+                        "total_items": len(site_chunks),
+                        "categories": categories,
+                        "grid_nodes": len(site_nodes),
+                        "updated": datetime.datetime.now(datetime.UTC).isoformat(),
+                    },
+                    indent=2,
+                )
+            )
 
             paths[site_name] = str(site_dir)
             print(f"  {site_name}: {len(site_chunks)} chunks, {len(site_nodes)} grid nodes")
@@ -378,6 +414,7 @@ class CategoryExporter:
 # ---------------------------------------------------------------------------
 # HuggingFace Pusher — upload categorized datasets
 # ---------------------------------------------------------------------------
+
 
 def push_datasets_to_hf(chunks: list[KnowledgeChunk], grid: FibonacciSphereGrid):
     """Push categorized datasets to HuggingFace."""
@@ -439,16 +476,30 @@ def push_datasets_to_hf(chunks: list[KnowledgeChunk], grid: FibonacciSphereGrid)
 # HYDRA Integration — feed HYDRA research output into pipeline
 # ---------------------------------------------------------------------------
 
+
 def hydra_research_to_chunks(topic: str, max_subtasks: int = 3) -> list[KnowledgeChunk]:
     """Run HYDRA research on a topic and convert results to KnowledgeChunks."""
     import subprocess
+
     chunks = []
 
     try:
         result = subprocess.run(
-            [sys.executable, "-m", "hydra", "research", topic,
-             "--mode", "httpx", "--max-subtasks", str(max_subtasks), "--json"],
-            capture_output=True, text=True, timeout=120,
+            [
+                sys.executable,
+                "-m",
+                "hydra",
+                "research",
+                topic,
+                "--mode",
+                "httpx",
+                "--max-subtasks",
+                str(max_subtasks),
+                "--json",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
             cwd=str(PROJECT_ROOT),
             env={**os.environ, "PYTHONPATH": str(PROJECT_ROOT)},
         )
@@ -518,13 +569,15 @@ def _categorize_hydra(topic: str) -> str:
 def hydra_arxiv_expand(query: str, max_results: int = 5) -> list[str]:
     """Use HYDRA arXiv search to discover new related queries."""
     import subprocess
+
     new_queries = []
 
     try:
         result = subprocess.run(
-            [sys.executable, "-m", "hydra", "arxiv", "search", query,
-             "--max", str(max_results)],
-            capture_output=True, text=True, timeout=30,
+            [sys.executable, "-m", "hydra", "arxiv", "search", query, "--max", str(max_results)],
+            capture_output=True,
+            text=True,
+            timeout=30,
             cwd=str(PROJECT_ROOT),
             env={**os.environ, "PYTHONPATH": str(PROJECT_ROOT)},
         )
@@ -723,6 +776,7 @@ SEED_QUERIES = {
 # Main Pipeline Cycle
 # ---------------------------------------------------------------------------
 
+
 def run_cycle(
     dedup: DedupRegistry,
     funnel: KnowledgeFunnel,
@@ -786,16 +840,23 @@ def run_cycle(
                     result = funnel.ingest(chunk)
                     if result["decision"] == "ALLOW":
                         graph.add_chunk(
-                            chunk.id, chunk.title, chunk.category,
-                            chunk.content, chunk.source,
-                            chunk.chain_hash, chunk.parent_hash,
+                            chunk.id,
+                            chunk.title,
+                            chunk.category,
+                            chunk.content,
+                            chunk.source,
+                            chunk.chain_hash,
+                            chunk.parent_hash,
                         )
                         # Add to Fibonacci grid
                         node_in_graph = graph.nodes.get(chunk.id)
                         coords = node_in_graph.coords if node_in_graph else [0.0] * 6
                         grid.add_node(
-                            chunk.id, chunk.title, chunk.category,
-                            coords, chunk.chain_hash[:12],
+                            chunk.id,
+                            chunk.title,
+                            chunk.category,
+                            coords,
+                            chunk.chain_hash[:12],
                         )
                         all_allowed.append(chunk)
 
@@ -829,15 +890,22 @@ def run_cycle(
                     result = funnel.ingest(chunk)
                     if result["decision"] == "ALLOW":
                         graph.add_chunk(
-                            chunk.id, chunk.title, chunk.category,
-                            chunk.content, chunk.source,
-                            chunk.chain_hash, chunk.parent_hash,
+                            chunk.id,
+                            chunk.title,
+                            chunk.category,
+                            chunk.content,
+                            chunk.source,
+                            chunk.chain_hash,
+                            chunk.parent_hash,
                         )
                         node_in_graph = graph.nodes.get(chunk.id)
                         coords = node_in_graph.coords if node_in_graph else [0.0] * 6
                         grid.add_node(
-                            chunk.id, chunk.title, chunk.category,
-                            coords, chunk.chain_hash[:12],
+                            chunk.id,
+                            chunk.title,
+                            chunk.category,
+                            coords,
+                            chunk.chain_hash[:12],
                         )
                         all_allowed.append(chunk)
 
@@ -910,6 +978,7 @@ def _scrape_arxiv_all_cats(search_fn, cats, query, max_per_cat=5):
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main():
     parser = argparse.ArgumentParser(description="Continuous Knowledge Pipeline")
     parser.add_argument("--daemon", action="store_true", help="Run in daemon mode (loop forever)")
@@ -938,7 +1007,10 @@ def main():
         print(f"{'#' * 60}")
 
         report = run_cycle(
-            dedup, funnel, graph, grid,
+            dedup,
+            funnel,
+            graph,
+            grid,
             push_hf=args.push_hf,
             export_web=args.export_web,
         )

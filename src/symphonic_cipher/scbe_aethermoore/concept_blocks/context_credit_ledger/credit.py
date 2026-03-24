@@ -33,14 +33,16 @@ from typing import Any, Dict, FrozenSet, List, Optional, Tuple
 #  Tongue denominations — each tongue is a "currency" with different weight
 # ---------------------------------------------------------------------------
 
+
 class Denomination(str, Enum):
     """Sacred Tongue denominations — each has intrinsic weight from cross-talk."""
-    KO = "KO"   # Kor'aelin — Flow/Intent     — weight 1.000  (base)
-    AV = "AV"   # Avali     — Diplomacy        — weight 1.618  (phi)
-    RU = "RU"   # Runethic  — Binding/Chaos    — weight 2.618  (phi^2)
-    CA = "CA"   # Cassisivadan — Bitcraft/Math — weight 4.236  (phi^3)
-    UM = "UM"   # Umbroth   — Veil/Mystery     — weight 6.854  (phi^4)
-    DR = "DR"   # Draumric  — Structure/Order  — weight 11.090 (phi^5)
+
+    KO = "KO"  # Kor'aelin — Flow/Intent     — weight 1.000  (base)
+    AV = "AV"  # Avali     — Diplomacy        — weight 1.618  (phi)
+    RU = "RU"  # Runethic  — Binding/Chaos    — weight 2.618  (phi^2)
+    CA = "CA"  # Cassisivadan — Bitcraft/Math — weight 4.236  (phi^3)
+    UM = "UM"  # Umbroth   — Veil/Mystery     — weight 6.854  (phi^4)
+    DR = "DR"  # Draumric  — Structure/Order  — weight 11.090 (phi^5)
 
 
 # Golden ratio weights — each tongue's value follows the Fibonacci spiral
@@ -58,6 +60,7 @@ DENOMINATION_WEIGHTS: Dict[Denomination, float] = {
 #  Credit DNA — the genetic fingerprint of a credit
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class CreditDNA:
     """
@@ -69,23 +72,23 @@ class CreditDNA:
 
     # Agent identity
     agent_id: str
-    model_name: str                          # e.g. "qwen3-8b", "claude-opus"
+    model_name: str  # e.g. "qwen3-8b", "claude-opus"
 
     # 21D personality vector snapshot (7 categories x 3 dimensions)
-    personality_vector: Tuple[float, ...]     # Frozen at mint time
+    personality_vector: Tuple[float, ...]  # Frozen at mint time
 
     # SCBE layers that were active during production
-    active_layers: FrozenSet[int]            # e.g. {1, 2, 5, 8, 10}
+    active_layers: FrozenSet[int]  # e.g. {1, 2, 5, 8, 10}
 
     # Hamiltonian energy signature
-    hamiltonian_d: float                     # deviation at mint time
-    hamiltonian_pd: float                    # policy deviation at mint time
+    hamiltonian_d: float  # deviation at mint time
+    hamiltonian_pd: float  # policy deviation at mint time
 
     # Entropy at mint time (Layer 7)
     entropy: float
 
     # Governance verdict that authorized this credit
-    governance_verdict: str                  # ALLOW / QUARANTINE
+    governance_verdict: str  # ALLOW / QUARANTINE
 
     @property
     def energy_cost(self) -> float:
@@ -123,6 +126,7 @@ class CreditDNA:
 #  Context Credit — the immutable currency unit
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class ContextCredit:
     """
@@ -131,13 +135,13 @@ class ContextCredit:
     Value = denomination_weight * energy_cost * complexity * legibility
     """
 
-    credit_id: str                           # UUID
-    denomination: Denomination               # Sacred Tongue denomination
-    dna: CreditDNA                           # Genetic fingerprint
-    payload_hash: str                        # SHA-256 of the context payload
-    parent_credits: Tuple[str, ...]          # IDs of credits that produced this one
-    timestamp: float                         # Unix time of minting
-    nonce: int                               # Proof-of-context nonce
+    credit_id: str  # UUID
+    denomination: Denomination  # Sacred Tongue denomination
+    dna: CreditDNA  # Genetic fingerprint
+    payload_hash: str  # SHA-256 of the context payload
+    parent_credits: Tuple[str, ...]  # IDs of credits that produced this one
+    timestamp: float  # Unix time of minting
+    nonce: int  # Proof-of-context nonce
 
     # Legibility score — how readable/verifiable the context is [0,1]
     legibility: float = 1.0
@@ -160,16 +164,19 @@ class ContextCredit:
     @property
     def block_hash(self) -> str:
         """Hash of this credit for blockchain inclusion."""
-        data = json.dumps({
-            "id": self.credit_id,
-            "denom": self.denomination.value,
-            "payload": self.payload_hash,
-            "parents": list(self.parent_credits),
-            "ts": self.timestamp,
-            "nonce": self.nonce,
-            "dna_hash": self.dna.personality_hash,
-            "value": round(self.face_value, 8),
-        }, sort_keys=True)
+        data = json.dumps(
+            {
+                "id": self.credit_id,
+                "denom": self.denomination.value,
+                "payload": self.payload_hash,
+                "parents": list(self.parent_credits),
+                "ts": self.timestamp,
+                "nonce": self.nonce,
+                "dna_hash": self.dna.personality_hash,
+                "value": round(self.face_value, 8),
+            },
+            sort_keys=True,
+        )
         return hashlib.sha256(data.encode()).hexdigest()
 
     def to_dict(self) -> Dict[str, Any]:
@@ -191,6 +198,7 @@ class ContextCredit:
 # ---------------------------------------------------------------------------
 #  Credit Minting — produce new credits from context
 # ---------------------------------------------------------------------------
+
 
 def mint_credit(
     agent_id: str,

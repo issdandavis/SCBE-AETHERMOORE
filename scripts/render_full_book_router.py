@@ -105,16 +105,25 @@ def ordered_packet_paths() -> list[Path]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Render all available webtoon prompt packets through the live router.")
-    parser.add_argument("--backend", choices=["imagen", "imagen-ultra", "hf", "zimage"], default=None, help="Force one backend for every packet.")
+    parser.add_argument(
+        "--backend",
+        choices=["imagen", "imagen-ultra", "hf", "zimage"],
+        default=None,
+        help="Force one backend for every packet.",
+    )
     parser.add_argument(
         "--output-root",
         default=str(ROOT / "artifacts" / "webtoon" / "generated_router_full_book"),
         help="Output root for generated images and manifests.",
     )
     parser.add_argument("--start-at", default=None, help="Start at this packet stem or chapter id.")
-    parser.add_argument("--limit-packets", type=int, default=None, help="Render only the next N packets after filtering.")
+    parser.add_argument(
+        "--limit-packets", type=int, default=None, help="Render only the next N packets after filtering."
+    )
     parser.add_argument("--dry-run", action="store_true", help="Build manifests without rendering images.")
-    parser.add_argument("--no-skip-existing", action="store_true", help="Do not skip panels that already exist on disk.")
+    parser.add_argument(
+        "--no-skip-existing", action="store_true", help="Do not skip panels that already exist on disk."
+    )
     return parser.parse_args()
 
 

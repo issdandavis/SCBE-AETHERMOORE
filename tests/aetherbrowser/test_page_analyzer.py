@@ -1,5 +1,7 @@
 """Tests for the 'This Page' analyzer."""
+
 from src.aetherbrowser.page_analyzer import PageAnalyzer
+
 
 class TestPageAnalyzer:
     def test_analyze_returns_summary(self):

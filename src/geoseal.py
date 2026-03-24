@@ -159,17 +159,11 @@ def compute_repel_force(
 def update_suspicion(agent: Agent, neighbor_id: str, is_anomaly: bool) -> None:
     """Update suspicion counters and quarantine status."""
     if is_anomaly:
-        agent.suspicion_count[neighbor_id] = (
-            agent.suspicion_count.get(neighbor_id, 0) + 1
-        )
+        agent.suspicion_count[neighbor_id] = agent.suspicion_count.get(neighbor_id, 0) + 1
     else:
-        agent.suspicion_count[neighbor_id] = max(
-            0, agent.suspicion_count.get(neighbor_id, 0) - SUSPICION_DECAY
-        )
+        agent.suspicion_count[neighbor_id] = max(0, agent.suspicion_count.get(neighbor_id, 0) - SUSPICION_DECAY)
 
-    suspicious_neighbors = sum(
-        1 for c in agent.suspicion_count.values() if c >= SUSPICION_THRESHOLD
-    )
+    suspicious_neighbors = sum(1 for c in agent.suspicion_count.values() if c >= SUSPICION_THRESHOLD)
     agent.is_quarantined = suspicious_neighbors >= QUARANTINE_CONSENSUS
 
     total_suspicion = sum(agent.suspicion_count.values())

@@ -109,9 +109,7 @@ class TestPromptSanitizer:
         ]
         for inp in extraction_attempts:
             sanitized, events = sanitizer.sanitize(inp, "test_agent")
-            has_exfil_event = any(
-                e.threat_type == ThreatType.DATA_EXFILTRATION for e in events
-            )
+            has_exfil_event = any(e.threat_type == ThreatType.DATA_EXFILTRATION for e in events)
             # These may be blocked or flagged
             assert has_exfil_event or len(events) > 0 or sanitized == inp
 
@@ -125,9 +123,7 @@ class TestPromptSanitizer:
         ]
         for inp in context_attacks:
             sanitized, events = sanitizer.sanitize(inp, "test_agent")
-            has_context_event = any(
-                e.threat_type == ThreatType.CONTEXT_MANIPULATION for e in events
-            )
+            has_context_event = any(e.threat_type == ThreatType.CONTEXT_MANIPULATION for e in events)
             assert has_context_event, f"Context manipulation not detected: {inp}"
 
     def test_max_input_length(self, sanitizer):
@@ -147,9 +143,7 @@ class TestPromptSanitizer:
         for inp in encoded_inputs:
             sanitized, events = sanitizer.sanitize(inp, "test_agent")
             # Should at least flag encoding
-            encoding_events = [
-                e for e in events if e.threat_type == ThreatType.ENCODING_ATTACK
-            ]
+            encoding_events = [e for e in events if e.threat_type == ThreatType.ENCODING_ATTACK]
             # Encoding patterns are detected but not necessarily blocked
             assert len(encoding_events) >= 0  # At least checked
 
@@ -345,9 +339,7 @@ class TestSecurityAgentTasks:
     @pytest.mark.asyncio
     async def test_generate_report(self, security_agent):
         """Security report generation should work."""
-        result = await security_agent.process_task(
-            {"type": "generate_report", "period": "day"}
-        )
+        result = await security_agent.process_task({"type": "generate_report", "period": "day"})
 
         assert "period" in result
         assert result["period"] == "day"
@@ -402,9 +394,7 @@ class TestTaskQueue:
         queue.add(task2)
 
         # Complete task1
-        queue.mark_completed(
-            task1.id, TaskResult(task_id=task1.id, status=TaskStatus.COMPLETED)
-        )
+        queue.mark_completed(task1.id, TaskResult(task_id=task1.id, status=TaskStatus.COMPLETED))
 
         ready = queue.get_ready_tasks()
         # Now task2 should be ready
@@ -565,9 +555,7 @@ class TestFullOrchestrationPipeline:
         """Agents should be able to execute tasks."""
         agent = SecurityAgent("IntegrationTestAgent")
 
-        result = await agent.process_task(
-            {"type": "threat_scan", "content": "Normal text content"}
-        )
+        result = await agent.process_task({"type": "threat_scan", "content": "Normal text content"})
 
         assert "threats" in result
         assert "risk_level" in result
@@ -578,9 +566,7 @@ class TestFullOrchestrationPipeline:
         gate = SecurityGate()
 
         # Check clean input
-        allowed, sanitized, events = gate.check_input(
-            "Please analyze this data", "sender_agent"
-        )
+        allowed, sanitized, events = gate.check_input("Please analyze this data", "sender_agent")
         assert allowed
         assert sanitized == "Please analyze this data"
 

@@ -23,9 +23,10 @@ from enum import Enum
 
 class TonguePolarity(str, Enum):
     """Polarity of a token - light (positive) or shadow (negative)."""
-    LIGHT = "light"      # Positive ID, above base frequency
+
+    LIGHT = "light"  # Positive ID, above base frequency
     NEUTRAL = "neutral"  # Zero ID, exactly base frequency
-    SHADOW = "shadow"    # Negative ID, below base frequency
+    SHADOW = "shadow"  # Negative ID, below base frequency
 
 
 # Known sacred tongue mappings (positive IDs = light/realms, negative = shadow/opposing)
@@ -59,21 +60,22 @@ SACRED_TONGUE_VOCAB: Dict[str, int] = {
 }
 
 # Symphonic parameters
-BASE_FREQ = 440.0       # A4 = 440 Hz
-FREQ_STEP = 30.0        # 30 Hz per ID unit
-SAMPLE_RATE = 44100     # CD quality
+BASE_FREQ = 440.0  # A4 = 440 Hz
+FREQ_STEP = 30.0  # 30 Hz per ID unit
+SAMPLE_RATE = 44100  # CD quality
 
 
 @dataclass
 class SymphonicToken:
     """A token mapped to its symphonic frequency."""
+
     token: str
     token_id: int
     frequency: float
     polarity: TonguePolarity
 
     @classmethod
-    def from_token(cls, token: str) -> 'SymphonicToken':
+    def from_token(cls, token: str) -> "SymphonicToken":
         """Create from vocabulary token."""
         token_lower = token.lower()
         if token_lower not in SACRED_TONGUE_VOCAB:
@@ -89,15 +91,10 @@ class SymphonicToken:
         else:
             polarity = TonguePolarity.NEUTRAL
 
-        return cls(
-            token=token_lower,
-            token_id=token_id,
-            frequency=frequency,
-            polarity=polarity
-        )
+        return cls(token=token_lower, token_id=token_id, frequency=frequency, polarity=polarity)
 
     @classmethod
-    def from_id(cls, token_id: int, name: str = None) -> 'SymphonicToken':
+    def from_id(cls, token_id: int, name: str = None) -> "SymphonicToken":
         """Create from arbitrary signed ID."""
         frequency = BASE_FREQ + FREQ_STEP * token_id
 
@@ -108,12 +105,7 @@ class SymphonicToken:
         else:
             polarity = TonguePolarity.NEUTRAL
 
-        return cls(
-            token=name or f"id_{token_id}",
-            token_id=token_id,
-            frequency=frequency,
-            polarity=polarity
-        )
+        return cls(token=name or f"id_{token_id}", token_id=token_id, frequency=frequency, polarity=polarity)
 
 
 def token_to_frequency(token: str) -> float:
@@ -146,9 +138,7 @@ def generate_tone(frequency: float, duration: float = 0.5, amplitude: float = 0.
 
 
 def generate_symphonic_sequence(
-    tokens: List[str],
-    tone_duration: float = 0.3,
-    fade_duration: float = 0.02
+    tokens: List[str], tone_duration: float = 0.3, fade_duration: float = 0.02
 ) -> np.ndarray:
     """
     Generate audio waveform from a sequence of sacred tongue tokens.
@@ -232,11 +222,7 @@ def analyze_polarity_balance(tokens: List[str]) -> Dict[str, any]:
         "light_count": light_count,
         "shadow_count": shadow_count,
         "neutral_count": neutral_count,
-        "dominant_polarity": (
-            "light" if balance_ratio > 0.1 else
-            "shadow" if balance_ratio < -0.1 else
-            "balanced"
-        )
+        "dominant_polarity": ("light" if balance_ratio > 0.1 else "shadow" if balance_ratio < -0.1 else "balanced"),
     }
 
 

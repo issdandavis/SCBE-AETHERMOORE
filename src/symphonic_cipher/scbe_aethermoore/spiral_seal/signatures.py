@@ -56,9 +56,7 @@ class DilithiumKeyPair:
         self.secret_key = secret_key
 
     def __repr__(self):
-        return (
-            f"DilithiumKeyPair(pk={len(self.public_key)}B, sk={len(self.secret_key)}B)"
-        )
+        return f"DilithiumKeyPair(pk={len(self.public_key)}B, sk={len(self.secret_key)}B)"
 
 
 def dilithium_keygen() -> Tuple[bytes, bytes]:
@@ -162,14 +160,8 @@ def get_pqc_sig_status() -> dict:
         "available": PQC_SIG_AVAILABLE,
         "backend": PQC_SIG_BACKEND,
         "algorithm": "Dilithium3",
-        "security_level": (
-            "NIST Level 3 (~AES-192)"
-            if PQC_SIG_AVAILABLE
-            else "FALLBACK (NOT PQ-SECURE)"
-        ),
+        "security_level": ("NIST Level 3 (~AES-192)" if PQC_SIG_AVAILABLE else "FALLBACK (NOT PQ-SECURE)"),
         "warning": (
-            None
-            if PQC_SIG_AVAILABLE
-            else "Using classical fallback! Install liboqs-python for post-quantum security."
+            None if PQC_SIG_AVAILABLE else "Using classical fallback! Install liboqs-python for post-quantum security."
         ),
     }

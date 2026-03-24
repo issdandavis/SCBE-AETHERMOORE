@@ -284,9 +284,7 @@ class TestFourteenLayerPipeline:
         """Verify H = 1 / (1 + d_star) when phase deviation = 0."""
         position = np.array([1.0, 2.0, 3.0, 5.0, 8.0, 13.0])
         # Weights must sum to 1.0
-        result = scbe_14layer_pipeline(
-            t=position, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2
-        )
+        result = scbe_14layer_pipeline(t=position, D=6, w_d=0.2, w_c=0.2, w_s=0.2, w_tau=0.2, w_a=0.2)
 
         expected_H = 1.0 / (1.0 + result["d_star"])
         assert np.isclose(result["H"], expected_H, rtol=1e-6)

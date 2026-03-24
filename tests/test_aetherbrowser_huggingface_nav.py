@@ -118,9 +118,7 @@ def test_playwright_path_exports_to_vault(monkeypatch, tmp_path: Path) -> None:
 
     assert len(results) == 1
     assert results[0]["source"] == "playwright"
-    assert fake_page.visited == [
-        ("https://huggingface.co/models?search=speech+recognition", 20000)
-    ]
+    assert fake_page.visited == [("https://huggingface.co/models?search=speech+recognition", 20000)]
 
     note_path = tmp_path / "huggingface_speech_recognition_models.md"
     assert note_path.exists()

@@ -25,6 +25,7 @@ def run_arxiv(funnel: KnowledgeFunnel, graph: TokenizerGraph):
     """Pull from arXiv."""
     print("\n=== arXiv Scraper ===")
     from src.knowledge.scrapers.arxiv_scraper import scrape_all_categories
+
     chunks = scrape_all_categories("hyperbolic geometry AI safety", max_per_cat=5)
     print(f"  Fetched {len(chunks)} papers")
 
@@ -32,8 +33,13 @@ def run_arxiv(funnel: KnowledgeFunnel, graph: TokenizerGraph):
         result = funnel.ingest(chunk)
         if result["decision"] == "ALLOW":
             graph.add_chunk(
-                chunk.id, chunk.title, chunk.category, chunk.content,
-                chunk.source, chunk.chain_hash, chunk.parent_hash,
+                chunk.id,
+                chunk.title,
+                chunk.category,
+                chunk.content,
+                chunk.source,
+                chunk.chain_hash,
+                chunk.parent_hash,
             )
     return len(chunks)
 
@@ -42,6 +48,7 @@ def run_semantic_scholar(funnel: KnowledgeFunnel, graph: TokenizerGraph):
     """Pull from Semantic Scholar."""
     print("\n=== Semantic Scholar Scraper ===")
     from src.knowledge.scrapers.semantic_scholar_scraper import scrape_all_queries
+
     chunks = scrape_all_queries(max_per_query=5)
     print(f"  Fetched {len(chunks)} papers")
 
@@ -49,8 +56,13 @@ def run_semantic_scholar(funnel: KnowledgeFunnel, graph: TokenizerGraph):
         result = funnel.ingest(chunk)
         if result["decision"] == "ALLOW":
             graph.add_chunk(
-                chunk.id, chunk.title, chunk.category, chunk.content,
-                chunk.source, chunk.chain_hash, chunk.parent_hash,
+                chunk.id,
+                chunk.title,
+                chunk.category,
+                chunk.content,
+                chunk.source,
+                chunk.chain_hash,
+                chunk.parent_hash,
             )
     return len(chunks)
 
@@ -59,6 +71,7 @@ def run_notion(funnel: KnowledgeFunnel, graph: TokenizerGraph):
     """Pull from Notion workspace."""
     print("\n=== Notion Scraper ===")
     from src.knowledge.scrapers.notion_scraper import scrape_workspace
+
     chunks = scrape_workspace(fetch_content=True)
     print(f"  Fetched {len(chunks)} pages")
 
@@ -66,8 +79,13 @@ def run_notion(funnel: KnowledgeFunnel, graph: TokenizerGraph):
         result = funnel.ingest(chunk)
         if result["decision"] == "ALLOW":
             graph.add_chunk(
-                chunk.id, chunk.title, chunk.category, chunk.content,
-                chunk.source, chunk.chain_hash, chunk.parent_hash,
+                chunk.id,
+                chunk.title,
+                chunk.category,
+                chunk.content,
+                chunk.source,
+                chunk.chain_hash,
+                chunk.parent_hash,
             )
     return len(chunks)
 
@@ -93,6 +111,7 @@ def push_to_huggingface(funnel: KnowledgeFunnel, graph: TokenizerGraph):
     # Push via huggingface_hub if available
     try:
         from huggingface_hub import HfApi
+
         api = HfApi(token=hf_token)
 
         repo_id = "issdandavis/scbe-aethermoore-knowledge-base"

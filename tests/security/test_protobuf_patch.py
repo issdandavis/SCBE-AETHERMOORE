@@ -57,9 +57,7 @@ class TestProtobufPatch:
 
         assert "too deep" in str(exc_info.value).lower()
 
-    @pytest.mark.skip(
-        reason="Requires protobuf type registration - patch validation done in other tests"
-    )
+    @pytest.mark.skip(reason="Requires protobuf type registration - patch validation done in other tests")
     def test_shallow_nesting_still_works(self):
         """Shallow nesting within limits should still work."""
         from src.security import protobuf_patch
@@ -72,9 +70,7 @@ class TestProtobufPatch:
         # Should not raise - within depth limit
         json_format.ParseDict(nested, any_msg, max_recursion_depth=50)
 
-    @pytest.mark.skip(
-        reason="Requires protobuf type registration - patch validation done in other tests"
-    )
+    @pytest.mark.skip(reason="Requires protobuf type registration - patch validation done in other tests")
     def test_exact_depth_limit(self):
         """Test behavior at exact recursion limit."""
         from src.security import protobuf_patch

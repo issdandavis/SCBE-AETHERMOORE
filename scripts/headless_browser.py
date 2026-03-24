@@ -49,10 +49,12 @@ logger = logging.getLogger("scbe.headless_browser")
 #  Configuration
 # ---------------------------------------------------------------------------
 
-ARTIFACTS_DIR = Path(os.environ.get(
-    "SCBE_ARTIFACTS_DIR",
-    str(Path(__file__).resolve().parent.parent / "artifacts" / "headless"),
-))
+ARTIFACTS_DIR = Path(
+    os.environ.get(
+        "SCBE_ARTIFACTS_DIR",
+        str(Path(__file__).resolve().parent.parent / "artifacts" / "headless"),
+    )
+)
 
 DEFAULT_TIMEOUT_MS = 30_000
 DEFAULT_VIEWPORT = {"width": 1280, "height": 720}
@@ -72,6 +74,7 @@ class Action(Enum):
 @dataclass
 class BrowserResult:
     """Result returned from every browser operation."""
+
     action: str
     success: bool
     url: str = ""
@@ -104,6 +107,7 @@ class BrowserResult:
 #  Optional SCBE Governance
 # ---------------------------------------------------------------------------
 
+
 def _try_governance_scan(text: str, url: str) -> Optional[Dict[str, Any]]:
     """
     Optional SCBE governance scan on extracted page content.
@@ -121,7 +125,7 @@ def _try_governance_scan(text: str, url: str) -> Optional[Dict[str, Any]]:
         # Create a simple embedding from page content hash
         # This is a lightweight proxy -- real deployments use VisionEmbedder
         content_hash = hashlib.sha256(text.encode("utf-8", errors="replace")).digest()
-        raw = np.frombuffer(content_hash[:16 * 4], dtype=np.float32)[:16]
+        raw = np.frombuffer(content_hash[: 16 * 4], dtype=np.float32)[:16]
         # Normalize into the Poincare ball (norm < 1)
         norm = np.linalg.norm(raw) + 1e-10
         embedding = raw / norm * 0.5  # Place at radius 0.5 (safe zone)
@@ -143,6 +147,7 @@ def _try_governance_scan(text: str, url: str) -> Optional[Dict[str, Any]]:
 # ---------------------------------------------------------------------------
 #  Main Browser Class
 # ---------------------------------------------------------------------------
+
 
 class HeadlessBrowser:
     """
@@ -237,7 +242,10 @@ class HeadlessBrowser:
             )
         except Exception as e:
             return BrowserResult(
-                action="navigate", success=False, url=url, error=str(e),
+                action="navigate",
+                success=False,
+                url=url,
+                error=str(e),
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
 
@@ -260,7 +268,9 @@ class HeadlessBrowser:
                 element = await self.page.query_selector(selector)
                 if not element:
                     return BrowserResult(
-                        action="screenshot", success=False, url=self.page.url,
+                        action="screenshot",
+                        success=False,
+                        url=self.page.url,
                         error=f"Selector not found: {selector}",
                         duration_ms=(time.perf_counter() - t0) * 1000,
                     )
@@ -269,13 +279,18 @@ class HeadlessBrowser:
                 await self.page.screenshot(path=path, full_page=full_page)
 
             return BrowserResult(
-                action="screenshot", success=True, url=self.page.url,
+                action="screenshot",
+                success=True,
+                url=self.page.url,
                 data={"path": path, "full_page": full_page},
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
         except Exception as e:
             return BrowserResult(
-                action="screenshot", success=False, url=self.page.url, error=str(e),
+                action="screenshot",
+                success=False,
+                url=self.page.url,
+                error=str(e),
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
 
@@ -286,19 +301,26 @@ class HeadlessBrowser:
             element = await self.page.query_selector(selector)
             if not element:
                 return BrowserResult(
-                    action="extract", success=False, url=self.page.url,
+                    action="extract",
+                    success=False,
+                    url=self.page.url,
                     error=f"Selector not found: {selector}",
                     duration_ms=(time.perf_counter() - t0) * 1000,
                 )
             text = await element.text_content() or ""
             return BrowserResult(
-                action="extract", success=True, url=self.page.url,
+                action="extract",
+                success=True,
+                url=self.page.url,
                 data={"text": text[:10_000], "length": len(text), "selector": selector},
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
         except Exception as e:
             return BrowserResult(
-                action="extract", success=False, url=self.page.url, error=str(e),
+                action="extract",
+                success=False,
+                url=self.page.url,
+                error=str(e),
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
 
@@ -306,17 +328,20 @@ class HeadlessBrowser:
         """Extract all visible text from the page."""
         t0 = time.perf_counter()
         try:
-            text = await self.page.evaluate(
-                "() => document.body.innerText"
-            )
+            text = await self.page.evaluate("() => document.body.innerText")
             return BrowserResult(
-                action="text", success=True, url=self.page.url,
+                action="text",
+                success=True,
+                url=self.page.url,
                 data={"text": text[:10_000], "length": len(text)},
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
         except Exception as e:
             return BrowserResult(
-                action="text", success=False, url=self.page.url, error=str(e),
+                action="text",
+                success=False,
+                url=self.page.url,
+                error=str(e),
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
 
@@ -326,13 +351,18 @@ class HeadlessBrowser:
         try:
             await self.page.fill(selector, value)
             return BrowserResult(
-                action="fill", success=True, url=self.page.url,
+                action="fill",
+                success=True,
+                url=self.page.url,
                 data={"selector": selector, "length": len(value)},
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
         except Exception as e:
             return BrowserResult(
-                action="fill", success=False, url=self.page.url, error=str(e),
+                action="fill",
+                success=False,
+                url=self.page.url,
+                error=str(e),
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
 
@@ -342,13 +372,18 @@ class HeadlessBrowser:
         try:
             await self.page.click(selector)
             return BrowserResult(
-                action="click", success=True, url=self.page.url,
+                action="click",
+                success=True,
+                url=self.page.url,
                 data={"selector": selector},
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
         except Exception as e:
             return BrowserResult(
-                action="click", success=False, url=self.page.url, error=str(e),
+                action="click",
+                success=False,
+                url=self.page.url,
+                error=str(e),
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
 
@@ -358,13 +393,18 @@ class HeadlessBrowser:
         try:
             result = await self.page.evaluate(script)
             return BrowserResult(
-                action="evaluate", success=True, url=self.page.url,
+                action="evaluate",
+                success=True,
+                url=self.page.url,
                 data=result,
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
         except Exception as e:
             return BrowserResult(
-                action="evaluate", success=False, url=self.page.url, error=str(e),
+                action="evaluate",
+                success=False,
+                url=self.page.url,
+                error=str(e),
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
 
@@ -380,13 +420,18 @@ class HeadlessBrowser:
 
             await self.page.pdf(path=path)
             return BrowserResult(
-                action="pdf", success=True, url=self.page.url,
+                action="pdf",
+                success=True,
+                url=self.page.url,
                 data={"path": path},
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
         except Exception as e:
             return BrowserResult(
-                action="pdf", success=False, url=self.page.url, error=str(e),
+                action="pdf",
+                success=False,
+                url=self.page.url,
+                error=str(e),
                 duration_ms=(time.perf_counter() - t0) * 1000,
             )
 
@@ -394,6 +439,7 @@ class HeadlessBrowser:
 # ---------------------------------------------------------------------------
 #  CLI
 # ---------------------------------------------------------------------------
+
 
 def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -463,7 +509,9 @@ async def run_cli(args: argparse.Namespace) -> BrowserResult:
         elif action == Action.FILL:
             if not args.selector or args.value is None:
                 return BrowserResult(
-                    action="fill", success=False, url=args.url,
+                    action="fill",
+                    success=False,
+                    url=args.url,
                     error="--selector and --value are required for fill action",
                 )
             result = await browser.fill(args.selector, args.value)
@@ -471,7 +519,9 @@ async def run_cli(args: argparse.Namespace) -> BrowserResult:
         elif action == Action.CLICK:
             if not args.selector:
                 return BrowserResult(
-                    action="click", success=False, url=args.url,
+                    action="click",
+                    success=False,
+                    url=args.url,
                     error="--selector is required for click action",
                 )
             result = await browser.click(args.selector)
@@ -485,7 +535,9 @@ async def run_cli(args: argparse.Namespace) -> BrowserResult:
 
         else:
             result = BrowserResult(
-                action=args.action, success=False, url=args.url,
+                action=args.action,
+                success=False,
+                url=args.url,
                 error=f"Unknown action: {args.action}",
             )
 

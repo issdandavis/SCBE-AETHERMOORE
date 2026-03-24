@@ -35,13 +35,15 @@ PHI = (1 + math.sqrt(5)) / 2
 
 class EvoBranch(Enum):
     """Evolution branch determined by coding/play style."""
-    ARCHITECT = "Architect"       # Clean, careful, verified
+
+    ARCHITECT = "Architect"  # Clean, careful, verified
     BERSERKER = "Patch Berserker"  # Fast, messy, aggressive
-    CORRUPTED = "Corrupted"       # Risky shortcuts, clever but dangerous
+    CORRUPTED = "Corrupted"  # Risky shortcuts, clever but dangerous
 
 
 class ArcStage(Enum):
     """Life-sim progression tied to narrative arcs."""
+
     YOUTH = "youth"
     TEEN = "teen"
     ADULT = "adult"
@@ -49,13 +51,14 @@ class ArcStage(Enum):
 
 class Career(Enum):
     """Sims-style careers mapped to real system roles."""
-    FLEET_STRATEGIST = "Fleet Strategist"     # Multi-agent coordination
-    ROOT_CARTOGRAPHER = "Root Cartographer"    # System mapping
-    SEAL_ENGINEER = "Seal Engineer"            # Cryptographic ops
-    ROGUE_HUNTER = "Rogue Hunter"             # Threat detection
-    HARMONIC_AUDITOR = "Harmonic Auditor"     # Safety verification
+
+    FLEET_STRATEGIST = "Fleet Strategist"  # Multi-agent coordination
+    ROOT_CARTOGRAPHER = "Root Cartographer"  # System mapping
+    SEAL_ENGINEER = "Seal Engineer"  # Cryptographic ops
+    ROGUE_HUNTER = "Rogue Hunter"  # Threat detection
+    HARMONIC_AUDITOR = "Harmonic Auditor"  # Safety verification
     CHRONICLE_ARCHIVIST = "Chronicle Archivist"  # Documentation
-    TONGUE_BIOLOGIST = "Tongue Biologist"     # Language analysis
+    TONGUE_BIOLOGIST = "Tongue Biologist"  # Language analysis
 
 
 # Career -> discipline bonus mapping
@@ -63,7 +66,7 @@ CAREER_DISCIPLINE_BONUS: Dict[Career, float] = {
     Career.FLEET_STRATEGIST: 0.85,
     Career.ROOT_CARTOGRAPHER: 0.90,
     Career.SEAL_ENGINEER: 0.80,
-    Career.ROGUE_HUNTER: 0.70,   # Risk-taking encouraged
+    Career.ROGUE_HUNTER: 0.70,  # Risk-taking encouraged
     Career.HARMONIC_AUDITOR: 0.95,
     Career.CHRONICLE_ARCHIVIST: 0.90,
     Career.TONGUE_BIOLOGIST: 0.85,
@@ -93,6 +96,7 @@ def compute_rho_e(state: np.ndarray) -> float:
 @dataclass
 class EvolutionState:
     """Tracks evolution progress for a creature/companion."""
+
     name: str
     arc_stage: ArcStage = ArcStage.YOUTH
     branch: Optional[EvoBranch] = None
@@ -126,8 +130,8 @@ class EvolutionSimulator:
     """
 
     def __init__(self, kappa: float = 0.2, sigma: float = 0.1):
-        self.kappa = kappa   # Mean reversion rate
-        self.sigma = sigma   # Volatility
+        self.kappa = kappa  # Mean reversion rate
+        self.sigma = sigma  # Volatility
 
     def simulate_flux(
         self,
@@ -166,11 +170,13 @@ class EvolutionSimulator:
         evo_state.branch = branch
 
         # Flux simulation for form transition
-        initial = np.array([
-            evo_state.safe_ratio,
-            evo_state.cooperation_score,
-            evo_state.harmonic_stability,
-        ])
+        initial = np.array(
+            [
+                evo_state.safe_ratio,
+                evo_state.cooperation_score,
+                evo_state.harmonic_stability,
+            ]
+        )
         evolved_state = self.simulate_flux(initial)
 
         # Compute rho_e for governance gate
@@ -178,7 +184,8 @@ class EvolutionSimulator:
         if rho_e > 5.0:
             logger.warning(
                 "Evolution snap: %s rho_e=%.2f exceeds threshold",
-                evo_state.name, rho_e,
+                evo_state.name,
+                rho_e,
             )
             return {
                 "result": "DE-EVOLUTION",
@@ -198,15 +205,18 @@ class EvolutionSimulator:
         # Generate training pair for HF
         training_pair = {
             "prompt": f"Evolution: {evo_state.name} evolves as {branch.value} "
-                     f"(safe_ratio={evo_state.safe_ratio:.2f})",
+            f"(safe_ratio={evo_state.safe_ratio:.2f})",
             "response": f"Evolved to {evo_state.arc_stage.value} stage via "
-                       f"{branch.value} branch. New form: Guardian-class.",
+            f"{branch.value} branch. New form: Guardian-class.",
             "provenance": "gacha_evolution_v1",
         }
 
         logger.info(
             "Layer 7 evolution: %s -> %s via %s (rho_e=%.2f)",
-            evo_state.name, evo_state.arc_stage.value, branch.value, rho_e,
+            evo_state.name,
+            evo_state.arc_stage.value,
+            branch.value,
+            rho_e,
         )
         return {
             "result": "EVOLVED",
@@ -230,11 +240,13 @@ class EvolutionSimulator:
         discipline_bonus = CAREER_DISCIPLINE_BONUS.get(career, 0.85)
 
         # Career modifies flux parameters
-        initial = np.array([
-            evo_state.safe_ratio * discipline_bonus,
-            evo_state.cooperation_score,
-            evo_state.harmonic_stability * discipline_bonus,
-        ])
+        initial = np.array(
+            [
+                evo_state.safe_ratio * discipline_bonus,
+                evo_state.cooperation_score,
+                evo_state.harmonic_stability * discipline_bonus,
+            ]
+        )
         result_state = self.simulate_flux(initial, t_steps=30)
 
         rho_e = compute_rho_e(result_state)
@@ -248,7 +260,9 @@ class EvolutionSimulator:
 
         logger.info(
             "Layer 7 career: %s -> %s (rho_e=%.2f)",
-            evo_state.name, career.value, rho_e,
+            evo_state.name,
+            career.value,
+            rho_e,
         )
         return {
             "result": "CAREER_ADVANCE",
@@ -256,8 +270,7 @@ class EvolutionSimulator:
             "rho_e": rho_e,
             "training_pair": {
                 "prompt": f"Career: {evo_state.name} advances in {career.value}",
-                "response": f"Career progression in {career.value} with "
-                           f"discipline={discipline_bonus:.2f}.",
+                "response": f"Career progression in {career.value} with " f"discipline={discipline_bonus:.2f}.",
                 "provenance": "gacha_career_v1",
             },
         }

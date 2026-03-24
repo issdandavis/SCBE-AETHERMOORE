@@ -14,6 +14,7 @@ Covers:
   - Fractal Chladni mode scaling
   - Interop matrix structure
 """
+
 import math
 import pytest
 
@@ -41,6 +42,7 @@ from hydra.octree_sphere_grid import (
 # ===================================================================
 #  Morton Encode / Decode
 # ===================================================================
+
 
 class TestMortonEncoding:
     def test_roundtrip_origin(self):
@@ -72,6 +74,7 @@ class TestMortonEncoding:
 #  Sign Triplet
 # ===================================================================
 
+
 class TestSignTriplet:
     def test_all_positive(self):
         assert sign_triplet(0.5, 0.5, 0.5) == (True, True, True)
@@ -93,6 +96,7 @@ class TestSignTriplet:
 #  Mirror Point
 # ===================================================================
 
+
 class TestMirrorPoint:
     def test_no_flip(self):
         assert mirror_point(1, 2, 3) == (1, 2, 3)
@@ -113,6 +117,7 @@ class TestMirrorPoint:
 # ===================================================================
 #  Toroidal Wrap
 # ===================================================================
+
 
 class TestToroidalWrap:
     def test_within_bounds(self):
@@ -142,6 +147,7 @@ class TestToroidalWrap:
 #  SphereSlot
 # ===================================================================
 
+
 class TestSphereSlot:
     def test_defaults(self):
         s = SphereSlot(slot_id=0)
@@ -161,6 +167,7 @@ class TestSphereSlot:
 # ===================================================================
 #  SphereGrid
 # ===================================================================
+
 
 class TestSphereGrid:
     def test_default_has_10_slots(self):
@@ -232,6 +239,7 @@ class TestSphereGrid:
 #  OctreeNode
 # ===================================================================
 
+
 class TestOctreeNode:
     def test_octant_index_all_positive(self):
         node = OctreeNode()
@@ -278,6 +286,7 @@ class TestOctreeNode:
 # ===================================================================
 #  SignedOctree — Core
 # ===================================================================
+
 
 class TestSignedOctreeInsert:
     def test_insert_returns_voxel(self):
@@ -326,6 +335,7 @@ class TestSignedOctreeInsert:
 #  SignedOctree — Queries
 # ===================================================================
 
+
 class TestSignedOctreeQueries:
     @pytest.fixture
     def populated_tree(self):
@@ -352,9 +362,7 @@ class TestSignedOctreeQueries:
         assert "c" in labels
 
     def test_query_by_intent_with_octant_filter(self, populated_tree):
-        results = populated_tree.query_by_intent(
-            [1, 0, 0], octant=(True, True, True), min_similarity=0.5
-        )
+        results = populated_tree.query_by_intent([1, 0, 0], octant=(True, True, True), min_similarity=0.5)
         assert len(results) == 1
 
     def test_query_by_authority(self, populated_tree):
@@ -378,6 +386,7 @@ class TestSignedOctreeQueries:
 # ===================================================================
 #  SignedOctree — Mirror Operations
 # ===================================================================
+
 
 class TestSignedOctreeMirror:
     def test_mirror_creates_voxels(self):
@@ -406,9 +415,7 @@ class TestSignedOctreeMirror:
     def test_mirror_with_intent_transform(self):
         tree = SignedOctree(max_depth=3)
         tree.insert(0.3, 0.5, 0.7, intent_vector=[1, 0, 0])
-        mirrored = tree.mirror_octant(
-            (True, True, True), (False, False, False), transform_intent=True
-        )
+        mirrored = tree.mirror_octant((True, True, True), (False, False, False), transform_intent=True)
         # Intent should be negated
         assert mirrored[0].intent_vector[0] < 0
 
@@ -422,6 +429,7 @@ class TestSignedOctreeMirror:
 # ===================================================================
 #  SignedOctree — Cross-Branch Attachments
 # ===================================================================
+
 
 class TestCrossBranches:
     def test_add_cross_branch(self):
@@ -445,6 +453,7 @@ class TestCrossBranches:
 # ===================================================================
 #  SignedOctree — Stats
 # ===================================================================
+
 
 class TestSignedOctreeStats:
     def test_empty_stats(self):
@@ -479,6 +488,7 @@ class TestSignedOctreeStats:
 #  Face Planes
 # ===================================================================
 
+
 class TestFacePlanes:
     def test_six_face_planes(self):
         assert len(FACE_PLANES) == 6
@@ -495,6 +505,7 @@ class TestFacePlanes:
 #  Interop Matrix
 # ===================================================================
 
+
 class TestInteropMatrix:
     def test_has_concepts(self):
         assert "concepts" in INTEROP_MATRIX
@@ -502,9 +513,16 @@ class TestInteropMatrix:
 
     def test_core_concepts_present(self):
         concepts = INTEROP_MATRIX["concepts"]
-        for key in ["SignedOctree", "MortonCode", "ChladniAmplitude",
-                     "SphereGrid", "PoincareDistance", "ToroidalWrap",
-                     "IntentSimilarity", "AuthorityHash"]:
+        for key in [
+            "SignedOctree",
+            "MortonCode",
+            "ChladniAmplitude",
+            "SphereGrid",
+            "PoincareDistance",
+            "ToroidalWrap",
+            "IntentSimilarity",
+            "AuthorityHash",
+        ]:
             assert key in concepts, f"Missing concept: {key}"
 
     def test_each_concept_has_python(self):
@@ -521,6 +539,7 @@ class TestInteropMatrix:
 # ===================================================================
 #  2.5D Hyperbolic Lattice (cyclic flow + semantic weighting)
 # ===================================================================
+
 
 class TestHyperbolicLattice25D:
     def test_phase_normalization(self):
@@ -543,7 +562,9 @@ class TestHyperbolicLattice25D:
 
     def test_query_nearest_prefers_semantic_alignment(self):
         lat = HyperbolicLattice25D(cell_size=0.5, phase_weight=0.2)
-        near_sem = lat.insert_bundle(0.1, 0.1, phase_rad=0.1, tongue="DR", intent_vector=[1, 0, 0], intent_label="near_sem")
+        near_sem = lat.insert_bundle(
+            0.1, 0.1, phase_rad=0.1, tongue="DR", intent_vector=[1, 0, 0], intent_label="near_sem"
+        )
         lat.insert_bundle(0.1, 0.1, phase_rad=0.1, tongue="KO", intent_vector=[0, 1, 0], intent_label="off_sem")
 
         res = lat.query_nearest(0.1, 0.1, phase_rad=0.1, intent_vector=[1, 0, 0], tongue="DR", top_k=1)

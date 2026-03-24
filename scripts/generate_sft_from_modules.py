@@ -46,12 +46,14 @@ def extract_docstrings(filepath: Path) -> list[dict[str, Any]]:
     # Module docstring
     module_doc = ast.get_docstring(tree)
     if module_doc and len(module_doc) >= 30:
-        records.append({
-            "type": "module",
-            "name": module_name,
-            "docstring": module_doc,
-            "filepath": str(filepath),
-        })
+        records.append(
+            {
+                "type": "module",
+                "name": module_name,
+                "docstring": module_doc,
+                "filepath": str(filepath),
+            }
+        )
 
     for node in ast.walk(tree):
         if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -76,14 +78,16 @@ def extract_docstrings(filepath: Path) -> list[dict[str, Any]]:
                 bases = ", ".join(ast.unparse(b) for b in node.bases)
                 sig = f"class {node.name}({bases})" if bases else f"class {node.name}"
 
-            records.append({
-                "type": "class" if isinstance(node, ast.ClassDef) else "function",
-                "name": node.name,
-                "signature": sig,
-                "docstring": doc,
-                "filepath": str(filepath),
-                "line": node.lineno,
-            })
+            records.append(
+                {
+                    "type": "class" if isinstance(node, ast.ClassDef) else "function",
+                    "name": node.name,
+                    "signature": sig,
+                    "docstring": doc,
+                    "filepath": str(filepath),
+                    "line": node.lineno,
+                }
+            )
 
     return records
 

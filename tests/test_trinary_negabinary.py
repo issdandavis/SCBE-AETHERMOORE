@@ -2,22 +2,31 @@
 
 import sys
 import os
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from symphonic_cipher.scbe_aethermoore.trinary import (
-    BalancedTernary, Trit, parse_bt,
-    trit_not, trit_and, trit_or, trit_consensus,
+    BalancedTernary,
+    Trit,
+    parse_bt,
+    trit_not,
+    trit_and,
+    trit_or,
+    trit_consensus,
     decision_to_trit,
 )
 from symphonic_cipher.scbe_aethermoore.negabinary import (
-    NegaBinary, analyze_gate_stability,
-    negabinary_to_balanced_ternary, balanced_ternary_to_negabinary,
+    NegaBinary,
+    analyze_gate_stability,
+    negabinary_to_balanced_ternary,
+    balanced_ternary_to_negabinary,
 )
 
 
 # ═══════════════════════════════════════════════════
 #  Balanced Ternary — Round-trip
 # ═══════════════════════════════════════════════════
+
 
 class TestBalancedTernaryRoundTrip:
     def test_zero(self):
@@ -53,6 +62,7 @@ class TestBalancedTernaryRoundTrip:
 #  Balanced Ternary — Arithmetic
 # ═══════════════════════════════════════════════════
 
+
 class TestBalancedTernaryArithmetic:
     def test_addition(self):
         for a in range(-20, 21):
@@ -80,6 +90,7 @@ class TestBalancedTernaryArithmetic:
 # ═══════════════════════════════════════════════════
 #  Balanced Ternary — Trit Logic
 # ═══════════════════════════════════════════════════
+
 
 class TestTritLogic:
     def test_kleene_not(self):
@@ -109,7 +120,7 @@ class TestTritLogic:
         assert trit_consensus(Trit.PLUS, Trit.ZERO) == Trit.ZERO
 
     def test_trit_level_and_or(self):
-        a = BalancedTernary.from_int(5)   # some value
+        a = BalancedTernary.from_int(5)  # some value
         b = BalancedTernary.from_int(-3)  # some value
         # Just verify these don't crash and return valid BT
         result_and = a.trit_and(b)
@@ -121,6 +132,7 @@ class TestTritLogic:
 # ═══════════════════════════════════════════════════
 #  Governance Packing
 # ═══════════════════════════════════════════════════
+
 
 class TestGovernancePacking:
     def test_decision_to_trit(self):
@@ -160,14 +172,15 @@ class TestGovernancePacking:
 #  Parse String
 # ═══════════════════════════════════════════════════
 
+
 class TestParseBT:
     def test_parse_positive(self):
-        assert parse_bt("10").to_int() == 3     # 1*3 + 0*1
-        assert parse_bt("1T").to_int() == 2     # 1*3 + (-1)*1
+        assert parse_bt("10").to_int() == 3  # 1*3 + 0*1
+        assert parse_bt("1T").to_int() == 2  # 1*3 + (-1)*1
 
     def test_parse_negative(self):
         assert parse_bt("T").to_int() == -1
-        assert parse_bt("T0").to_int() == -3    # -1*3 + 0*1
+        assert parse_bt("T0").to_int() == -3  # -1*3 + 0*1
 
     def test_roundtrip(self):
         for n in range(-50, 51):
@@ -178,6 +191,7 @@ class TestParseBT:
 # ═══════════════════════════════════════════════════
 #  Entropy
 # ═══════════════════════════════════════════════════
+
 
 class TestTritEntropy:
     def test_single_trit(self):
@@ -199,6 +213,7 @@ class TestTritEntropy:
 # ═══════════════════════════════════════════════════
 #  NegaBinary — Round-trip
 # ═══════════════════════════════════════════════════
+
 
 class TestNegaBinaryRoundTrip:
     def test_zero(self):
@@ -231,6 +246,7 @@ class TestNegaBinaryRoundTrip:
 #  NegaBinary — Arithmetic
 # ═══════════════════════════════════════════════════
 
+
 class TestNegaBinaryArithmetic:
     def test_addition(self):
         for a in range(-20, 21):
@@ -258,6 +274,7 @@ class TestNegaBinaryArithmetic:
 # ═══════════════════════════════════════════════════
 #  NegaBinary — Polarity & Tongues
 # ═══════════════════════════════════════════════════
+
 
 class TestNegaBinaryPolarity:
     def test_positive_polarity(self):
@@ -288,6 +305,7 @@ class TestNegaBinaryPolarity:
 #  Cross-Conversion
 # ═══════════════════════════════════════════════════
 
+
 class TestCrossConversion:
     def test_negabinary_to_ternary(self):
         for n in range(-50, 51):
@@ -312,6 +330,7 @@ class TestCrossConversion:
 # ═══════════════════════════════════════════════════
 #  Gate Stability Analysis
 # ═══════════════════════════════════════════════════
+
 
 class TestGateStability:
     def test_small_mixed_values_favor_ternary(self):

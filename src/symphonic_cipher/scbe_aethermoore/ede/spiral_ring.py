@@ -164,16 +164,12 @@ class SpiralRing:
             # Phase is distributed around the ring
             phase = (2 * math.pi * i) / self.config.ring_size
 
-            self.positions.append(
-                SpiralPosition(index=i, value=value, phase=phase, depth=0, entropy=0.0)
-            )
+            self.positions.append(SpiralPosition(index=i, value=value, phase=phase, depth=0, entropy=0.0))
 
         self.state = RingState.INITIALIZED
 
     @classmethod
-    def from_seed(
-        cls, seed: bytes, config: Optional[RingConfig] = None
-    ) -> "SpiralRing":
+    def from_seed(cls, seed: bytes, config: Optional[RingConfig] = None) -> "SpiralRing":
         """
         Create a new SpiralRing from a seed.
 
@@ -254,17 +250,11 @@ class SpiralRing:
             right = self.positions[(i + 1) % self.config.ring_size]
 
             # Mix values using XOR and rotation
-            mixed = (
-                pos.value
-                ^ self._rotate_left(left.value, 7)
-                ^ self._rotate_right(right.value, 13)
-            )
+            mixed = pos.value ^ self._rotate_left(left.value, 7) ^ self._rotate_right(right.value, 13)
 
             # Add step-dependent permutation
             step_mix = int.from_bytes(
-                hashlib.sha256(
-                    self.seed + step.to_bytes(8, "big") + i.to_bytes(2, "big")
-                ).digest(),
+                hashlib.sha256(self.seed + step.to_bytes(8, "big") + i.to_bytes(2, "big")).digest(),
                 "big",
             )
             mixed ^= step_mix
@@ -273,9 +263,7 @@ class SpiralRing:
             new_phase = (pos.phase + SPIRAL_TWIST) % (2 * math.pi)
 
             # Calculate entropy accumulation
-            new_entropy = (
-                pos.entropy + self.config.expansion_rate * self.config.time_quantum
-            )
+            new_entropy = pos.entropy + self.config.expansion_rate * self.config.time_quantum
 
             new_positions.append(
                 SpiralPosition(
@@ -407,19 +395,13 @@ class SynchronizedRingPair:
         ring_a = SpiralRing.from_seed(shared_seed, config)
         ring_b = SpiralRing.from_seed(shared_seed, config)
 
-        pair_a = cls(
-            local_ring=ring_a, station_id=station_a_id, partner_id=station_b_id
-        )
+        pair_a = cls(local_ring=ring_a, station_id=station_a_id, partner_id=station_b_id)
 
-        pair_b = cls(
-            local_ring=ring_b, station_id=station_b_id, partner_id=station_a_id
-        )
+        pair_b = cls(local_ring=ring_b, station_id=station_b_id, partner_id=station_a_id)
 
         return pair_a, pair_b
 
-    def encode_message(
-        self, message: bytes, send_time: Optional[float] = None
-    ) -> Tuple[bytes, float]:
+    def encode_message(self, message: bytes, send_time: Optional[float] = None) -> Tuple[bytes, float]:
         """
         Encode a message with timestamp.
 
@@ -462,9 +444,7 @@ class SynchronizedRingPair:
 # =============================================================================
 
 
-def create_entropy_stream(
-    seed: bytes, start_time: float = 0.0, chunk_size: int = 32
-) -> Iterator[bytes]:
+def create_entropy_stream(seed: bytes, start_time: float = 0.0, chunk_size: int = 32) -> Iterator[bytes]:
     """
     Create an infinite stream of entropy from a SpiralRing.
 

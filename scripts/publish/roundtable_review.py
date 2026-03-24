@@ -41,7 +41,14 @@ BATCHES = {
     5: ["ch14.md", "ch15.md", "ch16.md", "ch16b-the-fizzlecress-incident.md"],
     6: ["ch17.md", "ch18.md", "ch19.md", "ch20.md", "interlude-10-arias-garden.md"],
     7: ["ch21.md", "ch21b-senna-after.md", "ch22.md", "ch23.md", "ch24.md"],
-    8: ["interlude-08-the-pipe.md", "ch25.md", "interlude-05-alexanders-hold.md", "ch26.md", "ch27.md", "ch-rootlight.md"],
+    8: [
+        "interlude-08-the-pipe.md",
+        "ch25.md",
+        "interlude-05-alexanders-hold.md",
+        "ch26.md",
+        "ch27.md",
+        "ch-rootlight.md",
+    ],
 }
 
 MODELS = [
@@ -52,12 +59,13 @@ MODELS = [
 
 
 def get_token():
-    token = os.environ.get('HF_TOKEN', '')
+    token = os.environ.get("HF_TOKEN", "")
     if not token:
         try:
             from dotenv import load_dotenv
-            load_dotenv(str(REPO / 'config' / 'connector_oauth' / '.env.connector.oauth'))
-            token = os.environ.get('HF_TOKEN', '')
+
+            load_dotenv(str(REPO / "config" / "connector_oauth" / ".env.connector.oauth"))
+            token = os.environ.get("HF_TOKEN", "")
         except ImportError:
             pass
     return token
@@ -65,6 +73,7 @@ def get_token():
 
 def query_model(model_id, prompt, token, max_tokens=1500):
     from huggingface_hub import InferenceClient
+
     for attempt in range(3):
         try:
             client = InferenceClient(model=model_id, token=token)
@@ -88,19 +97,19 @@ def load_batch_text(batch_num):
     for fname in files:
         path = READER_DIR / fname
         if path.exists():
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, "r", encoding="utf-8") as f:
                 lines = f.readlines()
             # Take first 40 lines of each chapter (enough for tone/voice/opening)
-            excerpt = ''.join(lines[:40]).strip()
+            excerpt = "".join(lines[:40]).strip()
             parts.append(f"--- {fname} ---\n{excerpt}\n")
-    return '\n'.join(parts)
+    return "\n".join(parts)
 
 
 def append_to_ledger(entry):
     """Append a note to the persistent JSONL ledger."""
     LEDGER_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(LEDGER_PATH, 'a', encoding='utf-8') as f:
-        f.write(json.dumps(entry) + '\n')
+    with open(LEDGER_PATH, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry) + "\n")
 
 
 def load_ledger():
@@ -108,7 +117,7 @@ def load_ledger():
     if not LEDGER_PATH.exists():
         return []
     entries = []
-    with open(LEDGER_PATH, 'r', encoding='utf-8') as f:
+    with open(LEDGER_PATH, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line:
@@ -121,7 +130,7 @@ def phase_deposit(batch_num, token):
     print(f"\n{'#'*60}")
     print(f"DEPOSIT PHASE — Batch {batch_num}")
     print(f"Chapters: {', '.join(BATCHES[batch_num])}")
-    print('#'*60)
+    print("#" * 60)
 
     text = load_batch_text(batch_num)
 
@@ -168,7 +177,7 @@ def phase_roundtable(token):
     """Phase 2: Models read each other's notes and discuss."""
     print(f"\n{'#'*60}")
     print("ROUND TABLE PHASE — Cross-Talk Discussion")
-    print('#'*60)
+    print("#" * 60)
 
     ledger = load_ledger()
     deposits = [e for e in ledger if e["phase"] == "deposit"]
@@ -225,7 +234,7 @@ def phase_synthesize(token):
     """Phase 3: Final synthesis from all round table discussion."""
     print(f"\n{'#'*60}")
     print("SYNTHESIS PHASE — Final Verdict")
-    print('#'*60)
+    print("#" * 60)
 
     ledger = load_ledger()
     roundtable = [e for e in ledger if e["phase"] == "roundtable"]
@@ -234,10 +243,9 @@ def phase_synthesize(token):
         print("No round table entries. Run --phase roundtable first.")
         return
 
-    all_discussion = "\n\n".join([
-        f"=== {e['model']} ===\n{e['notes'][:1000]}"
-        for e in roundtable[-6:]  # Last 6 entries
-    ])
+    all_discussion = "\n\n".join(
+        [f"=== {e['model']} ===\n{e['notes'][:1000]}" for e in roundtable[-6:]]  # Last 6 entries
+    )
 
     prompt = f"""You are the chair of a book review panel. Read the round table discussion below and produce a FINAL SYNTHESIS.
 
@@ -271,7 +279,7 @@ PRODUCE:
         REPORT_DIR.mkdir(parents=True, exist_ok=True)
         ts = datetime.now().strftime("%Y%m%dT%H%M%S")
         report_path = REPORT_DIR / f"{ts}_final_synthesis.md"
-        with open(report_path, 'w', encoding='utf-8') as f:
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(f"# Round Table Final Synthesis\n\n")
             f.write(f"Generated: {ts}\n\n")
             f.write(response)
@@ -283,14 +291,10 @@ PRODUCE:
 
 def main():
     parser = argparse.ArgumentParser(description="Round Table Book Review System")
-    parser.add_argument("--phase", choices=["deposit", "roundtable", "synthesize"],
-                        help="Which phase to run")
-    parser.add_argument("--batch", default="1",
-                        help="Batch number (1-8) or 'all'")
-    parser.add_argument("--full", action="store_true",
-                        help="Run all phases end-to-end")
-    parser.add_argument("--clear-ledger", action="store_true",
-                        help="Clear the ledger and start fresh")
+    parser.add_argument("--phase", choices=["deposit", "roundtable", "synthesize"], help="Which phase to run")
+    parser.add_argument("--batch", default="1", help="Batch number (1-8) or 'all'")
+    parser.add_argument("--full", action="store_true", help="Run all phases end-to-end")
+    parser.add_argument("--clear-ledger", action="store_true", help="Clear the ledger and start fresh")
 
     args = parser.parse_args()
     token = get_token()

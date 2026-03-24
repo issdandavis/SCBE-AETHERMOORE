@@ -107,9 +107,7 @@ def adaptive_wave(ids):
             amp = (1 / h) * rng.uniform(0.8, 1.2)
             phase = rng.uniform(0, 2 * np.pi)
             vib = 1.0 + 0.003 * np.sin(2 * np.pi * 6 * t[start:stop])  # 6 Hz vibrato
-            out[start:stop] += amp * np.sin(
-                2 * np.pi * f * h * vib * t[start:stop] + phase
-            )
+            out[start:stop] += amp * np.sin(2 * np.pi * f * h * vib * t[start:stop] + phase)
     max_val = float(np.max(np.abs(out)))
     return out if max_val == 0.0 else out / max_val
 

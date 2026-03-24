@@ -64,6 +64,7 @@ EPS = 1e-12
 # 6-state micro-state alphabet
 # ---------------------------------------------------------------------------
 
+
 class MicroStateType(enum.Enum):
     """Six particle types for dual-channel governance.
 
@@ -75,6 +76,7 @@ class MicroStateType(enum.Enum):
         PERP_NEUTRAL  = "anti-neutron" — governance hold
         PERP_INHIBIT  = "anti-electron"— negative governance change
     """
+
     PAR_ACTIVATE = "par+"
     PAR_NEUTRAL = "par0"
     PAR_INHIBIT = "par-"
@@ -90,6 +92,7 @@ class MicroStateCensus:
     Like an element's composition (protons, neutrons, electrons),
     this describes the "atomic number" of a state transition.
     """
+
     par_activate: int = 0
     par_neutral: int = 0
     par_inhibit: int = 0
@@ -120,8 +123,7 @@ class MicroStateCensus:
     @property
     def active_count(self) -> int:
         """Total non-neutral micro-states (like counting charged particles)."""
-        return (self.par_activate + self.par_inhibit
-                + self.perp_activate + self.perp_inhibit)
+        return self.par_activate + self.par_inhibit + self.perp_activate + self.perp_inhibit
 
     @property
     def charge_imbalance(self) -> float:
@@ -155,9 +157,7 @@ class MicroStateCensus:
         }
 
 
-def census_from_ternary(
-    parallel: np.ndarray, perp: np.ndarray
-) -> MicroStateCensus:
+def census_from_ternary(parallel: np.ndarray, perp: np.ndarray) -> MicroStateCensus:
     """Build a MicroStateCensus from ternary channel vectors.
 
     Args:
@@ -183,6 +183,7 @@ def census_from_ternary(
 # ---------------------------------------------------------------------------
 # Valence rules (allowed combination patterns)
 # ---------------------------------------------------------------------------
+
 
 def check_valence(census: MicroStateCensus) -> Tuple[bool, List[str]]:
     """Check if a micro-state census satisfies valence rules.
@@ -228,6 +229,7 @@ def check_valence(census: MicroStateCensus) -> Tuple[bool, List[str]]:
 # Asymmetry persistence tracker
 # ---------------------------------------------------------------------------
 
+
 class AsymmetryTracker:
     """Tracks mirror asymmetry over a sliding window.
 
@@ -251,7 +253,7 @@ class AsymmetryTracker:
         """Record a new asymmetry measurement."""
         self._history.append(asymmetry)
         if len(self._history) > self.window_size:
-            self._history = self._history[-self.window_size:]
+            self._history = self._history[-self.window_size :]
 
     @property
     def persistence_count(self) -> int:
@@ -296,6 +298,7 @@ class AsymmetryTracker:
 # Flux contraction
 # ---------------------------------------------------------------------------
 
+
 def flux_contract(
     x: np.ndarray,
     contraction_strength: float = 0.3,
@@ -331,6 +334,7 @@ def flux_contract(
 # Governance verdict
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class GovernanceVerdict:
     """L13 risk decision from combined mirror + fractal + charge analysis.
@@ -338,19 +342,20 @@ class GovernanceVerdict:
     This is the output of the governance adapter — a complete diagnostic
     that feeds Layer 13 risk decisions and Layer 14 audio telemetry.
     """
-    decision: str                        # ALLOW, QUARANTINE, ESCALATE, DENY
-    mirror_asymmetry: float              # [0, 1] channel energy imbalance
-    fractal_anomaly: float               # [0, 1] multiscale anomaly score
-    charge_imbalance: float              # [0, 1] 6-state charge imbalance
-    combined_score: float                # [0, 1] weighted combination
-    micro_census: MicroStateCensus       # 6-state particle counts
-    valence_valid: bool                  # whether valence rules pass
-    valence_violations: List[str]        # which rules were broken
-    flux_contracted: bool                # whether contraction was applied
-    contraction_factor: float            # how much contraction (0 = none)
+
+    decision: str  # ALLOW, QUARANTINE, ESCALATE, DENY
+    mirror_asymmetry: float  # [0, 1] channel energy imbalance
+    fractal_anomaly: float  # [0, 1] multiscale anomaly score
+    charge_imbalance: float  # [0, 1] 6-state charge imbalance
+    combined_score: float  # [0, 1] weighted combination
+    micro_census: MicroStateCensus  # 6-state particle counts
+    valence_valid: bool  # whether valence rules pass
+    valence_violations: List[str]  # which rules were broken
+    flux_contracted: bool  # whether contraction was applied
+    contraction_factor: float  # how much contraction (0 = none)
     updated_state: Optional[np.ndarray]  # state after alignment + contraction
-    persistence_count: int               # consecutive high-asymmetry readings
-    alignment_corrections: int           # POCS corrections applied
+    persistence_count: int  # consecutive high-asymmetry readings
+    alignment_corrections: int  # POCS corrections applied
 
 
 def evaluate_governance(
@@ -395,9 +400,7 @@ def evaluate_governance(
     x_curr = np.asarray(x_curr, dtype=float).copy()
 
     if len(x_curr) != BRAIN_DIMENSIONS:
-        raise ValueError(
-            f"Expected {BRAIN_DIMENSIONS}D vector, got {len(x_curr)}D."
-        )
+        raise ValueError(f"Expected {BRAIN_DIMENSIONS}D vector, got {len(x_curr)}D.")
 
     # Step 1: Refactor-align
     alignment_corrections = 0
@@ -420,9 +423,7 @@ def evaluate_governance(
     valence_ok, valence_violations = check_valence(census)
 
     # Step 4: Mirror asymmetry
-    mirror_asym = mirror_asymmetry_score(
-        par.reshape(1, -1), perp.reshape(1, -1)
-    )
+    mirror_asym = mirror_asymmetry_score(par.reshape(1, -1), perp.reshape(1, -1))
 
     # Step 5: Fractal anomaly (multiscale spectrum)
     fractal_anomaly = 0.0
@@ -464,12 +465,7 @@ def evaluate_governance(
     #   10% valence penalty (binary: rules broken or not)
     valence_penalty = 0.0 if valence_ok else min(1.0, len(valence_violations) * 0.3)
 
-    combined = (
-        0.40 * mirror_asym
-        + 0.30 * fractal_anomaly
-        + 0.20 * charge_imb
-        + 0.10 * valence_penalty
-    )
+    combined = 0.40 * mirror_asym + 0.30 * fractal_anomaly + 0.20 * charge_imb + 0.10 * valence_penalty
     combined = max(0.0, min(1.0, combined))
 
     # Persistence amplification: if asymmetry has persisted, boost score
@@ -508,6 +504,7 @@ def evaluate_governance(
 # Trajectory governance: evaluate a full trajectory
 # ---------------------------------------------------------------------------
 
+
 def evaluate_trajectory_governance(
     trajectory: np.ndarray,
     tracker: Optional[AsymmetryTracker] = None,
@@ -536,10 +533,7 @@ def evaluate_trajectory_governance(
     """
     trajectory = np.asarray(trajectory, dtype=float)
     if trajectory.ndim != 2 or trajectory.shape[1] != BRAIN_DIMENSIONS:
-        raise ValueError(
-            f"Expected (T, {BRAIN_DIMENSIONS}) trajectory, "
-            f"got shape {trajectory.shape}."
-        )
+        raise ValueError(f"Expected (T, {BRAIN_DIMENSIONS}) trajectory, " f"got shape {trajectory.shape}.")
 
     if tracker is None:
         tracker = AsymmetryTracker()
@@ -549,7 +543,7 @@ def evaluate_trajectory_governance(
         x_curr = trajectory[t]
         x_prev = trajectory[t - 1] if t > 0 else None
         # Use trajectory up to current point for fractal analysis
-        traj_window = trajectory[:t + 1] if t >= 4 else None
+        traj_window = trajectory[: t + 1] if t >= 4 else None
 
         verdict = evaluate_governance(
             x_curr=x_curr,

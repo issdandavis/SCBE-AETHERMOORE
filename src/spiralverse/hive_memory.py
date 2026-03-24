@@ -38,23 +38,26 @@ MEMORY_PRESSURE_THRESHOLD = 0.8  # 80% triggers eviction
 
 class MemoryTier(Enum):
     """Three-tier memory hierarchy."""
-    HOT = "hot"      # RAM - instant access, limited capacity
-    WARM = "warm"    # SSD - fast access, larger capacity
-    COLD = "cold"    # Hive - network access, unlimited capacity
+
+    HOT = "hot"  # RAM - instant access, limited capacity
+    WARM = "warm"  # SSD - fast access, larger capacity
+    COLD = "cold"  # Hive - network access, unlimited capacity
 
 
 class EvictionPriority(Enum):
     """Priority levels for memory eviction."""
-    CRITICAL = 1.0   # Never evict (emergency data)
-    HIGH = 0.8       # Evict last
-    MEDIUM = 0.5     # Normal eviction candidate
-    LOW = 0.2        # Evict first
-    EXPIRED = 0.0    # Immediate eviction
+
+    CRITICAL = 1.0  # Never evict (emergency data)
+    HIGH = 0.8  # Evict last
+    MEDIUM = 0.5  # Normal eviction candidate
+    LOW = 0.2  # Evict first
+    EXPIRED = 0.0  # Immediate eviction
 
 
 # =============================================================================
 # Data Structures
 # =============================================================================
+
 
 @dataclass
 class MemoryBlock:
@@ -63,11 +66,12 @@ class MemoryBlock:
 
     Uses CHARM dimension for priority scoring.
     """
+
     block_id: str
     data: bytes
     timestamp: datetime
     tongue: str = "AET"  # Aetheric by default (temporal)
-    charm: float = 0.5   # Priority/harmony coefficient [-1, 1]
+    charm: float = 0.5  # Priority/harmony coefficient [-1, 1]
     critical_event: bool = False
     reference_count: int = 0
     compressed: bool = False
@@ -86,7 +90,7 @@ class MemoryBlock:
         delta = datetime.utcnow() - self.timestamp
         return delta.total_seconds() / 3600
 
-    def compress(self) -> 'MemoryBlock':
+    def compress(self) -> "MemoryBlock":
         """Compress data using gzip."""
         if self.compressed:
             return self
@@ -100,10 +104,10 @@ class MemoryBlock:
             critical_event=self.critical_event,
             reference_count=self.reference_count,
             compressed=True,
-            checksum=self.checksum
+            checksum=self.checksum,
         )
 
-    def decompress(self) -> 'MemoryBlock':
+    def decompress(self) -> "MemoryBlock":
         """Decompress data."""
         if not self.compressed:
             return self
@@ -117,7 +121,7 @@ class MemoryBlock:
             critical_event=self.critical_event,
             reference_count=self.reference_count,
             compressed=False,
-            checksum=self.checksum
+            checksum=self.checksum,
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -131,11 +135,11 @@ class MemoryBlock:
             "critical_event": self.critical_event,
             "reference_count": self.reference_count,
             "compressed": self.compressed,
-            "checksum": self.checksum
+            "checksum": self.checksum,
         }
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> 'MemoryBlock':
+    def from_dict(cls, d: Dict[str, Any]) -> "MemoryBlock":
         """Deserialize from dictionary."""
         return cls(
             block_id=d["block_id"],
@@ -146,7 +150,7 @@ class MemoryBlock:
             critical_event=d.get("critical_event", False),
             reference_count=d.get("reference_count", 0),
             compressed=d.get("compressed", False),
-            checksum=d.get("checksum", "")
+            checksum=d.get("checksum", ""),
         )
 
 
@@ -155,6 +159,7 @@ class AgentSnapshot:
     """
     Complete state snapshot of an agent at a point in time.
     """
+
     agent_id: str
     timestamp: datetime
     position_6d: np.ndarray  # [AXIOM, FLOW, GLYPH, ORACLE, CHARM, LEDGER]
@@ -172,28 +177,29 @@ class AgentSnapshot:
             "timestamp": self.timestamp.isoformat(),
             "position_6d": self.position_6d.tolist(),
             "memory_blocks": [b.to_dict() for b in self.memory_blocks],
-            "mission_context": self.mission_context
+            "mission_context": self.mission_context,
         }
         json_str = json.dumps(data)
-        return gzip.compress(json_str.encode('utf-8'))
+        return gzip.compress(json_str.encode("utf-8"))
 
     @classmethod
-    def from_bytes(cls, data: bytes) -> 'AgentSnapshot':
+    def from_bytes(cls, data: bytes) -> "AgentSnapshot":
         """Deserialize snapshot from bytes."""
-        json_str = gzip.decompress(data).decode('utf-8')
+        json_str = gzip.decompress(data).decode("utf-8")
         d = json.loads(json_str)
         return cls(
             agent_id=d["agent_id"],
             timestamp=datetime.fromisoformat(d["timestamp"]),
             position_6d=np.array(d["position_6d"]),
             memory_blocks=[MemoryBlock.from_dict(b) for b in d["memory_blocks"]],
-            mission_context=d.get("mission_context", {})
+            mission_context=d.get("mission_context", {}),
         )
 
 
 # =============================================================================
 # Memory Eviction Engine
 # =============================================================================
+
 
 class MemoryEvictionEngine:
     """
@@ -239,12 +245,12 @@ class MemoryEvictionEngine:
 
         # 5. Tongue-specific bonuses
         tongue_bonuses = {
-            "KO": 0.1,   # Control flow - important
+            "KO": 0.1,  # Control flow - important
             "UM": 0.15,  # Security - very important
             "DR": 0.05,  # Types - moderate
             "AET": 0.0,  # Default temporal
-            "CA": 0.0,   # Computation
-            "AV": -0.05  # I/O - can be regenerated
+            "CA": 0.0,  # Computation
+            "AV": -0.05,  # I/O - can be regenerated
         }
         priority += tongue_bonuses.get(block.tongue, 0.0)
 
@@ -258,11 +264,7 @@ class MemoryEvictionEngine:
         ranked.sort(key=lambda x: x[1])  # Ascending (lowest priority first)
         return ranked
 
-    def select_eviction_candidates(
-        self,
-        blocks: List[MemoryBlock],
-        target_free_bytes: int
-    ) -> List[MemoryBlock]:
+    def select_eviction_candidates(self, blocks: List[MemoryBlock], target_free_bytes: int) -> List[MemoryBlock]:
         """
         Select blocks to evict to free target_free_bytes.
         """
@@ -285,6 +287,7 @@ class MemoryEvictionEngine:
 # Adaptive Sync Scheduler
 # =============================================================================
 
+
 class AdaptiveSyncScheduler:
     """
     Adjusts sync frequency based on distance from hive.
@@ -295,11 +298,11 @@ class AdaptiveSyncScheduler:
 
     # Distance thresholds (in km) and corresponding intervals (in seconds)
     DISTANCE_INTERVALS = [
-        (10, 15),       # 0-10 km: every 15 seconds
-        (100, 60),      # 10-100 km: every 1 minute
-        (500, 300),     # 100-500 km: every 5 minutes
-        (2000, 900),    # 500-2000 km: every 15 minutes
-        (float('inf'), 3600)  # 2000+ km: every 1 hour
+        (10, 15),  # 0-10 km: every 15 seconds
+        (100, 60),  # 10-100 km: every 1 minute
+        (500, 300),  # 100-500 km: every 5 minutes
+        (2000, 900),  # 500-2000 km: every 15 minutes
+        (float("inf"), 3600),  # 2000+ km: every 1 hour
     ]
 
     def calculate_sync_interval(self, distance_from_hive_km: float) -> int:
@@ -318,6 +321,7 @@ class AdaptiveSyncScheduler:
 # =============================================================================
 # Hive Client (Network Interface)
 # =============================================================================
+
 
 class HiveClient:
     """
@@ -368,10 +372,7 @@ class HiveClient:
         return True
 
     async def bulk_upload(
-        self,
-        snapshots: List[AgentSnapshot],
-        priority: str = "medium",
-        compression: str = "gzip"
+        self, snapshots: List[AgentSnapshot], priority: str = "medium", compression: str = "gzip"
     ) -> bool:
         """Bulk upload multiple snapshots."""
         if not self.connected:
@@ -383,12 +384,7 @@ class HiveClient:
 
         return True
 
-    async def query(
-        self,
-        agent_id: str,
-        start_time: datetime,
-        end_time: datetime
-    ) -> List[AgentSnapshot]:
+    async def query(self, agent_id: str, start_time: datetime, end_time: datetime) -> List[AgentSnapshot]:
         """Query historical snapshots from hive."""
         if not self.connected:
             return []
@@ -419,6 +415,7 @@ class HiveClient:
 # Agent Memory System
 # =============================================================================
 
+
 class AgentMemorySystem:
     """
     Three-tier memory hierarchy for a single agent.
@@ -429,11 +426,7 @@ class AgentMemorySystem:
     """
 
     def __init__(
-        self,
-        agent_id: str,
-        hot_capacity_mb: int = 64,
-        warm_capacity_mb: int = 512,
-        warm_path: Optional[Path] = None
+        self, agent_id: str, hot_capacity_mb: int = 64, warm_capacity_mb: int = 512, warm_path: Optional[Path] = None
     ):
         self.agent_id = agent_id
         self.hot_capacity = hot_capacity_mb * 1024 * 1024
@@ -466,12 +459,7 @@ class AgentMemorySystem:
         return self.hot_usage / self.hot_capacity
 
     def store(
-        self,
-        block_id: str,
-        data: bytes,
-        tongue: str = "AET",
-        charm: float = 0.5,
-        critical: bool = False
+        self, block_id: str, data: bytes, tongue: str = "AET", charm: float = 0.5, critical: bool = False
     ) -> bool:
         """
         Store data in hot memory.
@@ -484,7 +472,7 @@ class AgentMemorySystem:
             timestamp=datetime.utcnow(),
             tongue=tongue,
             charm=charm,
-            critical_event=critical
+            critical_event=critical,
         )
 
         # Check if eviction needed
@@ -504,10 +492,7 @@ class AgentMemorySystem:
 
     def _evict_to_warm(self, target_free_bytes: int):
         """Evict low-priority blocks from hot to warm storage."""
-        candidates = self.eviction_engine.select_eviction_candidates(
-            list(self.hot_memory.values()),
-            target_free_bytes
-        )
+        candidates = self.eviction_engine.select_eviction_candidates(list(self.hot_memory.values()), target_free_bytes)
 
         for block in candidates:
             # Compress and write to warm storage
@@ -528,7 +513,7 @@ class AgentMemorySystem:
             timestamp=datetime.utcnow(),
             position_6d=self.position_6d.copy(),
             memory_blocks=list(self.hot_memory.values()),
-            mission_context=self.mission_context.copy()
+            mission_context=self.mission_context.copy(),
         )
 
     def restore_snapshot(self, snapshot: AgentSnapshot):
@@ -542,6 +527,7 @@ class AgentMemorySystem:
 # Auto-Save Worker
 # =============================================================================
 
+
 class AutoSaveWorker:
     """
     Background worker for automatic state persistence.
@@ -554,7 +540,7 @@ class AutoSaveWorker:
         agent_id: str,
         memory_system: AgentMemorySystem,
         hive_client: HiveClient,
-        sync_scheduler: AdaptiveSyncScheduler
+        sync_scheduler: AdaptiveSyncScheduler,
     ):
         self.agent_id = agent_id
         self.memory = memory_system
@@ -624,6 +610,7 @@ class AutoSaveWorker:
 # Offline Resilience
 # =============================================================================
 
+
 class OfflineResilience:
     """
     Handles offline operation and reconnection.
@@ -673,7 +660,7 @@ class OfflineResilience:
         # Batch upload
         batch_size = 50
         for i in range(0, count, batch_size):
-            batch = self.offline_buffer[i:i+batch_size]
+            batch = self.offline_buffer[i : i + batch_size]
             await hive_client.bulk_upload(batch)
             print(f"  Uploaded batch {i//batch_size + 1}/{(count + batch_size - 1)//batch_size}")
 
@@ -687,6 +674,7 @@ class OfflineResilience:
 # =============================================================================
 # Demo
 # =============================================================================
+
 
 async def demo():
     """Demonstrate hive memory management."""
@@ -713,7 +701,7 @@ async def demo():
             data=data,
             tongue=["KO", "AV", "RU", "CA", "UM", "DR"][i % 6],
             charm=np.random.uniform(-0.5, 1.0),
-            critical=(i == 0)  # First block is critical
+            critical=(i == 0),  # First block is critical
         )
 
     print(f"  Hot memory usage: {memory.hot_usage / 1024:.1f} KB ({memory.hot_usage_ratio:.1%})")

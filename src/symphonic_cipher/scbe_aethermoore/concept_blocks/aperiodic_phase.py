@@ -60,6 +60,7 @@ EPSILON: float = 1e-15
 # Fibonacci / Sturmian word generator
 # ---------------------------------------------------------------------------
 
+
 def fibonacci_word_char(n: int) -> int:
     """Return the n-th character (0 or 1) of the infinite Fibonacci word.
 
@@ -81,16 +82,18 @@ def fibonacci_word(length: int) -> List[int]:
 # Penrose interval classifier
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PenroseInterval:
     """A single interval in the 1D Penrose (quasiperiodic) tiling.
 
     Intervals are classified as Long (L) or Short (S) with L/S = φ.
     """
+
     index: int
     is_long: bool
     length: float
-    phase_shift: float   # Phase offset applied during this interval
+    phase_shift: float  # Phase offset applied during this interval
 
     @property
     def kind(self) -> str:
@@ -111,18 +114,21 @@ def penrose_intervals(n: int, base_length: float = 1.0) -> List[PenroseInterval]
         length = base_length * PHI if is_long else base_length
         # Phase shift scales with interval length and index
         phase = (2 * math.pi * i) / PHI  # Irrational winding → aperiodic
-        intervals.append(PenroseInterval(
-            index=i,
-            is_long=is_long,
-            length=length,
-            phase_shift=phase % (2 * math.pi),
-        ))
+        intervals.append(
+            PenroseInterval(
+                index=i,
+                is_long=is_long,
+                length=length,
+                phase_shift=phase % (2 * math.pi),
+            )
+        )
     return intervals
 
 
 # ---------------------------------------------------------------------------
 # 6D Gate Vector (Quasicrystal projection)
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class GateVector:
@@ -131,6 +137,7 @@ class GateVector:
     Projects to 3D physical space (pipeline layer mapping) and
     3D validation space (Sacred Tongue phase mapping).
     """
+
     coords: List[int] = field(default_factory=lambda: [0, 0, 0, 0, 0, 0])
 
     def physical_projection(self) -> List[float]:
@@ -167,6 +174,7 @@ class GateVector:
 # ---------------------------------------------------------------------------
 # Aperiodic Phase Controller
 # ---------------------------------------------------------------------------
+
 
 class AperiodicPhaseController:
     """Injects controlled chaos into a periodic pipeline.
@@ -253,9 +261,7 @@ class AperiodicPhaseController:
         shifted = False
         if should_shift:
             # Phason shift: move the gate vector aperiodically
-            delta = [
-                fibonacci_word_char(self._tick + i) for i in range(6)
-            ]
+            delta = [fibonacci_word_char(self._tick + i) for i in range(6)]
             self._gate = self._gate.shift(delta)
             self._epoch += 1
             shifted = True
@@ -266,7 +272,8 @@ class AperiodicPhaseController:
                 self._window_center[i] = 0.9 * self._window_center[i] + 0.1 * v_proj[i]
 
         dist_to_window = self._gate.distance_to_window(
-            self._window_center, self._window_radius,
+            self._window_center,
+            self._window_radius,
         )
         inside_window = dist_to_window < EPSILON
 
@@ -294,6 +301,7 @@ class AperiodicPhaseController:
 # ---------------------------------------------------------------------------
 # AperiodicPhaseBlock — concept block wrapper
 # ---------------------------------------------------------------------------
+
 
 class AperiodicPhaseBlock(ConceptBlock):
     """Concept block wrapper for the aperiodic phase controller.
@@ -330,7 +338,7 @@ class AperiodicPhaseBlock(ConceptBlock):
             status=BlockStatus.SUCCESS,
             output=state,
             message=f"Epoch {state['epoch']}, interval {state['interval_kind']}, "
-                    f"mod={state['phase_modulation']:.3f}",
+            f"mod={state['phase_modulation']:.3f}",
         )
 
     def _do_reset(self) -> None:

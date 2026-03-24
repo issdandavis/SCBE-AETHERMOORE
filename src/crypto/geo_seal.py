@@ -21,9 +21,10 @@ from enum import Enum
 
 class SecurityPosture(str, Enum):
     """Security postures based on flux state (from ADVANCED_CONCEPTS.md)."""
-    DEMI = "demi"        # Containment: 0 < v < 0.5, minimal trust
-    QUASI = "quasi"      # Adaptive: 0.5 <= v < 0.9, conditional trust
-    POLLY = "polly"      # Permissive: v >= 0.9, high trust
+
+    DEMI = "demi"  # Containment: 0 < v < 0.5, minimal trust
+    QUASI = "quasi"  # Adaptive: 0.5 <= v < 0.9, conditional trust
+    POLLY = "polly"  # Permissive: v >= 0.9, high trust
     COLLAPSED = "collapsed"  # Dormant: v ~ 0, no activity
 
 
@@ -43,6 +44,7 @@ class ContextVector:
     - [5]: Trust baseline
     - [6+]: Extended dimensions (intent, phase, etc.)
     """
+
     components: np.ndarray
 
     def __init__(self, components: List[float]):
@@ -91,10 +93,7 @@ class ContextVector:
         # Normalize each component independently using tanh
         return scale * np.tanh(self.components / 10.0)
 
-    def to_lattice_10d(
-        self,
-        tongue_mapping: Dict[int, float] = None
-    ) -> np.ndarray:
+    def to_lattice_10d(self, tongue_mapping: Dict[int, float] = None) -> np.ndarray:
         """
         Map context vector to 10D dual lattice space.
 
@@ -144,12 +143,8 @@ def signed_signal_to_bytes(signal: np.ndarray) -> bytes:
 # Hyperbolic Geometry (Poincare Ball Model)
 # =============================================================================
 
-def hyperbolic_distance(
-    x: np.ndarray,
-    y: np.ndarray,
-    curvature: float = -1.0,
-    eps: float = 1e-8
-) -> float:
+
+def hyperbolic_distance(x: np.ndarray, y: np.ndarray, curvature: float = -1.0, eps: float = 1e-8) -> float:
     """
     Poincare ball hyperbolic distance.
 
@@ -243,11 +238,8 @@ def compute_triangle_deficit(a: float, b: float, c: float) -> float:
 # Harmonic Wall Integration
 # =============================================================================
 
-def harmonic_wall_cost(
-    distance: float,
-    radius: float = 1.0,
-    base: float = 2.718281828  # e
-) -> float:
+
+def harmonic_wall_cost(distance: float, radius: float = 1.0, base: float = 2.718281828) -> float:  # e
     """
     Compute harmonic wall cost: H(d) = base^(d^2).
 
@@ -256,14 +248,10 @@ def harmonic_wall_cost(
     """
     # Normalize distance by radius
     normalized = distance / radius
-    return base ** (normalized ** 2)
+    return base ** (normalized**2)
 
 
-def trust_from_position(
-    point: np.ndarray,
-    center: np.ndarray = None,
-    radius: float = 0.9
-) -> float:
+def trust_from_position(point: np.ndarray, center: np.ndarray = None, radius: float = 0.9) -> float:
     """
     Compute trust score from position in Poincare ball.
 
@@ -312,12 +300,12 @@ def trust_from_position(
 
 # Sacred Tongues phase mapping (radians)
 TONGUE_PHASES: Dict[str, float] = {
-    'KO': 0.0,                    # Kor'aelin - Control/orchestration
-    'AV': np.pi / 3,              # Avali - Initialization/transport
-    'RU': 2 * np.pi / 3,          # Runethic - Policy/authorization
-    'CA': np.pi,                  # Cassisivadan - Encryption/compute
-    'UM': 4 * np.pi / 3,          # Umbroth - Redaction/privacy
-    'DR': 5 * np.pi / 3           # Draumric - Authentication/integrity
+    "KO": 0.0,  # Kor'aelin - Control/orchestration
+    "AV": np.pi / 3,  # Avali - Initialization/transport
+    "RU": 2 * np.pi / 3,  # Runethic - Policy/authorization
+    "CA": np.pi,  # Cassisivadan - Encryption/compute
+    "UM": 4 * np.pi / 3,  # Umbroth - Redaction/privacy
+    "DR": 5 * np.pi / 3,  # Draumric - Authentication/integrity
 }
 
 # Reverse mapping for phase -> tongue lookup
@@ -334,13 +322,14 @@ class SwarmAgent:
     - A retrieval/tool output (candidate, assigned or null phase)
     - A memory chunk (probationary, builds trust over time)
     """
+
     id: str
-    position: np.ndarray          # Embedding in Poincaré ball (||v|| < 1)
-    phase: Optional[float]        # Tongue phase, or None if rogue/unknown
+    position: np.ndarray  # Embedding in Poincaré ball (||v|| < 1)
+    phase: Optional[float]  # Tongue phase, or None if rogue/unknown
     tongue: Optional[str] = None  # Which Sacred Tongue (if any)
     suspicion_count: Dict[str, float] = None  # Per-neighbor suspicion
     is_quarantined: bool = False
-    trust_score: float = 1.0      # 0.0 = untrusted, 1.0 = fully trusted
+    trust_score: float = 1.0  # 0.0 = untrusted, 1.0 = fully trusted
 
     def __post_init__(self):
         if self.suspicion_count is None:
@@ -355,6 +344,7 @@ class SwarmAgent:
 @dataclass
 class RepulsionResult:
     """Result of computing repulsion force between two agents."""
+
     force: np.ndarray
     amplification: float
     anomaly_flag: bool
@@ -378,11 +368,7 @@ def phase_deviation(phase1: Optional[float], phase2: Optional[float]) -> float:
     return diff / np.pi  # Normalize to [0, 1]
 
 
-def compute_repel_force(
-    agent_a: SwarmAgent,
-    agent_b: SwarmAgent,
-    base_strength: float = 1.0
-) -> RepulsionResult:
+def compute_repel_force(agent_a: SwarmAgent, agent_b: SwarmAgent, base_strength: float = 1.0) -> RepulsionResult:
     """
     Core GeoSeal repulsion force computation.
 
@@ -434,11 +420,7 @@ def compute_repel_force(
 
     force = direction * base_repulsion * amplification
 
-    return RepulsionResult(
-        force=force,
-        amplification=amplification,
-        anomaly_flag=anomaly_flag
-    )
+    return RepulsionResult(force=force, amplification=amplification, anomaly_flag=anomaly_flag)
 
 
 def update_suspicion(
@@ -447,7 +429,7 @@ def update_suspicion(
     is_anomaly: bool,
     decay_rate: float = 0.5,
     suspicion_threshold: int = 3,
-    consensus_threshold: int = 3
+    consensus_threshold: int = 3,
 ) -> None:
     """
     Update suspicion counters and quarantine status.
@@ -470,10 +452,7 @@ def update_suspicion(
         agent.suspicion_count[neighbor_id] = max(0.0, current - decay_rate)
 
     # Count how many neighbors are suspicious
-    suspicious_neighbors = sum(
-        1 for count in agent.suspicion_count.values()
-        if count >= suspicion_threshold
-    )
+    suspicious_neighbors = sum(1 for count in agent.suspicion_count.values() if count >= suspicion_threshold)
 
     # Quarantine threshold: consensus_threshold+ neighbors with high suspicion
     agent.is_quarantined = suspicious_neighbors >= consensus_threshold
@@ -483,11 +462,7 @@ def update_suspicion(
     agent.trust_score = max(0.0, 1.0 - total_suspicion / 20.0)
 
 
-def swarm_step(
-    agents: List[SwarmAgent],
-    drift_rate: float = 0.01,
-    ball_radius: float = 0.99
-) -> List[SwarmAgent]:
+def swarm_step(agents: List[SwarmAgent], drift_rate: float = 0.01, ball_radius: float = 0.99) -> List[SwarmAgent]:
     """
     Run one swarm update step for all agents.
 
@@ -533,11 +508,7 @@ def swarm_step(
     return agents
 
 
-def run_swarm_dynamics(
-    agents: List[SwarmAgent],
-    num_steps: int = 10,
-    drift_rate: float = 0.01
-) -> List[SwarmAgent]:
+def run_swarm_dynamics(agents: List[SwarmAgent], num_steps: int = 10, drift_rate: float = 0.01) -> List[SwarmAgent]:
     """
     Run multiple swarm update steps.
 
@@ -564,22 +535,21 @@ def create_tongue_agents(dimension: int = 64) -> List[SwarmAgent]:
         position[0] = radius * np.cos(phase)
         position[1] = radius * np.sin(phase)
 
-        agents.append(SwarmAgent(
-            id=f"tongue-{tongue}",
-            position=position,
-            phase=phase,
-            tongue=tongue,
-            trust_score=1.0  # Tongues start fully trusted
-        ))
+        agents.append(
+            SwarmAgent(
+                id=f"tongue-{tongue}",
+                position=position,
+                phase=phase,
+                tongue=tongue,
+                trust_score=1.0,  # Tongues start fully trusted
+            )
+        )
 
     return agents
 
 
 def create_candidate_agent(
-    agent_id: str,
-    embedding: np.ndarray,
-    assigned_tongue: Optional[str] = None,
-    initial_trust: float = 0.5
+    agent_id: str, embedding: np.ndarray, assigned_tongue: Optional[str] = None, initial_trust: float = 0.5
 ) -> SwarmAgent:
     """
     Create a candidate agent for immune evaluation.
@@ -594,49 +564,32 @@ def create_candidate_agent(
     if norm >= 1.0:
         embedding = embedding / (norm + 1e-6) * 0.95
 
-    return SwarmAgent(
-        id=agent_id,
-        position=embedding,
-        phase=phase,
-        tongue=assigned_tongue,
-        trust_score=initial_trust
-    )
+    return SwarmAgent(id=agent_id, position=embedding, phase=phase, tongue=assigned_tongue, trust_score=initial_trust)
 
 
-def filter_by_trust(
-    agents: List[SwarmAgent],
-    threshold: float = 0.3
-) -> List[SwarmAgent]:
+def filter_by_trust(agents: List[SwarmAgent], threshold: float = 0.3) -> List[SwarmAgent]:
     """
     Filter agents by trust score, returning only those above threshold.
 
     Excludes tongue agents (they're always trusted infrastructure).
     """
-    return [
-        a for a in agents
-        if a.trust_score >= threshold or a.id.startswith("tongue-")
-    ]
+    return [a for a in agents if a.trust_score >= threshold or a.id.startswith("tongue-")]
 
 
-def get_attention_weights(
-    agents: List[SwarmAgent]
-) -> Dict[str, float]:
+def get_attention_weights(agents: List[SwarmAgent]) -> Dict[str, float]:
     """
     Extract trust scores as attention weights for RAG reweighting.
 
     Returns dict mapping agent ID -> trust score (0.0 to 1.0).
     Excludes tongue agents (infrastructure, not content).
     """
-    return {
-        a.id: a.trust_score
-        for a in agents
-        if not a.id.startswith("tongue-")
-    }
+    return {a.id: a.trust_score for a in agents if not a.id.startswith("tongue-")}
 
 
 @dataclass
 class SwarmMetrics:
     """Metrics from swarm immune dynamics."""
+
     quarantine_count: int
     avg_trust_score: float
     boundary_agents: int  # Agents pushed near boundary (norm > 0.9)
@@ -652,22 +605,15 @@ def compute_swarm_metrics(agents: List[SwarmAgent]) -> SwarmMetrics:
 
     quarantine_count = sum(1 for a in non_tongue if a.is_quarantined)
     avg_trust = sum(a.trust_score for a in non_tongue) / len(non_tongue)
-    boundary_agents = sum(
-        1 for a in non_tongue
-        if np.linalg.norm(a.position) > 0.9
-    )
+    boundary_agents = sum(1 for a in non_tongue if np.linalg.norm(a.position) > 0.9)
 
-    suspicious_pairs = sum(
-        1 for a in non_tongue
-        for count in a.suspicion_count.values()
-        if count >= 3
-    )
+    suspicious_pairs = sum(1 for a in non_tongue for count in a.suspicion_count.values() if count >= 3)
 
     return SwarmMetrics(
         quarantine_count=quarantine_count,
         avg_trust_score=avg_trust,
         boundary_agents=boundary_agents,
-        suspicious_pairs=suspicious_pairs
+        suspicious_pairs=suspicious_pairs,
     )
 
 
@@ -675,10 +621,8 @@ def compute_swarm_metrics(agents: List[SwarmAgent]) -> SwarmMetrics:
 # PROVEN: Phase + Distance Scoring (0.9999 AUC)
 # =============================================================================
 
-def phase_distance_score(
-    agent: SwarmAgent,
-    tongue_agents: List[SwarmAgent]
-) -> float:
+
+def phase_distance_score(agent: SwarmAgent, tongue_agents: List[SwarmAgent]) -> float:
     """
     Compute trust score using proven phase + distance formula.
 
@@ -698,7 +642,7 @@ def phase_distance_score(
         Trust score in [0, 1] - higher means more trustworthy
     """
     # Find closest tongue agent
-    min_distance = float('inf')
+    min_distance = float("inf")
     closest_tongue_phase = None
 
     for tongue in tongue_agents:
@@ -721,10 +665,7 @@ def phase_distance_score(
     return score
 
 
-def phase_distance_filter(
-    candidates: List[Dict[str, Any]],
-    dimension: int = 64
-) -> Dict[str, float]:
+def phase_distance_filter(candidates: List[Dict[str, Any]], dimension: int = 64) -> Dict[str, float]:
     """
     Batch score candidates using proven phase+distance formula.
 
@@ -739,15 +680,10 @@ def phase_distance_filter(
     weights = {}
 
     for c in candidates:
-        embedding = np.array(c['embedding'], dtype=np.float64)
-        agent = create_candidate_agent(
-            c['id'],
-            embedding,
-            c.get('tongue'),
-            initial_trust=0.5
-        )
+        embedding = np.array(c["embedding"], dtype=np.float64)
+        agent = create_candidate_agent(c["id"], embedding, c.get("tongue"), initial_trust=0.5)
         score = phase_distance_score(agent, tongue_agents)
-        weights[c['id']] = score
+        weights[c["id"]] = score
 
     return weights
 
@@ -756,11 +692,9 @@ def phase_distance_filter(
 # Spherical Nodal Oscillation (6-Tonic System)
 # =============================================================================
 
+
 def spherical_nodal_position(
-    phase: float,
-    time: float,
-    oscillation_freq: float = 1.0,
-    dimension: int = 64
+    phase: float, time: float, oscillation_freq: float = 1.0, dimension: int = 64
 ) -> np.ndarray:
     """
     Generate position on spherical nodal system with oscillation.
@@ -793,9 +727,7 @@ def spherical_nodal_position(
     for d in range(2, min(8, dimension)):
         # Each dimension gets a phase-shifted oscillation
         harmonic_order = d - 1
-        position[d] = 0.1 * np.sin(harmonic_order * base_angle) * np.cos(
-            oscillation_freq * time / harmonic_order
-        )
+        position[d] = 0.1 * np.sin(harmonic_order * base_angle) * np.cos(oscillation_freq * time / harmonic_order)
 
     # Ensure position stays in Poincaré ball
     norm = np.linalg.norm(position)
@@ -805,11 +737,7 @@ def spherical_nodal_position(
     return position
 
 
-def oscillating_tongue_agents(
-    time: float,
-    dimension: int = 64,
-    oscillation_freq: float = 0.5
-) -> List[SwarmAgent]:
+def oscillating_tongue_agents(time: float, dimension: int = 64, oscillation_freq: float = 0.5) -> List[SwarmAgent]:
     """
     Create tongue agents with spherical nodal oscillation.
 
@@ -828,26 +756,16 @@ def oscillating_tongue_agents(
     agents = []
 
     for tongue, base_phase in TONGUE_PHASES.items():
-        position = spherical_nodal_position(
-            base_phase, time, oscillation_freq, dimension
-        )
+        position = spherical_nodal_position(base_phase, time, oscillation_freq, dimension)
 
-        agents.append(SwarmAgent(
-            id=f"tongue-{tongue}",
-            position=position,
-            phase=base_phase,
-            tongue=tongue,
-            trust_score=1.0
-        ))
+        agents.append(
+            SwarmAgent(id=f"tongue-{tongue}", position=position, phase=base_phase, tongue=tongue, trust_score=1.0)
+        )
 
     return agents
 
 
-def temporal_phase_score(
-    agent: SwarmAgent,
-    time_steps: int = 5,
-    dimension: int = 64
-) -> float:
+def temporal_phase_score(agent: SwarmAgent, time_steps: int = 5, dimension: int = 64) -> float:
     """
     Score agent using temporal phase coherence with oscillating tongues.
 
@@ -952,7 +870,7 @@ if __name__ == "__main__":
         agent_id="rogue-001",
         embedding=np.array([0.2, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
         assigned_tongue=None,  # No tongue = rogue
-        initial_trust=0.5
+        initial_trust=0.5,
     )
     assert rogue.phase is None, "Rogue should have no phase"
 
@@ -979,7 +897,7 @@ if __name__ == "__main__":
         agent_id="legit-001",
         embedding=np.array([0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
         assigned_tongue="KO",  # Has KO tongue phase
-        initial_trust=0.5
+        initial_trust=0.5,
     )
     assert legit.phase == TONGUE_PHASES["KO"], "Should have KO phase"
 
@@ -993,8 +911,7 @@ if __name__ == "__main__":
     print(f"[INFO] Legit quarantined: {legit_after.is_quarantined}")
 
     # Legitimate agent should maintain higher trust
-    assert legit_after.trust_score > rogue_after.trust_score, \
-        "Legitimate agent should have higher trust than rogue"
+    assert legit_after.trust_score > rogue_after.trust_score, "Legitimate agent should have higher trust than rogue"
     print("[PASS] Legitimate agent preserved trust")
 
     # Test metrics

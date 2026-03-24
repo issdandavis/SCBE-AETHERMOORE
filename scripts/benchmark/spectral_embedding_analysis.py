@@ -26,11 +26,16 @@ from typing import List, Dict
 import numpy as np
 
 import sys
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from scripts.benchmark.dimensional_flux_analysis import (
-    simulate_neural_pipeline, text_to_seed, TONGUE_NAMES,
-    PHI, PI, TONGUE_WEIGHTS,
+    simulate_neural_pipeline,
+    text_to_seed,
+    TONGUE_NAMES,
+    PHI,
+    PI,
+    TONGUE_WEIGHTS,
 )
 
 
@@ -58,6 +63,7 @@ CORPUS = [
 # Pass 1: Frequency Domain (FFT of trajectory)
 # ═══════════════════════════════════════════════════════════
 
+
 @dataclass
 class FrequencyProfile:
     label: str
@@ -78,7 +84,7 @@ def pass1_frequency(stages: List[np.ndarray], label: str) -> FrequencyProfile:
         signal = np.array([float(s[d]) for s in stages])
         fft = np.fft.rfft(signal)
         magnitudes = np.abs(fft)
-        total_energy += float(np.sum(magnitudes ** 2))
+        total_energy += float(np.sum(magnitudes**2))
 
         # Dominant frequency
         if len(magnitudes) > 1:
@@ -104,6 +110,7 @@ def pass1_frequency(stages: List[np.ndarray], label: str) -> FrequencyProfile:
 # Pass 2: Amplitude Envelope (energy over time)
 # ═══════════════════════════════════════════════════════════
 
+
 @dataclass
 class AmplitudeProfile:
     label: str
@@ -116,7 +123,7 @@ class AmplitudeProfile:
 
 def pass2_amplitude(stages: List[np.ndarray], label: str) -> AmplitudeProfile:
     """Track total energy at each pipeline stage."""
-    energies = [float(np.sum(s ** 2)) for s in stages]
+    energies = [float(np.sum(s**2)) for s in stages]
     peak_idx = int(np.argmax(energies))
 
     return AmplitudeProfile(
@@ -132,6 +139,7 @@ def pass2_amplitude(stages: List[np.ndarray], label: str) -> AmplitudeProfile:
 # ═══════════════════════════════════════════════════════════
 # Pass 3: Phase Coherence (do dimensions stay in sync?)
 # ═══════════════════════════════════════════════════════════
+
 
 @dataclass
 class CoherenceProfile:
@@ -179,12 +187,13 @@ def pass3_coherence(stages: List[np.ndarray], label: str) -> CoherenceProfile:
 # Pass 4: Spin Direction (which dims move together?)
 # ═══════════════════════════════════════════════════════════
 
+
 @dataclass
 class SpinProfile:
     label: str
-    spin_code: str             # +/-/0 per dimension final direction
-    spin_magnitude: int        # How many dims deviated
-    dominant_direction: str    # Overall: positive/negative/mixed
+    spin_code: str  # +/-/0 per dimension final direction
+    spin_magnitude: int  # How many dims deviated
+    dominant_direction: str  # Overall: positive/negative/mixed
 
 
 def pass4_spin(stages: List[np.ndarray], label: str) -> SpinProfile:
@@ -214,6 +223,7 @@ def pass4_spin(stages: List[np.ndarray], label: str) -> SpinProfile:
 # ═══════════════════════════════════════════════════════════
 # Pass 5: Tongue Dominance (where's the meaning?)
 # ═══════════════════════════════════════════════════════════
+
 
 @dataclass
 class TongueDominanceProfile:
@@ -249,13 +259,14 @@ def pass5_tongue_dominance(stages: List[np.ndarray], label: str) -> TongueDomina
 # Pass 6: Settling Dynamics (when does meaning crystallize?)
 # ═══════════════════════════════════════════════════════════
 
+
 @dataclass
 class SettlingProfile:
     label: str
-    settling_stage: int        # When total change drops below threshold
-    settling_energy: float     # Energy at settling point
-    early_vs_late: str         # "early" (< L7) or "late" (>= L7) binding
-    oscillation_count: int     # Number of direction reversals before settling
+    settling_stage: int  # When total change drops below threshold
+    settling_energy: float  # Energy at settling point
+    early_vs_late: str  # "early" (< L7) or "late" (>= L7) binding
+    oscillation_count: int  # Number of direction reversals before settling
 
 
 def pass6_settling(stages: List[np.ndarray], label: str) -> SettlingProfile:
@@ -263,7 +274,7 @@ def pass6_settling(stages: List[np.ndarray], label: str) -> SettlingProfile:
     threshold = 0.01
     changes = []
     for i in range(1, len(stages)):
-        delta = float(np.sum(np.abs(stages[i] - stages[i-1])))
+        delta = float(np.sum(np.abs(stages[i] - stages[i - 1])))
         changes.append(delta)
 
     # Find settling point
@@ -274,10 +285,10 @@ def pass6_settling(stages: List[np.ndarray], label: str) -> SettlingProfile:
             break
 
     # Count oscillations (direction reversals in total energy)
-    energies = [float(np.sum(s ** 2)) for s in stages]
+    energies = [float(np.sum(s**2)) for s in stages]
     oscillations = 0
     for i in range(2, len(energies)):
-        if (energies[i] - energies[i-1]) * (energies[i-1] - energies[i-2]) < 0:
+        if (energies[i] - energies[i - 1]) * (energies[i - 1] - energies[i - 2]) < 0:
             oscillations += 1
 
     return SettlingProfile(
@@ -292,6 +303,7 @@ def pass6_settling(stages: List[np.ndarray], label: str) -> SettlingProfile:
 # ═══════════════════════════════════════════════════════════
 # Main — Run all 6 passes
 # ═══════════════════════════════════════════════════════════
+
 
 def run_spectral_analysis():
     print("=" * 80)
@@ -311,8 +323,12 @@ def run_spectral_analysis():
 
     for cat, items in categories.items():
         cat_results = {
-            "frequency": [], "amplitude": [], "coherence": [],
-            "spin": [], "tongue_dominance": [], "settling": [],
+            "frequency": [],
+            "amplitude": [],
+            "coherence": [],
+            "spin": [],
+            "tongue_dominance": [],
+            "settling": [],
         }
 
         for text, stages in items:
@@ -368,7 +384,9 @@ def run_spectral_analysis():
     print("-" * 80)
     for cat, data in results.items():
         td = data["tongue_dominance"][0]
-        print(f"{cat:<18} {td.dominant_tongue:>10} {td.dominance_ratio:>9.2f} {td.tongue_energies.get('KO',0):>8.4f} {td.tongue_energies.get('AV',0):>8.4f} {td.tongue_energies.get('RU',0):>8.4f} {td.tongue_energies.get('DR',0):>8.4f}")
+        print(
+            f"{cat:<18} {td.dominant_tongue:>10} {td.dominance_ratio:>9.2f} {td.tongue_energies.get('KO',0):>8.4f} {td.tongue_energies.get('AV',0):>8.4f} {td.tongue_energies.get('RU',0):>8.4f} {td.tongue_energies.get('DR',0):>8.4f}"
+        )
 
     print(f"\n{'PASS 6: SETTLING DYNAMICS':^80}")
     print(f"{'Category':<18} {'Settling Stage':>16} {'Binding':>10} {'Oscillations':>14}")

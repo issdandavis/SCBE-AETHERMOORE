@@ -107,10 +107,7 @@ def memory_to_sft_rows(events: Iterable[Dict[str, Any]]) -> List[Dict[str, Any]]
             f"Artifacts: {', '.join(artifacts) if artifacts else '(none)'}\n"
             f"What should the sidekick do?"
         )
-        response = (
-            f"Action plan: {action}\n"
-            f"Expected outcome: {outcome or '(not specified)'}"
-        )
+        response = f"Action plan: {action}\n" f"Expected outcome: {outcome or '(not specified)'}"
         rows.append(
             {
                 "id": f"sft_{e.get('event_id', uuid.uuid4().hex[:8])}",

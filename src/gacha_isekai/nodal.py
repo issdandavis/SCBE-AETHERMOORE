@@ -48,11 +48,12 @@ class CulturalArtifact:
     Artifacts can be: solved math problems, new dungeons, careers,
     cinematic scripts, evolution branches, squad tactics, etc.
     """
+
     artifact_id: str
-    artifact_type: str          # "math_solution", "dungeon", "career", "cinematic", etc.
+    artifact_type: str  # "math_solution", "dungeon", "career", "cinematic", etc.
     content: str
-    contributor: str            # Agent/player name
-    tongue: str                 # Primary tongue affiliation
+    contributor: str  # Agent/player name
+    tongue: str  # Primary tongue affiliation
     embedding: Optional[np.ndarray] = None  # 6D tongue-space embedding
     rho_e: float = 0.0
     signature: str = ""
@@ -63,6 +64,7 @@ class CulturalArtifact:
 @dataclass
 class NodalStats:
     """Statistics for the nodal network."""
+
     total_artifacts: int = 0
     total_edges: int = 0
     artifacts_by_type: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
@@ -115,7 +117,8 @@ class PolyAINodalNetwork:
         if not (p_match or q_match):
             logger.warning(
                 "Layer 6 alignment mismatch: contributor=%s vs leader=%s",
-                contributor_alignment, leader_alignment,
+                contributor_alignment,
+                leader_alignment,
             )
             return False
         return True
@@ -147,7 +150,10 @@ class PolyAINodalNetwork:
             if ds2 > self.path_ds2_threshold:
                 logger.warning(
                     "Layer 11 cultural path broken: ds2=%.2f > %.2f (%s -> %s)",
-                    ds2, self.path_ds2_threshold, artifact.artifact_id, cid,
+                    ds2,
+                    self.path_ds2_threshold,
+                    artifact.artifact_id,
+                    cid,
                 )
                 return False
 
@@ -181,9 +187,7 @@ class PolyAINodalNetwork:
             return False
 
         # Layer 12: rho_e gate
-        artifact.rho_e = compute_rho_e(
-            np.array([len(artifact.content), len(artifact.artifact_type)])
-        )
+        artifact.rho_e = compute_rho_e(np.array([len(artifact.content), len(artifact.artifact_type)]))
         if artifact.rho_e >= self.rho_e_threshold:
             logger.warning(
                 "Layer 12 high-entropy artifact rejected: rho_e=%.2f",
@@ -194,14 +198,17 @@ class PolyAINodalNetwork:
 
         # Layer 14: PQC sign
         artifact.signature = _sign_artifact(
-            json.dumps({
-                "id": artifact.artifact_id,
-                "type": artifact.artifact_type,
-                "content": artifact.content,
-                "contributor": artifact.contributor,
-                "tongue": artifact.tongue,
-                "ts": artifact.timestamp,
-            }, sort_keys=True).encode()
+            json.dumps(
+                {
+                    "id": artifact.artifact_id,
+                    "type": artifact.artifact_type,
+                    "content": artifact.content,
+                    "contributor": artifact.contributor,
+                    "tongue": artifact.tongue,
+                    "ts": artifact.timestamp,
+                },
+                sort_keys=True,
+            ).encode()
         )
 
         # Add to graph
@@ -217,8 +224,10 @@ class PolyAINodalNetwork:
 
         logger.info(
             "Layer 12 nodal artifact added: %s (%s, rho_e=%.2f, sig=%s)",
-            artifact.artifact_id, artifact.artifact_type,
-            artifact.rho_e, artifact.signature[:16],
+            artifact.artifact_id,
+            artifact.artifact_type,
+            artifact.rho_e,
+            artifact.signature[:16],
         )
         return True
 

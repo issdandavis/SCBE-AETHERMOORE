@@ -2,6 +2,7 @@
 Integration test: full backend message flow.
 Tests the complete path from WebSocket command to agent response.
 """
+
 from fastapi.testclient import TestClient
 import src.aetherbrowser.serve as serve_module
 from src.aetherbrowser.provider_executor import ProviderExecutionResult
@@ -24,6 +25,7 @@ class TestFullCommandFlow:
           3-6. agent_status for each non-KO role (AV, CA, RU, DR)
           7. agent_status KO done
         """
+
         class StubExecutor:
             async def execute(self, plan):
                 return ProviderExecutionResult(
@@ -37,11 +39,13 @@ class TestFullCommandFlow:
         original = serve_module.executor
         serve_module.executor = StubExecutor()
         with client.websocket_connect("/ws") as ws:
-            ws.send_json({
-                "type": "command",
-                "agent": "user",
-                "payload": {"text": "Research hyperbolic competitors"},
-            })
+            ws.send_json(
+                {
+                    "type": "command",
+                    "agent": "user",
+                    "payload": {"text": "Research hyperbolic competitors"},
+                }
+            )
             # "research" + "competitors" triggers research task type
             # -> roles KO, AV, CA, RU, DR (5 roles)
             # Messages: KO working, KO chat, 4x assigned, KO done = 7
@@ -76,21 +80,25 @@ class TestFullCommandFlow:
         serve_module.executor = StubExecutor()
         serve_module.pending_zone_requests.clear()
         with client.websocket_connect("/ws") as ws:
-            ws.send_json({
-                "type": "command",
-                "agent": "user",
-                "payload": {"text": "Open the browser tab, fill the login form, and submit it"},
-            })
+            ws.send_json(
+                {
+                    "type": "command",
+                    "agent": "user",
+                    "payload": {"text": "Open the browser tab, fill the login form, and submit it"},
+                }
+            )
             initial = _drain(ws, 4)
             zone_request = initial[-1]
             assert zone_request["type"] == "zone_request"
             assert zone_request["zone"] == "RED"
 
-            ws.send_json({
-                "type": "zone_response",
-                "agent": "user",
-                "payload": {"request_seq": zone_request["seq"], "decision": "allow_once"},
-            })
+            ws.send_json(
+                {
+                    "type": "zone_response",
+                    "agent": "user",
+                    "payload": {"request_seq": zone_request["seq"], "decision": "allow_once"},
+                }
+            )
             resumed = _drain(ws, 6)
             assert resumed[0]["type"] == "chat"
             assert resumed[0]["agent"] == "RU"
@@ -109,17 +117,19 @@ class TestFullCommandFlow:
           4. chat DR (structured topics, because topics detected)
         """
         with client.websocket_connect("/ws") as ws:
-            ws.send_json({
-                "type": "page_context",
-                "agent": "user",
-                "payload": {
-                    "url": "https://example.com/ai-safety",
-                    "title": "AI Safety Research",
-                    "text": "Machine learning security requires governance frameworks. "
-                            "Neural networks need adversarial defense mechanisms. "
-                            "Hyperbolic geometry provides exponential cost scaling.",
-                },
-            })
+            ws.send_json(
+                {
+                    "type": "page_context",
+                    "agent": "user",
+                    "payload": {
+                        "url": "https://example.com/ai-safety",
+                        "title": "AI Safety Research",
+                        "text": "Machine learning security requires governance frameworks. "
+                        "Neural networks need adversarial defense mechanisms. "
+                        "Hyperbolic geometry provides exponential cost scaling.",
+                    },
+                }
+            )
             # Topics detected (AI/ML + Security) -> 4 messages total
             messages = _drain(ws, 4)
 
@@ -140,11 +150,13 @@ class TestFullCommandFlow:
 class TestErrorHandling:
     def test_empty_command_returns_error(self):
         with client.websocket_connect("/ws") as ws:
-            ws.send_json({
-                "type": "command",
-                "agent": "user",
-                "payload": {"text": ""},
-            })
+            ws.send_json(
+                {
+                    "type": "command",
+                    "agent": "user",
+                    "payload": {"text": ""},
+                }
+            )
             msg = ws.receive_json()
             assert msg["type"] == "error"
 

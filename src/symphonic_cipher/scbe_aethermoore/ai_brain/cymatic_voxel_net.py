@@ -131,10 +131,9 @@ def chladni_6d(coords: List[float], state: List[float]) -> float:
         x2i = coords[2 * i] if 2 * i < len(coords) else 0.0
         x2i1 = coords[2 * i + 1] if 2 * i + 1 < len(coords) else 0.0
 
-        total += (
-            math.cos(s2i * math.pi * x2i) * math.cos(s2i1 * math.pi * x2i1)
-            - math.cos(s2i1 * math.pi * x2i) * math.cos(s2i * math.pi * x2i1)
-        )
+        total += math.cos(s2i * math.pi * x2i) * math.cos(s2i1 * math.pi * x2i1) - math.cos(
+            s2i1 * math.pi * x2i
+        ) * math.cos(s2i * math.pi * x2i1)
     return total
 
 

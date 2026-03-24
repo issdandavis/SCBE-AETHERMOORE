@@ -27,6 +27,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 import os
+
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 TONGUE_KEYS = ["KO", "AV", "RU", "CA", "UM", "DR"]
@@ -36,6 +37,7 @@ RESULTS = []
 
 def test(name: str):
     """Decorator to register and run tests."""
+
     def decorator(fn):
         def wrapper():
             t0 = time.time()
@@ -54,8 +56,10 @@ def test(name: str):
                 RESULTS.append({"name": name, "passed": False, "time": elapsed, "error": str(e)})
                 print(f"  [ERROR] {name} ({elapsed:.2f}s): {e}")
                 return {"passed": False, "error": str(e)}
+
         wrapper.__name__ = name
         return wrapper
+
     return decorator
 
 
@@ -65,6 +69,7 @@ def test(name: str):
 @test("tetris_sacred_rotation")
 def test_tetris_rotation():
     from src.kernel.tetris_embedder import sacred_rotate, _ROTATIONS
+
     # Each tongue should produce a DIFFERENT rotation
     vec = np.random.RandomState(42).randn(384).astype(np.float64)
     vec = vec / np.linalg.norm(vec)
@@ -77,7 +82,7 @@ def test_tetris_rotation():
     # Pairwise distances between rotated vectors
     dists = []
     for i, t1 in enumerate(TONGUE_KEYS):
-        for t2 in TONGUE_KEYS[i+1:]:
+        for t2 in TONGUE_KEYS[i + 1 :]:
             d = float(np.linalg.norm(rotated[t1] - rotated[t2]))
             dists.append(d)
 
@@ -111,7 +116,7 @@ def test_phi_expansion():
     centroids = np.array(list(expanded.values()))
     pairwise = []
     for i in range(6):
-        for j in range(i+1, 6):
+        for j in range(i + 1, 6):
             pairwise.append(float(np.linalg.norm(centroids[i] - centroids[j])))
 
     avg_sep = np.mean(pairwise)
@@ -136,9 +141,9 @@ def test_hyperbolic_distance():
 
     # Test known values
     tests = [
-        (0.0, 0.0),    # Origin
-        (0.5, 1.099),   # Known: 2*arctanh(0.5) = ln(3) ≈ 1.099
-        (0.9, 2.944),   # Known: ln(19) ≈ 2.944
+        (0.0, 0.0),  # Origin
+        (0.5, 1.099),  # Known: 2*arctanh(0.5) = ln(3) ≈ 1.099
+        (0.9, 2.944),  # Known: ln(19) ≈ 2.944
         (0.99, 5.293),  # Known: ln(199) ≈ 5.293
     ]
 
@@ -151,7 +156,9 @@ def test_hyperbolic_distance():
         ok = error < 0.01
         if not ok:
             all_ok = False
-        results.append({"norm": norm, "expected": expected, "actual": round(actual, 3), "error": round(error, 4), "ok": ok})
+        results.append(
+            {"norm": norm, "expected": expected, "actual": round(actual, 3), "error": round(error, 4), "ok": ok}
+        )
 
     # Key property: distance → infinity as norm → 1
     d_99 = hyperbolic_distance_from_origin(np.array([0.99, 0, 0, 0, 0, 0]))
@@ -191,11 +198,17 @@ def test_harmonic_wall():
 
     # Verify exponential scaling properties
     exponential = costs["extreme"] > 1000 * costs["safe_center"]
-    monotonic = (costs["safe_center"] < costs["safe_edge"] < costs["caution"] <
-                 costs["danger"] < costs["wall"] < costs["extreme"])
+    monotonic = (
+        costs["safe_center"]
+        < costs["safe_edge"]
+        < costs["caution"]
+        < costs["danger"]
+        < costs["wall"]
+        < costs["extreme"]
+    )
 
     # Verify it matches R^(d_H^2/scale)
-    scale = 2.2 ** 2
+    scale = 2.2**2
     d_h_09 = np.log(19)  # norm=0.9
     expected_09 = R ** (d_h_09**2 / scale)
     actual_09 = costs["danger"]
@@ -225,7 +238,7 @@ def test_phdm():
     assert len(emb) == 21, f"Expected 21D, got {len(emb)}D"
 
     # Check sub-dimensions
-    hyp = emb[:6]   # Hyperbolic
+    hyp = emb[:6]  # Hyperbolic
     phase = emb[6:12]  # Phase
     flux = emb[12:15]  # Flux
     audit = emb[15:21]  # Audit
@@ -259,12 +272,12 @@ def test_phdm():
 def test_pipeline_stages():
     """Verify each layer's math exists and produces valid output."""
     stages = {
-        "L1_complex_context": lambda: np.array([1+0j, 0.5+0.3j]),
+        "L1_complex_context": lambda: np.array([1 + 0j, 0.5 + 0.3j]),
         "L2_realification": lambda: np.array([1.0, 0.0, 0.5, 0.3]),  # Complex → Real
         "L3_langues_weight": lambda: np.array([1.0 * PHI**i for i in range(6)]),
         "L4_poincare_embed": lambda: np.tanh(np.array([0.5, 0.3, 0.2, 0.1, 0.4, 0.6])),
-        "L5_hyperbolic_dist": lambda: float(np.arccosh(1 + 2 * 0.25 / ((1-0.36)*(1-0.49) + 1e-10))),
-        "L6_breathing": lambda: np.array([0.5 * np.sin(2*np.pi*440*t/24000) for t in range(10)]),
+        "L5_hyperbolic_dist": lambda: float(np.arccosh(1 + 2 * 0.25 / ((1 - 0.36) * (1 - 0.49) + 1e-10))),
+        "L6_breathing": lambda: np.array([0.5 * np.sin(2 * np.pi * 440 * t / 24000) for t in range(10)]),
         "L7_mobius_phase": lambda: np.exp(1j * np.pi / 3),  # 60 degree phase
         "L8_hamiltonian_cfi": lambda: -0.5 * np.array([1, -1, 1, -1]),  # Multi-well
         "L9_spectral_fft": lambda: np.abs(np.fft.fft(np.random.randn(64)))[:32],
@@ -272,7 +285,7 @@ def test_pipeline_stages():
         "L11_triadic_temporal": lambda: float(np.sqrt(0.5**2 + 0.3**2 + 0.2**2)),
         "L12_harmonic_wall": lambda: 14.0 ** (2.944**2 / 4.84),  # R^(d_H^2/scale) at norm=0.9
         "L13_risk_decision": lambda: "QUARANTINE" if 14.0 ** (2.944**2 / 4.84) > 10 else "ALLOW",
-        "L14_audio_axis": lambda: np.abs(np.fft.fft(np.sin(2*np.pi*440*np.arange(1024)/24000)))[:512],
+        "L14_audio_axis": lambda: np.abs(np.fft.fft(np.sin(2 * np.pi * 440 * np.arange(1024) / 24000)))[:512],
     }
 
     results = {}
@@ -292,7 +305,12 @@ def test_pipeline_stages():
             results[name] = {"valid": False, "error": str(e)}
             all_ok = False
 
-    return {"passed": all_ok, "stages": results, "total": len(stages), "valid": sum(1 for r in results.values() if r["valid"])}
+    return {
+        "passed": all_ok,
+        "stages": results,
+        "total": len(stages),
+        "valid": sum(1 for r in results.values() if r["valid"]),
+    }
 
 
 # ================================================================
@@ -300,11 +318,11 @@ def test_pipeline_stages():
 # ================================================================
 @test("sacred_tongue_phi_weights")
 def test_phi_weights():
-    weights = {t: PHI ** i for i, t in enumerate(TONGUE_KEYS)}
+    weights = {t: PHI**i for i, t in enumerate(TONGUE_KEYS)}
     # Verify golden ratio property: w[n+1]/w[n] = PHI
     ratios = []
     for i in range(len(TONGUE_KEYS) - 1):
-        ratio = weights[TONGUE_KEYS[i+1]] / weights[TONGUE_KEYS[i]]
+        ratio = weights[TONGUE_KEYS[i + 1]] / weights[TONGUE_KEYS[i]]
         ratios.append(ratio)
 
     all_phi = all(abs(r - PHI) < 0.001 for r in ratios)
@@ -323,6 +341,7 @@ def test_phi_weights():
 @test("context_grid_obsidian")
 def test_context_grid():
     from src.kernel.context_grid import load_obsidian_vault
+
     docs = load_obsidian_vault(ROOT / "notes" / "sphere-grid")
 
     tongues = set()
@@ -446,21 +465,22 @@ def test_cross_source():
         "Generate code and run automated test suite deployment",
     ]
 
-    gov_embs = embedder.embed_batch(governance_texts, ["UM"]*3)
-    code_embs = embedder.embed_batch(code_texts, ["CA"]*3)
+    gov_embs = embedder.embed_batch(governance_texts, ["UM"] * 3)
+    code_embs = embedder.embed_batch(code_texts, ["CA"] * 3)
 
     # Intra-group distance should be small
     gov_coords = np.array([e.tongue_coords for e in gov_embs])
     code_coords = np.array([e.tongue_coords for e in code_embs])
 
-    gov_intra = float(np.mean([np.linalg.norm(gov_coords[i] - gov_coords[j])
-                                for i in range(3) for j in range(i+1, 3)]))
-    code_intra = float(np.mean([np.linalg.norm(code_coords[i] - code_coords[j])
-                                 for i in range(3) for j in range(i+1, 3)]))
+    gov_intra = float(
+        np.mean([np.linalg.norm(gov_coords[i] - gov_coords[j]) for i in range(3) for j in range(i + 1, 3)])
+    )
+    code_intra = float(
+        np.mean([np.linalg.norm(code_coords[i] - code_coords[j]) for i in range(3) for j in range(i + 1, 3)])
+    )
 
     # Inter-group distance should be large
-    inter = float(np.mean([np.linalg.norm(gov_coords[i] - code_coords[j])
-                           for i in range(3) for j in range(3)]))
+    inter = float(np.mean([np.linalg.norm(gov_coords[i] - code_coords[j]) for i in range(3) for j in range(3)]))
 
     consistent = inter > gov_intra and inter > code_intra
 
@@ -518,13 +538,19 @@ def main():
     # Save report
     report_path = ROOT / "artifacts" / "full_system_test_report.json"
     report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.write_text(json.dumps({
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "passed": passed,
-        "failed": failed,
-        "total": len(RESULTS),
-        "results": RESULTS,
-    }, indent=2, default=str))
+    report_path.write_text(
+        json.dumps(
+            {
+                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "passed": passed,
+                "failed": failed,
+                "total": len(RESULTS),
+                "results": RESULTS,
+            },
+            indent=2,
+            default=str,
+        )
+    )
     print(f"\nReport: {report_path}")
 
 

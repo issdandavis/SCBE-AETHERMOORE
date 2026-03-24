@@ -75,6 +75,7 @@ BILLING_API_KEYS: Dict[str, Dict[str, Any]] = {}
 # Stripe HTTP helpers (no SDK dependency — just urllib)
 # ---------------------------------------------------------------------------
 
+
 def _stripe_key() -> str:
     key = os.getenv("STRIPE_SECRET_KEY", "").strip()
     if not key:
@@ -95,9 +96,7 @@ def _stripe_request(
     encoded_data = None
     if form_data:
         encoded_data = "&".join(
-            f"{urllib.request.quote(k)}={urllib.request.quote(str(v))}"
-            for k, v in form_data.items()
-            if v is not None
+            f"{urllib.request.quote(k)}={urllib.request.quote(str(v))}" for k, v in form_data.items() if v is not None
         ).encode("utf-8")
 
     req = urllib.request.Request(
@@ -149,9 +148,7 @@ def _verify_stripe_signature(payload: bytes, sig_header: str) -> bool:
 
     # Compute expected signature
     signed_payload = f"{timestamp}.".encode("utf-8") + payload
-    expected = hmac.new(
-        secret.encode("utf-8"), signed_payload, hashlib.sha256
-    ).hexdigest()
+    expected = hmac.new(secret.encode("utf-8"), signed_payload, hashlib.sha256).hexdigest()
 
     return hmac.compare_digest(expected, v1_sig)
 
@@ -159,6 +156,7 @@ def _verify_stripe_signature(payload: bytes, sig_header: str) -> bool:
 # ---------------------------------------------------------------------------
 # Request models
 # ---------------------------------------------------------------------------
+
 
 class CheckoutRequest(BaseModel):
     plan: str = Field(..., pattern="^(starter|growth|enterprise)$")
@@ -170,6 +168,7 @@ class CheckoutRequest(BaseModel):
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
+
 
 @billing_router.get("/plans")
 async def list_plans():
@@ -310,6 +309,7 @@ def _handle_checkout_completed(session: Dict[str, Any]) -> None:
 
     # Also register in the SaaS API key store so endpoints accept it
     from src.api.saas_routes import VALID_API_KEYS
+
     VALID_API_KEYS[api_key] = email or customer_id
 
 
@@ -340,6 +340,7 @@ def _handle_subscription_deleted(subscription: Dict[str, Any]) -> None:
 
     # Remove from valid API keys
     from src.api.saas_routes import VALID_API_KEYS
+
     VALID_API_KEYS.pop(api_key, None)
 
 

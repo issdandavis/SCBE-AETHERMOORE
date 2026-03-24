@@ -43,9 +43,7 @@ class TestAllowPassthrough:
         assert outcome.deploy_honeypot is False
 
     def test_allow_preserves_antibody_and_stress(self):
-        outcome = resolve_turnstile(
-            decision="ALLOW", domain="browser", suspicion=0.3, geometry_norm=0.5
-        )
+        outcome = resolve_turnstile(decision="ALLOW", domain="browser", suspicion=0.3, geometry_norm=0.5)
         assert outcome.action == "ALLOW"
         # antibody_load and membrane_stress should still be computed
         assert 0.0 <= outcome.antibody_load <= 1.0
@@ -224,9 +222,7 @@ class TestAntibodyLoadMath:
         """After one half-life with zero suspicion, load halves (approximately)."""
         half_life = 12.0
         initial = 0.8
-        load = compute_antibody_load(
-            suspicion=0.0, previous_load=initial, dt=half_life, half_life=half_life
-        )
+        load = compute_antibody_load(suspicion=0.0, previous_load=initial, dt=half_life, half_life=half_life)
         # decay * initial where decay = exp(-ln2) = 0.5
         assert abs(load - initial * 0.5) < 0.01
 

@@ -28,9 +28,16 @@ from typing import Dict, List, Literal, Optional, Tuple
 # ---------------------------------------------------------------------------
 
 GameEventType = Literal[
-    "combat_action", "companion_command", "companion_response",
-    "evolution_choice", "formation_change", "codex_query",
-    "npc_dialogue", "item_use", "exploration_action", "tower_strategy",
+    "combat_action",
+    "companion_command",
+    "companion_response",
+    "evolution_choice",
+    "formation_change",
+    "codex_query",
+    "npc_dialogue",
+    "item_use",
+    "exploration_action",
+    "tower_strategy",
 ]
 
 DatasetTier = Literal["RAW", "QUARANTINED", "APPROVED"]
@@ -212,9 +219,7 @@ class TrainingPipeline:
         self._records.append(record)
         return record_id
 
-    def ingest_session(
-        self, events: List[GameEvent]
-    ) -> Dict[str, int]:
+    def ingest_session(self, events: List[GameEvent]) -> Dict[str, int]:
         approved = quarantined = rejected = 0
         for event in events:
             record_id = self.ingest_event(event)
@@ -242,9 +247,7 @@ class TrainingPipeline:
             return "APPROVED"
         elif safety_score >= QUARANTINE_THRESHOLD:
             record.tier = "QUARANTINED"
-            record.quarantine_reason = (
-                f"Safety score {safety_score:.2f} below auto-approve threshold"
-            )
+            record.quarantine_reason = f"Safety score {safety_score:.2f} below auto-approve threshold"
             return "QUARANTINED"
         else:
             self._records = [r for r in self._records if r.record_id != record_id]
@@ -305,12 +308,14 @@ class TrainingPipeline:
         instruction = "\n".join(parts)
 
         sign = "+" if outcome.numeric_result > 0 else ""
-        response = "\n".join([
-            f"Action: {action.description}",
-            f"Result: {outcome.description}",
-            "Outcome: SUCCESS" if outcome.success else "Outcome: FAILURE",
-            f"Effect: {sign}{outcome.numeric_result}",
-        ])
+        response = "\n".join(
+            [
+                f"Action: {action.description}",
+                f"Result: {outcome.description}",
+                "Outcome: SUCCESS" if outcome.success else "Outcome: FAILURE",
+                f"Effect: {sign}{outcome.numeric_result}",
+            ]
+        )
 
         success_factor = 1.0 if outcome.success else 0.3
         quality_score = min(
@@ -364,27 +369,29 @@ class TrainingPipeline:
             return None
         lines = []
         for pair in batch.pairs:
-            lines.append(json.dumps({
-                "id": pair.pair_id,
-                "category": pair.category,
-                "instruction": pair.instruction,
-                "response": pair.response,
-                "metadata": {
-                    "source": "spiral_forge_gameplay",
-                    "version": "1.0.0",
-                    "companion_id": pair.companion_id,
-                    "quality_score": pair.quality_score,
-                    "timestamp": pair.timestamp,
-                },
-            }))
+            lines.append(
+                json.dumps(
+                    {
+                        "id": pair.pair_id,
+                        "category": pair.category,
+                        "instruction": pair.instruction,
+                        "response": pair.response,
+                        "metadata": {
+                            "source": "spiral_forge_gameplay",
+                            "version": "1.0.0",
+                            "companion_id": pair.companion_id,
+                            "quality_score": pair.quality_score,
+                            "timestamp": pair.timestamp,
+                        },
+                    }
+                )
+            )
         return "\n".join(lines)
 
     # ----- Fine-Tune Jobs -----
 
     def can_trigger_fine_tune(self) -> bool:
-        pushed_pairs = sum(
-            len(b.pairs) for b in self._batches if b.status == "pushed"
-        )
+        pushed_pairs = sum(len(b.pairs) for b in self._batches if b.status == "pushed")
         return pushed_pairs >= FINE_TUNE_THRESHOLD
 
     def create_fine_tune_job(self) -> Optional[FineTuneJob]:

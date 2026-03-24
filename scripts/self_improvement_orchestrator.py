@@ -68,9 +68,7 @@ def _coherence_tasks(coherence: Dict[str, Any]) -> List[ImprovementTask]:
                 task_id=_hash_id("code", metric, str(value)),
                 mode="code-assistant",
                 title=f"Restore {metric} gate",
-                description=(
-                    f"Coherence metric `{metric}` is {value:.2f} and below threshold {threshold:.2f}."
-                ),
+                description=(f"Coherence metric `{metric}` is {value:.2f} and below threshold {threshold:.2f}."),
                 component="Layer 11 Coherence",
                 tongue="KO",
                 priority=priority,
@@ -260,9 +258,7 @@ def _fine_tune_funnel_tasks(training_data_path: Path, config: Dict[str, Any]) ->
                     task_id=_hash_id("fine", name, str(count), str(required_min)),
                     mode="fine-tune-funnel",
                     title=f"Increase {name} records",
-                    description=(
-                        f"Stream '{name}' is {count}/{required_min} records ({coverage:.2%} of corpus)."
-                    ),
+                    description=(f"Stream '{name}' is {count}/{required_min} records ({coverage:.2%} of corpus)."),
                     component="Fine-tune Funnel",
                     tongue="RU" if lane == "emotional" else "KO",
                     priority="high" if coverage < 0.20 else "medium",
@@ -335,9 +331,7 @@ def _ai_nodal_tasks(code_tasks: List[ImprovementTask], training_tasks: List[Impr
                 tongue="DR",
                 priority="high",
                 confidence=0.86,
-                evidence={
-                    "critical_count": len([t for t in code_tasks + training_tasks if t.priority == "critical"])
-                },
+                evidence={"critical_count": len([t for t in code_tasks + training_tasks if t.priority == "critical"])},
                 suggested_actions=[
                     "Hold next release candidate.",
                     "Run only security and coherence verification until fixed.",

@@ -22,6 +22,7 @@ try:
         CHACHA_AVAILABLE,
         OQS_AVAILABLE,
     )
+
     RWP_AVAILABLE = ARGON2_AVAILABLE and CHACHA_AVAILABLE
 except ImportError:
     RWP_AVAILABLE = False
@@ -34,8 +35,7 @@ from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
 
 # Skip all tests if dependencies not available
 pytestmark = pytest.mark.skipif(
-    not RWP_AVAILABLE,
-    reason="RWP v3.0 dependencies not installed (argon2-cffi, pycryptodome)"
+    not RWP_AVAILABLE, reason="RWP v3.0 dependencies not installed (argon2-cffi, pycryptodome)"
 )
 
 
@@ -219,7 +219,9 @@ class TestRWPv3Protocol:
         """Argon2 fallback should remain a real KDF, not a fast digest."""
         protocol = object.__new__(RWPv3Protocol)
 
-        monkeypatch.setattr("src.crypto.rwp_v3.hash_secret_raw", lambda **_: (_ for _ in ()).throw(RuntimeError("boom")))
+        monkeypatch.setattr(
+            "src.crypto.rwp_v3.hash_secret_raw", lambda **_: (_ for _ in ()).throw(RuntimeError("boom"))
+        )
 
         password = b"test-password"
         salt = b"0123456789abcdef"
@@ -227,7 +229,7 @@ class TestRWPv3Protocol:
 
         assert len(fallback_key) == ARGON2_PARAMS["hash_len"]
         assert fallback_key == protocol._derive_key(password, salt)
-        assert fallback_key != (password + salt)[:ARGON2_PARAMS["hash_len"]]
+        assert fallback_key != (password + salt)[: ARGON2_PARAMS["hash_len"]]
 
 
 class TestConvenienceAPI:
@@ -378,8 +380,6 @@ class TestEnvelopeSerialization:
 
     def test_envelope_dict_has_version(self):
         """Envelope dict should have version marker."""
-        envelope = RWPEnvelope(
-            aad=[], salt=[], nonce=[], ct=[], tag=[]
-        )
+        envelope = RWPEnvelope(aad=[], salt=[], nonce=[], ct=[], tag=[])
         d = envelope.to_dict()
         assert d["version"] == ["rwp", "v3", "alpha"]

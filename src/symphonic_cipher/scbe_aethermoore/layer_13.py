@@ -98,9 +98,7 @@ def harmonic_H(d_star: float, params: Optional[HarmonicParams] = None) -> float:
     return float(H)
 
 
-def harmonic_derivative(
-    d_star: float, params: Optional[HarmonicParams] = None
-) -> float:
+def harmonic_derivative(d_star: float, params: Optional[HarmonicParams] = None) -> float:
     """
     Compute ∂H/∂d* for sensitivity analysis.
 
@@ -432,9 +430,7 @@ def execute_decision(
         noise_injected = True
         action = "INJECT_NOISE"
 
-    return DecisionResponse(
-        decision=risk.decision, risk=risk, action=action, noise_injected=noise_injected
-    )
+    return DecisionResponse(decision=risk.decision, risk=risk, action=action, noise_injected=noise_injected)
 
 
 # =============================================================================
@@ -453,9 +449,7 @@ def batch_evaluate(
 
     Returns decision distribution and risk statistics.
     """
-    results = [
-        compute_composite_risk(r, harmonic_params, theta_1, theta_2) for r in requests
-    ]
+    results = [compute_composite_risk(r, harmonic_params, theta_1, theta_2) for r in requests]
 
     decisions = [r.decision for r in results]
     risks = [r.risk_prime for r in results]
@@ -466,11 +460,7 @@ def batch_evaluate(
             "ALLOW": sum(1 for d in decisions if d == Decision.ALLOW),
             "WARN": sum(1 for d in decisions if d == Decision.WARN),
             "REVIEW": sum(1 for d in decisions if d == Decision.REVIEW),
-            "DENY": sum(
-                1
-                for d in decisions
-                if d in [Decision.DENY, Decision.REJECT, Decision.SNAP]
-            ),
+            "DENY": sum(1 for d in decisions if d in [Decision.DENY, Decision.REJECT, Decision.SNAP]),
         },
         "risk_stats": {
             "min": min(risks) if risks else 0,
@@ -519,10 +509,7 @@ def verify_lemma_13_1() -> Dict[str, Any]:
     }
 
     # Property 2: Lower bound (Risk' ≥ Behavioral_Risk)
-    lower_bound = all(
-        compute_composite_risk(c).risk_prime >= c.behavioral_risk - EPSILON
-        for c in test_cases
-    )
+    lower_bound = all(compute_composite_risk(c).risk_prime >= c.behavioral_risk - EPSILON for c in test_cases)
     results["property_2_lower_bound"] = {
         "verified": lower_bound,
         "proof": "H ≥ 1, T ≥ 1, I ≥ 1 → B×H×T×I ≥ B×1×1×1 = B",
@@ -545,23 +532,17 @@ def verify_lemma_13_1() -> Dict[str, Any]:
     # Property 4: Monotonicity
     d_values = np.linspace(0, 3, 50)
     risks = [
-        compute_composite_risk(
-            RiskComponents(0.5, d, TimeMultiplier(), IntentMultiplier())
-        ).risk_prime
+        compute_composite_risk(RiskComponents(0.5, d, TimeMultiplier(), IntentMultiplier())).risk_prime
         for d in d_values
     ]
     monotonic_d = all(risks[i] <= risks[i + 1] + EPSILON for i in range(len(risks) - 1))
 
     B_values = np.linspace(0, 1, 50)
     risks_B = [
-        compute_composite_risk(
-            RiskComponents(B, 1.0, TimeMultiplier(), IntentMultiplier())
-        ).risk_prime
+        compute_composite_risk(RiskComponents(B, 1.0, TimeMultiplier(), IntentMultiplier())).risk_prime
         for B in B_values
     ]
-    monotonic_B = all(
-        risks_B[i] <= risks_B[i + 1] + EPSILON for i in range(len(risks_B) - 1)
-    )
+    monotonic_B = all(risks_B[i] <= risks_B[i + 1] + EPSILON for i in range(len(risks_B) - 1))
 
     results["property_4_monotonicity"] = {
         "verified": monotonic_d and monotonic_B,
@@ -589,9 +570,7 @@ def verify_lemma_13_1() -> Dict[str, Any]:
         theta_2=theta_2,
     )
 
-    decidable = (
-        allow_case.decision == Decision.ALLOW and deny_case.decision == Decision.DENY
-    )
+    decidable = allow_case.decision == Decision.ALLOW and deny_case.decision == Decision.DENY
 
     results["property_5_threshold_decidability"] = {
         "verified": decidable,
@@ -644,9 +623,7 @@ def self_test() -> Dict[str, Any]:
         d_values = np.linspace(0, 5, 100)
         H_values = [harmonic_H(d) for d in d_values]
 
-        monotonic = all(
-            H_values[i] <= H_values[i + 1] + EPSILON for i in range(len(H_values) - 1)
-        )
+        monotonic = all(H_values[i] <= H_values[i + 1] + EPSILON for i in range(len(H_values) - 1))
         if monotonic:
             passed += 1
             results["harmonic_monotonic"] = "✓ PASS (H monotonically increasing)"
@@ -708,9 +685,7 @@ def self_test() -> Dict[str, Any]:
             )
             risks.append(compute_composite_risk(components).risk_prime)
 
-        monotonic = all(
-            risks[i] <= risks[i + 1] + EPSILON for i in range(len(risks) - 1)
-        )
+        monotonic = all(risks[i] <= risks[i + 1] + EPSILON for i in range(len(risks) - 1))
         if monotonic:
             passed += 1
             results["monotonic_d_star"] = "✓ PASS (Risk' ↑ as d* ↑)"
@@ -741,9 +716,7 @@ def self_test() -> Dict[str, Any]:
                 f"✓ PASS (ALLOW={good_risk.risk_prime:.2f}, DENY={bad_risk.risk_prime:.2f})"
             )
         else:
-            results["threshold_decidability"] = (
-                f"✗ FAIL ({good_risk.decision}, {bad_risk.decision})"
-            )
+            results["threshold_decidability"] = f"✗ FAIL ({good_risk.decision}, {bad_risk.decision})"
     except Exception as e:
         results["threshold_decidability"] = f"✗ FAIL ({e})"
 
@@ -794,9 +767,7 @@ def self_test() -> Dict[str, Any]:
             passed += 1
             results["lemma_13_1"] = "✓ PASS (all 5 properties verified)"
         else:
-            failed = [
-                k for k, v in verification["properties"].items() if not v["verified"]
-            ]
+            failed = [k for k, v in verification["properties"].items() if not v["verified"]]
             results["lemma_13_1"] = f"✗ FAIL (failed: {failed})"
     except Exception as e:
         results["lemma_13_1"] = f"✗ FAIL ({e})"

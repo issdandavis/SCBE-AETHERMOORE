@@ -314,7 +314,9 @@ CLI_TOOL_CHECKS = (
     ("n8n", "n8n"),
 )
 FILE_ACTIVE_ACTIONS = frozenset({"keep-active", "keep-scoped", "keep-and-publish", "curate-before-promote"})
-FILE_EXPORT_ACTIONS = frozenset({"export-and-ignore", "archive-or-extract", "remove-from-active-tree", "vendor-or-archive"})
+FILE_EXPORT_ACTIONS = frozenset(
+    {"export-and-ignore", "archive-or-extract", "remove-from-active-tree", "vendor-or-archive"}
+)
 FILE_LOCAL_ONLY_ACTIONS = frozenset({"keep-local-only"})
 
 
@@ -498,10 +500,17 @@ def _source_metadata(path: Path | None = None, text: str | None = None) -> dict[
     }
 
 
-_SENSITIVE_ARG_FLAGS = frozenset({
-    "--secret", "--token", "--api-key", "--api-key-env",
-    "--password", "--credential", "--auth",
-})
+_SENSITIVE_ARG_FLAGS = frozenset(
+    {
+        "--secret",
+        "--token",
+        "--api-key",
+        "--api-key-env",
+        "--password",
+        "--credential",
+        "--auth",
+    }
+)
 
 
 def _redact_argv(argv: list[str], limit: int = 8) -> list[str]:
@@ -604,11 +613,13 @@ def _formation_hexagonal(radius: float = 0.3) -> list[list[float]]:
     positions: list[list[float]] = []
     for i in range(_flow_agent_count()):
         angle = i * (2.0 * math.pi / _flow_agent_count())
-        positions.append([
-            round(radius * math.cos(angle), 6),
-            round(radius * math.sin(angle), 6),
-            0.0,
-        ])
+        positions.append(
+            [
+                round(radius * math.cos(angle), 6),
+                round(radius * math.sin(angle), 6),
+                0.0,
+            ]
+        )
     return positions
 
 
@@ -627,17 +638,21 @@ def _formation_concentric(inner_radius: float = 0.2, outer_radius: float = 0.5) 
     angles = [0.0, (2.0 * math.pi) / 3.0, (4.0 * math.pi) / 3.0]
     positions: list[list[float]] = []
     for angle in angles:
-        positions.append([
-            round(inner_radius * math.cos(angle), 6),
-            round(inner_radius * math.sin(angle), 6),
-            0.0,
-        ])
+        positions.append(
+            [
+                round(inner_radius * math.cos(angle), 6),
+                round(inner_radius * math.sin(angle), 6),
+                0.0,
+            ]
+        )
     for angle in [math.pi / 3.0, math.pi, (5.0 * math.pi) / 3.0]:
-        positions.append([
-            round(outer_radius * math.cos(angle), 6),
-            round(outer_radius * math.sin(angle), 6),
-            0.0,
-        ])
+        positions.append(
+            [
+                round(outer_radius * math.cos(angle), 6),
+                round(outer_radius * math.sin(angle), 6),
+                0.0,
+            ]
+        )
     return positions
 
 
@@ -650,11 +665,13 @@ def _formation_adaptive_scatter(task: str, radius: float = 0.45) -> list[list[fl
         angle = (raw_a / 255.0) * (2.0 * math.pi)
         norm = 0.18 + (raw_b / 255.0) * radius
         z = round((((seed[i + 12] / 255.0) * 2.0) - 1.0) * 0.18, 6)
-        positions.append([
-            round(norm * math.cos(angle), 6),
-            round(norm * math.sin(angle), 6),
-            z,
-        ])
+        positions.append(
+            [
+                round(norm * math.cos(angle), 6),
+                round(norm * math.sin(angle), 6),
+                z,
+            ]
+        )
     return positions
 
 
@@ -932,7 +949,9 @@ def _colab_notebook_review(repo_root: Path) -> dict[str, object]:
         review["colab_name"] = colab_name
         review["signals"] = {
             "google_drive_mount": "google.colab import drive" in combined_source or "/content/drive" in combined_source,
-            "huggingface_push": "huggingface_hub" in combined_source or "push_to_hub" in combined_source or "HfApi" in combined_source,
+            "huggingface_push": "huggingface_hub" in combined_source
+            or "push_to_hub" in combined_source
+            or "HfApi" in combined_source,
             "canonical_repo_clone": "issdandavis/SCBE-AETHERMOORE" in combined_source,
             "demo_repo_clone": "issdandavis/scbe-aethermoore-demo" in combined_source.lower(),
         }
@@ -994,7 +1013,9 @@ def _parse_key_value(raw: str) -> tuple[str, str]:
     return safe_text(key), value
 
 
-def _workflow_output_paths(repo_root: Path, config: dict[str, object], workflow_name: str, workflow_path: str, queue_path: str) -> tuple[Path, Path]:
+def _workflow_output_paths(
+    repo_root: Path, config: dict[str, object], workflow_name: str, workflow_path: str, queue_path: str
+) -> tuple[Path, Path]:
     defaults = dict(config.get("defaults") or {})
     workflow_dir = workflow_path or str(defaults.get("workflow_dir") or ".github/workflows")
     queue_dir = queue_path or str(defaults.get("n8n_dir") or "workflows/n8n")
@@ -1028,7 +1049,17 @@ def _yaml_quote(value: str) -> str:
     return "'" + value.replace("'", "''") + "'"
 
 
-def _render_workflow_yaml(name: str, triggers: list[str], cron: str, runs_on: str, shell: str, node_version: str, python_version: str, env_vars: dict[str, str], steps: list[dict[str, str]]) -> str:
+def _render_workflow_yaml(
+    name: str,
+    triggers: list[str],
+    cron: str,
+    runs_on: str,
+    shell: str,
+    node_version: str,
+    python_version: str,
+    env_vars: dict[str, str],
+    steps: list[dict[str, str]],
+) -> str:
     lines = [f"name: {_yaml_quote(name)}", "on:"]
     if not triggers:
         triggers = ["workflow_dispatch"]
@@ -1080,7 +1111,9 @@ def _render_workflow_yaml(name: str, triggers: list[str], cron: str, runs_on: st
     return "\n".join(lines) + "\n"
 
 
-def _render_n8n_style_queue(name: str, workflow_path: Path, steps: list[dict[str, str]], triggers: list[str], env_vars: dict[str, str]) -> dict[str, object]:
+def _render_n8n_style_queue(
+    name: str, workflow_path: Path, steps: list[dict[str, str]], triggers: list[str], env_vars: dict[str, str]
+) -> dict[str, object]:
     items: list[dict[str, object]] = []
     for index, step in enumerate(steps, start=1):
         dependencies = [] if index == 1 else [steps[index - 2]["id"]]
@@ -1242,7 +1275,9 @@ def _execute_runtime(args: argparse.Namespace, *, app_entry: dict | None = None)
             language = _normalize_runtime_language(getattr(args, "language", None))
             if not language and source_path is not None:
                 language = _infer_runtime_language_from_path(source_path)
-            tongue = (getattr(args, "tongue", None) or language and RUNTIME_TONGUE_BY_LANGUAGE.get(language) or "CA").upper()
+            tongue = (
+                getattr(args, "tongue", None) or language and RUNTIME_TONGUE_BY_LANGUAGE.get(language) or "CA"
+            ).upper()
             cwd = str(pad_dir or args.repo_root)
         else:
             if bool(getattr(args, "file", "")) == bool(getattr(args, "code", "")):
@@ -1254,7 +1289,9 @@ def _execute_runtime(args: argparse.Namespace, *, app_entry: dict | None = None)
                     args.file,
                     extra_root=pad_dir,
                 )
-                language = _normalize_runtime_language(getattr(args, "language", None)) or _infer_runtime_language_from_path(source_path)
+                language = _normalize_runtime_language(
+                    getattr(args, "language", None)
+                ) or _infer_runtime_language_from_path(source_path)
                 if not language:
                     print("Unable to infer --language from file extension. Set --language explicitly.")
                     return 2
@@ -1270,7 +1307,9 @@ def _execute_runtime(args: argparse.Namespace, *, app_entry: dict | None = None)
                     return 2
                 temp_root = (pad_dir or output_dir / "inline") / ".scbe-runtime"
                 temp_root.mkdir(parents=True, exist_ok=True)
-                with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=suffix, dir=str(temp_root), delete=False) as handle:
+                with tempfile.NamedTemporaryFile(
+                    "w", encoding="utf-8", suffix=suffix, dir=str(temp_root), delete=False
+                ) as handle:
                     handle.write(source_text)
                     source_path = Path(handle.name)
                 cleanup_source = not keep_source
@@ -1315,12 +1354,18 @@ def _execute_runtime(args: argparse.Namespace, *, app_entry: dict | None = None)
             "tongue": tongue,
             "agent_id": agent_id,
             "pad_manifest_path": str(_manifest_path(pad_dir)) if pad_dir is not None else None,
-            "app": {
-                "id": app_entry.get("id"),
-                "name": app_entry.get("name"),
-            } if app_entry is not None else None,
+            "app": (
+                {
+                    "id": app_entry.get("id"),
+                    "name": app_entry.get("name"),
+                }
+                if app_entry is not None
+                else None
+            ),
             "command_metadata": _command_metadata(args.repo_root, tongue, command),
-            "source_metadata": _source_metadata(text=source_text) if source_text is not None else _source_metadata(path=source_path),
+            "source_metadata": (
+                _source_metadata(text=source_text) if source_text is not None else _source_metadata(path=source_path)
+            ),
             "stdout_metadata": _text_metadata(completed.stdout),
             "stderr_metadata": _text_metadata(completed.stderr),
             "working_directory": cwd,
@@ -1492,11 +1537,7 @@ def _sensitive_fingerprint(text: str) -> str:
 
 
 def _sanitize_agent_result_for_storage(result: dict) -> dict:
-    clean = {
-        key: value
-        for key, value in result.items()
-        if key not in {"raw", "content", "prompt", "error"}
-    }
+    clean = {key: value for key, value in result.items() if key not in {"raw", "content", "prompt", "error"}}
     if "content" in result:
         clean["content_metadata"] = _text_metadata(result.get("content"))
     if "error" in result:
@@ -1507,11 +1548,7 @@ def _sanitize_agent_result_for_storage(result: dict) -> dict:
 
 
 def _sanitize_agent_result_for_disk(result: dict) -> dict:
-    clean = {
-        key: value
-        for key, value in result.items()
-        if key not in {"raw", "content", "prompt", "error"}
-    }
+    clean = {key: value for key, value in result.items() if key not in {"raw", "content", "prompt", "error"}}
     for field in ("content", "prompt", "error"):
         if field not in result:
             continue
@@ -1526,10 +1563,9 @@ def _resolve_agent_api_key(agent: dict, env_cache: dict[str, str]) -> tuple[str 
     if not env_var:
         provider = (agent.get("provider") or "").lower()
         env_var = (
-            "ANTHROPIC_API_KEY" if provider == "anthropic" else
-            "OPENAI_API_KEY" if provider == "openai" else
-            "GOOGLE_API_KEY" if provider == "gemini" else
-            None
+            "ANTHROPIC_API_KEY"
+            if provider == "anthropic"
+            else "OPENAI_API_KEY" if provider == "openai" else "GOOGLE_API_KEY" if provider == "gemini" else None
         )
     if not env_var:
         return None, None
@@ -2112,9 +2148,7 @@ def cmd_agent_bootstrap(args: argparse.Namespace) -> int:
         agent_id="codex",
         provider="openai",
         display_name="Codex",
-        description=(
-            "General-purpose coding and architecture agent using OpenAI Chat Completions API."
-        ),
+        description=("General-purpose coding and architecture agent using OpenAI Chat Completions API."),
         api_key_env="OPENAI_API_KEY",
         model=args.codex_model or "gpt-4o-mini",
     )
@@ -2158,10 +2192,7 @@ def cmd_agent_list(args: argparse.Namespace) -> int:
     for aid in sorted(agents):
         entry = agents[aid]
         status = "enabled" if entry.get("enabled", True) else "disabled"
-        print(
-            f"{aid:24} | {entry.get('provider', 'unknown'):<12} | "
-            f"{entry.get('display_name', ''):<18} | {status}"
-        )
+        print(f"{aid:24} | {entry.get('provider', 'unknown'):<12} | " f"{entry.get('display_name', ''):<18} | {status}")
     return 0
 
 
@@ -2305,7 +2336,9 @@ def cmd_agent_call(args: argparse.Namespace) -> int:
 
     summary_path = out_dir / "agent_call_summary.json"
     summary_path.parent.mkdir(parents=True, exist_ok=True)
-    summary_path.write_text(json.dumps(_sanitize_agent_result_for_storage(summary), indent=2, sort_keys=True), encoding="utf-8")
+    summary_path.write_text(
+        json.dumps(_sanitize_agent_result_for_storage(summary), indent=2, sort_keys=True), encoding="utf-8"
+    )
     print(f"Summary: {summary['succeeded']} ok, {summary['failed']} failed")
     print(f"Saved: {summary_path}")
     return 0 if summary["failed"] == 0 else 1
@@ -2981,7 +3014,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     improve = sub.add_parser("self-improve", help="Run self-improvement orchestrator")
     add_runtime_cli_flags(improve)
-    improve.add_argument("--mode", default="all", choices=("all", "code-assistant", "ai-nodal-dev-specialist", "fine-tune-funnel"))
+    improve.add_argument(
+        "--mode", default="all", choices=("all", "code-assistant", "ai-nodal-dev-specialist", "fine-tune-funnel")
+    )
     improve.add_argument("--coherence-report", default="coherence-report.json")
     improve.add_argument("--training-data", default="training-data")
     improve.add_argument("--pipeline-config", default="training/vertex_pipeline_config.yaml")
@@ -3029,11 +3064,17 @@ def build_parser() -> argparse.ArgumentParser:
     auth.add_argument("--memory", type=float, default=None, help="Memory utilization metric")
     auth.add_argument("--intent", type=float, default=None, help="Intent score")
     auth.add_argument("--history", type=float, default=None, help="History score")
-    auth.add_argument("--reference-latitude", type=float, default=None, help="Reference latitude for geospatial matching")
-    auth.add_argument("--reference-longitude", type=float, default=None, help="Reference longitude for geospatial matching")
+    auth.add_argument(
+        "--reference-latitude", type=float, default=None, help="Reference latitude for geospatial matching"
+    )
+    auth.add_argument(
+        "--reference-longitude", type=float, default=None, help="Reference longitude for geospatial matching"
+    )
     auth.add_argument("--trusted-radius-km", type=float, default=50.0, help="GeoSeal trusted radius in km")
     auth.add_argument("--location-core-radius-km", type=float, default=5.0, help="GeoSeal location core radius in km")
-    auth.add_argument("--location-outer-radius-km", type=float, default=80.0, help="GeoSeal location outer radius in km")
+    auth.add_argument(
+        "--location-outer-radius-km", type=float, default=80.0, help="GeoSeal location outer radius in km"
+    )
     auth.add_argument("--location-core-max", type=float, default=None, help="Location core ring max risk")
     auth.add_argument("--location-outer-max", type=float, default=None, help="Location outer ring max risk")
     auth.add_argument("--enforce-location", action="store_true", help="Reject when location is missing/unresolvable")
@@ -3049,8 +3090,12 @@ def build_parser() -> argparse.ArgumentParser:
     a_boot = agent_sub.add_parser("bootstrap", help="Create or refresh default agent registry")
     a_boot.add_argument("--append", action="store_true", help="Add defaults while keeping existing agents")
     a_boot.add_argument("--force", action="store_true", help="Replace existing registry before bootstrapping")
-    a_boot.add_argument("--include-notebooklm", action="store_true", default=True, help="Include NotebookLM default entry")
-    a_boot.add_argument("--no-include-notebooklm", dest="include_notebooklm", action="store_false", help="Skip NotebookLM default entry")
+    a_boot.add_argument(
+        "--include-notebooklm", action="store_true", default=True, help="Include NotebookLM default entry"
+    )
+    a_boot.add_argument(
+        "--no-include-notebooklm", dest="include_notebooklm", action="store_false", help="Skip NotebookLM default entry"
+    )
     a_boot.add_argument("--codex-model", default="gpt-4o-mini")
     a_boot.set_defaults(func=cmd_agent_bootstrap)
 
@@ -3208,7 +3253,9 @@ def build_parser() -> argparse.ArgumentParser:
         choices=tuple(sorted(FLOW_WORKFLOW_TEMPLATES)),
         help="Doctrine template that determines ordered role handoffs",
     )
-    flow_plan.add_argument("--output", default="", help="Output JSON path (default: artifacts/flow_plans/<timestamp>-<task>.json)")
+    flow_plan.add_argument(
+        "--output", default="", help="Output JSON path (default: artifacts/flow_plans/<timestamp>-<task>.json)"
+    )
     flow_plan.add_argument(
         "--action-root",
         default="training/runs/action_maps",
@@ -3326,13 +3373,22 @@ def build_parser() -> argparse.ArgumentParser:
     rt_run.add_argument("--agent-root", default=str(DEFAULT_PAD_ROOT), help="Optional root path for polly pads")
     rt_run.add_argument("--app-id", default="", help="Installed Polly Pad app id to run")
     rt_run.add_argument("--app-name", default="", help="Installed Polly Pad app name to run")
-    rt_run.add_argument("--language", choices=RUNTIME_LANGUAGE_CHOICES, default="", help="Runtime language for direct execution")
-    rt_run.add_argument("--tongue", choices=("KO", "AV", "RU", "CA", "UM", "DR"), default="", help="Attach a Sacred Tongue execution label")
+    rt_run.add_argument(
+        "--language", choices=RUNTIME_LANGUAGE_CHOICES, default="", help="Runtime language for direct execution"
+    )
+    rt_run.add_argument(
+        "--tongue",
+        choices=("KO", "AV", "RU", "CA", "UM", "DR"),
+        default="",
+        help="Attach a Sacred Tongue execution label",
+    )
     rt_run.add_argument("--file", default="", help="Controlled source file path to run")
     rt_run.add_argument("--code", default="", help="Inline source code to run")
     rt_run.add_argument("--output-dir", default="artifacts/runtime_runs")
     rt_run.add_argument("--timeout-seconds", type=int, default=60)
-    rt_run.add_argument("--keep-source", action="store_true", help="Keep generated runtime source files for inline code")
+    rt_run.add_argument(
+        "--keep-source", action="store_true", help="Keep generated runtime source files for inline code"
+    )
     rt_run.add_argument("extra_args", nargs=argparse.REMAINDER, help="Args passed to the runtime after --")
     rt_run.set_defaults(func=cmd_runtime_run)
 

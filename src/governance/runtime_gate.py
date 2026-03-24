@@ -35,7 +35,7 @@ import numpy as np
 PHI = 1.618033988749895
 PI = math.pi
 TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
-TONGUE_WEIGHTS = tuple(PHI ** k for k in range(6))
+TONGUE_WEIGHTS = tuple(PHI**k for k in range(6))
 WORD_RE = re.compile(r"[A-Za-z0-9_']+")
 
 
@@ -50,6 +50,7 @@ class Decision(str, Enum):
 @dataclass
 class GateResult:
     """What the gate returns for every action."""
+
     decision: Decision
     cost: float
     spin_magnitude: int
@@ -85,6 +86,7 @@ def _fail_to_noise(action_hash: str, length: int = 32) -> bytes:
 @dataclass
 class RerouteRule:
     """Maps dangerous action patterns to safer alternatives."""
+
     pattern: str
     replacement: str
     reason: str
@@ -135,17 +137,15 @@ class RuntimeGate:
 
         # Reroute table
         self._reroute_rules = reroute_rules if reroute_rules is not None else DEFAULT_REROUTES
-        self._reroute_patterns = [
-            (re.compile(r.pattern, re.IGNORECASE), r) for r in self._reroute_rules
-        ]
+        self._reroute_patterns = [(re.compile(r.pattern, re.IGNORECASE), r) for r in self._reroute_rules]
 
         # Session state
         self._centroid: Optional[np.ndarray] = None
         self._centroid_count: int = 0
         self._cumulative_cost: float = 0.0
         self._query_count: int = 0
-        self._immune: set = set()       # known attack hashes → instant DENY
-        self._reflex: dict = {}         # known safe hashes → instant ALLOW
+        self._immune: set = set()  # known attack hashes → instant DENY
+        self._reflex: dict = {}  # known safe hashes → instant ALLOW
         self._audit_log: List[GateResult] = []
 
     # ------------------------------------------------------------------ #
@@ -243,9 +243,7 @@ class RuntimeGate:
         """
         self._query_count += 1
         ts = time.time()
-        action_hash = hashlib.blake2s(
-            action_text.encode("utf-8", errors="replace"), digest_size=8
-        ).hexdigest()
+        action_hash = hashlib.blake2s(action_text.encode("utf-8", errors="replace"), digest_size=8).hexdigest()
 
         # ---- Fast paths (O(1)) ----
 
@@ -256,11 +254,14 @@ class RuntimeGate:
         if reroute_rule is not None:
             coords = self._text_to_coords(full_text)
             result = GateResult(
-                decision=Decision.REROUTE, cost=0.0,
-                spin_magnitude=0, tongue_coords=coords,
+                decision=Decision.REROUTE,
+                cost=0.0,
+                spin_magnitude=0,
+                tongue_coords=coords,
                 signals=[f"reroute_match({reroute_rule.pattern})"],
                 reroute_to=reroute_rule.replacement,
-                action_hash=action_hash, timestamp=ts,
+                action_hash=action_hash,
+                timestamp=ts,
                 session_query_count=self._query_count,
                 cumulative_cost=self._cumulative_cost,
             )
@@ -274,10 +275,13 @@ class RuntimeGate:
             self._update_centroid(coords)
             self._cumulative_cost += 1.0  # nominal cost during calibration
             result = GateResult(
-                decision=Decision.ALLOW, cost=1.0,
-                spin_magnitude=0, tongue_coords=coords,
+                decision=Decision.ALLOW,
+                cost=1.0,
+                spin_magnitude=0,
+                tongue_coords=coords,
                 signals=["calibrating"],
-                action_hash=action_hash, timestamp=ts,
+                action_hash=action_hash,
+                timestamp=ts,
                 session_query_count=self._query_count,
                 cumulative_cost=self._cumulative_cost,
             )
@@ -287,11 +291,14 @@ class RuntimeGate:
         # Immune memory: known attack → instant DENY + noise
         if action_hash in self._immune:
             result = GateResult(
-                decision=Decision.DENY, cost=float("inf"),
-                spin_magnitude=6, tongue_coords=[0.0] * 6,
+                decision=Decision.DENY,
+                cost=float("inf"),
+                spin_magnitude=6,
+                tongue_coords=[0.0] * 6,
                 signals=["immune_memory_hit"],
                 noise=_fail_to_noise(action_hash),
-                action_hash=action_hash, timestamp=ts,
+                action_hash=action_hash,
+                timestamp=ts,
                 session_query_count=self._query_count,
                 cumulative_cost=self._cumulative_cost,
             )
@@ -301,10 +308,13 @@ class RuntimeGate:
         # Reflex table: known safe → instant ALLOW
         if action_hash in self._reflex:
             result = GateResult(
-                decision=Decision.ALLOW, cost=1.0,
-                spin_magnitude=0, tongue_coords=[0.5] * 6,
+                decision=Decision.ALLOW,
+                cost=1.0,
+                spin_magnitude=0,
+                tongue_coords=[0.5] * 6,
                 signals=["reflex_hit"],
-                action_hash=action_hash, timestamp=ts,
+                action_hash=action_hash,
+                timestamp=ts,
                 session_query_count=self._query_count,
                 cumulative_cost=self._cumulative_cost,
             )
@@ -381,11 +391,14 @@ class RuntimeGate:
             self._reflex[action_hash] = True
 
         result = GateResult(
-            decision=decision, cost=cost,
-            spin_magnitude=magnitude, tongue_coords=coords,
+            decision=decision,
+            cost=cost,
+            spin_magnitude=magnitude,
+            tongue_coords=coords,
             signals=signals,
             noise=noise if decision == Decision.DENY else None,
-            action_hash=action_hash, timestamp=ts,
+            action_hash=action_hash,
+            timestamp=ts,
             session_query_count=self._query_count,
             cumulative_cost=self._cumulative_cost,
         )
@@ -434,51 +447,99 @@ class RuntimeGate:
         # --- KO Council: Intent Review ---
         # Check if action text sentiment matches the tongue coordinate
         ko_coord = coords[0]
-        has_override_language = any(w in action_text.upper() for w in [
-            "OVERRIDE", "BYPASS", "IGNORE", "DISABLE", "SUDO", "ADMIN",
-            "GRANT", "ELEVATE", "UNRESTRICTED", "GOD MODE",
-        ])
+        has_override_language = any(
+            w in action_text.upper()
+            for w in [
+                "OVERRIDE",
+                "BYPASS",
+                "IGNORE",
+                "DISABLE",
+                "SUDO",
+                "ADMIN",
+                "GRANT",
+                "ELEVATE",
+                "UNRESTRICTED",
+                "GOD MODE",
+            ]
+        )
         ko_pass = not (has_override_language and ko_coord > 0.5)
-        reviews.append(("KO_intent", ko_pass,
-                        "override language with high governance signal" if not ko_pass else "clean"))
+        reviews.append(
+            ("KO_intent", ko_pass, "override language with high governance signal" if not ko_pass else "clean")
+        )
 
         # --- AV Council: Transport/Flow Review ---
         # Check for external data exfiltration patterns
-        has_external = any(w in action_text.lower() for w in [
-            "external", "send to", "forward to", "post to", "upload to",
-            "webhook", "http://", "https://", "attacker", ".com",
-        ])
+        has_external = any(
+            w in action_text.lower()
+            for w in [
+                "external",
+                "send to",
+                "forward to",
+                "post to",
+                "upload to",
+                "webhook",
+                "http://",
+                "https://",
+                "attacker",
+                ".com",
+            ]
+        )
         av_pass = not has_external
-        reviews.append(("AV_transport", av_pass,
-                        "external data flow detected" if not av_pass else "internal only"))
+        reviews.append(("AV_transport", av_pass, "external data flow detected" if not av_pass else "internal only"))
 
         # --- RU Council: Policy Review ---
         # Check against known restricted operations
-        has_restricted = any(w in action_text.lower() for w in [
-            "delete all", "drop table", "rm -rf", "format disk",
-            "shutdown", "kill process", "wipe", "destroy",
-        ])
+        has_restricted = any(
+            w in action_text.lower()
+            for w in [
+                "delete all",
+                "drop table",
+                "rm -rf",
+                "format disk",
+                "shutdown",
+                "kill process",
+                "wipe",
+                "destroy",
+            ]
+        )
         ru_pass = not has_restricted
-        reviews.append(("RU_policy", ru_pass,
-                        "restricted operation attempted" if not ru_pass else "within policy"))
+        reviews.append(("RU_policy", ru_pass, "restricted operation attempted" if not ru_pass else "within policy"))
 
         # --- CA Council: Compute Signature Review ---
         # Check if the action's computational profile (digit ratio, length) is anomalous
         ca_coord = coords[3]  # CA dimension
         ca_anomalous = ca_coord > 0.7  # high numeric content = suspicious
         ca_pass = not ca_anomalous
-        reviews.append(("CA_compute", ca_pass,
-                        f"anomalous compute signature (CA={ca_coord:.2f})" if not ca_pass else "normal signature"))
+        reviews.append(
+            (
+                "CA_compute",
+                ca_pass,
+                f"anomalous compute signature (CA={ca_coord:.2f})" if not ca_pass else "normal signature",
+            )
+        )
 
         # --- UM Council: Redaction Review ---
         # Check for attempts to access credentials, secrets, PII
-        has_credential_access = any(w in action_text.lower() for w in [
-            "password", "secret", "credential", "private key", "ssh key",
-            "token", "bearer", "auth", "/etc/shadow", "wallet", "seed phrase",
-        ])
+        has_credential_access = any(
+            w in action_text.lower()
+            for w in [
+                "password",
+                "secret",
+                "credential",
+                "private key",
+                "ssh key",
+                "token",
+                "bearer",
+                "auth",
+                "/etc/shadow",
+                "wallet",
+                "seed phrase",
+            ]
+        )
         um_pass = not has_credential_access
-        reviews.append(("UM_redaction", um_pass,
-                        "credential/PII access attempt" if not um_pass else "no sensitive access"))
+        reviews.append(
+            ("UM_redaction", um_pass, "credential/PII access attempt" if not um_pass else "no sensitive access")
+        )
 
         # --- DR Council: Integrity/Data Trace Review ---
         # Check for signs of injection or encoded payloads
@@ -487,14 +548,18 @@ class RuntimeGate:
         has_encoding_artifacts = punct_ratio > 0.15 or "base64" in action_text.lower() or "\\x" in action_text
         # Also check if action hash has been seen in a suspicious context before
         dr_pass = not has_encoding_artifacts
-        reviews.append(("DR_integrity", dr_pass,
-                        f"encoding artifacts detected (punct={punct_ratio:.2f})" if not dr_pass else "clean trace"))
+        reviews.append(
+            (
+                "DR_integrity",
+                dr_pass,
+                f"encoding artifacts detected (punct={punct_ratio:.2f})" if not dr_pass else "clean trace",
+            )
+        )
 
         # --- Council Deliberation ---
         fail_count = sum(1 for _, passed, _ in reviews if not passed)
 
-        signals = [f"council_{name}={'PASS' if passed else 'FAIL'}({reason})"
-                   for name, passed, reason in reviews]
+        signals = [f"council_{name}={'PASS' if passed else 'FAIL'}({reason})" for name, passed, reason in reviews]
         signals.append(f"council_verdict={fail_count}/6_failed")
 
         if fail_count == 0:
@@ -513,9 +578,7 @@ class RuntimeGate:
         """
         # In production: verify HMAC/signature of embedded token
         # For now: check if a known reflex hash exists
-        action_hash = hashlib.blake2s(
-            action_text.encode("utf-8", errors="replace"), digest_size=8
-        ).hexdigest()
+        action_hash = hashlib.blake2s(action_text.encode("utf-8", errors="replace"), digest_size=8).hexdigest()
         return action_hash in self._reflex
 
     def reset_session(self) -> None:

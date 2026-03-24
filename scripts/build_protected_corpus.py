@@ -61,7 +61,9 @@ ACCOUNT_RULE = PatternRule(
     ),
 )
 API_KEY_RULES = [
-    PatternRule("api_key", re.compile(r"(?i)\b(?:sk|rk|pk|ghp|gho|ghu|ghs|ghr|hf|xox[baprs])[_-]?[A-Za-z0-9_\-]{10,}\b")),
+    PatternRule(
+        "api_key", re.compile(r"(?i)\b(?:sk|rk|pk|ghp|gho|ghu|ghs|ghr|hf|xox[baprs])[_-]?[A-Za-z0-9_\-]{10,}\b")
+    ),
     PatternRule(
         "api_key",
         re.compile(
@@ -69,7 +71,18 @@ API_KEY_RULES = [
         ),
     ),
 ]
-SENSITIVE_RULES = [BEARER_RULE, API_KEY_RULES[0], API_KEY_RULES[1], CC_RULE, SSN_RULE, ACCOUNT_RULE, EMAIL_RULE, PHONE_RULE, URL_RULE, IP_RULE]
+SENSITIVE_RULES = [
+    BEARER_RULE,
+    API_KEY_RULES[0],
+    API_KEY_RULES[1],
+    CC_RULE,
+    SSN_RULE,
+    ACCOUNT_RULE,
+    EMAIL_RULE,
+    PHONE_RULE,
+    URL_RULE,
+    IP_RULE,
+]
 
 
 def _safe_relative(path: Path) -> str:
@@ -253,11 +266,14 @@ def _load_source_records(inputs: Iterable[str | Path]) -> tuple[list[dict[str, A
     return records, dict(extension_counts)
 
 
-def _protect_text(text: str, vault: _VaultAdapter, source_file: str, counts: Counter[str], unique_values: dict[str, set[str]]) -> tuple[str, int]:
+def _protect_text(
+    text: str, vault: _VaultAdapter, source_file: str, counts: Counter[str], unique_values: dict[str, set[str]]
+) -> tuple[str, int]:
     replacement_total = 0
     protected = text
     for rule in SENSITIVE_RULES:
         if rule.kind == "credit_card":
+
             def repl_cc(match: re.Match[str]) -> str:
                 nonlocal replacement_total
                 raw = match.group(0)
@@ -344,7 +360,9 @@ def _process_cycle(
                     "protected_by": "build_protected_corpus.py",
                 }
             )
-        protected_records.append(protected if isinstance(protected, dict) else {"value": protected, "source_file": source_file})
+        protected_records.append(
+            protected if isinstance(protected, dict) else {"value": protected, "source_file": source_file}
+        )
         source_file_counts[source_file] += 1
         total_replacements += replacements
 
@@ -475,7 +493,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--manifest", default="", help="Manifest JSON output path.")
     parser.add_argument("--vault-module", default=DEFAULT_VAULT_MODULE, help="Vault module to import.")
     parser.add_argument("--vault-dir", default=None, help="Optional vault directory or token store path.")
-    parser.add_argument("--max-cycles", type=int, default=DEFAULT_MAX_CYCLES, help="Maximum novelty cycles before exit.")
+    parser.add_argument(
+        "--max-cycles", type=int, default=DEFAULT_MAX_CYCLES, help="Maximum novelty cycles before exit."
+    )
     args = parser.parse_args(argv)
 
     output_path = Path(args.output) if args.output else _default_output_for(args.input)

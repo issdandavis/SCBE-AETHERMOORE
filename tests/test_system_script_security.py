@@ -13,9 +13,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import importlib.util as _ilu
-_ss_spec = _ilu.spec_from_file_location(
-    "src.security.secret_store", ROOT / "src" / "security" / "secret_store.py"
-)
+
+_ss_spec = _ilu.spec_from_file_location("src.security.secret_store", ROOT / "src" / "security" / "secret_store.py")
 _ss_mod = _ilu.module_from_spec(_ss_spec)
 _ss_spec.loader.exec_module(_ss_mod)
 _ss_mod.get_secret = lambda key, default="": default
@@ -147,7 +146,9 @@ terminal_ai_router = _load_module("test_terminal_ai_router", "scripts/system/ter
 sell_from_terminal = _load_module("test_sell_from_terminal", "scripts/system/sell_from_terminal.py")
 agentic_web_tool = _load_module("test_agentic_web_tool", "scripts/agentic_web_tool.py")
 ingest_x_post_via_hydra = _load_module("test_ingest_x_post_via_hydra", "scripts/ingest_x_post_via_hydra.py")
-shopify_store_launch_pack = _load_module("test_shopify_store_launch_pack", "scripts/system/shopify_store_launch_pack.py")
+shopify_store_launch_pack = _load_module(
+    "test_shopify_store_launch_pack", "scripts/system/shopify_store_launch_pack.py"
+)
 gov_contract_scan = _load_module(
     "test_gov_contract_scan",
     "skills/scbe-government-contract-intelligence/scripts/gov_contract_scan.py",
@@ -235,9 +236,10 @@ def test_agentic_web_tool_search_parser_and_output_dir_guard(monkeypatch):
     results = agentic_web_tool._search_duckduckgo("alpha", max_results=5)
 
     assert results == [{"title": "Alpha Result", "url": "https://example.com/alpha"}]
-    assert agentic_web_tool._resolve_output_dir("artifacts/web_tool/test") == (
-        ROOT / "artifacts" / "web_tool" / "test"
-    ).resolve()
+    assert (
+        agentic_web_tool._resolve_output_dir("artifacts/web_tool/test")
+        == (ROOT / "artifacts" / "web_tool" / "test").resolve()
+    )
     with pytest.raises(ValueError, match="artifacts/"):
         agentic_web_tool._resolve_output_dir("../outside")
 
@@ -258,12 +260,14 @@ def test_ingest_html_to_text_and_path_guards():
     text = ingest_x_post_via_hydra.html_to_text(html)
 
     assert text == "Hydra visible text."
-    assert ingest_x_post_via_hydra._resolve_run_root("training/runs/x_ingest") == (
-        ROOT / "training" / "runs" / "x_ingest"
-    ).resolve()
-    assert ingest_x_post_via_hydra._resolve_artifact_db_path("artifacts/hydra/test.db") == (
-        ROOT / "artifacts" / "hydra" / "test.db"
-    ).resolve()
+    assert (
+        ingest_x_post_via_hydra._resolve_run_root("training/runs/x_ingest")
+        == (ROOT / "training" / "runs" / "x_ingest").resolve()
+    )
+    assert (
+        ingest_x_post_via_hydra._resolve_artifact_db_path("artifacts/hydra/test.db")
+        == (ROOT / "artifacts" / "hydra" / "test.db").resolve()
+    )
     with pytest.raises(ValueError, match="training/runs/"):
         ingest_x_post_via_hydra._resolve_run_root("../outside")
     with pytest.raises(ValueError, match="artifacts/"):
@@ -276,9 +280,10 @@ def test_shopify_strip_html_and_output_dir_guard():
     )
 
     assert text == "Launch pack"
-    assert shopify_store_launch_pack._resolve_output_dir("artifacts/shopify-launch-pack/demo") == (
-        ROOT / "artifacts" / "shopify-launch-pack" / "demo"
-    ).resolve()
+    assert (
+        shopify_store_launch_pack._resolve_output_dir("artifacts/shopify-launch-pack/demo")
+        == (ROOT / "artifacts" / "shopify-launch-pack" / "demo").resolve()
+    )
     with pytest.raises(ValueError, match="artifacts/"):
         shopify_store_launch_pack._resolve_output_dir("../outside")
 
@@ -300,9 +305,10 @@ def test_gov_contract_scan_parser_and_output_dir_guard():
     text = gov_contract_scan._to_text(html)
     assert "autonomy and navigation opportunity." in text
     assert "ignore all previous instructions" not in text
-    assert gov_contract_scan._resolve_output_dir("artifacts/contracts/demo") == (
-        ROOT / "artifacts" / "contracts" / "demo"
-    ).resolve()
+    assert (
+        gov_contract_scan._resolve_output_dir("artifacts/contracts/demo")
+        == (ROOT / "artifacts" / "contracts" / "demo").resolve()
+    )
     with pytest.raises(ValueError, match="artifacts/"):
         gov_contract_scan._resolve_output_dir("../outside")
 
@@ -366,7 +372,9 @@ def test_terminal_ai_router_guards_endpoint_and_output_path():
 def test_sell_from_terminal_reports_secret_source_not_secret_value(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "super-secret-openai-token")
     monkeypatch.delenv("HF_TOKEN", raising=False)
-    monkeypatch.setattr(sell_from_terminal, "get_secret", lambda key, default="": "hf-secret" if key == "HF_TOKEN" else default)
+    monkeypatch.setattr(
+        sell_from_terminal, "get_secret", lambda key, default="": "hf-secret" if key == "HF_TOKEN" else default
+    )
 
     status = sell_from_terminal._load_secret_env()
 

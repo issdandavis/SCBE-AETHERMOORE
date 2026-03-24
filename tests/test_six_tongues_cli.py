@@ -296,11 +296,14 @@ class TestBlendUnblend:
         assert pairs == []
         assert xt.unblend(["KO", "AV"], []) == b""
 
-    @pytest.mark.parametrize("pattern", [
-        ["KO", "KO", "AV", "RU", "CA", "UM", "DR"],
-        ["DR", "DR", "DR"],
-        ["KO", "AV"],
-    ])
+    @pytest.mark.parametrize(
+        "pattern",
+        [
+            ["KO", "KO", "AV", "RU", "CA", "UM", "DR"],
+            ["DR", "DR", "DR"],
+            ["KO", "AV"],
+        ],
+    )
     def test_blend_various_patterns(self, pattern):
         lex = Lexicons()
         tok = TongueTokenizer(lex)
@@ -380,19 +383,22 @@ class TestConcentricRingPolicy:
     def policy(self):
         return ConcentricRingPolicy()
 
-    @pytest.mark.parametrize("r,expected_ring", [
-        (0.0, "core"),
-        (0.15, "core"),
-        (0.29, "core"),
-        (0.3, "inner"),
-        (0.45, "inner"),
-        (0.5, "middle"),
-        (0.65, "middle"),
-        (0.7, "outer"),
-        (0.85, "outer"),
-        (0.9, "edge"),
-        (0.99, "edge"),
-    ])
+    @pytest.mark.parametrize(
+        "r,expected_ring",
+        [
+            (0.0, "core"),
+            (0.15, "core"),
+            (0.29, "core"),
+            (0.3, "inner"),
+            (0.45, "inner"),
+            (0.5, "middle"),
+            (0.65, "middle"),
+            (0.7, "outer"),
+            (0.85, "outer"),
+            (0.9, "edge"),
+            (0.99, "edge"),
+        ],
+    )
     def test_ring_classification(self, policy, r, expected_ring):
         result = policy.classify(r)
         assert result["ring"] == expected_ring
@@ -490,8 +496,8 @@ class TestCrypto:
     def test_real_pqc_key_sizes(self):
         """Verify real ML-KEM-768 and ML-DSA-65 key sizes match NIST spec."""
         pk, sk = kem_keygen()
-        assert len(pk) == 1184   # ML-KEM-768 public key
-        assert len(sk) == 2400   # ML-KEM-768 secret key
+        assert len(pk) == 1184  # ML-KEM-768 public key
+        assert len(sk) == 2400  # ML-KEM-768 secret key
 
         dpk, dsk = dsa_keygen()
         assert len(dpk) == 1952  # ML-DSA-65 public key
@@ -670,6 +676,7 @@ class TestSemanticNavigator:
 
     def setup_method(self):
         import numpy as np
+
         self.np = np
         self.SemanticNavigator = cli.SemanticNavigator
 
@@ -697,17 +704,13 @@ class TestSemanticNavigator:
         assert len(nav.history) == 3
 
     def test_self_distance_zero(self):
-        nav = self.SemanticNavigator(
-            initial_pos=[0.1, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.01
-        )
+        nav = self.SemanticNavigator(initial_pos=[0.1, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.01)
         d = nav.distance_to(nav)
         assert d < 1e-6
 
     def test_distance_between_agents(self):
         nav1 = self.SemanticNavigator(chaos_strength=0.01)
-        nav2 = self.SemanticNavigator(
-            initial_pos=[0.3, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.01
-        )
+        nav2 = self.SemanticNavigator(initial_pos=[0.3, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.01)
         d = nav1.distance_to(nav2)
         assert d > 0
 
@@ -735,12 +738,8 @@ class TestSemanticNavigator:
 
     def test_mutation_count_affects_trajectory(self):
         """Non-zero mutation_count should introduce repulsion."""
-        nav1 = self.SemanticNavigator(
-            initial_pos=[0.1, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.0
-        )
-        nav2 = self.SemanticNavigator(
-            initial_pos=[0.1, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.0
-        )
+        nav1 = self.SemanticNavigator(initial_pos=[0.1, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.0)
+        nav2 = self.SemanticNavigator(initial_pos=[0.1, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.0)
         # Due to randomness in repulsion, positions may differ
         nav1.update_position(["KO"], coherence=0.5, mutation_count=0, dt=0.01)
         nav2.update_position(["KO"], coherence=0.5, mutation_count=100, dt=0.01)
@@ -770,12 +769,14 @@ class TestEdgeCases:
         ctx = [0.5]  # Very short
         pt_b64 = base64.b64encode(b"short ctx").decode()
         env = geoseal_encrypt(
-            pt_b64, ctx,
+            pt_b64,
+            ctx,
             base64.b64encode(kem_pk).decode(),
             base64.b64encode(dsa_sk).decode(),
         )
         ok, decpt = geoseal_decrypt(
-            env, ctx,
+            env,
+            ctx,
             base64.b64encode(kem_sk).decode(),
             base64.b64encode(dsa_pk).decode(),
         )
@@ -788,12 +789,14 @@ class TestEdgeCases:
         ctx = [0.0, 0.0, 0.0]
         pt_b64 = base64.b64encode(b"").decode()
         env = geoseal_encrypt(
-            pt_b64, ctx,
+            pt_b64,
+            ctx,
             base64.b64encode(kem_pk).decode(),
             base64.b64encode(dsa_sk).decode(),
         )
         ok, decpt = geoseal_decrypt(
-            env, ctx,
+            env,
+            ctx,
             base64.b64encode(kem_sk).decode(),
             base64.b64encode(dsa_pk).decode(),
         )
@@ -853,12 +856,14 @@ class TestIntegration:
         ctx = [0.2, -0.3, 0.7]
         pt_b64 = base64.b64encode(payload).decode()
         env = geoseal_encrypt(
-            pt_b64, ctx,
+            pt_b64,
+            ctx,
             base64.b64encode(kem_pk).decode(),
             base64.b64encode(dsa_sk).decode(),
         )
         ok, decpt = geoseal_decrypt(
-            env, ctx,
+            env,
+            ctx,
             base64.b64encode(kem_sk).decode(),
             base64.b64encode(dsa_pk).decode(),
         )

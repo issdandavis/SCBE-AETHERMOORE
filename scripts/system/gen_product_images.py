@@ -100,15 +100,14 @@ def draw_shield(draw, cx, cy, size, color):
     draw.polygon(pts, outline=color, width=5)
     draw.line(
         [(cx - s * 0.25, cy), (cx - s * 0.05, cy + s * 0.2), (cx + s * 0.3, cy - s * 0.2)],
-        fill=color, width=6,
+        fill=color,
+        width=6,
     )
 
 
 def draw_lock(draw, cx, cy, size, color):
     s = size * 0.4
-    draw.rounded_rectangle(
-        [cx - s, cy - s * 0.1, cx + s, cy + s * 1.5], radius=12, outline=color, width=5
-    )
+    draw.rounded_rectangle([cx - s, cy - s * 0.1, cx + s, cy + s * 1.5], radius=12, outline=color, width=5)
     draw.arc([cx - s * 0.6, cy - s * 1.4, cx + s * 0.6, cy + s * 0.1], 180, 0, fill=color, width=5)
     draw.ellipse([cx - s * 0.15, cy + s * 0.3, cx + s * 0.15, cy + s * 0.7], fill=color)
 
@@ -155,11 +154,13 @@ def draw_book(draw, cx, cy, size, color):
     s = size * 0.4
     draw.polygon(
         [(cx, cy - s), (cx - s * 1.2, cy - s * 0.8), (cx - s * 1.2, cy + s * 0.8), (cx, cy + s)],
-        outline=color, width=4,
+        outline=color,
+        width=4,
     )
     draw.polygon(
         [(cx, cy - s), (cx + s * 1.2, cy - s * 0.8), (cx + s * 1.2, cy + s * 0.8), (cx, cy + s)],
-        outline=color, width=4,
+        outline=color,
+        width=4,
     )
     draw.line([(cx, cy - s), (cx, cy + s)], fill=color, width=3)
     for i in range(3):

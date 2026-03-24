@@ -76,9 +76,7 @@ def _meet(values: Iterable[LatticeValue]) -> LatticeValue:
 
 def local_consensus_value(sheaf: TemporalSheaf, assignment: Mapping[str, LatticeValue], node: str) -> LatticeValue:
     incoming = [
-        sheaf.restrictions[(neighbor, node)](assignment[neighbor])
-        for neighbor in sheaf.nodes
-        if neighbor != node
+        sheaf.restrictions[(neighbor, node)](assignment[neighbor]) for neighbor in sheaf.nodes if neighbor != node
     ]
     if not incoming:
         return assignment[node]
@@ -86,10 +84,7 @@ def local_consensus_value(sheaf: TemporalSheaf, assignment: Mapping[str, Lattice
 
 
 def tarski_operator(sheaf: TemporalSheaf, assignment: Mapping[str, LatticeValue]) -> Dict[str, LatticeValue]:
-    return {
-        node: min(assignment[node], local_consensus_value(sheaf, assignment, node))
-        for node in sheaf.nodes
-    }
+    return {node: min(assignment[node], local_consensus_value(sheaf, assignment, node)) for node in sheaf.nodes}
 
 
 def iterate_to_fixed_point(

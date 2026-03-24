@@ -186,7 +186,13 @@ def _validate_notebook_url(url: str) -> str:
 
 
 def _save_output(path: str, payload: dict[str, Any]) -> str:
-    out_path = Path(path) if path else (DEFAULT_ARTIFACT_DIR / f"notebooklm_connector_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json")
+    out_path = (
+        Path(path)
+        if path
+        else (
+            DEFAULT_ARTIFACT_DIR / f"notebooklm_connector_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
+        )
+    )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return str(out_path.resolve())
@@ -700,7 +706,11 @@ def action_agent_dual(args: argparse.Namespace) -> dict[str, Any]:
         )
         _save_registry(reg_path, registry)
 
-    ok = bool(visual.get("ok")) and all(bool(r.get("ok")) for r in writer_results) and (not prompt or bool(prompt_result.get("ok")))
+    ok = (
+        bool(visual.get("ok"))
+        and all(bool(r.get("ok")) for r in writer_results)
+        and (not prompt or bool(prompt_result.get("ok")))
+    )
     return {
         "ok": ok,
         "action": "agent-dual",

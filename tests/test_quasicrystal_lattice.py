@@ -127,9 +127,7 @@ class TestGateMapping:
         rb = qc.map_gates_to_lattice(b)
         rab = qc.map_gates_to_lattice(ab)
 
-        np.testing.assert_allclose(
-            rab.r_physical, ra.r_physical + rb.r_physical, atol=1e-10
-        )
+        np.testing.assert_allclose(rab.r_physical, ra.r_physical + rb.r_physical, atol=1e-10)
 
 
 # =============================================================================
@@ -197,9 +195,7 @@ class TestPhasonRekey:
         # Physical-space projection is unchanged
         np.testing.assert_array_equal(before.r_physical, after.r_physical)
         # Perpendicular-space RAW projection is unchanged
-        np.testing.assert_array_equal(
-            before.r_perpendicular, after.r_perpendicular
-        )
+        np.testing.assert_array_equal(before.r_perpendicular, after.r_perpendicular)
         # But the distance (from shifted window) changed
         assert before.perp_distance != after.perp_distance
 

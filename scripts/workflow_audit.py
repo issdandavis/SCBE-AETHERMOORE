@@ -85,9 +85,7 @@ def scan_workflows(workspace: Path) -> List[WorkflowResult]:
     if not workflow_dir.exists():
         return results
 
-    workflow_files = sorted(
-        list(workflow_dir.glob("*.yml")) + list(workflow_dir.glob("*.yaml"))
-    )
+    workflow_files = sorted(list(workflow_dir.glob("*.yml")) + list(workflow_dir.glob("*.yaml")))
     for workflow in workflow_files:
         issues: List[Issue] = []
         text = workflow.read_text(encoding="utf-8", errors="replace")

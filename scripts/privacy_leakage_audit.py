@@ -37,7 +37,9 @@ ACCOUNT_RULE = PatternRule(
     ),
 )
 API_KEY_RULES = [
-    PatternRule("api_key", re.compile(r"(?i)\b(?:sk|rk|pk|ghp|gho|ghu|ghs|ghr|hf|xox[baprs])[_-]?[A-Za-z0-9_\-]{10,}\b")),
+    PatternRule(
+        "api_key", re.compile(r"(?i)\b(?:sk|rk|pk|ghp|gho|ghu|ghs|ghr|hf|xox[baprs])[_-]?[A-Za-z0-9_\-]{10,}\b")
+    ),
     PatternRule(
         "api_key",
         re.compile(
@@ -45,7 +47,18 @@ API_KEY_RULES = [
         ),
     ),
 ]
-SENSITIVE_RULES = [BEARER_RULE, API_KEY_RULES[0], API_KEY_RULES[1], CC_RULE, SSN_RULE, ACCOUNT_RULE, EMAIL_RULE, PHONE_RULE, URL_RULE, IP_RULE]
+SENSITIVE_RULES = [
+    BEARER_RULE,
+    API_KEY_RULES[0],
+    API_KEY_RULES[1],
+    CC_RULE,
+    SSN_RULE,
+    ACCOUNT_RULE,
+    EMAIL_RULE,
+    PHONE_RULE,
+    URL_RULE,
+    IP_RULE,
+]
 
 
 def _safe_relative(path: Path) -> str:
@@ -240,12 +253,16 @@ def _scan_pass(name: str, protected_texts: list[str], source_texts: list[str]) -
             "signals": sorted(f"normalized_sensitive:{kind}" for kind in sensitive_counts),
         }
     if name == "extractive_overlap":
-        overlap = _measure_overlap(protected_texts, source_texts) if source_texts else {
-            "mean_ratio": 0.0,
-            "max_ratio": 0.0,
-            "rows_above_threshold": 0,
-            "examples": [],
-        }
+        overlap = (
+            _measure_overlap(protected_texts, source_texts)
+            if source_texts
+            else {
+                "mean_ratio": 0.0,
+                "max_ratio": 0.0,
+                "rows_above_threshold": 0,
+                "examples": [],
+            }
+        )
         signals: list[str] = []
         if overlap["max_ratio"] >= 0.75:
             signals.append("overlap:max_ratio")
@@ -334,9 +351,13 @@ def audit_protected_corpus(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Audit a protected corpus for leakage and extractiveness.")
     parser.add_argument("--protected", nargs="+", required=True, help="Protected JSONL files, dirs, or globs.")
-    parser.add_argument("--source", nargs="*", default=[], help="Optional source JSONL or note files for overlap checks.")
+    parser.add_argument(
+        "--source", nargs="*", default=[], help="Optional source JSONL or note files for overlap checks."
+    )
     parser.add_argument("--out", required=True, help="Report JSON output path.")
-    parser.add_argument("--max-source-rows", type=int, default=1000, help="Reserved extension point for future bounded scanning.")
+    parser.add_argument(
+        "--max-source-rows", type=int, default=1000, help="Reserved extension point for future bounded scanning."
+    )
     parser.add_argument(
         "--max-tangential-passes",
         type=int,

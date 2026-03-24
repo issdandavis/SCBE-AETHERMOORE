@@ -31,19 +31,22 @@ from .credit import ContextCredit
 #  Vault states
 # ---------------------------------------------------------------------------
 
+
 class VaultState(str, Enum):
     """Lifecycle of a BitLocker vault."""
-    OPEN = "OPEN"               # Accepting deposits
-    LOCKED = "LOCKED"           # Sealed — no deposits, withdrawals need key
-    ESCROWED = "ESCROWED"       # Held for a pending exchange
-    RELEASED = "RELEASED"       # Credits returned to owner
-    EXPIRED = "EXPIRED"         # Time-lock exceeded — auto-released
-    BURNED = "BURNED"           # Credits permanently destroyed (penalty)
+
+    OPEN = "OPEN"  # Accepting deposits
+    LOCKED = "LOCKED"  # Sealed — no deposits, withdrawals need key
+    ESCROWED = "ESCROWED"  # Held for a pending exchange
+    RELEASED = "RELEASED"  # Credits returned to owner
+    EXPIRED = "EXPIRED"  # Time-lock exceeded — auto-released
+    BURNED = "BURNED"  # Credits permanently destroyed (penalty)
 
 
 # ---------------------------------------------------------------------------
 #  Encryption helpers (lightweight — uses stdlib only)
 # ---------------------------------------------------------------------------
+
 
 def _derive_vault_key(owner_id: str, salt: bytes) -> bytes:
     """Derive a 256-bit vault key from owner identity + salt."""
@@ -58,13 +61,14 @@ def _encrypt_payload(plaintext: bytes, key: bytes) -> Tuple[bytes, bytes]:
     """
     try:
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
         nonce = os.urandom(12)
         ct = AESGCM(key).encrypt(nonce, plaintext, None)
         return ct, nonce
     except ImportError:
         # Fallback: repeating-key XOR (NOT secure — development only)
         nonce = os.urandom(12)
-        extended = (key * ((len(plaintext) // len(key)) + 1))[:len(plaintext)]
+        extended = (key * ((len(plaintext) // len(key)) + 1))[: len(plaintext)]
         ct = bytes(a ^ b for a, b in zip(plaintext, extended))
         return ct, nonce
 
@@ -73,15 +77,17 @@ def _decrypt_payload(ciphertext: bytes, key: bytes, nonce: bytes) -> bytes:
     """Decrypt vault payload."""
     try:
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
         return AESGCM(key).decrypt(nonce, ciphertext, None)
     except ImportError:
-        extended = (key * ((len(ciphertext) // len(key)) + 1))[:len(ciphertext)]
+        extended = (key * ((len(ciphertext) // len(key)) + 1))[: len(ciphertext)]
         return bytes(a ^ b for a, b in zip(ciphertext, extended))
 
 
 # ---------------------------------------------------------------------------
 #  BitLocker Vault
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class BitLockerVault:
@@ -104,8 +110,8 @@ class BitLockerVault:
     state: VaultState = VaultState.OPEN
     created_at: float = 0.0
     locked_at: float = 0.0
-    expires_at: float = 0.0          # 0 = no expiry
-    escrow_counterparty: str = ""    # Agent on the other side of an exchange
+    expires_at: float = 0.0  # 0 = no expiry
+    escrow_counterparty: str = ""  # Agent on the other side of an exchange
 
     # Internal storage
     _credits: List[ContextCredit] = field(default_factory=list, repr=False)
@@ -284,6 +290,7 @@ class BitLockerVault:
 #  Vault Registry — manages multiple vaults
 # ---------------------------------------------------------------------------
 
+
 class VaultRegistry:
     """
     Registry of all BitLocker vaults.
@@ -313,10 +320,7 @@ class VaultRegistry:
         """All non-released, non-burned vaults."""
         for v in self._vaults.values():
             v._check_expiry()
-        return [
-            v for v in self._vaults.values()
-            if v.state not in (VaultState.RELEASED, VaultState.BURNED)
-        ]
+        return [v for v in self._vaults.values() if v.state not in (VaultState.RELEASED, VaultState.BURNED)]
 
     def summary(self) -> Dict[str, Any]:
         by_state: Dict[str, int] = {}

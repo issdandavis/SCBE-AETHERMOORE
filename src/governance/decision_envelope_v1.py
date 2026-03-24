@@ -132,7 +132,9 @@ def _build_file_descriptor() -> descriptor_pb2.FileDescriptorProto:
     add_field(authority, name="valid_until_ms", number=4, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_UINT64)
     add_field(authority, name="issued_at_ms", number=5, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_UINT64)
     add_field(authority, name="signature", number=6, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BYTES)
-    add_field(authority, name="signed_payload_hash", number=7, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BYTES)
+    add_field(
+        authority, name="signed_payload_hash", number=7, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BYTES
+    )
 
     scope = add_message("Scope")
     add_field(
@@ -308,12 +310,8 @@ except Exception:  # noqa: BLE001
 DecisionEnvelopeV1 = message_factory.GetMessageClass(
     _POOL.FindMessageTypeByName("scbe.governance.v1.DecisionEnvelopeV1")
 )
-ActionState = message_factory.GetMessageClass(
-    _POOL.FindMessageTypeByName("scbe.governance.v1.ActionState")
-)
-EvaluationResult = message_factory.GetMessageClass(
-    _POOL.FindMessageTypeByName("scbe.governance.v1.EvaluationResult")
-)
+ActionState = message_factory.GetMessageClass(_POOL.FindMessageTypeByName("scbe.governance.v1.ActionState"))
+EvaluationResult = message_factory.GetMessageClass(_POOL.FindMessageTypeByName("scbe.governance.v1.EvaluationResult"))
 
 _BOUNDARY_ENUM = _POOL.FindEnumTypeByName("scbe.governance.v1.BoundaryBehavior")
 _RISK_ENUM = _POOL.FindEnumTypeByName("scbe.governance.v1.RiskTier")
@@ -429,9 +427,7 @@ def compute_mmr_leaf_payload(
             "target_allowlist": _sorted_unique(list(envelope.scope.target_allowlist)),
         },
         "constraints": {
-            "mission_phase_allowlist": _sorted_unique(
-                list(envelope.constraints.mission_phase_allowlist)
-            ),
+            "mission_phase_allowlist": _sorted_unique(list(envelope.constraints.mission_phase_allowlist)),
             "resources": {
                 "power_min": float(envelope.constraints.resources.power_min),
                 "bandwidth_min": float(envelope.constraints.resources.bandwidth_min),

@@ -30,7 +30,9 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Run SCBE AI kernel wrapper over a job spec")
     p.add_argument("--job", required=True, help="Path to YAML/JSON job spec")
     p.add_argument("--run-dir", default="", help="Optional run dir. Default: training/runs/scbe_ai_kernel/<timestamp>")
-    p.add_argument("--browser-endpoint", default="", help="Optional browser worker endpoint, e.g. http://127.0.0.1:8000/scrape")
+    p.add_argument(
+        "--browser-endpoint", default="", help="Optional browser worker endpoint, e.g. http://127.0.0.1:8000/scrape"
+    )
     p.add_argument(
         "--hf-output",
         default="training-data/hf-digimon-egg/defensive_mesh_sft.jsonl",
@@ -94,7 +96,9 @@ def main() -> None:
     previous_antibody_load = 0.0
     for idx, task in enumerate(tasks, start=1):
         gate = DefensiveMeshKernel.gate_task(job, task, previous_antibody_load=previous_antibody_load)
-        previous_antibody_load = float(gate.kernel_gate.get("turnstile", {}).get("antibody_load", previous_antibody_load))
+        previous_antibody_load = float(
+            gate.kernel_gate.get("turnstile", {}).get("antibody_load", previous_antibody_load)
+        )
 
         row = {
             "job_id": job.job_id,
@@ -162,4 +166,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

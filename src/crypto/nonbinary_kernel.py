@@ -77,12 +77,16 @@ class KernelConfig:
         if self.theta1 >= self.theta2:
             raise ValueError("theta1 must be less than theta2")
 
-        default_labels = ["care", "neutral", "harm"] if self.k == 3 else [
-            "care",
-            "neutral",
-            "harm",
-            "repair",
-        ]
+        default_labels = (
+            ["care", "neutral", "harm"]
+            if self.k == 3
+            else [
+                "care",
+                "neutral",
+                "harm",
+                "repair",
+            ]
+        )
         if self.labels is None:
             self.labels = default_labels
         if len(self.labels) != self.k:
@@ -246,8 +250,7 @@ class NonBinarySimplexKernel:
         )
 
         reason = (
-            f"{tier} via risk={risk_score:.4f}; dominant={dominant_state}; "
-            f"E={e_t:.4f}, J={j_t:.4f}, q={q_t:.4f}"
+            f"{tier} via risk={risk_score:.4f}; dominant={dominant_state}; " f"E={e_t:.4f}, J={j_t:.4f}, q={q_t:.4f}"
         )
         signature_payload = {
             "StateVector": asdict(sv),

@@ -60,7 +60,11 @@ class HydraResearchRequest(BaseModel):
         default_factory=lambda: ["claude", "gpt", "gemini"],
         description="LLM providers to use (tried in order)",
     )
-    mode: str = Field(default="httpx", pattern="^(local|cloud|httpx)$", description="Browsing mode: httpx (lightweight), local (Playwright), or cloud (workers)")
+    mode: str = Field(
+        default="httpx",
+        pattern="^(local|cloud|httpx)$",
+        description="Browsing mode: httpx (lightweight), local (Playwright), or cloud (workers)",
+    )
     local_max_tabs: int = Field(default=4, ge=1, le=12, description="Max local browser tabs")
     extract_max_chars: int = Field(default=8000, ge=500, le=50000, description="Per-page extracted char cap")
     synthesis_provider: Optional[str] = Field(default=None, max_length=64, description="Preferred synthesis provider")
@@ -114,6 +118,7 @@ hydra_router = APIRouter(prefix="/hydra", tags=["HYDRA"])
 # POST /hydra/execute
 # ---------------------------------------------------------------------------
 
+
 @hydra_router.post("/execute")
 async def hydra_execute(
     request: HydraExecuteRequest,
@@ -146,6 +151,7 @@ async def hydra_execute(
 # ---------------------------------------------------------------------------
 # GET /hydra/status
 # ---------------------------------------------------------------------------
+
 
 @hydra_router.get("/status")
 async def hydra_status(user: str = Depends(verify_api_key)):
@@ -208,6 +214,7 @@ async def hydra_status(user: str = Depends(verify_api_key)):
 # POST /hydra/heads
 # ---------------------------------------------------------------------------
 
+
 @hydra_router.post("/heads")
 async def hydra_register_head(
     request: HydraRegisterHeadRequest,
@@ -261,6 +268,7 @@ async def hydra_register_head(
 # DELETE /hydra/heads/{head_id}
 # ---------------------------------------------------------------------------
 
+
 @hydra_router.delete("/heads/{head_id}")
 async def hydra_disconnect_head(
     head_id: str,
@@ -289,6 +297,7 @@ async def hydra_disconnect_head(
 # POST /hydra/workflow
 # ---------------------------------------------------------------------------
 
+
 @hydra_router.post("/workflow")
 async def hydra_workflow(
     request: HydraWorkflowRequest,
@@ -305,13 +314,15 @@ async def hydra_workflow(
         raise HTTPException(400, "At least one phase is required")
 
     try:
-        result = await spine.execute({
-            "action": "workflow",
-            "definition": {
-                "name": request.name,
-                "phases": request.phases,
-            },
-        })
+        result = await spine.execute(
+            {
+                "action": "workflow",
+                "definition": {
+                    "name": request.name,
+                    "phases": request.phases,
+                },
+            }
+        )
         return {"status": "ok", "data": result}
     except Exception as exc:
         raise HTTPException(500, f"Workflow execution failed: {exc}")
@@ -320,6 +331,7 @@ async def hydra_workflow(
 # ---------------------------------------------------------------------------
 # GET /hydra/switchboard/stats
 # ---------------------------------------------------------------------------
+
 
 @hydra_router.get("/switchboard/stats")
 async def hydra_switchboard_stats(user: str = Depends(verify_api_key)):
@@ -343,6 +355,7 @@ async def hydra_switchboard_stats(user: str = Depends(verify_api_key)):
 # ---------------------------------------------------------------------------
 # POST /hydra/switchboard/enqueue
 # ---------------------------------------------------------------------------
+
 
 @hydra_router.post("/switchboard/enqueue")
 async def hydra_switchboard_enqueue(
@@ -376,6 +389,7 @@ async def hydra_switchboard_enqueue(
 # ---------------------------------------------------------------------------
 # POST /hydra/think
 # ---------------------------------------------------------------------------
+
 
 @hydra_router.post("/think")
 async def hydra_think(
@@ -413,8 +427,7 @@ async def hydra_think(
     if provider is None:
         raise HTTPException(
             400,
-            "No AI head with an LLM provider is available. "
-            "Register a head with POST /hydra/heads first.",
+            "No AI head with an LLM provider is available. " "Register a head with POST /hydra/heads first.",
         )
 
     try:
@@ -439,6 +452,7 @@ async def hydra_think(
 # ---------------------------------------------------------------------------
 # POST /hydra/research
 # ---------------------------------------------------------------------------
+
 
 @hydra_router.post("/research")
 async def hydra_research(
