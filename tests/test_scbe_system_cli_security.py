@@ -56,6 +56,6 @@ def test_write_agent_call_result_sanitizes_content_and_raw(tmp_path: Path) -> No
 
 def test_visual_system_html2canvas_script_uses_sri() -> None:
     html = (ROOT / "scbe-visual-system" / "index.html").read_text(encoding="utf-8")
-    assert 'html2canvas.min.js' in html
+    assert "html2canvas.min.js" in html
     assert 'integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H"' in html
     assert 'crossorigin="anonymous"' in html

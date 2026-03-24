@@ -115,14 +115,14 @@ def summarize_research_flow(messages: list[dict[str, Any]]) -> dict[str, Any]:
         "plan_provider": plan.get("provider"),
         "plan_risk_tier": plan.get("risk_tier"),
         "status_sequence": [
-            msg.get("payload", {}).get("state")
-            for msg in messages
-            if msg.get("type") == "agent_status"
+            msg.get("payload", {}).get("state") for msg in messages if msg.get("type") == "agent_status"
         ],
     }
 
 
-def summarize_zone_gate(initial_messages: list[dict[str, Any]], resumed_messages: list[dict[str, Any]]) -> dict[str, Any]:
+def summarize_zone_gate(
+    initial_messages: list[dict[str, Any]], resumed_messages: list[dict[str, Any]]
+) -> dict[str, Any]:
     zone_request = next((msg for msg in initial_messages if msg.get("type") == "zone_request"), {})
     resumed_execution = next(
         (
@@ -136,14 +136,10 @@ def summarize_zone_gate(initial_messages: list[dict[str, Any]], resumed_messages
         "zone": zone_request.get("zone"),
         "request_seq": zone_request.get("seq"),
         "initial_states": [
-            msg.get("payload", {}).get("state")
-            for msg in initial_messages
-            if msg.get("type") == "agent_status"
+            msg.get("payload", {}).get("state") for msg in initial_messages if msg.get("type") == "agent_status"
         ],
         "resumed_states": [
-            msg.get("payload", {}).get("state")
-            for msg in resumed_messages
-            if msg.get("type") == "agent_status"
+            msg.get("payload", {}).get("state") for msg in resumed_messages if msg.get("type") == "agent_status"
         ],
         "execution_provider": resumed_execution.get("provider"),
         "execution_model": resumed_execution.get("model_id"),
@@ -166,9 +162,7 @@ def summarize_page_flow(messages: list[dict[str, Any]]) -> dict[str, Any]:
         "intent": analysis.get("intent"),
         "topics": analysis.get("topics", []),
         "next_actions": [
-            action.get("label")
-            for action in analysis.get("next_actions", [])
-            if isinstance(action, dict)
+            action.get("label") for action in analysis.get("next_actions", []) if isinstance(action, dict)
         ],
     }
 

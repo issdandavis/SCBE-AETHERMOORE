@@ -32,14 +32,16 @@ class TestCommandPlanner:
 
     def test_build_command_plan_without_cloud_escalation(self):
         squad = AgentSquad(WsFeed())
-        router = OctoArmorRouter(enabled_providers={
-            ModelProvider.LOCAL: True,
-            ModelProvider.HAIKU: False,
-            ModelProvider.SONNET: False,
-            ModelProvider.OPUS: False,
-            ModelProvider.FLASH: False,
-            ModelProvider.GROK: False,
-        })
+        router = OctoArmorRouter(
+            enabled_providers={
+                ModelProvider.LOCAL: True,
+                ModelProvider.HAIKU: False,
+                ModelProvider.SONNET: False,
+                ModelProvider.OPUS: False,
+                ModelProvider.FLASH: False,
+                ModelProvider.GROK: False,
+            }
+        )
 
         plan = build_command_plan(
             text="Summarize this page",

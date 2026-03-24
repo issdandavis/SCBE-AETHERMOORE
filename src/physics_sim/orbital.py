@@ -466,9 +466,7 @@ def hohmann_transfer(r1: float, r2: float, mu: float) -> Dict[str, float]:
     }
 
 
-def bi_elliptic_transfer(
-    r1: float, r2: float, r_b: float, mu: float
-) -> Dict[str, float]:
+def bi_elliptic_transfer(r1: float, r2: float, r_b: float, mu: float) -> Dict[str, float]:
     """
     Calculate bi-elliptic transfer parameters.
 

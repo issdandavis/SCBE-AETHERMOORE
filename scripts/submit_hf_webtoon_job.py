@@ -122,7 +122,11 @@ def main() -> None:
         detach=not args.foreground,
     )
 
-    print(json.dumps({"script_path": str(script_path), "staged_script_url": staged_script_url, "command": command}, indent=2))
+    print(
+        json.dumps(
+            {"script_path": str(script_path), "staged_script_url": staged_script_url, "command": command}, indent=2
+        )
+    )
     if args.dry_run:
         return
 

@@ -37,6 +37,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 import sys
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tests.adversarial.scbe_harness import (
@@ -47,7 +48,8 @@ from tests.adversarial.scbe_harness import (
     build_metric_tensor,
     TONGUE_NAMES,
     TONGUE_WEIGHTS,
-    PI, PHI,
+    PI,
+    PHI,
 )
 from tests.adversarial.attack_corpus import (
     BASELINE_CLEAN,
@@ -59,9 +61,11 @@ from tests.adversarial.attack_corpus import (
 # Layer-by-layer state capture ("time dilation")
 # ═══════════════════════════════════════════════════════════
 
+
 @dataclass
 class LayerState:
     """State snapshot at a single pipeline layer."""
+
     layer: int
     name: str
     timestamp: float
@@ -73,6 +77,7 @@ class LayerState:
 @dataclass
 class PipelineTrace:
     """Full trace through all 14 layers for one prompt."""
+
     prompt: str
     group: str  # A, B, or C
     layers: List[LayerState] = field(default_factory=list)
@@ -100,110 +105,172 @@ def simulate_14_layer_pipeline(prompt: str, group: str, centroid: List[float]) -
     complexity = len(set(w.lower() for w in words)) / max(word_count, 1)
     l1_state = np.array([word_count / 100, complexity, char_count / 1000])
     l1_norm = float(np.linalg.norm(l1_state))
-    trace.layers.append(LayerState(
-        layer=1, name="Complex Context", timestamp=time.time(),
-        values={"word_count": word_count, "complexity": round(complexity, 4), "char_count": char_count},
-        norm=l1_norm, energy=l1_norm ** 2,
-    ))
+    trace.layers.append(
+        LayerState(
+            layer=1,
+            name="Complex Context",
+            timestamp=time.time(),
+            values={"word_count": word_count, "complexity": round(complexity, 4), "char_count": char_count},
+            norm=l1_norm,
+            energy=l1_norm**2,
+        )
+    )
 
     # L2: Realification (complex → real)
     l2_state = np.abs(l1_state)
-    trace.layers.append(LayerState(
-        layer=2, name="Realification", timestamp=time.time(),
-        values={"real_vector": l2_state.tolist()},
-        norm=float(np.linalg.norm(l2_state)), energy=float(np.sum(l2_state ** 2)),
-    ))
+    trace.layers.append(
+        LayerState(
+            layer=2,
+            name="Realification",
+            timestamp=time.time(),
+            values={"real_vector": l2_state.tolist()},
+            norm=float(np.linalg.norm(l2_state)),
+            energy=float(np.sum(l2_state**2)),
+        )
+    )
 
     # L3-4: Weighted transform → Poincaré embedding
     coords = text_to_tongue_coords(prompt)
     G = build_metric_tensor()
     weighted = [coords[i] * TONGUE_WEIGHTS[i] for i in range(6)]
-    trace.layers.append(LayerState(
-        layer=3, name="Weighted Transform (Langues)", timestamp=time.time(),
-        values={TONGUE_NAMES[i]: round(coords[i], 4) for i in range(6)},
-        norm=float(np.linalg.norm(coords)), energy=sum(w ** 2 for w in weighted),
-    ))
+    trace.layers.append(
+        LayerState(
+            layer=3,
+            name="Weighted Transform (Langues)",
+            timestamp=time.time(),
+            values={TONGUE_NAMES[i]: round(coords[i], 4) for i in range(6)},
+            norm=float(np.linalg.norm(coords)),
+            energy=sum(w**2 for w in weighted),
+        )
+    )
 
     # L4: Poincaré embedding (clamp to ball)
     coord_norm = math.sqrt(sum(c * c for c in coords))
     poincare_norm = min(coord_norm, 0.999)
-    trace.layers.append(LayerState(
-        layer=4, name="Poincaré Embedding", timestamp=time.time(),
-        values={"coord_norm": round(coord_norm, 4), "poincare_norm": round(poincare_norm, 4),
-                "inside_ball": coord_norm < 1.0},
-        norm=poincare_norm, energy=poincare_norm ** 2,
-    ))
+    trace.layers.append(
+        LayerState(
+            layer=4,
+            name="Poincaré Embedding",
+            timestamp=time.time(),
+            values={
+                "coord_norm": round(coord_norm, 4),
+                "poincare_norm": round(poincare_norm, 4),
+                "inside_ball": coord_norm < 1.0,
+            },
+            norm=poincare_norm,
+            energy=poincare_norm**2,
+        )
+    )
 
     # L5: Hyperbolic distance from centroid
     d_star_sq = sum(G[i, i] * (coords[i] - centroid[i]) ** 2 for i in range(6))
     d_star = math.sqrt(d_star_sq)
-    trace.layers.append(LayerState(
-        layer=5, name="Hyperbolic Distance", timestamp=time.time(),
-        values={"d_star": round(d_star, 4), "d_star_sq": round(d_star_sq, 4)},
-        norm=d_star, energy=d_star_sq,
-    ))
+    trace.layers.append(
+        LayerState(
+            layer=5,
+            name="Hyperbolic Distance",
+            timestamp=time.time(),
+            values={"d_star": round(d_star, 4), "d_star_sq": round(d_star_sq, 4)},
+            norm=d_star,
+            energy=d_star_sq,
+        )
+    )
 
     # L6: Breathing transform
     breath_amp = 0.1
     breath_freq = 2 * PI
     breath_t = time.time() % 1.0
     breath = math.tanh(poincare_norm + breath_amp * math.sin(breath_freq * breath_t))
-    trace.layers.append(LayerState(
-        layer=6, name="Breathing Transform", timestamp=time.time(),
-        values={"breath_factor": round(breath, 4), "amplitude": breath_amp},
-        norm=breath, energy=breath ** 2,
-    ))
+    trace.layers.append(
+        LayerState(
+            layer=6,
+            name="Breathing Transform",
+            timestamp=time.time(),
+            values={"breath_factor": round(breath, 4), "amplitude": breath_amp},
+            norm=breath,
+            energy=breath**2,
+        )
+    )
 
     # L7: Phase modulation (Möbius)
     phase = sum(TONGUE_WEIGHTS[i] * coords[i] for i in range(6)) % (2 * PI)
-    trace.layers.append(LayerState(
-        layer=7, name="Phase Modulation", timestamp=time.time(),
-        values={"phase_rad": round(phase, 4), "phase_deg": round(math.degrees(phase), 2)},
-        norm=phase / (2 * PI), energy=phase ** 2,
-    ))
+    trace.layers.append(
+        LayerState(
+            layer=7,
+            name="Phase Modulation",
+            timestamp=time.time(),
+            values={"phase_rad": round(phase, 4), "phase_deg": round(math.degrees(phase), 2)},
+            norm=phase / (2 * PI),
+            energy=phase**2,
+        )
+    )
 
     # L8: Multi-well potential (realm assignment)
     realm_distance = min(d_star, 5.0)
-    trace.layers.append(LayerState(
-        layer=8, name="Multi-Well Potential", timestamp=time.time(),
-        values={"realm_distance": round(realm_distance, 4)},
-        norm=realm_distance, energy=realm_distance ** 2,
-    ))
+    trace.layers.append(
+        LayerState(
+            layer=8,
+            name="Multi-Well Potential",
+            timestamp=time.time(),
+            values={"realm_distance": round(realm_distance, 4)},
+            norm=realm_distance,
+            energy=realm_distance**2,
+        )
+    )
 
     # L9: Spectral coherence (FFT energy)
     spectral_energy = 1.0 / (1.0 + d_star)
-    trace.layers.append(LayerState(
-        layer=9, name="Spectral Coherence", timestamp=time.time(),
-        values={"spectral_energy": round(spectral_energy, 4)},
-        norm=spectral_energy, energy=spectral_energy,
-    ))
+    trace.layers.append(
+        LayerState(
+            layer=9,
+            name="Spectral Coherence",
+            timestamp=time.time(),
+            values={"spectral_energy": round(spectral_energy, 4)},
+            norm=spectral_energy,
+            energy=spectral_energy,
+        )
+    )
 
     # L10: Spin coherence
     spin = quantize_spin(coords, centroid, threshold=0.03)
     spin_coherence = 1.0 - (spin.magnitude / 6.0)
-    trace.layers.append(LayerState(
-        layer=10, name="Spin Coherence", timestamp=time.time(),
-        values={"spin_code": spin.code, "magnitude": spin.magnitude,
-                "coherence": round(spin_coherence, 4)},
-        norm=spin_coherence, energy=spin.magnitude,
-    ))
+    trace.layers.append(
+        LayerState(
+            layer=10,
+            name="Spin Coherence",
+            timestamp=time.time(),
+            values={"spin_code": spin.code, "magnitude": spin.magnitude, "coherence": round(spin_coherence, 4)},
+            norm=spin_coherence,
+            energy=spin.magnitude,
+        )
+    )
 
     # L11: Triadic temporal distance
     triadic = d_star * 0.33 + spin.magnitude * 0.33 + (1 - spectral_energy) * 0.34
-    trace.layers.append(LayerState(
-        layer=11, name="Triadic Temporal", timestamp=time.time(),
-        values={"triadic_distance": round(triadic, 4)},
-        norm=triadic, energy=triadic ** 2,
-    ))
+    trace.layers.append(
+        LayerState(
+            layer=11,
+            name="Triadic Temporal",
+            timestamp=time.time(),
+            values={"triadic_distance": round(triadic, 4)},
+            norm=triadic,
+            energy=triadic**2,
+        )
+    )
 
     # L12: Harmonic wall H(d,R) = π^(φ·d*)
     clamped_d = min(d_star, 5.0)
     harmonic_cost = PI ** (PHI * clamped_d)
-    trace.layers.append(LayerState(
-        layer=12, name="Harmonic Wall", timestamp=time.time(),
-        values={"harmonic_cost": round(harmonic_cost, 4), "clamped_d": round(clamped_d, 4)},
-        norm=min(harmonic_cost / 100, 1.0), energy=harmonic_cost,
-    ))
+    trace.layers.append(
+        LayerState(
+            layer=12,
+            name="Harmonic Wall",
+            timestamp=time.time(),
+            values={"harmonic_cost": round(harmonic_cost, 4), "clamped_d": round(clamped_d, 4)},
+            norm=min(harmonic_cost / 100, 1.0),
+            energy=harmonic_cost,
+        )
+    )
 
     # L13: Risk decision
     if harmonic_cost < 5.0 and spin.magnitude < 4 and coord_norm < 1.2:
@@ -212,13 +279,21 @@ def simulate_14_layer_pipeline(prompt: str, group: str, centroid: List[float]) -
         decision = "QUARANTINE"
     else:
         decision = "DENY"
-    trace.layers.append(LayerState(
-        layer=13, name="Risk Decision", timestamp=time.time(),
-        values={"decision": decision, "cost": round(harmonic_cost, 4),
-                "spin": spin.magnitude, "norm": round(coord_norm, 4)},
-        norm={"ALLOW": 0.2, "QUARANTINE": 0.6, "DENY": 1.0}[decision],
-        energy=harmonic_cost * spin.magnitude,
-    ))
+    trace.layers.append(
+        LayerState(
+            layer=13,
+            name="Risk Decision",
+            timestamp=time.time(),
+            values={
+                "decision": decision,
+                "cost": round(harmonic_cost, 4),
+                "spin": spin.magnitude,
+                "norm": round(coord_norm, 4),
+            },
+            norm={"ALLOW": 0.2, "QUARANTINE": 0.6, "DENY": 1.0}[decision],
+            energy=harmonic_cost * spin.magnitude,
+        )
+    )
 
     # L14: Audio axis (frequency signature!)
     # Map each layer's energy to a frequency — THIS is the sonification
@@ -229,12 +304,16 @@ def simulate_14_layer_pipeline(prompt: str, group: str, centroid: List[float]) -
         amplitude = layer_state.norm
         audio_sig.append(round(freq * amplitude, 4))
 
-    trace.layers.append(LayerState(
-        layer=14, name="Audio Axis", timestamp=time.time(),
-        values={"frequencies": audio_sig[:13], "dominant_freq": max(audio_sig[:13]) if audio_sig else 0},
-        norm=sum(audio_sig[:13]) / max(len(audio_sig), 1) / 1000,
-        energy=sum(f ** 2 for f in audio_sig[:13]),
-    ))
+    trace.layers.append(
+        LayerState(
+            layer=14,
+            name="Audio Axis",
+            timestamp=time.time(),
+            values={"frequencies": audio_sig[:13], "dominant_freq": max(audio_sig[:13]) if audio_sig else 0},
+            norm=sum(audio_sig[:13]) / max(len(audio_sig), 1) / 1000,
+            energy=sum(f**2 for f in audio_sig[:13]),
+        )
+    )
     trace.audio_signature = audio_sig
 
     # Final metrics
@@ -269,6 +348,7 @@ def simulate_14_layer_pipeline(prompt: str, group: str, centroid: List[float]) -
 # Group defenses
 # ═══════════════════════════════════════════════════════════
 
+
 def group_a_naked(prompt: str, centroid: List[float]) -> PipelineTrace:
     """Group A: No protection. Just run the pipeline and always ALLOW."""
     trace = simulate_14_layer_pipeline(prompt, "A-naked", centroid)
@@ -284,8 +364,13 @@ def group_b_basic_guard(prompt: str, centroid: List[float]) -> PipelineTrace:
 
     # Simple keyword blocklist (what most basic guards do)
     blocklist = [
-        "ignore previous", "system prompt", "bypass", "override",
-        "dev mode", "admin access", "disable safety",
+        "ignore previous",
+        "system prompt",
+        "bypass",
+        "override",
+        "dev mode",
+        "admin access",
+        "disable safety",
     ]
     blocked = any(kw in prompt.lower() for kw in blocklist)
 
@@ -317,9 +402,11 @@ def group_c_scbe(prompt: str, centroid: List[float]) -> PipelineTrace:
 # Benchmark runner
 # ═══════════════════════════════════════════════════════════
 
+
 @dataclass
 class BenchmarkResult:
     """Results from one group's run through all attacks."""
+
     group: str
     total_attacks: int
     allowed: int
@@ -423,10 +510,18 @@ def run_benchmark():
     print(f"{'Quarantined':.<30} {result_a.quarantined:>12} {result_b.quarantined:>12} {result_c.quarantined:>12}")
     print(f"{'Denied':.<30} {result_a.denied:>12} {result_b.denied:>12} {result_c.denied:>12}")
     print(f"{'ASR (lower=better)':.<30} {result_a.asr:>11.1%} {result_b.asr:>11.1%} {result_c.asr:>11.1%}")
-    print(f"{'Avg harmonic cost':.<30} {result_a.avg_cost:>12.2f} {result_b.avg_cost:>12.2f} {result_c.avg_cost:>12.2f}")
-    print(f"{'Avg drift magnitude':.<30} {result_a.avg_drift:>12.4f} {result_b.avg_drift:>12.4f} {result_c.avg_drift:>12.4f}")
-    print(f"{'Audio divergence':.<30} {result_a.audio_divergence:>12.2f} {result_b.audio_divergence:>12.2f} {result_c.audio_divergence:>12.2f}")
-    print(f"{'Avg detection time (ms)':.<30} {result_a.avg_detection_ms:>12.3f} {result_b.avg_detection_ms:>12.3f} {result_c.avg_detection_ms:>12.3f}")
+    print(
+        f"{'Avg harmonic cost':.<30} {result_a.avg_cost:>12.2f} {result_b.avg_cost:>12.2f} {result_c.avg_cost:>12.2f}"
+    )
+    print(
+        f"{'Avg drift magnitude':.<30} {result_a.avg_drift:>12.4f} {result_b.avg_drift:>12.4f} {result_c.avg_drift:>12.4f}"
+    )
+    print(
+        f"{'Audio divergence':.<30} {result_a.audio_divergence:>12.2f} {result_b.audio_divergence:>12.2f} {result_c.audio_divergence:>12.2f}"
+    )
+    print(
+        f"{'Avg detection time (ms)':.<30} {result_a.avg_detection_ms:>12.3f} {result_b.avg_detection_ms:>12.3f} {result_c.avg_detection_ms:>12.3f}"
+    )
     print("=" * 70)
 
     # Save detailed results
@@ -437,10 +532,18 @@ def run_benchmark():
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "attacks": len(attacks),
         "groups": {
-            "A_naked": {"asr": result_a.asr, "allowed": result_a.allowed, "denied": result_a.denied,
-                        "audio_divergence": result_a.audio_divergence},
-            "B_guard": {"asr": result_b.asr, "allowed": result_b.allowed, "denied": result_b.denied,
-                        "audio_divergence": result_b.audio_divergence},
+            "A_naked": {
+                "asr": result_a.asr,
+                "allowed": result_a.allowed,
+                "denied": result_a.denied,
+                "audio_divergence": result_a.audio_divergence,
+            },
+            "B_guard": {
+                "asr": result_b.asr,
+                "allowed": result_b.allowed,
+                "denied": result_b.denied,
+                "audio_divergence": result_b.audio_divergence,
+            },
             "C_scbe_trace_simulator": {
                 "asr": result_c.asr,
                 "allowed": result_c.allowed,

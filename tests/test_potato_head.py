@@ -144,14 +144,15 @@ class TestPotatoHeadLifecycle:
         class OrderTracker(ConceptBlock):
             def __init__(self, name):
                 super().__init__(name)
+
             def _do_tick(self, inputs):
                 tick_order.append(self.name)
                 return BlockResult(status=BlockStatus.SUCCESS, output={})
 
         # Attach to sockets with different layers
-        head.attach("plan", OrderTracker("plan"), EggRing.OUTER)        # L6
-        head.attach("proximity", OrderTracker("prox"), EggRing.CORE)    # L14
-        head.attach("sense", OrderTracker("sense"), EggRing.OUTER)      # L9
+        head.attach("plan", OrderTracker("plan"), EggRing.OUTER)  # L6
+        head.attach("proximity", OrderTracker("prox"), EggRing.CORE)  # L14
+        head.attach("sense", OrderTracker("sense"), EggRing.OUTER)  # L9
 
         head.tick_all({})
         assert tick_order == ["plan", "sense", "prox"]  # L6, L9, L14
@@ -241,6 +242,7 @@ class TestDriftShadowBuffer:
 
         # Genuine: irregular, non-uniform drift
         import random
+
         rng = random.Random(42)
         for _ in range(64):
             buf_genuine.push([rng.gauss(0, 0.01) for _ in range(3)])
@@ -333,10 +335,7 @@ class TestPhasonModulation:
         values = [_phason_modulation(i) for i in range(100)]
         # Check that no short period exists
         for period in range(2, 20):
-            matches = sum(
-                1 for i in range(len(values) - period)
-                if abs(values[i] - values[i + period]) < 1e-10
-            )
+            matches = sum(1 for i in range(len(values) - period) if abs(values[i] - values[i + period]) < 1e-10)
             # An aperiodic sequence should not have perfect periodicity
             assert matches < len(values) - period
 
@@ -380,10 +379,12 @@ class TestProximityBlock:
         for step in range(8):
             factor = 1.0 - (step * 0.1)  # Converging
             neighbor_sig = [v * (1.0 + factor) for v in own_sig]
-            result = block.tick({
-                "drift_values": [0.01, 0.02, 0.03],
-                "neighbor_signatures": {"drone-2": neighbor_sig},
-            })
+            result = block.tick(
+                {
+                    "drift_values": [0.01, 0.02, 0.03],
+                    "neighbor_signatures": {"drone-2": neighbor_sig},
+                }
+            )
 
         assert result.output["nearest_id"] == "drone-2"
         assert result.output["drift_distance"] >= 0
@@ -423,10 +424,7 @@ class TestFibonacciWord:
         """No short period exists in the Fibonacci word."""
         word = fibonacci_word(200)
         for period in range(1, 20):
-            is_periodic = all(
-                word[i] == word[i + period]
-                for i in range(min(50, len(word) - period))
-            )
+            is_periodic = all(word[i] == word[i + period] for i in range(min(50, len(word) - period)))
             assert not is_periodic, f"Word appears periodic with period {period}"
 
 
@@ -597,13 +595,17 @@ class TestPotatoHeadFullAssembly:
         # Both drones generate drift over time
         for i in range(16):
             # Drone A: stable drift pattern
-            drone_a.tick_all({
-                "drift_values": [0.01 + 0.001 * i, 0.02, 0.03],
-            })
+            drone_a.tick_all(
+                {
+                    "drift_values": [0.01 + 0.001 * i, 0.02, 0.03],
+                }
+            )
             # Drone B: converging drift pattern
-            drone_b.tick_all({
-                "drift_values": [0.01 + 0.001 * i + 0.005, 0.02, 0.03],
-            })
+            drone_b.tick_all(
+                {
+                    "drift_values": [0.01 + 0.001 * i + 0.005, 0.02, 0.03],
+                }
+            )
 
         # Get signatures
         sig_a = prox_a._shadow.signature()

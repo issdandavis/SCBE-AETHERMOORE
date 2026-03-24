@@ -11,6 +11,7 @@ from urllib.request import urlopen, Request
 from urllib.parse import urlencode
 
 import sys
+
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[3]))
 from src.knowledge.funnel import KnowledgeChunk
 
@@ -62,10 +63,13 @@ def sparql_query(query: str) -> list[dict]:
     """Run a SPARQL query against Wikidata."""
     params = {"query": query, "format": "json"}
     url = f"{WIKIDATA_SPARQL}?{urlencode(params)}"
-    req = Request(url, headers={
-        "User-Agent": "AetherBrowser/1.0 (SCBE-AETHERMOORE research)",
-        "Accept": "application/sparql-results+json",
-    })
+    req = Request(
+        url,
+        headers={
+            "User-Agent": "AetherBrowser/1.0 (SCBE-AETHERMOORE research)",
+            "Accept": "application/sparql-results+json",
+        },
+    )
 
     with urlopen(req, timeout=60) as response:
         data = json.loads(response.read())

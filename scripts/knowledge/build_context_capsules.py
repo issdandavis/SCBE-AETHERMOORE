@@ -43,8 +43,7 @@ class Chunk:
 
 
 DEFAULT_QUERY = (
-    "aether browser connectors rag arxiv wikidata nvd mit dataverse "
-    "knowledge library governance memory graph"
+    "aether browser connectors rag arxiv wikidata nvd mit dataverse " "knowledge library governance memory graph"
 )
 
 

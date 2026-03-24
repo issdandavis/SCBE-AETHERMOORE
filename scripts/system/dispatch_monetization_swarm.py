@@ -61,9 +61,7 @@ DEFAULT_LANES: List[LaneAssignment] = [
     LaneAssignment(
         recipient="agent.grok",
         task_id="MONETIZE-LEADS-30",
-        summary=(
-            "Own lead-intelligence lane: build first qualified prospect set for automation/workflow services."
-        ),
+        summary=("Own lead-intelligence lane: build first qualified prospect set for automation/workflow services."),
         next_action=(
             "Create 30-lead sheet with persona, pain, channel, and matched offer; emit packet with artifact path."
         ),

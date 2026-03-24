@@ -23,10 +23,7 @@ DEFAULT_NOTE_INPUTS = [
     REPO_ROOT / "notes" / "round-table",
 ]
 ARXIV_EVIDENCE_PATTERN = "playwriter-arxiv.org-*.json"
-SYSTEM_PROMPT = (
-    "You are building a source-grounded research memory. "
-    "Preserve only details present in the source."
-)
+SYSTEM_PROMPT = "You are building a source-grounded research memory. " "Preserve only details present in the source."
 
 
 def _utc_now_iso() -> str:
@@ -165,15 +162,9 @@ def _parse_markdown_note(path: Path, max_chars: int) -> dict[str, Any]:
                     frontmatter_title = value.strip().strip('"').strip("'")
                     break
 
-    headings = [
-        match.group(1).strip()
-        for match in re.finditer(r"(?m)^#{1,3}\s+(.+?)\s*$", body)
-    ]
+    headings = [match.group(1).strip() for match in re.finditer(r"(?m)^#{1,3}\s+(.+?)\s*$", body)]
     title = frontmatter_title or (headings[0] if headings else path.stem.replace("-", " ").replace("_", " "))
-    tasks = [
-        match.group(1).strip()
-        for match in re.finditer(r"(?m)^\s*[-*]\s+\[(?: |x|X)\]\s+(.+?)\s*$", body)
-    ]
+    tasks = [match.group(1).strip() for match in re.finditer(r"(?m)^\s*[-*]\s+\[(?: |x|X)\]\s+(.+?)\s*$", body)]
     summary_seed = re.sub(r"(?m)^#{1,6}\s+.+?$", "", body).strip()
     summary_seed = _shorten(summary_seed, max_chars)
     return {
@@ -460,9 +451,7 @@ def build_research_training_bundle(
         "## Source Inputs",
     ]
     for source in sources:
-        report_lines.append(
-            f"- `{source['kind']}` :: `{source.get('title', '')}` :: `{source['source_file']}`"
-        )
+        report_lines.append(f"- `{source['kind']}` :: `{source.get('title', '')}` :: `{source['source_file']}`")
     report_lines += [
         "",
         "## Training Guidance",
@@ -488,26 +477,38 @@ def build_research_training_bundle(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build a source-grounded research training bundle.")
-    parser.add_argument("--evidence-dir", default=str(DEFAULT_EVIDENCE_DIR), help="Directory containing page-evidence JSON files.")
+    parser.add_argument(
+        "--evidence-dir", default=str(DEFAULT_EVIDENCE_DIR), help="Directory containing page-evidence JSON files."
+    )
     parser.add_argument(
         "--note-input",
         action="append",
         default=[],
         help="Markdown file or directory to ingest (repeatable). Defaults to docs/research + notes/round-table.",
     )
-    parser.add_argument("--use-active-vault", action="store_true", help="Also ingest the active Obsidian vault from desktop config.")
+    parser.add_argument(
+        "--use-active-vault", action="store_true", help="Also ingest the active Obsidian vault from desktop config."
+    )
     parser.add_argument(
         "--vault-subdir",
         action="append",
         default=[],
         help="Subdirectory inside the active Obsidian vault to ingest (repeatable). Only used with --use-active-vault.",
     )
-    parser.add_argument("--output-root", default=str(DEFAULT_OUTPUT_ROOT), help="Directory where bundle folders are written.")
+    parser.add_argument(
+        "--output-root", default=str(DEFAULT_OUTPUT_ROOT), help="Directory where bundle folders are written."
+    )
     parser.add_argument("--bundle-name", default="research-bridge", help="Bundle name prefix.")
     parser.add_argument("--bundle-stamp", default=None, help="Optional deterministic timestamp suffix.")
-    parser.add_argument("--dataset-repo", default="issdandavis/scbe-aethermoore-training-data", help="Suggested HF dataset repo.")
-    parser.add_argument("--model-repo", default="issdandavis/scbe-research-bridge-qwen-0.5b", help="Suggested HF model repo.")
-    parser.add_argument("--max-excerpt-chars", type=int, default=1400, help="Max source chars copied into each training row.")
+    parser.add_argument(
+        "--dataset-repo", default="issdandavis/scbe-aethermoore-training-data", help="Suggested HF dataset repo."
+    )
+    parser.add_argument(
+        "--model-repo", default="issdandavis/scbe-research-bridge-qwen-0.5b", help="Suggested HF model repo."
+    )
+    parser.add_argument(
+        "--max-excerpt-chars", type=int, default=1400, help="Max source chars copied into each training row."
+    )
     parser.add_argument("--json", action="store_true", help="Print JSON output.")
     return parser.parse_args()
 

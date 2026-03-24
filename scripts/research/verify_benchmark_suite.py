@@ -209,12 +209,24 @@ def build_markdown(report: dict[str, Any]) -> str:
         lines.append("")
     lines.append("## Conclusions")
     lines.append("")
-    lines.append("1. All four benchmark scripts were deterministic over five reruns; the repeated outputs matched the saved baseline artifacts exactly.")
-    lines.append("2. `hyperbolic_helix_test.py` reproduced the same architecture tradeoff every time: flat retrieval wins recall, helix wins separation.")
-    lines.append("3. `semantic_vs_stub_comparison.py` reproduced the current reality that the semantic L3 path does not yet beat the stub on this exact detection logic.")
-    lines.append("4. `unified_triangulation.py` reproduced the null-space / remainder result, but it did not beat the simpler gate on detection-quality.")
-    lines.append("5. `null_space_ablation.py` reproduced the sharper finding: null space is a boost feature that can close the last 14.3% of misses, but it explodes held-out false positives when used as a universal gate.")
-    lines.append("6. The reliable claim is reproducibility of the measurements, not automatic promotion of every experimental idea.")
+    lines.append(
+        "1. All four benchmark scripts were deterministic over five reruns; the repeated outputs matched the saved baseline artifacts exactly."
+    )
+    lines.append(
+        "2. `hyperbolic_helix_test.py` reproduced the same architecture tradeoff every time: flat retrieval wins recall, helix wins separation."
+    )
+    lines.append(
+        "3. `semantic_vs_stub_comparison.py` reproduced the current reality that the semantic L3 path does not yet beat the stub on this exact detection logic."
+    )
+    lines.append(
+        "4. `unified_triangulation.py` reproduced the null-space / remainder result, but it did not beat the simpler gate on detection-quality."
+    )
+    lines.append(
+        "5. `null_space_ablation.py` reproduced the sharper finding: null space is a boost feature that can close the last 14.3% of misses, but it explodes held-out false positives when used as a universal gate."
+    )
+    lines.append(
+        "6. The reliable claim is reproducibility of the measurements, not automatic promotion of every experimental idea."
+    )
     lines.append("")
     return "\n".join(lines) + "\n"
 
@@ -497,14 +509,8 @@ def main() -> None:
     RESEARCH_DIR.mkdir(parents=True, exist_ok=True)
     DOCS_RESEARCH_DIR.mkdir(parents=True, exist_ok=True)
 
-    baseline_payloads = {
-        config.name: load_json(BENCHMARK_DIR / config.artifact)
-        for config in BENCHMARKS
-    }
-    baselines = {
-        config.name: config.extractor(baseline_payloads[config.name])
-        for config in BENCHMARKS
-    }
+    baseline_payloads = {config.name: load_json(BENCHMARK_DIR / config.artifact) for config in BENCHMARKS}
+    baselines = {config.name: config.extractor(baseline_payloads[config.name]) for config in BENCHMARKS}
 
     benchmark_reports: list[dict[str, Any]] = []
     repeats = 5

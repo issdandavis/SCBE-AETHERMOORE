@@ -35,16 +35,18 @@ from dataclasses import dataclass, field
 
 NUM_TONGUES = 6
 TONGUE_PHASES = np.array([i * (2 * np.pi / NUM_TONGUES) for i in range(NUM_TONGUES)])
-TONGUE_CODES = ['ko', 'av', 'ru', 'ca', 'um', 'dr']
+TONGUE_CODES = ["ko", "av", "ru", "ca", "um", "dr"]
 
 
 # =============================================================================
 # Types
 # =============================================================================
 
+
 @dataclass
 class MechanismScore:
     """Result from a single detection mechanism."""
+
     score: float
     flagged: bool
     detail: str
@@ -53,6 +55,7 @@ class MechanismScore:
 @dataclass
 class TriDetectionResult:
     """Full result from three-mechanism detection."""
+
     phase: MechanismScore
     tonic: MechanismScore
     drift: MechanismScore
@@ -64,6 +67,7 @@ class TriDetectionResult:
 @dataclass
 class DetectorConfig:
     """Configuration for the tri-mechanism detector."""
+
     w_phase: float = 0.35
     w_tonic: float = 0.35
     w_drift: float = 0.30
@@ -76,6 +80,7 @@ class DetectorConfig:
 # =============================================================================
 # Mechanism 1: Phase + Distance
 # =============================================================================
+
 
 def phase_deviation(observed: float, expected: float) -> float:
     """
@@ -98,16 +103,13 @@ def hyperbolic_distance(u: np.ndarray, v: np.ndarray, eps: float = 1e-10) -> flo
     diff_norm_sq = np.linalg.norm(u - v) ** 2
     u_factor = 1.0 - np.linalg.norm(u) ** 2
     v_factor = 1.0 - np.linalg.norm(v) ** 2
-    denom = max(u_factor * v_factor, eps ** 2)
+    denom = max(u_factor * v_factor, eps**2)
     arg = 1.0 + 2.0 * diff_norm_sq / denom
     return float(np.arccosh(max(arg, 1.0)))
 
 
 def phase_distance_score(
-    u: np.ndarray,
-    tongue_idx: int,
-    tongue_centroids: List[np.ndarray],
-    observed_phase: float
+    u: np.ndarray, tongue_idx: int, tongue_centroids: List[np.ndarray], observed_phase: float
 ) -> MechanismScore:
     """
     Mechanism 1: Phase-augmented distance score.
@@ -120,9 +122,7 @@ def phase_distance_score(
     score = 1.0 / (1.0 + d_h + 2.0 * p_dev)
 
     return MechanismScore(
-        score=score,
-        flagged=score < 0.3,
-        detail=f"d_H={d_h:.4f}, phase_dev={p_dev:.4f}, score={score:.4f}"
+        score=score, flagged=score < 0.3, detail=f"d_H={d_h:.4f}, phase_dev={p_dev:.4f}, score={score:.4f}"
     )
 
 
@@ -130,11 +130,9 @@ def phase_distance_score(
 # Mechanism 2: 6-Tonic Temporal Coherence
 # =============================================================================
 
+
 def tonic_coherence(
-    position_history: np.ndarray,
-    time_steps: np.ndarray,
-    tongue_idx: int,
-    config: DetectorConfig = DetectorConfig()
+    position_history: np.ndarray, time_steps: np.ndarray, tongue_idx: int, config: DetectorConfig = DetectorConfig()
 ) -> MechanismScore:
     """
     Mechanism 2: 6-tonic spherical nodal oscillation coherence.
@@ -147,7 +145,7 @@ def tonic_coherence(
     tongue_freq = (tongue_idx + 1) * config.base_freq
 
     # Anti-replay chirp
-    chirp = config.chirp_rate * time_steps ** 2
+    chirp = config.chirp_rate * time_steps**2
 
     # Expected oscillation
     expected = 0.5 + 0.3 * np.sin(2 * np.pi * tongue_freq * time_steps + chirp)
@@ -171,7 +169,7 @@ def tonic_coherence(
     return MechanismScore(
         score=float(np.clip(score, 0, 1)),
         flagged=score < 0.4,
-        detail=f"correlation={correlation:.4f}, freq_match={freq_score:.4f}"
+        detail=f"correlation={correlation:.4f}, freq_match={freq_score:.4f}",
     )
 
 
@@ -200,10 +198,8 @@ def _frequency_match(radii: np.ndarray, expected_freq: float, times: np.ndarray)
 # Mechanism 3: Decimal Drift Authentication
 # =============================================================================
 
-def compute_drift_signature(
-    pipeline_metrics: Dict[str, float],
-    input_data: Optional[np.ndarray] = None
-) -> np.ndarray:
+
+def compute_drift_signature(pipeline_metrics: Dict[str, float], input_data: Optional[np.ndarray] = None) -> np.ndarray:
     """
     Extract 17-dimensional drift signature.
 
@@ -213,18 +209,18 @@ def compute_drift_signature(
     sig = np.zeros(17)
 
     # Pipeline metrics
-    sig[0] = pipeline_metrics.get('u_norm', 0)
-    sig[1] = pipeline_metrics.get('u_breath_norm', 0)
-    sig[2] = pipeline_metrics.get('u_final_norm', 0)
-    sig[3] = pipeline_metrics.get('C_spin', 0)
-    sig[4] = pipeline_metrics.get('S_spec', 0)
-    sig[5] = pipeline_metrics.get('tau', 0)
-    sig[6] = pipeline_metrics.get('S_audio', 0)
-    sig[7] = pipeline_metrics.get('d_star', 0)
-    sig[8] = pipeline_metrics.get('d_tri_norm', 0)
-    sig[9] = pipeline_metrics.get('H', 0)
-    sig[10] = pipeline_metrics.get('risk_base', 0)
-    sig[11] = pipeline_metrics.get('risk_prime', 0)
+    sig[0] = pipeline_metrics.get("u_norm", 0)
+    sig[1] = pipeline_metrics.get("u_breath_norm", 0)
+    sig[2] = pipeline_metrics.get("u_final_norm", 0)
+    sig[3] = pipeline_metrics.get("C_spin", 0)
+    sig[4] = pipeline_metrics.get("S_spec", 0)
+    sig[5] = pipeline_metrics.get("tau", 0)
+    sig[6] = pipeline_metrics.get("S_audio", 0)
+    sig[7] = pipeline_metrics.get("d_star", 0)
+    sig[8] = pipeline_metrics.get("d_tri_norm", 0)
+    sig[9] = pipeline_metrics.get("H", 0)
+    sig[10] = pipeline_metrics.get("risk_base", 0)
+    sig[11] = pipeline_metrics.get("risk_prime", 0)
 
     # Fractional entropy of pipeline outputs
     frac_parts = np.abs(sig[:12] - np.floor(np.abs(sig[:12])))
@@ -240,10 +236,9 @@ def compute_drift_signature(
         sig[13] = -np.sum(hist_norm * np.log2(hist_norm + 1e-10))
 
         # Unique decimal precisions
-        unique_prec = len(set(
-            len(f"{abs(x):.15g}".split('.')[-1]) if '.' in f"{abs(x):.15g}" else 0
-            for x in input_data
-        ))
+        unique_prec = len(
+            set(len(f"{abs(x):.15g}".split(".")[-1]) if "." in f"{abs(x):.15g}" else 0 for x in input_data)
+        )
         sig[14] = unique_prec / len(input_data)
 
         # KS uniformity test
@@ -255,7 +250,7 @@ def compute_drift_signature(
         prec_scores = []
         for x in input_data:
             s = f"{abs(x):.15e}"
-            mantissa = s.split('e')[0].replace('.', '').rstrip('0')
+            mantissa = s.split("e")[0].replace(".", "").rstrip("0")
             prec_scores.append(len(mantissa))
         sig[16] = np.mean(prec_scores) / 15.0
     else:
@@ -264,10 +259,7 @@ def compute_drift_signature(
     return sig
 
 
-def drift_distance_to_baseline(
-    drift_sig: np.ndarray,
-    baseline_sigs: np.ndarray
-) -> float:
+def drift_distance_to_baseline(drift_sig: np.ndarray, baseline_sigs: np.ndarray) -> float:
     """Mahalanobis-like distance to baseline cluster."""
     if len(baseline_sigs) == 0:
         return 1.0
@@ -279,25 +271,20 @@ def drift_distance_to_baseline(
 
 
 def drift_auth_score(
-    pipeline_metrics: Dict[str, float],
-    input_data: np.ndarray,
-    baseline_sigs: np.ndarray
+    pipeline_metrics: Dict[str, float], input_data: np.ndarray, baseline_sigs: np.ndarray
 ) -> MechanismScore:
     """Mechanism 3: Decimal drift authentication."""
     sig = compute_drift_signature(pipeline_metrics, input_data)
     dist = drift_distance_to_baseline(sig, baseline_sigs)
     score = 1.0 / (1.0 + dist)
 
-    return MechanismScore(
-        score=score,
-        flagged=score < 0.3,
-        detail=f"drift_dist={dist:.4f}, score={score:.4f}"
-    )
+    return MechanismScore(score=score, flagged=score < 0.3, detail=f"drift_dist={dist:.4f}, score={score:.4f}")
 
 
 # =============================================================================
 # Combined Detector
 # =============================================================================
+
 
 class TriMechanismDetector:
     """
@@ -328,11 +315,7 @@ class TriMechanismDetector:
             centroid[1] = 0.3 * np.sin(angle)
             self.tongue_centroids.append(centroid)
 
-    def add_baseline_sample(
-        self,
-        pipeline_metrics: Dict[str, float],
-        input_data: Optional[np.ndarray] = None
-    ) -> None:
+    def add_baseline_sample(self, pipeline_metrics: Dict[str, float], input_data: Optional[np.ndarray] = None) -> None:
         """Add a legitimate sample to the drift baseline."""
         sig = compute_drift_signature(pipeline_metrics, input_data)
         self.baseline_sigs.append(sig)
@@ -349,7 +332,7 @@ class TriMechanismDetector:
         position_history: np.ndarray,
         time_steps: np.ndarray,
         pipeline_metrics: Dict[str, float],
-        u_final: np.ndarray
+        u_final: np.ndarray,
     ) -> TriDetectionResult:
         """
         Run three-mechanism detection.
@@ -367,29 +350,20 @@ class TriMechanismDetector:
         """
         # Mechanism 1: Phase + distance
         observed_phase = np.arctan2(
-            np.mean(input_data[len(input_data)//2:]),
-            np.mean(input_data[:len(input_data)//2])
+            np.mean(input_data[len(input_data) // 2 :]), np.mean(input_data[: len(input_data) // 2])
         )
-        phase = phase_distance_score(
-            u_final, tongue_idx, self.tongue_centroids, observed_phase
-        )
+        phase = phase_distance_score(u_final, tongue_idx, self.tongue_centroids, observed_phase)
 
         # Mechanism 2: 6-tonic temporal coherence
-        tonic = tonic_coherence(
-            position_history, time_steps, tongue_idx, self.config
-        )
+        tonic = tonic_coherence(position_history, time_steps, tongue_idx, self.config)
 
         # Mechanism 3: Decimal drift
         baseline_array = np.array(self.baseline_sigs) if self.baseline_sigs else np.array([])
-        drift = drift_auth_score(
-            pipeline_metrics, input_data, baseline_array
-        )
+        drift = drift_auth_score(pipeline_metrics, input_data, baseline_array)
 
         # Weighted combination
         combined = (
-            self.config.w_phase * phase.score +
-            self.config.w_tonic * tonic.score +
-            self.config.w_drift * drift.score
+            self.config.w_phase * phase.score + self.config.w_tonic * tonic.score + self.config.w_drift * drift.score
         )
 
         # Decision
@@ -407,16 +381,17 @@ class TriMechanismDetector:
             combined_score=combined,
             decision=decision,
             contributions={
-                'phase': self.config.w_phase * phase.score,
-                'tonic': self.config.w_tonic * tonic.score,
-                'drift': self.config.w_drift * drift.score,
-            }
+                "phase": self.config.w_phase * phase.score,
+                "tonic": self.config.w_tonic * tonic.score,
+                "drift": self.config.w_drift * drift.score,
+            },
         )
 
 
 # =============================================================================
 # Self-test
 # =============================================================================
+
 
 def self_test() -> Dict[str, Any]:
     """Run basic validation tests."""
@@ -429,39 +404,53 @@ def self_test() -> Dict[str, Any]:
     pd = phase_deviation(0, 0)
     if pd == 0:
         passed += 1
-        results['phase_dev_zero'] = '  PASS (dev(0,0) = 0)'
+        results["phase_dev_zero"] = "  PASS (dev(0,0) = 0)"
     else:
-        results['phase_dev_zero'] = f'  FAIL (expected 0, got {pd})'
+        results["phase_dev_zero"] = f"  FAIL (expected 0, got {pd})"
 
     # Test 2: Phase deviation at pi
     total += 1
     pd_pi = phase_deviation(0, np.pi)
     if abs(pd_pi - 1.0) < 0.01:
         passed += 1
-        results['phase_dev_pi'] = f'  PASS (dev(0,pi) = {pd_pi:.4f})'
+        results["phase_dev_pi"] = f"  PASS (dev(0,pi) = {pd_pi:.4f})"
     else:
-        results['phase_dev_pi'] = f'  FAIL (expected 1.0, got {pd_pi})'
+        results["phase_dev_pi"] = f"  FAIL (expected 1.0, got {pd_pi})"
 
     # Test 3: Hyperbolic distance at origin
     total += 1
     d = hyperbolic_distance(np.zeros(6), np.zeros(6))
     if d == 0:
         passed += 1
-        results['d_H_origin'] = '  PASS (d_H(0,0) = 0)'
+        results["d_H_origin"] = "  PASS (d_H(0,0) = 0)"
     else:
-        results['d_H_origin'] = f'  FAIL (expected 0, got {d})'
+        results["d_H_origin"] = f"  FAIL (expected 0, got {d})"
 
     # Test 4: Drift signature dimensionality
     total += 1
-    metrics = {k: 0.5 for k in ['u_norm', 'u_breath_norm', 'u_final_norm',
-                                  'C_spin', 'S_spec', 'tau', 'S_audio',
-                                  'd_star', 'd_tri_norm', 'H', 'risk_base', 'risk_prime']}
+    metrics = {
+        k: 0.5
+        for k in [
+            "u_norm",
+            "u_breath_norm",
+            "u_final_norm",
+            "C_spin",
+            "S_spec",
+            "tau",
+            "S_audio",
+            "d_star",
+            "d_tri_norm",
+            "H",
+            "risk_base",
+            "risk_prime",
+        ]
+    }
     sig = compute_drift_signature(metrics, np.random.randn(12))
     if len(sig) == 17:
         passed += 1
-        results['drift_sig_dim'] = '  PASS (17D drift signature)'
+        results["drift_sig_dim"] = "  PASS (17D drift signature)"
     else:
-        results['drift_sig_dim'] = f'  FAIL (expected 17D, got {len(sig)}D)'
+        results["drift_sig_dim"] = f"  FAIL (expected 17D, got {len(sig)}D)"
 
     # Test 5: Detector calibration
     total += 1
@@ -471,27 +460,27 @@ def self_test() -> Dict[str, Any]:
             detector.add_baseline_sample(metrics, np.random.randn(12))
         if detector.is_calibrated:
             passed += 1
-            results['calibration'] = '  PASS (calibrated after 15 samples)'
+            results["calibration"] = "  PASS (calibrated after 15 samples)"
         else:
-            results['calibration'] = '  FAIL (not calibrated after 15 samples)'
+            results["calibration"] = "  FAIL (not calibrated after 15 samples)"
     else:
-        results['calibration'] = '  FAIL (calibrated before any samples)'
+        results["calibration"] = "  FAIL (calibrated before any samples)"
 
     return {
-        'passed': passed,
-        'total': total,
-        'success_rate': f"{passed}/{total} ({100*passed/total:.0f}%)",
-        'results': results
+        "passed": passed,
+        "total": total,
+        "success_rate": f"{passed}/{total} ({100*passed/total:.0f}%)",
+        "results": results,
     }
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("=" * 60)
     print("  SCBE Three-Mechanism Detector - Self Test")
     print("=" * 60)
 
     test_results = self_test()
-    for name, result in test_results['results'].items():
+    for name, result in test_results["results"].items():
         print(f"  {name}: {result}")
 
     print("-" * 60)

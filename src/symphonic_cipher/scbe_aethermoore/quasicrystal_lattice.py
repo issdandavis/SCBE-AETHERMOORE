@@ -50,22 +50,23 @@ TAU: float = 2 * math.pi
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class LatticePoint:
     """Result of projecting a 6D gate vector onto the quasicrystal."""
 
     gate_vector: List[int]
-    r_physical: np.ndarray       # 3D position in E_parallel
+    r_physical: np.ndarray  # 3D position in E_parallel
     r_perpendicular: np.ndarray  # 3D position in E_perp
-    perp_distance: float         # ||r_perp - phason_strain||
-    is_valid: bool               # Inside acceptance window?
+    perp_distance: float  # ||r_perp - phason_strain||
+    is_valid: bool  # Inside acceptance window?
 
 
 @dataclass
 class DefectAnalysis:
     """Result of crystalline defect detection."""
 
-    score: float                 # 0.0 = aperiodic (safe), 1.0 = periodic (attack)
+    score: float  # 0.0 = aperiodic (safe), 1.0 = periodic (attack)
     dominant_frequency: float
     dominant_power_ratio: float
     sample_count: int
@@ -74,6 +75,7 @@ class DefectAnalysis:
 # ---------------------------------------------------------------------------
 # QuasicrystalLattice
 # ---------------------------------------------------------------------------
+
 
 class QuasicrystalLattice:
     """
@@ -110,28 +112,38 @@ class QuasicrystalLattice:
         by 1/sqrt(1 + PHI^2).  E_perp uses the Galois conjugate
         (PHI → -1/PHI).
         """
-        norm = 1.0 / np.sqrt(1.0 + PHI ** 2)
+        norm = 1.0 / np.sqrt(1.0 + PHI**2)
 
         # Physical-space basis  (shape 3×6)
-        e_par = np.array([
-            [1,  PHI, 0],
-            [-1, PHI, 0],
-            [0,  1,   PHI],
-            [0, -1,   PHI],
-            [PHI, 0,  1],
-            [PHI, 0, -1],
-        ]).T * norm
+        e_par = (
+            np.array(
+                [
+                    [1, PHI, 0],
+                    [-1, PHI, 0],
+                    [0, 1, PHI],
+                    [0, -1, PHI],
+                    [PHI, 0, 1],
+                    [PHI, 0, -1],
+                ]
+            ).T
+            * norm
+        )
 
         # Internal-space basis  (shape 3×6)  — Galois conjugation
         inv_phi = -1.0 / PHI
-        e_perp = np.array([
-            [1,       inv_phi, 0],
-            [-1,      inv_phi, 0],
-            [0,       1,       inv_phi],
-            [0,      -1,       inv_phi],
-            [inv_phi, 0,       1],
-            [inv_phi, 0,      -1],
-        ]).T * norm
+        e_perp = (
+            np.array(
+                [
+                    [1, inv_phi, 0],
+                    [-1, inv_phi, 0],
+                    [0, 1, inv_phi],
+                    [0, -1, inv_phi],
+                    [inv_phi, 0, 1],
+                    [inv_phi, 0, -1],
+                ]
+            ).T
+            * norm
+        )
 
         return e_par, e_perp
 
@@ -139,9 +151,7 @@ class QuasicrystalLattice:
     # Gate mapping
     # ------------------------------------------------------------------
 
-    def map_gates_to_lattice(
-        self, gate_vector: List[int]
-    ) -> LatticePoint:
+    def map_gates_to_lattice(self, gate_vector: List[int]) -> LatticePoint:
         """
         Project 6 integer gate inputs onto the quasicrystal.
 
@@ -188,11 +198,13 @@ class QuasicrystalLattice:
             The new phason_strain vector.
         """
         h = hashlib.sha256(entropy_seed).digest()
-        v = np.array([
-            int.from_bytes(h[0:4], "big") / (2 ** 32) * 2 - 1,
-            int.from_bytes(h[4:8], "big") / (2 ** 32) * 2 - 1,
-            int.from_bytes(h[8:12], "big") / (2 ** 32) * 2 - 1,
-        ])
+        v = np.array(
+            [
+                int.from_bytes(h[0:4], "big") / (2**32) * 2 - 1,
+                int.from_bytes(h[4:8], "big") / (2**32) * 2 - 1,
+                int.from_bytes(h[8:12], "big") / (2**32) * 2 - 1,
+            ]
+        )
         self.phason_strain = v * self.acceptance_radius * 2.0
         return self.phason_strain.copy()
 
@@ -200,9 +212,7 @@ class QuasicrystalLattice:
     # Crystalline defect detection
     # ------------------------------------------------------------------
 
-    def detect_crystalline_defects(
-        self, history_vectors: List[List[int]], min_samples: int = 32
-    ) -> DefectAnalysis:
+    def detect_crystalline_defects(self, history_vectors: List[List[int]], min_samples: int = 32) -> DefectAnalysis:
         """
         Detect forced periodicity (Crystalline Defect) in gate history.
 

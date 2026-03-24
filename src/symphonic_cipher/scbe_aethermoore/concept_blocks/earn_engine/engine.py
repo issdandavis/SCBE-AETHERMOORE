@@ -41,6 +41,7 @@ from .streams import (
 #  Settlement States
 # ---------------------------------------------------------------------------
 
+
 class SettlementState(str, Enum):
     EARNED = "EARNED"
     PENDING = "PENDING"
@@ -52,16 +53,18 @@ class SettlementState(str, Enum):
 #  Ledger Entry
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class LedgerEntry:
     """A single entry in the settlement ledger."""
+
     entry_id: str
     event: EarnEvent
     credit: Optional[ContextCredit]
     verdict: GovernanceVerdict
     state: SettlementState
     face_value: float
-    settled_value: float              # real-world value (0 until settled)
+    settled_value: float  # real-world value (0 until settled)
     created_at: float
     settled_at: Optional[float] = None
 
@@ -85,6 +88,7 @@ class LedgerEntry:
 # ---------------------------------------------------------------------------
 #  Earn Engine
 # ---------------------------------------------------------------------------
+
 
 class EarnEngine:
     """
@@ -154,7 +158,7 @@ class EarnEngine:
 
         # Harmonic wall cost
         R = DENOMINATION_WEIGHTS.get(event.denomination, 1.0)
-        h_cost = R ** (d ** 2)
+        h_cost = R ** (d**2)
 
         # Policy deviation check
         if pd > config.max_hamiltonian_pd:
@@ -173,12 +177,14 @@ class EarnEngine:
         config = STREAM_CONFIGS.get(event.stream_type, STREAM_CONFIGS[StreamType.GAME])
         reward = event.base_reward * config.base_multiplier
 
-        context_payload = json.dumps({
-            "event": event.event_name,
-            "stream": event.stream_type.value,
-            "reward": reward,
-            "metadata": event.metadata,
-        }).encode("utf-8")
+        context_payload = json.dumps(
+            {
+                "event": event.event_name,
+                "stream": event.stream_type.value,
+                "reward": reward,
+                "metadata": event.metadata,
+            }
+        ).encode("utf-8")
 
         return mint_credit(
             agent_id=event.agent_id or self.agent_id,
@@ -258,10 +264,7 @@ class EarnEngine:
 
     def total_earned(self) -> float:
         """Total face value of all earned + pending credits."""
-        return sum(
-            e.face_value for e in self.ledger
-            if e.state in (SettlementState.EARNED, SettlementState.PENDING)
-        )
+        return sum(e.face_value for e in self.ledger if e.state in (SettlementState.EARNED, SettlementState.PENDING))
 
     def total_settled(self) -> float:
         """Total real-world value settled."""

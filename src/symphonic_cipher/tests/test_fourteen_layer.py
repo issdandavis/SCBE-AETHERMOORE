@@ -157,12 +157,7 @@ class TestLayer5HyperbolicDistance:
         """d_H(u, v) = d_H(v, u)."""
         u = np.array([0.3, 0.4, 0.0])
         v = np.array([0.1, -0.2, 0.3])
-        assert (
-            np.abs(
-                layer_5_hyperbolic_distance(u, v) - layer_5_hyperbolic_distance(v, u)
-            )
-            < 1e-10
-        )
+        assert np.abs(layer_5_hyperbolic_distance(u, v) - layer_5_hyperbolic_distance(v, u)) < 1e-10
 
     def test_triangle_inequality(self):
         """d_H(u, w) ≤ d_H(u, v) + d_H(v, w)."""
@@ -353,9 +348,7 @@ class TestLayer11TriadicDistance:
 
         # Opposite phases (π apart) should give even larger distance
         # phase_fidelity = (1 + cos(π))/2 = 0, so 1-F = 1
-        d_q_opposite = layer_11_triadic_distance(
-            u, u, 1.0, 1.0, 4.0, 4.0, 1 + 0j, -1 + 0j
-        )
+        d_q_opposite = layer_11_triadic_distance(u, u, 1.0, 1.0, 4.0, 4.0, 1 + 0j, -1 + 0j)
         assert d_q_opposite > d_q, "Opposite phases should have larger distance"
 
 

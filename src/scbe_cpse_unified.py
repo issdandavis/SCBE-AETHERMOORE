@@ -77,14 +77,10 @@ class SCBEConfig:
         assert 0 < self.eps_ball < 1, "A4: eps_ball must be in (0,1)"
         assert self.eps > 0, "A9: eps must be > 0"
         assert 0 < self.b_min <= self.b_max, "A6: breathing bounds invalid"
-        assert (
-            abs(self.lambda1 + self.lambda2 + self.lambda3 - 1.0) < 1e-9
-        ), "A11: lambdas must sum to 1"
+        assert abs(self.lambda1 + self.lambda2 + self.lambda3 - 1.0) < 1e-9, "A11: lambdas must sum to 1"
         assert self.d_scale > 0, "A11: d_scale must be > 0"
         weights_sum = self.w_d + self.w_c + self.w_s + self.w_tau + self.w_a
-        assert (
-            abs(weights_sum - 1.0) < 1e-9
-        ), f"A12: weights must sum to 1, got {weights_sum}"
+        assert abs(weights_sum - 1.0) < 1e-9, f"A12: weights must sum to 1, got {weights_sum}"
         assert self.R > 1, "A12: R must be > 1"
         assert self.theta1 < self.theta2, "A12: theta1 must be < theta2"
         return True
@@ -203,9 +199,7 @@ class SCBESystem:
         while len(self.realm_centers) < self.cfg.K:
             self.realm_centers.append(scaling * np.random.rand(self.n) * 0.2)
         # Clamp all centers
-        self.realm_centers = [
-            HyperbolicOps.clamp(mu, self.cfg.eps_ball) for mu in self.realm_centers
-        ]
+        self.realm_centers = [HyperbolicOps.clamp(mu, self.cfg.eps_ball) for mu in self.realm_centers]
 
     def _init_weighting_matrix(self):
         """Initialize SPD weighting matrix G (A3)."""
@@ -219,9 +213,7 @@ class SCBESystem:
     # =========================================================================
     # LAYER 1: Complex Context (A1)
     # =========================================================================
-    def layer1_complex_context(
-        self, amplitudes: np.ndarray, phases: np.ndarray
-    ) -> np.ndarray:
+    def layer1_complex_context(self, amplitudes: np.ndarray, phases: np.ndarray) -> np.ndarray:
         """L1: Map amplitudes + phases to complex space."""
         return amplitudes * np.exp(1j * phases)
 
@@ -250,9 +242,7 @@ class SCBESystem:
     # =========================================================================
     # LAYER 5: Möbius Stabilization (A5)
     # =========================================================================
-    def layer5_mobius_stabilization(
-        self, u: np.ndarray, realm_idx: int = 0
-    ) -> np.ndarray:
+    def layer5_mobius_stabilization(self, u: np.ndarray, realm_idx: int = 0) -> np.ndarray:
         """L5: Möbius shift toward realm center."""
         mu = self.realm_centers[realm_idx % len(self.realm_centers)]
         neg_mu = -mu
@@ -269,9 +259,7 @@ class SCBESystem:
     # =========================================================================
     # LAYER 7: Phase Transform (A7)
     # =========================================================================
-    def layer7_phase_transform(
-        self, u: np.ndarray, a: np.ndarray, phase_angle: float = 0.0
-    ) -> np.ndarray:
+    def layer7_phase_transform(self, u: np.ndarray, a: np.ndarray, phase_angle: float = 0.0) -> np.ndarray:
         """L7: Angular rotation (isometry)."""
         # Build rotation matrix Q ∈ O(n)
         Q = np.eye(self.n)
@@ -286,12 +274,7 @@ class SCBESystem:
     # =========================================================================
     def layer8_realm_distance(self, u: np.ndarray) -> Tuple[float, np.ndarray]:
         """L8: Compute d*(u) = min_k d_H(u, μ_k)."""
-        distances = np.array(
-            [
-                HyperbolicOps.hyperbolic_distance(u, mu, self.cfg.eps)
-                for mu in self.realm_centers
-            ]
-        )
+        distances = np.array([HyperbolicOps.hyperbolic_distance(u, mu, self.cfg.eps) for mu in self.realm_centers])
         d_star = np.min(distances)
         return d_star, distances
 
@@ -326,10 +309,7 @@ class SCBESystem:
 
         if len(self.trained_patterns) > 0:
             pattern_energies = np.array(
-                [
-                    -0.5 * (p[: self.cfg.D] @ self.W_hopfield @ p[: self.cfg.D])
-                    for p in self.trained_patterns
-                ]
+                [-0.5 * (p[: self.cfg.D] @ self.W_hopfield @ p[: self.cfg.D]) for p in self.trained_patterns]
             )
             mean_e = np.mean(pattern_energies)
             std_e = np.std(pattern_energies) + self.cfg.eps
@@ -412,11 +392,7 @@ class SCBESystem:
         d2 = np.mean(d_star_history[-6:-3]) if len(d_star_history) >= 6 else d1
         d3 = np.mean(d_star_history)  # Global
 
-        d_tri = np.sqrt(
-            self.cfg.lambda1 * d1**2
-            + self.cfg.lambda2 * d2**2
-            + self.cfg.lambda3 * d3**2
-        )
+        d_tri = np.sqrt(self.cfg.lambda1 * d1**2 + self.cfg.lambda2 * d2**2 + self.cfg.lambda3 * d3**2)
 
         # Normalize to [0,1]
         return min(1.0, d_tri / self.cfg.d_scale)
@@ -478,9 +454,7 @@ class SCBESystem:
         d_tri_norm = self.compute_triadic_distance(history + [d_star])
 
         # L12-L13: Risk computation
-        base_risk, risk_prime, decision = self.layer13_composite_risk(
-            d_tri_norm, C_spin, S_spec, tau, S_audio, d_star
-        )
+        base_risk, risk_prime, decision = self.layer13_composite_risk(d_tri_norm, C_spin, S_spec, tau, S_audio, d_star)
 
         return {
             "risk_base": base_risk,
@@ -519,9 +493,7 @@ def test_axiom_compliance():
         norm = np.linalg.norm(u)
         max_allowed = 1.0 - system.cfg.eps_ball
         status = "✓" if norm <= max_allowed else "✗"
-        print(
-            f"  ||x||={np.linalg.norm(x):.2f} → ||u||={norm:.6f} ≤ {max_allowed:.4f}  {status}"
-        )
+        print(f"  ||x||={np.linalg.norm(x):.2f} → ||u||={norm:.6f} ≤ {max_allowed:.4f}  {status}")
 
     # A6: Breathing is NOT isometry
     print("\n[A6] Breathing is diffeomorphism (NOT isometry):")
@@ -548,20 +520,12 @@ def test_axiom_compliance():
     print("\n[A12] Risk monotonicity (higher coherence → lower risk):")
     d_tri, d_star = 0.5, 0.3
     for S_audio in [0.0, 0.5, 1.0]:
-        _, risk, _ = system.layer13_composite_risk(
-            d_tri, 0.8, 0.7, 0.6, S_audio, d_star
-        )
+        _, risk, _ = system.layer13_composite_risk(d_tri, 0.8, 0.7, 0.6, S_audio, d_star)
         print(f"  S_audio={S_audio:.1f} → Risk'={risk:.6f}")
 
     # A12: Weights sum to 1
     print("\n[A12] Risk weights sum to 1:")
-    w_sum = (
-        system.cfg.w_d
-        + system.cfg.w_c
-        + system.cfg.w_s
-        + system.cfg.w_tau
-        + system.cfg.w_a
-    )
+    w_sum = system.cfg.w_d + system.cfg.w_c + system.cfg.w_s + system.cfg.w_tau + system.cfg.w_a
     status = "✓" if abs(w_sum - 1.0) < 1e-9 else "✗"
     print(f"  Σw = {w_sum:.6f}  {status}")
 

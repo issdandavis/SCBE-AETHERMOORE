@@ -9,8 +9,8 @@ from functools import wraps
 from typing import Any, Callable, Dict, Iterable, Optional
 
 # Configure basic logging for governance audit trail
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger('SCBE_GOVERNANCE_AUDIT')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("SCBE_GOVERNANCE_AUDIT")
 
 
 def _to_float_list(vector: Iterable[float]) -> list[float]:
@@ -69,8 +69,8 @@ def audit_governance_decision(func: Callable) -> Callable:
         func_name = func.__name__
 
         # 2. Extract key input parameters from kwargs or args
-        message = kwargs.get('message', args[1] if len(args) > 1 else 'N/A')
-        agent_id = kwargs.get('agent_id', args[2] if len(args) > 2 else 'N/A')
+        message = kwargs.get("message", args[1] if len(args) > 1 else "N/A")
+        agent_id = kwargs.get("agent_id", args[2] if len(args) > 2 else "N/A")
 
         # 3. Execute the function and capture the output
         try:
@@ -89,6 +89,7 @@ def audit_governance_decision(func: Callable) -> Callable:
             raise
 
     return wrapper
+
 
 # Example:
 # @audit_governance_decision

@@ -48,9 +48,7 @@ def hkdf_expand(prk: bytes, info: bytes, length: int) -> bytes:
     counter = 1
 
     while len(output) < length:
-        output += hmac.new(
-            prk, output[-32:] + info + bytes([counter]), hashlib.sha3_256
-        ).digest()
+        output += hmac.new(prk, output[-32:] + info + bytes([counter]), hashlib.sha3_256).digest()
         counter += 1
 
     return output[:length]
@@ -99,9 +97,7 @@ def derive_session_keys(
     return session_keys[:32], session_keys[32:]
 
 
-def derive_horadam_seeds(
-    session_prk: bytes, tongue_index: int, session_nonce: bytes
-) -> Tuple[int, int]:
+def derive_horadam_seeds(session_prk: bytes, tongue_index: int, session_nonce: bytes) -> Tuple[int, int]:
     """
     Derive Horadam seeds from session secret
 
@@ -144,9 +140,7 @@ def horadam_sequence(alpha: int, beta: int, n: int, mod: int = 2**64) -> int:
     return h_prev1
 
 
-def compute_drift(
-    h_expected: List[int], h_observed: List[int], phi: float = 1.618033988749895
-) -> List[float]:
+def compute_drift(h_expected: List[int], h_observed: List[int], phi: float = 1.618033988749895) -> List[float]:
     """
     Compute normalized drift between expected and observed sequences
 
@@ -265,9 +259,7 @@ def generate_perturbed_vectors():
     print(f"Perturbation: {perturbation * 100}%")
     print()
 
-    print(
-        "Tongue | δ_0      | δ_1      | δ_2      | δ_5      | δ_10     | δ_20     | δ_31"
-    )
+    print("Tongue | δ_0      | δ_1      | δ_2      | δ_5      | δ_10     | δ_20     | δ_31")
     print("-" * 80)
 
     all_drifts = []
@@ -281,9 +273,7 @@ def generate_perturbed_vectors():
         # Perturbed sequence (1% noise on seeds)
         alpha_perturbed = int(alpha * (1 + perturbation)) % (2**64)
         beta_perturbed = int(beta * (1 + perturbation)) % (2**64)
-        h_observed = [
-            horadam_sequence(alpha_perturbed, beta_perturbed, n) for n in range(32)
-        ]
+        h_observed = [horadam_sequence(alpha_perturbed, beta_perturbed, n) for n in range(32)]
 
         # Compute drifts
         drifts = compute_drift(h_expected, h_observed)
@@ -358,15 +348,9 @@ def generate_triadic_vectors():
 
     for n in range(3, 8):  # Need n-2, n-1, n for vectors
         # Clean vectors
-        v0_clean = horadam_to_vector(
-            sequences_clean[0][n], sequences_clean[0][n - 1], sequences_clean[0][n - 2]
-        )
-        v1_clean = horadam_to_vector(
-            sequences_clean[1][n], sequences_clean[1][n - 1], sequences_clean[1][n - 2]
-        )
-        v2_clean = horadam_to_vector(
-            sequences_clean[2][n], sequences_clean[2][n - 1], sequences_clean[2][n - 2]
-        )
+        v0_clean = horadam_to_vector(sequences_clean[0][n], sequences_clean[0][n - 1], sequences_clean[0][n - 2])
+        v1_clean = horadam_to_vector(sequences_clean[1][n], sequences_clean[1][n - 1], sequences_clean[1][n - 2])
+        v2_clean = horadam_to_vector(sequences_clean[2][n], sequences_clean[2][n - 1], sequences_clean[2][n - 2])
 
         delta_clean = compute_triadic_invariant(v0_clean, v1_clean, v2_clean)
 
@@ -399,9 +383,7 @@ def generate_triadic_vectors():
 
         delta_diff = abs(delta_clean - delta_perturbed)
 
-        print(
-            f"{n} | {delta_clean:11.6f} | {delta_perturbed:15.6f} | {delta_diff:9.6f} | {stable}"
-        )
+        print(f"{n} | {delta_clean:11.6f} | {delta_perturbed:15.6f} | {delta_diff:9.6f} | {stable}")
 
         delta_clean_prev = delta_clean
         delta_perturbed_prev = delta_perturbed
@@ -465,9 +447,7 @@ def generate_transcript_vectors():
     kem_shared_secret = b"\x07" * 32
     classical_shared_secret = b"\x08" * 32
 
-    encrypt_key, mac_key = derive_session_keys(
-        kem_shared_secret, classical_shared_secret, transcript
-    )
+    encrypt_key, mac_key = derive_session_keys(kem_shared_secret, classical_shared_secret, transcript)
 
     print("Session Keys:")
     print(f"  encrypt_key: {encrypt_key.hex()}")
@@ -481,9 +461,7 @@ def main():
     print("\n")
     print("╔" + "=" * 78 + "╗")
     print("║" + " " * 78 + "║")
-    print(
-        "║" + "  HORADAM/TRANSCRIPT TEST VECTORS FOR SCBE-AETHERMOORE".center(78) + "║"
-    )
+    print("║" + "  HORADAM/TRANSCRIPT TEST VECTORS FOR SCBE-AETHERMOORE".center(78) + "║")
     print("║" + "  Engineering Review - Priority Fixes Implementation".center(78) + "║")
     print("║" + " " * 78 + "║")
     print("╚" + "=" * 78 + "╝")

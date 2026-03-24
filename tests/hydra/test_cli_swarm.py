@@ -30,10 +30,12 @@ class TestCLIImport:
 
     def test_import_module(self):
         from hydra import cli_swarm
+
         assert cli_swarm is not None
 
     def test_main_function_exists(self):
         from hydra.cli_swarm import main
+
         assert callable(main)
 
 
@@ -46,12 +48,10 @@ def _build_parser():
     """Recreate the argparse parser from cli_swarm for testing."""
     parser = argparse.ArgumentParser(prog="hydra-swarm")
     parser.add_argument("task", nargs="?", default=None)
-    parser.add_argument("--provider", default="local",
-                        choices=["local", "hf", "huggingface"])
+    parser.add_argument("--provider", default="local", choices=["local", "hf", "huggingface"])
     parser.add_argument("--model", default="local-model")
     parser.add_argument("--base-url", default="http://localhost:1234/v1")
-    parser.add_argument("--backend", default="playwright",
-                        choices=["playwright", "selenium", "cdp"])
+    parser.add_argument("--backend", default="playwright", choices=["playwright", "selenium", "cdp"])
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--status", action="store_true")
     return parser
@@ -132,13 +132,18 @@ class TestArgumentParsing:
 
     def test_all_flags_combined(self):
         parser = _build_parser()
-        args = parser.parse_args([
-            "--provider", "hf",
-            "--model", "mistral-7b",
-            "--backend", "cdp",
-            "--dry-run",
-            "navigate to example.com",
-        ])
+        args = parser.parse_args(
+            [
+                "--provider",
+                "hf",
+                "--model",
+                "mistral-7b",
+                "--backend",
+                "cdp",
+                "--dry-run",
+                "navigate to example.com",
+            ]
+        )
         assert args.provider == "hf"
         assert args.model == "mistral-7b"
         assert args.backend == "cdp"

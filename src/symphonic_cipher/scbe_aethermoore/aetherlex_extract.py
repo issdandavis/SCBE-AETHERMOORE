@@ -45,30 +45,30 @@ VERSION = "SPIRALVERSEv1"
 # From the Kor'aelin Alphabet Guide (Layer 1)
 # Index → (name, phoneme, concept)
 RUNES_24 = [
-    ("Arul",  "/a/",   "origin, creation"),
-    ("Belan", "/b/",   "balance, duality"),
-    ("Calor", "/k/",   "clarity, illumination"),
-    ("Dael",  "/d/",   "divinity, sacred trinity"),
-    ("Elar",  "/e/",   "air, freedom"),
-    ("Fen",   "/f/",   "fire, passion"),
-    ("Gaer",  "/g/",   "earth, foundation"),
-    ("Havar", "/h/",   "home, hearth"),
-    ("Iril",  "/i/",   "magic, mystery, arcane"),
-    ("Jael",  "/dʒ/",  "justice, law"),
-    ("Kor",   "/k/",   "knowledge, learning, secrets"),  # Runic layer
-    ("Laris", "/l/",   "protection, shielding"),
-    ("Mael",  "/m/",   "moon, dreams, intuition"),
-    ("Nera",  "/n/",   "abundance, harvest"),
-    ("Orun",  "/o/",   "rebirth, cycle"),
-    ("Parun", "/p/",   "flora, growth"),
-    ("Ren",   "/r/",   "journey, travel"),
-    ("Sylor", "/s/",   "sun, radiance"),
-    ("Thul",  "/θ/",   "time, spiral, evolution"),
-    ("Uen",   "/u/",   "ocean, depths"),
-    ("Vel",   "/v/",   "invitation, collaboration"),
-    ("Wyn",   "/w/",   "water, flow, change"),
-    ("Yul",   "/j/",   "youth, renewal"),
-    ("Thana", "/θa/",  "ending, closure, transition"),
+    ("Arul", "/a/", "origin, creation"),
+    ("Belan", "/b/", "balance, duality"),
+    ("Calor", "/k/", "clarity, illumination"),
+    ("Dael", "/d/", "divinity, sacred trinity"),
+    ("Elar", "/e/", "air, freedom"),
+    ("Fen", "/f/", "fire, passion"),
+    ("Gaer", "/g/", "earth, foundation"),
+    ("Havar", "/h/", "home, hearth"),
+    ("Iril", "/i/", "magic, mystery, arcane"),
+    ("Jael", "/dʒ/", "justice, law"),
+    ("Kor", "/k/", "knowledge, learning, secrets"),  # Runic layer
+    ("Laris", "/l/", "protection, shielding"),
+    ("Mael", "/m/", "moon, dreams, intuition"),
+    ("Nera", "/n/", "abundance, harvest"),
+    ("Orun", "/o/", "rebirth, cycle"),
+    ("Parun", "/p/", "flora, growth"),
+    ("Ren", "/r/", "journey, travel"),
+    ("Sylor", "/s/", "sun, radiance"),
+    ("Thul", "/θ/", "time, spiral, evolution"),
+    ("Uen", "/u/", "ocean, depths"),
+    ("Vel", "/v/", "invitation, collaboration"),
+    ("Wyn", "/w/", "water, flow, change"),
+    ("Yul", "/j/", "youth, renewal"),
+    ("Thana", "/θa/", "ending, closure, transition"),
 ]
 
 RUNE_BY_NAME = {r[0].lower(): i for i, r in enumerate(RUNES_24)}
@@ -76,20 +76,20 @@ RUNE_BY_NAME = {r[0].lower(): i for i, r in enumerate(RUNES_24)}
 # ─── The 14 Core Particles (Grammatical Layer — Heart/Relational) ───
 # From the Lexicon JSON (Layer 2)
 PARTICLES_14 = [
-    ("kor",  "heart, core, essence"),         # Particle layer — dual with rune
-    ("sil",  "together, unity"),
-    ("vel",  "invitation, collaboration"),
-    ("zar",  "dimension, bridge"),
+    ("kor", "heart, core, essence"),  # Particle layer — dual with rune
+    ("sil", "together, unity"),
+    ("vel", "invitation, collaboration"),
+    ("zar", "dimension, bridge"),
     ("keth", "time, temporal flow"),
     ("thul", "spiral, evolution"),
-    ("nav",  "difference, diversity"),
-    ("ael",  "eternal, continuity"),
-    ("ra",   "flow, current"),
-    ("med",  "wisdom, knowledge"),
-    ("gal",  "strength, foundation"),
-    ("lan",  "gentleness, peace"),
+    ("nav", "difference, diversity"),
+    ("ael", "eternal, continuity"),
+    ("ra", "flow, current"),
+    ("med", "wisdom, knowledge"),
+    ("gal", "strength, foundation"),
+    ("lan", "gentleness, peace"),
     ("bren", "warmth, flame, hearth"),
-    ("oen",  "circle, completeness"),
+    ("oen", "circle, completeness"),
 ]
 
 PARTICLE_BY_NAME = {p[0]: i for i, p in enumerate(PARTICLES_14)}
@@ -100,67 +100,215 @@ PHI = (1 + math.sqrt(5)) / 2  # Golden ratio
 
 TONGUES = {
     "KO": {
-        "name": "Kor'aelin", "meaning": "Heart-Eternal",
-        "phi_n": 0, "weight": PHI ** 0, "phase": 0.0,
+        "name": "Kor'aelin",
+        "meaning": "Heart-Eternal",
+        "phi_n": 0,
+        "weight": PHI**0,
+        "phase": 0.0,
         "keywords": [
-            "bind", "binding", "bond", "heart", "companion", "together",
-            "collaborative", "spell", "cast", "weave", "intent", "will",
-            "magic", "arcane", "enchant", "invoke", "ritual", "chant",
-            "kor", "sil", "vel", "gesture", "incantation", "summon",
+            "bind",
+            "binding",
+            "bond",
+            "heart",
+            "companion",
+            "together",
+            "collaborative",
+            "spell",
+            "cast",
+            "weave",
+            "intent",
+            "will",
+            "magic",
+            "arcane",
+            "enchant",
+            "invoke",
+            "ritual",
+            "chant",
+            "kor",
+            "sil",
+            "vel",
+            "gesture",
+            "incantation",
+            "summon",
         ],
     },
     "AV": {
-        "name": "Avali", "meaning": "Common Tongue",
-        "phi_n": 1, "weight": PHI ** 1, "phase": math.pi / 3,
+        "name": "Avali",
+        "meaning": "Common Tongue",
+        "phi_n": 1,
+        "weight": PHI**1,
+        "phase": math.pi / 3,
         "keywords": [
-            "speak", "say", "tell", "ask", "question", "conversation",
-            "trade", "negotiate", "greet", "welcome", "invite", "offer",
-            "gentle", "rhythm", "caress", "breeze", "dance", "sense",
-            "vision", "dream", "intriguing", "curious", "explore",
+            "speak",
+            "say",
+            "tell",
+            "ask",
+            "question",
+            "conversation",
+            "trade",
+            "negotiate",
+            "greet",
+            "welcome",
+            "invite",
+            "offer",
+            "gentle",
+            "rhythm",
+            "caress",
+            "breeze",
+            "dance",
+            "sense",
+            "vision",
+            "dream",
+            "intriguing",
+            "curious",
+            "explore",
         ],
     },
     "RU": {
-        "name": "Runethic", "meaning": "Ancient Tongue",
-        "phi_n": 2, "weight": PHI ** 2, "phase": 2 * math.pi / 3,
+        "name": "Runethic",
+        "meaning": "Ancient Tongue",
+        "phi_n": 2,
+        "weight": PHI**2,
+        "phase": 2 * math.pi / 3,
         "keywords": [
-            "ancient", "old", "rune", "ruin", "inscription", "temple",
-            "oath", "vow", "guard", "protect", "preserve", "history",
-            "knowledge", "study", "research", "scholar", "tome", "scroll",
-            "library", "archive", "legend", "lore", "power", "energy",
-            "eldritch", "blast", "supernatural", "weaving",
+            "ancient",
+            "old",
+            "rune",
+            "ruin",
+            "inscription",
+            "temple",
+            "oath",
+            "vow",
+            "guard",
+            "protect",
+            "preserve",
+            "history",
+            "knowledge",
+            "study",
+            "research",
+            "scholar",
+            "tome",
+            "scroll",
+            "library",
+            "archive",
+            "legend",
+            "lore",
+            "power",
+            "energy",
+            "eldritch",
+            "blast",
+            "supernatural",
+            "weaving",
         ],
     },
     "CA": {
-        "name": "Cassisivadan", "meaning": "Nature's Speech",
-        "phi_n": 3, "weight": PHI ** 3, "phase": math.pi,
+        "name": "Cassisivadan",
+        "meaning": "Nature's Speech",
+        "phi_n": 3,
+        "weight": PHI**3,
+        "phase": math.pi,
         "keywords": [
-            "forest", "tree", "root", "leaf", "herb", "plant", "grow",
-            "flower", "seed", "nature", "wild", "animal", "bird",
-            "puzzle", "mystery", "ambiguous", "unclear", "strange",
-            "storm", "nothing", "mechanical", "construct", "tinker",
-            "fun", "joy", "play", "laugh",
+            "forest",
+            "tree",
+            "root",
+            "leaf",
+            "herb",
+            "plant",
+            "grow",
+            "flower",
+            "seed",
+            "nature",
+            "wild",
+            "animal",
+            "bird",
+            "puzzle",
+            "mystery",
+            "ambiguous",
+            "unclear",
+            "strange",
+            "storm",
+            "nothing",
+            "mechanical",
+            "construct",
+            "tinker",
+            "fun",
+            "joy",
+            "play",
+            "laugh",
         ],
     },
     "UM": {
-        "name": "Umbroth", "meaning": "Shadow Tongue",
-        "phi_n": 4, "weight": PHI ** 4, "phase": 4 * math.pi / 3,
+        "name": "Umbroth",
+        "meaning": "Shadow Tongue",
+        "phi_n": 4,
+        "weight": PHI**4,
+        "phase": 4 * math.pi / 3,
         "keywords": [
-            "shadow", "dark", "hidden", "secret", "conceal", "veil",
-            "fragment", "disjointed", "disorient", "confus", "lost",
-            "nothing", "opaque", "unclear", "memory", "forget", "drift",
-            "sever", "cut", "break", "shatter", "crack", "limit",
-            "mock", "frustrat", "fail", "lack", "beyond",
+            "shadow",
+            "dark",
+            "hidden",
+            "secret",
+            "conceal",
+            "veil",
+            "fragment",
+            "disjointed",
+            "disorient",
+            "confus",
+            "lost",
+            "nothing",
+            "opaque",
+            "unclear",
+            "memory",
+            "forget",
+            "drift",
+            "sever",
+            "cut",
+            "break",
+            "shatter",
+            "crack",
+            "limit",
+            "mock",
+            "frustrat",
+            "fail",
+            "lack",
+            "beyond",
         ],
     },
     "DR": {
-        "name": "Draumric", "meaning": "Forge Tongue",
-        "phi_n": 5, "weight": PHI ** 5, "phase": 5 * math.pi / 3,
+        "name": "Draumric",
+        "meaning": "Forge Tongue",
+        "phi_n": 5,
+        "weight": PHI**5,
+        "phase": 5 * math.pi / 3,
         "keywords": [
-            "forge", "build", "craft", "construct", "gather", "material",
-            "stone", "metal", "wood", "timber", "shelter", "structure",
-            "golem", "servant", "form", "physical", "task", "tool",
-            "hammer", "fire", "heat", "mold", "shape", "ready",
-            "instruct", "direct", "precision", "collect",
+            "forge",
+            "build",
+            "craft",
+            "construct",
+            "gather",
+            "material",
+            "stone",
+            "metal",
+            "wood",
+            "timber",
+            "shelter",
+            "structure",
+            "golem",
+            "servant",
+            "form",
+            "physical",
+            "task",
+            "tool",
+            "hammer",
+            "fire",
+            "heat",
+            "mold",
+            "shape",
+            "ready",
+            "instruct",
+            "direct",
+            "precision",
+            "collect",
         ],
     },
 }
@@ -172,14 +320,16 @@ TONGUE_CODES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 # PHRASE EXTRACTION
 # ═══════════════════════════════════════════════════════════
 
+
 @dataclass
 class ExtractedPhrase:
     """A phrase extracted from the Everweave logs."""
+
     text: str
-    speaker: str           # "DM" or "Izack" or "unknown"
-    page: int              # Everweave page number
-    line_start: int        # Line number in source file
-    tongue_bias: str       # Two-letter tongue code
+    speaker: str  # "DM" or "Izack" or "unknown"
+    page: int  # Everweave page number
+    line_start: int  # Line number in source file
+    tongue_bias: str  # Two-letter tongue code
     tongue_scores: Dict[str, float] = field(default_factory=dict)
     tongue_confidence: float = 0.0  # 0 = no keywords matched, 1 = single dominant tongue
     # Populated after tokenization
@@ -189,9 +339,7 @@ class ExtractedPhrase:
     entropy_bpb: float = 0.0
 
 
-def parse_everweave(filepath: str,
-                    page_start: int = 1,
-                    page_end: int = 999) -> List[ExtractedPhrase]:
+def parse_everweave(filepath: str, page_start: int = 1, page_end: int = 999) -> List[ExtractedPhrase]:
     """
     Parse the Everweave text file into dialogue turns, then into sentences.
     Returns a list of ExtractedPhrase objects.
@@ -230,13 +378,15 @@ def parse_everweave(filepath: str,
                 continue
             if current_page < page_start or current_page > page_end:
                 continue
-            phrases.append(ExtractedPhrase(
-                text=sent,
-                speaker=current_speaker,
-                page=current_page,
-                line_start=block_start_line,
-                tongue_bias="",  # Classified later
-            ))
+            phrases.append(
+                ExtractedPhrase(
+                    text=sent,
+                    speaker=current_speaker,
+                    page=current_page,
+                    line_start=block_start_line,
+                    tongue_bias="",  # Classified later
+                )
+            )
         current_block = []
 
     for line_no, raw_line in enumerate(lines, 1):
@@ -277,6 +427,7 @@ def parse_everweave(filepath: str,
 # ═══════════════════════════════════════════════════════════
 # TONGUE CLASSIFICATION
 # ═══════════════════════════════════════════════════════════
+
 
 def classify_tongue(phrase: ExtractedPhrase) -> str:
     """
@@ -370,8 +521,9 @@ PARTICLE_AFFINITIES: Dict[str, List[str]] = {
 }
 
 
-def _affinity_tokenize(text: str, affinity_map: Dict[str, List[str]],
-                       name_to_idx: Dict[str, int], max_tokens: int) -> List[int]:
+def _affinity_tokenize(
+    text: str, affinity_map: Dict[str, List[str]], name_to_idx: Dict[str, int], max_tokens: int
+) -> List[int]:
     """Score text against affinity keywords, return top-N indices."""
     text_lower = text.lower()
     scores: Dict[int, float] = {}
@@ -409,20 +561,16 @@ def tokenize_dual_layer(phrase: ExtractedPhrase, n_runic: int = 6, n_particle: i
       Runic layer  — 24-letter symbolic mapping (mind/concept)
       Particle layer — 14-morpheme relational mapping (heart/intent)
     """
-    phrase.runic_tokens = _affinity_tokenize(
-        phrase.text, RUNE_AFFINITIES, RUNE_BY_NAME, n_runic)
-    phrase.particle_tokens = _affinity_tokenize(
-        phrase.text, PARTICLE_AFFINITIES, PARTICLE_BY_NAME, n_particle)
+    phrase.runic_tokens = _affinity_tokenize(phrase.text, RUNE_AFFINITIES, RUNE_BY_NAME, n_runic)
+    phrase.particle_tokens = _affinity_tokenize(phrase.text, PARTICLE_AFFINITIES, PARTICLE_BY_NAME, n_particle)
 
 
 # ═══════════════════════════════════════════════════════════
 # PACKING & HASHING
 # ═══════════════════════════════════════════════════════════
 
-def pack_tokens(tongue_code: str,
-                runic: List[int],
-                particles: List[int],
-                page: int) -> bytes:
+
+def pack_tokens(tongue_code: str, runic: List[int], particles: List[int], page: int) -> bytes:
     """
     Pack dual-layer tokens into a binary payload for hashing.
     Format:
@@ -471,11 +619,9 @@ def pack_tokens(tongue_code: str,
     return bytes(buf)
 
 
-def hash_seed(tongue_code: str,
-              runic: List[int],
-              particles: List[int],
-              page: int,
-              raw_text: str = "") -> Tuple[str, float]:
+def hash_seed(
+    tongue_code: str, runic: List[int], particles: List[int], page: int, raw_text: str = ""
+) -> Tuple[str, float]:
     """
     Hash packed tokens to a 64-byte SHAKE-256 seed.
     Returns (hex_string, entropy_bits_per_byte).
@@ -503,8 +649,7 @@ def hash_seed(tongue_code: str,
 
 def generate_attestation(phrase: ExtractedPhrase) -> Dict:
     """Generate a cryptographic attestation for a seed."""
-    packed = pack_tokens(
-        phrase.tongue_bias, phrase.runic_tokens, phrase.particle_tokens, phrase.page)
+    packed = pack_tokens(phrase.tongue_bias, phrase.runic_tokens, phrase.particle_tokens, phrase.page)
     text_hash = hashlib.sha256(phrase.text.encode()).digest()
     preimage = VERSION.encode() + packed + text_hash
 
@@ -513,8 +658,7 @@ def generate_attestation(phrase: ExtractedPhrase) -> Dict:
         "tongue": phrase.tongue_bias,
         "page": phrase.page,
         "sha256_preimage": hashlib.sha256(preimage).hexdigest(),
-        "hmac_attest": hmac.new(
-            VERSION.encode(), preimage, hashlib.sha256).hexdigest(),
+        "hmac_attest": hmac.new(VERSION.encode(), preimage, hashlib.sha256).hexdigest(),
         "phi_weight": TONGUES[phrase.tongue_bias]["weight"],
         "phase": TONGUES[phrase.tongue_bias]["phase"],
         "timestamp": time.time(),
@@ -524,6 +668,7 @@ def generate_attestation(phrase: ExtractedPhrase) -> Dict:
 # ═══════════════════════════════════════════════════════════
 # FULL PIPELINE
 # ═══════════════════════════════════════════════════════════
+
 
 def process_phrase(phrase: ExtractedPhrase) -> ExtractedPhrase:
     """Full pipeline: classify → tokenize → hash."""
@@ -539,9 +684,7 @@ def process_phrase(phrase: ExtractedPhrase) -> ExtractedPhrase:
     return phrase
 
 
-def extract_corpus(filepath: str,
-                   page_start: int = 1,
-                   page_end: int = 999) -> List[ExtractedPhrase]:
+def extract_corpus(filepath: str, page_start: int = 1, page_end: int = 999) -> List[ExtractedPhrase]:
     """Extract, classify, tokenize, and hash all phrases."""
     phrases = parse_everweave(filepath, page_start, page_end)
 
@@ -576,6 +719,7 @@ def extract_corpus(filepath: str,
 # CORPUS STATISTICS
 # ═══════════════════════════════════════════════════════════
 
+
 def corpus_stats(phrases: List[ExtractedPhrase]) -> Dict:
     """Compute statistics over a seed corpus."""
     total = len(phrases)
@@ -609,6 +753,7 @@ def corpus_stats(phrases: List[ExtractedPhrase]) -> Dict:
 # ═══════════════════════════════════════════════════════════
 # SELFTEST
 # ═══════════════════════════════════════════════════════════
+
 
 def selftest():
     """Validate invariants of the extraction pipeline."""
@@ -663,8 +808,8 @@ def selftest():
 
     # 6. Tongue classification sanity
     binding = ExtractedPhrase(
-        text="spell of binding upon sand and water", speaker="IZACK",
-        page=1, line_start=0, tongue_bias="")
+        text="spell of binding upon sand and water", speaker="IZACK", page=1, line_start=0, tongue_bias=""
+    )
     classify_tongue(binding)
     assert binding.tongue_bias == "" or True  # Just run it
     binding.tongue_bias = classify_tongue(binding)
@@ -672,14 +817,22 @@ def selftest():
 
     shadow = ExtractedPhrase(
         text="fragments of memory hidden in shadow, frustratingly lost",
-        speaker="DM", page=1, line_start=0, tongue_bias="")
+        speaker="DM",
+        page=1,
+        line_start=0,
+        tongue_bias="",
+    )
     shadow.tongue_bias = classify_tongue(shadow)
     assert shadow.tongue_bias == "UM", f"Expected UM, got {shadow.tongue_bias}"
     print("  [OK] Tongue classification: shadow phrase → UM")
 
     forge = ExtractedPhrase(
         text="gather materials, driftwood and stone, to construct a shelter",
-        speaker="DM", page=1, line_start=0, tongue_bias="")
+        speaker="DM",
+        page=1,
+        line_start=0,
+        tongue_bias="",
+    )
     forge.tongue_bias = classify_tongue(forge)
     assert forge.tongue_bias == "DR", f"Expected DR, got {forge.tongue_bias}"
     print("  [OK] Tongue classification: forge phrase → DR")
@@ -697,6 +850,7 @@ def selftest():
 # ═══════════════════════════════════════════════════════════
 # CLI
 # ═══════════════════════════════════════════════════════════
+
 
 def cmd_extract(args):
     """Extract seed corpus from Everweave log."""
@@ -783,8 +937,7 @@ def cmd_hash(args):
     )
 
     tokenize_dual_layer(p)
-    p.seed_hex, p.entropy_bpb = hash_seed(
-        tongue, p.runic_tokens, p.particle_tokens, p.page, p.text)
+    p.seed_hex, p.entropy_bpb = hash_seed(tongue, p.runic_tokens, p.particle_tokens, p.page, p.text)
 
     attest = generate_attestation(p)
 

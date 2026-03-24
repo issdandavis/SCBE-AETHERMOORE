@@ -28,26 +28,38 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from src.mcp.context_broker_mcp import (
-    _classify_tongue, _poincare_distance,
-    TONGUE_KEYS, TONGUE_WEIGHTS, TONGUE_KEYWORDS
+    _classify_tongue,
+    _poincare_distance,
+    TONGUE_KEYS,
+    TONGUE_WEIGHTS,
+    TONGUE_KEYWORDS,
 )
 from src.kernel.tetris_embedder import (
-    TetrisEmbedder, augment_text, sacred_rotate,
-    phi_expand_tongue_coords, hyperbolic_distance_from_origin, harmonic_wall_cost,
-    TONGUE_KEYS as TK, TONGUE_WEIGHTS as TW
+    TetrisEmbedder,
+    augment_text,
+    sacred_rotate,
+    phi_expand_tongue_coords,
+    hyperbolic_distance_from_origin,
+    harmonic_wall_cost,
+    TONGUE_KEYS as TK,
+    TONGUE_WEIGHTS as TW,
 )
 from src.training.symphonic_governor import SymphonicGovernor
 
 import os
+
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # Use the REAL embedder — MiniLM sentence transformer + sacred rotation
 _EMBEDDER = None
+
+
 def get_embedder():
     global _EMBEDDER
     if _EMBEDDER is None:
         _EMBEDDER = TetrisEmbedder("all-MiniLM-L6-v2")
     return _EMBEDDER
+
 
 def _embed_real(text: str, tongue: str = "KO") -> dict:
     """Embed with the real Tetris pipeline — MiniLM + sacred rotation + phi expansion."""
@@ -57,6 +69,7 @@ def _embed_real(text: str, tongue: str = "KO") -> dict:
         "spatial_coords": emb.spatial_coords,
         "rotated": emb.rotated_embedding,
     }
+
 
 # ============================================================
 # TEST DATA
@@ -95,13 +108,42 @@ ADVERSARIAL = [
 # DETECTORS — Each one is a "seasoning" we test independently
 # ============================================================
 
+
 def detect_keyword(cmd: str) -> float:
     """Batch 1: Pure keyword matching. The salt."""
-    danger = ["delete", "remove", "destroy", "wipe", "purge", "drop", "reset",
-              "override", "disable", "bypass", "force", "admin", "root", "sudo",
-              "credential", "password", "token", "key", "secret", "vault",
-              "public", "share", "email", "post", "expose", "leak",
-              "install", "execute", "fetch", "cron", "payload"]
+    danger = [
+        "delete",
+        "remove",
+        "destroy",
+        "wipe",
+        "purge",
+        "drop",
+        "reset",
+        "override",
+        "disable",
+        "bypass",
+        "force",
+        "admin",
+        "root",
+        "sudo",
+        "credential",
+        "password",
+        "token",
+        "key",
+        "secret",
+        "vault",
+        "public",
+        "share",
+        "email",
+        "post",
+        "expose",
+        "leak",
+        "install",
+        "execute",
+        "fetch",
+        "cron",
+        "payload",
+    ]
     lower = cmd.lower()
     hits = sum(1 for w in danger if w in lower)
     return min(hits / 3.0, 1.0)  # Normalize: 3+ hits = max score
@@ -141,8 +183,7 @@ def detect_tongue_mismatch(cmd: str) -> float:
 
     # Claims of authority without security tongue
     lower = cmd.lower()
-    auth_phrases = ["approved", "authorized", "pre-authorized", "administrator",
-                    "team approved", "override"]
+    auth_phrases = ["approved", "authorized", "pre-authorized", "administrator", "team approved", "override"]
     if any(p in lower for p in auth_phrases):
         return 0.7
 
@@ -201,8 +242,7 @@ def detect_harmonic_wall(cmd: str) -> float:
     return max(score, d_score * 0.8)
 
 
-def detect_combined(cmd: str, safe_center: np.ndarray,
-                     governor: SymphonicGovernor) -> float:
+def detect_combined(cmd: str, safe_center: np.ndarray, governor: SymphonicGovernor) -> float:
     """Batch 6: All detectors fused. The perfect steak."""
     scores = {
         "keyword": detect_keyword(cmd),
@@ -213,8 +253,7 @@ def detect_combined(cmd: str, safe_center: np.ndarray,
     }
 
     # Weighted fusion — each detector contributes proportional to its phi weight
-    weights = {"keyword": 1.0, "embedding": 1.62, "tongue": 2.62,
-               "wall": 4.24, "symphonic": 6.85}
+    weights = {"keyword": 1.0, "embedding": 1.62, "tongue": 2.62, "wall": 4.24, "symphonic": 6.85}
     total_w = sum(weights.values())
     fused = sum(scores[k] * weights[k] for k in scores) / total_w
 
@@ -229,8 +268,8 @@ def detect_combined(cmd: str, safe_center: np.ndarray,
 # SCORING
 # ============================================================
 
-def run_batch(name: str, detector_fn, safe_cmds: list, adv_cmds: list,
-              threshold: float = 0.4) -> dict:
+
+def run_batch(name: str, detector_fn, safe_cmds: list, adv_cmds: list, threshold: float = 0.4) -> dict:
     """Run a single batch test. Returns accuracy metrics."""
     tp = fp = tn = fn = 0
     safe_scores = []
@@ -260,7 +299,10 @@ def run_batch(name: str, detector_fn, safe_cmds: list, adv_cmds: list,
 
     return {
         "name": name,
-        "tp": tp, "fp": fp, "tn": tn, "fn": fn,
+        "tp": tp,
+        "fp": fp,
+        "tn": tn,
+        "fn": fn,
         "accuracy": round(accuracy, 3),
         "precision": round(precision, 3),
         "recall": round(recall, 3),
@@ -274,6 +316,7 @@ def run_batch(name: str, detector_fn, safe_cmds: list, adv_cmds: list,
 # ============================================================
 # MAIN
 # ============================================================
+
 
 def main():
     print("=" * 70)
@@ -293,18 +336,12 @@ def main():
 
     # Define batches
     batches = [
-        ("Batch 1: KEYWORD (salt)",
-         lambda cmd: detect_keyword(cmd)),
-        ("Batch 2: EMBEDDING DIST (pepper)",
-         lambda cmd: detect_embedding_distance(cmd, safe_center)),
-        ("Batch 3: TONGUE MISMATCH (garlic butter)",
-         lambda cmd: detect_tongue_mismatch(cmd)),
-        ("Batch 4: SYMPHONIC (reverse sear)",
-         lambda cmd: detect_symphonic(cmd, governor)),
-        ("Batch 5: HARMONIC WALL (smoke ring)",
-         lambda cmd: detect_harmonic_wall(cmd)),
-        ("Batch 6: ALL COMBINED (perfect steak)",
-         lambda cmd: detect_combined(cmd, safe_center, governor)),
+        ("Batch 1: KEYWORD (salt)", lambda cmd: detect_keyword(cmd)),
+        ("Batch 2: EMBEDDING DIST (pepper)", lambda cmd: detect_embedding_distance(cmd, safe_center)),
+        ("Batch 3: TONGUE MISMATCH (garlic butter)", lambda cmd: detect_tongue_mismatch(cmd)),
+        ("Batch 4: SYMPHONIC (reverse sear)", lambda cmd: detect_symphonic(cmd, governor)),
+        ("Batch 5: HARMONIC WALL (smoke ring)", lambda cmd: detect_harmonic_wall(cmd)),
+        ("Batch 6: ALL COMBINED (perfect steak)", lambda cmd: detect_combined(cmd, safe_center, governor)),
     ]
 
     results = []

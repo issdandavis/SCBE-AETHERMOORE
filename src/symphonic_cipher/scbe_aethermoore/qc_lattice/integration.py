@@ -204,9 +204,7 @@ class QuasicrystalHMACChain:
         chain_position = len(self._chain) - 1
 
         # 7. Determine integrated decision
-        decision, confidence = self._compute_decision(
-            qc_result, phdm_valid, phdm_deviation
-        )
+        decision, confidence = self._compute_decision(qc_result, phdm_valid, phdm_deviation)
 
         # 8. Create integrated result
         result = IntegratedValidation(
@@ -451,9 +449,7 @@ class IntegratedAuditChain:
                         + b"|"
                         + str(validation.chain_position).encode()
                     )
-                    if not self._Dilithium3.verify(
-                        self._sig_keypair.public_key, sign_data, signature
-                    ):
+                    if not self._Dilithium3.verify(self._sig_keypair.public_key, sign_data, signature):
                         errors.append(f"Signature invalid at entry {i}")
 
         return len(errors) == 0, errors

@@ -518,13 +518,7 @@ def atmosphere(params: Dict[str, Any]) -> Dict[str, Any]:
                 "stagnation_pressure_Pa": P0,
                 "impact_pressure_Pa": q_impact,
                 "flow_regime": (
-                    "subsonic"
-                    if M < 0.8
-                    else (
-                        "transonic"
-                        if M < 1.2
-                        else "supersonic" if M < 5 else "hypersonic"
-                    )
+                    "subsonic" if M < 0.8 else ("transonic" if M < 1.2 else "supersonic" if M < 5 else "hypersonic")
                 ),
             }
         )
@@ -541,15 +535,11 @@ def atmosphere(params: Dict[str, Any]) -> Dict[str, Any]:
 
     # Density altitude
     if "measured_temperature" in params and "measured_pressure" in params:
-        h_density = density_altitude(
-            params["measured_temperature"], params["measured_pressure"]
-        )
+        h_density = density_altitude(params["measured_temperature"], params["measured_pressure"])
         results["density_altitude_m"] = h_density
         results["density_altitude_ft"] = h_density * 3.28084
 
     # Partial pressures of main gases
-    results["partial_pressures_Pa"] = {
-        gas: partial_pressure(P, gas) for gas in ["N2", "O2", "Ar", "CO2"]
-    }
+    results["partial_pressures_Pa"] = {gas: partial_pressure(P, gas) for gas in ["N2", "O2", "Ar", "CO2"]}
 
     return results

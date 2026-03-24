@@ -58,6 +58,7 @@ def load_env() -> None:
     if env_path.is_file():
         try:
             from dotenv import load_dotenv
+
             load_dotenv(dotenv_path=env_path, override=False)
         except ImportError:
             with open(env_path, "r", encoding="utf-8") as f:
@@ -90,6 +91,7 @@ def run_game_session(steps: int) -> int:
 
     try:
         from headless import run_headless
+
         gif_path = str(PROJECT_ROOT / "artifacts" / f"training_session_{int(time.time())}.gif")
         os.makedirs(os.path.dirname(gif_path), exist_ok=True)
 
@@ -118,12 +120,14 @@ def run_gacha_fallback(steps: int) -> None:
     try:
         sys.path.insert(0, str(DEMO_DIR))
         from gacha_squad_demo import main as gacha_main
+
         gacha_main()
         logger.info("Gacha demo fallback completed")
     except Exception as e:
         logger.error("Gacha fallback also failed: %s", e)
         # Ultra-fallback: use hf_trainer directly
         from hf_trainer import RealTimeHFTrainer, load_dotenv as _ld
+
         _ld()
         trainer = RealTimeHFTrainer()
         trainer.start()

@@ -58,13 +58,9 @@ def require_approved_packet(report_path: Path, chapter: str, panel_count: int | 
 
     report = load_quality_report(report_path)
     if report.get("chapter_id") and report["chapter_id"] != chapter:
-        raise ValueError(
-            f"Quality report chapter mismatch: expected {chapter}, found {report.get('chapter_id')}"
-        )
+        raise ValueError(f"Quality report chapter mismatch: expected {chapter}, found {report.get('chapter_id')}")
     if not report.get("approved"):
-        raise ValueError(
-            f"Packet report is not approved: {report_path}"
-        )
+        raise ValueError(f"Packet report is not approved: {report_path}")
     if panel_count is not None and isinstance(report.get("panel_count"), int) and report["panel_count"] != panel_count:
         raise ValueError(
             f"Panel count mismatch for approved packet: report expects {report['panel_count']}, found {panel_count}"
@@ -127,9 +123,18 @@ def main():
     parser.add_argument("--chapter", default="ch01", help="Chapter ID (default: ch01)")
     parser.add_argument("--input", help="Input directory with panel images")
     parser.add_argument("--output", help="Output directory for strip and slices")
-    parser.add_argument("--width", type=int, default=DEFAULT_WIDTH, help=f"Strip width in px (default: {DEFAULT_WIDTH})")
-    parser.add_argument("--gap", type=int, default=DEFAULT_GAP, help=f"Gap between panels in px (default: {DEFAULT_GAP})")
-    parser.add_argument("--slice-height", type=int, default=DEFAULT_SLICE_HEIGHT, help=f"Max slice height (default: {DEFAULT_SLICE_HEIGHT})")
+    parser.add_argument(
+        "--width", type=int, default=DEFAULT_WIDTH, help=f"Strip width in px (default: {DEFAULT_WIDTH})"
+    )
+    parser.add_argument(
+        "--gap", type=int, default=DEFAULT_GAP, help=f"Gap between panels in px (default: {DEFAULT_GAP})"
+    )
+    parser.add_argument(
+        "--slice-height",
+        type=int,
+        default=DEFAULT_SLICE_HEIGHT,
+        help=f"Max slice height (default: {DEFAULT_SLICE_HEIGHT})",
+    )
     parser.add_argument("--no-slice", action="store_true", help="Output full strip only, no slicing")
     parser.add_argument("--prefer-hq", action="store_true", help="Use HQ panels when available, fall back to v3")
     parser.add_argument("--report", help="Optional governed packet report path")
@@ -195,7 +200,9 @@ def main():
 
     # Slice
     if not args.no_slice:
-        slices = slice_strip(strip, max_height=args.slice_height, output_dir=output_dir, prefix=f"{args.chapter}-scroll")
+        slices = slice_strip(
+            strip, max_height=args.slice_height, output_dir=output_dir, prefix=f"{args.chapter}-scroll"
+        )
         print(f"Sliced into {len(slices)} segments at max {args.slice_height}px height")
         for s in slices:
             print(f"  {s.name}")
@@ -207,6 +214,7 @@ def main():
         for s in slices:
             dest = app_dir / s.name
             import shutil
+
             shutil.copy2(s, dest)
         print(f"Copied to app: {app_dir}")
 

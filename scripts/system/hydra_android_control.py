@@ -28,7 +28,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_launch = sub.add_parser("launch-reader", help="Launch the app or browser reader route")
     p_launch.add_argument("--route", default=DEFAULT_READER_ROUTE, help="Reader URL when using browser route launch")
-    p_launch.add_argument("--browser", action="store_true", help="Open the route in Android browser instead of app shell")
+    p_launch.add_argument(
+        "--browser", action="store_true", help="Open the route in Android browser instead of app shell"
+    )
 
     p_observe = sub.add_parser("observe", help="Capture screenshot and optional UI dump")
     p_observe.add_argument("--name", default="observation", help="Artifact basename")

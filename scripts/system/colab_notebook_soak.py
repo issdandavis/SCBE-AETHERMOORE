@@ -148,10 +148,16 @@ def run_soak(
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run a long-form Colab smoke sweep.")
-    parser.add_argument("--notebook", action="append", default=[], help="Notebook name or alias. Repeat to select multiple.")
-    parser.add_argument("--category", action="append", default=[], help="Notebook category filter. Repeat to select multiple.")
+    parser.add_argument(
+        "--notebook", action="append", default=[], help="Notebook name or alias. Repeat to select multiple."
+    )
+    parser.add_argument(
+        "--category", action="append", default=[], help="Notebook category filter. Repeat to select multiple."
+    )
     parser.add_argument("--limit", type=int, default=0, help="Optional maximum notebooks to test.")
-    parser.add_argument("--include-missing", action="store_true", help="Include catalog entries whose local files are missing.")
+    parser.add_argument(
+        "--include-missing", action="store_true", help="Include catalog entries whose local files are missing."
+    )
     parser.add_argument("--profile-dir", default=str(smoke.DEFAULT_PROFILE_DIR))
     parser.add_argument("--artifact-root", default=str(ARTIFACT_ROOT))
     parser.add_argument("--timeout-ms", type=int, default=90000)

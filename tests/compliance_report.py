@@ -2031,14 +2031,8 @@ class ComplianceReportGenerator:
         """Summarize results by compliance framework."""
         summary = {}
         for framework in ComplianceFramework:
-            tests = [
-                m for m in self.mappings.values() if framework.value in m.frameworks
-            ]
-            passed = sum(
-                1
-                for t in tests
-                if any(r.passed for r in self.test_results if r.test_id == t.test_id)
-            )
+            tests = [m for m in self.mappings.values() if framework.value in m.frameworks]
+            passed = sum(1 for t in tests if any(r.passed for r in self.test_results if r.test_id == t.test_id))
             summary[framework.value] = {
                 "total": len(tests),
                 "passed": passed,
@@ -2052,11 +2046,7 @@ class ComplianceReportGenerator:
         summary = {}
         for layer in SCBELayer:
             tests = [m for m in self.mappings.values() if layer.value in m.scbe_layers]
-            passed = sum(
-                1
-                for t in tests
-                if any(r.passed for r in self.test_results if r.test_id == t.test_id)
-            )
+            passed = sum(1 for t in tests if any(r.passed for r in self.test_results if r.test_id == t.test_id))
             summary[layer.value] = {
                 "total": len(tests),
                 "passed": passed,
@@ -2069,11 +2059,7 @@ class ComplianceReportGenerator:
         summary = {}
         for severity in ["critical", "high", "medium", "low"]:
             tests = [m for m in self.mappings.values() if m.severity == severity]
-            passed = sum(
-                1
-                for t in tests
-                if any(r.passed for r in self.test_results if r.test_id == t.test_id)
-            )
+            passed = sum(1 for t in tests if any(r.passed for r in self.test_results if r.test_id == t.test_id))
             summary[severity] = {
                 "total": len(tests),
                 "passed": passed,
@@ -2085,11 +2071,7 @@ class ComplianceReportGenerator:
         """Get coverage by lattice structure."""
         coverage = {}
         for lattice in LatticeStructure:
-            tests = [
-                m
-                for m in self.mappings.values()
-                if lattice.value in m.lattice_structures
-            ]
+            tests = [m for m in self.mappings.values() if lattice.value in m.lattice_structures]
             coverage[lattice.value] = len(tests)
         return coverage
 
@@ -2155,9 +2137,7 @@ class ComplianceReportGenerator:
 |-----------|-------|--------|----------|
 """
         for fw, data in report.summary_by_framework.items():
-            md += (
-                f"| {fw} | {data['total']} | {data['passed']} | {data['coverage']} |\n"
-            )
+            md += f"| {fw} | {data['total']} | {data['passed']} | {data['coverage']} |\n"
 
         md += """
 ---
@@ -2219,9 +2199,7 @@ class ComplianceReportGenerator:
             md += "| ID | Test | Severity | Frameworks | Layers |\n"
             md += "|----|------|----------|------------|--------|\n"
             for t in sorted(tests, key=lambda x: int(x.test_id)):
-                fws = ", ".join(t.frameworks[:2]) + (
-                    "..." if len(t.frameworks) > 2 else ""
-                )
+                fws = ", ".join(t.frameworks[:2]) + ("..." if len(t.frameworks) > 2 else "")
                 layers = ", ".join([l.split(":")[0] for l in t.scbe_layers[:2]])
                 md += f"| {t.test_id} | {t.test_name} | {t.severity} | {fws} | {layers} |\n"
             md += "\n"
@@ -2293,12 +2271,7 @@ class ComplianceReportGenerator:
                     <tbody>
 """
         for fw, data in report.summary_by_framework.items():
-            color = (
-                "green"
-                if data["coverage"] != "N/A"
-                and float(data["coverage"].rstrip("%")) >= 90
-                else "yellow"
-            )
+            color = "green" if data["coverage"] != "N/A" and float(data["coverage"].rstrip("%")) >= 90 else "yellow"
             html += f"""                        <tr class="border-b border-white/10">
                             <td class="py-2">{fw}</td>
                             <td class="py-2">{data['total']}</td>
@@ -2361,9 +2334,7 @@ def main():
         default="compliance_report",
         help="Output filename (without extension)",
     )
-    parser.add_argument(
-        "--run-tests", action="store_true", help="Run tests before generating report"
-    )
+    parser.add_argument("--run-tests", action="store_true", help="Run tests before generating report")
 
     args = parser.parse_args()
 
@@ -2376,8 +2347,7 @@ def main():
     else:
         # Assume all tests passed for report generation
         generator.test_results = [
-            TestResult(test_id=m.test_id, passed=True, duration_ms=0)
-            for m in TEST_MAPPINGS.values()
+            TestResult(test_id=m.test_id, passed=True, duration_ms=0) for m in TEST_MAPPINGS.values()
         ]
 
     if args.format in ["json", "all"]:

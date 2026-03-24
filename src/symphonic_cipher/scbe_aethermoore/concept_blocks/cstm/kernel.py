@@ -32,6 +32,7 @@ from .player_agent import DIM_NAMES
 #  DecisionTree
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class DecisionNode:
     """A single decision point in the agent's history."""
@@ -42,7 +43,7 @@ class DecisionNode:
     alternatives: List[Choice]
     personality_at_decision: List[float]
     stats_at_decision: Dict[str, float]
-    confidence: float = 0.0       # Score gap between chosen and runner-up
+    confidence: float = 0.0  # Score gap between chosen and runner-up
     timestamp: float = 0.0
 
 
@@ -79,8 +80,8 @@ class DecisionTree:
 
         scores: List[float] = []
         for i in range(window, len(self._nodes)):
-            prev_window = self._nodes[i - window:i]
-            curr_window = self._nodes[max(0, i - window // 2):i]
+            prev_window = self._nodes[i - window : i]
+            curr_window = self._nodes[max(0, i - window // 2) : i]
 
             prev_dist = self._tag_dist(prev_window)
             curr_dist = self._tag_dist(curr_window)
@@ -129,8 +130,8 @@ class DecisionTree:
         if not keys:
             return 0.0
         dot = sum(a.get(k, 0) * b.get(k, 0) for k in keys)
-        ma = math.sqrt(sum(v ** 2 for v in a.values()))
-        mb = math.sqrt(sum(v ** 2 for v in b.values()))
+        ma = math.sqrt(sum(v**2 for v in a.values()))
+        mb = math.sqrt(sum(v**2 for v in b.values()))
         if ma < 1e-12 or mb < 1e-12:
             return 0.0
         return dot / (ma * mb)
@@ -139,6 +140,7 @@ class DecisionTree:
 # ---------------------------------------------------------------------------
 #  DriftAnalyzer
 # ---------------------------------------------------------------------------
+
 
 class DriftAnalyzer:
     """Analyze how the personality vector evolved over the curriculum."""
@@ -201,6 +203,7 @@ class DriftAnalyzer:
 # ---------------------------------------------------------------------------
 #  PreferenceMatrix
 # ---------------------------------------------------------------------------
+
 
 class PreferenceMatrix:
     """
@@ -298,8 +301,8 @@ class PreferenceMatrix:
         if not keys:
             return 0.0
         dot = sum(a.get(k, 0) * b.get(k, 0) for k in keys)
-        ma = math.sqrt(sum(v ** 2 for v in a.values()))
-        mb = math.sqrt(sum(v ** 2 for v in b.values()))
+        ma = math.sqrt(sum(v**2 for v in a.values()))
+        mb = math.sqrt(sum(v**2 for v in b.values()))
         if ma < 1e-12 or mb < 1e-12:
             return 0.0
         return dot / (ma * mb)
@@ -309,6 +312,7 @@ class PreferenceMatrix:
 #  GraduatedKernel
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class GraduatedKernel:
     """The complete extracted kernel for a graduated agent."""
@@ -316,8 +320,8 @@ class GraduatedKernel:
     agent_id: str
     nursery_id: str
     graduation_timestamp: float
-    final_personality: List[float]          # 21D
-    initial_personality: List[float]        # 21D
+    final_personality: List[float]  # 21D
+    initial_personality: List[float]  # 21D
     total_drift: float
     decision_tree: DecisionTree
     drift_analysis: DriftAnalyzer
@@ -342,10 +346,7 @@ class GraduatedKernel:
             "pivotal_decisions": len(self.decision_tree.pivotal_decisions()),
             "final_stats": self.final_stats,
             "graduation_scores": self.graduation_scores,
-            "dominant_traits": [
-                {"name": name, "value": val}
-                for name, val in self._dominant_traits(5)
-            ],
+            "dominant_traits": [{"name": name, "value": val} for name, val in self._dominant_traits(5)],
             "metadata": self.metadata,
         }
 
@@ -362,6 +363,7 @@ class GraduatedKernel:
 # ---------------------------------------------------------------------------
 #  KernelExtractor
 # ---------------------------------------------------------------------------
+
 
 class KernelExtractor:
     """Pipeline to extract a GraduatedKernel from an AgentRecord."""
@@ -381,14 +383,16 @@ class KernelExtractor:
             for step in pt.steps:
                 # Reconstruct alternatives (all choices minus the chosen one)
                 # We don't have the full list here, but we store the chosen choice
-                tree.add_node(DecisionNode(
-                    scene_id=step.scene_id,
-                    story_id=pt.story_id,
-                    chosen=step.choice,
-                    alternatives=[],
-                    personality_at_decision=step.personality_snapshot or agent.personality.vector,
-                    stats_at_decision=step.stats_snapshot,
-                ))
+                tree.add_node(
+                    DecisionNode(
+                        scene_id=step.scene_id,
+                        story_id=pt.story_id,
+                        chosen=step.choice,
+                        alternatives=[],
+                        personality_at_decision=step.personality_snapshot or agent.personality.vector,
+                        stats_at_decision=step.stats_snapshot,
+                    )
+                )
 
         # Build drift analyzer from personality snapshots
         snapshots = agent.personality.snapshots

@@ -53,14 +53,14 @@ DEFAULT_OUTPUT_DIR = "training/intake/arxiv_research"
 
 # SCBE categories of interest
 SCBE_CATEGORIES = [
-    "cs.AI",       # Artificial Intelligence
-    "cs.LG",       # Machine Learning
-    "cs.CR",       # Cryptography and Security
-    "cs.MA",       # Multi-Agent Systems
-    "cs.CL",       # Computation and Language (NLP)
-    "math.DG",     # Differential Geometry
-    "math.GT",     # Geometric Topology
-    "stat.ML",     # Statistics - Machine Learning
+    "cs.AI",  # Artificial Intelligence
+    "cs.LG",  # Machine Learning
+    "cs.CR",  # Cryptography and Security
+    "cs.MA",  # Multi-Agent Systems
+    "cs.CL",  # Computation and Language (NLP)
+    "math.DG",  # Differential Geometry
+    "math.GT",  # Geometric Topology
+    "stat.ML",  # Statistics - Machine Learning
 ]
 
 
@@ -68,9 +68,11 @@ SCBE_CATEGORIES = [
 #  ArXiv Paper dataclass
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ArxivPaper:
     """A paper from arXiv with SCBE governance metadata."""
+
     arxiv_id: str = ""
     title: str = ""
     authors: List[str] = field(default_factory=list)
@@ -85,9 +87,9 @@ class ArxivPaper:
     # SCBE governance fields
     governance_score: float = 0.0
     relevance_score: float = 0.0
-    tongue_affinity: str = ""       # Which Sacred Tongue this paper aligns with
+    tongue_affinity: str = ""  # Which Sacred Tongue this paper aligns with
     intent_vector: List[float] = field(default_factory=list)
-    training_value: float = 0.0     # How valuable for training data
+    training_value: float = 0.0  # How valuable for training data
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -139,26 +141,81 @@ class ArxivPaper:
 
 # Keywords that map to Sacred Tongues
 TONGUE_KEYWORDS = {
-    "KO": ["knowledge", "learning", "representation", "embedding", "understanding",
-            "reasoning", "inference", "attention", "transformer"],
-    "AV": ["language", "communication", "dialogue", "translation", "generation",
-            "summarization", "sentiment", "social"],
-    "RU": ["adversarial", "robustness", "attack", "defense", "chaos", "perturbation",
-            "generative", "creative", "synthesis"],
-    "CA": ["optimization", "compute", "efficiency", "scaling", "architecture",
-            "training", "hardware", "distributed", "parallel"],
-    "UM": ["privacy", "security", "stealth", "anonymity", "federated",
-            "differential", "encryption", "obfuscation"],
-    "DR": ["safety", "alignment", "governance", "structure", "formal",
-            "verification", "specification", "constraint", "regulation"],
+    "KO": [
+        "knowledge",
+        "learning",
+        "representation",
+        "embedding",
+        "understanding",
+        "reasoning",
+        "inference",
+        "attention",
+        "transformer",
+    ],
+    "AV": [
+        "language",
+        "communication",
+        "dialogue",
+        "translation",
+        "generation",
+        "summarization",
+        "sentiment",
+        "social",
+    ],
+    "RU": [
+        "adversarial",
+        "robustness",
+        "attack",
+        "defense",
+        "chaos",
+        "perturbation",
+        "generative",
+        "creative",
+        "synthesis",
+    ],
+    "CA": [
+        "optimization",
+        "compute",
+        "efficiency",
+        "scaling",
+        "architecture",
+        "training",
+        "hardware",
+        "distributed",
+        "parallel",
+    ],
+    "UM": ["privacy", "security", "stealth", "anonymity", "federated", "differential", "encryption", "obfuscation"],
+    "DR": [
+        "safety",
+        "alignment",
+        "governance",
+        "structure",
+        "formal",
+        "verification",
+        "specification",
+        "constraint",
+        "regulation",
+    ],
 }
 
 # Topics with high SCBE relevance
 HIGH_RELEVANCE_KEYWORDS = [
-    "hyperbolic", "poincare", "safety", "governance", "alignment",
-    "adversarial cost", "exponential scaling", "fiber bundle",
-    "multi-agent", "trust", "audit", "post-quantum",
-    "sacred", "geometric", "manifold", "curvature",
+    "hyperbolic",
+    "poincare",
+    "safety",
+    "governance",
+    "alignment",
+    "adversarial cost",
+    "exponential scaling",
+    "fiber bundle",
+    "multi-agent",
+    "trust",
+    "audit",
+    "post-quantum",
+    "sacred",
+    "geometric",
+    "manifold",
+    "curvature",
 ]
 
 
@@ -213,6 +270,7 @@ def analyze_paper(paper: ArxivPaper) -> ArxivPaper:
 # ---------------------------------------------------------------------------
 #  ArXiv Search — raw API client
 # ---------------------------------------------------------------------------
+
 
 def search_arxiv(
     query: str,
@@ -341,6 +399,7 @@ def _parse_atom_feed(xml_data: str) -> List[ArxivPaper]:
 #  Research Hub — the full pipeline
 # ---------------------------------------------------------------------------
 
+
 class ResearchHub:
     """
     Governed research pipeline connecting arXiv → SCBE → Training Data.
@@ -459,6 +518,7 @@ class ResearchHub:
 
         # Write to temp file
         import tempfile
+
         with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False, encoding="utf-8") as f:
             for paper in papers:
                 f.write(json.dumps(paper.to_training_record(), ensure_ascii=False) + "\n")
@@ -514,10 +574,7 @@ class ResearchHub:
             "avg_governance_score": round(avg_governance, 4),
             "avg_relevance_score": round(avg_relevance, 4),
             "avg_training_value": round(avg_training, 4),
-            "top_papers": [
-                {"title": p.title, "arxiv_id": p.arxiv_id, "score": p.training_value}
-                for p in papers[:5]
-            ],
+            "top_papers": [{"title": p.title, "arxiv_id": p.arxiv_id, "score": p.training_value} for p in papers[:5]],
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 

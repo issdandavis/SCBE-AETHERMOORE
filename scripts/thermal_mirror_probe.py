@@ -50,6 +50,7 @@ DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "artifacts" / "thermal_mirror"
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class SpectralMeasurement:
     s_spec: float
@@ -76,6 +77,7 @@ class ThermalProbeResult:
 # Spectral measurement (2D FFT)
 # ---------------------------------------------------------------------------
 
+
 def spectral_measure_2d(W: np.ndarray) -> SpectralMeasurement:
     fft2d = np.fft.fft2(W)
     power = np.abs(fft2d) ** 2
@@ -96,6 +98,7 @@ def spectral_measure_2d(W: np.ndarray) -> SpectralMeasurement:
 # ---------------------------------------------------------------------------
 # Temperature fields
 # ---------------------------------------------------------------------------
+
 
 def temperature_row_norm(W: np.ndarray) -> np.ndarray:
     """T_self: each row's L2 norm, broadcast to matrix shape."""
@@ -151,6 +154,7 @@ TEMPERATURE_SOURCES = {
 # Thermal deformation
 # ---------------------------------------------------------------------------
 
+
 def thermal_deform(W: np.ndarray, T: np.ndarray, alpha: float) -> np.ndarray:
     """M_thermo(W, T, alpha) = W * exp(-alpha * T)"""
     return W * np.exp(-alpha * T)
@@ -159,6 +163,7 @@ def thermal_deform(W: np.ndarray, T: np.ndarray, alpha: float) -> np.ndarray:
 # ---------------------------------------------------------------------------
 # Single weight analysis
 # ---------------------------------------------------------------------------
+
 
 def analyze_thermal(
     W: np.ndarray,
@@ -200,6 +205,7 @@ def analyze_thermal(
 # ---------------------------------------------------------------------------
 # Model weight extraction (reuse from mirror_differential_telemetry.py)
 # ---------------------------------------------------------------------------
+
 
 def find_qkv_weights(model, layer_idx: int) -> dict[str, np.ndarray]:
     weights = {}
@@ -254,6 +260,7 @@ def count_layers(model) -> int:
 # Full sweep
 # ---------------------------------------------------------------------------
 
+
 def run_thermal_sweep(
     model_id: str = "distilbert-base-uncased",
     alphas: list[float] | None = None,
@@ -275,6 +282,7 @@ def run_thermal_sweep(
     # then fall back to AutoModel (BERT, DistilBERT, etc.)
     try:
         from transformers import AutoModelForCausalLM
+
         model = AutoModelForCausalLM.from_pretrained(model_id, **kwargs)
     except Exception:
         model = AutoModel.from_pretrained(model_id, **kwargs)
@@ -289,10 +297,7 @@ def run_thermal_sweep(
     if not sample_weights:
         raise RuntimeError(f"Could not find Q/K/V weights in {model_id}")
     sample_shape = list(sample_weights.values())[0].shape
-    noise_baseline = float(np.mean([
-        spectral_measure_2d(np.random.randn(*sample_shape)).s_spec
-        for _ in range(10)
-    ]))
+    noise_baseline = float(np.mean([spectral_measure_2d(np.random.randn(*sample_shape)).s_spec for _ in range(10)]))
 
     print(f"Layers: {n_layers}, Shape: {sample_shape}, Noise baseline: {noise_baseline:.6f}")
     print(f"Alphas: {alphas}")
@@ -311,9 +316,15 @@ def run_thermal_sweep(
 
             # Print summary for this weight at alpha=2.0, row_norm
             key_result = next(
-                (r for r in all_results if r.layer == layer_idx and r.weight_type == wtype
-                 and r.alpha == 2.0 and r.temperature_source == "row_norm"),
-                None
+                (
+                    r
+                    for r in all_results
+                    if r.layer == layer_idx
+                    and r.weight_type == wtype
+                    and r.alpha == 2.0
+                    and r.temperature_source == "row_norm"
+                ),
+                None,
             )
             if key_result:
                 print(
@@ -329,7 +340,8 @@ def run_thermal_sweep(
         for temp_src in temp_sources:
             for alpha in alphas:
                 subset = [
-                    r for r in all_results
+                    r
+                    for r in all_results
                     if r.weight_type == wtype and r.temperature_source == temp_src and r.alpha == alpha
                 ]
                 if not subset:
@@ -344,8 +356,16 @@ def run_thermal_sweep(
                     "mean_deformed_s_spec": float(np.mean([r.deformed.s_spec for r in subset])),
                     "mean_delta_s_spec": float(np.mean([r.delta_s_spec for r in subset])),
                     "mean_suppression_ratio": float(np.mean([r.suppression_ratio for r in subset])),
-                    "original_vs_noise": float(np.mean([r.original.s_spec for r in subset])) / noise_baseline if noise_baseline > 0 else 0,
-                    "deformed_vs_noise": float(np.mean([r.deformed.s_spec for r in subset])) / noise_baseline if noise_baseline > 0 else 0,
+                    "original_vs_noise": (
+                        float(np.mean([r.original.s_spec for r in subset])) / noise_baseline
+                        if noise_baseline > 0
+                        else 0
+                    ),
+                    "deformed_vs_noise": (
+                        float(np.mean([r.deformed.s_spec for r in subset])) / noise_baseline
+                        if noise_baseline > 0
+                        else 0
+                    ),
                 }
 
     # Cross-alpha comparison: how does deformation scale with temperature?
@@ -355,15 +375,18 @@ def run_thermal_sweep(
             points = []
             for alpha in sorted(alphas):
                 subset = [
-                    r for r in all_results
+                    r
+                    for r in all_results
                     if r.weight_type == wtype and r.temperature_source == temp_src and r.alpha == alpha
                 ]
                 if subset:
-                    points.append({
-                        "alpha": alpha,
-                        "mean_deformed_s_spec": float(np.mean([r.deformed.s_spec for r in subset])),
-                        "mean_suppression": float(np.mean([r.suppression_ratio for r in subset])),
-                    })
+                    points.append(
+                        {
+                            "alpha": alpha,
+                            "mean_deformed_s_spec": float(np.mean([r.deformed.s_spec for r in subset])),
+                            "mean_suppression": float(np.mean([r.suppression_ratio for r in subset])),
+                        }
+                    )
             if points:
                 alpha_scaling[f"{wtype}_{temp_src}"] = points
 
@@ -387,6 +410,7 @@ def run_thermal_sweep(
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Thermal Mirror Probe on transformer weights.")
     parser.add_argument("--model", default="distilbert-base-uncased")
@@ -399,6 +423,7 @@ def main() -> int:
     args = parser.parse_args()
 
     import os
+
     token = os.environ.get(args.token_env, "").strip() or None
 
     result = run_thermal_sweep(

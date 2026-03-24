@@ -266,17 +266,9 @@ class SCBEFullSystem:
             eta=eta,
             q=q,
             ref_u=self.state.reference_embedding,
-            ref_tau=(
-                self.state.reference_state.tau if self.state.reference_state else 0.0
-            ),
-            ref_eta=(
-                self.state.reference_state.eta
-                if self.state.reference_state
-                else ETA_TARGET
-            ),
-            ref_q=(
-                self.state.reference_state.q if self.state.reference_state else 1 + 0j
-            ),
+            ref_tau=(self.state.reference_state.tau if self.state.reference_state else 0.0),
+            ref_eta=(self.state.reference_state.eta if self.state.reference_state else ETA_TARGET),
+            ref_q=(self.state.reference_state.q if self.state.reference_state else 1 + 0j),
         )
 
         # === PHASE 4: Extended Entropy Analysis ===
@@ -305,9 +297,7 @@ class SCBEFullSystem:
 
         # Triadic distance
         if self.state.reference_state is not None:
-            d_tri = triadic_distance(
-                state_9d.to_vector(), self.state.reference_state.to_vector()
-            )
+            d_tri = triadic_distance(state_9d.to_vector(), self.state.reference_state.to_vector())
         else:
             d_tri = 0.0
 
@@ -346,11 +336,7 @@ class SCBEFullSystem:
         # Create audit entry
         audit_data = f"{identity}|{intent}|{t}|{risk_assessment.decision}".encode()
         nonce = os.urandom(12)
-        prev_tag = (
-            self.state.audit_chain[-1][2]
-            if self.state.audit_chain
-            else self.state.audit_iv
-        )
+        prev_tag = self.state.audit_chain[-1][2] if self.state.audit_chain else self.state.audit_iv
         audit_tag = hmac_chain_tag(audit_data, nonce, prev_tag, self.state.secret_key)
 
         self.state.audit_chain.append((audit_data, nonce, audit_tag))
@@ -602,8 +588,7 @@ class SCBEFullSystem:
             "total_allows": self.state.total_allows,
             "total_denials": self.state.total_denials,
             "total_snaps": self.state.total_snaps,
-            "allow_rate": self.state.total_allows
-            / max(1, self.state.total_evaluations),
+            "allow_rate": self.state.total_allows / max(1, self.state.total_evaluations),
             "consecutive_denials": self.state.consecutive_denials,
             "audit_chain_length": len(self.state.audit_chain),
             "audit_chain_valid": self.verify_audit_chain(),
@@ -622,9 +607,7 @@ class SCBEFullSystem:
 # =============================================================================
 
 
-def quick_evaluate(
-    identity: str, intent: str, context: Dict[str, Any] = None
-) -> Tuple[GovernanceDecision, str]:
+def quick_evaluate(identity: str, intent: str, context: Dict[str, Any] = None) -> Tuple[GovernanceDecision, str]:
     """
     Quick one-shot governance evaluation.
 
@@ -697,9 +680,7 @@ def demo():
 
     for identity, intent in intents:
         result = system.evaluate_intent(identity, intent)
-        print(
-            f"  {identity:15s} | {intent:15s} | {result.decision.value:10s} | H={result.shannon_entropy:.2f}"
-        )
+        print(f"  {identity:15s} | {intent:15s} | {result.decision.value:10s} | H={result.shannon_entropy:.2f}")
     print()
 
     # Test 3: System status

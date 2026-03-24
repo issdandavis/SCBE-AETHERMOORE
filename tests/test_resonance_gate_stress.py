@@ -3,6 +3,7 @@ Resonance Gate — 1000-iteration stress test.
 Tests the gate across distance, time, phase, and adversarial scenarios.
 Reports statistics and identifies improvements.
 """
+
 import math
 import sys
 import os
@@ -14,7 +15,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 PHI = (1 + math.sqrt(5)) / 2
 F0 = 440
 TONGUE_WEIGHTS = [1.0, PHI, PHI**2, PHI**3, PHI**4, PHI**5]
-TONGUE_PHASES = [0, math.pi/3, 2*math.pi/3, math.pi, 4*math.pi/3, 5*math.pi/3]
+TONGUE_PHASES = [0, math.pi / 3, 2 * math.pi / 3, math.pi, 4 * math.pi / 3, 5 * math.pi / 3]
 TONGUE_NAMES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 
 
@@ -81,6 +82,7 @@ def phi_invariant_check(d_star, samples=64, dt=0.001):
 # TESTS
 # ============================================================================
 
+
 def test_basic_properties(n=1000):
     """Test rho is always in [0,1], envelope is always positive, decisions are consistent."""
     failures = []
@@ -111,7 +113,9 @@ def test_distance_monotonicity(n=1000):
         d = i * 0.003  # 0 to 3
         r = resonance_gate(d, t=0)
         if r["geometry_alignment"] > prev_ga + 1e-10:
-            failures.append(f"geometry_alignment increased at d*={d:.4f}: {r['geometry_alignment']:.6f} > {prev_ga:.6f}")
+            failures.append(
+                f"geometry_alignment increased at d*={d:.4f}: {r['geometry_alignment']:.6f} > {prev_ga:.6f}"
+            )
         prev_ga = r["geometry_alignment"]
     return len(failures) == 0, failures
 

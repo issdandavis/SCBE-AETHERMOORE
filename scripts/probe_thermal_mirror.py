@@ -304,9 +304,7 @@ def analyze_prompt_batch(
                 _aggregate_head_report(transform_buckets, differential_buckets, head)
 
     total_heads = sum(
-        layer["head_count"]
-        for prompt_report in prompt_reports
-        for layer in prompt_report["analysis"]["layers"]
+        layer["head_count"] for prompt_report in prompt_reports for layer in prompt_report["analysis"]["layers"]
     )
     return {
         "prompt_count": len(prompt_reports),
@@ -422,7 +420,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Probe attention tensors with thermal mirror operators.")
     parser.add_argument("prompt", nargs="?", default="", help="Prompt to run through the model forward pass.")
     parser.add_argument("--prompt-file", default="", help="Optional UTF-8 file containing the prompt.")
-    parser.add_argument("--prompt-list-file", default="", help="Optional file with one prompt per line or a JSON array.")
+    parser.add_argument(
+        "--prompt-list-file", default="", help="Optional file with one prompt per line or a JSON array."
+    )
     parser.add_argument("--use-default-prompt-set", action="store_true", help="Use the built-in semantic prompt batch.")
     parser.add_argument("--max-prompts", type=int, default=0)
     parser.add_argument("--model-id", default=DEFAULT_MODEL_ID)

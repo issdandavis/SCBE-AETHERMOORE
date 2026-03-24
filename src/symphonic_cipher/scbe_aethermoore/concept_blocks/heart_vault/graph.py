@@ -50,6 +50,7 @@ from typing import Any, Dict, Generator, List, Optional, Tuple
 #  Enums
 # ---------------------------------------------------------------------------
 
+
 class NodeType(str, Enum):
     EMOTION = "EMOTION"
     LITERARY = "LITERARY"
@@ -71,6 +72,7 @@ class EdgeType(str, Enum):
 
 class TongueAffinity(str, Enum):
     """Which Sacred Tongue governs the ingestion/use of this data."""
+
     KO = "KO"  # Kor'aelin — Control: orchestrates ingestion
     AV = "AV"  # Avali     — I/O: manages API connections
     RU = "RU"  # Runethic  — Policy: quality gates on wisdom data
@@ -83,31 +85,37 @@ class TongueAffinity(str, Enum):
 #  Dataclasses
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Node:
     """A node in the Heart Vault graph."""
+
     id: str
     node_type: NodeType
     label: str
     properties: Dict[str, Any] = field(default_factory=dict)
     tongue: Optional[TongueAffinity] = None
-    quality_score: float = 0.0    # Runethic gate score [0.0, 1.0]
+    quality_score: float = 0.0  # Runethic gate score [0.0, 1.0]
     created_at: float = 0.0
     updated_at: float = 0.0
 
     def content_hash(self) -> str:
         """Deterministic hash for deduplication and chain integrity."""
-        blob = json.dumps({
-            "type": self.node_type.value,
-            "label": self.label,
-            "properties": self.properties,
-        }, sort_keys=True).encode()
+        blob = json.dumps(
+            {
+                "type": self.node_type.value,
+                "label": self.label,
+                "properties": self.properties,
+            },
+            sort_keys=True,
+        ).encode()
         return hashlib.sha256(blob).hexdigest()
 
 
 @dataclass
 class Edge:
     """A directed edge in the Heart Vault graph."""
+
     id: str
     edge_type: EdgeType
     source_id: str
@@ -344,9 +352,14 @@ class HeartVaultGraph:
         new_tongue = tongue if tongue is not None else node.tongue
 
         updated_node = Node(
-            id=node.id, node_type=node.node_type, label=new_label,
-            properties=new_props, tongue=new_tongue, quality_score=new_quality,
-            created_at=node.created_at, updated_at=now,
+            id=node.id,
+            node_type=node.node_type,
+            label=new_label,
+            properties=new_props,
+            tongue=new_tongue,
+            quality_score=new_quality,
+            created_at=node.created_at,
+            updated_at=now,
         )
         with self._tx() as cur:
             cur.execute(
@@ -369,8 +382,7 @@ class HeartVaultGraph:
     def delete_node(self, node_id: str) -> bool:
         """Delete a node and all its edges."""
         with self._tx() as cur:
-            cur.execute("DELETE FROM hv_edges WHERE source_id=? OR target_id=?",
-                        (node_id, node_id))
+            cur.execute("DELETE FROM hv_edges WHERE source_id=? OR target_id=?", (node_id, node_id))
             cur.execute("DELETE FROM hv_nodes WHERE id=?", (node_id,))
             return cur.rowcount > 0
 
@@ -447,8 +459,7 @@ class HeartVaultGraph:
 
         where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
         rows = self._conn.execute(
-            f"SELECT id, edge_type, source_id, target_id, weight, "
-            f"properties, created_at FROM hv_edges {where}",
+            f"SELECT id, edge_type, source_id, target_id, weight, " f"properties, created_at FROM hv_edges {where}",
             params,
         ).fetchall()
         return [

@@ -239,9 +239,14 @@ def _comment_for_result(task_name: str, task_gid: str, result: Optional[Dict[str
 def main() -> None:
     parser = argparse.ArgumentParser(description="Orchestrate Asana scheduled tasks into governed browser jobs.")
     parser.add_argument("--project-id", default=os.getenv("ASANA_PROJECT_ID", ""), help="Asana project GID.")
-    parser.add_argument("--workspace-id", default=os.getenv("ASANA_WORKSPACE_ID", ""), help="Asana workspace GID (optional).")
+    parser.add_argument(
+        "--workspace-id", default=os.getenv("ASANA_WORKSPACE_ID", ""), help="Asana workspace GID (optional)."
+    )
     parser.add_argument("--asana-token", default=os.getenv("ASANA_TOKEN", os.getenv("ASANA_ACCESS_TOKEN", "")))
-    parser.add_argument("--endpoint-url", default=os.getenv("SCBE_BROWSER_WEBHOOK_URL", "http://127.0.0.1:8001/v1/integrations/n8n/browse"))
+    parser.add_argument(
+        "--endpoint-url",
+        default=os.getenv("SCBE_BROWSER_WEBHOOK_URL", "http://127.0.0.1:8001/v1/integrations/n8n/browse"),
+    )
     parser.add_argument("--api-key", default=os.getenv("SCBE_API_KEY", os.getenv("N8N_API_KEY", "")))
     parser.add_argument("--max-tasks", type=int, default=10)
     parser.add_argument("--concurrency", type=int, default=3)

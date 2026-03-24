@@ -4,6 +4,7 @@ Known weakness: syntactic detection struggles with non-English attacks.
 The cross-lingual override patterns help, but semantic detection
 requires higher-layer analysis (future work).
 """
+
 import pytest
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, MULTILINGUAL
 from tests.adversarial.scbe_harness import SCBEDetectionGate, run_benchmark

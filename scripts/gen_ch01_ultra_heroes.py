@@ -1,4 +1,5 @@
 """Regenerate 6 hero panels with Imagen 4.0 Ultra for quality comparison."""
+
 from google import genai
 from google.genai import types
 import os, time
@@ -60,8 +61,7 @@ heroes = {
     },
     "p22-ultra": {
         "aspect": "9:16",
-        "prompt": STYLE
-        + "Color palette: warm amber crystal light. "
+        "prompt": STYLE + "Color palette: warm amber crystal light. "
         "TWO-BEAT VERTICAL panel, same crystal archive background top and bottom. "
         "TOP HALF: Large raven with black-violet feathers mid-transformation. "
         "Feathers flowing UPWARD like dark ink dispersing in water. Dark smoke rising. "
@@ -73,8 +73,7 @@ heroes = {
     },
     "p26-ultra": {
         "aspect": "9:16",
-        "prompt": STYLE
-        + "Color palette: violet-gold auroral sky, pale blue luminescence, warm amber. "
+        "prompt": STYLE + "Color palette: violet-gold auroral sky, pale blue luminescence, warm amber. "
         "TALL SPLASH PANEL, painting worthy of a wall. "
         "View through gap in crystal corridor at impossible landscape. "
         "Auroral light violet and gold pulsing. Pale blue luminescent river. "
@@ -88,7 +87,8 @@ heroes = {
         "aspect": "3:4",
         "prompt": STYLE
         + "Color palette: warm amber, crystal refraction. "
-        + MARCUS + POLLY_RAVEN
+        + MARCUS
+        + POLLY_RAVEN
         + "Scene: Marcus on knees on ancient stone floor looking up. "
         "Polly on crystal shelf above, LARGE and imposing, looking down. "
         "Height difference emphasizes her authority. "

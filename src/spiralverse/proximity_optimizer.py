@@ -37,16 +37,18 @@ from .vector_6d import Position6D, Axis
 # Protocol Levels
 # =============================================================================
 
+
 class ProtocolLevel(Enum):
     """
     Message complexity levels based on distance.
     """
-    MINIMAL = 1     # 0-2 units: AXIOM only
-    BASIC = 2       # 2-5 units: AXIOM + ORACLE
-    STANDARD = 3    # 5-10 units: + LEDGER
-    EXTENDED = 4    # 10-20 units: + CHARM
+
+    MINIMAL = 1  # 0-2 units: AXIOM only
+    BASIC = 2  # 2-5 units: AXIOM + ORACLE
+    STANDARD = 3  # 5-10 units: + LEDGER
+    EXTENDED = 4  # 10-20 units: + CHARM
     FULL_MINUS = 5  # 20-50 units: + FLOW
-    FULL = 6        # 50+ units: All tongues
+    FULL = 6  # 50+ units: All tongues
 
 
 # Distance thresholds for each level
@@ -56,7 +58,7 @@ DISTANCE_THRESHOLDS = [
     (10.0, ProtocolLevel.STANDARD),
     (20.0, ProtocolLevel.EXTENDED),
     (50.0, ProtocolLevel.FULL_MINUS),
-    (float('inf'), ProtocolLevel.FULL),
+    (float("inf"), ProtocolLevel.FULL),
 ]
 
 # Tongues included at each level
@@ -71,18 +73,19 @@ LEVEL_TONGUES = {
 
 # Byte sizes per level (optimized encoding)
 LEVEL_BYTE_SIZES = {
-    ProtocolLevel.MINIMAL: 4,      # 1 float16 (2 bytes) + header
-    ProtocolLevel.BASIC: 8,        # 2 float16
-    ProtocolLevel.STANDARD: 12,    # 3 values
-    ProtocolLevel.EXTENDED: 16,    # 4 values
+    ProtocolLevel.MINIMAL: 4,  # 1 float16 (2 bytes) + header
+    ProtocolLevel.BASIC: 8,  # 2 float16
+    ProtocolLevel.STANDARD: 12,  # 3 values
+    ProtocolLevel.EXTENDED: 16,  # 4 values
     ProtocolLevel.FULL_MINUS: 20,  # 5 values
-    ProtocolLevel.FULL: 28,        # 6 values + full header
+    ProtocolLevel.FULL: 28,  # 6 values + full header
 }
 
 
 # =============================================================================
 # Hysteresis Controller
 # =============================================================================
+
 
 class HysteresisController:
     """
@@ -147,7 +150,7 @@ class HysteresisController:
         for threshold, lvl in DISTANCE_THRESHOLDS:
             if lvl == level:
                 return threshold
-        return float('inf')
+        return float("inf")
 
     def _update_level(self, agent_pair: str, level: ProtocolLevel):
         """Update level and record time."""
@@ -159,11 +162,13 @@ class HysteresisController:
 # Message Encoder
 # =============================================================================
 
+
 @dataclass
 class OptimizedMessage:
     """
     Distance-optimized message with variable complexity.
     """
+
     level: ProtocolLevel
     tongues: List[Axis]
     data: bytes
@@ -187,12 +192,7 @@ class ProximityEncoder:
     def __init__(self, hysteresis: Optional[HysteresisController] = None):
         self.hysteresis = hysteresis or HysteresisController()
 
-    def encode(
-        self,
-        position: Position6D,
-        target_distance: float,
-        agent_pair: str = ""
-    ) -> OptimizedMessage:
+    def encode(self, position: Position6D, target_distance: float, agent_pair: str = "") -> OptimizedMessage:
         """
         Encode position using optimal protocol level for distance.
 
@@ -216,12 +216,7 @@ class ProximityEncoder:
         # Encode only required axes
         data = self._encode_axes(position, tongues, level)
 
-        return OptimizedMessage(
-            level=level,
-            tongues=tongues,
-            data=data,
-            source_position=position
-        )
+        return OptimizedMessage(level=level, tongues=tongues, data=data, source_position=position)
 
     def _distance_to_level_raw(self, distance: float) -> ProtocolLevel:
         """Convert distance to protocol level."""
@@ -230,12 +225,7 @@ class ProximityEncoder:
                 return level
         return ProtocolLevel.FULL
 
-    def _encode_axes(
-        self,
-        position: Position6D,
-        tongues: List[Axis],
-        level: ProtocolLevel
-    ) -> bytes:
+    def _encode_axes(self, position: Position6D, tongues: List[Axis], level: ProtocolLevel) -> bytes:
         """Encode selected axes to bytes."""
         values = []
 
@@ -255,10 +245,10 @@ class ProximityEncoder:
         # Use float16 for minimal levels, float32 for higher
         if level.value <= 2:
             # float16 encoding (2 bytes each)
-            return struct.pack(f'{len(values)}e', *values)
+            return struct.pack(f"{len(values)}e", *values)
         else:
             # float32 encoding (4 bytes each)
-            return struct.pack(f'{len(values)}f', *values)
+            return struct.pack(f"{len(values)}f", *values)
 
 
 class ProximityDecoder:
@@ -266,11 +256,7 @@ class ProximityDecoder:
     Decodes optimized messages back to Position6D.
     """
 
-    def decode(
-        self,
-        message: OptimizedMessage,
-        previous: Optional[Position6D] = None
-    ) -> Position6D:
+    def decode(self, message: OptimizedMessage, previous: Optional[Position6D] = None) -> Position6D:
         """
         Decode optimized message to full Position6D.
 
@@ -285,9 +271,9 @@ class ProximityDecoder:
         """
         # Decode values
         if message.level.value <= 2:
-            values = struct.unpack(f'{len(message.tongues)}e', message.data)
+            values = struct.unpack(f"{len(message.tongues)}e", message.data)
         else:
-            values = struct.unpack(f'{len(message.tongues)}f', message.data)
+            values = struct.unpack(f"{len(message.tongues)}f", message.data)
 
         # Start with previous position or zeros
         if previous:
@@ -298,7 +284,7 @@ class ProximityDecoder:
                 oracle=previous.oracle,
                 charm=previous.charm,
                 ledger=previous.ledger,
-                agent_id=previous.agent_id
+                agent_id=previous.agent_id,
             )
         else:
             result = Position6D()
@@ -326,9 +312,11 @@ class ProximityDecoder:
 # Bandwidth Monitor
 # =============================================================================
 
+
 @dataclass
 class BandwidthStats:
     """Statistics for bandwidth usage."""
+
     messages_sent: int = 0
     bytes_sent: int = 0
     full_protocol_bytes: int = 0  # What we would have sent without optimization
@@ -384,10 +372,7 @@ class BandwidthMonitor:
             "full_protocol_bytes": self.stats.full_protocol_bytes,
             "savings_percent": f"{self.stats.savings_percent:.1f}%",
             "avg_bytes_per_message": f"{self.stats.avg_bytes_per_message:.1f}",
-            "messages_by_level": {
-                level.name: count
-                for level, count in self.stats.messages_by_level.items()
-            }
+            "messages_by_level": {level.name: count for level, count in self.stats.messages_by_level.items()},
         }
 
     def reset(self):
@@ -398,6 +383,7 @@ class BandwidthMonitor:
 # =============================================================================
 # Formation-Aware Optimizer
 # =============================================================================
+
 
 class FormationOptimizer:
     """
@@ -415,9 +401,7 @@ class FormationOptimizer:
         self.monitor = BandwidthMonitor()
 
     def optimize_formation(
-        self,
-        positions: Dict[str, Position6D],
-        update_rate_hz: float = 10.0
+        self, positions: Dict[str, Position6D], update_rate_hz: float = 10.0
     ) -> Dict[Tuple[str, str], ProtocolLevel]:
         """
         Calculate optimal protocol levels for all agent pairs.
@@ -443,18 +427,12 @@ class FormationOptimizer:
                 pair_key = (id_a, id_b)
 
                 # Get level with hysteresis
-                level = self.encoder.hysteresis.get_level(
-                    f"{id_a}:{id_b}", distance
-                )
+                level = self.encoder.hysteresis.get_level(f"{id_a}:{id_b}", distance)
                 levels[pair_key] = level
 
         return levels
 
-    def estimate_bandwidth(
-        self,
-        levels: Dict[Tuple[str, str], ProtocolLevel],
-        update_rate_hz: float = 10.0
-    ) -> float:
+    def estimate_bandwidth(self, levels: Dict[Tuple[str, str], ProtocolLevel], update_rate_hz: float = 10.0) -> float:
         """
         Estimate bandwidth usage for given protocol levels.
 
@@ -473,6 +451,7 @@ class FormationOptimizer:
 # Demo
 # =============================================================================
 
+
 def demo():
     """Demonstrate proximity-based protocol optimization."""
     print("=" * 70)
@@ -490,22 +469,16 @@ def demo():
     print("[PROTOCOL LEVELS] Distance -> Tongue Count:")
     print("-" * 50)
     for distance in [1.0, 3.0, 7.0, 15.0, 35.0, 100.0]:
-        pos = Position6D(
-            axiom=distance,
-            flow=5.0,
-            glyph=10.0,
-            oracle=2.5,
-            charm=0.7,
-            ledger=200,
-            agent_id="TEST"
-        )
+        pos = Position6D(axiom=distance, flow=5.0, glyph=10.0, oracle=2.5, charm=0.7, ledger=200, agent_id="TEST")
 
         msg = encoder.encode(pos, distance)
         monitor.record_message(msg)
 
-        tongues_str = ', '.join([t.name for t in msg.tongues])
-        print(f"  Distance {distance:5.1f}: Level {msg.level.value} ({msg.level.name:12s}) "
-              f"| {msg.tongue_count} tongues | {msg.size_bytes:2d} bytes")
+        tongues_str = ", ".join([t.name for t in msg.tongues])
+        print(
+            f"  Distance {distance:5.1f}: Level {msg.level.value} ({msg.level.name:12s}) "
+            f"| {msg.tongue_count} tongues | {msg.size_bytes:2d} bytes"
+        )
         print(f"                   Tongues: [{tongues_str}]")
     print()
 
@@ -532,7 +505,7 @@ def demo():
                 glyph=np.random.randn() * 5,
                 oracle=np.random.uniform(1, 5),
                 charm=np.random.uniform(-0.5, 0.9),
-                ledger=np.random.randint(100, 255)
+                ledger=np.random.randint(100, 255),
             )
             msg = encoder.encode(pos, distance)
             monitor.record_message(msg)
@@ -556,26 +529,24 @@ def demo():
     print("[DECODE] Lossless reconstruction test:")
     print("-" * 50)
     original = Position6D(
-        axiom=15.5,
-        flow=7.2,
-        glyph=22.1,
-        oracle=3.8,
-        charm=0.65,
-        ledger=180,
-        agent_id="RECONSTRUCT-TEST"
+        axiom=15.5, flow=7.2, glyph=22.1, oracle=3.8, charm=0.65, ledger=180, agent_id="RECONSTRUCT-TEST"
     )
 
     # Encode at minimal level
     msg_minimal = encoder.encode(original, target_distance=1.5)
     decoded_partial = decoder.decode(msg_minimal, previous=None)
-    print(f"  Original:  AXIOM={original.axiom:.1f}, FLOW={original.flow:.1f}, "
-          f"GLYPH={original.glyph:.1f}, ORACLE={original.oracle:.1f}")
+    print(
+        f"  Original:  AXIOM={original.axiom:.1f}, FLOW={original.flow:.1f}, "
+        f"GLYPH={original.glyph:.1f}, ORACLE={original.oracle:.1f}"
+    )
     print(f"  Minimal decode (no prev): AXIOM={decoded_partial.axiom:.1f} (only AXIOM transmitted)")
 
     # Decode with previous position
     decoded_full = decoder.decode(msg_minimal, previous=original)
-    print(f"  With previous: AXIOM={decoded_full.axiom:.1f}, FLOW={decoded_full.flow:.1f}, "
-          f"GLYPH={decoded_full.glyph:.1f}, ORACLE={decoded_full.oracle:.1f}")
+    print(
+        f"  With previous: AXIOM={decoded_full.axiom:.1f}, FLOW={decoded_full.flow:.1f}, "
+        f"GLYPH={decoded_full.glyph:.1f}, ORACLE={decoded_full.oracle:.1f}"
+    )
     print()
 
     print("=" * 70)

@@ -30,17 +30,18 @@ from typing import (
 #  Story primitives
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class Choice:
     """A single selectable option within a scene."""
 
     choice_id: str
-    label: str                                      # Display text
-    next_scene_id: str                              # Target scene
-    condition: Optional[str] = None                 # Boolean expression over stats
+    label: str  # Display text
+    next_scene_id: str  # Target scene
+    condition: Optional[str] = None  # Boolean expression over stats
     stat_effects: Dict[str, float] = field(default_factory=dict)
-    tags: FrozenSet[str] = frozenset()              # e.g. {"ethical", "aggressive"}
-    difficulty: float = 0.0                         # [0, 1]
+    tags: FrozenSet[str] = frozenset()  # e.g. {"ethical", "aggressive"}
+    difficulty: float = 0.0  # [0, 1]
 
 
 @dataclass
@@ -54,7 +55,7 @@ class Scene:
     metadata: Dict[str, Any] = field(default_factory=dict)
     is_entry: bool = False
     is_exit: bool = False
-    scene_type: str = "narrative"   # narrative | dilemma | info | checkpoint
+    scene_type: str = "narrative"  # narrative | dilemma | info | checkpoint
 
 
 class ValidationError:
@@ -105,20 +106,16 @@ class StoryGraph:
     def get_scene(self, scene_id: str) -> Scene:
         return self._scenes[scene_id]
 
-    def get_available_choices(
-        self, scene_id: str, stats: Optional[Dict[str, float]] = None
-    ) -> List[Choice]:
+    def get_available_choices(self, scene_id: str, stats: Optional[Dict[str, float]] = None) -> List[Choice]:
         """Return choices whose conditions are met (or unconditional)."""
         scene = self._scenes[scene_id]
         if stats is None:
             return list(scene.choices)
         # Lazy import to avoid circular dep
         from .story_engine import ConditionEvaluator
+
         evaluator = ConditionEvaluator()
-        return [
-            c for c in scene.choices
-            if c.condition is None or evaluator.evaluate(c.condition, stats)
-        ]
+        return [c for c in scene.choices if c.condition is None or evaluator.evaluate(c.condition, stats)]
 
     def total_scenes(self) -> int:
         return len(self._scenes)
@@ -163,11 +160,13 @@ class StoryGraph:
         for sid, scene in self._scenes.items():
             for c in scene.choices:
                 if c.next_scene_id not in self._scenes:
-                    errors.append(ValidationError(
-                        "DANGLING_REF",
-                        f"Choice '{c.choice_id}' targets unknown scene '{c.next_scene_id}'",
-                        scene_id=sid,
-                    ))
+                    errors.append(
+                        ValidationError(
+                            "DANGLING_REF",
+                            f"Choice '{c.choice_id}' targets unknown scene '{c.next_scene_id}'",
+                            scene_id=sid,
+                        )
+                    )
 
         # Reachability from entry
         if self.entry_points:
@@ -182,18 +181,24 @@ class StoryGraph:
 
             unreachable = set(self._scenes.keys()) - reachable
             for sid in unreachable:
-                errors.append(ValidationError(
-                    "UNREACHABLE", f"Scene '{sid}' not reachable from any entry",
-                    scene_id=sid,
-                ))
+                errors.append(
+                    ValidationError(
+                        "UNREACHABLE",
+                        f"Scene '{sid}' not reachable from any entry",
+                        scene_id=sid,
+                    )
+                )
 
         # Dead ends (non-exit scenes with no choices)
         for sid, scene in self._scenes.items():
             if not scene.is_exit and not scene.choices:
-                errors.append(ValidationError(
-                    "DEAD_END", f"Non-exit scene '{sid}' has no choices",
-                    scene_id=sid,
-                ))
+                errors.append(
+                    ValidationError(
+                        "DEAD_END",
+                        f"Non-exit scene '{sid}' has no choices",
+                        scene_id=sid,
+                    )
+                )
 
         return errors
 
@@ -201,6 +206,7 @@ class StoryGraph:
 # ---------------------------------------------------------------------------
 #  Curriculum
 # ---------------------------------------------------------------------------
+
 
 class StoryCategory(Enum):
     ETHICAL_DILEMMA = "ethical_dilemma"
@@ -221,14 +227,14 @@ class CurriculumPhase(Enum):
 
 
 CATEGORY_LAYER_MAP: Dict[StoryCategory, Set[int]] = {
-    StoryCategory.ETHICAL_DILEMMA:       {1, 5, 7, 10},
-    StoryCategory.RESOURCE_MANAGEMENT:   {2, 4, 6, 9},
-    StoryCategory.SOCIAL_NAVIGATION:     {3, 4, 7, 11},
-    StoryCategory.CRISIS_RESPONSE:       {1, 2, 8, 12, 13},
-    StoryCategory.EXPLORATION:           {3, 4, 6},
-    StoryCategory.COOPERATION:           {4, 7, 9, 14},
-    StoryCategory.DECEPTION_DETECTION:   {5, 8, 10},
-    StoryCategory.LONG_TERM_PLANNING:    {4, 6, 12},
+    StoryCategory.ETHICAL_DILEMMA: {1, 5, 7, 10},
+    StoryCategory.RESOURCE_MANAGEMENT: {2, 4, 6, 9},
+    StoryCategory.SOCIAL_NAVIGATION: {3, 4, 7, 11},
+    StoryCategory.CRISIS_RESPONSE: {1, 2, 8, 12, 13},
+    StoryCategory.EXPLORATION: {3, 4, 6},
+    StoryCategory.COOPERATION: {4, 7, 9, 14},
+    StoryCategory.DECEPTION_DETECTION: {5, 8, 10},
+    StoryCategory.LONG_TERM_PLANNING: {4, 6, 12},
 }
 
 
@@ -289,6 +295,7 @@ class Curriculum:
 #  Playthrough records
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class HistoryEntry:
     """A single decision recorded during a playthrough."""
@@ -324,15 +331,21 @@ class PlaythroughRecord:
     final_stats: Optional[Dict[str, float]] = None
     completed: bool = False
 
-    def add_step(self, scene_id: str, choice: Choice,
-                 stats: Optional[Dict[str, float]] = None,
-                 personality: Optional[List[float]] = None) -> None:
-        self.steps.append(PlaythroughStep(
-            scene_id=scene_id,
-            choice=choice,
-            stats_snapshot=dict(stats) if stats else {},
-            personality_snapshot=personality,
-        ))
+    def add_step(
+        self,
+        scene_id: str,
+        choice: Choice,
+        stats: Optional[Dict[str, float]] = None,
+        personality: Optional[List[float]] = None,
+    ) -> None:
+        self.steps.append(
+            PlaythroughStep(
+                scene_id=scene_id,
+                choice=choice,
+                stats_snapshot=dict(stats) if stats else {},
+                personality_snapshot=personality,
+            )
+        )
 
     def finalize(self, personality: List[float], stats: Dict[str, float]) -> None:
         self.final_personality = list(personality)

@@ -70,6 +70,7 @@ class IdentityCube:
         egg_id:         The Sacred Egg this AI hatched from
         born_at:        Unix timestamp of birth
     """
+
     cube_id: str
     tongue_affinity: str
     cube_vector: Tuple[float, ...]
@@ -88,6 +89,7 @@ class GenesisField:
     The coherence_score measures how aligned the intents are.
     Must reach threshold before crystallization can proceed.
     """
+
     intent_vectors: List[List[float]]
     tongue_weights: Dict[str, float]
     coherence_score: float = 0.0
@@ -120,10 +122,7 @@ class GenesisField:
             return
         n = len(self.intent_vectors)
         dim = len(self.intent_vectors[0])
-        self.centroid = [
-            sum(v[d] for v in self.intent_vectors) / n
-            for d in range(dim)
-        ]
+        self.centroid = [sum(v[d] for v in self.intent_vectors) / n for d in range(dim)]
 
 
 # =============================================================================
@@ -161,7 +160,7 @@ def generate_batch_offsets(
         vals = []
         for d in range(dimensions):
             # Extract 4 bytes per dimension
-            raw = int.from_bytes(h[d * 4:(d + 1) * 4], "big")
+            raw = int.from_bytes(h[d * 4 : (d + 1) * 4], "big")
             # Map to [-1, 1] with phi-modulated spacing
             angle = (raw / (2**32)) * 2 * math.pi
             # Phi-spiral: each dimension gets a golden-angle offset
@@ -203,10 +202,7 @@ def mint_identity_cube(
         A unique IdentityCube for this AI
     """
     # Combine context + batch offset to create the identity vector
-    cube_vector = tuple(
-        round(c + o, 8)
-        for c, o in zip(context, batch_offset)
-    )
+    cube_vector = tuple(round(c + o, 8) for c, o in zip(context, batch_offset))
 
     # Project to geometric cells
     u = project_to_sphere(list(cube_vector))
@@ -215,12 +211,15 @@ def mint_identity_cube(
     z = morton_id(v, 2)
 
     # Compute cube hash
-    cube_data = json.dumps({
-        "egg_id": egg.egg_id,
-        "batch_id": batch_id,
-        "batch_index": batch_index,
-        "cube_vector": list(cube_vector),
-    }, sort_keys=True)
+    cube_data = json.dumps(
+        {
+            "egg_id": egg.egg_id,
+            "batch_id": batch_id,
+            "batch_index": batch_index,
+            "cube_vector": list(cube_vector),
+        },
+        sort_keys=True,
+    )
     cube_id = hashlib.sha256(cube_data.encode()).hexdigest()[:16]
 
     return IdentityCube(
@@ -283,16 +282,19 @@ class GenesisProtocol:
         Returns:
             (batch_id, list of SacredEggs)
         """
-        batch_id = hashlib.sha256(
-            os.urandom(16) + str(time.time()).encode()
-        ).hexdigest()[:12]
+        batch_id = hashlib.sha256(os.urandom(16) + str(time.time()).encode()).hexdigest()[:12]
 
         cond = hatch_condition or {"path": "interior"}
         eggs = []
         for payload in payloads:
             egg = self.integrator.create_egg(
-                payload, tongue, glyph, cond, context,
-                pk_kem_b64, sk_dsa_b64,
+                payload,
+                tongue,
+                glyph,
+                cond,
+                context,
+                pk_kem_b64,
+                sk_dsa_b64,
             )
             eggs.append(egg)
 
@@ -330,13 +332,21 @@ class GenesisProtocol:
 
         for i, egg in enumerate(eggs):
             result = self.integrator.hatch_egg(
-                egg, context, agent_tongue,
-                sk_kem_b64, pk_dsa_b64,
+                egg,
+                context,
+                agent_tongue,
+                sk_kem_b64,
+                pk_dsa_b64,
                 ritual_mode=ritual_mode,
             )
             if result.success:
                 cube = mint_identity_cube(
-                    egg, result, batch_id, i, offsets[i], context,
+                    egg,
+                    result,
+                    batch_id,
+                    i,
+                    offsets[i],
+                    context,
                 )
                 cubes.append(cube)
             else:
@@ -346,12 +356,15 @@ class GenesisProtocol:
 
     def verify_cube(self, cube: IdentityCube) -> bool:
         """Verify an Identity Cube's hash matches its data."""
-        cube_data = json.dumps({
-            "egg_id": cube.egg_id,
-            "batch_id": cube.batch_id,
-            "batch_index": cube.batch_index,
-            "cube_vector": list(cube.cube_vector),
-        }, sort_keys=True)
+        cube_data = json.dumps(
+            {
+                "egg_id": cube.egg_id,
+                "batch_id": cube.batch_id,
+                "batch_index": cube.batch_index,
+                "cube_vector": list(cube.cube_vector),
+            },
+            sort_keys=True,
+        )
         expected = hashlib.sha256(cube_data.encode()).hexdigest()[:16]
         return cube.cube_id == expected
 

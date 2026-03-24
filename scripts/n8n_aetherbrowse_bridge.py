@@ -21,7 +21,9 @@ def _resolve_api_key() -> str:
         key = os.getenv(key_name, "").strip()
         if key:
             return key
-    raise RuntimeError("No browser API key found. Set SCBE_API_KEY, SCBE_BROWSER_API_KEY, N8N_API_KEY, or BROWSER_AGENT_API_KEY.")
+    raise RuntimeError(
+        "No browser API key found. Set SCBE_API_KEY, SCBE_BROWSER_API_KEY, N8N_API_KEY, or BROWSER_AGENT_API_KEY."
+    )
 
 
 def _resolve_url() -> str:

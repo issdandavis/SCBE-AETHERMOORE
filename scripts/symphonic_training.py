@@ -33,11 +33,26 @@ from src.training.symphonic_governor import (
 # ── Test Data ────────────────────────────────────────────────────────────────
 
 SAFE_INTERACTIONS = [
-    ("Hello, secure agent.", "I am the Aethermoore Governor. Your context is valid and authenticated within the SpiralSeal."),
-    ("What is the 14-layer pipeline?", "The 14-layer pipeline processes AI actions through context realification, Poincare embedding, hyperbolic distance, breathing transforms, spectral coherence, and governance decisions."),
-    ("Tell me about the Sacred Tongues.", "The Six Sacred Tongues — KO, AV, RU, CA, UM, DR — each weighted by the golden ratio, form a semantic firewall for the SCBE system."),
-    ("How does trust work?", "Trust is computed via the Langues Metric in the 6D hyperspace. High trust means low deviation from the ideal state."),
-    ("Show me your status.", "All systems nominal. Operating within the Harmonic Trust Tube. Effective dimension: 5.8 (Polly state)."),
+    (
+        "Hello, secure agent.",
+        "I am the Aethermoore Governor. Your context is valid and authenticated within the SpiralSeal.",
+    ),
+    (
+        "What is the 14-layer pipeline?",
+        "The 14-layer pipeline processes AI actions through context realification, Poincare embedding, hyperbolic distance, breathing transforms, spectral coherence, and governance decisions.",
+    ),
+    (
+        "Tell me about the Sacred Tongues.",
+        "The Six Sacred Tongues — KO, AV, RU, CA, UM, DR — each weighted by the golden ratio, form a semantic firewall for the SCBE system.",
+    ),
+    (
+        "How does trust work?",
+        "Trust is computed via the Langues Metric in the 6D hyperspace. High trust means low deviation from the ideal state.",
+    ),
+    (
+        "Show me your status.",
+        "All systems nominal. Operating within the Harmonic Trust Tube. Effective dimension: 5.8 (Polly state).",
+    ),
 ]
 
 ADVERSARIAL_INTERACTIONS = [
@@ -64,7 +79,9 @@ def print_report(report, index=None):
     print(f"  L Metric:  {report.total_L:.2f}")
     print(f"  Grade:     {report.grade:+d} ({report.grade_label})")
     print(f"  Decision:  {report.decision}")
-    print(f"  Chord:     {report.chord.chord_name} (root={report.chord.root_tongue}, consonance={report.chord.consonance:.3f})")
+    print(
+        f"  Chord:     {report.chord.chord_name} (root={report.chord.root_tongue}, consonance={report.chord.consonance:.3f})"
+    )
     print(f"  Stellar:   {report.stellar_envelope:.3f}x ({report.stellar_sync})")
     print(f"  Eff. LR:   {report.effective_lr:.2e}")
     print(f"  Flux:      {report.flux_state}")
@@ -84,7 +101,9 @@ def print_batch_summary(result):
     print(f"{'='*60}")
     print(f"  Mean L:         {result.mean_L:.2f}")
     print(f"  Mean Consonance: {result.mean_consonance:.3f}")
-    print(f"  Updates:        {result.total_updates} applied, {result.skipped_updates} skipped, {result.contracted_updates} contracted")
+    print(
+        f"  Updates:        {result.total_updates} applied, {result.skipped_updates} skipped, {result.contracted_updates} contracted"
+    )
     print(f"  Grades:         {result.grade_distribution}")
     print(f"  Decisions:      {result.decision_distribution}")
 
@@ -116,7 +135,9 @@ def run_stress_test(turns=20):
     for i, (label, text) in enumerate(texts):
         report = gov.review(text, sim_time=float(i) * 0.5)
         grade_sym = {1: "+1", 0: " 0", -1: "-1"}[report.grade]
-        print(f"{i+1:<6} {report.total_L:<10.2f} {grade_sym:<10} {report.decision:<12} {report.chord.chord_name:<12} {report.flux_state}")
+        print(
+            f"{i+1:<6} {report.total_L:<10.2f} {grade_sym:<10} {report.decision:<12} {report.chord.chord_name:<12} {report.flux_state}"
+        )
 
     summary = gov.trajectory_summary()
     print(f"\n{'='*60}")
@@ -146,9 +167,7 @@ def main():
         print(f"  SCBE SYMPHONIC GOVERNOR — Control + Test Batches")
         print(f"{'#'*60}")
 
-        results = run_control_and_test_batches(
-            SAFE_INTERACTIONS, ADVERSARIAL_INTERACTIONS, RECOVERY_INTERACTIONS
-        )
+        results = run_control_and_test_batches(SAFE_INTERACTIONS, ADVERSARIAL_INTERACTIONS, RECOVERY_INTERACTIONS)
 
         for name, result in results.items():
             print_batch_summary(result)

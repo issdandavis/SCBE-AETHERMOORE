@@ -380,7 +380,9 @@ def auto_fix_packet(
         fixes.append("filled missing key_script from storyboard manifest")
 
     if not fixed.get("target_panel_min"):
-        fixed["target_panel_min"] = (episode_metadata or {}).get("target_panel_min") or max(1, len(fixed.get("panels", [])) - 2)
+        fixed["target_panel_min"] = (episode_metadata or {}).get("target_panel_min") or max(
+            1, len(fixed.get("panels", [])) - 2
+        )
         fixes.append("filled missing target_panel_min")
 
     if not fixed.get("target_panel_max"):
@@ -509,7 +511,9 @@ def auto_fix_packet(
             fixes.append(f"{panel_id}: {'rewrote' if rewrite_prompts else 'filled'} prompt from governed metadata")
 
         if not panel.get("negative_prompt"):
-            panel["negative_prompt"] = "low detail, inconsistent character design, unreadable anatomy, random environment drift"
+            panel["negative_prompt"] = (
+                "low detail, inconsistent character design, unreadable anatomy, random environment drift"
+            )
             fixes.append(f"{panel_id}: filled negative_prompt guardrail")
 
     return fixed, fixes

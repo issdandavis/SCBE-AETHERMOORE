@@ -114,7 +114,9 @@ def _make_safe_unit(unit_id: str = "u1", x: float = 0.0, y: float = 0.0, z: floa
     """Unit with governance values that yield ALLOW."""
     return UnitState(
         unit_id=unit_id,
-        x=x, y=y, z=z,
+        x=x,
+        y=y,
+        z=z,
         coherence=0.95,
         d_star=0.1,
         h_eff=harmonic_cost(0.1),
@@ -125,7 +127,9 @@ def _make_risky_unit(unit_id: str = "bad", x: float = 0.0, y: float = 0.0, z: fl
     """Unit with governance values that yield DENY."""
     return UnitState(
         unit_id=unit_id,
-        x=x, y=y, z=z,
+        x=x,
+        y=y,
+        z=z,
         coherence=0.1,
         d_star=5.0,
         h_eff=harmonic_cost(5.0),
@@ -551,6 +555,7 @@ class TestCymaticField:
     def test_bounded_for_unit_cube(self):
         """Field value should be finite for inputs in [0,1]."""
         import random
+
         random.seed(42)
         for _ in range(50):
             x = tuple(random.random() for _ in range(6))

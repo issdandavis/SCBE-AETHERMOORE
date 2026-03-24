@@ -98,9 +98,7 @@ def euler_step(f: ODEFunc, t: float, y: Vector, h: float) -> Vector:
     return vec_add(y, vec_scale(k, h))
 
 
-def euler_solve(
-    f: ODEFunc, y0: Vector, t_span: Tuple[float, float], h: float
-) -> Tuple[List[float], List[Vector]]:
+def euler_solve(f: ODEFunc, y0: Vector, t_span: Tuple[float, float], h: float) -> Tuple[List[float], List[Vector]]:
     """
     Solve ODE using Euler method.
 
@@ -159,9 +157,7 @@ def rk4_step(f: ODEFunc, t: float, y: Vector, h: float) -> Vector:
     return vec_add(y, vec_scale(weighted, h / 6))
 
 
-def rk4_solve(
-    f: ODEFunc, y0: Vector, t_span: Tuple[float, float], h: float
-) -> Tuple[List[float], List[Vector]]:
+def rk4_solve(f: ODEFunc, y0: Vector, t_span: Tuple[float, float], h: float) -> Tuple[List[float], List[Vector]]:
     """
     Solve ODE using RK4 method.
 
@@ -191,9 +187,7 @@ def rk4_solve(
     return times, states
 
 
-def rk45_adaptive_step(
-    f: ODEFunc, t: float, y: Vector, h: float, tol: float = 1e-6
-) -> Tuple[Vector, float, float]:
+def rk45_adaptive_step(f: ODEFunc, t: float, y: Vector, h: float, tol: float = 1e-6) -> Tuple[Vector, float, float]:
     """
     Adaptive RK4-5 (Fehlberg) step with error estimation.
 
@@ -224,9 +218,7 @@ def rk45_adaptive_step(
 
     k1 = f(t, y)
     k2 = f(t + a2 * h, vec_add(y, vec_scale(k1, a2 * h)))
-    k3 = f(
-        t + a3 * h, vec_add(vec_add(y, vec_scale(k1, b31 * h)), vec_scale(k2, b32 * h))
-    )
+    k3 = f(t + a3 * h, vec_add(vec_add(y, vec_scale(k1, b31 * h)), vec_scale(k2, b32 * h)))
     k4 = f(
         t + a4 * h,
         vec_add(
@@ -263,9 +255,7 @@ def rk45_adaptive_step(
         y,
         vec_scale(
             vec_add(
-                vec_add(
-                    vec_add(vec_scale(k1, c1), vec_scale(k3, c3)), vec_scale(k4, c4)
-                ),
+                vec_add(vec_add(vec_scale(k1, c1), vec_scale(k3, c3)), vec_scale(k4, c4)),
                 vec_scale(k5, c5),
             ),
             h,
@@ -278,9 +268,7 @@ def rk45_adaptive_step(
         vec_scale(
             vec_add(
                 vec_add(
-                    vec_add(
-                        vec_add(vec_scale(k1, d1), vec_scale(k3, d3)), vec_scale(k4, d4)
-                    ),
+                    vec_add(vec_add(vec_scale(k1, d1), vec_scale(k3, d3)), vec_scale(k4, d4)),
                     vec_scale(k5, d5),
                 ),
                 vec_scale(k6, d6),
@@ -301,9 +289,7 @@ def rk45_adaptive_step(
     return y5, h, h_new
 
 
-def verlet_step(
-    x: Vector, v: Vector, a_func: Callable[[Vector], Vector], h: float
-) -> Tuple[Vector, Vector]:
+def verlet_step(x: Vector, v: Vector, a_func: Callable[[Vector], Vector], h: float) -> Tuple[Vector, Vector]:
     """
     Velocity Verlet integration step (for position-dependent forces).
 
@@ -334,9 +320,7 @@ def verlet_step(
     return x_new, v_new
 
 
-def leapfrog_step(
-    x: Vector, v: Vector, a_func: Callable[[Vector], Vector], h: float
-) -> Tuple[Vector, Vector]:
+def leapfrog_step(x: Vector, v: Vector, a_func: Callable[[Vector], Vector], h: float) -> Tuple[Vector, Vector]:
     """
     Leapfrog integration step.
 
@@ -375,9 +359,7 @@ def leapfrog_step(
 # =============================================================================
 
 
-def bisection(
-    f: ScalarFunc, a: float, b: float, tol: float = 1e-10, max_iter: int = 100
-) -> Tuple[float, int]:
+def bisection(f: ScalarFunc, a: float, b: float, tol: float = 1e-10, max_iter: int = 100) -> Tuple[float, int]:
     """
     Find root using bisection method.
 
@@ -449,9 +431,7 @@ def newton_raphson(
     return x, max_iter
 
 
-def secant_method(
-    f: ScalarFunc, x0: float, x1: float, tol: float = 1e-10, max_iter: int = 100
-) -> Tuple[float, int]:
+def secant_method(f: ScalarFunc, x0: float, x1: float, tol: float = 1e-10, max_iter: int = 100) -> Tuple[float, int]:
     """
     Find root using secant method (derivative-free).
 
@@ -598,9 +578,7 @@ def adaptive_simpson(f: ScalarFunc, a: float, b: float, tol: float = 1e-8) -> fl
         if abs(S_total - S) < 15 * tol:
             return S_total + (S_total - S) / 15  # Richardson extrapolation
         else:
-            return _adaptive(a, c, fa, fc, fd, S_left, tol / 2) + _adaptive(
-                c, b, fc, fb, fe, S_right, tol / 2
-            )
+            return _adaptive(a, c, fa, fc, fd, S_left, tol / 2) + _adaptive(c, b, fc, fb, fe, S_right, tol / 2)
 
     fa = f(a)
     fb = f(b)
@@ -639,9 +617,7 @@ def linear_interpolate(x: float, x_data: List[float], y_data: List[float]) -> fl
     return y_data[-1]
 
 
-def cubic_spline_coefficients(
-    x_data: List[float], y_data: List[float]
-) -> List[Tuple[float, ...]]:
+def cubic_spline_coefficients(x_data: List[float], y_data: List[float]) -> List[Tuple[float, ...]]:
     """
     Calculate natural cubic spline coefficients.
 
@@ -661,9 +637,7 @@ def cubic_spline_coefficients(
     # Build tridiagonal matrix equation
     alpha = [0.0] * (n + 1)
     for i in range(1, n):
-        alpha[i] = 3 / h[i] * (y_data[i + 1] - y_data[i]) - 3 / h[i - 1] * (
-            y_data[i] - y_data[i - 1]
-        )
+        alpha[i] = 3 / h[i] * (y_data[i + 1] - y_data[i]) - 3 / h[i - 1] * (y_data[i] - y_data[i - 1])
 
     l = [1.0] + [0.0] * n
     mu = [0.0] * (n + 1)
@@ -692,9 +666,7 @@ def cubic_spline_coefficients(
     return coeffs
 
 
-def cubic_spline_interpolate(
-    x: float, x_data: List[float], coeffs: List[Tuple[float, ...]]
-) -> float:
+def cubic_spline_interpolate(x: float, x_data: List[float], coeffs: List[Tuple[float, ...]]) -> float:
     """
     Evaluate cubic spline at point.
 
@@ -843,9 +815,7 @@ def particle_swarm_optimization(
     return global_best_pos, global_best_val, max_iter
 
 
-def golden_section_search(
-    f: ScalarFunc, a: float, b: float, tol: float = 1e-8
-) -> Tuple[float, float, int]:
+def golden_section_search(f: ScalarFunc, a: float, b: float, tol: float = 1e-8) -> Tuple[float, float, int]:
     """
     Golden section search for 1D optimization.
 

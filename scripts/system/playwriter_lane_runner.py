@@ -112,10 +112,7 @@ def _normalize_search_result_url(url: str) -> str:
 
 
 def _extract_search_results(html: str, max_results: int = 5) -> list[Dict[str, Any]]:
-    snippets = [
-        _clean_html_fragment(raw)
-        for raw in _SEARCH_RESULT_SNIPPET_RE.findall(html)
-    ]
+    snippets = [_clean_html_fragment(raw) for raw in _SEARCH_RESULT_SNIPPET_RE.findall(html)]
     results: list[Dict[str, Any]] = []
     for raw_url, raw_title in _SEARCH_RESULT_ANCHOR_RE.findall(html):
         title = _clean_html_fragment(raw_title)

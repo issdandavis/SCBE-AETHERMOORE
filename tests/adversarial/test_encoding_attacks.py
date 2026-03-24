@@ -3,6 +3,7 @@
 Tests: base64, character spacing, case mixing, null bytes, reversal,
 ROT13, acrostic, unicode escapes, and leet speak.
 """
+
 import pytest
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, ENCODING_OBFUSCATION
 from tests.adversarial.scbe_harness import SCBEDetectionGate, run_benchmark

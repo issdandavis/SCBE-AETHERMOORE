@@ -155,10 +155,7 @@ def build_voxel_record(
     canonical_cost = float(canonical_wall_cost(d_star_value, 1.0))
     cost_l12 = float(layer12_cost(d_star_value, coherence))
 
-    votes = {
-        tongue: local_vote(tongue, cost_l12, coherence, phases, weights)
-        for tongue in TONGUES
-    }
+    votes = {tongue: local_vote(tongue, cost_l12, coherence, phases, weights) for tongue in TONGUES}
     base_decision = bft_consensus(votes)
 
     gates = gate_vector_from_state(state)
@@ -303,9 +300,7 @@ def summarize(voxels: List[VoxelRecord], route: Dict[str, Any]) -> Dict[str, Any
         "node_count": len(voxels),
         "action": action,
     }
-    signature = hashlib.sha256(
-        json.dumps(trace_obj, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
+    signature = hashlib.sha256(json.dumps(trace_obj, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
     decision_record = {
         "action": action,
@@ -319,7 +314,7 @@ def summarize(voxels: List[VoxelRecord], route: Dict[str, Any]) -> Dict[str, Any
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Sparse voxel simulator for SCBE governance routing.")
-    p.add_argument("--input-json", type=Path, default=None, help="JSON file with {\"items\": [...]} seeds.")
+    p.add_argument("--input-json", type=Path, default=None, help='JSON file with {"items": [...]} seeds.')
     p.add_argument("--count", type=int, default=12, help="How many voxels to generate.")
     p.add_argument("--world-bound", type=float, default=2.5, help="Coordinate bound for world xyz.")
     p.add_argument("--bins", type=int, default=36, help="Quantization bins for voxel addressing.")
@@ -348,9 +343,10 @@ def main() -> None:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print(f"Wrote {args.output}")
-    print(json.dumps({"state_vector": payload["state_vector"], "decision_record": payload["decision_record"]}, indent=2))
+    print(
+        json.dumps({"state_vector": payload["state_vector"], "decision_record": payload["decision_record"]}, indent=2)
+    )
 
 
 if __name__ == "__main__":
     main()
-

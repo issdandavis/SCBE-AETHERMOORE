@@ -35,10 +35,12 @@ from src.gacha_isekai.evolution import compute_rho_e
 logger = logging.getLogger(__name__)
 
 # Where approved training data lands
-DEFAULT_OUTPUT_DIR = Path(os.environ.get(
-    "SCBE_TRAINING_OUTPUT",
-    str(Path(__file__).resolve().parent.parent.parent / "training-data" / "gacha_sessions"),
-))
+DEFAULT_OUTPUT_DIR = Path(
+    os.environ.get(
+        "SCBE_TRAINING_OUTPUT",
+        str(Path(__file__).resolve().parent.parent.parent / "training-data" / "gacha_sessions"),
+    )
+)
 DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -86,8 +88,7 @@ def _compute_ternary(value: Any) -> tuple:
     elif isinstance(value, (np.ndarray, list)):
         arr = np.asarray(value, dtype=float)
         mean = float(np.mean(arr))
-        return (1 if mean > 0.3 else (-1 if mean < -0.3 else 0),
-                1 if float(np.std(arr)) < 0.5 else 0)
+        return (1 if mean > 0.3 else (-1 if mean < -0.3 else 0), 1 if float(np.std(arr)) < 0.5 else 0)
     return (0, 0)
 
 
@@ -102,6 +103,7 @@ def _ml_dsa_hash(data: bytes) -> str:
 @dataclass
 class GameEvent:
     """A collected game event for training."""
+
     prompt: str
     response: str
     provenance: str
@@ -165,7 +167,8 @@ class HFTrainingLoop:
         self.pending_events.append(event)
         logger.info(
             "Layer 7 event collected: %s arc, rho_e preview=%.2f",
-            arc_stage, compute_rho_e(np.array([len(outcome)])),
+            arc_stage,
+            compute_rho_e(np.array([len(outcome)])),
         )
         return event
 
@@ -231,20 +234,23 @@ class HFTrainingLoop:
             event.ternary_alignment = _compute_ternary(event.response)
 
             # Approved — add to batch
-            self.approved_pairs.append({
-                "prompt": event.prompt,
-                "response": event.response,
-                "provenance": event.provenance,
-                "rho_e": event.rho_e,
-                "ternary_alignment": list(event.ternary_alignment),
-                "arc_stage": event.arc_stage,
-                "timestamp": event.timestamp,
-            })
+            self.approved_pairs.append(
+                {
+                    "prompt": event.prompt,
+                    "response": event.response,
+                    "provenance": event.provenance,
+                    "rho_e": event.rho_e,
+                    "ternary_alignment": list(event.ternary_alignment),
+                    "arc_stage": event.arc_stage,
+                    "timestamp": event.timestamp,
+                }
+            )
             newly_approved += 1
 
             logger.info(
                 "Layer 12 approved: rho_e=%.2f, alignment=%s",
-                event.rho_e, event.ternary_alignment,
+                event.rho_e,
+                event.ternary_alignment,
             )
 
         self.pending_events = remaining
@@ -263,8 +269,8 @@ class HFTrainingLoop:
         if len(self.approved_pairs) < self.batch_size:
             return None
 
-        batch = self.approved_pairs[:self.batch_size]
-        self.approved_pairs = self.approved_pairs[self.batch_size:]
+        batch = self.approved_pairs[: self.batch_size]
+        self.approved_pairs = self.approved_pairs[self.batch_size :]
 
         # PQC signature over batch
         batch_bytes = json.dumps(batch, sort_keys=True).encode()
@@ -289,16 +295,22 @@ class HFTrainingLoop:
         # Write signature sidecar
         sig_path = self.output_dir / f"batch_{self.total_batches_exported:04d}.sig.json"
         with open(sig_path, "w", encoding="utf-8") as f:
-            json.dump({
-                "signature": signature,
-                "batch_id": self.total_batches_exported,
-                "pair_count": len(batch),
-                "ts": signed_batch["ts"],
-            }, f, indent=2)
+            json.dump(
+                {
+                    "signature": signature,
+                    "batch_id": self.total_batches_exported,
+                    "pair_count": len(batch),
+                    "ts": signed_batch["ts"],
+                },
+                f,
+                indent=2,
+            )
 
         logger.info(
             "Layer 14 batch %d exported: %d pairs, sig=%s",
-            self.total_batches_exported, len(batch), signature[:16],
+            self.total_batches_exported,
+            len(batch),
+            signature[:16],
         )
         return str(out_path)
 

@@ -26,6 +26,7 @@ def check_stripe():
     """Check Stripe balance."""
     try:
         import stripe
+
         key = os.environ.get("STRIPE_SECRET_KEY", "")
         if not key:
             return {"status": "no_key", "balance": 0}
@@ -42,6 +43,7 @@ def check_npm_downloads():
     """Check npm download count for scbe-aethermoore."""
     try:
         import urllib.request
+
         url = "https://api.npmjs.org/downloads/point/last-week/scbe-aethermoore"
         with urllib.request.urlopen(url, timeout=10) as resp:
             data = json.loads(resp.read())
@@ -54,6 +56,7 @@ def check_pypi_downloads():
     """Check PyPI recent downloads."""
     try:
         import urllib.request
+
         url = "https://pypistats.org/api/packages/scbe-aethermoore/recent"
         with urllib.request.urlopen(url, timeout=10) as resp:
             data = json.loads(resp.read())

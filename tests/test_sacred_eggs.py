@@ -122,9 +122,7 @@ class TestSacredEgg:
     def test_lineage_tracking(self):
         """Should track parent IDs in lineage."""
         parent = SacredEgg.create(context="parent")
-        child = SacredEgg.create(
-            context="child", parent_ids=[parent.egg_id]
-        )
+        child = SacredEgg.create(context="child", parent_ids=[parent.egg_id])
         assert parent.egg_id in child.lineage
 
     def test_created_at_timestamp(self):
@@ -368,9 +366,7 @@ class TestEggCarton:
         parent = SacredEgg.create(context="parent")
         carton.add(parent)
 
-        child = SacredEgg.create(
-            context="child", parent_ids=[parent.egg_id]
-        )
+        child = SacredEgg.create(context="child", parent_ids=[parent.egg_id])
         carton.add(child)
 
         children = carton.get_children(parent.egg_id)
@@ -383,9 +379,7 @@ class TestEggCarton:
         grandparent = SacredEgg.create(context="gen0")
         carton.add(grandparent)
 
-        parent = SacredEgg.create(
-            context="gen1", parent_ids=[grandparent.egg_id]
-        )
+        parent = SacredEgg.create(context="gen1", parent_ids=[grandparent.egg_id])
         carton.add(parent)
 
         child = SacredEgg.create(
@@ -418,9 +412,7 @@ class TestSolitaryIncubation:
     def test_custom_labels(self, core_egg):
         """Should use custom labels for each cycle."""
         labels = ["encryption", "signing", "session"]
-        result = SacredRituals.solitary_incubation(
-            core_egg, cycles=3, labels=labels
-        )
+        result = SacredRituals.solitary_incubation(core_egg, cycles=3, labels=labels)
 
         assert "encryption" in result.derived_keys
         assert "signing" in result.derived_keys
@@ -539,9 +531,7 @@ class TestRingDescent:
     def test_outer_to_inner(self, outer_egg):
         """Should descend from OUTER to INNER with valid auth."""
         auth_secret = secrets.token_bytes(32)
-        result = SacredRituals.ring_descent(
-            outer_egg, EggRing.INNER, auth_secret
-        )
+        result = SacredRituals.ring_descent(outer_egg, EggRing.INNER, auth_secret)
 
         assert isinstance(result, RingDescentResult)
         assert result.old_ring == "OUTER"
@@ -551,9 +541,7 @@ class TestRingDescent:
     def test_outer_to_core(self, outer_egg):
         """Should descend from OUTER to CORE."""
         auth_secret = secrets.token_bytes(32)
-        result = SacredRituals.ring_descent(
-            outer_egg, EggRing.CORE, auth_secret
-        )
+        result = SacredRituals.ring_descent(outer_egg, EggRing.CORE, auth_secret)
         assert result.new_ring == "CORE"
         assert outer_egg.ring == EggRing.CORE
 
@@ -715,9 +703,7 @@ class TestIntegration:
 
         old_parent_id = parent.egg_id
 
-        child = SacredEgg.create(
-            context="child", parent_ids=[old_parent_id]
-        )
+        child = SacredEgg.create(context="child", parent_ids=[old_parent_id])
         carton.add(child)
 
         # Child still references old parent ID in lineage

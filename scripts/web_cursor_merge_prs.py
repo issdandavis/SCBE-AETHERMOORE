@@ -148,7 +148,9 @@ def run(args: argparse.Namespace, prs: List[int], approvals: Dict[int, Dict[str,
     try:
         from playwright.sync_api import sync_playwright  # type: ignore
     except ImportError as exc:  # pragma: no cover
-        raise RuntimeError("Playwright not installed. Run: pip install playwright && playwright install chromium") from exc
+        raise RuntimeError(
+            "Playwright not installed. Run: pip install playwright && playwright install chromium"
+        ) from exc
 
     profile_dir = args.user_data_dir or str(Path.home() / ".scbe-playwright-github")
     rows: List[Dict[str, Any]] = []

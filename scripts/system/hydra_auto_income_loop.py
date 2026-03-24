@@ -101,9 +101,9 @@ async def run(args: argparse.Namespace) -> Dict[str, Any]:
                 "python scripts/system/arxiv_monetization_spine.py "
                 f"--top-leads {max(1, int(args.top_leads))} "
                 "--dispatch-monetization-swarm "
-                f"--sender \"{args.sender}\" "
-                f"--recipient \"{args.recipient}\" "
-                f"--codename \"{args.codename}\""
+                f'--sender "{args.sender}" '
+                f'--recipient "{args.recipient}" '
+                f'--codename "{args.codename}"'
             )
             steps.append(await _run_limb_command(limb, "arxiv_monetization_spine", cmd))
 
@@ -150,4 +150,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

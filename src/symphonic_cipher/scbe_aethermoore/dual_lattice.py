@@ -197,9 +197,7 @@ class SimulatedDilithium:
 
         return DilithiumResult(signature=signature, valid=True, timestamp=time.time())
 
-    def verify(
-        self, public_key: bytes, message: bytes, signature: bytes
-    ) -> DilithiumResult:
+    def verify(self, public_key: bytes, message: bytes, signature: bytes) -> DilithiumResult:
         """Verify signature."""
         # Simulated verification
         hmac.new(public_key[:32], message, hashlib.sha3_256).digest()
@@ -280,9 +278,7 @@ class DualLatticeConsensus:
 
         # Normalize and hash to get key bytes
         K_normalized = (K_value + np.sum(self._C_n)) / (2 * np.sum(self._C_n))
-        K_bytes = hashlib.sha3_256(
-            str(K_normalized).encode() + str(t_arrival).encode()
-        ).digest()
+        K_bytes = hashlib.sha3_256(str(K_normalized).encode() + str(t_arrival).encode()).digest()
 
         return K_bytes
 
@@ -304,9 +300,7 @@ class DualLatticeConsensus:
         if self._state == ConsensusState.UNSETTLED:
             self._state = ConsensusState.SETTLING
 
-    def submit_dilithium(
-        self, signature: bytes, message: bytes, public_key: bytes
-    ) -> None:
+    def submit_dilithium(self, signature: bytes, message: bytes, public_key: bytes) -> None:
         """Submit Dilithium validation."""
         result = self.dilithium.verify(public_key, message, signature)
         self._dilithium_result = result
@@ -327,8 +321,7 @@ class DualLatticeConsensus:
                 key=None,
                 consensus_value=0.0,
                 kyber_valid=self._kyber_result is not None and self._kyber_result.valid,
-                dilithium_valid=self._dilithium_result is not None
-                and self._dilithium_result.valid,
+                dilithium_valid=self._dilithium_result is not None and self._dilithium_result.valid,
                 time_delta=float("inf"),
                 risk_contribution=self.params.risk_weight,
                 harmonics=[],
@@ -339,9 +332,7 @@ class DualLatticeConsensus:
         dilithium_valid = self._dilithium_result.valid
 
         # Check time window
-        time_delta = abs(
-            self._kyber_result.timestamp - self._dilithium_result.timestamp
-        )
+        time_delta = abs(self._kyber_result.timestamp - self._dilithium_result.timestamp)
         time_valid = time_delta < self.params.time_window
 
         # Consensus = AND of all three
@@ -349,9 +340,7 @@ class DualLatticeConsensus:
 
         if consensus:
             # SETTLED - compute K(t) via constructive interference
-            t_arrival = (
-                self._kyber_result.timestamp + self._dilithium_result.timestamp
-            ) / 2
+            t_arrival = (self._kyber_result.timestamp + self._dilithium_result.timestamp) / 2
             key = self._compute_settling_key(t_arrival)
             self._state = ConsensusState.SETTLED
 
@@ -367,11 +356,7 @@ class DualLatticeConsensus:
             )
         else:
             # FAILED - return chaos noise
-            self._state = (
-                ConsensusState.CHAOS
-                if (kyber_valid != dilithium_valid)
-                else ConsensusState.FAILED
-            )
+            self._state = ConsensusState.CHAOS if (kyber_valid != dilithium_valid) else ConsensusState.FAILED
 
             # Risk contribution on mismatch
             mismatch = 1.0 - (0.5 * kyber_valid + 0.5 * dilithium_valid)
@@ -400,9 +385,7 @@ class DualLatticeConsensus:
 # =============================================================================
 
 
-def integrate_dual_lattice_risk(
-    consensus_result: SettlingResult, base_risk: float, H_d_star: float
-) -> float:
+def integrate_dual_lattice_risk(consensus_result: SettlingResult, base_risk: float, H_d_star: float) -> float:
     """
     Integrate dual lattice mismatch into SCBE risk.
 
@@ -427,9 +410,7 @@ def integrate_dual_lattice_risk(
 # =============================================================================
 
 
-def compute_settling_wave(
-    t: np.ndarray, C_n: np.ndarray, omega_n: np.ndarray, t_arrival: float
-) -> np.ndarray:
+def compute_settling_wave(t: np.ndarray, C_n: np.ndarray, omega_n: np.ndarray, t_arrival: float) -> np.ndarray:
     """
     Compute the settling wave K(t).
 
@@ -568,21 +549,15 @@ def self_test() -> Dict[str, Any]:
         t_arrival = 5.0
 
         # At t_arrival, constructive interference → K = sum(C_n)
-        K_at_arrival = compute_settling_wave(
-            np.array([t_arrival]), C_n, omega_n, t_arrival
-        )[0]
+        K_at_arrival = compute_settling_wave(np.array([t_arrival]), C_n, omega_n, t_arrival)[0]
         expected_max = np.sum(C_n)  # = 1.75
 
         # Verify constructive interference at t_arrival
         if abs(K_at_arrival - expected_max) < 0.01:
             passed += 1
-            results["settling_wave"] = (
-                f"✓ PASS (K(t_arrival)={K_at_arrival:.2f} = Σc_n={expected_max:.2f})"
-            )
+            results["settling_wave"] = f"✓ PASS (K(t_arrival)={K_at_arrival:.2f} = Σc_n={expected_max:.2f})"
         else:
-            results["settling_wave"] = (
-                f"✗ FAIL (K(t_arrival)={K_at_arrival:.2f}, expected {expected_max:.2f})"
-            )
+            results["settling_wave"] = f"✗ FAIL (K(t_arrival)={K_at_arrival:.2f}, expected {expected_max:.2f})"
     except Exception as e:
         results["settling_wave"] = f"✗ FAIL ({e})"
 
@@ -617,9 +592,7 @@ def self_test() -> Dict[str, Any]:
 
         if risk_settled == 0.5 and risk_failed > 0.5:
             passed += 1
-            results["risk_integration"] = (
-                f"✓ PASS (settled={risk_settled:.2f}, failed={risk_failed:.2f})"
-            )
+            results["risk_integration"] = f"✓ PASS (settled={risk_settled:.2f}, failed={risk_failed:.2f})"
         else:
             results["risk_integration"] = "✗ FAIL (risk calculation wrong)"
     except Exception as e:
@@ -726,9 +699,7 @@ if __name__ == "__main__":
     kyber_keys = consensus.kyber.keygen()
     dilithium_keys = consensus.dilithium.keygen()
     print(f"   Kyber:     {kyber_keys.algorithm} ({kyber_keys.security_level}-bit)")
-    print(
-        f"   Dilithium: {dilithium_keys.algorithm} ({dilithium_keys.security_level}-bit)"
-    )
+    print(f"   Dilithium: {dilithium_keys.algorithm} ({dilithium_keys.security_level}-bit)")
 
     print("\n2. Submit validations...")
     consensus.submit_kyber(b"test_ciphertext", kyber_keys.public_key)

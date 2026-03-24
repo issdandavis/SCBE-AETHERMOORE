@@ -1,4 +1,5 @@
 """Tests for hydra/voxel_storage.py — 6D Voxel Storage with Chladni addressing."""
+
 import math
 import sys
 import os
@@ -23,6 +24,7 @@ from hydra.voxel_storage import (
 
 # ── Chladni Addressing ──────────────────────────────────────────
 
+
 class TestChladniAmplitude:
     def test_symmetric_modes(self):
         """A(x,y) with n=m should give zero everywhere (cos(n)-cos(n) = 0)."""
@@ -46,8 +48,7 @@ class TestChladniAmplitude:
     def test_center_value(self):
         """Known value at center (0.5, 0.5)."""
         a = chladni_amplitude(0.5, 0.5, n=3, m=2)
-        expected = (math.cos(1.5 * math.pi) * math.cos(math.pi)
-                    - math.cos(math.pi) * math.cos(1.5 * math.pi))
+        expected = math.cos(1.5 * math.pi) * math.cos(math.pi) - math.cos(math.pi) * math.cos(1.5 * math.pi)
         assert abs(a - expected) < 1e-10
 
 
@@ -90,6 +91,7 @@ class TestChladniGrid:
 
 # ── Authority Hash ───────────────────────────────────────────────
 
+
 class TestAuthorityHash:
     def test_deterministic(self):
         h1 = compute_authority_hash("agent.claude", "payload", 1000.0)
@@ -115,6 +117,7 @@ class TestAuthorityHash:
 
 
 # ── Intent Vector ────────────────────────────────────────────────
+
 
 class TestIntentVector:
     def test_normalize_unit(self):
@@ -147,6 +150,7 @@ class TestIntentVector:
 
 # ── Voxel Dataclass ──────────────────────────────────────────────
 
+
 class TestVoxel:
     def test_color_channel(self):
         v = Voxel(voxel_id="test", x=0, y=0, z=0, wavelength_nm=540.0, tongue="RU")
@@ -159,8 +163,15 @@ class TestVoxel:
         assert v.position_6d.shape == (6,)
 
     def test_distance_to_self_zero(self):
-        v = Voxel(voxel_id="a", x=0.5, y=0.5, z=0.0, wavelength_nm=550.0,
-                  authority_hash="abc", intent_vector=normalize_intent([1, 0, 0]))
+        v = Voxel(
+            voxel_id="a",
+            x=0.5,
+            y=0.5,
+            z=0.0,
+            wavelength_nm=550.0,
+            authority_hash="abc",
+            intent_vector=normalize_intent([1, 0, 0]),
+        )
         assert v.distance_to(v) == 0.0
 
     def test_distance_symmetry(self):
@@ -177,6 +188,7 @@ class TestVoxel:
 
 
 # ── VoxelGrid ────────────────────────────────────────────────────
+
 
 class TestVoxelGrid:
     def test_store_returns_voxel(self):
@@ -243,14 +255,42 @@ class TestVoxelGridQueries:
     @pytest.fixture()
     def populated_grid(self):
         grid = VoxelGrid(resolution=8)
-        grid.store(x=0.1, y=0.1, wavelength_nm=400.0, authority="claude",
-                   intent_vector=[1, 0, 0], intent_label="arch", voxel_id="v1")
-        grid.store(x=0.5, y=0.5, wavelength_nm=540.0, authority="gpt",
-                   intent_vector=[0, 1, 0], intent_label="draft", voxel_id="v2")
-        grid.store(x=0.9, y=0.9, wavelength_nm=700.0, authority="claude",
-                   intent_vector=[0, 0, 1], intent_label="research", voxel_id="v3")
-        grid.store(x=0.3, y=0.7, wavelength_nm=410.0, authority="gemini",
-                   intent_vector=[0.9, 0.1, 0], intent_label="review", voxel_id="v4")
+        grid.store(
+            x=0.1,
+            y=0.1,
+            wavelength_nm=400.0,
+            authority="claude",
+            intent_vector=[1, 0, 0],
+            intent_label="arch",
+            voxel_id="v1",
+        )
+        grid.store(
+            x=0.5,
+            y=0.5,
+            wavelength_nm=540.0,
+            authority="gpt",
+            intent_vector=[0, 1, 0],
+            intent_label="draft",
+            voxel_id="v2",
+        )
+        grid.store(
+            x=0.9,
+            y=0.9,
+            wavelength_nm=700.0,
+            authority="claude",
+            intent_vector=[0, 0, 1],
+            intent_label="research",
+            voxel_id="v3",
+        )
+        grid.store(
+            x=0.3,
+            y=0.7,
+            wavelength_nm=410.0,
+            authority="gemini",
+            intent_vector=[0.9, 0.1, 0],
+            intent_label="review",
+            voxel_id="v4",
+        )
         return grid
 
     def test_query_by_intent_ranking(self, populated_grid):

@@ -231,9 +231,7 @@ class PrivacyTokenVault:
         vault_name: str = "privacy-token-vault",
     ) -> None:
         _require_windows()
-        self.vault_root = (
-            Path(vault_root) if vault_root is not None else Path.home() / ".scbe" / "privacy_token_vault"
-        )
+        self.vault_root = Path(vault_root) if vault_root is not None else Path.home() / ".scbe" / "privacy_token_vault"
         self.vault_name = _collapse_whitespace(vault_name or "privacy-token-vault").lower().replace(" ", "-")
         self.index_path = self.vault_root / "index.json"
         self.master_secret_path = self.vault_root / "master_secret.bin"

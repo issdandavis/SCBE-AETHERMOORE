@@ -35,6 +35,7 @@ from .navigation_engine import NavigationEngine, PageUnderstanding
 #  Task types
 # ---------------------------------------------------------------------------
 
+
 class TaskStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -46,12 +47,12 @@ class TaskStatus(str, Enum):
 
 
 class TaskType(str, Enum):
-    NAVIGATE = "navigate"           # Go to URL, extract info
-    RESEARCH = "research"           # Multi-page research task
-    FORM_FILL = "form_fill"         # Fill and submit forms
-    MONITOR = "monitor"             # Watch a page for changes
-    POST_CONTENT = "post_content"   # Post to social/CMS/API (Buffer-style)
-    WORKFLOW = "workflow"            # Multi-step custom workflow
+    NAVIGATE = "navigate"  # Go to URL, extract info
+    RESEARCH = "research"  # Multi-page research task
+    FORM_FILL = "form_fill"  # Fill and submit forms
+    MONITOR = "monitor"  # Watch a page for changes
+    POST_CONTENT = "post_content"  # Post to social/CMS/API (Buffer-style)
+    WORKFLOW = "workflow"  # Multi-step custom workflow
 
 
 @dataclass
@@ -62,12 +63,12 @@ class WebTask:
     task_type: TaskType = TaskType.NAVIGATE
     description: str = ""
     target_url: Optional[str] = None
-    goal: str = ""                      # Natural language goal
+    goal: str = ""  # Natural language goal
     parameters: Dict[str, Any] = field(default_factory=dict)
     status: TaskStatus = TaskStatus.PENDING
-    priority: int = 5                   # 1=highest, 10=lowest
+    priority: int = 5  # 1=highest, 10=lowest
     max_steps: int = 100
-    timeout_seconds: float = 3600.0     # 1 hour default
+    timeout_seconds: float = 3600.0  # 1 hour default
     created_at: float = field(default_factory=time.time)
     started_at: Optional[float] = None
     completed_at: Optional[float] = None
@@ -75,10 +76,10 @@ class WebTask:
     checkpoints: List[Dict[str, Any]] = field(default_factory=list)
 
     # Content posting fields (Buffer integration)
-    post_content: Optional[str] = None          # Text to post
+    post_content: Optional[str] = None  # Text to post
     post_platforms: List[str] = field(default_factory=list)  # twitter, linkedin, etc.
-    post_schedule: Optional[float] = None       # Unix timestamp for scheduled post
-    post_media: List[str] = field(default_factory=list)      # Media file paths/URLs
+    post_schedule: Optional[float] = None  # Unix timestamp for scheduled post
+    post_media: List[str] = field(default_factory=list)  # Media file paths/URLs
 
 
 @dataclass
@@ -115,6 +116,7 @@ class TaskResult:
 #  Content posting buffer (Buffer-style integration)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PostJob:
     """A content posting job for social media / CMS / API."""
@@ -124,7 +126,7 @@ class PostJob:
     platforms: List[str] = field(default_factory=list)
     media: List[str] = field(default_factory=list)
     schedule_at: Optional[float] = None
-    status: str = "queued"          # queued, posting, posted, failed
+    status: str = "queued"  # queued, posting, posted, failed
     results: Dict[str, Any] = field(default_factory=dict)  # platform → result
     created_at: float = field(default_factory=time.time)
 
@@ -200,6 +202,7 @@ class ContentPostingBuffer:
 # ---------------------------------------------------------------------------
 #  AgentOrchestrator
 # ---------------------------------------------------------------------------
+
 
 class AgentOrchestrator:
     """

@@ -27,6 +27,7 @@ from ..context_credit_ledger.credit import Denomination
 #  Stream Types
 # ---------------------------------------------------------------------------
 
+
 class StreamType(str, Enum):
     GAME = "GAME"
     CONTENT = "CONTENT"
@@ -38,6 +39,7 @@ class StreamType(str, Enum):
 #  Governance Verdict (mirrors L13 decision gate)
 # ---------------------------------------------------------------------------
 
+
 class GovernanceVerdict(str, Enum):
     ALLOW = "ALLOW"
     QUARANTINE = "QUARANTINE"
@@ -48,21 +50,22 @@ class GovernanceVerdict(str, Enum):
 #  Earn Event — a single thing that happened that can mint credits
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class EarnEvent:
     """A raw event from any earn stream, before governance processing."""
 
     event_id: str = field(default_factory=lambda: uuid.uuid4().hex[:16])
     stream_type: StreamType = StreamType.GAME
-    event_name: str = ""              # e.g. "battle_victory", "post_published"
+    event_name: str = ""  # e.g. "battle_victory", "post_published"
     denomination: Denomination = Denomination.KO
-    base_reward: float = 10.0         # pre-governance reward amount
+    base_reward: float = 10.0  # pre-governance reward amount
     metadata: Dict[str, Any] = field(default_factory=dict)
     timestamp: float = field(default_factory=time.time)
 
     # Governance inputs (fed to harmonic wall)
-    hamiltonian_d: float = 0.1        # deviation from safe center
-    hamiltonian_pd: float = 0.05      # policy deviation
+    hamiltonian_d: float = 0.1  # deviation from safe center
+    hamiltonian_pd: float = 0.05  # policy deviation
 
     # Agent that triggered the event
     agent_id: str = "player"
@@ -73,14 +76,16 @@ class EarnEvent:
 #  Stream Configs — default parameters per stream type
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class StreamConfig:
     """Configuration for an earn stream."""
+
     stream_type: StreamType
     default_denomination: Denomination
-    base_multiplier: float            # reward multiplier
-    max_hamiltonian_d: float          # above this -> QUARANTINE
-    max_hamiltonian_pd: float         # above this -> DENY
+    base_multiplier: float  # reward multiplier
+    max_hamiltonian_d: float  # above this -> QUARANTINE
+    max_hamiltonian_pd: float  # above this -> DENY
     description: str = ""
 
 
@@ -123,6 +128,7 @@ STREAM_CONFIGS: Dict[StreamType, StreamConfig] = {
 # ---------------------------------------------------------------------------
 #  Game Event Subtypes — specific in-game actions
 # ---------------------------------------------------------------------------
+
 
 class GameEventType(str, Enum):
     BATTLE_VICTORY = "battle_victory"

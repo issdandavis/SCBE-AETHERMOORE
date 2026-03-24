@@ -26,6 +26,7 @@ try:
     from agents.antivirus_membrane import scan_text_for_threats as _scan_text_for_threats
     from agents.antivirus_membrane import turnstile_action as _turnstile_action
 except Exception:  # noqa: BLE001
+
     class _FallbackScan:
         risk_score = 0.0
         verdict = "CLEAN"
@@ -346,7 +347,9 @@ def _decide(score: float, cap: Dict[str, Any], noise_on_deny: bool) -> Tuple[str
     return ("NOISE" if noise_on_deny else "DENY", "verification score < 0.60")
 
 
-def _scr_hashes(resp: Dict[str, Any], outdir: pathlib.Path | None, job_id: str, session_id: str) -> List[Dict[str, Any]]:
+def _scr_hashes(
+    resp: Dict[str, Any], outdir: pathlib.Path | None, job_id: str, session_id: str
+) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     rr = resp.get("results", []) if isinstance(resp.get("results", []), list) else []
     if outdir:
@@ -442,7 +445,9 @@ def _build_layer14_telemetry(
         "hf_ratio": round(blocked_actions / total_actions, 4),
         "stability": round(float(verification["metrics"]["coherence"]), 4),
         "verification_score": round(float(verification.get("verification_score", 0.0)), 4),
-        "anomaly_ratio": round(len(rails.get("D-", [])) / max(len(rails.get("D+", [])) + len(rails.get("D-", [])), 1), 4),
+        "anomaly_ratio": round(
+            len(rails.get("D-", [])) / max(len(rails.get("D+", [])) + len(rails.get("D-", [])), 1), 4
+        ),
         "signal_class": decision.lower(),
         "channel": "layer14-comms",
     }
@@ -484,7 +489,21 @@ def main() -> None:
     tdir.mkdir(parents=True, exist_ok=True)
     shot_dir = pathlib.Path(a.save_screenshots_dir) if a.save_screenshots_dir else None
 
-    req = ["schema_version", "decision_id", "timestamp_utc", "kernel_version", "profile_id", "job_id", "agent_id", "session_id", "decision", "metrics", "capability", "trace_hash", "verification"]
+    req = [
+        "schema_version",
+        "decision_id",
+        "timestamp_utc",
+        "kernel_version",
+        "profile_id",
+        "job_id",
+        "agent_id",
+        "session_id",
+        "decision",
+        "metrics",
+        "capability",
+        "trace_hash",
+        "verification",
+    ]
     schema_path = pathlib.Path("schemas/decision_record.schema.json")
     if schema_path.exists():
         try:
@@ -581,10 +600,26 @@ def main() -> None:
                 }
             except Exception as exc:  # noqa: BLE001
                 err = str(exc)
-                resp = {"status": "request_error", "session_id": sid, "results": [], "total_actions": len(job["actions"]), "executed_actions": 0, "blocked_actions": len(job["actions"]), "trace": "request_error"}
+                resp = {
+                    "status": "request_error",
+                    "session_id": sid,
+                    "results": [],
+                    "total_actions": len(job["actions"]),
+                    "executed_actions": 0,
+                    "blocked_actions": len(job["actions"]),
+                    "trace": "request_error",
+                }
         else:
             err = cap["reason"]
-            resp = {"status": "blocked_by_policy", "session_id": sid, "results": [], "total_actions": len(job["actions"]), "executed_actions": 0, "blocked_actions": len(job["actions"]), "trace": "policy_gate_blocked"}
+            resp = {
+                "status": "blocked_by_policy",
+                "session_id": sid,
+                "results": [],
+                "total_actions": len(job["actions"]),
+                "executed_actions": 0,
+                "blocked_actions": len(job["actions"]),
+                "trace": "policy_gate_blocked",
+            }
         return i, {
             "job_id": job_id,
             "agent_id": aid,
@@ -623,7 +658,10 @@ def main() -> None:
             elif antivirus_action in {"HOLD", "ISOLATE"} and decision == "ALLOW":
                 decision = "QUARANTINE"
                 why = f"antivirus membrane action={antivirus_action}"
-            trace = {"request": {"payload": out["payload"], "risk_tier": out["risk_tier"], "verify": out["verify"]}, "response": out["response"]}
+            trace = {
+                "request": {"payload": out["payload"], "risk_tier": out["risk_tier"], "verify": out["verify"]},
+                "response": out["response"],
+            }
             trace = {
                 "request": {"payload": out["payload"], "risk_tier": out["risk_tier"], "verify": out["verify"]},
                 "response": out["response"],
@@ -649,7 +687,12 @@ def main() -> None:
                 "decision": decision,
                 "decision_reason": why,
                 "risk_tier": out["risk_tier"],
-                "metrics": {"risk": v["metrics"]["risk"], "d_star": v["metrics"]["d_star"], "coherence": v["metrics"]["coherence"], "verification_score": v["verification_score"]},
+                "metrics": {
+                    "risk": v["metrics"]["risk"],
+                    "d_star": v["metrics"]["d_star"],
+                    "coherence": v["metrics"]["coherence"],
+                    "verification_score": v["verification_score"],
+                },
                 "capability": out["capability"],
                 "lease": out.get("lease"),
                 "pqc_audit": out.get("pqc_audit", {}),
@@ -657,7 +700,12 @@ def main() -> None:
                 "rails": rails,
                 "layer14": layer14,
                 "trace_hash": trace_hash,
-                "verification": {"score": v["verification_score"], "passed_checks": v["passed_checks"], "total_checks": v["total_checks"], "checks": v["checks"]},
+                "verification": {
+                    "score": v["verification_score"],
+                    "passed_checks": v["passed_checks"],
+                    "total_checks": v["total_checks"],
+                    "checks": v["checks"],
+                },
             }
             miss = [k for k in req if k not in rec]
             if miss:
@@ -678,15 +726,38 @@ def main() -> None:
                 except Exception as exc:  # noqa: BLE001
                     fails.append({"job_id": out["job_id"], "replica_root": replica_root, "error": str(exc)})
             sh = _scr_hashes(out["response"], shot_dir, out["job_id"], out["session_id"])
-            pub = {"status": "noise", "detail": "suppressed by governance policy"} if decision == "NOISE" else out["response"]
+            pub = (
+                {"status": "noise", "detail": "suppressed by governance policy"}
+                if decision == "NOISE"
+                else out["response"]
+            )
             results[idx] = {
-                "job_id": out["job_id"], "agent_id": out["agent_id"], "worker_id": out["worker_id"], "mission_id": out["mission_id"], "session_id": out["session_id"], "risk_tier": out["risk_tier"],
-                "decision": decision, "decision_reason": why, "verification_score": v["verification_score"], "decision_record_path": str(rp),
-                "trace_path": str(tp), "trace_hash": trace_hash, "screenshot_hashes": sh, "elapsed_ms": out["elapsed_ms"],
-                "request_error": out["request_error"], "response_status": out["response"].get("status"), "response": pub, "lease": out.get("lease"), "rails": rails, "layer14": layer14, "pqc_audit": out.get("pqc_audit", {}),
+                "job_id": out["job_id"],
+                "agent_id": out["agent_id"],
+                "worker_id": out["worker_id"],
+                "mission_id": out["mission_id"],
+                "session_id": out["session_id"],
+                "risk_tier": out["risk_tier"],
+                "decision": decision,
+                "decision_reason": why,
+                "verification_score": v["verification_score"],
+                "decision_record_path": str(rp),
+                "trace_path": str(tp),
+                "trace_hash": trace_hash,
+                "screenshot_hashes": sh,
+                "elapsed_ms": out["elapsed_ms"],
+                "request_error": out["request_error"],
+                "response_status": out["response"].get("status"),
+                "response": pub,
+                "lease": out.get("lease"),
+                "rails": rails,
+                "layer14": layer14,
+                "pqc_audit": out.get("pqc_audit", {}),
                 "antivirus": antivirus_report,
             }
-            print(f"[job {idx+1}] job_id={out['job_id']} decision={decision} score={v['verification_score']} elapsed_ms={out['elapsed_ms']}")
+            print(
+                f"[job {idx+1}] job_id={out['job_id']} decision={decision} score={v['verification_score']} elapsed_ms={out['elapsed_ms']}"
+            )
 
     layer14_rows = [r["layer14"] for r in results if r is not None and isinstance(r.get("layer14"), dict)]
     summary_layer14 = {
@@ -696,10 +767,24 @@ def main() -> None:
         "centroid": round(sum(float(row.get("centroid", 0.0)) for row in layer14_rows) / max(len(layer14_rows), 1), 4),
         "flux": round(sum(float(row.get("flux", 0.0)) for row in layer14_rows) / max(len(layer14_rows), 1), 4),
         "hf_ratio": round(sum(float(row.get("hf_ratio", 0.0)) for row in layer14_rows) / max(len(layer14_rows), 1), 4),
-        "stability": round(sum(float(row.get("stability", 0.0)) for row in layer14_rows) / max(len(layer14_rows), 1), 4),
-        "anomaly_ratio": round(sum(float(row.get("anomaly_ratio", 0.0)) for row in layer14_rows) / max(len(layer14_rows), 1), 4),
+        "stability": round(
+            sum(float(row.get("stability", 0.0)) for row in layer14_rows) / max(len(layer14_rows), 1), 4
+        ),
+        "anomaly_ratio": round(
+            sum(float(row.get("anomaly_ratio", 0.0)) for row in layer14_rows) / max(len(layer14_rows), 1), 4
+        ),
     }
-    summary = {"run_id": run_id, "kernel_version": a.kernel_version, "profile_id": a.profile_id, "total_jobs": len(jobs), "success_jobs": len([r for r in results if r is not None]), "failed_jobs": len(fails), "failures": fails, "layer14": summary_layer14, "results": results}
+    summary = {
+        "run_id": run_id,
+        "kernel_version": a.kernel_version,
+        "profile_id": a.profile_id,
+        "total_jobs": len(jobs),
+        "success_jobs": len([r for r in results if r is not None]),
+        "failed_jobs": len(fails),
+        "failures": fails,
+        "layer14": summary_layer14,
+        "results": results,
+    }
     op = pathlib.Path(a.output_json) if a.output_json else (root / "summary.json")
     op.parent.mkdir(parents=True, exist_ok=True)
     op.write_text(json.dumps(summary, indent=2), encoding="utf-8")

@@ -38,6 +38,7 @@ from .story_engine import StoryEngine
 #  Lifecycle
 # ---------------------------------------------------------------------------
 
+
 class AgentLifecycleState(Enum):
     SPAWNED = "spawned"
     IN_CURRICULUM = "in_curriculum"
@@ -65,6 +66,7 @@ class AgentRecord:
 #  Cohort
 # ---------------------------------------------------------------------------
 
+
 class Cohort:
     """A group of agents progressing through curriculum together."""
 
@@ -87,14 +89,13 @@ class Cohort:
 
     def active_agents(self) -> List[AgentRecord]:
         return [
-            a for a in self._agents.values()
-            if a.state in (AgentLifecycleState.SPAWNED,
-                           AgentLifecycleState.IN_CURRICULUM)
+            a
+            for a in self._agents.values()
+            if a.state in (AgentLifecycleState.SPAWNED, AgentLifecycleState.IN_CURRICULUM)
         ]
 
     def graduated_agents(self) -> List[AgentRecord]:
-        return [a for a in self._agents.values()
-                if a.state == AgentLifecycleState.GRADUATED]
+        return [a for a in self._agents.values() if a.state == AgentLifecycleState.GRADUATED]
 
     def population_personality_matrix(self) -> List[List[float]]:
         """Return (N, 21) matrix of current personality vectors."""
@@ -131,6 +132,7 @@ class Cohort:
 # ---------------------------------------------------------------------------
 #  Graduation
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class GraduationResult:
@@ -206,16 +208,13 @@ class GraduationCriteria:
         scores["min_diversity"] = min_dist
         if min_dist < self.min_diversity_distance:
             failing.append("low_diversity")
-            recommendations.append(
-                f"Too similar to existing graduate (dist={min_dist:.3f})"
-            )
+            recommendations.append(f"Too similar to existing graduate (dist={min_dist:.3f})")
 
         # Overall
         passed = len(failing) == 0
-        scores["overall"] = sum(
-            1.0 for k in ["curriculum_completion", "consistency", "safety"]
-            if scores.get(k, 0) >= 0.5
-        ) / 3.0
+        scores["overall"] = (
+            sum(1.0 for k in ["curriculum_completion", "consistency", "safety"] if scores.get(k, 0) >= 0.5) / 3.0
+        )
 
         return GraduationResult(
             passed=passed,
@@ -229,7 +228,7 @@ class GraduationCriteria:
         Consistency = autocorrelation of choice-tag distributions across
         recent playthroughs.
         """
-        recent = record.playthroughs[-self.stability_window:]
+        recent = record.playthroughs[-self.stability_window :]
         if len(recent) < 2:
             return 0.0
 
@@ -276,7 +275,7 @@ class GraduationCriteria:
         snapshots = record.agent.personality.snapshots
         if len(snapshots) < 2:
             return 0.0
-        recent = snapshots[-self.stability_window:]
+        recent = snapshots[-self.stability_window :]
         if len(recent) < 2:
             return 0.0
         total_drift = 0.0
@@ -295,9 +294,7 @@ class GraduationCriteria:
         for grad in graduates:
             if grad.agent_id == record.agent_id:
                 continue
-            dist = record.agent.personality.cosine_distance_from(
-                grad.agent.personality.vector
-            )
+            dist = record.agent.personality.cosine_distance_from(grad.agent.personality.vector)
             min_dist = min(min_dist, dist)
         return min_dist
 
@@ -308,8 +305,8 @@ class GraduationCriteria:
         if not keys:
             return 0.0
         dot = sum(a.get(k, 0) * b.get(k, 0) for k in keys)
-        mag_a = math.sqrt(sum(v ** 2 for v in a.values()))
-        mag_b = math.sqrt(sum(v ** 2 for v in b.values()))
+        mag_a = math.sqrt(sum(v**2 for v in a.values()))
+        mag_b = math.sqrt(sum(v**2 for v in b.values()))
         if mag_a < 1e-12 or mag_b < 1e-12:
             return 0.0
         return dot / (mag_a * mag_b)
@@ -318,6 +315,7 @@ class GraduationCriteria:
 # ---------------------------------------------------------------------------
 #  NurseryManager
 # ---------------------------------------------------------------------------
+
 
 class NurseryManager:
     """Top-level orchestrator for agent training through curricula."""
@@ -365,7 +363,7 @@ class NurseryManager:
         base_rng = _rng.Random(seed)
 
         for i in range(self._cohort_size):
-            agent_seed = base_rng.randint(0, 2 ** 31)
+            agent_seed = base_rng.randint(0, 2**31)
 
             if distribution == "diverse_poles":
                 # Create agents clustered around personality archetypes

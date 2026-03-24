@@ -156,7 +156,7 @@ def run_upload(epub_path, dry_run=False, headless=False):
             try:
                 page.wait_for_selector(
                     "text=/uploaded successfully/i, text=/conversion complete/i, text=/manuscript.*processed/i",
-                    timeout=180000
+                    timeout=180000,
                 )
                 print("  ✓ Conversion complete!")
             except Exception:
@@ -202,7 +202,7 @@ def run_upload(epub_path, dry_run=False, headless=False):
                 if publish_btn.is_visible():
                     print("\n  ⚠️  Ready to publish. This will make the update LIVE on Amazon.")
                     confirm = input("  Type 'publish' to confirm: ")
-                    if confirm.strip().lower() == 'publish':
+                    if confirm.strip().lower() == "publish":
                         publish_btn.click()
                         time.sleep(5)
                         print("  ✓ Published! Amazon will review the update.")
@@ -239,12 +239,9 @@ def run_upload(epub_path, dry_run=False, headless=False):
 
 def main():
     parser = argparse.ArgumentParser(description="KDP Auto-Upload")
-    parser.add_argument("--epub", default=str(DEFAULT_EPUB),
-                        help="Path to EPUB file to upload")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Navigate without publishing")
-    parser.add_argument("--headless", action="store_true",
-                        help="Run without visible browser")
+    parser.add_argument("--epub", default=str(DEFAULT_EPUB), help="Path to EPUB file to upload")
+    parser.add_argument("--dry-run", action="store_true", help="Navigate without publishing")
+    parser.add_argument("--headless", action="store_true", help="Run without visible browser")
 
     args = parser.parse_args()
     run_upload(args.epub, args.dry_run, args.headless)

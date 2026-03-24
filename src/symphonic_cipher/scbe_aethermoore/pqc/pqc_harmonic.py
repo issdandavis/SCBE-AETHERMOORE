@@ -155,11 +155,7 @@ def harmonic_key_stretch(
     # Progressive key strengthening through iterated hashing
     # Each iteration incorporates dimension and ratio info
     current = hashlib.shake_256(
-        input_key
-        + salt
-        + info
-        + dimension.to_bytes(2, "big")
-        + int(R * 1000).to_bytes(4, "big")
+        input_key + salt + info + dimension.to_bytes(2, "big") + int(R * 1000).to_bytes(4, "big")
     ).digest(64)
 
     # Apply iterations in batches for efficiency
@@ -167,9 +163,7 @@ def harmonic_key_stretch(
     for batch_start in range(0, actual_iterations, batch_size):
         batch_end = min(batch_start + batch_size, actual_iterations)
         for i in range(batch_start, batch_end):
-            current = hashlib.shake_256(
-                current + i.to_bytes(4, "big") + dimension.to_bytes(1, "big")
-            ).digest(64)
+            current = hashlib.shake_256(current + i.to_bytes(4, "big") + dimension.to_bytes(1, "big")).digest(64)
 
     # Final key extraction
     final_key = hashlib.shake_256(current + b"final" + info).digest(output_length)
@@ -230,9 +224,9 @@ def fast_harmonic_key(
     )
 
     # Single-pass derivation with all parameters
-    derived = hashlib.shake_256(
-        input_key + salt + info + h_bytes + aether_bytes + dimension.to_bytes(1, "big")
-    ).digest(output_length)
+    derived = hashlib.shake_256(input_key + salt + info + h_bytes + aether_bytes + dimension.to_bytes(1, "big")).digest(
+        output_length
+    )
 
     return derived
 
@@ -318,9 +312,7 @@ def create_harmonic_pqc_session(
     if vector_key is not None:
         if len(vector_key) != 6:
             raise ValueError("Vector key must be 6-dimensional")
-        vector_bytes = b"".join(
-            int(v * 1e9).to_bytes(8, "big", signed=True) for v in vector_key
-        )
+        vector_bytes = b"".join(int(v * 1e9).to_bytes(8, "big", signed=True) for v in vector_key)
 
     # Sign the exchange
     sign_data = (
@@ -345,9 +337,7 @@ def create_harmonic_pqc_session(
             base_key=enc_key_bytes,
             dimension=dimension,
             harmonic_ratio=R,
-            effective_security_bits=security_bits(
-                BASE_SECURITY_BITS["Kyber768"], dimension, R
-            ),
+            effective_security_bits=security_bits(BASE_SECURITY_BITS["Kyber768"], dimension, R),
             iteration_count=1,
             salt=session_id,
             info=b"encryption",
@@ -364,9 +354,7 @@ def create_harmonic_pqc_session(
             base_key=mac_key_bytes,
             dimension=dimension,
             harmonic_ratio=R,
-            effective_security_bits=security_bits(
-                BASE_SECURITY_BITS["SHA3-256"], dimension, R
-            ),
+            effective_security_bits=security_bits(BASE_SECURITY_BITS["SHA3-256"], dimension, R),
             iteration_count=1,
             salt=session_id,
             info=b"mac",
@@ -426,9 +414,7 @@ def verify_harmonic_pqc_session(
     # Reconstruct vector bytes
     vector_bytes = b""
     if session.vector_key is not None:
-        vector_bytes = b"".join(
-            int(v * 1e9).to_bytes(8, "big", signed=True) for v in session.vector_key
-        )
+        vector_bytes = b"".join(int(v * 1e9).to_bytes(8, "big", signed=True) for v in session.vector_key)
 
     # Verify signature
     sign_data = (
@@ -443,9 +429,7 @@ def verify_harmonic_pqc_session(
         return None
 
     # Decapsulate shared secret
-    shared_secret = Kyber768.decapsulate(
-        responder_kem_keypair.secret_key, session.ciphertext
-    )
+    shared_secret = Kyber768.decapsulate(responder_kem_keypair.secret_key, session.ciphertext)
 
     # Derive same harmonic-enhanced keys
     if fast_mode:
@@ -543,19 +527,14 @@ class Vector6DKey:
 
     def to_bytes(self) -> bytes:
         """Serialize to bytes."""
-        return b"".join(
-            int(v * 1e9).to_bytes(8, "big", signed=True) for v in self.as_tuple()
-        )
+        return b"".join(int(v * 1e9).to_bytes(8, "big", signed=True) for v in self.as_tuple())
 
     @classmethod
     def from_bytes(cls, data: bytes) -> "Vector6DKey":
         """Deserialize from bytes."""
         if len(data) != 48:  # 6 × 8 bytes
             raise ValueError(f"Invalid vector key bytes length: {len(data)}")
-        values = [
-            int.from_bytes(data[i : i + 8], "big", signed=True) / 1e9
-            for i in range(0, 48, 8)
-        ]
+        values = [int.from_bytes(data[i : i + 8], "big", signed=True) / 1e9 for i in range(0, 48, 8)]
         return cls(*values)
 
     def distance_to(self, other: "Vector6DKey", R: float = DEFAULT_R) -> float:
@@ -640,11 +619,7 @@ def vector_proximity_key(
 
     # Key is derived from both vectors, weighted by proximity
     proximity_factor = 1.0 - (distance / tolerance)
-    combined = (
-        agent_vector.to_bytes()
-        + target_vector.to_bytes()
-        + int(proximity_factor * 1e9).to_bytes(8, "big")
-    )
+    combined = agent_vector.to_bytes() + target_vector.to_bytes() + int(proximity_factor * 1e9).to_bytes(8, "big")
 
     return fast_harmonic_key(
         combined,
@@ -690,9 +665,7 @@ def analyze_harmonic_security(
         "enhancement_bits": enhancement_bits,
         "computational_multiplier": h_value,
         "equivalent_aes": f"AES-{int(eff_bits)}",
-        "quantum_resistance": (
-            "NIST Level 3+" if base_algorithm == "Kyber768" else "varies"
-        ),
+        "quantum_resistance": ("NIST Level 3+" if base_algorithm == "Kyber768" else "varies"),
         "formula": f"S = {base_bits} + {dimension}² × log₂({R}) = {eff_bits:.2f} bits",
     }
 
@@ -719,9 +692,7 @@ def print_security_table(R: float = DEFAULT_R) -> str:
         h = harmonic_scale(d, R)
         log2_h = math.log2(h)
         aes = 128 + int(log2_h)
-        lines.append(
-            f"{d:>3} | {d*d:>4} | {h:>15,.2f} | {log2_h:>10.2f} | AES-{aes:>7}"
-        )
+        lines.append(f"{d:>3} | {d*d:>4} | {h:>15,.2f} | {log2_h:>10.2f} | AES-{aes:>7}")
 
     lines.append("=" * 70)
     lines.append("Base: AES-128 (128 bits)")

@@ -33,9 +33,7 @@ class TestTokenPackages:
             assert TOKEN_PACKAGES[i].price_usd > TOKEN_PACKAGES[i - 1].price_usd
 
     def test_better_rates_for_larger(self):
-        rates = [
-            p.price_usd / (p.tokens + p.bonus_tokens) for p in TOKEN_PACKAGES
-        ]
+        rates = [p.price_usd / (p.tokens + p.bonus_tokens) for p in TOKEN_PACKAGES]
         for i in range(1, len(rates)):
             assert rates[i] < rates[i - 1]
 

@@ -87,5 +87,13 @@ def test_run_scratch_cell_reports_success_when_marker_appears() -> None:
 def test_runtime_attached_uses_kernel_state_and_connection_timestamp() -> None:
     assert smoke._runtime_attached({"usage_visible": True, "kernel_state": "connect"}) is True
     assert smoke._runtime_attached({"usage_visible": False, "kernel_state": "connected"}) is True
-    assert smoke._runtime_attached({"usage_visible": False, "kernel_state": "connect", "kernel_last_connected_time_ms": 1}) is True
-    assert smoke._runtime_attached({"usage_visible": False, "kernel_state": "connect", "kernel_last_connected_time_ms": -1}) is False
+    assert (
+        smoke._runtime_attached({"usage_visible": False, "kernel_state": "connect", "kernel_last_connected_time_ms": 1})
+        is True
+    )
+    assert (
+        smoke._runtime_attached(
+            {"usage_visible": False, "kernel_state": "connect", "kernel_last_connected_time_ms": -1}
+        )
+        is False
+    )

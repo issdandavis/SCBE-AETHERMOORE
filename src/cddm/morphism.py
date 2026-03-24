@@ -58,8 +58,7 @@ class Morphism:
         """Apply the morphism: validate src, transform, validate dst."""
         if not self.src.contains(x):
             raise MorphismError(
-                f"Input {x} out of {self.src.name} bounds "
-                f"[{self.src.bounds[0]}, {self.src.bounds[1]}]"
+                f"Input {x} out of {self.src.name} bounds " f"[{self.src.bounds[0]}, {self.src.bounds[1]}]"
             )
         y = self.func(x)
         if not self.dst.contains(y):
@@ -117,8 +116,7 @@ class Morphism:
             # Allow if bounds overlap sufficiently
             if self.dst.name != other.src.name:
                 raise MorphismError(
-                    f"Cannot compose: {self.name} dst={self.dst.name} "
-                    f"!= {other.name} src={other.src.name}"
+                    f"Cannot compose: {self.name} dst={self.dst.name} " f"!= {other.name} src={other.src.name}"
                 )
 
         f1, f2 = self.func, other.func

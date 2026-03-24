@@ -43,6 +43,7 @@ import re
 # Tongue Definitions (Protocol Domains)
 # =============================================================================
 
+
 class ProtocolTongue(Enum):
     """
     The Six Sacred Tongues as protocol domains.
@@ -55,6 +56,7 @@ class ProtocolTongue(Enum):
     - UM: Security & Secrets (encryption, access control)
     - DR: Types & Schema (data structures, validation)
     """
+
     KO = "KO"  # Kor'aelin - Control Flow
     AV = "AV"  # Avali - I/O & Messaging
     RU = "RU"  # Runethic - Policy & Constraints
@@ -79,6 +81,7 @@ TONGUE_KEYS = {
 # Tier Classification
 # =============================================================================
 
+
 class OperationTier(Enum):
     """
     Tiered operation classification by risk level.
@@ -86,6 +89,7 @@ class OperationTier(Enum):
     Security scales exponentially: S(N) = B * R^(N^2)
     where B = base bits (256), R = harmonic ratio (1.5), N = tongue count
     """
+
     TIER_1 = 1  # Single tongue (KO) - Basic coordination
     TIER_2 = 2  # Dual tongue (KO+RU) - State modifications
     TIER_3 = 3  # Triple tongue (KO+RU+UM) - Security operations
@@ -113,9 +117,11 @@ TIER_SECURITY_MULTIPLIERS = {
 # Spelltext Parser
 # =============================================================================
 
+
 @dataclass
 class SpelltextData:
     """Parsed spelltext components."""
+
     command: str
     origin: str
     sequence: int
@@ -130,50 +136,40 @@ def parse_spelltext(spelltext: str) -> SpelltextData:
     Format: COMMAND<origin>TONGUE</origin><seq>N</seq><ts>ISO8601</ts>
     """
     # Extract command (first word)
-    command_match = re.match(r'^(\w+)', spelltext)
+    command_match = re.match(r"^(\w+)", spelltext)
     command = command_match.group(1) if command_match else "UNKNOWN"
 
     # Extract origin tongue
-    origin_match = re.search(r'<origin>(\w+)</origin>', spelltext)
+    origin_match = re.search(r"<origin>(\w+)</origin>", spelltext)
     origin = origin_match.group(1) if origin_match else "KO"
 
     # Extract sequence number
-    seq_match = re.search(r'<seq>(\d+)</seq>', spelltext)
+    seq_match = re.search(r"<seq>(\d+)</seq>", spelltext)
     sequence = int(seq_match.group(1)) if seq_match else 0
 
     # Extract timestamp
-    ts_match = re.search(r'<ts>([^<]+)</ts>', spelltext)
+    ts_match = re.search(r"<ts>([^<]+)</ts>", spelltext)
     if ts_match:
-        timestamp = datetime.fromisoformat(ts_match.group(1).replace('Z', '+00:00'))
+        timestamp = datetime.fromisoformat(ts_match.group(1).replace("Z", "+00:00"))
     else:
         timestamp = datetime.utcnow()
 
     # Extract any additional context
     context = {}
-    context_matches = re.findall(r'<(\w+)>([^<]+)</\1>', spelltext)
+    context_matches = re.findall(r"<(\w+)>([^<]+)</\1>", spelltext)
     for key, value in context_matches:
-        if key not in ['origin', 'seq', 'ts']:
+        if key not in ["origin", "seq", "ts"]:
             context[key] = value
 
-    return SpelltextData(
-        command=command,
-        origin=origin,
-        sequence=sequence,
-        timestamp=timestamp,
-        context=context
-    )
+    return SpelltextData(command=command, origin=origin, sequence=sequence, timestamp=timestamp, context=context)
 
 
 def build_spelltext(
-    command: str,
-    origin: ProtocolTongue,
-    sequence: int,
-    timestamp: Optional[datetime] = None,
-    **context
+    command: str, origin: ProtocolTongue, sequence: int, timestamp: Optional[datetime] = None, **context
 ) -> str:
     """Build spelltext from components."""
     ts = timestamp or datetime.utcnow()
-    ts_str = ts.strftime('%Y-%m-%dT%H:%M:%SZ')
+    ts_str = ts.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     parts = [
         command,
@@ -185,18 +181,20 @@ def build_spelltext(
     for key, value in context.items():
         parts.append(f"<{key}>{value}</{key}>")
 
-    return ''.join(parts)
+    return "".join(parts)
 
 
 # =============================================================================
 # RWP2 Envelope
 # =============================================================================
 
+
 @dataclass
 class RWP2Envelope:
     """
     Hybrid envelope with spelltext + Base64 payload + multi-tongue signatures.
     """
+
     # Core fields
     version: str = "2"
     spelltext: str = ""
@@ -223,7 +221,7 @@ class RWP2Envelope:
     @property
     def payload_b64(self) -> str:
         """Base64URL encoded payload."""
-        return base64.urlsafe_b64encode(self.payload).decode('ascii')
+        return base64.urlsafe_b64encode(self.payload).decode("ascii")
 
     @payload_b64.setter
     def payload_b64(self, value: str):
@@ -260,7 +258,7 @@ class RWP2Envelope:
         return result
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> 'RWP2Envelope':
+    def from_dict(cls, d: Dict[str, Any]) -> "RWP2Envelope":
         """Deserialize from dictionary."""
         # Extract signatures
         signatures = {}
@@ -281,7 +279,7 @@ class RWP2Envelope:
             timestamp_ms=d.get("ts", 0),
             kid=d.get("kid", ""),
             tier=OperationTier(d.get("tier", 1)),
-            signatures=signatures
+            signatures=signatures,
         )
 
         # Decode payload
@@ -295,7 +293,7 @@ class RWP2Envelope:
         return json.dumps(self.to_dict(), sort_keys=True)
 
     @classmethod
-    def from_json(cls, json_str: str) -> 'RWP2Envelope':
+    def from_json(cls, json_str: str) -> "RWP2Envelope":
         """Deserialize from JSON string."""
         return cls.from_dict(json.loads(json_str))
 
@@ -303,6 +301,7 @@ class RWP2Envelope:
 # =============================================================================
 # Signature Engine
 # =============================================================================
+
 
 class SignatureEngine:
     """
@@ -321,19 +320,15 @@ class SignatureEngine:
         Includes: spelltext + payload + aad + nonce + timestamp
         """
         parts = [
-            envelope.spelltext.encode('utf-8'),
+            envelope.spelltext.encode("utf-8"),
             envelope.payload,
-            envelope.aad.encode('utf-8'),
-            envelope.nonce.encode('utf-8'),
-            str(envelope.timestamp_ms).encode('utf-8'),
+            envelope.aad.encode("utf-8"),
+            envelope.nonce.encode("utf-8"),
+            str(envelope.timestamp_ms).encode("utf-8"),
         ]
-        return b'|'.join(parts)
+        return b"|".join(parts)
 
-    def sign(
-        self,
-        envelope: RWP2Envelope,
-        tongues: Set[ProtocolTongue]
-    ) -> RWP2Envelope:
+    def sign(self, envelope: RWP2Envelope, tongues: Set[ProtocolTongue]) -> RWP2Envelope:
         """
         Sign envelope with specified tongues.
 
@@ -358,13 +353,11 @@ class SignatureEngine:
             nonce=envelope.nonce,
             timestamp_ms=envelope.timestamp_ms,
             kid=envelope.kid,
-            tier=envelope.tier
+            tier=envelope.tier,
         )
 
     def verify(
-        self,
-        envelope: RWP2Envelope,
-        required_tongues: Optional[Set[ProtocolTongue]] = None
+        self, envelope: RWP2Envelope, required_tongues: Optional[Set[ProtocolTongue]] = None
     ) -> Tuple[bool, Dict[ProtocolTongue, bool]]:
         """
         Verify envelope signatures.
@@ -404,6 +397,7 @@ class SignatureEngine:
 # Replay Protection
 # =============================================================================
 
+
 class ReplayProtector:
     """
     Prevents replay attacks by tracking used nonces.
@@ -411,11 +405,7 @@ class ReplayProtector:
     Nonce + timestamp pairs are valid for single use only.
     """
 
-    def __init__(
-        self,
-        max_age_seconds: int = 300,  # 5 minutes
-        max_cache_size: int = 10000
-    ):
+    def __init__(self, max_age_seconds: int = 300, max_cache_size: int = 10000):  # 5 minutes
         self.max_age = max_age_seconds
         self.max_cache = max_cache_size
         self.used_nonces: Dict[str, int] = {}  # nonce -> timestamp_ms
@@ -472,6 +462,7 @@ class ReplayProtector:
 # Envelope Factory
 # =============================================================================
 
+
 class EnvelopeFactory:
     """
     Factory for creating and validating RWP2 envelopes.
@@ -483,13 +474,7 @@ class EnvelopeFactory:
         self.sequence_counter = 0
 
     def create(
-        self,
-        command: str,
-        payload: bytes,
-        origin_tongue: ProtocolTongue,
-        tier: OperationTier,
-        aad: str = "",
-        **context
+        self, command: str, payload: bytes, origin_tongue: ProtocolTongue, tier: OperationTier, aad: str = "", **context
     ) -> RWP2Envelope:
         """
         Create a signed RWP2 envelope.
@@ -497,20 +482,11 @@ class EnvelopeFactory:
         self.sequence_counter += 1
 
         # Build spelltext
-        spelltext = build_spelltext(
-            command=command,
-            origin=origin_tongue,
-            sequence=self.sequence_counter,
-            **context
-        )
+        spelltext = build_spelltext(command=command, origin=origin_tongue, sequence=self.sequence_counter, **context)
 
         # Create envelope
         envelope = RWP2Envelope(
-            spelltext=spelltext,
-            payload=payload,
-            aad=aad,
-            tier=tier,
-            kid=f"v1:{origin_tongue.value.lower()}_master"
+            spelltext=spelltext, payload=payload, aad=aad, tier=tier, kid=f"v1:{origin_tongue.value.lower()}_master"
         )
 
         # Sign with required tongues for tier
@@ -545,6 +521,7 @@ class EnvelopeFactory:
 # Demo
 # =============================================================================
 
+
 def demo():
     """Demonstrate RWP2 envelope system."""
     print("=" * 70)
@@ -563,7 +540,7 @@ def demo():
         payload=payload1,
         origin_tongue=ProtocolTongue.KO,
         tier=OperationTier.TIER_1,
-        aad="agent=alpha;mission=recon"
+        aad="agent=alpha;mission=recon",
     )
 
     print(f"  Spelltext: {envelope1.spelltext}")
@@ -588,7 +565,7 @@ def demo():
         payload=payload3,
         origin_tongue=ProtocolTongue.UM,
         tier=OperationTier.TIER_3,
-        aad="critical=true;approval_id=9f8e7d6c"
+        aad="critical=true;approval_id=9f8e7d6c",
     )
 
     print(f"  Spelltext: {envelope3.spelltext}")
@@ -628,7 +605,7 @@ def demo():
         payload=envelope1.payload,
         signatures=envelope1.signatures,
         nonce=envelope1.nonce,
-        timestamp_ms=envelope1.timestamp_ms
+        timestamp_ms=envelope1.timestamp_ms,
     )
     replay_valid2, reason = factory.replay_protector.is_valid(replay_envelope)
     print(f"  Replay attempt: {'ACCEPTED' if replay_valid2 else 'REJECTED'} ({reason})")
@@ -652,7 +629,7 @@ def demo():
         signatures=envelope3.signatures,
         nonce=envelope3.nonce,
         timestamp_ms=envelope3.timestamp_ms,
-        tier=envelope3.tier
+        tier=envelope3.tier,
     )
     tamper_valid, tamper_results = factory.signature_engine.verify(tampered)
     print(f"  Tampered envelope: {'VALID' if tamper_valid else 'INVALID (tampering detected)'}")

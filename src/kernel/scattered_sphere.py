@@ -31,12 +31,12 @@ PHI = 1.618033988749895
 
 # Sacred Tongue longitudes (radians)
 TONGUE_LONGITUDES = {
-    "KO": 0.0,                    # 0 deg
-    "AV": math.pi / 3,            # 60 deg
-    "RU": 2 * math.pi / 3,        # 120 deg
-    "CA": math.pi,                 # 180 deg
-    "UM": 4 * math.pi / 3,        # 240 deg
-    "DR": 5 * math.pi / 3,        # 300 deg
+    "KO": 0.0,  # 0 deg
+    "AV": math.pi / 3,  # 60 deg
+    "RU": 2 * math.pi / 3,  # 120 deg
+    "CA": math.pi,  # 180 deg
+    "UM": 4 * math.pi / 3,  # 240 deg
+    "DR": 5 * math.pi / 3,  # 300 deg
 }
 
 TONGUE_KEYS = list(TONGUE_LONGITUDES.keys())
@@ -45,21 +45,22 @@ TONGUE_KEYS = list(TONGUE_LONGITUDES.keys())
 TONGUE_WEIGHTS = {
     "KO": 1.0,
     "AV": PHI,
-    "RU": PHI ** 2,
-    "CA": PHI ** 3,
-    "UM": PHI ** 4,
-    "DR": PHI ** 5,
+    "RU": PHI**2,
+    "CA": PHI**3,
+    "UM": PHI**4,
+    "DR": PHI**5,
 }
 
 
 @dataclass
 class LatticePoint:
     """A single scattered point on the attention sphere."""
+
     value: float
     tongue: str
-    r: float          # radius (layer depth)
-    theta: float      # longitude (tongue angle)
-    phi: float         # latitude (phase angle)
+    r: float  # radius (layer depth)
+    theta: float  # longitude (tongue angle)
+    phi: float  # latitude (phase angle)
     orig_row: int
     orig_col: int
     transmission: float = 0.0  # T from PhaseTunnelGate
@@ -78,6 +79,7 @@ class LatticePoint:
 @dataclass
 class BandResult:
     """Result of a band-of-focus query."""
+
     phi_wall: float
     bandwidth: float
     resonant_count: int
@@ -104,8 +106,7 @@ class ScatteredAttentionSphere:
         self.lattice: list[LatticePoint] = []
         self._layers: list[str] = []  # track which matrices were scattered
 
-    def scatter(self, weight_matrix: np.ndarray, layer_name: str = "default",
-                layer_radius: float = 1.0) -> int:
+    def scatter(self, weight_matrix: np.ndarray, layer_name: str = "default", layer_radius: float = 1.0) -> int:
         """
         Fractalize a 2D weight matrix and scatter onto the sphere.
 
@@ -162,8 +163,7 @@ class ScatteredAttentionSphere:
         self._layers.append(layer_name)
         return count
 
-    def scatter_qkv(self, q_matrix: np.ndarray, k_matrix: np.ndarray,
-                    v_matrix: np.ndarray) -> dict[str, int]:
+    def scatter_qkv(self, q_matrix: np.ndarray, k_matrix: np.ndarray, v_matrix: np.ndarray) -> dict[str, int]:
         """Scatter Q, K, V matrices as concentric shells."""
         return {
             "Q": self.scatter(q_matrix, "Q", layer_radius=1.0),

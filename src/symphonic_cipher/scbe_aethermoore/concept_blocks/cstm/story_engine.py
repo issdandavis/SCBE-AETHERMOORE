@@ -33,19 +33,19 @@ from .models import Choice, Scene, StoryGraph, ValidationError
 #  Parser protocol
 # ---------------------------------------------------------------------------
 
+
 class StoryParser(Protocol):
     """All parsers implement this interface."""
 
-    def parse(self, source: Union[str, Path, IO]) -> StoryGraph:
-        ...
+    def parse(self, source: Union[str, Path, IO]) -> StoryGraph: ...
 
-    def supported_extensions(self) -> Tuple[str, ...]:
-        ...
+    def supported_extensions(self) -> Tuple[str, ...]: ...
 
 
 # ---------------------------------------------------------------------------
 #  Condition evaluator (safe restricted expressions)
 # ---------------------------------------------------------------------------
+
 
 class ConditionEvaluator:
     """
@@ -62,11 +62,27 @@ class ConditionEvaluator:
     """
 
     _ALLOWED_NODES = {
-        ast.Expression, ast.BoolOp, ast.And, ast.Or,
-        ast.Compare, ast.Name, ast.Constant, ast.Load,
-        ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE,
-        ast.UnaryOp, ast.Not, ast.USub,
-        ast.BinOp, ast.Add, ast.Sub, ast.Mult,
+        ast.Expression,
+        ast.BoolOp,
+        ast.And,
+        ast.Or,
+        ast.Compare,
+        ast.Name,
+        ast.Constant,
+        ast.Load,
+        ast.Eq,
+        ast.NotEq,
+        ast.Lt,
+        ast.LtE,
+        ast.Gt,
+        ast.GtE,
+        ast.UnaryOp,
+        ast.Not,
+        ast.USub,
+        ast.BinOp,
+        ast.Add,
+        ast.Sub,
+        ast.Mult,
     }
 
     _CMP_OPS = {
@@ -138,6 +154,7 @@ class ConditionEvaluator:
 #  JSON parser
 # ---------------------------------------------------------------------------
 
+
 class JSONParser:
     """
     Parse the native CSTM JSON schema::
@@ -189,15 +206,17 @@ class JSONParser:
         for s in data.get("scenes", []):
             choices = []
             for c in s.get("choices", []):
-                choices.append(Choice(
-                    choice_id=c.get("choice_id", str(uuid.uuid4())[:8]),
-                    label=c["label"],
-                    next_scene_id=c["next_scene_id"],
-                    condition=c.get("condition"),
-                    stat_effects=c.get("stat_effects", {}),
-                    tags=frozenset(c.get("tags", [])),
-                    difficulty=c.get("difficulty", 0.0),
-                ))
+                choices.append(
+                    Choice(
+                        choice_id=c.get("choice_id", str(uuid.uuid4())[:8]),
+                        label=c["label"],
+                        next_scene_id=c["next_scene_id"],
+                        condition=c.get("condition"),
+                        stat_effects=c.get("stat_effects", {}),
+                        tags=frozenset(c.get("tags", [])),
+                        difficulty=c.get("difficulty", 0.0),
+                    )
+                )
             scene = Scene(
                 scene_id=s["scene_id"],
                 title=s.get("title", s["scene_id"]),
@@ -217,8 +236,8 @@ class JSONParser:
 #  Twee / Twine parser
 # ---------------------------------------------------------------------------
 
-_PASSAGE_RE = re.compile(r'^::\s*(.+?)\s*(?:\[(.*?)\])?\s*$', re.MULTILINE)
-_LINK_RE = re.compile(r'\[\[([^\]]+)\]\]')
+_PASSAGE_RE = re.compile(r"^::\s*(.+?)\s*(?:\[(.*?)\])?\s*$", re.MULTILINE)
+_LINK_RE = re.compile(r"\[\[([^\]]+)\]\]")
 
 
 class TweeParser:
@@ -260,7 +279,7 @@ class TweeParser:
             choices = self._extract_choices(body, scene_id)
 
             # Strip link markup from display text
-            clean_text = _LINK_RE.sub('', body).strip()
+            clean_text = _LINK_RE.sub("", body).strip()
 
             is_exit = len(choices) == 0
             is_entry = first_passage
@@ -311,24 +330,27 @@ class TweeParser:
 
             target_id = self._slugify(target)
             choice_id = f"{parent_id}_to_{target_id}"
-            choices.append(Choice(
-                choice_id=choice_id,
-                label=label,
-                next_scene_id=target_id,
-            ))
+            choices.append(
+                Choice(
+                    choice_id=choice_id,
+                    label=label,
+                    next_scene_id=target_id,
+                )
+            )
         return choices
 
     @staticmethod
     def _slugify(title: str) -> str:
         """Convert passage title to a safe scene_id."""
         s = title.lower().strip()
-        s = re.sub(r'[^a-z0-9]+', '_', s)
-        return s.strip('_')
+        s = re.sub(r"[^a-z0-9]+", "_", s)
+        return s.strip("_")
 
 
 # ---------------------------------------------------------------------------
 #  StoryEngine — main orchestrator
 # ---------------------------------------------------------------------------
+
 
 class StoryEngine:
     """
@@ -376,6 +398,7 @@ class StoryEngine:
     def load_from_string(self, text: str, fmt: str = "json", story_id: Optional[str] = None) -> StoryGraph:
         """Parse a story from a string.  *fmt* is 'json' or 'twee'."""
         import io
+
         ext = f".{fmt}"
         parser = self._parsers.get(ext)
         if parser is None:

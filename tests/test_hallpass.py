@@ -41,18 +41,30 @@ from src.fleet.skill_card_forge import SkillCard, Deck
 
 
 _CARD_TEMPLATES = [
-    ("web-scraper", "Skill", "Offensive", 300, 3, 2,
-     "browse navigate search web scrape urls", ["browser"]),
-    ("data-processor", "Skill", "Support", 250, 4, 1,
-     "process transform data analyze compute", ["data"]),
-    ("governance-gate", "Defense", "Defensive", 400, 5, 3,
-     "governance safety quarantine deny audit gate", ["governance"]),
-    ("fleet-deployer", "Agent", "Orchestrator", 500, 6, 4,
-     "deploy orchestrate fleet coordinate multi-agent dispatch", ["deploy"]),
-    ("hf-publisher", "Workflow", "Offensive", 350, 3, 2,
-     "publish deploy huggingface push dataset model", ["publish"]),
-    ("entropy-monitor", "Skill", "Arcane", 600, 7, 3,
-     "entropy quantum geometry manifold sacred tongue", ["entropy"]),
+    ("web-scraper", "Skill", "Offensive", 300, 3, 2, "browse navigate search web scrape urls", ["browser"]),
+    ("data-processor", "Skill", "Support", 250, 4, 1, "process transform data analyze compute", ["data"]),
+    (
+        "governance-gate",
+        "Defense",
+        "Defensive",
+        400,
+        5,
+        3,
+        "governance safety quarantine deny audit gate",
+        ["governance"],
+    ),
+    (
+        "fleet-deployer",
+        "Agent",
+        "Orchestrator",
+        500,
+        6,
+        4,
+        "deploy orchestrate fleet coordinate multi-agent dispatch",
+        ["deploy"],
+    ),
+    ("hf-publisher", "Workflow", "Offensive", 350, 3, 2, "publish deploy huggingface push dataset model", ["publish"]),
+    ("entropy-monitor", "Skill", "Arcane", 600, 7, 3, "entropy quantum geometry manifold sacred tongue", ["entropy"]),
 ]
 
 
@@ -61,17 +73,26 @@ def _make_cards(n: int = 6) -> list:
     cards = []
     for i in range(min(n, len(_CARD_TEMPLATES))):
         name, ctype, syn, power, comp, scope, desc, tags = _CARD_TEMPLATES[i]
-        cards.append(SkillCard(
-            name=name, card_id=f"t{i}", card_type=ctype, synergy=syn,
-            power=power, complexity=comp, scope=scope,
-            description=desc, tags=tags,
-        ))
+        cards.append(
+            SkillCard(
+                name=name,
+                card_id=f"t{i}",
+                card_type=ctype,
+                synergy=syn,
+                power=power,
+                complexity=comp,
+                scope=scope,
+                description=desc,
+                tags=tags,
+            )
+        )
     return cards
 
 
 # ============================================================
 # PHDM Polyhedra Tests
 # ============================================================
+
 
 class TestPolyhedra:
     """Test the 16 PHDM polyhedra are correctly defined."""
@@ -121,6 +142,7 @@ class TestPolyhedra:
 # Edge Penalty Tests
 # ============================================================
 
+
 class TestEdgePenalties:
     """Test edge transition penalties match PHDM spec."""
 
@@ -146,6 +168,7 @@ class TestEdgePenalties:
 # ============================================================
 # Card → Polyhedron Mapping Tests
 # ============================================================
+
 
 class TestCardMapping:
     """Test that SkillCards map to correct polyhedra."""
@@ -204,6 +227,7 @@ class TestCardMapping:
 # Hamiltonian Path Tests
 # ============================================================
 
+
 class TestHamiltonianPath:
     """Test Hamiltonian path finding."""
 
@@ -257,6 +281,7 @@ class TestHamiltonianPath:
 # Face Projection Tests
 # ============================================================
 
+
 class TestFaceProjection:
     """Test face projection reduces context cost."""
 
@@ -306,6 +331,7 @@ class TestFaceProjection:
 # Tongue Phase Classification Tests
 # ============================================================
 
+
 class TestTongueClassification:
     def test_publish_is_flow(self):
         assert classify_tongue_phase("publish content to all platforms") == 0  # KO=Flow
@@ -329,6 +355,7 @@ class TestTongueClassification:
 # ============================================================
 # Trust Tube + Harmonic Wall Tests
 # ============================================================
+
 
 class TestHarmonicWall:
     """Test the phi^(d^2) barrier function."""
@@ -359,7 +386,7 @@ class TestHarmonicWall:
     def test_phi_squared_at_distance_sqrt2(self):
         """At d=sqrt(2), cost should be phi^2."""
         cost = harmonic_wall_cost(math.sqrt(2))
-        expected = PHI ** 2
+        expected = PHI**2
         assert abs(cost - expected) < 0.01
 
     def test_distance_3_blocks(self):
@@ -390,6 +417,7 @@ class TestHyperbolicDistance:
 # HallPass Compiler Tests
 # ============================================================
 
+
 class TestHallPassCompiler:
     """End-to-end tests for the HallPass system."""
 
@@ -397,30 +425,72 @@ class TestHallPassCompiler:
     def sample_cards(self) -> list:
         """Create a diverse set of test cards."""
         return [
-            SkillCard(name="web-scraper", card_id="a1", card_type="Skill",
-                      synergy="Offensive", power=300, complexity=3, scope=2,
-                      description="browse navigate search web scrape urls",
-                      tags=["browser", "scrape"]),
-            SkillCard(name="data-processor", card_id="a2", card_type="Skill",
-                      synergy="Support", power=250, complexity=4, scope=1,
-                      description="process transform data analyze compute",
-                      tags=["data", "transform"]),
-            SkillCard(name="governance-gate", card_id="a3", card_type="Defense",
-                      synergy="Defensive", power=400, complexity=5, scope=3,
-                      description="governance safety quarantine deny audit gate",
-                      tags=["governance", "security"]),
-            SkillCard(name="fleet-deployer", card_id="a4", card_type="Agent",
-                      synergy="Orchestrator", power=500, complexity=6, scope=4,
-                      description="deploy orchestrate fleet coordinate multi-agent dispatch",
-                      tags=["deploy", "fleet"]),
-            SkillCard(name="hf-publisher", card_id="a5", card_type="Workflow",
-                      synergy="Offensive", power=350, complexity=3, scope=2,
-                      description="publish deploy huggingface push dataset model",
-                      tags=["publish", "huggingface"]),
-            SkillCard(name="entropy-monitor", card_id="a6", card_type="Skill",
-                      synergy="Arcane", power=600, complexity=7, scope=3,
-                      description="entropy quantum geometry manifold sacred tongue",
-                      tags=["entropy", "geometry"]),
+            SkillCard(
+                name="web-scraper",
+                card_id="a1",
+                card_type="Skill",
+                synergy="Offensive",
+                power=300,
+                complexity=3,
+                scope=2,
+                description="browse navigate search web scrape urls",
+                tags=["browser", "scrape"],
+            ),
+            SkillCard(
+                name="data-processor",
+                card_id="a2",
+                card_type="Skill",
+                synergy="Support",
+                power=250,
+                complexity=4,
+                scope=1,
+                description="process transform data analyze compute",
+                tags=["data", "transform"],
+            ),
+            SkillCard(
+                name="governance-gate",
+                card_id="a3",
+                card_type="Defense",
+                synergy="Defensive",
+                power=400,
+                complexity=5,
+                scope=3,
+                description="governance safety quarantine deny audit gate",
+                tags=["governance", "security"],
+            ),
+            SkillCard(
+                name="fleet-deployer",
+                card_id="a4",
+                card_type="Agent",
+                synergy="Orchestrator",
+                power=500,
+                complexity=6,
+                scope=4,
+                description="deploy orchestrate fleet coordinate multi-agent dispatch",
+                tags=["deploy", "fleet"],
+            ),
+            SkillCard(
+                name="hf-publisher",
+                card_id="a5",
+                card_type="Workflow",
+                synergy="Offensive",
+                power=350,
+                complexity=3,
+                scope=2,
+                description="publish deploy huggingface push dataset model",
+                tags=["publish", "huggingface"],
+            ),
+            SkillCard(
+                name="entropy-monitor",
+                card_id="a6",
+                card_type="Skill",
+                synergy="Arcane",
+                power=600,
+                complexity=7,
+                scope=3,
+                description="entropy quantum geometry manifold sacred tongue",
+                tags=["entropy", "geometry"],
+            ),
         ]
 
     def test_compile_produces_hallpass(self, sample_cards):
@@ -509,17 +579,14 @@ class TestHallPassCompiler:
     def test_pass_id_deterministic(self, sample_cards):
         """Same task + same cards → same pass ID."""
         compiler = HallPassCompiler()
-        hp1 = compiler.compile("publish data", sample_cards, max_cards=3,
-                               workflow_name="test-pass")
-        hp2 = compiler.compile("publish data", sample_cards, max_cards=3,
-                               workflow_name="test-pass")
+        hp1 = compiler.compile("publish data", sample_cards, max_cards=3, workflow_name="test-pass")
+        hp2 = compiler.compile("publish data", sample_cards, max_cards=3, workflow_name="test-pass")
         assert hp1.pass_id == hp2.pass_id
 
     def test_ten_agents_same_pass(self, sample_cards):
         """10 agents with the same HallPass get identical corridors."""
         compiler = HallPassCompiler()
-        hp = compiler.compile("deploy fleet", sample_cards, max_cards=4,
-                              workflow_name="fleet-deploy")
+        hp = compiler.compile("deploy fleet", sample_cards, max_cards=4, workflow_name="fleet-deploy")
         # Simulate 10 agents reading the same pass
         for agent_num in range(10):
             corridor_ids = [n.card_id for n in hp.corridor]
@@ -539,6 +606,7 @@ class TestHallPassCompiler:
 # ============================================================
 # Integration: Real Deck Tests
 # ============================================================
+
 
 class TestRealDeck:
     """Test with the actual master deck if available."""
@@ -609,6 +677,7 @@ class TestHallPassDispatcher:
     def tmp_switchboard(self, tmp_path):
         """Create a temporary switchboard backed by a temp SQLite DB."""
         from hydra.switchboard import Switchboard
+
         db_path = str(tmp_path / "test_switchboard.db")
         return Switchboard(db_path=db_path)
 
@@ -690,14 +759,10 @@ class TestHallPassDispatcher:
         # Claim all tasks and complete them
         completed = 0
         for _ in range(sample_hallpass.node_count + 1):
-            claimed = tmp_switchboard.claim_task(
-                "worker-1", ["skill", "agent", "workflow", "tool", "defense"]
-            )
+            claimed = tmp_switchboard.claim_task("worker-1", ["skill", "agent", "workflow", "tool", "defense"])
             if claimed is None:
                 break
-            ok = tmp_switchboard.complete_task(
-                claimed["task_id"], "worker-1", {"status": "ok"}
-            )
+            ok = tmp_switchboard.complete_task(claimed["task_id"], "worker-1", {"status": "ok"})
             assert ok
             completed += 1
         assert completed == sample_hallpass.node_count

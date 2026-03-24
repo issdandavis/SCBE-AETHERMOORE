@@ -100,14 +100,14 @@ huggingface-hub
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Update AI Hub Space')
-    parser.add_argument('--dataset', required=True, help='HF dataset repo id')
-    parser.add_argument('--space', required=True, help='HF space repo id')
+    parser = argparse.ArgumentParser(description="Update AI Hub Space")
+    parser.add_argument("--dataset", required=True, help="HF dataset repo id")
+    parser.add_argument("--space", required=True, help="HF space repo id")
     args = parser.parse_args()
 
-    token = os.environ.get('HF_TOKEN')
+    token = os.environ.get("HF_TOKEN")
     if not token:
-        raise ValueError('HF_TOKEN environment variable required')
+        raise ValueError("HF_TOKEN environment variable required")
 
     login(token=token)
     api = HfApi()
@@ -115,28 +115,28 @@ def main():
     # Generate app.py with dataset reference
     app_code = GRADIO_APP.format(dataset_id=args.dataset)
 
-    print(f'Updating Space {args.space} with dataset reference {args.dataset}...')
+    print(f"Updating Space {args.space} with dataset reference {args.dataset}...")
 
     # Upload app.py
     api.upload_file(
         path_or_fileobj=app_code.encode(),
-        path_in_repo='app.py',
+        path_in_repo="app.py",
         repo_id=args.space,
-        repo_type='space',
-        commit_message=f'Update AI Hub with latest dataset reference'
+        repo_type="space",
+        commit_message=f"Update AI Hub with latest dataset reference",
     )
 
     # Upload requirements.txt
     api.upload_file(
         path_or_fileobj=REQUIREMENTS.encode(),
-        path_in_repo='requirements.txt',
+        path_in_repo="requirements.txt",
         repo_id=args.space,
-        repo_type='space',
-        commit_message='Update requirements'
+        repo_type="space",
+        commit_message="Update requirements",
     )
 
-    print(f'AI Hub Space updated: https://huggingface.co/spaces/{args.space}')
+    print(f"AI Hub Space updated: https://huggingface.co/spaces/{args.space}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

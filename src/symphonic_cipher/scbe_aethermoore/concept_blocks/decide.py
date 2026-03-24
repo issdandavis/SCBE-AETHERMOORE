@@ -32,6 +32,7 @@ from .base import BlockResult, BlockStatus, ConceptBlock
 
 # -- node status -------------------------------------------------------------
 
+
 class NodeStatus(Enum):
     SUCCESS = "success"
     FAILURE = "failure"
@@ -39,6 +40,7 @@ class NodeStatus(Enum):
 
 
 # -- blackboard --------------------------------------------------------------
+
 
 class Blackboard:
     """Shared data store for tree nodes."""
@@ -61,6 +63,7 @@ class Blackboard:
 
 # -- tree nodes --------------------------------------------------------------
 
+
 class TreeNode(ABC):
     """Base class for all behaviour-tree nodes."""
 
@@ -68,8 +71,7 @@ class TreeNode(ABC):
         self.name = name
 
     @abstractmethod
-    def tick(self, bb: Blackboard) -> NodeStatus:
-        ...
+    def tick(self, bb: Blackboard) -> NodeStatus: ...
 
     def reset(self) -> None:
         pass
@@ -136,6 +138,7 @@ class Selector(TreeNode):
 
 
 # -- concept block wrapper ---------------------------------------------------
+
 
 class DecideBlock(ConceptBlock):
     """Concept block wrapping a behaviour tree.

@@ -132,7 +132,9 @@ def main():
             continue
 
         alt = f"{product['title']} product image"
-        print(f"  {'UPLOAD' if upload_mode else 'WOULD UPLOAD'}: {img_path.name} -> {product['title']} [{product['id']}]")
+        print(
+            f"  {'UPLOAD' if upload_mode else 'WOULD UPLOAD'}: {img_path.name} -> {product['title']} [{product['id']}]"
+        )
 
         if upload_mode:
             result = upload_image(product["id"], img_path, alt)

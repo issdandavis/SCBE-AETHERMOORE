@@ -32,11 +32,11 @@ PHI = 1.618033988749895
 class LanguageSystem:
     """Describes a language system in the Rosetta graph."""
 
-    code: str           # "EN", "ZH", "JA", "KO", "KO_ST", "TOKIPONA"
-    name: str           # "English", "Kor'aelin"
-    family: str         # "germanic", "sinitic", "sacred", "conlang"
-    script: str         # "latin", "cjk", "hangul", "sacred_token"
-    vocab_size: int     # 256 (Sacred), 120 (Toki Pona), ~50000 (natural)
+    code: str  # "EN", "ZH", "JA", "KO", "KO_ST", "TOKIPONA"
+    name: str  # "English", "Kor'aelin"
+    family: str  # "germanic", "sinitic", "sacred", "conlang"
+    script: str  # "latin", "cjk", "hangul", "sacred_token"
+    vocab_size: int  # 256 (Sacred), 120 (Toki Pona), ~50000 (natural)
 
     @property
     def tam_type(self) -> str:
@@ -49,8 +49,8 @@ class LanguageSystem:
 class RosettaConcept:
     """A single concept mapped across languages."""
 
-    concept_id: str                             # NSM prime name: "GOOD", "MOVE", "WANT"
-    nsm_prime: bool = True                      # True for the 65 universal primes
+    concept_id: str  # NSM prime name: "GOOD", "MOVE", "WANT"
+    nsm_prime: bool = True  # True for the 65 universal primes
     embedding_6d: list[float] = field(default_factory=lambda: [0.0] * 6)
     surfaces: dict[str, list[str]] = field(default_factory=dict)
     sacred_tokens: dict[str, list[str]] = field(default_factory=dict)
@@ -64,11 +64,15 @@ class RosettaConcept:
         self.sacred_tokens[tongue_code] = tokens
 
     def log_drift(self, lang_a: str, lang_b: str, drift: float, note: str = "") -> None:
-        self.drift_log.append({
-            "lang_a": lang_a, "lang_b": lang_b,
-            "drift": drift, "note": note,
-            "timestamp": time.time(),
-        })
+        self.drift_log.append(
+            {
+                "lang_a": lang_a,
+                "lang_b": lang_b,
+                "drift": drift,
+                "note": note,
+                "timestamp": time.time(),
+            }
+        )
 
 
 class RosettaStone:
@@ -126,9 +130,7 @@ class RosettaStone:
 
             # TAM info
             concept.tam_profile = {
-                lang: TAM_PROFILES.get(lang, {})
-                for lang in concept.surfaces
-                if lang in TAM_PROFILES
+                lang: TAM_PROFILES.get(lang, {}) for lang in concept.surfaces if lang in TAM_PROFILES
             }
 
             self._concepts[concept_id] = concept
@@ -139,7 +141,7 @@ class RosettaStone:
         Uses hash-based projection into the unit ball (norm < 1).
         """
         h = hashlib.sha256(concept_id.encode()).digest()
-        raw = [int.from_bytes(h[i*4:(i+1)*4], "little") / (2**32) for i in range(6)]
+        raw = [int.from_bytes(h[i * 4 : (i + 1) * 4], "little") / (2**32) for i in range(6)]
         # Scale into Poincare ball (norm < 0.95)
         norm = math.sqrt(sum(x**2 for x in raw))
         if norm == 0:
@@ -292,12 +294,15 @@ class RosettaStone:
                 "id": f"rosetta-{cid.lower()}-001",
                 "category": "rosetta-concept",
                 "instruction": f"What are the surface forms for the concept '{cid}' across all registered languages?",
-                "response": json.dumps({
-                    "concept_id": cid,
-                    "nsm_prime": concept.nsm_prime,
-                    "surfaces": concept.surfaces,
-                    "sacred_tokens": concept.sacred_tokens,
-                }, ensure_ascii=False),
+                "response": json.dumps(
+                    {
+                        "concept_id": cid,
+                        "nsm_prime": concept.nsm_prime,
+                        "surfaces": concept.surfaces,
+                        "sacred_tokens": concept.sacred_tokens,
+                    },
+                    ensure_ascii=False,
+                ),
                 "metadata": {
                     "source": "scbe_aethermoore",
                     "version": "4.0.0",

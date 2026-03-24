@@ -208,8 +208,7 @@ def build_lock_packet(
 def lock_packet_markdown(lock_packet: dict[str, Any]) -> str:
     criteria = "\n".join(f"- {item}" for item in lock_packet["acceptance_criteria"])
     anchors = "\n".join(
-        f"- `{name}`: {anchor}"
-        for name, anchor in (lock_packet.get("character_anchors") or {}).items()
+        f"- `{name}`: {anchor}" for name, anchor in (lock_packet.get("character_anchors") or {}).items()
     )
     if not anchors:
         anchors = "- none"
