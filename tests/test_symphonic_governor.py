@@ -126,16 +126,16 @@ class TestConstants:
         assert TONGUES == ["KO", "AV", "RU", "CA", "UM", "DR"]
 
     def test_tongue_weights_golden_progression(self):
-        """w_{l+1} / w_l = φ for all l."""
-        for l in range(5):
-            ratio = TONGUE_WEIGHTS[l + 1] / TONGUE_WEIGHTS[l]
-            assert abs(ratio - PHI) < 1e-10, f"Tongue {l} ratio {ratio} != PHI"
+        """w_{l+1} / w_l = phi for all l."""
+        for idx in range(5):
+            ratio = TONGUE_WEIGHTS[idx + 1] / TONGUE_WEIGHTS[idx]
+            assert abs(ratio - PHI) < 1e-10, f"Tongue {idx} ratio {ratio} != PHI"
 
     def test_tongue_phases_sixfold_symmetry(self):
-        """φ_{l+1} - φ_l = 60° = π/3 for all l."""
+        """phi_{l+1} - phi_l = 60 degrees = pi/3 for all l."""
         expected_diff = TAU / 6
-        for l in range(5):
-            diff = TONGUE_PHASES[l + 1] - TONGUE_PHASES[l]
+        for idx in range(5):
+            diff = TONGUE_PHASES[idx + 1] - TONGUE_PHASES[idx]
             assert abs(diff - expected_diff) < 1e-10
 
     def test_tongue_frequencies_just_intonation(self):

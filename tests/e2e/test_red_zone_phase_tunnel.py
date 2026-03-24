@@ -414,5 +414,5 @@ class TestFullFlowIntegration:
         print("\n" + "=" * 90)
         print(f"GREEN links: {len(green_results)} (all accessible)")
         print(f"RED links: {len(red_results)} ({red_blind_blocked}/{len(red_results)} blocked with blind phase)")
-        print(f"No blind RED commits: VERIFIED")
+        print("No blind RED commits: VERIFIED")
         print("=" * 90)

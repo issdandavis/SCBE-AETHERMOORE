@@ -195,7 +195,7 @@ class TestFullBenchmark:
 
         # Print summary
         print(f"\n{'='*60}")
-        print(f"  SCBE ADVERSARIAL BENCHMARK RESULTS")
+        print("  SCBE ADVERSARIAL BENCHMARK RESULTS")
         print(f"{'='*60}")
         print(f"  Attacks: {attack_result.total_attacks}")
         print(f"  Detected: {attack_result.detected_count} ({attack_result.detection_rate:.1%})")

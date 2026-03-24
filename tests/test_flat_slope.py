@@ -173,9 +173,9 @@ def test_spectrum_analysis():
         print(f"    Detected: {sorted(detected_set)}")
 
         if detected_set == expected_harmonics:
-            print(f"    ✓ Match!")
+            print("    ✓ Match!")
         else:
-            print(f"    ✗ Mismatch!")
+            print("    ✗ Mismatch!")
             all_correct = False
 
     return all_correct
@@ -234,7 +234,7 @@ def test_attacker_without_key():
     purity = total_correct / len(true_labels)
 
     print(f"  Attacker clustering purity: {purity:.2%}")
-    print(f"  (Random guess = 12.5%, Perfect = 100%)")
+    print("  (Random guess = 12.5%, Perfect = 100%)")
 
     if purity < 0.3:
         print("  ✓ Attacker cannot reliably distinguish tokens")
@@ -334,7 +334,7 @@ def test_interference_multiple_tokens():
     print(f"  Expected (union): {sorted(expected_union)}")
 
     # Problem: We can't separate them!
-    print(f"\n  Can we separate which harmonic came from which token?")
+    print("\n  Can we separate which harmonic came from which token?")
 
     # Check for overlaps
     overlap_01 = mask_0 & mask_1
@@ -342,15 +342,15 @@ def test_interference_multiple_tokens():
     overlap_12 = mask_1 & mask_2
 
     if overlap_01 or overlap_02 or overlap_12:
-        print(f"  ✗ PROBLEM: Harmonics overlap!")
+        print("  ✗ PROBLEM: Harmonics overlap!")
         print(f"    Token 0 ∩ Token 1: {sorted(overlap_01) if overlap_01 else 'none'}")
         print(f"    Token 0 ∩ Token 2: {sorted(overlap_02) if overlap_02 else 'none'}")
         print(f"    Token 1 ∩ Token 2: {sorted(overlap_12) if overlap_12 else 'none'}")
-        print(f"  → Cannot decode multiple tokens from single signal!")
+        print("  → Cannot decode multiple tokens from single signal!")
         return False
     else:
-        print(f"  ✓ No overlap - tokens have disjoint harmonics")
-        print(f"  → Could potentially separate them")
+        print("  ✓ No overlap - tokens have disjoint harmonics")
+        print("  → Could potentially separate them")
         return True
 
 

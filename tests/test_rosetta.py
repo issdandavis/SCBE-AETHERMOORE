@@ -217,7 +217,7 @@ class TestRosettaStone:
 
     def test_export_sft_jsonl(self, rs):
         output = rs.export_sft(format="jsonl")
-        lines = [l for l in output.strip().split("\n") if l]
+        lines = [line for line in output.strip().split("\n") if line]
         assert len(lines) > 0
         # Each line should be valid JSON
         for line in lines[:5]:
@@ -249,7 +249,7 @@ class TestRosettaStone:
 
     def test_get_languages(self, rs):
         langs = rs.get_languages()
-        codes = [l.code for l in langs]
+        codes = [lang.code for lang in langs]
         assert "EN" in codes
         assert "ZH" in codes
         assert "KO_ST" in codes
