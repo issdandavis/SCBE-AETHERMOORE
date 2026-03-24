@@ -14,6 +14,8 @@ import tempfile
 
 import pytest
 
+pytest.importorskip("mcp.server", reason="mcp.server not installed")
+
 # Ensure project root is on sys.path
 _PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _PROJECT_ROOT not in sys.path:

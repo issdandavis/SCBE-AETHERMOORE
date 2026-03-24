@@ -6,6 +6,8 @@ import os
 import numpy as np
 import pytest
 
+pytest.importorskip("langgraph", reason="langgraph not installed")
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from hydra.spectral_langgraph import (

@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pytest
 
+pytest.importorskip("huggingface_hub", reason="huggingface_hub not installed")
+
 from scripts.build_hf_webtoon_job import build_uv_job_script, load_prompt_pack
 from scripts.submit_hf_webtoon_job import build_submit_command
 

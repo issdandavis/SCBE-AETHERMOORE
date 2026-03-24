@@ -70,9 +70,6 @@ def _select_sig_algorithm() -> str:
     return "ML-DSA-65"
 
 
-_KEM_ALG = _select_kem_algorithm()
-_SIG_ALG = _select_sig_algorithm()
-
 def _enabled_kem_mechanisms() -> set[str]:
     """Best-effort query of enabled KEM mechanisms in liboqs."""
     if not _LIBOQS_AVAILABLE:
@@ -311,7 +308,6 @@ class _LiboqsKyber:
         if _KEM_ALGORITHM is None:
             raise RuntimeError("No supported liboqs KEM algorithm found")
         with _oqs.KeyEncapsulation(_KEM_ALGORITHM) as kem:
-        with _oqs.KeyEncapsulation(_KEM_ALG) as kem:
             public_key = kem.generate_keypair()
             secret_key = kem.export_secret_key()
             return KyberKeyPair(public_key=public_key, secret_key=secret_key)
@@ -324,7 +320,6 @@ class _LiboqsKyber:
         if _KEM_ALGORITHM is None:
             raise RuntimeError("No supported liboqs KEM algorithm found")
         with _oqs.KeyEncapsulation(_KEM_ALGORITHM) as kem:
-        with _oqs.KeyEncapsulation(_KEM_ALG) as kem:
             ciphertext, shared_secret = kem.encap_secret(public_key)
             return EncapsulationResult(ciphertext=ciphertext, shared_secret=shared_secret)
 
@@ -338,7 +333,6 @@ class _LiboqsKyber:
         if _KEM_ALGORITHM is None:
             raise RuntimeError("No supported liboqs KEM algorithm found")
         with _oqs.KeyEncapsulation(_KEM_ALGORITHM, secret_key) as kem:
-        with _oqs.KeyEncapsulation(_KEM_ALG, secret_key) as kem:
             shared_secret = kem.decap_secret(ciphertext)
             return shared_secret
 class _LiboqsDilithium:
@@ -359,7 +353,6 @@ class _LiboqsDilithium:
         """Generate a Dilithium3 keypair using liboqs."""
         algorithm = _LiboqsDilithium._algorithm()
         with _oqs.Signature(algorithm) as sig:
-        with _oqs.Signature(_SIG_ALG) as sig:
             public_key = sig.generate_keypair()
             secret_key = sig.export_secret_key()
             return DilithiumKeyPair(public_key=public_key, secret_key=secret_key)
@@ -377,7 +370,6 @@ class _LiboqsDilithium:
 
         algorithm = _LiboqsDilithium._algorithm()
         with _oqs.Signature(algorithm, secret_key) as sig:
-        with _oqs.Signature(_SIG_ALG, secret_key) as sig:
             signature = sig.sign(message)
 
         _LiboqsDilithium._deterministic_cache[cache_key] = signature
@@ -392,7 +384,6 @@ class _LiboqsDilithium:
             return False
         algorithm = _LiboqsDilithium._algorithm()
         with _oqs.Signature(algorithm) as sig:
-        with _oqs.Signature(_SIG_ALG) as sig:
             return sig.verify(message, signature, public_key)
 
 # =============================================================================
