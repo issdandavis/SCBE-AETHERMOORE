@@ -11,7 +11,6 @@ Covers:
 - Error handling (not connected, spine missing)
 """
 
-import asyncio
 import pytest
 import sys
 import os

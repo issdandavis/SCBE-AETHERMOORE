@@ -246,4 +246,3 @@ def test_harmonic_wall_cost_monotonic_with_resource_scarcity() -> None:
         thermal_max=85.0,
     )
     assert high_scarcity > low_scarcity
-

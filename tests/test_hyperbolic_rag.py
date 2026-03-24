@@ -2,20 +2,16 @@
 Tests for HyperbolicRAG: k-NN retrieval in the Poincare ball with d* cost gating.
 """
 
-import math
 import sys
 import os
-import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from src.ai_brain.hyperbolic_rag import (
     HyperbolicRAG,
     HyperbolicRAGConfig,
     RAGCandidate,
-    RAGResult,
     project_to_ball,
 )
-from src.geoseal import TONGUE_PHASES
 
 
 # ---------------------------------------------------------------------------

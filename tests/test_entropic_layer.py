@@ -5,14 +5,12 @@ Tests for EntropicLayer: escape detection, adaptive-k, and expansion tracking.
 import math
 import sys
 import os
-import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from src.ai_brain.entropic_layer import (
     EntropicLayer,
     EntropicConfig,
     EntropicState,
-    EscapeAssessment,
     DEFAULT_MAX_VOLUME,
     MIN_K,
     MAX_K,

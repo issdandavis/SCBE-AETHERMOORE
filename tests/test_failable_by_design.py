@@ -16,8 +16,6 @@ Categories:
 
 import pytest
 import numpy as np
-import time
-import hashlib
 import os
 import sys
 

@@ -12,7 +12,6 @@ Covers:
 - Complete / fail lifecycle
 """
 
-import json
 import time
 import pytest
 import sys
