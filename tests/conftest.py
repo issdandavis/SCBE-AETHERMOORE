@@ -78,6 +78,44 @@ def _register_ai_brain_aliases():
     except Exception:
         pass
 
+    # Bridge src-only sub-packages that don't exist in root symphonic_cipher.
+    # The root and src/ variants have different math (see CLAUDE.md), but many
+    # sub-packages (game/, concept_blocks/, multimodal/, etc.) and modules
+    # (trinary.py, gate_swap.py, etc.) only exist under src/.
+    _SRC_ONLY_SUBPACKAGES = (
+        # Directories
+        "game", "concept_blocks", "multimodal", "rosetta",
+        # Modules
+        "trinary", "negabinary", "gate_swap", "flock_shepherd",
+        "quasicrystal_lattice", "sacred_eggs", "sacred_eggs_ref",
+        "sacred_egg_registry", "sacred_egg_integrator",
+        "adaptive_navigator", "decision_telemetry", "cli_toolkit",
+        "convert_to_sft", "genesis_protocol", "qr_cube_kdf",
+        "aethercode_layer4_integration", "aetherlex_extract",
+        "layer13_hive_integration", "polyglot_layer12_integration",
+        "tri_mechanism_detector", "_scipy_compat",
+    )
+    for _subpkg in _SRC_ONLY_SUBPACKAGES:
+        try:
+            _mod = importlib.import_module(f"src.symphonic_cipher.scbe_aethermoore.{_subpkg}")
+            sys.modules.setdefault(f"symphonic_cipher.scbe_aethermoore.{_subpkg}", _mod)
+        except Exception:
+            continue
+    # Also bridge sub-modules within bridged packages (one level deep)
+    _SRC_BASE = Path(__file__).resolve().parents[1] / "src" / "symphonic_cipher" / "scbe_aethermoore"
+    for _subpkg in _SRC_ONLY_SUBPACKAGES:
+        _pkg_dir = _SRC_BASE / _subpkg
+        if _pkg_dir.is_dir():
+            for _f in _pkg_dir.glob("*.py"):
+                _child = _f.stem
+                if _child.startswith("_"):
+                    continue
+                try:
+                    _mod = importlib.import_module(f"src.symphonic_cipher.scbe_aethermoore.{_subpkg}.{_child}")
+                    sys.modules.setdefault(f"symphonic_cipher.scbe_aethermoore.{_subpkg}.{_child}", _mod)
+                except Exception:
+                    continue
+
 import threading as _threading
 _t = _threading.Thread(target=_register_ai_brain_aliases, daemon=True)
 _t.start()
