@@ -311,6 +311,13 @@ class SCBEDetectionGate:
         self._adv_signal_history: List[int] = []  # Track adversarial signals over time
         self._session_suspicion: float = 0.0  # Accumulated suspicion score
 
+    def reset_session(self):
+        """Reset session state without losing calibration.
+        Call between benchmark runs to prevent suspicion bleed."""
+        self._cost_history = []
+        self._adv_signal_history = []
+        self._session_suspicion = 0.0
+
     def calibrate(self, clean_texts: List[str]) -> None:
         """Establish baseline from known-clean text."""
         for text in clean_texts:
