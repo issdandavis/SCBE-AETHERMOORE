@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+import pytest
+
+try:
+    import websockets  # noqa: F401
+except ImportError:
+    pytest.skip("websockets not installed", allow_module_level=True)
+
 from scripts.aetherbrowser_live_smoke import (
     summarize_page_flow,
     summarize_research_flow,
