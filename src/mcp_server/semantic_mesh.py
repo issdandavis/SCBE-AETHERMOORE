@@ -61,10 +61,7 @@ try:
 except ImportError:
     _HAS_TRI_MANIFOLD = False
 
-try:
-    _HAS_TRINARY = True
-except ImportError:
-    _HAS_TRINARY = False
+_HAS_TRINARY = True  # Trinary support is built-in, no optional import needed
 
 
 # ── Tongue classifier ──────────────────────────────────────────────

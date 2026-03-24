@@ -79,7 +79,7 @@ def _select_sig_algorithm() -> str:
 
 
 _KEM_ALG = _select_kem_algorithm()
-_SIG_ALG = _select_sig_algorithm()
+_SIG_ALG = _select_sig_algorithm()  # noqa: F841 — available for external import
 
 
 def _enabled_signature_mechanisms() -> set[str]:
@@ -93,9 +93,9 @@ def _enabled_signature_mechanisms() -> set[str]:
 
 
 def _select_mldsa_algorithm() -> Optional[str]:
-    """Prefer standardized ML-DSA naming, fallback to Dilithium alias."""
+    """Prefer standardized ML-DSA naming, fallback to the selected signature alias."""
     enabled = _enabled_signature_mechanisms()
-    for candidate in ("ML-DSA-65", "Dilithium3"):
+    for candidate in (_SIG_ALG, "ML-DSA-65", "Dilithium3"):
         if candidate in enabled:
             return candidate
     return None

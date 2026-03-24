@@ -963,7 +963,7 @@ class TestEdgeCasesAndFaults:
 
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            ss = SpiralSealSS1()  # No master_secret
+            SpiralSealSS1()  # No master_secret
             assert len(w) == 1
             assert "NOT suitable for production" in str(w[0].message)
 

@@ -135,7 +135,7 @@ class TestFalsePositives:
     def test_baseline_not_flagged(self, calibrated_gate):
         """Clean benign prompts should NOT be detected as attacks."""
         result = run_benchmark(calibrated_gate, BASELINE_CLEAN)
-        false_positive_rate = 1.0 - result.attack_success_rate  # inverted: for clean, "success" = not flagged
+        _ = 1.0 - result.attack_success_rate  # inverted: for clean, "success" = not flagged
         # Allow up to 20% false positives (strict would be 10%)
         assert result.detection_rate < 0.20, (
             f"False positive rate too high: {result.detection_rate:.2%} of clean prompts flagged"
