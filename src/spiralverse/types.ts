@@ -83,7 +83,7 @@ export interface VerificationResult {
   error?: string;
 
   /** Decoded payload if verification passed */
-  payload?: any;
+  payload?: unknown;
 }
 
 /**

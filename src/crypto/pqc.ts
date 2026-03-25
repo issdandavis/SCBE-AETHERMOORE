@@ -249,7 +249,7 @@ function parseKemSharedSecret(value: unknown): Uint8Array {
     value instanceof ArrayBuffer ||
     Buffer.isBuffer(value)
   ) {
-    return toBytes(value as any, 'ML-KEM decapsulated shared secret');
+    return toBytes(value, 'ML-KEM decapsulated shared secret');
   }
 
   if (Array.isArray(value)) {
