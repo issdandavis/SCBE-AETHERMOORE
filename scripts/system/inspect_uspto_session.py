@@ -62,9 +62,9 @@ def classify_session(url: str, dom: dict[str, Any]) -> dict[str, Any]:
     headings = [str(h) for h in dom.get("headings", [])]
     forms = dom.get("forms", [])
     has_password = any(field.get("type") == "password" for form in forms for field in form.get("fields", []))
-    patent_center_markers = ("patentcenter.uspto.gov" in hostname) or ("Patent Center" in title)
+    patent_center_markers = (hostname == "patentcenter.uspto.gov" or hostname.endswith(".patentcenter.uspto.gov")) or ("Patent Center" in title)
     auth_markers = (
-        ("auth.uspto.gov" in hostname)
+        (hostname == "auth.uspto.gov" or hostname.endswith(".auth.uspto.gov"))
         or has_password
         or any("sign in" in heading.lower() or "login" in heading.lower() for heading in headings)
     )
