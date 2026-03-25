@@ -72,7 +72,7 @@ export interface PolicyMatrix {
 /**
  * Verification result
  */
-export interface VerificationResult {
+export interface VerificationResult<T = Record<string, unknown>> {
   /** Whether verification passed */
   valid: boolean;
 
@@ -83,7 +83,7 @@ export interface VerificationResult {
   error?: string;
 
   /** Decoded payload if verification passed */
-  payload?: any;
+  payload?: T;
 }
 
 /**
