@@ -26,7 +26,7 @@ from urllib.request import Request, urlopen
 
 
 BSKY_API = "https://bsky.social/xrpc"
-AMAZON_LINK = "https://www.amazon.com/dp/B0GSSFQD9G"
+AMAZON_LINK = "https://a.co/d/024VowjS"
 GITHUB_LINK = "https://github.com/issdandavis/SCBE-AETHERMOORE"
 
 PROMOS = {
