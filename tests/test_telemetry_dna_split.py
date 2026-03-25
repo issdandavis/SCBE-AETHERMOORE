@@ -44,7 +44,7 @@ class MutationType(Enum):
 
 
 @dataclass
-class TestStrand:
+class Strand:
     """
     A single strand of test data (like DNA strand).
 
@@ -109,8 +109,8 @@ class DNATestResult:
     """
 
     test_name: str
-    expected_strand: TestStrand
-    actual_strand: TestStrand
+    expected_strand: Strand
+    actual_strand: Strand
     mutations: List[Mutation] = field(default_factory=list)
     passed: bool = True
     correction_suggestions: List[str] = field(default_factory=list)
@@ -131,15 +131,15 @@ class DNASplitTester:
         self.verbose = verbose
         self.results: List[DNATestResult] = []
 
-    def create_expected_strand(self, test_name: str, spec: Dict[str, Any]) -> TestStrand:
+    def create_expected_strand(self, test_name: str, spec: Dict[str, Any]) -> Strand:
         """Create the expected (template) strand from specification."""
-        return TestStrand(strand_type=StrandType.EXPECTED, data=spec, source=f"spec:{test_name}")
+        return Strand(strand_type=StrandType.EXPECTED, data=spec, source=f"spec:{test_name}")
 
-    def create_actual_strand(self, test_name: str, result: Dict[str, Any]) -> TestStrand:
+    def create_actual_strand(self, test_name: str, result: Dict[str, Any]) -> Strand:
         """Create the actual (coding) strand from implementation."""
-        return TestStrand(strand_type=StrandType.ACTUAL, data=result, source=f"impl:{test_name}")
+        return Strand(strand_type=StrandType.ACTUAL, data=result, source=f"impl:{test_name}")
 
-    def compare_strands(self, test_name: str, expected: TestStrand, actual: TestStrand) -> DNATestResult:
+    def compare_strands(self, test_name: str, expected: Strand, actual: Strand) -> DNATestResult:
         """
         Compare two strands and identify mutations.
 
@@ -295,8 +295,8 @@ class TestDNASplitSystem:
         data1 = {"a": 1, "b": 2}
         data2 = {"b": 2, "a": 1}  # Same data, different order
 
-        strand1 = TestStrand(StrandType.EXPECTED, data1)
-        strand2 = TestStrand(StrandType.EXPECTED, data2)
+        strand1 = Strand(StrandType.EXPECTED, data1)
+        strand2 = Strand(StrandType.EXPECTED, data2)
 
         # Should be same due to sort_keys=True
         assert strand1.checksum == strand2.checksum
