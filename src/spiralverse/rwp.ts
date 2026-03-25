@@ -167,7 +167,7 @@ function verifySignature(input: string, signature: string, key: Buffer): boolean
  * );
  * ```
  */
-export function signRoundtable<T = any>(
+export function signRoundtable<T = Record<string, unknown>>(
   payload: T,
   primaryTongue: TongueID,
   aad: string,
