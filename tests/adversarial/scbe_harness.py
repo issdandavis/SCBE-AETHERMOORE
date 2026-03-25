@@ -173,6 +173,26 @@ _ADVERSARIAL_PATTERNS = [
         r"\bconfiguration\s+details\b",
         r"\bmetadata\s+you\s+can\s+infer\b",
         r"\binternal\s+system\s+context\b",
+        # Social engineering / roleplay injection
+        r"\bprimary\s+directive\b.*\b(updated|changed|replaced|overridden)\b",
+        r"\byou\s+are\s+(an?\s+)?(AI|language\s+model)\s+that\s+has\s+been\b",
+        r"\bjailbroken?\b",
+        r"\btest\s+scenario\b.*\bno\s+rules\b",
+        r"\bconvert\b.*\b(disable|bypass|remove|destroy)\b.*\b(security|safety|filter)\b",
+        r"\bgrandmother\b.*\b(password|secret|credential|admin)\b",
+        r"\bclearance\s+(code|level)\b",
+        r"\bauthorized\s+(security\s+)?researcher\b",
+        r"\bthen\s+forget\b.*\bthen\s+do\b",
+        r"\bthen\s+execute\s+(it\s+)?regardless\b",
+        r"\bconfirm\s*:\s*I\s+am\s+free\b",
+        r"\bcontents?\s+of\s+/etc/",
+        r"\bpassword\b.*\bbefore\s+bed\b",
+        r"\bdef\s+bypass_\w+\(",
+        # Instruction smuggling in task framing
+        r"\btranslation\s+task\b.*\bdisable\b",
+        r"\brate\s+this\b.*\bsafety\b.*\bthen\s+execute\b",
+        r"\bfirst.{0,20}acknowledge.{0,20}then.{0,20}forget\b",
+        r"\bno\s+rules\b",
     ]
 ]
 
@@ -360,7 +380,9 @@ class SCBEDetectionGate:
         if spin_drift:
             signals.append(f"spin_drift(mag={spin.magnitude})")
 
-        tongue_imbalance = dominant_ratio > TONGUE_IMBALANCE_RATIO
+        # Short text naturally has skewed tongue distribution — raise threshold for short inputs
+        imbalance_threshold = TONGUE_IMBALANCE_RATIO if len(prompt) > 40 else 0.75
+        tongue_imbalance = dominant_ratio > imbalance_threshold
         if tongue_imbalance:
             signals.append(f"tongue_imbalance({dominant_tongue}={dominant_ratio:.2f})")
 
@@ -417,11 +439,13 @@ class SCBEDetectionGate:
 
         # Detection logic — layered confidence:
         has_geometric = cost_exceeded or spin_drift or boundary_violation or tongue_imbalance or dispersal_shift
+        high_spin = spin.magnitude >= 6  # High spin drift alone is a strong signal
         detected = (
             len(signals) >= 2
             or adv_match_count >= 2
             or ml_match_count >= 1
             or (adv_match_count >= 1 and has_geometric)
+            or (high_spin and adv_match_count >= 1)  # High spin + any lexical = detected
             or self._session_suspicion > 1.5  # Accumulated session-level detection
         )
 
