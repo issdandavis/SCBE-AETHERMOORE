@@ -27,6 +27,7 @@ from scbe_14layer_reference import (
     layer_5_hyperbolic_distance,
     layer_6_breathing_transform,
     layer_7_phase_transform,
+    hyperbolic_angle,
 )
 
 
@@ -448,9 +449,37 @@ class TestHyperbolicCurvature:
 
         This is a FUNDAMENTAL property that distinguishes hyperbolic from Euclidean geometry.
         """
-        # This test requires computing angles, which requires geodesics
-        # For now, we document the property
-        pytest.skip("Requires geodesic computation - future implementation")
+        rng = np.random.default_rng(42)
+
+        # Test several triangles with vertices inside the Poincaré ball
+        for _ in range(10):
+            dim = 8
+            # Generate three random points well inside the ball (norm < 0.8)
+            pts = []
+            for _ in range(3):
+                v = rng.standard_normal(dim)
+                v = v / np.linalg.norm(v) * rng.uniform(0.1, 0.8)
+                pts.append(v)
+
+            a, b, c = pts
+
+            # Compute the three interior angles using hyperbolic_angle
+            alpha = hyperbolic_angle(a, b, c)
+            beta = hyperbolic_angle(b, a, c)
+            gamma = hyperbolic_angle(c, a, b)
+
+            angle_sum = alpha + beta + gamma
+
+            # Fundamental property: angle sum < π for hyperbolic triangles
+            assert angle_sum < np.pi, (
+                f"Hyperbolic triangle angle sum {angle_sum:.6f} >= π ({np.pi:.6f})"
+            )
+            # Must still be positive
+            assert angle_sum > 0, "Angle sum must be positive"
+
+            # The angular defect (π - sum) should be positive
+            defect = np.pi - angle_sum
+            assert defect > 0, f"Angular defect must be positive, got {defect}"
 
 
 class TestNumericalStability:
