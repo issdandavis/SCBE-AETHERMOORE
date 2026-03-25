@@ -1904,3 +1904,249 @@ export {
   convTarskiLaplacian1 as tarskiLaplacian1,
   convTarskiCohomology1 as tarskiCohomology1,
 };
+
+// ═══════════════════════════════════════════════════════════════
+// V1 API wrappers — enables skipped test blocks C–I, N
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Constant sheaf on a V1 CellComplex: every stalk is the same lattice,
+ * every restriction is the identity Galois connection.
+ */
+export function v1ConstantSheaf<T>(
+  complex: CellComplex,
+  lattice: CompleteLattice<T>
+): CellularSheaf<T, T> {
+  const conn = identityConnection<T>();
+  return {
+    complex,
+    vertexLattice: () => lattice,
+    edgeLattice: () => lattice,
+    sourceRestriction: () => conn,
+    targetRestriction: () => conn,
+  };
+}
+
+/**
+ * Harmonic flow step Φ(x) = x ∧ L₀(x) on V1 sheaf (pointwise meet).
+ */
+export function harmonicFlowStep<V, E>(sheaf: CellularSheaf<V, E>, x: Cochain0<V>): Cochain0<V> {
+  const lx = tarskiLaplacian0(sheaf, x);
+  const result = new Map<string, V>();
+  for (const v of sheaf.complex.vertices) {
+    const lat = sheaf.vertexLattice(v.id);
+    const xv = x.get(v.id) ?? lat.bottom();
+    const lxv = lx.get(v.id) ?? lat.bottom();
+    result.set(v.id, lat.meet(xv, lxv));
+  }
+  return result;
+}
+
+interface V1HarmonicFlowResult<V> {
+  converged: boolean;
+  iterations: number;
+  fixedPoint: Cochain0<V>;
+}
+
+/**
+ * Iterate Φ = id ∧ L₀ on a V1 sheaf until convergence (Tarski fixed-point).
+ */
+export function v1HarmonicFlow<V, E>(
+  sheaf: CellularSheaf<V, E>,
+  initial: Cochain0<V>,
+  maxIter: number = 100
+): V1HarmonicFlowResult<V> {
+  let current = initial;
+  for (let i = 1; i <= maxIter; i++) {
+    const next = harmonicFlowStep(sheaf, current);
+    let changed = false;
+    for (const v of sheaf.complex.vertices) {
+      const lat = sheaf.vertexLattice(v.id);
+      if (!lat.eq(current.get(v.id) ?? lat.bottom(), next.get(v.id) ?? lat.bottom())) {
+        changed = true;
+        break;
+      }
+    }
+    if (!changed) return { converged: true, iterations: i - 1, fixedPoint: current };
+    current = next;
+  }
+  return { converged: false, iterations: maxIter, fixedPoint: current };
+}
+
+/**
+ * Global sections TH⁰: start from ⊤ cochain and flow to greatest fixed point.
+ */
+export function globalSections<V, E>(sheaf: CellularSheaf<V, E>): V1HarmonicFlowResult<V> {
+  const top = new Map<string, V>();
+  for (const v of sheaf.complex.vertices) {
+    top.set(v.id, sheaf.vertexLattice(v.id).top());
+  }
+  return v1HarmonicFlow(sheaf, top);
+}
+
+/**
+ * Obstruction degree: fraction of vertices that drop when flowing to fixed point.
+ * Returns 0 when cochain is already a global section, up to 1 for maximal obstruction.
+ */
+export function obstructionDegree<V, E>(sheaf: CellularSheaf<V, E>, cochain: Cochain0<V>): number {
+  const n = sheaf.complex.vertices.length;
+  if (n === 0) return 0;
+
+  const flowed = v1HarmonicFlow(sheaf, cochain);
+  const fp = flowed.fixedPoint;
+
+  // Measure how much each vertex drops (using lattice rank where possible)
+  const lat0 = sheaf.vertexLattice(sheaf.complex.vertices[0].id);
+  const elems = lat0.elements();
+  const maxRank = elems.length - 1;
+  if (maxRank <= 0) return 0;
+
+  // Build rank map
+  const rankOf = new Map<string, number>();
+  for (let i = 0; i < elems.length; i++) {
+    rankOf.set(String(elems[i]), i);
+  }
+
+  let totalDrop = 0;
+  for (const v of sheaf.complex.vertices) {
+    const orig = cochain.get(v.id) ?? lat0.bottom();
+    const final = fp.get(v.id) ?? lat0.bottom();
+    const origRank = rankOf.get(String(orig)) ?? 0;
+    const finalRank = rankOf.get(String(final)) ?? 0;
+    totalDrop += (origRank - finalRank) / maxRank;
+  }
+
+  return totalDrop / n;
+}
+
+/**
+ * Check if a cochain is a global section (zero obstruction).
+ */
+export function isGlobalSection<V, E>(sheaf: CellularSheaf<V, E>, cochain: Cochain0<V>): boolean {
+  // A cochain is a global section iff harmonicFlowStep preserves it
+  const stepped = harmonicFlowStep(sheaf, cochain);
+  for (const v of sheaf.complex.vertices) {
+    const lat = sheaf.vertexLattice(v.id);
+    const orig = cochain.get(v.id) ?? lat.bottom();
+    const next = stepped.get(v.id) ?? lat.bottom();
+    if (!lat.eq(orig, next)) return false;
+  }
+  return true;
+}
+
+// ── Temporal complex builders ──
+
+/**
+ * Build a temporal CellComplex for SCBE governance.
+ * - triadic: 3 vertices (immediate, memory, governance), 3 edges (triangle)
+ * - tetradic: 4 vertices (+ predictive), 6 edges (K₄)
+ */
+export function buildTemporalComplex(mode: 'triadic' | 'tetradic' = 'triadic'): CellComplex {
+  const vertices: CellVertex[] = [
+    { id: 'immediate', label: 'Immediate temporal context' },
+    { id: 'memory', label: 'Memory temporal context' },
+    { id: 'governance', label: 'Governance temporal context' },
+  ];
+  const edges: CellEdge[] = [
+    { id: 'im-mem', source: 'immediate', target: 'memory' },
+    { id: 'mem-gov', source: 'memory', target: 'governance' },
+    { id: 'gov-im', source: 'governance', target: 'immediate' },
+  ];
+
+  if (mode === 'tetradic') {
+    vertices.push({ id: 'predictive', label: 'Predictive temporal context' });
+    edges.push(
+      { id: 'im-pred', source: 'immediate', target: 'predictive' },
+      { id: 'mem-pred', source: 'memory', target: 'predictive' },
+      { id: 'gov-pred', source: 'governance', target: 'predictive' }
+    );
+  }
+
+  return { vertices, edges };
+}
+
+/**
+ * Edge twist: raises risk in lower adjoint, lowers risk in upper adjoint.
+ */
+export interface EdgeTwist {
+  raise: number;
+  lower: number;
+}
+
+/**
+ * Build a governance sheaf on a temporal complex with optional edge twists.
+ */
+export function buildGovernanceSheaf(
+  complex: CellComplex,
+  twists?: Map<string, EdgeTwist>
+): CellularSheaf<RiskLevel, RiskLevel> {
+  return {
+    complex,
+    vertexLattice: () => RISK_LATTICE,
+    edgeLattice: () => RISK_LATTICE,
+    sourceRestriction: (edgeId: string) => {
+      const twist = twists?.get(edgeId);
+      if (!twist) return identityConnection<RiskLevel>();
+      return {
+        lower: (s: RiskLevel) => Math.min(RiskLevel.DENY, s + twist.raise) as RiskLevel,
+        upper: (t: RiskLevel) => Math.max(RiskLevel.ALLOW, t - twist.lower) as RiskLevel,
+      };
+    },
+    targetRestriction: () => identityConnection<RiskLevel>(),
+  };
+}
+
+// ── Policy obstruction detection ──
+
+interface PolicyObstructionOptions {
+  noiseThreshold?: number;
+  twists?: Map<string, EdgeTwist>;
+}
+
+interface PolicyObstructionResult {
+  obstruction: number;
+  consensus: RiskLevel;
+  converged: boolean;
+  noiseTriggered: boolean;
+  noise?: Uint8Array;
+}
+
+/**
+ * Detect policy obstruction across temporal T-variants.
+ * Builds a temporal sheaf, runs harmonic flow, measures obstruction.
+ */
+export function detectPolicyObstruction(
+  variants: Record<string, RiskLevel>,
+  options?: PolicyObstructionOptions
+): PolicyObstructionResult {
+  const keys = Object.keys(variants);
+  const mode = keys.includes('predictive') ? 'tetradic' : 'triadic';
+  const complex = buildTemporalComplex(mode);
+  const sheaf = buildGovernanceSheaf(complex, options?.twists);
+
+  const cochain: Cochain0<RiskLevel> = new Map();
+  for (const v of complex.vertices) {
+    cochain.set(v.id, variants[v.id] ?? RiskLevel.ALLOW);
+  }
+
+  const obs = obstructionDegree(sheaf, cochain);
+  const flow = v1HarmonicFlow(sheaf, cochain);
+
+  // Consensus is the meet of all fixed-point values
+  let consensus = RiskLevel.DENY;
+  for (const v of complex.vertices) {
+    const val = flow.fixedPoint.get(v.id) ?? RiskLevel.ALLOW;
+    consensus = Math.min(consensus, val) as RiskLevel;
+  }
+
+  const threshold = options?.noiseThreshold ?? 0.5;
+  const noiseTriggered = obs >= threshold;
+
+  return {
+    obstruction: obs,
+    consensus,
+    converged: flow.converged,
+    noiseTriggered,
+    noise: noiseTriggered ? failToNoise(obs) : undefined,
+  };
+}

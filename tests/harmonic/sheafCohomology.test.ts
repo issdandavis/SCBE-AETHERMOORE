@@ -25,10 +25,12 @@ import {
   Cochain0,
   // Sheaf builders
   constantSheaf,
+  v1ConstantSheaf,
   // Tarski
   tarskiLaplacian0,
   harmonicFlowStep,
   harmonicFlow,
+  v1HarmonicFlow,
   globalSections,
   // Obstruction
   obstructionDegree,
@@ -211,7 +213,7 @@ describe('B · Galois connections', () => {
 // C. TARSKI LAPLACIAN on small graphs
 // ============================================================
 
-describe.skip('C · Tarski Laplacian L₀ (pending V1/V2 sheaf API alignment)', () => {
+describe('C · Tarski Laplacian L₀', () => {
   // Simple graph: v1 — e1 — v2
   const twoVertexGraph: CellComplex = {
     vertices: [{ id: 'v1' }, { id: 'v2' }],
@@ -219,7 +221,7 @@ describe.skip('C · Tarski Laplacian L₀ (pending V1/V2 sheaf API alignment)', 
   };
 
   it('on constant sheaf with equal values: L₀ preserves them', () => {
-    const sheaf = constantSheaf(twoVertexGraph, RISK_LATTICE);
+    const sheaf = v1ConstantSheaf(twoVertexGraph, RISK_LATTICE);
     const cochain: Cochain0<RiskLevel> = new Map([
       ['v1', RiskLevel.QUARANTINE],
       ['v2', RiskLevel.QUARANTINE],
@@ -230,7 +232,7 @@ describe.skip('C · Tarski Laplacian L₀ (pending V1/V2 sheaf API alignment)', 
   });
 
   it('on constant sheaf with different values: L₀ takes meet of neighbors', () => {
-    const sheaf = constantSheaf(twoVertexGraph, RISK_LATTICE);
+    const sheaf = v1ConstantSheaf(twoVertexGraph, RISK_LATTICE);
     const cochain: Cochain0<RiskLevel> = new Map([
       ['v1', RiskLevel.DENY],
       ['v2', RiskLevel.ALLOW],
@@ -246,7 +248,7 @@ describe.skip('C · Tarski Laplacian L₀ (pending V1/V2 sheaf API alignment)', 
       vertices: [{ id: 'v1' }],
       edges: [],
     };
-    const sheaf = constantSheaf(isolated, RISK_LATTICE);
+    const sheaf = v1ConstantSheaf(isolated, RISK_LATTICE);
     const cochain: Cochain0<RiskLevel> = new Map([['v1', RiskLevel.QUARANTINE]]);
     const result = tarskiLaplacian0(sheaf, cochain);
     expect(result.get('v1')).toBe(RiskLevel.DENY); // top
@@ -261,7 +263,7 @@ describe.skip('C · Tarski Laplacian L₀ (pending V1/V2 sheaf API alignment)', 
         { id: 'ca', source: 'c', target: 'a' },
       ],
     };
-    const sheaf = constantSheaf(triangle, RISK_LATTICE);
+    const sheaf = v1ConstantSheaf(triangle, RISK_LATTICE);
     const cochain: Cochain0<RiskLevel> = new Map([
       ['a', RiskLevel.DENY],
       ['b', RiskLevel.QUARANTINE],
@@ -278,14 +280,14 @@ describe.skip('C · Tarski Laplacian L₀ (pending V1/V2 sheaf API alignment)', 
 // D. HARMONIC FLOW
 // ============================================================
 
-describe.skip('D · Harmonic flow (pending V1/V2 sheaf API alignment)', () => {
+describe('D · Harmonic flow', () => {
   const twoVertexGraph: CellComplex = {
     vertices: [{ id: 'v1' }, { id: 'v2' }],
     edges: [{ id: 'e1', source: 'v1', target: 'v2' }],
   };
 
   it('flow step: x ∧ L₀(x) is ≤ x (monotonically non-increasing)', () => {
-    const sheaf = constantSheaf(twoVertexGraph, RISK_LATTICE);
+    const sheaf = v1ConstantSheaf(twoVertexGraph, RISK_LATTICE);
     const initial: Cochain0<RiskLevel> = new Map([
       ['v1', RiskLevel.DENY],
       ['v2', RiskLevel.QUARANTINE],
@@ -300,35 +302,35 @@ describe.skip('D · Harmonic flow (pending V1/V2 sheaf API alignment)', () => {
   });
 
   it('flow converges from (DENY, ALLOW) to (ALLOW, ALLOW)', () => {
-    const sheaf = constantSheaf(twoVertexGraph, RISK_LATTICE);
+    const sheaf = v1ConstantSheaf(twoVertexGraph, RISK_LATTICE);
     const initial: Cochain0<RiskLevel> = new Map([
       ['v1', RiskLevel.DENY],
       ['v2', RiskLevel.ALLOW],
     ]);
-    const { fixedPoint, converged } = harmonicFlow(sheaf, initial);
+    const { fixedPoint, converged } = v1HarmonicFlow(sheaf, initial);
     expect(converged).toBe(true);
     expect(fixedPoint.get('v1')).toBe(RiskLevel.ALLOW);
     expect(fixedPoint.get('v2')).toBe(RiskLevel.ALLOW);
   });
 
   it('already-consistent cochain converges in 0 iterations', () => {
-    const sheaf = constantSheaf(twoVertexGraph, RISK_LATTICE);
+    const sheaf = v1ConstantSheaf(twoVertexGraph, RISK_LATTICE);
     const initial: Cochain0<RiskLevel> = new Map([
       ['v1', RiskLevel.ESCALATE],
       ['v2', RiskLevel.ESCALATE],
     ]);
-    const { iterations, converged } = harmonicFlow(sheaf, initial);
+    const { iterations, converged } = v1HarmonicFlow(sheaf, initial);
     expect(converged).toBe(true);
     expect(iterations).toBe(0);
   });
 
   it('boolean flow: (true, false) → (false, false)', () => {
-    const sheaf = constantSheaf(twoVertexGraph, BOOLEAN_LATTICE);
+    const sheaf = v1ConstantSheaf(twoVertexGraph, BOOLEAN_LATTICE);
     const initial: Cochain0<boolean> = new Map([
       ['v1', true],
       ['v2', false],
     ]);
-    const { fixedPoint, converged } = harmonicFlow(sheaf, initial);
+    const { fixedPoint, converged } = v1HarmonicFlow(sheaf, initial);
     expect(converged).toBe(true);
     expect(fixedPoint.get('v1')).toBe(false);
     expect(fixedPoint.get('v2')).toBe(false);
@@ -339,7 +341,7 @@ describe.skip('D · Harmonic flow (pending V1/V2 sheaf API alignment)', () => {
 // E. GLOBAL SECTIONS (TH⁰)
 // ============================================================
 
-describe.skip('E · Global sections TH⁰ (pending V1/V2 sheaf API alignment)', () => {
+describe('E · Global sections TH⁰', () => {
   it('constant sheaf on connected graph: sections are constant cochains', () => {
     const triangle: CellComplex = {
       vertices: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
@@ -349,7 +351,7 @@ describe.skip('E · Global sections TH⁰ (pending V1/V2 sheaf API alignment)', 
         { id: 'ca', source: 'c', target: 'a' },
       ],
     };
-    const sheaf = constantSheaf(triangle, RISK_LATTICE);
+    const sheaf = v1ConstantSheaf(triangle, RISK_LATTICE);
     const { fixedPoint, converged } = globalSections(sheaf);
     expect(converged).toBe(true);
 
@@ -365,7 +367,7 @@ describe.skip('E · Global sections TH⁰ (pending V1/V2 sheaf API alignment)', 
       vertices: [{ id: 'a' }, { id: 'b' }],
       edges: [], // No edges → disconnected
     };
-    const sheaf = constantSheaf(disconnected, RISK_LATTICE);
+    const sheaf = v1ConstantSheaf(disconnected, RISK_LATTICE);
     const { fixedPoint, converged } = globalSections(sheaf);
     expect(converged).toBe(true);
     // Each isolated vertex keeps its top value
@@ -378,14 +380,14 @@ describe.skip('E · Global sections TH⁰ (pending V1/V2 sheaf API alignment)', 
 // F. OBSTRUCTION MEASUREMENT
 // ============================================================
 
-describe.skip('F · Obstruction degree (pending V1 API export)', () => {
+describe('F · Obstruction degree', () => {
   const twoVertexGraph: CellComplex = {
     vertices: [{ id: 'v1' }, { id: 'v2' }],
     edges: [{ id: 'e1', source: 'v1', target: 'v2' }],
   };
 
   it('zero obstruction when all values agree', () => {
-    const sheaf = constantSheaf(twoVertexGraph, RISK_LATTICE);
+    const sheaf = v1ConstantSheaf(twoVertexGraph, RISK_LATTICE);
     const cochain: Cochain0<RiskLevel> = new Map([
       ['v1', RiskLevel.QUARANTINE],
       ['v2', RiskLevel.QUARANTINE],
@@ -394,7 +396,7 @@ describe.skip('F · Obstruction degree (pending V1 API export)', () => {
   });
 
   it('nonzero obstruction when values disagree', () => {
-    const sheaf = constantSheaf(twoVertexGraph, RISK_LATTICE);
+    const sheaf = v1ConstantSheaf(twoVertexGraph, RISK_LATTICE);
     const cochain: Cochain0<RiskLevel> = new Map([
       ['v1', RiskLevel.DENY],
       ['v2', RiskLevel.ALLOW],
@@ -405,7 +407,7 @@ describe.skip('F · Obstruction degree (pending V1 API export)', () => {
   });
 
   it('maximal obstruction: DENY vs ALLOW → one drops 3 levels / maxRank 3', () => {
-    const sheaf = constantSheaf(twoVertexGraph, RISK_LATTICE);
+    const sheaf = v1ConstantSheaf(twoVertexGraph, RISK_LATTICE);
     const cochain: Cochain0<RiskLevel> = new Map([
       ['v1', RiskLevel.DENY],
       ['v2', RiskLevel.ALLOW],
@@ -416,7 +418,7 @@ describe.skip('F · Obstruction degree (pending V1 API export)', () => {
   });
 
   it('isGlobalSection returns true for consistent cochain', () => {
-    const sheaf = constantSheaf(twoVertexGraph, RISK_LATTICE);
+    const sheaf = v1ConstantSheaf(twoVertexGraph, RISK_LATTICE);
     const good: Cochain0<RiskLevel> = new Map([
       ['v1', RiskLevel.ESCALATE],
       ['v2', RiskLevel.ESCALATE],
@@ -425,7 +427,7 @@ describe.skip('F · Obstruction degree (pending V1 API export)', () => {
   });
 
   it('isGlobalSection returns false for inconsistent cochain', () => {
-    const sheaf = constantSheaf(twoVertexGraph, RISK_LATTICE);
+    const sheaf = v1ConstantSheaf(twoVertexGraph, RISK_LATTICE);
     const bad: Cochain0<RiskLevel> = new Map([
       ['v1', RiskLevel.DENY],
       ['v2', RiskLevel.ALLOW],
@@ -438,7 +440,7 @@ describe.skip('F · Obstruction degree (pending V1 API export)', () => {
 // G. SCBE TEMPORAL COMPLEX
 // ============================================================
 
-describe.skip('G · Temporal complex builder (pending V1 API export)', () => {
+describe('G · Temporal complex builder', () => {
   it('triadic mode: 3 vertices, 3 edges (triangle)', () => {
     const c = buildTemporalComplex('triadic');
     expect(c.vertices).toHaveLength(3);
@@ -466,7 +468,7 @@ describe.skip('G · Temporal complex builder (pending V1 API export)', () => {
 // H. GOVERNANCE SHEAF
 // ============================================================
 
-describe.skip('H · Governance sheaf (pending V1 API export)', () => {
+describe('H · Governance sheaf', () => {
   it('builds with constant restrictions (no twist)', () => {
     const complex = buildTemporalComplex('triadic');
     const sheaf = buildGovernanceSheaf(complex);
@@ -506,7 +508,7 @@ describe.skip('H · Governance sheaf (pending V1 API export)', () => {
 // I. POLICY OBSTRUCTION DETECTION
 // ============================================================
 
-describe.skip('I · Policy obstruction detection (pending V1 API export)', () => {
+describe('I · Policy obstruction detection', () => {
   it('all agents agree → zero obstruction, no noise', () => {
     const result = detectPolicyObstruction({
       immediate: RiskLevel.QUARANTINE,
@@ -585,7 +587,7 @@ describe.skip('I · Policy obstruction detection (pending V1 API export)', () =>
 // J. FAIL-TO-NOISE
 // ============================================================
 
-describe.skip('J · Fail-to-noise (pending V1 API export)', () => {
+describe('J · Fail-to-noise', () => {
   it('produces fixed-size output', () => {
     const noise = failToNoise(0.7);
     expect(noise).toHaveLength(256);
@@ -630,7 +632,7 @@ describe.skip('J · Fail-to-noise (pending V1 API export)', () => {
 // K. BRAIDED TEMPORAL DISTANCE
 // ============================================================
 
-describe.skip('K · Braided temporal distance (pending V1 API export)', () => {
+describe('K · Braided temporal distance', () => {
   it('identical variants → zero distance', () => {
     expect(braidedTemporalDistance([0.5, 0.5, 0.5])).toBeCloseTo(0, 5);
   });
@@ -672,7 +674,7 @@ describe.skip('K · Braided temporal distance (pending V1 API export)', () => {
 // L. BRAIDED META-TIME
 // ============================================================
 
-describe.skip('L · Braided meta-time (pending V1 API export)', () => {
+describe('L · Braided meta-time', () => {
   it('basic computation: T^(t+2) * intent * context', () => {
     // T=2, t=1, intent=1.1, context=0.9
     const result = braidedMetaTime(2, 1, 1.1, 0.9);
@@ -703,7 +705,7 @@ describe.skip('L · Braided meta-time (pending V1 API export)', () => {
 // M. COHOMOLOGICAL HARMONIC WALL
 // ============================================================
 
-describe.skip('M · Cohomological harmonic wall (pending V1 API export)', () => {
+describe('M · Cohomological harmonic wall', () => {
   it('zero obstruction → wall = 1 (no amplification)', () => {
     expect(cohomologicalHarmonicWall(0)).toBeCloseTo(1, 10);
   });
@@ -744,7 +746,7 @@ describe.skip('M · Cohomological harmonic wall (pending V1 API export)', () => 
 // N. INTEGRATION SCENARIOS
 // ============================================================
 
-describe.skip('N · SCBE governance scenarios (pending V1 API export)', () => {
+describe('N · SCBE governance scenarios', () => {
   it('scenario: all temporal T-variants report safe → ALLOW consensus', () => {
     const result = detectPolicyObstruction({
       immediate: RiskLevel.ALLOW,
