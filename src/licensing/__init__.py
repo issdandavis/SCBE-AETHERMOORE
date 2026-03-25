@@ -45,6 +45,16 @@ from .nist_ai_rmf import (
     generate_combined_compliance_summary,
 )
 
+from .sovereign_manifest import (
+    DeploymentEnvironment,
+    ComplianceFramework,
+    EntropySurfacePolicy,
+    SovereignManifest,
+    generate_sovereign_manifest,
+    verify_manifest_integrity,
+    compute_integrity_chain,
+)
+
 __all__ = [
     "LicenseTier",
     "LicenseModel",
@@ -65,4 +75,11 @@ __all__ = [
     "PolicyFrameworkReport",
     "generate_policy_framework_report",
     "generate_combined_compliance_summary",
+    "DeploymentEnvironment",
+    "ComplianceFramework",
+    "EntropySurfacePolicy",
+    "SovereignManifest",
+    "generate_sovereign_manifest",
+    "verify_manifest_integrity",
+    "compute_integrity_chain",
 ]
