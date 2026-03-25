@@ -25,7 +25,13 @@
  *   7. Ledger catches, not just throws
  */
 
-import { FleetAgent, GovernanceTier, GOVERNANCE_TIERS, TaskPriority, PRIORITY_WEIGHTS } from './types';
+import {
+  FleetAgent,
+  GovernanceTier,
+  GOVERNANCE_TIERS,
+  TaskPriority,
+  PRIORITY_WEIGHTS,
+} from './types';
 
 // ---------------------------------------------------------------------------
 // Enums & Constants
@@ -285,7 +291,7 @@ export function assignmentScore(
   task: TaskCapsule,
   agent: AgentSlot,
   now: number,
-  weights: ScoreWeights = DEFAULT_SCORE_WEIGHTS,
+  weights: ScoreWeights = DEFAULT_SCORE_WEIGHTS
 ): number {
   const timeLeft = Math.max(task.deadlineAt - now, 1e-3);
   const loadRatio = agent.currentLoad / Math.max(agent.catchCapacity, 1);
@@ -312,7 +318,11 @@ export function assignmentScore(
  * U(t) = e^(-lambda * elapsed_seconds)
  * Returns [0, 1] where 1 = fully recoverable, 0 = expired.
  */
-export function recoverability(task: TaskCapsule, now: number, lambda: number = DEFAULT_GRAVITY_LAMBDA): number {
+export function recoverability(
+  task: TaskCapsule,
+  now: number,
+  lambda: number = DEFAULT_GRAVITY_LAMBDA
+): number {
   const elapsedSec = Math.max(now - task.createdAt, 0) / 1000;
   return Math.exp(-lambda * elapsedSec);
 }
@@ -431,7 +441,10 @@ export class JugglingScheduler {
   private weights: ScoreWeights;
   private gravityLambda: number;
 
-  constructor(weights: ScoreWeights = DEFAULT_SCORE_WEIGHTS, gravityLambda: number = DEFAULT_GRAVITY_LAMBDA) {
+  constructor(
+    weights: ScoreWeights = DEFAULT_SCORE_WEIGHTS,
+    gravityLambda: number = DEFAULT_GRAVITY_LAMBDA
+  ) {
     this.weights = weights;
     this.gravityLambda = gravityLambda;
   }
@@ -492,11 +505,12 @@ export class JugglingScheduler {
    */
   findBestReceiver(capsule: TaskCapsule): AgentSlot | null {
     const now = Date.now();
-    const candidates = capsule.nextCandidates.length > 0
-      ? capsule.nextCandidates
-          .map((id) => this.agents.get(id))
-          .filter((a): a is AgentSlot => a !== undefined)
-      : Array.from(this.agents.values());
+    const candidates =
+      capsule.nextCandidates.length > 0
+        ? capsule.nextCandidates
+            .map((id) => this.agents.get(id))
+            .filter((a): a is AgentSlot => a !== undefined)
+        : Array.from(this.agents.values());
 
     // Rule 1: filter to agents that can actually catch
     const eligible = candidates.filter((a) => this.canCatch(a, capsule, now));
@@ -698,7 +712,10 @@ export class JugglingScheduler {
 
     const inFlight = allCapsules.filter((c) => c.state === FlightState.THROWN).length;
     const held = allCapsules.filter(
-      (c) => c.state === FlightState.HELD || c.state === FlightState.CAUGHT || c.state === FlightState.VALIDATING,
+      (c) =>
+        c.state === FlightState.HELD ||
+        c.state === FlightState.CAUGHT ||
+        c.state === FlightState.VALIDATING
     ).length;
     const drops = allCapsules.filter((c) => c.state === FlightState.DROPPED).length;
     const done = allCapsules.filter((c) => c.state === FlightState.DONE).length;
