@@ -189,9 +189,7 @@ describe('Repetition Score', () => {
 
 describe('Probing Detection', () => {
   it('should classify sparse queries as LEGITIMATE', () => {
-    const obs: QueryObservation[] = [
-      makeObs(ORIGIN, 1000),
-    ];
+    const obs: QueryObservation[] = [makeObs(ORIGIN, 1000)];
     const result = detectProbing(obs);
     expect(result.classification).toBe('LEGITIMATE');
     expect(result.confidence).toBe(0);
@@ -204,9 +202,7 @@ describe('Probing Detection', () => {
     let t = 0;
     for (let x = -0.5; x <= 0.5; x += step) {
       for (let y = -0.5; y <= 0.5; y += step) {
-        observations.push(
-          makeObs([x, y, 0, 0, 0, 0] as Vector6D, t, 1.0)
-        );
+        observations.push(makeObs([x, y, 0, 0, 0, 0] as Vector6D, t, 1.0));
         t += 100; // Regular 100ms intervals
       }
     }
@@ -267,9 +263,7 @@ describe('Leakage Budget', () => {
   });
 
   it('should track consumption', () => {
-    const observations = Array.from({ length: 10 }, (_, i) =>
-      makeObs(ORIGIN, i * 100, 5.0)
-    );
+    const observations = Array.from({ length: 10 }, (_, i) => makeObs(ORIGIN, i * 100, 5.0));
     const result = computeLeakageBudget(observations);
     expect(result.consumed).toBe(50);
     expect(result.remaining).toBe(78);
@@ -277,9 +271,7 @@ describe('Leakage Budget', () => {
   });
 
   it('should exhaust budget', () => {
-    const observations = Array.from({ length: 50 }, (_, i) =>
-      makeObs(ORIGIN, i * 100, 3.0)
-    );
+    const observations = Array.from({ length: 50 }, (_, i) => makeObs(ORIGIN, i * 100, 3.0));
     const result = computeLeakageBudget(observations);
     expect(result.consumed).toBe(150);
     expect(result.remaining).toBe(0);
@@ -301,9 +293,7 @@ describe('Leakage Budget', () => {
 
   it('should only consider windowed observations', () => {
     const config: EntropySurfaceConfig = { ...DEFAULT_ENTROPY_SURFACE_CONFIG, windowSize: 5 };
-    const observations = Array.from({ length: 20 }, (_, i) =>
-      makeObs(ORIGIN, i * 100, 2.0)
-    );
+    const observations = Array.from({ length: 20 }, (_, i) => makeObs(ORIGIN, i * 100, 2.0));
     const result = computeLeakageBudget(observations, config);
     // Only last 5 observations counted
     expect(result.consumed).toBe(10);
@@ -533,11 +523,7 @@ describe('Anti-Extraction Property', () => {
 
     // Simulate systematic probing
     for (let i = 0; i < 40; i++) {
-      const pos: Vector6D = [
-        Math.sin(i * 0.5) * 0.3,
-        Math.cos(i * 0.5) * 0.3,
-        0, 0, 0, 0,
-      ];
+      const pos: Vector6D = [Math.sin(i * 0.5) * 0.3, Math.cos(i * 0.5) * 0.3, 0, 0, 0, 0];
       const assessment = tracker.observe(pos, 2.0, i * 100);
       retentions.push(assessment.nullification.signalRetention);
     }
@@ -577,9 +563,7 @@ describe('Anti-Extraction Property', () => {
     }
 
     // Later nullified responses should be closer to origin (less informative)
-    const earlyNorm = Math.sqrt(
-      nullifiedResponses[0].reduce((s, x) => s + x * x, 0)
-    );
+    const earlyNorm = Math.sqrt(nullifiedResponses[0].reduce((s, x) => s + x * x, 0));
     const lateNorm = Math.sqrt(
       nullifiedResponses[nullifiedResponses.length - 1].reduce((s, x) => s + x * x, 0)
     );
