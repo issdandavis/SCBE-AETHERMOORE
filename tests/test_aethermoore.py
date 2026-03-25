@@ -72,7 +72,6 @@ from symphonic_cipher.scbe_aethermoore.pqc.pqc_harmonic import (
 
 from symphonic_cipher.scbe_aethermoore.pqc import Kyber768, Dilithium3
 
-
 # =============================================================================
 # CONSTANTS MODULE TESTS
 # =============================================================================

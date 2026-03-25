@@ -29,7 +29,6 @@ from typing import Any, Dict, List, Optional
 
 from .task_monitor import DriftLevel, DriftResult, AgentSession
 
-
 # ---------------------------------------------------------------------------
 #  Prompt Severity
 # ---------------------------------------------------------------------------
@@ -124,14 +123,8 @@ GENTLE_TEMPLATES = [
         'Just checking in — your declared task is: "{intent}". '
         "Your recent action ({action}) looks a bit different. Still on track?"
     ),
-    (
-        'Friendly reminder: you signed up for "{intent}". '
-        "Want to refocus, or has the task evolved?"
-    ),
-    (
-        'Quick GPS check: your destination is "{intent}" but you seem to be '
-        'heading toward "{action}". Recalculating?'
-    ),
+    ('Friendly reminder: you signed up for "{intent}". ' "Want to refocus, or has the task evolved?"),
+    ('Quick GPS check: your destination is "{intent}" but you seem to be ' 'heading toward "{action}". Recalculating?'),
 ]
 
 REDIRECT_TEMPLATES = [

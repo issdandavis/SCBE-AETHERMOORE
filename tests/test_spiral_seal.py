@@ -38,7 +38,6 @@ from symphonic_cipher.scbe_aethermoore.spiral_seal import (
     TAG_SIZE,
 )
 
-
 # =============================================================================
 # SACRED TONGUE TOKENIZER TESTS
 # =============================================================================

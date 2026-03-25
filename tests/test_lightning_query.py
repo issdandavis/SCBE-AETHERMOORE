@@ -6,7 +6,6 @@ import pytest
 
 from src.storage.lightning_query import LightningQuery, TongueBloom
 
-
 # =========================================================================== #
 #  Bloom Filter
 # =========================================================================== #

@@ -24,7 +24,6 @@ from .pqc_core import (
     KYBER768_SHARED_SECRET_SIZE,
 )
 
-
 # Constants for HMAC chain (matching unified.py Layer 0)
 NONCE_BYTES = 12
 KEY_LEN = 32

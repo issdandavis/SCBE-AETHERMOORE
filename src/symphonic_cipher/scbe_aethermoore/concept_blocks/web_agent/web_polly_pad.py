@@ -36,7 +36,6 @@ from typing import Any, Dict, List, Literal, Optional, Tuple
 
 from .semantic_antivirus import SemanticAntivirus, ContentVerdict
 
-
 # ---------------------------------------------------------------------------
 #  Types
 # ---------------------------------------------------------------------------

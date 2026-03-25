@@ -5,7 +5,6 @@ import importlib.util
 import json
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -73,8 +72,11 @@ def test_gh_sweep_json_combines_sections_and_fix_lane(monkeypatch, capsys) -> No
         scbe_system_cli,
         "_gh_pulse_payload",
         lambda: {
-            "commit_count": 9, "merged_pr_count": 3, "ci_pass_count": 5,
-            "ci_fail_count": 1, "open_scan_alerts": 2,
+            "commit_count": 9,
+            "merged_pr_count": 3,
+            "ci_pass_count": 5,
+            "ci_fail_count": 1,
+            "open_scan_alerts": 2,
         },
     )
     monkeypatch.setattr(scbe_system_cli, "_gh_release_payload", lambda: {"tagName": "v9.9.9"})

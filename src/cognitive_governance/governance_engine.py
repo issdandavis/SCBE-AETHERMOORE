@@ -40,6 +40,7 @@ from .permeability import (
 
 class GovernanceDecision(Enum):
     """Governance decision tiers."""
+
     ALLOW = "ALLOW"
     CONSTRAIN = "CONSTRAIN"
     REDIRECT = "REDIRECT"
@@ -49,13 +50,14 @@ class GovernanceDecision(Enum):
 @dataclass
 class DecisionContext:
     """Full context for a governance decision."""
+
     decision: GovernanceDecision
     score: float  # 0.0 (deny) to 1.0 (allow)
-    cost: float   # Total governance cost
+    cost: float  # Total governance cost
     distance: float  # Hyperbolic distance from center
     classification: str  # interior / governance / exterior
     passable_tongues: List[str]  # Which tongues can proceed
-    blocked_tongues: List[str]   # Which tongues are blocked
+    blocked_tongues: List[str]  # Which tongues are blocked
     dominant_tongue: str  # Agent's dominant tongue
     dominant_valence: str  # Agent's dominant valence
     phase_alignment: float  # Phase alignment with safe operation
@@ -76,6 +78,7 @@ class GovernanceEngine:
     - Phase coupling
     - Trust history
     """
+
     space: DimensionalSpace = field(default_factory=DimensionalSpace)
     hypercube: DoubleHypercube = field(default_factory=DoubleHypercube)
     permeability: PermeabilityMatrix = field(default_factory=create_security_walls)
@@ -196,7 +199,7 @@ class GovernanceEngine:
         # Record history
         self.history.append(ctx)
         if len(self.history) > self.max_history:
-            self.history = self.history[-self.max_history:]
+            self.history = self.history[-self.max_history :]
 
         return ctx
 
@@ -238,7 +241,7 @@ class GovernanceEngine:
             score *= 0.7
 
         # Sensitivity scaling
-        score *= (1.0 - sensitivity * 0.3)
+        score *= 1.0 - sensitivity * 0.3
 
         return max(0.0, min(1.0, score))
 

@@ -36,7 +36,6 @@ import math
 from dataclasses import dataclass
 from typing import Dict, List, Sequence, Tuple
 
-
 # ---------------------------------------------------------------------------
 # NegaBinary
 # ---------------------------------------------------------------------------

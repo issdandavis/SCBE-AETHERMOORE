@@ -162,9 +162,7 @@ def shannon_entropy(counts: List[int]) -> float:
     return entropy / max_entropy if max_entropy > 0 else 0.0
 
 
-def detect_temporal_regularity(
-    timestamps: List[float], jitter_threshold: float = 50.0
-) -> float:
+def detect_temporal_regularity(timestamps: List[float], jitter_threshold: float = 50.0) -> float:
     """Detect temporal regularity in query timing. Returns [0, 1]."""
     if len(timestamps) < 3:
         return 0.0
@@ -188,18 +186,14 @@ def compute_coverage_breadth(positions: List[Vector6D], bin_count: int = 5) -> f
 
     visited: set = set()
     for pos in positions:
-        key = tuple(
-            min(bin_count - 1, max(0, int(((v + 1) / 2) * bin_count))) for v in pos
-        )
+        key = tuple(min(bin_count - 1, max(0, int(((v + 1) / 2) * bin_count))) for v in pos)
         visited.add(key)
 
     max_bins = bin_count**6
     return len(visited) / max_bins
 
 
-def compute_repetition_score(
-    positions: List[Vector6D], dist_threshold: float = 0.1
-) -> float:
+def compute_repetition_score(positions: List[Vector6D], dist_threshold: float = 0.1) -> float:
     """Compute repetition score. Returns [0, 1]."""
     if len(positions) < 2:
         return 0.0
@@ -241,24 +235,18 @@ def detect_probing(
     bin_count = 5
     bin_counts: dict = {}
     for pos in positions:
-        key = tuple(
-            min(bin_count - 1, max(0, int(((v + 1) / 2) * bin_count))) for v in pos
-        )
+        key = tuple(min(bin_count - 1, max(0, int(((v + 1) / 2) * bin_count))) for v in pos)
         bin_counts[key] = bin_counts.get(key, 0) + 1
     query_entropy = shannon_entropy(list(bin_counts.values()))
 
     # 2. Temporal regularity
-    temporal_regularity = detect_temporal_regularity(
-        timestamps, config.timing_jitter_threshold
-    )
+    temporal_regularity = detect_temporal_regularity(timestamps, config.timing_jitter_threshold)
 
     # 3. Coverage breadth
     coverage_breadth = compute_coverage_breadth(positions, bin_count)
 
     # 4. Repetition
-    repetition_score = compute_repetition_score(
-        positions, config.repetition_dist_threshold
-    )
+    repetition_score = compute_repetition_score(positions, config.repetition_dist_threshold)
 
     # Composite confidence
     entropy_signal = 1.0 - query_entropy
@@ -374,9 +362,7 @@ def compute_nullification(
 # ═══════════════════════════════════════════════════════════════
 
 
-def surface_distance(
-    probing: ProbingSignature, leakage: LeakageBudget, theta: float = 0.5
-) -> float:
+def surface_distance(probing: ProbingSignature, leakage: LeakageBudget, theta: float = 0.5) -> float:
     """Signed distance to entropy surface boundary."""
     pressure = max(probing.confidence, leakage.pressure)
     return pressure - theta
@@ -443,9 +429,7 @@ class EntropySurfaceTracker:
         if timestamp is None:
             timestamp = _time.time() * 1000  # ms
 
-        self._observations.append(
-            QueryObservation(position=position, timestamp=timestamp, response_mi=response_mi)
-        )
+        self._observations.append(QueryObservation(position=position, timestamp=timestamp, response_mi=response_mi))
 
         max_history = self.config.window_size * 2
         if len(self._observations) > max_history:

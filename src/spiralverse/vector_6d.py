@@ -32,7 +32,6 @@ from typing import Dict, List, Optional, Tuple
 from enum import Enum
 from datetime import datetime
 
-
 # =============================================================================
 # Axis Definitions
 # =============================================================================

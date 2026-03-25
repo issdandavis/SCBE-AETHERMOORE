@@ -10,7 +10,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 SCHEMA_VERSION = "action_map_v1"
 EVENT_SCHEMA_VERSION = "action_event_v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]

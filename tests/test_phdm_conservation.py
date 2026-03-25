@@ -8,7 +8,6 @@ import numpy as np
 from hypothesis import given
 from hypothesis import strategies as st
 
-
 SACRED_TONGUE_WEIGHTS = {
     "KO": 1.00,
     "AV": 1.62,

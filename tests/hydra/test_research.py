@@ -56,8 +56,7 @@ class DummyMultiTabLimb:
                     "success": True,
                     "data": {
                         "preview": (
-                            "<html><body><h1>Aethermoor</h1>"
-                            "<p>Multi-agent governance and safety.</p></body></html>"
+                            "<html><body><h1>Aethermoor</h1>" "<p>Multi-agent governance and safety.</p></body></html>"
                         ),
                     },
                 }

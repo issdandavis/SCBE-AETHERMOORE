@@ -25,12 +25,12 @@ PHI = (1 + math.sqrt(5)) / 2
 
 # Six Sacred Tongues with phase angles and phi-scaled weights
 TONGUES = {
-    "KO": {"phase": 0, "weight": 1.00},          # Kor'aelin (Control)
-    "AV": {"phase": 60, "weight": PHI},            # Avali (I/O)
-    "RU": {"phase": 120, "weight": PHI ** 2},      # Runethic (Policy)
-    "CA": {"phase": 180, "weight": PHI ** 3},       # Cassisivadan (Compute)
-    "UM": {"phase": 240, "weight": PHI ** 4},       # Umbroth (Security)
-    "DR": {"phase": 300, "weight": PHI ** 5},       # Draumric (Structure)
+    "KO": {"phase": 0, "weight": 1.00},  # Kor'aelin (Control)
+    "AV": {"phase": 60, "weight": PHI},  # Avali (I/O)
+    "RU": {"phase": 120, "weight": PHI**2},  # Runethic (Policy)
+    "CA": {"phase": 180, "weight": PHI**3},  # Cassisivadan (Compute)
+    "UM": {"phase": 240, "weight": PHI**4},  # Umbroth (Security)
+    "DR": {"phase": 300, "weight": PHI**5},  # Draumric (Structure)
 }
 
 TONGUE_NAMES = list(TONGUES.keys())
@@ -38,6 +38,7 @@ TONGUE_NAMES = list(TONGUES.keys())
 
 class StateValence(Enum):
     """Three-state valence for cognitive dimensions."""
+
     NEGATIVE = -1
     NEUTRAL = 0
     POSITIVE = 1
@@ -51,6 +52,7 @@ class TongueVector:
     Each tongue contributes a weighted component to the overall
     cognitive state. The phase angle determines coupling between tongues.
     """
+
     tongue: str
     magnitude: float = 0.0
     phase_offset: float = 0.0  # Additional phase beyond base tongue phase
@@ -97,17 +99,13 @@ class CognitivePoint:
     - Near boundary = increasingly expensive/restricted
     - Beyond boundary = denied (infinite cost)
     """
+
     # Core coordinates: valence -> spatial_dim -> tongue -> magnitude
     coordinates: Dict[StateValence, Dict[int, Dict[str, float]]] = field(
-        default_factory=lambda: {
-            v: {d: {t: 0.0 for t in TONGUE_NAMES} for d in range(3)}
-            for v in StateValence
-        }
+        default_factory=lambda: {v: {d: {t: 0.0 for t in TONGUE_NAMES} for d in range(3)} for v in StateValence}
     )
     # Phase offsets per tongue (beyond base phase)
-    phase_offsets: Dict[str, float] = field(
-        default_factory=lambda: {t: 0.0 for t in TONGUE_NAMES}
-    )
+    phase_offsets: Dict[str, float] = field(default_factory=lambda: {t: 0.0 for t in TONGUE_NAMES})
     # Metadata
     agent_id: Optional[str] = None
     timestamp: float = 0.0
@@ -198,6 +196,7 @@ class DimensionalSpace:
     Key formula:
         d_H(u,v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2)))
     """
+
     # Curvature parameter (negative = hyperbolic)
     curvature: float = -1.0
     # Cost base for exponential scaling
@@ -247,7 +246,7 @@ class DimensionalSpace:
         @axiom A4: Harmonic wall (Layer 12)
         """
         exponent = (distance * self.gamma) ** 2
-        return self.R ** exponent
+        return self.R**exponent
 
     def safety_score(self, point: CognitivePoint) -> float:
         """
@@ -345,7 +344,7 @@ class DimensionalSpace:
                     coord = (byte_val - 0.5) * radius
                     # Higher sensitivity activates security tongues more
                     if tongue in ("UM", "DR") and sensitivity > 0.5:
-                        coord *= (1 + sensitivity)
+                        coord *= 1 + sensitivity
                     point.set_coordinate(valence, spatial, tongue, coord)
                     idx += 1
 
