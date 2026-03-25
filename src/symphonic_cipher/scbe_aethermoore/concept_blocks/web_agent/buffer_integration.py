@@ -40,7 +40,6 @@ from typing import Any, Dict, List, Optional
 
 from .semantic_antivirus import SemanticAntivirus
 
-
 # ---------------------------------------------------------------------------
 #  Platform definitions
 # ---------------------------------------------------------------------------

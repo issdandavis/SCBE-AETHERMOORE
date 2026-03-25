@@ -20,6 +20,7 @@ from .registry import AgentRegistry
 @dataclass
 class RouteResult:
     """Result of a routing attempt."""
+
     delivered: bool
     channel_id: Optional[str] = None
     error: Optional[str] = None

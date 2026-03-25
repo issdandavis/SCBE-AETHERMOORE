@@ -31,12 +31,11 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
-
 # ── Pricing Constants (from LAUNCH_SKU.md) ───────────────────────────────────
 
-DEFAULT_RATE_PER_1K_DECISIONS = 2.50     # USD per 1,000 decisions
-DEFAULT_PLATFORM_FLOOR_MONTHLY = 99.00   # USD per tenant per month
-DEFAULT_AGENT_BUNDLE_MONTHLY = 29.00     # USD per agent per month
+DEFAULT_RATE_PER_1K_DECISIONS = 2.50  # USD per 1,000 decisions
+DEFAULT_PLATFORM_FLOOR_MONTHLY = 99.00  # USD per tenant per month
+DEFAULT_AGENT_BUNDLE_MONTHLY = 29.00  # USD per agent per month
 
 # Success SLOs
 TARGET_P95_LATENCY_MS = 120
@@ -45,20 +44,23 @@ TARGET_FALSE_QUARANTINE_RATE = 0.015
 
 # ── Decision Record ──────────────────────────────────────────────────────────
 
+
 @dataclass(frozen=True)
 class DecisionRecord:
     """A single governance decision event for billing."""
+
     timestamp: float
     tenant_id: str
     agent_id: str
-    decision: str              # ALLOW, QUARANTINE, DENY, ESCALATE
-    latency_ms: float          # p95 target: ≤120ms
-    risk_score: float          # [0, 1]
-    policy_ids: List[str]      # Which policies triggered
-    billable: bool = True      # False for test/shadow mode
+    decision: str  # ALLOW, QUARANTINE, DENY, ESCALATE
+    latency_ms: float  # p95 target: ≤120ms
+    risk_score: float  # [0, 1]
+    policy_ids: List[str]  # Which policies triggered
+    billable: bool = True  # False for test/shadow mode
 
 
 # ── Usage Meter ──────────────────────────────────────────────────────────────
+
 
 class UsageMeter:
     """Thread-safe per-decision usage meter.
@@ -276,16 +278,20 @@ class UsageMeter:
         with self._lock:
             lines = []
             for r in self._records:
-                lines.append(json.dumps({
-                    "timestamp": r.timestamp,
-                    "tenant_id": r.tenant_id,
-                    "agent_id": r.agent_id,
-                    "decision": r.decision,
-                    "latency_ms": r.latency_ms,
-                    "risk_score": r.risk_score,
-                    "policy_ids": r.policy_ids,
-                    "billable": r.billable,
-                }))
+                lines.append(
+                    json.dumps(
+                        {
+                            "timestamp": r.timestamp,
+                            "tenant_id": r.tenant_id,
+                            "agent_id": r.agent_id,
+                            "decision": r.decision,
+                            "latency_ms": r.latency_ms,
+                            "risk_score": r.risk_score,
+                            "policy_ids": r.policy_ids,
+                            "billable": r.billable,
+                        }
+                    )
+                )
             return "\n".join(lines)
 
     def reset(self) -> None:

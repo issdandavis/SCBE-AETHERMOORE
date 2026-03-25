@@ -26,7 +26,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from .models import PlaythroughRecord
 
-
 # ---------------------------------------------------------------------------
 #  Event types
 # ---------------------------------------------------------------------------

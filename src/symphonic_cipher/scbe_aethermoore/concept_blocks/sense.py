@@ -20,7 +20,6 @@ from typing import Any, Dict, List
 
 from .base import BlockResult, BlockStatus, ConceptBlock
 
-
 # -- scalar Kalman filter ----------------------------------------------------
 
 

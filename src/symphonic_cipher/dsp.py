@@ -18,7 +18,6 @@ from typing import Optional, Tuple, List
 from dataclasses import dataclass
 from enum import Enum
 
-
 # =============================================================================
 # CONSTANTS
 # =============================================================================

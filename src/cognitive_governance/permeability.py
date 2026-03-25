@@ -23,10 +23,11 @@ from .dimensional_space import TONGUE_NAMES, TONGUES, CognitivePoint, StateValen
 
 class WallVisibility(Enum):
     """How a wall appears in a given dimension."""
-    INVISIBLE = 0       # Wall doesn't exist in this dimension
-    TRANSLUCENT = 1     # Wall exists but can be crossed with cost
-    OPAQUE = 2          # Wall exists and blocks passage
-    REFLECTIVE = 3      # Wall exists and reverses momentum
+
+    INVISIBLE = 0  # Wall doesn't exist in this dimension
+    TRANSLUCENT = 1  # Wall exists but can be crossed with cost
+    OPAQUE = 2  # Wall exists and blocks passage
+    REFLECTIVE = 3  # Wall exists and reverses momentum
 
 
 @dataclass
@@ -44,6 +45,7 @@ class DimensionalWall:
     This means an agent can freely control (KO) while being
     blocked from security operations (UM).
     """
+
     wall_id: str
     # Visibility per tongue dimension
     visibility: Dict[str, WallVisibility] = field(
@@ -110,6 +112,7 @@ class PermeabilityMatrix:
     crossing wall A then wall B may have different cost than
     crossing wall B then wall A (T o I != I o T).
     """
+
     walls: List[DimensionalWall] = field(default_factory=list)
     # Cache of computed costs
     _cost_cache: Dict[Tuple[str, str], float] = field(default_factory=dict, repr=False)
@@ -184,11 +187,7 @@ class PermeabilityMatrix:
         result = {}
         for tongue in TONGUE_NAMES:
             # Use the dominant coordinate for this tongue as momentum
-            momentum = max(
-                abs(point.get_coordinate(v, s, tongue))
-                for v in StateValence
-                for s in range(3)
-            )
+            momentum = max(abs(point.get_coordinate(v, s, tongue)) for v in StateValence for s in range(3))
             result[tongue] = self.total_cost(tongue, momentum)
         return result
 

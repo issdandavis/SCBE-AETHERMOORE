@@ -28,7 +28,6 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, FrozenSet, List, Optional, Tuple
 
-
 # ---------------------------------------------------------------------------
 #  Tongue denominations — each tongue is a "currency" with different weight
 # ---------------------------------------------------------------------------

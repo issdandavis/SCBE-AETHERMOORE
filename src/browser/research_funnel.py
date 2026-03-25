@@ -270,8 +270,7 @@ class ResearchFunnel:
                             "type": "text",
                             "text": {
                                 "content": (
-                                    f"Sources: {len(records)}"
-                                    f" | Topics: {', '.join(records[0].get('topics', []))}"
+                                    f"Sources: {len(records)}" f" | Topics: {', '.join(records[0].get('topics', []))}"
                                 )
                             },
                         }

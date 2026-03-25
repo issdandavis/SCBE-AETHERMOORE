@@ -40,7 +40,6 @@ from .dual_lattice import (
 from .octree import HyperbolicOctree
 from .hyperpath_finder import HyperpathFinder, PathResult, hyperbolic_distance_safe
 
-
 # =============================================================================
 # Constants
 # =============================================================================
@@ -1102,14 +1101,12 @@ class DualLatticeIntegrator:
 
 def demo():
     """Demonstrate 14-layer integration."""
-    print(
-        """
+    print("""
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║              DUAL LATTICE CROSS-STITCH - 14-LAYER INTEGRATION                 ║
 ║         PQC-Gated • Realm-Breathing • Spectral-Coherent • Sonified            ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
-    """
-    )
+    """)
 
     integrator = DualLatticeIntegrator()
 

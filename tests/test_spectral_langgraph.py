@@ -19,7 +19,6 @@ from hydra.spectral_langgraph import (
 )
 from hydra.color_dimension import ColorBand
 
-
 # ── SpectralMixer (FNet) ─────────────────────────────────────────
 
 

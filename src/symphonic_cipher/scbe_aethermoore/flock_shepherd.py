@@ -34,7 +34,6 @@ from typing import Any, Dict, List, Optional
 
 from .trinary import BalancedTernary
 
-
 # ---------------------------------------------------------------------------
 # Agent Definitions
 # ---------------------------------------------------------------------------

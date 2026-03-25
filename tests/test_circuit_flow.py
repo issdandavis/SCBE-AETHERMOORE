@@ -46,7 +46,6 @@ from circuit_flow import (
     _build_registry,
 )
 
-
 PHI = (1 + math.sqrt(5)) / 2
 
 

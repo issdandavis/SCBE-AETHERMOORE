@@ -9,7 +9,6 @@ without external dependencies (no numpy/scipy).
 import math
 from typing import List
 
-
 # Constants
 PHI = (1 + math.sqrt(5)) / 2  # Golden ratio ≈ 1.618
 EPS = 1e-10

@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
-
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = ROOT / "scripts" / "system" / "youtube_transcript_pull.py"
 SPEC = importlib.util.spec_from_file_location("youtube_transcript_pull", SCRIPT_PATH)

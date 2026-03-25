@@ -33,7 +33,6 @@ from licensing.sovereign_manifest import (
     verify_manifest_integrity,
 )
 
-
 SECRET = "test-sovereign-signing-secret-2026"
 
 
@@ -80,7 +79,8 @@ class TestManifestGeneration:
         """OEM license should produce a deployment-ready manifest."""
         key = _oem_license()
         manifest = generate_sovereign_manifest(
-            key, SECRET,
+            key,
+            SECRET,
             environment=DeploymentEnvironment.AIR_GAPPED,
             deployment_id="GOV-2026-001",
         )
@@ -98,7 +98,8 @@ class TestManifestGeneration:
         """Enterprise license in sovereign cloud."""
         key = _enterprise_license()
         manifest = generate_sovereign_manifest(
-            key, SECRET,
+            key,
+            SECRET,
             environment=DeploymentEnvironment.SOVEREIGN_CLOUD,
         )
 
@@ -177,7 +178,9 @@ class TestCompliance:
         key = _oem_license()
         targets = [ComplianceFramework.NIST_AI_RMF, ComplianceFramework.FEDRAMP_HIGH]
         manifest = generate_sovereign_manifest(
-            key, SECRET, compliance_targets=targets,
+            key,
+            SECRET,
+            compliance_targets=targets,
         )
 
         assert ComplianceFramework.NIST_AI_RMF.value in manifest.compliance_frameworks
@@ -194,7 +197,8 @@ class TestEntropySurface:
         """Air-gapped deployments should get paranoid entropy policy."""
         key = _oem_license()
         manifest = generate_sovereign_manifest(
-            key, SECRET,
+            key,
+            SECRET,
             environment=DeploymentEnvironment.AIR_GAPPED,
         )
 
@@ -206,7 +210,8 @@ class TestEntropySurface:
         """Sovereign cloud gets standard entropy policy."""
         key = _oem_license()
         manifest = generate_sovereign_manifest(
-            key, SECRET,
+            key,
+            SECRET,
             environment=DeploymentEnvironment.SOVEREIGN_CLOUD,
         )
 
@@ -218,7 +223,8 @@ class TestEntropySurface:
         """SCIF deployments should get paranoid mode."""
         key = _oem_license()
         manifest = generate_sovereign_manifest(
-            key, SECRET,
+            key,
+            SECRET,
             environment=DeploymentEnvironment.SCIF,
         )
 
@@ -232,7 +238,9 @@ class TestEntropySurface:
             anti_extraction_mode="aggressive",
         )
         manifest = generate_sovereign_manifest(
-            key, SECRET, entropy_policy=policy,
+            key,
+            SECRET,
+            entropy_policy=policy,
         )
 
         assert manifest.entropy_surface["leakage_budget_bits"] == 32.0
@@ -242,7 +250,8 @@ class TestEntropySurface:
         """SCIF with homebrew license should warn."""
         key = _homebrew_license()
         manifest = generate_sovereign_manifest(
-            key, SECRET,
+            key,
+            SECRET,
             environment=DeploymentEnvironment.SCIF,
         )
 

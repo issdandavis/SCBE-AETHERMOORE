@@ -27,7 +27,6 @@ from typing import Any, Deque, Dict, List, Optional, Tuple
 
 from .models import Choice, HistoryEntry, PlaythroughRecord, Scene, StoryGraph
 
-
 # ---------------------------------------------------------------------------
 #  Personality dimension names (21D)
 # ---------------------------------------------------------------------------
