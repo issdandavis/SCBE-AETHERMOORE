@@ -16,8 +16,6 @@ Covers:
 import json
 import time
 
-import pytest
-
 from licensing.oem_license import (
     LicenseClaims,
     LicenseKey,
@@ -30,7 +28,6 @@ from licensing.sovereign_manifest import (
     ComplianceFramework,
     DeploymentEnvironment,
     EntropySurfacePolicy,
-    SovereignManifest,
     compute_integrity_chain,
     generate_sovereign_manifest,
     verify_manifest_integrity,

@@ -475,7 +475,8 @@ class SacredEggIntegrator:
 
             for i, expected in enumerate(egg.ritual_tongues[:egg.ring_count]):
                 if i >= len(provided_tongues) or provided_tongues[i] != expected:
-                    log.append(f"Ring {i}: expected {expected}, got {provided_tongues[i] if i < len(provided_tongues) else 'nothing'}")
+                    got = provided_tongues[i] if i < len(provided_tongues) else "nothing"
+                    log.append(f"Ring {i}: expected {expected}, got {got}")
                     return HatchResult(success=False, ritual_log=log, error=f"Ring {i} mismatch")
                 log.append(f"Ring {i}: {expected} accepted")
 
