@@ -1665,6 +1665,7 @@ class HyperTorusManifold:
                 effective_deltas[i] = deltas[i]
 
         # Compute squared distance: ds² = Σ g_ii * dθ_i²
+        squared_dist = 0.0
         if frozen_violation:
             distance = np.inf
         else:
