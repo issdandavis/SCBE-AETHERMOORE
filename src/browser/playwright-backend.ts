@@ -74,7 +74,7 @@ interface PwPage {
   waitForSelector(selector: string, opts?: Record<string, unknown>): Promise<unknown>;
   waitForTimeout(ms: number): Promise<void>;
   waitForLoadState(state?: string, opts?: Record<string, unknown>): Promise<void>;
-  on(event: string, handler: (...args: any[]) => void): void;
+  on(event: string, handler: (...args: any[]) => void): void; // eslint-disable-line @typescript-eslint/no-explicit-any -- event emitter requires contravariant handler
   off(event: string, handler: (...args: unknown[]) => void): void;
   isClosed(): boolean;
   context(): PwContext;
