@@ -88,7 +88,9 @@ describe('JugglingScheduler', () => {
       const agentB = makeAgent({ agentId: 'b', reliability: 0.5 });
       const now = Date.now();
 
-      expect(assignmentScore(task, agentA, now)).toBeGreaterThan(assignmentScore(task, agentB, now));
+      expect(assignmentScore(task, agentA, now)).toBeGreaterThan(
+        assignmentScore(task, agentB, now)
+      );
     });
 
     it('should penalise loaded agents', () => {
@@ -112,10 +114,15 @@ describe('JugglingScheduler', () => {
     it('should penalise governance tier mismatch', () => {
       const task = makeCapsule({ requiredTier: 'DR' });
       const lowTier = makeAgent({ agentId: 'low', trustDomains: ['KO'] as GovernanceTier[] });
-      const highTier = makeAgent({ agentId: 'high', trustDomains: ['KO', 'AV', 'RU', 'CA', 'UM', 'DR'] as GovernanceTier[] });
+      const highTier = makeAgent({
+        agentId: 'high',
+        trustDomains: ['KO', 'AV', 'RU', 'CA', 'UM', 'DR'] as GovernanceTier[],
+      });
       const now = Date.now();
 
-      expect(assignmentScore(task, highTier, now)).toBeGreaterThan(assignmentScore(task, lowTier, now));
+      expect(assignmentScore(task, highTier, now)).toBeGreaterThan(
+        assignmentScore(task, lowTier, now)
+      );
     });
   });
 
@@ -251,10 +258,12 @@ describe('JugglingScheduler', () => {
     });
 
     it('should refuse agents below required governance tier', () => {
-      scheduler.registerAgent(makeAgent({
-        agentId: 'low',
-        trustDomains: ['KO'] as GovernanceTier[],
-      }));
+      scheduler.registerAgent(
+        makeAgent({
+          agentId: 'low',
+          trustDomains: ['KO'] as GovernanceTier[],
+        })
+      );
 
       const capsule = makeCapsule({ requiredTier: 'DR' });
       scheduler.addCapsule(capsule);
@@ -415,7 +424,9 @@ describe('JugglingScheduler', () => {
       scheduler.tick();
 
       const updated = scheduler.getCapsule('expired')!;
-      expect([FlightState.DROPPED, FlightState.CAUGHT, FlightState.RECOVERING]).toContain(updated.state);
+      expect([FlightState.DROPPED, FlightState.CAUGHT, FlightState.RECOVERING]).toContain(
+        updated.state
+      );
     });
   });
 
