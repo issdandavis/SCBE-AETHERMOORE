@@ -83,7 +83,8 @@ class ConceptBlock(ABC):
     # -- subclass hooks ------------------------------------------------------
 
     @abstractmethod
-    def _do_tick(self, inputs: Dict[str, Any]) -> BlockResult: ...
+    def _do_tick(self, inputs: Dict[str, Any]) -> BlockResult:
+        pass
 
     def _do_configure(self, params: Dict[str, Any]) -> None:
         """Override to accept runtime parameter changes."""

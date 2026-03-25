@@ -132,10 +132,14 @@ jobs:
 
       - name: Install Python linters
         run: |
-          pip install black flake8 mypy
+          pip install black flake8 mypy ruff
 
       - name: Check Python formatting
         run: black --check --target-version py311 --line-length 120 src/ tests/
+
+      - name: Run ruff (fast lint)
+        run: ruff check --config ruff.toml
+        continue-on-error: true
 
       - name: Run flake8
         run: flake8 src/ tests/ --max-line-length=120

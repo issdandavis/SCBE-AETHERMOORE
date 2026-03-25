@@ -112,7 +112,7 @@ class TestDeny:
         # Force a deny
         gate._immune.add("test_hash")
         # Manually check
-        r = gate.evaluate("anything")  # won't hit immune
+        gate.evaluate("anything")  # won't hit immune
         # Add the actual hash
         import hashlib
 
