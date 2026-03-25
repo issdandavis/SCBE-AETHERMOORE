@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: ['20', '22']
 
     steps:
       - name: Checkout code
@@ -117,7 +117,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -140,7 +140,6 @@ jobs:
 
       - name: Run ruff (fast lint)
         run: ruff check --config ruff.toml
-        continue-on-error: true
 
       - name: Run flake8
         run: flake8 src/ tests/
@@ -155,17 +154,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '20'
 
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
       - name: Run npm audit
         run: npm audit --audit-level=moderate
-        continue-on-error: true
 
       - name: Run Snyk security scan
         uses: snyk/actions/node@v3
-        continue-on-error: true
+        continue-on-error: true  # Requires SNYK_TOKEN secret; non-blocking if unconfigured
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
