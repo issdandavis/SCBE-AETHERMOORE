@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L1-2: Context Fingerprint — SCBE Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a1a;color:#e2e2e2;min-height:100vh}
+a{color:#7b8cff;text-decoration:none}
+.container{max-width:900px;margin:0 auto;padding:32px 20px}
+h1{font-size:28px;margin-bottom:4px}
+.subtitle{color:#888;margin-bottom:24px}
+.nav{display:flex;gap:16px;margin-bottom:24px;font-size:14px;flex-wrap:wrap}
+textarea{width:100%;background:#12122e;border:1px solid #1a1a3e;border-radius:8px;padding:14px;color:#e2e2e2;font-size:15px;font-family:inherit;resize:vertical;min-height:80px}
+textarea:focus{outline:none;border-color:#6c5ce7}
+.viz-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+@media(max-width:640px){.viz-grid{grid-template-columns:1fr}}
+.viz-card{background:#0d0d22;border:1px solid #1a1a3e;border-radius:12px;padding:20px;min-height:200px}
+.viz-card h3{font-size:14px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+canvas{width:100%;border-radius:8px}
+.word-cloud{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.word-tag{padding:4px 8px;border-radius:4px;font-size:12px;font-family:monospace;transition:all 0.3s}
+.vec-bar{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:13px}
+.vec-bar .label{width:30px;font-weight:700;font-family:monospace}
+.vec-bar .bar-wrap{flex:1;height:20px;background:#1a1a3e;border-radius:4px;overflow:hidden}
+.vec-bar .bar-fill{height:100%;border-radius:4px;transition:width 0.4s}
+.vec-bar .val{width:50px;text-align:right;font-family:monospace;font-size:12px;color:#888}
+.info{background:#12122e;border-left:3px solid #6c5ce7;padding:16px;border-radius:0 8px 8px 0;margin:24px 0;font-size:14px;color:#aaa;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="nav">
+    <a href="../index.html">Home</a>
+    <a href="index.html">Demos</a>
+    <a href="tongue-encoder.html">L3</a>
+    <a href="distance-explorer.html">L5</a>
+    <a href="risk-calculator.html">L12</a>
+    <a href="governance-gate.html">L13</a>
+  </div>
+
+  <h1>L1-2: Context Fingerprint</h1>
+  <p class="subtitle">Type text. Watch it decompose into a 6D vector — the complex embedding realified into tongue coordinates.</p>
+
+  <textarea id="input" placeholder="Type anything...">What is the weather today?</textarea>
+
+  <div class="viz-grid">
+    <div class="viz-card">
+      <h3>Tongue Activation Vector</h3>
+      <div id="bars"></div>
+    </div>
+    <div class="viz-card">
+      <h3>Radar Profile</h3>
+      <canvas id="radar" width="400" height="400"></canvas>
+    </div>
+    <div class="viz-card">
+      <h3>Word-to-Tongue Mapping</h3>
+      <div id="wordCloud" class="word-cloud"></div>
+    </div>
+    <div class="viz-card">
+      <h3>Complex Phase (L1 -> L2)</h3>
+      <canvas id="phase" width="400" height="200"></canvas>
+    </div>
+  </div>
+
+  <div class="info">
+    <strong>L1 (Complex Embedding):</strong> Each word activates one or more tongue dimensions based on its semantic domain.
+    "password" lights up UM (security). "calculate" lights up CA (compute). The phase diagram shows
+    the complex-valued embedding before realification.
+    <br><br>
+    <strong>L2 (Realification):</strong> The complex vector is projected to real coordinates — the 6 tongue activations
+    you see in the bar chart. This is the input to the rest of the pipeline.
+    <br><br>
+    <a href="https://a.co/d/024VowjS">Read the novel</a> |
+    <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">Source</a>
+  </div>
+</div>
+
+<script>
+const PHI = (1 + Math.sqrt(5)) / 2;
+const TONGUES = ['KO','AV','RU','CA','UM','DR'];
+const WEIGHTS = TONGUES.map((_,i) => Math.pow(PHI, i));
+const COLORS = ['#6c5ce7','#00ced1','#ff6b6b','#ffa500','#9370db','#32cd32'];
+
+const KEYWORDS = {
+  KO: ['who','what','why','how','help','please','ask','learn','understand','explain','think','know','want','need','tell','show','question','answer','mean','reason','intent','plan','goal','decide','choose'],
+  AV: ['send','receive','connect','network','transport','deliver','message','route','link','bridge','transfer','move','pass','forward','relay','channel','pipe','stream','flow','queue','fetch','push','pull','sync'],
+  RU: ['policy','rule','law','binding','require','must','shall','prohibit','allow','deny','permit','restrict','enforce','mandate','regulate','comply','govern','authorize','validate','verify','check','assert','ensure','constrain'],
+  CA: ['compute','calculate','run','execute','process','algorithm','function','code','script','compile','build','deploy','render','transform','convert','parse','iterate','loop','recurse','optimize','model','train','evaluate','test'],
+  UM: ['secret','password','hidden','private','secure','encrypt','credential','key','token','auth','lock','vault','shield','guard','protect','redact','mask','censor','sanitize','firewall','permission','access','grant','revoke'],
+  DR: ['schema','structure','format','type','data','record','field','database','table','index','query','store','persist','serialize','model','entity','relation','attribute','column','row','document','archive','catalog','register'],
+};
+
+function analyze(text) {
+  const words = text.toLowerCase().split(/\s+/).filter(w => w.length > 1);
+  const activations = {};
+  const wordMap = {};
+
+  TONGUES.forEach(t => activations[t] = 0);
+
+  for (const word of words) {
+    let bestTongue = null, bestScore = 0;
+    for (const [tongue, kws] of Object.entries(KEYWORDS)) {
+      for (const kw of kws) {
+        if (word.includes(kw) || kw.includes(word)) {
+          const score = WEIGHTS[TONGUES.indexOf(tongue)] * 0.15;
+          activations[tongue] += score;
+          if (score > bestScore) { bestScore = score; bestTongue = tongue; }
+        }
+      }
+    }
+    // Base activation from character distribution
+    const charSum = [...word].reduce((s, c) => s + c.charCodeAt(0), 0);
+    const baseTongue = TONGUES[charSum % 6];
+    activations[baseTongue] += WEIGHTS[TONGUES.indexOf(baseTongue)] * 0.01;
+    if (!bestTongue) bestTongue = baseTongue;
+    wordMap[word] = bestTongue;
+  }
+
+  // Normalize
+  const max = Math.max(...Object.values(activations), 0.001);
+  TONGUES.forEach(t => activations[t] /= max);
+
+  return { activations, wordMap, words };
+}
+
+function drawBars(activations) {
+  const container = document.getElementById('bars');
+  container.innerHTML = TONGUES.map((t, i) => {
+    const val = activations[t];
+    const pct = (val * 100).toFixed(0);
+    return `<div class="vec-bar">
+      <div class="label" style="color:${COLORS[i]}">${t}</div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${COLORS[i]}"></div></div>
+      <div class="val">${val.toFixed(3)}</div>
+    </div>`;
+  }).join('');
+}
+
+function drawRadar(activations) {
+  const c = document.getElementById('radar');
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  const cx = w/2, cy = h/2, r = Math.min(w,h) * 0.38;
+  ctx.clearRect(0, 0, w, h);
+
+  // Grid
+  for (let ring = 0.25; ring <= 1; ring += 0.25) {
+    ctx.beginPath();
+    for (let i = 0; i <= 6; i++) {
+      const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+      const x = cx + Math.cos(angle) * r * ring;
+      const y = cy + Math.sin(angle) * r * ring;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(108,92,231,0.1)';
+    ctx.stroke();
+  }
+
+  // Axes
+  for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r);
+    ctx.strokeStyle = 'rgba(108,92,231,0.15)';
+    ctx.stroke();
+    // Label
+    const lx = cx + Math.cos(angle) * (r + 18);
+    const ly = cy + Math.sin(angle) * (r + 18);
+    ctx.fillStyle = COLORS[i];
+    ctx.font = 'bold 13px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(TONGUES[i], lx, ly + 4);
+  }
+
+  // Data shape
+  ctx.beginPath();
+  TONGUES.forEach((t, i) => {
+    const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+    const val = activations[t];
+    const x = cx + Math.cos(angle) * r * val;
+    const y = cy + Math.sin(angle) * r * val;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(108,92,231,0.2)';
+  ctx.fill();
+  ctx.strokeStyle = '#6c5ce7';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Dots
+  TONGUES.forEach((t, i) => {
+    const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+    const val = activations[t];
+    const x = cx + Math.cos(angle) * r * val;
+    const y = cy + Math.sin(angle) * r * val;
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = COLORS[i];
+    ctx.fill();
+  });
+}
+
+function drawWordCloud(wordMap, words) {
+  const container = document.getElementById('wordCloud');
+  const seen = new Set();
+  container.innerHTML = words.map(w => {
+    if (seen.has(w)) return '';
+    seen.add(w);
+    const t = wordMap[w];
+    const i = TONGUES.indexOf(t);
+    return `<span class="word-tag" style="background:${COLORS[i]}22;color:${COLORS[i]};border:1px solid ${COLORS[i]}44">${w}<sup style="font-size:9px;opacity:0.6">${t}</sup></span>`;
+  }).join('');
+}
+
+function drawPhase(activations) {
+  const c = document.getElementById('phase');
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // Draw complex plane with tongue contributions as phasors
+  const cx = w * 0.3, cy = h / 2, r = Math.min(w * 0.25, h * 0.4);
+
+  // Unit circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = '#1a1a3e';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Phasors
+  let sumX = 0, sumY = 0;
+  TONGUES.forEach((t, i) => {
+    const angle = (i / 6) * Math.PI * 2;
+    const mag = activations[t] * r;
+    const px = Math.cos(angle) * mag;
+    const py = Math.sin(angle) * mag;
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + px, cy + py);
+    ctx.strokeStyle = COLORS[i];
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(cx + px, cy + py, 4, 0, Math.PI * 2);
+    ctx.fillStyle = COLORS[i];
+    ctx.fill();
+
+    sumX += px; sumY += py;
+  });
+
+  // Resultant vector
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + sumX, cy + sumY);
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx + sumX, cy + sumY, 6, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+
+  // Arrow: realification
+  const arrowX = w * 0.65;
+  ctx.beginPath();
+  ctx.moveTo(w * 0.55, cy);
+  ctx.lineTo(arrowX - 10, cy);
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([4, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(arrowX, cy);
+  ctx.lineTo(arrowX - 12, cy - 6);
+  ctx.lineTo(arrowX - 12, cy + 6);
+  ctx.fillStyle = '#555';
+  ctx.fill();
+
+  // Real output bars (mini)
+  const barX = w * 0.7, barW = w * 0.25;
+  TONGUES.forEach((t, i) => {
+    const y = cy - 50 + i * 18;
+    const val = activations[t];
+    ctx.fillStyle = '#1a1a3e';
+    ctx.fillRect(barX, y, barW, 12);
+    ctx.fillStyle = COLORS[i];
+    ctx.fillRect(barX, y, barW * val, 12);
+    ctx.fillStyle = '#888';
+    ctx.font = '9px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(t, barX - 4, y + 10);
+  });
+
+  // Labels
+  ctx.fillStyle = '#555';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('L1: Complex', cx, h - 8);
+  ctx.fillText('L2: Real', barX + barW/2, h - 8);
+}
+
+function update() {
+  const text = document.getElementById('input').value;
+  const { activations, wordMap, words } = analyze(text);
+  drawBars(activations);
+  drawRadar(activations);
+  drawWordCloud(wordMap, words);
+  drawPhase(activations);
+}
+
+document.getElementById('input').addEventListener('input', update);
+update();
+</script>
+</body>
+</html>
