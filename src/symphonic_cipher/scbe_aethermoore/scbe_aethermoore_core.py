@@ -7,6 +7,7 @@ USPTO Docket: SCBE-AETHERMOORE-2026-001-PROV
 
 This is the GOLDEN MASTER - the canonical implementation for patent filing.
 """
+
 import numpy as np
 import hashlib
 import hmac

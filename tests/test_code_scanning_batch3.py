@@ -6,7 +6,6 @@ from pathlib import Path
 
 from src.gacha_isekai import training as gacha_training
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 

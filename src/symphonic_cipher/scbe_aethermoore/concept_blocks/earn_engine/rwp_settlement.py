@@ -37,7 +37,6 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from .engine import EarnEngine, LedgerEntry, SettlementState
 from .streams import StreamType
 
-
 # ---------------------------------------------------------------------------
 #  Inline RWP2 signing (avoids import path issues with src/spiralverse)
 #  Uses the exact same HMAC-SHA256 protocol as rwp2_envelope.py

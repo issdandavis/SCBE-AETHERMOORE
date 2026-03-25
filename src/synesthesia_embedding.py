@@ -8,7 +8,6 @@ from typing import Dict, Sequence
 
 import numpy as np
 
-
 PHI = (1.0 + np.sqrt(5.0)) / 2.0
 
 

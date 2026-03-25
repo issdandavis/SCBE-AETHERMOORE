@@ -82,7 +82,6 @@ from . import causality_axiom
 from . import symmetry_axiom
 from . import composition_axiom
 
-
 # ============================================================================
 # Axiom Enumeration
 # ============================================================================

@@ -36,7 +36,6 @@ from src.browser.toolkit import (
     search,
 )
 
-
 # ── Helpers ──────────────────────────────────────────────────────────
 
 

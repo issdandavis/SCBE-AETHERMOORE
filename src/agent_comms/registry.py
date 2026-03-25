@@ -16,6 +16,7 @@ from typing import Dict, List, Optional, Set
 @dataclass
 class AgentInfo:
     """Information about a registered agent."""
+
     agent_id: str
     name: str
     role: str = "worker"

@@ -471,9 +471,7 @@ class TestHyperbolicCurvature:
             angle_sum = alpha + beta + gamma
 
             # Fundamental property: angle sum < π for hyperbolic triangles
-            assert angle_sum < np.pi, (
-                f"Hyperbolic triangle angle sum {angle_sum:.6f} >= π ({np.pi:.6f})"
-            )
+            assert angle_sum < np.pi, f"Hyperbolic triangle angle sum {angle_sum:.6f} >= π ({np.pi:.6f})"
             # Must still be positive
             assert angle_sum > 0, "Angle sum must be positive"
 

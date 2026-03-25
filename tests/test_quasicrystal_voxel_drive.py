@@ -14,7 +14,6 @@ import pytest
 
 from src.knowledge.quasicrystal_voxel_drive import QuasiCrystalVoxelDrive
 
-
 # =========================================================================== #
 #  Working tests (match current API)
 # =========================================================================== #

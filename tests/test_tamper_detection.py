@@ -34,7 +34,6 @@ from src.storage.langues_dispersal import (
 )
 from src.crypto.quasicrystal_lattice import QuasicrystalLattice
 
-
 # =========================================================================== #
 #  Helpers
 # =========================================================================== #

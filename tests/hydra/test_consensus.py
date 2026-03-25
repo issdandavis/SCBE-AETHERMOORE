@@ -33,7 +33,6 @@ from hydra.consensus import (
 )
 from hydra.head import HydraHead
 
-
 # =========================================================================
 # ByzantineConsensus - threshold math
 # =========================================================================

@@ -51,7 +51,6 @@ from symphonic_cipher.scbe_aethermoore.game.regions import (
     get_region_by_tongue,
 )
 
-
 # ===========================================================================
 #  Types & Tongue System
 # ===========================================================================

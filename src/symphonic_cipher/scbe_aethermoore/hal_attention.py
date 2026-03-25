@@ -21,7 +21,6 @@ from typing import List, Optional, Dict, Any
 
 from .constants import R_FIFTH, PHI, DEFAULT_D_MAX, harmonic_scale, CONSTANTS
 
-
 # =============================================================================
 # TYPE DEFINITIONS
 # =============================================================================

@@ -28,7 +28,6 @@ from hydra.color_dimension import (
     sort_by_disorganized_order,
 )
 
-
 # ── ColorChannel ──────────────────────────────────────────────────
 
 

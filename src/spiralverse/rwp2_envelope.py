@@ -38,7 +38,6 @@ from typing import Dict, List, Optional, Set, Tuple, Any
 from enum import Enum
 import re
 
-
 # =============================================================================
 # Tongue Definitions (Protocol Domains)
 # =============================================================================
