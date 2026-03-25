@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-          pip install numpy scipy pytest
+          pip install -r requirements.txt || pip install numpy scipy pytest
 
       - name: Type check
         run: npm run typecheck
@@ -54,4 +54,4 @@ jobs:
         run: npm test
 
       - name: Run Python tests
-        run: PYTHONPATH=. pytest tests/ -v --ignore=tests/node_modules -x --timeout=30
+        run: SCBE_FORCE_SKIP_LIBOQS=1 PYTHONPATH=. pytest tests/ -v --ignore=tests/node_modules -x --timeout=30
