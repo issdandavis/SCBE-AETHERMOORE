@@ -196,7 +196,10 @@ export async function platformSHA256Async(data: string | Uint8Array): Promise<st
     typeof globalThis.crypto !== 'undefined' &&
     typeof globalThis.crypto.subtle !== 'undefined'
   ) {
-    const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', new Uint8Array(bytes));
+    const hashBuffer = await globalThis.crypto.subtle.digest(
+      'SHA-256',
+      new Uint8Array(bytes).buffer
+    );
     return Array.from(new Uint8Array(hashBuffer))
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('');

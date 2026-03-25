@@ -366,7 +366,7 @@ export async function predicateCrypto(
     const key = await deriveKey(state.sharedSecret, egg, state);
 
     // Import key for AES-GCM
-    const aesKey = await crypto.subtle.importKey('raw', new Uint8Array(key), { name: 'AES-GCM' }, false, [
+    const aesKey = await crypto.subtle.importKey('raw', new Uint8Array(key).buffer, { name: 'AES-GCM' }, false, [
       'decrypt',
     ]);
 
@@ -378,7 +378,7 @@ export async function predicateCrypto(
         tagLength: 128,
       },
       aesKey,
-      new Uint8Array(egg.ciphertext)
+      new Uint8Array(egg.ciphertext).buffer
     );
 
     return new Uint8Array(plaintext);
@@ -490,7 +490,9 @@ export async function createEgg(
   const key = await deriveKey(sharedSecret, partialEgg, expectedState);
 
   // Import key for AES-GCM
-  const aesKey = await crypto.subtle.importKey('raw', new Uint8Array(key), { name: 'AES-GCM' }, false, ['encrypt']);
+  const aesKey = await crypto.subtle.importKey('raw', new Uint8Array(key).buffer, { name: 'AES-GCM' }, false, [
+    'encrypt',
+  ]);
 
   // Encrypt
   const ciphertext = await crypto.subtle.encrypt(
@@ -500,7 +502,7 @@ export async function createEgg(
       tagLength: 128,
     },
     aesKey,
-    new Uint8Array(plaintext)
+    new Uint8Array(plaintext).buffer
   );
 
   partialEgg.ciphertext = new Uint8Array(ciphertext);
