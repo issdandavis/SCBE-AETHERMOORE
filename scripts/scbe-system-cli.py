@@ -4053,6 +4053,28 @@ def build_parser() -> argparse.ArgumentParser:
     pp_snapshot.add_argument("--output")
     pp_snapshot.set_defaults(func=cmd_pollypad_snapshot)
 
+    # ── publish: Post content to platforms ──────────────────────────
+    pub_parser = sub.add_parser("publish", help="Post content — Bluesky, GitHub Discussions, or all")
+    pub_sub = pub_parser.add_subparsers(dest="pub_cmd", required=True)
+
+    pub_bsky = pub_sub.add_parser("bluesky", help="Post to Bluesky")
+    pub_bsky.add_argument("content", choices=["book-promo", "chapter-1", "chapter-2", "chapter-3", "governance", "design-partner"], help="What to post")
+    pub_bsky.set_defaults(func=lambda args: subprocess.call(
+        [sys.executable, str(Path(args.repo_root) / "scripts" / "publish" / "post_to_bluesky.py"), "--promo", args.content]
+    ))
+
+    pub_bsky_custom = pub_sub.add_parser("post", help="Post custom text to Bluesky")
+    pub_bsky_custom.add_argument("text", help="Text to post")
+    pub_bsky_custom.set_defaults(func=lambda args: subprocess.call(
+        [sys.executable, str(Path(args.repo_root) / "scripts" / "publish" / "post_to_bluesky.py"), "--text", args.text]
+    ))
+
+    pub_all = pub_sub.add_parser("all", help="Post to all platforms via GitHub Actions")
+    pub_all.add_argument("content", choices=["book-promo", "chapter-1", "chapter-2", "chapter-3", "governance", "design-partner"])
+    pub_all.set_defaults(func=lambda args: subprocess.call(
+        ["gh", "workflow", "run", "publish-content.yml", "-f", "platform=all", "-f", f"content={args.content}"]
+    ))
+
     # ── outreach: Cold outreach pipeline ────────────────────────────
     outreach_parser = sub.add_parser("outreach", help="Cold outreach — draft, preview, send partnership emails")
     outreach_parser.add_argument("outreach_args", nargs=argparse.REMAINDER, help="Args for outreach pipeline")
