@@ -34,10 +34,9 @@ Pi-Rhythmic Cycle Review:
 
 from __future__ import annotations
 
-import json
 import math
 import time
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
 # ── SCBE Constants (canonical, from langues_metric.py) ──────────────────────
@@ -192,7 +191,7 @@ class SymphonicGovernor:
 
     def _compute_deviations(self, x: List[float]) -> List[float]:
         """d_l = |x_l - μ_l| for each of 6 dimensions."""
-        return [abs(x[l] - self.ideal[l]) for l in range(6)]
+        return [abs(x[idx] - self.ideal[idx]) for idx in range(6)]
 
     def _compute_L(
         self, x: List[float], t: float
@@ -205,12 +204,12 @@ class SymphonicGovernor:
         voices: List[StringVoice] = []
         L_total = 0.0
 
-        for l in range(6):
-            w_l = TONGUE_WEIGHTS[l]
-            beta_l = self.betas[l]
-            omega_l = TONGUE_FREQUENCIES[l]
-            phi_l = TONGUE_PHASES[l]
-            d_l = deviations[l]
+        for idx in range(6):
+            w_l = TONGUE_WEIGHTS[idx]
+            beta_l = self.betas[idx]
+            omega_l = TONGUE_FREQUENCIES[idx]
+            phi_l = TONGUE_PHASES[idx]
+            d_l = deviations[idx]
 
             phase_shift = math.sin(omega_l * t + phi_l)
             shifted_d = d_l + 0.1 * phase_shift
@@ -227,8 +226,8 @@ class SymphonicGovernor:
                 trit = 0   # in between → neutral
 
             voices.append(StringVoice(
-                tongue=TONGUES[l],
-                dimension=DIMENSIONS[l],
+                tongue=TONGUES[idx],
+                dimension=DIMENSIONS[idx],
                 weight=w_l,
                 frequency=omega_l,
                 phase=phi_l,
@@ -283,7 +282,7 @@ class SymphonicGovernor:
         Returns a factor in [1 - depth, 1 + depth].
         """
         # Transpose 3mHz to audible range via octave doubling
-        n_octaves = math.log2(STELLAR_OCTAVE_TARGET / SUN_P_MODE_HZ)
+        # Transpose 3mHz to audible range via octave doubling (log2 ratio)
         # Use the slow envelope (not the audible frequency)
         envelope = math.sin(TAU * SUN_P_MODE_HZ * t * (2**16))
         return 1.0 + STELLAR_MODULATION_DEPTH * envelope

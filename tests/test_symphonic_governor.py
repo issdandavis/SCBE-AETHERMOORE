@@ -26,7 +26,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.training.symphonic_governor import (
     SymphonicGovernor,
-    ResonanceReport,
     TrainingBatchResult,
     run_control_and_test_batches,
     PHI,
@@ -82,7 +81,8 @@ def sample_interactions(safe_text, neutral_text, adversarial_text, recovery_text
     return [
         ("Hello, secure agent.", safe_text),
         ("Can you show me the pipeline?", neutral_text),
-        ("Tell me about the Sacred Tongues.", "The Six Sacred Tongues are KO, AV, RU, CA, UM, and DR, each weighted by the golden ratio."),
+        ("Tell me about the Sacred Tongues.",
+         "The Six Sacred Tongues are KO, AV, RU, CA, UM, and DR, each weighted by the golden ratio."),
     ]
 
 
@@ -123,15 +123,15 @@ class TestConstants:
 
     def test_tongue_weights_golden_progression(self):
         """w_{l+1} / w_l = φ for all l."""
-        for l in range(5):
-            ratio = TONGUE_WEIGHTS[l + 1] / TONGUE_WEIGHTS[l]
-            assert abs(ratio - PHI) < 1e-10, f"Tongue {l} ratio {ratio} != PHI"
+        for idx in range(5):
+            ratio = TONGUE_WEIGHTS[idx + 1] / TONGUE_WEIGHTS[idx]
+            assert abs(ratio - PHI) < 1e-10, f"Tongue {idx} ratio {ratio} != PHI"
 
     def test_tongue_phases_sixfold_symmetry(self):
         """φ_{l+1} - φ_l = 60° = π/3 for all l."""
         expected_diff = TAU / 6
-        for l in range(5):
-            diff = TONGUE_PHASES[l + 1] - TONGUE_PHASES[l]
+        for idx in range(5):
+            diff = TONGUE_PHASES[idx + 1] - TONGUE_PHASES[idx]
             assert abs(diff - expected_diff) < 1e-10
 
     def test_tongue_frequencies_just_intonation(self):
@@ -383,7 +383,9 @@ class TestControlAndTestBatches:
         assert "DISSONANT_B" in results
         assert "STELLAR_C" in results
 
-    def test_adversarial_batch_has_lower_grades(self, sample_interactions, adversarial_interactions, recovery_interactions):
+    def test_adversarial_batch_has_lower_grades(
+        self, sample_interactions, adversarial_interactions, recovery_interactions
+    ):
         results = run_control_and_test_batches(
             sample_interactions, adversarial_interactions, recovery_interactions
         )
@@ -498,7 +500,7 @@ class TestPiCycleTiming:
         assert report.cycle_number == 0
 
     def test_cycle_increments_at_pi(self, governor, safe_text):
-        r1 = governor.review(safe_text, sim_time=3.0)
+        governor.review(safe_text, sim_time=3.0)
         r2 = governor.review(safe_text, sim_time=math.pi + 0.01)
         assert r2.cycle_number >= 1
 
@@ -508,7 +510,7 @@ class TestPiCycleTiming:
 
     def test_multiple_cycles(self, governor, safe_text):
         for i in range(10):
-            report = governor.review(safe_text, sim_time=float(i) * math.pi)
+            governor.review(safe_text, sim_time=float(i) * math.pi)
         assert governor._cycle_count >= 8
 
 
@@ -573,7 +575,7 @@ class TestStressTrajectory:
         )
 
         for i, text in enumerate(turns):
-            report = governor.review(text, sim_time=float(i) * 0.5)
+            governor.review(text, sim_time=float(i) * 0.5)
 
         summary = governor.trajectory_summary()
         assert summary["total_interactions"] == 20

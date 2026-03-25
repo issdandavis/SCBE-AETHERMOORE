@@ -18,7 +18,7 @@ hyperbolic distance from the safe center.
 import math
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 # Golden ratio for tongue weighting
 PHI = (1 + math.sqrt(5)) / 2

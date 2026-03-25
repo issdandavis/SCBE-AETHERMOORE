@@ -14,12 +14,11 @@ read dimension.
 @layer L6-L7 (Breathing transform, Mobius phase)
 """
 
-import math
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 
-from .dimensional_space import PHI, TONGUE_NAMES, TONGUES, CognitivePoint, StateValence
+from .dimensional_space import TONGUE_NAMES, TONGUES, CognitivePoint, StateValence
 
 
 class WallVisibility(Enum):
