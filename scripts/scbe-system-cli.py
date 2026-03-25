@@ -4053,6 +4053,13 @@ def build_parser() -> argparse.ArgumentParser:
     pp_snapshot.add_argument("--output")
     pp_snapshot.set_defaults(func=cmd_pollypad_snapshot)
 
+    # ── outreach: Cold outreach pipeline ────────────────────────────
+    outreach_parser = sub.add_parser("outreach", help="Cold outreach — draft, preview, send partnership emails")
+    outreach_parser.add_argument("outreach_args", nargs=argparse.REMAINDER, help="Args for outreach pipeline")
+    outreach_parser.set_defaults(func=lambda args: subprocess.call(
+        [sys.executable, str(Path(args.repo_root) / "scripts" / "outreach" / "cold_outreach_pipeline.py")] + args.outreach_args
+    ))
+
     # ── gh: GitHub operations ──────────────────────────────────────
     gh_parser = sub.add_parser("gh", help="GitHub operations - PRs, CI, issues, code scanning, releases")
     gh_sub = gh_parser.add_subparsers(dest="gh_cmd", required=True)
