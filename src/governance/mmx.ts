@@ -1,3 +1,9 @@
+/**
+ * @file mmx.ts
+ * @module governance/mmx
+ * @layer Layer 13
+ * @component Multi-model matrix scalars
+ */
 import type { EnforcementContext, EnforcementRequest } from './offline_mode.js';
 
 export interface MMXScalars {
