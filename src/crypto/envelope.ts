@@ -209,7 +209,11 @@ export async function verifyEnvelope(p: VerifyParams): Promise<{ body: EnvelopeB
   // 4) Key derivation (must bind env/provider/intent/session)
   // Session binding via key derivation (HIGH-001 fix: replaces nonce prefix binding)
   const ikm = await getMasterKey(envelope.kid);
-  const salt = envelope.salt ? fromB64u(envelope.salt) : Buffer.alloc(32, 0);
+  if (!envelope.salt) {
+    metrics.incr('envelope_missing_salt', 1);
+    throw new Error('invalid envelope: missing salt');
+  }
+  const salt = fromB64u(envelope.salt);
   const infoBase = Buffer.from(
     `scbe:derivation:v1|env=${envelope.aad.env}|provider=${envelope.aad.provider_id}|intent=${envelope.aad.intent_id}|session=${p.session_id}`
   );
