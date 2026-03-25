@@ -92,7 +92,6 @@ class SeleniumBackend(BrowserBackend):
 
             elif self.browser == "firefox":
                 from selenium.webdriver.firefox.options import Options as FirefoxOptions
-                from selenium.webdriver.firefox.service import Service as FirefoxService
 
                 options = FirefoxOptions()
                 if self.headless:
@@ -102,7 +101,6 @@ class SeleniumBackend(BrowserBackend):
 
             elif self.browser == "edge":
                 from selenium.webdriver.edge.options import Options as EdgeOptions
-                from selenium.webdriver.edge.service import Service as EdgeService
 
                 options = EdgeOptions()
                 if self.headless:

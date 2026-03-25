@@ -4,7 +4,9 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.x.x   | :white_check_mark: |
+| 3.x.x   | :white_check_mark: |
+| 2.x.x   | :white_check_mark: (security fixes only) |
+| 1.x.x   | :x:                |
 | < 1.0   | :x:                |
 
 ## Reporting a Vulnerability
@@ -14,7 +16,7 @@ We take security seriously. If you discover a security vulnerability, please rep
 ### How to Report
 
 1. **DO NOT** open a public GitHub issue for security vulnerabilities
-2. Email security concerns to: [security contact - to be configured]
+2. Email security concerns to: **aethermoregames@pm.me**
 3. Include:
    - Description of the vulnerability
    - Steps to reproduce
@@ -94,16 +96,34 @@ All governance decisions include:
 
 1. **In-memory storage** - Production deployments should use persistent storage
 2. **Single-node** - High availability requires external load balancing
-3. **PQC fallback** - Full NIST PQC requires `pypqc` library installation
+3. **PQC fallback** - Full NIST PQC requires `liboqs` or `kyber-py`/`dilithium-py` (pure Python fallback available)
+4. **Timestamp race condition** - `test_121_large_medical_image_transfer` has a known timing-dependent assertion under heavy load; tracked and non-exploitable
+
+### Entropy Surface Defense Layer
+
+Active anti-extraction defense using information-theoretic nullification:
+
+| Posture | Signal Retention | Trigger |
+|---------|-----------------|---------|
+| TRANSPARENT | ~100% | Normal operation |
+| GUARDED | 50-95% | Mild anomaly detected |
+| OPAQUE | 10-50% | Active probing or budget pressure |
+| SILENT | <10% | Budget exhausted or confirmed extraction |
+
+The nullification function `N(x) = σ · f(x) + (1 - σ) · U` ensures surrogate models trained on probing pairs converge to the uniform distribution — they learn noise, not behavior.
+
+- TypeScript: `packages/kernel/src/entropySurface.ts`
+- Python: `src/symphonic_cipher/scbe_aethermoore/entropy_surface.py`
 
 ## Security Contacts
 
 For security-related inquiries:
-- GitHub Security Advisories: [Configure in repo settings]
-- Email: Aethermore Founder Issac Davis
-aethermoregames@pm.me
+- GitHub Security Advisories: enabled on this repository
+- Email: **aethermoregames@pm.me** (Issac Daniel Davis, Founder)
+- Patent: USPTO #63/961,403 (provisional)
+- ORCID: 0009-0002-3936-9369
 
 ## Acknowledgments
 
 We thank the following for responsible disclosure:
-- (None yet)
+- (None yet — be the first!)

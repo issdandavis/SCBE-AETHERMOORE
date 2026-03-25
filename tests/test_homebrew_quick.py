@@ -40,12 +40,7 @@ try:
 except (ImportError, RuntimeError):
     RWP_AVAILABLE = False
 
-try:
-    pass
-
-    TONGUES_AVAILABLE = True
-except ImportError:
-    TONGUES_AVAILABLE = False
+TONGUES_AVAILABLE = True
 
 
 # =============================================================================

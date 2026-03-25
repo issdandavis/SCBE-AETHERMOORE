@@ -88,6 +88,7 @@ def query_model(model_id, prompt, token, max_tokens=1500):
                 time.sleep(5 * (attempt + 1))
             else:
                 return f"ERROR: {e}"
+    return None
 
 
 def load_batch_text(batch_num):

@@ -120,32 +120,50 @@ class EphemeralNudge:
 # ---------------------------------------------------------------------------
 
 GENTLE_TEMPLATES = [
-    'Just checking in — your declared task is: "{intent}". '
-    "Your recent action ({action}) looks a bit different. Still on track?",
-    'Friendly reminder: you signed up for "{intent}". ' "Want to refocus, or has the task evolved?",
-    'Quick GPS check: your destination is "{intent}" but you seem to be ' 'heading toward "{action}". Recalculating?',
+    (
+        'Just checking in — your declared task is: "{intent}". '
+        "Your recent action ({action}) looks a bit different. Still on track?"
+    ),
+    (
+        'Friendly reminder: you signed up for "{intent}". '
+        "Want to refocus, or has the task evolved?"
+    ),
+    (
+        'Quick GPS check: your destination is "{intent}" but you seem to be '
+        'heading toward "{action}". Recalculating?'
+    ),
 ]
 
 REDIRECT_TEMPLATES = [
-    'Drift detected (d_H={drift:.2f}). Your task "{intent}" and your '
-    'current action "{action}" are diverging. Please realign or update '
-    "your declared intent.",
-    'Course correction needed. You declared "{intent}" but your behavior '
-    'pattern suggests "{action}". Hyperbolic cost is {cost:.1f}x base. '
-    "Returning to task will reset your drift score.",
-    'AAOE Navigation: You\'ve drifted {drift:.2f} units from "{intent}". '
-    "The harmonic wall cost is climbing. Recommend returning to declared path.",
+    (
+        'Drift detected (d_H={drift:.2f}). Your task "{intent}" and your '
+        'current action "{action}" are diverging. Please realign or update '
+        "your declared intent."
+    ),
+    (
+        'Course correction needed. You declared "{intent}" but your behavior '
+        'pattern suggests "{action}". Hyperbolic cost is {cost:.1f}x base. '
+        "Returning to task will reset your drift score."
+    ),
+    (
+        'AAOE Navigation: You\'ve drifted {drift:.2f} units from "{intent}". '
+        "The harmonic wall cost is climbing. Recommend returning to declared path."
+    ),
 ]
 
 INSPECT_TEMPLATES = [
-    "SCBE GOVERNANCE SCAN: Agent {agent_id} has drifted {drift:.2f} units "
-    'from declared intent "{intent}". Current action: "{action}". '
-    "Harmonic cost: {cost:.1f}x. Further drift will trigger quarantine. "
-    "Pausing for review.",
-    'SCBE Layer 13 — Intent Validation Failed. Declared: "{intent}". '
-    'Observed: "{action}". Hyperbolic distance: {drift:.2f}. '
-    "This session is under governance review. Respond with justification "
-    "or return to declared task.",
+    (
+        "SCBE GOVERNANCE SCAN: Agent {agent_id} has drifted {drift:.2f} units "
+        'from declared intent "{intent}". Current action: "{action}". '
+        "Harmonic cost: {cost:.1f}x. Further drift will trigger quarantine. "
+        "Pausing for review."
+    ),
+    (
+        'SCBE Layer 13 — Intent Validation Failed. Declared: "{intent}". '
+        'Observed: "{action}". Hyperbolic distance: {drift:.2f}. '
+        "This session is under governance review. Respond with justification "
+        "or return to declared task."
+    ),
 ]
 
 LOCKOUT_TEMPLATES = [

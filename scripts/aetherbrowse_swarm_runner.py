@@ -661,10 +661,6 @@ def main() -> None:
             trace = {
                 "request": {"payload": out["payload"], "risk_tier": out["risk_tier"], "verify": out["verify"]},
                 "response": out["response"],
-            }
-            trace = {
-                "request": {"payload": out["payload"], "risk_tier": out["risk_tier"], "verify": out["verify"]},
-                "response": out["response"],
                 "pqc_audit": out.get("pqc_audit", {}),
             }
             trace_hash = _sha_t(_j(trace))

@@ -636,12 +636,17 @@ def kyber_decaps(sk: bytes, ct: bytes) -> bytes:
     return hashlib.sha256(b"ss" + sk).digest()
 
 
+def _mock_dsa_key(material: bytes) -> bytes:
+    """Derive deterministic HMAC key so sign(sk)/verify(pk) round-trip in mock mode."""
+    return hashlib.sha256(b"mock-dsa:" + material).digest()
+
+
 def dsa_sign(sk: bytes, msg: bytes) -> bytes:
-    return hmac.new(sk, msg, hashlib.sha256).digest()
+    return hmac.new(_mock_dsa_key(sk), msg, hashlib.sha256).digest()
 
 
 def dsa_verify(pk: bytes, msg: bytes, sig: bytes) -> bool:
-    return hmac.compare_digest(hmac.new(pk, msg, hashlib.sha256).digest(), sig)
+    return hmac.compare_digest(hmac.new(_mock_dsa_key(pk), msg, hashlib.sha256).digest(), sig)
 
 
 # ---------- GeoSeal encrypt/decrypt ----------
@@ -855,32 +860,46 @@ def load_lexicons(path: str | None) -> Lexicons:
 def cmd_encode(args):
     lex = load_lexicons(args.lexicons)
     tok = TongueTokenizer(lex)
-    data = sys.stdin.buffer.read() if not args.infile else open(args.infile, "rb").read()
+    if not args.infile:
+        data = sys.stdin.buffer.read()
+    else:
+        with open(args.infile, "rb") as f:
+            data = f.read()
     tokens = tok.encode_bytes(args.tongue, data)
     out = (" ".join(tokens) + "\n").encode()
     if not args.outfile:
         sys.stdout.buffer.write(out)
     else:
-        open(args.outfile, "wb").write(out)
+        with open(args.outfile, "wb") as f:
+            f.write(out)
 
 
 def cmd_decode(args):
     lex = load_lexicons(args.lexicons)
     tok = TongueTokenizer(lex)
-    text = sys.stdin.read() if not args.infile else open(args.infile, "r", encoding="utf-8").read()
+    if not args.infile:
+        text = sys.stdin.read()
+    else:
+        with open(args.infile, "r", encoding="utf-8") as f:
+            text = f.read()
     tokens = tok.normalize_token_stream(text)
     data = tok.decode_tokens(args.tongue, tokens)
     if not args.outfile:
         sys.stdout.buffer.write(data)
     else:
-        open(args.outfile, "wb").write(data)
+        with open(args.outfile, "wb") as f:
+            f.write(data)
 
 
 def cmd_xlate(args):
     lex = load_lexicons(args.lexicons)
     tok = TongueTokenizer(lex)
     xt = CrossTokenizer(tok)
-    text = sys.stdin.read() if not args.infile else open(args.infile, "r", encoding="utf-8").read()
+    if not args.infile:
+        text = sys.stdin.read()
+    else:
+        with open(args.infile, "r", encoding="utf-8") as f:
+            text = f.read()
     out_tokens, attest = xt.retokenize(
         args.src,
         args.dst,
@@ -896,14 +915,19 @@ def cmd_xlate(args):
     if not args.outfile:
         print(s)
     else:
-        open(args.outfile, "w", encoding="utf-8").write(s)
+        with open(args.outfile, "w", encoding="utf-8") as f:
+            f.write(s)
 
 
 def cmd_blend(args):
     lex = load_lexicons(args.lexicons)
     tok = TongueTokenizer(lex)
     xt = CrossTokenizer(tok)
-    data = sys.stdin.buffer.read() if not args.infile else open(args.infile, "rb").read()
+    if not args.infile:
+        data = sys.stdin.buffer.read()
+    else:
+        with open(args.infile, "rb") as f:
+            data = f.read()
     pattern = []
     for seg in args.pattern.split(","):
         name, count = seg.split(":") if ":" in seg else (seg, "1")
@@ -914,21 +938,27 @@ def cmd_blend(args):
     if not args.outfile:
         print(s)
     else:
-        open(args.outfile, "w", encoding="utf-8").write(s)
+        with open(args.outfile, "w", encoding="utf-8") as f:
+            f.write(s)
 
 
 def cmd_unblend(args):
     lex = load_lexicons(args.lexicons)
     tok = TongueTokenizer(lex)
     xt = CrossTokenizer(tok)
-    js = json.load(sys.stdin if not args.infile else open(args.infile, "r", encoding="utf-8"))
+    if not args.infile:
+        js = json.load(sys.stdin)
+    else:
+        with open(args.infile, "r", encoding="utf-8") as f:
+            js = json.load(f)
     pattern = js["pattern"]
     pairs = [(tg, t) for tg, t in js["pairs"]]
     data = xt.unblend(pattern, pairs)
     if not args.outfile:
         sys.stdout.buffer.write(data)
     else:
-        open(args.outfile, "wb").write(data)
+        with open(args.outfile, "wb") as f:
+            f.write(data)
 
 
 def cmd_gencore(args):
@@ -939,7 +969,11 @@ def cmd_gencore(args):
 
 
 def cmd_gendec(args):
-    env = json.load(sys.stdin if not args.env else open(args.env, "r"))
+    if not args.env:
+        env = json.load(sys.stdin)
+    else:
+        with open(args.env, "r") as f:
+            env = json.load(f)
     ctx = json.loads(args.context)
     ok, pt = geoseal_decrypt(env, ctx, args.kem_key, args.dsa_pk)
     if not ok:
