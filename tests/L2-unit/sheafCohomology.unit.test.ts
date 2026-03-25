@@ -30,7 +30,7 @@ import {
   // Operators
   convLaplacian0 as tarskiLaplacian0,
   harmonicStep0,
-  harmonicFlow,
+  convHarmonicFlow as harmonicFlow,
   tarskiCohomology0,
   pseudoCoboundary,
   tarskiLaplacian1,
