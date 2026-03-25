@@ -1,3 +1,9 @@
+/**
+ * @file index.ts
+ * @module governance
+ * @layer Layer 13
+ * @component Governance barrel export
+ */
 export * from './offline_mode.js';
 export * from './immutable_laws.js';
 export * from './flux_manifest.js';
