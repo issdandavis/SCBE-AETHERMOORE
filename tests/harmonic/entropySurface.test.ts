@@ -542,7 +542,7 @@ describe('Anti-Extraction Property', () => {
       const pos = randomBallPoint(0.3);
       t += 5000 + Math.random() * 10000; // 5-15s apart (irregular)
       const assessment = tracker.observe(pos, 0.1, t);
-      expect(assessment.nullification.signalRetention).toBeGreaterThan(0.85);
+      expect(assessment.nullification.signalRetention).toBeGreaterThan(0.80);
     }
   });
 

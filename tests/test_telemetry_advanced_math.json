@@ -1,6 +1,6 @@
 {
-  "session_start": 1774216469.9002864,
-  "session_duration_ms": 552284.042596817,
+  "session_start": 1774421045.9808636,
+  "session_duration_ms": 267.5762176513672,
   "total_tests": 13,
   "passed_tests": 13,
   "failed_tests": 0,
@@ -8,9 +8,9 @@
     {
       "test_name": "Poincar\u00e9 Ball Containment",
       "category": "Hyperbolic Geometry",
-      "start_time": 1774216825.45667,
-      "end_time": 1774216825.4602218,
-      "duration_ms": 3.5517215728759766,
+      "start_time": 1774421046.1818156,
+      "end_time": 1774421046.189164,
+      "duration_ms": 7.348299026489258,
       "iterations": 100,
       "passed": true,
       "metrics": {
@@ -22,9 +22,9 @@
     {
       "test_name": "Triangle Inequality",
       "category": "Hyperbolic Geometry",
-      "start_time": 1774216825.4623365,
-      "end_time": 1774216825.4652,
-      "duration_ms": 2.8634071350097656,
+      "start_time": 1774421046.1899292,
+      "end_time": 1774421046.1918952,
+      "duration_ms": 1.9659996032714844,
       "iterations": 100,
       "passed": true,
       "metrics": {
@@ -35,9 +35,9 @@
     {
       "test_name": "Distance Symmetry",
       "category": "Hyperbolic Geometry",
-      "start_time": 1774216825.4660223,
-      "end_time": 1774216825.4679582,
-      "duration_ms": 1.9359588623046875,
+      "start_time": 1774421046.1924717,
+      "end_time": 1774421046.1937706,
+      "duration_ms": 1.2989044189453125,
       "iterations": 100,
       "passed": true,
       "metrics": {
@@ -47,9 +47,9 @@
     {
       "test_name": "M\u00f6bius Addition Identity",
       "category": "Hyperbolic Geometry",
-      "start_time": 1774216825.4691842,
-      "end_time": 1774216825.470449,
-      "duration_ms": 1.264810562133789,
+      "start_time": 1774421046.194312,
+      "end_time": 1774421046.1951296,
+      "duration_ms": 0.8175373077392578,
       "iterations": 100,
       "passed": true,
       "metrics": {
@@ -59,21 +59,21 @@
     {
       "test_name": "Phase Transform Isometry",
       "category": "Isometry Preservation",
-      "start_time": 1774216825.471312,
-      "end_time": 1774216825.477923,
-      "duration_ms": 6.610870361328125,
+      "start_time": 1774421046.195645,
+      "end_time": 1774421046.199287,
+      "duration_ms": 3.641843795776367,
       "iterations": 50,
       "passed": true,
       "metrics": {
-        "max_distance_change": 1.3322676295501878e-15
+        "max_distance_change": 1.7763568394002505e-15
       }
     },
     {
       "test_name": "Realification Norm Preservation",
       "category": "Isometry Preservation",
-      "start_time": 1774216825.4792066,
-      "end_time": 1774216825.4803843,
-      "duration_ms": 1.1777877807617188,
+      "start_time": 1774421046.1999395,
+      "end_time": 1774421046.200796,
+      "duration_ms": 0.8563995361328125,
       "iterations": 100,
       "passed": true,
       "metrics": {
@@ -83,9 +83,9 @@
     {
       "test_name": "Harmonic Scaling Monotonicity",
       "category": "Harmonic Scaling",
-      "start_time": 1774216825.481169,
-      "end_time": 1774216825.4815803,
-      "duration_ms": 0.4112720489501953,
+      "start_time": 1774421046.2013443,
+      "end_time": 1774421046.2016313,
+      "duration_ms": 0.28705596923828125,
       "iterations": 100,
       "passed": true,
       "metrics": {
@@ -95,9 +95,9 @@
     {
       "test_name": "Harmonic Scaling Identity",
       "category": "Harmonic Scaling",
-      "start_time": 1774216825.4824002,
-      "end_time": 1774216825.4824054,
-      "duration_ms": 0.005245208740234375,
+      "start_time": 1774421046.2021716,
+      "end_time": 1774421046.2021785,
+      "duration_ms": 0.0069141387939453125,
       "iterations": 1,
       "passed": true,
       "metrics": {
@@ -107,9 +107,9 @@
     {
       "test_name": "Harmonic Scaling Monotone Decreasing",
       "category": "Harmonic Scaling",
-      "start_time": 1774216825.4831495,
-      "end_time": 1774216825.4831588,
-      "duration_ms": 0.009298324584960938,
+      "start_time": 1774421046.2027528,
+      "end_time": 1774421046.2027626,
+      "duration_ms": 0.009775161743164062,
       "iterations": 5,
       "passed": true,
       "metrics": {
@@ -120,9 +120,9 @@
     {
       "test_name": "Euler Characteristic (Platonic)",
       "category": "Topological Invariants",
-      "start_time": 1774216825.483917,
-      "end_time": 1774216825.4839242,
-      "duration_ms": 0.007152557373046875,
+      "start_time": 1774421046.203289,
+      "end_time": 1774421046.2032945,
+      "duration_ms": 0.0054836273193359375,
       "iterations": 5,
       "passed": true,
       "metrics": {
@@ -132,9 +132,9 @@
     {
       "test_name": "Genus-Euler Relation",
       "category": "Topological Invariants",
-      "start_time": 1774216825.4846668,
-      "end_time": 1774216825.4846737,
-      "duration_ms": 0.0069141387939453125,
+      "start_time": 1774421046.203794,
+      "end_time": 1774421046.2037992,
+      "duration_ms": 0.005245208740234375,
       "iterations": 3,
       "passed": true,
       "metrics": {
@@ -144,9 +144,9 @@
     {
       "test_name": "Coherence Bounds",
       "category": "Coherence Measures",
-      "start_time": 1774216825.4854243,
-      "end_time": 1774216825.502009,
-      "duration_ms": 16.58463478088379,
+      "start_time": 1774421046.2043355,
+      "end_time": 1774421046.212827,
+      "duration_ms": 8.49151611328125,
       "iterations": 150,
       "passed": true,
       "metrics": {
@@ -156,9 +156,9 @@
     {
       "test_name": "Risk Amplification Monotonicity",
       "category": "Risk Logic",
-      "start_time": 1774216825.5030217,
-      "end_time": 1774216825.5032384,
-      "duration_ms": 0.2167224884033203,
+      "start_time": 1774421046.2135735,
+      "end_time": 1774421046.2137766,
+      "duration_ms": 0.20313262939453125,
       "iterations": 50,
       "passed": true,
       "metrics": {
