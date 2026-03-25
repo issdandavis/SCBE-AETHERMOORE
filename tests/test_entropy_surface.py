@@ -16,14 +16,11 @@ Covers:
 import math
 import random
 
-import pytest
-
 from symphonic_cipher.scbe_aethermoore.entropy_surface import (
     DefensePosture,
     EntropySurfaceConfig,
     EntropySurfaceTracker,
     LeakageBudget,
-    NullificationDirective,
     ProbingClassification,
     ProbingSignature,
     QueryObservation,
@@ -34,7 +31,6 @@ from symphonic_cipher.scbe_aethermoore.entropy_surface import (
     compute_repetition_score,
     detect_probing,
     detect_temporal_regularity,
-    estimate_response_mi,
     shannon_entropy,
     sigmoid_gate,
     surface_distance,

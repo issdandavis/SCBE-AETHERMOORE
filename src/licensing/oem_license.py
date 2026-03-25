@@ -257,8 +257,10 @@ TIER_DEFAULTS = {
         "support_level": "dedicated",
         "white_label": False,
         "air_gap_approved": True,
-        "modules": ["core", "harmonic", "crypto", "symphonic", "governance",
-                     "spectral", "fleet", "training", "ai_brain"],
+        "modules": [
+            "core", "harmonic", "crypto", "symphonic", "governance",
+            "spectral", "fleet", "training", "ai_brain",
+        ],
     },
     LicenseTier.OEM: {
         "max_authorized_users": 0,
@@ -268,8 +270,10 @@ TIER_DEFAULTS = {
         "support_level": "none",
         "white_label": True,
         "air_gap_approved": True,
-        "modules": ["core", "harmonic", "crypto", "symphonic", "governance",
-                     "spectral", "fleet", "training", "ai_brain", "gateway"],
+        "modules": [
+            "core", "harmonic", "crypto", "symphonic", "governance",
+            "spectral", "fleet", "training", "ai_brain", "gateway",
+        ],
     },
     LicenseTier.SOURCE_AVAILABLE: {
         "max_authorized_users": 0,
@@ -279,8 +283,10 @@ TIER_DEFAULTS = {
         "support_level": "none",
         "white_label": False,
         "air_gap_approved": True,
-        "modules": ["core", "harmonic", "crypto", "symphonic", "governance",
-                     "spectral", "fleet", "training", "ai_brain"],
+        "modules": [
+            "core", "harmonic", "crypto", "symphonic", "governance",
+            "spectral", "fleet", "training", "ai_brain",
+        ],
     },
 }
 
