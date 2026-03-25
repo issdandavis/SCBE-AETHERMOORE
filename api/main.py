@@ -132,6 +132,7 @@ if github_app_router is not None:
 
 # API Key authentication
 API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
+API_KEY_HEADER_LEGACY = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 def _load_api_keys() -> dict:
     """
@@ -272,12 +273,16 @@ class SessionStartRequest(BaseModel):
 # Authentication
 # =============================================================================
 
-async def verify_api_key(api_key: str = Security(API_KEY_HEADER)) -> str:
-    if api_key is None:
+async def verify_api_key(
+    api_key: str = Security(API_KEY_HEADER),
+    api_key_legacy: str = Security(API_KEY_HEADER_LEGACY),
+) -> str:
+    key = api_key or api_key_legacy
+    if key is None:
         raise HTTPException(status_code=401, detail="Missing API key")
-    if api_key not in VALID_API_KEYS:
+    if key not in VALID_API_KEYS:
         raise HTTPException(status_code=403, detail="Invalid API key")
-    return VALID_API_KEYS[api_key]
+    return VALID_API_KEYS[key]
 
 
 def _get_orchestrator() -> Optional[Any]:
