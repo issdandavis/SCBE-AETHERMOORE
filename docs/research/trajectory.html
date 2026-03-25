@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCBE Project Trajectory</title>
+  <meta name="description" content="Where SCBE-AETHERMOORE is going next: architecture trajectory, system lanes, runtime shape, and promotion path.">
+  <style>
+    :root {
+      --bg: #07101d;
+      --panel: #0f1d31;
+      --panel-2: #12243d;
+      --line: #27496d;
+      --text: #eef4ff;
+      --muted: #9cb2d3;
+      --accent: #79d7ff;
+      --gold: #f6ca74;
+      --green: #7de3a6;
+      --red: #ff8e8e;
+      --violet: #a78bfa;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top, rgba(121, 215, 255, 0.12), transparent 25%),
+        linear-gradient(180deg, #07101d 0%, #091526 52%, #07101d 100%);
+      color: var(--text);
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .wrap {
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 34px 22px 72px;
+    }
+
+    .topline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(15, 29, 49, 0.82);
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0 0 16px;
+      font-size: clamp(2.4rem, 5vw, 4.6rem);
+      line-height: 0.94;
+      letter-spacing: -0.045em;
+      max-width: 980px;
+    }
+
+    .lead {
+      max-width: 920px;
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 11px 18px;
+      border-radius: 999px;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6ea8ff 0%, #8b6cff 100%);
+      color: #fff;
+    }
+
+    .btn-ghost {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+    }
+
+    .section {
+      margin-top: 34px;
+    }
+
+    .section h2 {
+      margin: 0 0 10px;
+      font-size: 1.6rem;
+      color: var(--gold);
+    }
+
+    .section p {
+      color: var(--muted);
+      line-height: 1.65;
+      margin: 0 0 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(15, 29, 49, 0.95), rgba(10, 20, 35, 0.96));
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+    }
+
+    .panel h3 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .panel p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.58;
+      margin: 0;
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .layer {
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(39, 73, 109, 0.7);
+    }
+
+    .layer strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 5px;
+    }
+
+    .layer span {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .phase-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .phase {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(18, 36, 61, 0.9);
+    }
+
+    .phase .tag {
+      color: var(--accent);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 1.6px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .phase h3 {
+      margin: 0 0 10px;
+      font-size: 1.1rem;
+    }
+
+    .phase ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.93rem;
+    }
+
+    .diagram {
+      margin-top: 16px;
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(10, 20, 35, 0.88);
+      overflow-x: auto;
+    }
+
+    pre {
+      margin: 0;
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: #dce7ff;
+    }
+
+    .note {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-left: 4px solid var(--green);
+      background: rgba(125, 227, 166, 0.08);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .warn {
+      border-left-color: var(--red);
+      background: rgba(255, 142, 142, 0.08);
+    }
+
+    @media (max-width: 980px) {
+      .phase-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topline">
+      <div class="chip"><a href="../">Research hub</a></div>
+      <div class="chip"><a href="./verification.html">Five-run verification</a></div>
+      <div class="chip"><a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub repo</a></div>
+    </div>
+
+    <div class="eyebrow">Architecture trajectory</div>
+    <h1>The project is converging on a dual-speed governance system, not a single model trick.</h1>
+    <p class="lead">
+      The near-term direction is clear now. The flat path handles fast lookup and cheap routing. The curved path handles anomaly separation, drift, and governance.
+      The existing 14-layer runtime stays intact. The work is to harden the front door, route ambiguity correctly, and connect the research lanes to the production
+      lanes without pretending every benchmark promotion is already earned.
+    </p>
+
+    <div class="hero-actions">
+      <a href="./verification.html" class="btn btn-primary">Open verified results</a>
+      <a href="./math-flow.html" class="btn btn-ghost">Math flow</a>
+      <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/scripts/benchmark" class="btn btn-ghost" target="_blank">Benchmark code</a>
+    </div>
+
+    <section class="section">
+      <h2>What exists now</h2>
+      <div class="grid">
+        <div class="panel">
+          <h3>1. Runtime core</h3>
+          <p>The repo already has a large harmonic, governance, crypto, orchestration, and API surface. The core issue is not “missing architecture.” It is uneven coupling between the strongest theory lanes and the practical front-door lane.</p>
+        </div>
+        <div class="panel">
+          <h3>2. Current best gate</h3>
+          <p>`E4` is still the best clean detector on the current benchmark surface: high detection, zero holdout false positives, and stable reruns. That makes it the current anchor rather than an experimental side branch.</p>
+        </div>
+        <div class="panel">
+          <h3>3. Geometric edge</h3>
+          <p>The helix result is repeatable and useful, but it is a representation win, not a direct replacement for the detector. It belongs under the gate as a separation engine, not as a headline retrieval system.</p>
+        </div>
+        <div class="panel">
+          <h3>4. Null-space role</h3>
+          <p>Null-space is now correctly scoped: it is a boost feature for missed attacks, but not a universal gate. It belongs in the uncertain zone, where extra scrutiny is worth the cost.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>The architecture that is emerging</h2>
+      <p>
+        The project is trending toward a hybrid runtime with three speeds: a cheap fast path, a governed curved path, and a quarantine analysis path.
+        That lets flat-space speed and hyperbolic safety coexist instead of being forced into the same optimization target.
+      </p>
+      <div class="stack">
+        <div class="layer">
+          <strong>Fast path</strong>
+          <span>Flat / direct / cheap routing for obvious cases. Use when confidence is high and disagreement is low.</span>
+        </div>
+        <div class="layer">
+          <strong>Governed curved path</strong>
+          <span>Helix or hyperbolic representation feeding the existing 14-layer runtime for separation, drift, and structured anomaly handling.</span>
+        </div>
+        <div class="layer">
+          <strong>Uncertain zone</strong>
+          <span>Remainder, null-space, spectral, and route disagreement used only when the primary gate cannot resolve the case cleanly.</span>
+        </div>
+        <div class="layer">
+          <strong>Promotion path</strong>
+          <span>Only features that improve end-to-end detection without unacceptable false positives move from research into the live runtime.</span>
+        </div>
+      </div>
+      <div class="diagram">
+        <pre>input
+  -> flat pass / cheap semantic route
+      -> if confidence high and remainder low: allow fast path
+      -> else: hyperbolic / helix projection
+          -> 14-layer runtime (L4-L14 unchanged)
+              -> if clear: allow / deny
+              -> if uncertain: null-space + remainder + spectral quarantine lane
+                  -> decision record / audit packet / escalation</pre>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Project phases from here</h2>
+      <div class="phase-grid">
+        <div class="phase">
+          <div class="tag">Phase 1</div>
+          <h3>Stabilize what is already winning</h3>
+          <ul>
+            <li>Keep `E4` as the main benchmark winner.</li>
+            <li>Use helix as a geometry lane, not as a replacement detector.</li>
+            <li>Keep null-space in the uncertain zone only.</li>
+            <li>Publish verification and reproducibility surfaces.</li>
+          </ul>
+        </div>
+        <div class="phase">
+          <div class="tag">Phase 2</div>
+          <h3>Reconnect the real tongue machinery</h3>
+          <ul>
+            <li>Replace the stub front door with the actual tongue/conlang reader.</li>
+            <li>Feed the resulting tongue state into the existing downstream layers.</li>
+            <li>Run ablations against the same attack and clean sets.</li>
+            <li>Only promote if the end-to-end curve actually improves.</li>
+          </ul>
+        </div>
+        <div class="phase">
+          <div class="tag">Phase 3</div>
+          <h3>Fuse research and product</h3>
+          <ul>
+            <li>Public research domain for proofs, reports, and benchmark pages.</li>
+            <li>Operator runtime for APIs, HYDRA orchestration, and production controls.</li>
+            <li>A clean product layer that presents capabilities without overclaiming the math.</li>
+            <li>A repeatable promotion gate from experiment to runtime.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Subsystem map for the direction of travel</h2>
+      <div class="grid">
+        <div class="panel">
+          <h3>Language plane</h3>
+          <p>Moves from heuristic tongue proxies toward actual symbolic tongue reading. This is the front-door repair lane.</p>
+        </div>
+        <div class="panel">
+          <h3>Geometry plane</h3>
+          <p>Owns the helix, Poincaré ball, clustering, radius, and separation machinery. Its job is structure and anomaly geometry, not cheap lookup.</p>
+        </div>
+        <div class="panel">
+          <h3>Governance plane</h3>
+          <p>Preserves the 14-layer runtime, gate logic, audit decisions, and escalation states. This is where promotion standards stay strict.</p>
+        </div>
+        <div class="panel">
+          <h3>Diagnostic plane</h3>
+          <p>Null-space, remainder, flux, and spectral analysis stay here until they prove they improve net system behavior at an acceptable FP cost.</p>
+        </div>
+        <div class="panel">
+          <h3>Operator plane</h3>
+          <p>HYDRA, terminal workflows, browsers, APIs, and deployed services. This is where the system becomes a usable product rather than just a benchmark stack.</p>
+        </div>
+        <div class="panel">
+          <h3>Research plane</h3>
+          <p>Verification pages, ablations, codebase maps, and benchmark artifacts live here. This is the evidence layer that keeps the project honest.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Decisions already made by the data</h2>
+      <div class="note">
+        Flat space is not the enemy. It is the speed lane. Helix is not the main detector. It is the structured separation lane. Null-space is not a universal gate.
+        It is a conditional boost feature. The project is going toward a hybrid governed architecture where each mathematical surface is used for the job it actually wins.
+      </div>
+      <div class="note warn">
+        The thing to avoid now is more scope collapse. Do not downgrade the real tongue system into toy proxies and then talk as if the proxy is the architecture.
+        The trajectory page exists to keep that boundary explicit.
+      </div>
+    </section>
+  </div>
+</body>
+</html>
