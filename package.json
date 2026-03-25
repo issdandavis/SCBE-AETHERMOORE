@@ -89,9 +89,9 @@
     "lint:python": "flake8 src/ tests/",
     "cli": "python scbe-cli.py",
     "codeprism:build": "python scripts/code_prism_build.py",
-    "codeprism:mesh": "python scripts/code_mesh_build.py",
+    "codeprism:mesh": "python scripts/code_prism_build.py --mesh",
     "connector:health": "python scripts/connector_health_check.py",
-    "scbe:bootstrap": "powershell -ExecutionPolicy Bypass -File ./scripts/scbe_bootstrap.ps1",
+    "scbe:bootstrap": "node scripts/scbe_bootstrap.mjs",
     "system:cli": "python scripts/scbe-system-cli.py",
     "eval:legacy:hf": "python scripts/run_legacy_hf_eval.py",
     "probe:attention:fft": "python scripts/probe_attention_fft.py",
@@ -103,7 +103,7 @@
     "aetherbrowser:service:verify": "python scripts/verify_aetherbrowser_extension_service.py --run-backend-smoke",
     "aetherbrowser:service:stop": "powershell -ExecutionPolicy Bypass -File ./scripts/system/stop_aetherbrowser_extension_service.ps1",
     "m6:train": "python scripts/train_m6_spheremesh.py",
-    "demo": "start scbe-aethermoore/customer-demo.html",
+    "demo": "npx open-cli scbe-aethermoore/customer-demo.html",
     "agentic:demo": "ts-node src/agentic/demo-runner.ts",
     "docker:build": "docker build -t scbe-aethermoore:latest .",
     "docker:run": "docker run -it scbe-aethermoore:latest",
@@ -134,8 +134,8 @@
     "gateway:build": "tsc -p tsconfig.gateway.json",
     "xops:dryrun": "node scripts/system/x_ops_queue_runner.mjs --queue workflows/n8n/x_ops_queue.sample.json --dry-run",
     "xops:run": "node scripts/system/x_ops_queue_runner.mjs --queue workflows/n8n/x_ops_queue.sample.json",
-    "skills:bridge": "powershell -ExecutionPolicy Bypass -File ./scripts/system/scbe_skill_tool_bridge.ps1 -Action quick",
-    "skills:bridge:full": "powershell -ExecutionPolicy Bypass -File ./scripts/system/scbe_skill_tool_bridge.ps1 -Action full"
+    "skills:bridge": "node scripts/system/scbe_skill_tool_bridge.mjs --action quick",
+    "skills:bridge:full": "node scripts/system/scbe_skill_tool_bridge.mjs --action full"
   },
   "keywords": [
     "cryptography",
