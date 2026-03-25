@@ -678,6 +678,8 @@ class TestMedicalAICommunication:
 
     def test_121_large_medical_image_transfer(self):
         """Large medical images (DICOM-like) should transfer securely."""
+        from unittest.mock import patch
+
         master_secret = get_random(32)
 
         # Use same channel for send and receive
@@ -687,13 +689,16 @@ class TestMedicalAICommunication:
         image_data = get_random(100 * 1024)
         patient_id = "PAT-IMAGING-001"
 
-        sealed = sender.send_phi(image_data, MedicalDataType.DIAGNOSTIC, patient_id)
+        # Freeze time so sender and receiver AAD timestamps always match
+        frozen_ts = time.time()
+        with patch("time.time", return_value=frozen_ts):
+            sealed = sender.send_phi(image_data, MedicalDataType.DIAGNOSTIC, patient_id)
 
-        # Create receiver with same session to match AAD
-        receiver = MedicalAIChannel("AI-RADIOLOGY", "AI-PATHOLOGY", master_secret)
-        receiver.session_id = sender.session_id  # Match session
+            # Create receiver with same session to match AAD
+            receiver = MedicalAIChannel("AI-RADIOLOGY", "AI-PATHOLOGY", master_secret)
+            receiver.session_id = sender.session_id  # Match session
 
-        received = receiver.receive_phi(sealed, MedicalDataType.DIAGNOSTIC, patient_id)
+            received = receiver.receive_phi(sealed, MedicalDataType.DIAGNOSTIC, patient_id)
 
         assert received == image_data
 
