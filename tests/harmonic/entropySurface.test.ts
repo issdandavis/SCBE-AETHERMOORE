@@ -22,7 +22,6 @@ import {
   computeCoverageBreadth,
   computeRepetitionScore,
   detectProbing,
-  estimateResponseMI,
   computeLeakageBudget,
   sigmoidGate,
   computeNullification,
