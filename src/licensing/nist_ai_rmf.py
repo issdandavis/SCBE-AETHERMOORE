@@ -116,7 +116,12 @@ class ComplianceReport:
                     "total": len(self.by_function(f)),
                     "passed": sum(1 for c in self.by_function(f) if c.status == "PASS"),
                 }
-                for f in [RMFFunction.GOVERN, RMFFunction.MAP, RMFFunction.MEASURE, RMFFunction.MANAGE]
+                for f in [
+                    RMFFunction.GOVERN,
+                    RMFFunction.MAP,
+                    RMFFunction.MEASURE,
+                    RMFFunction.MANAGE,
+                ]
             },
         }
 
@@ -142,7 +147,10 @@ def generate_compliance_report() -> ComplianceReport:
             category="Policies",
             description="Legal and regulatory requirements are understood and inform AI risk management",
             scbe_mapping="CUSTOMER_LICENSE_AGREEMENT.md, docs/05-industry-guides/",
-            evidence="Dual-license model with explicit regulatory mapping for banking, healthcare, defense, SaaS verticals",
+            evidence=(
+                "Dual-license model with explicit regulatory mapping"
+                " for banking, healthcare, defense, SaaS verticals"
+            ),
         )
     )
 
@@ -164,7 +172,9 @@ def generate_compliance_report() -> ComplianceReport:
             category="Accountability",
             description="Roles and responsibilities for AI risk management are defined",
             scbe_mapping="src/governance/, src/fleet/ (shepherd/flock roles)",
-            evidence="Layer 13 governance with ALLOW/QUARANTINE/ESCALATE/DENY decisions requiring explicit authorization",
+            evidence=(
+                "Layer 13 governance with ALLOW/QUARANTINE/ESCALATE/DENY" " decisions requiring explicit authorization"
+            ),
         )
     )
 
@@ -264,7 +274,9 @@ def generate_compliance_report() -> ComplianceReport:
             category="Third-Party Components",
             description="Third-party AI components and their risks are identified",
             scbe_mapping="package.json (dependencies), src/pyproject.toml",
-            evidence="Explicit dependency list with PQC libraries (@noble/post-quantum), MCP SDK, and crypto primitives",
+            evidence=(
+                "Explicit dependency list with PQC libraries" " (@noble/post-quantum), MCP SDK, and crypto primitives"
+            ),
         )
     )
 
