@@ -2991,39 +2991,322 @@ def _gh(args: list, capture: bool = True) -> str:
     return result.stdout.strip() if capture else ""
 
 
-def cmd_gh_ci(args: argparse.Namespace) -> int:
-    """Check CI status for current branch or a PR."""
-    if args.pr:
-        output = _gh(["pr", "checks", str(args.pr)])
-    else:
-        branch = subprocess.run(
-            ["git", "branch", "--show-current"], capture_output=True, text=True
+def _git_current_branch() -> str:
+    return (
+        subprocess.run(
+            ["git", "branch", "--show-current"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
         ).stdout.strip()
-        output = _gh(["pr", "checks", "--repo", "issdandavis/SCBE-AETHERMOORE"])
+        or "main"
+    )
 
-    lines = []
-    pass_count = fail_count = pending_count = 0
-    for line in output.split("\n"):
+
+def _gh_lines(args: list[str]) -> list[str]:
+    output = _gh(args)
+    return [line.strip() for line in output.splitlines() if line.strip()]
+
+
+def _gh_json(args: list[str]) -> dict[str, object] | list[object] | None:
+    output = _gh(args)
+    if not output:
+        return None
+    try:
+        return json.loads(output)
+    except json.JSONDecodeError:
+        return None
+
+
+def _gh_count_open_scan_alerts() -> int:
+    return len(
+        _gh_lines(
+            [
+                "api",
+                "repos/issdandavis/SCBE-AETHERMOORE/code-scanning/alerts?state=open&per_page=100",
+                "--paginate",
+                "--jq",
+                ".[].number",
+            ]
+        )
+    )
+
+
+def _gh_scan_rule_buckets(limit: int = 5) -> list[dict[str, object]]:
+    counts: dict[str, int] = {}
+    for rule in _gh_lines(
+        [
+            "api",
+            "repos/issdandavis/SCBE-AETHERMOORE/code-scanning/alerts?state=open&per_page=100",
+            "--paginate",
+            "--jq",
+            ".[].rule.id",
+        ]
+    ):
+        counts[rule] = counts.get(rule, 0) + 1
+    return [
+        {"rule": rule, "count": count}
+        for rule, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))[:limit]
+    ]
+
+
+def _gh_ci_payload(pr: int | None = None) -> dict[str, object]:
+    branch = _git_current_branch()
+    resolved_pr = pr
+    if resolved_pr is None:
+        pr_lookup = _gh(
+            [
+                "pr",
+                "list",
+                "--state",
+                "open",
+                "--head",
+                branch,
+                "--json",
+                "number",
+                "--jq",
+                ".[0].number // empty",
+            ]
+        )
+        if pr_lookup.isdigit():
+            resolved_pr = int(pr_lookup)
+
+    output = _gh(["pr", "checks", str(resolved_pr)]) if resolved_pr else ""
+    failures: list[str] = []
+    pass_count = 0
+    fail_count = 0
+    pending_count = 0
+    for line in output.splitlines():
         if not line.strip():
             continue
         if "\tpass\t" in line:
             pass_count += 1
         elif "\tfail\t" in line:
             fail_count += 1
-            lines.append(f"  FAIL: {line.split(chr(9))[0]}")
+            failures.append(line.split(chr(9))[0])
         elif "\tpending\t" in line:
             pending_count += 1
 
-    print(f"CI: {pass_count} pass, {fail_count} fail, {pending_count} pending")
-    for line in lines:
-        print(line)
-    if fail_count == 0 and pending_count == 0:
-        print("  All checks green!")
-    return 0
+    return {
+        "branch": branch,
+        "pr": resolved_pr,
+        "checks_known": bool(resolved_pr),
+        "pass_count": pass_count,
+        "fail_count": fail_count,
+        "pending_count": pending_count,
+        "failures": failures,
+        "clean": bool(resolved_pr) and fail_count == 0 and pending_count == 0,
+    }
+
+
+def _gh_scan_payload(repo_root: str, verify: bool = False) -> dict[str, object]:
+    verification_exit_code = None
+    if verify:
+        script = Path(repo_root) / "scripts" / "ci" / "review_code_scanning.py"
+        verification_exit_code = subprocess.call([sys.executable, str(script), "--verify"])
+    return {
+        "open_alerts": _gh_count_open_scan_alerts(),
+        "top_rules": _gh_scan_rule_buckets(),
+        "verify_requested": verify,
+        "verification_exit_code": verification_exit_code,
+    }
+
+
+def _gh_prs_payload(limit: int = 10) -> dict[str, object]:
+    data = _gh_json(
+        [
+            "pr",
+            "list",
+            "--limit",
+            str(limit),
+            "--json",
+            "number,title,state,headRefName,mergeable,url",
+        ]
+    )
+    items = data if isinstance(data, list) else []
+    return {"count": len(items), "items": items}
+
+
+def _gh_issues_payload(limit: int = 10) -> dict[str, object]:
+    data = _gh_json(
+        [
+            "issue",
+            "list",
+            "--limit",
+            str(limit),
+            "--json",
+            "number,title,labels,url",
+        ]
+    )
+    items = data if isinstance(data, list) else []
+    return {"count": len(items), "items": items}
+
+
+def _gh_release_payload() -> dict[str, object]:
+    data = _gh_json(["release", "view", "--json", "tagName,name,publishedAt,body,url"])
+    if isinstance(data, dict):
+        return data
+    return {"tagName": "", "name": "", "publishedAt": "", "body": "", "url": ""}
+
+
+def _gh_pulse_payload() -> dict[str, object]:
+    commit_log = subprocess.run(
+        ["git", "log", "--oneline", "--since=1 week ago", "main"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    ).stdout.strip()
+    commit_count = len([line for line in commit_log.splitlines() if line.strip()])
+    pr_output = _gh(
+        [
+            "pr",
+            "list",
+            "--state",
+            "merged",
+            "--search",
+            "merged:>2026-03-17",
+            "--json",
+            "number",
+            "--jq",
+            "length",
+        ]
+    )
+    pr_count = int(pr_output) if pr_output.isdigit() else 0
+    issue_output = _gh(["issue", "list", "--json", "number", "--jq", "length"])
+    issue_count = int(issue_output) if issue_output.isdigit() else 0
+    open_pr_output = _gh(["pr", "list", "--json", "number", "--jq", "length"])
+    open_pr_count = int(open_pr_output) if open_pr_output.isdigit() else 0
+    runs = _gh(
+        [
+            "run",
+            "list",
+            "--limit",
+            "20",
+            "--json",
+            "conclusion",
+            "--jq",
+            '[.[] | .conclusion] | {pass: [.[] | select(. == "success")] | length, fail: [.[] | select(. == "failure")] | length}',
+        ]
+    )
+    ci_pass_count = 0
+    ci_fail_count = 0
+    ci_pass_rate = 0.0
+    if runs:
+        try:
+            run_data = json.loads(runs)
+            ci_pass_count = int(run_data.get("pass", 0))
+            ci_fail_count = int(run_data.get("fail", 0))
+            total = ci_pass_count + ci_fail_count
+            ci_pass_rate = (ci_pass_count / total * 100.0) if total else 0.0
+        except (json.JSONDecodeError, TypeError, ValueError):
+            pass
+    return {
+        "generated_at": _now_iso(),
+        "commit_count": commit_count,
+        "merged_pr_count": pr_count,
+        "open_issue_count": issue_count,
+        "open_pr_count": open_pr_count,
+        "ci_pass_count": ci_pass_count,
+        "ci_fail_count": ci_fail_count,
+        "ci_pass_rate": round(ci_pass_rate, 1),
+        "open_scan_alerts": _gh_count_open_scan_alerts(),
+    }
+
+
+def _gh_doctor_payload(repo_root: str, pr: int | None = None, verify: bool = False, limit: int = 5) -> dict[str, object]:
+    ci = _gh_ci_payload(pr)
+    scan = _gh_scan_payload(repo_root, verify=verify)
+    prs = _gh_prs_payload(limit=limit)
+    issues = _gh_issues_payload(limit=limit)
+    release = _gh_release_payload()
+    blockers: list[str] = []
+    if not ci["checks_known"]:
+        blockers.append(f"No open PR detected for branch {ci['branch']}.")
+    if ci["fail_count"]:
+        blockers.append(f"{ci['fail_count']} CI check(s) failing.")
+    if ci["pending_count"]:
+        blockers.append(f"{ci['pending_count']} CI check(s) pending.")
+    if scan["open_alerts"]:
+        blockers.append(f"{scan['open_alerts']} open code-scanning alert(s).")
+    return {
+        "schema_version": "scbe_gh_doctor_v1",
+        "generated_at": _now_iso(),
+        "ci": ci,
+        "scan": scan,
+        "prs": {"count": prs["count"], "sample": prs["items"][:limit]},
+        "issues": {"count": issues["count"], "sample": issues["items"][:limit]},
+        "release": {
+            "tagName": release.get("tagName", ""),
+            "name": release.get("name", ""),
+            "publishedAt": release.get("publishedAt", ""),
+            "url": release.get("url", ""),
+        },
+        "blockers": blockers,
+        "healthy": not blockers,
+    }
+
+
+def _run_cli_json(
+    repo_root: str,
+    config_path: str,
+    command: list[str],
+) -> tuple[int, dict[str, object]]:
+    cmd = [sys.executable, str(Path(__file__)), "--repo-root", repo_root]
+    if config_path:
+        cmd.extend(["--config-path", config_path])
+    cmd.extend(command)
+    cmd.append("--json")
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        encoding="utf-8",
+        errors="replace",
+    )
+    payload: dict[str, object] = {}
+    stdout = result.stdout.strip()
+    if stdout:
+        try:
+            parsed = json.loads(stdout)
+            if isinstance(parsed, dict):
+                payload = parsed
+            else:
+                payload = {"data": parsed}
+        except json.JSONDecodeError:
+            payload = {"raw_output": stdout}
+    if result.stderr.strip():
+        payload["stderr"] = result.stderr.strip()
+    return result.returncode, payload
+
+
+def cmd_gh_ci(args: argparse.Namespace) -> int:
+    """Check CI status for current branch or a PR."""
+    payload = _gh_ci_payload(args.pr)
+    lines = [
+        f"CI for {payload['branch']}: {payload['pass_count']} pass, {payload['fail_count']} fail, {payload['pending_count']} pending"
+    ]
+    if not payload["checks_known"]:
+        lines.append("  No open PR detected for the current branch.")
+    for item in payload["failures"]:
+        lines.append(f"  FAIL: {item}")
+    if payload["clean"]:
+        lines.append("  All checks green!")
+    return _json_result(args, payload, lines)
 
 
 def cmd_gh_scan(args: argparse.Namespace) -> int:
-    """Code scanning dashboard — delegates to review_code_scanning.py."""
+    """Code scanning dashboard - delegates to review_code_scanning.py."""
+    if getattr(args, "json_output", False):
+        payload = _gh_scan_payload(args.repo_root, verify=args.verify)
+        lines = [f"Open code-scanning alerts: {payload['open_alerts']}"]
+        for item in payload["top_rules"]:
+            lines.append(f"  {item['count']:>3} {item['rule']}")
+        if payload["verify_requested"]:
+            lines.append(f"  Verify exit code: {payload['verification_exit_code']}")
+        return _json_result(args, payload, lines)
     script = Path(args.repo_root) / "scripts" / "ci" / "review_code_scanning.py"
     cmd = [sys.executable, str(script)]
     if args.verify:
@@ -3032,57 +3315,66 @@ def cmd_gh_scan(args: argparse.Namespace) -> int:
 
 
 def cmd_gh_fix(args: argparse.Namespace) -> int:
-    """Auto-fix CI failures — delegates to auto_fix.py."""
+    """Auto-fix CI failures - delegates to auto_fix.py."""
     script = Path(args.repo_root) / "scripts" / "ci" / "auto_fix.py"
     cmd = [sys.executable, str(script), "--detect"]
     if args.run_id:
         cmd.extend(["--run-id", str(args.run_id)])
     if args.dry_run:
         cmd.append("--dry-run")
-    return subprocess.call(cmd)
+    rc = subprocess.call(cmd)
+    payload = {
+        "schema_version": "scbe_gh_fix_v1",
+        "repo_root": args.repo_root,
+        "run_id": args.run_id,
+        "dry_run": args.dry_run,
+        "exit_code": rc,
+    }
+    lines = [f"CI auto-fix exit code: {rc}"]
+    if args.dry_run:
+        lines.append("  Dry run only; no fixes applied.")
+    return _json_result(args, payload, lines)
 
 
 def cmd_gh_prs(args: argparse.Namespace) -> int:
     """List open PRs with CI status."""
-    output = _gh([
-        "pr", "list", "--json", "number,title,state,headRefName,mergeable",
-        "--jq", '.[] | "  #\\(.number) [\\(.headRefName)] \\(.title)"',
-    ])
-    if output:
-        print("Open PRs:")
-        print(output)
+    payload = _gh_prs_payload(limit=getattr(args, "limit", 10))
+    if payload["items"]:
+        lines = ["Open PRs:"]
+        lines.extend(f"  #{item['number']} [{item['headRefName']}] {item['title']}" for item in payload["items"])
     else:
-        print("No open PRs.")
-    return 0
+        lines = ["No open PRs."]
+    return _json_result(args, payload, lines)
 
 
 def cmd_gh_issues(args: argparse.Namespace) -> int:
     """List open issues."""
-    output = _gh([
-        "issue", "list", "--json", "number,title,labels",
-        "--jq", '.[] | "  #\\(.number) \\(.title) (\\([.labels[].name] | join(\", \")))"',
-    ])
-    if output:
-        print("Open issues:")
-        print(output)
+    payload = _gh_issues_payload(limit=getattr(args, "limit", 10))
+    if payload["items"]:
+        lines = ["Open issues:"]
+        for item in payload["items"]:
+            labels = ", ".join(label.get("name", "") for label in item.get("labels", []))
+            suffix = f" ({labels})" if labels else ""
+            lines.append(f"  #{item['number']} {item['title']}{suffix}")
     else:
-        print("No open issues.")
-    return 0
+        lines = ["No open issues."]
+    return _json_result(args, payload, lines)
 
 
 def cmd_gh_release(args: argparse.Namespace) -> int:
     """Show latest release info."""
-    output = _gh(["release", "view", "--json", "tagName,name,publishedAt,body"])
-    if output:
-        data = json.loads(output)
-        print(f"Latest release: {data.get('tagName', '?')} — {data.get('name', '?')}")
-        print(f"  Published: {data.get('publishedAt', '?')}")
-        body = data.get("body", "")
+    payload = _gh_release_payload()
+    if payload.get("tagName"):
+        lines = [
+            f"Latest release: {payload.get('tagName', '?')} - {payload.get('name', '?')}",
+            f"  Published: {payload.get('publishedAt', '?')}",
+        ]
+        body = payload.get("body", "")
         if body:
-            print(f"  {body[:200]}")
+            lines.append(f"  {str(body)[:200]}")
     else:
-        print("No releases found.")
-    return 0
+        lines = ["No releases found."]
+    return _json_result(args, payload, lines)
 
 
 def cmd_gh_deploy(args: argparse.Namespace) -> int:
@@ -3097,10 +3389,15 @@ def cmd_gh_deploy(args: argparse.Namespace) -> int:
     if not wf:
         print(f"Unknown deploy target: {args.target}")
         return 1
-    print(f"Triggering {wf} for {args.target}...")
     _gh(["workflow", "run", wf], capture=False)
-    print(f"  Dispatched. Check with: scbe-system gh ci")
-    return 0
+    payload = {
+        "schema_version": "scbe_gh_deploy_v1",
+        "target": args.target,
+        "workflow": wf,
+        "dispatched": True,
+    }
+    lines = [f"Triggering {wf} for {args.target}...", "  Dispatched. Check with: scbe-system gh ci"]
+    return _json_result(args, payload, lines)
 
 
 def cmd_gh_cleanup(args: argparse.Namespace) -> int:
@@ -3185,61 +3482,185 @@ def cmd_gh_cleanup(args: argparse.Namespace) -> int:
             print(f"    Cloud root not found: {cloud_root}")
             print(f"    Skipping (would need: mkdir {cloud_root})")
 
-    print(f"\n  Total freed: {total_freed} MB")
-    return 0
+    payload = {
+        "schema_version": "scbe_gh_cleanup_v1",
+        "target": args.target,
+        "dry_run": args.dry_run,
+        "total_freed_mb": total_freed,
+    }
+    lines = [f"Total freed: {total_freed} MB"]
+    return _json_result(args, payload, lines)
 
 
 def cmd_gh_pulse(args: argparse.Namespace) -> int:
     """Weekly activity summary."""
-    # Commits this week
-    commit_count = subprocess.run(
-        ["git", "log", "--oneline", "--since=1 week ago", "main"],
-        capture_output=True, text=True,
-    ).stdout.strip().count("\n") + 1
+    payload = _gh_pulse_payload()
+    total_runs = payload["ci_pass_count"] + payload["ci_fail_count"]
+    lines = [
+        "SCBE Pulse - This Week",
+        "=" * 40,
+        f"  Commits:       {payload['commit_count']}",
+        f"  PRs merged:    {payload['merged_pr_count']}",
+        f"  Open PRs:      {payload['open_pr_count']}",
+        f"  Open issues:   {payload['open_issue_count']}",
+        f"  Open scans:    {payload['open_scan_alerts']}",
+        f"  CI pass rate:  {payload['ci_pass_rate']:.0f}% ({payload['ci_pass_count']}/{total_runs} last 20 runs)" if total_runs else "  CI pass rate:  n/a",
+    ]
+    return _json_result(args, payload, lines)
 
-    # PRs merged this week
-    pr_output = _gh([
-        "pr", "list", "--state", "merged", "--search", "merged:>2026-03-17",
-        "--json", "number", "--jq", "length",
-    ])
-    pr_count = int(pr_output) if pr_output.isdigit() else 0
 
-    # Open issues
-    issue_output = _gh(["issue", "list", "--json", "number", "--jq", "length"])
-    issue_count = int(issue_output) if issue_output.isdigit() else 0
+def cmd_gh_doctor(args: argparse.Namespace) -> int:
+    """Aggregate GitHub health into one operator-friendly summary."""
+    payload = _gh_doctor_payload(args.repo_root, pr=args.pr, verify=args.verify, limit=args.limit)
+    lines = [
+        "SCBE GitHub Doctor",
+        "=" * 40,
+        f"  Branch:        {payload['ci']['branch']}",
+        f"  PR:            {payload['ci']['pr'] or 'none'}",
+        f"  CI:            {payload['ci']['pass_count']} pass / {payload['ci']['fail_count']} fail / {payload['ci']['pending_count']} pending",
+        f"  Scan alerts:   {payload['scan']['open_alerts']}",
+        f"  Open PRs:      {payload['prs']['count']}",
+        f"  Open issues:   {payload['issues']['count']}",
+        f"  Latest release:{' ' if payload['release']['tagName'] else ''}{payload['release']['tagName'] or 'none'}",
+    ]
+    if payload["blockers"]:
+        lines.append("  Blockers:")
+        lines.extend(f"    - {item}" for item in payload["blockers"])
+    else:
+        lines.append("  No active GitHub blockers.")
+    return _json_result(args, payload, lines)
 
-    # Open PRs
-    open_pr = _gh(["pr", "list", "--json", "number", "--jq", "length"])
-    open_pr_count = int(open_pr) if open_pr.isdigit() else 0
 
-    # Code scanning
-    scan_output = _gh([
-        "api", "repos/issdandavis/SCBE-AETHERMOORE/code-scanning/alerts?state=open&per_page=1",
-        "--jq", "length",
-    ])
+def cmd_gh_sweep(args: argparse.Namespace) -> int:
+    """Run a multi-action GitHub sweep in one pass."""
+    doctor = _gh_doctor_payload(args.repo_root, pr=args.pr, verify=args.verify, limit=args.limit)
+    prs = _gh_prs_payload(limit=args.limit)
+    issues = _gh_issues_payload(limit=args.limit)
+    pulse = _gh_pulse_payload()
+    release = _gh_release_payload() if args.include_release else {}
+    fix_payload: dict[str, object] | None = None
+    if args.fix_ci:
+        script = Path(args.repo_root) / "scripts" / "ci" / "auto_fix.py"
+        cmd = [sys.executable, str(script), "--detect"]
+        if args.fix_dry_run:
+            cmd.append("--dry-run")
+        fix_rc = subprocess.call(cmd)
+        fix_payload = {"requested": True, "dry_run": args.fix_dry_run, "exit_code": fix_rc}
+    blockers = list(doctor["blockers"])
+    payload = {
+        "schema_version": "scbe_gh_sweep_v1",
+        "generated_at": _now_iso(),
+        "doctor": doctor,
+        "prs": prs,
+        "issues": issues,
+        "pulse": pulse,
+        "release": release,
+        "fix": fix_payload,
+        "healthy": not blockers,
+    }
+    lines = [
+        "SCBE GitHub Sweep",
+        "=" * 40,
+        f"  Healthy:       {'yes' if payload['healthy'] else 'no'}",
+        f"  CI blockers:   {doctor['ci']['fail_count']} fail / {doctor['ci']['pending_count']} pending",
+        f"  Scan alerts:   {doctor['scan']['open_alerts']}",
+        f"  PR sample:     {prs['count']} open",
+        f"  Issue sample:  {issues['count']} open",
+        f"  Weekly pulse:  {pulse['commit_count']} commits / {pulse['merged_pr_count']} merged PRs",
+    ]
+    if args.include_release and release:
+        lines.append(f"  Release:       {release.get('tagName', 'none') or 'none'}")
+    if fix_payload:
+        lines.append(f"  Fix lane:      exit {fix_payload['exit_code']} (dry_run={fix_payload['dry_run']})")
+    if blockers:
+        lines.append("  Blockers:")
+        lines.extend(f"    - {item}" for item in blockers)
+    return _json_result(args, payload, lines)
 
-    # Workflow runs
-    runs = _gh([
-        "run", "list", "--limit", "20", "--json", "conclusion",
-        "--jq", '[.[] | .conclusion] | {pass: [.[] | select(. == "success")] | length, fail: [.[] | select(. == "failure")] | length}',
-    ])
 
-    print("SCBE Pulse — This Week")
-    print("=" * 40)
-    print(f"  Commits:       {commit_count}")
-    print(f"  PRs merged:    {pr_count}")
-    print(f"  Open PRs:      {open_pr_count}")
-    print(f"  Open issues:   {issue_count}")
-    if runs:
-        try:
-            r = json.loads(runs)
-            total = r.get("pass", 0) + r.get("fail", 0)
-            rate = (r["pass"] / total * 100) if total else 0
-            print(f"  CI pass rate:  {rate:.0f}% ({r['pass']}/{total} last 20 runs)")
-        except (json.JSONDecodeError, KeyError):
-            pass
-    print()
-    return 0
+def cmd_ops_board(args: argparse.Namespace) -> int:
+    """Aggregate local doctor/status plus GitHub and Colab into one board."""
+    sections: dict[str, dict[str, object]] = {}
+    blockers: list[str] = []
+    commands: list[tuple[str, list[str]]] = [("doctor", ["doctor"]), ("status", ["status"])]
+    if not args.skip_github:
+        gh_command = ["gh", "doctor", "--limit", str(args.limit)]
+        if args.verify_scan:
+            gh_command.append("--verify")
+        commands.append(("github", gh_command))
+    if not args.skip_colab:
+        commands.append(("colab", ["colab", "status"]))
+    for name, command in commands:
+        rc, payload = _run_cli_json(args.repo_root, getattr(args, "config_path", ""), command)
+        sections[name] = {"ok": rc == 0, "command": command, "payload": payload}
+        if rc != 0:
+            blockers.append(f"{name} exited with code {rc}.")
+        elif isinstance(payload, dict) and payload.get("blockers"):
+            blockers.extend(f"{name}: {item}" for item in payload["blockers"])
+    payload = {
+        "schema_version": "scbe_ops_board_v1",
+        "generated_at": _now_iso(),
+        "sections": sections,
+        "blockers": blockers,
+        "healthy": not blockers,
+    }
+    lines = [
+        "SCBE Ops Board",
+        "=" * 40,
+        f"  Healthy:       {'yes' if payload['healthy'] else 'no'}",
+    ]
+    for name, section in sections.items():
+        lines.append(f"  {name:<12} {'ok' if section['ok'] else 'error'}")
+    if blockers:
+        lines.append("  Blockers:")
+        lines.extend(f"    - {item}" for item in blockers)
+    return _json_result(args, payload, lines)
+
+
+def cmd_ops_sweep(args: argparse.Namespace) -> int:
+    """Run the board plus GitHub sweep in one pass."""
+    board_command = ["ops", "board", "--limit", str(args.limit)]
+    if args.skip_colab:
+        board_command.append("--skip-colab")
+    if args.skip_github:
+        board_command.append("--skip-github")
+    if args.verify_scan:
+        board_command.append("--verify-scan")
+    board_rc, board_payload = _run_cli_json(args.repo_root, getattr(args, "config_path", ""), board_command)
+
+    gh_command = ["gh", "sweep", "--limit", str(args.limit)]
+    if args.verify_scan:
+        gh_command.append("--verify")
+    if args.include_release:
+        gh_command.append("--include-release")
+    gh_rc, gh_payload = _run_cli_json(args.repo_root, getattr(args, "config_path", ""), gh_command)
+
+    blockers: list[str] = []
+    if board_rc != 0:
+        blockers.append(f"ops board exited with code {board_rc}.")
+    if gh_rc != 0:
+        blockers.append(f"gh sweep exited with code {gh_rc}.")
+    blockers.extend(item for item in board_payload.get("blockers", []) if isinstance(item, str))
+    blockers.extend(item for item in gh_payload.get("doctor", {}).get("blockers", []) if isinstance(item, str))
+    payload = {
+        "schema_version": "scbe_ops_sweep_v1",
+        "generated_at": _now_iso(),
+        "board": board_payload,
+        "github": gh_payload,
+        "blockers": blockers,
+        "healthy": not blockers,
+    }
+    lines = [
+        "SCBE Ops Sweep",
+        "=" * 40,
+        f"  Healthy:       {'yes' if payload['healthy'] else 'no'}",
+        f"  Board:         {'ok' if board_rc == 0 else f'error {board_rc}'}",
+        f"  GitHub sweep:  {'ok' if gh_rc == 0 else f'error {gh_rc}'}",
+    ]
+    if blockers:
+        lines.append("  Blockers:")
+        lines.extend(f"    - {item}" for item in blockers)
+    return _json_result(args, payload, lines)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -3633,42 +4054,90 @@ def build_parser() -> argparse.ArgumentParser:
     pp_snapshot.set_defaults(func=cmd_pollypad_snapshot)
 
     # ── gh: GitHub operations ──────────────────────────────────────
-    gh_parser = sub.add_parser("gh", help="GitHub operations — PRs, CI, issues, code scanning, releases")
+    gh_parser = sub.add_parser("gh", help="GitHub operations - PRs, CI, issues, code scanning, releases")
     gh_sub = gh_parser.add_subparsers(dest="gh_cmd", required=True)
 
     gh_ci = gh_sub.add_parser("ci", help="Check CI status for current branch or a PR")
+    add_runtime_cli_flags(gh_ci)
     gh_ci.add_argument("--pr", type=int, help="PR number (default: current branch)")
     gh_ci.set_defaults(func=cmd_gh_ci)
 
     gh_scan = gh_sub.add_parser("scan", help="Code scanning alert dashboard")
+    add_runtime_cli_flags(gh_scan)
     gh_scan.add_argument("--verify", action="store_true", help="Cross-check alerts against code")
     gh_scan.set_defaults(func=cmd_gh_scan)
 
     gh_fix = gh_sub.add_parser("fix", help="Auto-detect and fix CI failures")
+    add_runtime_cli_flags(gh_fix)
     gh_fix.add_argument("--run-id", type=int, help="Specific run ID")
     gh_fix.add_argument("--dry-run", action="store_true")
     gh_fix.set_defaults(func=cmd_gh_fix)
 
     gh_prs = gh_sub.add_parser("prs", help="List open PRs with CI status")
+    add_runtime_cli_flags(gh_prs)
+    gh_prs.add_argument("--limit", type=int, default=10, help="Max PRs to include")
     gh_prs.set_defaults(func=cmd_gh_prs)
 
     gh_issues = gh_sub.add_parser("issues", help="List open issues")
+    add_runtime_cli_flags(gh_issues)
+    gh_issues.add_argument("--limit", type=int, default=10, help="Max issues to include")
     gh_issues.set_defaults(func=cmd_gh_issues)
 
     gh_release = gh_sub.add_parser("release", help="Show latest release info")
+    add_runtime_cli_flags(gh_release)
     gh_release.set_defaults(func=cmd_gh_release)
 
     gh_deploy = gh_sub.add_parser("deploy", help="Trigger a deploy workflow")
+    add_runtime_cli_flags(gh_deploy)
     gh_deploy.add_argument("target", choices=["pages", "cloudrun", "npm", "pypi"], help="Deploy target")
     gh_deploy.set_defaults(func=cmd_gh_deploy)
 
     gh_cleanup = gh_sub.add_parser("cleanup", help="Push artifacts to cloud storage and clean local disk")
+    add_runtime_cli_flags(gh_cleanup)
     gh_cleanup.add_argument("--target", choices=["dropbox", "onedrive", "gdrive", "hf", "all"], default="all")
     gh_cleanup.add_argument("--dry-run", action="store_true")
     gh_cleanup.set_defaults(func=cmd_gh_cleanup)
 
     gh_pulse = gh_sub.add_parser("pulse", help="Weekly activity summary")
+    add_runtime_cli_flags(gh_pulse)
     gh_pulse.set_defaults(func=cmd_gh_pulse)
+
+    gh_doctor = gh_sub.add_parser("doctor", help="One-shot GitHub health summary with blockers")
+    add_runtime_cli_flags(gh_doctor)
+    gh_doctor.add_argument("--pr", type=int, help="PR number override")
+    gh_doctor.add_argument("--verify", action="store_true", help="Run code-scanning verification script too")
+    gh_doctor.add_argument("--limit", type=int, default=5, help="Max PR/issue samples to include")
+    gh_doctor.set_defaults(func=cmd_gh_doctor)
+
+    gh_sweep = gh_sub.add_parser("sweep", help="Multi-action GitHub sweep for CI, scans, PRs, issues, and pulse")
+    add_runtime_cli_flags(gh_sweep)
+    gh_sweep.add_argument("--pr", type=int, help="PR number override")
+    gh_sweep.add_argument("--verify", action="store_true", help="Run code-scanning verification script too")
+    gh_sweep.add_argument("--limit", type=int, default=5, help="Max PR/issue samples to include")
+    gh_sweep.add_argument("--include-release", action="store_true", help="Include latest release summary")
+    gh_sweep.add_argument("--fix-ci", action="store_true", help="Run the auto-fix lane after the sweep")
+    gh_sweep.add_argument("--fix-dry-run", action="store_true", help="Dry-run the auto-fix lane when used")
+    gh_sweep.set_defaults(func=cmd_gh_sweep)
+
+    ops = sub.add_parser("ops", help="Multi-system control-room commands")
+    ops_sub = ops.add_subparsers(dest="ops_cmd", required=True)
+
+    ops_board = ops_sub.add_parser("board", help="Aggregate doctor, status, GitHub, and Colab into one board")
+    add_runtime_cli_flags(ops_board)
+    ops_board.add_argument("--limit", type=int, default=5, help="Max GitHub PR/issue samples to include")
+    ops_board.add_argument("--verify-scan", action="store_true", help="Ask GitHub doctor to verify code scanning")
+    ops_board.add_argument("--skip-github", action="store_true", help="Skip GitHub aggregation")
+    ops_board.add_argument("--skip-colab", action="store_true", help="Skip Colab aggregation")
+    ops_board.set_defaults(func=cmd_ops_board)
+
+    ops_sweep = ops_sub.add_parser("sweep", help="Run the ops board plus the GitHub sweep")
+    add_runtime_cli_flags(ops_sweep)
+    ops_sweep.add_argument("--limit", type=int, default=5, help="Max GitHub PR/issue samples to include")
+    ops_sweep.add_argument("--verify-scan", action="store_true", help="Ask GitHub doctor/sweep to verify code scanning")
+    ops_sweep.add_argument("--include-release", action="store_true", help="Include latest release summary in GitHub sweep")
+    ops_sweep.add_argument("--skip-github", action="store_true", help="Skip GitHub inside the board phase")
+    ops_sweep.add_argument("--skip-colab", action="store_true", help="Skip Colab inside the board phase")
+    ops_sweep.set_defaults(func=cmd_ops_sweep)
 
     runtime = sub.add_parser("runtime", help="Governed polyglot execution runtime")
     add_runtime_cli_flags(runtime)
