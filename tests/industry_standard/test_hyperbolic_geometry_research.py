@@ -128,7 +128,11 @@ class TestPoincareMetricProperties:
         if failures:
             msg = f"Triangle inequality violated in {len(failures)}/100 trials:\n"
             for f in failures[:5]:  # Show first 5 failures
-                msg += f"  Trial {f['trial']}: d(u,w)={f['d_uw']:.6f} > d(u,v)+d(v,w)={f['d_uv']+f['d_vw']:.6f} (violation: {f['violation']:.6e})\n"
+                msg += (  # noqa: E501
+                    f"  Trial {f['trial']}: d(u,w)={f['d_uw']:.6f} > "
+                    f"d(u,v)+d(v,w)={f['d_uv']+f['d_vw']:.6f} "
+                    f"(violation: {f['violation']:.6e})\n"
+                )
             pytest.fail(msg)
 
     def test_hyperbolic_distance_formula(self):
@@ -252,7 +256,10 @@ class TestPoincareIsometries:
         if failures:
             msg = f"Rotation isometry violated in {len(failures)}/50 trials:\n"
             for f in failures[:5]:
-                msg += f"  Trial {f['trial']}: d_before={f['d_before']:.6f}, d_after={f['d_after']:.6f}, error={f['error']:.6e}\n"
+                msg += (
+                    f"  Trial {f['trial']}: d_before={f['d_before']:.6f},"
+                    f" d_after={f['d_after']:.6f}, error={f['error']:.6e}\n"
+                )
             pytest.fail(msg)
 
     def test_mobius_addition_properties(self):
@@ -277,7 +284,7 @@ class TestPoincareIsometries:
             # 0 ⊕ u should equal u
             result = layer_7_phase_transform(u, zero, Q)
 
-            assert np.allclose(result, u, atol=1e-8), f"Möbius identity violated: 0 ⊕ u ≠ u"
+            assert np.allclose(result, u, atol=1e-8), "Möbius identity violated: 0 ⊕ u ≠ u"
 
     def _random_rotation_matrix(self, n: int) -> np.ndarray:
         """Generate a random orthogonal matrix (rotation)."""
@@ -335,7 +342,10 @@ class TestBreathingTransformProperties:
         if failures:
             msg = f"Breathing transform pushed points outside ball in {len(failures)} cases:\n"
             for f in failures[:5]:
-                msg += f"  Trial {f['trial']}, b={f['b']}: ||u||={f['u_norm']:.6f} → ||breath(u)||={f['breath_norm']:.6f} ≥ 1\n"
+                msg += (
+                    f"  Trial {f['trial']}, b={f['b']}: ||u||={f['u_norm']:.6f}"
+                    f" → ||breath(u)||={f['breath_norm']:.6f} ≥ 1\n"
+                )
             pytest.fail(msg)
 
     def test_breathing_changes_distances(self):
@@ -384,7 +394,7 @@ class TestBreathingTransformProperties:
             u_breath = layer_6_breathing_transform(u, b=1.0)
 
             # Should be very close to original
-            assert np.allclose(u, u_breath, atol=1e-6), f"Breathing with b=1 should be identity"
+            assert np.allclose(u, u_breath, atol=1e-6), "Breathing with b=1 should be identity"
 
 
 class TestHyperbolicCurvature:

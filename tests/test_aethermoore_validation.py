@@ -208,7 +208,7 @@ def verify_cox_constant():
 
     c = 3.0  # Initial guess
 
-    print(f"\n  Solving c = e^(π/c) via Newton-Raphson:")
+    print("\n  Solving c = e^(π/c) via Newton-Raphson:")
     print(f"  {'Iteration':<12} {'c value':<20} {'f(c)':<15} {'Error'}")
     print("  " + "-" * 60)
 
@@ -278,7 +278,7 @@ def test_mars_frequency():
     print(f"\n  Tick duration: {tick_ms:.4f} ms")
 
     # Grid decoupling check
-    print(f"\n  Grid decoupling analysis:")
+    print("\n  Grid decoupling analysis:")
     print(f"    50 Hz ratio: {f_mars / 50:.4f} (non-integer = good)")
     print(f"    60 Hz ratio: {f_mars / 60:.4f} (non-integer = good)")
 
@@ -368,11 +368,11 @@ def test_hyperbolic_routing():
         print(f"  ({r1:.1f}, {t1:.2f})     ({r2:.1f}, {t2:.2f})     {d_euc:<12.4f} {d_hyp:<12.4f} {ratio:.2f}x")
 
     # Key insight: hyperbolic space expands exponentially with radius
-    print(f"\n  Key insight: In hyperbolic space, periphery nodes are")
-    print(f"  exponentially further apart than in Euclidean space.")
-    print(f"  This naturally models hierarchical network topologies.")
+    print("\n  Key insight: In hyperbolic space, periphery nodes are")
+    print("  exponentially further apart than in Euclidean space.")
+    print("  This naturally models hierarchical network topologies.")
 
-    print(f"\n  ✓ VALIDATED: Hyperbolic geometry provides natural hierarchy embedding")
+    print("\n  ✓ VALIDATED: Hyperbolic geometry provides natural hierarchy embedding")
     return True
 
 
@@ -445,9 +445,9 @@ def test_fixed_point():
     print(f"  Unique results: {len(results)}")
 
     # Compare to IEEE 754 floating point (which can vary)
-    print(f"\n  Fixed-point ensures bit-identical results across x86/ARM")
+    print("\n  Fixed-point ensures bit-identical results across x86/ARM")
 
-    print(f"\n  ✓ VALIDATED: Q16.16 provides deterministic cross-platform math")
+    print("\n  ✓ VALIDATED: Q16.16 provides deterministic cross-platform math")
     return deterministic
 
 
@@ -471,8 +471,8 @@ def test_tahs_harmonic():
     print("=" * 60)
 
     # Show the scaling law
-    print(f"\n  TAHS Scaling Law: f = e^(π/p)")
-    print(f"  Where p = periodicity, f = expansion factor")
+    print("\n  TAHS Scaling Law: f = e^(π/p)")
+    print("  Where p = periodicity, f = expansion factor")
 
     print(f"\n  {'Periodicity (p)':<20} {'Expansion (f)':<20} {'Interpretation'}")
     print("  " + "-" * 60)
@@ -496,10 +496,10 @@ def test_tahs_harmonic():
 
     print(f"\n  At Cox constant c = {c:.6f}:")
     print(f"    f = e^(π/c) = {f_c:.6f}")
-    print(f"    f ≈ c (self-similar fixed point)")
+    print("    f ≈ c (self-similar fixed point)")
 
     # Gradient stabilization simulation
-    print(f"\n  Gradient stabilization simulation:")
+    print("\n  Gradient stabilization simulation:")
     p = 1.0  # Start with high frequency (unstable)
     target = COX_CONSTANT_EXPECTED
 
@@ -509,7 +509,7 @@ def test_tahs_harmonic():
         p = p + 0.3 * (target - p)
         print(f"    Step {i}: p = {p:.4f}, f = {f:.4f}")
 
-    print(f"\n  ✓ VALIDATED: TAHS provides self-stabilizing harmonic scaling")
+    print("\n  ✓ VALIDATED: TAHS provides self-stabilizing harmonic scaling")
     return True
 
 
@@ -541,8 +541,8 @@ def test_soliton_propagation():
     x = np.linspace(-10, 10, 500)
     times = [0, 2, 4, 6, 8]
 
-    print(f"\n  NLSE Soliton: u(x,t) = sech(x) × exp(i×t/2)")
-    print(f"  Key property: Shape-preserving propagation")
+    print("\n  NLSE Soliton: u(x,t) = sech(x) × exp(i×t/2)")
+    print("  Key property: Shape-preserving propagation")
 
     # Track peak amplitude over time
     print(f"\n  {'Time':<10} {'Peak Amplitude':<20} {'Width (FWHM)'}")
@@ -572,10 +572,10 @@ def test_soliton_propagation():
     plt.savefig("aethermoore_soliton.png", dpi=150)
     plt.close()
 
-    print(f"\n  Saved: aethermoore_soliton.png")
+    print("\n  Saved: aethermoore_soliton.png")
 
     # Collision test (elastic vs inelastic)
-    print(f"\n  Elastic Collision Test:")
+    print("\n  Elastic Collision Test:")
 
     # Two solitons approaching
     u1 = nlse_soliton(x - 5, 0, amplitude=1.0)
@@ -591,7 +591,7 @@ def test_soliton_propagation():
     print(f"    Energy combined: {total_energy_combined:.4f}")
     print(f"    Ratio: {total_energy_combined/total_energy_before:.4f}")
 
-    print(f"\n  ✓ VALIDATED: Solitons preserve shape (self-healing data streams)")
+    print("\n  ✓ VALIDATED: Solitons preserve shape (self-healing data streams)")
     return True
 
 
@@ -645,14 +645,14 @@ def assess_originality():
     for component, status, notes in assessment:
         print(f"  {component:<25} {status:<20} {notes}")
 
-    print(f"\n  PATENTABILITY SUMMARY:")
-    print(f"  ----------------------")
-    print(f"  ✓ Hyperbolic AQM + Lorentz routing combination = PATENTABLE")
-    print(f"  ✓ TAHS harmonic scaling for ML stability = PATENTABLE")
-    print(f"  ✓ Soliton-based data integrity = PATENTABLE")
-    print(f"  ? Mars frequency timing = Weak claim (arbitrary constant)")
-    print(f"  ✗ Cox constant itself = Math, not patentable")
-    print(f"  ✗ Lattice crypto = Already standardized")
+    print("\n  PATENTABILITY SUMMARY:")
+    print("  ----------------------")
+    print("  ✓ Hyperbolic AQM + Lorentz routing combination = PATENTABLE")
+    print("  ✓ TAHS harmonic scaling for ML stability = PATENTABLE")
+    print("  ✓ Soliton-based data integrity = PATENTABLE")
+    print("  ? Mars frequency timing = Weak claim (arbitrary constant)")
+    print("  ✗ Cox constant itself = Math, not patentable")
+    print("  ✗ Lattice crypto = Already standardized")
 
 
 # ==============================================================================

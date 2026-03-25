@@ -47,7 +47,11 @@ def search_entities(query: str, limit: int = 20) -> list[KnowledgeChunk]:
             source="wikidata",
             category="research",
             title=f"{label} ({entity_id})",
-            content=f"# {label}\n\nWikidata ID: {entity_id}\nDescription: {description}\n\nStructured knowledge entity from Wikidata.",
+            content=(
+                f"# {label}\n\nWikidata ID: {entity_id}\n"
+                f"Description: {description}\n\n"
+                "Structured knowledge entity from Wikidata."
+            ),
             url=url_val,
             metadata={
                 "wikidata_id": entity_id,

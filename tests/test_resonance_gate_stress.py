@@ -26,7 +26,10 @@ def static_envelope(d_star, R=1.5):
 def tongue_wave(t, weights=None, phase_offset=0.0):
     w = weights or TONGUE_WEIGHTS
     total_weight = sum(w)
-    s = sum(w[l] * math.cos(2 * math.pi * F0 * PHI**l * t + TONGUE_PHASES[l] + phase_offset) for l in range(6))
+    s = sum(
+        w[lang] * math.cos(2 * math.pi * F0 * PHI**lang * t + TONGUE_PHASES[lang] + phase_offset)
+        for lang in range(6)
+    )
     return s / total_weight if total_weight > 0 else 0
 
 

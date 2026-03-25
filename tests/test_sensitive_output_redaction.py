@@ -6,6 +6,13 @@ import sys
 import types
 from pathlib import Path
 
+import pytest
+
+try:
+    from cryptography.fernet import Fernet  # noqa: F401
+except BaseException:
+    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:

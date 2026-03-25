@@ -490,11 +490,11 @@ class TestAuditLogger:
 
         # Query by level
         warnings = logger.query(level=LogLevel.WARNING)
-        assert len([l for l in warnings if l.level.value >= LogLevel.WARNING.value]) > 0
+        assert len([entry for entry in warnings if entry.level.value >= LogLevel.WARNING.value]) > 0
 
         # Query by category
         security_logs = logger.query(category=LogCategory.SECURITY)
-        assert all(l.category == LogCategory.SECURITY for l in security_logs)
+        assert all(entry.category == LogCategory.SECURITY for entry in security_logs)
 
 
 class TestSecureStorage:

@@ -604,7 +604,7 @@ check("Patent 63/961,403 covers core innovation", True, "Hyperbolic geometry + t
 # SUMMARY
 # =====================================================================
 print(f"\n{'='*70}")
-print(f"  SCBE-AETHERMOORE FULL SYSTEM VERIFICATION")
+print("  SCBE-AETHERMOORE FULL SYSTEM VERIFICATION")
 print(f"{'='*70}")
 print(f"  Total checks: {total}")
 print(f"  Passed:       {passed}")
@@ -613,15 +613,15 @@ print(f"  Pass rate:    {passed/total*100:.1f}%")
 print(f"{'='*70}")
 
 if failed == 0:
-    print(f"  VERDICT: ALL SYSTEMS OPERATIONAL")
+    print("  VERDICT: ALL SYSTEMS OPERATIONAL")
 else:
     print(f"  VERDICT: {failed} ISSUE(S) FOUND")
 
 print(f"{'='*70}")
-print(f"  Patent:     USPTO 63/961,403 (Filed 01/15/2026)")
-print(f"  Filing:     Hyperbolic Geometry-Based Authorization")
-print(f"  Inventor:   Isaac Daniel Davis")
-print(f"  Coverage:   14-layer pipeline, PHDM, unified kernel")
+print("  Patent:     USPTO 63/961,403 (Filed 01/15/2026)")
+print("  Filing:     Hyperbolic Geometry-Based Authorization")
+print("  Inventor:   Isaac Daniel Davis")
+print("  Coverage:   14-layer pipeline, PHDM, unified kernel")
 print(f"{'='*70}\n")
 
 

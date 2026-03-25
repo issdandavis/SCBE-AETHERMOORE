@@ -47,7 +47,6 @@ from typing import Dict, Tuple
 from enum import Enum
 from collections import deque
 
-
 # =============================================================================
 # Constants
 # =============================================================================
@@ -530,7 +529,8 @@ def demo():
     for d, x in test_cases:
         result = compare_scaling(d, x)
         print(
-            f"  {d:>8.2f} {x:>8.2f} {result['H_basic']:>12.2f} {result['H_temporal']:>12.2f} {result['amplification']:>10.2f}x"
+            f"  {d:>8.2f} {x:>8.2f} {result['H_basic']:>12.2f}"
+            f" {result['H_temporal']:>12.2f} {result['amplification']:>10.2f}x"
         )
     print()
 

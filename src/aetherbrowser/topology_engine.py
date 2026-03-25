@@ -229,7 +229,10 @@ def compute_langues_cost_gradient(n_samples: int = 20) -> list[dict]:
         d_h = 2 * math.atanh(clamped_r) if clamped_r > 0 else 0
 
         # Langues metric cost
-        cost = sum(LANGUES_WEIGHTS[l] * math.exp(LANGUES_BETA_BASE * PHI ** (l * 0.5) * min(d_h, 10)) for l in range(6))
+        cost = sum(
+            LANGUES_WEIGHTS[lang] * math.exp(LANGUES_BETA_BASE * PHI ** (lang * 0.5) * min(d_h, 10))
+            for lang in range(6)
+        )
 
         stops.append(
             {

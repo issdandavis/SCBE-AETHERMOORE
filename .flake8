@@ -1,0 +1,16 @@
+[flake8]
+max-line-length = 120
+extend-ignore =
+    E203,
+    W503,
+    E402
+per-file-ignores =
+    # Attack corpus contains intentionally long adversarial prompt strings
+    tests/adversarial/attack_corpus.py: E501
+    # XML/HTML test fixtures with long Android UI hierarchy or HTML lines
+    tests/test_phone_eye.py: E501
+    tests/test_phone_navigation_telemetry.py: E501
+    tests/test_playwriter_lane_runner.py: E501
+    # Test files with sys.path manipulation before imports
+    tests/conftest.py: E402
+    src/symphonic_cipher/__init__.py: E402

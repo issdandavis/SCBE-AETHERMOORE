@@ -37,7 +37,7 @@ from src.fleet.hallpass import (
     harmonic_wall_cost,
     hyperbolic_distance_approx,
 )
-from src.fleet.skill_card_forge import SkillCard, Deck
+from src.fleet.skill_card_forge import Deck  # SkillCard already imported above
 
 
 _CARD_TEMPLATES = [

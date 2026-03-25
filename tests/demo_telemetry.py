@@ -104,7 +104,7 @@ class TelemetryCollector:
         print(f"Total Tests: {total}")
         print(f"Passed: {passed} ({100*passed/total:.1f}%)")
         print(f"Failed: {failed} ({100*failed/total:.1f}%)")
-        print(f"\nBy Category:")
+        print("\nBy Category:")
 
         categories = {}
         for t in self.telemetry:
@@ -299,7 +299,7 @@ def main():
 
     # Export telemetry
     data = collector.export_json("test_telemetry_advanced_math.json")
-    print(f"\n✓ Telemetry exported to test_telemetry_advanced_math.json")
+    print("\n✓ Telemetry exported to test_telemetry_advanced_math.json")
     print(f"  Session duration: {data['session_duration_ms']:.2f}ms")
     print(f"  Total tests: {data['total_tests']}")
     print(f"  Pass rate: {100*data['passed_tests']/data['total_tests']:.1f}%")

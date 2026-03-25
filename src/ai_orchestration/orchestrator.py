@@ -498,8 +498,8 @@ class Orchestrator:
                 "end": end_time.isoformat() if end_time else "now",
             },
             "total_entries": len(logs),
-            "by_category": {cat.value: sum(1 for l in logs if l.category == cat) for cat in LogCategory},
-            "by_level": {level.name: sum(1 for l in logs if l.level == level) for level in LogLevel},
+            "by_category": {cat.value: sum(1 for log in logs if log.category == cat) for cat in LogCategory},
+            "by_level": {level.name: sum(1 for log in logs if log.level == level) for level in LogLevel},
             "chain_integrity": self.audit_logger.verify_chain_integrity(),
             "workflow_summary": self.workflow_tracker.generate_report(start_time, end_time),
         }

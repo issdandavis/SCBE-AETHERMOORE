@@ -253,7 +253,7 @@ def test_quantum_resistant_binding() -> bool:
         print("  [X] PQ binding not enforced when required")
     except ValueError as e:
         binding_required_ok = "commitment required" in str(e)
-        print(f"  [+] PQ binding enforced: [error message redacted]")
+        print("  [+] PQ binding enforced: [error message redacted]")
     all_passed &= binding_required_ok
 
     # Test 2: Valid commitment accepted
@@ -274,7 +274,7 @@ def test_quantum_resistant_binding() -> bool:
         print("  [X] Invalid commitment size accepted")
     except ValueError as e:
         invalid_size_ok = "size" in str(e).lower()
-        print(f"  [+] Invalid size rejected: [error message redacted]")
+        print("  [+] Invalid size rejected: [error message redacted]")
     all_passed &= invalid_size_ok
 
     # Test 4: Context commitment creation
@@ -289,7 +289,8 @@ def test_quantum_resistant_binding() -> bool:
     verify_fail = not pq_commitment.verify(b"wrong_data")
     pq_class_ok = verify_ok and verify_fail
     print(
-        f"  PQContextCommitment verify: correct={verify_ok}, wrong_rejected={verify_fail} {'OK' if pq_class_ok else 'FAIL'}"
+        f"  PQContextCommitment verify: correct={verify_ok},"
+        f" wrong_rejected={verify_fail} {'OK' if pq_class_ok else 'FAIL'}"
     )
     all_passed &= pq_class_ok
 
@@ -340,7 +341,8 @@ def test_security_decision_engine() -> bool:
     print("    [inputs redacted]")
     print(f"    H={details3['H']:.4f}, final_risk=[redacted]")
     print(
-        f"    Decision: {'accepted' if decision3 else 'rejected'} (expected rejected) {'OK' if scenario3_ok else 'FAIL'}"
+        f"    Decision: {'accepted' if decision3 else 'rejected'}"
+        f" (expected rejected) {'OK' if scenario3_ok else 'FAIL'}"
     )
     all_passed &= scenario3_ok
 

@@ -52,7 +52,8 @@ class TestDirectOverride:
         result = run_benchmark(calibrated_gate, DIRECT_OVERRIDE)
         # Record actual rate — this is a measurement, not a pass/fail gate
         print(
-            f"\n  Direct override: {result.detection_rate:.0%} detected ({result.detected_count}/{result.total_attacks})"
+            f"\n  Direct override: {result.detection_rate:.0%} detected"
+            f" ({result.detected_count}/{result.total_attacks})"
         )
         # At minimum, SOME overrides should trigger cost_exceeded or tongue_imbalance
         assert result.detected_count >= 1
@@ -62,7 +63,8 @@ class TestIndirectInjection:
     def test_detection_rate_recorded(self, calibrated_gate):
         result = run_benchmark(calibrated_gate, INDIRECT_INJECTION)
         print(
-            f"\n  Indirect injection: {result.detection_rate:.0%} detected ({result.detected_count}/{result.total_attacks})"
+            f"\n  Indirect injection: {result.detection_rate:.0%} detected"
+            f" ({result.detected_count}/{result.total_attacks})"
         )
         assert result.detected_count >= 1
 
@@ -71,7 +73,8 @@ class TestEncodingObfuscation:
     def test_detection_rate_recorded(self, calibrated_gate):
         result = run_benchmark(calibrated_gate, ENCODING_OBFUSCATION)
         print(
-            f"\n  Encoding obfuscation: {result.detection_rate:.0%} detected ({result.detected_count}/{result.total_attacks})"
+            f"\n  Encoding obfuscation: {result.detection_rate:.0%} detected"
+            f" ({result.detected_count}/{result.total_attacks})"
         )
         assert result.detected_count >= 1
 
@@ -99,7 +102,8 @@ class TestToolExfiltration:
     def test_detection_rate_recorded(self, calibrated_gate):
         result = run_benchmark(calibrated_gate, TOOL_EXFILTRATION)
         print(
-            f"\n  Tool exfiltration: {result.detection_rate:.0%} detected ({result.detected_count}/{result.total_attacks})"
+            f"\n  Tool exfiltration: {result.detection_rate:.0%} detected"
+            f" ({result.detected_count}/{result.total_attacks})"
         )
         assert result.detected_count >= 1
 
@@ -108,7 +112,8 @@ class TestTongueManipulation:
     def test_detection_rate_recorded(self, calibrated_gate):
         result = run_benchmark(calibrated_gate, TONGUE_MANIPULATION)
         print(
-            f"\n  Tongue manipulation: {result.detection_rate:.0%} detected ({result.detected_count}/{result.total_attacks})"
+            f"\n  Tongue manipulation: {result.detection_rate:.0%} detected"
+            f" ({result.detected_count}/{result.total_attacks})"
         )
         assert result.detected_count >= 1
 
@@ -127,7 +132,8 @@ class TestBoundaryExploit:
     def test_detection_rate_recorded(self, calibrated_gate):
         result = run_benchmark(calibrated_gate, BOUNDARY_EXPLOIT)
         print(
-            f"\n  Boundary exploit: {result.detection_rate:.0%} detected ({result.detected_count}/{result.total_attacks})"
+            f"\n  Boundary exploit: {result.detection_rate:.0%} detected"
+            f" ({result.detected_count}/{result.total_attacks})"
         )
         assert result.detected_count >= 1
 
@@ -195,7 +201,7 @@ class TestFullBenchmark:
 
         # Print summary
         print(f"\n{'='*60}")
-        print(f"  SCBE ADVERSARIAL BENCHMARK RESULTS")
+        print("  SCBE ADVERSARIAL BENCHMARK RESULTS")
         print(f"{'='*60}")
         print(f"  Attacks: {attack_result.total_attacks}")
         print(f"  Detected: {attack_result.detected_count} ({attack_result.detection_rate:.1%})")
@@ -203,7 +209,8 @@ class TestFullBenchmark:
         print(f"  Avg cost: {attack_result.avg_harmonic_cost:.2f}")
         print(f"  Avg spin: {attack_result.avg_spin_magnitude:.1f}")
         print(
-            f"  False positives: {baseline_result.detected_count}/{baseline_result.total_attacks} ({baseline_result.detection_rate:.1%})"
+            f"  False positives: {baseline_result.detected_count}/"
+            f"{baseline_result.total_attacks} ({baseline_result.detection_rate:.1%})"
         )
         print()
         print("  Per-class detection:")

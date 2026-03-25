@@ -367,12 +367,28 @@ export class Basin {
   }
 
   /**
+   * Guard against path traversal (../) in user-supplied path segments.
+   */
+  private assertNoTraversal(value: string, label: string): void {
+    const normalized = path.normalize(value);
+    if (
+      normalized.startsWith('..') ||
+      normalized.includes(`..${path.sep}`) ||
+      path.isAbsolute(normalized)
+    ) {
+      throw new Error(`Path traversal detected in ${label}: ${value}`);
+    }
+  }
+
+  /**
    * Deposit data into the basin from a river.
    * Creates the directory structure: intake/{riverId}/{category}/
    */
   deposit(riverId: string, category: string, filename: string, data: string | Buffer): string {
     const river = this.rivers.get(riverId);
     if (!river) throw new Error(`Unknown river: ${riverId}`);
+    this.assertNoTraversal(category, 'category');
+    this.assertNoTraversal(filename, 'filename');
     this.assertCategoryAllowed(river, category);
 
     const depositDir = path.join(this.config.intakePath, riverId, category);
@@ -401,6 +417,7 @@ export class Basin {
       throw new Error(`Cannot pull from river: ${riverId}`);
     }
     this.assertRiverAccess(river, 'read');
+    this.assertNoTraversal(sourcePath, 'sourcePath');
     this.assertCategoryAllowed(river, category);
 
     const fullSource = path.join(river.localPath, sourcePath);
@@ -431,6 +448,7 @@ export class Basin {
       throw new Error(`Cannot push to river: ${riverId}`);
     }
     this.assertRiverAccess(river, 'write');
+    this.assertNoTraversal(destPath, 'destPath');
     this.assertCategoryAllowed(river, category);
 
     const sourceDir = path.join(this.config.intakePath, riverId, category);

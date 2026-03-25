@@ -12,7 +12,7 @@ def test_build_lock_packet_keeps_marcus_identity_lock(tmp_path: Path) -> None:
         "episode_id": "ep01",
         "default_negative_prompt": "speech bubbles, text overlays",
         "character_anchors": {
-            "marcus": "Asian-American man early 30s, short dark messy hair, tired eyes, lean desk-worker build, rumpled dress shirt and hoodie.",
+            "marcus": "Asian-American man early 30s, short dark messy hair, tired eyes, lean desk-worker build, rumpled dress shirt and hoodie.",  # noqa: E501
         },
         "character_negative_anchors": {
             "marcus": "white man, caucasian, blond hair, blue eyes, superhero jawline",
@@ -23,7 +23,7 @@ def test_build_lock_packet_keeps_marcus_identity_lock(tmp_path: Path) -> None:
                 "id": "ch01-v4-p11",
                 "shot_label": "CH01-011",
                 "beat": "Found you",
-                "scene_prompt": "Close on Marcus highlighting the impossible sequence with one hand, mouth barely moving around the words Found you, green light cutting his features into quiet certainty.",
+                "scene_prompt": "Close on Marcus highlighting the impossible sequence with one hand, mouth barely moving around the words Found you, green light cutting his features into quiet certainty.",  # noqa: E501
                 "environment": "earth_office",
                 "characters": ["marcus"],
                 "style_metadata": {"camera_angle": "tight three-quarter close-up"},

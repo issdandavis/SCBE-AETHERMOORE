@@ -63,14 +63,15 @@ class TestFullCorpusBenchmark:
         out.write_text(json.dumps(report, indent=2))
 
         print(f"\n{'='*60}")
-        print(f"  SCBE ADVERSARIAL BENCHMARK")
+        print("  SCBE ADVERSARIAL BENCHMARK")
         print(f"{'='*60}")
         print(
-            f"  Detection: {attack_result.detection_rate:.1%} ({attack_result.detected_count}/{attack_result.total_attacks})"
+            f"  Detection: {attack_result.detection_rate:.1%}"
+            f" ({attack_result.detected_count}/{attack_result.total_attacks})"
         )
         print(f"  ASR: {attack_result.attack_success_rate:.1%}")
         print(f"  FP rate: {baseline_result.detection_rate:.1%}")
-        print(f"  Per-class:")
+        print("  Per-class:")
         for cls, data in sorted(attack_result.per_class.items()):
             print(f"    {cls:<25} {data['detected']}/{data['total']} ({data['detection_rate']:.0%})")
 

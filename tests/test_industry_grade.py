@@ -35,10 +35,15 @@ from dataclasses import dataclass
 from enum import Enum
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import pytest
+
+try:
+    from cryptography.fernet import Fernet  # noqa: F401
+except BaseException:
+    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
-
-import pytest
 
 # Import SpiralSeal components
 from symphonic_cipher.scbe_aethermoore.spiral_seal import (
@@ -644,7 +649,7 @@ class TestMedicalAICommunication:
         try:
             # This will fail due to AAD mismatch (different patient hash)
             channel.receive_phi(sealed, MedicalDataType.DIAGNOSTIC, "PAT-002")
-        except:
+        except Exception:
             pass
 
         audit = channel.get_audit_trail()
@@ -1089,7 +1094,7 @@ class TestAdversarialAttackResistance:
             start = time.perf_counter()
             try:
                 ss.unseal(sealed, aad="test")
-            except:
+            except Exception:
                 pass
             correct_times.append(time.perf_counter() - start)
 
