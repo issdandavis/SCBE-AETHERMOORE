@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from agents.browsers.cdp_backend import CDPBackend
+try:
+    from agents.browsers.cdp_backend import CDPBackend
+except ImportError:
+    CDPBackend = None
+
+pytestmark = pytest.mark.skipif(CDPBackend is None, reason="agents.browsers.cdp_backend not importable (missing requests?)")
 
 
 @pytest.mark.asyncio

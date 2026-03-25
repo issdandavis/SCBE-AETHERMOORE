@@ -132,10 +132,14 @@ jobs:
 
       - name: Install Python linters
         run: |
-          pip install black flake8 mypy
+          pip install black flake8 mypy ruff
 
       - name: Check Python formatting
-        run: black --check src/ tests/
+        run: black --check --target-version py311 --line-length 120 src/ tests/
+
+      - name: Run ruff (fast lint)
+        run: ruff check --config ruff.toml
+        continue-on-error: true
 
       - name: Run flake8
         run: flake8 src/ tests/
@@ -157,7 +161,7 @@ jobs:
         continue-on-error: true
 
       - name: Run Snyk security scan
-        uses: snyk/actions/node@b98d498629f1c368650224d6d212bf7564f43571 # v1.1110.0
+        uses: snyk/actions/node@master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

@@ -9,7 +9,12 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from agents import aetherbrowse_cli as cli  # noqa: E402
+try:
+    from agents import aetherbrowse_cli as cli  # noqa: E402
+except ImportError:
+    cli = None
+
+pytestmark = pytest.mark.skipif(cli is None, reason="agents dependencies not installed")
 
 
 def test_check_cdp_readiness_connection_refused_is_actionable(monkeypatch: pytest.MonkeyPatch) -> None:

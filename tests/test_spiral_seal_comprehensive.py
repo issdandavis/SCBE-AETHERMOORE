@@ -1544,7 +1544,7 @@ class TestIntegrationStress:
             try:
                 ss.unseal("invalid_blob", aad="test")
             except Exception:
-                pass
+                pass  # Intentionally swallowed — testing error recovery
 
         # Should still work after errors
         sealed = ss.seal(b"test after errors")

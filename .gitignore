@@ -165,3 +165,6 @@ voices-v1.0.bin
 
 # Artifacts temp root
 artifacts/pytest_temp_root/
+
+# Local model weights — pull from HuggingFace on demand
+models/hf/

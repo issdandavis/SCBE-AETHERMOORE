@@ -17,7 +17,6 @@ try:
     from browser_agent import SCBEClient, Decision, GovernanceResult, BrowserAction, EscalationHandler
 except ImportError:
     # Inline minimal versions if import fails
-    import requests
 
     class Decision(str, Enum):
         ALLOW = "ALLOW"
