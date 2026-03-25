@@ -20,17 +20,19 @@ from typing import Any, Dict, Optional
 
 class MessageType(Enum):
     """Types of agent messages."""
-    REQUEST = "request"       # Agent requesting action
-    RESPONSE = "response"     # Response to a request
-    BROADCAST = "broadcast"   # Message to all agents
-    HANDOFF = "handoff"       # Task handoff between agents
-    HEARTBEAT = "heartbeat"   # Keep-alive signal
+
+    REQUEST = "request"  # Agent requesting action
+    RESPONSE = "response"  # Response to a request
+    BROADCAST = "broadcast"  # Message to all agents
+    HANDOFF = "handoff"  # Task handoff between agents
+    HEARTBEAT = "heartbeat"  # Keep-alive signal
     GOVERNANCE = "governance"  # Governance decision notification
-    ALERT = "alert"           # Security alert
+    ALERT = "alert"  # Security alert
 
 
 class MessagePriority(Enum):
     """Message priority levels."""
+
     LOW = 0
     NORMAL = 1
     HIGH = 2
@@ -46,6 +48,7 @@ class AgentMessage:
     Messages are signed with HMAC to prevent tampering
     and include governance metadata for routing.
     """
+
     # Core fields
     message_id: str = ""
     sender_id: str = ""
@@ -78,11 +81,10 @@ class AgentMessage:
 
     def __post_init__(self):
         if not self.message_id:
-            self.message_id = hashlib.sha256(
-                f"{self.sender_id}:{time.time()}:{id(self)}".encode()
-            ).hexdigest()[:16]
+            self.message_id = hashlib.sha256(f"{self.sender_id}:{time.time()}:{id(self)}".encode()).hexdigest()[:16]
         if not self.nonce:
             import os
+
             self.nonce = os.urandom(16).hex()
         if self.expires_at == 0.0 and self.ttl_seconds > 0:
             self.expires_at = self.created_at + self.ttl_seconds
@@ -103,18 +105,22 @@ class AgentMessage:
 
     def _canonical_form(self) -> str:
         """Canonical string representation for signing."""
-        return json.dumps({
-            "id": self.message_id,
-            "sender": self.sender_id,
-            "recipient": self.recipient_id,
-            "type": self.message_type.value,
-            "action": self.action,
-            "target": self.target,
-            "payload": self.payload,
-            "tongue": self.tongue,
-            "nonce": self.nonce,
-            "created_at": self.created_at,
-        }, sort_keys=True, separators=(",", ":"))
+        return json.dumps(
+            {
+                "id": self.message_id,
+                "sender": self.sender_id,
+                "recipient": self.recipient_id,
+                "type": self.message_type.value,
+                "action": self.action,
+                "target": self.target,
+                "payload": self.payload,
+                "tongue": self.tongue,
+                "nonce": self.nonce,
+                "created_at": self.created_at,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
 
     def is_expired(self) -> bool:
         """Check if message has expired."""
@@ -177,9 +183,7 @@ class AgentMessage:
         )
         return msg
 
-    def create_response(
-        self, payload: Dict[str, Any], tongue: Optional[str] = None
-    ) -> "AgentMessage":
+    def create_response(self, payload: Dict[str, Any], tongue: Optional[str] = None) -> "AgentMessage":
         """Create a response message to this message."""
         return AgentMessage(
             sender_id=self.recipient_id,

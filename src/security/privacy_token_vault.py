@@ -18,7 +18,6 @@ from ctypes import wintypes
 
 from .secret_store import sanitize_for_report
 
-
 VAULT_KIND_EMAIL = "email"
 VAULT_KIND_PHONE = "phone"
 VAULT_KIND_PERSON = "person"

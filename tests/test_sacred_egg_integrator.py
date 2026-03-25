@@ -32,7 +32,6 @@ from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
     context_radius,
 )
 
-
 # =============================================================================
 # Fixtures
 # =============================================================================

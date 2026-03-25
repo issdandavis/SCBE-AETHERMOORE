@@ -29,7 +29,6 @@ from ..harmonic.tarski_sheaf import (
 )
 from ..scbe_math_reference import triadic_risk
 
-
 TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 
 

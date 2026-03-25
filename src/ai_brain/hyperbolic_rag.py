@@ -20,7 +20,6 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from src.geoseal import hyperbolic_distance, phase_deviation, TONGUE_PHASES
 
-
 # ---------------------------------------------------------------------------
 # Types
 # ---------------------------------------------------------------------------

@@ -19,7 +19,6 @@ from src.crypto.sacred_tongues import (
     TONGUES,
 )
 
-
 # Load test vectors
 VECTORS_PATH = Path(__file__).parent / "test_vectors.json"
 

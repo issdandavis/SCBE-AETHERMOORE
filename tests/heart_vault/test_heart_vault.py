@@ -51,7 +51,6 @@ from symphonic_cipher.scbe_aethermoore.concept_blocks.heart_vault import (
     PENALTY_AMOUNT,
 )
 
-
 # ===================================================================
 #  1. Graph CRUD
 # ===================================================================

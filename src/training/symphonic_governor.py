@@ -55,77 +55,82 @@ L_BASE = sum(TONGUE_WEIGHTS)  # ~12.09
 # ── Musical Interval Ratios (just intonation) ───────────────────────────────
 
 INTERVAL_NAMES = [
-    "Unison",          # KO  1:1
-    "Major Second",    # AV  9:8
-    "Major Third",     # RU  5:4
+    "Unison",  # KO  1:1
+    "Major Second",  # AV  9:8
+    "Major Third",  # RU  5:4
     "Perfect Fourth",  # CA  4:3
-    "Perfect Fifth",   # UM  3:2
-    "Major Sixth",     # DR  5:3
+    "Perfect Fifth",  # UM  3:2
+    "Major Sixth",  # DR  5:3
 ]
 
 # Chord Templates (indices into the 6-string array)
-CHORD_MAJOR = [0, 2, 4]      # KO-RU-UM (1, 3, 5) — stable/positive
-CHORD_MINOR = [0, 2, 5]      # KO-RU-DR (1, 3, 6) — reflective/neutral
+CHORD_MAJOR = [0, 2, 4]  # KO-RU-UM (1, 3, 5) — stable/positive
+CHORD_MINOR = [0, 2, 5]  # KO-RU-DR (1, 3, 6) — reflective/neutral
 CHORD_DIMINISHED = [1, 3, 5]  # AV-CA-DR — dissonant/negative
-CHORD_POWER = [0, 4]          # KO-UM (1, 5) — minimal/assertive
+CHORD_POWER = [0, 4]  # KO-UM (1, 5) — minimal/assertive
 
 # ── Stellar Octave Constants (from stellar_octave_mapping.py) ────────────────
 
-SUN_P_MODE_HZ = 0.003            # Solar 5-min oscillation
-STELLAR_OCTAVE_TARGET = 196.0    # G3 (transposed solar frequency)
-STELLAR_MODULATION_DEPTH = 0.2   # ±20% LR modulation
+SUN_P_MODE_HZ = 0.003  # Solar 5-min oscillation
+STELLAR_OCTAVE_TARGET = 196.0  # G3 (transposed solar frequency)
+STELLAR_MODULATION_DEPTH = 0.2  # ±20% LR modulation
 
 
 # =============================================================================
 # Data Structures
 # =============================================================================
 
+
 @dataclass
 class StringVoice:
     """State of a single 'string' in the 6-string tonal system."""
+
     tongue: str
     dimension: str
     weight: float
     frequency: float
     phase: float
-    cost: float           # L contribution from this tongue
-    deviation: float      # d_l distance from ideal
-    phase_shift: float    # sin(omega * t + phi)
-    trit: int             # -1, 0, or +1 quantized grade
+    cost: float  # L contribution from this tongue
+    deviation: float  # d_l distance from ideal
+    phase_shift: float  # sin(omega * t + phi)
+    trit: int  # -1, 0, or +1 quantized grade
 
 
 @dataclass
 class ChordState:
     """Chord voicing across the 6-string system."""
+
     chord_name: str
     chord_indices: List[int]
-    chord_cost: float           # sum of costs at chord tones
-    consonance: float           # [0, 1] harmonic alignment
+    chord_cost: float  # sum of costs at chord tones
+    consonance: float  # [0, 1] harmonic alignment
     root_tongue: str
 
 
 @dataclass
 class ResonanceReport:
     """Pi-rhythmic cycle review — produced every pi radians of sim time."""
+
     cycle_number: int
-    phase_radians: float        # current phase in radians
-    phase_pi: float             # phase / pi (human-readable)
+    phase_radians: float  # current phase in radians
+    phase_pi: float  # phase / pi (human-readable)
     strings: List[StringVoice]
     chord: ChordState
-    total_L: float              # full 6D Langues Metric value
-    grade: int                  # +1, 0, -1
-    grade_label: str            # "POSITIVE", "NEUTRAL", "NEGATIVE"
-    decision: str               # ALLOW, QUARANTINE, DENY
-    stellar_envelope: float     # stellar pulse modulation factor
-    stellar_sync: str           # "SYNCHRONIZED" or "DAMPENED"
-    effective_lr: float         # modulated learning rate
-    flux_state: str             # "POLLY", "QUASI", "DEMI", "COLLAPSED"
+    total_L: float  # full 6D Langues Metric value
+    grade: int  # +1, 0, -1
+    grade_label: str  # "POSITIVE", "NEUTRAL", "NEGATIVE"
+    decision: str  # ALLOW, QUARANTINE, DENY
+    stellar_envelope: float  # stellar pulse modulation factor
+    stellar_sync: str  # "SYNCHRONIZED" or "DAMPENED"
+    effective_lr: float  # modulated learning rate
+    flux_state: str  # "POLLY", "QUASI", "DEMI", "COLLAPSED"
     timestamp: float
 
 
 @dataclass
 class TrainingBatchResult:
     """Result of a training batch (control or test)."""
+
     batch_name: str
     mode: str
     reports: List[ResonanceReport]
@@ -141,6 +146,7 @@ class TrainingBatchResult:
 # =============================================================================
 # Core Engine
 # =============================================================================
+
 
 class SymphonicGovernor:
     """Tonal Multi-Scalar Grading Engine for AI-to-AI training.
@@ -193,9 +199,7 @@ class SymphonicGovernor:
         """d_l = |x_l - μ_l| for each of 6 dimensions."""
         return [abs(x[idx] - self.ideal[idx]) for idx in range(6)]
 
-    def _compute_L(
-        self, x: List[float], t: float
-    ) -> Tuple[float, List[StringVoice]]:
+    def _compute_L(self, x: List[float], t: float) -> Tuple[float, List[StringVoice]]:
         """Compute L(x,t) and per-string state.
 
         L(x,t) = Σ w_l exp(β_l · (d_l + 0.1·sin(ω_l·t + φ_l)))
@@ -219,31 +223,31 @@ class SymphonicGovernor:
             # Quantize deviation to trit
             normalized = d_l / max(abs(d_l) + 0.5, 0.01)
             if normalized < self.trit_positive_bound:
-                trit = 1   # close to ideal → positive
+                trit = 1  # close to ideal → positive
             elif normalized > self.trit_negative_bound:
                 trit = -1  # far from ideal → negative
             else:
-                trit = 0   # in between → neutral
+                trit = 0  # in between → neutral
 
-            voices.append(StringVoice(
-                tongue=TONGUES[idx],
-                dimension=DIMENSIONS[idx],
-                weight=w_l,
-                frequency=omega_l,
-                phase=phi_l,
-                cost=round(cost, 4),
-                deviation=round(d_l, 4),
-                phase_shift=round(phase_shift, 4),
-                trit=trit,
-            ))
+            voices.append(
+                StringVoice(
+                    tongue=TONGUES[idx],
+                    dimension=DIMENSIONS[idx],
+                    weight=w_l,
+                    frequency=omega_l,
+                    phase=phi_l,
+                    cost=round(cost, 4),
+                    deviation=round(d_l, 4),
+                    phase_shift=round(phase_shift, 4),
+                    trit=trit,
+                )
+            )
 
         return min(L_total, 1e6), voices
 
     # ── Chord Analysis ──────────────────────────────────────────────────────
 
-    def _analyze_chord(
-        self, voices: List[StringVoice], L_total: float
-    ) -> ChordState:
+    def _analyze_chord(self, voices: List[StringVoice], L_total: float) -> ChordState:
         """Determine which chord template best fits the current voicing."""
         # Compute consonance for each chord template
         best_chord = "Power"
@@ -304,11 +308,11 @@ class SymphonicGovernor:
         """Determine dimensional flux state from L."""
         ratio = L / L_BASE
         if ratio < 1.2:
-            return "POLLY"      # full dimension active
+            return "POLLY"  # full dimension active
         elif ratio < 2.0:
-            return "QUASI"      # partial participation
+            return "QUASI"  # partial participation
         elif ratio < 4.0:
-            return "DEMI"       # minimal participation
+            return "DEMI"  # minimal participation
         else:
             return "COLLAPSED"  # dimension off
 
@@ -512,10 +516,10 @@ class SymphonicGovernor:
             "L_mean": round(sum(self._L_history) / len(self._L_history), 4),
             "L_std": round(
                 math.sqrt(
-                    sum((v - sum(self._L_history) / len(self._L_history)) ** 2
-                        for v in self._L_history)
+                    sum((v - sum(self._L_history) / len(self._L_history)) ** 2 for v in self._L_history)
                     / len(self._L_history)
-                ), 4
+                ),
+                4,
             ),
             "grade_positive": sum(1 for g in self._grade_history if g == 1),
             "grade_neutral": sum(1 for g in self._grade_history if g == 0),
@@ -573,6 +577,7 @@ class SymphonicGovernor:
 # =============================================================================
 # Convenience: run all test batches
 # =============================================================================
+
 
 def run_control_and_test_batches(
     interactions: List[Tuple[str, str]],

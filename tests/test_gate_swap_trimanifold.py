@@ -39,7 +39,6 @@ from symphonic_cipher.scbe_aethermoore.negabinary import (
 )
 from symphonic_cipher.scbe_aethermoore.trinary import BalancedTernary
 
-
 # ═══════════════════════════════════════════════════
 #  MSD Extraction (the fixed function)
 # ═══════════════════════════════════════════════════

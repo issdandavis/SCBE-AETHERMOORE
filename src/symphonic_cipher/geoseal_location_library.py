@@ -19,7 +19,6 @@ import urllib.request
 from dataclasses import dataclass
 from typing import Dict, Tuple
 
-
 DEFAULT_CORE_MAX = 0.30
 DEFAULT_OUTER_MAX = 0.70
 

@@ -26,7 +26,6 @@ from src.symphonic_cipher.scbe_aethermoore.qr_cube_kdf import (
     derive_pi_phi_key,
 )
 
-
 # =========================================================================== #
 #  _pi_phi_scalar() unit tests
 # =========================================================================== #
