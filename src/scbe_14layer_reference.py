@@ -310,6 +310,45 @@ def mobius_rotate(u: np.ndarray, Q: np.ndarray, eps: float = 1e-10) -> np.ndarra
     return result
 
 
+def hyperbolic_angle(a: np.ndarray, b: np.ndarray, c: np.ndarray, eps: float = 1e-10) -> float:
+    """
+    Compute the hyperbolic angle at vertex ``a`` between geodesics a→b and a→c
+    in the Poincaré ball model.
+
+    Method: Translate ``a`` to the origin via Möbius addition (−a ⊕ b, −a ⊕ c),
+    then compute the ordinary Euclidean angle at the origin. This works because
+    the Poincaré ball model is *conformal*: angles at the origin equal hyperbolic
+    angles.
+
+    Reference: Ungar, "Analytic Hyperbolic Geometry" (2008), §6.
+
+    Args:
+        a: Vertex point in 𝔹ⁿ (‖a‖ < 1)
+        b: Second point in 𝔹ⁿ
+        c: Third point in 𝔹ⁿ
+        eps: Numerical stability bound
+
+    Returns:
+        Angle in radians ∈ [0, π]
+    """
+    neg_a = -a
+    # Translate b and c so that a maps to the origin
+    b_prime = mobius_add(neg_a, b, eps)
+    c_prime = mobius_add(neg_a, c, eps)
+
+    norm_b = np.linalg.norm(b_prime)
+    norm_c = np.linalg.norm(c_prime)
+
+    if norm_b < eps or norm_c < eps:
+        return 0.0
+
+    cos_angle = np.dot(b_prime, c_prime) / (norm_b * norm_c)
+    # Clamp for numerical safety
+    cos_angle = np.clip(cos_angle, -1.0, 1.0)
+
+    return float(np.arccos(cos_angle))
+
+
 # =============================================================================
 # LAYER 7: Phase Transform
 # =============================================================================
