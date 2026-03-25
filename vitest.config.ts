@@ -19,7 +19,6 @@ export default defineConfig({
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
-      '**/hioujhn/**',
       '**/scbe-aethermoore/**',
       '**/scbe-aethermoore-demo/**',
       '**/e2e/**',
