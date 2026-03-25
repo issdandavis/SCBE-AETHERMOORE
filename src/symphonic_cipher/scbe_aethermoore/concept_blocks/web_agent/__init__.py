@@ -94,8 +94,7 @@ __all__ = [
     "HuggingFacePublisher",
     "CustomAPIPublisher",
     "create_publisher",
-    "TongueTransport",
-    "TongueEnvelope",
+    # TongueTransport and TongueEnvelope are provided via __getattr__ (lazy import)
 ]
 
 
