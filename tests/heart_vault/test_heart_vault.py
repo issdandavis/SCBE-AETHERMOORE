@@ -347,8 +347,8 @@ class TestEmotions:
         x_mild, y_mild = valence_arousal_to_poincare(0.2, 0.1)
         x_extreme, y_extreme = valence_arousal_to_poincare(0.9, 0.9)
 
-        r_mild = math.sqrt(x_mild**2 + y_mild**2)
-        r_extreme = math.sqrt(x_extreme**2 + y_extreme**2)
+        r_mild = math.hypot(x_mild, y_mild)
+        r_extreme = math.hypot(x_extreme, y_extreme)
         assert r_extreme > r_mild
 
     def test_poincare_distance_same_point(self):

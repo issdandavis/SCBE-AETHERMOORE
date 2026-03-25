@@ -7,7 +7,7 @@ A separate ``render_discrepancy`` method produces conflict-tracking notes.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from urllib.parse import urlparse
 
 from .source_adapter import SourceType, IngestionResult

@@ -336,11 +336,11 @@ def main():
 
     # Define batches
     batches = [
-        ("Batch 1: KEYWORD (salt)", lambda cmd: detect_keyword(cmd)),
+        ("Batch 1: KEYWORD (salt)", detect_keyword),
         ("Batch 2: EMBEDDING DIST (pepper)", lambda cmd: detect_embedding_distance(cmd, safe_center)),
-        ("Batch 3: TONGUE MISMATCH (garlic butter)", lambda cmd: detect_tongue_mismatch(cmd)),
+        ("Batch 3: TONGUE MISMATCH (garlic butter)", detect_tongue_mismatch),
         ("Batch 4: SYMPHONIC (reverse sear)", lambda cmd: detect_symphonic(cmd, governor)),
-        ("Batch 5: HARMONIC WALL (smoke ring)", lambda cmd: detect_harmonic_wall(cmd)),
+        ("Batch 5: HARMONIC WALL (smoke ring)", detect_harmonic_wall),
         ("Batch 6: ALL COMBINED (perfect steak)", lambda cmd: detect_combined(cmd, safe_center, governor)),
     ]
 

@@ -37,9 +37,11 @@ from .models import Choice, Scene, StoryGraph, ValidationError
 class StoryParser(Protocol):
     """All parsers implement this interface."""
 
-    def parse(self, source: Union[str, Path, IO]) -> StoryGraph: ...
+    def parse(self, source: Union[str, Path, IO]) -> StoryGraph:
+        pass
 
-    def supported_extensions(self) -> Tuple[str, ...]: ...
+    def supported_extensions(self) -> Tuple[str, ...]:
+        pass
 
 
 # ---------------------------------------------------------------------------

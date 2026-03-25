@@ -408,8 +408,6 @@ class TestEndToEnd:
 # ============================================================================
 
 if __name__ == "__main__":
-    pass
-
     test_classes = [
         TestRegistry,
         TestTopology,

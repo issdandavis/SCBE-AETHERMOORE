@@ -398,12 +398,7 @@ class TestProperties:
 # ============================================================
 
 # Check if pytest-benchmark is available
-try:
-    pass
-
-    BENCHMARK_AVAILABLE = True
-except ImportError:
-    BENCHMARK_AVAILABLE = False
+BENCHMARK_AVAILABLE = True
 
 
 @pytest.mark.skipif(not BENCHMARK_AVAILABLE, reason="pytest-benchmark not installed (optional)")
