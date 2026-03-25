@@ -40,8 +40,8 @@ export interface SignatureSet {
 /** Action payload (before Base64URL encoding) */
 export interface ActionPayload {
   action: string;
-  params: Record<string, any>;
-  metadata?: Record<string, any>;
+  params: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 }
 
 /** 6D Position vector */
