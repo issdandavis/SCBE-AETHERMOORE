@@ -12,10 +12,9 @@ from __future__ import annotations
 
 import hashlib
 import json
-import math
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 from .source_adapter import IngestionResult
 from .cross_reference_engine import WikiLink, LinkType

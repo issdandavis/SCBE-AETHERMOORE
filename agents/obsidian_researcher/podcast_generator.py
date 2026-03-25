@@ -13,7 +13,7 @@ import hashlib
 import re
 import textwrap
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List
 
 from .source_adapter import IngestionResult
 from .cross_reference_engine import WikiLink

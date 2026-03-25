@@ -11,13 +11,12 @@ All pure stdlib.  No external dependencies.
 
 from __future__ import annotations
 
-import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
-from .recon_goggles import ReconGoggles, SemanticSkeleton
+from .recon_goggles import ReconGoggles
 from .pixel_scanner import PixelScanner
 from .site_recon import SiteProfile, SiteProfileBuilder
 from .site_skimmer import SiteSkimmer

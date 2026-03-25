@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from .source_adapter import SourceType, IngestionResult
 from .cross_reference_engine import WikiLink
