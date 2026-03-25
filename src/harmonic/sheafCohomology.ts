@@ -1451,3 +1451,456 @@ export class SheafCohomologyEngine {
  * Default sheaf cohomology engine with standard configuration.
  */
 export const defaultSheafEngine = new SheafCohomologyEngine();
+
+// ═══════════════════════════════════════════════════════════════
+// Convenience API — String-based lattices, builders, and helpers
+// ═══════════════════════════════════════════════════════════════
+
+/** String-based risk decision type matching Layer 13 tiers */
+export type RiskDecision = 'ALLOW' | 'QUARANTINE' | 'ESCALATE' | 'DENY';
+
+/** Sacred Tongues governance tier */
+export type GovernanceTier = 'KO' | 'AV' | 'RU' | 'CA' | 'UM' | 'DR';
+
+/** Dimensional state for fleet/polly-pads */
+export type DimensionalState = 'COLLAPSED' | 'DEMI' | 'QUASI' | 'POLLY';
+
+/**
+ * Convenience lattice interface: uses properties instead of methods for
+ * top/bot/elements, and adds meetAll/joinAll helpers.
+ */
+export interface ConvenienceLattice<T> {
+  readonly top: T;
+  readonly bot: T;
+  readonly elements: readonly T[];
+  leq(a: T, b: T): boolean;
+  eq(a: T, b: T): boolean;
+  meet(a: T, b: T): T;
+  join(a: T, b: T): T;
+  meetAll(xs: T[]): T;
+  joinAll(xs: T[]): T;
+}
+
+function buildOrderedLattice<T>(elems: readonly T[]): ConvenienceLattice<T> {
+  return {
+    elements: elems,
+    top: elems[elems.length - 1],
+    bot: elems[0],
+    leq: (a, b) => elems.indexOf(a) <= elems.indexOf(b),
+    eq: (a, b) => a === b,
+    meet: (a, b) => (elems.indexOf(a) <= elems.indexOf(b) ? a : b),
+    join: (a, b) => (elems.indexOf(a) >= elems.indexOf(b) ? a : b),
+    meetAll(xs: T[]): T {
+      if (xs.length === 0) return this.top;
+      return xs.reduce((acc, x) => this.meet(acc, x), this.top);
+    },
+    joinAll(xs: T[]): T {
+      if (xs.length === 0) return this.bot;
+      return xs.reduce((acc, x) => this.join(acc, x), this.bot);
+    },
+  };
+}
+
+/** 4-level risk lattice: ALLOW < QUARANTINE < ESCALATE < DENY */
+export const RiskLattice: ConvenienceLattice<RiskDecision> = buildOrderedLattice<RiskDecision>([
+  'ALLOW',
+  'QUARANTINE',
+  'ESCALATE',
+  'DENY',
+]);
+
+/** 6-level governance lattice matching the Sacred Tongues: KO < AV < RU < CA < UM < DR */
+export const GovernanceLattice: ConvenienceLattice<GovernanceTier> =
+  buildOrderedLattice<GovernanceTier>(['KO', 'AV', 'RU', 'CA', 'UM', 'DR']);
+
+/** 4-level dimensional state lattice: COLLAPSED < DEMI < QUASI < POLLY */
+export const DimensionalLattice: ConvenienceLattice<DimensionalState> =
+  buildOrderedLattice<DimensionalState>(['COLLAPSED', 'DEMI', 'QUASI', 'POLLY']);
+
+/** Create a unit interval lattice with n evenly spaced points from 0 to 1 */
+export function createUnitIntervalLattice(n: number): ConvenienceLattice<number> {
+  const step = n > 1 ? 1 / (n - 1) : 0;
+  const elems = Array.from({ length: n }, (_, i) => Math.round(i * step * 1e10) / 1e10);
+  return {
+    elements: elems,
+    top: 1,
+    bot: 0,
+    leq: (a, b) => a <= b + 1e-12,
+    eq: (a, b) => Math.abs(a - b) < 1e-12,
+    meet: (a, b) => Math.min(a, b),
+    join: (a, b) => Math.max(a, b),
+    meetAll(xs: number[]): number {
+      if (xs.length === 0) return this.top;
+      return Math.min(...xs);
+    },
+    joinAll(xs: number[]): number {
+      if (xs.length === 0) return this.bot;
+      return Math.max(...xs);
+    },
+  };
+}
+
+// ── Cell complex builder ──
+
+/** Build a CellComplex from vertex ID strings and edge pairs */
+export function buildComplex(vertexIds: string[], edges: [string, string][]): CellComplex {
+  const vertices: CellVertex[] = vertexIds.map((id) => ({ id }));
+  const cellEdges: CellEdge[] = edges.map(([src, tgt], i) => ({
+    id: `e-${src}-${tgt}`,
+    source: src,
+    target: tgt,
+  }));
+  return { vertices, edges: cellEdges };
+}
+
+// ── Sheaf builders ──
+
+interface SimpleSheaf<T> {
+  lattice: ConvenienceLattice<T>;
+  complex: CellComplex;
+  restrict(vertexId: string, edgeId: string, value: T): T;
+  extend(edgeId: string, vertexId: string, value: T): T;
+}
+
+function toV1Lattice<T>(cl: ConvenienceLattice<T>): CompleteLattice<T> {
+  return {
+    top: () => cl.top,
+    bottom: () => cl.bot,
+    meet: (a, b) => cl.meet(a, b),
+    join: (a, b) => cl.join(a, b),
+    leq: (a, b) => cl.leq(a, b),
+    eq: (a, b) => cl.eq(a, b),
+    elements: () => [...cl.elements],
+  };
+}
+
+function toV1Sheaf<T>(simple: SimpleSheaf<T>): CellularSheaf<T, T> {
+  const lat = toV1Lattice(simple.lattice);
+  return {
+    complex: simple.complex,
+    vertexLattice: () => lat,
+    edgeLattice: () => lat,
+    sourceRestriction: (edgeId: string) => ({
+      lower: (v: T) => {
+        const edge = simple.complex.edges.find((e) => e.id === edgeId)!;
+        return simple.restrict(edge.source, edgeId, v);
+      },
+      upper: (e: T) => {
+        const edge = simple.complex.edges.find((ed) => ed.id === edgeId)!;
+        return simple.extend(edgeId, edge.source, e);
+      },
+    }),
+    targetRestriction: (edgeId: string) => ({
+      lower: (v: T) => {
+        const edge = simple.complex.edges.find((e) => e.id === edgeId)!;
+        return simple.restrict(edge.target, edgeId, v);
+      },
+      upper: (e: T) => {
+        const edge = simple.complex.edges.find((ed) => ed.id === edgeId)!;
+        return simple.extend(edgeId, edge.target, e);
+      },
+    }),
+  };
+}
+
+/** Create a constant sheaf (identity restrictions) over a convenience lattice */
+export function convConstantSheaf<T>(
+  lattice: ConvenienceLattice<T>,
+  complex: CellComplex
+): SimpleSheaf<T> {
+  return {
+    lattice,
+    complex,
+    restrict: (_vertexId, _edgeId, value) => value,
+    extend: (_edgeId, _vertexId, value) => value,
+  };
+}
+
+// Re-export constantSheaf to also accept ConvenienceLattice
+export { convConstantSheaf as convenienceConstantSheaf };
+
+/** Create a custom sheaf with per-edge Galois connections */
+export function customSheaf<T>(
+  lattice: ConvenienceLattice<T>,
+  complex: CellComplex,
+  restrictions: Map<string, GaloisConnection<T, T>>
+): SimpleSheaf<T> {
+  return {
+    lattice,
+    complex,
+    restrict: (vertexId, edgeId, value) => {
+      const conn = restrictions.get(edgeId);
+      return conn ? conn.lower(value) : value;
+    },
+    extend: (edgeId, _vertexId, value) => {
+      const conn = restrictions.get(edgeId);
+      return conn ? conn.upper(value) : value;
+    },
+  };
+}
+
+/** Create a Galois connection from explicit lower/upper map functions */
+export function galoisFromMaps<S, T>(
+  lower: (s: S) => T,
+  upper: (t: T) => S
+): GaloisConnection<S, T> {
+  return { lower, upper };
+}
+
+// ── Cochain helpers ──
+
+/** Create a 0-cochain from a record of vertex values */
+export function cochain0<T>(record: Record<string, T>): Cochain0<T> {
+  return new Map(Object.entries(record));
+}
+
+/** Create a constant 0-cochain assigning the same value to every vertex */
+export function constantCochain0<T>(complex: CellComplex, value: T): Cochain0<T> {
+  const m = new Map<string, T>();
+  for (const v of complex.vertices) m.set(v.id, value);
+  return m;
+}
+
+/** Create a 0-cochain with ⊤ at every vertex */
+export function topCochain0<T>(sheaf: SimpleSheaf<T>): Cochain0<T> {
+  return constantCochain0(sheaf.complex, sheaf.lattice.top);
+}
+
+// ── Operators ──
+
+/** Convenience tarskiLaplacian0 that works with SimpleSheaf */
+function convTarskiLaplacian0<T>(sheaf: SimpleSheaf<T>, x: Cochain0<T>): Cochain0<T> {
+  return tarskiLaplacian0(toV1Sheaf(sheaf), x);
+}
+
+/** Harmonic step: Φ(x) = x ∧ L₀(x) (pointwise meet of identity and Laplacian) */
+export function harmonicStep0<T>(sheaf: SimpleSheaf<T>, x: Cochain0<T>): Cochain0<T> {
+  const lx = convTarskiLaplacian0(sheaf, x);
+  const result = new Map<string, T>();
+  for (const v of sheaf.complex.vertices) {
+    const xv = x.get(v.id) ?? sheaf.lattice.bot;
+    const lxv = lx.get(v.id) ?? sheaf.lattice.bot;
+    result.set(v.id, sheaf.lattice.meet(xv, lxv));
+  }
+  return result;
+}
+
+interface HarmonicFlowResult<T> {
+  converged: boolean;
+  iterations: number;
+  fixedPoint: Cochain0<T>;
+}
+
+/** Iterate Φ = id ∧ L₀ until convergence (Tarski fixed-point) */
+export function harmonicFlow<T>(
+  sheaf: SimpleSheaf<T>,
+  initial: Cochain0<T>,
+  maxIter: number = 100
+): HarmonicFlowResult<T> {
+  let current = initial;
+  for (let i = 1; i <= maxIter; i++) {
+    const next = harmonicStep0(sheaf, current);
+    let changed = false;
+    for (const v of sheaf.complex.vertices) {
+      if (
+        !sheaf.lattice.eq(
+          current.get(v.id) ?? sheaf.lattice.bot,
+          next.get(v.id) ?? sheaf.lattice.bot
+        )
+      ) {
+        changed = true;
+        break;
+      }
+    }
+    if (!changed) return { converged: true, iterations: i, fixedPoint: current };
+    current = next;
+  }
+  return { converged: false, iterations: maxIter, fixedPoint: current };
+}
+
+/** TH⁰: start from ⊤ cochain and flow to fixed point */
+function convTarskiCohomology0<T>(sheaf: SimpleSheaf<T>): HarmonicFlowResult<T> {
+  const top = topCochain0(sheaf);
+  return harmonicFlow(sheaf, top);
+}
+
+/** Pseudo-coboundary δ₀: maps 0-cochain to 1-cochain (edge values) via meet of restricted endpoints */
+function convPseudoCoboundary<T>(sheaf: SimpleSheaf<T>, x: Cochain0<T>): Map<string, T> {
+  const result = new Map<string, T>();
+  for (const edge of sheaf.complex.edges) {
+    const sv = x.get(edge.source) ?? sheaf.lattice.bot;
+    const tv = x.get(edge.target) ?? sheaf.lattice.bot;
+    const svr = sheaf.restrict(edge.source, edge.id, sv);
+    const tvr = sheaf.restrict(edge.target, edge.id, tv);
+    result.set(edge.id, sheaf.lattice.meet(svr, tvr));
+  }
+  return result;
+}
+
+/** 1-Laplacian on edge cochains */
+function convTarskiLaplacian1<T>(sheaf: SimpleSheaf<T>, y: Map<string, T>): Map<string, T> {
+  const result = new Map<string, T>();
+  for (const edge of sheaf.complex.edges) {
+    // For each edge, look at cofaces (faces sharing a vertex)
+    const neighbors = sheaf.complex.edges.filter(
+      (e2) =>
+        e2.id !== edge.id &&
+        (e2.source === edge.source ||
+          e2.source === edge.target ||
+          e2.target === edge.source ||
+          e2.target === edge.target)
+    );
+    if (neighbors.length === 0) {
+      result.set(edge.id, sheaf.lattice.top);
+    } else {
+      let acc = sheaf.lattice.top;
+      for (const nb of neighbors) {
+        acc = sheaf.lattice.meet(acc, y.get(nb.id) ?? sheaf.lattice.bot);
+      }
+      result.set(edge.id, acc);
+    }
+  }
+  return result;
+}
+
+/** TH¹: cohomology on 1-cochains */
+function convTarskiCohomology1<T>(sheaf: SimpleSheaf<T>): HarmonicFlowResult<T> {
+  // Start from ⊤ on all edges
+  let current = new Map<string, T>();
+  for (const edge of sheaf.complex.edges) current.set(edge.id, sheaf.lattice.top);
+
+  for (let i = 1; i <= 100; i++) {
+    const lx = convTarskiLaplacian1(sheaf, current);
+    const next = new Map<string, T>();
+    for (const edge of sheaf.complex.edges) {
+      const cv = current.get(edge.id) ?? sheaf.lattice.bot;
+      const lv = lx.get(edge.id) ?? sheaf.lattice.bot;
+      next.set(edge.id, sheaf.lattice.meet(cv, lv));
+    }
+    let changed = false;
+    for (const edge of sheaf.complex.edges) {
+      if (!sheaf.lattice.eq(current.get(edge.id)!, next.get(edge.id)!)) {
+        changed = true;
+        break;
+      }
+    }
+    if (!changed) return { converged: true, iterations: i, fixedPoint: current };
+    current = next;
+  }
+  return { converged: false, iterations: 100, fixedPoint: current };
+}
+
+// ── Consensus analysis ──
+
+interface ConsensusAnalysis<T> {
+  hasConsensus: boolean;
+  isUnanimous: boolean;
+  unanimousValue?: T;
+  distinctValues: number;
+  disagreementEdges: string[];
+  consensusValues: Record<string, T>;
+  iterations: number;
+  obstructionDegree: number;
+}
+
+/** Analyze consensus on a sheaf by running harmonic flow from the given opinions */
+export function analyzeConsensus<T>(
+  sheaf: SimpleSheaf<T>,
+  opinions: Cochain0<T>
+): ConsensusAnalysis<T> {
+  const flow = harmonicFlow(sheaf, opinions);
+  const fp = flow.fixedPoint;
+
+  const values = new Set<string>();
+  const consensusValues: Record<string, T> = {};
+  for (const v of sheaf.complex.vertices) {
+    const val = fp.get(v.id)!;
+    values.add(String(val));
+    consensusValues[v.id] = val;
+  }
+
+  const isUnanimous = values.size === 1;
+  const unanimousValue = isUnanimous ? fp.get(sheaf.complex.vertices[0]?.id)! : undefined;
+
+  // Find disagreement edges (where endpoints differ after flow)
+  const disagreementEdges: string[] = [];
+  for (const edge of sheaf.complex.edges) {
+    const sv = fp.get(edge.source);
+    const tv = fp.get(edge.target);
+    if (sv !== undefined && tv !== undefined && !sheaf.lattice.eq(sv, tv)) {
+      disagreementEdges.push(edge.id);
+    }
+  }
+
+  // Compute obstruction via TH¹
+  const th1 = convTarskiCohomology1(sheaf);
+  let obstructionDegree = 0;
+  for (const edge of sheaf.complex.edges) {
+    const val = th1.fixedPoint.get(edge.id);
+    if (val !== undefined && !sheaf.lattice.eq(val, sheaf.lattice.bot)) {
+      obstructionDegree++;
+    }
+  }
+
+  return {
+    hasConsensus: flow.converged,
+    isUnanimous,
+    unanimousValue,
+    distinctValues: values.size,
+    disagreementEdges,
+    consensusValues,
+    iterations: flow.iterations,
+    obstructionDegree,
+  };
+}
+
+/** Build a risk consensus sheaf from agent IDs and communication edges */
+export function riskConsensusSheaf(
+  agentIds: string[],
+  edges: [string, string][]
+): SimpleSheaf<RiskDecision> {
+  return convConstantSheaf(RiskLattice, buildComplex(agentIds, edges));
+}
+
+/** Build a governance consensus sheaf */
+export function governanceConsensusSheaf(
+  agentIds: string[],
+  edges: [string, string][]
+): SimpleSheaf<GovernanceTier> {
+  return convConstantSheaf(GovernanceLattice, buildComplex(agentIds, edges));
+}
+
+/** High-level risk consensus: build sheaf, run flow, analyze */
+export function riskConsensus(
+  agentIds: string[],
+  edges: [string, string][],
+  opinions: Record<string, RiskDecision>
+): ConsensusAnalysis<RiskDecision> {
+  const sheaf = riskConsensusSheaf(agentIds, edges);
+  return analyzeConsensus(sheaf, cochain0(opinions));
+}
+
+/** Format a consensus analysis as a human-readable summary string */
+export function consensusSummary<T>(analysis: ConsensusAnalysis<T>): string {
+  const lines: string[] = [];
+  lines.push(`Consensus: ${analysis.hasConsensus ? 'YES' : 'NO'}`);
+  lines.push(
+    `Unanimous: ${analysis.isUnanimous ? 'YES' : 'NO'}${analysis.unanimousValue !== undefined ? ` (${analysis.unanimousValue})` : ''}`
+  );
+  lines.push(`Distinct values: ${analysis.distinctValues}`);
+  lines.push(`Iterations: ${analysis.iterations}`);
+  lines.push(`Obstruction (TH^1): ${analysis.obstructionDegree}`);
+  if (analysis.disagreementEdges.length > 0) {
+    lines.push(`Disagreement edges: ${analysis.disagreementEdges.join(', ')}`);
+  }
+  return lines.join('\n');
+}
+
+// Re-export the convenience wrappers under the names the tests expect
+export {
+  convTarskiLaplacian0 as convLaplacian0,
+  convTarskiCohomology0 as tarskiCohomology0,
+  convPseudoCoboundary as pseudoCoboundary,
+  convTarskiLaplacian1 as tarskiLaplacian1,
+  convTarskiCohomology1 as tarskiCohomology1,
+};
