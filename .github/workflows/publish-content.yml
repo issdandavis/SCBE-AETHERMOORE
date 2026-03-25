@@ -32,7 +32,7 @@ permissions:
   discussions: write
 
 env:
-  AMAZON_LINK: "https://www.amazon.com/dp/B0GSSFQD9G"
+  AMAZON_LINK: "https://a.co/d/024VowjS"
   GITHUB_DISCUSSIONS: "https://github.com/issdandavis/SCBE-AETHERMOORE/discussions"
 
 jobs:
@@ -73,7 +73,7 @@ jobs:
 
           ...
 
-          **[Read the full novel on Amazon — Kindle \$4.99 / Paperback \$13.99](https://www.amazon.com/dp/B0GSSFQD9G)**"
+          **[Read the full novel on Amazon — Kindle \$4.99 / Paperback \$13.99](https://a.co/d/024VowjS)**"
               ;;
             chapter-*)
               NUM=$(echo "$CONTENT_TYPE" | sed 's/chapter-//')
@@ -82,7 +82,7 @@ jobs:
               BODY="$(cat content/book/reader-edition/${CH}.md)
 
           ---
-          **[Get the full novel on Amazon](https://www.amazon.com/dp/B0GSSFQD9G)**"
+          **[Get the full novel on Amazon](https://a.co/d/024VowjS)**"
               ;;
             governance)
               TITLE="AI Governance with Provable Safety Guarantees"
