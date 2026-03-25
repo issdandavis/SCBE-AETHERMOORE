@@ -22,24 +22,18 @@ The engine evaluates:
 @layer L13 (Risk decision)
 """
 
-import math
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from .dimensional_space import (
-    PHI,
-    TONGUE_NAMES,
     CognitivePoint,
     DimensionalSpace,
-    StateValence,
 )
-from .hypercube_geometry import DoubleHypercube, PhaseProjection
+from .hypercube_geometry import DoubleHypercube
 from .permeability import (
-    DimensionalWall,
     PermeabilityMatrix,
-    WallVisibility,
     create_security_walls,
 )
 

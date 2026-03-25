@@ -18,7 +18,7 @@ dimensional walls.
 
 import math
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 from .dimensional_space import (
     PHI,
@@ -26,7 +26,6 @@ from .dimensional_space import (
     TONGUES,
     CognitivePoint,
     StateValence,
-    TongueVector,
 )
 
 
