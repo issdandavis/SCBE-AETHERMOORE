@@ -249,8 +249,7 @@ def dispersal_route(
 
     # Dominant tongue: highest weighted spin deviation
     weighted_devs = [
-        TONGUE_WEIGHTS[lang] * abs(sv.spins[lang]) * abs(tongue_coords[lang] - centroid[lang])
-        for lang in range(6)
+        TONGUE_WEIGHTS[lang] * abs(sv.spins[lang]) * abs(tongue_coords[lang] - centroid[lang]) for lang in range(6)
     ]
     dominant_idx = weighted_devs.index(max(weighted_devs))
 

@@ -39,7 +39,6 @@ from src.symphonic_cipher.scbe_aethermoore.rosetta.seed_data import (
     TAM_PROFILES,
 )
 
-
 # ═══════════════════════════════════════════════════════════════
 # ROSETTA CORE TESTS
 # ═══════════════════════════════════════════════════════════════

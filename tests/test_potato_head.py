@@ -52,7 +52,6 @@ from symphonic_cipher.scbe_aethermoore.concept_blocks.aperiodic_phase import (
     penrose_intervals,
 )
 
-
 # ===================================================================
 # SOCKET / POTATO HEAD TESTS
 # ===================================================================

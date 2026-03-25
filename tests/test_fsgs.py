@@ -9,7 +9,6 @@ mode transitions, trust tube projection, and control sequence analysis.
 @tier L2-unit, L3-integration
 """
 
-
 import numpy as np
 import pytest
 
@@ -31,7 +30,6 @@ from symphonic_cipher.scbe_aethermoore.ai_brain.fsgs import (
     analyze_control_sequence,
     simulate_trajectory,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -27,7 +27,6 @@ import hmac
 import math
 import struct
 
-
 PHI = 1.61803398875
 
 # Balanced ternary outputs

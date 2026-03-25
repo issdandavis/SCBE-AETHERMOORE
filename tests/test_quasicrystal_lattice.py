@@ -22,7 +22,6 @@ from symphonic_cipher.scbe_aethermoore.quasicrystal_lattice import (
     DefectAnalysis,
 )
 
-
 # =============================================================================
 # PROJECTION MATRIX TESTS
 # =============================================================================

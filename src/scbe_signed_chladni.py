@@ -9,6 +9,7 @@ in any seal / manifold binding / auth token.
 
 Patent: continuation claim on USPTO #63/961,403.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

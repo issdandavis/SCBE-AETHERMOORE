@@ -120,6 +120,7 @@ class TongueTokenizer:
 @dataclass
 class XlateAttestation:
     """Attestation for a cross-tongue translation."""
+
     source_tongue: str
     target_tongue: str
     source_hash: str
@@ -135,9 +136,7 @@ class CrossTokenizer:
         self.lexicons = lexicons or Lexicons()
         self.tokenizer = TongueTokenizer(self.lexicons)
 
-    def translate(
-        self, tokens: List[str], source: str, target: str
-    ) -> Tuple[List[str], XlateAttestation]:
+    def translate(self, tokens: List[str], source: str, target: str) -> Tuple[List[str], XlateAttestation]:
         """
         Translate tokens from one tongue to another.
 
@@ -258,7 +257,7 @@ def geoseal_encrypt(
     derived = _derive_key(key, salt, b"geoseal:v1:" + geo_info)
 
     # XOR-based encryption (demo; production uses AES-256-GCM)
-    ciphertext = bytes(p ^ k for p, k in zip(plaintext, (derived * ((len(plaintext) // 32) + 1))[:len(plaintext)]))
+    ciphertext = bytes(p ^ k for p, k in zip(plaintext, (derived * ((len(plaintext) // 32) + 1))[: len(plaintext)]))
 
     tag = hmac.new(derived, ciphertext + geo_info, hashlib.sha256).digest()[:16]
 
@@ -293,7 +292,7 @@ def geoseal_decrypt(
         raise ValueError("GeoSeal authentication failed - wrong key or location")
 
     # Decrypt
-    plaintext = bytes(c ^ k for c, k in zip(ciphertext, (derived * ((len(ciphertext) // 32) + 1))[:len(ciphertext)]))
+    plaintext = bytes(c ^ k for c, k in zip(ciphertext, (derived * ((len(ciphertext) // 32) + 1))[: len(ciphertext)]))
     return plaintext
 
 
@@ -304,8 +303,9 @@ def geoseal_decrypt(
 
 class RitualMode(Enum):
     """Hatching ritual modes."""
-    SOLITARY = "solitary"       # Single tongue hatching
-    TRIADIC = "triadic"         # Three tongues with weight threshold
+
+    SOLITARY = "solitary"  # Single tongue hatching
+    TRIADIC = "triadic"  # Three tongues with weight threshold
     RING_DESCENT = "ring_descent"  # Inward progression through rings
 
 
@@ -317,6 +317,7 @@ class SacredEgg:
     The egg holds a payload encoded in Sacred Tongues and can only
     be hatched when the correct ritual conditions are met.
     """
+
     egg_id: str
     ritual_mode: RitualMode
     sealed_payload: Dict[str, Any]  # GeoSeal envelope
@@ -345,6 +346,7 @@ class SacredEgg:
 @dataclass
 class HatchResult:
     """Result of attempting to hatch a Sacred Egg."""
+
     success: bool
     payload: Optional[bytes] = None
     tokens: Optional[List[str]] = None
@@ -473,7 +475,7 @@ class SacredEggIntegrator:
                 log.append(f"Ring descent requires {egg.ring_count} tongues in order")
                 return HatchResult(success=False, ritual_log=log, error="Not enough tongues for ring descent")
 
-            for i, expected in enumerate(egg.ritual_tongues[:egg.ring_count]):
+            for i, expected in enumerate(egg.ritual_tongues[: egg.ring_count]):
                 if i >= len(provided_tongues) or provided_tongues[i] != expected:
                     got = provided_tongues[i] if i < len(provided_tongues) else "nothing"
                     log.append(f"Ring {i}: expected {expected}, got {got}")
@@ -538,7 +540,9 @@ def selftest():
     # Test 3: Triadic ritual
     print("\n3. Triadic Ritual")
     egg3 = integrator.create_egg(
-        test_payload, "RU", RitualMode.TRIADIC,
+        test_payload,
+        "RU",
+        RitualMode.TRIADIC,
         ritual_tongues=["RU", "UM", "DR"],
     )
     result3 = integrator.hatch_egg(egg3, ["RU", "UM", "DR"])
@@ -549,7 +553,9 @@ def selftest():
     # Test 4: Ring descent
     print("\n4. Ring Descent")
     egg4 = integrator.create_egg(
-        test_payload, "KO", RitualMode.RING_DESCENT,
+        test_payload,
+        "KO",
+        RitualMode.RING_DESCENT,
         ritual_tongues=["KO", "AV", "RU"],
         ring_count=3,
     )

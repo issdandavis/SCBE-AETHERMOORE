@@ -22,7 +22,6 @@ from src.symphonic_cipher.scbe_aethermoore.flock_shepherd import (
     TrainingTrack,
 )
 
-
 saas_router = APIRouter(prefix="/saas")
 
 VALID_API_KEYS = {

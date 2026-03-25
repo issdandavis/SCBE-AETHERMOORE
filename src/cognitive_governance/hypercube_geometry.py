@@ -38,6 +38,7 @@ class HypercubeFace:
     The face has a normal vector, a permeability level, and a cost
     function for crossing.
     """
+
     valence: StateValence
     spatial_dim: int  # 0, 1, or 2
     tongue: str
@@ -89,6 +90,7 @@ class Hypercube:
     The hypercube is axis-aligned and centered at the origin,
     with face normals along each of the 54 dimensions.
     """
+
     faces: Dict[str, HypercubeFace] = field(default_factory=dict)
     # Half-width of the hypercube in each dimension
     half_width: float = 1.0
@@ -170,6 +172,7 @@ class PhaseProjection:
 
     @axiom A3: Symmetry (gauge invariance under phase rotation)
     """
+
     # Coupling strength between tongues
     coupling_matrix: Dict[Tuple[str, str], float] = field(default_factory=dict)
 
@@ -265,6 +268,7 @@ class DoubleHypercube:
     - Each face can independently control permeability
     - The double structure creates a governance gap
     """
+
     outer: Hypercube = field(default_factory=lambda: Hypercube(half_width=1.0))
     inner: Hypercube = field(default_factory=lambda: Hypercube(half_width=0.7))
     phase_projection: PhaseProjection = field(default_factory=PhaseProjection)
@@ -286,12 +290,12 @@ class DoubleHypercube:
         Security tongues (UM, DR) are less permeable (harder to abuse).
         """
         permeability_map = {
-            "KO": 0.9,   # Control: very permeable
-            "AV": 0.8,   # I/O: mostly permeable
-            "RU": 0.6,   # Policy: moderately restricted
-            "CA": 0.5,   # Compute: moderately restricted
-            "UM": 0.3,   # Security: heavily restricted
-            "DR": 0.2,   # Structure: heavily restricted
+            "KO": 0.9,  # Control: very permeable
+            "AV": 0.8,  # I/O: mostly permeable
+            "RU": 0.6,  # Policy: moderately restricted
+            "CA": 0.5,  # Compute: moderately restricted
+            "UM": 0.3,  # Security: heavily restricted
+            "DR": 0.2,  # Structure: heavily restricted
         }
         for tongue, perm in permeability_map.items():
             self.inner.set_tongue_permeability(tongue, perm)
@@ -311,7 +315,7 @@ class DoubleHypercube:
         norm = point.poincare_norm()
         d_h = 0.0
         if norm > 1e-10:
-            d_h = math.acosh(1 + 2 * norm ** 2 / (1 - norm ** 2))
+            d_h = math.acosh(1 + 2 * norm**2 / (1 - norm**2))
 
         # Exponential cost: H = R^((d * gamma)^2)
         R = 2.0
@@ -340,9 +344,7 @@ class DoubleHypercube:
         else:
             return "exterior"
 
-    def selective_wall_check(
-        self, point: CognitivePoint, direction_tongue: str
-    ) -> Tuple[bool, float]:
+    def selective_wall_check(self, point: CognitivePoint, direction_tongue: str) -> Tuple[bool, float]:
         """
         Check if a point can move in a specific tongue direction.
 

@@ -18,7 +18,6 @@ from src.aetherbrowser.phase_tunnel import (
 )
 from src.aetherbrowser.provider_executor import ProviderExecutionResult
 
-
 client = TestClient(serve_module.app)
 FIXTURE_PATH = Path("tests/e2e/fixtures/red-zone-site.html")
 

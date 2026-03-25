@@ -19,6 +19,7 @@ from .message import AgentMessage
 
 class ChannelState(Enum):
     """Channel lifecycle states."""
+
     OPEN = "open"
     PAUSED = "paused"
     THROTTLED = "throttled"
@@ -33,6 +34,7 @@ class Channel:
     Channels are directional by default but can be made bidirectional.
     They support message queuing, priority ordering, and governance hooks.
     """
+
     channel_id: str
     owner_id: str
     # Allowed participants
@@ -169,7 +171,7 @@ class Channel:
         """Record message in history."""
         self._history.append(message)
         if len(self._history) > self.max_history:
-            self._history = self._history[-self.max_history:]
+            self._history = self._history[-self.max_history :]
 
     def get_history(self, limit: int = 50) -> List[AgentMessage]:
         """Get recent message history."""

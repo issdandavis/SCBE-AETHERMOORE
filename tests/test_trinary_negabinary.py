@@ -22,7 +22,6 @@ from symphonic_cipher.scbe_aethermoore.negabinary import (
     balanced_ternary_to_negabinary,
 )
 
-
 # ═══════════════════════════════════════════════════
 #  Balanced Ternary — Round-trip
 # ═══════════════════════════════════════════════════

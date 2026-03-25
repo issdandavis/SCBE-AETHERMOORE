@@ -21,7 +21,6 @@ import time
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-
 # The 6 Sacred Tongue agents authorized to propose and vote
 AGENTS = frozenset({"KO", "AV", "RU", "CA", "UM", "DR"})
 

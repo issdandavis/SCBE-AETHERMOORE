@@ -12,7 +12,6 @@ from symphonic_cipher.scbe_aethermoore.flock_shepherd import (
     TrainingTrack,
 )
 
-
 # ═══════════════════════════════════════════════════
 #  Spawn & Lifecycle
 # ═══════════════════════════════════════════════════

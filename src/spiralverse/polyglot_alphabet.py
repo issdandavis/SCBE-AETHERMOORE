@@ -23,7 +23,6 @@ from dataclasses import dataclass
 from typing import Dict, List, Set, Optional, Tuple
 from enum import Enum
 
-
 # =============================================================================
 # Tongue Definitions
 # =============================================================================

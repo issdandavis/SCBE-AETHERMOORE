@@ -29,7 +29,6 @@ from typing import Any, Callable, Dict, List, Optional
 
 from .base import BlockResult, BlockStatus, ConceptBlock
 
-
 # -- node status -------------------------------------------------------------
 
 
