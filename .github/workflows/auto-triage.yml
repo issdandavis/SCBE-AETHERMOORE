@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name != 'schedule'
     steps:
-      - uses: pozil/auto-assign-issue@v2
+      - uses: pozil/auto-assign-issue@v4
         with:
           assignees: issdandavis
           numOfAssignee: 1
