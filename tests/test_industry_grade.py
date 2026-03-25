@@ -1113,7 +1113,7 @@ class TestAdversarialAttackResistance:
             try:
                 ss.unseal(tampered, aad="test")
             except Exception:
-                pass
+                pass  # Intentionally swallowed — measuring timing
             incorrect_times.append(time.perf_counter() - start)
 
         # Timing difference should be minimal (< 20% of mean)
@@ -1631,7 +1631,7 @@ class TestChaosEngineeringFaultInjection:
                 if result == plaintext:
                     success_count += 1
             except Exception:
-                pass
+                pass  # Intentionally swallowed — counting successes
 
         assert success_count == 5
 

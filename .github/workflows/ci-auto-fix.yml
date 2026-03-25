@@ -1,0 +1,165 @@
+name: CI Auto-Fix
+
+on:
+  workflow_run:
+    workflows: ["CI", "SCBE Gates"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+  issues: write
+
+jobs:
+  auto-fix:
+    # Only on failure, skip our own fix branches to prevent infinite loops
+    if: |
+      github.event.workflow_run.conclusion == 'failure' &&
+      !startsWith(github.event.workflow_run.head_branch, 'fix/ci-auto-fix')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.email "ci-auto-fix[bot]@users.noreply.github.com"
+          git config user.name "ci-auto-fix[bot]"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          pip install black flake8
+          npm ci --ignore-scripts 2>/dev/null || true
+
+      - name: Detect and classify failures
+        id: detect
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/ci/detect_failures.py \
+            --run-id ${{ github.event.workflow_run.id }} \
+            --json > /tmp/failure_report.json 2>&1 || true
+
+          if [ ! -s /tmp/failure_report.json ]; then
+            echo '{"failure_count":0,"failures":[],"raw_errors":[]}' > /tmp/failure_report.json
+          fi
+
+          FCOUNT=$(python3 -c "import json; print(json.load(open('/tmp/failure_report.json')).get('failure_count', 0))" 2>/dev/null || echo 0)
+          echo "failure_count=$FCOUNT" >> $GITHUB_OUTPUT
+
+          # Classify fix types
+          HAS_FORMAT=$(python3 -c "import json; d=json.load(open('/tmp/failure_report.json')); print('true' if any(f.get('fix_strategy')=='black_format' for f in d.get('failures',[])) else 'false')")
+          HAS_AI_FIX=$(python3 -c "import json; d=json.load(open('/tmp/failure_report.json')); print('true' if any(f.get('fix_strategy') in ('typecheck_fix','import_fix','test_collection_fix','test_fix','action_ref_fix') for f in d.get('failures',[])) else 'false')")
+          echo "has_format=$HAS_FORMAT" >> $GITHUB_OUTPUT
+          echo "has_ai_fix=$HAS_AI_FIX" >> $GITHUB_OUTPUT
+
+          echo "### Failure Detection" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run**: ${{ github.event.workflow_run.id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Failures**: $FCOUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Formatting fix**: $HAS_FORMAT" >> $GITHUB_STEP_SUMMARY
+          echo "- **AI fix needed**: $HAS_AI_FIX" >> $GITHUB_STEP_SUMMARY
+
+      # ── Deterministic fixes (no AI needed) ──────────────────────────
+      - name: Apply Black formatting
+        if: steps.detect.outputs.has_format == 'true'
+        run: |
+          python -m black --target-version py311 --line-length 120 src/ tests/ 2>/dev/null || true
+
+      - name: Apply npm audit fix
+        if: steps.detect.outputs.failure_count > 0
+        run: npm audit fix 2>/dev/null || true
+        continue-on-error: true
+
+      # ── AI-powered fixes (Claude Code Action) ──────────────────────
+      - name: AI fix with Claude Code
+        if: steps.detect.outputs.has_ai_fix == 'true' && env.ANTHROPIC_API_KEY != ''
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            CI has failed on branch ${{ github.event.workflow_run.head_branch }}.
+
+            Failure report:
+            $(cat /tmp/failure_report.json | python3 -c "
+            import json,sys
+            d = json.load(sys.stdin)
+            for f in d.get('failures',[]):
+                print(f'[{f.get(\"category\")}] {f.get(\"description\")}: {f.get(\"raw_match\",\"\")[:150]}')
+                if f.get('file_path'): print(f'  File: {f[\"file_path\"]}:{f.get(\"line_number\",\"\")}')
+            ")
+
+            Make the MINIMAL change to fix each failure. Do NOT refactor.
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      # ── Create PR if changes were made ─────────────────────────────
+      - name: Create fix PR
+        if: steps.detect.outputs.failure_count > 0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -z "$(git diff --stat)" ] && [ -z "$(git diff --cached --stat)" ]; then
+            echo "No fixes could be applied automatically."
+            echo "### Result: No auto-fix available" >> $GITHUB_STEP_SUMMARY
+            python3 -c "
+          import json
+          d = json.load(open('/tmp/failure_report.json'))
+          cmds = d.get('fix_commands', [])
+          if cmds:
+              print('### Suggested Manual Commands')
+              for c in cmds: print(f'- \`{c[:120]}\`')
+          " >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+
+          BRANCH="fix/ci-auto-fix-${{ github.event.workflow_run.id }}"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "fix(ci): auto-fix from run ${{ github.event.workflow_run.id }}
+
+          Automated fix for ${{ github.event.workflow_run.name }} failure.
+
+          Co-Authored-By: CI Auto-Fix Bot <noreply@github.com>"
+          git push origin "$BRANCH"
+
+          FCOUNT=$(python3 -c "import json; print(json.load(open('/tmp/failure_report.json')).get('failure_count', 0))")
+          FAILURES=$(python3 -c "
+          import json
+          d = json.load(open('/tmp/failure_report.json'))
+          for f in d.get('failures', []):
+              print(f'- **[{f.get(\"category\")}]** {f.get(\"description\")}')
+          ")
+
+          gh pr create \
+            --title "fix(ci): auto-fix $FCOUNT failure(s) from run ${{ github.event.workflow_run.id }}" \
+            --body "$(cat <<EOF
+          ## Automated CI Fix
+
+          **Failed run**: ${{ github.event.workflow_run.html_url }}
+          **Workflow**: ${{ github.event.workflow_run.name }}
+          **Branch**: ${{ github.event.workflow_run.head_branch }}
+
+          ### Failures Fixed
+          $FAILURES
+
+          ---
+          Generated by CI Auto-Fix workflow. Please review before merging.
+          EOF
+          )" \
+            --base "${{ github.event.workflow_run.head_branch }}" \
+            --label "ci-auto-fix" || true
+
+          echo "### Result: Fix PR created" >> $GITHUB_STEP_SUMMARY

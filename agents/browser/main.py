@@ -16,7 +16,6 @@ import base64
 import logging
 import os
 from contextlib import asynccontextmanager
-from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -24,8 +23,8 @@ from fastapi import FastAPI, HTTPException, Header, Depends
 from pydantic import BaseModel, Field, field_validator
 
 from .phdm_brain import SimplePHDM, SafetyDecision, ContainmentResult, create_phdm_brain
-from .playwright_wrapper import PlaywrightWrapper, BrowserConfig, ScreenshotResult
-from .vision_embedding import VisionEmbedder, EmbeddingResult, create_vision_embedder
+from .playwright_wrapper import PlaywrightWrapper, BrowserConfig
+from .vision_embedding import VisionEmbedder, create_vision_embedder
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -71,7 +71,8 @@ class TreeNode(ABC):
         self.name = name
 
     @abstractmethod
-    def tick(self, bb: Blackboard) -> NodeStatus: ...
+    def tick(self, bb: Blackboard) -> NodeStatus:
+        pass
 
     def reset(self) -> None:
         pass

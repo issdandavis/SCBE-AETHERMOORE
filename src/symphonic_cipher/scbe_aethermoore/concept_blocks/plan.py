@@ -34,13 +34,16 @@ class GraphAdapter(ABC, Generic[N]):
     """Interface that A* needs from any graph."""
 
     @abstractmethod
-    def neighbours(self, node: N) -> List[N]: ...
+    def neighbours(self, node: N) -> List[N]:
+        pass
 
     @abstractmethod
-    def cost(self, current: N, neighbour: N) -> float: ...
+    def cost(self, current: N, neighbour: N) -> float:
+        pass
 
     @abstractmethod
-    def heuristic(self, node: N, goal: N) -> float: ...
+    def heuristic(self, node: N, goal: N) -> float:
+        pass
 
 
 # -- grid adapter (spatial navigation) --------------------------------------

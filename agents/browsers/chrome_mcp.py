@@ -11,9 +11,7 @@ Requirements:
     - Chrome browser running with extension active
 """
 
-import asyncio
-import json
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 from .base import BrowserBackend
 
 
