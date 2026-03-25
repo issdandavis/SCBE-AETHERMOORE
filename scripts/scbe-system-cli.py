@@ -2975,6 +2975,273 @@ def cmd_status(args: argparse.Namespace) -> int:
     return _json_result(args, payload, lines)
 
 
+# ── GitHub operations ──────────────────────────────────────────────────────
+
+
+def _gh(args: list, capture: bool = True) -> str:
+    """Run a gh CLI command and return stdout."""
+    result = subprocess.run(
+        ["gh"] + args,
+        capture_output=capture,
+        text=True,
+        timeout=60,
+        encoding="utf-8",
+        errors="replace",
+    )
+    return result.stdout.strip() if capture else ""
+
+
+def cmd_gh_ci(args: argparse.Namespace) -> int:
+    """Check CI status for current branch or a PR."""
+    if args.pr:
+        output = _gh(["pr", "checks", str(args.pr)])
+    else:
+        branch = subprocess.run(
+            ["git", "branch", "--show-current"], capture_output=True, text=True
+        ).stdout.strip()
+        output = _gh(["pr", "checks", "--repo", "issdandavis/SCBE-AETHERMOORE"])
+
+    lines = []
+    pass_count = fail_count = pending_count = 0
+    for line in output.split("\n"):
+        if not line.strip():
+            continue
+        if "\tpass\t" in line:
+            pass_count += 1
+        elif "\tfail\t" in line:
+            fail_count += 1
+            lines.append(f"  FAIL: {line.split(chr(9))[0]}")
+        elif "\tpending\t" in line:
+            pending_count += 1
+
+    print(f"CI: {pass_count} pass, {fail_count} fail, {pending_count} pending")
+    for line in lines:
+        print(line)
+    if fail_count == 0 and pending_count == 0:
+        print("  All checks green!")
+    return 0
+
+
+def cmd_gh_scan(args: argparse.Namespace) -> int:
+    """Code scanning dashboard — delegates to review_code_scanning.py."""
+    script = Path(args.repo_root) / "scripts" / "ci" / "review_code_scanning.py"
+    cmd = [sys.executable, str(script)]
+    if args.verify:
+        cmd.append("--verify")
+    return subprocess.call(cmd)
+
+
+def cmd_gh_fix(args: argparse.Namespace) -> int:
+    """Auto-fix CI failures — delegates to auto_fix.py."""
+    script = Path(args.repo_root) / "scripts" / "ci" / "auto_fix.py"
+    cmd = [sys.executable, str(script), "--detect"]
+    if args.run_id:
+        cmd.extend(["--run-id", str(args.run_id)])
+    if args.dry_run:
+        cmd.append("--dry-run")
+    return subprocess.call(cmd)
+
+
+def cmd_gh_prs(args: argparse.Namespace) -> int:
+    """List open PRs with CI status."""
+    output = _gh([
+        "pr", "list", "--json", "number,title,state,headRefName,mergeable",
+        "--jq", '.[] | "  #\\(.number) [\\(.headRefName)] \\(.title)"',
+    ])
+    if output:
+        print("Open PRs:")
+        print(output)
+    else:
+        print("No open PRs.")
+    return 0
+
+
+def cmd_gh_issues(args: argparse.Namespace) -> int:
+    """List open issues."""
+    output = _gh([
+        "issue", "list", "--json", "number,title,labels",
+        "--jq", '.[] | "  #\\(.number) \\(.title) (\\([.labels[].name] | join(\", \")))"',
+    ])
+    if output:
+        print("Open issues:")
+        print(output)
+    else:
+        print("No open issues.")
+    return 0
+
+
+def cmd_gh_release(args: argparse.Namespace) -> int:
+    """Show latest release info."""
+    output = _gh(["release", "view", "--json", "tagName,name,publishedAt,body"])
+    if output:
+        data = json.loads(output)
+        print(f"Latest release: {data.get('tagName', '?')} — {data.get('name', '?')}")
+        print(f"  Published: {data.get('publishedAt', '?')}")
+        body = data.get("body", "")
+        if body:
+            print(f"  {body[:200]}")
+    else:
+        print("No releases found.")
+    return 0
+
+
+def cmd_gh_deploy(args: argparse.Namespace) -> int:
+    """Trigger a deploy workflow."""
+    workflow_map = {
+        "pages": "pages-deploy.yml",
+        "cloudrun": "deploy-cloudrun.yml",
+        "npm": "auto-publish.yml",
+        "pypi": "auto-publish.yml",
+    }
+    wf = workflow_map.get(args.target, "")
+    if not wf:
+        print(f"Unknown deploy target: {args.target}")
+        return 1
+    print(f"Triggering {wf} for {args.target}...")
+    _gh(["workflow", "run", wf], capture=False)
+    print(f"  Dispatched. Check with: scbe-system gh ci")
+    return 0
+
+
+def cmd_gh_cleanup(args: argparse.Namespace) -> int:
+    """Push artifacts to cloud storage and clean local disk."""
+    import shutil as _shutil
+
+    repo = Path(args.repo_root)
+    targets = {
+        "voice_clone": repo / "artifacts" / "voice_clone",
+        "narration": repo / "artifacts" / "narration",
+        "pytest_temp": repo / "artifacts" / "pytest_temp_root",
+        "models_hf": repo / "models" / "hf",
+    }
+
+    # Cloud storage roots
+    cloud_roots = {
+        "dropbox": Path("C:/Users/issda/Dropbox/SCBE-Archive"),
+        "onedrive": Path("C:/Users/issda/OneDrive/SCBE-Archive"),
+        "gdrive": Path("C:/Users/issda/Drive/SCBE-Archive"),
+    }
+
+    # HuggingFace is handled differently
+    total_freed = 0
+
+    for name, local_path in targets.items():
+        if not local_path.exists():
+            continue
+
+        size = sum(f.stat().st_size for f in local_path.rglob("*") if f.is_file()) // (1024 * 1024)
+        print(f"\n  {name}: {size} MB at {local_path}")
+
+        if name == "pytest_temp":
+            # Just delete — these are dead temp files
+            if args.dry_run:
+                print(f"    [DRY RUN] Would delete {size} MB of pytest temp files")
+            else:
+                _shutil.rmtree(local_path, ignore_errors=True)
+                print(f"    Deleted {size} MB of dead pytest temp files")
+                total_freed += size
+            continue
+
+        if name == "models_hf":
+            # These should be pulled from HuggingFace on demand, not stored locally
+            if args.dry_run:
+                print(f"    [DRY RUN] Would delete {size} MB of model weights (available on HuggingFace)")
+            else:
+                # Add to .gitignore if not already there
+                gitignore = repo / ".gitignore"
+                gi_text = gitignore.read_text() if gitignore.exists() else ""
+                if "models/hf/" not in gi_text:
+                    with open(gitignore, "a") as f:
+                        f.write("\n# Local model weights — pull from HuggingFace on demand\nmodels/hf/\n")
+                    print(f"    Added models/hf/ to .gitignore")
+                print(f"    Models kept locally but excluded from git ({size} MB)")
+            continue
+
+        # For voice_clone and narration — copy to cloud, delete local
+        target_cloud = args.target if args.target != "all" else "dropbox"
+        cloud_root = cloud_roots.get(target_cloud)
+
+        if cloud_root and cloud_root.parent.exists():
+            dest = cloud_root / name
+            if args.dry_run:
+                print(f"    [DRY RUN] Would move {size} MB to {dest}")
+            else:
+                dest.mkdir(parents=True, exist_ok=True)
+                # Move files
+                for item in local_path.iterdir():
+                    target = dest / item.name
+                    if item.is_file():
+                        _shutil.move(str(item), str(target))
+                    elif item.is_dir():
+                        if target.exists():
+                            _shutil.rmtree(str(target))
+                        _shutil.move(str(item), str(target))
+                # Remove empty local dir
+                if not any(local_path.iterdir()):
+                    local_path.rmdir()
+                print(f"    Moved {size} MB to {dest}")
+                total_freed += size
+        else:
+            print(f"    Cloud root not found: {cloud_root}")
+            print(f"    Skipping (would need: mkdir {cloud_root})")
+
+    print(f"\n  Total freed: {total_freed} MB")
+    return 0
+
+
+def cmd_gh_pulse(args: argparse.Namespace) -> int:
+    """Weekly activity summary."""
+    # Commits this week
+    commit_count = subprocess.run(
+        ["git", "log", "--oneline", "--since=1 week ago", "main"],
+        capture_output=True, text=True,
+    ).stdout.strip().count("\n") + 1
+
+    # PRs merged this week
+    pr_output = _gh([
+        "pr", "list", "--state", "merged", "--search", "merged:>2026-03-17",
+        "--json", "number", "--jq", "length",
+    ])
+    pr_count = int(pr_output) if pr_output.isdigit() else 0
+
+    # Open issues
+    issue_output = _gh(["issue", "list", "--json", "number", "--jq", "length"])
+    issue_count = int(issue_output) if issue_output.isdigit() else 0
+
+    # Open PRs
+    open_pr = _gh(["pr", "list", "--json", "number", "--jq", "length"])
+    open_pr_count = int(open_pr) if open_pr.isdigit() else 0
+
+    # Code scanning
+    scan_output = _gh([
+        "api", "repos/issdandavis/SCBE-AETHERMOORE/code-scanning/alerts?state=open&per_page=1",
+        "--jq", "length",
+    ])
+
+    # Workflow runs
+    runs = _gh([
+        "run", "list", "--limit", "20", "--json", "conclusion",
+        "--jq", '[.[] | .conclusion] | {pass: [.[] | select(. == "success")] | length, fail: [.[] | select(. == "failure")] | length}',
+    ])
+
+    print("SCBE Pulse — This Week")
+    print("=" * 40)
+    print(f"  Commits:       {commit_count}")
+    print(f"  PRs merged:    {pr_count}")
+    print(f"  Open PRs:      {open_pr_count}")
+    print(f"  Open issues:   {issue_count}")
+    if runs:
+        try:
+            r = json.loads(runs)
+            total = r.get("pass", 0) + r.get("fail", 0)
+            rate = (r["pass"] / total * 100) if total else 0
+            print(f"  CI pass rate:  {rate:.0f}% ({r['pass']}/{total} last 20 runs)")
+        except (json.JSONDecodeError, KeyError):
+            pass
+    print()
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="scbe-system",
@@ -3364,6 +3631,44 @@ def build_parser() -> argparse.ArgumentParser:
     pp_snapshot.add_argument("--agent-id", required=True)
     pp_snapshot.add_argument("--output")
     pp_snapshot.set_defaults(func=cmd_pollypad_snapshot)
+
+    # ── gh: GitHub operations ──────────────────────────────────────
+    gh_parser = sub.add_parser("gh", help="GitHub operations — PRs, CI, issues, code scanning, releases")
+    gh_sub = gh_parser.add_subparsers(dest="gh_cmd", required=True)
+
+    gh_ci = gh_sub.add_parser("ci", help="Check CI status for current branch or a PR")
+    gh_ci.add_argument("--pr", type=int, help="PR number (default: current branch)")
+    gh_ci.set_defaults(func=cmd_gh_ci)
+
+    gh_scan = gh_sub.add_parser("scan", help="Code scanning alert dashboard")
+    gh_scan.add_argument("--verify", action="store_true", help="Cross-check alerts against code")
+    gh_scan.set_defaults(func=cmd_gh_scan)
+
+    gh_fix = gh_sub.add_parser("fix", help="Auto-detect and fix CI failures")
+    gh_fix.add_argument("--run-id", type=int, help="Specific run ID")
+    gh_fix.add_argument("--dry-run", action="store_true")
+    gh_fix.set_defaults(func=cmd_gh_fix)
+
+    gh_prs = gh_sub.add_parser("prs", help="List open PRs with CI status")
+    gh_prs.set_defaults(func=cmd_gh_prs)
+
+    gh_issues = gh_sub.add_parser("issues", help="List open issues")
+    gh_issues.set_defaults(func=cmd_gh_issues)
+
+    gh_release = gh_sub.add_parser("release", help="Show latest release info")
+    gh_release.set_defaults(func=cmd_gh_release)
+
+    gh_deploy = gh_sub.add_parser("deploy", help="Trigger a deploy workflow")
+    gh_deploy.add_argument("target", choices=["pages", "cloudrun", "npm", "pypi"], help="Deploy target")
+    gh_deploy.set_defaults(func=cmd_gh_deploy)
+
+    gh_cleanup = gh_sub.add_parser("cleanup", help="Push artifacts to cloud storage and clean local disk")
+    gh_cleanup.add_argument("--target", choices=["dropbox", "onedrive", "gdrive", "hf", "all"], default="all")
+    gh_cleanup.add_argument("--dry-run", action="store_true")
+    gh_cleanup.set_defaults(func=cmd_gh_cleanup)
+
+    gh_pulse = gh_sub.add_parser("pulse", help="Weekly activity summary")
+    gh_pulse.set_defaults(func=cmd_gh_pulse)
 
     runtime = sub.add_parser("runtime", help="Governed polyglot execution runtime")
     add_runtime_cli_flags(runtime)
