@@ -343,16 +343,24 @@ export function harmonicFlow<V, E>(
 /**
  * Global sections TH⁰: greatest fixed point of harmonic flow,
  * starting from the top cochain (⊤ everywhere).
+ *
+ * Polymorphic: accepts V1 CellularSheaf or V2 CellularSheaf.
  */
 export function globalSections<V, E>(
-  sheaf: CellularSheaf<V, E>,
+  sheaf: CellularSheaf<V, E> | V2CellularSheaf<V>,
   opts?: { maxIter?: number }
-): { fixedPoint: Cochain0<V>; converged: boolean } {
-  const topCochain: Cochain0<V> = new Map();
-  for (const v of sheaf.complex.vertices) {
-    topCochain.set(v.id, sheaf.vertexLattice(v.id).top());
+): { fixedPoint: Cochain0<V>; converged: boolean } | CohomologyResult<V> {
+  // Detect V2 sheaf: has `stalk` method and complex with `cells()` function
+  if ('stalk' in sheaf && typeof (sheaf as V2CellularSheaf<V>).stalk === 'function') {
+    return v2GlobalSections(sheaf as V2CellularSheaf<V>);
   }
-  const { fixedPoint, converged } = harmonicFlow(sheaf, topCochain, opts);
+  // V1 path
+  const v1Sheaf = sheaf as CellularSheaf<V, E>;
+  const topCochain: Cochain0<V> = new Map();
+  for (const v of v1Sheaf.complex.vertices) {
+    topCochain.set(v.id, v1Sheaf.vertexLattice(v.id).top());
+  }
+  const { fixedPoint, converged } = harmonicFlow(v1Sheaf, topCochain, opts);
   return { fixedPoint, converged };
 }
 
