@@ -26,7 +26,7 @@ import pytest
 
 # Telemetry tracking
 @dataclass
-class TestTelemetry:
+class TelemetryRecord:
     """Telemetry data for test execution"""
 
     test_name: str
@@ -53,12 +53,12 @@ class TelemetryCollector:
     """Collects and exports test telemetry"""
 
     def __init__(self):
-        self.telemetry: List[TestTelemetry] = []
+        self.telemetry: List[TelemetryRecord] = []
         self.session_start = time.time()
 
-    def start_test(self, name: str, category: str) -> TestTelemetry:
+    def start_test(self, name: str, category: str) -> TelemetryRecord:
         """Start tracking a test"""
-        telem = TestTelemetry(test_name=name, category=category, start_time=time.time())
+        telem = TelemetryRecord(test_name=name, category=category, start_time=time.time())
         self.telemetry.append(telem)
         return telem
 
