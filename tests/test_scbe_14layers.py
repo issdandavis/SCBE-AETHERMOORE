@@ -39,7 +39,7 @@ from scbe_14layer_reference import (
 )
 
 
-class TestSCBE14Layers:
+class SCBE14LayersSuite:
     """Test suite for all 14 SCBE layers."""
 
     def __init__(self):
@@ -469,6 +469,6 @@ class TestSCBE14Layers:
 
 
 if __name__ == "__main__":
-    tester = TestSCBE14Layers()
+    tester = SCBE14LayersSuite()
     success = tester.run_all_tests()
     sys.exit(0 if success else 1)
