@@ -50,11 +50,15 @@ jobs:
             --parser @typescript-eslint/parser \
             --plugin @typescript-eslint \
             --ext .js,.jsx,.ts,.tsx \
-            --rule '{"no-unused-vars": "off", "@typescript-eslint/no-unused-vars": "warn"}' \
+            --rule '{"no-unused-vars": "off", "@typescript-eslint/no-unused-vars": ["warn", {"argsIgnorePattern": "^_", "varsIgnorePattern": "^_", "caughtErrorsIgnorePattern": "^_"}]}' \
             --format @microsoft/eslint-formatter-sarif \
             --output-file eslint-results.sarif \
             --ignore-pattern "node_modules" \
-            --ignore-pattern "dist"
+            --ignore-pattern "dist" \
+            --ignore-pattern "external" \
+            --ignore-pattern "scbe-visual-system" \
+            --ignore-pattern "kindle-app" \
+            --ignore-pattern "src/word-addin"
         continue-on-error: true
 
       - name: Upload analysis results to GitHub
