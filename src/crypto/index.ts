@@ -1,8 +1,9 @@
 /**
- * SCBE Cryptographic Module
- * Core encryption and security primitives
+ * @file index.ts
+ * @module crypto
+ * @component SCBE Cryptographic Module
  *
- * Includes:
+ * Core encryption and security primitives including:
  * - Post-Quantum Cryptography (ML-KEM-768, ML-DSA-65)
  * - Envelope encryption
  * - Key management
