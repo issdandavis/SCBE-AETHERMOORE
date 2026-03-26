@@ -6,11 +6,15 @@ This module provides shared fixtures and configuration for Python enterprise tes
 
 import pytest
 from typing import Any
-from hypothesis import settings, Verbosity
 
-# Configure hypothesis for property-based testing
-settings.register_profile("enterprise", max_examples=100, deadline=None, verbosity=Verbosity.verbose)
-settings.load_profile("enterprise")
+try:
+    from hypothesis import settings, Verbosity
+
+    # Configure hypothesis for property-based testing
+    settings.register_profile("enterprise", max_examples=100, deadline=None, verbosity=Verbosity.verbose)
+    settings.load_profile("enterprise")
+except ImportError:
+    pass
 
 
 @pytest.fixture(scope="session")

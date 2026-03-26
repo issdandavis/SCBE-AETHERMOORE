@@ -27,6 +27,7 @@ class ModelProvider(str, Enum):
     FLASH = "flash"
     GROK = "grok"
     LOCAL = "local"
+    HUGGINGFACE = "huggingface"
 
 
 class TaskComplexity(str, Enum):
@@ -42,6 +43,7 @@ MODEL_COST_TIER: dict[ModelProvider, int] = {
     ModelProvider.GROK: 2,
     ModelProvider.SONNET: 3,
     ModelProvider.OPUS: 4,
+    ModelProvider.HUGGINGFACE: 1,
 }
 
 PROVIDER_ENV_VARS: dict[ModelProvider, tuple[str, ...]] = {
@@ -51,6 +53,7 @@ PROVIDER_ENV_VARS: dict[ModelProvider, tuple[str, ...]] = {
     ModelProvider.OPUS: ("ANTHROPIC_API_KEY",),
     ModelProvider.FLASH: ("OPENAI_API_KEY",),
     ModelProvider.GROK: ("XAI_API_KEY",),
+    ModelProvider.HUGGINGFACE: ("HF_TOKEN",),
 }
 
 PROVIDER_FAMILY: dict[ModelProvider, str] = {
@@ -60,6 +63,7 @@ PROVIDER_FAMILY: dict[ModelProvider, str] = {
     ModelProvider.OPUS: "anthropic",
     ModelProvider.FLASH: "openai",
     ModelProvider.GROK: "xai",
+    ModelProvider.HUGGINGFACE: "huggingface",
 }
 
 COMPLEXITY_MIN_TIER: dict[TaskComplexity, int] = {

@@ -52,7 +52,7 @@ class TestHFProviderRegistration:
         assert _PROVIDER_MAP["hf"] is _PROVIDER_MAP["huggingface"]
 
     def test_all_expected_providers_in_map(self):
-        expected = {"claude", "anthropic", "gpt", "openai", "gemini", "google", "huggingface", "hf", "local"}
+        expected = {"claude", "anthropic", "gpt", "openai", "gemini", "google", "huggingface", "hf", "local", "grok", "xai"}
         assert expected.issubset(set(_PROVIDER_MAP.keys()))
 
 
@@ -92,10 +92,13 @@ class TestCreateProviderFactory:
 
     def test_create_provider_local(self):
         """Sanity check: local provider still works."""
-        provider = create_provider("local")
-        from hydra.llm_providers import LocalProvider
+        try:
+            provider = create_provider("local")
+            from hydra.llm_providers import LocalProvider
 
-        assert isinstance(provider, LocalProvider)
+            assert isinstance(provider, LocalProvider)
+        except ImportError:
+            pytest.skip("openai package not installed")
 
 
 # =========================================================================
