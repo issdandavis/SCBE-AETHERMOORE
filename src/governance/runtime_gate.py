@@ -32,6 +32,23 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
+try:
+    from primitives.phi_poincare import (
+        fibonacci_ternary_consensus,
+        fibonacci_trust_level,
+        phi_shell_radius,
+        harmonic_cost_at_shell,
+        FIB_LADDER,
+    )
+except ImportError:
+    from src.primitives.phi_poincare import (
+        fibonacci_ternary_consensus,
+        fibonacci_trust_level,
+        phi_shell_radius,
+        harmonic_cost_at_shell,
+        FIB_LADDER,
+    )
+
 PHI = 1.618033988749895
 PI = math.pi
 TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
@@ -58,6 +75,10 @@ class GateResult:
     signals: List[str]
     reroute_to: Optional[str] = None
     noise: Optional[bytes] = None  # fail-to-noise: deterministic noise on DENY
+    # Fibonacci trust (session-accumulated)
+    trust_weight: int = 1
+    trust_level: str = "UNTRUSTED"
+    trust_index: int = 0
     # Audit
     action_hash: str = ""
     timestamp: float = 0.0
@@ -147,6 +168,9 @@ class RuntimeGate:
         self._immune: set = set()  # known attack hashes → instant DENY
         self._reflex: dict = {}  # known safe hashes → instant ALLOW
         self._audit_log: List[GateResult] = []
+        # Fibonacci trust history: aggregate ternary signal per query
+        # +1 if spin_magnitude == 0 (clean), 0 if 1-3, -1 if 4+
+        self._trust_history: List[int] = []
 
     # ------------------------------------------------------------------ #
     #  Tongue coordinate extraction
@@ -274,12 +298,17 @@ class RuntimeGate:
             coords = self._text_to_coords(full_text)
             self._update_centroid(coords)
             self._cumulative_cost += 1.0  # nominal cost during calibration
+            self._trust_history.append(1)  # calibration = +1 trust
+            fib = fibonacci_trust_level(self._trust_history)
             result = GateResult(
                 decision=Decision.ALLOW,
                 cost=1.0,
                 spin_magnitude=0,
                 tongue_coords=coords,
                 signals=["calibrating"],
+                trust_weight=fib["weight"],
+                trust_level=fib["level"],
+                trust_index=fib["index"],
                 action_hash=action_hash,
                 timestamp=ts,
                 session_query_count=self._query_count,
@@ -305,14 +334,19 @@ class RuntimeGate:
             self._audit_log.append(result)
             return result
 
-        # Reflex table: known safe → instant ALLOW
+        # Reflex table: known safe → instant ALLOW (still builds trust)
         if action_hash in self._reflex:
+            self._trust_history.append(1)  # known-safe = +1 trust
+            fib = fibonacci_trust_level(self._trust_history)
             result = GateResult(
                 decision=Decision.ALLOW,
                 cost=1.0,
                 spin_magnitude=0,
                 tongue_coords=[0.5] * 6,
                 signals=["reflex_hit"],
+                trust_weight=fib["weight"],
+                trust_level=fib["level"],
+                trust_index=fib["index"],
                 action_hash=action_hash,
                 timestamp=ts,
                 session_query_count=self._query_count,
@@ -331,17 +365,50 @@ class RuntimeGate:
         self._update_centroid(coords)
         self._cumulative_cost += cost
 
-        signals: List[str] = []
+        # ---- Fibonacci trust update ----
+        # Map spin magnitude to ternary trust signal:
+        #   0 spins = clean (+1), 1-3 spins = neutral (0), 4+ spins = suspicious (-1)
+        if magnitude == 0:
+            trust_signal = 1
+        elif magnitude <= 3:
+            trust_signal = 0
+        else:
+            trust_signal = -1
+        self._trust_history.append(trust_signal)
+
+        # Compute session trust from Fibonacci consensus
+        fib_trust = fibonacci_trust_level(self._trust_history)
+        trust_weight = fib_trust["weight"]
+        trust_level = fib_trust["level"]
+        trust_index = fib_trust["index"]
+
+        # Trust modulates thresholds: higher trust = more headroom (reward)
+        # New sessions start at baseline (1.0x). Consistent good behavior
+        # earns higher thresholds. Trust is a reward, not a penalty.
+        trust_multiplier = {
+            "UNTRUSTED": 1.0,
+            "PROVISIONAL": 1.0,
+            "TRUSTED": 1.5,
+            "CORE": 2.0,
+        }.get(trust_level, 1.0)
+
+        effective_cost_allow = self.cost_allow * trust_multiplier
+        effective_cost_quarantine = self.cost_quarantine * trust_multiplier
+        effective_cost_deny = self.cost_deny * trust_multiplier
+
+        signals: List[str] = [
+            f"fib_trust({trust_level},w={trust_weight},idx={trust_index})"
+        ]
 
         # ---- Cost-based decision ----
 
-        # Per-action cost
-        if cost > self.cost_deny:
-            signals.append(f"cost_deny({cost:.1f}>{self.cost_deny})")
-        elif cost > self.cost_quarantine:
-            signals.append(f"cost_quarantine({cost:.1f}>{self.cost_quarantine})")
-        elif cost > self.cost_allow:
-            signals.append(f"cost_elevated({cost:.1f}>{self.cost_allow})")
+        # Per-action cost (modulated by trust)
+        if cost > effective_cost_deny:
+            signals.append(f"cost_deny({cost:.1f}>{effective_cost_deny:.1f})")
+        elif cost > effective_cost_quarantine:
+            signals.append(f"cost_quarantine({cost:.1f}>{effective_cost_quarantine:.1f})")
+        elif cost > effective_cost_allow:
+            signals.append(f"cost_elevated({cost:.1f}>{effective_cost_allow:.1f})")
 
         # Spin magnitude
         if magnitude >= self.spin_deny:
@@ -397,6 +464,9 @@ class RuntimeGate:
             tongue_coords=coords,
             signals=signals,
             noise=noise if decision == Decision.DENY else None,
+            trust_weight=trust_weight,
+            trust_level=trust_level,
+            trust_index=trust_index,
             action_hash=action_hash,
             timestamp=ts,
             session_query_count=self._query_count,
@@ -588,11 +658,14 @@ class RuntimeGate:
         self._cumulative_cost = 0.0
         self._query_count = 0
         self._audit_log = []
+        self._trust_history = []
 
     def stats(self) -> Dict[str, Any]:
         decisions = {}
         for r in self._audit_log:
             decisions[r.decision.value] = decisions.get(r.decision.value, 0) + 1
+
+        fib = fibonacci_trust_level(self._trust_history)
         return {
             "query_count": self._query_count,
             "cumulative_cost": round(self._cumulative_cost, 2),
@@ -600,4 +673,6 @@ class RuntimeGate:
             "reflex_entries": len(self._reflex),
             "decisions": decisions,
             "audit_log_size": len(self._audit_log),
+            "fibonacci_trust": fib,
+            "trust_history_length": len(self._trust_history),
         }
