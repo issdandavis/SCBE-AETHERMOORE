@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCBE Demo Lab</title>
+  <meta name="description" content="Story-first demos for SCBE-AETHERMOORE, Hydra, GeoSeal, the 14-layer stack, and the manual surfaces that ship with the system." />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:title" content="SCBE Demo Lab" />
+  <meta property="og:description" content="Story-first demos for Hydra, GeoSeal, CLI surfaces, and the public SCBE site layers." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://aethermoorgames.com/demos/index.html" />
+  <meta property="og:image" content="https://aethermoorgames.com/static/showcase/book_cover.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SCBE Demo Lab" />
+  <meta name="twitter:description" content="Story-first demos for Hydra, GeoSeal, CLI surfaces, and public SCBE documentation." />
+  <meta name="twitter:image" content="https://aethermoorgames.com/static/showcase/book_cover.jpg" />
+  <link rel="canonical" href="https://aethermoorgames.com/demos/index.html" />
+  <link rel="stylesheet" href="../static/polly-sidebar.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #071412;
+      --bg-soft: #0d1d1a;
+      --panel: rgba(10, 28, 24, 0.82);
+      --panel-strong: rgba(8, 24, 20, 0.94);
+      --line: rgba(139, 255, 223, 0.18);
+      --text: #e7fff7;
+      --muted: #9bc5ba;
+      --mint: #8fffd3;
+      --aqua: #6dd8ff;
+      --gold: #ffd977;
+      --rose: #ff9ec7;
+      --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --max: 1220px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(109, 216, 255, 0.14), transparent 28%),
+        radial-gradient(circle at 80% 12%, rgba(143, 255, 211, 0.16), transparent 32%),
+        radial-gradient(circle at 55% 60%, rgba(255, 217, 119, 0.08), transparent 30%),
+        linear-gradient(180deg, #04100f 0%, #071412 35%, #091917 100%);
+      color: var(--text);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(143,255,211,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(143,255,211,0.035) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+      opacity: 0.4;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .wrap {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(18px);
+      background: rgba(4, 16, 15, 0.74);
+      border-bottom: 1px solid rgba(143,255,211,0.08);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      min-height: 74px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .brand-kicker, .eyebrow, .stat-label {
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 11px;
+      color: var(--mint);
+    }
+
+    .brand strong {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      letter-spacing: -0.03em;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .nav a {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      color: var(--muted);
+      transition: 180ms ease;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+      border-color: var(--line);
+      background: rgba(143,255,211,0.08);
+    }
+
+    .hero {
+      padding: 56px 0 30px;
+      position: relative;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 26px;
+      align-items: stretch;
+    }
+
+    .hero-copy, .hero-visual {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(12, 32, 27, 0.88), rgba(6, 18, 15, 0.96));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-copy {
+      padding: 36px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 560px;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -28% 22%;
+      height: 280px;
+      background: radial-gradient(circle, rgba(109,216,255,0.20), transparent 68%);
+      pointer-events: none;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      font-family: 'Space Grotesk', sans-serif;
+      letter-spacing: -0.04em;
+    }
+
+    h1 {
+      font-size: clamp(48px, 7vw, 82px);
+      line-height: 0.96;
+      max-width: 9.5ch;
+    }
+
+    .lede {
+      max-width: 60ch;
+      font-size: 18px;
+      line-height: 1.7;
+      color: var(--muted);
+      margin-top: 22px;
+    }
+
+    .lede strong { color: var(--text); }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 20px;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      color: #031210;
+      background: linear-gradient(135deg, var(--mint), var(--aqua));
+      box-shadow: 0 18px 40px rgba(109, 216, 255, 0.24);
+    }
+
+    .btn-secondary {
+      border: 1px solid var(--line);
+      color: var(--text);
+      background: rgba(143,255,211,0.06);
+    }
+
+    .pulse-card {
+      margin-top: 28px;
+      padding: 18px 18px 20px;
+      border-radius: var(--radius-lg);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(143,255,211,0.10);
+      display: grid;
+      gap: 12px;
+    }
+
+    .pulse-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .pulse-grid div {
+      padding: 14px;
+      border-radius: var(--radius-md);
+      background: rgba(6, 18, 15, 0.7);
+      border: 1px solid rgba(143,255,211,0.08);
+    }
+
+    .stat-value {
+      display: block;
+      margin-top: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+    }
+
+    .hero-visual {
+      min-height: 560px;
+      display: grid;
+      grid-template-rows: 1.2fr 0.8fr;
+      gap: 1px;
+      background: rgba(143,255,211,0.08);
+    }
+
+    .hero-visual-main {
+      position: relative;
+      overflow: hidden;
+      background: #04100f;
+    }
+
+    .hero-visual-main img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(1.05) contrast(1.02);
+    }
+
+    .hero-tag {
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+      padding: 12px 14px;
+      max-width: 270px;
+      border-radius: 18px;
+      background: rgba(3, 13, 11, 0.78);
+      border: 1px solid rgba(143,255,211,0.16);
+      backdrop-filter: blur(14px);
+    }
+
+    .hero-tag strong {
+      display: block;
+      font-family: 'Space Grotesk', sans-serif;
+      margin-bottom: 6px;
+    }
+
+    .hero-thumbs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: rgba(143,255,211,0.08);
+    }
+
+    .hero-thumbs figure,
+    .gallery-card figure {
+      margin: 0;
+      position: relative;
+      overflow: hidden;
+      background: #03100f;
+    }
+
+    .hero-thumbs img,
+    .gallery-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .hero-thumbs figcaption,
+    .gallery-card figcaption {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(3, 13, 11, 0.76);
+      border: 1px solid rgba(143,255,211,0.14);
+      font-size: 13px;
+      color: #d8fff2;
+    }
+
+    section {
+      padding: 34px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .section-head p {
+      max-width: 62ch;
+      color: var(--muted);
+      line-height: 1.7;
+      margin: 10px 0 0;
+    }
+
+    .grid-3, .grid-2 {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .card p, .bullet-list li, .manual-card p {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .card h3, .manual-card h3 {
+      margin-bottom: 12px;
+      font-size: 24px;
+    }
+
+    .bullet-list {
+      margin: 14px 0 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .quote-band {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .quote-card {
+      padding: 28px;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(145deg, rgba(11, 31, 27, 0.9), rgba(7, 18, 16, 0.96));
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .quote {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.08;
+      max-width: 11ch;
+    }
+
+    .quote-card p {
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 58ch;
+    }
+
+    .voice-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .voice-chip {
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(143,255,211,0.08);
+      border: 1px solid rgba(143,255,211,0.12);
+      color: #dffef5;
+      font-size: 13px;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr 0.9fr;
+      gap: 18px;
+    }
+
+    .gallery-card {
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      min-height: 300px;
+      box-shadow: var(--shadow);
+    }
+
+    .gallery-card.tall { min-height: 460px; }
+
+    .manual-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .manual-card {
+      padding: 20px;
+      border-radius: var(--radius-lg);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+    }
+
+    .manual-card span {
+      display: inline-block;
+      margin-top: 18px;
+      color: var(--mint);
+      font-weight: 600;
+    }
+
+    .video-shell {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .video-panel, .video-copy {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .video-panel {
+      position: relative;
+      min-height: 360px;
+      background:
+        radial-gradient(circle at 30% 35%, rgba(143,255,211,0.25), transparent 30%),
+        radial-gradient(circle at 72% 40%, rgba(109,216,255,0.18), transparent 30%),
+        linear-gradient(140deg, #061614, #102320 60%, #081412 100%);
+    }
+
+    .video-panel::before {
+      content: "";
+      position: absolute;
+      inset: 24px;
+      border-radius: 24px;
+      border: 1px dashed rgba(143,255,211,0.18);
+    }
+
+    .play-badge {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 32px;
+    }
+
+    .play-badge strong {
+      display: inline-grid;
+      place-items: center;
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      background: rgba(143,255,211,0.12);
+      border: 1px solid rgba(143,255,211,0.18);
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+
+    .video-copy {
+      background: linear-gradient(180deg, rgba(12, 32, 27, 0.88), rgba(6, 18, 15, 0.96));
+      padding: 28px;
+    }
+
+    .footer {
+      padding: 42px 0 60px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .footer a { color: var(--mint); }
+
+    @media (max-width: 1080px) {
+      .hero-grid,
+      .quote-band,
+      .gallery,
+      .video-shell,
+      .grid-3,
+      .manual-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-2,
+      .pulse-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .topbar-inner {
+        min-height: auto;
+        padding: 14px 0;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero-copy, .hero-visual, .quote-card, .video-copy {
+        padding: 22px;
+      }
+
+      h1 { font-size: 42px; }
+      .lede { font-size: 16px; }
+    }
+  </style>
+</head>
+<body data-polly-context="demos" data-polly-root=".">
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <span class="brand-kicker">SCBE AETHERMOORE</span>
+        <strong>Demo Lab</strong>
+      </div>
+      <nav class="nav">
+        <a href="../index.html">Home</a>
+        <a href="../product-manual/index.html">Manuals</a>
+        <a href="../support.html">Support</a>
+        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <div>
+            <span class="eyebrow">Story-first system surface</span>
+            <h1>Not a pitch deck. A guided threshold.</h1>
+            <p class="lede"><strong>The Everweave logs came first.</strong> The novel came later. SCBE grew out of system experiments, pressure, and governance problems; Aethermoor became the place where those ideas could speak like characters instead of whitepapers.</p>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="../product-manual/index.html">Open the manuals</a>
+              <a class="btn btn-secondary" href="../support.html">Talk to Polly support</a>
+            </div>
+          </div>
+
+          <div class="pulse-card">
+            <span class="eyebrow">Live demo directions</span>
+            <div class="pulse-grid">
+              <div>
+                <span class="stat-label">Hydra</span>
+                <span class="stat-value">Swarm ops</span>
+              </div>
+              <div>
+                <span class="stat-label">GeoSeal</span>
+                <span class="stat-value">Access field</span>
+              </div>
+              <div>
+                <span class="stat-label">CLI</span>
+                <span class="stat-value">Command lane</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-visual-main">
+            <img src="../static/showcase/book_cover.jpg" alt="The Six Tongues Protocol cover" />
+            <div class="hero-tag">
+              <strong>The Six Tongues Protocol</strong>
+              The book is an entrypoint into the world. It is not the origin of the architecture.
+            </div>
+          </div>
+          <div class="hero-thumbs">
+            <figure>
+              <img src="../static/showcase/grok_world_tree_civic.jpg" alt="World tree civic art" />
+              <figcaption>World Tree civic lane: collaboration made physical.</figcaption>
+            </figure>
+            <figure>
+              <img src="../static/showcase/grok_protocol_infrastructure.jpg" alt="Protocol infrastructure art" />
+              <figcaption>Protocol infrastructure: where system theory becomes place.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Interactive Demos</span>
+            <h2>Try the system right now. No install, no login, no API key.</h2>
+          </div>
+        </div>
+        <div class="grid-3">
+          <a href="tongue-encoder.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #6c5ce7;">
+            <h3 style="color:#a29bfe;">Sacred Tongue Encoder</h3>
+            <p>Type text, pick a tongue, watch it encode in real time. Decode it back. See the phi-weighted governance cost. All 6 languages, 256 tokens each.</p>
+            <p style="color:#6c5ce7; margin-top:12px; font-weight:600;">Try it now &rarr;</p>
+          </a>
+          <a href="risk-calculator.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #6c5ce7;">
+            <h3 style="color:#a29bfe;">Hyperbolic Risk Calculator</h3>
+            <p>Drag sliders to see how H(d,R)=R^(d^2) makes attacks exponentially expensive. Watch the Poincare ball visualization, intent modifiers, and ALLOW/QUARANTINE/DENY decisions.</p>
+            <p style="color:#6c5ce7; margin-top:12px; font-weight:600;">Try it now &rarr;</p>
+          </a>
+          <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/discussions/704" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #1a1a3e;">
+            <h3>Read Chapter 1</h3>
+            <p>The novel that started it all. "The smell of stale coffee sat on Marcus Chen's tongue like a warning he refused to read." Free to read.</p>
+            <p style="color:#7b8cff; margin-top:12px; font-weight:600;">Read free &rarr;</p>
+          </a>
+        </div>
+
+        <div class="section-head" style="margin-top:48px;">
+          <div>
+            <span class="eyebrow">System Overview</span>
+            <h2>Understand the shape before you touch the internals.</h2>
+            <p>This surface is for operators, buyers, and curious readers.</p>
+          </div>
+        </div>
+        <div class="grid-3">
+          <article class="card">
+            <h3>Hydra</h3>
+            <p>Multi-agent coordination, browser lanes, routing packets, and evidence surfaces. The point is not “many agents.” The point is governed work that does not dissolve into noise.</p>
+            <ul class="bullet-list">
+              <li>Browser and terminal lanes</li>
+              <li>Packetized handoff</li>
+              <li>Swarm formation telemetry</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>GeoSeal</h3>
+            <p>Geometric access control and contextual RAG immunity. The public explanation can show the manifold and the field behavior without exposing private weights.</p>
+            <ul class="bullet-list">
+              <li>Poincare-ball projection</li>
+              <li>Suspicion and quarantine surfaces</li>
+              <li>Safe retrieval boundaries</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>Command Lane</h3>
+            <p>The CLI and operator surfaces are part of the product. They need manuals, recoveries, copy-paste setup, and sane defaults more than they need mystique.</p>
+            <ul class="bullet-list">
+              <li>Runtime and status commands</li>
+              <li>PollyPad / agent entry points</li>
+              <li>Troubleshooting and delivery docs</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap quote-band">
+        <div class="quote-card">
+          <span class="eyebrow">Polly voice reference</span>
+          <div class="quote">“CAW. You are not lost. You are just early.”</div>
+        </div>
+        <div class="quote-card">
+          <h2>Polly is the right guide for the support and docs layer.</h2>
+          <p>She is old, precise, amused, and a little dangerous around sloppy thinking. She should sound like an archivist with field experience, not a mascot. Her lane is support, orientation, archive access, and occasional sharp corrections when the user is about to make their own life worse.</p>
+          <div class="voice-chip-row">
+            <span class="voice-chip">Dry wit</span>
+            <span class="voice-chip">Archive keeper</span>
+            <span class="voice-chip">Protocol idioms</span>
+            <span class="voice-chip">Helpful, not bubbly</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Visual references already local</span>
+            <h2>Existing art can carry the first public-facing pages.</h2>
+            <p>No need to stall for fresh design passes. There is already enough local material to make the site feel authored instead of empty: cover art, character sheets, infrastructure scenes, and world imagery.</p>
+          </div>
+        </div>
+        <div class="gallery">
+          <article class="gallery-card tall">
+            <figure>
+              <img src="../static/showcase/polly_human_reference_sheet.png" alt="Polly human reference sheet" />
+              <figcaption>Polly reference sheet for support, lore, and future sidebar assistant work.</figcaption>
+            </figure>
+          </article>
+          <article class="gallery-card">
+            <figure>
+              <img src="../static/showcase/grok_world_tree_civic.jpg" alt="World tree civic art" />
+              <figcaption>Use for world pages, lore pages, and the collaboration thesis.</figcaption>
+            </figure>
+          </article>
+          <article class="gallery-card">
+            <figure>
+              <img src="../static/showcase/grok_protocol_infrastructure.jpg" alt="Protocol infrastructure art" />
+              <figcaption>Use for architecture portals, Hydra, GeoSeal, and operator docs.</figcaption>
+            </figure>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Package surfaces</span>
+            <h2>The paid packages need readable manuals, not lore dumps.</h2>
+            <p>Each package page should explain what ships, how delivery works, how to activate it, where the keys or links arrive, and what to do when setup fails. That is separate from the pages explaining what the system is.</p>
+          </div>
+        </div>
+        <div class="manual-grid">
+          <a class="manual-card" href="../product-manual/index.html">
+            <h3>Manual hub</h3>
+            <p>Central starting point for package owners.</p>
+            <span>Open hub</span>
+          </a>
+          <a class="manual-card" href="../product-manual/delivery-and-access.html">
+            <h3>Delivery & access</h3>
+            <p>What arrives, where it arrives, and how to recover access.</p>
+            <span>Open delivery</span>
+          </a>
+          <a class="manual-card" href="../support.html">
+            <h3>Support</h3>
+            <p>Polly-guided issue routing for access, AI, CLI, and broken-page problems.</p>
+            <span>Get help</span>
+          </a>
+          <a class="manual-card" href="https://github.com/issdandavis/SCBE-AETHERMOORE">
+            <h3>Source and proof</h3>
+            <p>Public repo, docs, evidence, benchmarks, and implementation trail.</p>
+            <span>View repo</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap video-shell">
+        <div class="video-panel">
+          <div class="play-badge">
+            <div>
+              <strong>▶</strong>
+              <h3>Hero film slot</h3>
+              <p>A short guided video can sit here later once we generate or edit one that matches the site tone.</p>
+            </div>
+          </div>
+        </div>
+        <div class="video-copy">
+          <span class="eyebrow">Video lane</span>
+          <h2>Yes, a generated video can be embedded here.</h2>
+          <p>The right version is not “generic AI promo.” It should be a short, clean atmospheric loop or narrated capsule: archive lights, threshold geometry, Polly, and the operator surfaces. This page is already structured so a later video embed drops in cleanly.</p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="../support.html">Keep the docs moving</a>
+            <a class="btn btn-secondary" href="../index.html#pricing">See product paths</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>SCBE Demo Lab. Built from existing local art, live docs, and the Aethermoor canon lane. Return to <a href="../index.html">home</a>, open the <a href="../product-manual/index.html">manual hub</a>, or go straight to <a href="../support.html">support</a>.</p>
+    </div>
+  </footer>
+<script src="../static/polly-sidebar.js"></script>
+</body>
+</html>

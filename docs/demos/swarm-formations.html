@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hydra Swarm Formations -- SCBE Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a1a;color:#e2e2e2;font-family:system-ui;overflow:hidden}
+canvas{display:block}
+.hud{position:absolute;top:12px;left:12px;background:rgba(10,10,26,0.9);border:1px solid #1a1a3e;border-radius:8px;padding:14px;font-size:13px;max-width:260px}
+.hud h2{font-size:16px;margin-bottom:8px;color:#6c5ce7}
+.hud .stat{display:flex;justify-content:space-between;margin:3px 0}
+.hud .stat .val{font-family:monospace;color:#6c5ce7}
+.note{margin-top:8px;padding:8px;background:#1a1a3e;border-radius:4px;font-size:11px;color:#aaa}
+.note strong{color:#a29bfe}
+.controls{position:absolute;bottom:12px;left:12px;display:flex;gap:6px}
+.btn{background:#1a1a3e;border:1px solid #2a2a4e;color:#aaa;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px}
+.btn:hover{border-color:#6c5ce7;color:#fff}
+.btn.active{background:#6c5ce7;color:#fff}
+a{color:#7b8cff}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud">
+  <h2>Hydra Swarm</h2>
+  <div class="stat"><span>Agents</span><span class="val" id="sCount">42</span></div>
+  <div class="stat"><span>Aligned</span><span class="val" id="sAligned">0</span></div>
+  <div class="stat"><span>Cohesion</span><span class="val" id="sCohesion">0.00</span></div>
+  <div class="stat"><span>Threat</span><span class="val" id="sThreat" style="color:#2ecc71">NONE</span></div>
+  <div class="stat"><span>Formation</span><span class="val" id="sFormation">SCATTER</span></div>
+  <div class="note">
+    <strong>Mouse</strong> = threat vector.
+    <strong>Click</strong> = add agent.
+    <strong>Right-click</strong> = remove nearest.
+    <br><br><a href="index.html">Demos</a> | <a href="https://a.co/d/024VowjS">Novel</a>
+  </div>
+</div>
+<div class="controls">
+  <button class="btn active" onclick="setM('scatter',this)">Scatter</button>
+  <button class="btn" onclick="setM('circle',this)">Circle</button>
+  <button class="btn" onclick="setM('wedge',this)">Wedge</button>
+  <button class="btn" onclick="setM('grid',this)">Grid</button>
+  <button class="btn" onclick="setM('defend',this)">Defend</button>
+</div>
+<script>
+var c=document.getElementById('c'),x=c.getContext('2d');
+var w,h,mx=0,my=0,fm='scatter';
+var TC=['#6c5ce7','#00ced1','#ff6b6b','#ffa500','#9370db','#32cd32'];
+var ag=[];
+function sa(px,py){ag.push({x:px||Math.random()*w,y:py||Math.random()*h,vx:0,vy:0,t:Math.floor(Math.random()*6),r:Math.random()<0.1?'L':'W'});}
+function init(){w=c.width=innerWidth;h=c.height=innerHeight;ag=[];for(var i=0;i<42;i++)sa();}
+function setM(m,b){fm=m;document.querySelectorAll('.btn').forEach(function(e){e.classList.remove('active')});b.classList.add('active');}
+function tgt(a,i){var cx=w/2,cy=h/2,n=ag.length;
+if(fm==='circle'){var an=(i/n)*Math.PI*2,r=Math.min(w,h)*0.3;return{x:cx+Math.cos(an)*r,y:cy+Math.sin(an)*r};}
+if(fm==='wedge'){var row=Math.floor(i/8),col=i%8;return{x:cx-row*30+col*15,y:cy-100+row*40};}
+if(fm==='grid'){var cols=Math.ceil(Math.sqrt(n)),row=Math.floor(i/cols),col=i%cols,sp=40;return{x:cx-(cols*sp/2)+col*sp,y:cy-(Math.ceil(n/cols)*sp/2)+row*sp};}
+if(fm==='defend'){var an=(i/n)*Math.PI*2;return{x:mx+Math.cos(an)*120,y:my+Math.sin(an)*120};}
+return null;}
+function upd(){ag.forEach(function(a,i){var ax=0,ay=0,t=tgt(a,i);
+if(t){ax+=(t.x-a.x)*0.02;ay+=(t.y-a.y)*0.02;}
+var sx=0,sy=0,cx=0,cy=0,lx=0,ly=0,n=0;
+ag.forEach(function(b){if(a===b)return;var dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
+if(d<30&&d>1){sx-=dx/d;sy-=dy/d;}
+if(d<100){cx+=b.x;cy+=b.y;lx+=b.vx;ly+=b.vy;n++;}});
+if(n){cx/=n;cy/=n;ax+=(cx-a.x)*0.003;ay+=(cy-a.y)*0.003;ax+=lx/n*0.05;ay+=ly/n*0.05;}
+ax+=sx*0.5;ay+=sy*0.5;
+var td=Math.hypot(mx-a.x,my-a.y);
+if(td<150&&fm!=='defend'){ax-=(mx-a.x)/td*2;ay-=(my-a.y)/td*2;}
+ax+=(w/2-a.x)*0.0003;ay+=(h/2-a.y)*0.0003;
+a.vx=a.vx*0.9+ax;a.vy=a.vy*0.9+ay;
+var sp=Math.hypot(a.vx,a.vy);if(sp>4){a.vx*=4/sp;a.vy*=4/sp;}
+a.x+=a.vx;a.y+=a.vy;
+if(a.x<0)a.x=w;if(a.x>w)a.x=0;if(a.y<0)a.y=h;if(a.y>h)a.y=0;});}
+function drw(){x.fillStyle='rgba(10,10,26,0.15)';x.fillRect(0,0,w,h);
+var dR=Math.min(w,h)*0.4;
+x.beginPath();x.arc(w/2,h/2,dR,0,Math.PI*2);x.strokeStyle='rgba(108,92,231,0.08)';x.lineWidth=1;x.stroke();
+if(Math.hypot(mx-w/2,my-h/2)>50){x.beginPath();x.moveTo(w/2,h/2);x.lineTo(mx,my);x.strokeStyle='rgba(231,76,60,0.4)';x.lineWidth=2;x.stroke();x.beginPath();x.arc(mx,my,8,0,Math.PI*2);x.fillStyle='rgba(231,76,60,0.6)';x.fill();}
+ag.forEach(function(a,i){ag.forEach(function(b,j){if(j<=i)return;var d=Math.hypot(a.x-b.x,a.y-b.y);if(d<80){x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.strokeStyle='rgba(108,92,231,'+(0.15*(1-d/80))+')';x.lineWidth=1;x.stroke();}});});
+ag.forEach(function(a){var cl=TC[a.t],sz=a.r==='L'?6:4;
+x.beginPath();x.arc(a.x,a.y,sz,0,Math.PI*2);x.fillStyle=cl;x.fill();
+x.beginPath();x.moveTo(a.x,a.y);x.lineTo(a.x-a.vx*4,a.y-a.vy*4);x.strokeStyle=cl+'60';x.lineWidth=1;x.stroke();});
+var al=ag.filter(function(a){return Math.hypot(a.vx,a.vy)<1.5;}).length;
+var as=ag.reduce(function(s,a){return s+Math.hypot(a.vx,a.vy);},0)/ag.length;
+document.getElementById('sCount').textContent=ag.length;
+document.getElementById('sAligned').textContent=al;
+document.getElementById('sCohesion').textContent=(1-as/4).toFixed(2);
+var tl=Math.hypot(mx-w/2,my-h/2)>50?'ACTIVE':'NONE';
+document.getElementById('sThreat').textContent=tl;
+document.getElementById('sThreat').style.color=tl==='ACTIVE'?'#e74c3c':'#2ecc71';
+document.getElementById('sFormation').textContent=fm.toUpperCase();}
+function lp(){upd();drw();requestAnimationFrame(lp);}
+c.addEventListener('mousemove',function(e){mx=e.clientX;my=e.clientY;});
+c.addEventListener('click',function(e){sa(e.clientX,e.clientY);});
+c.addEventListener('contextmenu',function(e){e.preventDefault();var ni=-1,md=999;ag.forEach(function(a,i){var d=Math.hypot(a.x-e.clientX,a.y-e.clientY);if(d<md){md=d;ni=i;}});if(ni>=0&&md<50)ag.splice(ni,1);});
+window.addEventListener('resize',function(){w=c.width=innerWidth;h=c.height=innerHeight;});
+init();lp();
+</script>
+</body>
+</html>

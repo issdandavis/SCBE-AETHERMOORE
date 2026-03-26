@@ -23,7 +23,7 @@ from urllib.error import HTTPError
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 CHAPTER_DIR = REPO_ROOT / "content" / "book" / "reader-edition"
-AMAZON_LINK = "https://www.amazon.com/dp/B0GSSFQD9G"
+AMAZON_LINK = "https://a.co/d/024VowjS"
 AMAZON_PAPERBACK = "https://www.amazon.com/dp/B0GSW8CLC6"
 
 BOOK_CTA = f"""

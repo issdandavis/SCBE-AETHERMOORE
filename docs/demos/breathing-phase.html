@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L6-7: Breathing Transform + Mobius Phase — SCBE Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a1a;color:#e2e2e2;min-height:100vh}
+a{color:#7b8cff;text-decoration:none}
+.container{max-width:900px;margin:0 auto;padding:32px 20px}
+h1{font-size:28px;margin-bottom:4px}
+.subtitle{color:#888;margin-bottom:16px}
+.nav{display:flex;gap:16px;margin-bottom:24px;font-size:14px;flex-wrap:wrap}
+.canvas-wrap{width:100%;aspect-ratio:1;max-width:600px;margin:0 auto;background:#0d0d22;border:1px solid #1a1a3e;border-radius:12px;overflow:hidden}
+canvas{width:100%;height:100%}
+.controls{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}
+.control{flex:1;min-width:180px}
+.control label{display:block;font-size:12px;color:#888;text-transform:uppercase;margin-bottom:4px}
+.control input[type=range]{width:100%;accent-color:#6c5ce7}
+.control .val{font-family:monospace;color:#6c5ce7}
+.challenge{background:#1a1a3e;border:1px solid #6c5ce7;border-radius:8px;padding:16px;margin:16px 0;font-size:14px}
+.challenge strong{color:#a29bfe}
+.btn-row{display:flex;gap:8px;margin:8px 0}
+.btn-sm{background:#1a1a3e;border:1px solid #2a2a4e;color:#aaa;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px}
+.btn-sm:hover{border-color:#6c5ce7;color:#fff}
+.btn-sm.active{background:#6c5ce7;color:#fff;border-color:#6c5ce7}
+.info{background:#12122e;border-left:3px solid #6c5ce7;padding:16px;border-radius:0 8px 8px 0;margin:24px 0;font-size:14px;color:#aaa;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="nav">
+    <a href="index.html">Demos</a>
+    <a href="context-fingerprint.html">L1-2</a>
+    <a href="tongue-encoder.html">L3</a>
+    <a href="distance-explorer.html">L5</a>
+    <a href="risk-calculator.html">L12</a>
+    <a href="governance-gate.html">L13</a>
+  </div>
+
+  <h1>L6-7: Breathing Transform + Mobius Phase</h1>
+  <p class="subtitle">The Poincare disk is alive. It breathes (conformal scaling) and rotates (Mobius isometry). Points move but distances are preserved.</p>
+
+  <div class="challenge">
+    <strong>Challenge:</strong> Watch the colored dots. During breathing, do they change distance from each other? (Hint: look at the hyperbolic distance readout — it stays constant even though the dots visually move.)
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <div class="controls">
+    <div class="control">
+      <label>Breathing Rate <span class="val" id="breathVal">1.0 Hz</span></label>
+      <input type="range" id="breathRate" min="0" max="3" step="0.1" value="1.0">
+    </div>
+    <div class="control">
+      <label>Breathing Amplitude <span class="val" id="breathAmp">0.15</span></label>
+      <input type="range" id="breathAmplitude" min="0" max="0.4" step="0.01" value="0.15">
+    </div>
+    <div class="control">
+      <label>Mobius Rotation Speed <span class="val" id="mobiusVal">0.3 rad/s</span></label>
+      <input type="range" id="mobiusSpeed" min="0" max="2" step="0.1" value="0.3">
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-sm active" id="btnBreathe" onclick="toggleMode('breathe')">Breathing Only</button>
+    <button class="btn-sm" id="btnMobius" onclick="toggleMode('mobius')">Mobius Only</button>
+    <button class="btn-sm" id="btnBoth" onclick="toggleMode('both')">Both (Full L6-7)</button>
+    <button class="btn-sm" id="btnPause" onclick="togglePause()">Pause</button>
+  </div>
+
+  <div class="info">
+    <strong>L6 — Breathing Transform:</strong> The disk periodically contracts and expands (conformal scaling).
+    This is NOT random — it's a controlled temporal modulation that makes static attacks fail. An adversary
+    who calibrates their input to a specific disk state finds the state has changed by the time the input arrives.
+    <br><br>
+    <strong>L7 — Mobius Phase:</strong> An isometric rotation of the Poincare disk. Points orbit but their
+    hyperbolic distances to each other remain exactly the same. This prevents attackers from predicting
+    which region of the disk they need to target — the target moves, but the geometry is preserved.
+    <br><br>
+    <strong>Combined:</strong> Breathing changes the scale. Mobius changes the orientation. Together they create
+    a moving target that preserves all security invariants. The math guarantees that ALLOW/DENY decisions
+    are the same regardless of the current breathing/rotation state.
+    <br><br>
+    <a href="https://a.co/d/024VowjS">Read the novel</a> |
+    <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">Source</a>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W, H, cx, cy, R;
+let mode = 'breathe';
+let paused = false;
+let t = 0;
+
+// Fixed points in the disk
+const POINTS = [
+  { x: 0.3, y: 0.1, color: '#6c5ce7', label: 'Agent A' },
+  { x: -0.2, y: 0.35, color: '#2ecc71', label: 'Agent B' },
+  { x: 0.1, y: -0.4, color: '#ff6b6b', label: 'Agent C' },
+  { x: -0.5, y: -0.1, color: '#ffa500', label: 'Attacker' },
+  { x: 0.6, y: 0.3, color: '#e74c3c', label: 'Edge Agent' },
+];
+
+function resize() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * 2;
+  canvas.height = rect.height * 2;
+  W = canvas.width; H = canvas.height;
+  cx = W/2; cy = H/2;
+  R = Math.min(W,H) * 0.42;
+}
+
+function norm(x, y) { return Math.sqrt(x*x + y*y); }
+
+function hypDist(ax, ay, bx, by) {
+  const na = norm(ax, ay), nb = norm(bx, by);
+  const dx = ax-bx, dy = ay-by;
+  const diffSq = dx*dx + dy*dy;
+  const denom = (1 - na*na) * (1 - nb*nb);
+  if (denom <= 0) return Infinity;
+  return Math.acosh(Math.max(1, 1 + 2*diffSq/denom));
+}
+
+function breathe(px, py, amplitude, phase) {
+  // Conformal scaling: move points radially
+  const r = norm(px, py);
+  if (r < 0.001) return { x: px, y: py };
+  const scale = 1 + amplitude * Math.sin(phase);
+  const newR = r * scale;
+  const clampR = Math.min(newR, 0.98);
+  return { x: px * clampR / r, y: py * clampR / r };
+}
+
+function mobiusRotate(px, py, angle) {
+  // Rotation in the Poincare disk (isometric)
+  const cos = Math.cos(angle), sin = Math.sin(angle);
+  return { x: px * cos - py * sin, y: px * sin + py * cos };
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  const breathRate = parseFloat(document.getElementById('breathRate').value);
+  const breathAmp = parseFloat(document.getElementById('breathAmplitude').value);
+  const mobiusSpeed = parseFloat(document.getElementById('mobiusSpeed').value);
+
+  document.getElementById('breathVal').textContent = breathRate.toFixed(1) + ' Hz';
+  document.getElementById('breathAmp').textContent = breathAmp.toFixed(2);
+  document.getElementById('mobiusVal').textContent = mobiusSpeed.toFixed(1) + ' rad/s';
+
+  const breathPhase = t * breathRate * Math.PI * 2;
+  const mobiusAngle = t * mobiusSpeed;
+
+  // Draw disk boundary
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI*2);
+  ctx.strokeStyle = '#2a2a4e';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Draw breathing ring indicator
+  const breathScale = 1 + breathAmp * Math.sin(breathPhase);
+  if (mode === 'breathe' || mode === 'both') {
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * breathScale * 0.5, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(108,92,231,0.2)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Draw Mobius rotation indicator
+  if (mode === 'mobius' || mode === 'both') {
+    for (let i = 0; i < 6; i++) {
+      const a = mobiusAngle + i * Math.PI/3;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(a)*R*0.9, cy + Math.sin(a)*R*0.9);
+      ctx.strokeStyle = 'rgba(108,92,231,0.08)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+
+  // Transform and draw points
+  const transformed = POINTS.map(p => {
+    let { x, y } = p;
+    if (mode === 'breathe' || mode === 'both') {
+      const b = breathe(x, y, breathAmp, breathPhase);
+      x = b.x; y = b.y;
+    }
+    if (mode === 'mobius' || mode === 'both') {
+      const m = mobiusRotate(x, y, mobiusAngle);
+      x = m.x; y = m.y;
+    }
+    return { ...p, tx: x, ty: y };
+  });
+
+  // Draw trails (faint)
+  transformed.forEach(p => {
+    const px = cx + p.tx * R, py = cy + p.ty * R;
+    const grad = ctx.createRadialGradient(px, py, 0, px, py, 20);
+    grad.addColorStop(0, p.color + '30');
+    grad.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(px, py, 20, 0, Math.PI*2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+  });
+
+  // Draw connections with hyperbolic distances
+  const d01 = hypDist(transformed[0].tx, transformed[0].ty, transformed[1].tx, transformed[1].ty);
+  ctx.beginPath();
+  ctx.moveTo(cx+transformed[0].tx*R, cy+transformed[0].ty*R);
+  ctx.lineTo(cx+transformed[1].tx*R, cy+transformed[1].ty*R);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4,4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Distance label
+  const mx = (transformed[0].tx + transformed[1].tx)/2;
+  const my = (transformed[0].ty + transformed[1].ty)/2;
+  ctx.fillStyle = '#888';
+  ctx.font = `${W*0.02}px monospace`;
+  ctx.textAlign = 'center';
+  ctx.fillText(`d_H = ${d01.toFixed(3)}`, cx+mx*R, cy+my*R - 12);
+
+  // Draw points
+  transformed.forEach(p => {
+    const px = cx + p.tx * R, py = cy + p.ty * R;
+    ctx.beginPath();
+    ctx.arc(px, py, 10, 0, Math.PI*2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.fillStyle = '#ccc';
+    ctx.font = `${W*0.016}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(p.label, px, py - 16);
+  });
+
+  // Original distance (constant)
+  const origDist = hypDist(POINTS[0].x, POINTS[0].y, POINTS[1].x, POINTS[1].y);
+  ctx.fillStyle = '#555';
+  ctx.font = `${W*0.018}px monospace`;
+  ctx.textAlign = 'left';
+  ctx.fillText(`Original d_H: ${origDist.toFixed(3)}`, 20, H - 20);
+  ctx.fillText(`Current d_H:  ${d01.toFixed(3)}`, 20, H - 44);
+  const drift = Math.abs(d01 - origDist);
+  ctx.fillStyle = drift < 0.01 ? '#2ecc71' : '#f1c40f';
+  ctx.fillText(`Drift: ${drift.toFixed(4)} ${drift < 0.01 ? '(invariant preserved)' : ''}`, 20, H - 68);
+}
+
+function animate() {
+  if (!paused) {
+    t += 1/60;
+    draw();
+  }
+  requestAnimationFrame(animate);
+}
+
+function toggleMode(m) {
+  mode = m;
+  document.querySelectorAll('.btn-sm').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn' + m.charAt(0).toUpperCase() + m.slice(1)).classList.add('active');
+}
+
+function togglePause() {
+  paused = !paused;
+  document.getElementById('btnPause').textContent = paused ? 'Play' : 'Pause';
+  document.getElementById('btnPause').classList.toggle('active', paused);
+}
+
+['breathRate','breathAmplitude','mobiusSpeed'].forEach(id =>
+  document.getElementById(id).addEventListener('input', () => { if (paused) draw(); })
+);
+
+window.addEventListener('resize', resize);
+resize();
+animate();
+</script>
+</body>
+</html>

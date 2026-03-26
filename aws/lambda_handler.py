@@ -84,6 +84,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("scbe-lambda")
 
+
+def _extract_api_key(headers):
+    headers = headers or {}
+    return (
+        headers.get('scbe_api_key') or headers.get('SCBE_api_key') or
+        headers.get('x-api-key') or headers.get('X-API-Key')
+    )
+
 # Try to import Mangum (FastAPI -> Lambda adapter)
 try:
     from mangum import Mangum
@@ -140,7 +148,7 @@ else:
 
         # Get API key from headers
         headers = event.get('headers', {})
-        api_key = headers.get('x-api-key') or headers.get('X-API-Key')
+        api_key = _extract_api_key(headers)
 
         # Validate API key
         valid_keys = os.getenv('SCBE_API_KEY', '').split(',')
