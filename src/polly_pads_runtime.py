@@ -36,7 +36,6 @@ import math
 from dataclasses import dataclass, field
 from typing import Dict, List, Literal, Optional, Tuple
 
-
 # ---------------------------------------------------------------------------
 # Type aliases
 # ---------------------------------------------------------------------------

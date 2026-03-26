@@ -30,7 +30,6 @@ from src.scbe_math_reference import (
     QUARANTINE_THRESHOLD,
 )
 
-
 # ═══════════════════════════════════════════════════════════════
 # Formula 1: Hyperbolic Distance
 # ═══════════════════════════════════════════════════════════════

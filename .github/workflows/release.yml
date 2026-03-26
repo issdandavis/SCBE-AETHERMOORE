@@ -11,6 +11,7 @@ on:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: write
 
@@ -67,7 +68,7 @@ jobs:
           echo "Uploaded to Dropbox: ${DROPBOX_PATH}"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v4
         with:
           tag_name: ${{ steps.version.outputs.VERSION }}
           name: Six Tongues Secure Tokenizer ${{ steps.version.outputs.VERSION }}

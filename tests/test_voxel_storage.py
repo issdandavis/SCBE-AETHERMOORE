@@ -21,7 +21,6 @@ from hydra.voxel_storage import (
     verify_authority,
 )
 
-
 # ── Chladni Addressing ──────────────────────────────────────────
 
 

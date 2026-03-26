@@ -375,9 +375,7 @@ def test_attack_resistance():
     full_complexity = full_msg.compute_total_complexity()
     print(f"  DNA: {full_msg.dna_encoded}")
     print(f"  Temporal distance: {full_msg.temporal.compute_temporal_distance(TemporalVector(0, 0, 0, 0, 0)):.2f}")
-    _neutral_emo = EmotionalIntentVector(
-        0.5, 0.5, 0.5, 0.5, 0.5, 0.5, '', '', ''
-    )
+    _neutral_emo = EmotionalIntentVector(0.5, 0.5, 0.5, 0.5, 0.5, 0.5, "", "", "")
     _emo_dist = full_msg.emotional.compute_emotional_distance(_neutral_emo)
     print(f"  Emotional distance: {_emo_dist:.2f}")
     _grav = full_msg.emotional.compute_gravitational_force(_neutral_emo, 1.0)

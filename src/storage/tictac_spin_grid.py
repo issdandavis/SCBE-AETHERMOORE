@@ -37,7 +37,6 @@ import re
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
-
 PHI = 1.618033988749895
 TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 TONGUE_WEIGHTS = tuple(PHI**k for k in range(6))

@@ -15,6 +15,7 @@ permissions:
 jobs:
   security:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -41,7 +42,7 @@ jobs:
           fi
 
       - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -73,3 +74,24 @@ jobs:
           echo "- bandit: ${{ steps.bandit.outcome }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- npm audit: ${{ steps.npm_audit.outcome || 'skipped' }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- pip-audit: ${{ steps.pip_audit.outcome || 'skipped' }}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail if any security check failed
+        if: always()
+        run: |
+          failed=0
+          if [ "${{ steps.bandit.outcome }}" = "failure" ]; then
+            echo "::error::Bandit security scan found issues"
+            failed=1
+          fi
+          if [ "${{ steps.npm_audit.outcome }}" = "failure" ]; then
+            echo "::error::npm audit found vulnerabilities"
+            failed=1
+          fi
+          if [ "${{ steps.pip_audit.outcome }}" = "failure" ]; then
+            echo "::error::pip-audit found vulnerabilities"
+            failed=1
+          fi
+          if [ "$failed" -eq 1 ]; then
+            echo "::error::One or more security checks failed — see summary above"
+            exit 1
+          fi

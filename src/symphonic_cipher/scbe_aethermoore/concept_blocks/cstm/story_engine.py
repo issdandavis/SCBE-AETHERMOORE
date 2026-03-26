@@ -28,7 +28,6 @@ from typing import Any, Dict, IO, List, Optional, Protocol, Tuple, Union
 
 from .models import Choice, Scene, StoryGraph, ValidationError
 
-
 # ---------------------------------------------------------------------------
 #  Parser protocol
 # ---------------------------------------------------------------------------

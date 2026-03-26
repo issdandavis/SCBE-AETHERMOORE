@@ -22,7 +22,6 @@ from typing import Dict, List, Optional, Set, Tuple
 from .domain import Domain
 from .morphism import Morphism, MorphismError
 
-
 # ═══════════════════════════════════════════════════════════════
 # Composition Utilities
 # ═══════════════════════════════════════════════════════════════

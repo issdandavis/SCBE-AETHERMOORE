@@ -22,7 +22,6 @@ from typing import List, Dict, Tuple, Optional, Any
 from enum import Enum
 import hmac
 
-
 # Golden Ratio for icosahedral/dodecahedral geometry
 PHI = (1 + np.sqrt(5)) / 2
 

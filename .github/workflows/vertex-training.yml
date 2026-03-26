@@ -33,6 +33,7 @@ jobs:
   training:
     name: PHDM 21D Training Pipeline
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     permissions:
       contents: read
 
@@ -55,7 +56,7 @@ jobs:
         if: |
           github.event_name == 'workflow_dispatch' &&
           github.event.inputs.mode == 'train'
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v4
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
@@ -63,7 +64,7 @@ jobs:
         if: |
           github.event_name == 'workflow_dispatch' &&
           github.event.inputs.mode == 'train'
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v4
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
 

@@ -42,7 +42,6 @@ from .polyglot_alphabet import TongueID, TONGUE_ALPHABETS, SIGNATURE_TO_TONGUE
 from .vector_6d import Position6D
 from .rwp2_envelope import ProtocolTongue, RWP2Envelope, EnvelopeFactory, OperationTier, TONGUE_KEYS
 
-
 # =============================================================================
 # Constants & Frequency Mapping
 # =============================================================================

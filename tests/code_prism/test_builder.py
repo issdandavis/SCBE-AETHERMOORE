@@ -1,6 +1,5 @@
 from src.code_prism.builder import CodePrismBuilder
 
-
 PY_SOURCE = """
 def add(a, b):
     return a + b

@@ -13,6 +13,7 @@ jobs:
   audit-workflows:
     name: Scan GitHub workflows for governance risks
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4

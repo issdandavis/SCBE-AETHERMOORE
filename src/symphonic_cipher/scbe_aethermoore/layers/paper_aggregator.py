@@ -19,7 +19,6 @@ import requests
 
 from src.scbe_14layer_reference import scbe_14layer_pipeline
 
-
 JsonDict = Dict[str, Any]
 JsonFetcher = Callable[[str], JsonDict]
 GateFn = Callable[[Mapping[str, Any], int], Mapping[str, Any]]

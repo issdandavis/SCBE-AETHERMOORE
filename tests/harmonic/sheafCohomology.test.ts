@@ -211,7 +211,7 @@ describe('B · Galois connections', () => {
 // C. TARSKI LAPLACIAN on small graphs
 // ============================================================
 
-describe.skip('C · Tarski Laplacian L₀ (pending V1/V2 sheaf API alignment)', () => {
+describe('C · Tarski Laplacian L₀', () => {
   // Simple graph: v1 — e1 — v2
   const twoVertexGraph: CellComplex = {
     vertices: [{ id: 'v1' }, { id: 'v2' }],
@@ -278,7 +278,7 @@ describe.skip('C · Tarski Laplacian L₀ (pending V1/V2 sheaf API alignment)', 
 // D. HARMONIC FLOW
 // ============================================================
 
-describe.skip('D · Harmonic flow (pending V1/V2 sheaf API alignment)', () => {
+describe('D · Harmonic flow', () => {
   const twoVertexGraph: CellComplex = {
     vertices: [{ id: 'v1' }, { id: 'v2' }],
     edges: [{ id: 'e1', source: 'v1', target: 'v2' }],
@@ -339,7 +339,7 @@ describe.skip('D · Harmonic flow (pending V1/V2 sheaf API alignment)', () => {
 // E. GLOBAL SECTIONS (TH⁰)
 // ============================================================
 
-describe.skip('E · Global sections TH⁰ (pending V1/V2 sheaf API alignment)', () => {
+describe('E · Global sections TH⁰', () => {
   it('constant sheaf on connected graph: sections are constant cochains', () => {
     const triangle: CellComplex = {
       vertices: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
@@ -378,7 +378,7 @@ describe.skip('E · Global sections TH⁰ (pending V1/V2 sheaf API alignment)', 
 // F. OBSTRUCTION MEASUREMENT
 // ============================================================
 
-describe.skip('F · Obstruction degree (pending V1 API export)', () => {
+describe('F · Obstruction degree', () => {
   const twoVertexGraph: CellComplex = {
     vertices: [{ id: 'v1' }, { id: 'v2' }],
     edges: [{ id: 'e1', source: 'v1', target: 'v2' }],
@@ -438,7 +438,7 @@ describe.skip('F · Obstruction degree (pending V1 API export)', () => {
 // G. SCBE TEMPORAL COMPLEX
 // ============================================================
 
-describe.skip('G · Temporal complex builder (pending V1 API export)', () => {
+describe('G · Temporal complex builder', () => {
   it('triadic mode: 3 vertices, 3 edges (triangle)', () => {
     const c = buildTemporalComplex('triadic');
     expect(c.vertices).toHaveLength(3);
@@ -466,7 +466,7 @@ describe.skip('G · Temporal complex builder (pending V1 API export)', () => {
 // H. GOVERNANCE SHEAF
 // ============================================================
 
-describe.skip('H · Governance sheaf (pending V1 API export)', () => {
+describe('H · Governance sheaf', () => {
   it('builds with constant restrictions (no twist)', () => {
     const complex = buildTemporalComplex('triadic');
     const sheaf = buildGovernanceSheaf(complex);
@@ -506,7 +506,7 @@ describe.skip('H · Governance sheaf (pending V1 API export)', () => {
 // I. POLICY OBSTRUCTION DETECTION
 // ============================================================
 
-describe.skip('I · Policy obstruction detection (pending V1 API export)', () => {
+describe('I · Policy obstruction detection', () => {
   it('all agents agree → zero obstruction, no noise', () => {
     const result = detectPolicyObstruction({
       immediate: RiskLevel.QUARANTINE,
@@ -585,7 +585,7 @@ describe.skip('I · Policy obstruction detection (pending V1 API export)', () =>
 // J. FAIL-TO-NOISE
 // ============================================================
 
-describe.skip('J · Fail-to-noise (pending V1 API export)', () => {
+describe('J · Fail-to-noise', () => {
   it('produces fixed-size output', () => {
     const noise = failToNoise(0.7);
     expect(noise).toHaveLength(256);
@@ -630,7 +630,7 @@ describe.skip('J · Fail-to-noise (pending V1 API export)', () => {
 // K. BRAIDED TEMPORAL DISTANCE
 // ============================================================
 
-describe.skip('K · Braided temporal distance (pending V1 API export)', () => {
+describe('K · Braided temporal distance', () => {
   it('identical variants → zero distance', () => {
     expect(braidedTemporalDistance([0.5, 0.5, 0.5])).toBeCloseTo(0, 5);
   });
@@ -672,7 +672,7 @@ describe.skip('K · Braided temporal distance (pending V1 API export)', () => {
 // L. BRAIDED META-TIME
 // ============================================================
 
-describe.skip('L · Braided meta-time (pending V1 API export)', () => {
+describe('L · Braided meta-time', () => {
   it('basic computation: T^(t+2) * intent * context', () => {
     // T=2, t=1, intent=1.1, context=0.9
     const result = braidedMetaTime(2, 1, 1.1, 0.9);
@@ -703,7 +703,7 @@ describe.skip('L · Braided meta-time (pending V1 API export)', () => {
 // M. COHOMOLOGICAL HARMONIC WALL
 // ============================================================
 
-describe.skip('M · Cohomological harmonic wall (pending V1 API export)', () => {
+describe('M · Cohomological harmonic wall', () => {
   it('zero obstruction → wall = 1 (no amplification)', () => {
     expect(cohomologicalHarmonicWall(0)).toBeCloseTo(1, 10);
   });
@@ -744,7 +744,7 @@ describe.skip('M · Cohomological harmonic wall (pending V1 API export)', () => 
 // N. INTEGRATION SCENARIOS
 // ============================================================
 
-describe.skip('N · SCBE governance scenarios (pending V1 API export)', () => {
+describe('N · SCBE governance scenarios', () => {
   it('scenario: all temporal T-variants report safe → ALLOW consensus', () => {
     const result = detectPolicyObstruction({
       immediate: RiskLevel.ALLOW,
@@ -1274,7 +1274,7 @@ describe('Tarski Laplacian L_k', () => {
 // Tarski Cohomology
 // ═══════════════════════════════════════════════════════════════
 
-describe.skip('Tarski Cohomology TH^k (globalSections not exported)', () => {
+describe('Tarski Cohomology TH^k', () => {
   describe('TH^0 = global sections (constant sheaf)', () => {
     it('on connected graph: all cells converge to same value', () => {
       // Complete graph K3
@@ -1922,7 +1922,7 @@ describe('SheafCohomologyEngine', () => {
 // Property-Based Tests (lightweight, 20 iterations)
 // ═══════════════════════════════════════════════════════════════
 
-describe.skip('Property-based tests (globalSections not exported)', () => {
+describe('Property-based tests', () => {
   it('Tarski flow is non-increasing (monotone descent)', () => {
     for (let trial = 0; trial < 20; trial++) {
       const n = 3 + Math.floor(Math.random() * 3);

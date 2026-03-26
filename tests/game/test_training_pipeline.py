@@ -11,7 +11,6 @@ import json
 import sys
 from pathlib import Path
 
-
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
 
 from symphonic_cipher.scbe_aethermoore.game.training_pipeline import (
@@ -24,7 +23,6 @@ from symphonic_cipher.scbe_aethermoore.game.training_pipeline import (
     GameEvent,
     create_game_event,
 )
-
 
 # ---------------------------------------------------------------------------
 #  Helpers

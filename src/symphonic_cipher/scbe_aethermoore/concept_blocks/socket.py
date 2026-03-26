@@ -36,7 +36,6 @@ from typing import Any, Dict, List, Optional, Tuple
 from .base import BlockResult, BlockStatus, ConceptBlock
 from .telemetry import TelemetryLog, TelemetryRecord
 
-
 # ---------------------------------------------------------------------------
 # Sacred Egg ring levels (access control tiers)
 # ---------------------------------------------------------------------------

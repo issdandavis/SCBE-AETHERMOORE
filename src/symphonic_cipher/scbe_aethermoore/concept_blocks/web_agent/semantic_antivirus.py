@@ -27,7 +27,6 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
 
-
 # ---------------------------------------------------------------------------
 #  Prompt injection + malware patterns
 #  (mirrors agents/antivirus_membrane.py from main repo)

@@ -22,7 +22,6 @@ from typing import Any, Dict
 
 from ..context_credit_ledger.credit import Denomination
 
-
 # ---------------------------------------------------------------------------
 #  Stream Types
 # ---------------------------------------------------------------------------

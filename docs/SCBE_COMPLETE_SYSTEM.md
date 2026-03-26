@@ -347,9 +347,9 @@ name: SCBE-AETHERMOORE Tests
 
 on:
   push:
-    branches: [ main, master, 'claude/**' ]
+    branches: [ main, 'claude/**' ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
   test:
