@@ -7,6 +7,10 @@ import re
 from html import unescape
 from pathlib import Path
 
+import pytest
+
+pytest.importorskip("fastapi", reason="fastapi not installed")
+
 from fastapi.testclient import TestClient
 
 import src.aetherbrowser.serve as serve_module

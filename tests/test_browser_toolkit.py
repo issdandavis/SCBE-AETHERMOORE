@@ -13,8 +13,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 from unittest.mock import patch
 
-import httpx
 import pytest
+
+httpx = pytest.importorskip("httpx", reason="httpx is required for browser toolkit tests")
 
 # Ensure project root is on path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))

@@ -13,6 +13,20 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _SAFE_VAULT_SEGMENT_RE = re.compile(r"^[A-Za-z0-9._ -]+$")
 
+# Patterns that look like secrets or credentials in free-form text.
+_REDACT_PATTERNS: list[re.Pattern[str]] = [
+    re.compile(r"(?i)\b(token|password|secret|key|authorization)[=: ]+\S+"),
+    re.compile(r"\b(sk-[A-Za-z0-9]{6,})\b"),
+    re.compile(r"\b(Bearer\s+\S+)", re.IGNORECASE),
+]
+
+
+def _redact_sensitive(text: str) -> str:
+    """Replace strings that look like secrets with ``[redacted]``."""
+    for pat in _REDACT_PATTERNS:
+        text = pat.sub("[redacted]", text)
+    return text
+
 
 def _is_relative_to(path: Path, root: Path) -> bool:
     try:
@@ -150,6 +164,8 @@ def write_log(vault_path: str, provider: str, model: str, prompt: str, response:
     folder = root / "SCBE-Hub" / "AI-Bridge" / day
     folder.mkdir(parents=True, exist_ok=True)
     path = folder / f"{stamp}-{provider}-{_safe_model_slug(model)}.md"
+    safe_prompt = _redact_sensitive(prompt)
+    safe_response = _redact_sensitive(response)
     lines = [
         f"# AI Bridge Log - {provider}",
         "",
@@ -157,10 +173,10 @@ def write_log(vault_path: str, provider: str, model: str, prompt: str, response:
         f"- model: {model}",
         "",
         "## Prompt",
-        prompt,
+        safe_prompt,
         "",
         "## Response",
-        response,
+        safe_response,
     ]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return path

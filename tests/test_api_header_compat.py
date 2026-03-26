@@ -4,6 +4,8 @@ import types
 
 import pytest
 
+fastapi = pytest.importorskip("fastapi", reason="fastapi not installed")
+
 from api import main as api_main
 from fastapi import HTTPException
 

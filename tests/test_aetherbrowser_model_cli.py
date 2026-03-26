@@ -11,7 +11,7 @@ from scripts.system.aetherbrowser_model_cli import (
     resolve_provider,
 )
 from src.aetherbrowser.provider_executor import ProviderExecutionResult
-from src.aetherbrowser.router import ModelProvider
+from src.aetherbrowser.router import ModelProvider, OctoArmorRouter
 
 
 class StubExecutor:
@@ -52,6 +52,9 @@ def test_append_jsonl_record_writes_one_line(tmp_path: Path) -> None:
 
 @pytest.mark.asyncio
 async def test_execute_request_respects_requested_provider() -> None:
+    router = OctoArmorRouter(
+        enabled_providers={p: True for p in ModelProvider},
+    )
     record = await execute_request(
         text="Summarize this page",
         provider=ModelProvider.HUGGINGFACE,
@@ -62,6 +65,7 @@ async def test_execute_request_respects_requested_provider() -> None:
         context_weight=1.25,
         metadata={"origin": "test"},
         executor=StubExecutor(),
+        router=router,
     )
 
     assert record["requested_provider"] == "huggingface"
