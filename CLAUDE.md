@@ -75,6 +75,39 @@ npm run publish:dryrun     # Dry run npm pack
 npm run publish:check      # Pre-publish safety check
 ```
 
+## Pre-Push Verification (CI Replication)
+
+Run these checks locally before pushing to avoid CI failures:
+
+```bash
+# 1. TypeScript: build + lint + test (fast, ~30s total)
+npm run build && npm run lint && npm test
+
+# 2. Python: exact CI command (runs pytest with -x, stops on first failure)
+SCBE_FORCE_SKIP_LIBOQS=1 PYTHONPATH=. python -m pytest tests/ -v --ignore=tests/node_modules -x
+
+# 3. Python formatting (must pass in CI)
+black --check --target-version py311 --line-length 120 src/ tests/ hydra/
+flake8 --max-line-length 120 src/ tests/ hydra/
+
+# Quick smoke test (just the fast Python tests, ~5s)
+SCBE_FORCE_SKIP_LIBOQS=1 PYTHONPATH=. python -m pytest tests/ -x -q \
+  --ignore=tests/node_modules \
+  --ignore=tests/aetherbrowser/test_integration.py \
+  --ignore=tests/aetherbrowser/test_red_zone_integration.py \
+  -m "not slow"
+```
+
+### CI Gotchas
+
+- **`SCBE_FORCE_SKIP_LIBOQS=1`**: Required in CI because `liboqs-python` C bindings may not be available. Always use this flag when running pytest locally if liboqs is not installed.
+- **`PYTHONPATH=.`**: CI sets this so `import src.foo` and `import symphonic_cipher` resolve correctly.
+- **Hanging tests**: `test_integration.py` and `test_red_zone_integration.py` in `tests/aetherbrowser/` require Playwright browsers installed. They hang if browsers aren't present. Safe to `--ignore` locally.
+- **Optional provider SDKs**: Tests in `tests/aetherbrowser/test_provider_executor.py` require `openai` and `huggingface_hub` packages (listed in `requirements.txt`). Install with `pip install -r requirements.txt`.
+- **Black formatting**: Always run `black --target-version py311 --line-length 120` on new Python files. CI rejects unformatted code.
+- **Prettier formatting**: Always run `npm run format` on new TypeScript files. CI rejects unformatted code.
+- **Unused imports/variables**: TypeScript compilation catches these. Run `npm run build` before pushing.
+
 ## Critical Gotcha: Dual `symphonic_cipher` Packages
 
 There are **two** `symphonic_cipher/` directories with **different** math:
@@ -141,6 +174,23 @@ Each axiom has a Python implementation in `src/symphonic_cipher/scbe_aethermoore
 - **QUARANTINE**: Suspicious, needs review
 - **ESCALATE**: High risk, requires governance
 - **DENY**: Adversarial, blocked
+
+### Multi-Agent Coordination
+
+Three coordination systems operate across the fleet:
+
+| System | Location | Purpose |
+|--------|----------|---------|
+| **HYDRA** | `hydra/` (Python, 40+ files) | Central orchestrator: Spine, Heads, Limbs, Ledger, BFT consensus |
+| **Fleet** | `src/fleet/` (TypeScript, 50+ files) | Agent registry, task dispatch, governance, Polly Pads, swarm coordination |
+| **Juggling Scheduler** | `src/fleet/juggling-scheduler.ts` + `hydra/juggling_scheduler.py` | Physics-based task-flight coordination |
+| **Red/Blue Arena** | `src/security-engine/redblue-arena.ts` | Adversarial model-vs-model security simulation |
+
+**Juggling Scheduler** models task coordination as a physics juggling system: balls=TaskCapsules, hands=AgentSlots, throws=handoffs, arcs=deadline windows, drops=failures. Seven rules: (1) never throw to unready hand, (2) predicted catch windows, (3) fewer handoffs for high-inertia tasks, (4) higher arcs for risky tasks, (5) detect phase drift, (6) interception paths, (7) ledger catches not throws.
+
+**Key types**: `FlightState` (HELD→THROWN→CAUGHT→VALIDATING→DONE), `TaskCapsule`, `AgentSlot`, `HandoffReceipt`.
+
+**Red/Blue Arena** runs model-vs-model adversarial simulations against the SCBE governance pipeline. Red team crafts attacks (mimicry, edge-walking, origin-camping, oscillation, midpoint), Blue team configures defenses. Provider-agnostic — works with local, Anthropic, HuggingFace, OpenAI, xAI models.
 
 ## Project Structure
 
@@ -328,6 +378,14 @@ Add axiom compliance comments where applicable: `// A4: Clamping` or `# A2: Unit
 3. Write tests in the correct tier directory (L1 through L6)
 4. Update CHANGELOG.md for notable changes
 5. Keep TS and Python in sync
+6. Run pre-push verification (see "Pre-Push Verification" section above)
+
+### When Adding AI Providers
+The `ModelProvider` enum in `src/aetherbrowser/router.py` must be updated in **4 files** when adding a new provider:
+1. `src/aetherbrowser/router.py` — enum + `MODEL_COST_TIER` + `PROVIDER_ENV_VARS` + `PROVIDER_FAMILY`
+2. `src/aetherbrowser/provider_executor.py` — `_MODEL_ID_DEFAULTS` + `PROVIDER_PACKAGES` + adapter method + adapter registration
+3. `requirements.txt` — add the provider's SDK package
+4. `tests/aetherbrowser/test_command_planner.py` — update any `enabled_providers` dicts that enumerate all providers
 
 ### Commit Convention
 ```
