@@ -268,7 +268,8 @@ export class MachineConstantsRegistry {
   getQ16(category: keyof MachineConstants, key: string): number {
     const cat = this._active[category];
     if (typeof cat === 'object' && cat !== null && key in cat) {
-      const val = (cat as unknown as Record<string, unknown>)[key];
+      // All constant category interfaces contain only numeric values
+      const val = (cat as unknown as Readonly<Record<string, number>>)[key];
       if (typeof val === 'number') return toQ16(val);
     }
     throw new RangeError(`Unknown constant: ${String(category)}.${key}`);
