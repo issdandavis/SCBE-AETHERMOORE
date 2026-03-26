@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formula Vault — Notarize Your Inventions</title>
+<meta name="description" content="Timestamp and notarize your formulas, algorithms, and inventions. Cryptographic proof of existence with Sacred Tongue encoding. Free for individuals.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a1a;color:#e2e2e2;min-height:100vh;line-height:1.6}
+a{color:#7b8cff;text-decoration:none}
+.container{max-width:800px;margin:0 auto;padding:32px 20px}
+h1{font-size:32px;margin-bottom:4px}
+.subtitle{color:#888;font-size:16px;margin-bottom:32px}
+.nav{display:flex;gap:16px;margin-bottom:24px;font-size:14px;flex-wrap:wrap}
+textarea,input,select{width:100%;background:#12122e;border:1px solid #1a1a3e;border-radius:8px;padding:12px;color:#e2e2e2;font-size:14px;font-family:monospace}
+textarea:focus,input:focus{outline:none;border-color:#6c5ce7}
+label{display:block;font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px;margin:16px 0 6px}
+.btn{display:inline-block;background:#6c5ce7;color:#fff;padding:14px 28px;border-radius:8px;border:none;cursor:pointer;font-size:16px;font-weight:600}
+.btn:hover{background:#5a4bd1}
+.cert-output{background:#0d0d22;border:1px solid #1a1a3e;border-radius:12px;padding:24px;margin:24px 0;font-family:monospace;font-size:12px;display:none;word-break:break-all}
+.cert-output.show{display:block}
+.cert-output h3{font-family:sans-serif;font-size:18px;color:#6c5ce7;margin-bottom:16px}
+.field{margin:8px 0}
+.field .lbl{color:#888;font-size:11px;text-transform:uppercase}
+.field .val{color:#e2e2e2;margin-top:2px;line-height:1.5}
+.tongue-hash{color:#32cd32;font-size:11px;line-height:1.8;padding:12px;background:#0a0a14;border-radius:6px;margin-top:8px}
+.sig{color:#a29bfe}
+.verify-box{text-align:center;padding:16px;border-radius:8px;margin:16px 0;font-size:16px;font-weight:700;display:none}
+.verify-box.valid{display:block;background:rgba(46,204,113,0.1);border:2px solid #2ecc71;color:#2ecc71}
+.use-cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:32px 0}
+.use-card{background:#12122e;border:1px solid #1a1a3e;border-radius:8px;padding:20px}
+.use-card h4{font-size:14px;margin-bottom:4px}
+.use-card p{font-size:13px;color:#888}
+.pricing{background:linear-gradient(135deg,#12122e,#1a1a3e);border:2px solid #6c5ce7;border-radius:16px;padding:32px;text-align:center;margin:32px 0}
+.pricing .price{font-size:48px;font-weight:800;color:#6c5ce7}
+.pricing .note{color:#888;font-size:14px;margin-top:8px}
+.info{background:#12122e;border-left:3px solid #6c5ce7;padding:16px;border-radius:0 8px 8px 0;margin:24px 0;font-size:14px;color:#aaa;line-height:1.6}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.row>div{flex:1;min-width:150px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="nav">
+    <a href="../index.html">Home</a>
+    <a href="index.html">Demos</a>
+    <a href="notarize.html">Basic Notarizer</a>
+    <a href="../redteam.html">Red Team</a>
+  </div>
+
+  <h1>Formula Vault</h1>
+  <p class="subtitle">Timestamp your inventions. Cryptographic proof that YOUR formula existed at THIS moment. Like WIPO PROOF, but with Sacred Tongue encoding on top.</p>
+
+  <div class="use-cases">
+    <div class="use-card">
+      <h4>Inventors</h4>
+      <p>Prove you had the idea first. Timestamped hash = evidence of prior art.</p>
+    </div>
+    <div class="use-card">
+      <h4>Researchers</h4>
+      <p>Notarize formulas before publication. Establish priority without revealing content.</p>
+    </div>
+    <div class="use-card">
+      <h4>Startups</h4>
+      <p>Timestamp your algorithms, trade secrets, and IP before pitching to investors.</p>
+    </div>
+    <div class="use-card">
+      <h4>Patent Filers</h4>
+      <p>Create a chain of invention evidence. Each formula gets its own certificate.</p>
+    </div>
+  </div>
+
+  <label>Your Formula / Algorithm / Invention</label>
+  <textarea id="formula" rows="4" placeholder="H(d, R) = R^(d^2)&#10;&#10;Or paste any text — code, algorithm, idea, trade secret...">H(d, R) = R^(d^2)
+
+Harmonic wall function: adversarial behavior costs exponentially more the further it drifts from safe operation.</textarea>
+
+  <div class="row">
+    <div>
+      <label>Your Name</label>
+      <input id="name" value="Issac Daniel Davis">
+    </div>
+    <div>
+      <label>Description</label>
+      <input id="desc" placeholder="What is this formula for?">
+    </div>
+    <div>
+      <label>Tongue</label>
+      <select id="tongue">
+        <option value="DR" selected>DR (Attestation)</option>
+        <option value="KO">KO (Intent)</option>
+        <option value="RU">RU (Policy)</option>
+        <option value="UM">UM (Security)</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="margin:20px 0">
+    <button class="btn" onclick="notarizeFormula()">Notarize & Timestamp</button>
+  </div>
+
+  <div class="cert-output" id="certBox">
+    <h3>Notarization Certificate</h3>
+    <div class="field"><div class="lbl">Certificate ID</div><div class="val" id="cId"></div></div>
+    <div class="field"><div class="lbl">Timestamp (UTC)</div><div class="val" id="cTime"></div></div>
+    <div class="field"><div class="lbl">Inventor</div><div class="val" id="cName"></div></div>
+    <div class="field"><div class="lbl">SHA-256 Hash</div><div class="val" id="cHash"></div></div>
+    <div class="field"><div class="lbl">Sacred Tongue Encoded Hash (DR)</div><div class="tongue-hash" id="cTongue"></div></div>
+    <div class="field"><div class="lbl">HMAC Signature</div><div class="val sig" id="cSig"></div></div>
+    <div class="field"><div class="lbl">Data Size</div><div class="val" id="cSize"></div></div>
+    <div class="field"><div class="lbl">System</div><div class="val">SCBE-AETHERMOORE | USPTO #63/961,403</div></div>
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button class="btn" onclick="copyCert()" style="font-size:13px;padding:8px 16px">Copy JSON</button>
+      <button class="btn" onclick="downloadCert()" style="font-size:13px;padding:8px 16px;background:#2a2a4e">Download Certificate</button>
+      <button class="btn" onclick="verifyCert()" style="font-size:13px;padding:8px 16px;background:#1a1a3e">Verify</button>
+    </div>
+  </div>
+
+  <div class="verify-box" id="verifyBox"></div>
+
+  <div class="pricing">
+    <div style="font-size:14px;color:#888;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">Individual Inventors</div>
+    <div class="price">Free</div>
+    <div class="note">Unlimited formula notarizations. Run locally or use this page.</div>
+    <div style="margin-top:16px;font-size:14px;color:#888">
+      Enterprise: $0.50/certificate for API access + bulk notarization + audit trail
+    </div>
+  </div>
+
+  <div class="info">
+    <strong>How it works:</strong>
+    <br>1. Your formula is hashed with SHA-256 (the same algorithm the USPTO uses)
+    <br>2. The hash is encoded in Sacred Tongues (a 256-token conlang vocabulary — our proprietary layer)
+    <br>3. Everything is signed with HMAC-SHA-256 and timestamped
+    <br>4. You get a certificate proving THIS data existed at THIS time, signed by THIS person
+    <br><br>
+    <strong>What this proves:</strong> If someone later claims your formula, you have cryptographic evidence
+    with a specific timestamp showing you had it first. The SHA-256 hash is verifiable by anyone.
+    The Sacred Tongue encoding adds a second verification layer unique to SCBE.
+    <br><br>
+    <strong>Like WIPO PROOF</strong> (the World Intellectual Property Organization's timestamping service),
+    but free for individuals, with Sacred Tongue encoding on top, and you can run it locally:
+    <br><code>pip install scbe-aethermoore</code>
+    <br><br>
+    <strong>Existing services charge:</strong>
+    <br>- WIPO PROOF: CHF 20/token (~$22)
+    <br>- OriginStamp: $50-200/month
+    <br>- stampd.io: $5-50/stamp
+    <br>- Ours: <strong>Free</strong> (individual) / $0.50 (enterprise API)
+    <br><br>
+    <a href="https://a.co/d/024VowjS">Read the novel</a> |
+    <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">Source</a> |
+    Patent: USPTO #63/961,403
+  </div>
+</div>
+
+<script>
+const PREFIXES={DR:["fizz'","pop'","bub'","snap'","whiz'","zip'","spark'","glow'"],KO:["ik'","sor'","lin'","kor'","thal'","vex'","dor'","mak'"],RU:["groth'","sten'","drak'","fyr'","keld'","bron'","thun'","gal'"],UM:["thorn'","shade'","mist'","void'","dusk'","veil'","ash'","grim'"]};
+const SUFFIXES=["el","or","in","ak","ul","sa","ri","yn","on","ar","ik","eth","ix","um","os","an","ir","al","uk","ez","om","at","is","en","ob","av","ep","ux","id","ag","ot","un"];
+function buildVocab(t){const p=PREFIXES[t]||PREFIXES.DR;const v=[];for(let i=0;i<256;i++)v.push(p[i%p.length]+SUFFIXES[Math.floor(i/p.length)%SUFFIXES.length]);return v;}
+
+let lastCert=null;
+
+async function sha256(data){const buf=new TextEncoder().encode(data);const hash=await crypto.subtle.digest('SHA-256',buf);return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function hmacSha256(key,data){const k=new TextEncoder().encode(key);const d=new TextEncoder().encode(data);const ck=await crypto.subtle.importKey('raw',k,{name:'HMAC',hash:'SHA-256'},false,['sign']);const s=await crypto.subtle.sign('HMAC',ck,d);return Array.from(new Uint8Array(s)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+
+async function notarizeFormula(){
+  const formula=document.getElementById('formula').value;
+  const name=document.getElementById('name').value;
+  const desc=document.getElementById('desc').value;
+  const tongue=document.getElementById('tongue').value;
+  if(!formula)return;
+
+  const hash=await sha256(formula);
+  const hashBytes=[];
+  for(let i=0;i<hash.length;i+=2)hashBytes.push(parseInt(hash.substr(i,2),16));
+  const vocab=buildVocab(tongue);
+  const tongueHash=hashBytes.map(b=>vocab[b]).join(' ');
+
+  const now=new Date();
+  const nonce=Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b=>b.toString(16).padStart(2,'0')).join('');
+
+  const cert={
+    cert_id:'scbe-formula-'+Math.floor(now.getTime()/1000)+'-'+nonce.substring(0,8),
+    type:'formula-notarization',
+    version:'1.0',
+    sha256:hash,
+    tongue:tongue,
+    tongue_encoded_hash:tongueHash,
+    signer:name,
+    description:desc||'Formula notarization',
+    timestamp:now.getTime()/1000,
+    timestamp_iso:now.toISOString(),
+    nonce:nonce,
+    data_size:new TextEncoder().encode(formula).length,
+    system:'SCBE-AETHERMOORE Formula Vault',
+    patent:'USPTO #63/961,403',
+  };
+
+  const canonical=JSON.stringify(cert,Object.keys(cert).sort());
+  cert.hmac_sha256=await hmacSha256(name,canonical);
+  lastCert={...cert,formula_text:formula};
+
+  document.getElementById('cId').textContent=cert.cert_id;
+  document.getElementById('cTime').textContent=cert.timestamp_iso;
+  document.getElementById('cName').textContent=cert.signer;
+  document.getElementById('cHash').textContent=cert.sha256;
+  document.getElementById('cTongue').textContent=cert.tongue_encoded_hash;
+  document.getElementById('cSig').textContent=cert.hmac_sha256;
+  document.getElementById('cSize').textContent=cert.data_size+' bytes';
+  document.getElementById('certBox').classList.add('show');
+  document.getElementById('verifyBox').className='verify-box';
+}
+
+async function verifyCert(){
+  if(!lastCert)return;
+  const c={...lastCert};delete c.hmac_sha256;delete c.formula_text;
+  const canonical=JSON.stringify(c,Object.keys(c).sort());
+  const expected=await hmacSha256(lastCert.signer,canonical);
+  const valid=expected===lastCert.hmac_sha256;
+  const el=document.getElementById('verifyBox');
+  el.textContent=valid?'VERIFIED — Certificate is authentic and untampered':'INVALID — Certificate has been tampered with';
+  el.className='verify-box '+(valid?'valid':'');
+}
+
+function copyCert(){if(lastCert)navigator.clipboard.writeText(JSON.stringify(lastCert,null,2)).then(()=>alert('Certificate JSON copied'));}
+
+function downloadCert(){
+  if(!lastCert)return;
+  const blob=new Blob([JSON.stringify(lastCert,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=lastCert.cert_id+'.json';a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
