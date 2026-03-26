@@ -19,6 +19,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { sha512 } from '@noble/hashes/sha2.js';
+import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js';
 import {
   evaluateTrustState,
   getThresholdsForState,
@@ -29,6 +30,8 @@ import {
   DECIDE,
   Decision,
   TrustState,
+  resolveManifestConflict,
+  verifyManifest,
   type TrustContext,
   type FailClosedCheck,
   type FluxManifest,
@@ -36,6 +39,8 @@ import {
   type EnforcementRequest,
   type OfflineRuntime,
   type LocalKeySet,
+  type EnforcementContext,
+  type GovernanceScalars,
 } from '../../src/governance/offline_mode.js';
 
 // ─── Helpers ───────────────────────────────────────────────────
@@ -369,5 +374,277 @@ describe('TrustState enum', () => {
     expect(TrustState.T2_ManifestStale).toBe('T2');
     expect(TrustState.T3_KeyRolloverReq).toBe('T3');
     expect(TrustState.T4_IntegrityDegraded).toBe('T4');
+  });
+});
+
+// ─── §8 resolveManifestConflict ──────────────────────────────
+// NOTE: PQCrypto.sign/verify hit vitest Uint8Array realm boundary with
+// @noble/post-quantum. We use Uint8Array.from() to re-wrap keys into the
+// test module's realm so that the library's instanceof checks pass.
+
+/**
+ * Generate keys and sign directly using the test module's ml_dsa65 import.
+ * This avoids the vitest Uint8Array realm boundary issue that occurs when
+ * keys generated through one module instance are passed to sign/verify
+ * in another module instance.
+ */
+function testKeygen() {
+  return ml_dsa65.keygen();
+}
+function testSign(secretKey: Uint8Array, message: Uint8Array): Uint8Array {
+  return ml_dsa65.sign(message, secretKey);
+}
+
+describe('resolveManifestConflict', () => {
+  function makeManifest(
+    epochId: string,
+    keys: { secretKey: Uint8Array; publicKey: Uint8Array }
+  ): FluxManifest {
+    const m: Omit<FluxManifest, 'signature'> = {
+      manifest_id: `m-${epochId}`,
+      epoch_id: epochId,
+      valid_from: 0n,
+      valid_until: 999999999n,
+      policy_weights: {},
+      thresholds: {},
+      curvature_params: {},
+      required_keys: [],
+    };
+    const canonical = canonicalStringify({
+      manifest_id: m.manifest_id,
+      epoch_id: m.epoch_id,
+      valid_from: m.valid_from.toString(),
+      valid_until: m.valid_until.toString(),
+      policy_weights: m.policy_weights,
+      thresholds: m.thresholds,
+      curvature_params: m.curvature_params,
+      required_keys: m.required_keys,
+    });
+    const payload = new TextEncoder().encode(canonical);
+    const signature = testSign(keys.secretKey, payload);
+    return { ...m, signature };
+  }
+
+  it('returns a when only a is valid', () => {
+    const keys = testKeygen();
+    const a = makeManifest('1', keys);
+    const b = makeManifest('2', keys);
+    b.signature = new Uint8Array(b.signature.length);
+    expect(resolveManifestConflict(a, b, keys.publicKey)).toBe(a);
+  });
+
+  it('returns b when only b is valid', () => {
+    const keys = testKeygen();
+    const a = makeManifest('1', keys);
+    const b = makeManifest('2', keys);
+    a.signature = new Uint8Array(a.signature.length);
+    expect(resolveManifestConflict(a, b, keys.publicKey)).toBe(b);
+  });
+
+  it('throws BOTH_MANIFESTS_INVALID when neither is valid', () => {
+    const keys = testKeygen();
+    const a = makeManifest('1', keys);
+    const b = makeManifest('2', keys);
+    a.signature = new Uint8Array(a.signature.length);
+    b.signature = new Uint8Array(b.signature.length);
+    expect(() => resolveManifestConflict(a, b, keys.publicKey)).toThrow('BOTH_MANIFESTS_INVALID');
+  });
+
+  it('returns manifest with higher epoch when both valid', () => {
+    const keys = testKeygen();
+    const a = makeManifest('100', keys);
+    const b = makeManifest('200', keys);
+    expect(resolveManifestConflict(a, b, keys.publicKey)).toBe(b);
+    expect(resolveManifestConflict(b, a, keys.publicKey)).toBe(b);
+  });
+
+  it('returns a when epochs are equal (>= comparison)', () => {
+    const keys = testKeygen();
+    const a = makeManifest('100', keys);
+    const b = makeManifest('100', keys);
+    expect(resolveManifestConflict(a, b, keys.publicKey)).toBe(a);
+  });
+});
+
+// ─── §9 verifyManifest ───────────────────────────────────────
+
+describe('verifyManifest', () => {
+  it('returns true for correctly signed manifest', () => {
+    const keys = testKeygen();
+    const m: Omit<FluxManifest, 'signature'> = {
+      manifest_id: 'test-m',
+      epoch_id: '1',
+      valid_from: 0n,
+      valid_until: 999n,
+      policy_weights: {},
+      thresholds: {},
+      curvature_params: {},
+      required_keys: [],
+    };
+    const canonical = canonicalStringify({
+      manifest_id: m.manifest_id,
+      epoch_id: m.epoch_id,
+      valid_from: m.valid_from.toString(),
+      valid_until: m.valid_until.toString(),
+      policy_weights: m.policy_weights,
+      thresholds: m.thresholds,
+      curvature_params: m.curvature_params,
+      required_keys: m.required_keys,
+    });
+    const payload = new TextEncoder().encode(canonical);
+    const signature = testSign(keys.secretKey, payload);
+    expect(verifyManifest({ ...m, signature }, keys.publicKey)).toBe(true);
+  });
+
+  it('returns false for tampered signature', () => {
+    const keys = testKeygen();
+    const manifest: FluxManifest = {
+      manifest_id: 'test-m',
+      epoch_id: '1',
+      valid_from: 0n,
+      valid_until: 999n,
+      policy_weights: {},
+      thresholds: {},
+      curvature_params: {},
+      required_keys: [],
+      signature: new Uint8Array(4627),
+    };
+    expect(verifyManifest(manifest, keys.publicKey)).toBe(false);
+  });
+});
+
+// ─── §10 DECIDE Integration ─────────────────────────────────
+
+describe('DECIDE', () => {
+  function buildRuntime(
+    overrides: {
+      mmx?: Partial<Omit<GovernanceScalars, 'trust_level'>>;
+      manifestStale?: boolean;
+    } = {}
+  ): OfflineRuntime {
+    const sigKeys = testKeygen();
+    const kemKeys = PQCrypto.generateKEMKeys();
+
+    const laws: ImmutableLaws = {
+      metric_signature: 'harmonic_v3',
+      tongues_set: ['KO', 'AV', 'RU', 'CA', 'UM', 'DR'],
+      geometry_model: 'poincare_ball',
+      layer_behaviors: { 12: 'harmonic_scale' },
+      laws_hash: new Uint8Array(64),
+    };
+    const lawsCanonical = canonicalStringify({
+      metric_signature: laws.metric_signature,
+      tongues_set: laws.tongues_set,
+      geometry_model: laws.geometry_model,
+      layer_behaviors: laws.layer_behaviors,
+    });
+    (laws as { laws_hash: Uint8Array }).laws_hash = PQCrypto.hash(
+      new TextEncoder().encode(lawsCanonical)
+    );
+
+    const manifestBase = {
+      manifest_id: 'test-manifest',
+      epoch_id: '1',
+      valid_from: 0n,
+      valid_until: overrides.manifestStale ? 0n : 999999999n,
+      policy_weights: {},
+      thresholds: {},
+      curvature_params: {},
+      required_keys: [],
+    };
+    const mCanonical = canonicalStringify({
+      manifest_id: manifestBase.manifest_id,
+      epoch_id: manifestBase.epoch_id,
+      valid_from: manifestBase.valid_from.toString(),
+      valid_until: manifestBase.valid_until.toString(),
+      policy_weights: manifestBase.policy_weights,
+      thresholds: manifestBase.thresholds,
+      curvature_params: manifestBase.curvature_params,
+      required_keys: manifestBase.required_keys,
+    });
+    const mPayload = new TextEncoder().encode(mCanonical);
+    const manifest: FluxManifest = {
+      ...manifestBase,
+      signature: testSign(sigKeys.secretKey, mPayload),
+    };
+
+    const defaultMMX = {
+      mm_coherence: 0.9,
+      mm_conflict: 0.05,
+      mm_drift: 0.05,
+      wall_cost: 0.1,
+    };
+
+    return {
+      laws,
+      manifest,
+      keys: {
+        signing_secret: sigKeys.secretKey,
+        signing_public: sigKeys.publicKey,
+        kem_secret: kemKeys.secretKey,
+        kem_public: kemKeys.publicKey,
+        fingerprints: [PQCrypto.fingerprint(sigKeys.publicKey)],
+      },
+      ledger: new AuditLedger(sigKeys.secretKey),
+      voxelRoot: PQCrypto.hash(new Uint8Array([1])),
+      nowMono: 100n,
+      signerPubKey: sigKeys.publicKey,
+      computeMMX: () => ({ ...defaultMMX, ...overrides.mmx }),
+    };
+  }
+
+  const request: EnforcementRequest = {
+    action: 'data.write',
+    subject: 'agent-1',
+    object: 'resource-1',
+    payload_hash: PQCrypto.hash(new Uint8Array([42])),
+  };
+
+  it('returns ALLOW when all checks pass and scalars are within thresholds', () => {
+    const rt = buildRuntime();
+    const result = DECIDE(request, rt);
+    expect(result.decision).toBe(Decision.ALLOW);
+    expect(result.reason_codes).toHaveLength(0);
+    expect(result.proof).toBeDefined();
+    expect(result.proof.signature).toBeInstanceOf(Uint8Array);
+  });
+
+  it('returns QUARANTINE for single threshold violation', () => {
+    const rt = buildRuntime({ mmx: { mm_coherence: 0.1 } });
+    const result = DECIDE(request, rt);
+    expect(result.decision).toBe(Decision.QUARANTINE);
+    expect(result.reason_codes).toContain('LOW_COHERENCE');
+    expect(result.reason_codes).toHaveLength(1);
+  });
+
+  it('returns DENY for multiple threshold violations', () => {
+    const rt = buildRuntime({ mmx: { mm_coherence: 0.1, mm_conflict: 0.9 } });
+    const result = DECIDE(request, rt);
+    expect(result.decision).toBe(Decision.DENY);
+    expect(result.reason_codes).toContain('LOW_COHERENCE');
+    expect(result.reason_codes).toContain('HIGH_CONFLICT');
+  });
+
+  it('returns DEFER when manifest is stale and scalars pass', () => {
+    const rt = buildRuntime({ manifestStale: true });
+    const result = DECIDE(request, rt);
+    expect(result.decision).toBe(Decision.DEFER);
+    expect(result.reason_codes).toContain('MANIFEST_STALE');
+  });
+
+  it('appends to audit ledger on each decision', () => {
+    const rt = buildRuntime();
+    expect(rt.ledger.length).toBe(0);
+    DECIDE(request, rt);
+    expect(rt.ledger.length).toBe(1);
+    DECIDE(request, rt);
+    expect(rt.ledger.length).toBe(2);
+  });
+
+  it('includes governance scalars with trust level in result', () => {
+    const rt = buildRuntime();
+    const result = DECIDE(request, rt);
+    expect(result.governance_scalars.trust_level).toBe(TrustState.T0_Trusted);
+    expect(result.governance_scalars.mm_coherence).toBe(0.9);
   });
 });
