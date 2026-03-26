@@ -128,11 +128,11 @@ export const PQCrypto = {
   },
 
   sign(secretKey: Uint8Array, message: Uint8Array): Uint8Array {
-    return ml_dsa65.sign(secretKey, message);
+    return ml_dsa65.sign(message, secretKey);
   },
 
   verify(publicKey: Uint8Array, message: Uint8Array, signature: Uint8Array): boolean {
-    return ml_dsa65.verify(publicKey, message, signature);
+    return ml_dsa65.verify(signature, message, publicKey);
   },
 
   generateKEMKeys(seed?: Uint8Array) {
@@ -621,6 +621,8 @@ function encodeCanonical(value: unknown): Uint8Array {
 }
 
 function canonicalStringify(value: unknown): string {
+  if (typeof value === 'bigint') return `"${value.toString()}"`;
+  if (value instanceof Uint8Array) return `"${toHex(value)}"`;
   if (value === null || typeof value !== 'object') {
     return JSON.stringify(value);
   }
