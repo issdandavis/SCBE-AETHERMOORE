@@ -654,7 +654,7 @@ class DualLatticeCrossStitch:
             },
             "security": {
                 "kyber_level": f"ML-KEM-{self.kyber.k * 256}",
-                "dilithium_level": f"ML-DSA-{self.dilithium.k}{self.dilithium.l}",
+                "dilithium_level": f"ML-DSA-{self.dilithium.k}{self.dilithium.ell}",
                 "post_quantum": True,
                 "dimensions": 10,
             },
