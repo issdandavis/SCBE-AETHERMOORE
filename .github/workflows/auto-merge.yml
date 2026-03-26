@@ -16,6 +16,7 @@ jobs:
   auto-merge:
     name: Auto Merge
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: |
       github.event.review.state == 'approved' ||
       github.event.check_suite.conclusion == 'success' ||

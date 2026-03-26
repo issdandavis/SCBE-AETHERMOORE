@@ -3,22 +3,13 @@
  * @module tests/L2-unit
  * @layer Layer 13, Layer 9-10
  * @component Tarski Sheaf Cohomology Tests
- * @version 1.0.0
+ * @version 2.0.0
  *
  * Tests for cellular sheaf cohomology with Tarski Laplacian, harmonic flow,
  * and consensus analysis over agent network lattices.
- *
- * NOTE: Skipped until the full Tarski sheaf API is exported from sheafCohomology.ts.
- * Many imports (RiskLattice, GovernanceLattice, buildComplex, etc.) reference
- * functions not yet exported from the source module.
  */
 
 import { describe, it, expect } from 'vitest';
-
-describe.skip('Tarski Sheaf Cohomology (pending API exports)', () => {
-  it('placeholder', () => {});
-});
-/*
 import {
   // Lattices
   RiskLattice,
@@ -28,7 +19,7 @@ import {
   // Cell complex
   buildComplex,
   // Sheaf
-  constantSheaf,
+  convConstantSheaf as constantSheaf,
   customSheaf,
   galoisFromMaps,
   identityConnection,
@@ -37,9 +28,9 @@ import {
   constantCochain0,
   topCochain0,
   // Operators
-  tarskiLaplacian0,
+  convLaplacian0 as tarskiLaplacian0,
   harmonicStep0,
-  harmonicFlow,
+  convHarmonicFlow as harmonicFlow,
   tarskiCohomology0,
   pseudoCoboundary,
   tarskiLaplacian1,
@@ -54,7 +45,7 @@ import {
   type RiskDecision,
   type GovernanceTier,
   type DimensionalState,
-  type CompleteLattice,
+  type ConvenienceLattice,
 } from '../../src/harmonic/sheafCohomology.js';
 
 // =============================================================================
@@ -188,7 +179,13 @@ describe('UnitIntervalLattice', () => {
 
 describe('buildComplex', () => {
   it('builds vertices and edges', () => {
-    const cx = buildComplex(['A', 'B', 'C'], [['A', 'B'], ['B', 'C']]);
+    const cx = buildComplex(
+      ['A', 'B', 'C'],
+      [
+        ['A', 'B'],
+        ['B', 'C'],
+      ]
+    );
     expect(cx.vertices).toHaveLength(3);
     expect(cx.edges).toHaveLength(2);
     expect(cx.edges[0].source).toBe('A');
@@ -220,9 +217,6 @@ describe('GaloisConnection', () => {
   });
 
   it('custom Galois connection with floor/ceiling', () => {
-    // Example: map 4-level risk to 2-level {low, high}
-    // lower: ALLOW/QUARANTINE → 'ALLOW', ESCALATE/DENY → 'DENY'
-    // upper: 'ALLOW' → 'QUARANTINE', 'DENY' → 'DENY'
     const conn = galoisFromMaps<RiskDecision, RiskDecision>(
       (a) => (a === 'ALLOW' || a === 'QUARANTINE' ? 'ALLOW' : 'DENY'),
       (b) => (b === 'ALLOW' ? 'QUARANTINE' : 'DENY')
@@ -285,8 +279,13 @@ describe('cochains', () => {
 
 describe('tarskiLaplacian0', () => {
   it('on constant cochain with constant sheaf = identity', () => {
-    // All same value, identity restrictions → Laplacian preserves it
-    const cx = buildComplex(['A', 'B', 'C'], [['A', 'B'], ['B', 'C']]);
+    const cx = buildComplex(
+      ['A', 'B', 'C'],
+      [
+        ['A', 'B'],
+        ['B', 'C'],
+      ]
+    );
     const sheaf = constantSheaf(RiskLattice, cx);
     const x = constantCochain0(cx, 'ESCALATE' as RiskDecision);
 
@@ -297,9 +296,6 @@ describe('tarskiLaplacian0', () => {
   });
 
   it('on disagreeing cochain, diffuses via meet', () => {
-    // A=DENY, B=ALLOW on edge A-B
-    // L_0(A): edge A-B → restrict(A)=DENY, restrict(B)=ALLOW → meet=ALLOW → extend to A=ALLOW
-    // L_0(B): edge A-B → restrict(A)=DENY, restrict(B)=ALLOW → meet=ALLOW → extend to B=ALLOW
     const cx = buildComplex(['A', 'B'], [['A', 'B']]);
     const sheaf = constantSheaf(RiskLattice, cx);
     const x = cochain0({ A: 'DENY', B: 'ALLOW' } as Record<string, RiskDecision>);
@@ -319,8 +315,14 @@ describe('tarskiLaplacian0', () => {
   });
 
   it('triangle graph: all contribute to center vertex', () => {
-    // Triangle: A-B, B-C, A-C
-    const cx = buildComplex(['A', 'B', 'C'], [['A', 'B'], ['B', 'C'], ['A', 'C']]);
+    const cx = buildComplex(
+      ['A', 'B', 'C'],
+      [
+        ['A', 'B'],
+        ['B', 'C'],
+        ['A', 'C'],
+      ]
+    );
     const sheaf = constantSheaf(RiskLattice, cx);
     const x = cochain0({
       A: 'DENY',
@@ -329,14 +331,8 @@ describe('tarskiLaplacian0', () => {
     } as Record<string, RiskDecision>);
 
     const lx = tarskiLaplacian0(sheaf, x);
-    // For vertex A: edges A-B (meet DENY,ESCALATE=ESCALATE), A-C (meet DENY,QUARANTINE=QUARANTINE)
-    // → meet of ESCALATE, QUARANTINE = QUARANTINE
     expect(lx.get('A')).toBe('QUARANTINE');
-    // For vertex B: edges A-B (meet DENY,ESCALATE=ESCALATE), B-C (meet ESCALATE,QUARANTINE=QUARANTINE)
-    // → meet of ESCALATE, QUARANTINE = QUARANTINE
     expect(lx.get('B')).toBe('QUARANTINE');
-    // For vertex C: edges A-C (meet DENY,QUARANTINE=QUARANTINE), B-C (meet ESCALATE,QUARANTINE=QUARANTINE)
-    // → meet of QUARANTINE, QUARANTINE = QUARANTINE
     expect(lx.get('C')).toBe('QUARANTINE');
   });
 });
@@ -363,7 +359,6 @@ describe('harmonicStep0', () => {
     const x = topCochain0(sheaf); // A=DENY, B=DENY
 
     const step = harmonicStep0(sheaf, x);
-    // Both get meet(DENY, meet(DENY,DENY)) = meet(DENY,DENY) = DENY
     expect(step.get('A')).toBe('DENY');
     expect(step.get('B')).toBe('DENY');
   });
@@ -375,7 +370,13 @@ describe('harmonicStep0', () => {
 
 describe('harmonicFlow', () => {
   it('converges immediately on constant sheaf with constant cochain', () => {
-    const cx = buildComplex(['A', 'B', 'C'], [['A', 'B'], ['B', 'C']]);
+    const cx = buildComplex(
+      ['A', 'B', 'C'],
+      [
+        ['A', 'B'],
+        ['B', 'C'],
+      ]
+    );
     const sheaf = constantSheaf(RiskLattice, cx);
     const initial = constantCochain0(cx, 'ESCALATE' as RiskDecision);
 
@@ -386,8 +387,13 @@ describe('harmonicFlow', () => {
   });
 
   it('converges to meet on disagreeing path graph', () => {
-    // Path: A - B - C, values DENY, QUARANTINE, ALLOW
-    const cx = buildComplex(['A', 'B', 'C'], [['A', 'B'], ['B', 'C']]);
+    const cx = buildComplex(
+      ['A', 'B', 'C'],
+      [
+        ['A', 'B'],
+        ['B', 'C'],
+      ]
+    );
     const sheaf = constantSheaf(RiskLattice, cx);
     const initial = cochain0({
       A: 'DENY',
@@ -397,8 +403,6 @@ describe('harmonicFlow', () => {
 
     const result = harmonicFlow(sheaf, initial);
     expect(result.converged).toBe(true);
-    // On a constant sheaf, the harmonic flow converges to the global meet
-    // because meet-based diffusion propagates the minimum value
     expect(result.fixedPoint.get('A')).toBe('ALLOW');
     expect(result.fixedPoint.get('B')).toBe('ALLOW');
     expect(result.fixedPoint.get('C')).toBe('ALLOW');
@@ -407,7 +411,11 @@ describe('harmonicFlow', () => {
   it('converges in ≤ |elements| iterations for finite lattice', () => {
     const cx = buildComplex(
       ['A', 'B', 'C', 'D'],
-      [['A', 'B'], ['B', 'C'], ['C', 'D']]
+      [
+        ['A', 'B'],
+        ['B', 'C'],
+        ['C', 'D'],
+      ]
     );
     const sheaf = constantSheaf(RiskLattice, cx);
     const initial = cochain0({
@@ -419,7 +427,6 @@ describe('harmonicFlow', () => {
 
     const result = harmonicFlow(sheaf, initial);
     expect(result.converged).toBe(true);
-    // At most 4 iterations (lattice height)
     expect(result.iterations).toBeLessThanOrEqual(4);
   });
 
@@ -440,24 +447,28 @@ describe('harmonicFlow', () => {
 
 describe('tarskiCohomology0', () => {
   it('TH^0 from ⊤ on connected graph = ⊤ (constant sheaf)', () => {
-    // Constant sheaf: all restrictions are identity, so ⊤ is always a global section
     const cx = buildComplex(['A', 'B'], [['A', 'B']]);
     const sheaf = constantSheaf(RiskLattice, cx);
 
     const th0 = tarskiCohomology0(sheaf);
     expect(th0.converged).toBe(true);
-    // Starting from DENY,DENY with identity restrictions, DENY is a fixed point
     expect(th0.fixedPoint.get('A')).toBe('DENY');
     expect(th0.fixedPoint.get('B')).toBe('DENY');
   });
 
   it('TH^0 equals global sections (consensus)', () => {
-    const cx = buildComplex(['A', 'B', 'C'], [['A', 'B'], ['B', 'C'], ['A', 'C']]);
+    const cx = buildComplex(
+      ['A', 'B', 'C'],
+      [
+        ['A', 'B'],
+        ['B', 'C'],
+        ['A', 'C'],
+      ]
+    );
     const sheaf = constantSheaf(GovernanceLattice, cx);
 
     const th0 = tarskiCohomology0(sheaf);
     expect(th0.converged).toBe(true);
-    // Constant sheaf starting from DR → all stay DR
     expect(th0.fixedPoint.get('A')).toBe('DR');
     expect(th0.fixedPoint.get('B')).toBe('DR');
     expect(th0.fixedPoint.get('C')).toBe('DR');
@@ -494,7 +505,13 @@ describe('pseudoCoboundary', () => {
 
 describe('tarskiCohomology1', () => {
   it('converges on simple graph', () => {
-    const cx = buildComplex(['A', 'B', 'C'], [['A', 'B'], ['B', 'C']]);
+    const cx = buildComplex(
+      ['A', 'B', 'C'],
+      [
+        ['A', 'B'],
+        ['B', 'C'],
+      ]
+    );
     const sheaf = constantSheaf(RiskLattice, cx);
 
     const th1 = tarskiCohomology1(sheaf);
@@ -502,12 +519,18 @@ describe('tarskiCohomology1', () => {
   });
 
   it('TH^1 on triangle = stable edge values', () => {
-    const cx = buildComplex(['A', 'B', 'C'], [['A', 'B'], ['B', 'C'], ['A', 'C']]);
+    const cx = buildComplex(
+      ['A', 'B', 'C'],
+      [
+        ['A', 'B'],
+        ['B', 'C'],
+        ['A', 'C'],
+      ]
+    );
     const sheaf = constantSheaf(RiskLattice, cx);
 
     const th1 = tarskiCohomology1(sheaf);
     expect(th1.converged).toBe(true);
-    // All edges should stabilize to DENY (starting from ⊤)
     expect(th1.fixedPoint.get('e-A-B')).toBe('DENY');
     expect(th1.fixedPoint.get('e-B-C')).toBe('DENY');
     expect(th1.fixedPoint.get('e-A-C')).toBe('DENY');
@@ -520,7 +543,13 @@ describe('tarskiCohomology1', () => {
 
 describe('analyzeConsensus', () => {
   it('unanimous agreement detected', () => {
-    const cx = buildComplex(['A', 'B', 'C'], [['A', 'B'], ['B', 'C']]);
+    const cx = buildComplex(
+      ['A', 'B', 'C'],
+      [
+        ['A', 'B'],
+        ['B', 'C'],
+      ]
+    );
     const sheaf = constantSheaf(RiskLattice, cx);
     const opinions = cochain0({
       A: 'ALLOW',
@@ -551,10 +580,14 @@ describe('analyzeConsensus', () => {
   });
 
   it('multi-agent star topology converges', () => {
-    // Star: center C connected to A, B, D, E
     const cx = buildComplex(
       ['C', 'A', 'B', 'D', 'E'],
-      [['C', 'A'], ['C', 'B'], ['C', 'D'], ['C', 'E']]
+      [
+        ['C', 'A'],
+        ['C', 'B'],
+        ['C', 'D'],
+        ['C', 'E'],
+      ]
     );
     const sheaf = constantSheaf(RiskLattice, cx);
     const opinions = cochain0({
@@ -567,14 +600,18 @@ describe('analyzeConsensus', () => {
 
     const analysis = analyzeConsensus(sheaf, opinions);
     expect(analysis.hasConsensus).toBe(true);
-    // The center C is connected to everyone, so the meet propagates everywhere
     expect(analysis.isUnanimous).toBe(true);
-    expect(analysis.unanimousValue).toBe('ALLOW'); // global meet
+    expect(analysis.unanimousValue).toBe('ALLOW');
   });
 
   it('disconnected components have independent consensus', () => {
-    // Two disconnected pairs: A-B and C-D
-    const cx = buildComplex(['A', 'B', 'C', 'D'], [['A', 'B'], ['C', 'D']]);
+    const cx = buildComplex(
+      ['A', 'B', 'C', 'D'],
+      [
+        ['A', 'B'],
+        ['C', 'D'],
+      ]
+    );
     const sheaf = constantSheaf(RiskLattice, cx);
     const opinions = cochain0({
       A: 'DENY',
@@ -589,7 +626,6 @@ describe('analyzeConsensus', () => {
     expect(analysis.consensusValues['B']).toBe('DENY');
     expect(analysis.consensusValues['C']).toBe('ALLOW');
     expect(analysis.consensusValues['D']).toBe('ALLOW');
-    // Not unanimous because components disagree
     expect(analysis.isUnanimous).toBe(false);
     expect(analysis.distinctValues).toBe(2);
   });
@@ -603,7 +639,11 @@ describe('riskConsensus', () => {
   it('3-agent triangle reaches consensus', () => {
     const result = riskConsensus(
       ['agent-1', 'agent-2', 'agent-3'],
-      [['agent-1', 'agent-2'], ['agent-2', 'agent-3'], ['agent-1', 'agent-3']],
+      [
+        ['agent-1', 'agent-2'],
+        ['agent-2', 'agent-3'],
+        ['agent-1', 'agent-3'],
+      ],
       { 'agent-1': 'DENY', 'agent-2': 'ESCALATE', 'agent-3': 'QUARANTINE' }
     );
 
@@ -615,7 +655,10 @@ describe('riskConsensus', () => {
   it('unanimous agents stay unanimous', () => {
     const result = riskConsensus(
       ['A', 'B', 'C'],
-      [['A', 'B'], ['B', 'C']],
+      [
+        ['A', 'B'],
+        ['B', 'C'],
+      ],
       { A: 'ESCALATE', B: 'ESCALATE', C: 'ESCALATE' }
     );
 
@@ -625,11 +668,7 @@ describe('riskConsensus', () => {
   });
 
   it('single-agent consensus is trivial', () => {
-    const result = riskConsensus(
-      ['solo'],
-      [],
-      { solo: 'DENY' }
-    );
+    const result = riskConsensus(['solo'], [], { solo: 'DENY' });
 
     expect(result.hasConsensus).toBe(true);
     expect(result.isUnanimous).toBe(true);
@@ -643,10 +682,7 @@ describe('riskConsensus', () => {
 
 describe('governanceConsensusSheaf', () => {
   it('builds a valid sheaf', () => {
-    const sheaf = governanceConsensusSheaf(
-      ['agent-KO', 'agent-DR'],
-      [['agent-KO', 'agent-DR']]
-    );
+    const sheaf = governanceConsensusSheaf(['agent-KO', 'agent-DR'], [['agent-KO', 'agent-DR']]);
     expect(sheaf.lattice).toBe(GovernanceLattice);
     expect(sheaf.complex.vertices).toHaveLength(2);
   });
@@ -654,7 +690,10 @@ describe('governanceConsensusSheaf', () => {
   it('governance consensus converges to meet of tiers', () => {
     const sheaf = governanceConsensusSheaf(
       ['low', 'mid', 'high'],
-      [['low', 'mid'], ['mid', 'high']]
+      [
+        ['low', 'mid'],
+        ['mid', 'high'],
+      ]
     );
     const opinions = cochain0({
       low: 'KO',
@@ -672,9 +711,10 @@ describe('governanceConsensusSheaf', () => {
 // CUSTOM SHEAF (TWISTED) TESTS
 // =============================================================================
 
+const RISK_ORDER: readonly RiskDecision[] = ['ALLOW', 'QUARANTINE', 'ESCALATE', 'DENY'];
+
 describe('customSheaf with twisted restrictions', () => {
   it('non-identity restriction changes consensus', () => {
-    // Edge A-B with restriction that lowers by one level
     const cx = buildComplex(['A', 'B'], [['A', 'B']]);
     const stepDown = galoisFromMaps<RiskDecision, RiskDecision>(
       (a) => {
@@ -690,19 +730,13 @@ describe('customSheaf with twisted restrictions', () => {
     const restrictions = new Map([['e-A-B', stepDown]]);
     const sheaf = customSheaf(RiskLattice, cx, restrictions);
 
-    // A=ESCALATE, B=ESCALATE
     const x = cochain0({ A: 'ESCALATE', B: 'ESCALATE' } as Record<string, RiskDecision>);
     const lx = tarskiLaplacian0(sheaf, x);
 
-    // Edge A-B: restrict(A)=QUARANTINE, restrict(B)=QUARANTINE → meet=QUARANTINE
-    // extend to A = upper(QUARANTINE) = ESCALATE
-    // extend to B = upper(QUARANTINE) = ESCALATE
     expect(lx.get('A')).toBe('ESCALATE');
     expect(lx.get('B')).toBe('ESCALATE');
   });
 });
-
-const RISK_ORDER: readonly RiskDecision[] = ['ALLOW', 'QUARANTINE', 'ESCALATE', 'DENY'];
 
 // =============================================================================
 // CONSENSUS SUMMARY TESTS
@@ -712,7 +746,10 @@ describe('consensusSummary', () => {
   it('produces readable output', () => {
     const result = riskConsensus(
       ['A', 'B', 'C'],
-      [['A', 'B'], ['B', 'C']],
+      [
+        ['A', 'B'],
+        ['B', 'C'],
+      ],
       { A: 'DENY', B: 'ALLOW', C: 'ESCALATE' }
     );
 
@@ -732,13 +769,18 @@ describe('consensusSummary', () => {
 describe('harmonicFlow with UnitIntervalLattice', () => {
   it('numeric consensus converges', () => {
     const UIL = createUnitIntervalLattice(101);
-    const cx = buildComplex(['A', 'B', 'C'], [['A', 'B'], ['B', 'C']]);
+    const cx = buildComplex(
+      ['A', 'B', 'C'],
+      [
+        ['A', 'B'],
+        ['B', 'C'],
+      ]
+    );
     const sheaf = constantSheaf(UIL, cx);
     const opinions = cochain0({ A: 0.9, B: 0.5, C: 0.1 });
 
     const result = harmonicFlow(sheaf, opinions);
     expect(result.converged).toBe(true);
-    // Should converge to min = 0.1
     expect(result.fixedPoint.get('A')).toBeCloseTo(0.1, 1);
     expect(result.fixedPoint.get('B')).toBeCloseTo(0.1, 1);
     expect(result.fixedPoint.get('C')).toBeCloseTo(0.1, 1);
@@ -756,11 +798,11 @@ describe('edge cases', () => {
     const x = cochain0({ A: 'ESCALATE' } as Record<string, RiskDecision>);
 
     const lx = tarskiLaplacian0(sheaf, x);
-    expect(lx.get('A')).toBe('ESCALATE'); // meet(ESCALATE, ESCALATE) = ESCALATE
+    expect(lx.get('A')).toBe('ESCALATE');
   });
 
   it('parallel edges between same vertices', () => {
-    const cx: ReturnType<typeof buildComplex> = {
+    const cx = {
       vertices: [{ id: 'A' }, { id: 'B' }],
       edges: [
         { id: 'e1', source: 'A', target: 'B' },
@@ -771,7 +813,6 @@ describe('edge cases', () => {
     const x = cochain0({ A: 'DENY', B: 'QUARANTINE' } as Record<string, RiskDecision>);
 
     const lx = tarskiLaplacian0(sheaf, x);
-    // Two edges both contribute same thing → result is the meet
     expect(lx.get('A')).toBe('QUARANTINE');
     expect(lx.get('B')).toBe('QUARANTINE');
   });
@@ -779,7 +820,14 @@ describe('edge cases', () => {
   it('complete graph K4 converges', () => {
     const cx = buildComplex(
       ['A', 'B', 'C', 'D'],
-      [['A', 'B'], ['A', 'C'], ['A', 'D'], ['B', 'C'], ['B', 'D'], ['C', 'D']]
+      [
+        ['A', 'B'],
+        ['A', 'C'],
+        ['A', 'D'],
+        ['B', 'C'],
+        ['B', 'D'],
+        ['C', 'D'],
+      ]
     );
     const sheaf = constantSheaf(RiskLattice, cx);
     const opinions = cochain0({
@@ -796,7 +844,6 @@ describe('edge cases', () => {
   });
 
   it('long chain propagates minimum', () => {
-    // Chain: 0-1-2-3-4-5-6-7-8-9
     const ids = Array.from({ length: 10 }, (_, i) => `v${i}`);
     const links: [string, string][] = [];
     for (let i = 0; i < 9; i++) links.push([`v${i}`, `v${i + 1}`]);
@@ -805,11 +852,10 @@ describe('edge cases', () => {
     const sheaf = constantSheaf(RiskLattice, cx);
     const opinions: Record<string, RiskDecision> = {};
     for (let i = 0; i < 10; i++) opinions[`v${i}`] = 'DENY';
-    opinions['v9'] = 'ALLOW'; // One dissenter at the end
+    opinions['v9'] = 'ALLOW';
 
     const result = harmonicFlow(sheaf, cochain0(opinions));
     expect(result.converged).toBe(true);
-    // ALLOW propagates through the entire chain
     for (let i = 0; i < 10; i++) {
       expect(result.fixedPoint.get(`v${i}`)).toBe('ALLOW');
     }
@@ -822,7 +868,7 @@ describe('edge cases', () => {
 // =============================================================================
 
 describe('lattice axioms', () => {
-  function verifyLatticeAxioms<T>(L: CompleteLattice<T>, name: string) {
+  function verifyLatticeAxioms<T>(L: ConvenienceLattice<T>, name: string) {
     describe(`${name} lattice axioms`, () => {
       const elems = L.elements;
 
@@ -908,4 +954,3 @@ describe('lattice axioms', () => {
   verifyLatticeAxioms(GovernanceLattice, 'Governance');
   verifyLatticeAxioms(DimensionalLattice, 'Dimensional');
 });
-*/

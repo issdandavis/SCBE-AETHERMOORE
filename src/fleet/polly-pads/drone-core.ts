@@ -45,6 +45,17 @@ export interface Capability {
   active: boolean;
 }
 
+/** Serialized drone core JSON shape */
+export interface DroneCoreJSON {
+  id: string;
+  callsign: string;
+  class: DroneClass;
+  spectralIdentity: SpectralIdentity;
+  fluxState: FluxState;
+  loadout: Capability[];
+  maxLoadout: number;
+}
+
 /** Drone core configuration */
 export interface DroneCoreConfig {
   id?: string;
@@ -347,7 +358,7 @@ export class DroneCore {
   // Serialization
   // --------------------------------------------------------------------------
 
-  toJSON(): object {
+  toJSON(): DroneCoreJSON {
     return {
       id: this.id,
       callsign: this.callsign,
@@ -359,7 +370,7 @@ export class DroneCore {
     };
   }
 
-  static fromJSON(data: any): DroneCore {
+  static fromJSON(data: DroneCoreJSON): DroneCore {
     const drone = new DroneCore({
       id: data.id,
       callsign: data.callsign,

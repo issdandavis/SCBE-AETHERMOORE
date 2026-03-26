@@ -13,7 +13,6 @@ import math
 import os
 from importlib.machinery import SourceFileLoader
 
-
 _ROOT = os.path.join(os.path.dirname(__file__), "..")
 _CLI_PATH = os.path.join(_ROOT, "six-tongues-cli.py")
 _REGISTRY_PATH = os.path.join(_ROOT, "docs", "specs", "spiralverse_canonical_registry.v1.json")

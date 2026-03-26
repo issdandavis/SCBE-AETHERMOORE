@@ -26,7 +26,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from .credit import ContextCredit
 
-
 # ---------------------------------------------------------------------------
 #  Vault states
 # ---------------------------------------------------------------------------

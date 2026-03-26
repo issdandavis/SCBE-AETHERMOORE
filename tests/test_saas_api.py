@@ -14,7 +14,6 @@ from api.metering import (
 )
 from src.api.main import app
 
-
 API_KEY_HEADER = {"x-api-key": "demo_key_12345"}
 PILOT_KEY_HEADER = {"x-api-key": "pilot_key_67890"}
 

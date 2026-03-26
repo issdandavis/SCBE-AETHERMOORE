@@ -31,7 +31,6 @@ from .phdm import (
     HamiltonianNode,
 )
 
-
 # Constants matching Layer 0 (from unified.py)
 NONCE_BYTES = 12
 KEY_LEN = 32

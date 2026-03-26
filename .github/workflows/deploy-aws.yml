@@ -23,6 +23,7 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -44,6 +45,7 @@ jobs:
     name: Build Lambda Package
     needs: test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     outputs:
       artifact-name: ${{ steps.package.outputs.artifact-name }}
     steps:
@@ -86,6 +88,7 @@ jobs:
     needs: build
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment: staging
     steps:
       - uses: actions/checkout@v4
@@ -140,6 +143,7 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment: production
     steps:
       - uses: actions/checkout@v4

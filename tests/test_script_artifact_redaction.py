@@ -7,9 +7,7 @@ try:
 except ImportError:
     ai_bridge = colab_worker_lease = inspect_uspto_session = None
 
-pytestmark = pytest.mark.skipif(
-    ai_bridge is None, reason="scripts.system modules not importable"
-)
+pytestmark = pytest.mark.skipif(ai_bridge is None, reason="scripts.system modules not importable")
 
 
 def test_inspect_uspto_session_safe_url_strips_query_and_fragment() -> None:

@@ -30,7 +30,6 @@ from .semantic_antivirus import SemanticAntivirus
 from .web_polly_pad import WebPollyPad, PadMode
 from .navigation_engine import NavigationEngine, PageUnderstanding
 
-
 # ---------------------------------------------------------------------------
 #  Task types
 # ---------------------------------------------------------------------------

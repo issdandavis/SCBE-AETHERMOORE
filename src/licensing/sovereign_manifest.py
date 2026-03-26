@@ -36,28 +36,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from .oem_license import (
-    LicenseClaims,
     LicenseKey,
     LicenseTier,
-    ValidationResult,
     validate_license_key,
 )
 from .nist_ai_rmf import generate_compliance_report
 
-
 # ── Deployment Environment Classification ──────────────────────────────────
+
 
 class DeploymentEnvironment(Enum):
     """Target deployment environment for sovereign installs."""
-    AIR_GAPPED = "air_gapped"           # No network connectivity
+
+    AIR_GAPPED = "air_gapped"  # No network connectivity
     SOVEREIGN_CLOUD = "sovereign_cloud"  # Gov cloud (FedRAMP, GovCloud)
-    ON_PREMISES = "on_premises"          # Enterprise data center
-    EDGE = "edge"                        # Edge/tactical deployment
-    SCIF = "scif"                        # Sensitive Compartmented Info Facility
+    ON_PREMISES = "on_premises"  # Enterprise data center
+    EDGE = "edge"  # Edge/tactical deployment
+    SCIF = "scif"  # Sensitive Compartmented Info Facility
 
 
 class ComplianceFramework(Enum):
     """Compliance frameworks this deployment satisfies."""
+
     NIST_AI_RMF = "NIST_AI_RMF_1.0"
     NIST_800_53 = "NIST_SP_800-53_Rev5"
     FIPS_140_3 = "FIPS_140-3"
@@ -71,6 +71,7 @@ class ComplianceFramework(Enum):
 
 # ── Entropy Surface Defense Config ─────────────────────────────────────────
 
+
 @dataclass
 class EntropySurfacePolicy:
     """Entropy surface defense policy for this deployment.
@@ -78,6 +79,7 @@ class EntropySurfacePolicy:
     Controls how aggressively the system nullifies output under
     suspected extraction attempts.
     """
+
     enabled: bool = True
     leakage_budget_bits: float = 128.0
     probing_threshold: float = 0.6
@@ -90,6 +92,7 @@ class EntropySurfacePolicy:
 
 
 # ── Integrity Hash Chain ───────────────────────────────────────────────────
+
 
 def _sha256(data: str) -> str:
     """SHA-256 hex digest of a string."""
@@ -115,6 +118,7 @@ def compute_integrity_chain(components: List[str]) -> str:
 
 
 # ── Sovereign Deployment Manifest ──────────────────────────────────────────
+
 
 @dataclass
 class SovereignManifest:
@@ -175,14 +179,11 @@ class SovereignManifest:
     @property
     def deployment_ready(self) -> bool:
         """Whether this manifest allows deployment."""
-        return (
-            self.license_valid
-            and self.air_gap_approved
-            and self.compliance_score >= 0.8
-        )
+        return self.license_valid and self.air_gap_approved and self.compliance_score >= 0.8
 
 
 # ── Manifest Generator ─────────────────────────────────────────────────────
+
 
 def generate_sovereign_manifest(
     license_key: LicenseKey,
@@ -231,9 +232,7 @@ def generate_sovereign_manifest(
 
     # ── 1. Validate license ──────────────────────────────────────────────
 
-    validation = validate_license_key(
-        license_key, signing_secret, current_decisions_this_month
-    )
+    validation = validate_license_key(license_key, signing_secret, current_decisions_this_month)
 
     warnings: List[str] = list(validation.warnings)
 
@@ -241,17 +240,15 @@ def generate_sovereign_manifest(
     claims = license_key.claims
     if not claims.air_gap_approved:
         warnings.append(
-            "License does not include air-gap approval. "
-            "Sovereign deployment requires air_gap_approved=True."
+            "License does not include air-gap approval. " "Sovereign deployment requires air_gap_approved=True."
         )
 
     # Check tier compatibility with environment
     if environment == DeploymentEnvironment.SCIF and claims.tier not in (
-        LicenseTier.OEM.value, LicenseTier.ENTERPRISE.value
+        LicenseTier.OEM.value,
+        LicenseTier.ENTERPRISE.value,
     ):
-        warnings.append(
-            f"SCIF deployment requires OEM or Enterprise tier, got {claims.tier}"
-        )
+        warnings.append(f"SCIF deployment requires OEM or Enterprise tier, got {claims.tier}")
 
     # ── 2. Generate compliance evidence ──────────────────────────────────
 
@@ -273,9 +270,7 @@ def generate_sovereign_manifest(
 
     # ── 4. Compute integrity chain ───────────────────────────────────────
 
-    integrity_hash = compute_integrity_chain(
-        [component_hashes[k] for k in sorted(component_hashes.keys())]
-    )
+    integrity_hash = compute_integrity_chain([component_hashes[k] for k in sorted(component_hashes.keys())])
 
     # ── 5. Assemble manifest ─────────────────────────────────────────────
 
@@ -306,6 +301,7 @@ def generate_sovereign_manifest(
 
 # ── Manifest Verification ──────────────────────────────────────────────────
 
+
 def verify_manifest_integrity(manifest: SovereignManifest) -> bool:
     """Verify that a manifest hasn't been tampered with.
 
@@ -318,7 +314,5 @@ def verify_manifest_integrity(manifest: SovereignManifest) -> bool:
     Returns:
         True if integrity chain matches.
     """
-    expected = compute_integrity_chain(
-        [manifest.component_hashes[k] for k in sorted(manifest.component_hashes.keys())]
-    )
+    expected = compute_integrity_chain([manifest.component_hashes[k] for k in sorted(manifest.component_hashes.keys())])
     return expected == manifest.integrity_hash

@@ -20,6 +20,7 @@ Usage:
 Author: Issac Davis (@davisissac) / Spiralverse Protocol
 License: Spiralverse Open Seed License v1
 """
+
 import argparse
 import hashlib
 import hmac
@@ -33,7 +34,6 @@ import time
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple
-
 
 # ═══════════════════════════════════════════════════════════
 # CANONICAL CODEX DATA  (Immutable — derived from Everweave seed)

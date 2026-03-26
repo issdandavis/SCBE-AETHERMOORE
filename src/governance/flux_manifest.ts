@@ -1,3 +1,9 @@
+/**
+ * @file flux_manifest.ts
+ * @module governance/flux-manifest
+ * @layer Layer 13
+ * @component Flux manifest validation
+ */
 import type { FluxManifest } from './offline_mode.js';
 import { isManifestStale, verifyManifest } from './offline_mode.js';
 

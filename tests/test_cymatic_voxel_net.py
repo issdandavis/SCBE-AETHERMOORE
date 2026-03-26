@@ -36,7 +36,6 @@ from symphonic_cipher.scbe_aethermoore.ai_brain.cymatic_voxel_net import (
     estimate_nodal_density,
 )
 
-
 # ---------------------------------------------------------------------------
 # A. 6D Chladni Equation
 # ---------------------------------------------------------------------------
