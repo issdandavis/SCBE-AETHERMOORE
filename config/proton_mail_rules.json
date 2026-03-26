@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "folder_prefix": "Folders",
+  "sender_domain_rules": [
+    {
+      "domain": "github.com",
+      "classification": "admin",
+      "target": "Admin",
+      "action": "move",
+      "confidence": 0.99,
+      "rationale": "GitHub notification domain"
+    },
+    {
+      "domain": "gumroad.com",
+      "classification": "orders",
+      "target": "Orders",
+      "action": "move",
+      "confidence": 0.98,
+      "rationale": "Gumroad commerce domain"
+    },
+    {
+      "domain": "stripe.com",
+      "classification": "orders",
+      "target": "Orders",
+      "action": "move",
+      "confidence": 0.98,
+      "rationale": "Stripe commerce domain"
+    },
+    {
+      "domain": "shopify.com",
+      "classification": "orders",
+      "target": "Orders",
+      "action": "move",
+      "confidence": 0.96,
+      "rationale": "Shopify commerce domain"
+    }
+  ],
+  "subject_rules": [
+    {
+      "contains": ["delivery status notification", "mail delivery subsystem", "undeliverable", "returned mail"],
+      "classification": "delivery_failure",
+      "target": "Delivery Failures",
+      "action": "move",
+      "confidence": 0.98,
+      "rationale": "Delivery failure markers"
+    },
+    {
+      "contains": ["unsubscribe", "newsletter", "digest"],
+      "classification": "newsletter",
+      "target": "Archive",
+      "action": "archive",
+      "confidence": 0.86,
+      "rationale": "Newsletter markers"
+    }
+  ],
+  "trusted_senders": [
+    "aethermoregames@pm.me"
+  ]
+}
