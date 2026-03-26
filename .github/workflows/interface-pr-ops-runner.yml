@@ -22,6 +22,7 @@ jobs:
   validate-web-cursor:
     if: ${{ github.event_name == 'schedule' || inputs.validate_web_cursor_script == 'true' }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -42,6 +43,7 @@ jobs:
   export-pr-queue:
     if: ${{ github.event_name == 'schedule' || inputs.export_pr_queue == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4

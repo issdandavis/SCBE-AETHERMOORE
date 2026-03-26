@@ -29,6 +29,7 @@ jobs:
   # -------------------------------------------------------------------
   health-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: ${{ github.event_name == 'schedule' || inputs.run_health_check }}
     outputs:
       vm_status: ${{ steps.check.outputs.status }}
@@ -60,6 +61,7 @@ jobs:
   # -------------------------------------------------------------------
   training-data-push:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     if: ${{ github.event_name == 'schedule' || inputs.run_training_push }}
     steps:
       - name: Checkout repo
@@ -157,6 +159,7 @@ jobs:
   # -------------------------------------------------------------------
   arxiv-research:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -201,6 +204,7 @@ jobs:
   # -------------------------------------------------------------------
   governance-scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -231,6 +235,7 @@ jobs:
     needs: [health-check, training-data-push, arxiv-research, governance-scan]
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Generate Summary
         run: |
