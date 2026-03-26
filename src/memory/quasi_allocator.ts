@@ -5,6 +5,8 @@
  * @component GeoSeal / Mixed-Curvature Access Kernel - HF model load gating
  */
 
+import { logger } from '../utils/logger.js';
+
 export type HFLoadDecision = 'ALLOW' | 'QUARANTINE';
 
 export interface HFLoadResult {
@@ -50,7 +52,7 @@ export class QuasicrystalLattice {
     const n = this.norm(point);
 
     // Audit traceability: norm only, never secrets/tokens.
-    console.info(`[L2][HF_LOAD] repo=${repo} lattice_norm=${n.toFixed(6)}`);
+    logger.info('HF model load gating', { layer: 'L2', repo, lattice_norm: n.toFixed(6) });
 
     if (n > this.boundary) {
       return {

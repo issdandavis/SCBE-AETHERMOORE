@@ -11,6 +11,7 @@ import {
   RedisReplayStore,
   type RedisClient,
 } from '../../src/crypto/replayGuard.js';
+import { logger } from '../../src/utils/logger.js';
 
 describe('ReplayGuard', () => {
   describe('MemoryReplayStore (single-process)', () => {
@@ -187,11 +188,11 @@ describe('ReplayGuard', () => {
       const guard = ReplayGuard.create({ ttlSeconds: 60, redisClient: mockRedis });
 
       // Sync call with async store should fail closed (return false)
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const loggerSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {});
       const result = guard.checkAndSet('provider1', 'request1');
       expect(result).toBe(false);
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
+      expect(loggerSpy).toHaveBeenCalled();
+      loggerSpy.mockRestore();
     });
   });
 
