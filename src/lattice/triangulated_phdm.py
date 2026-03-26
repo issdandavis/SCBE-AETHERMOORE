@@ -70,7 +70,8 @@ class Triangle:
         w1, w2 blend the two tokenizer values.
         w3 * governance_weight compresses/expands the result.
         """
-        assert abs(w1 + w2 + w3 - 1.0) < 1e-6, "Barycentric coords must sum to 1"
+        if abs(w1 + w2 + w3 - 1.0) > 1e-6:
+            raise ValueError(f"Barycentric coords must sum to 1, got {w1 + w2 + w3:.6f}")
         semantic_blend = w1 * val_a + w2 * val_b
         governance_factor = 1.0 + (w3 * (self.governance_weight - 1.0))
         return semantic_blend * governance_factor
@@ -194,7 +195,8 @@ class TriangulatedPHDMLattice:
 
     def set_node_values(self, values: np.ndarray):
         """Set the 21 PHDM node values from a state vector."""
-        assert len(values) >= 21, "Need at least 21 values"
+        if len(values) < 21:
+            raise ValueError(f"Need at least 21 values, got {len(values)}")
         for i in range(21):
             self.nodes[i].value = float(values[i])
 
