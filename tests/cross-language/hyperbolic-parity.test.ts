@@ -7,7 +7,7 @@
  * identical results for the same inputs, ensuring implementation parity.
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'child_process';
 import * as path from 'path';
 import {
@@ -39,6 +39,7 @@ print(json.dumps(result))
     const output = execFileSync(PYTHON_BIN, ['-c', pythonScript], {
       encoding: 'utf-8',
       timeout: 10000,
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
     return JSON.parse(output.trim());
   } catch {
@@ -48,24 +49,23 @@ print(json.dumps(result))
 }
 
 /**
- * Check if Python is available
+ * Check if Python with numpy is available
  */
-function isPythonAvailable(): boolean {
+function hasPythonNumpy(): boolean {
   try {
-    execFileSync(PYTHON_BIN, ['--version'], { encoding: 'utf-8' });
+    execFileSync(PYTHON_BIN, ['-c', 'import numpy'], {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
     return true;
   } catch {
     return false;
   }
 }
 
-describe('Cross-Language: Hyperbolic Geometry Parity', () => {
-  let pythonAvailable = false;
+const pythonNumpyAvailable = hasPythonNumpy();
 
-  beforeAll(() => {
-    pythonAvailable = isPythonAvailable();
-  });
-
+describe.skipIf(!pythonNumpyAvailable)('Cross-Language: Hyperbolic Geometry Parity', () => {
   describe('Hyperbolic Distance', () => {
     const testCases = [
       { u: [0.1, 0.2], v: [0.3, 0.4], name: 'simple 2D points' },
@@ -76,11 +76,6 @@ describe('Cross-Language: Hyperbolic Geometry Parity', () => {
 
     for (const { u, v, name } of testCases) {
       it(`should match Python for ${name}`, () => {
-        if (!pythonAvailable) {
-          console.log('Skipping: Python not available');
-          return;
-        }
-
         const tsResult = hyperbolicDistance(u, v);
 
         const pyResult = execPython(
@@ -114,11 +109,6 @@ result = float(np.arccosh(1 + delta))
 
     for (const { u, v, name } of testCases) {
       it(`should match Python for ${name}`, () => {
-        if (!pythonAvailable) {
-          console.log('Skipping: Python not available');
-          return;
-        }
-
         const tsResult = mobiusAddition(u, v);
 
         const pyResult = execPython(
@@ -148,11 +138,6 @@ result = (num / denom).tolist()
 
   describe('Exponential Map', () => {
     it('should match Python for tangent vector mapping', () => {
-      if (!pythonAvailable) {
-        console.log('Skipping: Python not available');
-        return;
-      }
-
       const p = [0.1, 0.2];
       const v = [0.05, 0.05];
       const tsResult = exponentialMap(p, v);
@@ -195,11 +180,6 @@ else:
 
   describe('Logarithmic Map', () => {
     it('should match Python for point mapping to tangent space', () => {
-      if (!pythonAvailable) {
-        console.log('Skipping: Python not available');
-        return;
-      }
-
       const p = [0.1, 0.2];
       const q = [0.3, 0.4];
       const tsResult = logarithmicMap(p, q);

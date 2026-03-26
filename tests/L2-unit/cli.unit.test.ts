@@ -22,7 +22,8 @@ function resolvePython(): string | null {
 
   for (const candidate of candidates) {
     try {
-      execSync(`${candidate} --version`, {
+      // Check that Python exists and numpy is importable (CLI scripts need it)
+      execSync(`${candidate} -c "import numpy"`, {
         cwd: process.cwd(),
         encoding: 'utf-8',
         stdio: 'pipe',
