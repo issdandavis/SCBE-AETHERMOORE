@@ -81,7 +81,7 @@ class TestBarycentricInterpolation:
 
     def test_weights_not_summing_raises(self):
         tri = Triangle(corner_a=0, corner_b=1, corner_c=100, governance_weight=1.0)
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError, match="must sum to 1"):
             tri.interpolate(0.5, 0.5, 0.5, 1.0, 2.0)
 
     def test_pure_corner_a(self):

@@ -63,9 +63,14 @@ def tongue_encode(data: bytes, tongue: str = "DR") -> str:
 
 
 def tongue_decode(tokens: str, tongue: str = "DR") -> bytes:
-    """Decode Sacred Tongue tokens back to bytes."""
+    """Decode Sacred Tongue tokens back to bytes. Fails on unknown tokens."""
     rev = _REVERSE.get(tongue, _REVERSE["DR"])
-    return bytes(rev[t] for t in tokens.split() if t in rev)
+    result = []
+    for t in tokens.split():
+        if t not in rev:
+            raise ValueError(f"Unknown token '{t}' in tongue '{tongue}' — possible tampering or corruption")
+        result.append(rev[t])
+    return bytes(result)
 
 
 # ── Notarization Certificate ──────────────────────────────────────────────
