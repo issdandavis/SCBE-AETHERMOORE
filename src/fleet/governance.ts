@@ -4,6 +4,7 @@
  * @module fleet/governance
  */
 
+import { logger } from '../utils/logger';
 import { AgentRegistry } from './agent-registry';
 import { FleetEvent, GOVERNANCE_TIERS, GovernanceTier, RoundtableSession } from './types';
 
@@ -455,7 +456,7 @@ export class GovernanceManager {
       try {
         listener(event);
       } catch (e) {
-        console.error('Event listener error:', e);
+        logger.error('Event listener error', { error: e instanceof Error ? e.message : String(e) });
       }
     }
   }
