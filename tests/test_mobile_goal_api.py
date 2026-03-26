@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("fastapi", reason="fastapi is required for mobile goal API tests")
+
 from fastapi.testclient import TestClient
 
 import src.api.main as api_main

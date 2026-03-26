@@ -4,6 +4,8 @@ from urllib.parse import urlparse
 
 import pytest
 
+pytest.importorskip("httpx", reason="httpx is required for connector bridge tests")
+
 from src.fleet.connector_bridge import ConnectorBridge, ConnectorCapability
 
 

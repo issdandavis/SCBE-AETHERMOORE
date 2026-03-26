@@ -341,8 +341,12 @@ class AlertManager:
         self.alerts[alert.alert_id] = alert
         self.alert_history.append(alert)
 
-        # Send notifications
-        asyncio.create_task(self._notify(alert))
+        # Send notifications (fire-and-forget; gracefully handle missing event loop)
+        try:
+            asyncio.create_task(self._notify(alert))
+        except RuntimeError:
+            # No running event loop — skip async notifications
+            pass
 
         return alert
 

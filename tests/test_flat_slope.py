@@ -9,6 +9,10 @@ Test questions:
 4. Does the interference pattern actually hide information?
 """
 
+import pytest
+
+numpy = pytest.importorskip("numpy", reason="numpy required for flat slope tests")
+scipy = pytest.importorskip("scipy", reason="scipy required for flat slope tests")
 import numpy as np
 import hmac
 import hashlib

@@ -15,6 +15,8 @@ Iterations: 100+ per property (configurable via hypothesis settings)
 """
 
 import pytest
+
+hypothesis = pytest.importorskip("hypothesis", reason="hypothesis not installed")
 from hypothesis import given, settings, strategies as st, assume, HealthCheck
 import json
 
