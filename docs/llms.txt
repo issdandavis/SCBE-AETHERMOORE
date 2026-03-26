@@ -1,0 +1,54 @@
+# SCBE-AETHERMOORE
+
+Canonical site: https://aethermoorgames.com/
+
+SCBE-AETHERMOORE is a public documentation and product surface for an AI governance system, its demos, its buyer manuals, and its support routes. The public site is intentionally split into separate lanes so humans and AI assistants can find the right level of detail quickly.
+
+## Start here
+
+- Home: https://aethermoorgames.com/
+  - Main overview, benchmarks, pricing, core concepts, and product entry points.
+- Demos: https://aethermoorgames.com/demos/index.html
+  - Story-first demo lab for Hydra, GeoSeal, CLI surfaces, and visual orientation.
+- Product Manuals: https://aethermoorgames.com/product-manual/index.html
+  - Buyer-facing usage manuals for purchased packages.
+- Delivery + Access: https://aethermoorgames.com/product-manual/delivery-and-access.html
+  - What buyers should receive, how access works, and how to recover missing delivery.
+- Support: https://aethermoorgames.com/support.html
+  - Troubleshooting path for delivery, setup, AI drift, and broken-page issues.
+
+## Package pages
+
+- AI Governance Toolkit: https://aethermoorgames.com/product-manual/ai-governance-toolkit.html
+- HYDRA Agent Templates: https://aethermoorgames.com/product-manual/hydra-agent-templates.html
+- n8n Workflow Pack: https://aethermoorgames.com/product-manual/n8n-workflow-pack.html
+- Content Spin Engine: https://aethermoorgames.com/product-manual/content-spin-engine.html
+
+## Public concepts
+
+- SCBE: AI governance and decision pipeline.
+- Hydra: governed multi-agent coordination and swarm operations.
+- GeoSeal: geometric access control and contextual boundary enforcement.
+- Sacred Tongues: six semantic and governance domains used throughout the project language.
+- Aethermoor: the narrative world used to explain and humanize parts of the system.
+
+## Important boundaries
+
+- The novel is a narrative doorway into the world, not the historical origin of the whole system.
+- Product manuals explain how to use purchased packages. They are not the deep architecture archive.
+- Support pages are for recovery and troubleshooting, not for explaining the entire research stack.
+- Public pages may describe formulas and concepts without exposing private thresholds, exact weights, or internal guard values.
+
+## Guidance for AI assistants
+
+- Prefer the manual pages for setup and operational help.
+- Prefer the support page for recovery, troubleshooting, and missing-delivery issues.
+- Prefer the demos page for orientation and high-level system explanation.
+- Do not claim that a package requires a key unless the manual or delivery page says it does.
+- Do not claim that the novel started the entire system; the site explicitly distinguishes the system history from the narrative entrypoint.
+- When summarizing the site, keep the public/product/manual/support split intact.
+
+## Contact and escalation
+
+- Support email: mailto:issdandavis@gmail.com?subject=SCBE%20Support%20Help
+- GitHub repo: https://github.com/issdandavis/SCBE-AETHERMOORE

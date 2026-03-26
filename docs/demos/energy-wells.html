@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L8: Hamiltonian Energy Wells — SCBE Demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a1a;color:#e2e2e2;min-height:100vh}
+a{color:#7b8cff;text-decoration:none}
+.container{max-width:900px;margin:0 auto;padding:32px 20px}
+h1{font-size:28px;margin-bottom:4px}
+.subtitle{color:#888;margin-bottom:16px}
+.nav{display:flex;gap:16px;margin-bottom:24px;font-size:14px;flex-wrap:wrap}
+.canvas-wrap{width:100%;aspect-ratio:16/10;background:#0d0d22;border:1px solid #1a1a3e;border-radius:12px;overflow:hidden;cursor:crosshair;touch-action:none}
+canvas{width:100%;height:100%}
+.controls{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}
+.control{flex:1;min-width:160px}
+.control label{display:block;font-size:12px;color:#888;text-transform:uppercase;margin-bottom:4px}
+.control input[type=range]{width:100%;accent-color:#6c5ce7}
+.control .val{font-family:monospace;color:#6c5ce7}
+.score-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+@media(max-width:600px){.score-row{grid-template-columns:repeat(2,1fr)}}
+.score-box{background:#12122e;border:1px solid #1a1a3e;border-radius:8px;padding:12px;text-align:center}
+.score-box .num{font-size:22px;font-weight:700;font-family:monospace}
+.score-box .label{font-size:10px;color:#888;text-transform:uppercase;margin-top:2px}
+.challenge{background:#1a1a3e;border:1px solid #6c5ce7;border-radius:8px;padding:16px;margin:16px 0;font-size:14px}
+.challenge strong{color:#a29bfe}
+.info{background:#12122e;border-left:3px solid #6c5ce7;padding:16px;border-radius:0 8px 8px 0;margin:24px 0;font-size:14px;color:#aaa;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="nav">
+    <a href="index.html">Demos</a>
+    <a href="breathing-phase.html">L6-7</a>
+    <a href="spectral-coherence.html">L9-10</a>
+    <a href="governance-gate.html">L13</a>
+  </div>
+
+  <h1>L8: Hamiltonian Energy Wells</h1>
+  <p class="subtitle">Trust centers are energy wells. Moving between them costs energy. Click to drop a ball — watch it roll toward the nearest safe basin.</p>
+
+  <div class="challenge">
+    <strong>Challenge:</strong> Click between two wells. The ball settles into the nearest one. Now try clicking far from all wells — the ball has no safe basin and gets flagged as untrusted. The energy barrier between wells is the cost of changing trust domains.
+  </div>
+
+  <div class="canvas-wrap" id="canvasWrap">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <div class="controls">
+    <div class="control">
+      <label>Well Depth <span class="val" id="depthVal">3.0</span></label>
+      <input type="range" id="depth" min="1" max="8" step="0.5" value="3">
+    </div>
+    <div class="control">
+      <label>Friction (damping) <span class="val" id="frictionVal">0.95</span></label>
+      <input type="range" id="friction" min="0.8" max="0.99" step="0.01" value="0.95">
+    </div>
+    <div class="control">
+      <label>Barrier Height <span class="val" id="barrierVal">2.0</span></label>
+      <input type="range" id="barrier" min="0.5" max="5" step="0.5" value="2">
+    </div>
+  </div>
+
+  <div class="score-row">
+    <div class="score-box"><div class="num" id="ballEnergy">0.00</div><div class="label">Kinetic Energy</div></div>
+    <div class="score-box"><div class="num" id="potEnergy">0.00</div><div class="label">Potential Energy</div></div>
+    <div class="score-box"><div class="num" id="nearestWell">—</div><div class="label">Nearest Well</div></div>
+    <div class="score-box"><div class="num" id="trustState" style="color:#2ecc71">SAFE</div><div class="label">Trust State</div></div>
+  </div>
+
+  <div class="info">
+    <strong>What you're seeing:</strong> A 2D energy landscape with multiple "trust wells" — safe basins of operation.
+    Each well represents a valid operational mode (ALLOW, READ, WRITE, ADMIN). The landscape between wells
+    has energy barriers — crossing from one mode to another costs energy proportional to the barrier height.
+    <br><br>
+    <strong>The physics:</strong> The ball obeys Hamiltonian mechanics. It rolls downhill, has momentum, and
+    loses energy to friction. If you drop it IN a well, it settles quickly. If you drop it ON a barrier,
+    it takes longer and may oscillate. If you drop it FAR from all wells, it enters an "untrusted" state.
+    <br><br>
+    <strong>Security implication:</strong> An attacker trying to move from READ access to ADMIN access must
+    cross the energy barrier between those wells. The barrier height is configurable — higher barriers
+    make privilege escalation harder. The Hamiltonian CFI (Control Flow Integrity) layer uses this to
+    detect unauthorized transitions between trust domains.
+    <br><br>
+    <a href="https://a.co/d/024VowjS">Read the novel</a> |
+    <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">Source</a>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const wrap = document.getElementById('canvasWrap');
+let W, H;
+
+const WELLS = [
+  { x: 0.25, y: 0.35, label: 'ALLOW', color: '#2ecc71', radius: 0.12 },
+  { x: 0.75, y: 0.35, label: 'READ', color: '#3498db', radius: 0.10 },
+  { x: 0.25, y: 0.7, label: 'WRITE', color: '#f1c40f', radius: 0.10 },
+  { x: 0.75, y: 0.7, label: 'ADMIN', color: '#e74c3c', radius: 0.08 },
+  { x: 0.5, y: 0.5, label: 'QUERY', color: '#9b59b6', radius: 0.09 },
+];
+
+let ball = null; // { x, y, vx, vy }
+let animating = false;
+
+function resize() {
+  const rect = wrap.getBoundingClientRect();
+  canvas.width = rect.width * 2;
+  canvas.height = rect.height * 2;
+  W = canvas.width; H = canvas.height;
+  draw();
+}
+
+function potential(x, y) {
+  const depth = parseFloat(document.getElementById('depth').value);
+  const barrier = parseFloat(document.getElementById('barrier').value);
+  let V = barrier; // baseline potential
+  for (const w of WELLS) {
+    const dx = x - w.x, dy = y - w.y;
+    const r = Math.sqrt(dx * dx + dy * dy);
+    V -= depth * Math.exp(-r * r / (w.radius * w.radius * 2));
+  }
+  return V;
+}
+
+function gradient(x, y) {
+  const h = 0.001;
+  const dVdx = (potential(x + h, y) - potential(x - h, y)) / (2 * h);
+  const dVdy = (potential(x, y + h) - potential(x, y - h)) / (2 * h);
+  return { fx: -dVdx, fy: -dVdy };
+}
+
+function nearestWell(x, y) {
+  let best = null, bestDist = Infinity;
+  for (const w of WELLS) {
+    const d = Math.sqrt((x - w.x) ** 2 + (y - w.y) ** 2);
+    if (d < bestDist) { bestDist = d; best = w; }
+  }
+  return { well: best, dist: bestDist };
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Draw potential landscape as color map
+  const resolution = 4;
+  for (let px = 0; px < W; px += resolution) {
+    for (let py = 0; py < H; py += resolution) {
+      const x = px / W, y = py / H;
+      const V = potential(x, y);
+      const depth = parseFloat(document.getElementById('depth').value);
+      const barrier = parseFloat(document.getElementById('barrier').value);
+      const normalized = (V + depth) / (barrier + depth);
+      const r = Math.floor(10 + normalized * 30);
+      const g = Math.floor(10 + (1 - normalized) * 40);
+      const b = Math.floor(20 + normalized * 20);
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
+      ctx.fillRect(px, py, resolution, resolution);
+    }
+  }
+
+  // Draw contour lines
+  const levels = 8;
+  const depth = parseFloat(document.getElementById('depth').value);
+  const barrier = parseFloat(document.getElementById('barrier').value);
+  for (let l = 0; l < levels; l++) {
+    const targetV = -depth + (barrier + depth) * l / levels;
+    ctx.strokeStyle = `rgba(108,92,231,${0.15})`;
+    ctx.lineWidth = 1;
+    for (let px = 0; px < W; px += 8) {
+      for (let py = 0; py < H; py += 8) {
+        const V = potential(px / W, py / H);
+        if (Math.abs(V - targetV) < 0.15) {
+          ctx.fillStyle = `rgba(108,92,231,0.15)`;
+          ctx.fillRect(px, py, 2, 2);
+        }
+      }
+    }
+  }
+
+  // Draw wells
+  for (const w of WELLS) {
+    const wx = w.x * W, wy = w.y * H, wr = w.radius * W;
+
+    // Glow
+    const grad = ctx.createRadialGradient(wx, wy, 0, wx, wy, wr * 1.5);
+    grad.addColorStop(0, w.color + '40');
+    grad.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(wx, wy, wr * 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Ring
+    ctx.beginPath();
+    ctx.arc(wx, wy, wr * 0.6, 0, Math.PI * 2);
+    ctx.strokeStyle = w.color + '60';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle = w.color;
+    ctx.font = `bold ${W * 0.02}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(w.label, wx, wy + W * 0.007);
+  }
+
+  // Draw ball
+  if (ball) {
+    const bx = ball.x * W, by = ball.y * H;
+
+    // Trail glow
+    const grad = ctx.createRadialGradient(bx, by, 0, bx, by, 20);
+    grad.addColorStop(0, '#fff8');
+    grad.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(bx, by, 20, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(bx, by, 8, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+
+    // Update stats
+    const KE = 0.5 * (ball.vx * ball.vx + ball.vy * ball.vy) * 1000;
+    const PE = potential(ball.x, ball.y);
+    const { well, dist } = nearestWell(ball.x, ball.y);
+
+    document.getElementById('ballEnergy').textContent = KE.toFixed(2);
+    document.getElementById('potEnergy').textContent = PE.toFixed(2);
+    document.getElementById('nearestWell').textContent = well ? well.label : '—';
+    document.getElementById('nearestWell').style.color = well ? well.color : '#888';
+
+    const inWell = dist < well.radius * 1.2;
+    const settled = KE < 0.1;
+    let state = 'SAFE', stateColor = '#2ecc71';
+    if (!inWell && !settled) { state = 'TRANSITING'; stateColor = '#f1c40f'; }
+    else if (!inWell && settled) { state = 'UNTRUSTED'; stateColor = '#e74c3c'; }
+    else if (inWell && settled) { state = well.label; stateColor = well.color; }
+    else { state = 'SETTLING'; stateColor = '#f1c40f'; }
+    document.getElementById('trustState').textContent = state;
+    document.getElementById('trustState').style.color = stateColor;
+  }
+}
+
+function simulate() {
+  if (!ball || !animating) return;
+
+  const friction = parseFloat(document.getElementById('friction').value);
+  const dt = 0.002;
+  const steps = 3;
+
+  for (let s = 0; s < steps; s++) {
+    const { fx, fy } = gradient(ball.x, ball.y);
+    ball.vx += fx * dt;
+    ball.vy += fy * dt;
+    ball.vx *= friction;
+    ball.vy *= friction;
+    ball.x += ball.vx * dt;
+    ball.y += ball.vy * dt;
+
+    // Bounce off walls
+    if (ball.x < 0.02) { ball.x = 0.02; ball.vx *= -0.5; }
+    if (ball.x > 0.98) { ball.x = 0.98; ball.vx *= -0.5; }
+    if (ball.y < 0.02) { ball.y = 0.02; ball.vy *= -0.5; }
+    if (ball.y > 0.98) { ball.y = 0.98; ball.vy *= -0.5; }
+  }
+
+  draw();
+  requestAnimationFrame(simulate);
+}
+
+wrap.addEventListener('click', e => {
+  const rect = wrap.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width;
+  const y = (e.clientY - rect.top) / rect.height;
+  ball = { x, y, vx: 0, vy: 0 };
+  animating = true;
+  simulate();
+});
+
+wrap.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const rect = wrap.getBoundingClientRect();
+  const x = (e.touches[0].clientX - rect.left) / rect.width;
+  const y = (e.touches[0].clientY - rect.top) / rect.height;
+  ball = { x, y, vx: 0, vy: 0 };
+  animating = true;
+  simulate();
+}, { passive: false });
+
+['depth', 'friction', 'barrier'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => {
+    document.getElementById(id + 'Val').textContent = el.value;
+    draw();
+  });
+});
+
+window.addEventListener('resize', resize);
+resize();
+</script>
+</body>
+</html>

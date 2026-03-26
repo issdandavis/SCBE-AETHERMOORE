@@ -1,0 +1,52 @@
+{
+  "bundle": "SCBE_Production_Pack",
+  "version": "2026-03-24",
+  "support_email": "aethermoregames@pm.me",
+  "packages": [
+    {
+      "id": "ai-governance-toolkit",
+      "path": "packages/ai-governance-toolkit",
+      "files": [
+        "README.md",
+        "decision-record-template.md",
+        "threshold-worksheet.md",
+        "pilot-checklist.md",
+        "review-notes-template.md"
+      ]
+    },
+    {
+      "id": "hydra-agent-templates",
+      "path": "packages/hydra-agent-templates",
+      "files": [
+        "README.md",
+        "role-templates.md",
+        "packet-example.md",
+        "launch-checklist.md",
+        "review-checklist.md"
+      ]
+    },
+    {
+      "id": "n8n-workflow-pack",
+      "path": "packages/n8n-workflow-pack",
+      "files": [
+        "README.md",
+        "environment-variable-map.md",
+        "connector-notes.md",
+        "validation-checklist.md",
+        "workflows/SCBE_X_Merch_Autopilot.workflow.json",
+        "workflows/connectors.n8n.json"
+      ]
+    },
+    {
+      "id": "content-spin-engine",
+      "path": "packages/content-spin-engine",
+      "files": [
+        "README.md",
+        "source-to-channel-matrix.md",
+        "transformation-patterns.md",
+        "review-checklist.md",
+        "output-tracker.csv"
+      ]
+    }
+  ]
+}
