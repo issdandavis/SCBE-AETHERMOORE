@@ -321,15 +321,16 @@ def _make_task_summary(
 
     geoseal = summary.get("geoseal")
     if geoseal:
+        ring_distribution = geoseal.get("ring_distribution", {})
         lines.extend(
             [
                 "",
                 "## GeoSeal Ringing Summary",
                 f"- Total chunks assessed: {geoseal['total_chunks']}",
                 f"- Quarantine count: {geoseal['quarantine_count']}",
-                f"- Core rings: {geoseal['ring_distribution']['core']}",
-                f"- Outer rings: {geoseal['ring_distribution']['outer']}",
-                f"- Blocked rings: {geoseal['ring_distribution']['blocked']}",
+                f"- Core rings: {ring_distribution.get('core', 0)}",
+                f"- Outer rings: {ring_distribution.get('outer', 0)}",
+                f"- Blocked rings: {ring_distribution.get('blocked', 0)}",
                 "- Top phase tags:",
             ]
         )

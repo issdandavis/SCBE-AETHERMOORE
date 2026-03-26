@@ -53,16 +53,16 @@ It is a **governance and containment layer for autonomous agents** -- not anothe
 | **Hyperbolic Geometry** | Decisions mapped to Poincaré ball - center=safe, edge=risky |
 | **Rogue Agent Detection** | Swarms detect intruders through pure math - no messaging required |
 | **Multi-Signature Consensus** | Critical operations require cryptographic agreement |
-| **Zero False Positives** | Legitimate agents never get flagged |
+| **Public clean-prompt FP: 0/15** | Current public benchmark recorded zero false positives on 15 clean prompts |
 | **Jam-Resistant** | Works without RF/network - agents "feel" each other mathematically |
 
 ### Benchmark Results
 
 ```
-SCBE (Harmonic + Langues):  95.3% detection rate
-ML Anomaly Detection:       89.6%
-Pattern Matching:           56.6%
-Linear Threshold:           38.7%
+Public adversarial suite (2026-03-23):
+SCBE-AETHERMOORE:          91/91 blocked, 0/15 clean false positives
+ProtectAI DeBERTa v2:      62/91 blocked
+Keyword Filter:            27/91 blocked, high false positives
 ```
 
 ---
