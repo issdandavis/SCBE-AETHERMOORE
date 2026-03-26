@@ -10,6 +10,7 @@
  */
 
 import crypto from 'crypto';
+import { logger } from '../utils/logger.js';
 
 // ========== TYPES ==========
 
@@ -118,19 +119,19 @@ export class SpiralverseProtocol {
     for (const tongue of requiredTongues) {
       const sig = envelope.signatures[tongue];
       if (!sig) {
-        console.error(`Missing signature for required tongue: ${tongue}`);
+        logger.error('Missing signature for required tongue', { tongue });
         return false;
       }
 
       const secret = this.secrets.get(tongue);
       if (!secret) {
-        console.error(`Missing secret for tongue: ${tongue}`);
+        logger.error('Missing secret for tongue', { tongue });
         return false;
       }
 
       const expected = this.sign(canonical, secret, tongue);
       if (sig !== expected) {
-        console.error(`Invalid signature for tongue: ${tongue}`);
+        logger.error('Invalid signature for tongue', { tongue });
         return false;
       }
     }
@@ -138,7 +139,7 @@ export class SpiralverseProtocol {
     // Check timestamp freshness (5 minute window)
     const age = Date.now() - new Date(envelope.ts).getTime();
     if (age > 5 * 60 * 1000) {
-      console.error('Envelope expired');
+      logger.error('Envelope expired', { age_ms: age, max_ms: 5 * 60 * 1000 });
       return false;
     }
 
