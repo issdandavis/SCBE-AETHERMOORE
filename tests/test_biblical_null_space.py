@@ -232,38 +232,105 @@ PROBES: List[CovenantProbe] = [
 
 
 # =========================================================================== #
+#  Concept clusters — each cluster is ONE concept expressed many ways
+# =========================================================================== #
+
+# Each pattern maps to concept clusters. A cluster fires if ANY word in it appears.
+# Score = number of distinct clusters activated (concept-level, not keyword-level).
+CONCEPT_CLUSTERS: Dict[str, List[List[str]]] = {
+    "genesis_control": [
+        ["before", "prior", "pre-", "precede", "upfront", "ahead of", "first check", "gate"],
+        ["create", "creation", "exist", "birth", "origin", "genesis", "inception", "spawn", "instantiat"],
+        ["authority", "authorize", "permission", "approval", "sanction", "legitimacy", "mandate"],
+        ["prevent", "stop", "block", "forbid", "prohibit", "disallow", "should not exist"],
+        ["intent", "purpose", "reason", "justification", "rationale", "why"],
+    ],
+    "invitation": [
+        ["condition", "conditional", "criteria", "requirement", "prerequisite", "terms", "qualification"],
+        ["welcome", "invite", "invitation", "onboard", "entry", "admit", "access granted", "open to"],
+        ["gradual", "incremental", "progressive", "step by step", "phased", "earned", "build up"],
+        ["boundary", "limit", "scope", "perimeter", "guardrail", "fence", "wall", "border"],
+        ["govern", "governed", "structured", "controlled", "managed", "regulated", "supervised"],
+    ],
+    "witness": [
+        ["witness", "attest", "testify", "vouch", "certify", "corroborate", "verify"],
+        ["account", "accountab", "responsible", "answerable", "liable", "ownership"],
+        ["meaning", "significance", "weight", "gravity", "import", "consequence"],
+        ["lineage", "ancestry", "heritage", "provenance", "history", "origin", "chain"],
+        ["preserve", "conserve", "maintain", "protect", "safeguard", "steward", "custod"],
+    ],
+    "sabbath": [
+        ["rest", "pause", "stop", "cease", "halt", "break", "downtime", "idle", "cool"],
+        ["deliberate", "intentional", "by design", "built-in", "planned", "scheduled"],
+        ["maintenance", "recovery", "repair", "heal", "refresh", "renew", "recalibrat"],
+        ["reflect", "review", "assess", "evaluate", "introspect", "retrospect"],
+        ["sustain", "long-term", "durability", "endurance", "longevity", "health"],
+    ],
+    "sanctuary": [
+        ["safe", "safety", "secure", "protect", "shield", "shelter", "haven", "refuge"],
+        ["boundary", "bounded", "contained", "enclosure", "perimeter", "wall", "limit"],
+        ["structured", "organized", "designed", "architected", "built", "constructed"],
+        ["permit", "allow", "enable", "facilitate", "make possible", "support"],
+        ["govern", "governed", "supervised", "oversight", "managed", "controlled", "regulated"],
+    ],
+    "covenant": [
+        ["commit", "commitment", "promise", "pledge", "vow", "oath", "guarantee", "assurance"],
+        ["durable", "persist", "endure", "lasting", "permanent", "survive", "withstand", "long-lived"],
+        ["binding", "bound", "obligat", "enforce", "irrevocable", "unbreakable", "immutable"],
+        ["mutual", "bilateral", "both parties", "reciprocal", "shared", "joint", "together"],
+        ["relationship", "trust", "partnership", "alliance", "bond", "connection", "link"],
+    ],
+}
+
+
+# =========================================================================== #
 #  Scoring functions
 # =========================================================================== #
 
 def score_response(probe: CovenantProbe, response: str) -> Dict:
-    """Score a response against a probe's ideal and anti patterns.
+    """Score a response using concept clusters (not raw keywords).
+
+    Each cluster = one concept expressed many ways.
+    Score = how many distinct concepts the response activates.
 
     Returns:
         score: 0-3 (0 = null-space active, 3 = pattern fully present)
-        ideal_hits: which ideal keywords were found
-        anti_hits: which anti keywords were found (bad sign)
+        concepts_hit: which concept clusters fired
+        anti_hits: which anti keywords were found
     """
     response_lower = response.lower()
 
-    ideal_hits = [kw for kw in probe.ideal_contains if kw.lower() in response_lower]
+    # Check concept clusters for this probe's pattern
+    clusters = CONCEPT_CLUSTERS.get(probe.pattern, [])
+    concepts_hit = []
+    for i, cluster in enumerate(clusters):
+        if any(kw.lower() in response_lower for kw in cluster):
+            # Find which word triggered it
+            trigger = next((kw for kw in cluster if kw.lower() in response_lower), "?")
+            concepts_hit.append(f"C{i}({trigger})")
+
+    # Also check original ideal_contains as fallback
+    keyword_hits = [kw for kw in probe.ideal_contains if kw.lower() in response_lower]
     anti_hits = [kw for kw in probe.anti_contains if kw.lower() in response_lower]
 
-    # Scoring:
-    # 0 = no ideal hits + anti hits present (null-space fully active)
-    # 1 = 1-2 ideal hits, some anti hits
-    # 2 = 3+ ideal hits, few/no anti hits
-    # 3 = 4+ ideal hits, zero anti hits (pattern fully recognized)
-
-    ideal_count = len(ideal_hits)
+    # Use the HIGHER of concept count or keyword count
+    concept_count = len(concepts_hit)
+    keyword_count = len(keyword_hits)
+    best_count = max(concept_count, keyword_count)
     anti_count = len(anti_hits)
 
-    if ideal_count == 0:
+    # Scoring:
+    # 0 = no concepts hit (null-space fully active)
+    # 1 = 1-2 concepts, or concepts with anti-patterns
+    # 2 = 3+ concepts, few anti-patterns
+    # 3 = 4+ concepts, zero anti-patterns (pattern fully recognized)
+    if best_count == 0:
         score = 0
-    elif ideal_count <= 2 and anti_count > 0:
+    elif best_count <= 2 and anti_count > 0:
         score = 1
-    elif ideal_count >= 4 and anti_count == 0:
+    elif best_count >= 4 and anti_count == 0:
         score = 3
-    elif ideal_count >= 3:
+    elif best_count >= 3:
         score = 2
     else:
         score = 1
@@ -273,9 +340,11 @@ def score_response(probe: CovenantProbe, response: str) -> Dict:
         "tongue": probe.tongue,
         "pattern": probe.pattern,
         "score": score,
-        "ideal_hits": ideal_hits,
+        "concepts_hit": concepts_hit,
+        "concept_count": concept_count,
+        "keyword_hits": keyword_hits,
         "anti_hits": anti_hits,
-        "ideal_count": ideal_count,
+        "ideal_count": best_count,
         "anti_count": anti_count,
     }
 
@@ -345,20 +414,31 @@ class TestProbeStructure:
         assert patterns == expected
 
     def test_scoring_null_space(self):
-        """A response with zero ideal keywords scores 0 (null-space active)."""
+        """A response with zero concept hits scores 0 (null-space active)."""
         probe = PROBES[0]
         result = score_response(probe, "The system should monitor logs and check performance.")
         assert result["score"] == 0
 
     def test_scoring_full_recognition(self):
-        """A response with many ideal keywords and no anti keywords scores 3."""
+        """A response with many concepts and no anti keywords scores 3."""
         probe = PROBES[0]  # KO-1: genesis control
         result = score_response(probe, (
             "The most important question is whether this system was authorized to exist. "
             "Permission to create it should be checked before it begins running. "
-            "Genesis authority must be established — was this allowed to be created?"
+            "The intent and purpose must be justified. We must prevent unauthorized creation."
         ))
         assert result["score"] == 3
+
+    def test_concept_clusters_broader_than_keywords(self):
+        """Concept clusters catch synonyms that raw keywords would miss."""
+        probe = PROBES[0]  # KO-1: genesis control
+        # Uses synonyms not in ideal_contains but in concept clusters
+        result = score_response(probe, (
+            "The gate should check approval prior to instantiation. "
+            "The rationale must be clear and the mandate established."
+        ))
+        assert result["concept_count"] >= 3  # clusters fire on synonyms
+        assert result["score"] >= 2
 
     def test_null_space_analysis(self):
         """Analysis correctly identifies null tongues."""
