@@ -25,6 +25,7 @@ jobs:
   post-to-x:
     if: inputs.platform == 'x-twitter' || inputs.platform == 'all'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
