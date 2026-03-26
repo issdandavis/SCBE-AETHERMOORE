@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-from lattice import TriangulatedPHDMLattice, Triangle, TONGUE_DIMS, PHASE_DIMS, TELEMETRY_DIMS
+from lattice import TriangulatedPHDMLattice, Triangle, TONGUE_DIMS
 
 
 class TestConstruction:

@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List
 
 PHI = (1 + math.sqrt(5)) / 2  # 1.6180339887...
 
