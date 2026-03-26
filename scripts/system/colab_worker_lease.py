@@ -10,11 +10,19 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict
 
+from urllib.parse import urlparse
+
 from scripts.system import colab_workflow_catalog as catalog
 from scripts.system import crosstalk_relay as relay
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _safe_url(raw_url: str) -> str:
+    """Strip query string and fragment from a URL to avoid leaking secrets."""
+    parsed = urlparse(raw_url)
+    return parsed._replace(query="", fragment="").geturl()
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "colab_workers"
 DEFAULT_PROFILE_DIR = Path.home() / ".scbe-playwright-colab"
 

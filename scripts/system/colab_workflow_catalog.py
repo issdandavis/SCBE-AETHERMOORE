@@ -135,6 +135,17 @@ def _resolve_notebook(query: str) -> dict[str, Any]:
     raise KeyError(f"unknown notebook: {query}")
 
 
+def resolve_notebook_payload(query: str) -> dict[str, Any]:
+    """Resolve a notebook name or alias and return its full payload."""
+    row = _resolve_notebook(query)
+    return _record_payload(row)
+
+
+def list_notebook_payloads() -> list[dict[str, Any]]:
+    """Return payloads for every notebook in the catalog."""
+    return [_record_payload(row) for row in NOTEBOOKS]
+
+
 def _print_text_list() -> int:
     print("# SCBE Colab Notebook Catalog")
     for row in NOTEBOOKS:
