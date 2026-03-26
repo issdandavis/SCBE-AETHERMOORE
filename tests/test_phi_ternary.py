@@ -1,7 +1,6 @@
 """Tests for Phi-Ternary Primitive."""
 from __future__ import annotations
 
-import math
 import sys
 from pathlib import Path
 
@@ -9,7 +8,6 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from primitives import (
-    PhiTernary, DualPhiTernary,
     phi_ternary, dual_phi_ternary, tongue_phi_ternary,
     tongue_vector_to_phi_ternary,
     phi_ternary_energy, phi_ternary_center, phi_ternary_symmetry,
