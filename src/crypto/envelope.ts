@@ -1,3 +1,10 @@
+/**
+ * @file envelope.ts
+ * @module crypto/envelope
+ * @layer Layer 12
+ * @component Envelope Encryption
+ */
+
 import crypto from 'node:crypto';
 import { hkdfSha256 } from './hkdf.js';
 import { canonicalize, JsonValue } from './jcs.js';
