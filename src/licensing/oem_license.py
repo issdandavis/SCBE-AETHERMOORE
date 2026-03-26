@@ -29,28 +29,31 @@ from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-
 # ── License Tiers ────────────────────────────────────────────────────────────
+
 
 class LicenseTier(Enum):
     """Commercial license tiers (from CUSTOMER_LICENSE_AGREEMENT.md)."""
+
     HOMEBREW = "homebrew"
     PROFESSIONAL = "professional"
     ENTERPRISE = "enterprise"
-    OEM = "oem"                  # White-label / black-box
+    OEM = "oem"  # White-label / black-box
     SOURCE_AVAILABLE = "source_available"  # As-is, no support
 
 
 class LicenseModel(Enum):
     """Monetization model."""
-    PERPETUAL = "perpetual"           # One-time purchase
-    SUBSCRIPTION = "subscription"     # Monthly/annual recurring
-    USAGE_BASED = "usage_based"       # Per-1k decisions
-    ROYALTY = "royalty"               # Percentage of licensee revenue
-    HYBRID = "hybrid"                 # Platform floor + per-decision
+
+    PERPETUAL = "perpetual"  # One-time purchase
+    SUBSCRIPTION = "subscription"  # Monthly/annual recurring
+    USAGE_BASED = "usage_based"  # Per-1k decisions
+    ROYALTY = "royalty"  # Percentage of licensee revenue
+    HYBRID = "hybrid"  # Platform floor + per-decision
 
 
 # ── License Claims ───────────────────────────────────────────────────────────
+
 
 @dataclass
 class LicenseClaims:
@@ -58,20 +61,21 @@ class LicenseClaims:
 
     Fields match the Order Form terms from CUSTOMER_LICENSE_AGREEMENT.md.
     """
-    licensee: str                           # Organization name
-    tier: str                               # LicenseTier value
-    model: str                              # LicenseModel value
-    issued_at: float                        # Unix timestamp
-    expires_at: float                       # Unix timestamp (0 = perpetual)
-    max_authorized_users: int = 1           # Per Order Form
-    max_deployment_instances: int = 1       # Per Order Form
-    max_swarm_agents: int = 3              # Per Order Form
-    max_decisions_per_month: int = 0        # 0 = unlimited
+
+    licensee: str  # Organization name
+    tier: str  # LicenseTier value
+    model: str  # LicenseModel value
+    issued_at: float  # Unix timestamp
+    expires_at: float  # Unix timestamp (0 = perpetual)
+    max_authorized_users: int = 1  # Per Order Form
+    max_deployment_instances: int = 1  # Per Order Form
+    max_swarm_agents: int = 3  # Per Order Form
+    max_decisions_per_month: int = 0  # 0 = unlimited
     modules: List[str] = field(default_factory=lambda: ["core"])
-    patent_grant: bool = True               # US Patent 63/961,403
-    support_level: str = "none"             # none, community, email, dedicated
-    white_label: bool = False               # OEM white-label rights
-    air_gap_approved: bool = False          # Source-available deployment
+    patent_grant: bool = True  # US Patent 63/961,403
+    support_level: str = "none"  # none, community, email, dedicated
+    white_label: bool = False  # OEM white-label rights
+    air_gap_approved: bool = False  # Source-available deployment
     custom_terms: Dict[str, Any] = field(default_factory=dict)
 
     def canonical_json(self) -> str:
@@ -82,9 +86,11 @@ class LicenseClaims:
 
 # ── License Key ──────────────────────────────────────────────────────────────
 
+
 @dataclass
 class LicenseKey:
     """A signed license key containing claims + HMAC signature."""
+
     claims: LicenseClaims
     signature: str  # hex-encoded HMAC-SHA256
 
@@ -108,6 +114,7 @@ class LicenseKey:
 
 
 # ── License Generator ────────────────────────────────────────────────────────
+
 
 def generate_license_key(
     claims: LicenseClaims,
@@ -136,9 +143,11 @@ def generate_license_key(
 
 # ── License Validator ────────────────────────────────────────────────────────
 
+
 @dataclass
 class ValidationResult:
     """Result of license validation."""
+
     valid: bool
     tier: str
     model: str
@@ -183,8 +192,11 @@ def validate_license_key(
 
     if not hmac.compare_digest(key.signature, expected_sig):
         return ValidationResult(
-            valid=False, tier=claims.tier, model=claims.model,
-            reason="INVALID_SIGNATURE", modules=[],
+            valid=False,
+            tier=claims.tier,
+            model=claims.model,
+            reason="INVALID_SIGNATURE",
+            modules=[],
         )
 
     # 2. Expiration check
@@ -193,8 +205,11 @@ def validate_license_key(
     if claims.expires_at > 0:
         if now > claims.expires_at:
             return ValidationResult(
-                valid=False, tier=claims.tier, model=claims.model,
-                reason="LICENSE_EXPIRED", modules=claims.modules,
+                valid=False,
+                tier=claims.tier,
+                model=claims.model,
+                reason="LICENSE_EXPIRED",
+                modules=claims.modules,
             )
         expires_in_days = (claims.expires_at - now) / 86400
         if expires_in_days < 30:
@@ -206,7 +221,9 @@ def validate_license_key(
         remaining = claims.max_decisions_per_month - current_decisions_this_month
         if remaining <= 0:
             return ValidationResult(
-                valid=False, tier=claims.tier, model=claims.model,
+                valid=False,
+                tier=claims.tier,
+                model=claims.model,
                 reason="DECISION_QUOTA_EXCEEDED",
                 remaining_decisions=0,
                 modules=claims.modules,
@@ -257,8 +274,17 @@ TIER_DEFAULTS = {
         "support_level": "dedicated",
         "white_label": False,
         "air_gap_approved": True,
-        "modules": ["core", "harmonic", "crypto", "symphonic", "governance",
-                     "spectral", "fleet", "training", "ai_brain"],
+        "modules": [
+            "core",
+            "harmonic",
+            "crypto",
+            "symphonic",
+            "governance",
+            "spectral",
+            "fleet",
+            "training",
+            "ai_brain",
+        ],
     },
     LicenseTier.OEM: {
         "max_authorized_users": 0,
@@ -268,8 +294,18 @@ TIER_DEFAULTS = {
         "support_level": "none",
         "white_label": True,
         "air_gap_approved": True,
-        "modules": ["core", "harmonic", "crypto", "symphonic", "governance",
-                     "spectral", "fleet", "training", "ai_brain", "gateway"],
+        "modules": [
+            "core",
+            "harmonic",
+            "crypto",
+            "symphonic",
+            "governance",
+            "spectral",
+            "fleet",
+            "training",
+            "ai_brain",
+            "gateway",
+        ],
     },
     LicenseTier.SOURCE_AVAILABLE: {
         "max_authorized_users": 0,
@@ -279,8 +315,17 @@ TIER_DEFAULTS = {
         "support_level": "none",
         "white_label": False,
         "air_gap_approved": True,
-        "modules": ["core", "harmonic", "crypto", "symphonic", "governance",
-                     "spectral", "fleet", "training", "ai_brain"],
+        "modules": [
+            "core",
+            "harmonic",
+            "crypto",
+            "symphonic",
+            "governance",
+            "spectral",
+            "fleet",
+            "training",
+            "ai_brain",
+        ],
     },
 }
 

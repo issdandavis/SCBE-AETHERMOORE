@@ -39,7 +39,6 @@ from src.fleet.hallpass import (
 )
 from src.fleet.skill_card_forge import Deck  # SkillCard already imported above
 
-
 _CARD_TEMPLATES = [
     ("web-scraper", "Skill", "Offensive", 300, 3, 2, "browse navigate search web scrape urls", ["browser"]),
     ("data-processor", "Skill", "Support", 250, 4, 1, "process transform data analyze compute", ["data"]),

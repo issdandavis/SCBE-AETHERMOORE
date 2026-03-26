@@ -13,9 +13,9 @@ def test_extract_search_results_decodes_redirects_and_snippets() -> None:
         "      <body>\n"
         '        <a class="result__a" href="https://duckduckgo.com/l/?uddg=https%3A%2F%2Fexample.com%2Falpha">Alpha <b>Result</b></a>\n'  # noqa: E501
         "\n"
-        "        <div class=\"result__snippet\">First <b>snippet</b> for alpha.</div>\n"
+        '        <div class="result__snippet">First <b>snippet</b> for alpha.</div>\n'
         '        <a class="result__a" href="https://example.org/bravo">Bravo Result</a>\n'
-        "        <div class=\"result__snippet\">Second snippet for bravo.</div>\n"
+        '        <div class="result__snippet">Second snippet for bravo.</div>\n'
         "      </body>\n"
         "    </html>\n"
     )

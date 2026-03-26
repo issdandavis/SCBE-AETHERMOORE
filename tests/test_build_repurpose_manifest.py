@@ -4,7 +4,6 @@ import importlib.util
 import json
 from pathlib import Path
 
-
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts" / "system" / "build_repurpose_manifest.py"
 SPEC = importlib.util.spec_from_file_location("build_repurpose_manifest", SCRIPT_PATH)
 MODULE = importlib.util.module_from_spec(SPEC)

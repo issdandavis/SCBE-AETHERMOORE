@@ -1,3 +1,9 @@
+/**
+ * @file hkdf.ts
+ * @module crypto/hkdf
+ * @component HKDF Key Derivation
+ */
+
 import crypto from 'node:crypto';
 
 /**

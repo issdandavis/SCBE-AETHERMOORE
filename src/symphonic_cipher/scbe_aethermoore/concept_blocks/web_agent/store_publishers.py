@@ -9,14 +9,14 @@ Automate product listing, updates, and storefront management for:
 Both use direct REST APIs — no browser needed, zero delays.
 
 Usage:
-    gumroad = GumroadPublisher(api_token="your_token")
+    gumroad = GumroadPublisher(api_token=os.environ["GUMROAD_API_TOKEN"])
     result = await gumroad.create_product(
         name="Spiralverse AI Training Pack",
         price=49_99,  # cents
         description="...",
     )
 
-    shopify = ShopifyPublisher(shop="your-store", token="your_token")
+    shopify = ShopifyPublisher(shop="your-store", token=os.environ["SHOPIFY_TOKEN"])
     result = await shopify.create_product(
         title="SCBE Governance Toolkit",
         body_html="<p>...</p>",

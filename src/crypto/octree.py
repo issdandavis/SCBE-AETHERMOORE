@@ -463,7 +463,7 @@ if __name__ == "__main__":
     for i in range(30):
         point = np.random.randn(3) * 0.3
         point = point / (np.linalg.norm(point) + 0.1) * 0.4
-        fp_hash = hashlib.md5(f"light_{i}".encode()).hexdigest()[:16]
+        fp_hash = hashlib.sha256(f"light_{i}".encode()).hexdigest()[:16]
         octree.insert_with_fingerprint(
             point,
             "light_realm",
@@ -478,7 +478,7 @@ if __name__ == "__main__":
     for i in range(30):
         point = np.random.randn(3)
         point = point / np.linalg.norm(point) * 0.85
-        fp_hash = hashlib.md5(f"shadow_{i}".encode()).hexdigest()[:16]
+        fp_hash = hashlib.sha256(f"shadow_{i}".encode()).hexdigest()[:16]
         octree.insert_with_fingerprint(
             point,
             "shadow_realm",
@@ -495,7 +495,7 @@ if __name__ == "__main__":
         norm = np.linalg.norm(point)
         if norm > 0:
             point = point / norm * min(0.7, norm)
-        fp_hash = hashlib.md5(f"path_{i}".encode()).hexdigest()[:16]
+        fp_hash = hashlib.sha256(f"path_{i}".encode()).hexdigest()[:16]
         octree.insert_with_fingerprint(
             point,
             "path",

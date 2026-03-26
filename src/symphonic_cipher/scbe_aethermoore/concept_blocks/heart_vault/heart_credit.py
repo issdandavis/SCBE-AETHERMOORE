@@ -39,7 +39,6 @@ from typing import Any, Dict, List, Optional
 
 from .graph import HeartVaultGraph, TongueAffinity
 
-
 # ---------------------------------------------------------------------------
 #  Constants — mirror MMCCL denomination weights
 # ---------------------------------------------------------------------------
@@ -260,14 +259,12 @@ class HeartCreditLedger:
 
     def stats(self) -> Dict[str, Any]:
         """Summary statistics for the Heart Credit economy."""
-        row = self._graph._conn.execute(
-            """SELECT
+        row = self._graph._conn.execute("""SELECT
                  COUNT(*) as total_txns,
                  COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as total_earned,
                  COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0) as total_spent,
                  COUNT(DISTINCT agent_id) as unique_agents
-               FROM hv_heart_credits"""
-        ).fetchone()
+               FROM hv_heart_credits""").fetchone()
         return {
             "total_transactions": row[0],
             "total_earned": row[1],

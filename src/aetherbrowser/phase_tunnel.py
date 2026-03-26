@@ -38,7 +38,6 @@ import time
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-
 PHI = (1 + math.sqrt(5)) / 2
 R_FIFTH = 1.5
 TUNNEL_EPSILON = 1e-8

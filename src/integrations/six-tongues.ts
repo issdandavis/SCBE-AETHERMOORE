@@ -33,7 +33,7 @@ export interface GeoSealOptions {
 
 export interface SixTonguesResult {
   success: boolean;
-  data?: any;
+  data?: unknown;
   error?: string;
   stderr?: string;
 }

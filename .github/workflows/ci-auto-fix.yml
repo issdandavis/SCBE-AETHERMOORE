@@ -1,9 +1,9 @@
 name: CI Auto-Fix
 
 # SECURITY: This workflow uses workflow_run which runs in a PRIVILEGED context.
-# We NEVER checkout untrusted PR code. We only checkout the default branch (main)
-# and use the API to read failure logs. All user-controlled values go through
-# env vars, never ${{ }} interpolation in run: blocks.
+# We ONLY checkout the default branch (main), never untrusted PR code.
+# All user-controlled values go through env vars, never ${{ }} interpolation
+# in run: blocks.
 
 on:
   workflow_run:
@@ -31,22 +31,25 @@ jobs:
       FAILED_BRANCH: ${{ github.event.workflow_run.head_branch }}
       FAILED_WORKFLOW: ${{ github.event.workflow_run.name }}
       FAILED_URL: ${{ github.event.workflow_run.html_url }}
+      HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
+      THIS_REPO: ${{ github.repository }}
 
     steps:
+      # SECURITY: Verify the triggering workflow is NOT from a fork BEFORE checkout.
+      # This prevents any untrusted code from being checked out.
+      - name: Verify workflow is not from a fork
+        run: |
+          if [ "$HEAD_REPO" != "$THIS_REPO" ]; then
+            echo "::error::Refusing to run auto-fix on fork PR - security risk"
+            exit 1
+          fi
+
       # SECURITY: Checkout the DEFAULT branch (main), not the PR branch.
       # This ensures we never execute untrusted code from a PR.
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: main
           fetch-depth: 0
-
-      - name: Verify checkout is not from a fork
-        run: |
-          # Refuse to run if the triggering workflow was from a fork
-          if [ "${{ github.event.workflow_run.head_repository.full_name }}" != "${{ github.repository }}" ]; then
-            echo "::error::Refusing to run auto-fix on fork PR — security risk"
-            exit 1
-          fi
 
       - name: Configure git
         run: |
@@ -90,7 +93,7 @@ jobs:
           echo "- **Branch**: $FAILED_BRANCH" >> $GITHUB_STEP_SUMMARY
           echo "- **Failures**: $FCOUNT" >> $GITHUB_STEP_SUMMARY
 
-      # ── Deterministic fixes only (no AI — removes need for ANTHROPIC_API_KEY) ──
+      # -- Deterministic fixes only (no AI -- removes need for ANTHROPIC_API_KEY) --
       - name: Apply Black formatting
         if: steps.detect.outputs.has_format == 'true'
         run: |
@@ -101,7 +104,7 @@ jobs:
         run: npm audit fix 2>/dev/null || true
         continue-on-error: true
 
-      # ── Create PR if changes were made ─────────────────────────────
+      # -- Create PR if changes were made --
       - name: Create fix PR
         if: steps.detect.outputs.failure_count > 0
         env:

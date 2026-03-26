@@ -18,6 +18,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       KEY_ALIAS: ${{ secrets.AETHERCODE_KEY_ALIAS }}
       KEYSTORE_PASSWORD: ${{ secrets.AETHERCODE_KEYSTORE_PASSWORD }}

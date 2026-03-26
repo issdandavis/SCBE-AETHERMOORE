@@ -6,6 +6,7 @@
 
 import { SpectralIdentityGenerator } from '../harmonic/spectral-identity';
 import { TrustManager } from '../spaceTor/trust-manager';
+import { logger } from '../utils/logger';
 import {
   AgentCapability,
   AgentStatus,
@@ -407,7 +408,7 @@ export class AgentRegistry {
       try {
         listener(event);
       } catch (e) {
-        console.error('Event listener error:', e);
+        logger.error('Event listener error', { error: e instanceof Error ? e.message : String(e) });
       }
     }
   }

@@ -33,7 +33,6 @@ from typing import Dict, List, Optional, Tuple
 
 from .emotions import EmotionSpec, classify_emotion
 
-
 # ---------------------------------------------------------------------------
 #  Literary device types
 # ---------------------------------------------------------------------------

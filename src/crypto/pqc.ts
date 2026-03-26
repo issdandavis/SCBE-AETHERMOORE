@@ -27,7 +27,7 @@ import { randomBytes, createHash } from 'crypto';
 
 interface NativePqcHandle {
   readonly moduleName: string;
-  readonly instance: unknown;
+  readonly instance: Record<string, unknown>;
 }
 
 type PQCStatus = {
@@ -38,7 +38,10 @@ type PQCStatus = {
   reason?: string;
 };
 
-type NativeMethod = (...args: any[]) => any;
+type NativeMethod = (...args: unknown[]) => unknown;
+
+/** A dynamically-loaded native class constructor. */
+type NativeConstructor = new (...args: unknown[]) => Record<string, unknown>;
 
 const LIBOQS_CANDIDATES = ['liboqs-node', 'liboqs'];
 const KEM_CTORS = ['KEM', 'KeyEncapsulation'];
@@ -78,10 +81,13 @@ const SIG_SIGN_METHODS: readonly string[] = ['sign', 'signature', 'generate_sign
 
 const SIG_VERIFY_METHODS: readonly string[] = ['verify', 'verify_signature'];
 
-let liboqsModuleCache: { moduleName: string; module: any } | null | undefined = undefined;
+/** Shape of a dynamically-loaded liboqs native module (unknown at compile time). */
+type NativeModule = Record<string, unknown>;
+
+let liboqsModuleCache: { moduleName: string; module: NativeModule } | null | undefined = undefined;
 let pqcStatusCache: PQCStatus | null = null;
 
-function resolveLiboqsModule(): { moduleName: string; module: any } | null {
+function resolveLiboqsModule(): { moduleName: string; module: NativeModule } | null {
   if (liboqsModuleCache !== undefined) {
     return liboqsModuleCache;
   }
@@ -100,19 +106,25 @@ function resolveLiboqsModule(): { moduleName: string; module: any } | null {
   return null;
 }
 
-function getClassFromModule(mod: any, candidates: readonly string[]): any | null {
+function getClassFromModule(
+  mod: NativeModule,
+  candidates: readonly string[]
+): NativeConstructor | null {
   for (const name of candidates) {
     const candidate = mod?.[name];
     if (typeof candidate === 'function') {
-      return candidate;
+      return candidate as NativeConstructor;
     }
   }
   return null;
 }
 
-function firstMatchingMethod(target: any, candidates: readonly string[]): string | null {
+function firstMatchingMethod(
+  target: Record<string, unknown>,
+  candidates: readonly string[]
+): string | null {
   for (const name of candidates) {
-    const fn = (target as Record<string, NativeMethod | undefined>)[name];
+    const fn = target[name];
     if (typeof fn === 'function') {
       return name;
     }
@@ -121,7 +133,7 @@ function firstMatchingMethod(target: any, candidates: readonly string[]): string
 }
 
 async function invokeNativeMethod(
-  target: any,
+  target: Record<string, unknown>,
   candidates: readonly string[],
   args: unknown[]
 ): Promise<unknown | null> {
@@ -237,7 +249,7 @@ function parseKemSharedSecret(value: unknown): Uint8Array {
     value instanceof ArrayBuffer ||
     Buffer.isBuffer(value)
   ) {
-    return toBytes(value as any, 'ML-KEM decapsulated shared secret');
+    return toBytes(value, 'ML-KEM decapsulated shared secret');
   }
 
   if (Array.isArray(value)) {
@@ -299,7 +311,7 @@ function createNativeKEM(algorithm: string): NativePqcHandle | null {
   const ctorArgs: unknown[][] = [[algorithm], [{ algorithm }], []];
   for (const ctorArgSet of ctorArgs) {
     try {
-      const instance = new (ctor as new (...args: unknown[]) => unknown)(...ctorArgSet);
+      const instance = new ctor(...ctorArgSet);
       if (
         firstMatchingMethod(instance, KEM_KEYPAIR_METHODS) &&
         firstMatchingMethod(instance, KEM_ENCAPSULATE_METHODS) &&
@@ -329,7 +341,7 @@ function createNativeDSA(algorithm: string): NativePqcHandle | null {
   const ctorArgs: unknown[][] = [[algorithm], [{ algorithm }], []];
   for (const ctorArgSet of ctorArgs) {
     try {
-      const instance = new (ctor as new (...args: unknown[]) => unknown)(...ctorArgSet);
+      const instance = new ctor(...ctorArgSet);
       if (
         firstMatchingMethod(instance, SIG_KEYPAIR_METHODS) &&
         firstMatchingMethod(instance, SIG_SIGN_METHODS) &&

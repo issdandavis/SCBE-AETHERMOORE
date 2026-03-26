@@ -23,6 +23,7 @@ permissions:
 jobs:
   export-notion-to-dataset:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

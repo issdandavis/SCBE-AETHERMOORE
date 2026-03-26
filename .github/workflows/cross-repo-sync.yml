@@ -30,6 +30,7 @@ env:
 jobs:
   sync-to-gumroad:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: github.event.inputs.sync_direction != 'from-gumroad'
     outputs:
       has_token: ${{ steps.auth.outputs.has_token }}
@@ -124,6 +125,7 @@ jobs:
 
   create-sync-report:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [sync-to-gumroad]
     if: always()
 

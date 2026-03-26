@@ -43,7 +43,6 @@ from dataclasses import dataclass
 from typing import List, Set, Tuple
 from enum import Enum
 
-
 # =============================================================================
 # CONSTANTS
 # =============================================================================

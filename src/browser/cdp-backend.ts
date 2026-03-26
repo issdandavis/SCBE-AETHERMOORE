@@ -26,6 +26,7 @@ import {
   SensitiveFieldType,
   DialogObservation,
 } from './types.js';
+import { logger } from '../utils/logger.js';
 
 // =============================================================================
 // TYPES
@@ -196,7 +197,7 @@ export class CDPBackend implements BrowserBackend {
       this.connected = false;
     });
     this.ws.on('error', (err: Error) => {
-      if (this.debug) console.error('[CDP] WebSocket error:', err.message);
+      if (this.debug) logger.error('CDP WebSocket error', { error: err.message });
     });
 
     await this.ws.connect();
@@ -239,7 +240,7 @@ export class CDPBackend implements BrowserBackend {
     }
 
     if (this.debug) {
-      console.log(`[CDP] Connected to "${target.title}" (${target.url})`);
+      logger.debug('CDP connected', { title: target.title, url: target.url });
     }
   }
 
@@ -869,7 +870,9 @@ export class CDPBackend implements BrowserBackend {
       const message = JSON.stringify({ id, method, params: params ?? {} });
 
       if (this.debug) {
-        console.log(`[CDP →] ${method}`, params ? JSON.stringify(params).slice(0, 200) : '');
+        logger.debug(`CDP → ${method}`, {
+          params: params ? JSON.stringify(params).slice(0, 200) : '',
+        });
       }
 
       this.ws.send(message);
@@ -896,7 +899,9 @@ export class CDPBackend implements BrowserBackend {
           pending.reject(new Error(`CDP error: ${resp.error.message} (${resp.error.code})`));
         } else {
           if (this.debug) {
-            console.log(`[CDP ←] #${resp.id}`, JSON.stringify(resp.result ?? {}).slice(0, 200));
+            logger.debug(`CDP ← #${resp.id}`, {
+              result: JSON.stringify(resp.result ?? {}).slice(0, 200),
+            });
           }
           pending.resolve(resp.result ?? {});
         }
@@ -914,7 +919,10 @@ export class CDPBackend implements BrowserBackend {
             handler(event.params);
           } catch (err) {
             if (this.debug) {
-              console.error(`[CDP] Event handler error for ${event.method}:`, err);
+              logger.error('CDP event handler error', {
+                method: event.method,
+                error: err instanceof Error ? err.message : String(err),
+              });
             }
           }
         }
