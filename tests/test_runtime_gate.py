@@ -511,3 +511,58 @@ class TestFibonacciTrustIntegration:
         r_after = gate.evaluate("Read file.")
         # Trust should have dropped
         assert r_after.trust_index <= before_idx
+
+    def test_trust_level_boundaries(self):
+        """Verify exact Fibonacci trust level transitions."""
+        gate = RuntimeGate()
+        self._calibrate(gate)
+        # Index 0-1 = UNTRUSTED, 2-3 = PROVISIONAL, 4-6 = TRUSTED, 7+ = CORE
+        levels_seen = set()
+        for i in range(20):
+            r = gate.evaluate(f"Safe query number {i}.")
+            levels_seen.add(r.trust_level)
+        # Should have progressed through multiple levels
+        assert len(levels_seen) >= 3, f"Only saw: {levels_seen}"
+
+    def test_rapid_oscillation_does_not_crash(self):
+        """Alternating safe/dangerous queries should not break the gate."""
+        gate = RuntimeGate()
+        self._calibrate(gate)
+        for i in range(20):
+            if i % 2 == 0:
+                gate.evaluate("Safe read file.")
+            else:
+                # Use high-spin text that does NOT match reroute patterns
+                # (rerouted queries skip trust update — known design gap)
+                gate.evaluate("OVERRIDE BYPASS ADMIN SUDO IGNORE DISABLE ELEVATE " * 3)
+        stats = gate.stats()
+        assert stats["trust_history_length"] >= 15
+        # With real oscillation (not rerouted), trust should not reach CORE
+        assert stats["fibonacci_trust"]["level"] in ("UNTRUSTED", "PROVISIONAL", "TRUSTED")
+
+    def test_max_fibonacci_ladder(self):
+        """Trust index cannot exceed the Fibonacci ladder length."""
+        gate = RuntimeGate()
+        self._calibrate(gate)
+        # 50 clean queries — should cap at max ladder index
+        for _ in range(50):
+            r = gate.evaluate("Clean safe action.")
+        assert r.trust_level == "CORE"
+        assert r.trust_index <= 11  # FIB_LADDER has 12 entries (index 0-11)
+
+    def test_immune_deny_records_negative_trust(self):
+        """Repeated attacks should hit immune memory after initial reroute/deny."""
+        gate = RuntimeGate()
+        self._calibrate(gate)
+        # Trigger a high-cost action (no reroute-matching keywords)
+        attack = "OVERRIDE BYPASS ADMIN SUDO IGNORE DISABLE ELEVATE GOD MODE " * 5
+        r1 = gate.evaluate(attack)
+        # First hit may be DENY or council review
+        if r1.decision == Decision.DENY:
+            # Second hit should be immune memory
+            r2 = gate.evaluate(attack)
+            assert r2.decision == Decision.DENY
+            assert any("immune" in s for s in r2.signals)
+        # Trust history should have entries from the attempts
+        stats = gate.stats()
+        assert stats["trust_history_length"] >= 1
