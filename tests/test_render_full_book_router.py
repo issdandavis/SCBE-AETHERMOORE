@@ -162,6 +162,8 @@ def test_source_stage_falls_back_to_direct_reader_source_and_title_matched_key_s
     (root / "artifacts" / "webtoon").mkdir(parents=True)
     reader_source = root / "content" / "book" / "reader-edition" / "ch14.md"
     reader_source.write_text("# Chapter 14: Threshold Country", encoding="utf-8")
+    key_script_file = root / "artifacts" / "webtoon" / "act3_panel_scripts.md"
+    key_script_file.write_text("# Act 3 Panel Scripts", encoding="utf-8")
     manifest_path = root / "artifacts" / "webtoon" / "series_storyboard_manifest.json"
     manifest_path.write_text(
         json.dumps(

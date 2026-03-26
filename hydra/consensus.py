@@ -268,7 +268,8 @@ class ByzantineConsensus:
         context: Dict[str, Any],
         voting_heads: List[Any],  # List of HydraHead
         vote_collector: Callable,
-        proposer_id: str = "system"
+        proposer_id: str = "system",
+        timeout: Optional[float] = None,
     ) -> ConsensusResult:
         """
         Run a complete consensus round.
@@ -305,6 +306,9 @@ class ByzantineConsensus:
             proposer_id=proposer_id,
             num_voters=n
         )
+
+        if timeout is not None:
+            proposal.timeout_seconds = timeout
 
         print(f"\n[CONSENSUS] Starting round for: {action}")
         print(f"  Voters: {n}, Quorum: {proposal.required_quorum}")

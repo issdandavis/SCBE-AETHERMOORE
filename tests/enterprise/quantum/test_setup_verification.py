@@ -5,6 +5,8 @@ This test verifies that the Python testing infrastructure is properly configured
 """
 
 import pytest
+
+hypothesis = pytest.importorskip("hypothesis", reason="hypothesis not installed")
 from hypothesis import given, strategies as st
 
 

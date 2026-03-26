@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
+httpx = pytest.importorskip("httpx", reason="httpx is required for arxiv retrieval tests")
+
 from typing import Any, Dict, List
 
 from hydra.arxiv_retrieval import AI2AIRetrievalService, ArxivClient

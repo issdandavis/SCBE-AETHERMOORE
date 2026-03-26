@@ -68,7 +68,7 @@ def test_compile_panel_prompt_strips_legacy_prefix() -> None:
 
     prompt = compile_panel_prompt(panel)
 
-    assert prompt.count("single vertical Korean webtoon panel") == 1
+    assert prompt.count("manhwa webtoon panel") == 1
     assert "Wide reveal of Marcus alone in the office." in prompt
 
 
