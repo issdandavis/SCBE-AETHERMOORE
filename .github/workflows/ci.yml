@@ -23,6 +23,7 @@ jobs:
   test:
     name: Test on Node ${{ matrix.node-version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
@@ -72,6 +73,7 @@ jobs:
   python-test:
     name: Test Python Components
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
@@ -109,6 +111,7 @@ jobs:
   lint:
     name: Lint and Format Check
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -147,6 +150,7 @@ jobs:
   security:
     name: Security Audit
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
