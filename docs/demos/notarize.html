@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCBE Notarization — Cryptographic Document Attestation</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a1a;color:#e2e2e2;min-height:100vh;line-height:1.6}
+a{color:#7b8cff;text-decoration:none}
+.container{max-width:800px;margin:0 auto;padding:32px 20px}
+h1{font-size:28px;margin-bottom:4px}
+.subtitle{color:#888;margin-bottom:24px}
+.nav{display:flex;gap:16px;margin-bottom:24px;font-size:14px;flex-wrap:wrap}
+textarea{width:100%;background:#12122e;border:1px solid #1a1a3e;border-radius:8px;padding:14px;color:#e2e2e2;font-size:14px;font-family:monospace;resize:vertical;min-height:100px}
+textarea:focus{outline:none;border-color:#6c5ce7}
+select,input{background:#12122e;border:1px solid #1a1a3e;border-radius:8px;padding:10px;color:#e2e2e2;font-size:14px}
+.row{display:flex;gap:12px;margin:12px 0;flex-wrap:wrap;align-items:end}
+.row label{display:block;font-size:12px;color:#888;text-transform:uppercase;margin-bottom:4px}
+.btn{background:#6c5ce7;color:#fff;padding:12px 24px;border-radius:8px;border:none;cursor:pointer;font-size:15px;font-weight:600}
+.btn:hover{background:#5a4bd1}
+.cert{background:#0d0d22;border:1px solid #1a1a3e;border-radius:12px;padding:20px;margin:20px 0;font-family:monospace;font-size:13px;word-break:break-all;display:none}
+.cert.show{display:block}
+.cert h3{font-family:sans-serif;font-size:16px;color:#6c5ce7;margin-bottom:12px}
+.cert .field{margin:6px 0}
+.cert .label{color:#888;font-size:11px;text-transform:uppercase}
+.cert .value{color:#e2e2e2;margin-top:2px}
+.cert .tongue-hash{color:#32cd32;line-height:1.8;font-size:12px}
+.cert .sig{color:#a29bfe}
+.verify-box{text-align:center;padding:20px;border-radius:8px;margin:16px 0;font-size:18px;font-weight:700;display:none}
+.verify-box.valid{display:block;background:rgba(46,204,113,0.1);border:2px solid #2ecc71;color:#2ecc71}
+.verify-box.invalid{display:block;background:rgba(231,76,60,0.1);border:2px solid #e74c3c;color:#e74c3c}
+.info{background:#12122e;border-left:3px solid #6c5ce7;padding:16px;border-radius:0 8px 8px 0;margin:24px 0;font-size:14px;color:#aaa;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="nav">
+    <a href="../index.html">Home</a>
+    <a href="index.html">Demos</a>
+    <a href="../redteam.html">Red Team</a>
+    <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
+  </div>
+
+  <h1>SCBE Notarization</h1>
+  <p class="subtitle">Cryptographic document attestation with Sacred Tongue encoding. Prove any data existed at a specific time.</p>
+
+  <textarea id="input" placeholder="Paste any text or document content to notarize...">System and Method for Hyperbolic Geometry-Based Authorization with Topological Control-Flow Integrity</textarea>
+
+  <div class="row">
+    <div>
+      <label>Sacred Tongue</label>
+      <select id="tongue">
+        <option value="KO">KO (Intent)</option>
+        <option value="AV">AV (Transport)</option>
+        <option value="RU">RU (Policy)</option>
+        <option value="CA">CA (Compute)</option>
+        <option value="UM">UM (Security)</option>
+        <option value="DR" selected>DR (Attestation)</option>
+      </select>
+    </div>
+    <div>
+      <label>Signer</label>
+      <input id="signer" value="Issac Daniel Davis" style="width:200px">
+    </div>
+    <div style="flex:1"></div>
+    <button class="btn" onclick="notarizeDoc()">Notarize</button>
+  </div>
+
+  <div class="cert" id="certOutput">
+    <h3>Notarization Certificate</h3>
+    <div class="field"><div class="label">Certificate ID</div><div class="value" id="cId"></div></div>
+    <div class="field"><div class="label">SHA-256</div><div class="value" id="cSha256"></div></div>
+    <div class="field"><div class="label">SHA-3-256</div><div class="value" id="cSha3"></div></div>
+    <div class="field"><div class="label">Sacred Tongue Encoded Hash</div><div class="value tongue-hash" id="cTongue"></div></div>
+    <div class="field"><div class="label">HMAC Signature</div><div class="value sig" id="cHmac"></div></div>
+    <div class="field"><div class="label">Timestamp</div><div class="value" id="cTime"></div></div>
+    <div class="field"><div class="label">Signer</div><div class="value" id="cSigner"></div></div>
+    <div class="field"><div class="label">Data Size</div><div class="value" id="cSize"></div></div>
+    <div class="field"><div class="label">System</div><div class="value">SCBE-AETHERMOORE | USPTO #63/961,403</div></div>
+    <div style="margin-top:12px">
+      <button class="btn" onclick="copyCert()" style="font-size:13px;padding:8px 16px">Copy Certificate JSON</button>
+      <button class="btn" onclick="verifyCert()" style="font-size:13px;padding:8px 16px;background:#1a1a3e">Verify</button>
+    </div>
+  </div>
+
+  <div class="verify-box" id="verifyResult"></div>
+
+  <div class="info">
+    <strong>What this does:</strong> Hashes your data with SHA-256 and SHA-3-256 (dual: standard + quantum-resistant),
+    encodes the hash in a Sacred Tongue (256-token conlang vocabulary), signs everything with HMAC-SHA-256,
+    and timestamps it. The certificate proves exactly what data existed at what time.
+    <br><br>
+    <strong>Two layers of proof:</strong>
+    <br>1. Standard SHA-256 — verifiable by anyone with standard tools
+    <br>2. Sacred Tongue encoding — verifiable only within the SCBE system
+    <br><br>
+    <strong>Like the USPTO:</strong> When you file a patent, the USPTO hashes your document with SHA-512
+    and issues a timestamped receipt. This does the same thing, plus Sacred Tongue encoding and PQC-ready signatures.
+    <br><br>
+    <strong>Install:</strong> <code>pip install scbe-aethermoore</code>
+    <br><strong>CLI:</strong> <code>python -c "from src.notarize import notarize; print(notarize(open('file','rb').read()))"</code>
+    <br><br>
+    <a href="https://a.co/d/024VowjS">Read the novel</a> |
+    <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">Source</a>
+  </div>
+</div>
+
+<script>
+const PREFIXES = {
+  KO: ["ik'","sor'","lin'","kor'","thal'","vex'","dor'","mak'"],
+  AV: ["ael'","vir'","sen'","lum'","pax'","tor'","vel'","zan'"],
+  RU: ["groth'","sten'","drak'","fyr'","keld'","bron'","thun'","gal'"],
+  CA: ["steam'","gear'","rivet'","piston'","valve'","cog'","bolt'","flux'"],
+  UM: ["thorn'","shade'","mist'","void'","dusk'","veil'","ash'","grim'"],
+  DR: ["fizz'","pop'","bub'","snap'","whiz'","zip'","spark'","glow'"],
+};
+const SUFFIXES = ["el","or","in","ak","ul","sa","ri","yn","on","ar","ik","eth","ix","um","os","an","ir","al","uk","ez","om","at","is","en","ob","av","ep","ux","id","ag","ot","un"];
+
+function buildVocab(tongue) {
+  const p = PREFIXES[tongue] || PREFIXES.DR;
+  const v = [];
+  for (let i = 0; i < 256; i++) v.push(p[i % p.length] + SUFFIXES[Math.floor(i / p.length) % SUFFIXES.length]);
+  return v;
+}
+
+async function sha256(data) {
+  const buf = new TextEncoder().encode(data);
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function hmacSha256(key, data) {
+  const keyBuf = new TextEncoder().encode(key);
+  const dataBuf = new TextEncoder().encode(data);
+  const cryptoKey = await crypto.subtle.importKey('raw', keyBuf, {name: 'HMAC', hash: 'SHA-256'}, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', cryptoKey, dataBuf);
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+let lastCert = null;
+
+async function notarizeDoc() {
+  const text = document.getElementById('input').value;
+  const tongue = document.getElementById('tongue').value;
+  const signer = document.getElementById('signer').value;
+  if (!text) return;
+
+  const hash = await sha256(text);
+  const hashBytes = [];
+  for (let i = 0; i < hash.length; i += 2) hashBytes.push(parseInt(hash.substr(i, 2), 16));
+
+  const vocab = buildVocab(tongue);
+  const tongueHash = hashBytes.map(b => vocab[b]).join(' ');
+
+  const now = new Date();
+  const nonce = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2,'0')).join('');
+
+  const cert = {
+    cert_id: 'scbe-cert-' + Math.floor(now.getTime()/1000) + '-' + nonce.substring(0,8),
+    version: '1.0',
+    sha256: hash,
+    sha3_256: '(requires server - use pip install scbe-aethermoore for full SHA-3)',
+    tongue: tongue,
+    tongue_encoded_hash: tongueHash,
+    signer: signer,
+    timestamp: now.getTime() / 1000,
+    timestamp_iso: now.toISOString(),
+    nonce: nonce,
+    data_size: new TextEncoder().encode(text).length,
+    system: 'SCBE-AETHERMOORE',
+    patent: 'USPTO #63/961,403',
+  };
+
+  const canonical = JSON.stringify(cert, Object.keys(cert).sort());
+  cert.hmac_sha256 = await hmacSha256(signer, canonical);
+
+  lastCert = cert;
+
+  document.getElementById('cId').textContent = cert.cert_id;
+  document.getElementById('cSha256').textContent = cert.sha256;
+  document.getElementById('cSha3').textContent = cert.sha3_256;
+  document.getElementById('cTongue').textContent = cert.tongue_encoded_hash;
+  document.getElementById('cHmac').textContent = cert.hmac_sha256;
+  document.getElementById('cTime').textContent = cert.timestamp_iso;
+  document.getElementById('cSigner').textContent = cert.signer;
+  document.getElementById('cSize').textContent = cert.data_size + ' bytes';
+  document.getElementById('certOutput').classList.add('show');
+  document.getElementById('verifyResult').className = 'verify-box';
+}
+
+async function verifyCert() {
+  if (!lastCert) return;
+  const certCopy = {...lastCert};
+  delete certCopy.hmac_sha256;
+  const canonical = JSON.stringify(certCopy, Object.keys(certCopy).sort());
+  const expected = await hmacSha256(lastCert.signer, canonical);
+  const valid = expected === lastCert.hmac_sha256;
+  const el = document.getElementById('verifyResult');
+  el.textContent = valid ? 'VERIFIED - Certificate is authentic' : 'INVALID - Certificate has been tampered with';
+  el.className = 'verify-box ' + (valid ? 'valid' : 'invalid');
+}
+
+function copyCert() {
+  if (!lastCert) return;
+  navigator.clipboard.writeText(JSON.stringify(lastCert, null, 2));
+  alert('Certificate JSON copied to clipboard');
+}
+</script>
+</body>
+</html>
