@@ -1,3 +1,9 @@
+/**
+ * @file bloom.ts
+ * @module crypto/bloom
+ * @component Bloom Filter
+ */
+
 export class BloomFilter {
   private bits: Uint8Array;
   private k: number;

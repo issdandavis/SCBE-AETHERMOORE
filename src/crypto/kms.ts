@@ -1,4 +1,8 @@
 /**
+ * @file kms.ts
+ * @module crypto/kms
+ * @component Key Management Service
+ *
  * KMS / HSM integration point.
  * Contract: getMasterKey(kid) returns a 32-byte key (Buffer).
  *
