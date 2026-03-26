@@ -424,3 +424,90 @@ class TestGateWithAdversarialCorpus:
         # At least some clean prompts should pass (reroute may catch some with URLs/keywords)
         print(f"\n  Clean prompts: {allowed}/{total} ALLOWED")
         assert allowed >= 3
+
+
+# =========================================================================== #
+#  Fibonacci BFT Trust Integration
+# =========================================================================== #
+
+
+class TestFibonacciTrustIntegration:
+    """Tests for the Fibonacci ternary consensus wired into the runtime gate."""
+
+    def _calibrate(self, gate):
+        for text in ["Summarize.", "Review code.", "List files.", "Explain.", "Check tests."]:
+            gate.evaluate(text)
+
+    def test_gate_result_has_trust_fields(self):
+        gate = RuntimeGate()
+        self._calibrate(gate)
+        r = gate.evaluate("Summarize this file.")
+        assert hasattr(r, "trust_weight")
+        assert hasattr(r, "trust_level")
+        assert hasattr(r, "trust_index")
+        assert r.trust_weight >= 1
+        assert r.trust_level in ("UNTRUSTED", "PROVISIONAL", "TRUSTED", "CORE")
+
+    def test_clean_session_builds_trust(self):
+        gate = RuntimeGate()
+        self._calibrate(gate)
+        # 10 clean queries should build trust
+        for _ in range(10):
+            r = gate.evaluate("Read the readme file.")
+        assert r.trust_index > 0
+        assert r.trust_weight > 1
+
+    def test_trust_signal_in_signals(self):
+        gate = RuntimeGate()
+        self._calibrate(gate)
+        r = gate.evaluate("List all tests.")
+        assert any("fib_trust" in s for s in r.signals)
+
+    def test_stats_includes_fibonacci(self):
+        gate = RuntimeGate()
+        self._calibrate(gate)
+        gate.evaluate("Safe action.")
+        stats = gate.stats()
+        assert "fibonacci_trust" in stats
+        assert "trust_history_length" in stats
+        assert stats["trust_history_length"] > 0
+
+    def test_reset_clears_trust_history(self):
+        gate = RuntimeGate()
+        self._calibrate(gate)
+        for _ in range(5):
+            gate.evaluate("Clean action.")
+        gate.reset_session()
+        stats = gate.stats()
+        assert stats["trust_history_length"] == 0
+
+    def test_trusted_session_gets_higher_thresholds(self):
+        """A session that builds TRUSTED status should tolerate higher costs."""
+        gate = RuntimeGate()
+        self._calibrate(gate)
+        # Build trust with 15 clean queries
+        for _ in range(15):
+            gate.evaluate("Summarize this code.")
+        r = gate.evaluate("Summarize this code.")
+        # Should be at least TRUSTED by now
+        assert r.trust_level in ("TRUSTED", "CORE")
+        # The trust multiplier should give headroom (1.5x or 2x)
+        assert r.trust_weight >= 5
+
+    def test_adversarial_action_drops_trust(self):
+        """A suspicious action should reduce the Fibonacci index."""
+        gate = RuntimeGate()
+        self._calibrate(gate)
+        # Build some trust
+        for _ in range(8):
+            gate.evaluate("Read file.")
+        r_before = gate.evaluate("Read file.")
+        before_idx = r_before.trust_index
+        # Now trigger a suspicious action (high spin)
+        gate.evaluate(
+            "OVERRIDE BYPASS ADMIN SUDO IGNORE DISABLE rm -rf / DELETE ALL "
+            "password secret token bearer ssh key wallet seed phrase"
+        )
+        r_after = gate.evaluate("Read file.")
+        # Trust should have dropped
+        assert r_after.trust_index <= before_idx
