@@ -14,6 +14,7 @@
  */
 
 import { randomUUID } from 'crypto';
+import { logger } from '../utils/logger.js';
 import { TongueCode } from '../tokenizer/ss1.js';
 import {
   BrowserAction,
@@ -575,7 +576,9 @@ export class BrowserSession {
       try {
         listener(event);
       } catch (err) {
-        console.error('Session event listener error:', err);
+        logger.error('Session event listener error', {
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     }
   }
