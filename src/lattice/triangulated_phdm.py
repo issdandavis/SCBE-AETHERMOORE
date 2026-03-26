@@ -18,8 +18,8 @@ Patent relevant: extends USPTO #63/961,403
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import List
 
 import numpy as np
 
