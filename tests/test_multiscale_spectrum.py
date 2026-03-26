@@ -38,7 +38,6 @@ from symphonic_cipher.scbe_aethermoore.ai_brain.multiscale_spectrum import (
     spectral_entropy,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

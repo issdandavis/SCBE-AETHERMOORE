@@ -33,7 +33,6 @@ from typing import List, Tuple
 
 from .negabinary import NegaBinary, negabinary_to_balanced_ternary
 
-
 # ---------------------------------------------------------------------------
 # Gate Tri-Manifold State
 # ---------------------------------------------------------------------------

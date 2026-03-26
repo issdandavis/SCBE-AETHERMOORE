@@ -41,8 +41,10 @@ class DerivedCombatStats:
 
 def derive_combat_stats(state: CanonicalState) -> DerivedCombatStats:
     """Derive combat stats from 21D canonical state. Never set directly."""
+
     def clamp(x):
         return max(0.0, min(100.0, x * 100))
+
     return DerivedCombatStats(
         speed=clamp(state.flux),
         insight=clamp(state.coherence_s),

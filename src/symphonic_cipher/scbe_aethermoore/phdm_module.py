@@ -32,7 +32,6 @@ from dataclasses import dataclass, field
 from typing import List, Tuple, Dict, Optional, Any
 from enum import Enum
 
-
 # =============================================================================
 # SECTION 1: POLYHEDRA DEFINITIONS
 # =============================================================================

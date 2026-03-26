@@ -1,5 +1,9 @@
 /**
- * Minimal JCS (RFC 8785-like) canonicalization: UTF-8, lexicographic sorting of keys,
+ * @file jcs.ts
+ * @module crypto/jcs
+ * @component JSON Canonicalization Scheme (RFC 8785)
+ *
+ * Minimal JCS canonicalization: UTF-8, lexicographic sorting of keys,
  * no insignificant whitespace, stable numbers.
  */
 

@@ -29,7 +29,6 @@ from .credit import ContextCredit, Denomination, DENOMINATION_WEIGHTS
 from .bitlocker import VaultRegistry
 from .ledger import ContextLedger
 
-
 # ---------------------------------------------------------------------------
 #  Exchange types
 # ---------------------------------------------------------------------------

@@ -11,6 +11,7 @@ permissions:
 jobs:
   npm-audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -73,6 +74,7 @@ jobs:
 
   pip-audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -106,6 +108,7 @@ jobs:
   create-issue:
     needs: [npm-audit, pip-audit]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       issues: write
       actions: read

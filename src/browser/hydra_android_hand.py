@@ -29,7 +29,6 @@ from typing import Any, Dict, List, Optional, Sequence
 
 from src.browser.hydra_hand import Proximity, TONGUE_PROXIMITY, TONGUE_WEIGHT, Tongue
 
-
 DEFAULT_PACKAGE = "com.issdandavis.aethercode"
 DEFAULT_READER_ROUTE = "http://10.0.2.2:8088/polly-pad.html"
 

@@ -18,7 +18,6 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from symphonic_cipher.scbe_aethermoore.multimodal.mmx import compute_mmx
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================

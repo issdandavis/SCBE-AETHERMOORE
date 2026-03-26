@@ -7,7 +7,6 @@ from src.harmonic.tarski_sheaf import (
     obstruction_count,
 )
 
-
 TETRADIC = ("Ti", "Tm", "Tg", "Tp")
 TRIADIC = ("Ti", "Tm", "Tg")
 

@@ -39,7 +39,6 @@ from urllib.error import URLError
 
 from .task_monitor import PHI, hyperbolic_distance
 
-
 # ---------------------------------------------------------------------------
 #  Constants
 # ---------------------------------------------------------------------------

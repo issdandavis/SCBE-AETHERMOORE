@@ -25,7 +25,7 @@ export type PolicyLevel = 'standard' | 'strict' | 'secret' | 'critical';
  *
  * @template T - Payload type (must be JSON-serializable)
  */
-export interface RWP2MultiEnvelope<T = any> {
+export interface RWP2MultiEnvelope<T = Record<string, unknown>> {
   /** Protocol version (always "2.1") */
   ver: '2.1';
 
@@ -83,7 +83,7 @@ export interface VerificationResult {
   error?: string;
 
   /** Decoded payload if verification passed */
-  payload?: any;
+  payload?: unknown;
 }
 
 /**

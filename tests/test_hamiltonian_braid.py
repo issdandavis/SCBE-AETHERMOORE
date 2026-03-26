@@ -9,7 +9,6 @@ constraint manifold projection, and braid-constrained trajectory dynamics.
 @tier L2-unit, L3-integration, L4-property
 """
 
-
 import numpy as np
 import pytest
 
@@ -35,7 +34,6 @@ from symphonic_cipher.scbe_aethermoore.ai_brain.hamiltonian_braid import (
     braid_step,
     simulate_braid,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -4,6 +4,7 @@
  * @module fleet/task-dispatcher
  */
 
+import { logger } from '../utils/logger';
 import { AgentRegistry } from './agent-registry';
 import {
   AgentCapability,
@@ -565,7 +566,7 @@ export class TaskDispatcher {
       try {
         listener(event);
       } catch (e) {
-        console.error('Event listener error:', e);
+        logger.error('Event listener error', { error: e instanceof Error ? e.message : String(e) });
       }
     }
   }

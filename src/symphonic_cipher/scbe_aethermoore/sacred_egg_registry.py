@@ -60,8 +60,7 @@ class SacredEggRegistry:
 
     def _init_tables(self):
         c = self._conn.cursor()
-        c.execute(
-            """
+        c.execute("""
             CREATE TABLE IF NOT EXISTS eggs (
                 egg_id          TEXT PRIMARY KEY,
                 primary_tongue  TEXT NOT NULL,
@@ -74,10 +73,8 @@ class SacredEggRegistry:
                 hatched_at      REAL,
                 hatched_by      TEXT
             )
-        """
-        )
-        c.execute(
-            """
+        """)
+        c.execute("""
             CREATE TABLE IF NOT EXISTS ritual_log (
                 id              INTEGER PRIMARY KEY AUTOINCREMENT,
                 egg_id          TEXT NOT NULL,
@@ -87,14 +84,11 @@ class SacredEggRegistry:
                 ritual_mode     TEXT,
                 FOREIGN KEY (egg_id) REFERENCES eggs(egg_id)
             )
-        """
-        )
-        c.execute(
-            """
+        """)
+        c.execute("""
             CREATE INDEX IF NOT EXISTS idx_ritual_egg
             ON ritual_log(egg_id)
-        """
-        )
+        """)
         self._conn.commit()
 
     def register(self, egg: SacredEgg, ttl_seconds: int = 0) -> str:

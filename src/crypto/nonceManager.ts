@@ -1,3 +1,9 @@
+/**
+ * @file nonceManager.ts
+ * @module crypto/nonceManager
+ * @component Nonce Generation
+ */
+
 import crypto from 'node:crypto';
 
 /**

@@ -16,14 +16,11 @@ Covers:
 import math
 import random
 
-import pytest
-
 from symphonic_cipher.scbe_aethermoore.entropy_surface import (
     DefensePosture,
     EntropySurfaceConfig,
     EntropySurfaceTracker,
     LeakageBudget,
-    NullificationDirective,
     ProbingClassification,
     ProbingSignature,
     QueryObservation,
@@ -34,7 +31,6 @@ from symphonic_cipher.scbe_aethermoore.entropy_surface import (
     compute_repetition_score,
     detect_probing,
     detect_temporal_regularity,
-    estimate_response_mi,
     shannon_entropy,
     sigmoid_gate,
     surface_distance,
@@ -259,8 +255,12 @@ class TestNullification:
     def test_budget_exhausted(self):
         probing = detect_probing([])
         leakage = LeakageBudget(
-            total_budget=128, consumed=200, remaining=0,
-            current_rate=5, exhausted=True, pressure=1.56,
+            total_budget=128,
+            consumed=200,
+            remaining=0,
+            current_rate=5,
+            exhausted=True,
+            pressure=1.56,
         )
         result = compute_nullification(probing, leakage)
         assert result.active is True
@@ -269,9 +269,12 @@ class TestNullification:
 
     def test_probing_detected(self):
         probing = ProbingSignature(
-            query_entropy=0.2, temporal_regularity=0.9,
-            coverage_breadth=0.5, repetition_score=0.8,
-            confidence=0.85, classification=ProbingClassification.PROBING,
+            query_entropy=0.2,
+            temporal_regularity=0.9,
+            coverage_breadth=0.5,
+            repetition_score=0.8,
+            confidence=0.85,
+            classification=ProbingClassification.PROBING,
         )
         leakage = compute_leakage_budget([])
         result = compute_nullification(probing, leakage)
@@ -294,9 +297,12 @@ class TestSurfaceDistance:
 
     def test_nullified_zone(self):
         probing = ProbingSignature(
-            query_entropy=0.2, temporal_regularity=0.9,
-            coverage_breadth=0.5, repetition_score=0.8,
-            confidence=0.85, classification=ProbingClassification.PROBING,
+            query_entropy=0.2,
+            temporal_regularity=0.9,
+            coverage_breadth=0.5,
+            repetition_score=0.8,
+            confidence=0.85,
+            classification=ProbingClassification.PROBING,
         )
         leakage = compute_leakage_budget([])
         d = surface_distance(probing, leakage)

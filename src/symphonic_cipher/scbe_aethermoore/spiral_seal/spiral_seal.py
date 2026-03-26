@@ -34,7 +34,6 @@ from .sacred_tongues import (
     get_tokenizer,
 )
 
-
 # =============================================================================
 # CRYPTO BACKEND DETECTION (lazy loading to avoid broken cryptography module)
 # =============================================================================

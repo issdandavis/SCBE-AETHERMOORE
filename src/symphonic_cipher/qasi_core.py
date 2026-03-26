@@ -31,7 +31,7 @@ def clamp_ball(u: np.ndarray, eps_ball: float = 1e-3) -> np.ndarray:
     return (r_max / r) * u
 
 
-def safe_arcosh(x):
+def safe_arcosh(x: "float | np.ndarray") -> "float | np.ndarray":
     """arcosh defined for x>=1."""
     if isinstance(x, float):
         return float(np.arccosh(max(1.0, x)))
