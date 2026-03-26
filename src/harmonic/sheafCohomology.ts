@@ -1466,10 +1466,10 @@ export function analyseCohomology<T>(
   const h = lattice.height();
   let heightUtil = 0;
   if (h > 0 && typeof maxEl === 'number' && typeof minEl === 'number') {
-    const top = lattice.top as unknown as number;
-    const bot = lattice.bottom as unknown as number;
+    const top = Number(lattice.top);
+    const bot = Number(lattice.bottom);
     const range = top - bot;
-    heightUtil = range > 0 ? ((maxEl as number) - (minEl as number)) / range : 0;
+    heightUtil = range > 0 ? (Number(maxEl) - Number(minEl)) / range : 0;
   }
 
   return {
@@ -1533,9 +1533,8 @@ export function detectObstructions<T>(
       let severity = 0;
 
       if (typeof meetVal === 'number' && typeof joinVal === 'number') {
-        const range =
-          (edgeLattice.top as unknown as number) - (edgeLattice.bottom as unknown as number);
-        severity = range > 0 ? ((joinVal as number) - (meetVal as number)) / range : 1;
+        const range = Number(edgeLattice.top) - Number(edgeLattice.bottom);
+        severity = range > 0 ? (Number(joinVal) - Number(meetVal)) / range : 1;
       } else {
         severity = edgeLattice.eq(meetVal, edgeLattice.bottom) ? 1 : 0.5;
       }

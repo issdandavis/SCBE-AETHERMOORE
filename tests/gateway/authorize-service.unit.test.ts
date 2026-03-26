@@ -26,6 +26,7 @@ const { createAuthorizeApp } = await import('../../src/gateway/authorize-service
 
 // Minimal supertest-like helper using the Express app directly
 import type { Express } from 'express';
+import type { IncomingMessage } from 'http';
 
 async function request(app: Express, method: 'get' | 'post', path: string, body?: unknown) {
   return new Promise<{ status: number; body: Record<string, unknown> }>((resolve) => {
@@ -46,12 +47,12 @@ async function request(app: Express, method: 'get' | 'post', path: string, body?
         },
       };
 
-      const req = http.request(options, (res: any) => {
+      const req = http.request(options, (res: IncomingMessage) => {
         let data = '';
         res.on('data', (chunk: string) => (data += chunk));
         res.on('end', () => {
           server.close();
-          resolve({ status: res.statusCode, body: JSON.parse(data) });
+          resolve({ status: res.statusCode ?? 500, body: JSON.parse(data) });
         });
       });
 
