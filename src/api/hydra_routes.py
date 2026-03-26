@@ -80,7 +80,7 @@ _spine = None
 _providers: Dict[str, Any] = {}
 
 
-def get_spine():
+def get_spine() -> Any:
     """Return the shared HydraSpine singleton, or raise if not initialized."""
     if _spine is None:
         raise HTTPException(500, "HYDRA spine not initialized")
@@ -93,13 +93,10 @@ def get_spine():
 
 # Import at module level is safe; the dict is defined in main.py and we
 # re-use the same validation logic here without coupling tightly.
-VALID_API_KEYS = {
-    "demo_key_12345": "demo_user",
-    "pilot_key_67890": "pilot_customer",
-}
+from src.api.auth_config import VALID_API_KEYS
 
 
-async def verify_api_key(x_api_key: str = Header(...)):
+async def verify_api_key(x_api_key: str = Header(...)) -> str:
     """Verify API key and return user identifier."""
     if x_api_key not in VALID_API_KEYS:
         raise HTTPException(401, "Invalid API key")

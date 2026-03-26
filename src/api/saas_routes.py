@@ -24,10 +24,7 @@ from src.symphonic_cipher.scbe_aethermoore.flock_shepherd import (
 
 saas_router = APIRouter(prefix="/saas")
 
-VALID_API_KEYS = {
-    "demo_key_12345": "demo_user",
-    "pilot_key_67890": "pilot_customer",
-}
+from src.api.auth_config import VALID_API_KEYS
 
 PLAN_LIMITS: Dict[str, Dict[str, int]] = {
     "starter": {"flocks": 1, "agents": 8, "monthly_governance": 5000},

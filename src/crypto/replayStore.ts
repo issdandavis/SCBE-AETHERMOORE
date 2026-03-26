@@ -1,8 +1,10 @@
 /**
- * Replay Store Interface (MEDIUM-001 fix)
+ * @file replayStore.ts
+ * @module crypto/replayStore
+ * @component Replay Detection Storage
  *
  * Abstracts replay detection storage to support both single-process
- * and distributed deployments.
+ * and distributed deployments (MEDIUM-001 fix).
  */
 
 export interface ReplayEntry {
