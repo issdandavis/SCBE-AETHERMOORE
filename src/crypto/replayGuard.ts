@@ -1,4 +1,5 @@
 import { ReplayStore, MemoryReplayStore, createReplayStore, RedisClient } from './replayStore.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * ReplayGuard - Prevents replay attacks on envelopes.
@@ -77,9 +78,8 @@ export class ReplayGuard {
 
     // For async stores (Redis, etc.), this sync API is not safe
     // Log warning and fail closed (reject as replay) for safety
-    console.warn(
-      'ReplayGuard: Sync checkAndSet called with async store. ' +
-        'Use checkAndSetAsync for distributed deployments.'
+    logger.warn(
+      'ReplayGuard: Sync checkAndSet called with async store. Use checkAndSetAsync for distributed deployments.'
     );
     return false; // Fail closed for safety
   }
