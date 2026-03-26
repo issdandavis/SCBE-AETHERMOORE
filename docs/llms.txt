@@ -1,6 +1,7 @@
 # SCBE-AETHERMOORE
 
-Canonical site: https://aethermoorgames.com/
+Canonical offer site: https://aethermoorgames.com/
+Public docs hub: https://issdandavis.github.io/SCBE-AETHERMOORE/
 
 SCBE-AETHERMOORE is a public documentation and product surface for an AI governance system, its demos, its buyer manuals, and its support routes. The public site is intentionally split into separate lanes so humans and AI assistants can find the right level of detail quickly.
 
@@ -8,21 +9,21 @@ SCBE-AETHERMOORE is a public documentation and product surface for an AI governa
 
 - Home: https://aethermoorgames.com/
   - Main overview, benchmarks, pricing, core concepts, and product entry points.
-- Demos: https://aethermoorgames.com/demos/index.html
+- Demos: https://issdandavis.github.io/SCBE-AETHERMOORE/demos/index.html
   - Story-first demo lab for Hydra, GeoSeal, CLI surfaces, and visual orientation.
-- Product Manuals: https://aethermoorgames.com/product-manual/index.html
+- Product Manuals: https://issdandavis.github.io/SCBE-AETHERMOORE/product-manual/index.html
   - Buyer-facing usage manuals for purchased packages.
-- Delivery + Access: https://aethermoorgames.com/product-manual/delivery-and-access.html
+- Delivery + Access: https://issdandavis.github.io/SCBE-AETHERMOORE/product-manual/delivery-and-access.html
   - What buyers should receive, how access works, and how to recover missing delivery.
-- Support: https://aethermoorgames.com/support.html
+- Support: https://issdandavis.github.io/SCBE-AETHERMOORE/support.html
   - Troubleshooting path for delivery, setup, AI drift, and broken-page issues.
 
 ## Package pages
 
-- AI Governance Toolkit: https://aethermoorgames.com/product-manual/ai-governance-toolkit.html
-- HYDRA Agent Templates: https://aethermoorgames.com/product-manual/hydra-agent-templates.html
-- n8n Workflow Pack: https://aethermoorgames.com/product-manual/n8n-workflow-pack.html
-- Content Spin Engine: https://aethermoorgames.com/product-manual/content-spin-engine.html
+- AI Governance Toolkit: https://issdandavis.github.io/SCBE-AETHERMOORE/product-manual/ai-governance-toolkit.html
+- HYDRA Agent Templates: https://issdandavis.github.io/SCBE-AETHERMOORE/product-manual/hydra-agent-templates.html
+- n8n Workflow Pack: https://issdandavis.github.io/SCBE-AETHERMOORE/product-manual/n8n-workflow-pack.html
+- Content Spin Engine: https://issdandavis.github.io/SCBE-AETHERMOORE/product-manual/content-spin-engine.html
 
 ## Public concepts
 
@@ -50,5 +51,5 @@ SCBE-AETHERMOORE is a public documentation and product surface for an AI governa
 
 ## Contact and escalation
 
-- Support email: mailto:issdandavis@gmail.com?subject=SCBE%20Support%20Help
+- Support email: mailto:aethermoregames@pm.me?subject=SCBE%20Support%20Help
 - GitHub repo: https://github.com/issdandavis/SCBE-AETHERMOORE

@@ -86,9 +86,9 @@ jobs:
               ;;
             governance)
               TITLE="AI Governance with Provable Safety Guarantees"
-              BODY="Open source AI governance framework. 91/91 attacks blocked, 0 false positives, NIST AI RMF 100% compliant.
+              BODY="Open source AI governance framework. 91/91 attacks blocked, 0/15 clean false positives in the current public suite.
 
-          https://aethermoorgames.com#government"
+          https://issdandavis.github.io/SCBE-AETHERMOORE/redteam.html"
               ;;
             design-partner)
               TITLE="Design Partner Program — Free AI Governance Evaluation"

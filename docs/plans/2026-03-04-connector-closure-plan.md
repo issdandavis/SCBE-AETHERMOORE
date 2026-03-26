@@ -122,7 +122,7 @@ python scripts/shopify_bridge.py products --publish-live
 cd C:\Users\issda\SCBE-AETHERMOORE
 $env:PYTHONPATH='.'
 python scripts/connector_health_check.py --checks github notion huggingface zapier --output artifacts/connector_health/monetization_core_health.json
-python C:\Users\issda\.codex\skills\scbe-monetization-thought-to-cash\scripts\build_cash_scorecard.py --cash-today 0 --orders 0 --top-offer "Hydra Armor API" --next-action "Ship one direct revenue action now."
+python C:\Users\issda\.codex\skills\scbe-monetization-thought-to-cash\scripts\build_cash_scorecard.py --cash-today 0 --orders 0 --top-offer "AI Governance Toolkit" --next-action "Ship one direct revenue action now."
 ```
 
 ## Risk Controls
