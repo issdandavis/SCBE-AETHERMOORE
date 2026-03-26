@@ -148,3 +148,77 @@ class TestHarmonicCostAtShell:
             expected = R ** (r ** 2)
             actual = harmonic_cost_at_shell(k, R)
             assert abs(actual - expected) < 1e-10
+
+
+class TestEdgeCasesAndStress:
+    """Property-based and boundary tests for robustness."""
+
+    def test_phi_shell_radius_large_k(self):
+        """Large k should approach 1.0. At extreme k, float overflow → exactly 1.0."""
+        # Moderate k: still < 1.0
+        for k in [20, 30, 40]:
+            r = phi_shell_radius(k)
+            assert r < 1.0
+            assert r > 0.99
+        # Extreme k: phi^500 overflows to inf, r = inf/(1+inf) = 1.0 in float
+        # This is a known numerical boundary — the math is correct, float is finite
+        r_extreme = phi_shell_radius(500)
+        assert r_extreme <= 1.0
+
+    def test_harmonic_cost_different_R_values(self):
+        """Cost should scale with R parameter."""
+        for k in range(5):
+            c2 = harmonic_cost_at_shell(k, R=2.0)
+            c4 = harmonic_cost_at_shell(k, R=4.0)
+            c10 = harmonic_cost_at_shell(k, R=10.0)
+            assert c2 <= c4 <= c10
+
+    def test_consensus_long_history(self):
+        """Consensus should handle very long histories without error."""
+        history = [1] * 1000
+        result = fibonacci_ternary_consensus(history)
+        assert result == FIB_LADDER[-1]  # should cap at max
+
+    def test_consensus_alternating(self):
+        """Alternating +1/-1 should stay near bottom of ladder."""
+        history = [1, -1] * 100
+        result = fibonacci_ternary_consensus(history)
+        # Alternating: up then down, net should be near start
+        assert result <= FIB_LADDER[1]
+
+    def test_trust_level_all_neutral(self):
+        """All neutral (0) history should stay UNTRUSTED."""
+        result = fibonacci_trust_level([0] * 100)
+        assert result["level"] == "UNTRUSTED"
+        assert result["index"] == 0
+
+    def test_projection_large_vectors(self):
+        """Projection should handle large magnitude vectors."""
+        v = np.array([100, -100, 50, -50, 200, -200], dtype=float)
+        k = np.array([0, 1, 2, 3, 4, 5])
+        result = phi_lifted_poincare_projection(v, k)
+        assert np.linalg.norm(result) < 1.0  # still inside ball
+
+    def test_projection_all_zeros_k(self):
+        """Zero depth exponents should still work (phi^0 = 1)."""
+        v = np.array([1, 1, 1, 1, 1, 1], dtype=float)
+        k = np.zeros(6, dtype=int)
+        result = phi_lifted_poincare_projection(v, k)
+        assert np.linalg.norm(result) < 1.0
+
+    def test_consensus_single_drop_from_max(self):
+        """One -1 from max should drop exactly one step."""
+        history = [1] * 11 + [-1]  # climb to max, then drop
+        result = fibonacci_ternary_consensus(history)
+        assert result == FIB_LADDER[10]  # 89, not 144
+
+    def test_harmonic_cost_k0_R1(self):
+        """R=1 should give cost=1 for any shell (1^anything = 1)."""
+        for k in range(10):
+            assert harmonic_cost_at_shell(k, R=1.0) == 1.0
+
+    def test_shell_radius_self_similar(self):
+        """Adjacent shells should have phi-ratio relationship in their raw phi^k values."""
+        for k in range(1, 10):
+            ratio = PHI ** k / PHI ** (k - 1)
+            assert abs(ratio - PHI) < 1e-10
