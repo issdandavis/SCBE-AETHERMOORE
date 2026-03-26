@@ -8,9 +8,33 @@
   </url>
   <url>
     <loc>https://issdandavis.github.io/SCBE-AETHERMOORE/demos/index.html</loc>
-    <lastmod>2026-03-24</lastmod>
+    <lastmod>2026-03-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://issdandavis.github.io/SCBE-AETHERMOORE/demos/phi-poincare.html</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://issdandavis.github.io/SCBE-AETHERMOORE/articles/index.html</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://issdandavis.github.io/SCBE-AETHERMOORE/research/index.html</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://issdandavis.github.io/SCBE-AETHERMOORE/research/history-bible-theory-training.html</loc>
+    <lastmod>2026-03-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://issdandavis.github.io/SCBE-AETHERMOORE/support.html</loc>
