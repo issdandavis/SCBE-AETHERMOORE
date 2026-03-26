@@ -1,3 +1,9 @@
+/**
+ * @file replayGuard.ts
+ * @module crypto/replayGuard
+ * @component Replay Attack Prevention
+ */
+
 import { ReplayStore, MemoryReplayStore, createReplayStore, RedisClient } from './replayStore.js';
 import { logger } from '../utils/logger.js';
 

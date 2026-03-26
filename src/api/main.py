@@ -377,10 +377,7 @@ CONNECTOR_TEMPLATES: List[Dict[str, Any]] = [
 # AUTH
 # ============================================================================
 
-VALID_API_KEYS = {
-    "demo_key_12345": "demo_user",
-    "pilot_key_67890": "pilot_customer",
-}
+from src.api.auth_config import VALID_API_KEYS
 
 
 async def verify_api_key(x_api_key: str = Header(...)):
