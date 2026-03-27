@@ -26,6 +26,69 @@ except ImportError:
     np = None  # type: ignore[assignment]
     NUMPY_AVAILABLE = False
 
+# ---------------------------------------------------------------------------
+# Gracefully skip test files that import numpy at module level when numpy is
+# absent.  Without this guard, pytest collection fails with ImportError on
+# every file that does ``import numpy as np`` at the top level (57 files).
+# ---------------------------------------------------------------------------
+if not NUMPY_AVAILABLE:
+    _tests_dir = Path(__file__).resolve().parent
+    _repo_root = _tests_dir.parent
+    collect_ignore: List[str] = []
+
+    # Step 1: scan src/ and other source dirs to find top-level packages
+    # that transitively require numpy.
+    _NUMPY_PACKAGES: set = set()
+    for _src_dir in (_repo_root / "src", _repo_root / "hydra",
+                      _repo_root / "scripts", _repo_root / "tests",
+                      _repo_root / "symphonic_cipher", _repo_root / "experiments"):
+        if not _src_dir.is_dir():
+            continue
+        for _pyfile in _src_dir.rglob("*.py"):
+            try:
+                _content = _pyfile.read_text(encoding="utf-8", errors="ignore")
+            except Exception:
+                continue
+            if "import numpy" in _content or "from numpy" in _content:
+                # Extract the dotted package path relative to repo root
+                # e.g. src/storage/foo.py → "src.storage"
+                _rel = _pyfile.relative_to(_repo_root)
+                _parts = list(_rel.parts)
+                # Add all parent packages as numpy-dependent
+                for _depth in range(1, len(_parts)):
+                    _NUMPY_PACKAGES.add(".".join(_parts[:_depth]))
+
+    # Step 2: build text indicators from discovered packages + direct numpy.
+    # Tests may import with or without the "src." prefix, so generate both.
+    _NUMPY_INDICATORS: set = {"import numpy", "from numpy"}
+    for _pkg in sorted(_NUMPY_PACKAGES):
+        _NUMPY_INDICATORS.add(f"from {_pkg}")
+        _NUMPY_INDICATORS.add(f"import {_pkg}")
+        # Strip leading "src." to catch unprefixed imports (e.g. "from symphonic_cipher")
+        if _pkg.startswith("src."):
+            _short = _pkg[4:]
+            _NUMPY_INDICATORS.add(f"from {_short}")
+            _NUMPY_INDICATORS.add(f"import {_short}")
+
+    # Step 3: skip test files that match any indicator
+    for _candidate in _tests_dir.rglob("*.py"):
+        try:
+            _src = _candidate.read_text(encoding="utf-8", errors="ignore")
+            if any(ind in _src for ind in _NUMPY_INDICATORS):
+                collect_ignore.append(str(_candidate))
+                continue
+            # Catch dynamic imports (importlib.util.spec_from_file_location)
+            # that load numpy-dependent scripts at module level
+            if "spec_from_file_location" in _src:
+                for _pkg_path in _NUMPY_PACKAGES:
+                    # Convert dotted package to possible filename fragments
+                    _leaf = _pkg_path.rsplit(".", 1)[-1]
+                    if _leaf in _src:
+                        collect_ignore.append(str(_candidate))
+                        break
+        except Exception:
+            continue
+
 # Add src to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
