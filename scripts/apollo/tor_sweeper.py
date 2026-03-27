@@ -161,12 +161,13 @@ def sandboxed_fetch(url: str, timeout: int = 30) -> dict:
             vault_secrets(scrubbed_items, context=f"tor_sweep:{url[:80]}")
 
         # SANDBOX 2: Governance gate — check for blocked content
+        # Multi-word phrases to reduce false positives on news/research sites
         blocked_keywords = [
-            "marketplace", "vendor", "escrow", "listing",
-            "buy now", "add to cart", "shipping",
-            "exploit kit", "ransomware", "zero-day for sale",
-            "fullz", "dumps", "cvv", "credit card",
-            "passport", "fake id", "counterfeit",
+            "add to cart", "buy now", "checkout", "place order",
+            "exploit kit for sale", "ransomware as a service",
+            "fullz for sale", "credit card dumps", "cvv shop",
+            "counterfeit documents", "fake passport", "fake id for sale",
+            "hire a hacker", "ddos service",
         ]
         text_lower = clean_text.lower()
         blocked_hits = [kw for kw in blocked_keywords if kw in text_lower]
