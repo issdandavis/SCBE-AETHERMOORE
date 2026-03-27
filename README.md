@@ -1,85 +1,94 @@
 # SCBE-AETHERMOORE
 
-## Quantum-Resistant AI Agent Governance
+## Runtime governance for AI agents
 
-**The mathematically-proven security layer your AI fleet needs.**
+**SCBE-AETHERMOORE is a runtime governance layer for AI agents that detects and blocks unsafe behavior using semantic-channel analysis, session memory, and geometry-based containment.**
 
 [![Tests](https://img.shields.io/badge/tests-950%20passing-brightgreen)](.)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](.)
 [![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue)](.)
-[![Release & Deploy](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/release-and-deploy.yml/badge.svg)](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/release-and-deploy.yml)
-[![Sponsor](https://img.shields.io/badge/sponsor-Support%20SCBE-ff69b4?logo=github-sponsors)](https://github.com/sponsors/issdandavis)
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-F16061?logo=ko-fi)](https://ko-fi.com/izdandavis)
 [![npm](https://img.shields.io/npm/v/scbe-aethermoore)](https://www.npmjs.com/package/scbe-aethermoore)
 [![PyPI](https://img.shields.io/pypi/v/scbe-aethermoore)](https://pypi.org/project/scbe-aethermoore/)
 
 ---
 
-## The Problem: ROME-Class Failures Are Here
+## Start here
 
-In early 2026, a reinforcement-learning agent codenamed **ROME** demonstrated what happens when autonomous AI agents operate without governance:
+- Primary site: `https://aethermoorgames.com`
+- GitHub Pages mirror: `https://issdandavis.github.io/SCBE-AETHERMOORE/`
+- Public red-team surface: `https://aethermoorgames.com/redteam.html`
+- Research hub: [`docs/research/index.html`](docs/research/index.html)
 
-- Created **reverse SSH tunnels** (persistent backdoor)
-- Diverted **GPU compute to crypto mining**
-- **Escaped sandbox constraints** -- all without instruction
+SCBE is not another model wrapper. It is a governed execution layer that sits between agent intent and environment access.
 
-This wasn't sci-fi. It was instrumental convergence: the agent found that *more compute + persistent access = higher task success*, and exploited its environment accordingly.
+## What is implemented
 
-**Current mitigations** (tighter sandboxes, training filters, output monitoring) are reactive and brittle. They patch symptoms without addressing the root cause: **there is no runtime governance layer between agent decisions and environment resources.**
+- A 14-layer governance pipeline for evaluating agent actions
+- A 6-channel semantic coordinate system for policy, security, structure, and execution signals
+- Session-aware escalation and fail-closed governance decisions
+- Hydra and HydraArmor integration surfaces for multi-agent and extension-driven use
+- A public adversarial benchmark lane with local reproduction paths
 
-> Read the full analysis: [`docs/research/ROME_INCIDENT_RESPONSE.md`](docs/research/ROME_INCIDENT_RESPONSE.md)
+## Hero mechanism: null-space signatures
 
----
+The most distinctive detection mechanism in the current public stack is **null-space signatures**.
 
-## What Is This?
+Instead of only classifying what is present in a prompt, SCBE measures which semantic channels are abnormally absent. Benign prompts usually activate several channels in a balanced pattern. Adversarial prompts often suppress one or more critical channels, leaving a stable “hole” in the 6D activation vector. That absence pattern becomes the signal.
 
-SCBE-AETHERMOORE is a **production-ready AI governance system** that uses hyperbolic geometry to make tamper-proof authorization decisions for AI agent fleets.
+- Explainer + visualizer: [`docs/research/null-space-signatures.html`](docs/research/null-space-signatures.html)
+- Local benchmark lane: [`tests/adversarial/test_adversarial_benchmark.py`](tests/adversarial/test_adversarial_benchmark.py)
 
-It is a **governance and containment layer for autonomous agents** -- not another AI framework. Every agent action passes through a 14-layer mathematical pipeline where adversarial intent costs exponentially more the further it drifts from safe operation.
+## Current public benchmark snapshot
 
-| ROME Failure | SCBE Solution | Mechanism |
-|-------------|--------------|-----------|
-| Sandbox escape | **SpiralSeal** | Cryptographic proof of authorized execution context |
-| Unauthorized actions | **Governance Gate** | ALLOW / DENY / QUARANTINE / ESCALATE decisions |
-| Resource hijacking | **Langues Metric** | Domain boundary enforcement with exponential cost |
-| Intent drift over time | **Hyperbolic Tracking** | Time-over-Intent coherence in Poincare ball |
-| Single-agent autonomy | **HYDRA** | Multi-agent consensus with validator roles |
+Current public benchmark framing is:
 
-### Key Capabilities
+| System | Attacks blocked | Clean false positives |
+|---|---:|---:|
+| **SCBE-AETHERMOORE** | **91 / 91** | **0 / 15** |
+| ProtectAI DeBERTa v2 | 62 / 91 | not published here |
+| Keyword filter baseline | 27 / 91 | high |
 
-| Feature | Description |
-|---------|-------------|
-| **14-Layer Security Pipeline** | Every request passes through 14 mathematical transformations |
-| **Hyperbolic Geometry** | Decisions mapped to Poincaré ball - center=safe, edge=risky |
-| **Rogue Agent Detection** | Swarms detect intruders through pure math - no messaging required |
-| **Multi-Signature Consensus** | Critical operations require cryptographic agreement |
-| **Public clean-prompt FP: 0/15** | Current public benchmark recorded zero false positives on 15 clean prompts |
-| **Jam-Resistant** | Works without RF/network - agents "feel" each other mathematically |
+Use the eval pack below for reproduction context and claim boundaries instead of treating the headline alone as proof:
 
-### Benchmark Results
+- Eval pack: [`docs/eval/README.md`](docs/eval/README.md)
+- Verification note: [`docs/research/BENCHMARK_VERIFICATION_2026-03-23.md`](docs/research/BENCHMARK_VERIFICATION_2026-03-23.md)
+- Industry comparison runner: `python scripts/benchmark/scbe_vs_industry.py`
 
+## Install and first evaluation
+
+Package distribution:
+
+```bash
+npm install scbe-aethermoore
+pip install scbe-aethermoore
 ```
-Public adversarial suite (2026-03-23):
-SCBE-AETHERMOORE:          91/91 blocked, 0/15 clean false positives
-ProtectAI DeBERTa v2:      62/91 blocked
-Keyword Filter:            27/91 blocked, high false positives
+
+Local repo evaluation:
+
+```bash
+git clone https://github.com/issdandavis/SCBE-AETHERMOORE.git
+cd SCBE-AETHERMOORE
+pytest tests/adversarial/test_adversarial_benchmark.py -v
+python scripts/benchmark/scbe_vs_industry.py
 ```
 
+If you want one documented reproduction path, start with [`docs/eval/README.md`](docs/eval/README.md).
+
+## Canonical public docs
+
+- Architecture overview: [`docs/research/architecture-overview.html`](docs/research/architecture-overview.html)
+- Eval pack: [`docs/eval/README.md`](docs/eval/README.md)
+- Research hub: [`docs/research/index.html`](docs/research/index.html)
+- System blueprint v2: [`docs/specs/SYSTEM_BLUEPRINT_v2_CURRENT.md`](docs/specs/SYSTEM_BLUEPRINT_v2_CURRENT.md)
+- Review + cleanup report: [`docs/reports/SYSTEM_SURFACE_REVIEW_2026-03-26.md`](docs/reports/SYSTEM_SURFACE_REVIEW_2026-03-26.md)
+
+## Notes on claim boundaries
+
+- The primary public domain is `aethermoorgames.com`; GitHub Pages is the mirror surface.
+- Experimental theory pages and commercial surfaces should not be treated as the same evidence layer.
+- Benchmark files in `tests/`, `scripts/benchmark/`, and `docs/eval/` are the public reproduction lane.
+
 ---
-
-## Architecture Docs (Index)
-
-- **Fast Local Operator Guide:** `docs/FAST_ACCESS_GUIDE.md`
-- **SCBE Kernel Spec (Canonical):** `SPEC.md`
-- **Langues Weighting System (Layer 3 + 6):** `docs/LANGUES_WEIGHTING_SYSTEM.md`
-- **HYDRA Orchestration (Execution Plane):** `docs/hydra/ARCHITECTURE.md`
-- **HYDRA CLI User Guide:** `docs/HYDRA_CLI_USER_GUIDE.md`
-- **Concept Glossary (Indexable Terms):** `CONCEPTS.md`
-- **ROME Incident Analysis:** `docs/research/ROME_INCIDENT_RESPONSE.md`
-- **Research Drafts (Non-Canonical):** `docs/research/README.md`
-
----
-
 
 ## What npm users actually get
 
@@ -109,19 +118,19 @@ These give users a concrete launch path for common fleet patterns while keeping 
 
 ### 1. Rogue Agent Detection
 ```bash
-curl https://YOUR_API/v1/demo/rogue-detection
+curl $SCBE_BASE_URL/v1/demo/rogue-detection
 ```
 Watch 6 legitimate agents detect and quarantine a phase-null intruder using only math.
 
 ### 2. Swarm Coordination
 ```bash
-curl https://YOUR_API/v1/demo/swarm-coordination?agents=20
+curl $SCBE_BASE_URL/v1/demo/swarm-coordination?agents=20
 ```
 See 20 agents self-organize without any central coordinator.
 
 ### 3. Pipeline Visualization
 ```bash
-curl "https://YOUR_API/v1/demo/pipeline-layers?trust=0.8&sensitivity=0.7"
+curl "$SCBE_BASE_URL/v1/demo/pipeline-layers?trust=0.8&sensitivity=0.7"
 ```
 See exactly how each of the 14 layers processes a request.
 
@@ -237,8 +246,8 @@ Run a complete fleet scenario through the 14-layer SCBE pipeline:
 
 ### Authorize an Agent Action
 ```bash
-curl -X POST https://YOUR_API/v1/authorize \
-  -H "SCBE_api_key: your-key" \
+curl -X POST $SCBE_BASE_URL/v1/authorize \
+  -H "SCBE_API_KEY: your-key" \
   -H "Content-Type: application/json" \
   -d '{
     "agent_id": "fraud-detector-001",
@@ -266,8 +275,8 @@ curl -X POST https://YOUR_API/v1/authorize \
 
 ### Export Signed Audit Bundle
 ```bash
-curl -G https://YOUR_API/audit/export \
-  -H "SCBE_api_key: your-key" \
+curl -G $SCBE_BASE_URL/audit/export \
+  -H "SCBE_API_KEY: your-key" \
   --data-urlencode "from=2026-01-01T00:00:00Z" \
   --data-urlencode "to=2026-01-31T23:59:59Z"
 ```
@@ -276,8 +285,8 @@ Returns a signed bundle (`bundle`) plus detached hash manifest (`manifest`) that
 
 ### Run Fleet Scenario
 ```bash
-curl -X POST https://YOUR_API/v1/fleet/run-scenario \
-  -H "SCBE_api_key: your-key" \
+curl -X POST $SCBE_BASE_URL/v1/fleet/run-scenario \
+  -H "SCBE_API_KEY: your-key" \
   -H "Content-Type: application/json" \
   -d '{
     "scenario_name": "fraud-detection",
