@@ -35,6 +35,14 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 CONFIG_DIR = ROOT / "config"
 TRUSTED_SITES_PATH = CONFIG_DIR / "security" / "trusted_external_sites.json"
 ENV_FILE = CONFIG_DIR / "connector_oauth" / ".env.connector.oauth"
+WORKFLOWS_DIR = ROOT / "workflows" / "momentum"
+MOMENTUM_RUNS_DIR = ROOT / "artifacts" / "momentum_trains"
+CHESSBOARD_ARTIFACTS_DIR = ROOT / "artifacts" / "chessboard"
+
+MOMENTUM_TRAIN_CONFIGS: dict[str, Path] = {
+    "daily_ops": WORKFLOWS_DIR / "daily_ops_train.json",
+    "chessboard_dev_stack": WORKFLOWS_DIR / "chessboard_dev_stack_train.json",
+}
 
 # Add project root + src to path so we can import SCBE modules
 sys.path.insert(0, str(ROOT))
@@ -283,7 +291,6 @@ async def chat(req: ChatRequest):
         except Exception as e:
             gate_result = {"error": str(e)}
 
-    # Build response — the actual LLM call is out-of-scope here; return governance metadata
     fibonacci_index = min(fib_index, len(FIB_SEQUENCE) - 1)
     fib_value = FIB_SEQUENCE[fibonacci_index]
 
@@ -293,12 +300,30 @@ async def chat(req: ChatRequest):
     )
     tongue_str = "+".join(t for t, _ in active_tongues) if active_tongues else "KO"
 
-    response_text = (
-        f"[{req.model.capitalize()} via AetherBrowser API] "
-        f"Governance: {decision}. Trust: {trust_level} (FIB {fib_value}). "
-        f"Tongue activation: {tongue_str}. Cost: {cost}. "
-        f"Wire the {req.model} LLM endpoint for full responses."
-    )
+    # Route to model — Ollama local for "local", stub for others
+    response_text = ""
+    if req.model == "local" and decision != "DENY":
+        try:
+            import requests as _req
+            ollama_resp = _req.post(
+                "http://localhost:11434/api/generate",
+                json={"model": "issdandavis7795/AetherBot", "prompt": req.message, "stream": False},
+                timeout=120,
+            )
+            if ollama_resp.status_code == 200:
+                response_text = ollama_resp.json().get("response", "")
+            else:
+                response_text = f"[Ollama error: {ollama_resp.status_code}]"
+        except Exception as e:
+            response_text = f"[Ollama unavailable: {e}. Start with: ollama serve]"
+    elif decision == "DENY":
+        response_text = f"[DENIED by governance gate. Cost: {cost}. Signals: {gate_result.get('signals', []) if gate_result else []}]"
+    else:
+        response_text = (
+            f"[{req.model.capitalize()} model not wired yet. "
+            f"Governance: {decision}. Trust: {trust_level} (FIB {fib_value}). "
+            f"Select 'Local' to use AetherBot via Ollama.]"
+        )
 
     return {
         "response": response_text,
@@ -442,12 +467,17 @@ async def vault_stats():
 
     # Try running the scan command
     if vault_sync.exists():
-        result = await asyncio.to_thread(
+        scan_result = await asyncio.to_thread(
             _run_subprocess,
             [sys.executable, str(vault_sync), "scan"],
-            timeout=30,
+            timeout=60,
         )
-        stdout = result.get("stdout", "")
+        graph_result = await asyncio.to_thread(
+            _run_subprocess,
+            [sys.executable, str(vault_sync), "graph"],
+            timeout=60,
+        )
+        stdout = scan_result.get("stdout", "")
 
         # Try to parse structured output
         notes = 0
@@ -476,12 +506,17 @@ async def vault_stats():
         if graph_file.exists():
             try:
                 graph = json.loads(graph_file.read_text(encoding="utf-8"))
-                if "notes" in graph:
-                    notes = len(graph["notes"]) if isinstance(graph["notes"], list) else graph.get("note_count", notes)
-                if "edges" in graph:
-                    edges = len(graph["edges"]) if isinstance(graph["edges"], list) else graph.get("edge_count", edges)
-                if "tongue_distribution" in graph:
-                    tongues_dist = graph["tongue_distribution"]
+                if "stats" in graph and isinstance(graph["stats"], dict):
+                    stats = graph["stats"]
+                    notes = int(stats.get("total_notes", notes))
+                    edges = int(stats.get("total_links", edges))
+                    orphans = int(stats.get("orphan_count", orphans))
+                    tongues_dist = stats.get("tongues", tongues_dist) if isinstance(stats.get("tongues"), dict) else tongues_dist
+                else:
+                    if "nodes" in graph and isinstance(graph["nodes"], list):
+                        notes = len(graph["nodes"])
+                    if "edges" in graph and isinstance(graph["edges"], list):
+                        edges = len(graph["edges"])
             except Exception:
                 pass
 
@@ -494,21 +529,22 @@ async def vault_stats():
                 pass
 
         return {
-            "notes": notes or 758,  # fallback to known count
-            "edges": edges or 4660,
+            "notes": notes,
+            "edges": edges,
             "orphans": orphans,
-            "tongues": tongues_dist or {"KO": 31, "AV": 22, "RU": 16, "CA": 14, "UM": 10, "DR": 7},
-            "sft_pairs": sft_pairs or 389,
+            "tongues": tongues_dist,
+            "sft_pairs": sft_pairs,
             "scan_output": stdout[:2000] if stdout else "scan completed",
-            "exit_code": result.get("exit_code", 0),
+            "graph_output": graph_result.get("stdout", "")[:1000],
+            "exit_code": max(scan_result.get("exit_code", 0), graph_result.get("exit_code", 0)),
         }
     else:
         return {
-            "notes": 758,
-            "edges": 4660,
+            "notes": 0,
+            "edges": 0,
             "orphans": 0,
-            "tongues": {"KO": 31, "AV": 22, "RU": 16, "CA": 14, "UM": 10, "DR": 7},
-            "sft_pairs": 389,
+            "tongues": {},
+            "sft_pairs": 0,
             "scan_output": "vault sync script not found",
             "exit_code": -1,
         }
@@ -585,7 +621,17 @@ async def vault_sync():
     if not vault_sync_script.exists():
         return {"error": "obsidian_vault_sync.py not found", "synced": False}
 
-    # Run graph build then cloud sync
+    # Run connect/apply, export SFT, graph build, then cloud sync
+    connect_result = await asyncio.to_thread(
+        _run_subprocess,
+        [sys.executable, str(vault_sync_script), "connect", "--apply"],
+        timeout=90,
+    )
+    export_result = await asyncio.to_thread(
+        _run_subprocess,
+        [sys.executable, str(vault_sync_script), "export-sft"],
+        timeout=90,
+    )
     graph_result = await asyncio.to_thread(
         _run_subprocess,
         [sys.executable, str(vault_sync_script), "graph"],
@@ -597,12 +643,42 @@ async def vault_sync():
         timeout=60,
     )
 
+    # Return updated stats as well (used by the Ops tab).
+    stats = {"notes": 0, "edges": 0, "orphans": 0, "tongues": {}, "sft_pairs": 0}
+    graph_file = ROOT / "artifacts" / "apollo" / "obsidian_graph.json"
+    if graph_file.exists():
+        try:
+            graph = json.loads(graph_file.read_text(encoding="utf-8"))
+            if "stats" in graph and isinstance(graph["stats"], dict):
+                s = graph["stats"]
+                stats["notes"] = int(s.get("total_notes", 0))
+                stats["edges"] = int(s.get("total_links", 0))
+                stats["orphans"] = int(s.get("orphan_count", 0))
+                stats["tongues"] = s.get("tongues", {}) if isinstance(s.get("tongues"), dict) else {}
+        except Exception:
+            pass
+    sft_file = ROOT / "training-data" / "apollo" / "obsidian_vault_sft.jsonl"
+    if sft_file.exists():
+        try:
+            stats["sft_pairs"] = sum(1 for _ in sft_file.open(encoding="utf-8"))
+        except Exception:
+            pass
+
     return {
         "synced": sync_result.get("exit_code", -1) == 0,
+        **stats,
+        "connect_output": connect_result.get("stdout", "")[:1000],
+        "export_output": export_result.get("stdout", "")[:1000],
         "graph_output": graph_result.get("stdout", "")[:1000],
         "sync_output": sync_result.get("stdout", "")[:1000],
         "errors": [
-            e for e in [graph_result.get("stderr", ""), sync_result.get("stderr", "")]
+            e
+            for e in [
+                connect_result.get("stderr", ""),
+                export_result.get("stderr", ""),
+                graph_result.get("stderr", ""),
+                sync_result.get("stderr", ""),
+            ]
             if e and e != "timeout"
         ],
     }
@@ -730,6 +806,146 @@ async def ops_git_status():
         "staged": staged,
         "status": status_lines[:30],
         "recent_commits": log_lines,
+    }
+
+
+class MomentumRunRequest(BaseModel):
+    train_id: str = "daily_ops"
+    execute: bool = True
+    flow: Optional[str] = None
+    max_parallel: Optional[int] = None
+
+
+def _parse_last_json(stdout: str) -> dict[str, Any] | None:
+    for line in reversed((stdout or "").splitlines()):
+        line = line.strip()
+        if not line or not line.startswith("{"):
+            continue
+        try:
+            payload = json.loads(line)
+            return payload if isinstance(payload, dict) else None
+        except Exception:
+            continue
+    return None
+
+
+@app.post("/api/ops/momentum/run")
+async def ops_momentum_run(req: MomentumRunRequest = MomentumRunRequest()):
+    """Run a configured Momentum Train by id (safe allowlist)."""
+    cfg = MOMENTUM_TRAIN_CONFIGS.get(req.train_id)
+    if not cfg or not cfg.exists():
+        return {"error": f"Unknown or missing train_id: {req.train_id}", "ok": False}
+
+    runner = ROOT / "scripts" / "system" / "momentum_train.py"
+    if not runner.exists():
+        return {"error": "momentum_train.py not found", "ok": False}
+
+    cmd = [sys.executable, str(runner), "--config", str(cfg)]
+    if req.flow:
+        cmd += ["--flow", str(req.flow)]
+    if req.execute:
+        cmd += ["--execute"]
+    if req.max_parallel:
+        cmd += ["--max-parallel", str(int(req.max_parallel))]
+
+    result = await asyncio.to_thread(_run_subprocess, cmd, timeout=600)
+    parsed = _parse_last_json(result.get("stdout", ""))
+    if parsed:
+        return parsed
+    return {
+        "ok": result.get("exit_code", -1) == 0,
+        "train_id": req.train_id,
+        "stdout": result.get("stdout", "")[:2000],
+        "stderr": result.get("stderr", "")[:800] if result.get("stderr") else None,
+        "exit_code": result.get("exit_code", -1),
+    }
+
+
+@app.get("/api/ops/momentum/latest")
+async def ops_momentum_latest(train_id: str = "daily_ops"):
+    """Return the latest Momentum Train state.json summary (no execution)."""
+    run_root = MOMENTUM_RUNS_DIR / train_id
+    if not run_root.exists():
+        return {"error": f"No runs found for train_id={train_id}", "ok": False}
+    dirs = [p for p in run_root.iterdir() if p.is_dir()]
+    if not dirs:
+        return {"error": f"No runs found for train_id={train_id}", "ok": False}
+    latest = sorted(dirs, key=lambda p: p.name)[-1]
+    state_path = latest / "state.json"
+    if not state_path.exists():
+        return {"error": f"state.json missing for {latest.name}", "ok": False}
+    try:
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+    except Exception as e:
+        return {"error": str(e), "ok": False}
+
+    stations = state.get("stations", {}) if isinstance(state, dict) else {}
+    statuses: dict[str, str] = {}
+    for key, node in stations.items():
+        if isinstance(node, dict):
+            statuses[key] = str(node.get("status", "unknown"))
+
+    failed = sum(1 for v in statuses.values() if v == "failed")
+    completed = sum(1 for v in statuses.values() if v == "completed")
+    return {
+        "ok": bool(state.get("ok", False)),
+        "train_id": train_id,
+        "run_dir": str(latest.relative_to(ROOT)),
+        "finished_at": state.get("finished_at"),
+        "station_count": len(statuses),
+        "completed": completed,
+        "failed": failed,
+        "statuses": statuses,
+    }
+
+
+class ChessboardGenerateRequest(BaseModel):
+    goal: str = "Improve SCBE long-running agentic workflows with governed momentum trains."
+
+
+@app.post("/api/ops/chessboard/generate")
+async def ops_chessboard_generate(req: ChessboardGenerateRequest = ChessboardGenerateRequest()):
+    """Generate a chessboard dev-stack packet set for a given goal."""
+    script = ROOT / "scripts" / "system" / "chessboard_dev_stack.py"
+    if not script.exists():
+        return {"error": "chessboard_dev_stack.py not found", "ok": False}
+    result = await asyncio.to_thread(
+        _run_subprocess,
+        [sys.executable, str(script), "--goal", str(req.goal)],
+        timeout=60,
+    )
+    parsed = _parse_last_json(result.get("stdout", ""))
+    if parsed:
+        return parsed
+    return {
+        "ok": result.get("exit_code", -1) == 0,
+        "stdout": result.get("stdout", "")[:2000],
+        "stderr": result.get("stderr", "")[:800] if result.get("stderr") else None,
+        "exit_code": result.get("exit_code", -1),
+    }
+
+
+@app.get("/api/ops/chessboard/latest")
+async def ops_chessboard_latest():
+    """Return the latest generated chessboard packet set."""
+    if not CHESSBOARD_ARTIFACTS_DIR.exists():
+        return {"error": "No chessboard artifacts dir found", "ok": False}
+    dirs = [p for p in CHESSBOARD_ARTIFACTS_DIR.iterdir() if p.is_dir()]
+    if not dirs:
+        return {"error": "No chessboard packet runs found", "ok": False}
+    latest = sorted(dirs, key=lambda p: p.name)[-1]
+    meta_path = latest / "meta.json"
+    packets_path = latest / "packets.json"
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
+        packets = json.loads(packets_path.read_text(encoding="utf-8")) if packets_path.exists() else {}
+    except Exception as e:
+        return {"error": str(e), "ok": False}
+    return {
+        "ok": True,
+        "output_dir": str(latest.relative_to(ROOT)),
+        "meta": meta,
+        "packets": packets,
     }
 
 
