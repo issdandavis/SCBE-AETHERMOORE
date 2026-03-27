@@ -30,6 +30,7 @@ import {
   harmonicFlowStep,
   harmonicFlow,
   globalSections,
+  v2GlobalSections,
   // Obstruction
   obstructionDegree,
   isGlobalSection,
@@ -1274,7 +1275,7 @@ describe('Tarski Laplacian L_k', () => {
 // Tarski Cohomology
 // ═══════════════════════════════════════════════════════════════
 
-describe.skip('Tarski Cohomology TH^k (globalSections not exported)', () => {
+describe('Tarski Cohomology TH^k', () => {
   describe('TH^0 = global sections (constant sheaf)', () => {
     it('on connected graph: all cells converge to same value', () => {
       // Complete graph K3
@@ -1356,7 +1357,7 @@ describe.skip('Tarski Cohomology TH^k (globalSections not exported)', () => {
       const L = IntervalLattice(0, 10);
       const sheaf = constantSheaf(complex, L);
 
-      const gs = globalSections(sheaf);
+      const gs = v2GlobalSections(sheaf);
       const th0 = tarskiCohomology(sheaf, 0);
 
       expect(gs.degree).toBe(0);
@@ -1922,7 +1923,7 @@ describe('SheafCohomologyEngine', () => {
 // Property-Based Tests (lightweight, 20 iterations)
 // ═══════════════════════════════════════════════════════════════
 
-describe.skip('Property-based tests (globalSections not exported)', () => {
+describe('Property-based tests', () => {
   it('Tarski flow is non-increasing (monotone descent)', () => {
     for (let trial = 0; trial < 20; trial++) {
       const n = 3 + Math.floor(Math.random() * 3);
@@ -1961,7 +1962,7 @@ describe.skip('Property-based tests (globalSections not exported)', () => {
       const L = IntervalLattice(0, 50);
       const sheaf = constantSheaf(complex, L);
 
-      const result = globalSections(sheaf);
+      const result = v2GlobalSections(sheaf);
 
       // Post-fixpoint: x ≤ L(x)
       const lx = tarskiLaplacian(sheaf, 0, result.cochains);

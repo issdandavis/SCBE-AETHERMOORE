@@ -12,6 +12,9 @@
 
 import { HybridSpaceCrypto } from './hybrid-crypto';
 import { RelayNode, SpaceTorRouter } from './space-tor-router';
+import { logger } from '../utils/logger.js';
+
+const log = logger.child({ module: 'combat-network' });
 
 export interface TransmissionResult {
   success: boolean;
@@ -49,8 +52,8 @@ export class CombatNetwork {
       const pathA = this.router.calculatePath(origin, dest, 70);
       const pathB = this.generateDisjointPath(pathA, origin, dest, 70);
 
-      console.log(`[COMBAT] Routing via Primary: ${pathA.map((n) => n.id).join(' -> ')}`);
-      console.log(`[COMBAT] Routing via Backup:  ${pathB.map((n) => n.id).join(' -> ')}`);
+      log.info('Routing via PRIMARY', { mode: 'COMBAT', pathId: 'PRIMARY', route: pathA.map((n) => n.id).join(' -> ') });
+      log.info('Routing via BACKUP-1', { mode: 'COMBAT', pathId: 'BACKUP-1', route: pathB.map((n) => n.id).join(' -> ') });
 
       // 2. Encrypt & Send Parallel
       const [onionA, onionB] = await Promise.all([
@@ -68,7 +71,7 @@ export class CombatNetwork {
     } else {
       // Standard Routing
       const path = this.router.calculatePath(origin, dest, 50);
-      console.log(`[STANDARD] Routing via: ${path.map((n) => n.id).join(' -> ')}`);
+      log.info('Routing via STANDARD', { mode: 'STANDARD', route: path.map((n) => n.id).join(' -> ') });
 
       const onion = await this.crypto.buildOnion(payload, path);
       const result = await this.transmit(path[0], onion, 'STANDARD');
@@ -111,7 +114,7 @@ export class CombatNetwork {
     }
 
     // Fallback: return any valid path (better than failing)
-    console.warn('[COMBAT] Could not find fully disjoint path, using fallback');
+    log.warn('Could not find fully disjoint path, using fallback', { mode: 'COMBAT' });
     return this.router.calculatePath(origin, dest, minTrust);
   }
 
@@ -132,7 +135,7 @@ export class CombatNetwork {
 
     try {
       // Hardware interface mock
-      console.log(`[${pathId}] Transmitting ${packet.length} bytes to Entry Node: ${entryNode.id}`);
+      log.debug('Transmitting packet', { pathId, bytes: packet.length, entryNode: entryNode.id });
 
       // Simulate transmission delay based on distance
       // In production, this would interface with actual radio/laser comm hardware
