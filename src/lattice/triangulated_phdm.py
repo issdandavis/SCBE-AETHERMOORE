@@ -15,6 +15,7 @@ Key property: governance is structurally independent from semantics.
 
 Patent relevant: extends USPTO #63/961,403
 """
+
 from __future__ import annotations
 
 import math
@@ -23,22 +24,31 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
-
 PHI = (1 + math.sqrt(5)) / 2
 
 # 21 PHDM dimensions
 TONGUE_DIMS = ["KO", "AV", "RU", "CA", "UM", "DR"]
 PHASE_DIMS = ["KO_phase", "AV_phase", "RU_phase", "CA_phase", "UM_phase", "DR_phase"]
-TELEMETRY_DIMS = ["pressure", "tension", "curvature", "entropy", "temperature",
-                  "coherence", "drift", "fidelity", "stability"]
+TELEMETRY_DIMS = [
+    "pressure",
+    "tension",
+    "curvature",
+    "entropy",
+    "temperature",
+    "coherence",
+    "drift",
+    "fidelity",
+    "stability",
+]
 ALL_DIMS = TONGUE_DIMS + PHASE_DIMS + TELEMETRY_DIMS  # 21 total
 
-TONGUE_WEIGHTS = [PHI ** i for i in range(6)]
+TONGUE_WEIGHTS = [PHI**i for i in range(6)]
 
 
 @dataclass
 class LatticeNode:
     """A node in the 21D polyhedral graph."""
+
     id: int
     name: str
     dim_type: str  # "tongue", "phase", "telemetry"
@@ -49,6 +59,7 @@ class LatticeNode:
 @dataclass
 class TokenizerEdge:
     """An edge connecting two nodes via a Sacred Tongue tokenizer channel."""
+
     source: int
     target: int
     tongue: str  # Which tongue encodes this channel
@@ -58,13 +69,13 @@ class TokenizerEdge:
 @dataclass
 class Triangle:
     """A triangulated face with 2 tokenizer corners + 1 governance corner."""
+
     corner_a: int  # tokenizer node
     corner_b: int  # tokenizer node
     corner_c: int  # governance node (compression weight)
     governance_weight: float = 1.0  # compression parameter
 
-    def interpolate(self, w1: float, w2: float, w3: float,
-                    val_a: float, val_b: float) -> float:
+    def interpolate(self, w1: float, w2: float, w3: float, val_a: float, val_b: float) -> float:
         """Barycentric interpolation with governance compression.
 
         w1, w2 blend the two tokenizer values.
@@ -117,30 +128,39 @@ class TriangulatedPHDMLattice:
         """Connect nodes via polyhedral adjacency with tongue-specific channels."""
         # Tongue <-> Phase connections (each tongue connects to its phase)
         for i in range(6):
-            self.edges.append(TokenizerEdge(
-                source=i, target=6 + i,
-                tongue=TONGUE_DIMS[i],
-                weight=TONGUE_WEIGHTS[i],
-            ))
+            self.edges.append(
+                TokenizerEdge(
+                    source=i,
+                    target=6 + i,
+                    tongue=TONGUE_DIMS[i],
+                    weight=TONGUE_WEIGHTS[i],
+                )
+            )
 
         # Phase <-> Telemetry connections (distribute across telemetry)
         for i in range(6):
             for j in range(9):
                 if (i + j) % 3 == 0:  # Selective connectivity (polyhedral face rule)
-                    self.edges.append(TokenizerEdge(
-                        source=6 + i, target=12 + j,
-                        tongue=TONGUE_DIMS[i],
-                        weight=TONGUE_WEIGHTS[i] * 0.5,
-                    ))
+                    self.edges.append(
+                        TokenizerEdge(
+                            source=6 + i,
+                            target=12 + j,
+                            tongue=TONGUE_DIMS[i],
+                            weight=TONGUE_WEIGHTS[i] * 0.5,
+                        )
+                    )
 
         # Cross-tongue connections (60-degree phase neighbors)
         for i in range(6):
             next_i = (i + 1) % 6
-            self.edges.append(TokenizerEdge(
-                source=i, target=next_i,
-                tongue=TONGUE_DIMS[i],
-                weight=(TONGUE_WEIGHTS[i] + TONGUE_WEIGHTS[next_i]) / 2,
-            ))
+            self.edges.append(
+                TokenizerEdge(
+                    source=i,
+                    target=next_i,
+                    tongue=TONGUE_DIMS[i],
+                    weight=(TONGUE_WEIGHTS[i] + TONGUE_WEIGHTS[next_i]) / 2,
+                )
+            )
 
     def _triangulate(self):
         """Triangulate faces and add governance vertices at stitch points."""
@@ -225,15 +245,17 @@ class TriangulatedPHDMLattice:
 
             # Equal blend by default (can be parameterized)
             blended = tri.interpolate(0.4, 0.4, 0.2, val_a, val_b)
-            results.append({
-                "triangle_id": len(results),
-                "corner_a": tri.corner_a,
-                "corner_b": tri.corner_b,
-                "val_a": val_a,
-                "val_b": val_b,
-                "governance_weight": tri.governance_weight,
-                "blended": blended,
-            })
+            results.append(
+                {
+                    "triangle_id": len(results),
+                    "corner_a": tri.corner_a,
+                    "corner_b": tri.corner_b,
+                    "val_a": val_a,
+                    "val_b": val_b,
+                    "governance_weight": tri.governance_weight,
+                    "blended": blended,
+                }
+            )
 
         # Aggregate
         if results:

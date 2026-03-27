@@ -10,6 +10,7 @@ on:
         options:
           - bluesky
           - github-discussion
+          - x-twitter
           - all
       content:
         description: 'Content to post'
@@ -113,7 +114,6 @@ jobs:
             }
           }" --jq '.data.createDiscussion.discussion.url'
 
-jobs:
   post-to-x:
     if: inputs.platform == 'x-twitter' || inputs.platform == 'all'
     runs-on: ubuntu-latest

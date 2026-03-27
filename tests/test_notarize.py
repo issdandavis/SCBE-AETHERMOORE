@@ -1,4 +1,5 @@
 """Tests for SCBE Notarization Service."""
+
 from __future__ import annotations
 
 import json
