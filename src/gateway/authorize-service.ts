@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger.js';
 import express, { NextFunction, Request, Response } from 'express';
 import {
   UnifiedKernel,
@@ -99,7 +100,7 @@ export function createAuthorizeApp() {
   });
 
   app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
-    console.error('gateway_error', { message: error.message });
+    logger.error('gateway_error', { message: error.message });
     res.status(500).json({ error: 'internal_error' });
   });
 
@@ -109,10 +110,10 @@ export function createAuthorizeApp() {
 export function startAuthorizeService(): void {
   const { app, env } = createAuthorizeApp();
 
-  console.info('gateway_startup', redactDiagnostics(env));
+  logger.info('gateway_startup', redactDiagnostics(env));
 
   app.listen(env.port, () => {
-    console.info('gateway_listening', { port: env.port, nodeEnv: env.nodeEnv });
+    logger.info('gateway_listening', { port: env.port, nodeEnv: env.nodeEnv });
   });
 }
 
@@ -121,7 +122,7 @@ if (require.main === module) {
     startAuthorizeService();
   } catch (error) {
     const message = error instanceof Error ? error.message : 'unknown startup failure';
-    console.error('gateway_startup_failed', { message });
+    logger.error('gateway_startup_failed', { message });
     process.exit(1);
   }
 }

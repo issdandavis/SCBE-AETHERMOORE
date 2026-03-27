@@ -4,6 +4,7 @@
  * @module agentic/platform
  */
 
+import { logger } from '../utils/logger.js';
 import { createBuiltInAgents, getAgentByRole, getAvailableAgents } from './agents';
 import { TaskGroupManager } from './task-group';
 import { CollaborationEngine } from './collaboration';
@@ -592,8 +593,8 @@ export class AgenticCoderPlatform {
 
       if (availableProviders.length === 0) {
         // Fallback to mock if no providers configured
-        console.warn('[SCBE] No AI providers configured. Using mock executor.');
-        console.warn('[SCBE] Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GOOGLE_API_KEY in .env');
+        logger.warn('No AI providers configured, using mock executor');
+        logger.warn('Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GOOGLE_API_KEY in .env');
         return {
           output: `[${agent.name}/${action}] Mock: No AI providers configured.\n\nContext length: ${context.length} chars`,
           confidence: 0.75, // Must meet minConfidence threshold (0.7)
@@ -641,7 +642,7 @@ Respond with clear, actionable output.`;
       } catch (error) {
         // All providers failed/timed out - degrade gracefully to deterministic local fallback.
         const errorMsg = error instanceof Error ? error.message : String(error);
-        console.warn('[SCBE] Provider chain failed, using local fallback:', errorMsg);
+        logger.warn('Provider chain failed, using local fallback', { error: errorMsg });
 
         return {
           output: `[${agent.name}/${action}] Local fallback due to provider failure.\n\n${errorMsg}\n\nContext length: ${context.length} chars`,
@@ -687,7 +688,7 @@ Respond with clear, actionable output.`;
       try {
         listener(event);
       } catch (e) {
-        console.error('Event listener error:', e);
+        logger.error('Event listener error', { error: String(e) });
       }
     }
   }
