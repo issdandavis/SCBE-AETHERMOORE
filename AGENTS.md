@@ -78,3 +78,84 @@
 ## Security & Configuration Tips
 - Never commit API tokens or secrets; use `.env.example` as template.
 - Prefer script-based ops (`scripts/scbe_docker_status.ps1`, `scripts/scbe_mcp_terminal.ps1`) for reproducible local control.
+
+## Apollo Data Collection Pipeline
+
+Apollo is the email/content triage and training data agent. Any agent (Claude, Codex, Gemini) can run these commands.
+
+### Email Check
+```bash
+# Check ProtonMail + Gmail for important emails (patent, revenue, outreach)
+python scripts/system/daily_patent_check.py --check-email
+
+# Full Apollo email scan with tongue classification
+python scripts/apollo/email_reader.py --days 3 --route
+
+# Interactive search
+python scripts/apollo/apollo_core.py search "patent" --days 30
+
+# Teach Apollo (correct a classification)
+python scripts/apollo/apollo_core.py teach <msg_id> --correct-tongue RU --correct-route commitments
+
+# Collect + scrub secrets + generate SFT
+python scripts/apollo/apollo_core.py collect --days 7
+```
+
+### YouTube Transcript Collection
+```bash
+# List curated channels
+python scripts/apollo/youtube_transcript_collector.py channels
+
+# Collect from one channel
+python scripts/apollo/youtube_transcript_collector.py collect --channel "3Blue1Brown" --max 5
+
+# Collect from all curated channels
+python scripts/apollo/youtube_transcript_collector.py collect-all --max-per-channel 3
+
+# Show collection stats
+python scripts/apollo/youtube_transcript_collector.py stats
+```
+
+Transcript API is free (youtube-transcript-api). No API key needed for public videos.
+Curated channels are in `config/training/curated_youtube_channels.json`.
+
+### Dark Web Sweeper (requires Tor)
+```bash
+# Check Tor connection
+python scripts/apollo/tor_sweeper.py check
+
+# Sweep trusted onion sites (dry-run if Tor not running)
+python scripts/apollo/tor_sweeper.py sweep
+
+# Sweep specific tier only
+python scripts/apollo/tor_sweeper.py sweep --tier NEWS_AND_JOURNALISM
+```
+
+Trusted sites registry: `config/security/trusted_onion_sites.json`.
+Install Tor: `choco install tor` (Windows) or `apt install tor` (Linux).
+
+### Code Governance Gate
+```bash
+# Check a PR for injection/security issues
+python scripts/security/code_governance_gate.py check-pr 752
+
+# Check local changes before pushing
+python scripts/security/code_governance_gate.py check-push
+
+# Check diff against a ref
+python scripts/security/code_governance_gate.py check-diff HEAD~3
+```
+
+Owner (issdandavis) gets WARN on findings. Non-owners get BLOCK on critical findings.
+Trusted external sites: `config/security/trusted_external_sites.json`.
+
+### Credentials (env file)
+All credentials live in `config/connector_oauth/.env.connector.oauth`. Keys available:
+- `PROTONMAIL_BRIDGE_PASSWORD` / `PROTONMAIL_USER` — email via Bridge IMAP
+- `GMAIL_APP_PASSWORD` / `GMAIL_USER` — Gmail via IMAP SSL
+- `YOUTUBE_CLIENT_ID` / `YOUTUBE_CLIENT_SECRET` — YouTube Data API
+- `HF_TOKEN` — HuggingFace
+- `GEMINI_API_KEY` — Google Gemini
+- `BLUESKY_HANDLE` / `BLUESKY_APP_PASSWORD` — Bluesky posting
+
+ProtonMail Bridge must be running locally for email access (port 1143).
