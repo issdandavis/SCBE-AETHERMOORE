@@ -1,0 +1,140 @@
+Chapter 7: Fleet Dynamics. "You're going
+to pilot a drone swarm," Polly announced.
+"We call them Polly Pads." Marcus blinked. "Named after you?" "Named after the flux
+state—Polly mode, full dimensional
+engagement." She grinned. "But yes, I may
+have influenced the naming convention. I'm very humble like that." Marcus, still
+recovering from his Rite of Resonance two
+days prior, blinked. "A what now?"
+"Autonomous defense constructs. We call them a Fleet." Polly led him into
+a new training chamber—this one vast and
+open, with a ceiling that faded into what
+looked like actual sky. "Six drones, synchronized through the
+Protocol, operating as a single
+coordinated unit." She gestured, and six
+crystalline shapes materialized: elegant,
+bird-like constructs with wings of folded
+light. They hovered in a hexagonal formation,
+each one pulsing with a different color:
+Red-gold (KO) Blue-silver (AV) Deep purple
+(RU) White-gold (CA) Shadow-black (UM)
+Earth-brown (DR) "Each drone is attuned to
+one of the Six Tongues," Polly explained. "But here's the cool part: they're not
+just specialized. They can mode-switch." She gestured, and
+the KO drone (red-gold) suddenly
+shifted—its color bleeding through the
+spectrum until it pulsed with the deep
+purple of RU. "Wait," Marcus said. "It
+just... changed roles?" "Polly Pads aren't rigid
+specialists. They're hot-swappable. One
+AI, six potential modes." Polly
+demonstrated again, shifting the drone
+back to KO. "During normal operations,
+each pad runs its designated Tongue. But during a crisis, they can
+reconfigure—two engineers when you need
+repairs, three science analyzers when you
+discover something new." Marcus felt his
+engineer brain light up. "So instead of 'we need an engineer but
+only have navigators,' you just... shift
+modes?" "Exactly. Flexible response. The
+Fleet reorganizes itself based on mission
+needs." Polly's expression turned serious. "It's what kept Mars rovers alive when we
+couldn't contact Earth for thirty minutes.
+It's what lets autonomous systems survive
+alone." "You have Mars rovers?"
+"Aethermoor touches many realities,
+Marcus. Some of them have space programs." Marcus
+watched the drones circle each other in
+perfect synchronization. "This is like...
+distributed robotics." "Sure, if that
+helps. Now—your job is to command them as a unit. Tell them what you want achieved, and
+trust them to figure out the how." She
+pulled up a target on the far side of the
+chamber: a floating crystal sphere. "Task: disable that target without
+destroying it. Go." Marcus studied the
+formation. Six drones. Six Tongues. He
+needed to declare an intent that all six
+could act on simultaneously... He spoke in KO: "Kor'shael'va: Immobilize
+the target, preserve integrity." Disable
+without destruction. The Fleet moved. Not as six individuals, but as one
+organism: KO (red-gold) designated the
+target, broadcasting intent AV (blue-
+silver) calculated approach vectors RU
+(purple) verified they had authorization
+to act CA (white-gold) computed the
+binding equations UM (shadow-black) masked
+their approach, making them nearly
+invisible DR (earth-brown) authenticated
+the binding as real They converged on the
+crystal sphere in a six-pointed star
+formation, each drone emitting a thread of
+light. The threads wove together—a lattice of
+hard-light restraints that locked the
+sphere in place without cracking it.
+Target disabled. Integrity preserved.
+Marcus watched the drones return to
+formation, awed by the coordination. Each one had known its role instantly. No
+hesitation. No confusion. "How do they
+know?" he asked. "How do they decide who
+does what?" "Byzantine consensus," Polly
+said. "The six pads vote on role assignment. If
+four agree on a plan, they execute. Can
+tolerate one faulty or malicious pad
+without breaking coordination." "n ≥ 3f +
+1," Marcus murmured. "Where f is the max number of Byzantine
+failures." "Sure, if that helps." Polly
+grinned. "Math people love that formula."
+"Not bad," she continued. "Again. This time, hostile target." The crystal
+sphere turned red. Marcus felt a shift in
+the Protocol—this target was now
+attacking, launching shards of energy at
+the Fleet. Marcus's instinct was to panic, to
+micromanage—dodge left, shield up,
+counterattack— But that wasn't how Fleets
+worked. He had to trust the swarm. He spoke again in KO: "Kor'vel'dan:
+Neutralize the threat, minimize
+collateral." Stop the attack, don't wreck
+the room. The Fleet shifted formation—no longer a
+star, but a layered defense: UM (shadow-
+black) phased into the target's line of
+fire, absorbing the first volley RU
+(purple) locked the target's permission to
+launch further attacks ("You are not
+authorized to harm this Fleet") CA (white-
+gold) computed a counter-frequency to
+disrupt the target's energy flow AV (blue-
+silver) delivered the disruption pulse DR
+(earth-brown) authenticated the disruption
+as a legitimate security response KO (red-
+gold) declared the engagement over The red
+sphere went dark, neutralized. The Fleet returned to formation, hovering
+in perfect sync. Marcus exhaled shakily.
+"Holy hell." "You're a natural," Polly
+said, and she meant it. "Most pilots take
+weeks to stop micromanaging. You trusted the swarm on your second
+attempt." "I debug distributed systems for
+a living—" Marcus caught himself. "Did.
+Did debug. Past tense." Polly's head
+tilted. "You miss it?" "Earth? Yeah. Sometimes." Marcus watched the drones
+orbit each other in their resting
+formation. "But this... this is the same
+problem space, just with different tools.
+Consensus algorithms. Byzantine fault
+tolerance. Emergent behavior from simple rules." He
+looked at her. "The Fleet is just a mobile
+swarm of Echoes, isn't it?" Polly grinned. "Now you're thinking like a Keeper." SCBE
+Mapping: The Fleet's six drones map to the
+DroneCore class in drone-core.ts. Each
+drone has a SpectralIdentity (tongue,
+phase, baseFrequency) matching the six
+colors. The DroneClass enum (RECON, CODER, DEPLOY,
+RESEARCH, GUARD) provides the role
+taxonomy. Mode-switching ("hot-swappable")
+maps to FluxState transitions. The Fleet's
+swarm consensus uses SwarmCoordinator
+(swarm.ts) with its Flux ODE dynamics. The "4 out of 6 agree" rule is the BFT
+threshold: n=6, f=1 (6 ≥ 3×1+1). The
+FleetManager in fleet-manager.ts is the
+central orchestration hub combining
+AgentRegistry, TaskDispatcher,
+GovernanceManager, and SwarmCoordinator.

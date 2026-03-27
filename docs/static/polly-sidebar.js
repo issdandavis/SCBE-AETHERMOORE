@@ -18,6 +18,18 @@
       copy: 'This page is for understanding the system shape, not for doing package setup.',
       prompt: 'I am on the SCBE demo page. Explain what Hydra, GeoSeal, the CLI, and the manual surfaces are in plain language, and tell me what page I should open next based on my goal.'
     },
+    research: {
+      kicker: 'Research guide',
+      title: 'Keep proof and theory separated.',
+      copy: 'Use this page when you want benchmarks, active tracks, and clear claim boundaries before you follow the deeper theory language.',
+      prompt: 'I am on the SCBE research page. Separate what is benchmarked, what is implemented, and what is still exploratory, then tell me what page I should open next.'
+    },
+    articles: {
+      kicker: 'Article guide',
+      title: 'Read the field notes in order.',
+      copy: 'This hub is for public writing and launch-facing notes, not the whole repo or every private research artifact.',
+      prompt: 'I am on the SCBE article hub. Summarize the featured articles, keep product claims separate from research claims, and tell me which one I should read next.'
+    },
     support: {
       kicker: 'Support guide',
       title: 'Start with the exact break.',
@@ -48,6 +60,9 @@
   const links = [
     { href: `${root}/index.html`, title: 'Home', text: 'Main overview, pricing, benchmarks, and core links.' },
     { href: `${root}/demos/index.html`, title: 'Demos', text: 'Story-first tour of Hydra, GeoSeal, and the public surfaces.' },
+    { href: `${root}/redteam.html`, title: 'Red Team', text: 'Current public benchmark surface, dataset link, and eval entry path.' },
+    { href: `${root}/articles/index.html`, title: 'Articles', text: 'Field notes, public explanations, and launch-facing writing.' },
+    { href: `${root}/research/index.html`, title: 'Research', text: 'Benchmarks, theory packets, and active experiment tracks.' },
     { href: `${root}/product-manual/index.html`, title: 'Manuals', text: 'Buyer-facing package manuals and setup guides.' },
     { href: `${root}/support.html`, title: 'Support', text: 'Delivery, setup, AI troubleshooting, and broken-link recovery.' }
   ];

@@ -26,6 +26,10 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
 REPORT_DIR = ROOT / "artifacts" / "apollo" / "video_reviews"
+PLAN_FILES = [
+    REPORT_DIR / "youtube_description_updates_2026-03-26.json",
+    REPORT_DIR / "youtube_title_tag_updates_2026-03-26.json",
+]
 
 
 @dataclass
@@ -272,6 +276,23 @@ def main():
             {"id": "Oo7sT_dJ7eQ", "title": "The Six Tongues Protocol -- Ch.8: Rogue Signatures", "duration": "7m 38s", "tags": ["AI Safety", "SCBE", "Isekai", "Security"], "description": "Polly introduces Marcus to rogue agents..."},
             {"id": "HhGA0aXpTAg", "title": "The Everweave Protocol: How a DnD Campaign Became an AI Safety Framework", "duration": "4m 45s", "tags": ["AI Safety", "Aethermoore", "DnD", "Everweave"], "description": "X Thread: The Everweave Protocol..."},
         ]
+
+        for plan_path in PLAN_FILES:
+            if not plan_path.exists():
+                continue
+            planned = {
+                item["video_id"]: item
+                for item in json.loads(plan_path.read_text(encoding="utf-8"))
+            }
+            for video in videos:
+                override = planned.get(video["id"])
+                if override:
+                    if override.get("description"):
+                        video["description"] = override["description"]
+                    if override.get("title"):
+                        video["title"] = override["title"]
+                    if override.get("tags"):
+                        video["tags"] = override["tags"]
 
         from scripts.apollo.youtube_transcript_collector import get_transcript
 

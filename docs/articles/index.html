@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCBE Article Hub | Field Notes, Product Maps, and Theory Packets</title>
+  <meta name="description" content="Public SCBE field notes, shipping maps, benchmark explainers, and bounded theory packets tied back to product and research surfaces." />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:title" content="SCBE Article Hub" />
+  <meta property="og:description" content="Field notes, shipping maps, benchmark explainers, and bounded theory packets from SCBE-AETHERMOORE." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://issdandavis.github.io/SCBE-AETHERMOORE/articles/index.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SCBE Article Hub" />
+  <meta name="twitter:description" content="Public SCBE field notes and theory packets with clean claim boundaries." />
+  <link rel="canonical" href="https://issdandavis.github.io/SCBE-AETHERMOORE/articles/index.html" />
+  <link rel="stylesheet" href="../static/polly-sidebar.css" />
+  <style>
+    :root { --bg:#071019; --panel:rgba(12,20,31,0.92); --panel-soft:rgba(15,24,37,0.78); --line:rgba(128,194,255,0.16); --text:#edf5ff; --muted:#a9b9cb; --ice:#80c2ff; --mint:#8cf0d1; --gold:#ffd27a; --max:1180px; --shadow:0 28px 70px rgba(0,0,0,0.34); }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: Georgia, "Times New Roman", serif; color: var(--text); background: radial-gradient(circle at top left, rgba(128,194,255,0.14), transparent 30%), radial-gradient(circle at 80% 18%, rgba(140,240,209,0.10), transparent 28%), linear-gradient(180deg, #050b12 0%, #09121d 52%, #050b12 100%); }
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(var(--max), calc(100% - 32px)); margin: 0 auto; }
+    .topbar { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(16px); background: rgba(5, 11, 18, 0.82); border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .topbar-inner { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .brand-kicker, .eyebrow, .mini { text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px; color: var(--ice); }
+    .brand strong { display: block; font-size: 18px; letter-spacing: -0.03em; }
+    .nav { display: flex; flex-wrap: wrap; gap: 10px; }
+    .nav a { color: var(--muted); padding: 10px 14px; border-radius: 999px; border: 1px solid transparent; }
+    .nav a:hover { color: var(--text); border-color: var(--line); background: rgba(255,255,255,0.03); }
+    .hero { padding: 64px 0 24px; }
+    .hero-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 24px; align-items: stretch; }
+    .hero-copy, .hero-note, .panel { border-radius: 24px; border: 1px solid var(--line); background: linear-gradient(180deg, rgba(12,20,31,0.94), rgba(8,14,23,0.96)); box-shadow: var(--shadow); }
+    .hero-copy { padding: 32px; }
+    .hero-note { padding: 28px; display: grid; gap: 16px; }
+    h1, h2, h3 { margin: 0; letter-spacing: -0.04em; }
+    h1 { font-size: clamp(42px, 6.6vw, 78px); line-height: 0.94; max-width: 10ch; }
+    .lede { margin-top: 18px; max-width: 58ch; font-size: 18px; line-height: 1.7; color: var(--muted); }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 14px 20px; border-radius: 999px; font-weight: 700; }
+    .btn-primary { background: linear-gradient(135deg, var(--ice), var(--mint)); color: #061017; }
+    .btn-secondary { background: rgba(255,255,255,0.03); border: 1px solid var(--line); color: var(--text); }
+    .meta { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 14px; }
+    .meta span::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 8px; border-radius: 50%; background: var(--gold); vertical-align: middle; }
+    .hero-note ul { margin: 0; padding-left: 18px; color: var(--muted); display: grid; gap: 10px; }
+    main section { padding: 18px 0 0; }
+    .section-head { margin-bottom: 18px; }
+    .section-copy { color: var(--muted); max-width: 70ch; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+    .panel { padding: 24px; display: grid; gap: 12px; }
+    .panel p { color: var(--muted); margin: 0; line-height: 1.7; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tags span { border-radius: 999px; padding: 5px 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); font-size: 12px; color: #d6e7fb; }
+    .panel a.inline { color: var(--mint); font-weight: 700; }
+    footer { padding: 44px 0 70px; color: var(--muted); }
+    @media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body data-polly-context="articles" data-polly-root="..">
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <span class="brand-kicker">SCBE field notes</span>
+        <strong>Article hub</strong>
+      </div>
+      <nav class="nav">
+        <a href="../index.html">Home</a>
+        <a href="../demos/index.html">Demos</a>
+        <a href="../research/index.html">Research</a>
+        <a href="../product-manual/index.html">Manuals</a>
+      </nav>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-grid">
+        <article class="hero-copy">
+          <div class="eyebrow">Public writing layer</div>
+          <h1>Read the field notes without losing the plot.</h1>
+          <p class="lede">This is the public writing lane for SCBE-AETHERMOORE: shipping maps, benchmark explainers, product-facing notes, and bounded theory packets that stay honest about what is implemented versus what is still exploratory.</p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="../research/history-bible-theory-training.html">Open the latest theory packet</a>
+            <a class="btn btn-secondary" href="../index.html">See the product path</a>
+          </div>
+          <div class="meta">
+            <span>Launch-facing articles</span>
+            <span>Research links with claim boundaries</span>
+            <span>Fast route into product and proof surfaces</span>
+          </div>
+        </article>
+        <aside class="hero-note">
+          <div class="eyebrow">How to use this hub</div>
+          <h2>Pick one lane, then go deeper.</h2>
+          <ul>
+            <li><strong>Need the product map?</strong> Start with the shipping article and the toolkit/manual path.</li>
+            <li><strong>Need the proof layer?</strong> Go to the benchmark and research surfaces.</li>
+            <li><strong>Need the theory lane?</strong> Use the bounded training packet, not random lore fragments.</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+    <section>
+      <div class="section-head">
+        <div class="eyebrow">Featured pieces</div>
+        <h2>Start with the article that matches your job.</h2>
+        <p class="section-copy">One click for orientation. One click for proof. One click for the bounded theory lane.</p>
+      </div>
+      <div class="grid">
+        <article class="panel">
+          <div class="mini">New theory packet</div>
+          <h3>History + Bible theory training</h3>
+          <p>Selected local notes about covenant, witness, genesis control, memory, sanctuary, and timeline structure turned into a bounded training packet and public research page.</p>
+          <div class="tags"><span>history</span><span>covenant</span><span>bounded SFT</span></div>
+          <a class="inline" href="../research/history-bible-theory-training.html">Open the packet</a>
+        </article>
+        <article class="panel">
+          <div class="mini">Orientation</div>
+          <h3>What SCBE actually ships today</h3>
+          <p>A clean map of the kernel, control plane, operator lane, delivery surfaces, and creative foundry so buyers and collaborators stop reading the repo as one undifferentiated wall.</p>
+          <div class="tags"><span>product map</span><span>repo orientation</span><span>shipping</span></div>
+          <a class="inline" href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/content/articles/2026-03-16-what-scbe-actually-ships-today.md" target="_blank" rel="noopener">Read source article</a>
+        </article>
+        <article class="panel">
+          <div class="mini">Security explainer</div>
+          <h3>14-layer security pipeline</h3>
+          <p>The strongest public explanation of the pipeline shape: what each layer does, where the axioms sit, and how claim boundaries should be drawn when you explain the stack.</p>
+          <div class="tags"><span>14 layers</span><span>security</span><span>math framing</span></div>
+          <a class="inline" href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/content/articles/2026-03-19-14-layer-security-pipeline.md" target="_blank" rel="noopener">Read source article</a>
+        </article>
+        <article class="panel">
+          <div class="mini">Benchmark note</div>
+          <h3>6 named dimensions beat black-box security</h3>
+          <p>A public explanation of the tongues benchmark and why interpretable dimensions are strategically better than unnamed latent coordinates for this narrow security task.</p>
+          <div class="tags"><span>benchmark</span><span>prompt injection</span><span>semantic tongues</span></div>
+          <a class="inline" href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/content/articles/2026-03-24-semantic-tongues-beat-protectai.md" target="_blank" rel="noopener">Read source article</a>
+        </article>
+      </div>
+    </section>
+    <section>
+      <div class="section-head">
+        <div class="eyebrow">Next actions</div>
+        <h2>Route from reading into action.</h2>
+        <p class="section-copy">Use the article hub to orient, then move into the product or research surface that fits what you are trying to do.</p>
+      </div>
+      <div class="grid">
+        <a class="panel" href="../index.html">
+          <div class="mini">Buy / evaluate</div>
+          <h3>Product surface</h3>
+          <p>Use the homepage when you need price, offer, manual, and delivery without research overload.</p>
+        </a>
+        <a class="panel" href="../research/index.html">
+          <div class="mini">Verify / compare</div>
+          <h3>Research domain</h3>
+          <p>Use the research surface for benchmarks, live experiment tracks, and claim-separated math pages.</p>
+        </a>
+        <a class="panel" href="../demos/index.html">
+          <div class="mini">Tour the stack</div>
+          <h3>Demo lab</h3>
+          <p>Use the demo hub when you need a faster guided tour of Hydra, GeoSeal, manuals, and support routes.</p>
+        </a>
+      </div>
+    </section>
+  </main>
+  <footer class="wrap">Public writing for SCBE-AETHERMOORE. Keep product claims, benchmark results, and theory language in separate lanes.</footer>
+  <script src="../static/polly-sidebar.js"></script>
+</body>
+</html>

@@ -1,11 +1,11 @@
 {
-  "updated_at_utc": "2026-03-26T07:34:22.733497+00:00",
-  "run_id": "20260326T073422Z",
-  "fingerprint": "b027749708a2d3368f07f1316b3d2bd50196663cfbcf304ca13f8306838ccc2e",
+  "updated_at_utc": "2026-03-27T04:55:48.879036+00:00",
+  "run_id": "20260327T045548Z",
+  "fingerprint": "f3d55272e14a0168d5f7e63a66bf7521ed854a6a72b3c500809b83a61800aadb",
   "index": {
     "AGENTS.md": {
-      "size": 4829,
-      "mtime_ns": 1772676334392958700
+      "size": 8316,
+      "mtime_ns": 1774576267646183400
     },
     "ALIASES.md": {
       "size": 524,
@@ -84,8 +84,8 @@
       "mtime_ns": 1771221010238106500
     },
     "README.md": {
-      "size": 14879,
-      "mtime_ns": 1774446741506958600
+      "size": 14715,
+      "mtime_ns": 1774515933291814600
     },
     "README_INDEX.md": {
       "size": 1534,
@@ -1436,8 +1436,8 @@
       "mtime_ns": 1772676334691086700
     },
     "docs/DARPA_OUTREACH_PACKAGE.md": {
-      "size": 6645,
-      "mtime_ns": 1774446804622005700
+      "size": 6646,
+      "mtime_ns": 1774512492358978600
     },
     "docs/DARPA_SWARM_BRIEF.md": {
       "size": 6134,
@@ -1506,6 +1506,10 @@
     "docs/FRANKENMODEL_SWARM_AGENT.md": {
       "size": 729,
       "mtime_ns": 1772676334693606700
+    },
+    "docs/GEOMETRIC_INTUITION.md": {
+      "size": 4695,
+      "mtime_ns": 1774512491549085100
     },
     "docs/GEOSEAL_ACCESS_CONTROL.md": {
       "size": 17073,
@@ -1732,8 +1736,8 @@
       "mtime_ns": 1771221011252559300
     },
     "docs/README.md": {
-      "size": 11982,
-      "mtime_ns": 1774431596324816200
+      "size": 11987,
+      "mtime_ns": 1774512492359973700
     },
     "docs/REMAINING_WORK.md": {
       "size": 3647,
@@ -1772,8 +1776,8 @@
       "mtime_ns": 1772676334718015200
     },
     "docs/SCBE_COMPLETE_SYSTEM.md": {
-      "size": 23162,
-      "mtime_ns": 1771221011256567300
+      "size": 23146,
+      "mtime_ns": 1774512491550084400
     },
     "docs/SCBE_CONTEXT_AETHERBROWSE_AGENT.md": {
       "size": 1100,
@@ -1884,8 +1888,8 @@
       "mtime_ns": 1774273202298916100
     },
     "docs/TECHNICAL_REFERENCE.md": {
-      "size": 7291,
-      "mtime_ns": 1774446741506958600
+      "size": 7297,
+      "mtime_ns": 1774512492361976200
     },
     "docs/TERMINAL_OPS_QUICKSTART.md": {
       "size": 3435,
@@ -2515,6 +2519,10 @@
       "size": 5058,
       "mtime_ns": 1771221011360232700
     },
+    "docs/eval/README.md": {
+      "size": 2229,
+      "mtime_ns": 1774516192724551200
+    },
     "docs/evidence/PASS2_ORGAN_TEST_RESULTS.md": {
       "size": 8081,
       "mtime_ns": 1774273202300921000
@@ -2728,8 +2736,8 @@
       "mtime_ns": 1774446804622005700
     },
     "docs/monetization/README.md": {
-      "size": 864,
-      "mtime_ns": 1774447018051186900
+      "size": 877,
+      "mtime_ns": 1774512492365229300
     },
     "docs/news/latest.md": {
       "size": 926,
@@ -2803,9 +2811,17 @@
       "size": 1132,
       "mtime_ns": 1773563779730886500
     },
+    "docs/operations/PUBLIC_SURFACE_MAP.md": {
+      "size": 5181,
+      "mtime_ns": 1774586311094549300
+    },
     "docs/operations/USER_DESIGN_PHILOSOPHY.md": {
       "size": 2008,
       "mtime_ns": 1773563736603857300
+    },
+    "docs/operations/YOUTUBE_METADATA_WORKSHEET.md": {
+      "size": 1673,
+      "mtime_ns": 1774576910045299800
     },
     "docs/operations/aetherbrowser_browser_first_runbook.md": {
       "size": 10020,
@@ -2940,8 +2956,8 @@
       "mtime_ns": 1772664805733183700
     },
     "docs/plans/2026-03-04-connector-closure-plan.md": {
-      "size": 4849,
-      "mtime_ns": 1774446741513813900
+      "size": 4850,
+      "mtime_ns": 1774512492367227600
     },
     "docs/plans/2026-03-04-dual-side-loop-self-improvement.md": {
       "size": 2456,
@@ -2988,16 +3004,24 @@
       "mtime_ns": 1772664802225864800
     },
     "docs/products/ai-governance-starter-kit.md": {
-      "size": 28570,
-      "mtime_ns": 1774446741506958600
+      "size": 28577,
+      "mtime_ns": 1774512492377476600
     },
     "docs/products/gumroad-listing.md": {
-      "size": 5301,
-      "mtime_ns": 1774446741506958600
+      "size": 5302,
+      "mtime_ns": 1774512492378477800
     },
     "docs/qkd-integration.md": {
       "size": 4608,
       "mtime_ns": 1771221011370744600
+    },
+    "docs/reports/SCBE_CODEBASE_RESEARCH_REVIEW_2026-03-26.md": {
+      "size": 13860,
+      "mtime_ns": 1774532163294570600
+    },
+    "docs/reports/SYSTEM_SURFACE_REVIEW_2026-03-26.md": {
+      "size": 6062,
+      "mtime_ns": 1774516192723550000
     },
     "docs/research/2026-03-04-kindle-dev-and-virtual-upload-brief.md": {
       "size": 3288,
@@ -3083,6 +3107,10 @@
       "size": 3851,
       "mtime_ns": 1774336272670510500
     },
+    "docs/research/BIBLICAL_NULL_SPACE_HYPOTHESIS.md": {
+      "size": 6998,
+      "mtime_ns": 1774514931164075400
+    },
     "docs/research/CANONICAL_TRIADIC_HARMONIC_SYMBOL_REGISTRY.md": {
       "size": 7092,
       "mtime_ns": 1774499377409285200
@@ -3104,8 +3132,8 @@
       "mtime_ns": 1774491776676184500
     },
     "docs/research/FOAM_OVERLAY_FOR_TRI_MANIFOLD_LATTICE.md": {
-      "size": 5894,
-      "mtime_ns": 1774499377410284300
+      "size": 8036,
+      "mtime_ns": 1774567816908957700
     },
     "docs/research/FREE_OPEN_MAPPING_STACK_RESEARCH_2026-03-25.md": {
       "size": 7057,
@@ -3155,6 +3183,14 @@
       "size": 14075,
       "mtime_ns": 1773559490384420100
     },
+    "docs/research/TOPOLOGICAL_TRANSITIONS_NOTES_2026-03-26.md": {
+      "size": 5706,
+      "mtime_ns": 1774567853738436900
+    },
+    "docs/research/UM_DR_SECURITY_CORPUS_EXPANSION_2026-03-26.md": {
+      "size": 10872,
+      "mtime_ns": 1774568786104970100
+    },
     "docs/research/hsm-source-code-review.md": {
       "size": 5702,
       "mtime_ns": 1774393552359727500
@@ -3202,6 +3238,10 @@
     "docs/specs/AETHERBROWSER_PERPLEXITY_CONNECTOR.md": {
       "size": 4918,
       "mtime_ns": 1774273202309947400
+    },
+    "docs/specs/AETHERTUBE_ARCHITECTURE.md": {
+      "size": 7517,
+      "mtime_ns": 1774583224186279500
     },
     "docs/specs/AETHER_REALTIME_VOICE_CALL_OPTIONS.md": {
       "size": 6756,
@@ -3288,8 +3328,8 @@
       "mtime_ns": 1774429738179201200
     },
     "docs/specs/SYSTEM_BLUEPRINT_v2_CURRENT.md": {
-      "size": 11421,
-      "mtime_ns": 1774446995379166800
+      "size": 11742,
+      "mtime_ns": 1774512492382477500
     },
     "docs/specs/WEBTOON_CH01_VISUAL_MEMORY_PACKET.md": {
       "size": 17638,
@@ -3363,6 +3403,14 @@
       "size": 391,
       "mtime_ns": 1774506586502874800
     },
+    "docs/theories-untested/RPS_MODULATED_ZETA_DUAL_TERNARY.md": {
+      "size": 3520,
+      "mtime_ns": 1774514260458850500
+    },
+    "docs/theories-untested/TANGENTIAL_OPERATOR_COEFFICIENTS.md": {
+      "size": 3855,
+      "mtime_ns": 1774567768281497400
+    },
     "docs/theories-untested/TERNARY_BALANCE_AND_CRITICAL_LINE_NOTES_2026-03-25.md": {
       "size": 3231,
       "mtime_ns": 1774507166320605800
@@ -3385,7 +3433,7 @@
     },
     "mcp/apps/cymatic-voxel-app/package-lock.json": {
       "size": 110350,
-      "mtime_ns": 1773730319537210100
+      "mtime_ns": 1774512491554083900
     },
     "mcp/apps/cymatic-voxel-app/package.json": {
       "size": 673,
@@ -3696,12 +3744,48 @@
       "mtime_ns": 1774362130547949400
     },
     "scripts/agentic_antivirus.py": {
-      "size": 17196,
-      "mtime_ns": 1774431708390499500
+      "size": 17211,
+      "mtime_ns": 1774512492386635800
     },
     "scripts/agentic_web_tool.py": {
       "size": 8639,
       "mtime_ns": 1774362130547949400
+    },
+    "scripts/apollo/apollo_core.py": {
+      "size": 16063,
+      "mtime_ns": 1774573764012837400
+    },
+    "scripts/apollo/email_reader.py": {
+      "size": 12712,
+      "mtime_ns": 1774572681581269500
+    },
+    "scripts/apollo/field_trip.py": {
+      "size": 14714,
+      "mtime_ns": 1774578450909795700
+    },
+    "scripts/apollo/obsidian_vault_sync.py": {
+      "size": 13793,
+      "mtime_ns": 1774585201516461400
+    },
+    "scripts/apollo/tor_sweeper.py": {
+      "size": 12895,
+      "mtime_ns": 1774578462184829900
+    },
+    "scripts/apollo/video_review.py": {
+      "size": 12402,
+      "mtime_ns": 1774578372992379500
+    },
+    "scripts/apollo/youtube_metadata_sync.py": {
+      "size": 9325,
+      "mtime_ns": 1774578372992379500
+    },
+    "scripts/apollo/youtube_sync_and_review.py": {
+      "size": 1592,
+      "mtime_ns": 1774578372992379500
+    },
+    "scripts/apollo/youtube_transcript_collector.py": {
+      "size": 11553,
+      "mtime_ns": 1774582535899955100
     },
     "scripts/artifacts/agent_comm/github_lanes/cross_talk.jsonl": {
       "size": 334,
@@ -3784,8 +3868,8 @@
       "mtime_ns": 1774362130561634200
     },
     "scripts/benchmark/scbe_vs_industry.py": {
-      "size": 21775,
-      "mtime_ns": 1774362130561634200
+      "size": 22522,
+      "mtime_ns": 1774532505524795800
     },
     "scripts/benchmark/semantic_vs_stub_comparison.py": {
       "size": 11498,
@@ -3954,6 +4038,10 @@
     "scripts/enable_mcp_servers.ps1": {
       "size": 1560,
       "mtime_ns": 1772676334900675200
+    },
+    "scripts/eval/run_scbe_eval.ps1": {
+      "size": 1725,
+      "mtime_ns": 1774516192725551500
     },
     "scripts/eval_legacy_hf_model.py": {
       "size": 19811,
@@ -4323,6 +4411,10 @@
       "size": 23207,
       "mtime_ns": 1774179234850062400
     },
+    "scripts/publish/article_to_video.py": {
+      "size": 45753,
+      "mtime_ns": 1774583790615038700
+    },
     "scripts/publish/build_research_campaign.py": {
       "size": 24416,
       "mtime_ns": 1774362130640804900
@@ -4362,6 +4454,10 @@
     "scripts/publish/post_to_x.py": {
       "size": 15697,
       "mtime_ns": 1774362130640804900
+    },
+    "scripts/publish/post_to_youtube.py": {
+      "size": 26280,
+      "mtime_ns": 1774583790572327000
     },
     "scripts/publish/publish_discussions.py": {
       "size": 8154,
@@ -4467,6 +4563,10 @@
       "size": 1652,
       "mtime_ns": 1773891549564851600
     },
+    "scripts/run_biblical_null_space_eval.py": {
+      "size": 6304,
+      "mtime_ns": 1774515495931052300
+    },
     "scripts/run_cloud_kernel_data_pipeline.ps1": {
       "size": 1158,
       "mtime_ns": 1772676334922611900
@@ -4551,6 +4651,10 @@
       "size": 1878,
       "mtime_ns": 1774406419182122200
     },
+    "scripts/scbe_docker_status.mjs": {
+      "size": 10237,
+      "mtime_ns": 1774512491561084700
+    },
     "scripts/scbe_docker_status.ps1": {
       "size": 8457,
       "mtime_ns": 1772676334932346700
@@ -4558,6 +4662,10 @@
     "scripts/scbe_headless_ide_demo.py": {
       "size": 12590,
       "mtime_ns": 1774362130656564500
+    },
+    "scripts/scbe_mcp_terminal.mjs": {
+      "size": 5204,
+      "mtime_ns": 1774512491562084700
     },
     "scripts/scbe_mcp_terminal.ps1": {
       "size": 3418,
@@ -4570,6 +4678,10 @@
     "scripts/scbe_terminal_ops.py": {
       "size": 14859,
       "mtime_ns": 1774362130656564500
+    },
+    "scripts/security/code_governance_gate.py": {
+      "size": 12051,
+      "mtime_ns": 1774574667245493800
     },
     "scripts/self_improvement_orchestrator.py": {
       "size": 23990,
@@ -4770,6 +4882,10 @@
     "scripts/system/crosstalk_reliability_manager.py": {
       "size": 9147,
       "mtime_ns": 1774362130688276600
+    },
+    "scripts/system/daily_patent_check.py": {
+      "size": 4955,
+      "mtime_ns": 1774570989334451700
     },
     "scripts/system/daily_revenue_check.py": {
       "size": 17780,
@@ -5075,6 +5191,10 @@
       "size": 6329,
       "mtime_ns": 1773730306378803500
     },
+    "scripts/system/start_aetherbrowser_extension_service.mjs": {
+      "size": 11811,
+      "mtime_ns": 1774512491563410500
+    },
     "scripts/system/start_aetherbrowser_extension_service.ps1": {
       "size": 7500,
       "mtime_ns": 1774273202733232300
@@ -5094,6 +5214,10 @@
     "scripts/system/stop_aether_phone_mode.ps1": {
       "size": 993,
       "mtime_ns": 1772675123605925400
+    },
+    "scripts/system/stop_aetherbrowser_extension_service.mjs": {
+      "size": 2814,
+      "mtime_ns": 1774512491564418400
     },
     "scripts/system/stop_aetherbrowser_extension_service.ps1": {
       "size": 1429,
@@ -5154,6 +5278,10 @@
     "scripts/system/update_training_totals.ps1": {
       "size": 4295,
       "mtime_ns": 1772676334954104100
+    },
+    "scripts/system/vercel_preview_conference.ps1": {
+      "size": 700,
+      "mtime_ns": 1774587335176799500
     },
     "scripts/system/vm_clawbot_24x7.ps1": {
       "size": 3336,
@@ -5356,24 +5484,24 @@
       "mtime_ns": 1772676334984016300
     },
     "src/aaoe/agent_identity.py": {
-      "size": 13089,
-      "mtime_ns": 1774362130735507600
+      "size": 13087,
+      "mtime_ns": 1774512491567418300
     },
     "src/aaoe/ephemeral_prompt.py": {
-      "size": 11414,
-      "mtime_ns": 1774401543124200100
+      "size": 11362,
+      "mtime_ns": 1774512491568413600
     },
     "src/aaoe/garganta_manifold.py": {
-      "size": 26378,
-      "mtime_ns": 1774362130735507600
+      "size": 26376,
+      "mtime_ns": 1774512491569411200
     },
     "src/aaoe/research_hub.py": {
-      "size": 20714,
-      "mtime_ns": 1774362130735507600
+      "size": 20712,
+      "mtime_ns": 1774512491570413500
     },
     "src/aaoe/task_monitor.py": {
-      "size": 17265,
-      "mtime_ns": 1774362130751529400
+      "size": 17263,
+      "mtime_ns": 1774512491571412200
     },
     "src/aetherbrowser/__init__.py": {
       "size": 66,
@@ -5400,8 +5528,8 @@
       "mtime_ns": 1774362130751529400
     },
     "src/aetherbrowser/phase_tunnel.py": {
-      "size": 19516,
-      "mtime_ns": 1774362130751529400
+      "size": 19514,
+      "mtime_ns": 1774512491573413300
     },
     "src/aetherbrowser/provider_executor.py": {
       "size": 12348,
@@ -5416,8 +5544,8 @@
       "mtime_ns": 1774401543126168300
     },
     "src/aetherbrowser/topology_engine.py": {
-      "size": 10143,
-      "mtime_ns": 1774401543126168300
+      "size": 10141,
+      "mtime_ns": 1774512491574620900
     },
     "src/aetherbrowser/trilane_router.py": {
       "size": 19327,
@@ -5435,9 +5563,17 @@
       "size": 9048,
       "mtime_ns": 1774362130751529400
     },
+    "src/aethermoore_math/__init__.py": {
+      "size": 458,
+      "mtime_ns": 1774512491576622300
+    },
+    "src/aethermoore_math/sacred_eggs.py": {
+      "size": 22944,
+      "mtime_ns": 1774512491577622600
+    },
     "src/aetherwiki/index.html": {
-      "size": 68472,
-      "mtime_ns": 1774431596324816200
+      "size": 68483,
+      "mtime_ns": 1774512492389641500
     },
     "src/agent/index.ts": {
       "size": 2266,
@@ -5458,6 +5594,26 @@
     "src/agent/types.ts": {
       "size": 9504,
       "mtime_ns": 1774144540446794100
+    },
+    "src/agent_comms/__init__.py": {
+      "size": 862,
+      "mtime_ns": 1774512491579623000
+    },
+    "src/agent_comms/channel.py": {
+      "size": 7615,
+      "mtime_ns": 1774512491580620900
+    },
+    "src/agent_comms/message.py": {
+      "size": 6750,
+      "mtime_ns": 1774512491581621600
+    },
+    "src/agent_comms/registry.py": {
+      "size": 7324,
+      "mtime_ns": 1774512491583624500
+    },
+    "src/agent_comms/router.py": {
+      "size": 8775,
+      "mtime_ns": 1774512491584899000
     },
     "src/agentic/agents.ts": {
       "size": 7704,
@@ -5484,8 +5640,8 @@
       "mtime_ns": 1774144540453637300
     },
     "src/agentic/platform.ts": {
-      "size": 21388,
-      "mtime_ns": 1774273202788856900
+      "size": 21479,
+      "mtime_ns": 1774512491585897400
     },
     "src/agentic/providers.ts": {
       "size": 15205,
@@ -5544,8 +5700,8 @@
       "mtime_ns": 1774273202795880100
     },
     "src/ai_brain/entropic_layer.py": {
-      "size": 6549,
-      "mtime_ns": 1774362130751529400
+      "size": 6547,
+      "mtime_ns": 1774512491587900200
     },
     "src/ai_brain/flux-states.ts": {
       "size": 13790,
@@ -5560,8 +5716,8 @@
       "mtime_ns": 1774273202799890800
     },
     "src/ai_brain/hyperbolic_rag.py": {
-      "size": 5119,
-      "mtime_ns": 1774362130751529400
+      "size": 5117,
+      "mtime_ns": 1774512491588904300
     },
     "src/ai_brain/immune-response.ts": {
       "size": 14518,
@@ -5647,6 +5803,10 @@
       "size": 25566,
       "mtime_ns": 1774401543131168600
     },
+    "src/api/auth_config.py": {
+      "size": 1568,
+      "mtime_ns": 1774512491589896900
+    },
     "src/api/diagnosticSnapshot.ts": {
       "size": 20523,
       "mtime_ns": 1774273202801895500
@@ -5656,16 +5816,16 @@
       "mtime_ns": 1774144540494269700
     },
     "src/api/hydra_routes.py": {
-      "size": 19889,
-      "mtime_ns": 1774362130767538500
+      "size": 19848,
+      "mtime_ns": 1774512491590896000
     },
     "src/api/index.ts": {
       "size": 19506,
       "mtime_ns": 1774144540495269300
     },
     "src/api/main.py": {
-      "size": 47953,
-      "mtime_ns": 1774362130767538500
+      "size": 47900,
+      "mtime_ns": 1774512491591898600
     },
     "src/api/mesh_routes.py": {
       "size": 5446,
@@ -5684,12 +5844,12 @@
       "mtime_ns": 1774273202807820400
     },
     "src/api/saas_routes.py": {
-      "size": 15633,
-      "mtime_ns": 1774362130767538500
+      "size": 15578,
+      "mtime_ns": 1774512491593896300
     },
     "src/api/server.ts": {
-      "size": 10188,
-      "mtime_ns": 1774362130767538500
+      "size": 10222,
+      "mtime_ns": 1774512491594895400
     },
     "src/api/stripe_billing.py": {
       "size": 12527,
@@ -5784,12 +5944,12 @@
       "mtime_ns": 1774401543131168600
     },
     "src/browser/cdp-backend.ts": {
-      "size": 34975,
-      "mtime_ns": 1774273202807820400
+      "size": 35208,
+      "mtime_ns": 1774512491596896900
     },
     "src/browser/constitutionalWebAgent.py": {
-      "size": 17686,
-      "mtime_ns": 1774359300809150200
+      "size": 17684,
+      "mtime_ns": 1774512491597896600
     },
     "src/browser/evaluator.ts": {
       "size": 21606,
@@ -5800,8 +5960,8 @@
       "mtime_ns": 1774273202807820400
     },
     "src/browser/hydra_android_hand.py": {
-      "size": 28593,
-      "mtime_ns": 1774362130767538500
+      "size": 28591,
+      "mtime_ns": 1774512491598896200
     },
     "src/browser/hydra_hand.py": {
       "size": 40981,
@@ -5820,8 +5980,8 @@
       "mtime_ns": 1774144540507414700
     },
     "src/browser/playwright-backend.ts": {
-      "size": 17724,
-      "mtime_ns": 1774273202807820400
+      "size": 17830,
+      "mtime_ns": 1774512491600896100
     },
     "src/browser/polly_vision.py": {
       "size": 19541,
@@ -5832,12 +5992,12 @@
       "mtime_ns": 1774273202807820400
     },
     "src/browser/research_funnel.py": {
-      "size": 18427,
-      "mtime_ns": 1774401543132168400
+      "size": 18390,
+      "mtime_ns": 1774512491601896400
     },
     "src/browser/session.ts": {
-      "size": 19777,
-      "mtime_ns": 1774144540510415600
+      "size": 19898,
+      "mtime_ns": 1774512491602896500
     },
     "src/browser/spiralSealSession.ts": {
       "size": 15017,
@@ -5864,8 +6024,8 @@
       "mtime_ns": 1774362130783364200
     },
     "src/cddm/functor.py": {
-      "size": 12507,
-      "mtime_ns": 1774362130783364200
+      "size": 12505,
+      "mtime_ns": 1774512491603896300
     },
     "src/cddm/morphism.py": {
       "size": 4966,
@@ -5927,6 +6087,26 @@
       "size": 2069,
       "mtime_ns": 1774359300823093100
     },
+    "src/cognitive_governance/__init__.py": {
+      "size": 1199,
+      "mtime_ns": 1774512491604897700
+    },
+    "src/cognitive_governance/dimensional_space.py": {
+      "size": 12223,
+      "mtime_ns": 1774512491606045500
+    },
+    "src/cognitive_governance/governance_engine.py": {
+      "size": 11587,
+      "mtime_ns": 1774512491607045700
+    },
+    "src/cognitive_governance/hypercube_geometry.py": {
+      "size": 13949,
+      "mtime_ns": 1774512491607045700
+    },
+    "src/cognitive_governance/permeability.py": {
+      "size": 11426,
+      "mtime_ns": 1774512491608047600
+    },
     "src/constants/config.ts": {
       "size": 3915,
       "mtime_ns": 1774144540515415500
@@ -5952,32 +6132,32 @@
       "mtime_ns": 1774273202818327000
     },
     "src/crypto/bloom.ts": {
-      "size": 929,
-      "mtime_ns": 1774144540521415800
+      "size": 1013,
+      "mtime_ns": 1774512491610043000
     },
     "src/crypto/dual_lattice.py": {
-      "size": 31985,
-      "mtime_ns": 1774430313215152600
+      "size": 31986,
+      "mtime_ns": 1774512492391638100
     },
     "src/crypto/dual_lattice_integration.py": {
-      "size": 38970,
-      "mtime_ns": 1774362130783364200
+      "size": 38952,
+      "mtime_ns": 1774512491612048000
     },
     "src/crypto/envelope.ts": {
-      "size": 8875,
-      "mtime_ns": 1774144540522416000
+      "size": 9087,
+      "mtime_ns": 1774512491613521700
     },
     "src/crypto/geo_seal.py": {
       "size": 33973,
       "mtime_ns": 1774362130783364200
     },
     "src/crypto/h_lwe.py": {
-      "size": 14573,
-      "mtime_ns": 1774362130783364200
+      "size": 14571,
+      "mtime_ns": 1774512491614523500
     },
     "src/crypto/hkdf.ts": {
-      "size": 1841,
-      "mtime_ns": 1774144540523421200
+      "size": 1930,
+      "mtime_ns": 1774512491615522000
     },
     "src/crypto/hyperbolic_viz.py": {
       "size": 13372,
@@ -5988,16 +6168,16 @@
       "mtime_ns": 1774362130783364200
     },
     "src/crypto/index.ts": {
-      "size": 616,
-      "mtime_ns": 1774144540524425400
+      "size": 662,
+      "mtime_ns": 1774512491616521400
     },
     "src/crypto/jcs.ts": {
-      "size": 1371,
-      "mtime_ns": 1774144540526417500
+      "size": 1454,
+      "mtime_ns": 1774512491616521400
     },
     "src/crypto/kms.ts": {
-      "size": 1481,
-      "mtime_ns": 1774273202823539800
+      "size": 1563,
+      "mtime_ns": 1774512491617521500
     },
     "src/crypto/layeredEggArena.ts": {
       "size": 21960,
@@ -6008,12 +6188,12 @@
       "mtime_ns": 1774362130783364200
     },
     "src/crypto/nonceManager.ts": {
-      "size": 1229,
-      "mtime_ns": 1774144540529417800
+      "size": 1331,
+      "mtime_ns": 1774512491618521900
     },
     "src/crypto/octree.py": {
-      "size": 20849,
-      "mtime_ns": 1774362130783364200
+      "size": 20858,
+      "mtime_ns": 1774512491619517700
     },
     "src/crypto/platform.ts": {
       "size": 8930,
@@ -6024,8 +6204,8 @@
       "mtime_ns": 1774273202827179700
     },
     "src/crypto/pqc.ts": {
-      "size": 35725,
-      "mtime_ns": 1774273202827179700
+      "size": 36004,
+      "mtime_ns": 1774512491620518000
     },
     "src/crypto/pqcArena.ts": {
       "size": 25388,
@@ -6044,28 +6224,28 @@
       "mtime_ns": 1774362130799253100
     },
     "src/crypto/replayGuard.ts": {
-      "size": 3495,
-      "mtime_ns": 1774144540537416300
+      "size": 3634,
+      "mtime_ns": 1774512491621521700
     },
     "src/crypto/replayStore.ts": {
-      "size": 6898,
-      "mtime_ns": 1774144540537416300
+      "size": 6967,
+      "mtime_ns": 1774512491622520900
     },
     "src/crypto/rwp_v3.py": {
       "size": 13500,
       "mtime_ns": 1774362130799253100
     },
     "src/crypto/sacred_eggs.py": {
-      "size": 21783,
-      "mtime_ns": 1774362130799253100
+      "size": 21781,
+      "mtime_ns": 1774512491624518500
     },
     "src/crypto/sacred_tongues.py": {
       "size": 11795,
       "mtime_ns": 1774362130799253100
     },
     "src/crypto/signed_lattice_bridge.py": {
-      "size": 13745,
-      "mtime_ns": 1774362130799253100
+      "size": 13729,
+      "mtime_ns": 1774512491626523800
     },
     "src/crypto/symphonic_cipher.py": {
       "size": 8111,
@@ -6196,16 +6376,16 @@
       "mtime_ns": 1772676335029389800
     },
     "src/fleet/agent-registry.ts": {
-      "size": 11658,
-      "mtime_ns": 1774144540540196200
+      "size": 11751,
+      "mtime_ns": 1774512491628520600
     },
     "src/fleet/asymmetricMovement.ts": {
       "size": 17741,
       "mtime_ns": 1774273202843352200
     },
     "src/fleet/asymmetric_movement.py": {
-      "size": 8586,
-      "mtime_ns": 1774401543137168300
+      "size": 8569,
+      "mtime_ns": 1774512491629520900
     },
     "src/fleet/autoRetrigger.ts": {
       "size": 6895,
@@ -6236,12 +6416,12 @@
       "mtime_ns": 1774273202849546100
     },
     "src/fleet/fleet-manager.ts": {
-      "size": 16654,
-      "mtime_ns": 1774144540553352400
+      "size": 16754,
+      "mtime_ns": 1774512491630520100
     },
     "src/fleet/governance.ts": {
-      "size": 12144,
-      "mtime_ns": 1774144540556072000
+      "size": 12237,
+      "mtime_ns": 1774512491631524700
     },
     "src/fleet/governed-drift.ts": {
       "size": 12971,
@@ -6255,13 +6435,17 @@
       "size": 1682,
       "mtime_ns": 1774144540558069300
     },
+    "src/fleet/juggling-scheduler.ts": {
+      "size": 26462,
+      "mtime_ns": 1774512491632522900
+    },
     "src/fleet/mitosis.ts": {
       "size": 9944,
       "mtime_ns": 1774273202851573000
     },
     "src/fleet/model_matrix.py": {
-      "size": 27923,
-      "mtime_ns": 1774362130799253100
+      "size": 27921,
+      "mtime_ns": 1774512491633521700
     },
     "src/fleet/node-kernel.ts": {
       "size": 15991,
@@ -6296,8 +6480,8 @@
       "mtime_ns": 1774273202857343200
     },
     "src/fleet/polly-pads/drone-core.ts": {
-      "size": 13421,
-      "mtime_ns": 1774144540571000500
+      "size": 13689,
+      "mtime_ns": 1774512491634688000
     },
     "src/fleet/polly-pads/index.ts": {
       "size": 4500,
@@ -6376,12 +6560,28 @@
       "mtime_ns": 1774144540593809300
     },
     "src/fleet/task-dispatcher.ts": {
-      "size": 14537,
-      "mtime_ns": 1774144540594811100
+      "size": 14630,
+      "mtime_ns": 1774512491635689900
     },
     "src/fleet/types.ts": {
       "size": 7481,
       "mtime_ns": 1774144540595809100
+    },
+    "src/flow_router/__init__.py": {
+      "size": 635,
+      "mtime_ns": 1774514918081430200
+    },
+    "src/flow_router/builtins.py": {
+      "size": 1489,
+      "mtime_ns": 1774514918082429100
+    },
+    "src/flow_router/executor.py": {
+      "size": 10859,
+      "mtime_ns": 1774514918083429900
+    },
+    "src/flow_router/schema.py": {
+      "size": 3770,
+      "mtime_ns": 1774514918081430200
     },
     "src/gacha_isekai/__init__.py": {
       "size": 1579,
@@ -6476,12 +6676,12 @@
       "mtime_ns": 1774401543138168700
     },
     "src/gateway/DNA_MULTI_LAYER_ENCODING_TEST.py": {
-      "size": 17018,
-      "mtime_ns": 1774401543139168400
+      "size": 17002,
+      "mtime_ns": 1774512491636688300
     },
     "src/gateway/authorize-service.ts": {
-      "size": 3906,
-      "mtime_ns": 1774144540611735300
+      "size": 3948,
+      "mtime_ns": 1774512491637688100
     },
     "src/gateway/complex_math_core.py": {
       "size": 15572,
@@ -6504,8 +6704,8 @@
       "mtime_ns": 1774273202871118800
     },
     "src/geoseal.py": {
-      "size": 8205,
-      "mtime_ns": 1774362130815381100
+      "size": 8203,
+      "mtime_ns": 1774512491638688900
     },
     "src/geoseal.ts": {
       "size": 9725,
@@ -6524,24 +6724,24 @@
       "mtime_ns": 1774362130815381100
     },
     "src/governance/audit_ledger.ts": {
-      "size": 104,
-      "mtime_ns": 1774273202873124500
+      "size": 240,
+      "mtime_ns": 1774512491639685500
     },
     "src/governance/decision_envelope_v1.py": {
       "size": 30907,
       "mtime_ns": 1774362130815381100
     },
     "src/governance/flux_manifest.ts": {
-      "size": 492,
-      "mtime_ns": 1774273202873124500
+      "size": 626,
+      "mtime_ns": 1774512491640685300
     },
     "src/governance/flux_parameters.py": {
-      "size": 6153,
-      "mtime_ns": 1774362130815381100
+      "size": 6151,
+      "mtime_ns": 1774512491641687300
     },
     "src/governance/governance_engine.ts": {
-      "size": 424,
-      "mtime_ns": 1774273202875130300
+      "size": 568,
+      "mtime_ns": 1774512491641687300
     },
     "src/governance/hybrid_mesh_chain.py": {
       "size": 11290,
@@ -6552,24 +6752,24 @@
       "mtime_ns": 1774273202877254500
     },
     "src/governance/index.ts": {
-      "size": 318,
-      "mtime_ns": 1774144540620362000
+      "size": 430,
+      "mtime_ns": 1774512491642683000
     },
     "src/governance/mmx.ts": {
-      "size": 2086,
-      "mtime_ns": 1774273202877254500
+      "size": 2202,
+      "mtime_ns": 1774512491643682700
     },
     "src/governance/offline_mode.ts": {
-      "size": 23325,
-      "mtime_ns": 1774401543140184500
+      "size": 23455,
+      "mtime_ns": 1774512491644686700
     },
     "src/governance/pq_crypto.ts": {
-      "size": 102,
-      "mtime_ns": 1774273202879260900
+      "size": 239,
+      "mtime_ns": 1774512491645687500
     },
     "src/governance/runtime_gate.py": {
-      "size": 23566,
-      "mtime_ns": 1774401543142168800
+      "size": 26590,
+      "mtime_ns": 1774514213807175000
     },
     "src/governance/sync_client.ts": {
       "size": 980,
@@ -6796,8 +6996,8 @@
       "mtime_ns": 1774144540689997900
     },
     "src/harmonic/sheafCohomology.ts": {
-      "size": 50438,
-      "mtime_ns": 1774273202894479800
+      "size": 75618,
+      "mtime_ns": 1774512491647689000
     },
     "src/harmonic/sheaf_consensus_gate.py": {
       "size": 5429,
@@ -6884,16 +7084,16 @@
       "mtime_ns": 1774144540704994200
     },
     "src/integrations/six-tongues.ts": {
-      "size": 6637,
-      "mtime_ns": 1774144540704994200
+      "size": 6641,
+      "mtime_ns": 1774512491648685800
     },
     "src/kernel/__init__.py": {
       "size": 559,
       "mtime_ns": 1774067867936799900
     },
     "src/kernel/agentic_sphere_grid.py": {
-      "size": 43895,
-      "mtime_ns": 1774362130815381100
+      "size": 43893,
+      "mtime_ns": 1774512491649685400
     },
     "src/kernel/context_grid.py": {
       "size": 24059,
@@ -7032,20 +7232,20 @@
       "mtime_ns": 1774406419182122200
     },
     "src/licensing/nist_ai_rmf.py": {
-      "size": 33108,
-      "mtime_ns": 1774406419182122200
+      "size": 34908,
+      "mtime_ns": 1774512491650686500
     },
     "src/licensing/oem_license.py": {
-      "size": 11709,
-      "mtime_ns": 1774406419182122200
+      "size": 11922,
+      "mtime_ns": 1774512491651685700
     },
     "src/licensing/sovereign_manifest.py": {
-      "size": 12275,
-      "mtime_ns": 1774406419182122200
+      "size": 12060,
+      "mtime_ns": 1774512491652685200
     },
     "src/licensing/usage_meter.py": {
-      "size": 11622,
-      "mtime_ns": 1774406419182122200
+      "size": 11728,
+      "mtime_ns": 1774512491653685800
     },
     "src/m4mesh/__init__.py": {
       "size": 1913,
@@ -7116,12 +7316,12 @@
       "mtime_ns": 1774362130853854400
     },
     "src/memory/quasi_allocator.ts": {
-      "size": 1857,
-      "mtime_ns": 1774144540704994200
+      "size": 1920,
+      "mtime_ns": 1774512491654685600
     },
     "src/metrics/telemetry.ts": {
-      "size": 1665,
-      "mtime_ns": 1774144540704994200
+      "size": 1675,
+      "mtime_ns": 1774512491655687500
     },
     "src/minimal/README.md": {
       "size": 2704,
@@ -7177,7 +7377,7 @@
     },
     "src/package-lock.json": {
       "size": 49817,
-      "mtime_ns": 1772676335081228200
+      "mtime_ns": 1774512491656685200
     },
     "src/package.json": {
       "size": 802,
@@ -7228,24 +7428,28 @@
       "mtime_ns": 1774362130862814300
     },
     "src/physics_sim/test_physics_comprehensive.py": {
-      "size": 21036,
-      "mtime_ns": 1774362130862814300
+      "size": 21020,
+      "mtime_ns": 1774512491659693800
     },
     "src/physics_sim/waves_optics.py": {
       "size": 25429,
       "mtime_ns": 1774401543151168200
     },
     "src/polly_pads_runtime.py": {
-      "size": 27730,
-      "mtime_ns": 1774362130862814300
+      "size": 27728,
+      "mtime_ns": 1774512491660686000
     },
     "src/pqc/symphonic_cipher/__init__.py": {
       "size": 608,
       "mtime_ns": 1771221012075927100
     },
     "src/primitives/__init__.py": {
-      "size": 589,
-      "mtime_ns": 1774510261348670600
+      "size": 920,
+      "mtime_ns": 1774512968132476600
+    },
+    "src/primitives/phi_poincare.py": {
+      "size": 3408,
+      "mtime_ns": 1774512852028118400
     },
     "src/primitives/phi_ternary.py": {
       "size": 6248,
@@ -7276,8 +7480,8 @@
       "mtime_ns": 1774362130862814300
     },
     "src/scbe_14layer_reference.py": {
-      "size": 32691,
-      "mtime_ns": 1774362130862814300
+      "size": 33972,
+      "mtime_ns": 1774512491661686200
     },
     "src/scbe_aethermoore.egg-info/PKG-INFO": {
       "size": 12296,
@@ -7320,8 +7524,8 @@
       "mtime_ns": 1774362130878882000
     },
     "src/scbe_signed_chladni.py": {
-      "size": 6168,
-      "mtime_ns": 1774362130878882000
+      "size": 6170,
+      "mtime_ns": 1774512491662686300
     },
     "src/scbe_spaceflight.py": {
       "size": 36167,
@@ -7352,20 +7556,24 @@
       "mtime_ns": 1774144540720027100
     },
     "src/security-engine/machine-constants.ts": {
-      "size": 13922,
-      "mtime_ns": 1774273202907992200
+      "size": 14002,
+      "mtime_ns": 1774512491663686200
     },
     "src/security-engine/policy-fields.ts": {
       "size": 12815,
       "mtime_ns": 1774273202909997300
+    },
+    "src/security-engine/redblue-arena.ts": {
+      "size": 22927,
+      "mtime_ns": 1774512491664686300
     },
     "src/security/__init__.py": {
       "size": 274,
       "mtime_ns": 1774273202909997300
     },
     "src/security/privacy_token_vault.py": {
-      "size": 17301,
-      "mtime_ns": 1774362130878882000
+      "size": 17299,
+      "mtime_ns": 1774512491665686000
     },
     "src/security/protobuf_patch.py": {
       "size": 4297,
@@ -7376,20 +7584,24 @@
       "mtime_ns": 1774362130878882000
     },
     "src/selfHealing/coordinator.ts": {
-      "size": 517,
-      "mtime_ns": 1774144540725133600
+      "size": 569,
+      "mtime_ns": 1774512491666682200
     },
     "src/selfHealing/deepHealing.ts": {
-      "size": 296,
-      "mtime_ns": 1774144540726133600
+      "size": 341,
+      "mtime_ns": 1774512491667686300
     },
     "src/selfHealing/quickFixBot.ts": {
-      "size": 294,
-      "mtime_ns": 1774144540727133800
+      "size": 339,
+      "mtime_ns": 1774512491668687000
     },
     "src/selfHealing/selfHealingOrchestrator.py": {
       "size": 14827,
       "mtime_ns": 1774362130878882000
+    },
+    "src/selfHealing/types.ts": {
+      "size": 737,
+      "mtime_ns": 1774512491668687000
     },
     "src/shell-executor.ts": {
       "size": 27380,
@@ -7408,8 +7620,8 @@
       "mtime_ns": 1774144540732133900
     },
     "src/spaceTor/combat-network.ts": {
-      "size": 6253,
-      "mtime_ns": 1774144540733132100
+      "size": 6322,
+      "mtime_ns": 1774512491670685800
     },
     "src/spaceTor/hybrid-crypto.ts": {
       "size": 5435,
@@ -7432,16 +7644,16 @@
       "mtime_ns": 1774362130878882000
     },
     "src/spiralverse/aethercode.py": {
-      "size": 34886,
-      "mtime_ns": 1774362130878882000
+      "size": 34884,
+      "mtime_ns": 1774512491671686300
     },
     "src/spiralverse/aethermoor_spiral_engine.py": {
-      "size": 21444,
-      "mtime_ns": 1774359300894552900
+      "size": 21442,
+      "mtime_ns": 1774512491672685300
     },
     "src/spiralverse/hive_memory.py": {
-      "size": 25666,
-      "mtime_ns": 1774362130878882000
+      "size": 25664,
+      "mtime_ns": 1774512491673684700
     },
     "src/spiralverse/index.ts": {
       "size": 11702,
@@ -7452,40 +7664,40 @@
       "mtime_ns": 1774144540743518000
     },
     "src/spiralverse/polyglot_alphabet.py": {
-      "size": 16990,
-      "mtime_ns": 1774362130878882000
+      "size": 16988,
+      "mtime_ns": 1774512491674689200
     },
     "src/spiralverse/proximity_optimizer.py": {
-      "size": 19562,
-      "mtime_ns": 1774362130878882000
+      "size": 19560,
+      "mtime_ns": 1774512491675689500
     },
     "src/spiralverse/rwp.ts": {
-      "size": 8717,
-      "mtime_ns": 1774144540744518700
+      "size": 8737,
+      "mtime_ns": 1774512491676684900
     },
     "src/spiralverse/rwp2_envelope.py": {
-      "size": 21692,
-      "mtime_ns": 1774362130878882000
+      "size": 21690,
+      "mtime_ns": 1774512491677686800
     },
     "src/spiralverse/rwp_v3.ts": {
       "size": 9734,
       "mtime_ns": 1774144540745517300
     },
     "src/spiralverse/spiralverse-sdk.ts": {
-      "size": 7731,
-      "mtime_ns": 1774144540746516100
+      "size": 7824,
+      "mtime_ns": 1774512491678685700
     },
     "src/spiralverse/temporal_intent.py": {
       "size": 21224,
       "mtime_ns": 1774401543153168500
     },
     "src/spiralverse/types.ts": {
-      "size": 3771,
-      "mtime_ns": 1774144540748519400
+      "size": 3795,
+      "mtime_ns": 1774512491679687800
     },
     "src/spiralverse/vector_6d.py": {
-      "size": 22023,
-      "mtime_ns": 1774362130878882000
+      "size": 22021,
+      "mtime_ns": 1774512491680686400
     },
     "src/storage/__init__.py": {
       "size": 976,
@@ -7504,16 +7716,16 @@
       "mtime_ns": 1774401543154168500
     },
     "src/storage/langues_dispersal.py": {
-      "size": 9180,
-      "mtime_ns": 1774401543155307800
+      "size": 9171,
+      "mtime_ns": 1774512491681687100
     },
     "src/storage/lightning_query.py": {
       "size": 17477,
       "mtime_ns": 1774401543156306000
     },
     "src/storage/tictac_spin_grid.py": {
-      "size": 11824,
-      "mtime_ns": 1774362130894986200
+      "size": 11822,
+      "mtime_ns": 1774512491682690800
     },
     "src/storage/tri_lattice_membrane.py": {
       "size": 15998,
@@ -7576,8 +7788,8 @@
       "mtime_ns": 1774273202918096000
     },
     "src/symphonic_cipher/ai_verifier.py": {
-      "size": 48747,
-      "mtime_ns": 1774362130894986200
+      "size": 48745,
+      "mtime_ns": 1774512491684686500
     },
     "src/symphonic_cipher/audio/__init__.py": {
       "size": 242,
@@ -7604,8 +7816,8 @@
       "mtime_ns": 1774362130894986200
     },
     "src/symphonic_cipher/dsp.py": {
-      "size": 28216,
-      "mtime_ns": 1774362130894986200
+      "size": 28214,
+      "mtime_ns": 1774512491685683900
     },
     "src/symphonic_cipher/dual_lattice_consensus.py": {
       "size": 13564,
@@ -7620,20 +7832,20 @@
       "mtime_ns": 1774362130894986200
     },
     "src/symphonic_cipher/flat_slope_encoder.py": {
-      "size": 20372,
-      "mtime_ns": 1774362130894986200
+      "size": 20370,
+      "mtime_ns": 1774512491687685500
     },
     "src/symphonic_cipher/geoseal_location_library.py": {
-      "size": 6826,
-      "mtime_ns": 1774362130894986200
+      "size": 6824,
+      "mtime_ns": 1774512491688685500
     },
     "src/symphonic_cipher/harmonic_scaling_law.py": {
-      "size": 136607,
-      "mtime_ns": 1774407208234105600
+      "size": 136605,
+      "mtime_ns": 1774512491692687200
     },
     "src/symphonic_cipher/qasi_core.py": {
-      "size": 8930,
-      "mtime_ns": 1774362130894986200
+      "size": 8976,
+      "mtime_ns": 1774512491693685600
     },
     "src/symphonic_cipher/scbe_aethermoore/PATENT_SPECIFICATION.md": {
       "size": 33689,
@@ -7661,7 +7873,7 @@
     },
     "src/symphonic_cipher/scbe_aethermoore/aetherlex_extract.py": {
       "size": 37594,
-      "mtime_ns": 1774362130910934100
+      "mtime_ns": 1774512491695869600
     },
     "src/symphonic_cipher/scbe_aethermoore/ai_brain/__init__.py": {
       "size": 7208,
@@ -7672,8 +7884,8 @@
       "mtime_ns": 1774359300908194500
     },
     "src/symphonic_cipher/scbe_aethermoore/ai_brain/circuit_flow.py": {
-      "size": 29618,
-      "mtime_ns": 1774362130910934100
+      "size": 29616,
+      "mtime_ns": 1774512491696869600
     },
     "src/symphonic_cipher/scbe_aethermoore/ai_brain/cymatic_voxel_net.py": {
       "size": 15907,
@@ -7720,16 +7932,16 @@
       "mtime_ns": 1774362130910934100
     },
     "src/symphonic_cipher/scbe_aethermoore/attack_simulation.py": {
-      "size": 17244,
-      "mtime_ns": 1774362130910934100
+      "size": 17242,
+      "mtime_ns": 1774512491697869500
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/SPECIFICATION.md": {
       "size": 10876,
       "mtime_ns": 1771221012146060100
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/__init__.py": {
-      "size": 12002,
-      "mtime_ns": 1774362130910934100
+      "size": 12000,
+      "mtime_ns": 1774512491698870500
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/audio_axis.py": {
       "size": 11541,
@@ -7776,12 +7988,12 @@
       "mtime_ns": 1771221012155088000
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/tests/test_axiom_grouped.py": {
-      "size": 23995,
-      "mtime_ns": 1774362130926797200
+      "size": 23993,
+      "mtime_ns": 1774512491699870600
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/tests/test_dual_mode_pure.py": {
-      "size": 12230,
-      "mtime_ns": 1774362130926797200
+      "size": 12228,
+      "mtime_ns": 1774512491700870600
     },
     "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/tests/validate_system.py": {
       "size": 12361,
@@ -7812,28 +8024,28 @@
       "mtime_ns": 1772676335120438600
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_catalog/catalog.py": {
-      "size": 35160,
-      "mtime_ns": 1774362130926797200
+      "size": 35158,
+      "mtime_ns": 1774512491703867200
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_credit_ledger/__init__.py": {
       "size": 1348,
       "mtime_ns": 1772676335122044800
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_credit_ledger/bitlocker.py": {
-      "size": 12156,
-      "mtime_ns": 1774362130926797200
+      "size": 12154,
+      "mtime_ns": 1774512491705147800
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_credit_ledger/credit.py": {
-      "size": 10284,
-      "mtime_ns": 1774362130942800600
+      "size": 10282,
+      "mtime_ns": 1774512491706151300
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_credit_ledger/exchange.py": {
-      "size": 15176,
-      "mtime_ns": 1774362130942800600
+      "size": 15174,
+      "mtime_ns": 1774512491707149900
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_credit_ledger/ledger.py": {
-      "size": 9296,
-      "mtime_ns": 1774362130942800600
+      "size": 9294,
+      "mtime_ns": 1774512491708147700
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/coordinate.py": {
       "size": 4747,
@@ -7844,40 +8056,40 @@
       "mtime_ns": 1774362130942800600
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/cstm/kernel.py": {
-      "size": 16045,
-      "mtime_ns": 1774362130942800600
+      "size": 16043,
+      "mtime_ns": 1774512491710146700
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/cstm/models.py": {
-      "size": 11920,
-      "mtime_ns": 1774362130942800600
+      "size": 11918,
+      "mtime_ns": 1774512491711147800
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/cstm/nursery.py": {
-      "size": 17407,
-      "mtime_ns": 1774362130942800600
+      "size": 17405,
+      "mtime_ns": 1774512491712151500
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/cstm/player_agent.py": {
-      "size": 15886,
-      "mtime_ns": 1774362130942800600
+      "size": 15884,
+      "mtime_ns": 1774512491713150800
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/cstm/story_engine.py": {
-      "size": 14500,
-      "mtime_ns": 1774401543164306300
+      "size": 14498,
+      "mtime_ns": 1774512491714333700
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/cstm/telemetry_bridge.py": {
-      "size": 13827,
-      "mtime_ns": 1774362130942800600
+      "size": 13825,
+      "mtime_ns": 1774512491715335200
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/decide.py": {
-      "size": 5110,
-      "mtime_ns": 1774401543165307300
+      "size": 5108,
+      "mtime_ns": 1774512491716336200
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/earn_engine/__init__.py": {
       "size": 1550,
       "mtime_ns": 1772676335131639600
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/earn_engine/engine.py": {
-      "size": 11718,
-      "mtime_ns": 1774362130942800600
+      "size": 11716,
+      "mtime_ns": 1774512491717334300
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/earn_engine/game_hooks.py": {
       "size": 8798,
@@ -7888,40 +8100,40 @@
       "mtime_ns": 1774362130942800600
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/earn_engine/rwp_settlement.py": {
-      "size": 12069,
-      "mtime_ns": 1774362130942800600
+      "size": 12067,
+      "mtime_ns": 1774512491718331500
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/earn_engine/shopify_bridge.py": {
       "size": 11222,
       "mtime_ns": 1774359300955738600
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/earn_engine/streams.py": {
-      "size": 5680,
-      "mtime_ns": 1774362130942800600
+      "size": 5678,
+      "mtime_ns": 1774512491719331700
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/heart_vault/__init__.py": {
       "size": 3017,
       "mtime_ns": 1772676335135640200
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/heart_vault/emotions.py": {
-      "size": 8145,
-      "mtime_ns": 1774362130942800600
+      "size": 8143,
+      "mtime_ns": 1774512491720334700
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/heart_vault/graph.py": {
-      "size": 20553,
-      "mtime_ns": 1774362130958924800
+      "size": 20551,
+      "mtime_ns": 1774512491721330300
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/heart_vault/heart_credit.py": {
-      "size": 9312,
-      "mtime_ns": 1774362130958924800
+      "size": 9286,
+      "mtime_ns": 1774512491722333400
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/heart_vault/literary.py": {
-      "size": 11535,
-      "mtime_ns": 1774362130958924800
+      "size": 11533,
+      "mtime_ns": 1774512491723330300
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/matrix_catalog_bridge.py": {
-      "size": 15908,
-      "mtime_ns": 1774362130958924800
+      "size": 15906,
+      "mtime_ns": 1774512491725466600
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/plan.py": {
       "size": 6431,
@@ -7932,12 +8144,12 @@
       "mtime_ns": 1774362130958924800
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/sense.py": {
-      "size": 8347,
-      "mtime_ns": 1774401543167308500
+      "size": 8345,
+      "mtime_ns": 1774512491726466700
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/socket.py": {
-      "size": 14229,
-      "mtime_ns": 1774362130958924800
+      "size": 14227,
+      "mtime_ns": 1774512491727465300
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/steer.py": {
       "size": 4281,
@@ -7952,44 +8164,44 @@
       "mtime_ns": 1774407208234105600
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/agent_orchestrator.py": {
-      "size": 14559,
-      "mtime_ns": 1774362130958924800
+      "size": 14557,
+      "mtime_ns": 1774512491728464400
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/buffer_integration.py": {
-      "size": 15454,
-      "mtime_ns": 1774362130958924800
+      "size": 15452,
+      "mtime_ns": 1774512491729464900
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/headless_driver.py": {
       "size": 20646,
       "mtime_ns": 1774362130958924800
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/navigation_engine.py": {
-      "size": 15922,
-      "mtime_ns": 1774362130958924800
+      "size": 15920,
+      "mtime_ns": 1774512491731466600
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/publishers.py": {
-      "size": 34827,
-      "mtime_ns": 1774362130958924800
+      "size": 34825,
+      "mtime_ns": 1774512491732468500
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/semantic_antivirus.py": {
-      "size": 12170,
-      "mtime_ns": 1774362130958924800
+      "size": 12168,
+      "mtime_ns": 1774512491733467400
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/store_publishers.py": {
-      "size": 21685,
-      "mtime_ns": 1774362130958924800
+      "size": 21719,
+      "mtime_ns": 1774512491734653400
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/tongue_transport.py": {
       "size": 9845,
       "mtime_ns": 1774359300959754000
     },
     "src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/web_polly_pad.py": {
-      "size": 10552,
-      "mtime_ns": 1774362130974639700
+      "size": 10550,
+      "mtime_ns": 1774512491735653300
     },
     "src/symphonic_cipher/scbe_aethermoore/constants.py": {
-      "size": 9107,
-      "mtime_ns": 1771221012159391500
+      "size": 9105,
+      "mtime_ns": 1774512491736653100
     },
     "src/symphonic_cipher/scbe_aethermoore/convert_to_sft.py": {
       "size": 11211,
@@ -8004,8 +8216,8 @@
       "mtime_ns": 1774362130974639700
     },
     "src/symphonic_cipher/scbe_aethermoore/cymatic_storage.py": {
-      "size": 23596,
-      "mtime_ns": 1774362130974639700
+      "size": 23594,
+      "mtime_ns": 1774512491737653100
     },
     "src/symphonic_cipher/scbe_aethermoore/decision_telemetry.py": {
       "size": 15034,
@@ -8020,32 +8232,32 @@
       "mtime_ns": 1771221012164023600
     },
     "src/symphonic_cipher/scbe_aethermoore/ede/chemistry_agent.py": {
-      "size": 18877,
-      "mtime_ns": 1774362130974639700
+      "size": 18875,
+      "mtime_ns": 1774512491738654700
     },
     "src/symphonic_cipher/scbe_aethermoore/ede/ede_protocol.py": {
       "size": 17133,
       "mtime_ns": 1774362130974639700
     },
     "src/symphonic_cipher/scbe_aethermoore/ede/spiral_ring.py": {
-      "size": 16199,
-      "mtime_ns": 1774362130974639700
+      "size": 16197,
+      "mtime_ns": 1774512491739654800
     },
     "src/symphonic_cipher/scbe_aethermoore/entropy_surface.py": {
-      "size": 16885,
-      "mtime_ns": 1774406419182122200
+      "size": 16750,
+      "mtime_ns": 1774512491741653500
     },
     "src/symphonic_cipher/scbe_aethermoore/flock_shepherd.py": {
-      "size": 15982,
-      "mtime_ns": 1774362130974639700
+      "size": 15980,
+      "mtime_ns": 1774512491742654700
     },
     "src/symphonic_cipher/scbe_aethermoore/fractional_flux.py": {
       "size": 23608,
       "mtime_ns": 1774362130974639700
     },
     "src/symphonic_cipher/scbe_aethermoore/full_system.py": {
-      "size": 24933,
-      "mtime_ns": 1774362130974639700
+      "size": 24931,
+      "mtime_ns": 1774512491743653900
     },
     "src/symphonic_cipher/scbe_aethermoore/game/__init__.py": {
       "size": 2262,
@@ -8056,8 +8268,8 @@
       "mtime_ns": 1774359300971783600
     },
     "src/symphonic_cipher/scbe_aethermoore/game/companion.py": {
-      "size": 6535,
-      "mtime_ns": 1774401543168305800
+      "size": 6539,
+      "mtime_ns": 1774512491744892500
     },
     "src/symphonic_cipher/scbe_aethermoore/game/energy_token.py": {
       "size": 8499,
@@ -8088,8 +8300,8 @@
       "mtime_ns": 1774362130990395900
     },
     "src/symphonic_cipher/scbe_aethermoore/gate_swap.py": {
-      "size": 6460,
-      "mtime_ns": 1774362130990395900
+      "size": 6458,
+      "mtime_ns": 1774512491745892200
     },
     "src/symphonic_cipher/scbe_aethermoore/genesis_protocol.py": {
       "size": 12353,
@@ -8104,8 +8316,8 @@
       "mtime_ns": 1774359300987492900
     },
     "src/symphonic_cipher/scbe_aethermoore/hal_attention.py": {
-      "size": 19631,
-      "mtime_ns": 1774362130990395900
+      "size": 19629,
+      "mtime_ns": 1774512491746893300
     },
     "src/symphonic_cipher/scbe_aethermoore/kyber_orchestrator.py": {
       "size": 20462,
@@ -8128,12 +8340,12 @@
       "mtime_ns": 1771221012172533800
     },
     "src/symphonic_cipher/scbe_aethermoore/layers/fourteen_layer_pipeline.py": {
-      "size": 36619,
-      "mtime_ns": 1774362130990395900
+      "size": 36617,
+      "mtime_ns": 1774512491748896500
     },
     "src/symphonic_cipher/scbe_aethermoore/layers/paper_aggregator.py": {
-      "size": 4911,
-      "mtime_ns": 1774362130990395900
+      "size": 4909,
+      "mtime_ns": 1774512491749896400
     },
     "src/symphonic_cipher/scbe_aethermoore/layers_9_12.py": {
       "size": 26539,
@@ -8156,12 +8368,12 @@
       "mtime_ns": 1771221012178048100
     },
     "src/symphonic_cipher/scbe_aethermoore/multimodal/mmx.py": {
-      "size": 5895,
-      "mtime_ns": 1774362130990395900
+      "size": 5893,
+      "mtime_ns": 1774512491750895100
     },
     "src/symphonic_cipher/scbe_aethermoore/negabinary.py": {
-      "size": 13293,
-      "mtime_ns": 1774362131006287700
+      "size": 13291,
+      "mtime_ns": 1774512491751892700
     },
     "src/symphonic_cipher/scbe_aethermoore/organic_hyperbolic.py": {
       "size": 35389,
@@ -8172,8 +8384,8 @@
       "mtime_ns": 1774362131006287700
     },
     "src/symphonic_cipher/scbe_aethermoore/phdm_module.py": {
-      "size": 25825,
-      "mtime_ns": 1774362131006287700
+      "size": 25823,
+      "mtime_ns": 1774512491752892800
     },
     "src/symphonic_cipher/scbe_aethermoore/polyglot_layer12_integration.py": {
       "size": 15785,
@@ -8192,12 +8404,12 @@
       "mtime_ns": 1774359301003369700
     },
     "src/symphonic_cipher/scbe_aethermoore/pqc/pqc_harmonic.py": {
-      "size": 25512,
-      "mtime_ns": 1774362131006287700
+      "size": 25510,
+      "mtime_ns": 1774512491753892600
     },
     "src/symphonic_cipher/scbe_aethermoore/pqc/pqc_hmac.py": {
-      "size": 15783,
-      "mtime_ns": 1774362131006287700
+      "size": 15781,
+      "mtime_ns": 1774512491755064600
     },
     "src/symphonic_cipher/scbe_aethermoore/pqc_module.py": {
       "size": 21331,
@@ -8208,32 +8420,32 @@
       "mtime_ns": 1774362131006287700
     },
     "src/symphonic_cipher/scbe_aethermoore/proofs_verification.py": {
-      "size": 23879,
-      "mtime_ns": 1774362131006287700
+      "size": 23877,
+      "mtime_ns": 1774512491756066000
     },
     "src/symphonic_cipher/scbe_aethermoore/qasi_core.py": {
-      "size": 13794,
-      "mtime_ns": 1774362131006287700
+      "size": 13792,
+      "mtime_ns": 1774512491758069300
     },
     "src/symphonic_cipher/scbe_aethermoore/qc_lattice/__init__.py": {
       "size": 2843,
       "mtime_ns": 1771221012189561700
     },
     "src/symphonic_cipher/scbe_aethermoore/qc_lattice/integration.py": {
-      "size": 16577,
-      "mtime_ns": 1774362131006287700
+      "size": 16575,
+      "mtime_ns": 1774512491759072500
     },
     "src/symphonic_cipher/scbe_aethermoore/qc_lattice/phdm.py": {
-      "size": 21177,
-      "mtime_ns": 1774362131006287700
+      "size": 21175,
+      "mtime_ns": 1774512491761064800
     },
     "src/symphonic_cipher/scbe_aethermoore/qc_lattice/quasicrystal.py": {
       "size": 16930,
       "mtime_ns": 1774362131006287700
     },
     "src/symphonic_cipher/scbe_aethermoore/qr_cube_kdf.py": {
-      "size": 7087,
-      "mtime_ns": 1774362131022302700
+      "size": 7085,
+      "mtime_ns": 1774512491762066400
     },
     "src/symphonic_cipher/scbe_aethermoore/quantum/__init__.py": {
       "size": 373,
@@ -8260,8 +8472,8 @@
       "mtime_ns": 1774362131022302700
     },
     "src/symphonic_cipher/scbe_aethermoore/rosetta/rosetta_core.py": {
-      "size": 12420,
-      "mtime_ns": 1774401543171461800
+      "size": 12399,
+      "mtime_ns": 1774512491763065900
     },
     "src/symphonic_cipher/scbe_aethermoore/rosetta/seed_data.py": {
       "size": 32423,
@@ -8272,20 +8484,20 @@
       "mtime_ns": 1774401543172462400
     },
     "src/symphonic_cipher/scbe_aethermoore/sacred_egg_registry.py": {
-      "size": 7911,
-      "mtime_ns": 1774362131022302700
+      "size": 7839,
+      "mtime_ns": 1774512491764246400
     },
     "src/symphonic_cipher/scbe_aethermoore/sacred_eggs.py": {
       "size": 13338,
       "mtime_ns": 1774362131022302700
     },
     "src/symphonic_cipher/scbe_aethermoore/sacred_eggs_ref.py": {
-      "size": 12926,
-      "mtime_ns": 1774362131022302700
+      "size": 12924,
+      "mtime_ns": 1774512491765247600
     },
     "src/symphonic_cipher/scbe_aethermoore/scbe_aethermoore_core.py": {
-      "size": 14897,
-      "mtime_ns": 1774362131022302700
+      "size": 14899,
+      "mtime_ns": 1774512491766246800
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/__init__.py": {
       "size": 1980,
@@ -8296,8 +8508,8 @@
       "mtime_ns": 1774362131022302700
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/sacred_tongues.py": {
-      "size": 11918,
-      "mtime_ns": 1772676335158268000
+      "size": 11916,
+      "mtime_ns": 1774512491767247600
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/seal.py": {
       "size": 13115,
@@ -8308,8 +8520,8 @@
       "mtime_ns": 1774362131022302700
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/spiral_seal.py": {
-      "size": 34996,
-      "mtime_ns": 1774362131022302700
+      "size": 34994,
+      "mtime_ns": 1774512491768248000
     },
     "src/symphonic_cipher/scbe_aethermoore/spiral_seal/utils.py": {
       "size": 4585,
@@ -8324,8 +8536,8 @@
       "mtime_ns": 1774362131038168800
     },
     "src/symphonic_cipher/scbe_aethermoore/trinary.py": {
-      "size": 11249,
-      "mtime_ns": 1774362131038168800
+      "size": 11247,
+      "mtime_ns": 1774512491769245600
     },
     "src/symphonic_cipher/scbe_aethermoore/unified.py": {
       "size": 37382,
@@ -8336,12 +8548,12 @@
       "mtime_ns": 1772676335158268000
     },
     "src/symphonic_cipher/scbe_aethermoore/vacuum_acoustics.py": {
-      "size": 20126,
-      "mtime_ns": 1774362131038168800
+      "size": 20124,
+      "mtime_ns": 1774512491771250100
     },
     "src/symphonic_cipher/scbe_aethermoore_core.py": {
-      "size": 13522,
-      "mtime_ns": 1774362131038168800
+      "size": 13524,
+      "mtime_ns": 1774512491772246300
     },
     "src/symphonic_cipher/scbe_aethermoore_kyber_v2.1.py": {
       "size": 22922,
@@ -8376,8 +8588,8 @@
       "mtime_ns": 1774362131038168800
     },
     "src/symphonic_cipher/tests/test_flat_slope.py": {
-      "size": 22176,
-      "mtime_ns": 1774362131038168800
+      "size": 22174,
+      "mtime_ns": 1774512491773246300
     },
     "src/symphonic_cipher/tests/test_fourteen_layer.py": {
       "size": 19802,
@@ -8388,8 +8600,8 @@
       "mtime_ns": 1774362131038168800
     },
     "src/symphonic_cipher/tests/test_harmonic_scaling.py": {
-      "size": 106993,
-      "mtime_ns": 1774362131038168800
+      "size": 106991,
+      "mtime_ns": 1774512491775414100
     },
     "src/symphonic_cipher/tests/test_patent_modules.py": {
       "size": 11180,
@@ -8400,8 +8612,8 @@
       "mtime_ns": 1774359301035447000
     },
     "src/synesthesia_embedding.py": {
-      "size": 2837,
-      "mtime_ns": 1772676335168800200
+      "size": 2835,
+      "mtime_ns": 1774512491776414600
     },
     "src/tokenizer/index.ts": {
       "size": 1445,
@@ -8420,8 +8632,8 @@
       "mtime_ns": 1774069349450128000
     },
     "src/training/action_map_protocol.py": {
-      "size": 31906,
-      "mtime_ns": 1774362131054019700
+      "size": 31904,
+      "mtime_ns": 1774512491777414200
     },
     "src/training/auto_ledger.py": {
       "size": 17371,
@@ -8432,8 +8644,8 @@
       "mtime_ns": 1772664805925715500
     },
     "src/training/symphonic_governor.py": {
-      "size": 24016,
-      "mtime_ns": 1774406419182122200
+      "size": 23860,
+      "mtime_ns": 1774512491779411600
     },
     "src/tsconfig.json": {
       "size": 615,
@@ -8478,10 +8690,6 @@
     "src/video/watermark.ts": {
       "size": 11179,
       "mtime_ns": 1774273202918096000
-    },
-    "src/vitest.config.ts": {
-      "size": 383,
-      "mtime_ns": 1774144540780770000
     },
     "src/word-addin/node_modules/@anthropic-ai/sdk/CHANGELOG.md": {
       "size": 106386,
@@ -16736,8 +16944,8 @@
       "mtime_ns": 1774273202949531100
     },
     "tests/L2-unit/sheafCohomology.unit.test.ts": {
-      "size": 32677,
-      "mtime_ns": 1774273202949531100
+      "size": 30764,
+      "mtime_ns": 1774512491780414600
     },
     "tests/L2-unit/spectral-coherence.unit.test.ts": {
       "size": 7197,
@@ -16820,8 +17028,8 @@
       "mtime_ns": 1774362131054019700
     },
     "tests/adversarial/scbe_harness.py": {
-      "size": 22423,
-      "mtime_ns": 1774445832849774100
+      "size": 22424,
+      "mtime_ns": 1774512491782418400
     },
     "tests/adversarial/test_adaptive_sequences.py": {
       "size": 2538,
@@ -16904,8 +17112,8 @@
       "mtime_ns": 1774497445848012300
     },
     "tests/aetherbrowser/test_red_zone_integration.py": {
-      "size": 8428,
-      "mtime_ns": 1774362131069748000
+      "size": 8426,
+      "mtime_ns": 1774512491783417100
     },
     "tests/aetherbrowser/test_router.py": {
       "size": 6196,
@@ -17080,16 +17288,16 @@
       "mtime_ns": 1774273202985060300
     },
     "tests/code_prism/test_builder.py": {
-      "size": 1027,
-      "mtime_ns": 1774362131069748000
+      "size": 1025,
+      "mtime_ns": 1774512491784647800
     },
     "tests/code_prism/test_matrix.py": {
       "size": 513,
       "mtime_ns": 1774362131069748000
     },
     "tests/code_prism/test_parity.py": {
-      "size": 1273,
-      "mtime_ns": 1772676335186741800
+      "size": 1271,
+      "mtime_ns": 1774512491784647800
     },
     "tests/compliance_report.py": {
       "size": 80112,
@@ -17167,6 +17375,10 @@
       "size": 2512,
       "mtime_ns": 1774401543184461000
     },
+    "tests/crypto/kms.test.ts": {
+      "size": 2713,
+      "mtime_ns": 1774512491786649800
+    },
     "tests/crypto/nonceManager.test.ts": {
       "size": 1823,
       "mtime_ns": 1774401543184461000
@@ -17192,8 +17404,8 @@
       "mtime_ns": 1774144540903259400
     },
     "tests/crypto/replayGuard.test.ts": {
-      "size": 7444,
-      "mtime_ns": 1774144540904257400
+      "size": 7493,
+      "mtime_ns": 1774512491787649100
     },
     "tests/crypto/replayStore.test.ts": {
       "size": 6811,
@@ -17208,12 +17420,12 @@
       "mtime_ns": 1772676335190327500
     },
     "tests/crypto/test_rwp_v3.py": {
-      "size": 14030,
-      "mtime_ns": 1774362131085678700
+      "size": 14028,
+      "mtime_ns": 1774512491788648200
     },
     "tests/crypto/test_rwp_v3_properties.py": {
-      "size": 14555,
-      "mtime_ns": 1774362131085678700
+      "size": 14553,
+      "mtime_ns": 1774512491789645600
     },
     "tests/crypto/test_sacred_tongues.py": {
       "size": 11825,
@@ -17312,8 +17524,8 @@
       "mtime_ns": 1774144540912257400
     },
     "tests/enterprise/quantum/setup_verification.test.ts": {
-      "size": 746,
-      "mtime_ns": 1774144540913259100
+      "size": 2134,
+      "mtime_ns": 1774512491791647200
     },
     "tests/enterprise/quantum/test_setup_verification.py": {
       "size": 1222,
@@ -17367,6 +17579,10 @@
       "size": 20621,
       "mtime_ns": 1774273202999394500
     },
+    "tests/fleet/juggling-scheduler.test.ts": {
+      "size": 17298,
+      "mtime_ns": 1774512491792646600
+    },
     "tests/fleet/mitosis.test.ts": {
       "size": 12690,
       "mtime_ns": 1774144540925982900
@@ -17400,20 +17616,20 @@
       "mtime_ns": 1774362131085678700
     },
     "tests/game/test_game_systems.py": {
-      "size": 11556,
-      "mtime_ns": 1774362131085678700
+      "size": 11554,
+      "mtime_ns": 1774512491793646300
     },
     "tests/game/test_micro_ledger.py": {
       "size": 6561,
       "mtime_ns": 1774362131085678700
     },
     "tests/game/test_training_pipeline.py": {
-      "size": 8561,
-      "mtime_ns": 1774362131085678700
+      "size": 8557,
+      "mtime_ns": 1774512491795862000
     },
     "tests/gateway/authorize-service.unit.test.ts": {
-      "size": 5909,
-      "mtime_ns": 1774401543189623900
+      "size": 5974,
+      "mtime_ns": 1774512491796855100
     },
     "tests/gateway/env.test.ts": {
       "size": 1442,
@@ -17423,13 +17639,29 @@
       "size": 14840,
       "mtime_ns": 1774401543190621700
     },
+    "tests/golden_vectors/__init__.py": {
+      "size": 0,
+      "mtime_ns": 1774533589986953300
+    },
+    "tests/golden_vectors/pipeline14_golden.json": {
+      "size": 8923,
+      "mtime_ns": 1774533586355026100
+    },
+    "tests/golden_vectors/test_golden_vectors.py": {
+      "size": 10701,
+      "mtime_ns": 1774533630289767700
+    },
     "tests/governance/immutable_laws.test.ts": {
       "size": 4123,
       "mtime_ns": 1774401543191622200
     },
     "tests/governance/offline_mode.test.ts": {
-      "size": 13928,
-      "mtime_ns": 1774401543192623300
+      "size": 23811,
+      "mtime_ns": 1774512491797856000
+    },
+    "tests/governance/voxel_store.test.ts": {
+      "size": 4236,
+      "mtime_ns": 1774512491799856900
     },
     "tests/harmonic/adaptiveNavigator.test.ts": {
       "size": 17198,
@@ -17456,8 +17688,8 @@
       "mtime_ns": 1774273203007417800
     },
     "tests/harmonic/entropySurface.test.ts": {
-      "size": 23786,
-      "mtime_ns": 1774408185328282800
+      "size": 24307,
+      "mtime_ns": 1774512491800855700
     },
     "tests/harmonic/fluxState.test.ts": {
       "size": 11565,
@@ -17544,8 +17776,8 @@
       "mtime_ns": 1774144540969106300
     },
     "tests/harmonic/sheafCohomology.test.ts": {
-      "size": 72553,
-      "mtime_ns": 1774273203018947100
+      "size": 72099,
+      "mtime_ns": 1774512491801852700
     },
     "tests/harmonic/spectral-identity.test.ts": {
       "size": 10678,
@@ -17572,8 +17804,8 @@
       "mtime_ns": 1774273203020952000
     },
     "tests/heart_vault/test_heart_vault.py": {
-      "size": 30485,
-      "mtime_ns": 1774401543193624000
+      "size": 30483,
+      "mtime_ns": 1774512491803856400
     },
     "tests/hydra-terminal-browse.test.ts": {
       "size": 1434,
@@ -17588,8 +17820,8 @@
       "mtime_ns": 1774273203020952000
     },
     "tests/hydra/test_browsers.py": {
-      "size": 8688,
-      "mtime_ns": 1774362131085678700
+      "size": 8686,
+      "mtime_ns": 1774512491805038900
     },
     "tests/hydra/test_cli.py": {
       "size": 3904,
@@ -17600,8 +17832,8 @@
       "mtime_ns": 1774362131085678700
     },
     "tests/hydra/test_consensus.py": {
-      "size": 18671,
-      "mtime_ns": 1774362131085678700
+      "size": 18669,
+      "mtime_ns": 1774512491806040200
     },
     "tests/hydra/test_head.py": {
       "size": 10278,
@@ -17620,20 +17852,20 @@
       "mtime_ns": 1774327147406629200
     },
     "tests/hydra/test_llm_providers_hf.py": {
-      "size": 5870,
-      "mtime_ns": 1774362131085678700
+      "size": 5868,
+      "mtime_ns": 1774512491807039400
     },
     "tests/hydra/test_research.py": {
-      "size": 6162,
-      "mtime_ns": 1774401543194627800
+      "size": 6133,
+      "mtime_ns": 1774512491808041100
     },
     "tests/hydra/test_spine.py": {
       "size": 14166,
       "mtime_ns": 1774362131101751800
     },
     "tests/hydra/test_swarm_browser.py": {
-      "size": 13064,
-      "mtime_ns": 1774362131101751800
+      "size": 13062,
+      "mtime_ns": 1774512491809039200
     },
     "tests/hydra/test_switchboard.py": {
       "size": 12206,
@@ -17648,8 +17880,8 @@
       "mtime_ns": 1772664805928709600
     },
     "tests/hydra/test_turnstile.py": {
-      "size": 12242,
-      "mtime_ns": 1774362131101751800
+      "size": 12240,
+      "mtime_ns": 1774512491810038900
     },
     "tests/industry_standard/test_ai_safety_governance.py": {
       "size": 13034,
@@ -17664,8 +17896,8 @@
       "mtime_ns": 1773801277828704300
     },
     "tests/industry_standard/test_hyperbolic_geometry_research.py": {
-      "size": 17932,
-      "mtime_ns": 1774401543196622200
+      "size": 18969,
+      "mtime_ns": 1774512491811039500
     },
     "tests/industry_standard/test_nist_pqc_compliance.py": {
       "size": 20733,
@@ -17700,8 +17932,8 @@
       "mtime_ns": 1772777980874346300
     },
     "tests/interop/test_interop.py": {
-      "size": 7213,
-      "mtime_ns": 1774362131101751800
+      "size": 7211,
+      "mtime_ns": 1774512491812038700
     },
     "tests/interop/test_m4_canonical_bridge.py": {
       "size": 959,
@@ -17744,8 +17976,8 @@
       "mtime_ns": 1774067874089049300
     },
     "tests/kernel/test_dual_core.py": {
-      "size": 10872,
-      "mtime_ns": 1774362131101751800
+      "size": 10870,
+      "mtime_ns": 1774512491813039500
     },
     "tests/kernel/test_tetris_embedder.py": {
       "size": 817,
@@ -17799,6 +18031,10 @@
       "size": 19013,
       "mtime_ns": 1771221012435372100
     },
+    "tests/security-engine/redblue-arena.test.ts": {
+      "size": 13239,
+      "mtime_ns": 1774512491814250800
+    },
     "tests/security-engine/security-engine.test.ts": {
       "size": 27976,
       "mtime_ns": 1774273203028857000
@@ -17808,8 +18044,8 @@
       "mtime_ns": 1771221012435372100
     },
     "tests/security/test_privacy_token_vault.py": {
-      "size": 3528,
-      "mtime_ns": 1774115141539156700
+      "size": 3626,
+      "mtime_ns": 1774512491815248700
     },
     "tests/security/test_protobuf_patch.py": {
       "size": 4984,
@@ -17864,16 +18100,16 @@
       "mtime_ns": 1774144541009786500
     },
     "tests/test_aaoe.py": {
-      "size": 25247,
-      "mtime_ns": 1774362131117481300
+      "size": 25245,
+      "mtime_ns": 1774512491816247700
     },
     "tests/test_action_map_protocol.py": {
       "size": 1876,
       "mtime_ns": 1774151407916328900
     },
     "tests/test_advanced_mathematics.py": {
-      "size": 19967,
-      "mtime_ns": 1774401543199622100
+      "size": 19975,
+      "mtime_ns": 1774512491817247800
     },
     "tests/test_aetherbrowse_cli.py": {
       "size": 3381,
@@ -17884,8 +18120,8 @@
       "mtime_ns": 1774362131117481300
     },
     "tests/test_aetherbrowser_huggingface_nav.py": {
-      "size": 5547,
-      "mtime_ns": 1774362131117481300
+      "size": 5545,
+      "mtime_ns": 1774512491820250700
     },
     "tests/test_aetherbrowser_live_smoke.py": {
       "size": 3105,
@@ -17904,12 +18140,12 @@
       "mtime_ns": 1774362131117481300
     },
     "tests/test_aethermoore.py": {
-      "size": 24736,
-      "mtime_ns": 1774362131117481300
+      "size": 24734,
+      "mtime_ns": 1774512491821251200
     },
     "tests/test_aethermoore_patents.py": {
-      "size": 4990,
-      "mtime_ns": 1774362131117481300
+      "size": 4992,
+      "mtime_ns": 1774512491823249600
     },
     "tests/test_aethermoore_validation.py": {
       "size": 24019,
@@ -17952,16 +18188,16 @@
       "mtime_ns": 1774216839380142800
     },
     "tests/test_arxiv_ai2ai_retrieval.py": {
-      "size": 4409,
-      "mtime_ns": 1774362131117481300
+      "size": 4407,
+      "mtime_ns": 1774512491824413700
     },
     "tests/test_arxiv_pipeline.py": {
       "size": 1839,
       "mtime_ns": 1774362131117481300
     },
     "tests/test_asymmetric_movement.py": {
-      "size": 10866,
-      "mtime_ns": 1774362131117481300
+      "size": 10864,
+      "mtime_ns": 1774512491826413000
     },
     "tests/test_audio_gate_spectrum_report.py": {
       "size": 1956,
@@ -17974,6 +18210,10 @@
     "tests/test_auto_ledger_offline.py": {
       "size": 322,
       "mtime_ns": 1774179234850062400
+    },
+    "tests/test_biblical_null_space.py": {
+      "size": 21265,
+      "mtime_ns": 1774516121490446300
     },
     "tests/test_browser_chain_dispatcher_local.py": {
       "size": 4047,
@@ -17992,56 +18232,56 @@
       "mtime_ns": 1772752225876887700
     },
     "tests/test_browser_toolkit.py": {
-      "size": 32188,
-      "mtime_ns": 1774362131117481300
+      "size": 32186,
+      "mtime_ns": 1774512491827409300
     },
     "tests/test_build_manhwa_edit_packet.py": {
       "size": 4474,
       "mtime_ns": 1773622631718700500
     },
     "tests/test_build_offload_sft_records.py": {
-      "size": 2368,
-      "mtime_ns": 1774124628271072200
+      "size": 2430,
+      "mtime_ns": 1774512491828413100
     },
     "tests/test_build_rag_index.py": {
       "size": 3816,
       "mtime_ns": 1774362131133540900
     },
     "tests/test_build_repurpose_manifest.py": {
-      "size": 3138,
-      "mtime_ns": 1774273203028857000
+      "size": 3136,
+      "mtime_ns": 1774512491829411400
     },
     "tests/test_build_research_campaign.py": {
       "size": 1226,
       "mtime_ns": 1774362131133540900
     },
     "tests/test_build_training_ingestion_pool.py": {
-      "size": 2442,
-      "mtime_ns": 1774362131133540900
+      "size": 2440,
+      "mtime_ns": 1774512491830412600
     },
     "tests/test_build_webtoon_lock_packet.py": {
       "size": 2270,
       "mtime_ns": 1774401543204757600
     },
     "tests/test_cdp_backend_python.py": {
-      "size": 1568,
-      "mtime_ns": 1774401543206756200
+      "size": 1576,
+      "mtime_ns": 1774512491831409200
     },
     "tests/test_choicescript_branching.py": {
       "size": 8541,
       "mtime_ns": 1774362131133540900
     },
     "tests/test_circuit_flow.py": {
-      "size": 16940,
-      "mtime_ns": 1774401543207756300
+      "size": 16938,
+      "mtime_ns": 1774512491832410000
     },
     "tests/test_code_scanning_batch3.py": {
-      "size": 3178,
-      "mtime_ns": 1774273203028857000
+      "size": 3176,
+      "mtime_ns": 1774512491833412100
     },
     "tests/test_code_scanning_batch5.py": {
-      "size": 3522,
-      "mtime_ns": 1774362131133540900
+      "size": 3520,
+      "mtime_ns": 1774512491833412100
     },
     "tests/test_colab_n8n_bridge_security.py": {
       "size": 7269,
@@ -18060,12 +18300,12 @@
       "mtime_ns": 1774156570478754300
     },
     "tests/test_colab_workflow_catalog.py": {
-      "size": 1360,
-      "mtime_ns": 1774273203028857000
+      "size": 1358,
+      "mtime_ns": 1774512491835605400
     },
     "tests/test_color_dimension.py": {
-      "size": 18876,
-      "mtime_ns": 1774362131133540900
+      "size": 18874,
+      "mtime_ns": 1774512491836604400
     },
     "tests/test_combined_protocol.py": {
       "size": 23931,
@@ -18076,8 +18316,8 @@
       "mtime_ns": 1774362131133540900
     },
     "tests/test_constitutional_web_agent.py": {
-      "size": 8754,
-      "mtime_ns": 1774362131133540900
+      "size": 8750,
+      "mtime_ns": 1774512491836604400
     },
     "tests/test_crosstalk_relay.py": {
       "size": 8287,
@@ -18092,8 +18332,8 @@
       "mtime_ns": 1774401543209756400
     },
     "tests/test_cymatic_voxel_net.py": {
-      "size": 12701,
-      "mtime_ns": 1774362131133540900
+      "size": 12699,
+      "mtime_ns": 1774512491838600600
     },
     "tests/test_davis_formula.py": {
       "size": 2019,
@@ -18120,8 +18360,8 @@
       "mtime_ns": 1774362131133540900
     },
     "tests/test_ede.py": {
-      "size": 21855,
-      "mtime_ns": 1774362131149279800
+      "size": 21853,
+      "mtime_ns": 1774512491839601800
     },
     "tests/test_enhanced_scbe_cli.py": {
       "size": 1990,
@@ -18132,20 +18372,20 @@
       "mtime_ns": 1774362131149279800
     },
     "tests/test_entropic_dual_quantum_system.py": {
-      "size": 23635,
-      "mtime_ns": 1774362131149279800
+      "size": 23633,
+      "mtime_ns": 1774512491841602700
     },
     "tests/test_entropic_layer.py": {
-      "size": 10656,
-      "mtime_ns": 1774362131149279800
+      "size": 10654,
+      "mtime_ns": 1774512491842602700
     },
     "tests/test_entropic_suite.py": {
       "size": 5996,
       "mtime_ns": 1774362131149279800
     },
     "tests/test_entropy_surface.py": {
-      "size": 16856,
-      "mtime_ns": 1774406419196953400
+      "size": 16913,
+      "mtime_ns": 1774512491843606900
     },
     "tests/test_eval_legacy_hf_model.py": {
       "size": 3892,
@@ -18172,28 +18412,32 @@
       "mtime_ns": 1774401543211757100
     },
     "tests/test_flock_shepherd.py": {
-      "size": 13822,
-      "mtime_ns": 1774362131149279800
+      "size": 13820,
+      "mtime_ns": 1774512491845751000
+    },
+    "tests/test_flow_router.py": {
+      "size": 9720,
+      "mtime_ns": 1774514918084429200
     },
     "tests/test_flux_parameters.py": {
       "size": 4676,
       "mtime_ns": 1774273203028857000
     },
     "tests/test_fsgs.py": {
-      "size": 21197,
-      "mtime_ns": 1774401543211757100
+      "size": 21193,
+      "mtime_ns": 1774512491846748700
     },
     "tests/test_full_system_verification.py": {
       "size": 22653,
       "mtime_ns": 1774401543212756300
     },
     "tests/test_fusion_surfaces.py": {
-      "size": 7126,
-      "mtime_ns": 1774362131149279800
+      "size": 7124,
+      "mtime_ns": 1774512491847749800
     },
     "tests/test_gate_swap_trimanifold.py": {
-      "size": 15626,
-      "mtime_ns": 1774362131149279800
+      "size": 15624,
+      "mtime_ns": 1774512491848749500
     },
     "tests/test_genesis_protocol.py": {
       "size": 11544,
@@ -18208,16 +18452,16 @@
       "mtime_ns": 1774362131149279800
     },
     "tests/test_github_workflow_audit.py": {
-      "size": 1927,
-      "mtime_ns": 1774273203028857000
+      "size": 1925,
+      "mtime_ns": 1774512491849749800
     },
     "tests/test_goal_race_loop.py": {
       "size": 1595,
       "mtime_ns": 1774362131149279800
     },
     "tests/test_governance_adapter.py": {
-      "size": 22976,
-      "mtime_ns": 1774362131149279800
+      "size": 22972,
+      "mtime_ns": 1774512491850749400
     },
     "tests/test_grok_image_gen.py": {
       "size": 1550,
@@ -18232,12 +18476,16 @@
       "mtime_ns": 1772676335241669300
     },
     "tests/test_hallpass.py": {
-      "size": 31016,
-      "mtime_ns": 1774401543214756800
+      "size": 31014,
+      "mtime_ns": 1774512491851751500
     },
     "tests/test_hamiltonian_braid.py": {
-      "size": 18867,
-      "mtime_ns": 1774362131164994200
+      "size": 18863,
+      "mtime_ns": 1774512491852752100
+    },
+    "tests/test_hard_negatives.py": {
+      "size": 12791,
+      "mtime_ns": 1774533469153577100
     },
     "tests/test_harmonic_scaling_integration.py": {
       "size": 17874,
@@ -18264,8 +18512,8 @@
       "mtime_ns": 1774362131164994200
     },
     "tests/test_hydra_android_hand.py": {
-      "size": 2701,
-      "mtime_ns": 1773596701575650600
+      "size": 2776,
+      "mtime_ns": 1774512491853752100
     },
     "tests/test_hydra_branch_orchestrator.py": {
       "size": 2910,
@@ -18280,8 +18528,8 @@
       "mtime_ns": 1774362131164994200
     },
     "tests/test_hydra_command_center.py": {
-      "size": 6093,
-      "mtime_ns": 1774362131164994200
+      "size": 6091,
+      "mtime_ns": 1774512491854929500
     },
     "tests/test_hydra_swarm_browser.py": {
       "size": 14775,
@@ -18296,8 +18544,8 @@
       "mtime_ns": 1774196760098611800
     },
     "tests/test_hyperbolic_rag.py": {
-      "size": 10436,
-      "mtime_ns": 1774362131164994200
+      "size": 10434,
+      "mtime_ns": 1774512491855932200
     },
     "tests/test_hyperbolic_validation_lambda.py": {
       "size": 584,
@@ -18308,8 +18556,8 @@
       "mtime_ns": 1774406419196953400
     },
     "tests/test_inspect_code_scanning_alerts.py": {
-      "size": 3323,
-      "mtime_ns": 1774362131164994200
+      "size": 3321,
+      "mtime_ns": 1774512491857929200
     },
     "tests/test_inspect_uspto_session.py": {
       "size": 1887,
@@ -18336,28 +18584,28 @@
       "mtime_ns": 1774401543220756500
     },
     "tests/test_langues_dispersal.py": {
-      "size": 9643,
-      "mtime_ns": 1774362131180870600
+      "size": 9641,
+      "mtime_ns": 1774512491858934500
     },
     "tests/test_lattice25d_ops.py": {
       "size": 2264,
       "mtime_ns": 1773730319627206600
     },
     "tests/test_layer12_voxel.py": {
-      "size": 14832,
-      "mtime_ns": 1774362131180870600
+      "size": 14830,
+      "mtime_ns": 1774512491859930000
     },
     "tests/test_layer13_cymatic_voxel_pq_envelope.py": {
       "size": 4462,
       "mtime_ns": 1774362131180870600
     },
     "tests/test_licensing.py": {
-      "size": 24139,
-      "mtime_ns": 1774406419200699600
+      "size": 25453,
+      "mtime_ns": 1774512491861927500
     },
     "tests/test_lightning_query.py": {
-      "size": 9079,
-      "mtime_ns": 1774362131180870600
+      "size": 9077,
+      "mtime_ns": 1774512491862927200
     },
     "tests/test_linux_kernel_event_bridge.py": {
       "size": 2862,
@@ -18368,8 +18616,8 @@
       "mtime_ns": 1773814874716889300
     },
     "tests/test_local_cloud_autosync_security.py": {
-      "size": 1333,
-      "mtime_ns": 1773730319627206600
+      "size": 1331,
+      "mtime_ns": 1774512491863926200
     },
     "tests/test_mcp_servers.py": {
       "size": 13541,
@@ -18380,28 +18628,28 @@
       "mtime_ns": 1773905572089328100
     },
     "tests/test_mirror_shift.py": {
-      "size": 16631,
-      "mtime_ns": 1774362131180870600
+      "size": 16629,
+      "mtime_ns": 1774512491863926200
     },
     "tests/test_mmx.py": {
-      "size": 12260,
-      "mtime_ns": 1774362131180870600
+      "size": 12258,
+      "mtime_ns": 1774512491865131400
     },
     "tests/test_mobile_goal_api.py": {
-      "size": 7211,
-      "mtime_ns": 1772676335246669700
+      "size": 7209,
+      "mtime_ns": 1774512491866135900
     },
     "tests/test_multi_cloud_agents.py": {
-      "size": 31661,
-      "mtime_ns": 1774362131180870600
+      "size": 31659,
+      "mtime_ns": 1774512491867136000
     },
     "tests/test_multi_model_modal_matrix.py": {
       "size": 2344,
       "mtime_ns": 1774362131180870600
     },
     "tests/test_multiscale_spectrum.py": {
-      "size": 14065,
-      "mtime_ns": 1774362131180870600
+      "size": 14063,
+      "mtime_ns": 1774512491868135500
     },
     "tests/test_normalize_perplexity.py": {
       "size": 2286,
@@ -18416,8 +18664,8 @@
       "mtime_ns": 1773730319628206600
     },
     "tests/test_octree_sphere_grid.py": {
-      "size": 24303,
-      "mtime_ns": 1774362131180870600
+      "size": 24301,
+      "mtime_ns": 1774512491870135600
     },
     "tests/test_ops_control.py": {
       "size": 3401,
@@ -18436,24 +18684,28 @@
       "mtime_ns": 1773727698325931900
     },
     "tests/test_phdm_conservation.py": {
-      "size": 4571,
-      "mtime_ns": 1773588146747368900
+      "size": 4569,
+      "mtime_ns": 1774512491871136200
     },
     "tests/test_phdm_suite5.py": {
-      "size": 14352,
-      "mtime_ns": 1774362131180870600
+      "size": 14350,
+      "mtime_ns": 1774512491872137400
+    },
+    "tests/test_phi_poincare.py": {
+      "size": 8294,
+      "mtime_ns": 1774532355751585800
     },
     "tests/test_phi_ternary.py": {
       "size": 7391,
       "mtime_ns": 1774510300038861600
     },
     "tests/test_phone_eye.py": {
-      "size": 3707,
-      "mtime_ns": 1774401543221757300
+      "size": 3705,
+      "mtime_ns": 1774512491873142000
     },
     "tests/test_phone_navigation_telemetry.py": {
-      "size": 3841,
-      "mtime_ns": 1774401543222757300
+      "size": 3839,
+      "mtime_ns": 1774512491874137000
     },
     "tests/test_physics.py": {
       "size": 3089,
@@ -18464,28 +18716,28 @@
       "mtime_ns": 1774362131180870600
     },
     "tests/test_pipeline_quick_score.py": {
-      "size": 7782,
-      "mtime_ns": 1774362131196875900
+      "size": 7780,
+      "mtime_ns": 1774512491875135800
     },
     "tests/test_playwright_ops_extension_skill.py": {
-      "size": 1585,
-      "mtime_ns": 1772777980880867000
+      "size": 1583,
+      "mtime_ns": 1774512491876135900
     },
     "tests/test_playwriter_lane_runner.py": {
-      "size": 4010,
-      "mtime_ns": 1774401543223756200
+      "size": 4006,
+      "mtime_ns": 1774512491877136800
     },
     "tests/test_polly_pad_store.py": {
       "size": 2262,
       "mtime_ns": 1772676335251012800
     },
     "tests/test_polly_pads_modes_and_sync_runtime.py": {
-      "size": 30329,
-      "mtime_ns": 1774362131196875900
+      "size": 30327,
+      "mtime_ns": 1774512491878136800
     },
     "tests/test_polly_pads_runtime.py": {
-      "size": 23530,
-      "mtime_ns": 1774362131196875900
+      "size": 23528,
+      "mtime_ns": 1774512491880132700
     },
     "tests/test_post_all_campaign.py": {
       "size": 3402,
@@ -18500,12 +18752,12 @@
       "mtime_ns": 1774273203044717300
     },
     "tests/test_potato_head.py": {
-      "size": 23003,
-      "mtime_ns": 1774362131196875900
+      "size": 23001,
+      "mtime_ns": 1774512491881133700
     },
     "tests/test_pqc.py": {
-      "size": 37671,
-      "mtime_ns": 1774362131196875900
+      "size": 37669,
+      "mtime_ns": 1774512491882133900
     },
     "tests/test_pr_merge_triage.py": {
       "size": 1059,
@@ -18528,16 +18780,16 @@
       "mtime_ns": 1774362131196875900
     },
     "tests/test_programmatic_hf_training.py": {
-      "size": 3835,
-      "mtime_ns": 1774159872593694800
+      "size": 3936,
+      "mtime_ns": 1774512491884133700
     },
     "tests/test_property_based.py": {
       "size": 15559,
       "mtime_ns": 1774362131196875900
     },
     "tests/test_protected_corpus_pipeline.py": {
-      "size": 7621,
-      "mtime_ns": 1774401543224766000
+      "size": 7592,
+      "mtime_ns": 1774512491885132200
     },
     "tests/test_proton_mail_ops.py": {
       "size": 9994,
@@ -18548,24 +18800,24 @@
       "mtime_ns": 1774362131196875900
     },
     "tests/test_qr_cube_kdf_hardened.py": {
-      "size": 14103,
-      "mtime_ns": 1774362131196875900
+      "size": 14101,
+      "mtime_ns": 1774512491886142400
     },
     "tests/test_qr_cube_pi_phi_kdf.py": {
-      "size": 12686,
-      "mtime_ns": 1774401543225768300
+      "size": 12684,
+      "mtime_ns": 1774512491887135900
     },
     "tests/test_quadtree25d.py": {
-      "size": 17645,
-      "mtime_ns": 1774362131196875900
+      "size": 17643,
+      "mtime_ns": 1774512491888133200
     },
     "tests/test_quasicrystal_lattice.py": {
-      "size": 10081,
-      "mtime_ns": 1774362131196875900
+      "size": 10079,
+      "mtime_ns": 1774512491889131500
     },
     "tests/test_quasicrystal_voxel_drive.py": {
-      "size": 6399,
-      "mtime_ns": 1774273203044717300
+      "size": 6397,
+      "mtime_ns": 1774512491890134400
     },
     "tests/test_render_full_book_router.py": {
       "size": 7829,
@@ -18584,12 +18836,12 @@
       "mtime_ns": 1774401543226756200
     },
     "tests/test_resonance_gate_stress.py": {
-      "size": 10801,
-      "mtime_ns": 1774401543227756700
+      "size": 10792,
+      "mtime_ns": 1774512491891132200
     },
     "tests/test_rosetta.py": {
-      "size": 19474,
-      "mtime_ns": 1774401543228756400
+      "size": 19472,
+      "mtime_ns": 1774512491892132000
     },
     "tests/test_run_attention_fft_probe.py": {
       "size": 1198,
@@ -18608,28 +18860,28 @@
       "mtime_ns": 1773905594611266200
     },
     "tests/test_runtime_gate.py": {
-      "size": 17207,
-      "mtime_ns": 1774401543229756200
+      "size": 23179,
+      "mtime_ns": 1774532392488739800
     },
     "tests/test_saas_api.py": {
-      "size": 6850,
-      "mtime_ns": 1773612100844907200
+      "size": 7053,
+      "mtime_ns": 1774512491894132600
     },
     "tests/test_sacred_egg_integrator.py": {
-      "size": 31086,
-      "mtime_ns": 1774362131214399500
+      "size": 31084,
+      "mtime_ns": 1774512491895136700
     },
     "tests/test_sacred_egg_registry.py": {
       "size": 7456,
       "mtime_ns": 1774362131216407700
     },
     "tests/test_sacred_eggs.py": {
-      "size": 27452,
-      "mtime_ns": 1774362131216407700
+      "size": 27450,
+      "mtime_ns": 1774512491897132600
     },
     "tests/test_sacred_eggs_ref.py": {
-      "size": 15220,
-      "mtime_ns": 1774362131218414700
+      "size": 15218,
+      "mtime_ns": 1774512491898132500
     },
     "tests/test_sacred_eggs_rituals.py": {
       "size": 21945,
@@ -18644,12 +18896,12 @@
       "mtime_ns": 1774362131220421600
     },
     "tests/test_scbe_14layers.py": {
-      "size": 18985,
-      "mtime_ns": 1774401543230756200
+      "size": 18987,
+      "mtime_ns": 1774512491899133000
     },
     "tests/test_scbe_chain.py": {
-      "size": 15025,
-      "mtime_ns": 1771221012486119800
+      "size": 15023,
+      "mtime_ns": 1774512491900132500
     },
     "tests/test_scbe_chiral_chladni.py": {
       "size": 5922,
@@ -18668,40 +18920,44 @@
       "mtime_ns": 1772752225876887700
     },
     "tests/test_scbe_spaceflight.py": {
-      "size": 23557,
-      "mtime_ns": 1774362131222427700
+      "size": 23555,
+      "mtime_ns": 1774512491901131100
     },
     "tests/test_scbe_synesthesia.py": {
       "size": 1567,
       "mtime_ns": 1772676335257695100
     },
     "tests/test_scbe_system_cli_flow.py": {
-      "size": 4080,
-      "mtime_ns": 1774153121830605600
+      "size": 4204,
+      "mtime_ns": 1774512491902131400
     },
     "tests/test_scbe_system_cli_gh.py": {
-      "size": 5006,
-      "mtime_ns": 1774402175232721700
+      "size": 5081,
+      "mtime_ns": 1774512491903131600
     },
     "tests/test_scbe_system_cli_operator.py": {
-      "size": 4750,
-      "mtime_ns": 1774155814540050500
+      "size": 4894,
+      "mtime_ns": 1774512491905131500
     },
     "tests/test_scbe_system_cli_runtime.py": {
-      "size": 3670,
-      "mtime_ns": 1773730319631206500
+      "size": 3668,
+      "mtime_ns": 1774512491906131300
     },
     "tests/test_scbe_system_cli_security.py": {
-      "size": 2212,
-      "mtime_ns": 1774362131224433800
+      "size": 2210,
+      "mtime_ns": 1774512491907132200
     },
     "tests/test_scbe_unified_cli_forwarding.py": {
-      "size": 5397,
-      "mtime_ns": 1774362131224433800
+      "size": 5395,
+      "mtime_ns": 1774512491908135100
+    },
+    "tests/test_scbe_vs_industry.py": {
+      "size": 2083,
+      "mtime_ns": 1774532537833329200
     },
     "tests/test_script_artifact_redaction.py": {
-      "size": 1389,
-      "mtime_ns": 1774401543232756300
+      "size": 1381,
+      "mtime_ns": 1774512491909135600
     },
     "tests/test_semantic_antivirus.py": {
       "size": 1933,
@@ -18712,8 +18968,8 @@
       "mtime_ns": 1774401543233763900
     },
     "tests/test_session_envelope.py": {
-      "size": 9473,
-      "mtime_ns": 1774401543234756200
+      "size": 9183,
+      "mtime_ns": 1774512491910134600
     },
     "tests/test_sheaf_consensus_gate.py": {
       "size": 1822,
@@ -18728,32 +18984,32 @@
       "mtime_ns": 1774362131230196300
     },
     "tests/test_sovereign_manifest.py": {
-      "size": 13724,
-      "mtime_ns": 1774406419200699600
+      "size": 13811,
+      "mtime_ns": 1774512491911134000
     },
     "tests/test_spectral_langgraph.py": {
-      "size": 8944,
-      "mtime_ns": 1774362131230196300
+      "size": 8942,
+      "mtime_ns": 1774512491912135700
     },
     "tests/test_spiral_seal.py": {
-      "size": 22991,
-      "mtime_ns": 1774362131232203900
+      "size": 22989,
+      "mtime_ns": 1774512491913136100
     },
     "tests/test_spiral_seal_comprehensive.py": {
       "size": 58997,
       "mtime_ns": 1774401543235756200
     },
     "tests/test_spiralverse_canonical_registry.py": {
-      "size": 2395,
-      "mtime_ns": 1772676335257695100
+      "size": 2393,
+      "mtime_ns": 1774512491914136200
     },
     "tests/test_state21_product_metric.py": {
       "size": 2299,
       "mtime_ns": 1772676335259701900
     },
     "tests/test_storage_bridge_lab.py": {
-      "size": 9152,
-      "mtime_ns": 1774362131234210300
+      "size": 9150,
+      "mtime_ns": 1774512491915136100
     },
     "tests/test_storage_compaction_lab.py": {
       "size": 2214,
@@ -18776,8 +19032,8 @@
       "mtime_ns": 1774362131234210300
     },
     "tests/test_symphonic_governor.py": {
-      "size": 24851,
-      "mtime_ns": 1774406419200699600
+      "size": 24795,
+      "mtime_ns": 1774512491916137600
     },
     "tests/test_symphonic_verifier.py": {
       "size": 796,
@@ -18800,24 +19056,24 @@
       "mtime_ns": 1774401543237756200
     },
     "tests/test_tamper_detection.py": {
-      "size": 15857,
-      "mtime_ns": 1774362131238225600
+      "size": 15855,
+      "mtime_ns": 1774512491917140100
     },
     "tests/test_tarski_sheaf.py": {
-      "size": 1747,
-      "mtime_ns": 1771221012490638200
+      "size": 1745,
+      "mtime_ns": 1774512491918136500
     },
     "tests/test_telemetry_advanced_math.json": {
-      "size": 4730,
-      "mtime_ns": 1774430439765648700
+      "size": 4562,
+      "mtime_ns": 1774513137001207700
     },
     "tests/test_telemetry_dna_audit_report.json": {
       "size": 648,
       "mtime_ns": 1774217021382556700
     },
     "tests/test_telemetry_dna_split.py": {
-      "size": 21034,
-      "mtime_ns": 1774362131240231700
+      "size": 20990,
+      "mtime_ns": 1774512491920136800
     },
     "tests/test_temporal_lock_diagnostic.py": {
       "size": 1411,
@@ -18848,16 +19104,16 @@
       "mtime_ns": 1774362131243985700
     },
     "tests/test_tri_manifold_lattice.py": {
-      "size": 12173,
-      "mtime_ns": 1774362131245992200
+      "size": 12171,
+      "mtime_ns": 1774512491921135800
     },
     "tests/test_triangulated_lattice.py": {
       "size": 6949,
       "mtime_ns": 1774503530818176700
     },
     "tests/test_trinary_negabinary.py": {
-      "size": 15550,
-      "mtime_ns": 1774362131245992200
+      "size": 15548,
+      "mtime_ns": 1774512491922135800
     },
     "tests/test_verify_aetherbrowser_extension_service.py": {
       "size": 2310,
@@ -18868,8 +19124,8 @@
       "mtime_ns": 1774362131247998400
     },
     "tests/test_voxel_storage.py": {
-      "size": 13830,
-      "mtime_ns": 1774362131250004400
+      "size": 13828,
+      "mtime_ns": 1774512491923138300
     },
     "tests/test_web_research_training_pipeline.py": {
       "size": 2528,
@@ -18880,8 +19136,8 @@
       "mtime_ns": 1773634152902948000
     },
     "tests/test_webtoon_gen.py": {
-      "size": 4006,
-      "mtime_ns": 1774401543239756900
+      "size": 3989,
+      "mtime_ns": 1774512491924137000
     },
     "tests/test_webtoon_prompt_compilation.py": {
       "size": 3262,
@@ -18891,9 +19147,13 @@
       "size": 6143,
       "mtime_ns": 1773633535213834700
     },
+    "tests/test_youtube_transcript_collector.py": {
+      "size": 4689,
+      "mtime_ns": 1774576145676592200
+    },
     "tests/test_youtube_transcript_pull.py": {
-      "size": 2050,
-      "mtime_ns": 1773738712332219000
+      "size": 2048,
+      "mtime_ns": 1774512491925135100
     },
     "tests/tsconfig.json": {
       "size": 213,
@@ -23792,8 +24052,8 @@
       "mtime_ns": 1774179251109408500
     },
     "training/local_cloud_sync.json": {
-      "size": 1407,
-      "mtime_ns": 1774273203116885300
+      "size": 1425,
+      "mtime_ns": 1774582660960581000
     },
     "training/long_run_multicloud_training_plan.json": {
       "size": 2543,
@@ -23919,50 +24179,6 @@
       "f5407724141e18535298fffc2a2f911913ddf4efa49861fce22da1499d9f1102"
     ],
     "adobe": [
-      "7b13d47379ae684ead3dfb52038eec7386f51df409f3b8f58e0f372bb631c881",
-      "a4a7f71dd5afdf4c38ab161ad0e460731b7bd37b76793692eb1f897508ee9447",
-      "4371d6a825b6c7610c9a8f5fbe7c486f34f414ac8c78e2e073898bb0ef7985ba",
-      "65e887a839495a2e9e7cb5692f05eb63ddacebf552def63f6eaa6f678f37336e",
-      "53e8d917dc03af74a9959b4ab2945a15a5f648484e46d7940fc77b0342cdec2d",
-      "f6ac317a56b139b85d356eb714d653af2d7b2bf0dccaac0726ee5ca68827f9a9",
-      "0316eeaf30bec934e763033be4d7cd01a1cad850758ceed69f9e85e6c74f4c06",
-      "a71104ea2af3d4bce3197a3da006bbafa6543bfe1ee00447958e86550c718525",
-      "dfefb6db59a8d99584c42ae9e793c0191323d557e69ceeeb5edc7ba9ce9337d2",
-      "5c97957622374a6ef92a36e1099029652cc557739265e7f241bc7d93006ec686",
-      "8a4951fd08d8b050b507003ce7034151adbe08f09d1ef6227b36184cb258fa25",
-      "57b34ead2cf14c2ee560245d0b34857bf206d52132732bb7bb1591b85d333375",
-      "682a22f1d43f189926387092c89bdfd8b0b011e1a75cca79ab42a6a2bd7ba219",
-      "348202d73e3be6ccebffd0280841e1bc3cc7203e083bce37860944dc69216062",
-      "248979d8f2f9bcfbdd006536e1db500db1a239ffa9aaffead3dde068ad716d13",
-      "0a42058f5a173bb6235177534499709680c5a469e387f5eafa6cc54e3a9a0baf",
-      "3db262f76ae05bad2fa2d3b26b9cda9400c1a26341f09b8fcd59a7243b11cf2f",
-      "6ec6b292206c9387119475f03a45adc118eacd82a81e049fc2e3cd1a9b1f66b3",
-      "c974e3991fca6da908ed14faeb95aa91bdcc9c03fcb99b81adb226a24bf88aaf",
-      "08e9a1bdb1ec6edc74d30c5349b25a97bf3a1c150f7bb0bced4b004027179f93",
-      "0d2933ea3b6b071a75a4c3421adba80f996991daa86e6a3203d7432b8a6092cb",
-      "9e282fbb152c2e3222ac0577333e4ac261eeebfb68fc969ebdbb7f04048c9ce6",
-      "aa6b557157fb63ef77d7be8ff04acec53c7a1242b2760cb7ec4dec36f40cd6d6",
-      "dedf55857db60b61d33951536bbefd5c7ae15da9b0a2188043e2d273a360856b",
-      "3a87062f9f6bf6f5ef5be380a01bae64f8eb79cec7cb8c713fcff3b5887826df",
-      "923f38ffdd1c0c28c4f69f3ba30085a12f998b6d74a216888d721ab95b3d6d66",
-      "2ef8d57ab6ea11217453404b605981dd82d4bbae06414a1ade9014ab12f5def9",
-      "f1439003450fe484f80f83765a11b5f8aaf9203d9b17708fc336e4ddce90e197",
-      "872d19aa4e09ded04385c303f7b909ac955af35d90f9ee83c306abbcc7bef90d",
-      "de2f2e43503e0e09bf05483fd1045ceec45e7e709c19e327d33001cc0d4eb7e2",
-      "df9fa8f2a59c4385cc443c3655b558abac2a4d30efafd5d80f66a5b9fd14bcb9",
-      "2e90008895df2e2e72baedaf69a2efc55a8c3bec901b25f826fcc189b86496ee",
-      "a1038e8ab7656399311f82e73bec722c03ba70d7aae7be126b3eea969db9ddff",
-      "f9e5c60332e16d740ecad5ba4546984bffedfb59ffff48ef69309c7b5b0265ec",
-      "18a2cf4921568fbc55bcd76d3d32aed9462c36dda9fe662ca2d0c82a4a523517",
-      "4f750badcf378881ac053ceb87033d124775cbe8c18c727958864393b7dbdcf2",
-      "aaed5f85f38128411a74271e0ffc87374e1727870db17eadeb980a9006633644",
-      "6646d33e507890b61b58cf2bb7c3658a87caab11ccc005ea70d64485b8bbe83f",
-      "5b827ed73a1964d905dcda141891b1e52d349abc0449e34b89305c0c24580abb",
-      "8fb8c8a99173a2ef279680fb03a818b848bb9fb61b1ff6da8d3397762abbba7f",
-      "ff5f5a178e7df98d8734a8658760182f54cba760b18d9b95efcda2f3d49acfcc",
-      "df28e4cf7f49617c2cf7b6033a1d17b5082d2e0e815cdf7b27e82b3cf27bf1d4",
-      "e9ad7b04e2b78a8cec3b9972649a13ad98cada00fd4e4a2ae28b0f730a1c6517",
-      "fc54fe875cb8d883be7ec8345aa5b1cf582c29d334513a9fa6b84a0973b49d85",
       "d2581304120324143f1aacc2a94299aff8c5a8628d2424857929440866246ea1",
       "4baa1e7e518f137641ac95d5f575ff20d4272842a7072f3207d3f01a0778c26d",
       "fb6b83092343e484cee2633700dd667268b1366016ff7568b9a8380c81127cd3",
@@ -24118,56 +24334,53 @@
       "7cc58599bc6030271e6d649d611ead5d8a41100f0d34508c2561ce816dac1248",
       "36b75e111787d71495ec00674005fd70389aade234ec947a205ddfe343b5d942",
       "ac320321f0def7478fd00939d88f95b530eb4fd0e1694187f229261f8ddf5bb2",
-      "b027749708a2d3368f07f1316b3d2bd50196663cfbcf304ca13f8306838ccc2e"
+      "b027749708a2d3368f07f1316b3d2bd50196663cfbcf304ca13f8306838ccc2e",
+      "6e502da87a1da9dfa12cc3329798c873d1ec34caa86590c8a83e2c1c80b232ef",
+      "38a4fe7bb0365cb4a307858b1ebb0530f903563d3fe0b244e30a0c4da25d223d",
+      "c26f46fec4c3d0d6bd57fbfca2da7078b7caeeac94eb62d1f802b7fd94488a75",
+      "a210e9ed8faa6fc0f74983f5460e4602c5f76af85f9851edd683c8813375016b",
+      "a80451076651c5ccf0d8e90c2acb25ca12cbe0cb6a1d3f9213e332cb4678a362",
+      "81e25879a13edec854d3faf0316389d92984e0782e7b7356dc05fe3cbd4c6853",
+      "8a5ef69683446f6804e217ffad8d07e0a316a581b2ac367057c6e119897e7fde",
+      "09e0b83b352bef33cfbf241f768d847fe70ca307c55ca1f6d50b384e137e3724",
+      "2fd34e6892bbcb55471f87cd0a5c3093947a1563eacf5f8852b32bfd5bbd6962",
+      "ccde33768caec72ddf5c9a746a08e88fdcd63cf1d0c298e22e75fbfd74d0c73a",
+      "d9335661e9a37336b513a46932ba2a20c0e92e7fda73fee6e3d836fa5c06990a",
+      "33e45d11387b3f397a08720474c31db02c2927c354bcf03ab25113c003e178e8",
+      "21f5838b1a73332bb93d8635e8318e06456fb15ae03a60540969e089b4eb2561",
+      "9f79425663a0c9aa32459c0501a1beff3a4f28c453d531fc3313189a922cc5d2",
+      "b06110105b0aa346604efa52e2b1ecba98672d22d420a1c076bcadb40420cef9",
+      "747cbaad88fe560e067743e7045859638ed38ebb41c5c33c04361c70aa57679e",
+      "5511bad6735b8656770164735b17b1892001b8ab46eda4b3f07945f6bd22ae2f",
+      "06c8b7fcc881569c28da32607b6857749f32d26cdea1f3310795f88e5f4fce70",
+      "f8b9b328a4dca52e842542a43bd4aded7afd11af18aea1bde3148002219caadc",
+      "e15363a48136fa8f7b5476f047aea40de87d2e80dde7c48e7317e7f51ffb91f0",
+      "3ef727fbc25be77f8268c19816f8887e7d083c55ae6599c93af6bca472e96176",
+      "d71af81047b2c54afcefe960eb85431435c5f64a4326efcefaafa9f99e2e61e7",
+      "ae10609c9a54316a1dc87edcb9ebefd06313435aae28682849de57b416b681fb",
+      "b2a473a85fba2514521df8387990d0308ec970e50e152a27ce30d08c5c034e8c",
+      "e9903d8bc34dc7b1c70507fd25821d673f3a3479c171daeba0fb26cfe3b5bf49",
+      "7de59a6d9ef54baa51d8c176b17c311f77968971c95eab91eaf64fb070d2b482",
+      "01456c771bfcecdfe2797a3861ff2046bc03d087cc6a3c20b0ad84440f2457ae",
+      "5609cd34b880ae05bc1eb0cd81a106cc54bafec60eb1b0b3cdb10cb5a1df9f67",
+      "e2b5524691c1db87807546c58ba442326b8991af708eaeb574f96cbc5ca718a2",
+      "2d819ecc5349270caf8a4987f467183bd90c4e4f86a4e275eab267be99971c4f",
+      "774478bb466f42ba92bf31cd47535a4244304ca95d5c75f43fa1521981cf21ba",
+      "5bf4b27e0c0e100f750e174430cc3baaa41c809f3b6639a51428429bdcd601d7",
+      "c6c03adc7ff5745299b22ef526faf3709670c57c18ff0c8e3ae53e45653485e1",
+      "7bd15d369d8186f452fa48dc8cff9179e0fd683cbcb860fa5837382ad4f6813f",
+      "753e7bf81cb44c4b06fbabd042cd7f4433b9af4f2fbe3b66fc447cc8149afc5f",
+      "f860e38bb4bfe7c56fb21c41a327ca192cad5797e0412e90e5e4839ca0e93854",
+      "b3b2065621080ec4001bfb92a538e226d71844747cb543b5a36afbe6f4c5a611",
+      "4a4a305d880b9d1250fdfa9ed74a20f7772df589ada08f1a4185de220df53edd",
+      "67ace3927658b2e4c8242d300b548a511f53cbe7d3ab7a8043178702375a654c",
+      "555259b9a992a8966492ce9e1fc15533366002c03e36c1eacb0e6c653b1e1cc0",
+      "b28e0bd0ba2903eeffd767e1d1a718443a06b792a5648d29beca63b57339ad13",
+      "7e1f5e79df6e1bc33370a64d66de32bf33b699844af0d84bb4881c7bdf457e66",
+      "766b284d239c19747213f3106d30b4f1f6bf69b3a17f836375686b32cc8c8603",
+      "f7a3c76c6f58b30b50a4074f92a8c4dbf55ffde9e188d30fb171a124c69faec2"
     ],
     "dropbox": [
-      "7b13d47379ae684ead3dfb52038eec7386f51df409f3b8f58e0f372bb631c881",
-      "a4a7f71dd5afdf4c38ab161ad0e460731b7bd37b76793692eb1f897508ee9447",
-      "4371d6a825b6c7610c9a8f5fbe7c486f34f414ac8c78e2e073898bb0ef7985ba",
-      "65e887a839495a2e9e7cb5692f05eb63ddacebf552def63f6eaa6f678f37336e",
-      "53e8d917dc03af74a9959b4ab2945a15a5f648484e46d7940fc77b0342cdec2d",
-      "f6ac317a56b139b85d356eb714d653af2d7b2bf0dccaac0726ee5ca68827f9a9",
-      "0316eeaf30bec934e763033be4d7cd01a1cad850758ceed69f9e85e6c74f4c06",
-      "a71104ea2af3d4bce3197a3da006bbafa6543bfe1ee00447958e86550c718525",
-      "dfefb6db59a8d99584c42ae9e793c0191323d557e69ceeeb5edc7ba9ce9337d2",
-      "5c97957622374a6ef92a36e1099029652cc557739265e7f241bc7d93006ec686",
-      "8a4951fd08d8b050b507003ce7034151adbe08f09d1ef6227b36184cb258fa25",
-      "57b34ead2cf14c2ee560245d0b34857bf206d52132732bb7bb1591b85d333375",
-      "682a22f1d43f189926387092c89bdfd8b0b011e1a75cca79ab42a6a2bd7ba219",
-      "348202d73e3be6ccebffd0280841e1bc3cc7203e083bce37860944dc69216062",
-      "248979d8f2f9bcfbdd006536e1db500db1a239ffa9aaffead3dde068ad716d13",
-      "0a42058f5a173bb6235177534499709680c5a469e387f5eafa6cc54e3a9a0baf",
-      "3db262f76ae05bad2fa2d3b26b9cda9400c1a26341f09b8fcd59a7243b11cf2f",
-      "6ec6b292206c9387119475f03a45adc118eacd82a81e049fc2e3cd1a9b1f66b3",
-      "c974e3991fca6da908ed14faeb95aa91bdcc9c03fcb99b81adb226a24bf88aaf",
-      "08e9a1bdb1ec6edc74d30c5349b25a97bf3a1c150f7bb0bced4b004027179f93",
-      "0d2933ea3b6b071a75a4c3421adba80f996991daa86e6a3203d7432b8a6092cb",
-      "9e282fbb152c2e3222ac0577333e4ac261eeebfb68fc969ebdbb7f04048c9ce6",
-      "aa6b557157fb63ef77d7be8ff04acec53c7a1242b2760cb7ec4dec36f40cd6d6",
-      "dedf55857db60b61d33951536bbefd5c7ae15da9b0a2188043e2d273a360856b",
-      "3a87062f9f6bf6f5ef5be380a01bae64f8eb79cec7cb8c713fcff3b5887826df",
-      "923f38ffdd1c0c28c4f69f3ba30085a12f998b6d74a216888d721ab95b3d6d66",
-      "2ef8d57ab6ea11217453404b605981dd82d4bbae06414a1ade9014ab12f5def9",
-      "f1439003450fe484f80f83765a11b5f8aaf9203d9b17708fc336e4ddce90e197",
-      "872d19aa4e09ded04385c303f7b909ac955af35d90f9ee83c306abbcc7bef90d",
-      "de2f2e43503e0e09bf05483fd1045ceec45e7e709c19e327d33001cc0d4eb7e2",
-      "df9fa8f2a59c4385cc443c3655b558abac2a4d30efafd5d80f66a5b9fd14bcb9",
-      "2e90008895df2e2e72baedaf69a2efc55a8c3bec901b25f826fcc189b86496ee",
-      "a1038e8ab7656399311f82e73bec722c03ba70d7aae7be126b3eea969db9ddff",
-      "f9e5c60332e16d740ecad5ba4546984bffedfb59ffff48ef69309c7b5b0265ec",
-      "18a2cf4921568fbc55bcd76d3d32aed9462c36dda9fe662ca2d0c82a4a523517",
-      "4f750badcf378881ac053ceb87033d124775cbe8c18c727958864393b7dbdcf2",
-      "aaed5f85f38128411a74271e0ffc87374e1727870db17eadeb980a9006633644",
-      "6646d33e507890b61b58cf2bb7c3658a87caab11ccc005ea70d64485b8bbe83f",
-      "5b827ed73a1964d905dcda141891b1e52d349abc0449e34b89305c0c24580abb",
-      "8fb8c8a99173a2ef279680fb03a818b848bb9fb61b1ff6da8d3397762abbba7f",
-      "ff5f5a178e7df98d8734a8658760182f54cba760b18d9b95efcda2f3d49acfcc",
-      "df28e4cf7f49617c2cf7b6033a1d17b5082d2e0e815cdf7b27e82b3cf27bf1d4",
-      "e9ad7b04e2b78a8cec3b9972649a13ad98cada00fd4e4a2ae28b0f730a1c6517",
-      "fc54fe875cb8d883be7ec8345aa5b1cf582c29d334513a9fa6b84a0973b49d85",
-      "d2581304120324143f1aacc2a94299aff8c5a8628d2424857929440866246ea1",
-      "4baa1e7e518f137641ac95d5f575ff20d4272842a7072f3207d3f01a0778c26d",
-      "fb6b83092343e484cee2633700dd667268b1366016ff7568b9a8380c81127cd3",
       "40964619a6c74d879ea3442c194ac7d86d82af9041c7c5ed7fd6895643703074",
       "92b105afef58d444f99af111993b4efba4a7addfd8b2161c2f6b8aff09df2897",
       "aa835e53c83dd5c73bf0a977450d070439e2f4948dd9311581727626b6231976",
@@ -24320,14 +24533,56 @@
       "7cc58599bc6030271e6d649d611ead5d8a41100f0d34508c2561ce816dac1248",
       "36b75e111787d71495ec00674005fd70389aade234ec947a205ddfe343b5d942",
       "ac320321f0def7478fd00939d88f95b530eb4fd0e1694187f229261f8ddf5bb2",
-      "b027749708a2d3368f07f1316b3d2bd50196663cfbcf304ca13f8306838ccc2e"
+      "b027749708a2d3368f07f1316b3d2bd50196663cfbcf304ca13f8306838ccc2e",
+      "6e502da87a1da9dfa12cc3329798c873d1ec34caa86590c8a83e2c1c80b232ef",
+      "38a4fe7bb0365cb4a307858b1ebb0530f903563d3fe0b244e30a0c4da25d223d",
+      "c26f46fec4c3d0d6bd57fbfca2da7078b7caeeac94eb62d1f802b7fd94488a75",
+      "a210e9ed8faa6fc0f74983f5460e4602c5f76af85f9851edd683c8813375016b",
+      "a80451076651c5ccf0d8e90c2acb25ca12cbe0cb6a1d3f9213e332cb4678a362",
+      "81e25879a13edec854d3faf0316389d92984e0782e7b7356dc05fe3cbd4c6853",
+      "8a5ef69683446f6804e217ffad8d07e0a316a581b2ac367057c6e119897e7fde",
+      "09e0b83b352bef33cfbf241f768d847fe70ca307c55ca1f6d50b384e137e3724",
+      "2fd34e6892bbcb55471f87cd0a5c3093947a1563eacf5f8852b32bfd5bbd6962",
+      "ccde33768caec72ddf5c9a746a08e88fdcd63cf1d0c298e22e75fbfd74d0c73a",
+      "d9335661e9a37336b513a46932ba2a20c0e92e7fda73fee6e3d836fa5c06990a",
+      "33e45d11387b3f397a08720474c31db02c2927c354bcf03ab25113c003e178e8",
+      "21f5838b1a73332bb93d8635e8318e06456fb15ae03a60540969e089b4eb2561",
+      "9f79425663a0c9aa32459c0501a1beff3a4f28c453d531fc3313189a922cc5d2",
+      "b06110105b0aa346604efa52e2b1ecba98672d22d420a1c076bcadb40420cef9",
+      "747cbaad88fe560e067743e7045859638ed38ebb41c5c33c04361c70aa57679e",
+      "5511bad6735b8656770164735b17b1892001b8ab46eda4b3f07945f6bd22ae2f",
+      "06c8b7fcc881569c28da32607b6857749f32d26cdea1f3310795f88e5f4fce70",
+      "f8b9b328a4dca52e842542a43bd4aded7afd11af18aea1bde3148002219caadc",
+      "e15363a48136fa8f7b5476f047aea40de87d2e80dde7c48e7317e7f51ffb91f0",
+      "3ef727fbc25be77f8268c19816f8887e7d083c55ae6599c93af6bca472e96176",
+      "d71af81047b2c54afcefe960eb85431435c5f64a4326efcefaafa9f99e2e61e7",
+      "ae10609c9a54316a1dc87edcb9ebefd06313435aae28682849de57b416b681fb",
+      "b2a473a85fba2514521df8387990d0308ec970e50e152a27ce30d08c5c034e8c",
+      "e9903d8bc34dc7b1c70507fd25821d673f3a3479c171daeba0fb26cfe3b5bf49",
+      "7de59a6d9ef54baa51d8c176b17c311f77968971c95eab91eaf64fb070d2b482",
+      "01456c771bfcecdfe2797a3861ff2046bc03d087cc6a3c20b0ad84440f2457ae",
+      "5609cd34b880ae05bc1eb0cd81a106cc54bafec60eb1b0b3cdb10cb5a1df9f67",
+      "e2b5524691c1db87807546c58ba442326b8991af708eaeb574f96cbc5ca718a2",
+      "2d819ecc5349270caf8a4987f467183bd90c4e4f86a4e275eab267be99971c4f",
+      "774478bb466f42ba92bf31cd47535a4244304ca95d5c75f43fa1521981cf21ba",
+      "5bf4b27e0c0e100f750e174430cc3baaa41c809f3b6639a51428429bdcd601d7",
+      "c6c03adc7ff5745299b22ef526faf3709670c57c18ff0c8e3ae53e45653485e1",
+      "7bd15d369d8186f452fa48dc8cff9179e0fd683cbcb860fa5837382ad4f6813f",
+      "753e7bf81cb44c4b06fbabd042cd7f4433b9af4f2fbe3b66fc447cc8149afc5f",
+      "f860e38bb4bfe7c56fb21c41a327ca192cad5797e0412e90e5e4839ca0e93854",
+      "b3b2065621080ec4001bfb92a538e226d71844747cb543b5a36afbe6f4c5a611",
+      "4a4a305d880b9d1250fdfa9ed74a20f7772df589ada08f1a4185de220df53edd",
+      "67ace3927658b2e4c8242d300b548a511f53cbe7d3ab7a8043178702375a654c",
+      "555259b9a992a8966492ce9e1fc15533366002c03e36c1eacb0e6c653b1e1cc0",
+      "b28e0bd0ba2903eeffd767e1d1a718443a06b792a5648d29beca63b57339ad13",
+      "7e1f5e79df6e1bc33370a64d66de32bf33b699844af0d84bb4881c7bdf457e66",
+      "766b284d239c19747213f3106d30b4f1f6bf69b3a17f836375686b32cc8c8603",
+      "f7a3c76c6f58b30b50a4074f92a8c4dbf55ffde9e188d30fb171a124c69faec2",
+      "ae97969decd36097dcc10c699b78ad243b9103f1380ac999bf0220bac6833f94",
+      "c2ace06243fbdc0e9c336139aed359954dbca6f3780426fa0e21a9db7e637a96",
+      "f3d55272e14a0168d5f7e63a66bf7521ed854a6a72b3c500809b83a61800aadb"
     ],
     "gdrive": [
-      "c6f5b3b83f6589a20cf550769b0912078d890e564f04974d8a5a2c1e94b553fa",
-      "58e646f96a03de1d40259c57d15c6bee03240b303485252523734babc68def3e",
-      "8f2d5a7c26bbb8cde1b477249a78adddb562c35633b517b9041d58908aa9c92b",
-      "132afc25ed1c0f43d2f46e8698ad3977d1bf5f7942fe44dbe8a95dc3a6388aaf",
-      "aa820c4119873cf87cc17b7a7795ea5334dcfce74b876deba3492554e013a356",
       "30a0487b912182e496f4a147b5d4c39eca8bfc7a590fbf1468aa057c8656cadc",
       "ac0f624328160554e04cfc4f71a80f74e0092cd4cd6c606c398fb69d1b689ea1",
       "0aa1a4fd5a8b744b3bbcf9085d0e3ca221dfefed64781f5e25b5b3f196eaf6c1",
@@ -24522,7 +24777,12 @@
       "1c00b45ec8b1a0478a7bded9708407b1aa5c4cf0a41837afb5515ff5ce6d1f7c",
       "4f196abc2c10854329068172f17100e9857bac3c508b0fdcf4ca1d2a2944bb2c",
       "e14c652a966f3ec006b13082cb0bb725643839344368cc66186beefb73a79d66",
-      "d4a44d2d7856fab57b32720a59fce895b7ad076691e44a9d9f76daadc875c5ae"
+      "d4a44d2d7856fab57b32720a59fce895b7ad076691e44a9d9f76daadc875c5ae",
+      "766b284d239c19747213f3106d30b4f1f6bf69b3a17f836375686b32cc8c8603",
+      "f7a3c76c6f58b30b50a4074f92a8c4dbf55ffde9e188d30fb171a124c69faec2",
+      "ae97969decd36097dcc10c699b78ad243b9103f1380ac999bf0220bac6833f94",
+      "c2ace06243fbdc0e9c336139aed359954dbca6f3780426fa0e21a9db7e637a96",
+      "f3d55272e14a0168d5f7e63a66bf7521ed854a6a72b3c500809b83a61800aadb"
     ],
     "proton": [
       "9a06efabdbeff27fefc1bb5e0291aea6bf1eb0a065e611a134900fa8fba19f97",
