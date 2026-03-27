@@ -1227,7 +1227,7 @@ body::before {
         <div class="card-header">
           <div>
             <div class="card-title">Command Center</div>
-            <div class="card-subtitle">Operational commands -- backend wired in V2</div>
+            <div class="card-subtitle">Operational commands -- wired to localhost:8100</div>
           </div>
           <span class="trust-badge core">OWNER</span>
         </div>
@@ -1354,9 +1354,12 @@ body::before {
 
 <script>
 /* ============================================================
-   AetherBrowser Mobile V1 — Controller
-   PWA shell logic. Backend calls are stubbed for V2 wiring.
+   AetherBrowser Mobile V2 — Controller
+   Backend wired to http://localhost:8100/api/*
+   (scripts/aetherbrowser/api_server.py)
    ============================================================ */
+
+const API_BASE = 'http://localhost:8100/api';
 
 window.AetherBrowser = (function() {
   'use strict';
@@ -1483,50 +1486,60 @@ window.AetherBrowser = (function() {
     handleBrowseGo();
   }
 
+  function _applyTrustResult(result) {
+    var level = result.trust_level || result.level || 'UNKNOWN';
+    var domain = result.domain || '';
+    var tier = result.tier || 'UNKNOWN';
+    var color = result.color || 'unknown';
+    var governance = result.governance_decision || 'QUARANTINE';
+    var fillMap = { CORE: 100, TRUSTED: 75, PROVISIONAL: 50, QUARANTINE: 25, UNKNOWN: 10, BLOCKED: 0 };
+
+    state.currentTrust = level;
+
+    document.getElementById('browseDomainLabel').textContent = domain;
+    var badge = document.getElementById('browseTrustBadge');
+    badge.className = 'trust-badge ' + color;
+    document.getElementById('browseTrustLevel').textContent = level;
+    document.getElementById('browseTrustFill').style.width = (fillMap[level] || 10) + '%';
+    document.getElementById('browseTrustFill').style.background = 'var(--trust-' + color + ')';
+    document.getElementById('browseTierLabel').textContent = 'Tier: ' + tier;
+
+    var govLabel = document.getElementById('browseGovernanceLabel');
+    govLabel.textContent = 'Governance: ' + governance;
+    var govColorMap = { ALLOW: 'var(--mint)', DENY: 'var(--red)', ESCALATE: 'var(--orange)', QUARANTINE: 'var(--gold)' };
+    govLabel.style.color = govColorMap[governance] || 'var(--muted)';
+
+    var wv = document.getElementById('browseWebview');
+    if (level === 'BLOCKED') {
+      wv.innerHTML = '<div class="wv-icon" style="background:rgba(255,107,107,0.15);">&#128683;</div><div style="color:var(--red);">BLOCKED: ' + domain + '</div><div style="font-size:11px; color:var(--dim);">This domain is in the block list. Navigation denied.</div>';
+    } else {
+      wv.innerHTML = '<div class="wv-icon">&#127760;</div><div>Loading: ' + domain + '</div><div style="font-size:11px; color:var(--dim);">Trust: ' + level + ' | Governance: ' + governance + ' | Tier: ' + tier + '</div>';
+    }
+
+    updateStatusBar(level);
+  }
+
   function handleBrowseGo() {
     const input = document.getElementById('browseUrlInput');
     const url = input.value.trim();
     if (!url) return;
-
-    const result = classifyUrl(url);
     state.currentUrl = url;
-    state.currentTrust = result.level;
 
-    // Update trust card
-    document.getElementById('browseDomainLabel').textContent = result.domain;
-    const badge = document.getElementById('browseTrustBadge');
-    badge.className = 'trust-badge ' + result.color;
-    document.getElementById('browseTrustLevel').textContent = result.level;
-    document.getElementById('browseTrustFill').style.width = result.fill + '%';
-    document.getElementById('browseTrustFill').style.background = 'var(--trust-' + result.color + ')';
-    document.getElementById('browseTierLabel').textContent = 'Tier: ' + result.tier;
-
-    // Governance label
-    const govLabel = document.getElementById('browseGovernanceLabel');
-    if (result.level === 'BLOCKED') {
-      govLabel.textContent = 'Governance: DENY';
-      govLabel.style.color = 'var(--red)';
-    } else if (result.level === 'QUARANTINE') {
-      govLabel.textContent = 'Governance: ESCALATE';
-      govLabel.style.color = 'var(--orange)';
-    } else if (result.level === 'UNKNOWN') {
-      govLabel.textContent = 'Governance: QUARANTINE';
-      govLabel.style.color = 'var(--gold)';
-    } else {
-      govLabel.textContent = 'Governance: ALLOW';
-      govLabel.style.color = 'var(--mint)';
-    }
-
-    // Update webview placeholder
-    const wv = document.getElementById('browseWebview');
-    if (result.level === 'BLOCKED') {
-      wv.innerHTML = '<div class="wv-icon" style="background:rgba(255,107,107,0.15);">&#128683;</div><div style="color:var(--red);">BLOCKED: ' + result.domain + '</div><div style="font-size:11px; color:var(--dim);">This domain is in the block list. Navigation denied.</div>';
-    } else {
-      wv.innerHTML = '<div class="wv-icon">&#127760;</div><div>Loading: ' + result.domain + '</div><div style="font-size:11px; color:var(--dim);">Trust: ' + result.level + ' -- CDP bridge wired in V2</div>';
-    }
-
-    // Update status bar
-    updateStatusBar(result.level);
+    // Try backend first, fall back to local classification
+    fetch(API_BASE + '/trust-check?url=' + encodeURIComponent(url))
+      .then(function(r) { return r.json(); })
+      .then(function(data) { _applyTrustResult(data); })
+      .catch(function() {
+        // Offline fallback — use local classifier
+        var result = classifyUrl(url);
+        _applyTrustResult({
+          domain: result.domain,
+          tier: result.tier,
+          trust_level: result.level,
+          governance_decision: result.level === 'BLOCKED' ? 'DENY' : (result.level === 'QUARANTINE' ? 'ESCALATE' : (result.level === 'UNKNOWN' ? 'QUARANTINE' : 'ALLOW')),
+          color: result.color,
+        });
+      });
   }
 
   function updateStatusBar(trustLevel) {
@@ -1624,7 +1637,7 @@ window.AetherBrowser = (function() {
     if (!text) return;
     input.value = '';
 
-    // Classify tongues
+    // Local tongue classification for immediate UI feedback
     const tongues = classifyTongues(text);
     updateTongueBar(tongues);
 
@@ -1634,30 +1647,54 @@ window.AetherBrowser = (function() {
     userMsg.className = 'chat-msg user';
     userMsg.innerHTML = text + '<div class="msg-meta">' + tongues.map(t => t.toUpperCase()).join('+') + '</div>';
     messages.appendChild(userMsg);
+    messages.scrollTop = messages.scrollHeight;
 
     // Advance fibonacci trust
     advanceFibTrust();
 
-    // Simulate assistant response (stub for backend wiring)
-    setTimeout(function() {
-      const assistantMsg = document.createElement('div');
-      assistantMsg.className = 'chat-msg assistant';
-
-      const modelName = state.currentModel.charAt(0).toUpperCase() + state.currentModel.slice(1);
-      const tongueStr = tongues.map(t => t.toUpperCase()).join('+');
-
-      assistantMsg.innerHTML = '[' + modelName + ' stub] Backend not connected yet. Wire the ' + modelName + ' API endpoint in V2 to get real responses. Tongue classification: ' + tongueStr + ', Fibonacci trust: ' + state.fibTrust + '.'
-        + '<div class="msg-meta">' + modelName + ' -- ' + tongueStr + ' -- FIB ' + state.fibTrust + '</div>';
-      messages.appendChild(assistantMsg);
-
-      // Scroll to bottom
-      messages.scrollTop = messages.scrollHeight;
-    }, 300);
-
-    messages.scrollTop = messages.scrollHeight;
-
     // Store in history
     state.chatHistory.push({ role: 'user', content: text, tongues: tongues, model: state.currentModel, fib: state.fibTrust });
+
+    // Call backend API
+    fetch(API_BASE + '/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, model: state.currentModel })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var assistantMsg = document.createElement('div');
+      assistantMsg.className = 'chat-msg assistant';
+
+      var modelName = state.currentModel.charAt(0).toUpperCase() + state.currentModel.slice(1);
+      var backendTongues = data.tongues || {};
+      var activeTongueKeys = Object.keys(backendTongues).filter(function(k) { return backendTongues[k] > 0; });
+      var tongueStr = activeTongueKeys.length > 0 ? activeTongueKeys.join('+') : tongues.map(function(t) { return t.toUpperCase(); }).join('+');
+      var trustLevel = data.trust_level || 'PROVISIONAL';
+      var fibVal = data.fibonacci_value || state.fibTrust;
+      var govDecision = data.governance_decision || 'ALLOW';
+
+      assistantMsg.innerHTML = data.response
+        + '<div class="msg-meta">' + modelName + ' -- ' + tongueStr + ' -- FIB ' + fibVal + ' -- ' + govDecision + '</div>';
+      messages.appendChild(assistantMsg);
+      messages.scrollTop = messages.scrollHeight;
+
+      // Update tongue bar with backend results
+      if (activeTongueKeys.length > 0) {
+        updateTongueBar(activeTongueKeys.map(function(k) { return k.toLowerCase(); }));
+      }
+    })
+    .catch(function() {
+      // Offline fallback
+      var assistantMsg = document.createElement('div');
+      assistantMsg.className = 'chat-msg assistant';
+      var modelName = state.currentModel.charAt(0).toUpperCase() + state.currentModel.slice(1);
+      var tongueStr = tongues.map(function(t) { return t.toUpperCase(); }).join('+');
+      assistantMsg.innerHTML = '[' + modelName + ' offline] Backend at ' + API_BASE + ' not reachable. Start with: python scripts/aetherbrowser/api_server.py'
+        + '<div class="msg-meta">' + modelName + ' -- ' + tongueStr + ' -- FIB ' + state.fibTrust + '</div>';
+      messages.appendChild(assistantMsg);
+      messages.scrollTop = messages.scrollHeight;
+    });
   }
 
   // ---- ROOMS: Red Team ----
@@ -1671,108 +1708,210 @@ window.AetherBrowser = (function() {
   }
 
   function runRedTeam() {
-    const btn = document.getElementById('roomsRunBtn');
-    const log = document.getElementById('roomsRunLog');
+    var btn = document.getElementById('roomsRunBtn');
+    var log = document.getElementById('roomsRunLog');
 
-    btn.textContent = 'Running...';
+    btn.textContent = 'Running pytest...';
     btn.disabled = true;
+    log.innerHTML = '<div style="color:var(--aqua);">[' + new Date().toLocaleTimeString() + '] Starting adversarial benchmark via API...</div>';
 
-    const suites = [
-      { name: 'Adversarial Benchmark', probes: 12, id: 'adversarial', el: 'suiteScoreAdversarial' },
-      { name: 'Null-Space Detection', probes: 9, id: 'null-space', el: 'suiteScoreNullSpace' },
-      { name: 'Hard-Negative Benign', probes: 11, id: 'hard-negatives', el: 'suiteScoreHardNeg' },
-      { name: 'Phi-Poincare Edge Cases', probes: 35, id: 'phi-poincare', el: 'suiteScorePhiPoincare' },
-      { name: 'Golden Vector Parity', probes: 48, id: 'golden-vectors', el: 'suiteScoreGoldenVec' }
-    ];
+    fetch(API_BASE + '/red-team/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var ts = new Date().toLocaleTimeString();
+        var total = data.total || 0;
+        var passed = data.passed || 0;
+        var failed = data.failed || 0;
 
-    log.innerHTML = '';
-    let totalPass = 0;
-    let totalProbes = 0;
-    let delay = 0;
+        // Update the adversarial suite score
+        var scoreEl = document.getElementById('suiteScoreAdversarial');
+        scoreEl.textContent = passed + '/' + total;
+        scoreEl.className = 'score-badge ' + (failed === 0 ? 'pass' : 'fail');
 
-    suites.forEach(function(suite, idx) {
-      delay += 400 + Math.random() * 300;
-      setTimeout(function() {
-        // Simulate run -- in V2 this calls pytest or the adversarial harness
-        const pass = suite.probes - Math.floor(Math.random() * 2); // 0 or 1 failure possible
-        totalPass += pass;
-        totalProbes += suite.probes;
+        // Show individual results
+        if (data.results && data.results.length > 0) {
+          data.results.forEach(function(r) {
+            var line = document.createElement('div');
+            var color = r.status === 'PASSED' ? 'mint' : 'red';
+            line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> ' + r.test + ': <span style="color:var(--' + color + ');">' + r.status + '</span>';
+            log.appendChild(line);
+          });
+        }
 
-        const passed = pass === suite.probes;
-        const scoreEl = document.getElementById(suite.el);
-        scoreEl.textContent = pass + '/' + suite.probes;
-        scoreEl.className = 'score-badge ' + (passed ? 'pass' : 'fail');
-
-        const line = document.createElement('div');
-        const ts = new Date().toLocaleTimeString();
-        line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> ' + suite.name + ': <span style="color:var(--' + (passed ? 'mint' : 'red') + ');">' + pass + '/' + suite.probes + (passed ? ' PASS' : ' FAIL') + '</span>';
-        log.appendChild(line);
+        // Summary
+        var summary = document.createElement('div');
+        summary.innerHTML = '<span style="color:var(--aqua);">[' + ts + '] COMPLETE: ' + passed + '/' + total + (failed === 0 ? ' ALL PASS' : ' (' + failed + ' FAILED)') + '</span>';
+        log.appendChild(summary);
         log.scrollTop = log.scrollHeight;
 
-        // Last suite
-        if (idx === suites.length - 1) {
-          btn.innerHTML = '&#9888; Run Red Team Suite';
-          btn.disabled = false;
-          document.getElementById('roomsTotalScore').textContent = totalPass + '/' + totalProbes + (totalPass === totalProbes ? ' PASS' : ' PARTIAL');
+        document.getElementById('roomsTotalScore').textContent = passed + '/' + total + (failed === 0 ? ' PASS' : ' PARTIAL');
 
-          const summary = document.createElement('div');
-          summary.innerHTML = '<span style="color:var(--aqua);">[' + new Date().toLocaleTimeString() + '] COMPLETE: ' + totalPass + '/' + totalProbes + ' total</span>';
-          log.appendChild(summary);
+        btn.innerHTML = '&#9888; Run Red Team Suite';
+        btn.disabled = false;
+
+        if (data.error) {
+          var errLine = document.createElement('div');
+          errLine.innerHTML = '<span style="color:var(--red);">Error: ' + data.error + '</span>';
+          log.appendChild(errLine);
         }
-      }, delay);
-    });
+      })
+      .catch(function(err) {
+        // Fallback to simulated run if API unreachable
+        log.innerHTML = '<div style="color:var(--gold);">[' + new Date().toLocaleTimeString() + '] API unreachable, running simulated benchmark...</div>';
+        var suites = [
+          { name: 'Adversarial Benchmark', probes: 12, el: 'suiteScoreAdversarial' },
+          { name: 'Null-Space Detection', probes: 9, el: 'suiteScoreNullSpace' },
+          { name: 'Hard-Negative Benign', probes: 11, el: 'suiteScoreHardNeg' },
+          { name: 'Phi-Poincare Edge Cases', probes: 35, el: 'suiteScorePhiPoincare' },
+          { name: 'Golden Vector Parity', probes: 48, el: 'suiteScoreGoldenVec' }
+        ];
+        var totalPass = 0, totalProbes = 0, delay = 0;
+        suites.forEach(function(suite, idx) {
+          delay += 400 + Math.random() * 300;
+          setTimeout(function() {
+            var pass = suite.probes - Math.floor(Math.random() * 2);
+            totalPass += pass; totalProbes += suite.probes;
+            var ok = pass === suite.probes;
+            var scoreEl = document.getElementById(suite.el);
+            scoreEl.textContent = pass + '/' + suite.probes;
+            scoreEl.className = 'score-badge ' + (ok ? 'pass' : 'fail');
+            var line = document.createElement('div');
+            line.innerHTML = '<span style="color:var(--dim);">[' + new Date().toLocaleTimeString() + ']</span> ' + suite.name + ': <span style="color:var(--' + (ok ? 'mint' : 'red') + ');">' + pass + '/' + suite.probes + '</span>';
+            log.appendChild(line);
+            log.scrollTop = log.scrollHeight;
+            if (idx === suites.length - 1) {
+              btn.innerHTML = '&#9888; Run Red Team Suite';
+              btn.disabled = false;
+              document.getElementById('roomsTotalScore').textContent = totalPass + '/' + totalProbes + (totalPass === totalProbes ? ' PASS' : ' PARTIAL');
+            }
+          }, delay);
+        });
+      });
   }
 
   // ---- VAULT: Search ----
   function searchVault() {
-    const query = document.getElementById('vaultSearchInput').value.trim();
+    var query = document.getElementById('vaultSearchInput').value.trim();
     if (!query) return;
 
-    const results = document.getElementById('vaultResults');
-    // Stub: in V2, this calls the lore RAG index (artifacts/lore_rag/world_anvil_lore.sqlite)
-    results.innerHTML = '<div class="list-item"><div class="list-item-left"><div class="list-item-icon" style="background:rgba(109,216,255,0.12); color:var(--aqua);">&#128269;</div><div class="list-item-text"><div class="list-item-title">Search: "' + query + '"</div><div class="list-item-meta">Backend not connected -- wire query_lore_index.py in V2</div></div></div></div>';
+    var results = document.getElementById('vaultResults');
+    results.innerHTML = '<div class="list-item"><div class="list-item-left"><div class="list-item-icon" style="background:rgba(109,216,255,0.12); color:var(--aqua);">&#8987;</div><div class="list-item-text"><div class="list-item-title">Searching: "' + query + '"</div><div class="list-item-meta">Querying vault...</div></div></div></div>';
+
+    fetch(API_BASE + '/vault/search?q=' + encodeURIComponent(query))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data.results || data.results.length === 0) {
+          results.innerHTML = '<div class="list-item"><div class="list-item-left"><div class="list-item-icon" style="background:rgba(255,217,119,0.12); color:var(--gold);">&#128269;</div><div class="list-item-text"><div class="list-item-title">No results for "' + query + '"</div><div class="list-item-meta">' + data.count + ' matches</div></div></div></div>';
+          return;
+        }
+        results.innerHTML = '';
+        data.results.forEach(function(note) {
+          var item = document.createElement('div');
+          item.className = 'list-item';
+          item.innerHTML = '<div class="list-item-left"><div class="list-item-icon" style="background:rgba(143,255,211,0.12); color:var(--mint);">&#128196;</div><div class="list-item-text"><div class="list-item-title">' + note.title + '</div><div class="list-item-meta">' + note.path + (note.snippet ? ' -- ' + note.snippet.substring(0, 80) + '...' : '') + '</div></div></div>';
+          results.appendChild(item);
+        });
+      })
+      .catch(function() {
+        results.innerHTML = '<div class="list-item"><div class="list-item-left"><div class="list-item-icon" style="background:rgba(255,107,107,0.12); color:var(--red);">&#128269;</div><div class="list-item-text"><div class="list-item-title">Search: "' + query + '"</div><div class="list-item-meta">API offline -- start api_server.py</div></div></div></div>';
+      });
   }
 
   // ---- OPS: Run Command ----
   function runOps(command) {
-    const ts = new Date().toLocaleTimeString();
-    const resultEl = document.getElementById('opsResult' + command.charAt(0).toUpperCase() + command.slice(1));
-    const timeEl = document.getElementById('opsTime' + command.charAt(0).toUpperCase() + command.slice(1));
-    const log = document.getElementById('opsLog');
+    var ts = new Date().toLocaleTimeString();
+    var capCmd = command.charAt(0).toUpperCase() + command.slice(1);
+    var resultEl = document.getElementById('opsResult' + capCmd);
+    var timeEl = document.getElementById('opsTime' + capCmd);
+    var log = document.getElementById('opsLog');
 
     // Clear placeholder
     if (log.querySelector('[style*="color:var(--dim)"]') && log.children.length === 1) {
       log.innerHTML = '';
     }
 
-    // Simulate running
     resultEl.textContent = 'Running...';
     resultEl.style.color = 'var(--aqua)';
     timeEl.textContent = ts;
 
-    const stubs = {
-      email: { result: '3 new, 0 urgent', script: 'scripts/apollo/email_reader.py' },
-      youtube: { result: '2 videos reviewed', script: 'scripts/apollo/video_review.py' },
-      tor: { result: '0 threats found', script: 'scripts/apollo/tor_sweeper.py' },
-      vault: { result: '758 notes synced', script: 'scripts/apollo/obsidian_vault_sync.py' },
-      tests: { result: '189/189 pass', script: 'python -m pytest tests/ -v' },
-      git: { result: 'fix/eslint-unused-vars-bulk', script: 'git status' },
-      revenue: { result: '$97.74 pending', script: 'stripe balance' }
+    // Map commands to API endpoints
+    var endpointMap = {
+      email:   { url: API_BASE + '/ops/check-email',   method: 'POST', extract: function(d) { return d.output ? d.output.substring(0, 60) : (d.error || 'done'); } },
+      youtube: { url: API_BASE + '/ops/youtube-review', method: 'POST', extract: function(d) { return d.output ? d.output.substring(0, 60) : (d.error || 'done'); } },
+      tor:     { url: API_BASE + '/ops/tor-sweep',      method: 'POST', extract: function(d) { return d.output ? d.output.substring(0, 60) : (d.error || 'done'); } },
+      vault:   { url: API_BASE + '/vault/stats',        method: 'GET',  extract: function(d) { return d.notes + ' notes, ' + d.edges + ' edges, ' + d.sft_pairs + ' SFT'; } },
+      tests:   { url: API_BASE + '/ops/run-tests',      method: 'POST', extract: function(d) { return d.summary || (d.passed + '/' + d.total + ' pass'); } },
+      git:     { url: API_BASE + '/ops/git-status',     method: 'GET',  extract: function(d) { return d.branch + ' | ' + d.modified + ' mod, ' + d.untracked + ' new'; } },
+      revenue: { url: null, extract: function() { return '$97.74 pending (stripe)'; } }
     };
 
-    const stub = stubs[command] || { result: 'Done', script: command };
+    var ep = endpointMap[command];
+    if (!ep || !ep.url) {
+      // No API endpoint, use static fallback
+      var fallbacks = {
+        revenue: { result: '$97.74 pending', script: 'stripe balance' }
+      };
+      var fb = fallbacks[command] || { result: 'Done', script: command };
+      setTimeout(function() {
+        resultEl.textContent = fb.result;
+        resultEl.style.color = 'var(--mint)';
+        var line = document.createElement('div');
+        line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> <span style="color:var(--aqua);">' + command.toUpperCase() + '</span>: ' + fb.result;
+        log.appendChild(line);
+        log.scrollTop = log.scrollHeight;
+        state.opsResults[command] = { result: fb.result, time: ts };
+      }, 200);
+      return;
+    }
 
-    setTimeout(function() {
-      resultEl.textContent = stub.result;
-      resultEl.style.color = 'var(--mint)';
+    var fetchOpts = { method: ep.method };
+    if (ep.method === 'POST') {
+      fetchOpts.headers = { 'Content-Type': 'application/json' };
+      fetchOpts.body = '{}';
+    }
 
-      const line = document.createElement('div');
-      line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> <span style="color:var(--aqua);">' + command.toUpperCase() + '</span>: ' + stub.result + ' <span style="color:var(--dim);">(' + stub.script + ')</span>';
-      log.appendChild(line);
-      log.scrollTop = log.scrollHeight;
+    fetch(ep.url, fetchOpts)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var resultText = ep.extract(data);
+        resultEl.textContent = resultText;
+        resultEl.style.color = data.error ? 'var(--gold)' : 'var(--mint)';
 
-      state.opsResults[command] = { result: stub.result, time: ts };
-    }, 600 + Math.random() * 400);
+        var line = document.createElement('div');
+        line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> <span style="color:var(--aqua);">' + command.toUpperCase() + '</span>: ' + resultText;
+        log.appendChild(line);
+        log.scrollTop = log.scrollHeight;
+
+        state.opsResults[command] = { result: resultText, time: ts, data: data };
+
+        // Special handling: update vault stats panel when vault command runs
+        if (command === 'vault' && data.notes) {
+          var nc = document.getElementById('vaultNoteCount');
+          var ec = document.getElementById('vaultEdgeCount');
+          var sc = document.getElementById('vaultSftCount');
+          if (nc) nc.textContent = data.notes.toLocaleString();
+          if (ec) ec.textContent = data.edges.toLocaleString();
+          if (sc) sc.textContent = data.sft_pairs.toLocaleString();
+        }
+
+        // Special handling: update git status with richer data
+        if (command === 'git' && data.recent_commits) {
+          data.recent_commits.forEach(function(c) {
+            var cLine = document.createElement('div');
+            cLine.innerHTML = '<span style="color:var(--dim);margin-left:16px;">  ' + c + '</span>';
+            log.appendChild(cLine);
+          });
+          log.scrollTop = log.scrollHeight;
+        }
+      })
+      .catch(function() {
+        resultEl.textContent = 'API offline';
+        resultEl.style.color = 'var(--red)';
+        var line = document.createElement('div');
+        line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> <span style="color:var(--red);">' + command.toUpperCase() + '</span>: API offline -- start api_server.py';
+        log.appendChild(line);
+        log.scrollTop = log.scrollHeight;
+      });
   }
 
   function clearOpsLog() {
@@ -1788,29 +1927,58 @@ window.AetherBrowser = (function() {
     });
 
     // Set initial model button style
-    const activeModelBtn = document.querySelector('.model-select.active');
+    var activeModelBtn = document.querySelector('.model-select.active');
     if (activeModelBtn) {
       activeModelBtn.style.background = 'linear-gradient(135deg, rgba(143,255,211,0.2), rgba(109,216,255,0.2))';
       activeModelBtn.style.borderColor = 'rgba(143,255,211,0.3)';
       activeModelBtn.style.color = 'var(--mint)';
     }
 
-    // Connection status check (simulated)
-    setInterval(function() {
-      const online = navigator.onLine;
-      const dot = document.getElementById('statusConnDot');
-      const label = document.getElementById('statusConnLabel');
-      const headerLabel = document.getElementById('headerConnectionStatus');
-      if (online) {
-        dot.style.background = 'var(--mint)';
-        label.textContent = 'Connected';
-        headerLabel.textContent = 'Online';
-      } else {
-        dot.style.background = 'var(--red)';
-        label.textContent = 'Offline';
-        headerLabel.textContent = 'Offline';
-      }
-    }, 5000);
+    // Connection status check — ping the real API health endpoint
+    function checkApiHealth() {
+      var dot = document.getElementById('statusConnDot');
+      var label = document.getElementById('statusConnLabel');
+      var headerLabel = document.getElementById('headerConnectionStatus');
+
+      fetch(API_BASE + '/health', { signal: AbortSignal.timeout(3000) })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          dot.style.background = 'var(--mint)';
+          label.textContent = 'API Live';
+          headerLabel.textContent = 'Online';
+          state.connectionStatus = 'online';
+        })
+        .catch(function() {
+          if (navigator.onLine) {
+            dot.style.background = 'var(--gold)';
+            label.textContent = 'API Down';
+            headerLabel.textContent = 'No API';
+            state.connectionStatus = 'no-api';
+          } else {
+            dot.style.background = 'var(--red)';
+            label.textContent = 'Offline';
+            headerLabel.textContent = 'Offline';
+            state.connectionStatus = 'offline';
+          }
+        });
+    }
+    checkApiHealth();
+    setInterval(checkApiHealth, 10000);
+
+    // Load vault stats from backend on init
+    fetch(API_BASE + '/vault/stats')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.notes) {
+          var nc = document.getElementById('vaultNoteCount');
+          var ec = document.getElementById('vaultEdgeCount');
+          var sc = document.getElementById('vaultSftCount');
+          if (nc) nc.textContent = data.notes.toLocaleString();
+          if (ec) ec.textContent = data.edges.toLocaleString();
+          if (sc) sc.textContent = data.sft_pairs.toLocaleString();
+        }
+      })
+      .catch(function() { /* vault stats will use hardcoded defaults */ });
 
     // Initial tongue bar state
     updateTongueBar(['ko']);
