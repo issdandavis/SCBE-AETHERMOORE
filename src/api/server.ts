@@ -9,6 +9,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { randomUUID } from 'crypto';
 import { govern, listPolicies, GovernanceRequest, GovernanceResponse } from './govern.js';
+import { logger } from '../utils/logger.js';
 
 // ============================================================================
 // Types
@@ -46,7 +47,7 @@ function requestLogger(req: Request, res: Response, next: NextFunction): void {
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
-    console.log(`${req.method} ${req.path} ${res.statusCode} ${duration}ms`);
+    logger.info(`${req.method} ${req.path} ${res.statusCode} ${duration}ms`, { module: 'api' });
   });
   next();
 }
@@ -183,7 +184,7 @@ export function createApp(): express.Application {
 
       res.json(response);
     } catch (error) {
-      console.error('Governance error:', error);
+      logger.error('Governance error', { module: 'api', error: String(error) });
       res.status(500).json({
         error: 'Internal Server Error',
         message: 'Governance engine error',
@@ -234,7 +235,7 @@ export function createApp(): express.Application {
 
       res.json({ decisions });
     } catch (error) {
-      console.error('Batch governance error:', error);
+      logger.error('Batch governance error', { module: 'api', error: String(error) });
       res.status(500).json({
         error: 'Internal Server Error',
         message: 'Batch processing error',
@@ -342,12 +343,13 @@ export function startServer(port = 8080): void {
   const app = createApp();
 
   app.listen(port, () => {
-    console.log(`🛡️  SCBE Governance API running on http://localhost:${port}`);
-    console.log(`   POST /v1/govern       - Request governance decision`);
-    console.log(`   POST /v1/govern/batch - Batch governance decisions`);
-    console.log(`   GET  /v1/policies     - List active policies`);
-    console.log(`   GET  /v1/audit        - Get audit log`);
-    console.log(`   GET  /v1/stats        - Get statistics`);
+    logger.info(`SCBE Governance API running on http://localhost:${port}`, { module: 'api' });
+    logger.info(
+      'Routes: POST /v1/govern, POST /v1/govern/batch, GET /v1/policies, GET /v1/audit, GET /v1/stats',
+      {
+        module: 'api',
+      }
+    );
   });
 }
 
