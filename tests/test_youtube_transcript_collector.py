@@ -13,11 +13,63 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from scripts.apollo.youtube_transcript_collector import (
+    _TRANSCRIPT_DELAY,
     get_transcript,
     scrub_transcript,
     generate_sft_from_transcript,
     load_channels,
+    search_channel_videos,
 )
+
+
+class TestSearchChannelVideos:
+    """Verify handle-based search to avoid ambiguous channel matches."""
+
+    @patch("subprocess.run")
+    def test_uses_handle_when_provided(self, mock_run):
+        """When a handle is given, yt-dlp search should use it instead of the display name."""
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="abc123 Some Video Title\n"
+        )
+        search_channel_videos("Robert Miles", max_results=3, handle="@RobertMilesAI")
+        call_args = mock_run.call_args[0][0]
+        # The search query should contain the handle, not the display name
+        assert any("@RobertMilesAI" in arg for arg in call_args)
+        assert not any("Robert Miles" in arg for arg in call_args)
+
+    @patch("subprocess.run")
+    def test_falls_back_to_name_without_handle(self, mock_run):
+        """Without a handle, yt-dlp search should use the display name."""
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="xyz789 Another Video\n"
+        )
+        search_channel_videos("3Blue1Brown", max_results=2)
+        call_args = mock_run.call_args[0][0]
+        assert any("3Blue1Brown" in arg for arg in call_args)
+
+    @patch("subprocess.run")
+    def test_handle_none_uses_name(self, mock_run):
+        """Explicitly passing handle=None should fall back to name."""
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="vid1 Title One\n"
+        )
+        search_channel_videos("Fireship", max_results=1, handle=None)
+        call_args = mock_run.call_args[0][0]
+        assert any("Fireship" in arg for arg in call_args)
+
+
+class TestTranscriptDelay:
+    def test_delay_is_30_seconds(self):
+        """Delay should be 30s to avoid aggressive YouTube rate limiting."""
+        assert _TRANSCRIPT_DELAY == 30
+
+
+class TestChannelHandles:
+    def test_all_channels_have_handles(self):
+        """Every curated channel should have a handle field for unambiguous search."""
+        for c in load_channels():
+            assert "handle" in c, f"Channel {c['name']} missing 'handle' field"
+            assert c["handle"].startswith("@"), f"Handle for {c['name']} must start with @"
 
 
 class TestLoadChannels:
