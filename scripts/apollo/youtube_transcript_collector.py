@@ -80,18 +80,39 @@ def search_channel_videos(channel_name: str, max_results: int = 5) -> list[dict]
     return []
 
 
-def get_transcript(video_id: str) -> Optional[str]:
-    """Get transcript for a video using youtube-transcript-api."""
+_TRANSCRIPT_DELAY = 15  # seconds between requests to avoid rate limiting
+
+
+def get_transcript(video_id: str, delay: bool = True) -> Optional[str]:
+    """Get transcript for a video using youtube-transcript-api.
+
+    Adds a delay between calls to avoid YouTube rate limiting (429).
+    """
+    import time as _time
+
     try:
         from youtube_transcript_api import YouTubeTranscriptApi
         api = YouTubeTranscriptApi()
         transcript = api.fetch(video_id)
         full_text = " ".join(snippet.text for snippet in transcript)
+        if delay:
+            _time.sleep(_TRANSCRIPT_DELAY)
         return full_text
     except ImportError:
         print("  youtube-transcript-api not installed. Run: pip install youtube-transcript-api")
         return None
     except Exception as e:
+        if "429" in str(e) or "IpBlocked" in str(type(e).__name__):
+            print(f"  Rate limited for {video_id}. Waiting 60s...")
+            _time.sleep(60)
+            # One retry after cooldown
+            try:
+                api = YouTubeTranscriptApi()
+                transcript = api.fetch(video_id)
+                return " ".join(snippet.text for snippet in transcript)
+            except Exception:
+                print(f"  Still blocked. Skip and try later.")
+                return None
         print(f"  Transcript unavailable for {video_id}: {e}")
         return None
 
