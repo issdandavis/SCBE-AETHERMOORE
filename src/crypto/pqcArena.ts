@@ -348,7 +348,7 @@ export class ShiftingKeyspace {
     const axis: GovernanceAxis = {
       ...params,
       bitsAdded,
-      currentValue: Math.floor(Math.random() * params.cardinality),
+      currentValue: randomBytes(4).readUInt32BE(0) % params.cardinality,
     };
     this.axes.push(axis);
     this.shiftCount++;
