@@ -1,0 +1,92 @@
+{
+  "policy_version": "1.0",
+  "record_status": "draft",
+  "owner": {
+    "name": "Issac Daniel Davis"
+  },
+  "policy_scope": {
+    "persistent_ai": true,
+    "agent_memory": true,
+    "archival_state": true,
+    "autonomous_actions": true
+  },
+  "trigger_conditions": {
+    "verified_death": true,
+    "verified_permanent_incapacity": true,
+    "insufficient_triggers": [
+      "silence",
+      "account_dormancy",
+      "rumor",
+      "unverified_family_request"
+    ]
+  },
+  "verification_examples": [
+    "death_certificate",
+    "executor_confirmation",
+    "court_order",
+    "notarized_legal_confirmation",
+    "trusted_contact_process"
+  ],
+  "suspected_loss_actions": [
+    "freeze_autonomous_execution",
+    "stop_financial_actions",
+    "stop_external_outreach",
+    "preserve_audit_logs",
+    "preserve_policy_state",
+    "require_stronger_verification"
+  ],
+  "post_event_modes": {
+    "allowed": [
+      "transfer_control",
+      "archive_mode",
+      "memorial_mode",
+      "decommission_mode",
+      "deletion_mode"
+    ],
+    "default_preference": "safe_hold_until_verified"
+  },
+  "transfer_principles": {
+    "control_may_transfer": true,
+    "identity_continuity_not_automatic": true,
+    "memorial_or_executor_labeling_required": true
+  },
+  "forbidden_post_death_behaviors": [
+    "impersonate_owner_as_alive",
+    "autonomous_outreach_in_owner_name",
+    "financial_transactions",
+    "credential_reuse_for_new_activity",
+    "unauthorized_private_memory_disclosure",
+    "create_new_obligations_in_owner_name"
+  ],
+  "data_handling": {
+    "credentials": "delete_or_disable",
+    "business_records": "authorized_executor_only",
+    "personal_memories": "restricted_archive",
+    "audit_logs": "preserve",
+    "model_state": "archive_transfer_or_delete_per_mode"
+  },
+  "lifecycle_states": [
+    "ACTIVE",
+    "SUSPECTED_LOSS",
+    "VERIFIED_DEATH_OR_INCAPACITY",
+    "TRANSFER",
+    "ARCHIVE",
+    "MEMORIAL",
+    "DECOMMISSION",
+    "DELETE"
+  ],
+  "transition_requirements": [
+    "evidence_threshold",
+    "audit_logging",
+    "policy_lookup",
+    "authorized_approver",
+    "reversible_hold_when_possible"
+  ],
+  "legal_priority_order": [
+    "applicable_law",
+    "valid_legal_instruments",
+    "platform_and_contractual_obligations",
+    "owner_policy_intent"
+  ],
+  "note": "This is an intent and governance record, not legal advice."
+}
