@@ -7,6 +7,7 @@
  * @module fleet/fleet-manager
  */
 
+import { logger } from '../utils/logger.js';
 import { SpectralIdentityGenerator } from '../harmonic/spectral-identity';
 import { TrustManager } from '../spaceTor/trust-manager';
 import { AgentRegistrationOptions, AgentRegistry } from './agent-registry';
@@ -536,13 +537,13 @@ export class FleetManager {
       try {
         listener(event);
       } catch (e) {
-        console.error('Event listener error:', e);
+        logger.error('Event listener error', { error: String(e) });
       }
     }
 
     // Handle security alerts
     if (this.config.enableSecurityAlerts && event.type === 'security_alert') {
-      console.warn('[FLEET SECURITY ALERT]', event.data);
+      logger.warn('Fleet security alert', { data: event.data });
     }
   }
 

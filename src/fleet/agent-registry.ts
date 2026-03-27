@@ -4,6 +4,7 @@
  * @module fleet/agent-registry
  */
 
+import { logger } from '../utils/logger.js';
 import { SpectralIdentityGenerator } from '../harmonic/spectral-identity';
 import { TrustManager } from '../spaceTor/trust-manager';
 import {
@@ -407,7 +408,7 @@ export class AgentRegistry {
       try {
         listener(event);
       } catch (e) {
-        console.error('Event listener error:', e);
+        logger.error('Event listener error', { error: String(e) });
       }
     }
   }

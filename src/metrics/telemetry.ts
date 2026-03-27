@@ -1,5 +1,5 @@
 import { performance } from 'node:perf_hooks';
-import { metricsLogger } from '../utils/logger.js';
+import { logger, metricsLogger } from '../utils/logger.js';
 
 type Tags = Record<string, string | number | boolean | undefined>;
 
@@ -10,10 +10,10 @@ let warnedUnsupportedBackend = false;
 function warnUnsupportedBackendOnce() {
   if (backend === 'stdout' || warnedUnsupportedBackend) return;
   warnedUnsupportedBackend = true;
-  console.warn(
-    `[metrics] Backend '${backend}' is configured but not implemented. ` +
-      'Metrics will be dropped. Use SCBE_METRICS_BACKEND=stdout or configure an exporter.'
-  );
+  logger.warn('Unsupported metrics backend configured, metrics will be dropped', {
+    backend,
+    hint: 'Use SCBE_METRICS_BACKEND=stdout or configure an exporter',
+  });
 }
 
 /**
