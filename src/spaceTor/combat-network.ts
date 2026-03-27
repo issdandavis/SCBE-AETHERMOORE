@@ -52,8 +52,16 @@ export class CombatNetwork {
       const pathA = this.router.calculatePath(origin, dest, 70);
       const pathB = this.generateDisjointPath(pathA, origin, dest, 70);
 
-      log.info('Routing via PRIMARY', { mode: 'COMBAT', pathId: 'PRIMARY', route: pathA.map((n) => n.id).join(' -> ') });
-      log.info('Routing via BACKUP-1', { mode: 'COMBAT', pathId: 'BACKUP-1', route: pathB.map((n) => n.id).join(' -> ') });
+      log.info('Routing via PRIMARY', {
+        mode: 'COMBAT',
+        pathId: 'PRIMARY',
+        route: pathA.map((n) => n.id).join(' -> '),
+      });
+      log.info('Routing via BACKUP-1', {
+        mode: 'COMBAT',
+        pathId: 'BACKUP-1',
+        route: pathB.map((n) => n.id).join(' -> '),
+      });
 
       // 2. Encrypt & Send Parallel
       const [onionA, onionB] = await Promise.all([
@@ -71,7 +79,10 @@ export class CombatNetwork {
     } else {
       // Standard Routing
       const path = this.router.calculatePath(origin, dest, 50);
-      log.info('Routing via STANDARD', { mode: 'STANDARD', route: path.map((n) => n.id).join(' -> ') });
+      log.info('Routing via STANDARD', {
+        mode: 'STANDARD',
+        route: path.map((n) => n.id).join(' -> '),
+      });
 
       const onion = await this.crypto.buildOnion(payload, path);
       const result = await this.transmit(path[0], onion, 'STANDARD');
