@@ -159,3 +159,16 @@ All credentials live in `config/connector_oauth/.env.connector.oauth`. Keys avai
 - `BLUESKY_HANDLE` / `BLUESKY_APP_PASSWORD` — Bluesky posting
 
 ProtonMail Bridge must be running locally for email access (port 1143).
+
+### YouTube Publish & Review
+```bash
+# Review all your uploaded videos (scores title, description, transcript, tags)
+python scripts/apollo/video_review.py review-all
+
+# Pull transcripts from your own channel for training
+# (uses cached transcripts from training-data/apollo/youtube_transcripts/)
+```
+
+Review scores: title (structure, length, searchability), description (depth, links, hashtags),
+transcript (speaking rate, vocabulary richness, technical density), tags (count, brand coverage).
+Reports saved to `artifacts/apollo/video_reviews/`.
