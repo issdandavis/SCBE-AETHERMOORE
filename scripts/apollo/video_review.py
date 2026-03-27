@@ -64,29 +64,71 @@ def parse_duration(iso_duration: str) -> int:
 
 
 def score_title(title: str) -> tuple[int, list, list]:
-    """Score video title quality (0-10)."""
-    issues, suggestions = [], []
-    score = 5  # baseline
+    """Score video title quality (0-10).
 
+    Rewards:
+      - Structured separators (pipe, dash, colon)
+      - Series format (Ch., Part, Ep.)
+      - Searchable/curiosity words (how, why, what, secret, hidden, ...)
+      - Hook-first: title opens with a question or dramatic statement
+      - Pipe separator format ("Hook | Series Ch.X")
+      - Mobile-friendly length (under 55 chars)
+    """
+    issues, suggestions = [], []
+    score = 4  # baseline
+
+    # --- Length checks ---
     if len(title) < 15:
         issues.append("Title too short")
         score -= 2
     elif len(title) > 80:
         issues.append("Title may be too long for mobile display")
         score -= 1
+    elif len(title) <= 55:
+        score += 1  # mobile-friendly length
 
+    # --- Structural separators ---
+    if "|" in title:
+        score += 1  # pipe separator (preferred hook|series format)
     if "--" in title or ":" in title:
-        score += 1  # structured title
+        score += 1  # structured title with dash or colon
 
+    # --- Series format ---
     if any(w in title.lower() for w in ["chapter", "ch.", "ep.", "part"]):
         score += 1  # series format
 
-    if any(w in title.lower() for w in ["how", "why", "what", "tutorial", "guide", "explained"]):
-        score += 1  # searchable format
+    # --- Searchable / curiosity / emotional words ---
+    curiosity_words = [
+        "how", "why", "what", "secret", "hidden", "every", "never",
+        "broke", "hacked", "tutorial", "guide", "explained",
+    ]
+    matched_curiosity = [w for w in curiosity_words if w in title.lower()]
+    if matched_curiosity:
+        score += 1  # at least one curiosity/emotional word
 
-    if title == title.upper():
+    # --- Hook-first: title starts with a question or dramatic statement ---
+    title_stripped = title.strip()
+    first_segment = title_stripped.split("|")[0].strip() if "|" in title_stripped else title_stripped
+    hook_first = False
+    # Question hook: opens with interrogative or ends segment with '?'
+    if first_segment.endswith("?") or re.match(r"(?i)^(how|why|what|who|when|where|can|is|are|do|does|will|did)\b", first_segment):
+        hook_first = True
+    # Dramatic statement hook: starts with a strong verb phrase or personal pronoun
+    if re.match(r"(?i)^(he |she |they |i |we |it |the |this |every |no one |never |stop |watch |meet |inside )", first_segment):
+        hook_first = True
+    if hook_first:
+        score += 1  # hook-first title
+
+    # --- ALL CAPS penalty ---
+    if title == title.upper() and len(title) > 5:
         issues.append("ALL CAPS title")
         score -= 2
+
+    # --- Suggestions for low-scoring titles ---
+    if not hook_first:
+        suggestions.append("Start with a question or dramatic hook for higher CTR")
+    if "|" not in title:
+        suggestions.append("Consider pipe format: 'Hook | Series Ch.X'")
 
     return min(10, max(0, score)), issues, suggestions
 
