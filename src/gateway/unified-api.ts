@@ -192,7 +192,12 @@ export class UnifiedSCBEGateway {
     // Layer 14: Decision
     const decision = this.makeDecision(compositeRisk);
 
-    const decisionId = `dec_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    const decisionId = `dec_${Date.now().toString(36)}_${Array.from(
+      crypto.getRandomValues(new Uint8Array(6)),
+      (b) => b.toString(36)
+    )
+      .join('')
+      .slice(0, 8)}`;
 
     return {
       decision,
@@ -404,7 +409,12 @@ export class UnifiedSCBEGateway {
     algorithm: 'ML-KEM-768' | 'ML-KEM-1024' = 'ML-KEM-768'
   ): Promise<QuantumKeyExchange> {
     // In a real implementation, this would call scbe-quantum-prototype
-    const sessionId = `qkex_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    const sessionId = `qkex_${Date.now().toString(36)}_${Array.from(
+      crypto.getRandomValues(new Uint8Array(6)),
+      (b) => b.toString(36)
+    )
+      .join('')
+      .slice(0, 8)}`;
 
     // Placeholder for actual Kyber keygen
     const publicKey = Buffer.from(
