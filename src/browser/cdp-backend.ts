@@ -17,6 +17,7 @@
 import { request as httpRequest } from 'http';
 import { BrowserBackend } from './agent.js';
 import { WSClient } from './ws-client.js';
+import { logger } from '../utils/logger.js';
 import {
   BrowserSessionConfig,
   PageObservation,
@@ -196,7 +197,7 @@ export class CDPBackend implements BrowserBackend {
       this.connected = false;
     });
     this.ws.on('error', (err: Error) => {
-      if (this.debug) console.error('[CDP] WebSocket error:', err.message);
+      if (this.debug) logger.error(`WebSocket error: ${err.message}`, { module: 'cdp-backend' });
     });
 
     await this.ws.connect();
@@ -239,7 +240,7 @@ export class CDPBackend implements BrowserBackend {
     }
 
     if (this.debug) {
-      console.log(`[CDP] Connected to "${target.title}" (${target.url})`);
+      logger.info(`Connected to "${target.title}" (${target.url})`, { module: 'cdp-backend' });
     }
   }
 
@@ -869,7 +870,9 @@ export class CDPBackend implements BrowserBackend {
       const message = JSON.stringify({ id, method, params: params ?? {} });
 
       if (this.debug) {
-        console.log(`[CDP →] ${method}`, params ? JSON.stringify(params).slice(0, 200) : '');
+        logger.debug(`CDP → ${method} ${params ? JSON.stringify(params).slice(0, 200) : ''}`, {
+          module: 'cdp-backend',
+        });
       }
 
       this.ws.send(message);
@@ -896,7 +899,9 @@ export class CDPBackend implements BrowserBackend {
           pending.reject(new Error(`CDP error: ${resp.error.message} (${resp.error.code})`));
         } else {
           if (this.debug) {
-            console.log(`[CDP ←] #${resp.id}`, JSON.stringify(resp.result ?? {}).slice(0, 200));
+            logger.debug(`CDP ← #${resp.id} ${JSON.stringify(resp.result ?? {}).slice(0, 200)}`, {
+              module: 'cdp-backend',
+            });
           }
           pending.resolve(resp.result ?? {});
         }
@@ -914,7 +919,9 @@ export class CDPBackend implements BrowserBackend {
             handler(event.params);
           } catch (err) {
             if (this.debug) {
-              console.error(`[CDP] Event handler error for ${event.method}:`, err);
+              logger.error(`Event handler error for ${event.method}: ${err}`, {
+                module: 'cdp-backend',
+              });
             }
           }
         }
