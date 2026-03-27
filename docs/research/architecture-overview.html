@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCBE Architecture Overview</title>
+    <meta name="description" content="Canonical public-facing 14-layer architecture overview for SCBE-AETHERMOORE.">
+    <link rel="canonical" href="https://aethermoorgames.com/research/architecture-overview.html">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #07111d; color: #eef3ff; line-height: 1.7; }
+        a { color: inherit; text-decoration: none; }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 36px 24px 72px; }
+        .nav { display: flex; gap: 16px; flex-wrap: wrap; color: #a9b6d1; font-size: 14px; margin-bottom: 26px; }
+        .eyebrow { color: #87a0ff; text-transform: uppercase; letter-spacing: 0.16em; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+        h1 { font-size: clamp(34px, 6vw, 64px); line-height: 0.96; letter-spacing: -0.045em; margin-bottom: 16px; max-width: 800px; }
+        p.lead { color: #b5c0d9; max-width: 760px; margin-bottom: 26px; }
+        .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 34px; }
+        .btn { display: inline-block; padding: 12px 18px; border-radius: 999px; font-size: 14px; font-weight: 700; }
+        .btn-primary { background: linear-gradient(135deg, #6e86ff, #9f6bff); color: #fff; }
+        .btn-ghost { background: rgba(255,255,255,0.03); border: 1px solid rgba(126, 146, 255, 0.18); color: #dbe3ff; }
+        .panel { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 18px; padding: 24px; margin-bottom: 18px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+        .card { background: rgba(255,255,255,0.03); border: 1px solid rgba(126, 146, 255, 0.1); border-radius: 16px; padding: 18px; }
+        .card h3 { margin-bottom: 8px; font-size: 18px; }
+        .card p { color: #b2bdd7; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid rgba(126, 146, 255, 0.12); vertical-align: top; }
+        th { color: #96a4d1; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+        code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; color: #7df1d3; }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <div class="nav">
+            <a href="../index.html">Home</a>
+            <a href="./index.html">Research</a>
+            <a href="./eval-pack.html">Eval Pack</a>
+            <a href="./null-space-signatures.html">Null Space</a>
+            <a href="../redteam.html">Red Team</a>
+        </div>
+
+        <div class="eyebrow">Canonical public map</div>
+        <h1>One public 14-layer architecture map.</h1>
+        <p class="lead">
+            This page is the canonical public-facing layer map for SCBE-AETHERMOORE. Older markdown architecture
+            files may still exist for history, but this is the page to use when you need one stable explanation.
+        </p>
+
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="./eval-pack.html">Open the eval pack</a>
+            <a class="btn btn-ghost" href="./null-space-signatures.html">Open null-space signatures</a>
+            <a class="btn btn-ghost" href="../redteam.html">See the red-team surface</a>
+        </div>
+
+        <section class="panel">
+            <div class="eyebrow">System thesis</div>
+            <p class="lead" style="margin-bottom:0;">
+                SCBE is a runtime governance layer. It does not wait until after execution to decide whether an
+                action was safe. It evaluates agent intent, semantic structure, session drift, and geometric distance
+                before allowing environment-facing work to proceed.
+            </p>
+        </section>
+
+        <section class="panel">
+            <div class="eyebrow">Canonical layer map</div>
+            <table>
+                <thead>
+                    <tr><th>Layer</th><th>Role</th><th>Public description</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>L1-L2</td><td>Context realification</td><td>Turn raw request/context into a stable semantic coordinate frame.</td></tr>
+                    <tr><td>L3-L4</td><td>Weighted transform and Poincare embedding</td><td>Map the request into the six-channel semantic space with weighted structure.</td></tr>
+                    <tr><td>L5</td><td>Hyperbolic distance</td><td>Measure drift from the safe operating center.</td></tr>
+                    <tr><td>L6-L7</td><td>Breathing and Mobius phase</td><td>Apply bounded conformal transforms and phase movement without destroying invariants.</td></tr>
+                    <tr><td>L8</td><td>Multi-well energy</td><td>Evaluate how strongly the request sits inside or outside trusted basins.</td></tr>
+                    <tr><td>L9-L10</td><td>Spectral and spin coherence</td><td>Check frequency-domain and channel-alignment consistency.</td></tr>
+                    <tr><td>L11</td><td>Triadic temporal distance</td><td>Track session-level escalation and repeated probing.</td></tr>
+                    <tr><td>L12</td><td>Harmonic wall</td><td>Convert unsafe drift into rapidly increasing cost.</td></tr>
+                    <tr><td>L13</td><td>Governance decision</td><td>Return <code>ALLOW</code>, <code>QUARANTINE</code>, <code>ESCALATE</code>, or <code>DENY</code>.</td></tr>
+                    <tr><td>L14</td><td>Audio telemetry</td><td>Emit decision-state telemetry for human or operator awareness.</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section class="grid">
+            <div class="card">
+                <h3>Hero mechanism</h3>
+                <p>Null-space signatures explain the system better than a long mythology stack. Start there when introducing SCBE to someone new.</p>
+            </div>
+            <div class="card">
+                <h3>Install story</h3>
+                <p>Lead with the package surface and the local eval path. Do not make first-contact readers absorb every research lane before they can test it.</p>
+            </div>
+            <div class="card">
+                <h3>Domain strategy</h3>
+                <p><code>aethermoorgames.com</code> is the primary public domain. GitHub Pages is the mirror surface for repo-hosted docs.</p>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

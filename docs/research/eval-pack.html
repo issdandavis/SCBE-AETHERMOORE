@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCBE Eval Pack</title>
+    <meta name="description" content="Canonical public evaluation pack for reproducing the current SCBE adversarial benchmark story.">
+    <link rel="canonical" href="https://aethermoorgames.com/research/eval-pack.html">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #07111d; color: #edf3ff; line-height: 1.7; }
+        a { color: inherit; text-decoration: none; }
+        .wrap { max-width: 1080px; margin: 0 auto; padding: 36px 24px 72px; }
+        .nav { display: flex; gap: 16px; flex-wrap: wrap; color: #a9b6d1; font-size: 14px; margin-bottom: 26px; }
+        .eyebrow { color: #87a0ff; text-transform: uppercase; letter-spacing: 0.16em; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+        h1 { font-size: clamp(34px, 6vw, 62px); line-height: 0.96; letter-spacing: -0.045em; margin-bottom: 16px; max-width: 820px; }
+        p.lead { color: #b5c0d9; max-width: 760px; margin-bottom: 26px; }
+        .panel { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 18px; padding: 24px; margin-bottom: 18px; }
+        code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+        pre { background: #0a1320; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 14px; padding: 18px; overflow-x: auto; color: #8ef0d6; margin-top: 12px; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .callout { border-left: 3px solid #8ef0d6; padding-left: 14px; color: #b9c5de; }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <div class="nav">
+            <a href="../index.html">Home</a>
+            <a href="./index.html">Research</a>
+            <a href="./architecture-overview.html">Architecture</a>
+            <a href="../redteam.html">Red Team</a>
+        </div>
+
+        <div class="eyebrow">Canonical public evaluation lane</div>
+        <h1>One eval pack. One reproducible path.</h1>
+        <p class="lead">
+            Use this page when you want to reproduce the current public benchmark story instead of relying on a table alone.
+            It points to one corpus, one local runner, one comparison script, and one manifest.
+        </p>
+
+        <section class="panel">
+            <div class="eyebrow">Commands</div>
+            <pre>pytest tests/adversarial/test_adversarial_benchmark.py -v
+python scripts/benchmark/scbe_vs_industry.py
+Get-Content artifacts\benchmark\industry_benchmark_report.json</pre>
+        </section>
+
+        <section class="panel">
+            <div class="eyebrow">Canonical files</div>
+            <ul>
+                <li><code>tests/adversarial/attack_corpus.py</code> - canonical red-team corpus source</li>
+                <li><code>tests/adversarial/test_adversarial_benchmark.py</code> - public corpus runner</li>
+                <li><code>scripts/benchmark/scbe_vs_industry.py</code> - comparison runner</li>
+                <li><code>docs/eval/manifest.json</code> - hashes, commands, and claim boundaries</li>
+                <li><code>docs/research/BENCHMARK_VERIFICATION_2026-03-23.md</code> - reproducibility note</li>
+            </ul>
+        </section>
+
+        <section class="panel">
+            <div class="eyebrow">What this page does not claim</div>
+            <p class="callout">
+                This eval pack supports reproducibility of the local public benchmark lane. It does not claim that every external
+                environment, model provider, or deployment surface will reproduce identical numbers without reading the command path,
+                dependencies, and artifact outputs.
+            </p>
+        </section>
+
+        <section class="panel">
+            <div class="eyebrow">Repo docs</div>
+            <ul>
+                <li><a href="../eval/README.md">Open the repo eval README</a></li>
+                <li><a href="../eval/manifest.json">Open the eval manifest</a></li>
+                <li><a href="./verification.html">Open the verification note</a></li>
+            </ul>
+        </section>
+    </main>
+</body>
+</html>
