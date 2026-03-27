@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>AetherBrowser</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./static/icons/icon-192.png">
+<meta name="theme-color" content="#071412">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+/* ============================================================
+   AetherBrowser Mobile V1 — PWA Shell
+   Theme: SCBE Demo Lab dark (--bg: #071412, --mint: #8fffd3)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #071412;
+  --bg-soft: #0d1d1a;
+  --panel: rgba(10, 28, 24, 0.88);
+  --panel-strong: rgba(8, 24, 20, 0.95);
+  --panel-hover: rgba(16, 40, 34, 0.92);
+  --line: rgba(139, 255, 223, 0.16);
+  --line-strong: rgba(139, 255, 223, 0.28);
+  --text: #e7fff7;
+  --muted: #9bc5ba;
+  --dim: #6b998c;
+  --mint: #8fffd3;
+  --aqua: #6dd8ff;
+  --gold: #ffd977;
+  --rose: #ff9ec7;
+  --red: #ff6b6b;
+  --orange: #ffb347;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --radius-xl: 24px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+
+  /* Trust tier colors */
+  --trust-core: #8fffd3;
+  --trust-trusted: #6dd8ff;
+  --trust-provisional: #ffd977;
+  --trust-unknown: #9bc5ba;
+  --trust-blocked: #ff6b6b;
+  --trust-quarantine: #ffb347;
+
+  /* Tongue colors */
+  --tongue-ko: #ff6b6b;
+  --tongue-av: #6dd8ff;
+  --tongue-ru: #ffd977;
+  --tongue-ca: #8fffd3;
+  --tongue-um: #c792ea;
+  --tongue-dr: #ff9ec7;
+
+  /* Safe area insets for mobile */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Grid background overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(143,255,211,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(143,255,211,0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at center, black 30%, transparent 90%);
+  opacity: 0.5;
+  z-index: 0;
+}
+
+/* ---- APP SHELL LAYOUT ---- */
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- HEADER BAR ---- */
+
+.header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 8px) 16px 8px;
+  background: var(--panel-strong);
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+  min-height: 52px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-logo {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--mint), var(--aqua));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--bg);
+}
+
+.header-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.header-title span {
+  color: var(--mint);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: rgba(143, 255, 211, 0.08);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.header-badge .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--mint);
+  animation: pulse-dot 2s ease infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ---- TAB CONTENT AREA ---- */
+
+.tab-content-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.tab-panel {
+  display: none;
+  padding: 16px;
+  min-height: 100%;
+  animation: fadeIn 0.2s ease;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- BOTTOM NAV (5 TABS) ---- */
+
+.bottom-nav {
+  display: flex;
+  background: var(--panel-strong);
+  border-top: 1px solid var(--line);
+  padding: 6px 8px calc(var(--safe-bottom) + 6px);
+  flex-shrink: 0;
+}
+
+.nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 4px;
+  border: none;
+  background: none;
+  color: var(--dim);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 0.15s, transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: var(--radius-sm);
+}
+
+.nav-tab:active {
+  transform: scale(0.92);
+}
+
+.nav-tab.active {
+  color: var(--mint);
+}
+
+.nav-tab .nav-icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-tab .nav-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav-tab.active .nav-icon {
+  background: rgba(143, 255, 211, 0.12);
+  border-radius: 6px;
+}
+
+/* ---- STATUS BAR (BOTTOM) ---- */
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 16px;
+  background: rgba(4, 10, 8, 0.95);
+  border-top: 1px solid rgba(139, 255, 223, 0.08);
+  font-size: 10px;
+  font-family: 'IBM Plex Mono', 'Consolas', monospace;
+  color: var(--dim);
+  flex-shrink: 0;
+}
+
+.status-bar .status-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status-bar .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* ---- SHARED CARD STYLES ---- */
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(12px);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.card-subtitle {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+
+/* ---- TRUST TIER BADGES ---- */
+
+.trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.trust-badge.core {
+  background: rgba(143, 255, 211, 0.12);
+  color: var(--trust-core);
+  border: 1px solid rgba(143, 255, 211, 0.3);
+}
+.trust-badge.trusted {
+  background: rgba(109, 216, 255, 0.12);
+  color: var(--trust-trusted);
+  border: 1px solid rgba(109, 216, 255, 0.3);
+}
+.trust-badge.provisional {
+  background: rgba(255, 217, 119, 0.12);
+  color: var(--trust-provisional);
+  border: 1px solid rgba(255, 217, 119, 0.3);
+}
+.trust-badge.unknown {
+  background: rgba(155, 197, 186, 0.12);
+  color: var(--trust-unknown);
+  border: 1px solid rgba(155, 197, 186, 0.3);
+}
+.trust-badge.blocked {
+  background: rgba(255, 107, 107, 0.12);
+  color: var(--trust-blocked);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+.trust-badge.quarantine {
+  background: rgba(255, 179, 71, 0.12);
+  color: var(--trust-quarantine);
+  border: 1px solid rgba(255, 179, 71, 0.3);
+}
+
+/* ---- FIBONACCI TRUST BADGES ---- */
+
+.fib-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.fib-badge.untrusted { background: rgba(255,107,107,0.15); color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
+.fib-badge.provisional { background: rgba(255,217,119,0.15); color: var(--gold); border: 1px solid rgba(255,217,119,0.3); }
+.fib-badge.trusted { background: rgba(109,216,255,0.15); color: var(--aqua); border: 1px solid rgba(109,216,255,0.3); }
+.fib-badge.core { background: rgba(143,255,211,0.15); color: var(--mint); border: 1px solid rgba(143,255,211,0.3); }
+
+/* ---- TONGUE INDICATOR PILLS ---- */
+
+.tongue-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tongue-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.04em;
+  opacity: 0.35;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.tongue-pill.active {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.tongue-pill.ko { background: rgba(255,107,107,0.15); color: var(--tongue-ko); border: 1px solid rgba(255,107,107,0.25); }
+.tongue-pill.av { background: rgba(109,216,255,0.15); color: var(--tongue-av); border: 1px solid rgba(109,216,255,0.25); }
+.tongue-pill.ru { background: rgba(255,217,119,0.15); color: var(--tongue-ru); border: 1px solid rgba(255,217,119,0.25); }
+.tongue-pill.ca { background: rgba(143,255,211,0.15); color: var(--tongue-ca); border: 1px solid rgba(143,255,211,0.25); }
+.tongue-pill.um { background: rgba(199,146,234,0.15); color: var(--tongue-um); border: 1px solid rgba(199,146,234,0.25); }
+.tongue-pill.dr { background: rgba(255,158,199,0.15); color: var(--tongue-dr); border: 1px solid rgba(255,158,199,0.25); }
+
+.tongue-pill .tongue-weight {
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+/* ---- BUTTONS ---- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--panel);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn:hover {
+  background: var(--panel-hover);
+  border-color: var(--line-strong);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, rgba(143,255,211,0.2), rgba(109,216,255,0.2));
+  border-color: rgba(143,255,211,0.3);
+  color: var(--mint);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, rgba(143,255,211,0.3), rgba(109,216,255,0.3));
+}
+
+.btn-danger {
+  background: rgba(255,107,107,0.1);
+  border-color: rgba(255,107,107,0.3);
+  color: var(--red);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* ---- INPUT FIELDS ---- */
+
+.input-field {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(4, 16, 12, 0.6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.input-field:focus {
+  border-color: var(--mint);
+}
+
+.input-field::placeholder {
+  color: var(--dim);
+}
+
+/* ---- STAT GRID ---- */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.stat-box {
+  background: rgba(4, 16, 12, 0.5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--mint);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+}
+
+/* ---- PROGRESS BAR ---- */
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(143, 255, 211, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* ---- LIST ITEMS ---- */
+
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: rgba(4, 16, 12, 0.4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.list-item:active {
+  background: var(--panel-hover);
+}
+
+.list-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.list-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.list-item-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.list-item-title {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-item-meta {
+  font-size: 11px;
+  color: var(--dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-item-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+/* ---- SCORE BADGE ---- */
+
+.score-badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.score-badge.pass { background: rgba(143,255,211,0.15); color: var(--mint); }
+.score-badge.fail { background: rgba(255,107,107,0.15); color: var(--red); }
+.score-badge.running { background: rgba(109,216,255,0.15); color: var(--aqua); }
+
+/* ---- CHAT MESSAGES ---- */
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chat-msg {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.chat-msg.user {
+  align-self: flex-end;
+  background: linear-gradient(135deg, rgba(143,255,211,0.2), rgba(109,216,255,0.15));
+  border: 1px solid rgba(143,255,211,0.2);
+  color: var(--text);
+}
+
+.chat-msg.assistant {
+  align-self: flex-start;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+.chat-msg .msg-meta {
+  font-size: 10px;
+  color: var(--dim);
+  margin-top: 4px;
+}
+
+.chat-input-area {
+  display: flex;
+  gap: 8px;
+  padding-top: 10px;
+}
+
+/* ---- OPS COMMAND GRID ---- */
+
+.ops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  gap: 10px;
+}
+
+.ops-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ops-btn:active {
+  transform: scale(0.95);
+}
+
+.ops-btn:hover {
+  background: var(--panel-hover);
+  border-color: var(--line-strong);
+}
+
+.ops-btn .ops-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.ops-btn .ops-label {
+  font-weight: 600;
+}
+
+.ops-btn .ops-timestamp {
+  font-size: 9px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--dim);
+}
+
+.ops-btn .ops-result {
+  font-size: 10px;
+  color: var(--muted);
+  min-height: 14px;
+}
+
+/* ---- WEBVIEW PLACEHOLDER ---- */
+
+.webview-frame {
+  width: 100%;
+  flex: 1;
+  min-height: 300px;
+  background: rgba(4, 16, 12, 0.4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--dim);
+  font-size: 13px;
+}
+
+.webview-frame .wv-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(143, 255, 211, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+/* ---- SEARCH BAR ---- */
+
+.search-bar {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.search-bar .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--dim);
+  font-size: 14px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 10px 14px 10px 36px;
+  background: rgba(4, 16, 12, 0.6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.search-bar input:focus {
+  border-color: var(--mint);
+}
+
+.search-bar input::placeholder {
+  color: var(--dim);
+}
+
+/* ---- SCROLLBAR ---- */
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(143,255,211,0.15); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(143,255,211,0.3); }
+
+/* ---- RESPONSIVE ---- */
+
+@media (max-width: 380px) {
+  .tab-panel { padding: 12px; }
+  .ops-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .header-badge { display: none; }
+}
+
+@media (min-width: 768px) {
+  .ops-grid { grid-template-columns: repeat(4, 1fr); }
+  .stat-grid { grid-template-columns: repeat(4, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ======== HEADER BAR ======== -->
+  <header class="header-bar">
+    <div class="header-brand">
+      <div class="header-logo">A</div>
+      <div class="header-title">Aether<span>Browser</span></div>
+    </div>
+    <div class="header-actions">
+      <div class="header-badge">
+        <span class="dot"></span>
+        <span id="headerConnectionStatus">Online</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======== TAB CONTENT AREA ======== -->
+  <div class="tab-content-area">
+
+    <!-- ============================================================
+         TAB 1: BROWSE
+         ============================================================ -->
+    <div class="tab-panel active" id="panelBrowse">
+
+      <!-- URL Bar -->
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <input class="input-field" id="browseUrlInput" type="url" placeholder="Enter URL or search..." style="flex:1; border-radius:24px; padding-left:18px;">
+        <button class="btn btn-primary" id="browseGoBtn" style="border-radius:24px; padding:10px 20px;">Go</button>
+      </div>
+
+      <!-- Trust Classification -->
+      <div class="card" id="browseTrustCard">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Page Trust</div>
+            <div class="card-subtitle" id="browseDomainLabel">Enter a URL to classify</div>
+          </div>
+          <span class="trust-badge unknown" id="browseTrustBadge">
+            <span id="browseTrustDot" style="width:6px;height:6px;border-radius:50%;background:currentColor;"></span>
+            <span id="browseTrustLevel">UNKNOWN</span>
+          </span>
+        </div>
+        <div class="progress-bar" style="margin-bottom:8px;">
+          <div class="progress-fill" id="browseTrustFill" style="width:0%; background:var(--trust-unknown);"></div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span class="card-badge" style="background:rgba(143,255,211,0.08); color:var(--muted); border:1px solid var(--line);" id="browseTierLabel">Tier: --</span>
+          <span class="card-badge" style="background:rgba(143,255,211,0.08); color:var(--muted); border:1px solid var(--line);" id="browseGovernanceLabel">Governance: Idle</span>
+        </div>
+      </div>
+
+      <!-- Quick Access Sites -->
+      <div class="section-label">Trusted Lanes</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+        <button class="btn btn-sm" onclick="AetherBrowser.navigateTo('https://github.com/issdandavis')">GitHub</button>
+        <button class="btn btn-sm" onclick="AetherBrowser.navigateTo('https://huggingface.co/issdandavis')">HuggingFace</button>
+        <button class="btn btn-sm" onclick="AetherBrowser.navigateTo('https://arxiv.org')">arXiv</button>
+        <button class="btn btn-sm" onclick="AetherBrowser.navigateTo('https://stripe.com/dashboard')">Stripe</button>
+        <button class="btn btn-sm" onclick="AetherBrowser.navigateTo('https://aethermore-works.myshopify.com')">Shopify</button>
+        <button class="btn btn-sm" onclick="AetherBrowser.navigateTo('https://notion.so')">Notion</button>
+      </div>
+
+      <!-- Webview Placeholder -->
+      <div class="webview-frame" id="browseWebview">
+        <div class="wv-icon">&#127760;</div>
+        <div>Webview renders here</div>
+        <div style="font-size:11px; color:var(--dim);">CDP/Capacitor bridge wired in V2</div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================
+         TAB 2: CHAT
+         ============================================================ -->
+    <div class="tab-panel" id="panelChat">
+
+      <!-- Model Selector -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Model</div>
+            <div class="card-subtitle">Select AI provider for this session</div>
+          </div>
+          <span class="fib-badge untrusted" id="chatFibBadge">FIB: 1</span>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn btn-sm model-select active" data-model="claude" onclick="AetherBrowser.selectModel(this)">Claude</button>
+          <button class="btn btn-sm model-select" data-model="gemini" onclick="AetherBrowser.selectModel(this)">Gemini</button>
+          <button class="btn btn-sm model-select" data-model="grok" onclick="AetherBrowser.selectModel(this)">Grok</button>
+          <button class="btn btn-sm model-select" data-model="local" onclick="AetherBrowser.selectModel(this)">Local</button>
+        </div>
+      </div>
+
+      <!-- Tongue Classification -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Sacred Tongue Activation</div>
+            <div class="card-subtitle">Dimension weights active in this conversation</div>
+          </div>
+        </div>
+        <div class="tongue-bar" id="chatTongueBar">
+          <span class="tongue-pill ko active" data-tongue="ko">KO <span class="tongue-weight">1.00</span></span>
+          <span class="tongue-pill av" data-tongue="av">AV <span class="tongue-weight">1.62</span></span>
+          <span class="tongue-pill ru" data-tongue="ru">RU <span class="tongue-weight">2.62</span></span>
+          <span class="tongue-pill ca" data-tongue="ca">CA <span class="tongue-weight">4.24</span></span>
+          <span class="tongue-pill um" data-tongue="um">UM <span class="tongue-weight">6.85</span></span>
+          <span class="tongue-pill dr" data-tongue="dr">DR <span class="tongue-weight">11.09</span></span>
+        </div>
+      </div>
+
+      <!-- Chat Messages -->
+      <div class="card" style="flex:1; display:flex; flex-direction:column; min-height:320px;">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-msg assistant">
+            I am ready. Select a model and ask anything. Every response is classified by Sacred Tongue dimension and scored for trust.
+            <div class="msg-meta">Claude -- KO active -- FIB 1</div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <input class="input-field" id="chatInput" type="text" placeholder="Ask anything..." style="flex:1; border-radius:24px; padding-left:18px;" onkeydown="if(event.key==='Enter')AetherBrowser.sendChat()">
+          <button class="btn btn-primary" onclick="AetherBrowser.sendChat()" style="border-radius:24px; padding:10px 18px;">Send</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================
+         TAB 3: ROOMS
+         ============================================================ -->
+    <div class="tab-panel" id="panelRooms">
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Red Team Sandbox</div>
+            <div class="card-subtitle">Adversarial testing and benchmark suites</div>
+          </div>
+          <span class="trust-badge quarantine">QUARANTINE</span>
+        </div>
+        <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">
+          Run benchmark suites against the 14-layer pipeline. All prompts are sandboxed. Results feed adversarial SFT pairs for training.
+        </p>
+        <button class="btn btn-danger btn-block" id="roomsRunBtn" onclick="AetherBrowser.runRedTeam()">
+          &#9888; Run Red Team Suite
+        </button>
+      </div>
+
+      <!-- Benchmark Suites -->
+      <div class="section-label">Benchmark Suites</div>
+
+      <div class="list-item" onclick="AetherBrowser.selectSuite('adversarial')">
+        <div class="list-item-left">
+          <div class="list-item-icon" style="background:rgba(255,107,107,0.15); color:var(--red);">&#128737;</div>
+          <div class="list-item-text">
+            <div class="list-item-title">Adversarial Benchmark</div>
+            <div class="list-item-meta">12 probes -- injection, jailbreak, exfil</div>
+          </div>
+        </div>
+        <div class="list-item-right">
+          <span class="score-badge pass" id="suiteScoreAdversarial">12/12</span>
+        </div>
+      </div>
+
+      <div class="list-item" onclick="AetherBrowser.selectSuite('null-space')">
+        <div class="list-item-left">
+          <div class="list-item-icon" style="background:rgba(199,146,234,0.15); color:var(--tongue-um);">&#9724;</div>
+          <div class="list-item-text">
+            <div class="list-item-title">Null-Space Detection</div>
+            <div class="list-item-meta">9 probes -- absence patterns, void seeds</div>
+          </div>
+        </div>
+        <div class="list-item-right">
+          <span class="score-badge pass" id="suiteScoreNullSpace">9/9</span>
+        </div>
+      </div>
+
+      <div class="list-item" onclick="AetherBrowser.selectSuite('hard-negatives')">
+        <div class="list-item-left">
+          <div class="list-item-icon" style="background:rgba(255,217,119,0.15); color:var(--gold);">&#9878;</div>
+          <div class="list-item-text">
+            <div class="list-item-title">Hard-Negative Benign</div>
+            <div class="list-item-meta">11 probes -- false positive reduction</div>
+          </div>
+        </div>
+        <div class="list-item-right">
+          <span class="score-badge pass" id="suiteScoreHardNeg">11/11</span>
+        </div>
+      </div>
+
+      <div class="list-item" onclick="AetherBrowser.selectSuite('phi-poincare')">
+        <div class="list-item-left">
+          <div class="list-item-icon" style="background:rgba(143,255,211,0.15); color:var(--mint);">&#966;</div>
+          <div class="list-item-text">
+            <div class="list-item-title">Phi-Poincare Edge Cases</div>
+            <div class="list-item-meta">35 probes -- boundary math validation</div>
+          </div>
+        </div>
+        <div class="list-item-right">
+          <span class="score-badge pass" id="suiteScorePhiPoincare">35/35</span>
+        </div>
+      </div>
+
+      <div class="list-item" onclick="AetherBrowser.selectSuite('golden-vectors')">
+        <div class="list-item-left">
+          <div class="list-item-icon" style="background:rgba(109,216,255,0.15); color:var(--aqua);">&#8623;</div>
+          <div class="list-item-text">
+            <div class="list-item-title">Golden Vector Parity</div>
+            <div class="list-item-meta">48 probes -- TS/Python cross-language checks</div>
+          </div>
+        </div>
+        <div class="list-item-right">
+          <span class="score-badge pass" id="suiteScoreGoldenVec">48/48</span>
+        </div>
+      </div>
+
+      <!-- Run Log -->
+      <div class="card" style="margin-top:12px;">
+        <div class="card-header">
+          <div class="card-title">Run Log</div>
+          <span class="card-badge" style="background:rgba(143,255,211,0.08); color:var(--mint); border:1px solid var(--line);" id="roomsTotalScore">189/189 PASS</span>
+        </div>
+        <div id="roomsRunLog" style="max-height:180px; overflow-y:auto; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); line-height:1.6;">
+          <div style="color:var(--dim);">No runs yet. Press "Run Red Team Suite" to begin.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================
+         TAB 4: VAULT
+         ============================================================ -->
+    <div class="tab-panel" id="panelVault">
+
+      <!-- Vault Stats -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Knowledge Graph</div>
+            <div class="card-subtitle">Obsidian vault + SFT pipeline</div>
+          </div>
+          <span class="trust-badge core">CORE</span>
+        </div>
+        <div class="stat-grid" style="margin-top:8px;">
+          <div class="stat-box">
+            <div class="stat-value" id="vaultNoteCount">758</div>
+            <div class="stat-label">Notes</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="vaultEdgeCount">4,660</div>
+            <div class="stat-label">Edges</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="vaultSftCount">389</div>
+            <div class="stat-label">SFT Pairs</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="vaultTongueCount">6</div>
+            <div class="stat-label">Tongues</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vault Search -->
+      <div class="search-bar">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" id="vaultSearchInput" placeholder="Search vault notes..." onkeydown="if(event.key==='Enter')AetherBrowser.searchVault()">
+      </div>
+
+      <!-- Tongue Distribution -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:10px;">Tongue Distribution</div>
+        <div id="vaultTongueChart">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+            <span style="width:24px; font-size:11px; font-weight:600; color:var(--tongue-ko);">KO</span>
+            <div class="progress-bar" style="flex:1;"><div class="progress-fill" style="width:31%; background:var(--tongue-ko);"></div></div>
+            <span style="font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--muted); width:40px; text-align:right;">31%</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+            <span style="width:24px; font-size:11px; font-weight:600; color:var(--tongue-av);">AV</span>
+            <div class="progress-bar" style="flex:1;"><div class="progress-fill" style="width:22%; background:var(--tongue-av);"></div></div>
+            <span style="font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--muted); width:40px; text-align:right;">22%</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+            <span style="width:24px; font-size:11px; font-weight:600; color:var(--tongue-ru);">RU</span>
+            <div class="progress-bar" style="flex:1;"><div class="progress-fill" style="width:16%; background:var(--tongue-ru);"></div></div>
+            <span style="font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--muted); width:40px; text-align:right;">16%</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+            <span style="width:24px; font-size:11px; font-weight:600; color:var(--tongue-ca);">CA</span>
+            <div class="progress-bar" style="flex:1;"><div class="progress-fill" style="width:14%; background:var(--tongue-ca);"></div></div>
+            <span style="font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--muted); width:40px; text-align:right;">14%</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+            <span style="width:24px; font-size:11px; font-weight:600; color:var(--tongue-um);">UM</span>
+            <div class="progress-bar" style="flex:1;"><div class="progress-fill" style="width:10%; background:var(--tongue-um);"></div></div>
+            <span style="font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--muted); width:40px; text-align:right;">10%</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="width:24px; font-size:11px; font-weight:600; color:var(--tongue-dr);">DR</span>
+            <div class="progress-bar" style="flex:1;"><div class="progress-fill" style="width:7%; background:var(--tongue-dr);"></div></div>
+            <span style="font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--muted); width:40px; text-align:right;">7%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Results / Recent Notes -->
+      <div class="section-label">Recent Vault Notes</div>
+      <div id="vaultResults">
+        <div class="list-item">
+          <div class="list-item-left">
+            <div class="list-item-icon" style="background:rgba(143,255,211,0.12); color:var(--mint);">&#128196;</div>
+            <div class="list-item-text">
+              <div class="list-item-title">Sacred Vault v3 Architecture</div>
+              <div class="list-item-meta">Argon2id + XChaCha20 -- 57 secrets sealed</div>
+            </div>
+          </div>
+          <div class="list-item-right"><span class="tongue-pill ca active" style="font-size:9px;">CA</span></div>
+        </div>
+        <div class="list-item">
+          <div class="list-item-left">
+            <div class="list-item-icon" style="background:rgba(109,216,255,0.12); color:var(--aqua);">&#128196;</div>
+            <div class="list-item-text">
+              <div class="list-item-title">Apollo Email Triage Pipeline</div>
+              <div class="list-item-meta">ProtonMail + Gmail classified -- 100 SFT pairs</div>
+            </div>
+          </div>
+          <div class="list-item-right"><span class="tongue-pill av active" style="font-size:9px;">AV</span></div>
+        </div>
+        <div class="list-item">
+          <div class="list-item-left">
+            <div class="list-item-icon" style="background:rgba(255,107,107,0.12); color:var(--red);">&#128196;</div>
+            <div class="list-item-text">
+              <div class="list-item-title">Kael Nightwhisper Analysis</div>
+              <div class="list-item-meta">3 versions -- Young, Erased, Void Seed</div>
+            </div>
+          </div>
+          <div class="list-item-right"><span class="tongue-pill ko active" style="font-size:9px;">KO</span></div>
+        </div>
+        <div class="list-item">
+          <div class="list-item-left">
+            <div class="list-item-icon" style="background:rgba(255,217,119,0.12); color:var(--gold);">&#128196;</div>
+            <div class="list-item-text">
+              <div class="list-item-title">14-Layer Pipeline Spec</div>
+              <div class="list-item-meta">L1-L14 complete -- 5 axioms mapped</div>
+            </div>
+          </div>
+          <div class="list-item-right"><span class="tongue-pill ru active" style="font-size:9px;">RU</span></div>
+        </div>
+      </div>
+
+      <!-- Recent SFT Pairs -->
+      <div class="card" style="margin-top:12px;">
+        <div class="card-header">
+          <div class="card-title">Recent SFT Pairs</div>
+          <span class="card-badge" style="background:rgba(143,255,211,0.08); color:var(--mint); border:1px solid var(--line);">389 total</span>
+        </div>
+        <div id="vaultSftList" style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); line-height:1.7;">
+          <div>&#9679; email_triage_sft.jsonl <span style="color:var(--dim);">-- 100 pairs</span></div>
+          <div>&#9679; obsidian_vault_sft.jsonl <span style="color:var(--dim);">-- 161 pairs</span></div>
+          <div>&#9679; copilot_replacement_sft.jsonl <span style="color:var(--dim);">-- 25 pairs</span></div>
+          <div>&#9679; security_deep_sft.jsonl <span style="color:var(--dim);">-- 20 pairs</span></div>
+          <div>&#9679; null_space_confidence_sft.jsonl <span style="color:var(--dim);">-- 18 pairs</span></div>
+          <div>&#9679; phi_poincare_sft.jsonl <span style="color:var(--dim);">-- 15 pairs</span></div>
+          <div>&#9679; youtube_transcripts_sft.jsonl <span style="color:var(--dim);">-- 13 pairs</span></div>
+          <div>&#9679; tor_sweep_sft.jsonl <span style="color:var(--dim);">-- 12 pairs</span></div>
+          <div>&#9679; tax_bot_sft.jsonl <span style="color:var(--dim);">-- 12 pairs</span></div>
+          <div>&#9679; own_channel_sft.jsonl <span style="color:var(--dim);">-- 9 pairs</span></div>
+          <div>&#9679; field_trip_sft.jsonl <span style="color:var(--dim);">-- 4 pairs</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================
+         TAB 5: OPS
+         ============================================================ -->
+    <div class="tab-panel" id="panelOps">
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Command Center</div>
+            <div class="card-subtitle">Operational commands -- backend wired in V2</div>
+          </div>
+          <span class="trust-badge core">OWNER</span>
+        </div>
+      </div>
+
+      <div class="ops-grid" id="opsGrid">
+
+        <button class="ops-btn" onclick="AetherBrowser.runOps('email')">
+          <div class="ops-icon" style="background:rgba(109,216,255,0.12); color:var(--aqua);">&#9993;</div>
+          <div class="ops-label">Check Email</div>
+          <div class="ops-result" id="opsResultEmail">--</div>
+          <div class="ops-timestamp" id="opsTimeEmail">never</div>
+        </button>
+
+        <button class="ops-btn" onclick="AetherBrowser.runOps('youtube')">
+          <div class="ops-icon" style="background:rgba(255,107,107,0.12); color:var(--red);">&#9654;</div>
+          <div class="ops-label">YouTube Review</div>
+          <div class="ops-result" id="opsResultYoutube">--</div>
+          <div class="ops-timestamp" id="opsTimeYoutube">never</div>
+        </button>
+
+        <button class="ops-btn" onclick="AetherBrowser.runOps('tor')">
+          <div class="ops-icon" style="background:rgba(199,146,234,0.12); color:var(--tongue-um);">&#128373;</div>
+          <div class="ops-label">Tor Sweep</div>
+          <div class="ops-result" id="opsResultTor">--</div>
+          <div class="ops-timestamp" id="opsTimeTor">never</div>
+        </button>
+
+        <button class="ops-btn" onclick="AetherBrowser.runOps('vault')">
+          <div class="ops-icon" style="background:rgba(143,255,211,0.12); color:var(--mint);">&#128274;</div>
+          <div class="ops-label">Vault Sync</div>
+          <div class="ops-result" id="opsResultVault">--</div>
+          <div class="ops-timestamp" id="opsTimeVault">never</div>
+        </button>
+
+        <button class="ops-btn" onclick="AetherBrowser.runOps('tests')">
+          <div class="ops-icon" style="background:rgba(255,217,119,0.12); color:var(--gold);">&#10003;</div>
+          <div class="ops-label">Run Tests</div>
+          <div class="ops-result" id="opsResultTests">--</div>
+          <div class="ops-timestamp" id="opsTimeTests">never</div>
+        </button>
+
+        <button class="ops-btn" onclick="AetherBrowser.runOps('git')">
+          <div class="ops-icon" style="background:rgba(255,158,199,0.12); color:var(--rose);">&#128193;</div>
+          <div class="ops-label">Git Status</div>
+          <div class="ops-result" id="opsResultGit">--</div>
+          <div class="ops-timestamp" id="opsTimeGit">never</div>
+        </button>
+
+        <button class="ops-btn" onclick="AetherBrowser.runOps('revenue')">
+          <div class="ops-icon" style="background:rgba(143,255,211,0.15); color:var(--mint);">&#36;</div>
+          <div class="ops-label">Revenue Check</div>
+          <div class="ops-result" id="opsResultRevenue">--</div>
+          <div class="ops-timestamp" id="opsTimeRevenue">never</div>
+        </button>
+
+      </div>
+
+      <!-- Ops Log -->
+      <div class="card" style="margin-top:12px;">
+        <div class="card-header">
+          <div class="card-title">Operations Log</div>
+          <button class="btn btn-sm" onclick="AetherBrowser.clearOpsLog()">Clear</button>
+        </div>
+        <div id="opsLog" style="max-height:240px; overflow-y:auto; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); line-height:1.7;">
+          <div style="color:var(--dim);">Waiting for commands...</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /tab-content-area -->
+
+  <!-- ======== STATUS BAR ======== -->
+  <div class="status-bar" id="statusBar">
+    <div class="status-item">
+      <span class="status-dot" id="statusTrustDot" style="background:var(--trust-unknown);"></span>
+      <span id="statusTrustLabel">UNKNOWN</span>
+    </div>
+    <div class="status-item">
+      <span id="statusTongueLabel" style="color:var(--tongue-ko);">KO</span>
+    </div>
+    <div class="status-item">
+      <span class="status-dot" id="statusConnDot" style="background:var(--mint);"></span>
+      <span id="statusConnLabel">Connected</span>
+    </div>
+  </div>
+
+  <!-- ======== BOTTOM NAVIGATION ======== -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-tab active" data-tab="panelBrowse" onclick="AetherBrowser.switchTab(this)">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </span>
+      BROWSE
+    </button>
+    <button class="nav-tab" data-tab="panelChat" onclick="AetherBrowser.switchTab(this)">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </span>
+      CHAT
+    </button>
+    <button class="nav-tab" data-tab="panelRooms" onclick="AetherBrowser.switchTab(this)">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </span>
+      ROOMS
+    </button>
+    <button class="nav-tab" data-tab="panelVault" onclick="AetherBrowser.switchTab(this)">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </span>
+      VAULT
+    </button>
+    <button class="nav-tab" data-tab="panelOps" onclick="AetherBrowser.switchTab(this)">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </span>
+      OPS
+    </button>
+  </nav>
+
+</div><!-- /app-shell -->
+
+<script>
+/* ============================================================
+   AetherBrowser Mobile V1 — Controller
+   PWA shell logic. Backend calls are stubbed for V2 wiring.
+   ============================================================ */
+
+window.AetherBrowser = (function() {
+  'use strict';
+
+  // ---- Trusted sites registry (from config/security/trusted_external_sites.json) ----
+  const TRUST_REGISTRY = {
+    CORE: [
+      'uspto.gov','patentcenter.uspto.gov','nist.gov','nvd.nist.gov','csrc.nist.gov',
+      'cisa.gov','cisa.dhs.gov','dhs.gov','congress.gov','govinfo.gov','irs.gov',
+      'sec.gov','ftc.gov','whitehouse.gov','data.gov','nasa.gov','energy.gov',
+      'defense.gov','state.gov','justice.gov','fbi.gov','uscourts.gov','loc.gov',
+      'arxiv.org','scholar.google.com','semanticscholar.org','pubmed.ncbi.nlm.nih.gov',
+      'doi.org','zenodo.org','orcid.org','ieee.org','acm.org','nature.com',
+      'science.org','pnas.org','jstor.org','springer.com','wiley.com','elsevier.com',
+      'biorxiv.org','medrxiv.org','ssrn.com','researchgate.net',
+      'mitre.org','attack.mitre.org','cve.org','cve.mitre.org','owasp.org',
+      'sans.org','first.org','cert.org','us-cert.gov','iso.org','ietf.org',
+      'w3.org','rfc-editor.org',
+      'aethermoorgames.com','issdandavis.github.io'
+    ],
+    TRUSTED: [
+      'github.com','api.github.com','raw.githubusercontent.com','huggingface.co',
+      'pypi.org','npmjs.org','registry.npmjs.org','crates.io','docs.rs',
+      'developer.mozilla.org','stackoverflow.com','docs.python.org','nodejs.org',
+      'typescriptlang.org','rust-lang.org','docs.docker.com','kubernetes.io',
+      'stripe.com','api.stripe.com','shopify.com','aethermore-works.myshopify.com',
+      'notion.so','api.notion.com','airtable.com','api.airtable.com','slack.com',
+      'discord.com','vercel.com','netlify.com','firebase.google.com',
+      'cloud.google.com','aws.amazon.com','protonmail.com','proton.me',
+      'openai.com','api.openai.com','anthropic.com','api.anthropic.com',
+      'deepmind.google','ai.google.dev','generativelanguage.googleapis.com',
+      'api.x.ai','ollama.com','replicate.com','wandb.ai','kaggle.com',
+      'tensorflow.org','pytorch.org'
+    ],
+    PROVISIONAL: [
+      'bsky.app','bsky.social','twitter.com','x.com','linkedin.com','medium.com',
+      'dev.to','reddit.com','lesswrong.com','substack.com','youtube.com',
+      'gumroad.com','amazon.com','kdp.amazon.com'
+    ],
+    BLOCKED_PATTERNS: ['*.ru.com','*.tk','*.ml','*.ga','*.cf','pastebin.com','paste.ee','hastebin.com']
+  };
+
+  // ---- State ----
+  const state = {
+    activeTab: 'panelBrowse',
+    currentModel: 'claude',
+    fibTrust: 1,
+    fibSequence: [1, 1, 2, 3, 5, 8, 13, 21],
+    fibIndex: 0,
+    activeTongues: ['ko'],
+    chatHistory: [],
+    currentUrl: '',
+    currentTrust: 'unknown',
+    opsResults: {},
+    selectedSuite: null,
+    connectionStatus: 'online'
+  };
+
+  // ---- Tab Switching ----
+  function switchTab(el) {
+    const tabId = el.dataset.tab;
+    // Deactivate all
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    // Activate target
+    document.getElementById(tabId).classList.add('active');
+    el.classList.add('active');
+    state.activeTab = tabId;
+  }
+
+  // ---- BROWSE: Trust Classification ----
+  function classifyUrl(urlStr) {
+    try {
+      let url = urlStr;
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+      }
+      const hostname = new URL(url).hostname;
+      const domain = hostname.replace(/^www\./, '');
+
+      // Check blocked patterns
+      for (const pat of TRUST_REGISTRY.BLOCKED_PATTERNS) {
+        const suffix = pat.replace('*', '');
+        if (domain.endsWith(suffix) || domain === pat) {
+          return { level: 'BLOCKED', tier: 'BLOCKED', domain: domain, color: 'blocked', fill: 0 };
+        }
+      }
+
+      // Check onion
+      if (domain.endsWith('.onion')) {
+        return { level: 'QUARANTINE', tier: 'DARK_WEB', domain: domain, color: 'quarantine', fill: 25 };
+      }
+
+      // Check CORE
+      for (const d of TRUST_REGISTRY.CORE) {
+        if (domain === d || domain.endsWith('.' + d)) {
+          return { level: 'CORE', tier: 'CORE', domain: domain, color: 'core', fill: 100 };
+        }
+      }
+
+      // Check TRUSTED
+      for (const d of TRUST_REGISTRY.TRUSTED) {
+        if (domain === d || domain.endsWith('.' + d)) {
+          return { level: 'TRUSTED', tier: 'TRUSTED', domain: domain, color: 'trusted', fill: 75 };
+        }
+      }
+
+      // Check PROVISIONAL
+      for (const d of TRUST_REGISTRY.PROVISIONAL) {
+        if (domain === d || domain.endsWith('.' + d)) {
+          return { level: 'PROVISIONAL', tier: 'PROVISIONAL', domain: domain, color: 'provisional', fill: 50 };
+        }
+      }
+
+      return { level: 'UNKNOWN', tier: 'UNKNOWN', domain: domain, color: 'unknown', fill: 10 };
+    } catch (e) {
+      return { level: 'UNKNOWN', tier: 'UNKNOWN', domain: urlStr, color: 'unknown', fill: 0 };
+    }
+  }
+
+  function navigateTo(url) {
+    const input = document.getElementById('browseUrlInput');
+    input.value = url;
+    handleBrowseGo();
+  }
+
+  function handleBrowseGo() {
+    const input = document.getElementById('browseUrlInput');
+    const url = input.value.trim();
+    if (!url) return;
+
+    const result = classifyUrl(url);
+    state.currentUrl = url;
+    state.currentTrust = result.level;
+
+    // Update trust card
+    document.getElementById('browseDomainLabel').textContent = result.domain;
+    const badge = document.getElementById('browseTrustBadge');
+    badge.className = 'trust-badge ' + result.color;
+    document.getElementById('browseTrustLevel').textContent = result.level;
+    document.getElementById('browseTrustFill').style.width = result.fill + '%';
+    document.getElementById('browseTrustFill').style.background = 'var(--trust-' + result.color + ')';
+    document.getElementById('browseTierLabel').textContent = 'Tier: ' + result.tier;
+
+    // Governance label
+    const govLabel = document.getElementById('browseGovernanceLabel');
+    if (result.level === 'BLOCKED') {
+      govLabel.textContent = 'Governance: DENY';
+      govLabel.style.color = 'var(--red)';
+    } else if (result.level === 'QUARANTINE') {
+      govLabel.textContent = 'Governance: ESCALATE';
+      govLabel.style.color = 'var(--orange)';
+    } else if (result.level === 'UNKNOWN') {
+      govLabel.textContent = 'Governance: QUARANTINE';
+      govLabel.style.color = 'var(--gold)';
+    } else {
+      govLabel.textContent = 'Governance: ALLOW';
+      govLabel.style.color = 'var(--mint)';
+    }
+
+    // Update webview placeholder
+    const wv = document.getElementById('browseWebview');
+    if (result.level === 'BLOCKED') {
+      wv.innerHTML = '<div class="wv-icon" style="background:rgba(255,107,107,0.15);">&#128683;</div><div style="color:var(--red);">BLOCKED: ' + result.domain + '</div><div style="font-size:11px; color:var(--dim);">This domain is in the block list. Navigation denied.</div>';
+    } else {
+      wv.innerHTML = '<div class="wv-icon">&#127760;</div><div>Loading: ' + result.domain + '</div><div style="font-size:11px; color:var(--dim);">Trust: ' + result.level + ' -- CDP bridge wired in V2</div>';
+    }
+
+    // Update status bar
+    updateStatusBar(result.level);
+  }
+
+  function updateStatusBar(trustLevel) {
+    const dot = document.getElementById('statusTrustDot');
+    const label = document.getElementById('statusTrustLabel');
+    const colorMap = { CORE: '--trust-core', TRUSTED: '--trust-trusted', PROVISIONAL: '--trust-provisional', UNKNOWN: '--trust-unknown', BLOCKED: '--trust-blocked', QUARANTINE: '--trust-quarantine' };
+    const cssVar = colorMap[trustLevel] || '--trust-unknown';
+    dot.style.background = 'var(' + cssVar + ')';
+    label.textContent = trustLevel || 'UNKNOWN';
+  }
+
+  // ---- CHAT: Model Selection ----
+  function selectModel(el) {
+    document.querySelectorAll('.model-select').forEach(b => {
+      b.classList.remove('active');
+      b.style.background = '';
+      b.style.borderColor = '';
+      b.style.color = '';
+    });
+    el.classList.add('active');
+    el.style.background = 'linear-gradient(135deg, rgba(143,255,211,0.2), rgba(109,216,255,0.2))';
+    el.style.borderColor = 'rgba(143,255,211,0.3)';
+    el.style.color = 'var(--mint)';
+    state.currentModel = el.dataset.model;
+  }
+
+  // ---- CHAT: Fibonacci Trust ----
+  function advanceFibTrust() {
+    if (state.fibIndex < state.fibSequence.length - 1) {
+      state.fibIndex++;
+    }
+    state.fibTrust = state.fibSequence[state.fibIndex];
+    const badge = document.getElementById('chatFibBadge');
+    badge.textContent = 'FIB: ' + state.fibTrust;
+
+    // Update badge class based on trust level
+    badge.className = 'fib-badge ';
+    if (state.fibTrust <= 1) badge.className += 'untrusted';
+    else if (state.fibTrust <= 3) badge.className += 'provisional';
+    else if (state.fibTrust <= 8) badge.className += 'trusted';
+    else badge.className += 'core';
+  }
+
+  // ---- CHAT: Tongue Classification ----
+  function classifyTongues(text) {
+    // Lightweight heuristic tongue classifier
+    // Real classification uses the 16x16 token grids; this is a PWA stub
+    const tongues = [];
+    const lower = text.toLowerCase();
+
+    // KO: Intent/Control -- questions, commands, directives
+    if (/\b(what|how|why|do|run|make|build|tell|show|find|get|set|start|stop)\b/.test(lower)) tongues.push('ko');
+
+    // AV: Context/Metadata -- references, about, context, describe
+    if (/\b(about|context|describe|explain|history|background|metadata|info)\b/.test(lower)) tongues.push('av');
+
+    // RU: Binding/Witness -- prove, verify, confirm, sign, witness, attest
+    if (/\b(prove|verify|confirm|sign|witness|attest|check|test|validate|assert)\b/.test(lower)) tongues.push('ru');
+
+    // CA: Compute/Crypto -- encrypt, hash, calculate, compute, key, token
+    if (/\b(encrypt|hash|calculate|compute|key|token|crypto|cipher|math|formula)\b/.test(lower)) tongues.push('ca');
+
+    // UM: Security/Redaction -- block, deny, redact, scan, quarantine, threat
+    if (/\b(block|deny|redact|scan|quarantine|threat|secure|protect|guard|firewall)\b/.test(lower)) tongues.push('um');
+
+    // DR: Structure/Schema -- schema|struct|format|template|define|type|interface
+    if (/\b(schema|struct|format|template|define|type|interface|model|shape|layout)\b/.test(lower)) tongues.push('dr');
+
+    // Default to KO if nothing matched
+    if (tongues.length === 0) tongues.push('ko');
+    return tongues;
+  }
+
+  function updateTongueBar(activeTongues) {
+    state.activeTongues = activeTongues;
+    document.querySelectorAll('.tongue-pill').forEach(pill => {
+      const tongue = pill.dataset.tongue;
+      if (activeTongues.includes(tongue)) {
+        pill.classList.add('active');
+      } else {
+        pill.classList.remove('active');
+      }
+    });
+    // Update status bar tongue
+    const primary = activeTongues[0] || 'ko';
+    const tongueLabel = document.getElementById('statusTongueLabel');
+    tongueLabel.textContent = primary.toUpperCase();
+    tongueLabel.style.color = 'var(--tongue-' + primary + ')';
+  }
+
+  // ---- CHAT: Send Message ----
+  function sendChat() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+
+    // Classify tongues
+    const tongues = classifyTongues(text);
+    updateTongueBar(tongues);
+
+    // Add user message
+    const messages = document.getElementById('chatMessages');
+    const userMsg = document.createElement('div');
+    userMsg.className = 'chat-msg user';
+    userMsg.innerHTML = text + '<div class="msg-meta">' + tongues.map(t => t.toUpperCase()).join('+') + '</div>';
+    messages.appendChild(userMsg);
+
+    // Advance fibonacci trust
+    advanceFibTrust();
+
+    // Simulate assistant response (stub for backend wiring)
+    setTimeout(function() {
+      const assistantMsg = document.createElement('div');
+      assistantMsg.className = 'chat-msg assistant';
+
+      const modelName = state.currentModel.charAt(0).toUpperCase() + state.currentModel.slice(1);
+      const tongueStr = tongues.map(t => t.toUpperCase()).join('+');
+
+      assistantMsg.innerHTML = '[' + modelName + ' stub] Backend not connected yet. Wire the ' + modelName + ' API endpoint in V2 to get real responses. Tongue classification: ' + tongueStr + ', Fibonacci trust: ' + state.fibTrust + '.'
+        + '<div class="msg-meta">' + modelName + ' -- ' + tongueStr + ' -- FIB ' + state.fibTrust + '</div>';
+      messages.appendChild(assistantMsg);
+
+      // Scroll to bottom
+      messages.scrollTop = messages.scrollHeight;
+    }, 300);
+
+    messages.scrollTop = messages.scrollHeight;
+
+    // Store in history
+    state.chatHistory.push({ role: 'user', content: text, tongues: tongues, model: state.currentModel, fib: state.fibTrust });
+  }
+
+  // ---- ROOMS: Red Team ----
+  function selectSuite(name) {
+    state.selectedSuite = name;
+    // Highlight selected
+    document.querySelectorAll('#panelRooms .list-item').forEach(item => {
+      item.style.borderColor = '';
+    });
+    event.currentTarget.style.borderColor = 'var(--mint)';
+  }
+
+  function runRedTeam() {
+    const btn = document.getElementById('roomsRunBtn');
+    const log = document.getElementById('roomsRunLog');
+
+    btn.textContent = 'Running...';
+    btn.disabled = true;
+
+    const suites = [
+      { name: 'Adversarial Benchmark', probes: 12, id: 'adversarial', el: 'suiteScoreAdversarial' },
+      { name: 'Null-Space Detection', probes: 9, id: 'null-space', el: 'suiteScoreNullSpace' },
+      { name: 'Hard-Negative Benign', probes: 11, id: 'hard-negatives', el: 'suiteScoreHardNeg' },
+      { name: 'Phi-Poincare Edge Cases', probes: 35, id: 'phi-poincare', el: 'suiteScorePhiPoincare' },
+      { name: 'Golden Vector Parity', probes: 48, id: 'golden-vectors', el: 'suiteScoreGoldenVec' }
+    ];
+
+    log.innerHTML = '';
+    let totalPass = 0;
+    let totalProbes = 0;
+    let delay = 0;
+
+    suites.forEach(function(suite, idx) {
+      delay += 400 + Math.random() * 300;
+      setTimeout(function() {
+        // Simulate run -- in V2 this calls pytest or the adversarial harness
+        const pass = suite.probes - Math.floor(Math.random() * 2); // 0 or 1 failure possible
+        totalPass += pass;
+        totalProbes += suite.probes;
+
+        const passed = pass === suite.probes;
+        const scoreEl = document.getElementById(suite.el);
+        scoreEl.textContent = pass + '/' + suite.probes;
+        scoreEl.className = 'score-badge ' + (passed ? 'pass' : 'fail');
+
+        const line = document.createElement('div');
+        const ts = new Date().toLocaleTimeString();
+        line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> ' + suite.name + ': <span style="color:var(--' + (passed ? 'mint' : 'red') + ');">' + pass + '/' + suite.probes + (passed ? ' PASS' : ' FAIL') + '</span>';
+        log.appendChild(line);
+        log.scrollTop = log.scrollHeight;
+
+        // Last suite
+        if (idx === suites.length - 1) {
+          btn.innerHTML = '&#9888; Run Red Team Suite';
+          btn.disabled = false;
+          document.getElementById('roomsTotalScore').textContent = totalPass + '/' + totalProbes + (totalPass === totalProbes ? ' PASS' : ' PARTIAL');
+
+          const summary = document.createElement('div');
+          summary.innerHTML = '<span style="color:var(--aqua);">[' + new Date().toLocaleTimeString() + '] COMPLETE: ' + totalPass + '/' + totalProbes + ' total</span>';
+          log.appendChild(summary);
+        }
+      }, delay);
+    });
+  }
+
+  // ---- VAULT: Search ----
+  function searchVault() {
+    const query = document.getElementById('vaultSearchInput').value.trim();
+    if (!query) return;
+
+    const results = document.getElementById('vaultResults');
+    // Stub: in V2, this calls the lore RAG index (artifacts/lore_rag/world_anvil_lore.sqlite)
+    results.innerHTML = '<div class="list-item"><div class="list-item-left"><div class="list-item-icon" style="background:rgba(109,216,255,0.12); color:var(--aqua);">&#128269;</div><div class="list-item-text"><div class="list-item-title">Search: "' + query + '"</div><div class="list-item-meta">Backend not connected -- wire query_lore_index.py in V2</div></div></div></div>';
+  }
+
+  // ---- OPS: Run Command ----
+  function runOps(command) {
+    const ts = new Date().toLocaleTimeString();
+    const resultEl = document.getElementById('opsResult' + command.charAt(0).toUpperCase() + command.slice(1));
+    const timeEl = document.getElementById('opsTime' + command.charAt(0).toUpperCase() + command.slice(1));
+    const log = document.getElementById('opsLog');
+
+    // Clear placeholder
+    if (log.querySelector('[style*="color:var(--dim)"]') && log.children.length === 1) {
+      log.innerHTML = '';
+    }
+
+    // Simulate running
+    resultEl.textContent = 'Running...';
+    resultEl.style.color = 'var(--aqua)';
+    timeEl.textContent = ts;
+
+    const stubs = {
+      email: { result: '3 new, 0 urgent', script: 'scripts/apollo/email_reader.py' },
+      youtube: { result: '2 videos reviewed', script: 'scripts/apollo/video_review.py' },
+      tor: { result: '0 threats found', script: 'scripts/apollo/tor_sweeper.py' },
+      vault: { result: '758 notes synced', script: 'scripts/apollo/obsidian_vault_sync.py' },
+      tests: { result: '189/189 pass', script: 'python -m pytest tests/ -v' },
+      git: { result: 'fix/eslint-unused-vars-bulk', script: 'git status' },
+      revenue: { result: '$97.74 pending', script: 'stripe balance' }
+    };
+
+    const stub = stubs[command] || { result: 'Done', script: command };
+
+    setTimeout(function() {
+      resultEl.textContent = stub.result;
+      resultEl.style.color = 'var(--mint)';
+
+      const line = document.createElement('div');
+      line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> <span style="color:var(--aqua);">' + command.toUpperCase() + '</span>: ' + stub.result + ' <span style="color:var(--dim);">(' + stub.script + ')</span>';
+      log.appendChild(line);
+      log.scrollTop = log.scrollHeight;
+
+      state.opsResults[command] = { result: stub.result, time: ts };
+    }, 600 + Math.random() * 400);
+  }
+
+  function clearOpsLog() {
+    document.getElementById('opsLog').innerHTML = '<div style="color:var(--dim);">Waiting for commands...</div>';
+  }
+
+  // ---- Init ----
+  function init() {
+    // Wire browse Go button
+    document.getElementById('browseGoBtn').addEventListener('click', handleBrowseGo);
+    document.getElementById('browseUrlInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') handleBrowseGo();
+    });
+
+    // Set initial model button style
+    const activeModelBtn = document.querySelector('.model-select.active');
+    if (activeModelBtn) {
+      activeModelBtn.style.background = 'linear-gradient(135deg, rgba(143,255,211,0.2), rgba(109,216,255,0.2))';
+      activeModelBtn.style.borderColor = 'rgba(143,255,211,0.3)';
+      activeModelBtn.style.color = 'var(--mint)';
+    }
+
+    // Connection status check (simulated)
+    setInterval(function() {
+      const online = navigator.onLine;
+      const dot = document.getElementById('statusConnDot');
+      const label = document.getElementById('statusConnLabel');
+      const headerLabel = document.getElementById('headerConnectionStatus');
+      if (online) {
+        dot.style.background = 'var(--mint)';
+        label.textContent = 'Connected';
+        headerLabel.textContent = 'Online';
+      } else {
+        dot.style.background = 'var(--red)';
+        label.textContent = 'Offline';
+        headerLabel.textContent = 'Offline';
+      }
+    }, 5000);
+
+    // Initial tongue bar state
+    updateTongueBar(['ko']);
+  }
+
+  // Boot
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  // Public API
+  return {
+    switchTab: switchTab,
+    navigateTo: navigateTo,
+    selectModel: selectModel,
+    sendChat: sendChat,
+    runRedTeam: runRedTeam,
+    selectSuite: selectSuite,
+    searchVault: searchVault,
+    runOps: runOps,
+    clearOpsLog: clearOpsLog,
+    state: state
+  };
+
+})();
+</script>
+
+</body>
+</html>
