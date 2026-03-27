@@ -50,17 +50,23 @@ def save_state(state: dict):
     STATE_PATH.write_text(json.dumps(state, indent=2))
 
 
-def search_channel_videos(channel_name: str, max_results: int = 5) -> list[dict]:
-    """Search YouTube for recent videos from a channel."""
+def search_channel_videos(channel_name: str, max_results: int = 5, handle: str | None = None) -> list[dict]:
+    """Search YouTube for recent videos from a channel.
+
+    When *handle* is provided (e.g. ``"@RobertMilesAI"``), the yt-dlp
+    search query uses the handle instead of the display name.  This avoids
+    ambiguous matches — for example, searching "Robert Miles" returns the
+    Italian musician, not the AI-safety YouTuber.
+    """
     try:
         import urllib.request
-        # Use YouTube search (no API key needed for basic search)
-        query = f"{channel_name} site:youtube.com"
+        # Prefer the handle for search queries — it is unique on YouTube
+        search_term = handle if handle else channel_name
         # Fallback: use yt-dlp if available
         import subprocess
         result = subprocess.run(
             ["yt-dlp", "--flat-playlist", "--print", "%(id)s %(title)s",
-             f"ytsearch{max_results}:{channel_name}", "--no-warnings"],
+             f"ytsearch{max_results}:{search_term}", "--no-warnings"],
             capture_output=True, text=True, timeout=30
         )
         if result.returncode == 0:
@@ -80,7 +86,7 @@ def search_channel_videos(channel_name: str, max_results: int = 5) -> list[dict]
     return []
 
 
-_TRANSCRIPT_DELAY = 15  # seconds between requests to avoid rate limiting
+_TRANSCRIPT_DELAY = 30  # seconds between requests to avoid rate limiting
 
 
 def get_transcript(video_id: str, delay: bool = True) -> Optional[str]:
@@ -173,7 +179,7 @@ def collect_channel(channel_name: str, max_videos: int = 5) -> dict:
     print(f"Collecting from {channel['name']} (tongue: {channel['tongue']}, rating: {channel['rating']})")
 
     state = load_state()
-    videos = search_channel_videos(channel["name"], max_videos)
+    videos = search_channel_videos(channel["name"], max_videos, handle=channel.get("handle"))
 
     if not videos:
         print(f"  No videos found via search. Skipping.")
