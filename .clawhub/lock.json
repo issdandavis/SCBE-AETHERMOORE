@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "code-review": {
+      "version": "1.0.0",
+      "installedAt": 1774574240615
+    },
+    "security-auditor": {
+      "version": "1.0.0",
+      "installedAt": 1774574252325
+    },
+    "email-daily-summary": {
+      "version": "0.1.0",
+      "installedAt": 1774574284875
+    },
+    "code-review-fix": {
+      "version": "1.0.0",
+      "installedAt": 1774574318774
+    },
+    "git-workflow": {
+      "version": "1.0.0",
+      "installedAt": 1774574330882
+    },
+    "security-scanner": {
+      "version": "1.0.0",
+      "installedAt": 1774574342464
+    }
+  }
+}

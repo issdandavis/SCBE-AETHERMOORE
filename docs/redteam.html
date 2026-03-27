@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Red Team Sandbox — SCBE-AETHERMOORE</title>
-<meta name="description" content="Test your AI against 91 adversarial attacks across 10 categories. $1 for 60 minutes of access. Patent-pending geometric detection. 0/15 clean false positives in the current public suite.">
-<meta property="og:title" content="Red Team Sandbox — SCBE-AETHERMOORE">
-<meta property="og:description" content="91 attacks blocked. 0/15 clean false positives. Beat ProtectAI DeBERTa v2. Try it for $1.">
-<meta property="og:url" content="https://issdandavis.github.io/SCBE-AETHERMOORE/redteam.html">
-<link rel="canonical" href="https://issdandavis.github.io/SCBE-AETHERMOORE/redteam.html">
+<title>Red Team Sandbox - SCBE-AETHERMOORE</title>
+<meta name="description" content="Evaluate SCBE-AETHERMOORE against the current 91-attack public suite, inspect the benchmark table, and reproduce the benchmark locally from the canonical eval pack.">
+<meta property="og:title" content="Red Team Sandbox - SCBE-AETHERMOORE">
+<meta property="og:description" content="91 attacks blocked in the current public suite. Inspect the benchmark, read the eval pack, and reproduce the run locally.">
+<meta property="og:url" content="https://aethermoorgames.com/redteam.html">
+<link rel="canonical" href="https://aethermoorgames.com/redteam.html">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a1a;color:#e2e2e2;line-height:1.7}
@@ -61,13 +61,14 @@ footer{border-top:1px solid #1a1a3e;padding:32px;text-align:center;color:#555;fo
   <div class="nav">
     <a href="index.html">Home</a>
     <a href="demos/index.html">Demos</a>
-    <a href="product-manual/index.html">Manuals</a>
+    <a href="research/eval-pack.html">Eval Pack</a>
+    <a href="research/null-space-signatures.html">Null Space</a>
     <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
     <a href="https://huggingface.co/datasets/issdandavis/scbe-red-team-benchmarks">HuggingFace</a>
   </div>
 
   <h1>Red Team Sandbox</h1>
-  <p class="subtitle">Test your AI security against 91 adversarial attacks. See exactly where it fails.</p>
+  <p class="subtitle">Inspect the current 91-attack public suite, then reproduce it locally from the canonical eval pack.</p>
 
   <div class="hero-stat">
     <div class="stat-big"><div class="num green">91/91</div><div class="label">Attacks Blocked</div></div>
@@ -135,19 +136,20 @@ footer{border-top:1px solid #1a1a3e;padding:32px;text-align:center;color:#555;fo
       <li>Compare against ProtectAI baseline</li>
       <li>Full null space signature analysis</li>
     </ul>
-    <a href="https://buy.stripe.com/test_sandbox_redteam" class="btn-big">Start Red Team Session</a>
-    <p style="margin-top:12px;font-size:13px;color:#555">Or run it yourself for free: <code>pip install scbe-aethermoore && python -m pytest tests/adversarial/ -v</code></p>
+    <a href="mailto:aethermoregames@pm.me?subject=SCBE%20Red%20Team%20Sandbox%20Access" class="btn-big">Request hosted sandbox access</a>
+    <p style="margin-top:12px;font-size:13px;color:#555">Hosted checkout is being rewired. The free local path is active now: <code>pytest tests/adversarial/test_adversarial_benchmark.py -v</code></p>
   </div>
 
   <div class="info">
-    <strong>What happens after payment:</strong> You get a time-limited link to a hosted sandbox running the full SCBE test suite.
-    Type any prompt, see all 14 layers evaluate it, get the full score breakdown.
-    After 60 minutes, the session expires. No subscription, no recurring charge.
+    <strong>Hosted path:</strong> Request a time-limited hosted session if you want the guided sandbox without local setup.
+    The public self-serve checkout link is being replaced; until then, the authoritative proof path is the local eval pack and the public dataset.
     <br><br>
     <strong>Or run it free:</strong> The entire test suite is open source. Install it, run it locally, verify every claim yourself.
-    The $1 is for people who want the hosted version without setting up Python.
+    Start with the canonical eval pack before relying on summary tables alone.
     <br><br>
     <strong>Dataset:</strong> <a href="https://huggingface.co/datasets/issdandavis/scbe-red-team-benchmarks">huggingface.co/datasets/issdandavis/scbe-red-team-benchmarks</a>
+    <br>
+    <strong>Eval pack:</strong> <a href="research/eval-pack.html">aethermoorgames.com/research/eval-pack.html</a>
     <br>
     <strong>Patent:</strong> USPTO #63/961,403 (provisional)
     <br>
@@ -158,7 +160,7 @@ footer{border-top:1px solid #1a1a3e;padding:32px;text-align:center;color:#555;fo
     <p style="color:#888;margin-bottom:16px;">Also available</p>
     <a href="demos/index.html" style="margin:0 8px">Try 14 Free Demos</a> |
     <a href="https://a.co/d/024VowjS" style="margin:0 8px">Read the Novel ($4.99)</a> |
-    <a href="index.html#government" style="margin:0 8px">Enterprise Evaluation (Free)</a>
+    <a href="research/architecture-overview.html" style="margin:0 8px">Architecture Overview</a>
   </div>
 </div>
 
