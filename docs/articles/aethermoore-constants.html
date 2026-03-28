@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The AetherMoore Constants (Review + Boundaries) | SCBE-AETHERMOORE</title>
+  <meta name="description" content="A disciplined review of the AetherMoore Constants: what is implemented, what is exploratory, and how to keep claim boundaries clean across SCBE-AETHERMOORE." />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:title" content="The AetherMoore Constants (Review + Boundaries)" />
+  <meta property="og:description" content="What is implemented vs exploratory, where the constants appear in the 14-layer system, and how to keep claim boundaries clean." />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://aethermoorgames.com/articles/aethermoore-constants.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The AetherMoore Constants (Review + Boundaries)" />
+  <meta name="twitter:description" content="A disciplined review of the AetherMoore Constants: implemented vs exploratory, with claim boundaries." />
+  <link rel="canonical" href="https://aethermoorgames.com/articles/aethermoore-constants.html" />
+  <link rel="stylesheet" href="../static/polly-sidebar.css" />
+  <style>
+    :root { --bg:#071019; --panel:rgba(12,20,31,0.92); --line:rgba(128,194,255,0.16); --text:#edf5ff; --muted:#a9b9cb; --ice:#80c2ff; --mint:#8cf0d1; --gold:#ffd27a; --max:980px; --shadow:0 28px 70px rgba(0,0,0,0.34); }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Georgia, "Times New Roman", serif; color: var(--text); background: radial-gradient(circle at top left, rgba(128,194,255,0.14), transparent 30%), radial-gradient(circle at 78% 18%, rgba(140,240,209,0.10), transparent 28%), linear-gradient(180deg, #050b12 0%, #09121d 52%, #050b12 100%); }
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(var(--max), calc(100% - 32px)); margin: 0 auto; }
+    .topbar { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(16px); background: rgba(5, 11, 18, 0.82); border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .topbar-inner { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .brand-kicker { text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px; color: var(--ice); }
+    .brand strong { display: block; font-size: 18px; letter-spacing: -0.03em; }
+    .nav { display: flex; flex-wrap: wrap; gap: 10px; }
+    .nav a { color: var(--muted); padding: 10px 14px; border-radius: 999px; border: 1px solid transparent; }
+    .nav a:hover { color: var(--text); border-color: var(--line); background: rgba(255,255,255,0.03); }
+    .hero { padding: 58px 0 18px; }
+    .hero-card { border-radius: 24px; border: 1px solid var(--line); background: linear-gradient(180deg, rgba(12,20,31,0.94), rgba(8,14,23,0.96)); box-shadow: var(--shadow); padding: 32px; }
+    .eyebrow, .mini { text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px; color: var(--ice); }
+    h1, h2, h3 { margin: 0; letter-spacing: -0.04em; }
+    h1 { font-size: clamp(40px, 5.6vw, 64px); line-height: 0.96; }
+    .lede { margin-top: 18px; color: var(--muted); font-size: 18px; line-height: 1.7; max-width: 72ch; }
+    .meta { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 14px; }
+    .meta span::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 8px; border-radius: 50%; background: var(--gold); vertical-align: middle; }
+    main { padding: 18px 0 60px; }
+    section { margin-top: 18px; }
+    .panel { border-radius: 24px; border: 1px solid var(--line); background: rgba(12,20,31,0.84); box-shadow: var(--shadow); padding: 26px; }
+    p { margin: 10px 0; color: var(--muted); line-height: 1.8; }
+    ul { margin: 10px 0; padding-left: 18px; color: var(--muted); line-height: 1.8; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    pre { overflow: auto; background: rgba(0,0,0,0.26); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 14px; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 12px; }
+    .table-wrap { overflow: auto; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; }
+    table { width: 100%; border-collapse: collapse; min-width: 820px; }
+    th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.07); vertical-align: top; }
+    th { color: #d6e7fb; font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; background: rgba(255,255,255,0.03); }
+    td { color: var(--muted); }
+    .badge { display: inline-flex; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.10); background: rgba(255,255,255,0.03); font-size: 12px; color: #d6e7fb; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 16px; border-radius: 999px; font-weight: 700; }
+    .btn-primary { background: linear-gradient(135deg, var(--ice), var(--mint)); color: #061017; }
+    .btn-secondary { background: rgba(255,255,255,0.03); border: 1px solid var(--line); color: var(--text); }
+    footer { padding: 34px 0 70px; color: var(--muted); }
+  </style>
+</head>
+<body data-polly-context="articles" data-polly-root="..">
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <div class="brand-kicker">SCBE field notes</div>
+        <strong>AetherMoore Constants</strong>
+      </div>
+      <nav class="nav">
+        <a href="../index.html">Home</a>
+        <a href="index.html">Articles</a>
+        <a href="../network.html">Network</a>
+        <a href="../research/index.html">Research</a>
+        <a href="../demos/index.html">Demos</a>
+        <a href="../product-manual/index.html">Manuals</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <article class="hero-card">
+        <div class="eyebrow">Review + boundaries</div>
+        <h1>The AetherMoore Constants</h1>
+        <p class="lede">
+          This is a disciplined review of the “Constants” writeup: what each constant claims, where it appears (or does not yet appear) in the SCBE stack, and how to keep the public claim boundary honest.
+        </p>
+        <div class="meta">
+          <span>Updated: 2026-03-28</span>
+          <span>Not legal advice</span>
+          <span>Implemented vs exploratory separated</span>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="../demos/governance-gate.html">See the 14-layer demo</a>
+          <a class="btn btn-secondary" href="../research/index.html">Open the research index</a>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>How to read this</h2>
+      <p>
+        A constant can be one of three things: an implemented mechanism, a documented design, or an exploratory hypothesis. Those are different classes of claim.
+      </p>
+      <ul>
+        <li><strong>Implemented</strong>: exists in code, can be executed, tested, and benchmarked.</li>
+        <li><strong>Documented</strong>: exists as a spec, but is not yet a working module.</li>
+        <li><strong>Exploratory</strong>: an idea with math or analogy, not yet a controlled prototype.</li>
+      </ul>
+      <p>
+        This page keeps the boundary clean on purpose. Patentability, priority, and “prior art” analysis are legal processes; this page is an engineering framing document, not legal advice.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>Constants at a glance</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Constant</th>
+              <th>Core formula</th>
+              <th>Status</th>
+              <th>Where it appears on-site</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Constant 1</strong><br>Harmonic scaling law</td>
+              <td><code>H(d, R) = R^(d^2)</code></td>
+              <td><span class="badge">Implemented (demo + docs)</span></td>
+              <td><a class="inline" href="../demos/governance-gate.html">Governance Gate demo</a></td>
+              <td>Used as “harmonic wall” framing: small drift is cheap, large drift is expensive.</td>
+            </tr>
+            <tr>
+              <td><strong>Constant 2</strong><br>Cymatic voxel storage</td>
+              <td><code>Chladni-style nodal access</code></td>
+              <td><span class="badge">Documented / exploratory</span></td>
+              <td><a class="inline" href="../research/index.html">Research index</a></td>
+              <td>Claim boundary: the novelty (if any) would be the access-control mapping, not cymatics itself.</td>
+            </tr>
+            <tr>
+              <td><strong>Constant 3</strong><br>Flux duality / cancellation</td>
+              <td><code>R × (1/R) = 1</code></td>
+              <td><span class="badge">Exploratory</span></td>
+              <td><a class="inline" href="../research/index.html">Research index</a></td>
+              <td>As written, this is a framing model. Treat as hypothesis until it has a controlled prototype.</td>
+            </tr>
+            <tr>
+              <td><strong>Constant 4</strong><br>Stellar-to-human octave mapping</td>
+              <td><code>f_human = f_stellar × 2^n</code></td>
+              <td><span class="badge">Exploratory</span></td>
+              <td><a class="inline" href="../research/index.html">Research index</a></td>
+              <td>Strong as an educational bridge; any engineering claim needs measurable coupling evidence.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Constant 1: Harmonic scaling law (H(d,R))</h2>
+      <p>
+        The usable operational framing is simple: as drift accumulates across dimensions, cost grows superlinearly.
+        In SCBE language, this becomes a “wall” that gets steep quickly.
+      </p>
+      <pre><code>H(d, R) = R^(d^2)
+d = number of independent dimensions you are enforcing
+R = ratio (a configurable scaling base)</code></pre>
+      <p>
+        Where it shows up publicly today:
+      </p>
+      <ul>
+        <li>As a concept in the <a class="inline" href="../demos/governance-gate.html">Governance Gate demo</a> (Layer 12).</li>
+        <li>As a claim boundary topic in the <a class="inline" href="../research/index.html">Research domain</a>.</li>
+      </ul>
+      <p>
+        Practical use case: converting “a little bit suspicious” into “expensive enough to deny” without enumerating every single attack pattern as a rule.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>Constant 2: Cymatic voxel storage (Chladni-style access)</h2>
+      <p>
+        This is best treated as a design direction: use a resonance / nodal condition as an access gate, so that “wrong approach vectors” read only noise.
+      </p>
+      <ul>
+        <li>Prior art exists for cymatics / Chladni patterns.</li>
+        <li>The only defensible novelty claim would be in the <em>mapping</em> from an access-state vector into a retrieval condition, not in the underlying phenomenon.</li>
+      </ul>
+      <p>
+        Until there is a controlled prototype and an evaluation harness (false accept, false reject, adversarial bypass attempt), keep this in the research lane.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>Constant 3: Flux interaction framework (duality / cancellation)</h2>
+      <p>
+        Treat this as a metaphor until it has measurable invariants. If you want it to become engineering, it needs:
+      </p>
+      <ul>
+        <li>state variables and units,</li>
+        <li>a repeatable simulation,</li>
+        <li>a falsifiable test (“if X then Y”),</li>
+        <li>a benchmark harness that distinguishes it from baseline control.</li>
+      </ul>
+      <p>
+        Without that, it belongs in exploratory notes, not in shipping claims.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>Constant 4: Stellar-to-human octave mapping</h2>
+      <p>
+        This can be a powerful bridge from astronomy into human intuition: octave transposition makes an extremely low-frequency phenomenon audible and comparable.
+        The technical claim boundary is: “mapping for intuition” is different from “coupling for control”.
+      </p>
+      <ul>
+        <li>Safe claim: educational transposition and visualization.</li>
+        <li>Risky claim: engineering control (requires evidence of coupling or regulation, not just mapping).</li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>Next step: turn each constant into a testable packet</h2>
+      <p>
+        If you want these to become “hard objects” instead of good narrative, each one needs the same conversion pipeline:
+      </p>
+      <ul>
+        <li>spec → prototype → harness → control group → results → public claim boundary</li>
+      </ul>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="workflow-cultivation.html">Read the workflow cultivation method</a>
+        <a class="btn btn-secondary" href="../network.html">Open the ops network map</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    SCBE-AETHERMOORE. This page is engineering framing, not legal advice. Keep implemented, documented, and exploratory claims in separate lanes.
+  </footer>
+
+  <script src="../static/polly-sidebar.js"></script>
+</body>
+</html>
+

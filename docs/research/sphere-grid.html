@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skill Vault Sphere Grid | SCBE-AETHERMOORE</title>
+  <meta name="description" content="Interactive 3D map of the Codex skill library arranged in the Sacred Tongue sphere grid. Click spheres to read the vault notes and the exact SKILL.md playbooks.">
+  <link rel="canonical" href="https://aethermoorgames.com/research/sphere-grid.html">
+  <meta property="og:title" content="Skill Vault Sphere Grid | SCBE-AETHERMOORE">
+  <meta property="og:description" content="Interactive 3D skill map. Click spheres to open patterns, concepts, training pairs, and SKILL.md playbooks.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://aethermoorgames.com/research/sphere-grid.html">
+  <meta name="twitter:card" content="summary">
+  <style>
+    :root{
+      --bg0:#070711;
+      --bg1:#0a0b15;
+      --ink:#edf0ff;
+      --muted:#b4b9df;
+      --line:rgba(123,140,255,0.14);
+      --accentA:#6f84ff;
+      --accentB:#9160ff;
+      --panel:rgba(10,11,21,0.86);
+      --panel2:rgba(16,17,34,0.9);
+      --shadow: 0 28px 80px rgba(0,0,0,0.55);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      color:var(--ink);
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(111,132,255,0.20), transparent 55%),
+        radial-gradient(900px 620px at 80% 30%, rgba(145,96,255,0.18), transparent 60%),
+        radial-gradient(900px 720px at 60% 90%, rgba(124,243,219,0.08), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow:hidden;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+    a{color:inherit;text-decoration:none}
+    .topbar{
+      position:fixed;
+      inset:0 0 auto 0;
+      z-index:10;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 18px;
+      background:rgba(7,7,17,0.70);
+      border-bottom:1px solid var(--line);
+      backdrop-filter: blur(18px);
+    }
+    .brand{
+      font-weight:900;
+      letter-spacing:0.10em;
+      text-transform:uppercase;
+      font-size:12px;
+      color:#dce0ff;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .brand .dot{
+      width:10px;height:10px;border-radius:999px;
+      background:linear-gradient(135deg,var(--accentA),var(--accentB));
+      box-shadow:0 0 0 6px rgba(111,132,255,0.12);
+    }
+    nav{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:13px;
+      justify-content:flex-end;
+    }
+    nav a{opacity:0.92}
+    nav a:hover{opacity:1;text-decoration:underline}
+    #grid{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+    }
+    .hud{
+      position:fixed;
+      z-index:11;
+      left:18px;
+      top:74px;
+      width:min(460px, calc(100vw - 36px));
+      display:grid;
+      gap:12px;
+    }
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px 14px;
+      box-shadow:var(--shadow);
+    }
+    .kicker{
+      color:#8590ff;
+      text-transform:uppercase;
+      letter-spacing:0.16em;
+      font-size:11px;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+    h1{
+      margin:0 0 10px;
+      font-size:22px;
+      line-height:1.08;
+      letter-spacing:-0.03em;
+    }
+    .sub{
+      margin:0;
+      color:#aeb4d7;
+      font-size:13px;
+      line-height:1.6;
+    }
+    .searchRow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .search{
+      flex:1;
+      border-radius:999px;
+      border:1px solid rgba(123,140,255,0.22);
+      padding:10px 12px;
+      background:rgba(255,255,255,0.03);
+      color:var(--ink);
+      outline:none;
+      font-size:13px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(123,140,255,0.18);
+      background:rgba(255,255,255,0.02);
+      color:#dce0ff;
+      font-weight:800;
+      font-size:12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .pill:hover{border-color:rgba(123,140,255,0.32)}
+    .legend{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+    .legend .tag{
+      font-size:11px;
+      border:1px solid rgba(123,140,255,0.14);
+      background:rgba(123,140,255,0.06);
+      padding:5px 9px;
+      border-radius:999px;
+      color:#dfe3ff;
+      cursor:pointer;
+      user-select:none;
+    }
+    .legend .tag:hover{border-color:rgba(123,140,255,0.30)}
+
+    .panel{
+      position:fixed;
+      z-index:12;
+      top:74px;
+      right:18px;
+      width:min(560px, calc(100vw - 36px));
+      height:calc(100vh - 92px);
+      background:var(--panel2);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      display:none;
+      overflow:hidden;
+    }
+    .panel.open{display:flex;flex-direction:column}
+    .panelTop{
+      padding:14px 14px;
+      border-bottom:1px solid rgba(123,140,255,0.12);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .panelTitle{
+      margin:0;
+      font-size:14px;
+      letter-spacing:0.02em;
+    }
+    .panelMeta{
+      margin-top:6px;
+      color:#aab0d6;
+      font-size:12px;
+      line-height:1.5;
+    }
+    .closeBtn{
+      border:1px solid rgba(123,140,255,0.18);
+      background:rgba(255,255,255,0.02);
+      color:#dce0ff;
+      font-weight:900;
+      font-size:12px;
+      border-radius:12px;
+      padding:8px 10px;
+      cursor:pointer;
+    }
+    .closeBtn:hover{border-color:rgba(123,140,255,0.32)}
+    .panelBody{
+      padding:16px 16px 24px;
+      overflow:auto;
+    }
+    .panelBody h1,.panelBody h2,.panelBody h3{margin:14px 0 8px;letter-spacing:-0.02em}
+    .panelBody h1{font-size:22px}
+    .panelBody h2{font-size:18px}
+    .panelBody h3{font-size:15px}
+    .panelBody p{margin:0 0 12px;color:#c7cbea}
+    .panelBody blockquote{
+      margin:12px 0;
+      padding:12px 14px;
+      border-left:3px solid rgba(124,243,219,0.6);
+      background:rgba(124,243,219,0.06);
+      color:#dffdf6;
+      border-radius:14px;
+    }
+    .panelBody code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color:#7cf3db;
+    }
+    .panelBody pre{
+      background:rgba(0,0,0,0.30);
+      border:1px solid rgba(123,140,255,0.12);
+      border-radius:14px;
+      padding:12px 12px;
+      overflow:auto;
+      margin:12px 0;
+    }
+    .panelBody table{
+      width:100%;
+      border-collapse:collapse;
+      margin:14px 0;
+      font-size:12px;
+    }
+    .panelBody th,.panelBody td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(123,140,255,0.12);
+      vertical-align:top;
+      text-align:left;
+    }
+    .panelBody th{
+      color:#96a4d1;
+      text-transform:uppercase;
+      letter-spacing:0.10em;
+      font-size:11px;
+    }
+    .panelBody a{color:#7cf3db;text-decoration:none}
+    .panelBody a:hover{text-decoration:underline}
+    .hint{
+      position:fixed;
+      z-index:11;
+      left:18px;
+      bottom:16px;
+      padding:10px 12px;
+      border-radius:14px;
+      background:rgba(7,7,17,0.72);
+      border:1px solid rgba(123,140,255,0.12);
+      color:#b9bfdf;
+      font-size:12px;
+      max-width:min(720px, calc(100vw - 36px));
+      backdrop-filter: blur(14px);
+    }
+    .hint strong{color:#fff}
+    @media (max-width: 980px){
+      .panel{left:18px;right:18px;width:auto}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./index.html"><span class="dot"></span><span>SCBE Skill Vault</span></a>
+    <nav>
+      <a href="../index.html">Home</a>
+      <a href="./index.html">Research</a>
+      <a href="../demos/index.html">Demos</a>
+      <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
+      <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noreferrer">GitHub</a>
+    </nav>
+  </header>
+
+  <canvas id="grid"></canvas>
+
+  <div class="hud" aria-label="Skill vault controls">
+    <div class="card">
+      <div class="kicker">Interactive 3D map</div>
+      <h1>Sphere Grid Skill Vault</h1>
+      <p class="sub">Six tongue domains. Four tiers each. Click a sphere to open its vault notes, then jump into the exact <code>SKILL.md</code> playbook.</p>
+      <div class="searchRow" style="margin-top:12px;">
+        <input class="search" id="search" type="search" placeholder="Search skills (ex: 'playwright', 'self-healing', 'notion')…" autocomplete="off">
+        <div class="pill" id="resetView" title="Reset camera + filters">Reset</div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+
+  <aside class="panel" id="panel" aria-live="polite">
+    <div class="panelTop">
+      <div>
+        <h2 class="panelTitle" id="panelTitle">Loading…</h2>
+        <div class="panelMeta" id="panelMeta"></div>
+      </div>
+      <button class="closeBtn" id="closePanel" type="button" aria-label="Close">Esc</button>
+    </div>
+    <div class="panelBody" id="panelBody"></div>
+  </aside>
+
+  <div class="hint">
+    <strong>Controls:</strong> Drag to orbit. Mouse wheel to zoom. Click spheres to open notes. Click skill names to open playbooks.
+  </div>
+
+  <script src="./sphere-grid.js" defer></script>
+</body>
+</html>
+

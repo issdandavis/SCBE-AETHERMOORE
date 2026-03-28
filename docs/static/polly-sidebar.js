@@ -48,6 +48,12 @@
       copy: 'Do not assume a package needs a key unless the delivery page or manual says it does.',
       prompt: 'I am on the SCBE delivery and access page. Help me verify what should have arrived after purchase and what support details I should gather before emailing.'
     },
+    network: {
+      kicker: 'Ops map',
+      title: 'Follow the flows.',
+      copy: 'Use this when you want the external writing lane (Medium/GitHub) and the internal public lanes (demos, research, manuals) without losing the thread.',
+      prompt: 'I am on the SCBE network page. Summarize the external links (Medium, GitHub, YouTube), then give me the shortest route into demos, manuals, and benchmark proof based on my goal.'
+    },
     site: {
       kicker: 'Page guide',
       title: 'Polly can route you.',
@@ -59,12 +65,15 @@
   const data = contexts[context] || contexts.site;
   const links = [
     { href: `${root}/index.html`, title: 'Home', text: 'Main overview, pricing, benchmarks, and core links.' },
+    { href: `${root}/network.html`, title: 'Network', text: 'External links, writing lanes, and AI-readable entry points.' },
     { href: `${root}/demos/index.html`, title: 'Demos', text: 'Story-first tour of Hydra, GeoSeal, and the public surfaces.' },
     { href: `${root}/redteam.html`, title: 'Red Team', text: 'Current public benchmark surface, dataset link, and eval entry path.' },
     { href: `${root}/articles/index.html`, title: 'Articles', text: 'Field notes, public explanations, and launch-facing writing.' },
     { href: `${root}/research/index.html`, title: 'Research', text: 'Benchmarks, theory packets, and active experiment tracks.' },
     { href: `${root}/product-manual/index.html`, title: 'Manuals', text: 'Buyer-facing package manuals and setup guides.' },
-    { href: `${root}/support.html`, title: 'Support', text: 'Delivery, setup, AI troubleshooting, and broken-link recovery.' }
+    { href: `${root}/support.html`, title: 'Support', text: 'Delivery, setup, AI troubleshooting, and broken-link recovery.' },
+    { href: 'https://github.com/issdandavis', title: 'GitHub', text: 'Repos, code, and source writing.' },
+    { href: 'https://medium.com/@issdandavis7795', title: 'Medium', text: 'External essays and public drafts.' }
   ];
 
   const launcher = document.createElement('button');
@@ -100,7 +109,7 @@
           <p class="polly-prompt-copy" id="pollyPromptText">${data.prompt}</p>
           <div class="polly-actions">
             <button class="polly-btn" type="button" id="pollyCopyPrompt">Copy prompt</button>
-            <a class="polly-btn" href="mailto:issdandavis@gmail.com?subject=SCBE%20Support%20Help">Email support</a>
+            <a class="polly-btn" href="mailto:aethermoregames@pm.me?subject=SCBE%20Support%20Help">Email support</a>
           </div>
           <div class="polly-status" id="pollyStatus" aria-live="polite"></div>
         </div>
