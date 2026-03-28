@@ -29,6 +29,8 @@ from typing import List, Optional
 
 from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
     SacredEgg,
+    DEFAULT_EGG_SELF_TAG,
+    self_detect_shape,
 )
 
 # Default database path
@@ -141,6 +143,8 @@ class SacredEggRegistry:
             glyph=row["glyph"],
             hatch_condition=json.loads(row["hatch_condition"]),
             yolk_ct=json.loads(row["yolk_ct"]),
+            self_tag=DEFAULT_EGG_SELF_TAG,
+            self_shape=self_detect_shape(row["egg_id"], DEFAULT_EGG_SELF_TAG),
         )
 
     def get_status(self, egg_id: str) -> Optional[str]:

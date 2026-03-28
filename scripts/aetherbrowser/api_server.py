@@ -13,12 +13,15 @@ Default port: 8100
 from __future__ import annotations
 
 import asyncio
+from collections import deque
 import datetime
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
+import uuid
 from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -38,10 +41,22 @@ ENV_FILE = CONFIG_DIR / "connector_oauth" / ".env.connector.oauth"
 WORKFLOWS_DIR = ROOT / "workflows" / "momentum"
 MOMENTUM_RUNS_DIR = ROOT / "artifacts" / "momentum_trains"
 CHESSBOARD_ARTIFACTS_DIR = ROOT / "artifacts" / "chessboard"
+IDE_LOGS_DIR = ROOT / "artifacts" / "ai_ide_logs"
+IDE_CHAT_LOG = IDE_LOGS_DIR / "chat.jsonl"
+IDE_CLI_LOG = IDE_LOGS_DIR / "cli.jsonl"
 
 MOMENTUM_TRAIN_CONFIGS: dict[str, Path] = {
     "daily_ops": WORKFLOWS_DIR / "daily_ops_train.json",
     "chessboard_dev_stack": WORKFLOWS_DIR / "chessboard_dev_stack_train.json",
+}
+
+CLI_DOCS_REGISTRY: dict[str, Path] = {
+    "fast-access": ROOT / "docs" / "FAST_ACCESS_GUIDE.md",
+    "system-anatomy": ROOT / "docs" / "SYSTEM_ANATOMY.md",
+    "docs-catalog": ROOT / "docs" / "DOCS_CATALOG.md",
+    "aetherbrowser-config": ROOT / "docs" / "specs" / "AETHERBROWSER_CONFIG.md",
+    "aetherbrowser-search-mesh": ROOT / "docs" / "specs" / "aetherbrowser_search_mesh.md",
+    "aetherbrowser-first-runbook": ROOT / "docs" / "operations" / "aetherbrowser_browser_first_runbook.md",
 }
 
 # Add project root + src to path so we can import SCBE modules
@@ -61,11 +76,13 @@ def _get_gate():
     if _runtime_gate is None:
         try:
             from governance.runtime_gate import RuntimeGate
-            _runtime_gate = RuntimeGate()
+            coords_backend = os.environ.get("SCBE_COORDS_BACKEND", "stats")
+            _runtime_gate = RuntimeGate(coords_backend=coords_backend)
         except Exception:
             try:
                 from src.governance.runtime_gate import RuntimeGate
-                _runtime_gate = RuntimeGate()
+                coords_backend = os.environ.get("SCBE_COORDS_BACKEND", "stats")
+                _runtime_gate = RuntimeGate(coords_backend=coords_backend)
             except Exception:
                 _runtime_gate = None
     return _runtime_gate
@@ -102,6 +119,76 @@ def _load_env():
 
 
 _load_env()
+
+# ---------------------------------------------------------------------------
+#  SCBE-AETHERMOORE Training Lab logging (Hugging Face training export lane)
+# ---------------------------------------------------------------------------
+
+_SECRET_PATTERNS: list[re.Pattern[str]] = [
+    # SSH public keys pasted into chat
+    re.compile(r"\bssh-(rsa|ed25519)\s+[A-Za-z0-9+/=]{20,}\b"),
+    # Generic KEY=... / TOKEN: ... etc
+    re.compile(r"(?i)\b(api[_-]?key|token|secret|password)\b\s*[:=]\s*([^\s\"']{8,})"),
+    # Common prefix-style keys
+    re.compile(r"\bsk-[A-Za-z0-9]{16,}\b"),
+    # Long opaque tokens (avoid grabbing normal code identifiers by requiring mixed charset + length)
+    re.compile(r"\b[A-Za-z0-9_-]{40,}\b"),
+]
+
+
+def _scrub_text(text: str) -> str:
+    if not text:
+        return text
+    out = text
+    for pat in _SECRET_PATTERNS:
+        out = pat.sub("[REDACTED]", out)
+    return out
+
+
+def _scrub_obj(obj: Any) -> Any:
+    if obj is None:
+        return None
+    if isinstance(obj, str):
+        return _scrub_text(obj)
+    if isinstance(obj, list):
+        return [_scrub_obj(x) for x in obj]
+    if isinstance(obj, dict):
+        return {str(k): _scrub_obj(v) for k, v in obj.items()}
+    return obj
+
+
+def _append_jsonl(path: Path, record: dict[str, Any]) -> None:
+    try:
+        IDE_LOGS_DIR.mkdir(parents=True, exist_ok=True)
+        safe = _scrub_obj(record)
+        with path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(safe, ensure_ascii=True) + "\n")
+    except Exception:
+        # Logging must never break the API server.
+        pass
+
+
+def _tail_jsonl(path: Path, n: int) -> list[dict[str, Any]]:
+    try:
+        if not path.exists():
+            return []
+        dq: deque[str] = deque(maxlen=max(1, n))
+        with path.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    dq.append(line)
+        out: list[dict[str, Any]] = []
+        for line in dq:
+            try:
+                item = json.loads(line)
+                if isinstance(item, dict):
+                    out.append(item)
+            except Exception:
+                continue
+        return out
+    except Exception:
+        return []
 
 # ---------------------------------------------------------------------------
 #  FastAPI App
@@ -246,6 +333,9 @@ FIB_SEQUENCE = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
 class ChatRequest(BaseModel):
     message: str
     model: str = "claude"
+    mode: Optional[str] = None
+    active_file_name: Optional[str] = None
+    active_file_content: Optional[str] = None
 
 
 def _classify_tongues(text: str) -> Dict[str, float]:
@@ -305,9 +395,23 @@ async def chat(req: ChatRequest):
     if req.model == "local" and decision != "DENY":
         try:
             import requests as _req
+            # Provide lightweight IDE context to improve code-aware answers.
+            ctx_lines: list[str] = []
+            if req.mode:
+                ctx_lines.append(f"MODE: {req.mode}")
+            if req.active_file_name:
+                ctx_lines.append(f"ACTIVE_FILE: {req.active_file_name}")
+            if req.active_file_content:
+                content = req.active_file_content
+                if len(content) > 12000:
+                    content = content[:12000] + "\n...[TRUNCATED]..."
+                ctx_lines.append("ACTIVE_FILE_CONTENT:\n" + content)
+            prompt = req.message
+            if ctx_lines:
+                prompt = "\n".join(ctx_lines) + "\n\nUSER:\n" + req.message + "\n\nASSISTANT:"
             ollama_resp = _req.post(
                 "http://localhost:11434/api/generate",
-                json={"model": "issdandavis7795/AetherBot", "prompt": req.message, "stream": False},
+                json={"model": "issdandavis7795/AetherBot", "prompt": prompt, "stream": False},
                 timeout=120,
             )
             if ollama_resp.status_code == 200:
@@ -324,6 +428,31 @@ async def chat(req: ChatRequest):
             f"Governance: {decision}. Trust: {trust_level} (FIB {fib_value}). "
             f"Select 'Local' to use AetherBot via Ollama.]"
         )
+
+    _append_jsonl(
+        IDE_CHAT_LOG,
+        {
+            "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "kind": "chat",
+            "request": {
+                "message": req.message,
+                "model": req.model,
+                "mode": req.mode,
+                "active_file_name": req.active_file_name,
+                "active_file_content_preview": (req.active_file_content or "")[:4000],
+                "active_file_content_len": len(req.active_file_content or ""),
+            },
+            "response": {
+                "text": response_text,
+                "tongues": tongues,
+                "governance_decision": decision,
+                "trust_level": trust_level,
+                "fibonacci_index": fibonacci_index,
+                "fibonacci_value": fib_value,
+                "cost": cost,
+            },
+        },
+    )
 
     return {
         "response": response_text,
@@ -947,6 +1076,410 @@ async def ops_chessboard_latest():
         "meta": meta,
         "packets": packets,
     }
+
+
+# =========================================================================== #
+#  CLI — Safe command interpreter (web-usable)
+# =========================================================================== #
+
+
+class CliRunRequest(BaseModel):
+    command: str = "help"
+
+
+def _cli_now_iso() -> str:
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+
+def _cli_truncate(text: str, max_chars: int) -> str:
+    if len(text) <= max_chars:
+        return text
+    return text[:max_chars] + "\n\n...(truncated)...\n"
+
+
+def _cli_command_registry() -> list[dict[str, Any]]:
+    """A small interoperability matrix for multi-lane ops."""
+    return [
+        {
+            "cmd": "help",
+            "lane": "offline",
+            "interop": {"web": True, "python": True, "node": False, "connectors": False},
+            "desc": "Show CLI help + examples.",
+            "example": "help",
+        },
+        {
+            "cmd": "matrix",
+            "lane": "offline",
+            "interop": {"web": True, "python": True, "node": False, "connectors": False},
+            "desc": "Return the interoperability matrix for safe commands.",
+            "example": "matrix",
+        },
+        {
+            "cmd": "trust <url>",
+            "lane": "browse",
+            "interop": {"web": True, "python": True, "node": False, "connectors": False},
+            "desc": "Classify a URL against trusted_external_sites.json (safe allowlist).",
+            "example": "trust aethermoorgames.com",
+        },
+        {
+            "cmd": "vault stats|search <q>|sync",
+            "lane": "vault",
+            "interop": {"web": True, "python": True, "node": False, "connectors": False},
+            "desc": "Vault operations (local Obsidian vault).",
+            "example": "vault search \"harmonic wall\"",
+        },
+        {
+            "cmd": "ops email|youtube|tor|tests|git",
+            "lane": "ops",
+            "interop": {"web": True, "python": True, "node": False, "connectors": True},
+            "desc": "Run operational tasks through the same endpoints used by the Ops tab buttons.",
+            "example": "ops tests",
+        },
+        {
+            "cmd": "momentum run <train_id> [--flow X] [--execute] [--max-parallel N]",
+            "lane": "momentum",
+            "interop": {"web": True, "python": True, "node": False, "connectors": False},
+            "desc": "Run a Momentum Train (safe allowlist of configs).",
+            "example": "momentum run daily_ops --execute --max-parallel 3",
+        },
+        {
+            "cmd": "momentum latest [train_id]",
+            "lane": "momentum",
+            "interop": {"web": True, "python": True, "node": False, "connectors": False},
+            "desc": "Show the latest Momentum Train summary (no execution).",
+            "example": "momentum latest daily_ops",
+        },
+        {
+            "cmd": "chessboard generate <goal...> | chessboard latest",
+            "lane": "chessboard",
+            "interop": {"web": True, "python": True, "node": False, "connectors": False},
+            "desc": "Generate or view the latest chessboard dev-stack packet set.",
+            "example": "chessboard generate \"Draft AetherBrowser Mobile V1 spec\"",
+        },
+        {
+            "cmd": "docs list | docs show <key>",
+            "lane": "docs",
+            "interop": {"web": True, "python": True, "node": False, "connectors": False},
+            "desc": "Show curated docs safely (registry, not arbitrary file reads).",
+            "example": "docs show aetherbrowser-config",
+        },
+    ]
+
+
+def _cli_help_text() -> str:
+    lines = [
+        "AetherBrowser CLI (SAFE MODE)",
+        "",
+        "This endpoint is a command interpreter for the AetherBrowser web UI and for AI callers.",
+        "It is allowlist-only (no arbitrary shell).",
+        "",
+        "Core commands:",
+        "  help",
+        "  matrix",
+        "  trust <url>",
+        "  vault stats",
+        "  vault search \"query\"",
+        "  vault sync",
+        "  ops email|youtube|tor|tests|git",
+        "  momentum run <train_id> [--flow X] [--execute] [--max-parallel N]",
+        "  momentum latest [train_id]",
+        "  chessboard generate \"goal...\"",
+        "  chessboard latest",
+        "  docs list",
+        "  docs show <key>",
+        "",
+        "Examples:",
+        "  trust aethermoorgames.com",
+        "  vault search \"phi poincare\"",
+        "  ops tests",
+        "  momentum run daily_ops --execute --max-parallel 3",
+        "  chessboard generate \"Improve long-running agent workflows\"",
+        "  docs show aetherbrowser-config",
+    ]
+    return "\n".join(lines)
+
+
+def _cli_docs_list() -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
+    for key, path in sorted(CLI_DOCS_REGISTRY.items(), key=lambda kv: kv[0]):
+        items.append(
+            {
+                "key": key,
+                "path": str(path.relative_to(ROOT)) if path.exists() else str(path),
+                "exists": path.exists(),
+            }
+        )
+    return items
+
+
+def _cli_docs_show(key: str, max_chars: int = 9000) -> dict[str, Any]:
+    path = CLI_DOCS_REGISTRY.get(key)
+    if not path:
+        return {"ok": False, "error": f"Unknown doc key: {key}", "docs": _cli_docs_list()}
+    if not path.exists():
+        return {"ok": False, "error": f"Doc missing: {path}", "key": key, "path": str(path)}
+    try:
+        content = path.read_text(encoding="utf-8", errors="replace")
+    except Exception as e:
+        return {"ok": False, "error": str(e), "key": key, "path": str(path)}
+    return {
+        "ok": True,
+        "key": key,
+        "path": str(path.relative_to(ROOT)),
+        "content": _cli_truncate(content, max_chars),
+    }
+
+
+def _cli_parse_flags(parts: list[str]) -> dict[str, Any]:
+    """Very small flag parser for: --flow, --execute, --max-parallel."""
+    out: dict[str, Any] = {"args": []}
+    i = 0
+    while i < len(parts):
+        p = parts[i]
+        if p == "--flow" and i + 1 < len(parts):
+            out["flow"] = parts[i + 1]
+            i += 2
+            continue
+        if p == "--execute":
+            out["execute"] = True
+            i += 1
+            continue
+        if p == "--max-parallel" and i + 1 < len(parts):
+            try:
+                out["max_parallel"] = int(parts[i + 1])
+            except Exception:
+                out["max_parallel"] = parts[i + 1]
+            i += 2
+            continue
+        out["args"].append(p)
+        i += 1
+    return out
+
+
+async def _cli_dispatch(parts: list[str]) -> dict[str, Any]:
+    if not parts:
+        return {"ok": True, "result": _cli_help_text()}
+
+    cmd = parts[0].lower()
+    rest = parts[1:]
+
+    if cmd in {"help", "?"}:
+        return {"ok": True, "result": _cli_help_text()}
+
+    if cmd in {"matrix", "commands"}:
+        return {"ok": True, "result": _cli_command_registry()}
+
+    if cmd == "trust":
+        if not rest:
+            return {"ok": False, "error": "Usage: trust <url>"}
+        return _classify_url(rest[0])
+
+    if cmd == "health":
+        return await health()
+
+    if cmd == "vault":
+        if not rest or rest[0].lower() == "stats":
+            return await vault_stats()
+        if rest[0].lower() == "sync":
+            return await vault_sync()
+        if rest[0].lower() == "search":
+            q = " ".join(rest[1:]).strip().strip('"')
+            if not q:
+                return {"ok": False, "error": "Usage: vault search <query>"}
+            return await vault_search(q=q)
+        return {"ok": False, "error": "Unknown vault subcommand. Try: vault stats|search|sync"}
+
+    if cmd == "ops":
+        if not rest:
+            return {"ok": False, "error": "Usage: ops email|youtube|tor|tests|git"}
+        op = rest[0].lower()
+        if op in {"email", "mail"}:
+            return await ops_check_email()
+        if op in {"youtube", "yt"}:
+            return await ops_youtube_review()
+        if op in {"tor", "onion"}:
+            return await ops_tor_sweep()
+        if op in {"tests", "test"}:
+            return await ops_run_tests()
+        if op in {"git", "status"}:
+            return await ops_git_status()
+        return {"ok": False, "error": f"Unknown ops subcommand: {op}"}
+
+    if cmd == "momentum":
+        if not rest:
+            return {"ok": False, "error": "Usage: momentum run|latest ..."}
+        sub = rest[0].lower()
+        if sub == "latest":
+            train_id = rest[1] if len(rest) >= 2 else "daily_ops"
+            return await ops_momentum_latest(train_id=train_id)
+        if sub == "run":
+            if len(rest) < 2:
+                return {"ok": False, "error": "Usage: momentum run <train_id> [--flow X] [--execute] [--max-parallel N]"}
+            flags = _cli_parse_flags(rest[2:])
+            req = MomentumRunRequest(
+                train_id=rest[1],
+                flow=flags.get("flow"),
+                execute=bool(flags.get("execute", False)),
+                max_parallel=flags.get("max_parallel"),
+            )
+            return await ops_momentum_run(req=req)
+        return {"ok": False, "error": f"Unknown momentum subcommand: {sub}"}
+
+    if cmd == "chessboard":
+        if not rest:
+            return {"ok": False, "error": "Usage: chessboard generate|latest ..."}
+        sub = rest[0].lower()
+        if sub == "latest":
+            return await ops_chessboard_latest()
+        if sub == "generate":
+            goal = " ".join(rest[1:]).strip().strip('"')
+            if not goal:
+                return {"ok": False, "error": "Usage: chessboard generate <goal...>"}
+            return await ops_chessboard_generate(req=ChessboardGenerateRequest(goal=goal))
+        return {"ok": False, "error": f"Unknown chessboard subcommand: {sub}"}
+
+    if cmd == "docs":
+        if not rest or rest[0].lower() == "list":
+            return {"ok": True, "result": _cli_docs_list()}
+        if rest[0].lower() == "show":
+            if len(rest) < 2:
+                return {"ok": False, "error": "Usage: docs show <key>", "docs": _cli_docs_list()}
+            return _cli_docs_show(rest[1])
+        return {"ok": False, "error": "Unknown docs subcommand. Try: docs list | docs show <key>"}
+
+    return {"ok": False, "error": f"Unknown command: {cmd}. Try: help"}
+
+
+@app.get("/api/cli/commands")
+async def cli_commands():
+    return {"ok": True, "commands": _cli_command_registry(), "timestamp": _cli_now_iso()}
+
+
+@app.post("/api/cli/run")
+async def cli_run(req: CliRunRequest = CliRunRequest()):
+    raw = (req.command or "").strip()
+    if not raw:
+        raw = "help"
+    try:
+        parts = shlex.split(raw, posix=True)
+    except Exception as e:
+        return {"ok": False, "command": raw, "error": f"Parse error: {e}", "timestamp": _cli_now_iso()}
+
+    result = await _cli_dispatch(parts)
+    # Normalise to always include command + timestamp
+    if isinstance(result, dict):
+        out: dict[str, Any] = dict(result)
+        out.setdefault("ok", True)
+        out.setdefault("command", raw)
+        out.setdefault("timestamp", _cli_now_iso())
+    else:
+        out = {"ok": True, "command": raw, "result": result, "timestamp": _cli_now_iso()}
+
+    _append_jsonl(
+        IDE_CLI_LOG,
+        {
+            "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "kind": "cli",
+            "command": raw,
+            "result": out,
+        },
+    )
+    return out
+
+
+@app.post("/api/cli/job")
+async def cli_job(req: CliRunRequest = CliRunRequest()):
+    """Run a safe CLI command asynchronously and return a job_id."""
+    raw = (req.command or "").strip() or "help"
+    try:
+        parts = shlex.split(raw, posix=True)
+    except Exception as e:
+        return {"ok": False, "command": raw, "error": f"Parse error: {e}", "timestamp": _cli_now_iso()}
+
+    job_id = uuid.uuid4().hex
+    started = _cli_now_iso()
+    _cli_jobs[job_id] = {"ok": True, "job_id": job_id, "command": raw, "status": "running", "started_at": started}
+
+    async def _runner():
+        try:
+            out = await _cli_dispatch(parts)
+            _append_jsonl(
+                IDE_CLI_LOG,
+                {
+                    "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                    "kind": "cli_job",
+                    "job_id": job_id,
+                    "command": raw,
+                    "status": "completed",
+                    "result": out,
+                },
+            )
+            _cli_jobs[job_id] = {
+                "ok": True,
+                "job_id": job_id,
+                "command": raw,
+                "status": "completed",
+                "started_at": started,
+                "finished_at": _cli_now_iso(),
+                "result": out,
+            }
+        except Exception as e:
+            _append_jsonl(
+                IDE_CLI_LOG,
+                {
+                    "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                    "kind": "cli_job",
+                    "job_id": job_id,
+                    "command": raw,
+                    "status": "failed",
+                    "error": str(e),
+                },
+            )
+            _cli_jobs[job_id] = {
+                "ok": False,
+                "job_id": job_id,
+                "command": raw,
+                "status": "failed",
+                "started_at": started,
+                "finished_at": _cli_now_iso(),
+                "error": str(e),
+            }
+
+    asyncio.create_task(_runner())
+    return {"ok": True, "job_id": job_id, "command": raw, "status": "running", "started_at": started}
+
+
+@app.get("/api/cli/job/{job_id}")
+async def cli_job_status(job_id: str):
+    """Fetch a job result created by /api/cli/job."""
+    job = _cli_jobs.get(job_id)
+    if not job:
+        return {"ok": False, "error": f"Unknown job_id: {job_id}", "job_id": job_id, "timestamp": _cli_now_iso()}
+    out = dict(job)
+    out.setdefault("timestamp", _cli_now_iso())
+    return out
+
+
+@app.get("/api/ide/logs/tail")
+async def ide_logs_tail(kind: str = Query("chat"), n: int = Query(50, ge=1, le=500)):
+    kind = (kind or "").strip().lower()
+    if kind not in {"chat", "cli"}:
+        return {"ok": False, "error": "kind must be 'chat' or 'cli'", "timestamp": _cli_now_iso()}
+    path = IDE_CHAT_LOG if kind == "chat" else IDE_CLI_LOG
+    entries = _tail_jsonl(path, n=int(n))
+    return {
+        "ok": True,
+        "kind": kind,
+        "requested": int(n),
+        "returned": len(entries),
+        "path": str(path),
+        "entries": entries,
+        "timestamp": _cli_now_iso(),
+    }
+
+
+# In-memory job store (safe commands only). Not persisted.
+_cli_jobs: dict[str, dict[str, Any]] = {}
 
 
 # =========================================================================== #

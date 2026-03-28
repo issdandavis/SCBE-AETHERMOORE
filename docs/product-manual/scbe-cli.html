@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCBE-AETHERMOORE CLI Manual</title>
+  <meta name="description" content="Buyer manual for the SCBE CLI: multi-lane workflow trains, guides, doctor checks, and repeatable building blocks.">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta property="og:title" content="SCBE CLI Manual">
+  <meta property="og:description" content="Multi-lane workflow trains + step-by-step guides + repeatable building blocks.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://aethermoorgames.com/product-manual/scbe-cli.html">
+  <link rel="canonical" href="https://aethermoorgames.com/product-manual/scbe-cli.html">
+  <link rel="stylesheet" href="assets/manual.css">
+  <link rel="stylesheet" href="../static/polly-sidebar.css">
+</head>
+<body data-polly-context="manual" data-polly-root="..">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">SCBE</a>
+      <nav class="nav-links" aria-label="SCBE CLI manual navigation">
+        <a href="index.html">Manual Hub</a>
+        <a href="user-guide.html">Start Guide</a>
+        <a href="delivery-and-access.html">Delivery + Access</a>
+        <a class="current" href="scbe-cli.html">SCBE CLI</a>
+        <a href="ai-governance-toolkit.html">Governance Toolkit</a>
+        <a href="hydra-agent-templates.html">HYDRA Templates</a>
+        <a href="n8n-workflow-pack.html">n8n Pack</a>
+        <a href="content-spin-engine.html">Content Spin Engine</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">Buyer Manual</div>
+        <h1>SCBE CLI</h1>
+        <p class="lead">
+          The SCBE CLI is the runnable interface for the system: multi-lane trains, step-by-step guides, and repeatable building blocks.
+          It is built to replace “repo spelunking” with a command surface you can trust and repeat.
+        </p>
+        <div class="chip-row">
+          <span class="chip">Multi-lane trains</span>
+          <span class="chip">Doctor checks</span>
+          <span class="chip">Guides in terminal</span>
+          <span class="chip">Python + Node</span>
+        </div>
+        <div class="notice">
+          If you want the shortest path, start with the <a href="user-guide.html">Buyer Start Guide</a>.
+          If you want the runnable workflow surface, use this page.
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="info-grid">
+        <div class="article">
+          <section class="flow-wrap">
+            <h3>First-run path</h3>
+            <div class="flow" role="img" aria-label="Run doctor checks, list trains, inspect the matrix, dry-run a train, then execute.">
+              <div class="flow-step"><strong>1. Doctor</strong><span>Check python/node/npm/git/ollama on your machine.</span></div>
+              <div class="flow-step"><strong>2. List</strong><span>List available trains and pick one lane to start with.</span></div>
+              <div class="flow-step"><strong>3. Inspect</strong><span>View the interoperability matrix (what runs where).</span></div>
+              <div class="flow-step"><strong>4. Dry-run</strong><span>Run without --execute to preview the plan.</span></div>
+              <div class="flow-step"><strong>5. Execute</strong><span>Run the train for real once you trust the steps.</span></div>
+            </div>
+          </section>
+
+          <section class="table-wrap">
+            <h3>Core commands</h3>
+            <table>
+              <thead>
+                <tr><th>Command</th><th>What it does</th><th>When to use it</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>./scbe.ps1 doctor</code></td><td>Checks core tools (python/node/npm/git/ollama).</td><td>Before first run or when something breaks.</td></tr>
+                <tr><td><code>./scbe.ps1 train list</code></td><td>Lists multi-lane train configs.</td><td>When you want the workflow menu.</td></tr>
+                <tr><td><code>./scbe.ps1 train show workflows/momentum/daily_ops_train.json</code></td><td>Readable plan view for a train.</td><td>Before running anything.</td></tr>
+                <tr><td><code>./scbe.ps1 train matrix workflows/momentum/daily_ops_train.json</code></td><td>Interoperability matrix (flow/type/language/commands).</td><td>To see what runs in each lane and why.</td></tr>
+                <tr><td><code>./scbe.ps1 train run workflows/momentum/daily_ops_train.json</code></td><td>Dry-run preview (no execution).</td><td>To confirm nothing dangerous is executed.</td></tr>
+                <tr><td><code>./scbe.ps1 train run workflows/momentum/daily_ops_train.json --execute</code></td><td>Runs the train for real.</td><td>Once you trust the plan.</td></tr>
+                <tr><td><code>./scbe.ps1 website sales-train</code></td><td>Runs the homepage audit (and optional iterations).</td><td>To keep the offer page improving on rails.</td></tr>
+                <tr><td><code>./scbe.ps1 guide list</code></td><td>Lists guides you can read in terminal.</td><td>When you want step-by-step reference.</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section>
+            <h3>Success check</h3>
+            <ol class="step-list">
+              <li>You can run <code>doctor</code> and see what is missing.</li>
+              <li>You can list trains and inspect the matrix before execution.</li>
+              <li>You can dry-run a train and understand the steps.</li>
+              <li>You can execute one train and get repeatable output under <code>artifacts/</code>.</li>
+            </ol>
+          </section>
+        </div>
+
+        <aside class="article">
+          <section class="side-card">
+            <h3>What “dual-language” means here</h3>
+            <p>
+              The CLI runs tasks implemented in both Python and Node. You get one command surface, with an interoperability matrix that shows which lane uses which tool.
+            </p>
+          </section>
+          <section class="side-card">
+            <h3>Safety rule</h3>
+            <p>
+              Always inspect before execution. Use <code>train show</code> and <code>train matrix</code>, then do a dry-run, then execute.
+            </p>
+          </section>
+          <section class="side-card">
+            <h3>Recovery links</h3>
+            <ul class="link-list">
+              <li><a href="delivery-and-access.html">Check delivery + access</a></li>
+              <li><a href="../support.html">Open support</a></li>
+              <li><a href="mailto:aethermoregames@pm.me?subject=SCBE%20CLI%20Support">Email support</a></li>
+            </ul>
+          </section>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer container">
+    <div class="footer-links">
+      <a href="../index.html">Main site</a>
+      <a href="index.html">Manual Hub</a>
+      <a href="user-guide.html">Start Guide</a>
+      <a href="delivery-and-access.html">Delivery + Access</a>
+      <a href="mailto:aethermoregames@pm.me?subject=SCBE%20CLI%20Support">Email support</a>
+    </div>
+    <div>This manual is for running the workflow surface, not for deep theory.</div>
+  </footer>
+
+  <script src="../static/polly-sidebar.js"></script>
+</body>
+</html>
+
