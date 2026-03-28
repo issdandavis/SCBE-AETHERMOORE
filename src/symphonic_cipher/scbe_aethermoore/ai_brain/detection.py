@@ -105,7 +105,7 @@ def detect_phase_distance(
         mechanism="phase_distance",
         score=score,
         flagged=score >= threshold,
-        detected_attack_types=["wrong_tongue", "synthetic"] if score >= threshold else [],
+        detected_attack_types=(["wrong_tongue", "synthetic"] if score >= threshold else []),
         metadata={"avg_phase_error": avg_phase, "avg_dist_score": avg_dist},
     )
 
@@ -145,7 +145,11 @@ def detect_curvature_accumulation(
 
     # Project to 3D for geometrically meaningful curvature
     def _proj3d(emb: List[float]) -> List[float]:
-        return [emb[0] if len(emb) > 0 else 0, emb[1] if len(emb) > 1 else 0, emb[2] if len(emb) > 2 else 0]
+        return [
+            emb[0] if len(emb) > 0 else 0,
+            emb[1] if len(emb) > 1 else 0,
+            emb[2] if len(emb) > 2 else 0,
+        ]
 
     curvatures = []
     for i in range(1, len(trajectory) - 1):
@@ -170,7 +174,10 @@ def detect_curvature_accumulation(
         score=score,
         flagged=score >= threshold,
         detected_attack_types=["path_deviation", "drift"] if score >= threshold else [],
-        metadata={"max_window_curvature": max_window, "curvature_count": len(curvatures)},
+        metadata={
+            "max_window_curvature": max_window,
+            "curvature_count": len(curvatures),
+        },
     )
 
 
@@ -234,7 +241,7 @@ def detect_threat_lissajous(
         mechanism="threat_lissajous",
         score=score,
         flagged=score >= threshold,
-        detected_attack_types=["malicious_pattern", "knot_topology"] if score >= threshold else [],
+        detected_attack_types=(["malicious_pattern", "knot_topology"] if score >= threshold else []),
         metadata={"intersections": intersections, "winding_number": winding_number},
     )
 
@@ -281,7 +288,7 @@ def detect_decimal_drift(
         mechanism="decimal_drift",
         score=score,
         flagged=score >= threshold,
-        detected_attack_types=["no_pipeline", "scale_attack", "synthetic"] if score >= threshold else [],
+        detected_attack_types=(["no_pipeline", "scale_attack", "synthetic"] if score >= threshold else []),
         metadata={"avg_drift": avg_drift, "uniform_ratio": uniform_ratio},
     )
 
@@ -340,7 +347,15 @@ def detect_six_tonic(
 
     static_score = 1.0 if is_static else 0.0
     freq_score = _clamp(freq_error, 0, 1)
-    score = _clamp(max(static_score, replay_score, 0.4 * static_score + 0.3 * replay_score + 0.3 * freq_score), 0, 1)
+    score = _clamp(
+        max(
+            static_score,
+            replay_score,
+            0.4 * static_score + 0.3 * replay_score + 0.3 * freq_score,
+        ),
+        0,
+        1,
+    )
 
     attacks = []
     if score >= threshold:
@@ -356,7 +371,11 @@ def detect_six_tonic(
         score=score,
         flagged=score >= threshold,
         detected_attack_types=attacks,
-        metadata={"is_static": is_static, "replay_score": replay_score, "freq_error": freq_error},
+        metadata={
+            "is_static": is_static,
+            "replay_score": replay_score,
+            "freq_error": freq_error,
+        },
     )
 
 

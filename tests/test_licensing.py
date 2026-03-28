@@ -382,7 +382,7 @@ class TestUsageMeter:
         assert p95 == 95.0  # 95th percentile of 0-99
 
     def test_revenue_estimation(self, meter):
-        for i in range(1000):
+        for _i in range(1000):
             meter.record_decision(
                 DecisionRecord(
                     timestamp=time.time(),
@@ -402,7 +402,7 @@ class TestUsageMeter:
         assert rev["total_estimated"] > 0
 
     def test_per_tenant_revenue(self, meter):
-        for i in range(500):
+        for _i in range(500):
             meter.record_decision(
                 DecisionRecord(
                     timestamp=time.time(),
@@ -418,7 +418,7 @@ class TestUsageMeter:
         assert rev["tenants_counted"] == 1
 
     def test_quota_check(self, meter):
-        for i in range(50):
+        for _i in range(50):
             meter.record_decision(
                 DecisionRecord(
                     timestamp=time.time(),
@@ -435,7 +435,7 @@ class TestUsageMeter:
         assert remaining == 50
 
     def test_quota_exceeded(self, meter):
-        for i in range(101):
+        for _i in range(101):
             meter.record_decision(
                 DecisionRecord(
                     timestamp=time.time(),
@@ -457,7 +457,7 @@ class TestUsageMeter:
         assert remaining == -1
 
     def test_slo_report(self, meter):
-        for i in range(100):
+        for _i in range(100):
             meter.record_decision(
                 DecisionRecord(
                     timestamp=time.time(),
@@ -620,7 +620,13 @@ class TestPolicyFrameworkReport:
 
     def test_all_five_pillars_covered(self, report):
         pillar_ids = set(p.pillar_id for p in report.pillars)
-        assert pillar_ids == {"PILLAR-1", "PILLAR-2", "PILLAR-3", "PILLAR-4", "PILLAR-5"}
+        assert pillar_ids == {
+            "PILLAR-1",
+            "PILLAR-2",
+            "PILLAR-3",
+            "PILLAR-4",
+            "PILLAR-5",
+        }
 
     def test_pillar_1_federal_preemption(self, report):
         p1 = report.by_pillar("PILLAR-1")

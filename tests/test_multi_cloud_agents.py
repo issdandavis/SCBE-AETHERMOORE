@@ -20,6 +20,7 @@ import pytest
 def _can_import_cryptography():
     try:
         from cryptography.fernet import Fernet  # noqa: F401
+
         return True
     except BaseException:
         return False
@@ -46,7 +47,13 @@ from src.cloud.multi_cloud_agents import (
     AgentFactory,
 )
 
-from src.cloud.cross_cloud_comms import CircuitState, CloudEndpoint, ServiceRegistry, CircuitBreaker, MessageEncryption
+from src.cloud.cross_cloud_comms import (
+    CircuitState,
+    CloudEndpoint,
+    ServiceRegistry,
+    CircuitBreaker,
+    MessageEncryption,
+)
 
 from src.cloud.monitoring_dashboard import (
     AlertSeverity,
@@ -64,13 +71,23 @@ from src.cloud.monitoring_dashboard import (
 @pytest.fixture
 def aws_config():
     """AWS cloud configuration."""
-    return CloudConfig(provider=CloudProvider.AWS, region="us-west-2", memory_mb=512, timeout_seconds=300)
+    return CloudConfig(
+        provider=CloudProvider.AWS,
+        region="us-west-2",
+        memory_mb=512,
+        timeout_seconds=300,
+    )
 
 
 @pytest.fixture
 def gcp_config():
     """GCP cloud configuration."""
-    return CloudConfig(provider=CloudProvider.GCP, region="us-central1", memory_mb=512, timeout_seconds=300)
+    return CloudConfig(
+        provider=CloudProvider.GCP,
+        region="us-central1",
+        memory_mb=512,
+        timeout_seconds=300,
+    )
 
 
 @pytest.fixture
@@ -188,7 +205,12 @@ class TestSecurityTesterAgent:
     async def test_vulnerability_scan(self, security_agent):
         """Test vulnerability scanning."""
         result = await security_agent.process(
-            {"type": "vulnerability_scan", "target": "https://example.com", "depth": "basic"}, {}
+            {
+                "type": "vulnerability_scan",
+                "target": "https://example.com",
+                "depth": "basic",
+            },
+            {},
         )
 
         assert "scan_id" in result
@@ -200,7 +222,12 @@ class TestSecurityTesterAgent:
     async def test_api_security_test(self, security_agent):
         """Test API security testing."""
         result = await security_agent.process(
-            {"type": "api_security_test", "endpoint": "/api/v1/users", "method": "POST"}, {}
+            {
+                "type": "api_security_test",
+                "endpoint": "/api/v1/users",
+                "method": "POST",
+            },
+            {},
         )
 
         assert result["endpoint"] == "/api/v1/users"
@@ -258,7 +285,12 @@ class TestPerformanceMonitorAgent:
     async def test_collect_metrics(self, performance_agent):
         """Test metrics collection."""
         result = await performance_agent.process(
-            {"type": "collect_metrics", "target": "api-server", "metrics": ["latency", "throughput", "errors"]}, {}
+            {
+                "type": "collect_metrics",
+                "target": "api-server",
+                "metrics": ["latency", "throughput", "errors"],
+            },
+            {},
         )
 
         assert result["target"] == "api-server"
@@ -290,7 +322,10 @@ class TestPerformanceMonitorAgent:
         """Test anomaly detection."""
         # First collect some metrics
         for _ in range(10):
-            await performance_agent.process({"type": "collect_metrics", "target": "test", "metrics": ["latency"]}, {})
+            await performance_agent.process(
+                {"type": "collect_metrics", "target": "test", "metrics": ["latency"]},
+                {},
+            )
 
         result = await performance_agent.process({"type": "detect_anomalies"}, {})
 
@@ -350,7 +385,14 @@ class TestHallucinationDetectorAgent:
     async def test_register_facts(self, hallucination_agent):
         """Test fact registration."""
         result = await hallucination_agent.process(
-            {"type": "register_facts", "facts": {"water_boiling_point": "100°C", "earth_circumference": "40075 km"}}, {}
+            {
+                "type": "register_facts",
+                "facts": {
+                    "water_boiling_point": "100°C",
+                    "earth_circumference": "40075 km",
+                },
+            },
+            {},
         )
 
         assert result["facts_added"] == 2
@@ -449,7 +491,12 @@ class TestMultiCloudOrchestratorAgent:
 
         # Then route a request
         result = await orchestrator_agent.process(
-            {"type": "route_request", "target_agent": "agent_001", "payload": {"action": "scan"}}, {}
+            {
+                "type": "route_request",
+                "target_agent": "agent_001",
+                "payload": {"action": "scan"},
+            },
+            {},
         )
 
         assert result["routed_to"] == "agent_001"
@@ -584,7 +631,11 @@ class TestServiceRegistry:
     def test_update_health(self, service_registry):
         """Test health status update."""
         endpoint = CloudEndpoint(
-            endpoint_id="ep_001", cloud="aws", region="us-west-2", url="https://example.com", agent_type="monitor"
+            endpoint_id="ep_001",
+            cloud="aws",
+            region="us-west-2",
+            url="https://example.com",
+            agent_type="monitor",
         )
         service_registry.register(endpoint)
 
@@ -738,7 +789,10 @@ class TestAlertManager:
     def test_create_alert(self, alert_manager):
         """Test creating an alert."""
         alert = alert_manager.create_alert(
-            severity=AlertSeverity.WARNING, title="High CPU Usage", message="CPU usage exceeded 80%", source="agent_001"
+            severity=AlertSeverity.WARNING,
+            title="High CPU Usage",
+            message="CPU usage exceeded 80%",
+            source="agent_001",
         )
 
         assert alert.alert_id is not None
@@ -777,7 +831,11 @@ class TestAlertManager:
     def test_add_alerting_rule(self, alert_manager):
         """Test adding alerting rule."""
         alert_manager.add_rule(
-            name="High CPU", metric_name="cpu_percent", condition="gt", threshold=80, severity=AlertSeverity.WARNING
+            name="High CPU",
+            metric_name="cpu_percent",
+            condition="gt",
+            threshold=80,
+            severity=AlertSeverity.WARNING,
         )
 
         assert len(alert_manager.rules) == 1
@@ -821,7 +879,11 @@ class TestIntegration:
 
         # Health check — may report UNHEALTHY on high-memory hosts
         health = await agent.health_check()
-        assert health.status in [AgentHealth.HEALTHY, AgentHealth.DEGRADED, AgentHealth.UNHEALTHY]
+        assert health.status in [
+            AgentHealth.HEALTHY,
+            AgentHealth.DEGRADED,
+            AgentHealth.UNHEALTHY,
+        ]
 
         # Process request
         result = await agent.process({"type": "vulnerability_scan", "target": "https://example.com"}, {})

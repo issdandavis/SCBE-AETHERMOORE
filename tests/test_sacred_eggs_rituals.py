@@ -37,7 +37,13 @@ FILE_CANDIDATES = (
     REPO_ROOT / "sacred_egg.py",
 )
 
-INVOKE_ALIASES = ("invoke_ritual", "perform_ritual", "ritual_invoke", "invoke", "ritual")
+INVOKE_ALIASES = (
+    "invoke_ritual",
+    "perform_ritual",
+    "ritual_invoke",
+    "invoke",
+    "ritual",
+)
 INCUBATION_ALIASES = (
     "solitary_incubation",
     "begin_solitary_incubation",
@@ -124,7 +130,15 @@ ALIASES = {
         "message",
         "secret_payload",
     },
-    "actor": {"actor", "invoker", "caller", "agent", "guardian", "binder", "participant"},
+    "actor": {
+        "actor",
+        "invoker",
+        "caller",
+        "agent",
+        "guardian",
+        "binder",
+        "participant",
+    },
     "participants": {
         "participants",
         "binders",
@@ -149,10 +163,25 @@ ALIASES = {
         "manifold_point",
         "bind_point",
     },
-    "binding": {"binding", "token", "seal", "proof", "attestation", "digest", "handle", "lock"},
+    "binding": {
+        "binding",
+        "token",
+        "seal",
+        "proof",
+        "attestation",
+        "digest",
+        "handle",
+        "lock",
+    },
     "ritual": {"ritual", "ritual_name", "invocation", "action", "op", "mode", "name"},
     "ring": {"ring", "ring_level", "depth", "level", "ring_index", "realm"},
-    "source_ring": {"source_ring", "from_ring", "current_ring", "src_ring", "ring_from"},
+    "source_ring": {
+        "source_ring",
+        "from_ring",
+        "current_ring",
+        "src_ring",
+        "ring_from",
+    },
     "target_ring": {"target_ring", "to_ring", "next_ring", "dst_ring", "ring_to"},
 }
 
@@ -341,7 +370,15 @@ def _is_success(result: Any) -> bool:
         return True
 
     if isinstance(result, dict):
-        for key in ("ok", "success", "allowed", "bound", "sealed", "verified", "accepted"):
+        for key in (
+            "ok",
+            "success",
+            "allowed",
+            "bound",
+            "sealed",
+            "verified",
+            "accepted",
+        ):
             if key in result:
                 status = _status_to_bool(result[key])
                 return bool(result[key]) if status is None else status
@@ -358,7 +395,7 @@ def _is_success(result: Any) -> bool:
             return bool(value) if status is None else status
 
     if hasattr(result, "status"):
-        status = _status_to_bool(getattr(result, "status"))
+        status = _status_to_bool(result.status)
         if status is not None:
             return status
 
@@ -368,11 +405,30 @@ def _is_success(result: Any) -> bool:
 def _has_explicit_status(result: Any) -> bool:
     if isinstance(result, dict):
         return any(
-            key in result for key in ("ok", "success", "allowed", "bound", "sealed", "verified", "accepted", "status")
+            key in result
+            for key in (
+                "ok",
+                "success",
+                "allowed",
+                "bound",
+                "sealed",
+                "verified",
+                "accepted",
+                "status",
+            )
         )
     return any(
         hasattr(result, attr)
-        for attr in ("ok", "success", "allowed", "bound", "sealed", "verified", "accepted", "status")
+        for attr in (
+            "ok",
+            "success",
+            "allowed",
+            "bound",
+            "sealed",
+            "verified",
+            "accepted",
+            "status",
+        )
     )
 
 
@@ -381,12 +437,32 @@ def _binding_fingerprint(result: Any) -> Any:
         return result
 
     if isinstance(result, dict):
-        for key in ("binding", "digest", "seal", "token", "proof", "fingerprint", "id", "handle", "lock"):
+        for key in (
+            "binding",
+            "digest",
+            "seal",
+            "token",
+            "proof",
+            "fingerprint",
+            "id",
+            "handle",
+            "lock",
+        ):
             if key in result:
                 return result[key]
         return repr(sorted(result.items()))
 
-    for attr in ("binding", "digest", "seal", "token", "proof", "fingerprint", "id", "handle", "lock"):
+    for attr in (
+        "binding",
+        "digest",
+        "seal",
+        "token",
+        "proof",
+        "fingerprint",
+        "id",
+        "handle",
+        "lock",
+    ):
         if hasattr(result, attr):
             return getattr(result, attr)
 
@@ -580,7 +656,9 @@ def test_triadic_binding_rejects_insufficient_or_non_distinct_binders(
     )
 
 
-def test_triadic_binding_accepts_three_of_six_distinct_guardians(egg_api: SacredEggAPI) -> None:
+def test_triadic_binding_accepts_three_of_six_distinct_guardians(
+    egg_api: SacredEggAPI,
+) -> None:
     result = egg_api.ritual(
         "triadic_binding",
         TRIADIC_ALIASES,

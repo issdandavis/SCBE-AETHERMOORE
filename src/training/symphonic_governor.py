@@ -465,7 +465,7 @@ class SymphonicGovernor:
         skipped = 0
         contracted = 0
 
-        for i, (user_input, response) in enumerate(interactions):
+        for i, (_user_input, response) in enumerate(interactions):
             sim_t = i * (math.pi / len(interactions)) if interactions else 0
             report = self.review(response, sim_time=sim_t)
             reports.append(report)

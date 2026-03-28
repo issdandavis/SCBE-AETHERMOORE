@@ -97,7 +97,12 @@ class CoordinateBlock(ConceptBlock):
         }
     """
 
-    def __init__(self, num_nodes: int = 4, max_faulty: Optional[int] = None, name: str = "COORDINATE") -> None:
+    def __init__(
+        self,
+        num_nodes: int = 4,
+        max_faulty: Optional[int] = None,
+        name: str = "COORDINATE",
+    ) -> None:
         super().__init__(name)
         self._consensus = BFTConsensus(num_nodes, max_faulty)
 

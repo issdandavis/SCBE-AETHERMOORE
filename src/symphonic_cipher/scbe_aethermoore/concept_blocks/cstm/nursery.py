@@ -463,5 +463,5 @@ class NurseryManager:
             "active": len(self._cohort.active_agents()),
             "graduated": len(self._cohort.graduated_agents()),
             "diversity": self._cohort.diversity_score(),
-            "curriculum_stories": self._curriculum.total_stories if self._curriculum else 0,
+            "curriculum_stories": (self._curriculum.total_stories if self._curriculum else 0),
         }

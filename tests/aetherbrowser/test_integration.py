@@ -100,7 +100,10 @@ class TestFullCommandFlow:
                 {
                     "type": "zone_response",
                     "agent": "user",
-                    "payload": {"request_seq": zone_request["seq"], "decision": "allow_once"},
+                    "payload": {
+                        "request_seq": zone_request["seq"],
+                        "decision": "allow_once",
+                    },
                 }
             )
             resumed = _drain(ws, 6)

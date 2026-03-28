@@ -67,11 +67,56 @@ _MASTER_KEYWORDS = {"novel", "creative", "synthesize", "invent", "research"}
 # =============================================================================
 
 TONGUE_DOMAIN_KEYWORDS = {
-    "KO": {"intent", "command", "control", "flow", "nonce", "orchestrate", "decide", "route"},
-    "AV": {"transport", "context", "metadata", "header", "api", "message", "send", "receive"},
-    "RU": {"policy", "rule", "bind", "salt", "constraint", "validate", "enforce", "permission"},
-    "CA": {"compute", "cipher", "encrypt", "decrypt", "transform", "process", "execute", "calculate"},
-    "UM": {"security", "redact", "hide", "veil", "protect", "shield", "obscure", "mask"},
+    "KO": {
+        "intent",
+        "command",
+        "control",
+        "flow",
+        "nonce",
+        "orchestrate",
+        "decide",
+        "route",
+    },
+    "AV": {
+        "transport",
+        "context",
+        "metadata",
+        "header",
+        "api",
+        "message",
+        "send",
+        "receive",
+    },
+    "RU": {
+        "policy",
+        "rule",
+        "bind",
+        "salt",
+        "constraint",
+        "validate",
+        "enforce",
+        "permission",
+    },
+    "CA": {
+        "compute",
+        "cipher",
+        "encrypt",
+        "decrypt",
+        "transform",
+        "process",
+        "execute",
+        "calculate",
+    },
+    "UM": {
+        "security",
+        "redact",
+        "hide",
+        "veil",
+        "protect",
+        "shield",
+        "obscure",
+        "mask",
+    },
     "DR": {"schema", "structure", "auth", "tag", "verify", "sign", "certify", "format"},
 }
 
@@ -154,7 +199,12 @@ _phdm_classifier = None
 def get_phdm_classifier():
     """Lazy-load PHDM classifier."""
     global _phdm_classifier
-    if os.environ.get("SCBE_DISABLE_HF_CLASSIFIER", "").strip().lower() in {"1", "true", "yes", "on"}:
+    if os.environ.get("SCBE_DISABLE_HF_CLASSIFIER", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }:
         return None
     if _phdm_classifier is None:
         try:
@@ -324,7 +374,7 @@ def process_jsonl_file(path: Path) -> list[LedgerEntry]:
     """Process a JSONL file of SFT pairs."""
     entries = []
     with open(path, encoding="utf-8") as f:
-        for line_num, line in enumerate(f, 1):
+        for _line_num, line in enumerate(f, 1):
             line = line.strip()
             if not line:
                 continue

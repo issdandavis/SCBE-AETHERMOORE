@@ -30,7 +30,9 @@ class SCBEKyber:
             self.kem = None
             return
         try:
-            from oqs import KeyEncapsulation  # local import avoids module import side effects
+            from oqs import (
+                KeyEncapsulation,
+            )  # local import avoids module import side effects
 
             self.kem = KeyEncapsulation(KYBER_ALG_NAME)
             print(f"PQC module initialized: {KYBER_ALG_NAME}")

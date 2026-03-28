@@ -129,7 +129,13 @@ def tunnel_radius(d: float, R: float = R_BASE, r_max: float = R_MAX) -> float:
     return r_max / cost
 
 
-def tunnel_radius_4d(d: float, t: float, decay_rate: float = 0.01, R: float = R_BASE, r_max: float = R_MAX) -> float:
+def tunnel_radius_4d(
+    d: float,
+    t: float,
+    decay_rate: float = 0.01,
+    R: float = R_BASE,
+    r_max: float = R_MAX,
+) -> float:
     """
     4D tunnel radius — includes time decay.
     r(d,t) = r_max / R^(d²) * exp(-λt)
@@ -640,7 +646,15 @@ def render_3d_tunnel(
 
     # --- 3D tunnel ---
     ax1 = fig.add_subplot(121, projection="3d")
-    ax1.plot_surface(X_grid, Y_grid, Z_grid, facecolors=colors, shade=True, alpha=0.5, edgecolors="none")
+    ax1.plot_surface(
+        X_grid,
+        Y_grid,
+        Z_grid,
+        facecolors=colors,
+        shade=True,
+        alpha=0.5,
+        edgecolors="none",
+    )
 
     # Agent path
     if agent_drifts:
@@ -650,7 +664,15 @@ def render_3d_tunnel(
         ax_path = ar * np.cos(at)
         ay_path = ar * np.sin(at)
         ax1.plot(ax_path, ay_path, az, color="white", linewidth=2.5, label="Agent path")
-        ax1.scatter([ax_path[-1]], [ay_path[-1]], [az[-1]], color="red", s=100, zorder=5, label="Now")
+        ax1.scatter(
+            [ax_path[-1]],
+            [ay_path[-1]],
+            [az[-1]],
+            color="red",
+            s=100,
+            zorder=5,
+            label="Now",
+        )
 
     # Zone rings
     for d_b in [DRIFT_GENTLE, DRIFT_REDIRECT, DRIFT_INSPECT, DRIFT_QUARANTINE]:
@@ -658,7 +680,12 @@ def render_3d_tunnel(
             br = tunnel_radius(d_b)
             btheta = np.linspace(0, 2 * np.pi, 64)
             ax1.plot(
-                br * np.cos(btheta), br * np.sin(btheta), np.full(64, d_b), color="white", linewidth=0.8, alpha=0.4
+                br * np.cos(btheta),
+                br * np.sin(btheta),
+                np.full(64, d_b),
+                color="white",
+                linewidth=0.8,
+                alpha=0.4,
             )
 
     ax1.set_xlabel("X")
@@ -676,7 +703,14 @@ def render_3d_tunnel(
     r_line = np.array([tunnel_radius(d) for d in d_line])
 
     # Zone fills
-    zone_bounds = [0, DRIFT_GENTLE, DRIFT_REDIRECT, DRIFT_INSPECT, DRIFT_QUARANTINE, length]
+    zone_bounds = [
+        0,
+        DRIFT_GENTLE,
+        DRIFT_REDIRECT,
+        DRIFT_INSPECT,
+        DRIFT_QUARANTINE,
+        length,
+    ]
     zone_names = ["ON_TRACK", "GENTLE", "REDIRECT", "INSPECT", "QUARANTINE"]
     zone_rgba = [
         (0.2, 0.4, 0.9, 0.3),
@@ -688,7 +722,13 @@ def render_3d_tunnel(
     for idx in range(len(zone_names)):
         lo, hi = zone_bounds[idx], zone_bounds[idx + 1]
         mask = (d_line >= lo) & (d_line <= hi)
-        ax2.fill_between(d_line[mask], -r_line[mask], r_line[mask], color=zone_rgba[idx], label=zone_names[idx])
+        ax2.fill_between(
+            d_line[mask],
+            -r_line[mask],
+            r_line[mask],
+            color=zone_rgba[idx],
+            label=zone_names[idx],
+        )
 
     ax2.plot(d_line, r_line, color="cyan", linewidth=2)
     ax2.plot(d_line, -r_line, color="cyan", linewidth=2)

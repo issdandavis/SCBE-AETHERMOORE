@@ -66,8 +66,16 @@ def test_gh_sweep_json_combines_sections_and_fix_lane(monkeypatch, capsys) -> No
             "blockers": ["1 CI check(s) failing.", "2 open code-scanning alert(s)."],
         },
     )
-    monkeypatch.setattr(scbe_system_cli, "_gh_prs_payload", lambda limit=5: {"count": 2, "items": [{"number": 10}]})
-    monkeypatch.setattr(scbe_system_cli, "_gh_issues_payload", lambda limit=5: {"count": 1, "items": [{"number": 77}]})
+    monkeypatch.setattr(
+        scbe_system_cli,
+        "_gh_prs_payload",
+        lambda limit=5: {"count": 2, "items": [{"number": 10}]},
+    )
+    monkeypatch.setattr(
+        scbe_system_cli,
+        "_gh_issues_payload",
+        lambda limit=5: {"count": 1, "items": [{"number": 77}]},
+    )
     monkeypatch.setattr(
         scbe_system_cli,
         "_gh_pulse_payload",

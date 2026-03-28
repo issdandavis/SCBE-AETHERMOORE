@@ -171,7 +171,7 @@ def _build_chunk_map(
     ring_counts = {k: 0 for k in ["core", "outer", "blocked"]}
     phase_counts = {k: 0 for k in TONGUES}
 
-    for path, file_findings in by_path.items():
+    for _path, file_findings in by_path.items():
         for finding in file_findings:
             phase_counts[finding.phase] = phase_counts.get(finding.phase, 0) + 1
 
@@ -321,15 +321,16 @@ def _make_task_summary(
 
     geoseal = summary.get("geoseal")
     if geoseal:
+        ring_distribution = geoseal.get("ring_distribution", {})
         lines.extend(
             [
                 "",
                 "## GeoSeal Ringing Summary",
                 f"- Total chunks assessed: {geoseal['total_chunks']}",
                 f"- Quarantine count: {geoseal['quarantine_count']}",
-                f"- Core rings: {geoseal['ring_distribution']['core']}",
-                f"- Outer rings: {geoseal['ring_distribution']['outer']}",
-                f"- Blocked rings: {geoseal['ring_distribution']['blocked']}",
+                f"- Core rings: {ring_distribution.get('core', 0)}",
+                f"- Outer rings: {ring_distribution.get('outer', 0)}",
+                f"- Blocked rings: {ring_distribution.get('blocked', 0)}",
                 "- Top phase tags:",
             ]
         )

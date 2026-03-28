@@ -72,7 +72,13 @@ def test_run_scratch_cell_reports_success_when_marker_appears() -> None:
             {"ok": True},
             {"ok": True, "method": "colab_api", "index": 20},
             {"ok": True, "method": "runButton.click"},
-            {"ok": True, "output_count": 1, "joined_text": "SCBE_COLAB_SMOKE_OK", "busy": False, "execution_count": 1},
+            {
+                "ok": True,
+                "output_count": 1,
+                "joined_text": "SCBE_COLAB_SMOKE_OK",
+                "busy": False,
+                "execution_count": 1,
+            },
         ]
     )
 
@@ -88,12 +94,22 @@ def test_runtime_attached_uses_kernel_state_and_connection_timestamp() -> None:
     assert smoke._runtime_attached({"usage_visible": True, "kernel_state": "connect"}) is True
     assert smoke._runtime_attached({"usage_visible": False, "kernel_state": "connected"}) is True
     assert (
-        smoke._runtime_attached({"usage_visible": False, "kernel_state": "connect", "kernel_last_connected_time_ms": 1})
+        smoke._runtime_attached(
+            {
+                "usage_visible": False,
+                "kernel_state": "connect",
+                "kernel_last_connected_time_ms": 1,
+            }
+        )
         is True
     )
     assert (
         smoke._runtime_attached(
-            {"usage_visible": False, "kernel_state": "connect", "kernel_last_connected_time_ms": -1}
+            {
+                "usage_visible": False,
+                "kernel_state": "connect",
+                "kernel_last_connected_time_ms": -1,
+            }
         )
         is False
     )

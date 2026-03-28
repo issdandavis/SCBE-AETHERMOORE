@@ -1,8 +1,7 @@
 name: Auto-Resolve Merge Conflicts
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write

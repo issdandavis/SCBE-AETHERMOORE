@@ -160,7 +160,14 @@ def _squad_with_6_units() -> SquadSpace:
 class TestPadModesExist:
     """Verify the PAD_MODES constant contains exactly 6 modes."""
 
-    EXPECTED_MODES = {"ENGINEERING", "NAVIGATION", "SYSTEMS", "SCIENCE", "COMMS", "MISSION"}
+    EXPECTED_MODES = {
+        "ENGINEERING",
+        "NAVIGATION",
+        "SYSTEMS",
+        "SCIENCE",
+        "COMMS",
+        "MISSION",
+    }
 
     def test_pad_modes_count(self):
         assert len(PAD_MODES) == 6

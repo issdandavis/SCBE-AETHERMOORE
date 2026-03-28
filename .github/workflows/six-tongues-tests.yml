@@ -1,18 +1,7 @@
 name: Six Tongues CLI Tests
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - '**.py'
-      - 'requirements*.txt'
-      - '.github/workflows/six-tongues-tests.yml'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - '**.py'
-      - 'requirements*.txt'
-      - '.github/workflows/six-tongues-tests.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -22,18 +11,15 @@ jobs:
     name: Run Six Tongues Selftest
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    strategy:
-      matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12']
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |

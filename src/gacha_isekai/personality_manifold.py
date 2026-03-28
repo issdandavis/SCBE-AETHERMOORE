@@ -342,12 +342,52 @@ class PersonalityManifold:
 
         # Keyword -> facet mapping
         triggers = {
-            "curiosity": ["what", "how", "why", "explore", "discover", "wonder", "quest"],
-            "empathy": ["feel", "help", "care", "understand", "sorry", "emotion", "friend"],
-            "wisdom": ["know", "history", "lore", "ancient", "teach", "remember", "elder"],
+            "curiosity": [
+                "what",
+                "how",
+                "why",
+                "explore",
+                "discover",
+                "wonder",
+                "quest",
+            ],
+            "empathy": [
+                "feel",
+                "help",
+                "care",
+                "understand",
+                "sorry",
+                "emotion",
+                "friend",
+            ],
+            "wisdom": [
+                "know",
+                "history",
+                "lore",
+                "ancient",
+                "teach",
+                "remember",
+                "elder",
+            ],
             "wit": ["funny", "joke", "clever", "trick", "pun", "laugh", "haha"],
-            "vigilance": ["danger", "careful", "watch", "threat", "protect", "guard", "warning"],
-            "resolve": ["mission", "must", "duty", "promise", "fight", "defend", "never give up"],
+            "vigilance": [
+                "danger",
+                "careful",
+                "watch",
+                "threat",
+                "protect",
+                "guard",
+                "warning",
+            ],
+            "resolve": [
+                "mission",
+                "must",
+                "duty",
+                "promise",
+                "fight",
+                "defend",
+                "never give up",
+            ],
         }
 
         activations = {}
@@ -433,7 +473,7 @@ class PersonalityManifold:
         )
 
         trait_lines = []
-        for name, act, desc, bridge in active[:3]:
+        for name, _act, desc, bridge in active[:3]:
             depth = "deep" if bridge > 0.5 else "surface"
             trait_lines.append(f"- {name} ({depth}): {desc}")
 

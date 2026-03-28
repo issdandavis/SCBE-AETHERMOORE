@@ -795,7 +795,7 @@ class TriManifoldPersonality:
                 center=facet.positive_point.copy(),
             )
             # Seed positive particles
-            for i in range(5):
+            for _i in range(5):
                 noise = np.random.randn(DIM) * 0.04
                 p = _poincare_project(facet.positive_point + noise)
                 pos_cluster.add_particle(p, spin=1)
@@ -808,7 +808,7 @@ class TriManifoldPersonality:
                 center=facet.negative_point.copy(),
             )
             # Seed negative particles
-            for i in range(4):
+            for _i in range(4):
                 noise = np.random.randn(DIM) * 0.04
                 n = _poincare_project(facet.negative_point + noise)
                 neg_cluster.add_particle(n, spin=-1)
@@ -1223,7 +1223,7 @@ class TriManifoldPersonality:
 
         # Channel statistics
         channel_stats = {}
-        for (src, tgt), channel in self.channels.items():
+        for (_src, _tgt), channel in self.channels.items():
             channel_stats[channel.name] = {
                 "coupling": round(channel.coupling, 3),
                 "transfers": channel.transfer_count,
@@ -1274,7 +1274,7 @@ class TriManifoldPersonality:
         )[:3]
 
         tri_lines = []
-        for name, act in active_facets:
+        for name, _act in active_facets:
             bridges = self.tri_bridge_strength(name)
             tri_coupling = bridges["tri_coupling"]
             depth_word = (

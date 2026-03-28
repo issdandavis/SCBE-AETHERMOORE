@@ -12,6 +12,7 @@ Positive/negative mirror symmetrically around it.
 
 Patent relevant: extends USPTO #63/961,403
 """
+
 from __future__ import annotations
 
 import math
@@ -28,8 +29,9 @@ class PhiTernary:
     q: ternary state (-1, 0, +1)
     k: phi exponent (determines scale/depth)
     """
-    q: int   # -1, 0, or +1
-    k: int   # phi exponent
+
+    q: int  # -1, 0, or +1
+    k: int  # phi exponent
 
     def __post_init__(self):
         if self.q not in (-1, 0, 1):
@@ -38,7 +40,7 @@ class PhiTernary:
     @property
     def weight(self) -> float:
         """Phi-scaled weight: phi^k."""
-        return PHI ** self.k
+        return PHI**self.k
 
     @property
     def value(self) -> float:
@@ -88,6 +90,7 @@ class DualPhiTernary:
     Agreement: both centers match -> 1 = 1
     Disagreement: non-congruent object detected
     """
+
     a: PhiTernary
     b: PhiTernary
 
@@ -103,7 +106,7 @@ class DualPhiTernary:
             return 0.0
         diff = abs(self.a.q - self.b.q)  # 0, 1, or 2
         max_k = max(self.a.k, self.b.k)
-        return diff * PHI ** max_k
+        return diff * PHI**max_k
 
     @property
     def combined_value(self) -> float:
@@ -156,7 +159,7 @@ def tongue_vector_to_phi_ternary(activations: List[float], threshold: float = 0.
     """
     tongues = ["KO", "AV", "RU", "CA", "UM", "DR"]
     result = []
-    for i, (tongue, val) in enumerate(zip(tongues, activations)):
+    for i, (_tongue, val) in enumerate(zip(tongues, activations)):
         if val > threshold:
             q = 1
         elif val < -threshold:
@@ -173,7 +176,7 @@ def phi_ternary_energy(values: List[PhiTernary]) -> float:
     Energy = sum of |value|^2 = sum of (q * phi^k)^2.
     Neutral states contribute 0. Activated states contribute phi^(2k).
     """
-    return sum(v.value ** 2 for v in values)
+    return sum(v.value**2 for v in values)
 
 
 def phi_ternary_center(values: List[PhiTernary]) -> float:

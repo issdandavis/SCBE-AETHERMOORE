@@ -18,15 +18,60 @@ def _load_pi_phi_deriver():
     Attempts to locate a callable pi^phi derivation function across likely modules.
     """
     candidates = [
-        ("src.polly_pads_runtime", ["harmonic_cost", "access_cost", "pi_phi_key_derivation", "derive_pi_phi_key"]),
-        ("src.scbe_14layer_reference", ["pi_phi_key_derivation", "derive_pi_phi_key", "pi_phi_wall", "harmonic_wall"]),
-        ("src.holographic_qr_cube", ["pi_phi_key_derivation", "derive_pi_phi_key", "pi_phi_wall", "harmonic_wall"]),
-        ("src.qr_cube", ["pi_phi_key_derivation", "derive_pi_phi_key", "pi_phi_wall", "harmonic_wall"]),
+        (
+            "src.polly_pads_runtime",
+            [
+                "harmonic_cost",
+                "access_cost",
+                "pi_phi_key_derivation",
+                "derive_pi_phi_key",
+            ],
+        ),
+        (
+            "src.scbe_14layer_reference",
+            [
+                "pi_phi_key_derivation",
+                "derive_pi_phi_key",
+                "pi_phi_wall",
+                "harmonic_wall",
+            ],
+        ),
+        (
+            "src.holographic_qr_cube",
+            [
+                "pi_phi_key_derivation",
+                "derive_pi_phi_key",
+                "pi_phi_wall",
+                "harmonic_wall",
+            ],
+        ),
+        (
+            "src.qr_cube",
+            [
+                "pi_phi_key_derivation",
+                "derive_pi_phi_key",
+                "pi_phi_wall",
+                "harmonic_wall",
+            ],
+        ),
         (
             "src.layer12_harmonic_scaling",
-            ["pi_phi_key_derivation", "derive_pi_phi_key", "pi_phi_wall", "harmonic_wall"],
+            [
+                "pi_phi_key_derivation",
+                "derive_pi_phi_key",
+                "pi_phi_wall",
+                "harmonic_wall",
+            ],
         ),
-        ("src.kernel.harmonic_scaling", ["pi_phi_key_derivation", "derive_pi_phi_key", "pi_phi_wall", "harmonic_wall"]),
+        (
+            "src.kernel.harmonic_scaling",
+            [
+                "pi_phi_key_derivation",
+                "derive_pi_phi_key",
+                "pi_phi_wall",
+                "harmonic_wall",
+            ],
+        ),
     ]
 
     last_err = None

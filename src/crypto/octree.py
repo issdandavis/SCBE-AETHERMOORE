@@ -57,7 +57,13 @@ class OctreeNode:
     Leaf nodes store a color/realm label.
     """
 
-    def __init__(self, bounds_min: np.ndarray, bounds_max: np.ndarray, depth: int, max_depth: int = 6):
+    def __init__(
+        self,
+        bounds_min: np.ndarray,
+        bounds_max: np.ndarray,
+        depth: int,
+        max_depth: int = 6,
+    ):
         self.bounds_min = bounds_min
         self.bounds_max = bounds_max
         self.center = (bounds_min + bounds_max) / 2.0
@@ -325,7 +331,10 @@ class HyperbolicOctree:
         return self.root.collect_spectral_voxels()
 
     def find_spectral_neighbors(
-        self, target_voxel: SpectralVoxel, max_distance: float = 0.5, max_results: int = 10
+        self,
+        target_voxel: SpectralVoxel,
+        max_distance: float = 0.5,
+        max_results: int = 10,
     ) -> List[Tuple[np.ndarray, SpectralVoxel, float]]:
         """
         Find spectrally similar voxels.

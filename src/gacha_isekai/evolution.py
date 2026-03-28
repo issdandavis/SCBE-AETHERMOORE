@@ -108,7 +108,14 @@ class EvolutionState:
     evolution_pressure: float = 0.0
     career: Optional[Career] = None
     tongue_proficiency: Dict[str, float] = field(
-        default_factory=lambda: {"KO": 0.0, "AV": 0.0, "RU": 0.0, "CA": 0.0, "UM": 0.0, "DR": 0.0}
+        default_factory=lambda: {
+            "KO": 0.0,
+            "AV": 0.0,
+            "RU": 0.0,
+            "CA": 0.0,
+            "UM": 0.0,
+            "DR": 0.0,
+        }
     )
 
     @property

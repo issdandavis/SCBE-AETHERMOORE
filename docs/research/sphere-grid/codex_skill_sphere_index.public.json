@@ -1,0 +1,3707 @@
+{
+  "generated_at_utc": "2026-03-28T22:17:38.305603+00:00",
+  "count": 103,
+  "items": [
+    {
+      "skill": "aether-phone-lane-ops",
+      "skill_dir": "aether-phone-lane-ops",
+      "description": "Boot, recover, tune, and verify the SCBE Android emulator phone lane for AetherCode and Polly Pad. Use when Codex needs to operate the `SCBE_Pixel_6_API35` emulator, repair stale lock state, resize the phone surface, or prove the current lane state from local artifacts.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 3,
+        "sphere_name": "Self Healing",
+        "sphere_link": "DR-Structure/T3-Self-Healing/_sphere"
+      },
+      "skill_doc": "skills/aether-phone-lane-ops/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "DR",
+          "tier": 3,
+          "score": 3.0,
+          "hits": [
+            "recover"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "aetherbrowser-arxiv-nav",
+      "skill_dir": "aetherbrowser-arxiv-nav",
+      "description": "Navigate arXiv papers and topic searches through AetherBrowser for research extraction workflows. Use when collecting abstracts, paper metadata, and evidence snapshots from arxiv.org.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 1,
+        "sphere_name": "Web Search",
+        "sphere_link": "AV-Transport/T1-Web-Search/_sphere"
+      },
+      "skill_doc": "skills/aetherbrowser-arxiv-nav/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 4.0,
+          "hits": [
+            "arxiv"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 4.0,
+          "hits": [
+            "navigate"
+          ]
+        },
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "research extraction"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "aetherbrowser-github-nav",
+      "skill_dir": "aetherbrowser-github-nav",
+      "description": "Navigate GitHub repositories, pull requests, issues, and settings through AetherBrowser tentacle routing. Use when tasks require browser-based GitHub movement, page evidence capture, or coordinated lane assignment with playwriter or playwright.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 2,
+        "sphere_name": "Navigation",
+        "sphere_link": "AV-Transport/T2-Navigation/_sphere"
+      },
+      "skill_doc": "skills/aetherbrowser-github-nav/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 19.0,
+          "hits": [
+            "navigate",
+            "browser",
+            "playwright",
+            "playwriter",
+            "github nav"
+          ]
+        },
+        {
+          "tongue": "UM",
+          "tier": 3,
+          "score": 2.0,
+          "hits": [
+            "evidence"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "aetherbrowser-huggingface-nav",
+      "skill_dir": "aetherbrowser-huggingface-nav",
+      "description": "Navigate Hugging Face models, datasets, and spaces through AetherBrowser for research, validation, and publishing workflows. Use when inspecting repo cards, files, docs, and leaderboard surfaces in browser mode.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 2,
+        "sphere_name": "Navigation",
+        "sphere_link": "AV-Transport/T2-Navigation/_sphere"
+      },
+      "skill_doc": "skills/aetherbrowser-huggingface-nav/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 7.0,
+          "hits": [
+            "navigate",
+            "browser"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 1,
+          "score": 3.0,
+          "hits": [
+            "docs"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "aetherbrowser-notion-nav",
+      "skill_dir": "aetherbrowser-notion-nav",
+      "description": "Navigate Notion workspace pages in AetherBrowser for knowledge retrieval and workspace coordination tasks. Use when locating pages, databases, or section paths in browser mode before API operations.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 2,
+        "sphere_name": "Navigation",
+        "sphere_link": "AV-Transport/T2-Navigation/_sphere"
+      },
+      "skill_doc": "skills/aetherbrowser-notion-nav/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 7.0,
+          "hits": [
+            "navigate",
+            "browser"
+          ]
+        },
+        {
+          "tongue": "KO",
+          "tier": 3,
+          "score": 4.0,
+          "hits": [
+            "coordination"
+          ]
+        },
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "notion"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "aetherbrowser-operator",
+      "skill_dir": "aetherbrowser-operator",
+      "description": "Operate AetherBrowser as the primary online task surface across search, GitHub, Codespaces, research, Notion, Hugging Face, Shopify, and general web work. Use when Codex should drive a real browser session first, coordinate with built-in search or fetch tools second, capture page-state proof, and keep online work inside the SCBE browser lane instead of defaulting to generic web automation.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 1,
+        "sphere_name": "Web Search",
+        "sphere_link": "AV-Transport/T1-Web-Search/_sphere"
+      },
+      "skill_doc": "skills/aetherbrowser-operator/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 3.0,
+          "hits": [
+            "search"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "browser"
+          ]
+        },
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "notion"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "aetherbrowser-shopify-nav",
+      "skill_dir": "aetherbrowser-shopify-nav",
+      "description": "Navigate Shopify admin and storefront pages through AetherBrowser for merchandising and operations tasks. Use when working on products, collections, orders, settings, or marketing surfaces in browser mode.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 2,
+        "sphere_name": "Navigation",
+        "sphere_link": "AV-Transport/T2-Navigation/_sphere"
+      },
+      "skill_doc": "skills/aetherbrowser-shopify-nav/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 7.0,
+          "hits": [
+            "navigate",
+            "browser"
+          ]
+        },
+        {
+          "tongue": "KO",
+          "tier": 4,
+          "score": 3.0,
+          "hits": [
+            "admin"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "aethermoor-lore",
+      "skill_dir": "aethermoor-lore",
+      "description": "Reference and generate Aethermoor world lore, characters, locations, magic systems, and story canon. Use when writing dialogue, scenes, world-building content, NPC backstories, quest text, or any narrative content for the Aethermoor game.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 1,
+        "sphere_name": "Code Generation",
+        "sphere_link": "CA-Compute/T1-Code-Generation/_sphere"
+      },
+      "skill_doc": "skills/aethermoor-lore/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 3.0,
+          "hits": [
+            "game"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "agent-handoff-packager",
+      "skill_dir": "agent-handoff-packager",
+      "description": "Package agent context and state for handoff between agents or sessions. Use when transferring work between agents, saving checkpoint state, or preparing a compact summary for another agent to resume from.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 4,
+        "sphere_name": "Fleet Transport",
+        "sphere_link": "AV-Transport/T4-Fleet-Transport/_sphere"
+      },
+      "skill_doc": "skills/agent-handoff-packager/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "handoff"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "article-posting-ops",
+      "skill_dir": "article-posting-ops",
+      "description": "Create, validate, and publish SCBE articles across social/blog platforms with API-first posting and Playwright browser fallback. Use when the user asks to write articles, post online, run headless browser posting, or move content toward revenue with lead capture.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 2,
+        "sphere_name": "Navigation",
+        "sphere_link": "AV-Transport/T2-Navigation/_sphere"
+      },
+      "skill_doc": "skills/article-posting-ops/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 7.0,
+          "hits": [
+            "browser",
+            "playwright"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "api"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 1,
+          "score": 1.5,
+          "hits": [
+            "write"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "book-manuscript-edit",
+      "skill_dir": "book-manuscript-edit",
+      "description": "Edit, rebuild, visually review, reverse-sync, and stage KDP upload for The Six Tongues Protocol and similar SCBE book projects. Use when asked to edit chapter prose, do a style pass, sync LibreOffice edits back to Markdown, rebuild the KDP DOCX, prepare a review packet, or keep the Markdown to DOCX to review to upload flow aligned.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 4,
+        "sphere_name": "Fleet Transport",
+        "sphere_link": "AV-Transport/T4-Fleet-Transport/_sphere"
+      },
+      "skill_doc": "skills/book-manuscript-edit/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 4.0,
+          "hits": [
+            "sync"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "book-publication-ops",
+      "skill_dir": "book-publication-ops",
+      "description": "Research, format, review, and package books for ebook and print publication. Use when preparing a manuscript for KDP or similar platforms, building a source-document conversion matrix, auditing compiled manuscripts, generating EPUB/PDF/cover specs, staging AI review lanes, or assembling upload-ready publication packets.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/book-publication-ops/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "development-flow-loop",
+      "skill_dir": "development-flow-loop",
+      "description": "Structured software delivery lifecycle for coding tasks that should move from planning to production with repeated quality gates. Use when building features, refactors, integrations, automations, or systems work where the expected flow is Plan, Architect, Evaluate, Implement, Test, Fix, Test, Improve, Test, Fix or Launch, Launch.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 1,
+        "sphere_name": "Code Generation",
+        "sphere_link": "CA-Compute/T1-Code-Generation/_sphere"
+      },
+      "skill_doc": "skills/development-flow-loop/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 3.0,
+          "hits": [
+            "implement"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "test"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "fix"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "figma",
+      "skill_dir": "figma",
+      "description": "Use the Figma MCP server to fetch design context, screenshots, variables, and assets from Figma, and to translate Figma nodes into production code. Trigger when a task involves Figma URLs, node IDs, design-to-code implementation, or Figma MCP setup and troubleshooting.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 4,
+        "sphere_name": "Fleet Transport",
+        "sphere_link": "AV-Transport/T4-Fleet-Transport/_sphere"
+      },
+      "skill_doc": "skills/figma/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 3.0,
+          "hits": [
+            "mcp"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "code"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "server"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "figma-implement-design",
+      "skill_dir": "figma-implement-design",
+      "description": "Translate Figma nodes into production-ready code with 1:1 visual fidelity using the Figma MCP workflow (design context, screenshots, assets, and project-convention translation). Trigger when the user provides Figma URLs or node IDs, or asks to implement designs or components that must match Figma specs. Requires a working Figma MCP server connection.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 1,
+        "sphere_name": "Code Generation",
+        "sphere_link": "CA-Compute/T1-Code-Generation/_sphere"
+      },
+      "skill_doc": "skills/figma-implement-design/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 5.0,
+          "hits": [
+            "code",
+            "implement"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 3.0,
+          "hits": [
+            "mcp"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "server"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "frontend-skill",
+      "skill_dir": "frontend-skill",
+      "description": "Use when the task asks for a visually strong landing page, website, app, prototype, demo, or game UI. This skill enforces restrained composition, image-led hierarchy, cohesive content structure, and tasteful motion while avoiding generic cards, weak branding, and UI clutter.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 1,
+        "sphere_name": "Code Generation",
+        "sphere_link": "CA-Compute/T1-Code-Generation/_sphere"
+      },
+      "skill_doc": "skills/frontend-skill/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 6.0,
+          "hits": [
+            "frontend",
+            "game"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "game-dev",
+      "skill_dir": "game-dev",
+      "description": "Build, prototype, debug, and ship game features across Unity, Unreal, Godot, and web game stacks. Use when requests involve gameplay systems, mechanics implementation, level scripting, input/camera/UI flow, save-load design, multiplayer foundations, performance profiling, content pipelines, or release-readiness planning for game projects.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 1,
+        "sphere_name": "Code Generation",
+        "sphere_link": "CA-Compute/T1-Code-Generation/_sphere"
+      },
+      "skill_doc": "skills/game-dev/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 5.0,
+          "hits": [
+            "game",
+            "build"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 2,
+          "score": 4.0,
+          "hits": [
+            "debug"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "design"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "gh-address-comments",
+      "skill_dir": "gh-address-comments",
+      "description": "Help address review/issue comments on the open GitHub PR for the current branch using gh CLI; verify gh auth first and prompt the user to authenticate if not logged in.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/gh-address-comments/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "gh-fix-ci",
+      "skill_dir": "gh-fix-ci",
+      "description": "Use when a user asks to debug or fix failing GitHub PR checks that run in GitHub Actions; use `gh` to inspect checks and logs, summarize failure context, draft a fix plan, and implement only after explicit approval. Treat external providers (for example Buildkite) as out of scope and report only the details URL.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 2,
+        "sphere_name": "Debugging",
+        "sphere_link": "DR-Structure/T2-Debugging/_sphere"
+      },
+      "skill_doc": "skills/gh-fix-ci/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "DR",
+          "tier": 2,
+          "score": 11.0,
+          "hits": [
+            "debug",
+            "fix",
+            "ci",
+            "failing"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 3.0,
+          "hits": [
+            "implement"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "gumroad-upload-management",
+      "skill_dir": "gumroad-upload-management",
+      "description": "Automate Gumroad product image uploads and listing maintenance with Selenium and Chrome profile sessions. Use when users ask to upload or replace Gumroad product images, map local image files to product pages, run `gumroad_image_uploader.py`, troubleshoot Chrome/Selenium session failures, or verify upload results from logs.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 4,
+        "sphere_name": "Architecture",
+        "sphere_link": "DR-Structure/T4-Architecture/_sphere"
+      },
+      "skill_doc": "skills/gumroad-upload-management/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "DR",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "map"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "hf-publish-workflow",
+      "skill_dir": "hf-publish-workflow",
+      "description": "Automate Hugging Face model/dataset/space publishing from PowerShell with one-time auth, README card generation, `hf upload` commands, and optional `--create-pr` review flow. Use when users ask to log in to Hugging Face CLI, publish artifacts, add or update model/dataset/space cards, wire a reusable profile publish function (for example `scbe-hf-publish`), or troubleshoot common `hf` command usage.",
+      "primary": {
+        "tongue": "RU",
+        "tier": 2,
+        "sphere_name": "Data Collection",
+        "sphere_link": "RU-Entropy/T2-Data-Collection/_sphere"
+      },
+      "skill_doc": "skills/hf-publish-workflow/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 4.0,
+          "hits": [
+            "dataset"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "high-school-explainer",
+      "skill_dir": "high-school-explainer",
+      "description": "Use when the user asks for simple high-school-level explanations of complex topics.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/high-school-explainer/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "hugging-face-cli",
+      "skill_dir": "hugging-face-cli",
+      "description": "Execute Hugging Face Hub operations using the `hf` CLI. Use when the user needs to download models/datasets/spaces, upload files to Hub repositories, create repos, manage local cache, or run compute jobs on HF infrastructure. Covers authentication, file transfers, repository creation, cache operations, and cloud compute.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/hugging-face-cli/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "hugging-face-datasets",
+      "skill_dir": "hugging-face-datasets",
+      "description": "Create and manage datasets on Hugging Face Hub. Supports initializing repos, defining configs/system prompts, streaming row updates, and SQL-based dataset querying/transformation. Designed to work alongside HF MCP server for comprehensive dataset workflows.",
+      "primary": {
+        "tongue": "RU",
+        "tier": 2,
+        "sphere_name": "Data Collection",
+        "sphere_link": "RU-Entropy/T2-Data-Collection/_sphere"
+      },
+      "skill_doc": "skills/hugging-face-datasets/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 4.0,
+          "hits": [
+            "dataset"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 3.0,
+          "hits": [
+            "mcp"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "server"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "hugging-face-model-trainer",
+      "skill_dir": "hugging-face-model-trainer",
+      "description": "This skill should be used when users want to train or fine-tune language models using TRL (Transformer Reinforcement Learning) on Hugging Face Jobs infrastructure. Covers SFT, DPO, GRPO and reward modeling training methods, plus GGUF conversion for local deployment. Includes guidance on the TRL Jobs package, UV scripts with PEP 723 format, dataset preparation and validation, hardware selection, cost estimation, Trackio monitoring, Hub authentication, and model persistence. Should be invoked for tasks involving cloud GPU training, GGUF conversion, or when users mention training on Hugging Face Jobs without local GPU setup.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 3,
+        "sphere_name": "Training Pipeline",
+        "sphere_link": "CA-Compute/T3-Training-Pipeline/_sphere"
+      },
+      "skill_doc": "skills/hugging-face-model-trainer/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 3,
+          "score": 17.0,
+          "hits": [
+            "train",
+            "fine-tune",
+            "trl",
+            "sft",
+            "dpo"
+          ]
+        },
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 4.0,
+          "hits": [
+            "dataset"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "hydra-clawbot-synthesis",
+      "skill_dir": "hydra-clawbot-synthesis",
+      "description": "Synthesize HYDRA terminal browsing, multi-agent orchestration, Playwright smoke checks, Airtable/Hugging Face dataset handoff, and Obsidian command-lane publishing for Clawbot/OpenClaw operations.",
+      "primary": {
+        "tongue": "RU",
+        "tier": 2,
+        "sphere_name": "Data Collection",
+        "sphere_link": "RU-Entropy/T2-Data-Collection/_sphere"
+      },
+      "skill_doc": "skills/hydra-clawbot-synthesis/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 6.0,
+          "hits": [
+            "dataset",
+            "obsidian"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 4.0,
+          "hits": [
+            "playwright"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "handoff"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "hydra-deep-research-self-healing",
+      "skill_dir": "hydra-deep-research-self-healing",
+      "description": "Run deep-research loops with HYDRA/Clawbot using self-healing workflow methods (sense, plan, execute, verify, recover), combining arXiv routing, Playwright evidence capture, synthesis smoke checks, and CI triage hooks. Use when operating long-running 24/7 research automation with deterministic cross-talk logging.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 3,
+        "sphere_name": "Self Healing",
+        "sphere_link": "DR-Structure/T3-Self-Healing/_sphere"
+      },
+      "skill_doc": "skills/hydra-deep-research-self-healing/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "DR",
+          "tier": 3,
+          "score": 7.0,
+          "hits": [
+            "self-heal",
+            "recover"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 4.0,
+          "hits": [
+            "arxiv"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 4.0,
+          "hits": [
+            "playwright"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "hydra-node-terminal-browsing",
+      "skill_dir": "hydra-node-terminal-browsing",
+      "description": "Use when HYDRA tasks need Node.js-first terminal browsing, deterministic page extraction, and evidence JSON output that can be routed into hydra swarm workflows.",
+      "primary": {
+        "tongue": "UM",
+        "tier": 3,
+        "sphere_name": "Audit Trail",
+        "sphere_link": "UM-Security/T3-Audit-Trail/_sphere"
+      },
+      "skill_doc": "skills/hydra-node-terminal-browsing/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "UM",
+          "tier": 3,
+          "score": 2.0,
+          "hits": [
+            "evidence"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "issac-story-engine",
+      "skill_dir": "issac-story-engine",
+      "description": "Write and revise scenes, chapters, and full novels in Issac's style using research-backed craft, canon-aware worldbuilding, and a balanced technical-plus-human narrative voice. Use when drafting fiction, sharpening scenes, adding interludes, preserving tone, or turning research and lore into readable prose.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/issac-story-engine/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "DR",
+          "tier": 1,
+          "score": 1.5,
+          "hits": [
+            "write"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "kindle-app-delivery",
+      "skill_dir": "kindle-app-delivery",
+      "description": "Build, sideload, and publish the SCBE Kindle/Fire app using Capacitor, Gradle, ADB, and Amazon Appstore checklist steps.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 1,
+        "sphere_name": "Code Generation",
+        "sphere_link": "CA-Compute/T1-Code-Generation/_sphere"
+      },
+      "skill_doc": "skills/kindle-app-delivery/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "build"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "kindle-app-ops",
+      "skill_dir": "kindle-app-ops",
+      "description": "Build, sideload, and validate the SCBE Kindle/Fire OS app loop with Capacitor, ADB, and release-readiness checks.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 1,
+        "sphere_name": "Code Generation",
+        "sphere_link": "CA-Compute/T1-Code-Generation/_sphere"
+      },
+      "skill_doc": "skills/kindle-app-ops/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "build"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "kindle-tablet-ui-review",
+      "skill_dir": "kindle-tablet-ui-review",
+      "description": "Review and improve AetherCode UI for Kindle Fire tablet constraints (7-11 inch displays, touch ergonomics, offline resilience).",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/kindle-tablet-ui-review/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "living-codex-browser-builder",
+      "skill_dir": "living-codex-browser-builder",
+      "description": "Build and evolve an AI-native browser stack (Living Codex Browser / AetherBrowse) using existing SCBE infrastructure. Use when implementing browser architecture, headless research lanes, UI panels, agent routing, or browser reliability/performance upgrades across Electron, Playwright, and runtime APIs.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 2,
+        "sphere_name": "Navigation",
+        "sphere_link": "AV-Transport/T2-Navigation/_sphere"
+      },
+      "skill_doc": "skills/living-codex-browser-builder/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 7.0,
+          "hits": [
+            "browser",
+            "playwright"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 4,
+          "score": 4.0,
+          "hits": [
+            "architecture"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "build"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "multi-agent-orchestrator",
+      "skill_dir": "multi-agent-orchestrator",
+      "description": "Coordinate multi-agent workflows end to end. Use when a task should be decomposed into parallel sub-work with explicit ownership, dependency ordering, collision avoidance, checkpoint tracking, and final output recomposition.",
+      "primary": {
+        "tongue": "KO",
+        "tier": 3,
+        "sphere_name": "Rally Coordination",
+        "sphere_link": "KO-Command/T3-Rally-Coordination/_sphere"
+      },
+      "skill_doc": "skills/multi-agent-orchestrator/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "KO",
+          "tier": 3,
+          "score": 3.0,
+          "hits": [
+            "orchestrator"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "multi-agent-review-gate",
+      "skill_dir": "multi-agent-review-gate",
+      "description": "Run a structured review gate before merging multi-agent outputs. Use when multiple agents have produced work packets that need quality checks, conflict detection, and approval before integration.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/multi-agent-review-gate/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "multi-model-animation-studio-notes",
+      "skill_dir": "multi-model-animation-studio-notes",
+      "description": "Organize animation and manhwa/webtoon production notes across multiple AI models and reference sources. Use when extracting reference frames from recap videos or webtoon pages, planning scene packets, comparing model lanes, or preserving arc-level world continuity while allowing deliberate per-panel style shifts.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/multi-model-animation-studio-notes/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "notion",
+      "skill_dir": "notion",
+      "description": "Notion API for creating and managing pages, databases, and blocks.",
+      "primary": {
+        "tongue": "RU",
+        "tier": 2,
+        "sphere_name": "Data Collection",
+        "sphere_link": "RU-Entropy/T2-Data-Collection/_sphere"
+      },
+      "skill_doc": "skills/notion/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "notion"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "api"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "notion-hf-curator",
+      "skill_dir": "notion-hf-curator",
+      "description": "End-to-end Notion-to-Hugging Face dataset and model curation workflow for SCBE repositories (export, QA, comparison, GitHub Actions, publishing).",
+      "primary": {
+        "tongue": "RU",
+        "tier": 2,
+        "sphere_name": "Data Collection",
+        "sphere_link": "RU-Entropy/T2-Data-Collection/_sphere"
+      },
+      "skill_doc": "skills/notion-hf-curator/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 6.0,
+          "hits": [
+            "dataset",
+            "notion"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "notion-knowledge-capture",
+      "skill_dir": "notion-knowledge-capture",
+      "description": "Capture conversations and decisions into structured Notion pages; use when turning chats/notes into wiki entries, how-tos, decisions, or FAQs with proper linking.",
+      "primary": {
+        "tongue": "RU",
+        "tier": 2,
+        "sphere_name": "Data Collection",
+        "sphere_link": "RU-Entropy/T2-Data-Collection/_sphere"
+      },
+      "skill_doc": "skills/notion-knowledge-capture/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "notion"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "notion-meeting-intelligence",
+      "skill_dir": "notion-meeting-intelligence",
+      "description": "Prepare meeting materials with Notion context and Codex research; use when gathering context, drafting agendas/pre-reads, and tailoring materials to attendees.",
+      "primary": {
+        "tongue": "RU",
+        "tier": 2,
+        "sphere_name": "Data Collection",
+        "sphere_link": "RU-Entropy/T2-Data-Collection/_sphere"
+      },
+      "skill_doc": "skills/notion-meeting-intelligence/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "notion"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "notion-research-documentation",
+      "skill_dir": "notion-research-documentation",
+      "description": "Research across Notion and synthesize into structured documentation; use when gathering info from multiple Notion sources to produce briefs, comparisons, or reports with citations.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/notion-research-documentation/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "DR",
+          "tier": 1,
+          "score": 4.0,
+          "hits": [
+            "documentation"
+          ]
+        },
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "notion"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "notion-spec-to-implementation",
+      "skill_dir": "notion-spec-to-implementation",
+      "description": "Turn Notion specs into implementation plans, tasks, and progress tracking; use when implementing PRDs/feature specs and creating Notion plans + tasks from them.",
+      "primary": {
+        "tongue": "RU",
+        "tier": 2,
+        "sphere_name": "Data Collection",
+        "sphere_link": "RU-Entropy/T2-Data-Collection/_sphere"
+      },
+      "skill_doc": "skills/notion-spec-to-implementation/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "notion"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "novel-editor-flow",
+      "skill_dir": "novel-editor-flow",
+      "description": "Assess fiction manuscripts and run a staged developmental-to-publication edit flow. Use when reading a novel draft or compiled manuscript to diagnose scene thinness, pacing, subtext, foreshadowing, emotional payoff, relationship arcs, or publication readiness, especially when turning a PDF or rough draft into an edited source, review packet, EPUB, and print-ready files.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/novel-editor-flow/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "obsidian",
+      "skill_dir": "obsidian",
+      "description": "Work with Obsidian vaults (plain Markdown notes) and automate via obsidian-cli.",
+      "primary": {
+        "tongue": "RU",
+        "tier": 2,
+        "sphere_name": "Data Collection",
+        "sphere_link": "RU-Entropy/T2-Data-Collection/_sphere"
+      },
+      "skill_doc": "skills/obsidian/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "obsidian"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "obsidian-vault-ops",
+      "skill_dir": "obsidian-vault-ops",
+      "description": "Operate Obsidian vaults for SCBE workflows, including discovery, inspection, and controlled note export.",
+      "primary": {
+        "tongue": "RU",
+        "tier": 2,
+        "sphere_name": "Data Collection",
+        "sphere_link": "RU-Entropy/T2-Data-Collection/_sphere"
+      },
+      "skill_doc": "skills/obsidian-vault-ops/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "obsidian"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "octoarms-hydra-model-swarm",
+      "skill_dir": "octoarms-hydra-model-swarm",
+      "description": "Coordinate OctoArmor, HYDRA swarm extensions, Hugging Face model deployment, and governed multi-agent task completion across browser, deep-research, Colab bridge, universal synthesis, and Spiralverse intent-auth lanes.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 2,
+        "sphere_name": "Navigation",
+        "sphere_link": "AV-Transport/T2-Navigation/_sphere"
+      },
+      "skill_doc": "skills/octoarms-hydra-model-swarm/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "browser"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 3,
+          "score": 3.0,
+          "hits": [
+            "colab"
+          ]
+        },
+        {
+          "tongue": "KO",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "universal"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "openai-docs",
+      "skill_dir": ".system/openai-docs",
+      "description": "Use when the user asks how to build with OpenAI products or APIs and needs up-to-date official documentation with citations, help choosing the latest model for a use case, or explicit GPT-5.4 upgrade and prompt-upgrade guidance; prioritize OpenAI docs MCP tools, use bundled references only as helper context, and restrict any fallback browsing to official OpenAI domains.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/.system/openai-docs/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "DR",
+          "tier": 1,
+          "score": 7.0,
+          "hits": [
+            "docs",
+            "documentation"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 3.0,
+          "hits": [
+            "mcp"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "build"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "plan-check-gate",
+      "skill_dir": "plan-check-gate",
+      "description": "Require fact-backed research and an explicit implementation plan before writing code. Use when the user asks for planning first, wants verification/citations, says they may be wrong, or when the task is high-risk/high-cost and code should stay blocked until plan approval.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 1,
+        "sphere_name": "Code Generation",
+        "sphere_link": "CA-Compute/T1-Code-Generation/_sphere"
+      },
+      "skill_doc": "skills/plan-check-gate/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "code"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "playwright",
+      "skill_dir": "playwright",
+      "description": "Use when the task requires automating a real browser from the terminal (navigation, form filling, snapshots, screenshots, data extraction, UI-flow debugging) via `playwright-cli` or the bundled wrapper script.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 2,
+        "sphere_name": "Navigation",
+        "sphere_link": "AV-Transport/T2-Navigation/_sphere"
+      },
+      "skill_doc": "skills/playwright/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 11.0,
+          "hits": [
+            "navigation",
+            "browser",
+            "playwright"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "polyhedral-workflow-mesh",
+      "skill_dir": "polyhedral-workflow-mesh",
+      "description": "Coordinate sub-agent communication, relay workflows, n8n-style automations, triggers, and cross-surface handoffs as one governed mesh. Use when a goal spans multiple agents, browser and terminal surfaces, automation hooks, or periodic and aperiodic work loops that need packets, scoreboards, relays, and proof-backed checkpoints instead of loose AI-to-AI chat.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 2,
+        "sphere_name": "Navigation",
+        "sphere_link": "AV-Transport/T2-Navigation/_sphere"
+      },
+      "skill_doc": "skills/polyhedral-workflow-mesh/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "browser"
+          ]
+        },
+        {
+          "tongue": "KO",
+          "tier": 3,
+          "score": 3.0,
+          "hits": [
+            "relay"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "profit-autopilot",
+      "skill_dir": "profit-autopilot",
+      "description": "Run a fact-checked monetization pipeline that upgrades the landing page, builds Shopify launch assets, validates storefront/admin state, and optionally publishes products live with evidence reports. Use when the user asks for money progress, product launch automation, website-to-store pipelines, or end-to-end sell-from-terminal execution.",
+      "primary": {
+        "tongue": "KO",
+        "tier": 4,
+        "sphere_name": "Sovereign Command",
+        "sphere_link": "KO-Command/T4-Sovereign-Command/_sphere"
+      },
+      "skill_doc": "skills/profit-autopilot/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "KO",
+          "tier": 4,
+          "score": 6.0,
+          "hits": [
+            "admin",
+            "autopilot"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "pipeline"
+          ]
+        },
+        {
+          "tongue": "UM",
+          "tier": 3,
+          "score": 2.0,
+          "hits": [
+            "evidence"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-admin-autopilot",
+      "skill_dir": "scbe-admin-autopilot",
+      "description": "Operate SCBE in admin mode through the Issac Command Center, watchdog loops, service launchers, cross-talk relay commands, and verified storage or sync runs. Use when the user asks for always-on agent workflows, command-center automation, repo or system health checks, backup or prune lanes, service bootstrapping, or admin-level orchestration.",
+      "primary": {
+        "tongue": "KO",
+        "tier": 4,
+        "sphere_name": "Sovereign Command",
+        "sphere_link": "KO-Command/T4-Sovereign-Command/_sphere"
+      },
+      "skill_doc": "skills/scbe-admin-autopilot/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "KO",
+          "tier": 4,
+          "score": 6.0,
+          "hits": [
+            "admin",
+            "autopilot"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 3,
+          "score": 6.0,
+          "hits": [
+            "health check",
+            "watchdog"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 4.0,
+          "hits": [
+            "sync"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-ai-to-ai-communication",
+      "skill_dir": "scbe-ai-to-ai-communication",
+      "description": "Standardize AI-to-AI coordination messages and exchange protocols across Codex, Claude, and other autonomous agents through Obsidian cross-talk and shared JSON packets.",
+      "primary": {
+        "tongue": "KO",
+        "tier": 3,
+        "sphere_name": "Rally Coordination",
+        "sphere_link": "KO-Command/T3-Rally-Coordination/_sphere"
+      },
+      "skill_doc": "skills/scbe-ai-to-ai-communication/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "KO",
+          "tier": 3,
+          "score": 4.0,
+          "hits": [
+            "coordination"
+          ]
+        },
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "obsidian"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-ai2ai-kindle-research",
+      "skill_dir": "scbe-ai2ai-kindle-research",
+      "description": "Run Kindle-focused AI2AI research/debate workflows through n8n and SCBE bridge endpoints with governance thresholds.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/scbe-ai2ai-kindle-research/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-api-key-local-mirror",
+      "skill_dir": "scbe-api-key-local-mirror",
+      "description": "Securely mirror API keys from environment or prompt into a local Windows DPAPI-encrypted token store, then resolve them back into runtime env vars for terminal workflows. Use when users ask for quick API key access, local backup key storage, tokenized secret indexing, or safe secret handoff for services like World Anvil.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 4,
+        "sphere_name": "Fleet Transport",
+        "sphere_link": "AV-Transport/T4-Fleet-Transport/_sphere"
+      },
+      "skill_doc": "skills/scbe-api-key-local-mirror/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 6.0,
+          "hits": [
+            "mirror",
+            "handoff"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "api"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-browser-sidepanel-ops",
+      "skill_dir": "scbe-browser-sidepanel-ops",
+      "description": "Build, improve, and package the local AetherBrowse browser with an AI sidepanel workflow, governance checks, and app-store-ready Android artifacts.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 2,
+        "sphere_name": "Navigation",
+        "sphere_link": "AV-Transport/T2-Navigation/_sphere"
+      },
+      "skill_doc": "skills/scbe-browser-sidepanel-ops/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "browser"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "build"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-claude-crosstalk-workflow",
+      "skill_dir": "scbe-claude-crosstalk-workflow",
+      "description": "Use when two AI lanes (Codex and Claude) work in parallel and need deterministic handoff packets with session IDs, lane-bus appends, and repairable delivery checks.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 4,
+        "sphere_name": "Fleet Transport",
+        "sphere_link": "AV-Transport/T4-Fleet-Transport/_sphere"
+      },
+      "skill_doc": "skills/scbe-claude-crosstalk-workflow/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "handoff"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-codebase-orienter",
+      "skill_dir": "scbe-codebase-orienter",
+      "description": "Explain the SCBE-AETHERMOORE repo, separate live code from generated or archival material, and route work to the correct entrypoints. Use when Codex needs a fast codebase walkthrough, startup map, module ownership summary, or guidance on whether a feature lives in `src/`, `api/`, `scripts/`, `artifacts/`, or docs.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 4,
+        "sphere_name": "Architecture",
+        "sphere_link": "DR-Structure/T4-Architecture/_sphere"
+      },
+      "skill_doc": "skills/scbe-codebase-orienter/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "DR",
+          "tier": 4,
+          "score": 4.0,
+          "hits": [
+            "module",
+            "map"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 1,
+          "score": 3.0,
+          "hits": [
+            "docs"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "route"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-colab-training-ops",
+      "skill_dir": "scbe-colab-training-ops",
+      "description": "Operate SCBE Colab notebooks as a daily training and remote-compute lane using the Issac command center, local bridge profiles, notebook catalog, and Hugging Face training scripts. Use when the user wants to run or prepare Colab notebooks, wire local Colab URLs into SCBE, choose the right notebook for SFT or pivot work, or turn browser/compute sessions into repeatable training flows.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 3,
+        "sphere_name": "Training Pipeline",
+        "sphere_link": "CA-Compute/T3-Training-Pipeline/_sphere"
+      },
+      "skill_doc": "skills/scbe-colab-training-ops/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 3,
+          "score": 6.0,
+          "hits": [
+            "colab",
+            "sft"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "browser"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-connector-health-check",
+      "skill_dir": "scbe-connector-health-check",
+      "description": "Run safety-first connector diagnostics for MCP/services used by SCBE so outreach, research, publishing, and runtime calls do not break silently.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 4,
+        "sphere_name": "Fleet Transport",
+        "sphere_link": "AV-Transport/T4-Fleet-Transport/_sphere"
+      },
+      "skill_doc": "skills/scbe-connector-health-check/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 6.0,
+          "hits": [
+            "connector",
+            "mcp"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 3,
+          "score": 3.0,
+          "hits": [
+            "health check"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-context-full-test-suite",
+      "skill_dir": "scbe-context-full-test-suite",
+      "description": "Manage context and run validation for the SCBE-AETHERMOORE monorepo without loading unnecessary repo noise. Use when work needs a fast repo handoff, diff-first context trimming, a decision about targeted vs core vs full test lanes, or a repeatable full-suite run using the branch validation workflow.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 4,
+        "sphere_name": "Fleet Transport",
+        "sphere_link": "AV-Transport/T4-Fleet-Transport/_sphere"
+      },
+      "skill_doc": "skills/scbe-context-full-test-suite/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "handoff"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "test"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-crosstalk-reliability",
+      "skill_dir": "scbe-crosstalk-reliability",
+      "description": "Audit and repair SCBE cross-talk packet delivery across JSON packets, JSONL lane bus, and markdown mirrors.",
+      "primary": {
+        "tongue": "UM",
+        "tier": 3,
+        "sphere_name": "Audit Trail",
+        "sphere_link": "UM-Security/T3-Audit-Trail/_sphere"
+      },
+      "skill_doc": "skills/scbe-crosstalk-reliability/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "UM",
+          "tier": 3,
+          "score": 4.0,
+          "hits": [
+            "audit"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-demo-lab-builder",
+      "skill_dir": "scbe-demo-lab-builder",
+      "description": "Build public-facing demos, research surfaces, and monetized launch pages for SCBE using Figma concepts, frontend implementation, browser validation, deployment, and research-output packaging. Use when turning a product idea, benchmark, experiment, or internal tool into a public demo hub, interactive lab, landing page, benchmark board, or research domain.",
+      "primary": {
+        "tongue": "RU",
+        "tier": 1,
+        "sphere_name": "Hypothesis Generation",
+        "sphere_link": "RU-Entropy/T1-Hypothesis-Generation/_sphere"
+      },
+      "skill_doc": "skills/scbe-demo-lab-builder/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "RU",
+          "tier": 1,
+          "score": 5.0,
+          "hits": [
+            "idea",
+            "experiment"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 5.0,
+          "hits": [
+            "frontend",
+            "build"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "browser"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-docker-workflow",
+      "skill_dir": "scbe-docker-workflow",
+      "description": "Coordinate SCBE Docker workflows from build to runtime. Use for SCBE container commands, docker-compose service startup, health checks, and troubleshooting of image/build failures, port conflicts, and container startup issues in SCBE repos.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 4,
+        "sphere_name": "Model Deployment",
+        "sphere_link": "CA-Compute/T4-Model-Deployment/_sphere"
+      },
+      "skill_doc": "skills/scbe-docker-workflow/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 4,
+          "score": 3.0,
+          "hits": [
+            "docker"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 3,
+          "score": 3.0,
+          "hits": [
+            "health check"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "build"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-experimental-research-safe-integration",
+      "skill_dir": "scbe-experimental-research-safe-integration",
+      "description": "Design and execute advanced experimental research with fail-closed safety integration for SCBE systems. Use when users ask to test novel kernels/manifolds, map proposals into the 21D/M4 state layout, add semantic mesh overlays (including 230-bit envelopes), or move experimental results toward production safely.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 4,
+        "sphere_name": "Architecture",
+        "sphere_link": "DR-Structure/T4-Architecture/_sphere"
+      },
+      "skill_doc": "skills/scbe-experimental-research-safe-integration/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "DR",
+          "tier": 4,
+          "score": 4.0,
+          "hits": [
+            "design",
+            "map"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "test"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-gh-powershell-workflow",
+      "skill_dir": "scbe-gh-powershell-workflow",
+      "description": "Manage GitHub workflows and SCBE-AETHERMOORE repository operations from PowerShell 7 preview. Use for authenticated gh CLI actions, PR and branch workflows, CI triage, and SCBE code-aware repository inspections.",
+      "primary": {
+        "tongue": "KO",
+        "tier": 1,
+        "sphere_name": "Task Dispatch",
+        "sphere_link": "KO-Command/T1-Task-Dispatch/_sphere"
+      },
+      "skill_doc": "skills/scbe-gh-powershell-workflow/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "KO",
+          "tier": 1,
+          "score": 3.0,
+          "hits": [
+            "triage"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "ci"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "code"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-github-pages-funnel-builder",
+      "skill_dir": "scbe-github-pages-funnel-builder",
+      "description": "Build or update SCBE GitHub Pages marketing surfaces under docs/ so they are discoverable, SEO-aware, and wired into the right funnel. Use when adding a new demo, free tool, product page, research surface, or support/manual page that must be linked from the homepage, demo hub, Polly sidebar, and sitemap without overstating claims.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/scbe-github-pages-funnel-builder/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "DR",
+          "tier": 1,
+          "score": 5.0,
+          "hits": [
+            "docs",
+            "manual"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 4.0,
+          "hits": [
+            "sitemap"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "build"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-github-sweep-sorter",
+      "skill_dir": "scbe-github-sweep-sorter",
+      "description": "Sort GitHub and local repo sweeps into governed agent lanes using HYDRA formations, roundtable role assignments, repo triage buckets, and deterministic handoff packets. Use when classifying repos, PRs, issues, security alerts, or dirty trees before assigning collaborative AI work in one shared codebase.",
+      "primary": {
+        "tongue": "KO",
+        "tier": 1,
+        "sphere_name": "Task Dispatch",
+        "sphere_link": "KO-Command/T1-Task-Dispatch/_sphere"
+      },
+      "skill_doc": "skills/scbe-github-sweep-sorter/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "KO",
+          "tier": 1,
+          "score": 3.0,
+          "hits": [
+            "triage"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "handoff"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-github-systems",
+      "skill_dir": "scbe-github-systems",
+      "description": "Navigate and develop Issac Davis' SCBE-AETHERMOORE projects with a consistent GitHub workflow. Use for repo orientation (14-layer pipeline, Sacred Tongues, Polly Pads), running build/test/demo/API, and git/GitHub tasks (branching, Conventional Commits, PR reviews, CI workflows, releases) in SCBE repos like SCBE-AETHERMOORE-working and scbe-ultimate.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 2,
+        "sphere_name": "Navigation",
+        "sphere_link": "AV-Transport/T2-Navigation/_sphere"
+      },
+      "skill_doc": "skills/scbe-github-systems/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 4.0,
+          "hits": [
+            "navigate"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "ci"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "pipeline"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-gitlab-pond-integration",
+      "skill_dir": "scbe-gitlab-pond-integration",
+      "description": "Integrate GitLab as a second pond (lore/research) alongside GitHub (code/product) for SCBE. Use when tasks involve GitLab repos, cross-pond mirroring/sync, GitLab auth failures, or keeping flows unblocked with a read-only 'pond flush' health check before/after PR/CI work.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 4,
+        "sphere_name": "Fleet Transport",
+        "sphere_link": "AV-Transport/T4-Fleet-Transport/_sphere"
+      },
+      "skill_doc": "skills/scbe-gitlab-pond-integration/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 4.0,
+          "hits": [
+            "sync"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "ci"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 3,
+          "score": 3.0,
+          "hits": [
+            "health check"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-government-contract-intelligence",
+      "skill_dir": "scbe-government-contract-intelligence",
+      "description": "Investigate and prioritize U.S. federal and prime-contractor opportunities for SCBE swarm, autonomy, navigation, and AI-governance technologies. Use when evaluating SAM.gov/DIU/AFWERX/SBIR pathways, validating policy/news claims, producing capture plans, or preparing outreach packets for government-adjacent revenue.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 2,
+        "sphere_name": "Navigation",
+        "sphere_link": "AV-Transport/T2-Navigation/_sphere"
+      },
+      "skill_doc": "skills/scbe-government-contract-intelligence/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 4.0,
+          "hits": [
+            "navigation"
+          ]
+        },
+        {
+          "tongue": "UM",
+          "tier": 1,
+          "score": 3.0,
+          "hits": [
+            "policy"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-internet-workflow-synthesis",
+      "skill_dir": "scbe-internet-workflow-synthesis",
+      "description": "Synthesize and operate SCBE end-to-end internet workflows by discovering local and GitHub architecture templates, generating a baseline web pipeline profile, running ingestion and governance scans, and tuning system variables after the first run. Use when users ask to build, repair, or optimize internet workflow pipelines, workflow architecture maps, n8n or agent orchestration flows, or post-baseline threshold and concurrency tuning.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 4,
+        "sphere_name": "Architecture",
+        "sphere_link": "DR-Structure/T4-Architecture/_sphere"
+      },
+      "skill_doc": "skills/scbe-internet-workflow-synthesis/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "DR",
+          "tier": 4,
+          "score": 6.0,
+          "hits": [
+            "architecture",
+            "system"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "pipeline"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "build"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-manhwa-anchor-sheets",
+      "skill_dir": "scbe-manhwa-anchor-sheets",
+      "description": "Build and maintain canon-locked character anchor sheets, expression packs, costume and prop locks, and environment swatch sheets for The Six Tongues Protocol and related SCBE webtoon/manhwa production. Use when preparing Senna, Bram, Alexander, or other cast for image generation, beat-expansion packets, reference atlas work, LoRA prep, or any render pass where character and environment continuity must be locked before prompts are scaled.",
+      "primary": {
+        "tongue": "UM",
+        "tier": 2,
+        "sphere_name": "Threat Detection",
+        "sphere_link": "UM-Security/T2-Threat-Detection/_sphere"
+      },
+      "skill_doc": "skills/scbe-manhwa-anchor-sheets/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "UM",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "atlas"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "build"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-manhwa-video-picture-research",
+      "skill_dir": "scbe-manhwa-video-picture-research",
+      "description": "Research manhwa recap video and image workflows and emit story-first, source-traceable scene packets for production, narration, and publishing.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/scbe-manhwa-video-picture-research/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-marketing-outreach-runbook",
+      "skill_dir": "scbe-marketing-outreach-runbook",
+      "description": "Build safe, high-value B2B outreach campaigns for SCBE services (cold email, social, investor outreach) with strong hooks, high-signal targeting, and anti-spam controls.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 1,
+        "sphere_name": "Code Generation",
+        "sphere_link": "CA-Compute/T1-Code-Generation/_sphere"
+      },
+      "skill_doc": "skills/scbe-marketing-outreach-runbook/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "build"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-monetization-thought-to-cash",
+      "skill_dir": "scbe-monetization-thought-to-cash",
+      "description": "Drive end-to-end monetization from idea to cash for SCBE projects using offer design, Stripe/Shopify execution, launch tasks, revenue tracking, and Obsidian evidence logging. Use when the user asks to make money, launch paid products, create pricing, wire checkout and webhooks, publish store products, or run a daily cash execution loop.",
+      "primary": {
+        "tongue": "RU",
+        "tier": 1,
+        "sphere_name": "Hypothesis Generation",
+        "sphere_link": "RU-Entropy/T1-Hypothesis-Generation/_sphere"
+      },
+      "skill_doc": "skills/scbe-monetization-thought-to-cash/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "RU",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "idea"
+          ]
+        },
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "obsidian"
+          ]
+        },
+        {
+          "tongue": "UM",
+          "tier": 3,
+          "score": 2.0,
+          "hits": [
+            "evidence"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-n8n-colab-bridge",
+      "skill_dir": "scbe-n8n-colab-bridge",
+      "description": "Configure and reuse Google Colab local notebook connection settings for SCBE n8n automation and agent handoff workflows.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 3,
+        "sphere_name": "Training Pipeline",
+        "sphere_link": "CA-Compute/T3-Training-Pipeline/_sphere"
+      },
+      "skill_doc": "skills/scbe-n8n-colab-bridge/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 3,
+          "score": 3.0,
+          "hits": [
+            "colab"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "handoff"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-npm-prepublish-autopublish",
+      "skill_dir": "scbe-npm-prepublish-autopublish",
+      "description": "Enforce deterministic npm prepublish cleanup and auto-publish workflow gates for SCBE-AETHERMOORE. Use when preparing npm releases, hardening package contents, adding tarball guard checks, or updating GitHub Actions publish jobs to run the same local gates.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/scbe-npm-prepublish-autopublish/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-overwatch-relay-swarm",
+      "skill_dir": "scbe-overwatch-relay-swarm",
+      "description": "Run a baton-style multi-agent sequence with dedicated overwatcher gates, deterministic AI-to-AI packet passing, and terminal-first execution artifacts.",
+      "primary": {
+        "tongue": "KO",
+        "tier": 3,
+        "sphere_name": "Rally Coordination",
+        "sphere_link": "KO-Command/T3-Rally-Coordination/_sphere"
+      },
+      "skill_doc": "skills/scbe-overwatch-relay-swarm/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "KO",
+          "tier": 3,
+          "score": 7.0,
+          "hits": [
+            "overwatch",
+            "relay"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-pocket-phone",
+      "skill_dir": "scbe-pocket-phone",
+      "description": "Treat the SCBE Android emulator as Codex's daily-driver pocket phone for browsing, messaging, workflow capture, mobile testing, and app handoff. Use when Codex should operate `SCBE_Pixel_6_API35` like a real personal phone: boot or recover the lane, open Polly Pad or AetherCode routes, browse in Chrome, bridge secrets, hand off to browser research skills, capture notes, or coordinate document and image work through a mobile-first flow.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 2,
+        "sphere_name": "Navigation",
+        "sphere_link": "AV-Transport/T2-Navigation/_sphere"
+      },
+      "skill_doc": "skills/scbe-pocket-phone/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "browser"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 3,
+          "score": 3.0,
+          "hits": [
+            "recover"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "handoff"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-rapid-shell-guidance",
+      "skill_dir": "scbe-rapid-shell-guidance",
+      "description": "Deliver fast, low-friction PowerShell coaching for SCBE workflows with exact copy-paste commands, shell labeling (Shell A server, Shell B client), and single-step execution checks. Use when users ask for short command-first help for browser-agent startup, API tests, MCP setup, port/process fixes, or GitHub CLI operations.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 4,
+        "sphere_name": "Model Deployment",
+        "sphere_link": "CA-Compute/T4-Model-Deployment/_sphere"
+      },
+      "skill_doc": "skills/scbe-rapid-shell-guidance/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 4,
+          "score": 4.0,
+          "hits": [
+            "server",
+            "api"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "browser"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 3.0,
+          "hits": [
+            "mcp"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-research-publishing-autopilot",
+      "skill_dir": "scbe-research-publishing-autopilot",
+      "description": "Build and operate multi-hour SCBE research-to-publishing loops for articles and social posts with retrigger logic, evidence gates, and performance monitoring. Use when repeatable growth execution must stay lore/code accurate and avoid invention misrepresentation.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 1,
+        "sphere_name": "Code Generation",
+        "sphere_link": "CA-Compute/T1-Code-Generation/_sphere"
+      },
+      "skill_doc": "skills/scbe-research-publishing-autopilot/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 4.0,
+          "hits": [
+            "code",
+            "build"
+          ]
+        },
+        {
+          "tongue": "KO",
+          "tier": 4,
+          "score": 3.0,
+          "hits": [
+            "autopilot"
+          ]
+        },
+        {
+          "tongue": "UM",
+          "tier": 3,
+          "score": 2.0,
+          "hits": [
+            "evidence"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-self-improvement-skill-management",
+      "skill_dir": "scbe-self-improvement-skill-management",
+      "description": "Run the SCBE self-improvement loop by documenting completed work, creating new skills, updating existing skills, and propagating SCBE knowledge to other AI systems via context documents and structured knowledge files. Use when users ask to create/update skills, formalize repeated SCBE workflows, enforce skill approval gates, generate transfer prompts for Claude/Gemini/custom agents, or publish SCBE knowledge artifacts to Hugging Face datasets.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/scbe-self-improvement-skill-management/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-session-corkscrew",
+      "skill_dir": "scbe-session-corkscrew",
+      "description": "Manage SCBE multi-agent session continuity with timestamped callsigns, append-only cross-talk packets, Obsidian handoffs, and verification roll-forward. Use when starting or rotating an agent session, sending AI-to-AI updates, acknowledging packets, marking work verified or retired, or stabilizing coordination across repo bus and Obsidian.",
+      "primary": {
+        "tongue": "KO",
+        "tier": 3,
+        "sphere_name": "Rally Coordination",
+        "sphere_link": "KO-Command/T3-Rally-Coordination/_sphere"
+      },
+      "skill_doc": "skills/scbe-session-corkscrew/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "KO",
+          "tier": 3,
+          "score": 4.0,
+          "hits": [
+            "coordination"
+          ]
+        },
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "obsidian"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-session-crosstalk-manager",
+      "skill_dir": "scbe-session-crosstalk-manager",
+      "description": "Manage SCBE terminal cross-talk sessions with collision-safe logs, persistent codenames, session IDs, and where/why/how metadata across repo packet lanes and Obsidian handoff notes. Use when starting a new AI work session, posting updates, handing off work, verifying lane sync, or closing a session.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 4,
+        "sphere_name": "Fleet Transport",
+        "sphere_link": "AV-Transport/T4-Fleet-Transport/_sphere"
+      },
+      "skill_doc": "skills/scbe-session-crosstalk-manager/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 6.0,
+          "hits": [
+            "sync",
+            "handoff"
+          ]
+        },
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "obsidian"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-shopify-money-flow",
+      "skill_dir": "scbe-shopify-money-flow",
+      "description": "Execute revenue-focused Shopify operations using SCBE and HYDRA command lanes with deterministic evidence, cross-talk dispatch, and workflow tuning. Use when the goal is to improve Shopify conversion, publish or refresh digital offers, coordinate monetization agents, or run pre-launch smoke checks before live store actions.",
+      "primary": {
+        "tongue": "KO",
+        "tier": 1,
+        "sphere_name": "Task Dispatch",
+        "sphere_link": "KO-Command/T1-Task-Dispatch/_sphere"
+      },
+      "skill_doc": "skills/scbe-shopify-money-flow/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "KO",
+          "tier": 1,
+          "score": 4.0,
+          "hits": [
+            "dispatch"
+          ]
+        },
+        {
+          "tongue": "UM",
+          "tier": 3,
+          "score": 2.0,
+          "hits": [
+            "evidence"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-spiralverse-intent-auth",
+      "skill_dir": "scbe-spiralverse-intent-auth",
+      "description": "Implement and operate Spiralverse intent-authenticated communication for HYDRA/SCBE using six sacred tongues, governance gates, and signed audit packets.",
+      "primary": {
+        "tongue": "UM",
+        "tier": 3,
+        "sphere_name": "Audit Trail",
+        "sphere_link": "UM-Security/T3-Audit-Trail/_sphere"
+      },
+      "skill_doc": "skills/scbe-spiralverse-intent-auth/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "UM",
+          "tier": 3,
+          "score": 4.0,
+          "hits": [
+            "audit"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 3.0,
+          "hits": [
+            "implement"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-system-engine",
+      "skill_dir": "scbe-system-engine",
+      "description": "Coordinate SCBE-AETHERMOORE math, automation, and service connectors so multi-agent systems can execute work end-to-end. Use when tasks require SCBE dimensional validation, AI-to-AI workflows, browser automation planning, Hugging Face or GitHub/Linear/Notion/Zapier integration, or self-improving skill updates.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 2,
+        "sphere_name": "Navigation",
+        "sphere_link": "AV-Transport/T2-Navigation/_sphere"
+      },
+      "skill_doc": "skills/scbe-system-engine/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "browser"
+          ]
+        },
+        {
+          "tongue": "RU",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "notion"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "system"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-universal-synthesis",
+      "skill_dir": "scbe-universal-synthesis",
+      "description": "Orchestrate all installed Codex skills through an auto-updating synthesis matrix with Sacred Tongues routing, emotion/intent metadata, and decodable lexicon packets tied to established SCBE characters. Use when the user asks for cross-skill coordination, auto skill updates, multi-skill routing, or Sacred Tongues intent mapping.",
+      "primary": {
+        "tongue": "KO",
+        "tier": 3,
+        "sphere_name": "Rally Coordination",
+        "sphere_link": "KO-Command/T3-Rally-Coordination/_sphere"
+      },
+      "skill_doc": "skills/scbe-universal-synthesis/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "KO",
+          "tier": 3,
+          "score": 4.0,
+          "hits": [
+            "coordination"
+          ]
+        },
+        {
+          "tongue": "KO",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "universal"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-voice-render-verification",
+      "skill_dir": "scbe-voice-render-verification",
+      "description": "Govern and verify SCBE voice rendering work that maps Langues weighting into breath, phase, and Layer 14 audio-axis packets. Use when implementing or reviewing `scripts/voice_gen_hf.py`, emitting sidecar voice packets, validating canonical tongue ordering, tuning breath planning or phase timing, or keeping voice docs and code aligned with `docs/LANGUES_WEIGHTING_SYSTEM.md` and `docs/specs/SCBE_VOICE_EMOTIONAL_TIMBRE_SYSTEM.md`.",
+      "primary": {
+        "tongue": "UM",
+        "tier": 1,
+        "sphere_name": "Governance Scan",
+        "sphere_link": "UM-Security/T1-Governance-Scan/_sphere"
+      },
+      "skill_doc": "skills/scbe-voice-render-verification/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "UM",
+          "tier": 1,
+          "score": 3.0,
+          "hits": [
+            "govern"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 1,
+          "score": 3.0,
+          "hits": [
+            "docs"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "code"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-webtoon-book-conversion",
+      "skill_dir": "scbe-webtoon-book-conversion",
+      "description": "Convert The Six Tongues Protocol and related manuscript sections into webtoon/manhwa storyboard packets, episode roadmaps, panel expansion plans, and image-generation-ready prompt lanes. Use when extending the series storyboard, adapting book chapters into vertical scroll episodes, or keeping art generation tied to canon instead of drifting into generic fantasy panels.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/scbe-webtoon-book-conversion/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "scbe-workflow-cultivation",
+      "skill_dir": "scbe-workflow-cultivation",
+      "description": "Cycle operational workflows like a cultivation loop: scan lanes (meridians), detect blockages, apply the smallest fix, then compress output into reusable qi pellets (runbooks/scripts/skill patches). Use for self-healing ops across GitHub CI, connectors, GitLab mirrors, publishing, and research ingestion where you want iterative refinement instead of new features.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 3,
+        "sphere_name": "Self Healing",
+        "sphere_link": "DR-Structure/T3-Self-Healing/_sphere"
+      },
+      "skill_doc": "skills/scbe-workflow-cultivation/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "DR",
+          "tier": 3,
+          "score": 6.0,
+          "hits": [
+            "self-heal",
+            "cultivation"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 2,
+          "score": 5.0,
+          "hits": [
+            "fix",
+            "ci"
+          ]
+        },
+        {
+          "tongue": "UM",
+          "tier": 1,
+          "score": 3.0,
+          "hits": [
+            "scan"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "scbe-world-anvil-lore-rag-7th-tongue",
+      "skill_dir": "scbe-world-anvil-lore-rag-7th-tongue",
+      "description": "Build and operate a lore-focused RAG system using World Anvil exports and SCBE docs, with deterministic Claude/Codex cross-talk packets for handoff. Use when users ask to structure lore canon retrieval, sync worldbuilding data, enforce citation-grounded generation, or coordinate a 7th Tongue overseer lane across multiple AI agents.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 4,
+        "sphere_name": "Fleet Transport",
+        "sphere_link": "AV-Transport/T4-Fleet-Transport/_sphere"
+      },
+      "skill_doc": "skills/scbe-world-anvil-lore-rag-7th-tongue/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 6.0,
+          "hits": [
+            "sync",
+            "handoff"
+          ]
+        },
+        {
+          "tongue": "DR",
+          "tier": 1,
+          "score": 3.0,
+          "hits": [
+            "docs"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "build"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "screenshot",
+      "skill_dir": "screenshot",
+      "description": "Use when the user explicitly asks for a desktop or system screenshot (full screen, specific app or window, or a pixel region), or when tool-specific capture capabilities are unavailable and an OS-level capture is needed.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 4,
+        "sphere_name": "Architecture",
+        "sphere_link": "DR-Structure/T4-Architecture/_sphere"
+      },
+      "skill_doc": "skills/screenshot/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "DR",
+          "tier": 4,
+          "score": 2.0,
+          "hits": [
+            "system"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "shopify-management-ops",
+      "skill_dir": "shopify-management-ops",
+      "description": "Run Shopify management from terminal with audit-first checks, product sync, storefront gate control, and optional live publish. Use when the user asks to manage Shopify products, storefront state, or monetization operations.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 4,
+        "sphere_name": "Fleet Transport",
+        "sphere_link": "AV-Transport/T4-Fleet-Transport/_sphere"
+      },
+      "skill_doc": "skills/shopify-management-ops/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 4.0,
+          "hits": [
+            "sync"
+          ]
+        },
+        {
+          "tongue": "UM",
+          "tier": 3,
+          "score": 4.0,
+          "hits": [
+            "audit"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "skill-creator",
+      "skill_dir": ".system/skill-creator",
+      "description": "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Codex's capabilities with specialized knowledge, workflows, or tool integrations.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/.system/skill-creator/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "skill-installer",
+      "skill_dir": ".system/skill-installer",
+      "description": "Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill, or install a skill from another repo (including private repos).",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/.system/skill-installer/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "skill-synthesis",
+      "skill_dir": "skill-synthesis",
+      "description": "Compose multiple installed skills into one coordinated execution stack with ordered packets, minimal context load, and deterministic handoff artifacts. Use when tasks span multiple domains (for example HYDRA + browser + training + deploy) and you need a single combined workflow instead of invoking skills one-by-one.",
+      "primary": {
+        "tongue": "KO",
+        "tier": 4,
+        "sphere_name": "Sovereign Command",
+        "sphere_link": "KO-Command/T4-Sovereign-Command/_sphere"
+      },
+      "skill_doc": "skills/skill-synthesis/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "KO",
+          "tier": 4,
+          "score": 7.0,
+          "hits": [
+            "compose multiple",
+            "execution stack"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 3.0,
+          "hits": [
+            "browser"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 4,
+          "score": 3.0,
+          "hits": [
+            "deploy"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "skill-update",
+      "skill_dir": "skill-update",
+      "description": "Upgrade an existing Codex skill through a structured loop: inspect, compare, improve, validate, test, and finalize with evidence for future reuse.",
+      "primary": {
+        "tongue": "CA",
+        "tier": 2,
+        "sphere_name": "Test Writing",
+        "sphere_link": "CA-Compute/T2-Test-Writing/_sphere"
+      },
+      "skill_doc": "skills/skill-update/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "CA",
+          "tier": 2,
+          "score": 2.0,
+          "hits": [
+            "test"
+          ]
+        },
+        {
+          "tongue": "UM",
+          "tier": 3,
+          "score": 2.0,
+          "hits": [
+            "evidence"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "speed-line-delivery",
+      "skill_dir": "speed-line-delivery",
+      "description": "Deliver terminal instructions with shell-labeled lanes and one-line command blocks so users can execute quickly without context confusion. Use when users are working across multiple terminals, mixing chat and shell actions, hitting PowerShell parsing errors, or asking to learn while still completing setup/ops tasks fast.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/speed-line-delivery/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "telegram-bot-maker",
+      "skill_dir": "telegram-bot-maker",
+      "description": "Build and operate Telegram bots with BotFather, HTTPS webhooks, n8n workflows, and SCBE connector automation. Use when users ask to create, wire, debug, or harden Telegram bot pipelines.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 2,
+        "sphere_name": "Debugging",
+        "sphere_link": "DR-Structure/T2-Debugging/_sphere"
+      },
+      "skill_doc": "skills/telegram-bot-maker/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "DR",
+          "tier": 2,
+          "score": 4.0,
+          "hits": [
+            "debug"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 3.0,
+          "hits": [
+            "connector"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "build"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "video-source-verification",
+      "skill_dir": "video-source-verification",
+      "description": "Use this skill for fast, traceable internet-source verification of claims from videos/articles (especially YouTube claims) before acting on them.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "skill_doc": "skills/video-source-verification/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "youtube-sync-review-ops",
+      "skill_dir": "youtube-sync-review-ops",
+      "description": "Preview, apply, and score YouTube metadata changes from local JSON plans using the Apollo scripts in SCBE-AETHERMOORE. Use when updating YouTube titles, descriptions, or tags; when running a local sync-and-review loop for channel packaging; or when converting review findings into machine-applied metadata changes.",
+      "primary": {
+        "tongue": "AV",
+        "tier": 4,
+        "sphere_name": "Fleet Transport",
+        "sphere_link": "AV-Transport/T4-Fleet-Transport/_sphere"
+      },
+      "skill_doc": "skills/youtube-sync-review-ops/SKILL.md",
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 4.0,
+          "hits": [
+            "sync"
+          ]
+        },
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    }
+  ]
+}

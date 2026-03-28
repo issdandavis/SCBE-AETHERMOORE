@@ -93,7 +93,7 @@ class TestTemporalRegularity:
 
     def test_irregular_timing(self):
         ts = [1000]
-        for i in range(1, 20):
+        for _i in range(1, 20):
             ts.append(ts[-1] + 5000 + random.uniform(-4000, 4000))
         assert detect_temporal_regularity(ts, 50) < 0.7
 
@@ -166,7 +166,7 @@ class TestProbingDetection:
 
     def test_natural_usage(self):
         ts = [1000]
-        for i in range(1, 15):
+        for _i in range(1, 15):
             ts.append(ts[-1] + 5000 + random.uniform(-2000, 2000))
         obs = [make_obs(random_ball_point(0.3), t, 0.5) for t in ts]
         result = detect_probing(obs)
@@ -397,7 +397,7 @@ class TestAntiExtraction:
         """Legitimate sparse use should maintain high signal retention."""
         tracker = EntropySurfaceTracker()
         t = 1000.0
-        for i in range(10):
+        for _i in range(10):
             pos = random_ball_point(0.3)
             t += 5000 + random.uniform(0, 10000)  # 5-15s apart (irregular)
             assessment = tracker.observe(pos, 0.1, t)

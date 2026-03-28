@@ -167,7 +167,8 @@ def evaluate_geoseal_location(
 
     # Combine distance score with a bounded trust radius.
     risk_radius = min(
-        1.0, 0.85 * distance_score + 0.15 * (0.0 if distance_km is None else distance_km / max(outer_radius_km, 1.0))
+        1.0,
+        0.85 * distance_score + 0.15 * (0.0 if distance_km is None else distance_km / max(outer_radius_km, 1.0)),
     )
     trust = round(1.0 - risk_radius, 4)
 

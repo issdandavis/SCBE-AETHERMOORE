@@ -21,7 +21,10 @@ scbe_system_cli = _load_module("test_scbe_system_cli_security", "scripts/scbe-sy
 
 def test_notebooklm_fallback_persists_prompt_metadata_only(tmp_path: Path) -> None:
     result = scbe_system_cli._notebooklm_fallback(
-        {"agent_id": "notebooklm-main", "notebook_url": "https://notebooklm.google.com/notebook/demo"},
+        {
+            "agent_id": "notebooklm-main",
+            "notebook_url": "https://notebooklm.google.com/notebook/demo",
+        },
         "super secret password prompt",
         tmp_path,
     )

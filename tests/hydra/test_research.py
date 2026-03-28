@@ -49,7 +49,11 @@ class DummyMultiTabLimb:
         action = str(commands[0].get("action", ""))
         if action == "navigate":
             return [
-                {"success": True, "tab_id": f"tab-{idx}", "data": {"url": cmd.get("target")}}
+                {
+                    "success": True,
+                    "tab_id": f"tab-{idx}",
+                    "data": {"url": cmd.get("target")},
+                }
                 for idx, cmd in enumerate(commands)
             ]
         if action == "get_content":

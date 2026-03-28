@@ -96,7 +96,9 @@ def test_build_edit_packet_writes_outputs_and_uses_manifest(tmp_path: Path) -> N
     assert any("Continuity:" in note for note in payload["panels"][0]["preserve"])
 
 
-def test_build_edit_packet_auto_switches_to_canva_for_layout_goal(tmp_path: Path) -> None:
+def test_build_edit_packet_auto_switches_to_canva_for_layout_goal(
+    tmp_path: Path,
+) -> None:
     packet_path = tmp_path / "packet.json"
     write_packet(packet_path)
 

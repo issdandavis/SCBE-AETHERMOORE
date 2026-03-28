@@ -360,38 +360,93 @@ def _build_skill_catalog() -> list[SkillNode]:
         "KO": [
             ("task_dispatch", "Task Dispatch", 1, "Route tasks to appropriate agents"),
             ("formation_swap", "Formation Swap", 2, "Reorganize agent fleet mid-task"),
-            ("rally_coordination", "Rally Coordination", 3, "Boost all fleet members performance"),
-            ("sovereign_command", "Sovereign Command", 4, "Full fleet orchestration authority"),
+            (
+                "rally_coordination",
+                "Rally Coordination",
+                3,
+                "Boost all fleet members performance",
+            ),
+            (
+                "sovereign_command",
+                "Sovereign Command",
+                4,
+                "Full fleet orchestration authority",
+            ),
         ],
         "AV": [
             ("web_search", "Web Search", 1, "Find and retrieve web content"),
             ("navigation", "Navigation", 2, "Multi-step browser navigation"),
             ("site_mapping", "Site Mapping", 3, "Map full site structure and extract"),
-            ("fleet_transport", "Fleet Transport", 4, "Move data between agents and systems"),
+            (
+                "fleet_transport",
+                "Fleet Transport",
+                4,
+                "Move data between agents and systems",
+            ),
         ],
         "RU": [
-            ("hypothesis_gen", "Hypothesis Generation", 1, "Generate research hypotheses"),
-            ("data_collection", "Data Collection", 2, "Gather and structure research data"),
-            ("chaos_testing", "Chaos Testing", 3, "Stress-test systems with random inputs"),
-            ("entropy_oracle", "Entropy Oracle", 4, "Predict system failures from entropy patterns"),
+            (
+                "hypothesis_gen",
+                "Hypothesis Generation",
+                1,
+                "Generate research hypotheses",
+            ),
+            (
+                "data_collection",
+                "Data Collection",
+                2,
+                "Gather and structure research data",
+            ),
+            (
+                "chaos_testing",
+                "Chaos Testing",
+                3,
+                "Stress-test systems with random inputs",
+            ),
+            (
+                "entropy_oracle",
+                "Entropy Oracle",
+                4,
+                "Predict system failures from entropy patterns",
+            ),
         ],
         "CA": [
             ("code_gen", "Code Generation", 1, "Write functional code"),
             ("test_writing", "Test Writing", 2, "Generate comprehensive test suites"),
             ("training_pipeline", "Training Pipeline", 3, "Run ML training workflows"),
-            ("model_deployment", "Model Deployment", 4, "Deploy and manage production models"),
+            (
+                "model_deployment",
+                "Model Deployment",
+                4,
+                "Deploy and manage production models",
+            ),
         ],
         "UM": [
-            ("governance_scan", "Governance Scan", 1, "Check content against governance rules"),
+            (
+                "governance_scan",
+                "Governance Scan",
+                1,
+                "Check content against governance rules",
+            ),
             ("threat_detection", "Threat Detection", 2, "Detect adversarial patterns"),
             ("audit_trail", "Audit Trail", 3, "Generate verifiable audit records"),
-            ("seal_enforcement", "Seal Enforcement", 4, "Enforce Sacred Seal cryptographic proofs"),
+            (
+                "seal_enforcement",
+                "Seal Enforcement",
+                4,
+                "Enforce Sacred Seal cryptographic proofs",
+            ),
         ],
         "DR": [
             ("documentation", "Documentation", 1, "Generate structured documentation"),
             ("debugging", "Debugging", 2, "Diagnose and fix system issues"),
             ("self_healing", "Self Healing", 3, "Automatic error recovery and repair"),
-            ("architecture", "Architecture", 4, "Design and validate system architecture"),
+            (
+                "architecture",
+                "Architecture",
+                4,
+                "Design and validate system architecture",
+            ),
         ],
     }
 
@@ -562,7 +617,13 @@ class AgenticSphereGrid:
     #  AP Economy — Earning and Spending
     # -------------------------------------------------------------------------
 
-    def earn_ap(self, agent_id: str, amount: float, reason: str, skill_context: Optional[str] = None) -> float:
+    def earn_ap(
+        self,
+        agent_id: str,
+        amount: float,
+        reason: str,
+        skill_context: Optional[str] = None,
+    ) -> float:
         """
         Agent earns AP from doing useful work.
 
@@ -680,7 +741,11 @@ class AgenticSphereGrid:
             }
         )
 
-        return True, new_level, f"{skill_id}: {current:.2f} -> {new_level:.2f} ({tier_name})"
+        return (
+            True,
+            new_level,
+            f"{skill_id}: {current:.2f} -> {new_level:.2f} ({tier_name})",
+        )
 
     def _adjacency_ripple(self, state: AgentState, source: SkillNode, ripple: float):
         """
@@ -708,7 +773,11 @@ class AgenticSphereGrid:
     # -------------------------------------------------------------------------
 
     def computational_necessity(
-        self, agent_id: str, task_type: str, outcome: str, needed_skills: Optional[list[str]] = None
+        self,
+        agent_id: str,
+        task_type: str,
+        outcome: str,
+        needed_skills: Optional[list[str]] = None,
     ) -> dict[str, Any]:
         """
         The system detects what the agent NEEDS.
@@ -1000,7 +1069,10 @@ class AgenticSphereGrid:
 
         teacher_level = teacher.activations.get(skill_id, 0.0)
         if teacher_level < 0.90:
-            return {"success": False, "reason": f"Teacher not mastered ({teacher_level:.2f} < 0.90)"}
+            return {
+                "success": False,
+                "reason": f"Teacher not mastered ({teacher_level:.2f} < 0.90)",
+            }
 
         # Student gets 20% of the remaining activation for free
         student_level = student.activations.get(skill_id, 0.0)

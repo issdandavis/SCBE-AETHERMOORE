@@ -1,4 +1,5 @@
 """Tests for Triangulated PHDM Lattice — governance-as-geometry vertices."""
+
 from __future__ import annotations
 
 import sys
@@ -8,7 +9,11 @@ import numpy as np
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-from lattice import TriangulatedPHDMLattice, Triangle, TONGUE_DIMS
+from lattice import (
+    TriangulatedPHDMLattice,
+    Triangle,
+    TONGUE_DIMS,
+)
 
 
 class TestConstruction:
