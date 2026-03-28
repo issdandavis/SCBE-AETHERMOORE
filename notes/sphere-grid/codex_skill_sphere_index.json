@@ -1,30 +1,61 @@
 {
-  "generated_at_utc": "2026-03-28T21:32:08.027559+00:00",
+  "generated_at_utc": "2026-03-28T22:17:38.305603+00:00",
   "repo_root": "C:\\Users\\issda\\SCBE-AETHERMOORE",
   "sphere_root": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\sphere-grid",
   "skills_dir": "C:\\Users\\issda\\.codex\\skills",
-  "count": 101,
+  "count": 103,
   "items": [
     {
-      "skill": ".system",
-      "skill_dir": ".system",
-      "description": "",
+      "skill": "openai-docs",
+      "skill_dir": ".system/openai-docs",
+      "description": "Use when the user asks how to build with OpenAI products or APIs and needs up-to-date official documentation with citations, help choosing the latest model for a use case, or explicit GPT-5.4 upgrade and prompt-upgrade guidance; prioritize OpenAI docs MCP tools, use bundled references only as helper context, and restrict any fallback browsing to official OpenAI domains.",
       "primary": {
         "tongue": "DR",
-        "tier": 4,
-        "sphere_name": "Architecture",
-        "sphere_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\sphere-grid\\DR-Structure\\T4-Architecture\\_sphere.md",
-        "sphere_link": "DR-Structure/T4-Architecture/_sphere"
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\sphere-grid\\DR-Structure\\T1-Documentation\\_sphere.md",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
       },
       "candidates": [
         {
           "tongue": "DR",
-          "tier": 4,
-          "score": 2.0,
+          "tier": 1,
+          "score": 7.0,
           "hits": [
-            "system"
+            "docs",
+            "documentation"
           ]
         },
+        {
+          "tongue": "AV",
+          "tier": 4,
+          "score": 3.0,
+          "hits": [
+            "mcp"
+          ]
+        },
+        {
+          "tongue": "CA",
+          "tier": 1,
+          "score": 2.0,
+          "hits": [
+            "build"
+          ]
+        }
+      ]
+    },
+    {
+      "skill": "skill-creator",
+      "skill_dir": ".system/skill-creator",
+      "description": "Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Codex's capabilities with specialized knowledge, workflows, or tool integrations.",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\sphere-grid\\DR-Structure\\T1-Documentation\\_sphere.md",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "candidates": [
         {
           "tongue": "AV",
           "tier": 1,
@@ -34,6 +65,44 @@
         {
           "tongue": "AV",
           "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
+          "score": 0.0,
+          "hits": []
+        }
+      ]
+    },
+    {
+      "skill": "skill-installer",
+      "skill_dir": ".system/skill-installer",
+      "description": "Install Codex skills into $CODEX_HOME/skills from a curated list or a GitHub repo path. Use when a user asks to list installable skills, install a curated skill, or install a skill from another repo (including private repos).",
+      "primary": {
+        "tongue": "DR",
+        "tier": 1,
+        "sphere_name": "Documentation",
+        "sphere_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\notes\\sphere-grid\\DR-Structure\\T1-Documentation\\_sphere.md",
+        "sphere_link": "DR-Structure/T1-Documentation/_sphere"
+      },
+      "candidates": [
+        {
+          "tongue": "AV",
+          "tier": 1,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 2,
+          "score": 0.0,
+          "hits": []
+        },
+        {
+          "tongue": "AV",
+          "tier": 3,
           "score": 0.0,
           "hits": []
         }
