@@ -353,13 +353,30 @@ def main() -> int:
         raise SystemExit(f"No skill spheres found under: {sphere_root}")
 
     items: list[dict[str, Any]] = []
-    for d in sorted([p for p in skills_dir.iterdir() if p.is_dir()], key=lambda p: p.name.lower()):
+    # Skills can be nested (e.g. `.system/openai-docs`). Index any directory
+    # that contains a SKILL.md file, not just top-level folders.
+    skill_dirs: list[Path] = []
+    for md in skills_dir.rglob("SKILL.md"):
+        skill_dirs.append(md.parent)
+
+    # Deterministic order by relative path inside the skills dir.
+    def rel_key(p: Path) -> str:
+        try:
+            return p.relative_to(skills_dir).as_posix().lower()
+        except Exception:
+            return p.as_posix().lower()
+
+    for d in sorted(skill_dirs, key=rel_key):
         name, desc = read_skill_meta(d)
         primary, cand = classify_skill(name, desc, spheres)
+        try:
+            skill_rel = d.relative_to(skills_dir).as_posix()
+        except Exception:
+            skill_rel = d.name
         items.append(
             {
                 "skill": name,
-                "skill_dir": d.name,
+                "skill_dir": skill_rel,
                 "description": desc,
                 "primary": {
                     "tongue": primary.tongue,
