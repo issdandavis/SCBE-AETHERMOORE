@@ -65,5 +65,7 @@ jobs:
           # This workflow installs liboqs, so don't force-skip it.
           SCBE_FORCE_SKIP_LIBOQS: "0"
         run: |
-          PYTHONPATH=. python scripts/system/run_core_python_checks.py --maxfail 1 -m "pqc or requires_liboqs"
+          # NOTE: run_core_python_checks.py accepts extra pytest args as positionals.
+          # Use `--` so argparse doesn't treat `-m` as an unknown option.
+          PYTHONPATH=. python scripts/system/run_core_python_checks.py --maxfail 1 -- -m "pqc or requires_liboqs"
 
