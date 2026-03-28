@@ -1,8 +1,9 @@
 name: PQC Python (liboqs)
 
 on:
-  pull_request:
-    branches: [ main ]
+  schedule:
+    # Nightly PQC lane (UTC). Keep off PR to avoid long builds + flaky native deps.
+    - cron: '0 4 * * *'
   workflow_dispatch:
 
 concurrency:
@@ -60,6 +61,9 @@ jobs:
           "
 
       - name: Run PQC marker lane
+        env:
+          # This workflow installs liboqs, so don't force-skip it.
+          SCBE_FORCE_SKIP_LIBOQS: "0"
         run: |
-          PYTHONPATH=. pytest tests/ -v -m "pqc or requires_liboqs" --ignore=tests/node_modules
+          PYTHONPATH=. python scripts/system/run_core_python_checks.py --maxfail 1 -m "pqc or requires_liboqs"
 

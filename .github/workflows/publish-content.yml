@@ -38,7 +38,7 @@ env:
 
 jobs:
   post-to-bluesky:
-    if: inputs.platform == 'bluesky' || inputs.platform == 'all'
+    if: github.event.inputs.platform == 'bluesky' || github.event.inputs.platform == 'all'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,19 +53,19 @@ jobs:
           python scripts/publish/post_to_bluesky.py \
             --handle "$BLUESKY_HANDLE" \
             --password "$BLUESKY_APP_PASSWORD" \
-            --promo "${{ inputs.content == 'custom' && 'book' || inputs.content }}" \
-            ${{ inputs.content == 'custom' && format('--text "{0}"', inputs.custom_text) || '' }}
+            --promo "${{ github.event.inputs.content == 'custom' && 'book' || github.event.inputs.content }}" \
+            ${{ github.event.inputs.content == 'custom' && format('--text "{0}"', github.event.inputs.custom_text) || '' }}
 
   post-to-github:
-    if: inputs.platform == 'github-discussion' || inputs.platform == 'all'
+    if: github.event.inputs.platform == 'github-discussion' || github.event.inputs.platform == 'all'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Post to GitHub Discussions
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CONTENT_TYPE: ${{ inputs.content }}
-          CUSTOM_TEXT: ${{ inputs.custom_text }}
+          CONTENT_TYPE: ${{ github.event.inputs.content }}
+          CUSTOM_TEXT: ${{ github.event.inputs.custom_text }}
         run: |
           case "$CONTENT_TYPE" in
             book-promo)
@@ -115,7 +115,7 @@ jobs:
           }" --jq '.data.createDiscussion.discussion.url'
 
   post-to-x:
-    if: inputs.platform == 'x-twitter' || inputs.platform == 'all'
+    if: github.event.inputs.platform == 'x-twitter' || github.event.inputs.platform == 'all'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -141,8 +141,8 @@ jobs:
           consumer_secret = os.environ['X_API_SECRET']
           access_token = os.environ['X_ACCESS_TOKEN']
           access_secret = os.environ['X_ACCESS_TOKEN_SECRET']
-          content_type = "${{ inputs.content }}"
-          custom = "${{ inputs.custom_text }}"
+          content_type = "${{ github.event.inputs.content }}"
+          custom = "${{ github.event.inputs.custom_text }}"
 
           TWEETS = {
               "book-promo": """The Six Tongues Protocol — a fantasy novel born from 12,596 AI game log paragraphs.
@@ -223,3 +223,5 @@ jobs:
               print(f"Body: {error_body[:500]}")
               raise
           PYEOF
+
+
