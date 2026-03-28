@@ -3,6 +3,10 @@ Integration test: full backend message flow.
 Tests the complete path from WebSocket command to agent response.
 """
 
+import pytest
+
+pytest.importorskip("fastapi", reason="fastapi not installed")
+
 from fastapi.testclient import TestClient
 import src.aetherbrowser.serve as serve_module
 from src.aetherbrowser.provider_executor import ProviderExecutionResult

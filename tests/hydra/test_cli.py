@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip("httpx", reason="httpx not installed")
+
 from hydra.cli import (
     _load_json_object,
     _parse_lattice25d_options,

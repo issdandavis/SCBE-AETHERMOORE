@@ -16,6 +16,8 @@ import pytest
 import sys
 import os
 import numpy as np
+
+pytest.importorskip("hypothesis")
 from hypothesis import given, strategies as st, settings
 
 # Add src to path

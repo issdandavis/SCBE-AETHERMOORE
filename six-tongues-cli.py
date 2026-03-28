@@ -414,8 +414,6 @@ def kem_keygen() -> Tuple[bytes, bytes]:
     """Generate ML-KEM-768 keypair (pk, sk). Falls back to deterministic mock."""
     if _REAL_PQC:
         return _kem_keygen()
-    sk = os.urandom(32)
-    pk = hashlib.sha256(b"kem_pk:" + sk).digest()
     # Mock mode: derive pk deterministically from sk for encaps/decaps consistency.
     sk = secrets.token_bytes(32)
     pk = hashlib.sha256(b"ml-kem-mock:pk:" + sk).digest()
@@ -430,9 +428,6 @@ def kyber_encaps(pk: bytes) -> Tuple[bytes, bytes]:
     if _REAL_PQC:
         ct, ss = _kem_encrypt(pk)
         return ss, ct
-    nonce = os.urandom(32)
-    ct = nonce + hashlib.sha256(b"ct" + pk + nonce).digest()
-    ss = hashlib.sha256(b"ss" + pk + ct).digest()
     # Mock mode: ciphertext carries an ephemeral nonce; shared secret binds pk + nonce.
     ct = secrets.token_bytes(32)
     ss = hmac.new(pk, b"ml-kem-mock:ss:" + ct, hashlib.sha256).digest()
@@ -446,8 +441,6 @@ def kyber_decaps(sk: bytes, ct: bytes) -> bytes:
     """
     if _REAL_PQC:
         return _kem_decrypt(sk, ct)
-    pk = hashlib.sha256(b"kem_pk:" + sk).digest()
-    return hashlib.sha256(b"ss" + pk + ct).digest()
     pk = hashlib.sha256(b"ml-kem-mock:pk:" + sk).digest()
     return hmac.new(pk, b"ml-kem-mock:ss:" + ct, hashlib.sha256).digest()
 
@@ -456,8 +449,6 @@ def dsa_keygen() -> Tuple[bytes, bytes]:
     """Generate ML-DSA-65 keypair (pk, sk). Falls back to deterministic mock."""
     if _REAL_PQC:
         return _dsa_keygen()
-    sk = os.urandom(32)
-    pk = hashlib.sha256(b"dsa_pk:" + sk).digest()
     # Mock mode: derive pk deterministically from sk for sign/verify consistency.
     sk = secrets.token_bytes(32)
     pk = hashlib.sha256(b"ml-dsa-mock:pk:" + sk).digest()
@@ -468,8 +459,6 @@ def dsa_sign(sk: bytes, msg: bytes) -> bytes:
     """ML-DSA-65 sign. Uses real ML-DSA-65 when pqcrypto is available."""
     if _REAL_PQC:
         return _dsa_sign_real(sk, msg)
-    pk = hashlib.sha256(b"dsa_pk:" + sk).digest()
-    return hmac.new(pk, msg, hashlib.sha256).digest()
     pk = hashlib.sha256(b"ml-dsa-mock:pk:" + sk).digest()
     return hmac.new(pk, b"ml-dsa-mock:sig:" + msg, hashlib.sha256).digest()
 
@@ -483,7 +472,6 @@ def dsa_verify(pk: bytes, msg: bytes, sig: bytes) -> bool:
             return result is True or result is None
         except Exception:
             return False
-    expected = hmac.new(pk, msg, hashlib.sha256).digest()
     expected = hmac.new(pk, b"ml-dsa-mock:sig:" + msg, hashlib.sha256).digest()
     return hmac.compare_digest(expected, sig)
 

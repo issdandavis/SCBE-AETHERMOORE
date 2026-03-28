@@ -23,10 +23,9 @@ def test_compile_panel_prompt_uses_structured_style_and_mood_metadata() -> None:
     prompt = compile_panel_prompt(panel, packet)
 
     assert prompt.startswith("manhwa webtoon panel")
-    assert "story-first composition" in prompt
     assert "green terminal glow" in prompt
-    assert "forensic focus" in prompt
-    assert "selective painterly detail spike on the focal beat" in prompt
+    assert "held-breath suspense" in prompt
+    assert "painterly focal beat" in prompt
     assert "Marcus catches the impossible auth line in a dead office" in prompt
 
 

@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts.render_grok_storyboard_packet import build_render_jobs, run_packet
-from scripts.webtoon_quality_gate import govern_packet, lookup_episode_metadata, resolve_path
+from scripts.webtoon_quality_gate import govern_packet, lookup_episode_metadata
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -54,6 +54,23 @@ def direct_reader_source(chapter_id: str) -> str | None:
     if candidate.exists():
         return str(candidate.relative_to(ROOT).as_posix())
     return None
+
+
+def resolve_path(path_value: str | None, packet_path: Path | None) -> Path | None:
+    if not path_value:
+        return None
+    candidate = Path(path_value)
+    if candidate.is_absolute():
+        return candidate
+    root_candidate = (ROOT / candidate).resolve()
+    if root_candidate.exists():
+        return root_candidate
+    if packet_path is not None:
+        packet_candidate = (packet_path.parent / candidate).resolve()
+        if packet_candidate.exists():
+            return packet_candidate
+        return packet_candidate
+    return root_candidate
 
 
 def load_json(path: Path) -> dict[str, Any]:
