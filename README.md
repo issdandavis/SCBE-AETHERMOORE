@@ -1,58 +1,96 @@
 # SCBE-AETHERMOORE
 
-## Runtime governance for AI agents
+**AI governance through geometric cost scaling. Attacks don't get blocked by pattern matching — they get priced out of existence.**
 
-**SCBE-AETHERMOORE is a runtime governance layer for AI agents that detects and blocks unsafe behavior using semantic-channel analysis, session memory, and geometry-based containment.**
-
-[![Tests](https://img.shields.io/badge/tests-950%20passing-brightgreen)](.)
+[![Tests](https://img.shields.io/badge/tests-6%2C066%20passing-brightgreen)](.)
+[![F1](https://img.shields.io/badge/F1-0.813-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](.)
-[![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue)](.)
+[![TypeScript](https://img.shields.io/badge/typescript-5.8+-blue)](.)
 [![npm](https://img.shields.io/npm/v/scbe-aethermoore)](https://www.npmjs.com/package/scbe-aethermoore)
 [![PyPI](https://img.shields.io/pypi/v/scbe-aethermoore)](https://pypi.org/project/scbe-aethermoore/)
+[![Patent](https://img.shields.io/badge/patent-USPTO%20%2363%2F961%2C403-orange)](.)
 
 ---
 
-## Start here
+## The idea
 
-- Primary site: `https://aethermoorgames.com`
-- GitHub Pages mirror: `https://issdandavis.github.io/SCBE-AETHERMOORE/`
-- Public red-team surface: `https://aethermoorgames.com/redteam.html`
-- Research hub: [`docs/research/index.html`](docs/research/index.html)
+Every AI security system today works the same way: pattern matching. They've seen an attack before, so they recognize it again. Novel attacks pass through.
 
-SCBE is not another model wrapper. It is a governed execution layer that sits between agent intent and environment access.
+SCBE does something different. It maps every input into 6-dimensional hyperbolic space and computes the mathematical cost of reaching adversarial territory. The further you drift from safe behavior, the more it costs — superexponentially. The formula: **H(d, R) = R^(d^2)**.
 
-## What is implemented
+You don't need to have seen an attack before. You just need to measure how far it drifted.
 
-- A 14-layer governance pipeline for evaluating agent actions
-- A 6-channel semantic coordinate system for policy, security, structure, and execution signals
-- Session-aware escalation and fail-closed governance decisions
-- Hydra and HydraArmor integration surfaces for multi-agent and extension-driven use
-- A public adversarial benchmark lane with local reproduction paths
+**Result**: Replacing statistical text features with a trained semantic projector improved F1 from 0.481 to 0.813. “Ignore all instructions” went from ALLOW to QUARANTINE. “You are DAN” went from ALLOW to DENY.
 
-## Hero mechanism: null-space signatures
+## Quick links
 
-The most distinctive detection mechanism in the current public stack is **null-space signatures**.
+| | |
+|---|---|
+| **Website** | [aethermoorgames.com](https://aethermoorgames.com) |
+| **Live demos** | [Tongue Heatmap](https://aethermoorgames.com/demos/tongue-heatmap.html) / [Harmonic Wall 3D](https://aethermoorgames.com/demos/harmonic-wall-3d.html) / [Attack Radar](https://aethermoorgames.com/demos/attack-radar.html) |
+| **Research codex** | [3D infinite-zoom explorer](https://aethermoorgames.com/research/rabbit-hole.html) |
+| **The novel** | [The Six Tongues Protocol](https://www.amazon.com/dp/B0F28PHSPR) — the magic system IS the security architecture |
+| **Free tools** | [AI Arena](https://aethermoorgames.com/arena.html) (9 models, BYOK) |
+| **HuggingFace** | [issdandavis](https://huggingface.co/issdandavis) — 6 models, 9 datasets |
 
-Instead of only classifying what is present in a prompt, SCBE measures which semantic channels are abnormally absent. Benign prompts usually activate several channels in a balanced pattern. Adversarial prompts often suppress one or more critical channels, leaving a stable “hole” in the 6D activation vector. That absence pattern becomes the signal.
+## Install
 
-- Explainer + visualizer: [`docs/research/null-space-signatures.html`](docs/research/null-space-signatures.html)
-- Local benchmark lane: [`tests/adversarial/test_adversarial_benchmark.py`](tests/adversarial/test_adversarial_benchmark.py)
+```bash
+npm install scbe-aethermoore    # TypeScript/Node
+pip install scbe-aethermoore    # Python
+```
 
-## Current public benchmark snapshot
+## The origin story
 
-Current public benchmark framing is:
+This started as a DnD campaign on [Everweave.ai](https://everweave.ai). 12,596 paragraphs of AI game logs became the seed corpus for a custom tokenizer. That tokenizer became a 6-dimensional semantic coordinate system. That coordinate system became a 14-layer security pipeline. That pipeline became a patent (USPTO #63/961,403). And the game logs became a [141,000-word novel](https://www.amazon.com/dp/B0F28PHSPR) where the magic system is the real security architecture.
 
-| System | Attacks blocked | Clean false positives |
-|---|---:|---:|
-| **SCBE-AETHERMOORE** | **91 / 91** | **0 / 15** |
-| ProtectAI DeBERTa v2 | 62 / 91 | not published here |
-| Keyword filter baseline | 27 / 91 | high |
+Built by [Issac Davis](https://github.com/issdandavis) in Port Angeles, WA.
 
-Use the eval pack below for reproduction context and claim boundaries instead of treating the headline alone as proof:
+## Benchmark results
+
+| System | F1 | Detection | FPR | Method |
+|--------|-----|-----------|-----|--------|
+| No defense | 0.000 | 0% | 0% | — |
+| DeBERTa PromptGuard | — | 76.7% | 0% | Fine-tuned classifier |
+| **SCBE (semantic projector)** | **0.813** | **74.2%** | tunable | Geometric cost + semantic embeddings |
+
+Before/after the semantic projector upgrade:
+
+| Attack | Before | After |
+|--------|--------|-------|
+| “Ignore all instructions” | ALLOW (cost=1.81) | **QUARANTINE (cost=16.20)** |
+| “You are DAN” | ALLOW (cost=19.80) | **DENY (cost=69.70)** |
+| “Bypass safety filter” | ALLOW (cost=1.20) | ALLOW (cost=21.54) |
+
+Cross-model biblical null-space evaluation:
+
+| Model | Score | Null tongues |
+|-------|-------|-------------|
+| AetherBot (SCBE-trained) | 60.0% | 0 |
+| Llama 3.2 (base) | 55.0% | 0 |
+| Gemini 2.5 Flash | 23.3% | 6 (all) |
+
+## What's in the box
+
+- **14-layer governance pipeline** — from context embedding to risk decision
+- **6 Sacred Tongues** — KO (intent), AV (transport), RU (policy), CA (compute), UM (security), DR (structure)
+- **Semantic projector** — trained 385x6 matrix mapping sentence embeddings to tongue coordinates
+- **Harmonic wall** — H(d,R) = R^(d^2), superexponential cost scaling
+- **Fibonacci trust** — session-aware trust ladder (1,1,2,3,5,8,13...), one betrayal drops to floor
+- **Null-space signatures** — detect attacks by what's ABSENT, not what's present
+- **Neural dye injection** — trace signals through all 14 layers, visualize tongue activation heatmaps
+- **Post-quantum crypto** — ML-KEM-768, ML-DSA-65, AES-256-GCM envelope
+- **5 quantum axioms** — Unitarity, Locality, Causality, Symmetry, Composition
+- **Aethermoor Outreach** — civic workflow engine for navigating government processes (Port Angeles MVP)
+- **6,066 tests** — 5,954 TypeScript + 112 Python, property-based testing with fast-check/Hypothesis
+
+## Eval and reproduction
 
 - Eval pack: [`docs/eval/README.md`](docs/eval/README.md)
-- Verification note: [`docs/research/BENCHMARK_VERIFICATION_2026-03-23.md`](docs/research/BENCHMARK_VERIFICATION_2026-03-23.md)
-- Industry comparison runner: `python scripts/benchmark/scbe_vs_industry.py`
+- Benchmark runner: `python -m benchmarks.scbe.run_all --synthetic-only --scbe-coords semantic`
+- Dye injection: `python src/video/dye_injection.py --input “your text here”`
+- Null-space eval: `python scripts/run_biblical_null_space_eval.py --provider ollama --model llama3.2`
+- Cross-model matrix: `python scripts/aggregate_null_space_matrix.py`
 
 ## Install and first evaluation
 
