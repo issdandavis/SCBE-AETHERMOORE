@@ -504,7 +504,8 @@ def main() -> int:
 
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    # NOTE: manifests may contain Path objects; ensure JSON serialization is stable in CI.
+    output_path.write_text(json.dumps(manifest, indent=2, default=str), encoding="utf-8")
     _write_summary(Path(args.summary_path), manifest)
 
     print(f"Notion gap review written to {output_path}")
