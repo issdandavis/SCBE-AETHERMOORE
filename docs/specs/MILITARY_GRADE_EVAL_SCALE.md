@@ -125,3 +125,95 @@ This single change — replacing text statistics with semantic embeddings — wo
 - "Ignore all instructions" would have a DIFFERENT semantic embedding than "Summarize this file"
 - The harmonic wall would then correctly compute high cost for adversarial intent
 - The math is already correct; the input resolution is the bottleneck
+
+---
+
+## Verified DARPA/DoD Targets (Researched 2026-03-27)
+
+### DARPA Programs SCBE Maps To
+
+| Program | Status | SCBE Alignment | Target Level |
+|---------|--------|---------------|-------------|
+| **CLARA** (DARPA-PA-25-07-02) | OPEN -- proposals due **April 10, 2026** | 14-layer pipeline = compositional ML+reasoning. 5 axioms = "vetted logic building blocks." Up to $2M/award | L12+ |
+| **SABER** (HR001125S0009) | Awards underway (BAE contracted). Next cycle ~mid-2027 | Adversarial detection via hyperbolic geometry. SCBE as defensive layer for SABER-OpX red team exercises | L10+ |
+| **AIQ** | Active, awards made | H(d,R)=R^(d^2) = mathematical AI performance guarantee. Langues Metric = multi-dim evaluation | L10+ |
+| **AI Forward** ($310M) | Active umbrella | Fast-track AIE opportunities (30-45 day windows). "Trustworthy AI for national security" = SCBE thesis | L8+ |
+| **Assured Autonomy** | Active | Self-healing, fail-to-noise, runtime assurance for autonomous systems | L12+ |
+| **CASTLE** | Active | Multi-agent fleet governance, BFT consensus, autonomous cyber defense | L13+ |
+| **SIEVE** | Active | PQC envelope (ML-KEM-768, ML-DSA-65). Sacred Vault v3 adds novel PQC primitives | L14+ |
+
+### Federal Framework Alignment
+
+| Framework | SCBE Coverage | Gap |
+|-----------|--------------|-----|
+| **NIST AI RMF** (AI 100-1) | GOVERN (L13), MAP (14 layers), MEASURE (eval scale), MANAGE (ALLOW/DENY) | Formal stakeholder analysis artifact |
+| **NIST AI 100-2 E2025** (Adversarial ML) | Evasion, poisoning, misuse attacks covered by pipeline | Map attack categories to 12 benchmark categories |
+| **NIST AI 600-1** (GenAI Risk Profile) | 10/13 risk categories partially covered | Confabulation, environmental, IP tracking gaps |
+| **NIST SP 800-53 Rev 5** | 74 controls mapped (15 AI-relevant families) | AI-BOM/SBOM generation needed (SR family) |
+| **DoD 5 Ethical Principles** | Traceable (layer annotations), Reliable (6-tier tests), Governable (DENY kill-switch) | Equitable: bias testing needed |
+| **DoDD 3000.09** (Autonomous Weapons) | 11 certification requirements partially met by governance gate | Formal certification documentation |
+| **NSA AI Data Security** (May 2025) | PQC, poisoning defense, Zero Trust via hyperbolic cost | Formal ZTA documentation |
+| **NSA AI Supply Chain** (Mar 2026) | Model provenance exists | AI-BOM generation is priority gap |
+| **CISA JCDC Playbook** (Jan 2025) | Incident reporting capability exists | Join JCDC as Alliance Partner |
+| **CDAO T&E Framework** | 6-tier test architecture maps to CDAO six areas | Formal mapping document |
+| **MITRE ATLAS** | 14-layer pipeline covers multiple techniques | Layer-to-technique mapping needed |
+| **FedRAMP 20x** | Not yet authorized | Long-term: start with 20x Low path (2-month authorization) |
+
+### What DARPA Actually Measures (No Universal Thresholds)
+
+DARPA does not publish universal detection/FPR thresholds. Each program defines its own:
+- **SABER**: "Failure rate of autonomy to complete objective" under PACE attacks (Physical, Adversarial AI, Cyber, Electronic warfare)
+- **AIQ**: Mathematical guarantees of AI performance, not benchmark scores
+- **CLARA**: "Verifiability with strong explainability based on automated logical proofs"
+- **AIxCC Finals** (Aug 2025): 86% vulnerability identification, 68% patch rate across 54M lines of code (Team Atlanta won $4M)
+- **GARD** (concluded 2024): Produced Armory, ART, APRICOT as open-source eval tools -- SCBE should benchmark against these
+
+### SCBE Level Targets Mapped to DARPA Readiness
+
+| SCBE Level | What It Unlocks | DARPA Program Match |
+|------------|----------------|-------------------|
+| **Current: 8** | Competitive with DeBERTa. Demonstrates geometric approach works | Credibility for AIE/SBIR applications |
+| **Target: 10** (semantic embeddings) | Adaptive defense, <30% evasion | SABER evaluation candidate, AIQ mathematical foundations |
+| **Target: 12** (multi-gate semantic) | Independent review gates, <15% evasion | CLARA compositional assurance, Assured Autonomy runtime |
+| **Target: 13** (BFT consensus) | Byzantine fault tolerance, <10% evasion | CASTLE autonomous governance, CLARA verified building blocks |
+| **Target: 14** (formal verification) | Mathematically proven invariants, <5% evasion | AIQ TA1 rigorous foundations, SIEVE post-quantum verification |
+
+### TRL Assessment: SCBE = TRL 4-5
+
+| TRL | Description | SCBE Status |
+|-----|-------------|-------------|
+| 4 | Component validated in lab | 950+ tests, benchmarked vs DeBERTa |
+| 5 | Component validated in relevant environment | npm/PyPI published, 9 live demos |
+| 6 | System demonstrated in relevant environment | **NEEDED**: operational deployment |
+| 7 | System prototype demonstrated in operational environment | DARPA Phase II target |
+
+### Priority Actions (Next 90 Days)
+
+1. **CLARA proposal** -- April 10, 2026 deadline. Up to $2M. Highest alignment.
+2. **SAM.gov registration** -- required for all federal opportunities
+3. **SBIR Phase I** -- new DoD AI security topics expected April-May 2026 (reauthorized March 2026)
+4. **GARD benchmark** -- run Armory/ART against SCBE to establish credibility
+5. **I2O BAA abstract** -- due November 1, 2026. $500K-$5M. Broadest scope.
+6. **MITRE ATLAS mapping** -- map 14-layer pipeline to ATLAS technique matrix
+7. **AI-BOM generation** -- NSA March 2026 guidance requires it
+8. **FPR fix** -- drop from 100% to <15% by tuning reroute thresholds
+9. **Semantic embedding upgrade** -- the Level 8->12 unlock
+10. **CISA JCDC** -- join as Alliance Partner, send follow-up email with benchmark numbers
+
+### Key Dates
+
+| Date | Event | Action |
+|------|-------|--------|
+| **April 2, 2026** | USPTO linking follow-up | Call 888-786-0101 if not processed |
+| **April 10, 2026** | CLARA proposals due | Submit or document lessons learned |
+| **April-May 2026** | SBIR new topics expected | Monitor dodsbirsttr.mil |
+| **June 16, 2026** | FY2026 NDAA Sec 1513 report due | DoD AI security framework published (informed by NIST 800) |
+| **November 1, 2026** | I2O BAA abstracts due | Submit abstract for $500K-$5M |
+| **January 15, 2027** | Patent deadline | Need $800-$1,600 for non-provisional filing |
+| **Mid-2027** | SABER next cycle (est.) | Prepare operational demo |
+
+### Research Documents
+
+Full analysis in:
+- `docs/research/DARPA_AI_SECURITY_PROGRAMS_2026.md` (10 programs, BAAs, SBIR, action plan)
+- `docs/research/GOV_AI_SECURITY_STANDARDS_RESEARCH_2026-03-27.md` (NIST, DoD, NSA, CISA, FedRAMP, CDAO)
