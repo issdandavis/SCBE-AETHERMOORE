@@ -70,6 +70,56 @@ def summarize_fine_tune_plan(pipeline):
     }
 
 
+def validate_fine_tune_streams(pipeline, dry_run=False):
+    """Validate fine_tune streams before training.
+
+    Checks that streams are non-empty, have required fields, weights are
+    positive and sum to ~1.0, and required_min_records >= 1.
+    """
+    cfg = pipeline.get("fine_tune") or {}
+    if not cfg.get("enabled", False):
+        log.info("Fine-tune disabled — skipping stream validation")
+        return
+
+    streams = cfg.get("streams", [])
+    errors: list[str] = []
+
+    if not streams:
+        errors.append("fine_tune.streams is empty but fine_tune.enabled is true")
+
+    required_fields = ("name", "lane", "weight")
+    total_weight = 0.0
+    for i, stream in enumerate(streams):
+        if not isinstance(stream, dict):
+            errors.append(f"stream[{i}] is not a dict")
+            continue
+        for field in required_fields:
+            if field not in stream:
+                errors.append(f"stream[{i}] missing required field '{field}'")
+        w = stream.get("weight", 0)
+        if not isinstance(w, (int, float)) or w <= 0:
+            errors.append(f"stream[{i}] weight must be positive, got {w}")
+        else:
+            total_weight += w
+        min_records = stream.get("required_min_records", 0)
+        if not isinstance(min_records, (int, float)) or min_records < 1:
+            errors.append(f"stream[{i}] required_min_records must be >= 1, got {min_records}")
+
+    if streams and abs(total_weight - 1.0) > 0.05:
+        errors.append(f"stream weights sum to {total_weight:.4f}, expected ~1.0 (±0.05)")
+
+    if errors:
+        for err in errors:
+            log.error("Stream validation: %s", err)
+        if dry_run:
+            log.warning("Dry-run mode — continuing despite validation errors")
+        else:
+            log.error("Aborting: fix fine_tune.streams in pipeline config")
+            sys.exit(1)
+    else:
+        log.info("Fine-tune streams validated: %d streams, total weight=%.4f", len(streams), total_weight)
+
+
 def validate_environment(dry_run=False):
     """Check that required env vars and credentials are present."""
     required = ["GCP_PROJECT_ID"]
@@ -203,6 +253,8 @@ def main():
         fine_tune_summary["stream_count"],
         ", ".join(fine_tune_summary["stream_weights"]) or "none",
     )
+
+    validate_fine_tune_streams(pipeline, dry_run=args.dry_run)
 
     if args.push_only:
         push_to_huggingface(cfg)
