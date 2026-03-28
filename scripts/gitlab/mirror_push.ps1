@@ -26,8 +26,8 @@ function Get-EnvValueFromDotEnvFile {
     if ($line -match ("^\s*" + [regex]::Escape($Key) + "\s*=\s*(.*)\s*$")) {
       $raw = $Matches[1]
       $raw = $raw.Trim()
-      if ($raw.StartsWith('\"') -and $raw.EndsWith('\"')) { return $raw.Substring(1, $raw.Length - 2) }
-      if ($raw.StartsWith(\"'\") -and $raw.EndsWith(\"'\")) { return $raw.Substring(1, $raw.Length - 2) }
+      if ($raw.StartsWith('"') -and $raw.EndsWith('"')) { return $raw.Substring(1, $raw.Length - 2) }
+      if ($raw.StartsWith("'") -and $raw.EndsWith("'")) { return $raw.Substring(1, $raw.Length - 2) }
       return $raw
     }
   }
@@ -61,17 +61,42 @@ Push-Location $repoRoot
 try {
   $env:GIT_TERMINAL_PROMPT = "0"
 
+  function Invoke-GitSafe {
+    param(
+      [Parameter(Mandatory = $true)][string[]]$Args,
+      [Parameter(Mandatory = $true)][string]$Secret
+    )
+
+    $out = & git @Args 2>&1
+    $code = $LASTEXITCODE
+
+    $san = $out
+    if (!([string]::IsNullOrEmpty($Secret))) {
+      $san = ($san -replace [regex]::Escape($Secret), "***")
+    }
+    # Also redact token-bearing oauth2 URLs even if the token differs or is not a direct match.
+    $san = ($san -replace "oauth2:[^@]+@", "oauth2:***@")
+
+    if ($code -ne 0) {
+      $argsJoined = ($Args -join " ")
+      if (!([string]::IsNullOrEmpty($Secret))) {
+        $argsJoined = ($argsJoined -replace [regex]::Escape($Secret), "***")
+      }
+      $argsJoined = ($argsJoined -replace "oauth2:[^@]+@", "oauth2:***@")
+      throw ("git " + $argsJoined + " failed (sanitized):`n" + $san)
+    }
+  }
+
   if ($PushAllBranchesAndTags) {
     Write-Host "Pushing all branches and tags to GitLab (sanitized)…"
-    git push $authUrl --all | Out-Null
-    git push $authUrl --tags | Out-Null
+    Invoke-GitSafe -Args @("push", $authUrl, "--all") -Secret $token
+    Invoke-GitSafe -Args @("push", $authUrl, "--tags") -Secret $token
   } else {
     Write-Host "Pushing HEAD to GitLab branch '$Branch' (sanitized)…"
-    git push $authUrl ("HEAD:refs/heads/" + $Branch) | Out-Null
+    Invoke-GitSafe -Args @("push", $authUrl, ("HEAD:refs/heads/" + $Branch)) -Secret $token
   }
 
   Write-Host "Done."
 } finally {
   Pop-Location
 }
-
