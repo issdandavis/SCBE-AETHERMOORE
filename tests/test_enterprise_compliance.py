@@ -527,7 +527,7 @@ class TestEnterpriseStress:
         """Verify pipeline handles high request volume."""
         results = []
 
-        for i in range(100):
+        for _i in range(100):
             position = np.random.rand(6) * 10
             result = scbe_14layer_pipeline(t=position, D=6)
             results.append(result)

@@ -28,7 +28,12 @@ class HydraExecuteRequest(BaseModel):
 
 
 class HydraRegisterHeadRequest(BaseModel):
-    ai_type: str = Field(..., min_length=1, max_length=64, description="AI provider type (claude, gpt, gemini, local)")
+    ai_type: str = Field(
+        ...,
+        min_length=1,
+        max_length=64,
+        description="AI provider type (claude, gpt, gemini, local)",
+    )
     model: str = Field(..., min_length=1, max_length=128, description="Model identifier")
     callsign: Optional[str] = Field(default=None, max_length=64, description="Custom callsign")
 
@@ -52,7 +57,12 @@ class HydraThinkRequest(BaseModel):
 
 
 class HydraResearchRequest(BaseModel):
-    query: str = Field(..., min_length=3, max_length=2000, description="Research query in natural language")
+    query: str = Field(
+        ...,
+        min_length=3,
+        max_length=2000,
+        description="Research query in natural language",
+    )
     max_subtasks: int = Field(default=5, ge=1, le=10, description="Max parallel sub-tasks")
     discovery_per_subtask: int = Field(default=3, ge=1, le=10, description="Max pages per sub-task")
     provider_order: List[str] = Field(
@@ -164,7 +174,7 @@ async def hydra_status(user: str = Depends(verify_api_key)):
             "ai_type": head.ai_type,
             "model": head.model,
             "callsign": head.callsign,
-            "status": head.status.value if hasattr(head.status, "value") else str(head.status),
+            "status": (head.status.value if hasattr(head.status, "value") else str(head.status)),
             "action_count": head.action_count,
             "has_llm_provider": hid in _providers,
         }
@@ -181,7 +191,7 @@ async def hydra_status(user: str = Depends(verify_api_key)):
     for wid, wf in spine.workflows.items():
         workflows_info[wid] = {
             "name": wf.name,
-            "status": wf.status.value if hasattr(wf.status, "value") else str(wf.status),
+            "status": (wf.status.value if hasattr(wf.status, "value") else str(wf.status)),
             "current_phase": wf.current_phase,
             "total_phases": len(wf.phases),
             "created_at": wf.created_at,
@@ -539,7 +549,11 @@ async def init_hydra_spine() -> None:
         try:
             from hydra.llm_providers import create_provider
 
-            default_head = HydraHead(ai_type="claude", model="claude-sonnet-4-20250514", callsign="CT-DEFAULT")
+            default_head = HydraHead(
+                ai_type="claude",
+                model="claude-sonnet-4-20250514",
+                callsign="CT-DEFAULT",
+            )
             await default_head.connect(_spine)
             _providers[default_head.head_id] = create_provider("claude")
             print(f"[HYDRA-API] Default Claude head registered: {default_head.head_id}")

@@ -5,7 +5,10 @@ import pytest
 try:
     from cryptography.fernet import Fernet  # noqa: F401
 except BaseException:
-    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+    pytest.skip(
+        "cryptography package not functional (cffi backend missing)",
+        allow_module_level=True,
+    )
 
 from hydra.tenreary import MCPTenreary, MCPTenrearyRunner
 
@@ -20,7 +23,10 @@ def test_tenreary_rule_analysis_local_only():
                 {
                     "id": "set_a",
                     "type": "context.set",
-                    "params": {"key": "message", "value": "stripe checkout conversion n8n zapier"},
+                    "params": {
+                        "key": "message",
+                        "value": "stripe checkout conversion n8n zapier",
+                    },
                 },
                 {
                     "id": "analyze",
@@ -83,7 +89,10 @@ def test_tenreary_notion_append_skips_without_network():
                 {
                     "id": "set_payload",
                     "type": "context.set",
-                    "params": {"key": "run_summary", "value": {"cash_signal": 88, "elite_ready": True}},
+                    "params": {
+                        "key": "run_summary",
+                        "value": {"cash_signal": 88, "elite_ready": True},
+                    },
                 },
                 {
                     "id": "notion_log",

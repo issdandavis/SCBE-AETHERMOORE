@@ -586,7 +586,7 @@ def test_swarm_auto_exclusion() -> Dict[str, Any]:
     health_history = [swarm_health(nodes)]
 
     # Run swarm updates
-    for round_num in range(n_rounds):
+    for _round_num in range(n_rounds):
         centroid = compute_centroid(nodes)
         for node in nodes:
             node.trust = update_trust(node, centroid)

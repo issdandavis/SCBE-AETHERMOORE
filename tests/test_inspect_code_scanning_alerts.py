@@ -31,7 +31,12 @@ def test_summarize_alerts_groups_rule_and_path_counts() -> None:
                 "name": "Incomplete URL substring sanitization",
                 "security_severity_level": "high",
             },
-            "most_recent_instance": {"location": {"path": "src/aetherbrowser/page_analyzer.py", "start_line": 152}},
+            "most_recent_instance": {
+                "location": {
+                    "path": "src/aetherbrowser/page_analyzer.py",
+                    "start_line": 152,
+                }
+            },
             "html_url": "https://example.test/2261",
         },
         {
@@ -50,7 +55,11 @@ def test_summarize_alerts_groups_rule_and_path_counts() -> None:
             "number": 2259,
             "state": "open",
             "tool": {"name": "CodeQL"},
-            "rule": {"id": "js/bad-tag-filter", "name": "Bad HTML filtering regexp", "security_severity_level": "high"},
+            "rule": {
+                "id": "js/bad-tag-filter",
+                "name": "Bad HTML filtering regexp",
+                "security_severity_level": "high",
+            },
             "most_recent_instance": {"location": {"path": "src/browser/toolkit.py", "start_line": 136}},
             "html_url": "https://example.test/2259",
         },

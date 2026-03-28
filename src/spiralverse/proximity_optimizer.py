@@ -66,8 +66,21 @@ LEVEL_TONGUES = {
     ProtocolLevel.BASIC: [Axis.AXIOM, Axis.ORACLE],
     ProtocolLevel.STANDARD: [Axis.AXIOM, Axis.ORACLE, Axis.LEDGER],
     ProtocolLevel.EXTENDED: [Axis.AXIOM, Axis.ORACLE, Axis.LEDGER, Axis.CHARM],
-    ProtocolLevel.FULL_MINUS: [Axis.AXIOM, Axis.ORACLE, Axis.LEDGER, Axis.CHARM, Axis.FLOW],
-    ProtocolLevel.FULL: [Axis.AXIOM, Axis.FLOW, Axis.GLYPH, Axis.ORACLE, Axis.CHARM, Axis.LEDGER],
+    ProtocolLevel.FULL_MINUS: [
+        Axis.AXIOM,
+        Axis.ORACLE,
+        Axis.LEDGER,
+        Axis.CHARM,
+        Axis.FLOW,
+    ],
+    ProtocolLevel.FULL: [
+        Axis.AXIOM,
+        Axis.FLOW,
+        Axis.GLYPH,
+        Axis.ORACLE,
+        Axis.CHARM,
+        Axis.LEDGER,
+    ],
 }
 
 # Byte sizes per level (optimized encoding)
@@ -439,7 +452,7 @@ class FormationOptimizer:
         """
         total_bytes_per_second = 0.0
 
-        for pair, level in levels.items():
+        for _pair, level in levels.items():
             bytes_per_msg = LEVEL_BYTE_SIZES[level]
             total_bytes_per_second += bytes_per_msg * update_rate_hz
 
@@ -468,7 +481,15 @@ def demo():
     print("[PROTOCOL LEVELS] Distance -> Tongue Count:")
     print("-" * 50)
     for distance in [1.0, 3.0, 7.0, 15.0, 35.0, 100.0]:
-        pos = Position6D(axiom=distance, flow=5.0, glyph=10.0, oracle=2.5, charm=0.7, ledger=200, agent_id="TEST")
+        pos = Position6D(
+            axiom=distance,
+            flow=5.0,
+            glyph=10.0,
+            oracle=2.5,
+            charm=0.7,
+            ledger=200,
+            agent_id="TEST",
+        )
 
         msg = encoder.encode(pos, distance)
         monitor.record_message(msg)
@@ -528,7 +549,13 @@ def demo():
     print("[DECODE] Lossless reconstruction test:")
     print("-" * 50)
     original = Position6D(
-        axiom=15.5, flow=7.2, glyph=22.1, oracle=3.8, charm=0.65, ledger=180, agent_id="RECONSTRUCT-TEST"
+        axiom=15.5,
+        flow=7.2,
+        glyph=22.1,
+        oracle=3.8,
+        charm=0.65,
+        ledger=180,
+        agent_id="RECONSTRUCT-TEST",
     )
 
     # Encode at minimal level

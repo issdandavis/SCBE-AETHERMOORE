@@ -30,7 +30,14 @@ class ResonanceGateEvolvable:
         self.geometry_decay = PHI  # exp(-decay * d*)
         self.wave_power = 1.0  # how much wave matters vs geometry
         self.tongue_weights = [1.0, PHI, PHI**2, PHI**3, PHI**4, PHI**5]
-        self.tongue_phases = [0, math.pi / 3, 2 * math.pi / 3, math.pi, 4 * math.pi / 3, 5 * math.pi / 3]
+        self.tongue_phases = [
+            0,
+            math.pi / 3,
+            2 * math.pi / 3,
+            math.pi,
+            4 * math.pi / 3,
+            5 * math.pi / 3,
+        ]
         self.f0 = F0
         self.geometry_floor = 0.0  # minimum geometry alignment
 
@@ -291,7 +298,12 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
             "barrier_cost_ratio": cost_3 / max(cost_0, 1e-10),
         },
     }
-    report_path = os.path.join(os.path.dirname(__file__), "..", "artifacts", "resonance_gate_evolution_report.json")
+    report_path = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "artifacts",
+        "resonance_gate_evolution_report.json",
+    )
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
     with open(report_path, "w") as f:
         json.dump(report, f, indent=2)

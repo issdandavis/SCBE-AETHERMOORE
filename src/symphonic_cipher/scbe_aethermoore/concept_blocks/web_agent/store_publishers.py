@@ -342,7 +342,9 @@ class ShopifyPublisher:
         """Update an existing product."""
         t0 = time.time()
         data = self._request(
-            "PUT", f"/products/{product_id}.json", json={"product": {"id": int(product_id), **updates}}
+            "PUT",
+            f"/products/{product_id}.json",
+            json={"product": {"id": int(product_id), **updates}},
         )
         success = data.get("_status_code") in (200, 201)
         return StoreResult(
@@ -410,7 +412,11 @@ class ShopifyPublisher:
         if image_url:
             collection_data["image"] = {"src": image_url}
 
-        data = self._request("POST", "/custom_collections.json", json={"custom_collection": collection_data})
+        data = self._request(
+            "POST",
+            "/custom_collections.json",
+            json={"custom_collection": collection_data},
+        )
         collection = data.get("custom_collection", {})
         success = data.get("_status_code") in (200, 201)
 

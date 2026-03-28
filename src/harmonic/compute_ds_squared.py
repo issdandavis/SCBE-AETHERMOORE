@@ -6,7 +6,10 @@ from typing import Dict, Iterable, Optional
 
 import numpy as np
 
-from src.harmonic.state21_product_metric import State21Error, hyperbolic_distance_poincare
+from src.harmonic.state21_product_metric import (
+    State21Error,
+    hyperbolic_distance_poincare,
+)
 
 
 def fisher_rao_distance_squared(p: Iterable[float], q: Iterable[float], eps: float = 1e-12) -> float:

@@ -281,7 +281,7 @@ def show_stats():
     # Per-channel breakdown
     collected = state.get("collected", {})
     by_channel = {}
-    for vid_id, info in collected.items():
+    for _vid_id, info in collected.items():
         ch = info.get("channel", "?")
         by_channel[ch] = by_channel.get(ch, 0) + 1
 
@@ -292,7 +292,7 @@ def show_stats():
 
     # Per-tongue breakdown
     by_tongue = {}
-    for vid_id, info in collected.items():
+    for _vid_id, info in collected.items():
         t = info.get("tongue", "?")
         by_tongue[t] = by_tongue.get(t, 0) + 1
 

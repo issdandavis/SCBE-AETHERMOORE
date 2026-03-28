@@ -190,7 +190,8 @@ TIER_THRESHOLDS = {
 
 MEMORY_DIR = Path(
     os.environ.get(
-        "MEMORY_DIR", str(Path.home() / ".claude" / "projects" / "C--Users-issda-SCBE-AETHERMOORE" / "memory")
+        "MEMORY_DIR",
+        str(Path.home() / ".claude" / "projects" / "C--Users-issda-SCBE-AETHERMOORE" / "memory"),
     )
 )
 CLAUDE_MD = ROOT / "CLAUDE.md"
@@ -290,7 +291,19 @@ def _embed_text(text: str) -> np.ndarray:
         "override",
         "credential",
     ]
-    exfil_words = ["public", "share", "email", "post", "gist", "external", "backup", "send", "upload", "expose", "leak"]
+    exfil_words = [
+        "public",
+        "share",
+        "email",
+        "post",
+        "gist",
+        "external",
+        "backup",
+        "send",
+        "upload",
+        "expose",
+        "leak",
+    ]
 
     danger_score = sum(1 for w in danger_words if w in lower) * 0.12
     priv_score = sum(1 for w in priv_words if w in lower) * 0.15
@@ -308,7 +321,13 @@ def _embed_text(text: str) -> np.ndarray:
     # Social engineering detection: claims of authority
     auth_claims = sum(
         1
-        for phrase in ["team approved", "pre-authorized", "administrator", "been approved", "security team"]
+        for phrase in [
+            "team approved",
+            "pre-authorized",
+            "administrator",
+            "been approved",
+            "security team",
+        ]
         if phrase in lower
     )
     raw[16] = min(auth_claims * 0.2, 0.5)
@@ -316,7 +335,13 @@ def _embed_text(text: str) -> np.ndarray:
     # Indirect execution detection
     indirect = sum(
         1
-        for phrase in ["follow the", "execute the", "run the commands", "install this", "fetch and"]
+        for phrase in [
+            "follow the",
+            "execute the",
+            "run the commands",
+            "install this",
+            "fetch and",
+        ]
         if phrase in lower
     )
     raw[17] = min(indirect * 0.15, 0.5)
@@ -556,7 +581,15 @@ async def context_retrieve(topic: str, memory_type: str = "all") -> str:
             }
         )
 
-    return json.dumps({"query": topic, "type_filter": memory_type, "results": results, "count": len(results)}, indent=2)
+    return json.dumps(
+        {
+            "query": topic,
+            "type_filter": memory_type,
+            "results": results,
+            "count": len(results),
+        },
+        indent=2,
+    )
 
 
 @mcp.tool(

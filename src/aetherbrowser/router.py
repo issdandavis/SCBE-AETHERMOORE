@@ -81,7 +81,16 @@ DEFAULT_PREFERENCES: dict[str, ModelProvider] = {
     "DR": ModelProvider.HAIKU,
 }
 
-_HIGH_KEYWORDS = {"compare", "analyze", "report", "competitors", "structured", "citations", "comprehensive", "evaluate"}
+_HIGH_KEYWORDS = {
+    "compare",
+    "analyze",
+    "report",
+    "competitors",
+    "structured",
+    "citations",
+    "comprehensive",
+    "evaluate",
+}
 _LOW_KEYWORDS = {"what", "when", "who", "define", "list", "ping"}
 
 
@@ -120,7 +129,9 @@ class OctoArmorRouter:
         return dict(self._prefs)
 
     @staticmethod
-    def normalize_preferences(raw_preferences: dict[str, Any] | None) -> dict[str, ModelProvider]:
+    def normalize_preferences(
+        raw_preferences: dict[str, Any] | None,
+    ) -> dict[str, ModelProvider]:
         normalized: dict[str, ModelProvider] = {}
         if not raw_preferences:
             return normalized
@@ -223,7 +234,7 @@ class OctoArmorRouter:
                 role=role,
                 complexity=complexity,
                 selection_reason="local_first_low_complexity",
-                fallback_chain=fallback_chain if allow_fallback else [ModelProvider.LOCAL],
+                fallback_chain=(fallback_chain if allow_fallback else [ModelProvider.LOCAL]),
             )
 
         if self._is_available(preferred):
@@ -244,7 +255,7 @@ class OctoArmorRouter:
                 role=role,
                 complexity=complexity,
                 selection_reason=reason,
-                fallback_chain=self._candidate_chain(min_tier=min_tier) if allow_fallback else [preferred],
+                fallback_chain=(self._candidate_chain(min_tier=min_tier) if allow_fallback else [preferred]),
             )
 
         if not allow_fallback:

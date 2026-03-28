@@ -130,7 +130,11 @@ class TestConstitutionalRules:
             target="#submit-btn",
             content="opacity: 0 hidden button clickjack",
         )
-        assert result.decision in (Decision.QUARANTINE, Decision.DENY, Decision.ESCALATE)
+        assert result.decision in (
+            Decision.QUARANTINE,
+            Decision.DENY,
+            Decision.ESCALATE,
+        )
         assert TongueCode.CA in result.failed_tongues
 
 
@@ -145,7 +149,11 @@ class TestBrowseWithGovernance:
 
     def test_completes_safe_browsing_task(self) -> None:
         steps = [
-            BrowseStep(action="navigate", target="https://example.com", rationale="Go to homepage"),
+            BrowseStep(
+                action="navigate",
+                target="https://example.com",
+                rationale="Go to homepage",
+            ),
             BrowseStep(action="click", target="#products", rationale="Click products link"),
             BrowseStep(action="extract", target=".price", rationale="Extract pricing data"),
         ]

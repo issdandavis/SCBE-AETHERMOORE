@@ -53,7 +53,7 @@ def apply_black_format() -> bool:
 def apply_npm_audit() -> bool:
     """Run npm audit fix — deterministic."""
     print("  [FIX] Running npm audit fix...")
-    result = run(["npm", "audit", "fix"])
+    _result = run(["npm", "audit", "fix"])
     return git_has_changes()
 
 

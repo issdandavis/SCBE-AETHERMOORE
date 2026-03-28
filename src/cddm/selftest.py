@@ -64,7 +64,10 @@ def selftest() -> int:
     check("span", abs(energy.span() - 1e6) < 1)
     check("midpoint", abs(energy.midpoint() - 500_000) < 1)
     check("equality", energy == Domain("Energy", units=("Joule",), bounds=(0, 1e6)))
-    check("hash stable", hash(energy) == hash(Domain("Energy", units=("Joule",), bounds=(0, 1e6))))
+    check(
+        "hash stable",
+        hash(energy) == hash(Domain("Energy", units=("Joule",), bounds=(0, 1e6))),
+    )
 
     # Validation
     try:
@@ -150,7 +153,10 @@ def selftest() -> int:
         inverse_func=lambda y: y / 100,
     )
     composed = compose(e_to_m, m_to_i)
-    check("compose name", "Motivation->Incentive" in composed.name and "Energy->Motivation" in composed.name)
+    check(
+        "compose name",
+        "Motivation->Incentive" in composed.name and "Energy->Motivation" in composed.name,
+    )
     check("compose call", abs(composed(500_000) - 50.0) < 1e-6)
     check("compose invertible", composed.invertible)
 

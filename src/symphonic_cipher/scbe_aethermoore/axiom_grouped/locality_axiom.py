@@ -59,7 +59,9 @@ class LocalityCheckResult:
 
 
 def locality_check(
-    max_radius: float = 2.0, require_sparse: bool = False, max_bandwidth: Optional[int] = None
+    max_radius: float = 2.0,
+    require_sparse: bool = False,
+    max_bandwidth: Optional[int] = None,
 ) -> Callable[[F], F]:
     """
     Decorator that verifies an operation satisfies locality constraints.

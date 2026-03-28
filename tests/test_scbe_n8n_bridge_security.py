@@ -16,7 +16,10 @@ if str(ROOT) not in sys.path:
 try:
     from workflows.n8n import scbe_n8n_bridge as bridge  # noqa: E402
 except (ImportError, Exception):
-    pytest.skip("dependency not available (fastapi required by scbe_n8n_bridge)", allow_module_level=True)
+    pytest.skip(
+        "dependency not available (fastapi required by scbe_n8n_bridge)",
+        allow_module_level=True,
+    )
 
 
 def test_send_zapier_event_blocks_non_allowlisted_host(monkeypatch) -> None:
@@ -76,7 +79,10 @@ async def test_llm_dispatch_ignores_user_hook_override(monkeypatch) -> None:
     monkeypatch.setattr(
         bridge,
         "_send_zapier_event",
-        lambda **kwargs: {"status": "sent", "event": kwargs.get("event_payload", {}).get("event")},
+        lambda **kwargs: {
+            "status": "sent",
+            "event": kwargs.get("event_payload", {}).get("event"),
+        },
     )
 
     req = bridge.LLMDispatchRequest.model_validate(

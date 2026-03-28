@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from src.governance.flux_parameters import FluxParams, ConsensusEngine, create_voxel_header
+from src.governance.flux_parameters import (
+    FluxParams,
+    ConsensusEngine,
+    create_voxel_header,
+)
 
 
 @pytest.fixture
