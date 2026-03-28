@@ -4,7 +4,6 @@ import importlib.util
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -86,7 +85,11 @@ class FakeSmtp:
 def test_doctor_payload_reports_missing_credentials(monkeypatch) -> None:
     cfg = mail_ops.BridgeConfig("127.0.0.1", 1143, 1025, "", "", "Labels")
     monkeypatch.setattr(mail_ops, "_probe_tcp", lambda host, port, timeout=1.5: False)
-    monkeypatch.setattr(mail_ops, "_bridge_installation_candidates", lambda: ["C:/Program Files/Proton AG/Proton Mail Bridge/bridge.exe"])
+    monkeypatch.setattr(
+        mail_ops,
+        "_bridge_installation_candidates",
+        lambda: ["C:/Program Files/Proton AG/Proton Mail Bridge/bridge.exe"],
+    )
 
     payload = mail_ops.doctor(cfg)
     assert payload["ready"] is False
