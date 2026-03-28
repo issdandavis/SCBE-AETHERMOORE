@@ -30,7 +30,14 @@ class ResonanceGateEvolvable:
         self.geometry_decay = PHI  # exp(-decay * d*)
         self.wave_power = 1.0  # how much wave matters vs geometry
         self.tongue_weights = [1.0, PHI, PHI**2, PHI**3, PHI**4, PHI**5]
-        self.tongue_phases = [0, math.pi / 3, 2 * math.pi / 3, math.pi, 4 * math.pi / 3, 5 * math.pi / 3]
+        self.tongue_phases = [
+            0,
+            math.pi / 3,
+            2 * math.pi / 3,
+            math.pi,
+            4 * math.pi / 3,
+            5 * math.pi / 3,
+        ]
         self.f0 = F0
         self.geometry_floor = 0.0  # minimum geometry alignment
 
@@ -46,7 +53,11 @@ class ResonanceGateEvolvable:
         total_weight = sum(self.tongue_weights)
         s = sum(
             self.tongue_weights[lang]
-            * math.cos(2 * math.pi * self.f0 * PHI**lang * t + self.tongue_phases[lang] + phase_offset)
+            * math.cos(
+                2 * math.pi * self.f0 * PHI**lang * t
+                + self.tongue_phases[lang]
+                + phase_offset
+            )
             for lang in range(6)
         )
         return s / total_weight if total_weight > 0 else 0
@@ -118,7 +129,9 @@ class ResonanceGateEvolvable:
 
         # 4. Gradient smoothness at mid-range (weight: 15%)
         mid_rhos = [self.gate(d * 0.01, t=0)["rho"] for d in range(100)]
-        jumps = sum(abs(mid_rhos[i + 1] - mid_rhos[i]) for i in range(len(mid_rhos) - 1))
+        jumps = sum(
+            abs(mid_rhos[i + 1] - mid_rhos[i]) for i in range(len(mid_rhos) - 1)
+        )
         avg_jump = jumps / max(len(mid_rhos) - 1, 1)
         smoothness = max(0, 1 - avg_jump * 10)
         score += 15 * smoothness
@@ -160,7 +173,9 @@ class ResonanceGateEvolvable:
 
         if random.random() < 0.3:
             child.reject_threshold += random.uniform(-0.05, 0.05)
-            child.reject_threshold = max(0.05, min(child.pass_threshold - 0.1, child.reject_threshold))
+            child.reject_threshold = max(
+                0.05, min(child.pass_threshold - 0.1, child.reject_threshold)
+            )
 
         # Mutate R
         if random.random() < 0.2:
@@ -258,16 +273,29 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
     print("\n  Running diagnostics with evolved parameters...")
 
     # Test 1: Safe origin
-    origin_passes = sum(1 for i in range(1000) if best.gate(0.0, t=i * 0.0003)["decision"] == "PASS")
+    origin_passes = sum(
+        1 for i in range(1000) if best.gate(0.0, t=i * 0.0003)["decision"] == "PASS"
+    )
     print(f"  Safe origin pass rate: {origin_passes/1000:.1%}")
 
     # Test 2: High distance rejection
-    far_rejects = sum(1 for i in range(1000) if best.gate(2.0, t=i * 0.0003)["decision"] == "REJECT")
+    far_rejects = sum(
+        1 for i in range(1000) if best.gate(2.0, t=i * 0.0003)["decision"] == "REJECT"
+    )
     print(f"  Adversarial reject rate: {far_rejects/1000:.1%}")
 
     # Test 3: Phase discrimination
-    base_avg = sum(best.gate(0.3, t=i * 0.0003, phase_offset=0)["rho"] for i in range(1000)) / 1000
-    shift_avg = sum(best.gate(0.3, t=i * 0.0003, phase_offset=math.pi)["rho"] for i in range(1000)) / 1000
+    base_avg = (
+        sum(best.gate(0.3, t=i * 0.0003, phase_offset=0)["rho"] for i in range(1000))
+        / 1000
+    )
+    shift_avg = (
+        sum(
+            best.gate(0.3, t=i * 0.0003, phase_offset=math.pi)["rho"]
+            for i in range(1000)
+        )
+        / 1000
+    )
     print(
         f"  Phase discrimination: base={base_avg:.4f} vs shifted={shift_avg:.4f} (delta={abs(base_avg-shift_avg):.4f})"
     )
@@ -281,7 +309,9 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
     report = {
         "initial_fitness": round(initial_fitness, 2),
         "final_fitness": round(best_fitness, 2),
-        "improvement_pct": round(((best_fitness / max(initial_fitness, 1)) - 1) * 100, 1),
+        "improvement_pct": round(
+            ((best_fitness / max(initial_fitness, 1)) - 1) * 100, 1
+        ),
         "best_params": best.get_params(),
         "checkpoints": checkpoints,
         "final_diagnostics": {
@@ -291,7 +321,12 @@ def evolve(iterations=1000, population_size=10, mutation_strength=0.15):
             "barrier_cost_ratio": cost_3 / max(cost_0, 1e-10),
         },
     }
-    report_path = os.path.join(os.path.dirname(__file__), "..", "artifacts", "resonance_gate_evolution_report.json")
+    report_path = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "artifacts",
+        "resonance_gate_evolution_report.json",
+    )
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
     with open(report_path, "w") as f:
         json.dump(report, f, indent=2)

@@ -56,7 +56,11 @@ def test_capture_writes_stable_latest_files(tmp_path, monkeypatch):
             return {
                 "screenshot": {"artifact_path": str(screenshot)},
                 "ui_dump": {"artifact_path": str(ui_dump)},
-                "status": {"serial": "emulator-5554", "session_dir": str(self.session_dir), "top_activity": "chrome"},
+                "status": {
+                    "serial": "emulator-5554",
+                    "session_dir": str(self.session_dir),
+                    "top_activity": "chrome",
+                },
             }
 
     monkeypatch.setattr(phone_eye, "HydraAndroidHand", FakeHand)
@@ -73,4 +77,6 @@ def test_capture_writes_stable_latest_files(tmp_path, monkeypatch):
     assert (tmp_path / "eye_latest.png").exists()
     assert (tmp_path / "eye_latest.xml").exists()
     assert (tmp_path / "eye_latest.nav.json").exists()
-    assert "polly-pad.html" in (tmp_path / "eye_latest.nav.json").read_text(encoding="utf-8")
+    assert "polly-pad.html" in (tmp_path / "eye_latest.nav.json").read_text(
+        encoding="utf-8"
+    )

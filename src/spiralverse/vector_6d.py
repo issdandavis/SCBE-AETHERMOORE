@@ -144,7 +144,9 @@ class Position6D:
     @property
     def full_vector(self) -> np.ndarray:
         """Get complete 6D vector."""
-        return np.array([self.axiom, self.flow, self.glyph, self.oracle, self.charm, self.ledger])
+        return np.array(
+            [self.axiom, self.flow, self.glyph, self.oracle, self.charm, self.ledger]
+        )
 
     @classmethod
     def from_array(cls, arr: np.ndarray, agent_id: str = "") -> "Position6D":
@@ -190,7 +192,9 @@ def euclidean_distance_6d(a: Position6D, b: Position6D) -> float:
     return a.distance_to(b)
 
 
-def weighted_distance_6d(a: Position6D, b: Position6D, weights: Optional[np.ndarray] = None) -> float:
+def weighted_distance_6d(
+    a: Position6D, b: Position6D, weights: Optional[np.ndarray] = None
+) -> float:
     """
     Weighted distance where each axis has different importance.
 
@@ -205,7 +209,9 @@ def weighted_distance_6d(a: Position6D, b: Position6D, weights: Optional[np.ndar
     return float(np.linalg.norm(weighted_diff))
 
 
-def hyperbolic_distance_6d(a: Position6D, b: Position6D, curvature: float = -1.0) -> float:
+def hyperbolic_distance_6d(
+    a: Position6D, b: Position6D, curvature: float = -1.0
+) -> float:
     """
     Hyperbolic distance in 6D Poincare ball model.
 
@@ -347,7 +353,9 @@ class DockingSystem:
             agent_b_id=b.agent_id,
             lock_token=lock_token,
             timestamp=now,
-            expiry=datetime(now.year, now.month, now.day, now.hour, now.minute, now.second)
+            expiry=datetime(
+                now.year, now.month, now.day, now.hour, now.minute, now.second
+            )
             + __import__("datetime").timedelta(seconds=self.LOCK_DURATION_SECONDS),
             velocity_delta=eligibility["velocity_delta"],
             security_delta=eligibility["security_delta"],
@@ -554,7 +562,9 @@ class ConvergenceDetector:
             return None
 
         # Calculate average rate of approach
-        distance_changes = [distances[i + 1] - distances[i] for i in range(len(distances) - 1)]
+        distance_changes = [
+            distances[i + 1] - distances[i] for i in range(len(distances) - 1)
+        ]
         avg_rate = sum(distance_changes) / len(distance_changes)
 
         if avg_rate >= 0:  # Not approaching
@@ -597,9 +607,15 @@ def demo():
 
     # Distance calculations
     print("[DISTANCE] Pairwise distances:")
-    print(f"  ALPHA <-> BETA:    {agents['ALPHA'].distance_to(agents['BETA']):.2f} (close)")
-    print(f"  ALPHA <-> GAMMA:   {agents['ALPHA'].distance_to(agents['GAMMA']):.2f} (medium)")
-    print(f"  ALPHA <-> DELTA:   {agents['ALPHA'].distance_to(agents['DELTA']):.2f} (far)")
+    print(
+        f"  ALPHA <-> BETA:    {agents['ALPHA'].distance_to(agents['BETA']):.2f} (close)"
+    )
+    print(
+        f"  ALPHA <-> GAMMA:   {agents['ALPHA'].distance_to(agents['GAMMA']):.2f} (medium)"
+    )
+    print(
+        f"  ALPHA <-> DELTA:   {agents['ALPHA'].distance_to(agents['DELTA']):.2f} (far)"
+    )
     print()
 
     # Docking system
@@ -609,13 +625,21 @@ def demo():
     # ALPHA and BETA should be docking-eligible (very close)
     eligibility_ab = docking.check_docking_eligibility(agents["ALPHA"], agents["BETA"])
     print("  ALPHA <-> BETA eligibility:")
-    print(f"    Velocity delta: {eligibility_ab['velocity_delta']:.2f} m/s (ok={eligibility_ab['velocity_ok']})")
-    print(f"    Security delta: {eligibility_ab['security_delta']} (ok={eligibility_ab['security_ok']})")
-    print(f"    Spatial distance: {eligibility_ab['spatial_distance']:.2f}m (ok={eligibility_ab['spatial_ok']})")
+    print(
+        f"    Velocity delta: {eligibility_ab['velocity_delta']:.2f} m/s (ok={eligibility_ab['velocity_ok']})"
+    )
+    print(
+        f"    Security delta: {eligibility_ab['security_delta']} (ok={eligibility_ab['security_ok']})"
+    )
+    print(
+        f"    Spatial distance: {eligibility_ab['spatial_distance']:.2f}m (ok={eligibility_ab['spatial_ok']})"
+    )
     print(f"    ELIGIBLE: {eligibility_ab['eligible']}")
 
     # ALPHA and EPSILON are even closer
-    eligibility_ae = docking.check_docking_eligibility(agents["ALPHA"], agents["EPSILON"])
+    eligibility_ae = docking.check_docking_eligibility(
+        agents["ALPHA"], agents["EPSILON"]
+    )
     print(f"  ALPHA <-> EPSILON eligibility: {eligibility_ae['eligible']}")
 
     # Attempt dock
@@ -633,7 +657,9 @@ def demo():
         swarm.add_agent(name, pos)
 
     centroid = swarm.centroid
-    print(f"  Centroid: X={centroid.axiom:.1f}, Y={centroid.flow:.1f}, Z={centroid.glyph:.1f}")
+    print(
+        f"  Centroid: X={centroid.axiom:.1f}, Y={centroid.flow:.1f}, Z={centroid.glyph:.1f}"
+    )
     print(f"  Avg distance from centroid: {swarm.avg_distance_from_centroid:.2f}")
     print(f"  Cohesion score: {swarm.cohesion_score:.3f}")
     print(f"  Alignment score: {swarm.alignment_score:.3f}")

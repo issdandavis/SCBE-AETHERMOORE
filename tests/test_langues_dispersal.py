@@ -93,7 +93,9 @@ class TestSpinQuantization:
         sv_ko = SpinVector(spins=(1, 0, 0, 0, 0, 0))
         sv_dr = SpinVector(spins=(0, 0, 0, 0, 0, 1))
         assert sv_dr.metric_weighted_norm() > sv_ko.metric_weighted_norm()
-        assert sv_dr.metric_weighted_norm() == pytest.approx(math.sqrt(PHI**5), rel=1e-14)
+        assert sv_dr.metric_weighted_norm() == pytest.approx(
+            math.sqrt(PHI**5), rel=1e-14
+        )
 
 
 # =========================================================================== #
@@ -206,7 +208,10 @@ class TestDispersalFusionIntegration:
     def test_dispersal_routes_match_semisphere_cone_zones(self):
         """Records routed to 'hemisphere' by dispersal should have low
         Poincare radius, matching SemiSphereCone's logic."""
-        from scripts.system.storage_bridge_lab import build_bridge_workload, _note_to_geometry
+        from scripts.system.storage_bridge_lab import (
+            build_bridge_workload,
+            _note_to_geometry,
+        )
 
         notes = build_bridge_workload(seed=42, count=50)
         geos = [_note_to_geometry(n, i) for i, n in enumerate(notes)]
@@ -232,7 +237,10 @@ class TestDispersalFusionIntegration:
 
     def test_dispersal_report_from_real_workload(self):
         """Full dispersal analysis on a real workload."""
-        from scripts.system.storage_bridge_lab import build_bridge_workload, _note_to_geometry
+        from scripts.system.storage_bridge_lab import (
+            build_bridge_workload,
+            _note_to_geometry,
+        )
 
         notes = build_bridge_workload(seed=99, count=200)
         geos = [_note_to_geometry(n, i) for i, n in enumerate(notes)]

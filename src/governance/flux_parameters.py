@@ -76,30 +76,42 @@ def _validate_params(params: FluxParams) -> None:
     Raises ValueError with a descriptive message.
     """
     if params.curvature_kappa < 0:
-        raise ValueError(f"Negative curvature not allowed: curvature_kappa={params.curvature_kappa}")
+        raise ValueError(
+            f"Negative curvature not allowed: curvature_kappa={params.curvature_kappa}"
+        )
 
     lo, hi = SAFE_RANGES["layer12_R"]
     if not (lo <= params.layer12_R <= hi):
-        raise ValueError(f"Layer 12 Radius out of safe range [{lo}, {hi}]: " f"layer12_R={params.layer12_R}")
+        raise ValueError(
+            f"Layer 12 Radius out of safe range [{lo}, {hi}]: "
+            f"layer12_R={params.layer12_R}"
+        )
 
     lo, hi = SAFE_RANGES["layer12_gamma"]
     if not (lo <= params.layer12_gamma <= hi):
-        raise ValueError(f"Layer 12 gamma out of safe range [{lo}, {hi}]: " f"layer12_gamma={params.layer12_gamma}")
+        raise ValueError(
+            f"Layer 12 gamma out of safe range [{lo}, {hi}]: "
+            f"layer12_gamma={params.layer12_gamma}"
+        )
 
     lo, hi = SAFE_RANGES["phase_coupling_eta"]
     if not (lo <= params.phase_coupling_eta <= hi):
         raise ValueError(
-            f"Phase coupling eta out of safe range [{lo}, {hi}]: " f"phase_coupling_eta={params.phase_coupling_eta}"
+            f"Phase coupling eta out of safe range [{lo}, {hi}]: "
+            f"phase_coupling_eta={params.phase_coupling_eta}"
         )
 
     lo, hi = SAFE_RANGES["entropy_noise_floor"]
     if not (lo <= params.entropy_noise_floor <= hi):
         raise ValueError(
-            f"Entropy noise floor out of safe range [{lo}, {hi}]: " f"entropy_noise_floor={params.entropy_noise_floor}"
+            f"Entropy noise floor out of safe range [{lo}, {hi}]: "
+            f"entropy_noise_floor={params.entropy_noise_floor}"
         )
 
     if params.quarantine_cost < 0:
-        raise ValueError(f"Quarantine cost must be non-negative: {params.quarantine_cost}")
+        raise ValueError(
+            f"Quarantine cost must be non-negative: {params.quarantine_cost}"
+        )
 
 
 class ConsensusEngine:
@@ -124,7 +136,9 @@ class ConsensusEngine:
             ValueError: if new_params contains illegal values
         """
         if proposer not in AGENTS:
-            raise PermissionError(f"Unauthorized proposer: {proposer!r}. Must be one of {sorted(AGENTS)}")
+            raise PermissionError(
+                f"Unauthorized proposer: {proposer!r}. Must be one of {sorted(AGENTS)}"
+            )
 
         _validate_params(new_params)
 

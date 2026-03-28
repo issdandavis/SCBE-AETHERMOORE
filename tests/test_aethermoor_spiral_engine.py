@@ -20,7 +20,9 @@ def test_world_generation_is_deterministic_by_seed() -> None:
 
 def test_sheaf_obstruction_penalizes_stability() -> None:
     eng = AethermoorSpiralEngine(seed=5, region_count=8)
-    stable, obs = eng._triadic_obstruction(distance=0.9, entropy=0.8, trust=0.1)  # noqa: SLF001
+    stable, obs = eng._triadic_obstruction(
+        distance=0.9, entropy=0.8, trust=0.1
+    )  # noqa: SLF001
     assert obs >= 1
     assert 0.0 <= stable <= 1.0
 
@@ -54,7 +56,14 @@ def test_step_produces_valid_decision_and_progress_fields() -> None:
     assert isinstance(out.lock_vector, dict)
     assert "harm_score" in out.lock_vector
     assert len(out.voxel_key.split(":")) == 6
-    assert out.terrain in {"glow_meadow", "crystal_garden", "storm_maw", "shadow_brush", "rift_spines", "ember_steppe"}
+    assert out.terrain in {
+        "glow_meadow",
+        "crystal_garden",
+        "storm_maw",
+        "shadow_brush",
+        "rift_spines",
+        "ember_steppe",
+    }
     assert isinstance(out.voxel_discovered, bool)
     assert 0.0 <= out.watcher_fast <= 1.0
     assert 0.0 <= out.watcher_memory <= 1.0
@@ -63,7 +72,9 @@ def test_step_produces_valid_decision_and_progress_fields() -> None:
     assert 0.0 <= out.triadic_from_rings <= 1.0
     assert 0.0 <= out.triadic_from_sheaf <= 1.0
     assert 0.0 <= out.triadic_stable <= 1.0
-    expected_d_tri = triadic_risk(out.watcher_fast, out.watcher_memory, out.watcher_governance)
+    expected_d_tri = triadic_risk(
+        out.watcher_fast, out.watcher_memory, out.watcher_governance
+    )
     assert out.d_tri == pytest.approx(expected_d_tri, rel=1e-6)
     routed, target = out.mission_progress
     assert 0 <= routed <= target
@@ -76,15 +87,25 @@ def test_run_demo_is_reproducible() -> None:
     assert a["final"]["voxels"] == b["final"]["voxels"]
     assert a["history"][0]["watchers"] == b["history"][0]["watchers"]
     assert a["history"][0]["omega_factors"] == b["history"][0]["omega_factors"]
-    proj_a = [(h["tick"], h["action"], h["decision"], tuple(h["progress"])) for h in a["history"]]
-    proj_b = [(h["tick"], h["action"], h["decision"], tuple(h["progress"])) for h in b["history"]]
+    proj_a = [
+        (h["tick"], h["action"], h["decision"], tuple(h["progress"]))
+        for h in a["history"]
+    ]
+    proj_b = [
+        (h["tick"], h["action"], h["decision"], tuple(h["progress"]))
+        for h in b["history"]
+    ]
     assert proj_a == proj_b
 
 
 def test_coherence_shapes_terrain_classification() -> None:
     # High coherence + low hazard should map to safe-biome terrain.
-    terrain_hi = AethermoorSpiralEngine._terrain_from_coherence(0.20, 0.90, 0.05)  # noqa: SLF001
+    terrain_hi = AethermoorSpiralEngine._terrain_from_coherence(
+        0.20, 0.90, 0.05
+    )  # noqa: SLF001
     # Low coherence + high hazard should map to hostile-biome terrain.
-    terrain_lo = AethermoorSpiralEngine._terrain_from_coherence(0.85, 0.20, 0.60)  # noqa: SLF001
+    terrain_lo = AethermoorSpiralEngine._terrain_from_coherence(
+        0.85, 0.20, 0.60
+    )  # noqa: SLF001
     assert terrain_hi == "glow_meadow"
     assert terrain_lo == "storm_maw"

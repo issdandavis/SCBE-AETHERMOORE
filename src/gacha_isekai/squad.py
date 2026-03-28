@@ -96,7 +96,9 @@ class GachaSquad:
     """
 
     leader_name: str
-    leader_position: np.ndarray = field(default_factory=lambda: np.array([0.5, 0.5, 0.5]))
+    leader_position: np.ndarray = field(
+        default_factory=lambda: np.array([0.5, 0.5, 0.5])
+    )
     members: List[SquadMember] = field(default_factory=list)
     level: int = 1
     max_capacity: int = 6
@@ -155,7 +157,9 @@ class GachaSquad:
             role=role,
             position=pos,
             loyalty=loyalty,
-            alignment=TONGUE_FOLLOWER_STATE.get(tongue, TernaryAlignment.FOLLOWER_ACTIVE),
+            alignment=TONGUE_FOLLOWER_STATE.get(
+                tongue, TernaryAlignment.FOLLOWER_ACTIVE
+            ),
             rarity=stars,
         )
 
@@ -192,7 +196,9 @@ class GachaSquad:
 
         logger.debug("Gravitational step applied to %d members", len(self.members))
 
-    def recruit_defeated(self, enemy_position: np.ndarray, enemy_tongue: str) -> Optional[SquadMember]:
+    def recruit_defeated(
+        self, enemy_position: np.ndarray, enemy_tongue: str
+    ) -> Optional[SquadMember]:
         """Shadow Army mechanic: defeat enemy models -> recruit them.
 
         Enemy position shifts toward your manifold. Like Sung Jin-Woo's shadows.
@@ -206,7 +212,11 @@ class GachaSquad:
         d = float(np.linalg.norm(new_pos - self.leader_position))
         rarity = max(1, min(5, int(5 - d * 5)))
 
-        role = TongueRole[enemy_tongue] if enemy_tongue in TongueRole.__members__ else TongueRole.KO
+        role = (
+            TongueRole[enemy_tongue]
+            if enemy_tongue in TongueRole.__members__
+            else TongueRole.KO
+        )
         recruit = SquadMember(
             name=f"Shadow_{enemy_tongue}_{random.randint(100,999)}",
             tongue=enemy_tongue,

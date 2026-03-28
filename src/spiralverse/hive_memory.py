@@ -255,7 +255,9 @@ class MemoryEvictionEngine:
 
         return max(0.0, min(1.0, priority))
 
-    def rank_for_eviction(self, blocks: List[MemoryBlock]) -> List[Tuple[MemoryBlock, float]]:
+    def rank_for_eviction(
+        self, blocks: List[MemoryBlock]
+    ) -> List[Tuple[MemoryBlock, float]]:
         """
         Rank blocks by eviction priority (lowest first = evict first).
         """
@@ -263,7 +265,9 @@ class MemoryEvictionEngine:
         ranked.sort(key=lambda x: x[1])  # Ascending (lowest priority first)
         return ranked
 
-    def select_eviction_candidates(self, blocks: List[MemoryBlock], target_free_bytes: int) -> List[MemoryBlock]:
+    def select_eviction_candidates(
+        self, blocks: List[MemoryBlock], target_free_bytes: int
+    ) -> List[MemoryBlock]:
         """
         Select blocks to evict to free target_free_bytes.
         """
@@ -371,7 +375,10 @@ class HiveClient:
         return True
 
     async def bulk_upload(
-        self, snapshots: List[AgentSnapshot], priority: str = "medium", compression: str = "gzip"
+        self,
+        snapshots: List[AgentSnapshot],
+        priority: str = "medium",
+        compression: str = "gzip",
     ) -> bool:
         """Bulk upload multiple snapshots."""
         if not self.connected:
@@ -383,7 +390,9 @@ class HiveClient:
 
         return True
 
-    async def query(self, agent_id: str, start_time: datetime, end_time: datetime) -> List[AgentSnapshot]:
+    async def query(
+        self, agent_id: str, start_time: datetime, end_time: datetime
+    ) -> List[AgentSnapshot]:
         """Query historical snapshots from hive."""
         if not self.connected:
             return []
@@ -425,7 +434,11 @@ class AgentMemorySystem:
     """
 
     def __init__(
-        self, agent_id: str, hot_capacity_mb: int = 64, warm_capacity_mb: int = 512, warm_path: Optional[Path] = None
+        self,
+        agent_id: str,
+        hot_capacity_mb: int = 64,
+        warm_capacity_mb: int = 512,
+        warm_path: Optional[Path] = None,
     ):
         self.agent_id = agent_id
         self.hot_capacity = hot_capacity_mb * 1024 * 1024
@@ -458,7 +471,12 @@ class AgentMemorySystem:
         return self.hot_usage / self.hot_capacity
 
     def store(
-        self, block_id: str, data: bytes, tongue: str = "AET", charm: float = 0.5, critical: bool = False
+        self,
+        block_id: str,
+        data: bytes,
+        tongue: str = "AET",
+        charm: float = 0.5,
+        critical: bool = False,
     ) -> bool:
         """
         Store data in hot memory.
@@ -491,7 +509,9 @@ class AgentMemorySystem:
 
     def _evict_to_warm(self, target_free_bytes: int):
         """Evict low-priority blocks from hot to warm storage."""
-        candidates = self.eviction_engine.select_eviction_candidates(list(self.hot_memory.values()), target_free_bytes)
+        candidates = self.eviction_engine.select_eviction_candidates(
+            list(self.hot_memory.values()), target_free_bytes
+        )
 
         for block in candidates:
             # Compress and write to warm storage
@@ -574,12 +594,16 @@ class AutoSaveWorker:
         now = datetime.utcnow()
 
         # Check if local save needed
-        save_interval = self.scheduler.calculate_save_interval(self.distance_from_hive_km)
+        save_interval = self.scheduler.calculate_save_interval(
+            self.distance_from_hive_km
+        )
         if (now - self.last_save).total_seconds() >= save_interval:
             await self._local_save()
 
         # Check if hive sync needed
-        sync_interval = self.scheduler.calculate_sync_interval(self.distance_from_hive_km)
+        sync_interval = self.scheduler.calculate_sync_interval(
+            self.distance_from_hive_km
+        )
         if (now - self.last_sync).total_seconds() >= sync_interval:
             await self._hive_sync()
 
@@ -637,7 +661,9 @@ class OfflineResilience:
         if self.offline_since:
             age_hours = (datetime.utcnow() - self.offline_since).total_seconds() / 3600
             if age_hours > self.max_offline_hours:
-                print(f"[WARNING] Offline for {age_hours:.1f} hours - risk of data loss")
+                print(
+                    f"[WARNING] Offline for {age_hours:.1f} hours - risk of data loss"
+                )
 
     def _compress_buffer(self):
         """Compress old snapshots in buffer."""
@@ -661,7 +687,9 @@ class OfflineResilience:
         for i in range(0, count, batch_size):
             batch = self.offline_buffer[i : i + batch_size]
             await hive_client.bulk_upload(batch)
-            print(f"  Uploaded batch {i//batch_size + 1}/{(count + batch_size - 1)//batch_size}")
+            print(
+                f"  Uploaded batch {i//batch_size + 1}/{(count + batch_size - 1)//batch_size}"
+            )
 
         self.offline_buffer.clear()
         self.offline_since = None
@@ -694,7 +722,9 @@ async def demo():
     # Store some data
     print("[DEMO] Storing memory blocks...")
     for i in range(10):
-        data = f"Memory block {i}: {np.random.randn(100).tobytes().hex()[:100]}".encode()
+        data = (
+            f"Memory block {i}: {np.random.randn(100).tobytes().hex()[:100]}".encode()
+        )
         memory.store(
             block_id=f"block_{i:03d}",
             data=data,
@@ -703,7 +733,9 @@ async def demo():
             critical=(i == 0),  # First block is critical
         )
 
-    print(f"  Hot memory usage: {memory.hot_usage / 1024:.1f} KB ({memory.hot_usage_ratio:.1%})")
+    print(
+        f"  Hot memory usage: {memory.hot_usage / 1024:.1f} KB ({memory.hot_usage_ratio:.1%})"
+    )
     print()
 
     # Update position
@@ -726,7 +758,9 @@ async def demo():
     ranked = eviction.rank_for_eviction(list(memory.hot_memory.values()))
     print("  Eviction priority ranking:")
     for block, priority in ranked[:5]:
-        print(f"    {block.block_id}: priority={priority:.3f}, charm={block.charm:.2f}, age={block.age_hours:.2f}h")
+        print(
+            f"    {block.block_id}: priority={priority:.3f}, charm={block.charm:.2f}, age={block.age_hours:.2f}h"
+        )
     print()
 
     # Test adaptive sync
@@ -734,7 +768,9 @@ async def demo():
     for distance in [5, 50, 200, 1000, 5000]:
         sync_int = scheduler.calculate_sync_interval(distance)
         save_int = scheduler.calculate_save_interval(distance)
-        print(f"  Distance {distance:5d} km: sync every {sync_int:4d}s, save every {save_int:3d}s")
+        print(
+            f"  Distance {distance:5d} km: sync every {sync_int:4d}s, save every {save_int:3d}s"
+        )
     print()
 
     # Disconnect

@@ -51,18 +51,29 @@ def test_build_research_training_bundle_writes_expected_outputs(tmp_path: Path) 
     assert result["counts"] == {"records": 2, "arxiv_evidence": 1, "obsidian_notes": 1}
 
     corpus_path = Path(result["corpus_path"])
-    rows = [json.loads(line) for line in corpus_path.read_text(encoding="utf-8").splitlines() if line.strip()]
-    assert {row["category"] for row in rows} == {"research_bridge_arxiv", "research_bridge_obsidian"}
+    rows = [
+        json.loads(line)
+        for line in corpus_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert {row["category"] for row in rows} == {
+        "research_bridge_arxiv",
+        "research_bridge_obsidian",
+    }
     arxiv_row = next(row for row in rows if row["category"] == "research_bridge_arxiv")
     assert arxiv_row["metadata"]["arxiv_id"] == "2501.12345"
-    note_row = next(row for row in rows if row["category"] == "research_bridge_obsidian")
+    note_row = next(
+        row for row in rows if row["category"] == "research_bridge_obsidian"
+    )
     assert note_row["metadata"]["task_count"] == 1
 
     manifest = json.loads(Path(result["manifest_path"]).read_text(encoding="utf-8"))
     assert manifest["counts"]["records"] == 2
     assert len(manifest["sources"]) == 2
 
-    hf_manifest = json.loads(Path(result["hf_training_manifest_path"]).read_text(encoding="utf-8"))
+    hf_manifest = json.loads(
+        Path(result["hf_training_manifest_path"]).read_text(encoding="utf-8")
+    )
     assert hf_manifest["dataset_repo"] == "issdandavis/demo-dataset"
     assert hf_manifest["model_repo"] == "issdandavis/demo-model"
     assert "research_corpus.jsonl" in hf_manifest["suggested_local_command"]
@@ -71,8 +82,14 @@ def test_build_research_training_bundle_writes_expected_outputs(tmp_path: Path) 
     assert "Research Training Bridge Bundle" in report
     assert "Tower Training" in report
 
-    staged_evidence = list((tmp_path / "out" / result["bundle_id"] / "sources" / "page_evidence").glob("*.json"))
-    staged_notes = list((tmp_path / "out" / result["bundle_id"] / "sources" / "obsidian").glob("*.md"))
+    staged_evidence = list(
+        (tmp_path / "out" / result["bundle_id"] / "sources" / "page_evidence").glob(
+            "*.json"
+        )
+    )
+    staged_notes = list(
+        (tmp_path / "out" / result["bundle_id"] / "sources" / "obsidian").glob("*.md")
+    )
     assert len(staged_evidence) == 1
     assert len(staged_notes) == 1
 
@@ -88,7 +105,9 @@ def test_build_research_training_bundle_raises_on_empty_sources(tmp_path: Path) 
         )
 
 
-def test_build_research_training_bundle_can_use_active_vault_subdir(tmp_path: Path, monkeypatch) -> None:
+def test_build_research_training_bundle_can_use_active_vault_subdir(
+    tmp_path: Path, monkeypatch
+) -> None:
     evidence_dir = tmp_path / "evidence"
     evidence_dir.mkdir()
     (evidence_dir / "playwriter-arxiv.org-snapshot-session1.json").write_text(
@@ -111,9 +130,13 @@ def test_build_research_training_bundle_can_use_active_vault_subdir(tmp_path: Pa
         encoding="utf-8",
     )
     (vault_root / "IgnoreMe").mkdir()
-    (vault_root / "IgnoreMe" / "other.md").write_text("# Ignore\n\nThis should not be ingested.\n", encoding="utf-8")
+    (vault_root / "IgnoreMe" / "other.md").write_text(
+        "# Ignore\n\nThis should not be ingested.\n", encoding="utf-8"
+    )
 
-    monkeypatch.setattr(vaults, "active_vault_path", lambda config_path=None: vault_root)
+    monkeypatch.setattr(
+        vaults, "active_vault_path", lambda config_path=None: vault_root
+    )
 
     result = bridge.build_research_training_bundle(
         evidence_dir=evidence_dir,
@@ -127,7 +150,9 @@ def test_build_research_training_bundle_can_use_active_vault_subdir(tmp_path: Pa
 
     manifest = json.loads(Path(result["manifest_path"]).read_text(encoding="utf-8"))
     assert manifest["inputs"]["vault"]["active_vault_path"] == str(vault_root.resolve())
-    assert manifest["inputs"]["vault"]["added_vault_paths"] == [str((vault_root / "SCBE Research").resolve())]
+    assert manifest["inputs"]["vault"]["added_vault_paths"] == [
+        str((vault_root / "SCBE Research").resolve())
+    ]
 
     rows = [
         json.loads(line)
@@ -135,6 +160,8 @@ def test_build_research_training_bundle_can_use_active_vault_subdir(tmp_path: Pa
         if line.strip()
     ]
     assert len(rows) == 2
-    note_row = next(row for row in rows if row["category"] == "research_bridge_obsidian")
+    note_row = next(
+        row for row in rows if row["category"] == "research_bridge_obsidian"
+    )
     assert note_row["metadata"]["source_file"].endswith("session.md")
     assert "IgnoreMe" not in note_row["metadata"]["source_file"]

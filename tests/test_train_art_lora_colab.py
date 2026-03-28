@@ -22,7 +22,9 @@ def write_metadata(dataset_dir: Path, rows: list[dict[str, str]]) -> None:
     )
 
 
-def test_build_training_plan_uses_quality_weights_and_ignores_missing_files(tmp_path: Path) -> None:
+def test_build_training_plan_uses_quality_weights_and_ignores_missing_files(
+    tmp_path: Path,
+) -> None:
     dataset_dir = tmp_path / "art-style-lora"
     dataset_dir.mkdir()
     (dataset_dir / "anchor.png").write_bytes(b"anchor")
@@ -30,9 +32,24 @@ def test_build_training_plan_uses_quality_weights_and_ignores_missing_files(tmp_
     write_metadata(
         dataset_dir,
         [
-            {"file_name": "anchor.png", "text": "anchor ref", "source": "ref", "quality": "anchor"},
-            {"file_name": "good.png", "text": "good panel", "source": "panel", "quality": "good"},
-            {"file_name": "missing.png", "text": "missing panel", "source": "panel", "quality": "hero"},
+            {
+                "file_name": "anchor.png",
+                "text": "anchor ref",
+                "source": "ref",
+                "quality": "anchor",
+            },
+            {
+                "file_name": "good.png",
+                "text": "good panel",
+                "source": "panel",
+                "quality": "good",
+            },
+            {
+                "file_name": "missing.png",
+                "text": "missing panel",
+                "source": "panel",
+                "quality": "hero",
+            },
         ],
     )
 
@@ -54,14 +71,23 @@ def test_build_training_plan_uses_quality_weights_and_ignores_missing_files(tmp_
     assert plan["quality_breakdown"][0]["weighted_examples"] == 5
 
 
-def test_build_notebook_writes_weighted_dataset_prep_and_training_command(tmp_path: Path) -> None:
+def test_build_notebook_writes_weighted_dataset_prep_and_training_command(
+    tmp_path: Path,
+) -> None:
     weights = merged_quality_weights()
     dataset_dir = tmp_path / "art-style-lora"
     dataset_dir.mkdir()
     (dataset_dir / "anchor.png").write_bytes(b"anchor")
     write_metadata(
         dataset_dir,
-        [{"file_name": "anchor.png", "text": "anchor ref", "source": "ref", "quality": "anchor"}],
+        [
+            {
+                "file_name": "anchor.png",
+                "text": "anchor ref",
+                "source": "ref",
+                "quality": "anchor",
+            }
+        ],
     )
     entries = load_training_entries(dataset_dir, weights)
     plan = build_training_plan(
@@ -102,14 +128,23 @@ def test_build_notebook_writes_weighted_dataset_prep_and_training_command(tmp_pa
     assert "art-style-lora-weighted" in notebook_text
 
 
-def test_render_report_mentions_shared_trigger_and_weighted_examples(tmp_path: Path) -> None:
+def test_render_report_mentions_shared_trigger_and_weighted_examples(
+    tmp_path: Path,
+) -> None:
     weights = merged_quality_weights(parse_quality_overrides(["anchor=6"]))
     dataset_dir = tmp_path / "art-style-lora"
     dataset_dir.mkdir()
     (dataset_dir / "anchor.png").write_bytes(b"anchor")
     write_metadata(
         dataset_dir,
-        [{"file_name": "anchor.png", "text": "anchor ref", "source": "ref", "quality": "anchor"}],
+        [
+            {
+                "file_name": "anchor.png",
+                "text": "anchor ref",
+                "source": "ref",
+                "quality": "anchor",
+            }
+        ],
     )
     entries = load_training_entries(dataset_dir, weights)
     plan = build_training_plan(

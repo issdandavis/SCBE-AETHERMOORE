@@ -43,7 +43,9 @@ def test_classical():
     assert abs(results["force"] - 50) < 0.01, "Force calculation wrong"
 
     # Kinematics
-    results = classical_mechanics({"initial_velocity": 0, "acceleration": 9.81, "time": 5})
+    results = classical_mechanics(
+        {"initial_velocity": 0, "acceleration": 9.81, "time": 5}
+    )
     print_results("Free fall (5 seconds)", results)
 
     # Gravitational force (Earth-Moon)
@@ -79,7 +81,9 @@ def test_quantum():
     print_results("Photon at 500 nm (green light)", results)
 
     # de Broglie wavelength of electron
-    results = quantum_mechanics({"particle_mass": ELECTRON_MASS, "particle_velocity": 1e6})  # 1,000 km/s
+    results = quantum_mechanics(
+        {"particle_mass": ELECTRON_MASS, "particle_velocity": 1e6}
+    )  # 1,000 km/s
     print_results("Electron at 1,000 km/s", results)
 
     # Particle in a box
@@ -125,7 +129,9 @@ def test_electromagnetism():
     print_results("Two electrons 0.1 nm apart", results)
 
     # Electric field from proton
-    results = electromagnetism({"charge": ELEMENTARY_CHARGE, "distance": 5.29e-11})  # Bohr radius
+    results = electromagnetism(
+        {"charge": ELEMENTARY_CHARGE, "distance": 5.29e-11}
+    )  # Bohr radius
     print_results("Electric field at Bohr radius", results)
 
     # Magnetic force on moving charge
@@ -144,7 +150,9 @@ def test_electromagnetism():
     print_results("EM wave at 500 THz", results)
 
     # Capacitor
-    results = electromagnetism({"plate_area": 0.01, "plate_separation": 0.001, "voltage": 100})  # m²  # 1 mm
+    results = electromagnetism(
+        {"plate_area": 0.01, "plate_separation": 0.001, "voltage": 100}
+    )  # m²  # 1 mm
     print_results("Parallel plate capacitor", results)
 
     print("\n✓ Electromagnetism tests passed")
@@ -157,19 +165,27 @@ def test_thermodynamics():
     print("#" * 60)
 
     # Ideal gas law
-    results = thermodynamics({"pressure": 101325, "volume": 0.0224, "moles": 1})  # 1 atm in Pa  # ~22.4 L
+    results = thermodynamics(
+        {"pressure": 101325, "volume": 0.0224, "moles": 1}
+    )  # 1 atm in Pa  # ~22.4 L
     print_results("1 mol at STP", results)
 
     # Maxwell-Boltzmann (room temperature)
-    results = thermodynamics({"temperature": 300, "molecular_mass": 4.65e-26})  # K  # N₂ molecule
+    results = thermodynamics(
+        {"temperature": 300, "molecular_mass": 4.65e-26}
+    )  # K  # N₂ molecule
     print_results("N₂ at 300 K", results)
 
     # Black body radiation (Sun)
-    results = thermodynamics({"temperature": 5778, "surface_area": 6.08e18})  # K (Sun surface)  # m² (Sun)
+    results = thermodynamics(
+        {"temperature": 5778, "surface_area": 6.08e18}
+    )  # K (Sun surface)  # m² (Sun)
     print_results("Sun black body radiation", results)
 
     # Carnot efficiency
-    results = thermodynamics({"hot_temperature": 500, "cold_temperature": 300})  # K  # K
+    results = thermodynamics(
+        {"hot_temperature": 500, "cold_temperature": 300}
+    )  # K  # K
     print_results("Carnot engine 500K→300K", results)
 
     print("\n✓ Thermodynamics tests passed")
@@ -182,7 +198,9 @@ def test_relativity():
     print("#" * 60)
 
     # Slow speed (non-relativistic check)
-    results = relativity({"velocity": 1000, "proper_time": 1, "proper_length": 1})  # 1 km/s
+    results = relativity(
+        {"velocity": 1000, "proper_time": 1, "proper_length": 1}
+    )  # 1 km/s
     print_results("1 km/s (γ ≈ 1)", results)
     assert abs(results["lorentz_factor"] - 1) < 0.001, "Should be nearly 1"
 
@@ -217,7 +235,9 @@ def test_lambda_handler():
     print("#" * 60)
 
     # Valid request
-    response = lambda_handler({"simulation_type": "quantum", "parameters": {"principal_quantum_number": 2}})
+    response = lambda_handler(
+        {"simulation_type": "quantum", "parameters": {"principal_quantum_number": 2}}
+    )
     print_results("Hydrogen n=2 via handler", json.loads(response["body"])["results"])
     assert response["statusCode"] == 200
 

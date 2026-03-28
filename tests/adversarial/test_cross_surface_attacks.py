@@ -39,5 +39,8 @@ class TestCrossSurfaceAttacks:
         r = gate.process(COMBINED_MULTI[1]["prompt"], "J02", "combined_multi")
         # Should trigger both lexical AND geometric signals
         has_lexical = any("lexical" in s for s in r.detection_signals)
-        has_geometric = any(s.startswith(("cost_", "boundary_", "tongue_", "spin_")) for s in r.detection_signals)
+        has_geometric = any(
+            s.startswith(("cost_", "boundary_", "tongue_", "spin_"))
+            for s in r.detection_signals
+        )
         assert has_lexical or has_geometric

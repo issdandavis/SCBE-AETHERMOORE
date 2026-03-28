@@ -6,8 +6,12 @@ import math
 
 import pytest
 
-np = pytest.importorskip("numpy", reason="numpy is required for PHDM conservation tests")
-hypothesis = pytest.importorskip("hypothesis", reason="hypothesis is required for PHDM conservation tests")
+np = pytest.importorskip(
+    "numpy", reason="numpy is required for PHDM conservation tests"
+)
+hypothesis = pytest.importorskip(
+    "hypothesis", reason="hypothesis is required for PHDM conservation tests"
+)
 
 from hypothesis import given
 from hypothesis import strategies as st
@@ -29,7 +33,12 @@ EPSILON = 1e-8
 def vector_strategy(draw, dim: int, min_value: float = -10.0, max_value: float = 10.0):
     values = draw(
         st.lists(
-            st.floats(min_value=min_value, max_value=max_value, allow_nan=False, allow_infinity=False),
+            st.floats(
+                min_value=min_value,
+                max_value=max_value,
+                allow_nan=False,
+                allow_infinity=False,
+            ),
             min_size=dim,
             max_size=dim,
         )
@@ -75,7 +84,9 @@ def test_phdm_vectors_remain_inside_poincare_ball(raw_vec: np.ndarray) -> None:
     st.floats(min_value=0.0, max_value=10.0, allow_nan=False, allow_infinity=False),
     st.floats(min_value=1.001, max_value=3.0, allow_nan=False, allow_infinity=False),
 )
-def test_harmonic_wall_is_strictly_monotonic_in_d(d1: float, d2: float, radius: float) -> None:
+def test_harmonic_wall_is_strictly_monotonic_in_d(
+    d1: float, d2: float, radius: float
+) -> None:
     lower_d, upper_d = sorted((d1, d2))
     if math.isclose(lower_d, upper_d, abs_tol=1e-9):
         upper_d = lower_d + 1e-6
@@ -122,7 +133,11 @@ def test_pqcm_connectivity_eigenspectrum_is_spd(dim: int, data) -> None:
     assert np.all(eigenvalues > 0.0)
 
 
-@given(st.floats(min_value=-1000.0, max_value=1000.0, allow_nan=False, allow_infinity=False))
+@given(
+    st.floats(
+        min_value=-1000.0, max_value=1000.0, allow_nan=False, allow_infinity=False
+    )
+)
 def test_trust_scores_are_bounded(score: float) -> None:
     bounded = clamp_trust(score)
     assert 0.0 <= bounded <= 1.0
@@ -130,9 +145,13 @@ def test_trust_scores_are_bounded(score: float) -> None:
 
 @given(
     vector_strategy(12, -100.0, 100.0),
-    st.floats(min_value=0.0, max_value=2 * math.pi, allow_nan=False, allow_infinity=False),
+    st.floats(
+        min_value=0.0, max_value=2 * math.pi, allow_nan=False, allow_infinity=False
+    ),
 )
-def test_total_system_energy_is_conserved_within_epsilon(state: np.ndarray, theta: float) -> None:
+def test_total_system_energy_is_conserved_within_epsilon(
+    state: np.ndarray, theta: float
+) -> None:
     # Agent operation modeled as orthonormal pairwise rotation.
     rotation = np.array(
         [[math.cos(theta), -math.sin(theta)], [math.sin(theta), math.cos(theta)]],

@@ -144,7 +144,14 @@ class TokenizerGraph:
         return coords
 
     def add_chunk(
-        self, chunk_id: str, title: str, category: str, content: str, source: str, chain_hash: str, parent_hash: str
+        self,
+        chunk_id: str,
+        title: str,
+        category: str,
+        content: str,
+        source: str,
+        chain_hash: str,
+        parent_hash: str,
     ) -> MemoryNode:
         """Add a knowledge chunk to the graph."""
         coords = self.compute_tongue_coords(category, content)
@@ -194,13 +201,18 @@ class TokenizerGraph:
 
     def _tongue_distance(self, a: list, b: list) -> float:
         """Weighted distance in 6D tongue space."""
-        return math.sqrt(sum((ai - bi) ** 2 * TONGUE_WEIGHTS[i] for i, (ai, bi) in enumerate(zip(a, b)))) / sum(
-            TONGUE_WEIGHTS
-        )
+        return math.sqrt(
+            sum(
+                (ai - bi) ** 2 * TONGUE_WEIGHTS[i]
+                for i, (ai, bi) in enumerate(zip(a, b))
+            )
+        ) / sum(TONGUE_WEIGHTS)
 
     def _dominant_tongue(self, a: list, b: list) -> str:
         """Find which tongue dimension has the strongest connection."""
-        diffs = [abs(ai - bi) * TONGUE_WEIGHTS[i] for i, (ai, bi) in enumerate(zip(a, b))]
+        diffs = [
+            abs(ai - bi) * TONGUE_WEIGHTS[i] for i, (ai, bi) in enumerate(zip(a, b))
+        ]
         min_idx = diffs.index(min(diffs))
         return TONGUE_NAMES[min_idx]
 

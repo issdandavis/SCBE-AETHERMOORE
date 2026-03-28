@@ -3,7 +3,9 @@ import sys
 from pathlib import Path
 
 
-def get_logger(name: str, level: int = logging.INFO, log_file: str | None = None) -> logging.Logger:
+def get_logger(
+    name: str, level: int = logging.INFO, log_file: str | None = None
+) -> logging.Logger:
     logger = logging.getLogger(name)
     if logger.handlers:
         return logger

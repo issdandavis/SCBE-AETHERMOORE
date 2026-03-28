@@ -42,7 +42,9 @@ class TongueSpec:
 
     def __post_init__(self):
         if len(self.prefixes) != 16 or len(self.suffixes) != 16:
-            raise ValueError(f"Tongue {self.code} requires exactly 16 prefixes and 16 suffixes")
+            raise ValueError(
+                f"Tongue {self.code} requires exactly 16 prefixes and 16 suffixes"
+            )
 
 
 # Six Sacred Tongues with spectral fingerprints
@@ -377,7 +379,9 @@ class SacredTongueTokenizer:
 
             # Uniqueness: 256 distinct tokens
             if len(tokens) != 256:
-                raise ValueError(f"Tongue {code} has {len(tokens)} tokens (expected 256)")
+                raise ValueError(
+                    f"Tongue {code} has {len(tokens)} tokens (expected 256)"
+                )
 
             # Bijectivity: Token→byte→token round-trip
             for b in range(256):
@@ -422,7 +426,9 @@ class SacredTongueTokenizer:
 
     # ==================== SCBE Integration ====================
 
-    def compute_harmonic_fingerprint(self, tongue_code: str, tokens: List[str]) -> float:
+    def compute_harmonic_fingerprint(
+        self, tongue_code: str, tokens: List[str]
+    ) -> float:
         """
         Compute spectral coherence for Layer 9 validation.
         Returns: Weighted sum of token frequencies * tongue harmonic.

@@ -202,7 +202,9 @@ class SacredEgg:
             PermissionError: If ring is insufficient
         """
         if not ring_allows(ring, EggRing.CORE):
-            raise PermissionError(f"Yolk access requires CORE ring, caller has {ring.value}")
+            raise PermissionError(
+                f"Yolk access requires CORE ring, caller has {ring.value}"
+            )
         return self._yolk
 
     def derive_albumen(self, label: str, salt: Optional[bytes] = None) -> bytes:
@@ -244,7 +246,9 @@ class SacredEgg:
             KeyError: If label not found
         """
         if not ring_allows(ring, EggRing.INNER):
-            raise PermissionError(f"Albumen access requires INNER ring, caller has {ring.value}")
+            raise PermissionError(
+                f"Albumen access requires INNER ring, caller has {ring.value}"
+            )
         if label not in self.albumen:
             raise KeyError(f"No albumen key for label '{label}'")
         return self.albumen[label]
@@ -323,7 +327,9 @@ class EggCarton:
     @staticmethod
     def create(name: str = "default") -> "EggCarton":
         """Create a new empty carton."""
-        carton_id = hashlib.sha256(f"carton:{name}:{time.time()}".encode()).hexdigest()[:12]
+        carton_id = hashlib.sha256(f"carton:{name}:{time.time()}".encode()).hexdigest()[
+            :12
+        ]
         return EggCarton(carton_id=carton_id)
 
     def add(self, egg: SacredEgg) -> str:

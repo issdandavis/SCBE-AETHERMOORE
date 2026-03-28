@@ -65,7 +65,9 @@ class TaskResult:
             "output": self.output,
             "error": self.error,
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": (self.completed_at.isoformat() if self.completed_at else None),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "execution_time_ms": self.execution_time_ms,
             "agent_id": self.agent_id,
             "retries": self.retries,
@@ -112,7 +114,9 @@ class Task:
             "assigned_agent": self.assigned_agent,
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": (self.completed_at.isoformat() if self.completed_at else None),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "result": self.result.to_dict() if self.result else None,
             "max_retries": self.max_retries,
             "retry_count": self.retry_count,
@@ -184,13 +188,19 @@ class Workflow:
         condition: Optional[Callable[[Dict], bool]] = None,
     ):
         """Add a step to the workflow."""
-        self.steps[name] = WorkflowStep(task=task, on_success=on_success, on_failure=on_failure, condition=condition)
+        self.steps[name] = WorkflowStep(
+            task=task, on_success=on_success, on_failure=on_failure, condition=condition
+        )
         if not self.entry_point:
             self.entry_point = name
 
     def get_ready_tasks(self) -> List[Task]:
         """Get all tasks that are ready to execute."""
-        completed = {name for name, step in self.steps.items() if step.task.status == TaskStatus.COMPLETED}
+        completed = {
+            name
+            for name, step in self.steps.items()
+            if step.task.status == TaskStatus.COMPLETED
+        }
 
         ready = []
         for name, step in self.steps.items():
@@ -205,9 +215,17 @@ class Workflow:
     def get_progress(self) -> Dict[str, Any]:
         """Get workflow progress."""
         total = len(self.steps)
-        completed = sum(1 for step in self.steps.values() if step.task.status == TaskStatus.COMPLETED)
-        failed = sum(1 for step in self.steps.values() if step.task.status == TaskStatus.FAILED)
-        running = sum(1 for step in self.steps.values() if step.task.status == TaskStatus.RUNNING)
+        completed = sum(
+            1
+            for step in self.steps.values()
+            if step.task.status == TaskStatus.COMPLETED
+        )
+        failed = sum(
+            1 for step in self.steps.values() if step.task.status == TaskStatus.FAILED
+        )
+        running = sum(
+            1 for step in self.steps.values() if step.task.status == TaskStatus.RUNNING
+        )
 
         return {
             "workflow_id": self.id,
@@ -230,7 +248,9 @@ class Workflow:
             "entry_point": self.entry_point,
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": (self.completed_at.isoformat() if self.completed_at else None),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "steps": {
                 name: {
                     "task": step.task.to_dict(),
@@ -340,7 +360,10 @@ class WorkflowExecutor:
 
                 # Execute ready tasks (can be parallel)
                 results = await asyncio.gather(
-                    *[self._execute_task(task, agent_executor, workflow) for task in ready_tasks]
+                    *[
+                        self._execute_task(task, agent_executor, workflow)
+                        for task in ready_tasks
+                    ]
                 )
 
                 # Process results
@@ -364,7 +387,11 @@ class WorkflowExecutor:
                                 next_step.task.status = TaskStatus.PENDING
 
             # Determine final status
-            failed_count = sum(1 for step in workflow.steps.values() if step.task.status == TaskStatus.FAILED)
+            failed_count = sum(
+                1
+                for step in workflow.steps.values()
+                if step.task.status == TaskStatus.FAILED
+            )
 
             if failed_count > 0:
                 workflow.status = WorkflowStatus.FAILED
@@ -388,13 +415,18 @@ class WorkflowExecutor:
             {
                 "workflow_id": workflow.id,
                 "status": workflow.status.value,
-                "duration_ms": (workflow.completed_at - workflow.started_at).total_seconds() * 1000,
+                "duration_ms": (
+                    workflow.completed_at - workflow.started_at
+                ).total_seconds()
+                * 1000,
             },
         )
 
         return workflow.to_dict()
 
-    async def _execute_task(self, task: Task, executor: Callable[[Task], TaskResult], workflow: Workflow) -> TaskResult:
+    async def _execute_task(
+        self, task: Task, executor: Callable[[Task], TaskResult], workflow: Workflow
+    ) -> TaskResult:
         """Execute a single task with retry logic."""
         task.status = TaskStatus.RUNNING
         task.started_at = datetime.now()
@@ -417,7 +449,9 @@ class WorkflowExecutor:
                 )
 
                 task.completed_at = datetime.now()
-                result.execution_time_ms = (task.completed_at - task.started_at).total_seconds() * 1000
+                result.execution_time_ms = (
+                    task.completed_at - task.started_at
+                ).total_seconds() * 1000
 
                 if result.status == TaskStatus.COMPLETED:
                     task.status = TaskStatus.COMPLETED

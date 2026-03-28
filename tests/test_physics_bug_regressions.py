@@ -20,7 +20,9 @@ def test_em_wave_and_capacitor_can_be_computed_together():
     result = electromagnetism(params)
 
     expected_wavelength = C / params["em_frequency"]
-    expected_capacitance = VACUUM_PERMITTIVITY * params["plate_area"] / params["plate_separation"]
+    expected_capacitance = (
+        VACUUM_PERMITTIVITY * params["plate_area"] / params["plate_separation"]
+    )
 
     assert math.isclose(result["em_wavelength"], expected_wavelength, rel_tol=1e-12)
     assert math.isclose(result["capacitance"], expected_capacitance, rel_tol=1e-12)
@@ -52,7 +54,9 @@ def test_harsh_physics_mode_enforces_thrust_envelope():
     )
 
     assert wrapped["allowed"] is False
-    assert any(v["code"] == "thrust_envelope_exceeded" for v in wrapped["hard_violations"])
+    assert any(
+        v["code"] == "thrust_envelope_exceeded" for v in wrapped["hard_violations"]
+    )
 
 
 def test_lambda_handler_returns_422_when_harsh_mode_rejects():
@@ -67,4 +71,6 @@ def test_lambda_handler_returns_422_when_harsh_mode_rejects():
 
     assert response["statusCode"] == 422
     assert "hard_violations" in body
-    assert any(v["code"] == "invalid_kelvin_temperature" for v in body["hard_violations"])
+    assert any(
+        v["code"] == "invalid_kelvin_temperature" for v in body["hard_violations"]
+    )

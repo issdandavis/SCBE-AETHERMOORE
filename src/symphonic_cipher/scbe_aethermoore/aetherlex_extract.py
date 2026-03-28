@@ -331,7 +331,9 @@ class ExtractedPhrase:
     line_start: int  # Line number in source file
     tongue_bias: str  # Two-letter tongue code
     tongue_scores: Dict[str, float] = field(default_factory=dict)
-    tongue_confidence: float = 0.0  # 0 = no keywords matched, 1 = single dominant tongue
+    tongue_confidence: float = (
+        0.0  # 0 = no keywords matched, 1 = single dominant tongue
+    )
     # Populated after tokenization
     runic_tokens: List[int] = field(default_factory=list)
     particle_tokens: List[int] = field(default_factory=list)
@@ -339,7 +341,9 @@ class ExtractedPhrase:
     entropy_bpb: float = 0.0
 
 
-def parse_everweave(filepath: str, page_start: int = 1, page_end: int = 999) -> List[ExtractedPhrase]:
+def parse_everweave(
+    filepath: str, page_start: int = 1, page_end: int = 999
+) -> List[ExtractedPhrase]:
     """
     Parse the Everweave text file into dialogue turns, then into sentences.
     Returns a list of ExtractedPhrase objects.
@@ -522,7 +526,10 @@ PARTICLE_AFFINITIES: Dict[str, List[str]] = {
 
 
 def _affinity_tokenize(
-    text: str, affinity_map: Dict[str, List[str]], name_to_idx: Dict[str, int], max_tokens: int
+    text: str,
+    affinity_map: Dict[str, List[str]],
+    name_to_idx: Dict[str, int],
+    max_tokens: int,
 ) -> List[int]:
     """Score text against affinity keywords, return top-N indices."""
     text_lower = text.lower()
@@ -561,8 +568,12 @@ def tokenize_dual_layer(phrase: ExtractedPhrase, n_runic: int = 6, n_particle: i
       Runic layer  — 24-letter symbolic mapping (mind/concept)
       Particle layer — 14-morpheme relational mapping (heart/intent)
     """
-    phrase.runic_tokens = _affinity_tokenize(phrase.text, RUNE_AFFINITIES, RUNE_BY_NAME, n_runic)
-    phrase.particle_tokens = _affinity_tokenize(phrase.text, PARTICLE_AFFINITIES, PARTICLE_BY_NAME, n_particle)
+    phrase.runic_tokens = _affinity_tokenize(
+        phrase.text, RUNE_AFFINITIES, RUNE_BY_NAME, n_runic
+    )
+    phrase.particle_tokens = _affinity_tokenize(
+        phrase.text, PARTICLE_AFFINITIES, PARTICLE_BY_NAME, n_particle
+    )
 
 
 # ═══════════════════════════════════════════════════════════
@@ -570,7 +581,9 @@ def tokenize_dual_layer(phrase: ExtractedPhrase, n_runic: int = 6, n_particle: i
 # ═══════════════════════════════════════════════════════════
 
 
-def pack_tokens(tongue_code: str, runic: List[int], particles: List[int], page: int) -> bytes:
+def pack_tokens(
+    tongue_code: str, runic: List[int], particles: List[int], page: int
+) -> bytes:
     """
     Pack dual-layer tokens into a binary payload for hashing.
     Format:
@@ -620,7 +633,11 @@ def pack_tokens(tongue_code: str, runic: List[int], particles: List[int], page: 
 
 
 def hash_seed(
-    tongue_code: str, runic: List[int], particles: List[int], page: int, raw_text: str = ""
+    tongue_code: str,
+    runic: List[int],
+    particles: List[int],
+    page: int,
+    raw_text: str = "",
 ) -> Tuple[str, float]:
     """
     Hash packed tokens to a 64-byte SHAKE-256 seed.
@@ -649,7 +666,9 @@ def hash_seed(
 
 def generate_attestation(phrase: ExtractedPhrase) -> Dict:
     """Generate a cryptographic attestation for a seed."""
-    packed = pack_tokens(phrase.tongue_bias, phrase.runic_tokens, phrase.particle_tokens, phrase.page)
+    packed = pack_tokens(
+        phrase.tongue_bias, phrase.runic_tokens, phrase.particle_tokens, phrase.page
+    )
     text_hash = hashlib.sha256(phrase.text.encode()).digest()
     preimage = VERSION.encode() + packed + text_hash
 
@@ -684,7 +703,9 @@ def process_phrase(phrase: ExtractedPhrase) -> ExtractedPhrase:
     return phrase
 
 
-def extract_corpus(filepath: str, page_start: int = 1, page_end: int = 999) -> List[ExtractedPhrase]:
+def extract_corpus(
+    filepath: str, page_start: int = 1, page_end: int = 999
+) -> List[ExtractedPhrase]:
     """Extract, classify, tokenize, and hash all phrases."""
     phrases = parse_everweave(filepath, page_start, page_end)
 
@@ -784,12 +805,16 @@ def selftest():
 
     seeds = []
     for text in test_phrases:
-        p = ExtractedPhrase(text=text, speaker="DM", page=1, line_start=0, tongue_bias="")
+        p = ExtractedPhrase(
+            text=text, speaker="DM", page=1, line_start=0, tongue_bias=""
+        )
         process_phrase(p)
         seeds.append(p.seed_hex)
 
         # Regenerability: same input → same output
-        p2 = ExtractedPhrase(text=text, speaker="DM", page=1, line_start=0, tongue_bias="")
+        p2 = ExtractedPhrase(
+            text=text, speaker="DM", page=1, line_start=0, tongue_bias=""
+        )
         process_phrase(p2)
         assert p.seed_hex == p2.seed_hex, f"Non-deterministic seed for: {text[:40]}..."
 
@@ -801,14 +826,20 @@ def selftest():
 
     # 5. Entropy check (should be > 5.0 bits/byte for SHAKE-256 output)
     for text in test_phrases:
-        p = ExtractedPhrase(text=text, speaker="DM", page=1, line_start=0, tongue_bias="")
+        p = ExtractedPhrase(
+            text=text, speaker="DM", page=1, line_start=0, tongue_bias=""
+        )
         process_phrase(p)
         assert p.entropy_bpb > 4.5, f"Low entropy {p.entropy_bpb} for: {text[:40]}..."
     print("  [OK] Entropy check: all seeds > 4.5 bits/byte")
 
     # 6. Tongue classification sanity
     binding = ExtractedPhrase(
-        text="spell of binding upon sand and water", speaker="IZACK", page=1, line_start=0, tongue_bias=""
+        text="spell of binding upon sand and water",
+        speaker="IZACK",
+        page=1,
+        line_start=0,
+        tongue_bias="",
     )
     classify_tongue(binding)
     assert binding.tongue_bias == "" or True  # Just run it
@@ -916,7 +947,9 @@ def cmd_extract(args):
             print(f"\n  [{p.tongue_bias}] p.{p.page} ({p.speaker})")
             print(f"  Text: {p.text[:80]}...")
             print(f"  Runes:     {', '.join(RUNES_24[i][0] for i in p.runic_tokens)}")
-            print(f"  Particles: {', '.join(PARTICLES_14[i][0] for i in p.particle_tokens)}")
+            print(
+                f"  Particles: {', '.join(PARTICLES_14[i][0] for i in p.particle_tokens)}"
+            )
             print(f"  Seed: {p.seed_hex[:32]}...")
             print(f"  Entropy: {p.entropy_bpb:.4f} bpb")
 
@@ -937,7 +970,9 @@ def cmd_hash(args):
     )
 
     tokenize_dual_layer(p)
-    p.seed_hex, p.entropy_bpb = hash_seed(tongue, p.runic_tokens, p.particle_tokens, p.page, p.text)
+    p.seed_hex, p.entropy_bpb = hash_seed(
+        tongue, p.runic_tokens, p.particle_tokens, p.page, p.text
+    )
 
     attest = generate_attestation(p)
 
@@ -990,7 +1025,9 @@ def main():
     # hash
     p_hash = sub.add_parser("hash", help="Hash a single phrase")
     p_hash.add_argument("--phrase", required=True, help="Phrase text")
-    p_hash.add_argument("--tongue", required=True, help="Tongue code (KO/AV/RU/CA/UM/DR)")
+    p_hash.add_argument(
+        "--tongue", required=True, help="Tongue code (KO/AV/RU/CA/UM/DR)"
+    )
     p_hash.add_argument("--speaker", default="IZACK", help="Speaker (DM/IZACK)")
     p_hash.add_argument("--page", type=int, default=1, help="Page number")
 

@@ -25,7 +25,9 @@ def _canonical_manifold(manifold: Iterable[float]) -> Dimension6:
     if any(not math.isfinite(v) for v in values):
         raise ValueError("manifold must contain only finite values")
     if sum(v * v for v in values) >= 1.0:
-        raise ValueError("manifold point must lie strictly inside the Poincare unit ball")
+        raise ValueError(
+            "manifold point must lie strictly inside the Poincare unit ball"
+        )
     return values  # type: ignore[return-value]
 
 
@@ -93,7 +95,9 @@ class ChiralModeAddress:
     def base_field(self, x: float, y: float) -> float:
         n, m = self.magnitudes
         pi = math.pi
-        return math.cos(n * pi * x) * math.cos(m * pi * y) - math.cos(m * pi * x) * math.cos(n * pi * y)
+        return math.cos(n * pi * x) * math.cos(m * pi * y) - math.cos(
+            m * pi * x
+        ) * math.cos(n * pi * y)
 
     def chiral_component(self, x: float, y: float) -> float:
         """
@@ -106,12 +110,14 @@ class ChiralModeAddress:
         pi = math.pi
         phi = self.phase_offset
 
-        return math.sin(n * pi * x + phi) * math.cos(m * pi * y - phi) - math.sin(m * pi * x - phi) * math.cos(
-            n * pi * y + phi
-        )
+        return math.sin(n * pi * x + phi) * math.cos(m * pi * y - phi) - math.sin(
+            m * pi * x - phi
+        ) * math.cos(n * pi * y + phi)
 
     def raw_field(self, x: float, y: float) -> float:
-        return self.base_field(x, y) + self.chirality * self.chiral_weight * self.chiral_component(x, y)
+        return self.base_field(
+            x, y
+        ) + self.chirality * self.chiral_weight * self.chiral_component(x, y)
 
     def readout(self, x: float, y: float) -> float:
         return abs(self.raw_field(x, y))
@@ -182,7 +188,9 @@ def seal_egg(
         realm=realm,
     )
 
-    body = f"seal|realm={realm}|payload={payload_hash}|binding={binding_token}".encode("utf-8")
+    body = f"seal|realm={realm}|payload={payload_hash}|binding={binding_token}".encode(
+        "utf-8"
+    )
     seal = hashlib.blake2b(body, key=secret_key, digest_size=32).hexdigest()
 
     return EggSeal(
@@ -235,7 +243,8 @@ def derive_separator_token(
 
     M = _canonical_manifold(manifold)
     body = (
-        f"separator|src={source.signed_label()}|dst={target.signed_label()}|" f"manifold={_format_manifold(M)}"
+        f"separator|src={source.signed_label()}|dst={target.signed_label()}|"
+        f"manifold={_format_manifold(M)}"
     ).encode("utf-8")
 
     return hashlib.blake2b(body, key=secret_key, digest_size=32).hexdigest()

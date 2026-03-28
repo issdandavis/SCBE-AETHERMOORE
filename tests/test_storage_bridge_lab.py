@@ -153,7 +153,12 @@ def test_compare_returns_all_surfaces():
     report = lab.compare()
 
     assert "surfaces" in report
-    assert set(report["surfaces"].keys()) == {"octree", "lattice25d", "qc_drive", "sphere"}
+    assert set(report["surfaces"].keys()) == {
+        "octree",
+        "lattice25d",
+        "qc_drive",
+        "sphere",
+    }
     assert report["record_count"] == 16
 
 
@@ -174,7 +179,9 @@ def test_compare_compaction_scores_are_positive():
     report = lab.compare()
 
     for name in ("octree", "lattice25d", "qc_drive"):
-        assert report["surfaces"][name]["compaction_score"] > 0, f"{name} compaction zero"
+        assert (
+            report["surfaces"][name]["compaction_score"] > 0
+        ), f"{name} compaction zero"
 
 
 def test_compare_governance_trace_rate_nonzero():
@@ -194,7 +201,12 @@ def test_compare_summary_picks_winners():
     report = lab.compare()
 
     assert report["summary"]["best_compaction"] in ("octree", "lattice25d", "qc_drive")
-    assert report["summary"]["lowest_node_explosion"] in ("octree", "lattice25d", "qc_drive", "sphere")
+    assert report["summary"]["lowest_node_explosion"] in (
+        "octree",
+        "lattice25d",
+        "qc_drive",
+        "sphere",
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -224,10 +236,20 @@ def test_export_writes_valid_json(tmp_path: Path):
 
 def test_hypothesis_deck_has_required_fields():
     deck = get_hypothesis_deck()
-    required = {"knob", "surface", "purpose", "expected_effect", "metric_to_watch", "fail_condition", "sweep_values"}
+    required = {
+        "knob",
+        "surface",
+        "purpose",
+        "expected_effect",
+        "metric_to_watch",
+        "fail_condition",
+        "sweep_values",
+    }
     for card in deck:
         assert required.issubset(card.keys()), f"Card {card['knob']} missing fields"
-        assert len(card["sweep_values"]) >= 2, f"Card {card['knob']} needs >=2 sweep values"
+        assert (
+            len(card["sweep_values"]) >= 2
+        ), f"Card {card['knob']} needs >=2 sweep values"
 
 
 def test_hypothesis_deck_covers_all_surfaces():
@@ -254,4 +276,7 @@ def test_different_configs_produce_different_metrics():
     r_deep = lab_deep.compare()
 
     # Deeper octree should have more nodes
-    assert r_deep["surfaces"]["octree"]["node_count"] >= r_shallow["surfaces"]["octree"]["node_count"]
+    assert (
+        r_deep["surfaces"]["octree"]["node_count"]
+        >= r_shallow["surfaces"]["octree"]["node_count"]
+    )

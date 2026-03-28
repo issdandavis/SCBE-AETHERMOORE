@@ -341,7 +341,9 @@ class TestQuickValidation:
             return (
                 isinstance(pos, (list, np.ndarray))
                 and len(pos) == 6
-                and all(isinstance(x, (int, float, np.integer, np.floating)) for x in pos)
+                and all(
+                    isinstance(x, (int, float, np.integer, np.floating)) for x in pos
+                )
             )
 
         assert is_valid_position([1, 2, 3, 4, 5, 6])

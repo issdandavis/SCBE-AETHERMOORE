@@ -86,7 +86,16 @@ class TongueAlphabet:
 
 AXIOM_ALPHABET = TongueAlphabet(
     tongue_id=TongueID.AXIOM,
-    symbols=["A", "X", "I", "O", "M", "\u0394", "\u2192", "\u2234"],  # A X I O M Delta Arrow Therefore
+    symbols=[
+        "A",
+        "X",
+        "I",
+        "O",
+        "M",
+        "\u0394",
+        "\u2192",
+        "\u2234",
+    ],  # A X I O M Delta Arrow Therefore
     encoding={
         "A": 0x41,  # Assert/Affirmative
         "X": 0x58,  # Execute
@@ -103,7 +112,16 @@ AXIOM_ALPHABET = TongueAlphabet(
 
 FLOW_ALPHABET = TongueAlphabet(
     tongue_id=TongueID.FLOW,
-    symbols=["F", "L", "W", "Y", "~", "\u21c4", "\u221e", "\u25ca"],  # F L W Y ~ Bidirectional Infinity Diamond
+    symbols=[
+        "F",
+        "L",
+        "W",
+        "Y",
+        "~",
+        "\u21c4",
+        "\u221e",
+        "\u25ca",
+    ],  # F L W Y ~ Bidirectional Infinity Diamond
     encoding={
         "F": 0x46,  # Flux
         "L": 0x4C,  # Lateral
@@ -120,7 +138,16 @@ FLOW_ALPHABET = TongueAlphabet(
 
 GLYPH_ALPHABET = TongueAlphabet(
     tongue_id=TongueID.GLYPH,
-    symbols=["G", "H", "P", "Z", "|", "\u2195", "\u22a5", "\u22a4"],  # G H P Z | UpDown Bottom Top
+    symbols=[
+        "G",
+        "H",
+        "P",
+        "Z",
+        "|",
+        "\u2195",
+        "\u22a5",
+        "\u22a4",
+    ],  # G H P Z | UpDown Bottom Top
     encoding={
         "G": 0x47,  # Gravity/Ground
         "H": 0x48,  # Height
@@ -137,7 +164,16 @@ GLYPH_ALPHABET = TongueAlphabet(
 
 ORACLE_ALPHABET = TongueAlphabet(
     tongue_id=TongueID.ORACLE,
-    symbols=["R", "C", "E", "T", "V", "\u26a1", "\u23f1", "\u25c9"],  # R C E T V Lightning Stopwatch Target
+    symbols=[
+        "R",
+        "C",
+        "E",
+        "T",
+        "V",
+        "\u26a1",
+        "\u23f1",
+        "\u25c9",
+    ],  # R C E T V Lightning Stopwatch Target
     encoding={
         "R": 0x52,  # Rate
         "C": 0x43,  # Chronos/Clock
@@ -154,7 +190,16 @@ ORACLE_ALPHABET = TongueAlphabet(
 
 CHARM_ALPHABET = TongueAlphabet(
     tongue_id=TongueID.CHARM,
-    symbols=["S", "N", "U", "K", "\u266a", "\u2696", "\u262f", "\u2727"],  # S N U K Note Balance YinYang Star
+    symbols=[
+        "S",
+        "N",
+        "U",
+        "K",
+        "\u266a",
+        "\u2696",
+        "\u262f",
+        "\u2727",
+    ],  # S N U K Note Balance YinYang Star
     encoding={
         "S": 0x53,  # Sync
         "N": 0x4E,  # Negotiate
@@ -171,7 +216,16 @@ CHARM_ALPHABET = TongueAlphabet(
 
 LEDGER_ALPHABET = TongueAlphabet(
     tongue_id=TongueID.LEDGER,
-    symbols=["D", "B", "J", "Q", "#", "\U0001f512", "\u2211", "\u26bf"],  # D B J Q # Lock Sigma Key
+    symbols=[
+        "D",
+        "B",
+        "J",
+        "Q",
+        "#",
+        "\U0001f512",
+        "\u2211",
+        "\u26bf",
+    ],  # D B J Q # Lock Sigma Key
     encoding={
         "D": 0x44,  # Document
         "B": 0x42,  # Block/Barrier
@@ -197,7 +251,9 @@ TONGUE_ALPHABETS: Dict[TongueID, TongueAlphabet] = {
 }
 
 # Signature lookup
-SIGNATURE_TO_TONGUE: Dict[str, TongueID] = {alph.signature: alph.tongue_id for alph in TONGUE_ALPHABETS.values()}
+SIGNATURE_TO_TONGUE: Dict[str, TongueID] = {
+    alph.signature: alph.tongue_id for alph in TONGUE_ALPHABETS.values()
+}
 
 
 # =============================================================================
@@ -396,7 +452,9 @@ class PolyglotSDK:
         _, decoded = decompose_polyglot_message(message)
         return decoded
 
-    def verify(self, message: str, expected_tongues: Optional[List[TongueID]] = None) -> bool:
+    def verify(
+        self, message: str, expected_tongues: Optional[List[TongueID]] = None
+    ) -> bool:
         """Verify a message's tongue signatures."""
         try:
             tongues, _ = decompose_polyglot_message(message)
@@ -444,7 +502,9 @@ def calculate_cipher_strength(tongues: List[TongueID]) -> Dict[str, any]:
         "keyspace_size": keyspace,
         "xor_depth": xor_depth,
         "brute_force_complexity": f"O(2^{bits_per_tongue * n} * {n})",
-        "security_rating": "LOW" if n == 1 else "MEDIUM" if n <= 3 else "HIGH" if n <= 5 else "MAXIMUM",
+        "security_rating": (
+            "LOW" if n == 1 else "MEDIUM" if n <= 3 else "HIGH" if n <= 5 else "MAXIMUM"
+        ),
     }
 
 
@@ -500,7 +560,9 @@ def demo():
     for n in [1, 2, 3, 4, 5, 6]:
         test_tongues = list(TongueID)[:n]
         strength = calculate_cipher_strength(test_tongues)
-        print(f"  {n} tongue(s): keyspace=2^{strength['keyspace_bits']}, rating={strength['security_rating']}")
+        print(
+            f"  {n} tongue(s): keyspace=2^{strength['keyspace_bits']}, rating={strength['security_rating']}"
+        )
     print()
 
     # Verification

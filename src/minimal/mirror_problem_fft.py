@@ -105,7 +105,9 @@ def _normalize_profile(values: np.ndarray) -> np.ndarray:
     return shifted / (spread + EPS)
 
 
-def derive_thermal_profiles(matrix: np.ndarray, *, source: str = "l2_norm") -> tuple[np.ndarray, np.ndarray]:
+def derive_thermal_profiles(
+    matrix: np.ndarray, *, source: str = "l2_norm"
+) -> tuple[np.ndarray, np.ndarray]:
     """Derive normalized row/column heat profiles from a matrix."""
     array = np.asarray(matrix, dtype=np.float64)
     if array.ndim != 2:
@@ -171,7 +173,10 @@ def _convolve1d_same(vector: np.ndarray, kernel: np.ndarray) -> np.ndarray:
     radius = len(kernel) // 2
     padded = np.pad(vector, (radius, radius), mode="edge")
     return np.array(
-        [float(np.dot(padded[i : i + len(kernel)], kernel)) for i in range(vector.size)],
+        [
+            float(np.dot(padded[i : i + len(kernel)], kernel))
+            for i in range(vector.size)
+        ],
         dtype=np.float64,
     )
 
@@ -219,7 +224,9 @@ def apply_thermal_mirage(
     return transformed, profile
 
 
-def compute_spectral_probe(signal: np.ndarray, *, cutoff_ratio: float = 0.25) -> SpectralProbe:
+def compute_spectral_probe(
+    signal: np.ndarray, *, cutoff_ratio: float = 0.25
+) -> SpectralProbe:
     """Compute simple FFT-based structure metrics for a 1D signal."""
     raw = np.asarray(signal)
     dtype = np.complex128 if np.iscomplexobj(raw) else np.float64
@@ -228,7 +235,9 @@ def compute_spectral_probe(signal: np.ndarray, *, cutoff_ratio: float = 0.25) ->
         raise ValueError("signal must contain at least 4 values")
 
     centered = vector - np.mean(vector)
-    spectrum = np.fft.fft(centered) if np.iscomplexobj(centered) else np.fft.rfft(centered)
+    spectrum = (
+        np.fft.fft(centered) if np.iscomplexobj(centered) else np.fft.rfft(centered)
+    )
     power = np.abs(spectrum) ** 2
     total = float(np.sum(power))
     if total < EPS:
@@ -258,7 +267,9 @@ def compute_spectral_probe(signal: np.ndarray, *, cutoff_ratio: float = 0.25) ->
     )
 
 
-def probe_attention_matrix(matrix: np.ndarray, *, mode: str = "row_mean") -> SpectralProbe:
+def probe_attention_matrix(
+    matrix: np.ndarray, *, mode: str = "row_mean"
+) -> SpectralProbe:
     return compute_spectral_probe(attention_signal(matrix, mode=mode))
 
 
@@ -275,7 +286,9 @@ def make_uniform_control(rows: int, cols: int | None = None) -> np.ndarray:
     return np.full((row_count, col_count), 1.0 / col_count, dtype=np.float64)
 
 
-def make_banded_control(rows: int, cols: int | None = None, *, sigma: float = 1.5) -> np.ndarray:
+def make_banded_control(
+    rows: int, cols: int | None = None, *, sigma: float = 1.5
+) -> np.ndarray:
     row_count, col_count = _resolve_shape(rows, cols)
     rows = []
     for i in range(row_count):
@@ -289,19 +302,25 @@ def make_banded_control(rows: int, cols: int | None = None, *, sigma: float = 1.
     return _normalize_rows(np.vstack(rows))
 
 
-def make_random_control(rows: int, cols: int | None = None, *, seed: int = 7) -> np.ndarray:
+def make_random_control(
+    rows: int, cols: int | None = None, *, seed: int = 7
+) -> np.ndarray:
     row_count, col_count = _resolve_shape(rows, cols)
     rng = np.random.default_rng(seed)
     return _normalize_rows(rng.random((row_count, col_count)))
 
 
-def compare_attention_to_controls(matrix: np.ndarray, *, mode: str = "row_mean") -> ProbeComparison:
+def compare_attention_to_controls(
+    matrix: np.ndarray, *, mode: str = "row_mean"
+) -> ProbeComparison:
     shape = np.asarray(matrix).shape
     if len(shape) != 2:
         raise ValueError("attention matrix must be 2D")
     rows, cols = shape
     candidate = probe_attention_matrix(matrix, mode=mode)
-    uniform_control = probe_attention_matrix(make_uniform_control(rows, cols), mode=mode)
+    uniform_control = probe_attention_matrix(
+        make_uniform_control(rows, cols), mode=mode
+    )
     banded_control = probe_attention_matrix(make_banded_control(rows, cols), mode=mode)
     random_control = probe_attention_matrix(make_random_control(rows, cols), mode=mode)
     return ProbeComparison(

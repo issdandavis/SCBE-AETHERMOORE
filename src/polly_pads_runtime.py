@@ -162,7 +162,11 @@ def scbe_decide(
         return "DENY"
     if d_star > thr.quarantine_max_drift:
         return "DENY"
-    if coherence >= thr.allow_min_coherence and h_eff <= thr.allow_max_cost and d_star <= thr.allow_max_drift:
+    if (
+        coherence >= thr.allow_min_coherence
+        and h_eff <= thr.allow_max_cost
+        and d_star <= thr.allow_max_drift
+    ):
         return "ALLOW"
     return "QUARANTINE"
 
@@ -429,7 +433,10 @@ class SquadSpace:
         Returns:
             Mapping from unit_id to SCBE decision.
         """
-        return {uid: scbe_decide(s.d_star, s.coherence, s.h_eff, thr) for uid, s in self.units.items()}
+        return {
+            uid: scbe_decide(s.d_star, s.coherence, s.h_eff, thr)
+            for uid, s in self.units.items()
+        }
 
 
 # ---------------------------------------------------------------------------
@@ -471,7 +478,9 @@ class PollyPad:
 
     # -- Zone promotion --
 
-    def can_promote_to_safe(self, state: UnitState, quorum_votes: Optional[int] = None) -> bool:
+    def can_promote_to_safe(
+        self, state: UnitState, quorum_votes: Optional[int] = None
+    ) -> bool:
         """Check whether HOT -> SAFE promotion is allowed.
 
         Requires SCBE decision == ALLOW and optional 4/6 quorum.
@@ -669,7 +678,11 @@ def triadic_temporal_distance(
         Triadic temporal distance.
     """
     eps = 1e-10
-    s = lambda1 * max(d1, eps) ** PHI + lambda2 * max(d2, eps) ** PHI + lambda3 * max(d_g, eps) ** PHI
+    s = (
+        lambda1 * max(d1, eps) ** PHI
+        + lambda2 * max(d2, eps) ** PHI
+        + lambda3 * max(d_g, eps) ** PHI
+    )
     return s ** (1.0 / PHI)
 
 
@@ -763,7 +776,9 @@ def plan_tri_directional(
     directions: List[TraceDirection] = ["STRUCTURE", "CONFLICT", "TIME"]
     traces = [plan_trace(d, state, d_star, checkpoints) for d in directions]
 
-    triadic_dist = triadic_temporal_distance(traces[0].cost, traces[1].cost, traces[2].cost)
+    triadic_dist = triadic_temporal_distance(
+        traces[0].cost, traces[1].cost, traces[2].cost
+    )
     valid_count = sum(1 for t in traces if t.result == "VALID")
 
     total_jaccard = 0.0

@@ -21,7 +21,9 @@ from .schema import (
     NodeStatus,
 )
 
-NodeHandler = Callable[[dict[str, Any], dict[str, Any], FlowExecutionState], dict[str, Any]]
+NodeHandler = Callable[
+    [dict[str, Any], dict[str, Any], FlowExecutionState], dict[str, Any]
+]
 
 
 @dataclass
@@ -48,7 +50,9 @@ class InMemoryFlowCache:
 
     def set(self, key: str, output: dict[str, Any], ttl_seconds: int | None) -> None:
         expires_at = None if ttl_seconds is None else self._now_fn() + ttl_seconds
-        self._entries[key] = _CacheEntry(output=copy.deepcopy(output), expires_at=expires_at)
+        self._entries[key] = _CacheEntry(
+            output=copy.deepcopy(output), expires_at=expires_at
+        )
 
 
 class NodeRegistry:
@@ -92,7 +96,9 @@ class FlowExecutor:
 
     def load_workflow(self, payload: dict[str, Any]) -> FlowDefinition:
         workflow_id = str(payload.get("workflow_id") or payload.get("id") or "").strip()
-        start_node_id = str(payload.get("start_node_id") or payload.get("start_at") or "").strip()
+        start_node_id = str(
+            payload.get("start_node_id") or payload.get("start_at") or ""
+        ).strip()
         if not workflow_id:
             raise FlowValidationError("Workflow id is required.")
         node_payloads = payload.get("nodes")
@@ -119,9 +125,13 @@ class FlowExecutor:
         )
         for edge in edges:
             if edge.source not in nodes:
-                raise FlowValidationError(f"Edge source '{edge.source}' does not exist.")
+                raise FlowValidationError(
+                    f"Edge source '{edge.source}' does not exist."
+                )
             if edge.target not in nodes:
-                raise FlowValidationError(f"Edge target '{edge.target}' does not exist.")
+                raise FlowValidationError(
+                    f"Edge target '{edge.target}' does not exist."
+                )
 
         return FlowDefinition(
             workflow_id=workflow_id,
@@ -265,7 +275,9 @@ class FlowExecutor:
         if isinstance(value, list):
             return [self._resolve_value(item, context) for item in value]
         if isinstance(value, dict):
-            return {key: self._resolve_value(item, context) for key, item in value.items()}
+            return {
+                key: self._resolve_value(item, context) for key, item in value.items()
+            }
         return value
 
     def _resolve_reference(self, token: str, context: dict[str, Any]) -> Any:

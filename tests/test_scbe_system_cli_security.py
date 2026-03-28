@@ -16,12 +16,17 @@ def _load_module(name: str, relative_path: str):
     return module
 
 
-scbe_system_cli = _load_module("test_scbe_system_cli_security", "scripts/scbe-system-cli.py")
+scbe_system_cli = _load_module(
+    "test_scbe_system_cli_security", "scripts/scbe-system-cli.py"
+)
 
 
 def test_notebooklm_fallback_persists_prompt_metadata_only(tmp_path: Path) -> None:
     result = scbe_system_cli._notebooklm_fallback(
-        {"agent_id": "notebooklm-main", "notebook_url": "https://notebooklm.google.com/notebook/demo"},
+        {
+            "agent_id": "notebooklm-main",
+            "notebook_url": "https://notebooklm.google.com/notebook/demo",
+        },
         "super secret password prompt",
         tmp_path,
     )
@@ -56,5 +61,8 @@ def test_write_agent_call_result_sanitizes_content_and_raw(tmp_path: Path) -> No
 def test_visual_system_html2canvas_script_uses_sri() -> None:
     html = (ROOT / "scbe-visual-system" / "index.html").read_text(encoding="utf-8")
     assert "html2canvas.min.js" in html
-    assert 'integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H"' in html
+    assert (
+        'integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H"'
+        in html
+    )
     assert 'crossorigin="anonymous"' in html

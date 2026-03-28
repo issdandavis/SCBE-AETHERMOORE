@@ -49,7 +49,9 @@ class DecisionNode:
 class DecisionTree:
     """Complete record of every decision an agent made."""
 
-    def __init__(self, agent_id: str, nodes: Optional[List[DecisionNode]] = None) -> None:
+    def __init__(
+        self, agent_id: str, nodes: Optional[List[DecisionNode]] = None
+    ) -> None:
         self.agent_id = agent_id
         self._nodes: List[DecisionNode] = list(nodes) if nodes else []
 
@@ -345,7 +347,9 @@ class GraduatedKernel:
             "pivotal_decisions": len(self.decision_tree.pivotal_decisions()),
             "final_stats": self.final_stats,
             "graduation_scores": self.graduation_scores,
-            "dominant_traits": [{"name": name, "value": val} for name, val in self._dominant_traits(5)],
+            "dominant_traits": [
+                {"name": name, "value": val} for name, val in self._dominant_traits(5)
+            ],
             "metadata": self.metadata,
         }
 
@@ -388,7 +392,8 @@ class KernelExtractor:
                         story_id=pt.story_id,
                         chosen=step.choice,
                         alternatives=[],
-                        personality_at_decision=step.personality_snapshot or agent.personality.vector,
+                        personality_at_decision=step.personality_snapshot
+                        or agent.personality.vector,
                         stats_at_decision=step.stats_snapshot,
                     )
                 )

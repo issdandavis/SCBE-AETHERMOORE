@@ -43,7 +43,9 @@ class HyperbolicLWE:
         # Validate input vector within Poincaré ball (norm < 1.0)
         if np.linalg.norm(vector) >= 0.999:
             # Note: A hard error here enforces the architectural constraint
-            raise ValueError("Vector outside Poincaré ball constraint (norm must be < 1.0)")
+            raise ValueError(
+                "Vector outside Poincaré ball constraint (norm must be < 1.0)"
+            )
 
         # Random vector r (n x 1)
         r = np.random.randint(0, self.q, size=self.dim)

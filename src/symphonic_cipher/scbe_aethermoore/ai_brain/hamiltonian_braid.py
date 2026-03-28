@@ -195,7 +195,10 @@ def make_rail_from_trajectory(
     """
     trajectory = np.asarray(trajectory, dtype=float)
     if trajectory.ndim != 2 or trajectory.shape[1] != BRAIN_DIMENSIONS:
-        raise ValueError(f"Expected (N, {BRAIN_DIMENSIONS}) trajectory, " f"got shape {trajectory.shape}.")
+        raise ValueError(
+            f"Expected (N, {BRAIN_DIMENSIONS}) trajectory, "
+            f"got shape {trajectory.shape}."
+        )
 
     n = len(trajectory)
     if phases is None:
@@ -203,7 +206,10 @@ def make_rail_from_trajectory(
     if len(phases) != n:
         raise ValueError(f"phases length {len(phases)} != trajectory length {n}.")
 
-    points = [RailPoint(position=trajectory[i], expected_phase=phases[i], index=i) for i in range(n)]
+    points = [
+        RailPoint(position=trajectory[i], expected_phase=phases[i], index=i)
+        for i in range(n)
+    ]
     return Rail(points=points)
 
 
@@ -388,7 +394,11 @@ def constraint_project(
         candidates = (
             valid_neighbors(current_phase)
             if prev_phase is None
-            else [s for s in valid_neighbors(current_phase) if prev_phase is None or valid_transition(prev_phase, s)]
+            else [
+                s
+                for s in valid_neighbors(current_phase)
+                if prev_phase is None or valid_transition(prev_phase, s)
+            ]
         )
         if candidates:
             best = min(
@@ -417,7 +427,9 @@ def constraint_project(
     x_emb = safe_poincare_embed(projected_x.tolist())
     r_emb = safe_poincare_embed(nearest.position.tolist())
     d_H = hyperbolic_distance_safe(x_emb, r_emb)
-    d_braid = d_H + lambda_phase * phase_deviation(projected_phase, nearest.expected_phase)
+    d_braid = d_H + lambda_phase * phase_deviation(
+        projected_phase, nearest.expected_phase
+    )
     cost = harmonic_cost(d_braid)
 
     return ConstraintProjection(

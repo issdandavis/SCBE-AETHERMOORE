@@ -166,7 +166,11 @@ def triadic_distance(
     """
     if weights is None:
         weights = TriadicWeights()
-    sum_sq = weights.immediate * d1 * d1 + weights.memory * d2 * d2 + weights.governance * d_g * d_g
+    sum_sq = (
+        weights.immediate * d1 * d1
+        + weights.memory * d2 * d2
+        + weights.governance * d_g * d_g
+    )
     return math.sqrt(max(0.0, sum_sq))
 
 
@@ -397,8 +401,14 @@ class TriManifoldLattice:
             tick=self._tick,
             triadic_distance=latest.triadic_distance if latest else 0.0,
             harmonic_cost=latest.harmonic_cost if latest else 0.0,
-            manifold_distances=latest.manifold_distances if latest else {"immediate": 0, "memory": 0, "governance": 0},
-            weights=TriadicWeights(self._weights.immediate, self._weights.memory, self._weights.governance),
+            manifold_distances=(
+                latest.manifold_distances
+                if latest
+                else {"immediate": 0, "memory": 0, "governance": 0}
+            ),
+            weights=TriadicWeights(
+                self._weights.immediate, self._weights.memory, self._weights.governance
+            ),
             node_count=len(self._nodes),
             drift_velocity=self.drift_velocity(),
         )

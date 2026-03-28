@@ -37,7 +37,9 @@ from src.scbe_math_reference import (
 
 class TestHyperbolicDistance:
     def test_zero_distance_same_point(self):
-        assert hyperbolic_distance_poincare((0.0, 0.0), (0.0, 0.0)) == pytest.approx(0.0, abs=1e-5)
+        assert hyperbolic_distance_poincare((0.0, 0.0), (0.0, 0.0)) == pytest.approx(
+            0.0, abs=1e-5
+        )
 
     def test_symmetry(self):
         a = (0.2, 0.1)

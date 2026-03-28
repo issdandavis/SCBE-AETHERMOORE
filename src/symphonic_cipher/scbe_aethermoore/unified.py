@@ -429,7 +429,9 @@ class ManifoldController:
     Geometric divergence beyond ε triggers SNAP.
     """
 
-    def __init__(self, R_major: float = 10.0, r_minor: float = 2.0, epsilon: float = EPSILON):
+    def __init__(
+        self, R_major: float = 10.0, r_minor: float = 2.0, epsilon: float = EPSILON
+    ):
         self.R = R_major
         self.r = r_minor
         self.epsilon = epsilon
@@ -453,7 +455,9 @@ class ManifoldController:
         diff = np.abs(a1 - a2)
         return np.minimum(diff, 2 * np.pi - diff)
 
-    def geometric_divergence(self, p1: Tuple[float, float], p2: Tuple[float, float]) -> float:
+    def geometric_divergence(
+        self, p1: Tuple[float, float], p2: Tuple[float, float]
+    ) -> float:
         """
         Compute geodesic distance on torus.
 
@@ -474,7 +478,9 @@ class ManifoldController:
         squared_distance = g_phi_phi * (d_phi**2) + g_theta_theta * (d_theta**2)
         return np.sqrt(squared_distance)
 
-    def validate_write(self, previous_fact: Optional[Dict[str, Any]], new_fact: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_write(
+        self, previous_fact: Optional[Dict[str, Any]], new_fact: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Validate a write operation against geometric constraints.
 
@@ -743,8 +749,12 @@ def triadic_distance(xi1: np.ndarray, xi2: np.ndarray) -> float:
     """
     # Hyperbolic component (context)
     d_h = hyperbolic_distance(
-        np.array([float(x) if not isinstance(x, complex) else np.abs(x) for x in xi1[:6]]),
-        np.array([float(x) if not isinstance(x, complex) else np.abs(x) for x in xi2[:6]]),
+        np.array(
+            [float(x) if not isinstance(x, complex) else np.abs(x) for x in xi1[:6]]
+        ),
+        np.array(
+            [float(x) if not isinstance(x, complex) else np.abs(x) for x in xi2[:6]]
+        ),
     )
 
     # Time component
@@ -1071,7 +1081,9 @@ class SCBEAethermoore:
 
         return State9D(context=context, tau=tau, eta=eta, q=q)
 
-    def evaluate(self, intent: float, poly: Polyhedron = None) -> Tuple[GovernanceDecision, str, Dict[str, Any]]:
+    def evaluate(
+        self, intent: float, poly: Polyhedron = None
+    ) -> Tuple[GovernanceDecision, str, Dict[str, Any]]:
         """
         Evaluate an intent against governance constraints.
 
@@ -1091,7 +1103,9 @@ class SCBEAethermoore:
             reference_xi = self.state_history[-1].to_vector()
 
         # Evaluate governance
-        decision, msg, metrics = governance_9d(xi, intent, poly, reference_xi, self.epsilon)
+        decision, msg, metrics = governance_9d(
+            xi, intent, poly, reference_xi, self.epsilon
+        )
 
         # Update history if allowed
         if decision == GovernanceDecision.ALLOW:
@@ -1123,7 +1137,9 @@ class SCBEAethermoore:
             return True
 
         messages, nonces, tags = zip(*self.hmac_chain)
-        return verify_hmac_chain(list(messages), list(nonces), list(tags), self.key, self.iv)
+        return verify_hmac_chain(
+            list(messages), list(nonces), list(tags), self.key, self.iv
+        )
 
 
 # =============================================================================

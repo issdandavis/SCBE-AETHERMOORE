@@ -15,7 +15,9 @@ from unittest.mock import patch
 
 import pytest
 
-httpx = pytest.importorskip("httpx", reason="httpx is required for browser toolkit tests")
+httpx = pytest.importorskip(
+    "httpx", reason="httpx is required for browser toolkit tests"
+)
 
 # Ensure project root is on path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -74,7 +76,9 @@ def _make_response(text: str, status_code: int = 200) -> httpx.Response:
 class MockTransport(httpx.AsyncBaseTransport):
     """Async transport that returns canned responses for testing."""
 
-    def __init__(self, responses: dict[str, httpx.Response] | None = None, default_text: str = ""):
+    def __init__(
+        self, responses: dict[str, httpx.Response] | None = None, default_text: str = ""
+    ):
         self._responses = responses or {}
         self._default_text = default_text
         self.request_log: list[httpx.Request] = []
@@ -125,7 +129,12 @@ class TestImports:
         assert callable(needs_js)
 
     def test_import_dataclasses(self):
-        from src.browser.toolkit import SearchResult, PageDiff, ExtractedItem, JSDetectionResult
+        from src.browser.toolkit import (
+            SearchResult,
+            PageDiff,
+            ExtractedItem,
+            JSDetectionResult,
+        )
 
         assert SearchResult is not None
         assert PageDiff is not None
@@ -141,7 +150,9 @@ class TestSearchResultDataclass:
         assert r.source == "google"
 
     def test_custom_source(self):
-        r = SearchResult(title="Test", url="https://x.com", snippet="hi", source="duckduckgo")
+        r = SearchResult(
+            title="Test", url="https://x.com", snippet="hi", source="duckduckgo"
+        )
         assert r.source == "duckduckgo"
 
 
@@ -156,7 +167,9 @@ class TestPageDiffDataclass:
 
 class TestExtractedItemDataclass:
     def test_fields(self):
-        item = ExtractedItem(pattern_name="email", value="a@b.com", context="contact a@b.com here")
+        item = ExtractedItem(
+            pattern_name="email", value="a@b.com", context="contact a@b.com here"
+        )
         assert item.pattern_name == "email"
         assert item.value == "a@b.com"
 
@@ -427,7 +440,9 @@ class TestDiff:
             if call_count == 1:
                 return _make_response("<html><body><p>Version A</p></body></html>")
             else:
-                return _make_response("<html><body><p>Version B with more text</p></body></html>")
+                return _make_response(
+                    "<html><body><p>Version B with more text</p></body></html>"
+                )
 
         with patch("httpx.AsyncClient.get", new=mock_get):
             result = await diff("https://example.com", interval=0.01)
@@ -443,10 +458,13 @@ class TestDiff:
             nonlocal call_count
             call_count += 1
             if call_count == 1:
-                return _make_response('<html><body><a href="https://a.com">A</a></body></html>')
+                return _make_response(
+                    '<html><body><a href="https://a.com">A</a></body></html>'
+                )
             else:
                 return _make_response(
-                    '<html><body><a href="https://a.com">A</a>' '<a href="https://b.com">B</a></body></html>'
+                    '<html><body><a href="https://a.com">A</a>'
+                    '<a href="https://b.com">B</a></body></html>'
                 )
 
         with patch("httpx.AsyncClient.get", new=mock_get):
@@ -464,10 +482,13 @@ class TestDiff:
             call_count += 1
             if call_count == 1:
                 return _make_response(
-                    '<html><body><a href="https://a.com">A</a>' '<a href="https://b.com">B</a></body></html>'
+                    '<html><body><a href="https://a.com">A</a>'
+                    '<a href="https://b.com">B</a></body></html>'
                 )
             else:
-                return _make_response('<html><body><a href="https://a.com">A</a></body></html>')
+                return _make_response(
+                    '<html><body><a href="https://a.com">A</a></body></html>'
+                )
 
         with patch("httpx.AsyncClient.get", new=mock_get):
             result = await diff("https://example.com", interval=0.01)
@@ -538,7 +559,9 @@ class TestExtract:
 
     @pytest.mark.asyncio
     async def test_extract_dates(self):
-        html = "<html><body><p>Published: 2026-03-15 Updated: 2026/01/20</p></body></html>"
+        html = (
+            "<html><body><p>Published: 2026-03-15 Updated: 2026/01/20</p></body></html>"
+        )
         transport = MockTransport(default_text=html)
         with patch("src.browser.toolkit._build_client") as mock_build:
             mock_build.return_value = httpx.AsyncClient(transport=transport)
@@ -592,7 +615,9 @@ class TestExtract:
 
     @pytest.mark.asyncio
     async def test_extract_includes_context(self):
-        html = "<html><body><p>Please email admin@example.com for help</p></body></html>"
+        html = (
+            "<html><body><p>Please email admin@example.com for help</p></body></html>"
+        )
         transport = MockTransport(default_text=html)
         with patch("src.browser.toolkit._build_client") as mock_build:
             mock_build.return_value = httpx.AsyncClient(transport=transport)

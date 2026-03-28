@@ -85,7 +85,11 @@ class HyperpathFinder:
                 center = node.center
                 idx = ((center + 1.0) / 2.0 * (self.grid_size - 1)).astype(int)
                 i, j, k = int(idx[0]), int(idx[1]), int(idx[2])
-                if 0 <= i < self.grid_size and 0 <= j < self.grid_size and 0 <= k < self.grid_size:
+                if (
+                    0 <= i < self.grid_size
+                    and 0 <= j < self.grid_size
+                    and 0 <= k < self.grid_size
+                ):
                     self.occupied.add((i, j, k))
             else:
                 for child in node.children.values():
@@ -118,7 +122,11 @@ class HyperpathFinder:
 
                     ni, nj, nk = i + di, j + dj, k + dk
 
-                    if 0 <= ni < self.grid_size and 0 <= nj < self.grid_size and 0 <= nk < self.grid_size:
+                    if (
+                        0 <= ni < self.grid_size
+                        and 0 <= nj < self.grid_size
+                        and 0 <= nk < self.grid_size
+                    ):
                         if (ni, nj, nk) in self.occupied:
                             neighbors.append((ni, nj, nk))
 
@@ -157,7 +165,9 @@ class HyperpathFinder:
         # A* data structures
         # Priority queue: (f_score, g_score, node)
         frontier = []
-        h_start = hyperbolic_distance_safe(self.idx_to_coord(start_idx), self.idx_to_coord(goal_idx))
+        h_start = hyperbolic_distance_safe(
+            self.idx_to_coord(start_idx), self.idx_to_coord(goal_idx)
+        )
         heapq.heappush(frontier, (h_start, 0.0, start_idx))
 
         came_from: Dict[Tuple, Tuple] = {}
@@ -191,7 +201,9 @@ class HyperpathFinder:
                     came_from[neighbor] = current
 
                     # Heuristic = hyperbolic distance to goal
-                    h = hyperbolic_distance_safe(neighbor_coord, self.idx_to_coord(goal_idx))
+                    h = hyperbolic_distance_safe(
+                        neighbor_coord, self.idx_to_coord(goal_idx)
+                    )
                     f = tentative_g + h
 
                     heapq.heappush(frontier, (f, tentative_g, neighbor))
@@ -202,7 +214,9 @@ class HyperpathFinder:
     # Bidirectional A* (Dual-Time)
     # =========================================================================
 
-    def bidirectional_a_star(self, start_coord: np.ndarray, goal_coord: np.ndarray) -> PathResult:
+    def bidirectional_a_star(
+        self, start_coord: np.ndarray, goal_coord: np.ndarray
+    ) -> PathResult:
         """
         Bidirectional A* ("Dual-Time") pathfinding.
 
@@ -277,7 +291,9 @@ class HyperpathFinder:
                             front_g[neighbor] = tentative_g
                             front_came[neighbor] = f_current
                             h = hyperbolic_distance_safe(n_coord, goal_coord_actual)
-                            heapq.heappush(front_frontier, (tentative_g + h, tentative_g, neighbor))
+                            heapq.heappush(
+                                front_frontier, (tentative_g + h, tentative_g, neighbor)
+                            )
 
             # Backward step
             if back_frontier:
@@ -302,7 +318,9 @@ class HyperpathFinder:
                             back_g[neighbor] = tentative_g
                             back_came[neighbor] = b_current
                             h = hyperbolic_distance_safe(n_coord, start_coord_actual)
-                            heapq.heappush(back_frontier, (tentative_g + h, tentative_g, neighbor))
+                            heapq.heappush(
+                                back_frontier, (tentative_g + h, tentative_g, neighbor)
+                            )
 
             # Early termination check
             if meeting_node is not None:
@@ -316,7 +334,9 @@ class HyperpathFinder:
             return PathResult(None, float("inf"), nodes_expanded, False)
 
         # Reconstruct path from both directions
-        path = self._reconstruct_bidirectional_path(front_came, back_came, start_idx, goal_idx, meeting_node)
+        path = self._reconstruct_bidirectional_path(
+            front_came, back_came, start_idx, goal_idx, meeting_node
+        )
 
         return PathResult(path, best_cost, nodes_expanded, True)
 
@@ -324,7 +344,9 @@ class HyperpathFinder:
     # Helper Methods
     # =========================================================================
 
-    def _find_nearest_occupied(self, idx: Tuple[int, int, int]) -> Optional[Tuple[int, int, int]]:
+    def _find_nearest_occupied(
+        self, idx: Tuple[int, int, int]
+    ) -> Optional[Tuple[int, int, int]]:
         """Find nearest occupied voxel using BFS."""
         if not self.occupied:
             return None
@@ -358,7 +380,9 @@ class HyperpathFinder:
 
         return None
 
-    def _reconstruct_path(self, came_from: Dict[Tuple, Tuple], start_idx: Tuple, goal_idx: Tuple) -> List[np.ndarray]:
+    def _reconstruct_path(
+        self, came_from: Dict[Tuple, Tuple], start_idx: Tuple, goal_idx: Tuple
+    ) -> List[np.ndarray]:
         """Reconstruct path from A* came_from dict."""
         path = []
         current = goal_idx

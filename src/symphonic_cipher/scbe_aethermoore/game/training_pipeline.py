@@ -247,7 +247,9 @@ class TrainingPipeline:
             return "APPROVED"
         elif safety_score >= QUARANTINE_THRESHOLD:
             record.tier = "QUARANTINED"
-            record.quarantine_reason = f"Safety score {safety_score:.2f} below auto-approve threshold"
+            record.quarantine_reason = (
+                f"Safety score {safety_score:.2f} below auto-approve threshold"
+            )
             return "QUARANTINED"
         else:
             self._records = [r for r in self._records if r.record_id != record_id]
@@ -440,7 +442,9 @@ class TrainingPipeline:
         return {
             "companion_id": self._companion_id,
             "raw_count": sum(1 for r in self._records if r.tier == "RAW"),
-            "quarantined_count": sum(1 for r in self._records if r.tier == "QUARANTINED"),
+            "quarantined_count": sum(
+                1 for r in self._records if r.tier == "QUARANTINED"
+            ),
             "approved_count": sum(1 for r in self._records if r.tier == "APPROVED"),
             "sft_pair_count": len(self._pairs),
             "batches_pushed": sum(1 for b in self._batches if b.status == "pushed"),

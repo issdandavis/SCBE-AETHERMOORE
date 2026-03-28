@@ -20,7 +20,9 @@ def cosine_sim(a: torch.Tensor, b: torch.Tensor, eps: float = 1e-12) -> torch.Te
     return b_n @ a_n
 
 
-def retrieve_tie(tie_kb: TIEKB, q: torch.Tensor, top_k: int, temperature: float) -> torch.Tensor:
+def retrieve_tie(
+    tie_kb: TIEKB, q: torch.Tensor, top_k: int, temperature: float
+) -> torch.Tensor:
     """Deterministic top-k retrieval with temperature-weighted average."""
 
     sims = cosine_sim(q, tie_kb.kb)

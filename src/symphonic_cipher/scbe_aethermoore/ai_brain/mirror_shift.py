@@ -128,7 +128,10 @@ def dual_ternary_trajectory(
     """
     trajectory = np.asarray(trajectory, dtype=float)
     if trajectory.ndim != 2 or trajectory.shape[1] < BRAIN_DIMENSIONS:
-        raise ValueError(f"Expected (T, {BRAIN_DIMENSIONS}) trajectory, " f"got shape {trajectory.shape}.")
+        raise ValueError(
+            f"Expected (T, {BRAIN_DIMENSIONS}) trajectory, "
+            f"got shape {trajectory.shape}."
+        )
 
     T = len(trajectory)
     par_list = []

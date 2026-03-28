@@ -42,7 +42,9 @@ class TestSpinStack:
     def test_encode_produces_6_boards(self):
         stack = encode_spin_stack("Test text for encoding.")
         assert len(stack.boards) == 6
-        assert all(b.tongue in ("KO", "AV", "RU", "CA", "UM", "DR") for b in stack.boards)
+        assert all(
+            b.tongue in ("KO", "AV", "RU", "CA", "UM", "DR") for b in stack.boards
+        )
 
     def test_pattern_code_length(self):
         stack = encode_spin_stack("Hello world.")
@@ -112,15 +114,21 @@ class TestAdversarialDiscrimination:
     def test_attacks_have_more_winning_lines(self):
         """Extreme values create winning lines (3-in-a-row)."""
         clean_lines = sum(len(encode_spin_stack(t).winning_lines()) for t in self.CLEAN)
-        attack_lines = sum(len(encode_spin_stack(t).winning_lines()) for t in self.ATTACKS)
+        attack_lines = sum(
+            len(encode_spin_stack(t).winning_lines()) for t in self.ATTACKS
+        )
 
         print(f"\n  Clean winning lines: {clean_lines}")
         print(f"  Attack winning lines: {attack_lines}")
 
     def test_attacks_have_higher_cross_board_disagreement(self):
         """Attacks should cause more disagreement between tongue boards."""
-        clean_disagree = [encode_spin_stack(t).cross_board_disagreement() for t in self.CLEAN]
-        attack_disagree = [encode_spin_stack(t).cross_board_disagreement() for t in self.ATTACKS]
+        clean_disagree = [
+            encode_spin_stack(t).cross_board_disagreement() for t in self.CLEAN
+        ]
+        attack_disagree = [
+            encode_spin_stack(t).cross_board_disagreement() for t in self.ATTACKS
+        ]
 
         avg_clean = sum(clean_disagree) / len(clean_disagree)
         avg_attack = sum(attack_disagree) / len(attack_disagree)
@@ -154,7 +162,9 @@ class TestAdversarialDiscrimination:
         dist_attack = stack_distance(clean_stack, attack_stack)
         dist_same = stack_distance(clean_stack, same_stack)
 
-        print(f"\n  Clean<->Attack distance: {dist_attack['total_diff']}/54 ({dist_attack['diff_ratio']:.0%})")
+        print(
+            f"\n  Clean<->Attack distance: {dist_attack['total_diff']}/54 ({dist_attack['diff_ratio']:.0%})"
+        )
         print(f"  Clean<->Clean distance:  {dist_same['total_diff']}/54")
 
         assert dist_same["total_diff"] == 0  # same text = same pattern

@@ -37,7 +37,9 @@ try:
     SCIPY_AVAILABLE = True
 except ImportError:
     SCIPY_AVAILABLE = False
-    print("[WAVEFORM] scipy not available, using pure numpy wav export", file=sys.stderr)
+    print(
+        "[WAVEFORM] scipy not available, using pure numpy wav export", file=sys.stderr
+    )
 
 
 # =============================================================================
@@ -119,7 +121,12 @@ def position_to_intent(point: np.ndarray) -> SymphonicIntent:
         phase = 0.0
 
     return SymphonicIntent(
-        position=point, polarity=polarity, intensity=intensity, frequency=frequency, token_id=token_id, phase=phase
+        position=point,
+        polarity=polarity,
+        intensity=intensity,
+        frequency=frequency,
+        token_id=token_id,
+        phase=phase,
     )
 
 
@@ -134,7 +141,11 @@ def hyperpath_to_intents(path: List[np.ndarray]) -> List[SymphonicIntent]:
 
 
 def generate_tone(
-    frequency: float, duration: float, sample_rate: int = SAMPLE_RATE, amplitude: float = 0.5, phase: float = 0.0
+    frequency: float,
+    duration: float,
+    sample_rate: int = SAMPLE_RATE,
+    amplitude: float = 0.5,
+    phase: float = 0.0,
 ) -> np.ndarray:
     """Generate a pure sine tone."""
     t = np.linspace(0, duration, int(sample_rate * duration), dtype=np.float32)
@@ -264,7 +275,9 @@ def hyperpath_to_waveform(
             else:
                 harmonics = [(2, 0.3), (3, 0.15)]
 
-            tone = add_harmonics(tone, intent.frequency, note_duration, harmonics, sample_rate)
+            tone = add_harmonics(
+                tone, intent.frequency, note_duration, harmonics, sample_rate
+            )
 
         # Apply envelope
         tone = apply_envelope(tone, sample_rate=sample_rate)
@@ -280,7 +293,11 @@ def hyperpath_to_waveform(
     # Build final waveform
     result = segments[0]
     for seg in segments[1:]:
-        if crossfade_samples > 0 and len(result) >= crossfade_samples and len(seg) >= crossfade_samples:
+        if (
+            crossfade_samples > 0
+            and len(result) >= crossfade_samples
+            and len(seg) >= crossfade_samples
+        ):
             # Crossfade
             fade_out = np.linspace(1, 0, crossfade_samples)
             fade_in = np.linspace(0, 1, crossfade_samples)
@@ -302,7 +319,9 @@ def hyperpath_to_waveform(
 # =============================================================================
 
 
-def export_wav(samples: np.ndarray, filename: str, sample_rate: int = SAMPLE_RATE) -> bool:
+def export_wav(
+    samples: np.ndarray, filename: str, sample_rate: int = SAMPLE_RATE
+) -> bool:
     """
     Export waveform to .wav file.
 
@@ -379,7 +398,9 @@ class HarmonicFingerprint:
     hash: str
 
 
-def compute_harmonic_fingerprint(samples: np.ndarray, sample_rate: int = SAMPLE_RATE) -> HarmonicFingerprint:
+def compute_harmonic_fingerprint(
+    samples: np.ndarray, sample_rate: int = SAMPLE_RATE
+) -> HarmonicFingerprint:
     """
     Compute harmonic fingerprint from waveform segment.
 
@@ -441,7 +462,9 @@ def compute_harmonic_fingerprint(samples: np.ndarray, sample_rate: int = SAMPLE_
 # =============================================================================
 
 
-def poincare_geodesic(u: np.ndarray, v: np.ndarray, t: float, eps: float = 1e-8) -> np.ndarray:
+def poincare_geodesic(
+    u: np.ndarray, v: np.ndarray, t: float, eps: float = 1e-8
+) -> np.ndarray:
     """Point on geodesic from u to v at parameter t ∈ [0,1]."""
 
     def mobius_add(x, y):
@@ -482,7 +505,11 @@ def poincare_geodesic(u: np.ndarray, v: np.ndarray, t: float, eps: float = 1e-8)
 
 
 def geodesic_to_waveform(
-    start: np.ndarray, end: np.ndarray, n_points: int = 20, note_duration: float = 0.25, sample_rate: int = SAMPLE_RATE
+    start: np.ndarray,
+    end: np.ndarray,
+    n_points: int = 20,
+    note_duration: float = 0.25,
+    sample_rate: int = SAMPLE_RATE,
 ) -> Tuple[np.ndarray, List[SymphonicIntent], str]:
     """
     Generate waveform from geodesic traversal between two points.
@@ -498,7 +525,9 @@ def geodesic_to_waveform(
         path.append(point)
 
     # Generate waveform
-    samples, intents = hyperpath_to_waveform(path, note_duration, sample_rate=sample_rate)
+    samples, intents = hyperpath_to_waveform(
+        path, note_duration, sample_rate=sample_rate
+    )
 
     # Generate filename with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -537,7 +566,11 @@ class RealTimeRenderer:
 
         # Generate tone
         tone = generate_tone(
-            intent.frequency, duration, self.sample_rate, amplitude=0.5 + intent.intensity * 0.3, phase=intent.phase
+            intent.frequency,
+            duration,
+            self.sample_rate,
+            amplitude=0.5 + intent.intensity * 0.3,
+            phase=intent.phase,
         )
 
         # Simple envelope
@@ -598,7 +631,9 @@ def demo():
 
     # Fingerprint
     fp_light = compute_harmonic_fingerprint(samples_light)
-    print(f"    Fingerprint: {fp_light.hash} (centroid: {fp_light.spectral_centroid:.1f}Hz)")
+    print(
+        f"    Fingerprint: {fp_light.hash} (centroid: {fp_light.spectral_centroid:.1f}Hz)"
+    )
     print()
 
     # Demo 2: Shadow realm geodesic (near boundary)
@@ -614,13 +649,17 @@ def demo():
     print(f"    Start: {start_shadow} -> End: {end_shadow}")
     print(f"    Points: 15, Duration: {len(samples_shadow)/SAMPLE_RATE:.2f}s")
     print(f"    Frequencies: {[f'{i.frequency:.0f}Hz' for i in intents_shadow[:5]]}...")
-    print(f"    Polarity: {intents_shadow[0].polarity} -> {intents_shadow[-1].polarity}")
+    print(
+        f"    Polarity: {intents_shadow[0].polarity} -> {intents_shadow[-1].polarity}"
+    )
 
     export_wav(samples_shadow, filename_shadow)
     print(f"    Exported: {filename_shadow}")
 
     fp_shadow = compute_harmonic_fingerprint(samples_shadow)
-    print(f"    Fingerprint: {fp_shadow.hash} (centroid: {fp_shadow.spectral_centroid:.1f}Hz)")
+    print(
+        f"    Fingerprint: {fp_shadow.hash} (centroid: {fp_shadow.spectral_centroid:.1f}Hz)"
+    )
     print()
 
     # Demo 3: Cross-realm traversal (light -> shadow)
@@ -640,7 +679,9 @@ def demo():
     # Show frequency progression
     freqs = [i.frequency for i in intents_cross]
     print(f"    Frequency range: {min(freqs):.0f}Hz -> {max(freqs):.0f}Hz")
-    print(f"    Polarity transition: {intents_cross[0].polarity} -> {intents_cross[-1].polarity}")
+    print(
+        f"    Polarity transition: {intents_cross[0].polarity} -> {intents_cross[-1].polarity}"
+    )
 
     export_wav(samples_cross, filename_cross)
     print(f"    Exported: {filename_cross}")
@@ -652,9 +693,15 @@ def demo():
     # Summary
     print("  " + "=" * 60)
     print("  Summary:")
-    print(f"    Light traversal:  {fp_light.dominant_freq:.0f}Hz dominant, {fp_light.polarity}")
-    print(f"    Shadow traversal: {fp_shadow.dominant_freq:.0f}Hz dominant, {fp_shadow.polarity}")
-    print(f"    Cross-realm:      {fp_cross.dominant_freq:.0f}Hz dominant, {fp_cross.polarity}")
+    print(
+        f"    Light traversal:  {fp_light.dominant_freq:.0f}Hz dominant, {fp_light.polarity}"
+    )
+    print(
+        f"    Shadow traversal: {fp_shadow.dominant_freq:.0f}Hz dominant, {fp_shadow.polarity}"
+    )
+    print(
+        f"    Cross-realm:      {fp_cross.dominant_freq:.0f}Hz dominant, {fp_cross.polarity}"
+    )
     print()
     print("  Audio files generated. Play to hear the 'proof of validity'.")
     print()

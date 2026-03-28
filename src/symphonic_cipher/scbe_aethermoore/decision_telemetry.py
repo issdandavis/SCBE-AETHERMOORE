@@ -75,7 +75,9 @@ class DecisionEvent:
 
     # -- 6D Tongue Phases (BLOCK_PHASE slice) --
     tongue_phases_6d: Optional[List[float]] = None
-    tongue_log_weights: List[float] = field(default_factory=lambda: list(TONGUE_LOG_WEIGHTS))
+    tongue_log_weights: List[float] = field(
+        default_factory=lambda: list(TONGUE_LOG_WEIGHTS)
+    )
 
     # -- Derived Radial Coordinate --
     radial_r: float = 0.0  # ||embed(xi)|| — derived, not independent
@@ -122,7 +124,10 @@ class DecisionEvent:
         if self.brain_poincare_21d is not None:
             d["poincare_21d"] = [round(x, 6) for x in self.brain_poincare_21d]
         if self.governance_9d is not None:
-            d["gov_9d"] = [round(float(x.real) if hasattr(x, "real") else float(x), 6) for x in self.governance_9d]
+            d["gov_9d"] = [
+                round(float(x.real) if hasattr(x, "real") else float(x), 6)
+                for x in self.governance_9d
+            ]
         if self.tongue_phases_6d is not None:
             d["tongue_6d"] = [round(x, 6) for x in self.tongue_phases_6d]
         d["tongue_log_weights"] = self.tongue_log_weights

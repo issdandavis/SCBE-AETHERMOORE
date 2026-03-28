@@ -19,7 +19,9 @@ LOC_API = "https://www.loc.gov"
 RATE_LIMIT = 1.5
 
 
-def search_loc(query: str, collection: str = "", limit: int = 25) -> list[KnowledgeChunk]:
+def search_loc(
+    query: str, collection: str = "", limit: int = 25
+) -> list[KnowledgeChunk]:
     """Search Library of Congress collections."""
     params = {"q": query, "fo": "json", "c": limit, "sp": 1}
     if collection:
@@ -27,7 +29,9 @@ def search_loc(query: str, collection: str = "", limit: int = 25) -> list[Knowle
     else:
         url = f"{LOC_API}/search/?{urlencode(params)}"
 
-    req = Request(url, headers={"User-Agent": "AetherBrowser/1.0 (SCBE-AETHERMOORE research)"})
+    req = Request(
+        url, headers={"User-Agent": "AetherBrowser/1.0 (SCBE-AETHERMOORE research)"}
+    )
     with urlopen(req, timeout=30) as response:
         data = json.loads(response.read())
 
@@ -79,7 +83,9 @@ def _categorize_loc(title: str, subjects: list) -> str:
         return "security"
     if any(kw in text for kw in ["geometry", "manifold", "topology", "mathematical"]):
         return "math"
-    if any(kw in text for kw in ["artificial intelligence", "machine learning", "neural"]):
+    if any(
+        kw in text for kw in ["artificial intelligence", "machine learning", "neural"]
+    ):
         return "ai"
     if any(kw in text for kw in ["quantum", "physics"]):
         return "quantum"

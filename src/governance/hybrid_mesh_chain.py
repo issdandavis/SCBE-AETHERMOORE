@@ -80,8 +80,12 @@ def _ring_coupling(scale: float) -> List[List[float]]:
 @dataclass(frozen=True)
 class HybridGovernanceConfig:
     base_weights: Sequence[float] = DEFAULT_BASE_WEIGHTS
-    explicit_coupling: Sequence[Sequence[float]] = tuple(tuple(x) for x in _ring_coupling(0.08))
-    implicit_coupling: Sequence[Sequence[float]] = tuple(tuple(x) for x in _ring_coupling(0.03))
+    explicit_coupling: Sequence[Sequence[float]] = tuple(
+        tuple(x) for x in _ring_coupling(0.08)
+    )
+    implicit_coupling: Sequence[Sequence[float]] = tuple(
+        tuple(x) for x in _ring_coupling(0.03)
+    )
     damping: float = 0.08
     breathing_amp: float = 0.03
     breathing_freq: float = 0.07
@@ -157,7 +161,9 @@ def step_agent_state(
     current = _vec6(state.tongue_state, name="tongue_state")
     ctrl = _vec6(control if control is not None else [0.0] * 6, name="control")
 
-    angle = (2.0 * math.pi * cfg.breathing_freq * float(step_index)) + float(state.breathing_phase)
+    angle = (2.0 * math.pi * cfg.breathing_freq * float(step_index)) + float(
+        state.breathing_phase
+    )
     breath = cfg.breathing_amp * math.sin(angle)
     next_state: List[float] = []
     for i in range(6):
@@ -167,7 +173,9 @@ def step_agent_state(
 
 
 def _can_sync(state: AgentMeshState, cfg: HybridGovernanceConfig) -> bool:
-    return float(state.coherence) >= float(cfg.sync_coherence_min) and float(state.drift) <= float(cfg.sync_drift_max)
+    return float(state.coherence) >= float(cfg.sync_coherence_min) and float(
+        state.drift
+    ) <= float(cfg.sync_drift_max)
 
 
 def _mesh_sync(
@@ -214,7 +222,10 @@ def compute_agent_decision(
     denom = max(1e-9, sum(weights))
     activation = sum(w * x for w, x in zip(weights, abs_state)) / denom
     risk_input = (
-        (1.4 * activation) + (1.2 * float(state.drift)) + (1.1 * float(state.conflict)) - (1.5 * float(state.coherence))
+        (1.4 * activation)
+        + (1.2 * float(state.drift))
+        + (1.1 * float(state.conflict))
+        - (1.5 * float(state.coherence))
     )
     risk = _sigmoid(risk_input)
 
@@ -252,7 +263,9 @@ def _canonical_payload(value: Mapping[str, Any]) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
 
 
-def _hash_block(index: int, timestamp: str, prev_hash: str, payload: Mapping[str, Any]) -> str:
+def _hash_block(
+    index: int, timestamp: str, prev_hash: str, payload: Mapping[str, Any]
+) -> str:
     raw = f"{index}|{timestamp}|{prev_hash}|{_canonical_payload(payload)}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
@@ -288,7 +301,9 @@ def verify_ledger(chain: Sequence[LedgerBlock]) -> bool:
             return False
         if block.prev_hash != expected_prev:
             return False
-        expected_hash = _hash_block(block.index, block.timestamp, block.prev_hash, block.payload)
+        expected_hash = _hash_block(
+            block.index, block.timestamp, block.prev_hash, block.payload
+        )
         if block.block_hash != expected_hash:
             return False
         expected_prev = block.block_hash

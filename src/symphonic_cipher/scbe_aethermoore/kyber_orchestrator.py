@@ -187,7 +187,9 @@ class HyperbolicAgent:
     def update(self, dt: float = 0.1):
         """Update agent state by time step."""
         self.t += dt
-        self.eta = np.clip(self.eta + BETA * (ETA_TARGET - self.eta) * dt, ETA_MIN, ETA_MAX)
+        self.eta = np.clip(
+            self.eta + BETA * (ETA_TARGET - self.eta) * dt, ETA_MIN, ETA_MAX
+        )
         self.quantum *= np.exp(-1j * dt)
         self.trajectory.append(self.to_poincare())
         if len(self.trajectory) > 100:
@@ -300,7 +302,9 @@ class L6_SessionKey:
         return self.key
 
     def verify(self) -> Tuple[bool, int]:
-        return (self.key is not None and len(self.key) == 32), (len(self.key) if self.key else 0)
+        return (self.key is not None and len(self.key) == 32), (
+            len(self.key) if self.key else 0
+        )
 
 
 class L7_TrajectorySmooth:
@@ -354,7 +358,10 @@ class L10_TemporalConsistency:
     def verify(self) -> Tuple[bool, float]:
         if len(self.tau_hist) < 2:
             return True, 0.0
-        diffs = [self.tau_hist[i + 1] - self.tau_hist[i] for i in range(len(self.tau_hist) - 1)]
+        diffs = [
+            self.tau_hist[i + 1] - self.tau_hist[i]
+            for i in range(len(self.tau_hist) - 1)
+        ]
         ratio = sum(1 for d in diffs if d >= 0) / len(diffs)
         return ratio > 0.8, ratio
 
@@ -580,7 +587,9 @@ def run_governance_test(steps: int = 50, verbose: bool = True) -> Dict[str, Any]
         print(f"\n✓ System initialized with agent: {system.agent.agent_id}")
         print(f"  Using real PQC: {system.kyber.using_real_pqc}")
         print(f"  Kyber public key: {system.kyber.pk[:8].hex()}...")
-        print(f"  Session key generated: {system.l6.key[:8].hex() if system.l6.key else 'None'}...")
+        print(
+            f"  Session key generated: {system.l6.key[:8].hex() if system.l6.key else 'None'}..."
+        )
 
     # Run time steps
     if verbose:

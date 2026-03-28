@@ -20,7 +20,14 @@ TONGUE_NAMES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 TONGUE_WEIGHTS = [PHI**k for k in range(6)]
 
 # Domain order matches tongue order
-DOMAINS = ["humanities", "social_sciences", "mathematics", "engineering", "creative_arts", "physical_sciences"]
+DOMAINS = [
+    "humanities",
+    "social_sciences",
+    "mathematics",
+    "engineering",
+    "creative_arts",
+    "physical_sciences",
+]
 
 # Direct port from linguisticCrossTalk.ts DOMAIN_KEYWORDS
 DOMAIN_KEYWORDS: Dict[str, Dict[str, float]] = {
@@ -189,7 +196,9 @@ def semantic_tongue_coords(text: str) -> np.ndarray:
             0.05 * len(set(w.lower() for w in words)) / total_words,  # RU: diversity
             0.05 * sum(c.isdigit() for c in text) / chars,  # CA: technical
             0.05 * sum(c.isupper() for c in text) / chars,  # UM: authority
-            0.05 * sum(c in ".,;:!?-_/()[]{}@#$%^&*" for c in text) / chars,  # DR: structure
+            0.05
+            * sum(c in ".,;:!?-_/()[]{}@#$%^&*" for c in text)
+            / chars,  # DR: structure
         ]
     )
 

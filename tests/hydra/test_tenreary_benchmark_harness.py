@@ -12,10 +12,34 @@ def test_score_run_detects_reliability_gap():
         "steps_ok": 3,
         "steps_failed": 1,
         "results": [
-            {"id": "a", "type": "browser.navigate", "status": "ok", "started_at": "t", "elapsed_ms": 100},
-            {"id": "b_secondary", "type": "browser.navigate", "status": "error", "started_at": "t", "elapsed_ms": 200},
-            {"id": "c", "type": "analysis.content", "status": "ok", "started_at": "t", "elapsed_ms": 10},
-            {"id": "d", "type": "automation.emit", "status": "ok", "started_at": "t", "elapsed_ms": 30},
+            {
+                "id": "a",
+                "type": "browser.navigate",
+                "status": "ok",
+                "started_at": "t",
+                "elapsed_ms": 100,
+            },
+            {
+                "id": "b_secondary",
+                "type": "browser.navigate",
+                "status": "error",
+                "started_at": "t",
+                "elapsed_ms": 200,
+            },
+            {
+                "id": "c",
+                "type": "analysis.content",
+                "status": "ok",
+                "started_at": "t",
+                "elapsed_ms": 10,
+            },
+            {
+                "id": "d",
+                "type": "automation.emit",
+                "status": "ok",
+                "started_at": "t",
+                "elapsed_ms": 30,
+            },
         ],
     }
 
@@ -34,15 +58,29 @@ def test_score_run_elite_ready_when_all_gates_pass():
         "steps_ok": 5,
         "steps_failed": 0,
         "results": [
-            {"id": "p_primary", "type": "browser.navigate", "status": "ok", "started_at": "t", "elapsed_ms": 900},
-            {"id": "s_secondary", "type": "browser.navigate", "status": "ok", "started_at": "t", "elapsed_ms": 1000},
+            {
+                "id": "p_primary",
+                "type": "browser.navigate",
+                "status": "ok",
+                "started_at": "t",
+                "elapsed_ms": 900,
+            },
+            {
+                "id": "s_secondary",
+                "type": "browser.navigate",
+                "status": "ok",
+                "started_at": "t",
+                "elapsed_ms": 1000,
+            },
             {
                 "id": "analyze",
                 "type": "analysis.content",
                 "status": "ok",
                 "started_at": "t",
                 "elapsed_ms": 100,
-                "data": {"analysis": {"keyword_counts": {"shopify": 2, "conversion": 1}}},
+                "data": {
+                    "analysis": {"keyword_counts": {"shopify": 2, "conversion": 1}}
+                },
             },
             {
                 "id": "emit",

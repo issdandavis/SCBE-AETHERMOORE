@@ -116,7 +116,9 @@ class TestAPIEndpoints:
                 "context": context,
             }
 
-            response = client.post("/retrieve-memory", json=payload, headers=auth_headers)
+            response = client.post(
+                "/retrieve-memory", json=payload, headers=auth_headers
+            )
 
             assert response.status_code == 200
             data = response.json()
@@ -173,7 +175,11 @@ class TestRateLimiting:
 
     def test_rate_limiter_allows_under_limit(self):
         """Test rate limiter allows requests under limit."""
-        limiter = RateLimiter(max_requests=10, window_seconds=60) if FASTAPI_AVAILABLE else Mock()
+        limiter = (
+            RateLimiter(max_requests=10, window_seconds=60)
+            if FASTAPI_AVAILABLE
+            else Mock()
+        )
 
         if not FASTAPI_AVAILABLE:
             limiter.is_allowed = Mock(return_value=True)
@@ -458,7 +464,9 @@ class TestResponseFormats:
             "position": [1, 2, 3, 5, 8, 13],
         }
 
-        response = client.post("/seal-memory", json=payload, headers={"X-API-Key": valid_api_key})
+        response = client.post(
+            "/seal-memory", json=payload, headers={"X-API-Key": valid_api_key}
+        )
 
         data = response.json()
 

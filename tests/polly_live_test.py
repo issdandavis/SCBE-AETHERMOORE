@@ -35,7 +35,9 @@ class TestPollyHamiltonianStability:
 
         # Assertions based on the AWS validation report
         assert result["decision"] == "ALLOW", f"Decision should be ALLOW for {agent_id}"
-        assert result["hamiltonian_deviation"] < 1e-6, f"Deviation must be near zero for {agent_id}"
+        assert (
+            result["hamiltonian_deviation"] < 1e-6
+        ), f"Deviation must be near zero for {agent_id}"
 
 
 # To run: `pytest tests/polly_live_test.py`

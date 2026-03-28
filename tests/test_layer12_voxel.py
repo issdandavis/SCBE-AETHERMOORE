@@ -44,7 +44,14 @@ class TestCoherence:
         assert abs(c - 1.0) < 1e-12
 
     def test_range_bounded(self):
-        phases = {"KO": 0, "UM": math.pi, "RU": 0, "AV": math.pi, "DR": 0, "CA": math.pi}
+        phases = {
+            "KO": 0,
+            "UM": math.pi,
+            "RU": 0,
+            "AV": math.pi,
+            "DR": 0,
+            "CA": math.pi,
+        }
         c = coherence_from_phases(phases)
         assert -1.0 <= c <= 1.0
 
@@ -54,7 +61,14 @@ class TestCoherence:
 
     def test_alternating_phases(self):
         # 3 at 0, 3 at π → lots of negative cosines
-        phases = {"KO": 0, "AV": 0, "RU": 0, "CA": math.pi, "UM": math.pi, "DR": math.pi}
+        phases = {
+            "KO": 0,
+            "AV": 0,
+            "RU": 0,
+            "CA": math.pi,
+            "UM": math.pi,
+            "DR": math.pi,
+        }
         c = coherence_from_phases(phases)
         # 6 same-pair cos(0)=1 + 9 cross-pair cos(π)=-1 → (6-9)/15 = -0.2
         assert c == pytest.approx(-0.2, abs=1e-10)
@@ -223,16 +237,37 @@ class TestBFTConsensus:
         assert bft_consensus(votes) == "DENY"
 
     def test_one_faulty_cant_deny(self):
-        votes = {"KO": "DENY", "AV": "ALLOW", "RU": "ALLOW", "CA": "ALLOW", "UM": "ALLOW", "DR": "ALLOW"}
+        votes = {
+            "KO": "DENY",
+            "AV": "ALLOW",
+            "RU": "ALLOW",
+            "CA": "ALLOW",
+            "UM": "ALLOW",
+            "DR": "ALLOW",
+        }
         assert bft_consensus(votes) == "ALLOW"
 
     def test_threshold_deny(self):
         # Exactly 4 DENY → should trigger DENY
-        votes = {"KO": "DENY", "AV": "DENY", "RU": "DENY", "CA": "DENY", "UM": "ALLOW", "DR": "ALLOW"}
+        votes = {
+            "KO": "DENY",
+            "AV": "DENY",
+            "RU": "DENY",
+            "CA": "DENY",
+            "UM": "ALLOW",
+            "DR": "ALLOW",
+        }
         assert bft_consensus(votes) == "DENY"
 
     def test_three_deny_not_enough(self):
-        votes = {"KO": "DENY", "AV": "DENY", "RU": "DENY", "CA": "ALLOW", "UM": "ALLOW", "DR": "ALLOW"}
+        votes = {
+            "KO": "DENY",
+            "AV": "DENY",
+            "RU": "DENY",
+            "CA": "ALLOW",
+            "UM": "ALLOW",
+            "DR": "ALLOW",
+        }
         assert bft_consensus(votes) == "ALLOW"
 
     def test_quarantine_threshold(self):
@@ -248,12 +283,26 @@ class TestBFTConsensus:
 
     def test_mixed_deny_quarantine(self):
         # 3 DENY + 2 QUARANTINE + 1 ALLOW → neither DENY nor QUARANTINE reaches 4
-        votes = {"KO": "DENY", "AV": "DENY", "RU": "DENY", "CA": "QUARANTINE", "UM": "QUARANTINE", "DR": "ALLOW"}
+        votes = {
+            "KO": "DENY",
+            "AV": "DENY",
+            "RU": "DENY",
+            "CA": "QUARANTINE",
+            "UM": "QUARANTINE",
+            "DR": "ALLOW",
+        }
         assert bft_consensus(votes) == "ALLOW"
 
     def test_deny_takes_priority_over_quarantine(self):
         # 4 DENY + 2 QUARANTINE → DENY wins
-        votes = {"KO": "DENY", "AV": "DENY", "RU": "DENY", "CA": "DENY", "UM": "QUARANTINE", "DR": "QUARANTINE"}
+        votes = {
+            "KO": "DENY",
+            "AV": "DENY",
+            "RU": "DENY",
+            "CA": "DENY",
+            "UM": "QUARANTINE",
+            "DR": "QUARANTINE",
+        }
         assert bft_consensus(votes) == "DENY"
 
 

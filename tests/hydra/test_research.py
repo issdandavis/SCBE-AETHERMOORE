@@ -20,7 +20,9 @@ class DummyProvider:
         self._responses = list(responses)
         self.calls: list[str] = []
 
-    async def complete(self, prompt: str, system=None, max_tokens: int = 4096, temperature: float = 0.7):
+    async def complete(
+        self, prompt: str, system=None, max_tokens: int = 4096, temperature: float = 0.7
+    ):
         self.calls.append(prompt)
         text = self._responses.pop(0) if self._responses else "fallback"
         return SimpleNamespace(
@@ -49,7 +51,11 @@ class DummyMultiTabLimb:
         action = str(commands[0].get("action", ""))
         if action == "navigate":
             return [
-                {"success": True, "tab_id": f"tab-{idx}", "data": {"url": cmd.get("target")}}
+                {
+                    "success": True,
+                    "tab_id": f"tab-{idx}",
+                    "data": {"url": cmd.get("target")},
+                }
                 for idx, cmd in enumerate(commands)
             ]
         if action == "get_content":
@@ -58,7 +64,8 @@ class DummyMultiTabLimb:
                     "success": True,
                     "data": {
                         "preview": (
-                            "<html><body><h1>Aethermoor</h1>" "<p>Multi-agent governance and safety.</p></body></html>"
+                            "<html><body><h1>Aethermoor</h1>"
+                            "<p>Multi-agent governance and safety.</p></body></html>"
                         ),
                     },
                 }
@@ -68,7 +75,9 @@ class DummyMultiTabLimb:
 
 
 def test_html_to_text_compacts_markup():
-    raw = "<html><body><script>ignored()</script><p>Hello <b>World</b></p></body></html>"
+    raw = (
+        "<html><body><script>ignored()</script><p>Hello <b>World</b></p></body></html>"
+    )
     text = html_to_text(raw, max_chars=200)
     assert "ignored" not in text
     assert "Hello World" in text
@@ -91,7 +100,9 @@ async def test_research_local_pipeline_with_parallel_browse():
         ]
     )
 
-    provider = DummyProvider([decompose, "Synthesis: governance trends and operational controls."])
+    provider = DummyProvider(
+        [decompose, "Synthesis: governance trends and operational controls."]
+    )
     orchestrator = ResearchOrchestrator(
         config=ResearchConfig(mode="local", provider_order=["claude"]),
         providers={"claude": provider},

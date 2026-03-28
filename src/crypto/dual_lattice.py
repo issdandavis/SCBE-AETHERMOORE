@@ -126,12 +126,20 @@ class LatticeVector:
 
     def to_array(self) -> np.ndarray:
         """Convert to 10D numpy array."""
-        return np.concatenate([self.tongues, np.array([self.time, self.intent, self.phase, self.flux])])
+        return np.concatenate(
+            [self.tongues, np.array([self.time, self.intent, self.phase, self.flux])]
+        )
 
     @classmethod
     def from_array(cls, arr: np.ndarray) -> "LatticeVector":
         """Create from 10D numpy array."""
-        return cls(tongues=arr[:6], time=float(arr[6]), intent=float(arr[7]), phase=float(arr[8]), flux=float(arr[9]))
+        return cls(
+            tongues=arr[:6],
+            time=float(arr[6]),
+            intent=float(arr[7]),
+            phase=float(arr[8]),
+            flux=float(arr[9]),
+        )
 
     def norm(self) -> float:
         """Compute L2 norm."""
@@ -199,7 +207,12 @@ class TongueContext:
 
     @classmethod
     def create(cls, tongue: SacredTongue, value: float = 1.0) -> "TongueContext":
-        return cls(tongue=tongue, coefficient=value, phase=TONGUE_PHASES[tongue], weight=TONGUE_WEIGHTS[tongue])
+        return cls(
+            tongue=tongue,
+            coefficient=value,
+            phase=TONGUE_PHASES[tongue],
+            weight=TONGUE_WEIGHTS[tongue],
+        )
 
 
 # =============================================================================
@@ -221,7 +234,9 @@ class CrossStitchPattern:
 
     def __init__(self, seed: bytes = None):
         self.seed = seed or secrets.token_bytes(32)
-        self._rng = np.random.default_rng(int.from_bytes(hashlib.sha256(self.seed).digest()[:8], "big"))
+        self._rng = np.random.default_rng(
+            int.from_bytes(hashlib.sha256(self.seed).digest()[:8], "big")
+        )
 
     def generate_stitch_matrix(self, n: int = 10) -> np.ndarray:
         """
@@ -385,8 +400,14 @@ class KyberTongueEncryptor:
             "u": u.tobytes(),
             "v": v.tobytes(),
             "metadata": {
-                "tongues_active": [t.value for t in SacredTongue if vector.tongues[list(SacredTongue).index(t)] > 0.5],
-                "time_hash": hashlib.sha256(struct.pack("d", vector.time)).hexdigest()[:16],
+                "tongues_active": [
+                    t.value
+                    for t in SacredTongue
+                    if vector.tongues[list(SacredTongue).index(t)] > 0.5
+                ],
+                "time_hash": hashlib.sha256(struct.pack("d", vector.time)).hexdigest()[
+                    :16
+                ],
                 "intent_level": vector.intent,
                 "flux_state": self._classify_flux(vector.flux),
             },
@@ -501,7 +522,9 @@ class DilithiumTongueSigner:
             },
             "temporal_binding": {
                 "time": vector.time,
-                "time_hash": hashlib.sha256(struct.pack("<d", vector.time)).hexdigest()[:16],
+                "time_hash": hashlib.sha256(struct.pack("<d", vector.time)).hexdigest()[
+                    :16
+                ],
             },
             "intent_binding": {
                 "level": vector.intent,
@@ -574,7 +597,10 @@ class DualLatticeCrossStitch:
         self.dilithium = DilithiumTongueSigner(security_level)
 
     def create_context_vector(
-        self, tongues: Dict[SacredTongue, float], intent: float, flux_state: FluxState = FluxState.POLLY
+        self,
+        tongues: Dict[SacredTongue, float],
+        intent: float,
+        flux_state: FluxState = FluxState.POLLY,
     ) -> LatticeVector:
         """
         Create a lattice vector from context.
@@ -617,7 +643,13 @@ class DualLatticeCrossStitch:
         }
         flux = flux_values.get(flux_state, 0.5)
 
-        return LatticeVector(tongues=tongue_arr, time=time_normalized, intent=intent, phase=phase, flux=flux)
+        return LatticeVector(
+            tongues=tongue_arr,
+            time=time_normalized,
+            intent=intent,
+            phase=phase,
+            flux=flux,
+        )
 
     def process(self, vector: LatticeVector) -> Dict[str, Any]:
         """
@@ -703,7 +735,9 @@ class TongueLatticeGovernor:
         self.lattice = DualLatticeCrossStitch()
         self.scbe_url = scbe_url
 
-    def encode_action(self, action: str, target: str, sensitivity: float = 0.5) -> LatticeVector:
+    def encode_action(
+        self, action: str, target: str, sensitivity: float = 0.5
+    ) -> LatticeVector:
         """
         Encode an action into the tongue lattice.
 
@@ -731,9 +765,13 @@ class TongueLatticeGovernor:
         else:
             flux = FluxState.DEMI
 
-        return self.lattice.create_context_vector(tongues=tongues, intent=sensitivity, flux_state=flux)
+        return self.lattice.create_context_vector(
+            tongues=tongues, intent=sensitivity, flux_state=flux
+        )
 
-    def authorize(self, action: str, target: str, sensitivity: float = 0.5) -> Dict[str, Any]:
+    def authorize(
+        self, action: str, target: str, sensitivity: float = 0.5
+    ) -> Dict[str, Any]:
         """
         Authorize an action through the dual lattice.
 
@@ -801,7 +839,9 @@ class TongueLatticeGovernor:
                 "quarantine": float(quarantine_threshold),
                 "escalate": float(escalate_threshold),
             },
-            "tongues_active": [t.value for i, t in enumerate(SacredTongue) if vector.tongues[i] > 0.5],
+            "tongues_active": [
+                t.value for i, t in enumerate(SacredTongue) if vector.tongues[i] > 0.5
+            ],
         }
 
 
@@ -840,7 +880,9 @@ def demo():
         print(f"\n  Action: {action.upper()} → {target[:30]}")
         print(f"  Sensitivity: {sensitivity}")
         print(f"  Active Tongues: {', '.join(result['tongues_active'])}")
-        print(f"  Vector Norm: {result['vector_norm']:.3f} (normalized: {result['normalized_norm']:.3f})")
+        print(
+            f"  Vector Norm: {result['vector_norm']:.3f} (normalized: {result['normalized_norm']:.3f})"
+        )
         print(f"  Trust Score: {result['trust_score']:.3f}")
         print(
             f"  Thresholds: ALLOW>{result['thresholds']['allow']:.2f}"
@@ -849,7 +891,9 @@ def demo():
         )
         print(f"  Decision: {result['decision']}")
         print(f"  Kyber Level: {result['lattice_proof']['security']['kyber_level']}")
-        print(f"  Dilithium Level: {result['lattice_proof']['security']['dilithium_level']}")
+        print(
+            f"  Dilithium Level: {result['lattice_proof']['security']['dilithium_level']}"
+        )
 
     print("\n" + "=" * 70)
     print("  Lattice Structure Details")

@@ -41,10 +41,14 @@ from .buffer_integration import (
 # ---------------------------------------------------------------------------
 
 _DEFAULT_TIMEOUT = 30.0
-_USER_AGENT = "SCBE-WebAgent/1.0 (Autonomous; +https://github.com/issdandavis/SCBE-AETHERMOORE)"
+_USER_AGENT = (
+    "SCBE-WebAgent/1.0 (Autonomous; +https://github.com/issdandavis/SCBE-AETHERMOORE)"
+)
 
 
-def _client(headers: Optional[Dict[str, str]] = None, timeout: float = _DEFAULT_TIMEOUT) -> httpx.Client:
+def _client(
+    headers: Optional[Dict[str, str]] = None, timeout: float = _DEFAULT_TIMEOUT
+) -> httpx.Client:
     """Build a pre-configured httpx client."""
     base = {
         "User-Agent": _USER_AGENT,
@@ -204,7 +208,13 @@ class LinkedInPublisher(PlatformPublisher):
         with _client({"Authorization": f"Bearer {self._token}"}) as client:
             try:
                 resp = client.post(f"{self.API_BASE}/ugcPosts", json=body)
-                data = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
+                data = (
+                    resp.json()
+                    if resp.headers.get("content-type", "").startswith(
+                        "application/json"
+                    )
+                    else {}
+                )
                 if resp.status_code in (200, 201):
                     post_urn = resp.headers.get("X-RestLi-Id", data.get("id", ""))
                     return PublishResult(
@@ -315,7 +325,11 @@ class BlueskyPublisher(PlatformPublisher):
                     uri = data.get("uri", "")
                     # Convert AT URI to web URL
                     parts = uri.replace("at://", "").split("/")
-                    web_url = f"https://bsky.app/profile/{parts[0]}/post/{parts[-1]}" if len(parts) >= 3 else uri
+                    web_url = (
+                        f"https://bsky.app/profile/{parts[0]}/post/{parts[-1]}"
+                        if len(parts) >= 3
+                        else uri
+                    )
                     return PublishResult(
                         platform=self.platform,
                         success=True,
@@ -468,7 +482,9 @@ class WordPressPublisher(PlatformPublisher):
                     return PublishResult(
                         platform=self.platform,
                         success=True,
-                        post_url=data.get("link", data.get("guid", {}).get("rendered", "")),
+                        post_url=data.get(
+                            "link", data.get("guid", {}).get("rendered", "")
+                        ),
                         response_data={"id": data.get("id"), "link": data.get("link")},
                     )
                 return PublishResult(
@@ -607,7 +623,9 @@ class GitHubPublisher(PlatformPublisher):
             else:
                 return self._create_issue(client, content)
 
-    def _create_issue(self, client: httpx.Client, content: PostContent) -> PublishResult:
+    def _create_issue(
+        self, client: httpx.Client, content: PostContent
+    ) -> PublishResult:
         body = {
             "title": content.title or content.text[:80],
             "body": content.text,
@@ -634,8 +652,12 @@ class GitHubPublisher(PlatformPublisher):
         except httpx.HTTPError as e:
             return PublishResult(platform=self.platform, success=False, error=str(e))
 
-    def _create_comment(self, client: httpx.Client, content: PostContent) -> PublishResult:
-        issue_num = content.metadata.get("issue_number") or self._credentials.get("issue_number")
+    def _create_comment(
+        self, client: httpx.Client, content: PostContent
+    ) -> PublishResult:
+        issue_num = content.metadata.get("issue_number") or self._credentials.get(
+            "issue_number"
+        )
         if not issue_num:
             return PublishResult(
                 platform=self.platform,
@@ -665,7 +687,9 @@ class GitHubPublisher(PlatformPublisher):
         except httpx.HTTPError as e:
             return PublishResult(platform=self.platform, success=False, error=str(e))
 
-    def _create_release(self, client: httpx.Client, content: PostContent) -> PublishResult:
+    def _create_release(
+        self, client: httpx.Client, content: PostContent
+    ) -> PublishResult:
         tag = content.metadata.get("tag_name", f"v{time.strftime('%Y%m%d%H%M%S')}")
         body = {
             "tag_name": tag,
@@ -676,7 +700,9 @@ class GitHubPublisher(PlatformPublisher):
         }
 
         try:
-            resp = client.post(f"{self.API_BASE}/repos/{self._repo}/releases", json=body)
+            resp = client.post(
+                f"{self.API_BASE}/repos/{self._repo}/releases", json=body
+            )
             data = resp.json()
             if resp.status_code in (200, 201):
                 return PublishResult(
@@ -756,7 +782,10 @@ class HuggingFacePublisher(PlatformPublisher):
                     )
 
                 # Upload README via the git-based API
-                upload_url = f"https://huggingface.co/api/{self._repo_type}s/{self._repo_id}" f"/upload/main/README.md"
+                upload_url = (
+                    f"https://huggingface.co/api/{self._repo_type}s/{self._repo_id}"
+                    f"/upload/main/README.md"
+                )
                 resp = client.put(
                     upload_url,
                     content=readme_content.encode("utf-8"),

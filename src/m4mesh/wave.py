@@ -33,7 +33,11 @@ def damped_wave(
         z = physics_gate(z)
 
     for _ in range(int(steps)):
-        z_next = (2.0 - float(gamma)) * z - (1.0 - float(gamma)) * z_prev - float(alpha) * sparse_mm(L_norm, z)
+        z_next = (
+            (2.0 - float(gamma)) * z
+            - (1.0 - float(gamma)) * z_prev
+            - float(alpha) * sparse_mm(L_norm, z)
+        )
         z_prev, z = z, z_next
         if physics_gate is not None:
             z = physics_gate(z)

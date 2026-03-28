@@ -86,7 +86,9 @@ class CompositionCheckResult:
         )
 
 
-def composition_check(input_type: LayerType, output_type: LayerType) -> Callable[[F], F]:
+def composition_check(
+    input_type: LayerType, output_type: LayerType
+) -> Callable[[F], F]:
     """
     Decorator that declares and verifies layer type signatures.
 
@@ -259,7 +261,9 @@ class AudioOutput:
     sample_rate: int  # Samples per second
 
 
-@composition_check(input_type=LayerType.MULTI_TO_DECISION, output_type=LayerType.DECISION_TO_SIGNAL)
+@composition_check(
+    input_type=LayerType.MULTI_TO_DECISION, output_type=LayerType.DECISION_TO_SIGNAL
+)
 def layer_14_audio_axis(
     risk_level: str,
     coherence: float,
@@ -671,7 +675,9 @@ class AxiomAwarePipeline:
 
         return audio_output, self.states
 
-    def _record_state(self, layer_num: int, layer_name: str, output: Any, axiom: str) -> None:
+    def _record_state(
+        self, layer_num: int, layer_name: str, output: Any, axiom: str
+    ) -> None:
         """Record pipeline state."""
         state = PipelineState(
             layer_num=layer_num,
@@ -712,7 +718,10 @@ def verify_pipeline_composition(verbose: bool = False) -> Tuple[bool, List[str]]
     for group in parallel_groups:
         for dep in LAYER_DEPENDENCIES:
             if dep.source in group and dep.target in group:
-                issues.append(f"Parallel group {group} contains dependency " f"L{dep.source} → L{dep.target}")
+                issues.append(
+                    f"Parallel group {group} contains dependency "
+                    f"L{dep.source} → L{dep.target}"
+                )
 
     if verbose:
         for issue in issues:

@@ -33,7 +33,9 @@ def test_jobs_accepts_id_alias_for_job_id() -> None:
             "jobs": [
                 {
                     "id": "paper-001",
-                    "actions": [{"action": "navigate", "target": "https://example.com"}],
+                    "actions": [
+                        {"action": "navigate", "target": "https://example.com"}
+                    ],
                 }
             ]
         }
@@ -43,7 +45,9 @@ def test_jobs_accepts_id_alias_for_job_id() -> None:
 
 def test_verify_exact_navigate_detects_url_drift() -> None:
     job = {
-        "actions": [{"action": "navigate", "target": "https://arxiv.org/abs/2402.05930"}],
+        "actions": [
+            {"action": "navigate", "target": "https://arxiv.org/abs/2402.05930"}
+        ],
         "verify": {"exact_navigate": True},
     }
     response = {
@@ -59,14 +63,18 @@ def test_verify_exact_navigate_detects_url_drift() -> None:
         ],
     }
     verification = _verify(job, response)
-    exact = next(check for check in verification["checks"] if check["check"] == "exact_navigate")
+    exact = next(
+        check for check in verification["checks"] if check["check"] == "exact_navigate"
+    )
     assert exact["passed"] is False
     assert exact["mismatches"]
 
 
 def test_verify_exact_navigate_passes_when_urls_match() -> None:
     job = {
-        "actions": [{"action": "navigate", "target": "https://arxiv.org/abs/2402.05930"}],
+        "actions": [
+            {"action": "navigate", "target": "https://arxiv.org/abs/2402.05930"}
+        ],
         "verify": {"exact_navigate": True},
     }
     response = {
@@ -82,12 +90,18 @@ def test_verify_exact_navigate_passes_when_urls_match() -> None:
         ],
     }
     verification = _verify(job, response)
-    exact = next(check for check in verification["checks"] if check["check"] == "exact_navigate")
+    exact = next(
+        check for check in verification["checks"] if check["check"] == "exact_navigate"
+    )
     assert exact["passed"] is True
 
 
 def test_pqc_audit_enforces_missing_key_ids() -> None:
-    result = _pqc_audit({"pqc": {"kyber_id": "", "dilithium_id": ""}}, {"workflow_id": "x"}, "DELIBERATION")
+    result = _pqc_audit(
+        {"pqc": {"kyber_id": "", "dilithium_id": ""}},
+        {"workflow_id": "x"},
+        "DELIBERATION",
+    )
     assert result["status"] == "QUARANTINE"
 
 
@@ -128,7 +142,14 @@ def test_pqc_audit_allows_valid_metadata() -> None:
 def test_normalize_lease_derives_owner_and_expiry() -> None:
     claimed_at = datetime(2026, 3, 18, 1, 30, tzinfo=timezone.utc)
     lease = _normalize_lease(
-        {"job_id": "j1", "lease": {"provider": "colab", "resource_class": "t4", "lease_seconds": 600}},
+        {
+            "job_id": "j1",
+            "lease": {
+                "provider": "colab",
+                "resource_class": "t4",
+                "lease_seconds": 600,
+            },
+        },
         "worker-7",
         claimed_at=claimed_at,
     )
@@ -149,7 +170,12 @@ def test_build_packet_rails_splits_positive_and_negative_paths() -> None:
     }
     out = {
         "request_error": "chunk 1 status=request_error",
-        "response": {"status": "request_error", "blocked_actions": 1, "total_actions": 2, "executed_actions": 1},
+        "response": {
+            "status": "request_error",
+            "blocked_actions": 1,
+            "total_actions": 2,
+            "executed_actions": 1,
+        },
         "pqc_audit": {"status": "QUARANTINE", "reason": "rotation overdue"},
     }
     verification = {
@@ -161,7 +187,9 @@ def test_build_packet_rails_splits_positive_and_negative_paths() -> None:
         ],
     }
     antivirus_report = {"turnstile_action": "HOLD"}
-    rails = _build_packet_rails(job, out, verification, "QUARANTINE", "trace-123", antivirus_report)
+    rails = _build_packet_rails(
+        job, out, verification, "QUARANTINE", "trace-123", antivirus_report
+    )
     assert rails["P+"][0]["action"] == "navigate"
     assert any(item["type"] == "request_error" for item in rails["P-"])
     assert any(item["type"] == "decision" for item in rails["D+"])

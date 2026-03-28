@@ -44,7 +44,16 @@ except ImportError:
 
         @property
         def full_vector(self):
-            return np.array([self.axiom, self.flow, self.glyph, self.oracle, self.charm, self.ledger])
+            return np.array(
+                [
+                    self.axiom,
+                    self.flow,
+                    self.glyph,
+                    self.oracle,
+                    self.charm,
+                    self.ledger,
+                ]
+            )
 
 
 # =============================================================================
@@ -79,7 +88,9 @@ TONGUE_WEIGHTS = {
 # =============================================================================
 
 
-def poincare_embedding(x: np.ndarray, alpha: float = 1.0, eps_ball: float = 0.01) -> np.ndarray:
+def poincare_embedding(
+    x: np.ndarray, alpha: float = 1.0, eps_ball: float = 0.01
+) -> np.ndarray:
     """
     Layer 4: Poincaré Ball Embedding with Clamping.
 
@@ -376,13 +387,22 @@ def embed_position_simple(
     Returns:
         6D point in Poincaré ball
     """
-    pos = Position6D(axiom=axiom, flow=flow, glyph=glyph, oracle=oracle, charm=charm, ledger=int(ledger))
+    pos = Position6D(
+        axiom=axiom,
+        flow=flow,
+        glyph=glyph,
+        oracle=oracle,
+        charm=charm,
+        ledger=int(ledger),
+    )
     bridge = AethercodeLayer4Bridge(alpha=alpha)
     result = bridge.embed_position(pos)
     return result.embedded
 
 
-def position_risk_score(pos: Position6D, safe_position: Optional[Position6D] = None) -> Dict[str, Any]:
+def position_risk_score(
+    pos: Position6D, safe_position: Optional[Position6D] = None
+) -> Dict[str, Any]:
     """
     Compute risk score based on position in Poincaré ball.
 

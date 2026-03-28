@@ -80,7 +80,9 @@ class StellarOctaveMapping:
     def __init__(self):
         """Initialize Stellar Octave Mapping"""
 
-    def transpose(self, f_stellar: float, target_freq: Optional[float] = None) -> OctaveTranspositionResult:
+    def transpose(
+        self, f_stellar: float, target_freq: Optional[float] = None
+    ) -> OctaveTranspositionResult:
         """
         Transpose stellar frequency to human audible range
 
@@ -120,7 +122,9 @@ class StellarOctaveMapping:
             period_ratio=period_ratio,
         )
 
-    def transpose_to_note(self, f_stellar: float, note: str = "C4") -> OctaveTranspositionResult:
+    def transpose_to_note(
+        self, f_stellar: float, note: str = "C4"
+    ) -> OctaveTranspositionResult:
         """
         Transpose stellar frequency to specific musical note
 
@@ -132,7 +136,9 @@ class StellarOctaveMapping:
             OctaveTranspositionResult
         """
         if note not in self.MUSICAL_NOTES:
-            raise ValueError(f"Unknown note: {note}. Valid: {list(self.MUSICAL_NOTES.keys())}")
+            raise ValueError(
+                f"Unknown note: {note}. Valid: {list(self.MUSICAL_NOTES.keys())}"
+            )
 
         target_freq = self.MUSICAL_NOTES[note]
         return self.transpose(f_stellar, target_freq)
@@ -161,7 +167,8 @@ class StellarOctaveMapping:
         """
         if stellar_body not in self.STELLAR_FREQUENCIES:
             raise ValueError(
-                f"Unknown stellar body: {stellar_body}. " f"Valid: {list(self.STELLAR_FREQUENCIES.keys())}"
+                f"Unknown stellar body: {stellar_body}. "
+                f"Valid: {list(self.STELLAR_FREQUENCIES.keys())}"
             )
 
         f_stellar = self.STELLAR_FREQUENCIES[stellar_body]
@@ -172,10 +179,14 @@ class StellarOctaveMapping:
             # Adjust octaves to bring into audible range
             if result.human_freq < self.AUDIBLE_MIN:
                 while result.human_freq < self.AUDIBLE_MIN:
-                    result = self.transpose(f_stellar, target_freq=result.human_freq * 2)
+                    result = self.transpose(
+                        f_stellar, target_freq=result.human_freq * 2
+                    )
             else:
                 while result.human_freq > self.AUDIBLE_MAX:
-                    result = self.transpose(f_stellar, target_freq=result.human_freq / 2)
+                    result = self.transpose(
+                        f_stellar, target_freq=result.human_freq / 2
+                    )
 
         return {
             "stellar_body": stellar_body,
@@ -188,7 +199,9 @@ class StellarOctaveMapping:
             "entropy_regulation_mode": "resonant_pulsing",
         }
 
-    def entropy_regulation_sequence(self, stellar_body: str = "sun_p_mode", duration_s: float = 60.0) -> dict:
+    def entropy_regulation_sequence(
+        self, stellar_body: str = "sun_p_mode", duration_s: float = 60.0
+    ) -> dict:
         """
         Generate entropy regulation pulse sequence
 
@@ -217,7 +230,9 @@ class StellarOctaveMapping:
             "amplitude_modulation": "sine",  # Smooth envelope
         }
 
-    def stellar_camouflage_frequencies(self, stellar_body: str = "sun_p_mode", num_harmonics: int = 5) -> List[float]:
+    def stellar_camouflage_frequencies(
+        self, stellar_body: str = "sun_p_mode", num_harmonics: int = 5
+    ) -> List[float]:
         """
         Generate harmonic series for stellar camouflage
 

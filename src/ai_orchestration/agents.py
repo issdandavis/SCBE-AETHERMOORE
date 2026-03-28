@@ -332,7 +332,9 @@ class SecurityAgent(Agent):
             "period": period,
             "total_scans": len(self.threat_log),
             "threats_detected": sum(t["threats_found"] for t in self.threat_log),
-            "high_risk_events": sum(1 for t in self.threat_log if t["risk_level"] in ("high", "critical")),
+            "high_risk_events": sum(
+                1 for t in self.threat_log if t["risk_level"] in ("high", "critical")
+            ),
             "generated_at": datetime.now().isoformat(),
         }
 
@@ -377,9 +379,13 @@ class ResearchAgent(Agent):
         task_type = task_data.get("type")
 
         if task_type == "search_knowledge":
-            return await self._search(task_data.get("query", ""), task_data.get("domains", []))
+            return await self._search(
+                task_data.get("query", ""), task_data.get("domains", [])
+            )
         elif task_type == "summarize":
-            return await self._summarize(task_data.get("content", ""), task_data.get("max_length", 500))
+            return await self._summarize(
+                task_data.get("content", ""), task_data.get("max_length", 500)
+            )
 
         return {"error": f"Unknown task type: {task_type}"}
 
@@ -396,7 +402,10 @@ class ResearchAgent(Agent):
             # Simple keyword search (real implementation would use embeddings)
             if isinstance(knowledge, dict):
                 for key, value in knowledge.items():
-                    if query.lower() in str(key).lower() or query.lower() in str(value).lower():
+                    if (
+                        query.lower() in str(key).lower()
+                        or query.lower() in str(value).lower()
+                    ):
                         results.append(
                             {
                                 "source": pack_name,
@@ -469,7 +478,9 @@ class BusinessAgent(Agent):
         if task_type == "portfolio_analysis":
             return await self._analyze_portfolio(task_data.get("portfolio_data", {}))
         elif task_type == "generate_report":
-            return await self._generate_report(task_data.get("report_type", "summary"), task_data.get("data", {}))
+            return await self._generate_report(
+                task_data.get("report_type", "summary"), task_data.get("data", {})
+            )
 
         return {"error": f"Unknown task type: {task_type}"}
 
@@ -492,7 +503,9 @@ class BusinessAgent(Agent):
             ],
         }
 
-    async def _generate_report(self, report_type: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    async def _generate_report(
+        self, report_type: str, data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Generate business report."""
         return {
             "report": {
@@ -541,9 +554,13 @@ class EngineerAgent(Agent):
         task_type = task_data.get("type")
 
         if task_type == "generate_code":
-            return await self._generate_code(task_data.get("spec", ""), task_data.get("language", "python"))
+            return await self._generate_code(
+                task_data.get("spec", ""), task_data.get("language", "python")
+            )
         elif task_type == "run_tests":
-            return await self._run_tests(task_data.get("code", ""), task_data.get("test_cases", []))
+            return await self._run_tests(
+                task_data.get("code", ""), task_data.get("test_cases", [])
+            )
 
         return {"error": f"Unknown task type: {task_type}"}
 
@@ -665,13 +682,19 @@ class CoordinatorAgent(Agent):
         return {
             "agents": [agent.get_status() for agent in self.managed_agents.values()],
             "total": len(self.managed_agents),
-            "active": sum(1 for a in self.managed_agents.values() if a.status in (AgentStatus.IDLE, AgentStatus.BUSY)),
+            "active": sum(
+                1
+                for a in self.managed_agents.values()
+                if a.status in (AgentStatus.IDLE, AgentStatus.BUSY)
+            ),
         }
 
     async def _balance_load(self, tasks: List[Dict]) -> Dict[str, Any]:
         """Balance tasks across available agents."""
         assignments = []
-        available = [a for a in self.managed_agents.values() if a.status == AgentStatus.IDLE]
+        available = [
+            a for a in self.managed_agents.values() if a.status == AgentStatus.IDLE
+        ]
 
         for i, task in enumerate(tasks):
             if available:

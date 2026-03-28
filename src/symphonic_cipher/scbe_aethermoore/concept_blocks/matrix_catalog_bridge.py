@@ -199,7 +199,12 @@ def _score_archetype(
     compat_bonus = 1.0 if decision_compatible else 0.0
 
     # Weighted total
-    score = 0.4 * radial_fit + 0.3 * complexity_fit + 0.2 * modality_fit + 0.1 * compat_bonus
+    score = (
+        0.4 * radial_fit
+        + 0.3 * complexity_fit
+        + 0.2 * modality_fit
+        + 0.1 * compat_bonus
+    )
 
     return ArchetypeMatch(
         archetype=archetype,
@@ -366,7 +371,9 @@ class MatrixCatalogBridge:
         event.archetype_id = match.archetype.archetype_id
         event.polyhedron = match.archetype.polyhedron.value
         event.radial_zone = match.archetype.radial_zone
-        event.symmetry_order = POLYHEDRON_SYMMETRY.get(match.archetype.polyhedron.value, 0)
+        event.symmetry_order = POLYHEDRON_SYMMETRY.get(
+            match.archetype.polyhedron.value, 0
+        )
 
         # If we computed a better radial, update the event
         if match.radial_r > 0 and event.radial_r == 0:
