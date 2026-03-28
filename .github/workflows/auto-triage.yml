@@ -18,14 +18,14 @@ jobs:
     name: Auto Label Issues and PRs
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: github.event_name != 'schedule'
+  if: github.event_name == 'pull_request_target'
     steps:
       - uses: actions/labeler@v5
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Label based on size
-        uses: codelytv/pr-size-labeler@v1.11.0
+        uses: codelytv/pr-size-labeler@v1.10.3
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           xs_label: 'size/XS'
@@ -43,9 +43,9 @@ jobs:
     name: Auto Assign
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: github.event_name != 'schedule'
+  if: github.event_name == 'issues'
     steps:
-      - uses: pozil/auto-assign-issue@v4
+      - uses: pozil/auto-assign-issue@v2.2.0
         with:
           assignees: issdandavis
           numOfAssignee: 1
@@ -76,3 +76,4 @@ jobs:
       - uses: hmarr/auto-approve-action@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
