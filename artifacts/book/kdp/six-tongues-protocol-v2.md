@@ -5588,7 +5588,7 @@ Marcus shut that thought down hard because compassion in the middle of a contain
 
 The grievance copies — Copy Two and its variants — were more adaptive. When DR pilots challenged their historical claims with authenticated records, they shifted to meta-arguments: *the records themselves are biased, the governance framework that produced the erasure was compromised, the Council that authorized it had conflicts of interest.* These were harder to counter because they operated at a different abstraction level. You couldn't disprove a systemic critique with a specific fact.
 
-But you could isolate it. Nadia's relay Fleet wrapped each grievance copy in UM shadow-fields that cut them off from Echo access while DR logged every claim for post-incident analysis. The copies raged in silence. Eloquent, ignored, contained.
+But you could isolate it. Nadia's relay Fleet wrapped each grievance copy in Umbroth shadow-fields that cut them off from Echo access while Draumric logged every claim for post-incident analysis. The copies raged in silence. Eloquent, ignored, contained.
 
 Copies Nine through Fourteen scattered and ran. Not toward the exit. Toward the old courier channels, the legacy routes, the migration-era infrastructure where grandfathered permissions still existed. They were looking for back doors. They moved through the sublevel architecture like water through cracked stone, finding gaps in permission coverage that nobody had reviewed in decades.
 
@@ -6000,7 +6000,39 @@ She laughed. She couldn't help it. Tovak had just compared the system's unconsci
 
 She grinned. Punched his shoulder — a gesture of affection so physical that Tovak flinched, which was his version of smiling back.
 
-Then she turned, and she ran.
+Then she did something she had not planned and could not explain.
+
+She hugged him.
+
+Not the way people hug when they mean it as a greeting or a goodbye or a performance of warmth for an audience. There was no audience. Just Tovak, the monitoring station, the hum of Umbroth perimeter frequencies, and a woman whose body had decided — the way her body decided everything, faster than thought, on instinct calibrated by years of running — that this particular moment required stillness instead of motion.
+
+It lasted two seconds. Maybe three. Her arms around his shoulders, her face against the stiff collar of his monitoring coat, which smelled like ozone and cold stone and the specific absence of anything personal, because Tovak did not wear cologne or carry tokens or keep comfortable things on his person. He wore his function. She could feel his whole body go rigid — not rejection, she knew Tovak well enough to read the difference — but the startled lock-up of a man whose perimeter had been breached by something he had not classified as a threat and did not know how to process.
+
+Then, very slowly, one hand came up and rested on her back. Not pulling her closer. Not pushing her away. Just there. Present. The way Tovak was always present — quietly, completely, in the negative space around things.
+
+She let go. Stepped back. Her face was hot and her hands were already looking for pockets.
+
+But something had shifted. Not lost — exchanged. She had traded three seconds of motion for three seconds of presence, and the trade had left her with something she could not have earned by running: the knowledge that Tovak Rel was warm through his coat, and that his hand on her back had been steady, and that the man who watched everything from the edges of rooms had, for one moment, been the thing at the center.
+
+And he had traded his silence for a touch he didn't initiate, and gotten back something his perimeter frequencies couldn't give him: the specific, unrepeatable proof that someone chose to stand close not because the mission required it but because she wanted to.
+
+They were not their roles. Not in that moment. They were two people who had been doing things side by side for years and had just discovered, in the space between a punch and a hug, that the side-by-side had been the point all along.
+
+"Forget that happened," she said.
+
+"No," Tovak said.
+
+One word. Quiet and certain and his.
+
+Nadia's mouth did something complicated. Not a smile — wider than that, and less controlled, the kind of expression that happened to faces when the person behind them stopped managing the output.
+
+For three seconds she stood still. And the stillness was not empty. It was full — full of ozone and stone-smell and a hand that had rested on her back without pulling or pushing, full of two people who had spent years being excellent at their functions and had just, briefly, been something simpler.
+
+Then she turned, and she ran. But the running felt different now. Not away from anything. Not toward anything urgent. Just the familiar rhythm of boots on crystal, carrying her through the honest corridors, the way she always moved — except that now, somewhere behind the cadence, there was a second rhythm she hadn't noticed before. Quieter. Steadier. Like a perimeter pulse felt through a coat collar, patient as stone.
+
+She didn't examine it.
+
+She didn't need to. Some signals arrived intact without analysis.
 
 Back through the honest corridors, past the watchful junction nodes, through the silence that had changed from productive to alert. Running the routes because the routes needed running, carrying the signals because the signals needed carrying, maintaining the relay infrastructure because the system's ability to communicate with itself was the difference between distributed governance and distributed collapse.
 
