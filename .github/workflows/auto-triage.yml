@@ -5,20 +5,22 @@ on:
     types: [opened, edited, reopened]
   pull_request_target:
     types: [opened, edited, reopened, synchronize]
-  schedule:
-    - cron: '0 0 * * *'  # Daily at midnight
 
 permissions:
   issues: write
   pull-requests: write
   contents: read
 
+env:
+  # Preempt Node 20 deprecation warnings for JavaScript-based actions.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   auto-label:
     name: Auto Label Issues and PRs
     runs-on: ubuntu-latest
     timeout-minutes: 10
-  if: github.event_name == 'pull_request_target'
+    if: github.event_name == 'pull_request_target'
     steps:
       - uses: actions/labeler@v5
         with:
@@ -43,7 +45,7 @@ jobs:
     name: Auto Assign
     runs-on: ubuntu-latest
     timeout-minutes: 10
-  if: github.event_name == 'issues'
+    if: github.event_name == 'issues'
     steps:
       - uses: pozil/auto-assign-issue@v2.2.0
         with:
