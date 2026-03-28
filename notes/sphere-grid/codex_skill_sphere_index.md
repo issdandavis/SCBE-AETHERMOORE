@@ -1,6 +1,6 @@
 # Codex Skill -> Sphere Index
 
-Generated: 2026-03-28T21:32:08.027559+00:00
+Generated: 2026-03-28T22:17:38.305603+00:00
 Skills dir: `C:\Users\issda\.codex\skills`
 
 | Skill | Primary sphere | Skill dir |
@@ -59,12 +59,15 @@ Skills dir: `C:\Users\issda\.codex\skills`
 | `multi-model-animation-studio-notes` | [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] | `multi-model-animation-studio-notes` |
 | `notion-research-documentation` | [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] | `notion-research-documentation` |
 | `novel-editor-flow` | [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] | `novel-editor-flow` |
+| `openai-docs` | [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] | `.system/openai-docs` |
 | `scbe-ai2ai-kindle-research` | [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] | `scbe-ai2ai-kindle-research` |
 | `scbe-github-pages-funnel-builder` | [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] | `scbe-github-pages-funnel-builder` |
 | `scbe-manhwa-video-picture-research` | [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] | `scbe-manhwa-video-picture-research` |
 | `scbe-npm-prepublish-autopublish` | [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] | `scbe-npm-prepublish-autopublish` |
 | `scbe-self-improvement-skill-management` | [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] | `scbe-self-improvement-skill-management` |
 | `scbe-webtoon-book-conversion` | [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] | `scbe-webtoon-book-conversion` |
+| `skill-creator` | [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] | `.system/skill-creator` |
+| `skill-installer` | [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] | `.system/skill-installer` |
 | `speed-line-delivery` | [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] | `speed-line-delivery` |
 | `video-source-verification` | [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] | `video-source-verification` |
 | `gh-fix-ci` | [[DR-Structure/T2-Debugging/_sphere|DR T2 Debugging]] | `gh-fix-ci` |
@@ -72,7 +75,6 @@ Skills dir: `C:\Users\issda\.codex\skills`
 | `aether-phone-lane-ops` | [[DR-Structure/T3-Self-Healing/_sphere|DR T3 Self Healing]] | `aether-phone-lane-ops` |
 | `hydra-deep-research-self-healing` | [[DR-Structure/T3-Self-Healing/_sphere|DR T3 Self Healing]] | `hydra-deep-research-self-healing` |
 | `scbe-workflow-cultivation` | [[DR-Structure/T3-Self-Healing/_sphere|DR T3 Self Healing]] | `scbe-workflow-cultivation` |
-| `.system` | [[DR-Structure/T4-Architecture/_sphere|DR T4 Architecture]] | `.system` |
 | `gumroad-upload-management` | [[DR-Structure/T4-Architecture/_sphere|DR T4 Architecture]] | `gumroad-upload-management` |
 | `scbe-codebase-orienter` | [[DR-Structure/T4-Architecture/_sphere|DR T4 Architecture]] | `scbe-codebase-orienter` |
 | `scbe-experimental-research-safe-integration` | [[DR-Structure/T4-Architecture/_sphere|DR T4 Architecture]] | `scbe-experimental-research-safe-integration` |
@@ -108,11 +110,6 @@ Skills dir: `C:\Users\issda\.codex\skills`
 | `scbe-spiralverse-intent-auth` | [[UM-Security/T3-Audit-Trail/_sphere|UM T3 Audit Trail]] | `scbe-spiralverse-intent-auth` |
 
 ## Candidates (top)
-
-### .system
-- [[DR-Structure/T4-Architecture/_sphere|DR T4 Architecture]] score=2.0 hits=system
-- [[AV-Transport/T1-Web-Search/_sphere|AV T1 Web Search]] score=0.0 hits=
-- [[AV-Transport/T2-Navigation/_sphere|AV T2 Navigation]] score=0.0 hits=
 
 ### aether-phone-lane-ops
 - [[DR-Structure/T3-Self-Healing/_sphere|DR T3 Self Healing]] score=3.0 hits=recover
@@ -343,6 +340,11 @@ Skills dir: `C:\Users\issda\.codex\skills`
 - [[AV-Transport/T2-Navigation/_sphere|AV T2 Navigation]] score=3.0 hits=browser
 - [[CA-Compute/T3-Training-Pipeline/_sphere|CA T3 Training Pipeline]] score=3.0 hits=colab
 - [[KO-Command/T4-Sovereign-Command/_sphere|KO T4 Sovereign Command]] score=2.0 hits=universal
+
+### openai-docs
+- [[DR-Structure/T1-Documentation/_sphere|DR T1 Documentation]] score=7.0 hits=docs, documentation
+- [[AV-Transport/T4-Fleet-Transport/_sphere|AV T4 Fleet Transport]] score=3.0 hits=mcp
+- [[CA-Compute/T1-Code-Generation/_sphere|CA T1 Code Generation]] score=2.0 hits=build
 
 ### plan-check-gate
 - [[CA-Compute/T1-Code-Generation/_sphere|CA T1 Code Generation]] score=2.0 hits=code
@@ -583,6 +585,16 @@ Skills dir: `C:\Users\issda\.codex\skills`
 - [[AV-Transport/T4-Fleet-Transport/_sphere|AV T4 Fleet Transport]] score=4.0 hits=sync
 - [[UM-Security/T3-Audit-Trail/_sphere|UM T3 Audit Trail]] score=4.0 hits=audit
 - [[AV-Transport/T1-Web-Search/_sphere|AV T1 Web Search]] score=0.0 hits=
+
+### skill-creator
+- [[AV-Transport/T1-Web-Search/_sphere|AV T1 Web Search]] score=0.0 hits=
+- [[AV-Transport/T2-Navigation/_sphere|AV T2 Navigation]] score=0.0 hits=
+- [[AV-Transport/T3-Site-Mapping/_sphere|AV T3 Site Mapping]] score=0.0 hits=
+
+### skill-installer
+- [[AV-Transport/T1-Web-Search/_sphere|AV T1 Web Search]] score=0.0 hits=
+- [[AV-Transport/T2-Navigation/_sphere|AV T2 Navigation]] score=0.0 hits=
+- [[AV-Transport/T3-Site-Mapping/_sphere|AV T3 Site Mapping]] score=0.0 hits=
 
 ### skill-synthesis
 - [[KO-Command/T4-Sovereign-Command/_sphere|KO T4 Sovereign Command]] score=7.0 hits=compose multiple, execution stack
