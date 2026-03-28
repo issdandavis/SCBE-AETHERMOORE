@@ -1277,6 +1277,20 @@ body::before {
           <div class="ops-timestamp" id="opsTimeGit">never</div>
         </button>
 
+        <button class="ops-btn" onclick="AetherBrowser.runOps('train')">
+          <div class="ops-icon" style="background:rgba(109,216,255,0.12); color:var(--aqua);">&#128640;</div>
+          <div class="ops-label">Daily Train</div>
+          <div class="ops-result" id="opsResultTrain">--</div>
+          <div class="ops-timestamp" id="opsTimeTrain">never</div>
+        </button>
+
+        <button class="ops-btn" onclick="AetherBrowser.runOps('chess')">
+          <div class="ops-icon" style="background:rgba(255,217,119,0.12); color:var(--gold);">&#9818;</div>
+          <div class="ops-label">Chessboard Packets</div>
+          <div class="ops-result" id="opsResultChess">--</div>
+          <div class="ops-timestamp" id="opsTimeChess">never</div>
+        </button>
+
         <button class="ops-btn" onclick="AetherBrowser.runOps('revenue')">
           <div class="ops-icon" style="background:rgba(143,255,211,0.15); color:var(--mint);">&#36;</div>
           <div class="ops-label">Revenue Check</div>
@@ -1284,6 +1298,39 @@ body::before {
           <div class="ops-timestamp" id="opsTimeRevenue">never</div>
         </button>
 
+      </div>
+
+      <!-- CLI Console (safe allowlist, backed by /api/cli/run) -->
+      <div class="card" style="margin-top:12px;">
+        <div class="card-header">
+          <div class="card-title">Command Line</div>
+          <button class="btn btn-sm" onclick="AetherBrowser.runCli('help')">Help</button>
+        </div>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input
+            id="cliInput"
+            type="text"
+            placeholder='Try: vault stats | vault search "harmonic wall" | ops tests | momentum latest'
+            style="flex:1; padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:rgba(10,28,24,0.6); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12px; outline:none;"
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
+          >
+          <button class="btn" style="white-space:nowrap;" onclick="AetherBrowser.runCli()">Run</button>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-sm" onclick="AetherBrowser.setCli('vault stats')">vault stats</button>
+          <button class="btn btn-sm" onclick="AetherBrowser.setCli('vault search \"phi poincare\"')">vault search</button>
+          <button class="btn btn-sm" onclick="AetherBrowser.setCli('ops tests')">ops tests</button>
+          <button class="btn btn-sm" onclick="AetherBrowser.setCli('momentum latest daily_ops')">momentum latest</button>
+          <button class="btn btn-sm" onclick="AetherBrowser.setCli('docs list')">docs list</button>
+        </div>
+
+        <div id="cliStatus" style="margin-top:10px; color:var(--dim); font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.6;">
+          SAFE MODE. Enter runs. Up/Down cycles history. Allowlist-only (no shell).
+        </div>
       </div>
 
       <!-- Ops Log -->
@@ -1415,7 +1462,9 @@ window.AetherBrowser = (function() {
     currentTrust: 'unknown',
     opsResults: {},
     selectedSuite: null,
-    connectionStatus: 'online'
+    connectionStatus: 'online',
+    cliHistory: [],
+    cliHistoryIndex: 0
   };
 
   // ---- Tab Switching ----
@@ -1839,9 +1888,11 @@ window.AetherBrowser = (function() {
       email:   { url: API_BASE + '/ops/check-email',   method: 'POST', extract: function(d) { return d.output ? d.output.substring(0, 60) : (d.error || 'done'); } },
       youtube: { url: API_BASE + '/ops/youtube-review', method: 'POST', extract: function(d) { return d.output ? d.output.substring(0, 60) : (d.error || 'done'); } },
       tor:     { url: API_BASE + '/ops/tor-sweep',      method: 'POST', extract: function(d) { return d.output ? d.output.substring(0, 60) : (d.error || 'done'); } },
-      vault:   { url: API_BASE + '/vault/stats',        method: 'GET',  extract: function(d) { return d.notes + ' notes, ' + d.edges + ' edges, ' + d.sft_pairs + ' SFT'; } },
+      vault:   { url: API_BASE + '/vault/sync',         method: 'POST', extract: function(d) { return (d.synced ? 'synced' : (d.error || 'sync fail')) + ' | ' + d.notes + ' notes'; } },
       tests:   { url: API_BASE + '/ops/run-tests',      method: 'POST', extract: function(d) { return d.summary || (d.passed + '/' + d.total + ' pass'); } },
       git:     { url: API_BASE + '/ops/git-status',     method: 'GET',  extract: function(d) { return d.branch + ' | ' + d.modified + ' mod, ' + d.untracked + ' new'; } },
+      train:   { url: API_BASE + '/ops/momentum/run',   method: 'POST', body: { train_id: 'daily_ops', execute: true, max_parallel: 3 }, extract: function(d) { return (d.ok ? 'ok' : 'warn') + ' | ' + (d.run_dir || 'no-run-dir'); } },
+      chess:   { url: API_BASE + '/ops/chessboard/generate', method: 'POST', body: { goal: 'Improve SCBE long-running agentic workflows with governed momentum trains.' }, extract: function(d) { return (d.packet_count || 0) + ' packets | ' + (d.output_dir || ''); } },
       revenue: { url: null, extract: function() { return '$97.74 pending (stripe)'; } }
     };
 
@@ -1867,7 +1918,7 @@ window.AetherBrowser = (function() {
     var fetchOpts = { method: ep.method };
     if (ep.method === 'POST') {
       fetchOpts.headers = { 'Content-Type': 'application/json' };
-      fetchOpts.body = '{}';
+      fetchOpts.body = JSON.stringify(ep.body || {});
     }
 
     fetch(ep.url, fetchOpts)
@@ -1911,6 +1962,99 @@ window.AetherBrowser = (function() {
         line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> <span style="color:var(--red);">' + command.toUpperCase() + '</span>: API offline -- start api_server.py';
         log.appendChild(line);
         log.scrollTop = log.scrollHeight;
+      });
+  }
+
+  // ---- CLI: Safe command interpreter (web -> /api/cli/run) ----
+  function _escHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function setCli(value) {
+    var input = document.getElementById('cliInput');
+    if (!input) return;
+    input.value = value || '';
+    input.focus();
+  }
+
+  function runCli(overrideCommand) {
+    var input = document.getElementById('cliInput');
+    var status = document.getElementById('cliStatus');
+    var log = document.getElementById('opsLog');
+    var ts = new Date().toLocaleTimeString();
+
+    var command = (overrideCommand != null ? String(overrideCommand) : (input ? input.value : '')).trim();
+    if (!command) return;
+
+    // Clear placeholder
+    if (log && log.querySelector('[style*="color:var(--dim)"]') && log.children.length === 1) {
+      log.innerHTML = '';
+    }
+
+    // History
+    if (state.cliHistory.length === 0 || state.cliHistory[state.cliHistory.length - 1] !== command) {
+      state.cliHistory.push(command);
+    }
+    state.cliHistoryIndex = state.cliHistory.length;
+
+    if (input && overrideCommand == null) input.value = '';
+    if (status) status.textContent = 'Running: ' + command;
+
+    if (log) {
+      var line = document.createElement('div');
+      line.innerHTML =
+        '<span style="color:var(--dim);">[' + ts + ']</span> ' +
+        '<span style="color:var(--mint);">CLI</span> <span style="color:var(--aqua);">$</span> ' +
+        _escHtml(command);
+      log.appendChild(line);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    fetch(API_BASE + '/cli/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: command })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var payload = (data && data.result !== undefined) ? data.result : data;
+        var ok = !!(data && data.ok !== false);
+        var outText = (typeof payload === 'string') ? payload : JSON.stringify(payload, null, 2);
+        if (outText.length > 2000) outText = outText.substring(0, 2000) + '\n...(truncated)...\n';
+
+        if (log) {
+          var pre = document.createElement('pre');
+          pre.textContent = outText;
+          pre.style.whiteSpace = 'pre-wrap';
+          pre.style.margin = '6px 0 10px';
+          pre.style.padding = '8px 10px';
+          pre.style.borderRadius = '12px';
+          pre.style.border = '1px solid var(--line)';
+          pre.style.background = 'rgba(10, 28, 24, 0.55)';
+          pre.style.color = ok ? 'var(--muted)' : 'var(--gold)';
+          pre.style.fontFamily = "'IBM Plex Mono', monospace";
+          pre.style.fontSize = '11px';
+          log.appendChild(pre);
+          log.scrollTop = log.scrollHeight;
+        }
+
+        if (status) status.textContent = ok ? 'OK' : ('Error: ' + (data.error || 'unknown'));
+      })
+      .catch(function() {
+        if (status) status.textContent = 'API offline — start api_server.py';
+        if (log) {
+          var err = document.createElement('div');
+          err.innerHTML =
+            '<span style="color:var(--dim);">[' + ts + ']</span> ' +
+            '<span style="color:var(--red);">CLI</span>: API offline -- start api_server.py';
+          log.appendChild(err);
+          log.scrollTop = log.scrollHeight;
+        }
       });
   }
 
@@ -1982,6 +2126,32 @@ window.AetherBrowser = (function() {
 
     // Initial tongue bar state
     updateTongueBar(['ko']);
+
+    // CLI input handlers
+    var cliInput = document.getElementById('cliInput');
+    if (cliInput) {
+      cliInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          runCli();
+          return;
+        }
+        if (e.key === 'ArrowUp') {
+          if (!state.cliHistory || state.cliHistory.length === 0) return;
+          state.cliHistoryIndex = Math.max(0, state.cliHistoryIndex - 1);
+          cliInput.value = state.cliHistory[state.cliHistoryIndex] || '';
+          e.preventDefault();
+          return;
+        }
+        if (e.key === 'ArrowDown') {
+          if (!state.cliHistory || state.cliHistory.length === 0) return;
+          state.cliHistoryIndex = Math.min(state.cliHistory.length, state.cliHistoryIndex + 1);
+          cliInput.value = state.cliHistory[state.cliHistoryIndex] || '';
+          e.preventDefault();
+          return;
+        }
+      });
+    }
   }
 
   // Boot
@@ -2001,6 +2171,8 @@ window.AetherBrowser = (function() {
     selectSuite: selectSuite,
     searchVault: searchVault,
     runOps: runOps,
+    setCli: setCli,
+    runCli: runCli,
     clearOpsLog: clearOpsLog,
     state: state
   };
