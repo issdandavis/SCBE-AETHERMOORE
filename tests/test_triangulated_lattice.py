@@ -1,4 +1,5 @@
 """Tests for Triangulated PHDM Lattice — governance-as-geometry vertices."""
+
 from __future__ import annotations
 
 import sys
