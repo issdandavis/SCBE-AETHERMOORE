@@ -421,7 +421,7 @@ class StoryEngine:
     def validate_all(self) -> Dict[str, List[ValidationError]]:
         """Validate all cached stories.  Returns {story_id: [errors]}."""
         results: Dict[str, List[ValidationError]] = {}
-        for sid, graph in self._cache.items():
+        for _sid, graph in self._cache.items():
             errors = graph.validate()
             if errors:
                 results[graph.story_id] = errors

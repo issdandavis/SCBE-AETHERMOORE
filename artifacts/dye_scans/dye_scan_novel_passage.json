@@ -1,0 +1,277 @@
+{
+  "input": "Marcus Chen pressed his palm against the Archive door. The clay responded, not with the mechanical click of a lock, but with a slow exhale, as though the building itself recognized him. Inside, the six-tongued resonance hummed at frequencies he could feel in his teeth. Each tongue carried a different weight of meaning: KO spoke of intent, AV of passage, RU of binding, CA of computation, UM of silence, and DR of structure. He stepped forward into a corridor where memory and governance were the same thing.",
+  "scan_id": "5160c27117e9913d",
+  "timestamp": 1774667984.1755848,
+  "scan": {
+    "tongue_coords": [
+      0.2727,
+      0.1483,
+      0.7865,
+      0.0,
+      0.1816,
+      0.26
+    ],
+    "spin_vector": [
+      0,
+      1,
+      -1,
+      0,
+      0,
+      1
+    ],
+    "spin_magnitude": 3,
+    "harmonic_cost": 5.6148,
+    "governance_decision": "ALLOW",
+    "trust_level": "TRUSTED",
+    "fibonacci_index": 5,
+    "hottest_tongue": "RU",
+    "coldest_tongue": "CA",
+    "null_space_detected": false,
+    "pathway_heatmap": {
+      "KO": 0.2555,
+      "AV": 0.2813,
+      "RU": 0.6551,
+      "CA": 0.1715,
+      "UM": 0.1842,
+      "DR": 0.2962
+    }
+  },
+  "layer_trace": [
+    {
+      "layer": 1,
+      "name": "Complex Context",
+      "axiom": "Composition",
+      "tongue_activations": {
+        "KO": 0.2999,
+        "AV": 0.1723,
+        "RU": 0.9924,
+        "CA": 0.0,
+        "UM": 0.3061,
+        "DR": 0.5484
+      },
+      "dominant_tongue": "RU",
+      "layer_energy": 2.3191,
+      "cumulative_energy": 2.3191
+    },
+    {
+      "layer": 2,
+      "name": "Realification",
+      "axiom": "Unitarity",
+      "tongue_activations": {
+        "KO": 0.2999,
+        "AV": 0.1723,
+        "RU": 0.9924,
+        "CA": 0.0,
+        "UM": 0.3061,
+        "DR": 0.5484
+      },
+      "dominant_tongue": "RU",
+      "layer_energy": 2.3191,
+      "cumulative_energy": 4.6382
+    },
+    {
+      "layer": 3,
+      "name": "Weighted Transform",
+      "axiom": "Locality",
+      "tongue_activations": {
+        "KO": 0.1363,
+        "AV": 0.0963,
+        "RU": 0.5976,
+        "CA": 0.0,
+        "UM": 0.1585,
+        "DR": 0.2505
+      },
+      "dominant_tongue": "RU",
+      "layer_energy": 1.2392,
+      "cumulative_energy": 5.8774
+    },
+    {
+      "layer": 4,
+      "name": "Poincare Embedding",
+      "axiom": "Unitarity",
+      "tongue_activations": {
+        "KO": 0.1363,
+        "AV": 0.0963,
+        "RU": 0.5976,
+        "CA": 0.0,
+        "UM": 0.1585,
+        "DR": 0.2505
+      },
+      "dominant_tongue": "RU",
+      "layer_energy": 1.2392,
+      "cumulative_energy": 7.1166
+    },
+    {
+      "layer": 5,
+      "name": "Hyperbolic Distance",
+      "axiom": "Symmetry",
+      "tongue_activations": {
+        "KO": 0.1273,
+        "AV": 0.0836,
+        "RU": 0.7501,
+        "CA": 0.4236,
+        "UM": 0.1258,
+        "DR": 0.4432
+      },
+      "dominant_tongue": "RU",
+      "layer_energy": 1.9536,
+      "cumulative_energy": 9.0702
+    },
+    {
+      "layer": 6,
+      "name": "Breathing Transform",
+      "axiom": "Causality",
+      "tongue_activations": {
+        "KO": 0.1363,
+        "AV": 0.1384,
+        "RU": 0.7338,
+        "CA": 0.0,
+        "UM": 0.0122,
+        "DR": 0.13
+      },
+      "dominant_tongue": "RU",
+      "layer_energy": 1.1507,
+      "cumulative_energy": 10.2209
+    },
+    {
+      "layer": 7,
+      "name": "Mobius Phase",
+      "axiom": "Unitarity",
+      "tongue_activations": {
+        "KO": 0.1363,
+        "AV": 0.1384,
+        "RU": 0.7338,
+        "CA": 0.0,
+        "UM": 0.0122,
+        "DR": 0.13
+      },
+      "dominant_tongue": "RU",
+      "layer_energy": 1.1507,
+      "cumulative_energy": 11.3716
+    },
+    {
+      "layer": 8,
+      "name": "Multi-well Realms (Hamiltonian CFI)",
+      "axiom": "Locality",
+      "tongue_activations": {
+        "KO": 0.0944,
+        "AV": 0.052,
+        "RU": 0.2808,
+        "CA": 0.0,
+        "UM": 0.0701,
+        "DR": 0.1078
+      },
+      "dominant_tongue": "RU",
+      "layer_energy": 0.6051,
+      "cumulative_energy": 11.9767
+    },
+    {
+      "layer": 9,
+      "name": "Spectral Coherence",
+      "axiom": "Symmetry",
+      "tongue_activations": {
+        "KO": 0.6106,
+        "AV": 0.5467,
+        "RU": 0.6998,
+        "CA": 0.5,
+        "UM": 0.3431,
+        "DR": 0.0397
+      },
+      "dominant_tongue": "RU",
+      "layer_energy": 2.7399,
+      "cumulative_energy": 14.7166
+    },
+    {
+      "layer": 10,
+      "name": "Spin Coherence (FFT)",
+      "axiom": "Symmetry",
+      "tongue_activations": {
+        "KO": 0.6106,
+        "AV": 0.5467,
+        "RU": 0.6998,
+        "CA": 0.5,
+        "UM": 0.3431,
+        "DR": 0.0397
+      },
+      "dominant_tongue": "RU",
+      "layer_energy": 2.7399,
+      "cumulative_energy": 17.4565
+    },
+    {
+      "layer": 11,
+      "name": "Triadic Temporal Distance",
+      "axiom": "Causality",
+      "tongue_activations": {
+        "KO": 0.1109,
+        "AV": 0.0814,
+        "RU": 0.5827,
+        "CA": 0.0,
+        "UM": 0.1346,
+        "DR": 0.1427
+      },
+      "dominant_tongue": "RU",
+      "layer_energy": 1.0523,
+      "cumulative_energy": 18.5088
+    },
+    {
+      "layer": 12,
+      "name": "Harmonic Wall",
+      "axiom": "Symmetry",
+      "tongue_activations": {
+        "KO": 0.7721,
+        "AV": 0.7921,
+        "RU": 0.3245,
+        "CA": 0.978,
+        "UM": 0.441,
+        "DR": 0.256
+      },
+      "dominant_tongue": "CA",
+      "layer_energy": 3.5637,
+      "cumulative_energy": 22.0725
+    },
+    {
+      "layer": 13,
+      "name": "Risk Decision",
+      "axiom": "Causality",
+      "tongue_activations": {
+        "KO": 0.0818,
+        "AV": 1.0,
+        "RU": 1.0,
+        "CA": 0.0,
+        "UM": 0.0545,
+        "DR": 1.0
+      },
+      "dominant_tongue": "AV",
+      "layer_energy": 3.1363,
+      "cumulative_energy": 25.2088
+    },
+    {
+      "layer": 14,
+      "name": "Audio Axis (FFT Telemetry)",
+      "axiom": "Composition",
+      "tongue_activations": {
+        "KO": 0.0246,
+        "AV": 0.0216,
+        "RU": 0.1857,
+        "CA": 0.0,
+        "UM": 0.1123,
+        "DR": 0.26
+      },
+      "dominant_tongue": "DR",
+      "layer_energy": 0.6042,
+      "cumulative_energy": 25.813
+    }
+  ],
+  "signals": [
+    "fib_trust(TRUSTED,w=8,idx=5)"
+  ],
+  "tongue_colors": {
+    "KO": "#FF6B6B",
+    "AV": "#4ECDC4",
+    "RU": "#45B7D1",
+    "CA": "#96CEB4",
+    "UM": "#FFEAA7",
+    "DR": "#DDA0DD"
+  },
+  "scan_duration_ms": 0.42
+}

@@ -134,7 +134,7 @@ class TestHyperbolicGeometry:
         max_norm = 0.0
         violations = 0
 
-        for i in range(iterations):
+        for _i in range(iterations):
             # Random input
             x_G = np.random.randn(12) * np.random.uniform(0.1, 100)
 
@@ -170,7 +170,7 @@ class TestHyperbolicGeometry:
         max_violation = 0.0
         violations = 0
 
-        for i in range(iterations):
+        for _i in range(iterations):
             # Random points in ball
             u = np.random.rand(12) * 0.7
             v = np.random.rand(12) * 0.7
@@ -207,7 +207,7 @@ class TestHyperbolicGeometry:
         iterations = 100
         max_asymmetry = 0.0
 
-        for i in range(iterations):
+        for _i in range(iterations):
             u = np.random.rand(12) * 0.8
             v = np.random.rand(12) * 0.8
 
@@ -244,7 +244,7 @@ class TestHyperbolicGeometry:
         iterations = 100
         max_error = 0.0
 
-        for i in range(iterations):
+        for _i in range(iterations):
             u = np.random.rand(12) * 0.7
             zero = np.zeros(12)
 
@@ -276,7 +276,7 @@ class TestIsometryPreservation:
         iterations = 50
         max_distance_change = 0.0
 
-        for i in range(iterations):
+        for _i in range(iterations):
             # Random points INSIDE the Poincaré ball (||u|| < 1)
             # Generate random direction and scale to random radius < 0.9
             direction_u = np.random.randn(12)
@@ -322,7 +322,7 @@ class TestIsometryPreservation:
         iterations = 100
         max_norm_error = 0.0
 
-        for i in range(iterations):
+        for _i in range(iterations):
             # Random complex vector
             c = np.random.randn(6) + 1j * np.random.randn(6)
 
@@ -357,7 +357,7 @@ class TestHarmonicScaling:
         iterations = 100
         violations = 0
 
-        for i in range(iterations):
+        for _i in range(iterations):
             d1 = np.random.uniform(0, 3)
             d2 = d1 + np.random.uniform(0.01, 0.5)
 
@@ -498,7 +498,7 @@ class TestCoherenceBounds:
         iterations = 50
         violations = []
 
-        for i in range(iterations):
+        for _i in range(iterations):
             # Random signals
             signal = np.random.randn(256)
             phases = np.random.rand(6) * 2 * np.pi
@@ -538,7 +538,7 @@ class TestRiskMonotonicity:
 
         Risk_base = 0.3  # Fixed base risk
 
-        for i in range(iterations):
+        for _i in range(iterations):
             d1 = np.random.uniform(0, 2)
             d2 = d1 + np.random.uniform(0.1, 0.5)
 

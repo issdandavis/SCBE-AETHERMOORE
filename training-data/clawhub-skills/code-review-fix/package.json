@@ -1,0 +1,17 @@
+{
+  "name": "code-review-fix",
+  "version": "1.0.0",
+  "description": "智能代码审查与修复 - Code Review & Fix with SkillPay billing",
+  "main": "scripts/main.ts",
+  "scripts": {
+    "start": "bun scripts/main.ts",
+    "dev": "bun --watch scripts/main.ts"
+  },
+  "keywords": ["code-review", "claude-code", "skill"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/bun": "^1.0.0"
+  }
+}

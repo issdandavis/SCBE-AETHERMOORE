@@ -164,7 +164,7 @@ def compute_dispersal(
     dispersal_sum = 0.0
     tongue_sums = [0.0] * 6
 
-    for i, (tv, sv) in enumerate(zip(tongue_vectors, spins)):
+    for _i, (tv, sv) in enumerate(zip(tongue_vectors, spins)):
         for lang in range(6):
             contrib = G[lang, lang] * abs(sv.spins[lang]) * abs(tv[lang] - centroid[lang])
             dispersal_sum += contrib

@@ -34,8 +34,16 @@ def test_build_rag_index_writes_artifacts(tmp_path: Path) -> None:
     out_dir = tmp_path / "rag_index"
     rows = [
         {"thread_id": "t1", "turn_index": 0, "text": "Hyperbolic retrieval context."},
-        {"thread_id": "t1", "turn_index": 1, "text": "Poincare distance and trust score."},
-        {"thread_id": "t2", "turn_index": 0, "text": "Gumroad uploader selenium session."},
+        {
+            "thread_id": "t1",
+            "turn_index": 1,
+            "text": "Poincare distance and trust score.",
+        },
+        {
+            "thread_id": "t2",
+            "turn_index": 0,
+            "text": "Gumroad uploader selenium session.",
+        },
     ]
     write_jsonl(input_jsonl, rows)
 

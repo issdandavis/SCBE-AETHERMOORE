@@ -68,6 +68,8 @@ class IdentityCube:
         healpix_cell:   S2 cell on the Poincare ball boundary
         morton_cell:    Cube-projected lattice cell
         egg_id:         The Sacred Egg this AI hatched from
+        egg_self_tag:   Genesis protocol label bound to the egg (stable)
+        egg_self_shape: Genesis-bound egg identity fingerprint (stable)
         born_at:        Unix timestamp of birth
     """
 
@@ -79,6 +81,8 @@ class IdentityCube:
     healpix_cell: int
     morton_cell: int
     egg_id: str
+    egg_self_tag: str
+    egg_self_shape: str
     born_at: float
 
 
@@ -214,6 +218,8 @@ def mint_identity_cube(
     cube_data = json.dumps(
         {
             "egg_id": egg.egg_id,
+            "egg_self_tag": getattr(egg, "self_tag", ""),
+            "egg_self_shape": getattr(egg, "self_shape", ""),
             "batch_id": batch_id,
             "batch_index": batch_index,
             "cube_vector": list(cube_vector),
@@ -231,6 +237,8 @@ def mint_identity_cube(
         healpix_cell=h,
         morton_cell=z,
         egg_id=egg.egg_id,
+        egg_self_tag=getattr(egg, "self_tag", ""),
+        egg_self_shape=getattr(egg, "self_shape", ""),
         born_at=time.time(),
     )
 
@@ -359,6 +367,8 @@ class GenesisProtocol:
         cube_data = json.dumps(
             {
                 "egg_id": cube.egg_id,
+                "egg_self_tag": cube.egg_self_tag,
+                "egg_self_shape": cube.egg_self_shape,
                 "batch_id": cube.batch_id,
                 "batch_index": cube.batch_index,
                 "cube_vector": list(cube.cube_vector),

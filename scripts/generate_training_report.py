@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 def main() -> None:
-    root = Path(".")
+    _root = Path(".")
     inventory = {}
     total_records = 0
     total_files = 0

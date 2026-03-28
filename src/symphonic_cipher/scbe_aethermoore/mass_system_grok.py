@@ -245,7 +245,7 @@ def resonance_refractor(token_ids: List[int], secret_key: bytes) -> np.ndarray:
     total_len = int(SAMPLE_RATE * DURATION * len(token_ids))
     t = np.linspace(0, DURATION * len(token_ids), total_len)
     signal = np.zeros_like(t)
-    for i, token_id in enumerate(token_ids):
+    for _i, token_id in enumerate(token_ids):
         phase_seed = hmac.new(secret_key, f"phase:{token_id}".encode(), hashlib.sha256).digest()
         phase = (phase_seed[0] / 255) * 2 * np.pi
         harmonics = derive_harmonic_mask(token_id, secret_key)

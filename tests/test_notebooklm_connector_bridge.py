@@ -21,7 +21,9 @@ def test_notebooklm_connector_registered() -> None:
 
 
 @pytest.mark.asyncio
-async def test_notebooklm_create_notebook_routes_to_script(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_notebooklm_create_notebook_routes_to_script(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     bridge = ConnectorBridge()
     seen: dict[str, list[str]] = {}
 
@@ -61,7 +63,9 @@ async def test_notebooklm_add_source_requires_required_fields() -> None:
 
 
 @pytest.mark.asyncio
-async def test_notebooklm_seed_notebooks_passes_source_urls(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_notebooklm_seed_notebooks_passes_source_urls(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     bridge = ConnectorBridge()
     seen: dict[str, list[str]] = {}
 
@@ -89,7 +93,9 @@ async def test_notebooklm_seed_notebooks_passes_source_urls(monkeypatch: pytest.
 
 
 @pytest.mark.asyncio
-async def test_notebooklm_resolve_routes_action(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_notebooklm_resolve_routes_action(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     bridge = ConnectorBridge()
     seen: dict[str, list[str]] = {}
 
@@ -110,7 +116,9 @@ async def test_notebooklm_resolve_routes_action(monkeypatch: pytest.MonkeyPatch)
 
 
 @pytest.mark.asyncio
-async def test_automation_connector_posts_to_local_hub(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_automation_connector_posts_to_local_hub(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("SCBE_AUTOMATIONS_URL", "http://127.0.0.1:8001/v1/automations/emit")
     bridge = ConnectorBridge()
     seen: dict[str, object] = {}

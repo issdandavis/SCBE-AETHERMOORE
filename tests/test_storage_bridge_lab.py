@@ -153,7 +153,12 @@ def test_compare_returns_all_surfaces():
     report = lab.compare()
 
     assert "surfaces" in report
-    assert set(report["surfaces"].keys()) == {"octree", "lattice25d", "qc_drive", "sphere"}
+    assert set(report["surfaces"].keys()) == {
+        "octree",
+        "lattice25d",
+        "qc_drive",
+        "sphere",
+    }
     assert report["record_count"] == 16
 
 
@@ -194,7 +199,12 @@ def test_compare_summary_picks_winners():
     report = lab.compare()
 
     assert report["summary"]["best_compaction"] in ("octree", "lattice25d", "qc_drive")
-    assert report["summary"]["lowest_node_explosion"] in ("octree", "lattice25d", "qc_drive", "sphere")
+    assert report["summary"]["lowest_node_explosion"] in (
+        "octree",
+        "lattice25d",
+        "qc_drive",
+        "sphere",
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -224,7 +234,15 @@ def test_export_writes_valid_json(tmp_path: Path):
 
 def test_hypothesis_deck_has_required_fields():
     deck = get_hypothesis_deck()
-    required = {"knob", "surface", "purpose", "expected_effect", "metric_to_watch", "fail_condition", "sweep_values"}
+    required = {
+        "knob",
+        "surface",
+        "purpose",
+        "expected_effect",
+        "metric_to_watch",
+        "fail_condition",
+        "sweep_values",
+    }
     for card in deck:
         assert required.issubset(card.keys()), f"Card {card['knob']} missing fields"
         assert len(card["sweep_values"]) >= 2, f"Card {card['knob']} needs >=2 sweep values"

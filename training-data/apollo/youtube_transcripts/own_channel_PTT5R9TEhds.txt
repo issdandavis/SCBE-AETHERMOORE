@@ -1,0 +1,77 @@
+Chapter 1: Protocol Handshake. Marcus
+Chen's coffee had gone cold three hours
+ago. The terminal blinked its familiar
+green-on-black rhythm as he traced through
+the authentication logs one more time. Something was routing packets through an
+unauthorized channel—not malicious enough
+to trigger alarms, but wrong enough to
+make his instincts itch. He leaned back in his ergonomic chair, the
+kind his company provided after the
+settlement from the last burnout lawsuit.
+Ironic, considering he was voluntarily
+pulling a sixteen-hour shift on a
+Saturday. "Found you," he muttered, highlighting a
+sequence of authorization tokens that
+didn't quite— The screen went white. Not
+the blue-screen-of-death white. Not the
+monitor-failure white. This was everywhere white—the walls, the
+ceiling, his hands when he looked down at
+them. Then sound collapsed into a single
+tone, and Marcus Chen fell through the
+floor of reality. He woke to the smell of old books and
+something sharper—ozone? Magic? No. Focus.
+Assess. Stone floor beneath his palms.
+Curved ceiling above. Shelves carved directly into crystal
+walls, filled with leather-bound volumes
+that seemed to hum. And standing over him: a girl who couldn't
+be older than twenty, with glossy black
+feathers where hair should be, wings
+folded against her back, and eyes that
+gleamed like polished obsidian—sharp,
+intelligent, and currently radiating
+annoyance. "You're finally awake," she said in a
+language he absolutely did not know but
+somehow understood perfectly. "Took you
+long enough. I'm Polly, Fifth Circle
+Keeper of the Archives. You're Marcus Chen, systems engineer, age
+thirty-two, last known location: San
+Francisco, Earth. Correct?" Marcus sat up
+slowly, running threat assessments on
+autopilot. "How do you—" "The Protocol told us you
+were coming." She crouched down to his eye
+level, amber eyes studying him like he was
+a particularly interesting bug. "It always
+does. You're not the first, won't be the last.
+Welcome to Aethermoor." "This is a
+hallucination," Marcus said flatly. "I've
+been awake too long. That coffee was
+expired. I'm having a psychotic break." "Occam's
+Razor would suggest you've been isekai'd
+to a fantasy world where magic is actually
+cryptographic protocol architecture, but
+sure, go with 'psychotic break' if it
+helps." Polly stood and offered him a
+hand. "Come on. If you're going to survive here,
+you need to learn the Six Sacred Tongues."
+Marcus took her hand—warm, solid, real—and
+let her pull him up. "What are the Six Sacred Tongues?"
+"Domain-separated authorization channels."
+She grinned at his expression. "What, you
+thought magic would be all wands and
+fireballs? This is a serious universe. We have infrastructure." SCBE Mapping:
+Marcus's arrival in Aethermoor mirrors
+SCBE's Layer 1 Context Commitment — raw
+input (his existence) enters the pipeline
+and must be authenticated. The Protocol's "What do you intend?" maps
+to EnvelopeCore.seal() in
+spiralverse_core.py, which binds identity
++ intent + environment into a verifiable
+envelope. Polly's role as Fifth Circle Keeper
+parallels the PollyPadManager in fleet-
+manager.ts, which orchestrates drone
+authentication. The 0.3-second heartbeat
+check is the SCBE pipeline's continuous
+think() cycle. The "unauthorized channel" Marcus was
+debugging on Earth foreshadows the fail-
+to-noise principle: unverifiable signals
+degrade to noise rather than propagating.

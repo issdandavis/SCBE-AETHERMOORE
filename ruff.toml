@@ -54,7 +54,9 @@ unfixable = [
 ]
 
 [lint.per-file-ignores]
-# Tests often have unused variables from fixtures
-"tests/**/*.py" = ["F841"]
-# Scripts may import for side effects
-"scripts/**/*.py" = ["F401"]
+# Tests often have unused variables from fixtures, broad exception asserts are intentional
+"tests/**/*.py" = ["F841", "B017", "SIM115"]
+# Scripts may import for side effects, have unused vars from prototyping
+"scripts/**/*.py" = ["F401", "F841", "SIM115"]
+# Agents directory mirrors scripts patterns
+"agents/**/*.py" = ["F401"]

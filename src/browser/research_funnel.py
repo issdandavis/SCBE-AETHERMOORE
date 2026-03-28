@@ -259,7 +259,14 @@ class ResearchFunnel:
             {
                 "object": "block",
                 "type": "heading_2",
-                "heading_2": {"rich_text": [{"type": "text", "text": {"content": f"Run {run_id} | {date_str}"}}]},
+                "heading_2": {
+                    "rich_text": [
+                        {
+                            "type": "text",
+                            "text": {"content": f"Run {run_id} | {date_str}"},
+                        }
+                    ]
+                },
             },
             {
                 "object": "block",
@@ -295,7 +302,12 @@ class ResearchFunnel:
                     "object": "block",
                     "type": "toggle",
                     "toggle": {
-                        "rich_text": [{"type": "text", "text": {"content": f"[{verdict}] {source_title[:80]}"}}],
+                        "rich_text": [
+                            {
+                                "type": "text",
+                                "text": {"content": f"[{verdict}] {source_title[:80]}"},
+                            }
+                        ],
                         "children": [
                             {
                                 "object": "block",
@@ -409,8 +421,17 @@ async def _main():
     logging.basicConfig(level=logging.INFO, format="%(name)s | %(message)s")
 
     parser = argparse.ArgumentParser(description="Push research findings to cloud storage")
-    parser.add_argument("--backfill", type=int, default=0, help="Push N most recent local JSONL files to Notion/HF")
-    parser.add_argument("--dry-run", action="store_true", help="Print what would be pushed without pushing")
+    parser.add_argument(
+        "--backfill",
+        type=int,
+        default=0,
+        help="Push N most recent local JSONL files to Notion/HF",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print what would be pushed without pushing",
+    )
     args = parser.parse_args()
 
     funnel = ResearchFunnel()
@@ -419,7 +440,8 @@ async def _main():
         if args.dry_run:
             files = sorted(funnel.intake_dir.glob("web_research_*.jsonl"))
             for f in files[-args.backfill :]:
-                count = sum(1 for _ in open(f))
+                with open(f) as _fh:
+                    count = sum(1 for _ in _fh)
                 print(f"  [DRY] {f.name} ({count} records)")
             return
 

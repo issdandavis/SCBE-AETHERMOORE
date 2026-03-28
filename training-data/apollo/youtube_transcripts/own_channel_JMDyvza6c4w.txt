@@ -1,0 +1,118 @@
+Chapter 2: The Language Barrier. Polly led
+him through corridors that shouldn't
+exist—walls of crystallized light, floors
+that felt solid but looked transparent,
+doorways that appeared only when
+approached. "The Archives exist in protocol space,"
+she explained, navigating with the ease of
+someone who'd walked these paths a
+thousand times. "Physical location is...
+negotiable. What matters is authorization."
+"Authorization to what?" "To be." She
+stopped at a door that crystallized from
+nothing as they approached. "In Aethermoor, your existence is verified
+by the Protocol every 0.3 seconds. Fail
+authentication, and you... flicker. Fail hard enough, and you cease." Marcus
+felt his engineer brain latch onto the
+problem despite the absurdity. "So it's
+like a heartbeat check. Continuous verification against some
+baseline state." "Exactly!" Polly's wings
+fluttered enthusiastically. "See? You're
+going to do fine here. Most refugees from
+Earth take weeks to grasp the basics. You already think in systems." The door
+opened into a chamber that made Marcus's
+breath catch. Six pedestals arranged in a hexagon, each
+holding a sphere of crystallized light
+pulsing with different rhythms: KO
+(Kor'aelin): Steady, commanding
+pulses—red-gold like authority itself AV
+(Avali): Quick, flowing rhythms—blue-
+silver like water or wind RU (Runethic):
+Measured, binding beats—deep purple like
+oaths in stone CA (Cassisivadan): Complex,
+layered harmonics—white-gold like woven
+light UM (Umbroth): Quiet, protective
+tones—shadow-black that somehow shone DR
+(Draumric): Anchoring, structural
+pulses—earth-brown like bedrock "The Six
+Sacred Tongues," Polly said reverently. "Each one a domain of intent. To speak
+them is to mean things at the protocol
+level. To command reality itself." Marcus
+stepped closer to the KO sphere. Up close, he could see patterns in the
+light—not random, but structured. Like
+packets. Like data. "Can I...?" "Touch it?
+Sure. It won't bite." Polly leaned against
+the doorframe. "Won't do much of anything, actually.
+You're not authorized yet." Marcus reached
+out. The moment his fingers brushed the KO
+sphere, his vision inverted. He saw—
+—himself as a data structure. Marcus Chen: undefined protocol entity,
+Earth-native, authentication status:
+PENDING. Sixteen open threads trying to verify his
+existence against a baseline that didn't
+include "humans from other dimensions."
+Errors cascading through layers he didn't
+have names for, caught and buffered by
+something vast and patient. And beneath it all: a question. "What do
+you intend?" Not in words. In meaning.
+Pure semantic content injected directly
+into his consciousness. Marcus tried to answer—I intend to
+understand—and the sphere pulsed. For one
+heartbeat, he felt... recognized. Then the
+connection severed and he stumbled back,
+gasping. "Congratulations," Polly said,
+catching his elbow. "You just had your first Protocol
+handshake. Usually takes people three
+tries to even get a response. The Six
+Tongues like you." "What... what was
+that?" "Intent verification. The Protocol needs to know you're not a
+rogue process before it grants you deeper
+access." She steered him toward a bench
+carved from the crystal wall. "Sit.
+Breathe. I'll explain the Tongues." Marcus sat, his
+engineer brain trying to process what he'd
+just experienced. Polly counted on her
+fingers: "KO—Kor'aelin, the Control
+Tongue. High-level commands. 'I want this to happen.' When you cast a
+spell, you're speaking KO to tell reality
+what outcome you're requesting. "AV—Avali,
+the Transport Tongue. How to get there.
+Initialization, movement, data flow. If KO is 'teleport me to the castle,' AV
+is 'here's the secure channel and
+handshake to make that happen.'
+"RU—Runethic, the Policy Tongue. Access
+control. Permissions. 'Who is allowed to do what.' Every magical
+artifact has RU inscriptions defining who
+can use it and how. "CA—Cassisivadan, the
+Compute Tongue. Encryption,
+transformation, processing. This is where the heavy math happens.
+Energy conversion, transmutation, complex
+spellwork—all CA. "UM—Umbroth, the
+Security Tongue. Privacy, secrecy,
+protection. Hiding, shielding, making
+things undetectable. Spies and assassins
+study UM for years. "DR—Draumric, the Schema Tongue.
+Structure, authentication, data integrity.
+This is the signature layer. Every
+official document, every identity token,
+every binding contract—DR makes it real."
+Marcus stared at the six spheres. "This is... this is a network stack."
+Polly grinned. "Welcome to Aethermoor,
+Marcus. Where magic is engineering and engineering
+is magic." SCBE Mapping: The Six Sacred
+Tongues (KO/AV/RU/CA/UM/DR) map directly
+to the SacredTongueTokenizer in
+sacred_tongues.py, which implements 6 ×
+256 = 1,536 bijective tokens. The TONGUE_PHASES constant in drone-
+core.ts defines each tongue at 60°
+intervals: KO: 0, AV: π/3, RU: 2π/3, CA:
+π, UM: 4π/3, DR: 5π/3. The six-layer spell pipeline
+(KO→AV→RU→CA→UM→DR) is the narrative form
+of the 14-layer
+FourteenLayerPipeline.process() in
+fourteen_layer_pipeline.py. The Sacred
+Tongue keywords are canonically defined in
+docs/SPIRALVERSE_CODEX.md. Marcus's "network stack" realization
+captures the core architectural insight:
+each tongue is a domain-separated
+authorization channel.

@@ -48,6 +48,87 @@ export const DEFAULT_TONGUE_WEIGHTS: Record<Tongue, number> = {
 };
 
 // ═══════════════════════════════════════════════════════════════
+// Self-identity (genesis-bound, unchanging variables)
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Default "self tag" describing the genesis protocol family that minted the egg.
+ *
+ * This is intentionally stable: it is meant to be an unchanging identity label
+ * that can be bound into genesis seals / certificates and used for tamper detection.
+ */
+export const DEFAULT_EGG_SELF_TAG = 'SCBE-AETHERMOORE:SacredEggGenesis:v1';
+
+/**
+ * Deterministic 64-hex hash for identity binding (synchronous).
+ *
+ * This is not a replacement for cryptographic AEAD integrity; it is a cheap,
+ * stable identity hash used for genesis-binding and for fast "shape" checks.
+ */
+function stableHashHex64(data: string): string {
+  let hash = 2166136261;
+  for (let i = 0; i < data.length; i++) {
+    hash ^= data.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  let hex = '';
+  let state = hash;
+  for (let i = 0; i < 8; i++) {
+    state = Math.imul(state ^ (state >>> 16), 2246822507);
+    state = Math.imul(state ^ (state >>> 13), 3266489909);
+    state = (state ^ (state >>> 16)) >>> 0;
+    hex += state.toString(16).padStart(8, '0');
+  }
+  return hex;
+}
+
+/**
+ * Combine a base shape + self tag into a single stable identity fingerprint.
+ *
+ * This is the "self detect shape(self shape + self tag)" primitive:
+ *   selfShape := H( baseShape || selfTag )
+ */
+export function selfDetectShape(baseShape: string, selfTag: string): string {
+  return stableHashHex64(`${baseShape}|${selfTag}`);
+}
+
+/**
+ * Compute the base (structural) egg shape from public header fields.
+ *
+ * Note: This is intentionally cheap and synchronous; it is not meant to hide data,
+ * only to provide a stable identity binding for genesis protocols.
+ */
+export function computeEggBaseShape(egg: SacredEgg): string {
+  const h = egg.header;
+  return stableHashHex64([h.id, String(h.epoch), h.policyHash].join('|'));
+}
+
+/**
+ * Compute the egg's self-identity pair (selfShape + selfTag).
+ *
+ * These are intended to be immutable across transit and referenced by genesis seals.
+ */
+export function computeEggSelfIdentity(
+  egg: SacredEgg,
+  selfTag: string = egg.header.selfTag ?? DEFAULT_EGG_SELF_TAG
+): { selfShape: string; selfTag: string } {
+  const base = computeEggBaseShape(egg);
+  return { selfTag, selfShape: selfDetectShape(base, selfTag) };
+}
+
+/**
+ * Verify that an egg's stored self identity matches its current public header fields.
+ *
+ * Fail closed: returns false if fields are missing.
+ */
+export function verifyEggSelfIdentity(egg: SacredEgg): boolean {
+  if (!egg.header.selfShape || !egg.header.selfTag) return false;
+  const base = computeEggBaseShape(egg);
+  const expected = selfDetectShape(base, egg.header.selfTag);
+  return expected === egg.header.selfShape;
+}
+
+// ═══════════════════════════════════════════════════════════════
 // Sacred Egg Structure
 // ═══════════════════════════════════════════════════════════════
 
@@ -89,6 +170,16 @@ export interface SacredEgg {
     epoch: number;
     /** Policy hash (for verification without revealing policy) */
     policyHash: string;
+    /**
+     * Genesis-bound self identity shape (stable hash of base shape + self tag).
+     * Optional for backward compatibility; recommended for all new eggs.
+     */
+    selfShape?: string;
+    /**
+     * Genesis-bound self identity tag (protocol family label).
+     * Optional for backward compatibility; recommended for all new eggs.
+     */
+    selfTag?: string;
   };
   /** Ciphertext (encrypted payload) */
   ciphertext: Uint8Array;
@@ -514,6 +605,11 @@ export async function createEgg(
   partialEgg.header.policyHash = Array.from(new Uint8Array(hashBuffer))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
+
+  // Bind genesis self identity (shape + tag) as unchanging variables
+  const selfIdentity = computeEggSelfIdentity(partialEgg);
+  partialEgg.header.selfTag = selfIdentity.selfTag;
+  partialEgg.header.selfShape = selfIdentity.selfShape;
 
   return partialEgg;
 }

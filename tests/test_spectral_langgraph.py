@@ -180,7 +180,7 @@ class TestEndToEnd:
         channels = result["_spectral_channels"]
         assert len(channels) >= 5  # research, outline, draft, challenge, edit, merge
         # Each channel has wavelength
-        for nid, ch_info in channels.items():
+        for _nid, ch_info in channels.items():
             assert "wavelength_nm" in ch_info
             assert 380 <= ch_info["wavelength_nm"] <= 780
 

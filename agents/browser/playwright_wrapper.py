@@ -369,7 +369,7 @@ class PlaywrightWrapper:
         timeout = timeout_ms or self.config.navigation_timeout_ms
 
         async def _nav():
-            response = await self._page.goto(url, wait_until=wait_until)
+            await self._page.goto(url, wait_until=wait_until)
             self._navigation_depth += 1
             return self._page.url
 

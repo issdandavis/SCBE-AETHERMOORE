@@ -41,12 +41,26 @@ class AgentInfo:
 
 
 _TASK_ROLES: dict[str, list[TongueRole]] = {
-    "research": [TongueRole.KO, TongueRole.AV, TongueRole.CA, TongueRole.RU, TongueRole.DR],
+    "research": [
+        TongueRole.KO,
+        TongueRole.AV,
+        TongueRole.CA,
+        TongueRole.RU,
+        TongueRole.DR,
+    ],
     "page": [TongueRole.KO, TongueRole.CA, TongueRole.DR],
     "default": [TongueRole.KO, TongueRole.AV, TongueRole.CA],
 }
 
-_RESEARCH_KEYWORDS = {"research", "find", "search", "compare", "investigate", "competitors", "analyze"}
+_RESEARCH_KEYWORDS = {
+    "research",
+    "find",
+    "search",
+    "compare",
+    "investigate",
+    "competitors",
+    "analyze",
+}
 _PAGE_KEYWORDS = {"page", "summarize", "extract", "this"}
 
 
@@ -62,7 +76,11 @@ class AgentSquad:
 
     def status_snapshot(self) -> dict[TongueRole, dict[str, Any]]:
         return {
-            role: {"state": info.state.value, "model": info.model, "task": info.current_task}
+            role: {
+                "state": info.state.value,
+                "model": info.model,
+                "task": info.current_task,
+            }
             for role, info in self.agents.items()
         }
 

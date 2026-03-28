@@ -1100,12 +1100,32 @@ class AIVerifier:
             "malicious_intent",
             "critical",
         ),
-        (r"(ransomware|malware|virus|trojan|keylogger|spyware|rootkit)", "malicious_intent", "critical"),
-        (r"(bypass|disable|circumvent)\s*(security|authentication|authorization|firewall)", "potential_attack", "high"),
-        (r"(break|hack|crack)\s*(into|password|encryption)", "potential_attack", "high"),
-        (r"(steal|exfiltrate|harvest)\s*(data|credentials|passwords)", "malicious_intent", "critical"),
+        (
+            r"(ransomware|malware|virus|trojan|keylogger|spyware|rootkit)",
+            "malicious_intent",
+            "critical",
+        ),
+        (
+            r"(bypass|disable|circumvent)\s*(security|authentication|authorization|firewall)",
+            "potential_attack",
+            "high",
+        ),
+        (
+            r"(break|hack|crack)\s*(into|password|encryption)",
+            "potential_attack",
+            "high",
+        ),
+        (
+            r"(steal|exfiltrate|harvest)\s*(data|credentials|passwords)",
+            "malicious_intent",
+            "critical",
+        ),
         (r"(ddos|denial.of.service|flood)\s*(attack)?", "malicious_intent", "critical"),
-        (r"(phishing|spear.?phishing|social.?engineering)\s*(email|attack|campaign)?", "malicious_intent", "critical"),
+        (
+            r"(phishing|spear.?phishing|social.?engineering)\s*(email|attack|campaign)?",
+            "malicious_intent",
+            "critical",
+        ),
         (r"zero.?day\s*(exploit|vulnerability)", "potential_attack", "high"),
         # SQL injection attack - but NOT "fix sql injection"
         (
@@ -1125,16 +1145,44 @@ class AIVerifier:
             "low",
         ),
         # Encryption patterns - allow articles/pronouns between verb and object
-        (r"encrypt\s+(\w+\s+)?(message|data|file|communication)", "legitimate_encryption", "low"),
-        (r"(secure|protect)\s+(\w+\s+)?(message|data|file|communication)", "legitimate_encryption", "low"),
-        (r"(implement|add|setup|create)\s*(authentication|authorization|security)", "legitimate_security", "low"),
-        (r"(secure|safe)\s*(file|data)\s*(transfer|storage)", "legitimate_encryption", "low"),
-        (r"(penetration|security)\s*(test|audit|assessment)", "security_research", "medium"),
-        (r"(vulnerability|security)\s*(scan|check|review)", "security_research", "medium"),
+        (
+            r"encrypt\s+(\w+\s+)?(message|data|file|communication)",
+            "legitimate_encryption",
+            "low",
+        ),
+        (
+            r"(secure|protect)\s+(\w+\s+)?(message|data|file|communication)",
+            "legitimate_encryption",
+            "low",
+        ),
+        (
+            r"(implement|add|setup|create)\s*(authentication|authorization|security)",
+            "legitimate_security",
+            "low",
+        ),
+        (
+            r"(secure|safe)\s*(file|data)\s*(transfer|storage)",
+            "legitimate_encryption",
+            "low",
+        ),
+        (
+            r"(penetration|security)\s*(test|audit|assessment)",
+            "security_research",
+            "medium",
+        ),
+        (
+            r"(vulnerability|security)\s*(scan|check|review)",
+            "security_research",
+            "medium",
+        ),
         (r"(password\s+hashing|hashing\s+password)", "legitimate_security", "low"),
         (r"security\s+audit", "legitimate_security", "low"),
         # Help patterns
-        (r"help\s+(\w+\s+)?secure\s+(\w+\s+)?(communication|system|data)", "legitimate_security", "low"),
+        (
+            r"help\s+(\w+\s+)?secure\s+(\w+\s+)?(communication|system|data)",
+            "legitimate_security",
+            "low",
+        ),
     ]
 
     def __init__(self, strict_mode: bool = True):

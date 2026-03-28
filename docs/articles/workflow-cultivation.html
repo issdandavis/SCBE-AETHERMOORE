@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workflow Cultivation (Meridian Flush for CI + Ops) | SCBE-AETHERMOORE</title>
+  <meta name="description" content="A practical ops method: cycle workflows like meridians, find blockages, apply the smallest fix, and compress outputs into reusable runbooks and skills." />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:title" content="Workflow Cultivation (Meridian Flush for CI + Ops)" />
+  <meta property="og:description" content="Cycle workflows, find blockages, apply the smallest fix, and compress outputs into reusable runbooks and skills." />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://aethermoorgames.com/articles/workflow-cultivation.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Workflow Cultivation (Meridian Flush for CI + Ops)" />
+  <meta name="twitter:description" content="Cycle workflows, find blockages, apply the smallest fix, and compress outputs into reusable runbooks and skills." />
+  <link rel="canonical" href="https://aethermoorgames.com/articles/workflow-cultivation.html" />
+  <link rel="stylesheet" href="../static/polly-sidebar.css" />
+  <style>
+    :root { --bg:#071019; --panel:rgba(12,20,31,0.92); --line:rgba(128,194,255,0.16); --text:#edf5ff; --muted:#a9b9cb; --ice:#80c2ff; --mint:#8cf0d1; --gold:#ffd27a; --max:980px; --shadow:0 28px 70px rgba(0,0,0,0.34); }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Georgia, "Times New Roman", serif; color: var(--text); background: radial-gradient(circle at top left, rgba(128,194,255,0.14), transparent 30%), radial-gradient(circle at 78% 18%, rgba(140,240,209,0.10), transparent 28%), radial-gradient(circle at 70% 88%, rgba(255,210,122,0.08), transparent 36%), linear-gradient(180deg, #050b12 0%, #09121d 52%, #050b12 100%); }
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(var(--max), calc(100% - 32px)); margin: 0 auto; }
+    .topbar { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(16px); background: rgba(5, 11, 18, 0.82); border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .topbar-inner { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .brand-kicker { text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px; color: var(--ice); }
+    .brand strong { display: block; font-size: 18px; letter-spacing: -0.03em; }
+    .nav { display: flex; flex-wrap: wrap; gap: 10px; }
+    .nav a { color: var(--muted); padding: 10px 14px; border-radius: 999px; border: 1px solid transparent; }
+    .nav a:hover { color: var(--text); border-color: var(--line); background: rgba(255,255,255,0.03); }
+    .hero { padding: 58px 0 18px; }
+    .hero-card { border-radius: 24px; border: 1px solid var(--line); background: linear-gradient(180deg, rgba(12,20,31,0.94), rgba(8,14,23,0.96)); box-shadow: var(--shadow); padding: 32px; }
+    .eyebrow, .mini { text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px; color: var(--ice); }
+    h1, h2, h3 { margin: 0; letter-spacing: -0.04em; }
+    h1 { font-size: clamp(40px, 5.6vw, 64px); line-height: 0.96; }
+    .lede { margin-top: 18px; color: var(--muted); font-size: 18px; line-height: 1.7; max-width: 76ch; }
+    .meta { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 14px; }
+    .meta span::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 8px; border-radius: 50%; background: var(--gold); vertical-align: middle; }
+    main { padding: 18px 0 60px; }
+    section { margin-top: 18px; }
+    .panel { border-radius: 24px; border: 1px solid var(--line); background: rgba(12,20,31,0.84); box-shadow: var(--shadow); padding: 26px; }
+    p { margin: 10px 0; color: var(--muted); line-height: 1.8; }
+    ul { margin: 10px 0; padding-left: 18px; color: var(--muted); line-height: 1.8; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    pre { overflow: auto; background: rgba(0,0,0,0.26); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 12px; }
+    .tile { border-radius: 18px; border: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.03); padding: 16px; }
+    .tile h3 { font-size: 18px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .tags span { border-radius: 999px; padding: 5px 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); font-size: 12px; color: #d6e7fb; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 16px; border-radius: 999px; font-weight: 700; }
+    .btn-primary { background: linear-gradient(135deg, var(--ice), var(--mint)); color: #061017; }
+    .btn-secondary { background: rgba(255,255,255,0.03); border: 1px solid var(--line); color: var(--text); }
+    footer { padding: 34px 0 70px; color: var(--muted); }
+  </style>
+</head>
+<body data-polly-context="articles" data-polly-root="..">
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <div class="brand-kicker">SCBE ops method</div>
+        <strong>Workflow cultivation</strong>
+      </div>
+      <nav class="nav">
+        <a href="../index.html">Home</a>
+        <a href="index.html">Articles</a>
+        <a href="../network.html">Network</a>
+        <a href="../research/sphere-grid.html">Sphere Grid</a>
+        <a href="../research/index.html">Research</a>
+        <a href="../demos/index.html">Demos</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <article class="hero-card">
+        <div class="eyebrow">Meridian flush (technical)</div>
+        <h1>Workflow cultivation</h1>
+        <p class="lede">
+          “Meridian flush” is a useful ops metaphor if you make it real: workflows are the meridians, failures are blockages, throughput is qi, and the goal is to circulate just enough energy to unblock the system without burning it down.
+        </p>
+        <div class="meta">
+          <span>Updated: 2026-03-28</span>
+          <span>CI stability first</span>
+          <span>Small fixes, compressed outputs</span>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="../research/sphere-grid.html">Open the Sphere Grid</a>
+          <a class="btn btn-secondary" href="../support.html">Support / recovery lane</a>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Mapping: philosophy → ops</h2>
+      <p>
+        This is not “standard procedure with a new name.” The key conversion is: <strong>turn soft metaphors into executable loops</strong>.
+      </p>
+      <ul>
+        <li><strong>Meridians</strong> → the system’s repeatable lanes: CI, demos, docs, connectors, releases, backups.</li>
+        <li><strong>Qi</strong> → the system’s usable energy: passing checks, fast feedback, working deploys, stable docs links.</li>
+        <li><strong>Blockage</strong> → any failure that stops the flow: flaky tests, broken links, missing env vars, expired tokens, drifted docs, dead scripts.</li>
+        <li><strong>Flush</strong> → a controlled cycle that touches all lanes just enough to detect and remove the blockage.</li>
+        <li><strong>Pellet</strong> → the compressed output: a runbook, a script, a skill patch, a check that prevents recurrence.</li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>The cultivation loop (first-principles)</h2>
+      <pre><code>Sense  →  Focus  →  Flush  →  Compress  →  Store  →  Repeat</code></pre>
+      <div class="grid">
+        <div class="tile">
+          <h3>Sense</h3>
+          <p>Scan the system for the smallest set of signals that predicts breakage (failed workflow, broken page, missing token, drifted config).</p>
+          <div class="tags"><span>status</span><span>signals</span><span>triage</span></div>
+        </div>
+        <div class="tile">
+          <h3>Focus</h3>
+          <p>Pick one lane. One failure. One fix. You do not flush everything at once; you route energy where the blockage is.</p>
+          <div class="tags"><span>one job</span><span>no scatter</span></div>
+        </div>
+        <div class="tile">
+          <h3>Flush</h3>
+          <p>Run the minimal cycle that reproduces the failure and confirms the fix. Avoid “full suite” unless it is the only way to see the break.</p>
+          <div class="tags"><span>minimal</span><span>repeatable</span></div>
+        </div>
+        <div class="tile">
+          <h3>Compress</h3>
+          <p>Turn the fix into a reusable artifact: a script, a guard, a test, a docs entry, or a skill update that makes the blockage harder to reintroduce.</p>
+          <div class="tags"><span>runbook</span><span>skill</span><span>guardrail</span></div>
+        </div>
+        <div class="tile">
+          <h3>Store</h3>
+          <p>Put the pellet where the next operator will look first: docs/, scripts/, skills/, or the demo surface itself.</p>
+          <div class="tags"><span>discoverable</span><span>indexed</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Four flush types (practical)</h2>
+      <div class="grid">
+        <div class="tile">
+          <h3>CI flush</h3>
+          <p>Goal: reduce repeat failures. Treat flaky tests and “daily failures” as blockages, not mysteries.</p>
+          <ul>
+            <li>Identify the smallest failing workflow/job.</li>
+            <li>Extract the failing step + error text.</li>
+            <li>Make the fix and add a regression guard.</li>
+          </ul>
+          <div class="tags"><span>gh-actions</span><span>stability</span></div>
+        </div>
+        <div class="tile">
+          <h3>Docs flush</h3>
+          <p>Goal: keep the public site crawlable and navigable. Broken internal links are blockages.</p>
+          <ul>
+            <li>Update sitemap + llms.txt.</li>
+            <li>Fix canonical URLs and robots.</li>
+            <li>Remove orphan pages or link them deliberately.</li>
+          </ul>
+          <div class="tags"><span>SEO</span><span>index</span><span>routing</span></div>
+        </div>
+        <div class="tile">
+          <h3>Connector flush</h3>
+          <p>Goal: keep tokens and integrations healthy. Expired auth is a blockage.</p>
+          <ul>
+            <li>Check which connector fails first.</li>
+            <li>Rotate only that key/token.</li>
+            <li>Add a health-check script to detect future expiry early.</li>
+          </ul>
+          <div class="tags"><span>MCP</span><span>oauth</span><span>health</span></div>
+        </div>
+        <div class="tile">
+          <h3>Release flush</h3>
+          <p>Goal: keep shipping surfaces stable. Treat deploy breakage as a circulatory failure.</p>
+          <ul>
+            <li>Verify the one page or tool that should work “always.”</li>
+            <li>Fix the regression and pin it with a guard.</li>
+            <li>Update the on-site manual/support paths to match reality.</li>
+          </ul>
+          <div class="tags"><span>deploy</span><span>manuals</span><span>support</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>The outcome: pellets (compressed qi)</h2>
+      <p>
+        The system improves over time only if fixes become <strong>reusable pellets</strong>.
+        In SCBE, pellets often look like:
+      </p>
+      <ul>
+        <li>a new skill file or an updated skill instruction,</li>
+        <li>a new script in <code>scripts/</code>,</li>
+        <li>a new public page under <code>docs/</code> that becomes a stable entry point,</li>
+        <li>a regression test that turns “memory” into enforcement.</li>
+      </ul>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="../network.html">Open the ops network map</a>
+        <a class="btn btn-secondary" href="aethermoore-constants.html">Read the constants review</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    Workflow cultivation is an ops method: sense, focus, flush, compress, store, repeat. Treat recurring failures as blockages and convert fixes into reusable pellets.
+  </footer>
+
+  <script src="../static/polly-sidebar.js"></script>
+</body>
+</html>
+

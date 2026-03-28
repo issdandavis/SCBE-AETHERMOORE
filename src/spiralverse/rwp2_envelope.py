@@ -100,7 +100,12 @@ TIER_REQUIRED_TONGUES = {
     OperationTier.TIER_1: {ProtocolTongue.KO},
     OperationTier.TIER_2: {ProtocolTongue.KO, ProtocolTongue.RU},
     OperationTier.TIER_3: {ProtocolTongue.KO, ProtocolTongue.RU, ProtocolTongue.UM},
-    OperationTier.TIER_4: {ProtocolTongue.KO, ProtocolTongue.RU, ProtocolTongue.UM, ProtocolTongue.CA},
+    OperationTier.TIER_4: {
+        ProtocolTongue.KO,
+        ProtocolTongue.RU,
+        ProtocolTongue.UM,
+        ProtocolTongue.CA,
+    },
 }
 
 # Security multipliers (approximate, for display)
@@ -160,11 +165,21 @@ def parse_spelltext(spelltext: str) -> SpelltextData:
         if key not in ["origin", "seq", "ts"]:
             context[key] = value
 
-    return SpelltextData(command=command, origin=origin, sequence=sequence, timestamp=timestamp, context=context)
+    return SpelltextData(
+        command=command,
+        origin=origin,
+        sequence=sequence,
+        timestamp=timestamp,
+        context=context,
+    )
 
 
 def build_spelltext(
-    command: str, origin: ProtocolTongue, sequence: int, timestamp: Optional[datetime] = None, **context
+    command: str,
+    origin: ProtocolTongue,
+    sequence: int,
+    timestamp: Optional[datetime] = None,
+    **context,
 ) -> str:
     """Build spelltext from components."""
     ts = timestamp or datetime.utcnow()
@@ -356,7 +371,9 @@ class SignatureEngine:
         )
 
     def verify(
-        self, envelope: RWP2Envelope, required_tongues: Optional[Set[ProtocolTongue]] = None
+        self,
+        envelope: RWP2Envelope,
+        required_tongues: Optional[Set[ProtocolTongue]] = None,
     ) -> Tuple[bool, Dict[ProtocolTongue, bool]]:
         """
         Verify envelope signatures.
@@ -473,7 +490,13 @@ class EnvelopeFactory:
         self.sequence_counter = 0
 
     def create(
-        self, command: str, payload: bytes, origin_tongue: ProtocolTongue, tier: OperationTier, aad: str = "", **context
+        self,
+        command: str,
+        payload: bytes,
+        origin_tongue: ProtocolTongue,
+        tier: OperationTier,
+        aad: str = "",
+        **context,
     ) -> RWP2Envelope:
         """
         Create a signed RWP2 envelope.
@@ -481,11 +504,20 @@ class EnvelopeFactory:
         self.sequence_counter += 1
 
         # Build spelltext
-        spelltext = build_spelltext(command=command, origin=origin_tongue, sequence=self.sequence_counter, **context)
+        spelltext = build_spelltext(
+            command=command,
+            origin=origin_tongue,
+            sequence=self.sequence_counter,
+            **context,
+        )
 
         # Create envelope
         envelope = RWP2Envelope(
-            spelltext=spelltext, payload=payload, aad=aad, tier=tier, kid=f"v1:{origin_tongue.value.lower()}_master"
+            spelltext=spelltext,
+            payload=payload,
+            aad=aad,
+            tier=tier,
+            kid=f"v1:{origin_tongue.value.lower()}_master",
         )
 
         # Sign with required tongues for tier

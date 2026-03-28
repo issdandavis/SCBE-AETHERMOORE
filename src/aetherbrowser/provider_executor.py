@@ -59,7 +59,10 @@ _MODEL_ID_DEFAULTS: dict[ModelProvider, tuple[str, str]] = {
     ModelProvider.OPUS: ("AETHERBROWSER_MODEL_OPUS", "claude-opus-4-1-20250805"),
     ModelProvider.FLASH: ("AETHERBROWSER_MODEL_FLASH", "gpt-4o-mini"),
     ModelProvider.GROK: ("AETHERBROWSER_MODEL_GROK", "grok-3-mini"),
-    ModelProvider.HUGGINGFACE: ("AETHERBROWSER_MODEL_HUGGINGFACE", "mistralai/Mistral-7B-Instruct-v0.3"),
+    ModelProvider.HUGGINGFACE: (
+        "AETHERBROWSER_MODEL_HUGGINGFACE",
+        "mistralai/Mistral-7B-Instruct-v0.3",
+    ),
 }
 
 
@@ -227,8 +230,14 @@ class ProviderExecutor:
     async def _call_local(self, model_id: str, prompt: str) -> str:
         del model_id
         lines = prompt.splitlines()
-        request_line = next((line for line in lines if line.startswith("User request: ")), "User request: ")
-        task_line = next((line for line in lines if line.startswith("Task type: ")), "Task type: default")
+        request_line = next(
+            (line for line in lines if line.startswith("User request: ")),
+            "User request: ",
+        )
+        task_line = next(
+            (line for line in lines if line.startswith("Task type: ")),
+            "Task type: default",
+        )
         risk_line = next((line for line in lines if line.startswith("Risk tier: ")), "Risk tier: low")
         browser_line = next(
             (line for line in lines if line.startswith("Browser action required: ")),

@@ -1,0 +1,154 @@
+Chapter 8: Rogue Signatures. Two months in
+Aethermoor. Marcus's baseline had drifted
+further toward center—down to R = 1.287
+now. He could cast four-layer spells
+without burning out. He'd learned to read RU inscriptions
+fluently. And he could command a Fleet
+with enough precision to thread them
+through moving obstacle courses. Then Polly introduced him to the concept
+of Rogue Agents. "Every system has
+adversaries," she said, pulling up a case
+study on the chamber walls. "People who
+try to subvert the Protocol. Forge authentication. Bypass permissions.
+Lie to the Echoes." The case study showed
+a familiar name: Kael Nightwhisper, the
+archmage who'd nearly collapsed Aethermoor
+three centuries ago. "Kael's strategy was
+elegant," Polly explained. "He didn't attack the Protocol. He
+convinced it. Slowly, over decades, he
+declared intents that were... technically
+true, but misleading. Built a reputation for honesty while
+hiding his real goals." Marcus studied the
+logs. "Social engineering. He hacked the
+trust model." "Exactly. By the time anyone noticed, his
+authentication was so deeply trusted that
+the Echoes stopped questioning him. He could declare anything—'This mountain
+should be a lake,' 'This person should
+cease to exist'—and the Protocol would
+comply." "So how do you stop someone like
+that?" Polly's expression went grim. "You introduce a counter-swarm. Echoes
+specifically trained to scrutinize the
+rogue's every action. Force the Protocol to re-verify them at
+maximum paranoia." She pulled up another
+diagram: two swarms, red and blue, locked
+in conflict. "It's consensus warfare. The
+blue swarm trusts Kael. The red swarm doesn't. They fight for
+majority vote." "And?" "The red swarm won.
+Barely. Kael's authentication dropped
+below threshold. He flickered, then
+erased." Polly closed the diagram. "But it
+cost us. Twelve Archive Keepers died maintaining
+the counter-swarm. The Protocol was
+unstable for years afterward." Marcus felt
+a chill. "So the defense against a trusted
+adversary is... mutually assured
+destruction." "Not always. If you catch them early—before they're
+deeply trusted—you can isolate them.
+Quarantine their authentication, limit
+their access. But once they're
+embedded..." "...you're fighting a civil
+war inside the Protocol itself." Polly
+nodded. "Which is why we train Fleets. Autonomous
+defense constructs that operate outside
+individual authentication chains. They're immune to social engineering
+because they don't trust—they verify."
+"Show me." Polly led Marcus to a
+restricted section of the Archives—deeper
+than he'd ever been, where the walls
+thrummed with barely contained power. "This is a Containment Vault," she said.
+"We keep... artifacts here. Dangerous
+ones. Experiments that went wrong. And," she gestured to a crystalline cage
+in the center of the room, "captured Rogue
+signatures." Inside the cage: a thing that
+hurt to look at. Not a person—a pattern. A data structure that kept trying to
+rewrite itself, to escape, to propagate.
+"This is what's left of a mage who tried
+to forge their own authentication," Polly
+explained. "They succeeded—for about fifteen seconds.
+Then the Protocol realized it had been
+lied to and... retaliated." "By erasing
+them?" "Worse. By isolating them. Stripping away every permission, every
+connection, every thread of trust. What's left is a ghost in the
+machine—self-aware, but unable to interact
+with reality." The pattern in the cage
+screamed—not audibly, but in protocol
+space. A desperate, recursive plea: Let me out,
+let me out, let me out— Marcus forced
+himself to look away. "Why keep it?" "As a
+warning. And as a test case." Polly pulled up a
+control panel. "We're going to release it—in a contained
+environment—and you're going to use your
+Fleet to neutralize it before it can forge
+new authentication." "You're kidding."
+"I'm really not. This is advanced training, Marcus. If
+you're going to be a Keeper, you need to
+handle Rogues." Marcus summoned his
+Fleet—six drones materializing in their
+familiar hexagonal formation. "And if I fail?" "The Vault contains the
+damage. Probably." Polly grinned. "No
+pressure." "You're enjoying this way too
+much." "I really am. Ready?" Marcus steadied himself, feeling
+the Fleet's presence through his
+connection to the Protocol. Six points of
+synchronized intent, waiting for his
+command. "Do it," he said. Polly opened
+the cage. The Rogue signature exploded outward—a
+chaotic bloom of forged authentication
+tokens, each one screaming different lies
+at the Echoes: I am authorized! I am
+trusted! I am real! Marcus's Fleet moved. RU (purple) locked onto the signature,
+parsing its authentication claims DR
+(earth-brown) cross-referenced them
+against archived truth: None of these
+signatures are valid UM (shadow-black)
+isolated the Rogue's broadcast, preventing
+it from reaching the wider swarm CA
+(white-gold) computed a counter-frequency
+to disrupt the forged tokens AV (blue-
+silver) delivered the disruption pulse KO
+(red-gold) declared the final verdict:
+Rogue agent detected. Authentication denied. The Rogue signature
+collapsed—not erased, but nullified.
+Stripped of its forged claims, unable to
+propagate, it flickered weakly and went
+still. The Fleet returned to formation.
+Silence. "Time elapsed: 4.7 seconds," Polly said
+quietly. "That's... that's a record,
+Marcus." Marcus stared at the neutralized
+signature. "It was trying to lie. To all
+the Echoes at once. Just... spamming false authentication." "And your
+Fleet didn't listen. They verified
+independently, reached consensus, and shut
+it down." Polly met his eyes. "That's the
+power of a well-trained swarm. They don't care about reputation or
+history. They care about proof." Marcus
+dismissed his Fleet, feeling suddenly
+exhausted. "If Kael had faced Fleets like this..."
+"He wouldn't have gotten as far as he did.
+But Fleet technology didn't exist back
+then. We built it because of Kael. Learned from the mistake." She closed the
+Vault, sealing the Rogue signature back in
+its cage. "The Protocol evolves, Marcus.
+Every attack teaches us. Every exploit
+gets patched. That's why Aethermoor has survived for ten
+thousand years." Marcus thought about
+Earth—about the endless arms race between
+hackers and defenders, about zero-days and
+patches and the constant, grinding effort
+to stay ahead of adversaries. "Same problems," he murmured. "Just
+different tools." Polly smiled. "Welcome to security engineering,
+Aethermoor edition." SCBE Mapping: Rogue
+detection maps to detect_rogue_agents() in
+swarm.ts, which identifies agents whose
+behavior deviates from swarm consensus. The counter-swarm strategy (fighting
+consensus with consensus) maps to the
+adaptive hyperbolic geometry in
+swarm_governance.py, where REALM_CENTERS
+define 6D positions for each Sacred Tongue
+domain and agents beyond tolerance are
+excluded. The Containment Vault's Rogue signatures
+correspond to quarantined agent states in
+Layer 13 Decision Gate: ALLOW / QUARANTINE
+/ DENY. The Fleet's six-step
+neutralization sequence mirrors the
+pipeline's layered verification.
