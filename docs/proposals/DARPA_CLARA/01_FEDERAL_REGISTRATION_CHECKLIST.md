@@ -139,14 +139,113 @@ If SAM.gov registration does not complete by April 17:
 
 ---
 
+---
+
+## SAM.gov ALL AWARDS REGISTRATION — EXACT FIELDS REQUIRED
+
+(From official GSA Entity Registration Checklist, 18 pages)
+
+### Section 1: Unique Entity ID
+- [ ] Legal Business Name: **Issac Daniel Davis** (sole proprietor)
+- [ ] Physical Address: Port Angeles, WA (NO P.O. Box allowed)
+- [ ] Choose: Make entity visible in public search results? (YES recommended — defense buyers search SAM)
+
+### Section 2: Core Data — Business Information
+- [ ] Organization start date: (date you started doing business)
+- [ ] Fiscal year end date: December 31
+- [ ] Website URL: https://aethermoorgames.com (optional but helps)
+- [ ] Create MPIN (Marketing Partner ID Number — you make this up during registration)
+- [ ] Mailing address (can copy physical)
+
+### Section 3: Core Data — Tax Info
+- [ ] TIN (Taxpayer ID): Your SSN (sole proprietors use SSN) — **TYPE THIS YOURSELF**
+- [ ] IRS Consent Form: Authorize SAM to validate your TIN with IRS
+- **THIS IS THE SLOW STEP** — IRS validation takes up to 10 business days
+
+### Section 4: Core Data — CAGE Code
+- [ ] Do you have a CAGE code? Select **"No"** — one will be assigned after submission
+
+### Section 5: Core Data — Ownership
+- [ ] Is entity owned or controlled by another entity? **No**
+- [ ] Is entity a successor to a predecessor? **No**
+
+### Section 6: Core Data — General Information
+- [ ] Country of Incorporation: **United States**
+- [ ] State of Incorporation: **Washington**
+- [ ] Company Security Clearance: **None** (skip — optional)
+- [ ] Entity Structure: **Sole Proprietorship**
+- [ ] Profit Structure: **For-Profit**
+- [ ] Organization Factors: None checked (not S-corp, not LLC, not foreign-owned)
+
+### Section 7: Core Data — Financial Information (EFT)
+- [ ] Accept credit cards: **No**
+- [ ] Account type: **Checking** (Cash App routing/account)
+- [ ] Routing number: **TYPE YOURSELF**
+- [ ] Account number: **TYPE YOURSELF**
+- [ ] Remittance address: Same as physical
+
+### Section 8: Core Data — Executive Compensation
+- [ ] 80%+ revenue from federal sources? **No** (first-time applicant)
+- [ ] This skips the executive compensation disclosure
+
+### Section 9: Core Data — Proceedings
+- [ ] All three proceedings questions: **No** (no prior federal contracts, no convictions, no debarment)
+
+### Section 10: Assertions — Goods and Services
+- [ ] NAICS codes:
+  - **541715** (R&D Physical/Engineering/Life Sciences) — PRIMARY
+  - **541511** (Custom Computer Programming)
+  - **541512** (Computer Systems Design)
+- [ ] PSC codes: Optional — skip for now
+
+### Section 11: Assertions — Size Metrics
+- [ ] Annual receipts: Enter your gross revenue (from W-2 + any 1099: ~$24,340 from TY2025)
+- [ ] Number of employees: **1**
+
+### Section 12: Assertions — Disaster Response
+- [ ] Include in Disaster Response Registry? **No**
+
+### Section 13: Reps & Certs — FAR Responses
+Most of these are straightforward No's for a new sole proprietor:
+- [ ] (7) Debarred/suspended? **No**
+- [ ] (8) Part 1: Convicted/civil judgment? **No**
+- [ ] (8) Part 2: Delinquent federal taxes >$3K? **No**
+- [ ] (9) Presently indicted? **No**
+- [ ] (10) Terminated for cause? **No**
+- [ ] (15) Limited rights data? **Yes** — you have patented IP (USPTO #63/961,403)
+- [ ] (20) Previous contracts with FAR 52.222-26? **No**
+- [ ] (27) Inverted domestic corp? **No**
+- [ ] (28) Subsidiary of inverted domestic corp? **No**
+- [ ] (30) Delinquent tax liability? **No**
+- [ ] (31) Felony conviction in 24 months? **No**
+- [ ] (32) >$7.5M federal contracts? **No**
+- [ ] (33) Covered telecom equipment? **No**
+
+### Section 14: DFARS Questionnaire
+- [ ] May apply since this is a DoD solicitation — answer when prompted
+- [ ] Most questions about foreign ownership, ITAR, etc. — all **No** for domestic sole proprietor
+
+### Section 15: Points of Contact
+- [ ] Government POC: **Issac Daniel Davis** (you are all POCs as sole proprietor)
+- [ ] Electronic POC: Same
+- [ ] Past Performance POC: Same
+- [ ] Phone, email for each
+
+### Section 16: SBA Supplemental (Small Business)
+- [ ] You qualify as small business under NAICS 541715 (threshold: 1,000 employees)
+- [ ] Fill out SBA supplemental page if prompted
+
+---
+
 ## CHECKLIST SUMMARY
 
-- [ ] Login.gov account created
+- [x] Login.gov account created (Mar 27)
+- [x] Login.gov connected to SAM.gov (Mar 27, 8:57 PM)
 - [ ] SAM.gov UEI requested
-- [ ] SAM.gov entity registration submitted (all sections)
+- [ ] SAM.gov entity registration submitted (all 16 sections above)
 - [ ] NAICS codes selected (primary: 541715)
 - [ ] CAGE code received (automatic with SAM.gov)
 - [ ] DARPAConnect account created
 - [ ] Submission portal access confirmed
 - [ ] Full solicitation downloaded from SAM.gov
-- [ ] Bank account info ready for EFT setup
+- [ ] Bank account info ready for EFT setup (Cash App routing/account)
