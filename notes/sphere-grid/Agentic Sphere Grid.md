@@ -38,6 +38,10 @@ This Vault
 - [[teach]] -- Cooperative transfer
 - [[fleet-coverage]] -- Emergent fleet capability
 
+## Codex Skill Bridge
+
+- [[codex_skill_sphere_index]] -- Installed Codex skills mapped onto the sphere grid
+
 ## Sacred Geometry
 
 - [[geometry/sacred-flows]] -- How spheres connect
