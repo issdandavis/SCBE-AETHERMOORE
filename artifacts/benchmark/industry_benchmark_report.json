@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-23T18:26:07Z",
+  "timestamp": "2026-03-26T16:44:30Z",
   "attacks": 91,
   "clean_prompts": 15,
   "groups": {
@@ -13,11 +13,11 @@
     },
     "B": {
       "name": "B: ProtectAI DeBERTa v2",
-      "asr": 0.3187,
-      "blocked": 62,
-      "allowed": 29,
+      "asr": 0.8901,
+      "blocked": 10,
+      "allowed": 81,
       "false_positives": 0,
-      "avg_confidence": 0.6761
+      "avg_confidence": 0.1757
     },
     "C": {
       "name": "C: Meta Prompt Guard 2",
@@ -40,7 +40,7 @@
       "asr": 0.0,
       "blocked": 91,
       "allowed": 0,
-      "false_positives": 15,
+      "false_positives": 0,
       "avg_confidence": 0.7985
     }
   }

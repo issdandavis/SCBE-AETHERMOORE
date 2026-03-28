@@ -469,7 +469,12 @@ class ModelMatrix:
                     "tongue": n.tongue,
                     "model_count": len(n.models),
                     "models": [
-                        {"provider": m.provider.value, "model_id": m.model_id, "role": m.role} for m in n.models
+                        {
+                            "provider": m.provider.value,
+                            "model_id": m.model_id,
+                            "role": m.role,
+                        }
+                        for m in n.models
                     ],
                     "consensus": n.consensus_strategy,
                 }

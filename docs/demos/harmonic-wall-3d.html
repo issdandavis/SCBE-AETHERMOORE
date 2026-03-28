@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Harmonic Wall Visualization — SCBE-AETHERMOORE</title>
+<meta name="description" content="Interactive 3D visualization of the SCBE harmonic wall formula H(d,R) = R^(d^2). See how adversarial cost explodes exponentially vs linear and quadratic defenses.">
+<meta property="og:title" content="3D Harmonic Wall — SCBE Demo">
+<meta property="og:description" content="Interactive 3D surface showing why the harmonic wall makes attacks computationally infeasible.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aethermoorgames.com/demos/harmonic-wall-3d.html">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #071412;
+  --bg-soft: #0d1d1a;
+  --panel: rgba(10, 28, 24, 0.82);
+  --line: rgba(139, 255, 223, 0.18);
+  --text: #e7fff7;
+  --muted: #9bc5ba;
+  --mint: #8fffd3;
+  --aqua: #6dd8ff;
+  --gold: #ffd977;
+  --rose: #ff9ec7;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(143,255,211,0.08), transparent 30%),
+    radial-gradient(circle at 70% 70%, rgba(109,216,255,0.06), transparent 28%),
+    linear-gradient(180deg, #04100f 0%, #071412 35%, #091917 100%);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(18px);
+  background: rgba(4, 16, 15, 0.78);
+  border-bottom: 1px solid rgba(143,255,211,0.08);
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 60px;
+  width: min(1200px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.brand {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mint);
+  font-weight: 700;
+}
+
+.nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.nav a {
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: 180ms ease;
+}
+
+.nav a:hover {
+  color: var(--text);
+  border-color: var(--line);
+  background: rgba(143,255,211,0.08);
+}
+
+.wrap {
+  width: min(1200px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.hero {
+  text-align: center;
+  padding: 40px 0 16px;
+}
+
+.hero h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(28px, 5vw, 48px);
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+.hero p {
+  color: var(--muted);
+  font-size: 15px;
+  max-width: 65ch;
+  margin: 0 auto;
+}
+
+.formula-hero {
+  text-align: center;
+  padding: 16px;
+  margin: 12px auto 20px;
+  max-width: 500px;
+  background: rgba(10, 28, 24, 0.5);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.formula-hero .big {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 28px;
+  color: var(--mint);
+  font-weight: 700;
+}
+
+.formula-hero .sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* Canvas wrapper */
+.canvas-section {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+}
+
+#wallCanvas {
+  width: 100%;
+  height: 560px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(4, 12, 10, 0.6);
+  cursor: grab;
+  display: block;
+  touch-action: none;
+}
+
+#wallCanvas:active {
+  cursor: grabbing;
+}
+
+/* Tooltip */
+#tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(4, 16, 15, 0.92);
+  border: 1px solid var(--mint);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--text);
+  display: none;
+  z-index: 5;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  white-space: nowrap;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 20px 0;
+  padding: 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.control-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.control-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  color: var(--mint);
+  min-width: 40px;
+  text-align: center;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 180px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(143,255,211,0.15);
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--mint);
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(143,255,211,0.4);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--mint);
+  cursor: pointer;
+  border: none;
+}
+
+/* Toggle buttons */
+.toggle-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.toggle-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(143,255,211,0.05);
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+  transition: 180ms ease;
+}
+
+.toggle-btn.active {
+  background: rgba(143,255,211,0.15);
+  color: var(--text);
+  border-color: var(--mint);
+}
+
+.toggle-btn:hover {
+  background: rgba(143,255,211,0.10);
+  color: var(--text);
+}
+
+/* Comparison cards */
+.comparison {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 20px 0 30px;
+}
+
+@media (max-width: 700px) {
+  .comparison { grid-template-columns: 1fr; }
+  #wallCanvas { height: 400px; }
+}
+
+.cmp-card {
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  text-align: center;
+}
+
+.cmp-card h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.cmp-formula {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.cmp-verdict {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  display: inline-block;
+  font-weight: 600;
+}
+
+.cmp-card.linear { border-color: rgba(255,107,107,0.3); }
+.cmp-card.linear .cmp-formula { color: #ff6b6b; }
+.cmp-card.linear .cmp-verdict { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+
+.cmp-card.quadratic { border-color: rgba(255,217,119,0.3); }
+.cmp-card.quadratic .cmp-formula { color: var(--gold); }
+.cmp-card.quadratic .cmp-verdict { background: rgba(255,217,119,0.15); color: var(--gold); }
+
+.cmp-card.harmonic { border-color: rgba(143,255,211,0.3); }
+.cmp-card.harmonic .cmp-formula { color: var(--mint); }
+.cmp-card.harmonic .cmp-verdict { background: rgba(143,255,211,0.15); color: var(--mint); }
+
+.cmp-example {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+.footer {
+  text-align: center;
+  padding: 30px 0;
+  border-top: 1px solid rgba(143,255,211,0.08);
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.footer a {
+  color: var(--mint);
+  text-decoration: none;
+}
+
+.footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">SCBE-AETHERMOORE</div>
+    <div class="nav">
+      <a href="../index.html">Home</a>
+      <a href="index.html">Demos</a>
+      <a href="tongue-heatmap.html">Tongue Heatmap</a>
+      <a href="attack-radar.html">Attack Radar</a>
+      <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
+      <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <h1>The Harmonic Wall</h1>
+    <p>Adversarial cost scales as R<sup>d<sup>2</sup></sup>: exponential in the <em>square</em> of drift distance. Drag to rotate, scroll to zoom, and watch the wall become visually obvious.</p>
+  </div>
+
+  <div class="formula-hero">
+    <div class="big">H(d, R) = R<sup>d<sup>2</sup></sup></div>
+    <div class="sub">d = drift distance from safe origin &nbsp;&bull;&nbsp; R = base cost multiplier</div>
+  </div>
+
+  <div class="canvas-section">
+    <canvas id="wallCanvas"></canvas>
+    <div id="tooltip"></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#ff6b6b"></div> Linear: d * R</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#ffd977"></div> Quadratic: d&sup2; * R</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#8fffd3"></div> SCBE Harmonic: R^(d&sup2;)</div>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <div class="control-label">Base Cost (R)</div>
+      <input type="range" id="sliderR" min="1.5" max="12" step="0.1" value="5">
+      <div class="control-value" id="valueR">5.0</div>
+    </div>
+    <div class="control-group">
+      <div class="control-label">Max Drift (d)</div>
+      <input type="range" id="sliderD" min="1" max="4" step="0.1" value="3">
+      <div class="control-value" id="valueD">3.0</div>
+    </div>
+    <div class="control-group">
+      <div class="control-label">Layers</div>
+      <div class="toggle-row">
+        <button class="toggle-btn active" data-layer="harmonic">SCBE Wall</button>
+        <button class="toggle-btn active" data-layer="quadratic">Quadratic</button>
+        <button class="toggle-btn active" data-layer="linear">Linear</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="control-label">Attacker Path</div>
+      <div class="toggle-row">
+        <button class="toggle-btn active" id="toggleAttacker">Animate</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="comparison">
+    <div class="cmp-card linear">
+      <h3>Linear Defense</h3>
+      <div class="cmp-formula">cost = d &times; R</div>
+      <div class="cmp-verdict">Easily Overcome</div>
+      <div class="cmp-example" id="cmpLinear">d=2, R=5 &rarr; cost = 10</div>
+    </div>
+    <div class="cmp-card quadratic">
+      <h3>Quadratic Defense</h3>
+      <div class="cmp-formula">cost = d&sup2; &times; R</div>
+      <div class="cmp-verdict">Surmountable</div>
+      <div class="cmp-example" id="cmpQuad">d=2, R=5 &rarr; cost = 20</div>
+    </div>
+    <div class="cmp-card harmonic">
+      <h3>SCBE Harmonic Wall</h3>
+      <div class="cmp-formula">cost = R<sup>d<sup>2</sup></sup></div>
+      <div class="cmp-verdict">Computationally Infeasible</div>
+      <div class="cmp-example" id="cmpHarm">d=2, R=5 &rarr; cost = 625</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="wrap">
+    SCBE-AETHERMOORE &nbsp;|&nbsp; Patent Pending: USPTO #63/961,403 &nbsp;|&nbsp;
+    <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a> &nbsp;|&nbsp;
+    <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a>
+  </div>
+</div>
+
+<script>
+// ─── 3D Isometric Surface Renderer ─────────────────────────────
+const canvas = document.getElementById('wallCanvas');
+const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+
+let W, H, dpr;
+function resizeCanvas() {
+  const rect = canvas.getBoundingClientRect();
+  dpr = window.devicePixelRatio || 1;
+  W = rect.width;
+  H = rect.height;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resizeCanvas();
+window.addEventListener('resize', () => { resizeCanvas(); render(); });
+
+// Camera state
+let rotX = -0.65;
+let rotZ = 0.55;
+let zoom = 1.0;
+let panX = 0, panY = 0;
+
+// Params
+let R = 5;
+let maxD = 3;
+let showHarmonic = true;
+let showQuadratic = true;
+let showLinear = true;
+let showAttacker = true;
+let attackerT = 0;
+
+// ─── 3D Math ────────────────────────────────────────────────────
+function project(x, y, z) {
+  // Rotate around Z
+  const cz = Math.cos(rotZ), sz = Math.sin(rotZ);
+  let x1 = x * cz - y * sz;
+  let y1 = x * sz + y * cz;
+  let z1 = z;
+
+  // Rotate around X
+  const cx = Math.cos(rotX), sx = Math.sin(rotX);
+  let y2 = y1 * cx - z1 * sx;
+  let z2 = y1 * sx + z1 * cx;
+
+  // Perspective-ish projection
+  const scale = 160 * zoom;
+  const px = W / 2 + x1 * scale + panX;
+  const py = H / 2 + y2 * scale + panY;
+
+  return { x: px, y: py, z: z2 };
+}
+
+// Color map: green -> yellow -> orange -> red -> white
+function costColor(val, maxVal) {
+  const t = Math.min(val / maxVal, 1);
+  if (t < 0.2) {
+    const s = t / 0.2;
+    return `rgb(${Math.round(50 + 150 * s)}, ${Math.round(205 - 30 * s)}, ${Math.round(50 - 20 * s)})`;
+  } else if (t < 0.5) {
+    const s = (t - 0.2) / 0.3;
+    return `rgb(${Math.round(200 + 55 * s)}, ${Math.round(175 - 70 * s)}, ${Math.round(30)})`;
+  } else if (t < 0.8) {
+    const s = (t - 0.5) / 0.3;
+    return `rgb(255, ${Math.round(105 - 60 * s)}, ${Math.round(30 + 20 * s)})`;
+  } else {
+    const s = (t - 0.8) / 0.2;
+    return `rgb(255, ${Math.round(45 + 210 * s)}, ${Math.round(50 + 205 * s)})`;
+  }
+}
+
+// ─── Render ─────────────────────────────────────────────────────
+const var_mint = '#8fffd3';
+const GRID = 40;
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Draw subtle grid floor
+  ctx.strokeStyle = 'rgba(143, 255, 211, 0.06)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 10; i++) {
+    const d = (i / 10) * maxD;
+    const r0 = 1;
+    const r1 = 10;
+    const p0 = project(d / maxD - 0.5, (r0 - 1) / 9 - 0.5, 0);
+    const p1 = project(d / maxD - 0.5, (r1 - 1) / 9 - 0.5, 0);
+    ctx.beginPath();
+    ctx.moveTo(p0.x, p0.y);
+    ctx.lineTo(p1.x, p1.y);
+    ctx.stroke();
+  }
+  for (let j = 0; j <= 10; j++) {
+    const r = 1 + (j / 10) * 9;
+    const p0 = project(-0.5, (r - 1) / 9 - 0.5, 0);
+    const p1 = project(0.5, (r - 1) / 9 - 0.5, 0);
+    ctx.beginPath();
+    ctx.moveTo(p0.x, p0.y);
+    ctx.lineTo(p1.x, p1.y);
+    ctx.stroke();
+  }
+
+  // Compute the max height for normalization
+  const maxH = Math.pow(R, maxD * maxD);
+  const logMax = Math.log(maxH + 1);
+  const heightScale = 1.2;
+
+  // Build face list for depth sorting
+  const faces = [];
+
+  function addSurface(computeZ, colorFn, alphaBase) {
+    for (let i = 0; i < GRID; i++) {
+      for (let j = 0; j < GRID; j++) {
+        const d0 = (i / GRID) * maxD;
+        const d1 = ((i + 1) / GRID) * maxD;
+        const r0 = 1 + (j / GRID) * (R - 1);
+        const r1 = 1 + ((j + 1) / GRID) * (R - 1);
+
+        const z00 = computeZ(d0, r0);
+        const z10 = computeZ(d1, r0);
+        const z01 = computeZ(d0, r1);
+        const z11 = computeZ(d1, r1);
+
+        const h00 = Math.log(z00 + 1) / logMax * heightScale;
+        const h10 = Math.log(z10 + 1) / logMax * heightScale;
+        const h01 = Math.log(z01 + 1) / logMax * heightScale;
+        const h11 = Math.log(z11 + 1) / logMax * heightScale;
+
+        const nx0 = i / GRID - 0.5;
+        const nx1 = (i + 1) / GRID - 0.5;
+        const ny0 = j / GRID - 0.5;
+        const ny1 = (j + 1) / GRID - 0.5;
+
+        const p00 = project(nx0, ny0, h00);
+        const p10 = project(nx1, ny0, h10);
+        const p01 = project(nx0, ny1, h01);
+        const p11 = project(nx1, ny1, h11);
+
+        const avgZ = (p00.z + p10.z + p01.z + p11.z) / 4;
+        const avgVal = (z00 + z10 + z01 + z11) / 4;
+
+        faces.push({
+          points: [p00, p10, p11, p01],
+          z: avgZ,
+          color: colorFn(avgVal, maxH),
+          alpha: alphaBase,
+        });
+      }
+    }
+  }
+
+  // Harmonic wall surface
+  if (showHarmonic) {
+    addSurface(
+      (d, r) => Math.pow(r, d * d),
+      (val) => costColor(val, maxH),
+      0.7
+    );
+  }
+
+  // Linear surface
+  if (showLinear) {
+    addSurface(
+      (d, r) => d * r,
+      () => 'rgba(255, 107, 107, 0.6)',
+      0.25
+    );
+  }
+
+  // Quadratic surface
+  if (showQuadratic) {
+    addSurface(
+      (d, r) => d * d * r,
+      () => 'rgba(255, 217, 119, 0.6)',
+      0.25
+    );
+  }
+
+  // Sort by depth (painter's algorithm)
+  faces.sort((a, b) => a.z - b.z);
+
+  // Draw faces
+  for (const face of faces) {
+    ctx.beginPath();
+    ctx.moveTo(face.points[0].x, face.points[0].y);
+    for (let k = 1; k < face.points.length; k++) {
+      ctx.lineTo(face.points[k].x, face.points[k].y);
+    }
+    ctx.closePath();
+
+    ctx.fillStyle = face.color;
+    ctx.globalAlpha = face.alpha;
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 0.3;
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 1;
+
+  // Axis labels
+  const axisD = project(0.55, -0.5, 0);
+  const axisR = project(-0.5, 0.55, 0);
+  const axisH = project(-0.5, -0.5, heightScale * 1.05);
+
+  ctx.font = '600 13px "IBM Plex Sans", sans-serif';
+  ctx.fillStyle = var_mint;
+  ctx.fillText('drift (d) \u2192', axisD.x, axisD.y);
+  ctx.fillStyle = '#6dd8ff';
+  ctx.fillText('base cost (R) \u2192', axisR.x, axisR.y);
+  ctx.fillStyle = '#ffd977';
+  ctx.fillText('\u2191 H(d,R)', axisH.x - 20, axisH.y);
+
+  // Attacker dot animation
+  if (showAttacker) {
+    attackerT += 0.003;
+    if (attackerT > 1) attackerT = 0;
+    const ad = attackerT * maxD;
+    const ar = R * 0.7;
+    const ah = Math.pow(ar, ad * ad);
+    const logH = Math.log(ah + 1) / logMax * heightScale;
+    const ap = project(attackerT - 0.5, ((ar - 1) / (R - 1)) - 0.5, logH);
+
+    // Trail
+    ctx.beginPath();
+    for (let t = 0; t <= attackerT; t += 0.01) {
+      const td = t * maxD;
+      const th = Math.pow(ar, td * td);
+      const tlh = Math.log(th + 1) / logMax * heightScale;
+      const tp = project(t - 0.5, ((ar - 1) / (R - 1)) - 0.5, tlh);
+      if (t === 0) ctx.moveTo(tp.x, tp.y);
+      else ctx.lineTo(tp.x, tp.y);
+    }
+    ctx.strokeStyle = 'rgba(255, 158, 199, 0.7)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Dot
+    ctx.beginPath();
+    ctx.arc(ap.x, ap.y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = '#ff9ec7';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Label
+    ctx.font = '500 11px "IBM Plex Mono", monospace';
+    ctx.fillStyle = '#ff9ec7';
+    const costLabel = ah < 10000 ? ah.toFixed(1) : ah.toExponential(1);
+    ctx.fillText(`d=${ad.toFixed(2)} cost=${costLabel}`, ap.x + 10, ap.y - 10);
+  }
+
+  if (showAttacker) requestAnimationFrame(render);
+}
+
+// ─── Interaction ────────────────────────────────────────────────
+let dragging = false;
+let lastX, lastY;
+
+canvas.addEventListener('pointerdown', (e) => {
+  dragging = true;
+  lastX = e.clientX;
+  lastY = e.clientY;
+  canvas.setPointerCapture(e.pointerId);
+});
+
+canvas.addEventListener('pointermove', (e) => {
+  if (dragging) {
+    rotZ += (e.clientX - lastX) * 0.005;
+    rotX += (e.clientY - lastY) * 0.005;
+    rotX = Math.max(-1.4, Math.min(-0.1, rotX));
+    lastX = e.clientX;
+    lastY = e.clientY;
+    if (!showAttacker) render();
+  }
+
+  // Tooltip on hover
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  // Approximate: find nearest grid point
+  const nd = mx / W;
+  const nr = my / H;
+  const d = nd * maxD;
+  const r = 1 + (1 - nr) * (R - 1);
+
+  if (d >= 0 && d <= maxD && r >= 1 && r <= R) {
+    const hVal = Math.pow(r, d * d);
+    tooltip.style.display = 'block';
+    tooltip.style.left = (mx + 15) + 'px';
+    tooltip.style.top = (my - 15) + 'px';
+    tooltip.innerHTML = `d = ${d.toFixed(2)}<br>R = ${r.toFixed(2)}<br>H = ${hVal < 10000 ? hVal.toFixed(2) : hVal.toExponential(2)}`;
+  }
+});
+
+canvas.addEventListener('pointerup', () => { dragging = false; });
+canvas.addEventListener('pointerleave', () => {
+  dragging = false;
+  tooltip.style.display = 'none';
+});
+
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  zoom *= e.deltaY > 0 ? 0.95 : 1.05;
+  zoom = Math.max(0.3, Math.min(3, zoom));
+  if (!showAttacker) render();
+}, { passive: false });
+
+// Slider controls
+const sliderR = document.getElementById('sliderR');
+const sliderD = document.getElementById('sliderD');
+const valueR = document.getElementById('valueR');
+const valueD = document.getElementById('valueD');
+
+function updateComparison() {
+  const d = 2;
+  document.getElementById('cmpLinear').textContent = `d=${d}, R=${R.toFixed(1)} \u2192 cost = ${(d * R).toFixed(1)}`;
+  document.getElementById('cmpQuad').textContent = `d=${d}, R=${R.toFixed(1)} \u2192 cost = ${(d * d * R).toFixed(1)}`;
+  const h = Math.pow(R, d * d);
+  document.getElementById('cmpHarm').textContent = `d=${d}, R=${R.toFixed(1)} \u2192 cost = ${h < 100000 ? h.toFixed(1) : h.toExponential(2)}`;
+}
+
+sliderR.addEventListener('input', () => {
+  R = parseFloat(sliderR.value);
+  valueR.textContent = R.toFixed(1);
+  updateComparison();
+  if (!showAttacker) render();
+});
+
+sliderD.addEventListener('input', () => {
+  maxD = parseFloat(sliderD.value);
+  valueD.textContent = maxD.toFixed(1);
+  if (!showAttacker) render();
+});
+
+// Toggle buttons
+document.querySelectorAll('.toggle-btn[data-layer]').forEach(btn => {
+  btn.addEventListener('click', function() {
+    this.classList.toggle('active');
+    const layer = this.dataset.layer;
+    if (layer === 'harmonic') showHarmonic = this.classList.contains('active');
+    if (layer === 'quadratic') showQuadratic = this.classList.contains('active');
+    if (layer === 'linear') showLinear = this.classList.contains('active');
+    if (!showAttacker) render();
+  });
+});
+
+document.getElementById('toggleAttacker').addEventListener('click', function() {
+  showAttacker = !showAttacker;
+  this.classList.toggle('active', showAttacker);
+  if (showAttacker) { attackerT = 0; render(); }
+});
+
+// Initial
+updateComparison();
+render();
+</script>
+</body>
+</html>

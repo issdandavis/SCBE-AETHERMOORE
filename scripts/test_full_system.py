@@ -239,9 +239,9 @@ def test_phdm():
 
     # Check sub-dimensions
     hyp = emb[:6]  # Hyperbolic
-    phase = emb[6:12]  # Phase
-    flux = emb[12:15]  # Flux
-    audit = emb[15:21]  # Audit
+    _phase = emb[6:12]  # Phase
+    _flux = emb[12:15]  # Flux
+    _audit = emb[15:21]  # Audit
 
     # Hyperbolic part should be in Poincare ball
     hyp_norm = float(np.linalg.norm(hyp))

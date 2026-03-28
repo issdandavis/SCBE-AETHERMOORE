@@ -500,7 +500,14 @@ TOOL_DEFINITIONS = [
                 },
                 "node_type": {
                     "type": "string",
-                    "enum": ["EMOTION", "LITERARY", "PROVERB", "CONCEPT", "SOURCE", "TONGUE"],
+                    "enum": [
+                        "EMOTION",
+                        "LITERARY",
+                        "PROVERB",
+                        "CONCEPT",
+                        "SOURCE",
+                        "TONGUE",
+                    ],
                     "description": "Type of knowledge node",
                     "default": "CONCEPT",
                 },
@@ -539,7 +546,14 @@ TOOL_DEFINITIONS = [
                 },
                 "node_type": {
                     "type": "string",
-                    "enum": ["EMOTION", "LITERARY", "PROVERB", "CONCEPT", "SOURCE", "TONGUE"],
+                    "enum": [
+                        "EMOTION",
+                        "LITERARY",
+                        "PROVERB",
+                        "CONCEPT",
+                        "SOURCE",
+                        "TONGUE",
+                    ],
                     "description": "Filter by node type",
                 },
             },
@@ -726,7 +740,11 @@ class MCPServer:
 
     @staticmethod
     def _error(req_id: Any, code: int, message: str) -> Dict[str, Any]:
-        return {"jsonrpc": "2.0", "id": req_id, "error": {"code": code, "message": message}}
+        return {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "error": {"code": code, "message": message},
+        }
 
     def run(self) -> None:
         """Run the MCP server on stdio."""

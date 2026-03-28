@@ -19,5 +19,6 @@ jobs:
     steps:
       - name: Approve PR
         uses: hmarr/auto-approve-action@v4
+        continue-on-error: true
         with:
           review-message: "Auto-approved: trusted source (${{ github.actor }})"

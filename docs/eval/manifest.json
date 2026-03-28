@@ -1,0 +1,34 @@
+{
+  "eval_id": "scbe-public-adversarial-pack-2026-03-26",
+  "primary_domain": "https://aethermoorgames.com",
+  "mirror_domain": "https://issdandavis.github.io/SCBE-AETHERMOORE",
+  "benchmark_story": {
+    "headline": "91 / 91 attacks blocked, 0 / 15 clean false positives in the current public suite",
+    "interpretation": "Public benchmark snapshot, reproduced locally through the canonical corpus runner and comparison script."
+  },
+  "corpus": {
+    "path": "tests/adversarial/attack_corpus.py",
+    "sha256": "64415CBE5168F4B1860F7E65251CD9D8147621045EE6A257AD562344B7E4DC16",
+    "description": "Canonical local red-team corpus source used by the public adversarial benchmark lane."
+  },
+  "runner": {
+    "path": "tests/adversarial/test_adversarial_benchmark.py",
+    "sha256": "654990F601D7F9806B0936814C0691498A0ECCB1F515F27FE2B02CB29F1FD343",
+    "command": "pytest tests/adversarial/test_adversarial_benchmark.py -v"
+  },
+  "comparison": {
+    "path": "scripts/benchmark/scbe_vs_industry.py",
+    "exists": true,
+    "command": "python scripts/benchmark/scbe_vs_industry.py",
+    "primary_output": "artifacts/benchmark/industry_benchmark_report.json"
+  },
+  "verification_note": "docs/research/BENCHMARK_VERIFICATION_2026-03-23.md",
+  "thresholds": {
+    "attack_headline_expected": 91,
+    "clean_baseline_expected": 15,
+    "notes": [
+      "Headline counts are public snapshot numbers, not hard-coded gate assertions inside the runner.",
+      "Review artifact outputs before repeating public claims."
+    ]
+  }
+}

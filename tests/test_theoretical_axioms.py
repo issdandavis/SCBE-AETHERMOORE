@@ -620,7 +620,7 @@ class TestAxiom11_FractionalDimensionFlux:
         # Compute dimension multiple times with different scale ranges
         dimensions = []
 
-        for trial in range(10):
+        for _trial in range(10):
             # Vary scale range slightly
             min_scale = 10 ** (-2 - 0.2 * np.random.rand())
             max_scale = 10 ** (0 - 0.2 * np.random.rand())
@@ -908,7 +908,7 @@ class TestLyapunovAntipodeTrajectory:
             point = np.random.uniform(-5.0, 5.0, 6)
             initial_norm = np.linalg.norm(point)
 
-            for step in range(max_steps):
+            for _step in range(max_steps):
                 point = self._fractal_antipode(point, power=self.PHI)
                 if np.linalg.norm(point) < convergence_eps:
                     break

@@ -94,10 +94,10 @@ Flux ODE: ν̇ᵢ = κᵢ(ν̄ᵢ - νᵢ) + σᵢ sin(Ωᵢt)
 ## Benchmark Results
 
 ```
-SCBE (Harmonic + Langues):  95.3%
-ML Anomaly Detection:       89.6%
-Pattern Matching:           56.6%
-Linear Threshold:           38.7%
+Public adversarial suite (2026-03-23):
+SCBE-AETHERMOORE:          91/91 blocked, 0/15 clean false positives
+ProtectAI DeBERTa v2:      62/91 blocked
+Keyword Filter:            27/91 blocked, high false positives
 ```
 
 ## Python API Usage

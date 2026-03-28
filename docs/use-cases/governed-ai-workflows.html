@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Use Cases | SCBE-AETHERMOORE AI Governance Toolkit</title>
+  <meta name="description" content="Concrete buyer scenarios for the SCBE AI Governance Toolkit: governed AI workflows for internal copilots, agentic automations, and research ingestion.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Use Cases | SCBE AI Governance Toolkit">
+  <meta property="og:description" content="Governed AI workflows in buyer terms: what breaks in production and how to start with a smaller surface.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://aethermoorgames.com/use-cases/governed-ai-workflows.html">
+  <meta property="og:image" content="https://aethermoorgames.com/hero.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Use Cases | SCBE AI Governance Toolkit">
+  <meta name="twitter:description" content="Governed AI workflows in buyer terms: what breaks in production and how to start.">
+  <meta name="twitter:image" content="https://aethermoorgames.com/hero.png">
+  <link rel="canonical" href="https://aethermoorgames.com/use-cases/governed-ai-workflows.html">
+  <link rel="stylesheet" href="../static/polly-sidebar.css">
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --bg-soft: #11161f;
+      --panel: rgba(18, 23, 32, 0.92);
+      --line: rgba(214, 167, 86, 0.18);
+      --text: #f2f0ea;
+      --muted: #a3acb9;
+      --accent: #d6a756;
+      --accent-strong: #f0bf67;
+      --cool: #8cb4ff;
+      --max: 980px;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top, rgba(214, 167, 86, 0.12), transparent 34%),
+        linear-gradient(180deg, #0b0d12 0%, #0e131b 40%, #0b0d12 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(14px);
+      background: rgba(11, 13, 18, 0.82);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .topbar-inner, .section-inner, .footer-inner {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+    .topbar-inner {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .brand {
+      font-size: 14px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .nav { display: flex; gap: 16px; flex-wrap: wrap; justify-content: flex-end; font-size: 14px; color: var(--muted); }
+    .nav a { padding: 8px 10px; border-radius: 999px; border: 1px solid transparent; }
+    .nav a:hover { border-color: rgba(214, 167, 86, 0.35); color: var(--text); background: rgba(214, 167, 86, 0.08); }
+    .hero { padding: 70px 0 18px; }
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.22em; font-size: 12px; color: var(--muted); }
+    h1 { font-size: clamp(36px, 4.4vw, 56px); line-height: 1.06; margin-top: 14px; }
+    .lede { margin-top: 16px; font-size: 18px; color: var(--muted); max-width: 70ch; }
+    .pillrow { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .pill { display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 999px; background: rgba(18,23,32,0.75); border: 1px solid rgba(255,255,255,0.08); color: var(--muted); }
+    .pill strong { color: var(--text); font-weight: 700; }
+    .cta-row { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 16px; border-radius: 14px; border: 1px solid rgba(214, 167, 86, 0.35); background: rgba(18,23,32,0.62); color: var(--text); font-weight: 700; box-shadow: var(--shadow); }
+    .btn-primary { background: linear-gradient(135deg, rgba(214, 167, 86, 0.35), rgba(140, 180, 255, 0.18)); border-color: rgba(214, 167, 86, 0.55); }
+    .btn:hover { transform: translateY(-1px); border-color: rgba(240, 191, 103, 0.75); }
+    main { padding-bottom: 70px; }
+    section { padding: 44px 0; border-top: 1px solid rgba(255,255,255,0.06); }
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .card {
+      background: rgba(18,23,32,0.72);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+      box-shadow: var(--shadow);
+    }
+    .card h2 { font-size: 18px; letter-spacing: 0.02em; }
+    .card p { margin-top: 10px; color: var(--muted); }
+    .card ul { margin-top: 12px; padding-left: 18px; color: var(--muted); }
+    .card li { margin: 6px 0; }
+    .callout {
+      margin-top: 16px;
+      padding: 16px 16px;
+      border-radius: 18px;
+      background: rgba(214, 167, 86, 0.10);
+      border: 1px solid rgba(214, 167, 86, 0.22);
+      color: var(--text);
+    }
+    .callout p { margin-top: 8px; color: var(--muted); }
+    .footer { border-top: 1px solid rgba(255,255,255,0.06); padding: 22px 0; color: var(--muted); }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; }
+    .footer-links a { border-bottom: 1px solid rgba(214, 167, 86, 0.22); padding-bottom: 2px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="../index.html">SCBE AETHERMOORE</a>
+      <nav class="nav" aria-label="Site navigation">
+        <a href="../index.html#proof">Proof</a>
+        <a href="../product-manual/ai-governance-toolkit.html">Manual</a>
+        <a href="https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06" target="_blank" rel="noopener">Buy</a>
+        <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="section-inner">
+        <div class="eyebrow">Use cases</div>
+        <h1>Governed AI workflows, in buyer terms.</h1>
+        <p class="lede">
+          If you are shipping LLM features, the question is not whether something will break. It is whether your workflow makes the break visible,
+          bounded, and recoverable. The SCBE AI Governance Toolkit is a starter surface for that.
+        </p>
+        <div class="pillrow" aria-label="Use case highlights">
+          <div class="pill"><strong>Agents</strong><span>govern actions, not just text</span></div>
+          <div class="pill"><strong>Ingestion</strong><span>govern what enters your training lane</span></div>
+          <div class="pill"><strong>Proof</strong><span>decisions you can defend later</span></div>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06" target="_blank" rel="noopener">Buy the toolkit</a>
+          <a class="btn" href="../comparison/toolkit-vs-full-repo.html">See what is included</a>
+          <a class="btn" href="../proof/why-the-manual-exists.html">Why the manual exists</a>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-inner">
+        <div class="eyebrow">Scenarios</div>
+        <div class="grid">
+          <article class="card">
+            <h2>Internal copilots and support bots</h2>
+            <p>Where it breaks: prompt injection, policy drift, and accidental data exposure when the bot touches real inboxes and docs.</p>
+            <ul>
+              <li>Use a governed action boundary: allow, deny, quarantine, reroute.</li>
+              <li>Keep a smaller delivery surface so the team actually adopts it.</li>
+              <li>Attach decision records so audit questions have receipts.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h2>Agentic automations (email, uploads, ops)</h2>
+            <p>Where it breaks: the model executes the wrong operation confidently. The blast radius is the point.</p>
+            <ul>
+              <li>Separate intent from execution with a gate in between.</li>
+              <li>Require escalation for dangerous-but-legitimate operations.</li>
+              <li>Log decisions as governance artifacts, not debug spam.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h2>Research ingestion and training data pipelines</h2>
+            <p>Where it breaks: malicious pages, contaminated transcripts, or toxic corpora enter your data lane quietly.</p>
+            <ul>
+              <li>Start with a trusted allowlist. Expand deliberately.</li>
+              <li>Quarantine ambiguous sources; do not auto-train on them.</li>
+              <li>Label every packet with provenance so learning is traceable.</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="callout">
+          <strong>Week 1 path (the point of the starter pack)</strong>
+          <p>
+            Pick one workflow you already run (email triage, transcript collection, web research). Put a governance boundary in front of actions,
+            and ship the smallest defensible version. The toolkit is designed to help you do that without spelunking a whole repo.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-inner">
+        <div class="eyebrow">Next step</div>
+        <h2 style="margin-top:10px; font-size:28px; line-height:1.2;">Start with a smaller surface, then expand.</h2>
+        <p class="lede" style="margin-top:12px;">
+          If you want the full SCBE repo later, great. But most buyers do better when they begin with a product that has one clear delivery path.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06" target="_blank" rel="noopener">Buy the toolkit</a>
+          <a class="btn" href="../product-manual/ai-governance-toolkit.html">Read the manual first</a>
+          <a class="btn" href="../support.html">Support route</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-links">
+        <a href="../index.html">Home</a>
+        <a href="../product-manual/ai-governance-toolkit.html">Manual</a>
+        <a href="../comparison/toolkit-vs-full-repo.html">Toolkit vs repo</a>
+        <a href="../support.html">Support</a>
+        <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
+      </div>
+      <div>SCBE AETHERMOORE. Built for direct delivery, not maze navigation.</div>
+    </div>
+  </footer>
+
+  <script src="../static/polly-sidebar.js"></script>
+</body>
+</html>
+

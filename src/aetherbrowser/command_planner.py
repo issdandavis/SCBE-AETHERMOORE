@@ -168,7 +168,7 @@ class CommandPlan:
             "assignments": [
                 {
                     **assignment,
-                    "role": assignment["role"].value if hasattr(assignment["role"], "value") else assignment["role"],
+                    "role": (assignment["role"].value if hasattr(assignment["role"], "value") else assignment["role"]),
                 }
                 for assignment in self.assignments
             ],

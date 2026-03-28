@@ -1,0 +1,66 @@
+{
+  "version": "2026-03-28",
+  "sources": [
+    {
+      "name": "SAM.gov (Contract Opportunities)",
+      "type": "solicitations",
+      "url": "https://sam.gov/content/opportunities",
+      "notes": "Primary U.S. federal contracting portal. Use keyword searches + NAICS filters."
+    },
+    {
+      "name": "SAM.gov (Assistance Listings / Grants)",
+      "type": "assistance",
+      "url": "https://sam.gov/content/assistance",
+      "notes": "Federal financial assistance portal. Useful for grant-style announcements."
+    },
+    {
+      "name": "DARPA Opportunities",
+      "type": "darpa",
+      "url": "https://www.darpa.mil/work-with-us/opportunities",
+      "notes": "Official DARPA opportunities list (BAAs, solicitations, events)."
+    },
+    {
+      "name": "DARPA CLARA Program Page",
+      "type": "darpa",
+      "url": "https://www.darpa.mil/research/programs/clara",
+      "notes": "Compositional Learning-And-Reasoning for AI Complex Systems Engineering (CLARA)."
+    },
+    {
+      "name": "DARPA I2O Office",
+      "type": "darpa",
+      "url": "https://www.darpa.mil/about/offices/i2o",
+      "notes": "Information Innovation Office (I2O) program index and updates."
+    },
+    {
+      "name": "Defense Logistics Agency (DLA) SBIR/STTR",
+      "type": "sbir",
+      "url": "https://www.dla.mil/Small-Business/Vendor-Opportunities/Small-Business-Innovation-Programs/",
+      "notes": "Example DoD component SBIR/STTR schedule and resources."
+    },
+    {
+      "name": "DOE Office of Science SBIR Funding Opportunities (FY 2026)",
+      "type": "sbir",
+      "url": "https://science.osti.gov/sbir/Funding-Opportunities/FY-2026",
+      "notes": "Official DOE SBIR/STTR schedule details (dates vary by release)."
+    },
+    {
+      "name": "NSF TIP Timeline",
+      "type": "nsf",
+      "url": "https://www.nsf.gov/tip/timeline",
+      "notes": "NSF Directorate for Technology, Innovation and Partnerships (TIP) activity timeline."
+    },
+    {
+      "name": "DIU Solicitations",
+      "type": "diu",
+      "url": "https://www.diu.mil/work-with-us/solicitations",
+      "notes": "Defense Innovation Unit open solicitations (CSO-based)."
+    },
+    {
+      "name": "AFWERX (U.S. Air Force) SBIR/STTR",
+      "type": "sbir",
+      "url": "https://afwerx.com/divisions/afsbirsttr/",
+      "notes": "AFWERX open topics and SBIR/STTR participation paths."
+    }
+  ]
+}
+

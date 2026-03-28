@@ -1,0 +1,20 @@
+{
+  "train_id": "chessboard_dev_stack",
+  "description": "Generate chessboard role packets (Spec Kit + BMAD + GSD + Superpowers) for SCBE work.",
+  "entry_flow": "main",
+  "settings": {
+    "max_parallel_flows": 1
+  },
+  "flows": {
+    "main": [
+      {
+        "type": "shell",
+        "id": "generate_packets",
+        "cmd": "python scripts/system/chessboard_dev_stack.py",
+        "timeout_s": 60,
+        "continue_on_error": false
+      }
+    ]
+  }
+}
+

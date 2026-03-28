@@ -155,7 +155,11 @@ def build_lattice_point_gated(
         layer=1,
         decision="ALLOW" if authorized else "DENY",
         score=1.0 if authorized else 0.0,
-        metadata={"kyber_level": kyber_level, "dilithium_level": dilithium_level, "reason": reason},
+        metadata={
+            "kyber_level": kyber_level,
+            "dilithium_level": dilithium_level,
+            "reason": reason,
+        },
     )
 
     if not authorized:
@@ -207,7 +211,9 @@ def realify_with_sign(context: GeoContext) -> np.ndarray:
     return real_vec
 
 
-def project_to_poincare_with_realm(real_vec: np.ndarray) -> Tuple[np.ndarray, RealmType]:
+def project_to_poincare_with_realm(
+    real_vec: np.ndarray,
+) -> Tuple[np.ndarray, RealmType]:
     """
     Layer 4: Project realified vector to Poincare ball with realm assignment.
 
@@ -235,7 +241,9 @@ def project_to_poincare_with_realm(real_vec: np.ndarray) -> Tuple[np.ndarray, Re
     return projected, realm
 
 
-def layers_2_4_process(context: GeoContext) -> Tuple[np.ndarray, RealmType, LayerDecision]:
+def layers_2_4_process(
+    context: GeoContext,
+) -> Tuple[np.ndarray, RealmType, LayerDecision]:
     """
     Process through layers 2-4: Realification → Weighted → Poincare.
     """
@@ -287,7 +295,10 @@ def governance_aware_distance(a: np.ndarray, b: np.ndarray, phase_a: float = 0.0
 
 
 def layer_5_evaluate(
-    position: np.ndarray, target: np.ndarray, phase: float = 0.0, target_phase: float = 0.0
+    position: np.ndarray,
+    target: np.ndarray,
+    phase: float = 0.0,
+    target_phase: float = 0.0,
 ) -> LayerDecision:
     """
     Layer 5: Evaluate hyperbolic distance for governance decision.
@@ -309,7 +320,10 @@ def layer_5_evaluate(
         layer=5,
         decision=decision,
         score=max(0, score),
-        metadata={"hyperbolic_distance": float(distance), "phase_diff": abs(phase - target_phase)},
+        metadata={
+            "hyperbolic_distance": float(distance),
+            "phase_diff": abs(phase - target_phase),
+        },
     )
 
 
@@ -442,7 +456,11 @@ def layer_8_cluster(points: List[np.ndarray]) -> Tuple[List[RealmType], LayerDec
         layer=8,
         decision="CLUSTERED",
         score=light_count / max(1, len(realms)),  # Higher = more light
-        metadata={"light_count": light_count, "shadow_count": shadow_count, "total_points": len(points)},
+        metadata={
+            "light_count": light_count,
+            "shadow_count": shadow_count,
+            "total_points": len(points),
+        },
     )
 
     return realms, layer_decision
@@ -710,7 +728,9 @@ def _step_phase_deviation(a: np.ndarray, b: np.ndarray) -> float:
 
 
 def compute_path_cost(
-    path: List[np.ndarray], realms: Optional[List[RealmType]] = None, realm_weights: Dict[RealmType, float] = None
+    path: List[np.ndarray],
+    realms: Optional[List[RealmType]] = None,
+    realm_weights: Dict[RealmType, float] = None,
 ) -> float:
     """
     Layer 12: Compute total path cost with harmonic amplification.
@@ -752,7 +772,9 @@ def compute_path_cost(
 
 
 def layer_12_13_evaluate(
-    path: List[np.ndarray], realms: Optional[List[RealmType]] = None, risk_threshold: float = 0.3
+    path: List[np.ndarray],
+    realms: Optional[List[RealmType]] = None,
+    risk_threshold: float = 0.3,
 ) -> Tuple[str, LayerDecision]:
     """
     Layer 12-13: Evaluate path with harmonic scaling and make decision.
@@ -822,7 +844,7 @@ def hyperpath_to_audio(path: List[np.ndarray], realms: List[RealmType] = None) -
 
     frequencies = []
 
-    for i, (coord, realm) in enumerate(zip(path, realms)):
+    for _i, (coord, realm) in enumerate(zip(path, realms)):
         # Base frequency from position
         if realm == RealmType.LIGHT:
             base_freq = LIGHT_BASE_FREQ
@@ -907,7 +929,13 @@ class DualLatticeIntegrator:
     with full lattice proofs and audio signatures.
     """
 
-    def __init__(self, kyber_level: int = 3, dilithium_level: int = 3, grid_size: int = 64, max_depth: int = 6):
+    def __init__(
+        self,
+        kyber_level: int = 3,
+        dilithium_level: int = 3,
+        grid_size: int = 64,
+        max_depth: int = 6,
+    ):
         self.kyber_level = kyber_level
         self.dilithium_level = dilithium_level
 
@@ -921,7 +949,11 @@ class DualLatticeIntegrator:
         self.path_history_limit = 8
 
     def process_action(
-        self, action: str, target: str, sensitivity: float = 0.5, context: Optional[GeoContext] = None
+        self,
+        action: str,
+        target: str,
+        sensitivity: float = 0.5,
+        context: Optional[GeoContext] = None,
     ) -> IntegratedResult:
         """
         Process an action through all 14 layers.
@@ -955,7 +987,7 @@ class DualLatticeIntegrator:
         if context is None:
             context = GeoContext(
                 location=np.array([0.0, 0.0, 0.0]),
-                intent_strength=sensitivity if sensitivity > 0.5 else -(1 - sensitivity),
+                intent_strength=(sensitivity if sensitivity > 0.5 else -(1 - sensitivity)),
                 temporal_offset=0.0,
                 semantic_weight=1.0,
             )

@@ -40,7 +40,13 @@ from datetime import datetime, timezone
 # Internal imports
 from .polyglot_alphabet import TongueID, TONGUE_ALPHABETS, SIGNATURE_TO_TONGUE
 from .vector_6d import Position6D
-from .rwp2_envelope import ProtocolTongue, RWP2Envelope, EnvelopeFactory, OperationTier, TONGUE_KEYS
+from .rwp2_envelope import (
+    ProtocolTongue,
+    RWP2Envelope,
+    EnvelopeFactory,
+    OperationTier,
+    TONGUE_KEYS,
+)
 
 # =============================================================================
 # Constants & Frequency Mapping
@@ -143,7 +149,11 @@ def parse_verse(line: str, line_number: int = 0) -> Optional[AetherVerse]:
         return None
 
     return AetherVerse(
-        tongue_id=tongue_id, signature=signature, content=content, line_number=line_number, indent_level=indent_level
+        tongue_id=tongue_id,
+        signature=signature,
+        content=content,
+        line_number=line_number,
+        indent_level=indent_level,
     )
 
 
@@ -576,7 +586,11 @@ class LedgerHandler(DomainHandler):
         if content.startswith("RECORD"):
             data = content[6:].strip().strip("\"'")
             hash_val = hashlib.sha256(data.encode()).hexdigest()[:16]
-            record = {"data": data, "hash": hash_val, "timestamp": datetime.now(timezone.utc).isoformat()}
+            record = {
+                "data": data,
+                "hash": hash_val,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
             ctx.trace.append({"ledger_record": record})
             ctx.emit(f"[LEDGER] Recorded: {hash_val}")
             return hash_val
@@ -832,7 +846,7 @@ class AethercodeInterpreter:
         # Create envelope with all tongues used
         factory = EnvelopeFactory()
         tongues_used = [
-            ProtocolTongue[t.value[:2].upper()] if hasattr(ProtocolTongue, t.value[:2].upper()) else ProtocolTongue.KO
+            (ProtocolTongue[t.value[:2].upper()] if hasattr(ProtocolTongue, t.value[:2].upper()) else ProtocolTongue.KO)
             for t in set(tv.tongue_id for tv in ctx.trace if hasattr(tv, "tongue_id"))
         ] or [ProtocolTongue.KO]
 

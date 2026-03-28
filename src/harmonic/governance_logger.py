@@ -36,7 +36,10 @@ def audit_state_transition(
     validation: Dict[str, Any] = {}
     try:
         # Local import prevents hard dependency at module import time.
-        from src.harmonic.state21_product_metric import parse_state21_v1, validate_state21_v1
+        from src.harmonic.state21_product_metric import (
+            parse_state21_v1,
+            validate_state21_v1,
+        )
 
         validation = validate_state21_v1(parse_state21_v1(vec))
     except Exception as exc:  # pragma: no cover - defensive fallback

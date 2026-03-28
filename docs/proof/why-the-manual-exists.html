@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why the Manual Exists | SCBE-AETHERMOORE AI Governance Toolkit</title>
+  <meta name="description" content="Why the SCBE AI Governance Toolkit is manual-first: reduce buyer friction, avoid repo maze failure modes, and ship a smaller governed surface.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Why the Manual Exists | SCBE AI Governance Toolkit">
+  <meta property="og:description" content="The manual is the product surface: delivery, recovery, and adoption without repo spelunking.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://aethermoorgames.com/proof/why-the-manual-exists.html">
+  <meta property="og:image" content="https://aethermoorgames.com/hero.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Why the Manual Exists | SCBE Toolkit">
+  <meta name="twitter:description" content="Manual-first delivery reduces buyer friction and prevents abandoned toolkits.">
+  <meta name="twitter:image" content="https://aethermoorgames.com/hero.png">
+  <link rel="canonical" href="https://aethermoorgames.com/proof/why-the-manual-exists.html">
+  <link rel="stylesheet" href="../static/polly-sidebar.css">
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --panel: rgba(18, 23, 32, 0.92);
+      --text: #f2f0ea;
+      --muted: #a3acb9;
+      --accent: #d6a756;
+      --accent-strong: #f0bf67;
+      --max: 980px;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top, rgba(214, 167, 86, 0.12), transparent 34%),
+        linear-gradient(180deg, #0b0d12 0%, #0e131b 40%, #0b0d12 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(14px);
+      background: rgba(11, 13, 18, 0.82);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .topbar-inner, .section-inner, .footer-inner {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+    .topbar-inner {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .brand {
+      font-size: 14px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .nav { display: flex; gap: 16px; flex-wrap: wrap; justify-content: flex-end; font-size: 14px; color: var(--muted); }
+    .nav a { padding: 8px 10px; border-radius: 999px; border: 1px solid transparent; }
+    .nav a:hover { border-color: rgba(214, 167, 86, 0.35); color: var(--text); background: rgba(214, 167, 86, 0.08); }
+    main { padding: 64px 0 70px; }
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.22em; font-size: 12px; color: var(--muted); }
+    h1 { margin-top: 14px; font-size: clamp(34px, 4.2vw, 54px); line-height: 1.08; }
+    .lede { margin-top: 16px; font-size: 18px; color: var(--muted); max-width: 72ch; }
+    section { padding: 34px 0; border-top: 1px solid rgba(255,255,255,0.06); }
+    .slab {
+      background: rgba(18,23,32,0.72);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+      box-shadow: var(--shadow);
+    }
+    .slab h2 { font-size: 18px; letter-spacing: 0.02em; }
+    .slab p { margin-top: 10px; color: var(--muted); }
+    .slab ul { margin-top: 12px; padding-left: 18px; color: var(--muted); }
+    .slab li { margin: 6px 0; }
+    .cta-row { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 16px; border-radius: 14px; border: 1px solid rgba(214, 167, 86, 0.35); background: rgba(18,23,32,0.62); color: var(--text); font-weight: 700; box-shadow: var(--shadow); }
+    .btn-primary { background: linear-gradient(135deg, rgba(214, 167, 86, 0.35), rgba(140, 180, 255, 0.18)); border-color: rgba(214, 167, 86, 0.55); }
+    .btn:hover { transform: translateY(-1px); border-color: rgba(240, 191, 103, 0.75); }
+    .footer { border-top: 1px solid rgba(255,255,255,0.06); padding: 22px 0; color: var(--muted); }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; }
+    .footer-links a { border-bottom: 1px solid rgba(214, 167, 86, 0.22); padding-bottom: 2px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="../index.html">SCBE AETHERMOORE</a>
+      <nav class="nav" aria-label="Site navigation">
+        <a href="../index.html#delivery">Delivery</a>
+        <a href="../product-manual/ai-governance-toolkit.html">Manual</a>
+        <a href="https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06" target="_blank" rel="noopener">Buy</a>
+        <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="section-inner">
+      <div class="eyebrow">Proof</div>
+      <h1>The manual exists because toolkits fail at delivery, not code.</h1>
+      <p class="lede">
+        Most buyers do not abandon a toolkit because it is low quality. They abandon it because they cannot find the usable surface fast enough.
+        A manual-first delivery path turns the purchase into a sequence: receive, open, follow, recover.
+      </p>
+
+      <section>
+        <div class="slab">
+          <h2>The repo-maze failure mode</h2>
+          <p>
+            When a product is "the repo", the buyer spends their first hour answering questions they should not need to answer:
+            what folder matters, what is deprecated, what is safe, what is optional, what is marketing.
+          </p>
+          <ul>
+            <li>High friction means low adoption, even if the tech is strong.</li>
+            <li>Low adoption means the workflow never gets governed.</li>
+            <li>Ungoverned workflows drift until something breaks in production.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <div class="slab">
+          <h2>Manual-first means the buyer path is part of the product</h2>
+          <p>
+            The SCBE AI Governance Toolkit is paired with a manual and a recovery route. This is not "documentation as an afterthought".
+            It is the shortest route from checkout to a governed workflow running on a smaller surface.
+          </p>
+          <ul>
+            <li>Manual: the only route the buyer needs on day one.</li>
+            <li>Delivery: clear access steps that do not depend on tribal knowledge.</li>
+            <li>Recovery: a support path when something is missing or broken.</li>
+          </ul>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="../product-manual/ai-governance-toolkit.html">Read the toolkit manual</a>
+            <a class="btn" href="../product-manual/delivery-and-access.html">Review delivery and access</a>
+            <a class="btn" href="../support.html">Support route</a>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="slab">
+          <h2>If you want the whole repo</h2>
+          <p>
+            The full SCBE repo exists. The toolkit exists so you do not have to start there. Start with a smaller governed surface, then expand.
+          </p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06" target="_blank" rel="noopener">Buy the toolkit</a>
+            <a class="btn" href="../comparison/toolkit-vs-full-repo.html">Toolkit vs repo</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-links">
+        <a href="../index.html">Home</a>
+        <a href="../use-cases/governed-ai-workflows.html">Use cases</a>
+        <a href="../product-manual/ai-governance-toolkit.html">Manual</a>
+        <a href="../comparison/toolkit-vs-full-repo.html">Toolkit vs repo</a>
+        <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
+      </div>
+      <div>SCBE AETHERMOORE. Built for direct delivery, not maze navigation.</div>
+    </div>
+  </footer>
+
+  <script src="../static/polly-sidebar.js"></script>
+</body>
+</html>
+

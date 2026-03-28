@@ -462,7 +462,10 @@ async def invoke_gate(
             details=f"Tier {perms['tier']} cannot invoke gates",
         )
         rath.observe(obs)
-        return {"ok": False, "error": f"Permission denied: {perms['tier']} tier cannot invoke gates"}
+        return {
+            "ok": False,
+            "error": f"Permission denied: {perms['tier']} tier cannot invoke gates",
+        }
 
     # Rate limit check
     max_rpm = perms.get("max_requests_per_minute", 10)
@@ -478,7 +481,10 @@ async def invoke_gate(
             details=f"Rate limit exceeded: {max_rpm}/min",
         )
         rath.observe(obs)
-        return {"ok": False, "error": f"Rate limited: {max_rpm} requests/minute for {perms['tier']} tier"}
+        return {
+            "ok": False,
+            "error": f"Rate limited: {max_rpm} requests/minute for {perms['tier']} tier",
+        }
 
     # Build URL with path variables
     url = gate.endpoint

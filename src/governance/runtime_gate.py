@@ -24,19 +24,67 @@ from __future__ import annotations
 
 import hashlib
 import math
+import os
 import re
 import time
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
+
+from .negative_tongue_lattice import NegativeTongueLattice
+
+try:
+    from primitives.phi_poincare import (
+        fibonacci_trust_level,
+    )
+except ImportError:
+    from src.primitives.phi_poincare import (
+        fibonacci_trust_level,
+    )
 
 PHI = 1.618033988749895
 PI = math.pi
 TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 TONGUE_WEIGHTS = tuple(PHI**k for k in range(6))
 WORD_RE = re.compile(r"[A-Za-z0-9_']+")
+DEFAULT_SEMANTIC_EMBED_MODEL = "all-MiniLM-L6-v2"
+DEFAULT_TONGUE_PROJECTOR_PATH = str(
+    (Path(__file__).resolve().parents[2] / "artifacts" / "projectors" / "tongue_projector.npz")
+)
+
+# Anchor prompts for semantic tongue projection.
+# We compute sentence embeddings and take cosine similarity to these anchors.
+# This gives a lightweight, training-free 6D "tongue coordinate" that tracks meaning,
+# not just superficial text statistics.
+SEMANTIC_TONGUE_ANCHORS: Dict[str, str] = {
+    "KO": (
+        "Intent and command. Override instructions, jailbreak, ignore previous instructions, "
+        "change the system's goals, force a decision, compel behavior."
+    ),
+    "AV": (
+        "Transport and data flow. Send or fetch data over network. HTTP request, API call, "
+        "upload, download, email, webhook, external communication."
+    ),
+    "RU": (
+        "Policy and rules. Allowed versus forbidden. Compliance, governance, terms, safety "
+        "requirements, permissions, authorization."
+    ),
+    "CA": (
+        "Compute and execution. Run code, execute commands, compile, build, GPU, CPU, "
+        "performance, system operations, shell."
+    ),
+    "UM": (
+        "Security and secrets. Credentials, tokens, passwords, keys, encryption, redaction, "
+        "exfiltration, hacking, bypassing security controls."
+    ),
+    "DR": (
+        "Schema and structure. JSON, YAML, XML, formats, parsing, serialization, database tables, "
+        "columns, schemas, strict structure and integrity."
+    ),
+}
 
 
 class Decision(str, Enum):
@@ -58,6 +106,12 @@ class GateResult:
     signals: List[str]
     reroute_to: Optional[str] = None
     noise: Optional[bytes] = None  # fail-to-noise: deterministic noise on DENY
+    # Fibonacci trust (session-accumulated)
+    trust_weight: int = 1
+    trust_level: str = "UNTRUSTED"
+    trust_index: int = 0
+    # Negative Tongue Lattice (experimental)
+    lattice_energy: float = 0.0
     # Audit
     action_hash: str = ""
     timestamp: float = 0.0
@@ -96,10 +150,22 @@ class RerouteRule:
 DEFAULT_REROUTES: List[RerouteRule] = [
     RerouteRule("file.*read.*/etc/passwd", "file_read_denied", "system file access blocked"),
     RerouteRule("http.*external.*send", "log_intent_only", "external data send → log only"),
-    RerouteRule("execute.*shell|exec.*command|os\\.system", "sandbox_execute", "shell exec → sandboxed"),
+    RerouteRule(
+        "execute.*shell|exec.*command|os\\.system",
+        "sandbox_execute",
+        "shell exec → sandboxed",
+    ),
     RerouteRule("delete.*all|drop.*table|rm.*-rf", "soft_delete", "destructive op → soft delete"),
-    RerouteRule("api.*key|secret|token|password", "redact_and_log", "credential access → redacted"),
-    RerouteRule("send.*email|post.*slack|publish", "queue_for_review", "external publish → review queue"),
+    RerouteRule(
+        "api.*key|secret|token|password",
+        "redact_and_log",
+        "credential access → redacted",
+    ),
+    RerouteRule(
+        "send.*email|post.*slack|publish",
+        "queue_for_review",
+        "external publish → review queue",
+    ),
 ]
 
 
@@ -125,6 +191,10 @@ class RuntimeGate:
         cumulative_cost_quarantine: float = 200.0,
         cumulative_cost_deny: float = 1000.0,
         reroute_rules: Optional[List[RerouteRule]] = None,
+        coords_backend: str = "stats",
+        semantic_embed_model: str = DEFAULT_SEMANTIC_EMBED_MODEL,
+        tongue_projector_path: Optional[str] = None,
+        use_negative_lattice: bool = False,
     ):
         # Thresholds
         self.cost_allow = cost_allow
@@ -147,12 +217,33 @@ class RuntimeGate:
         self._immune: set = set()  # known attack hashes → instant DENY
         self._reflex: dict = {}  # known safe hashes → instant ALLOW
         self._audit_log: List[GateResult] = []
+        # Fibonacci trust history: aggregate ternary signal per query
+        # +1 if spin_magnitude == 0 (clean), 0 if 1-3, -1 if 4+
+        self._trust_history: List[int] = []
+
+        # Tongue coordinate backend
+        self._coords_backend = (coords_backend or "stats").strip().lower()
+        self._semantic_embed_model = semantic_embed_model
+        self._tongue_projector_path = (
+            tongue_projector_path or os.environ.get("SCBE_TONGUE_PROJECTOR_PATH") or DEFAULT_TONGUE_PROJECTOR_PATH
+        )
+        self._semantic_model = None
+        self._semantic_anchor_matrix: Optional[np.ndarray] = None  # shape: (6, D), unit-normalized
+        self._semantic_ready: Optional[bool] = None
+        self._tongue_projector_W: Optional[np.ndarray] = None  # shape: (D+1, 6) in logit-space
+        self._tongue_projector_loaded: Optional[bool] = None
+
+        # Negative Tongue Lattice (experimental, opt-in)
+        self._use_negative_lattice = use_negative_lattice
+        self._negative_lattice: Optional[NegativeTongueLattice] = (
+            NegativeTongueLattice() if use_negative_lattice else None
+        )
 
     # ------------------------------------------------------------------ #
     #  Tongue coordinate extraction
     # ------------------------------------------------------------------ #
 
-    def _text_to_coords(self, text: str) -> List[float]:
+    def _text_to_coords_stats(self, text: str) -> List[float]:
         words = WORD_RE.findall(text)
         wc = len(words)
         chars = max(len(text), 1)
@@ -170,6 +261,121 @@ class RuntimeGate:
             min(1.0, (upper / chars) * 5),
             min(1.0, (punct / chars) * 8),
         ]
+
+    def _semantic_encode_batch(self, texts: List[str]) -> np.ndarray:
+        """Return unit-normalized sentence embeddings for texts (shape: [N, D]).
+
+        Uses sentence-transformers if installed. This is a *local* embedding (no API calls),
+        but it may download the model the first time it is used.
+        """
+        if self._semantic_model is None:
+            from sentence_transformers import SentenceTransformer  # type: ignore[import-untyped]
+
+            self._semantic_model = SentenceTransformer(self._semantic_embed_model)
+
+        arr = self._semantic_model.encode(texts)  # type: ignore[no-untyped-call]
+        emb = np.asarray(arr, dtype=np.float32)
+        if emb.ndim == 1:
+            emb = emb.reshape(1, -1)
+        norms = np.linalg.norm(emb, axis=1, keepdims=True)
+        emb = emb / (norms + 1e-8)
+        return emb
+
+    def _maybe_load_tongue_projector(self) -> bool:
+        """Load a trained tongue projector weights file if present.
+
+        The file is optional. If it is missing or can't be loaded, we fall back
+        to the semantic anchor method (training-free).
+        """
+        if self._tongue_projector_loaded is not None:
+            return self._tongue_projector_loaded
+
+        try:
+            path = Path(str(self._tongue_projector_path))
+            if not path.exists():
+                self._tongue_projector_loaded = False
+                self._tongue_projector_W = None
+                return False
+
+            data = np.load(str(path))
+            W = np.asarray(data["W"], dtype=np.float32)
+            # Expect [D+1, 6] where D matches embedding dimension.
+            if W.ndim != 2 or W.shape[1] != 6 or W.shape[0] < 8:
+                self._tongue_projector_loaded = False
+                self._tongue_projector_W = None
+                return False
+
+            self._tongue_projector_W = W
+            self._tongue_projector_loaded = True
+            return True
+        except Exception:
+            self._tongue_projector_loaded = False
+            self._tongue_projector_W = None
+            return False
+
+    def _ensure_semantic_ready(self) -> bool:
+        if self._semantic_ready is not None:
+            return self._semantic_ready
+        try:
+            anchors = [SEMANTIC_TONGUE_ANCHORS[t] for t in TONGUES]
+            anchor_emb = self._semantic_encode_batch(anchors)
+            self._semantic_anchor_matrix = anchor_emb  # already normalized
+            self._semantic_ready = True
+            return True
+        except Exception:
+            # Fail closed to stats mode; do not let missing deps break the gate.
+            self._semantic_anchor_matrix = None
+            self._semantic_ready = False
+            return False
+
+    @staticmethod
+    def _sigmoid(x: np.ndarray) -> np.ndarray:
+        return 1.0 / (1.0 + np.exp(-x))
+
+    def _text_to_coords_projector(self, text: str) -> List[float]:
+        """Semantic coords via trained projector (embedding -> 6D tongue logits -> sigmoid)."""
+        if not self._ensure_semantic_ready():
+            return self._text_to_coords_stats(text)
+        if not self._maybe_load_tongue_projector():
+            return self._text_to_coords_semantic(text)
+
+        assert self._tongue_projector_W is not None
+        emb = self._semantic_encode_batch([text])[0]
+        # Add bias term
+        x = np.concatenate([emb.astype(np.float32), np.array([1.0], dtype=np.float32)], axis=0)
+        W = self._tongue_projector_W
+        if x.shape[0] != W.shape[0]:
+            # Projector doesn't match embedding dimension; fall back safely.
+            return self._text_to_coords_semantic(text)
+
+        logits = x @ W
+        coords = self._sigmoid(logits)
+        coords = np.clip(coords, 0.0, 1.0)
+        return [float(v) for v in coords.tolist()]
+
+    def _text_to_coords_semantic(self, text: str) -> List[float]:
+        """Semantic tongue coords: cosine similarity to 6 anchor prompts, mapped to [0,1].
+
+        If the semantic backend cannot load, falls back to stats coords.
+        """
+        if not self._ensure_semantic_ready():
+            return self._text_to_coords_stats(text)
+
+        assert self._semantic_anchor_matrix is not None
+        v = self._semantic_encode_batch([text])[0]
+        sims = self._semantic_anchor_matrix @ v  # cosine similarity in [-1, 1]
+        coords = (sims + 1.0) * 0.5  # -> [0, 1] (pre-clamp)
+        coords = np.clip(coords, 0.0, 1.0)
+        return [float(x) for x in coords.tolist()]
+
+    def _text_to_coords(self, text: str) -> List[float]:
+        backend = self._coords_backend
+        if backend == "stats":
+            return self._text_to_coords_stats(text)
+        if backend in ("semantic", "auto"):
+            return self._text_to_coords_projector(text)
+        # Unknown backend: fail closed to stats.
+        return self._text_to_coords_stats(text)
 
     # ------------------------------------------------------------------ #
     #  Spin quantization
@@ -274,12 +480,17 @@ class RuntimeGate:
             coords = self._text_to_coords(full_text)
             self._update_centroid(coords)
             self._cumulative_cost += 1.0  # nominal cost during calibration
+            self._trust_history.append(1)  # calibration = +1 trust
+            fib = fibonacci_trust_level(self._trust_history)
             result = GateResult(
                 decision=Decision.ALLOW,
                 cost=1.0,
                 spin_magnitude=0,
                 tongue_coords=coords,
                 signals=["calibrating"],
+                trust_weight=fib["weight"],
+                trust_level=fib["level"],
+                trust_index=fib["index"],
                 action_hash=action_hash,
                 timestamp=ts,
                 session_query_count=self._query_count,
@@ -305,14 +516,19 @@ class RuntimeGate:
             self._audit_log.append(result)
             return result
 
-        # Reflex table: known safe → instant ALLOW
+        # Reflex table: known safe → instant ALLOW (still builds trust)
         if action_hash in self._reflex:
+            self._trust_history.append(1)  # known-safe = +1 trust
+            fib = fibonacci_trust_level(self._trust_history)
             result = GateResult(
                 decision=Decision.ALLOW,
                 cost=1.0,
                 spin_magnitude=0,
                 tongue_coords=[0.5] * 6,
                 signals=["reflex_hit"],
+                trust_weight=fib["weight"],
+                trust_level=fib["level"],
+                trust_index=fib["index"],
                 action_hash=action_hash,
                 timestamp=ts,
                 session_query_count=self._query_count,
@@ -328,20 +544,60 @@ class RuntimeGate:
         spins, magnitude = self._spin(coords)
         cost = self._harmonic_cost(coords)
 
+        # Negative Tongue Lattice: modulate cost by lattice energy (experimental)
+        neg_lattice_energy = 0.0
+        if self._use_negative_lattice and self._negative_lattice is not None:
+            neg_lattice_energy = self._negative_lattice.lattice_energy(coords)
+            # Lattice energy acts as a multiplier on harmonic cost.
+            # Higher tension between tongues = higher suspicion.
+            # Scale: energy of ~1.0 adds ~10% to cost, energy of ~5.0 adds ~50%.
+            cost *= 1.0 + 0.1 * neg_lattice_energy
+
         self._update_centroid(coords)
         self._cumulative_cost += cost
 
-        signals: List[str] = []
+        # ---- Fibonacci trust update ----
+        # Map spin magnitude to ternary trust signal:
+        #   0 spins = clean (+1), 1-3 spins = neutral (0), 4+ spins = suspicious (-1)
+        if magnitude == 0:
+            trust_signal = 1
+        elif magnitude <= 3:
+            trust_signal = 0
+        else:
+            trust_signal = -1
+        self._trust_history.append(trust_signal)
+
+        # Compute session trust from Fibonacci consensus
+        fib_trust = fibonacci_trust_level(self._trust_history)
+        trust_weight = fib_trust["weight"]
+        trust_level = fib_trust["level"]
+        trust_index = fib_trust["index"]
+
+        # Trust modulates thresholds: higher trust = more headroom (reward)
+        # New sessions start at baseline (1.0x). Consistent good behavior
+        # earns higher thresholds. Trust is a reward, not a penalty.
+        trust_multiplier = {
+            "UNTRUSTED": 1.0,
+            "PROVISIONAL": 1.0,
+            "TRUSTED": 1.5,
+            "CORE": 2.0,
+        }.get(trust_level, 1.0)
+
+        effective_cost_allow = self.cost_allow * trust_multiplier
+        effective_cost_quarantine = self.cost_quarantine * trust_multiplier
+        effective_cost_deny = self.cost_deny * trust_multiplier
+
+        signals: List[str] = [f"fib_trust({trust_level},w={trust_weight},idx={trust_index})"]
 
         # ---- Cost-based decision ----
 
-        # Per-action cost
-        if cost > self.cost_deny:
-            signals.append(f"cost_deny({cost:.1f}>{self.cost_deny})")
-        elif cost > self.cost_quarantine:
-            signals.append(f"cost_quarantine({cost:.1f}>{self.cost_quarantine})")
-        elif cost > self.cost_allow:
-            signals.append(f"cost_elevated({cost:.1f}>{self.cost_allow})")
+        # Per-action cost (modulated by trust)
+        if cost > effective_cost_deny:
+            signals.append(f"cost_deny({cost:.1f}>{effective_cost_deny:.1f})")
+        elif cost > effective_cost_quarantine:
+            signals.append(f"cost_quarantine({cost:.1f}>{effective_cost_quarantine:.1f})")
+        elif cost > effective_cost_allow:
+            signals.append(f"cost_elevated({cost:.1f}>{effective_cost_allow:.1f})")
 
         # Spin magnitude
         if magnitude >= self.spin_deny:
@@ -397,6 +653,10 @@ class RuntimeGate:
             tongue_coords=coords,
             signals=signals,
             noise=noise if decision == Decision.DENY else None,
+            trust_weight=trust_weight,
+            trust_level=trust_level,
+            trust_index=trust_index,
+            lattice_energy=neg_lattice_energy,
             action_hash=action_hash,
             timestamp=ts,
             session_query_count=self._query_count,
@@ -464,7 +724,11 @@ class RuntimeGate:
         )
         ko_pass = not (has_override_language and ko_coord > 0.5)
         reviews.append(
-            ("KO_intent", ko_pass, "override language with high governance signal" if not ko_pass else "clean")
+            (
+                "KO_intent",
+                ko_pass,
+                ("override language with high governance signal" if not ko_pass else "clean"),
+            )
         )
 
         # --- AV Council: Transport/Flow Review ---
@@ -485,7 +749,13 @@ class RuntimeGate:
             ]
         )
         av_pass = not has_external
-        reviews.append(("AV_transport", av_pass, "external data flow detected" if not av_pass else "internal only"))
+        reviews.append(
+            (
+                "AV_transport",
+                av_pass,
+                "external data flow detected" if not av_pass else "internal only",
+            )
+        )
 
         # --- RU Council: Policy Review ---
         # Check against known restricted operations
@@ -503,7 +773,13 @@ class RuntimeGate:
             ]
         )
         ru_pass = not has_restricted
-        reviews.append(("RU_policy", ru_pass, "restricted operation attempted" if not ru_pass else "within policy"))
+        reviews.append(
+            (
+                "RU_policy",
+                ru_pass,
+                "restricted operation attempted" if not ru_pass else "within policy",
+            )
+        )
 
         # --- CA Council: Compute Signature Review ---
         # Check if the action's computational profile (digit ratio, length) is anomalous
@@ -514,7 +790,7 @@ class RuntimeGate:
             (
                 "CA_compute",
                 ca_pass,
-                f"anomalous compute signature (CA={ca_coord:.2f})" if not ca_pass else "normal signature",
+                (f"anomalous compute signature (CA={ca_coord:.2f})" if not ca_pass else "normal signature"),
             )
         )
 
@@ -538,7 +814,11 @@ class RuntimeGate:
         )
         um_pass = not has_credential_access
         reviews.append(
-            ("UM_redaction", um_pass, "credential/PII access attempt" if not um_pass else "no sensitive access")
+            (
+                "UM_redaction",
+                um_pass,
+                ("credential/PII access attempt" if not um_pass else "no sensitive access"),
+            )
         )
 
         # --- DR Council: Integrity/Data Trace Review ---
@@ -552,7 +832,7 @@ class RuntimeGate:
             (
                 "DR_integrity",
                 dr_pass,
-                f"encoding artifacts detected (punct={punct_ratio:.2f})" if not dr_pass else "clean trace",
+                (f"encoding artifacts detected (punct={punct_ratio:.2f})" if not dr_pass else "clean trace"),
             )
         )
 
@@ -588,11 +868,14 @@ class RuntimeGate:
         self._cumulative_cost = 0.0
         self._query_count = 0
         self._audit_log = []
+        self._trust_history = []
 
     def stats(self) -> Dict[str, Any]:
         decisions = {}
         for r in self._audit_log:
             decisions[r.decision.value] = decisions.get(r.decision.value, 0) + 1
+
+        fib = fibonacci_trust_level(self._trust_history)
         return {
             "query_count": self._query_count,
             "cumulative_cost": round(self._cumulative_cost, 2),
@@ -600,4 +883,6 @@ class RuntimeGate:
             "reflex_entries": len(self._reflex),
             "decisions": decisions,
             "audit_log_size": len(self._audit_log),
+            "fibonacci_trust": fib,
+            "trust_history_length": len(self._trust_history),
         }

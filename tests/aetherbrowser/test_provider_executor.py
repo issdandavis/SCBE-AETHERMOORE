@@ -3,7 +3,10 @@
 import pytest
 
 from src.aetherbrowser.command_planner import CommandPlan, RankedAction
-from src.aetherbrowser.provider_executor import ProviderExecutionResult, ProviderExecutor
+from src.aetherbrowser.provider_executor import (
+    ProviderExecutionResult,
+    ProviderExecutor,
+)
 from src.aetherbrowser.router import ModelProvider, TaskComplexity
 
 
@@ -124,7 +127,11 @@ class TestProviderExecutor:
 
         executor = ProviderExecutor(adapters={ModelProvider.HUGGINGFACE: hf_adapter})
         result = await executor.execute(
-            _plan(provider="huggingface", fallback_chain=["huggingface"], auto_cascade=False)
+            _plan(
+                provider="huggingface",
+                fallback_chain=["huggingface"],
+                auto_cascade=False,
+            )
         )
 
         assert result.provider == "huggingface"

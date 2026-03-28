@@ -27,7 +27,10 @@ def test_save_thread_writes_expected_shape(tmp_path) -> None:
         thread_id="abc123",
         title="Test Thread",
         url="https://www.perplexity.ai/search/test-thread",
-        messages=[{"role": "user", "content": "Q?"}, {"role": "assistant", "content": "A."}],
+        messages=[
+            {"role": "user", "content": "Q?"},
+            {"role": "assistant", "content": "A."},
+        ],
         label="label-x",
     )
     data = json.loads(out_path.read_text(encoding="utf-8"))

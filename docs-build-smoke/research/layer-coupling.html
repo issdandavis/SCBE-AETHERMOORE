@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCBE Layer Coupling</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #111827;
+      --line: #243244;
+      --text: #e6edf3;
+      --muted: #93a4b8;
+      --accent: #f59e0b;
+      --accent-2: #22c55e;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top, rgba(245, 158, 11, 0.12), transparent 28%),
+        linear-gradient(180deg, #0a0f15 0%, var(--bg) 100%);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .wrap {
+      width: min(1100px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 48px 0 80px;
+    }
+    h1, h2, h3 { margin: 0 0 16px; }
+    h1 {
+      font-size: clamp(2.2rem, 4vw, 4.1rem);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      max-width: 10ch;
+    }
+    h2 {
+      font-size: 1.45rem;
+      border-top: 1px solid var(--line);
+      padding-top: 22px;
+      margin-top: 40px;
+    }
+    p, li { color: var(--muted); }
+    .hero {
+      display: grid;
+      gap: 24px;
+      grid-template-columns: 1.4fr 1fr;
+      align-items: end;
+      margin-bottom: 32px;
+    }
+    .panel {
+      background: rgba(17, 24, 39, 0.72);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: rgba(255,255,255,0.02);
+    }
+    .stat strong {
+      display: block;
+      color: var(--text);
+      font-size: 1.5rem;
+    }
+    .chips {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.92rem;
+      color: var(--text);
+      background: rgba(255,255,255,0.03);
+    }
+    .path {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .step {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 16px;
+      align-items: start;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: rgba(255,255,255,0.02);
+    }
+    .step code {
+      color: var(--accent);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .lane-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+    }
+    .lane-table th,
+    .lane-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    .lane-table th { color: var(--text); }
+    .ok { color: var(--accent-2); }
+    .warn { color: var(--accent); }
+    .bad { color: var(--danger); }
+    @media (max-width: 860px) {
+      .hero { grid-template-columns: 1fr; }
+      .step { grid-template-columns: 1fr; }
+      .stat-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <p class="chip">Research note</p>
+        <h1>Where the variables actually couple</h1>
+        <p>
+          Night summary after rerunning the fixed branch: the clean benchmark split is now visible.
+          One lane is the current harnessed detector. The other lane is the older trace simulator that is still useful for watching state motion through L1-L14.
+        </p>
+        <div class="chips">
+          <span class="chip">main updated after PR #649</span>
+          <span class="chip">91/91 blocked</span>
+          <span class="chip">0/15 false positives</span>
+          <span class="chip">108/108 system checks passed</span>
+        </div>
+      </div>
+      <aside class="panel">
+        <div class="stat-grid">
+          <div class="stat">
+            <span>Harnessed gate</span>
+            <strong>91/91</strong>
+            <span class="ok">0/15 false positives</span>
+          </div>
+          <div class="stat">
+            <span>Industry baseline</span>
+            <strong>10/91</strong>
+            <span class="warn">ProtectAI blocked</span>
+          </div>
+          <div class="stat">
+            <span>Formal verification</span>
+            <strong>108/108</strong>
+            <span class="ok">all checks passed</span>
+          </div>
+          <div class="stat">
+            <span>Trace simulator</span>
+            <strong>18.7%</strong>
+            <span class="bad">older lane, not claim lane</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <h2>Benchmark split</h2>
+      <table class="lane-table">
+        <thead>
+          <tr>
+            <th>Lane</th>
+            <th>File</th>
+            <th>Use</th>
+            <th>Do not use for</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Harnessed detector</strong></td>
+            <td><code>scripts/benchmark/scbe_vs_industry.py</code></td>
+            <td>Head-to-head protection claims, clean vs attack scoring, false-positive reporting.</td>
+            <td>Raw layer introspection.</td>
+          </tr>
+          <tr>
+            <td><strong>Legacy trace simulator</strong></td>
+            <td><code>scripts/benchmark/scbe_vs_baseline.py</code></td>
+            <td>Watching variable motion across L1-L14, seeing where energy spikes and decisions form.</td>
+            <td>Industry ranking or detector-vs-detector claims.</td>
+          </tr>
+          <tr>
+            <td><strong>Formal invariant suite</strong></td>
+            <td><code>tests/test_full_system_verification.py</code></td>
+            <td>Math axioms, tokenizer, PHDM, MMCCL, RWP, game and consistency checks.</td>
+            <td>Adversarial protection claims.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Main coupling path</h2>
+      <div class="path">
+        <div class="step">
+          <code>L3</code>
+          <div>
+            <h3>Weighted tongue lift</h3>
+            <p>
+              This is the first real amplification point. Small input differences stop looking like simple text metrics and become a weighted state.
+              In the sample trace, energy jumped from about <strong>1.01</strong> to about <strong>9.19</strong> here.
+            </p>
+          </div>
+        </div>
+        <div class="step">
+          <code>L4-L5</code>
+          <div>
+            <h3>Poincare clamp plus hyperbolic distance</h3>
+            <p>
+              The state is compressed back inside the ball and turned into a usable divergence scalar <code>d*</code>. This is the geometry handoff that the later layers use.
+            </p>
+          </div>
+        </div>
+        <div class="step">
+          <code>L6-L7</code>
+          <div>
+            <h3>Breathing plus phase</h3>
+            <p>
+              This is where structured deviation starts to become visible without pure norm explosion. In the legacy sample trace, <code>L7</code> was the first major spike at about <strong>23.29</strong> energy.
+            </p>
+          </div>
+        </div>
+        <div class="step">
+          <code>L8-L11</code>
+          <div>
+            <h3>Coherence, spin and temporal aggregation</h3>
+            <p>
+              These layers decide whether the deviation is coherent, directional and persistent. This is where gradual attacks start to separate from static text.
+            </p>
+          </div>
+        </div>
+        <div class="step">
+          <code>L12</code>
+          <div>
+            <h3>Harmonic wall</h3>
+            <p>
+              <code>d*</code> becomes governance cost. Important, but not sufficient by itself. In the sample direct-override trace, the cost was only about <strong>2.48</strong>, which was not enough alone to hard-block.
+            </p>
+          </div>
+        </div>
+        <div class="step">
+          <code>L13</code>
+          <div>
+            <h3>Decision fusion</h3>
+            <p>
+              This is the real interaction zone: geometry, lexical evidence, spin and session state combine here. The current fixed gate is winning because the decision is made from the constellation, not from one scalar.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>What the fixed branch actually says</h2>
+      <ul>
+        <li>The session-bleed regression is gone in the harnessed benchmark lane.</li>
+        <li>The full adversarial harness is back at <strong>91/91</strong> detected with <strong>0/15</strong> clean false positives.</li>
+        <li>The old trace simulator is still useful, but now it is explicitly marked as a trace lane instead of a claim lane.</li>
+        <li>The main decision path is <strong>L3 → L7 → L12 → L13</strong>, with lexical and session evidence joining the geometric variables before the final block/allow outcome.</li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <h2>Next morning handoff</h2>
+      <p>
+        The next serious upgrade is not more threshold tuning. It is replacing the old front-door projection with the real tongue reader or learned tongue head, while preserving the proven L7-L13 fusion path.
+      </p>
+    </section>
+  </main>
+</body>
+</html>
