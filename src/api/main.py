@@ -275,7 +275,12 @@ class ConnectorPayloadMode(str, Enum):
 
 
 class MobileGoalRequest(BaseModel):
-    goal: str = Field(..., min_length=3, max_length=1024, description="Natural language goal description")
+    goal: str = Field(
+        ...,
+        min_length=3,
+        max_length=1024,
+        description="Natural language goal description",
+    )
     channel: str = Field(
         default="store_ops",
         pattern="^(store_ops|web_research|content_ops|custom)$",
@@ -411,14 +416,30 @@ def _build_goal_steps(channel: str, targets: List[str]) -> List[Dict[str, Any]]:
     target_hint = f" ({len(targets)} targets)" if targets else ""
     if channel == "store_ops":
         return [
-            {"name": f"collect_store_state{target_hint}", "risk": "low", "status": "pending"},
-            {"name": "prioritize_orders_and_messages", "risk": "medium", "status": "pending"},
-            {"name": "execute_catalog_or_fulfillment_changes", "risk": "high", "status": "pending"},
+            {
+                "name": f"collect_store_state{target_hint}",
+                "risk": "low",
+                "status": "pending",
+            },
+            {
+                "name": "prioritize_orders_and_messages",
+                "risk": "medium",
+                "status": "pending",
+            },
+            {
+                "name": "execute_catalog_or_fulfillment_changes",
+                "risk": "high",
+                "status": "pending",
+            },
             {"name": "publish_daily_report", "risk": "low", "status": "pending"},
         ]
     if channel == "web_research":
         return [
-            {"name": f"crawl_sources{target_hint}", "risk": "medium", "status": "pending"},
+            {
+                "name": f"crawl_sources{target_hint}",
+                "risk": "medium",
+                "status": "pending",
+            },
             {"name": "scan_and_filter_results", "risk": "low", "status": "pending"},
             {"name": "assemble_training_brief", "risk": "low", "status": "pending"},
         ]
@@ -589,17 +610,33 @@ def _build_connector_payload(record: Dict[str, Any], step: Dict[str, Any]) -> Di
 
 def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
     if record["execution_mode"] != "connector":
-        return {"ok": True, "mode": record["execution_mode"], "detail": "non-connector-mode"}
+        return {
+            "ok": True,
+            "mode": record["execution_mode"],
+            "detail": "non-connector-mode",
+        }
 
     connector_id = record.get("connector_id")
     if not connector_id:
-        return {"ok": False, "code": "connector_missing", "detail": "connector_id required for connector mode"}
+        return {
+            "ok": False,
+            "code": "connector_missing",
+            "detail": "connector_id required for connector mode",
+        }
 
     connector = CONNECTOR_STORE.get(connector_id)
     if connector is None:
-        return {"ok": False, "code": "connector_not_found", "detail": "connector not found"}
+        return {
+            "ok": False,
+            "code": "connector_not_found",
+            "detail": "connector not found",
+        }
     if not connector.get("enabled", False):
-        return {"ok": False, "code": "connector_disabled", "detail": "connector disabled"}
+        return {
+            "ok": False,
+            "code": "connector_disabled",
+            "detail": "connector disabled",
+        }
 
     payload = _build_connector_payload(record, step)
 
@@ -630,7 +667,11 @@ def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Di
             status = int(getattr(resp, "status", 200))
             resp.read().decode("utf-8", errors="replace")
             if 200 <= status < 300:
-                return {"ok": True, "status": status, "detail": "connector request completed"}
+                return {
+                    "ok": True,
+                    "status": status,
+                    "detail": "connector request completed",
+                }
             return {
                 "ok": False,
                 "code": "connector_http_status",
@@ -645,9 +686,17 @@ def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Di
             "detail": "connector request failed",
         }
     except URLError:
-        return {"ok": False, "code": "connector_network_error", "detail": "connector network error"}
+        return {
+            "ok": False,
+            "code": "connector_network_error",
+            "detail": "connector network error",
+        }
     except Exception:
-        return {"ok": False, "code": "connector_dispatch_error", "detail": "connector dispatch failed"}
+        return {
+            "ok": False,
+            "code": "connector_dispatch_error",
+            "detail": "connector dispatch failed",
+        }
 
 
 # ============================================================================
@@ -727,9 +776,27 @@ async def retrieve_memory(request: RetrieveRequest, user: str = Depends(verify_a
 
         # Adjust weights based on context (must sum to 1.0)
         context_params = {
-            "internal": {"w_d": 0.20, "w_c": 0.20, "w_s": 0.20, "w_tau": 0.20, "w_a": 0.20},
-            "external": {"w_d": 0.30, "w_c": 0.15, "w_s": 0.15, "w_tau": 0.30, "w_a": 0.10},
-            "untrusted": {"w_d": 0.35, "w_c": 0.10, "w_s": 0.10, "w_tau": 0.35, "w_a": 0.10},
+            "internal": {
+                "w_d": 0.20,
+                "w_c": 0.20,
+                "w_s": 0.20,
+                "w_tau": 0.20,
+                "w_a": 0.20,
+            },
+            "external": {
+                "w_d": 0.30,
+                "w_c": 0.15,
+                "w_s": 0.15,
+                "w_tau": 0.30,
+                "w_a": 0.10,
+            },
+            "untrusted": {
+                "w_d": 0.35,
+                "w_c": 0.10,
+                "w_s": 0.10,
+                "w_tau": 0.35,
+                "w_a": 0.10,
+            },
         }
 
         # Run SCBE pipeline with context-aware weights
@@ -823,9 +890,27 @@ async def governance_check(
 
         # Adjust weights based on context (must sum to 1.0)
         context_params = {
-            "internal": {"w_d": 0.20, "w_c": 0.20, "w_s": 0.20, "w_tau": 0.20, "w_a": 0.20},
-            "external": {"w_d": 0.30, "w_c": 0.15, "w_s": 0.15, "w_tau": 0.30, "w_a": 0.10},
-            "untrusted": {"w_d": 0.35, "w_c": 0.10, "w_s": 0.10, "w_tau": 0.35, "w_a": 0.10},
+            "internal": {
+                "w_d": 0.20,
+                "w_c": 0.20,
+                "w_s": 0.20,
+                "w_tau": 0.20,
+                "w_a": 0.20,
+            },
+            "external": {
+                "w_d": 0.30,
+                "w_c": 0.15,
+                "w_s": 0.15,
+                "w_tau": 0.30,
+                "w_a": 0.10,
+            },
+            "untrusted": {
+                "w_d": 0.35,
+                "w_c": 0.10,
+                "w_s": 0.10,
+                "w_tau": 0.35,
+                "w_a": 0.10,
+            },
         }
 
         # Run SCBE pipeline
@@ -927,7 +1012,10 @@ async def register_mobile_connector(request: ConnectorRegisterRequest, user: str
         if not endpoint_url:
             endpoint_url = _build_shopify_endpoint(shop_domain, request.shopify_api_version)
             if not endpoint_url:
-                raise HTTPException(400, "shop_domain required for shopify connector without endpoint_url")
+                raise HTTPException(
+                    400,
+                    "shop_domain required for shopify connector without endpoint_url",
+                )
             if payload_mode == ConnectorPayloadMode.scbe_step.value:
                 payload_mode = ConnectorPayloadMode.shopify_graphql_read.value
         if request.auth_token and request.auth_type == ConnectorAuthType.none:
@@ -959,7 +1047,10 @@ async def register_mobile_connector(request: ConnectorRegisterRequest, user: str
         "created_at": ts,
         "updated_at": ts,
     }
-    return {"status": "registered", "data": _connector_view(CONNECTOR_STORE[connector_id])}
+    return {
+        "status": "registered",
+        "data": _connector_view(CONNECTOR_STORE[connector_id]),
+    }
 
 
 @app.get("/mobile/connectors/templates", tags=["Mobile Autonomy"])
@@ -1123,7 +1214,13 @@ async def approve_mobile_goal(
         raise HTTPException(404, "Goal not found")
     record["approved_high_risk"] = True
     record["updated_at"] = int(time.time())
-    record["events"].append({"ts": record["updated_at"], "event": "high_risk_approved", "detail": request.note})
+    record["events"].append(
+        {
+            "ts": record["updated_at"],
+            "event": "high_risk_approved",
+            "detail": request.note,
+        }
+    )
     if record["status"] == GoalStatus.review_required.value:
         record["status"] = GoalStatus.running.value
     return {"status": "ok", "data": _goal_view(record)}

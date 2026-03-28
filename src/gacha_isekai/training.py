@@ -88,7 +88,10 @@ def _compute_ternary(value: Any) -> tuple:
     elif isinstance(value, (np.ndarray, list)):
         arr = np.asarray(value, dtype=float)
         mean = float(np.mean(arr))
-        return (1 if mean > 0.3 else (-1 if mean < -0.3 else 0), 1 if float(np.std(arr)) < 0.5 else 0)
+        return (
+            1 if mean > 0.3 else (-1 if mean < -0.3 else 0),
+            1 if float(np.std(arr)) < 0.5 else 0,
+        )
     return (0, 0)
 
 
@@ -195,7 +198,11 @@ class HFTrainingLoop:
         coherence = min(1.0, unique_ratio * 1.2)
 
         if coherence < self.coherence_threshold:
-            logger.warning("Layer 9 pair rejected: coherence=%.3f < %.3f", coherence, self.coherence_threshold)
+            logger.warning(
+                "Layer 9 pair rejected: coherence=%.3f < %.3f",
+                coherence,
+                self.coherence_threshold,
+            )
             return False
 
         logger.debug("Layer 9 pair validated: coherence=%.3f, hash=%s", coherence, pair_hash[:16])

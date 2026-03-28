@@ -14,7 +14,7 @@ from enum import Enum
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
-    from browser_agent import SCBEClient, Decision, GovernanceResult, BrowserAction, EscalationHandler
+    from browser_agent import Decision
 except ImportError:
     # Inline minimal versions if import fails
 

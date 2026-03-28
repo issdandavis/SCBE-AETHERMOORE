@@ -54,14 +54,35 @@ def parse_test_site():
             "Download All Tools. Deploy to Network."
         ),
         "links": [
-            {"text": "Premium Password Recovery Tool v3.2", "href": "https://evil-malware-site.example.com/tool1.exe"},
-            {"text": "Credential Database 2026", "href": "https://phishing-central.example.net/creds.zip"},
-            {"text": "Universal License Keygen", "href": "https://sketchy-downloads.example.org/keygen.exe"},
-            {"text": "SCBE-AETHERMOORE (legitimate)", "href": "https://github.com/issdandavis/SCBE-AETHERMOORE"},
-            {"text": "Research Paper (legitimate)", "href": "https://arxiv.org/abs/2401.00001"},
-            {"text": "Stack Overflow (safe)", "href": "https://stackoverflow.com/questions/tagged/python"},
+            {
+                "text": "Premium Password Recovery Tool v3.2",
+                "href": "https://evil-malware-site.example.com/tool1.exe",
+            },
+            {
+                "text": "Credential Database 2026",
+                "href": "https://phishing-central.example.net/creds.zip",
+            },
+            {
+                "text": "Universal License Keygen",
+                "href": "https://sketchy-downloads.example.org/keygen.exe",
+            },
+            {
+                "text": "SCBE-AETHERMOORE (legitimate)",
+                "href": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+            },
+            {
+                "text": "Research Paper (legitimate)",
+                "href": "https://arxiv.org/abs/2401.00001",
+            },
+            {
+                "text": "Stack Overflow (safe)",
+                "href": "https://stackoverflow.com/questions/tagged/python",
+            },
             {"text": "Reddit Hacking (yellow)", "href": "https://reddit.com/r/hacking"},
-            {"text": "Underground Forum (red)", "href": "https://dark-forum.example.com"},
+            {
+                "text": "Underground Forum (red)",
+                "href": "https://dark-forum.example.com",
+            },
         ],
         "headings": [
             {"level": "H1", "text": "Free Premium Tools Download Portal"},

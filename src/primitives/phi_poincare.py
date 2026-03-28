@@ -7,6 +7,7 @@ From Gemini collaboration session (2026-03-26):
 The phi-lift counterbalances exponential metric growth in hyperbolic space.
 Fibonacci is the integer shadow of phi — consensus runs on integers only.
 """
+
 from __future__ import annotations
 
 import math
@@ -26,7 +27,7 @@ def phi_lifted_poincare_projection(v_raw: np.ndarray, k_depths: np.ndarray) -> n
 
     Returns: Point inside the Poincare ball, shell-quantized by phi.
     """
-    v_phi = v_raw * (PHI ** k_depths)
+    v_phi = v_raw * (PHI**k_depths)
 
     norm = np.linalg.norm(v_phi)
     if norm == 0:
@@ -45,7 +46,7 @@ def phi_shell_radius(k: int) -> float:
 
     Returns: r in (0, 1) where higher k = closer to boundary = more expensive.
     """
-    phi_k = PHI ** k
+    phi_k = PHI**k
     return phi_k / (1 + phi_k)
 
 
@@ -111,4 +112,4 @@ def harmonic_cost_at_shell(k: int, R: float = 4.0) -> float:
     Higher k = closer to boundary = exponentially more expensive.
     """
     r = phi_shell_radius(k)
-    return R ** (r ** 2)
+    return R ** (r**2)

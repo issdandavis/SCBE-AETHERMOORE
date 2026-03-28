@@ -91,9 +91,21 @@ def test_web_search_surface_gets_explicit_search_tentacle():
 @pytest.mark.parametrize(
     ("domain", "payload", "expected_tentacle"),
     [
-        ("https://github.com/issues", {"repo_query": "browser chain dispatcher"}, "tentacle-github-ko"),
-        ("https://www.notion.so/workspace", {"page_query": "browser policy note"}, "tentacle-notion-av"),
-        ("https://admin.shopify.com/store/demo", {"product_query": "agent console"}, "tentacle-shopify-ru"),
+        (
+            "https://github.com/issues",
+            {"repo_query": "browser chain dispatcher"},
+            "tentacle-github-ko",
+        ),
+        (
+            "https://www.notion.so/workspace",
+            {"page_query": "browser policy note"},
+            "tentacle-notion-av",
+        ),
+        (
+            "https://admin.shopify.com/store/demo",
+            {"product_query": "agent console"},
+            "tentacle-shopify-ru",
+        ),
     ],
 )
 def test_signed_in_surfaces_promote_search_when_query_present(

@@ -31,7 +31,11 @@ def test_external_models_can_be_opted_in(monkeypatch):
         calls.append((task, model, device))
         return "fake-model"
 
-    monkeypatch.setitem(benchmark.sys.modules, "transformers", types.SimpleNamespace(pipeline=fake_pipeline))
+    monkeypatch.setitem(
+        benchmark.sys.modules,
+        "transformers",
+        types.SimpleNamespace(pipeline=fake_pipeline),
+    )
 
     assert benchmark._load_protectai() == "fake-model"
     assert calls == [("text-classification", "protectai/deberta-v3-base-prompt-injection-v2", -1)]

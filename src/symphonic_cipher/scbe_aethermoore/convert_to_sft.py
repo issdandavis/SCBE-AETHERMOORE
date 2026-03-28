@@ -216,22 +216,22 @@ def main():
 
     # Read input
     records = []
+
+    def _read_lines(source):
+        for line in source:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                records.append(json.loads(line))
+            except json.JSONDecodeError as e:
+                print(f"WARN: Skipping malformed JSON line: {e}", file=sys.stderr)
+
     if args.input == "-":
-        source = sys.stdin
+        _read_lines(sys.stdin)
     else:
-        source = open(args.input, "r", encoding="utf-8")
-
-    for line in source:
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            records.append(json.loads(line))
-        except json.JSONDecodeError as e:
-            print(f"WARN: Skipping malformed JSON line: {e}", file=sys.stderr)
-
-    if args.input != "-":
-        source.close()
+        with open(args.input, "r", encoding="utf-8") as fh:
+            _read_lines(fh)
 
     # Convert
     converted = []
@@ -284,7 +284,10 @@ def main():
     print(f"Skipped (too short): {skipped}", file=sys.stderr)
     if args.merge:
         print(f"Merged from:       {len(args.merge)} file(s)", file=sys.stderr)
-    print(f"Output format:     {'chat-messages' if args.chat else 'instruction/response'}", file=sys.stderr)
+    print(
+        f"Output format:     {'chat-messages' if args.chat else 'instruction/response'}",
+        file=sys.stderr,
+    )
     if args.output:
         print(f"Written to:        {args.output}", file=sys.stderr)
 

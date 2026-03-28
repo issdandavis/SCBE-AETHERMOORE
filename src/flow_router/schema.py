@@ -75,9 +75,7 @@ class FlowEdgeDefinition:
         if not source or not target:
             raise FlowValidationError("Edges must include source and target ids.")
         if when not in {"always", "true", "false"}:
-            raise FlowValidationError(
-                f"Edge '{source}' -> '{target}' uses unsupported route '{when}'."
-            )
+            raise FlowValidationError(f"Edge '{source}' -> '{target}' uses unsupported route '{when}'.")
         return cls(source=source, target=target, when=when)
 
 

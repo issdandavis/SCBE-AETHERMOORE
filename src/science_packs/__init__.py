@@ -872,7 +872,7 @@ SCIENCE_PACKS: Dict[str, Dict[str, SciencePack]] = {
 
 def get_pack_info(pack_name: str) -> Optional[SciencePack]:
     """Get information about a specific pack."""
-    for category, packs in SCIENCE_PACKS.items():
+    for _category, packs in SCIENCE_PACKS.items():
         if pack_name in packs:
             return packs[pack_name]
     return None
@@ -886,7 +886,7 @@ def list_available_packs() -> Dict[str, List[str]]:
 def get_installed_packs() -> List[SciencePack]:
     """Get all installed packs."""
     installed = []
-    for category, packs in SCIENCE_PACKS.items():
+    for _category, packs in SCIENCE_PACKS.items():
         for pack in packs.values():
             if pack.status in (PackStatus.INSTALLED, PackStatus.ACTIVE):
                 installed.append(pack)

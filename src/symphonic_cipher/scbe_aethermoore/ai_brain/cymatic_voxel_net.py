@@ -404,7 +404,11 @@ class CymaticVoxelNet:
             nodal_fraction=nodal / total,
             negative_space_fraction=neg / total,
             mean_chladni_abs=chladni_sum / total,
-            storage_capacity={"nodal": nodal, "negative_space": neg, "total": len(self._voxels)},
+            storage_capacity={
+                "nodal": nodal,
+                "negative_space": neg,
+                "total": len(self._voxels),
+            },
         )
 
     def clear(self) -> None:

@@ -278,7 +278,7 @@ def check_push_diff(ref: str = "HEAD~1") -> GateResult:
 def print_result(result: GateResult, context: str = ""):
     """Print gate result."""
     symbols = {"PASS": "[PASS]", "WARN": "[WARN]", "BLOCK": "[BLOCK]"}
-    colors = {"PASS": "", "WARN": "", "BLOCK": ""}
+    _colors = {"PASS": "", "WARN": "", "BLOCK": ""}
 
     print(f"\nCODE GOVERNANCE GATE — {context}")
     print("=" * 60)
@@ -310,7 +310,7 @@ def main():
     p = sub.add_parser("check-pr", help="Check a GitHub PR")
     p.add_argument("number", type=int)
 
-    p2 = sub.add_parser("check-push", help="Check local changes before push")
+    _p2 = sub.add_parser("check-push", help="Check local changes before push")
 
     p3 = sub.add_parser("check-diff", help="Check diff against a ref")
     p3.add_argument("ref", default="HEAD~1", nargs="?")

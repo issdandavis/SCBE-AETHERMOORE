@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List
 
 PHI = (1 + math.sqrt(5)) / 2  # 1.6180339887...
 
@@ -159,7 +159,7 @@ def tongue_vector_to_phi_ternary(activations: List[float], threshold: float = 0.
     """
     tongues = ["KO", "AV", "RU", "CA", "UM", "DR"]
     result = []
-    for i, (tongue, val) in enumerate(zip(tongues, activations)):
+    for i, (_tongue, val) in enumerate(zip(tongues, activations)):
         if val > threshold:
             q = 1
         elif val < -threshold:

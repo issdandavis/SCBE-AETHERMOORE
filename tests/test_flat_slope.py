@@ -231,7 +231,7 @@ def test_attacker_without_key():
 
     # Purity: fraction of samples in majority class per cluster
     total_correct = 0
-    for cluster, labels in cluster_contents.items():
+    for _cluster, labels in cluster_contents.items():
         majority = Counter(labels).most_common(1)[0][1]
         total_correct += majority
 

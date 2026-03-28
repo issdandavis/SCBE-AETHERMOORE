@@ -32,7 +32,12 @@ def _create_tenant(client: TestClient, name: str = "SCBE Design Partner") -> str
     response = client.post(
         "/saas/tenants",
         headers=API_KEY_HEADER,
-        json={"name": name, "plan": "growth", "governance_profile": "strict", "region": "us"},
+        json={
+            "name": name,
+            "plan": "growth",
+            "governance_profile": "strict",
+            "region": "us",
+        },
     )
     assert response.status_code == 200
     return response.json()["data"]["tenant_id"]
@@ -134,7 +139,11 @@ def test_governance_and_audit_increment_usage(client: TestClient) -> None:
     gov = client.post(
         "/saas/governance/check",
         headers=API_KEY_HEADER,
-        json={"tenant_id": tenant_id, "flock_id": flock_id, "action": "deploy-enterprise-pilot"},
+        json={
+            "tenant_id": tenant_id,
+            "flock_id": flock_id,
+            "action": "deploy-enterprise-pilot",
+        },
     )
     assert gov.status_code == 200
     assert gov.json()["data"]["consensus"] == "ALLOW"

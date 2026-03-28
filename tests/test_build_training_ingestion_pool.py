@@ -32,7 +32,9 @@ def test_build_doc_sft_records_maps_source_paths() -> None:
     assert records[1]["metadata"]["track"] == "functions"
 
 
-def test_build_ingestion_pool_uses_existing_doc_chunks_when_refresh_skipped(tmp_path: Path) -> None:
+def test_build_ingestion_pool_uses_existing_doc_chunks_when_refresh_skipped(
+    tmp_path: Path,
+) -> None:
     doc_output = tmp_path / "doc_chunks.jsonl"
     with doc_output.open("w", encoding="utf-8") as handle:
         handle.write(

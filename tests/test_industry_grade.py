@@ -40,7 +40,10 @@ import pytest
 try:
     from cryptography.fernet import Fernet  # noqa: F401
 except BaseException:
-    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+    pytest.skip(
+        "cryptography package not functional (cffi backend missing)",
+        allow_module_level=True,
+    )
 
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -717,7 +720,7 @@ class TestMedicalAICommunication:
         patient_id = "PAT-CHAIN-001"
         current_data = original_data
 
-        for i, ch in enumerate(chain):
+        for _i, ch in enumerate(chain):
             sealed = ch.send_phi(current_data, MedicalDataType.DIAGNOSTIC, patient_id)
             current_data = ch.receive_phi(sealed, MedicalDataType.DIAGNOSTIC, patient_id)
 
@@ -1642,7 +1645,7 @@ class TestChaosEngineeringFaultInjection:
 
         # Pre-rotation messages should fail (different key)
         fail_count = 0
-        for plaintext, sealed in pre_rotation:
+        for _plaintext, sealed in pre_rotation:
             try:
                 ss.unseal(sealed, aad="test")
             except ValueError:

@@ -27,8 +27,20 @@ from datetime import datetime, timezone
 
 # Import the three systems
 from .symphonic_cipher import token_to_frequency, analyze_polarity_balance, BASE_FREQ
-from .geo_seal import ContextVector, SecurityPosture, hyperbolic_distance, trust_from_position, harmonic_wall_cost
-from .dual_lattice import SacredTongue, LatticeVector, DualLatticeCrossStitch, TongueLatticeGovernor, TONGUE_PHASES
+from .geo_seal import (
+    ContextVector,
+    SecurityPosture,
+    hyperbolic_distance,
+    trust_from_position,
+    harmonic_wall_cost,
+)
+from .dual_lattice import (
+    SacredTongue,
+    LatticeVector,
+    DualLatticeCrossStitch,
+    TongueLatticeGovernor,
+    TONGUE_PHASES,
+)
 
 
 @dataclass
@@ -116,7 +128,9 @@ class SignedLatticeBridge:
         return ContextVector(components), analysis
 
     def context_to_lattice(
-        self, context: ContextVector, security_posture: SecurityPosture = SecurityPosture.QUASI
+        self,
+        context: ContextVector,
+        security_posture: SecurityPosture = SecurityPosture.QUASI,
     ) -> LatticeVector:
         """
         Project context vector into 10D dual lattice space.
@@ -297,7 +311,12 @@ def demo():
         # Shadow-dominant sequence
         (["shadow", "void", "abyss", "phantom"], "execute", "rm -rf /", 0.8),
         # Balanced sequence
-        (["light", "shadow", "balance", "truth", "void"], "click", "button.submit", 0.5),
+        (
+            ["light", "shadow", "balance", "truth", "void"],
+            "click",
+            "button.submit",
+            0.5,
+        ),
         # Mixed with neutrals
         (["center", "light", "echo", "harmony", "mist"], "type", "input#search", 0.4),
     ]

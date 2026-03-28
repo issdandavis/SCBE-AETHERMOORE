@@ -94,7 +94,14 @@ def _positive_to_signed(intent: list[float]) -> list[float]:
 def _qc_coords_from_state(x: float, y: float, phase_rad: float, signed_intent: list[float]) -> list[float]:
     phase_sin = math.sin(phase_rad)
     phase_cos = math.cos(phase_rad)
-    coords = [x, y, phase_sin, phase_cos, signed_intent[0], signed_intent[1] + signed_intent[2]]
+    coords = [
+        x,
+        y,
+        phase_sin,
+        phase_cos,
+        signed_intent[0],
+        signed_intent[1] + signed_intent[2],
+    ]
     return _normalize_ball(coords, limit=0.93)
 
 
@@ -192,7 +199,14 @@ class StorageInteractionMesh:
 
             entropic_state = EntropicState(
                 position=list(qc_coords),
-                velocity=[signed_intent[0], signed_intent[1], signed_intent[2], 0.0, 0.0, 0.0],
+                velocity=[
+                    signed_intent[0],
+                    signed_intent[1],
+                    signed_intent[2],
+                    0.0,
+                    0.0,
+                    0.0,
+                ],
             )
             entropic_assessment = self.entropic_layer.detect_escape(entropic_state)
             adaptive_k = self.entropic_layer.adaptive_k(
@@ -213,7 +227,11 @@ class StorageInteractionMesh:
                 entropic_volume_ratio=entropic_assessment.volume_ratio,
                 entropic_escape=entropic_assessment.escaped,
                 adaptive_k=adaptive_k,
-                metadata={"metrics": metrics, "source": note.source, "tags": list(note.tags)},
+                metadata={
+                    "metrics": metrics,
+                    "source": note.source,
+                    "tags": list(note.tags),
+                },
             )
 
             if self.fold_negative_vectors:
@@ -245,7 +263,7 @@ class StorageInteractionMesh:
             "fold_count": fold_count,
             "entropic_escape_count": entropic_escape_count,
             "max_entropic_volume_ratio": max((record.entropic_volume_ratio for record in self.records), default=0.0),
-            "adaptive_k_mean": (sum(adaptive_k_values) / len(adaptive_k_values)) if adaptive_k_values else 0.0,
+            "adaptive_k_mean": ((sum(adaptive_k_values) / len(adaptive_k_values)) if adaptive_k_values else 0.0),
             "lattice": self.lattice.stats(),
             "hyperbolic_octree": self.hyperbolic_octree.stats(),
             "quasi_drive": self.quasi_drive.stats(),

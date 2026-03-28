@@ -235,8 +235,6 @@ class AdaptiveToolBuilder:
         rate_strategy = "polite"
 
         dist = skeleton.tongue_distribution
-        archetype = skeleton.page_archetype
-
         # Always add a body-text fallback
         rules.append(ExtractionRule(
             name="body_text",

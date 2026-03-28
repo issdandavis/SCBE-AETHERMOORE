@@ -12,7 +12,11 @@ from dataclasses import asdict
 from typing import Any
 
 from agents.antivirus_membrane import scan_text_for_threats, turnstile_action
-from scripts.agentic_web_tool import _capture_with_fallback, _resolve_output_dir, _save_capture
+from scripts.agentic_web_tool import (
+    _capture_with_fallback,
+    _resolve_output_dir,
+    _save_capture,
+)
 from src.aetherbrowser.hyperlane_py import Decision, HyperLanePy, HyperLaneResult, Zone
 from src.browser.toolkit import extract as toolkit_extract
 from src.browser.toolkit import needs_js as toolkit_needs_js
@@ -21,8 +25,8 @@ from src.browser.toolkit import search as toolkit_search
 
 def _lane_dict(result: HyperLaneResult) -> dict[str, Any]:
     return {
-        "decision": result.decision.value if isinstance(result.decision, Decision) else str(result.decision),
-        "zone": result.zone.value if isinstance(result.zone, Zone) else str(result.zone),
+        "decision": (result.decision.value if isinstance(result.decision, Decision) else str(result.decision)),
+        "zone": (result.zone.value if isinstance(result.zone, Zone) else str(result.zone)),
         "reason": result.reason,
         "latency_ms": result.latency_ms,
     }

@@ -221,7 +221,10 @@ def generate_sovereign_manifest(
 
     if entropy_policy is None:
         # Default: scale aggressiveness by environment
-        if environment in (DeploymentEnvironment.SCIF, DeploymentEnvironment.AIR_GAPPED):
+        if environment in (
+            DeploymentEnvironment.SCIF,
+            DeploymentEnvironment.AIR_GAPPED,
+        ):
             entropy_policy = EntropySurfacePolicy(
                 anti_extraction_mode="paranoid",
                 leakage_budget_bits=64.0,

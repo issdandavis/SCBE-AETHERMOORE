@@ -125,7 +125,12 @@ class TestImports:
         assert callable(needs_js)
 
     def test_import_dataclasses(self):
-        from src.browser.toolkit import SearchResult, PageDiff, ExtractedItem, JSDetectionResult
+        from src.browser.toolkit import (
+            SearchResult,
+            PageDiff,
+            ExtractedItem,
+            JSDetectionResult,
+        )
 
         assert SearchResult is not None
         assert PageDiff is not None
