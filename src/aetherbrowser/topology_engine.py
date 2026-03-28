@@ -229,7 +229,8 @@ def compute_langues_cost_gradient(n_samples: int = 20) -> list[dict]:
 
         # Langues metric cost
         cost = sum(
-            LANGUES_WEIGHTS[lang] * math.exp(LANGUES_BETA_BASE * PHI ** (lang * 0.5) * min(d_h, 10))
+            LANGUES_WEIGHTS[lang]
+            * math.exp(LANGUES_BETA_BASE * PHI ** (lang * 0.5) * min(d_h, 10))
             for lang in range(6)
         )
 
@@ -306,7 +307,11 @@ def compute_page_topology(
 
         dist = semantic_distance(page_corpus, link_text, link_url)
         zone = classify_zone(link_url)
-        angle = angles[i] if i < len(angles) else 2 * math.pi * i / max(len(links_trimmed), 1)
+        angle = (
+            angles[i]
+            if i < len(angles)
+            else 2 * math.pi * i / max(len(links_trimmed), 1)
+        )
 
         x, y = project_to_disk(dist, angle)
 
@@ -320,15 +325,32 @@ def compute_page_topology(
             zone=zone,
             risk_tier=zone_to_risk(zone),
             semantic_dist=round(dist, 4),
-            topics=[t for t in topics if t.lower() in (link_text + " " + link_url).lower()][:3],
+            topics=[
+                t for t in topics if t.lower() in (link_text + " " + link_url).lower()
+            ][:3],
         )
         nodes.append(node)
 
     # Zone rings
     zone_rings = [
-        {"zone": "GREEN", "inner_radius": 0, "outer_radius": ZONE_GREEN_MAX, "color": "#3fb950"},
-        {"zone": "YELLOW", "inner_radius": ZONE_GREEN_MAX, "outer_radius": ZONE_YELLOW_MAX, "color": "#d29922"},
-        {"zone": "RED", "inner_radius": ZONE_YELLOW_MAX, "outer_radius": 1.0, "color": "#f85149"},
+        {
+            "zone": "GREEN",
+            "inner_radius": 0,
+            "outer_radius": ZONE_GREEN_MAX,
+            "color": "#3fb950",
+        },
+        {
+            "zone": "YELLOW",
+            "inner_radius": ZONE_GREEN_MAX,
+            "outer_radius": ZONE_YELLOW_MAX,
+            "color": "#d29922",
+        },
+        {
+            "zone": "RED",
+            "inner_radius": ZONE_YELLOW_MAX,
+            "outer_radius": 1.0,
+            "color": "#f85149",
+        },
     ]
 
     # Langues cost gradient

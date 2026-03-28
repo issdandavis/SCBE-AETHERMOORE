@@ -209,7 +209,9 @@ class MessageRouter:
         # Prefer channels matching the message tongue
         for ch_id in shared:
             channel = self._channels[ch_id]
-            if channel.is_open() and (not channel.required_tongue or channel.required_tongue == message.tongue):
+            if channel.is_open() and (
+                not channel.required_tongue or channel.required_tongue == message.tongue
+            ):
                 return channel
 
         # Fall back to any open shared channel

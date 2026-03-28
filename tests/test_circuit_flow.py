@@ -116,21 +116,27 @@ class TestTopology:
     def test_small_stellated_dodecahedron_chi_minus_6(self):
         registry = _build_registry()
         ssd = registry["small_stellated_dodecahedron"]
-        assert ssd.euler_characteristic == -6, f"Expected χ=-6, got {ssd.euler_characteristic}"
+        assert (
+            ssd.euler_characteristic == -6
+        ), f"Expected χ=-6, got {ssd.euler_characteristic}"
 
     def test_toroidal_chi_0(self):
         registry = _build_registry()
         for name, node in registry.items():
             if node.zone == Zone.RECURSIVE:
                 chi = node.euler_characteristic
-                assert chi == 0, f"{name}: Toroidal (genus=1) should have χ=0, got {chi}"
+                assert (
+                    chi == 0
+                ), f"{name}: Toroidal (genus=1) should have χ=0, got {chi}"
 
     def test_all_topologies_valid(self):
         """All 16 should pass zone-dependent topology validation."""
         circuit = PolyDidacticCircuit()
         results = circuit.validate_topology()
         for name, r in results.items():
-            assert r["valid"], f"{name}: topology invalid (χ={r['chi']}, zone={r['zone']})"
+            assert r[
+                "valid"
+            ], f"{name}: topology invalid (χ={r['chi']}, zone={r['zone']})"
 
 
 # ============================================================================
@@ -233,19 +239,25 @@ class TestFluxGate:
     def test_quasi_core_plus_cortex(self):
         circuit = PolyDidacticCircuit(flux=FluxGate.QUASI)
         trace = circuit.route(b"test intent")
-        assert trace.accessible_nodes == 8, f"QUASI should have 8 nodes, got {trace.accessible_nodes}"
+        assert (
+            trace.accessible_nodes == 8
+        ), f"QUASI should have 8 nodes, got {trace.accessible_nodes}"
 
     def test_demi_core_only(self):
         circuit = PolyDidacticCircuit(flux=FluxGate.DEMI)
         trace = circuit.route(b"test intent")
-        assert trace.accessible_nodes == 5, f"DEMI should have 5 nodes, got {trace.accessible_nodes}"
+        assert (
+            trace.accessible_nodes == 5
+        ), f"DEMI should have 5 nodes, got {trace.accessible_nodes}"
 
     def test_demi_only_platonic(self):
         circuit = PolyDidacticCircuit(flux=FluxGate.DEMI)
         trace = circuit.route(b"test intent")
         for step in trace.steps:
             node = circuit.nodes[step.node]
-            assert node.zone == Zone.CORE, f"DEMI: {step.node} is {node.zone}, expected CORE"
+            assert (
+                node.zone == Zone.CORE
+            ), f"DEMI: {step.node} is {node.zone}, expected CORE"
 
 
 # ============================================================================
@@ -274,7 +286,9 @@ class TestHamiltonianPath:
         circuit = PolyDidacticCircuit(flux=FluxGate.DEMI)
         trace = circuit.route(b"no dupes")
         visited = [s.node for s in trace.steps]
-        assert len(visited) == len(set(visited)), "Hamiltonian path should have no duplicates"
+        assert len(visited) == len(
+            set(visited)
+        ), "Hamiltonian path should have no duplicates"
 
 
 # ============================================================================
@@ -288,7 +302,9 @@ class TestGovernance:
         circuit = PolyDidacticCircuit(flux=FluxGate.DEMI)
         trace = circuit.route(b"core test")
         for step in trace.steps:
-            assert step.mode == "RUN", f"{step.node}: expected RUN in Core, got {step.mode}"
+            assert (
+                step.mode == "RUN"
+            ), f"{step.node}: expected RUN in Core, got {step.mode}"
 
     def test_risk_zone_gets_quarantine(self):
         circuit = PolyDidacticCircuit(flux=FluxGate.POLLY)
@@ -320,7 +336,9 @@ class TestAuditTrail:
         circuit = PolyDidacticCircuit(flux=FluxGate.DEMI)
         trace = circuit.route(b"audit check")
         for step in trace.steps:
-            assert step.reasoning, f"Step {step.step_index} ({step.node}) has no reasoning"
+            assert (
+                step.reasoning
+            ), f"Step {step.step_index} ({step.node}) has no reasoning"
 
     def test_step_indices_sequential(self):
         circuit = PolyDidacticCircuit(flux=FluxGate.DEMI)
@@ -332,7 +350,9 @@ class TestAuditTrail:
         circuit = PolyDidacticCircuit(flux=FluxGate.DEMI)
         trace = circuit.route(b"energy check")
         for i in range(1, len(trace.steps)):
-            assert trace.steps[i].cumulative_energy >= trace.steps[i - 1].cumulative_energy
+            assert (
+                trace.steps[i].cumulative_energy >= trace.steps[i - 1].cumulative_energy
+            )
 
     def test_trace_digest_deterministic(self):
         circuit = PolyDidacticCircuit(flux=FluxGate.DEMI)
@@ -392,7 +412,9 @@ class TestEndToEnd:
         for i in range(1, len(weights)):
             ratio = weights[i] / weights[i - 1]
             # Should be approximately φ ≈ 1.618
-            assert 1.5 < ratio < 1.7, f"Weight ratio {weights[i]}/{weights[i-1]}={ratio:.3f}, expected ≈φ"
+            assert (
+                1.5 < ratio < 1.7
+            ), f"Weight ratio {weights[i]}/{weights[i-1]}={ratio:.3f}, expected ≈φ"
 
     def test_tongue_phases_pi_over_3_spacing(self):
         """Verify tongue phases are spaced at π/3."""

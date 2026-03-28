@@ -433,7 +433,11 @@ def thermodynamics(params: Dict[str, Any]) -> Dict[str, Any]:
         results["peak_wavelength"] = lambda_max
 
     # Heat transfer: Q = mcΔT
-    if "mass" in params and "specific_heat" in params and "temperature_change" in params:
+    if (
+        "mass" in params
+        and "specific_heat" in params
+        and "temperature_change" in params
+    ):
         m = params["mass"]
         c = params["specific_heat"]
         delta_T = params["temperature_change"]
@@ -560,7 +564,9 @@ def relativity(params: Dict[str, Any]) -> Dict[str, Any]:
 # =============================================================================
 
 
-def _collect_harsh_physics_violations(simulation_type: str, params: Dict[str, Any]) -> List[Dict[str, Any]]:
+def _collect_harsh_physics_violations(
+    simulation_type: str, params: Dict[str, Any]
+) -> List[Dict[str, Any]]:
     """
     Collect non-physical constraint violations.
 

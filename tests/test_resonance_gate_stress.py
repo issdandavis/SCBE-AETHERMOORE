@@ -15,7 +15,14 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 PHI = (1 + math.sqrt(5)) / 2
 F0 = 440
 TONGUE_WEIGHTS = [1.0, PHI, PHI**2, PHI**3, PHI**4, PHI**5]
-TONGUE_PHASES = [0, math.pi / 3, 2 * math.pi / 3, math.pi, 4 * math.pi / 3, 5 * math.pi / 3]
+TONGUE_PHASES = [
+    0,
+    math.pi / 3,
+    2 * math.pi / 3,
+    math.pi,
+    4 * math.pi / 3,
+    5 * math.pi / 3,
+]
 TONGUE_NAMES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 
 
@@ -27,7 +34,11 @@ def tongue_wave(t, weights=None, phase_offset=0.0):
     w = weights or TONGUE_WEIGHTS
     total_weight = sum(w)
     s = sum(
-        w[lang] * math.cos(2 * math.pi * F0 * PHI**lang * t + TONGUE_PHASES[lang] + phase_offset) for lang in range(6)
+        w[lang]
+        * math.cos(
+            2 * math.pi * F0 * PHI**lang * t + TONGUE_PHASES[lang] + phase_offset
+        )
+        for lang in range(6)
     )
     return s / total_weight if total_weight > 0 else 0
 
@@ -98,11 +109,17 @@ def test_basic_properties(n=1000):
         if r["envelope"] <= 0:
             failures.append(f"envelope non-positive: {r['envelope']} at d*={d}")
         if r["rho"] >= 0.7 and r["decision"] != "PASS":
-            failures.append(f"decision mismatch: rho={r['rho']} but decision={r['decision']}")
+            failures.append(
+                f"decision mismatch: rho={r['rho']} but decision={r['decision']}"
+            )
         if r["rho"] < 0.3 and r["decision"] != "REJECT":
-            failures.append(f"decision mismatch: rho={r['rho']} but decision={r['decision']}")
+            failures.append(
+                f"decision mismatch: rho={r['rho']} but decision={r['decision']}"
+            )
         if r["barrier_cost"] < r["envelope"]:
-            failures.append(f"barrier_cost < envelope: {r['barrier_cost']} < {r['envelope']}")
+            failures.append(
+                f"barrier_cost < envelope: {r['barrier_cost']} < {r['envelope']}"
+            )
 
     return len(failures) == 0, failures
 
@@ -130,7 +147,9 @@ def test_envelope_growth(n=1000):
         d = i * 0.003
         r = resonance_gate(d, t=0)
         if r["envelope"] < prev_env:
-            failures.append(f"envelope decreased at d*={d:.4f}: {r['envelope']:.2f} < {prev_env:.2f}")
+            failures.append(
+                f"envelope decreased at d*={d:.4f}: {r['envelope']:.2f} < {prev_env:.2f}"
+            )
         prev_env = r["envelope"]
     return len(failures) == 0, failures
 
@@ -189,7 +208,9 @@ def test_phase_offset_discrimination(n=1000):
     avg_shift = sum(shifted_rhos) / n
     discrimination = abs(avg_base - avg_shift)
     ok = discrimination > 0.01  # there should be measurable difference
-    return ok, [f"avg_base_rho={avg_base:.4f}, avg_shifted_rho={avg_shift:.4f}, discrimination={discrimination:.4f}"]
+    return ok, [
+        f"avg_base_rho={avg_base:.4f}, avg_shifted_rho={avg_shift:.4f}, discrimination={discrimination:.4f}"
+    ]
 
 
 def test_barrier_cost_explodes(n=1000):
@@ -227,7 +248,9 @@ def test_negative_distance_safety(n=100):
         if not (0 <= r["rho"] <= 1):
             failures.append(f"rho={r['rho']} at d*={d}")
         if r["geometry_alignment"] > 1.01:
-            failures.append(f"geometry_alignment={r['geometry_alignment']} > 1 at d*={d}")
+            failures.append(
+                f"geometry_alignment={r['geometry_alignment']} > 1 at d*={d}"
+            )
     return len(failures) == 0, failures
 
 
@@ -285,7 +308,12 @@ if __name__ == "__main__":
         "elapsed_s": round(elapsed, 3),
         "results": results,
     }
-    report_path = os.path.join(os.path.dirname(__file__), "..", "artifacts", "resonance_gate_stress_report.json")
+    report_path = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "artifacts",
+        "resonance_gate_stress_report.json",
+    )
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
     with open(report_path, "w") as f:
         json.dump(report, f, indent=2)

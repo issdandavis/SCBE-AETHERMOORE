@@ -101,7 +101,9 @@ class TemporalState:
         return [(t, s) for t, s in self.history if t >= cutoff]
 
 
-def causality_check(require_time_param: bool = True, allow_acausal: bool = False) -> Callable[[F], F]:
+def causality_check(
+    require_time_param: bool = True, allow_acausal: bool = False
+) -> Callable[[F], F]:
     """
     Decorator that verifies a transform respects causality.
 
@@ -146,7 +148,10 @@ def causality_check(require_time_param: bool = True, allow_acausal: bool = False
             if last_time["value"] is not None and current_time < last_time["value"]:
                 if explicit_time and not strict_time_order:
                     # Explicit rewinds are treated as a new sequence origin.
-                    message = f"Time sequence reset: {current_time:.4f} < " f"{last_time['value']:.4f}"
+                    message = (
+                        f"Time sequence reset: {current_time:.4f} < "
+                        f"{last_time['value']:.4f}"
+                    )
                 else:
                     if not explicit_time or strict_time_order:
                         time_ordering_preserved = False
@@ -154,7 +159,10 @@ def causality_check(require_time_param: bool = True, allow_acausal: bool = False
                             future_dependency = True
 
                     if strict_time_order:
-                        message = f"Time went backwards: {current_time:.4f} < " f"{last_time['value']:.4f}"
+                        message = (
+                            f"Time went backwards: {current_time:.4f} < "
+                            f"{last_time['value']:.4f}"
+                        )
                     else:
                         # Treat backwards time as a new independent sequence.
                         # This avoids stale cross-test/cross-call temporal state.
@@ -199,7 +207,9 @@ def causality_check(require_time_param: bool = True, allow_acausal: bool = False
 # ============================================================================
 
 
-def breathing_factor(t: float, b_max: float = B_BREATH_MAX, omega: float = OMEGA_BREATH) -> float:
+def breathing_factor(
+    t: float, b_max: float = B_BREATH_MAX, omega: float = OMEGA_BREATH
+) -> float:
     """
     Compute the breathing factor at time t.
 
@@ -556,7 +566,9 @@ class CausalPipeline:
         self.execution_log.append((self.temporal_state.t, "layer_6", result.copy()))
         return result
 
-    def execute_layer_11(self, u: np.ndarray, ref_u: np.ndarray, q: complex, ref_q: complex) -> float:
+    def execute_layer_11(
+        self, u: np.ndarray, ref_u: np.ndarray, q: complex, ref_q: complex
+    ) -> float:
         """Execute triadic distance with temporal state."""
         result = layer_11_triadic_distance(
             u=u,
@@ -571,9 +583,13 @@ class CausalPipeline:
         self.execution_log.append((self.temporal_state.t, "layer_11", result))
         return result
 
-    def execute_layer_13(self, d_star: float, coherence: float, realm_index: int) -> RiskAssessment:
+    def execute_layer_13(
+        self, d_star: float, coherence: float, realm_index: int
+    ) -> RiskAssessment:
         """Execute decision layer."""
-        result = layer_13_decision(d_star=d_star, coherence=coherence, realm_index=realm_index)
+        result = layer_13_decision(
+            d_star=d_star, coherence=coherence, realm_index=realm_index
+        )
         self.execution_log.append((self.temporal_state.t, "layer_13", result))
         return result
 
@@ -600,7 +616,9 @@ class CausalPipeline:
 # ============================================================================
 
 
-def verify_layer_causality(layer_func: Callable, n_tests: int = 100, verbose: bool = False) -> Tuple[bool, dict]:
+def verify_layer_causality(
+    layer_func: Callable, n_tests: int = 100, verbose: bool = False
+) -> Tuple[bool, dict]:
     """
     Verify that a layer respects causality over multiple invocations.
 

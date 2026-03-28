@@ -60,7 +60,9 @@ def parse_decisions(raw_entries: list[str] | None) -> list[dict[str, str]]:
             cleaned, rationale = cleaned.split("::", 1)
         key, sep, value = cleaned.partition("=")
         if not sep:
-            raise ValueError("decision entries must use key=value or key=value::rationale")
+            raise ValueError(
+                "decision entries must use key=value or key=value::rationale"
+            )
         decisions.append(
             {
                 "key": safe_text(key),
@@ -221,7 +223,9 @@ def find_latest_run(run_root: Path) -> str | None:
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=True) + "\n", encoding="utf-8"
+    )
 
 
 def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
@@ -263,7 +267,9 @@ def append_event(
     decisions: list[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     root = Path(run_root)
-    current_events = load_events(root, run_id) if events_path(root, run_id).exists() else []
+    current_events = (
+        load_events(root, run_id) if events_path(root, run_id).exists() else []
+    )
     step_index = next_step_index(current_events)
     event = ActionEvent(
         event_id=f"{event_type}-{utc_stamp()}-{step_index:04d}",
@@ -493,7 +499,9 @@ def git_snapshot(repo_root: Path) -> dict[str, Any]:
 
     top_dirty = [
         {"name": name, "dirty_count": count}
-        for name, count in sorted(dirty_roots.items(), key=lambda item: (-item[1], item[0]))[:10]
+        for name, count in sorted(
+            dirty_roots.items(), key=lambda item: (-item[1], item[0])
+        )[:10]
     ]
     return {
         "available": True,
@@ -534,7 +542,9 @@ def build_cleanup_focus(task: str, repo_snapshot: dict[str, Any]) -> dict[str, A
             }
         )
     return {
-        "task_matches_cleanup": any(token in task.lower() for token in ("clean", "cleanup", "organize", "sort")),
+        "task_matches_cleanup": any(
+            token in task.lower() for token in ("clean", "cleanup", "organize", "sort")
+        ),
         "dirty_hotspots": annotated_hotspots,
     }
 
@@ -644,8 +654,12 @@ def build_action_map(run_root: Path, run_id: str) -> dict[str, Any]:
     tools = unique_strings([event.tool for event in events if event.tool])
     lanes = unique_strings([event.lane for event in events if event.lane])
     skills = unique_strings([skill for event in events for skill in event.skills])
-    touched_layers = unique_strings([layer for event in events for layer in event.touched_layers])
-    changed_files = unique_strings([path for event in events for path in event.changed_files])
+    touched_layers = unique_strings(
+        [layer for event in events for layer in event.touched_layers]
+    )
+    changed_files = unique_strings(
+        [path for event in events for path in event.changed_files]
+    )
     artifacts = unique_strings([path for event in events for path in event.artifacts])
     proof = unique_strings([path for event in events for path in event.proof])
     tags = unique_strings([tag for event in events for tag in event.tags])
@@ -664,7 +678,9 @@ def build_action_map(run_root: Path, run_id: str) -> dict[str, Any]:
         "run_id": run_id,
         "task": task,
         "started_at": events[0].timestamp_utc,
-        "closed_at": events[-1].timestamp_utc if events[-1].event_type == "close" else "",
+        "closed_at": (
+            events[-1].timestamp_utc if events[-1].event_type == "close" else ""
+        ),
         "workflow_signature": signature,
         "summary": {
             "terminal_status": terminal_status,
@@ -738,12 +754,25 @@ def status(run_root: Path, run_id: str | None = None) -> dict[str, Any]:
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Record and compile SCBE action-map workflow telemetry.")
-    parser.add_argument("--run-root", default=str(DEFAULT_RUN_ROOT), help=f"Run root (default: {DEFAULT_RUN_ROOT})")
+    parser = argparse.ArgumentParser(
+        description="Record and compile SCBE action-map workflow telemetry."
+    )
+    parser.add_argument(
+        "--run-root",
+        default=str(DEFAULT_RUN_ROOT),
+        help=f"Run root (default: {DEFAULT_RUN_ROOT})",
+    )
     sub = parser.add_subparsers(dest="subcommand", required=True)
 
-    def add_common_arguments(p: argparse.ArgumentParser, *, require_summary: bool = True) -> None:
-        p.add_argument("--summary", required=require_summary, default="", help="Human summary for this event.")
+    def add_common_arguments(
+        p: argparse.ArgumentParser, *, require_summary: bool = True
+    ) -> None:
+        p.add_argument(
+            "--summary",
+            required=require_summary,
+            default="",
+            help="Human summary for this event.",
+        )
         p.add_argument("--operator", default="agent.codex")
         p.add_argument("--lane", default="terminal")
         p.add_argument("--tool", default="")
@@ -776,10 +805,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     close_p.add_argument("--status", default="completed")
     add_common_arguments(close_p)
 
-    build_p = sub.add_parser("build", help="Compile action-map artifacts and training rows")
+    build_p = sub.add_parser(
+        "build", help="Compile action-map artifacts and training rows"
+    )
     build_p.add_argument("--run-id", required=True)
 
-    status_p = sub.add_parser("status", help="Show the latest action-map run or one specific run")
+    status_p = sub.add_parser(
+        "status", help="Show the latest action-map run or one specific run"
+    )
     status_p.add_argument("--run-id", default="")
 
     return parser.parse_args(argv)

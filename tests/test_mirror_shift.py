@@ -307,7 +307,9 @@ class TestRefactorAlign:
         result1 = refactor_align(x)
         result2 = refactor_align(result1.aligned_state)
         # The aligned state should be stable (same output on second pass)
-        np.testing.assert_allclose(result1.aligned_state, result2.aligned_state, atol=1e-6)
+        np.testing.assert_allclose(
+            result1.aligned_state, result2.aligned_state, atol=1e-6
+        )
 
     def test_wrong_dimension_raises(self):
         """Non-21D vector raises ValueError."""
@@ -400,8 +402,12 @@ class TestUnifiedBrainStateIntegration:
         state1 = UnifiedBrainState.safe_origin()
         state2 = UnifiedBrainState.safe_origin()
         # Modify navigation directly on the dataclass
-        state2.navigation = NavigationVector(x=0.1, y=-0.05, z=0.0, time=0.0, priority=0.5, confidence=1.0)
-        state2.swarm_coordination = SwarmCoordination(trust_score=0.3, byzantine_votes=0.0, spectral_coherence=1.0)
+        state2.navigation = NavigationVector(
+            x=0.1, y=-0.05, z=0.0, time=0.0, priority=0.5, confidence=1.0
+        )
+        state2.swarm_coordination = SwarmCoordination(
+            trust_score=0.3, byzantine_votes=0.0, spectral_coherence=1.0
+        )
 
         v1 = np.array(state1.to_vector())
         v2 = np.array(state2.to_vector())

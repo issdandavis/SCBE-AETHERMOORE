@@ -177,7 +177,9 @@ class PlatformPublisher:
     produces a dry-run result (for testing without live API connections).
     """
 
-    def __init__(self, platform: Platform, credentials: Optional[Dict[str, str]] = None) -> None:
+    def __init__(
+        self, platform: Platform, credentials: Optional[Dict[str, str]] = None
+    ) -> None:
         self.platform = platform
         self._credentials = credentials or {}
 
@@ -205,7 +207,9 @@ class PlatformPublisher:
         if len(content.text) > max_chars:
             issues.append(f"Text exceeds {max_chars} chars ({len(content.text)})")
         if len(content.media_urls) > max_media:
-            issues.append(f"Too many media files ({len(content.media_urls)} > {max_media})")
+            issues.append(
+                f"Too many media files ({len(content.media_urls)} > {max_media})"
+            )
 
         return issues
 
@@ -366,7 +370,9 @@ class ContentBuffer:
                 if not self._rate_limiter.can_post(platform):
                     post.platform_results[platform.value] = {
                         "error": "rate_limited",
-                        "retry_after": self._rate_limiter.time_until_available(platform),
+                        "retry_after": self._rate_limiter.time_until_available(
+                            platform
+                        ),
                     }
                     continue
 
@@ -426,7 +432,11 @@ class ContentBuffer:
         return list(self._published)
 
     def due_posts(self) -> List[ScheduledPost]:
-        return [p for p in self._queue if p.is_due and p.status in (PostStatus.QUEUED, PostStatus.SCHEDULED)]
+        return [
+            p
+            for p in self._queue
+            if p.is_due and p.status in (PostStatus.QUEUED, PostStatus.SCHEDULED)
+        ]
 
     def summary(self) -> Dict[str, Any]:
         by_status: Dict[str, int] = {}

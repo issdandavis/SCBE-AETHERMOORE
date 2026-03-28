@@ -56,7 +56,9 @@ def apply_spd_weights(x: np.ndarray, g_diag: np.ndarray) -> np.ndarray:
     return np.sqrt(g_diag) * x
 
 
-def poincare_embed(x: np.ndarray, alpha: float = 1.0, eps_ball: float = 1e-3) -> np.ndarray:
+def poincare_embed(
+    x: np.ndarray, alpha: float = 1.0, eps_ball: float = 1e-3
+) -> np.ndarray:
     """Radial tanh embedding to Poincare ball."""
     x = np.asarray(x, dtype=np.float64)
     r = _norm(x)
@@ -91,7 +93,9 @@ def mobius_add(a: np.ndarray, u: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     return num / denom
 
 
-def phase_transform(u: np.ndarray, a: np.ndarray, Q: Optional[np.ndarray] = None, eps_ball: float = 1e-3) -> np.ndarray:
+def phase_transform(
+    u: np.ndarray, a: np.ndarray, Q: Optional[np.ndarray] = None, eps_ball: float = 1e-3
+) -> np.ndarray:
     """Phase transform: T_phase(u) = Q (a + u)."""
     u2 = mobius_add(a, u)
     if Q is not None:
@@ -119,7 +123,9 @@ def realm_distance(u: np.ndarray, centers: np.ndarray) -> float:
     return float(min(dmins))
 
 
-def spectral_stability(y: np.ndarray, hf_frac: float = 0.5, eps: float = 1e-12) -> float:
+def spectral_stability(
+    y: np.ndarray, hf_frac: float = 0.5, eps: float = 1e-12
+) -> float:
     """S_spec = 1 - r_HF in [0,1]."""
     y = np.asarray(y, dtype=np.float64)
     if y.size < 2:
@@ -156,7 +162,9 @@ def triadic_distance(
     return float(np.sqrt(max(0.0, s)))
 
 
-def harmonic_scaling(d: float, R: float = 1.5, max_log: float = 700.0) -> Tuple[float, float]:
+def harmonic_scaling(
+    d: float, R: float = 1.5, max_log: float = 700.0
+) -> Tuple[float, float]:
     """H(d,R) = R^(d^2)."""
     logH = float(np.log(R) * (d**2))
     logH_c = min(logH, max_log)
@@ -196,14 +204,18 @@ def risk_base(
     return float(sum(terms))
 
 
-def risk_prime(d_star: float, risk_base_value: float, R: float = 1.5) -> Dict[str, float]:
+def risk_prime(
+    d_star: float, risk_base_value: float, R: float = 1.5
+) -> Dict[str, float]:
     """Risk' = Risk_base * H(d*, R)."""
     rb = max(0.0, float(risk_base_value))
     H, logH = harmonic_scaling(float(d_star), R=R)
     return {"risk_prime": rb * H, "H": H, "logH": logH, "risk_base": rb}
 
 
-def decision_from_risk(risk_prime_value: float, allow: float = 0.30, deny: float = 0.70) -> str:
+def decision_from_risk(
+    risk_prime_value: float, allow: float = 0.30, deny: float = 0.70
+) -> str:
     """Convert Risk' to ALLOW/QUARANTINE/DENY."""
     r = float(risk_prime_value)
     if r < allow:
@@ -244,7 +256,9 @@ def self_test(verbose: bool = True) -> Dict[str, Any]:
     ok_phase = abs(duv_before - duv_after) < 1e-8
 
     # A7: realm Lipschitz
-    centers = np.stack([np.zeros_like(u), clamp_ball(np.array([0.2, 0.0, 0.0, 0.0]))], axis=0)
+    centers = np.stack(
+        [np.zeros_like(u), clamp_ball(np.array([0.2, 0.0, 0.0, 0.0]))], axis=0
+    )
     dstar_u = realm_distance(u, centers)
     dstar_v = realm_distance(v, centers)
     ok_lip = abs(dstar_u - dstar_v) <= hyperbolic_distance(u, v) + 1e-7

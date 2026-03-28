@@ -87,7 +87,9 @@ def clean_text(text: str) -> str:
     # Collapse multiple newlines
     text = re.sub(r"\n{3,}", "\n\n", text)
     # Remove leading emoji + whitespace from lines (Notion export style)
-    text = re.sub(r"^[\U0001f300-\U0001faff\u2600-\u27bf]+\s*", "", text, flags=re.MULTILINE)
+    text = re.sub(
+        r"^[\U0001f300-\U0001faff\u2600-\u27bf]+\s*", "", text, flags=re.MULTILINE
+    )
     # Strip trailing whitespace per line
     text = re.sub(r"[ \t]+$", "", text, flags=re.MULTILINE)
     return text.strip()
@@ -179,7 +181,9 @@ def convert_to_chat(record: dict) -> dict:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert raw Notion JSONL to SCBE SFT training format")
+    parser = argparse.ArgumentParser(
+        description="Convert raw Notion JSONL to SCBE SFT training format"
+    )
     parser.add_argument(
         "input",
         help="Input JSONL file (use '-' for stdin)",
@@ -284,7 +288,10 @@ def main():
     print(f"Skipped (too short): {skipped}", file=sys.stderr)
     if args.merge:
         print(f"Merged from:       {len(args.merge)} file(s)", file=sys.stderr)
-    print(f"Output format:     {'chat-messages' if args.chat else 'instruction/response'}", file=sys.stderr)
+    print(
+        f"Output format:     {'chat-messages' if args.chat else 'instruction/response'}",
+        file=sys.stderr,
+    )
     if args.output:
         print(f"Written to:        {args.output}", file=sys.stderr)
 

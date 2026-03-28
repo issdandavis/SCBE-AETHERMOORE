@@ -62,4 +62,7 @@ def test_events_are_recorded_for_audit(tmp_path: Path) -> None:
 
     events = store.list_events(pad_id, limit=10)
     assert len(events) == 2
-    assert {events[0]["event_type"], events[1]["event_type"]} == {"book_opened", "web_lookup"}
+    assert {events[0]["event_type"], events[1]["event_type"]} == {
+        "book_opened",
+        "web_lookup",
+    }

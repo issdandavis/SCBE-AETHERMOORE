@@ -4,7 +4,9 @@ import importlib.util
 import json
 from pathlib import Path
 
-MODULE_PATH = Path(__file__).resolve().parent.parent / "scripts" / "programmatic_hf_training.py"
+MODULE_PATH = (
+    Path(__file__).resolve().parent.parent / "scripts" / "programmatic_hf_training.py"
+)
 SPEC = importlib.util.spec_from_file_location("programmatic_hf_training", MODULE_PATH)
 assert SPEC is not None and SPEC.loader is not None
 MODULE = importlib.util.module_from_spec(SPEC)
@@ -98,5 +100,9 @@ def test_run_local_placeholder_training_smoke(tmp_path: Path) -> None:
     assert "growth" in report
     assert (tmp_path / "model_run" / "label_map.json").exists()
     assert (tmp_path / "model_run" / "model_weights.npz").exists()
-    metrics = json.loads((tmp_path / "model_run" / "hf_training_metrics.json").read_text(encoding="utf-8"))
+    metrics = json.loads(
+        (tmp_path / "model_run" / "hf_training_metrics.json").read_text(
+            encoding="utf-8"
+        )
+    )
     assert metrics["model_repo"] == "issdandavis/phdm-21d-embedding-next"

@@ -32,7 +32,9 @@ TELEMETRY_DIM = 9
 # Default weighting and scaling for telemetry block.
 # Last two (radial_norm, energy_harmonic) are derived cache slots and default to zero weight
 # to avoid double-counting geometry.
-DEFAULT_TELEMETRY_WEIGHTS = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.0, 0.0], dtype=float)
+DEFAULT_TELEMETRY_WEIGHTS = np.array(
+    [1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.0, 0.0], dtype=float
+)
 DEFAULT_TELEMETRY_SCALES = np.ones(TELEMETRY_DIM, dtype=float)
 
 
@@ -95,7 +97,9 @@ def _wrap_angle_delta(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     return np.arctan2(np.sin(a - b), np.cos(a - b))
 
 
-def hyperbolic_distance_poincare(u: np.ndarray, v: np.ndarray, eps: float = 1e-12) -> float:
+def hyperbolic_distance_poincare(
+    u: np.ndarray, v: np.ndarray, eps: float = 1e-12
+) -> float:
     uu = float(np.dot(u, u))
     vv = float(np.dot(v, v))
     if uu >= 1.0 or vv >= 1.0:
@@ -135,7 +139,10 @@ def validate_state21_v1(state: State21V1, eps: float = 1e-6) -> Dict[str, float]
         raise State21Error(f"Invalid tongue embedding norm: {u_norm:.8f} >= 1")
 
     # Coherence channels are independent measurements in [0,1]^3 (not simplex-constrained).
-    coherences = np.array([state.coherence_spectral, state.coherence_spin, state.coherence_triadic], dtype=float)
+    coherences = np.array(
+        [state.coherence_spectral, state.coherence_spin, state.coherence_triadic],
+        dtype=float,
+    )
     if np.any(coherences < -eps) or np.any(coherences > 1.0 + eps):
         raise State21Error("coherence_* channels must be in [0,1]")
 
@@ -176,8 +183,18 @@ def product_metric_distance_v1(
     sa = parse_state21_v1(a)
     sb = parse_state21_v1(b)
 
-    w = np.asarray(telemetry_weights if telemetry_weights is not None else DEFAULT_TELEMETRY_WEIGHTS, dtype=float)
-    s = np.asarray(telemetry_scales if telemetry_scales is not None else DEFAULT_TELEMETRY_SCALES, dtype=float)
+    w = np.asarray(
+        (
+            telemetry_weights
+            if telemetry_weights is not None
+            else DEFAULT_TELEMETRY_WEIGHTS
+        ),
+        dtype=float,
+    )
+    s = np.asarray(
+        telemetry_scales if telemetry_scales is not None else DEFAULT_TELEMETRY_SCALES,
+        dtype=float,
+    )
 
     if w.shape != (TELEMETRY_DIM,):
         raise State21Error(f"telemetry_weights must have shape ({TELEMETRY_DIM},)")

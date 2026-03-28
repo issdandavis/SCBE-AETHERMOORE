@@ -332,7 +332,9 @@ class AperiodicPhaseBlock(ConceptBlock):
         # Optional frequency modulation
         base_freq = inputs.get("base_frequency")
         if base_freq is not None:
-            state["frequency_shifted"] = self._controller.frequency_shift(float(base_freq))
+            state["frequency_shifted"] = self._controller.frequency_shift(
+                float(base_freq)
+            )
 
         return BlockResult(
             status=BlockStatus.SUCCESS,

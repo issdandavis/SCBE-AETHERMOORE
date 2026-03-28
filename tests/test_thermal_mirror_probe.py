@@ -123,7 +123,9 @@ class TestNullHypothesis:
 class TestAnalyzeThermal:
     def test_returns_correct_dataclass(self):
         W = np.random.randn(16, 16)
-        result = analyze_thermal(W, layer=0, weight_type="Q", alpha=2.0, temp_source="row_norm")
+        result = analyze_thermal(
+            W, layer=0, weight_type="Q", alpha=2.0, temp_source="row_norm"
+        )
         assert isinstance(result, ThermalProbeResult)
         assert result.layer == 0
         assert result.weight_type == "Q"
@@ -133,12 +135,16 @@ class TestAnalyzeThermal:
     def test_suppression_ratio_between_zero_and_one(self):
         rng = np.random.default_rng(42)
         W = rng.standard_normal((32, 32))
-        result = analyze_thermal(W, layer=0, weight_type="Q", alpha=5.0, temp_source="elementwise")
+        result = analyze_thermal(
+            W, layer=0, weight_type="Q", alpha=5.0, temp_source="elementwise"
+        )
         assert 0 < result.suppression_ratio <= 1.0
 
     def test_temperature_stats_present(self):
         W = np.random.randn(16, 16)
-        result = analyze_thermal(W, layer=0, weight_type="V", alpha=1.0, temp_source="col_norm")
+        result = analyze_thermal(
+            W, layer=0, weight_type="V", alpha=1.0, temp_source="col_norm"
+        )
         assert "mean" in result.temperature_stats
         assert "std" in result.temperature_stats
         assert "max" in result.temperature_stats

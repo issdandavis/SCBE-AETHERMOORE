@@ -103,7 +103,9 @@ def extract_features(
     # Spectral Centroid: Ca = (Σk fk·Pa[k]) / (Σk Pa[k] + ε)
     freq_resolution = sample_rate / N_FFT
     total_power = sum(spectrum) + EPS
-    weighted_freq = sum((k * freq_resolution) * spectrum[k] for k in range(len(spectrum)))
+    weighted_freq = sum(
+        (k * freq_resolution) * spectrum[k] for k in range(len(spectrum))
+    )
     centroid = weighted_freq / total_power
 
     # Spectral Flux: Fa = Σk (√Pa[k] - √Pa_prev[k])²
@@ -111,7 +113,11 @@ def extract_features(
         prev_spectrum = [0.0] * len(spectrum)
 
     flux = sum(
-        (math.sqrt(spectrum[k]) - math.sqrt(prev_spectrum[k] if k < len(prev_spectrum) else 0)) ** 2
+        (
+            math.sqrt(spectrum[k])
+            - math.sqrt(prev_spectrum[k] if k < len(prev_spectrum) else 0)
+        )
+        ** 2
         for k in range(len(spectrum))
     ) / (total_power + EPS)
 
@@ -293,9 +299,15 @@ if __name__ == "__main__":
     print()
 
     print("MATHEMATICAL PROOFS:")
-    print(f"  Stability bounded (S ∈ [0,1]):  {'✓ PROVEN' if verify_stability_bounded() else '✗ FAILED'}")
-    print(f"  HF detection works:             {'✓ PROVEN' if verify_hf_detection() else '✗ FAILED'}")
-    print(f"  Flux detects changes:           {'✓ PROVEN' if verify_flux_sensitivity() else '✗ FAILED'}")
+    print(
+        f"  Stability bounded (S ∈ [0,1]):  {'✓ PROVEN' if verify_stability_bounded() else '✗ FAILED'}"
+    )
+    print(
+        f"  HF detection works:             {'✓ PROVEN' if verify_hf_detection() else '✗ FAILED'}"
+    )
+    print(
+        f"  Flux detects changes:           {'✓ PROVEN' if verify_flux_sensitivity() else '✗ FAILED'}"
+    )
     print()
 
     print("FEATURE DEFINITIONS:")

@@ -54,14 +54,35 @@ def parse_test_site():
             "Download All Tools. Deploy to Network."
         ),
         "links": [
-            {"text": "Premium Password Recovery Tool v3.2", "href": "https://evil-malware-site.example.com/tool1.exe"},
-            {"text": "Credential Database 2026", "href": "https://phishing-central.example.net/creds.zip"},
-            {"text": "Universal License Keygen", "href": "https://sketchy-downloads.example.org/keygen.exe"},
-            {"text": "SCBE-AETHERMOORE (legitimate)", "href": "https://github.com/issdandavis/SCBE-AETHERMOORE"},
-            {"text": "Research Paper (legitimate)", "href": "https://arxiv.org/abs/2401.00001"},
-            {"text": "Stack Overflow (safe)", "href": "https://stackoverflow.com/questions/tagged/python"},
+            {
+                "text": "Premium Password Recovery Tool v3.2",
+                "href": "https://evil-malware-site.example.com/tool1.exe",
+            },
+            {
+                "text": "Credential Database 2026",
+                "href": "https://phishing-central.example.net/creds.zip",
+            },
+            {
+                "text": "Universal License Keygen",
+                "href": "https://sketchy-downloads.example.org/keygen.exe",
+            },
+            {
+                "text": "SCBE-AETHERMOORE (legitimate)",
+                "href": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+            },
+            {
+                "text": "Research Paper (legitimate)",
+                "href": "https://arxiv.org/abs/2401.00001",
+            },
+            {
+                "text": "Stack Overflow (safe)",
+                "href": "https://stackoverflow.com/questions/tagged/python",
+            },
             {"text": "Reddit Hacking (yellow)", "href": "https://reddit.com/r/hacking"},
-            {"text": "Underground Forum (red)", "href": "https://dark-forum.example.com"},
+            {
+                "text": "Underground Forum (red)",
+                "href": "https://dark-forum.example.com",
+            },
         ],
         "headings": [
             {"level": "H1", "text": "Free Premium Tools Download Portal"},
@@ -95,8 +116,12 @@ class TestRedZoneTopology:
         )
 
     def test_center_node_is_the_page(self):
-        assert self.topology["center"]["url"] == "https://suspicious-downloads.example.com"
-        assert self.topology["center"]["zone"] == "GREEN"  # center is always safe by definition
+        assert (
+            self.topology["center"]["url"] == "https://suspicious-downloads.example.com"
+        )
+        assert (
+            self.topology["center"]["zone"] == "GREEN"
+        )  # center is always safe by definition
 
     def test_all_nodes_inside_unit_disk(self):
         for node in self.topology["nodes"]:
@@ -112,7 +137,9 @@ class TestRedZoneTopology:
         }
         for node in self.topology["nodes"]:
             if node["url"] in red_urls:
-                assert node["zone"] == "RED", f"{node['url']} should be RED, got {node['zone']}"
+                assert (
+                    node["zone"] == "RED"
+                ), f"{node['url']} should be RED, got {node['zone']}"
 
     def test_legitimate_links_classified_green(self):
         green_urls = {
@@ -122,16 +149,22 @@ class TestRedZoneTopology:
         }
         for node in self.topology["nodes"]:
             if node["url"] in green_urls:
-                assert node["zone"] == "GREEN", f"{node['url']} should be GREEN, got {node['zone']}"
+                assert (
+                    node["zone"] == "GREEN"
+                ), f"{node['url']} should be GREEN, got {node['zone']}"
 
     def test_reddit_classified_yellow(self):
         for node in self.topology["nodes"]:
             if _host_has_suffix(node["url"], "reddit", "com"):
-                assert node["zone"] == "YELLOW", f"Reddit should be YELLOW, got {node['zone']}"
+                assert (
+                    node["zone"] == "YELLOW"
+                ), f"Reddit should be YELLOW, got {node['zone']}"
 
     def test_red_nodes_further_from_center_than_green(self):
         red_radii = [n["radius"] for n in self.topology["nodes"] if n["zone"] == "RED"]
-        green_radii = [n["radius"] for n in self.topology["nodes"] if n["zone"] == "GREEN"]
+        green_radii = [
+            n["radius"] for n in self.topology["nodes"] if n["zone"] == "GREEN"
+        ]
 
         if red_radii and green_radii:
             # On average, RED nodes should have higher semantic distance
@@ -226,7 +259,9 @@ class TestRedZonePhaseTunnel:
                 kernel=kernel,
             )
             # GREEN should be easy even for new agents
-            assert result.transmission_coeff > 0, f"GREEN link blocked: {node['url']}, T={result.transmission_coeff}"
+            assert (
+                result.transmission_coeff > 0
+            ), f"GREEN link blocked: {node['url']}, T={result.transmission_coeff}"
 
     def test_phase_read_red_without_commit(self):
         """The key feature: preview RED zone content without committing to enter.
@@ -382,7 +417,9 @@ class TestFullFlowIntegration:
         print("\n" + "=" * 90)
         print("FULL RED ZONE ANALYSIS — Phase Tunnel Decisions")
         print("=" * 90)
-        print(f"{'Label':<35} {'Zone':<8} {'Optimal':<12} {'T':<8} {'Commit':<8} {'Blind':<12} {'T':<8}")
+        print(
+            f"{'Label':<35} {'Zone':<8} {'Optimal':<12} {'T':<8} {'Commit':<8} {'Blind':<12} {'T':<8}"
+        )
         print("-" * 90)
 
         for r in results:
@@ -402,17 +439,23 @@ class TestFullFlowIntegration:
             assert r["optimal_T"] > 0, f"GREEN link {r['url']} has zero transmission"
 
         # RED links with blind phase should mostly reflect/collapse
-        red_blind_blocked = sum(1 for r in red_results if r["blind_outcome"] in ("reflect", "collapse"))
+        red_blind_blocked = sum(
+            1 for r in red_results if r["blind_outcome"] in ("reflect", "collapse")
+        )
         assert (
             red_blind_blocked >= len(red_results) // 2
         ), f"Too many RED links accessible with blind phase: {len(red_results) - red_blind_blocked}/{len(red_results)}"
 
         # No blind RED access should allow commit
         for r in red_results:
-            assert r["blind_commit"] is False, f"Blind RED commit allowed for {r['url']}"
+            assert (
+                r["blind_commit"] is False
+            ), f"Blind RED commit allowed for {r['url']}"
 
         print("\n" + "=" * 90)
         print(f"GREEN links: {len(green_results)} (all accessible)")
-        print(f"RED links: {len(red_results)} ({red_blind_blocked}/{len(red_results)} blocked with blind phase)")
+        print(
+            f"RED links: {len(red_results)} ({red_blind_blocked}/{len(red_results)} blocked with blind phase)"
+        )
         print("No blind RED commits: VERIFIED")
         print("=" * 90)

@@ -15,7 +15,12 @@ from scripts.audio_gate_spectrum_report import (
 )
 
 
-def _write_sine_wav(path: Path, frequency: float = 440.0, sample_rate: int = 44100, seconds: float = 0.12) -> None:
+def _write_sine_wav(
+    path: Path,
+    frequency: float = 440.0,
+    sample_rate: int = 44100,
+    seconds: float = 0.12,
+) -> None:
     samples = int(sample_rate * seconds)
     values = []
     for n in range(samples):

@@ -68,7 +68,10 @@ def test_build_ch01_v4_packet_has_expected_density() -> None:
     assert packet["generation_router_profile"]["hero_backend"] == "imagen-ultra"
     assert "speech bubbles" in packet["default_negative_prompt"]
     assert len(packet["beat_sequences"]) == 14
-    assert packet["beat_expansion_schema"]["approach"] == "B with disciplined selective expansion"
+    assert (
+        packet["beat_expansion_schema"]["approach"]
+        == "B with disciplined selective expansion"
+    )
     assert any(panel["render_tier"] == "hero" for panel in packet["panels"])
     assert packet["panels"][0]["sequence_id"] == "ch01-seq01"
     assert packet["panels"][0]["beat_id"] == "ch01-seq01-beat01"
@@ -76,17 +79,27 @@ def test_build_ch01_v4_packet_has_expected_density() -> None:
     assert "Marcus feels human" in packet["panels"][0]["expansion_reason"]
     assert packet["panels"][0]["shot_label"] == "CH01-001"
     assert packet["panels"][0]["review_order"] == 1
-    assert packet["panels"][0]["style_metadata"]["camera_angle"] == "extreme macro desk-level insert"
+    assert (
+        packet["panels"][0]["style_metadata"]["camera_angle"]
+        == "extreme macro desk-level insert"
+    )
     assert packet["generation_profile"]["trigger_phrases"] == ["sixtongues_ch01_pilot"]
-    assert packet["generation_profile"]["style_adapter"]["trigger_word"] == "sixtongues_ch01_pilot"
-    assert packet["character_anchors"]["patrol_creature"].startswith("many-legged patrol creature")
-    assert next(panel for panel in packet["panels"] if panel["id"] == "ch01-v4-p51")["characters"] == [
-        "patrol_creature"
-    ]
+    assert (
+        packet["generation_profile"]["style_adapter"]["trigger_word"]
+        == "sixtongues_ch01_pilot"
+    )
+    assert packet["character_anchors"]["patrol_creature"].startswith(
+        "many-legged patrol creature"
+    )
+    assert next(panel for panel in packet["panels"] if panel["id"] == "ch01-v4-p51")[
+        "characters"
+    ] == ["patrol_creature"]
     assert packet["panels"][-1]["sequence_id"] == "ch01-seq14"
 
 
-def test_build_render_jobs_routes_hero_and_batch_panels(tmp_path: Path, monkeypatch) -> None:
+def test_build_render_jobs_routes_hero_and_batch_panels(
+    tmp_path: Path, monkeypatch
+) -> None:
     packet_path = tmp_path / "packet.json"
     write_packet(packet_path)
 
@@ -101,7 +114,10 @@ def test_build_render_jobs_routes_hero_and_batch_panels(tmp_path: Path, monkeypa
 
     assert jobs[0]["backend"] == "imagen-ultra"
     assert jobs[0]["aspect"] == "16:9"
-    assert jobs[0]["negative_prompt"] == "speech bubbles, text overlays, white man, caucasian, blond hair"
+    assert (
+        jobs[0]["negative_prompt"]
+        == "speech bubbles, text overlays, white man, caucasian, blond hair"
+    )
     assert jobs[1]["backend"] == "imagen"
     assert jobs[1]["aspect"] == "9:16"
     assert (
@@ -145,7 +161,9 @@ def test_run_packet_retries_with_fallback_on_quota(tmp_path: Path, monkeypatch) 
     )
     monkeypatch.setattr(router, "pick_best_backend", lambda preference=None: "imagen")
 
-    def fake_generate(*, backend, prompt, output, aspect, reference, negative_prompt, width, height):
+    def fake_generate(
+        *, backend, prompt, output, aspect, reference, negative_prompt, width, height
+    ):
         calls.append(backend)
         if backend == "imagen-ultra":
             raise RuntimeError("429 RESOURCE_EXHAUSTED quota")

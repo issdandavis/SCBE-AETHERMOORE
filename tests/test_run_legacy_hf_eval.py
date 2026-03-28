@@ -13,7 +13,9 @@ from scripts.run_legacy_hf_eval import (
 
 
 def test_build_eval_command_targets_eval_script():
-    command = build_eval_command(Path(r"C:\Users\issda\Python312\python.exe"), ["--json", "--limit", "2"])
+    command = build_eval_command(
+        Path(r"C:\Users\issda\Python312\python.exe"), ["--json", "--limit", "2"]
+    )
 
     assert command[0] == r"C:\Users\issda\Python312\python.exe"
     assert command[1] == str(EVAL_SCRIPT)

@@ -250,7 +250,8 @@ class NonBinarySimplexKernel:
         )
 
         reason = (
-            f"{tier} via risk={risk_score:.4f}; dominant={dominant_state}; " f"E={e_t:.4f}, J={j_t:.4f}, q={q_t:.4f}"
+            f"{tier} via risk={risk_score:.4f}; dominant={dominant_state}; "
+            f"E={e_t:.4f}, J={j_t:.4f}, q={q_t:.4f}"
         )
         signature_payload = {
             "StateVector": asdict(sv),
@@ -403,7 +404,9 @@ def save_trajectory(steps: List[KernelStep], out_dir: Path) -> Dict[str, str]:
     action_counts: Dict[str, int] = {}
     for s in steps:
         tier_counts[s.StateVector.tier] = tier_counts.get(s.StateVector.tier, 0) + 1
-        action_counts[s.DecisionRecord.action] = action_counts.get(s.DecisionRecord.action, 0) + 1
+        action_counts[s.DecisionRecord.action] = (
+            action_counts.get(s.DecisionRecord.action, 0) + 1
+        )
 
     summary = {
         "generated_utc": _now_utc(),
@@ -496,7 +499,9 @@ def _cli() -> None:
         default=Path("artifacts/nonbinary_kernel"),
         help="Output directory",
     )
-    p.add_argument("--plot", action="store_true", help="Generate PNG plot if matplotlib exists")
+    p.add_argument(
+        "--plot", action="store_true", help="Generate PNG plot if matplotlib exists"
+    )
     args = p.parse_args()
 
     cfg = KernelConfig(

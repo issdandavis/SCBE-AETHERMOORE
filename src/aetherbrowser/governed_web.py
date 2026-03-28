@@ -12,7 +12,11 @@ from dataclasses import asdict
 from typing import Any
 
 from agents.antivirus_membrane import scan_text_for_threats, turnstile_action
-from scripts.agentic_web_tool import _capture_with_fallback, _resolve_output_dir, _save_capture
+from scripts.agentic_web_tool import (
+    _capture_with_fallback,
+    _resolve_output_dir,
+    _save_capture,
+)
 from src.aetherbrowser.hyperlane_py import Decision, HyperLanePy, HyperLaneResult, Zone
 from src.browser.toolkit import extract as toolkit_extract
 from src.browser.toolkit import needs_js as toolkit_needs_js
@@ -21,8 +25,14 @@ from src.browser.toolkit import search as toolkit_search
 
 def _lane_dict(result: HyperLaneResult) -> dict[str, Any]:
     return {
-        "decision": result.decision.value if isinstance(result.decision, Decision) else str(result.decision),
-        "zone": result.zone.value if isinstance(result.zone, Zone) else str(result.zone),
+        "decision": (
+            result.decision.value
+            if isinstance(result.decision, Decision)
+            else str(result.decision)
+        ),
+        "zone": (
+            result.zone.value if isinstance(result.zone, Zone) else str(result.zone)
+        ),
         "reason": result.reason,
         "latency_ms": result.latency_ms,
     }
@@ -43,8 +53,12 @@ class GovernedWebTools:
         ):
             self.hyperlane.add_domain(domain, Zone.YELLOW)
 
-    async def search(self, query: str, *, num_results: int = 8, agent_id: str = "KO") -> dict[str, Any]:
-        lane = self.hyperlane.evaluate("https://html.duckduckgo.com/html/", action="search", agent_id=agent_id)
+    async def search(
+        self, query: str, *, num_results: int = 8, agent_id: str = "KO"
+    ) -> dict[str, Any]:
+        lane = self.hyperlane.evaluate(
+            "https://html.duckduckgo.com/html/", action="search", agent_id=agent_id
+        )
         if lane.decision != Decision.ALLOW:
             return {
                 "ok": False,
@@ -151,7 +165,9 @@ class GovernedWebTools:
 
         items = await toolkit_extract(url, pattern)
         serialized_items = [asdict(item) for item in items]
-        scan_source = "\n".join(f"{item['value']} {item['context']}" for item in serialized_items)
+        scan_source = "\n".join(
+            f"{item['value']} {item['context']}" for item in serialized_items
+        )
         scan = scan_text_for_threats(scan_source)
         membrane_action = turnstile_action("browser", scan)
 

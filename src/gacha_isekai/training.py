@@ -38,7 +38,11 @@ logger = logging.getLogger(__name__)
 DEFAULT_OUTPUT_DIR = Path(
     os.environ.get(
         "SCBE_TRAINING_OUTPUT",
-        str(Path(__file__).resolve().parent.parent.parent / "training-data" / "gacha_sessions"),
+        str(
+            Path(__file__).resolve().parent.parent.parent
+            / "training-data"
+            / "gacha_sessions"
+        ),
     )
 )
 DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -88,7 +92,10 @@ def _compute_ternary(value: Any) -> tuple:
     elif isinstance(value, (np.ndarray, list)):
         arr = np.asarray(value, dtype=float)
         mean = float(np.mean(arr))
-        return (1 if mean > 0.3 else (-1 if mean < -0.3 else 0), 1 if float(np.std(arr)) < 0.5 else 0)
+        return (
+            1 if mean > 0.3 else (-1 if mean < -0.3 else 0),
+            1 if float(np.std(arr)) < 0.5 else 0,
+        )
     return (0, 0)
 
 
@@ -195,10 +202,16 @@ class HFTrainingLoop:
         coherence = min(1.0, unique_ratio * 1.2)
 
         if coherence < self.coherence_threshold:
-            logger.warning("Layer 9 pair rejected: coherence=%.3f < %.3f", coherence, self.coherence_threshold)
+            logger.warning(
+                "Layer 9 pair rejected: coherence=%.3f < %.3f",
+                coherence,
+                self.coherence_threshold,
+            )
             return False
 
-        logger.debug("Layer 9 pair validated: coherence=%.3f, hash=%s", coherence, pair_hash[:16])
+        logger.debug(
+            "Layer 9 pair validated: coherence=%.3f, hash=%s", coherence, pair_hash[:16]
+        )
         return True
 
     # -----------------------------------------------------------------
@@ -221,7 +234,9 @@ class HFTrainingLoop:
                 continue
 
             # Compute rho_e
-            event.rho_e = compute_rho_e(np.array([len(event.response), len(event.prompt)]))
+            event.rho_e = compute_rho_e(
+                np.array([len(event.response), len(event.prompt)])
+            )
             if event.rho_e >= self.rho_e_threshold:
                 logger.warning(
                     "Layer 12 high-entropy event rejected: rho_e=%.2f",

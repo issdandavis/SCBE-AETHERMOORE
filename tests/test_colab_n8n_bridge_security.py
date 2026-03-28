@@ -11,7 +11,10 @@ import pytest
 try:
     from cryptography.fernet import Fernet  # noqa: F401
 except BaseException:
-    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+    pytest.skip(
+        "cryptography package not functional (cffi backend missing)",
+        allow_module_level=True,
+    )
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -58,7 +61,9 @@ def test_secret_store_persists_ciphertext_only(tmp_path: Path, monkeypatch) -> N
     assert secret_store.has_secret("SCBE_UNIT_SECRET") is True
 
 
-def test_secret_store_migrates_legacy_plaintext_entries(tmp_path: Path, monkeypatch) -> None:
+def test_secret_store_migrates_legacy_plaintext_entries(
+    tmp_path: Path, monkeypatch
+) -> None:
     store_path = tmp_path / ".secrets.json"
     monkeypatch.setenv(secret_store.SECRET_STORE_KEY_ENV, "unit-test-passphrase")
     monkeypatch.setattr(secret_store, "_SECRETS_DIR", tmp_path)
@@ -66,7 +71,10 @@ def test_secret_store_migrates_legacy_plaintext_entries(tmp_path: Path, monkeypa
     monkeypatch.delenv("SCBE_LEGACY_SECRET", raising=False)
 
     store_path.write_text(
-        json.dumps({"SCBE_LEGACY_SECRET": {"value": "legacy-secret", "note": "legacy"}}, indent=2),
+        json.dumps(
+            {"SCBE_LEGACY_SECRET": {"value": "legacy-secret", "note": "legacy"}},
+            indent=2,
+        ),
         encoding="utf-8",
     )
 
@@ -80,7 +88,9 @@ def test_secret_store_migrates_legacy_plaintext_entries(tmp_path: Path, monkeypa
     assert "legacy-secret" not in store_path.read_text(encoding="utf-8")
 
 
-def test_env_profile_emits_secret_names_without_secret_values(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_env_profile_emits_secret_names_without_secret_values(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     config_path = tmp_path / "colab_n8n_bridge.json"
     config_path.write_text(
         json.dumps(
@@ -119,7 +129,9 @@ def test_env_profile_emits_secret_names_without_secret_values(tmp_path: Path, mo
     assert "resolve secrets locally" in payload["resolution"].lower()
 
 
-def test_status_profile_omits_backend_value_and_token_value(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_status_profile_omits_backend_value_and_token_value(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     config_path = tmp_path / "colab_n8n_bridge.json"
     config_path.write_text(
         json.dumps(
@@ -138,7 +150,9 @@ def test_status_profile_omits_backend_value_and_token_value(tmp_path: Path, monk
     )
     monkeypatch.setattr(colab_bridge, "CONFIG_PATH", config_path)
     monkeypatch.setattr(colab_bridge, "has_secret", lambda key: key.endswith("_PIVOT"))
-    monkeypatch.setattr(colab_bridge, "get_secret", lambda key, default="": "secret-token-123")
+    monkeypatch.setattr(
+        colab_bridge, "get_secret", lambda key, default="": "secret-token-123"
+    )
 
     result = colab_bridge.status_profile(argparse.Namespace(name="pivot"))
     output = capsys.readouterr().out
@@ -151,7 +165,9 @@ def test_status_profile_omits_backend_value_and_token_value(tmp_path: Path, monk
     assert payload["token_configured"] is True
 
 
-def test_probe_profile_omits_preview_and_secret_text(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_probe_profile_omits_preview_and_secret_text(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     config_path = tmp_path / "colab_n8n_bridge.json"
     config_path.write_text(
         json.dumps(

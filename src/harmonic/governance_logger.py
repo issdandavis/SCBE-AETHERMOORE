@@ -9,7 +9,9 @@ from functools import wraps
 from typing import Any, Callable, Dict, Iterable, Optional
 
 # Configure basic logging for governance audit trail
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger("SCBE_GOVERNANCE_AUDIT")
 
 
@@ -36,7 +38,10 @@ def audit_state_transition(
     validation: Dict[str, Any] = {}
     try:
         # Local import prevents hard dependency at module import time.
-        from src.harmonic.state21_product_metric import parse_state21_v1, validate_state21_v1
+        from src.harmonic.state21_product_metric import (
+            parse_state21_v1,
+            validate_state21_v1,
+        )
 
         validation = validate_state21_v1(parse_state21_v1(vec))
     except Exception as exc:  # pragma: no cover - defensive fallback
@@ -75,8 +80,16 @@ def audit_governance_decision(func: Callable) -> Callable:
         # 3. Execute the function and capture the output
         try:
             result = func(*args, **kwargs)
-            decision = result.get("decision", "UNKNOWN") if isinstance(result, dict) else str(result)
-            deviation = result.get("hamiltonian_deviation", 0.0) if isinstance(result, dict) else 0.0
+            decision = (
+                result.get("decision", "UNKNOWN")
+                if isinstance(result, dict)
+                else str(result)
+            )
+            deviation = (
+                result.get("hamiltonian_deviation", 0.0)
+                if isinstance(result, dict)
+                else 0.0
+            )
 
             # 4. Log the audit event (Layer 13 PQC Auditability)
             logger.info(
@@ -85,7 +98,9 @@ def audit_governance_decision(func: Callable) -> Callable:
             )
             return result
         except Exception as e:
-            logger.error(f"Governance function '{func_name}' failed for Agent={agent_id}: {e}")
+            logger.error(
+                f"Governance function '{func_name}' failed for Agent={agent_id}: {e}"
+            )
             raise
 
     return wrapper

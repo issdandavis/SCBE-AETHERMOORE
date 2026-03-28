@@ -41,4 +41,6 @@ class PHDM:
         # Fall back to a reproducible manifold deviation score.
         observed_vertices = len(re.findall(r"[A-Za-z]", normalized))
         observed_euler = len(normalized) + len(tongue_code or "")
-        return self._detector.detect_manifold_deviation(observed_vertices, observed_euler)
+        return self._detector.detect_manifold_deviation(
+            observed_vertices, observed_euler
+        )

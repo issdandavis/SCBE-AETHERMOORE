@@ -142,4 +142,3 @@ def free_energy(
     """Quadratic free-energy proxy derived from the chemical-potential gap."""
     gap = chemical_potential_gap(sigma=sigma, activities=activities, coupling=coupling)
     return 0.5 * gap * gap
-

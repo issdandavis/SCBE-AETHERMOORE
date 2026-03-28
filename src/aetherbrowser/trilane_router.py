@@ -49,13 +49,71 @@ _VISUAL_INTENTS = {TaskIntent.VERIFY}
 _COMBINED_INTENTS = {TaskIntent.RESEARCH, TaskIntent.TRAIN}
 
 # Keywords for intent detection
-_SCRAPE_KEYWORDS = {"scrape", "extract", "crawl", "harvest", "pull", "fetch", "download", "bulk", "parallel", "batch"}
-_INTERACT_KEYWORDS = {"click", "fill", "type", "submit", "login", "form", "navigate", "open", "tab", "upload"}
-_VERIFY_KEYWORDS = {"check", "verify", "look", "screenshot", "visual", "inspect", "compare", "review"}
-_POST_KEYWORDS = {"post", "publish", "tweet", "comment", "send", "upload", "share", "announce"}
+_SCRAPE_KEYWORDS = {
+    "scrape",
+    "extract",
+    "crawl",
+    "harvest",
+    "pull",
+    "fetch",
+    "download",
+    "bulk",
+    "parallel",
+    "batch",
+}
+_INTERACT_KEYWORDS = {
+    "click",
+    "fill",
+    "type",
+    "submit",
+    "login",
+    "form",
+    "navigate",
+    "open",
+    "tab",
+    "upload",
+}
+_VERIFY_KEYWORDS = {
+    "check",
+    "verify",
+    "look",
+    "screenshot",
+    "visual",
+    "inspect",
+    "compare",
+    "review",
+}
+_POST_KEYWORDS = {
+    "post",
+    "publish",
+    "tweet",
+    "comment",
+    "send",
+    "upload",
+    "share",
+    "announce",
+}
 _MONITOR_KEYWORDS = {"watch", "monitor", "poll", "track", "alert", "notify", "wait for"}
-_RESEARCH_KEYWORDS = {"research", "search", "find", "discover", "analyze", "summarize", "learn", "read"}
-_TRAIN_KEYWORDS = {"train", "learn", "shadow", "capture", "record", "log", "sft", "dataset"}
+_RESEARCH_KEYWORDS = {
+    "research",
+    "search",
+    "find",
+    "discover",
+    "analyze",
+    "summarize",
+    "learn",
+    "read",
+}
+_TRAIN_KEYWORDS = {
+    "train",
+    "learn",
+    "shadow",
+    "capture",
+    "record",
+    "log",
+    "sft",
+    "dataset",
+}
 
 
 @dataclass
@@ -289,7 +347,9 @@ class TriLaneRouter:
                 }
 
             if not targets:
-                result_data["note"] = "No targets extracted from task. Provide URLs or service names."
+                result_data["note"] = (
+                    "No targets extracted from task. Provide URLs or service names."
+                )
 
             await backend.close()
             return LaneResult(
@@ -330,7 +390,9 @@ class TriLaneRouter:
                     {
                         "label": getattr(action, "label", str(action)),
                         "risk_tier": getattr(action, "risk_tier", "unknown"),
-                        "requires_approval": getattr(action, "requires_approval", False),
+                        "requires_approval": getattr(
+                            action, "requires_approval", False
+                        ),
                         "command_hint": getattr(action, "command_hint", None),
                     }
                 )
@@ -384,7 +446,10 @@ class TriLaneRouter:
                     }
             await backend.close()
 
-            result_data["screenshots"] = {k: {"size": v["size_bytes"], "url": v["url"]} for k, v in screenshots.items()}
+            result_data["screenshots"] = {
+                k: {"size": v["size_bytes"], "url": v["url"]}
+                for k, v in screenshots.items()
+            }
             result_data["screenshot_count"] = len(screenshots)
 
             return LaneResult(
@@ -417,9 +482,16 @@ class TriLaneRouter:
                 {
                     "success": result.success,
                     "lane_results": [
-                        {"lane": r.lane.value, "success": r.success, "actions": r.actions_taken} for r in result.results
+                        {
+                            "lane": r.lane.value,
+                            "success": r.success,
+                            "actions": r.actions_taken,
+                        }
+                        for r in result.results
                     ],
-                    "governance": result.plan.get("review_zone") if result.plan else None,
+                    "governance": (
+                        result.plan.get("review_zone") if result.plan else None
+                    ),
                 }
             ),
             "label": f"browser_routing_{result.intent.value}",
@@ -498,7 +570,9 @@ async def kiosk_mode():
 
         for lr in result.results:
             status = "OK" if lr.success else f"FAIL: {lr.error}"
-            print(f"  [{lr.lane.value}] {status} ({lr.actions_taken} actions, {lr.duration_ms:.0f}ms)")
+            print(
+                f"  [{lr.lane.value}] {status} ({lr.actions_taken} actions, {lr.duration_ms:.0f}ms)"
+            )
 
         if result.shadow_sft:
             print(f"  [SFT] Training pair captured for {router._shadow_model}")

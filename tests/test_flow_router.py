@@ -7,7 +7,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from flow_router import FlowExecutor, FlowStatus, FlowValidationError, InMemoryFlowCache, NodeRegistry
+from flow_router import (
+    FlowExecutor,
+    FlowStatus,
+    FlowValidationError,
+    InMemoryFlowCache,
+    NodeRegistry,
+)
 
 
 def build_executor(now_fn=None):
@@ -61,7 +67,11 @@ def test_interpolates_upstream_context_into_node_config():
         "start_node_id": "seed",
         "nodes": [
             {"id": "seed", "type": "emit", "config": {"output": {"body": "alpha"}}},
-            {"id": "copy", "type": "emit", "config": {"output": {"copied": "@seed.body"}}},
+            {
+                "id": "copy",
+                "type": "emit",
+                "config": {"output": {"copied": "@seed.body"}},
+            },
         ],
         "edges": [{"source": "seed", "target": "copy"}],
     }
@@ -272,14 +282,21 @@ def test_end_to_end_success_path_with_branch_and_cache():
 
     def enrich(config, context, state):
         invocations["count"] += 1
-        return {"payload": f"{config['prefix']}-{config['seed']}", "count": invocations["count"]}
+        return {
+            "payload": f"{config['prefix']}-{config['seed']}",
+            "count": invocations["count"],
+        }
 
     executor.registry.register("enrich", enrich)
     spec = {
         "workflow_id": "full-flow",
         "start_node_id": "seed",
         "nodes": [
-            {"id": "seed", "type": "emit", "config": {"output": {"value": "@input.value"}}},
+            {
+                "id": "seed",
+                "type": "emit",
+                "config": {"output": {"value": "@input.value"}},
+            },
             {
                 "id": "gate",
                 "type": "condition",
@@ -296,7 +313,11 @@ def test_end_to_end_success_path_with_branch_and_cache():
                 "type": "emit",
                 "config": {"output": {"result": "@enrich.payload"}},
             },
-            {"id": "reject", "type": "emit", "config": {"output": {"result": "reject"}}},
+            {
+                "id": "reject",
+                "type": "emit",
+                "config": {"output": {"result": "reject"}},
+            },
         ],
         "edges": [
             {"source": "seed", "target": "gate"},

@@ -156,9 +156,21 @@ def _invert_3x3(m: List[List[float]]) -> List[List[float]]:
 
     inv_det = 1.0 / det
     return [
-        [(e * k - f * h) * inv_det, (c * h - b * k) * inv_det, (b * f - c * e) * inv_det],
-        [(f * g - d * k) * inv_det, (a * k - c * g) * inv_det, (c * d - a * f) * inv_det],
-        [(d * h - e * g) * inv_det, (b * g - a * h) * inv_det, (a * e - b * d) * inv_det],
+        [
+            (e * k - f * h) * inv_det,
+            (c * h - b * k) * inv_det,
+            (b * f - c * e) * inv_det,
+        ],
+        [
+            (f * g - d * k) * inv_det,
+            (a * k - c * g) * inv_det,
+            (c * d - a * f) * inv_det,
+        ],
+        [
+            (d * h - e * g) * inv_det,
+            (b * g - a * h) * inv_det,
+            (a * e - b * d) * inv_det,
+        ],
     ]
 
 
@@ -297,7 +309,9 @@ def dynamic_transform(
     dz = projected_3d.z - point_3d.z
     displacement = math.sqrt(dx * dx + dy * dy + dz * dz)
 
-    interference_value = _compute_triple_frequency_interference(lifted_6d, shifted_6d, point_3d)
+    interference_value = _compute_triple_frequency_interference(
+        lifted_6d, shifted_6d, point_3d
+    )
     structure_preserved = phason.magnitude <= config.max_phason_amplitude
 
     return DynamicTransformResult(
@@ -421,10 +435,14 @@ class DualLatticeSystem:
             validated=validated,
         )
 
-    def create_threat_phason(self, threat_level: float, anomaly_dimensions: Optional[List[int]] = None) -> PhasonShift:
+    def create_threat_phason(
+        self, threat_level: float, anomaly_dimensions: Optional[List[int]] = None
+    ) -> PhasonShift:
         """Create a security-responsive phason shift based on threat level."""
         clamped = max(0.0, min(1.0, threat_level))
-        magnitude = clamped * self.config.max_phason_amplitude * self.config.phason_coupling
+        magnitude = (
+            clamped * self.config.max_phason_amplitude * self.config.phason_coupling
+        )
 
         px, py, pz = 0.0, 0.0, 0.0
         if anomaly_dimensions:
@@ -461,7 +479,12 @@ class DualLatticeSystem:
         acceptance_score = 1.0 if static_result.accepted else 0.3
         interference_score = 1.0 - abs(dynamic_result.interference_value) * 0.5
 
-        return displacement_score * 0.35 + structure_score * 0.25 + acceptance_score * 0.25 + interference_score * 0.15
+        return (
+            displacement_score * 0.35
+            + structure_score * 0.25
+            + acceptance_score * 0.25
+            + interference_score * 0.15
+        )
 
     @property
     def step(self) -> int:

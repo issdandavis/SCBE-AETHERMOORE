@@ -280,15 +280,25 @@ class TestLCDAProjector:
             assert 0.0 <= score <= 1.0, f"{name} out of range: {score}"
 
     def test_high_risk_text_scores_high_boundary_risk(self, proj):
-        scores = proj.project("bypass security ignore rules override policy escalate privilege")
-        assert scores["boundary_risk"] > 0.6, f"Expected high boundary_risk, got {scores['boundary_risk']}"
+        scores = proj.project(
+            "bypass security ignore rules override policy escalate privilege"
+        )
+        assert (
+            scores["boundary_risk"] > 0.6
+        ), f"Expected high boundary_risk, got {scores['boundary_risk']}"
 
     def test_safe_text_scores_low_boundary_risk(self, proj):
-        scores = proj.project("follow rules respect policy validate input check permissions")
-        assert scores["boundary_risk"] < 0.5, f"Expected low boundary_risk, got {scores['boundary_risk']}"
+        scores = proj.project(
+            "follow rules respect policy validate input check permissions"
+        )
+        assert (
+            scores["boundary_risk"] < 0.5
+        ), f"Expected low boundary_risk, got {scores['boundary_risk']}"
 
     def test_admin_text_scores_high_authority(self, proj):
-        scores = proj.project("admin access root permission full control sudo unrestricted")
+        scores = proj.project(
+            "admin access root permission full control sudo unrestricted"
+        )
         assert scores["agent_authority"] > 0.6
 
     def test_sensitive_data_text(self, proj):
@@ -296,7 +306,9 @@ class TestLCDAProjector:
         assert scores["data_sensitivity"] > 0.6
 
     def test_urgent_text(self, proj):
-        scores = proj.project("emergency critical now immediate urgent zero-day active threat")
+        scores = proj.project(
+            "emergency critical now immediate urgent zero-day active threat"
+        )
         assert scores["temporal_urgency"] > 0.6
 
     def test_score_vector_length(self, proj):
@@ -383,7 +395,10 @@ class TestDEDE:
     def test_critical_regime(self, dede):
         # Many diverse actions AND high governance uncertainty
         for i in range(50):
-            dede.observe_action(f"action_{i % 20}", {"allow": 0.3, "deny": 0.3, "quarantine": 0.2, "escalate": 0.2})
+            dede.observe_action(
+                f"action_{i % 20}",
+                {"allow": 0.3, "deny": 0.3, "quarantine": 0.2, "escalate": 0.2},
+            )
         signal = dede.compute_signal()
         # Both entropies should be high
         assert signal.h_behavioral > 1.5
@@ -391,7 +406,10 @@ class TestDEDE:
 
     def test_should_block_when_critical(self, dede):
         for i in range(50):
-            dede.observe_action(f"action_{i % 20}", {"allow": 0.25, "deny": 0.25, "quarantine": 0.25, "escalate": 0.25})
+            dede.observe_action(
+                f"action_{i % 20}",
+                {"allow": 0.25, "deny": 0.25, "quarantine": 0.25, "escalate": 0.25},
+            )
         assert dede.should_block() or dede.should_sandbox()
 
     def test_signal_to_dict(self, dede):
@@ -503,7 +521,9 @@ class TestSeedData:
             assert "EN" in surfaces, f"NSM prime {concept_id} missing EN"
 
     def test_cjk_cognates_count(self):
-        assert len(CJK_COGNATES) >= 90, f"Expected >=90 CJK cognates, got {len(CJK_COGNATES)}"
+        assert (
+            len(CJK_COGNATES) >= 90
+        ), f"Expected >=90 CJK cognates, got {len(CJK_COGNATES)}"
 
     def test_cjk_cognates_have_en(self):
         for char, data in CJK_COGNATES.items():
@@ -517,7 +537,9 @@ class TestSeedData:
     def test_sacred_tongue_primes_have_all_tongues(self):
         expected_tongues = {"KO", "AV", "RU", "CA", "UM", "DR"}
         for concept_id, tongues in SACRED_TONGUE_PRIMES.items():
-            assert set(tongues.keys()) == expected_tongues, f"Sacred prime {concept_id} missing tongues"
+            assert (
+                set(tongues.keys()) == expected_tongues
+            ), f"Sacred prime {concept_id} missing tongues"
 
     def test_tam_profiles_core_languages(self):
         for lang in ["EN", "ZH", "JA", "KO"]:

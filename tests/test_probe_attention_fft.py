@@ -27,10 +27,14 @@ def test_resolve_prompts_uses_default_set_and_limit() -> None:
 
 
 def test_analyze_control_matrix_prefers_banded_for_banded_control() -> None:
-    report = probe_attention_fft.analyze_control_matrix("banded", size=16, mode="flatten", seed=5)
+    report = probe_attention_fft.analyze_control_matrix(
+        "banded", size=16, mode="flatten", seed=5
+    )
 
     assert report["closer_to_banded_than_random"] is True
-    assert report["candidate"]["s_spec"] == pytest.approx(report["controls"]["banded"]["s_spec"])
+    assert report["candidate"]["s_spec"] == pytest.approx(
+        report["controls"]["banded"]["s_spec"]
+    )
 
 
 def test_analyze_attention_stack_counts_layers_and_heads() -> None:
@@ -89,7 +93,9 @@ def test_write_report_creates_json_bundle(tmp_path: Path) -> None:
         "analysis": {"head_count": 1},
     }
 
-    artifact = probe_attention_fft.write_report(report, output_root=tmp_path, label="demo/model")
+    artifact = probe_attention_fft.write_report(
+        report, output_root=tmp_path, label="demo/model"
+    )
 
     assert artifact.exists()
     payload = json.loads(artifact.read_text(encoding="utf-8"))
@@ -117,7 +123,9 @@ def test_build_report_for_control_has_synthetic_model_id() -> None:
     assert report["control_kind"] == "random"
 
 
-def test_main_control_json_smoke(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_main_control_json_smoke(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     exit_code = probe_attention_fft.main(
         [
             "--control",
@@ -180,7 +188,9 @@ def test_analyze_precision_drift_aggregates_prompt_reports(monkeypatch) -> None:
             "prompt": prompt,
         }
 
-    monkeypatch.setattr("scripts.probe_attention_fft.extract_hidden_matrix", _fake_extract_hidden)
+    monkeypatch.setattr(
+        "scripts.probe_attention_fft.extract_hidden_matrix", _fake_extract_hidden
+    )
 
     analysis = probe_attention_fft.analyze_precision_drift(
         "demo-model",

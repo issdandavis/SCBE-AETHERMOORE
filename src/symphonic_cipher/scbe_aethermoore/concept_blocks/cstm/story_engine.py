@@ -376,7 +376,9 @@ class StoryEngine:
         for ext in parser.supported_extensions():
             self._parsers[ext] = parser
 
-    def load(self, source: Union[str, Path], story_id: Optional[str] = None) -> StoryGraph:
+    def load(
+        self, source: Union[str, Path], story_id: Optional[str] = None
+    ) -> StoryGraph:
         """Load a story from file path.  Returns cached graph if already loaded."""
         path = Path(source)
         cache_key = story_id or str(path.resolve())
@@ -396,7 +398,9 @@ class StoryEngine:
         self._cache[cache_key] = graph
         return graph
 
-    def load_from_string(self, text: str, fmt: str = "json", story_id: Optional[str] = None) -> StoryGraph:
+    def load_from_string(
+        self, text: str, fmt: str = "json", story_id: Optional[str] = None
+    ) -> StoryGraph:
         """Parse a story from a string.  *fmt* is 'json' or 'twee'."""
         import io
 

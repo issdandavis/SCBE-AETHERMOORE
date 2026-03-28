@@ -151,8 +151,12 @@ class TestRitualLog:
 
     def test_log_attempt(self, registry, sample_egg):
         registry.register(sample_egg)
-        registry.log_attempt(sample_egg.egg_id, success=False, agent_tongue="DR", ritual_mode="solitary")
-        registry.log_attempt(sample_egg.egg_id, success=True, agent_tongue="KO", ritual_mode="solitary")
+        registry.log_attempt(
+            sample_egg.egg_id, success=False, agent_tongue="DR", ritual_mode="solitary"
+        )
+        registry.log_attempt(
+            sample_egg.egg_id, success=True, agent_tongue="KO", ritual_mode="solitary"
+        )
 
         attempts = registry.get_attempts(sample_egg.egg_id)
         assert len(attempts) == 2
@@ -185,7 +189,9 @@ class TestListAndFilter:
     def test_list_all(self, registry, integrator, key_pair, context):
         pk, sk = key_pair
         for tongue in ["KO", "AV", "RU"]:
-            egg = integrator.create_egg(f"t_{tongue}".encode(), tongue, "g", {}, context, pk, sk)
+            egg = integrator.create_egg(
+                f"t_{tongue}".encode(), tongue, "g", {}, context, pk, sk
+            )
             registry.register(egg)
         all_eggs = registry.list_eggs()
         assert len(all_eggs) == 3

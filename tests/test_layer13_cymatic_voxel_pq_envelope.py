@@ -108,7 +108,9 @@ class TestPQEnvelope:
         assert retrieved == encrypted
 
         recovered = Kyber768.decapsulate(kp.secret_key, enc.ciphertext)
-        key_stream2 = (recovered * ((len(payload) // len(recovered)) + 1))[: len(payload)]
+        key_stream2 = (recovered * ((len(payload) // len(recovered)) + 1))[
+            : len(payload)
+        ]
         decrypted = bytes(a ^ b for a, b in zip(retrieved, key_stream2))
         assert decrypted == payload
 

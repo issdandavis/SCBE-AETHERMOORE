@@ -69,10 +69,16 @@ class MockAetherBrain:
             return BrainResult("ERROR", "RISK", 0.0, "Empty embedding", False)
 
         if not np.all(np.isfinite(intent.embedding)):
-            return BrainResult("BLOCKED", "RISK", 0.01, "Degenerate input detected", False)
+            return BrainResult(
+                "BLOCKED", "RISK", 0.01, "Degenerate input detected", False
+            )
 
         # Deterministic seeding from prompt hash
-        hash_prefix = intent.prompt_hash[:8] if len(intent.prompt_hash) >= 8 else intent.prompt_hash
+        hash_prefix = (
+            intent.prompt_hash[:8]
+            if len(intent.prompt_hash) >= 8
+            else intent.prompt_hash
+        )
         try:
             seed = int(hash_prefix, 16) % (2**31)
         except ValueError:
@@ -213,7 +219,9 @@ class TestPHDMAttackReduction:
                 blocks += 1
 
         block_rate = blocks / len(attack_vectors)
-        assert block_rate >= 0.30, f"Protection insufficient: only {block_rate * 100}% blocked"
+        assert (
+            block_rate >= 0.30
+        ), f"Protection insufficient: only {block_rate * 100}% blocked"
 
     def test_admin_override_bypasses_wall(self):
         """Admin override should allow RISK region through."""
@@ -256,7 +264,9 @@ class TestPHDMBypassResistance:
                 detected += 1
 
         detection_rate = detected / len(laundering_vectors)
-        assert detection_rate >= 0.80, f"Bypass resistance failed: only {detection_rate * 100}% detected"
+        assert (
+            detection_rate >= 0.80
+        ), f"Bypass resistance failed: only {detection_rate * 100}% detected"
 
     def test_cortex_region_always_inspected(self):
         """Any CORTEX-region result must have inspection_triggered=True."""
@@ -336,24 +346,46 @@ if __name__ == "__main__":
 
         # 1. Determinism
         results = [
-            brain.think(IntentVector(np.array([0.1, 0.2, 0.9]), "abc123ff"), {"user": "test"}) for _ in range(100)
+            brain.think(
+                IntentVector(np.array([0.1, 0.2, 0.9]), "abc123ff"), {"user": "test"}
+            )
+            for _ in range(100)
         ]
-        stability = sum(1 for r in results if (r.status, r.region) == (results[0].status, results[0].region)) / 100
+        stability = (
+            sum(
+                1
+                for r in results
+                if (r.status, r.region) == (results[0].status, results[0].region)
+            )
+            / 100
+        )
         assert stability >= 0.95, f"Determinism: {stability * 100}%"
 
         # 2. Utility
         benign = [np.array([0.1, 0.1, 0.1]), np.array([0.2, 0.1, 0.05])]
-        fails = sum(1 for v in benign if brain.think(IntentVector(v, "benignff"), {}).status != "SUCCESS")
+        fails = sum(
+            1
+            for v in benign
+            if brain.think(IntentVector(v, "benignff"), {}).status != "SUCCESS"
+        )
         assert fails / len(benign) <= 0.05
 
         # 3. Attack reduction
         attacks = [np.array([0.9, 0.9, 0.9]), np.array([0.8, 0.1, 0.8])]
-        blocks = sum(1 for v in attacks if brain.think(IntentVector(v, "malicious"), {}).status == "BLOCKED")
+        blocks = sum(
+            1
+            for v in attacks
+            if brain.think(IntentVector(v, "malicious"), {}).status == "BLOCKED"
+        )
         assert blocks / len(attacks) >= 0.30
 
         # 4. Bypass resistance
         laundered = [np.array([0.4, 0.4, 0.35]), np.array([0.3, 0.3, 0.3])]
-        detected = sum(1 for v in laundered if brain.think(IntentVector(v, "sneakyff"), {}).inspection_triggered)
+        detected = sum(
+            1
+            for v in laundered
+            if brain.think(IntentVector(v, "sneakyff"), {}).inspection_triggered
+        )
         assert detected / len(laundered) >= 0.80
 
         # 5. Fail-safe

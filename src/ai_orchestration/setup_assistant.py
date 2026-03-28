@@ -321,7 +321,8 @@ Choose a setup option to continue:
                             "size_mb": pack.size_mb,
                             "dependencies": pack.dependencies,
                             "essential": name in recommendations.get("essential", []),
-                            "recommended": name in recommendations.get("recommended", []),
+                            "recommended": name
+                            in recommendations.get("recommended", []),
                             "selected": name in self.profile.selected_packs,
                         }
                     )
@@ -349,7 +350,11 @@ Packs marked RECOMMENDED will enhance your experience.
             ],
             "packs": all_packs,
             "current_selection": self.profile.selected_packs,
-            "total_size_mb": sum(p["size_mb"] for p in all_packs if p["name"] in self.profile.selected_packs),
+            "total_size_mb": sum(
+                p["size_mb"]
+                for p in all_packs
+                if p["name"] in self.profile.selected_packs
+            ),
         }
 
     def select_packs(self, pack_names: List[str]) -> Dict[str, Any]:
@@ -504,7 +509,9 @@ All data is stored securely using SCBE encryption.
             "skip_option": True,
         }
 
-    def import_portfolio(self, file_path: Optional[str] = None, enable_cloud_backup: bool = False) -> Dict[str, Any]:
+    def import_portfolio(
+        self, file_path: Optional[str] = None, enable_cloud_backup: bool = False
+    ) -> Dict[str, Any]:
         """Import portfolio data."""
         self.profile.portfolio_path = file_path
         self.profile.cloud_backup = enable_cloud_backup
@@ -639,7 +646,9 @@ def run_interactive_setup():
             else:
                 print(f"  {status} Dependencies: All installed")
         else:
-            print(f"  {status} {check.title()}: {info['value']} (required: {info['required']})")
+            print(
+                f"  {status} {check.title()}: {info['value']} (required: {info['required']})"
+            )
 
     if not result["all_ok"]:
         print("\nSome requirements not met. Please fix issues and try again.")
@@ -656,15 +665,25 @@ def run_interactive_setup():
         print("\nAvailable packs (enter numbers to select, comma-separated):")
         for i, pack in enumerate(packs.get("packs", [])[:10], 1):
             marker = "*" if pack.get("selected") else " "
-            print(f"  {i}.{marker} {pack['name']} ({pack['category']}) - {pack['size_mb']}MB")
+            print(
+                f"  {i}.{marker} {pack['name']} ({pack['category']}) - {pack['size_mb']}MB"
+            )
 
-        selection = input("\nSelect packs (e.g., 1,3,5) or Enter to keep defaults: ").strip()
+        selection = input(
+            "\nSelect packs (e.g., 1,3,5) or Enter to keep defaults: "
+        ).strip()
         if selection:
-            indices = [int(x.strip()) - 1 for x in selection.split(",") if x.strip().isdigit()]
-            selected = [packs["packs"][i]["name"] for i in indices if i < len(packs["packs"])]
+            indices = [
+                int(x.strip()) - 1 for x in selection.split(",") if x.strip().isdigit()
+            ]
+            selected = [
+                packs["packs"][i]["name"] for i in indices if i < len(packs["packs"])
+            ]
             assistant.select_packs(selected)
     else:
-        print(f"\nUsing template packs: {', '.join(assistant.profile.selected_packs) or 'None'}")
+        print(
+            f"\nUsing template packs: {', '.join(assistant.profile.selected_packs) or 'None'}"
+        )
         assistant.select_packs(assistant.profile.selected_packs)
 
     input("\nPress Enter to continue...")

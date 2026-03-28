@@ -3,7 +3,10 @@
 import pytest
 
 from src.aetherbrowser.command_planner import CommandPlan, RankedAction
-from src.aetherbrowser.provider_executor import ProviderExecutionResult, ProviderExecutor
+from src.aetherbrowser.provider_executor import (
+    ProviderExecutionResult,
+    ProviderExecutor,
+)
 from src.aetherbrowser.router import ModelProvider, TaskComplexity
 
 
@@ -25,7 +28,11 @@ def _plan(**overrides):
         approval_required=False,
         required_approvals=[],
         auto_cascade=True,
-        next_actions=[RankedAction(label="Inspect target repo", reason="best next step", risk_tier="low")],
+        next_actions=[
+            RankedAction(
+                label="Inspect target repo", reason="best next step", risk_tier="low"
+            )
+        ],
         assignments=[{"role": "KO", "task": "Orchestrate the research"}],
     )
     for key, value in overrides.items():
@@ -75,7 +82,9 @@ class TestProviderExecutor:
     async def test_local_executor_returns_deterministic_summary(self):
         executor = ProviderExecutor()
 
-        result = await executor.execute(_plan(provider="local", fallback_chain=["local"]))
+        result = await executor.execute(
+            _plan(provider="local", fallback_chain=["local"])
+        )
 
         assert isinstance(result, ProviderExecutionResult)
         assert result.provider == "local"
@@ -124,7 +133,11 @@ class TestProviderExecutor:
 
         executor = ProviderExecutor(adapters={ModelProvider.HUGGINGFACE: hf_adapter})
         result = await executor.execute(
-            _plan(provider="huggingface", fallback_chain=["huggingface"], auto_cascade=False)
+            _plan(
+                provider="huggingface",
+                fallback_chain=["huggingface"],
+                auto_cascade=False,
+            )
         )
 
         assert result.provider == "huggingface"

@@ -6,14 +6,18 @@ from pathlib import Path
 
 import pytest
 
-pytest.importorskip("fastapi", reason="fastapi is required for code scanning batch3 tests")
+pytest.importorskip(
+    "fastapi", reason="fastapi is required for code scanning batch3 tests"
+)
 
 from src.gacha_isekai import training as gacha_training
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def _load_module(relative_path: str, module_name: str, extra_paths: list[Path] | None = None):
+def _load_module(
+    relative_path: str, module_name: str, extra_paths: list[Path] | None = None
+):
     if extra_paths:
         for extra in extra_paths:
             extra_str = str(extra)

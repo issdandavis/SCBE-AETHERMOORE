@@ -49,7 +49,9 @@ def _mk_state(nav=(0.1, 0.1, 0.1), osc=0, history=None):
     vec[3], vec[4], vec[5] = nav
     if history is None:
         history = []
-    return StateVector(vector=tuple(vec), history=history, attestations=[], oscillation_state=osc)
+    return StateVector(
+        vector=tuple(vec), history=history, attestations=[], oscillation_state=osc
+    )
 
 
 def _mk_policy(**overrides):
@@ -180,19 +182,34 @@ class TestOscillationPredicate:
         policy = _mk_policy(req_oscillation_phase=-1)  # any phase
         # now=25, window=10 → phase = (25//10)%6 = 2
         st = _mk_state(osc=2)
-        assert check_oscillation_predicate(policy, st, now_fn=_now_fixed(25), phase_window=10) == T_PASS
+        assert (
+            check_oscillation_predicate(
+                policy, st, now_fn=_now_fixed(25), phase_window=10
+            )
+            == T_PASS
+        )
 
     def test_stale_oscillation_fails(self):
         """Replay attack: oscillation_state doesn't match current phase."""
         policy = _mk_policy(req_oscillation_phase=-1)
         st = _mk_state(osc=1)  # stale: current phase is 2
-        assert check_oscillation_predicate(policy, st, now_fn=_now_fixed(25), phase_window=10) == T_FAIL
+        assert (
+            check_oscillation_predicate(
+                policy, st, now_fn=_now_fixed(25), phase_window=10
+            )
+            == T_FAIL
+        )
 
     def test_specific_phase_requirement(self):
         """Policy requires specific phase that doesn't match current."""
         policy = _mk_policy(req_oscillation_phase=4)  # requires phase 4
         st = _mk_state(osc=2)  # current phase = 2
-        assert check_oscillation_predicate(policy, st, now_fn=_now_fixed(25), phase_window=10) == T_FAIL
+        assert (
+            check_oscillation_predicate(
+                policy, st, now_fn=_now_fixed(25), phase_window=10
+            )
+            == T_FAIL
+        )
 
     def test_phase_wraps_mod_6(self):
         """Phase cycles through 0..5."""
@@ -200,7 +217,12 @@ class TestOscillationPredicate:
         for t in range(60):
             expected = (t // 10) % 6
             st = _mk_state(osc=expected)
-            assert check_oscillation_predicate(policy, st, now_fn=_now_fixed(t), phase_window=10) == T_PASS
+            assert (
+                check_oscillation_predicate(
+                    policy, st, now_fn=_now_fixed(t), phase_window=10
+                )
+                == T_PASS
+            )
 
 
 # ==============================================================================

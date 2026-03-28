@@ -52,7 +52,9 @@ class TestInteractiveElement:
     def test_create_element(self):
         from src.browser.polly_vision import InteractiveElement
 
-        el = InteractiveElement(ref_id=1, role="button", name="Submit", tag="button", selector="#submit-btn")
+        el = InteractiveElement(
+            ref_id=1, role="button", name="Submit", tag="button", selector="#submit-btn"
+        )
         assert el.ref_id == 1
         assert el.role == "button"
         assert el.name == "Submit"
@@ -63,7 +65,12 @@ class TestInteractiveElement:
         from src.browser.polly_vision import InteractiveElement
 
         el = InteractiveElement(
-            ref_id=5, role="checkbox", name="Agree", tag="input", selector="#agree", state="checked"
+            ref_id=5,
+            role="checkbox",
+            name="Agree",
+            tag="input",
+            selector="#agree",
+            state="checked",
         )
         assert el.state == "checked"
 
@@ -71,7 +78,14 @@ class TestInteractiveElement:
         from src.browser.polly_vision import InteractiveElement
 
         bbox = {"x": 10, "y": 20, "width": 100, "height": 30}
-        el = InteractiveElement(ref_id=2, role="link", name="Home", tag="a", selector="a.home", bounding_box=bbox)
+        el = InteractiveElement(
+            ref_id=2,
+            role="link",
+            name="Home",
+            tag="a",
+            selector="a.home",
+            bounding_box=bbox,
+        )
         assert el.bounding_box["width"] == 100
 
 
@@ -79,15 +93,27 @@ class TestPageObservation:
     """Test PageObservation dataclass and methods."""
 
     def _make_observation(self, **kwargs):
-        from src.browser.polly_vision import PageObservation, ObservationTier, InteractiveElement
+        from src.browser.polly_vision import (
+            PageObservation,
+            ObservationTier,
+            InteractiveElement,
+        )
 
         defaults = dict(
             url="https://example.com",
             title="Example",
             accessibility_tree="@1 button: Submit\n@2 link: Home",
             interactive_elements=[
-                InteractiveElement(ref_id=1, role="button", name="Submit", tag="button", selector="#sub"),
-                InteractiveElement(ref_id=2, role="link", name="Home", tag="a", selector="a.home"),
+                InteractiveElement(
+                    ref_id=1,
+                    role="button",
+                    name="Submit",
+                    tag="button",
+                    selector="#sub",
+                ),
+                InteractiveElement(
+                    ref_id=2, role="link", name="Home", tag="a", selector="a.home"
+                ),
             ],
             screenshot_bytes=None,
             screenshot_b64=None,
@@ -136,7 +162,12 @@ class TestPageObservation:
         obs = self._make_observation(
             interactive_elements=[
                 InteractiveElement(
-                    ref_id=1, role="checkbox", name="Agree", tag="input", selector="#a", state="checked"
+                    ref_id=1,
+                    role="checkbox",
+                    name="Agree",
+                    tag="input",
+                    selector="#a",
+                    state="checked",
                 ),
             ]
         )
@@ -188,9 +219,15 @@ class TestPollyVisionEngine:
         from src.browser.polly_vision import PollyVision, InteractiveElement
 
         elements = [
-            InteractiveElement(ref_id=1, role="button", name="Go", tag="button", selector="#go"),
-            InteractiveElement(ref_id=2, role="button", name="Stop", tag="button", selector="#stop"),
-            InteractiveElement(ref_id=3, role="link", name="Home", tag="a", selector="a"),
+            InteractiveElement(
+                ref_id=1, role="button", name="Go", tag="button", selector="#go"
+            ),
+            InteractiveElement(
+                ref_id=2, role="button", name="Stop", tag="button", selector="#stop"
+            ),
+            InteractiveElement(
+                ref_id=3, role="link", name="Home", tag="a", selector="a"
+            ),
         ]
         summary = PollyVision._generate_summary("My Page", "https://x.com", elements)
         assert "My Page" in summary
@@ -489,8 +526,13 @@ class TestTongueWeights:
     def test_weight_ordering(self):
         from src.browser.hydra_hand import TONGUE_WEIGHT, Tongue
 
-        weights = [TONGUE_WEIGHT[t] for t in [Tongue.KO, Tongue.AV, Tongue.RU, Tongue.CA, Tongue.UM, Tongue.DR]]
-        assert weights == sorted(weights), "Tongue weights should be in ascending phi order"
+        weights = [
+            TONGUE_WEIGHT[t]
+            for t in [Tongue.KO, Tongue.AV, Tongue.RU, Tongue.CA, Tongue.UM, Tongue.DR]
+        ]
+        assert weights == sorted(
+            weights
+        ), "Tongue weights should be in ascending phi order"
 
 
 class TestProximityMapping:

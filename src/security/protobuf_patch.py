@@ -58,7 +58,9 @@ def apply() -> bool:
 
         if self.recursion_depth > self.max_recursion_depth:
             raise json_format.ParseError(
-                "Message too deep. Max recursion depth is {0}".format(self.max_recursion_depth)
+                "Message too deep. Max recursion depth is {0}".format(
+                    self.max_recursion_depth
+                )
             )
 
         try:

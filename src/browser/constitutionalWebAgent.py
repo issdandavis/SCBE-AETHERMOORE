@@ -241,7 +241,11 @@ def classify_intent(task: str) -> IntentAnalysis:
 
     # Elevated but potentially legitimate
     elevated_patterns = [
-        (r"automate.*login|fill.*password|enter.*credentials", 0.6, "credential_automation"),
+        (
+            r"automate.*login|fill.*password|enter.*credentials",
+            0.6,
+            "credential_automation",
+        ),
         (r"download.*bulk|mass.*download|crawl", 0.5, "bulk_operation"),
         (r"modify.*cookie|inject.*header", 0.55, "session_manipulation"),
     ]
@@ -344,7 +348,11 @@ class ConstitutionalWebAgent:
         # Compute risk score
         action_risk = ACTION_SENSITIVITY.get(action, 0.5)
         violation_risk = sum(
-            0.3 if v.rule.severity == Severity.CRITICAL else 0.2 if v.rule.severity == Severity.HIGH else 0.1
+            (
+                0.3
+                if v.rule.severity == Severity.CRITICAL
+                else 0.2 if v.rule.severity == Severity.HIGH else 0.1
+            )
             for v in violations
         )
         risk_score = min(1.0, action_risk * 0.4 + violation_risk * 0.6)
@@ -505,7 +513,9 @@ class ConstitutionalWebAgent:
         failed_tongues: List[TongueCode],
     ) -> Decision:
         # Critical tongue failures (UM = Security) → immediate DENY
-        critical_violations = [v for v in violations if v.rule.severity == Severity.CRITICAL]
+        critical_violations = [
+            v for v in violations if v.rule.severity == Severity.CRITICAL
+        ]
         if critical_violations:
             return Decision.DENY
 

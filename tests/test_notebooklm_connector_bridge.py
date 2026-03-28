@@ -21,7 +21,9 @@ def test_notebooklm_connector_registered() -> None:
 
 
 @pytest.mark.asyncio
-async def test_notebooklm_create_notebook_routes_to_script(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_notebooklm_create_notebook_routes_to_script(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     bridge = ConnectorBridge()
     seen: dict[str, list[str]] = {}
 
@@ -61,7 +63,9 @@ async def test_notebooklm_add_source_requires_required_fields() -> None:
 
 
 @pytest.mark.asyncio
-async def test_notebooklm_seed_notebooks_passes_source_urls(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_notebooklm_seed_notebooks_passes_source_urls(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     bridge = ConnectorBridge()
     seen: dict[str, list[str]] = {}
 
@@ -83,13 +87,19 @@ async def test_notebooklm_seed_notebooks_passes_source_urls(monkeypatch: pytest.
     )
     assert result.success is True
     assert seen["args"].count("--source-url") == 2
-    seen_hosts = {(urlparse(arg).hostname or "") for arg in seen["args"] if urlparse(arg).scheme == "https"}
+    seen_hosts = {
+        (urlparse(arg).hostname or "")
+        for arg in seen["args"]
+        if urlparse(arg).scheme == "https"
+    }
     assert "arxiv.org" in seen_hosts
     assert "example.com" in seen_hosts
 
 
 @pytest.mark.asyncio
-async def test_notebooklm_resolve_routes_action(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_notebooklm_resolve_routes_action(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     bridge = ConnectorBridge()
     seen: dict[str, list[str]] = {}
 
@@ -103,15 +113,21 @@ async def test_notebooklm_resolve_routes_action(monkeypatch: pytest.MonkeyPatch)
 
     monkeypatch.setattr(bridge, "_run_notebooklm_connector", _fake_runner)
 
-    result = await bridge.execute("notebooklm", "resolve_notebook", {"title": "Hydra Research 01"})
+    result = await bridge.execute(
+        "notebooklm", "resolve_notebook", {"title": "Hydra Research 01"}
+    )
     assert result.success is True
     assert "resolve-notebook" in seen["args"]
     assert "--title" in seen["args"]
 
 
 @pytest.mark.asyncio
-async def test_automation_connector_posts_to_local_hub(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("SCBE_AUTOMATIONS_URL", "http://127.0.0.1:8001/v1/automations/emit")
+async def test_automation_connector_posts_to_local_hub(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(
+        "SCBE_AUTOMATIONS_URL", "http://127.0.0.1:8001/v1/automations/emit"
+    )
     bridge = ConnectorBridge()
     seen: dict[str, object] = {}
 
@@ -136,6 +152,8 @@ async def test_automation_connector_posts_to_local_hub(monkeypatch: pytest.Monke
 @pytest.mark.asyncio
 async def test_automation_connector_requires_event() -> None:
     bridge = ConnectorBridge()
-    result = await bridge.execute("automations", "trigger", {"payload": {"lead_id": "demo"}})
+    result = await bridge.execute(
+        "automations", "trigger", {"payload": {"lead_id": "demo"}}
+    )
     assert result.success is False
     assert "event is required" in result.error

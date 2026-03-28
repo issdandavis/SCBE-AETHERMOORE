@@ -7,7 +7,10 @@ try:
 except ImportError:
     pytest.skip("websockets not installed", allow_module_level=True)
 
-from scripts.verify_aetherbrowser_extension_service import build_service_report, classify_cdp_targets
+from scripts.verify_aetherbrowser_extension_service import (
+    build_service_report,
+    classify_cdp_targets,
+)
 
 
 def test_classify_cdp_targets_extracts_extension_workers_and_pages():
@@ -61,7 +64,9 @@ def test_build_service_report_tracks_provider_state_and_extension_flag():
         "extension_workers": [],
     }
 
-    report = build_service_report(health, cdp, {"research_flow": {"execution_provider": "local"}})
+    report = build_service_report(
+        health, cdp, {"research_flow": {"execution_provider": "local"}}
+    )
 
     assert report["status"] == "ok"
     assert report["ready_providers"] == ["local", "sonnet"]

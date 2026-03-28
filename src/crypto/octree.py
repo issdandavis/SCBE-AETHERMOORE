@@ -40,7 +40,9 @@ class SpectralVoxel:
 
         # Weighted sum of spectral differences
         centroid_diff = abs(self.spectral_centroid - other.spectral_centroid) / 1000.0
-        freq_diff = abs((self.dominant_freq or 440) - (other.dominant_freq or 440)) / 500.0
+        freq_diff = (
+            abs((self.dominant_freq or 440) - (other.dominant_freq or 440)) / 500.0
+        )
 
         # Polarity penalty
         polarity_penalty = 0.0 if self.polarity == other.polarity else 0.5
@@ -57,7 +59,13 @@ class OctreeNode:
     Leaf nodes store a color/realm label.
     """
 
-    def __init__(self, bounds_min: np.ndarray, bounds_max: np.ndarray, depth: int, max_depth: int = 6):
+    def __init__(
+        self,
+        bounds_min: np.ndarray,
+        bounds_max: np.ndarray,
+        depth: int,
+        max_depth: int = 6,
+    ):
         self.bounds_min = bounds_min
         self.bounds_max = bounds_max
         self.center = (bounds_min + bounds_max) / 2.0
@@ -68,7 +76,9 @@ class OctreeNode:
         self.children: Dict[int, "OctreeNode"] = {}  # 0-7 octants
         self.occupied = False
 
-    def insert(self, coord_3d: np.ndarray, color: str, voxel: Optional[SpectralVoxel] = None):
+    def insert(
+        self, coord_3d: np.ndarray, color: str, voxel: Optional[SpectralVoxel] = None
+    ):
         """Insert a point with given color and optional spectral metadata."""
         # Leaf case - maximum depth reached
         if self.depth == self.max_depth:
@@ -104,7 +114,9 @@ class OctreeNode:
             else:
                 child_max[2] = self.center[2]
 
-            self.children[octant] = OctreeNode(child_min, child_max, self.depth + 1, self.max_depth)
+            self.children[octant] = OctreeNode(
+                child_min, child_max, self.depth + 1, self.max_depth
+            )
 
         self.children[octant].insert(coord_3d, color, voxel)
         self.occupied = True
@@ -189,7 +201,9 @@ class OctreeNode:
                 j_min, j_max = max(0, j_min), min(grid_size - 1, j_max)
                 k_min, k_max = max(0, k_min), min(grid_size - 1, k_max)
 
-                colors[i_min : i_max + 1, j_min : j_max + 1, k_min : k_max + 1] = self.color
+                colors[i_min : i_max + 1, j_min : j_max + 1, k_min : k_max + 1] = (
+                    self.color
+                )
             else:
                 for child in self.children.values():
                     child._fill_dense(colors, grid_size)
@@ -246,7 +260,9 @@ class HyperbolicOctree:
     def __init__(self, grid_size: int = 64, max_depth: int = 6):
         self.grid_size = grid_size
         self.max_depth = max_depth
-        self.root = OctreeNode(np.array([-1.0, -1.0, -1.0]), np.array([1.0, 1.0, 1.0]), 0, max_depth)
+        self.root = OctreeNode(
+            np.array([-1.0, -1.0, -1.0]), np.array([1.0, 1.0, 1.0]), 0, max_depth
+        )
         self._point_count = 0
 
     def _realm_to_color(self, realm: str) -> str:
@@ -325,7 +341,10 @@ class HyperbolicOctree:
         return self.root.collect_spectral_voxels()
 
     def find_spectral_neighbors(
-        self, target_voxel: SpectralVoxel, max_distance: float = 0.5, max_results: int = 10
+        self,
+        target_voxel: SpectralVoxel,
+        max_distance: float = 0.5,
+        max_results: int = 10,
     ) -> List[Tuple[np.ndarray, SpectralVoxel, float]]:
         """
         Find spectrally similar voxels.
@@ -391,9 +410,14 @@ class HyperbolicOctree:
         if bands is None:
             bands = [(0, 300), (300, 600), (600, float("inf"))]
 
-        band_names = [f"{int(lo)}-{int(hi) if hi != float('inf') else 'inf'}Hz" for lo, hi in bands]
+        band_names = [
+            f"{int(lo)}-{int(hi) if hi != float('inf') else 'inf'}Hz"
+            for lo, hi in bands
+        ]
 
-        clusters: Dict[str, List[Tuple[np.ndarray, SpectralVoxel]]] = {name: [] for name in band_names}
+        clusters: Dict[str, List[Tuple[np.ndarray, SpectralVoxel]]] = {
+            name: [] for name in band_names
+        }
         clusters["unknown"] = []
 
         for pos, voxel in self.get_all_spectral_voxels():
@@ -517,8 +541,12 @@ if __name__ == "__main__":
     polarity_clusters = octree.cluster_by_polarity()
     for polarity, voxels in polarity_clusters.items():
         if voxels:
-            avg_centroid = np.mean([v.spectral_centroid for _, v in voxels if v.spectral_centroid])
-            print(f"    {polarity}: {len(voxels)} voxels, avg centroid: {avg_centroid:.1f}Hz")
+            avg_centroid = np.mean(
+                [v.spectral_centroid for _, v in voxels if v.spectral_centroid]
+            )
+            print(
+                f"    {polarity}: {len(voxels)} voxels, avg centroid: {avg_centroid:.1f}Hz"
+            )
 
     # Test frequency band clustering
     print()
@@ -531,12 +559,16 @@ if __name__ == "__main__":
     # Test spectral neighbor search
     print()
     print("[SEARCH] Finding spectrally similar voxels...")
-    target = SpectralVoxel(color="cyan", spectral_centroid=450.0, dominant_freq=440.0, polarity="balanced")
+    target = SpectralVoxel(
+        color="cyan", spectral_centroid=450.0, dominant_freq=440.0, polarity="balanced"
+    )
     neighbors = octree.find_spectral_neighbors(target, max_distance=0.8, max_results=5)
     print("    Target: centroid=450Hz, dominant=440Hz, polarity=balanced")
     print(f"    Found {len(neighbors)} spectral neighbors:")
     for pos, voxel, dist in neighbors:
-        print(f"      - pos={pos.round(2)}, centroid={voxel.spectral_centroid:.0f}Hz, dist={dist:.3f}")
+        print(
+            f"      - pos={pos.round(2)}, centroid={voxel.spectral_centroid:.0f}Hz, dist={dist:.3f}"
+        )
 
     print()
     print("=" * 70)

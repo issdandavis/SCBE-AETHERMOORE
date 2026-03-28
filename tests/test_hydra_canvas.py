@@ -69,7 +69,9 @@ class TestRecipes:
             step_ids = {s.step_id for s in steps}
             for step in steps:
                 for dep in step.depends_on:
-                    assert dep in step_ids, f"Recipe '{name}' step '{step.step_id}' depends on missing '{dep}'"
+                    assert (
+                        dep in step_ids
+                    ), f"Recipe '{name}' step '{step.step_id}' depends on missing '{dep}'"
 
 
 class TestCanvasOrchestrator:
@@ -85,7 +87,9 @@ class TestCanvasOrchestrator:
 
     def test_multi_provider_execution(self):
         steps = recipe_article("test")
-        orch = CanvasOrchestrator(available_providers=["claude", "gpt", "gemini", "grok"])
+        orch = CanvasOrchestrator(
+            available_providers=["claude", "gpt", "gemini", "grok"]
+        )
         orch.execute_recipe(steps, topic="test")
         summary = orch.summary()
         assert summary["completed"] == summary["total_steps"]
@@ -93,7 +97,9 @@ class TestCanvasOrchestrator:
         assert len(summary["colors_used"]) >= 2
 
     def test_color_assignment(self):
-        orch = CanvasOrchestrator(available_providers=["claude", "gpt", "gemini", "grok"])
+        orch = CanvasOrchestrator(
+            available_providers=["claude", "gpt", "gemini", "grok"]
+        )
         # Violet step should go to claude
         step = CanvasStep("test", StepType.DRAFT, assigned_color=ModelColor.VIOLET)
         provider = orch._assign_provider(step)
@@ -119,7 +125,12 @@ class TestCanvasOrchestrator:
     def test_roundabout_execution(self):
         steps = [
             CanvasStep("draft", StepType.DRAFT),
-            CanvasStep("check", StepType.ROUNDABOUT, depends_on=["draft"], params={"min_quality": 0.5}),
+            CanvasStep(
+                "check",
+                StepType.ROUNDABOUT,
+                depends_on=["draft"],
+                params={"min_quality": 0.5},
+            ),
         ]
         orch = CanvasOrchestrator(available_providers=["claude"])
         orch.execute_recipe(steps, topic="test")

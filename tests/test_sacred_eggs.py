@@ -562,8 +562,12 @@ class TestRingDescent:
 
         # Create two identical eggs
         yolk = outer_egg._yolk
-        egg1 = SacredEgg.create(context=outer_egg.context, yolk=yolk, ring=EggRing.OUTER)
-        egg2 = SacredEgg.create(context=outer_egg.context, yolk=yolk, ring=EggRing.OUTER)
+        egg1 = SacredEgg.create(
+            context=outer_egg.context, yolk=yolk, ring=EggRing.OUTER
+        )
+        egg2 = SacredEgg.create(
+            context=outer_egg.context, yolk=yolk, ring=EggRing.OUTER
+        )
 
         r1 = SacredRituals.ring_descent(egg1, EggRing.INNER, auth_secret)
         r2 = SacredRituals.ring_descent(egg2, EggRing.INNER, auth_secret)

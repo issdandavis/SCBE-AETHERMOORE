@@ -221,7 +221,9 @@ def text_to_features(text: str) -> Dict[str, float]:
         "numeric": min(1.0, sum(c.isdigit() for c in text) / chars * 8),  # cell 3
         "centroid": 0.5,  # placeholder — filled per tongue               # cell 4
         "uppercase": min(1.0, sum(c.isupper() for c in text) / chars * 4),  # cell 5
-        "punctuation": min(1.0, sum(c in ".,;:!?-_/()" for c in text) / chars * 6),  # cell 6
+        "punctuation": min(
+            1.0, sum(c in ".,;:!?-_/()" for c in text) / chars * 6
+        ),  # cell 6
         "urls": min(1.0, len(re.findall(r"https?://", text)) * 0.3),  # cell 7
         "entropy": _text_entropy(text),  # cell 8
     }
@@ -277,16 +279,27 @@ def encode_spin_stack(
             if cell_idx == 4:
                 # Center cell: weighted distance from centroid across ALL features
                 weighted_dist = (
-                    sum(abs(feature_values[j] - centroid_values[j]) * (1.0 if j != 4 else 0.0) for j in range(9)) / 8.0
+                    sum(
+                        abs(feature_values[j] - centroid_values[j])
+                        * (1.0 if j != 4 else 0.0)
+                        for j in range(9)
+                    )
+                    / 8.0
                 )
                 # Scale by tongue weight — higher tongues are more sensitive
                 scaled = weighted_dist * weight
-                cells.append(_quantize(scaled, 0.3 * weight, threshold=threshold * weight))
+                cells.append(
+                    _quantize(scaled, 0.3 * weight, threshold=threshold * weight)
+                )
             else:
                 # Regular cell: feature weighted by tongue
                 weighted_val = feature_values[cell_idx] * (1.0 + 0.1 * weight)
                 weighted_centroid = centroid_values[cell_idx] * (1.0 + 0.1 * weight)
-                cells.append(_quantize(weighted_val, weighted_centroid, threshold=threshold * weight))
+                cells.append(
+                    _quantize(
+                        weighted_val, weighted_centroid, threshold=threshold * weight
+                    )
+                )
 
         boards.append(SpinBoard(tongue=tongue, cells=tuple(cells)))
 

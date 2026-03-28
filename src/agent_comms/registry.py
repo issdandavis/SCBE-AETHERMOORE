@@ -136,7 +136,9 @@ class AgentRegistry:
         agent.heartbeat()
         return True
 
-    def find_by_capability(self, capability: str, online_only: bool = True) -> List[AgentInfo]:
+    def find_by_capability(
+        self, capability: str, online_only: bool = True
+    ) -> List[AgentInfo]:
         """Find agents with a specific capability."""
         agent_ids = self._capability_index.get(capability, set())
         agents = [self._agents[aid] for aid in agent_ids if aid in self._agents]
@@ -159,7 +161,9 @@ class AgentRegistry:
             agents = [a for a in agents if a.is_alive(self.heartbeat_timeout)]
         return agents
 
-    def find_trusted(self, min_trust: float = 0.7, online_only: bool = True) -> List[AgentInfo]:
+    def find_trusted(
+        self, min_trust: float = 0.7, online_only: bool = True
+    ) -> List[AgentInfo]:
         """Find agents above a trust threshold."""
         agents = [a for a in self._agents.values() if a.trust_score >= min_trust]
         if online_only:

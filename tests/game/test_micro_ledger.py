@@ -59,12 +59,16 @@ class TestServiceCosts:
             assert SERVICE_BASE_COSTS[svc] > 0
 
     def test_evolution_catalyst_most_expensive(self):
-        assert SERVICE_BASE_COSTS["evolution_catalyst"] == max(SERVICE_BASE_COSTS.values())
+        assert SERVICE_BASE_COSTS["evolution_catalyst"] == max(
+            SERVICE_BASE_COSTS.values()
+        )
 
 
 class TestCreditMinting:
     def test_mint_valid_credit(self):
-        credit = mint_credit("agent-1", "crysling", "CA", "healing", (0.1, 0.1, 0.1, 0.6, 0.1, 0.1))
+        credit = mint_credit(
+            "agent-1", "crysling", "CA", "healing", (0.1, 0.1, 0.1, 0.6, 0.1, 0.1)
+        )
         assert credit.credit_id.startswith("cr_")
         assert credit.denomination == "CA"
         assert credit.service_type == "healing"

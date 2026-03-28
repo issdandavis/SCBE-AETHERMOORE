@@ -19,7 +19,9 @@ def test_build_worker_lease_has_expiry() -> None:
     assert lease["claimed_at_utc"] < lease["expires_at_utc"]
 
 
-def test_provision_colab_worker_dry_run_emits_packets(tmp_path: Path, monkeypatch) -> None:
+def test_provision_colab_worker_dry_run_emits_packets(
+    tmp_path: Path, monkeypatch
+) -> None:
     emitted: list[dict[str, object]] = []
 
     def fake_emit_packet(**kwargs):
@@ -47,7 +49,11 @@ def test_provision_colab_worker_dry_run_emits_packets(tmp_path: Path, monkeypatc
     assert artifact["state"] == "dry_run"
     assert artifact["notebook"]["name"] == "scbe-pivot-v2"
     assert len(emitted) == 3
-    assert [row["packet_class"] for row in emitted] == ["governance", "internal", "evidence"]
+    assert [row["packet_class"] for row in emitted] == [
+        "governance",
+        "internal",
+        "evidence",
+    ]
     assert emitted[1]["worker_id"] == "worker-colab-01"
     assert emitted[1]["mission_id"] == "mission-1"
     assert Path(artifact["artifact_path"]).exists()
@@ -57,7 +63,9 @@ def test_provision_colab_worker_dry_run_emits_packets(tmp_path: Path, monkeypatc
     assert saved["packets"]["evidence"] == "pkt-3"
 
 
-def test_provision_colab_worker_with_fake_playwright_marks_auth_required(tmp_path: Path, monkeypatch) -> None:
+def test_provision_colab_worker_with_fake_playwright_marks_auth_required(
+    tmp_path: Path, monkeypatch
+) -> None:
     emitted: list[dict[str, object]] = []
 
     def fake_emit_packet(**kwargs):
@@ -129,7 +137,9 @@ def test_provision_colab_worker_with_fake_playwright_marks_auth_required(tmp_pat
         def chromium(self):
             return FakeChromium()
 
-    monkeypatch.setattr(worker, "_load_sync_playwright", lambda: (lambda: FakePlaywright()))
+    monkeypatch.setattr(
+        worker, "_load_sync_playwright", lambda: (lambda: FakePlaywright())
+    )
 
     artifact = worker.provision_colab_worker(
         notebook_query="pivot",

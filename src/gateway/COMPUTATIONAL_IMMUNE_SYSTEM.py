@@ -156,7 +156,16 @@ class ContextVector:
         how_hash = int(hashlib.sha256(self.how.encode()).hexdigest()[:8], 16) % 1000
 
         return np.array(
-            [who_hash, what_hash, self.when, self.where[0], self.where[1], self.where[2], why_hash, how_hash]
+            [
+                who_hash,
+                what_hash,
+                self.when,
+                self.where[0],
+                self.where[1],
+                self.where[2],
+                why_hash,
+                how_hash,
+            ]
         )
 
     def context_distance(self, other: "ContextVector") -> float:
@@ -226,7 +235,9 @@ class DriftSimulationEngine:
         self.error_accumulator = ErrorAccumulator()
         self.simulation_history: List[Dict] = []
 
-    def run_single_scenario(self, context_a: ContextVector, context_b: ContextVector, operations: int = 100) -> Dict:
+    def run_single_scenario(
+        self, context_a: ContextVector, context_b: ContextVector, operations: int = 100
+    ) -> Dict:
         """Run one scenario through the system"""
         # Calculate context distance (5W1H difference)
         context_dist = context_a.context_distance(context_b)
@@ -237,7 +248,9 @@ class DriftSimulationEngine:
             self.error_accumulator.add_operation_error(op_type, complexity=1.0)
 
         # Calculate linguistic drift (based on context distance)
-        linguistic_drift = self.expert_mind.linguistic_drift_rate * (1 + context_dist / 1000)
+        linguistic_drift = self.expert_mind.linguistic_drift_rate * (
+            1 + context_dist / 1000
+        )
 
         # Total drift = linguistic + computational + context
         total_drift = linguistic_drift + self.error_accumulator.cumulative_error
@@ -280,7 +293,11 @@ class DriftSimulationEngine:
                             who="RESEARCHER",
                             what="test_message",
                             when=time.time(),
-                            where=(np.random.uniform(-180, 180), np.random.uniform(-90, 90), 0),
+                            where=(
+                                np.random.uniform(-180, 180),
+                                np.random.uniform(-90, 90),
+                                0,
+                            ),
                             why="security_test",
                             how="api_call",
                         )
@@ -288,7 +305,11 @@ class DriftSimulationEngine:
                             who=np.random.choice(["RESEARCHER", "WRITER", "THINKER"]),
                             what="response_message",
                             when=time.time() + np.random.uniform(0, 100),
-                            where=(np.random.uniform(-180, 180), np.random.uniform(-90, 90), 0),
+                            where=(
+                                np.random.uniform(-180, 180),
+                                np.random.uniform(-90, 90),
+                                0,
+                            ),
                             why=np.random.choice(["security_test", "data_sync"]),
                             how=np.random.choice(["api_call", "message_queue"]),
                         )
@@ -300,7 +321,9 @@ class DriftSimulationEngine:
                     std_drift = np.std(scenario_drifts)
 
                     # Check if this is 'elegant' (low variance, within tolerance)
-                    elegance_score = 1.0 / (std_drift + 0.001)  # Lower variance = more elegant
+                    elegance_score = 1.0 / (
+                        std_drift + 0.001
+                    )  # Lower variance = more elegant
 
                     # Check agent tolerance (most strict is 0.1 = 10%)
                     passes_tolerance = mean_drift < 0.1
@@ -330,8 +353,12 @@ class DriftSimulationEngine:
 
         print("\n✨ MAGIC NUMBER FOUND!")
         print(f"   Base Drift: {magic['base_drift']}")
-        print(f"   Time Exponent: {magic['time_exponent']} (time^{magic['time_exponent']})")
-        print(f"   Distance Exponent: {magic['distance_exponent']} (dist^{magic['distance_exponent']})")
+        print(
+            f"   Time Exponent: {magic['time_exponent']} (time^{magic['time_exponent']})"
+        )
+        print(
+            f"   Distance Exponent: {magic['distance_exponent']} (dist^{magic['distance_exponent']})"
+        )
         print(f"   Mean Drift: {magic['mean_drift']:.6f}")
         print(f"   Std Drift: {magic['std_drift']:.6f}")
         print(f"   Elegance Score: {magic['elegance_score']:.2f}")

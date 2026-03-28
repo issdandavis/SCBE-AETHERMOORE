@@ -259,7 +259,10 @@ class HamiltonianEmbedding:
 
         for curve_point in self.principal_curve:
             # Euclidean distance to curve point
-            dist_sq = sum((state[d] - curve_point[d]) ** 2 for d in range(min(len(state), len(curve_point))))
+            dist_sq = sum(
+                (state[d] - curve_point[d]) ** 2
+                for d in range(min(len(state), len(curve_point)))
+            )
             dist = math.sqrt(dist_sq)
             min_dist = min(min_dist, dist)
 
@@ -414,9 +417,15 @@ if __name__ == "__main__":
     print()
 
     print("MATHEMATICAL PROOFS:")
-    print(f"  Dirac theorem check:     {'✓ PROVEN' if verify_dirac_theorem() else '✗ FAILED'}")
-    print(f"  Bipartite detection:     {'✓ PROVEN' if verify_bipartite_detection() else '✗ FAILED'}")
-    print(f"  Deviation detection:     {'✓ PROVEN' if verify_deviation_detection() else '✗ FAILED'}")
+    print(
+        f"  Dirac theorem check:     {'✓ PROVEN' if verify_dirac_theorem() else '✗ FAILED'}"
+    )
+    print(
+        f"  Bipartite detection:     {'✓ PROVEN' if verify_bipartite_detection() else '✗ FAILED'}"
+    )
+    print(
+        f"  Deviation detection:     {'✓ PROVEN' if verify_deviation_detection() else '✗ FAILED'}"
+    )
     print()
 
     print("CORE CONCEPT:")

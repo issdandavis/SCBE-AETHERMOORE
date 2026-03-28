@@ -55,7 +55,9 @@ class TestFiniteDirichletHarness:
         expected_total = sum(n ** (-sigma) for n in range(1, terms + 1))
         assert activities.total == pytest.approx(expected_total)
 
-    def test_selector_induced_positive_negative_activities_are_nearly_balanced(self) -> None:
+    def test_selector_induced_positive_negative_activities_are_nearly_balanced(
+        self,
+    ) -> None:
         activities = activities_from_selector(sigma=0.8, terms=600)
         imbalance = abs(activities.positive - activities.negative)
         assert imbalance / activities.total < 0.01
@@ -76,7 +78,9 @@ class TestChemistryStyleEquilibrium:
     def test_chemical_potential_gap_vanishes_at_equilibrium(self) -> None:
         activities = TernaryActivities(positive=2.0, neutral=1.0, negative=5.0)
         sigma_eq = equilibrium_sigma(activities, coupling=1.75)
-        assert chemical_potential_gap(sigma_eq, activities, coupling=1.75) == pytest.approx(0.0)
+        assert chemical_potential_gap(
+            sigma_eq, activities, coupling=1.75
+        ) == pytest.approx(0.0)
 
     def test_free_energy_is_minimized_at_equilibrium(self) -> None:
         activities = TernaryActivities(positive=2.0, neutral=1.0, negative=2.0)
@@ -90,7 +94,9 @@ class TestChemistryStyleEquilibrium:
         assert left_energy > center_energy
         assert right_energy > center_energy
 
-    def test_noncongruent_bias_has_lower_energy_at_shifted_center_than_at_half(self) -> None:
+    def test_noncongruent_bias_has_lower_energy_at_shifted_center_than_at_half(
+        self,
+    ) -> None:
         activities = TernaryActivities(positive=5.0, neutral=1.0, negative=2.0)
         shifted = equilibrium_sigma(activities, coupling=1.0)
 

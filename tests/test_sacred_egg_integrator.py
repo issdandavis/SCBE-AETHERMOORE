@@ -128,16 +128,24 @@ class TestSacredEggCreation:
                 sk_dsa_b64=sk,
             )
 
-    def test_different_payloads_different_ids(self, integrator, key_pair, interior_context):
+    def test_different_payloads_different_ids(
+        self, integrator, key_pair, interior_context
+    ):
         pk, sk = key_pair
-        egg1 = integrator.create_egg(b"payload A", "KO", "a", {}, interior_context, pk, sk)
-        egg2 = integrator.create_egg(b"payload B", "KO", "b", {}, interior_context, pk, sk)
+        egg1 = integrator.create_egg(
+            b"payload A", "KO", "a", {}, interior_context, pk, sk
+        )
+        egg2 = integrator.create_egg(
+            b"payload B", "KO", "b", {}, interior_context, pk, sk
+        )
         assert egg1.egg_id != egg2.egg_id
 
     def test_all_six_tongues(self, integrator, key_pair, interior_context):
         pk, sk = key_pair
         for tongue in TONGUES:
-            egg = integrator.create_egg(b"test", tongue, "g", {}, interior_context, pk, sk)
+            egg = integrator.create_egg(
+                b"test", tongue, "g", {}, interior_context, pk, sk
+            )
             assert egg.primary_tongue == tongue
 
 
@@ -174,26 +182,38 @@ class TestSerialization:
 class TestSolitaryRitual:
     """Tests for solitary hatch mode: tongue must match."""
 
-    def test_matching_tongue_succeeds(self, integrator, egg_solitary, key_pair, interior_context):
+    def test_matching_tongue_succeeds(
+        self, integrator, egg_solitary, key_pair, interior_context
+    ):
         pk, sk = key_pair
-        result = integrator.hatch_egg(egg_solitary, interior_context, "KO", sk, pk, ritual_mode="solitary")
+        result = integrator.hatch_egg(
+            egg_solitary, interior_context, "KO", sk, pk, ritual_mode="solitary"
+        )
         assert result.success is True
         assert result.reason == "hatched"
         assert result.tokens is not None
         assert len(result.tokens) > 0
         assert result.attestation is not None
 
-    def test_wrong_tongue_fails(self, integrator, egg_solitary, key_pair, interior_context):
+    def test_wrong_tongue_fails(
+        self, integrator, egg_solitary, key_pair, interior_context
+    ):
         pk, sk = key_pair
-        result = integrator.hatch_egg(egg_solitary, interior_context, "DR", sk, pk, ritual_mode="solitary")
+        result = integrator.hatch_egg(
+            egg_solitary, interior_context, "DR", sk, pk, ritual_mode="solitary"
+        )
         assert result.success is False
         assert result.reason == "sealed"
         assert result.tokens is not None  # noise tokens, not None
 
-    def test_all_wrong_tongues_fail(self, integrator, egg_solitary, key_pair, interior_context):
+    def test_all_wrong_tongues_fail(
+        self, integrator, egg_solitary, key_pair, interior_context
+    ):
         pk, sk = key_pair
         for tongue in ["AV", "RU", "CA", "UM", "DR"]:
-            result = integrator.hatch_egg(egg_solitary, interior_context, tongue, sk, pk, ritual_mode="solitary")
+            result = integrator.hatch_egg(
+                egg_solitary, interior_context, tongue, sk, pk, ritual_mode="solitary"
+            )
             assert result.success is False
             assert result.reason == "sealed"
 
@@ -223,7 +243,9 @@ class TestTriadicRitual:
             sk_dsa_b64=sk,
         )
 
-    def test_sufficient_tongues_and_weight(self, integrator, egg_triadic, key_pair, interior_context):
+    def test_sufficient_tongues_and_weight(
+        self, integrator, egg_triadic, key_pair, interior_context
+    ):
         pk, sk = key_pair
         # KO(1.0) + RU(2.618) + UM(6.854) = 10.472 >= 10.0
         result = integrator.hatch_egg(
@@ -238,7 +260,9 @@ class TestTriadicRitual:
         assert result.success is True
         assert result.reason == "hatched"
 
-    def test_insufficient_tongues(self, integrator, egg_triadic, key_pair, interior_context):
+    def test_insufficient_tongues(
+        self, integrator, egg_triadic, key_pair, interior_context
+    ):
         pk, sk = key_pair
         # Only 2 tongues (KO + AV), need 3
         result = integrator.hatch_egg(
@@ -252,7 +276,9 @@ class TestTriadicRitual:
         )
         assert result.success is False
 
-    def test_insufficient_weight(self, integrator, egg_triadic, key_pair, interior_context):
+    def test_insufficient_weight(
+        self, integrator, egg_triadic, key_pair, interior_context
+    ):
         pk, sk = key_pair
         # KO(1.0) + AV(1.618) + RU(2.618) = 5.236 < 10.0
         result = integrator.hatch_egg(
@@ -266,7 +292,9 @@ class TestTriadicRitual:
         )
         assert result.success is False
 
-    def test_heavy_tongues_pass(self, integrator, egg_triadic, key_pair, interior_context):
+    def test_heavy_tongues_pass(
+        self, integrator, egg_triadic, key_pair, interior_context
+    ):
         pk, sk = key_pair
         # KO(1.0) + UM(6.854) + DR(11.090) = 18.944 >= 10.0
         result = integrator.hatch_egg(
@@ -396,10 +424,14 @@ class TestRingDescentRitual:
 class TestFailToNoise:
     """Theorem 7.1: all failure modes return identically-structured output."""
 
-    def test_noise_has_tokens(self, integrator, egg_solitary, key_pair, interior_context):
+    def test_noise_has_tokens(
+        self, integrator, egg_solitary, key_pair, interior_context
+    ):
         pk, sk = key_pair
         # Wrong tongue → fail
-        result = integrator.hatch_egg(egg_solitary, interior_context, "DR", sk, pk, ritual_mode="solitary")
+        result = integrator.hatch_egg(
+            egg_solitary, interior_context, "DR", sk, pk, ritual_mode="solitary"
+        )
         assert result.success is False
         assert result.tokens is not None
         assert len(result.tokens) > 0
@@ -408,27 +440,41 @@ class TestFailToNoise:
         """Noise tokens have same count as real output."""
         pk, sk = key_pair
         payload = b"exactly twenty bytes"
-        egg = integrator.create_egg(payload, "KO", "d", {"path": "interior"}, interior_context, pk, sk)
+        egg = integrator.create_egg(
+            payload, "KO", "d", {"path": "interior"}, interior_context, pk, sk
+        )
 
         # Successful hatch
-        ok_result = integrator.hatch_egg(egg, interior_context, "KO", sk, pk, ritual_mode="solitary")
+        ok_result = integrator.hatch_egg(
+            egg, interior_context, "KO", sk, pk, ritual_mode="solitary"
+        )
         # Failed hatch (wrong tongue)
-        fail_result = integrator.hatch_egg(egg, interior_context, "DR", sk, pk, ritual_mode="solitary")
+        fail_result = integrator.hatch_egg(
+            egg, interior_context, "DR", sk, pk, ritual_mode="solitary"
+        )
 
         assert ok_result.success is True
         assert fail_result.success is False
         # Both should have same number of tokens (same byte length)
         assert len(ok_result.tokens) == len(fail_result.tokens)
 
-    def test_noise_reason_is_sealed(self, integrator, egg_solitary, key_pair, interior_context):
+    def test_noise_reason_is_sealed(
+        self, integrator, egg_solitary, key_pair, interior_context
+    ):
         """All failures say 'sealed' — never reveals which predicate failed."""
         pk, sk = key_pair
-        result = integrator.hatch_egg(egg_solitary, interior_context, "UM", sk, pk, ritual_mode="solitary")
+        result = integrator.hatch_egg(
+            egg_solitary, interior_context, "UM", sk, pk, ritual_mode="solitary"
+        )
         assert result.reason == "sealed"
 
-    def test_unknown_ritual_mode_fails(self, integrator, egg_solitary, key_pair, interior_context):
+    def test_unknown_ritual_mode_fails(
+        self, integrator, egg_solitary, key_pair, interior_context
+    ):
         pk, sk = key_pair
-        result = integrator.hatch_egg(egg_solitary, interior_context, "KO", sk, pk, ritual_mode="unknown_mode")
+        result = integrator.hatch_egg(
+            egg_solitary, interior_context, "KO", sk, pk, ritual_mode="unknown_mode"
+        )
         assert result.success is False
         assert result.reason == "sealed"
 
@@ -472,9 +518,13 @@ class TestCrossTokenization:
         assert xlate["src"] == "KO"
         assert xlate["dst"] == "UM"
 
-    def test_same_tongue_no_xlate(self, integrator, egg_solitary, key_pair, interior_context):
+    def test_same_tongue_no_xlate(
+        self, integrator, egg_solitary, key_pair, interior_context
+    ):
         pk, sk = key_pair
-        result = integrator.hatch_egg(egg_solitary, interior_context, "KO", sk, pk, ritual_mode="solitary")
+        result = integrator.hatch_egg(
+            egg_solitary, interior_context, "KO", sk, pk, ritual_mode="solitary"
+        )
         assert result.success is True
         # No xlate when tongues match
         assert "xlate" not in result.attestation
@@ -492,7 +542,9 @@ class TestContextBinding:
         pk, sk = key_pair
         # Completely different context
         wrong_context = [9.9, -9.9, 9.9, -9.9, 9.9, -9.9]
-        result = integrator.hatch_egg(egg_solitary, wrong_context, "KO", sk, pk, ritual_mode="solitary")
+        result = integrator.hatch_egg(
+            egg_solitary, wrong_context, "KO", sk, pk, ritual_mode="solitary"
+        )
         # GeoSeal decrypt will fail (different h/z) → sealed
         assert result.success is False
         assert result.reason == "sealed"
@@ -556,7 +608,9 @@ class TestGeoSealRoundtrip:
             sk,
         )
 
-        result = integrator.hatch_egg(egg, interior_context, "RU", sk, pk, ritual_mode="solitary")
+        result = integrator.hatch_egg(
+            egg, interior_context, "RU", sk, pk, ritual_mode="solitary"
+        )
         assert result.success is True
 
         # Decode tokens back to bytes and verify payload
@@ -576,7 +630,9 @@ class TestGeoSealRoundtrip:
                 pk,
                 sk,
             )
-            result = integrator.hatch_egg(egg, interior_context, tongue, sk, pk, ritual_mode="solitary")
+            result = integrator.hatch_egg(
+                egg, interior_context, tongue, sk, pk, ritual_mode="solitary"
+            )
             assert result.success is True, f"Failed for tongue {tongue}"
             recovered = xt.tok.decode_tokens(tongue, result.tokens)
             assert recovered == payload, f"Payload mismatch for tongue {tongue}"
@@ -606,7 +662,9 @@ class TestPaintEgg:
         assert painted.yolk_ct == egg_solitary.yolk_ct  # yolk untouched
 
     def test_paint_both(self, integrator, egg_solitary):
-        painted = integrator.paint_egg(egg_solitary, glyph="golden", hatch_condition={"min_tongues": 5})
+        painted = integrator.paint_egg(
+            egg_solitary, glyph="golden", hatch_condition={"min_tongues": 5}
+        )
         assert painted.glyph == "golden"
         assert painted.hatch_condition == {"min_tongues": 5}
         assert painted.yolk_ct == egg_solitary.yolk_ct
@@ -617,7 +675,9 @@ class TestPaintEgg:
         assert painted.hatch_condition == egg_solitary.hatch_condition
         assert painted.yolk_ct == egg_solitary.yolk_ct
 
-    def test_painted_egg_still_hatches(self, integrator, key_pair, interior_context, xt):
+    def test_painted_egg_still_hatches(
+        self, integrator, key_pair, interior_context, xt
+    ):
         """A painted egg should still hatch with correct conditions."""
         pk, sk = key_pair
         payload = b"paint me red"
@@ -632,7 +692,9 @@ class TestPaintEgg:
         )
         painted = integrator.paint_egg(egg, glyph="red_sparkle")
 
-        result = integrator.hatch_egg(painted, interior_context, "KO", sk, pk, ritual_mode="solitary")
+        result = integrator.hatch_egg(
+            painted, interior_context, "KO", sk, pk, ritual_mode="solitary"
+        )
         assert result.success is True
         recovered = xt.tok.decode_tokens("KO", result.tokens)
         assert recovered == payload

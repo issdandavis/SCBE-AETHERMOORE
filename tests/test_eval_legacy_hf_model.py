@@ -60,7 +60,9 @@ def test_score_response_is_case_insensitive_and_tracks_missing_terms() -> None:
         response_should_contain=["Kor'aelin", "Draumric", "GABA"],
     )
 
-    result = score_response(record, "kor'aelin maps to dopamine. DRAUMRIC handles structure.")
+    result = score_response(
+        record, "kor'aelin maps to dopamine. DRAUMRIC handles structure."
+    )
 
     assert result.matched_terms == ["Kor'aelin", "Draumric"]
     assert result.missing_terms == ["GABA"]

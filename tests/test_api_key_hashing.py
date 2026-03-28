@@ -4,13 +4,18 @@ import pytest
 
 try:
     from api.keys.generator import generate_api_key
-    from api.keys.hashing import api_key_hash_candidates, hash_api_key, legacy_hash_api_key
+    from api.keys.hashing import (
+        api_key_hash_candidates,
+        hash_api_key,
+        legacy_hash_api_key,
+    )
 except ImportError:
     generate_api_key = None
     api_key_hash_candidates = hash_api_key = legacy_hash_api_key = None
 
 pytestmark = pytest.mark.skipif(
-    generate_api_key is None, reason="api.keys modules not importable (missing sqlalchemy?)"
+    generate_api_key is None,
+    reason="api.keys modules not importable (missing sqlalchemy?)",
 )
 
 

@@ -49,11 +49,16 @@ def test_build_navigation_telemetry_extracts_route_text_and_targets(tmp_path):
     xml_path = tmp_path / "window_dump.xml"
     xml_path.write_text(SAMPLE_XML, encoding="utf-8")
 
-    payload = build_navigation_telemetry(xml_path, screenshot_path="eye_latest.png", status={"top_activity": "chrome"})
+    payload = build_navigation_telemetry(
+        xml_path, screenshot_path="eye_latest.png", status={"top_activity": "chrome"}
+    )
 
     assert payload["package_name"] == "com.android.chrome"
     assert payload["page_title"] == "Webtoon Viewer"
-    assert payload["route_url"] == "10.0.2.2:8088/reader.html?chapter=ch01&variant=generated"
+    assert (
+        payload["route_url"]
+        == "10.0.2.2:8088/reader.html?chapter=ch01&variant=generated"
+    )
     assert "Chapter 1: Protocol Handshake" in payload["visible_text"]
     assert payload["scrollables"][0]["label"] == "Webtoon Viewer"
     assert [target["label"] for target in payload["tap_targets"]] == [

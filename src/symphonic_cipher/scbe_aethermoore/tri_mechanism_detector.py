@@ -109,7 +109,10 @@ def hyperbolic_distance(u: np.ndarray, v: np.ndarray, eps: float = 1e-10) -> flo
 
 
 def phase_distance_score(
-    u: np.ndarray, tongue_idx: int, tongue_centroids: List[np.ndarray], observed_phase: float
+    u: np.ndarray,
+    tongue_idx: int,
+    tongue_centroids: List[np.ndarray],
+    observed_phase: float,
 ) -> MechanismScore:
     """
     Mechanism 1: Phase-augmented distance score.
@@ -122,7 +125,9 @@ def phase_distance_score(
     score = 1.0 / (1.0 + d_h + 2.0 * p_dev)
 
     return MechanismScore(
-        score=score, flagged=score < 0.3, detail=f"d_H={d_h:.4f}, phase_dev={p_dev:.4f}, score={score:.4f}"
+        score=score,
+        flagged=score < 0.3,
+        detail=f"d_H={d_h:.4f}, phase_dev={p_dev:.4f}, score={score:.4f}",
     )
 
 
@@ -132,7 +137,10 @@ def phase_distance_score(
 
 
 def tonic_coherence(
-    position_history: np.ndarray, time_steps: np.ndarray, tongue_idx: int, config: DetectorConfig = DetectorConfig()
+    position_history: np.ndarray,
+    time_steps: np.ndarray,
+    tongue_idx: int,
+    config: DetectorConfig = DetectorConfig(),
 ) -> MechanismScore:
     """
     Mechanism 2: 6-tonic spherical nodal oscillation coherence.
@@ -173,7 +181,9 @@ def tonic_coherence(
     )
 
 
-def _frequency_match(radii: np.ndarray, expected_freq: float, times: np.ndarray) -> float:
+def _frequency_match(
+    radii: np.ndarray, expected_freq: float, times: np.ndarray
+) -> float:
     """Check if dominant frequency matches expected tongue frequency."""
     if len(radii) < 8:
         return 0.5
@@ -199,7 +209,9 @@ def _frequency_match(radii: np.ndarray, expected_freq: float, times: np.ndarray)
 # =============================================================================
 
 
-def compute_drift_signature(pipeline_metrics: Dict[str, float], input_data: Optional[np.ndarray] = None) -> np.ndarray:
+def compute_drift_signature(
+    pipeline_metrics: Dict[str, float], input_data: Optional[np.ndarray] = None
+) -> np.ndarray:
     """
     Extract 17-dimensional drift signature.
 
@@ -237,7 +249,10 @@ def compute_drift_signature(pipeline_metrics: Dict[str, float], input_data: Opti
 
         # Unique decimal precisions
         unique_prec = len(
-            set(len(f"{abs(x):.15g}".split(".")[-1]) if "." in f"{abs(x):.15g}" else 0 for x in input_data)
+            set(
+                len(f"{abs(x):.15g}".split(".")[-1]) if "." in f"{abs(x):.15g}" else 0
+                for x in input_data
+            )
         )
         sig[14] = unique_prec / len(input_data)
 
@@ -259,7 +274,9 @@ def compute_drift_signature(pipeline_metrics: Dict[str, float], input_data: Opti
     return sig
 
 
-def drift_distance_to_baseline(drift_sig: np.ndarray, baseline_sigs: np.ndarray) -> float:
+def drift_distance_to_baseline(
+    drift_sig: np.ndarray, baseline_sigs: np.ndarray
+) -> float:
     """Mahalanobis-like distance to baseline cluster."""
     if len(baseline_sigs) == 0:
         return 1.0
@@ -271,14 +288,20 @@ def drift_distance_to_baseline(drift_sig: np.ndarray, baseline_sigs: np.ndarray)
 
 
 def drift_auth_score(
-    pipeline_metrics: Dict[str, float], input_data: np.ndarray, baseline_sigs: np.ndarray
+    pipeline_metrics: Dict[str, float],
+    input_data: np.ndarray,
+    baseline_sigs: np.ndarray,
 ) -> MechanismScore:
     """Mechanism 3: Decimal drift authentication."""
     sig = compute_drift_signature(pipeline_metrics, input_data)
     dist = drift_distance_to_baseline(sig, baseline_sigs)
     score = 1.0 / (1.0 + dist)
 
-    return MechanismScore(score=score, flagged=score < 0.3, detail=f"drift_dist={dist:.4f}, score={score:.4f}")
+    return MechanismScore(
+        score=score,
+        flagged=score < 0.3,
+        detail=f"drift_dist={dist:.4f}, score={score:.4f}",
+    )
 
 
 # =============================================================================
@@ -315,7 +338,11 @@ class TriMechanismDetector:
             centroid[1] = 0.3 * np.sin(angle)
             self.tongue_centroids.append(centroid)
 
-    def add_baseline_sample(self, pipeline_metrics: Dict[str, float], input_data: Optional[np.ndarray] = None) -> None:
+    def add_baseline_sample(
+        self,
+        pipeline_metrics: Dict[str, float],
+        input_data: Optional[np.ndarray] = None,
+    ) -> None:
         """Add a legitimate sample to the drift baseline."""
         sig = compute_drift_signature(pipeline_metrics, input_data)
         self.baseline_sigs.append(sig)
@@ -350,20 +377,27 @@ class TriMechanismDetector:
         """
         # Mechanism 1: Phase + distance
         observed_phase = np.arctan2(
-            np.mean(input_data[len(input_data) // 2 :]), np.mean(input_data[: len(input_data) // 2])
+            np.mean(input_data[len(input_data) // 2 :]),
+            np.mean(input_data[: len(input_data) // 2]),
         )
-        phase = phase_distance_score(u_final, tongue_idx, self.tongue_centroids, observed_phase)
+        phase = phase_distance_score(
+            u_final, tongue_idx, self.tongue_centroids, observed_phase
+        )
 
         # Mechanism 2: 6-tonic temporal coherence
         tonic = tonic_coherence(position_history, time_steps, tongue_idx, self.config)
 
         # Mechanism 3: Decimal drift
-        baseline_array = np.array(self.baseline_sigs) if self.baseline_sigs else np.array([])
+        baseline_array = (
+            np.array(self.baseline_sigs) if self.baseline_sigs else np.array([])
+        )
         drift = drift_auth_score(pipeline_metrics, input_data, baseline_array)
 
         # Weighted combination
         combined = (
-            self.config.w_phase * phase.score + self.config.w_tonic * tonic.score + self.config.w_drift * drift.score
+            self.config.w_phase * phase.score
+            + self.config.w_tonic * tonic.score
+            + self.config.w_drift * drift.score
         )
 
         # Decision

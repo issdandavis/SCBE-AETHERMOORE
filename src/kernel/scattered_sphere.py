@@ -106,7 +106,12 @@ class ScatteredAttentionSphere:
         self.lattice: list[LatticePoint] = []
         self._layers: list[str] = []  # track which matrices were scattered
 
-    def scatter(self, weight_matrix: np.ndarray, layer_name: str = "default", layer_radius: float = 1.0) -> int:
+    def scatter(
+        self,
+        weight_matrix: np.ndarray,
+        layer_name: str = "default",
+        layer_radius: float = 1.0,
+    ) -> int:
         """
         Fractalize a 2D weight matrix and scatter onto the sphere.
 
@@ -163,7 +168,9 @@ class ScatteredAttentionSphere:
         self._layers.append(layer_name)
         return count
 
-    def scatter_qkv(self, q_matrix: np.ndarray, k_matrix: np.ndarray, v_matrix: np.ndarray) -> dict[str, int]:
+    def scatter_qkv(
+        self, q_matrix: np.ndarray, k_matrix: np.ndarray, v_matrix: np.ndarray
+    ) -> dict[str, int]:
         """Scatter Q, K, V matrices as concentric shells."""
         return {
             "Q": self.scatter(q_matrix, "Q", layer_radius=1.0),

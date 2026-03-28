@@ -114,7 +114,9 @@ def test_thermal_profiles_normalize_and_thermal_mirror_scales_hot_regions() -> N
     )
 
     row_heat, col_heat = derive_thermal_profiles(matrix, source="l2_norm")
-    transformed, profile = apply_thermal_mirror(matrix, alpha=1.5, source="l2_norm", min_scale=0.2)
+    transformed, profile = apply_thermal_mirror(
+        matrix, alpha=1.5, source="l2_norm", min_scale=0.2
+    )
 
     assert row_heat.max() == pytest.approx(1.0)
     assert row_heat.min() == pytest.approx(0.0)

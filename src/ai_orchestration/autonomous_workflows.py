@@ -192,7 +192,8 @@ class PersistentQueue:
         return [
             wf
             for wf in self.queue.values()
-            if wf.status in (WorkflowState.QUEUED, WorkflowState.RUNNING, WorkflowState.WAITING)
+            if wf.status
+            in (WorkflowState.QUEUED, WorkflowState.RUNNING, WorkflowState.WAITING)
         ]
 
 
@@ -207,7 +208,12 @@ class AgentHandoffManager:
         self.active_handoffs: Dict[str, Dict[str, Any]] = {}
 
     def initiate_handoff(
-        self, from_agent_id: str, to_agent_id: str, workflow_id: str, step_id: str, context: Dict[str, Any]
+        self,
+        from_agent_id: str,
+        to_agent_id: str,
+        workflow_id: str,
+        step_id: str,
+        context: Dict[str, Any],
     ) -> str:
         """Initiate a handoff between agents."""
         handoff_id = str(uuid.uuid4())
@@ -247,7 +253,11 @@ class AgentHandoffManager:
 
     def get_pending_handoffs(self, agent_id: str) -> List[Dict[str, Any]]:
         """Get pending handoffs for an agent."""
-        return [h for h in self.active_handoffs.values() if h["to_agent"] == agent_id and h["status"] == "pending"]
+        return [
+            h
+            for h in self.active_handoffs.values()
+            if h["to_agent"] == agent_id and h["status"] == "pending"
+        ]
 
 
 class WatchdogMonitor:
@@ -257,7 +267,10 @@ class WatchdogMonitor:
     """
 
     def __init__(
-        self, heartbeat_interval: int = 30, stuck_threshold: int = 300, on_stuck_callback: Optional[Callable] = None
+        self,
+        heartbeat_interval: int = 30,
+        stuck_threshold: int = 300,
+        on_stuck_callback: Optional[Callable] = None,
     ):
         self.heartbeat_interval = heartbeat_interval
         self.stuck_threshold = stuck_threshold
@@ -281,7 +294,9 @@ class WatchdogMonitor:
         threshold = timedelta(seconds=self.stuck_threshold)
 
         return [
-            agent_id for agent_id, last_heartbeat in self.agent_heartbeats.items() if now - last_heartbeat > threshold
+            agent_id
+            for agent_id, last_heartbeat in self.agent_heartbeats.items()
+            if now - last_heartbeat > threshold
         ]
 
     def get_stuck_workflows(self) -> List[str]:
@@ -290,7 +305,9 @@ class WatchdogMonitor:
         threshold = timedelta(seconds=self.stuck_threshold)
 
         return [
-            wf_id for wf_id, last_checkpoint in self.workflow_checkpoints.items() if now - last_checkpoint > threshold
+            wf_id
+            for wf_id, last_checkpoint in self.workflow_checkpoints.items()
+            if now - last_checkpoint > threshold
         ]
 
     async def monitor_loop(self):
@@ -396,7 +413,10 @@ class AutonomousWorkflowEngine:
     """
 
     def __init__(
-        self, storage_path: str = "./autonomous_workflows", max_concurrent_workflows: int = 10, max_retries: int = 3
+        self,
+        storage_path: str = "./autonomous_workflows",
+        max_concurrent_workflows: int = 10,
+        max_retries: int = 3,
     ):
         self.storage_path = Path(storage_path)
         self.max_concurrent = max_concurrent_workflows
@@ -454,7 +474,9 @@ class AutonomousWorkflowEngine:
             try:
                 # Get pending workflows
                 pending = self.queue.get_pending()
-                running_count = sum(1 for wf in pending if wf.status == WorkflowState.RUNNING)
+                running_count = sum(
+                    1 for wf in pending if wf.status == WorkflowState.RUNNING
+                )
 
                 # Start new workflows if capacity available
                 if running_count < self.max_concurrent:
@@ -484,7 +506,8 @@ class AutonomousWorkflowEngine:
                 ready_steps = [
                     step
                     for step in workflow.steps
-                    if step.status == WorkflowState.QUEUED and all(dep in completed_steps for dep in step.depends_on)
+                    if step.status == WorkflowState.QUEUED
+                    and all(dep in completed_steps for dep in step.depends_on)
                 ]
 
                 if not ready_steps:
@@ -500,7 +523,10 @@ class AutonomousWorkflowEngine:
                     continue
 
                 # Execute ready steps in parallel
-                tasks = [self._execute_step(workflow, step, step_outputs) for step in ready_steps]
+                tasks = [
+                    self._execute_step(workflow, step, step_outputs)
+                    for step in ready_steps
+                ]
                 results = await asyncio.gather(*tasks, return_exceptions=True)
 
                 # Process results
@@ -539,7 +565,10 @@ class AutonomousWorkflowEngine:
             self.queue.update(workflow)
 
     async def _execute_step(
-        self, workflow: AutonomousWorkflow, step: WorkflowStep, previous_outputs: Dict[str, Dict[str, Any]]
+        self,
+        workflow: AutonomousWorkflow,
+        step: WorkflowStep,
+        previous_outputs: Dict[str, Dict[str, Any]],
     ) -> Optional[Dict[str, Any]]:
         """Execute a single workflow step."""
         step.status = WorkflowState.RUNNING
@@ -573,7 +602,8 @@ class AutonomousWorkflowEngine:
         for attempt in range(step.max_retries):
             try:
                 result = await asyncio.wait_for(
-                    agent.process_task({"type": step.action, **input_data}), timeout=step.timeout_seconds
+                    agent.process_task({"type": step.action, **input_data}),
+                    timeout=step.timeout_seconds,
                 )
 
                 step.status = WorkflowState.COMPLETED
@@ -586,7 +616,9 @@ class AutonomousWorkflowEngine:
                 if attempt < step.max_retries - 1:
                     await asyncio.sleep(step.retry_delay_seconds * (2**attempt))
                 else:
-                    await self._handle_step_failure(workflow, step, f"Timeout after {step.timeout_seconds}s")
+                    await self._handle_step_failure(
+                        workflow, step, f"Timeout after {step.timeout_seconds}s"
+                    )
 
             except Exception as e:
                 step.retry_count += 1
@@ -605,7 +637,9 @@ class AutonomousWorkflowEngine:
                     return agent
         return None
 
-    async def _handle_step_failure(self, workflow: AutonomousWorkflow, step: WorkflowStep, error: str):
+    async def _handle_step_failure(
+        self, workflow: AutonomousWorkflow, step: WorkflowStep, error: str
+    ):
         """Handle step failure based on recovery action."""
         step.error = error
 
@@ -669,10 +703,17 @@ class AutonomousWorkflowEngine:
             "workflows": {
                 "total": len(self.queue.queue),
                 "queued": sum(1 for wf in pending if wf.status == WorkflowState.QUEUED),
-                "running": sum(1 for wf in pending if wf.status == WorkflowState.RUNNING),
-                "waiting": sum(1 for wf in pending if wf.status == WorkflowState.WAITING),
+                "running": sum(
+                    1 for wf in pending if wf.status == WorkflowState.RUNNING
+                ),
+                "waiting": sum(
+                    1 for wf in pending if wf.status == WorkflowState.WAITING
+                ),
             },
-            "agents": {"registered": len(self.agents), "dead": len(self.watchdog.get_dead_agents())},
+            "agents": {
+                "registered": len(self.agents),
+                "dead": len(self.watchdog.get_dead_agents()),
+            },
             "escalations": {"pending": len(self.escalation_manager.get_pending())},
         }
 
@@ -686,7 +727,9 @@ class WorkflowBuilder:
     """Fluent builder for creating workflows."""
 
     def __init__(self, name: str, description: str = ""):
-        self.workflow = AutonomousWorkflow(id=str(uuid.uuid4()), name=name, description=description, steps=[])
+        self.workflow = AutonomousWorkflow(
+            id=str(uuid.uuid4()), name=name, description=description, steps=[]
+        )
         self._step_counter = 0
 
     def add_step(
@@ -723,7 +766,10 @@ class WorkflowBuilder:
         return self
 
     def set_escalation(
-        self, after_failures: int = 3, after_timeout: int = 3600, channels: List[str] = None
+        self,
+        after_failures: int = 3,
+        after_timeout: int = 3600,
+        channels: List[str] = None,
     ) -> "WorkflowBuilder":
         """Configure escalation settings."""
         self.workflow.escalate_after_failures = after_failures

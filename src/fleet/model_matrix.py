@@ -96,7 +96,9 @@ class ModelNode:
 
     def __post_init__(self) -> None:
         if self.tongue not in TONGUE_NAMES:
-            raise ValueError(f"tongue must be one of {TONGUE_NAMES}, got '{self.tongue}'")
+            raise ValueError(
+                f"tongue must be one of {TONGUE_NAMES}, got '{self.tongue}'"
+            )
 
 
 @dataclass
@@ -115,7 +117,9 @@ class NodeBundle:
 # ═══════════════════════════════════════════════════════════════
 
 
-async def _call_claude(config: ModelConfig, prompt: str, context: Optional[str] = None) -> str:
+async def _call_claude(
+    config: ModelConfig, prompt: str, context: Optional[str] = None
+) -> str:
     """Query Anthropic Claude. Falls back to mock if SDK unavailable."""
     try:
         import anthropic  # type: ignore[import-untyped]
@@ -128,7 +132,9 @@ async def _call_claude(config: ModelConfig, prompt: str, context: Optional[str] 
         messages = []
         if context:
             messages.append({"role": "user", "content": context})
-            messages.append({"role": "assistant", "content": "Understood — context received."})
+            messages.append(
+                {"role": "assistant", "content": "Understood — context received."}
+            )
         messages.append({"role": "user", "content": prompt})
 
         resp = client.messages.create(
@@ -144,7 +150,9 @@ async def _call_claude(config: ModelConfig, prompt: str, context: Optional[str] 
         return f"[Claude error: {exc}]"
 
 
-async def _call_gemini(config: ModelConfig, prompt: str, context: Optional[str] = None) -> str:
+async def _call_gemini(
+    config: ModelConfig, prompt: str, context: Optional[str] = None
+) -> str:
     """Query Google Gemini. Falls back to mock if SDK unavailable."""
     try:
         import google.generativeai as genai  # type: ignore[import-untyped]
@@ -170,7 +178,9 @@ async def _call_gemini(config: ModelConfig, prompt: str, context: Optional[str] 
         return f"[Gemini error: {exc}]"
 
 
-async def _call_ollama(config: ModelConfig, prompt: str, context: Optional[str] = None) -> str:
+async def _call_ollama(
+    config: ModelConfig, prompt: str, context: Optional[str] = None
+) -> str:
     """Query a local Ollama instance at localhost:11434."""
     try:
         import urllib.request
@@ -200,7 +210,9 @@ async def _call_ollama(config: ModelConfig, prompt: str, context: Optional[str] 
         return _mock("Ollama", config, prompt, note=str(exc))
 
 
-async def _call_huggingface(config: ModelConfig, prompt: str, context: Optional[str] = None) -> str:
+async def _call_huggingface(
+    config: ModelConfig, prompt: str, context: Optional[str] = None
+) -> str:
     """Query HuggingFace Inference API. Falls back to mock if SDK unavailable."""
     try:
         from huggingface_hub import InferenceClient  # type: ignore[import-untyped]
@@ -223,9 +235,13 @@ async def _call_huggingface(config: ModelConfig, prompt: str, context: Optional[
         return f"[HuggingFace error: {exc}]"
 
 
-async def _call_local(config: ModelConfig, prompt: str, context: Optional[str] = None) -> str:
+async def _call_local(
+    config: ModelConfig, prompt: str, context: Optional[str] = None
+) -> str:
     """Placeholder for loading a local model (GGUF, ONNX, etc.)."""
-    return _mock("Local", config, prompt, note="local model loading not yet implemented")
+    return _mock(
+        "Local", config, prompt, note="local model loading not yet implemented"
+    )
 
 
 def _mock(provider: str, config: ModelConfig, prompt: str, *, note: str = "") -> str:
@@ -340,7 +356,9 @@ class ModelMatrix:
 
     # ── Bundle Management ────────────────────────────────────
 
-    def create_bundle(self, node_ids: List[str], bundle_id: Optional[str] = None) -> str:
+    def create_bundle(
+        self, node_ids: List[str], bundle_id: Optional[str] = None
+    ) -> str:
         """Create a bundle from existing nodes. Returns the bundle id."""
         bid = bundle_id or f"bundle-{uuid.uuid4().hex[:8]}"
         nodes = [self.nodes[nid] for nid in node_ids if nid in self.nodes]
@@ -469,7 +487,12 @@ class ModelMatrix:
                     "tongue": n.tongue,
                     "model_count": len(n.models),
                     "models": [
-                        {"provider": m.provider.value, "model_id": m.model_id, "role": m.role} for m in n.models
+                        {
+                            "provider": m.provider.value,
+                            "model_id": m.model_id,
+                            "role": m.role,
+                        }
+                        for m in n.models
                     ],
                     "consensus": n.consensus_strategy,
                 }

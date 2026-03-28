@@ -17,7 +17,10 @@ from scripts.aetherbrowser_live_smoke import (
 def test_summarize_research_flow_extracts_execution_and_states():
     messages = [
         {"type": "agent_status", "payload": {"state": "working"}},
-        {"type": "chat", "payload": {"plan": {"provider": "local", "risk_tier": "low"}}},
+        {
+            "type": "chat",
+            "payload": {"plan": {"provider": "local", "risk_tier": "low"}},
+        },
         {
             "type": "chat",
             "payload": {
@@ -93,4 +96,7 @@ def test_summarize_page_flow_extracts_analysis_payload():
     assert summary["risk_tier"] == "low"
     assert summary["intent"] == "research"
     assert summary["topics"] == ["ai", "security"]
-    assert summary["next_actions"] == ["Inspect cited paper", "Compare governance systems"]
+    assert summary["next_actions"] == [
+        "Inspect cited paper",
+        "Compare governance systems",
+    ]

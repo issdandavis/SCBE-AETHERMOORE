@@ -24,9 +24,15 @@ def test_metering_store_daily_aggregate_upsert(tmp_path):
 def test_metering_store_exports_multiple_metrics(tmp_path):
     store = MeteringStore(str(tmp_path / "metering.db"))
 
-    store.increment_metric("tenant_a", GOVERNANCE_EVALUATIONS, when=datetime(2026, 1, 2))
-    store.increment_metric("tenant_a", WORKFLOW_EXECUTIONS, when=datetime(2026, 1, 3), amount=4)
-    store.increment_metric("tenant_b", AUDIT_REPORT_GENERATIONS, when=datetime(2026, 1, 4), amount=2)
+    store.increment_metric(
+        "tenant_a", GOVERNANCE_EVALUATIONS, when=datetime(2026, 1, 2)
+    )
+    store.increment_metric(
+        "tenant_a", WORKFLOW_EXECUTIONS, when=datetime(2026, 1, 3), amount=4
+    )
+    store.increment_metric(
+        "tenant_b", AUDIT_REPORT_GENERATIONS, when=datetime(2026, 1, 4), amount=2
+    )
 
     jan_rows = store.export_monthly_usage(2026, 1)
     actual = {(r.tenant_id, r.metric_name): r.count for r in jan_rows}

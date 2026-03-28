@@ -3,10 +3,16 @@
 from __future__ import annotations
 
 import pytest
-from src.storage.tri_lattice_membrane import TriLatticeMembrane, TriRecord, PolyhedralFallback
+from src.storage.tri_lattice_membrane import (
+    TriLatticeMembrane,
+    TriRecord,
+    PolyhedralFallback,
+)
 
 
-def _make_record(i: int, tongue: str = "KO", tongue_coords=None, intent=None) -> TriRecord:
+def _make_record(
+    i: int, tongue: str = "KO", tongue_coords=None, intent=None
+) -> TriRecord:
     return TriRecord(
         record_id=f"tri-{i:04d}",
         tongue_coords=tongue_coords or [0.3, 0.2, 0.1, 0.5, 0.1, 0.4],
@@ -37,7 +43,10 @@ class TestTriLatticeMembrane:
 
     def test_batch_insert(self):
         membrane = TriLatticeMembrane()
-        records = [_make_record(i, tongue=["KO", "AV", "RU", "CA", "UM", "DR"][i % 6]) for i in range(30)]
+        records = [
+            _make_record(i, tongue=["KO", "AV", "RU", "CA", "UM", "DR"][i % 6])
+            for i in range(30)
+        ]
         count = membrane.insert_batch(records)
         assert count == 30
 
@@ -46,7 +55,11 @@ class TestTriLatticeMembrane:
         records = [_make_record(i) for i in range(50)]
         membrane.insert_batch(records)
         stats = membrane.stats()
-        total_placed = stats.lattice25d_accepted + stats.quasicrystal_accepted + stats.polyhedral_fallback
+        total_placed = (
+            stats.lattice25d_accepted
+            + stats.quasicrystal_accepted
+            + stats.polyhedral_fallback
+        )
         assert total_placed == 50
 
     def test_stats_have_required_fields(self):
@@ -66,11 +79,25 @@ class TestTriLatticeMembrane:
         membrane = TriLatticeMembrane()
         # Near-centroid records
         safe = [
-            TriRecord(f"safe-{i}", [0.5, 0.5, 0.5, 0.5, 0.5, 0.5], [0.5, 0.5, 0.5], "KO", b"safe") for i in range(10)
+            TriRecord(
+                f"safe-{i}",
+                [0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+                [0.5, 0.5, 0.5],
+                "KO",
+                b"safe",
+            )
+            for i in range(10)
         ]
         # Far-from-centroid records
         risky = [
-            TriRecord(f"risky-{i}", [0.9, 0.1, 0.9, 0.1, 0.9, 0.1], [0.9, 0.1, 0.9], "DR", b"risky") for i in range(10)
+            TriRecord(
+                f"risky-{i}",
+                [0.9, 0.1, 0.9, 0.1, 0.9, 0.1],
+                [0.9, 0.1, 0.9],
+                "DR",
+                b"risky",
+            )
+            for i in range(10)
         ]
         membrane.insert_batch(safe + risky)
         stats = membrane.stats()

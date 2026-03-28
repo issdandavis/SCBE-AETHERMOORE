@@ -110,7 +110,9 @@ def test_hyperbolic_aqm():
         return 1 / (1 + np.exp(-k * (q - q0)))
 
     sigmoid_probs = [sigmoid_drop(q) for q in queue_levels]
-    sigmoid_horizon = next((q for q, p in zip(queue_levels, sigmoid_probs) if p > 0.9), K)
+    sigmoid_horizon = next(
+        (q for q, p in zip(queue_levels, sigmoid_probs) if p > 0.9), K
+    )
 
     print(f"\n  Sigmoid (true hyperbolic) 90% drop at queue = {sigmoid_horizon:.1f}")
 
@@ -118,7 +120,9 @@ def test_hyperbolic_aqm():
     plt.figure(figsize=(10, 6))
     plt.plot(queue_levels, linear_probs, label="Linear RED", linewidth=2)
     plt.plot(queue_levels, hyper_probs, label="AD-RED (Document)", linewidth=2)
-    plt.plot(queue_levels, sigmoid_probs, label="Sigmoid (True Hyperbolic)", linewidth=2)
+    plt.plot(
+        queue_levels, sigmoid_probs, label="Sigmoid (True Hyperbolic)", linewidth=2
+    )
     plt.axhline(y=0.9, color="r", linestyle="--", label="Event Horizon (90%)")
     plt.xlabel("Queue Occupancy")
     plt.ylabel("Drop Probability")
@@ -158,7 +162,9 @@ def test_lorentz_factor():
 
     velocities = [0.0, 0.5, 0.9, 0.99, 0.999, 0.9999]
 
-    print(f"\n  {'Threat Velocity (v/c)':<25} {'Lorentz Factor (γ)':<20} {'Path Dilation'}")
+    print(
+        f"\n  {'Threat Velocity (v/c)':<25} {'Lorentz Factor (γ)':<20} {'Path Dilation'}"
+    )
     print("  " + "-" * 65)
 
     for v in velocities:
@@ -284,7 +290,9 @@ def test_mars_frequency():
 
     match = abs(f_mars - MARS_FREQUENCY_EXPECTED) < 0.1
 
-    print(f"\n  ✓ VALIDATED: Mars frequency {f_mars:.2f} Hz derived from orbital mechanics")
+    print(
+        f"\n  ✓ VALIDATED: Mars frequency {f_mars:.2f} Hz derived from orbital mechanics"
+    )
     return match
 
 
@@ -348,7 +356,9 @@ def test_hyperbolic_routing():
 
     # Test nodes at various radii (hierarchy depth)
     print("\n  Comparing Euclidean vs Hyperbolic distances:")
-    print(f"  {'Node A':<15} {'Node B':<15} {'Euclidean':<12} {'Hyperbolic':<12} {'Ratio'}")
+    print(
+        f"  {'Node A':<15} {'Node B':<15} {'Euclidean':<12} {'Hyperbolic':<12} {'Ratio'}"
+    )
     print("  " + "-" * 65)
 
     test_cases = [
@@ -365,7 +375,9 @@ def test_hyperbolic_routing():
         d_hyp = hyperbolic_distance(r1, t1, r2, t2)
         ratio = d_hyp / d_euc if d_euc > 0 else 0
 
-        print(f"  ({r1:.1f}, {t1:.2f})     ({r2:.1f}, {t2:.2f})     {d_euc:<12.4f} {d_hyp:<12.4f} {ratio:.2f}x")
+        print(
+            f"  ({r1:.1f}, {t1:.2f})     ({r2:.1f}, {t2:.2f})     {d_euc:<12.4f} {d_hyp:<12.4f} {ratio:.2f}x"
+        )
 
     # Key insight: hyperbolic space expands exponentially with radius
     print("\n  Key insight: In hyperbolic space, periphery nodes are")
@@ -441,7 +453,9 @@ def test_fixed_point():
         results.add(z.raw)
 
     deterministic = len(results) == 1
-    print(f"\n  Determinism test (1000 iterations): {'✓ PASS' if deterministic else '✗ FAIL'}")
+    print(
+        f"\n  Determinism test (1000 iterations): {'✓ PASS' if deterministic else '✗ FAIL'}"
+    )
     print(f"  Unique results: {len(results)}")
 
     # Compare to IEEE 754 floating point (which can vary)

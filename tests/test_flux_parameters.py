@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from src.governance.flux_parameters import FluxParams, ConsensusEngine, create_voxel_header
+from src.governance.flux_parameters import (
+    FluxParams,
+    ConsensusEngine,
+    create_voxel_header,
+)
 
 
 @pytest.fixture
@@ -41,7 +45,9 @@ def _safe_update_from(base: FluxParams, **overrides) -> FluxParams:
     return FluxParams(**data)
 
 
-def test_illegal_layer12_radius_rejected(engine: ConsensusEngine, current_params: FluxParams):
+def test_illegal_layer12_radius_rejected(
+    engine: ConsensusEngine, current_params: FluxParams
+):
     bad = _safe_update_from(current_params, layer12_R=5.0)  # out of [0.8, 1.2]
     with pytest.raises(ValueError, match="Layer 12 Radius"):
         engine.propose_update(bad, proposer="KO")
@@ -50,7 +56,9 @@ def test_illegal_layer12_radius_rejected(engine: ConsensusEngine, current_params
     assert engine.current_params.epoch_id == current_params.epoch_id
 
 
-def test_negative_curvature_rejected(engine: ConsensusEngine, current_params: FluxParams):
+def test_negative_curvature_rejected(
+    engine: ConsensusEngine, current_params: FluxParams
+):
     bad = _safe_update_from(current_params, curvature_kappa=-0.01)
     with pytest.raises(ValueError, match="Negative curvature"):
         engine.propose_update(bad, proposer="KO")
@@ -58,7 +66,9 @@ def test_negative_curvature_rejected(engine: ConsensusEngine, current_params: Fl
     assert engine.pending_proposal is None
 
 
-def test_unauthorized_proposer_rejected(engine: ConsensusEngine, current_params: FluxParams):
+def test_unauthorized_proposer_rejected(
+    engine: ConsensusEngine, current_params: FluxParams
+):
     newp = _safe_update_from(current_params, epoch_id="NK-2026.02-SEASON-X")
     with pytest.raises(PermissionError, match="Unauthorized proposer"):
         engine.propose_update(newp, proposer="ZZ")  # not in AGENTS
@@ -66,7 +76,9 @@ def test_unauthorized_proposer_rejected(engine: ConsensusEngine, current_params:
     assert engine.pending_proposal is None
 
 
-def test_quorum_commit_requires_four_signatures(engine: ConsensusEngine, current_params: FluxParams):
+def test_quorum_commit_requires_four_signatures(
+    engine: ConsensusEngine, current_params: FluxParams
+):
     newp = _safe_update_from(current_params, epoch_id="NK-2026.02-SEASON-1")
     engine.propose_update(newp, proposer="KO")
     assert engine.pending_proposal is not None
@@ -89,7 +101,9 @@ def test_quorum_commit_requires_four_signatures(engine: ConsensusEngine, current
     assert engine.signatures == {}
 
 
-def test_vote_ignores_unknown_agent(engine: ConsensusEngine, current_params: FluxParams):
+def test_vote_ignores_unknown_agent(
+    engine: ConsensusEngine, current_params: FluxParams
+):
     newp = _safe_update_from(current_params, epoch_id="NK-2026.02-SEASON-1")
     engine.propose_update(newp, proposer="KO")
 
@@ -114,7 +128,9 @@ def test_manifest_hash_deterministic_for_same_values(current_params: FluxParams)
     assert p1.compute_hash() == p2.compute_hash()
 
 
-def test_create_voxel_header_binds_epoch_and_param_hash(monkeypatch, current_params: FluxParams):
+def test_create_voxel_header_binds_epoch_and_param_hash(
+    monkeypatch, current_params: FluxParams
+):
     monkeypatch.setattr("time.time", lambda: 123.456)
 
     hdr = create_voxel_header("vox-001", current_params)

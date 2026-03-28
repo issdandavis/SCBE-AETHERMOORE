@@ -198,7 +198,9 @@ class SpatialVector:
 
     def distance_to(self, other: "SpatialVector") -> float:
         """Euclidean distance in 3D space"""
-        return np.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2)
+        return np.sqrt(
+            (self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2
+        )
 
     def to_hash_input(self) -> bytes:
         return f"{self.x}{self.y}{self.z}{self.node_id}{self.hop_count}".encode()
@@ -266,16 +268,26 @@ class DNAMultiLayerMessage:
             purpose="unknown",
             method="unknown",
         )
-        emotional_distance = self.emotional.compute_emotional_distance(reference_emotional)
+        emotional_distance = self.emotional.compute_emotional_distance(
+            reference_emotional
+        )
         emotional_complexity = 1.0 / (
-            self.emotional.compute_gravitational_force(reference_emotional, emotional_distance, G=1e-5) + 1e-10
+            self.emotional.compute_gravitational_force(
+                reference_emotional, emotional_distance, G=1e-5
+            )
+            + 1e-10
         )  # Prevent division by zero
 
         # Spatial complexity
         spatial_complexity = self.spatial.hop_count * 10
 
         # TOTAL COMPLEXITY = MULTIPLICATIVE (exponential growth)
-        total = base_complexity * temporal_complexity * emotional_complexity * spatial_complexity
+        total = (
+            base_complexity
+            * temporal_complexity
+            * emotional_complexity
+            * spatial_complexity
+        )
 
         return total
 
@@ -304,7 +316,8 @@ class DNAMultiLayerMessage:
         plaintext_bytes = self.plaintext.encode()
         encrypted = bytes(
             [
-                plaintext_bytes[i % len(plaintext_bytes)] ^ final_key[i % len(final_key)]
+                plaintext_bytes[i % len(plaintext_bytes)]
+                ^ final_key[i % len(final_key)]
                 for i in range(len(plaintext_bytes))
             ]
         )
@@ -374,7 +387,9 @@ def test_attack_resistance():
 
     full_complexity = full_msg.compute_total_complexity()
     print(f"  DNA: {full_msg.dna_encoded}")
-    print(f"  Temporal distance: {full_msg.temporal.compute_temporal_distance(TemporalVector(0, 0, 0, 0, 0)):.2f}")
+    print(
+        f"  Temporal distance: {full_msg.temporal.compute_temporal_distance(TemporalVector(0, 0, 0, 0, 0)):.2f}"
+    )
     _neutral_emo = EmotionalIntentVector(0.5, 0.5, 0.5, 0.5, 0.5, 0.5, "", "", "")
     _emo_dist = full_msg.emotional.compute_emotional_distance(_neutral_emo)
     print(f"  Emotional distance: {_emo_dist:.2f}")
@@ -401,8 +416,12 @@ def test_attack_resistance():
     print("COMPARISON")
     print("=" * 80)
     print(f"Morse-only:       {morse_complexity:.2e} (baseline)")
-    print(f"Hybrid (M+E):     {hybrid_complexity:.2e} ({hybrid_complexity/morse_complexity:.2f}x harder)")
-    print(f"Full multi-layer: {full_complexity:.2e} ({full_complexity/morse_complexity:.2f}x harder)")
+    print(
+        f"Hybrid (M+E):     {hybrid_complexity:.2e} ({hybrid_complexity/morse_complexity:.2f}x harder)"
+    )
+    print(
+        f"Full multi-layer: {full_complexity:.2e} ({full_complexity/morse_complexity:.2f}x harder)"
+    )
 
     print("\n🎯 RESULT:")
     if full_complexity > hybrid_complexity > morse_complexity:

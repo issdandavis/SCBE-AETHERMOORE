@@ -7,7 +7,9 @@ from pathlib import Path
 
 
 def _load_module():
-    module_path = Path(__file__).resolve().parents[1] / "scripts" / "publish" / "post_all.py"
+    module_path = (
+        Path(__file__).resolve().parents[1] / "scripts" / "publish" / "post_all.py"
+    )
     spec = importlib.util.spec_from_file_location("post_all_module", module_path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
@@ -43,7 +45,10 @@ def test_post_all_campaign_posts_dry_run(tmp_path: Path, monkeypatch):
                 "site": "huggingface_model",
                 "title": "HF test",
                 "content_file": str(hf_file),
-                "target": {"repo_id": "issdandavis/phdm-21d-embedding", "repo_type": "model"},
+                "target": {
+                    "repo_id": "issdandavis/phdm-21d-embedding",
+                    "repo_type": "model",
+                },
             },
             {
                 "id": "gh-post",
@@ -51,7 +56,11 @@ def test_post_all_campaign_posts_dry_run(tmp_path: Path, monkeypatch):
                 "site": "github",
                 "title": "GH test",
                 "content_file": str(gh_file),
-                "target": {"owner": "issdandavis", "repo": "SCBE-AETHERMOORE", "category": "General"},
+                "target": {
+                    "owner": "issdandavis",
+                    "repo": "SCBE-AETHERMOORE",
+                    "category": "General",
+                },
             },
             {
                 "id": "medium-post",
@@ -67,9 +76,19 @@ def test_post_all_campaign_posts_dry_run(tmp_path: Path, monkeypatch):
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
     monkeypatch.setattr(module, "EVIDENCE_DIR", tmp_path / "evidence")
-    monkeypatch.setattr(module, "_run_devto_publish", lambda *args, **kwargs: ("dry_run_ready", "devto ok"))
-    monkeypatch.setattr(module, "_run_hf_publish", lambda *args, **kwargs: ("dry_run_ready", "hf ok"))
-    monkeypatch.setattr(module, "_run_github_publish_file", lambda *args, **kwargs: ("dry_run_ready", "gh ok"))
+    monkeypatch.setattr(
+        module,
+        "_run_devto_publish",
+        lambda *args, **kwargs: ("dry_run_ready", "devto ok"),
+    )
+    monkeypatch.setattr(
+        module, "_run_hf_publish", lambda *args, **kwargs: ("dry_run_ready", "hf ok")
+    )
+    monkeypatch.setattr(
+        module,
+        "_run_github_publish_file",
+        lambda *args, **kwargs: ("dry_run_ready", "gh ok"),
+    )
     monkeypatch.setattr(
         sys,
         "argv",

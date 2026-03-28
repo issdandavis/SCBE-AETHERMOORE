@@ -31,7 +31,9 @@ def test_mark_then_cooldown_blocks_emit(tmp_path: Path) -> None:
     assert mod.should_emit_with_cooldown(state_file, "sync_completed", 3600) is False
 
 
-def test_maybe_emit_skips_when_cooldown_active(tmp_path: Path, monkeypatch, capsys) -> None:
+def test_maybe_emit_skips_when_cooldown_active(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     mod = _load_module()
     state_file = tmp_path / "zapier_state.json"
     mod.mark_emitted(state_file, "sync_completed")

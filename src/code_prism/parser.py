@@ -19,7 +19,8 @@ def parse_python_to_ir(source: str, module_name: str = "module") -> PrismModule:
         body_lines = [
             ast.unparse(stmt)
             for stmt in node.body
-            if not isinstance(stmt, ast.Expr) or not isinstance(stmt.value, ast.Constant)
+            if not isinstance(stmt, ast.Expr)
+            or not isinstance(stmt.value, ast.Constant)
         ]
         if not body_lines:
             body_lines = ["pass"]
@@ -45,7 +46,9 @@ def parse_python_to_ir(source: str, module_name: str = "module") -> PrismModule:
 
 
 def parse_typescript_to_ir(source: str, module_name: str = "module") -> PrismModule:
-    pattern = re.compile(r"function\s+([A-Za-z_][A-Za-z0-9_]*)\s*\((.*?)\)\s*\{", re.DOTALL)
+    pattern = re.compile(
+        r"function\s+([A-Za-z_][A-Za-z0-9_]*)\s*\((.*?)\)\s*\{", re.DOTALL
+    )
     functions: List[PrismFunction] = []
 
     for match in pattern.finditer(source):
@@ -76,7 +79,9 @@ def parse_typescript_to_ir(source: str, module_name: str = "module") -> PrismMod
     )
 
 
-def parse_source_to_ir(source: str, source_language: str, module_name: str = "module") -> PrismModule:
+def parse_source_to_ir(
+    source: str, source_language: str, module_name: str = "module"
+) -> PrismModule:
     lang = source_language.lower()
     if lang == "python":
         return parse_python_to_ir(source, module_name=module_name)

@@ -219,7 +219,9 @@ class SelfHealingOrchestrator:
         error_str = str(error).lower()
         return any(ind.lower() in error_str for ind in security_indicators)
 
-    def execute(self, operation: Callable, *args, operation_id: str = None, **kwargs) -> Tuple[bool, Any, List[str]]:
+    def execute(
+        self, operation: Callable, *args, operation_id: str = None, **kwargs
+    ) -> Tuple[bool, Any, List[str]]:
         """
         Execute operation with self-healing capabilities.
 
@@ -233,7 +235,9 @@ class SelfHealingOrchestrator:
             Tuple of (success, result, healing_actions_taken)
         """
         if operation_id is None:
-            operation_id = hashlib.sha256(f"{operation.__name__}:{time.time()}".encode()).hexdigest()[:16]
+            operation_id = hashlib.sha256(
+                f"{operation.__name__}:{time.time()}".encode()
+            ).hexdigest()[:16]
 
         healing_actions = []
         start_time = time.perf_counter()
@@ -291,7 +295,9 @@ class SelfHealingOrchestrator:
                 # Try fallback handler
                 if error_type in self._fallback_handlers:
                     try:
-                        fallback_result = self._fallback_handlers[error_type](e, *args, **kwargs)
+                        fallback_result = self._fallback_handlers[error_type](
+                            e, *args, **kwargs
+                        )
                         healing_actions.append(f"fallback_{error_type}")
                         self._log_healing_event(
                             operation_id,
@@ -333,7 +339,10 @@ class SelfHealingOrchestrator:
         """Get current health status."""
         with self._lock:
             return {
-                "healthy": (self._circuit_state == CircuitState.CLOSED and self._metrics.error_rate < 0.05),
+                "healthy": (
+                    self._circuit_state == CircuitState.CLOSED
+                    and self._metrics.error_rate < 0.05
+                ),
                 "circuit_state": self._circuit_state.value,
                 "metrics": {
                     "total_operations": self._metrics.total_operations,
@@ -386,7 +395,9 @@ class SelfHealingOrchestrator:
 
 
 # Convenience function for simple usage
-def with_healing(operation: Callable, *args, max_retries: int = 3, **kwargs) -> Tuple[bool, Any]:
+def with_healing(
+    operation: Callable, *args, max_retries: int = 3, **kwargs
+) -> Tuple[bool, Any]:
     """
     Execute operation with default self-healing.
 

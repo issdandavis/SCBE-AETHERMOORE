@@ -17,12 +17,18 @@ except ImportError:
 pytestmark = pytest.mark.skipif(cli is None, reason="agents dependencies not installed")
 
 
-def test_check_cdp_readiness_connection_refused_is_actionable(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_check_cdp_readiness_connection_refused_is_actionable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     def fake_read_json_url(url: str, timeout: float = 2.0):
         raise urllib_error.URLError(ConnectionRefusedError(10061, "Connection refused"))
 
     monkeypatch.setattr(cli, "_read_json_url", fake_read_json_url)
-    monkeypatch.setattr(cli, "get_chrome_launch_command", lambda port=9222: f"chrome --remote-debugging-port={port}")
+    monkeypatch.setattr(
+        cli,
+        "get_chrome_launch_command",
+        lambda port=9222: f"chrome --remote-debugging-port={port}",
+    )
 
     message = asyncio.run(cli._check_cdp_readiness("127.0.0.1", 9222, None))
 
@@ -33,9 +39,15 @@ def test_check_cdp_readiness_connection_refused_is_actionable(monkeypatch: pytes
     assert "Connection refused" in message
 
 
-def test_check_cdp_readiness_reports_empty_target_list(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_check_cdp_readiness_reports_empty_target_list(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(cli, "_read_json_url", lambda url, timeout=2.0: (200, []))
-    monkeypatch.setattr(cli, "get_chrome_launch_command", lambda port=9223: f"chrome --remote-debugging-port={port}")
+    monkeypatch.setattr(
+        cli,
+        "get_chrome_launch_command",
+        lambda port=9223: f"chrome --remote-debugging-port={port}",
+    )
 
     message = asyncio.run(cli._check_cdp_readiness("localhost", 9223, None))
 
@@ -45,7 +57,9 @@ def test_check_cdp_readiness_reports_empty_target_list(monkeypatch: pytest.Monke
     assert "chrome --remote-debugging-port=9223" in message
 
 
-def test_check_cdp_readiness_reports_missing_target_id(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_check_cdp_readiness_reports_missing_target_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     targets = [
         {
             "id": "page-1",
@@ -68,16 +82,22 @@ def test_main_exits_cleanly_on_cdp_readiness_failure(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    async def fake_check_cdp_readiness(host: str, port: int, target_id: str | None) -> str:
+    async def fake_check_cdp_readiness(
+        host: str, port: int, target_id: str | None
+    ) -> str:
         return "CDP unavailable for test"
 
     class FailIfConstructed:
         def __init__(self, config):
-            raise AssertionError("session should not be constructed when CDP is unavailable")
+            raise AssertionError(
+                "session should not be constructed when CDP is unavailable"
+            )
 
     monkeypatch.setattr(cli, "_check_cdp_readiness", fake_check_cdp_readiness)
     monkeypatch.setattr(cli, "AetherbrowseSession", FailIfConstructed)
-    monkeypatch.setattr(sys, "argv", ["aetherbrowse_cli.py", "navigate", "https://example.com"])
+    monkeypatch.setattr(
+        sys, "argv", ["aetherbrowse_cli.py", "navigate", "https://example.com"]
+    )
 
     with pytest.raises(SystemExit) as excinfo:
         cli.main()
