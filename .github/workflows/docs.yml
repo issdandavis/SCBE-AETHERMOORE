@@ -1,12 +1,6 @@
 name: Documentation
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'docs/**'
-      - 'README.md'
-      - 'src/**/*.ts'
   workflow_dispatch:
 
 concurrency:
