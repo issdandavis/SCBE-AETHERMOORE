@@ -118,6 +118,13 @@ def parse_args() -> argparse.Namespace:
         help="Random seed for reproducibility",
     )
     parser.add_argument(
+        "--scbe-coords",
+        type=str,
+        default=os.environ.get("SCBE_COORDS_BACKEND", "stats"),
+        choices=["stats", "semantic", "auto"],
+        help="SCBE RuntimeGate tongue-coordinate extractor backend (stats|semantic|auto)",
+    )
+    parser.add_argument(
         "--verbose",
         "-v",
         action="store_true",
@@ -132,6 +139,7 @@ def parse_args() -> argparse.Namespace:
 
 def setup_systems(
     skip_deberta: bool = False,
+    scbe_coords_backend: str = "stats",
 ) -> Dict[str, Any]:
     """Initialize all detection systems.
 
@@ -148,7 +156,7 @@ def setup_systems(
     systems[naked.name] = naked
 
     # 2. SCBE RuntimeGate system
-    scbe = SCBESystem()
+    scbe = SCBESystem(coords_backend=scbe_coords_backend)
     if scbe.available:
         systems[scbe.name] = scbe
     else:
@@ -244,7 +252,7 @@ def run_all(args: argparse.Namespace) -> None:
     # 2. Initialize systems
     # -----------------------------------------------------------------------
     print("  [2/5] Initializing detection systems...")
-    systems = setup_systems(skip_deberta=args.no_deberta)
+    systems = setup_systems(skip_deberta=args.no_deberta, scbe_coords_backend=args.scbe_coords)
     print(f"         Active systems: {', '.join(systems.keys())}")
     print("")
 

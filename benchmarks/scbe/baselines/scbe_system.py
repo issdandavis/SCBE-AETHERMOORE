@@ -12,6 +12,7 @@ The wrapper:
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
@@ -48,14 +49,18 @@ class SCBESystem:
     name = "scbe_system"
     description = "SCBE RuntimeGate (14-layer harmonic + tongue + spin + trust)"
 
-    def __init__(self):
+    def __init__(self, *, coords_backend: Optional[str] = None):
         self._gate: Optional[Any] = None
         self._harness_gate: Optional[Any] = None
         self._available = _SCBE_AVAILABLE or _HARNESS_AVAILABLE
         self._using_runtime_gate = _SCBE_AVAILABLE
+        self._coords_backend = coords_backend or os.environ.get("SCBE_COORDS_BACKEND")
 
         if _SCBE_AVAILABLE:
-            self._gate = RuntimeGate()
+            if self._coords_backend:
+                self._gate = RuntimeGate(coords_backend=str(self._coords_backend))
+            else:
+                self._gate = RuntimeGate()
         elif _HARNESS_AVAILABLE:
             self._harness_gate = SCBEDetectionGate()
 
@@ -81,7 +86,10 @@ class SCBESystem:
     def reset(self) -> None:
         """Reset the gate state (new session)."""
         if _SCBE_AVAILABLE:
-            self._gate = RuntimeGate()
+            if self._coords_backend:
+                self._gate = RuntimeGate(coords_backend=str(self._coords_backend))
+            else:
+                self._gate = RuntimeGate()
         elif _HARNESS_AVAILABLE:
             self._harness_gate = SCBEDetectionGate()
 
