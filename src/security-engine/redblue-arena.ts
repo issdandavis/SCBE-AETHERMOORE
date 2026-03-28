@@ -21,6 +21,7 @@
  * get DENY. Blue tries to detect and block those inputs.
  */
 
+import { randomBytes } from 'crypto';
 import { SecurityDecision } from './context-engine';
 
 // ---------------------------------------------------------------------------
@@ -590,7 +591,7 @@ export class RedBlueArena {
   /** Run the full match. Returns the complete record. */
   async runMatch(): Promise<MatchRecord> {
     const startedAt = Date.now();
-    const matchId = `match_${startedAt}_${Math.random().toString(36).slice(2, 8)}`;
+    const matchId = `match_${startedAt}_${randomBytes(4).toString('hex')}`;
 
     for (let round = 0; round < this.config.rounds; round++) {
       const surface = this.config.surfaces[round % this.config.surfaces.length];
@@ -678,7 +679,7 @@ export class RedBlueArena {
 
   private createAgent(team: Team, role: UnitRole, provider: ProviderId): ArenaAgent {
     return {
-      id: `${team}_${role}_${Math.random().toString(36).slice(2, 6)}`,
+      id: `${team}_${role}_${randomBytes(3).toString('hex')}`,
       team,
       role,
       provider,
