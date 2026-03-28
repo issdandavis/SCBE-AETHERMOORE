@@ -68,9 +68,7 @@ class NodalStats:
     total_artifacts: int = 0
     total_edges: int = 0
     artifacts_by_type: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
-    artifacts_by_tongue: Dict[str, int] = field(
-        default_factory=lambda: defaultdict(int)
-    )
+    artifacts_by_tongue: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
     rejected_count: int = 0
     avg_rho_e: float = 0.0
 
@@ -189,9 +187,7 @@ class PolyAINodalNetwork:
             return False
 
         # Layer 12: rho_e gate
-        artifact.rho_e = compute_rho_e(
-            np.array([len(artifact.content), len(artifact.artifact_type)])
-        )
+        artifact.rho_e = compute_rho_e(np.array([len(artifact.content), len(artifact.artifact_type)]))
         if artifact.rho_e >= self.rho_e_threshold:
             logger.warning(
                 "Layer 12 high-entropy artifact rejected: rho_e=%.2f",

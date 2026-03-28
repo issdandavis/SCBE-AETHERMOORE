@@ -142,6 +142,4 @@ def test_colab_review_reports_readiness_and_warnings() -> None:
     assert payload["notebook_count"] >= 10
     reviews = {row["name"]: row for row in payload["reviews"]}
     assert "aethermoor-datagen" in reviews
-    assert any(
-        "demo repo" in warning for warning in reviews["aethermoor-datagen"]["warnings"]
-    )
+    assert any("demo repo" in warning for warning in reviews["aethermoor-datagen"]["warnings"])

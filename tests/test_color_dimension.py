@@ -397,9 +397,7 @@ class TestAudioVisibleBridge:
 class TestSpectralFlowRouter:
     @staticmethod
     def _build_router() -> SpectralFlowRouter:
-        router = SpectralFlowRouter(
-            isolation_threshold=0.1, hyperbolic_min_separation=0.3
-        )
+        router = SpectralFlowRouter(isolation_threshold=0.1, hyperbolic_min_separation=0.3)
         router.add_node("a", (0.00, 0.00))
         router.add_node("b", (0.20, 0.00))
         router.add_node("c", (0.40, 0.00))
@@ -455,9 +453,7 @@ class TestSpectralFlowRouter:
         assert router.route("f1", ["a", "m", "c"], close_a).allowed
         denied = router.route("f2", ["a", "n", "c"], close_b)
         assert not denied.allowed
-        assert any(
-            reason.startswith("hyperbolic_proximity:") for reason in denied.reasons
-        )
+        assert any(reason.startswith("hyperbolic_proximity:") for reason in denied.reasons)
 
     def test_disconnected_path_rejected(self):
         router = self._build_router()

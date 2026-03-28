@@ -141,9 +141,7 @@ class HamiltonianTester:
         for i, u in enumerate(vertices):
             for v in vertices[i + 1 :]:
                 # Check if non-adjacent
-                adjacent = v in self.cfg.adjacency.get(
-                    u, []
-                ) or u in self.cfg.adjacency.get(v, [])
+                adjacent = v in self.cfg.adjacency.get(u, []) or u in self.cfg.adjacency.get(v, [])
                 if not adjacent:
                     if self.cfg.get_degree(u) + self.cfg.get_degree(v) < n:
                         return False

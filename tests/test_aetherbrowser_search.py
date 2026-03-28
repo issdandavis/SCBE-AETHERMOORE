@@ -9,9 +9,7 @@ from pathlib import Path
 def _load_search_module():
     repo_root = Path(__file__).resolve().parents[1]
     script_path = repo_root / "scripts" / "system" / "aetherbrowser_search.py"
-    spec = importlib.util.spec_from_file_location(
-        "aetherbrowser_search_module", script_path
-    )
+    spec = importlib.util.spec_from_file_location("aetherbrowser_search_module", script_path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Unable to load search module from {script_path}")
     module = importlib.util.module_from_spec(spec)
@@ -74,21 +72,15 @@ def test_huggingface_module_call_uses_keywords(tmp_path, monkeypatch):
         def __init__(self) -> None:
             self.calls = []
 
-        def nav_huggingface_api_fallback(
-            self, query, *, max_results, search_type, save_to_vault
-        ):
+        def nav_huggingface_api_fallback(self, query, *, max_results, search_type, save_to_vault):
             self.calls.append((query, max_results, search_type, save_to_vault))
             return [{"title": "issdandavis/phdm-21d-embedding"}]
 
     fake_hf = FakeHFModule()
-    monkeypatch.setattr(
-        module, "_load_module", lambda module_name, script_name: fake_hf
-    )
+    monkeypatch.setattr(module, "_load_module", lambda module_name, script_name: fake_hf)
     scripts_dir = tmp_path / "scripts"
     scripts_dir.mkdir()
-    (scripts_dir / "aetherbrowser_huggingface_nav.py").write_text(
-        "# stub\n", encoding="utf-8"
-    )
+    (scripts_dir / "aetherbrowser_huggingface_nav.py").write_text("# stub\n", encoding="utf-8")
     monkeypatch.setattr(module, "SCRIPTS_DIR", scripts_dir)
 
     results = module._dispatch_search("huggingface", "phdm", 3, False, "C:/vault")
@@ -114,9 +106,7 @@ def test_web_surface_uses_playwriter_runner(tmp_path, monkeypatch):
             }
         )
 
-    monkeypatch.setattr(
-        module.subprocess, "run", lambda *args, **kwargs: FakeCompleted()
-    )
+    monkeypatch.setattr(module.subprocess, "run", lambda *args, **kwargs: FakeCompleted())
 
     results = module._dispatch_search("web", "SCBE", 3, False, str(tmp_path))
 

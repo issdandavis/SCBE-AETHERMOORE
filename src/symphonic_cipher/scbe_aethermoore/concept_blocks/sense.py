@@ -121,9 +121,7 @@ def _mat_inv(m: List[List[float]]) -> List[List[float]]:
     if n == 2:
         return _mat_inv_2x2(m)
     # Gauss-Jordan for larger matrices
-    aug = [
-        row[:] + [1.0 if j == i else 0.0 for j in range(n)] for i, row in enumerate(m)
-    ]
+    aug = [row[:] + [1.0 if j == i else 0.0 for j in range(n)] for i, row in enumerate(m)]
     for col in range(n):
         pivot = max(range(col, n), key=lambda r: abs(aug[r][col]))
         aug[col], aug[pivot] = aug[pivot], aug[col]
@@ -150,13 +148,8 @@ class MultiDimKalmanFilter:
         self.dim = dim
         self.x = [[0.0] for _ in range(dim)]  # state column vector
         self.P = _mat_identity(dim)  # error covariance
-        self.Q = [
-            [process_noise if i == j else 0.0 for j in range(dim)] for i in range(dim)
-        ]
-        self.R = [
-            [measurement_noise if i == j else 0.0 for j in range(dim)]
-            for i in range(dim)
-        ]
+        self.Q = [[process_noise if i == j else 0.0 for j in range(dim)] for i in range(dim)]
+        self.R = [[measurement_noise if i == j else 0.0 for j in range(dim)] for i in range(dim)]
         self.F = _mat_identity(dim)  # state transition (identity default)
         self.H = _mat_identity(dim)  # observation (identity default)
 
@@ -224,9 +217,7 @@ class SenseBlock(ConceptBlock):
     def _do_tick(self, inputs: Dict[str, Any]) -> BlockResult:
         meas = inputs.get("measurement")
         if meas is None:
-            return BlockResult(
-                status=BlockStatus.FAILURE, message="No measurement provided"
-            )
+            return BlockResult(status=BlockStatus.FAILURE, message="No measurement provided")
 
         if self._dim == 1:
             est = self._filter.update(float(meas))

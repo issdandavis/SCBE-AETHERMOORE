@@ -99,9 +99,7 @@ class TestExecute:
         head = HydraHead(ai_type="claude", model="sonnet")
         await head.connect(spine)
 
-        result = await head.execute(
-            {"action": "remember", "key": "color", "value": "red"}
-        )
+        result = await head.execute({"action": "remember", "key": "color", "value": "red"})
         assert result["success"] is True
 
         result = await head.execute({"action": "recall", "key": "color"})
@@ -202,9 +200,7 @@ class TestPollyPad:
 
     def test_get_loadout(self):
         head = HydraHead()
-        head.equip_polly_pad(
-            {"id": "pad-001", "loadout": [{"id": "code_review", "name": "Code Review"}]}
-        )
+        head.equip_polly_pad({"id": "pad-001", "loadout": [{"id": "code_review", "name": "Code Review"}]})
         loadout = head.get_loadout()
         assert len(loadout) == 1
         assert loadout[0]["id"] == "code_review"

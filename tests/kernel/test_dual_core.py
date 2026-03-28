@@ -52,26 +52,18 @@ class TestKernelStack:
 
 class TestMemoryEntry:
     def test_hash_chain(self):
-        e1 = MemoryEntry(
-            content="first", layer=MemoryLayer.SESSION, prev_hash="genesis"
-        )
+        e1 = MemoryEntry(content="first", layer=MemoryLayer.SESSION, prev_hash="genesis")
         e2 = MemoryEntry(content="second", layer=MemoryLayer.SESSION, prev_hash=e1.hash)
         assert e1.hash != e2.hash
         assert e2.prev_hash == e1.hash
 
     def test_hash_deterministic(self):
-        e1 = MemoryEntry(
-            content="test", layer=MemoryLayer.WORKING, timestamp=1000.0, prev_hash="abc"
-        )
-        e2 = MemoryEntry(
-            content="test", layer=MemoryLayer.WORKING, timestamp=1000.0, prev_hash="abc"
-        )
+        e1 = MemoryEntry(content="test", layer=MemoryLayer.WORKING, timestamp=1000.0, prev_hash="abc")
+        e2 = MemoryEntry(content="test", layer=MemoryLayer.WORKING, timestamp=1000.0, prev_hash="abc")
         assert e1.hash == e2.hash
 
     def test_to_dict(self):
-        e = MemoryEntry(
-            content="hello", layer=MemoryLayer.IDENTITY, category="greeting"
-        )
+        e = MemoryEntry(content="hello", layer=MemoryLayer.IDENTITY, category="greeting")
         d = e.to_dict()
         assert d["content"] == "hello"
         assert d["layer"] == "IDENTITY"

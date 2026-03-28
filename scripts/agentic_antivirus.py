@@ -171,7 +171,7 @@ def _build_chunk_map(
     ring_counts = {k: 0 for k in ["core", "outer", "blocked"]}
     phase_counts = {k: 0 for k in TONGUES}
 
-    for path, file_findings in by_path.items():
+    for _path, file_findings in by_path.items():
         for finding in file_findings:
             phase_counts[finding.phase] = phase_counts.get(finding.phase, 0) + 1
 

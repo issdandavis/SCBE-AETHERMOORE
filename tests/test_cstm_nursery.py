@@ -14,9 +14,7 @@ try:
 except ImportError:
     cstm_nursery = None
 
-pytestmark = pytest.mark.skipif(
-    cstm_nursery is None, reason="cstm_nursery module not importable"
-)
+pytestmark = pytest.mark.skipif(cstm_nursery is None, reason="cstm_nursery module not importable")
 
 
 SEED_STORY = Path("training-data/hf-digimon-egg/cstm_seed_story.json")

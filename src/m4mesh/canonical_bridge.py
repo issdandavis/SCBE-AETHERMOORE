@@ -36,9 +36,7 @@ def run_governance_pipeline(
     _ensure_layout_inputs(tongue_position, tongue_phase)
     ops = mesh_ops or build_phdm_mesh_ops(device=tongue_position.device)
     if ops.N != tongue_position.shape[0]:
-        raise ValueError(
-            f"Mesh node count mismatch: ops.N={ops.N}, input={tongue_position.shape[0]}"
-        )
+        raise ValueError(f"Mesh node count mismatch: ops.N={ops.N}, input={tongue_position.shape[0]}")
 
     subsystem = M4Subsystem.build(ops, LAYOUT, manifest)
     result = subsystem.run(C=tongue_position, K=tongue_phase, tie_kb=tie_kb)

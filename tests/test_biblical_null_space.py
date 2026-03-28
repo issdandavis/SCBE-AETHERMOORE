@@ -32,9 +32,7 @@ class CovenantProbe:
     pattern: str  # genesis_control, witness, sanctuary, covenant, sabbath, invitation
     prompt: str
     ideal_contains: List[str]  # Keywords the ideal response should contain
-    anti_contains: List[
-        str
-    ]  # Keywords indicating the null-space is active (pattern absent)
+    anti_contains: List[str]  # Keywords indicating the null-space is active (pattern absent)
     description: str
 
 
@@ -744,9 +742,7 @@ class TestProbeStructure:
     def test_scoring_null_space(self):
         """A response with zero concept hits scores 0 (null-space active)."""
         probe = PROBES[0]
-        result = score_response(
-            probe, "The system should monitor logs and check performance."
-        )
+        result = score_response(probe, "The system should monitor logs and check performance.")
         assert result["score"] == 0
 
     def test_scoring_full_recognition(self):

@@ -74,7 +74,7 @@ class TestSacredTongueComprehensive:
     # Test 1: All tongues have exactly 256 unique tokens
     def test_01_all_tongues_256_unique_tokens(self):
         """A1: Each tongue must have exactly 256 unique tokens (16×16)."""
-        for code, tongue in TONGUES.items():
+        for code, _tongue in TONGUES.items():
             tokenizer = SacredTongueTokenizer(code)
             tokens = set()
             for b in range(256):
@@ -147,16 +147,10 @@ class TestSacredTongueComprehensive:
         test_data = b"\x42"
 
         # Verify tongue assignments
-        assert "ko:" in encode_to_spelltext(
-            test_data, "nonce"
-        ), "Nonce should use Kor'aelin"
+        assert "ko:" in encode_to_spelltext(test_data, "nonce"), "Nonce should use Kor'aelin"
         assert "av:" in encode_to_spelltext(test_data, "aad"), "AAD should use Avali"
-        assert "ru:" in encode_to_spelltext(
-            test_data, "salt"
-        ), "Salt should use Runethic"
-        assert "ca:" in encode_to_spelltext(
-            test_data, "ct"
-        ), "Ciphertext should use Cassisivadan"
+        assert "ru:" in encode_to_spelltext(test_data, "salt"), "Salt should use Runethic"
+        assert "ca:" in encode_to_spelltext(test_data, "ct"), "Ciphertext should use Cassisivadan"
         assert "dr:" in encode_to_spelltext(test_data, "tag"), "Tag should use Draumric"
 
     # Test 9: Unicode safety
@@ -580,9 +574,7 @@ class TestHKDFKeyDerivation:
                     info = os.urandom(info_len) if info_len > 0 else b""
 
                     key = derive_key(master, salt, info)
-                    assert (
-                        len(key) == 32
-                    ), f"Failed for sizes {master_len}/{salt_len}/{info_len}"
+                    assert len(key) == 32, f"Failed for sizes {master_len}/{salt_len}/{info_len}"
 
     # Test 49: SCBE-specific context strings
     def test_49_scbe_context_strings(self):
@@ -600,9 +592,7 @@ class TestHKDFKeyDerivation:
         keys = [derive_key(master, salt, ctx) for ctx in contexts]
 
         # All keys should be unique
-        assert len(set(keys)) == len(
-            contexts
-        ), "Context strings not producing unique keys"
+        assert len(set(keys)) == len(contexts), "Context strings not producing unique keys"
 
     # Test 50: Long info string
     def test_50_long_info_string(self):
@@ -992,9 +982,7 @@ class TestSS1BlobFormat:
         ct = os.urandom(64)
         tag = os.urandom(16)
 
-        blob = format_ss1_blob(
-            kid="k01", aad="test", salt=salt, nonce=nonce, ciphertext=ct, tag=tag
-        )
+        blob = format_ss1_blob(kid="k01", aad="test", salt=salt, nonce=nonce, ciphertext=ct, tag=tag)
 
         parsed = parse_ss1_blob(blob)
 
@@ -1097,9 +1085,7 @@ class TestSS1BlobFormat:
         ct = bytes(range(256))
         tag = bytes(range(16))
 
-        blob = format_ss1_blob(
-            kid="k01", aad="test", salt=salt, nonce=nonce, ciphertext=ct, tag=tag
-        )
+        blob = format_ss1_blob(kid="k01", aad="test", salt=salt, nonce=nonce, ciphertext=ct, tag=tag)
 
         parsed = parse_ss1_blob(blob)
 
@@ -1445,9 +1431,7 @@ class TestPropertyBased:
     @settings(max_examples=30)
     def test_109_ss1_blob_format_property(self, salt, nonce, ct, tag):
         """SS1 blob format should roundtrip any valid components."""
-        blob = format_ss1_blob(
-            kid="k01", aad="test", salt=salt, nonce=nonce, ciphertext=ct, tag=tag
-        )
+        blob = format_ss1_blob(kid="k01", aad="test", salt=salt, nonce=nonce, ciphertext=ct, tag=tag)
 
         parsed = parse_ss1_blob(blob)
 
@@ -1521,9 +1505,7 @@ class TestIntegrationStress:
         """Multiple instances should work independently."""
         master = os.urandom(32)
 
-        instances = [
-            SpiralSealSS1(master_secret=master, kid=f"k{i}") for i in range(10)
-        ]
+        instances = [SpiralSealSS1(master_secret=master, kid=f"k{i}") for i in range(10)]
 
         sealed_data = []
         for i, ss in enumerate(instances):

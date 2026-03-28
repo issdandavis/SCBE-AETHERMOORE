@@ -4,9 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 
-MODULE_PATH = (
-    Path(__file__).resolve().parent.parent / "scripts" / "build_offload_sft_records.py"
-)
+MODULE_PATH = Path(__file__).resolve().parent.parent / "scripts" / "build_offload_sft_records.py"
 SPEC = importlib.util.spec_from_file_location("build_offload_sft_records", MODULE_PATH)
 MODULE = importlib.util.module_from_spec(SPEC)
 assert SPEC and SPEC.loader
@@ -48,14 +46,10 @@ def test_build_sft_records_filters_empty_and_dedupes(tmp_path: Path) -> None:
         json.dumps(row_keep) + "\n" + json.dumps(row_skip) + "\n",
         encoding="utf-8",
     )
-    (run_b / "training_rows.jsonl").write_text(
-        json.dumps(row_duplicate) + "\n", encoding="utf-8"
-    )
+    (run_b / "training_rows.jsonl").write_text(json.dumps(row_duplicate) + "\n", encoding="utf-8")
 
     output_path = tmp_path / "sft_multi_agent_offload.jsonl"
-    summary = MODULE.build_sft_records(
-        run_root=run_root, output_path=output_path, min_output_chars=5
-    )
+    summary = MODULE.build_sft_records(run_root=run_root, output_path=output_path, min_output_chars=5)
 
     lines = output_path.read_text(encoding="utf-8").splitlines()
     assert len(lines) == 1

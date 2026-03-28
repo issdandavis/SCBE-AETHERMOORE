@@ -12,9 +12,7 @@ from src.harmonic.state21_product_metric import (
 )
 
 
-def fisher_rao_distance_squared(
-    p: Iterable[float], q: Iterable[float], eps: float = 1e-12
-) -> float:
+def fisher_rao_distance_squared(p: Iterable[float], q: Iterable[float], eps: float = 1e-12) -> float:
     """Squared Fisher-Rao distance on probability simplex.
 
     d_FR(p, q) = 2 * arccos(sum_i sqrt(p_i q_i))
@@ -22,9 +20,7 @@ def fisher_rao_distance_squared(
     p_arr = np.asarray(list(p), dtype=float)
     q_arr = np.asarray(list(q), dtype=float)
     if p_arr.shape != q_arr.shape:
-        raise ValueError(
-            f"Fisher-Rao vectors must match shape, got {p_arr.shape} vs {q_arr.shape}"
-        )
+        raise ValueError(f"Fisher-Rao vectors must match shape, got {p_arr.shape} vs {q_arr.shape}")
     if p_arr.ndim != 1 or p_arr.size == 0:
         raise ValueError("Fisher-Rao vectors must be non-empty 1D arrays")
     if np.any(p_arr < 0) or np.any(q_arr < 0):
@@ -69,9 +65,7 @@ def computeDsSquared(
     u_arr = np.asarray(list(u), dtype=float)
     v_arr = np.asarray(list(v), dtype=float)
     if u_arr.shape != v_arr.shape:
-        raise ValueError(
-            f"u and v must have identical shape, got {u_arr.shape} vs {v_arr.shape}"
-        )
+        raise ValueError(f"u and v must have identical shape, got {u_arr.shape} vs {v_arr.shape}")
     if u_arr.ndim != 1:
         raise ValueError("u and v must be 1D vectors")
 
@@ -84,9 +78,7 @@ def computeDsSquared(
     d_fisher_sq = 0.0
     if fisher_p is not None or fisher_q is not None:
         if fisher_p is None or fisher_q is None:
-            raise ValueError(
-                "fisher_p and fisher_q must either both be set or both be omitted"
-            )
+            raise ValueError("fisher_p and fisher_q must either both be set or both be omitted")
         d_fisher_sq = fisher_rao_distance_squared(fisher_p, fisher_q, eps=eps)
 
     total = float(d_h_sq_scaled + float(fisher_weight) * d_fisher_sq)

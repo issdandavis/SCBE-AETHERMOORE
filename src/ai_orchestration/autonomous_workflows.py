@@ -192,8 +192,7 @@ class PersistentQueue:
         return [
             wf
             for wf in self.queue.values()
-            if wf.status
-            in (WorkflowState.QUEUED, WorkflowState.RUNNING, WorkflowState.WAITING)
+            if wf.status in (WorkflowState.QUEUED, WorkflowState.RUNNING, WorkflowState.WAITING)
         ]
 
 
@@ -253,11 +252,7 @@ class AgentHandoffManager:
 
     def get_pending_handoffs(self, agent_id: str) -> List[Dict[str, Any]]:
         """Get pending handoffs for an agent."""
-        return [
-            h
-            for h in self.active_handoffs.values()
-            if h["to_agent"] == agent_id and h["status"] == "pending"
-        ]
+        return [h for h in self.active_handoffs.values() if h["to_agent"] == agent_id and h["status"] == "pending"]
 
 
 class WatchdogMonitor:
@@ -294,9 +289,7 @@ class WatchdogMonitor:
         threshold = timedelta(seconds=self.stuck_threshold)
 
         return [
-            agent_id
-            for agent_id, last_heartbeat in self.agent_heartbeats.items()
-            if now - last_heartbeat > threshold
+            agent_id for agent_id, last_heartbeat in self.agent_heartbeats.items() if now - last_heartbeat > threshold
         ]
 
     def get_stuck_workflows(self) -> List[str]:
@@ -305,9 +298,7 @@ class WatchdogMonitor:
         threshold = timedelta(seconds=self.stuck_threshold)
 
         return [
-            wf_id
-            for wf_id, last_checkpoint in self.workflow_checkpoints.items()
-            if now - last_checkpoint > threshold
+            wf_id for wf_id, last_checkpoint in self.workflow_checkpoints.items() if now - last_checkpoint > threshold
         ]
 
     async def monitor_loop(self):
@@ -474,9 +465,7 @@ class AutonomousWorkflowEngine:
             try:
                 # Get pending workflows
                 pending = self.queue.get_pending()
-                running_count = sum(
-                    1 for wf in pending if wf.status == WorkflowState.RUNNING
-                )
+                running_count = sum(1 for wf in pending if wf.status == WorkflowState.RUNNING)
 
                 # Start new workflows if capacity available
                 if running_count < self.max_concurrent:
@@ -506,8 +495,7 @@ class AutonomousWorkflowEngine:
                 ready_steps = [
                     step
                     for step in workflow.steps
-                    if step.status == WorkflowState.QUEUED
-                    and all(dep in completed_steps for dep in step.depends_on)
+                    if step.status == WorkflowState.QUEUED and all(dep in completed_steps for dep in step.depends_on)
                 ]
 
                 if not ready_steps:
@@ -523,10 +511,7 @@ class AutonomousWorkflowEngine:
                     continue
 
                 # Execute ready steps in parallel
-                tasks = [
-                    self._execute_step(workflow, step, step_outputs)
-                    for step in ready_steps
-                ]
+                tasks = [self._execute_step(workflow, step, step_outputs) for step in ready_steps]
                 results = await asyncio.gather(*tasks, return_exceptions=True)
 
                 # Process results
@@ -616,9 +601,7 @@ class AutonomousWorkflowEngine:
                 if attempt < step.max_retries - 1:
                     await asyncio.sleep(step.retry_delay_seconds * (2**attempt))
                 else:
-                    await self._handle_step_failure(
-                        workflow, step, f"Timeout after {step.timeout_seconds}s"
-                    )
+                    await self._handle_step_failure(workflow, step, f"Timeout after {step.timeout_seconds}s")
 
             except Exception as e:
                 step.retry_count += 1
@@ -631,15 +614,13 @@ class AutonomousWorkflowEngine:
 
     async def _find_agent(self, role: str) -> Optional[Any]:
         """Find an available agent for a role."""
-        for agent_id, agent in self.agents.items():
+        for _agent_id, agent in self.agents.items():
             if hasattr(agent, "role") and agent.role.value == role:
                 if hasattr(agent, "status") and agent.status.value == "idle":
                     return agent
         return None
 
-    async def _handle_step_failure(
-        self, workflow: AutonomousWorkflow, step: WorkflowStep, error: str
-    ):
+    async def _handle_step_failure(self, workflow: AutonomousWorkflow, step: WorkflowStep, error: str):
         """Handle step failure based on recovery action."""
         step.error = error
 
@@ -703,12 +684,8 @@ class AutonomousWorkflowEngine:
             "workflows": {
                 "total": len(self.queue.queue),
                 "queued": sum(1 for wf in pending if wf.status == WorkflowState.QUEUED),
-                "running": sum(
-                    1 for wf in pending if wf.status == WorkflowState.RUNNING
-                ),
-                "waiting": sum(
-                    1 for wf in pending if wf.status == WorkflowState.WAITING
-                ),
+                "running": sum(1 for wf in pending if wf.status == WorkflowState.RUNNING),
+                "waiting": sum(1 for wf in pending if wf.status == WorkflowState.WAITING),
             },
             "agents": {
                 "registered": len(self.agents),
@@ -727,9 +704,7 @@ class WorkflowBuilder:
     """Fluent builder for creating workflows."""
 
     def __init__(self, name: str, description: str = ""):
-        self.workflow = AutonomousWorkflow(
-            id=str(uuid.uuid4()), name=name, description=description, steps=[]
-        )
+        self.workflow = AutonomousWorkflow(id=str(uuid.uuid4()), name=name, description=description, steps=[])
         self._step_counter = 0
 
     def add_step(

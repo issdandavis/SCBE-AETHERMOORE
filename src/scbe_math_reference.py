@@ -161,13 +161,7 @@ def omega_gate(
     def c01(x: float) -> float:
         return max(0.0, min(1.0, float(x)))
 
-    return (
-        c01(pqc_valid)
-        * c01(harm_score)
-        * c01(drift_factor)
-        * c01(triadic_stable)
-        * c01(spectral_score)
-    )
+    return c01(pqc_valid) * c01(harm_score) * c01(drift_factor) * c01(triadic_stable) * c01(spectral_score)
 
 
 def omega_decision(omega: float) -> str:
@@ -219,6 +213,4 @@ def full_chain(
     dtri = triadic_risk(I_fast, I_memory, I_governance)
     omega = omega_gate(pqc_valid, harm, drift_factor, triadic_stable, spectral_score)
     decision = omega_decision(omega)
-    return ChainOutputs(
-        d=d, x=x, H_eff=H, harm=harm, d_tri=dtri, omega=omega, decision=decision
-    )
+    return ChainOutputs(d=d, x=x, H_eff=H, harm=harm, d_tri=dtri, omega=omega, decision=decision)

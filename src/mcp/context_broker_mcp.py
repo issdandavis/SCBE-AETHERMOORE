@@ -191,13 +191,7 @@ TIER_THRESHOLDS = {
 MEMORY_DIR = Path(
     os.environ.get(
         "MEMORY_DIR",
-        str(
-            Path.home()
-            / ".claude"
-            / "projects"
-            / "C--Users-issda-SCBE-AETHERMOORE"
-            / "memory"
-        ),
+        str(Path.home() / ".claude" / "projects" / "C--Users-issda-SCBE-AETHERMOORE" / "memory"),
     )
 )
 CLAUDE_MD = ROOT / "CLAUDE.md"
@@ -607,9 +601,7 @@ async def context_retrieve(topic: str, memory_type: str = "all") -> str:
         "idempotentHint": False,
     },
 )
-async def memory_update(
-    name: str, content: str, memory_type: str = "project", description: str = ""
-) -> str:
+async def memory_update(name: str, content: str, memory_type: str = "project", description: str = "") -> str:
     """Write a new memory entry or update an existing one.
 
     Args:
@@ -656,9 +648,7 @@ type: {memory_type}
         "idempotentHint": False,
     },
 )
-async def session_summarize(
-    summary: str, decisions: str = "", blockers: str = "", next_steps: str = ""
-) -> str:
+async def session_summarize(summary: str, decisions: str = "", blockers: str = "", next_steps: str = "") -> str:
     """Write a session summary to the journal for persistence across sessions.
 
     Call this at the end of a session to preserve context for next time.

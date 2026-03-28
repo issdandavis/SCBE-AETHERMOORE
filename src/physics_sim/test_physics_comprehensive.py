@@ -29,9 +29,7 @@ def assert_close(actual, expected, tol=0.01, msg=""):
     """Assert values are within tolerance."""
     if abs(expected) > 1e-10:
         rel_error = abs(actual - expected) / abs(expected)
-        assert (
-            rel_error < tol
-        ), f"{msg}: Expected {expected}, got {actual} (rel error: {rel_error:.2%})"
+        assert rel_error < tol, f"{msg}: Expected {expected}, got {actual} (rel error: {rel_error:.2%})"
     else:
         assert abs(actual - expected) < tol, f"{msg}: Expected {expected}, got {actual}"
 
@@ -185,9 +183,7 @@ def test_orbital():
     transfer = hohmann_transfer(r1, r2, MU_EARTH)
     # Total Delta_V for LEO->GEO ~ 3.9 km/s
     assert_close(transfer["delta_v_total_m_s"] / 1000, 3.9, 0.1, "Hohmann Delta_V")
-    print(
-        f"  [OK] Hohmann LEO->GEO: Delta_V={transfer['delta_v_total_m_s']/1000:.2f} km/s"
-    )
+    print(f"  [OK] Hohmann LEO->GEO: Delta_V={transfer['delta_v_total_m_s']/1000:.2f} km/s")
 
     # Test 5: Comprehensive orbital mechanics
     orbit = orbital_mechanics(
@@ -198,9 +194,7 @@ def test_orbital():
     )
     assert "period_min" in orbit
     assert "escape_velocity_m_s" in orbit
-    print(
-        f"  [OK] Comprehensive orbit: T={orbit['period_min']:.1f} min, e={orbit['eccentricity']:.4f}"
-    )
+    print(f"  [OK] Comprehensive orbit: T={orbit['period_min']:.1f} min, e={orbit['eccentricity']:.4f}")
 
     print("\n[OK] All orbital mechanics tests passed")
 
@@ -241,14 +235,10 @@ def test_nuclear():
     print(f"  [OK] U-235 fission: {fission['total_release']:.0f} MeV")
 
     # Test 4: Nuclear physics comprehensive
-    nuc = nuclear_physics(
-        {"nuclide": "U-235", "initial_nuclei": 1e20, "time": 1e9}
-    )  # 1 billion seconds
+    nuc = nuclear_physics({"nuclide": "U-235", "initial_nuclei": 1e20, "time": 1e9})  # 1 billion seconds
     assert "binding_energy_MeV" in nuc
     assert "decay_constant_per_s" in nuc
-    print(
-        f"  [OK] U-235: B={nuc['binding_energy_MeV']:.1f} MeV, lambda={nuc['decay_constant_per_s']:.2e}/s"
-    )
+    print(f"  [OK] U-235: B={nuc['binding_energy_MeV']:.1f} MeV, lambda={nuc['decay_constant_per_s']:.2e}/s")
 
     print("\n[OK] All nuclear physics tests passed")
 
@@ -295,10 +285,7 @@ def test_statistical():
     # Approximate integral by summing
     dv = 10
     v_max = 2000
-    total = sum(
-        maxwell_boltzmann_speed_distribution(v, m_N2, T) * dv
-        for v in range(1, v_max, dv)
-    )
+    total = sum(maxwell_boltzmann_speed_distribution(v, m_N2, T) * dv for v in range(1, v_max, dv))
     assert_close(total, 1.0, 0.05, "MB distribution normalization")
     print(f"  [OK] MB distribution integral: {total:.4f}")
 
@@ -350,9 +337,7 @@ def test_waves_optics():
     lens = thin_lens_equation(f=0.1, d_o=0.3)  # f=10cm, object at 30cm
     # 1/di = 1/0.1 - 1/0.3 = 10 - 3.33 = 6.67, di = 0.15m
     assert_close(lens["image_distance_m"], 0.15, 0.01, "Thin lens image distance")
-    print(
-        f"  [OK] Thin lens: d_o=30cm, f=10cm -> d_i={lens['image_distance_m']*100:.0f}cm"
-    )
+    print(f"  [OK] Thin lens: d_o=30cm, f=10cm -> d_i={lens['image_distance_m']*100:.0f}cm")
 
     # Test 4: Young's double slit fringe spacing
     # lambda=500nm, d=0.1mm, L=1m -> Delta_y=5mm
@@ -420,13 +405,9 @@ def test_numerical():
     def sphere(x):
         return sum(xi**2 for xi in x)
 
-    best_pos, best_val, _ = particle_swarm_optimization(
-        sphere, [(-5, 5), (-5, 5)], n_particles=20, max_iter=50
-    )
+    best_pos, best_val, _ = particle_swarm_optimization(sphere, [(-5, 5), (-5, 5)], n_particles=20, max_iter=50)
     assert_close(best_val, 0.0, 0.1, "PSO optimization")
-    print(
-        f"  [OK] PSO minimum: f({best_pos[0]:.4f}, {best_pos[1]:.4f}) = {best_val:.6f}"
-    )
+    print(f"  [OK] PSO minimum: f({best_pos[0]:.4f}, {best_pos[1]:.4f}) = {best_val:.6f}")
 
     print("\n[OK] All numerical methods tests passed")
 
@@ -462,9 +443,7 @@ def test_simulator():
     print(f"  [OK] Projectile range: {range_x:.1f}m (expected ~255m)")
 
     # Test 2: Energy conservation in orbital simulation
-    sim2 = create_orbital_simulation(
-        central_mass=5.972e24, orbiter_mass=1000, orbital_radius=7e6, eccentricity=0.1
-    )
+    sim2 = create_orbital_simulation(central_mass=5.972e24, orbiter_mass=1000, orbital_radius=7e6, eccentricity=0.1)
 
     E_initial = sim2.total_energy()
     for _ in range(1000):
@@ -528,18 +507,14 @@ def test_core_physics():
     print(f"  [OK] Hydrogen ground state: {result['hydrogen_energy_eV']:.1f} eV")
 
     # Test 3: Electromagnetism - Coulomb
-    result = electromagnetism(
-        {"charge1": ELEMENTARY_CHARGE, "charge2": ELEMENTARY_CHARGE, "distance": 1e-10}
-    )
+    result = electromagnetism({"charge1": ELEMENTARY_CHARGE, "charge2": ELEMENTARY_CHARGE, "distance": 1e-10})
     assert result["coulomb_force"] > 0, "Like charges repel"
     print(f"  [OK] Coulomb force: {result['coulomb_force']:.2e}N (repulsive)")
 
     # Test 4: Thermodynamics - Carnot efficiency
     result = thermodynamics({"hot_temperature": 500, "cold_temperature": 300})
     assert_close(result["carnot_efficiency"], 0.4, 0.01, "Carnot efficiency")
-    print(
-        f"  [OK] Carnot efficiency (500K->300K): {result['carnot_efficiency']*100:.0f}%"
-    )
+    print(f"  [OK] Carnot efficiency (500K->300K): {result['carnot_efficiency']*100:.0f}%")
 
     # Test 5: Relativity - electron rest mass energy
     result = relativity({"mass": ELECTRON_MASS})

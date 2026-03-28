@@ -78,9 +78,7 @@ class TestChemistryStyleEquilibrium:
     def test_chemical_potential_gap_vanishes_at_equilibrium(self) -> None:
         activities = TernaryActivities(positive=2.0, neutral=1.0, negative=5.0)
         sigma_eq = equilibrium_sigma(activities, coupling=1.75)
-        assert chemical_potential_gap(
-            sigma_eq, activities, coupling=1.75
-        ) == pytest.approx(0.0)
+        assert chemical_potential_gap(sigma_eq, activities, coupling=1.75) == pytest.approx(0.0)
 
     def test_free_energy_is_minimized_at_equilibrium(self) -> None:
         activities = TernaryActivities(positive=2.0, neutral=1.0, negative=2.0)

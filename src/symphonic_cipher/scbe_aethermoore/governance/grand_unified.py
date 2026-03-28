@@ -80,9 +80,7 @@ class ManifoldController:
     Enforces the 'Grand Unified Equation' on the Riemannian manifold.
     """
 
-    def __init__(
-        self, R_major: float = 10.0, r_minor: float = 2.0, epsilon: float = 1.5
-    ):
+    def __init__(self, R_major: float = 10.0, r_minor: float = 2.0, epsilon: float = 1.5):
         self.R = R_major
         self.r = r_minor
         self.epsilon = epsilon
@@ -105,9 +103,7 @@ class ManifoldController:
         diff = np.abs(a1 - a2)
         return np.minimum(diff, 2 * np.pi - diff)
 
-    def geometric_divergence(
-        self, p1: Tuple[float, float], p2: Tuple[float, float]
-    ) -> float:
+    def geometric_divergence(self, p1: Tuple[float, float], p2: Tuple[float, float]) -> float:
         """
         Computes Riemannian distance on the Torus.
         ds^2 = (R + r cos theta)^2 dphi^2 + r^2 dtheta^2
@@ -124,9 +120,7 @@ class ManifoldController:
         squared_distance = g_phi_phi * (d_phi**2) + g_theta_theta * (d_theta**2)
         return np.sqrt(squared_distance)
 
-    def validate_write(
-        self, previous_fact: Dict[str, Any], new_fact: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def validate_write(self, previous_fact: Dict[str, Any], new_fact: Dict[str, Any]) -> Dict[str, Any]:
         """
         Validates if a state transition is geometrically permissible (the 'Snap' Protocol).
         """
@@ -236,9 +230,7 @@ def quantum_evolution(q0: complex, t: float, H: float = 1.0) -> complex:
 # =============================================================================
 
 
-def governance_9d(
-    xi: np.ndarray, intent_val: float, poly_topology: Dict[str, int]
-) -> Tuple[str, str]:
+def governance_9d(xi: np.ndarray, intent_val: float, poly_topology: Dict[str, int]) -> Tuple[str, str]:
     """
     The Grand Unified Governance Function G(xi, i, poly).
     Evaluates the 9D state against all physical and information-theoretic bounds.
@@ -337,9 +329,7 @@ def demo():
     target_intent = 0.75
     wave = phase_modulated_intent(target_intent)
     recovered_intent = extract_phase(wave)
-    print(
-        f"[2] Audio Intent Modulation: Target={target_intent:.4f}, Recovered={recovered_intent:.4f}"
-    )
+    print(f"[2] Audio Intent Modulation: Target={target_intent:.4f}, Recovered={recovered_intent:.4f}")
 
     # 3. State Evolution (Time, Entropy, Quantum)
     tau_val = t
@@ -362,9 +352,7 @@ def demo():
     else:
         distance_val = write_result["divergence"]
 
-    print(
-        f"[4] Manifold Write Validation: {write_result['status']} (d={distance_val:.4f})"
-    )
+    print(f"[4] Manifold Write Validation: {write_result['status']} (d={distance_val:.4f})")
 
     # 6. Final Governance Decision
     # Simulating a closed polyhedral topology (e.g. Cube: V=8, E=12, F=6 -> 8-12+6 = 2)

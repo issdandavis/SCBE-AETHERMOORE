@@ -7,9 +7,7 @@ from pathlib import Path
 
 
 def _load_module():
-    module_path = (
-        Path(__file__).resolve().parents[1] / "scripts" / "publish" / "post_all.py"
-    )
+    module_path = Path(__file__).resolve().parents[1] / "scripts" / "publish" / "post_all.py"
     spec = importlib.util.spec_from_file_location("post_all_module", module_path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
@@ -81,9 +79,7 @@ def test_post_all_campaign_posts_dry_run(tmp_path: Path, monkeypatch):
         "_run_devto_publish",
         lambda *args, **kwargs: ("dry_run_ready", "devto ok"),
     )
-    monkeypatch.setattr(
-        module, "_run_hf_publish", lambda *args, **kwargs: ("dry_run_ready", "hf ok")
-    )
+    monkeypatch.setattr(module, "_run_hf_publish", lambda *args, **kwargs: ("dry_run_ready", "hf ok"))
     monkeypatch.setattr(
         module,
         "_run_github_publish_file",

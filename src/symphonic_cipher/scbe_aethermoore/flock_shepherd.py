@@ -130,10 +130,7 @@ class Sheep:
 
     @property
     def is_available(self) -> bool:
-        return (
-            self.state in (SheepState.ACTIVE, SheepState.IDLE)
-            and self.current_task is None
-        )
+        return self.state in (SheepState.ACTIVE, SheepState.IDLE) and self.current_task is None
 
     @property
     def health_label(self) -> str:
@@ -170,9 +167,7 @@ class Sheep:
             self.tasks_failed += 1
             self.degrade()
         self.current_task = None
-        self.error_rate = self.tasks_failed / max(
-            1, self.tasks_completed + self.tasks_failed
-        )
+        self.error_rate = self.tasks_failed / max(1, self.tasks_completed + self.tasks_failed)
 
 
 # ---------------------------------------------------------------------------
@@ -307,9 +302,7 @@ class Flock:
 
     def _select_best_agent(self, track: TrainingTrack) -> Optional[Sheep]:
         """Select the best available agent for a track."""
-        candidates = [
-            s for s in self.sheep.values() if s.is_available and s.track == track
-        ]
+        candidates = [s for s in self.sheep.values() if s.is_available and s.track == track]
         if not candidates:
             # Fallback: any available agent
             candidates = [s for s in self.sheep.values() if s.is_available]
@@ -336,11 +329,7 @@ class Flock:
 
         Returns consensus decision and vote breakdown.
         """
-        validators = [
-            s
-            for s in self.sheep.values()
-            if s.role == SheepRole.VALIDATOR and s.state == SheepState.ACTIVE
-        ]
+        validators = [s for s in self.sheep.values() if s.role == SheepRole.VALIDATOR and s.state == SheepState.ACTIVE]
 
         if not validators:
             return {
@@ -396,9 +385,7 @@ class Flock:
         isolated = sum(1 for s in self.sheep.values() if s.state == SheepState.ISOLATED)
         frozen = sum(1 for s in self.sheep.values() if s.state == SheepState.FROZEN)
 
-        avg_coherence = (
-            sum(s.coherence for s in self.sheep.values()) / total if total > 0 else 0.0
-        )
+        avg_coherence = sum(s.coherence for s in self.sheep.values()) / total if total > 0 else 0.0
 
         healthy_count = sum(1 for s in self.sheep.values() if s.is_healthy)
 
@@ -408,9 +395,7 @@ class Flock:
             agents = [s for s in self.sheep.values() if s.track == track]
             tracks[track.value] = {
                 "count": len(agents),
-                "avg_coherence": (
-                    sum(a.coherence for a in agents) / len(agents) if agents else 0.0
-                ),
+                "avg_coherence": (sum(a.coherence for a in agents) / len(agents) if agents else 0.0),
             }
 
         return {
@@ -443,10 +428,7 @@ class Flock:
             "Tracks:",
         ]
         for track_name, info in h["tracks"].items():
-            lines.append(
-                f"  {track_name}: {info['count']} agents, "
-                f"coherence={info['avg_coherence']:.3f}"
-            )
+            lines.append(f"  {track_name}: {info['count']} agents, " f"coherence={info['avg_coherence']:.3f}")
 
         # Per-agent detail
         if self.sheep:

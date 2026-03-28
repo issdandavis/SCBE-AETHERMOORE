@@ -96,9 +96,7 @@ def _stripe_request(
     encoded_data = None
     if form_data:
         encoded_data = "&".join(
-            f"{urllib.request.quote(k)}={urllib.request.quote(str(v))}"
-            for k, v in form_data.items()
-            if v is not None
+            f"{urllib.request.quote(k)}={urllib.request.quote(str(v))}" for k, v in form_data.items() if v is not None
         ).encode("utf-8")
 
     req = urllib.request.Request(
@@ -150,9 +148,7 @@ def _verify_stripe_signature(payload: bytes, sig_header: str) -> bool:
 
     # Compute expected signature
     signed_payload = f"{timestamp}.".encode("utf-8") + payload
-    expected = hmac.new(
-        secret.encode("utf-8"), signed_payload, hashlib.sha256
-    ).hexdigest()
+    expected = hmac.new(secret.encode("utf-8"), signed_payload, hashlib.sha256).hexdigest()
 
     return hmac.compare_digest(expected, v1_sig)
 
@@ -204,10 +200,7 @@ async def create_checkout(request: CheckoutRequest):
         raise HTTPException(400, f"Unknown plan: {request.plan}")
 
     base_url = os.getenv("SCBE_BILLING_BASE_URL", "http://localhost:8000").rstrip("/")
-    success_url = (
-        request.success_url
-        or f"{base_url}/billing/success?session_id={{CHECKOUT_SESSION_ID}}"
-    )
+    success_url = request.success_url or f"{base_url}/billing/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = request.cancel_url or f"{base_url}/billing/cancel"
 
     form_data: Dict[str, str] = {
@@ -304,9 +297,7 @@ def _handle_checkout_completed(session: Dict[str, Any]) -> None:
     customer_id = session.get("customer", "")
     plan_id = session.get("metadata", {}).get("scbe_plan", "starter")
     subscription_id = session.get("subscription", "")
-    email = session.get("customer_email") or session.get("customer_details", {}).get(
-        "email", ""
-    )
+    email = session.get("customer_email") or session.get("customer_details", {}).get("email", "")
 
     api_key = _generate_api_key()
     now = int(time.time())

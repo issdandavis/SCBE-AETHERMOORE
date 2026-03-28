@@ -170,18 +170,14 @@ class CymaticCone:
             "octree_leaves": oct_stats["leaf_count"],
             "occupied_voxels": oct_stats["occupied_voxels"],
             "node_explosion": round(
-                (oct_stats["node_count"] + oct_stats["leaf_count"])
-                / max(1, self._record_count),
+                (oct_stats["node_count"] + oct_stats["leaf_count"]) / max(1, self._record_count),
                 4,
             ),
             "compaction_score": round(
-                self._record_count
-                / max(1, oct_stats["node_count"] + oct_stats["leaf_count"]),
+                self._record_count / max(1, oct_stats["node_count"] + oct_stats["leaf_count"]),
                 6,
             ),
-            "unique_chladni_modes": len(
-                {(leaf.chladni_n, leaf.chladni_m) for leaf in self.leaves.values()}
-            ),
+            "unique_chladni_modes": len({(leaf.chladni_n, leaf.chladni_m) for leaf in self.leaves.values()}),
         }
 
 
@@ -306,9 +302,7 @@ class SemiSphereCone:
             "total_nodes": total_nodes,
             "node_explosion": round(total_nodes / max(1, total), 4),
             "compaction_score": round(total / max(1, total_nodes), 6),
-            "lattice_overlap_heat": round(
-                len(self.lattice.overlapping_cells()) / max(1, hemisphere_nodes), 4
-            ),
+            "lattice_overlap_heat": round(len(self.lattice.overlapping_cells()) / max(1, hemisphere_nodes), 4),
         }
 
 
@@ -434,9 +428,7 @@ class TongueRouter:
             "lattice_nodes": lat_nodes,
             "sphere_points": sph_points,
             "total_nodes": lat_nodes + sph_points,
-            "node_explosion": round(
-                (lat_nodes + sph_points) / max(1, self._record_count), 4
-            ),
+            "node_explosion": round((lat_nodes + sph_points) / max(1, self._record_count), 4),
             "lattice_compaction": round(self._record_count / max(1, lat_nodes), 6),
             "tongue_evenness": round(tongue_evenness, 4),
         }

@@ -182,7 +182,7 @@ class TestHFProviderInterface:
         from hydra.llm_providers import HuggingFaceProvider
 
         # stream() may be an async generator (yields tokens) rather than a coroutine
-        is_async = asyncio.iscoroutinefunction(
+        is_async = asyncio.iscoroutinefunction(HuggingFaceProvider.stream) or inspect.isasyncgenfunction(
             HuggingFaceProvider.stream
-        ) or inspect.isasyncgenfunction(HuggingFaceProvider.stream)
+        )
         assert is_async

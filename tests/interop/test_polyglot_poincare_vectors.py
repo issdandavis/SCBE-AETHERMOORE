@@ -24,9 +24,7 @@ def poincare_distance(u: list[float], v: list[float]) -> float:
 
 def _load_vectors() -> dict:
     root = Path(__file__).resolve().parents[2]
-    vector_path = (
-        root / "tests" / "interop" / "polyglot_vectors" / "poincare_distance.v1.json"
-    )
+    vector_path = root / "tests" / "interop" / "polyglot_vectors" / "poincare_distance.v1.json"
     return json.loads(vector_path.read_text(encoding="utf-8"))
 
 

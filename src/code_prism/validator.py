@@ -58,17 +58,9 @@ def validate_generated_code(source: str, language: str) -> List[ValidationIssue]
 
     if lang == "go":
         if "package " not in source:
-            issues.append(
-                ValidationIssue(
-                    code="go_missing_package", message="Missing package declaration."
-                )
-            )
+            issues.append(ValidationIssue(code="go_missing_package", message="Missing package declaration."))
         if "func " not in source:
-            issues.append(
-                ValidationIssue(
-                    code="go_missing_function", message="No Go function emitted."
-                )
-            )
+            issues.append(ValidationIssue(code="go_missing_function", message="No Go function emitted."))
         if not _balanced_braces(source, "{", "}"):
             issues.append(
                 ValidationIssue(
@@ -78,9 +70,5 @@ def validate_generated_code(source: str, language: str) -> List[ValidationIssue]
             )
         return issues
 
-    issues.append(
-        ValidationIssue(
-            code="unsupported_language", message=f"Unsupported language {language}."
-        )
-    )
+    issues.append(ValidationIssue(code="unsupported_language", message=f"Unsupported language {language}."))
     return issues

@@ -11,9 +11,7 @@ from .builder import CodePrismBuilder
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Code Prism transpilation scaffold.")
     parser.add_argument("--input", required=True, help="Source file to translate.")
-    parser.add_argument(
-        "--source-lang", required=True, help="Source language (python/typescript)."
-    )
+    parser.add_argument("--source-lang", required=True, help="Source language (python/typescript).")
     parser.add_argument(
         "--targets",
         required=True,

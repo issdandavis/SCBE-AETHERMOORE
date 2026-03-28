@@ -20,9 +20,7 @@ class TestComplexityScoring:
 
     def test_medium_task(self):
         router = OctoArmorRouter()
-        score = router.score_complexity(
-            "Summarize the main points of this article about AI safety"
-        )
+        score = router.score_complexity("Summarize the main points of this article about AI safety")
         assert score == TaskComplexity.MEDIUM
 
 
@@ -62,9 +60,7 @@ class TestModelSelection:
         assert prefs["KO"] == ModelProvider.SONNET
 
     def test_request_scoped_preference_override_wins(self):
-        router = OctoArmorRouter(
-            enabled_providers={provider: True for provider in ModelProvider}
-        )
+        router = OctoArmorRouter(enabled_providers={provider: True for provider in ModelProvider})
         model = router.select_model(
             TaskComplexity.LOW,
             role="KO",
@@ -128,14 +124,10 @@ class TestCascade:
         assert model.provider == ModelProvider.OPUS
 
     def test_all_limited_raises(self):
-        router = OctoArmorRouter(
-            enabled_providers={provider: True for provider in ModelProvider}
-        )
+        router = OctoArmorRouter(enabled_providers={provider: True for provider in ModelProvider})
         for p in ModelProvider:
             router.mark_rate_limited(p)
-        with pytest.raises(
-            RuntimeError, match="All models rate-limited or unavailable"
-        ):
+        with pytest.raises(RuntimeError, match="All models rate-limited or unavailable"):
             router.select_model(TaskComplexity.LOW, role="DR")
 
     def test_provider_status_reports_missing_env(self):
@@ -156,8 +148,6 @@ class TestCascade:
         assert status["haiku"]["available"] is False
 
     def test_provider_status_reports_huggingface_family(self):
-        router = OctoArmorRouter(
-            enabled_providers={provider: True for provider in ModelProvider}
-        )
+        router = OctoArmorRouter(enabled_providers={provider: True for provider in ModelProvider})
         status = router.provider_status_snapshot()
         assert status["huggingface"]["family"] == "huggingface"

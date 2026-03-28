@@ -48,12 +48,8 @@ def _get_mesh():
 
 class IngestRequest(BaseModel):
     content: str = Field(..., description="The concept/knowledge to ingest")
-    label: Optional[str] = Field(
-        None, description="Short label (defaults to first 100 chars)"
-    )
-    node_type: str = Field(
-        "CONCEPT", description="EMOTION|LITERARY|PROVERB|CONCEPT|SOURCE|TONGUE"
-    )
+    label: Optional[str] = Field(None, description="Short label (defaults to first 100 chars)")
+    node_type: str = Field("CONCEPT", description="EMOTION|LITERARY|PROVERB|CONCEPT|SOURCE|TONGUE")
     connect_to: Optional[List[str]] = Field(None, description="Node IDs to connect to")
 
 

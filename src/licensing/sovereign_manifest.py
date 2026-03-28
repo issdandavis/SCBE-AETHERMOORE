@@ -179,11 +179,7 @@ class SovereignManifest:
     @property
     def deployment_ready(self) -> bool:
         """Whether this manifest allows deployment."""
-        return (
-            self.license_valid
-            and self.air_gap_approved
-            and self.compliance_score >= 0.8
-        )
+        return self.license_valid and self.air_gap_approved and self.compliance_score >= 0.8
 
 
 # ── Manifest Generator ─────────────────────────────────────────────────────
@@ -239,9 +235,7 @@ def generate_sovereign_manifest(
 
     # ── 1. Validate license ──────────────────────────────────────────────
 
-    validation = validate_license_key(
-        license_key, signing_secret, current_decisions_this_month
-    )
+    validation = validate_license_key(license_key, signing_secret, current_decisions_this_month)
 
     warnings: List[str] = list(validation.warnings)
 
@@ -249,8 +243,7 @@ def generate_sovereign_manifest(
     claims = license_key.claims
     if not claims.air_gap_approved:
         warnings.append(
-            "License does not include air-gap approval. "
-            "Sovereign deployment requires air_gap_approved=True."
+            "License does not include air-gap approval. " "Sovereign deployment requires air_gap_approved=True."
         )
 
     # Check tier compatibility with environment
@@ -258,9 +251,7 @@ def generate_sovereign_manifest(
         LicenseTier.OEM.value,
         LicenseTier.ENTERPRISE.value,
     ):
-        warnings.append(
-            f"SCIF deployment requires OEM or Enterprise tier, got {claims.tier}"
-        )
+        warnings.append(f"SCIF deployment requires OEM or Enterprise tier, got {claims.tier}")
 
     # ── 2. Generate compliance evidence ──────────────────────────────────
 
@@ -274,9 +265,7 @@ def generate_sovereign_manifest(
     component_hashes = {
         "license_claims": _sha256(claims.canonical_json()),
         "license_signature": _sha256(license_key.signature),
-        "compliance_report": _sha256(
-            json.dumps(asdict(compliance_report), sort_keys=True, default=str)
-        ),
+        "compliance_report": _sha256(json.dumps(asdict(compliance_report), sort_keys=True, default=str)),
         "entropy_policy": _sha256(json.dumps(entropy_policy.to_dict(), sort_keys=True)),
         "environment": _sha256(environment.value),
         "deployment_id": _sha256(deployment_id or "unspecified"),
@@ -284,9 +273,7 @@ def generate_sovereign_manifest(
 
     # ── 4. Compute integrity chain ───────────────────────────────────────
 
-    integrity_hash = compute_integrity_chain(
-        [component_hashes[k] for k in sorted(component_hashes.keys())]
-    )
+    integrity_hash = compute_integrity_chain([component_hashes[k] for k in sorted(component_hashes.keys())])
 
     # ── 5. Assemble manifest ─────────────────────────────────────────────
 
@@ -330,7 +317,5 @@ def verify_manifest_integrity(manifest: SovereignManifest) -> bool:
     Returns:
         True if integrity chain matches.
     """
-    expected = compute_integrity_chain(
-        [manifest.component_hashes[k] for k in sorted(manifest.component_hashes.keys())]
-    )
+    expected = compute_integrity_chain([manifest.component_hashes[k] for k in sorted(manifest.component_hashes.keys())])
     return expected == manifest.integrity_hash

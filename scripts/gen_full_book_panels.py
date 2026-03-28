@@ -272,7 +272,7 @@ def create_panel_prompts_from_chapter(
     panel_num = 0
 
     # Distribute panels across scenes
-    panels_per_scene = max(1, target_panels // max(len(scenes), 1))
+    _panels_per_scene = max(1, target_panels // max(len(scenes), 1))
 
     for scene_idx, scene in enumerate(scenes):
         lines = [l.strip() for l in scene.split("\n") if l.strip()]

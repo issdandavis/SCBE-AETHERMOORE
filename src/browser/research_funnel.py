@@ -100,9 +100,7 @@ class ResearchFunnel:
         self.notion_token = notion_token or os.getenv("NOTION_TOKEN")
         self.notion_parent_id = notion_parent_id or os.getenv("NOTION_HUB_PAGE_ID")
         self.hf_token = hf_token or os.getenv("HF_TOKEN")
-        self.hf_repo = hf_repo or os.getenv(
-            "HF_DATASET_REPO", "issdandavis/scbe-aethermoore-training-data"
-        )
+        self.hf_repo = hf_repo or os.getenv("HF_DATASET_REPO", "issdandavis/scbe-aethermoore-training-data")
 
     # ── Main entry point ──────────────────────────────────────────────
 
@@ -129,9 +127,7 @@ class ResearchFunnel:
         receipt = FunnelReceipt(run_id=run_id)
 
         # Normalize extractions from either research() or swarm_research()
-        extractions = (
-            research.get("merged_extractions") or research.get("extractions") or []
-        )
+        extractions = research.get("merged_extractions") or research.get("extractions") or []
         query = research.get("query") or ", ".join(research.get("queries", []))
         topic_list = topics or [query] if query else ["web_research"]
 
@@ -281,8 +277,7 @@ class ResearchFunnel:
                             "type": "text",
                             "text": {
                                 "content": (
-                                    f"Sources: {len(records)}"
-                                    f" | Topics: {', '.join(records[0].get('topics', []))}"
+                                    f"Sources: {len(records)}" f" | Topics: {', '.join(records[0].get('topics', []))}"
                                 )
                             },
                         }
@@ -321,9 +316,7 @@ class ResearchFunnel:
                                     "rich_text": [
                                         {
                                             "type": "text",
-                                            "text": {
-                                                "content": f"URL: {rec.get('source_url', 'N/A')}\n\n{preview}"
-                                            },
+                                            "text": {"content": f"URL: {rec.get('source_url', 'N/A')}\n\n{preview}"},
                                         }
                                     ]
                                 },
@@ -336,9 +329,7 @@ class ResearchFunnel:
         # Create the page
         page = notion.pages.create(
             parent={"page_id": self.notion_parent_id},
-            properties={
-                "title": {"title": [{"type": "text", "text": {"content": title}}]}
-            },
+            properties={"title": {"title": [{"type": "text", "text": {"content": title}}]}},
             children=children,
         )
 
@@ -351,9 +342,7 @@ class ResearchFunnel:
         try:
             from huggingface_hub import HfApi
         except ImportError:
-            raise RuntimeError(
-                "huggingface_hub not installed: pip install huggingface_hub"
-            )
+            raise RuntimeError("huggingface_hub not installed: pip install huggingface_hub")
 
         api = HfApi(token=self.hf_token)
 
@@ -431,9 +420,7 @@ async def _main():
 
     logging.basicConfig(level=logging.INFO, format="%(name)s | %(message)s")
 
-    parser = argparse.ArgumentParser(
-        description="Push research findings to cloud storage"
-    )
+    parser = argparse.ArgumentParser(description="Push research findings to cloud storage")
     parser.add_argument(
         "--backfill",
         type=int,
@@ -453,7 +440,8 @@ async def _main():
         if args.dry_run:
             files = sorted(funnel.intake_dir.glob("web_research_*.jsonl"))
             for f in files[-args.backfill :]:
-                count = sum(1 for _ in open(f))
+                with open(f) as _fh:
+                    count = sum(1 for _ in _fh)
                 print(f"  [DRY] {f.name} ({count} records)")
             return
 
@@ -462,9 +450,7 @@ async def _main():
             status = "OK" if not r.errors else f"ERRORS: {r.errors}"
             notion = r.notion_url or "skipped"
             hf = "committed" if r.hf_committed else "skipped"
-            print(
-                f"  {r.run_id}: {r.records_written} records | notion={notion} | hf={hf} | {status}"
-            )
+            print(f"  {r.run_id}: {r.records_written} records | notion={notion} | hf={hf} | {status}")
     else:
         print("Usage:")
         print("  python -m src.browser.research_funnel --backfill 5")

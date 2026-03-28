@@ -56,18 +56,14 @@ class TestSpinDrift:
         """The last 2 steps (most aggressive) should produce detection signals."""
         for step in SPIN_DRIFT[-2:]:
             r = gate.process(step["prompt"], step["id"], step["class"])
-            assert (
-                len(r.detection_signals) >= 1
-            ), f"Late drift step {step['id']} undetected"
+            assert len(r.detection_signals) >= 1, f"Late drift step {step['id']} undetected"
 
     def test_early_steps_benign(self, gate):
         """First 2 steps should NOT trigger detection (gradual)."""
         for step in SPIN_DRIFT[:2]:
             r = gate.process(step["prompt"], step["id"], step["class"])
             # Early steps should look clean
-            assert (
-                not r.detected
-            ), f"Early drift step {step['id']} should not be detected"
+            assert not r.detected, f"Early drift step {step['id']} should not be detected"
 
 
 class TestBoundaryExploit:

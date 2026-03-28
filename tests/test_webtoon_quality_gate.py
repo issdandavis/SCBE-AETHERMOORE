@@ -28,9 +28,7 @@ def test_govern_packet_auto_fixes_sparse_packet() -> None:
     assert governed["episode_id"] == "ep01"
     assert governed["source_markdown"] == "content/book/reader-edition/ch01.md"
     assert governed["key_script"] == "artifacts/webtoon/ch1_panel_script.md"
-    assert (
-        governed["generation_profile"]["model_id"] == "black-forest-labs/FLUX.1-schnell"
-    )
+    assert governed["generation_profile"]["model_id"] == "black-forest-labs/FLUX.1-schnell"
     assert governed["generation_profile"]["default_steps"] == 4
     assert governed["panels"][0]["environment"] == "earth_office"
     assert governed["panels"][0]["characters"] == ["marcus"]
@@ -136,10 +134,7 @@ def test_require_approved_packet_rejects_missing_or_bad_reports(tmp_path: Path) 
 
 def test_lookup_episode_metadata_does_not_cross_into_kyle_story_lane() -> None:
     assert lookup_episode_metadata(chapter_id="ch28") is None
-    assert (
-        lookup_episode_metadata(source_markdown="content/book/kyle-edition/ch28.md")
-        is None
-    )
+    assert lookup_episode_metadata(source_markdown="content/book/kyle-edition/ch28.md") is None
 
 
 def test_govern_packet_auto_fixes_supported_environment_arc_lock() -> None:

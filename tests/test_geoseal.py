@@ -29,9 +29,7 @@ def _norm(v):
 def make_agent(id, pos, phase, tongue=None, trust=None):
     if trust is None:
         trust = 1.0 if phase is not None else 0.5
-    return Agent(
-        id=id, position=list(pos), phase=phase, tongue=tongue, trust_score=trust
-    )
+    return Agent(id=id, position=list(pos), phase=phase, tongue=tongue, trust_score=trust)
 
 
 # ---------------------------------------------------------------------------
@@ -47,9 +45,7 @@ class TestHyperbolicDistance:
     def test_symmetric(self):
         u = [0.1, 0.2]
         v = [0.3, -0.1]
-        assert hyperbolic_distance(u, v) == pytest.approx(
-            hyperbolic_distance(v, u), abs=1e-10
-        )
+        assert hyperbolic_distance(u, v) == pytest.approx(hyperbolic_distance(v, u), abs=1e-10)
 
     def test_increases_with_separation(self):
         o = [0, 0, 0]
@@ -84,9 +80,7 @@ class TestPhaseDeviation:
     def test_symmetric(self):
         p1 = math.pi / 4
         p2 = 3 * math.pi / 4
-        assert phase_deviation(p1, p2) == pytest.approx(
-            phase_deviation(p2, p1), abs=1e-10
-        )
+        assert phase_deviation(p1, p2) == pytest.approx(phase_deviation(p2, p1), abs=1e-10)
 
 
 # ---------------------------------------------------------------------------

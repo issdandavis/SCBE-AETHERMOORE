@@ -173,9 +173,7 @@ class EntryToken:
     @property
     def fingerprint(self) -> str:
         """SHA-256 fingerprint of the token."""
-        data = (
-            f"{self.token_id}:{self.agent_id}:{self.declared_intent}:{self.issued_at}"
-        )
+        data = f"{self.token_id}:{self.agent_id}:{self.declared_intent}:{self.issued_at}"
         return hashlib.sha256(data.encode()).hexdigest()[:16]
 
     def revoke(self, reason: str = "governance_violation") -> None:
@@ -368,9 +366,7 @@ class AgentRegistry:
         for tier in AccessTier:
             by_tier[tier.value] = sum(1 for s in self.seals.values() if s.tier == tier)
         hov = sum(1 for s in self.seals.values() if s.governance_score.hov_eligible)
-        quarantined = sum(
-            1 for s in self.seals.values() if s.governance_score.quarantine_count > 0
-        )
+        quarantined = sum(1 for s in self.seals.values() if s.governance_score.quarantine_count > 0)
         return {
             "total_agents": total,
             "by_tier": by_tier,

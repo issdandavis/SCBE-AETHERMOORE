@@ -133,19 +133,13 @@ class DNASplitTester:
 
     def create_expected_strand(self, test_name: str, spec: Dict[str, Any]) -> Strand:
         """Create the expected (template) strand from specification."""
-        return Strand(
-            strand_type=StrandType.EXPECTED, data=spec, source=f"spec:{test_name}"
-        )
+        return Strand(strand_type=StrandType.EXPECTED, data=spec, source=f"spec:{test_name}")
 
     def create_actual_strand(self, test_name: str, result: Dict[str, Any]) -> Strand:
         """Create the actual (coding) strand from implementation."""
-        return Strand(
-            strand_type=StrandType.ACTUAL, data=result, source=f"impl:{test_name}"
-        )
+        return Strand(strand_type=StrandType.ACTUAL, data=result, source=f"impl:{test_name}")
 
-    def compare_strands(
-        self, test_name: str, expected: Strand, actual: Strand
-    ) -> DNATestResult:
+    def compare_strands(self, test_name: str, expected: Strand, actual: Strand) -> DNATestResult:
         """
         Compare two strands and identify mutations.
 
@@ -172,9 +166,7 @@ class DNASplitTester:
         self.results.append(result)
         return result
 
-    def _find_mutations(
-        self, expected: Dict[str, Any], actual: Dict[str, Any], path: str = ""
-    ) -> List[Mutation]:
+    def _find_mutations(self, expected: Dict[str, Any], actual: Dict[str, Any], path: str = "") -> List[Mutation]:
         """Recursively find mutations between expected and actual."""
         mutations = []
 
@@ -194,9 +186,7 @@ class DNASplitTester:
                 )
             elif isinstance(expected[key], dict) and isinstance(actual[key], dict):
                 # Recurse into nested dicts
-                mutations.extend(
-                    self._find_mutations(expected[key], actual[key], current_path)
-                )
+                mutations.extend(self._find_mutations(expected[key], actual[key], current_path))
             elif expected[key] != actual[key]:
                 mutations.append(
                     Mutation(
@@ -250,18 +240,12 @@ class DNASplitTester:
 
         for m in mutations:
             if m.mutation_type == MutationType.DELETION:
-                suggestions.append(
-                    f"MISSING: Add '{m.path}' with value {repr(m.expected)}"
-                )
+                suggestions.append(f"MISSING: Add '{m.path}' with value {repr(m.expected)}")
             elif m.mutation_type == MutationType.SUBSTITUTION:
-                suggestions.append(
-                    f"WRONG VALUE: Change '{m.path}' from {repr(m.actual)} to {repr(m.expected)}"
-                )
+                suggestions.append(f"WRONG VALUE: Change '{m.path}' from {repr(m.actual)} to {repr(m.expected)}")
             elif m.mutation_type == MutationType.INSERTION:
                 if m.severity >= 5:
-                    suggestions.append(
-                        f"UNEXPECTED: Review if '{m.path}' should be in specification"
-                    )
+                    suggestions.append(f"UNEXPECTED: Review if '{m.path}' should be in specification")
 
         return suggestions
 
@@ -273,9 +257,7 @@ class DNASplitTester:
             "passed": sum(1 for r in self.results if r.passed),
             "failed": sum(1 for r in self.results if not r.passed),
             "total_mutations": sum(len(r.mutations) for r in self.results),
-            "critical_mutations": sum(
-                len([m for m in r.mutations if m.severity >= 7]) for r in self.results
-            ),
+            "critical_mutations": sum(len([m for m in r.mutations if m.severity >= 7]) for r in self.results),
             "tests": [
                 {
                     "name": r.test_name,
@@ -323,9 +305,7 @@ class TestDNASplitSystem:
         """Test detection of missing fields."""
         tester = DNASplitTester()
 
-        expected = tester.create_expected_strand(
-            "test", {"layer_count": 14, "pqc_status": "active"}
-        )
+        expected = tester.create_expected_strand("test", {"layer_count": 14, "pqc_status": "active"})
 
         actual = tester.create_actual_strand(
             "test",
@@ -346,13 +326,9 @@ class TestDNASplitSystem:
         """Test detection of changed values."""
         tester = DNASplitTester()
 
-        expected = tester.create_expected_strand(
-            "test", {"security_level": 3, "status": "active"}
-        )
+        expected = tester.create_expected_strand("test", {"security_level": 3, "status": "active"})
 
-        actual = tester.create_actual_strand(
-            "test", {"security_level": 1, "status": "active"}
-        )  # Wrong!
+        actual = tester.create_actual_strand("test", {"security_level": 1, "status": "active"})  # Wrong!
 
         result = tester.compare_strands("test", expected, actual)
 
@@ -366,9 +342,7 @@ class TestDNASplitSystem:
 
         expected = tester.create_expected_strand("test", {"status": "active"})
 
-        actual = tester.create_actual_strand(
-            "test", {"status": "active", "extra_field": "unexpected"}
-        )
+        actual = tester.create_actual_strand("test", {"status": "active", "extra_field": "unexpected"})
 
         result = tester.compare_strands("test", expected, actual)
 
@@ -594,9 +568,7 @@ class TestSCBE14LayerDNASplit:
         print("=" * 60)
 
         # Save report to file
-        report_path = os.path.join(
-            os.path.dirname(__file__), "test_telemetry_dna_audit_report.json"
-        )
+        report_path = os.path.join(os.path.dirname(__file__), "test_telemetry_dna_audit_report.json")
         with open(report_path, "w") as f:
             json.dump(report, f, indent=2)
 

@@ -77,6 +77,4 @@ def test_capture_writes_stable_latest_files(tmp_path, monkeypatch):
     assert (tmp_path / "eye_latest.png").exists()
     assert (tmp_path / "eye_latest.xml").exists()
     assert (tmp_path / "eye_latest.nav.json").exists()
-    assert "polly-pad.html" in (tmp_path / "eye_latest.nav.json").read_text(
-        encoding="utf-8"
-    )
+    assert "polly-pad.html" in (tmp_path / "eye_latest.nav.json").read_text(encoding="utf-8")

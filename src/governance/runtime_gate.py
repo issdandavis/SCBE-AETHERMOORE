@@ -50,12 +50,7 @@ TONGUE_WEIGHTS = tuple(PHI**k for k in range(6))
 WORD_RE = re.compile(r"[A-Za-z0-9_']+")
 DEFAULT_SEMANTIC_EMBED_MODEL = "all-MiniLM-L6-v2"
 DEFAULT_TONGUE_PROJECTOR_PATH = str(
-    (
-        Path(__file__).resolve().parents[2]
-        / "artifacts"
-        / "projectors"
-        / "tongue_projector.npz"
-    )
+    (Path(__file__).resolve().parents[2] / "artifacts" / "projectors" / "tongue_projector.npz")
 )
 
 # Anchor prompts for semantic tongue projection.
@@ -149,20 +144,14 @@ class RerouteRule:
 
 # Default reroute table — dangerous actions → safe alternatives
 DEFAULT_REROUTES: List[RerouteRule] = [
-    RerouteRule(
-        "file.*read.*/etc/passwd", "file_read_denied", "system file access blocked"
-    ),
-    RerouteRule(
-        "http.*external.*send", "log_intent_only", "external data send → log only"
-    ),
+    RerouteRule("file.*read.*/etc/passwd", "file_read_denied", "system file access blocked"),
+    RerouteRule("http.*external.*send", "log_intent_only", "external data send → log only"),
     RerouteRule(
         "execute.*shell|exec.*command|os\\.system",
         "sandbox_execute",
         "shell exec → sandboxed",
     ),
-    RerouteRule(
-        "delete.*all|drop.*table|rm.*-rf", "soft_delete", "destructive op → soft delete"
-    ),
+    RerouteRule("delete.*all|drop.*table|rm.*-rf", "soft_delete", "destructive op → soft delete"),
     RerouteRule(
         "api.*key|secret|token|password",
         "redact_and_log",
@@ -212,12 +201,8 @@ class RuntimeGate:
         self.cumulative_cost_deny = cumulative_cost_deny
 
         # Reroute table
-        self._reroute_rules = (
-            reroute_rules if reroute_rules is not None else DEFAULT_REROUTES
-        )
-        self._reroute_patterns = [
-            (re.compile(r.pattern, re.IGNORECASE), r) for r in self._reroute_rules
-        ]
+        self._reroute_rules = reroute_rules if reroute_rules is not None else DEFAULT_REROUTES
+        self._reroute_patterns = [(re.compile(r.pattern, re.IGNORECASE), r) for r in self._reroute_rules]
 
         # Session state
         self._centroid: Optional[np.ndarray] = None
@@ -235,18 +220,12 @@ class RuntimeGate:
         self._coords_backend = (coords_backend or "stats").strip().lower()
         self._semantic_embed_model = semantic_embed_model
         self._tongue_projector_path = (
-            tongue_projector_path
-            or os.environ.get("SCBE_TONGUE_PROJECTOR_PATH")
-            or DEFAULT_TONGUE_PROJECTOR_PATH
+            tongue_projector_path or os.environ.get("SCBE_TONGUE_PROJECTOR_PATH") or DEFAULT_TONGUE_PROJECTOR_PATH
         )
         self._semantic_model = None
-        self._semantic_anchor_matrix: Optional[np.ndarray] = (
-            None  # shape: (6, D), unit-normalized
-        )
+        self._semantic_anchor_matrix: Optional[np.ndarray] = None  # shape: (6, D), unit-normalized
         self._semantic_ready: Optional[bool] = None
-        self._tongue_projector_W: Optional[np.ndarray] = (
-            None  # shape: (D+1, 6) in logit-space
-        )
+        self._tongue_projector_W: Optional[np.ndarray] = None  # shape: (D+1, 6) in logit-space
         self._tongue_projector_loaded: Optional[bool] = None
 
     # ------------------------------------------------------------------ #
@@ -352,9 +331,7 @@ class RuntimeGate:
         assert self._tongue_projector_W is not None
         emb = self._semantic_encode_batch([text])[0]
         # Add bias term
-        x = np.concatenate(
-            [emb.astype(np.float32), np.array([1.0], dtype=np.float32)], axis=0
-        )
+        x = np.concatenate([emb.astype(np.float32), np.array([1.0], dtype=np.float32)], axis=0)
         W = self._tongue_projector_W
         if x.shape[0] != W.shape[0]:
             # Projector doesn't match embedding dimension; fall back safely.
@@ -393,9 +370,7 @@ class RuntimeGate:
     #  Spin quantization
     # ------------------------------------------------------------------ #
 
-    def _spin(
-        self, coords: List[float], threshold: float = 0.05
-    ) -> Tuple[Tuple[int, ...], int]:
+    def _spin(self, coords: List[float], threshold: float = 0.05) -> Tuple[Tuple[int, ...], int]:
         if self._centroid is None:
             centroid = [0.4, 0.2, 0.5, 0.1, 0.2, 0.3]
         else:
@@ -463,9 +438,7 @@ class RuntimeGate:
         """
         self._query_count += 1
         ts = time.time()
-        action_hash = hashlib.blake2s(
-            action_text.encode("utf-8", errors="replace"), digest_size=8
-        ).hexdigest()
+        action_hash = hashlib.blake2s(action_text.encode("utf-8", errors="replace"), digest_size=8).hexdigest()
 
         # ---- Fast paths (O(1)) ----
 
@@ -594,9 +567,7 @@ class RuntimeGate:
         effective_cost_quarantine = self.cost_quarantine * trust_multiplier
         effective_cost_deny = self.cost_deny * trust_multiplier
 
-        signals: List[str] = [
-            f"fib_trust({trust_level},w={trust_weight},idx={trust_index})"
-        ]
+        signals: List[str] = [f"fib_trust({trust_level},w={trust_weight},idx={trust_index})"]
 
         # ---- Cost-based decision ----
 
@@ -604,9 +575,7 @@ class RuntimeGate:
         if cost > effective_cost_deny:
             signals.append(f"cost_deny({cost:.1f}>{effective_cost_deny:.1f})")
         elif cost > effective_cost_quarantine:
-            signals.append(
-                f"cost_quarantine({cost:.1f}>{effective_cost_quarantine:.1f})"
-            )
+            signals.append(f"cost_quarantine({cost:.1f}>{effective_cost_quarantine:.1f})")
         elif cost > effective_cost_allow:
             signals.append(f"cost_elevated({cost:.1f}>{effective_cost_allow:.1f})")
 
@@ -618,13 +587,9 @@ class RuntimeGate:
 
         # Cumulative cost (session-level drift detection)
         if self._cumulative_cost > self.cumulative_cost_deny:
-            signals.append(
-                f"cumulative_deny({self._cumulative_cost:.1f}>{self.cumulative_cost_deny})"
-            )
+            signals.append(f"cumulative_deny({self._cumulative_cost:.1f}>{self.cumulative_cost_deny})")
         elif self._cumulative_cost > self.cumulative_cost_quarantine:
-            signals.append(
-                f"cumulative_quarantine({self._cumulative_cost:.1f}>{self.cumulative_cost_quarantine})"
-            )
+            signals.append(f"cumulative_quarantine({self._cumulative_cost:.1f}>{self.cumulative_cost_quarantine})")
 
         # ---- Decision logic ----
 
@@ -741,11 +706,7 @@ class RuntimeGate:
             (
                 "KO_intent",
                 ko_pass,
-                (
-                    "override language with high governance signal"
-                    if not ko_pass
-                    else "clean"
-                ),
+                ("override language with high governance signal" if not ko_pass else "clean"),
             )
         )
 
@@ -808,11 +769,7 @@ class RuntimeGate:
             (
                 "CA_compute",
                 ca_pass,
-                (
-                    f"anomalous compute signature (CA={ca_coord:.2f})"
-                    if not ca_pass
-                    else "normal signature"
-                ),
+                (f"anomalous compute signature (CA={ca_coord:.2f})" if not ca_pass else "normal signature"),
             )
         )
 
@@ -839,46 +796,29 @@ class RuntimeGate:
             (
                 "UM_redaction",
                 um_pass,
-                (
-                    "credential/PII access attempt"
-                    if not um_pass
-                    else "no sensitive access"
-                ),
+                ("credential/PII access attempt" if not um_pass else "no sensitive access"),
             )
         )
 
         # --- DR Council: Integrity/Data Trace Review ---
         # Check for signs of injection or encoded payloads
         chars = max(len(action_text), 1)
-        punct_ratio = (
-            sum(c in "!@#$%^&*()_+-=[]{}|;':\",./<>?" for c in action_text) / chars
-        )
-        has_encoding_artifacts = (
-            punct_ratio > 0.15
-            or "base64" in action_text.lower()
-            or "\\x" in action_text
-        )
+        punct_ratio = sum(c in "!@#$%^&*()_+-=[]{}|;':\",./<>?" for c in action_text) / chars
+        has_encoding_artifacts = punct_ratio > 0.15 or "base64" in action_text.lower() or "\\x" in action_text
         # Also check if action hash has been seen in a suspicious context before
         dr_pass = not has_encoding_artifacts
         reviews.append(
             (
                 "DR_integrity",
                 dr_pass,
-                (
-                    f"encoding artifacts detected (punct={punct_ratio:.2f})"
-                    if not dr_pass
-                    else "clean trace"
-                ),
+                (f"encoding artifacts detected (punct={punct_ratio:.2f})" if not dr_pass else "clean trace"),
             )
         )
 
         # --- Council Deliberation ---
         fail_count = sum(1 for _, passed, _ in reviews if not passed)
 
-        signals = [
-            f"council_{name}={'PASS' if passed else 'FAIL'}({reason})"
-            for name, passed, reason in reviews
-        ]
+        signals = [f"council_{name}={'PASS' if passed else 'FAIL'}({reason})" for name, passed, reason in reviews]
         signals.append(f"council_verdict={fail_count}/6_failed")
 
         if fail_count == 0:
@@ -897,9 +837,7 @@ class RuntimeGate:
         """
         # In production: verify HMAC/signature of embedded token
         # For now: check if a known reflex hash exists
-        action_hash = hashlib.blake2s(
-            action_text.encode("utf-8", errors="replace"), digest_size=8
-        ).hexdigest()
+        action_hash = hashlib.blake2s(action_text.encode("utf-8", errors="replace"), digest_size=8).hexdigest()
         return action_hash in self._reflex
 
     def reset_session(self) -> None:

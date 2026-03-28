@@ -229,8 +229,7 @@ def compute_langues_cost_gradient(n_samples: int = 20) -> list[dict]:
 
         # Langues metric cost
         cost = sum(
-            LANGUES_WEIGHTS[lang]
-            * math.exp(LANGUES_BETA_BASE * PHI ** (lang * 0.5) * min(d_h, 10))
+            LANGUES_WEIGHTS[lang] * math.exp(LANGUES_BETA_BASE * PHI ** (lang * 0.5) * min(d_h, 10))
             for lang in range(6)
         )
 
@@ -307,11 +306,7 @@ def compute_page_topology(
 
         dist = semantic_distance(page_corpus, link_text, link_url)
         zone = classify_zone(link_url)
-        angle = (
-            angles[i]
-            if i < len(angles)
-            else 2 * math.pi * i / max(len(links_trimmed), 1)
-        )
+        angle = angles[i] if i < len(angles) else 2 * math.pi * i / max(len(links_trimmed), 1)
 
         x, y = project_to_disk(dist, angle)
 
@@ -325,9 +320,7 @@ def compute_page_topology(
             zone=zone,
             risk_tier=zone_to_risk(zone),
             semantic_dist=round(dist, 4),
-            topics=[
-                t for t in topics if t.lower() in (link_text + " " + link_url).lower()
-            ][:3],
+            topics=[t for t in topics if t.lower() in (link_text + " " + link_url).lower()][:3],
         )
         nodes.append(node)
 

@@ -32,9 +32,7 @@ class TestSemanticDistance:
 
     def test_url_contributes_to_similarity(self):
         d_without = semantic_distance("github repository", "click here")
-        d_with = semantic_distance(
-            "github repository", "click here", "https://github.com/repo"
-        )
+        d_with = semantic_distance("github repository", "click here", "https://github.com/repo")
         assert d_with < d_without
 
 
@@ -70,12 +68,8 @@ class TestProjectToDisk:
 
     def test_larger_distance_gives_larger_radius(self):
         _, _ = project_to_disk(0.1, 0)
-        r1 = math.sqrt(
-            project_to_disk(0.1, 0)[0] ** 2 + project_to_disk(0.1, 0)[1] ** 2
-        )
-        r2 = math.sqrt(
-            project_to_disk(1.0, 0)[0] ** 2 + project_to_disk(1.0, 0)[1] ** 2
-        )
+        r1 = math.sqrt(project_to_disk(0.1, 0)[0] ** 2 + project_to_disk(0.1, 0)[1] ** 2)
+        r2 = math.sqrt(project_to_disk(1.0, 0)[0] ** 2 + project_to_disk(1.0, 0)[1] ** 2)
         assert r2 > r1
 
 
@@ -147,9 +141,7 @@ class TestComputePageTopology:
         assert len(result["langues_cost"]) > 0
 
     def test_max_nodes_capped(self):
-        links = [
-            {"text": f"Link {i}", "href": f"https://example{i}.com"} for i in range(100)
-        ]
+        links = [{"text": f"Link {i}", "href": f"https://example{i}.com"} for i in range(100)]
         result = compute_page_topology(
             url="https://test.com",
             title="Test",

@@ -93,9 +93,7 @@ def test_playwright_path_exports_to_vault(monkeypatch, tmp_path: Path) -> None:
             return False
 
     fake_page = FakePage()
-    monkeypatch.setattr(
-        hf_nav, "_load_sync_playwright", lambda: (lambda: FakeContext(fake_page))
-    )
+    monkeypatch.setattr(hf_nav, "_load_sync_playwright", lambda: (lambda: FakeContext(fake_page)))
     monkeypatch.setattr(
         hf_nav,
         "_extract_browser_results",
@@ -119,9 +117,7 @@ def test_playwright_path_exports_to_vault(monkeypatch, tmp_path: Path) -> None:
 
     assert len(results) == 1
     assert results[0]["source"] == "playwright"
-    assert fake_page.visited == [
-        ("https://huggingface.co/models?search=speech+recognition", 20000)
-    ]
+    assert fake_page.visited == [("https://huggingface.co/models?search=speech+recognition", 20000)]
 
     note_path = tmp_path / "huggingface_speech_recognition_models.md"
     assert note_path.exists()
@@ -133,9 +129,7 @@ def test_playwright_path_exports_to_vault(monkeypatch, tmp_path: Path) -> None:
 def test_playwright_missing_falls_back_to_api(monkeypatch, tmp_path: Path) -> None:
     captured = {}
 
-    def fake_fallback(
-        query: str, max_results: int, search_type: str, save_to_vault: str | None
-    ):
+    def fake_fallback(query: str, max_results: int, search_type: str, save_to_vault: str | None):
         captured["args"] = (query, max_results, search_type, save_to_vault)
         return [
             {
@@ -154,9 +148,7 @@ def test_playwright_missing_falls_back_to_api(monkeypatch, tmp_path: Path) -> No
         save_to_vault=str(tmp_path),
     )
 
-    assert results == [
-        {"title": "fallback-result", "link": "https://huggingface.co/spaces/org/demo"}
-    ]
+    assert results == [{"title": "fallback-result", "link": "https://huggingface.co/spaces/org/demo"}]
     assert captured["args"] == ("demo space", 2, "spaces", str(tmp_path))
 
 
@@ -170,9 +162,7 @@ def test_main_json_output_uses_no_browser(monkeypatch, capsys) -> None:
             "source": "api",
         }
     ]
-    monkeypatch.setattr(
-        hf_nav, "nav_huggingface_api_fallback", lambda *args, **kwargs: expected
-    )
+    monkeypatch.setattr(hf_nav, "nav_huggingface_api_fallback", lambda *args, **kwargs: expected)
 
     exit_code = hf_nav.main(["zephyr", "--json", "--no-browser"])
 

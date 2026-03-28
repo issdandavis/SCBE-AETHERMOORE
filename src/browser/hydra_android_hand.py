@@ -39,9 +39,7 @@ ADB_FALLBACKS = (
     r"C:\Users\issda\android-sdk",
 )
 
-ADB_DEVICE_LINE_RE = re.compile(
-    r"^(?P<serial>\S+)\s+(?P<state>\S+)(?:\s+(?P<meta>.+))?$"
-)
+ADB_DEVICE_LINE_RE = re.compile(r"^(?P<serial>\S+)\s+(?P<state>\S+)(?:\s+(?P<meta>.+))?$")
 WM_DIMENSION_RE = re.compile(r"(?P<width>\d+)x(?P<height>\d+)")
 TOP_ACTIVITY_RE = re.compile(r"([A-Za-z0-9_.]+)/([A-Za-z0-9_.$]+)")
 
@@ -83,9 +81,7 @@ def resolve_adb_path() -> str:
         if candidate.exists():
             return str(candidate)
 
-    raise RuntimeError(
-        "adb not found. Set ANDROID_SDK_ROOT/ANDROID_HOME or install platform-tools."
-    )
+    raise RuntimeError("adb not found. Set ANDROID_SDK_ROOT/ANDROID_HOME or install platform-tools.")
 
 
 def parse_adb_devices(output: str) -> List[Dict[str, Any]]:
@@ -212,9 +208,7 @@ def build_webtoon_preview_plan(
     start_y = max(1, int(height * 0.78))
     end_y = max(1, int(height * 0.32))
 
-    tasks: List[Dict[str, Any]] = [
-        {"tongue": "CA", "action": "screencap", "name": f"{capture_prefix}_00"}
-    ]
+    tasks: List[Dict[str, Any]] = [{"tongue": "CA", "action": "screencap", "name": f"{capture_prefix}_00"}]
     for index in range(1, steps):
         tasks.append(
             {
@@ -271,12 +265,8 @@ class AndroidFinger:
     def tap(self, x: int, y: int) -> AndroidActionResult:
         return self.hand.tap(x, y, tongue=self.tongue)
 
-    def swipe(
-        self, x1: int, y1: int, x2: int, y2: int, duration_ms: int = 250
-    ) -> AndroidActionResult:
-        return self.hand.swipe(
-            x1, y1, x2, y2, duration_ms=duration_ms, tongue=self.tongue
-        )
+    def swipe(self, x1: int, y1: int, x2: int, y2: int, duration_ms: int = 250) -> AndroidActionResult:
+        return self.hand.swipe(x1, y1, x2, y2, duration_ms=duration_ms, tongue=self.tongue)
 
     def screencap(self, name: str = "screen") -> AndroidActionResult:
         return self.hand.screencap(name=name, tongue=self.tongue)
@@ -356,23 +346,13 @@ class HydraAndroidHand:
             env=env,
         )
         if check and completed.returncode != 0:
-            stderr = (
-                completed.stderr.decode("utf-8", errors="replace")
-                if binary
-                else completed.stderr
-            )
-            stdout = (
-                completed.stdout.decode("utf-8", errors="replace")
-                if binary
-                else completed.stdout
-            )
+            stderr = completed.stderr.decode("utf-8", errors="replace") if binary else completed.stderr
+            stdout = completed.stdout.decode("utf-8", errors="replace") if binary else completed.stdout
             detail = stderr.strip() or stdout.strip() or f"exit={completed.returncode}"
             raise RuntimeError(detail)
         return completed
 
-    def _adb(
-        self, *args: str, use_serial: bool = False, **kwargs: Any
-    ) -> subprocess.CompletedProcess:
+    def _adb(self, *args: str, use_serial: bool = False, **kwargs: Any) -> subprocess.CompletedProcess:
         cmd = [self.adb_path]
         if use_serial:
             if not self.serial:
@@ -400,17 +380,13 @@ class HydraAndroidHand:
             raise RuntimeError("No online Android device found.")
 
         while time.monotonic() < deadline:
-            completed = self._adb(
-                "shell", "getprop", "sys.boot_completed", use_serial=True, check=False
-            )
+            completed = self._adb("shell", "getprop", "sys.boot_completed", use_serial=True, check=False)
             if completed.returncode == 0 and completed.stdout.strip() == "1":
                 self._open = True
                 return self.serial
             time.sleep(1.5)
 
-        raise RuntimeError(
-            f"Timed out waiting for Android device {self.serial} to boot."
-        )
+        raise RuntimeError(f"Timed out waiting for Android device {self.serial} to boot.")
 
     def open(self, timeout_sec: int = 60) -> str:
         return self.wait_until_ready(timeout_sec=timeout_sec)
@@ -466,13 +442,9 @@ class HydraAndroidHand:
     def wake(self, tongue: Tongue = Tongue.RU) -> AndroidActionResult:
         started = time.monotonic()
         self.ensure_open()
-        completed = self._adb(
-            "shell", "input", "keyevent", "KEYCODE_WAKEUP", use_serial=True
-        )
+        completed = self._adb("shell", "input", "keyevent", "KEYCODE_WAKEUP", use_serial=True)
         self._adb("shell", "wm", "dismiss-keyguard", use_serial=True, check=False)
-        return self._make_result(
-            tongue=tongue, action="wake", started_at=started, completed=completed
-        )
+        return self._make_result(tongue=tongue, action="wake", started_at=started, completed=completed)
 
     def launch_app(self, tongue: Tongue = Tongue.AV) -> AndroidActionResult:
         started = time.monotonic()
@@ -544,9 +516,7 @@ class HydraAndroidHand:
     def input_text(self, text: str, tongue: Tongue = Tongue.RU) -> AndroidActionResult:
         started = time.monotonic()
         self.ensure_open()
-        completed = self._adb(
-            "shell", "input", "text", encode_input_text(text), use_serial=True
-        )
+        completed = self._adb("shell", "input", "text", encode_input_text(text), use_serial=True)
         return self._make_result(
             tongue=tongue,
             action="input_text",
@@ -604,15 +574,11 @@ class HydraAndroidHand:
             },
         )
 
-    def screencap(
-        self, name: str = "screen", tongue: Tongue = Tongue.CA
-    ) -> AndroidActionResult:
+    def screencap(self, name: str = "screen", tongue: Tongue = Tongue.CA) -> AndroidActionResult:
         started = time.monotonic()
         self.ensure_open()
         artifact_path = self._artifact_path(name, ".png")
-        completed = self._adb(
-            "exec-out", "screencap", "-p", use_serial=True, binary=True
-        )
+        completed = self._adb("exec-out", "screencap", "-p", use_serial=True, binary=True)
         artifact_path.write_bytes(completed.stdout)
         return self._make_result(
             tongue=tongue,
@@ -623,17 +589,13 @@ class HydraAndroidHand:
             capture_streams=False,
         )
 
-    def dump_ui(
-        self, name: str = "ui", tongue: Tongue = Tongue.DR
-    ) -> AndroidActionResult:
+    def dump_ui(self, name: str = "ui", tongue: Tongue = Tongue.DR) -> AndroidActionResult:
         started = time.monotonic()
         self.ensure_open()
         remote_path = f"/sdcard/Download/{_safe_name(name)}.xml"
         artifact_path = self._artifact_path(name, ".xml")
         self._adb("shell", "uiautomator", "dump", remote_path, use_serial=True)
-        pull_completed = self._adb(
-            "pull", remote_path, str(artifact_path), use_serial=True
-        )
+        pull_completed = self._adb("pull", remote_path, str(artifact_path), use_serial=True)
         self._adb("shell", "rm", "-f", remote_path, use_serial=True, check=False)
         metadata = {"remote_path": remote_path}
         return self._make_result(
@@ -648,12 +610,8 @@ class HydraAndroidHand:
     def get_display_metrics(self) -> Dict[str, Any]:
         self.ensure_open()
         size = parse_wm_size(self._adb("shell", "wm", "size", use_serial=True).stdout)
-        density = parse_wm_density(
-            self._adb("shell", "wm", "density", use_serial=True).stdout
-        )
-        effective = (
-            size.get("override") or size.get("physical") or {"width": 0, "height": 0}
-        )
+        density = parse_wm_density(self._adb("shell", "wm", "density", use_serial=True).stdout)
+        effective = size.get("override") or size.get("physical") or {"width": 0, "height": 0}
         return {
             "size": size,
             "density": density,
@@ -683,16 +641,10 @@ class HydraAndroidHand:
         }
         if selected:
             self.serial = selected
-            boot = self._adb(
-                "shell", "getprop", "sys.boot_completed", use_serial=True, check=False
-            ).stdout.strip()
-            model = self._adb(
-                "shell", "getprop", "ro.product.model", use_serial=True, check=False
-            ).stdout.strip()
+            boot = self._adb("shell", "getprop", "sys.boot_completed", use_serial=True, check=False).stdout.strip()
+            model = self._adb("shell", "getprop", "ro.product.model", use_serial=True, check=False).stdout.strip()
             activity = parse_top_activity(
-                self._adb(
-                    "shell", "dumpsys", "activity", "top", use_serial=True, check=False
-                ).stdout
+                self._adb("shell", "dumpsys", "activity", "top", use_serial=True, check=False).stdout
             )
             payload["boot_completed"] = boot == "1"
             payload["model"] = model
@@ -766,9 +718,7 @@ class HydraAndroidHand:
                 result = self.input_text(str(task["text"]), tongue=tongue)
                 results.append(result.to_dict())
             elif action == "screencap":
-                result = self.screencap(
-                    name=str(task.get("name", "screen")), tongue=tongue
-                )
+                result = self.screencap(name=str(task.get("name", "screen")), tongue=tongue)
                 results.append(result.to_dict())
             elif action == "dump_ui":
                 result = self.dump_ui(name=str(task.get("name", "ui")), tongue=tongue)
@@ -833,9 +783,7 @@ class HydraAndroidHand:
 
         if launch_reader:
             session_payload["results"].append(
-                self.launch_reader(
-                    route_url=route_url, use_browser=use_browser, tongue=Tongue.AV
-                ).to_dict()
+                self.launch_reader(route_url=route_url, use_browser=use_browser, tongue=Tongue.AV).to_dict()
             )
             time.sleep(max(0.2, settle_ms / 1000.0))
 
@@ -856,9 +804,7 @@ class HydraAndroidHand:
                 time.sleep(max(0.0, settle_ms / 1000.0))
             elif include_ui_dump and task["action"] == "screencap":
                 name = str(task.get("name", "observation"))
-                session_payload["results"].append(
-                    self.dump_ui(name=f"{name}_ui", tongue=Tongue.DR).to_dict()
-                )
+                session_payload["results"].append(self.dump_ui(name=f"{name}_ui", tongue=Tongue.DR).to_dict())
 
         summary_path = self._artifact_path(f"{self.session_id}_summary", ".json")
         summary_path.write_text(json.dumps(session_payload, indent=2), encoding="utf-8")

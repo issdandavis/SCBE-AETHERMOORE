@@ -448,7 +448,7 @@ class TestSolitaryIncubation:
     def test_derived_keys_are_hex_truncated(self, core_egg):
         """Derived keys in result should be first 8 bytes as hex."""
         result = SacredRituals.solitary_incubation(core_egg)
-        for label, key_hex in result.derived_keys.items():
+        for _label, key_hex in result.derived_keys.items():
             assert len(key_hex) == 16  # 8 bytes = 16 hex chars
             # Should be valid hex
             int(key_hex, 16)
@@ -562,12 +562,8 @@ class TestRingDescent:
 
         # Create two identical eggs
         yolk = outer_egg._yolk
-        egg1 = SacredEgg.create(
-            context=outer_egg.context, yolk=yolk, ring=EggRing.OUTER
-        )
-        egg2 = SacredEgg.create(
-            context=outer_egg.context, yolk=yolk, ring=EggRing.OUTER
-        )
+        egg1 = SacredEgg.create(context=outer_egg.context, yolk=yolk, ring=EggRing.OUTER)
+        egg2 = SacredEgg.create(context=outer_egg.context, yolk=yolk, ring=EggRing.OUTER)
 
         r1 = SacredRituals.ring_descent(egg1, EggRing.INNER, auth_secret)
         r2 = SacredRituals.ring_descent(egg2, EggRing.INNER, auth_secret)

@@ -342,9 +342,7 @@ class SignatureEngine:
         ]
         return b"|".join(parts)
 
-    def sign(
-        self, envelope: RWP2Envelope, tongues: Set[ProtocolTongue]
-    ) -> RWP2Envelope:
+    def sign(self, envelope: RWP2Envelope, tongues: Set[ProtocolTongue]) -> RWP2Envelope:
         """
         Sign envelope with specified tongues.
 
@@ -391,9 +389,7 @@ class SignatureEngine:
 
         # Determine required tongues
         if required_tongues is None:
-            required_tongues = TIER_REQUIRED_TONGUES.get(
-                envelope.tier, {ProtocolTongue.KO}
-            )
+            required_tongues = TIER_REQUIRED_TONGUES.get(envelope.tier, {ProtocolTongue.KO})
 
         results = {}
         for tongue in required_tongues:
@@ -425,9 +421,7 @@ class ReplayProtector:
     Nonce + timestamp pairs are valid for single use only.
     """
 
-    def __init__(
-        self, max_age_seconds: int = 300, max_cache_size: int = 10000
-    ):  # 5 minutes
+    def __init__(self, max_age_seconds: int = 300, max_cache_size: int = 10000):  # 5 minutes
         self.max_age = max_age_seconds
         self.max_cache = max_cache_size
         self.used_nonces: Dict[str, int] = {}  # nonce -> timestamp_ms
@@ -669,9 +663,7 @@ def demo():
         tier=envelope3.tier,
     )
     tamper_valid, tamper_results = factory.signature_engine.verify(tampered)
-    print(
-        f"  Tampered envelope: {'VALID' if tamper_valid else 'INVALID (tampering detected)'}"
-    )
+    print(f"  Tampered envelope: {'VALID' if tamper_valid else 'INVALID (tampering detected)'}")
     print()
 
     print("=" * 70)

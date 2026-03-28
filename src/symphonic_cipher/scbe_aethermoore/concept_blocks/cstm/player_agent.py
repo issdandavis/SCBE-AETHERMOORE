@@ -107,9 +107,7 @@ class PersonalityVector:
     def __init__(self, initial: Optional[List[float]] = None, seed: int = 0) -> None:
         if initial is not None:
             if len(initial) != 21:
-                raise ValueError(
-                    f"PersonalityVector requires 21 dims, got {len(initial)}"
-                )
+                raise ValueError(f"PersonalityVector requires 21 dims, got {len(initial)}")
             self._vector = [max(0.0, min(1.0, v)) for v in initial]
         else:
             rng = random.Random(seed)
@@ -130,9 +128,7 @@ class PersonalityVector:
         """Shift personality by delta * learning_rate, clamped to [0, 1]."""
         self._history.append((time.time(), list(self._vector)))
         for i in range(21):
-            self._vector[i] = max(
-                0.0, min(1.0, self._vector[i] + learning_rate * delta[i])
-            )
+            self._vector[i] = max(0.0, min(1.0, self._vector[i] + learning_rate * delta[i]))
 
     def cosine_distance_from(self, other: List[float]) -> float:
         """Cosine distance (1 - cosine_similarity)."""
@@ -218,7 +214,7 @@ class HistoryBuffer:
             for tag in e.choice_tags:
                 tag_counts[tag] = tag_counts.get(tag, 0) + 1
         total = max(sum(tag_counts.values()), 1)
-        for i, (tag, count) in enumerate(sorted(tag_counts.items())):
+        for i, (_tag, count) in enumerate(sorted(tag_counts.items())):
             if i >= 32:
                 break
             vec[i] = count / total
@@ -231,10 +227,7 @@ class HistoryBuffer:
             key_list = sorted(all_keys)[:16]
             n = len(self._entries)
             for i, key in enumerate(key_list):
-                delta_sum = sum(
-                    e.stats_after.get(key, 0) - e.stats_before.get(key, 0)
-                    for e in self._entries
-                )
+                delta_sum = sum(e.stats_after.get(key, 0) - e.stats_before.get(key, 0) for e in self._entries)
                 vec[32 + i] = delta_sum / n
 
         # Recency (dims 48-63): exponentially decaying activity markers

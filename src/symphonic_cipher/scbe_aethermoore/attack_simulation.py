@@ -143,9 +143,7 @@ class Attacker:
         self.history.append(self.position.copy())
         return self.position
 
-    def inject_noise(
-        self, amplitude: float = 0.5, frequency: float = 10.0, t: float = 0.0
-    ) -> np.ndarray:
+    def inject_noise(self, amplitude: float = 0.5, frequency: float = 10.0, t: float = 0.0) -> np.ndarray:
         """Inject high-frequency oscillations."""
         noise = amplitude * np.sin(frequency * t + np.random.randn(self.dim))
         self.position = self.position + noise
@@ -181,9 +179,7 @@ class SCBEDefenseSystem:
 
     def __init__(self):
         # Layer components
-        self.living_metric = LivingMetricEngine(
-            params=ShockAbsorberParams(beta=3.0, max_expansion=2.0)
-        )
+        self.living_metric = LivingMetricEngine(params=ShockAbsorberParams(beta=3.0, max_expansion=2.0))
         self.flux_engine = FractionalFluxEngine(epsilon_base=0.05)
         self.harmonic_params = HarmonicParams(alpha=1.0, beta=1.0)
 
@@ -247,11 +243,7 @@ class SCBEDefenseSystem:
         diagnostics["H"] = H
 
         # --- Update Pressure Based on Metrics ---
-        self.pressure = (
-            0.3 * (1 - spectral.s_spec)
-            + 0.3 * (1 - spin.c_spin)
-            + 0.4 * triadic.d_tri_norm
-        )
+        self.pressure = 0.3 * (1 - spectral.s_spec) + 0.3 * (1 - spin.c_spin) + 0.4 * triadic.d_tri_norm
         self.pressure = min(1.0, self.pressure)
         diagnostics["pressure"] = self.pressure
 
@@ -276,11 +268,7 @@ class SCBEDefenseSystem:
             return Decision.SNAP, 1.0, diagnostics
 
         # --- Layer 13: Risk Decision ---
-        behavioral_risk = (
-            (1 - spectral.s_spec) * 0.3
-            + (1 - spin.c_spin) * 0.3
-            + triadic.d_tri_norm * 0.4
-        )
+        behavioral_risk = (1 - spectral.s_spec) * 0.3 + (1 - spin.c_spin) * 0.3 + triadic.d_tri_norm * 0.4
 
         components = RiskComponents(
             behavioral_risk=behavioral_risk,
@@ -313,9 +301,7 @@ class SCBEDefenseSystem:
 # =============================================================================
 
 
-def run_attack(
-    attack_type: AttackType, max_steps: int = 100, verbose: bool = True
-) -> AttackReport:
+def run_attack(attack_type: AttackType, max_steps: int = 100, verbose: bool = True) -> AttackReport:
     """
     Execute a simulated attack and return results.
     """
@@ -356,9 +342,7 @@ def run_attack(
         velocity = attacker.position - prev_pos
 
         # Defense evaluation
-        decision, risk, diag = defense.evaluate_state(
-            attacker.position, velocity, step * 0.1
-        )
+        decision, risk, diag = defense.evaluate_state(attacker.position, velocity, step * 0.1)
 
         max_pressure = max(max_pressure, diag.get("pressure", 0))
 
@@ -389,14 +373,11 @@ def run_attack(
             detection_layer = "Layer 13 (Warning)"
 
     # Compute final metrics
-    final_energy = defense.living_metric.compute_metric(
-        np.ones(6) * 0.5, max_pressure
-    ).energy
+    final_energy = defense.living_metric.compute_metric(np.ones(6) * 0.5, max_pressure).energy
     expansion = final_energy / start_energy
 
     distance_traveled = sum(
-        np.linalg.norm(attacker.history[i + 1] - attacker.history[i])
-        for i in range(len(attacker.history) - 1)
+        np.linalg.norm(attacker.history[i + 1] - attacker.history[i]) for i in range(len(attacker.history) - 1)
     )
 
     # Determine result
@@ -457,14 +438,8 @@ def run_full_simulation(verbose: bool = True) -> Dict[str, Any]:
     print("ATTACK SIMULATION SUMMARY")
     print("=" * 70)
 
-    blocked = sum(
-        1
-        for r in results.values()
-        if r.result in [AttackResult.BLOCKED, AttackResult.SNAPPED]
-    )
-    quarantined = sum(
-        1 for r in results.values() if r.result == AttackResult.QUARANTINED
-    )
+    blocked = sum(1 for r in results.values() if r.result in [AttackResult.BLOCKED, AttackResult.SNAPPED])
+    quarantined = sum(1 for r in results.values() if r.result == AttackResult.QUARANTINED)
 
     print(f"\n  Total Attacks: {len(results)}")
     print(f"  Blocked/Snapped: {blocked}")
@@ -473,11 +448,7 @@ def run_full_simulation(verbose: bool = True) -> Dict[str, Any]:
 
     print("\n  Per-Attack Results:")
     for name, report in results.items():
-        icon = (
-            "🛡️"
-            if report.result in [AttackResult.BLOCKED, AttackResult.SNAPPED]
-            else "⚠️"
-        )
+        icon = "🛡️" if report.result in [AttackResult.BLOCKED, AttackResult.SNAPPED] else "⚠️"
         print(f"    {icon} {name}: {report.result.value} @ {report.detection_layer}")
 
     # Anti-fragile demonstration

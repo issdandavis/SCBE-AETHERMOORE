@@ -204,8 +204,7 @@ def _parse_google_results(html: str) -> List[SearchResult]:
     # Pattern: links that look like organic results (not google internal)
     # Google wraps results in <a href="/url?q=ACTUAL_URL&..."> or direct links
     link_pattern = re.compile(
-        r'<a\s[^>]*href="(/url\?q=([^"&]+)&[^"]*|https?://(?!www\.google\.com)[^"]+)"[^>]*>'
-        r".*?<h3[^>]*>(.*?)</h3>",
+        r'<a\s[^>]*href="(/url\?q=([^"&]+)&[^"]*|https?://(?!www\.google\.com)[^"]+)"[^>]*>' r".*?<h3[^>]*>(.*?)</h3>",
         re.DOTALL | re.IGNORECASE,
     )
 
@@ -220,9 +219,7 @@ def _parse_google_results(html: str) -> List[SearchResult]:
             url = raw_href
 
         parsed = urlparse(url)
-        if parsed.scheme not in {"http", "https"} or _hostname_matches(
-            url, "google.com"
-        ):
+        if parsed.scheme not in {"http", "https"} or _hostname_matches(url, "google.com"):
             continue
 
         title = _extract_text_from_html(title_html).strip()
@@ -315,9 +312,7 @@ async def search(
     results: List[SearchResult] = []
 
     # ── Try Google first ──────────────────────────────────────────
-    google_url = (
-        f"https://www.google.com/search?q={quote_plus(query)}&num={num_results}"
-    )
+    google_url = f"https://www.google.com/search?q={quote_plus(query)}&num={num_results}"
     try:
         async with _build_client(timeout=timeout) as client:
             resp = await client.get(google_url)
@@ -525,9 +520,7 @@ async def needs_js(
     script_count = len(re.findall(r"<script[\s>]", html, re.IGNORECASE))
 
     # Check <noscript> presence with meaningful content
-    noscript_match = re.search(
-        r"<noscript[^>]*>(.*?)</noscript>", html, re.DOTALL | re.IGNORECASE
-    )
+    noscript_match = re.search(r"<noscript[^>]*>(.*?)</noscript>", html, re.DOTALL | re.IGNORECASE)
     noscript_present = False
     if noscript_match:
         noscript_text = noscript_match.group(1).strip()
@@ -563,9 +556,7 @@ async def needs_js(
 
     # Heuristic 1: Lots of scripts, little text
     if script_count >= 5 and body_text_length < 200:
-        reasons.append(
-            f"{script_count} scripts but only {body_text_length} chars of body text"
-        )
+        reasons.append(f"{script_count} scripts but only {body_text_length} chars of body text")
         js_score += 3
 
     # Heuristic 2: SPA framework markers
@@ -585,9 +576,7 @@ async def needs_js(
 
     # Heuristic 5: Very short body relative to total HTML
     if content_length > 1000 and body_text_length < 100:
-        reasons.append(
-            f"HTML is {content_length} bytes but body text is only {body_text_length} chars"
-        )
+        reasons.append(f"HTML is {content_length} bytes but body text is only {body_text_length} chars")
         js_score += 2
 
     needs_javascript = js_score >= 3

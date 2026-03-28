@@ -327,9 +327,7 @@ class TestVacuumAcoustics:
         ]
 
         # At origin, counter-propagating waves should interfere
-        intensity = bottle_beam_intensity(
-            position=(0.0, 0.0, 0.0), sources=sources, wavelength=1.0
-        )
+        intensity = bottle_beam_intensity(position=(0.0, 0.0, 0.0), sources=sources, wavelength=1.0)
         assert intensity >= 0  # Intensity is always non-negative
 
 

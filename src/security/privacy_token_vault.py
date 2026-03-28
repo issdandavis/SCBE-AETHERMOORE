@@ -50,16 +50,12 @@ class DATA_BLOB(ctypes.Structure):
 
 
 def _utc_now() -> str:
-    return (
-        datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
-    )
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def _require_windows() -> None:
     if os.name != "nt":
-        raise RuntimeError(
-            "PrivacyTokenVault requires Windows DPAPI and is not supported on this platform."
-        )
+        raise RuntimeError("PrivacyTokenVault requires Windows DPAPI and is not supported on this platform.")
 
 
 def _blob_from_bytes(payload: bytes) -> DATA_BLOB:
@@ -234,16 +230,8 @@ class PrivacyTokenVault:
         vault_name: str = "privacy-token-vault",
     ) -> None:
         _require_windows()
-        self.vault_root = (
-            Path(vault_root)
-            if vault_root is not None
-            else Path.home() / ".scbe" / "privacy_token_vault"
-        )
-        self.vault_name = (
-            _collapse_whitespace(vault_name or "privacy-token-vault")
-            .lower()
-            .replace(" ", "-")
-        )
+        self.vault_root = Path(vault_root) if vault_root is not None else Path.home() / ".scbe" / "privacy_token_vault"
+        self.vault_name = _collapse_whitespace(vault_name or "privacy-token-vault").lower().replace(" ", "-")
         self.index_path = self.vault_root / "index.json"
         self.master_secret_path = self.vault_root / "master_secret.bin"
         self.blob_dir = self.vault_root / "blobs"
@@ -330,9 +318,7 @@ class PrivacyTokenVault:
 
     def _save_index(self) -> None:
         self._index["updated_at_utc"] = _utc_now()
-        self.index_path.write_text(
-            json.dumps(self._index, indent=2, ensure_ascii=True), encoding="utf-8"
-        )
+        self.index_path.write_text(json.dumps(self._index, indent=2, ensure_ascii=True), encoding="utf-8")
 
     def alias_for(self, value: str, kind: str = VAULT_KIND_GENERIC) -> str:
         kind = _kind_prefix(kind)
@@ -345,13 +331,9 @@ class PrivacyTokenVault:
         return self.blob_dir / kind / f"{alias}.bin"
 
     def _encrypt_record(self, alias: str, kind: str, payload: dict[str, Any]) -> bytes:
-        packed = json.dumps(payload, ensure_ascii=True, separators=(",", ":")).encode(
-            "utf-8"
-        )
+        packed = json.dumps(payload, ensure_ascii=True, separators=(",", ":")).encode("utf-8")
         entropy = self._blob_entropy(alias, kind)
-        return _dpapi_protect(
-            packed, entropy, f"SCBE Privacy Token Vault {self.vault_name} entry {alias}"
-        )
+        return _dpapi_protect(packed, entropy, f"SCBE Privacy Token Vault {self.vault_name} entry {alias}")
 
     def _decrypt_record(self, alias: str, kind: str, blob: bytes) -> dict[str, Any]:
         entropy = self._blob_entropy(alias, kind)
@@ -387,9 +369,7 @@ class PrivacyTokenVault:
             "value": value,
             "normalized": normalized,
             "metadata": safe_metadata,
-            "created_at_utc": (
-                entry.get("created_at_utc") if isinstance(entry, dict) else now
-            ),
+            "created_at_utc": (entry.get("created_at_utc") if isinstance(entry, dict) else now),
         }
         encrypted = self._encrypt_record(alias, kind, record_payload)
         blob_path.write_bytes(encrypted)
@@ -400,11 +380,7 @@ class PrivacyTokenVault:
             blob_file=str(blob_path),
             value_sha256=value_sha256,
             value_length=len(value),
-            created_at_utc=(
-                str(entry.get("created_at_utc", now))
-                if isinstance(entry, dict)
-                else now
-            ),
+            created_at_utc=(str(entry.get("created_at_utc", now)) if isinstance(entry, dict) else now),
             updated_at_utc=now,
             metadata=safe_metadata,
         )
@@ -434,22 +410,16 @@ class PrivacyTokenVault:
         source_file: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> str:
-        return self.protect(
-            value, kind=kind, source_file=source_file, metadata=metadata
-        )
+        return self.protect(value, kind=kind, source_file=source_file, metadata=metadata)
 
-    def get(
-        self, alias: str, *, include_metadata: bool = False
-    ) -> str | dict[str, Any]:
+    def get(self, alias: str, *, include_metadata: bool = False) -> str | dict[str, Any]:
         entry = self._index.get("entries", {}).get(alias)
         if not isinstance(entry, dict):
             raise KeyError(alias)
         blob_path = Path(entry["blob_file"])
         if not blob_path.exists():
             raise FileNotFoundError(blob_path)
-        payload = self._decrypt_record(
-            alias, str(entry.get("kind", VAULT_KIND_GENERIC)), blob_path.read_bytes()
-        )
+        payload = self._decrypt_record(alias, str(entry.get("kind", VAULT_KIND_GENERIC)), blob_path.read_bytes())
         if include_metadata:
             return payload
         return str(payload.get("value", ""))
@@ -497,9 +467,7 @@ class PrivacyTokenVault:
         return len(entries) if isinstance(entries, dict) else 0
 
 
-def create_vault(
-    vault_dir: str | Path | None = None, **kwargs: Any
-) -> PrivacyTokenVault:
+def create_vault(vault_dir: str | Path | None = None, **kwargs: Any) -> PrivacyTokenVault:
     return PrivacyTokenVault(vault_root=vault_dir, **kwargs)
 
 
@@ -507,9 +475,7 @@ def get_vault(vault_dir: str | Path | None = None, **kwargs: Any) -> PrivacyToke
     return create_vault(vault_dir=vault_dir, **kwargs)
 
 
-def build_vault(
-    vault_dir: str | Path | None = None, **kwargs: Any
-) -> PrivacyTokenVault:
+def build_vault(vault_dir: str | Path | None = None, **kwargs: Any) -> PrivacyTokenVault:
     return create_vault(vault_dir=vault_dir, **kwargs)
 
 

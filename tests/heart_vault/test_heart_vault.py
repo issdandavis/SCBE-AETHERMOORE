@@ -166,9 +166,7 @@ class TestHeartVaultGraph:
 
     def test_content_hash_deterministic(self):
         n1 = self.vault.add_node(NodeType.CONCEPT, "test", properties={"k": "v"})
-        n2 = Node(
-            id="other", node_type=NodeType.CONCEPT, label="test", properties={"k": "v"}
-        )
+        n2 = Node(id="other", node_type=NodeType.CONCEPT, label="test", properties={"k": "v"})
         assert n1.content_hash() == n2.content_hash()
 
     # -- Edge operations --
@@ -424,9 +422,7 @@ class TestLiteraryDevices:
 
     def test_detect_personification(self):
         hits = detect_literary_devices("The wind whispered through the trees.")
-        personifications = [
-            h for h in hits if h.device == LiteraryDevice.PERSONIFICATION
-        ]
+        personifications = [h for h in hits if h.device == LiteraryDevice.PERSONIFICATION]
         assert len(personifications) >= 1
         assert "wind whispered" in personifications[0].text
 
@@ -449,18 +445,11 @@ class TestLiteraryDevices:
 
     def test_no_false_positives_on_plain_text(self):
         hits = detect_literary_devices("The cat sat on the mat.")
-        metaphors = [
-            h
-            for h in hits
-            if h.device == LiteraryDevice.METAPHOR and h.confidence > 0.7
-        ]
+        metaphors = [h for h in hits if h.device == LiteraryDevice.METAPHOR and h.confidence > 0.7]
         assert len(metaphors) == 0
 
     def test_sorted_by_confidence(self):
-        hits = detect_literary_devices(
-            "Time is a thief. The deafening silence broke. "
-            "She told him a million times."
-        )
+        hits = detect_literary_devices("Time is a thief. The deafening silence broke. " "She told him a million times.")
         if len(hits) >= 2:
             for i in range(len(hits) - 1):
                 assert hits[i].confidence >= hits[i + 1].confidence
@@ -510,9 +499,7 @@ class TestHeartCredits:
             tongue=TongueAffinity.KO,
             quality_score=0.8,
         )
-        entry = self.ledger.contribute(
-            "agent-1", node.id, TongueAffinity.KO, quality_score=0.8
-        )
+        entry = self.ledger.contribute("agent-1", node.id, TongueAffinity.KO, quality_score=0.8)
         assert entry.amount > 0
         assert entry.action == CreditAction.CONTRIBUTE
         expected = BASE_CONTRIBUTE_REWARD * 0.8 * TONGUE_WEIGHTS[TongueAffinity.KO]
@@ -550,9 +537,7 @@ class TestHeartCredits:
         self.ledger.query("agent-1")
 
         balance = self.ledger.balance("agent-1")
-        expected = (
-            BASE_CONTRIBUTE_REWARD * 1.0 * TONGUE_WEIGHTS[TongueAffinity.KO]
-        ) - BASE_QUERY_COST
+        expected = (BASE_CONTRIBUTE_REWARD * 1.0 * TONGUE_WEIGHTS[TongueAffinity.KO]) - BASE_QUERY_COST
         assert abs(balance - expected) < 0.01
 
     def test_balance_zero_for_unknown_agent(self):
@@ -574,12 +559,8 @@ class TestHeartCredits:
         n1 = self.vault.add_node(NodeType.PROVERB, "P1")
         n2 = self.vault.add_node(NodeType.PROVERB, "P2")
 
-        self.ledger.contribute(
-            "rich-agent", n1.id, TongueAffinity.DR, quality_score=1.0
-        )
-        self.ledger.contribute(
-            "poor-agent", n2.id, TongueAffinity.KO, quality_score=0.1
-        )
+        self.ledger.contribute("rich-agent", n1.id, TongueAffinity.DR, quality_score=1.0)
+        self.ledger.contribute("poor-agent", n2.id, TongueAffinity.KO, quality_score=0.1)
 
         board = self.ledger.leaderboard()
         assert len(board) == 2
@@ -723,9 +704,7 @@ class TestIntegration:
         self.vault.add_edge(EdgeType.ILLUSTRATES, node.id, time_concept.id)
 
         # Credit the contributing agent
-        self.ledger.contribute(
-            "proverb-collector", node.id, TongueAffinity.DR, quality_score=quality
-        )
+        self.ledger.contribute("proverb-collector", node.id, TongueAffinity.DR, quality_score=quality)
 
         # Query by another agent
         self.ledger.query("wisdom-seeker", TongueAffinity.DR)

@@ -113,7 +113,7 @@ def run_stress_test(turns=20):
     print(f"\n{'Turn':<6} {'L':<10} {'Grade':<10} {'Decision':<12} {'Chord':<12} {'Flux':<10}")
     print("-" * 60)
 
-    for i, (label, text) in enumerate(texts):
+    for i, (_label, text) in enumerate(texts):
         report = gov.review(text, sim_time=float(i) * 0.5)
         grade_sym = {1: "+1", 0: " 0", -1: "-1"}[report.grade]
         print(f"{i+1:<6} {report.total_L:<10.2f} {grade_sym:<10} {report.decision:<12} {report.chord.chord_name:<12} {report.flux_state}")
@@ -150,7 +150,7 @@ def main():
             SAFE_INTERACTIONS, ADVERSARIAL_INTERACTIONS, RECOVERY_INTERACTIONS
         )
 
-        for name, result in results.items():
+        for _name, result in results.items():
             print_batch_summary(result)
             # Show first and last report
             if result.reports:

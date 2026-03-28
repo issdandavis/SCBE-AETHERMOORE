@@ -266,9 +266,7 @@ class PollyVision:
 
     # ── Accessibility Tree ────────────────────────────────────────────
 
-    async def _get_accessibility_snapshot(
-        self, page
-    ) -> tuple[str, List[InteractiveElement]]:
+    async def _get_accessibility_snapshot(self, page) -> tuple[str, List[InteractiveElement]]:
         """Extract accessibility tree and interactive elements."""
         elements: List[InteractiveElement] = []
         tree_lines: List[str] = []
@@ -300,11 +298,7 @@ class PollyVision:
                             el = locator.nth(i)
                             name = await el.get_attribute("aria-label") or ""
                             if not name:
-                                name = (
-                                    (await el.inner_text())[:80]
-                                    if role != "textbox"
-                                    else ""
-                                )
+                                name = (await el.inner_text())[:80] if role != "textbox" else ""
                             if not name:
                                 name = await el.get_attribute("placeholder") or ""
                             if not name:
@@ -361,9 +355,7 @@ class PollyVision:
                             )
                             elements.append(element)
                             state_str = f" [{element.state}]" if element.state else ""
-                            tree_lines.append(
-                                f"@{ref_id} {role}: {element.name}{state_str}"
-                            )
+                            tree_lines.append(f"@{ref_id} {role}: {element.name}{state_str}")
                             ref_id += 1
                         except Exception:
                             continue
@@ -444,9 +436,7 @@ class PollyVision:
     async def _remove_som_overlay(self, page) -> None:
         """Remove Set-of-Marks overlay labels."""
         try:
-            await page.evaluate(
-                "() => document.querySelectorAll('.polly-som-label').forEach(e => e.remove())"
-            )
+            await page.evaluate("() => document.querySelectorAll('.polly-som-label').forEach(e => e.remove())")
         except Exception:
             pass
 
@@ -462,9 +452,7 @@ class PollyVision:
         return text_tokens + image_tokens
 
     @staticmethod
-    def _generate_summary(
-        title: str, url: str, elements: List[InteractiveElement]
-    ) -> str:
+    def _generate_summary(title: str, url: str, elements: List[InteractiveElement]) -> str:
         """One-line page summary."""
         roles = {}
         for el in elements:
@@ -481,7 +469,5 @@ class PollyVision:
             "screenshots": self._screenshot_count,
             "total_tokens_est": self._total_tokens,
             "tier": self.tier.value,
-            "screenshot_rate": (
-                self._screenshot_count / max(self._observation_count, 1)
-            ),
+            "screenshot_rate": (self._screenshot_count / max(self._observation_count, 1)),
         }

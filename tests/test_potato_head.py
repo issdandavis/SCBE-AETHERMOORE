@@ -334,11 +334,7 @@ class TestPhasonModulation:
         values = [_phason_modulation(i) for i in range(100)]
         # Check that no short period exists
         for period in range(2, 20):
-            matches = sum(
-                1
-                for i in range(len(values) - period)
-                if abs(values[i] - values[i + period]) < 1e-10
-            )
+            matches = sum(1 for i in range(len(values) - period) if abs(values[i] - values[i + period]) < 1e-10)
             # An aperiodic sequence should not have perfect periodicity
             assert matches < len(values) - period
 
@@ -427,9 +423,7 @@ class TestFibonacciWord:
         """No short period exists in the Fibonacci word."""
         word = fibonacci_word(200)
         for period in range(1, 20):
-            is_periodic = all(
-                word[i] == word[i + period] for i in range(min(50, len(word) - period))
-            )
+            is_periodic = all(word[i] == word[i + period] for i in range(min(50, len(word) - period)))
             assert not is_periodic, f"Word appears periodic with period {period}"
 
 

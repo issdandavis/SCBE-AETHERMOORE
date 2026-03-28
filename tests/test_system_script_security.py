@@ -22,9 +22,7 @@ if str(ROOT) not in sys.path:
 
 import importlib.util as _ilu
 
-_ss_spec = _ilu.spec_from_file_location(
-    "src.security.secret_store", ROOT / "src" / "security" / "secret_store.py"
-)
+_ss_spec = _ilu.spec_from_file_location("src.security.secret_store", ROOT / "src" / "security" / "secret_store.py")
 _ss_mod = _ilu.module_from_spec(_ss_spec)
 _ss_spec.loader.exec_module(_ss_mod)
 _ss_mod.get_secret = lambda key, default="": default
@@ -150,20 +148,12 @@ def _load_module(name: str, relative_path: str):
     return module
 
 
-playwriter_lane_runner = _load_module(
-    "test_playwriter_lane_runner", "scripts/system/playwriter_lane_runner.py"
-)
+playwriter_lane_runner = _load_module("test_playwriter_lane_runner", "scripts/system/playwriter_lane_runner.py")
 ai_bridge = _load_module("test_ai_bridge", "scripts/system/ai_bridge.py")
-terminal_ai_router = _load_module(
-    "test_terminal_ai_router", "scripts/system/terminal_ai_router.py"
-)
-sell_from_terminal = _load_module(
-    "test_sell_from_terminal", "scripts/system/sell_from_terminal.py"
-)
+terminal_ai_router = _load_module("test_terminal_ai_router", "scripts/system/terminal_ai_router.py")
+sell_from_terminal = _load_module("test_sell_from_terminal", "scripts/system/sell_from_terminal.py")
 agentic_web_tool = _load_module("test_agentic_web_tool", "scripts/agentic_web_tool.py")
-ingest_x_post_via_hydra = _load_module(
-    "test_ingest_x_post_via_hydra", "scripts/ingest_x_post_via_hydra.py"
-)
+ingest_x_post_via_hydra = _load_module("test_ingest_x_post_via_hydra", "scripts/ingest_x_post_via_hydra.py")
 shopify_store_launch_pack = _load_module(
     "test_shopify_store_launch_pack", "scripts/system/shopify_store_launch_pack.py"
 )
@@ -226,9 +216,7 @@ def test_agentic_web_tool_http_fetch_uses_parser_and_skips_script_style(monkeypa
     </html>
     """
 
-    monkeypatch.setattr(
-        agentic_web_tool, "_http_fetch_html", lambda url, timeout=25: (200, html)
-    )
+    monkeypatch.setattr(agentic_web_tool, "_http_fetch_html", lambda url, timeout=25: (200, html))
 
     result = agentic_web_tool._http_fetch("https://example.com")
 
@@ -251,9 +239,7 @@ def test_agentic_web_tool_search_parser_and_output_dir_guard(monkeypatch):
     </html>
     """
 
-    monkeypatch.setattr(
-        agentic_web_tool, "_http_fetch_html", lambda url, timeout=25: (200, html)
-    )
+    monkeypatch.setattr(agentic_web_tool, "_http_fetch_html", lambda url, timeout=25: (200, html))
 
     results = agentic_web_tool._search_duckduckgo("alpha", max_results=5)
 
@@ -303,9 +289,7 @@ def test_shopify_strip_html_and_output_dir_guard():
 
     assert text == "Launch pack"
     assert (
-        shopify_store_launch_pack._resolve_output_dir(
-            "artifacts/shopify-launch-pack/demo"
-        )
+        shopify_store_launch_pack._resolve_output_dir("artifacts/shopify-launch-pack/demo")
         == (ROOT / "artifacts" / "shopify-launch-pack" / "demo").resolve()
     )
     with pytest.raises(ValueError, match="artifacts/"):
@@ -358,9 +342,7 @@ def test_ai_bridge_safe_model_slug_removes_path_characters():
 
 def test_terminal_ai_router_response_metadata_and_body_summary_are_sanitized():
     meta = terminal_ai_router._response_metadata("sensitive response body")
-    summary = terminal_ai_router._safe_body_summary(
-        {"token": "secret", "detail": "value"}
-    )
+    summary = terminal_ai_router._safe_body_summary({"token": "secret", "detail": "value"})
 
     assert meta["present"] is True
     assert meta["length"] == len("sensitive response body")
@@ -370,9 +352,7 @@ def test_terminal_ai_router_response_metadata_and_body_summary_are_sanitized():
 
 
 def test_terminal_ai_router_guards_endpoint_and_output_path():
-    safe_output = terminal_ai_router._resolve_artifact_output(
-        "artifacts/ai_router/test.json"
-    )
+    safe_output = terminal_ai_router._resolve_artifact_output("artifacts/ai_router/test.json")
     assert safe_output == (ROOT / "artifacts" / "ai_router" / "test.json").resolve()
 
     try:
@@ -390,9 +370,7 @@ def test_terminal_ai_router_guards_endpoint_and_output_path():
     assert validated == "https://api.openai.com/v1/models"
 
     try:
-        terminal_ai_router._validate_provider_endpoint(
-            "http://localhost:8000", "openai", {}
-        )
+        terminal_ai_router._validate_provider_endpoint("http://localhost:8000", "openai", {})
     except ValueError as exc:
         assert "https" in str(exc).lower() or "local" in str(exc).lower()
     else:
@@ -416,9 +394,7 @@ def test_sell_from_terminal_reports_secret_source_not_secret_value(monkeypatch):
 
 
 def test_sell_from_terminal_report_path_is_artifacts_scoped():
-    resolved = sell_from_terminal._resolve_report_path(
-        "artifacts/monetization/test.json"
-    )
+    resolved = sell_from_terminal._resolve_report_path("artifacts/monetization/test.json")
     assert resolved == (ROOT / "artifacts" / "monetization" / "test.json").resolve()
 
     try:

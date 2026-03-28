@@ -88,9 +88,7 @@ TONGUE_WEIGHTS = {
 # =============================================================================
 
 
-def poincare_embedding(
-    x: np.ndarray, alpha: float = 1.0, eps_ball: float = 0.01
-) -> np.ndarray:
+def poincare_embedding(x: np.ndarray, alpha: float = 1.0, eps_ball: float = 0.01) -> np.ndarray:
     """
     Layer 4: Poincaré Ball Embedding with Clamping.
 
@@ -400,9 +398,7 @@ def embed_position_simple(
     return result.embedded
 
 
-def position_risk_score(
-    pos: Position6D, safe_position: Optional[Position6D] = None
-) -> Dict[str, Any]:
+def position_risk_score(pos: Position6D, safe_position: Optional[Position6D] = None) -> Dict[str, Any]:
     """
     Compute risk score based on position in Poincaré ball.
 

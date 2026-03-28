@@ -39,11 +39,7 @@ class TestToolExfiltration:
 
     def test_exfil_urls_detected(self, gate):
         """Attacks with attacker URLs should produce elevated signals."""
-        url_attacks = [
-            a
-            for a in TOOL_EXFILTRATION
-            if "attacker" in a["prompt"] or "evil.com" in a["prompt"]
-        ]
+        url_attacks = [a for a in TOOL_EXFILTRATION if "attacker" in a["prompt"] or "evil.com" in a["prompt"]]
         for a in url_attacks:
             r = gate.process(a["prompt"], a["id"], a["class"])
             assert (

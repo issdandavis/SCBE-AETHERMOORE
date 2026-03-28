@@ -92,9 +92,7 @@ class KnowledgeGrounder:
             self.ground_truth[domain] = {}
         self.ground_truth[domain].update(facts)
 
-    def check_claim(
-        self, claim: str, domain: Optional[str] = None
-    ) -> Tuple[bool, float, Optional[str]]:
+    def check_claim(self, claim: str, domain: Optional[str] = None) -> Tuple[bool, float, Optional[str]]:
         """
         Check if a claim can be grounded in known facts.
 
@@ -250,9 +248,7 @@ class ConfidenceCalibrator:
     def __init__(self, confidence_threshold: float = 0.7):
         self.threshold = confidence_threshold
 
-    def calibrate(
-        self, text: str, claimed_confidence: float
-    ) -> Tuple[float, List[str]]:
+    def calibrate(self, text: str, claimed_confidence: float) -> Tuple[float, List[str]]:
         """
         Calibrate confidence based on language analysis.
 
@@ -262,12 +258,8 @@ class ConfidenceCalibrator:
         text_lower = text.lower()
 
         # Count certainty markers
-        high_certainty_count = sum(
-            1 for marker in self.HIGH_CERTAINTY_MARKERS if marker in text_lower
-        )
-        uncertainty_count = sum(
-            1 for marker in self.UNCERTAINTY_MARKERS if marker in text_lower
-        )
+        high_certainty_count = sum(1 for marker in self.HIGH_CERTAINTY_MARKERS if marker in text_lower)
+        uncertainty_count = sum(1 for marker in self.UNCERTAINTY_MARKERS if marker in text_lower)
 
         # Flag overclaiming
         if high_certainty_count > 2 and claimed_confidence < 0.9:
@@ -372,9 +364,7 @@ class HallucinationGuard:
         self.grounder = KnowledgeGrounder()
         self.consistency_checker = SemanticConsistencyChecker()
         self.calibrator = ConfidenceCalibrator(confidence_threshold)
-        self.cross_validator = (
-            CrossValidator(min_validators) if cross_validation_enabled else None
-        )
+        self.cross_validator = CrossValidator(min_validators) if cross_validation_enabled else None
 
         # Statistics
         self.stats = {
@@ -443,9 +433,7 @@ class HallucinationGuard:
         claims = self.extract_claims(output)
 
         # 1. Confidence Calibration
-        calibrated_confidence, confidence_warnings = self.calibrator.calibrate(
-            output, claimed_confidence
-        )
+        calibrated_confidence, confidence_warnings = self.calibrator.calibrate(output, claimed_confidence)
 
         for warning in confidence_warnings:
             hallucinations.append(
@@ -458,9 +446,7 @@ class HallucinationGuard:
 
         # 2. Fact Grounding
         for claim in claims:
-            is_grounded, ground_confidence, source = self.grounder.check_claim(
-                claim.text
-            )
+            is_grounded, ground_confidence, source = self.grounder.check_claim(claim.text)
 
             if is_grounded:
                 verified_claims.append(claim.text)
@@ -560,27 +546,18 @@ class HallucinationGuard:
         """Register domain knowledge for fact-checking."""
         self.grounder.register_ground_truth(domain, facts)
 
-    def submit_cross_validation(
-        self, claim: str, agent_id: str, is_valid: bool, confidence: float
-    ):
+    def submit_cross_validation(self, claim: str, agent_id: str, is_valid: bool, confidence: float):
         """Submit a cross-validation vote."""
         if self.cross_validator:
             claim_hash = hashlib.sha256(claim.encode()).hexdigest()[:16]
-            self.cross_validator.submit_validation(
-                claim_hash, agent_id, is_valid, confidence
-            )
+            self.cross_validator.submit_validation(claim_hash, agent_id, is_valid, confidence)
 
     def get_stats(self) -> Dict[str, Any]:
         """Get hallucination detection statistics."""
         return {
             **self.stats,
-            "rejection_rate": (
-                self.stats["rejected"] / max(1, self.stats["total_checks"])
-            ),
-            "hallucination_rate": (
-                self.stats["hallucinations_detected"]
-                / max(1, self.stats["total_checks"])
-            ),
+            "rejection_rate": (self.stats["rejected"] / max(1, self.stats["total_checks"])),
+            "hallucination_rate": (self.stats["hallucinations_detected"] / max(1, self.stats["total_checks"])),
         }
 
 
@@ -610,9 +587,7 @@ class GuardedAgentWrapper:
         output_text = json.dumps(result) if isinstance(result, dict) else str(result)
 
         # Verify output
-        verification = self.guard.verify_output(
-            agent_id=self.agent.id, output=output_text, context=task_data
-        )
+        verification = self.guard.verify_output(agent_id=self.agent.id, output=output_text, context=task_data)
 
         # Handle based on status
         if verification.status == VerificationStatus.VERIFIED:
@@ -650,9 +625,7 @@ class GuardedAgentWrapper:
                     "confidence": verification.confidence_score,
                     "unverified_claims": verification.unverified_claims,
                     "warnings": [
-                        h["description"]
-                        for h in verification.hallucinations_detected
-                        if h.get("severity") == "low"
+                        h["description"] for h in verification.hallucinations_detected if h.get("severity") == "low"
                     ],
                 },
             }

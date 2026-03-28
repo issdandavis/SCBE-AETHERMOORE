@@ -6,19 +6,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = (
-    ROOT
-    / "skills"
-    / "codex-mirror"
-    / "scbe-code-scanning-ops"
-    / "scripts"
-    / "inspect_code_scanning_alerts.py"
+    ROOT / "skills" / "codex-mirror" / "scbe-code-scanning-ops" / "scripts" / "inspect_code_scanning_alerts.py"
 )
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location(
-        "test_code_scanning_alerts", SCRIPT_PATH
-    )
+    spec = importlib.util.spec_from_file_location("test_code_scanning_alerts", SCRIPT_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -55,9 +48,7 @@ def test_summarize_alerts_groups_rule_and_path_counts() -> None:
                 "name": "Incomplete URL substring sanitization",
                 "security_severity_level": "high",
             },
-            "most_recent_instance": {
-                "location": {"path": "src/browser/toolkit.py", "start_line": 189}
-            },
+            "most_recent_instance": {"location": {"path": "src/browser/toolkit.py", "start_line": 189}},
             "html_url": "https://example.test/2258",
         },
         {
@@ -69,9 +60,7 @@ def test_summarize_alerts_groups_rule_and_path_counts() -> None:
                 "name": "Bad HTML filtering regexp",
                 "security_severity_level": "high",
             },
-            "most_recent_instance": {
-                "location": {"path": "src/browser/toolkit.py", "start_line": 136}
-            },
+            "most_recent_instance": {"location": {"path": "src/browser/toolkit.py", "start_line": 136}},
             "html_url": "https://example.test/2259",
         },
     ]

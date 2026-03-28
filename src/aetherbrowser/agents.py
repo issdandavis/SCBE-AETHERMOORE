@@ -67,13 +67,9 @@ _PAGE_KEYWORDS = {"page", "summarize", "extract", "this"}
 class AgentSquad:
     def __init__(self, feed: WsFeed):
         self.feed = feed
-        self.agents: dict[TongueRole, AgentInfo] = {
-            role: AgentInfo(role=role) for role in TongueRole
-        }
+        self.agents: dict[TongueRole, AgentInfo] = {role: AgentInfo(role=role) for role in TongueRole}
 
-    def set_state(
-        self, role: TongueRole, state: AgentState, model: str | None = None
-    ) -> None:
+    def set_state(self, role: TongueRole, state: AgentState, model: str | None = None) -> None:
         self.agents[role].state = state
         if model:
             self.agents[role].model = model
@@ -88,9 +84,7 @@ class AgentSquad:
             for role, info in self.agents.items()
         }
 
-    def decompose(
-        self, text: str, task_type: str | None = None
-    ) -> list[dict[str, Any]]:
+    def decompose(self, text: str, task_type: str | None = None) -> list[dict[str, Any]]:
         if task_type is None:
             task_type = self.infer_task_type(text)
         roles = _TASK_ROLES.get(task_type, _TASK_ROLES["default"])

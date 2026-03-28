@@ -580,7 +580,7 @@ def run_full_benchmark():
         attack_classes.setdefault(a["class"], []).append(a)
 
     _print_line(f"{'Class':<25} {'A:None':>10} {'B:ProtAI':>10} {'C:Meta':>10} {'D:KeyWd':>10} {'E:SCBE':>10}")
-    for cls, class_attacks in sorted(attack_classes.items()):
+    for cls, _class_attacks in sorted(attack_classes.items()):
         row = []
         for key in "ABCDE":
             cls_traces = [results[key].traces[i] for i, a in enumerate(attacks) if a["class"] == cls]

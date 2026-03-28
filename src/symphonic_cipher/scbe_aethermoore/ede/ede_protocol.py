@@ -163,25 +163,16 @@ class EDEMessage:
 
         expected_len = HEADER_SIZE + header.payload_len + MAC_SIZE
         if len(data) < expected_len:
-            raise ValueError(
-                f"Message truncated: expected {expected_len}, got {len(data)}"
-            )
+            raise ValueError(f"Message truncated: expected {expected_len}, got {len(data)}")
 
         payload = data[HEADER_SIZE : HEADER_SIZE + header.payload_len]
-        mac = data[
-            HEADER_SIZE
-            + header.payload_len : HEADER_SIZE
-            + header.payload_len
-            + MAC_SIZE
-        ]
+        mac = data[HEADER_SIZE + header.payload_len : HEADER_SIZE + header.payload_len + MAC_SIZE]
 
         return cls(header=header, payload=payload, mac=mac)
 
     def verify_mac(self, mac_key: bytes) -> bool:
         """Verify message MAC."""
-        expected = hmac.new(
-            mac_key, self.header.to_bytes() + self.payload, hashlib.sha256
-        ).digest()
+        expected = hmac.new(mac_key, self.header.to_bytes() + self.payload, hashlib.sha256).digest()
         return hmac.compare_digest(self.mac, expected)
 
 
@@ -274,15 +265,11 @@ class EDEStation:
         self.sequence_counter += 1
 
         # Compute MAC
-        mac = hmac.new(
-            self.mac_key, header.to_bytes() + encrypted_payload, hashlib.sha256
-        ).digest()
+        mac = hmac.new(self.mac_key, header.to_bytes() + encrypted_payload, hashlib.sha256).digest()
 
         return EDEMessage(header=header, payload=encrypted_payload, mac=mac)
 
-    def receive(
-        self, message: EDEMessage, sender_id: str = "unknown"
-    ) -> Tuple[bytes, bool]:
+    def receive(self, message: EDEMessage, sender_id: str = "unknown") -> Tuple[bytes, bool]:
         """
         Receive and decode an EDE message.
 
@@ -345,14 +332,10 @@ class MarsLink:
 
     earth_station: EDEStation
     mars_station: EDEStation
-    current_distance_m: float = (
-        (MARS_LIGHT_TIME_MIN + MARS_LIGHT_TIME_MAX) / 2 * LIGHT_SPEED
-    )
+    current_distance_m: float = (MARS_LIGHT_TIME_MIN + MARS_LIGHT_TIME_MAX) / 2 * LIGHT_SPEED
 
     @classmethod
-    def establish(
-        cls, shared_seed: bytes, config: Optional[RingConfig] = None
-    ) -> "MarsLink":
+    def establish(cls, shared_seed: bytes, config: Optional[RingConfig] = None) -> "MarsLink":
         """
         Establish a Mars communication link.
 

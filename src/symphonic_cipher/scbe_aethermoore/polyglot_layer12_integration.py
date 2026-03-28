@@ -158,9 +158,7 @@ def analyze_text_by_tongue(text: str) -> Dict[TongueID, float]:
     return {t: count / total_chars for t, count in tongue_counts.items()}
 
 
-def compute_semantic_phases(
-    text: str, base_phases: Optional[Dict[TongueID, float]] = None
-) -> Dict[TongueID, float]:
+def compute_semantic_phases(text: str, base_phases: Optional[Dict[TongueID, float]] = None) -> Dict[TongueID, float]:
     """
     Compute semantic phase angles for text.
 
@@ -229,9 +227,7 @@ def encode_text_semantic(text: str) -> SemanticVector:
 # =============================================================================
 
 
-def layer1_complex_state_from_semantic(
-    semantic: SemanticVector, D: int = 6
-) -> Tuple[np.ndarray, np.ndarray]:
+def layer1_complex_state_from_semantic(semantic: SemanticVector, D: int = 6) -> Tuple[np.ndarray, np.ndarray]:
     """
     Layer 1: Construct complex state from semantic encoding.
 
@@ -262,9 +258,7 @@ def layer1_complex_state_from_semantic(
     return real, imag
 
 
-def layer1_complex_state_from_text(
-    text: str, D: int = 6
-) -> Tuple[np.ndarray, np.ndarray]:
+def layer1_complex_state_from_text(text: str, D: int = 6) -> Tuple[np.ndarray, np.ndarray]:
     """
     Layer 1: Construct complex state directly from text.
 

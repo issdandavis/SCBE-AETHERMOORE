@@ -19,9 +19,7 @@ PHI = (1 + math.sqrt(5)) / 2
 FIB_LADDER = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144]
 
 
-def phi_lifted_poincare_projection(
-    v_raw: np.ndarray, k_depths: np.ndarray
-) -> np.ndarray:
+def phi_lifted_poincare_projection(v_raw: np.ndarray, k_depths: np.ndarray) -> np.ndarray:
     """Project phi-lifted vectors into the Poincare ball as concentric shells.
 
     v_raw: Ternary vector [-1, 0, 1] per dimension

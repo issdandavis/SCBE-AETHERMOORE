@@ -46,7 +46,5 @@ async def test_navigate_raises_when_cdp_reports_error(monkeypatch):
 
     monkeypatch.setattr(backend, "_send", fake_send)
 
-    with pytest.raises(
-        RuntimeError, match="Navigation failed: net::ERR_NAME_NOT_RESOLVED"
-    ):
+    with pytest.raises(RuntimeError, match="Navigation failed: net::ERR_NAME_NOT_RESOLVED"):
         await backend.navigate("https://bad.invalid")
