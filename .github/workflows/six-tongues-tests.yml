@@ -7,12 +7,6 @@ on:
       - '**.py'
       - 'requirements*.txt'
       - '.github/workflows/six-tongues-tests.yml'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - '**.py'
-      - 'requirements*.txt'
-      - '.github/workflows/six-tongues-tests.yml'
 
 permissions:
   contents: read
