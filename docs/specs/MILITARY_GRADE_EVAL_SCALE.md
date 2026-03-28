@@ -1,7 +1,19 @@
-# SCBE Military-Grade Evaluation Scale (17 Points)
+# SCBE Evaluation Scale (17 Points)
 
-Based on NIST SP 800-53 control families, DISA STIG severity categories,
-and DoD RMF assessment scales. Adapted for AI governance systems.
+**Important**: This is SCBE-AETHERMOORE's proprietary engineering benchmark, NOT an official
+US government standard. It synthesizes concepts from real frameworks (NIST SP 800-53 control
+families, DISA STIG severity categories, DoD RMF assessment scales) into a practical
+measurement ladder for adversarial AI defense — a space where no official tiered scoring
+system exists yet.
+
+Real government standards use different structures:
+- **DoD Impact Levels**: IL2, IL4, IL5, IL6 (cloud classification, not AI scoring)
+- **NIST SP 800-53**: Low / Moderate / High baselines (control catalogs, not numeric tiers)
+- **NIST AI RMF**: Govern / Map / Measure / Manage (broad guidelines, not prompt injection scores)
+- **DISA STIGs**: CAT I / II / III severity (no AI-specific STIG exists as of March 2026)
+
+The value of this scale: it translates dense government compliance requirements into
+concrete code milestones with measurable detection/evasion thresholds.
 
 ## The 17-Point Scale
 
