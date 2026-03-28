@@ -29,7 +29,7 @@
  * A5: Composition — snapshot composes pipeline + tongue + queue state
  */
 
-import { createHash } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 
 // ============================================================================
 // Diagnostic States
@@ -567,7 +567,7 @@ export class DiagnosticEngine {
   /** Generate deterministic snapshot ID */
   private generateSnapshotId(actorId: string, intent: string): string {
     const hash = createHash('sha256')
-      .update(`${actorId}:${intent}:${Date.now()}:${Math.random()}`)
+      .update(`${actorId}:${intent}:${Date.now()}:${randomBytes(8).toString('hex')}`)
       .digest('hex')
       .slice(0, 16);
     return `diag-${hash}`;
