@@ -14,7 +14,7 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-ARTIFACTS_DIR = REPO_ROOT / "artifacts" / "benchmarks"
+ARTIFACTS_DIR = REPO_ROOT / "artifacts" / "benchmark"
 REPORTS_DIR = ARTIFACTS_DIR / "reports"
 
 # Ensure output dirs exist at import time
