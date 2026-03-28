@@ -944,7 +944,7 @@ def inflow_chatgpt() -> List[InflowNote]:
 
         # Build a preview of the conversation
         messages: List[str] = []
-        for node_id, node in mapping.items():
+        for _node_id, node in mapping.items():
             msg = node.get("message")
             if not msg:
                 continue
