@@ -1,8 +1,9 @@
 name: CI Auto-Fix
 
-# Purpose: Apply deterministic, safe fixes (formatting only) when CI fails on main.
-# NOTE: Keep workflow syntax and expressions conservative; this file previously caused
-# "workflow file issue" failures at parse time.
+# SECURITY: This workflow uses workflow_run which runs in a PRIVILEGED context.
+# We ONLY checkout the default branch (main), never untrusted PR code.
+# All user-controlled values go through env vars, never ${{ }} interpolation
+# in run: blocks.
 
 on:
   workflow_run:
@@ -16,72 +17,141 @@ permissions:
 
 jobs:
   auto-fix:
-    # Only run on failures from main, never on forks.
-    if: github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository
+    # Only on failure, skip our own fix branches to prevent infinite loops
+    if: |
+      github.event.workflow_run.conclusion == 'failure' &&
+      !startsWith(github.event.workflow_run.head_branch, 'fix/ci-auto-fix')
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    # SECURITY: Pass all user-controlled values through env, never interpolate
+    # into shell commands with ${{ }}
     env:
-      RUN_ID: ${{ github.event.workflow_run.id }}
-      RUN_URL: ${{ github.event.workflow_run.html_url }}
+      FAILED_RUN_ID: ${{ github.event.workflow_run.id }}
+      FAILED_BRANCH: ${{ github.event.workflow_run.head_branch }}
+      FAILED_WORKFLOW: ${{ github.event.workflow_run.name }}
+      FAILED_URL: ${{ github.event.workflow_run.html_url }}
+      HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
+      THIS_REPO: ${{ github.repository }}
 
     steps:
-      - name: Checkout default branch
-        uses: actions/checkout@v4
+      # SECURITY: Verify the triggering workflow is NOT from a fork BEFORE checkout.
+      # This prevents any untrusted code from being checked out.
+      - name: Verify workflow is not from a fork
+        run: |
+          if [ "$HEAD_REPO" != "$THIS_REPO" ]; then
+            echo "::error::Refusing to run auto-fix on fork PR - security risk"
+            exit 1
+          fi
+
+      # SECURITY: Checkout the DEFAULT branch (main), not the PR branch.
+      # This ensures we never execute untrusted code from a PR.
+      - uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
+      - name: Configure git
+        run: |
+          git config user.email "ci-auto-fix[bot]@users.noreply.github.com"
+          git config user.name "ci-auto-fix[bot]"
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
 
-      - name: Install minimal tooling
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install black ruff
-          npm ci --ignore-scripts 2>/dev/null || true
+          pip install black flake8
+          npm ci --ignore-scripts
+        continue-on-error: true
 
-      - name: Apply deterministic formatting fixes
+      - name: Detect and classify failures
+        id: detect
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python -m black --target-version py311 --line-length 120 src/ tests/ 2>/dev/null || true
-          ruff check --config ruff.toml --fix 2>/dev/null || true
+          if ! python scripts/ci/detect_failures.py \
+            --run-id "$FAILED_RUN_ID" \
+            --json > /tmp/failure_report.json 2>&1; then
+            echo "::warning::Failure detection script encountered errors"
+          fi
 
-      - name: Create fix PR if changes exist
+          if [ ! -s /tmp/failure_report.json ]; then
+            echo '{"failure_count":0,"failures":[],"raw_errors":[]}' > /tmp/failure_report.json
+          fi
+
+          FCOUNT=$(python3 -c "import json; print(json.load(open('/tmp/failure_report.json')).get('failure_count', 0))" 2>/dev/null || echo 0)
+          echo "failure_count=$FCOUNT" >> $GITHUB_OUTPUT
+
+          HAS_FORMAT=$(python3 -c "import json; d=json.load(open('/tmp/failure_report.json')); print('true' if any(f.get('fix_strategy')=='black_format' for f in d.get('failures',[])) else 'false')")
+          echo "has_format=$HAS_FORMAT" >> $GITHUB_OUTPUT
+
+          echo "### Failure Detection" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run**: $FAILED_RUN_ID" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: $FAILED_BRANCH" >> $GITHUB_STEP_SUMMARY
+          echo "- **Failures**: $FCOUNT" >> $GITHUB_STEP_SUMMARY
+
+      # -- Deterministic fixes only (no AI -- removes need for ANTHROPIC_API_KEY) --
+      - name: Apply Black formatting
+        if: steps.detect.outputs.has_format == 'true'
+        continue-on-error: true
+        run: |
+          python -m black --target-version py311 --line-length 120 src/ tests/
+
+      - name: Apply npm audit fix
+        if: steps.detect.outputs.failure_count > 0
+        continue-on-error: true
+        run: npm audit fix
+
+      # -- Create PR if changes were made --
+      - name: Create fix PR
+        if: steps.detect.outputs.failure_count > 0
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ -z "$(git diff --stat)" ] && [ -z "$(git diff --cached --stat)" ]; then
-            echo "No deterministic fixes to apply." >> "$GITHUB_STEP_SUMMARY"
-            echo "- CI run: $RUN_URL" >> "$GITHUB_STEP_SUMMARY"
+            echo "No fixes could be applied automatically."
+            echo "### Result: No auto-fix available" >> $GITHUB_STEP_SUMMARY
+            python3 -c "
+          import json
+          d = json.load(open('/tmp/failure_report.json'))
+          cmds = d.get('fix_commands', [])
+          if cmds:
+              print('### Suggested Manual Commands')
+              for c in cmds: print(f'- \`{c[:120]}\`')
+          " >> $GITHUB_STEP_SUMMARY
             exit 0
           fi
 
-          BRANCH="fix/ci-auto-fix-${RUN_ID}"
-
-          git config user.email "ci-auto-fix[bot]@users.noreply.github.com"
-          git config user.name "ci-auto-fix[bot]"
-
+          # SECURITY: Use env var for branch name, never interpolate directly
+          BRANCH="fix/ci-auto-fix-${FAILED_RUN_ID}"
           git checkout -b "$BRANCH"
           git add -A
-          git commit -m "fix(ci): auto-fix formatting from run ${RUN_ID}"
+          git commit -m "fix(ci): auto-fix from run ${FAILED_RUN_ID}
+
+          Automated fix for ${FAILED_WORKFLOW} failure.
+
+          Co-Authored-By: CI Auto-Fix Bot <noreply@github.com>"
           git push origin "$BRANCH"
 
-          gh pr create \
-            --title "fix(ci): auto-fix formatting" \
-            --body "Deterministic formatting-only fixes for CI failure: ${RUN_URL}" \
-            --base main \
-            --head "$BRANCH" \
-            --label "ci-auto-fix" || true
+          FCOUNT=$(python3 -c "import json; print(json.load(open('/tmp/failure_report.json')).get('failure_count', 0))")
 
-          echo "Fix PR created (or already exists)." >> "$GITHUB_STEP_SUMMARY"
-          echo "- Branch: $BRANCH" >> "$GITHUB_STEP_SUMMARY"
-          echo "- CI run: $RUN_URL" >> "$GITHUB_STEP_SUMMARY"
+          # SECURITY: Use env var for --base, not ${{ }} interpolation
+          gh pr create \
+            --title "fix(ci): auto-fix $FCOUNT failure(s) from run ${FAILED_RUN_ID}" \
+            --body "## Automated CI Fix
+
+          **Failed run**: ${FAILED_URL}
+          **Workflow**: ${FAILED_WORKFLOW}
+          **Branch**: ${FAILED_BRANCH}
+
+          Generated by CI Auto-Fix workflow. Please review before merging." \
+            --base "${FAILED_BRANCH}" \
+            --label "ci-auto-fix"
+
+          echo "### Result: Fix PR created" >> $GITHUB_STEP_SUMMARY
