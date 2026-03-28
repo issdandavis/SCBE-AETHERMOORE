@@ -1,0 +1,246 @@
+{
+  "generated_at_utc": "2026-03-28T22:17:57.590933+00:00",
+  "count": 24,
+  "spheres": [
+    {
+      "id": "AV-T1-Web-Search",
+      "tongue": "AV",
+      "tier": 1,
+      "name": "Web Search",
+      "cost": 12.9,
+      "phi": 0.0,
+      "rel_md": "AV-Transport/T1-Web-Search/_sphere.md",
+      "rel_link": "AV-Transport/T1-Web-Search/_sphere"
+    },
+    {
+      "id": "AV-T2-Navigation",
+      "tongue": "AV",
+      "tier": 2,
+      "name": "Navigation",
+      "cost": 25.9,
+      "phi": 0.4,
+      "rel_md": "AV-Transport/T2-Navigation/_sphere.md",
+      "rel_link": "AV-Transport/T2-Navigation/_sphere"
+    },
+    {
+      "id": "AV-T3-Site-Mapping",
+      "tongue": "AV",
+      "tier": 3,
+      "name": "Site Mapping",
+      "cost": 38.8,
+      "phi": 0.8,
+      "rel_md": "AV-Transport/T3-Site-Mapping/_sphere.md",
+      "rel_link": "AV-Transport/T3-Site-Mapping/_sphere"
+    },
+    {
+      "id": "AV-T4-Fleet-Transport",
+      "tongue": "AV",
+      "tier": 4,
+      "name": "Fleet Transport",
+      "cost": 51.8,
+      "phi": 1.2,
+      "rel_md": "AV-Transport/T4-Fleet-Transport/_sphere.md",
+      "rel_link": "AV-Transport/T4-Fleet-Transport/_sphere"
+    },
+    {
+      "id": "CA-T1-Code-Generation",
+      "tongue": "CA",
+      "tier": 1,
+      "name": "Code Generation",
+      "cost": 33.9,
+      "phi": 0.0,
+      "rel_md": "CA-Compute/T1-Code-Generation/_sphere.md",
+      "rel_link": "CA-Compute/T1-Code-Generation/_sphere"
+    },
+    {
+      "id": "CA-T2-Test-Writing",
+      "tongue": "CA",
+      "tier": 2,
+      "name": "Test Writing",
+      "cost": 67.8,
+      "phi": 0.4,
+      "rel_md": "CA-Compute/T2-Test-Writing/_sphere.md",
+      "rel_link": "CA-Compute/T2-Test-Writing/_sphere"
+    },
+    {
+      "id": "CA-T3-Training-Pipeline",
+      "tongue": "CA",
+      "tier": 3,
+      "name": "Training Pipeline",
+      "cost": 101.7,
+      "phi": 0.8,
+      "rel_md": "CA-Compute/T3-Training-Pipeline/_sphere.md",
+      "rel_link": "CA-Compute/T3-Training-Pipeline/_sphere"
+    },
+    {
+      "id": "CA-T4-Model-Deployment",
+      "tongue": "CA",
+      "tier": 4,
+      "name": "Model Deployment",
+      "cost": 135.6,
+      "phi": 1.2,
+      "rel_md": "CA-Compute/T4-Model-Deployment/_sphere.md",
+      "rel_link": "CA-Compute/T4-Model-Deployment/_sphere"
+    },
+    {
+      "id": "DR-T1-Documentation",
+      "tongue": "DR",
+      "tier": 1,
+      "name": "Documentation",
+      "cost": 88.7,
+      "phi": 0.0,
+      "rel_md": "DR-Structure/T1-Documentation/_sphere.md",
+      "rel_link": "DR-Structure/T1-Documentation/_sphere"
+    },
+    {
+      "id": "DR-T2-Debugging",
+      "tongue": "DR",
+      "tier": 2,
+      "name": "Debugging",
+      "cost": 177.4,
+      "phi": 0.4,
+      "rel_md": "DR-Structure/T2-Debugging/_sphere.md",
+      "rel_link": "DR-Structure/T2-Debugging/_sphere"
+    },
+    {
+      "id": "DR-T3-Self-Healing",
+      "tongue": "DR",
+      "tier": 3,
+      "name": "Self Healing",
+      "cost": 266.2,
+      "phi": 0.8,
+      "rel_md": "DR-Structure/T3-Self-Healing/_sphere.md",
+      "rel_link": "DR-Structure/T3-Self-Healing/_sphere"
+    },
+    {
+      "id": "DR-T4-Architecture",
+      "tongue": "DR",
+      "tier": 4,
+      "name": "Architecture",
+      "cost": 354.9,
+      "phi": 1.2,
+      "rel_md": "DR-Structure/T4-Architecture/_sphere.md",
+      "rel_link": "DR-Structure/T4-Architecture/_sphere"
+    },
+    {
+      "id": "KO-T1-Task-Dispatch",
+      "tongue": "KO",
+      "tier": 1,
+      "name": "Task Dispatch",
+      "cost": 8.0,
+      "phi": 0.0,
+      "rel_md": "KO-Command/T1-Task-Dispatch/_sphere.md",
+      "rel_link": "KO-Command/T1-Task-Dispatch/_sphere"
+    },
+    {
+      "id": "KO-T2-Formation-Swap",
+      "tongue": "KO",
+      "tier": 2,
+      "name": "Formation Swap",
+      "cost": 16.0,
+      "phi": 0.4,
+      "rel_md": "KO-Command/T2-Formation-Swap/_sphere.md",
+      "rel_link": "KO-Command/T2-Formation-Swap/_sphere"
+    },
+    {
+      "id": "KO-T3-Rally-Coordination",
+      "tongue": "KO",
+      "tier": 3,
+      "name": "Rally Coordination",
+      "cost": 24.0,
+      "phi": 0.8,
+      "rel_md": "KO-Command/T3-Rally-Coordination/_sphere.md",
+      "rel_link": "KO-Command/T3-Rally-Coordination/_sphere"
+    },
+    {
+      "id": "KO-T4-Sovereign-Command",
+      "tongue": "KO",
+      "tier": 4,
+      "name": "Sovereign Command",
+      "cost": 32.0,
+      "phi": 1.2,
+      "rel_md": "KO-Command/T4-Sovereign-Command/_sphere.md",
+      "rel_link": "KO-Command/T4-Sovereign-Command/_sphere"
+    },
+    {
+      "id": "RU-T1-Hypothesis-Generation",
+      "tongue": "RU",
+      "tier": 1,
+      "name": "Hypothesis Generation",
+      "cost": 20.9,
+      "phi": 0.0,
+      "rel_md": "RU-Entropy/T1-Hypothesis-Generation/_sphere.md",
+      "rel_link": "RU-Entropy/T1-Hypothesis-Generation/_sphere"
+    },
+    {
+      "id": "RU-T2-Data-Collection",
+      "tongue": "RU",
+      "tier": 2,
+      "name": "Data Collection",
+      "cost": 41.9,
+      "phi": 0.4,
+      "rel_md": "RU-Entropy/T2-Data-Collection/_sphere.md",
+      "rel_link": "RU-Entropy/T2-Data-Collection/_sphere"
+    },
+    {
+      "id": "RU-T3-Chaos-Testing",
+      "tongue": "RU",
+      "tier": 3,
+      "name": "Chaos Testing",
+      "cost": 62.8,
+      "phi": 0.8,
+      "rel_md": "RU-Entropy/T3-Chaos-Testing/_sphere.md",
+      "rel_link": "RU-Entropy/T3-Chaos-Testing/_sphere"
+    },
+    {
+      "id": "RU-T4-Entropy-Oracle",
+      "tongue": "RU",
+      "tier": 4,
+      "name": "Entropy Oracle",
+      "cost": 83.8,
+      "phi": 1.2,
+      "rel_md": "RU-Entropy/T4-Entropy-Oracle/_sphere.md",
+      "rel_link": "RU-Entropy/T4-Entropy-Oracle/_sphere"
+    },
+    {
+      "id": "UM-T1-Governance-Scan",
+      "tongue": "UM",
+      "tier": 1,
+      "name": "Governance Scan",
+      "cost": 54.8,
+      "phi": 0.0,
+      "rel_md": "UM-Security/T1-Governance-Scan/_sphere.md",
+      "rel_link": "UM-Security/T1-Governance-Scan/_sphere"
+    },
+    {
+      "id": "UM-T2-Threat-Detection",
+      "tongue": "UM",
+      "tier": 2,
+      "name": "Threat Detection",
+      "cost": 109.7,
+      "phi": 0.4,
+      "rel_md": "UM-Security/T2-Threat-Detection/_sphere.md",
+      "rel_link": "UM-Security/T2-Threat-Detection/_sphere"
+    },
+    {
+      "id": "UM-T3-Audit-Trail",
+      "tongue": "UM",
+      "tier": 3,
+      "name": "Audit Trail",
+      "cost": 164.5,
+      "phi": 0.8,
+      "rel_md": "UM-Security/T3-Audit-Trail/_sphere.md",
+      "rel_link": "UM-Security/T3-Audit-Trail/_sphere"
+    },
+    {
+      "id": "UM-T4-Seal-Enforcement",
+      "tongue": "UM",
+      "tier": 4,
+      "name": "Seal Enforcement",
+      "cost": 219.3,
+      "phi": 1.2,
+      "rel_md": "UM-Security/T4-Seal-Enforcement/_sphere.md",
+      "rel_link": "UM-Security/T4-Seal-Enforcement/_sphere"
+    }
+  ]
+}
