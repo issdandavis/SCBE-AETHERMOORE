@@ -53,6 +53,23 @@ _RING_ORDER: Dict[str, int] = {
 }
 
 
+DEFAULT_EGG_SELF_TAG = "SCBE-AETHERMOORE:SacredEggGenesis:v1"
+
+
+def self_detect_shape(egg_id: str, self_tag: str = DEFAULT_EGG_SELF_TAG) -> str:
+    """Deterministic self-identity fingerprint for an egg.
+
+    This is the python-side equivalent of:
+      selfShape := H(selfShapeBase || selfTag)
+
+    We use egg_id as the stable base shape (it is derived from the yolk envelope),
+    then bind it to a stable protocol label (self_tag).
+
+    Returns a hex SHA-256 digest (64 chars).
+    """
+    return hashlib.sha256(f"{egg_id}|{self_tag}".encode()).hexdigest()
+
+
 # =============================================================================
 # Data Structures
 # =============================================================================
@@ -85,6 +102,9 @@ class SacredEgg:
     glyph: str
     hatch_condition: dict
     yolk_ct: dict
+    # Genesis-bound self identity (unchanging variables linked to genesis protocol)
+    self_tag: str = DEFAULT_EGG_SELF_TAG
+    self_shape: str = ""
 
     # --- Biological anatomy accessors ---
 
@@ -96,6 +116,8 @@ class SacredEgg:
             "glyph": self.glyph,
             "primary_tongue": self.primary_tongue,
             "hatch_condition": self.hatch_condition,
+            "self_tag": self.self_tag,
+            "self_shape": self.self_shape,
         }
 
     @property
@@ -224,6 +246,8 @@ class SacredEggIntegrator:
         pt_b64 = base64.b64encode(payload).decode()
         env = toolkit.geoseal_encrypt(pt_b64, context, pk_kem_b64, sk_dsa_b64)
         egg_id = hashlib.sha256(json.dumps(env, sort_keys=True).encode()).hexdigest()[:16]
+        self_tag = DEFAULT_EGG_SELF_TAG
+        self_shape = self_detect_shape(egg_id, self_tag)
 
         return SacredEgg(
             egg_id=egg_id,
@@ -231,6 +255,8 @@ class SacredEggIntegrator:
             glyph=glyph,
             hatch_condition=dict(hatch_condition),
             yolk_ct=env,
+            self_tag=self_tag,
+            self_shape=self_shape,
         )
 
     def hatch_egg(
@@ -279,6 +305,12 @@ class SacredEggIntegrator:
         ct_spec_b64 = egg.yolk_ct.get("ct_spec", "")
         ct_spec_len = len(base64.b64decode(ct_spec_b64)) if ct_spec_b64 else 16
         fail_tokens = _sealed_noise_tokens(self.xt, agent_tongue, nbytes=ct_spec_len)
+
+        # --- Self-identity integrity check (genesis-bound) ---
+        # Back-compat: if fields are missing/empty, do not fail here.
+        if egg.self_tag and egg.self_shape:
+            if self_detect_shape(egg.egg_id, egg.self_tag) != egg.self_shape:
+                return HatchResult(False, fail_tokens, None, "sealed")
 
         # --- Enforce hatch conditions (geometric) ---
 
@@ -372,6 +404,8 @@ class SacredEggIntegrator:
             glyph=glyph if glyph is not None else egg.glyph,
             hatch_condition=(dict(hatch_condition) if hatch_condition is not None else dict(egg.hatch_condition)),
             yolk_ct=egg.yolk_ct,
+            self_tag=egg.self_tag,
+            self_shape=egg.self_shape,
         )
 
     def to_json(self, egg: SacredEgg) -> str:

@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SCBE AI Governance Toolkit | One-Time Pack for Governed AI Workflows</title>
-  <meta name="description" content="Buy the SCBE AI Governance Toolkit: a one-time package for governed AI workflows with templates, decision records, setup guidance, buyer manual, and direct support.">
+  <title>SCBE-AETHERMOORE AI Governance Toolkit | Governed AI Workflow Starter Pack</title>
+  <meta name="description" content="Buy the SCBE AI Governance Toolkit: a one-time starter pack for governed AI workflows with templates, policy examples, a buyer manual, delivery guidance, and direct support.">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta property="og:title" content="SCBE AI Governance Toolkit">
-  <meta property="og:description" content="One pack. One payment. One manual. Start using governed AI workflow templates tonight.">
+  <meta property="og:description" content="One payment. One delivery path. One manual. Start governed AI work without digging through the whole repo.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://aethermoorgames.com/">
   <meta property="og:image" content="https://aethermoorgames.com/hero.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="SCBE AI Governance Toolkit">
-  <meta name="twitter:description" content="A one-time toolkit for governed AI workflows. No subscription. Direct delivery.">
+  <meta name="twitter:description" content="A one-time governed AI workflow starter pack with manual, delivery path, and support.">
   <meta name="twitter:image" content="https://aethermoorgames.com/hero.png">
   <link rel="canonical" href="https://aethermoorgames.com/">
   <link rel="stylesheet" href="static/polly-sidebar.css">
@@ -245,6 +245,13 @@
       color: var(--muted);
       margin-bottom: 18px;
     }
+    .offer-hero {
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 22px 70px rgba(0,0,0,0.4);
+      margin: 8px 0 16px;
+    }
     .offer-list {
       list-style: none;
       display: grid;
@@ -281,6 +288,9 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 22px;
     }
+    .split.split-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
     .slab {
       background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.06);
@@ -296,6 +306,23 @@
       padding-left: 18px;
       display: grid;
       gap: 10px;
+    }
+    .checklist {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 6px;
+    }
+    .checklist li {
+      position: relative;
+      padding-left: 22px;
+    }
+    .checklist li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--accent);
+      font-weight: 700;
     }
     .flow {
       display: grid;
@@ -389,11 +416,10 @@
         <a href="#includes">What you get</a>
         <a href="#delivery">Delivery</a>
         <a href="product-manual/ai-governance-toolkit.html">Manual</a>
-        <a href="redteam.html">Red Team</a>
+        <a href="#proof">Proof</a>
         <a href="articles/index.html">Articles</a>
         <a href="research/index.html">Research</a>
         <a href="support.html">Support</a>
-        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
       </nav>
     </div>
   </header>
@@ -402,29 +428,29 @@
     <section class="hero" id="offer">
       <div class="hero-grid">
         <div class="hero-copy">
-          <div class="eyebrow">One offer. One path to cash.</div>
-          <h1>Buy one thing and start using SCBE tonight.</h1>
+          <div class="eyebrow">Governed AI workflow starter pack</div>
+          <h1>Start governed AI work without digging through the whole stack.</h1>
           <p>
-            The <strong>SCBE AI Governance Toolkit</strong> is the cleanest entry into the project: a one-time package for governed AI workflows with starter templates, decision records, setup guidance, a buyer manual, and direct support.
+            The <strong>SCBE AI Governance Toolkit</strong> gives you the usable layer first: starter templates, decision-record structure, threshold examples, a buyer manual, and a clear delivery path so you can start working instead of decoding the full repo.
           </p>
           <div class="cta-row">
             <a class="btn btn-primary" href="https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06" target="_blank" rel="noopener">Buy the toolkit for $29</a>
+            <a class="btn btn-secondary" href="#includes">See exactly what is included</a>
             <a class="btn btn-secondary" href="product-manual/ai-governance-toolkit.html">Read the manual first</a>
-            <a class="btn btn-secondary" href="redteam.html">Review the red-team proof</a>
-            <a class="btn btn-secondary" href="articles/index.html">Read field notes</a>
           </div>
           <div class="meta">
             <span>One-time purchase</span>
-            <span>Direct delivery</span>
-            <span>Manual included</span>
-            <span>Support at aethermoregames@pm.me</span>
+            <span>No subscription</span>
+            <span>Delivery link after checkout</span>
+            <span>Manual + support at aethermoregames@pm.me</span>
           </div>
         </div>
 
         <aside class="offer-panel" aria-label="Offer summary">
           <div class="label">Primary product</div>
+          <img class="offer-hero" src="hero.png" alt="SCBE AI Governance Toolkit" loading="eager">
           <h2>AI Governance Toolkit</h2>
-          <p>The shortest route from curiosity to a real SCBE package.</p>
+          <p>The shortest route from interest to a usable SCBE starter pack.</p>
           <div class="price">$29 <small>one time</small></div>
           <ul class="offer-list">
             <li>Governance starter templates</li>
@@ -442,28 +468,101 @@
       <div class="section-inner">
         <div class="section-head">
           <div class="eyebrow">What you get</div>
-          <h2>This is not the whole repo. It is the usable layer.</h2>
+          <h2>This is the part you can open and use first.</h2>
           <p>
-            The package is built for buyers who want to start using the governed workflow pieces without digging through the full architecture, research archive, or old experiments.
+            The toolkit is built for fast starts: concrete templates, a pilot-first worksheet path, and a short manual that tells you what to do first and how to know it worked.
+          </p>
+        </div>
+        <div class="split split-3">
+          <article class="slab">
+            <h3>Inside the package</h3>
+            <ul>
+              <li>Decision record template (ALLOW / QUARANTINE / DENY)</li>
+              <li>Threshold worksheet (starting boundaries + assumptions)</li>
+              <li>Pilot checklist (so you do not over-scope the first rollout)</li>
+              <li>Review notes format (what surprised you, what to tighten next)</li>
+              <li>Package manual (first-run path + success checks)</li>
+              <li>Delivery + recovery instructions if anything breaks</li>
+            </ul>
+          </article>
+          <article class="slab">
+            <h3>First win (15 minutes)</h3>
+            <ul class="checklist">
+              <li>You pick one real workflow to govern first.</li>
+              <li>You fill one threshold worksheet.</li>
+              <li>You complete one decision record on a real example.</li>
+              <li>You write one review note about what to tighten next.</li>
+            </ul>
+            <p style="margin-top:12px; color: var(--muted); font-size: 16px;">If you can do those four steps, the toolkit is working.</p>
+          </article>
+          <article class="slab">
+            <h3>What this helps you do</h3>
+            <ul>
+              <li>Start a governed workflow from a fixed template instead of a blank page</li>
+              <li>Make thresholds and review steps explicit (so “policy” isn’t just vibes)</li>
+              <li>Evaluate whether SCBE fits your environment before going deeper</li>
+              <li>Use a manual-first package instead of guessing what matters in the repo</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="fit">
+      <div class="section-inner">
+        <div class="section-head">
+          <div class="eyebrow">Fit</div>
+          <h2>Good for buyers who want a starter pack, not a consulting mystery box.</h2>
+          <p>
+            Strong sales pages reduce mismatch. This offer is for people who want a governed workflow starting point they can read, edit, and test on their own.
           </p>
         </div>
         <div class="split">
           <article class="slab">
-            <h3>Inside the package</h3>
+            <h3>Good fit</h3>
             <ul>
-              <li>SCBE governance starter materials</li>
-              <li>Readable configuration and decision scaffolds</li>
-              <li>Examples that show what to change first</li>
-              <li>A package-specific manual instead of a repo dump</li>
+              <li>Independent builders and operators who want a structured first step</li>
+              <li>Teams exploring policy, thresholds, decision records, or review gates</li>
+              <li>Buyers who want a compact package before touching the full SCBE system</li>
             </ul>
           </article>
           <article class="slab">
-            <h3>What it is for</h3>
+            <h3>Not for</h3>
             <ul>
-              <li>Independent builders who need a structured starting point</li>
-              <li>People testing governed AI workflow ideas</li>
-              <li>Buyers who want usable SCBE material, not just theory</li>
-              <li>Operators who want a manual and support route</li>
+              <li>People expecting a fully managed enterprise rollout for $29</li>
+              <li>Buyers looking for the entire repo, all research history, and every experiment at once</li>
+              <li>Anyone who does not want to read a short manual and configure their own workflow</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="proof">
+      <div class="section-inner">
+        <div class="section-head">
+          <div class="eyebrow">Proof and trust</div>
+          <h2>You should be able to inspect the path before you buy.</h2>
+          <p>
+            This page should not force blind trust. The manual, delivery route, and public technical proof are all visible before checkout so you can judge the offer on concrete surfaces.
+          </p>
+        </div>
+        <div class="split">
+          <article class="slab">
+            <h3>Inspect before checkout</h3>
+            <ul>
+              <li><a href="product-manual/ai-governance-toolkit.html">Read the buyer manual</a></li>
+              <li><a href="product-manual/delivery-and-access.html">Review delivery and access</a></li>
+              <li><a href="support.html">Check the support route</a></li>
+            </ul>
+          </article>
+          <article class="slab">
+            <h3>Technical proof surfaces</h3>
+            <ul>
+              <li><a href="proof/red-team-summary.html">Red-team summary (plain English)</a></li>
+              <li><a href="redteam.html">Red-team proof page</a></li>
+              <li><a href="research/index.html">Research index</a></li>
+              <li><a href="articles/index.html">Field notes and public writing</a></li>
             </ul>
           </article>
         </div>
@@ -474,9 +573,9 @@
       <div class="section-inner">
         <div class="section-head">
           <div class="eyebrow">Delivery</div>
-          <h2>Buy, receive, open the manual, get moving.</h2>
+          <h2>Buy, receive, open the manual, start with a smaller surface.</h2>
           <p>
-            The buyer path matters more than the story around it. This offer is paired with a manual and a recovery route so you do not get stranded after checkout.
+            The buyer path matters more than pitch language. This offer is paired with a manual and a recovery route so you do not get stranded after checkout.
           </p>
         </div>
         <div class="flow" role="img" aria-label="Checkout, receipt, delivery, manual, support.">
@@ -525,7 +624,7 @@
           </article>
           <article class="faq-item">
             <h3>Why this offer first?</h3>
-            <p>Because one clear product converts better than a homepage trying to sell subscriptions, enterprise pilots, demos, books, and four packages at once.</p>
+            <p>Because one clear product converts better than a homepage trying to sell subscriptions, enterprise pilots, demos, books, consulting, and five packages at once.</p>
           </article>
         </div>
       </div>
@@ -534,14 +633,13 @@
     <section class="final-cta">
       <div class="section-inner">
         <div class="eyebrow">Final CTA</div>
-        <h2>One click is better than another week of “maybe later.”</h2>
+        <h2>If you want the starter pack, buy the starter pack.</h2>
         <p>
-          If a post gets attention, this is the page it should land on. One product. One price. One manual. One support route.
+          This page now has one job: move the right buyer from interest to checkout with enough proof to feel safe doing it.
         </p>
         <div class="cta-row" style="justify-content:center;">
           <a class="btn btn-primary" href="https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06" target="_blank" rel="noopener">Buy the toolkit</a>
-          <a class="btn btn-secondary" href="product-manual/index.html">See all package manuals</a>
-          <a class="btn btn-secondary" href="research/history-bible-theory-training.html">See the latest research packet</a>
+          <a class="btn btn-secondary" href="product-manual/ai-governance-toolkit.html">Read the manual first</a>
         </div>
       </div>
     </section>
@@ -551,10 +649,13 @@
     <div class="footer-inner">
       <div class="footer-links">
         <a href="product-manual/ai-governance-toolkit.html">Manual</a>
+        <a href="use-cases/governed-ai-workflows.html">Use cases</a>
+        <a href="proof/why-the-manual-exists.html">Why the manual</a>
         <a href="product-manual/delivery-and-access.html">Delivery</a>
         <a href="support.html">Support</a>
         <a href="mailto:aethermoregames@pm.me?subject=SCBE%20Toolkit%20Support">Email</a>
-        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
+        <a href="comparison/toolkit-vs-full-repo.html">Toolkit vs repo</a>
+        <a href="research/index.html">Research</a>
       </div>
       <div>SCBE AETHERMOORE. Built for direct delivery, not maze navigation.</div>
     </div>
