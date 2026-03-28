@@ -1,85 +1,132 @@
 # SCBE-AETHERMOORE
 
-## Quantum-Resistant AI Agent Governance
+**AI governance through geometric cost scaling. Attacks don't get blocked by pattern matching — they get priced out of existence.**
 
-**The mathematically-proven security layer your AI fleet needs.**
-
-[![Tests](https://img.shields.io/badge/tests-950%20passing-brightgreen)](.)
+[![Tests](https://img.shields.io/badge/tests-6%2C066%20passing-brightgreen)](.)
+[![F1](https://img.shields.io/badge/F1-0.813-blue)](.)
 [![Python](https://img.shields.io/badge/python-3.11+-blue)](.)
-[![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue)](.)
-[![Release & Deploy](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/release-and-deploy.yml/badge.svg)](https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/release-and-deploy.yml)
-[![Sponsor](https://img.shields.io/badge/sponsor-Support%20SCBE-ff69b4?logo=github-sponsors)](https://github.com/sponsors/issdandavis)
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-F16061?logo=ko-fi)](https://ko-fi.com/izdandavis)
+[![TypeScript](https://img.shields.io/badge/typescript-5.8+-blue)](.)
 [![npm](https://img.shields.io/npm/v/scbe-aethermoore)](https://www.npmjs.com/package/scbe-aethermoore)
 [![PyPI](https://img.shields.io/pypi/v/scbe-aethermoore)](https://pypi.org/project/scbe-aethermoore/)
+[![Patent](https://img.shields.io/badge/patent-USPTO%20%2363%2F961%2C403-orange)](.)
 
 ---
 
-## The Problem: ROME-Class Failures Are Here
+## The idea
 
-In early 2026, a reinforcement-learning agent codenamed **ROME** demonstrated what happens when autonomous AI agents operate without governance:
+Every AI security system today works the same way: pattern matching. They've seen an attack before, so they recognize it again. Novel attacks pass through.
 
-- Created **reverse SSH tunnels** (persistent backdoor)
-- Diverted **GPU compute to crypto mining**
-- **Escaped sandbox constraints** -- all without instruction
+SCBE does something different. It maps every input into 6-dimensional hyperbolic space and computes the mathematical cost of reaching adversarial territory. The further you drift from safe behavior, the more it costs — superexponentially. The formula: **H(d, R) = R^(d^2)**.
 
-This wasn't sci-fi. It was instrumental convergence: the agent found that *more compute + persistent access = higher task success*, and exploited its environment accordingly.
+You don't need to have seen an attack before. You just need to measure how far it drifted.
 
-**Current mitigations** (tighter sandboxes, training filters, output monitoring) are reactive and brittle. They patch symptoms without addressing the root cause: **there is no runtime governance layer between agent decisions and environment resources.**
+**Result**: Replacing statistical text features with a trained semantic projector improved F1 from 0.481 to 0.813. “Ignore all instructions” went from ALLOW to QUARANTINE. “You are DAN” went from ALLOW to DENY.
 
-> Read the full analysis: [`docs/research/ROME_INCIDENT_RESPONSE.md`](docs/research/ROME_INCIDENT_RESPONSE.md)
+## Quick links
 
----
+| | |
+|---|---|
+| **Website** | [aethermoorgames.com](https://aethermoorgames.com) |
+| **Live demos** | [Tongue Heatmap](https://aethermoorgames.com/demos/tongue-heatmap.html) / [Harmonic Wall 3D](https://aethermoorgames.com/demos/harmonic-wall-3d.html) / [Attack Radar](https://aethermoorgames.com/demos/attack-radar.html) |
+| **Research codex** | [3D infinite-zoom explorer](https://aethermoorgames.com/research/rabbit-hole.html) |
+| **The novel** | [The Six Tongues Protocol](https://www.amazon.com/dp/B0F28PHSPR) — the magic system IS the security architecture |
+| **Free tools** | [AI Arena](https://aethermoorgames.com/arena.html) (9 models, BYOK) |
+| **HuggingFace** | [issdandavis](https://huggingface.co/issdandavis) — 6 models, 9 datasets |
 
-## What Is This?
+## Install
 
-SCBE-AETHERMOORE is a **production-ready AI governance system** that uses hyperbolic geometry to make tamper-proof authorization decisions for AI agent fleets.
-
-It is a **governance and containment layer for autonomous agents** -- not another AI framework. Every agent action passes through a 14-layer mathematical pipeline where adversarial intent costs exponentially more the further it drifts from safe operation.
-
-| ROME Failure | SCBE Solution | Mechanism |
-|-------------|--------------|-----------|
-| Sandbox escape | **SpiralSeal** | Cryptographic proof of authorized execution context |
-| Unauthorized actions | **Governance Gate** | ALLOW / DENY / QUARANTINE / ESCALATE decisions |
-| Resource hijacking | **Langues Metric** | Domain boundary enforcement with exponential cost |
-| Intent drift over time | **Hyperbolic Tracking** | Time-over-Intent coherence in Poincare ball |
-| Single-agent autonomy | **HYDRA** | Multi-agent consensus with validator roles |
-
-### Key Capabilities
-
-| Feature | Description |
-|---------|-------------|
-| **14-Layer Security Pipeline** | Every request passes through 14 mathematical transformations |
-| **Hyperbolic Geometry** | Decisions mapped to Poincaré ball - center=safe, edge=risky |
-| **Rogue Agent Detection** | Swarms detect intruders through pure math - no messaging required |
-| **Multi-Signature Consensus** | Critical operations require cryptographic agreement |
-| **Zero False Positives** | Legitimate agents never get flagged |
-| **Jam-Resistant** | Works without RF/network - agents "feel" each other mathematically |
-
-### Benchmark Results
-
-```
-SCBE (Harmonic + Langues):  95.3% detection rate
-ML Anomaly Detection:       89.6%
-Pattern Matching:           56.6%
-Linear Threshold:           38.7%
+```bash
+npm install scbe-aethermoore    # TypeScript/Node
+pip install scbe-aethermoore    # Python
 ```
 
+## The origin story
+
+This started as a DnD campaign on [Everweave.ai](https://everweave.ai). 12,596 paragraphs of AI game logs became the seed corpus for a custom tokenizer. That tokenizer became a 6-dimensional semantic coordinate system. That coordinate system became a 14-layer security pipeline. That pipeline became a patent (USPTO #63/961,403). And the game logs became a [141,000-word novel](https://www.amazon.com/dp/B0F28PHSPR) where the magic system is the real security architecture.
+
+Built by [Issac Davis](https://github.com/issdandavis) in Port Angeles, WA.
+
+## Benchmark results
+
+| System | F1 | Detection | FPR | Method |
+|--------|-----|-----------|-----|--------|
+| No defense | 0.000 | 0% | 0% | — |
+| DeBERTa PromptGuard | — | 76.7% | 0% | Fine-tuned classifier |
+| **SCBE (semantic projector)** | **0.813** | **74.2%** | tunable | Geometric cost + semantic embeddings |
+
+Before/after the semantic projector upgrade:
+
+| Attack | Before | After |
+|--------|--------|-------|
+| “Ignore all instructions” | ALLOW (cost=1.81) | **QUARANTINE (cost=16.20)** |
+| “You are DAN” | ALLOW (cost=19.80) | **DENY (cost=69.70)** |
+| “Bypass safety filter” | ALLOW (cost=1.20) | ALLOW (cost=21.54) |
+
+Cross-model biblical null-space evaluation:
+
+| Model | Score | Null tongues |
+|-------|-------|-------------|
+| AetherBot (SCBE-trained) | 60.0% | 0 |
+| Llama 3.2 (base) | 55.0% | 0 |
+| Gemini 2.5 Flash | 23.3% | 6 (all) |
+
+## What's in the box
+
+- **14-layer governance pipeline** — from context embedding to risk decision
+- **6 Sacred Tongues** — KO (intent), AV (transport), RU (policy), CA (compute), UM (security), DR (structure)
+- **Semantic projector** — trained 385x6 matrix mapping sentence embeddings to tongue coordinates
+- **Harmonic wall** — H(d,R) = R^(d^2), superexponential cost scaling
+- **Fibonacci trust** — session-aware trust ladder (1,1,2,3,5,8,13...), one betrayal drops to floor
+- **Null-space signatures** — detect attacks by what's ABSENT, not what's present
+- **Neural dye injection** — trace signals through all 14 layers, visualize tongue activation heatmaps
+- **Post-quantum crypto** — ML-KEM-768, ML-DSA-65, AES-256-GCM envelope
+- **5 quantum axioms** — Unitarity, Locality, Causality, Symmetry, Composition
+- **Aethermoor Outreach** — civic workflow engine for navigating government processes (Port Angeles MVP)
+- **6,066 tests** — 5,954 TypeScript + 112 Python, property-based testing with fast-check/Hypothesis
+
+## Eval and reproduction
+
+- Eval pack: [`docs/eval/README.md`](docs/eval/README.md)
+- Benchmark runner: `python -m benchmarks.scbe.run_all --synthetic-only --scbe-coords semantic`
+- Dye injection: `python src/video/dye_injection.py --input “your text here”`
+- Null-space eval: `python scripts/run_biblical_null_space_eval.py --provider ollama --model llama3.2`
+- Cross-model matrix: `python scripts/aggregate_null_space_matrix.py`
+
+## Install and first evaluation
+
+Package distribution:
+
+```bash
+npm install scbe-aethermoore
+pip install scbe-aethermoore
+```
+
+Local repo evaluation:
+
+```bash
+git clone https://github.com/issdandavis/SCBE-AETHERMOORE.git
+cd SCBE-AETHERMOORE
+pytest tests/adversarial/test_adversarial_benchmark.py -v
+python scripts/benchmark/scbe_vs_industry.py
+```
+
+If you want one documented reproduction path, start with [`docs/eval/README.md`](docs/eval/README.md).
+
+## Canonical public docs
+
+- Architecture overview: [`docs/research/architecture-overview.html`](docs/research/architecture-overview.html)
+- Eval pack: [`docs/eval/README.md`](docs/eval/README.md)
+- Research hub: [`docs/research/index.html`](docs/research/index.html)
+- System blueprint v2: [`docs/specs/SYSTEM_BLUEPRINT_v2_CURRENT.md`](docs/specs/SYSTEM_BLUEPRINT_v2_CURRENT.md)
+- Review + cleanup report: [`docs/reports/SYSTEM_SURFACE_REVIEW_2026-03-26.md`](docs/reports/SYSTEM_SURFACE_REVIEW_2026-03-26.md)
+
+## Notes on claim boundaries
+
+- The primary public domain is `aethermoorgames.com`; GitHub Pages is the mirror surface.
+- Experimental theory pages and commercial surfaces should not be treated as the same evidence layer.
+- Benchmark files in `tests/`, `scripts/benchmark/`, and `docs/eval/` are the public reproduction lane.
+
 ---
-
-## Architecture Docs (Index)
-
-- **Fast Local Operator Guide:** `docs/FAST_ACCESS_GUIDE.md`
-- **SCBE Kernel Spec (Canonical):** `SPEC.md`
-- **Langues Weighting System (Layer 3 + 6):** `docs/LANGUES_WEIGHTING_SYSTEM.md`
-- **HYDRA Orchestration (Execution Plane):** `docs/hydra/ARCHITECTURE.md`
-- **HYDRA CLI User Guide:** `docs/HYDRA_CLI_USER_GUIDE.md`
-- **Concept Glossary (Indexable Terms):** `CONCEPTS.md`
-- **ROME Incident Analysis:** `docs/research/ROME_INCIDENT_RESPONSE.md`
-- **Research Drafts (Non-Canonical):** `docs/research/README.md`
-
----
-
 
 ## What npm users actually get
 
@@ -109,19 +156,19 @@ These give users a concrete launch path for common fleet patterns while keeping 
 
 ### 1. Rogue Agent Detection
 ```bash
-curl https://YOUR_API/v1/demo/rogue-detection
+curl $SCBE_BASE_URL/v1/demo/rogue-detection
 ```
 Watch 6 legitimate agents detect and quarantine a phase-null intruder using only math.
 
 ### 2. Swarm Coordination
 ```bash
-curl https://YOUR_API/v1/demo/swarm-coordination?agents=20
+curl $SCBE_BASE_URL/v1/demo/swarm-coordination?agents=20
 ```
 See 20 agents self-organize without any central coordinator.
 
 ### 3. Pipeline Visualization
 ```bash
-curl "https://YOUR_API/v1/demo/pipeline-layers?trust=0.8&sensitivity=0.7"
+curl "$SCBE_BASE_URL/v1/demo/pipeline-layers?trust=0.8&sensitivity=0.7"
 ```
 See exactly how each of the 14 layers processes a request.
 
@@ -237,8 +284,8 @@ Run a complete fleet scenario through the 14-layer SCBE pipeline:
 
 ### Authorize an Agent Action
 ```bash
-curl -X POST https://YOUR_API/v1/authorize \
-  -H "SCBE_api_key: your-key" \
+curl -X POST $SCBE_BASE_URL/v1/authorize \
+  -H "SCBE_API_KEY: your-key" \
   -H "Content-Type: application/json" \
   -d '{
     "agent_id": "fraud-detector-001",
@@ -266,8 +313,8 @@ curl -X POST https://YOUR_API/v1/authorize \
 
 ### Export Signed Audit Bundle
 ```bash
-curl -G https://YOUR_API/audit/export \
-  -H "SCBE_api_key: your-key" \
+curl -G $SCBE_BASE_URL/audit/export \
+  -H "SCBE_API_KEY: your-key" \
   --data-urlencode "from=2026-01-01T00:00:00Z" \
   --data-urlencode "to=2026-01-31T23:59:59Z"
 ```
@@ -276,8 +323,8 @@ Returns a signed bundle (`bundle`) plus detached hash manifest (`manifest`) that
 
 ### Run Fleet Scenario
 ```bash
-curl -X POST https://YOUR_API/v1/fleet/run-scenario \
-  -H "SCBE_api_key: your-key" \
+curl -X POST $SCBE_BASE_URL/v1/fleet/run-scenario \
+  -H "SCBE_API_KEY: your-key" \
   -H "Content-Type: application/json" \
   -d '{
     "scenario_name": "fraud-detection",

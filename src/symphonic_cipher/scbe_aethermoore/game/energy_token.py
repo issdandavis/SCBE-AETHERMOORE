@@ -45,10 +45,29 @@ class TokenPackage:
 
 TOKEN_PACKAGES: Tuple[TokenPackage, ...] = (
     TokenPackage("starter", "Starter Pack", 100, 4.99, 0, "100 Energy Tokens — ~5 dungeon runs"),
-    TokenPackage("adventurer", "Adventurer Pack", 500, 19.99, 50, "550 Energy Tokens — ~25 dungeon runs + bonus"),
-    TokenPackage("guild", "Guild Pack", 2000, 49.99, 400, "2400 Energy Tokens — ~100 dungeon runs + bonus"),
     TokenPackage(
-        "academy", "Academy Semester", 10000, 199.99, 3000, "13000 Energy Tokens — full semester of training + bonus"
+        "adventurer",
+        "Adventurer Pack",
+        500,
+        19.99,
+        50,
+        "550 Energy Tokens — ~25 dungeon runs + bonus",
+    ),
+    TokenPackage(
+        "guild",
+        "Guild Pack",
+        2000,
+        49.99,
+        400,
+        "2400 Energy Tokens — ~100 dungeon runs + bonus",
+    ),
+    TokenPackage(
+        "academy",
+        "Academy Semester",
+        10000,
+        199.99,
+        3000,
+        "13000 Energy Tokens — full semester of training + bonus",
     ),
 )
 

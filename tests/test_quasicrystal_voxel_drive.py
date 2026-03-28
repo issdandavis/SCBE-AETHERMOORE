@@ -98,7 +98,11 @@ def test_get_slab_returns_tongue_data() -> None:
 def test_multiple_stores_in_same_slab() -> None:
     drive = QuasiCrystalVoxelDrive(resolution=16)
     for i in range(5):
-        drive.store(f"batch-{i}", f"data-{i}".encode(), [0.1, 0.1, 0.1, 0.8, 0.1, 0.1 + i * 0.01])
+        drive.store(
+            f"batch-{i}",
+            f"data-{i}".encode(),
+            [0.1, 0.1, 0.1, 0.8, 0.1, 0.1 + i * 0.01],
+        )
     stats = drive.stats()
     assert stats["total_cells"] == 5
 
@@ -106,7 +110,13 @@ def test_multiple_stores_in_same_slab() -> None:
 def test_depth_tree_parent_child() -> None:
     drive = QuasiCrystalVoxelDrive(resolution=16)
     drive.store("parent", b"root", [0.5, 0.5, 0.5, 0.5, 0.5, 0.5], category="root")
-    drive.store("child", b"leaf", [0.5, 0.5, 0.5, 0.5, 0.5, 0.5], category="leaf", parent_id="parent")
+    drive.store(
+        "child",
+        b"leaf",
+        [0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+        category="leaf",
+        parent_id="parent",
+    )
     assert drive.cells["child"].depth == 1
     assert "child" in drive.cells["parent"].children
 

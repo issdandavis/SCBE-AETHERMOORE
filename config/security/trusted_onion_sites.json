@@ -1,0 +1,165 @@
+{
+  "_description": "Verified legitimate .onion sites for dark web research sweeper. Every site here has a known clearnet counterpart or is operated by a verified organization. Updated 2026-03-26.",
+  "_policy": "QUARANTINE by default. All content passes through governance gate + secret scrubber before entering any training pipeline. Double-sandbox required.",
+  "_legal": "Accessing .onion sites is legal. Content collection follows the same fair-use and copyright rules as surface web. No marketplace access. No illegal content.",
+
+  "tiers": {
+    "NEWS_AND_JOURNALISM": {
+      "trust": "TRUSTED",
+      "description": "Major news outlets with verified .onion mirrors. Content is the same as clearnet but accessed anonymously.",
+      "sites": [
+        {
+          "name": "ProPublica",
+          "clearnet": "propublica.org",
+          "purpose": "Investigative journalism — unique deep-dive reporting",
+          "value": "Investigative reports not indexed by standard AI training pipelines"
+        },
+        {
+          "name": "The New York Times",
+          "clearnet": "nytimes.com",
+          "purpose": "News reporting accessible in censored regions",
+          "value": "Full news corpus accessible without geo-restrictions"
+        },
+        {
+          "name": "BBC News",
+          "clearnet": "bbc.com",
+          "purpose": "International news mirror for censored regions",
+          "value": "International perspective on events"
+        },
+        {
+          "name": "Deutsche Welle",
+          "clearnet": "dw.com",
+          "purpose": "German international broadcaster",
+          "value": "European perspective, multilingual content"
+        }
+      ]
+    },
+
+    "WHISTLEBLOWER_PLATFORMS": {
+      "trust": "PROVISIONAL",
+      "description": "SecureDrop instances operated by verified news organizations. Content is sensitive — governance gate required.",
+      "sites": [
+        {
+          "name": "SecureDrop (Guardian)",
+          "clearnet": "theguardian.com/securedrop",
+          "purpose": "Anonymous tip submission for The Guardian",
+          "value": "Understanding whistleblower communication patterns"
+        },
+        {
+          "name": "SecureDrop (Washington Post)",
+          "clearnet": "washingtonpost.com/securedrop",
+          "purpose": "Anonymous tip submission for WaPo",
+          "value": "Secure communication protocol patterns"
+        },
+        {
+          "name": "SecureDrop Project",
+          "clearnet": "securedrop.org",
+          "purpose": "The SecureDrop platform itself",
+          "value": "Open-source secure communication architecture"
+        }
+      ]
+    },
+
+    "ACADEMIC_AND_LIBRARIES": {
+      "trust": "TRUSTED",
+      "description": "Digital libraries and academic archives on .onion. Unique content not available through standard channels.",
+      "sites": [
+        {
+          "name": "Imperial Library",
+          "clearnet": "none (onion-only)",
+          "purpose": "Digital book archive — thousands of academic texts",
+          "value": "Rare academic materials, research papers, historical texts not in standard corpora"
+        },
+        {
+          "name": "Z-Library (mirror)",
+          "clearnet": "z-lib.io",
+          "purpose": "Book and paper archive",
+          "value": "Academic papers and textbooks — verify copyright compliance per-item"
+        }
+      ]
+    },
+
+    "PRIVACY_TOOLS": {
+      "trust": "TRUSTED",
+      "description": "Privacy-focused services with verified .onion mirrors.",
+      "sites": [
+        {
+          "name": "DuckDuckGo",
+          "clearnet": "duckduckgo.com",
+          "purpose": "Privacy search engine (searches surface web via Tor)",
+          "value": "Entry point for Tor-based research queries"
+        },
+        {
+          "name": "ProtonMail",
+          "clearnet": "proton.me",
+          "purpose": "Encrypted email via Tor",
+          "value": "We already use this — .onion access adds anonymity layer"
+        },
+        {
+          "name": "OnionShare",
+          "clearnet": "onionshare.org",
+          "purpose": "Anonymous file sharing, hosting, chat",
+          "value": "Peer-to-peer secure transfer without third-party servers"
+        }
+      ]
+    },
+
+    "GOVERNMENT_ONION": {
+      "trust": "CORE",
+      "description": "Government agencies operating verified .onion services.",
+      "sites": [
+        {
+          "name": "CIA",
+          "clearnet": "cia.gov",
+          "purpose": "Intelligence agency public information portal via Tor",
+          "value": "Government intelligence reports accessible anonymously"
+        },
+        {
+          "name": "Tor Project",
+          "clearnet": "torproject.org",
+          "purpose": "Tor documentation, downloads, research",
+          "value": "Authoritative source on onion routing architecture"
+        }
+      ]
+    },
+
+    "SEARCH_AND_INDEXING": {
+      "trust": "PROVISIONAL",
+      "description": "Dark web search engines and indexes. Content they link to must be individually verified.",
+      "sites": [
+        {
+          "name": "Ahmia",
+          "clearnet": "ahmia.fi",
+          "purpose": "Tor search engine that filters illegal content",
+          "value": "Filtered .onion search — removes abuse material, indexes legitimate sites"
+        },
+        {
+          "name": "dark.fail",
+          "clearnet": "dark.fail",
+          "purpose": "Verified .onion link directory — prevents phishing",
+          "value": "Authoritative link verification for .onion addresses"
+        },
+        {
+          "name": "Torch",
+          "clearnet": "none",
+          "purpose": "Oldest Tor search engine",
+          "value": "Broadest .onion index — requires governance gate on results"
+        }
+      ]
+    }
+  },
+
+  "NEVER_ACCESS": {
+    "description": "Categories that are ALWAYS blocked regardless of research purpose.",
+    "blocked_categories": [
+      "Marketplaces (drugs, weapons, counterfeit)",
+      "Child exploitation material (CSAM)",
+      "Terrorism and extremist content",
+      "Stolen data / credential dumps",
+      "Ransomware-as-a-service",
+      "Assassination / violence services",
+      "Human trafficking"
+    ],
+    "detection_method": "Content passes through SCBE adversarial harness + governance gate. Any content matching blocked categories triggers immediate DENY + audit log + connection termination."
+  }
+}

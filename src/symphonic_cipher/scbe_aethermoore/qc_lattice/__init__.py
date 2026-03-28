@@ -80,6 +80,8 @@ from .integration import (
     AUDIT_CHAIN_IV,
 )
 
+from .phason_secret import PhasonSecret, PhasonAuditRecord
+
 __all__ = [
     # Quasicrystal
     "QuasicrystalLattice",
@@ -89,6 +91,9 @@ __all__ = [
     "LatticePoint",
     "PHI",
     "TAU",
+    # Phason Secret (Layer 8)
+    "PhasonSecret",
+    "PhasonAuditRecord",
     # PHDM
     "Polyhedron",
     "PolyhedronType",

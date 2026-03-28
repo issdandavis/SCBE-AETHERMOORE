@@ -158,7 +158,10 @@ class SCBEGate:
         return 1.0
 
     def evaluate(
-        self, context: List[float], action: str = "default", metadata: Optional[Dict[str, Any]] = None
+        self,
+        context: List[float],
+        action: str = "default",
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> RiskResult:
         """
         Evaluate an action in the given context.

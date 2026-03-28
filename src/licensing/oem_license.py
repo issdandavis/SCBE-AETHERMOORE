@@ -264,7 +264,14 @@ TIER_DEFAULTS = {
         "support_level": "email",
         "white_label": False,
         "air_gap_approved": False,
-        "modules": ["core", "harmonic", "crypto", "symphonic", "governance", "spectral"],
+        "modules": [
+            "core",
+            "harmonic",
+            "crypto",
+            "symphonic",
+            "governance",
+            "spectral",
+        ],
     },
     LicenseTier.ENTERPRISE: {
         "max_authorized_users": 0,  # unlimited

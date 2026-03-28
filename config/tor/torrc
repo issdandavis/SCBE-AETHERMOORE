@@ -1,0 +1,40 @@
+# SCBE-AETHERMOORE Tor Hidden Service (Hardened)
+# Security: Tor Project best practices + SCBE governance
+
+# Hidden service v3 (default, 56-char .onion, ed25519 keys)
+HiddenServiceDir C:/Users/issda/SCBE-AETHERMOORE/config/tor/hidden_service
+HiddenServicePort 80 127.0.0.1:8200
+HiddenServiceVersion 3
+
+# Use different SOCKS port (9050 may be in use by Tor Browser)
+SocksPort 9055
+
+# Logging
+Log notice file C:/Users/issda/SCBE-AETHERMOORE/config/tor/tor.log
+
+# Data directory
+DataDirectory C:/Users/issda/SCBE-AETHERMOORE/config/tor/data
+
+# --- SECURITY HARDENING ---
+
+# Disable SOCKS for outbound (we only need the hidden service, not browsing)
+# SocksPolicy reject *  # Uncomment to fully lock down outbound
+
+# Sandbox (Linux only, ignored on Windows but good practice)
+# Sandbox 1
+
+# Limit connection rate to prevent DDoS on the hidden service
+HiddenServiceMaxStreams 100
+HiddenServiceMaxStreamsCloseCircuit 1
+
+# Only allow v3 onion services (v2 is deprecated and insecure)
+HiddenServiceVersion 3
+
+# Disable single-hop mode (always use full 3-hop circuits)
+HiddenServiceSingleHopMode 0
+HiddenServiceNonAnonymousMode 0
+
+# --- NOTES ---
+# .onion address: xxdb24d7bqjtmsd7wdiwm53fsxtwvwq7dgwelyjmpbd5dh5oqlanq4ad.onion
+# To start: python scripts/system/onion_site.py
+# Keys stored in: config/tor/hidden_service/ (NEVER commit private keys)

@@ -628,7 +628,7 @@ class SwarmBrowser:
         print("  Activating Sacred Tongue Agents...")
         print("=" * 60 + "\n")
 
-        for tongue, agent in self.agents.items():
+        for _tongue, agent in self.agents.items():
             await agent.activate()
 
         print("\n[SWARM] All agents active. Ready for commands.\n")

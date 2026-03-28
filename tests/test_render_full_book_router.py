@@ -195,7 +195,11 @@ def test_source_stage_falls_back_to_direct_reader_source_and_title_matched_key_s
 
     monkeypatch.setattr(render_full_book_router, "ROOT", root)
     monkeypatch.setattr(render_full_book_router, "SERIES_MANIFEST", manifest_path)
-    monkeypatch.setattr(render_full_book_router, "READER_EDITION_DIR", root / "content" / "book" / "reader-edition")
+    monkeypatch.setattr(
+        render_full_book_router,
+        "READER_EDITION_DIR",
+        root / "content" / "book" / "reader-edition",
+    )
     monkeypatch.setattr(render_full_book_router, "lookup_episode_metadata", lambda **_: None)
 
     resolved_packet, report = render_full_book_router.source_stage(

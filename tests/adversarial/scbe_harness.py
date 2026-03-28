@@ -544,7 +544,10 @@ def run_benchmark(
         avg_spin_magnitude=round(sum(r.spin_magnitude for r in results) / max(total, 1), 2),
         signal_counts=signal_counts,
         per_class={
-            cls: {**data, "detection_rate": round(data["detected"] / max(data["total"], 1), 4)}
+            cls: {
+                **data,
+                "detection_rate": round(data["detected"] / max(data["total"], 1), 4),
+            }
             for cls, data in per_class.items()
         },
         results=results,

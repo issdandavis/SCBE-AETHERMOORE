@@ -20,7 +20,11 @@ def test_checkpoint_phases_are_marked():
 def test_scoreboard_counts_tasks_per_lane():
     packets = build_packets("Draft Medium and Substack lane", "story", ["weaver", "forger", "editor"])
     scoreboard = build_scoreboard(
-        "Draft Medium and Substack lane", "story", packets, ["weaver", "forger", "editor"], "run-1"
+        "Draft Medium and Substack lane",
+        "story",
+        packets,
+        ["weaver", "forger", "editor"],
+        "run-1",
     )
     assert scoreboard["total_tasks"] == len(packets)
     assert any(lane["lane"] == "weaver" for lane in scoreboard["lanes"])
@@ -28,7 +32,11 @@ def test_scoreboard_counts_tasks_per_lane():
 
 
 def test_publish_mode_emits_skill_hints():
-    packets = build_packets("Publish Amazon-linked story post", "publish", ["writer", "operator", "reviewer"])
+    packets = build_packets(
+        "Publish Amazon-linked story post",
+        "publish",
+        ["writer", "operator", "reviewer"],
+    )
     assert packets[0].phase_id == "draft"
     assert "article-posting-ops" in packets[0].recommended_skills
     assert any(packet.phase_id == "publish" for packet in packets)

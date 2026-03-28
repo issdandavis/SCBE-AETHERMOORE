@@ -15,8 +15,6 @@ on:
         type: string
   schedule:
     - cron: '0 2 * * *'
-  push:
-    branches: [ main, 'claude/**' ]
 
 permissions:
   contents: read

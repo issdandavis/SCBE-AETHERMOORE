@@ -2,14 +2,6 @@
 name: Deploy GitHub Pages (Static HTML)
 
 on:
-  push:
-    branches: ["main"]
-    paths:
-      - 'docs/**'
-      - 'public/**'
-      - 'index.html'
-      - 'demo.html'
-      - 'product-landing.html'
   workflow_dispatch:
 
 permissions:

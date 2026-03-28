@@ -16,16 +16,67 @@ from urllib.parse import urlparse
 MAX_WORDS = 50_000
 
 _TOPIC_KEYWORDS: dict[str, list[str]] = {
-    "AI/ML": ["machine learning", "artificial intelligence", "neural network", "deep learning", "model", "training"],
-    "Security": ["security", "vulnerability", "threat", "attack", "defense", "governance", "encryption"],
+    "AI/ML": [
+        "machine learning",
+        "artificial intelligence",
+        "neural network",
+        "deep learning",
+        "model",
+        "training",
+    ],
+    "Security": [
+        "security",
+        "vulnerability",
+        "threat",
+        "attack",
+        "defense",
+        "governance",
+        "encryption",
+    ],
     "Research": ["research", "paper", "study", "findings", "experiment", "analysis"],
     "Finance": ["financial", "payment", "revenue", "pricing", "investment", "market"],
-    "Code": ["code", "programming", "developer", "api", "function", "class", "repository"],
+    "Code": [
+        "code",
+        "programming",
+        "developer",
+        "api",
+        "function",
+        "class",
+        "repository",
+    ],
 }
 
-_AUTH_HINTS = {"auth", "credential", "email", "login", "password", "sign in", "signin", "username"}
-_PAYMENT_HINTS = {"billing", "buy", "card", "checkout", "invoice", "order", "pay", "payment", "wallet"}
-_DESTRUCTIVE_HINTS = {"delete", "deploy", "merge", "publish", "push", "remove", "submit", "transfer"}
+_AUTH_HINTS = {
+    "auth",
+    "credential",
+    "email",
+    "login",
+    "password",
+    "sign in",
+    "signin",
+    "username",
+}
+_PAYMENT_HINTS = {
+    "billing",
+    "buy",
+    "card",
+    "checkout",
+    "invoice",
+    "order",
+    "pay",
+    "payment",
+    "wallet",
+}
+_DESTRUCTIVE_HINTS = {
+    "delete",
+    "deploy",
+    "merge",
+    "publish",
+    "push",
+    "remove",
+    "submit",
+    "transfer",
+}
 
 
 def _hostname_matches(url: str, domain: str) -> bool:
@@ -71,7 +122,14 @@ class PageAnalyzer:
         selected_text = selection.strip()
         if selected_text:
             summary = f"Selected: {selected_text}\n\n{summary}".strip()
-        intent = self._infer_intent(url=url, title=title, text=text, page_type=page_type, forms=forms, buttons=buttons)
+        intent = self._infer_intent(
+            url=url,
+            title=title,
+            text=text,
+            page_type=page_type,
+            forms=forms,
+            buttons=buttons,
+        )
         risk_tier, required_approvals = self._infer_risk(
             title=title,
             text=text,

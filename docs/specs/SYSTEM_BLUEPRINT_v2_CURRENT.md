@@ -64,7 +64,7 @@ At d=0.95 (clearly adversarial): cost = astronomical
 | L14 | Audio telemetry | Sonification of governance decisions |
 
 ### Interactive Demos (all live)
-Every layer has a working browser demo at aethermoorgames.com/demos/:
+Every layer has a working browser demo at https://issdandavis.github.io/SCBE-AETHERMOORE/demos/index.html:
 - L1-2: Context Fingerprint (radar, word map, phase diagram)
 - L3: Tongue Encoder (6 tongues, encode/decode)
 - L5: Distance Explorer (drag on Poincare disk)

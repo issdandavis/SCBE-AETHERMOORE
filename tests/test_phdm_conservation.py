@@ -29,7 +29,12 @@ EPSILON = 1e-8
 def vector_strategy(draw, dim: int, min_value: float = -10.0, max_value: float = 10.0):
     values = draw(
         st.lists(
-            st.floats(min_value=min_value, max_value=max_value, allow_nan=False, allow_infinity=False),
+            st.floats(
+                min_value=min_value,
+                max_value=max_value,
+                allow_nan=False,
+                allow_infinity=False,
+            ),
             min_size=dim,
             max_size=dim,
         )

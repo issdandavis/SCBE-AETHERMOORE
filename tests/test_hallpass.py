@@ -40,8 +40,26 @@ from src.fleet.hallpass import (
 from src.fleet.skill_card_forge import Deck  # SkillCard already imported above
 
 _CARD_TEMPLATES = [
-    ("web-scraper", "Skill", "Offensive", 300, 3, 2, "browse navigate search web scrape urls", ["browser"]),
-    ("data-processor", "Skill", "Support", 250, 4, 1, "process transform data analyze compute", ["data"]),
+    (
+        "web-scraper",
+        "Skill",
+        "Offensive",
+        300,
+        3,
+        2,
+        "browse navigate search web scrape urls",
+        ["browser"],
+    ),
+    (
+        "data-processor",
+        "Skill",
+        "Support",
+        250,
+        4,
+        1,
+        "process transform data analyze compute",
+        ["data"],
+    ),
     (
         "governance-gate",
         "Defense",
@@ -62,8 +80,26 @@ _CARD_TEMPLATES = [
         "deploy orchestrate fleet coordinate multi-agent dispatch",
         ["deploy"],
     ),
-    ("hf-publisher", "Workflow", "Offensive", 350, 3, 2, "publish deploy huggingface push dataset model", ["publish"]),
-    ("entropy-monitor", "Skill", "Arcane", 600, 7, 3, "entropy quantum geometry manifold sacred tongue", ["entropy"]),
+    (
+        "hf-publisher",
+        "Workflow",
+        "Offensive",
+        350,
+        3,
+        2,
+        "publish deploy huggingface push dataset model",
+        ["publish"],
+    ),
+    (
+        "entropy-monitor",
+        "Skill",
+        "Arcane",
+        600,
+        7,
+        3,
+        "entropy quantum geometry manifold sacred tongue",
+        ["entropy"],
+    ),
 ]
 
 
@@ -134,7 +170,14 @@ class TestPolyhedra:
 
     def test_categories_complete(self):
         categories = {p.category for p in POLYHEDRA}
-        assert categories == {"platonic", "archimedean", "kepler", "toroidal", "rhombic", "johnson"}
+        assert categories == {
+            "platonic",
+            "archimedean",
+            "kepler",
+            "toroidal",
+            "rhombic",
+            "johnson",
+        }
 
 
 # ============================================================
@@ -272,7 +315,11 @@ class TestHamiltonianPath:
     def test_platonic_path_cheaper_than_mixed(self):
         """Platonic-only path should cost less than one with Kepler nodes."""
         platonic_path = POLYHEDRA[:3]
-        mixed_path = [POLYHEDRA[0], POLYHEDRA[9], POLYHEDRA[1]]  # inject Great Stellated
+        mixed_path = [
+            POLYHEDRA[0],
+            POLYHEDRA[9],
+            POLYHEDRA[1],
+        ]  # inject Great Stellated
         assert compute_path_cost(platonic_path) < compute_path_cost(mixed_path)
 
 
@@ -587,7 +634,7 @@ class TestHallPassCompiler:
         compiler = HallPassCompiler()
         hp = compiler.compile("deploy fleet", sample_cards, max_cards=4, workflow_name="fleet-deploy")
         # Simulate 10 agents reading the same pass
-        for agent_num in range(10):
+        for _agent_num in range(10):
             corridor_ids = [n.card_id for n in hp.corridor]
             corridor_polys = [n.polyhedron_name for n in hp.corridor]
             # All agents see the same path

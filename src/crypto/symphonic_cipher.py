@@ -105,7 +105,12 @@ class SymphonicToken:
         else:
             polarity = TonguePolarity.NEUTRAL
 
-        return cls(token=name or f"id_{token_id}", token_id=token_id, frequency=frequency, polarity=polarity)
+        return cls(
+            token=name or f"id_{token_id}",
+            token_id=token_id,
+            frequency=frequency,
+            polarity=polarity,
+        )
 
 
 def token_to_frequency(token: str) -> float:

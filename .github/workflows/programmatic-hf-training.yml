@@ -65,7 +65,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
@@ -81,12 +81,25 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           set -euo pipefail
-          publish_dataset='${{ inputs.publish_dataset }}'
-          mirror_backup='${{ inputs.mirror_backup }}'
-          train_model='${{ inputs.train_model }}'
-          push_model='${{ inputs.push_model }}'
-          allow_quarantine='${{ inputs.allow_quarantine }}'
-          refresh_ingestion_pool='${{ inputs.refresh_ingestion_pool }}'
+
+          # Skip cleanly if the Hugging Face token isn't configured.
+          if [ -z "${HF_TOKEN:-}" ]; then
+            echo "::notice::HF_TOKEN is not set; skipping Hub operations."
+            exit 0
+          fi
+
+          publish_dataset='${{ github.event.inputs.publish_dataset }}'
+          mirror_backup='${{ github.event.inputs.mirror_backup }}'
+          train_model='${{ github.event.inputs.train_model }}'
+          push_model='${{ github.event.inputs.push_model }}'
+          allow_quarantine='${{ github.event.inputs.allow_quarantine }}'
+          refresh_ingestion_pool='${{ github.event.inputs.refresh_ingestion_pool }}'
+
+          dataset_repo='${{ github.event.inputs.dataset_repo }}'
+          backup_dataset_repo='${{ github.event.inputs.backup_dataset_repo }}'
+          model_repo='${{ github.event.inputs.model_repo }}'
+
+          # Schedule mode: set defaults explicitly (schedule events do not provide dispatch inputs).
           if [ "${GITHUB_EVENT_NAME}" = "schedule" ]; then
             publish_dataset='true'
             mirror_backup='true'
@@ -94,13 +107,24 @@ jobs:
             push_model='false'
             allow_quarantine='false'
             refresh_ingestion_pool='true'
+
+            dataset_repo='issdandavis/scbe-aethermoore-knowledge-base'
+            backup_dataset_repo='issdandavis/scbe-aethermoore-datasets'
+            model_repo='issdandavis/phdm-21d-embedding-next'
           fi
+
+          # Defensive fallback: never allow empty repo ids.
+          if [ -z "${dataset_repo}" ]; then dataset_repo='issdandavis/scbe-aethermoore-knowledge-base'; fi
+          if [ -z "${backup_dataset_repo}" ]; then backup_dataset_repo='issdandavis/scbe-aethermoore-datasets'; fi
+          if [ -z "${model_repo}" ]; then model_repo='issdandavis/phdm-21d-embedding-next'; fi
+
           cmd=(
             python scripts/programmatic_hf_training.py
-            --dataset-repo "${{ inputs.dataset_repo }}"
-            --backup-dataset-repo "${{ inputs.backup_dataset_repo }}"
-            --model-repo "${{ inputs.model_repo }}"
+            --dataset-repo "${dataset_repo}"
+            --backup-dataset-repo "${backup_dataset_repo}"
+            --model-repo "${model_repo}"
           )
+
           if [ "$publish_dataset" = "true" ]; then
             cmd+=(--publish-dataset)
           fi
@@ -119,6 +143,7 @@ jobs:
           if [ "$refresh_ingestion_pool" != "true" ]; then
             cmd+=(--skip-ingestion-pool-refresh)
           fi
+
           printf 'Running: %q ' "${cmd[@]}"
           printf '\n'
           "${cmd[@]}"

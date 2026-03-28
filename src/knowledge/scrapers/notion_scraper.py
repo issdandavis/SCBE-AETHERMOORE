@@ -149,7 +149,15 @@ def scrape_workspace(queries: list[str] = None, fetch_content: bool = True) -> l
         return []
 
     if queries is None:
-        queries = ["SCBE", "Sacred", "GeoSeed", "HYDRA", "Spiralverse", "governance", "theorem"]
+        queries = [
+            "SCBE",
+            "Sacred",
+            "GeoSeed",
+            "HYDRA",
+            "Spiralverse",
+            "governance",
+            "theorem",
+        ]
 
     all_pages = {}
     for q in queries:

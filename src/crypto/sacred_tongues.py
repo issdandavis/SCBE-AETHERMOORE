@@ -372,7 +372,7 @@ class SacredTongueTokenizer:
 
     def _validate_security_properties(self) -> None:
         """Runtime validation of cryptographic requirements."""
-        for code, spec in self.tongues.items():
+        for code, _spec in self.tongues.items():
             tokens = set(self.byte_to_token[code])
 
             # Uniqueness: 256 distinct tokens

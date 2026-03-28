@@ -57,7 +57,10 @@ def selftest():
     check("Intake has ternary_state", len(intake["ternary_state"]) == 6)
     check("Intake has manifold", intake["manifold"] in ("M+", "M0", "M-"))
     check("Intake has breath_phase", 0.0 <= intake["breath_phase"] < 1.0)
-    check("Intake ternary values valid", all(t in (-1, 0, 1) for t in intake["ternary_state"]))
+    check(
+        "Intake ternary values valid",
+        all(t in (-1, 0, 1) for t in intake["ternary_state"]),
+    )
     print(f"    Tongue: {intake['tongue']}")
     print(f"    Manifold: {intake['manifold']}")
     print(f"    Ternary: {intake['ternary_state']}")
@@ -68,7 +71,9 @@ def selftest():
 
     # Ingest some concepts
     r1 = mesh.ingest(
-        "The harmonic wall creates exponential cost for adversarial drift", label="Harmonic Wall", node_type="CONCEPT"
+        "The harmonic wall creates exponential cost for adversarial drift",
+        label="Harmonic Wall",
+        node_type="CONCEPT",
     )
     check("Ingest returns node_id", bool(r1["node_id"]))
     check("Ingest has tongue", bool(r1["tongue"]))
@@ -83,7 +88,10 @@ def selftest():
     check("Second ingest OK", bool(r2["node_id"]))
     check("Edge created", len(r2["edges_created"]) == 1)
 
-    r3 = mesh.ingest("The secret encryption protocol hides data in shadows", label="Shadow Encryption")
+    r3 = mesh.ingest(
+        "The secret encryption protocol hides data in shadows",
+        label="Shadow Encryption",
+    )
     check("Third ingest OK", bool(r3["node_id"]))
 
     r4 = mesh.ingest(
@@ -131,7 +139,14 @@ def selftest():
     # ── MCP Tool Definitions ──────────────────────────────────────
     check("6 tools defined", len(TOOL_DEFINITIONS) == 6)
     tool_names = {t["name"] for t in TOOL_DEFINITIONS}
-    for expected in ["mesh_ingest", "mesh_query", "mesh_context", "mesh_connect", "mesh_path", "mesh_stats"]:
+    for expected in [
+        "mesh_ingest",
+        "mesh_query",
+        "mesh_context",
+        "mesh_connect",
+        "mesh_path",
+        "mesh_stats",
+    ]:
         check(f"  Tool {expected} exists", expected in tool_names)
 
     # ── MCP Server construction ───────────────────────────────────
@@ -140,7 +155,10 @@ def selftest():
 
     # Test initialize
     resp = server.handle_request({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
-    check("Initialize response OK", resp["result"]["serverInfo"]["name"] == "scbe-semantic-mesh")
+    check(
+        "Initialize response OK",
+        resp["result"]["serverInfo"]["name"] == "scbe-semantic-mesh",
+    )
 
     # Test tools/list
     resp = server.handle_request({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}})

@@ -1,21 +1,30 @@
 # SCBE-AETHERMOORE
 
 Canonical site: https://aethermoorgames.com/
+Mirror (same content): https://issdandavis.github.io/SCBE-AETHERMOORE/
 
-SCBE-AETHERMOORE is a public documentation and product surface for an AI governance system, its demos, its buyer manuals, and its support routes. The public site is intentionally split into separate lanes so humans and AI assistants can find the right level of detail quickly.
+SCBE-AETHERMOORE is a public documentation and product surface for an AI governance system, its demos, its buyer manuals, and its support routes. The site is intentionally split into separate lanes so humans and AI assistants can find the right level of detail quickly.
 
 ## Start here
 
 - Home: https://aethermoorgames.com/
   - Main overview, benchmarks, pricing, core concepts, and product entry points.
+- Articles: https://aethermoorgames.com/articles/index.html
+  - Public writing: field notes, product maps, benchmark explainers, and bounded theory packets.
+- Network: https://aethermoorgames.com/network.html
+  - External links (Medium, GitHub), ops map, and machine-readable entry points.
 - Demos: https://aethermoorgames.com/demos/index.html
-  - Story-first demo lab for Hydra, GeoSeal, CLI surfaces, and visual orientation.
-- Product Manuals: https://aethermoorgames.com/product-manual/index.html
+  - Story-first demo lab for Hydra, GeoSeal, and public surfaces.
+- Research: https://aethermoorgames.com/research/index.html
+  - Benchmarks, theory packets, and active experiment tracks.
+- Product manuals: https://aethermoorgames.com/product-manual/index.html
   - Buyer-facing usage manuals for purchased packages.
-- Delivery + Access: https://aethermoorgames.com/product-manual/delivery-and-access.html
+- Delivery + access: https://aethermoorgames.com/product-manual/delivery-and-access.html
   - What buyers should receive, how access works, and how to recover missing delivery.
 - Support: https://aethermoorgames.com/support.html
   - Troubleshooting path for delivery, setup, AI drift, and broken-page issues.
+- Sphere Grid (skills vault): https://aethermoorgames.com/research/sphere-grid.html
+  - Skill spheres + Sacred Tongues routing map for agent work.
 
 ## Package pages
 
@@ -43,12 +52,14 @@ SCBE-AETHERMOORE is a public documentation and product surface for an AI governa
 
 - Prefer the manual pages for setup and operational help.
 - Prefer the support page for recovery, troubleshooting, and missing-delivery issues.
-- Prefer the demos page for orientation and high-level system explanation.
+- Prefer the demo hub for fast orientation and high-level explanations.
+- Prefer research pages for benchmarks and claim-separated theory packets.
+- Keep product claims, benchmark results, and theory language in separate lanes.
 - Do not claim that a package requires a key unless the manual or delivery page says it does.
-- Do not claim that the novel started the entire system; the site explicitly distinguishes the system history from the narrative entrypoint.
 - When summarizing the site, keep the public/product/manual/support split intact.
 
 ## Contact and escalation
 
-- Support email: mailto:issdandavis@gmail.com?subject=SCBE%20Support%20Help
+- Support email: mailto:aethermoregames@pm.me?subject=SCBE%20Support%20Help
 - GitHub repo: https://github.com/issdandavis/SCBE-AETHERMOORE
+- Medium: https://medium.com/@issdandavis7795

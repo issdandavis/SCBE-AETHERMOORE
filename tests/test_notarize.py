@@ -1,12 +1,18 @@
 """Tests for SCBE Notarization Service."""
+
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
-
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-from notarize import notarize, verify, batch_notarize, cert_to_json, cert_from_json
+from notarize import (
+    notarize,
+    verify,
+    batch_notarize,
+    cert_to_json,
+    cert_from_json,
+)
 
 
 class TestNotarize:

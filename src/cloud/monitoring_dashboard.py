@@ -325,7 +325,13 @@ class AlertManager:
         return triggered
 
     def create_alert(
-        self, severity: AlertSeverity, title: str, message: str, source: str, cloud: Optional[str] = None, **kwargs
+        self,
+        severity: AlertSeverity,
+        title: str,
+        message: str,
+        source: str,
+        cloud: Optional[str] = None,
+        **kwargs,
     ) -> Alert:
         """Create a new alert."""
         alert = Alert(
@@ -536,7 +542,7 @@ class MonitoringDashboard:
 
         # Aggregate by cloud
         by_cloud = {"aws": [], "gcp": [], "local": []}
-        for agent_id, snap in latest_snapshot.items():
+        for _agent_id, snap in latest_snapshot.items():
             by_cloud[snap.cloud].append(
                 {
                     "agent_id": snap.agent_id,

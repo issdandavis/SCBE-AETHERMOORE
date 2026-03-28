@@ -47,7 +47,11 @@ def test_provision_colab_worker_dry_run_emits_packets(tmp_path: Path, monkeypatc
     assert artifact["state"] == "dry_run"
     assert artifact["notebook"]["name"] == "scbe-pivot-v2"
     assert len(emitted) == 3
-    assert [row["packet_class"] for row in emitted] == ["governance", "internal", "evidence"]
+    assert [row["packet_class"] for row in emitted] == [
+        "governance",
+        "internal",
+        "evidence",
+    ]
     assert emitted[1]["worker_id"] == "worker-colab-01"
     assert emitted[1]["mission_id"] == "mission-1"
     assert Path(artifact["artifact_path"]).exists()

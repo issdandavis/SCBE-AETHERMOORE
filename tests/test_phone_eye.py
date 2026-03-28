@@ -56,7 +56,11 @@ def test_capture_writes_stable_latest_files(tmp_path, monkeypatch):
             return {
                 "screenshot": {"artifact_path": str(screenshot)},
                 "ui_dump": {"artifact_path": str(ui_dump)},
-                "status": {"serial": "emulator-5554", "session_dir": str(self.session_dir), "top_activity": "chrome"},
+                "status": {
+                    "serial": "emulator-5554",
+                    "session_dir": str(self.session_dir),
+                    "top_activity": "chrome",
+                },
             }
 
     monkeypatch.setattr(phone_eye, "HydraAndroidHand", FakeHand)

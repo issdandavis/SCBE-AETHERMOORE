@@ -67,7 +67,7 @@
     {"@type":"ListItem","position":15,"name":"PyTorch","url":"https://aetherwiki.aethermoore.com/#pytorch"},
     {"@type":"ListItem","position":16,"name":"LangChain","url":"https://aetherwiki.aethermoore.com/#langchain"},
     {"@type":"ListItem","position":17,"name":"AetherBrowse","url":"https://aetherwiki.aethermoore.com/#aetherbrowse"},
-    {"@type":"ListItem","position":18,"name":"Hydra Armor API","url":"https://aetherwiki.aethermoore.com/#hydra-armor"},
+    {"@type":"ListItem","position":18,"name":"Aether Antivirus","url":"https://aetherwiki.aethermoore.com/#aether-antivirus"},
     {"@type":"ListItem","position":19,"name":"Cursor","url":"https://aetherwiki.aethermoore.com/#cursor"},
     {"@type":"ListItem","position":20,"name":"GitHub Copilot","url":"https://aetherwiki.aethermoore.com/#github-copilot"},
     {"@type":"ListItem","position":21,"name":"OpenAI Operator","url":"https://aetherwiki.aethermoore.com/#openai-operator"},
@@ -880,7 +880,7 @@ const entries = [
     company: "Aethermoore Works",
     tags: ["governed-browser", "SCBE", "open-source"],
     summary: "SCBE-governed AI browser agent with 4-agent loop: PERCEIVE (Polly/UM) > PLAN (Zara/KO) > GOVERN (Aria/AV) > EXECUTE (Kael/CA).",
-    article: `<h2>Overview</h2><p>AetherBrowse is the AI-governed browser built on SCBE-AETHERMOORE. It uses a 4-agent loop where every browser action passes through governance checks before execution.</p><h2>Agent Loop</h2><table><tr><th>Phase</th><th>Agent</th><th>Tongue</th><th>Role</th></tr><tr><td>PERCEIVE</td><td>Polly</td><td>UM</td><td>Analyze page state</td></tr><tr><td>PLAN</td><td>Zara</td><td>KO</td><td>Generate action plan</td></tr><tr><td>GOVERN</td><td>Aria</td><td>AV</td><td>Governance gate check</td></tr><tr><td>EXECUTE</td><td>Kael</td><td>CA</td><td>Execute browser actions</td></tr></table><h2>Architecture</h2><ul><li><strong>Electron shell</strong>: Tab management, DevTools bridge</li><li><strong>Python runtime</strong>: FastAPI on port 8400</li><li><strong>Playwright worker</strong>: Headless browser automation</li><li><strong>Hydra Armor</strong>: Multi-model governance consensus</li></ul>`
+    article: `<h2>Overview</h2><p>AetherBrowse is the AI-governed browser built on SCBE-AETHERMOORE. It uses a 4-agent loop where every browser action passes through governance checks before execution.</p><h2>Agent Loop</h2><table><tr><th>Phase</th><th>Agent</th><th>Tongue</th><th>Role</th></tr><tr><td>PERCEIVE</td><td>Polly</td><td>UM</td><td>Analyze page state</td></tr><tr><td>PLAN</td><td>Zara</td><td>KO</td><td>Generate action plan</td></tr><tr><td>GOVERN</td><td>Aria</td><td>AV</td><td>Governance gate check</td></tr><tr><td>EXECUTE</td><td>Kael</td><td>CA</td><td>Execute browser actions</td></tr></table><h2>Architecture</h2><ul><li><strong>Electron shell</strong>: Tab management, DevTools bridge</li><li><strong>Python runtime</strong>: FastAPI on port 8400</li><li><strong>Playwright worker</strong>: Headless browser automation</li><li><strong>Hydra Armor</strong>: HYDRA plus governance and antivirus protection</li><li><strong>Aether Antivirus</strong>: SemanticAntivirus, kernel gating, and repo triage layers</li></ul>`
   },
 
   // ── Frameworks (DR: Schema) ──
@@ -915,14 +915,14 @@ const entries = [
     article: `<h2>Overview</h2><p>Hugging Face is the central platform for the open-source AI community. It hosts models, datasets, and Spaces (demo applications) with Git-based version control.</p><h2>Key Products</h2><ul><li><strong>Hub</strong>: 1M+ models, 250K+ datasets</li><li><strong>Transformers</strong>: Python library for model inference and training</li><li><strong>Spaces</strong>: Free hosting for ML demos (Gradio, Streamlit)</li><li><strong>Inference API</strong>: Serverless model inference</li><li><strong>TRL</strong>: Transformer Reinforcement Learning library</li></ul>`
   },
   {
-    id: "hydra-armor",
-    title: "Hydra Armor API",
+    id: "aether-antivirus",
+    title: "Aether Antivirus",
     type: "Tool",
     tongue: "UM",
     company: "Aethermoore Works",
-    tags: ["governance", "API", "multi-model", "SCBE"],
-    summary: "Governance-as-a-Service API providing multi-head consensus on AI actions. Free tier: 2M requests/month.",
-    article: `<h2>Overview</h2><p>Hydra Armor is a standalone Governance-as-a-Service API from the SCBE-AETHERMOORE stack. It provides multi-model consensus governance checks for AI agent actions.</p><h2>Endpoints</h2><table><tr><th>Method</th><th>Path</th><th>Description</th></tr><tr><td>POST</td><td>/v1/armor/verify</td><td>Action-level governance check</td></tr><tr><td>POST</td><td>/v1/hydra-armor</td><td>Multi-head consensus on browser snapshot</td></tr><tr><td>GET</td><td>/v1/armor/health</td><td>API health check</td></tr><tr><td>GET</td><td>/v1/armor/usage/{id}</td><td>Usage stats per agent</td></tr></table><h2>Pricing</h2><ul><li><strong>Free</strong>: 1,000 checks/month</li><li><strong>Starter</strong>: $5/month, 50K checks</li><li><strong>Pro</strong>: $29/month, unlimited</li></ul>`
+    tags: ["security", "antivirus", "governance", "SCBE"],
+    summary: "Umbrella security stack for SCBE web, kernel, and repo defense: Antivirus Membrane, SemanticAntivirus, Kernel Antivirus Gate, and Agentic Antivirus.",
+    article: `<h2>Overview</h2><p>Aether Antivirus is the umbrella security stack inside SCBE-AETHERMOORE. It is not a separate standalone runtime. It names the defensive layers already present in the repo.</p><h2>Stack Components</h2><table><tr><th>Layer</th><th>Purpose</th><th>Code Surface</th></tr><tr><td>Antivirus Membrane</td><td>Deterministic text and threat signature scanning</td><td><code>agents/antivirus_membrane.py</code></td></tr><tr><td>SemanticAntivirus</td><td>Web content, injection, entropy, and governance filtering</td><td><code>src/symphonic_cipher/scbe_aethermoore/concept_blocks/web_agent/semantic_antivirus.py</code></td></tr><tr><td>Kernel Antivirus Gate</td><td>Kernel telemetry policy and containment decisions</td><td><code>agents/kernel_antivirus_gate.py</code></td></tr><tr><td>Agentic Antivirus</td><td>Repository and corpus triage for secrets and risky patterns</td><td><code>scripts/agentic_antivirus.py</code></td></tr></table><h2>Relationship to HYDRA and OctoArmor</h2><ul><li><strong>HYDRA</strong>: orchestration body</li><li><strong>Hydra Armor</strong>: HYDRA with governance and antivirus protection</li><li><strong>OctoArmor</strong>: router and connector hub</li><li><strong>Aether Antivirus</strong>: the actual scanning and containment stack</li></ul><h2>Current Status</h2><p>The antivirus surfaces are implemented as code modules and CLI tools in the repository today. Public copy should describe them as an integrated stack, not as a standalone API product unless that API is implemented separately.</p>`
   },
   {
     id: "aether-gates",

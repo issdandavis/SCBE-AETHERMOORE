@@ -80,8 +80,8 @@ def _replace(
 ) -> DavisFormulaInputs:
     return DavisFormulaInputs(
         time_budget=inputs.time_budget if time_budget is None else time_budget,
-        intent_intensity=inputs.intent_intensity if intent_intensity is None else intent_intensity,
-        context_dimensions=inputs.context_dimensions if context_dimensions is None else context_dimensions,
+        intent_intensity=(inputs.intent_intensity if intent_intensity is None else intent_intensity),
+        context_dimensions=(inputs.context_dimensions if context_dimensions is None else context_dimensions),
         drift=inputs.drift if drift is None else drift,
     )
 
@@ -123,7 +123,12 @@ class TestProbeIntentSweep:
     def test_intent_sweep_is_inverse_monotone_for_all_controls(self) -> None:
         for control in CONTROLS:
             scores = [
-                _score(_replace(control.inputs, intent_intensity=control.inputs.intent_intensity * scale))
+                _score(
+                    _replace(
+                        control.inputs,
+                        intent_intensity=control.inputs.intent_intensity * scale,
+                    )
+                )
                 for scale in INTENT_SCALES
             ]
             assert scores == sorted(scores, reverse=True)

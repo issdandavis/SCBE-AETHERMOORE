@@ -34,7 +34,8 @@ from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
 
 # Skip all tests if dependencies not available
 pytestmark = pytest.mark.skipif(
-    not RWP_AVAILABLE, reason="RWP v3.0 dependencies not installed (argon2-cffi, pycryptodome)"
+    not RWP_AVAILABLE,
+    reason="RWP v3.0 dependencies not installed (argon2-cffi, pycryptodome)",
 )
 
 
@@ -219,7 +220,8 @@ class TestRWPv3Protocol:
         protocol = object.__new__(RWPv3Protocol)
 
         monkeypatch.setattr(
-            "src.crypto.rwp_v3.hash_secret_raw", lambda **_: (_ for _ in ()).throw(RuntimeError("boom"))
+            "src.crypto.rwp_v3.hash_secret_raw",
+            lambda **_: (_ for _ in ()).throw(RuntimeError("boom")),
         )
 
         password = b"test-password"

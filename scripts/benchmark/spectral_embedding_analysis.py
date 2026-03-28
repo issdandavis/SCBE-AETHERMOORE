@@ -331,7 +331,7 @@ def run_spectral_analysis():
             "settling": [],
         }
 
-        for text, stages in items:
+        for _text, stages in items:
             cat_results["frequency"].append(pass1_frequency(stages, cat))
             cat_results["amplitude"].append(pass2_amplitude(stages, cat))
             cat_results["coherence"].append(pass3_coherence(stages, cat))

@@ -10,7 +10,10 @@ import pytest
 try:
     from cryptography.fernet import Fernet  # noqa: F401
 except BaseException:
-    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+    pytest.skip(
+        "cryptography package not functional (cffi backend missing)",
+        allow_module_level=True,
+    )
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -378,7 +381,9 @@ def test_sell_from_terminal_reports_secret_source_not_secret_value(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "super-secret-openai-token")
     monkeypatch.delenv("HF_TOKEN", raising=False)
     monkeypatch.setattr(
-        sell_from_terminal, "get_secret", lambda key, default="": "hf-secret" if key == "HF_TOKEN" else default
+        sell_from_terminal,
+        "get_secret",
+        lambda key, default="": "hf-secret" if key == "HF_TOKEN" else default,
     )
 
     status = sell_from_terminal._load_secret_env()
