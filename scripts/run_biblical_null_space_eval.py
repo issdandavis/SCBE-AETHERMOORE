@@ -93,10 +93,30 @@ def call_xai(prompt: str, model: str = "grok-3-mini-fast") -> str:
     return data["choices"][0]["message"]["content"]
 
 
+def call_ollama(prompt: str, model: str = "llama3.2") -> str:
+    """Call local Ollama (free, no API key needed)."""
+    import urllib.request
+    payload = json.dumps({
+        "model": model,
+        "prompt": prompt,
+        "stream": False,
+        "options": {"temperature": 0.3, "num_predict": 500},
+    }).encode()
+    req = urllib.request.Request(
+        "http://localhost:11434/api/generate",
+        data=payload,
+        headers={"Content-Type": "application/json"},
+    )
+    resp = urllib.request.urlopen(req, timeout=120)
+    data = json.loads(resp.read().decode())
+    return data.get("response", "")
+
+
 PROVIDERS = {
     "gemini": call_gemini,
     "openai": call_openai,
     "xai": call_xai,
+    "ollama": call_ollama,
 }
 
 
@@ -107,7 +127,7 @@ def main():
     parser.add_argument("--output", default=None, help="Output JSON path")
     args = parser.parse_args()
 
-    defaults = {"gemini": "gemini-2.5-flash", "openai": "gpt-4o-mini", "xai": "grok-3-mini-fast"}
+    defaults = {"gemini": "gemini-2.5-flash", "openai": "gpt-4o-mini", "xai": "grok-3-mini-fast", "ollama": "llama3.2"}
     model = args.model or defaults[args.provider]
     call_fn = PROVIDERS[args.provider]
 
