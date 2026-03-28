@@ -27,7 +27,9 @@ from src.crypto.h_lwe import (
 )
 
 
-def rand_ball_vec(dim: int, rng: np.random.Generator, max_r: float = 0.85) -> np.ndarray:
+def rand_ball_vec(
+    dim: int, rng: np.random.Generator, max_r: float = 0.85
+) -> np.ndarray:
     v = rng.normal(size=(dim,))
     n = np.linalg.norm(v) or 1.0
     v = v / n
@@ -95,7 +97,9 @@ class TestHLWESymmetric:
         tampered = ct.ct.copy()
         n = np.linalg.norm(tampered) or 1.0
         tampered = tampered / n * 0.999999
-        ct2 = HLWECiphertext(ct=tampered, radius_ct=float(np.linalg.norm(tampered)), meta=ct.meta)
+        ct2 = HLWECiphertext(
+            ct=tampered, radius_ct=float(np.linalg.norm(tampered)), meta=ct.meta
+        )
 
         with pytest.raises(ContainmentBreach):
             hlwe.decrypt(key, ct2)

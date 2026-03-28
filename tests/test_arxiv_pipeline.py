@@ -10,11 +10,14 @@ from scripts.arxiv_synthesize_paper import synthesize_latex
 def test_aggregate_collects_documents(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
-    (repo / "README.md").write_text("# Title\nA long enough sentence for extraction.", encoding="utf-8")
+    (repo / "README.md").write_text(
+        "# Title\nA long enough sentence for extraction.", encoding="utf-8"
+    )
     docs = repo / "docs"
     docs.mkdir()
     (docs / "A.md").write_text(
-        "Doc body with sufficient narrative length to be included in synthesis.", encoding="utf-8"
+        "Doc body with sufficient narrative length to be included in synthesis.",
+        encoding="utf-8",
     )
 
     out = aggregate(root=repo, include=["README.md", "docs"], max_chars=10000)

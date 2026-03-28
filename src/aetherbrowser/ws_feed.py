@@ -78,9 +78,13 @@ class WsFeed:
         return self._base(MsgType.CHAT, agent, model=model, payload=merged_payload)
 
     def agent_status(self, agent: Agent, state: str, model: str | None = None) -> dict:
-        return self._base(MsgType.AGENT_STATUS, agent, model=model, payload={"state": state})
+        return self._base(
+            MsgType.AGENT_STATUS, agent, model=model, payload={"state": state}
+        )
 
-    def zone_request(self, agent: Agent, zone: Zone, *, url: str, action: str, description: str) -> dict:
+    def zone_request(
+        self, agent: Agent, zone: Zone, *, url: str, action: str, description: str
+    ) -> dict:
         return self._base(
             MsgType.ZONE_REQUEST,
             agent,
@@ -88,8 +92,14 @@ class WsFeed:
             payload={"url": url, "action": action, "description": description},
         )
 
-    def progress(self, agent: Agent, *, current: int, total: int, label: str = "") -> dict:
-        return self._base(MsgType.PROGRESS, agent, payload={"current": current, "total": total, "label": label})
+    def progress(
+        self, agent: Agent, *, current: int, total: int, label: str = ""
+    ) -> dict:
+        return self._base(
+            MsgType.PROGRESS,
+            agent,
+            payload={"current": current, "total": total, "label": label},
+        )
 
     def error(self, reason: str, agent: Agent = Agent.SYSTEM) -> dict:
         return self._base(MsgType.ERROR, agent, payload={"reason": reason})

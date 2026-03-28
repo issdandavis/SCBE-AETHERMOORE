@@ -4,7 +4,12 @@ import importlib.util
 import json
 from pathlib import Path
 
-SCRIPT_PATH = Path(__file__).resolve().parents[1] / "scripts" / "system" / "build_repurpose_manifest.py"
+SCRIPT_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "scripts"
+    / "system"
+    / "build_repurpose_manifest.py"
+)
 SPEC = importlib.util.spec_from_file_location("build_repurpose_manifest", SCRIPT_PATH)
 MODULE = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
@@ -16,13 +21,17 @@ def test_build_manifest_classifies_top_level_paths(tmp_path: Path) -> None:
     repo_root.mkdir()
 
     (repo_root / "src").mkdir()
-    (repo_root / "src" / "index.ts").write_text("export const ok = true;\n", encoding="utf-8")
+    (repo_root / "src" / "index.ts").write_text(
+        "export const ok = true;\n", encoding="utf-8"
+    )
 
     (repo_root / "artifacts").mkdir()
     (repo_root / "artifacts" / "run.log").write_text("hello\n", encoding="utf-8")
 
     (repo_root / "training-data").mkdir()
-    (repo_root / "training-data" / "records.jsonl").write_text('{"ok": true}\n', encoding="utf-8")
+    (repo_root / "training-data" / "records.jsonl").write_text(
+        '{"ok": true}\n', encoding="utf-8"
+    )
 
     (repo_root / ".env").write_text("SECRET=1\n", encoding="utf-8")
 

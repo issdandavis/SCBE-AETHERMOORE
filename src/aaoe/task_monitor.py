@@ -101,22 +101,37 @@ class IntentVector:
         t = text.lower()
         v = cls()
         # KO — research, knowledge, learning, reading
-        if any(w in t for w in ["research", "learn", "read", "study", "paper", "analyze"]):
+        if any(
+            w in t for w in ["research", "learn", "read", "study", "paper", "analyze"]
+        ):
             v.ko = 0.4
         # AV — communicate, publish, share, post
-        if any(w in t for w in ["publish", "post", "share", "communicate", "tweet", "write"]):
+        if any(
+            w in t
+            for w in ["publish", "post", "share", "communicate", "tweet", "write"]
+        ):
             v.av = 0.35
         # RU — create, build, code, hack
-        if any(w in t for w in ["build", "create", "code", "develop", "hack", "generate"]):
+        if any(
+            w in t for w in ["build", "create", "code", "develop", "hack", "generate"]
+        ):
             v.ru = 0.3
         # CA — compute, calculate, train, model
-        if any(w in t for w in ["compute", "train", "model", "calculate", "optimize", "data"]):
+        if any(
+            w in t
+            for w in ["compute", "train", "model", "calculate", "optimize", "data"]
+        ):
             v.ca = 0.35
         # UM — stealth, scrape, monitor, observe
-        if any(w in t for w in ["scrape", "monitor", "stealth", "observe", "crawl", "spy"]):
+        if any(
+            w in t for w in ["scrape", "monitor", "stealth", "observe", "crawl", "spy"]
+        ):
             v.um = 0.25
         # DR — organize, structure, deploy, archive
-        if any(w in t for w in ["organize", "deploy", "structure", "archive", "store", "backup"]):
+        if any(
+            w in t
+            for w in ["organize", "deploy", "structure", "archive", "store", "backup"]
+        ):
             v.dr = 0.3
         # Ensure non-zero
         if v.norm() < EPSILON:
@@ -194,7 +209,10 @@ class AgentSession:
             "declared_intent": self.declared_intent,
             "intent_vector": self.intent_vector.to_array(),
             "num_observations": len(self.observations),
-            "drift_history": [{"time": t, "distance": d, "level": lv.value} for t, d, lv in self.drift_history],
+            "drift_history": [
+                {"time": t, "distance": d, "level": lv.value}
+                for t, d, lv in self.drift_history
+            ],
             "duration_s": round(self.duration, 2),
             "was_quarantined": self.is_quarantined,
             "credits_earned": round(self.total_credits_earned, 6),
@@ -410,7 +428,9 @@ class TaskMonitor:
         # At INSPECT/QUARANTINE level, prompt every 3 observations
         if current_level in (DriftLevel.INSPECT, DriftLevel.QUARANTINE):
             inspect_count = sum(
-                1 for _, _, lv in session.drift_history[-6:] if lv in (DriftLevel.INSPECT, DriftLevel.QUARANTINE)
+                1
+                for _, _, lv in session.drift_history[-6:]
+                if lv in (DriftLevel.INSPECT, DriftLevel.QUARANTINE)
             )
             return inspect_count % 3 == 0
         return False

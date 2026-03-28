@@ -290,7 +290,9 @@ class GenesisProtocol:
         Returns:
             (batch_id, list of SacredEggs)
         """
-        batch_id = hashlib.sha256(os.urandom(16) + str(time.time()).encode()).hexdigest()[:12]
+        batch_id = hashlib.sha256(
+            os.urandom(16) + str(time.time()).encode()
+        ).hexdigest()[:12]
 
         cond = hatch_condition or {"path": "interior"}
         eggs = []

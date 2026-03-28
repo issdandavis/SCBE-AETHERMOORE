@@ -185,7 +185,9 @@ def harmonic_wall_cost(d: float, R: float = R_FIFTH) -> float:
     return R ** (d * d)
 
 
-def tunnel_phase_cost(d: float, phase: float, wall_frequency: float, R: float = R_FIFTH) -> float:
+def tunnel_phase_cost(
+    d: float, phase: float, wall_frequency: float, R: float = R_FIFTH
+) -> float:
     """Cost of moving through a wall via phase tunneling.
 
     When the agent's phase matches the wall's transparency frequency,
@@ -489,10 +491,13 @@ class TunnelGovernor:
             "action": "continue",
             "cost": cost,
             "depth": d_H,
-            "remaining_time": permit.max_duration_seconds - (time.time() - permit.issued_at),
+            "remaining_time": permit.max_duration_seconds
+            - (time.time() - permit.issued_at),
         }
 
-    def complete_tunnel(self, agent_id: str, kernel: KernelStack | None = None, success: bool = True):
+    def complete_tunnel(
+        self, agent_id: str, kernel: KernelStack | None = None, success: bool = True
+    ):
         """Complete a tunnel traversal — agent returns to safe zone."""
         permit = self.active_permits.get(agent_id)
         if not permit:

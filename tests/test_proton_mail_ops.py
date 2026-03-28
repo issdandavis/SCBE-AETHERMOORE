@@ -31,7 +31,10 @@ class FakeImap:
         return "OK", [b"logged in"]
 
     def list(self):
-        return "OK", [b'(\\HasNoChildren) "/" "INBOX"', b'(\\HasNoChildren) "/" "Labels/Support"']
+        return "OK", [
+            b'(\\HasNoChildren) "/" "INBOX"',
+            b'(\\HasNoChildren) "/" "Labels/Support"',
+        ]
 
     def select(self, folder: str, readonly: bool = True):
         return "OK", [b"1"]
@@ -150,8 +153,16 @@ def test_sweep_messages_groups_actions_and_targets(monkeypatch) -> None:
             "count": 2,
             "counts": {"admin": 1, "newsletter": 1},
             "messages": [
-                {"uid": "1", "suggested_target": "Folders/Admin", "suggested_action": "move"},
-                {"uid": "2", "suggested_target": "Archive", "suggested_action": "archive"},
+                {
+                    "uid": "1",
+                    "suggested_target": "Folders/Admin",
+                    "suggested_action": "move",
+                },
+                {
+                    "uid": "2",
+                    "suggested_target": "Archive",
+                    "suggested_action": "archive",
+                },
             ],
             "lines": [],
         },
@@ -222,7 +233,9 @@ def test_apply_triage_plan_filters_to_selected_targets(monkeypatch) -> None:
     )
     monkeypatch.setattr(mail_ops, "_audit", lambda event, payload: None)
 
-    payload = mail_ops.apply_triage_plan(cfg, "INBOX", 10, execute=False, only_targets={"Folders/Admin"})
+    payload = mail_ops.apply_triage_plan(
+        cfg, "INBOX", 10, execute=False, only_targets={"Folders/Admin"}
+    )
     assert payload["move_count"] == 1
     assert payload["filtered_count"] == 1
     assert payload["only_targets"] == ["Folders/Admin"]
@@ -251,7 +264,9 @@ def test_apply_triage_plan_execute_marks_deleted_flag(monkeypatch) -> None:
     )
     monkeypatch.setattr(mail_ops, "_audit", lambda event, payload: None)
 
-    payload = mail_ops.apply_triage_plan(cfg, "INBOX", 10, execute=True, only_targets={"Folders/Admin"})
+    payload = mail_ops.apply_triage_plan(
+        cfg, "INBOX", 10, execute=True, only_targets={"Folders/Admin"}
+    )
     assert payload["move_count"] == 1
     assert fake.copied == [("7", "Folders/Admin")]
     assert fake.stored == [("7", "+FLAGS", r"\Deleted")]
@@ -259,24 +274,36 @@ def test_apply_triage_plan_execute_marks_deleted_flag(monkeypatch) -> None:
 
 
 def test_send_mail_execute_uses_authenticated_bridge_smtp(monkeypatch) -> None:
-    cfg = mail_ops.BridgeConfig("127.0.0.1", 1143, 1025, "aethermoregames@pm.me", "bridge-password", "Folders")
+    cfg = mail_ops.BridgeConfig(
+        "127.0.0.1", 1143, 1025, "aethermoregames@pm.me", "bridge-password", "Folders"
+    )
     fake = FakeSmtp()
     monkeypatch.setattr(mail_ops, "_connect_smtp", lambda config: fake)
     monkeypatch.setattr(mail_ops, "_audit", lambda event, payload: None)
 
-    payload = mail_ops.send_mail(cfg, "buyer@example.com", "Hello", "World", execute=True)
+    payload = mail_ops.send_mail(
+        cfg, "buyer@example.com", "Hello", "World", execute=True
+    )
     assert payload["status"] == "sent"
     assert fake.sent_to == "buyer@example.com"
 
 
 def test_store_credentials_persists_bridge_secrets(monkeypatch) -> None:
     writes: list[tuple[str, str, str]] = []
-    monkeypatch.setattr(mail_ops, "set_secret", lambda name, value, note="": writes.append((name, value, note)))
+    monkeypatch.setattr(
+        mail_ops,
+        "set_secret",
+        lambda name, value, note="": writes.append((name, value, note)),
+    )
     monkeypatch.setattr(mail_ops, "_audit", lambda event, payload: None)
 
     payload = mail_ops.store_credentials("aethermoregames@pm.me", "bridge-password")
     assert payload["status"] == "stored"
     assert writes == [
-        ("PROTON_BRIDGE_USERNAME", "aethermoregames@pm.me", "Proton Mail Bridge username"),
+        (
+            "PROTON_BRIDGE_USERNAME",
+            "aethermoregames@pm.me",
+            "Proton Mail Bridge username",
+        ),
         ("PROTON_BRIDGE_PASSWORD", "bridge-password", "Proton Mail Bridge password"),
     ]

@@ -19,7 +19,9 @@ def gate():
 class TestDirectOverride:
     def test_detects_at_least_30_percent(self, gate):
         result = run_benchmark(gate, DIRECT_OVERRIDE)
-        assert result.detection_rate >= 0.30, f"Direct override detection too low: {result.detection_rate:.1%}"
+        assert (
+            result.detection_rate >= 0.30
+        ), f"Direct override detection too low: {result.detection_rate:.1%}"
 
     def test_system_override_detected(self, gate):
         """A03: SYSTEM OVERRIDE should trigger lexical detection."""

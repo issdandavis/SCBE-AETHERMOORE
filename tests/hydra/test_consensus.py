@@ -208,7 +208,9 @@ class TestByzantineResistance:
 
         # 5 honest heads DENY
         for i in range(5):
-            bc.cast_vote(proposal.id, f"honest-{i}", VoteDecision.DENY, "dangerous", 1.0)
+            bc.cast_vote(
+                proposal.id, f"honest-{i}", VoteDecision.DENY, "dangerous", 1.0
+            )
 
         # 2 Byzantine heads try to ALLOW
         for i in range(2):

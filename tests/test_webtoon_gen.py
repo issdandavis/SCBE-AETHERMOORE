@@ -46,7 +46,8 @@ def test_compile_panel_prompt_includes_character_lock_and_story_context() -> Non
         "style_metadata": {
             "camera_angle": "tight three-quarter close-up",
             "character_anchor": (
-                "Asian-American man early 30s, short dark messy hair," " tired eyes, lean desk-worker build."
+                "Asian-American man early 30s, short dark messy hair,"
+                " tired eyes, lean desk-worker build."
             ),
         },
     }
@@ -62,7 +63,8 @@ def test_compile_panel_prompt_includes_character_lock_and_story_context() -> Non
 
 def test_compile_panel_prompt_strips_legacy_prefix() -> None:
     panel = {
-        "prompt": LEGACY_STYLE_PREFIXES[0] + "Wide reveal of Marcus alone in the office.",
+        "prompt": LEGACY_STYLE_PREFIXES[0]
+        + "Wide reveal of Marcus alone in the office.",
         "cornerstone_style": "standard_dialogue",
     }
 

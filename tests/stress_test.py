@@ -66,7 +66,9 @@ CONSTANTS = {
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def poincare_embed(x: np.ndarray, alpha: float = CONSTANTS["ALPHA_EMBED"]) -> np.ndarray:
+def poincare_embed(
+    x: np.ndarray, alpha: float = CONSTANTS["ALPHA_EMBED"]
+) -> np.ndarray:
     """Layer 4: Poincaré ball embedding."""
     norm = np.linalg.norm(x)
     if norm < 1e-12:
@@ -120,7 +122,9 @@ def harmonic_H(d_star: float) -> float:
 def shock_absorber(pressure: float) -> float:
     """Claim 61: Anti-fragile stiffness."""
     P = max(0.0, min(1.0, pressure))
-    growth = 1.0 + (CONSTANTS["MAX_EXPANSION"] - 1.0) * np.tanh(CONSTANTS["BETA_PRESSURE"] * P)
+    growth = 1.0 + (CONSTANTS["MAX_EXPANSION"] - 1.0) * np.tanh(
+        CONSTANTS["BETA_PRESSURE"] * P
+    )
     return float(growth)
 
 
@@ -140,7 +144,9 @@ def settling_wave(t: float, t_arrival: float = 1.0) -> float:
     return float(K)
 
 
-def compute_risk(behavioral: float, d_star: float, time_multi: float, intent_multi: float) -> float:
+def compute_risk(
+    behavioral: float, d_star: float, time_multi: float, intent_multi: float
+) -> float:
     """Layer 13: Composite risk."""
     H = harmonic_H(d_star)
     return behavioral * H * time_multi * intent_multi
@@ -194,9 +200,15 @@ def run_stress_tests() -> List[TestResult]:
     # ─────────────────────────────────────────────────────────────────────────
     # TEST GROUP 1: POINCARÉ BALL EMBEDDING
     # ─────────────────────────────────────────────────────────────────────────
-    print("╔══════════════════════════════════════════════════════════════════════════════╗")
-    print("║  TEST GROUP 1: POINCARÉ BALL EMBEDDING                                       ║")
-    print("╚══════════════════════════════════════════════════════════════════════════════╝")
+    print(
+        "╔══════════════════════════════════════════════════════════════════════════════╗"
+    )
+    print(
+        "║  TEST GROUP 1: POINCARÉ BALL EMBEDDING                                       ║"
+    )
+    print(
+        "╚══════════════════════════════════════════════════════════════════════════════╝"
+    )
 
     # Test 1.1: Zero vector
     u = poincare_embed(np.zeros(6))
@@ -210,7 +222,9 @@ def run_stress_tests() -> List[TestResult]:
             "Origin stays at origin",
         )
     )
-    print(f"  [{'OK' if passed else 'FAIL'}] Zero vector: ||u|| = {np.linalg.norm(u):.6f}")
+    print(
+        f"  [{'OK' if passed else 'FAIL'}] Zero vector: ||u|| = {np.linalg.norm(u):.6f}"
+    )
 
     # Test 1.2: Unit vector
     u = poincare_embed(np.array([1, 0, 0, 0, 0, 0]))
@@ -224,7 +238,9 @@ def run_stress_tests() -> List[TestResult]:
             "Must stay inside ball",
         )
     )
-    print(f"  [{'OK' if passed else 'FAIL'}] Unit vector: ||u|| = {np.linalg.norm(u):.6f} < 1.0")
+    print(
+        f"  [{'OK' if passed else 'FAIL'}] Unit vector: ||u|| = {np.linalg.norm(u):.6f} < 1.0"
+    )
 
     # Test 1.3: Large vector (stress)
     u = poincare_embed(np.array([1000, 1000, 1000, 1000, 1000, 1000]))
@@ -238,7 +254,9 @@ def run_stress_tests() -> List[TestResult]:
             "Even huge inputs stay bounded",
         )
     )
-    print(f"  [{'OK' if passed else 'FAIL'}] Large vector (1000s): ||u|| = {np.linalg.norm(u):.6f} < 1.0")
+    print(
+        f"  [{'OK' if passed else 'FAIL'}] Large vector (1000s): ||u|| = {np.linalg.norm(u):.6f} < 1.0"
+    )
 
     # Test 1.4: Random stress test (1000 samples)
     all_contained = True
@@ -258,21 +276,31 @@ def run_stress_tests() -> List[TestResult]:
             f"Max norm: {max_norm:.6f}",
         )
     )
-    print(f"  [{'OK' if all_contained else 'FAIL'}] 1000 random vectors: max ||u|| = {max_norm:.6f}")
+    print(
+        f"  [{'OK' if all_contained else 'FAIL'}] 1000 random vectors: max ||u|| = {max_norm:.6f}"
+    )
     print()
 
     # ─────────────────────────────────────────────────────────────────────────
     # TEST GROUP 2: HYPERBOLIC DISTANCE
     # ─────────────────────────────────────────────────────────────────────────
-    print("╔══════════════════════════════════════════════════════════════════════════════╗")
-    print("║  TEST GROUP 2: HYPERBOLIC DISTANCE (THE INVARIANT)                           ║")
-    print("╚══════════════════════════════════════════════════════════════════════════════╝")
+    print(
+        "╔══════════════════════════════════════════════════════════════════════════════╗"
+    )
+    print(
+        "║  TEST GROUP 2: HYPERBOLIC DISTANCE (THE INVARIANT)                           ║"
+    )
+    print(
+        "╚══════════════════════════════════════════════════════════════════════════════╝"
+    )
 
     # Test 2.1: Self-distance
     u = poincare_embed(np.array([0.3, 0.4, 0.0, 0.0, 0.0, 0.0]))
     d = hyperbolic_distance(u, u)
     passed = d < 1e-10
-    results.append(TestResult("Self-distance = 0", passed, d, "d_H(u,u) = 0", "Identity property"))
+    results.append(
+        TestResult("Self-distance = 0", passed, d, "d_H(u,u) = 0", "Identity property")
+    )
     print(f"  [{'OK' if passed else 'FAIL'}] Self-distance: d_H(u,u) = {d:.10f}")
 
     # Test 2.2: Symmetry
@@ -290,7 +318,9 @@ def run_stress_tests() -> List[TestResult]:
             "Symmetric property",
         )
     )
-    print(f"  [{'OK' if passed else 'FAIL'}] Symmetry: |d_H(u,v) - d_H(v,u)| = {abs(d12 - d21):.10f}")
+    print(
+        f"  [{'OK' if passed else 'FAIL'}] Symmetry: |d_H(u,v) - d_H(v,u)| = {abs(d12 - d21):.10f}"
+    )
 
     # Test 2.3: Boundary explosion
     print("\n  Boundary explosion test (THE VERTICAL WALL):")
@@ -313,9 +343,15 @@ def run_stress_tests() -> List[TestResult]:
     # ─────────────────────────────────────────────────────────────────────────
     # TEST GROUP 3: BREATHING TRANSFORM
     # ─────────────────────────────────────────────────────────────────────────
-    print("╔══════════════════════════════════════════════════════════════════════════════╗")
-    print("║  TEST GROUP 3: BREATHING TRANSFORM                                           ║")
-    print("╚══════════════════════════════════════════════════════════════════════════════╝")
+    print(
+        "╔══════════════════════════════════════════════════════════════════════════════╗"
+    )
+    print(
+        "║  TEST GROUP 3: BREATHING TRANSFORM                                           ║"
+    )
+    print(
+        "╚══════════════════════════════════════════════════════════════════════════════╝"
+    )
 
     u_orig = poincare_embed(np.array([0.5, 0.5, 0.0, 0.0, 0.0, 0.0]))
     print(f"  Original ||u|| = {np.linalg.norm(u_orig):.4f}")
@@ -332,7 +368,9 @@ def run_stress_tests() -> List[TestResult]:
             "Pulls toward origin",
         )
     )
-    print(f"  [{'OK' if passed else 'FAIL'}] b=0.5 (contract): ||u'|| = {np.linalg.norm(u_contract):.4f}")
+    print(
+        f"  [{'OK' if passed else 'FAIL'}] b=0.5 (contract): ||u'|| = {np.linalg.norm(u_contract):.4f}"
+    )
 
     # Test 3.2: Identity (b = 1)
     u_identity = breathing_transform(u_orig, 1.0)
@@ -346,7 +384,9 @@ def run_stress_tests() -> List[TestResult]:
             "No change",
         )
     )
-    print(f"  [{'OK' if passed else 'FAIL'}] b=1.0 (identity): ||u' - u|| = {np.linalg.norm(u_identity - u_orig):.6f}")
+    print(
+        f"  [{'OK' if passed else 'FAIL'}] b=1.0 (identity): ||u' - u|| = {np.linalg.norm(u_identity - u_orig):.6f}"
+    )
 
     # Test 3.3: Expand (b > 1)
     u_expand = breathing_transform(u_orig, 1.7)
@@ -360,7 +400,9 @@ def run_stress_tests() -> List[TestResult]:
             "Pushes toward boundary",
         )
     )
-    print(f"  [{'OK' if passed else 'FAIL'}] b=1.7 (expand): ||u'|| = {np.linalg.norm(u_expand):.4f}")
+    print(
+        f"  [{'OK' if passed else 'FAIL'}] b=1.7 (expand): ||u'|| = {np.linalg.norm(u_expand):.4f}"
+    )
 
     # Test 3.4: Extreme expansion
     u_extreme = breathing_transform(u_orig, 3.0)
@@ -374,15 +416,23 @@ def run_stress_tests() -> List[TestResult]:
             "Never escapes ball",
         )
     )
-    print(f"  [{'OK' if passed else 'FAIL'}] b=3.0 (extreme): ||u'|| = {np.linalg.norm(u_extreme):.4f} < 1.0")
+    print(
+        f"  [{'OK' if passed else 'FAIL'}] b=3.0 (extreme): ||u'|| = {np.linalg.norm(u_extreme):.4f} < 1.0"
+    )
     print()
 
     # ─────────────────────────────────────────────────────────────────────────
     # TEST GROUP 4: HARMONIC SCALING (VERTICAL WALL)
     # ─────────────────────────────────────────────────────────────────────────
-    print("╔══════════════════════════════════════════════════════════════════════════════╗")
-    print("║  TEST GROUP 4: HARMONIC SCALING H(d*) = exp(d*²)                             ║")
-    print("╚══════════════════════════════════════════════════════════════════════════════╝")
+    print(
+        "╔══════════════════════════════════════════════════════════════════════════════╗"
+    )
+    print(
+        "║  TEST GROUP 4: HARMONIC SCALING H(d*) = exp(d*²)                             ║"
+    )
+    print(
+        "╚══════════════════════════════════════════════════════════════════════════════╝"
+    )
 
     print("  The VERTICAL WALL that makes attacks geometrically impossible:")
     test_values = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
@@ -403,15 +453,23 @@ def run_stress_tests() -> List[TestResult]:
             "Larger d* = larger H",
         )
     )
-    print(f"\n  [{'OK' if monotonic else 'FAIL'}] Monotonicity verified: H(d*) strictly increasing")
+    print(
+        f"\n  [{'OK' if monotonic else 'FAIL'}] Monotonicity verified: H(d*) strictly increasing"
+    )
     print()
 
     # ─────────────────────────────────────────────────────────────────────────
     # TEST GROUP 5: ANTI-FRAGILE LIVING METRIC (CLAIM 61)
     # ─────────────────────────────────────────────────────────────────────────
-    print("╔══════════════════════════════════════════════════════════════════════════════╗")
-    print("║  TEST GROUP 5: ANTI-FRAGILE LIVING METRIC (CLAIM 61)                         ║")
-    print("╚══════════════════════════════════════════════════════════════════════════════╝")
+    print(
+        "╔══════════════════════════════════════════════════════════════════════════════╗"
+    )
+    print(
+        "║  TEST GROUP 5: ANTI-FRAGILE LIVING METRIC (CLAIM 61)                         ║"
+    )
+    print(
+        "╚══════════════════════════════════════════════════════════════════════════════╝"
+    )
 
     print("  Ψ(P) = 1 + (max-1) × tanh(β × P)")
     print("  System gets STRONGER under attack:\n")
@@ -425,7 +483,9 @@ def run_stress_tests() -> List[TestResult]:
         print(f"    P={p:.1f} → Ψ={s:.4f} [{bar:<40}] {state}")
 
     # Verify anti-fragile property
-    anti_fragile = all(stiffnesses[i] <= stiffnesses[i + 1] for i in range(len(stiffnesses) - 1))
+    anti_fragile = all(
+        stiffnesses[i] <= stiffnesses[i + 1] for i in range(len(stiffnesses) - 1)
+    )
     results.append(
         TestResult(
             "Anti-fragile property",
@@ -435,7 +495,9 @@ def run_stress_tests() -> List[TestResult]:
             "Stronger under attack",
         )
     )
-    print(f"\n  [{'OK' if anti_fragile else 'FAIL'}] Anti-fragile verified: Ψ increases with pressure")
+    print(
+        f"\n  [{'OK' if anti_fragile else 'FAIL'}] Anti-fragile verified: Ψ increases with pressure"
+    )
 
     # Test bounds
     min_s = shock_absorber(0)
@@ -458,9 +520,15 @@ def run_stress_tests() -> List[TestResult]:
     # ─────────────────────────────────────────────────────────────────────────
     # TEST GROUP 6: FRACTIONAL FLUX (CLAIM 16)
     # ─────────────────────────────────────────────────────────────────────────
-    print("╔══════════════════════════════════════════════════════════════════════════════╗")
-    print("║  TEST GROUP 6: FRACTIONAL FLUX ODE (CLAIM 16)                                ║")
-    print("╚══════════════════════════════════════════════════════════════════════════════╝")
+    print(
+        "╔══════════════════════════════════════════════════════════════════════════════╗"
+    )
+    print(
+        "║  TEST GROUP 6: FRACTIONAL FLUX ODE (CLAIM 16)                                ║"
+    )
+    print(
+        "╚══════════════════════════════════════════════════════════════════════════════╝"
+    )
 
     print("  ν̇ = κ(ν̄ - ν) + σ sin(Ωt)")
     print("  Dimensions 'breathe' via ODE dynamics:\n")
@@ -509,15 +577,23 @@ def run_stress_tests() -> List[TestResult]:
             "Always valid participation",
         )
     )
-    print(f"  [{'OK' if bounded else 'FAIL'}] Bounded: ν ∈ [{min_nu:.4f}, {max_nu:.4f}]")
+    print(
+        f"  [{'OK' if bounded else 'FAIL'}] Bounded: ν ∈ [{min_nu:.4f}, {max_nu:.4f}]"
+    )
     print()
 
     # ─────────────────────────────────────────────────────────────────────────
     # TEST GROUP 7: SETTLING WAVE (CLAIM 62)
     # ─────────────────────────────────────────────────────────────────────────
-    print("╔══════════════════════════════════════════════════════════════════════════════╗")
-    print("║  TEST GROUP 7: SETTLING WAVE K(t) (CLAIM 62)                                 ║")
-    print("╚══════════════════════════════════════════════════════════════════════════════╝")
+    print(
+        "╔══════════════════════════════════════════════════════════════════════════════╗"
+    )
+    print(
+        "║  TEST GROUP 7: SETTLING WAVE K(t) (CLAIM 62)                                 ║"
+    )
+    print(
+        "╚══════════════════════════════════════════════════════════════════════════════╝"
+    )
 
     print("  K(t) = Σ C_n sin(ω_n t + φ_n)")
     print("  Key only materializes at t_arrival:\n")
@@ -531,7 +607,9 @@ def run_stress_tests() -> List[TestResult]:
     max_t = t_values[K_values.index(max_K)]
 
     for t, K in zip(t_values, K_values):
-        bar = "#" * int((K - min(K_values)) / (max(K_values) - min(K_values) + 1e-6) * 30)
+        bar = "#" * int(
+            (K - min(K_values)) / (max(K_values) - min(K_values) + 1e-6) * 30
+        )
         marker = " ← MAX" if abs(t - max_t) < 0.05 else ""
         print(f"    t={t:.2f} → K={K:>7.3f} {bar}{marker}")
 
@@ -547,15 +625,23 @@ def run_stress_tests() -> List[TestResult]:
             f"K at arrival = {K_at_arrival:.3f}",
         )
     )
-    print(f"\n  [{'OK' if constructive else 'FAIL'}] K(t_arrival={t_arrival}) = {K_at_arrival:.3f} (max = {max_K:.3f})")
+    print(
+        f"\n  [{'OK' if constructive else 'FAIL'}] K(t_arrival={t_arrival}) = {K_at_arrival:.3f} (max = {max_K:.3f})"
+    )
     print()
 
     # ─────────────────────────────────────────────────────────────────────────
     # TEST GROUP 8: COMPOSITE RISK (LAYER 13)
     # ─────────────────────────────────────────────────────────────────────────
-    print("╔══════════════════════════════════════════════════════════════════════════════╗")
-    print("║  TEST GROUP 8: COMPOSITE RISK - LEMMA 13.1                                   ║")
-    print("╚══════════════════════════════════════════════════════════════════════════════╝")
+    print(
+        "╔══════════════════════════════════════════════════════════════════════════════╗"
+    )
+    print(
+        "║  TEST GROUP 8: COMPOSITE RISK - LEMMA 13.1                                   ║"
+    )
+    print(
+        "╚══════════════════════════════════════════════════════════════════════════════╝"
+    )
 
     print("  Risk' = B × H(d*) × T × I")
     print("  All factors multiplicative:\n")
@@ -574,9 +660,17 @@ def run_stress_tests() -> List[TestResult]:
     for name, B, d_star, T, I in scenarios:
         risk = compute_risk(B, d_star, T, I)
         H = harmonic_H(d_star)
-        decision = "ALLOW" if risk < CONSTANTS["THETA_1"] else ("WARN" if risk < CONSTANTS["THETA_2"] else "DENY")
-        color_code = "OK" if decision == "ALLOW" else ("!!" if decision == "WARN" else "XX")
-        print(f"    [{color_code}] {name:<30} B={B:.1f} d*={d_star:.1f} T={T:.1f} I={I:.1f}")
+        decision = (
+            "ALLOW"
+            if risk < CONSTANTS["THETA_1"]
+            else ("WARN" if risk < CONSTANTS["THETA_2"] else "DENY")
+        )
+        color_code = (
+            "OK" if decision == "ALLOW" else ("!!" if decision == "WARN" else "XX")
+        )
+        print(
+            f"    [{color_code}] {name:<30} B={B:.1f} d*={d_star:.1f} T={T:.1f} I={I:.1f}"
+        )
         print(f"         H(d*)={H:.2f} → Risk'={risk:.3f} → {decision}")
 
     # Verify non-negativity
@@ -597,15 +691,23 @@ def run_stress_tests() -> List[TestResult]:
             "Never negative",
         )
     )
-    print(f"\n  [{'OK' if all_non_neg else 'FAIL'}] Non-negativity: all 1000 random samples ≥ 0")
+    print(
+        f"\n  [{'OK' if all_non_neg else 'FAIL'}] Non-negativity: all 1000 random samples ≥ 0"
+    )
     print()
 
     # ─────────────────────────────────────────────────────────────────────────
     # TEST GROUP 9: SPECTRAL AND SPIN COHERENCE
     # ─────────────────────────────────────────────────────────────────────────
-    print("╔══════════════════════════════════════════════════════════════════════════════╗")
-    print("║  TEST GROUP 9: SPECTRAL AND SPIN COHERENCE (LAYERS 9-10)                     ║")
-    print("╚══════════════════════════════════════════════════════════════════════════════╝")
+    print(
+        "╔══════════════════════════════════════════════════════════════════════════════╗"
+    )
+    print(
+        "║  TEST GROUP 9: SPECTRAL AND SPIN COHERENCE (LAYERS 9-10)                     ║"
+    )
+    print(
+        "╚══════════════════════════════════════════════════════════════════════════════╝"
+    )
 
     # Spectral coherence
     print("  Spectral Coherence S_spec = 1 - r_HF:\n")
@@ -670,9 +772,15 @@ def run_stress_tests() -> List[TestResult]:
     # ─────────────────────────────────────────────────────────────────────────
     # TEST GROUP 10: MÖBIUS ADDITION
     # ─────────────────────────────────────────────────────────────────────────
-    print("╔══════════════════════════════════════════════════════════════════════════════╗")
-    print("║  TEST GROUP 10: MÖBIUS ADDITION (LAYER 7)                                    ║")
-    print("╚══════════════════════════════════════════════════════════════════════════════╝")
+    print(
+        "╔══════════════════════════════════════════════════════════════════════════════╗"
+    )
+    print(
+        "║  TEST GROUP 10: MÖBIUS ADDITION (LAYER 7)                                    ║"
+    )
+    print(
+        "╚══════════════════════════════════════════════════════════════════════════════╝"
+    )
 
     # Identity: 0 ⊕ u = u
     u = np.array([0.3, 0.4, 0, 0, 0, 0])
@@ -688,7 +796,9 @@ def run_stress_tests() -> List[TestResult]:
             "Zero is identity",
         )
     )
-    print(f"  [{'OK' if identity_ok else 'FAIL'}] Identity: ||0 ⊕ u - u|| = {np.linalg.norm(result - u):.10f}")
+    print(
+        f"  [{'OK' if identity_ok else 'FAIL'}] Identity: ||0 ⊕ u - u|| = {np.linalg.norm(result - u):.10f}"
+    )
 
     # Stays in ball
     a = np.array([0.5, 0.3, 0, 0, 0, 0])
@@ -704,7 +814,9 @@ def run_stress_tests() -> List[TestResult]:
             "Result stays in ball",
         )
     )
-    print(f"  [{'OK' if in_ball else 'FAIL'}] Containment: ||a ⊕ b|| = {np.linalg.norm(result):.6f} < 1.0")
+    print(
+        f"  [{'OK' if in_ball else 'FAIL'}] Containment: ||a ⊕ b|| = {np.linalg.norm(result):.6f} < 1.0"
+    )
 
     # Distance preservation (isometry)
     u1 = np.array([0.2, 0.3, 0, 0, 0, 0])
@@ -722,7 +834,9 @@ def run_stress_tests() -> List[TestResult]:
             f"Δd = {abs(d_before - d_after):.4f}",
         )
     )
-    print(f"  [{'OK' if isometry_ok else 'FAIL'}] Isometry: |d_before - d_after| = {abs(d_before - d_after):.6f}")
+    print(
+        f"  [{'OK' if isometry_ok else 'FAIL'}] Isometry: |d_before - d_after| = {abs(d_before - d_after):.6f}"
+    )
     print()
 
     # ═══════════════════════════════════════════════════════════════════════════════

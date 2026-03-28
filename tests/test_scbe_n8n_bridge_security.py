@@ -16,7 +16,10 @@ if str(ROOT) not in sys.path:
 try:
     from workflows.n8n import scbe_n8n_bridge as bridge  # noqa: E402
 except (ImportError, Exception):
-    pytest.skip("dependency not available (fastapi required by scbe_n8n_bridge)", allow_module_level=True)
+    pytest.skip(
+        "dependency not available (fastapi required by scbe_n8n_bridge)",
+        allow_module_level=True,
+    )
 
 
 def test_send_zapier_event_blocks_non_allowlisted_host(monkeypatch) -> None:
@@ -33,7 +36,9 @@ def test_send_zapier_event_skips_when_no_env_hook(monkeypatch) -> None:
 
 
 def test_send_zapier_event_hides_exception_text(monkeypatch) -> None:
-    monkeypatch.setattr(bridge, "_ZAPIER_WEBHOOK_URL", "https://hooks.zapier.com/hooks/catch/123/abc")
+    monkeypatch.setattr(
+        bridge, "_ZAPIER_WEBHOOK_URL", "https://hooks.zapier.com/hooks/catch/123/abc"
+    )
 
     def fake_urlopen(*args, **kwargs):
         raise RuntimeError("secret webhook failure")
@@ -76,7 +81,10 @@ async def test_llm_dispatch_ignores_user_hook_override(monkeypatch) -> None:
     monkeypatch.setattr(
         bridge,
         "_send_zapier_event",
-        lambda **kwargs: {"status": "sent", "event": kwargs.get("event_payload", {}).get("event")},
+        lambda **kwargs: {
+            "status": "sent",
+            "event": kwargs.get("event_payload", {}).get("event"),
+        },
     )
 
     req = bridge.LLMDispatchRequest.model_validate(
@@ -98,7 +106,9 @@ def test_dispatch_single_provider_hides_exception_text(monkeypatch) -> None:
     monkeypatch.setattr(
         bridge,
         "_dispatch_openai_compatible",
-        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("secret stack details")),
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            RuntimeError("secret stack details")
+        ),
     )
 
     result = bridge._dispatch_single_provider("openai", "hello", "system prompt")
@@ -176,7 +186,9 @@ def test_get_trainer_hides_startup_exception_text(monkeypatch) -> None:
         def __init__(self):
             raise RuntimeError("secret trainer boot detail")
 
-    fake_module = types.SimpleNamespace(RealTimeHFTrainer=BoomTrainer, load_dotenv=lambda: None)
+    fake_module = types.SimpleNamespace(
+        RealTimeHFTrainer=BoomTrainer, load_dotenv=lambda: None
+    )
     monkeypatch.setitem(sys.modules, "hf_trainer", fake_module)
     monkeypatch.setattr(bridge, "_trainer", None)
 
@@ -316,7 +328,9 @@ def test_resolve_repo_relative_output_path_rejects_absolute_path(tmp_path) -> No
 
 
 @pytest.mark.asyncio
-async def test_workflow_lattice25d_rejects_invalid_hf_dataset_repo(monkeypatch, tmp_path) -> None:
+async def test_workflow_lattice25d_rejects_invalid_hf_dataset_repo(
+    monkeypatch, tmp_path
+) -> None:
     monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
     repo_root = tmp_path / "repo-root"
     repo_root.mkdir()
@@ -348,7 +362,9 @@ async def test_workflow_lattice25d_rejects_invalid_hf_dataset_repo(monkeypatch, 
 
 
 @pytest.mark.asyncio
-async def test_workflow_lattice25d_push_requires_allowlisted_repo(monkeypatch, tmp_path) -> None:
+async def test_workflow_lattice25d_push_requires_allowlisted_repo(
+    monkeypatch, tmp_path
+) -> None:
     monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
     monkeypatch.setattr(bridge, "_HF_ALLOWED_DATASET_REPOS", set())
     monkeypatch.setattr(bridge, "_HF_ROUTER_TOKEN", "hf_test_token")

@@ -22,7 +22,9 @@ def test_alias_generation_is_deterministic_and_typed(tmp_path) -> None:
         VAULT_KIND_PERSON,
     )
 
-    vault = PrivacyTokenVault(tmp_path, master_secret="unit-test-master-key", vault_name="unit")
+    vault = PrivacyTokenVault(
+        tmp_path, master_secret="unit-test-master-key", vault_name="unit"
+    )
 
     alias_1 = vault.alias_for("User.Name+tag@example.com", VAULT_KIND_EMAIL)
     alias_2 = vault.alias_for(" user.name+tag@EXAMPLE.com ", VAULT_KIND_EMAIL)
@@ -41,7 +43,9 @@ def test_roundtrip_lookup_and_public_metadata(tmp_path) -> None:
         VAULT_KIND_GENERIC,
     )
 
-    vault = PrivacyTokenVault(tmp_path, master_secret="unit-test-master-key", vault_name="unit")
+    vault = PrivacyTokenVault(
+        tmp_path, master_secret="unit-test-master-key", vault_name="unit"
+    )
 
     entry = vault.put(
         "Sensitive.User@example.com",
@@ -51,7 +55,10 @@ def test_roundtrip_lookup_and_public_metadata(tmp_path) -> None:
 
     assert vault.has(entry.alias) is True
     assert vault.get(entry.alias) == "Sensitive.User@example.com"
-    assert vault.lookup(" sensitive.user@EXAMPLE.com ", kind=VAULT_KIND_EMAIL) == "Sensitive.User@example.com"
+    assert (
+        vault.lookup(" sensitive.user@EXAMPLE.com ", kind=VAULT_KIND_EMAIL)
+        == "Sensitive.User@example.com"
+    )
 
     public = vault.export_public_index()
     assert entry.alias in public["entries"]
@@ -65,9 +72,13 @@ def test_roundtrip_lookup_and_public_metadata(tmp_path) -> None:
 def test_encrypted_storage_does_not_write_plaintext_value(tmp_path) -> None:
     from src.security.privacy_token_vault import PrivacyTokenVault, VAULT_KIND_ACCOUNT
 
-    vault = PrivacyTokenVault(tmp_path, master_secret="unit-test-master-key", vault_name="unit")
+    vault = PrivacyTokenVault(
+        tmp_path, master_secret="unit-test-master-key", vault_name="unit"
+    )
     secret_value = "acct-very-private-123456"
-    entry = vault.put(secret_value, kind=VAULT_KIND_ACCOUNT, metadata={"owner": "billing"})
+    entry = vault.put(
+        secret_value, kind=VAULT_KIND_ACCOUNT, metadata={"owner": "billing"}
+    )
 
     index_text = (tmp_path / "index.json").read_text(encoding="utf-8")
     blob_path = Path(entry.blob_file)
@@ -85,7 +96,9 @@ def test_protect_returns_placeholder_and_preserves_lookup_metadata(tmp_path) -> 
         decode_placeholder_alias,
     )
 
-    vault = PrivacyTokenVault(tmp_path, master_secret="unit-test-master-key", vault_name="unit")
+    vault = PrivacyTokenVault(
+        tmp_path, master_secret="unit-test-master-key", vault_name="unit"
+    )
     token = vault.protect(
         "Sensitive.User@example.com",
         kind=VAULT_KIND_EMAIL,

@@ -55,7 +55,9 @@ class PageUnderstanding:
     fingerprint: str = ""  # Hash of key content for change detection
 
     @staticmethod
-    def from_content(url: str, title: str, text: str, links: List[Dict[str, str]]) -> "PageUnderstanding":
+    def from_content(
+        url: str, title: str, text: str, links: List[Dict[str, str]]
+    ) -> "PageUnderstanding":
         fp = hashlib.md5((url + title + text[:500]).encode()).hexdigest()[:12]
         page_type = _classify_page(url, title, text)
         return PageUnderstanding(
@@ -208,7 +210,9 @@ class NavigationEngine:
         # Personality bias (from CSTM kernel)
         self._personality = personality  # 21D vector or None
 
-    def set_goal(self, goal_url: Optional[str] = None, goal_description: str = "") -> None:
+    def set_goal(
+        self, goal_url: Optional[str] = None, goal_description: str = ""
+    ) -> None:
         """Set navigation goal."""
         self._state.goal_url = goal_url
         self._state.goal_description = goal_description
@@ -262,7 +266,9 @@ class NavigationEngine:
 
         return action
 
-    def handle_result(self, success: bool, error: Optional[str] = None) -> Optional[RecoveryStrategy]:
+    def handle_result(
+        self, success: bool, error: Optional[str] = None
+    ) -> Optional[RecoveryStrategy]:
         """Process the result of executing an action."""
         from .web_polly_pad import ActionResult
 
@@ -348,10 +354,14 @@ class NavigationEngine:
         total = max(len(self._state.planned_route), 1)
         return remaining / total
 
-    def _select_action(self, page: PageUnderstanding, correction: float) -> Optional[BrowserAction]:
+    def _select_action(
+        self, page: PageUnderstanding, correction: float
+    ) -> Optional[BrowserAction]:
         """Select the best action based on current state."""
         # If we have a planned route, follow it
-        if self._state.planned_route and self._state.route_index < len(self._state.planned_route):
+        if self._state.planned_route and self._state.route_index < len(
+            self._state.planned_route
+        ):
             next_url = self._state.planned_route[self._state.route_index]
             self._state.route_index += 1
 
@@ -393,7 +403,9 @@ class NavigationEngine:
         """Generate a fallback action when primary is denied."""
         return BrowserAction(action_type=ActionType.BACK)
 
-    def _rank_links(self, links: List[Dict[str, str]], goal: str) -> Optional[Dict[str, str]]:
+    def _rank_links(
+        self, links: List[Dict[str, str]], goal: str
+    ) -> Optional[Dict[str, str]]:
         """Rank page links by similarity to goal URL."""
         if not links:
             return None

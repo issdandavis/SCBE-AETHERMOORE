@@ -7,7 +7,10 @@ import pytest
 try:
     from cryptography.fernet import Fernet  # noqa: F401
 except BaseException:
-    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+    pytest.skip(
+        "cryptography package not functional (cffi backend missing)",
+        allow_module_level=True,
+    )
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -25,7 +28,9 @@ class _StubService:
         self.last_payload = None
         self.last_delivery = None
 
-    def verify_signature(self, payload_body: bytes, signature_header: str | None) -> bool:
+    def verify_signature(
+        self, payload_body: bytes, signature_header: str | None
+    ) -> bool:
         if not signature_header:
             return False
         digest = hmac.new(
@@ -35,7 +40,9 @@ class _StubService:
         ).hexdigest()
         return hmac.compare_digest(f"sha256={digest}", signature_header)
 
-    async def handle_event(self, *, event: str, payload: dict, delivery_id: str | None = None) -> dict:
+    async def handle_event(
+        self, *, event: str, payload: dict, delivery_id: str | None = None
+    ) -> dict:
         self.last_event = event
         self.last_payload = payload
         self.last_delivery = delivery_id
@@ -59,7 +66,9 @@ def _client(monkeypatch, service: _StubService | None = None) -> TestClient:
 
 
 def _signature(secret: str, body: bytes) -> str:
-    digest = hmac.new(secret.encode("utf-8"), msg=body, digestmod=hashlib.sha256).hexdigest()
+    digest = hmac.new(
+        secret.encode("utf-8"), msg=body, digestmod=hashlib.sha256
+    ).hexdigest()
     return f"sha256={digest}"
 
 
@@ -86,7 +95,10 @@ def test_webhook_processes_valid_pull_request(monkeypatch) -> None:
         "action": "opened",
         "number": 42,
         "repository": {"full_name": "issdandavis/SCBE-AETHERMOORE"},
-        "pull_request": {"title": "Add health check", "body": "Includes tests and docs."},
+        "pull_request": {
+            "title": "Add health check",
+            "body": "Includes tests and docs.",
+        },
     }
     body = json.dumps(payload).encode("utf-8")
     response = client.post(

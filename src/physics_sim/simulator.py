@@ -745,11 +745,15 @@ def create_spring_pendulum_simulation(
     x = rest_length * math.sin(angle_rad)
     y = -rest_length * math.cos(angle_rad)
 
-    bob = Particle(mass=mass, position=[x, y, 0.0], velocity=[0.0, 0.0, 0.0], name="Bob")
+    bob = Particle(
+        mass=mass, position=[x, y, 0.0], velocity=[0.0, 0.0, 0.0], name="Bob"
+    )
     sim.add_particle(bob)
 
     # Spring connecting pivot to bob
-    spring = Spring(particle1_idx=0, particle2_idx=1, k=k, rest_length=rest_length, damping=0.1)
+    spring = Spring(
+        particle1_idx=0, particle2_idx=1, k=k, rest_length=rest_length, damping=0.1
+    )
 
     sim.add_force_calculator(UniformGravityCalculator())
     sim.add_force_calculator(SpringCalculator([spring]))
@@ -795,7 +799,9 @@ def create_n_body_simulation(
             random.uniform(-v_scale, v_scale),
         ]
 
-        particle = Particle(mass=mass, position=position, velocity=velocity, name=f"Body_{i}")
+        particle = Particle(
+            mass=mass, position=position, velocity=velocity, name=f"Body_{i}"
+        )
         sim.add_particle(particle)
 
     sim.add_force_calculator(GravityCalculator(softening=box_size * 0.01))

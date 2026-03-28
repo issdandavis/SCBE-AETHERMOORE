@@ -254,7 +254,9 @@ class ContextLedger:
         by_denom: Dict[str, float] = {}
         by_agent: Dict[str, float] = {}
         for c in self._credit_index.values():
-            by_denom[c.denomination.value] = by_denom.get(c.denomination.value, 0) + c.face_value
+            by_denom[c.denomination.value] = (
+                by_denom.get(c.denomination.value, 0) + c.face_value
+            )
             by_agent[c.dna.agent_id] = by_agent.get(c.dna.agent_id, 0) + c.face_value
 
         return {

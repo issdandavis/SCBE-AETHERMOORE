@@ -72,7 +72,11 @@ class GridAdapter(GraphAdapter[tuple]):
         out = []
         for dr, dc in self._dirs:
             nr, nc = r + dr, c + dc
-            if 0 <= nr < self.rows and 0 <= nc < self.cols and (nr, nc) not in self._blocked:
+            if (
+                0 <= nr < self.rows
+                and 0 <= nc < self.cols
+                and (nr, nc) not in self._blocked
+            ):
                 out.append((nr, nc))
         return out
 
@@ -169,7 +173,9 @@ class PlanBlock(ConceptBlock):
         BlockResult with output={"path": list, "cost": float, "expansions": int}
     """
 
-    def __init__(self, graph: Optional[GraphAdapter] = None, name: str = "PLAN") -> None:
+    def __init__(
+        self, graph: Optional[GraphAdapter] = None, name: str = "PLAN"
+    ) -> None:
         super().__init__(name)
         self._graph = graph
 

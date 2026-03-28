@@ -26,7 +26,9 @@ def search_datasets(query: str, limit: int = 20) -> list[KnowledgeChunk]:
         "per_page": limit,
     }
     url = f"{DATAVERSE_API}/search?{urlencode(params)}"
-    req = Request(url, headers={"User-Agent": "AetherBrowser/1.0 (SCBE-AETHERMOORE research)"})
+    req = Request(
+        url, headers={"User-Agent": "AetherBrowser/1.0 (SCBE-AETHERMOORE research)"}
+    )
 
     with urlopen(req, timeout=30) as response:
         data = json.loads(response.read())
@@ -74,7 +76,10 @@ def _categorize_dataverse(name: str, description: str, subjects: list) -> str:
         return "security"
     if any(kw in text for kw in ["geometry", "manifold", "topology", "mathematical"]):
         return "math"
-    if any(kw in text for kw in ["artificial intelligence", "machine learning", "deep learning"]):
+    if any(
+        kw in text
+        for kw in ["artificial intelligence", "machine learning", "deep learning"]
+    ):
         return "ai"
     if any(kw in text for kw in ["quantum", "qubit"]):
         return "quantum"

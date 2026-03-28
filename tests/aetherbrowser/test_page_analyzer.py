@@ -51,7 +51,9 @@ class TestPageAnalyzer:
     def test_analyze_truncates_long_text(self):
         analyzer = PageAnalyzer()
         long_text = "word " * 100_000
-        result = analyzer.analyze_sync(url="https://long.com", title="Long", text=long_text)
+        result = analyzer.analyze_sync(
+            url="https://long.com", title="Long", text=long_text
+        )
         assert result["truncated"] is True
 
     def test_repository_review_uses_hostname_not_url_substring(self):

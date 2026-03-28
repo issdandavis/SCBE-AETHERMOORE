@@ -352,7 +352,9 @@ class MLDSA65:
             return _DilithiumPure.verify(self._public_key, message, signature)
 
         # Tier 3: HMAC-SHA512 simulation
-        expected_core = hmac.new(self._secret_key[:32], message, hashlib.sha512).digest()
+        expected_core = hmac.new(
+            self._secret_key[:32], message, hashlib.sha512
+        ).digest()
         return hmac.compare_digest(expected_core, signature[:64])
 
     @classmethod
@@ -402,7 +404,9 @@ def create_dual_lattice_keys(seed: Optional[bytes] = None) -> Tuple[MLKEM768, ML
     return MLKEM768(kem_seed), MLDSA65(dsa_seed)
 
 
-def compute_consensus_hash(kem_shared_secret: bytes, dsa_signature: bytes, context: bytes = b"") -> bytes:
+def compute_consensus_hash(
+    kem_shared_secret: bytes, dsa_signature: bytes, context: bytes = b""
+) -> bytes:
     """
     Compute dual lattice consensus hash.
 

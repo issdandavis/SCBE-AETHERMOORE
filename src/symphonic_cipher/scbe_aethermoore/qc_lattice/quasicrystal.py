@@ -187,7 +187,9 @@ class QuasicrystalLattice:
             LatticePoint with physical/perpendicular projections and validity
         """
         if len(gate_vector) != 6:
-            raise ValueError(f"Gate vector must have 6 elements, got {len(gate_vector)}")
+            raise ValueError(
+                f"Gate vector must have 6 elements, got {len(gate_vector)}"
+            )
 
         n = np.array(gate_vector, dtype=float)
 
@@ -391,7 +393,9 @@ class PQCQuasicrystalLattice(QuasicrystalLattice):
         """Check if PQC is available."""
         return self._pqc_available
 
-    def apply_pqc_phason_rekey(self, peer_public_key: Optional[bytes] = None) -> Dict[str, Any]:
+    def apply_pqc_phason_rekey(
+        self, peer_public_key: Optional[bytes] = None
+    ) -> Dict[str, Any]:
         """
         Apply phason rekey using PQC key encapsulation.
 

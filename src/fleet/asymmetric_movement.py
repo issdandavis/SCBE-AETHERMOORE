@@ -225,7 +225,8 @@ def validate_movement(
             "ai_cost": ai_cost,
             "moved_axes": moved,
             "reason": (
-                f"Vertical depth {vert_depth:.3f} exceeds auth tier" f" {unit.human.auth_tier} limit {depth_limit:.3f}"
+                f"Vertical depth {vert_depth:.3f} exceeds auth tier"
+                f" {unit.human.auth_tier} limit {depth_limit:.3f}"
             ),
         }
 

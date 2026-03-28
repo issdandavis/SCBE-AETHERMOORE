@@ -14,17 +14,25 @@ SPEC.loader.exec_module(MODULE)
 
 
 def test_extract_video_id_from_watch_url() -> None:
-    assert MODULE.extract_video_id("https://www.youtube.com/watch?v=dQw4w9WgXcQ") == "dQw4w9WgXcQ"
+    assert (
+        MODULE.extract_video_id("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+        == "dQw4w9WgXcQ"
+    )
 
 
 def test_extract_video_id_from_shorts_url() -> None:
-    assert MODULE.extract_video_id("https://www.youtube.com/shorts/dQw4w9WgXcQ") == "dQw4w9WgXcQ"
+    assert (
+        MODULE.extract_video_id("https://www.youtube.com/shorts/dQw4w9WgXcQ")
+        == "dQw4w9WgXcQ"
+    )
 
 
 def test_fetch_transcript_normalizes_legacy_api(monkeypatch) -> None:
     class FakeApi:
         @staticmethod
-        def get_transcript(video_id: str, languages: list[str]) -> list[dict[str, object]]:
+        def get_transcript(
+            video_id: str, languages: list[str]
+        ) -> list[dict[str, object]]:
             assert video_id == "dQw4w9WgXcQ"
             assert languages == ["en", "es"]
             return [
@@ -32,7 +40,11 @@ def test_fetch_transcript_normalizes_legacy_api(monkeypatch) -> None:
                 {"text": "world", "start": 1.5, "duration": 1.0},
             ]
 
-    monkeypatch.setitem(sys.modules, "youtube_transcript_api", SimpleNamespace(YouTubeTranscriptApi=FakeApi))
+    monkeypatch.setitem(
+        sys.modules,
+        "youtube_transcript_api",
+        SimpleNamespace(YouTubeTranscriptApi=FakeApi),
+    )
     segments = MODULE.fetch_transcript("dQw4w9WgXcQ", ["en", "es"])
     assert segments == [
         {"text": "Hello", "start": 0.0, "duration": 1.5},

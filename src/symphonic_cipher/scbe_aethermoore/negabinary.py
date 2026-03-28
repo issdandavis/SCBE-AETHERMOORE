@@ -142,10 +142,18 @@ class NegaBinary:
         Even positions contribute positive weight ((-2)^0=1, (-2)^2=4, ...)
         Odd positions contribute negative weight ((-2)^1=-2, (-2)^3=-8, ...)
         """
-        positive_bits = sum(1 for i, b in enumerate(self._bits) if b == 1 and i % 2 == 0)
-        negative_bits = sum(1 for i, b in enumerate(self._bits) if b == 1 and i % 2 == 1)
-        positive_weight = sum((-2) ** i for i, b in enumerate(self._bits) if b == 1 and i % 2 == 0)
-        negative_weight = sum((-2) ** i for i, b in enumerate(self._bits) if b == 1 and i % 2 == 1)
+        positive_bits = sum(
+            1 for i, b in enumerate(self._bits) if b == 1 and i % 2 == 0
+        )
+        negative_bits = sum(
+            1 for i, b in enumerate(self._bits) if b == 1 and i % 2 == 1
+        )
+        positive_weight = sum(
+            (-2) ** i for i, b in enumerate(self._bits) if b == 1 and i % 2 == 0
+        )
+        negative_weight = sum(
+            (-2) ** i for i, b in enumerate(self._bits) if b == 1 and i % 2 == 1
+        )
         return {
             "positive_bits": positive_bits,
             "negative_bits": negative_bits,

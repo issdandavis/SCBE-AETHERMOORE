@@ -227,7 +227,9 @@ class TestValidateMovement:
         agents = [
             AIState("a1", position=(0.1, 0.2, 0.3, 0.1, 0.05, 0.02), coherence=0.85),
         ]
-        return FleetUnit("u1", human, agents, composite_position=(0.1, 0.2, 0.3, 0.1, 0.05, 0.02))
+        return FleetUnit(
+            "u1", human, agents, composite_position=(0.1, 0.2, 0.3, 0.1, 0.05, 0.02)
+        )
 
     def test_human_lateral_allowed(self):
         unit = self._make_unit()
@@ -248,7 +250,9 @@ class TestValidateMovement:
     def test_depth_limit_enforced(self):
         human = HumanState("h1", lateral=(0.1, 0.2), auth_tier="KO")
         agents = [AIState("a1", position=(0.1, 0.2, 0.1, 0, 0, 0), coherence=0.9)]
-        unit = FleetUnit("u1", human, agents, composite_position=(0.1, 0.2, 0.1, 0, 0, 0))
+        unit = FleetUnit(
+            "u1", human, agents, composite_position=(0.1, 0.2, 0.1, 0, 0, 0)
+        )
         r = validate_movement(unit, (0.1, 0.2, 0.5, 0.4, 0.3, 0.2), "AI")
         assert r["allowed"] is False
         assert "auth tier" in r["reason"]

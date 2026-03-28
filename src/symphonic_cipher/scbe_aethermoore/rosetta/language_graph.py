@@ -46,21 +46,75 @@ class LanguageGraph:
         """Seed the graph with known language relationships."""
         default_edges = [
             # CJK shared script
-            ("ZH", "JA", "shared_script", 0.8, "Kanji/Hanzi shared logographic characters"),
-            ("ZH", "KO", "shared_script", 0.5, "Hanja usage declining but Sino-Korean readings remain"),
-            ("JA", "KO", "shared_script", 0.3, "Both borrowed from Chinese; Katakana/Hangul diverged"),
+            (
+                "ZH",
+                "JA",
+                "shared_script",
+                0.8,
+                "Kanji/Hanzi shared logographic characters",
+            ),
+            (
+                "ZH",
+                "KO",
+                "shared_script",
+                0.5,
+                "Hanja usage declining but Sino-Korean readings remain",
+            ),
+            (
+                "JA",
+                "KO",
+                "shared_script",
+                0.3,
+                "Both borrowed from Chinese; Katakana/Hangul diverged",
+            ),
             # Cognate vocabulary (Sino-Xenic)
             ("ZH", "JA", "cognate_vocab", 0.7, "~60% JA vocab is Sino-Japanese"),
             ("ZH", "KO", "cognate_vocab", 0.6, "~60% KO vocab is Sino-Korean"),
-            ("JA", "KO", "cognate_vocab", 0.5, "Shared Sino-readings, divergent native vocab"),
+            (
+                "JA",
+                "KO",
+                "cognate_vocab",
+                0.5,
+                "Shared Sino-readings, divergent native vocab",
+            ),
             # Shared grammar
-            ("JA", "KO", "shared_grammar", 0.9, "SOV order, agglutinative, honorific systems"),
-            ("JA", "TOKIPONA", "shared_grammar", 0.2, "Toki Pona is SVO but particles similar"),
+            (
+                "JA",
+                "KO",
+                "shared_grammar",
+                0.9,
+                "SOV order, agglutinative, honorific systems",
+            ),
+            (
+                "JA",
+                "TOKIPONA",
+                "shared_grammar",
+                0.2,
+                "Toki Pona is SVO but particles similar",
+            ),
             # TAM parallels
-            ("ZH", "TOKIPONA", "tam_parallel", 0.7, "Both tenseless, aspect-via-context"),
+            (
+                "ZH",
+                "TOKIPONA",
+                "tam_parallel",
+                0.7,
+                "Both tenseless, aspect-via-context",
+            ),
             ("ZH", "LOJBAN", "tam_parallel", 0.5, "Both treat tense as optional"),
-            ("JA", "KO", "tam_parallel", 0.6, "Both aspect-prominent with tense morphology"),
-            ("EN", "ESPERANTO", "tam_parallel", 0.7, "Both tense-prominent, 3-way distinction"),
+            (
+                "JA",
+                "KO",
+                "tam_parallel",
+                0.6,
+                "Both aspect-prominent with tense morphology",
+            ),
+            (
+                "EN",
+                "ESPERANTO",
+                "tam_parallel",
+                0.7,
+                "Both tense-prominent, 3-way distinction",
+            ),
             # Sacred Tongue bridges (via NSM primes)
             ("EN", "KO_ST", "concept_bridge", 0.4, "NSM prime mapping via Rosetta"),
             ("EN", "AV_ST", "concept_bridge", 0.4, "NSM prime mapping via Rosetta"),
@@ -69,15 +123,33 @@ class LanguageGraph:
             ("EN", "UM_ST", "concept_bridge", 0.4, "NSM prime mapping via Rosetta"),
             ("EN", "DR_ST", "concept_bridge", 0.4, "NSM prime mapping via Rosetta"),
             # Sacred Tongue inter-bridges
-            ("KO_ST", "AV_ST", "concept_bridge", 0.6, "Both Sacred Tongues, shared token grammar"),
+            (
+                "KO_ST",
+                "AV_ST",
+                "concept_bridge",
+                0.6,
+                "Both Sacred Tongues, shared token grammar",
+            ),
             ("AV_ST", "RU_ST", "concept_bridge", 0.6, "Sacred Tongue family"),
             ("RU_ST", "CA_ST", "concept_bridge", 0.6, "Sacred Tongue family"),
             ("CA_ST", "UM_ST", "concept_bridge", 0.6, "Sacred Tongue family"),
             ("UM_ST", "DR_ST", "concept_bridge", 0.6, "Sacred Tongue family"),
             # Conlang construction sources
-            ("EN", "ESPERANTO", "constructed_from", 0.5, "Romance+Germanic+Slavic base"),
+            (
+                "EN",
+                "ESPERANTO",
+                "constructed_from",
+                0.5,
+                "Romance+Germanic+Slavic base",
+            ),
             ("EN", "TOKIPONA", "constructed_from", 0.3, "Some English-derived roots"),
-            ("EN", "LOJBAN", "constructed_from", 0.2, "Lojban vocab from 6 source languages"),
+            (
+                "EN",
+                "LOJBAN",
+                "constructed_from",
+                0.2,
+                "Lojban vocab from 6 source languages",
+            ),
         ]
 
         for la, lb, rt, strength, notes in default_edges:
@@ -111,7 +183,8 @@ class LanguageGraph:
         return [
             e
             for e in self._edges
-            if (e.lang_a == lang_a and e.lang_b == lang_b) or (e.lang_a == lang_b and e.lang_b == lang_a)
+            if (e.lang_a == lang_a and e.lang_b == lang_b)
+            or (e.lang_a == lang_b and e.lang_b == lang_a)
         ]
 
     def shortest_path(self, src_lang: str, dst_lang: str) -> list[str]:
@@ -168,7 +241,9 @@ class LanguageGraph:
         """List all language codes in the graph."""
         return sorted(self._nodes)
 
-    def related_languages(self, lang: str, min_strength: float = 0.3) -> list[tuple[str, float]]:
+    def related_languages(
+        self, lang: str, min_strength: float = 0.3
+    ) -> list[tuple[str, float]]:
         """Find languages related to the given one, sorted by strength."""
         edges = self.get_edges(lang)
         related: dict[str, float] = {}

@@ -92,11 +92,15 @@ class DimensionalWall:
 
     def visible_dimensions(self) -> List[str]:
         """Return tongues where this wall is visible (not invisible)."""
-        return [t for t in TONGUE_NAMES if self.visibility[t] != WallVisibility.INVISIBLE]
+        return [
+            t for t in TONGUE_NAMES if self.visibility[t] != WallVisibility.INVISIBLE
+        ]
 
     def invisible_dimensions(self) -> List[str]:
         """Return tongues where this wall is invisible."""
-        return [t for t in TONGUE_NAMES if self.visibility[t] == WallVisibility.INVISIBLE]
+        return [
+            t for t in TONGUE_NAMES if self.visibility[t] == WallVisibility.INVISIBLE
+        ]
 
 
 @dataclass
@@ -187,7 +191,11 @@ class PermeabilityMatrix:
         result = {}
         for tongue in TONGUE_NAMES:
             # Use the dominant coordinate for this tongue as momentum
-            momentum = max(abs(point.get_coordinate(v, s, tongue)) for v in StateValence for s in range(3))
+            momentum = max(
+                abs(point.get_coordinate(v, s, tongue))
+                for v in StateValence
+                for s in range(3)
+            )
             result[tongue] = self.total_cost(tongue, momentum)
         return result
 
@@ -242,7 +250,9 @@ def create_security_walls() -> PermeabilityMatrix:
     matrix = PermeabilityMatrix()
 
     # Read wall - mostly permeable
-    read_wall = DimensionalWall(wall_id="read", position=0.3, base_cost=0.5, description="Read operations")
+    read_wall = DimensionalWall(
+        wall_id="read", position=0.3, base_cost=0.5, description="Read operations"
+    )
     read_wall.set_visibility("KO", WallVisibility.INVISIBLE)
     read_wall.set_visibility("AV", WallVisibility.INVISIBLE)
     read_wall.set_visibility("RU", WallVisibility.TRANSLUCENT)
@@ -252,7 +262,9 @@ def create_security_walls() -> PermeabilityMatrix:
     matrix.add_wall(read_wall)
 
     # Write wall - restricted in security dimensions
-    write_wall = DimensionalWall(wall_id="write", position=0.5, base_cost=1.0, description="Write operations")
+    write_wall = DimensionalWall(
+        wall_id="write", position=0.5, base_cost=1.0, description="Write operations"
+    )
     write_wall.set_visibility("KO", WallVisibility.TRANSLUCENT)
     write_wall.set_visibility("AV", WallVisibility.TRANSLUCENT)
     write_wall.set_visibility("RU", WallVisibility.TRANSLUCENT)
@@ -262,7 +274,9 @@ def create_security_walls() -> PermeabilityMatrix:
     matrix.add_wall(write_wall)
 
     # Execute wall - heavily restricted
-    exec_wall = DimensionalWall(wall_id="execute", position=0.7, base_cost=2.0, description="Execute operations")
+    exec_wall = DimensionalWall(
+        wall_id="execute", position=0.7, base_cost=2.0, description="Execute operations"
+    )
     exec_wall.set_visibility("KO", WallVisibility.TRANSLUCENT)
     exec_wall.set_visibility("AV", WallVisibility.TRANSLUCENT)
     exec_wall.set_visibility("RU", WallVisibility.TRANSLUCENT)
@@ -272,7 +286,9 @@ def create_security_walls() -> PermeabilityMatrix:
     matrix.add_wall(exec_wall)
 
     # Admin wall - almost everything blocked
-    admin_wall = DimensionalWall(wall_id="admin", position=0.9, base_cost=5.0, description="Admin operations")
+    admin_wall = DimensionalWall(
+        wall_id="admin", position=0.9, base_cost=5.0, description="Admin operations"
+    )
     admin_wall.set_visibility("KO", WallVisibility.TRANSLUCENT)
     admin_wall.set_visibility("AV", WallVisibility.OPAQUE)
     admin_wall.set_visibility("RU", WallVisibility.OPAQUE)

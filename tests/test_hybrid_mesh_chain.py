@@ -21,7 +21,9 @@ def test_effective_weights_positive_and_bounded() -> None:
         tongue_state=[0.3, -0.1, 0.2, -0.4, 0.5, -0.2],
         modifier_bias=0.2,
     )
-    weights = effective_tongue_weights(state.tongue_state, modifier_bias=state.modifier_bias)
+    weights = effective_tongue_weights(
+        state.tongue_state, modifier_bias=state.modifier_bias
+    )
     assert len(weights) == 6
     assert all(w > 0.0 for w in weights)
     assert all(w < 50.0 for w in weights)

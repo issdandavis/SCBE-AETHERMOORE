@@ -5,7 +5,9 @@ import torch
 from .wave import sparse_mm
 
 
-def smear(u: torch.Tensor, A_norm: torch.Tensor, betas: list[float], J: int) -> torch.Tensor:
+def smear(
+    u: torch.Tensor, A_norm: torch.Tensor, betas: list[float], J: int
+) -> torch.Tensor:
     """SMEAR(u) = sum_{j=0..J} beta_j * A^j u."""
 
     j_max = int(J)

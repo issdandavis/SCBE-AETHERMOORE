@@ -229,7 +229,9 @@ class AethermoorSpiralEngine:
         lvl = self.skills.tongues[tongue]
         return min(0.99, base + 0.03 * lvl)
 
-    def _triadic_obstruction(self, distance: float, entropy: float, trust: float) -> tuple[float, int]:
+    def _triadic_obstruction(
+        self, distance: float, entropy: float, trust: float
+    ) -> tuple[float, int]:
         # Map continuous signals to a 4-level lattice {0,1,2,3}
         # 0 = ALLOW-like, 3 = DENY-like.
         fast = min(3, int(distance * 4.0))
@@ -340,7 +342,9 @@ class AethermoorSpiralEngine:
             return "rift_spines"
         return "ember_steppe"
 
-    def _discover_voxel(self, region: Region, distance: float) -> tuple[VoxelCell, bool]:
+    def _discover_voxel(
+        self, region: Region, distance: float
+    ) -> tuple[VoxelCell, bool]:
         # Coherence-shaped procedural voxel address [X,Y,Z,V,P,S].
         x = region.region_id % 16
         y = self._q01(region.hazard)
@@ -351,7 +355,9 @@ class AethermoorSpiralEngine:
         key = f"{x:02d}:{y:02d}:{z:02d}:{v:02d}:{p:02d}:{s:02d}"
 
         heat = min(1.0, distance * max(0.5, self.player.accumulated_intent))
-        terrain = self._terrain_from_coherence(region.hazard, self.player.coherence, heat)
+        terrain = self._terrain_from_coherence(
+            region.hazard, self.player.coherence, heat
+        )
         cell = VoxelCell(
             key=key,
             terrain=terrain,
@@ -368,10 +374,14 @@ class AethermoorSpiralEngine:
         self.voxels[key] = cell
         return cell, is_new
 
-    def _three_watchers(self, distance: float, trust: float, entropy: float) -> dict[str, float]:
+    def _three_watchers(
+        self, distance: float, trust: float, entropy: float
+    ) -> dict[str, float]:
         # Three watcher ring signals normalized to 0..1.
         i_fast = self._clamp01(distance)
-        i_memory = self._clamp01(self.player.accumulated_intent / MAX_INTENT_ACCUMULATION)
+        i_memory = self._clamp01(
+            self.player.accumulated_intent / MAX_INTENT_ACCUMULATION
+        )
         i_governance = self._clamp01(((1.0 - trust) * 0.7) + (entropy * 0.3))
         d_tri = self._clamp01(triadic_risk(i_fast, i_memory, i_governance))
         triadic_from_rings = self._clamp01(1.0 - d_tri)
@@ -412,7 +422,9 @@ class AethermoorSpiralEngine:
             # Expensive but lowers intent heat
             spend = min(self.inventory.data_shard, 1)
             self.inventory.data_shard -= spend
-            self.player.accumulated_intent = max(0.0, self.player.accumulated_intent - 0.6 - 0.2 * spend)
+            self.player.accumulated_intent = max(
+                0.0, self.player.accumulated_intent - 0.6 - 0.2 * spend
+            )
             self.player.coherence = min(1.0, self.player.coherence + 0.04)
             notes.append("quarantine_resolve")
 
@@ -436,8 +448,12 @@ class AethermoorSpiralEngine:
             entropy=self.player.entropy,
             trust=self.player.trust,
         )
-        watchers = self._three_watchers(distance=distance, trust=self.player.trust, entropy=self.player.entropy)
-        triadic_stable = self._clamp01(triadic_from_sheaf * watchers["triadic_from_rings"])
+        watchers = self._three_watchers(
+            distance=distance, trust=self.player.trust, entropy=self.player.entropy
+        )
+        triadic_stable = self._clamp01(
+            triadic_from_sheaf * watchers["triadic_from_rings"]
+        )
 
         spectral = self._spectral_score(tongue)
         if self.inventory.spectral_filter > 0:
@@ -461,7 +477,9 @@ class AethermoorSpiralEngine:
         else:
             decision = "DENY"
 
-        self.player.coherence = max(0.0, min(1.0, 0.55 * self.player.coherence + 0.45 * triadic_stable))
+        self.player.coherence = max(
+            0.0, min(1.0, 0.55 * self.player.coherence + 0.45 * triadic_stable)
+        )
         self.player.entropy = max(0.0, min(1.0, 1.0 - self.player.coherence))
 
         voxel, voxel_discovered = self._discover_voxel(region, distance)
@@ -515,7 +533,10 @@ class AethermoorSpiralEngine:
             sheaf_obstructions=obs,
             trust=self.player.trust,
             coherence=self.player.coherence,
-            mission_progress=(self.mission.packets_routed, self.mission.objective_packets),
+            mission_progress=(
+                self.mission.packets_routed,
+                self.mission.objective_packets,
+            ),
             inventory=Inventory(**self.inventory.__dict__),
             notes=notes,
         )

@@ -11,7 +11,10 @@ import pytest
 try:
     from cryptography.fernet import Fernet  # noqa: F401
 except BaseException:
-    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+    pytest.skip(
+        "cryptography package not functional (cffi backend missing)",
+        allow_module_level=True,
+    )
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -19,7 +22,9 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 src_module = sys.modules.setdefault("src", types.ModuleType("src"))
-security_module = sys.modules.setdefault("src.security", types.ModuleType("src.security"))
+security_module = sys.modules.setdefault(
+    "src.security", types.ModuleType("src.security")
+)
 # Load the real secret_store module by file path so its utility functions
 # (redact, fingerprint, etc.) are available, but override get/set to avoid
 # touching real credential files during tests.
@@ -31,7 +36,9 @@ _ss_spec.loader.exec_module(_ss_mod)
 _ss_mod.get_secret = lambda key, default="": default
 _ss_mod.set_secret = lambda key, value, note="", tongue=None: None
 src_module = sys.modules.setdefault("src", types.ModuleType("src"))
-security_module = sys.modules.setdefault("src.security", types.ModuleType("src.security"))
+security_module = sys.modules.setdefault(
+    "src.security", types.ModuleType("src.security")
+)
 sys.modules["src.security.secret_store"] = _ss_mod
 setattr(src_module, "security", security_module)
 setattr(src_module, "security", security_module)
@@ -47,8 +54,12 @@ def _load_module(name: str, relative_path: str):
     return module
 
 
-terminal_ai_router = _load_module("test_terminal_ai_router", "scripts/system/terminal_ai_router.py")
-sell_from_terminal = _load_module("test_sell_from_terminal", "scripts/system/sell_from_terminal.py")
+terminal_ai_router = _load_module(
+    "test_terminal_ai_router", "scripts/system/terminal_ai_router.py"
+)
+sell_from_terminal = _load_module(
+    "test_sell_from_terminal", "scripts/system/sell_from_terminal.py"
+)
 scbe_system_cli = _load_module("test_scbe_system_cli", "scripts/scbe-system-cli.py")
 
 
@@ -92,7 +103,9 @@ def test_sell_from_terminal_process_summary_omits_raw_streams() -> None:
         stdout = "OPENAI_API_KEY=abc123"
         stderr = "Authorization: Bearer super-secret-token"
 
-    summary = sell_from_terminal._summarize_process_result(["python", "tool.py"], Proc())
+    summary = sell_from_terminal._summarize_process_result(
+        ["python", "tool.py"], Proc()
+    )
 
     assert summary["returncode"] == 1
     assert summary["stdout_present"] is True

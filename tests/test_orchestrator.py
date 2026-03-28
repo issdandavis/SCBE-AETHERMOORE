@@ -147,10 +147,18 @@ class TestOrchSCBE:
         assert base64.b64decode(unsealed["plaintext_b64"]) == pt
 
     def test_ring_classify_all_rings(self):
-        cases = [(0.05, "core"), (0.35, "inner"), (0.55, "middle"), (0.75, "outer"), (0.95, "edge")]
+        cases = [
+            (0.05, "core"),
+            (0.35, "inner"),
+            (0.55, "middle"),
+            (0.75, "outer"),
+            (0.95, "edge"),
+        ]
         for radius, expected_ring in cases:
             result = json.loads(_orch.ring_classify(radius))
-            assert result["ring"] == expected_ring, f"radius {radius} expected {expected_ring} got {result['ring']}"
+            assert (
+                result["ring"] == expected_ring
+            ), f"radius {radius} expected {expected_ring} got {result['ring']}"
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -198,7 +206,9 @@ class TestOrchEggs:
         egg_json, _, _, _ = self._make_egg()
         with tempfile.TemporaryDirectory() as td:
             db = os.path.join(td, "test.db")
-            result = json.loads(_orch.egg_register(egg_json, ttl_seconds=600, db_path=db))
+            result = json.loads(
+                _orch.egg_register(egg_json, ttl_seconds=600, db_path=db)
+            )
             assert result["status"] == "SEALED"
             assert result["egg_id"]
 
@@ -255,13 +265,20 @@ class TestOrchGovernedWeb:
 
     @pytest.mark.asyncio
     async def test_web_search(self, monkeypatch):
-        async def fake_search(query: str, *, num_results: int = 8, agent_id: str = "KO"):
+        async def fake_search(
+            query: str, *, num_results: int = 8, agent_id: str = "KO"
+        ):
             return {
                 "ok": True,
                 "query": query,
                 "result_count": 1,
                 "zone_counts": {"GREEN": 1, "YELLOW": 0, "RED": 0},
-                "governance": {"decision": "ALLOW", "zone": "YELLOW", "reason": "test", "latency_ms": 1.0},
+                "governance": {
+                    "decision": "ALLOW",
+                    "zone": "YELLOW",
+                    "reason": "test",
+                    "latency_ms": 1.0,
+                },
                 "results": [
                     {
                         "title": "Example",
@@ -286,7 +303,12 @@ class TestOrchGovernedWeb:
             return {
                 "ok": False,
                 "url": url,
-                "governance": {"decision": "QUARANTINE", "zone": "RED", "reason": "blocked", "latency_ms": 1.0},
+                "governance": {
+                    "decision": "QUARANTINE",
+                    "zone": "RED",
+                    "reason": "blocked",
+                    "latency_ms": 1.0,
+                },
                 "status": "quarantined",
             }
 
@@ -302,11 +324,22 @@ class TestOrchGovernedWeb:
                 "ok": True,
                 "url": url,
                 "pattern": pattern,
-                "governance": {"decision": "ALLOW", "zone": "GREEN", "reason": "ok", "latency_ms": 1.0},
+                "governance": {
+                    "decision": "ALLOW",
+                    "zone": "GREEN",
+                    "reason": "ok",
+                    "latency_ms": 1.0,
+                },
                 "item_count": 1,
                 "threat_scan": {"verdict": "CLEAN", "risk_score": 0.0},
                 "membrane_action": "ALLOW",
-                "items": [{"pattern_name": "email", "value": "a@example.com", "context": "contact a@example.com"}],
+                "items": [
+                    {
+                        "pattern_name": "email",
+                        "value": "a@example.com",
+                        "context": "contact a@example.com",
+                    }
+                ],
             }
 
         monkeypatch.setattr(_orch._gov_web, "extract", fake_extract)
@@ -320,7 +353,12 @@ class TestOrchGovernedWeb:
             return {
                 "ok": True,
                 "url": url,
-                "governance": {"decision": "ALLOW", "zone": "GREEN", "reason": "ok", "latency_ms": 1.0},
+                "governance": {
+                    "decision": "ALLOW",
+                    "zone": "GREEN",
+                    "reason": "ok",
+                    "latency_ms": 1.0,
+                },
                 "needs_js": True,
                 "reason": "SPA shell",
                 "content_length": 100,

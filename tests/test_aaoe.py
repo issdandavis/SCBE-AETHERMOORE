@@ -522,7 +522,9 @@ class TestGeoSeal:
     def test_seal_creation(self):
         from src.aaoe.agent_identity import GeoSeal, AccessTier
 
-        seal = GeoSeal(agent_id="bot-1", agent_name="TestBot", origin_platform="openclaw")
+        seal = GeoSeal(
+            agent_id="bot-1", agent_name="TestBot", origin_platform="openclaw"
+        )
         assert seal.tier == AccessTier.FREE
         assert seal.fingerprint
         assert len(seal.fingerprint) == 24
@@ -702,7 +704,9 @@ class TestAAOEIntegration:
         assert record["num_observations"] == 2
 
         # 7. Record session in GeoSeal
-        drift_events = len([d for _, d, lv in session.drift_history if lv.value != "ON_TRACK"])
+        drift_events = len(
+            [d for _, d, lv in session.drift_history if lv.value != "ON_TRACK"]
+        )
         seal.record_session(
             session.session_id,
             was_clean=not session.is_quarantined,

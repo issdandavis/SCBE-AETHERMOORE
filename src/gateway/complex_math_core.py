@@ -224,7 +224,9 @@ class QuantumInspiredSecurity:
     """
 
     @staticmethod
-    def compute_entanglement_entropy(state_vector: np.ndarray, partition_size: int) -> float:
+    def compute_entanglement_entropy(
+        state_vector: np.ndarray, partition_size: int
+    ) -> float:
         """
         Compute entanglement entropy across a bipartition.
 
@@ -252,7 +254,9 @@ class QuantumInspiredSecurity:
         rho = np.outer(state, np.conj(state))
 
         # Reshape for partial trace
-        rho_reshaped = rho.reshape(partition_size, subsystem_b_size, partition_size, subsystem_b_size)
+        rho_reshaped = rho.reshape(
+            partition_size, subsystem_b_size, partition_size, subsystem_b_size
+        )
 
         # Partial trace over subsystem B
         rho_a = np.trace(rho_reshaped, axis1=1, axis2=3)
@@ -420,7 +424,9 @@ def demonstrate_math_core():
     test_state = np.random.randn(state_size) + 1j * np.random.randn(state_size)
     test_state = test_state / np.linalg.norm(test_state)
 
-    entanglement = QuantumInspiredSecurity.compute_entanglement_entropy(test_state, partition_size=8)
+    entanglement = QuantumInspiredSecurity.compute_entanglement_entropy(
+        test_state, partition_size=8
+    )
     print(f"  State vector size: {state_size}")
     print(f"  Entanglement entropy: {entanglement:.4f} bits")
 

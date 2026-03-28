@@ -114,7 +114,9 @@ class TestHarmonicScalingLaw:
         law = HarmonicScalingLaw(alpha=10.0, beta=0.5, require_pq_binding=False)
         H = law.compute(100.0)
         expected_max = 1.0 + law.alpha
-        assert abs(H - expected_max) < 0.01, f"H(100) should approach {expected_max}, got {H}"
+        assert (
+            abs(H - expected_max) < 0.01
+        ), f"H(100) should approach {expected_max}, got {H}"
 
     def test_negative_distance_clamped(self):
         """Test that negative d* is clamped to 0."""
@@ -150,7 +152,9 @@ class TestSpecificationVectors:
         """Test the built-in vector verification function."""
         results = verify_test_vectors(tolerance=0.01)
         all_passed = all(passed for passed, _ in results)
-        assert all_passed, f"Some test vectors failed: {[msg for passed, msg in results if not passed]}"
+        assert (
+            all_passed
+        ), f"Some test vectors failed: {[msg for passed, msg in results if not passed]}"
 
 
 # =============================================================================
@@ -179,7 +183,9 @@ class TestScalingModes:
 
     def test_linear_clipped_mode(self):
         """Test linear clipped scaling mode."""
-        law = HarmonicScalingLaw(alpha=10.0, mode=ScalingMode.LINEAR_CLIPPED, require_pq_binding=False)
+        law = HarmonicScalingLaw(
+            alpha=10.0, mode=ScalingMode.LINEAR_CLIPPED, require_pq_binding=False
+        )
 
         # H = min(1 + d*, 11)
         assert abs(law.compute(0.0) - 1.0) < 1e-10
@@ -229,7 +235,9 @@ class TestQuantumResistantBinding:
 
     def test_context_commitment_creation(self):
         """Test context commitment creation."""
-        commitment = create_context_commitment(d_star=1.5, behavioral_risk=0.3, session_id=b"test_session_123")
+        commitment = create_context_commitment(
+            d_star=1.5, behavioral_risk=0.3, session_id=b"test_session_123"
+        )
         assert len(commitment) == 32  # SHA3-256 output
 
     def test_pq_context_commitment_class(self):
@@ -319,13 +327,17 @@ class TestBehavioralRiskIntegration:
 
     def test_behavioral_risk_perfect_match(self):
         """Test risk computation for perfect match."""
-        components = BehavioralRiskComponents(D_hyp=0.0, C_spin=1.0, S_spec=1.0, T_temp=1.0, E_entropy=0.0)
+        components = BehavioralRiskComponents(
+            D_hyp=0.0, C_spin=1.0, S_spec=1.0, T_temp=1.0, E_entropy=0.0
+        )
         risk = components.compute()
         assert abs(risk) < 1e-10
 
     def test_behavioral_risk_maximum(self):
         """Test risk computation for maximum deviation."""
-        components = BehavioralRiskComponents(D_hyp=1.0, C_spin=0.0, S_spec=0.0, T_temp=0.0, E_entropy=1.0)
+        components = BehavioralRiskComponents(
+            D_hyp=1.0, C_spin=0.0, S_spec=0.0, T_temp=0.0, E_entropy=1.0
+        )
         risk = components.compute()
         assert abs(risk - 1.0) < 1e-10
 
@@ -350,7 +362,9 @@ class TestSecurityDecisionEngine:
 
     def test_accept_when_all_valid(self):
         """Test acceptance when crypto valid and risk below threshold."""
-        engine = SecurityDecisionEngine(scaling_law=HarmonicScalingLaw(require_pq_binding=False), risk_threshold=0.7)
+        engine = SecurityDecisionEngine(
+            scaling_law=HarmonicScalingLaw(require_pq_binding=False), risk_threshold=0.7
+        )
 
         decision, details = engine.evaluate(
             crypto_valid=True,
@@ -364,9 +378,13 @@ class TestSecurityDecisionEngine:
 
     def test_reject_when_crypto_invalid(self):
         """Test rejection when crypto is invalid."""
-        engine = SecurityDecisionEngine(scaling_law=HarmonicScalingLaw(require_pq_binding=False), risk_threshold=0.7)
+        engine = SecurityDecisionEngine(
+            scaling_law=HarmonicScalingLaw(require_pq_binding=False), risk_threshold=0.7
+        )
 
-        decision, details = engine.evaluate(crypto_valid=False, behavioral_risk=0.1, d_star=0.5)
+        decision, details = engine.evaluate(
+            crypto_valid=False, behavioral_risk=0.1, d_star=0.5
+        )
 
         assert decision is False
         assert details["crypto_valid"] is False
@@ -391,7 +409,9 @@ class TestSecurityDecisionEngine:
 
     def test_details_contain_all_components(self):
         """Test that details dict contains expected keys."""
-        engine = SecurityDecisionEngine(scaling_law=HarmonicScalingLaw(require_pq_binding=False))
+        engine = SecurityDecisionEngine(
+            scaling_law=HarmonicScalingLaw(require_pq_binding=False)
+        )
 
         _, details = engine.evaluate(crypto_valid=True, behavioral_risk=0.3, d_star=1.0)
 
@@ -514,13 +534,17 @@ class TestLanguesMetricTensor:
         """Test that epsilon >= threshold raises error for NORMALIZED mode."""
         # NORMALIZED mode has ε* ≈ 0.083, so 0.15 should fail
         with pytest.raises(ValueError, match="epsilon.*must be < threshold"):
-            LanguesMetricTensor(epsilon=0.15, mode=CouplingMode.NORMALIZED, validate_epsilon=True)
+            LanguesMetricTensor(
+                epsilon=0.15, mode=CouplingMode.NORMALIZED, validate_epsilon=True
+            )
 
     def test_epsilon_threshold_validation_harmonic(self):
         """Test that epsilon >= threshold raises error for HARMONIC mode."""
         # HARMONIC mode has ε* ≈ 3.67e-4, so even 0.001 should fail
         with pytest.raises(ValueError, match="epsilon.*must be < threshold"):
-            LanguesMetricTensor(epsilon=0.001, mode=CouplingMode.HARMONIC, validate_epsilon=True)
+            LanguesMetricTensor(
+                epsilon=0.001, mode=CouplingMode.HARMONIC, validate_epsilon=True
+            )
 
     def test_epsilon_threshold_bypass(self):
         """Test that validation can be bypassed."""
@@ -531,15 +555,30 @@ class TestLanguesMetricTensor:
         """Test rigorous epsilon thresholds for each mode."""
         # HARMONIC: ε* = 1/(2φ^17) ≈ 3.67e-4
         assert abs(EPSILON_THRESHOLD_HARMONIC - 1 / (2 * PHI**17)) < 1e-10
-        assert abs(get_epsilon_threshold(CouplingMode.HARMONIC) - EPSILON_THRESHOLD_HARMONIC) < 1e-10
+        assert (
+            abs(
+                get_epsilon_threshold(CouplingMode.HARMONIC)
+                - EPSILON_THRESHOLD_HARMONIC
+            )
+            < 1e-10
+        )
 
         # UNIFORM: ε* = 1/(2*6) ≈ 0.083
         assert abs(EPSILON_THRESHOLD_UNIFORM - 1 / 12) < 1e-10
-        assert abs(get_epsilon_threshold(CouplingMode.UNIFORM) - EPSILON_THRESHOLD_UNIFORM) < 1e-10
+        assert (
+            abs(get_epsilon_threshold(CouplingMode.UNIFORM) - EPSILON_THRESHOLD_UNIFORM)
+            < 1e-10
+        )
 
         # NORMALIZED: ε* = 1/(2*6) ≈ 0.083
         assert abs(EPSILON_THRESHOLD_NORMALIZED - 1 / 12) < 1e-10
-        assert abs(get_epsilon_threshold(CouplingMode.NORMALIZED) - EPSILON_THRESHOLD_NORMALIZED) < 1e-10
+        assert (
+            abs(
+                get_epsilon_threshold(CouplingMode.NORMALIZED)
+                - EPSILON_THRESHOLD_NORMALIZED
+            )
+            < 1e-10
+        )
 
     def test_baseline_metric_shape(self):
         """Test baseline metric G_0 is 6x6."""
@@ -568,7 +607,9 @@ class TestLanguesMetricTensor:
         """Test coupling matrix has correct diagonal term."""
         R = PHI
         for k in range(6):
-            A_k = create_coupling_matrix(k, R=R, epsilon=0.05, mode=CouplingMode.HARMONIC)
+            A_k = create_coupling_matrix(
+                k, R=R, epsilon=0.05, mode=CouplingMode.HARMONIC
+            )
             expected_diag = k * np.log(R) if k > 0 else 0.0
             assert abs(A_k[k, k] - expected_diag) < 1e-10
 
@@ -578,7 +619,9 @@ class TestLanguesMetricTensor:
         R = PHI
         G_0_diag = np.array([1.0, 1.0, 1.0, R, R**2, R**3])
         for k in range(6):
-            A_k = create_coupling_matrix(k, R=R, epsilon=epsilon, mode=CouplingMode.NORMALIZED, G_0_diag=G_0_diag)
+            A_k = create_coupling_matrix(
+                k, R=R, epsilon=epsilon, mode=CouplingMode.NORMALIZED, G_0_diag=G_0_diag
+            )
             k_next = (k + 1) % 6
             normalizer = np.sqrt(G_0_diag[k] * G_0_diag[k_next])
             expected = epsilon / normalizer
@@ -757,7 +800,9 @@ class TestLanguesValidation:
 
     def test_validate_langues_metric_stability_function(self):
         """Test the standalone validation function."""
-        results = validate_langues_metric_stability(epsilon_values=[0.01, 0.05], n_trials=10, seed=42)
+        results = validate_langues_metric_stability(
+            epsilon_values=[0.01, 0.05], n_trials=10, seed=42
+        )
 
         assert 0.01 in results
         assert 0.05 in results
@@ -896,7 +941,9 @@ class TestRecursiveMetricIteration:
         analyzer = FractalDimensionAnalyzer()
         r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
 
-        _, det_history = analyzer.iterate_metric_recursively(r, n_iterations=50, contraction_factor=0.95)
+        _, det_history = analyzer.iterate_metric_recursively(
+            r, n_iterations=50, contraction_factor=0.95
+        )
 
         # Determinant should generally decrease
         assert det_history[-1] < det_history[0]
@@ -1041,7 +1088,9 @@ class TestFractalAttractor:
         """Test that attractor has correct shape."""
         analyzer = FractalDimensionAnalyzer()
 
-        points = analyzer.generate_fractal_attractor(n_iterations=100, n_points=50, seed=42)
+        points = analyzer.generate_fractal_attractor(
+            n_iterations=100, n_points=50, seed=42
+        )
 
         assert points.shape == (50, 6)
 
@@ -1049,7 +1098,9 @@ class TestFractalAttractor:
         """Test that attractor points are bounded (tanh constraint)."""
         analyzer = FractalDimensionAnalyzer()
 
-        points = analyzer.generate_fractal_attractor(n_iterations=500, n_points=100, seed=42)
+        points = analyzer.generate_fractal_attractor(
+            n_iterations=500, n_points=100, seed=42
+        )
 
         # All points should be in [-1, 1] due to tanh
         assert np.all(np.abs(points) <= 1.0)
@@ -1058,8 +1109,12 @@ class TestFractalAttractor:
         """Test that same seed gives same attractor."""
         analyzer = FractalDimensionAnalyzer()
 
-        points1 = analyzer.generate_fractal_attractor(n_iterations=100, n_points=20, seed=123)
-        points2 = analyzer.generate_fractal_attractor(n_iterations=100, n_points=20, seed=123)
+        points1 = analyzer.generate_fractal_attractor(
+            n_iterations=100, n_points=20, seed=123
+        )
+        points2 = analyzer.generate_fractal_attractor(
+            n_iterations=100, n_points=20, seed=123
+        )
 
         np.testing.assert_array_equal(points1, points2)
 
@@ -1072,7 +1127,9 @@ class TestBoxCountingDimension:
         analyzer = FractalDimensionAnalyzer()
 
         # Generate some attractor points
-        points = analyzer.generate_fractal_attractor(n_iterations=100, n_points=200, seed=42)
+        points = analyzer.generate_fractal_attractor(
+            n_iterations=100, n_points=200, seed=42
+        )
 
         D_box, details = analyzer.estimate_box_counting_dimension(points, n_scales=8)
 
@@ -1085,7 +1142,9 @@ class TestBoxCountingDimension:
         """Test that estimated dimension is positive."""
         analyzer = FractalDimensionAnalyzer()
 
-        points = analyzer.generate_fractal_attractor(n_iterations=200, n_points=500, seed=42)
+        points = analyzer.generate_fractal_attractor(
+            n_iterations=200, n_points=500, seed=42
+        )
 
         D_box, _ = analyzer.estimate_box_counting_dimension(points, n_scales=10)
 
@@ -1095,7 +1154,9 @@ class TestBoxCountingDimension:
         """Test that dimension is in reasonable range for 6D attractor."""
         analyzer = FractalDimensionAnalyzer()
 
-        points = analyzer.generate_fractal_attractor(n_iterations=200, n_points=1000, seed=42)
+        points = analyzer.generate_fractal_attractor(
+            n_iterations=200, n_points=1000, seed=42
+        )
 
         D_box, _ = analyzer.estimate_box_counting_dimension(points, n_scales=10)
 
@@ -1116,7 +1177,9 @@ class TestFractalAnalyzerIntegration:
         assert field["n_samples"] >= 20
 
         # 2. Generate attractor
-        points = analyzer.generate_fractal_attractor(n_iterations=100, n_points=100, seed=42)
+        points = analyzer.generate_fractal_attractor(
+            n_iterations=100, n_points=100, seed=42
+        )
         assert points.shape == (100, 6)
 
         # 3. Estimate box-counting dimension
@@ -1163,7 +1226,9 @@ class TestFractalAnalyzerIntegration:
         assert math.isfinite(D_H)
 
         # Generate attractor
-        points = analyzer.generate_fractal_attractor(n_iterations=50, n_points=30, seed=42)
+        points = analyzer.generate_fractal_attractor(
+            n_iterations=50, n_points=30, seed=42
+        )
         assert points.shape == (30, 6)
 
 
@@ -1677,10 +1742,16 @@ class TestGrandUnifiedSymphonicCipher:
         assert "omega" in log_result
 
         # Verify exp(log_omega) ≈ omega
-        assert log_result["omega"] == pytest.approx(np.exp(log_result["log_omega"]), rel=1e-6)
+        assert log_result["omega"] == pytest.approx(
+            np.exp(log_result["log_omega"]), rel=1e-6
+        )
 
         # Verify additivity: log_omega = log_H + log_det_factor + log_complexity
-        expected_sum = log_result["log_H"] + log_result["log_det_factor"] + log_result["log_complexity"]
+        expected_sum = (
+            log_result["log_H"]
+            + log_result["log_det_factor"]
+            + log_result["log_complexity"]
+        )
         assert log_result["log_omega"] == pytest.approx(expected_sum, rel=1e-10)
 
     def test_action_integral_trajectory(self):
@@ -1771,7 +1842,9 @@ class TestGrandUnifiedSymphonicCipher:
 
         for theta, r in test_points:
             coherence = guscf.compute_coherence_score(theta, r)
-            assert 0.0 <= coherence <= 1.0, f"Coherence {coherence} out of [0,1] for θ={theta}"
+            assert (
+                0.0 <= coherence <= 1.0
+            ), f"Coherence {coherence} out of [0,1] for θ={theta}"
 
     def test_coherence_varies_with_position(self):
         """Test that coherence varies with position and stays bounded.
@@ -1801,7 +1874,9 @@ class TestGrandUnifiedSymphonicCipher:
         guscf = GrandUnifiedSymphonicCipher(n_dims=6, dimension_modes=modes)
 
         theta_origin = np.zeros(6)  # noqa: F841
-        theta_violate = np.array([0.0, 0.0, 1.0, 0.0, 0.0, 0.0])  # Only moves frozen dim
+        theta_violate = np.array(
+            [0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
+        )  # Only moves frozen dim
         r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
 
         # Using theta_violate as reference means we measure distance that crosses frozen dim
@@ -1879,8 +1954,12 @@ class TestGrandUnifiedSymphonicCipher:
 
     def test_coupling_mode_forwarded(self):
         """Test that coupling mode is forwarded to Langues metric."""
-        guscf_harmonic = GrandUnifiedSymphonicCipher(n_dims=6, coupling_mode=CouplingMode.HARMONIC)
-        guscf_uniform = GrandUnifiedSymphonicCipher(n_dims=6, coupling_mode=CouplingMode.UNIFORM)
+        guscf_harmonic = GrandUnifiedSymphonicCipher(
+            n_dims=6, coupling_mode=CouplingMode.HARMONIC
+        )
+        guscf_uniform = GrandUnifiedSymphonicCipher(
+            n_dims=6, coupling_mode=CouplingMode.UNIFORM
+        )
 
         assert guscf_harmonic.langues_metric.coupling_mode == CouplingMode.HARMONIC
         assert guscf_uniform.langues_metric.coupling_mode == CouplingMode.UNIFORM
@@ -2151,7 +2230,9 @@ class TestDifferentialCryptographyFramework:
 
     def test_repr(self):
         """Test string representation."""
-        dcf = DifferentialCryptographyFramework(base_frequency=880.0, modulation_depth=0.15, curvature_threshold=75.0)
+        dcf = DifferentialCryptographyFramework(
+            base_frequency=880.0, modulation_depth=0.15, curvature_threshold=75.0
+        )
         repr_str = repr(dcf)
 
         assert "DifferentialCryptographyFramework" in repr_str
@@ -2438,7 +2519,9 @@ class TestPolyhedralHamiltonianDefense:
         assert tetra.euler_characteristic() == 2
 
         # Torus (genus=1): chi = 0
-        torus = Polyhedron(name="Torus", vertices=16, edges=32, faces=16, centroid=np.zeros(6), genus=1)
+        torus = Polyhedron(
+            name="Torus", vertices=16, edges=32, faces=16, centroid=np.zeros(6), genus=1
+        )
         assert torus.euler_characteristic() == 0
 
     def test_topological_invariant(self):
@@ -2610,7 +2693,9 @@ class TestPolyhedralHamiltonianDefense:
 
         phdm = PolyhedralHamiltonianDefense(epsilon_snap=0.05)
 
-        result = phdm.simulate_attack(attack_type="deviation", attack_magnitude=2.0, attack_position=0.5)
+        result = phdm.simulate_attack(
+            attack_type="deviation", attack_magnitude=2.0, attack_position=0.5
+        )
 
         assert result["attack_type"] == "deviation"
         assert "attack_detected" in result
@@ -2625,7 +2710,9 @@ class TestPolyhedralHamiltonianDefense:
 
         phdm = PolyhedralHamiltonianDefense(epsilon_snap=0.1)
 
-        result = phdm.simulate_attack(attack_type="skip", attack_magnitude=2.0, attack_position=0.3)
+        result = phdm.simulate_attack(
+            attack_type="skip", attack_magnitude=2.0, attack_position=0.3
+        )
 
         assert result["attack_type"] == "skip"
         assert "attack_detected" in result
@@ -2636,7 +2723,9 @@ class TestPolyhedralHamiltonianDefense:
 
         phdm = PolyhedralHamiltonianDefense(epsilon_snap=0.1)
 
-        result = phdm.simulate_attack(attack_type="curvature", attack_magnitude=5.0, attack_position=0.7)
+        result = phdm.simulate_attack(
+            attack_type="curvature", attack_magnitude=5.0, attack_position=0.7
+        )
 
         assert result["attack_type"] == "curvature"
         assert "attack_detected" in result
@@ -2666,7 +2755,9 @@ class TestPolyhedralHamiltonianDefense:
         P, key = tampered_chain[5]
         tampered_chain[5] = (P, b"X" * 32)  # Fake key
 
-        result = phdm.verify_chain_integrity(tampered_chain, initial_key=b"integrity_test")
+        result = phdm.verify_chain_integrity(
+            tampered_chain, initial_key=b"integrity_test"
+        )
 
         assert result["valid"] is False
         assert result["integrity_ratio"] < 1.0
@@ -2730,7 +2821,9 @@ class TestPolyhedralHamiltonianDefense:
         phdm = PolyhedralHamiltonianDefense()
         gamma = phdm.compute_geodesic_curve(n_points=100)
 
-        result = phdm.detect_intrusion([gamma[i] for i in range(len(gamma))], np.linspace(0, 1, len(gamma)))
+        result = phdm.detect_intrusion(
+            [gamma[i] for i in range(len(gamma))], np.linspace(0, 1, len(gamma))
+        )
 
         assert "max_curvature" in result
         assert "mean_curvature" in result

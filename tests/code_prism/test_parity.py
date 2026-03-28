@@ -35,11 +35,15 @@ def test_shape_parity_python_to_typescript_and_go():
 
     ts_signatures = {
         name: _arg_count(args)
-        for name, args in re.findall(r"export function ([A-Za-z_][A-Za-z0-9_]*)\(([^)]*)\)", ts_artifact.code)
+        for name, args in re.findall(
+            r"export function ([A-Za-z_][A-Za-z0-9_]*)\(([^)]*)\)", ts_artifact.code
+        )
     }
     go_signatures = {
         name.lower(): _arg_count(args)
-        for name, args in re.findall(r"func ([A-Za-z_][A-Za-z0-9_]*)\(([^)]*)\)", go_artifact.code)
+        for name, args in re.findall(
+            r"func ([A-Za-z_][A-Za-z0-9_]*)\(([^)]*)\)", go_artifact.code
+        )
     }
 
     expected = {"add": 2, "subtract": 2}

@@ -25,11 +25,9 @@ import math
 import os
 import sys
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-
-import numpy as np
 
 # --- Resolve imports from project root ---
 _PROJECT_ROOT = str(Path(__file__).resolve().parent.parent.parent)
@@ -40,15 +38,10 @@ if _PROJECT_ROOT not in sys.path:
 from src.governance.runtime_gate import (
     TONGUE_WEIGHTS,
     TONGUES,
-    Decision,
     GateResult,
     RuntimeGate,
 )
 from src.primitives.phi_poincare import (
-    FIB_LADDER,
-    fibonacci_ternary_consensus,
-    fibonacci_trust_level,
-    harmonic_cost_at_shell,
     phi_shell_radius,
 )
 
@@ -554,13 +547,15 @@ Examples:
                 json.dumps(scan_dict, indent=indent, ensure_ascii=False),
                 encoding="utf-8",
             )
-            print(f"[{label}] {scan.governance_decision:12s} | "
-                  f"cost={scan.harmonic_cost:8.2f} | "
-                  f"spin={scan.spin_magnitude} | "
-                  f"hot={scan.hottest_tongue} cold={scan.coldest_tongue} | "
-                  f"trust={scan.trust_level} | "
-                  f"null_space={scan.null_space_detected} | "
-                  f"-> {out_path}")
+            print(
+                f"[{label}] {scan.governance_decision:12s} | "
+                f"cost={scan.harmonic_cost:8.2f} | "
+                f"spin={scan.spin_magnitude} | "
+                f"hot={scan.hottest_tongue} cold={scan.coldest_tongue} | "
+                f"trust={scan.trust_level} | "
+                f"null_space={scan.null_space_detected} | "
+                f"-> {out_path}"
+            )
         else:
             print(json.dumps(scan_dict, indent=indent, ensure_ascii=False))
 
@@ -579,20 +574,30 @@ Examples:
             print("\n" + "=" * 80)
             print("NEURAL DYE INJECTION — PATHWAY COMPARISON")
             print("=" * 80)
-            print(f"{'Signal':<20} {'Decision':<14} {'Cost':>10} {'Spin':>5} "
-                  f"{'Hot':>4} {'Cold':>5} {'Trust':<12} {'Null':>5}")
+            print(
+                f"{'Signal':<20} {'Decision':<14} {'Cost':>10} {'Spin':>5} "
+                f"{'Hot':>4} {'Cold':>5} {'Trust':<12} {'Null':>5}"
+            )
             print("-" * 80)
             for label, scan in zip(labels, scans):
-                print(f"{label:<20} {scan.governance_decision:<14} "
-                      f"{scan.harmonic_cost:>10.2f} {scan.spin_magnitude:>5} "
-                      f"{scan.hottest_tongue:>4} {scan.coldest_tongue:>5} "
-                      f"{scan.trust_level:<12} {'YES' if scan.null_space_detected else 'no':>5}")
+                print(
+                    f"{label:<20} {scan.governance_decision:<14} "
+                    f"{scan.harmonic_cost:>10.2f} {scan.spin_magnitude:>5} "
+                    f"{scan.hottest_tongue:>4} {scan.coldest_tongue:>5} "
+                    f"{scan.trust_level:<12} {'YES' if scan.null_space_detected else 'no':>5}"
+                )
             print("-" * 80)
-            print(f"Most discriminative tongue: {comparison['most_discriminative_tongue']}")
-            print(f"Cost spread: {comparison['cost_range']['spread']:.2f} "
-                  f"(min={comparison['cost_range']['min']:.2f}, "
-                  f"max={comparison['cost_range']['max']:.2f})")
-            print(f"Null spaces detected: {comparison['null_space_count']}/{len(scans)}")
+            print(
+                f"Most discriminative tongue: {comparison['most_discriminative_tongue']}"
+            )
+            print(
+                f"Cost spread: {comparison['cost_range']['spread']:.2f} "
+                f"(min={comparison['cost_range']['min']:.2f}, "
+                f"max={comparison['cost_range']['max']:.2f})"
+            )
+            print(
+                f"Null spaces detected: {comparison['null_space_count']}/{len(scans)}"
+            )
             print("=" * 80)
         else:
             print(json.dumps(comparison, indent=indent, ensure_ascii=False))

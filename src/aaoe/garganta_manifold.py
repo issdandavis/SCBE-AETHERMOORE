@@ -129,7 +129,13 @@ def tunnel_radius(d: float, R: float = R_BASE, r_max: float = R_MAX) -> float:
     return r_max / cost
 
 
-def tunnel_radius_4d(d: float, t: float, decay_rate: float = 0.01, R: float = R_BASE, r_max: float = R_MAX) -> float:
+def tunnel_radius_4d(
+    d: float,
+    t: float,
+    decay_rate: float = 0.01,
+    R: float = R_BASE,
+    r_max: float = R_MAX,
+) -> float:
     """
     4D tunnel radius — includes time decay.
     r(d,t) = r_max / R^(d²) * exp(-λt)
@@ -145,7 +151,9 @@ def tunnel_radius_4d(d: float, t: float, decay_rate: float = 0.01, R: float = R_
     return spatial * temporal
 
 
-def fiber_volume(d: float, t: float = 0.0, n_tongue: int = 6, R: float = R_BASE, r_max: float = R_MAX) -> float:
+def fiber_volume(
+    d: float, t: float = 0.0, n_tongue: int = 6, R: float = R_BASE, r_max: float = R_MAX
+) -> float:
     """
     Volume of the N-dimensional fiber at (d, t).
 
@@ -157,7 +165,11 @@ def fiber_volume(d: float, t: float = 0.0, n_tongue: int = 6, R: float = R_BASE,
 
     This is the agent's total "freedom of action" in multi-D space.
     """
-    r = tunnel_radius_4d(d, t, R=R, r_max=r_max) if t > 0 else tunnel_radius(d, R, r_max)
+    r = (
+        tunnel_radius_4d(d, t, R=R, r_max=r_max)
+        if t > 0
+        else tunnel_radius(d, R, r_max)
+    )
     n = n_tongue
     # Volume of n-ball
     half_n = n / 2.0
@@ -227,7 +239,11 @@ def compute_portals(
     4. Quarantined agents get NO portals
     """
     zone = _d_to_level(d)
-    tr = tunnel_radius_4d(d, t, R=R, r_max=r_max) if t > 0 else tunnel_radius(d, R, r_max)
+    tr = (
+        tunnel_radius_4d(d, t, R=R, r_max=r_max)
+        if t > 0
+        else tunnel_radius(d, R, r_max)
+    )
     cost_base = R ** (d**2)  # Harmonic wall
 
     portals = []
@@ -472,7 +488,9 @@ def ascii_tunnel_slice(
 
     lines.append(f"  ╔══ Garganta Slice @ d={d:.2f}, t={t:.1f} ══╗")
     lines.append(f"  ║ Zone: {ts.zone.value:<12}  Freedom: {ts.freedom_pct:.1f}%")
-    lines.append(f"  ║ Radius: {ts.tunnel_r:.4f}    Portals: {sum(1 for p in ts.portals if p.is_accessible)}/6")
+    lines.append(
+        f"  ║ Radius: {ts.tunnel_r:.4f}    Portals: {sum(1 for p in ts.portals if p.is_accessible)}/6"
+    )
     lines.append(f"  ╚{'═' * 38}╝")
     lines.append("")
 
@@ -484,10 +502,14 @@ def ascii_tunnel_slice(
             dist = math.sqrt(x * x + y * y)
             if abs(dist - r_chars) < 1.5:
                 # Wall — check for portal
-                portal_idx = int((math.atan2(y, x) + math.pi) / (2 * math.pi) * len(SACRED_TONGUES))
+                portal_idx = int(
+                    (math.atan2(y, x) + math.pi) / (2 * math.pi) * len(SACRED_TONGUES)
+                )
                 portal_idx = min(portal_idx, len(SACRED_TONGUES) - 1)
                 tongue = SACRED_TONGUES[portal_idx]
-                is_open = any(p.tongue == tongue and p.is_accessible for p in ts.portals)
+                is_open = any(
+                    p.tongue == tongue and p.is_accessible for p in ts.portals
+                )
                 row_chars.append(tongue[0] if is_open else "█")
             elif dist < r_chars:
                 if abs(x) < 1 and abs(y) < 1:
@@ -499,7 +521,12 @@ def ascii_tunnel_slice(
         lines.append("  " + "".join(row_chars))
 
     lines.append("")
-    lines.append("  Portals: " + " ".join(f"[{p.tongue}]" if p.is_accessible else f" {p.tongue} " for p in ts.portals))
+    lines.append(
+        "  Portals: "
+        + " ".join(
+            f"[{p.tongue}]" if p.is_accessible else f" {p.tongue} " for p in ts.portals
+        )
+    )
 
     return "\n".join(lines)
 
@@ -579,7 +606,9 @@ def ascii_journey(
     lines.append("")
     lines.append("  " + "═" * (width + 20))
     lines.append("  ░ ON_TRACK  ▒ GENTLE  ▓ REDIRECT  █ INSPECT  ╳ QUARANTINE")
-    lines.append("  ◆ Agent  │ Tunnel Wall  K/A/R/C/U/D = Portal to Sacred Tongue realm")
+    lines.append(
+        "  ◆ Agent  │ Tunnel Wall  K/A/R/C/U/D = Portal to Sacred Tongue realm"
+    )
     lines.append("")
 
     # Freedom summary
@@ -593,7 +622,9 @@ def ascii_journey(
         z_val = _d_to_level(d_val)
         portals = compute_portals(d_val, 0.0, agent_tier)
         n_open = sum(1 for p in portals if p.is_accessible)
-        lines.append(f"  │ {d_val:>5.1f}   │ {r_val:>8.4f} │ {f_val:>8.3f}%  │ {z_val.value:<12} │ {n_open}/6     │")
+        lines.append(
+            f"  │ {d_val:>5.1f}   │ {r_val:>8.4f} │ {f_val:>8.3f}%  │ {z_val.value:<12} │ {n_open}/6     │"
+        )
     lines.append("  └─────────┴──────────┴───────────┴──────────────┴─────────┘")
 
     return "\n".join(lines)
@@ -640,7 +671,15 @@ def render_3d_tunnel(
 
     # --- 3D tunnel ---
     ax1 = fig.add_subplot(121, projection="3d")
-    ax1.plot_surface(X_grid, Y_grid, Z_grid, facecolors=colors, shade=True, alpha=0.5, edgecolors="none")
+    ax1.plot_surface(
+        X_grid,
+        Y_grid,
+        Z_grid,
+        facecolors=colors,
+        shade=True,
+        alpha=0.5,
+        edgecolors="none",
+    )
 
     # Agent path
     if agent_drifts:
@@ -650,7 +689,15 @@ def render_3d_tunnel(
         ax_path = ar * np.cos(at)
         ay_path = ar * np.sin(at)
         ax1.plot(ax_path, ay_path, az, color="white", linewidth=2.5, label="Agent path")
-        ax1.scatter([ax_path[-1]], [ay_path[-1]], [az[-1]], color="red", s=100, zorder=5, label="Now")
+        ax1.scatter(
+            [ax_path[-1]],
+            [ay_path[-1]],
+            [az[-1]],
+            color="red",
+            s=100,
+            zorder=5,
+            label="Now",
+        )
 
     # Zone rings
     for d_b in [DRIFT_GENTLE, DRIFT_REDIRECT, DRIFT_INSPECT, DRIFT_QUARANTINE]:
@@ -658,7 +705,12 @@ def render_3d_tunnel(
             br = tunnel_radius(d_b)
             btheta = np.linspace(0, 2 * np.pi, 64)
             ax1.plot(
-                br * np.cos(btheta), br * np.sin(btheta), np.full(64, d_b), color="white", linewidth=0.8, alpha=0.4
+                br * np.cos(btheta),
+                br * np.sin(btheta),
+                np.full(64, d_b),
+                color="white",
+                linewidth=0.8,
+                alpha=0.4,
             )
 
     ax1.set_xlabel("X")
@@ -676,7 +728,14 @@ def render_3d_tunnel(
     r_line = np.array([tunnel_radius(d) for d in d_line])
 
     # Zone fills
-    zone_bounds = [0, DRIFT_GENTLE, DRIFT_REDIRECT, DRIFT_INSPECT, DRIFT_QUARANTINE, length]
+    zone_bounds = [
+        0,
+        DRIFT_GENTLE,
+        DRIFT_REDIRECT,
+        DRIFT_INSPECT,
+        DRIFT_QUARANTINE,
+        length,
+    ]
     zone_names = ["ON_TRACK", "GENTLE", "REDIRECT", "INSPECT", "QUARANTINE"]
     zone_rgba = [
         (0.2, 0.4, 0.9, 0.3),
@@ -688,7 +747,13 @@ def render_3d_tunnel(
     for idx in range(len(zone_names)):
         lo, hi = zone_bounds[idx], zone_bounds[idx + 1]
         mask = (d_line >= lo) & (d_line <= hi)
-        ax2.fill_between(d_line[mask], -r_line[mask], r_line[mask], color=zone_rgba[idx], label=zone_names[idx])
+        ax2.fill_between(
+            d_line[mask],
+            -r_line[mask],
+            r_line[mask],
+            color=zone_rgba[idx],
+            label=zone_names[idx],
+        )
 
     ax2.plot(d_line, r_line, color="cyan", linewidth=2)
     ax2.plot(d_line, -r_line, color="cyan", linewidth=2)

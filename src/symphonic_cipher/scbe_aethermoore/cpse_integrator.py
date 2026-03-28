@@ -241,10 +241,16 @@ class CPSESCBEIntegrator:
         S_spec_eff = clip(self.S_spec_0 - self.kappa_flux * devs.flux_dev)
 
         # C_spin_eff = clip(C_spin₀ - κ_spin × spin_dev - κ_sol × sol_dev)
-        C_spin_eff = clip(self.C_spin_0 - self.kappa_spin * devs.spin_dev - self.kappa_sol * devs.sol_dev)
+        C_spin_eff = clip(
+            self.C_spin_0
+            - self.kappa_spin * devs.spin_dev
+            - self.kappa_sol * devs.sol_dev
+        )
 
         # d*_eff = min(d_max, d*₀ × (1 + κ_cost × cost_dev))
-        d_star_eff = min(self.d_max, self.d_star_0 * (1.0 + self.kappa_cost * devs.cost_dev))
+        d_star_eff = min(
+            self.d_max, self.d_star_0 * (1.0 + self.kappa_cost * devs.cost_dev)
+        )
 
         # S_audio unchanged (no CPSE coupling yet)
         S_audio_eff = self.S_audio_0
@@ -287,7 +293,9 @@ class CPSESCBEIntegrator:
 # =============================================================================
 
 
-def verify_axioms(integrator: CPSESCBEIntegrator, n_tests: int = 100) -> Dict[str, bool]:
+def verify_axioms(
+    integrator: CPSESCBEIntegrator, n_tests: int = 100
+) -> Dict[str, bool]:
     """
     Verify C1-C3 axioms hold under random inputs.
 
@@ -436,8 +444,12 @@ def demo():
     print("COMPARISON: Clean vs Attack")
     print("-" * 70)
     clean = integrator.integrate(0.01, 10, 0.99, 1, 0.01, 0.1)
-    print(f"Clean scenario:  Risk' = {clean.risk_prime:.2e} (log₁₀ = {clean.log10_risk:.2f})")
-    print(f"Attack scenario: Risk' = {out.risk_prime:.2e} (log₁₀ = {out.log10_risk:.2f})")
+    print(
+        f"Clean scenario:  Risk' = {clean.risk_prime:.2e} (log₁₀ = {clean.log10_risk:.2f})"
+    )
+    print(
+        f"Attack scenario: Risk' = {out.risk_prime:.2e} (log₁₀ = {out.log10_risk:.2f})"
+    )
     print(f"Amplification:   {out.risk_prime / max(clean.risk_prime, 1e-300):.1f}x")
     print()
 

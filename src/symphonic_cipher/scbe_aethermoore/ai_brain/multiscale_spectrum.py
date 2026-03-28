@@ -375,7 +375,9 @@ def analyze_subsystem(
         "swarm": SWARM_SLICE,
     }
     if subsystem not in slices:
-        raise ValueError(f"Unknown subsystem '{subsystem}'. " f"Choose from: {list(slices.keys())}")
+        raise ValueError(
+            f"Unknown subsystem '{subsystem}'. " f"Choose from: {list(slices.keys())}"
+        )
     X = np.asarray(X, dtype=float)
     return analyze_trajectory(X[:, slices[subsystem]], scales)
 

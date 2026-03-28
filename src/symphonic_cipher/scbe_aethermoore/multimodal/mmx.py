@@ -127,7 +127,8 @@ def compute_mmx(
     for i, v in enumerate(vecs):
         if len(v) != dim:
             raise ValueError(
-                f"Dimension mismatch: modality '{labels[0]}' has dim={dim}, " f"but '{labels[i]}' has dim={len(v)}"
+                f"Dimension mismatch: modality '{labels[0]}' has dim={dim}, "
+                f"but '{labels[i]}' has dim={len(v)}"
             )
 
     # ---- Alignment matrix (K×K) ----

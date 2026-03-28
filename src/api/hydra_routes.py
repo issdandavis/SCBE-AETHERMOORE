@@ -21,40 +21,78 @@ from pydantic import BaseModel, Field
 
 
 class HydraExecuteRequest(BaseModel):
-    action: str = Field(..., min_length=1, max_length=256, description="Action to execute")
+    action: str = Field(
+        ..., min_length=1, max_length=256, description="Action to execute"
+    )
     target: str = Field(default="", max_length=2048, description="Action target")
-    params: Dict[str, Any] = Field(default_factory=dict, description="Action parameters")
-    head_id: Optional[str] = Field(default=None, max_length=128, description="Route to specific head")
+    params: Dict[str, Any] = Field(
+        default_factory=dict, description="Action parameters"
+    )
+    head_id: Optional[str] = Field(
+        default=None, max_length=128, description="Route to specific head"
+    )
 
 
 class HydraRegisterHeadRequest(BaseModel):
-    ai_type: str = Field(..., min_length=1, max_length=64, description="AI provider type (claude, gpt, gemini, local)")
-    model: str = Field(..., min_length=1, max_length=128, description="Model identifier")
-    callsign: Optional[str] = Field(default=None, max_length=64, description="Custom callsign")
+    ai_type: str = Field(
+        ...,
+        min_length=1,
+        max_length=64,
+        description="AI provider type (claude, gpt, gemini, local)",
+    )
+    model: str = Field(
+        ..., min_length=1, max_length=128, description="Model identifier"
+    )
+    callsign: Optional[str] = Field(
+        default=None, max_length=64, description="Custom callsign"
+    )
 
 
 class HydraWorkflowRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=256, description="Workflow name")
-    phases: List[Dict[str, Any]] = Field(..., min_length=1, description="Ordered list of phase definitions")
+    phases: List[Dict[str, Any]] = Field(
+        ..., min_length=1, description="Ordered list of phase definitions"
+    )
 
 
 class HydraSwitchboardEnqueueRequest(BaseModel):
-    role: str = Field(..., min_length=1, max_length=128, description="Target role channel")
+    role: str = Field(
+        ..., min_length=1, max_length=128, description="Target role channel"
+    )
     payload: Dict[str, Any] = Field(..., description="Task payload")
-    priority: int = Field(default=100, ge=0, le=10000, description="Priority (lower = higher priority)")
-    dedupe_key: Optional[str] = Field(default=None, max_length=256, description="Deduplication key")
+    priority: int = Field(
+        default=100, ge=0, le=10000, description="Priority (lower = higher priority)"
+    )
+    dedupe_key: Optional[str] = Field(
+        default=None, max_length=256, description="Deduplication key"
+    )
 
 
 class HydraThinkRequest(BaseModel):
-    prompt: str = Field(..., min_length=1, max_length=32000, description="Prompt for the AI head")
-    head_id: Optional[str] = Field(default=None, max_length=128, description="Specific head to use")
-    system: Optional[str] = Field(default=None, max_length=8000, description="System prompt override")
+    prompt: str = Field(
+        ..., min_length=1, max_length=32000, description="Prompt for the AI head"
+    )
+    head_id: Optional[str] = Field(
+        default=None, max_length=128, description="Specific head to use"
+    )
+    system: Optional[str] = Field(
+        default=None, max_length=8000, description="System prompt override"
+    )
 
 
 class HydraResearchRequest(BaseModel):
-    query: str = Field(..., min_length=3, max_length=2000, description="Research query in natural language")
-    max_subtasks: int = Field(default=5, ge=1, le=10, description="Max parallel sub-tasks")
-    discovery_per_subtask: int = Field(default=3, ge=1, le=10, description="Max pages per sub-task")
+    query: str = Field(
+        ...,
+        min_length=3,
+        max_length=2000,
+        description="Research query in natural language",
+    )
+    max_subtasks: int = Field(
+        default=5, ge=1, le=10, description="Max parallel sub-tasks"
+    )
+    discovery_per_subtask: int = Field(
+        default=3, ge=1, le=10, description="Max pages per sub-task"
+    )
     provider_order: List[str] = Field(
         default_factory=lambda: ["claude", "gpt", "gemini"],
         description="LLM providers to use (tried in order)",
@@ -64,10 +102,18 @@ class HydraResearchRequest(BaseModel):
         pattern="^(local|cloud|httpx)$",
         description="Browsing mode: httpx (lightweight), local (Playwright), or cloud (workers)",
     )
-    local_max_tabs: int = Field(default=4, ge=1, le=12, description="Max local browser tabs")
-    extract_max_chars: int = Field(default=8000, ge=500, le=50000, description="Per-page extracted char cap")
-    synthesis_provider: Optional[str] = Field(default=None, max_length=64, description="Preferred synthesis provider")
-    use_hf_summarizer: bool = Field(default=False, description="Use HuggingFace BART for page compression")
+    local_max_tabs: int = Field(
+        default=4, ge=1, le=12, description="Max local browser tabs"
+    )
+    extract_max_chars: int = Field(
+        default=8000, ge=500, le=50000, description="Per-page extracted char cap"
+    )
+    synthesis_provider: Optional[str] = Field(
+        default=None, max_length=64, description="Preferred synthesis provider"
+    )
+    use_hf_summarizer: bool = Field(
+        default=False, description="Use HuggingFace BART for page compression"
+    )
 
 
 # ============================================================================
@@ -164,7 +210,9 @@ async def hydra_status(user: str = Depends(verify_api_key)):
             "ai_type": head.ai_type,
             "model": head.model,
             "callsign": head.callsign,
-            "status": head.status.value if hasattr(head.status, "value") else str(head.status),
+            "status": (
+                head.status.value if hasattr(head.status, "value") else str(head.status)
+            ),
             "action_count": head.action_count,
             "has_llm_provider": hid in _providers,
         }
@@ -181,7 +229,9 @@ async def hydra_status(user: str = Depends(verify_api_key)):
     for wid, wf in spine.workflows.items():
         workflows_info[wid] = {
             "name": wf.name,
-            "status": wf.status.value if hasattr(wf.status, "value") else str(wf.status),
+            "status": (
+                wf.status.value if hasattr(wf.status, "value") else str(wf.status)
+            ),
             "current_phase": wf.current_phase,
             "total_phases": len(wf.phases),
             "created_at": wf.created_at,
@@ -423,7 +473,8 @@ async def hydra_think(
     if provider is None:
         raise HTTPException(
             400,
-            "No AI head with an LLM provider is available. " "Register a head with POST /hydra/heads first.",
+            "No AI head with an LLM provider is available. "
+            "Register a head with POST /hydra/heads first.",
         )
 
     try:
@@ -539,7 +590,11 @@ async def init_hydra_spine() -> None:
         try:
             from hydra.llm_providers import create_provider
 
-            default_head = HydraHead(ai_type="claude", model="claude-sonnet-4-20250514", callsign="CT-DEFAULT")
+            default_head = HydraHead(
+                ai_type="claude",
+                model="claude-sonnet-4-20250514",
+                callsign="CT-DEFAULT",
+            )
             await default_head.connect(_spine)
             _providers[default_head.head_id] = create_provider("claude")
             print(f"[HYDRA-API] Default Claude head registered: {default_head.head_id}")
@@ -551,7 +606,9 @@ async def init_hydra_spine() -> None:
         try:
             from hydra.llm_providers import create_provider
 
-            default_head = HydraHead(ai_type="gpt", model="gpt-4o", callsign="GP-DEFAULT")
+            default_head = HydraHead(
+                ai_type="gpt", model="gpt-4o", callsign="GP-DEFAULT"
+            )
             await default_head.connect(_spine)
             _providers[default_head.head_id] = create_provider("gpt")
             print(f"[HYDRA-API] Default GPT head registered: {default_head.head_id}")
@@ -559,4 +616,6 @@ async def init_hydra_spine() -> None:
             print(f"[HYDRA-API] Failed to create default GPT head: {exc}")
 
     if default_head is None:
-        print("[HYDRA-API] No LLM API key found; /hydra/think requires manual head registration")
+        print(
+            "[HYDRA-API] No LLM API key found; /hydra/think requires manual head registration"
+        )

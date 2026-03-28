@@ -211,7 +211,10 @@ class LightningQuery:
 
         leader = self.leaders[zone_id]
         leader.tongue_bloom.add(tongue)
-        leader.tongue_affinity[tongue] = leader.tongue_affinity.get(tongue, 0.0) + TONGUE_WEIGHTS[TONGUES.index(tongue)]
+        leader.tongue_affinity[tongue] = (
+            leader.tongue_affinity.get(tongue, 0.0)
+            + TONGUE_WEIGHTS[TONGUES.index(tongue)]
+        )
         leader.record_count += 1
 
         # Update centroid incrementally
@@ -455,8 +458,12 @@ class LightningQuery:
         total_records = len(self.records)
         total_zones = len(self.leaders)
         total_charge = sum(leader.effective_charge for leader in self.leaders.values())
-        avg_conductivity = sum(leader.conductivity for leader in self.leaders.values()) / max(1, total_zones)
-        penalized_zones = sum(1 for leader in self.leaders.values() if leader.penalty > 0.01)
+        avg_conductivity = sum(
+            leader.conductivity for leader in self.leaders.values()
+        ) / max(1, total_zones)
+        penalized_zones = sum(
+            1 for leader in self.leaders.values() if leader.penalty > 0.01
+        )
 
         return {
             "type": "LightningQuery",
@@ -468,6 +475,8 @@ class LightningQuery:
             "queries_executed": self._query_count,
             "total_probes": self._total_probes,
             "total_pruned": self._total_pruned,
-            "avg_probes_per_query": round(self._total_probes / max(1, self._query_count), 2),
+            "avg_probes_per_query": round(
+                self._total_probes / max(1, self._query_count), 2
+            ),
             "prune_rate": round(self._total_pruned / max(1, self._total_probes), 4),
         }

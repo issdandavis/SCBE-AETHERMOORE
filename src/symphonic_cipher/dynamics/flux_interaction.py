@@ -130,7 +130,9 @@ class FluxInteractionFramework:
         result = self.compute_duality(d, Base)
         return abs(result.product - 1.0) < tolerance
 
-    def interference_pattern(self, d: int, Base: float, x: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def interference_pattern(
+        self, d: int, Base: float, x: np.ndarray
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute interference pattern from flux duality
 
@@ -162,7 +164,9 @@ class FluxInteractionFramework:
 
         return constructive, destructive, total
 
-    def energy_redistribution_zones(self, d: int, Base: float, grid_size: int = 100) -> dict:
+    def energy_redistribution_zones(
+        self, d: int, Base: float, grid_size: int = 100
+    ) -> dict:
         """
         Compute energy redistribution zones (4x corners)
 
@@ -191,7 +195,11 @@ class FluxInteractionFramework:
             "peak_energy": peak_energy,
             "concentration_ratio": concentration_ratio,
             "peak_zone_fraction": np.mean(peak_zones),
-            "energy_amplification": (concentration_ratio / np.mean(peak_zones) if np.mean(peak_zones) > 0 else 0),
+            "energy_amplification": (
+                concentration_ratio / np.mean(peak_zones)
+                if np.mean(peak_zones) > 0
+                else 0
+            ),
         }
 
     def acoustic_black_hole_strength(self, d: int, Base: float) -> float:
@@ -237,7 +245,9 @@ class FluxInteractionFramework:
             "stability_score": trapping * zones["concentration_ratio"],
         }
 
-    def compute_range(self, d_min: int = 1, d_max: int = 6, Base: float = 100) -> List[FluxDualityResult]:
+    def compute_range(
+        self, d_min: int = 1, d_max: int = 6, Base: float = 100
+    ) -> List[FluxDualityResult]:
         """
         Compute flux duality for range of dimensions
 
@@ -306,7 +316,11 @@ def demo():
     for d in range(1, 7):
         is_valid = fif.verify_duality(d, Base=100)
         result = fif.compute_duality(d, Base=100)
-        print(f"  d={d}: product={result.product:.10f} ✓" if is_valid else f"  d={d}: FAILED")
+        print(
+            f"  d={d}: product={result.product:.10f} ✓"
+            if is_valid
+            else f"  d={d}: FAILED"
+        )
     print()
 
     # Energy redistribution

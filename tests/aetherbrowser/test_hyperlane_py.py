@@ -46,7 +46,9 @@ class TestDecisionMaking:
 
     def test_yellow_write_quarantines(self):
         hl = HyperLanePy()
-        d = hl.evaluate("https://api.anthropic.com/v1/messages", action="write", agent_id="CA")
+        d = hl.evaluate(
+            "https://api.anthropic.com/v1/messages", action="write", agent_id="CA"
+        )
         assert d.decision == Decision.QUARANTINE
         assert d.zone == Zone.YELLOW
 
@@ -58,7 +60,9 @@ class TestDecisionMaking:
 
     def test_green_write_allows(self):
         hl = HyperLanePy()
-        d = hl.evaluate("http://localhost:8001/v1/training/ingest", action="write", agent_id="DR")
+        d = hl.evaluate(
+            "http://localhost:8001/v1/training/ingest", action="write", agent_id="DR"
+        )
         assert d.decision == Decision.ALLOW
 
 

@@ -259,7 +259,9 @@ class AgentOrchestrator:
 
         return task.task_id
 
-    def step_task(self, task_id: str, page: PageUnderstanding) -> Optional[Dict[str, Any]]:
+    def step_task(
+        self, task_id: str, page: PageUnderstanding
+    ) -> Optional[Dict[str, Any]]:
         """
         Execute one navigation step for a task.
         Feed current page, get back next action.
@@ -297,7 +299,9 @@ class AgentOrchestrator:
             "metadata": action.metadata,
         }
 
-    def report_step_result(self, task_id: str, success: bool, error: Optional[str] = None) -> Optional[str]:
+    def report_step_result(
+        self, task_id: str, success: bool, error: Optional[str] = None
+    ) -> Optional[str]:
         """Report the result of executing a step. Returns recovery strategy or None."""
         engine = self._engines.get(task_id)
         if not engine:
@@ -329,7 +333,9 @@ class AgentOrchestrator:
             status=task.status,
             urls_visited=engine._pad._visited_urls if engine else [],
             steps_taken=nav_summary.get("steps_taken", 0),
-            duration_seconds=(task.completed_at - (task.started_at or task.completed_at)),
+            duration_seconds=(
+                task.completed_at - (task.started_at or task.completed_at)
+            ),
             governance_stats=pad_summary.get("antivirus_stats", {}),
         )
 

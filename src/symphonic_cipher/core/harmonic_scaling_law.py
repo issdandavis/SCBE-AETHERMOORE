@@ -108,7 +108,9 @@ class HarmonicScalingLaw:
             security_bits=security_bits,
         )
 
-    def compute_range(self, d_min: int = 1, d_max: int = 6) -> List[HarmonicScalingResult]:
+    def compute_range(
+        self, d_min: int = 1, d_max: int = 6
+    ) -> List[HarmonicScalingResult]:
         """
         Compute scaling factors for range of dimensions
 
@@ -185,7 +187,9 @@ class HarmonicScalingLaw:
             1.5
         """
         if interval not in cls.RATIOS:
-            raise ValueError(f"Unknown interval: {interval}. " f"Valid: {list(cls.RATIOS.keys())}")
+            raise ValueError(
+                f"Unknown interval: {interval}. " f"Valid: {list(cls.RATIOS.keys())}"
+            )
 
         return cls(R=cls.RATIOS[interval])
 
@@ -219,7 +223,10 @@ def demo():
     for interval in ["perfect_fourth", "perfect_fifth", "octave"]:
         hsl_interval = HarmonicScalingLaw.from_interval(interval)
         result = hsl_interval.compute(d=3)
-        print(f"  {interval:20s} (R={hsl_interval.R:.3f}): " f"H(3, R) = {result.scaling_factor:,.2f}")
+        print(
+            f"  {interval:20s} (R={hsl_interval.R:.3f}): "
+            f"H(3, R) = {result.scaling_factor:,.2f}"
+        )
 
 
 if __name__ == "__main__":

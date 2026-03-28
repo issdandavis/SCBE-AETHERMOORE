@@ -104,7 +104,11 @@ class TestMirrorPoint:
         assert mirror_point(1, 2, 3, flip_x=True) == (-1, 2, 3)
 
     def test_flip_all(self):
-        assert mirror_point(1, 2, 3, flip_x=True, flip_y=True, flip_z=True) == (-1, -2, -3)
+        assert mirror_point(1, 2, 3, flip_x=True, flip_y=True, flip_z=True) == (
+            -1,
+            -2,
+            -3,
+        )
 
     def test_flip_preserves_magnitude(self):
         mx, my, mz = mirror_point(0.5, -0.3, 0.7, flip_y=True)
@@ -339,10 +343,33 @@ class TestSignedOctreeQueries:
     @pytest.fixture
     def populated_tree(self):
         tree = SignedOctree(max_depth=4)
-        tree.insert(0.5, 0.5, 0.5, intent_label="a", intent_vector=[1, 0, 0], authority="sealed")
-        tree.insert(-0.5, 0.5, 0.5, intent_label="b", intent_vector=[0, 1, 0], authority="public")
-        tree.insert(0.5, -0.5, -0.5, intent_label="c", intent_vector=[1, 0, 0], authority="sealed")
-        tree.insert(-0.3, -0.3, 0.3, intent_label="d", intent_vector=[0, 0, 1], authority="internal")
+        tree.insert(
+            0.5, 0.5, 0.5, intent_label="a", intent_vector=[1, 0, 0], authority="sealed"
+        )
+        tree.insert(
+            -0.5,
+            0.5,
+            0.5,
+            intent_label="b",
+            intent_vector=[0, 1, 0],
+            authority="public",
+        )
+        tree.insert(
+            0.5,
+            -0.5,
+            -0.5,
+            intent_label="c",
+            intent_vector=[1, 0, 0],
+            authority="sealed",
+        )
+        tree.insert(
+            -0.3,
+            -0.3,
+            0.3,
+            intent_label="d",
+            intent_vector=[0, 0, 1],
+            authority="internal",
+        )
         return tree
 
     def test_query_by_octant(self, populated_tree):
@@ -361,7 +388,9 @@ class TestSignedOctreeQueries:
         assert "c" in labels
 
     def test_query_by_intent_with_octant_filter(self, populated_tree):
-        results = populated_tree.query_by_intent([1, 0, 0], octant=(True, True, True), min_similarity=0.5)
+        results = populated_tree.query_by_intent(
+            [1, 0, 0], octant=(True, True, True), min_similarity=0.5
+        )
         assert len(results) == 1
 
     def test_query_by_authority(self, populated_tree):
@@ -414,7 +443,9 @@ class TestSignedOctreeMirror:
     def test_mirror_with_intent_transform(self):
         tree = SignedOctree(max_depth=3)
         tree.insert(0.3, 0.5, 0.7, intent_vector=[1, 0, 0])
-        mirrored = tree.mirror_octant((True, True, True), (False, False, False), transform_intent=True)
+        mirrored = tree.mirror_octant(
+            (True, True, True), (False, False, False), transform_intent=True
+        )
         # Intent should be negated
         assert mirrored[0].intent_vector[0] < 0
 
@@ -526,7 +557,9 @@ class TestInteropMatrix:
 
     def test_each_concept_has_python(self):
         for name, langs in INTEROP_MATRIX["concepts"].items():
-            assert "python" in langs or "formula" in langs, f"{name} missing python entry"
+            assert (
+                "python" in langs or "formula" in langs
+            ), f"{name} missing python entry"
 
     def test_type_mappings_complete(self):
         mappings = INTEROP_MATRIX["type_mappings"]
@@ -548,8 +581,12 @@ class TestHyperbolicLattice25D:
 
     def test_overlap_cells_detected(self):
         lat = HyperbolicLattice25D(cell_size=0.5)
-        lat.insert_bundle(0.10, 0.10, phase_rad=0.1, tongue="KO", intent_vector=[1, 0, 0])
-        lat.insert_bundle(0.12, 0.11, phase_rad=0.2, tongue="DR", intent_vector=[1, 0, 0])
+        lat.insert_bundle(
+            0.10, 0.10, phase_rad=0.1, tongue="KO", intent_vector=[1, 0, 0]
+        )
+        lat.insert_bundle(
+            0.12, 0.11, phase_rad=0.2, tongue="DR", intent_vector=[1, 0, 0]
+        )
         overlaps = lat.overlapping_cells(min_bundles=2)
         assert len(overlaps) >= 1
 
@@ -562,11 +599,25 @@ class TestHyperbolicLattice25D:
     def test_query_nearest_prefers_semantic_alignment(self):
         lat = HyperbolicLattice25D(cell_size=0.5, phase_weight=0.2)
         near_sem = lat.insert_bundle(
-            0.1, 0.1, phase_rad=0.1, tongue="DR", intent_vector=[1, 0, 0], intent_label="near_sem"
+            0.1,
+            0.1,
+            phase_rad=0.1,
+            tongue="DR",
+            intent_vector=[1, 0, 0],
+            intent_label="near_sem",
         )
-        lat.insert_bundle(0.1, 0.1, phase_rad=0.1, tongue="KO", intent_vector=[0, 1, 0], intent_label="off_sem")
+        lat.insert_bundle(
+            0.1,
+            0.1,
+            phase_rad=0.1,
+            tongue="KO",
+            intent_vector=[0, 1, 0],
+            intent_label="off_sem",
+        )
 
-        res = lat.query_nearest(0.1, 0.1, phase_rad=0.1, intent_vector=[1, 0, 0], tongue="DR", top_k=1)
+        res = lat.query_nearest(
+            0.1, 0.1, phase_rad=0.1, intent_vector=[1, 0, 0], tongue="DR", top_k=1
+        )
         assert len(res) == 1
         assert res[0][0].bundle_id == near_sem.bundle_id
 
@@ -665,7 +716,12 @@ class TestAdaptiveQuadtree25D:
         assert "lod" in mesh[0]
 
     def test_quadtree_to_octree_projection(self):
-        lat = HyperbolicLattice25D(cell_size=0.4, index_mode="quadtree", quadtree_capacity=1, quadtree_z_variance=0.0)
+        lat = HyperbolicLattice25D(
+            cell_size=0.4,
+            index_mode="quadtree",
+            quadtree_capacity=1,
+            quadtree_z_variance=0.0,
+        )
         lat.insert_bundle(0.1, 0.1, phase_rad=0.2, tongue="DR", intent_label="p0")
         lat.insert_bundle(-0.2, 0.3, phase_rad=1.0, tongue="KO", intent_label="p1")
         inserted = lat.project_quadtree_to_octree()

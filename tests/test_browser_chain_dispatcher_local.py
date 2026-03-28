@@ -10,7 +10,9 @@ import pytest
 def _load_dispatcher_module():
     repo_root = Path(__file__).resolve().parents[1]
     script_path = repo_root / "scripts" / "system" / "browser_chain_dispatcher.py"
-    spec = importlib.util.spec_from_file_location("browser_chain_dispatcher_module", script_path)
+    spec = importlib.util.spec_from_file_location(
+        "browser_chain_dispatcher_module", script_path
+    )
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Unable to load dispatcher module from {script_path}")
     module = importlib.util.module_from_spec(spec)
@@ -35,7 +37,9 @@ def _build_dispatcher():
         ("http://127.0.0.1:8500/arena", "127.0.0.1"),
     ],
 )
-def test_local_preview_surfaces_route_to_preview_tentacle(domain: str, expected_host: str):
+def test_local_preview_surfaces_route_to_preview_tentacle(
+    domain: str, expected_host: str
+):
     dispatcher = _build_dispatcher()
 
     result = dispatcher.assign_task(domain, "navigate", {})
@@ -91,9 +95,21 @@ def test_web_search_surface_gets_explicit_search_tentacle():
 @pytest.mark.parametrize(
     ("domain", "payload", "expected_tentacle"),
     [
-        ("https://github.com/issues", {"repo_query": "browser chain dispatcher"}, "tentacle-github-ko"),
-        ("https://www.notion.so/workspace", {"page_query": "browser policy note"}, "tentacle-notion-av"),
-        ("https://admin.shopify.com/store/demo", {"product_query": "agent console"}, "tentacle-shopify-ru"),
+        (
+            "https://github.com/issues",
+            {"repo_query": "browser chain dispatcher"},
+            "tentacle-github-ko",
+        ),
+        (
+            "https://www.notion.so/workspace",
+            {"page_query": "browser policy note"},
+            "tentacle-notion-av",
+        ),
+        (
+            "https://admin.shopify.com/store/demo",
+            {"product_query": "agent console"},
+            "tentacle-shopify-ru",
+        ),
     ],
 )
 def test_signed_in_surfaces_promote_search_when_query_present(

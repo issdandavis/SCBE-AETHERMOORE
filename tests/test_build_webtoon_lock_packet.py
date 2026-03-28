@@ -37,12 +37,18 @@ def test_build_lock_packet_keeps_marcus_identity_lock(tmp_path: Path) -> None:
 
     packet = load_packet(packet_path)
     panel = find_panel(packet, "ch01-v4-p11")
-    lock_packet = build_lock_packet(packet, panel, lock_name="marcus-face-lock", lock_type="character")
+    lock_packet = build_lock_packet(
+        packet, panel, lock_name="marcus-face-lock", lock_type="character"
+    )
 
     assert lock_packet["panel_id"] == "ch01-v4-p11"
-    assert "Character lock: marcus: Asian-American man early 30s" in lock_packet["prompt"]
+    assert (
+        "Character lock: marcus: Asian-American man early 30s" in lock_packet["prompt"]
+    )
     assert "light stubble" in lock_packet["prompt"]
     assert "white man" in lock_packet["negative_prompt"]
     assert "teenager" in lock_packet["negative_prompt"]
     assert any("Asian-American" in item for item in lock_packet["acceptance_criteria"])
-    assert any("Office proportions" in item for item in lock_packet["acceptance_criteria"])
+    assert any(
+        "Office proportions" in item for item in lock_packet["acceptance_criteria"]
+    )

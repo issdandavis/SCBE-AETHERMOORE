@@ -40,7 +40,10 @@ import pytest
 try:
     from cryptography.fernet import Fernet  # noqa: F401
 except BaseException:
-    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+    pytest.skip(
+        "cryptography package not functional (cffi backend missing)",
+        allow_module_level=True,
+    )
 
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -169,7 +172,9 @@ class SelfHealingOrchestrator:
                 }
             )
 
-    def execute_with_healing(self, operation, *args, **kwargs) -> Tuple[bool, Any, List[str]]:
+    def execute_with_healing(
+        self, operation, *args, **kwargs
+    ) -> Tuple[bool, Any, List[str]]:
         """
         Execute operation with self-healing capabilities.
         Returns: (success, result, healing_actions_taken)
@@ -199,7 +204,9 @@ class SelfHealingOrchestrator:
                     return False, None, healing_actions
 
             except Exception as e:
-                healing_actions.append(f"attempt_{attempt}_exception_{type(e).__name__}")
+                healing_actions.append(
+                    f"attempt_{attempt}_exception_{type(e).__name__}"
+                )
                 if attempt == self.max_retries:
                     self._record_failure(e, {"type": "max_retries_exceeded"})
                     return False, None, healing_actions
@@ -211,7 +218,9 @@ class SelfHealingOrchestrator:
 
     def get_health_status(self) -> Dict:
         """Get current health status."""
-        success_rate = self.metrics["successful_operations"] / max(1, self.metrics["total_operations"])
+        success_rate = self.metrics["successful_operations"] / max(
+            1, self.metrics["total_operations"]
+        )
         return {
             "healthy": not self.circuit_open and success_rate > 0.95,
             "circuit_open": self.circuit_open,
@@ -248,7 +257,9 @@ class MedicalAIChannel:
             f"timestamp={int(time.time())}"
         )
 
-    def _audit(self, operation: str, resource: str, outcome: str, metadata: Dict = None):
+    def _audit(
+        self, operation: str, resource: str, outcome: str, metadata: Dict = None
+    ):
         """Record audit trail entry."""
         self.audit_trail.append(
             AuditRecord(
@@ -282,10 +293,14 @@ class MedicalAIChannel:
             )
             return sealed
         except Exception as e:
-            self._audit("PHI_SEND", f"patient:{patient_id[:8]}...", "FAILURE", {"error": str(e)})
+            self._audit(
+                "PHI_SEND", f"patient:{patient_id[:8]}...", "FAILURE", {"error": str(e)}
+            )
             raise
 
-    def receive_phi(self, sealed: str, data_type: MedicalDataType, patient_id: str) -> bytes:
+    def receive_phi(
+        self, sealed: str, data_type: MedicalDataType, patient_id: str
+    ) -> bytes:
         """
         Receive and decrypt PHI with verification.
         """
@@ -337,7 +352,9 @@ class MilitarySecureChannel:
         self.classification = classification
         self.compartment = compartment
         self.master_secret = get_random(32)  # FIPS-compliant key generation
-        self.ss = SpiralSealSS1(master_secret=self.master_secret, kid=f"mil-{classification.name}")
+        self.ss = SpiralSealSS1(
+            master_secret=self.master_secret, kid=f"mil-{classification.name}"
+        )
         self.message_counter = 0
         self.key_usage_count = 0
         self.max_key_usage = 2**20  # Key rotation threshold
@@ -357,7 +374,9 @@ class MilitarySecureChannel:
         self.master_secret = new_secret
         self.key_usage_count = 0
 
-    def _create_military_aad(self, message_type: str, priority: int, seq: int, ts: int) -> str:
+    def _create_military_aad(
+        self, message_type: str, priority: int, seq: int, ts: int
+    ) -> str:
         """Create military-grade AAD with classification markings."""
         return (
             f"classification={self.classification.name};"
@@ -368,16 +387,22 @@ class MilitarySecureChannel:
             f"timestamp={ts}"
         )
 
-    def encrypt_classified(self, data: bytes, message_type: str, priority: int = 1) -> str:
+    def encrypt_classified(
+        self, data: bytes, message_type: str, priority: int = 1
+    ) -> str:
         """Encrypt classified data with full security controls."""
         self._check_key_rotation()
         self.message_counter += 1
         ts = int(time.time() * 1000)
-        aad = self._create_military_aad(message_type, priority, self.message_counter, ts)
+        aad = self._create_military_aad(
+            message_type, priority, self.message_counter, ts
+        )
         self._last_aad = aad  # Store for decrypt
         return self.ss.seal(data, aad=aad)
 
-    def decrypt_classified(self, sealed: str, message_type: str, priority: int = 1) -> bytes:
+    def decrypt_classified(
+        self, sealed: str, message_type: str, priority: int = 1
+    ) -> bytes:
         """Decrypt classified data with verification."""
         # Use the stored AAD from encryption
         return self.ss.unseal(sealed, aad=self._last_aad)
@@ -394,7 +419,9 @@ class TestSelfHealingWorkflow:
         healer = SelfHealingOrchestrator()
         ss = SpiralSealSS1(master_secret=b"0" * 32)
 
-        success, result, actions = healer.execute_with_healing(ss.seal, b"test data", aad="test")
+        success, result, actions = healer.execute_with_healing(
+            ss.seal, b"test data", aad="test"
+        )
 
         assert success is True
         assert result.startswith("SS1|")
@@ -455,7 +482,9 @@ class TestSelfHealingWorkflow:
         ss = SpiralSealSS1(master_secret=b"0" * 32)
         sealed = ss.seal(b"secret", aad="correct")
 
-        success, result, actions = healer.execute_with_healing(ss.unseal, sealed, aad="wrong")
+        success, result, actions = healer.execute_with_healing(
+            ss.unseal, sealed, aad="wrong"
+        )
 
         assert success is False
         assert "aad_mismatch_detected" in actions
@@ -494,7 +523,9 @@ class TestSelfHealingWorkflow:
         results = []
 
         def concurrent_seal(i):
-            success, result, _ = healer.execute_with_healing(ss.seal, f"message {i}".encode(), aad="test")
+            success, result, _ = healer.execute_with_healing(
+                ss.seal, f"message {i}".encode(), aad="test"
+            )
             return success, result
 
         with ThreadPoolExecutor(max_workers=10) as executor:
@@ -553,7 +584,9 @@ class TestMedicalAICommunication:
         master_secret = get_random(32)
         channel = MedicalAIChannel("AI-DIAG-001", "AI-TREAT-002", master_secret)
 
-        phi_data = b'{"diagnosis": "Type 2 Diabetes", "icd10": "E11.9", "confidence": 0.94}'
+        phi_data = (
+            b'{"diagnosis": "Type 2 Diabetes", "icd10": "E11.9", "confidence": 0.94}'
+        )
         patient_id = "PAT-12345-ABCDE"
 
         sealed = channel.send_phi(phi_data, MedicalDataType.DIAGNOSTIC, patient_id)
@@ -566,7 +599,9 @@ class TestMedicalAICommunication:
         master_secret = get_random(32)
         channel = MedicalAIChannel("AI-TREAT-001", "AI-PHARM-001", master_secret)
 
-        treatment = b'{"medication": "Metformin", "dosage": "500mg", "frequency": "2x daily"}'
+        treatment = (
+            b'{"medication": "Metformin", "dosage": "500mg", "frequency": "2x daily"}'
+        )
         patient_id = "PAT-67890-FGHIJ"
 
         sealed = channel.send_phi(treatment, MedicalDataType.TREATMENT, patient_id)
@@ -609,7 +644,9 @@ class TestMedicalAICommunication:
         patient_id = "PAT-MH-PROTECTED"
 
         sealed = channel.send_phi(mh_data, MedicalDataType.MENTAL_HEALTH, patient_id)
-        received = channel.receive_phi(sealed, MedicalDataType.MENTAL_HEALTH, patient_id)
+        received = channel.receive_phi(
+            sealed, MedicalDataType.MENTAL_HEALTH, patient_id
+        )
 
         assert received == mh_data
 
@@ -622,7 +659,9 @@ class TestMedicalAICommunication:
         patient_id = "PAT-SA-PROTECTED"
 
         sealed = channel.send_phi(sa_data, MedicalDataType.SUBSTANCE_ABUSE, patient_id)
-        received = channel.receive_phi(sealed, MedicalDataType.SUBSTANCE_ABUSE, patient_id)
+        received = channel.receive_phi(
+            sealed, MedicalDataType.SUBSTANCE_ABUSE, patient_id
+        )
 
         assert received == sa_data
 
@@ -698,7 +737,9 @@ class TestMedicalAICommunication:
             receiver = MedicalAIChannel("AI-RADIOLOGY", "AI-PATHOLOGY", master_secret)
             receiver.session_id = sender.session_id  # Match session
 
-            received = receiver.receive_phi(sealed, MedicalDataType.DIAGNOSTIC, patient_id)
+            received = receiver.receive_phi(
+                sealed, MedicalDataType.DIAGNOSTIC, patient_id
+            )
 
         assert received == image_data
 
@@ -719,7 +760,9 @@ class TestMedicalAICommunication:
 
         for i, ch in enumerate(chain):
             sealed = ch.send_phi(current_data, MedicalDataType.DIAGNOSTIC, patient_id)
-            current_data = ch.receive_phi(sealed, MedicalDataType.DIAGNOSTIC, patient_id)
+            current_data = ch.receive_phi(
+                sealed, MedicalDataType.DIAGNOSTIC, patient_id
+            )
 
         assert current_data == original_data
 
@@ -768,13 +811,17 @@ class TestMedicalAICommunication:
 
         # Verify each patient's data is isolated
         for pid in patients:
-            received = channel.receive_phi(sealed_data[pid], MedicalDataType.DIAGNOSTIC, pid)
+            received = channel.receive_phi(
+                sealed_data[pid], MedicalDataType.DIAGNOSTIC, pid
+            )
             assert pid.encode() in received
 
             # Cross-patient access should fail
             other_pid = patients[(patients.index(pid) + 1) % len(patients)]
             with pytest.raises(ValueError):
-                channel.receive_phi(sealed_data[pid], MedicalDataType.DIAGNOSTIC, other_pid)
+                channel.receive_phi(
+                    sealed_data[pid], MedicalDataType.DIAGNOSTIC, other_pid
+                )
 
 
 # =============================================================================
@@ -815,7 +862,9 @@ class TestMilitaryGradeSecurity:
 
     def test_129_classification_ts_sci(self):
         """TOP SECRET//SCI should encrypt with compartment."""
-        channel = MilitarySecureChannel(SecurityLevel.TOP_SECRET_SCI, compartment="GAMMA")
+        channel = MilitarySecureChannel(
+            SecurityLevel.TOP_SECRET_SCI, compartment="GAMMA"
+        )
 
         data = b"TS//SCI-GAMMA: Compartmented intelligence"
         sealed = channel.encrypt_classified(data, "SIGINT", priority=5)
@@ -933,8 +982,12 @@ class TestMilitaryGradeSecurity:
 
     def test_138_compartment_separation(self):
         """Different compartments should be cryptographically separated."""
-        gamma_channel = MilitarySecureChannel(SecurityLevel.TOP_SECRET_SCI, compartment="GAMMA")
-        delta_channel = MilitarySecureChannel(SecurityLevel.TOP_SECRET_SCI, compartment="DELTA")
+        gamma_channel = MilitarySecureChannel(
+            SecurityLevel.TOP_SECRET_SCI, compartment="GAMMA"
+        )
+        delta_channel = MilitarySecureChannel(
+            SecurityLevel.TOP_SECRET_SCI, compartment="DELTA"
+        )
 
         gamma_sealed = gamma_channel.encrypt_classified(b"gamma data", "INTEL")
 
@@ -1725,7 +1778,9 @@ class TestPerformanceScalability:
             times.append(time.perf_counter() - start)
 
         avg_time = sum(times) / len(times)
-        assert avg_time < 0.01, f"Average unseal time {avg_time*1000:.2f}ms exceeds 10ms"
+        assert (
+            avg_time < 0.01
+        ), f"Average unseal time {avg_time*1000:.2f}ms exceeds 10ms"
 
     def test_183_throughput_small_messages(self):
         """Should handle > 1000 small messages/second."""
@@ -2095,7 +2150,9 @@ class TestFinancialCriticalInfrastructure:
         """Aviation data link messages should be protected."""
         ss = SpiralSealSS1(master_secret=b"0" * 32)
 
-        acars = b'{"flight": "AA123", "position": "40.7128,-74.0060", "altitude": 35000}'
+        acars = (
+            b'{"flight": "AA123", "position": "40.7128,-74.0060", "altitude": 35000}'
+        )
         aad = "acars;priority=safety"
 
         sealed = ss.seal(acars, aad=aad)
@@ -2117,7 +2174,9 @@ class TestFinancialCriticalInfrastructure:
 
     def test_209_nuclear_facility_data(self):
         """Nuclear facility data should have maximum protection."""
-        channel = MilitarySecureChannel(SecurityLevel.TOP_SECRET_SCI, compartment="NUCLEAR")
+        channel = MilitarySecureChannel(
+            SecurityLevel.TOP_SECRET_SCI, compartment="NUCLEAR"
+        )
 
         data = b'{"reactor": "R-01", "temp_c": 315.2, "pressure_mpa": 15.5}'
         sealed = channel.encrypt_classified(data, "REACTOR_STATUS", priority=5)
@@ -2161,16 +2220,24 @@ class TestAItoAIMultiAgent:
 
         # Step 2: Analysis AI receives and processes
         imaging_ai.receive_phi(sealed1, MedicalDataType.DIAGNOSTIC, patient_id)
-        analysis_result = b'{"findings": "nodule_detected", "size_mm": 8, "location": "RUL"}'
-        sealed2 = analysis_ai.send_phi(analysis_result, MedicalDataType.DIAGNOSTIC, patient_id)
+        analysis_result = (
+            b'{"findings": "nodule_detected", "size_mm": 8, "location": "RUL"}'
+        )
+        sealed2 = analysis_ai.send_phi(
+            analysis_result, MedicalDataType.DIAGNOSTIC, patient_id
+        )
 
         # Step 3: Diagnosis AI receives and diagnoses
         analysis_ai.receive_phi(sealed2, MedicalDataType.DIAGNOSTIC, patient_id)
         diagnosis = b'{"diagnosis": "suspicious_nodule", "recommendation": "biopsy"}'
-        sealed3 = diagnosis_ai.send_phi(diagnosis, MedicalDataType.DIAGNOSTIC, patient_id)
+        sealed3 = diagnosis_ai.send_phi(
+            diagnosis, MedicalDataType.DIAGNOSTIC, patient_id
+        )
 
         # Verify chain integrity
-        final = diagnosis_ai.receive_phi(sealed3, MedicalDataType.DIAGNOSTIC, patient_id)
+        final = diagnosis_ai.receive_phi(
+            sealed3, MedicalDataType.DIAGNOSTIC, patient_id
+        )
         assert final == diagnosis
 
     def test_212_autonomous_vehicle_swarm(self):
@@ -2181,7 +2248,9 @@ class TestAItoAIMultiAgent:
         messages = []
 
         for v in vehicles:
-            msg = f'{{"vehicle": "{v}", "position": [40.7, -74.0], "speed": 35}}'.encode()
+            msg = (
+                f'{{"vehicle": "{v}", "position": [40.7, -74.0], "speed": 35}}'.encode()
+            )
             aad = f"v2v;swarm=alpha;vehicle={v}"
             sealed = ss.seal(msg, aad=aad)
             messages.append((msg, sealed, aad))
@@ -2346,7 +2415,9 @@ class TestAItoAIMultiAgent:
 
     def test_222_intelligence_fusion_ai(self):
         """Intelligence fusion AI should handle multi-source data."""
-        channel = MilitarySecureChannel(SecurityLevel.TOP_SECRET_SCI, compartment="FUSION")
+        channel = MilitarySecureChannel(
+            SecurityLevel.TOP_SECRET_SCI, compartment="FUSION"
+        )
 
         sources = ["SIGINT", "HUMINT", "IMINT", "OSINT"]
 
@@ -2441,7 +2512,9 @@ class TestAItoAIMultiAgent:
         factory_ais = ["ROBOT-ARM-1", "CONVEYOR-AI", "QC-AI", "INVENTORY-AI"]
 
         for ai in factory_ais:
-            cmd = f'{{"ai": "{ai}", "operation": "PRODUCE", "part": "WIDGET-A"}}'.encode()
+            cmd = (
+                f'{{"ai": "{ai}", "operation": "PRODUCE", "part": "WIDGET-A"}}'.encode()
+            )
             aad = f"factory;line=1;ai={ai}"
 
             sealed = ss.seal(cmd, aad=aad)
@@ -2533,10 +2606,14 @@ class TestZeroTrustDefenseInDepth:
             "database": get_random(32),
         }
 
-        segments = {name: SpiralSealSS1(master_secret=key) for name, key in segment_keys.items()}
+        segments = {
+            name: SpiralSealSS1(master_secret=key) for name, key in segment_keys.items()
+        }
 
         # Seal in frontend
-        frontend_sealed = segments["frontend"].seal(b"frontend data", aad="segment=frontend")
+        frontend_sealed = segments["frontend"].seal(
+            b"frontend data", aad="segment=frontend"
+        )
 
         # Cannot unseal in other segments
         with pytest.raises(ValueError):
@@ -2675,7 +2752,9 @@ class TestZeroTrustDefenseInDepth:
 
         # Perform operations
         for i in range(5):
-            channel.send_phi(f"data {i}".encode(), MedicalDataType.DIAGNOSTIC, f"PAT-{i}")
+            channel.send_phi(
+                f"data {i}".encode(), MedicalDataType.DIAGNOSTIC, f"PAT-{i}"
+            )
 
         audit = channel.get_audit_trail()
 
@@ -2792,7 +2871,10 @@ class TestZeroTrustDefenseInDepth:
             "core": get_random(32),
         }
 
-        boundaries = {name: SpiralSealSS1(master_secret=key) for name, key in boundary_keys.items()}
+        boundaries = {
+            name: SpiralSealSS1(master_secret=key)
+            for name, key in boundary_keys.items()
+        }
 
         # Data must be re-encrypted at each boundary
         original_data = b"zero-trust protected data"
@@ -2803,7 +2885,9 @@ class TestZeroTrustDefenseInDepth:
 
         # Perimeter -> Internal
         peri_sealed = boundaries["perimeter"].seal(ext_data, aad="boundary=perimeter")
-        peri_data = boundaries["perimeter"].unseal(peri_sealed, aad="boundary=perimeter")
+        peri_data = boundaries["perimeter"].unseal(
+            peri_sealed, aad="boundary=perimeter"
+        )
 
         # Internal -> Core
         int_sealed = boundaries["internal"].seal(peri_data, aad="boundary=internal")

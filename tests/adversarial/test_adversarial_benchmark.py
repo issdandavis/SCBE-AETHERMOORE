@@ -92,10 +92,14 @@ class TestAdaptiveSequences:
     def test_cost_escalation(self, calibrated_gate):
         """In each adaptive sequence, later steps should have higher cost."""
         for seq in ADAPTIVE_SEQUENCES:
-            results = [calibrated_gate.process(s["prompt"], s["id"], s["class"]) for s in seq]
+            results = [
+                calibrated_gate.process(s["prompt"], s["id"], s["class"]) for s in seq
+            ]
             early_cost = results[0].harmonic_cost
             late_cost = results[-1].harmonic_cost
-            print(f"\n  Adaptive {seq[0]['id']}: early_cost={early_cost:.2f} late_cost={late_cost:.2f}")
+            print(
+                f"\n  Adaptive {seq[0]['id']}: early_cost={early_cost:.2f} late_cost={late_cost:.2f}"
+            )
 
 
 class TestToolExfiltration:
@@ -121,7 +125,10 @@ class TestTongueManipulation:
 class TestSpinDrift:
     def test_cost_escalation(self, calibrated_gate):
         """Later steps in drift sequence should have higher cost than earlier."""
-        results = [calibrated_gate.process(s["prompt"], s["id"], s["class"]) for s in SPIN_DRIFT]
+        results = [
+            calibrated_gate.process(s["prompt"], s["id"], s["class"])
+            for s in SPIN_DRIFT
+        ]
         early_cost = sum(r.harmonic_cost for r in results[:3]) / 3
         late_cost = sum(r.harmonic_cost for r in results[-3:]) / 3
         print(f"\n  Spin drift: early_cost={early_cost:.2f} late_cost={late_cost:.2f}")
@@ -156,7 +163,9 @@ class TestFalsePositives:
     def test_baseline_not_flagged(self, calibrated_gate):
         """Clean benign prompts should NOT be detected as attacks."""
         result = run_benchmark(calibrated_gate, BASELINE_CLEAN)
-        _ = 1.0 - result.attack_success_rate  # inverted: for clean, "success" = not flagged
+        _ = (
+            1.0 - result.attack_success_rate
+        )  # inverted: for clean, "success" = not flagged
         # Allow up to 20% false positives (strict would be 10%)
         assert (
             result.detection_rate < 0.20
@@ -204,8 +213,12 @@ class TestFullBenchmark:
         print("  SCBE ADVERSARIAL BENCHMARK RESULTS")
         print(f"{'='*60}")
         print(f"  Attacks: {attack_result.total_attacks}")
-        print(f"  Detected: {attack_result.detected_count} ({attack_result.detection_rate:.1%})")
-        print(f"  Missed: {attack_result.missed_count} ({attack_result.attack_success_rate:.1%} ASR)")
+        print(
+            f"  Detected: {attack_result.detected_count} ({attack_result.detection_rate:.1%})"
+        )
+        print(
+            f"  Missed: {attack_result.missed_count} ({attack_result.attack_success_rate:.1%} ASR)"
+        )
         print(f"  Avg cost: {attack_result.avg_harmonic_cost:.2f}")
         print(f"  Avg spin: {attack_result.avg_spin_magnitude:.1f}")
         print(
@@ -215,7 +228,9 @@ class TestFullBenchmark:
         print()
         print("  Per-class detection:")
         for cls, data in sorted(attack_result.per_class.items()):
-            print(f"    {cls:<25} {data['detected']}/{data['total']} ({data['detection_rate']:.0%})")
+            print(
+                f"    {cls:<25} {data['detected']}/{data['total']} ({data['detection_rate']:.0%})"
+            )
         print()
 
         # The benchmark MUST produce results (even if detection is imperfect)

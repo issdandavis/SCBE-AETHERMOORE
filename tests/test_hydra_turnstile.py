@@ -54,7 +54,9 @@ def test_high_geometry_or_antibody_triggers_honeypot():
 
 
 def test_cell_math_functions_are_bounded():
-    load = compute_antibody_load(suspicion=0.8, previous_load=0.6, dt=1.0, half_life=10.0)
+    load = compute_antibody_load(
+        suspicion=0.8, previous_load=0.6, dt=1.0, half_life=10.0
+    )
     stress = compute_membrane_stress(norm_value=0.99, threshold=0.98)
     assert 0.0 <= load <= 1.0
     assert 0.0 <= stress <= 1.0

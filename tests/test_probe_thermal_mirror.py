@@ -90,14 +90,18 @@ def test_write_report_creates_json_bundle(tmp_path: Path) -> None:
         "analysis": {"head_count": 1},
     }
 
-    artifact = probe_thermal_mirror.write_report(report, output_root=tmp_path, label="demo/model")
+    artifact = probe_thermal_mirror.write_report(
+        report, output_root=tmp_path, label="demo/model"
+    )
 
     assert artifact.exists()
     payload = json.loads(artifact.read_text(encoding="utf-8"))
     assert payload["analysis"]["head_count"] == 1
 
 
-def test_main_control_json_smoke(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_main_control_json_smoke(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     exit_code = probe_thermal_mirror.main(
         [
             "--control",

@@ -186,7 +186,9 @@ class Finger:
         context = await self.browser.new_context(**context_args)
         self.page = await context.new_page()
         self.active = True
-        logger.info("[%s] Finger opened (%s mode)", self.tongue.value, self.proximity.value)
+        logger.info(
+            "[%s] Finger opened (%s mode)", self.tongue.value, self.proximity.value
+        )
 
     async def close(self):
         """Shut down this finger's browser."""
@@ -200,7 +202,9 @@ class Finger:
         """Navigate to URL and return result."""
         start = time.monotonic()
         try:
-            response = await self.page.goto(url, timeout=timeout, wait_until="domcontentloaded")
+            response = await self.page.goto(
+                url, timeout=timeout, wait_until="domcontentloaded"
+            )
             title = await self.page.title()
             self.action_count += 1
             return BrowsingResult(
@@ -232,7 +236,8 @@ class Finger:
         """Extract all links from current page."""
         try:
             links = await self.page.eval_on_selector_all(
-                "a[href]", "els => els.map(e => e.href).filter(h => h.startsWith('http'))"
+                "a[href]",
+                "els => els.map(e => e.href).filter(h => h.startsWith('http'))",
             )
             return links[:100]  # Cap at 100
         except Exception:
@@ -248,7 +253,9 @@ class Finger:
         """Execute JavaScript on current page."""
         return await self.page.evaluate(script)
 
-    async def observe(self, force_screenshot: bool = False, reason: str = "") -> Optional[PageObservation]:
+    async def observe(
+        self, force_screenshot: bool = False, reason: str = ""
+    ) -> Optional[PageObservation]:
         """Observe the current page through PollyVision.
 
         Returns a PageObservation with accessibility tree, interactive
@@ -257,7 +264,9 @@ class Finger:
         """
         if not self.vision or not self.page:
             return None
-        return await self.vision.observe(self.page, force_screenshot=force_screenshot, reason=reason)
+        return await self.vision.observe(
+            self.page, force_screenshot=force_screenshot, reason=reason
+        )
 
 
 # ── Domain Safety (RU Finger's Job) ─────────────────────────────────
@@ -313,10 +322,16 @@ class HydraHand:
     6. KO synthesizes and returns the final result
     """
 
-    def __init__(self, head_id: str = "default", vision_tier: ObservationTier = ObservationTier.TIER_2):
+    def __init__(
+        self,
+        head_id: str = "default",
+        vision_tier: ObservationTier = ObservationTier.TIER_2,
+    ):
         self.head_id = head_id
         self.vision_tier = vision_tier
-        self.fingers: Dict[Tongue, Finger] = {t: Finger(tongue=t, vision=PollyVision(tier=vision_tier)) for t in Tongue}
+        self.fingers: Dict[Tongue, Finger] = {
+            t: Finger(tongue=t, vision=PollyVision(tier=vision_tier)) for t in Tongue
+        }
         self._playwright = None
         self._open = False
 
@@ -326,7 +341,8 @@ class HydraHand:
             from playwright.async_api import async_playwright
         except ImportError:
             raise RuntimeError(
-                "Playwright not installed. Run:\n" "  pip install playwright && playwright install chromium"
+                "Playwright not installed. Run:\n"
+                "  pip install playwright && playwright install chromium"
             )
 
         self._playwright = await async_playwright().__aenter__()
@@ -519,7 +535,12 @@ class HydraHand:
         report["structured"] = structured
         report["elapsed_ms"] = (time.monotonic() - start) * 1000
 
-        logger.info("[%s] Research complete: %d sources, %.0fms", self.head_id, len(extractions), report["elapsed_ms"])
+        logger.info(
+            "[%s] Research complete: %d sources, %.0fms",
+            self.head_id,
+            len(extractions),
+            report["elapsed_ms"],
+        )
         return report
 
     async def research_and_funnel(
@@ -853,7 +874,9 @@ class _HandLimbAdapter:
         self.hand = hand
         self.limb_id = f"hand-{hand.head_id}"
 
-    async def execute(self, action: str, target: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute(
+        self, action: str, target: str, params: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Route spine execute calls to appropriate finger actions."""
         tongue_str = params.get("tongue", "CA").upper()
         try:
@@ -952,7 +975,9 @@ async def swarm_research(
         assignments[hand_idx].append(query)
 
     # Run all research tasks in parallel
-    async def _research_batch(hand: HydraHand, batch_queries: List[str]) -> List[Dict[str, Any]]:
+    async def _research_batch(
+        hand: HydraHand, batch_queries: List[str]
+    ) -> List[Dict[str, Any]]:
         results = []
         for q in batch_queries:
             try:
@@ -981,7 +1006,13 @@ async def swarm_research(
     per_query: List[Dict[str, Any]] = []
     for batch in batch_results:
         if isinstance(batch, Exception):
-            per_query.append({"error": str(batch), "extractions": [], "structured": {"mesh_nodes": []}})
+            per_query.append(
+                {
+                    "error": str(batch),
+                    "extractions": [],
+                    "structured": {"mesh_nodes": []},
+                }
+            )
         else:
             per_query.extend(batch)
 

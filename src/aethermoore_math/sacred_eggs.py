@@ -136,7 +136,9 @@ class CrossTokenizer:
         self.lexicons = lexicons or Lexicons()
         self.tokenizer = TongueTokenizer(self.lexicons)
 
-    def translate(self, tokens: List[str], source: str, target: str) -> Tuple[List[str], XlateAttestation]:
+    def translate(
+        self, tokens: List[str], source: str, target: str
+    ) -> Tuple[List[str], XlateAttestation]:
         """
         Translate tokens from one tongue to another.
 
@@ -217,7 +219,9 @@ def morton_id(coords: Tuple[int, int, int]) -> int:
     return spread(coords[0]) | (spread(coords[1]) << 1) | (spread(coords[2]) << 2)
 
 
-def classify_point(distance: float, inner_radius: float = 0.7, outer_radius: float = 1.0) -> str:
+def classify_point(
+    distance: float, inner_radius: float = 0.7, outer_radius: float = 1.0
+) -> str:
     """Classify a point by its distance from center."""
     if distance <= inner_radius:
         return "interior"
@@ -244,7 +248,9 @@ def _derive_key(secret: bytes, salt: bytes, info: bytes, length: int = 32) -> by
 
 
 def geoseal_encrypt(
-    plaintext: bytes, key: bytes, geo_coords: Tuple[float, float, float] = (0.0, 0.0, 0.0)
+    plaintext: bytes,
+    key: bytes,
+    geo_coords: Tuple[float, float, float] = (0.0, 0.0, 0.0),
 ) -> Dict[str, Any]:
     """
     GeoSeal encryption with geographic binding.
@@ -257,7 +263,12 @@ def geoseal_encrypt(
     derived = _derive_key(key, salt, b"geoseal:v1:" + geo_info)
 
     # XOR-based encryption (demo; production uses AES-256-GCM)
-    ciphertext = bytes(p ^ k for p, k in zip(plaintext, (derived * ((len(plaintext) // 32) + 1))[: len(plaintext)]))
+    ciphertext = bytes(
+        p ^ k
+        for p, k in zip(
+            plaintext, (derived * ((len(plaintext) // 32) + 1))[: len(plaintext)]
+        )
+    )
 
     tag = hmac.new(derived, ciphertext + geo_info, hashlib.sha256).digest()[:16]
 
@@ -271,7 +282,9 @@ def geoseal_encrypt(
 
 
 def geoseal_decrypt(
-    envelope: Dict[str, Any], key: bytes, geo_coords: Optional[Tuple[float, float, float]] = None
+    envelope: Dict[str, Any],
+    key: bytes,
+    geo_coords: Optional[Tuple[float, float, float]] = None,
 ) -> bytes:
     """
     GeoSeal decryption with geographic verification.
@@ -287,12 +300,19 @@ def geoseal_decrypt(
     derived = _derive_key(key, salt, b"geoseal:v1:" + geo_info)
 
     # Verify tag
-    expected_tag = hmac.new(derived, ciphertext + geo_info, hashlib.sha256).digest()[:16]
+    expected_tag = hmac.new(derived, ciphertext + geo_info, hashlib.sha256).digest()[
+        :16
+    ]
     if not hmac.compare_digest(stored_tag, expected_tag):
         raise ValueError("GeoSeal authentication failed - wrong key or location")
 
     # Decrypt
-    plaintext = bytes(c ^ k for c, k in zip(ciphertext, (derived * ((len(ciphertext) // 32) + 1))[: len(ciphertext)]))
+    plaintext = bytes(
+        c ^ k
+        for c, k in zip(
+            ciphertext, (derived * ((len(ciphertext) // 32) + 1))[: len(ciphertext)]
+        )
+    )
     return plaintext
 
 
@@ -322,7 +342,9 @@ class SacredEgg:
     ritual_mode: RitualMode
     sealed_payload: Dict[str, Any]  # GeoSeal envelope
     tongue: str  # Primary tongue
-    ritual_tongues: List[str] = field(default_factory=list)  # Required tongues for hatching
+    ritual_tongues: List[str] = field(
+        default_factory=list
+    )  # Required tongues for hatching
     weight_threshold: float = 0.0  # Minimum cumulative weight for triadic mode
     ring_count: int = 3  # Number of rings for ring_descent mode
     created_at: float = field(default_factory=time.time)
@@ -448,38 +470,60 @@ class SacredEggIntegrator:
         if egg.ritual_mode == RitualMode.SOLITARY:
             if egg.tongue not in provided_tongues:
                 log.append(f"Solitary ritual failed: tongue {egg.tongue} not provided")
-                return HatchResult(success=False, ritual_log=log, error="Wrong tongue for solitary ritual")
+                return HatchResult(
+                    success=False,
+                    ritual_log=log,
+                    error="Wrong tongue for solitary ritual",
+                )
             log.append(f"Solitary ritual: tongue {egg.tongue} accepted")
 
         elif egg.ritual_mode == RitualMode.TRIADIC:
             if len(provided_tongues) < 3:
                 log.append("Triadic ritual requires 3+ tongues")
-                return HatchResult(success=False, ritual_log=log, error="Need 3+ tongues for triadic")
+                return HatchResult(
+                    success=False, ritual_log=log, error="Need 3+ tongues for triadic"
+                )
 
             # Check if required tongues are present
             missing = [t for t in egg.ritual_tongues if t not in provided_tongues]
             if missing:
                 log.append(f"Triadic ritual: missing tongues {missing}")
-                return HatchResult(success=False, ritual_log=log, error=f"Missing tongues: {missing}")
+                return HatchResult(
+                    success=False, ritual_log=log, error=f"Missing tongues: {missing}"
+                )
 
             # Check weight threshold
-            total_weight = sum(TONGUES[t]["weight"] for t in provided_tongues if t in TONGUE_IDS)
-            log.append(f"Triadic weight: {total_weight:.2f} (threshold: {egg.weight_threshold:.2f})")
+            total_weight = sum(
+                TONGUES[t]["weight"] for t in provided_tongues if t in TONGUE_IDS
+            )
+            log.append(
+                f"Triadic weight: {total_weight:.2f} (threshold: {egg.weight_threshold:.2f})"
+            )
             if total_weight < egg.weight_threshold:
-                return HatchResult(success=False, ritual_log=log, error="Weight threshold not met")
+                return HatchResult(
+                    success=False, ritual_log=log, error="Weight threshold not met"
+                )
             log.append("Triadic ritual: weight threshold met")
 
         elif egg.ritual_mode == RitualMode.RING_DESCENT:
             # Must provide tongues in the correct ring order
             if len(provided_tongues) < egg.ring_count:
                 log.append(f"Ring descent requires {egg.ring_count} tongues in order")
-                return HatchResult(success=False, ritual_log=log, error="Not enough tongues for ring descent")
+                return HatchResult(
+                    success=False,
+                    ritual_log=log,
+                    error="Not enough tongues for ring descent",
+                )
 
             for i, expected in enumerate(egg.ritual_tongues[: egg.ring_count]):
                 if i >= len(provided_tongues) or provided_tongues[i] != expected:
-                    got = provided_tongues[i] if i < len(provided_tongues) else "nothing"
+                    got = (
+                        provided_tongues[i] if i < len(provided_tongues) else "nothing"
+                    )
                     log.append(f"Ring {i}: expected {expected}, got {got}")
-                    return HatchResult(success=False, ritual_log=log, error=f"Ring {i} mismatch")
+                    return HatchResult(
+                        success=False, ritual_log=log, error=f"Ring {i} mismatch"
+                    )
                 log.append(f"Ring {i}: {expected} accepted")
 
         # Decrypt GeoSeal
@@ -491,15 +535,21 @@ class SacredEggIntegrator:
             log.append("GeoSeal decrypted successfully")
         except Exception as e:
             log.append(f"GeoSeal decryption failed: {e}")
-            return HatchResult(success=False, ritual_log=log, error=f"Decryption failed: {e}")
+            return HatchResult(
+                success=False, ritual_log=log, error=f"Decryption failed: {e}"
+            )
 
         # Decode tokens back to payload
         try:
             payload = self.tokenizer.decode(tokens, egg.tongue)
-            log.append(f"Payload decoded from {egg.tongue} tokens ({len(tokens)} tokens)")
+            log.append(
+                f"Payload decoded from {egg.tongue} tokens ({len(tokens)} tokens)"
+            )
         except Exception as e:
             log.append(f"Token decoding failed: {e}")
-            return HatchResult(success=False, ritual_log=log, error=f"Token decode failed: {e}")
+            return HatchResult(
+                success=False, ritual_log=log, error=f"Token decode failed: {e}"
+            )
 
         return HatchResult(
             success=True,
@@ -577,7 +627,9 @@ def selftest():
     tokens_dr, attestation = cross.translate(tokens_ko, "KO", "DR")
     decoded = cross.tokenizer.decode(tokens_dr, "DR")
     assert decoded == test_payload, "Cross-translation round-trip failed"
-    print(f"   PASS: KO -> DR ({len(tokens_ko)} tokens), attestation valid={attestation.valid}")
+    print(
+        f"   PASS: KO -> DR ({len(tokens_ko)} tokens), attestation valid={attestation.valid}"
+    )
 
     # Test 7: GeoSeal round-trip
     print("\n7. GeoSeal Round-Trip")

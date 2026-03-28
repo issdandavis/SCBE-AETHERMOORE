@@ -267,11 +267,61 @@ def _build_registry() -> Dict[str, CircuitNode]:
         nodes[name] = CircuitNode(name, zone, v, e, f, g, rband, tongue, func)
 
     # ── Core: Limbic System (5 Platonic Solids) ── r < 0.2 ──
-    _add("tetrahedron", Zone.CORE, 4, 6, 4, 0, (0.0, 0.05), "KO", "Fundamental truth — 'do no harm' axiom")
-    _add("cube", Zone.CORE, 8, 12, 6, 0, (0.05, 0.10), "RU", "Stable facts, verified knowledge, data integrity")
-    _add("octahedron", Zone.CORE, 6, 12, 8, 0, (0.10, 0.13), "CA", "Binary decisions, yes/no logic, access control")
-    _add("dodecahedron", Zone.CORE, 20, 30, 12, 0, (0.13, 0.17), "DR", "Complex rule systems, policy enforcement")
-    _add("icosahedron", Zone.CORE, 12, 30, 20, 0, (0.17, 0.20), "AV", "Multi-modal integration, cross-domain reasoning")
+    _add(
+        "tetrahedron",
+        Zone.CORE,
+        4,
+        6,
+        4,
+        0,
+        (0.0, 0.05),
+        "KO",
+        "Fundamental truth — 'do no harm' axiom",
+    )
+    _add(
+        "cube",
+        Zone.CORE,
+        8,
+        12,
+        6,
+        0,
+        (0.05, 0.10),
+        "RU",
+        "Stable facts, verified knowledge, data integrity",
+    )
+    _add(
+        "octahedron",
+        Zone.CORE,
+        6,
+        12,
+        8,
+        0,
+        (0.10, 0.13),
+        "CA",
+        "Binary decisions, yes/no logic, access control",
+    )
+    _add(
+        "dodecahedron",
+        Zone.CORE,
+        20,
+        30,
+        12,
+        0,
+        (0.13, 0.17),
+        "DR",
+        "Complex rule systems, policy enforcement",
+    )
+    _add(
+        "icosahedron",
+        Zone.CORE,
+        12,
+        30,
+        20,
+        0,
+        (0.17, 0.20),
+        "AV",
+        "Multi-modal integration, cross-domain reasoning",
+    )
 
     # ── Cortex: Processing Layer (3 Archimedean) ── 0.3 < r < 0.6 ──
     _add(
@@ -285,8 +335,28 @@ def _build_registry() -> Dict[str, CircuitNode]:
         "AV",
         "Multi-step planning, strategic reasoning",
     )
-    _add("rhombicuboctahedron", Zone.CORTEX, 24, 48, 26, 0, (0.40, 0.50), "RU", "Concept bridging, analogy generation")
-    _add("snub_dodecahedron", Zone.CORTEX, 60, 150, 92, 0, (0.50, 0.60), "CA", "Creative synthesis, novel solutions")
+    _add(
+        "rhombicuboctahedron",
+        Zone.CORTEX,
+        24,
+        48,
+        26,
+        0,
+        (0.40, 0.50),
+        "RU",
+        "Concept bridging, analogy generation",
+    )
+    _add(
+        "snub_dodecahedron",
+        Zone.CORTEX,
+        60,
+        150,
+        92,
+        0,
+        (0.50, 0.60),
+        "CA",
+        "Creative synthesis, novel solutions",
+    )
 
     # ── Risk: Subconscious (2 Kepler-Poinsot) ── 0.8 < r < 0.95 ──
     # χ = -6 for Small Stellated Dodecahedron (self-intersecting)
@@ -316,14 +386,74 @@ def _build_registry() -> Dict[str, CircuitNode]:
     )
 
     # ── Recursive: Cerebellum (2 Toroidal) ── genus=1 ──
-    _add("szilassi", Zone.RECURSIVE, 14, 21, 7, 1, (0.25, 0.35), "RU", "Self-diagnostic loops, runtime introspection")
-    _add("csaszar", Zone.RECURSIVE, 7, 21, 14, 1, (0.35, 0.45), "CA", "Recursive processing, fractal thinking")
+    _add(
+        "szilassi",
+        Zone.RECURSIVE,
+        14,
+        21,
+        7,
+        1,
+        (0.25, 0.35),
+        "RU",
+        "Self-diagnostic loops, runtime introspection",
+    )
+    _add(
+        "csaszar",
+        Zone.RECURSIVE,
+        7,
+        21,
+        14,
+        1,
+        (0.35, 0.45),
+        "CA",
+        "Recursive processing, fractal thinking",
+    )
 
     # ── Bridge: Connectome (4 Johnson/Rhombic) ──
-    _add("rhombic_dodecahedron", Zone.BRIDGE, 14, 24, 12, 0, (0.20, 0.30), "KO", "Space-filling logic (fits concepts)")
-    _add("rhombic_triacontahedron", Zone.BRIDGE, 32, 60, 30, 0, (0.30, 0.40), "AV", "High-dimensional pattern matching")
-    _add("johnson_j17", Zone.BRIDGE, 9, 16, 9, 0, (0.40, 0.55), "RU", "Domain connector A (gyrobifastigium)")
-    _add("johnson_j91", Zone.BRIDGE, 30, 60, 32, 0, (0.55, 0.70), "CA", "Domain connector B (bilunabirotunda)")
+    _add(
+        "rhombic_dodecahedron",
+        Zone.BRIDGE,
+        14,
+        24,
+        12,
+        0,
+        (0.20, 0.30),
+        "KO",
+        "Space-filling logic (fits concepts)",
+    )
+    _add(
+        "rhombic_triacontahedron",
+        Zone.BRIDGE,
+        32,
+        60,
+        30,
+        0,
+        (0.30, 0.40),
+        "AV",
+        "High-dimensional pattern matching",
+    )
+    _add(
+        "johnson_j17",
+        Zone.BRIDGE,
+        9,
+        16,
+        9,
+        0,
+        (0.40, 0.55),
+        "RU",
+        "Domain connector A (gyrobifastigium)",
+    )
+    _add(
+        "johnson_j91",
+        Zone.BRIDGE,
+        30,
+        60,
+        32,
+        0,
+        (0.55, 0.70),
+        "CA",
+        "Domain connector B (bilunabirotunda)",
+    )
 
     return nodes
 
@@ -487,7 +617,8 @@ def _governance_gate(
         return (
             GovernanceAction.ROLLBACK,
             "-1",
-            f"Event horizon reached (r={radial_dist:.3f}). " f"Harmonic Wall denies access beyond r=0.9.",
+            f"Event horizon reached (r={radial_dist:.3f}). "
+            f"Harmonic Wall denies access beyond r=0.9.",
         )
 
     # Energy exhaustion → hold
@@ -496,7 +627,8 @@ def _governance_gate(
         return (
             GovernanceAction.HOLD,
             "-0",
-            f"Energy budget nearly exhausted ({remaining:.1f} remaining). " f"Freezing state for quorum check.",
+            f"Energy budget nearly exhausted ({remaining:.1f} remaining). "
+            f"Freezing state for quorum check.",
         )
 
     # Outer Ring → hold for verification
@@ -504,14 +636,16 @@ def _governance_gate(
         return (
             GovernanceAction.HOLD,
             "+0",
-            f"Outer Ring (r={radial_dist:.3f}). " f"Moderate resistance — verification required.",
+            f"Outer Ring (r={radial_dist:.3f}). "
+            f"Moderate resistance — verification required.",
         )
 
     # Normal operation → run
     return (
         GovernanceAction.RUN,
         "+1",
-        f"{'Core' if ring == 'CORE' else 'Inner'} Ring " f"(r={radial_dist:.3f}). Safe thought space — forward thrust.",
+        f"{'Core' if ring == 'CORE' else 'Inner'} Ring "
+        f"(r={radial_dist:.3f}). Safe thought space — forward thrust.",
     )
 
 
@@ -662,7 +796,9 @@ class PolyDidacticCircuit:
             return trace
 
         # 3. Pick starting node: tongue-affine node with lowest radial band
-        tongue_nodes = [n for n in accessible if self.nodes[n].tongue_affinity == tongue]
+        tongue_nodes = [
+            n for n in accessible if self.nodes[n].tongue_affinity == tongue
+        ]
         if tongue_nodes:
             start = min(tongue_nodes, key=lambda n: self.nodes[n].radial_band[0])
         else:

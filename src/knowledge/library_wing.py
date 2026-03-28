@@ -42,11 +42,33 @@ class LibraryWingRoundTable:
     """Round-table conductor for parallel perspective loops."""
 
     DEFAULT_PERSPECTIVES = [
-        Perspective("research-chair", "hf:qwen2.5-7b", "evidence quality and source ranking", "string_E"),
-        Perspective("trainer-chair", "hf:llama3.1-8b", "dataset and training-loop design", "string_A"),
-        Perspective("governance-chair", "hf:mistral-7b", "safety and policy gates", "string_D"),
-        Perspective("product-chair", "hf:phi-4-mini", "delivery and monetization shape", "string_G"),
-        Perspective("ops-chair", "hubspot-legacy", "workflow ops and CRM orchestration", "string_B"),
+        Perspective(
+            "research-chair",
+            "hf:qwen2.5-7b",
+            "evidence quality and source ranking",
+            "string_E",
+        ),
+        Perspective(
+            "trainer-chair",
+            "hf:llama3.1-8b",
+            "dataset and training-loop design",
+            "string_A",
+        ),
+        Perspective(
+            "governance-chair", "hf:mistral-7b", "safety and policy gates", "string_D"
+        ),
+        Perspective(
+            "product-chair",
+            "hf:phi-4-mini",
+            "delivery and monetization shape",
+            "string_G",
+        ),
+        Perspective(
+            "ops-chair",
+            "hubspot-legacy",
+            "workflow ops and CRM orchestration",
+            "string_B",
+        ),
     ]
 
     def __init__(self, repo_root: Path, output_root: Path):
@@ -58,7 +80,9 @@ class LibraryWingRoundTable:
     def _tokenize(text: str) -> list[str]:
         return [t.lower() for t in TOKEN_RE.findall(text)]
 
-    def _score_item(self, item: dict[str, Any], role_terms: set[str], prompt_terms: set[str]) -> float:
+    def _score_item(
+        self, item: dict[str, Any], role_terms: set[str], prompt_terms: set[str]
+    ) -> float:
         blob = f"{item.get('title', '')} {item.get('text', '')}"
         tokens = self._tokenize(blob)
         role_overlap = sum(1 for t in tokens if t in role_terms)
@@ -67,13 +91,19 @@ class LibraryWingRoundTable:
         return source_boost * (2.0 * role_overlap + 1.25 * prompt_overlap + 0.1)
 
     def _synthesize(
-        self, perspective: Perspective, prompt: str, context_items: list[dict[str, Any]], round_index: int
+        self,
+        perspective: Perspective,
+        prompt: str,
+        context_items: list[dict[str, Any]],
+        round_index: int,
     ) -> LaneNote:
         role_terms = set(self._tokenize(perspective.role))
         prompt_terms = set(self._tokenize(prompt))
         ranked = sorted(
             context_items,
-            key=lambda x: self._score_item(x, role_terms=role_terms, prompt_terms=prompt_terms),
+            key=lambda x: self._score_item(
+                x, role_terms=role_terms, prompt_terms=prompt_terms
+            ),
             reverse=True,
         )
         top = ranked[:4]
@@ -89,10 +119,14 @@ class LibraryWingRoundTable:
             f"Round guidance: prioritize modular loops, compact context, and parallel lanes.\n"
             f"Selected notes:\n" + "\n".join(key_points)
         )
-        digest = hashlib.sha1((perspective.name + str(round_index) + summary).encode("utf-8")).hexdigest()[:12]
+        digest = hashlib.sha1(
+            (perspective.name + str(round_index) + summary).encode("utf-8")
+        ).hexdigest()[:12]
         avg_score = 0.0
         if top:
-            avg_score = sum(self._score_item(i, role_terms, prompt_terms) for i in top) / len(top)
+            avg_score = sum(
+                self._score_item(i, role_terms, prompt_terms) for i in top
+            ) / len(top)
 
         return LaneNote(
             note_id=f"{perspective.name}-{round_index}-{digest}",
@@ -106,7 +140,11 @@ class LibraryWingRoundTable:
         )
 
     def run(
-        self, prompt: str, context_items: list[dict[str, Any]], rounds: int = 2, max_workers: int = 5
+        self,
+        prompt: str,
+        context_items: list[dict[str, Any]],
+        rounds: int = 2,
+        max_workers: int = 5,
     ) -> dict[str, Any]:
         now = dt.datetime.now(dt.UTC).isoformat()
         notes: list[LaneNote] = []
@@ -161,7 +199,9 @@ class LibraryWingRoundTable:
         json_path = self.output_root / f"{stem}.json"
         md_path = self.output_root / f"{stem}.md"
 
-        json_path.write_text(json.dumps(run, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        json_path.write_text(
+            json.dumps(run, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
 
         lines = [
             f"# Library Wing Round Table Run ({stem})",
@@ -218,7 +258,9 @@ def load_capsule_context(capsule_path: Path) -> list[dict[str, Any]]:
     return items
 
 
-def load_obsidian_context(vault_path: Path, max_files: int = 40) -> list[dict[str, Any]]:
+def load_obsidian_context(
+    vault_path: Path, max_files: int = 40
+) -> list[dict[str, Any]]:
     vault = Path(vault_path)
     items: list[dict[str, Any]] = []
     if not vault.exists():
@@ -248,7 +290,9 @@ def load_choicescript_context(notes_path: Path) -> list[dict[str, Any]]:
     path = Path(notes_path)
     if not path.exists():
         return items
-    for idx, line in enumerate(path.read_text(encoding="utf-8", errors="ignore").splitlines(), start=1):
+    for idx, line in enumerate(
+        path.read_text(encoding="utf-8", errors="ignore").splitlines(), start=1
+    ):
         if not line.strip():
             continue
         items.append(

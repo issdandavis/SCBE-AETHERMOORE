@@ -209,7 +209,9 @@ class HiveIntegratedLayer13:
     def _generate_record_id(self, components: RiskComponents) -> str:
         """Generate unique record ID for a decision."""
         now = datetime.utcnow().isoformat()
-        content = f"{self.agent_id}:{self.session_id}:{now}:{components.behavioral_risk}"
+        content = (
+            f"{self.agent_id}:{self.session_id}:{now}:{components.behavioral_risk}"
+        )
         return hashlib.sha256(content.encode()).hexdigest()[:24]
 
     def _compute_context_hash(self, components: RiskComponents) -> str:
@@ -364,10 +366,14 @@ class HiveIntegratedLayer13:
             "counts": self._decision_counts.copy(),
             "rates": rates,
             "deny_rate": (
-                self._decision_counts["DENY"] + self._decision_counts["REJECT"] + self._decision_counts["SNAP"]
+                self._decision_counts["DENY"]
+                + self._decision_counts["REJECT"]
+                + self._decision_counts["SNAP"]
             )
             / self._total_decisions,
-            "recent_risk_mean": sum(recent_risks) / len(recent_risks) if recent_risks else 0,
+            "recent_risk_mean": (
+                sum(recent_risks) / len(recent_risks) if recent_risks else 0
+            ),
             "recent_risk_max": max(recent_risks) if recent_risks else 0,
             "session_id": self.session_id,
             "agent_id": self.agent_id,
@@ -431,12 +437,16 @@ class HiveIntegratedLayer13:
         total_weight = 0
 
         for record, sim_score in similar:
-            decision_weights[record.decision] = decision_weights.get(record.decision, 0) + sim_score
+            decision_weights[record.decision] = (
+                decision_weights.get(record.decision, 0) + sim_score
+            )
             total_weight += sim_score
 
         # Normalize
         if total_weight > 0:
-            decision_weights = {k: v / total_weight for k, v in decision_weights.items()}
+            decision_weights = {
+                k: v / total_weight for k, v in decision_weights.items()
+            }
 
         # Predict most likely decision
         predicted = max(decision_weights.items(), key=lambda x: x[1])

@@ -230,7 +230,9 @@ class PQCAuditChain:
         self._chain_iv = AUDIT_CHAIN_IV
 
     @classmethod
-    def create_new(cls, key_mode: KeyDerivationMode = KeyDerivationMode.HYBRID) -> "PQCAuditChain":
+    def create_new(
+        cls, key_mode: KeyDerivationMode = KeyDerivationMode.HYBRID
+    ) -> "PQCAuditChain":
         """Create a new PQC audit chain with fresh keys."""
         hmac_chain = PQCHMACChain.create_new(mode=key_mode)
         return cls(hmac_chain=hmac_chain)
@@ -341,8 +343,12 @@ class PQCAuditChain:
             return False, "Invalid Dilithium3 signature"
 
         # Verify HMAC tag computation
-        audit_data = f"{entry.identity}|{entry.intent}|{entry.timestamp}|{entry.decision.value}".encode("utf-8")
-        expected_tag = pqc_hmac_chain_tag(audit_data, entry.nonce, entry.prev_tag, self._hmac_chain.key_material)
+        audit_data = f"{entry.identity}|{entry.intent}|{entry.timestamp}|{entry.decision.value}".encode(
+            "utf-8"
+        )
+        expected_tag = pqc_hmac_chain_tag(
+            audit_data, entry.nonce, entry.prev_tag, self._hmac_chain.key_material
+        )
 
         if not hmac.compare_digest(entry.hmac_tag, expected_tag):
             return False, "Invalid HMAC tag"
@@ -359,7 +365,9 @@ class PQCAuditChain:
             AuditChainVerification with detailed results
         """
         if not self._entries:
-            return AuditChainVerification(is_valid=True, hmac_valid=True, signatures_valid=True, entries_checked=0)
+            return AuditChainVerification(
+                is_valid=True, hmac_valid=True, signatures_valid=True, entries_checked=0
+            )
 
         # Verify HMAC chain
         hmac_valid = self._hmac_chain.verify()
@@ -420,7 +428,9 @@ class PQCAuditChain:
         """Get all entries with a specific decision."""
         return [e for e in self._entries if e.decision == decision]
 
-    def get_entries_in_range(self, start_time: float, end_time: float) -> List[PQCAuditEntry]:
+    def get_entries_in_range(
+        self, start_time: float, end_time: float
+    ) -> List[PQCAuditEntry]:
         """Get entries within a time range."""
         return [e for e in self._entries if start_time <= e.timestamp <= end_time]
 
@@ -666,4 +676,6 @@ class PQCAuditIntegration:
         Returns:
             List of verification results
         """
-        return [self.verify_entry(data, tag, sig, public_key) for data, tag, sig in entries]
+        return [
+            self.verify_entry(data, tag, sig, public_key) for data, tag, sig in entries
+        ]
