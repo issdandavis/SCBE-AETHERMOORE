@@ -1,6 +1,18 @@
 [submodule "aws-lambda-simple-web-app"]
 	path = aws-lambda-simple-web-app
 	url = https://github.com/issdandavis/aws-lambda-simple-web-app.git
+[submodule "external/Entropicdefenseengineproposal"]
+	path = external/Entropicdefenseengineproposal
+	url = https://github.com/issdandavis/Entropicdefenseengineproposal.git
+[submodule "external/claude-code-plugins-plus-skills"]
+	path = external/claude-code-plugins-plus-skills
+	url = https://github.com/jeremylongshore/claude-code-plugins-plus-skills.git
+[submodule "external/designer-skills"]
+	path = external/designer-skills
+	url = https://github.com/Owl-Listener/designer-skills.git
+[submodule "external/openclaw"]
+	path = external/openclaw
+	url = https://github.com/openclaw/openclaw.git
 [submodule "external_repos/Spiralverse-AetherMoore"]
 	path = external_repos/Spiralverse-AetherMoore
 	url = https://github.com/issdandavis/Spiralverse-AetherMoore.git
@@ -34,6 +46,9 @@
 [submodule "external_repos/spiralverse-protocol"]
 	path = external_repos/spiralverse-protocol
 	url = https://github.com/issdandavis/spiralverse-protocol.git
+[submodule "shopify/aethermoore-creator-os"]
+	path = shopify/aethermoore-creator-os
+	url = https://github.com/issdandavis/aethermoore-creator-os.git
 
 [submodule "packages/six-tongues-geoseal"]
 	path = packages/six-tongues-geoseal
