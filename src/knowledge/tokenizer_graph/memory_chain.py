@@ -201,18 +201,13 @@ class TokenizerGraph:
 
     def _tongue_distance(self, a: list, b: list) -> float:
         """Weighted distance in 6D tongue space."""
-        return math.sqrt(
-            sum(
-                (ai - bi) ** 2 * TONGUE_WEIGHTS[i]
-                for i, (ai, bi) in enumerate(zip(a, b))
-            )
-        ) / sum(TONGUE_WEIGHTS)
+        return math.sqrt(sum((ai - bi) ** 2 * TONGUE_WEIGHTS[i] for i, (ai, bi) in enumerate(zip(a, b)))) / sum(
+            TONGUE_WEIGHTS
+        )
 
     def _dominant_tongue(self, a: list, b: list) -> str:
         """Find which tongue dimension has the strongest connection."""
-        diffs = [
-            abs(ai - bi) * TONGUE_WEIGHTS[i] for i, (ai, bi) in enumerate(zip(a, b))
-        ]
+        diffs = [abs(ai - bi) * TONGUE_WEIGHTS[i] for i, (ai, bi) in enumerate(zip(a, b))]
         min_idx = diffs.index(min(diffs))
         return TONGUE_NAMES[min_idx]
 
@@ -240,7 +235,7 @@ class TokenizerGraph:
 
             node = self.nodes.get(node_id)
             if node:
-                for target_id, weight, _ in node.edges:
+                for target_id, _weight, _ in node.edges:
                     if target_id not in visited:
                         queue.append((target_id, d + 1))
 

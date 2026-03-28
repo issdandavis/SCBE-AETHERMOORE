@@ -23,9 +23,7 @@ def energy_ratio(x: torch.Tensor, vis_gate) -> dict:
     }
 
 
-def leakage_sensitivity(
-    pipeline_fn, x0: torch.Tensor, tie_gate, delta: torch.Tensor
-) -> float:
+def leakage_sensitivity(pipeline_fn, x0: torch.Tensor, tie_gate, delta: torch.Tensor) -> float:
     """Numerical sensitivity of visible output to hidden/T perturbations."""
 
     d = tie_gate.apply(delta)

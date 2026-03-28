@@ -58,10 +58,7 @@ class TestDynamicTransform:
         p3 = Lattice3D(x=1.0, y=0.5, z=-0.3)
         ph = PhasonShift(perp_shift=(1.0, 0.0, 0.0), magnitude=0.5, phase=0.0)
         out = dynamic_transform(p3, ph)
-        diff = sum(
-            (out.shifted_6d.components[i] - out.lifted_6d.components[i]) ** 2
-            for i in range(6)
-        )
+        diff = sum((out.shifted_6d.components[i] - out.lifted_6d.components[i]) ** 2 for i in range(6))
         assert diff > 0.01
         assert -1.0 <= out.interference_value <= 1.0
 
@@ -109,11 +106,7 @@ class TestFractalDimension:
         assert 0.5 < d < 1.5
 
     def test_plane_like_dimension(self):
-        points = [
-            Lattice3D(x=i * 0.07, y=j * 0.07, z=0.0)
-            for i in range(30)
-            for j in range(30)
-        ]
+        points = [Lattice3D(x=i * 0.07, y=j * 0.07, z=0.0) for i in range(30) for j in range(30)]
         d = estimate_fractal_dimension(points, scales=[1.0, 0.5, 0.25, 0.125, 0.0625])
         assert 1.5 < d < 2.5
 

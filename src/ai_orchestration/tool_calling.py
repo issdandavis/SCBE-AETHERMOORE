@@ -158,9 +158,7 @@ class Tool(ABC):
                 }
                 expected_type = type_map.get(param.type)
                 if expected_type and not isinstance(value, expected_type):
-                    errors.append(
-                        f"Parameter {param.name} expected {param.type}, got {type(value).__name__}"
-                    )
+                    errors.append(f"Parameter {param.name} expected {param.type}, got {type(value).__name__}")
 
         return errors
 
@@ -220,23 +218,17 @@ class PermissionManager:
             self.role_permissions[role] = {}
         self.role_permissions[role][tool_id] = level
 
-    def check_permission(
-        self, agent_id: str, agent_role: str, tool: ToolDefinition
-    ) -> bool:
+    def check_permission(self, agent_id: str, agent_role: str, tool: ToolDefinition) -> bool:
         """Check if agent has permission to use tool."""
         required = tool.required_permission
 
         # Check agent-specific permission
-        agent_level = self.agent_permissions.get(agent_id, {}).get(
-            tool.id, PermissionLevel.NONE
-        )
+        agent_level = self.agent_permissions.get(agent_id, {}).get(tool.id, PermissionLevel.NONE)
         if agent_level.value >= required.value:
             return True
 
         # Check role permission
-        role_level = self.role_permissions.get(agent_role, {}).get(
-            tool.id, PermissionLevel.NONE
-        )
+        role_level = self.role_permissions.get(agent_role, {}).get(tool.id, PermissionLevel.NONE)
         if role_level.value >= required.value:
             return True
 
@@ -324,9 +316,7 @@ class ToolRegistry:
     def __init__(self):
         self.tools: Dict[str, Tool] = {}
         self.definitions: Dict[str, ToolDefinition] = {}
-        self.categories: Dict[ToolCategory, List[str]] = {
-            cat: [] for cat in ToolCategory
-        }
+        self.categories: Dict[ToolCategory, List[str]] = {cat: [] for cat in ToolCategory}
 
     def register(self, tool: Tool):
         """Register a tool."""
@@ -420,9 +410,7 @@ class ToolExecutor:
                 status=ExecutionStatus.DENIED,
                 error="Permission denied",
             )
-            self.audit.log_execution(
-                execution_id, agent_id, tool_id, parameters, result, context
-            )
+            self.audit.log_execution(execution_id, agent_id, tool_id, parameters, result, context)
             return result
 
         # Check rate limit
@@ -434,9 +422,7 @@ class ToolExecutor:
                 status=ExecutionStatus.RATE_LIMITED,
                 error=f"Rate limit exceeded: {definition.rate_limit}/min",
             )
-            self.audit.log_execution(
-                execution_id, agent_id, tool_id, parameters, result, context
-            )
+            self.audit.log_execution(execution_id, agent_id, tool_id, parameters, result, context)
             return result
 
         # Validate parameters
@@ -448,9 +434,7 @@ class ToolExecutor:
                 status=ExecutionStatus.FAILED,
                 error=f"Parameter validation failed: {validation_errors}",
             )
-            self.audit.log_execution(
-                execution_id, agent_id, tool_id, parameters, result, context
-            )
+            self.audit.log_execution(execution_id, agent_id, tool_id, parameters, result, context)
             return result
 
         # Check if confirmation required
@@ -470,9 +454,7 @@ class ToolExecutor:
             )
 
         # Execute tool
-        return await self._execute_tool(
-            execution_id, agent_id, tool, parameters, context
-        )
+        return await self._execute_tool(execution_id, agent_id, tool, parameters, context)
 
     async def confirm_execution(self, execution_id: str) -> ToolExecutionResult:
         """Confirm a pending execution."""
@@ -546,9 +528,7 @@ class ToolExecutor:
                 completed_at=datetime.now(),
             )
 
-        self.audit.log_execution(
-            execution_id, agent_id, tool.definition.id, parameters, result, context
-        )
+        self.audit.log_execution(execution_id, agent_id, tool.definition.id, parameters, result, context)
         return result
 
 
@@ -576,9 +556,7 @@ class HTTPRequestTool(Tool):
                         default="GET",
                     ),
                     ToolParameter("headers", "dict", "Request headers", required=False),
-                    ToolParameter(
-                        "body", "dict", "Request body for POST/PUT", required=False
-                    ),
+                    ToolParameter("body", "dict", "Request body for POST/PUT", required=False),
                     ToolParameter(
                         "timeout",
                         "int",
@@ -672,9 +650,7 @@ class FileSystemTool(Tool):
                 description="Read files from allowed directories",
                 category=ToolCategory.DATA_RETRIEVAL,
                 parameters=[
-                    ToolParameter(
-                        "operation", "string", "Operation: read, list, exists"
-                    ),
+                    ToolParameter("operation", "string", "Operation: read, list, exists"),
                     ToolParameter("path", "string", "File or directory path"),
                 ],
                 return_type="dict",
@@ -693,9 +669,7 @@ class FileSystemTool(Tool):
 
         # Security: Check path is allowed
         abs_path = os.path.abspath(path)
-        if self.allowed_paths and not any(
-            abs_path.startswith(ap) for ap in self.allowed_paths
-        ):
+        if self.allowed_paths and not any(abs_path.startswith(ap) for ap in self.allowed_paths):
             raise ValueError(f"Path not allowed: {path}")
 
         # Prevent path traversal
@@ -729,9 +703,7 @@ class ToolCallingSystem:
         self.permissions = PermissionManager()
         self.rate_limiter = RateLimiter()
         self.audit = AuditLogger()
-        self.executor = ToolExecutor(
-            self.registry, self.permissions, self.rate_limiter, self.audit
-        )
+        self.executor = ToolExecutor(self.registry, self.permissions, self.rate_limiter, self.audit)
 
         # Register built-in tools
         self._register_builtin_tools()
@@ -763,13 +735,9 @@ class ToolCallingSystem:
         context: Optional[Dict[str, Any]] = None,
     ) -> ToolExecutionResult:
         """Call a tool."""
-        return await self.executor.execute(
-            agent_id, agent_role, tool_name, parameters, context
-        )
+        return await self.executor.execute(agent_id, agent_role, tool_name, parameters, context)
 
-    def get_available_tools(
-        self, agent_id: str, agent_role: str
-    ) -> List[Dict[str, Any]]:
+    def get_available_tools(self, agent_id: str, agent_role: str) -> List[Dict[str, Any]]:
         """Get tools available to an agent."""
         available = []
         for definition in self.registry.definitions.values():

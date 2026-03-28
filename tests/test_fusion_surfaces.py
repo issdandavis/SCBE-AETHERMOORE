@@ -122,9 +122,7 @@ class TestSemiSphereCone:
         assert stats["hemisphere_count"] > 0
         assert stats["cone_count"] > 0
         assert stats["record_count"] == 30
-        assert stats["hemisphere_ratio"] + stats["cone_ratio"] == pytest.approx(
-            1.0, abs=0.01
-        )
+        assert stats["hemisphere_ratio"] + stats["cone_ratio"] == pytest.approx(1.0, abs=0.01)
 
     def test_hemisphere_query_returns_results(self):
         ssc = SemiSphereCone(radius_threshold=0.5)

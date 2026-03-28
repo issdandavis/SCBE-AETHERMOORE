@@ -50,9 +50,7 @@ class KnowledgeChunk:
     content: str
     url: str = ""
     timestamp: str = ""
-    tongue_coords: list = field(
-        default_factory=lambda: [0.0] * 6
-    )  # 6D Sacred Tongue position
+    tongue_coords: list = field(default_factory=lambda: [0.0] * 6)  # 6D Sacred Tongue position
     trust_score: float = 0.5
     governance_zone: str = "YELLOW"  # GREEN/YELLOW/RED
     chain_hash: str = ""
@@ -63,9 +61,7 @@ class KnowledgeChunk:
         if not self.timestamp:
             self.timestamp = datetime.datetime.utcnow().isoformat()
         if not self.id:
-            self.id = hashlib.sha256(
-                f"{self.source}:{self.title}:{self.timestamp}".encode()
-            ).hexdigest()[:16]
+            self.id = hashlib.sha256(f"{self.source}:{self.title}:{self.timestamp}".encode()).hexdigest()[:16]
         if not self.chain_hash:
             self.chain_hash = self._compute_hash()
 
@@ -253,11 +249,7 @@ class KnowledgeFunnel:
 
         # 1. Antivirus scan
         decision, reason = self.antivirus.scan(chunk)
-        chunk.governance_zone = (
-            "GREEN"
-            if decision == "ALLOW"
-            else "RED" if decision == "DENY" else "YELLOW"
-        )
+        chunk.governance_zone = "GREEN" if decision == "ALLOW" else "RED" if decision == "DENY" else "YELLOW"
 
         if decision == "DENY":
             self.stats["denied"] += 1

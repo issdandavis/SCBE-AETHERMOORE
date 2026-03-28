@@ -123,12 +123,7 @@ class MicroStateCensus:
     @property
     def active_count(self) -> int:
         """Total non-neutral micro-states (like counting charged particles)."""
-        return (
-            self.par_activate
-            + self.par_inhibit
-            + self.perp_activate
-            + self.perp_inhibit
-        )
+        return self.par_activate + self.par_inhibit + self.perp_activate + self.perp_inhibit
 
     @property
     def charge_imbalance(self) -> float:
@@ -470,12 +465,7 @@ def evaluate_governance(
     #   10% valence penalty (binary: rules broken or not)
     valence_penalty = 0.0 if valence_ok else min(1.0, len(valence_violations) * 0.3)
 
-    combined = (
-        0.40 * mirror_asym
-        + 0.30 * fractal_anomaly
-        + 0.20 * charge_imb
-        + 0.10 * valence_penalty
-    )
+    combined = 0.40 * mirror_asym + 0.30 * fractal_anomaly + 0.20 * charge_imb + 0.10 * valence_penalty
     combined = max(0.0, min(1.0, combined))
 
     # Persistence amplification: if asymmetry has persisted, boost score
@@ -543,10 +533,7 @@ def evaluate_trajectory_governance(
     """
     trajectory = np.asarray(trajectory, dtype=float)
     if trajectory.ndim != 2 or trajectory.shape[1] != BRAIN_DIMENSIONS:
-        raise ValueError(
-            f"Expected (T, {BRAIN_DIMENSIONS}) trajectory, "
-            f"got shape {trajectory.shape}."
-        )
+        raise ValueError(f"Expected (T, {BRAIN_DIMENSIONS}) trajectory, " f"got shape {trajectory.shape}.")
 
     if tracker is None:
         tracker = AsymmetryTracker()

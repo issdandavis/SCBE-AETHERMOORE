@@ -139,8 +139,7 @@ GROUNDED_CONCEPTS: List[ConceptQuad] = [
         domain="mathematics",
         grounded=True,
         positive=(
-            "In a right triangle, the square of the hypotenuse equals"
-            " the sum of the squares of the other two sides"
+            "In a right triangle, the square of the hypotenuse equals" " the sum of the squares of the other two sides"
         ),
         negative="The Pythagorean theorem does not apply to non-right triangles directly",
         inverse="The sum of the squares of two sides equals the square of the hypotenuse in a right triangle",
@@ -566,9 +565,7 @@ def print_report(
     print(sep)
 
     print(f"\n  {'GROUNDED CONCEPTS':^86}")
-    print(
-        f"  {'Label':<30} {'Domain':<18} {'MeanSim':>8} {'Var':>8} {'MaxDiv':>8} {'Score':>8}"
-    )
+    print(f"  {'Label':<30} {'Domain':<18} {'MeanSim':>8} {'Var':>8} {'MaxDiv':>8} {'Score':>8}")
     print(f"  {'-'*30} {'-'*18} {'-'*8} {'-'*8} {'-'*8} {'-'*8}")
     for r in grounded:
         print(
@@ -577,9 +574,7 @@ def print_report(
         )
 
     print(f"\n  {'HALLUCINATED CONCEPTS':^86}")
-    print(
-        f"  {'Label':<30} {'Domain':<18} {'MeanSim':>8} {'Var':>8} {'MaxDiv':>8} {'Score':>8}"
-    )
+    print(f"  {'Label':<30} {'Domain':<18} {'MeanSim':>8} {'Var':>8} {'MaxDiv':>8} {'Score':>8}")
     print(f"  {'-'*30} {'-'*18} {'-'*8} {'-'*8} {'-'*8} {'-'*8}")
     for r in hallucinated:
         print(
@@ -599,12 +594,8 @@ def print_report(
         f"(std: {summary['hallucinated_std_score']:.4f})"
     )
     print()
-    print(
-        f"  Grounded   mean pairwise similarity: {summary['grounded_mean_similarity']:.4f}"
-    )
-    print(
-        f"  Halluc.    mean pairwise similarity: {summary['hallucinated_mean_similarity']:.4f}"
-    )
+    print(f"  Grounded   mean pairwise similarity: {summary['grounded_mean_similarity']:.4f}")
+    print(f"  Halluc.    mean pairwise similarity: {summary['hallucinated_mean_similarity']:.4f}")
     print()
     print(f"  Grounded   mean variance:  {summary['grounded_mean_variance']:.6f}")
     print(f"  Halluc.    mean variance:  {summary['hallucinated_mean_variance']:.6f}")
@@ -620,25 +611,16 @@ def print_report(
         f"  Mean similarity:    t = {summary['t_stat_mean_similarity']:>8.3f}  "
         f"p = {summary['p_value_mean_similarity']:.6f}"
     )
-    print(
-        f"  Variance:           t = {summary['t_stat_variance']:>8.3f}  "
-        f"p = {summary['p_value_variance']:.6f}"
-    )
+    print(f"  Variance:           t = {summary['t_stat_variance']:>8.3f}  " f"p = {summary['p_value_variance']:.6f}")
 
     print(f"\n{sep}")
     print("  DISCRIMINATION ANALYSIS")
     print(sep)
-    print(
-        f"  Best separating threshold (grounding score): {summary['best_threshold']:.4f}"
-    )
-    print(
-        f"  Classification accuracy at that threshold:   {summary['best_threshold_accuracy']:.1%}"
-    )
+    print(f"  Best separating threshold (grounding score): {summary['best_threshold']:.4f}")
+    print(f"  Classification accuracy at that threshold:   {summary['best_threshold_accuracy']:.1%}")
     sig = summary["p_value_grounding_score"] < 0.05
     print(f"  Statistically significant (p < 0.05):        {'YES' if sig else 'NO'}")
-    print(
-        f"  Separation exists (accuracy > 70%):          {'YES' if summary['separation_exists'] else 'NO'}"
-    )
+    print(f"  Separation exists (accuracy > 70%):          {'YES' if summary['separation_exists'] else 'NO'}")
 
     # Determine best discriminating metric
     metrics = [
@@ -647,9 +629,7 @@ def print_report(
         ("variance", abs(summary["t_stat_variance"])),
     ]
     best_metric = max(metrics, key=lambda x: x[1])
-    print(
-        f"  Best discriminating metric:                  {best_metric[0]} (|t| = {best_metric[1]:.3f})"
-    )
+    print(f"  Best discriminating metric:                  {best_metric[0]} (|t| = {best_metric[1]:.3f})")
 
     # Hypothesis check
     print(f"\n{sep}")
@@ -696,16 +676,12 @@ def print_detailed_coords(results: List[QuadAnalysis]) -> None:
     for r in results:
         tag = "GROUNDED" if r.grounded else "HALLUC"
         print(f"\n  [{tag}] {r.label} ({r.domain})")
-        print(
-            f"    {'View':<16} {'KO':>7} {'AV':>7} {'RU':>7} {'CA':>7} {'UM':>7} {'DR':>7}"
-        )
-        for idx, (vlabel, coord) in enumerate(zip(view_labels, r.coords)):
+        print(f"    {'View':<16} {'KO':>7} {'AV':>7} {'RU':>7} {'CA':>7} {'UM':>7} {'DR':>7}")
+        for _idx, (vlabel, coord) in enumerate(zip(view_labels, r.coords)):
             vals = "  ".join(f"{v:>5.3f}" for v in coord)
             print(f"    {vlabel:<16} {vals}")
         pair_labels = ["P-N", "P-I", "P-C", "N-I", "N-C", "I-C"]
-        sims_str = "  ".join(
-            f"{pl}={s:.3f}" for pl, s in zip(pair_labels, r.pairwise_sims)
-        )
+        sims_str = "  ".join(f"{pl}={s:.3f}" for pl, s in zip(pair_labels, r.pairwise_sims))
         print(f"    Pairwise sims: {sims_str}")
         print(
             f"    Mean={r.mean_similarity:.4f}  Var={r.variance_similarity:.6f}  "
@@ -738,9 +714,7 @@ class TestGroundedConceptsHighConsistency:
         # Allow up to 20% of grounded concepts to fall below threshold
         # (the theory predicts a trend, not absolute guarantees per sample)
         max_failures = max(1, len(GROUNDED_CONCEPTS) // 5)
-        assert (
-            len(low_scores) <= max_failures
-        ), f"Too many grounded concepts with low consistency: {low_scores}"
+        assert len(low_scores) <= max_failures, f"Too many grounded concepts with low consistency: {low_scores}"
 
 
 @requires_sentence_transformers
@@ -761,8 +735,7 @@ class TestHallucinatedConceptsLowConsistency:
         # The hallucinated group average should be measurably lower than
         # a fully consistent set (which would be ~1.0)
         assert mean_halluc_sim < 0.99, (
-            f"Hallucinated concepts should not be perfectly consistent: "
-            f"mean similarity = {mean_halluc_sim:.4f}"
+            f"Hallucinated concepts should not be perfectly consistent: " f"mean similarity = {mean_halluc_sim:.4f}"
         )
 
 
@@ -830,9 +803,7 @@ class TestVarianceHypothesis:
             print("  Variance hypothesis: SUPPORTED (grounded < hallucinated)")
         else:
             print("  Variance hypothesis: NOT SUPPORTED (grounded >= hallucinated)")
-            print(
-                "  (This may indicate the semantic projector treats both groups similarly)"
-            )
+            print("  (This may indicate the semantic projector treats both groups similarly)")
 
 
 @requires_sentence_transformers
@@ -877,10 +848,7 @@ class TestStatsBackendFallback:
         # Both should produce valid scores (not NaN)
         assert not np.isnan(r_g.grounding_score)
         assert not np.isnan(r_h.grounding_score)
-        print(
-            f"\n  Stats backend: grounded={r_g.grounding_score:.4f}  "
-            f"hallucinated={r_h.grounding_score:.4f}"
-        )
+        print(f"\n  Stats backend: grounded={r_g.grounding_score:.4f}  " f"hallucinated={r_h.grounding_score:.4f}")
 
 
 # ===========================================================================

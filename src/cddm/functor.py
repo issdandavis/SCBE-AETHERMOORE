@@ -61,10 +61,7 @@ class CompositionChain:
         if self.steps:
             last = self.steps[-1]
             if last.dst.name != morphism.src.name:
-                raise MorphismError(
-                    f"Chain break: last dst={last.dst.name} "
-                    f"!= new src={morphism.src.name}"
-                )
+                raise MorphismError(f"Chain break: last dst={last.dst.name} " f"!= new src={morphism.src.name}")
         self.steps.append(morphism)
         return self
 
@@ -140,9 +137,7 @@ class DomainGraph:
 
     def __init__(self):
         self.nodes: Dict[str, Domain] = {}
-        self.edges: Dict[str, List[Tuple[str, Morphism]]] = (
-            {}
-        )  # src_name -> [(dst_name, morphism)]
+        self.edges: Dict[str, List[Tuple[str, Morphism]]] = {}  # src_name -> [(dst_name, morphism)]
 
     def add_domain(self, domain: Domain) -> None:
         self.nodes[domain.name] = domain

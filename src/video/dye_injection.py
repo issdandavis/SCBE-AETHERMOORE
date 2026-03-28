@@ -293,9 +293,7 @@ class DyeInjector:
         # Scan ID: hash of input + timestamp
         import hashlib
 
-        scan_id = hashlib.blake2s(
-            f"{text}:{time.time()}".encode(), digest_size=8
-        ).hexdigest()
+        scan_id = hashlib.blake2s(f"{text}:{time.time()}".encode(), digest_size=8).hexdigest()
 
         elapsed_ms = (time.perf_counter() - start) * 1000
 
@@ -383,8 +381,7 @@ def compare_scans(scans: List[DyeScan]) -> Dict[str, Any]:
             "min": round(min(s.harmonic_cost for s in scans), 4),
             "max": round(max(s.harmonic_cost for s in scans), 4),
             "spread": round(
-                max(s.harmonic_cost for s in scans)
-                - min(s.harmonic_cost for s in scans),
+                max(s.harmonic_cost for s in scans) - min(s.harmonic_cost for s in scans),
                 4,
             ),
         },
@@ -587,17 +584,13 @@ Examples:
                     f"{scan.trust_level:<12} {'YES' if scan.null_space_detected else 'no':>5}"
                 )
             print("-" * 80)
-            print(
-                f"Most discriminative tongue: {comparison['most_discriminative_tongue']}"
-            )
+            print(f"Most discriminative tongue: {comparison['most_discriminative_tongue']}")
             print(
                 f"Cost spread: {comparison['cost_range']['spread']:.2f} "
                 f"(min={comparison['cost_range']['min']:.2f}, "
                 f"max={comparison['cost_range']['max']:.2f})"
             )
-            print(
-                f"Null spaces detected: {comparison['null_space_count']}/{len(scans)}"
-            )
+            print(f"Null spaces detected: {comparison['null_space_count']}/{len(scans)}")
             print("=" * 80)
         else:
             print(json.dumps(comparison, indent=indent, ensure_ascii=False))

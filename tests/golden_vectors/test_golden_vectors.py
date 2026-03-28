@@ -190,9 +190,7 @@ class TestPhiShellRadius:
         """Shell radii must increase with k (approaching boundary)."""
         radii = [phi_shell_radius(k) for k in range(6)]
         for i in range(1, len(radii)):
-            assert (
-                radii[i] > radii[i - 1]
-            ), f"r({i})={radii[i]} <= r({i-1})={radii[i-1]}"
+            assert radii[i] > radii[i - 1], f"r({i})={radii[i]} <= r({i-1})={radii[i-1]}"
 
     def test_bounded_in_unit_ball(self) -> None:
         """All shell radii must be in (0, 1)."""
@@ -250,9 +248,7 @@ class TestFibonacciTernaryConsensus:
     def test_impl_matches_golden(self, vec: Dict[str, Any]) -> None:
         history = vec["inputs"]["history"]
         actual = fibonacci_ternary_consensus(history)
-        assert (
-            actual == vec["expected"]
-        ), f"[{vec['id']}] consensus({history})={actual}, expected={vec['expected']}"
+        assert actual == vec["expected"], f"[{vec['id']}] consensus({history})={actual}, expected={vec['expected']}"
 
     def test_neutral_holds_position(self) -> None:
         """All zeros should leave index at 0 -> FIB[0]=1."""

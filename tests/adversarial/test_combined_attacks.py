@@ -34,9 +34,7 @@ class TestCombinedMulti:
         """Each combined attack should fire 2+ signal types."""
         for a in COMBINED_MULTI:
             r = gate.process(a["prompt"], a["id"], a["class"])
-            assert (
-                len(r.detection_signals) >= 2
-            ), f"{a['id']}: only {len(r.detection_signals)} signals"
+            assert len(r.detection_signals) >= 2, f"{a['id']}: only {len(r.detection_signals)} signals"
 
 
 class TestFullCorpusBenchmark:
@@ -75,9 +73,7 @@ class TestFullCorpusBenchmark:
         print(f"  FP rate: {baseline_result.detection_rate:.1%}")
         print("  Per-class:")
         for cls, data in sorted(attack_result.per_class.items()):
-            print(
-                f"    {cls:<25} {data['detected']}/{data['total']} ({data['detection_rate']:.0%})"
-            )
+            print(f"    {cls:<25} {data['detected']}/{data['total']} ({data['detection_rate']:.0%})")
 
         assert attack_result.total_attacks >= 80
         assert attack_result.detected_count > 0

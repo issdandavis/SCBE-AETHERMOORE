@@ -91,9 +91,7 @@ class SymphonicToken:
         else:
             polarity = TonguePolarity.NEUTRAL
 
-        return cls(
-            token=token_lower, token_id=token_id, frequency=frequency, polarity=polarity
-        )
+        return cls(token=token_lower, token_id=token_id, frequency=frequency, polarity=polarity)
 
     @classmethod
     def from_id(cls, token_id: int, name: str = None) -> "SymphonicToken":
@@ -128,9 +126,7 @@ def id_to_frequency(token_id: int) -> float:
     return BASE_FREQ + FREQ_STEP * token_id
 
 
-def generate_tone(
-    frequency: float, duration: float = 0.5, amplitude: float = 0.5
-) -> np.ndarray:
+def generate_tone(frequency: float, duration: float = 0.5, amplitude: float = 0.5) -> np.ndarray:
     """
     Generate a pure sine wave tone at the given frequency.
 
@@ -231,11 +227,7 @@ def analyze_polarity_balance(tokens: List[str]) -> Dict[str, any]:
         "light_count": light_count,
         "shadow_count": shadow_count,
         "neutral_count": neutral_count,
-        "dominant_polarity": (
-            "light"
-            if balance_ratio > 0.1
-            else "shadow" if balance_ratio < -0.1 else "balanced"
-        ),
+        "dominant_polarity": ("light" if balance_ratio > 0.1 else "shadow" if balance_ratio < -0.1 else "balanced"),
     }
 
 
@@ -262,6 +254,4 @@ if __name__ == "__main__":
 
     # Generate waveform
     waveform = generate_symphonic_sequence(sequence)
-    print(
-        f"[SYMPHONIC] Generated {len(waveform)} samples ({len(waveform)/SAMPLE_RATE:.2f}s)"
-    )
+    print(f"[SYMPHONIC] Generated {len(waveform)} samples ({len(waveform)/SAMPLE_RATE:.2f}s)")

@@ -151,54 +151,33 @@ class TestModeTransition:
         """(+1) always transitions to RUN."""
         x = make_valid_state()
         for q in GovernanceMode:
-            assert (
-                mode_transition(q, GovernanceSymbol.PLUS_ONE, x) == GovernanceMode.RUN
-            )
+            assert mode_transition(q, GovernanceSymbol.PLUS_ONE, x) == GovernanceMode.RUN
 
     def test_minus_one_goes_to_rollback(self):
         """(-1) always transitions to ROLLBACK."""
         x = make_valid_state()
         for q in GovernanceMode:
-            assert (
-                mode_transition(q, GovernanceSymbol.MINUS_ONE, x)
-                == GovernanceMode.ROLLBACK
-            )
+            assert mode_transition(q, GovernanceSymbol.MINUS_ONE, x) == GovernanceMode.ROLLBACK
 
     def test_plus_zero_stays_in_mode(self):
         """(+0) stays in current mode (except ROLLBACK → RUN)."""
         x = make_valid_state()
-        assert (
-            mode_transition(GovernanceMode.RUN, GovernanceSymbol.PLUS_ZERO, x)
-            == GovernanceMode.RUN
-        )
-        assert (
-            mode_transition(GovernanceMode.HOLD, GovernanceSymbol.PLUS_ZERO, x)
-            == GovernanceMode.HOLD
-        )
-        assert (
-            mode_transition(GovernanceMode.QUAR, GovernanceSymbol.PLUS_ZERO, x)
-            == GovernanceMode.QUAR
-        )
+        assert mode_transition(GovernanceMode.RUN, GovernanceSymbol.PLUS_ZERO, x) == GovernanceMode.RUN
+        assert mode_transition(GovernanceMode.HOLD, GovernanceSymbol.PLUS_ZERO, x) == GovernanceMode.HOLD
+        assert mode_transition(GovernanceMode.QUAR, GovernanceSymbol.PLUS_ZERO, x) == GovernanceMode.QUAR
         # ROLLBACK + (+0) → RUN (exit rollback on idle-continue)
-        assert (
-            mode_transition(GovernanceMode.ROLLBACK, GovernanceSymbol.PLUS_ZERO, x)
-            == GovernanceMode.RUN
-        )
+        assert mode_transition(GovernanceMode.ROLLBACK, GovernanceSymbol.PLUS_ZERO, x) == GovernanceMode.RUN
 
     def test_minus_zero_low_risk_hold(self):
         """(-0) with low risk → HOLD."""
         x = make_valid_state()
-        result = mode_transition(
-            GovernanceMode.RUN, GovernanceSymbol.MINUS_ZERO, x, risk_score=0.3
-        )
+        result = mode_transition(GovernanceMode.RUN, GovernanceSymbol.MINUS_ZERO, x, risk_score=0.3)
         assert result == GovernanceMode.HOLD
 
     def test_minus_zero_high_risk_quar(self):
         """(-0) with high risk → QUAR."""
         x = make_valid_state()
-        result = mode_transition(
-            GovernanceMode.RUN, GovernanceSymbol.MINUS_ZERO, x, risk_score=0.7
-        )
+        result = mode_transition(GovernanceMode.RUN, GovernanceSymbol.MINUS_ZERO, x, risk_score=0.7)
         assert result == GovernanceMode.QUAR
 
 
@@ -413,11 +392,7 @@ class TestControlSequenceAnalysis:
     def test_dwell_times_computed(self):
         """Mode dwell times are correctly computed."""
         # 3x RUN, 2x HOLD, 3x RUN
-        symbols = (
-            [GovernanceSymbol.PLUS_ONE] * 3
-            + [GovernanceSymbol.MINUS_ZERO] * 2
-            + [GovernanceSymbol.PLUS_ONE] * 3
-        )
+        symbols = [GovernanceSymbol.PLUS_ONE] * 3 + [GovernanceSymbol.MINUS_ZERO] * 2 + [GovernanceSymbol.PLUS_ONE] * 3
         stats = analyze_control_sequence(symbols)
         # Should have multiple dwell periods
         total_dwells = sum(len(v) for v in stats.mode_dwell_times.values())

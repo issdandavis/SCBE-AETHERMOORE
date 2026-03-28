@@ -305,9 +305,7 @@ def _call_with_context(fn: Any, **context: Any) -> Any:
         return fn()
 
     kwargs: dict[str, Any] = {}
-    accepts_kwargs = any(
-        p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()
-    )
+    accepts_kwargs = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values())
 
     for param in sig.parameters.values():
         if param.name in {"self", "cls"}:
@@ -324,9 +322,7 @@ def _call_with_context(fn: Any, **context: Any) -> Any:
             continue
 
         if param.default is inspect._empty:
-            raise LookupError(
-                f"Cannot satisfy required parameter '{param.name}' for {fn!r}"
-            )
+            raise LookupError(f"Cannot satisfy required parameter '{param.name}' for {fn!r}")
 
     if accepts_kwargs:
         for canonical, value in context.items():
@@ -399,7 +395,7 @@ def _is_success(result: Any) -> bool:
             return bool(value) if status is None else status
 
     if hasattr(result, "status"):
-        status = _status_to_bool(getattr(result, "status"))
+        status = _status_to_bool(result.status)
         if status is not None:
             return status
 
@@ -437,10 +433,7 @@ def _has_explicit_status(result: Any) -> bool:
 
 
 def _binding_fingerprint(result: Any) -> Any:
-    if (
-        isinstance(result, (str, bytes, bytearray, memoryview, int, float, bool))
-        or result is None
-    ):
+    if isinstance(result, (str, bytes, bytearray, memoryview, int, float, bool)) or result is None:
         return result
 
     if isinstance(result, dict):
@@ -481,9 +474,7 @@ def assert_rejected(invocation) -> None:
         result = invocation()
     except Exception:
         return
-    assert not _is_success(
-        result
-    ), f"Expected rejection, got success-like result: {result!r}"
+    assert not _is_success(result), f"Expected rejection, got success-like result: {result!r}"
 
 
 def assert_no_payload_leak(value: Any, payload: bytes = PAYLOAD) -> None:
@@ -525,9 +516,7 @@ class SacredEggAPI:
 
     @property
     def targets(self) -> tuple[Any, ...]:
-        return tuple(
-            target for target in (self.instance, self.module) if target is not None
-        )
+        return tuple(target for target in (self.instance, self.module) if target is not None)
 
     def available(self) -> list[str]:
         names: set[str] = set()
@@ -705,9 +694,7 @@ def test_ring_descent_rejects_negative_target_ring(egg_api: SacredEggAPI) -> Non
         INF_MANIFOLD,
     ],
 )
-def test_manifold_binding_rejects_invalid_points(
-    egg_api: SacredEggAPI, manifold: tuple[float, ...]
-) -> None:
+def test_manifold_binding_rejects_invalid_points(egg_api: SacredEggAPI, manifold: tuple[float, ...]) -> None:
     assert_rejected(
         lambda: egg_api.ritual(
             "manifold_binding",
@@ -721,9 +708,7 @@ def test_manifold_binding_rejects_invalid_points(
 
 
 @pytest.mark.parametrize("wrong_manifold", [PERTURBED_MANIFOLD, PERMUTED_MANIFOLD])
-def test_manifold_binding_breaks_on_coordinate_change(
-    egg_api: SacredEggAPI, wrong_manifold: tuple[float, ...]
-) -> None:
+def test_manifold_binding_breaks_on_coordinate_change(egg_api: SacredEggAPI, wrong_manifold: tuple[float, ...]) -> None:
     binding = egg_api.ritual(
         "manifold_binding",
         MANIFOLD_RITUAL_ALIASES,
@@ -742,9 +727,7 @@ def test_manifold_binding_breaks_on_coordinate_change(
         manifold=VALID_MANIFOLD,
     )
     if verified is not None:
-        assert _is_success(
-            verified
-        ), f"binding did not verify at original manifold: {verified!r}"
+        assert _is_success(verified), f"binding did not verify at original manifold: {verified!r}"
         assert_rejected(
             lambda: egg_api.verify(
                 binding,
@@ -764,9 +747,7 @@ def test_manifold_binding_breaks_on_coordinate_change(
         payload=PAYLOAD,
         manifold=wrong_manifold,
     )
-    assert _is_success(
-        rebound
-    ), f"rebind on changed manifold unexpectedly failed: {rebound!r}"
+    assert _is_success(rebound), f"rebind on changed manifold unexpectedly failed: {rebound!r}"
 
     fp_a = _binding_fingerprint(binding)
     fp_b = _binding_fingerprint(rebound)
@@ -775,9 +756,7 @@ def test_manifold_binding_breaks_on_coordinate_change(
             "Need either a verify/open API or a structured binding token "
             "to prove coordinate sensitivity for this implementation"
         )
-    assert (
-        fp_a != fp_b
-    ), "changing manifold coordinates should change the binding token/fingerprint"
+    assert fp_a != fp_b, "changing manifold coordinates should change the binding token/fingerprint"
 
 
 def test_fail_to_noise_never_leaks_raw_payload(egg_api: SacredEggAPI) -> None:
@@ -812,6 +791,5 @@ def test_fail_to_noise_never_leaks_raw_payload(egg_api: SacredEggAPI) -> None:
     assert_no_payload_leak(result, PAYLOAD)
     if _has_explicit_status(result):
         assert not _is_success(result), (
-            "Invalid manifold + duplicate binders should not surface a success status; "
-            f"got {result!r}"
+            "Invalid manifold + duplicate binders should not surface a success status; " f"got {result!r}"
         )

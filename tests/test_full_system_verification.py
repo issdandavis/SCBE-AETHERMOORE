@@ -112,9 +112,7 @@ def d_H(u_norm, v_norm, diff_norm):
 d1 = d_H(0.3, 0.5, 0.2)
 d_identity = d_H(0.3, 0.3, 0.0)
 check("L5: Hyperbolic metric non-negative", d1 >= 0, f"d_H={d1:.4f}")
-check(
-    "L5: Hyperbolic metric identity", abs(d_identity) < EPS, f"d(u,u)={d_identity:.2e}"
-)
+check("L5: Hyperbolic metric identity", abs(d_identity) < EPS, f"d(u,u)={d_identity:.2e}")
 
 
 # L6: Breathing is NOT isometry
@@ -172,9 +170,7 @@ def H_wall(d, R=PHI):
 d_vals = [0, 0.5, 1.0, 1.5, 2.0, 3.0]
 H_vals = [H_wall(d) for d in d_vals]
 mono = all(H_vals[i] <= H_vals[i + 1] for i in range(len(d_vals) - 1))
-check(
-    "L12: Harmonic wall monotonic", mono, f"H(0)={H_vals[0]:.2f}, H(3)={H_vals[-1]:.2f}"
-)
+check("L12: Harmonic wall monotonic", mono, f"H(0)={H_vals[0]:.2f}, H(3)={H_vals[-1]:.2f}")
 
 # L12b: exp(d^2) version
 H_exp = [math.exp(d**2) for d in d_vals]
@@ -319,11 +315,7 @@ try:
 
     valid, issues = validate_all_polyhedra()
     # Star polyhedra have non-standard Euler characteristic -- filter to Platonic-only
-    platonic_issues = [
-        i
-        for i in (issues or [])
-        if not any(s in i for s in ("Stellated", "Great Dodecahedron"))
-    ]
+    platonic_issues = [i for i in (issues or []) if not any(s in i for s in ("Stellated", "Great Dodecahedron"))]
     check(
         "PHDM: Platonic solids topology valid",
         len(platonic_issues) == 0,
@@ -367,9 +359,7 @@ try:
     check("Credit minted", isinstance(credit, ContextCredit))
     check("Credit has UUID", len(credit.credit_id) > 0)
     check("Credit has block hash", len(credit.block_hash) == 64)
-    check(
-        "Credit face value > 0", credit.face_value > 0, f"value={credit.face_value:.6f}"
-    )
+    check("Credit face value > 0", credit.face_value > 0, f"value={credit.face_value:.6f}")
 
     # DNA check
     check("Credit DNA has agent_id", credit.dna.agent_id == "test-agent")
@@ -379,9 +369,7 @@ try:
     # Denomination weights follow golden ratio
     check("KO weight = 1.0", abs(DENOMINATION_WEIGHTS[Denomination.KO] - 1.0) < EPS)
     check("AV weight = phi", abs(DENOMINATION_WEIGHTS[Denomination.AV] - 1.618) < 0.001)
-    check(
-        "DR weight = phi^5", abs(DENOMINATION_WEIGHTS[Denomination.DR] - 11.090) < 0.01
-    )
+    check("DR weight = phi^5", abs(DENOMINATION_WEIGHTS[Denomination.DR] - 11.090) < 0.01)
 
 except Exception as e:
     check("MMCCL imports", False, str(e))
@@ -703,9 +691,7 @@ check(
 )
 
 # Earn engine governance matches L13 decision gate
-check(
-    "Earn engine uses L13 governance", True, "ALLOW/QUARANTINE/DENY from harmonic wall"
-)
+check("Earn engine uses L13 governance", True, "ALLOW/QUARANTINE/DENY from harmonic wall")
 
 # RWP signing uses same tongue keys as envelope protocol
 check(

@@ -496,9 +496,7 @@ def analyze_control_sequence(
         dwell_times[current_mode.value].append(current_dwell)
 
     # Transition count
-    transitions = sum(
-        1 for i in range(1, len(mode_seq)) if mode_seq[i] != mode_seq[i - 1]
-    )
+    transitions = sum(1 for i in range(1, len(mode_seq)) if mode_seq[i] != mode_seq[i - 1])
 
     # Mode ratios
     mode_counts = {m.value: 0 for m in GovernanceMode}

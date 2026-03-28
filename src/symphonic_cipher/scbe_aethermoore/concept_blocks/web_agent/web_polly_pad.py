@@ -220,9 +220,7 @@ class WebPollyPad:
         # Track navigation
         if action.action_type == ActionType.NAVIGATE:
             self._visited_urls.append(action.target)
-            self._loop_detector[action.target] = (
-                self._loop_detector.get(action.target, 0) + 1
-            )
+            self._loop_detector[action.target] = self._loop_detector.get(action.target, 0) + 1
 
         return action, decision
 

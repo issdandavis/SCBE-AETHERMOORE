@@ -58,9 +58,7 @@ def test_run_lock_packet_retries_with_fallback(tmp_path: Path, monkeypatch) -> N
     )
     monkeypatch.setattr(renderer, "pick_best_backend", lambda preference=None: "imagen")
 
-    def fake_generate(
-        *, backend, prompt, output, aspect, reference, negative_prompt, width, height
-    ):
+    def fake_generate(*, backend, prompt, output, aspect, reference, negative_prompt, width, height):
         calls.append(backend)
         if backend == "imagen-ultra":
             raise RuntimeError("429 RESOURCE_EXHAUSTED quota")

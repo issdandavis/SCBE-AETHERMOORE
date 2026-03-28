@@ -24,9 +24,7 @@ PILOT_KEY_HEADER = {"x-api-key": "pilot_key_67890"}
 @pytest.fixture
 def client(tmp_path) -> TestClient:
     saas_routes.reset_saas_state()
-    saas_routes.set_saas_metering_store(
-        MeteringStore(str(tmp_path / "saas_metering.db"))
-    )
+    saas_routes.set_saas_metering_store(MeteringStore(str(tmp_path / "saas_metering.db")))
     return TestClient(app)
 
 
@@ -150,9 +148,7 @@ def test_governance_and_audit_increment_usage(client: TestClient) -> None:
     assert gov.status_code == 200
     assert gov.json()["data"]["consensus"] == "ALLOW"
 
-    audit = client.get(
-        f"/saas/tenants/{tenant_id}/audit-report", headers=API_KEY_HEADER
-    )
+    audit = client.get(f"/saas/tenants/{tenant_id}/audit-report", headers=API_KEY_HEADER)
     assert audit.status_code == 200
     totals = audit.json()["data"]["totals"]
     assert totals["flocks"] == 1
@@ -203,9 +199,7 @@ def test_refresh_reassigns_stale_task(client: TestClient) -> None:
     task_id = task_resp.json()["data"]["dashboard"]["tasks"][0]["task_id"]
 
     flock = saas_routes.SAAS_FLOCKS[flock_id]["flock"]
-    flock.sheep[sheep_one_id].last_heartbeat = (
-        flock.sheep[sheep_one_id].last_heartbeat - 120
-    )
+    flock.sheep[sheep_one_id].last_heartbeat = flock.sheep[sheep_one_id].last_heartbeat - 120
 
     refresh = client.post(
         f"/saas/flocks/{flock_id}/refresh",

@@ -72,9 +72,7 @@ class SignedLatticeBridge:
         self.dual_lattice = DualLatticeCrossStitch()
         self.lattice_governor = TongueLatticeGovernor()
 
-    def symphonic_to_context(
-        self, tokens: List[str]
-    ) -> Tuple[ContextVector, Dict[str, Any]]:
+    def symphonic_to_context(self, tokens: List[str]) -> Tuple[ContextVector, Dict[str, Any]]:
         """
         Convert symphonic tokens to a context vector.
 
@@ -165,9 +163,7 @@ class SignedLatticeBridge:
             ]
         )
         n_tongue = min(6, len(context.components))
-        signed_phase = (
-            np.sum(context.components[:n_tongue] * phase_weights[:n_tongue]) * 60
-        )
+        signed_phase = np.sum(context.components[:n_tongue] * phase_weights[:n_tongue]) * 60
 
         # Normalize phase to [0, 360)
         phase = signed_phase % 360
@@ -180,9 +176,7 @@ class SignedLatticeBridge:
             flux=flux,
         )
 
-    def compute_hyperbolic_trust(
-        self, context: ContextVector, reference: ContextVector = None
-    ) -> Tuple[float, float]:
+    def compute_hyperbolic_trust(self, context: ContextVector, reference: ContextVector = None) -> Tuple[float, float]:
         """
         Compute trust score using hyperbolic geometry.
 
@@ -254,23 +248,17 @@ class SignedLatticeBridge:
         adjusted_sensitivity = min(1.0, max(0.0, sensitivity + polarity_adjustment))
 
         # Run through lattice governor
-        lattice_result = self.lattice_governor.authorize(
-            action, target, adjusted_sensitivity
-        )
+        lattice_result = self.lattice_governor.authorize(action, target, adjusted_sensitivity)
 
         # Step 5: Apply harmonic wall modulation
         harmonic_cost = harmonic_wall_cost(h_dist)
 
         # Modulate trust score by harmonic cost
         # Higher cost = lower effective trust
-        effective_trust = lattice_result["trust_score"] / (
-            1 + np.log1p(harmonic_cost - 1)
-        )
+        effective_trust = lattice_result["trust_score"] / (1 + np.log1p(harmonic_cost - 1))
 
         # Final decision based on effective trust and thresholds
-        thresholds = lattice_result.get(
-            "thresholds", {"allow": 0.7, "quarantine": 0.5, "escalate": 0.3}
-        )
+        thresholds = lattice_result.get("thresholds", {"allow": 0.7, "quarantine": 0.5, "escalate": 0.3})
 
         if effective_trust > thresholds.get("allow", 0.7):
             decision = "ALLOW"

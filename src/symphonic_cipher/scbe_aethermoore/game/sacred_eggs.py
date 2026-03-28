@@ -95,9 +95,7 @@ _HODGE_EGGS: List[_EggDef] = [
         "Eclipse Egg",
         "harmonizer",
         None,
-        lambda v: _tv(v, "KO") >= 0.4
-        and _tv(v, "DR") >= 0.4
-        and abs(_tv(v, "KO") - _tv(v, "DR")) < 0.15,
+        lambda v: _tv(v, "KO") >= 0.4 and _tv(v, "DR") >= 0.4 and abs(_tv(v, "KO") - _tv(v, "DR")) < 0.15,
         "KO >= 0.4 AND DR >= 0.4 AND |KO-DR| < 0.15",
     ),
     _EggDef(
@@ -105,9 +103,7 @@ _HODGE_EGGS: List[_EggDef] = [
         "Storm Egg",
         "balancer",
         None,
-        lambda v: _tv(v, "AV") >= 0.4
-        and _tv(v, "UM") >= 0.4
-        and abs(_tv(v, "AV") - _tv(v, "UM")) < 0.15,
+        lambda v: _tv(v, "AV") >= 0.4 and _tv(v, "UM") >= 0.4 and abs(_tv(v, "AV") - _tv(v, "UM")) < 0.15,
         "AV >= 0.4 AND UM >= 0.4 AND |AV-UM| < 0.15",
     ),
     _EggDef(
@@ -115,9 +111,7 @@ _HODGE_EGGS: List[_EggDef] = [
         "Paradox Egg",
         "synthesizer",
         None,
-        lambda v: _tv(v, "RU") >= 0.4
-        and _tv(v, "CA") >= 0.4
-        and abs(_tv(v, "RU") - _tv(v, "CA")) < 0.15,
+        lambda v: _tv(v, "RU") >= 0.4 and _tv(v, "CA") >= 0.4 and abs(_tv(v, "RU") - _tv(v, "CA")) < 0.15,
         "RU >= 0.4 AND CA >= 0.4 AND |RU-CA| < 0.15",
     ),
 ]

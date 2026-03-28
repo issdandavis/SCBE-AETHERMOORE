@@ -83,11 +83,7 @@ def _position_for_record(
     radial = 0.08 + radius * _hash_unit(f"{note_id}|radius")
     x = math.cos(angle) * radial
     y = math.sin(angle) * radial
-    phase = (
-        phase_rad
-        if phase_rad is not None
-        else 2.0 * math.pi * _hash_unit(f"{note_id}|phase")
-    )
+    phase = phase_rad if phase_rad is not None else 2.0 * math.pi * _hash_unit(f"{note_id}|phase")
     return x, y, phase
 
 
@@ -95,9 +91,7 @@ def _positive_to_signed(intent: list[float]) -> list[float]:
     return [float((2.0 * value) - 1.0) for value in intent]
 
 
-def _qc_coords_from_state(
-    x: float, y: float, phase_rad: float, signed_intent: list[float]
-) -> list[float]:
+def _qc_coords_from_state(x: float, y: float, phase_rad: float, signed_intent: list[float]) -> list[float]:
     phase_sin = math.sin(phase_rad)
     phase_cos = math.cos(phase_rad)
     coords = [
@@ -128,9 +122,7 @@ def _realm_from_signed_vector(signed_intent: list[float]) -> str:
     return REALM_PATH
 
 
-def _fold_target_octant(
-    source_octant: SignTriplet, signed_intent: list[float], threshold: float
-) -> SignTriplet:
+def _fold_target_octant(source_octant: SignTriplet, signed_intent: list[float], threshold: float) -> SignTriplet:
     flips = [component <= -threshold for component in signed_intent]
     return tuple((not sign) if flip else sign for sign, flip in zip(source_octant, flips))  # type: ignore[return-value]
 
@@ -156,12 +148,8 @@ class StorageInteractionMesh:
         fold_negative_vectors: bool = True,
         fold_threshold: float = 0.15,
     ):
-        self.lattice = lattice or HyperbolicLattice25D(
-            index_mode="hybrid", quadtree_capacity=12, cell_size=0.5
-        )
-        self.hyperbolic_octree = hyperbolic_octree or HyperbolicOctree(
-            grid_size=64, max_depth=3
-        )
+        self.lattice = lattice or HyperbolicLattice25D(index_mode="hybrid", quadtree_capacity=12, cell_size=0.5)
+        self.hyperbolic_octree = hyperbolic_octree or HyperbolicOctree(grid_size=64, max_depth=3)
         self.quasi_drive = quasi_drive or QuasiCrystalVoxelDrive(resolution=32)
         self.entropic_layer = EntropicLayer()
         self.focus_phase_rad = focus_phase_rad
@@ -249,13 +237,9 @@ class StorageInteractionMesh:
             if self.fold_negative_vectors:
                 voxel = _find_bundle_voxel(self.lattice, bundle.bundle_id)
                 if voxel is not None:
-                    target = _fold_target_octant(
-                        voxel.octant, signed_intent, self.fold_threshold
-                    )
+                    target = _fold_target_octant(voxel.octant, signed_intent, self.fold_threshold)
                     if target != voxel.octant:
-                        self.lattice.octree.mirror_octant(
-                            voxel.octant, target, transform_intent=True
-                        )
+                        self.lattice.octree.mirror_octant(voxel.octant, target, transform_intent=True)
                         record.fold_applied = True
                         record.fold_target_octant = OCTANT_NAMES[target]
 
@@ -264,18 +248,12 @@ class StorageInteractionMesh:
         return list(self.records)
 
     def attachment_ring_records(self) -> list[MeshRecord]:
-        return [
-            record
-            for record in self.records
-            if record.focus_delta <= self.focus_bandwidth
-        ]
+        return [record for record in self.records if record.focus_delta <= self.focus_bandwidth]
 
     def stats(self) -> dict[str, Any]:
         ring_records = self.attachment_ring_records()
         fold_count = sum(1 for record in self.records if record.fold_applied)
-        entropic_escape_count = sum(
-            1 for record in self.records if record.entropic_escape
-        )
+        entropic_escape_count = sum(1 for record in self.records if record.entropic_escape)
         adaptive_k_values = [record.adaptive_k for record in self.records]
         return {
             "record_count": len(self.records),
@@ -284,14 +262,8 @@ class StorageInteractionMesh:
             "attachment_ring_count": len(ring_records),
             "fold_count": fold_count,
             "entropic_escape_count": entropic_escape_count,
-            "max_entropic_volume_ratio": max(
-                (record.entropic_volume_ratio for record in self.records), default=0.0
-            ),
-            "adaptive_k_mean": (
-                (sum(adaptive_k_values) / len(adaptive_k_values))
-                if adaptive_k_values
-                else 0.0
-            ),
+            "max_entropic_volume_ratio": max((record.entropic_volume_ratio for record in self.records), default=0.0),
+            "adaptive_k_mean": ((sum(adaptive_k_values) / len(adaptive_k_values)) if adaptive_k_values else 0.0),
             "lattice": self.lattice.stats(),
             "hyperbolic_octree": self.hyperbolic_octree.stats(),
             "quasi_drive": self.quasi_drive.stats(),

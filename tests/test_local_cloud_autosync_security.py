@@ -15,9 +15,7 @@ def _load_module(name: str, relative_path: str):
     return module
 
 
-autosync = _load_module(
-    "test_local_cloud_autosync_security", "scripts/local_cloud_autosync.py"
-)
+autosync = _load_module("test_local_cloud_autosync_security", "scripts/local_cloud_autosync.py")
 
 
 def test_detect_github_repo_rejects_non_github_substring(monkeypatch) -> None:

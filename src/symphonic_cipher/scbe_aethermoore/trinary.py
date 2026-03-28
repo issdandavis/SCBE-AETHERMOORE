@@ -207,16 +207,12 @@ class BalancedTernary:
     def trit_and(self, other: BalancedTernary) -> BalancedTernary:
         """Apply Kleene AND trit-by-trit."""
         a, b = _pad_equal(self, other)
-        return BalancedTernary(
-            tuple(Trit(min(at.value, bt.value)) for at, bt in zip(a._trits, b._trits))
-        )
+        return BalancedTernary(tuple(Trit(min(at.value, bt.value)) for at, bt in zip(a._trits, b._trits)))
 
     def trit_or(self, other: BalancedTernary) -> BalancedTernary:
         """Apply Kleene OR trit-by-trit."""
         a, b = _pad_equal(self, other)
-        return BalancedTernary(
-            tuple(Trit(max(at.value, bt.value)) for at, bt in zip(a._trits, b._trits))
-        )
+        return BalancedTernary(tuple(Trit(max(at.value, bt.value)) for at, bt in zip(a._trits, b._trits)))
 
     # ── Governance ──
 
@@ -278,9 +274,7 @@ class BalancedTernary:
 # ---------------------------------------------------------------------------
 
 
-def _pad_equal(
-    a: BalancedTernary, b: BalancedTernary
-) -> Tuple[BalancedTernary, BalancedTernary]:
+def _pad_equal(a: BalancedTernary, b: BalancedTernary) -> Tuple[BalancedTernary, BalancedTernary]:
     """Zero-pad both numbers to equal width (LSB-first)."""
     max_len = max(len(a._trits), len(b._trits))
     at = a._trits + (Trit.ZERO,) * (max_len - len(a._trits))

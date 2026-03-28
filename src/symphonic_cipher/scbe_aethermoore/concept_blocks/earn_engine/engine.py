@@ -263,17 +263,11 @@ class EarnEngine:
 
     def total_earned(self) -> float:
         """Total face value of all earned + pending credits."""
-        return sum(
-            e.face_value
-            for e in self.ledger
-            if e.state in (SettlementState.EARNED, SettlementState.PENDING)
-        )
+        return sum(e.face_value for e in self.ledger if e.state in (SettlementState.EARNED, SettlementState.PENDING))
 
     def total_settled(self) -> float:
         """Total real-world value settled."""
-        return sum(
-            e.settled_value for e in self.ledger if e.state == SettlementState.SETTLED
-        )
+        return sum(e.settled_value for e in self.ledger if e.state == SettlementState.SETTLED)
 
     def balance_by_denomination(self) -> Dict[str, float]:
         """Breakdown of earned value by tongue denomination."""
@@ -300,15 +294,9 @@ class EarnEngine:
     def stats(self) -> Dict[str, Any]:
         """Summary statistics."""
         earned_count = sum(1 for e in self.ledger if e.state == SettlementState.EARNED)
-        pending_count = sum(
-            1 for e in self.ledger if e.state == SettlementState.PENDING
-        )
-        rejected_count = sum(
-            1 for e in self.ledger if e.state == SettlementState.REJECTED
-        )
-        settled_count = sum(
-            1 for e in self.ledger if e.state == SettlementState.SETTLED
-        )
+        pending_count = sum(1 for e in self.ledger if e.state == SettlementState.PENDING)
+        rejected_count = sum(1 for e in self.ledger if e.state == SettlementState.REJECTED)
+        settled_count = sum(1 for e in self.ledger if e.state == SettlementState.SETTLED)
 
         return {
             "total_events": len(self.ledger),

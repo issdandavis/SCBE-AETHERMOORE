@@ -531,18 +531,9 @@ class CrossTokenizer:
         sha = hashlib.sha256(b).hexdigest()
         phase_delta = (self.PHASE[dst_tg] - self.PHASE[src_tg]) % (2 * math.pi)
         weight_ratio = self.WEIGHT[dst_tg] / self.WEIGHT[src_tg]
-        msg = (
-            f"{src_tg}->{dst_tg}|{mode}|{sha}|{phase_delta:.6f}"
-            f"|{weight_ratio:.6f}|{int(time.time())}"
-        ).encode()
-        h = base64.b64encode(
-            hmac.new(
-                attest_key or b"aether-attest-default", msg, hashlib.sha256
-            ).digest()
-        ).decode()
-        attest = XlateAttestation(
-            src_tg, dst_tg, mode, time.time(), phase_delta, weight_ratio, sha, h
-        )
+        msg = (f"{src_tg}->{dst_tg}|{mode}|{sha}|{phase_delta:.6f}" f"|{weight_ratio:.6f}|{int(time.time())}").encode()
+        h = base64.b64encode(hmac.new(attest_key or b"aether-attest-default", msg, hashlib.sha256).digest()).decode()
+        attest = XlateAttestation(src_tg, dst_tg, mode, time.time(), phase_delta, weight_ratio, sha, h)
         return out_tokens, attest
 
     def blend(self, pattern: List[str], data: bytes) -> List[Tuple[str, str]]:
@@ -580,10 +571,7 @@ def project_to_sphere(ctx: List[float]) -> List[float]:
 
 
 def project_to_cube(ctx: List[float], m: int = 6) -> List[float]:
-    arr = [
-        (math.tanh(x / 5) + 1) / 2
-        for x in (ctx[:m] if len(ctx) >= m else ctx + [0] * (m - len(ctx)))
-    ]
+    arr = [(math.tanh(x / 5) + 1) / 2 for x in (ctx[:m] if len(ctx) >= m else ctx + [0] * (m - len(ctx)))]
     return [min(1.0, max(0.0, x)) for x in arr]
 
 
@@ -606,11 +594,7 @@ def potentials(u: List[float], v: List[float]) -> Tuple[float, float]:
 
 
 def classify(h: str, z: str, P: float, margin: float) -> str:
-    return (
-        "interior"
-        if ("S" in h and "C" in z and P < 0.6 and margin > 0.05)
-        else "exterior"
-    )
+    return "interior" if ("S" in h and "C" in z and P < 0.6 and margin > 0.05) else "exterior"
 
 
 class ConcentricRingPolicy:
@@ -662,9 +646,7 @@ def dsa_sign(sk: bytes, msg: bytes) -> bytes:
 
 
 def dsa_verify(pk: bytes, msg: bytes, sig: bytes) -> bool:
-    return hmac.compare_digest(
-        hmac.new(_mock_dsa_key(pk), msg, hashlib.sha256).digest(), sig
-    )
+    return hmac.compare_digest(hmac.new(_mock_dsa_key(pk), msg, hashlib.sha256).digest(), sig)
 
 
 # ---------- GeoSeal encrypt/decrypt ----------
@@ -720,14 +702,8 @@ def geoseal_decrypt(
     sk_kem_b64: str,
     pk_dsa_b64: str,
 ) -> Tuple[bool, bytes | None]:
-    ct_k = (
-        base64.b64decode(env["ct_k"]) if isinstance(env["ct_k"], str) else env["ct_k"]
-    )
-    ct_spec = (
-        base64.b64decode(env["ct_spec"])
-        if isinstance(env["ct_spec"], str)
-        else env["ct_spec"]
-    )
+    ct_k = base64.b64decode(env["ct_k"]) if isinstance(env["ct_k"], str) else env["ct_k"]
+    ct_spec = base64.b64decode(env["ct_spec"]) if isinstance(env["ct_spec"], str) else env["ct_spec"]
     attest = env["attest"]
     sig = base64.b64decode(env["sig"]) if isinstance(env["sig"], str) else env["sig"]
     if not dsa_verify(
@@ -833,11 +809,7 @@ def derive_seed(
     token_bits = encode_token_indices(indices)
 
     # Weight header: sum of weights for all tokens
-    weights = (
-        CrossTokenizer.WEIGHT_LWS
-        if weight_system == "lws"
-        else CrossTokenizer.WEIGHT_PHDM
-    )
+    weights = CrossTokenizer.WEIGHT_LWS if weight_system == "lws" else CrossTokenizer.WEIGHT_PHDM
     total_weight = sum(weights[tg] for tg, _ in parsed)
     weight_bytes = struct.pack(">f", total_weight)
 
@@ -990,9 +962,7 @@ def cmd_unblend(args):
 
 
 def cmd_gencore(args):
-    pt_b64 = (
-        sys.stdin.read().strip() if args.plaintext_b64 is None else args.plaintext_b64
-    )
+    pt_b64 = sys.stdin.read().strip() if args.plaintext_b64 is None else args.plaintext_b64
     ctx = json.loads(args.context)
     env = geoseal_encrypt(pt_b64, ctx, args.kem_key, args.dsa_key)
     print(json.dumps(env))
@@ -1038,7 +1008,8 @@ def cmd_egg_create(args):
     if not args.outfile:
         print(out)
     else:
-        open(args.outfile, "w", encoding="utf-8").write(out)
+        with open(args.outfile, "w", encoding="utf-8") as fh:
+            fh.write(out)
 
 
 def cmd_egg_hatch(args):
@@ -1051,7 +1022,8 @@ def cmd_egg_hatch(args):
     xt = CrossTokenizer(tok)
     integrator = SacredEggIntegrator(xt)
 
-    egg_data = open(args.egg_json, "r", encoding="utf-8").read()
+    with open(args.egg_json, "r", encoding="utf-8") as fh:
+        egg_data = fh.read()
     egg = integrator.from_json(egg_data)
     ctx = json.loads(args.context)
     additional = json.loads(args.additional_tongues)
@@ -1088,7 +1060,8 @@ def cmd_egg_paint(args):
     xt = CrossTokenizer(tok)
     integrator = SacredEggIntegrator(xt)
 
-    egg_data = open(args.egg_json, "r", encoding="utf-8").read()
+    with open(args.egg_json, "r", encoding="utf-8") as fh:
+        egg_data = fh.read()
     egg = integrator.from_json(egg_data)
 
     hatch_cond = json.loads(args.hatch_condition) if args.hatch_condition else None
@@ -1098,7 +1071,8 @@ def cmd_egg_paint(args):
     if not args.outfile:
         print(out)
     else:
-        open(args.outfile, "w", encoding="utf-8").write(out)
+        with open(args.outfile, "w", encoding="utf-8") as fh:
+            fh.write(out)
 
 
 def cmd_seed(args):
@@ -1171,10 +1145,7 @@ def selftest() -> int:
             for i, t in enumerate(toks)
         ]
         assert tok.decode_tokens(tg, noisy) == payload
-        assert (
-            tok.decode_tokens(tg, tok.normalize_token_stream(" ".join(noisy)))
-            == payload
-        )
+        assert tok.decode_tokens(tg, tok.normalize_token_stream(" ".join(noisy))) == payload
 
     # ── Canonical-collision guard ──
     try:
@@ -1194,9 +1165,7 @@ def selftest() -> int:
             back = tok.decode_tokens(d, out_tokens)
             assert back == payload
             assert isinstance(attest.hmac_attest, str)
-            out_tokens2, _ = xt.retokenize(
-                s, d, ttext, mode="semantic", attest_key=b"k"
-            )
+            out_tokens2, _ = xt.retokenize(s, d, ttext, mode="semantic", attest_key=b"k")
             assert tok.decode_tokens(d, out_tokens2) == payload
 
     # ── Blend/unblend ──
@@ -1343,12 +1312,8 @@ def build_cli():
 
     # ── Sacred Egg commands ──
 
-    ec = sub.add_parser(
-        "egg-create", help="Create a Sacred Egg (GeoSeal-encrypted + ritual-gated)"
-    )
-    ec.add_argument(
-        "--payload-b64", required=True, help="Base64-encoded payload to seal"
-    )
+    ec = sub.add_parser("egg-create", help="Create a Sacred Egg (GeoSeal-encrypted + ritual-gated)")
+    ec.add_argument("--payload-b64", required=True, help="Base64-encoded payload to seal")
     ec.add_argument(
         "--primary-tongue",
         required=True,
@@ -1356,12 +1321,8 @@ def build_cli():
         help="Tongue identity bound to egg",
     )
     ec.add_argument("--glyph", default="egg", help="Visual symbol for the egg")
-    ec.add_argument(
-        "--hatch-condition", default="{}", help="JSON dict of ritual requirements"
-    )
-    ec.add_argument(
-        "--context", required=True, help="JSON array of 6 floats for GeoSeal context"
-    )
+    ec.add_argument("--hatch-condition", default="{}", help="JSON dict of ritual requirements")
+    ec.add_argument("--context", required=True, help="JSON array of 6 floats for GeoSeal context")
     ec.add_argument("--kem-key", required=True, help="Base64 KEM public key")
     ec.add_argument("--dsa-key", required=True, help="Base64 DSA signing key")
     ec.add_argument("--out", dest="outfile", help="Output JSON file (default: stdout)")
@@ -1369,9 +1330,7 @@ def build_cli():
 
     eh = sub.add_parser("egg-hatch", help="Attempt to hatch a Sacred Egg")
     eh.add_argument("--egg-json", required=True, help="Path to Sacred Egg JSON file")
-    eh.add_argument(
-        "--agent-tongue", required=True, choices=TONGUES, help="Agent's active tongue"
-    )
+    eh.add_argument("--agent-tongue", required=True, choices=TONGUES, help="Agent's active tongue")
     eh.add_argument(
         "--ritual-mode",
         default="solitary",
@@ -1387,39 +1346,25 @@ def build_cli():
         default="[]",
         help="JSON array of ring traversal (ring_descent mode)",
     )
-    eh.add_argument(
-        "--context", required=True, help="JSON array of 6 floats for current context"
-    )
+    eh.add_argument("--context", required=True, help="JSON array of 6 floats for current context")
     eh.add_argument("--kem-key", required=True, help="Base64 KEM secret key")
     eh.add_argument("--dsa-pk", required=True, help="Base64 DSA verification key")
     eh.add_argument("--lexicons")
     eh.set_defaults(func=cmd_egg_hatch)
 
-    ep = sub.add_parser(
-        "egg-paint", help="Paint an egg — change the shell, keep the yolk"
-    )
+    ep = sub.add_parser("egg-paint", help="Paint an egg — change the shell, keep the yolk")
     ep.add_argument("--egg-json", required=True, help="Path to Sacred Egg JSON file")
     ep.add_argument("--glyph", help="New visual symbol for the egg")
-    ep.add_argument(
-        "--hatch-condition", help="New hatch condition JSON (replaces existing)"
-    )
+    ep.add_argument("--hatch-condition", help="New hatch condition JSON (replaces existing)")
     ep.add_argument("--out", dest="outfile", help="Output JSON file (default: stdout)")
     ep.set_defaults(func=cmd_egg_paint)
 
     ps = sub.add_parser("seed", help="AetherLex Seed: mnemonic to PQC key material")
     ps.add_argument("--phrase", help="Existing mnemonic phrase (omit to generate)")
-    ps.add_argument(
-        "--length", type=int, default=13, help="Token count for generated phrase"
-    )
-    ps.add_argument(
-        "--bytes", type=int, default=64, choices=[32, 64], help="Seed output length"
-    )
-    ps.add_argument(
-        "--weights", default="lws", choices=["lws", "phdm"], help="Weight system"
-    )
-    ps.add_argument(
-        "--split", choices=["mlkem", "mldsa"], help="Split seed for PQC algorithm"
-    )
+    ps.add_argument("--length", type=int, default=13, help="Token count for generated phrase")
+    ps.add_argument("--bytes", type=int, default=64, choices=[32, 64], help="Seed output length")
+    ps.add_argument("--weights", default="lws", choices=["lws", "phdm"], help="Weight system")
+    ps.add_argument("--split", choices=["mlkem", "mldsa"], help="Split seed for PQC algorithm")
     ps.add_argument("--lexicons")
     ps.set_defaults(func=cmd_seed)
 

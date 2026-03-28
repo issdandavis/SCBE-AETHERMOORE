@@ -123,9 +123,7 @@ class ConnectorBridge:
             parsed = response.text
         return {"status_code": response.status_code, "response": parsed}
 
-    async def execute(
-        self, platform: str, action: str, payload: dict[str, Any] | None = None
-    ) -> ConnectorResult:
+    async def execute(self, platform: str, action: str, payload: dict[str, Any] | None = None) -> ConnectorResult:
         platform = platform.lower()
         payload = payload or {}
         started = time.perf_counter()
@@ -146,9 +144,7 @@ class ConnectorBridge:
         result.elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
         return result
 
-    async def _execute_notebooklm(
-        self, action: str, payload: dict[str, Any]
-    ) -> ConnectorResult:
+    async def _execute_notebooklm(self, action: str, payload: dict[str, Any]) -> ConnectorResult:
         action_map = {
             "create_notebook": "create-notebook",
             "resolve_notebook": "resolve-notebook",
@@ -158,9 +154,7 @@ class ConnectorBridge:
         }
         cli_action = action_map.get(action)
         if not cli_action:
-            return ConnectorResult(
-                success=False, error=f"Unknown notebooklm action: {action}"
-            )
+            return ConnectorResult(success=False, error=f"Unknown notebooklm action: {action}")
 
         args: list[str] = ["--action", cli_action]
         session_id = str(payload.get("session_id", "1")).strip() or "1"
@@ -211,37 +205,21 @@ class ConnectorBridge:
         return ConnectorResult(
             success=ok,
             data=raw if ok else {},
-            error=(
-                ""
-                if ok
-                else str(
-                    raw.get("error")
-                    or raw.get("stderr")
-                    or "NotebookLM connector failed"
-                )
-            ),
+            error=("" if ok else str(raw.get("error") or raw.get("stderr") or "NotebookLM connector failed")),
         )
 
-    async def _execute_automations(
-        self, action: str, payload: dict[str, Any]
-    ) -> ConnectorResult:
+    async def _execute_automations(self, action: str, payload: dict[str, Any]) -> ConnectorResult:
         if action != "trigger":
-            return ConnectorResult(
-                success=False, error=f"Unknown automations action: {action}"
-            )
+            return ConnectorResult(success=False, error=f"Unknown automations action: {action}")
 
         event = str(payload.get("event", "")).strip()
         if not event:
             return ConnectorResult(success=False, error="event is required")
 
-        target_url = str(
-            os.getenv("SCBE_AUTOMATIONS_URL", DEFAULT_AUTOMATIONS_URL)
-        ).strip()
+        target_url = str(os.getenv("SCBE_AUTOMATIONS_URL", DEFAULT_AUTOMATIONS_URL)).strip()
         parsed = urlparse(target_url)
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-            return ConnectorResult(
-                success=False, error="SCBE_AUTOMATIONS_URL must be a valid http(s) URL"
-            )
+            return ConnectorResult(success=False, error="SCBE_AUTOMATIONS_URL must be a valid http(s) URL")
 
         body = {"event": event, "payload": payload.get("payload", {})}
         raw = await self._post_json(target_url, body)

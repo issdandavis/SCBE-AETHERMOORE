@@ -36,14 +36,8 @@ def test_action_map_round_trip_writes_compiled_outputs(tmp_path: Path) -> None:
     )
 
     summary = mod.build_action_map(tmp_path, run_id)
-    action_map = json.loads(
-        (tmp_path / run_id / "action_map.json").read_text(encoding="utf-8")
-    )
-    rows = (
-        (tmp_path / run_id / "training_rows.jsonl")
-        .read_text(encoding="utf-8")
-        .splitlines()
-    )
+    action_map = json.loads((tmp_path / run_id / "action_map.json").read_text(encoding="utf-8"))
+    rows = (tmp_path / run_id / "training_rows.jsonl").read_text(encoding="utf-8").splitlines()
 
     assert summary["terminal_status"] == "completed"
     assert summary["training_rows"] == 2

@@ -151,9 +151,7 @@ def tongue_phi_ternary(tongue: str, decision: int) -> PhiTernary:
     return PhiTernary(q=decision, k=k)
 
 
-def tongue_vector_to_phi_ternary(
-    activations: List[float], threshold: float = 0.1
-) -> List[PhiTernary]:
+def tongue_vector_to_phi_ternary(activations: List[float], threshold: float = 0.1) -> List[PhiTernary]:
     """Convert a 6D tongue activation vector to phi-ternary values.
 
     Each tongue's activation is quantized to {-1, 0, +1} based on threshold,
@@ -161,7 +159,7 @@ def tongue_vector_to_phi_ternary(
     """
     tongues = ["KO", "AV", "RU", "CA", "UM", "DR"]
     result = []
-    for i, (tongue, val) in enumerate(zip(tongues, activations)):
+    for i, (_tongue, val) in enumerate(zip(tongues, activations)):
         if val > threshold:
             q = 1
         elif val < -threshold:

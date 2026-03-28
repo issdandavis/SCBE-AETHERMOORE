@@ -215,9 +215,7 @@ class SacredEggRegistry:
                 (status,),
             )
         else:
-            c.execute(
-                "SELECT egg_id, primary_tongue, glyph, status, created_at FROM eggs"
-            )
+            c.execute("SELECT egg_id, primary_tongue, glyph, status, created_at FROM eggs")
         return [dict(row) for row in c.fetchall()]
 
     def expire_stale(self) -> int:

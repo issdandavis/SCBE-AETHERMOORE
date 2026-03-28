@@ -588,9 +588,7 @@ class TestIntegration:
 
         # Verify counts add up
         assert census.par_activate + census.par_neutral + census.par_inhibit == len(par)
-        assert census.perp_activate + census.perp_neutral + census.perp_inhibit == len(
-            perp
-        )
+        assert census.perp_activate + census.perp_neutral + census.perp_inhibit == len(perp)
 
     def test_brain_state_roundtrip(self):
         """GovernanceVerdict.updated_state can be fed back to UnifiedBrainState."""

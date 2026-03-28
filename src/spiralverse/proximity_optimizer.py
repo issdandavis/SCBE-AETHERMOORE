@@ -204,9 +204,7 @@ class ProximityEncoder:
     def __init__(self, hysteresis: Optional[HysteresisController] = None):
         self.hysteresis = hysteresis or HysteresisController()
 
-    def encode(
-        self, position: Position6D, target_distance: float, agent_pair: str = ""
-    ) -> OptimizedMessage:
+    def encode(self, position: Position6D, target_distance: float, agent_pair: str = "") -> OptimizedMessage:
         """
         Encode position using optimal protocol level for distance.
 
@@ -230,9 +228,7 @@ class ProximityEncoder:
         # Encode only required axes
         data = self._encode_axes(position, tongues, level)
 
-        return OptimizedMessage(
-            level=level, tongues=tongues, data=data, source_position=position
-        )
+        return OptimizedMessage(level=level, tongues=tongues, data=data, source_position=position)
 
     def _distance_to_level_raw(self, distance: float) -> ProtocolLevel:
         """Convert distance to protocol level."""
@@ -241,9 +237,7 @@ class ProximityEncoder:
                 return level
         return ProtocolLevel.FULL
 
-    def _encode_axes(
-        self, position: Position6D, tongues: List[Axis], level: ProtocolLevel
-    ) -> bytes:
+    def _encode_axes(self, position: Position6D, tongues: List[Axis], level: ProtocolLevel) -> bytes:
         """Encode selected axes to bytes."""
         values = []
 
@@ -274,9 +268,7 @@ class ProximityDecoder:
     Decodes optimized messages back to Position6D.
     """
 
-    def decode(
-        self, message: OptimizedMessage, previous: Optional[Position6D] = None
-    ) -> Position6D:
+    def decode(self, message: OptimizedMessage, previous: Optional[Position6D] = None) -> Position6D:
         """
         Decode optimized message to full Position6D.
 
@@ -392,10 +384,7 @@ class BandwidthMonitor:
             "full_protocol_bytes": self.stats.full_protocol_bytes,
             "savings_percent": f"{self.stats.savings_percent:.1f}%",
             "avg_bytes_per_message": f"{self.stats.avg_bytes_per_message:.1f}",
-            "messages_by_level": {
-                level.name: count
-                for level, count in self.stats.messages_by_level.items()
-            },
+            "messages_by_level": {level.name: count for level, count in self.stats.messages_by_level.items()},
         }
 
     def reset(self):
@@ -455,9 +444,7 @@ class FormationOptimizer:
 
         return levels
 
-    def estimate_bandwidth(
-        self, levels: Dict[Tuple[str, str], ProtocolLevel], update_rate_hz: float = 10.0
-    ) -> float:
+    def estimate_bandwidth(self, levels: Dict[Tuple[str, str], ProtocolLevel], update_rate_hz: float = 10.0) -> float:
         """
         Estimate bandwidth usage for given protocol levels.
 
@@ -465,7 +452,7 @@ class FormationOptimizer:
         """
         total_bytes_per_second = 0.0
 
-        for pair, level in levels.items():
+        for _pair, level in levels.items():
             bytes_per_msg = LEVEL_BYTE_SIZES[level]
             total_bytes_per_second += bytes_per_msg * update_rate_hz
 
@@ -545,9 +532,7 @@ def demo():
 
         summary = monitor.get_summary()
         print(f"  {stage_name}:")
-        print(
-            f"    Bytes sent: {summary['bytes_sent']:,} / {summary['full_protocol_bytes']:,} (full)"
-        )
+        print(f"    Bytes sent: {summary['bytes_sent']:,} / {summary['full_protocol_bytes']:,} (full)")
         print(f"    Savings: {summary['savings_percent']}")
         print()
 
@@ -580,9 +565,7 @@ def demo():
         f"  Original:  AXIOM={original.axiom:.1f}, FLOW={original.flow:.1f}, "
         f"GLYPH={original.glyph:.1f}, ORACLE={original.oracle:.1f}"
     )
-    print(
-        f"  Minimal decode (no prev): AXIOM={decoded_partial.axiom:.1f} (only AXIOM transmitted)"
-    )
+    print(f"  Minimal decode (no prev): AXIOM={decoded_partial.axiom:.1f} (only AXIOM transmitted)")
 
     # Decode with previous position
     decoded_full = decoder.decode(msg_minimal, previous=original)

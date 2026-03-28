@@ -135,13 +135,7 @@ class FibonacciSphereGrid:
         coords[0] = r * math.cos(angles[0])
         coords[1] = r * math.sin(angles[0]) * math.cos(angles[1])
         coords[2] = r * math.sin(angles[0]) * math.sin(angles[1]) * math.cos(angles[2])
-        coords[3] = (
-            r
-            * math.sin(angles[0])
-            * math.sin(angles[1])
-            * math.sin(angles[2])
-            * math.cos(angles[3])
-        )
+        coords[3] = r * math.sin(angles[0]) * math.sin(angles[1]) * math.sin(angles[2]) * math.cos(angles[3])
         coords[4] = (
             r
             * math.sin(angles[0])
@@ -230,26 +224,19 @@ class FibonacciSphereGrid:
                     {
                         "target": target_id,
                         "distance": round(dist, 4),
-                        "tongue": self._dominant_dimension(
-                            node["coords_6d"], self.nodes[target_id]["coords_6d"]
-                        ),
+                        "tongue": self._dominant_dimension(node["coords_6d"], self.nodes[target_id]["coords_6d"]),
                     }
                 )
 
     @staticmethod
     def _distance(a: list, b: list) -> float:
-        return math.sqrt(
-            sum(
-                (ai - bi) ** 2 * TONGUE_WEIGHTS[i]
-                for i, (ai, bi) in enumerate(zip(a, b))
-            )
-        ) / sum(TONGUE_WEIGHTS)
+        return math.sqrt(sum((ai - bi) ** 2 * TONGUE_WEIGHTS[i] for i, (ai, bi) in enumerate(zip(a, b)))) / sum(
+            TONGUE_WEIGHTS
+        )
 
     @staticmethod
     def _dominant_dimension(a: list, b: list) -> str:
-        diffs = [
-            abs(ai - bi) * TONGUE_WEIGHTS[i] for i, (ai, bi) in enumerate(zip(a, b))
-        ]
+        diffs = [abs(ai - bi) * TONGUE_WEIGHTS[i] for i, (ai, bi) in enumerate(zip(a, b))]
         min_idx = diffs.index(min(diffs))
         return TONGUE_NAMES[min_idx]
 
@@ -273,9 +260,7 @@ class FibonacciSphereGrid:
         # Compute stats
         for node in self.nodes.values():
             cat = node["category"]
-            data["stats"]["categories"][cat] = (
-                data["stats"]["categories"].get(cat, 0) + 1
-            )
+            data["stats"]["categories"][cat] = data["stats"]["categories"].get(cat, 0) + 1
             data["stats"]["max_depth"] = max(data["stats"]["max_depth"], node["depth"])
             data["stats"]["total_connections"] += len(node["connections"])
 
@@ -322,11 +307,7 @@ class MultiAngleAnalyzer:
 
         for angle_name, categories, description in self.ANGLES:
             if categories:
-                relevant = {
-                    nid: n
-                    for nid, n in grid.nodes.items()
-                    if n["category"] in categories
-                }
+                relevant = {nid: n for nid, n in grid.nodes.items() if n["category"] in categories}
             else:
                 # Cross-domain: top connected nodes
                 relevant = dict(
@@ -362,9 +343,7 @@ class MultiAngleAnalyzer:
                     "description": description,
                     "nodes_analyzed": len(relevant),
                     "bridges_found": len(bridges),
-                    "top_bridges": sorted(
-                        bridges, key=lambda x: x["connection_count"], reverse=True
-                    )[:5],
+                    "top_bridges": sorted(bridges, key=lambda x: x["connection_count"], reverse=True)[:5],
                 }
             )
 
@@ -388,9 +367,7 @@ class CategoryExporter:
         "data": ["research", "distributed"],
     }
 
-    def export_for_web(
-        self, chunks: list[KnowledgeChunk], grid: FibonacciSphereGrid
-    ) -> dict[str, str]:
+    def export_for_web(self, chunks: list[KnowledgeChunk], grid: FibonacciSphereGrid) -> dict[str, str]:
         """Export categorized datasets for website backends."""
         paths = {}
 
@@ -399,9 +376,7 @@ class CategoryExporter:
             site_dir.mkdir(parents=True, exist_ok=True)
 
             site_chunks = [c for c in chunks if c.category in categories]
-            site_nodes = {
-                nid: n for nid, n in grid.nodes.items() if n["category"] in categories
-            }
+            site_nodes = {nid: n for nid, n in grid.nodes.items() if n["category"] in categories}
 
             # Dataset JSON
             dataset_path = site_dir / "dataset.json"
@@ -443,9 +418,7 @@ class CategoryExporter:
             )
 
             paths[site_name] = str(site_dir)
-            print(
-                f"  {site_name}: {len(site_chunks)} chunks, {len(site_nodes)} grid nodes"
-            )
+            print(f"  {site_name}: {len(site_chunks)} chunks, {len(site_nodes)} grid nodes")
 
         return paths
 
@@ -479,9 +452,7 @@ def push_datasets_to_hf(chunks: list[KnowledgeChunk], grid: FibonacciSphereGrid)
     for category, records in by_category.items():
         # Write JSONL
         filename = f"knowledge/{category}/{category}_{timestamp}.jsonl"
-        local_path = (
-            BASIN_ROOT / "hf_staging" / category / f"{category}_{timestamp}.jsonl"
-        )
+        local_path = BASIN_ROOT / "hf_staging" / category / f"{category}_{timestamp}.jsonl"
         local_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(local_path, "w") as f:
@@ -565,21 +536,13 @@ def hydra_research_to_chunks(topic: str, max_subtasks: int = 3) -> list[Knowledg
                 return chunks
 
         # Convert research findings to chunks
-        findings = (
-            data
-            if isinstance(data, list)
-            else data.get("findings", data.get("results", []))
-        )
+        findings = data if isinstance(data, list) else data.get("findings", data.get("results", []))
         if isinstance(findings, dict):
             findings = [findings]
 
         for i, finding in enumerate(findings):
-            title = finding.get(
-                "title", finding.get("query", f"HYDRA research: {topic}")
-            )
-            content = finding.get(
-                "content", finding.get("summary", finding.get("text", str(finding)))
-            )
+            title = finding.get("title", finding.get("query", f"HYDRA research: {topic}"))
+            content = finding.get("content", finding.get("summary", finding.get("text", str(finding))))
             url = finding.get("url", finding.get("source", ""))
 
             chunk = KnowledgeChunk(
@@ -606,15 +569,11 @@ def _categorize_hydra(topic: str) -> str:
     topic_lower = topic.lower()
     if any(w in topic_lower for w in ["security", "crypto", "attack", "vulnerability"]):
         return "security"
-    if any(
-        w in topic_lower for w in ["governance", "consensus", "agent", "coordination"]
-    ):
+    if any(w in topic_lower for w in ["governance", "consensus", "agent", "coordination"]):
         return "governance"
     if any(w in topic_lower for w in ["ai", "neural", "learning", "model", "training"]):
         return "ai"
-    if any(
-        w in topic_lower for w in ["geometry", "manifold", "topology", "quasicrystal"]
-    ):
+    if any(w in topic_lower for w in ["geometry", "manifold", "topology", "quasicrystal"]):
         return "math"
     return "research"
 
@@ -1046,18 +1005,10 @@ def _scrape_arxiv_all_cats(search_fn, cats, query, max_per_cat=5):
 
 def main():
     parser = argparse.ArgumentParser(description="Continuous Knowledge Pipeline")
-    parser.add_argument(
-        "--daemon", action="store_true", help="Run in daemon mode (loop forever)"
-    )
-    parser.add_argument(
-        "--push-hf", action="store_true", help="Push to HuggingFace after each cycle"
-    )
-    parser.add_argument(
-        "--export-web", action="store_true", help="Export for Firebase/web backends"
-    )
-    parser.add_argument(
-        "--interval", type=int, default=CYCLE_INTERVAL, help="Seconds between cycles"
-    )
+    parser.add_argument("--daemon", action="store_true", help="Run in daemon mode (loop forever)")
+    parser.add_argument("--push-hf", action="store_true", help="Push to HuggingFace after each cycle")
+    parser.add_argument("--export-web", action="store_true", help="Export for Firebase/web backends")
+    parser.add_argument("--interval", type=int, default=CYCLE_INTERVAL, help="Seconds between cycles")
     args = parser.parse_args()
 
     dedup = DedupRegistry()
@@ -1067,9 +1018,7 @@ def main():
 
     print("=" * 60)
     print("SCBE Continuous Knowledge Pipeline")
-    print(
-        f"Daemon: {args.daemon} | Push HF: {args.push_hf} | Export Web: {args.export_web}"
-    )
+    print(f"Daemon: {args.daemon} | Push HF: {args.push_hf} | Export Web: {args.export_web}")
     print(f"Interval: {args.interval}s | Max req/cycle: {MAX_REQUESTS_PER_CYCLE}")
     print(f"Previously scraped: {dedup.total_scraped()}")
     print("=" * 60)

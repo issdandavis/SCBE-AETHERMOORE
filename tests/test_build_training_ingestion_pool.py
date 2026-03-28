@@ -4,14 +4,8 @@ import importlib.util
 import json
 from pathlib import Path
 
-MODULE_PATH = (
-    Path(__file__).resolve().parent.parent
-    / "scripts"
-    / "build_training_ingestion_pool.py"
-)
-SPEC = importlib.util.spec_from_file_location(
-    "build_training_ingestion_pool", MODULE_PATH
-)
+MODULE_PATH = Path(__file__).resolve().parent.parent / "scripts" / "build_training_ingestion_pool.py"
+SPEC = importlib.util.spec_from_file_location("build_training_ingestion_pool", MODULE_PATH)
 assert SPEC is not None and SPEC.loader is not None
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)

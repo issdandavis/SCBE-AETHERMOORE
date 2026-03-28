@@ -624,7 +624,7 @@ def validate_packet(packet: dict[str, Any], *, packet_path: Path | None = None) 
     for index, panel in enumerate(packet.get("panels", [])):
         panel_id = panel.get("id") or f"panel-{index + 1:02d}"
         scene_text = panel_scene_text(panel)
-        panel_type = str(panel.get("type") or "").upper()
+        _panel_type = str(panel.get("type") or "").upper()
 
         if not scene_text:
             errors.append(f"{panel_id}: missing scene_prompt/prompt text")

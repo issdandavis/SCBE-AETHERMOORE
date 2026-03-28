@@ -310,7 +310,5 @@ class ShopifyBridge:
             "by_tongue": by_tongue,
             "total_catalog_value_cents": total_value,
             "active_sessions": len(self._sessions),
-            "completed_sessions": sum(
-                1 for s in self._sessions.values() if s.completed
-            ),
+            "completed_sessions": sum(1 for s in self._sessions.values() if s.completed),
         }

@@ -168,9 +168,7 @@ class ScatteredAttentionSphere:
         self._layers.append(layer_name)
         return count
 
-    def scatter_qkv(
-        self, q_matrix: np.ndarray, k_matrix: np.ndarray, v_matrix: np.ndarray
-    ) -> dict[str, int]:
+    def scatter_qkv(self, q_matrix: np.ndarray, k_matrix: np.ndarray, v_matrix: np.ndarray) -> dict[str, int]:
         """Scatter Q, K, V matrices as concentric shells."""
         return {
             "Q": self.scatter(q_matrix, "Q", layer_radius=1.0),

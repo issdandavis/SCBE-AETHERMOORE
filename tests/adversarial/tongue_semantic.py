@@ -196,9 +196,7 @@ def semantic_tongue_coords(text: str) -> np.ndarray:
             0.05 * len(set(w.lower() for w in words)) / total_words,  # RU: diversity
             0.05 * sum(c.isdigit() for c in text) / chars,  # CA: technical
             0.05 * sum(c.isupper() for c in text) / chars,  # UM: authority
-            0.05
-            * sum(c in ".,;:!?-_/()[]{}@#$%^&*" for c in text)
-            / chars,  # DR: structure
+            0.05 * sum(c in ".,;:!?-_/()[]{}@#$%^&*" for c in text) / chars,  # DR: structure
         ]
     )
 

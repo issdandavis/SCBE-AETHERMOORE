@@ -228,9 +228,7 @@ GATE_REGISTRY: Dict[str, AetherGate] = {
         endpoint="https://en.wikipedia.org/api/rest_v1/page/summary/{title}",
         description="Fetch encyclopedia summaries",
         lore="The Lorekeeper's portal to the world's largest knowledge archive.",
-        headers={
-            "User-Agent": "AetherGate/1.0 (SCBE-AETHERMOORE; issdandavis@gmail.com)"
-        },
+        headers={"User-Agent": "AetherGate/1.0 (SCBE-AETHERMOORE; issdandavis@gmail.com)"},
     ),
     "ru-open-trivia": AetherGate(
         name="Scholar's Trial Gate",
@@ -361,9 +359,7 @@ class RathObserver:
     def __init__(self):
         self._log: List[RathObservation] = []
         self._rate_counters: Dict[str, List[float]] = {}  # agent -> [timestamps]
-        self._log_path = (
-            REPO_ROOT / "artifacts" / "agent_comm" / "rath_observations.jsonl"
-        )
+        self._log_path = REPO_ROOT / "artifacts" / "agent_comm" / "rath_observations.jsonl"
 
     def observe(self, obs: RathObservation) -> None:
         """Record an observation."""
@@ -379,9 +375,7 @@ class RathObserver:
         if agent_id not in self._rate_counters:
             self._rate_counters[agent_id] = []
         # Prune old entries
-        self._rate_counters[agent_id] = [
-            t for t in self._rate_counters[agent_id] if now - t < window
-        ]
+        self._rate_counters[agent_id] = [t for t in self._rate_counters[agent_id] if now - t < window]
         if len(self._rate_counters[agent_id]) >= max_rpm:
             return False
         self._rate_counters[agent_id].append(now)

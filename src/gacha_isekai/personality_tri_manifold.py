@@ -613,11 +613,7 @@ def compute_emergent_cluster(
 
         # Emergent spin = consensus of positive and negative spins
         p_spin = pos_cluster.spins[i] if i < len(pos_cluster.spins) else 0
-        n_spin = (
-            neg_cluster.spins[min(i, len(neg_cluster.spins) - 1)]
-            if neg_cluster.spins
-            else 0
-        )
+        n_spin = neg_cluster.spins[min(i, len(neg_cluster.spins) - 1)] if neg_cluster.spins else 0
         e_spin_val = trit_consensus(
             Trit(max(-1, min(1, p_spin))),
             Trit(max(-1, min(1, n_spin))),
@@ -799,7 +795,7 @@ class TriManifoldPersonality:
                 center=facet.positive_point.copy(),
             )
             # Seed positive particles
-            for i in range(5):
+            for _i in range(5):
                 noise = np.random.randn(DIM) * 0.04
                 p = _poincare_project(facet.positive_point + noise)
                 pos_cluster.add_particle(p, spin=1)
@@ -812,7 +808,7 @@ class TriManifoldPersonality:
                 center=facet.negative_point.copy(),
             )
             # Seed negative particles
-            for i in range(4):
+            for _i in range(4):
                 noise = np.random.randn(DIM) * 0.04
                 n = _poincare_project(facet.negative_point + noise)
                 neg_cluster.add_particle(n, spin=-1)
@@ -1227,7 +1223,7 @@ class TriManifoldPersonality:
 
         # Channel statistics
         channel_stats = {}
-        for (src, tgt), channel in self.channels.items():
+        for (_src, _tgt), channel in self.channels.items():
             channel_stats[channel.name] = {
                 "coupling": round(channel.coupling, 3),
                 "transfers": channel.transfer_count,
@@ -1273,22 +1269,16 @@ class TriManifoldPersonality:
 
         # Compute tri-bridge report for top facets
         active_facets = sorted(
-            [
-                (name, f.activation)
-                for name, f in self.base.facets.items()
-                if f.activation > 0.2
-            ],
+            [(name, f.activation) for name, f in self.base.facets.items() if f.activation > 0.2],
             key=lambda x: -x[1],
         )[:3]
 
         tri_lines = []
-        for name, act in active_facets:
+        for name, _act in active_facets:
             bridges = self.tri_bridge_strength(name)
             tri_coupling = bridges["tri_coupling"]
             depth_word = (
-                "deeply integrated"
-                if tri_coupling > 0.3
-                else "developing" if tri_coupling > 0.1 else "nascent"
+                "deeply integrated" if tri_coupling > 0.3 else "developing" if tri_coupling > 0.1 else "nascent"
             )
             tri_lines.append(
                 f"  {name}: {depth_word} "
@@ -1302,11 +1292,7 @@ class TriManifoldPersonality:
         e_emg = self.spaces[ManifoldID.EMERGENT].compute_energy()
         e_neg = self.spaces[ManifoldID.NEGATIVE].compute_energy()
         total = e_pos + e_emg + e_neg + 1e-8
-        balance = (
-            f"Expression={e_pos / total:.0%}, "
-            f"Emergence={e_emg / total:.0%}, "
-            f"Depth={e_neg / total:.0%}"
-        )
+        balance = f"Expression={e_pos / total:.0%}, " f"Emergence={e_emg / total:.0%}, " f"Depth={e_neg / total:.0%}"
 
         if tri_lines:
             base_prompt += (

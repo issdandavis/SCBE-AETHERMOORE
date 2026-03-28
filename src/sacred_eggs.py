@@ -69,9 +69,7 @@ def _binding_token(
 class SacredEgg:
     egg_id: str = "egg"
     payload: bytes = b""
-    manifold: Tuple[float, ...] = field(
-        default_factory=lambda: (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-    )
+    manifold: Tuple[float, ...] = field(default_factory=lambda: (0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
     participants: Tuple[str, ...] = field(default_factory=tuple)
     threshold: int = 3
     latest_binding: Optional[str] = None
@@ -85,9 +83,7 @@ class SacredEgg:
         else:
             self.manifold = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         p = kwargs.get("participants", ())
-        self.participants = (
-            tuple(str(x) for x in p) if isinstance(p, (list, tuple)) else tuple()
-        )
+        self.participants = tuple(str(x) for x in p) if isinstance(p, (list, tuple)) else tuple()
         self.threshold = int(kwargs.get("threshold", 3))
         self.latest_binding = None
 
@@ -133,11 +129,7 @@ class SacredEgg:
         participants: Optional[Iterable[str]] = None,
         **_: Any,
     ) -> Dict[str, Any]:
-        member_list = (
-            list(participants)
-            if participants is not None
-            else ([actor] if actor else [])
-        )
+        member_list = list(participants) if participants is not None else ([actor] if actor else [])
         if len(member_list) != 1:
             return {"ok": False, "status": "rejected", "error": "requires_one_invoker"}
         return {
@@ -175,9 +167,7 @@ class SacredEgg:
             return {"ok": False, "status": "rejected", "error": "invalid_manifold"}
 
         raw_payload = _safe_bytes(payload if payload is not None else self.payload)
-        token = _binding_token(
-            parts, k, raw_payload, tuple(float(x) for x in manifold_point)
-        )
+        token = _binding_token(parts, k, raw_payload, tuple(float(x) for x in manifold_point))
         self.latest_binding = token
         return {
             "ok": True,
@@ -214,16 +204,12 @@ class SacredEgg:
             return {"ok": False, "status": "rejected", "error": "invalid_participants"}
 
         raw_payload = _safe_bytes(payload if payload is not None else self.payload)
-        expected = _binding_token(
-            parts, k, raw_payload, tuple(float(x) for x in manifold_point)
-        )
+        expected = _binding_token(parts, k, raw_payload, tuple(float(x) for x in manifold_point))
         if str(token) != expected:
             return {"ok": False, "status": "rejected", "error": "binding_mismatch"}
         return {"ok": True, "status": "verified", "binding": expected}
 
-    def ring_descent(
-        self, ring: int = 0, source_ring: int = 0, target_ring: int = 0, **_: Any
-    ) -> Dict[str, Any]:
+    def ring_descent(self, ring: int = 0, source_ring: int = 0, target_ring: int = 0, **_: Any) -> Dict[str, Any]:
         try:
             current = int(source_ring if source_ring is not None else ring)
             nxt = int(target_ring if target_ring is not None else ring)
@@ -240,9 +226,7 @@ class SacredEgg:
 
     def fail_to_noise(self, **_: Any) -> Dict[str, Any]:
         # Do not leak payload in any error surface.
-        noise = base64.urlsafe_b64encode(
-            hashlib.sha256(_GOOD_NOISE + os.urandom(16)).digest()
-        ).decode("ascii")
+        noise = base64.urlsafe_b64encode(hashlib.sha256(_GOOD_NOISE + os.urandom(16)).digest()).decode("ascii")
         return {"ok": False, "status": "rejected", "noise": noise}
 
 

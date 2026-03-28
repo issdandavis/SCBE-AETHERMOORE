@@ -125,9 +125,7 @@ class HeadlessBrowserDriver:
         fast_mode: bool = False,
     ):
         if not HAS_PLAYWRIGHT:
-            raise RuntimeError(
-                "Playwright not installed. Run: pip install playwright && playwright install chromium"
-            )
+            raise RuntimeError("Playwright not installed. Run: pip install playwright && playwright install chromium")
         self.mode = mode
         self.stealth = stealth
         self.slow_mo = 0 if fast_mode else slow_mo
@@ -261,9 +259,7 @@ class HeadlessBrowserDriver:
 
     # -- Core Actions --------------------------------------------------------
 
-    async def navigate(
-        self, url: str, platform: str = "default", wait: str = "domcontentloaded"
-    ) -> ActionResult:
+    async def navigate(self, url: str, platform: str = "default", wait: str = "domcontentloaded") -> ActionResult:
         """Navigate to a URL."""
         t0 = time.time()
         try:
@@ -363,9 +359,7 @@ class HeadlessBrowserDriver:
                 duration_ms=(time.time() - t0) * 1000,
             )
 
-    async def extract_text(
-        self, selector: str = "body", platform: str = "default"
-    ) -> ActionResult:
+    async def extract_text(self, selector: str = "body", platform: str = "default") -> ActionResult:
         """Extract text content from an element."""
         t0 = time.time()
         try:
@@ -405,9 +399,7 @@ class HeadlessBrowserDriver:
                 duration_ms=(time.time() - t0) * 1000,
             )
 
-    async def wait_for(
-        self, selector: str, platform: str = "default", timeout: int = 10000
-    ) -> ActionResult:
+    async def wait_for(self, selector: str, platform: str = "default", timeout: int = 10000) -> ActionResult:
         """Wait for an element to appear."""
         t0 = time.time()
         try:
@@ -457,9 +449,7 @@ class HeadlessBrowserDriver:
         page = await self.get_page(platform)
         try:
             # LinkedIn uses contenteditable div
-            editor = page.locator(
-                '[contenteditable="true"], [role="textbox"], .ql-editor'
-            ).first
+            editor = page.locator('[contenteditable="true"], [role="textbox"], .ql-editor').first
             await editor.click()
             await self._human_delay(300, 600)
 
@@ -485,9 +475,7 @@ class HeadlessBrowserDriver:
         except Exception as e:
             return ActionResult(success=False, action="post_linkedin", error=str(e))
 
-    async def post_to_devto(
-        self, title: str, body: str, tags: List[str] = None
-    ) -> ActionResult:
+    async def post_to_devto(self, title: str, body: str, tags: List[str] = None) -> ActionResult:
         """Post an article to dev.to."""
         platform = "devto"
         tags = tags or ["ai", "fantasy", "worldbuilding"]
@@ -518,9 +506,7 @@ class HeadlessBrowserDriver:
             await self._human_delay(500, 1000)
 
             # Body — dev.to uses a textarea or markdown editor
-            body_input = page.locator(
-                '#article_body_markdown, textarea[id*="body"]'
-            ).first
+            body_input = page.locator('#article_body_markdown, textarea[id*="body"]').first
             await body_input.click()
             await page.keyboard.type(body, delay=random.randint(5, 15))
 
@@ -613,9 +599,7 @@ async def _selftest():
 
     # Test 2: Extract text
     r = await driver.extract_text("h1")
-    print(
-        f"  Extract:  {'PASS' if r.success else 'FAIL'} — {r.data.get('text', '')[:40] if r.data else 'N/A'}"
-    )
+    print(f"  Extract:  {'PASS' if r.success else 'FAIL'} — {r.data.get('text', '')[:40] if r.data else 'N/A'}")
 
     # Test 3: Screenshot
     r = await driver.screenshot()

@@ -358,9 +358,7 @@ class FederatedContextGrid:
     #  Retrieve — Multiple Methods
     # =========================================================================
 
-    def query_rag(
-        self, query: str, top_k: int = 5, tongue_filter: str | None = None
-    ) -> list[RetrievalResult]:
+    def query_rag(self, query: str, top_k: int = 5, tongue_filter: str | None = None) -> list[RetrievalResult]:
         """
         RAG retrieval: embed query, cosine similarity, Poincare distance ranking.
 
@@ -378,9 +376,7 @@ class FederatedContextGrid:
         similarities = emb_matrix @ query_emb
 
         # Poincare distance boost: project to tongue space, compute hyperbolic distance
-        query_tongue_coords = self._compute_tongue_coords(
-            tongue_filter or "KO", query_emb
-        )
+        query_tongue_coords = self._compute_tongue_coords(tongue_filter or "KO", query_emb)
 
         results = []
         for i, doc_id in enumerate(self._doc_ids):
@@ -432,9 +428,7 @@ class FederatedContextGrid:
 
         return results[:top_k]
 
-    def query_octree(
-        self, query: str, radius: int = 1, top_k: int = 5
-    ) -> list[RetrievalResult]:
+    def query_octree(self, query: str, radius: int = 1, top_k: int = 5) -> list[RetrievalResult]:
         """
         Octree spatial retrieval: find documents in nearby buckets.
 
@@ -479,9 +473,7 @@ class FederatedContextGrid:
         self._retrieval_times.append(elapsed)
         return results[:top_k]
 
-    def query_memory(
-        self, layer: str, category: str | None = None, limit: int = 10
-    ) -> list[ContextDocument]:
+    def query_memory(self, layer: str, category: str | None = None, limit: int = 10) -> list[ContextDocument]:
         """
         Memory layer retrieval: get documents from a specific memory tier.
         """
@@ -509,18 +501,14 @@ class FederatedContextGrid:
             results = [d for d in results if d.doc_type == doc_type]
         return results
 
-    def query_multi_method(
-        self, query: str, top_k: int = 5, tongue_filter: str | None = None
-    ) -> list[RetrievalResult]:
+    def query_multi_method(self, query: str, top_k: int = 5, tongue_filter: str | None = None) -> list[RetrievalResult]:
         """
         Fused multi-method retrieval: RAG + octree + dedup + rerank.
 
         This is the grid's signature query — combines all retrieval methods
         and deduplicates by doc_id, keeping the highest trust score.
         """
-        rag_results = self.query_rag(
-            query, top_k=top_k * 2, tongue_filter=tongue_filter
-        )
+        rag_results = self.query_rag(query, top_k=top_k * 2, tongue_filter=tongue_filter)
         octree_results = self.query_octree(query, radius=1, top_k=top_k * 2)
 
         # Merge and dedup
@@ -558,8 +546,7 @@ class FederatedContextGrid:
         context_parts = []
         for i, r in enumerate(context_docs[:5]):
             context_parts.append(
-                f"[{i+1}] {r.title} ({r.tongue} domain, trust={r.trust_score:.3f}):\n"
-                f"{r.content[:400]}"
+                f"[{i+1}] {r.title} ({r.tongue} domain, trust={r.trust_score:.3f}):\n" f"{r.content[:400]}"
             )
         context_str = "\n\n".join(context_parts)
 
@@ -598,11 +585,7 @@ class FederatedContextGrid:
             tongue_dist[doc.tongue] = tongue_dist.get(doc.tongue, 0) + 1
 
         memory_layers = {k: len(v) for k, v in self.memory.items()}
-        avg_rt = (
-            sum(self._retrieval_times) / len(self._retrieval_times)
-            if self._retrieval_times
-            else 0.0
-        )
+        avg_rt = sum(self._retrieval_times) / len(self._retrieval_times) if self._retrieval_times else 0.0
 
         return GridStats(
             total_documents=len(self.documents),
@@ -691,9 +674,7 @@ def load_obsidian_vault(vault_path: str | Path) -> list[dict]:
                 "doc_type": doc_type,
                 "source_path": rel_path,
                 "metadata": metadata,
-                "memory_layer": (
-                    "identity" if doc_type in ("concept", "moc") else "session"
-                ),
+                "memory_layer": ("identity" if doc_type in ("concept", "moc") else "session"),
             }
         )
 

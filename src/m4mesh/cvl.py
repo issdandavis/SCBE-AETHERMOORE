@@ -75,9 +75,7 @@ class CVLFuser(torch.nn.Module):
             t_list = []
             for i in range(n):
                 q = self.Q(C[i])
-                t_list.append(
-                    retrieve_tie(tie_kb, q, top_k=top_k, temperature=temperature)
-                )
+                t_list.append(retrieve_tie(tie_kb, q, top_k=top_k, temperature=temperature))
             T = torch.stack(t_list, dim=0)
 
         fused = torch.cat(

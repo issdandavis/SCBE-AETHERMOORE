@@ -48,14 +48,10 @@ def _build_parser():
     """Recreate the argparse parser from cli_swarm for testing."""
     parser = argparse.ArgumentParser(prog="hydra-swarm")
     parser.add_argument("task", nargs="?", default=None)
-    parser.add_argument(
-        "--provider", default="local", choices=["local", "hf", "huggingface"]
-    )
+    parser.add_argument("--provider", default="local", choices=["local", "hf", "huggingface"])
     parser.add_argument("--model", default="local-model")
     parser.add_argument("--base-url", default="http://localhost:1234/v1")
-    parser.add_argument(
-        "--backend", default="playwright", choices=["playwright", "selenium", "cdp"]
-    )
+    parser.add_argument("--backend", default="playwright", choices=["playwright", "selenium", "cdp"])
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--status", action="store_true")
     return parser

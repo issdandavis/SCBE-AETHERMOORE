@@ -87,9 +87,7 @@ def clean_text(text: str) -> str:
     # Collapse multiple newlines
     text = re.sub(r"\n{3,}", "\n\n", text)
     # Remove leading emoji + whitespace from lines (Notion export style)
-    text = re.sub(
-        r"^[\U0001f300-\U0001faff\u2600-\u27bf]+\s*", "", text, flags=re.MULTILINE
-    )
+    text = re.sub(r"^[\U0001f300-\U0001faff\u2600-\u27bf]+\s*", "", text, flags=re.MULTILINE)
     # Strip trailing whitespace per line
     text = re.sub(r"[ \t]+$", "", text, flags=re.MULTILINE)
     return text.strip()
@@ -181,9 +179,7 @@ def convert_to_chat(record: dict) -> dict:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Convert raw Notion JSONL to SCBE SFT training format"
-    )
+    parser = argparse.ArgumentParser(description="Convert raw Notion JSONL to SCBE SFT training format")
     parser.add_argument(
         "input",
         help="Input JSONL file (use '-' for stdin)",
@@ -220,22 +216,22 @@ def main():
 
     # Read input
     records = []
+
+    def _read_lines(source):
+        for line in source:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                records.append(json.loads(line))
+            except json.JSONDecodeError as e:
+                print(f"WARN: Skipping malformed JSON line: {e}", file=sys.stderr)
+
     if args.input == "-":
-        source = sys.stdin
+        _read_lines(sys.stdin)
     else:
-        source = open(args.input, "r", encoding="utf-8")
-
-    for line in source:
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            records.append(json.loads(line))
-        except json.JSONDecodeError as e:
-            print(f"WARN: Skipping malformed JSON line: {e}", file=sys.stderr)
-
-    if args.input != "-":
-        source.close()
+        with open(args.input, "r", encoding="utf-8") as fh:
+            _read_lines(fh)
 
     # Convert
     converted = []

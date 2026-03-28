@@ -138,9 +138,7 @@ class OctoArmorRouter:
         for role, provider in raw_preferences.items():
             try:
                 normalized[str(role)] = (
-                    provider
-                    if isinstance(provider, ModelProvider)
-                    else ModelProvider(str(provider))
+                    provider if isinstance(provider, ModelProvider) else ModelProvider(str(provider))
                 )
             except ValueError:
                 continue
@@ -183,9 +181,7 @@ class OctoArmorRouter:
             return TaskComplexity.LOW
         return TaskComplexity.MEDIUM
 
-    def mark_rate_limited(
-        self, provider: ModelProvider, window_sec: float = 60.0
-    ) -> None:
+    def mark_rate_limited(self, provider: ModelProvider, window_sec: float = 60.0) -> None:
         self._rate_limits[provider] = time.monotonic() + window_sec
 
     def _configured_available(self, provider: ModelProvider) -> tuple[bool, str]:
@@ -238,9 +234,7 @@ class OctoArmorRouter:
                 role=role,
                 complexity=complexity,
                 selection_reason="local_first_low_complexity",
-                fallback_chain=(
-                    fallback_chain if allow_fallback else [ModelProvider.LOCAL]
-                ),
+                fallback_chain=(fallback_chain if allow_fallback else [ModelProvider.LOCAL]),
             )
 
         if self._is_available(preferred):
@@ -261,17 +255,11 @@ class OctoArmorRouter:
                 role=role,
                 complexity=complexity,
                 selection_reason=reason,
-                fallback_chain=(
-                    self._candidate_chain(min_tier=min_tier)
-                    if allow_fallback
-                    else [preferred]
-                ),
+                fallback_chain=(self._candidate_chain(min_tier=min_tier) if allow_fallback else [preferred]),
             )
 
         if not allow_fallback:
-            raise RuntimeError(
-                f"Preferred provider '{preferred.value}' unavailable and auto-cascade disabled"
-            )
+            raise RuntimeError(f"Preferred provider '{preferred.value}' unavailable and auto-cascade disabled")
 
         candidates = self._candidate_chain(min_tier=min_tier)
         if not candidates:
@@ -286,10 +274,6 @@ class OctoArmorRouter:
 
     def _candidate_chain(self, *, min_tier: int) -> list[ModelProvider]:
         return sorted(
-            [
-                p
-                for p in ModelProvider
-                if self._is_available(p) and MODEL_COST_TIER[p] >= min_tier
-            ],
+            [p for p in ModelProvider if self._is_available(p) and MODEL_COST_TIER[p] >= min_tier],
             key=lambda p: MODEL_COST_TIER[p],
         )

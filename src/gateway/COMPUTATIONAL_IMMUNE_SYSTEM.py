@@ -235,22 +235,18 @@ class DriftSimulationEngine:
         self.error_accumulator = ErrorAccumulator()
         self.simulation_history: List[Dict] = []
 
-    def run_single_scenario(
-        self, context_a: ContextVector, context_b: ContextVector, operations: int = 100
-    ) -> Dict:
+    def run_single_scenario(self, context_a: ContextVector, context_b: ContextVector, operations: int = 100) -> Dict:
         """Run one scenario through the system"""
         # Calculate context distance (5W1H difference)
         context_dist = context_a.context_distance(context_b)
 
         # Simulate operations (each adds error)
-        for i in range(operations):
+        for _i in range(operations):
             op_type = np.random.choice(["hash", "encrypt", "decrypt", "pattern_match"])
             self.error_accumulator.add_operation_error(op_type, complexity=1.0)
 
         # Calculate linguistic drift (based on context distance)
-        linguistic_drift = self.expert_mind.linguistic_drift_rate * (
-            1 + context_dist / 1000
-        )
+        linguistic_drift = self.expert_mind.linguistic_drift_rate * (1 + context_dist / 1000)
 
         # Total drift = linguistic + computational + context
         total_drift = linguistic_drift + self.error_accumulator.cumulative_error
@@ -321,9 +317,7 @@ class DriftSimulationEngine:
                     std_drift = np.std(scenario_drifts)
 
                     # Check if this is 'elegant' (low variance, within tolerance)
-                    elegance_score = 1.0 / (
-                        std_drift + 0.001
-                    )  # Lower variance = more elegant
+                    elegance_score = 1.0 / (std_drift + 0.001)  # Lower variance = more elegant
 
                     # Check agent tolerance (most strict is 0.1 = 10%)
                     passes_tolerance = mean_drift < 0.1
@@ -353,12 +347,8 @@ class DriftSimulationEngine:
 
         print("\n✨ MAGIC NUMBER FOUND!")
         print(f"   Base Drift: {magic['base_drift']}")
-        print(
-            f"   Time Exponent: {magic['time_exponent']} (time^{magic['time_exponent']})"
-        )
-        print(
-            f"   Distance Exponent: {magic['distance_exponent']} (dist^{magic['distance_exponent']})"
-        )
+        print(f"   Time Exponent: {magic['time_exponent']} (time^{magic['time_exponent']})")
+        print(f"   Distance Exponent: {magic['distance_exponent']} (dist^{magic['distance_exponent']})")
         print(f"   Mean Drift: {magic['mean_drift']:.6f}")
         print(f"   Std Drift: {magic['std_drift']:.6f}")
         print(f"   Elegance Score: {magic['elegance_score']:.2f}")

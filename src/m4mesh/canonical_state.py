@@ -17,9 +17,7 @@ TONGUE_PHASE_DIMS = slice(6, 12)
 TELEMETRY_DIMS = slice(12, 21)
 
 
-def harmonic_energy_from_radial(
-    radial: torch.Tensor, d_hyp: int = 6, eps: float = 1e-12
-) -> torch.Tensor:
+def harmonic_energy_from_radial(radial: torch.Tensor, d_hyp: int = 6, eps: float = 1e-12) -> torch.Tensor:
     """Harmonic wall cache term from radial norm."""
     if torch.any(radial >= 1.0):
         raise ValueError("Radial norm must satisfy r < 1 in Poincare ball")
@@ -130,9 +128,7 @@ def embed_gacha_floor(
     # dim 20: harmonic energy cache
     harmonic = harmonic_energy_from_radial(radial)
 
-    vector = torch.cat(
-        [u, phase, intent, coherence, risk, entropy, stabilization, radial, harmonic]
-    )
+    vector = torch.cat([u, phase, intent, coherence, risk, entropy, stabilization, radial, harmonic])
 
     bug_type = monster_bug.get("type", "unknown")
     logger.info(
@@ -178,24 +174,18 @@ def compute_squad_ds_squared(
     }
 
 
-def validate_canonical_state(
-    states: torch.Tensor, eps: float = 1e-6
-) -> Dict[str, float]:
+def validate_canonical_state(states: torch.Tensor, eps: float = 1e-6) -> Dict[str, float]:
     """Validate canonical 21D vectors and return summary metrics."""
     if states.ndim == 1:
         states = states.unsqueeze(0)
     if states.ndim != 2 or states.shape[1] != CANONICAL_DIM:
-        raise ValueError(
-            f"Expected state tensor shape (N, {CANONICAL_DIM}), got {tuple(states.shape)}"
-        )
+        raise ValueError(f"Expected state tensor shape (N, {CANONICAL_DIM}), got {tuple(states.shape)}")
 
     u = states[:, TONGUE_POSITION_DIMS]
     u_norm = torch.linalg.norm(u, dim=1)
     if torch.any(u_norm >= 1.0):
         max_norm = float(torch.max(u_norm).item())
-        raise ValueError(
-            f"Invalid Poincare tongue position norm >= 1: max={max_norm:.6f}"
-        )
+        raise ValueError(f"Invalid Poincare tongue position norm >= 1: max={max_norm:.6f}")
 
     coherence = states[:, 13:16]
     if torch.any(coherence < -eps) or torch.any(coherence > 1.0 + eps):

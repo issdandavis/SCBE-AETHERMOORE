@@ -25,9 +25,7 @@ def search_cves(keyword: str, limit: int = 20) -> list[KnowledgeChunk]:
         "resultsPerPage": limit,
     }
     url = f"{NVD_API}?{urlencode(params)}"
-    req = Request(
-        url, headers={"User-Agent": "AetherBrowser/1.0 (SCBE-AETHERMOORE research)"}
-    )
+    req = Request(url, headers={"User-Agent": "AetherBrowser/1.0 (SCBE-AETHERMOORE research)"})
 
     with urlopen(req, timeout=60) as response:
         data = json.loads(response.read())

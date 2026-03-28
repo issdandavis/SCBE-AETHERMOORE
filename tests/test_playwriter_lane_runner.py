@@ -111,9 +111,7 @@ def test_search_evidence_fetches_selected_result_and_updates_state(
     assert artifact_path.exists()
     assert artifact_path.parent == tmp_path
 
-    state = json.loads(
-        (tmp_path / "playwriter-session-lane-5.json").read_text(encoding="utf-8")
-    )
+    state = json.loads((tmp_path / "playwriter-session-lane-5.json").read_text(encoding="utf-8"))
     assert state == {
         "session_id": "lane-5",
         "url": "https://example.org/bravo",

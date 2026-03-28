@@ -129,9 +129,7 @@ def fuse_scores(
     else:
         action = "DENY"
 
-    return FusedScore(
-        trust=trust, s_h=s_h, s_s=s_s, s_g=s_g, anomaly=anomaly, action=action
-    )
+    return FusedScore(trust=trust, s_h=s_h, s_s=s_s, s_g=s_g, anomaly=anomaly, action=action)
 
 
 # ---------------------------------------------------------------------------
@@ -141,17 +139,11 @@ def fuse_scores(
 
 def update_suspicion_v2(agent: MixedAgent, neighbor_id: str, is_anomaly: bool) -> None:
     if is_anomaly:
-        agent.suspicion_count[neighbor_id] = (
-            agent.suspicion_count.get(neighbor_id, 0) + 1
-        )
+        agent.suspicion_count[neighbor_id] = agent.suspicion_count.get(neighbor_id, 0) + 1
     else:
-        agent.suspicion_count[neighbor_id] = max(
-            0, agent.suspicion_count.get(neighbor_id, 0) - SUSPICION_DECAY
-        )
+        agent.suspicion_count[neighbor_id] = max(0, agent.suspicion_count.get(neighbor_id, 0) - SUSPICION_DECAY)
 
-    suspicious_neighbors = sum(
-        1 for c in agent.suspicion_count.values() if c >= SUSPICION_THRESHOLD
-    )
+    suspicious_neighbors = sum(1 for c in agent.suspicion_count.values() if c >= SUSPICION_THRESHOLD)
     agent.is_quarantined = suspicious_neighbors >= QUARANTINE_CONSENSUS
 
     total_suspicion = sum(agent.suspicion_count.values())
@@ -241,9 +233,7 @@ def swarm_step_v2(
             if i == j:
                 continue
 
-            force, _amp, anomaly, _fused = compute_repel_force_v2(
-                agents[i], agents[j], None, 1.0, weights
-            )
+            force, _amp, anomaly, _fused = compute_repel_force_v2(agents[i], agents[j], None, 1.0, weights)
             for k in range(dim):
                 net_force[k] += force[k]
 

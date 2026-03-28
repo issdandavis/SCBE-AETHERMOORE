@@ -225,16 +225,10 @@ def _push_to_airtable(rows: list[dict]):
 
 def main():
     parser = argparse.ArgumentParser(description="Notion -> Datasheet Funnel")
-    parser.add_argument(
-        "--query", type=str, default=None, help="Specific Notion search query"
-    )
+    parser.add_argument("--query", type=str, default=None, help="Specific Notion search query")
     parser.add_argument("--format", choices=["csv", "json", "both"], default="both")
-    parser.add_argument(
-        "--no-content", action="store_true", help="Skip fetching page content (faster)"
-    )
-    parser.add_argument(
-        "--push-airtable", action="store_true", help="Also push to Airtable"
-    )
+    parser.add_argument("--no-content", action="store_true", help="Skip fetching page content (faster)")
+    parser.add_argument("--push-airtable", action="store_true", help="Also push to Airtable")
     args = parser.parse_args()
 
     queries = [args.query] if args.query else None

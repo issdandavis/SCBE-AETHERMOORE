@@ -94,9 +94,7 @@ class TestPlaywrightBackend:
         for method_name in required:
             method = getattr(PlaywrightBackend, method_name, None)
             assert method is not None, f"Missing method: {method_name}"
-            assert not getattr(
-                method, "__isabstractmethod__", False
-            ), f"{method_name} is still abstract"
+            assert not getattr(method, "__isabstractmethod__", False), f"{method_name} is still abstract"
 
     def test_all_methods_are_async(self):
         """All interface methods should be coroutines."""
@@ -240,9 +238,7 @@ class TestBackendConsistency:
     def test_all_backends_have_same_methods(self):
         for cls in self.BACKENDS:
             for method_name in self.INTERFACE:
-                assert hasattr(
-                    cls, method_name
-                ), f"{cls.__name__} missing {method_name}"
+                assert hasattr(cls, method_name), f"{cls.__name__} missing {method_name}"
 
     def test_navigate_takes_url_param(self):
         """navigate(self, url) signature across all backends."""
