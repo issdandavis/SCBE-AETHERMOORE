@@ -89,7 +89,11 @@ class WsFeed:
         )
 
     def progress(self, agent: Agent, *, current: int, total: int, label: str = "") -> dict:
-        return self._base(MsgType.PROGRESS, agent, payload={"current": current, "total": total, "label": label})
+        return self._base(
+            MsgType.PROGRESS,
+            agent,
+            payload={"current": current, "total": total, "label": label},
+        )
 
     def error(self, reason: str, agent: Agent = Agent.SYSTEM) -> dict:
         return self._base(MsgType.ERROR, agent, payload={"reason": reason})

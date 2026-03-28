@@ -21,7 +21,11 @@
       "mcp__claude_ai_Canva__*",
       "mcp__claude_in_chrome__*",
       "mcp__plugin_context7_context7__*",
-      "mcp__plugin_playwright_playwright__*"
+      "mcp__plugin_playwright_playwright__*",
+      "mcp__youtube-studio__youtube_list_videos",
+      "mcp__youtube-studio__youtube_auth",
+      "mcp__youtube-studio__youtube_search",
+      "mcp__youtube-studio__youtube_get_transcript"
     ]
   }
 }

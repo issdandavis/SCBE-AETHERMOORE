@@ -87,7 +87,11 @@ def test_verify_exact_navigate_passes_when_urls_match() -> None:
 
 
 def test_pqc_audit_enforces_missing_key_ids() -> None:
-    result = _pqc_audit({"pqc": {"kyber_id": "", "dilithium_id": ""}}, {"workflow_id": "x"}, "DELIBERATION")
+    result = _pqc_audit(
+        {"pqc": {"kyber_id": "", "dilithium_id": ""}},
+        {"workflow_id": "x"},
+        "DELIBERATION",
+    )
     assert result["status"] == "QUARANTINE"
 
 
@@ -128,7 +132,14 @@ def test_pqc_audit_allows_valid_metadata() -> None:
 def test_normalize_lease_derives_owner_and_expiry() -> None:
     claimed_at = datetime(2026, 3, 18, 1, 30, tzinfo=timezone.utc)
     lease = _normalize_lease(
-        {"job_id": "j1", "lease": {"provider": "colab", "resource_class": "t4", "lease_seconds": 600}},
+        {
+            "job_id": "j1",
+            "lease": {
+                "provider": "colab",
+                "resource_class": "t4",
+                "lease_seconds": 600,
+            },
+        },
         "worker-7",
         claimed_at=claimed_at,
     )
@@ -149,7 +160,12 @@ def test_build_packet_rails_splits_positive_and_negative_paths() -> None:
     }
     out = {
         "request_error": "chunk 1 status=request_error",
-        "response": {"status": "request_error", "blocked_actions": 1, "total_actions": 2, "executed_actions": 1},
+        "response": {
+            "status": "request_error",
+            "blocked_actions": 1,
+            "total_actions": 2,
+            "executed_actions": 1,
+        },
         "pqc_audit": {"status": "QUARANTINE", "reason": "rotation overdue"},
     }
     verification = {

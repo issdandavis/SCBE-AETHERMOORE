@@ -20,7 +20,14 @@ TONGUE_NAMES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 TONGUE_WEIGHTS = [PHI**k for k in range(6)]
 
 # Domain order matches tongue order
-DOMAINS = ["humanities", "social_sciences", "mathematics", "engineering", "creative_arts", "physical_sciences"]
+DOMAINS = [
+    "humanities",
+    "social_sciences",
+    "mathematics",
+    "engineering",
+    "creative_arts",
+    "physical_sciences",
+]
 
 # Direct port from linguisticCrossTalk.ts DOMAIN_KEYWORDS
 DOMAIN_KEYWORDS: Dict[str, Dict[str, float]] = {

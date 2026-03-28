@@ -402,7 +402,7 @@ def run_benchmark():
             false_positives = 0
             true_negatives = 0
 
-            for i, (dev, coh, is_atk) in enumerate(
+            for _i, (dev, coh, is_atk) in enumerate(
                 zip(
                     scenario.deviation_profile,
                     scenario.coherence_mask,

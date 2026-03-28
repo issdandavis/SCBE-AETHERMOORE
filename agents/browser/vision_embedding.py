@@ -343,8 +343,6 @@ class VisionEmbedder:
             Pseudo-embedding array
         """
         # Use SHA-256 to generate deterministic values
-        h = hashlib.sha256(image_data).digest()
-
         # Expand hash to full dimension using SHAKE-256
         import hashlib as hl
         shake = hl.shake_256(image_data)

@@ -146,7 +146,10 @@ def parse_wm_size(output: str) -> Dict[str, Optional[Dict[str, int]]]:
         match = WM_DIMENSION_RE.search(line)
         if not match:
             continue
-        dims = {"width": int(match.group("width")), "height": int(match.group("height"))}
+        dims = {
+            "width": int(match.group("width")),
+            "height": int(match.group("height")),
+        }
         lowered = line.lower()
         if lowered.startswith("override"):
             result["override"] = dims
@@ -218,7 +221,13 @@ def build_webtoon_preview_plan(
                 "duration_ms": swipe_duration_ms,
             }
         )
-        tasks.append({"tongue": "CA", "action": "screencap", "name": f"{capture_prefix}_{index:02d}"})
+        tasks.append(
+            {
+                "tongue": "CA",
+                "action": "screencap",
+                "name": f"{capture_prefix}_{index:02d}",
+            }
+        )
     return tasks
 
 
@@ -556,7 +565,13 @@ class HydraAndroidHand:
             action="swipe",
             started_at=started,
             completed=completed,
-            metadata={"x1": x1, "y1": y1, "x2": x2, "y2": y2, "duration_ms": duration_ms},
+            metadata={
+                "x1": x1,
+                "y1": y1,
+                "x2": x2,
+                "y2": y2,
+                "duration_ms": duration_ms,
+            },
         )
 
     def screencap(self, name: str = "screen", tongue: Tongue = Tongue.CA) -> AndroidActionResult:
@@ -730,7 +745,13 @@ class HydraAndroidHand:
                     ).to_dict()
                 )
             elif action == "status":
-                results.append({"action": "status", "tongue": tongue.value, "payload": self.status()})
+                results.append(
+                    {
+                        "action": "status",
+                        "tongue": tongue.value,
+                        "payload": self.status(),
+                    }
+                )
             else:
                 raise ValueError(f"Unknown Android hand action: {action}")
         return results

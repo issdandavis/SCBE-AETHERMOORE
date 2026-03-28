@@ -1,0 +1,206 @@
+{
+  "_description": "Verified external site allowlist for SCBE Copilot and Apollo systems. Sites on this list are trusted for training data collection, research, and outbound connections. Everything else requires governance review.",
+  "_updated": "2026-03-26",
+  "_owner": "issdandavis",
+
+  "tiers": {
+    "GOVERNMENT": {
+      "trust_level": "CORE",
+      "description": "US and international government agencies. Maximum trust — these sites do not serve malicious content.",
+      "domains": [
+        "uspto.gov",
+        "patentcenter.uspto.gov",
+        "nist.gov",
+        "nvd.nist.gov",
+        "csrc.nist.gov",
+        "cisa.gov",
+        "cisa.dhs.gov",
+        "dhs.gov",
+        "congress.gov",
+        "govinfo.gov",
+        "irs.gov",
+        "sec.gov",
+        "ftc.gov",
+        "whitehouse.gov",
+        "data.gov",
+        "nasa.gov",
+        "energy.gov",
+        "defense.gov",
+        "state.gov",
+        "justice.gov",
+        "fbi.gov",
+        "uscourts.gov",
+        "loc.gov"
+      ]
+    },
+
+    "SCIENCE_AND_RESEARCH": {
+      "trust_level": "CORE",
+      "description": "Academic, scientific, and research institutions. Peer-reviewed, institutionally maintained.",
+      "domains": [
+        "arxiv.org",
+        "scholar.google.com",
+        "semanticscholar.org",
+        "pubmed.ncbi.nlm.nih.gov",
+        "doi.org",
+        "zenodo.org",
+        "orcid.org",
+        "ieee.org",
+        "acm.org",
+        "nature.com",
+        "science.org",
+        "pnas.org",
+        "jstor.org",
+        "springer.com",
+        "wiley.com",
+        "elsevier.com",
+        "biorxiv.org",
+        "medrxiv.org",
+        "ssrn.com",
+        "researchgate.net"
+      ]
+    },
+
+    "SECURITY_STANDARDS": {
+      "trust_level": "CORE",
+      "description": "Security frameworks, CVE databases, and industry standards bodies.",
+      "domains": [
+        "mitre.org",
+        "attack.mitre.org",
+        "cve.org",
+        "cve.mitre.org",
+        "owasp.org",
+        "sans.org",
+        "first.org",
+        "cert.org",
+        "us-cert.gov",
+        "iso.org",
+        "ietf.org",
+        "w3.org",
+        "rfc-editor.org"
+      ]
+    },
+
+    "DEVELOPER_PLATFORMS": {
+      "trust_level": "TRUSTED",
+      "description": "Major dev platforms we actively use. Trusted but verify content.",
+      "domains": [
+        "github.com",
+        "api.github.com",
+        "raw.githubusercontent.com",
+        "huggingface.co",
+        "pypi.org",
+        "npmjs.org",
+        "registry.npmjs.org",
+        "crates.io",
+        "docs.rs",
+        "developer.mozilla.org",
+        "stackoverflow.com",
+        "docs.python.org",
+        "nodejs.org",
+        "typescriptlang.org",
+        "rust-lang.org",
+        "docs.docker.com",
+        "kubernetes.io"
+      ]
+    },
+
+    "CLOUD_SERVICES": {
+      "trust_level": "TRUSTED",
+      "description": "Cloud providers and SaaS we have active accounts with.",
+      "domains": [
+        "stripe.com",
+        "api.stripe.com",
+        "shopify.com",
+        "aethermore-works.myshopify.com",
+        "notion.so",
+        "api.notion.com",
+        "airtable.com",
+        "api.airtable.com",
+        "slack.com",
+        "discord.com",
+        "vercel.com",
+        "netlify.com",
+        "firebase.google.com",
+        "cloud.google.com",
+        "aws.amazon.com",
+        "protonmail.com",
+        "proton.me"
+      ]
+    },
+
+    "AI_AND_ML": {
+      "trust_level": "TRUSTED",
+      "description": "AI/ML platforms, model registries, research labs.",
+      "domains": [
+        "openai.com",
+        "api.openai.com",
+        "anthropic.com",
+        "api.anthropic.com",
+        "deepmind.google",
+        "ai.google.dev",
+        "generativelanguage.googleapis.com",
+        "api.x.ai",
+        "ollama.com",
+        "replicate.com",
+        "wandb.ai",
+        "kaggle.com",
+        "tensorflow.org",
+        "pytorch.org"
+      ]
+    },
+
+    "SOCIAL_AND_PUBLISHING": {
+      "trust_level": "PROVISIONAL",
+      "description": "Social platforms we post to. Content is user-generated — trust the platform, verify the content.",
+      "domains": [
+        "bsky.app",
+        "bsky.social",
+        "twitter.com",
+        "x.com",
+        "linkedin.com",
+        "medium.com",
+        "dev.to",
+        "reddit.com",
+        "lesswrong.com",
+        "substack.com",
+        "youtube.com",
+        "gumroad.com",
+        "amazon.com",
+        "kdp.amazon.com"
+      ]
+    },
+
+    "OUR_DOMAINS": {
+      "trust_level": "CORE",
+      "description": "Domains we own and operate.",
+      "domains": [
+        "aethermoorgames.com",
+        "issdandavis.github.io"
+      ]
+    }
+  },
+
+  "BLOCKED": {
+    "description": "Known malicious or untrusted. Never connect.",
+    "patterns": [
+      "*.ru.com",
+      "*.tk",
+      "*.ml",
+      "*.ga",
+      "*.cf",
+      "pastebin.com",
+      "paste.ee",
+      "hastebin.com",
+      "temp-mail.*",
+      "guerrillamail.*"
+    ]
+  },
+
+  "DARK_WEB": {
+    "description": "Onion services — requires SpaceTor router. Research only, governed access.",
+    "trust_level": "QUARANTINE",
+    "router": "src/network/space-tor-router.ts",
+    "policy": "All .onion traffic must route through SpaceTor with governance gate. No direct connections. All content is QUARANTINED by default and requires explicit ALLOW from the owner."
+  }
+}

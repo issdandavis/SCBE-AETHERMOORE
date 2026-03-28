@@ -77,6 +77,41 @@ body{
 .seat-status.error{color:var(--red);background:rgba(239,68,68,0.1)}
 .seat-status.offline{color:var(--dim);background:rgba(148,163,184,0.1)}
 .seat-status.proxy{color:#67e8f9;background:rgba(6,182,212,0.14)}
+.seat-status.nokey{color:var(--amber);background:rgba(255,184,74,0.1)}
+
+/* BYOK Settings Modal */
+.settings-btn{
+  background:none;border:none;color:var(--dim);cursor:pointer;font-size:18px;padding:4px 6px;border-radius:6px;
+  transition:color .15s,background .15s
+}
+.settings-btn:hover{color:var(--accent);background:rgba(23,198,207,.12)}
+.settings-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;
+  align-items:center;justify-content:center
+}
+.settings-overlay.open{display:flex}
+.settings-panel{
+  background:linear-gradient(160deg,#0e1622,#151f30);border:1px solid var(--border);
+  border-radius:14px;padding:20px 24px 24px;width:440px;max-width:92vw;max-height:85vh;overflow-y:auto;
+  box-shadow:0 12px 40px rgba(0,0,0,.6)
+}
+.settings-panel h3{font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.settings-panel h3 .close-settings{background:none;border:none;color:var(--dim);font-size:20px;cursor:pointer}
+.settings-panel h3 .close-settings:hover{color:var(--red)}
+.settings-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.settings-row label{font-size:12px;font-weight:600;width:110px;flex-shrink:0;color:var(--dim)}
+.settings-row input{
+  flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);
+  padding:6px 10px;border-radius:6px;font-size:12px;font-family:var(--mono)
+}
+.settings-row input:focus{border-color:var(--accent);outline:none}
+.settings-row .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.settings-save{
+  background:linear-gradient(135deg,var(--accent),#2e98dd);color:#fff;border:none;
+  padding:8px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;margin-top:10px;width:100%
+}
+.settings-save:hover{opacity:.9}
+.settings-note{font-size:10px;color:var(--dim);margin-top:8px;line-height:1.4}
 
 .seat-chat{flex:1;overflow-y:auto;padding:6px 10px;font-size:12px;line-height:1.4;min-height:0}
 .seat-chat .msg{margin-bottom:6px;padding:5px 8px;border-radius:6px;word-wrap:break-word}
@@ -142,9 +177,19 @@ body{
     <span id="agentCallsign">Lyra Forge</span>
     <button class="scout-btn" id="replitScoutBtn" onclick="scoutReplitLegacy()">Scout Replit</button>
     <button class="xtalk-btn" onclick="emitCrossTalk()">Cross-talk</button>
+    <button class="settings-btn" id="settingsBtn" onclick="openSettings()" title="API Key Settings">&#9881;</button>
     <button class="install-btn" id="arenaInstallBtn" onclick="promptInstall()">Install</button>
     <button class="train-btn" onclick="flushTraining()">Train</button>
     <span id="clock"></span>
+  </div>
+</div>
+
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-panel">
+    <h3>API Keys (BYOK) <button class="close-settings" onclick="closeSettings()">&times;</button></h3>
+    <div id="settingsRows"></div>
+    <button class="settings-save" onclick="saveSettings()">Save &amp; Apply</button>
+    <div class="settings-note">Keys are stored in your browser's localStorage only. They are sent directly to each provider's API from your browser — never to any intermediary server. Ollama runs locally and needs no key.</div>
   </div>
 </div>
 
@@ -168,7 +213,7 @@ const PLAYERS = [
   { id: 'groq',          name: 'Groq',         color: '#f97316', model: 'llama-3.3-70b-versatile', tongue: 'KO', role: 'Intent Analyst' },
   { id: 'cerebras',      name: 'Cerebras',      color: '#06b6d4', model: 'llama-3.3-70b',         tongue: 'RU', role: 'Security Auditor' },
   { id: 'google_ai',     name: 'Google AI',     color: '#34d399', model: 'gemini-2.5-flash',       tongue: 'DR', role: 'Lead Architect' },
-  { id: 'claude',        name: 'Claude',        color: '#a78bfa', model: 'claude-sonnet',          tongue: 'UM', role: 'Governance Arbiter' },
+  { id: 'claude',        name: 'Claude',        color: '#a78bfa', model: 'claude-sonnet-4-20250514', tongue: 'UM', role: 'Governance Arbiter' },
   { id: 'xai',           name: 'xAI (Grok)',    color: '#f472b6', model: 'grok-3-mini',            tongue: 'AV', role: 'Creative Advocate' },
   { id: 'openrouter',    name: 'Kimi',          color: '#60a5fa', model: 'kimi-k2-instruct',       tongue: 'CA', role: 'Compute Optimizer' },
   { id: 'github_models', name: 'GitHub',        color: '#e2e8f0', model: 'gpt-4o-mini',            tongue: 'RU', role: 'Code Reviewer' },
@@ -592,21 +637,204 @@ function setStatus(playerId, status, label) {
   el.textContent = label || status;
 }
 
-// Check which providers are actually configured
-async function loadProviderStatus() {
-  try {
-    const resp = await fetch(API + '/v1/providers');
-    if (!resp.ok) return;
-    const data = await resp.json();
-    const rows = Array.isArray(data.tentacles) ? data.tentacles : [];
-    rows.forEach((row) => {
-      const id = row.tentacle;
-      providerStatus[id] = row;
-      if (!row.available) {
-        setStatus(id, 'offline', 'no key');
-      }
-    });
-  } catch (_err) {}
+// BYOK — provider key config stored in localStorage
+const PROVIDER_KEY_MAP = {
+  groq:          { label: 'Groq',           envName: 'GROQ_API_KEY' },
+  cerebras:      { label: 'Cerebras',       envName: 'CEREBRAS_API_KEY' },
+  google_ai:     { label: 'Google AI',      envName: 'GOOGLE_AI_KEY' },
+  claude:        { label: 'Claude',         envName: 'ANTHROPIC_API_KEY' },
+  xai:           { label: 'xAI (Grok)',     envName: 'XAI_API_KEY' },
+  openrouter:    { label: 'OpenRouter',     envName: 'OPENROUTER_API_KEY' },
+  github_models: { label: 'GitHub Models',  envName: 'GITHUB_TOKEN' },
+  huggingface:   { label: 'HuggingFace',    envName: 'HF_TOKEN' },
+  ollama:        { label: 'Ollama (local)',  envName: null },
+};
+
+function loadArenaKeys() {
+  try { return JSON.parse(localStorage.getItem('arena_keys') || '{}'); } catch { return {}; }
+}
+function saveArenaKeys(keys) {
+  localStorage.setItem('arena_keys', JSON.stringify(keys));
+}
+
+function hasKey(playerId) {
+  if (playerId === 'ollama') return true;
+  const keys = loadArenaKeys();
+  return !!(keys[playerId] && keys[playerId].trim());
+}
+
+function getKey(playerId) {
+  const keys = loadArenaKeys();
+  return (keys[playerId] || '').trim();
+}
+
+// Settings panel
+function openSettings() {
+  const overlay = document.getElementById('settingsOverlay');
+  const container = document.getElementById('settingsRows');
+  const keys = loadArenaKeys();
+  container.innerHTML = '';
+  PLAYERS.forEach(p => {
+    const cfg = PROVIDER_KEY_MAP[p.id];
+    if (!cfg) return;
+    if (p.id === 'ollama') {
+      const row = document.createElement('div');
+      row.className = 'settings-row';
+      row.innerHTML = `<div class="dot" style="background:${p.color}"></div><label>${cfg.label}</label><input disabled value="localhost:11434 (no key needed)" style="opacity:.5"/>`;
+      container.appendChild(row);
+      return;
+    }
+    const row = document.createElement('div');
+    row.className = 'settings-row';
+    row.innerHTML = `<div class="dot" style="background:${p.color}"></div><label>${cfg.label}</label><input type="password" id="key-${p.id}" placeholder="${cfg.envName}" value="${escHtml(keys[p.id] || '')}"/>`;
+    container.appendChild(row);
+  });
+  overlay.classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('open');
+}
+
+function saveSettings() {
+  const keys = {};
+  PLAYERS.forEach(p => {
+    if (p.id === 'ollama') return;
+    const input = document.getElementById('key-' + p.id);
+    if (input && input.value.trim()) keys[p.id] = input.value.trim();
+  });
+  saveArenaKeys(keys);
+  closeSettings();
+  refreshKeyStatus();
+}
+
+function refreshKeyStatus() {
+  PLAYERS.forEach(p => {
+    const has = hasKey(p.id);
+    providerStatus[p.id] = { available: has };
+    if (!has) {
+      setStatus(p.id, 'nokey', 'no key');
+    } else {
+      setStatus(p.id, 'idle', 'ready');
+    }
+  });
+}
+
+// Close settings on overlay click
+document.addEventListener('click', (e) => {
+  const overlay = document.getElementById('settingsOverlay');
+  if (e.target === overlay) closeSettings();
+});
+
+// ---- Direct API calls per provider ----
+
+// Shared helper for OpenAI-compatible chat completions endpoints
+async function callOpenAICompatible(url, apiKey, model, systemPrompt, userMessage, extraHeaders) {
+  const headers = { 'Content-Type': 'application/json', ...extraHeaders };
+  if (apiKey) headers['Authorization'] = 'Bearer ' + apiKey;
+  const body = {
+    model: model,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userMessage },
+    ],
+    max_tokens: 1024,
+    temperature: 0.7,
+  };
+  const resp = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error?.message || data.detail || JSON.stringify(data));
+  const choice = data.choices && data.choices[0];
+  return (choice && choice.message && choice.message.content) || '';
+}
+
+async function callGoogle(apiKey, model, systemPrompt, userMessage) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const body = {
+    system_instruction: { parts: [{ text: systemPrompt }] },
+    contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+    generationConfig: { maxOutputTokens: 1024, temperature: 0.7 },
+  };
+  const resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error?.message || JSON.stringify(data));
+  const parts = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+  return parts ? parts.map(p => p.text || '').join('') : '';
+}
+
+async function callClaude(apiKey, model, systemPrompt, userMessage) {
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: model,
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+    }),
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error?.message || JSON.stringify(data));
+  return (data.content && data.content.map(b => b.text || '').join('')) || '';
+}
+
+async function callHuggingFace(apiKey, userMessage) {
+  const url = 'https://api-inference.huggingface.co/models/meta-llama/Llama-3.3-70B-Instruct';
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+    body: JSON.stringify({ inputs: userMessage, parameters: { max_new_tokens: 1024, temperature: 0.7, return_full_text: false } }),
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error || JSON.stringify(data));
+  if (Array.isArray(data) && data[0]) return data[0].generated_text || '';
+  return typeof data === 'string' ? data : JSON.stringify(data);
+}
+
+async function callOllama(model, systemPrompt, userMessage) {
+  const resp = await fetch('http://localhost:11434/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: model || 'llama3', system: systemPrompt, prompt: userMessage, stream: false }),
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error || JSON.stringify(data));
+  return data.response || '';
+}
+
+// Route a call to the correct provider
+async function callProvider(playerId, systemPrompt, userMessage) {
+  const player = PLAYERS.find(p => p.id === playerId);
+  const model = player ? player.model : '';
+  const key = getKey(playerId);
+
+  switch (playerId) {
+    case 'groq':
+      return callOpenAICompatible('https://api.groq.com/openai/v1/chat/completions', key, model, systemPrompt, userMessage);
+    case 'cerebras':
+      return callOpenAICompatible('https://api.cerebras.ai/v1/chat/completions', key, model, systemPrompt, userMessage);
+    case 'xai':
+      return callOpenAICompatible('https://api.x.ai/v1/chat/completions', key, model, systemPrompt, userMessage);
+    case 'openrouter':
+      return callOpenAICompatible('https://openrouter.ai/api/v1/chat/completions', key, 'moonshotai/kimi-k2-0711-preview', systemPrompt, userMessage, { 'HTTP-Referer': window.location.origin, 'X-Title': 'AetherCode Arena' });
+    case 'github_models':
+      return callOpenAICompatible('https://models.inference.ai.azure.com/chat/completions', key, model, systemPrompt, userMessage);
+    case 'google_ai':
+      return callGoogle(key, model, systemPrompt, userMessage);
+    case 'claude':
+      return callClaude(key, model, systemPrompt, userMessage);
+    case 'huggingface':
+      return callHuggingFace(key, systemPrompt + '\n\n' + userMessage);
+    case 'ollama':
+      return callOllama(model !== 'local' ? model : 'llama3', systemPrompt, userMessage);
+    default:
+      throw new Error('Unknown provider: ' + playerId);
+  }
 }
 
 // Ask a single player — returns the response for Deliberate mode
@@ -615,12 +843,9 @@ async function askPlayer(playerId, message) {
   const text = message || (input ? input.value.trim() : '');
   if (!text) return null;
 
-  const provider = providerStatus[playerId];
-  const route = resolveTentacleForSeat(playerId);
-  if (provider && !provider.available && route.proxied) {
-    setStatus(playerId, 'proxy', `proxy:${route.via}`);
-  } else if (provider && !provider.available) {
-    addMessage(playerId, 'error', `No API key. Set ${provider.required_env || 'key'} in .env`);
+  if (!hasKey(playerId)) {
+    const cfg = PROVIDER_KEY_MAP[playerId];
+    addMessage(playerId, 'error', `No API key set. Click the gear icon and enter your ${cfg ? cfg.envName : 'key'}.`);
     return null;
   }
 
@@ -632,43 +857,22 @@ async function askPlayer(playerId, message) {
   const tongueInstruction = player ? TONGUE_INSTRUCTIONS[player.tongue] || '' : '';
   const roleContext = player ? `You are the ${player.role} (${player.tongue} tongue) in the AI Round Table. ${tongueInstruction}` : '';
 
+  const systemParts = [roleContext];
+  if (sharedCode) systemParts.push('Shared code:\n```\n' + sharedCode + '\n```');
+  const systemPrompt = systemParts.join('\n\n');
+
+  const t0 = performance.now();
   try {
-    const body = {
-      message: text,
-      mode: 'chat',
-      tentacle: route.tentacle,
-      context: [
-        ...(route.proxied ? [{ role: 'system', content: `Proxy mode: provider ${route.via} is responding as seat ${playerId}. Keep the seat persona/role exactly.` }] : []),
-        { role: 'system', content: roleContext },
-        ...(sharedCode ? [{ role: 'system', content: 'Shared code:\n```\n' + sharedCode + '\n```' }] : []),
-      ],
-    };
+    const response = await callProvider(playerId, systemPrompt, text);
+    const latency = Math.round(performance.now() - t0);
 
-    const resp = await fetch(API + '/v1/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    const data = await resp.json();
-
-    if (resp.ok && data.response) {
-      const routeMeta = route.proxied ? `proxy:${route.via} / ` : '';
-      addMessage(playerId, 'ai', data.response,
-        `${routeMeta}${data.tentacle} / ${data.model} / ${Math.round(data.latency_ms)}ms / ${Math.round(data.governance_score * 100)}%`
-      );
-      setStatus(playerId, 'idle', 'ready');
-      return { id: playerId, name: player.name, tongue: player.tongue, role: player.role, response: data.response };
-    } else {
-      const errMsg = data.detail || data.response || JSON.stringify(data);
-      addMessage(playerId, 'error', errMsg);
-      setStatus(playerId, 'error', 'error');
-      setTimeout(() => setStatus(playerId, 'idle', 'ready'), 5000);
-      return null;
-    }
+    addMessage(playerId, 'ai', response, `${player.model} / ${latency}ms`);
+    setStatus(playerId, 'idle', 'ready');
+    return { id: playerId, name: player.name, tongue: player.tongue, role: player.role, response };
   } catch (err) {
     addMessage(playerId, 'error', err.message);
-    setStatus(playerId, 'offline', 'offline');
+    setStatus(playerId, 'error', 'error');
+    setTimeout(() => setStatus(playerId, 'idle', 'ready'), 5000);
     return null;
   }
 }
@@ -927,7 +1131,7 @@ loadLoreStrip();
 registerServiceWorker();
 setupInstallPrompt();
 updateInstallUi();
-loadProviderStatus();
+refreshKeyStatus();
 updateTrainingCount();
 </script>
 </body>

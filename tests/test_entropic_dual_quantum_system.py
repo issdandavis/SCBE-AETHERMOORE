@@ -621,7 +621,7 @@ class TestPerformanceBenchmarks:
 
         # Benchmark single-epoch forward (the common real-world case)
         # NOT increasing epochs which makes each call O(n) work
-        for i in range(iterations):
+        for _i in range(iterations):
             # Each call jumps 1 epoch (1 hour), measuring per-derivation speed
             _ = compute_fast_forward_key(master_secret, 3600, current_time=0)
 

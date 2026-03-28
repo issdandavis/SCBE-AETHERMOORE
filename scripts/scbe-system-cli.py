@@ -1247,7 +1247,7 @@ def _execute_runtime(args: argparse.Namespace, *, app_entry: dict | None = None)
         if not manifest_path.exists():
             print("Pad not found. Run pollypad init first.")
             return 1
-        manifest = _load_manifest(manifest_path)
+        _manifest = _load_manifest(manifest_path)
 
     runtime_mode = "app" if app_entry is not None else "direct"
     source_path: Path | None = None

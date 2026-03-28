@@ -3,7 +3,10 @@ import pytest
 try:
     from agents.browser.symphonic_verifier import SymphonicVerifier
 except (ImportError, Exception):
-    pytest.skip("dependency not available (fastapi required by agents.browser)", allow_module_level=True)
+    pytest.skip(
+        "dependency not available (fastapi required by agents.browser)",
+        allow_module_level=True,
+    )
 
 
 def test_symphonic_verifier_returns_structured_result():

@@ -1,0 +1,271 @@
+{
+  "version": "1.0.0",
+  "description": "Golden test vectors for the 14-layer pipeline. All expected values are derived from closed-form math, not copied from implementation output. Both TypeScript (canonical) and Python (reference) must match these vectors.",
+  "constants": {
+    "PHI": 1.618033988749895,
+    "PHI_NOTE": "(1 + sqrt(5)) / 2"
+  },
+  "vectors": [
+    {
+      "id": "L5-hyperbolic-distance-origin-to-axis",
+      "layer": "L5",
+      "function": "hyperbolic_distance_poincare",
+      "description": "dH(u,v) = acosh(1 + 2*||u-v||^2 / ((1-||u||^2)(1-||v||^2))). Origin to (0.5, 0).",
+      "inputs": {"u": [0.0, 0.0], "v": [0.5, 0.0]},
+      "expected": 1.0986122886681096,
+      "tolerance": 1e-12
+    },
+    {
+      "id": "L5-hyperbolic-distance-2d-diagonal",
+      "layer": "L5",
+      "function": "hyperbolic_distance_poincare",
+      "description": "2D points with both components nonzero.",
+      "inputs": {"u": [0.1, 0.2], "v": [0.3, 0.4]},
+      "expected": 0.6582194273693331,
+      "tolerance": 1e-12
+    },
+    {
+      "id": "L5-hyperbolic-distance-perpendicular",
+      "layer": "L5",
+      "function": "hyperbolic_distance_poincare",
+      "description": "Two points at equal Euclidean distance from origin but on perpendicular axes.",
+      "inputs": {"u": [0.3, 0.0], "v": [0.0, 0.3]},
+      "expected": 0.901599472981844,
+      "tolerance": 1e-12
+    },
+    {
+      "id": "L5-hyperbolic-distance-near-boundary",
+      "layer": "L5",
+      "function": "hyperbolic_distance_poincare",
+      "description": "Points near the Poincare ball boundary where distance grows rapidly.",
+      "inputs": {"u": [0.9, 0.0], "v": [0.0, 0.9]},
+      "expected": 5.201232927686145,
+      "tolerance": 1e-10
+    },
+    {
+      "id": "L5-hyperbolic-distance-symmetric-opposites",
+      "layer": "L5",
+      "function": "hyperbolic_distance_poincare",
+      "description": "Symmetric opposite points in 2D Poincare ball.",
+      "inputs": {"u": [0.5, 0.5], "v": [-0.5, -0.5]},
+      "expected": 3.5254943480781717,
+      "tolerance": 1e-12
+    },
+    {
+      "id": "L12-harmonic-wall-d0-R4",
+      "layer": "L12",
+      "function": "harmonic_wall",
+      "description": "H(d, R) = R^(d^2). At d=0 cost is always 1 (safe center).",
+      "inputs": {"d": 0.0, "R": 4.0},
+      "expected": 1.0,
+      "tolerance": 1e-15
+    },
+    {
+      "id": "L12-harmonic-wall-d0.5-R4",
+      "layer": "L12",
+      "function": "harmonic_wall",
+      "description": "H(0.5, 4) = 4^0.25 = sqrt(2).",
+      "inputs": {"d": 0.5, "R": 4.0},
+      "expected": 1.4142135623730951,
+      "tolerance": 1e-12
+    },
+    {
+      "id": "L12-harmonic-wall-d1-R4",
+      "layer": "L12",
+      "function": "harmonic_wall",
+      "description": "H(1.0, 4) = 4^1 = 4. At boundary, full base cost.",
+      "inputs": {"d": 1.0, "R": 4.0},
+      "expected": 4.0,
+      "tolerance": 1e-15
+    },
+    {
+      "id": "L12-harmonic-wall-d0.3-R2",
+      "layer": "L12",
+      "function": "harmonic_wall",
+      "description": "H(0.3, 2) = 2^0.09.",
+      "inputs": {"d": 0.3, "R": 2.0},
+      "expected": 1.0643701824533598,
+      "tolerance": 1e-12
+    },
+    {
+      "id": "L12-harmonic-wall-d0.9-R10",
+      "layer": "L12",
+      "function": "harmonic_wall",
+      "description": "H(0.9, 10) = 10^0.81. Near boundary with large R.",
+      "inputs": {"d": 0.9, "R": 10.0},
+      "expected": 6.456542290346556,
+      "tolerance": 1e-10
+    },
+    {
+      "id": "tongue-weights-phi-k",
+      "layer": "langues",
+      "function": "tongue_weights",
+      "description": "Sacred Tongue weights: PHI^k for k=0..5 (KO, AV, RU, CA, UM, DR).",
+      "inputs": {"k_values": [0, 1, 2, 3, 4, 5]},
+      "expected": [1.0, 1.618033988749895, 2.618033988749895, 4.23606797749979, 6.854101966249686, 11.090169943749476],
+      "tolerance": 1e-12
+    },
+    {
+      "id": "shell-radius-k0",
+      "layer": "L12",
+      "function": "phi_shell_radius",
+      "description": "r(k) = phi^k / (1 + phi^k). k=0: phi^0=1, r=1/2=0.5.",
+      "inputs": {"k": 0},
+      "expected": 0.5,
+      "tolerance": 1e-15
+    },
+    {
+      "id": "shell-radius-k1",
+      "layer": "L12",
+      "function": "phi_shell_radius",
+      "description": "k=1: r = phi / (1+phi) = phi/(phi+1) = phi/phi^2 = 1/phi = phi-1 = 0.618...",
+      "inputs": {"k": 1},
+      "expected": 0.6180339887498949,
+      "tolerance": 1e-12
+    },
+    {
+      "id": "shell-radius-k2",
+      "layer": "L12",
+      "function": "phi_shell_radius",
+      "description": "k=2: r = phi^2 / (1+phi^2).",
+      "inputs": {"k": 2},
+      "expected": 0.7236067977499789,
+      "tolerance": 1e-12
+    },
+    {
+      "id": "shell-radius-k3",
+      "layer": "L12",
+      "function": "phi_shell_radius",
+      "description": "k=3: r = phi^3 / (1+phi^3).",
+      "inputs": {"k": 3},
+      "expected": 0.8090169943749475,
+      "tolerance": 1e-12
+    },
+    {
+      "id": "shell-radius-k4",
+      "layer": "L12",
+      "function": "phi_shell_radius",
+      "description": "k=4: r = phi^4 / (1+phi^4).",
+      "inputs": {"k": 4},
+      "expected": 0.872677996249965,
+      "tolerance": 1e-12
+    },
+    {
+      "id": "shell-radius-k5",
+      "layer": "L12",
+      "function": "phi_shell_radius",
+      "description": "k=5: r = phi^5 / (1+phi^5). Approaches 1 (boundary).",
+      "inputs": {"k": 5},
+      "expected": 0.9172881767044977,
+      "tolerance": 1e-12
+    },
+    {
+      "id": "harmonic-cost-at-shell-k0",
+      "layer": "L12",
+      "function": "harmonic_cost_at_shell",
+      "description": "Cost at shell 0 with R=4: H(r(0), 4) = 4^(0.5^2) = 4^0.25 = sqrt(2).",
+      "inputs": {"k": 0, "R": 4.0},
+      "expected": 1.4142135623730951,
+      "tolerance": 1e-12
+    },
+    {
+      "id": "harmonic-cost-at-shell-k3",
+      "layer": "L12",
+      "function": "harmonic_cost_at_shell",
+      "description": "Cost at shell 3 with R=4: 4^(r(3)^2) = 4^(0.80902^2).",
+      "inputs": {"k": 3, "R": 4.0},
+      "expected": 2.4777265820315924,
+      "tolerance": 1e-10
+    },
+    {
+      "id": "harmonic-cost-at-shell-k5",
+      "layer": "L12",
+      "function": "harmonic_cost_at_shell",
+      "description": "Cost at shell 5 with R=4: 4^(r(5)^2). Near boundary = high cost.",
+      "inputs": {"k": 5, "R": 4.0},
+      "expected": 3.2105827830318856,
+      "tolerance": 1e-10
+    },
+    {
+      "id": "fibonacci-consensus-empty",
+      "layer": "consensus",
+      "function": "fibonacci_ternary_consensus",
+      "description": "Empty history: index stays at 0, FIB[0]=1.",
+      "inputs": {"history": []},
+      "expected": 1,
+      "tolerance": 0
+    },
+    {
+      "id": "fibonacci-consensus-1-activate",
+      "layer": "consensus",
+      "function": "fibonacci_ternary_consensus",
+      "description": "Single +1: climb to index 1, FIB[1]=1.",
+      "inputs": {"history": [1]},
+      "expected": 1,
+      "tolerance": 0
+    },
+    {
+      "id": "fibonacci-consensus-3-activate",
+      "layer": "consensus",
+      "function": "fibonacci_ternary_consensus",
+      "description": "Three +1s: climb to index 3, FIB[3]=3.",
+      "inputs": {"history": [1, 1, 1]},
+      "expected": 3,
+      "tolerance": 0
+    },
+    {
+      "id": "fibonacci-consensus-5-activate",
+      "layer": "consensus",
+      "function": "fibonacci_ternary_consensus",
+      "description": "Five +1s: climb to index 5, FIB[5]=8.",
+      "inputs": {"history": [1, 1, 1, 1, 1]},
+      "expected": 8,
+      "tolerance": 0
+    },
+    {
+      "id": "fibonacci-consensus-10-activate",
+      "layer": "consensus",
+      "function": "fibonacci_ternary_consensus",
+      "description": "Ten +1s: climb to index 10, FIB[10]=89.",
+      "inputs": {"history": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]},
+      "expected": 89,
+      "tolerance": 0
+    },
+    {
+      "id": "fibonacci-consensus-activate-then-inhibit",
+      "layer": "consensus",
+      "function": "fibonacci_ternary_consensus",
+      "description": "+1,+1,-1: climb to 2 then drop to 1. FIB[1]=1.",
+      "inputs": {"history": [1, 1, -1]},
+      "expected": 1,
+      "tolerance": 0
+    },
+    {
+      "id": "fibonacci-consensus-mixed-with-neutral",
+      "layer": "consensus",
+      "function": "fibonacci_ternary_consensus",
+      "description": "+1,0,+1,0,+1: neutrals hold position. Final index=3, FIB[3]=3.",
+      "inputs": {"history": [1, 0, 1, 0, 1]},
+      "expected": 3,
+      "tolerance": 0
+    },
+    {
+      "id": "fibonacci-consensus-all-inhibit",
+      "layer": "consensus",
+      "function": "fibonacci_ternary_consensus",
+      "description": "All -1s: index stays clamped at 0. FIB[0]=1.",
+      "inputs": {"history": [-1, -1, -1]},
+      "expected": 1,
+      "tolerance": 0
+    },
+    {
+      "id": "fibonacci-consensus-climb-and-fall",
+      "layer": "consensus",
+      "function": "fibonacci_ternary_consensus",
+      "description": "+1,+1,+1,-1,-1: climb to 3 then drop to 1. FIB[1]=1.",
+      "inputs": {"history": [1, 1, 1, -1, -1]},
+      "expected": 1,
+      "tolerance": 0
+    }
+  ]
+}

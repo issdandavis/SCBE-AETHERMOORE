@@ -1,4 +1,5 @@
 """Triangulated PHDM Lattice — governance-as-geometry on 21D polyhedral mesh."""
+
 from .triangulated_phdm import (
     TriangulatedPHDMLattice,
     LatticeNode,

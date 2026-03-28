@@ -10,6 +10,7 @@ Combines:
 The certificate proves: this exact data existed at this exact time,
 attested by this signer, encoded in this Sacred Tongue.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -18,7 +19,6 @@ import json
 import os
 import time
 from dataclasses import asdict, dataclass
-
 
 # ── Sacred Tongue token tables (subset for hash encoding) ──────────────────
 
@@ -35,10 +35,38 @@ _PREFIXES = {
     "DR": ["fizz'", "pop'", "bub'", "snap'", "whiz'", "zip'", "spark'", "glow'"],
 }
 _SUFFIXES = [
-    "el", "or", "in", "ak", "ul", "sa", "ri", "yn",
-    "on", "ar", "ik", "eth", "ix", "um", "os", "an",
-    "ir", "al", "uk", "ez", "om", "at", "is", "en",
-    "ob", "av", "ep", "ux", "id", "ag", "ot", "un",
+    "el",
+    "or",
+    "in",
+    "ak",
+    "ul",
+    "sa",
+    "ri",
+    "yn",
+    "on",
+    "ar",
+    "ik",
+    "eth",
+    "ix",
+    "um",
+    "os",
+    "an",
+    "ir",
+    "al",
+    "uk",
+    "ez",
+    "om",
+    "at",
+    "is",
+    "en",
+    "ob",
+    "av",
+    "ep",
+    "ux",
+    "id",
+    "ag",
+    "ot",
+    "un",
 ]
 
 
@@ -194,7 +222,13 @@ def batch_notarize(
 ) -> list[NotarizationCert]:
     """Notarize multiple items. Each item is (data, description)."""
     return [
-        notarize(data, tongue=tongue, signer=signer, signing_key=signing_key, description=desc)
+        notarize(
+            data,
+            tongue=tongue,
+            signer=signer,
+            signing_key=signing_key,
+            description=desc,
+        )
         for data, desc in items
     ]
 

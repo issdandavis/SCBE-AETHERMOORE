@@ -38,13 +38,55 @@ def test_reduce_deny_when_models_agree_on_deny():
 def test_conflicting_votes_quarantine_or_deny():
     m = MultiModelModalMatrix()
     # Same modality disagreement across models.
-    m.ingest(model_id="ko", modality_id="content", prediction="ALLOW", confidence=0.9, latency_ms=100, risk=0.15)
-    m.ingest(model_id="ru", modality_id="content", prediction="QUARANTINE", confidence=0.9, latency_ms=100, risk=0.4)
-    m.ingest(model_id="dr", modality_id="content", prediction="DENY", confidence=0.9, latency_ms=100, risk=0.7)
+    m.ingest(
+        model_id="ko",
+        modality_id="content",
+        prediction="ALLOW",
+        confidence=0.9,
+        latency_ms=100,
+        risk=0.15,
+    )
+    m.ingest(
+        model_id="ru",
+        modality_id="content",
+        prediction="QUARANTINE",
+        confidence=0.9,
+        latency_ms=100,
+        risk=0.4,
+    )
+    m.ingest(
+        model_id="dr",
+        modality_id="content",
+        prediction="DENY",
+        confidence=0.9,
+        latency_ms=100,
+        risk=0.7,
+    )
     # Add a second modality to avoid trivial structure.
-    m.ingest(model_id="ko", modality_id="threat", prediction="ALLOW", confidence=0.7, latency_ms=120, risk=0.2)
-    m.ingest(model_id="ru", modality_id="threat", prediction="QUARANTINE", confidence=0.8, latency_ms=120, risk=0.45)
-    m.ingest(model_id="dr", modality_id="threat", prediction="DENY", confidence=0.8, latency_ms=120, risk=0.75)
+    m.ingest(
+        model_id="ko",
+        modality_id="threat",
+        prediction="ALLOW",
+        confidence=0.7,
+        latency_ms=120,
+        risk=0.2,
+    )
+    m.ingest(
+        model_id="ru",
+        modality_id="threat",
+        prediction="QUARANTINE",
+        confidence=0.8,
+        latency_ms=120,
+        risk=0.45,
+    )
+    m.ingest(
+        model_id="dr",
+        modality_id="threat",
+        prediction="DENY",
+        confidence=0.8,
+        latency_ms=120,
+        risk=0.75,
+    )
     out = m.reduce()
     assert out.decision in {"QUARANTINE", "DENY"}
     assert out.signals["conflict_mass"] > 0.0

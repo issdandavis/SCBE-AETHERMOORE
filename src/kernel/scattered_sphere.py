@@ -106,7 +106,12 @@ class ScatteredAttentionSphere:
         self.lattice: list[LatticePoint] = []
         self._layers: list[str] = []  # track which matrices were scattered
 
-    def scatter(self, weight_matrix: np.ndarray, layer_name: str = "default", layer_radius: float = 1.0) -> int:
+    def scatter(
+        self,
+        weight_matrix: np.ndarray,
+        layer_name: str = "default",
+        layer_radius: float = 1.0,
+    ) -> int:
         """
         Fractalize a 2D weight matrix and scatter onto the sphere.
 

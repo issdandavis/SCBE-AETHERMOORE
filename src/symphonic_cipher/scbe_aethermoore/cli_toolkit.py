@@ -1008,7 +1008,8 @@ def cmd_egg_create(args):
     if not args.outfile:
         print(out)
     else:
-        open(args.outfile, "w", encoding="utf-8").write(out)
+        with open(args.outfile, "w", encoding="utf-8") as fh:
+            fh.write(out)
 
 
 def cmd_egg_hatch(args):
@@ -1021,7 +1022,8 @@ def cmd_egg_hatch(args):
     xt = CrossTokenizer(tok)
     integrator = SacredEggIntegrator(xt)
 
-    egg_data = open(args.egg_json, "r", encoding="utf-8").read()
+    with open(args.egg_json, "r", encoding="utf-8") as fh:
+        egg_data = fh.read()
     egg = integrator.from_json(egg_data)
     ctx = json.loads(args.context)
     additional = json.loads(args.additional_tongues)
@@ -1058,7 +1060,8 @@ def cmd_egg_paint(args):
     xt = CrossTokenizer(tok)
     integrator = SacredEggIntegrator(xt)
 
-    egg_data = open(args.egg_json, "r", encoding="utf-8").read()
+    with open(args.egg_json, "r", encoding="utf-8") as fh:
+        egg_data = fh.read()
     egg = integrator.from_json(egg_data)
 
     hatch_cond = json.loads(args.hatch_condition) if args.hatch_condition else None
@@ -1068,7 +1071,8 @@ def cmd_egg_paint(args):
     if not args.outfile:
         print(out)
     else:
-        open(args.outfile, "w", encoding="utf-8").write(out)
+        with open(args.outfile, "w", encoding="utf-8") as fh:
+            fh.write(out)
 
 
 def cmd_seed(args):
@@ -1310,7 +1314,12 @@ def build_cli():
 
     ec = sub.add_parser("egg-create", help="Create a Sacred Egg (GeoSeal-encrypted + ritual-gated)")
     ec.add_argument("--payload-b64", required=True, help="Base64-encoded payload to seal")
-    ec.add_argument("--primary-tongue", required=True, choices=TONGUES, help="Tongue identity bound to egg")
+    ec.add_argument(
+        "--primary-tongue",
+        required=True,
+        choices=TONGUES,
+        help="Tongue identity bound to egg",
+    )
     ec.add_argument("--glyph", default="egg", help="Visual symbol for the egg")
     ec.add_argument("--hatch-condition", default="{}", help="JSON dict of ritual requirements")
     ec.add_argument("--context", required=True, help="JSON array of 6 floats for GeoSeal context")
@@ -1322,9 +1331,21 @@ def build_cli():
     eh = sub.add_parser("egg-hatch", help="Attempt to hatch a Sacred Egg")
     eh.add_argument("--egg-json", required=True, help="Path to Sacred Egg JSON file")
     eh.add_argument("--agent-tongue", required=True, choices=TONGUES, help="Agent's active tongue")
-    eh.add_argument("--ritual-mode", default="solitary", choices=["solitary", "triadic", "ring_descent"])
-    eh.add_argument("--additional-tongues", default="[]", help="JSON array of extra tongues (triadic mode)")
-    eh.add_argument("--path-history", default="[]", help="JSON array of ring traversal (ring_descent mode)")
+    eh.add_argument(
+        "--ritual-mode",
+        default="solitary",
+        choices=["solitary", "triadic", "ring_descent"],
+    )
+    eh.add_argument(
+        "--additional-tongues",
+        default="[]",
+        help="JSON array of extra tongues (triadic mode)",
+    )
+    eh.add_argument(
+        "--path-history",
+        default="[]",
+        help="JSON array of ring traversal (ring_descent mode)",
+    )
     eh.add_argument("--context", required=True, help="JSON array of 6 floats for current context")
     eh.add_argument("--kem-key", required=True, help="Base64 KEM secret key")
     eh.add_argument("--dsa-pk", required=True, help="Base64 DSA verification key")

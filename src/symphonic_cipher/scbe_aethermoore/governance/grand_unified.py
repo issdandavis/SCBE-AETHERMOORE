@@ -134,7 +134,11 @@ class ManifoldController:
         distance = self.geometric_divergence(p_prev, p_new)
 
         if distance <= self.epsilon:
-            return {"status": "WRITE_SUCCESS", "distance": distance, "coordinates": p_new}
+            return {
+                "status": "WRITE_SUCCESS",
+                "distance": distance,
+                "coordinates": p_new,
+            }
         else:
             return {
                 "status": "WRITE_FAIL",

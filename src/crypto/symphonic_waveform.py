@@ -119,7 +119,12 @@ def position_to_intent(point: np.ndarray) -> SymphonicIntent:
         phase = 0.0
 
     return SymphonicIntent(
-        position=point, polarity=polarity, intensity=intensity, frequency=frequency, token_id=token_id, phase=phase
+        position=point,
+        polarity=polarity,
+        intensity=intensity,
+        frequency=frequency,
+        token_id=token_id,
+        phase=phase,
     )
 
 
@@ -134,7 +139,11 @@ def hyperpath_to_intents(path: List[np.ndarray]) -> List[SymphonicIntent]:
 
 
 def generate_tone(
-    frequency: float, duration: float, sample_rate: int = SAMPLE_RATE, amplitude: float = 0.5, phase: float = 0.0
+    frequency: float,
+    duration: float,
+    sample_rate: int = SAMPLE_RATE,
+    amplitude: float = 0.5,
+    phase: float = 0.0,
 ) -> np.ndarray:
     """Generate a pure sine tone."""
     t = np.linspace(0, duration, int(sample_rate * duration), dtype=np.float32)
@@ -482,7 +491,11 @@ def poincare_geodesic(u: np.ndarray, v: np.ndarray, t: float, eps: float = 1e-8)
 
 
 def geodesic_to_waveform(
-    start: np.ndarray, end: np.ndarray, n_points: int = 20, note_duration: float = 0.25, sample_rate: int = SAMPLE_RATE
+    start: np.ndarray,
+    end: np.ndarray,
+    n_points: int = 20,
+    note_duration: float = 0.25,
+    sample_rate: int = SAMPLE_RATE,
 ) -> Tuple[np.ndarray, List[SymphonicIntent], str]:
     """
     Generate waveform from geodesic traversal between two points.
@@ -537,7 +550,11 @@ class RealTimeRenderer:
 
         # Generate tone
         tone = generate_tone(
-            intent.frequency, duration, self.sample_rate, amplitude=0.5 + intent.intensity * 0.3, phase=intent.phase
+            intent.frequency,
+            duration,
+            self.sample_rate,
+            amplitude=0.5 + intent.intensity * 0.3,
+            phase=intent.phase,
         )
 
         # Simple envelope

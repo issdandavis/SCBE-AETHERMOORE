@@ -119,7 +119,12 @@ class TestCanvasOrchestrator:
     def test_roundabout_execution(self):
         steps = [
             CanvasStep("draft", StepType.DRAFT),
-            CanvasStep("check", StepType.ROUNDABOUT, depends_on=["draft"], params={"min_quality": 0.5}),
+            CanvasStep(
+                "check",
+                StepType.ROUNDABOUT,
+                depends_on=["draft"],
+                params={"min_quality": 0.5},
+            ),
         ]
         orch = CanvasOrchestrator(available_providers=["claude"])
         orch.execute_recipe(steps, topic="test")

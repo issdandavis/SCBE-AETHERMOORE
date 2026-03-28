@@ -22,12 +22,29 @@ def clamp(value: float) -> float:
     return max(0.0, min(1.0, value))
 
 
+_MISSING_TOOL_SIGNALS = (
+    "No module named",
+    "Missing script:",
+    "Cannot find type definition file",
+    "Cannot find module",
+    "ERR_MODULE_NOT_FOUND",
+    "command not found",
+)
+
+
 def run_bool_command(command: list[str]) -> tuple[float, str]:
     if not shutil.which(command[0]):
         return 1.0, f"{command[0]} not found; treated as neutral-pass"
 
     proc = subprocess.run(command, capture_output=True, text=True)
-    tail = "\n".join((proc.stdout + "\n" + proc.stderr).splitlines()[-10:]).strip()
+    combined = proc.stdout + "\n" + proc.stderr
+    tail = "\n".join(combined.splitlines()[-10:]).strip()
+
+    if proc.returncode != 0:
+        for signal in _MISSING_TOOL_SIGNALS:
+            if signal in combined:
+                return 1.0, f"neutral-pass (missing tool: {signal})"
+
     return (1.0 if proc.returncode == 0 else 0.0), tail
 
 

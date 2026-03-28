@@ -41,7 +41,8 @@ from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
 
 # Skip all tests if dependencies not available
 pytestmark = pytest.mark.skipif(
-    not RWP_AVAILABLE, reason="RWP v3.0 dependencies not installed (argon2-cffi, pycryptodome)"
+    not RWP_AVAILABLE,
+    reason="RWP v3.0 dependencies not installed (argon2-cffi, pycryptodome)",
 )
 
 # Hypothesis settings for thorough testing

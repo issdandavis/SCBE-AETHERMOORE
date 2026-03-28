@@ -381,7 +381,10 @@ class HeartVaultGraph:
     def delete_node(self, node_id: str) -> bool:
         """Delete a node and all its edges."""
         with self._tx() as cur:
-            cur.execute("DELETE FROM hv_edges WHERE source_id=? OR target_id=?", (node_id, node_id))
+            cur.execute(
+                "DELETE FROM hv_edges WHERE source_id=? OR target_id=?",
+                (node_id, node_id),
+            )
             cur.execute("DELETE FROM hv_nodes WHERE id=?", (node_id,))
             return cur.rowcount > 0
 

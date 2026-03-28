@@ -229,7 +229,12 @@ class TestAIMessaging:
         spine.connect_head(h2)
 
         result = await spine.execute(
-            {"action": "message", "from_head": h1.head_id, "to_head": h2.head_id, "message": {"task": "review code"}}
+            {
+                "action": "message",
+                "from_head": h1.head_id,
+                "to_head": h2.head_id,
+                "message": {"task": "review code"},
+            }
         )
         assert result["success"] is True
         assert result["delivered"] is True
@@ -242,7 +247,8 @@ class TestAIMessaging:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
-        "dangerous_word", ["ignore", "override", "sudo", "admin", "forget", "disregard", "system prompt"]
+        "dangerous_word",
+        ["ignore", "override", "sudo", "admin", "forget", "disregard", "system prompt"],
     )
     async def test_dangerous_patterns_blocked(self, spine: HydraSpine, dangerous_word: str):
         h1 = make_head()
@@ -267,7 +273,12 @@ class TestAIMessaging:
         spine.connect_head(h1)
 
         result = await spine.execute(
-            {"action": "message", "from_head": h1.head_id, "to_head": "ghost", "message": {"hello": "anyone?"}}
+            {
+                "action": "message",
+                "from_head": h1.head_id,
+                "to_head": "ghost",
+                "message": {"hello": "anyone?"},
+            }
         )
         assert result["success"] is False
 

@@ -131,7 +131,12 @@ def test_playwright_missing_falls_back_to_api(monkeypatch, tmp_path: Path) -> No
 
     def fake_fallback(query: str, max_results: int, search_type: str, save_to_vault: str | None):
         captured["args"] = (query, max_results, search_type, save_to_vault)
-        return [{"title": "fallback-result", "link": "https://huggingface.co/spaces/org/demo"}]
+        return [
+            {
+                "title": "fallback-result",
+                "link": "https://huggingface.co/spaces/org/demo",
+            }
+        ]
 
     monkeypatch.setattr(hf_nav, "_load_sync_playwright", lambda: None)
     monkeypatch.setattr(hf_nav, "nav_huggingface_api_fallback", fake_fallback)

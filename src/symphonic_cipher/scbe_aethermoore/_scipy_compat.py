@@ -137,7 +137,7 @@ except ImportError:
         Y = A.copy()
         Z = np.eye(n)
 
-        for i in range(max_iter):
+        for _i in range(max_iter):
             Y_new = 0.5 * (Y + np.linalg.inv(Z))
             Z_new = 0.5 * (Z + np.linalg.inv(Y))
 

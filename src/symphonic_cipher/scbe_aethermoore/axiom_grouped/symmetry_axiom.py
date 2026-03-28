@@ -508,7 +508,7 @@ def wilson_loop(connection: np.ndarray, path: List[Tuple[int, int]]) -> complex:
     """
     phase = 0.0
 
-    for i, (site, direction) in enumerate(path):
+    for _i, (site, direction) in enumerate(path):
         phase += connection[site, direction]
 
     return np.exp(1j * phase)
@@ -539,7 +539,7 @@ def verify_layer_symmetry(
     max_error = 0.0
     violations = 0
 
-    for i in range(n_tests):
+    for _i in range(n_tests):
         if layer_func.__name__ == "layer_5_hyperbolic_distance":
             # Test Möbius invariance
             u = np.random.randn(dim) * 0.3

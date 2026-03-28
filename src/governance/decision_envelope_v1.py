@@ -120,20 +120,73 @@ def _build_file_descriptor() -> descriptor_pb2.FileDescriptorProto:
     )
 
     identity = add_message("Identity")
-    add_field(identity, name="envelope_id", number=1, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
-    add_field(identity, name="version", number=2, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
-    add_field(identity, name="mission_id", number=3, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
-    add_field(identity, name="swarm_id", number=4, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
+    add_field(
+        identity,
+        name="envelope_id",
+        number=1,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
+    add_field(
+        identity,
+        name="version",
+        number=2,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
+    add_field(
+        identity,
+        name="mission_id",
+        number=3,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
+    add_field(
+        identity,
+        name="swarm_id",
+        number=4,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
 
     authority = add_message("Authority")
-    add_field(authority, name="issuer", number=1, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
-    add_field(authority, name="key_id", number=2, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
-    add_field(authority, name="valid_from_ms", number=3, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_UINT64)
-    add_field(authority, name="valid_until_ms", number=4, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_UINT64)
-    add_field(authority, name="issued_at_ms", number=5, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_UINT64)
-    add_field(authority, name="signature", number=6, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BYTES)
     add_field(
-        authority, name="signed_payload_hash", number=7, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BYTES
+        authority,
+        name="issuer",
+        number=1,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
+    add_field(
+        authority,
+        name="key_id",
+        number=2,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
+    add_field(
+        authority,
+        name="valid_from_ms",
+        number=3,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_UINT64,
+    )
+    add_field(
+        authority,
+        name="valid_until_ms",
+        number=4,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_UINT64,
+    )
+    add_field(
+        authority,
+        name="issued_at_ms",
+        number=5,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_UINT64,
+    )
+    add_field(
+        authority,
+        name="signature",
+        number=6,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BYTES,
+    )
+    add_field(
+        authority,
+        name="signed_payload_hash",
+        number=7,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BYTES,
     )
 
     scope = add_message("Scope")
@@ -160,9 +213,24 @@ def _build_file_descriptor() -> descriptor_pb2.FileDescriptorProto:
     )
 
     resources = add_message("ResourceConstraints")
-    add_field(resources, name="power_min", number=1, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_DOUBLE)
-    add_field(resources, name="bandwidth_min", number=2, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_DOUBLE)
-    add_field(resources, name="thermal_max", number=3, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_DOUBLE)
+    add_field(
+        resources,
+        name="power_min",
+        number=1,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_DOUBLE,
+    )
+    add_field(
+        resources,
+        name="bandwidth_min",
+        number=2,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_DOUBLE,
+    )
+    add_field(
+        resources,
+        name="thermal_max",
+        number=3,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_DOUBLE,
+    )
 
     constraints = add_message("Constraints")
     add_field(
@@ -188,14 +256,44 @@ def _build_file_descriptor() -> descriptor_pb2.FileDescriptorProto:
     )
 
     recovery = add_message("RecoveryPath")
-    add_field(recovery, name="path_id", number=1, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
-    add_field(recovery, name="playbook_ref", number=2, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
-    add_field(recovery, name="quorum_min", number=3, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_UINT32)
-    add_field(recovery, name="human_ack_required", number=4, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BOOL)
+    add_field(
+        recovery,
+        name="path_id",
+        number=1,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
+    add_field(
+        recovery,
+        name="playbook_ref",
+        number=2,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
+    add_field(
+        recovery,
+        name="quorum_min",
+        number=3,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_UINT32,
+    )
+    add_field(
+        recovery,
+        name="human_ack_required",
+        number=4,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BOOL,
+    )
 
     rule = add_message("Rule")
-    add_field(rule, name="capability", number=1, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
-    add_field(rule, name="target", number=2, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
+    add_field(
+        rule,
+        name="capability",
+        number=1,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
+    add_field(
+        rule,
+        name="target",
+        number=2,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
     add_field(
         rule,
         name="boundary",
@@ -219,7 +317,12 @@ def _build_file_descriptor() -> descriptor_pb2.FileDescriptorProto:
         field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
         label=descriptor_pb2.FieldDescriptorProto.LABEL_REPEATED,
     )
-    add_field(audit, name="mmr_leaf_hash", number=2, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BYTES)
+    add_field(
+        audit,
+        name="mmr_leaf_hash",
+        number=2,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BYTES,
+    )
 
     envelope = add_message("DecisionEnvelopeV1")
     add_field(
@@ -267,10 +370,30 @@ def _build_file_descriptor() -> descriptor_pb2.FileDescriptorProto:
     )
 
     action = add_message("ActionState")
-    add_field(action, name="mission_phase", number=1, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
-    add_field(action, name="agent_id", number=2, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
-    add_field(action, name="capability", number=3, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
-    add_field(action, name="target", number=4, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
+    add_field(
+        action,
+        name="mission_phase",
+        number=1,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
+    add_field(
+        action,
+        name="agent_id",
+        number=2,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
+    add_field(
+        action,
+        name="capability",
+        number=3,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
+    add_field(
+        action,
+        name="target",
+        number=4,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
     add_field(
         action,
         name="risk_tier",
@@ -278,12 +401,32 @@ def _build_file_descriptor() -> descriptor_pb2.FileDescriptorProto:
         field_type=descriptor_pb2.FieldDescriptorProto.TYPE_ENUM,
         type_name=".scbe.governance.v1.RiskTier",
     )
-    add_field(action, name="power", number=6, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_DOUBLE)
-    add_field(action, name="bandwidth", number=7, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_DOUBLE)
-    add_field(action, name="thermal", number=8, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_DOUBLE)
+    add_field(
+        action,
+        name="power",
+        number=6,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_DOUBLE,
+    )
+    add_field(
+        action,
+        name="bandwidth",
+        number=7,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_DOUBLE,
+    )
+    add_field(
+        action,
+        name="thermal",
+        number=8,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_DOUBLE,
+    )
 
     evaluation = add_message("EvaluationResult")
-    add_field(evaluation, name="in_envelope", number=1, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BOOL)
+    add_field(
+        evaluation,
+        name="in_envelope",
+        number=1,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BOOL,
+    )
     add_field(
         evaluation,
         name="boundary",
@@ -291,9 +434,24 @@ def _build_file_descriptor() -> descriptor_pb2.FileDescriptorProto:
         field_type=descriptor_pb2.FieldDescriptorProto.TYPE_ENUM,
         type_name=".scbe.governance.v1.BoundaryBehavior",
     )
-    add_field(evaluation, name="reason", number=3, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
-    add_field(evaluation, name="recovery_path_id", number=4, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING)
-    add_field(evaluation, name="mmr_leaf_hash", number=5, field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BYTES)
+    add_field(
+        evaluation,
+        name="reason",
+        number=3,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
+    add_field(
+        evaluation,
+        name="recovery_path_id",
+        number=4,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_STRING,
+    )
+    add_field(
+        evaluation,
+        name="mmr_leaf_hash",
+        number=5,
+        field_type=descriptor_pb2.FieldDescriptorProto.TYPE_BYTES,
+    )
 
     return fd
 

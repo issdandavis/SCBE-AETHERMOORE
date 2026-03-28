@@ -38,24 +38,47 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install deps
+      - name: Install Python deps
+        continue-on-error: true
         run: |
-          pip install -r requirements.txt 2>/dev/null || pip install pytest hypothesis numpy 2>/dev/null || true
-          npm ci 2>/dev/null || true
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install pytest hypothesis numpy
+          fi
+
+      - name: Install Node deps
+        continue-on-error: true
+        run: npm ci
 
       - name: Validate
         id: validate
         run: |
+          FAILURES=0
+
           echo "=== Python syntax check ==="
-          python -m py_compile src/symphonic_cipher/scbe_aethermoore/cpse.py 2>/dev/null || true
+          if ! python -m py_compile src/symphonic_cipher/scbe_aethermoore/cpse.py; then
+            echo "::warning::Python syntax check failed"
+            FAILURES=$((FAILURES + 1))
+          fi
 
           echo "=== TypeScript type check ==="
-          npx tsc --noEmit 2>/dev/null || true
+          if ! npx tsc --noEmit; then
+            echo "::warning::TypeScript type check failed"
+            FAILURES=$((FAILURES + 1))
+          fi
 
           echo "=== Quick smoke tests ==="
-          python -m pytest tests/ -m "homebrew or unit" -x -q --tb=line 2>&1 || true
+          if ! python -m pytest tests/ -m "homebrew or unit" -x -q --tb=line 2>&1; then
+            echo "::warning::Smoke tests failed"
+            FAILURES=$((FAILURES + 1))
+          fi
 
-          echo "=== Tier 1 complete ==="
+          echo "=== Tier 1 complete (failures: $FAILURES) ==="
+          echo "failure_count=$FAILURES" >> $GITHUB_OUTPUT
+          if [ "$FAILURES" -gt 0 ]; then
+            echo "::warning::Tier 1 completed with $FAILURES failure(s)"
+          fi
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -81,7 +104,13 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
-        run: pip install -r requirements.txt 2>/dev/null || pip install pytest hypothesis numpy scipy 2>/dev/null || true
+        continue-on-error: true
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install pytest hypothesis numpy scipy
+          fi
 
       - name: Download Tier 1 results
         uses: actions/download-artifact@v4
@@ -93,18 +122,22 @@ jobs:
       - name: Full test suite
         id: test
         run: |
+          mkdir -p artifacts
+          PASSED=true
+
           echo "=== Full pytest ==="
-          python -m pytest tests/ -v --tb=short -x 2>&1 | tee artifacts/tier2_test_results.txt || true
+          if ! python -m pytest tests/ -v --tb=short -x 2>&1 | tee artifacts/tier2_test_results.txt; then
+            echo "::warning::Full test suite had failures"
+            PASSED=false
+          fi
 
           echo "=== Property tests ==="
-          python -m pytest tests/ -m "property" -v --tb=short 2>&1 | tee -a artifacts/tier2_test_results.txt || true
-
-          # Check if tests passed
-          if grep -q "passed" artifacts/tier2_test_results.txt; then
-            echo "passed=true" >> $GITHUB_OUTPUT
-          else
-            echo "passed=false" >> $GITHUB_OUTPUT
+          if ! python -m pytest tests/ -m "property" -v --tb=short 2>&1 | tee -a artifacts/tier2_test_results.txt; then
+            echo "::warning::Property tests had failures"
+            PASSED=false
           fi
+
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -128,7 +161,13 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
-        run: pip install -r requirements.txt 2>/dev/null || pip install pytest hypothesis numpy scipy huggingface_hub 2>/dev/null || true
+        continue-on-error: true
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install pytest hypothesis numpy scipy huggingface_hub
+          fi
 
       - name: Download previous tier results
         uses: actions/download-artifact@v4
@@ -139,17 +178,38 @@ jobs:
 
       - name: Adversarial attack suite
         run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          SECURITY_FAILURES=0
+
           echo "=== SCBE Adversarial Tests ==="
-          python -m pytest tests/adversarial/ -v --tb=short 2>&1 | tee artifacts/tier3_security_results.txt || true
+          if ! python -m pytest tests/adversarial/ -v --tb=short 2>&1 | tee artifacts/tier3_security_results.txt; then
+            echo "::error::Adversarial tests FAILED"
+            SECURITY_FAILURES=$((SECURITY_FAILURES + 1))
+          fi
 
           echo "=== HYDRA spine + ledger ==="
-          python -m pytest tests/hydra/ -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt || true
+          if ! python -m pytest tests/hydra/ -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt; then
+            echo "::error::HYDRA tests FAILED"
+            SECURITY_FAILURES=$((SECURITY_FAILURES + 1))
+          fi
 
           echo "=== Tamper detection ==="
-          python -m pytest tests/test_tamper_detection.py -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt || true
+          if ! python -m pytest tests/test_tamper_detection.py -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt; then
+            echo "::error::Tamper detection tests FAILED"
+            SECURITY_FAILURES=$((SECURITY_FAILURES + 1))
+          fi
 
           echo "=== Manifold validation ==="
-          python -m pytest tests/ -k "manifold or lattice or harmonic" -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt || true
+          if ! python -m pytest tests/ -k "manifold or lattice or harmonic" -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt; then
+            echo "::error::Manifold validation tests FAILED"
+            SECURITY_FAILURES=$((SECURITY_FAILURES + 1))
+          fi
+
+          if [ "$SECURITY_FAILURES" -gt 0 ]; then
+            echo "::error::Tier 3 Security: $SECURITY_FAILURES suite(s) failed — security gate violated"
+            exit 1
+          fi
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -175,10 +235,18 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install deps
+      - name: Install Python deps
+        continue-on-error: true
         run: |
-          pip install -r requirements.txt 2>/dev/null || true
-          npm ci 2>/dev/null || true
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            echo "::warning::requirements.txt not found"
+          fi
+
+      - name: Install Node deps
+        continue-on-error: true
+        run: npm ci
 
       - name: Download all previous results
         uses: actions/download-artifact@v4
@@ -187,17 +255,26 @@ jobs:
         continue-on-error: true
 
       - name: Build TypeScript
-        run: npm run build 2>/dev/null || npx tsc 2>/dev/null || true
+        continue-on-error: true
+        run: |
+          if ! npm run build; then
+            echo "::warning::npm run build failed, trying npx tsc"
+            npx tsc
+          fi
 
       - name: Build book EPUB
+        continue-on-error: true
         run: |
-          pip install pypandoc_binary 2>/dev/null || true
-          python scripts/publish/rebuild_and_stage_kdp.py 2>&1 | tee artifacts/tier4_build_results.txt || true
+          pip install pypandoc_binary
+          mkdir -p artifacts
+          python scripts/publish/rebuild_and_stage_kdp.py 2>&1 | tee artifacts/tier4_build_results.txt
 
       - name: Generate training data
+        continue-on-error: true
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
+          mkdir -p artifacts
           echo "=== SFT data merge ==="
           python -c "
           import json
@@ -206,7 +283,7 @@ jobs:
           if sft.exists():
               count = sum(1 for _ in open(sft))
               print(f'SFT records: {count}')
-          " 2>&1 | tee -a artifacts/tier4_build_results.txt || true
+          " 2>&1 | tee -a artifacts/tier4_build_results.txt
 
       - name: Generate overnight report
         run: |
@@ -244,15 +321,17 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
-        run: pip install huggingface_hub datasets pytest numpy 2>/dev/null || true
+        continue-on-error: true
+        run: pip install huggingface_hub datasets pytest numpy
 
       - name: Merge training data sources
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
+          mkdir -p artifacts
           echo "=== Merging SFT sources ==="
           python -c "
-          import json
+          import json, sys
           from pathlib import Path
 
           sources = list(Path('training-data').glob('**/*.jsonl'))
@@ -265,9 +344,14 @@ jobs:
                       merged.extend(records)
                       total += len(records)
                       print(f'  {src.name}: {len(records)} records')
-              except: pass
+              except Exception as e:
+                  print(f'  WARNING: {src.name}: {e}', file=sys.stderr)
 
           print(f'Total merged: {total} records')
+
+          if total == 0:
+              print('::error::Zero records merged — aborting', file=sys.stderr)
+              sys.exit(1)
 
           # Deduplicate by prompt
           seen = set()
@@ -283,12 +367,12 @@ jobs:
           with open('artifacts/training_merged.jsonl', 'w') as f:
               for r in unique:
                   f.write(json.dumps(r) + '\n')
-          " 2>&1 | tee artifacts/tier5_training_results.txt || true
+          " 2>&1 | tee artifacts/tier5_training_results.txt
 
       - name: Validate training data quality
         run: |
           python -c "
-          import json
+          import json, sys
           records = [json.loads(l) for l in open('artifacts/training_merged.jsonl')]
           print(f'Records: {len(records)}')
 
@@ -304,10 +388,18 @@ jobs:
               else:
                   bad += 1
 
+          total = good + bad
+          quality = good / total * 100 if total > 0 else 0
           print(f'Valid: {good}')
           print(f'Invalid: {bad}')
-          print(f'Quality: {good/(good+bad)*100:.1f}%')
-          " 2>&1 | tee -a artifacts/tier5_training_results.txt || true
+          print(f'Quality: {quality:.1f}%')
+
+          if quality < 50:
+              print(f'::error::Training data quality {quality:.1f}% is below 50% threshold')
+              sys.exit(1)
+          elif quality < 80:
+              print(f'::warning::Training data quality {quality:.1f}% is below 80% target')
+          " 2>&1 | tee -a artifacts/tier5_training_results.txt
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -331,7 +423,8 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
-        run: pip install huggingface_hub google-genai requests 2>/dev/null || true
+        continue-on-error: true
+        run: pip install huggingface_hub google-genai requests
 
       - name: Download merged training data
         uses: actions/download-artifact@v4
@@ -366,7 +459,7 @@ jobs:
                   print(f'HF push failed: {e}')
           else:
               print('No training data or no token')
-          " 2>&1 | tee artifacts/tier6_colab_results.txt || true
+          " 2>&1 | tee artifacts/tier6_colab_results.txt
 
       - name: Trigger Colab notebook (if configured)
         env:

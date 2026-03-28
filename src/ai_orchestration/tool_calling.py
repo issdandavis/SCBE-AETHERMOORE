@@ -148,7 +148,14 @@ class Tool(ABC):
             if param.name in parameters:
                 value = parameters[param.name]
                 # Type checking
-                type_map = {"string": str, "int": int, "float": (int, float), "bool": bool, "list": list, "dict": dict}
+                type_map = {
+                    "string": str,
+                    "int": int,
+                    "float": (int, float),
+                    "bool": bool,
+                    "list": list,
+                    "dict": dict,
+                }
                 expected_type = type_map.get(param.type)
                 if expected_type and not isinstance(value, expected_type):
                     errors.append(f"Parameter {param.name} expected {param.type}, got {type(value).__name__}")
@@ -398,7 +405,10 @@ class ToolExecutor:
         # Check permission
         if not self.permissions.check_permission(agent_id, agent_role, definition):
             result = ToolExecutionResult(
-                execution_id=execution_id, tool_id=tool_id, status=ExecutionStatus.DENIED, error="Permission denied"
+                execution_id=execution_id,
+                tool_id=tool_id,
+                status=ExecutionStatus.DENIED,
+                error="Permission denied",
             )
             self.audit.log_execution(execution_id, agent_id, tool_id, parameters, result, context)
             return result
@@ -460,11 +470,20 @@ class ToolExecutor:
         tool = self.registry.get(pending["tool_id"])
 
         return await self._execute_tool(
-            execution_id, pending["agent_id"], tool, pending["parameters"], pending["context"]
+            execution_id,
+            pending["agent_id"],
+            tool,
+            pending["parameters"],
+            pending["context"],
         )
 
     async def _execute_tool(
-        self, execution_id: str, agent_id: str, tool: Tool, parameters: Dict[str, Any], context: Dict[str, Any]
+        self,
+        execution_id: str,
+        agent_id: str,
+        tool: Tool,
+        parameters: Dict[str, Any],
+        context: Dict[str, Any],
     ) -> ToolExecutionResult:
         """Actually execute the tool."""
         started_at = datetime.now()
@@ -472,7 +491,8 @@ class ToolExecutor:
         try:
             # Execute with timeout
             result_data = await asyncio.wait_for(
-                tool.execute(parameters, context), timeout=tool.definition.timeout_seconds
+                tool.execute(parameters, context),
+                timeout=tool.definition.timeout_seconds,
             )
 
             completed_at = datetime.now()
@@ -529,10 +549,21 @@ class HTTPRequestTool(Tool):
                 category=ToolCategory.EXTERNAL_API,
                 parameters=[
                     ToolParameter("url", "string", "The URL to request"),
-                    ToolParameter("method", "string", "HTTP method (GET, POST, etc.)", default="GET"),
+                    ToolParameter(
+                        "method",
+                        "string",
+                        "HTTP method (GET, POST, etc.)",
+                        default="GET",
+                    ),
                     ToolParameter("headers", "dict", "Request headers", required=False),
                     ToolParameter("body", "dict", "Request body for POST/PUT", required=False),
-                    ToolParameter("timeout", "int", "Request timeout in seconds", required=False, default=30),
+                    ToolParameter(
+                        "timeout",
+                        "int",
+                        "Request timeout in seconds",
+                        required=False,
+                        default=30,
+                    ),
                 ],
                 return_type="dict",
                 required_permission=PermissionLevel.EXECUTE,
@@ -552,9 +583,17 @@ class HTTPRequestTool(Tool):
 
         async with aiohttp.ClientSession() as session:
             async with session.request(
-                method, url, headers=headers, json=body if body else None, timeout=aiohttp.ClientTimeout(total=timeout)
+                method,
+                url,
+                headers=headers,
+                json=body if body else None,
+                timeout=aiohttp.ClientTimeout(total=timeout),
             ) as response:
-                return {"status": response.status, "headers": dict(response.headers), "body": await response.text()}
+                return {
+                    "status": response.status,
+                    "headers": dict(response.headers),
+                    "body": await response.text(),
+                }
 
 
 class DatabaseQueryTool(Tool):
@@ -570,7 +609,13 @@ class DatabaseQueryTool(Tool):
                 parameters=[
                     ToolParameter("query", "string", "SQL query to execute"),
                     ToolParameter("database", "string", "Database name"),
-                    ToolParameter("limit", "int", "Maximum rows to return", required=False, default=100),
+                    ToolParameter(
+                        "limit",
+                        "int",
+                        "Maximum rows to return",
+                        required=False,
+                        default=100,
+                    ),
                 ],
                 return_type="list",
                 required_permission=PermissionLevel.READ,
