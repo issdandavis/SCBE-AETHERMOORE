@@ -21,6 +21,12 @@ from agents.browsers.cdp_backend import CDPBackend
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _safe_url(raw_url: str) -> str:
+    """Strip query string and fragment from a URL to avoid leaking secrets."""
+    parsed = urlparse(raw_url)
+    return parsed._replace(query="", fragment="").geturl()
 DEFAULT_URL = "https://patentcenter.uspto.gov/"
 
 
