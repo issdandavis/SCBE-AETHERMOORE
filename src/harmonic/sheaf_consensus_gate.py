@@ -151,7 +151,11 @@ def run_jsonl(
     input_path: Path,
     output_path: Path,
 ) -> Dict[str, int]:
-    rows = [x.strip() for x in input_path.read_text(encoding="utf-8", errors="replace").splitlines() if x.strip()]
+    rows = [
+        x.strip()
+        for x in input_path.read_text(encoding="utf-8", errors="replace").splitlines()
+        if x.strip()
+    ]
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     counts = {"ALLOW": 0, "QUARANTINE": 0, "DENY": 0}
@@ -166,7 +170,9 @@ def run_jsonl(
 
             fast = float(rec.get("fast_signal", rec.get("distance", 0.0)) or 0.0)
             memory = float(rec.get("memory_signal", rec.get("intent", 0.0)) or 0.0)
-            gov = float(rec.get("governance_signal", 1.0 - float(rec.get("trust", 1.0))) or 0.0)
+            gov = float(
+                rec.get("governance_signal", 1.0 - float(rec.get("trust", 1.0))) or 0.0
+            )
 
             result = sheaf_gate(
                 fast_signal=fast,

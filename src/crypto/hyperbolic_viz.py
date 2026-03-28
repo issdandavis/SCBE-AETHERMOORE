@@ -26,7 +26,10 @@ try:
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
-    print("[VIZ] Warning: matplotlib not available, visualization disabled", file=sys.stderr)
+    print(
+        "[VIZ] Warning: matplotlib not available, visualization disabled",
+        file=sys.stderr,
+    )
 
 
 def hyperbolic_distance_safe(x: np.ndarray, y: np.ndarray, eps: float = 1e-8) -> float:
@@ -101,7 +104,9 @@ def classical_mds(dist_matrix: np.ndarray, n_dims: int = 2) -> np.ndarray:
     return Y
 
 
-def poincare_geodesic(u: np.ndarray, v: np.ndarray, t: float, eps: float = 1e-8) -> np.ndarray:
+def poincare_geodesic(
+    u: np.ndarray, v: np.ndarray, t: float, eps: float = 1e-8
+) -> np.ndarray:
     """
     Compute point on geodesic from u to v at parameter t in [0,1].
 
@@ -217,18 +222,34 @@ def visualize_poincare_disk(
     ax.set_facecolor("black")
 
     # Unit disk boundary
-    disk = Circle((0, 0), 1.0, edgecolor="white", facecolor="none", linewidth=2, linestyle="--")
+    disk = Circle(
+        (0, 0), 1.0, edgecolor="white", facecolor="none", linewidth=2, linestyle="--"
+    )
     ax.add_patch(disk)
 
     # Origin
     ax.plot(0, 0, "o", color="white", markersize=8)
 
     # Points
-    ax.scatter(coords_2d[:, 0], coords_2d[:, 1], c=colors, s=150, edgecolors="white", linewidth=1, alpha=0.9)
+    ax.scatter(
+        coords_2d[:, 0],
+        coords_2d[:, 1],
+        c=colors,
+        s=150,
+        edgecolors="white",
+        linewidth=1,
+        alpha=0.9,
+    )
 
     # Labels
     for i, label in enumerate(labels):
-        ax.text(coords_2d[i, 0] + 0.02, coords_2d[i, 1] + 0.02, f"{i}", color="white", fontsize=8)
+        ax.text(
+            coords_2d[i, 0] + 0.02,
+            coords_2d[i, 1] + 0.02,
+            f"{i}",
+            color="white",
+            fontsize=8,
+        )
 
     ax.set_xlim(-1.1, 1.1)
     ax.set_ylim(-1.1, 1.1)
@@ -334,7 +355,14 @@ def visualize_3d_voxels(
                     grid_pt = (pt + 1.0) / 2.0 * (grid_size - 1)
                     path_coords.append(grid_pt)
                 path_coords = np.array(path_coords)
-                ax.plot(path_coords[:, 0], path_coords[:, 1], path_coords[:, 2], color="white", linewidth=3, alpha=0.9)
+                ax.plot(
+                    path_coords[:, 0],
+                    path_coords[:, 1],
+                    path_coords[:, 2],
+                    color="white",
+                    linewidth=3,
+                    alpha=0.9,
+                )
 
         ax.set_xlim(0, grid_size)
         ax.set_ylim(0, grid_size)
@@ -345,7 +373,8 @@ def visualize_3d_voxels(
         fig.patch.set_facecolor("black")
 
         plt.title(
-            f"3D Poincare Ball Voxels - {view_name.capitalize()}\n" "Gold=Light | Purple=Shadow | Cyan=Paths",
+            f"3D Poincare Ball Voxels - {view_name.capitalize()}\n"
+            "Gold=Light | Purple=Shadow | Cyan=Paths",
             color="white",
             fontsize=12,
         )

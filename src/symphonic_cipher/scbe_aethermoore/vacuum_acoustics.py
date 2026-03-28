@@ -154,7 +154,9 @@ def is_on_nodal_line(
     return abs(nodal_surface(x, n, m, L)) < tolerance
 
 
-def find_nodal_points(n: float, m: float, L: float = DEFAULT_L, resolution: int = 100) -> List[Vector2D]:
+def find_nodal_points(
+    n: float, m: float, L: float = DEFAULT_L, resolution: int = 100
+) -> List[Vector2D]:
     """
     Find all nodal intersection points in a grid.
 
@@ -180,7 +182,9 @@ def find_nodal_points(n: float, m: float, L: float = DEFAULT_L, resolution: int 
     return points
 
 
-def compute_chladni_pattern(n: float, m: float, L: float = DEFAULT_L, resolution: int = 100) -> List[List[float]]:
+def compute_chladni_pattern(
+    n: float, m: float, L: float = DEFAULT_L, resolution: int = 100
+) -> List[List[float]]:
     """
     Compute full Chladni pattern (nodal surface values over grid).
 
@@ -458,7 +462,9 @@ def analyze_bottle_beam(
 # =============================================================================
 
 
-def flux_redistribution(primary_amplitude: float, phase_offset: float = PI) -> FluxResult:
+def flux_redistribution(
+    primary_amplitude: float, phase_offset: float = PI
+) -> FluxResult:
     """
     Compute flux redistribution after wave cancellation.
 
@@ -615,7 +621,9 @@ def harmonic_pressure_field(
 # =============================================================================
 
 
-def visualize_chladni_pattern(n: float, m: float, L: float = DEFAULT_L, resolution: int = 40) -> str:
+def visualize_chladni_pattern(
+    n: float, m: float, L: float = DEFAULT_L, resolution: int = 40
+) -> str:
     """
     Create ASCII visualization of Chladni pattern.
 

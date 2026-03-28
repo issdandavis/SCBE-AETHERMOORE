@@ -34,7 +34,14 @@ class BlockLayout:
 class CVLFuser(torch.nn.Module):
     """Deterministic CVL fusion in concat mode: [aC*C | aK*K | aT*T]."""
 
-    def __init__(self, layout: BlockLayout, alpha_C: float, alpha_K: float, alpha_T: float, activation: str):
+    def __init__(
+        self,
+        layout: BlockLayout,
+        alpha_C: float,
+        alpha_K: float,
+        alpha_T: float,
+        activation: str,
+    ):
         super().__init__()
         self.layout = layout
         self.alpha_C = float(alpha_C)
@@ -52,7 +59,12 @@ class CVLFuser(torch.nn.Module):
             p.requires_grad_(False)
 
     def forward(
-        self, C: torch.Tensor, K: torch.Tensor, tie_kb: TIEKB | None, top_k: int, temperature: float
+        self,
+        C: torch.Tensor,
+        K: torch.Tensor,
+        tie_kb: TIEKB | None,
+        top_k: int,
+        temperature: float,
     ) -> torch.Tensor:
         n = C.shape[0]
         device = C.device
@@ -63,7 +75,9 @@ class CVLFuser(torch.nn.Module):
             t_list = []
             for i in range(n):
                 q = self.Q(C[i])
-                t_list.append(retrieve_tie(tie_kb, q, top_k=top_k, temperature=temperature))
+                t_list.append(
+                    retrieve_tie(tie_kb, q, top_k=top_k, temperature=temperature)
+                )
             T = torch.stack(t_list, dim=0)
 
         fused = torch.cat(

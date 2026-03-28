@@ -93,7 +93,9 @@ def test_specification_vectors() -> bool:
     print(f"\nParameters: alpha={law.alpha}, beta={law.beta}")
     print(f"Tolerance: {tolerance}")
     print()
-    print(f"{'d*':>6} | {'tanh(calc)':>10} | {'tanh(exp)':>10} | {'H(calc)':>10} | {'H(exp)':>10} | Status")
+    print(
+        f"{'d*':>6} | {'tanh(calc)':>10} | {'tanh(exp)':>10} | {'H(calc)':>10} | {'H(exp)':>10} | Status"
+    )
     print("-" * 72)
 
     for d_star, expected_tanh, expected_H in TEST_VECTORS:
@@ -207,7 +209,9 @@ def test_hyperbolic_distance() -> bool:
     d_uv = hyperbolic_distance_poincare(u, v)
     d_vu = hyperbolic_distance_poincare(v, u)
     symmetry_ok = abs(d_uv - d_vu) < 1e-10
-    print(f"  Symmetry: d(u,v)={d_uv:.6f}, d(v,u)={d_vu:.6f} {'OK' if symmetry_ok else 'FAIL'}")
+    print(
+        f"  Symmetry: d(u,v)={d_uv:.6f}, d(v,u)={d_vu:.6f} {'OK' if symmetry_ok else 'FAIL'}"
+    )
     all_passed &= symmetry_ok
 
     # Test 3: From origin formula
@@ -217,7 +221,9 @@ def test_hyperbolic_distance() -> bool:
     d_computed = hyperbolic_distance_poincare(origin, point)
     d_expected = 2 * np.arctanh(r)
     origin_ok = abs(d_computed - d_expected) < 0.01
-    print(f"  From origin: computed={d_computed:.6f}, expected={d_expected:.6f} {'OK' if origin_ok else 'FAIL'}")
+    print(
+        f"  From origin: computed={d_computed:.6f}, expected={d_expected:.6f} {'OK' if origin_ok else 'FAIL'}"
+    )
     all_passed &= origin_ok
 
     # Test 4: Boundary behavior (distance increases)
@@ -225,7 +231,9 @@ def test_hyperbolic_distance() -> bool:
     d2 = hyperbolic_distance_poincare(origin, np.array([0.5, 0.0]))
     d3 = hyperbolic_distance_poincare(origin, np.array([0.9, 0.0]))
     boundary_ok = d1 < d2 < d3
-    print(f"  Boundary behavior: d(0.1)={d1:.4f} < d(0.5)={d2:.4f} < d(0.9)={d3:.4f} {'OK' if boundary_ok else 'FAIL'}")
+    print(
+        f"  Boundary behavior: d(0.1)={d1:.4f} < d(0.5)={d2:.4f} < d(0.9)={d3:.4f} {'OK' if boundary_ok else 'FAIL'}"
+    )
     all_passed &= boundary_ok
 
     print_result("Hyperbolic Distance", all_passed)
@@ -278,9 +286,13 @@ def test_quantum_resistant_binding() -> bool:
     all_passed &= invalid_size_ok
 
     # Test 4: Context commitment creation
-    ctx = create_context_commitment(d_star=1.5, behavioral_risk=0.3, session_id=b"test_session")
+    ctx = create_context_commitment(
+        d_star=1.5, behavioral_risk=0.3, session_id=b"test_session"
+    )
     commitment_size_ok = len(ctx) == 32
-    print(f"  Context commitment size: {len(ctx)} bytes {'OK' if commitment_size_ok else 'FAIL'}")
+    print(
+        f"  Context commitment size: {len(ctx)} bytes {'OK' if commitment_size_ok else 'FAIL'}"
+    )
     all_passed &= commitment_size_ok
 
     # Test 5: PQContextCommitment class
@@ -318,24 +330,34 @@ def test_security_decision_engine() -> bool:
     )
 
     # Scenario 1: Accept (crypto valid, low risk, close to trusted realm)
-    decision1, details1 = engine.evaluate(crypto_valid=True, behavioral_risk=0.1, d_star=0.5)
+    decision1, details1 = engine.evaluate(
+        crypto_valid=True, behavioral_risk=0.1, d_star=0.5
+    )
     scenario1_ok = decision1 is True
     print("\n  Scenario 1: Accept (valid crypto, low risk)")
     print("    [inputs redacted]")
     print(f"    H={details1['H']:.4f}, final_risk=[redacted]")
-    print(f"    Decision: {'accepted' if decision1 else 'rejected'} {'OK' if scenario1_ok else 'FAIL'}")
+    print(
+        f"    Decision: {'accepted' if decision1 else 'rejected'} {'OK' if scenario1_ok else 'FAIL'}"
+    )
     all_passed &= scenario1_ok
 
     # Scenario 2: Reject (crypto invalid)
-    decision2, details2 = engine.evaluate(crypto_valid=False, behavioral_risk=0.1, d_star=0.5)
+    decision2, details2 = engine.evaluate(
+        crypto_valid=False, behavioral_risk=0.1, d_star=0.5
+    )
     scenario2_ok = decision2 is False
     print("\n  Scenario 2: Reject (invalid crypto)")
     print("    [inputs redacted]")
-    print(f"    Decision: {'accepted' if decision2 else 'rejected'} {'OK' if scenario2_ok else 'FAIL'}")
+    print(
+        f"    Decision: {'accepted' if decision2 else 'rejected'} {'OK' if scenario2_ok else 'FAIL'}"
+    )
     all_passed &= scenario2_ok
 
     # Scenario 3: Reject (high risk due to large d*)
-    decision3, details3 = engine.evaluate(crypto_valid=True, behavioral_risk=0.5, d_star=5.0)  # Far from trusted realm
+    decision3, details3 = engine.evaluate(
+        crypto_valid=True, behavioral_risk=0.5, d_star=5.0
+    )  # Far from trusted realm
     scenario3_ok = decision3 is False
     print("\n  Scenario 3: Reject (high scaled risk)")
     print("    [inputs redacted]")
@@ -360,7 +382,9 @@ def test_security_decision_engine() -> bool:
     print("\n  Scenario 4: Edge case (perfect match)")
     print("    [inputs redacted]")
     print(f"    H={details4['H']:.4f}, final_risk=[redacted]")
-    print(f"    Decision: {'accepted' if decision4 else 'rejected'} {'OK' if scenario4_ok else 'FAIL'}")
+    print(
+        f"    Decision: {'accepted' if decision4 else 'rejected'} {'OK' if scenario4_ok else 'FAIL'}"
+    )
     all_passed &= scenario4_ok
 
     print_result("Security Decision Engine", all_passed)
@@ -380,24 +404,32 @@ def test_behavioral_risk_components() -> bool:
     all_passed = True
 
     # Perfect match (risk = 0)
-    perfect = BehavioralRiskComponents(D_hyp=0.0, C_spin=1.0, S_spec=1.0, T_temp=1.0, E_entropy=0.0)
+    perfect = BehavioralRiskComponents(
+        D_hyp=0.0, C_spin=1.0, S_spec=1.0, T_temp=1.0, E_entropy=0.0
+    )
     risk_perfect = perfect.compute()
     perfect_ok = abs(risk_perfect) < 1e-10
     print(f"  Perfect match: risk={risk_perfect:.6f} {'OK' if perfect_ok else 'FAIL'}")
     all_passed &= perfect_ok
 
     # Maximum deviation (risk = 1)
-    worst = BehavioralRiskComponents(D_hyp=1.0, C_spin=0.0, S_spec=0.0, T_temp=0.0, E_entropy=1.0)
+    worst = BehavioralRiskComponents(
+        D_hyp=1.0, C_spin=0.0, S_spec=0.0, T_temp=0.0, E_entropy=1.0
+    )
     risk_worst = worst.compute()
     worst_ok = abs(risk_worst - 1.0) < 1e-10
     print(f"  Maximum deviation: risk={risk_worst:.6f} {'OK' if worst_ok else 'FAIL'}")
     all_passed &= worst_ok
 
     # Partial deviation
-    partial = BehavioralRiskComponents(D_hyp=0.5, C_spin=0.5, S_spec=0.5, T_temp=0.5, E_entropy=0.5)
+    partial = BehavioralRiskComponents(
+        D_hyp=0.5, C_spin=0.5, S_spec=0.5, T_temp=0.5, E_entropy=0.5
+    )
     risk_partial = partial.compute()
     partial_ok = 0.0 < risk_partial < 1.0
-    print(f"  Partial deviation: risk={risk_partial:.6f} {'OK' if partial_ok else 'FAIL'}")
+    print(
+        f"  Partial deviation: risk={risk_partial:.6f} {'OK' if partial_ok else 'FAIL'}"
+    )
     all_passed &= partial_ok
 
     print_result("Behavioral Risk Components", all_passed)
@@ -421,15 +453,21 @@ def test_scaling_modes() -> bool:
     H_log_1 = law_log.compute(1.0)
     H_log_7 = law_log.compute(7.0)
     log_ok = abs(H_log_1 - 1.0) < 0.01 and abs(H_log_7 - 3.0) < 0.01
-    print(f"  LOGARITHMIC: H(1)={H_log_1:.4f}~1, H(7)={H_log_7:.4f}~3 {'OK' if log_ok else 'FAIL'}")
+    print(
+        f"  LOGARITHMIC: H(1)={H_log_1:.4f}~1, H(7)={H_log_7:.4f}~3 {'OK' if log_ok else 'FAIL'}"
+    )
     all_passed &= log_ok
 
     # Linear clipped mode
-    law_linear = HarmonicScalingLaw(alpha=10.0, mode=ScalingMode.LINEAR_CLIPPED, require_pq_binding=False)
+    law_linear = HarmonicScalingLaw(
+        alpha=10.0, mode=ScalingMode.LINEAR_CLIPPED, require_pq_binding=False
+    )
     H_lin_5 = law_linear.compute(5.0)
     H_lin_15 = law_linear.compute(15.0)
     linear_ok = abs(H_lin_5 - 6.0) < 1e-10 and abs(H_lin_15 - 11.0) < 1e-10
-    print(f"  LINEAR_CLIPPED: H(5)={H_lin_5:.4f}=6, H(15)={H_lin_15:.4f}=11 (clipped) {'OK' if linear_ok else 'FAIL'}")
+    print(
+        f"  LINEAR_CLIPPED: H(5)={H_lin_5:.4f}=6, H(15)={H_lin_15:.4f}=11 (clipped) {'OK' if linear_ok else 'FAIL'}"
+    )
     all_passed &= linear_ok
 
     print_result("Alternative Scaling Modes", all_passed)

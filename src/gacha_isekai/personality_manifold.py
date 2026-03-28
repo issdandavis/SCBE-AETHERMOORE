@@ -307,7 +307,13 @@ class PersonalityManifold:
             # Propagation strength = connection_weight * bridge_strengths * decay
             source_bridge = primary.compute_bridge()
             target_bridge = target.compute_bridge()
-            prop_strength = weight * source_bridge * target_bridge * self.propagation_decay * intensity
+            prop_strength = (
+                weight
+                * source_bridge
+                * target_bridge
+                * self.propagation_decay
+                * intensity
+            )
 
             # Update target activation (additive, clamped)
             target.activation = min(1.0, target.activation * 0.7 + prop_strength * 0.3)
@@ -342,12 +348,52 @@ class PersonalityManifold:
 
         # Keyword -> facet mapping
         triggers = {
-            "curiosity": ["what", "how", "why", "explore", "discover", "wonder", "quest"],
-            "empathy": ["feel", "help", "care", "understand", "sorry", "emotion", "friend"],
-            "wisdom": ["know", "history", "lore", "ancient", "teach", "remember", "elder"],
+            "curiosity": [
+                "what",
+                "how",
+                "why",
+                "explore",
+                "discover",
+                "wonder",
+                "quest",
+            ],
+            "empathy": [
+                "feel",
+                "help",
+                "care",
+                "understand",
+                "sorry",
+                "emotion",
+                "friend",
+            ],
+            "wisdom": [
+                "know",
+                "history",
+                "lore",
+                "ancient",
+                "teach",
+                "remember",
+                "elder",
+            ],
             "wit": ["funny", "joke", "clever", "trick", "pun", "laugh", "haha"],
-            "vigilance": ["danger", "careful", "watch", "threat", "protect", "guard", "warning"],
-            "resolve": ["mission", "must", "duty", "promise", "fight", "defend", "never give up"],
+            "vigilance": [
+                "danger",
+                "careful",
+                "watch",
+                "threat",
+                "protect",
+                "guard",
+                "warning",
+            ],
+            "resolve": [
+                "mission",
+                "must",
+                "duty",
+                "promise",
+                "fight",
+                "defend",
+                "never give up",
+            ],
         }
 
         activations = {}
@@ -394,7 +440,11 @@ class PersonalityManifold:
         Returns something like: "[curiosity:0.8|wisdom:0.6|wit:0.3]"
         """
         active = sorted(
-            [(name, f.activation) for name, f in self.facets.items() if f.activation > 0.2],
+            [
+                (name, f.activation)
+                for name, f in self.facets.items()
+                if f.activation > 0.2
+            ],
             key=lambda x: -x[1],
         )
         if not active:
@@ -407,7 +457,9 @@ class PersonalityManifold:
         return {
             "facets": {name: f.to_dict() for name, f in self.facets.items()},
             "personality_tag": self.get_personality_tag(),
-            "personality_vector_norm": round(float(np.linalg.norm(self.get_personality_vector())), 4),
+            "personality_vector_norm": round(
+                float(np.linalg.norm(self.get_personality_vector())), 4
+            ),
             "total_propagation_events": len(self.history),
         }
 
@@ -437,7 +489,11 @@ class PersonalityManifold:
             depth = "deep" if bridge > 0.5 else "surface"
             trait_lines.append(f"- {name} ({depth}): {desc}")
 
-        traits_str = "\n".join(trait_lines) if trait_lines else "- balanced: all facets in equilibrium"
+        traits_str = (
+            "\n".join(trait_lines)
+            if trait_lines
+            else "- balanced: all facets in equilibrium"
+        )
 
         return (
             f"You are an inhabitant of Aethermoor, a realm governed by the Six Sacred "

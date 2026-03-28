@@ -16,16 +16,67 @@ from urllib.parse import urlparse
 MAX_WORDS = 50_000
 
 _TOPIC_KEYWORDS: dict[str, list[str]] = {
-    "AI/ML": ["machine learning", "artificial intelligence", "neural network", "deep learning", "model", "training"],
-    "Security": ["security", "vulnerability", "threat", "attack", "defense", "governance", "encryption"],
+    "AI/ML": [
+        "machine learning",
+        "artificial intelligence",
+        "neural network",
+        "deep learning",
+        "model",
+        "training",
+    ],
+    "Security": [
+        "security",
+        "vulnerability",
+        "threat",
+        "attack",
+        "defense",
+        "governance",
+        "encryption",
+    ],
     "Research": ["research", "paper", "study", "findings", "experiment", "analysis"],
     "Finance": ["financial", "payment", "revenue", "pricing", "investment", "market"],
-    "Code": ["code", "programming", "developer", "api", "function", "class", "repository"],
+    "Code": [
+        "code",
+        "programming",
+        "developer",
+        "api",
+        "function",
+        "class",
+        "repository",
+    ],
 }
 
-_AUTH_HINTS = {"auth", "credential", "email", "login", "password", "sign in", "signin", "username"}
-_PAYMENT_HINTS = {"billing", "buy", "card", "checkout", "invoice", "order", "pay", "payment", "wallet"}
-_DESTRUCTIVE_HINTS = {"delete", "deploy", "merge", "publish", "push", "remove", "submit", "transfer"}
+_AUTH_HINTS = {
+    "auth",
+    "credential",
+    "email",
+    "login",
+    "password",
+    "sign in",
+    "signin",
+    "username",
+}
+_PAYMENT_HINTS = {
+    "billing",
+    "buy",
+    "card",
+    "checkout",
+    "invoice",
+    "order",
+    "pay",
+    "payment",
+    "wallet",
+}
+_DESTRUCTIVE_HINTS = {
+    "delete",
+    "deploy",
+    "merge",
+    "publish",
+    "push",
+    "remove",
+    "submit",
+    "transfer",
+}
 
 
 def _hostname_matches(url: str, domain: str) -> bool:
@@ -71,7 +122,14 @@ class PageAnalyzer:
         selected_text = selection.strip()
         if selected_text:
             summary = f"Selected: {selected_text}\n\n{summary}".strip()
-        intent = self._infer_intent(url=url, title=title, text=text, page_type=page_type, forms=forms, buttons=buttons)
+        intent = self._infer_intent(
+            url=url,
+            title=title,
+            text=text,
+            page_type=page_type,
+            forms=forms,
+            buttons=buttons,
+        )
         risk_tier, required_approvals = self._infer_risk(
             title=title,
             text=text,
@@ -156,9 +214,15 @@ class PageAnalyzer:
     ) -> str:
         combined = " ".join([url, title, text[:2000], page_type]).lower()
         tokens = set(re.findall(r"[a-z0-9]+", combined))
-        if forms and (self._contains_hint(combined, _AUTH_HINTS) or self._buttons_match(buttons, _AUTH_HINTS)):
+        if forms and (
+            self._contains_hint(combined, _AUTH_HINTS)
+            or self._buttons_match(buttons, _AUTH_HINTS)
+        ):
             return "authenticate"
-        if forms and (self._contains_hint(combined, _PAYMENT_HINTS) or self._buttons_match(buttons, _PAYMENT_HINTS)):
+        if forms and (
+            self._contains_hint(combined, _PAYMENT_HINTS)
+            or self._buttons_match(buttons, _PAYMENT_HINTS)
+        ):
             return "checkout"
         if _hostname_matches(url, "github.com") or "repository" in combined:
             return "repository_review"
@@ -181,14 +245,25 @@ class PageAnalyzer:
     ) -> tuple[str, list[str]]:
         combined = " ".join([title, text[:3000], page_type]).lower()
         approvals: list[str] = []
-        if forms and (self._contains_hint(combined, _AUTH_HINTS) or self._buttons_match(buttons, _AUTH_HINTS)):
+        if forms and (
+            self._contains_hint(combined, _AUTH_HINTS)
+            or self._buttons_match(buttons, _AUTH_HINTS)
+        ):
             approvals.append("Page contains authentication or credential entry")
-        if forms and (self._contains_hint(combined, _PAYMENT_HINTS) or self._buttons_match(buttons, _PAYMENT_HINTS)):
+        if forms and (
+            self._contains_hint(combined, _PAYMENT_HINTS)
+            or self._buttons_match(buttons, _PAYMENT_HINTS)
+        ):
             approvals.append("Page contains payment or checkout flow")
-        if self._contains_hint(combined, _DESTRUCTIVE_HINTS) or self._buttons_match(buttons, _DESTRUCTIVE_HINTS):
+        if self._contains_hint(combined, _DESTRUCTIVE_HINTS) or self._buttons_match(
+            buttons, _DESTRUCTIVE_HINTS
+        ):
             approvals.append("Page exposes a high-impact state-changing action")
         unique_approvals = list(dict.fromkeys(approvals))
-        if any("payment" in item.lower() or "high-impact" in item.lower() for item in unique_approvals):
+        if any(
+            "payment" in item.lower() or "high-impact" in item.lower()
+            for item in unique_approvals
+        ):
             return "high", unique_approvals
         if unique_approvals or forms:
             return "medium", unique_approvals
@@ -288,7 +363,9 @@ class PageAnalyzer:
     @staticmethod
     def _buttons_match(buttons: list[dict], hints: set[str]) -> bool:
         for button in buttons:
-            button_text = " ".join(str(button.get(key, "")) for key in ("text", "type", "name")).lower()
+            button_text = " ".join(
+                str(button.get(key, "")) for key in ("text", "type", "name")
+            ).lower()
             if any(hint in button_text for hint in hints):
                 return True
         return False

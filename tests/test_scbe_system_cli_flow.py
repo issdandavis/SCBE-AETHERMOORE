@@ -64,7 +64,9 @@ def test_flow_plan_writes_packet_and_action_map(tmp_path: Path) -> None:
     assert (run_dir / "action_map.json").exists()
     assert (run_dir / "training_rows.jsonl").exists()
 
-    compiled_summary = json.loads((run_dir / "run_summary.json").read_text(encoding="utf-8"))
+    compiled_summary = json.loads(
+        (run_dir / "run_summary.json").read_text(encoding="utf-8")
+    )
     assert compiled_summary["run_id"] == run_id
     assert compiled_summary["training_rows"] >= 2
 

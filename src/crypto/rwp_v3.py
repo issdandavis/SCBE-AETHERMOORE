@@ -178,16 +178,22 @@ class RWPv3Protocol:
 
     def __init__(self, enable_pqc: bool = False):
         if not ARGON2_AVAILABLE:
-            raise ImportError("argon2-cffi required. Install with: pip install argon2-cffi")
+            raise ImportError(
+                "argon2-cffi required. Install with: pip install argon2-cffi"
+            )
         if not CHACHA_AVAILABLE:
-            raise ImportError("pycryptodome required. Install with: pip install pycryptodome")
+            raise ImportError(
+                "pycryptodome required. Install with: pip install pycryptodome"
+            )
 
         self.tokenizer = SACRED_TONGUE_TOKENIZER
         self.enable_pqc = enable_pqc
 
         if enable_pqc:
             if not OQS_AVAILABLE:
-                raise ImportError("liboqs-python required for PQC. Install with: pip install liboqs-python")
+                raise ImportError(
+                    "liboqs-python required for PQC. Install with: pip install liboqs-python"
+                )
             self.kem = oqs.KeyEncapsulation(_KEM_ALG)
             self.sig = oqs.Signature(_SIG_ALG)
 
@@ -270,8 +276,16 @@ class RWPv3Protocol:
             nonce=self.tokenizer.encode_section("nonce", nonce),
             ct=self.tokenizer.encode_section("ct", ct),
             tag=self.tokenizer.encode_section("tag", tag),
-            ml_kem_ct=(self.tokenizer.encode_section("redact", ml_kem_ct_bytes) if ml_kem_ct_bytes else None),
-            ml_dsa_sig=(self.tokenizer.encode_section("tag", ml_dsa_sig_bytes) if ml_dsa_sig_bytes else None),
+            ml_kem_ct=(
+                self.tokenizer.encode_section("redact", ml_kem_ct_bytes)
+                if ml_kem_ct_bytes
+                else None
+            ),
+            ml_dsa_sig=(
+                self.tokenizer.encode_section("tag", ml_dsa_sig_bytes)
+                if ml_dsa_sig_bytes
+                else None
+            ),
         )
 
         return envelope
@@ -313,8 +327,12 @@ class RWPv3Protocol:
 
         # Optional: Hybrid PQC key exchange
         if self.enable_pqc and envelope.ml_kem_ct and ml_kem_secret_key:
-            ml_kem_ct_bytes = self.tokenizer.decode_section("redact", envelope.ml_kem_ct)
-            ml_kem_shared_secret = self.kem.decap_secret(ml_kem_ct_bytes, ml_kem_secret_key)
+            ml_kem_ct_bytes = self.tokenizer.decode_section(
+                "redact", envelope.ml_kem_ct
+            )
+            ml_kem_shared_secret = self.kem.decap_secret(
+                ml_kem_ct_bytes, ml_kem_secret_key
+            )
             # XOR shared secret into key
             key = bytes(a ^ b for a, b in zip(key, ml_kem_shared_secret[:32]))
 

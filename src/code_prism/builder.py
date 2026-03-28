@@ -33,7 +33,9 @@ class CodePrismBuilder:
         tongue_combo: str = "KO+CA",
     ) -> Dict[str, TranslationArtifact]:
         source = source_language.lower()
-        ir = parse_source_to_ir(source_code, source_language=source, module_name=module_name)
+        ir = parse_source_to_ir(
+            source_code, source_language=source, module_name=module_name
+        )
         artifacts: Dict[str, TranslationArtifact] = {}
 
         for target in target_languages:
@@ -46,7 +48,8 @@ class CodePrismBuilder:
                     valid=False,
                     issues=[
                         ValidationIssue(
-                            code="unsupported_route", message=f"{source} -> {target_lang} not allowed by matrix."
+                            code="unsupported_route",
+                            message=f"{source} -> {target_lang} not allowed by matrix.",
                         )
                     ],
                     metadata={"tongue_combo": tongue_combo, "route_allowed": False},

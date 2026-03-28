@@ -37,7 +37,13 @@ FILE_CANDIDATES = (
     REPO_ROOT / "sacred_egg.py",
 )
 
-INVOKE_ALIASES = ("invoke_ritual", "perform_ritual", "ritual_invoke", "invoke", "ritual")
+INVOKE_ALIASES = (
+    "invoke_ritual",
+    "perform_ritual",
+    "ritual_invoke",
+    "invoke",
+    "ritual",
+)
 INCUBATION_ALIASES = (
     "solitary_incubation",
     "begin_solitary_incubation",
@@ -124,7 +130,15 @@ ALIASES = {
         "message",
         "secret_payload",
     },
-    "actor": {"actor", "invoker", "caller", "agent", "guardian", "binder", "participant"},
+    "actor": {
+        "actor",
+        "invoker",
+        "caller",
+        "agent",
+        "guardian",
+        "binder",
+        "participant",
+    },
     "participants": {
         "participants",
         "binders",
@@ -149,10 +163,25 @@ ALIASES = {
         "manifold_point",
         "bind_point",
     },
-    "binding": {"binding", "token", "seal", "proof", "attestation", "digest", "handle", "lock"},
+    "binding": {
+        "binding",
+        "token",
+        "seal",
+        "proof",
+        "attestation",
+        "digest",
+        "handle",
+        "lock",
+    },
     "ritual": {"ritual", "ritual_name", "invocation", "action", "op", "mode", "name"},
     "ring": {"ring", "ring_level", "depth", "level", "ring_index", "realm"},
-    "source_ring": {"source_ring", "from_ring", "current_ring", "src_ring", "ring_from"},
+    "source_ring": {
+        "source_ring",
+        "from_ring",
+        "current_ring",
+        "src_ring",
+        "ring_from",
+    },
     "target_ring": {"target_ring", "to_ring", "next_ring", "dst_ring", "ring_to"},
 }
 
@@ -276,7 +305,9 @@ def _call_with_context(fn: Any, **context: Any) -> Any:
         return fn()
 
     kwargs: dict[str, Any] = {}
-    accepts_kwargs = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values())
+    accepts_kwargs = any(
+        p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()
+    )
 
     for param in sig.parameters.values():
         if param.name in {"self", "cls"}:
@@ -293,7 +324,9 @@ def _call_with_context(fn: Any, **context: Any) -> Any:
             continue
 
         if param.default is inspect._empty:
-            raise LookupError(f"Cannot satisfy required parameter '{param.name}' for {fn!r}")
+            raise LookupError(
+                f"Cannot satisfy required parameter '{param.name}' for {fn!r}"
+            )
 
     if accepts_kwargs:
         for canonical, value in context.items():
@@ -341,7 +374,15 @@ def _is_success(result: Any) -> bool:
         return True
 
     if isinstance(result, dict):
-        for key in ("ok", "success", "allowed", "bound", "sealed", "verified", "accepted"):
+        for key in (
+            "ok",
+            "success",
+            "allowed",
+            "bound",
+            "sealed",
+            "verified",
+            "accepted",
+        ):
             if key in result:
                 status = _status_to_bool(result[key])
                 return bool(result[key]) if status is None else status
@@ -368,25 +409,67 @@ def _is_success(result: Any) -> bool:
 def _has_explicit_status(result: Any) -> bool:
     if isinstance(result, dict):
         return any(
-            key in result for key in ("ok", "success", "allowed", "bound", "sealed", "verified", "accepted", "status")
+            key in result
+            for key in (
+                "ok",
+                "success",
+                "allowed",
+                "bound",
+                "sealed",
+                "verified",
+                "accepted",
+                "status",
+            )
         )
     return any(
         hasattr(result, attr)
-        for attr in ("ok", "success", "allowed", "bound", "sealed", "verified", "accepted", "status")
+        for attr in (
+            "ok",
+            "success",
+            "allowed",
+            "bound",
+            "sealed",
+            "verified",
+            "accepted",
+            "status",
+        )
     )
 
 
 def _binding_fingerprint(result: Any) -> Any:
-    if isinstance(result, (str, bytes, bytearray, memoryview, int, float, bool)) or result is None:
+    if (
+        isinstance(result, (str, bytes, bytearray, memoryview, int, float, bool))
+        or result is None
+    ):
         return result
 
     if isinstance(result, dict):
-        for key in ("binding", "digest", "seal", "token", "proof", "fingerprint", "id", "handle", "lock"):
+        for key in (
+            "binding",
+            "digest",
+            "seal",
+            "token",
+            "proof",
+            "fingerprint",
+            "id",
+            "handle",
+            "lock",
+        ):
             if key in result:
                 return result[key]
         return repr(sorted(result.items()))
 
-    for attr in ("binding", "digest", "seal", "token", "proof", "fingerprint", "id", "handle", "lock"):
+    for attr in (
+        "binding",
+        "digest",
+        "seal",
+        "token",
+        "proof",
+        "fingerprint",
+        "id",
+        "handle",
+        "lock",
+    ):
         if hasattr(result, attr):
             return getattr(result, attr)
 
@@ -398,7 +481,9 @@ def assert_rejected(invocation) -> None:
         result = invocation()
     except Exception:
         return
-    assert not _is_success(result), f"Expected rejection, got success-like result: {result!r}"
+    assert not _is_success(
+        result
+    ), f"Expected rejection, got success-like result: {result!r}"
 
 
 def assert_no_payload_leak(value: Any, payload: bytes = PAYLOAD) -> None:
@@ -440,7 +525,9 @@ class SacredEggAPI:
 
     @property
     def targets(self) -> tuple[Any, ...]:
-        return tuple(target for target in (self.instance, self.module) if target is not None)
+        return tuple(
+            target for target in (self.instance, self.module) if target is not None
+        )
 
     def available(self) -> list[str]:
         names: set[str] = set()
@@ -580,7 +667,9 @@ def test_triadic_binding_rejects_insufficient_or_non_distinct_binders(
     )
 
 
-def test_triadic_binding_accepts_three_of_six_distinct_guardians(egg_api: SacredEggAPI) -> None:
+def test_triadic_binding_accepts_three_of_six_distinct_guardians(
+    egg_api: SacredEggAPI,
+) -> None:
     result = egg_api.ritual(
         "triadic_binding",
         TRIADIC_ALIASES,
@@ -616,7 +705,9 @@ def test_ring_descent_rejects_negative_target_ring(egg_api: SacredEggAPI) -> Non
         INF_MANIFOLD,
     ],
 )
-def test_manifold_binding_rejects_invalid_points(egg_api: SacredEggAPI, manifold: tuple[float, ...]) -> None:
+def test_manifold_binding_rejects_invalid_points(
+    egg_api: SacredEggAPI, manifold: tuple[float, ...]
+) -> None:
     assert_rejected(
         lambda: egg_api.ritual(
             "manifold_binding",
@@ -630,7 +721,9 @@ def test_manifold_binding_rejects_invalid_points(egg_api: SacredEggAPI, manifold
 
 
 @pytest.mark.parametrize("wrong_manifold", [PERTURBED_MANIFOLD, PERMUTED_MANIFOLD])
-def test_manifold_binding_breaks_on_coordinate_change(egg_api: SacredEggAPI, wrong_manifold: tuple[float, ...]) -> None:
+def test_manifold_binding_breaks_on_coordinate_change(
+    egg_api: SacredEggAPI, wrong_manifold: tuple[float, ...]
+) -> None:
     binding = egg_api.ritual(
         "manifold_binding",
         MANIFOLD_RITUAL_ALIASES,
@@ -649,7 +742,9 @@ def test_manifold_binding_breaks_on_coordinate_change(egg_api: SacredEggAPI, wro
         manifold=VALID_MANIFOLD,
     )
     if verified is not None:
-        assert _is_success(verified), f"binding did not verify at original manifold: {verified!r}"
+        assert _is_success(
+            verified
+        ), f"binding did not verify at original manifold: {verified!r}"
         assert_rejected(
             lambda: egg_api.verify(
                 binding,
@@ -669,7 +764,9 @@ def test_manifold_binding_breaks_on_coordinate_change(egg_api: SacredEggAPI, wro
         payload=PAYLOAD,
         manifold=wrong_manifold,
     )
-    assert _is_success(rebound), f"rebind on changed manifold unexpectedly failed: {rebound!r}"
+    assert _is_success(
+        rebound
+    ), f"rebind on changed manifold unexpectedly failed: {rebound!r}"
 
     fp_a = _binding_fingerprint(binding)
     fp_b = _binding_fingerprint(rebound)
@@ -678,7 +775,9 @@ def test_manifold_binding_breaks_on_coordinate_change(egg_api: SacredEggAPI, wro
             "Need either a verify/open API or a structured binding token "
             "to prove coordinate sensitivity for this implementation"
         )
-    assert fp_a != fp_b, "changing manifold coordinates should change the binding token/fingerprint"
+    assert (
+        fp_a != fp_b
+    ), "changing manifold coordinates should change the binding token/fingerprint"
 
 
 def test_fail_to_noise_never_leaks_raw_payload(egg_api: SacredEggAPI) -> None:
@@ -713,5 +812,6 @@ def test_fail_to_noise_never_leaks_raw_payload(egg_api: SacredEggAPI) -> None:
     assert_no_payload_leak(result, PAYLOAD)
     if _has_explicit_status(result):
         assert not _is_success(result), (
-            "Invalid manifold + duplicate binders should not surface a success status; " f"got {result!r}"
+            "Invalid manifold + duplicate binders should not surface a success status; "
+            f"got {result!r}"
         )

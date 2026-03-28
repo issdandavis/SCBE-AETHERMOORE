@@ -124,7 +124,9 @@ def _extract_block_text(block: dict) -> str:
     if "rich_text" in block_data:
         return "".join(rt.get("plain_text", "") for rt in block_data["rich_text"])
     elif block_type == "code":
-        code_text = "".join(rt.get("plain_text", "") for rt in block_data.get("rich_text", []))
+        code_text = "".join(
+            rt.get("plain_text", "") for rt in block_data.get("rich_text", [])
+        )
         lang = block_data.get("language", "")
         return f"```{lang}\n{code_text}\n```"
     elif block_type == "equation":
@@ -142,14 +144,24 @@ def _extract_title(page: dict) -> str:
     return "Untitled"
 
 
-def scrape_workspace(queries: list[str] = None, fetch_content: bool = True) -> list[KnowledgeChunk]:
+def scrape_workspace(
+    queries: list[str] = None, fetch_content: bool = True
+) -> list[KnowledgeChunk]:
     """Scrape the entire Notion workspace into KnowledgeChunks."""
     if not NOTION_TOKEN:
         print("ERROR: NOTION_TOKEN not set")
         return []
 
     if queries is None:
-        queries = ["SCBE", "Sacred", "GeoSeed", "HYDRA", "Spiralverse", "governance", "theorem"]
+        queries = [
+            "SCBE",
+            "Sacred",
+            "GeoSeed",
+            "HYDRA",
+            "Spiralverse",
+            "governance",
+            "theorem",
+        ]
 
     all_pages = {}
     for q in queries:

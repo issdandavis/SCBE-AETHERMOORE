@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List
 
 PHI = (1 + math.sqrt(5)) / 2  # 1.6180339887...
 
@@ -151,7 +151,9 @@ def tongue_phi_ternary(tongue: str, decision: int) -> PhiTernary:
     return PhiTernary(q=decision, k=k)
 
 
-def tongue_vector_to_phi_ternary(activations: List[float], threshold: float = 0.1) -> List[PhiTernary]:
+def tongue_vector_to_phi_ternary(
+    activations: List[float], threshold: float = 0.1
+) -> List[PhiTernary]:
     """Convert a 6D tongue activation vector to phi-ternary values.
 
     Each tongue's activation is quantized to {-1, 0, +1} based on threshold,

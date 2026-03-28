@@ -407,7 +407,9 @@ class TestLatticeBridge:
 
 class TestTerrainGenerators:
     def test_sine_hills_range(self):
-        vals = [sine_hills(x * 0.1, y * 0.1) for x in range(-10, 10) for y in range(-10, 10)]
+        vals = [
+            sine_hills(x * 0.1, y * 0.1) for x in range(-10, 10) for y in range(-10, 10)
+        ]
         assert min(vals) < 0
         assert max(vals) > 0
 
@@ -486,9 +488,17 @@ class TestFullPipeline:
     def test_mixed_terrain_types(self):
         """Mix different terrain functions in one quadtree."""
         qt = Quadtree25D(max_points=4, variance_threshold=0.3)
-        qt.insert_batch(generate_terrain_points(sine_hills, bounds=(-1, -1, 0, 0), resolution=8))
-        qt.insert_batch(generate_terrain_points(ridge_terrain, bounds=(0, 0, 1, 1), resolution=8))
-        qt.insert_batch(generate_terrain_points(flat_with_spikes, bounds=(-1, 0, 0, 1), resolution=8))
+        qt.insert_batch(
+            generate_terrain_points(sine_hills, bounds=(-1, -1, 0, 0), resolution=8)
+        )
+        qt.insert_batch(
+            generate_terrain_points(ridge_terrain, bounds=(0, 0, 1, 1), resolution=8)
+        )
+        qt.insert_batch(
+            generate_terrain_points(
+                flat_with_spikes, bounds=(-1, 0, 0, 1), resolution=8
+            )
+        )
 
         stats = qt.stats()
         assert stats["point_count"] == 192  # 64 * 3

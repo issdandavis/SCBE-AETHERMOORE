@@ -99,8 +99,14 @@ async def _handle_command(ws: WebSocket, msg: dict) -> None:
         await ws.send_json(feed.error("Empty command"))
         return
 
-    routing = payload.get("routing", {}) if isinstance(payload.get("routing"), dict) else {}
-    routing_preferences = routing.get("preferences") if isinstance(routing.get("preferences"), dict) else None
+    routing = (
+        payload.get("routing", {}) if isinstance(payload.get("routing"), dict) else {}
+    )
+    routing_preferences = (
+        routing.get("preferences")
+        if isinstance(routing.get("preferences"), dict)
+        else None
+    )
     auto_cascade = bool(routing.get("auto_cascade", routing.get("autoCascade", True)))
 
     plan = build_command_plan(
@@ -186,7 +192,9 @@ async def _handle_page_context(ws: WebSocket, msg: dict) -> None:
     await ws.send_json(feed.agent_status(Agent.CA, "done"))
 
     if result["topics"]:
-        next_action_labels = ", ".join(action["label"] for action in result["next_actions"]) or "none"
+        next_action_labels = (
+            ", ".join(action["label"] for action in result["next_actions"]) or "none"
+        )
         await ws.send_json(
             feed.chat(
                 Agent.DR,
@@ -203,7 +211,9 @@ async def _handle_zone_response(ws: WebSocket, msg: dict) -> None:
     request_seq = payload.get("request_seq")
     pending = pending_zone_requests.pop(request_seq, None)
     if pending is None:
-        await ws.send_json(feed.error(f"Unknown zone request: {request_seq}", agent=Agent.RU))
+        await ws.send_json(
+            feed.error(f"Unknown zone request: {request_seq}", agent=Agent.RU)
+        )
         return
 
     if decision in {"allow", "allow_once", "add_yellow"}:
@@ -225,7 +235,9 @@ async def _handle_zone_response(ws: WebSocket, msg: dict) -> None:
             payload={"plan": pending.plan.to_dict()},
         )
     )
-    await ws.send_json(feed.agent_status(Agent.KO, "error", model=pending.plan.provider))
+    await ws.send_json(
+        feed.agent_status(Agent.KO, "error", model=pending.plan.provider)
+    )
 
 
 async def _complete_command_flow(
@@ -243,7 +255,9 @@ async def _complete_command_flow(
         execution = await executor.execute(plan)
     except Exception as exc:
         squad.set_state(TongueRole.KO, AgentState.ERROR, model=plan.provider)
-        await ws.send_json(feed.error(f"Command execution failed: {exc}", agent=Agent.KO))
+        await ws.send_json(
+            feed.error(f"Command execution failed: {exc}", agent=Agent.KO)
+        )
         await ws.send_json(feed.agent_status(Agent.KO, "error", model=plan.provider))
         return
 
@@ -273,7 +287,9 @@ async def _complete_command_flow(
 
 def _format_command_summary(plan: CommandPlan) -> str:
     targets = ", ".join(plan.targets) if plan.targets else "generic browser lane"
-    approvals = ", ".join(plan.required_approvals) if plan.required_approvals else "none"
+    approvals = (
+        ", ".join(plan.required_approvals) if plan.required_approvals else "none"
+    )
     next_action = plan.next_actions[0].label if plan.next_actions else "review plan"
     return (
         f"Intent: {plan.intent}\n"

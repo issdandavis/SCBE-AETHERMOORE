@@ -226,7 +226,10 @@ def check_oscillation_predicate(
     Detects replay attacks where oscillation_state is stale.
     """
     current_phase = (now_fn() // phase_window) % 6
-    if policy.req_oscillation_phase != -1 and policy.req_oscillation_phase != current_phase:
+    if (
+        policy.req_oscillation_phase != -1
+        and policy.req_oscillation_phase != current_phase
+    ):
         return T_FAIL
     return T_PASS if state.oscillation_state == current_phase else T_FAIL
 

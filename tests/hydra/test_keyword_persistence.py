@@ -107,7 +107,9 @@ class TestCrossSessionPersistence:
         # Session 1: remember facts
         ledger1 = Ledger(db_path=db_path)
         lib1 = Librarian(ledger1)
-        lib1.remember("project:scbe", {"name": "SCBE"}, category="project", importance=0.9)
+        lib1.remember(
+            "project:scbe", {"name": "SCBE"}, category="project", importance=0.9
+        )
         del lib1
         del ledger1
 

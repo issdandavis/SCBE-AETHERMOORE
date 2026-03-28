@@ -52,7 +52,9 @@ def _run_powershell(command: str, timeout: int = 180) -> str:
 
 
 def _host_equals(url: str, expected_host: str) -> bool:
-    return (urlparse(url.strip()).hostname or "").strip(".").lower() == expected_host.lower()
+    return (urlparse(url.strip()).hostname or "").strip(
+        "."
+    ).lower() == expected_host.lower()
 
 
 def test_help_lists_new_command_center_surface() -> None:

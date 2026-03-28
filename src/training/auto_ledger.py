@@ -67,11 +67,56 @@ _MASTER_KEYWORDS = {"novel", "creative", "synthesize", "invent", "research"}
 # =============================================================================
 
 TONGUE_DOMAIN_KEYWORDS = {
-    "KO": {"intent", "command", "control", "flow", "nonce", "orchestrate", "decide", "route"},
-    "AV": {"transport", "context", "metadata", "header", "api", "message", "send", "receive"},
-    "RU": {"policy", "rule", "bind", "salt", "constraint", "validate", "enforce", "permission"},
-    "CA": {"compute", "cipher", "encrypt", "decrypt", "transform", "process", "execute", "calculate"},
-    "UM": {"security", "redact", "hide", "veil", "protect", "shield", "obscure", "mask"},
+    "KO": {
+        "intent",
+        "command",
+        "control",
+        "flow",
+        "nonce",
+        "orchestrate",
+        "decide",
+        "route",
+    },
+    "AV": {
+        "transport",
+        "context",
+        "metadata",
+        "header",
+        "api",
+        "message",
+        "send",
+        "receive",
+    },
+    "RU": {
+        "policy",
+        "rule",
+        "bind",
+        "salt",
+        "constraint",
+        "validate",
+        "enforce",
+        "permission",
+    },
+    "CA": {
+        "compute",
+        "cipher",
+        "encrypt",
+        "decrypt",
+        "transform",
+        "process",
+        "execute",
+        "calculate",
+    },
+    "UM": {
+        "security",
+        "redact",
+        "hide",
+        "veil",
+        "protect",
+        "shield",
+        "obscure",
+        "mask",
+    },
     "DR": {"schema", "structure", "auth", "tag", "verify", "sign", "certify", "format"},
 }
 
@@ -137,7 +182,9 @@ class LedgerEntry:
                 "output_length": self.output_length,
                 "is_duplicate": self.is_duplicate,
                 "phdm_confidence": round(self.phdm_confidence, 3),
-                "tongue_scores": {k: round(v, 3) for k, v in self.tongue_scores.items()},
+                "tongue_scores": {
+                    k: round(v, 3) for k, v in self.tongue_scores.items()
+                },
                 "source_file": self.source_file,
             }
         )
@@ -154,7 +201,12 @@ _phdm_classifier = None
 def get_phdm_classifier():
     """Lazy-load PHDM classifier."""
     global _phdm_classifier
-    if os.environ.get("SCBE_DISABLE_HF_CLASSIFIER", "").strip().lower() in {"1", "true", "yes", "on"}:
+    if os.environ.get("SCBE_DISABLE_HF_CLASSIFIER", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }:
         return None
     if _phdm_classifier is None:
         try:
@@ -277,7 +329,9 @@ def assign_curriculum(instruction: str, output: str) -> tuple[str, float]:
 # =============================================================================
 
 
-def process_pair(instruction: str, output: str, label: str = "general", source_file: str = "") -> LedgerEntry | None:
+def process_pair(
+    instruction: str, output: str, label: str = "general", source_file: str = ""
+) -> LedgerEntry | None:
     """Run a single SFT pair through the full pipeline."""
 
     # Step 1: Quality audit
@@ -345,7 +399,9 @@ def process_jsonl_file(path: Path) -> list[LedgerEntry]:
 def run_pipeline(sft_dir: Path | None = None, push_to_hf: bool = False) -> dict:
     """Run the full auto-ledger pipeline."""
     if sft_dir is None:
-        sft_dir = Path(__file__).resolve().parent.parent.parent / "training" / "sft_records"
+        sft_dir = (
+            Path(__file__).resolve().parent.parent.parent / "training" / "sft_records"
+        )
 
     all_entries: list[LedgerEntry] = []
     files_processed = 0
@@ -388,7 +444,11 @@ def run_pipeline(sft_dir: Path | None = None, push_to_hf: bool = False) -> dict:
         CurriculumLevel.MASTER,
     ]:
         level_entries = [
-            e for e in all_entries if e.curriculum_level == level and e.quality_score >= 0.5 and not e.is_duplicate
+            e
+            for e in all_entries
+            if e.curriculum_level == level
+            and e.quality_score >= 0.5
+            and not e.is_duplicate
         ]
         if level_entries:
             level_file = out_dir / f"sft_{level}.jsonl"
@@ -399,7 +459,11 @@ def run_pipeline(sft_dir: Path | None = None, push_to_hf: bool = False) -> dict:
     # Per-tongue splits
     for tongue in ["KO", "AV", "RU", "CA", "UM", "DR"]:
         tongue_entries = [
-            e for e in all_entries if e.primary_tongue == tongue and e.quality_score >= 0.5 and not e.is_duplicate
+            e
+            for e in all_entries
+            if e.primary_tongue == tongue
+            and e.quality_score >= 0.5
+            and not e.is_duplicate
         ]
         if tongue_entries:
             tongue_file = out_dir / f"sft_tongue_{tongue}.jsonl"
@@ -408,7 +472,9 @@ def run_pipeline(sft_dir: Path | None = None, push_to_hf: bool = False) -> dict:
                     f.write(json.dumps(entry.to_training_dict()) + "\n")
 
     # Stats
-    clean_count = sum(1 for e in all_entries if e.quality_score >= 0.5 and not e.is_duplicate)
+    clean_count = sum(
+        1 for e in all_entries if e.quality_score >= 0.5 and not e.is_duplicate
+    )
     duplicate_count = sum(1 for e in all_entries if e.is_duplicate)
     low_quality_count = sum(1 for e in all_entries if e.quality_score < 0.5)
 
@@ -416,7 +482,9 @@ def run_pipeline(sft_dir: Path | None = None, push_to_hf: bool = False) -> dict:
     tongue_dist = {}
     for e in all_entries:
         if e.quality_score >= 0.5 and not e.is_duplicate:
-            curriculum_dist[e.curriculum_level] = curriculum_dist.get(e.curriculum_level, 0) + 1
+            curriculum_dist[e.curriculum_level] = (
+                curriculum_dist.get(e.curriculum_level, 0) + 1
+            )
             tongue_dist[e.primary_tongue] = tongue_dist.get(e.primary_tongue, 0) + 1
 
     stats = {

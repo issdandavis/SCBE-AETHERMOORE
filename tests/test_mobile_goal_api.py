@@ -60,17 +60,23 @@ def test_mobile_goal_requires_approval_for_high_risk_step() -> None:
     goal_id = create.json()["data"]["goal_id"]
 
     # Step 1 (low risk)
-    r1 = client.post(f"/mobile/goals/{goal_id}/advance", headers=API_KEY_HEADER, json={})
+    r1 = client.post(
+        f"/mobile/goals/{goal_id}/advance", headers=API_KEY_HEADER, json={}
+    )
     assert r1.status_code == 200
     assert r1.json()["data"]["status"] == "running"
 
     # Step 2 (medium risk)
-    r2 = client.post(f"/mobile/goals/{goal_id}/advance", headers=API_KEY_HEADER, json={})
+    r2 = client.post(
+        f"/mobile/goals/{goal_id}/advance", headers=API_KEY_HEADER, json={}
+    )
     assert r2.status_code == 200
     assert r2.json()["data"]["status"] == "running"
 
     # Step 3 (high risk) should block and require review
-    r3 = client.post(f"/mobile/goals/{goal_id}/advance", headers=API_KEY_HEADER, json={})
+    r3 = client.post(
+        f"/mobile/goals/{goal_id}/advance", headers=API_KEY_HEADER, json={}
+    )
     assert r3.status_code == 200
     assert r3.json()["status"] == "blocked"
     assert r3.json()["data"]["status"] == "review_required"
@@ -84,12 +90,16 @@ def test_mobile_goal_requires_approval_for_high_risk_step() -> None:
     assert appr.status_code == 200
     assert appr.json()["data"]["approved_high_risk"] is True
 
-    r4 = client.post(f"/mobile/goals/{goal_id}/advance", headers=API_KEY_HEADER, json={})
+    r4 = client.post(
+        f"/mobile/goals/{goal_id}/advance", headers=API_KEY_HEADER, json={}
+    )
     assert r4.status_code == 200
     assert r4.json()["data"]["status"] in {"running", "completed"}
 
     # Final step
-    r5 = client.post(f"/mobile/goals/{goal_id}/advance", headers=API_KEY_HEADER, json={})
+    r5 = client.post(
+        f"/mobile/goals/{goal_id}/advance", headers=API_KEY_HEADER, json={}
+    )
     assert r5.status_code == 200
     assert r5.json()["data"]["status"] == "completed"
 
@@ -162,7 +172,10 @@ def test_connector_templates_and_shopify_autobuild() -> None:
     )
     assert shopify_conn.status_code == 200
     data = shopify_conn.json()["data"]
-    assert data["endpoint_url"] == "https://demo-store.myshopify.com/admin/api/2025-10/graphql.json"
+    assert (
+        data["endpoint_url"]
+        == "https://demo-store.myshopify.com/admin/api/2025-10/graphql.json"
+    )
     assert data["payload_mode"] == "shopify_graphql_read"
     assert data["auth_header_name"] == "X-Shopify-Access-Token"
 

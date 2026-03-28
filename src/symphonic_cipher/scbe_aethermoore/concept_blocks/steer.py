@@ -114,12 +114,16 @@ class SteerBlock(ConceptBlock):
         name: str = "STEER",
     ) -> None:
         super().__init__(name)
-        self._pid = PIDController(kp=kp, ki=ki, kd=kd, output_min=output_min, output_max=output_max)
+        self._pid = PIDController(
+            kp=kp, ki=ki, kd=kd, output_min=output_min, output_max=output_max
+        )
 
     def _do_tick(self, inputs: Dict[str, Any]) -> BlockResult:
         error = inputs.get("error")
         if error is None:
-            return BlockResult(status=BlockStatus.FAILURE, message="No error signal provided")
+            return BlockResult(
+                status=BlockStatus.FAILURE, message="No error signal provided"
+            )
 
         dt = inputs.get("dt")
         correction = self._pid.update(float(error), dt=dt)

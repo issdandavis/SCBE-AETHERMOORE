@@ -133,7 +133,9 @@ class TestRememberRecall:
 
     @pytest.mark.asyncio
     async def test_remember_and_recall(self, spine: HydraSpine):
-        result = await spine.execute({"action": "remember", "key": "favorite_color", "value": "blue"})
+        result = await spine.execute(
+            {"action": "remember", "key": "favorite_color", "value": "blue"}
+        )
         assert result["success"] is True
 
         result = await spine.execute({"action": "recall", "key": "favorite_color"})
@@ -202,7 +204,9 @@ class TestWorkflows:
 
     @pytest.mark.asyncio
     async def test_execute_missing_workflow(self, spine: HydraSpine):
-        result = await spine.execute({"action": "workflow", "workflow_id": "nonexistent"})
+        result = await spine.execute(
+            {"action": "workflow", "workflow_id": "nonexistent"}
+        )
         assert result["success"] is False
         assert "not found" in result["error"].lower()
 
@@ -229,7 +233,12 @@ class TestAIMessaging:
         spine.connect_head(h2)
 
         result = await spine.execute(
-            {"action": "message", "from_head": h1.head_id, "to_head": h2.head_id, "message": {"task": "review code"}}
+            {
+                "action": "message",
+                "from_head": h1.head_id,
+                "to_head": h2.head_id,
+                "message": {"task": "review code"},
+            }
         )
         assert result["success"] is True
         assert result["delivered"] is True
@@ -242,9 +251,12 @@ class TestAIMessaging:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
-        "dangerous_word", ["ignore", "override", "sudo", "admin", "forget", "disregard", "system prompt"]
+        "dangerous_word",
+        ["ignore", "override", "sudo", "admin", "forget", "disregard", "system prompt"],
     )
-    async def test_dangerous_patterns_blocked(self, spine: HydraSpine, dangerous_word: str):
+    async def test_dangerous_patterns_blocked(
+        self, spine: HydraSpine, dangerous_word: str
+    ):
         h1 = make_head()
         h2 = make_head()
         spine.connect_head(h1)
@@ -267,7 +279,12 @@ class TestAIMessaging:
         spine.connect_head(h1)
 
         result = await spine.execute(
-            {"action": "message", "from_head": h1.head_id, "to_head": "ghost", "message": {"hello": "anyone?"}}
+            {
+                "action": "message",
+                "from_head": h1.head_id,
+                "to_head": "ghost",
+                "message": {"hello": "anyone?"},
+            }
         )
         assert result["success"] is False
 
@@ -336,7 +353,9 @@ class TestSwitchboardIntegration:
         assert len(get_result["messages"]) == 1
 
     @pytest.mark.asyncio
-    async def test_switchboard_disabled_returns_error(self, spine_no_switchboard: HydraSpine):
+    async def test_switchboard_disabled_returns_error(
+        self, spine_no_switchboard: HydraSpine
+    ):
         result = await spine_no_switchboard.execute(
             {
                 "action": "switchboard_enqueue",
@@ -381,7 +400,9 @@ class TestSensitivityInference:
     def test_high_risk_target_elevates(self, spine: HydraSpine):
         """Targets containing 'password' or 'admin' push sensitivity up."""
         base = spine._infer_sensitivity("navigate", "https://example.com")
-        elevated = spine._infer_sensitivity("navigate", "https://admin-panel.com/password")
+        elevated = spine._infer_sensitivity(
+            "navigate", "https://admin-panel.com/password"
+        )
         assert elevated > base
 
     def test_sensitivity_clamped_to_one(self, spine: HydraSpine):

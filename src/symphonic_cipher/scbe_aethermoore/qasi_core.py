@@ -94,7 +94,9 @@ def apply_spd_weights(x: np.ndarray, g_diag: np.ndarray) -> np.ndarray:
 # ----------------------------
 
 
-def poincare_embed(x: np.ndarray, alpha: float = 1.0, eps_ball: float = 1e-3) -> np.ndarray:
+def poincare_embed(
+    x: np.ndarray, alpha: float = 1.0, eps_ball: float = 1e-3
+) -> np.ndarray:
     """
     Radial tanh embedding Ψα: R^n → B^n:
       u = tanh(alpha*||x||) * x/||x||, u(0)=0
@@ -146,7 +148,9 @@ def mobius_add(a: np.ndarray, u: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     return num / denom
 
 
-def phase_transform(u: np.ndarray, a: np.ndarray, Q: Optional[np.ndarray] = None, eps_ball: float = 1e-3) -> np.ndarray:
+def phase_transform(
+    u: np.ndarray, a: np.ndarray, Q: Optional[np.ndarray] = None, eps_ball: float = 1e-3
+) -> np.ndarray:
     """
     Phase transform: T_phase(u) = Q (a ⊕ u), where Q ∈ O(n).
     If Q is None, identity is used.
@@ -189,7 +193,9 @@ def realm_distance(u: np.ndarray, centers: np.ndarray) -> float:
 # ----------------------------
 
 
-def spectral_stability(y: np.ndarray, hf_frac: float = 0.5, eps: float = 1e-12) -> float:
+def spectral_stability(
+    y: np.ndarray, hf_frac: float = 0.5, eps: float = 1e-12
+) -> float:
     """
     Spectral stability S_spec = 1 - r_HF where r_HF is fraction of power in high bins.
     hf_frac=0.5 means top half of non-DC bins are "high".
@@ -253,7 +259,9 @@ def clamp01(x: float) -> float:
 # ----------------------------
 
 
-def harmonic_scaling(d: float, R: float = 1.5, max_log: float = 700.0) -> Tuple[float, float]:
+def harmonic_scaling(
+    d: float, R: float = 1.5, max_log: float = 700.0
+) -> Tuple[float, float]:
     """
     H(d,R) = R^(d^2) computed safely via exp(log(R)*d^2).
     Returns (H, logH). logH is clamped to max_log to avoid overflow.
@@ -335,7 +343,9 @@ def risk_prime(
     }
 
 
-def decision_from_risk(risk_prime_value: float, allow: float = 0.30, deny: float = 0.70) -> str:
+def decision_from_risk(
+    risk_prime_value: float, allow: float = 0.30, deny: float = 0.70
+) -> str:
     """
     Convert Risk' into a discrete decision.
     If you want strict 1/0 outputs, map ALLOW->1, others->0 externally.

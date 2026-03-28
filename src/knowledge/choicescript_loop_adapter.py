@@ -83,7 +83,9 @@ class ChoiceScriptLoopAdapter:
             prefix += f"[{tongue}]"
         return f"{prefix} {ep.prompt[:140]} -> {ep.response[:140]}"
 
-    def export_notes(self, output_path: Path, max_notes: int = 200, file_limit: int = 25) -> int:
+    def export_notes(
+        self, output_path: Path, max_notes: int = 200, file_limit: int = 25
+    ) -> int:
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         written = 0

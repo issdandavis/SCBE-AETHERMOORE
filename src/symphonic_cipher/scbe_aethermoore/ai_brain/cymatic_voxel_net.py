@@ -131,9 +131,9 @@ def chladni_6d(coords: List[float], state: List[float]) -> float:
         x2i = coords[2 * i] if 2 * i < len(coords) else 0.0
         x2i1 = coords[2 * i + 1] if 2 * i + 1 < len(coords) else 0.0
 
-        total += math.cos(s2i * math.pi * x2i) * math.cos(s2i1 * math.pi * x2i1) - math.cos(
-            s2i1 * math.pi * x2i
-        ) * math.cos(s2i * math.pi * x2i1)
+        total += math.cos(s2i * math.pi * x2i) * math.cos(
+            s2i1 * math.pi * x2i1
+        ) - math.cos(s2i1 * math.pi * x2i) * math.cos(s2i * math.pi * x2i1)
     return total
 
 
@@ -245,7 +245,9 @@ class CymaticVoxelNet:
         max_hops: int = 10,
     ):
         self._state = list(initial_state) if initial_state else [1, 2, 3, 2, 1, 3]
-        self._position = list(initial_position) if initial_position else [0, 0, 0, 0, 0, 0]
+        self._position = (
+            list(initial_position) if initial_position else [0, 0, 0, 0, 0, 0]
+        )
         self._nodal_threshold = nodal_threshold
         self._boundary_width = boundary_width
         self._harmonic_r = harmonic_r
@@ -297,7 +299,9 @@ class CymaticVoxelNet:
         req_embedded = _poincare_embed_6d(requester_position)
         dist = _hyperbolic_dist_6d(req_embedded, voxel.embedded)
 
-        effective_max = max_distance * 0.5 if voxel.zone == "negative_space" else max_distance
+        effective_max = (
+            max_distance * 0.5 if voxel.zone == "negative_space" else max_distance
+        )
         if dist > effective_max:
             return None
         return voxel
@@ -355,7 +359,10 @@ class CymaticVoxelNet:
 
         g_norm = math.sqrt(sum(g * g for g in gradient))
         if g_norm < BRAIN_EPSILON:
-            return [c + math.sin((i + 1) * PHI) * step_size * 0.1 for i, c in enumerate(coords)]
+            return [
+                c + math.sin((i + 1) * PHI) * step_size * 0.1
+                for i, c in enumerate(coords)
+            ]
 
         return [c - (gradient[i] / g_norm) * step_size for i, c in enumerate(coords)]
 
@@ -404,7 +411,11 @@ class CymaticVoxelNet:
             nodal_fraction=nodal / total,
             negative_space_fraction=neg / total,
             mean_chladni_abs=chladni_sum / total,
-            storage_capacity={"nodal": nodal, "negative_space": neg, "total": len(self._voxels)},
+            storage_capacity={
+                "nodal": nodal,
+                "negative_space": neg,
+                "total": len(self._voxels),
+            },
         )
 
     def clear(self) -> None:

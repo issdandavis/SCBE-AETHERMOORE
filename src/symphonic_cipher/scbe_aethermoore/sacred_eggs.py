@@ -236,7 +236,9 @@ def seal_egg(
     """Seal a secret into a Sacred Egg."""
     salt = os.urandom(32)
     quorum_material = combine_shares(quorum_shares, quorum_k)
-    key = derive_egg_key(tongue_code, geometry_point, path_indices, quorum_material, salt)
+    key = derive_egg_key(
+        tongue_code, geometry_point, path_indices, quorum_material, salt
+    )
 
     aad = json.dumps(
         {
@@ -273,11 +275,15 @@ def unseal_egg(
 ) -> Optional[bytes]:
     """Attempt to unseal. Returns secret on success, None on failure."""
     quorum_material = combine_shares(quorum_shares, egg.quorum_k)
-    key = derive_egg_key(tongue_code, geometry_point, path_indices, quorum_material, egg.salt)
+    key = derive_egg_key(
+        tongue_code, geometry_point, path_indices, quorum_material, egg.salt
+    )
     return aead_decrypt(key, egg.ciphertext, egg.aad)
 
 
-def check_geometry_proximity(egg: SacredEgg, candidate: np.ndarray) -> Tuple[bool, float]:
+def check_geometry_proximity(
+    egg: SacredEgg, candidate: np.ndarray
+) -> Tuple[bool, float]:
     """Optional pre-check for geometry proximity."""
     a = project_to_ball(egg.geometry_center)
     b = project_to_ball(candidate)

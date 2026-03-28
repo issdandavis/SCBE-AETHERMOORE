@@ -245,7 +245,9 @@ class SacredEggIntegrator:
 
         pt_b64 = base64.b64encode(payload).decode()
         env = toolkit.geoseal_encrypt(pt_b64, context, pk_kem_b64, sk_dsa_b64)
-        egg_id = hashlib.sha256(json.dumps(env, sort_keys=True).encode()).hexdigest()[:16]
+        egg_id = hashlib.sha256(json.dumps(env, sort_keys=True).encode()).hexdigest()[
+            :16
+        ]
         self_tag = DEFAULT_EGG_SELF_TAG
         self_shape = self_detect_shape(egg_id, self_tag)
 
@@ -360,7 +362,9 @@ class SacredEggIntegrator:
 
         # --- Context-bound GeoSeal decrypt ---
 
-        ok, yolk_bytes = toolkit.geoseal_decrypt(egg.yolk_ct, current_context, sk_kem_b64, pk_dsa_b64)
+        ok, yolk_bytes = toolkit.geoseal_decrypt(
+            egg.yolk_ct, current_context, sk_kem_b64, pk_dsa_b64
+        )
         if not ok or yolk_bytes is None:
             return HatchResult(False, fail_tokens, None, "sealed")
 
@@ -373,7 +377,9 @@ class SacredEggIntegrator:
 
         if agent_tongue != egg.primary_tongue:
             token_text = " ".join(tokens_primary)
-            tokens_dst, xlate_attest = self.xt.retokenize(egg.primary_tongue, agent_tongue, token_text)
+            tokens_dst, xlate_attest = self.xt.retokenize(
+                egg.primary_tongue, agent_tongue, token_text
+            )
             attest_out["xlate"] = dataclasses.asdict(xlate_attest)
             return HatchResult(True, tokens_dst, attest_out, "hatched")
 
@@ -402,7 +408,11 @@ class SacredEggIntegrator:
             egg_id=egg.egg_id,
             primary_tongue=egg.primary_tongue,
             glyph=glyph if glyph is not None else egg.glyph,
-            hatch_condition=(dict(hatch_condition) if hatch_condition is not None else dict(egg.hatch_condition)),
+            hatch_condition=(
+                dict(hatch_condition)
+                if hatch_condition is not None
+                else dict(egg.hatch_condition)
+            ),
             yolk_ct=egg.yolk_ct,
             self_tag=egg.self_tag,
             self_shape=egg.self_shape,

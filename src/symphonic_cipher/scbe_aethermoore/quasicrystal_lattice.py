@@ -164,7 +164,9 @@ class QuasicrystalLattice:
             validity flag.
         """
         if len(gate_vector) != 6:
-            raise ValueError(f"gate_vector must have 6 elements, got {len(gate_vector)}")
+            raise ValueError(
+                f"gate_vector must have 6 elements, got {len(gate_vector)}"
+            )
 
         n = np.array(gate_vector, dtype=float)
 
@@ -212,7 +214,9 @@ class QuasicrystalLattice:
     # Crystalline defect detection
     # ------------------------------------------------------------------
 
-    def detect_crystalline_defects(self, history_vectors: List[List[int]], min_samples: int = 32) -> DefectAnalysis:
+    def detect_crystalline_defects(
+        self, history_vectors: List[List[int]], min_samples: int = 32
+    ) -> DefectAnalysis:
         """
         Detect forced periodicity (Crystalline Defect) in gate history.
 

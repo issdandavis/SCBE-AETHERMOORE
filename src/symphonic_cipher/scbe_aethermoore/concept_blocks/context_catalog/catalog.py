@@ -840,7 +840,11 @@ class ContextCatalog:
 
     def for_radial_distance(self, r: float) -> List[TaskArchetype]:
         """Find archetypes valid at a given radial distance in Poincaré ball."""
-        return [a for a in self._registry.values() if a.radial_zone[0] <= r <= a.radial_zone[1]]
+        return [
+            a
+            for a in self._registry.values()
+            if a.radial_zone[0] <= r <= a.radial_zone[1]
+        ]
 
     def summary(self) -> Dict[str, Any]:
         by_poly: Dict[str, int] = {}
@@ -851,8 +855,12 @@ class ContextCatalog:
         for a in self._registry.values():
             by_poly[a.polyhedron.value] = by_poly.get(a.polyhedron.value, 0) + 1
             by_denom[a.denomination] = by_denom.get(a.denomination, 0) + 1
-            by_source[a.source_domain.value] = by_source.get(a.source_domain.value, 0) + 1
-            by_tier[a.complexity_tier.value] = by_tier.get(a.complexity_tier.value, 0) + 1
+            by_source[a.source_domain.value] = (
+                by_source.get(a.source_domain.value, 0) + 1
+            )
+            by_tier[a.complexity_tier.value] = (
+                by_tier.get(a.complexity_tier.value, 0) + 1
+            )
 
         return {
             "total_archetypes": len(self._registry),

@@ -14,7 +14,9 @@ try:
 except ImportError:
     cstm_nursery = None
 
-pytestmark = pytest.mark.skipif(cstm_nursery is None, reason="cstm_nursery module not importable")
+pytestmark = pytest.mark.skipif(
+    cstm_nursery is None, reason="cstm_nursery module not importable"
+)
 
 
 SEED_STORY = Path("training-data/hf-digimon-egg/cstm_seed_story.json")
@@ -48,7 +50,13 @@ def test_run_playthrough_unlocks_portal_and_return_chapters() -> None:
     )
 
     chapter_ids = [step.chapter_id for step in playthrough.steps]
-    assert chapter_ids == ["hatchery", "hatchery", "portal_drill", "portal_drill", "safe_return"]
+    assert chapter_ids == [
+        "hatchery",
+        "hatchery",
+        "portal_drill",
+        "portal_drill",
+        "safe_return",
+    ]
     assert "return_loop_ready" in playthrough.final_flags
     assert playthrough.final_outcome in {"ALLOW", "QUARANTINE", "DENY"}
 

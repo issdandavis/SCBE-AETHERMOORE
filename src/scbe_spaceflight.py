@@ -104,8 +104,12 @@ class DelayTolerantBundle:
         """
         if not relay_id:
             raise ValueError("relay_id must be non-empty")
-        if len(signature_hash) != 64 or not all(c in "0123456789abcdef" for c in signature_hash.lower()):
-            raise ValueError("signature_hash must be a 64-character lowercase hex SHA-256 digest")
+        if len(signature_hash) != 64 or not all(
+            c in "0123456789abcdef" for c in signature_hash.lower()
+        ):
+            raise ValueError(
+                "signature_hash must be a 64-character lowercase hex SHA-256 digest"
+            )
         order = len(self.custody_chain)
         self.custody_chain.append(
             CustodyEntry(
@@ -154,7 +158,9 @@ class DelayTolerantBundle:
             Hex-encoded SHA-256 digest.
         """
         h = hashlib.sha256()
-        h.update(self.payload if isinstance(self.payload, bytes) else self.payload.encode())
+        h.update(
+            self.payload if isinstance(self.payload, bytes) else self.payload.encode()
+        )
         h.update(self.sender_id.encode())
         h.update(self.receiver_id.encode())
         for entry in self.custody_chain:
@@ -261,7 +267,10 @@ class HyperbolicTrajectory:
             r_norm = (r - r_periapsis) / (r_at_max - r_periapsis + EPSILON)
 
             # Interpolated direction in 6D with bounded hyperbolic modulation
-            point = tuple(o + (d - o) * t + r_norm * (d - o) * 0.05 for o, d in zip(self.origin, self.destination))
+            point = tuple(
+                o + (d - o) * t + r_norm * (d - o) * 0.05
+                for o, d in zip(self.origin, self.destination)
+            )
             waypoints.append(point)
 
         return waypoints
@@ -290,7 +299,9 @@ class HyperbolicTrajectory:
         dist = _vec6_distance(self.destination, body_position) + EPSILON
         influence = body_mass / (dist * dist)  # inverse-square
 
-        new_dest = tuple(d + influence * (bp - d) for d, bp in zip(self.destination, body_position))
+        new_dest = tuple(
+            d + influence * (bp - d) for d, bp in zip(self.destination, body_position)
+        )
         # Gravity assists tend to reduce eccentricity toward parabolic
         new_e = max(1.001, self.eccentricity - influence * 0.1)
 
@@ -403,7 +414,8 @@ class DockingProtocol:
         allowed = _DOCKING_TRANSITIONS.get(self.state, [])
         if target not in allowed:
             raise RuntimeError(
-                f"Invalid transition {self.state.name} -> {target.name}; " f"allowed: {[s.name for s in allowed]}"
+                f"Invalid transition {self.state.name} -> {target.name}; "
+                f"allowed: {[s.name for s in allowed]}"
             )
         self.state = target
         self._history.append(target)
@@ -778,7 +790,9 @@ class StarTracker:
         self,
         claimed_position: Tuple[float, float, float, float, float, float],
         tolerance: float,
-        observed_positions: Optional[List[Tuple[float, float, float, float, float, float]]] = None,
+        observed_positions: Optional[
+            List[Tuple[float, float, float, float, float, float]]
+        ] = None,
     ) -> bool:
         """Verify a claimed position against star-derived observations.
 
@@ -805,7 +819,10 @@ class StarTracker:
             matches = self.identify_stars(observed_positions)
             # Compute mean observed centroid
             dims = len(claimed_position)
-            centroid = tuple(sum(m.observed_position[d] for m in matches) / len(matches) for d in range(dims))
+            centroid = tuple(
+                sum(m.observed_position[d] for m in matches) / len(matches)
+                for d in range(dims)
+            )
             return _vec6_distance(claimed_position, centroid) <= tolerance
 
         # Fallback: check against catalog directly
@@ -910,7 +927,10 @@ class ConstellationFleet:
             ValueError: If *formation_type* is not recognised.
         """
         if formation_type not in VALID_FORMATIONS:
-            raise ValueError(f"Unknown formation '{formation_type}'; " f"must be one of {sorted(VALID_FORMATIONS)}")
+            raise ValueError(
+                f"Unknown formation '{formation_type}'; "
+                f"must be one of {sorted(VALID_FORMATIONS)}"
+            )
         self._proposal = formation_type
         self._votes = {}
         return formation_type

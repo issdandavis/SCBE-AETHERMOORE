@@ -171,7 +171,9 @@ class TestDualLatticeConsensus:
         """Valid tokens should verify successfully."""
         dlc = DualLatticeConsensus()
 
-        token = dlc.create_authorization_token(identity="user_test", intent="read", context={"session_id": "sess_456"})
+        token = dlc.create_authorization_token(
+            identity="user_test", intent="read", context={"session_id": "sess_456"}
+        )
 
         result, reason = dlc.verify_token(token)
 
@@ -182,7 +184,9 @@ class TestDualLatticeConsensus:
         """Tampered tokens should fail verification."""
         dlc = DualLatticeConsensus()
 
-        token = dlc.create_authorization_token(identity="user_test", intent="read", context={"session_id": "sess_789"})
+        token = dlc.create_authorization_token(
+            identity="user_test", intent="read", context={"session_id": "sess_789"}
+        )
 
         # Tamper with the consensus hash
         tampered_token = token.copy()
@@ -198,7 +202,9 @@ class TestDualLatticeConsensus:
         dlc = DualLatticeConsensus()
 
         # Get internal consensus state
-        token = dlc.create_authorization_token(identity="consensus_test", intent="verify", context={})
+        token = dlc.create_authorization_token(
+            identity="consensus_test", intent="verify", context={}
+        )
 
         # Both lattices must report ALLOW for consensus
         assert dlc.last_kem_result == "ALLOW"
@@ -250,7 +256,9 @@ class TestQuantumResistance:
         context1 = {"session_id": "session_A", "ip": "192.168.1.1"}
         context2 = {"session_id": "session_B", "ip": "192.168.1.2"}
 
-        token1 = dlc.create_authorization_token(identity="user", intent="read", context=context1)
+        token1 = dlc.create_authorization_token(
+            identity="user", intent="read", context=context1
+        )
 
         # Token created for context1 should NOT verify for context2
         result, _ = dlc.verify_token_with_context(token1, context2)

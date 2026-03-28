@@ -147,7 +147,9 @@ class EntropicLayer:
         r = math.sqrt(r_sq)
         radial_velocity = v_dot_r / r if r > 1e-10 else 0.0
 
-        escaped = volume > self.config.max_volume or radial_velocity > escape_velocity_bound
+        escaped = (
+            volume > self.config.max_volume or radial_velocity > escape_velocity_bound
+        )
 
         return EscapeAssessment(
             escaped=escaped,

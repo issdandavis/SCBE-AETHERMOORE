@@ -31,7 +31,9 @@ CATEGORIES = {
 }
 
 
-def search_arxiv(query: str, category: str = "cs.AI", max_results: int = 20) -> list[KnowledgeChunk]:
+def search_arxiv(
+    query: str, category: str = "cs.AI", max_results: int = 20
+) -> list[KnowledgeChunk]:
     """Search arXiv and return KnowledgeChunks."""
     params = {
         "search_query": f"cat:{category} AND all:{query}",
@@ -47,7 +49,10 @@ def search_arxiv(query: str, category: str = "cs.AI", max_results: int = 20) -> 
         data = response.read()
 
     root = ET.fromstring(data)
-    ns = {"atom": "http://www.w3.org/2005/Atom", "arxiv": "http://arxiv.org/schemas/atom"}
+    ns = {
+        "atom": "http://www.w3.org/2005/Atom",
+        "arxiv": "http://arxiv.org/schemas/atom",
+    }
 
     chunks = []
     for entry in root.findall("atom:entry", ns):
@@ -56,7 +61,11 @@ def search_arxiv(query: str, category: str = "cs.AI", max_results: int = 20) -> 
         published_el = entry.find("atom:published", ns)
         id_el = entry.find("atom:id", ns)
 
-        title = title_el.text.strip().replace("\n", " ") if title_el is not None else "Unknown"
+        title = (
+            title_el.text.strip().replace("\n", " ")
+            if title_el is not None
+            else "Unknown"
+        )
         summary = summary_el.text.strip() if summary_el is not None else ""
         published = published_el.text.strip() if published_el is not None else ""
         arxiv_url = id_el.text.strip() if id_el is not None else ""
@@ -79,7 +88,9 @@ def search_arxiv(query: str, category: str = "cs.AI", max_results: int = 20) -> 
             metadata={
                 "authors": authors,
                 "arxiv_category": category,
-                "arxiv_id": arxiv_url.split("/abs/")[-1] if "/abs/" in arxiv_url else "",
+                "arxiv_id": (
+                    arxiv_url.split("/abs/")[-1] if "/abs/" in arxiv_url else ""
+                ),
             },
         )
         chunks.append(chunk)

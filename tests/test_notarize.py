@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
-import pytest
-
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-from notarize import notarize, verify, batch_notarize, cert_to_json, cert_from_json, NotarizationCert
+from notarize import (
+    notarize,
+    verify,
+    batch_notarize,
+    cert_to_json,
+    cert_from_json,
+)
 
 
 class TestNotarize:

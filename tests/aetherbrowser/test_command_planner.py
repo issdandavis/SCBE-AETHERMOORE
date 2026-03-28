@@ -9,7 +9,9 @@ from src.aetherbrowser.ws_feed import WsFeed
 class TestCommandPlanner:
     def test_build_command_plan_for_browser_task(self):
         squad = AgentSquad(WsFeed())
-        router = OctoArmorRouter(enabled_providers={provider: True for provider in ModelProvider})
+        router = OctoArmorRouter(
+            enabled_providers={provider: True for provider in ModelProvider}
+        )
 
         plan = build_command_plan(
             text="Open the browser tab, fill the login form, and submit it",
@@ -58,7 +60,9 @@ class TestCommandPlanner:
 
     def test_to_dict_normalizes_assignments_and_actions(self):
         squad = AgentSquad(WsFeed())
-        router = OctoArmorRouter(enabled_providers={provider: True for provider in ModelProvider})
+        router = OctoArmorRouter(
+            enabled_providers={provider: True for provider in ModelProvider}
+        )
 
         plan = build_command_plan(
             text="Research GitHub competitors",
@@ -75,7 +79,9 @@ class TestCommandPlanner:
 
     def test_build_command_plan_honors_request_preferences(self):
         squad = AgentSquad(WsFeed())
-        router = OctoArmorRouter(enabled_providers={provider: True for provider in ModelProvider})
+        router = OctoArmorRouter(
+            enabled_providers={provider: True for provider in ModelProvider}
+        )
 
         plan = build_command_plan(
             text="Summarize this page",

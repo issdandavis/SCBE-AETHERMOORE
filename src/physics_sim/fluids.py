@@ -59,7 +59,9 @@ FLUID_PROPERTIES = {
 # =============================================================================
 
 
-def reynolds_number(velocity: float, length: float, density: float, viscosity: float) -> float:
+def reynolds_number(
+    velocity: float, length: float, density: float, viscosity: float
+) -> float:
     """
     Calculate Reynolds number.
 
@@ -110,7 +112,9 @@ def froude_number(velocity: float, length: float, g: float = 9.80665) -> float:
     return velocity / math.sqrt(g * length)
 
 
-def weber_number(density: float, velocity: float, length: float, surface_tension: float) -> float:
+def weber_number(
+    density: float, velocity: float, length: float, surface_tension: float
+) -> float:
     """
     Calculate Weber number.
 
@@ -219,7 +223,9 @@ def torricelli_velocity(height: float, g: float = 9.80665) -> float:
     return math.sqrt(2 * g * height)
 
 
-def venturi_flow_rate(A1: float, A2: float, P1: float, P2: float, density: float) -> float:
+def venturi_flow_rate(
+    A1: float, A2: float, P1: float, P2: float, density: float
+) -> float:
     """
     Calculate flow rate through Venturi meter.
 
@@ -245,7 +251,9 @@ def venturi_flow_rate(A1: float, A2: float, P1: float, P2: float, density: float
     return A2 * V2
 
 
-def pitot_velocity(stagnation_pressure: float, static_pressure: float, density: float) -> float:
+def pitot_velocity(
+    stagnation_pressure: float, static_pressure: float, density: float
+) -> float:
     """
     Calculate velocity from Pitot tube measurement.
 
@@ -332,7 +340,9 @@ def sphere_drag_coefficient(Re: float) -> float:
         return 0.1
 
 
-def terminal_velocity(mass: float, Cd: float, density: float, area: float, g: float = 9.80665) -> float:
+def terminal_velocity(
+    mass: float, Cd: float, density: float, area: float, g: float = 9.80665
+) -> float:
     """
     Calculate terminal velocity.
 
@@ -371,7 +381,9 @@ def darcy_friction_factor_laminar(Re: float) -> float:
     return 64 / Re
 
 
-def darcy_friction_factor_turbulent(Re: float, roughness: float, diameter: float) -> float:
+def darcy_friction_factor_turbulent(
+    Re: float, roughness: float, diameter: float
+) -> float:
     """
     Darcy friction factor for turbulent flow (Colebrook-White equation).
 
@@ -412,7 +424,9 @@ def darcy_friction_factor_turbulent(Re: float, roughness: float, diameter: float
     return f
 
 
-def pipe_pressure_drop(f: float, length: float, diameter: float, density: float, velocity: float) -> float:
+def pipe_pressure_drop(
+    f: float, length: float, diameter: float, density: float, velocity: float
+) -> float:
     """
     Calculate pressure drop in pipe (Darcy-Weisbach equation).
 
@@ -431,7 +445,9 @@ def pipe_pressure_drop(f: float, length: float, diameter: float, density: float,
     return f * (length / diameter) * (density * velocity**2 / 2)
 
 
-def head_loss(f: float, length: float, diameter: float, velocity: float, g: float = 9.80665) -> float:
+def head_loss(
+    f: float, length: float, diameter: float, velocity: float, g: float = 9.80665
+) -> float:
     """
     Calculate head loss in pipe.
 
@@ -831,7 +847,9 @@ def fluid_dynamics(params: Dict[str, Any]) -> Dict[str, Any]:
         Re = reynolds_number(velocity, length, density, viscosity)
         results["reynolds_number"] = Re
 
-        flow_regime = "laminar" if Re < 2300 else "transitional" if Re < 4000 else "turbulent"
+        flow_regime = (
+            "laminar" if Re < 2300 else "transitional" if Re < 4000 else "turbulent"
+        )
         results["flow_regime"] = flow_regime
 
         # Froude number (if applicable)

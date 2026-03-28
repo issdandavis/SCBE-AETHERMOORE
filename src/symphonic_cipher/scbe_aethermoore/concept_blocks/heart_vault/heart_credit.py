@@ -208,7 +208,9 @@ class HeartCreditLedger:
 
         Penalty = -PENALTY_AMOUNT (flat)
         """
-        return self._record(agent_id, CreditAction.PENALTY, -PENALTY_AMOUNT, tongue, node_id)
+        return self._record(
+            agent_id, CreditAction.PENALTY, -PENALTY_AMOUNT, tongue, node_id
+        )
 
     def balance(self, agent_id: str) -> float:
         """Get the net credit balance for an agent."""

@@ -202,7 +202,9 @@ class State9D:
 
     def update(self, dt: float = 0.1):
         self.t += dt
-        self.eta = np.clip(self.eta + BETA * (ETA_TARGET - self.eta) * dt, ETA_MIN, ETA_MAX)
+        self.eta = np.clip(
+            self.eta + BETA * (ETA_TARGET - self.eta) * dt, ETA_MIN, ETA_MAX
+        )
         self.quantum *= np.exp(-1j * dt)
         self.trajectory.append(self.to_poincare())
         if len(self.trajectory) > 100:
@@ -304,7 +306,10 @@ class L3_HyperbolicDistance:
         trajectory = self.agent.get_trajectory()
         if len(trajectory) < 2:
             return True, 0.0
-        max_dist = max(self.compute_distance(trajectory[i], trajectory[i + 1]) for i in range(len(trajectory) - 1))
+        max_dist = max(
+            self.compute_distance(trajectory[i], trajectory[i + 1])
+            for i in range(len(trajectory) - 1)
+        )
         return max_dist < 3.0, max_dist
 
 
@@ -371,8 +376,13 @@ class L7_TrajectorySmooth:
         trajectory = self.agent.get_trajectory()
         if len(trajectory) < 3:
             return True, 0.0
-        velocities = [trajectory[i + 1] - trajectory[i] for i in range(len(trajectory) - 1)]
-        accels = [np.linalg.norm(velocities[i + 1] - velocities[i]) for i in range(len(velocities) - 1)]
+        velocities = [
+            trajectory[i + 1] - trajectory[i] for i in range(len(trajectory) - 1)
+        ]
+        accels = [
+            np.linalg.norm(velocities[i + 1] - velocities[i])
+            for i in range(len(velocities) - 1)
+        ]
         max_accel = max(accels) if accels else 0.0
         return max_accel < 0.5, max_accel
 
@@ -424,7 +434,10 @@ class L10_TemporalConsistency:
         """Check tau evolves monotonically."""
         if len(self.tau_history) < 2:
             return True, 0.0
-        diffs = [self.tau_history[i + 1] - self.tau_history[i] for i in range(len(self.tau_history) - 1)]
+        diffs = [
+            self.tau_history[i + 1] - self.tau_history[i]
+            for i in range(len(self.tau_history) - 1)
+        ]
         positive_ratio = sum(1 for d in diffs if d >= 0) / len(diffs)
         return positive_ratio > 0.8, positive_ratio
 
@@ -504,7 +517,14 @@ class L14_GovernanceDecision:
         """Make final ALLOW/DENY decision."""
         passed, ratio = self.l13.aggregate()
         decision = "ALLOW" if passed else "DENY"
-        self.decision_log.append({"timestamp": time.time(), "decision": decision, "ratio": ratio, "context": context})
+        self.decision_log.append(
+            {
+                "timestamp": time.time(),
+                "decision": decision,
+                "ratio": ratio,
+                "context": context,
+            }
+        )
         return decision
 
     def get_log(self) -> List[Dict]:

@@ -316,7 +316,9 @@ class ComputeExchange:
         # Verify credit value covers agreed price
         total = sum(c.face_value for c in credits)
         if total < tx.agreed_price * 0.95:  # 5% tolerance
-            raise ValueError(f"Escrowed value {total:.4f} insufficient for price {tx.agreed_price:.4f}")
+            raise ValueError(
+                f"Escrowed value {total:.4f} insufficient for price {tx.agreed_price:.4f}"
+            )
 
         # Create and lock vault
         vault = self.vaults.create_vault(owner_id=tx.buyer_id)
@@ -344,7 +346,10 @@ class ComputeExchange:
         if tx.state != ExchangeState.ESCROWED:
             raise ValueError(f"Transaction in wrong state: {tx.state.value}")
 
-        tx.delivery_hash = delivery_hash or hashlib.sha256(f"{tx.tx_id}:{time.time()}".encode()).hexdigest()
+        tx.delivery_hash = (
+            delivery_hash
+            or hashlib.sha256(f"{tx.tx_id}:{time.time()}".encode()).hexdigest()
+        )
         tx.state = ExchangeState.EXECUTING
 
         # Auto-settle: release escrow to seller
@@ -411,7 +416,9 @@ class ComputeExchange:
             "by_state": by_state,
             "total_volume_settled": round(total_volume, 6),
             "exchange_rates": {
-                f"{d1.value}/{d2.value}": round(DENOMINATION_WEIGHTS[d1] / DENOMINATION_WEIGHTS[d2], 4)
+                f"{d1.value}/{d2.value}": round(
+                    DENOMINATION_WEIGHTS[d1] / DENOMINATION_WEIGHTS[d2], 4
+                )
                 for d1 in Denomination
                 for d2 in Denomination
                 if d1 != d2 and d1.value < d2.value

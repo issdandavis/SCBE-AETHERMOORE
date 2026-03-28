@@ -109,7 +109,9 @@ def _make_voxel_record(
     )
 
 
-def _make_safe_unit(unit_id: str = "u1", x: float = 0.0, y: float = 0.0, z: float = 0.0) -> UnitState:
+def _make_safe_unit(
+    unit_id: str = "u1", x: float = 0.0, y: float = 0.0, z: float = 0.0
+) -> UnitState:
     """Unit with governance values that yield ALLOW."""
     return UnitState(
         unit_id=unit_id,
@@ -122,7 +124,9 @@ def _make_safe_unit(unit_id: str = "u1", x: float = 0.0, y: float = 0.0, z: floa
     )
 
 
-def _make_risky_unit(unit_id: str = "bad", x: float = 0.0, y: float = 0.0, z: float = 0.0) -> UnitState:
+def _make_risky_unit(
+    unit_id: str = "bad", x: float = 0.0, y: float = 0.0, z: float = 0.0
+) -> UnitState:
     """Unit with governance values that yield DENY."""
     return UnitState(
         unit_id=unit_id,
@@ -160,7 +164,14 @@ def _squad_with_6_units() -> SquadSpace:
 class TestPadModesExist:
     """Verify the PAD_MODES constant contains exactly 6 modes."""
 
-    EXPECTED_MODES = {"ENGINEERING", "NAVIGATION", "SYSTEMS", "SCIENCE", "COMMS", "MISSION"}
+    EXPECTED_MODES = {
+        "ENGINEERING",
+        "NAVIGATION",
+        "SYSTEMS",
+        "SCIENCE",
+        "COMMS",
+        "MISSION",
+    }
 
     def test_pad_modes_count(self):
         assert len(PAD_MODES) == 6
@@ -406,7 +417,9 @@ class TestSquadSpaceTopology:
         nbrs = sq.neighbors(radius=5.0)
         for uid, neighbor_list in nbrs.items():
             for nid in neighbor_list:
-                assert uid in nbrs[nid], f"{uid} in {nid}'s neighbors but not vice versa"
+                assert (
+                    uid in nbrs[nid]
+                ), f"{uid} in {nid}'s neighbors but not vice versa"
 
     def test_neighbors_large_radius_all_connected(self):
         sq = _squad_with_6_units()
@@ -636,8 +649,12 @@ class TestEpochCoexistence:
     """Voxel records from different epochs coexist in squad memory."""
 
     def test_different_epochs_different_cube_ids(self):
-        cid1 = cube_id("squad", "u1", "ENGINEERING", epoch=1, lang="CA", voxel=[0, 0, 0, 0, 0, 0])
-        cid2 = cube_id("squad", "u1", "ENGINEERING", epoch=2, lang="CA", voxel=[0, 0, 0, 0, 0, 0])
+        cid1 = cube_id(
+            "squad", "u1", "ENGINEERING", epoch=1, lang="CA", voxel=[0, 0, 0, 0, 0, 0]
+        )
+        cid2 = cube_id(
+            "squad", "u1", "ENGINEERING", epoch=2, lang="CA", voxel=[0, 0, 0, 0, 0, 0]
+        )
         assert cid1 != cid2
 
     def test_coexistent_epoch_records(self):
@@ -655,8 +672,12 @@ class TestEpochCoexistence:
 
     def test_same_epoch_same_params_same_cube_id(self):
         """Determinism: identical inputs produce identical cube_id."""
-        cid_a = cube_id("squad", "u1", "ENGINEERING", 1, "CA", [0, 0, 0, 0, 0, 0], "sq1")
-        cid_b = cube_id("squad", "u1", "ENGINEERING", 1, "CA", [0, 0, 0, 0, 0, 0], "sq1")
+        cid_a = cube_id(
+            "squad", "u1", "ENGINEERING", 1, "CA", [0, 0, 0, 0, 0, 0], "sq1"
+        )
+        cid_b = cube_id(
+            "squad", "u1", "ENGINEERING", 1, "CA", [0, 0, 0, 0, 0, 0], "sq1"
+        )
         assert cid_a == cid_b
 
 

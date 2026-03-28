@@ -119,7 +119,9 @@ def layer_2_realification(c: np.ndarray) -> np.ndarray:
 # =============================================================================
 # LAYER 3: Weighted Transform
 # =============================================================================
-def layer_3_weighted_transform(x: np.ndarray, G: Optional[np.ndarray] = None) -> np.ndarray:
+def layer_3_weighted_transform(
+    x: np.ndarray, G: Optional[np.ndarray] = None
+) -> np.ndarray:
     """
     Layer 3: SPD Weighted Transform
 
@@ -148,7 +150,9 @@ def layer_3_weighted_transform(x: np.ndarray, G: Optional[np.ndarray] = None) ->
 # =============================================================================
 # LAYER 4: Poincaré Embedding
 # =============================================================================
-def layer_4_poincare_embedding(x_G: np.ndarray, alpha: float = 1.0, eps_ball: float = 0.01) -> np.ndarray:
+def layer_4_poincare_embedding(
+    x_G: np.ndarray, alpha: float = 1.0, eps_ball: float = 0.01
+) -> np.ndarray:
     """
     Layer 4: Poincaré Ball Embedding with Clamping
 
@@ -178,7 +182,9 @@ def layer_4_poincare_embedding(x_G: np.ndarray, alpha: float = 1.0, eps_ball: fl
 # =============================================================================
 # LAYER 5: Hyperbolic Distance
 # =============================================================================
-def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray, eps: float = 1e-5) -> float:
+def layer_5_hyperbolic_distance(
+    u: np.ndarray, v: np.ndarray, eps: float = 1e-5
+) -> float:
     """
     Layer 5: Poincaré Ball Metric
 
@@ -201,7 +207,9 @@ def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray, eps: float = 1e-5)
 # =============================================================================
 # LAYER 6: Breathing Transform
 # =============================================================================
-def layer_6_breathing_transform(u: np.ndarray, b: float, b_min: float = 0.5, b_max: float = 2.0) -> np.ndarray:
+def layer_6_breathing_transform(
+    u: np.ndarray, b: float, b_min: float = 0.5, b_max: float = 2.0
+) -> np.ndarray:
     """
     Layer 6: Breathing Map (Diffeomorphism, NOT Isometry)
 
@@ -310,7 +318,9 @@ def mobius_rotate(u: np.ndarray, Q: np.ndarray, eps: float = 1e-10) -> np.ndarra
     return result
 
 
-def hyperbolic_angle(a: np.ndarray, b: np.ndarray, c: np.ndarray, eps: float = 1e-10) -> float:
+def hyperbolic_angle(
+    a: np.ndarray, b: np.ndarray, c: np.ndarray, eps: float = 1e-10
+) -> float:
     """
     Compute the hyperbolic angle at vertex ``a`` between geodesics a→b and a→c
     in the Poincaré ball model.
@@ -352,7 +362,9 @@ def hyperbolic_angle(a: np.ndarray, b: np.ndarray, c: np.ndarray, eps: float = 1
 # =============================================================================
 # LAYER 7: Phase Transform
 # =============================================================================
-def layer_7_phase_transform(u: np.ndarray, a: np.ndarray, Q: np.ndarray, eps: float = 1e-10) -> np.ndarray:
+def layer_7_phase_transform(
+    u: np.ndarray, a: np.ndarray, Q: np.ndarray, eps: float = 1e-10
+) -> np.ndarray:
     """
     Layer 7: Phase Transform (True Isometry)
 
@@ -375,7 +387,9 @@ def layer_7_phase_transform(u: np.ndarray, a: np.ndarray, Q: np.ndarray, eps: fl
 # =============================================================================
 # LAYER 8: Realm Distance
 # =============================================================================
-def layer_8_realm_distance(u: np.ndarray, realms: List[np.ndarray], eps: float = 1e-5) -> Tuple[float, np.ndarray]:
+def layer_8_realm_distance(
+    u: np.ndarray, realms: List[np.ndarray], eps: float = 1e-5
+) -> Tuple[float, np.ndarray]:
     """
     Layer 8: Minimum Distance to Realm Centers
 
@@ -393,7 +407,9 @@ def layer_8_realm_distance(u: np.ndarray, realms: List[np.ndarray], eps: float =
 # =============================================================================
 # LAYER 9: Spectral Coherence
 # =============================================================================
-def layer_9_spectral_coherence(signal: Optional[np.ndarray], eps: float = 1e-5) -> float:
+def layer_9_spectral_coherence(
+    signal: Optional[np.ndarray], eps: float = 1e-5
+) -> float:
     """
     Layer 9: Spectral Coherence via FFT
 
@@ -496,7 +512,9 @@ def layer_12_harmonic_scaling(d: float, phase_deviation: float = 0.0) -> float:
 # =============================================================================
 # LAYER 13: Risk Decision
 # =============================================================================
-def layer_13_risk_decision(Risk_base: float, H: float, theta1: float = 0.33, theta2: float = 0.67) -> Tuple[str, float]:
+def layer_13_risk_decision(
+    Risk_base: float, H: float, theta1: float = 0.33, theta2: float = 0.67
+) -> Tuple[str, float]:
     """
     Layer 13: Three-Way Risk Decision
 
@@ -717,7 +735,11 @@ def scbe_14layer_pipeline(
     assert abs(w_d + w_c + w_s + w_tau + w_a - 1.0) < 1e-6, "Weights must sum to 1"
 
     Risk_base = (
-        w_d * d_tri_norm + w_c * (1.0 - C_spin) + w_s * (1.0 - S_spec) + w_tau * (1.0 - tau) + w_a * (1.0 - S_audio)
+        w_d * d_tri_norm
+        + w_c * (1.0 - C_spin)
+        + w_s * (1.0 - S_spec)
+        + w_tau * (1.0 - tau)
+        + w_a * (1.0 - S_audio)
     )
 
     decision, Risk_prime = layer_13_risk_decision(Risk_base, H, theta1, theta2)
@@ -846,7 +868,9 @@ if __name__ == "__main__":
 
     # Test individual layers
     print("\n[Layer 1] Complex State:")
-    t = np.array([0.5, 0.3, 0.2, 0.1, 0.4, 0.6, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5])  # amplitudes  # phases
+    t = np.array(
+        [0.5, 0.3, 0.2, 0.1, 0.4, 0.6, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5]
+    )  # amplitudes  # phases
     c = layer_1_complex_state(t, D=6)
     print(f"  c.shape = {c.shape}, ||c|| = {np.linalg.norm(c):.4f}")
 
@@ -916,7 +940,9 @@ if __name__ == "__main__":
     print("FULL PIPELINE TEST")
     print("=" * 80)
 
-    result = scbe_14layer_pipeline(t=t, D=6, breathing_factor=1.1, telemetry_signal=signal, audio_frame=audio)
+    result = scbe_14layer_pipeline(
+        t=t, D=6, breathing_factor=1.1, telemetry_signal=signal, audio_frame=audio
+    )
 
     print(f"\nDecision: {result['decision']}")
     print(f"Risk (base):  {result['risk_base']:.6f}")
@@ -939,7 +965,9 @@ if __name__ == "__main__":
 # These aliases allow tests to import functions with simpler names.
 
 
-def poincare_embed(x: np.ndarray, alpha: float = 1.0, epsilon: float = 0.01, eps_ball: float = None) -> np.ndarray:
+def poincare_embed(
+    x: np.ndarray, alpha: float = 1.0, epsilon: float = 0.01, eps_ball: float = None
+) -> np.ndarray:
     """
     Backward-compatible wrapper for layer_4_poincare_embedding.
     Accepts 'epsilon' parameter name for backward compatibility.
@@ -962,7 +990,9 @@ spectral_coherence = layer_9_spectral_coherence
 spin_coherence = layer_10_spin_coherence
 
 
-def weighted_transform(x: np.ndarray, G: Optional[np.ndarray] = None, return_matrix: bool = False):
+def weighted_transform(
+    x: np.ndarray, G: Optional[np.ndarray] = None, return_matrix: bool = False
+):
     """
     Backward-compatible wrapper for layer_3_weighted_transform.
     Optionally returns the G matrix used.

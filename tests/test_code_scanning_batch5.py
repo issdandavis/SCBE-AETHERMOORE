@@ -16,7 +16,9 @@ def _load_module(name: str, relative_path: str):
 
 
 ai_bridge = _load_module("test_batch5_ai_bridge", "scripts/system/ai_bridge.py")
-codebase_to_sft = _load_module("test_batch5_codebase_to_sft", "scripts/codebase_to_sft.py")
+codebase_to_sft = _load_module(
+    "test_batch5_codebase_to_sft", "scripts/codebase_to_sft.py"
+)
 
 
 def test_lore_strip_copies_use_dom_rendering_and_safe_url_helper():
@@ -42,7 +44,9 @@ def test_kindle_browse_uses_dom_construction_for_dynamic_lists():
     assert "createTabChip" in text
 
 
-def test_ai_bridge_write_log_uses_allowlisted_root_and_safe_filename(tmp_path, monkeypatch):
+def test_ai_bridge_write_log_uses_allowlisted_root_and_safe_filename(
+    tmp_path, monkeypatch
+):
     monkeypatch.setenv("SCBE_ALLOWED_VAULT_ROOTS", str(tmp_path))
 
     log_path = ai_bridge.write_log(
@@ -60,7 +64,9 @@ def test_ai_bridge_write_log_uses_allowlisted_root_and_safe_filename(tmp_path, m
     assert "gpt_4o_preview" in log_path.name
 
 
-def test_ai_bridge_resolve_vault_root_anchors_relative_paths_to_allowlisted_root(tmp_path, monkeypatch):
+def test_ai_bridge_resolve_vault_root_anchors_relative_paths_to_allowlisted_root(
+    tmp_path, monkeypatch
+):
     nested = tmp_path / "team-vault"
     nested.mkdir()
     monkeypatch.setenv("SCBE_ALLOWED_VAULT_ROOTS", str(tmp_path))

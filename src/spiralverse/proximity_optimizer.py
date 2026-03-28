@@ -66,8 +66,21 @@ LEVEL_TONGUES = {
     ProtocolLevel.BASIC: [Axis.AXIOM, Axis.ORACLE],
     ProtocolLevel.STANDARD: [Axis.AXIOM, Axis.ORACLE, Axis.LEDGER],
     ProtocolLevel.EXTENDED: [Axis.AXIOM, Axis.ORACLE, Axis.LEDGER, Axis.CHARM],
-    ProtocolLevel.FULL_MINUS: [Axis.AXIOM, Axis.ORACLE, Axis.LEDGER, Axis.CHARM, Axis.FLOW],
-    ProtocolLevel.FULL: [Axis.AXIOM, Axis.FLOW, Axis.GLYPH, Axis.ORACLE, Axis.CHARM, Axis.LEDGER],
+    ProtocolLevel.FULL_MINUS: [
+        Axis.AXIOM,
+        Axis.ORACLE,
+        Axis.LEDGER,
+        Axis.CHARM,
+        Axis.FLOW,
+    ],
+    ProtocolLevel.FULL: [
+        Axis.AXIOM,
+        Axis.FLOW,
+        Axis.GLYPH,
+        Axis.ORACLE,
+        Axis.CHARM,
+        Axis.LEDGER,
+    ],
 }
 
 # Byte sizes per level (optimized encoding)
@@ -191,7 +204,9 @@ class ProximityEncoder:
     def __init__(self, hysteresis: Optional[HysteresisController] = None):
         self.hysteresis = hysteresis or HysteresisController()
 
-    def encode(self, position: Position6D, target_distance: float, agent_pair: str = "") -> OptimizedMessage:
+    def encode(
+        self, position: Position6D, target_distance: float, agent_pair: str = ""
+    ) -> OptimizedMessage:
         """
         Encode position using optimal protocol level for distance.
 
@@ -215,7 +230,9 @@ class ProximityEncoder:
         # Encode only required axes
         data = self._encode_axes(position, tongues, level)
 
-        return OptimizedMessage(level=level, tongues=tongues, data=data, source_position=position)
+        return OptimizedMessage(
+            level=level, tongues=tongues, data=data, source_position=position
+        )
 
     def _distance_to_level_raw(self, distance: float) -> ProtocolLevel:
         """Convert distance to protocol level."""
@@ -224,7 +241,9 @@ class ProximityEncoder:
                 return level
         return ProtocolLevel.FULL
 
-    def _encode_axes(self, position: Position6D, tongues: List[Axis], level: ProtocolLevel) -> bytes:
+    def _encode_axes(
+        self, position: Position6D, tongues: List[Axis], level: ProtocolLevel
+    ) -> bytes:
         """Encode selected axes to bytes."""
         values = []
 
@@ -255,7 +274,9 @@ class ProximityDecoder:
     Decodes optimized messages back to Position6D.
     """
 
-    def decode(self, message: OptimizedMessage, previous: Optional[Position6D] = None) -> Position6D:
+    def decode(
+        self, message: OptimizedMessage, previous: Optional[Position6D] = None
+    ) -> Position6D:
         """
         Decode optimized message to full Position6D.
 
@@ -371,7 +392,10 @@ class BandwidthMonitor:
             "full_protocol_bytes": self.stats.full_protocol_bytes,
             "savings_percent": f"{self.stats.savings_percent:.1f}%",
             "avg_bytes_per_message": f"{self.stats.avg_bytes_per_message:.1f}",
-            "messages_by_level": {level.name: count for level, count in self.stats.messages_by_level.items()},
+            "messages_by_level": {
+                level.name: count
+                for level, count in self.stats.messages_by_level.items()
+            },
         }
 
     def reset(self):
@@ -431,7 +455,9 @@ class FormationOptimizer:
 
         return levels
 
-    def estimate_bandwidth(self, levels: Dict[Tuple[str, str], ProtocolLevel], update_rate_hz: float = 10.0) -> float:
+    def estimate_bandwidth(
+        self, levels: Dict[Tuple[str, str], ProtocolLevel], update_rate_hz: float = 10.0
+    ) -> float:
         """
         Estimate bandwidth usage for given protocol levels.
 
@@ -468,7 +494,15 @@ def demo():
     print("[PROTOCOL LEVELS] Distance -> Tongue Count:")
     print("-" * 50)
     for distance in [1.0, 3.0, 7.0, 15.0, 35.0, 100.0]:
-        pos = Position6D(axiom=distance, flow=5.0, glyph=10.0, oracle=2.5, charm=0.7, ledger=200, agent_id="TEST")
+        pos = Position6D(
+            axiom=distance,
+            flow=5.0,
+            glyph=10.0,
+            oracle=2.5,
+            charm=0.7,
+            ledger=200,
+            agent_id="TEST",
+        )
 
         msg = encoder.encode(pos, distance)
         monitor.record_message(msg)
@@ -511,7 +545,9 @@ def demo():
 
         summary = monitor.get_summary()
         print(f"  {stage_name}:")
-        print(f"    Bytes sent: {summary['bytes_sent']:,} / {summary['full_protocol_bytes']:,} (full)")
+        print(
+            f"    Bytes sent: {summary['bytes_sent']:,} / {summary['full_protocol_bytes']:,} (full)"
+        )
         print(f"    Savings: {summary['savings_percent']}")
         print()
 
@@ -528,7 +564,13 @@ def demo():
     print("[DECODE] Lossless reconstruction test:")
     print("-" * 50)
     original = Position6D(
-        axiom=15.5, flow=7.2, glyph=22.1, oracle=3.8, charm=0.65, ledger=180, agent_id="RECONSTRUCT-TEST"
+        axiom=15.5,
+        flow=7.2,
+        glyph=22.1,
+        oracle=3.8,
+        charm=0.65,
+        ledger=180,
+        agent_id="RECONSTRUCT-TEST",
     )
 
     # Encode at minimal level
@@ -538,7 +580,9 @@ def demo():
         f"  Original:  AXIOM={original.axiom:.1f}, FLOW={original.flow:.1f}, "
         f"GLYPH={original.glyph:.1f}, ORACLE={original.oracle:.1f}"
     )
-    print(f"  Minimal decode (no prev): AXIOM={decoded_partial.axiom:.1f} (only AXIOM transmitted)")
+    print(
+        f"  Minimal decode (no prev): AXIOM={decoded_partial.axiom:.1f} (only AXIOM transmitted)"
+    )
 
     # Decode with previous position
     decoded_full = decoder.decode(msg_minimal, previous=original)

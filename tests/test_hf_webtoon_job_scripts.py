@@ -22,7 +22,9 @@ def test_load_prompt_pack_counts_current_repo_data() -> None:
     assert chapters[0]["chapter_id"] == "ch01"
     assert ch01.get("reference_chapter") is True
     assert len(ch01.get("panels", [])) >= 10
-    assert first_panel["compiled_prompt"].startswith("sixtongues_style, manhwa webtoon panel")
+    assert first_panel["compiled_prompt"].startswith(
+        "sixtongues_style, manhwa webtoon panel"
+    )
     assert "Marcus" in first_panel["compiled_prompt"]
 
 
@@ -36,7 +38,9 @@ def test_build_uv_job_script_embeds_prompt_pack_and_defaults() -> None:
     assert 'DEFAULT_OUTPUT_REPO = "issdandavis/six-tongues-webtoon-panels"' in script
     assert '"chapter_id": "ch01"' in script
     assert '"compiled_prompt": "sixtongues_style, manhwa webtoon panel' in script
-    assert 'prompt = panel.get("compiled_prompt") or panel.get("prompt") or ""' in script
+    assert (
+        'prompt = panel.get("compiled_prompt") or panel.get("prompt") or ""' in script
+    )
 
 
 def test_build_uv_job_script_rejects_empty_pack() -> None:

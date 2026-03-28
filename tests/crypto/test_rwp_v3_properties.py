@@ -41,7 +41,8 @@ from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
 
 # Skip all tests if dependencies not available
 pytestmark = pytest.mark.skipif(
-    not RWP_AVAILABLE, reason="RWP v3.0 dependencies not installed (argon2-cffi, pycryptodome)"
+    not RWP_AVAILABLE,
+    reason="RWP v3.0 dependencies not installed (argon2-cffi, pycryptodome)",
 )
 
 # Hypothesis settings for thorough testing
@@ -122,7 +123,9 @@ class TestWrongPasswordFails:
         plaintext=st.binary(min_size=1, max_size=256),
     )
     @settings(max_examples=100, deadline=None)
-    def test_wrong_password_fails(self, password: bytes, wrong_suffix: bytes, plaintext: bytes):
+    def test_wrong_password_fails(
+        self, password: bytes, wrong_suffix: bytes, plaintext: bytes
+    ):
         """Different password should always fail."""
         protocol = RWPv3Protocol(enable_pqc=False)
         envelope = protocol.encrypt(password, plaintext)
@@ -156,7 +159,9 @@ class TestWrongPasswordFails:
         byte_position=st.integers(min_value=0),
     )
     @settings(max_examples=100, deadline=None)
-    def test_bit_flipped_password_fails(self, password: bytes, plaintext: bytes, bit_position: int, byte_position: int):
+    def test_bit_flipped_password_fails(
+        self, password: bytes, plaintext: bytes, bit_position: int, byte_position: int
+    ):
         """Single bit flip in password should fail."""
         protocol = RWPv3Protocol(enable_pqc=False)
         envelope = protocol.encrypt(password, plaintext)
@@ -182,7 +187,9 @@ class TestTamperedCiphertextFails:
         token_index=st.integers(min_value=0),
     )
     @settings(max_examples=100, deadline=None)
-    def test_modified_ct_token_fails(self, password: bytes, plaintext: bytes, token_index: int):
+    def test_modified_ct_token_fails(
+        self, password: bytes, plaintext: bytes, token_index: int
+    ):
         """Modifying any ciphertext token should fail."""
         protocol = RWPv3Protocol(enable_pqc=False)
         envelope = protocol.encrypt(password, plaintext)
@@ -207,7 +214,9 @@ class TestTamperedTagFails:
         token_index=st.integers(min_value=0),
     )
     @settings(max_examples=100, deadline=None)
-    def test_modified_tag_token_fails(self, password: bytes, plaintext: bytes, token_index: int):
+    def test_modified_tag_token_fails(
+        self, password: bytes, plaintext: bytes, token_index: int
+    ):
         """Modifying any tag token should fail."""
         protocol = RWPv3Protocol(enable_pqc=False)
         envelope = protocol.encrypt(password, plaintext)
@@ -259,7 +268,9 @@ class TestNonceUniqueness:
         plaintext=st.binary(min_size=1, max_size=256),
     )
     @settings(max_examples=50, deadline=None)
-    def test_ciphertexts_differ_for_same_plaintext(self, password: bytes, plaintext: bytes):
+    def test_ciphertexts_differ_for_same_plaintext(
+        self, password: bytes, plaintext: bytes
+    ):
         """Same plaintext should produce different ciphertext each time."""
         protocol = RWPv3Protocol(enable_pqc=False)
 
@@ -335,7 +346,9 @@ class TestEnvelopeSerialization:
         plaintext=st.binary(min_size=1, max_size=256),
     )
     @settings(max_examples=50, deadline=None)
-    def test_json_roundtrip_preserves_decryption(self, password: bytes, plaintext: bytes):
+    def test_json_roundtrip_preserves_decryption(
+        self, password: bytes, plaintext: bytes
+    ):
         """Envelope should decrypt after JSON roundtrip."""
         protocol = RWPv3Protocol(enable_pqc=False)
         envelope = protocol.encrypt(password, plaintext)
@@ -362,7 +375,9 @@ class TestAADIntegrity:
         aad=st.binary(min_size=1, max_size=128),
     )
     @settings(max_examples=50, deadline=None)
-    def test_aad_modification_fails(self, password: bytes, plaintext: bytes, aad: bytes):
+    def test_aad_modification_fails(
+        self, password: bytes, plaintext: bytes, aad: bytes
+    ):
         """Modifying AAD after encryption should fail."""
         protocol = RWPv3Protocol(enable_pqc=False)
         envelope = protocol.encrypt(password, plaintext, aad=aad)

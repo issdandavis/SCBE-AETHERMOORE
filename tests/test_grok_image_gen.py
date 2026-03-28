@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from scripts.grok_image_gen import _imagen_config_kwargs, _is_person_generation_error, _merge_prompt_avoidances
+from scripts.grok_image_gen import (
+    _imagen_config_kwargs,
+    _is_person_generation_error,
+    _merge_prompt_avoidances,
+)
 
 
 def test_imagen_config_kwargs_prefers_allow_adult_enum() -> None:
@@ -29,7 +33,9 @@ def test_imagen_config_kwargs_can_omit_people_flag() -> None:
 
 
 def test_person_generation_error_detection_matches_api_message() -> None:
-    exc = RuntimeError("PersonGeneration.ALLOW_ALL enum value is not supported in Gemini API.")
+    exc = RuntimeError(
+        "PersonGeneration.ALLOW_ALL enum value is not supported in Gemini API."
+    )
 
     assert _is_person_generation_error(exc) is True
     assert _is_person_generation_error(RuntimeError("something else broke")) is False

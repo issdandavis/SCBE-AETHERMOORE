@@ -38,7 +38,9 @@ import numpy as np
 # =============================================================================
 
 PHI = 1.618033988749895
-MEMORY_DIR = Path(__file__).resolve().parent.parent.parent / "artifacts" / "kernel_memory"
+MEMORY_DIR = (
+    Path(__file__).resolve().parent.parent.parent / "artifacts" / "kernel_memory"
+)
 
 
 # Icosahedral projection matrix (6x6, from quasi-space.ts)
@@ -163,7 +165,9 @@ class MemoryEntry:
 class PHDMClassifier:
     """Lightweight wrapper around the issdandavis/phdm-21d-embedding model."""
 
-    def __init__(self, weights: np.ndarray, bias: np.ndarray, label_map: dict[str, int]):
+    def __init__(
+        self, weights: np.ndarray, bias: np.ndarray, label_map: dict[str, int]
+    ):
         self.w = weights  # shape: (83, 256)
         self.b = bias  # shape: (83,)
         self.label_map = label_map
@@ -177,8 +181,12 @@ class PHDMClassifier:
 
         token = os.environ.get("HF_TOKEN")
         repo = "issdandavis/phdm-21d-embedding"
-        w_path = hf_hub_download(repo, f"training_runs/{run_id}/model_weights.npz", token=token)
-        l_path = hf_hub_download(repo, f"training_runs/{run_id}/label_map.json", token=token)
+        w_path = hf_hub_download(
+            repo, f"training_runs/{run_id}/model_weights.npz", token=token
+        )
+        l_path = hf_hub_download(
+            repo, f"training_runs/{run_id}/label_map.json", token=token
+        )
         data = np.load(w_path)
         with open(l_path) as f:
             labels = json.load(f)
@@ -208,7 +216,10 @@ class PHDMClassifier:
 
         # Top-k
         top_indices = np.argsort(probs)[::-1][:top_k]
-        return [(self.reverse_map.get(int(i), f"unknown_{i}"), float(probs[i])) for i in top_indices]
+        return [
+            (self.reverse_map.get(int(i), f"unknown_{i}"), float(probs[i]))
+            for i in top_indices
+        ]
 
     def embed(self, text: str) -> np.ndarray:
         """Get the pre-softmax activation as an embedding."""
@@ -315,8 +326,12 @@ class MemoryLattice:
     """
 
     def __init__(self):
-        self.layers: dict[MemoryLayer, list[MemoryEntry]] = {layer: [] for layer in MemoryLayer}
-        self._last_hash: dict[MemoryLayer, str] = {layer: "genesis" for layer in MemoryLayer}
+        self.layers: dict[MemoryLayer, list[MemoryEntry]] = {
+            layer: [] for layer in MemoryLayer
+        }
+        self._last_hash: dict[MemoryLayer, str] = {
+            layer: "genesis" for layer in MemoryLayer
+        }
 
     def store(
         self,

@@ -56,7 +56,9 @@ class AgentRegistry:
 
     def __init__(self):
         self.agents: Dict[str, Agent] = {}
-        self.agents_by_role: Dict[AgentRole, List[str]] = {role: [] for role in AgentRole}
+        self.agents_by_role: Dict[AgentRole, List[str]] = {
+            role: [] for role in AgentRole
+        }
 
     def register(self, agent: Agent) -> str:
         """Register an agent."""
@@ -80,7 +82,11 @@ class AgentRegistry:
 
     def get_by_role(self, role: AgentRole) -> List[Agent]:
         """Get all agents with a specific role."""
-        return [self.agents[aid] for aid in self.agents_by_role.get(role, []) if aid in self.agents]
+        return [
+            self.agents[aid]
+            for aid in self.agents_by_role.get(role, [])
+            if aid in self.agents
+        ]
 
     def get_available(self, role: Optional[AgentRole] = None) -> List[Agent]:
         """Get all available (idle) agents."""
@@ -183,12 +189,16 @@ class Orchestrator:
     def create_agent(self, role: AgentRole, name: str, **kwargs) -> Agent:
         """Create and register a new agent."""
         if self.registry.count() >= self.config.max_agents:
-            raise RuntimeError(f"Maximum agent limit reached ({self.config.max_agents})")
+            raise RuntimeError(
+                f"Maximum agent limit reached ({self.config.max_agents})"
+            )
 
         agent = create_agent(role, name, **kwargs)
         self.registry.register(agent)
 
-        self.audit_logger.log_agent_action(agent.id, "created", {"name": name, "role": role.value})
+        self.audit_logger.log_agent_action(
+            agent.id, "created", {"name": name, "role": role.value}
+        )
 
         return agent
 
@@ -198,7 +208,9 @@ class Orchestrator:
         if not agent:
             return False
 
-        self.audit_logger.log_agent_action(agent_id, "removed", {"name": agent.name, "role": agent.role.value})
+        self.audit_logger.log_agent_action(
+            agent_id, "removed", {"name": agent.name, "role": agent.role.value}
+        )
 
         return self.registry.unregister(agent_id)
 
@@ -236,7 +248,9 @@ class Orchestrator:
 
         # Security check
         if self.security_gate:
-            allowed, sanitized, events = self.security_gate.check_input(content, sender_id)
+            allowed, sanitized, events = self.security_gate.check_input(
+                content, sender_id
+            )
 
             for event in events:
                 self.audit_logger.log_security_event(
@@ -274,7 +288,9 @@ class Orchestrator:
         import hashlib
 
         content_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
-        self.audit_logger.log_communication(sender_id, receiver_id, message_type, content_hash)
+        self.audit_logger.log_communication(
+            sender_id, receiver_id, message_type, content_hash
+        )
 
         # Queue for delivery
         await self.message_queue.put(message)
@@ -292,7 +308,9 @@ class Orchestrator:
                     # Verify message if security enabled
                     content = message.content
                     if self.security_gate and ":" in content:
-                        valid, original = self.security_gate.verify_message(content, message.sender_id)
+                        valid, original = self.security_gate.verify_message(
+                            content, message.sender_id
+                        )
                         if valid:
                             content = original
                         else:
@@ -389,7 +407,9 @@ class Orchestrator:
                 agent_id=agent.id,
             )
 
-            self.audit_logger.log_task_event(task.id, "failed", agent.id, {"error": str(e)})
+            self.audit_logger.log_task_event(
+                task.id, "failed", agent.id, {"error": str(e)}
+            )
 
         finally:
             agent.status = AgentStatus.IDLE
@@ -399,7 +419,9 @@ class Orchestrator:
 
     async def execute_workflow(self, workflow: Workflow) -> Dict[str, Any]:
         """Execute a complete workflow."""
-        self.workflow_tracker.start_workflow(workflow.id, workflow.name, "orchestrator", workflow.metadata)
+        self.workflow_tracker.start_workflow(
+            workflow.id, workflow.name, "orchestrator", workflow.metadata
+        )
 
         async def task_executor(task: Task) -> TaskResult:
             result = await self.execute_task(task)
@@ -414,7 +436,9 @@ class Orchestrator:
 
         result = await self.workflow_executor.execute_workflow(workflow, task_executor)
 
-        self.workflow_tracker.complete_workflow(workflow.id, result.get("status", "unknown"), result)
+        self.workflow_tracker.complete_workflow(
+            workflow.id, result.get("status", "unknown"), result
+        )
 
         return result
 
@@ -469,15 +493,29 @@ class Orchestrator:
             "orchestrator": {
                 "started_at": self.started_at.isoformat() if self.started_at else None,
                 "is_running": self.is_running,
-                "uptime_seconds": ((datetime.now() - self.started_at).total_seconds() if self.started_at else 0),
+                "uptime_seconds": (
+                    (datetime.now() - self.started_at).total_seconds()
+                    if self.started_at
+                    else 0
+                ),
             },
             "agents": {
                 "total": len(agents),
-                "by_status": {status.value: sum(1 for a in agents if a.status == status) for status in AgentStatus},
-                "by_role": {role.value: len(self.registry.get_by_role(role)) for role in AgentRole},
+                "by_status": {
+                    status.value: sum(1 for a in agents if a.status == status)
+                    for status in AgentStatus
+                },
+                "by_role": {
+                    role.value: len(self.registry.get_by_role(role))
+                    for role in AgentRole
+                },
             },
             "knowledge_bases": self.get_loaded_knowledge(),
-            "security": (self.security_gate.get_security_report() if self.security_gate else {"enabled": False}),
+            "security": (
+                self.security_gate.get_security_report()
+                if self.security_gate
+                else {"enabled": False}
+            ),
             "workflows": {
                 "active": len(self.workflow_tracker.get_active_workflows()),
                 "completed": len(self.workflow_tracker.completed_workflows),
@@ -490,7 +528,9 @@ class Orchestrator:
         end_time: Optional[datetime] = None,
     ) -> Dict[str, Any]:
         """Generate audit report."""
-        logs = self.audit_logger.query(start_time=start_time, end_time=end_time, limit=10000)
+        logs = self.audit_logger.query(
+            start_time=start_time, end_time=end_time, limit=10000
+        )
 
         return {
             "period": {
@@ -498,10 +538,18 @@ class Orchestrator:
                 "end": end_time.isoformat() if end_time else "now",
             },
             "total_entries": len(logs),
-            "by_category": {cat.value: sum(1 for log in logs if log.category == cat) for cat in LogCategory},
-            "by_level": {level.name: sum(1 for log in logs if log.level == level) for level in LogLevel},
+            "by_category": {
+                cat.value: sum(1 for log in logs if log.category == cat)
+                for cat in LogCategory
+            },
+            "by_level": {
+                level.name: sum(1 for log in logs if log.level == level)
+                for level in LogLevel
+            },
             "chain_integrity": self.audit_logger.verify_chain_integrity(),
-            "workflow_summary": self.workflow_tracker.generate_report(start_time, end_time),
+            "workflow_summary": self.workflow_tracker.generate_report(
+                start_time, end_time
+            ),
         }
 
 

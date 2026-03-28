@@ -252,7 +252,9 @@ class State9D:
 
     def to_vector(self) -> np.ndarray:
         """Full 9D vector representation."""
-        return np.concatenate([self.context, np.array([self.tau, self.eta, np.abs(self.quantum)])])
+        return np.concatenate(
+            [self.context, np.array([self.tau, self.eta, np.abs(self.quantum)])]
+        )
 
     def update(self, dt: float = 0.1):
         """Evolve state by dt."""
@@ -275,7 +277,9 @@ class State9D:
 
 def derive_harmonic_mask(token_id: int, secret_key: bytes) -> List[int]:
     """Derive which harmonics are present for a token (flat-slope security)."""
-    mask_seed = hmac.new(secret_key, f"mask:{token_id}".encode(), hashlib.sha256).digest()
+    mask_seed = hmac.new(
+        secret_key, f"mask:{token_id}".encode(), hashlib.sha256
+    ).digest()
     K = 16
     harmonics = [h for h in range(1, K + 1) if mask_seed[h % 32] > 128]
     if 1 not in harmonics:
@@ -328,7 +332,9 @@ def resonance_refractor(token_ids: List[int], secret_key: bytes) -> np.ndarray:
     signal = np.zeros_like(t)
 
     for token_id in token_ids:
-        phase_seed = hmac.new(secret_key, f"phase:{token_id}".encode(), hashlib.sha256).digest()
+        phase_seed = hmac.new(
+            secret_key, f"phase:{token_id}".encode(), hashlib.sha256
+        ).digest()
         phase = (phase_seed[0] / 255) * 2 * np.pi
         harmonics = derive_harmonic_mask(token_id, secret_key)
         for h in harmonics:
@@ -381,7 +387,9 @@ class GovernanceResult:
         self.layer_passed: int = 0
 
 
-def governance_pipeline(state: State9D, intent: float, poly: Polyhedron) -> GovernanceResult:
+def governance_pipeline(
+    state: State9D, intent: float, poly: Polyhedron
+) -> GovernanceResult:
     """
     Full L1-L14 Governance Pipeline
     ================================
@@ -479,7 +487,9 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron) -> Gove
     result.metrics["delta_tau"] = delta_tau
     if not result.checks["L9_time_dilation"]:
         result.decision = "QUARANTINE"
-        result.message = f"L9 FAIL: Time dilation {delta_tau:.4f} exceeds {DELTA_DRIFT_MAX}"
+        result.message = (
+            f"L9 FAIL: Time dilation {delta_tau:.4f} exceeds {DELTA_DRIFT_MAX}"
+        )
         result.layer_passed = 8
         return result
 
@@ -489,7 +499,9 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron) -> Gove
     result.metrics["kappa_tau"] = kappa_tau
     if not result.checks["L10_time_curvature"]:
         result.decision = "QUARANTINE"
-        result.message = f"L10 FAIL: Time curvature {kappa_tau:.4f} exceeds {KAPPA_TAU_MAX}"
+        result.message = (
+            f"L10 FAIL: Time curvature {kappa_tau:.4f} exceeds {KAPPA_TAU_MAX}"
+        )
         result.layer_passed = 9
         return result
 
@@ -498,7 +510,9 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron) -> Gove
     result.metrics["eta"] = state.eta
     if not result.checks["L11_entropy_bounds"]:
         result.decision = "QUARANTINE"
-        result.message = f"L11 FAIL: Entropy {state.eta:.3f} outside [{ETA_MIN}, {ETA_MAX}]"
+        result.message = (
+            f"L11 FAIL: Entropy {state.eta:.3f} outside [{ETA_MIN}, {ETA_MAX}]"
+        )
         result.layer_passed = 10
         return result
 
@@ -508,7 +522,9 @@ def governance_pipeline(state: State9D, intent: float, poly: Polyhedron) -> Gove
     result.metrics["kappa_eta"] = kappa_eta
     if not result.checks["L12_entropy_curvature"]:
         result.decision = "QUARANTINE"
-        result.message = f"L12 FAIL: Entropy curvature {kappa_eta:.4f} exceeds {KAPPA_ETA_MAX}"
+        result.message = (
+            f"L12 FAIL: Entropy curvature {kappa_eta:.4f} exceeds {KAPPA_ETA_MAX}"
+        )
         result.layer_passed = 11
         return result
 
@@ -671,7 +687,9 @@ def test_axioms() -> Dict[str, bool]:
 
     # A11: Monotonicity (Harmonic risk increasing)
     risks = [harmonic_risk(d) for d in range(5)]
-    results["A11_monotonicity"] = all(risks[i] <= risks[i + 1] for i in range(len(risks) - 1))
+    results["A11_monotonicity"] = all(
+        risks[i] <= risks[i + 1] for i in range(len(risks) - 1)
+    )
 
     return results
 

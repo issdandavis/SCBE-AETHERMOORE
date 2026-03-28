@@ -247,7 +247,9 @@ def layer_5_hyperbolic_distance(u: np.ndarray, v: np.ndarray) -> float:
 # =============================================================================
 
 
-def breathing_factor(t: float, b_max: float = B_BREATH_MAX, omega: float = OMEGA_BREATH) -> float:
+def breathing_factor(
+    t: float, b_max: float = B_BREATH_MAX, omega: float = OMEGA_BREATH
+) -> float:
     """
     Compute breathing factor b(t) = 1 + b_max · sin(ωt)
 
@@ -383,7 +385,9 @@ def generate_realm_centers(dim: int, n_realms: int = N_REALMS) -> List[np.ndarra
     return centers
 
 
-def layer_8_multi_well(u: np.ndarray, realm_centers: List[np.ndarray] = None) -> Tuple[float, int]:
+def layer_8_multi_well(
+    u: np.ndarray, realm_centers: List[np.ndarray] = None
+) -> Tuple[float, int]:
     """
     Layer 8: Multi-Well Realms
 
@@ -404,7 +408,9 @@ def layer_8_multi_well(u: np.ndarray, realm_centers: List[np.ndarray] = None) ->
         # Ensure dimensions match
         if len(mu_k) != len(u):
             mu_k = np.zeros(len(u))
-            mu_k[: min(len(mu_k), N_REALMS)] = realm_centers[k][: min(len(mu_k), N_REALMS)]
+            mu_k[: min(len(mu_k), N_REALMS)] = realm_centers[k][
+                : min(len(mu_k), N_REALMS)
+            ]
 
         dist = layer_5_hyperbolic_distance(u, mu_k)
         if dist < min_dist:
@@ -747,7 +753,9 @@ class FourteenLayerPipeline:
         self.layer_states = []
 
         # Layer 1: Complex Context
-        c = layer_1_complex_context(identity, intent, trajectory, timing, commitment, signature)
+        c = layer_1_complex_context(
+            identity, intent, trajectory, timing, commitment, signature
+        )
         self._record(1, "Complex Context", c, {"dim": len(c)})
 
         # Layer 2: Realification
@@ -758,7 +766,9 @@ class FourteenLayerPipeline:
         if self.langues_metric is None:
             self.langues_metric = build_langues_metric(len(x))
         x_weighted = layer_3_weighted(x, self.langues_metric)
-        self._record(3, "Weighted Transform", x_weighted, {"norm": np.linalg.norm(x_weighted)})
+        self._record(
+            3, "Weighted Transform", x_weighted, {"norm": np.linalg.norm(x_weighted)}
+        )
 
         # Layer 4: Poincaré Embedding
         u = layer_4_poincare(x_weighted, self.alpha)
@@ -793,7 +803,9 @@ class FourteenLayerPipeline:
         )
 
         # Verify Theorem A: d_H preserved (compute but result not used in this path)
-        layer_5_hyperbolic_distance(layer_6_breathing(u, t), layer_6_breathing(ref_u, t))
+        layer_5_hyperbolic_distance(
+            layer_6_breathing(u, t), layer_6_breathing(ref_u, t)
+        )
 
         # Layer 7: Phase Transform
         if translation is None:
@@ -813,7 +825,9 @@ class FourteenLayerPipeline:
         if boundary["boundary_quarantine"] > 0.5:
             # Enforce stricter denial geometry when state approaches ball edge.
             d_star = max(d_star, self.theta_2 + 0.1)
-        self._record(8, "Multi-Well Realms", d_star, {"d_star": d_star, "realm": realm_idx})
+        self._record(
+            8, "Multi-Well Realms", d_star, {"d_star": d_star, "realm": realm_idx}
+        )
 
         # Layer 9: Spectral Coherence (using realified signal)
         S_spec = layer_9_spectral_coherence(x)
@@ -827,7 +841,9 @@ class FourteenLayerPipeline:
         coherence = 0.5 * (S_spec + (C_spin + 1) / 2)  # Map C_spin to [0,1]
 
         # Layer 11: Triadic Distance
-        d_tri = layer_11_triadic_distance(u_phase, ref_u, tau, ref_tau, eta, ref_eta, q, ref_q)
+        d_tri = layer_11_triadic_distance(
+            u_phase, ref_u, tau, ref_tau, eta, ref_eta, q, ref_q
+        )
         self._record(11, "Triadic Distance", d_tri, {"d_tri": d_tri})
 
         # Layer 12: Harmonic Scaling
@@ -835,7 +851,9 @@ class FourteenLayerPipeline:
         self._record(12, "Harmonic Scaling", H_d, {"H_d": H_d, "d²": d_tri**2})
 
         # Layer 13: Decision & Risk
-        risk = layer_13_decision(d_star, H_d, coherence, realm_idx, self.theta_1, self.theta_2)
+        risk = layer_13_decision(
+            d_star, H_d, coherence, realm_idx, self.theta_1, self.theta_2
+        )
         self._record(
             13,
             "Decision & Risk",
@@ -861,7 +879,9 @@ class FourteenLayerPipeline:
 
     def _record(self, layer: int, name: str, value: Any, metrics: Dict[str, float]):
         """Record layer state."""
-        self.layer_states.append(PipelineState(layer=layer, name=name, value=value, metrics=metrics))
+        self.layer_states.append(
+            PipelineState(layer=layer, name=name, value=value, metrics=metrics)
+        )
 
 
 # =============================================================================
@@ -913,7 +933,9 @@ def verify_theorem_A_metric_invariance(
             results["passed"] += 1
         else:
             results["failed"] += 1
-            results["errors"].append({"d_original": d_original, "d_phase": d_phase, "error": error_phase})
+            results["errors"].append(
+                {"d_original": d_original, "d_phase": d_phase, "error": error_phase}
+            )
 
     return results["failed"] == 0, results
 
@@ -1102,7 +1124,8 @@ def demo():
     print("-" * 70)
     for state in states:
         metrics_str = ", ".join(
-            f"{k}={v:.4f}" if isinstance(v, float) else f"{k}={v}" for k, v in state.metrics.items()
+            f"{k}={v:.4f}" if isinstance(v, float) else f"{k}={v}"
+            for k, v in state.metrics.items()
         )
         print(f"Layer {state.layer:2d}: {state.name:<20s} | {metrics_str}")
     print()
@@ -1135,7 +1158,9 @@ def demo():
 
     all_passed = all(passed for passed, _ in results.values())
     print("=" * 70)
-    print(f"Overall: {'ALL THEOREMS VERIFIED ✓' if all_passed else 'SOME THEOREMS FAILED ✗'}")
+    print(
+        f"Overall: {'ALL THEOREMS VERIFIED ✓' if all_passed else 'SOME THEOREMS FAILED ✗'}"
+    )
     print("=" * 70)
 
     return all_passed

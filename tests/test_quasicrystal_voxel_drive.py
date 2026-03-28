@@ -98,7 +98,11 @@ def test_get_slab_returns_tongue_data() -> None:
 def test_multiple_stores_in_same_slab() -> None:
     drive = QuasiCrystalVoxelDrive(resolution=16)
     for i in range(5):
-        drive.store(f"batch-{i}", f"data-{i}".encode(), [0.1, 0.1, 0.1, 0.8, 0.1, 0.1 + i * 0.01])
+        drive.store(
+            f"batch-{i}",
+            f"data-{i}".encode(),
+            [0.1, 0.1, 0.1, 0.8, 0.1, 0.1 + i * 0.01],
+        )
     stats = drive.stats()
     assert stats["total_cells"] == 5
 
@@ -106,7 +110,13 @@ def test_multiple_stores_in_same_slab() -> None:
 def test_depth_tree_parent_child() -> None:
     drive = QuasiCrystalVoxelDrive(resolution=16)
     drive.store("parent", b"root", [0.5, 0.5, 0.5, 0.5, 0.5, 0.5], category="root")
-    drive.store("child", b"leaf", [0.5, 0.5, 0.5, 0.5, 0.5, 0.5], category="leaf", parent_id="parent")
+    drive.store(
+        "child",
+        b"leaf",
+        [0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+        category="leaf",
+        parent_id="parent",
+    )
     assert drive.cells["child"].depth == 1
     assert "child" in drive.cells["parent"].children
 
@@ -120,7 +130,9 @@ def test_depth_tree_parent_child() -> None:
 def test_strict_retrieve_rejects_wrong_vector() -> None:
     drive = QuasiCrystalVoxelDrive(resolution=32)
     drive.store("cell-strict", b"data", [0.3, 0.1, 0.2, 0.8, 0.1, 0.1])
-    recovered = drive.retrieve("cell-strict", [0.9, 0.9, 0.9, 0.1, 0.1, 0.1], strict=True)
+    recovered = drive.retrieve(
+        "cell-strict", [0.9, 0.9, 0.9, 0.1, 0.1, 0.1], strict=True
+    )
     assert recovered is None
 
 
@@ -135,7 +147,9 @@ def test_fail_closed_rejects_outside_window() -> None:
 @pytest.mark.xfail(reason="storage_tier not yet on VoxelCell")
 def test_storage_tier_assigned() -> None:
     drive = QuasiCrystalVoxelDrive(resolution=24)
-    cell = drive.store("tier-1", b"data", [0.9, 0.1, 0.1, 0.2, 0.1, 0.0], category="ops")
+    cell = drive.store(
+        "tier-1", b"data", [0.9, 0.1, 0.1, 0.2, 0.1, 0.0], category="ops"
+    )
     assert 0 <= cell.storage_tier <= 2
 
 
@@ -143,7 +157,9 @@ def test_storage_tier_assigned() -> None:
 def test_spin_coherence_affects_projection() -> None:
     drive = QuasiCrystalVoxelDrive(resolution=32)
     spin = [0.9, 0.1, 0.0, 0.2, 0.1, 0.7]
-    cell = drive.store("spin-cell", b"data", [0.25, 0.15, 0.2, 0.6, 0.1, 0.1], spin_coherence=spin)
+    cell = drive.store(
+        "spin-cell", b"data", [0.25, 0.15, 0.2, 0.6, 0.1, 0.1], spin_coherence=spin
+    )
     assert cell is not None
 
 

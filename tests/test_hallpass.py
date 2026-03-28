@@ -40,8 +40,26 @@ from src.fleet.hallpass import (
 from src.fleet.skill_card_forge import Deck  # SkillCard already imported above
 
 _CARD_TEMPLATES = [
-    ("web-scraper", "Skill", "Offensive", 300, 3, 2, "browse navigate search web scrape urls", ["browser"]),
-    ("data-processor", "Skill", "Support", 250, 4, 1, "process transform data analyze compute", ["data"]),
+    (
+        "web-scraper",
+        "Skill",
+        "Offensive",
+        300,
+        3,
+        2,
+        "browse navigate search web scrape urls",
+        ["browser"],
+    ),
+    (
+        "data-processor",
+        "Skill",
+        "Support",
+        250,
+        4,
+        1,
+        "process transform data analyze compute",
+        ["data"],
+    ),
     (
         "governance-gate",
         "Defense",
@@ -62,8 +80,26 @@ _CARD_TEMPLATES = [
         "deploy orchestrate fleet coordinate multi-agent dispatch",
         ["deploy"],
     ),
-    ("hf-publisher", "Workflow", "Offensive", 350, 3, 2, "publish deploy huggingface push dataset model", ["publish"]),
-    ("entropy-monitor", "Skill", "Arcane", 600, 7, 3, "entropy quantum geometry manifold sacred tongue", ["entropy"]),
+    (
+        "hf-publisher",
+        "Workflow",
+        "Offensive",
+        350,
+        3,
+        2,
+        "publish deploy huggingface push dataset model",
+        ["publish"],
+    ),
+    (
+        "entropy-monitor",
+        "Skill",
+        "Arcane",
+        600,
+        7,
+        3,
+        "entropy quantum geometry manifold sacred tongue",
+        ["entropy"],
+    ),
 ]
 
 
@@ -105,7 +141,9 @@ class TestPolyhedra:
 
     def test_all_have_6d_positions(self):
         for p in POLYHEDRA:
-            assert len(p.position_6d) == 6, f"{p.name} has {len(p.position_6d)}D position"
+            assert (
+                len(p.position_6d) == 6
+            ), f"{p.name} has {len(p.position_6d)}D position"
 
     def test_platonic_five_cheap(self):
         """Platonic solids should have energy E0 = 1.0-2.5 (safe core)."""
@@ -134,7 +172,14 @@ class TestPolyhedra:
 
     def test_categories_complete(self):
         categories = {p.category for p in POLYHEDRA}
-        assert categories == {"platonic", "archimedean", "kepler", "toroidal", "rhombic", "johnson"}
+        assert categories == {
+            "platonic",
+            "archimedean",
+            "kepler",
+            "toroidal",
+            "rhombic",
+            "johnson",
+        }
 
 
 # ============================================================
@@ -272,7 +317,11 @@ class TestHamiltonianPath:
     def test_platonic_path_cheaper_than_mixed(self):
         """Platonic-only path should cost less than one with Kepler nodes."""
         platonic_path = POLYHEDRA[:3]
-        mixed_path = [POLYHEDRA[0], POLYHEDRA[9], POLYHEDRA[1]]  # inject Great Stellated
+        mixed_path = [
+            POLYHEDRA[0],
+            POLYHEDRA[9],
+            POLYHEDRA[1],
+        ]  # inject Great Stellated
         assert compute_path_cost(platonic_path) < compute_path_cost(mixed_path)
 
 
@@ -336,19 +385,27 @@ class TestTongueClassification:
         assert classify_tongue_phase("publish content to all platforms") == 0  # KO=Flow
 
     def test_research_is_context(self):
-        assert classify_tongue_phase("research academic papers and learn") == 1  # AV=Context
+        assert (
+            classify_tongue_phase("research academic papers and learn") == 1
+        )  # AV=Context
 
     def test_api_is_binding(self):
-        assert classify_tongue_phase("integrate with API and connect services") == 2  # RU=Binding
+        assert (
+            classify_tongue_phase("integrate with API and connect services") == 2
+        )  # RU=Binding
 
     def test_code_is_bitcraft(self):
         assert classify_tongue_phase("build and implement new code") == 3  # CA=Bitcraft
 
     def test_security_is_veil(self):
-        assert classify_tongue_phase("security audit and governance gate") == 4  # UM=Veil
+        assert (
+            classify_tongue_phase("security audit and governance gate") == 4
+        )  # UM=Veil
 
     def test_deploy_is_structure(self):
-        assert classify_tongue_phase("deploy and architect the system") == 5  # DR=Structure
+        assert (
+            classify_tongue_phase("deploy and architect the system") == 5
+        )  # DR=Structure
 
 
 # ============================================================
@@ -409,7 +466,10 @@ class TestHyperbolicDistance:
     def test_symmetric(self):
         a = (0.1, 0.2, 0.0, 0.0, 0.0, 0.0)
         b = (0.3, 0.1, 0.0, 0.0, 0.0, 0.0)
-        assert abs(hyperbolic_distance_approx(a, b) - hyperbolic_distance_approx(b, a)) < 0.001
+        assert (
+            abs(hyperbolic_distance_approx(a, b) - hyperbolic_distance_approx(b, a))
+            < 0.001
+        )
 
 
 # ============================================================
@@ -521,7 +581,9 @@ class TestHallPassCompiler:
 
     def test_guidance_metadata_present(self, sample_cards):
         compiler = HallPassCompiler()
-        hp = compiler.compile("split and publish across lanes", sample_cards, max_cards=4)
+        hp = compiler.compile(
+            "split and publish across lanes", sample_cards, max_cards=4
+        )
         assert hp.guidance_only is True
         assert hp.grants_access is False
         assert hp.branch_policy == "split"
@@ -578,14 +640,20 @@ class TestHallPassCompiler:
     def test_pass_id_deterministic(self, sample_cards):
         """Same task + same cards → same pass ID."""
         compiler = HallPassCompiler()
-        hp1 = compiler.compile("publish data", sample_cards, max_cards=3, workflow_name="test-pass")
-        hp2 = compiler.compile("publish data", sample_cards, max_cards=3, workflow_name="test-pass")
+        hp1 = compiler.compile(
+            "publish data", sample_cards, max_cards=3, workflow_name="test-pass"
+        )
+        hp2 = compiler.compile(
+            "publish data", sample_cards, max_cards=3, workflow_name="test-pass"
+        )
         assert hp1.pass_id == hp2.pass_id
 
     def test_ten_agents_same_pass(self, sample_cards):
         """10 agents with the same HallPass get identical corridors."""
         compiler = HallPassCompiler()
-        hp = compiler.compile("deploy fleet", sample_cards, max_cards=4, workflow_name="fleet-deploy")
+        hp = compiler.compile(
+            "deploy fleet", sample_cards, max_cards=4, workflow_name="fleet-deploy"
+        )
         # Simulate 10 agents reading the same pass
         for agent_num in range(10):
             corridor_ids = [n.card_id for n in hp.corridor]
@@ -612,9 +680,13 @@ class TestRealDeck:
 
     @pytest.fixture
     def real_deck(self):
-        deck_path = os.path.join(os.path.dirname(__file__), "..", "artifacts", "cards", "master_deck.json")
+        deck_path = os.path.join(
+            os.path.dirname(__file__), "..", "artifacts", "cards", "master_deck.json"
+        )
         if not os.path.exists(deck_path):
-            pytest.skip("Master deck not found — run forge_cards.py --refresh --save first")
+            pytest.skip(
+                "Master deck not found — run forge_cards.py --refresh --save first"
+            )
         return Deck.load(deck_path)
 
     def test_revenue_pipeline_hallpass(self, real_deck):
@@ -735,11 +807,15 @@ class TestHallPassDispatcher:
         assert msg["event"] == "corridor_dispatched"
         assert msg["pass_id"] == sample_hallpass.pass_id
 
-    def test_dispatch_task_payload_has_hallpass_metadata(self, tmp_switchboard, sample_hallpass):
+    def test_dispatch_task_payload_has_hallpass_metadata(
+        self, tmp_switchboard, sample_hallpass
+    ):
         dispatcher = HallPassDispatcher(switchboard=tmp_switchboard)
         dispatcher.dispatch(sample_hallpass)
         # Claim the first task and inspect its payload
-        claimed = tmp_switchboard.claim_task("test-worker", ["skill", "agent", "workflow", "tool", "defense"])
+        claimed = tmp_switchboard.claim_task(
+            "test-worker", ["skill", "agent", "workflow", "tool", "defense"]
+        )
         assert claimed is not None
         payload = claimed["payload"]
         assert "hallpass" in payload
@@ -752,16 +828,22 @@ class TestHallPassDispatcher:
         assert "capability_hints" in payload
         assert "permissions" in payload
 
-    def test_dispatch_worker_can_claim_and_complete(self, tmp_switchboard, sample_hallpass):
+    def test_dispatch_worker_can_claim_and_complete(
+        self, tmp_switchboard, sample_hallpass
+    ):
         dispatcher = HallPassDispatcher(switchboard=tmp_switchboard)
         dispatcher.dispatch(sample_hallpass)
         # Claim all tasks and complete them
         completed = 0
         for _ in range(sample_hallpass.node_count + 1):
-            claimed = tmp_switchboard.claim_task("worker-1", ["skill", "agent", "workflow", "tool", "defense"])
+            claimed = tmp_switchboard.claim_task(
+                "worker-1", ["skill", "agent", "workflow", "tool", "defense"]
+            )
             if claimed is None:
                 break
-            ok = tmp_switchboard.complete_task(claimed["task_id"], "worker-1", {"status": "ok"})
+            ok = tmp_switchboard.complete_task(
+                claimed["task_id"], "worker-1", {"status": "ok"}
+            )
             assert ok
             completed += 1
         assert completed == sample_hallpass.node_count

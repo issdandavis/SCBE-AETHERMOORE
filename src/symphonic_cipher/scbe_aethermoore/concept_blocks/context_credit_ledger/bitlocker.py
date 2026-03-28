@@ -197,7 +197,9 @@ class BitLockerVault:
         if self.escrow_counterparty:
             authorized.add(self.escrow_counterparty)
         if owner_id not in authorized:
-            raise PermissionError(f"Agent {owner_id} not authorized for vault {self.vault_id}")
+            raise PermissionError(
+                f"Agent {owner_id} not authorized for vault {self.vault_id}"
+            )
 
         # Decrypt
         key = _derive_vault_key(self.owner_id, self._salt)
@@ -319,7 +321,11 @@ class VaultRegistry:
         """All non-released, non-burned vaults."""
         for v in self._vaults.values():
             v._check_expiry()
-        return [v for v in self._vaults.values() if v.state not in (VaultState.RELEASED, VaultState.BURNED)]
+        return [
+            v
+            for v in self._vaults.values()
+            if v.state not in (VaultState.RELEASED, VaultState.BURNED)
+        ]
 
     def summary(self) -> Dict[str, Any]:
         by_state: Dict[str, int] = {}

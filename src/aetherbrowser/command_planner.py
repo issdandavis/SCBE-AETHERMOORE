@@ -168,7 +168,11 @@ class CommandPlan:
             "assignments": [
                 {
                     **assignment,
-                    "role": assignment["role"].value if hasattr(assignment["role"], "value") else assignment["role"],
+                    "role": (
+                        assignment["role"].value
+                        if hasattr(assignment["role"], "value")
+                        else assignment["role"]
+                    ),
                 }
                 for assignment in self.assignments
             ],
@@ -188,7 +192,9 @@ def build_command_plan(
     task_type = squad.infer_task_type(text)
     complexity = router.score_complexity(text)
     assignments = squad.decompose(text, task_type=task_type)
-    browser_action_required = bool(tokens & _BROWSER_ACTION_KEYWORDS) or task_type == "page"
+    browser_action_required = (
+        bool(tokens & _BROWSER_ACTION_KEYWORDS) or task_type == "page"
+    )
     intent = _infer_intent(task_type=task_type, lowered=lowered, tokens=tokens)
     targets = _infer_targets(lowered)
     risk_tier, required_approvals = _infer_risk(
@@ -204,7 +210,11 @@ def build_command_plan(
     routing_complexity = complexity
     if browser_action_required and risk_tier == "low":
         routing_complexity = TaskComplexity.LOW
-    elif browser_action_required and risk_tier == "medium" and complexity == TaskComplexity.HIGH:
+    elif (
+        browser_action_required
+        and risk_tier == "medium"
+        and complexity == TaskComplexity.HIGH
+    ):
         routing_complexity = TaskComplexity.MEDIUM
     selection = router.select_model(
         routing_complexity,
@@ -213,7 +223,10 @@ def build_command_plan(
         allow_fallback=auto_cascade,
     )
     provider_status = router.provider_status_snapshot()
-    escalation_ready = any(meta["available"] is True and name != "local" for name, meta in provider_status.items())
+    escalation_ready = any(
+        meta["available"] is True and name != "local"
+        for name, meta in provider_status.items()
+    )
     approval_required = bool(required_approvals)
     review_zone = _review_zone_for_risk(risk_tier) if approval_required else None
     next_actions = _build_next_actions(
@@ -279,14 +292,18 @@ def _infer_targets(lowered: str) -> list[str]:
     return targets
 
 
-def _infer_risk(*, lowered: str, tokens: set[str], browser_action_required: bool) -> tuple[str, list[str]]:
+def _infer_risk(
+    *, lowered: str, tokens: set[str], browser_action_required: bool
+) -> tuple[str, list[str]]:
     approvals: list[str] = []
     if tokens & _AUTH_KEYWORDS or "sign in" in lowered or "log in" in lowered:
         approvals.append("Uses authentication or credentials")
     if tokens & _SIDE_EFFECT_KEYWORDS:
         approvals.append("Performs a state-changing browser action")
     if tokens & _HIGH_RISK_KEYWORDS:
-        approvals.append("Touches a high-impact flow such as payment, publish, deploy, push, or delete")
+        approvals.append(
+            "Touches a high-impact flow such as payment, publish, deploy, push, or delete"
+        )
 
     if not approvals and browser_action_required and not (tokens & _READ_ONLY_KEYWORDS):
         approvals.append("Browser action is not clearly read-only")
@@ -299,7 +316,9 @@ def _infer_risk(*, lowered: str, tokens: set[str], browser_action_required: bool
     return "low", []
 
 
-def _select_engine(*, intent: str, browser_action_required: bool, risk_tier: str) -> str:
+def _select_engine(
+    *, intent: str, browser_action_required: bool, risk_tier: str
+) -> str:
     if intent in {"authenticate", "checkout", "submit_changes"}:
         return "playwright"
     if browser_action_required and risk_tier == "low":

@@ -175,7 +175,9 @@ class TestMintIdentityCube:
         assert cube.egg_id == egg.egg_id
         assert len(cube.cube_vector) == 6
 
-    def test_different_offsets_different_cubes(self, integrator, key_pair, interior_context):
+    def test_different_offsets_different_cubes(
+        self, integrator, key_pair, interior_context
+    ):
         pk, sk = key_pair
         egg = integrator.create_egg(
             b"data",
@@ -325,7 +327,9 @@ class TestGenesisProtocol:
         assert cube is not None
         assert protocol.verify_cube(cube) is True
 
-    def test_tampered_cube_fails_verification(self, protocol, key_pair, interior_context):
+    def test_tampered_cube_fails_verification(
+        self, protocol, key_pair, interior_context
+    ):
         pk, sk = key_pair
         batch_id, eggs = protocol.create_batch(
             [b"tamper"],

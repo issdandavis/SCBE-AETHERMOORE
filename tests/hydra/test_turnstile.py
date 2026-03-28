@@ -32,7 +32,9 @@ from hydra.turnstile import (
 class TestAllowPassthrough:
     """ALLOW decision should always yield action=ALLOW regardless of domain."""
 
-    @pytest.mark.parametrize("domain", ["browser", "vehicle", "fleet", "antivirus", "default"])
+    @pytest.mark.parametrize(
+        "domain", ["browser", "vehicle", "fleet", "antivirus", "default"]
+    )
     def test_allow_all_domains(self, domain: str):
         outcome = resolve_turnstile(decision="ALLOW", domain=domain)
         assert outcome.action == "ALLOW"
@@ -42,7 +44,9 @@ class TestAllowPassthrough:
         assert outcome.deploy_honeypot is False
 
     def test_allow_preserves_antibody_and_stress(self):
-        outcome = resolve_turnstile(decision="ALLOW", domain="browser", suspicion=0.3, geometry_norm=0.5)
+        outcome = resolve_turnstile(
+            decision="ALLOW", domain="browser", suspicion=0.3, geometry_norm=0.5
+        )
         assert outcome.action == "ALLOW"
         # antibody_load and membrane_stress should still be computed
         assert 0.0 <= outcome.antibody_load <= 1.0
@@ -110,13 +114,17 @@ class TestQuarantineRouting:
 
     def test_quarantine_fleet_isolates(self):
         """QUARANTINE on fleet (not ESCALATE) -> ISOLATE action."""
-        outcome = resolve_turnstile(decision="QUARANTINE", domain="fleet", quorum_ok=True)
+        outcome = resolve_turnstile(
+            decision="QUARANTINE", domain="fleet", quorum_ok=True
+        )
         assert outcome.action == "ISOLATE"
         assert outcome.isolate is True
         assert outcome.continue_execution is True
 
     def test_quarantine_fleet_no_quorum_isolates(self):
-        outcome = resolve_turnstile(decision="QUARANTINE", domain="fleet", quorum_ok=False)
+        outcome = resolve_turnstile(
+            decision="QUARANTINE", domain="fleet", quorum_ok=False
+        )
         assert outcome.action == "ISOLATE"
         assert outcome.isolate is True
 
@@ -221,7 +229,9 @@ class TestAntibodyLoadMath:
         """After one half-life with zero suspicion, load halves (approximately)."""
         half_life = 12.0
         initial = 0.8
-        load = compute_antibody_load(suspicion=0.0, previous_load=initial, dt=half_life, half_life=half_life)
+        load = compute_antibody_load(
+            suspicion=0.0, previous_load=initial, dt=half_life, half_life=half_life
+        )
         # decay * initial where decay = exp(-ln2) = 0.5
         assert abs(load - initial * 0.5) < 0.01
 

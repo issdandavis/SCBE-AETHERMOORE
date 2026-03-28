@@ -7,7 +7,9 @@ from pathlib import Path
 def _load_module():
     repo_root = Path(__file__).resolve().parents[1]
     script_path = repo_root / "scripts" / "web_research_training_pipeline.py"
-    spec = importlib.util.spec_from_file_location("web_research_training_pipeline", script_path)
+    spec = importlib.util.spec_from_file_location(
+        "web_research_training_pipeline", script_path
+    )
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -48,7 +50,9 @@ def test_build_training_rows_routes_allow_and_quarantine():
             },
         ]
     }
-    allowed, quarantined = mod.build_training_rows(payload, run_id="r1", topics=["space"])
+    allowed, quarantined = mod.build_training_rows(
+        payload, run_id="r1", topics=["space"]
+    )
     assert len(allowed) == 1
     assert len(quarantined) == 1
     assert allowed[0]["source_url"] == "https://example.com/allow"

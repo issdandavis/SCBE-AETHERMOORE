@@ -66,9 +66,9 @@ class TestChladni6D:
     def test_sums_three_paired_terms(self):
         coords = [0.5, 0.3, 0.0, 0.0, 0.0, 0.0]
         state = [2, 3, 0, 0, 0, 0]  # Only first pair nonzero
-        expected = math.cos(2 * math.pi * 0.5) * math.cos(3 * math.pi * 0.3) - math.cos(3 * math.pi * 0.5) * math.cos(
-            2 * math.pi * 0.3
-        )
+        expected = math.cos(2 * math.pi * 0.5) * math.cos(3 * math.pi * 0.3) - math.cos(
+            3 * math.pi * 0.5
+        ) * math.cos(2 * math.pi * 0.3)
         assert chladni_6d(coords, state) == pytest.approx(expected, abs=1e-8)
 
     def test_handles_short_inputs(self):
@@ -260,7 +260,9 @@ class TestPropagation:
 
     def test_propagation_stops_at_negative_space(self):
         net = CymaticVoxelNet([1, 5, 3, 7, 2, 4])
-        acts = net.propagate([0.5, 0.3, 0.7, 0.1, 0.9, 0.2], max_hops=20, step_size=0.05)
+        acts = net.propagate(
+            [0.5, 0.3, 0.7, 0.1, 0.9, 0.2], max_hops=20, step_size=0.05
+        )
         assert len(acts) <= 20
 
     def test_last_propagation(self):
@@ -303,11 +305,15 @@ class TestNetworkStatistics:
         assert snap.mean_chladni_abs >= 0
 
     def test_nodal_density_reasonable(self):
-        density = estimate_nodal_density([1, 2, 3, 2, 1, 3], samples=5000, threshold=0.01)
+        density = estimate_nodal_density(
+            [1, 2, 3, 2, 1, 3], samples=5000, threshold=0.01
+        )
         assert 0 <= density <= 1
 
     def test_equal_pair_100_percent_nodal(self):
-        density = estimate_nodal_density([2, 2, 3, 3, 1, 1], samples=1000, threshold=0.01)
+        density = estimate_nodal_density(
+            [2, 2, 3, 3, 1, 1], samples=1000, threshold=0.01
+        )
         assert density == pytest.approx(1.0, abs=0.05)
 
 

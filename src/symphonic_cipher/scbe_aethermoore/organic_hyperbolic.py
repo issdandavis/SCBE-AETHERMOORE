@@ -103,7 +103,9 @@ class InputEncoder:
         if np.sum(magnitude) > EPSILON:
             freqs = np.arange(len(magnitude))
             centroid = np.sum(freqs * magnitude) / np.sum(magnitude)
-            spread = np.sqrt(np.sum((freqs - centroid) ** 2 * magnitude) / np.sum(magnitude))
+            spread = np.sqrt(
+                np.sum((freqs - centroid) ** 2 * magnitude) / np.sum(magnitude)
+            )
         else:
             centroid, spread = 0.0, 0.0
 
@@ -192,7 +194,9 @@ class StateGenerator:
         # Pre-compute golden weights for 9 dimensions
         self.phi_weights = np.array([PHI ** (-k) for k in range(9)])
 
-    def from_input(self, command_vec: np.ndarray, audio_vec: np.ndarray, t: float = 0.0) -> State9D:
+    def from_input(
+        self, command_vec: np.ndarray, audio_vec: np.ndarray, t: float = 0.0
+    ) -> State9D:
         """
         Generate 9D state from input vectors.
 
@@ -562,7 +566,9 @@ class GovernanceEngine:
         exponent = min(exponent, 700 / np.log(R_base + EPSILON))
         return float(R_base**exponent)
 
-    def composite_risk(self, d_tri: float, s_spec: float, s_spin: float, d_star: float) -> float:
+    def composite_risk(
+        self, d_tri: float, s_spec: float, s_spin: float, d_star: float
+    ) -> float:
         """
         Compute composite normalized risk (A12).
 
@@ -577,7 +583,9 @@ class GovernanceEngine:
         # Base risk from coherence deficits
         w = self.weights
         R_base = (
-            w["spectral"] * (1 - s_spec) + w["spin"] * (1 - s_spin) + w["triadic"] * np.tanh(d_tri)  # Soft saturation
+            w["spectral"] * (1 - s_spec)
+            + w["spin"] * (1 - s_spin)
+            + w["triadic"] * np.tanh(d_tri)  # Soft saturation
         )
 
         # Harmonic amplification
@@ -603,7 +611,9 @@ class GovernanceEngine:
         else:
             return GovernanceDecision.DENY
 
-    def evaluate(self, state: State9D, audio_features: np.ndarray, t: float) -> Dict[str, Any]:
+    def evaluate(
+        self, state: State9D, audio_features: np.ndarray, t: float
+    ) -> Dict[str, Any]:
         """
         Complete organic governance evaluation.
 
@@ -673,7 +683,9 @@ class OrganicSCBE:
         # Pillar 4: Governance
         self.govern = GovernanceEngine(self.hyper)
 
-    def process(self, command: str, audio_signal: Optional[np.ndarray] = None, t: float = 0.0) -> Dict[str, Any]:
+    def process(
+        self, command: str, audio_signal: Optional[np.ndarray] = None, t: float = 0.0
+    ) -> Dict[str, Any]:
         """
         Process input through organic pipeline.
 
@@ -713,7 +725,10 @@ class OrganicSCBE:
         if times is None:
             times = [float(i) for i in range(n)]
 
-        return [self.process(cmd, audio, t) for cmd, audio, t in zip(commands, audio_signals, times)]
+        return [
+            self.process(cmd, audio, t)
+            for cmd, audio, t in zip(commands, audio_signals, times)
+        ]
 
 
 # =============================================================================
@@ -907,7 +922,9 @@ def test_edge_cases() -> Dict[str, Any]:
         "inside_ball": np.linalg.norm(u_large) < 1.0,
     }
 
-    all_passed = results["zero_input"]["is_origin"] and results["large_input"]["inside_ball"]
+    all_passed = (
+        results["zero_input"]["is_origin"] and results["large_input"]["inside_ball"]
+    )
 
     return {
         "test": "edge_cases",
@@ -949,14 +966,22 @@ def test_f1_hierarchical_vs_euclidean() -> Dict[str, Any]:
             angle = np.random.rand() * 2 * np.pi
             r = 0.15 + depth * 0.12  # Radius grows with depth
             noise = np.random.randn(3) * 0.05
-            invalid_samples.append(np.array([r * np.cos(angle), r * np.sin(angle), depth * 0.1]) + noise)
+            invalid_samples.append(
+                np.array([r * np.cos(angle), r * np.sin(angle), depth * 0.1]) + noise
+            )
 
     origin = np.zeros(3)
 
     # Hyperbolic classification
     # Key insight: hyperbolic distance grows exponentially with "depth"
-    valid_h_dists = [hyper.hyperbolic_distance(hyper.poincare_embed(x), origin) for x in valid_samples]
-    invalid_h_dists = [hyper.hyperbolic_distance(hyper.poincare_embed(x), origin) for x in invalid_samples]
+    valid_h_dists = [
+        hyper.hyperbolic_distance(hyper.poincare_embed(x), origin)
+        for x in valid_samples
+    ]
+    invalid_h_dists = [
+        hyper.hyperbolic_distance(hyper.poincare_embed(x), origin)
+        for x in invalid_samples
+    ]
 
     # Find optimal threshold using median gap
     threshold_h = (np.max(valid_h_dists) + np.min(invalid_h_dists)) / 2
@@ -1073,9 +1098,13 @@ def demonstrate_organic_flow():
         result = scbe.process(cmd, audio, t)
 
         print(f"\nCommand: {cmd} @ t={t}")
-        print(f"  → Embedded point norm: {np.linalg.norm(result['embedded_point']):.4f}")
+        print(
+            f"  → Embedded point norm: {np.linalg.norm(result['embedded_point']):.4f}"
+        )
         print(f"  → Realm: {result['realm']} (d*={result['d_star']:.4f})")
-        print(f"  → Coherence: s_spec={result['s_spec']:.3f}, s_spin={result['s_spin']:.3f}")
+        print(
+            f"  → Coherence: s_spec={result['s_spec']:.3f}, s_spin={result['s_spin']:.3f}"
+        )
         print(f"  → Triadic distance: {result['d_tri']:.4f}")
         print(f"  → Harmonic amplification: H={result['harmonic_H']:.4f}")
         print(f"  → Risk: {result['risk']:.4f}")

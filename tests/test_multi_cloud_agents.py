@@ -20,6 +20,7 @@ import pytest
 def _can_import_cryptography():
     try:
         from cryptography.fernet import Fernet  # noqa: F401
+
         return True
     except BaseException:
         return False
@@ -46,7 +47,13 @@ from src.cloud.multi_cloud_agents import (
     AgentFactory,
 )
 
-from src.cloud.cross_cloud_comms import CircuitState, CloudEndpoint, ServiceRegistry, CircuitBreaker, MessageEncryption
+from src.cloud.cross_cloud_comms import (
+    CircuitState,
+    CloudEndpoint,
+    ServiceRegistry,
+    CircuitBreaker,
+    MessageEncryption,
+)
 
 from src.cloud.monitoring_dashboard import (
     AlertSeverity,
@@ -64,13 +71,23 @@ from src.cloud.monitoring_dashboard import (
 @pytest.fixture
 def aws_config():
     """AWS cloud configuration."""
-    return CloudConfig(provider=CloudProvider.AWS, region="us-west-2", memory_mb=512, timeout_seconds=300)
+    return CloudConfig(
+        provider=CloudProvider.AWS,
+        region="us-west-2",
+        memory_mb=512,
+        timeout_seconds=300,
+    )
 
 
 @pytest.fixture
 def gcp_config():
     """GCP cloud configuration."""
-    return CloudConfig(provider=CloudProvider.GCP, region="us-central1", memory_mb=512, timeout_seconds=300)
+    return CloudConfig(
+        provider=CloudProvider.GCP,
+        region="us-central1",
+        memory_mb=512,
+        timeout_seconds=300,
+    )
 
 
 @pytest.fixture
@@ -188,7 +205,12 @@ class TestSecurityTesterAgent:
     async def test_vulnerability_scan(self, security_agent):
         """Test vulnerability scanning."""
         result = await security_agent.process(
-            {"type": "vulnerability_scan", "target": "https://example.com", "depth": "basic"}, {}
+            {
+                "type": "vulnerability_scan",
+                "target": "https://example.com",
+                "depth": "basic",
+            },
+            {},
         )
 
         assert "scan_id" in result
@@ -200,7 +222,12 @@ class TestSecurityTesterAgent:
     async def test_api_security_test(self, security_agent):
         """Test API security testing."""
         result = await security_agent.process(
-            {"type": "api_security_test", "endpoint": "/api/v1/users", "method": "POST"}, {}
+            {
+                "type": "api_security_test",
+                "endpoint": "/api/v1/users",
+                "method": "POST",
+            },
+            {},
         )
 
         assert result["endpoint"] == "/api/v1/users"
@@ -211,7 +238,9 @@ class TestSecurityTesterAgent:
     @pytest.mark.asyncio
     async def test_auth_test(self, security_agent):
         """Test authentication testing."""
-        result = await security_agent.process({"type": "auth_test", "target": "https://example.com/login"}, {})
+        result = await security_agent.process(
+            {"type": "auth_test", "target": "https://example.com/login"}, {}
+        )
 
         assert "tests" in result
         assert "all_passed" in result
@@ -219,7 +248,9 @@ class TestSecurityTesterAgent:
     @pytest.mark.asyncio
     async def test_rate_limit_test(self, security_agent):
         """Test rate limit testing."""
-        result = await security_agent.process({"type": "rate_limit_test", "endpoint": "/api/v1/data", "rps": 100}, {})
+        result = await security_agent.process(
+            {"type": "rate_limit_test", "endpoint": "/api/v1/data", "rps": 100}, {}
+        )
 
         assert result["endpoint"] == "/api/v1/data"
         assert "rate_limit_detected" in result
@@ -227,7 +258,9 @@ class TestSecurityTesterAgent:
     @pytest.mark.asyncio
     async def test_input_validation_test(self, security_agent):
         """Test input validation testing."""
-        result = await security_agent.process({"type": "input_validation_test", "endpoint": "/api/v1/submit"}, {})
+        result = await security_agent.process(
+            {"type": "input_validation_test", "endpoint": "/api/v1/submit"}, {}
+        )
 
         assert "payloads_tested" in result
         assert "all_blocked" in result
@@ -258,7 +291,12 @@ class TestPerformanceMonitorAgent:
     async def test_collect_metrics(self, performance_agent):
         """Test metrics collection."""
         result = await performance_agent.process(
-            {"type": "collect_metrics", "target": "api-server", "metrics": ["latency", "throughput", "errors"]}, {}
+            {
+                "type": "collect_metrics",
+                "target": "api-server",
+                "metrics": ["latency", "throughput", "errors"],
+            },
+            {},
         )
 
         assert result["target"] == "api-server"
@@ -269,7 +307,9 @@ class TestPerformanceMonitorAgent:
     @pytest.mark.asyncio
     async def test_check_latency(self, performance_agent):
         """Test latency checking."""
-        result = await performance_agent.process({"type": "check_latency", "endpoint": "/api/health", "samples": 5}, {})
+        result = await performance_agent.process(
+            {"type": "check_latency", "endpoint": "/api/health", "samples": 5}, {}
+        )
 
         assert result["samples"] == 5
         assert "avg_ms" in result
@@ -290,7 +330,10 @@ class TestPerformanceMonitorAgent:
         """Test anomaly detection."""
         # First collect some metrics
         for _ in range(10):
-            await performance_agent.process({"type": "collect_metrics", "target": "test", "metrics": ["latency"]}, {})
+            await performance_agent.process(
+                {"type": "collect_metrics", "target": "test", "metrics": ["latency"]},
+                {},
+            )
 
         result = await performance_agent.process({"type": "detect_anomalies"}, {})
 
@@ -300,7 +343,9 @@ class TestPerformanceMonitorAgent:
     @pytest.mark.asyncio
     async def test_generate_report(self, performance_agent):
         """Test report generation."""
-        result = await performance_agent.process({"type": "generate_report", "period": "1h"}, {})
+        result = await performance_agent.process(
+            {"type": "generate_report", "period": "1h"}, {}
+        )
 
         assert result["period"] == "1h"
         assert "summary" in result
@@ -309,7 +354,9 @@ class TestPerformanceMonitorAgent:
     @pytest.mark.asyncio
     async def test_set_threshold(self, performance_agent):
         """Test threshold setting."""
-        result = await performance_agent.process({"type": "set_threshold", "metric": "latency_ms", "value": 500}, {})
+        result = await performance_agent.process(
+            {"type": "set_threshold", "metric": "latency_ms", "value": 500}, {}
+        )
 
         assert result["metric"] == "latency_ms"
         assert result["new_value"] == 500
@@ -350,7 +397,14 @@ class TestHallucinationDetectorAgent:
     async def test_register_facts(self, hallucination_agent):
         """Test fact registration."""
         result = await hallucination_agent.process(
-            {"type": "register_facts", "facts": {"water_boiling_point": "100°C", "earth_circumference": "40075 km"}}, {}
+            {
+                "type": "register_facts",
+                "facts": {
+                    "water_boiling_point": "100°C",
+                    "earth_circumference": "40075 km",
+                },
+            },
+            {},
         )
 
         assert result["facts_added"] == 2
@@ -360,7 +414,9 @@ class TestHallucinationDetectorAgent:
     async def test_verify_with_known_facts(self, hallucination_agent):
         """Test verification against known facts."""
         # Register a fact
-        await hallucination_agent.process({"type": "register_facts", "facts": {"python_version": "3.11"}}, {})
+        await hallucination_agent.process(
+            {"type": "register_facts", "facts": {"python_version": "3.11"}}, {}
+        )
 
         # Verify claim that matches
         result = await hallucination_agent.process(
@@ -449,7 +505,12 @@ class TestMultiCloudOrchestratorAgent:
 
         # Then route a request
         result = await orchestrator_agent.process(
-            {"type": "route_request", "target_agent": "agent_001", "payload": {"action": "scan"}}, {}
+            {
+                "type": "route_request",
+                "target_agent": "agent_001",
+                "payload": {"action": "scan"},
+            },
+            {},
         )
 
         assert result["routed_to"] == "agent_001"
@@ -502,7 +563,9 @@ class TestMultiCloudOrchestratorAgent:
             {},
         )
 
-        result = await orchestrator_agent.process({"type": "failover", "from_cloud": "aws", "to_cloud": "gcp"}, {})
+        result = await orchestrator_agent.process(
+            {"type": "failover", "from_cloud": "aws", "to_cloud": "gcp"}, {}
+        )
 
         assert result["from_cloud"] == "aws"
         assert result["to_cloud"] == "gcp"
@@ -520,7 +583,9 @@ class TestMultiCloudOrchestratorAgent:
     @pytest.mark.asyncio
     async def test_balance_load(self, orchestrator_agent):
         """Test load balancing."""
-        result = await orchestrator_agent.process({"type": "balance_load", "strategy": "round_robin"}, {})
+        result = await orchestrator_agent.process(
+            {"type": "balance_load", "strategy": "round_robin"}, {}
+        )
 
         assert result["strategy"] == "round_robin"
         assert "aws_agents" in result
@@ -584,7 +649,11 @@ class TestServiceRegistry:
     def test_update_health(self, service_registry):
         """Test health status update."""
         endpoint = CloudEndpoint(
-            endpoint_id="ep_001", cloud="aws", region="us-west-2", url="https://example.com", agent_type="monitor"
+            endpoint_id="ep_001",
+            cloud="aws",
+            region="us-west-2",
+            url="https://example.com",
+            agent_type="monitor",
         )
         service_registry.register(endpoint)
 
@@ -726,7 +795,9 @@ class TestMetricsCollector:
         metrics_collector.record("requests", 200, {"region": "us-east"})
         metrics_collector.record("requests", 150, {"region": "us-west"})
 
-        filtered = metrics_collector.get_metric("requests", labels={"region": "us-west"})
+        filtered = metrics_collector.get_metric(
+            "requests", labels={"region": "us-west"}
+        )
         assert len(filtered) == 2
 
 
@@ -738,7 +809,10 @@ class TestAlertManager:
     def test_create_alert(self, alert_manager):
         """Test creating an alert."""
         alert = alert_manager.create_alert(
-            severity=AlertSeverity.WARNING, title="High CPU Usage", message="CPU usage exceeded 80%", source="agent_001"
+            severity=AlertSeverity.WARNING,
+            title="High CPU Usage",
+            message="CPU usage exceeded 80%",
+            source="agent_001",
         )
 
         assert alert.alert_id is not None
@@ -747,7 +821,9 @@ class TestAlertManager:
 
     def test_acknowledge_alert(self, alert_manager):
         """Test acknowledging an alert."""
-        alert = alert_manager.create_alert(severity=AlertSeverity.ERROR, title="Test", message="Test", source="test")
+        alert = alert_manager.create_alert(
+            severity=AlertSeverity.ERROR, title="Test", message="Test", source="test"
+        )
 
         alert_manager.acknowledge(alert.alert_id)
         assert alert.status == AlertStatus.ACKNOWLEDGED
@@ -755,7 +831,9 @@ class TestAlertManager:
 
     def test_resolve_alert(self, alert_manager):
         """Test resolving an alert."""
-        alert = alert_manager.create_alert(severity=AlertSeverity.ERROR, title="Test", message="Test", source="test")
+        alert = alert_manager.create_alert(
+            severity=AlertSeverity.ERROR, title="Test", message="Test", source="test"
+        )
 
         alert_manager.resolve(alert.alert_id)
         assert alert.status == AlertStatus.RESOLVED
@@ -766,7 +844,9 @@ class TestAlertManager:
         # Create multiple alerts
         alert_manager.create_alert(AlertSeverity.INFO, "Info", "Info", "test")
         alert_manager.create_alert(AlertSeverity.WARNING, "Warning", "Warning", "test")
-        alert3 = alert_manager.create_alert(AlertSeverity.ERROR, "Error", "Error", "test")
+        alert3 = alert_manager.create_alert(
+            AlertSeverity.ERROR, "Error", "Error", "test"
+        )
 
         # Resolve one
         alert_manager.resolve(alert3.alert_id)
@@ -777,7 +857,11 @@ class TestAlertManager:
     def test_add_alerting_rule(self, alert_manager):
         """Test adding alerting rule."""
         alert_manager.add_rule(
-            name="High CPU", metric_name="cpu_percent", condition="gt", threshold=80, severity=AlertSeverity.WARNING
+            name="High CPU",
+            metric_name="cpu_percent",
+            condition="gt",
+            threshold=80,
+            severity=AlertSeverity.WARNING,
         )
 
         assert len(alert_manager.rules) == 1
@@ -821,10 +905,16 @@ class TestIntegration:
 
         # Health check — may report UNHEALTHY on high-memory hosts
         health = await agent.health_check()
-        assert health.status in [AgentHealth.HEALTHY, AgentHealth.DEGRADED, AgentHealth.UNHEALTHY]
+        assert health.status in [
+            AgentHealth.HEALTHY,
+            AgentHealth.DEGRADED,
+            AgentHealth.UNHEALTHY,
+        ]
 
         # Process request
-        result = await agent.process({"type": "vulnerability_scan", "target": "https://example.com"}, {})
+        result = await agent.process(
+            {"type": "vulnerability_scan", "target": "https://example.com"}, {}
+        )
 
         # health_check() internally calls process({"type": "health_check"}),
         # so invocation_count is 2: one from health_check + one from vulnerability_scan

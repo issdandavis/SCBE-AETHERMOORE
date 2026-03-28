@@ -40,7 +40,13 @@ from datetime import datetime, timezone
 # Internal imports
 from .polyglot_alphabet import TongueID, TONGUE_ALPHABETS, SIGNATURE_TO_TONGUE
 from .vector_6d import Position6D
-from .rwp2_envelope import ProtocolTongue, RWP2Envelope, EnvelopeFactory, OperationTier, TONGUE_KEYS
+from .rwp2_envelope import (
+    ProtocolTongue,
+    RWP2Envelope,
+    EnvelopeFactory,
+    OperationTier,
+    TONGUE_KEYS,
+)
 
 # =============================================================================
 # Constants & Frequency Mapping
@@ -143,7 +149,11 @@ def parse_verse(line: str, line_number: int = 0) -> Optional[AetherVerse]:
         return None
 
     return AetherVerse(
-        tongue_id=tongue_id, signature=signature, content=content, line_number=line_number, indent_level=indent_level
+        tongue_id=tongue_id,
+        signature=signature,
+        content=content,
+        line_number=line_number,
+        indent_level=indent_level,
     )
 
 
@@ -193,7 +203,9 @@ class AetherContext:
     audio_segments: List[np.ndarray] = field(default_factory=list)
 
     # Tongue-specific state
-    tongue_state: Dict[TongueID, Dict[str, Any]] = field(default_factory=lambda: {t: {} for t in TongueID})
+    tongue_state: Dict[TongueID, Dict[str, Any]] = field(
+        default_factory=lambda: {t: {} for t in TongueID}
+    )
 
     # Control flow
     call_stack: List[str] = field(default_factory=list)
@@ -576,7 +588,11 @@ class LedgerHandler(DomainHandler):
         if content.startswith("RECORD"):
             data = content[6:].strip().strip("\"'")
             hash_val = hashlib.sha256(data.encode()).hexdigest()[:16]
-            record = {"data": data, "hash": hash_val, "timestamp": datetime.now(timezone.utc).isoformat()}
+            record = {
+                "data": data,
+                "hash": hash_val,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
             ctx.trace.append({"ledger_record": record})
             ctx.emit(f"[LEDGER] Recorded: {hash_val}")
             return hash_val
@@ -765,7 +781,9 @@ class AethercodeInterpreter:
         self.synthesize_audio = synthesize_audio
         self.synthesizer = ChantSynthesizer() if synthesize_audio else None
 
-    def execute(self, program: AetherProgram, ctx: AetherContext = None) -> AetherContext:
+    def execute(
+        self, program: AetherProgram, ctx: AetherContext = None
+    ) -> AetherContext:
         """
         Execute an Aethercode program.
 
@@ -822,7 +840,9 @@ class AethercodeInterpreter:
         # Build proof payload
         proof_data = {
             "verses": len(ctx.trace),
-            "output_hash": hashlib.sha256("\n".join(ctx.output).encode()).hexdigest()[:16],
+            "output_hash": hashlib.sha256("\n".join(ctx.output).encode()).hexdigest()[
+                :16
+            ],
             "trace_hash": hashlib.sha256(str(ctx.trace).encode()).hexdigest()[:16],
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
@@ -832,7 +852,11 @@ class AethercodeInterpreter:
         # Create envelope with all tongues used
         factory = EnvelopeFactory()
         tongues_used = [
-            ProtocolTongue[t.value[:2].upper()] if hasattr(ProtocolTongue, t.value[:2].upper()) else ProtocolTongue.KO
+            (
+                ProtocolTongue[t.value[:2].upper()]
+                if hasattr(ProtocolTongue, t.value[:2].upper())
+                else ProtocolTongue.KO
+            )
             for t in set(tv.tongue_id for tv in ctx.trace if hasattr(tv, "tongue_id"))
         ] or [ProtocolTongue.KO]
 
@@ -997,7 +1021,9 @@ def demo():
     for tongue, alph in TONGUE_ALPHABETS.items():
         domain = TONGUE_DOMAINS[tongue]
         freq_low, freq_high = TONGUE_FREQUENCIES[tongue]
-        print(f"    {alph.signature}: {tongue.value:8s} -> {domain:10s} ({freq_low:.0f}-{freq_high:.0f}Hz)")
+        print(
+            f"    {alph.signature}: {tongue.value:8s} -> {domain:10s} ({freq_low:.0f}-{freq_high:.0f}Hz)"
+        )
     print()
     print("  'The roundtable awaits your next invocation.'")
     print("=" * 70)

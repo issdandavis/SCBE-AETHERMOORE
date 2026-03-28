@@ -157,7 +157,10 @@ def get_axiom_layers(axiom: str) -> List[int]:
     try:
         axiom_enum = QuantumAxiom(axiom.lower())
     except ValueError:
-        raise ValueError(f"Unknown axiom: {axiom}. Must be one of: " f"{[a.value for a in QuantumAxiom]}")
+        raise ValueError(
+            f"Unknown axiom: {axiom}. Must be one of: "
+            f"{[a.value for a in QuantumAxiom]}"
+        )
     return AXIOM_TO_LAYERS[axiom_enum]
 
 
@@ -330,7 +333,11 @@ def print_layer_mapping() -> None:
 
     for layer_num in range(1, 15):
         info = get_layer_info(layer_num)
-        print("{:<6} {:<25} {:<15}".format(f"L{layer_num}", info.name[:24], info.axiom.value.upper()))
+        print(
+            "{:<6} {:<25} {:<15}".format(
+                f"L{layer_num}", info.name[:24], info.axiom.value.upper()
+            )
+        )
 
     print("-" * 60)
     print("\nAxiom Summary:")

@@ -44,7 +44,9 @@ ORIGIN = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 
 
 def make_obs(position, timestamp, response_mi=1.0):
-    return QueryObservation(position=position, timestamp=timestamp, response_mi=response_mi)
+    return QueryObservation(
+        position=position, timestamp=timestamp, response_mi=response_mi
+    )
 
 
 def random_ball_point(max_norm=0.5):

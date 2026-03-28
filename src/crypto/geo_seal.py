@@ -144,7 +144,9 @@ def signed_signal_to_bytes(signal: np.ndarray) -> bytes:
 # =============================================================================
 
 
-def hyperbolic_distance(x: np.ndarray, y: np.ndarray, curvature: float = -1.0, eps: float = 1e-8) -> float:
+def hyperbolic_distance(
+    x: np.ndarray, y: np.ndarray, curvature: float = -1.0, eps: float = 1e-8
+) -> float:
     """
     Poincare ball hyperbolic distance.
 
@@ -162,7 +164,9 @@ def hyperbolic_distance(x: np.ndarray, y: np.ndarray, curvature: float = -1.0, e
     ny = np.dot(y, y)
 
     if nx >= 1.0 or ny >= 1.0:
-        raise ValueError("Points must lie strictly inside the Poincare ball (||v|| < 1)")
+        raise ValueError(
+            "Points must lie strictly inside the Poincare ball (||v|| < 1)"
+        )
 
     diff_norm_sq = np.dot(x - y, x - y)
     denominator = (1 - nx) * (1 - ny)
@@ -170,7 +174,9 @@ def hyperbolic_distance(x: np.ndarray, y: np.ndarray, curvature: float = -1.0, e
 
     if arg < 1.0:
         # This should never happen for valid points, but we enforce the constraint
-        raise ValueError("Invalid hyperbolic argument < 1 -> negative/complex distance impossible")
+        raise ValueError(
+            "Invalid hyperbolic argument < 1 -> negative/complex distance impossible"
+        )
 
     # Scale by curvature
     c = abs(curvature)
@@ -239,7 +245,9 @@ def compute_triangle_deficit(a: float, b: float, c: float) -> float:
 # =============================================================================
 
 
-def harmonic_wall_cost(distance: float, radius: float = 1.0, base: float = 2.718281828) -> float:  # e
+def harmonic_wall_cost(
+    distance: float, radius: float = 1.0, base: float = 2.718281828
+) -> float:  # e
     """
     Compute harmonic wall cost: H(d) = base^(d^2).
 
@@ -251,7 +259,9 @@ def harmonic_wall_cost(distance: float, radius: float = 1.0, base: float = 2.718
     return base ** (normalized**2)
 
 
-def trust_from_position(point: np.ndarray, center: np.ndarray = None, radius: float = 0.9) -> float:
+def trust_from_position(
+    point: np.ndarray, center: np.ndarray = None, radius: float = 0.9
+) -> float:
     """
     Compute trust score from position in Poincare ball.
 
@@ -368,7 +378,9 @@ def phase_deviation(phase1: Optional[float], phase2: Optional[float]) -> float:
     return diff / np.pi  # Normalize to [0, 1]
 
 
-def compute_repel_force(agent_a: SwarmAgent, agent_b: SwarmAgent, base_strength: float = 1.0) -> RepulsionResult:
+def compute_repel_force(
+    agent_a: SwarmAgent, agent_b: SwarmAgent, base_strength: float = 1.0
+) -> RepulsionResult:
     """
     Core GeoSeal repulsion force computation.
 
@@ -420,7 +432,9 @@ def compute_repel_force(agent_a: SwarmAgent, agent_b: SwarmAgent, base_strength:
 
     force = direction * base_repulsion * amplification
 
-    return RepulsionResult(force=force, amplification=amplification, anomaly_flag=anomaly_flag)
+    return RepulsionResult(
+        force=force, amplification=amplification, anomaly_flag=anomaly_flag
+    )
 
 
 def update_suspicion(
@@ -452,7 +466,9 @@ def update_suspicion(
         agent.suspicion_count[neighbor_id] = max(0.0, current - decay_rate)
 
     # Count how many neighbors are suspicious
-    suspicious_neighbors = sum(1 for count in agent.suspicion_count.values() if count >= suspicion_threshold)
+    suspicious_neighbors = sum(
+        1 for count in agent.suspicion_count.values() if count >= suspicion_threshold
+    )
 
     # Quarantine threshold: consensus_threshold+ neighbors with high suspicion
     agent.is_quarantined = suspicious_neighbors >= consensus_threshold
@@ -462,7 +478,9 @@ def update_suspicion(
     agent.trust_score = max(0.0, 1.0 - total_suspicion / 20.0)
 
 
-def swarm_step(agents: List[SwarmAgent], drift_rate: float = 0.01, ball_radius: float = 0.99) -> List[SwarmAgent]:
+def swarm_step(
+    agents: List[SwarmAgent], drift_rate: float = 0.01, ball_radius: float = 0.99
+) -> List[SwarmAgent]:
     """
     Run one swarm update step for all agents.
 
@@ -508,7 +526,9 @@ def swarm_step(agents: List[SwarmAgent], drift_rate: float = 0.01, ball_radius: 
     return agents
 
 
-def run_swarm_dynamics(agents: List[SwarmAgent], num_steps: int = 10, drift_rate: float = 0.01) -> List[SwarmAgent]:
+def run_swarm_dynamics(
+    agents: List[SwarmAgent], num_steps: int = 10, drift_rate: float = 0.01
+) -> List[SwarmAgent]:
     """
     Run multiple swarm update steps.
 
@@ -549,7 +569,10 @@ def create_tongue_agents(dimension: int = 64) -> List[SwarmAgent]:
 
 
 def create_candidate_agent(
-    agent_id: str, embedding: np.ndarray, assigned_tongue: Optional[str] = None, initial_trust: float = 0.5
+    agent_id: str,
+    embedding: np.ndarray,
+    assigned_tongue: Optional[str] = None,
+    initial_trust: float = 0.5,
 ) -> SwarmAgent:
     """
     Create a candidate agent for immune evaluation.
@@ -564,16 +587,26 @@ def create_candidate_agent(
     if norm >= 1.0:
         embedding = embedding / (norm + 1e-6) * 0.95
 
-    return SwarmAgent(id=agent_id, position=embedding, phase=phase, tongue=assigned_tongue, trust_score=initial_trust)
+    return SwarmAgent(
+        id=agent_id,
+        position=embedding,
+        phase=phase,
+        tongue=assigned_tongue,
+        trust_score=initial_trust,
+    )
 
 
-def filter_by_trust(agents: List[SwarmAgent], threshold: float = 0.3) -> List[SwarmAgent]:
+def filter_by_trust(
+    agents: List[SwarmAgent], threshold: float = 0.3
+) -> List[SwarmAgent]:
     """
     Filter agents by trust score, returning only those above threshold.
 
     Excludes tongue agents (they're always trusted infrastructure).
     """
-    return [a for a in agents if a.trust_score >= threshold or a.id.startswith("tongue-")]
+    return [
+        a for a in agents if a.trust_score >= threshold or a.id.startswith("tongue-")
+    ]
 
 
 def get_attention_weights(agents: List[SwarmAgent]) -> Dict[str, float]:
@@ -607,7 +640,9 @@ def compute_swarm_metrics(agents: List[SwarmAgent]) -> SwarmMetrics:
     avg_trust = sum(a.trust_score for a in non_tongue) / len(non_tongue)
     boundary_agents = sum(1 for a in non_tongue if np.linalg.norm(a.position) > 0.9)
 
-    suspicious_pairs = sum(1 for a in non_tongue for count in a.suspicion_count.values() if count >= 3)
+    suspicious_pairs = sum(
+        1 for a in non_tongue for count in a.suspicion_count.values() if count >= 3
+    )
 
     return SwarmMetrics(
         quarantine_count=quarantine_count,
@@ -665,7 +700,9 @@ def phase_distance_score(agent: SwarmAgent, tongue_agents: List[SwarmAgent]) -> 
     return score
 
 
-def phase_distance_filter(candidates: List[Dict[str, Any]], dimension: int = 64) -> Dict[str, float]:
+def phase_distance_filter(
+    candidates: List[Dict[str, Any]], dimension: int = 64
+) -> Dict[str, float]:
     """
     Batch score candidates using proven phase+distance formula.
 
@@ -681,7 +718,9 @@ def phase_distance_filter(candidates: List[Dict[str, Any]], dimension: int = 64)
 
     for c in candidates:
         embedding = np.array(c["embedding"], dtype=np.float64)
-        agent = create_candidate_agent(c["id"], embedding, c.get("tongue"), initial_trust=0.5)
+        agent = create_candidate_agent(
+            c["id"], embedding, c.get("tongue"), initial_trust=0.5
+        )
         score = phase_distance_score(agent, tongue_agents)
         weights[c["id"]] = score
 
@@ -727,7 +766,11 @@ def spherical_nodal_position(
     for d in range(2, min(8, dimension)):
         # Each dimension gets a phase-shifted oscillation
         harmonic_order = d - 1
-        position[d] = 0.1 * np.sin(harmonic_order * base_angle) * np.cos(oscillation_freq * time / harmonic_order)
+        position[d] = (
+            0.1
+            * np.sin(harmonic_order * base_angle)
+            * np.cos(oscillation_freq * time / harmonic_order)
+        )
 
     # Ensure position stays in Poincaré ball
     norm = np.linalg.norm(position)
@@ -737,7 +780,9 @@ def spherical_nodal_position(
     return position
 
 
-def oscillating_tongue_agents(time: float, dimension: int = 64, oscillation_freq: float = 0.5) -> List[SwarmAgent]:
+def oscillating_tongue_agents(
+    time: float, dimension: int = 64, oscillation_freq: float = 0.5
+) -> List[SwarmAgent]:
     """
     Create tongue agents with spherical nodal oscillation.
 
@@ -756,16 +801,26 @@ def oscillating_tongue_agents(time: float, dimension: int = 64, oscillation_freq
     agents = []
 
     for tongue, base_phase in TONGUE_PHASES.items():
-        position = spherical_nodal_position(base_phase, time, oscillation_freq, dimension)
+        position = spherical_nodal_position(
+            base_phase, time, oscillation_freq, dimension
+        )
 
         agents.append(
-            SwarmAgent(id=f"tongue-{tongue}", position=position, phase=base_phase, tongue=tongue, trust_score=1.0)
+            SwarmAgent(
+                id=f"tongue-{tongue}",
+                position=position,
+                phase=base_phase,
+                tongue=tongue,
+                trust_score=1.0,
+            )
         )
 
     return agents
 
 
-def temporal_phase_score(agent: SwarmAgent, time_steps: int = 5, dimension: int = 64) -> float:
+def temporal_phase_score(
+    agent: SwarmAgent, time_steps: int = 5, dimension: int = 64
+) -> float:
     """
     Score agent using temporal phase coherence with oscillating tongues.
 
@@ -825,7 +880,9 @@ if __name__ == "__main__":
     print("\n[TEST] Negative curvature verification...")
     a = b = c = 0.5  # equilateral-ish hyperbolic triangle
     deficit = compute_triangle_deficit(a, b, c)
-    print(f"[GEO] Triangle angle deficit: {deficit:.2f}deg (positive = negative curvature)")
+    print(
+        f"[GEO] Triangle angle deficit: {deficit:.2f}deg (positive = negative curvature)"
+    )
 
     # Test harmonic wall
     print("\n[TEST] Harmonic wall cost...")
@@ -849,7 +906,9 @@ if __name__ == "__main__":
     # Test phase deviation
     print("\n[TEST] Phase deviation...")
     assert phase_deviation(0.0, 0.0) == 0.0, "Same phase should have 0 deviation"
-    assert phase_deviation(0.0, np.pi) == 1.0, "Opposite phases should have max deviation"
+    assert (
+        phase_deviation(0.0, np.pi) == 1.0
+    ), "Opposite phases should have max deviation"
     assert phase_deviation(None, 0.0) == 1.0, "Null phase should have max deviation"
     print("[PASS] Phase deviation tests passed")
 
@@ -911,7 +970,9 @@ if __name__ == "__main__":
     print(f"[INFO] Legit quarantined: {legit_after.is_quarantined}")
 
     # Legitimate agent should maintain higher trust
-    assert legit_after.trust_score > rogue_after.trust_score, "Legitimate agent should have higher trust than rogue"
+    assert (
+        legit_after.trust_score > rogue_after.trust_score
+    ), "Legitimate agent should have higher trust than rogue"
     print("[PASS] Legitimate agent preserved trust")
 
     # Test metrics

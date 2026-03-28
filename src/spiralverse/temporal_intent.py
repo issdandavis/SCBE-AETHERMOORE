@@ -109,7 +109,9 @@ class IntentSample:
     @property
     def d_tri(self) -> float:
         """Triadic temporal distance (L11) - geometric mean of time scales."""
-        return (abs(self.d_tri_immediate) * abs(self.d_tri_medium) * abs(self.d_tri_long)) ** (1 / 3)
+        return (
+            abs(self.d_tri_immediate) * abs(self.d_tri_medium) * abs(self.d_tri_long)
+        ) ** (1 / 3)
 
     @property
     def raw_intent(self) -> float:
@@ -128,7 +130,9 @@ class IntentSample:
         harmony_dampening = (1 - self.harmony) / 2  # 0 to 1
 
         # CPSE deviation channels contribution
-        cpse_factor = (abs(self.chaosdev) + abs(self.fractaldev) + abs(self.energydev)) / 3
+        cpse_factor = (
+            abs(self.chaosdev) + abs(self.fractaldev) + abs(self.energydev)
+        ) / 3
 
         # Triadic temporal contribution (L11)
         triadic_factor = self.d_tri
@@ -159,7 +163,9 @@ class IntentHistory:
         """Add a new intent sample and update accumulation."""
         now = time.time()
 
-        sample = IntentSample(timestamp=now, distance=distance, velocity=velocity, harmony=harmony)
+        sample = IntentSample(
+            timestamp=now, distance=distance, velocity=velocity, harmony=harmony
+        )
         self.samples.append(sample)
 
         # Apply decay to accumulated intent
@@ -367,13 +373,23 @@ class TemporalSecurityGate:
             self.histories[agent_id] = IntentHistory(agent_id=agent_id)
         return self.histories[agent_id]
 
-    def record_observation(self, agent_id: str, distance: float, velocity: float = 0.0, harmony: float = 0.0):
+    def record_observation(
+        self,
+        agent_id: str,
+        distance: float,
+        velocity: float = 0.0,
+        harmony: float = 0.0,
+    ):
         """Record an observation for an agent."""
         history = self.get_or_create_history(agent_id)
         history.add_sample(distance, velocity, harmony)
 
     def compute_omega(
-        self, agent_id: str, pqc_valid: bool = True, triadic_stable: float = 1.0, spectral_score: float = 1.0
+        self,
+        agent_id: str,
+        pqc_valid: bool = True,
+        triadic_stable: float = 1.0,
+        spectral_score: float = 1.0,
     ) -> Tuple[float, str]:
         """
         Backward-compatible wrapper returning (omega, decision).
@@ -432,7 +448,9 @@ class TemporalSecurityGate:
         harm_score = _clamp01(1.0 / (1.0 + math.log(max(1.0, h_temporal))))
 
         # Drift factor from accumulated intent
-        drift_factor = _clamp01(1.0 - (history.accumulated_intent / MAX_INTENT_ACCUMULATION))
+        drift_factor = _clamp01(
+            1.0 - (history.accumulated_intent / MAX_INTENT_ACCUMULATION)
+        )
 
         # PQC factor
         pqc_factor = 1.0 if pqc_valid else 0.0
@@ -511,7 +529,9 @@ def demo():
     # Demo 1: Compare basic vs temporal at various distances and intents
     print("[SCALING] H(d,R) vs H(d,R)^x comparison:")
     print("-" * 60)
-    print(f"  {'Distance':>8} {'x_factor':>8} {'H_basic':>12} {'H_temporal':>12} {'Amplify':>10}")
+    print(
+        f"  {'Distance':>8} {'x_factor':>8} {'H_basic':>12} {'H_temporal':>12} {'Amplify':>10}"
+    )
     print("-" * 60)
 
     test_cases = [
@@ -552,7 +572,9 @@ def demo():
     # Simulate drifting agent
     print("  Drifting Agent (gradually moves toward boundary):")
     for i in range(15):
-        gate.record_observation("drifter", distance=0.2 + 0.04 * i, velocity=0.04, harmony=0.3)
+        gate.record_observation(
+            "drifter", distance=0.2 + 0.04 * i, velocity=0.04, harmony=0.3
+        )
     status = gate.get_status("drifter")
     print(
         f"    State: {status['state']}, x={status['x_factor']:.2f}, Omega={status['omega']:.3f} -> {status['decision']}"
@@ -561,7 +583,9 @@ def demo():
     # Simulate adversarial agent
     print("  Adversarial Agent (sustained boundary approach):")
     for i in range(20):
-        gate.record_observation("adversary", distance=0.7 + 0.01 * i, velocity=0.1, harmony=-0.5)
+        gate.record_observation(
+            "adversary", distance=0.7 + 0.01 * i, velocity=0.1, harmony=-0.5
+        )
     status = gate.get_status("adversary")
     print(
         f"    State: {status['state']}, x={status['x_factor']:.2f}, Omega={status['omega']:.3f} -> {status['decision']}"
@@ -570,9 +594,13 @@ def demo():
     # Simulate recovered agent (was drifting, came back)
     print("  Recovered Agent (drifted then returned):")
     for i in range(10):
-        gate.record_observation("recovered", distance=0.5 + 0.03 * i, velocity=0.03, harmony=0.2)
+        gate.record_observation(
+            "recovered", distance=0.5 + 0.03 * i, velocity=0.03, harmony=0.2
+        )
     for i in range(15):
-        gate.record_observation("recovered", distance=0.8 - 0.04 * i, velocity=-0.04, harmony=0.7)
+        gate.record_observation(
+            "recovered", distance=0.8 - 0.04 * i, velocity=-0.04, harmony=0.7
+        )
     status = gate.get_status("recovered")
     print(
         f"    State: {status['state']}, x={status['x_factor']:.2f}, Omega={status['omega']:.3f} -> {status['decision']}"

@@ -41,7 +41,9 @@ def identity_restriction(value: LatticeValue) -> LatticeValue:
 
 def complement_boolean_restriction(value: LatticeValue) -> LatticeValue:
     if value not in (0, 1):
-        raise ValueError("Complement restriction is only defined for Boolean lattice {0,1}")
+        raise ValueError(
+            "Complement restriction is only defined for Boolean lattice {0,1}"
+        )
     return 1 - value
 
 
@@ -55,7 +57,9 @@ def make_temporal_sheaf(
     twisted_edges: Mapping[Tuple[str, str], Restriction] | None = None,
 ) -> TemporalSheaf:
     edges = make_complete_temporal_edges(nodes)
-    restrictions: Dict[Tuple[str, str], Restriction] = {edge: identity_restriction for edge in edges}
+    restrictions: Dict[Tuple[str, str], Restriction] = {
+        edge: identity_restriction for edge in edges
+    }
     if twisted_edges:
         for edge, fn in twisted_edges.items():
             if edge not in restrictions:
@@ -74,17 +78,26 @@ def _meet(values: Iterable[LatticeValue]) -> LatticeValue:
     return min(values)
 
 
-def local_consensus_value(sheaf: TemporalSheaf, assignment: Mapping[str, LatticeValue], node: str) -> LatticeValue:
+def local_consensus_value(
+    sheaf: TemporalSheaf, assignment: Mapping[str, LatticeValue], node: str
+) -> LatticeValue:
     incoming = [
-        sheaf.restrictions[(neighbor, node)](assignment[neighbor]) for neighbor in sheaf.nodes if neighbor != node
+        sheaf.restrictions[(neighbor, node)](assignment[neighbor])
+        for neighbor in sheaf.nodes
+        if neighbor != node
     ]
     if not incoming:
         return assignment[node]
     return _meet(incoming)
 
 
-def tarski_operator(sheaf: TemporalSheaf, assignment: Mapping[str, LatticeValue]) -> Dict[str, LatticeValue]:
-    return {node: min(assignment[node], local_consensus_value(sheaf, assignment, node)) for node in sheaf.nodes}
+def tarski_operator(
+    sheaf: TemporalSheaf, assignment: Mapping[str, LatticeValue]
+) -> Dict[str, LatticeValue]:
+    return {
+        node: min(assignment[node], local_consensus_value(sheaf, assignment, node))
+        for node in sheaf.nodes
+    }
 
 
 def iterate_to_fixed_point(
@@ -101,7 +114,9 @@ def iterate_to_fixed_point(
     raise RuntimeError("Tarski operator did not converge within max_steps")
 
 
-def is_global_intent_consistent(sheaf: TemporalSheaf, assignment: Mapping[str, LatticeValue]) -> bool:
+def is_global_intent_consistent(
+    sheaf: TemporalSheaf, assignment: Mapping[str, LatticeValue]
+) -> bool:
     return tarski_operator(sheaf, assignment) == dict(assignment)
 
 
@@ -122,7 +137,9 @@ def enumerate_global_sections(sheaf: TemporalSheaf) -> List[Dict[str, LatticeVal
     return sections
 
 
-def obstruction_count(sheaf: TemporalSheaf, assignment: Mapping[str, LatticeValue]) -> int:
+def obstruction_count(
+    sheaf: TemporalSheaf, assignment: Mapping[str, LatticeValue]
+) -> int:
     """Count local violations where node value exceeds local propagated meet."""
     violations = 0
     for node in sheaf.nodes:
@@ -131,7 +148,9 @@ def obstruction_count(sheaf: TemporalSheaf, assignment: Mapping[str, LatticeValu
     return violations
 
 
-def fail_to_noise_projection(sheaf: TemporalSheaf, assignment: Mapping[str, LatticeValue]) -> Dict[str, LatticeValue]:
+def fail_to_noise_projection(
+    sheaf: TemporalSheaf, assignment: Mapping[str, LatticeValue]
+) -> Dict[str, LatticeValue]:
     """Project any local intent pattern to nearest descending fixed point.
 
     In adversarial paths this converges to low lattice values (noise) unless
