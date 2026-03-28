@@ -92,7 +92,7 @@ class MessageRouter:
         channel.close()
 
         # Clean up agent-channel index
-        for agent_id, channels in self._agent_channels.items():
+        for _agent_id, channels in self._agent_channels.items():
             if channel_id in channels:
                 channels.remove(channel_id)
 
@@ -178,7 +178,7 @@ class MessageRouter:
     def _route_broadcast(self, message: AgentMessage) -> RouteResult:
         """Route a broadcast message to all relevant channels."""
         delivered = False
-        for channel_id, channel in self._channels.items():
+        for _channel_id, channel in self._channels.items():
             if channel.is_participant(message.sender_id) and channel.is_open():
                 if channel.send(message):
                     delivered = True

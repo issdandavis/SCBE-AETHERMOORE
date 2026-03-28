@@ -8,6 +8,7 @@ languages are tested against the same ground-truth values.
 All expected values in the JSON are derived from closed-form math,
 NOT copied from implementation output.
 """
+
 from __future__ import annotations
 
 import json
@@ -60,19 +61,19 @@ def _ref_hyperbolic_distance(u: List[float], v: List[float]) -> float:
 
 def _ref_harmonic_wall(d: float, R: float) -> float:
     """H(d, R) = R^(d^2)"""
-    return R ** (d ** 2)
+    return R ** (d**2)
 
 
 def _ref_phi_shell_radius(k: int) -> float:
     """r(k) = phi^k / (1 + phi^k)"""
-    phi_k = PHI ** k
+    phi_k = PHI**k
     return phi_k / (1.0 + phi_k)
 
 
 def _ref_harmonic_cost_at_shell(k: int, R: float) -> float:
     """Compose shell radius with harmonic wall."""
     r = _ref_phi_shell_radius(k)
-    return R ** (r ** 2)
+    return R ** (r**2)
 
 
 # ---------------------------------------------------------------------------
@@ -114,9 +115,9 @@ class TestL5HyperbolicDistance:
         u = vec["inputs"]["u"]
         v = vec["inputs"]["v"]
         actual = _ref_hyperbolic_distance(u, v)
-        assert actual == pytest.approx(vec["expected"], abs=vec["tolerance"]), (
-            f"[{vec['id']}] ref={actual}, expected={vec['expected']}"
-        )
+        assert actual == pytest.approx(
+            vec["expected"], abs=vec["tolerance"]
+        ), f"[{vec['id']}] ref={actual}, expected={vec['expected']}"
 
 
 # ---------------------------------------------------------------------------
@@ -132,9 +133,9 @@ class TestL12HarmonicWall:
         d = vec["inputs"]["d"]
         R = vec["inputs"]["R"]
         actual = _ref_harmonic_wall(d, R)
-        assert actual == pytest.approx(vec["expected"], abs=vec["tolerance"]), (
-            f"[{vec['id']}] ref={actual}, expected={vec['expected']}"
-        )
+        assert actual == pytest.approx(
+            vec["expected"], abs=vec["tolerance"]
+        ), f"[{vec['id']}] ref={actual}, expected={vec['expected']}"
 
 
 # ---------------------------------------------------------------------------
@@ -149,10 +150,10 @@ class TestTongueWeights:
     def test_tongue_weights_match_golden(self) -> None:
         vec = next(v for v in ALL_VECTORS if v["function"] == "tongue_weights")
         for k, exp in zip(vec["inputs"]["k_values"], vec["expected"]):
-            actual = PHI ** k
-            assert actual == pytest.approx(exp, abs=vec["tolerance"]), (
-                f"Tongue weight k={k}: actual={actual}, expected={exp}"
-            )
+            actual = PHI**k
+            assert actual == pytest.approx(
+                exp, abs=vec["tolerance"]
+            ), f"Tongue weight k={k}: actual={actual}, expected={exp}"
 
 
 # ---------------------------------------------------------------------------
@@ -168,9 +169,9 @@ class TestPhiShellRadius:
         """Verify the src.primitives.phi_poincare implementation."""
         k = vec["inputs"]["k"]
         actual = phi_shell_radius(k)
-        assert actual == pytest.approx(vec["expected"], abs=vec["tolerance"]), (
-            f"[{vec['id']}] phi_shell_radius({k})={actual}, expected={vec['expected']}"
-        )
+        assert actual == pytest.approx(
+            vec["expected"], abs=vec["tolerance"]
+        ), f"[{vec['id']}] phi_shell_radius({k})={actual}, expected={vec['expected']}"
 
     @pytest.mark.parametrize(
         "vec",
@@ -181,9 +182,9 @@ class TestPhiShellRadius:
         """Cross-check: pure-math reference agrees with golden value."""
         k = vec["inputs"]["k"]
         actual = _ref_phi_shell_radius(k)
-        assert actual == pytest.approx(vec["expected"], abs=vec["tolerance"]), (
-            f"[{vec['id']}] ref phi_shell_radius({k})={actual}, expected={vec['expected']}"
-        )
+        assert actual == pytest.approx(
+            vec["expected"], abs=vec["tolerance"]
+        ), f"[{vec['id']}] ref phi_shell_radius({k})={actual}, expected={vec['expected']}"
 
     def test_monotonically_increasing(self) -> None:
         """Shell radii must increase with k (approaching boundary)."""
@@ -211,9 +212,9 @@ class TestHarmonicCostAtShell:
         k = vec["inputs"]["k"]
         R = vec["inputs"]["R"]
         actual = harmonic_cost_at_shell(k, R)
-        assert actual == pytest.approx(vec["expected"], abs=vec["tolerance"]), (
-            f"[{vec['id']}] harmonic_cost_at_shell({k}, {R})={actual}, expected={vec['expected']}"
-        )
+        assert actual == pytest.approx(
+            vec["expected"], abs=vec["tolerance"]
+        ), f"[{vec['id']}] harmonic_cost_at_shell({k}, {R})={actual}, expected={vec['expected']}"
 
     @pytest.mark.parametrize(
         "vec",
@@ -224,9 +225,9 @@ class TestHarmonicCostAtShell:
         k = vec["inputs"]["k"]
         R = vec["inputs"]["R"]
         actual = _ref_harmonic_cost_at_shell(k, R)
-        assert actual == pytest.approx(vec["expected"], abs=vec["tolerance"]), (
-            f"[{vec['id']}] ref cost({k}, {R})={actual}, expected={vec['expected']}"
-        )
+        assert actual == pytest.approx(
+            vec["expected"], abs=vec["tolerance"]
+        ), f"[{vec['id']}] ref cost({k}, {R})={actual}, expected={vec['expected']}"
 
     def test_cost_increases_with_k(self) -> None:
         """Higher shells must be more expensive."""
@@ -247,9 +248,7 @@ class TestFibonacciTernaryConsensus:
     def test_impl_matches_golden(self, vec: Dict[str, Any]) -> None:
         history = vec["inputs"]["history"]
         actual = fibonacci_ternary_consensus(history)
-        assert actual == vec["expected"], (
-            f"[{vec['id']}] consensus({history})={actual}, expected={vec['expected']}"
-        )
+        assert actual == vec["expected"], f"[{vec['id']}] consensus({history})={actual}, expected={vec['expected']}"
 
     def test_neutral_holds_position(self) -> None:
         """All zeros should leave index at 0 -> FIB[0]=1."""

@@ -140,7 +140,15 @@ class TestOutputContract:
 
     def test_required_fields(self) -> None:
         result = pipeline_quick_score("test")
-        required = {"input_len", "d_star", "x_poincare", "H_eff", "phase_deviation", "decision", "digest_hex"}
+        required = {
+            "input_len",
+            "d_star",
+            "x_poincare",
+            "H_eff",
+            "phase_deviation",
+            "decision",
+            "digest_hex",
+        }
         assert required <= set(result.keys())
 
     def test_h_eff_bounded(self) -> None:

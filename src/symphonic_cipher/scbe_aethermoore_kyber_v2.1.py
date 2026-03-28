@@ -481,7 +481,7 @@ class L13_DecisionBoundary:
         """Aggregate all layer results."""
         passed = 0
         total = 0
-        for name, layer in self.layers.items():
+        for _name, layer in self.layers.items():
             if hasattr(layer, "verify"):
                 result = layer.verify()
                 if isinstance(result, tuple):
@@ -504,7 +504,14 @@ class L14_GovernanceDecision:
         """Make final ALLOW/DENY decision."""
         passed, ratio = self.l13.aggregate()
         decision = "ALLOW" if passed else "DENY"
-        self.decision_log.append({"timestamp": time.time(), "decision": decision, "ratio": ratio, "context": context})
+        self.decision_log.append(
+            {
+                "timestamp": time.time(),
+                "decision": decision,
+                "ratio": ratio,
+                "context": context,
+            }
+        )
         return decision
 
     def get_log(self) -> List[Dict]:
@@ -626,7 +633,7 @@ def run_full_test() -> Dict[str, Any]:
 
     # Run several time steps
     print("\nRunning 50 time steps...")
-    for i in range(50):
+    for _i in range(50):
         system.step(0.1)
 
     # Get state

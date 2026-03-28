@@ -131,7 +131,13 @@ class LatticeVector:
     @classmethod
     def from_array(cls, arr: np.ndarray) -> "LatticeVector":
         """Create from 10D numpy array."""
-        return cls(tongues=arr[:6], time=float(arr[6]), intent=float(arr[7]), phase=float(arr[8]), flux=float(arr[9]))
+        return cls(
+            tongues=arr[:6],
+            time=float(arr[6]),
+            intent=float(arr[7]),
+            phase=float(arr[8]),
+            flux=float(arr[9]),
+        )
 
     def norm(self) -> float:
         """Compute L2 norm."""
@@ -199,7 +205,12 @@ class TongueContext:
 
     @classmethod
     def create(cls, tongue: SacredTongue, value: float = 1.0) -> "TongueContext":
-        return cls(tongue=tongue, coefficient=value, phase=TONGUE_PHASES[tongue], weight=TONGUE_WEIGHTS[tongue])
+        return cls(
+            tongue=tongue,
+            coefficient=value,
+            phase=TONGUE_PHASES[tongue],
+            weight=TONGUE_WEIGHTS[tongue],
+        )
 
 
 # =============================================================================
@@ -574,7 +585,10 @@ class DualLatticeCrossStitch:
         self.dilithium = DilithiumTongueSigner(security_level)
 
     def create_context_vector(
-        self, tongues: Dict[SacredTongue, float], intent: float, flux_state: FluxState = FluxState.POLLY
+        self,
+        tongues: Dict[SacredTongue, float],
+        intent: float,
+        flux_state: FluxState = FluxState.POLLY,
     ) -> LatticeVector:
         """
         Create a lattice vector from context.
@@ -617,7 +631,13 @@ class DualLatticeCrossStitch:
         }
         flux = flux_values.get(flux_state, 0.5)
 
-        return LatticeVector(tongues=tongue_arr, time=time_normalized, intent=intent, phase=phase, flux=flux)
+        return LatticeVector(
+            tongues=tongue_arr,
+            time=time_normalized,
+            intent=intent,
+            phase=phase,
+            flux=flux,
+        )
 
     def process(self, vector: LatticeVector) -> Dict[str, Any]:
         """

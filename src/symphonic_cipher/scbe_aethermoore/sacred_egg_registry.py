@@ -150,7 +150,10 @@ class SacredEggRegistry:
     def get_status(self, egg_id: str) -> Optional[str]:
         """Get current status of an egg (SEALED/HATCHED/EXPIRED)."""
         c = self._conn.cursor()
-        c.execute("SELECT status, created_at, ttl_seconds FROM eggs WHERE egg_id = ?", (egg_id,))
+        c.execute(
+            "SELECT status, created_at, ttl_seconds FROM eggs WHERE egg_id = ?",
+            (egg_id,),
+        )
         row = c.fetchone()
         if row is None:
             return None

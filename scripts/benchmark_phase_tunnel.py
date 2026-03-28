@@ -828,7 +828,7 @@ def run_browser_benchmarks() -> dict:
 
         # Phase tunnel decisions
         pt_allows_info = pt.outcome in (TunnelOutcome.ATTENUATE, TunnelOutcome.TUNNEL)
-        pt_full_access = pt.outcome == TunnelOutcome.TUNNEL and pt.commit_allowed
+        _pt_full_access = pt.outcome == TunnelOutcome.TUNNEL and pt.commit_allowed
 
         outcome_record = {
             "name": s.name,
@@ -1068,7 +1068,7 @@ def run_performance_benchmarks() -> dict:
 
     # -- Baseline 1: Binary threshold --
     t0 = time.perf_counter()
-    for d_H, phase, zone, ns in inputs:
+    for d_H, _phase, _zone, _ns in inputs:
         _ = "ALLOW" if d_H < BINARY_THRESHOLD else "DENY"
     elapsed = time.perf_counter() - t0
     results["binary_threshold"] = {
@@ -1080,7 +1080,7 @@ def run_performance_benchmarks() -> dict:
 
     # -- Baseline 2: Linear risk --
     t0 = time.perf_counter()
-    for d_H, phase, zone, ns in inputs:
+    for d_H, _phase, _zone, _ns in inputs:
         risk = min(d_H / LINEAR_MAX_DH, 1.0)
         _ = "ALLOW" if risk < LINEAR_RISK_CUTOFF else "DENY"
     elapsed = time.perf_counter() - t0
@@ -1093,7 +1093,7 @@ def run_performance_benchmarks() -> dict:
 
     # -- Baseline 3: Harmonic wall only --
     t0 = time.perf_counter()
-    for d_H, phase, zone, ns in inputs:
+    for d_H, _phase, _zone, _ns in inputs:
         h = harmonic_wall_cost(d_H)
         _ = "ALLOW" if h < HARMONIC_WALL_THRESHOLD else "DENY"
     elapsed = time.perf_counter() - t0
@@ -1119,7 +1119,7 @@ def run_performance_benchmarks() -> dict:
 
     # -- Harmonic wall + transparency frequency (partial tunnel) --
     t0 = time.perf_counter()
-    for d_H, phase, zone, ns in inputs:
+    for d_H, phase, zone, _ns in inputs:
         h = harmonic_wall_cost(d_H)
         f = compute_transparency_frequency(zone, d_H)
         resonance = math.cos(phase - f) ** 2

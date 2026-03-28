@@ -41,7 +41,11 @@ def test_public_checkout_creates_session(monkeypatch):
             "tier": tier,
         }
 
-    monkeypatch.setattr(routes.StripeClient, "create_checkout_session", staticmethod(fake_create_checkout_session))
+    monkeypatch.setattr(
+        routes.StripeClient,
+        "create_checkout_session",
+        staticmethod(fake_create_checkout_session),
+    )
     client = _client()
 
     response = client.post(

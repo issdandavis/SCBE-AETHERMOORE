@@ -133,7 +133,7 @@ class Channel:
 
         if agent_id:
             # Find first message for this agent
-            for i, msg in enumerate(self._queue):
+            for _i, msg in enumerate(self._queue):
                 if msg.recipient_id == agent_id or msg.is_broadcast():
                     self._queue.remove(msg)
                     self._record_history(msg)

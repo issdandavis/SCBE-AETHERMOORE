@@ -423,7 +423,8 @@ CRYPTOGRAPHY_AVAILABLE = _cryptography_available()
 
 # Skip decorator for tests requiring cryptography
 requires_cryptography = pytest.mark.skipif(
-    not CRYPTOGRAPHY_AVAILABLE, reason="cryptography package not functional (cffi backend missing)"
+    not CRYPTOGRAPHY_AVAILABLE,
+    reason="cryptography package not functional (cffi backend missing)",
 )
 
 

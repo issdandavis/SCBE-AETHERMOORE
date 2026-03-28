@@ -295,7 +295,12 @@ async def create_task(flock_id: str, request: TaskCreateRequest, x_api_key: str 
 
 
 @saas_router.post("/flocks/{flock_id}/tasks/{task_id}/assign", tags=["SaaS Tasks"])
-async def assign_task(flock_id: str, task_id: str, request: TaskAssignRequest, x_api_key: str = Header(...)):
+async def assign_task(
+    flock_id: str,
+    task_id: str,
+    request: TaskAssignRequest,
+    x_api_key: str = Header(...),
+):
     owner = await verify_saas_api_key(x_api_key)
     record = _require_flock(owner, flock_id)
     if not record["flock"].assign_task(task_id, request.sheep_id):
@@ -305,7 +310,12 @@ async def assign_task(flock_id: str, task_id: str, request: TaskAssignRequest, x
 
 
 @saas_router.post("/flocks/{flock_id}/tasks/{task_id}/complete", tags=["SaaS Tasks"])
-async def complete_task(flock_id: str, task_id: str, request: TaskCompleteRequest, x_api_key: str = Header(...)):
+async def complete_task(
+    flock_id: str,
+    task_id: str,
+    request: TaskCompleteRequest,
+    x_api_key: str = Header(...),
+):
     owner = await verify_saas_api_key(x_api_key)
     record = _require_flock(owner, flock_id)
     if not record["flock"].mark_task_complete(

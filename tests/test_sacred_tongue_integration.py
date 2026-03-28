@@ -55,7 +55,7 @@ class TestSacredTongueTokenizer:
 
     def test_tongue_uniqueness(self):
         """Verify 256 distinct tokens per tongue"""
-        for tongue_code, spec in TONGUES.items():
+        for tongue_code, _spec in TONGUES.items():
             tokens = set()
             for byte_val in range(256):
                 token_list = SACRED_TONGUE_TOKENIZER.encode_bytes(tongue_code, bytes([byte_val]))

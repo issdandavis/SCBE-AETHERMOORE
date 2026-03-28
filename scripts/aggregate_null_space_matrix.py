@@ -20,7 +20,7 @@ def generate_null_space_matrix(artifact_dir="artifacts"):
         return
 
     summary_data = []
-    tongues = ['KO', 'AV', 'RU', 'CA', 'UM', 'DR']
+    _tongues = ['KO', 'AV', 'RU', 'CA', 'UM', 'DR']
 
     for file in files:
         try:
@@ -28,7 +28,7 @@ def generate_null_space_matrix(artifact_dir="artifacts"):
                 data = json.load(f)
 
             analysis = data.get("analysis", {})
-            scores_list = data.get("scores", [])
+            _scores_list = data.get("scores", [])
             model_name = f"{data.get('provider', '?')} / {data.get('model', '?')}"
 
             total_score = analysis.get("total_score", 0)

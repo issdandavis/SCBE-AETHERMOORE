@@ -23,7 +23,7 @@ def _load_module(name: str, relative_path: str):
 def _install_fake_vault(monkeypatch):
     src_module = sys.modules.setdefault("src", types.ModuleType("src"))
     security_module = sys.modules.setdefault("src.security", types.ModuleType("src.security"))
-    setattr(src_module, "security", security_module)
+    src_module.security = security_module
 
     vault_module = types.ModuleType("src.security.privacy_token_vault")
 
@@ -63,7 +63,10 @@ def test_builder_masks_sensitive_strings_and_writes_manifest(monkeypatch, tmp_pa
                         ),
                         "output": "API key sk-test-abcdef0123456789 and SSN 123-45-6789 plus card 4111 1111 1111 1111.",
                         "messages": [
-                            {"role": "user", "content": "Visit https://example.com/api from 10.0.0.5"},
+                            {
+                                "role": "user",
+                                "content": "Visit https://example.com/api from 10.0.0.5",
+                            },
                             {"role": "assistant", "content": "ok"},
                         ],
                     }
@@ -139,7 +142,10 @@ def test_builder_reports_no_sensitive_matches_for_benign_input(monkeypatch, tmp_
     builder = _load_module("test_build_protected_corpus_clean", "scripts/build_protected_corpus.py")
 
     clean_note = tmp_path / "clean.md"
-    clean_note.write_text("# Plain Note\n\nNo secrets here, just a calm status update.\n", encoding="utf-8")
+    clean_note.write_text(
+        "# Plain Note\n\nNo secrets here, just a calm status update.\n",
+        encoding="utf-8",
+    )
 
     manifest = builder.build_protected_corpus(
         [clean_note],
@@ -161,7 +167,10 @@ def test_audit_detects_surviving_sensitive_text_and_overlap(monkeypatch, tmp_pat
         json.dumps(
             {
                 "messages": [
-                    {"role": "user", "content": "Ping alice@example.com at https://example.com"},
+                    {
+                        "role": "user",
+                        "content": "Ping alice@example.com at https://example.com",
+                    },
                     {"role": "assistant", "content": "Use token still-visible-123"},
                 ],
                 "source_file": "protected-source.md",

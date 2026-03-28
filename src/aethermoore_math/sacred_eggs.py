@@ -244,7 +244,9 @@ def _derive_key(secret: bytes, salt: bytes, info: bytes, length: int = 32) -> by
 
 
 def geoseal_encrypt(
-    plaintext: bytes, key: bytes, geo_coords: Tuple[float, float, float] = (0.0, 0.0, 0.0)
+    plaintext: bytes,
+    key: bytes,
+    geo_coords: Tuple[float, float, float] = (0.0, 0.0, 0.0),
 ) -> Dict[str, Any]:
     """
     GeoSeal encryption with geographic binding.
@@ -271,7 +273,9 @@ def geoseal_encrypt(
 
 
 def geoseal_decrypt(
-    envelope: Dict[str, Any], key: bytes, geo_coords: Optional[Tuple[float, float, float]] = None
+    envelope: Dict[str, Any],
+    key: bytes,
+    geo_coords: Optional[Tuple[float, float, float]] = None,
 ) -> bytes:
     """
     GeoSeal decryption with geographic verification.
@@ -448,7 +452,11 @@ class SacredEggIntegrator:
         if egg.ritual_mode == RitualMode.SOLITARY:
             if egg.tongue not in provided_tongues:
                 log.append(f"Solitary ritual failed: tongue {egg.tongue} not provided")
-                return HatchResult(success=False, ritual_log=log, error="Wrong tongue for solitary ritual")
+                return HatchResult(
+                    success=False,
+                    ritual_log=log,
+                    error="Wrong tongue for solitary ritual",
+                )
             log.append(f"Solitary ritual: tongue {egg.tongue} accepted")
 
         elif egg.ritual_mode == RitualMode.TRIADIC:
@@ -473,7 +481,11 @@ class SacredEggIntegrator:
             # Must provide tongues in the correct ring order
             if len(provided_tongues) < egg.ring_count:
                 log.append(f"Ring descent requires {egg.ring_count} tongues in order")
-                return HatchResult(success=False, ritual_log=log, error="Not enough tongues for ring descent")
+                return HatchResult(
+                    success=False,
+                    ritual_log=log,
+                    error="Not enough tongues for ring descent",
+                )
 
             for i, expected in enumerate(egg.ritual_tongues[: egg.ring_count]):
                 if i >= len(provided_tongues) or provided_tongues[i] != expected:

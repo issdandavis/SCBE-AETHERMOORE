@@ -8,7 +8,11 @@ architecture operating across a 21D manifold.
 Version: 1.1.0 (Reference - canonical implementation is TypeScript)
 """
 
-from .unified_state import UnifiedBrainState, safe_poincare_embed, hyperbolic_distance_safe
+from .unified_state import (
+    UnifiedBrainState,
+    safe_poincare_embed,
+    hyperbolic_distance_safe,
+)
 from .detection import (
     detect_phase_distance,
     detect_curvature_accumulation,

@@ -573,7 +573,7 @@ def main():
     # Also scan for any .md files in docs/ not already listed
     docs_dir = PROJECT_ROOT / "docs"
     if docs_dir.is_dir():
-        already_listed = {s.replace("/", os.sep) for s in MD_SOURCES}
+        _already_listed = {s.replace("/", os.sep) for s in MD_SOURCES}
         for md_file in sorted(docs_dir.glob("*.md")):
             rel = str(md_file.relative_to(PROJECT_ROOT)).replace("\\", "/")
             if rel in {s for s in MD_SOURCES}:

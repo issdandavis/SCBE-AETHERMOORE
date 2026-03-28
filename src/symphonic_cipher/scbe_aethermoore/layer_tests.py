@@ -83,7 +83,7 @@ class DecimalTracker:
             s_in = f"{self.input_val:.15f}"
             s_out = f"{self.output_val:.15f}"
             match_count = 0
-            for i, (a, b) in enumerate(zip(s_in, s_out)):
+            for _i, (a, b) in enumerate(zip(s_in, s_out)):
                 if a == b:
                     match_count += 1
                 else:
@@ -359,7 +359,7 @@ def test_L3_5_quasicrystal() -> List[LayerTestResult]:
     # E_par vectors should incorporate PHI
     e_par = M_par
     # Check that PHI appears in the structure
-    has_phi = np.any(np.abs(e_par - PHI * e_par / np.max(np.abs(e_par))) < 0.5)  # noqa: F841
+    np.any(np.abs(e_par - PHI * e_par / np.max(np.abs(e_par))) < 0.5)
     passed = True  # Structural test
     results.append(
         LayerTestResult(

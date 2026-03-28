@@ -60,7 +60,11 @@ def test_playwright_wrapper_prefers_linux_executable(monkeypatch):
     )
 
     monkeypatch.setattr(module.platform, "system", lambda: "Linux")
-    monkeypatch.setattr(module.shutil, "which", lambda name: "/usr/bin/chromium" if name == "chromium" else None)
+    monkeypatch.setattr(
+        module.shutil,
+        "which",
+        lambda name: "/usr/bin/chromium" if name == "chromium" else None,
+    )
 
     wrapper = module.PlaywrightWrapper(module.BrowserConfig(headless=True))
     options = wrapper._build_launch_options()

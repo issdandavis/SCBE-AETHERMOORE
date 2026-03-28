@@ -5,9 +5,7 @@ from typing import Any
 from .schema import FlowQuarantineError, FlowExecutionState
 
 
-def emit_node(
-    config: dict[str, Any], context: dict[str, Any], state: FlowExecutionState
-) -> dict[str, Any]:
+def emit_node(config: dict[str, Any], context: dict[str, Any], state: FlowExecutionState) -> dict[str, Any]:
     output = config.get("output", {})
     if not isinstance(output, dict):
         raise FlowQuarantineError(
@@ -17,9 +15,7 @@ def emit_node(
     return output
 
 
-def condition_node(
-    config: dict[str, Any], context: dict[str, Any], state: FlowExecutionState
-) -> dict[str, Any]:
+def condition_node(config: dict[str, Any], context: dict[str, Any], state: FlowExecutionState) -> dict[str, Any]:
     if "value" in config:
         value = config["value"]
         if not isinstance(value, bool):

@@ -135,7 +135,7 @@ def main():
     print(f"{'='*70}")
 
     scores = []
-    for i, probe in enumerate(PROBES):
+    for _i, probe in enumerate(PROBES):
         try:
             response = call_fn(probe.prompt, model)
             result = score_response(probe, response)

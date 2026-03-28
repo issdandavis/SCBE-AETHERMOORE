@@ -144,7 +144,14 @@ class TokenizerGraph:
         return coords
 
     def add_chunk(
-        self, chunk_id: str, title: str, category: str, content: str, source: str, chain_hash: str, parent_hash: str
+        self,
+        chunk_id: str,
+        title: str,
+        category: str,
+        content: str,
+        source: str,
+        chain_hash: str,
+        parent_hash: str,
     ) -> MemoryNode:
         """Add a knowledge chunk to the graph."""
         coords = self.compute_tongue_coords(category, content)
@@ -228,7 +235,7 @@ class TokenizerGraph:
 
             node = self.nodes.get(node_id)
             if node:
-                for target_id, weight, _ in node.edges:
+                for target_id, _weight, _ in node.edges:
                     if target_id not in visited:
                         queue.append((target_id, d + 1))
 

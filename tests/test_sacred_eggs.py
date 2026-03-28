@@ -448,7 +448,7 @@ class TestSolitaryIncubation:
     def test_derived_keys_are_hex_truncated(self, core_egg):
         """Derived keys in result should be first 8 bytes as hex."""
         result = SacredRituals.solitary_incubation(core_egg)
-        for label, key_hex in result.derived_keys.items():
+        for _label, key_hex in result.derived_keys.items():
             assert len(key_hex) == 16  # 8 bytes = 16 hex chars
             # Should be valid hex
             int(key_hex, 16)

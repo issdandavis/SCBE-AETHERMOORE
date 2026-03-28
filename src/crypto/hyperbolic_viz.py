@@ -26,7 +26,10 @@ try:
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
-    print("[VIZ] Warning: matplotlib not available, visualization disabled", file=sys.stderr)
+    print(
+        "[VIZ] Warning: matplotlib not available, visualization disabled",
+        file=sys.stderr,
+    )
 
 
 def hyperbolic_distance_safe(x: np.ndarray, y: np.ndarray, eps: float = 1e-8) -> float:
@@ -224,11 +227,25 @@ def visualize_poincare_disk(
     ax.plot(0, 0, "o", color="white", markersize=8)
 
     # Points
-    ax.scatter(coords_2d[:, 0], coords_2d[:, 1], c=colors, s=150, edgecolors="white", linewidth=1, alpha=0.9)
+    ax.scatter(
+        coords_2d[:, 0],
+        coords_2d[:, 1],
+        c=colors,
+        s=150,
+        edgecolors="white",
+        linewidth=1,
+        alpha=0.9,
+    )
 
     # Labels
-    for i, label in enumerate(labels):
-        ax.text(coords_2d[i, 0] + 0.02, coords_2d[i, 1] + 0.02, f"{i}", color="white", fontsize=8)
+    for i, _label in enumerate(labels):
+        ax.text(
+            coords_2d[i, 0] + 0.02,
+            coords_2d[i, 1] + 0.02,
+            f"{i}",
+            color="white",
+            fontsize=8,
+        )
 
     ax.set_xlim(-1.1, 1.1)
     ax.set_ylim(-1.1, 1.1)
@@ -334,7 +351,14 @@ def visualize_3d_voxels(
                     grid_pt = (pt + 1.0) / 2.0 * (grid_size - 1)
                     path_coords.append(grid_pt)
                 path_coords = np.array(path_coords)
-                ax.plot(path_coords[:, 0], path_coords[:, 1], path_coords[:, 2], color="white", linewidth=3, alpha=0.9)
+                ax.plot(
+                    path_coords[:, 0],
+                    path_coords[:, 1],
+                    path_coords[:, 2],
+                    color="white",
+                    linewidth=3,
+                    alpha=0.9,
+                )
 
         ax.set_xlim(0, grid_size)
         ax.set_ylim(0, grid_size)

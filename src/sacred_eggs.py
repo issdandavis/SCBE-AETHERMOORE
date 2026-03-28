@@ -52,7 +52,12 @@ def _valid_manifold(manifold: Any) -> bool:
     return total < 1.0
 
 
-def _binding_token(participants: Iterable[str], threshold: int, payload: bytes, manifold: Tuple[float, ...]) -> str:
+def _binding_token(
+    participants: Iterable[str],
+    threshold: int,
+    payload: bytes,
+    manifold: Tuple[float, ...],
+) -> str:
     material = "|".join(sorted(participants)).encode("utf-8")
     material += b"::" + str(int(threshold)).encode("utf-8")
     material += b"::" + payload
@@ -84,25 +89,55 @@ class SacredEgg:
 
     def invoke_ritual(self, ritual: str, **kwargs: Any) -> Dict[str, Any]:
         r = (ritual or "").strip().lower()
-        if r in {"solitary_incubation", "begin_solitary_incubation", "incubate_solitary", "incubate"}:
+        if r in {
+            "solitary_incubation",
+            "begin_solitary_incubation",
+            "incubate_solitary",
+            "incubate",
+        }:
             return self.solitary_incubation(**kwargs)
-        if r in {"triadic_binding", "perform_triadic_binding", "triadic_bind", "bind_triad", "triad_bind"}:
+        if r in {
+            "triadic_binding",
+            "perform_triadic_binding",
+            "triadic_bind",
+            "bind_triad",
+            "triad_bind",
+        }:
             return self.triadic_binding(**kwargs)
-        if r in {"manifold_binding", "bind_manifold", "bind_to_manifold", "manifold_bind", "lock_to_manifold"}:
+        if r in {
+            "manifold_binding",
+            "bind_manifold",
+            "bind_to_manifold",
+            "manifold_bind",
+            "lock_to_manifold",
+        }:
             return self.manifold_binding(**kwargs)
         if r in {"ring_descent", "perform_ring_descent", "descend_ring", "descent"}:
             return self.ring_descent(**kwargs)
-        if r in {"fail_to_noise", "noise_failover", "zeroize_to_noise", "obscure_to_noise"}:
+        if r in {
+            "fail_to_noise",
+            "noise_failover",
+            "zeroize_to_noise",
+            "obscure_to_noise",
+        }:
             return self.fail_to_noise(**kwargs)
         return {"ok": False, "status": "rejected", "error": "unknown_ritual"}
 
     def solitary_incubation(
-        self, actor: Optional[str] = None, participants: Optional[Iterable[str]] = None, **_: Any
+        self,
+        actor: Optional[str] = None,
+        participants: Optional[Iterable[str]] = None,
+        **_: Any,
     ) -> Dict[str, Any]:
         member_list = list(participants) if participants is not None else ([actor] if actor else [])
         if len(member_list) != 1:
             return {"ok": False, "status": "rejected", "error": "requires_one_invoker"}
-        return {"ok": True, "status": "accepted", "mode": "solitary_incubation", "actor": str(member_list[0])}
+        return {
+            "ok": True,
+            "status": "accepted",
+            "mode": "solitary_incubation",
+            "actor": str(member_list[0]),
+        }
 
     def triadic_binding(
         self,
@@ -115,9 +150,17 @@ class SacredEgg:
         parts = tuple(str(x) for x in (participants or self.participants))
         k = int(threshold if threshold is not None else self.threshold)
         if k <= 0 or len(parts) < k:
-            return {"ok": False, "status": "rejected", "error": "insufficient_participants"}
+            return {
+                "ok": False,
+                "status": "rejected",
+                "error": "insufficient_participants",
+            }
         if not _distinct(parts):
-            return {"ok": False, "status": "rejected", "error": "participants_not_distinct"}
+            return {
+                "ok": False,
+                "status": "rejected",
+                "error": "participants_not_distinct",
+            }
 
         manifold_point = manifold if manifold is not None else self.manifold
         if not _valid_manifold(manifold_point):
@@ -174,7 +217,12 @@ class SacredEgg:
             return {"ok": False, "status": "rejected", "error": "invalid_ring"}
         if current < 0 or nxt < 0:
             return {"ok": False, "status": "rejected", "error": "negative_ring"}
-        return {"ok": True, "status": "accepted", "source_ring": current, "target_ring": nxt}
+        return {
+            "ok": True,
+            "status": "accepted",
+            "source_ring": current,
+            "target_ring": nxt,
+        }
 
     def fail_to_noise(self, **_: Any) -> Dict[str, Any]:
         # Do not leak payload in any error surface.

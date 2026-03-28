@@ -227,7 +227,10 @@ async def create_checkout(request: CheckoutRequest):
 async def checkout_success(session_id: str = ""):
     """Landing page after successful checkout. Returns API key if ready."""
     if not session_id:
-        return {"status": "ok", "message": "Payment successful. Your API key will be emailed."}
+        return {
+            "status": "ok",
+            "message": "Payment successful. Your API key will be emailed.",
+        }
 
     # Look up if we've already provisioned
     for api_key, record in BILLING_API_KEYS.items():
@@ -239,13 +242,19 @@ async def checkout_success(session_id: str = ""):
                 "plan": record["plan"],
             }
 
-    return {"status": "pending", "message": "Payment processing. API key will be available shortly."}
+    return {
+        "status": "pending",
+        "message": "Payment processing. API key will be available shortly.",
+    }
 
 
 @billing_router.get("/cancel")
 async def checkout_cancel():
     """Landing page after canceled checkout."""
-    return {"status": "canceled", "message": "Checkout was canceled. No charge was made."}
+    return {
+        "status": "canceled",
+        "message": "Checkout was canceled. No charge was made.",
+    }
 
 
 @billing_router.post("/webhook")

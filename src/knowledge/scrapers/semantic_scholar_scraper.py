@@ -19,7 +19,9 @@ RATE_LIMIT = 1
 
 
 def search_papers(
-    query: str, limit: int = 20, fields: str = "title,abstract,authors,year,url,citationCount"
+    query: str,
+    limit: int = 20,
+    fields: str = "title,abstract,authors,year,url,citationCount",
 ) -> list[KnowledgeChunk]:
     """Search Semantic Scholar for papers."""
     params = urlencode({"query": query, "limit": limit, "fields": fields})
