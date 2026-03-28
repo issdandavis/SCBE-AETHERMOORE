@@ -34,6 +34,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
+from .negative_tongue_lattice import NegativeTongueLattice
+
 try:
     from primitives.phi_poincare import (
         fibonacci_trust_level,
@@ -108,6 +110,8 @@ class GateResult:
     trust_weight: int = 1
     trust_level: str = "UNTRUSTED"
     trust_index: int = 0
+    # Negative Tongue Lattice (experimental)
+    lattice_energy: float = 0.0
     # Audit
     action_hash: str = ""
     timestamp: float = 0.0
@@ -190,6 +194,7 @@ class RuntimeGate:
         coords_backend: str = "stats",
         semantic_embed_model: str = DEFAULT_SEMANTIC_EMBED_MODEL,
         tongue_projector_path: Optional[str] = None,
+        use_negative_lattice: bool = False,
     ):
         # Thresholds
         self.cost_allow = cost_allow
@@ -227,6 +232,12 @@ class RuntimeGate:
         self._semantic_ready: Optional[bool] = None
         self._tongue_projector_W: Optional[np.ndarray] = None  # shape: (D+1, 6) in logit-space
         self._tongue_projector_loaded: Optional[bool] = None
+
+        # Negative Tongue Lattice (experimental, opt-in)
+        self._use_negative_lattice = use_negative_lattice
+        self._negative_lattice: Optional[NegativeTongueLattice] = (
+            NegativeTongueLattice() if use_negative_lattice else None
+        )
 
     # ------------------------------------------------------------------ #
     #  Tongue coordinate extraction
@@ -533,6 +544,15 @@ class RuntimeGate:
         spins, magnitude = self._spin(coords)
         cost = self._harmonic_cost(coords)
 
+        # Negative Tongue Lattice: modulate cost by lattice energy (experimental)
+        neg_lattice_energy = 0.0
+        if self._use_negative_lattice and self._negative_lattice is not None:
+            neg_lattice_energy = self._negative_lattice.lattice_energy(coords)
+            # Lattice energy acts as a multiplier on harmonic cost.
+            # Higher tension between tongues = higher suspicion.
+            # Scale: energy of ~1.0 adds ~10% to cost, energy of ~5.0 adds ~50%.
+            cost *= 1.0 + 0.1 * neg_lattice_energy
+
         self._update_centroid(coords)
         self._cumulative_cost += cost
 
@@ -636,6 +656,7 @@ class RuntimeGate:
             trust_weight=trust_weight,
             trust_level=trust_level,
             trust_index=trust_index,
+            lattice_energy=neg_lattice_energy,
             action_hash=action_hash,
             timestamp=ts,
             session_query_count=self._query_count,
