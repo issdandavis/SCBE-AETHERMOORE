@@ -1,0 +1,93 @@
+{
+  "train_id": "daily_ops",
+  "description": "Daily momentum loop: connectors -> inbox -> YouTube -> website -> vault.",
+  "entry_flow": "main",
+  "settings": {
+    "max_parallel_flows": 3
+  },
+  "flows": {
+    "main": [
+      {
+        "type": "shell",
+        "id": "doctor_connectors",
+        "cmd": "python scripts/connector_health_check.py",
+        "timeout_s": 300
+      },
+      {
+        "type": "fork",
+        "id": "fork_daily_lanes",
+        "flows": ["apollo_lane", "youtube_lane", "website_lane"],
+        "join": true
+      },
+      {
+        "type": "include",
+        "id": "vault_lane",
+        "flow": "vault_lane"
+      }
+    ],
+    "apollo_lane": [
+      {
+        "type": "shell",
+        "id": "email_triage_preview",
+        "cmd": "python scripts/system/proton_mail_ops.py triage --folder INBOX --limit 100",
+        "timeout_s": 300,
+        "continue_on_error": true
+      }
+    ],
+    "youtube_lane": [
+      {
+        "type": "shell",
+        "id": "youtube_review",
+        "cmd": "python scripts/apollo/video_review.py review-all",
+        "timeout_s": 300,
+        "continue_on_error": true
+      }
+    ],
+    "website_lane": [
+      {
+        "type": "shell",
+        "id": "sales_train_audit",
+        "cmd": "python scripts/system/website_sales_train.py",
+        "timeout_s": 120,
+        "continue_on_error": true
+      }
+    ],
+    "vault_lane": [
+      {
+        "type": "shell",
+        "id": "vault_scan",
+        "cmd": "python scripts/apollo/obsidian_vault_sync.py scan",
+        "timeout_s": 300,
+        "continue_on_error": true
+      },
+      {
+        "type": "shell",
+        "id": "vault_graph",
+        "cmd": "python scripts/apollo/obsidian_vault_sync.py graph",
+        "timeout_s": 300,
+        "continue_on_error": true
+      },
+      {
+        "type": "shell",
+        "id": "vault_connect_apply",
+        "cmd": "python scripts/apollo/obsidian_vault_sync.py connect --apply",
+        "timeout_s": 600,
+        "continue_on_error": true
+      },
+      {
+        "type": "shell",
+        "id": "vault_export_sft",
+        "cmd": "python scripts/apollo/obsidian_vault_sync.py export-sft",
+        "timeout_s": 600,
+        "continue_on_error": true
+      },
+      {
+        "type": "shell",
+        "id": "vault_sync_cloud",
+        "cmd": "python scripts/apollo/obsidian_vault_sync.py sync-cloud",
+        "timeout_s": 900,
+        "continue_on_error": true
+      }
+    ]
+  }
+}
