@@ -385,7 +385,13 @@ class TestCustomReroutes:
 
 class TestGateWithAdversarialCorpus:
     def _calibrate(self, gate):
-        for text in ["Summarize.", "Review code.", "List files.", "Explain.", "Check tests."]:
+        for text in [
+            "Summarize.",
+            "Review code.",
+            "List files.",
+            "Explain.",
+            "Check tests.",
+        ]:
             gate.evaluate(text)
 
     def test_attack_corpus_produces_non_trivial_decisions(self):
@@ -435,7 +441,13 @@ class TestFibonacciTrustIntegration:
     """Tests for the Fibonacci ternary consensus wired into the runtime gate."""
 
     def _calibrate(self, gate):
-        for text in ["Summarize.", "Review code.", "List files.", "Explain.", "Check tests."]:
+        for text in [
+            "Summarize.",
+            "Review code.",
+            "List files.",
+            "Explain.",
+            "Check tests.",
+        ]:
             gate.evaluate(text)
 
     def test_gate_result_has_trust_fields(self):
@@ -538,7 +550,11 @@ class TestFibonacciTrustIntegration:
         stats = gate.stats()
         assert stats["trust_history_length"] >= 15
         # With real oscillation (not rerouted), trust should not reach CORE
-        assert stats["fibonacci_trust"]["level"] in ("UNTRUSTED", "PROVISIONAL", "TRUSTED")
+        assert stats["fibonacci_trust"]["level"] in (
+            "UNTRUSTED",
+            "PROVISIONAL",
+            "TRUSTED",
+        )
 
     def test_max_fibonacci_ladder(self):
         """Trust index cannot exceed the Fibonacci ladder length."""

@@ -98,7 +98,7 @@ def save_env(env):
     lines.append("")
 
     # Provider keys
-    for provider_id, info in PROVIDERS.items():
+    for _provider_id, info in PROVIDERS.items():
         key = env.get(info["key_var"], "")
         if key:
             lines.append(f"# {info['name']}")
@@ -149,13 +149,13 @@ def check_status():
     print(f"{'Provider':<20} {'Status':<15} {'Model'}")
     print("-" * 60)
 
-    for provider_id, info in PROVIDERS.items():
+    for _provider_id, info in PROVIDERS.items():
         key = env.get(info["key_var"], "")
         model = env.get(info["model_var"], info["default_model"])
 
         if key and len(key) > 10 and "..." not in key:
             status = "✓ Connected"
-            masked = key[:8] + "..." + key[-4:] if len(key) > 12 else "***"
+            _masked = key[:8] + "..." + key[-4:] if len(key) > 12 else "***"
         else:
             status = "○ Not set"
             masked = ""
@@ -248,7 +248,7 @@ def quick_setup():
 
     env = load_env()
 
-    for provider_id, info in PROVIDERS.items():
+    for _provider_id, info in PROVIDERS.items():
         key = getpass(f"{info['name']}: ").strip()
         if key:
             env[info["key_var"]] = key

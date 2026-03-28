@@ -42,11 +42,31 @@ class LibraryWingRoundTable:
     """Round-table conductor for parallel perspective loops."""
 
     DEFAULT_PERSPECTIVES = [
-        Perspective("research-chair", "hf:qwen2.5-7b", "evidence quality and source ranking", "string_E"),
-        Perspective("trainer-chair", "hf:llama3.1-8b", "dataset and training-loop design", "string_A"),
+        Perspective(
+            "research-chair",
+            "hf:qwen2.5-7b",
+            "evidence quality and source ranking",
+            "string_E",
+        ),
+        Perspective(
+            "trainer-chair",
+            "hf:llama3.1-8b",
+            "dataset and training-loop design",
+            "string_A",
+        ),
         Perspective("governance-chair", "hf:mistral-7b", "safety and policy gates", "string_D"),
-        Perspective("product-chair", "hf:phi-4-mini", "delivery and monetization shape", "string_G"),
-        Perspective("ops-chair", "hubspot-legacy", "workflow ops and CRM orchestration", "string_B"),
+        Perspective(
+            "product-chair",
+            "hf:phi-4-mini",
+            "delivery and monetization shape",
+            "string_G",
+        ),
+        Perspective(
+            "ops-chair",
+            "hubspot-legacy",
+            "workflow ops and CRM orchestration",
+            "string_B",
+        ),
     ]
 
     def __init__(self, repo_root: Path, output_root: Path):
@@ -67,7 +87,11 @@ class LibraryWingRoundTable:
         return source_boost * (2.0 * role_overlap + 1.25 * prompt_overlap + 0.1)
 
     def _synthesize(
-        self, perspective: Perspective, prompt: str, context_items: list[dict[str, Any]], round_index: int
+        self,
+        perspective: Perspective,
+        prompt: str,
+        context_items: list[dict[str, Any]],
+        round_index: int,
     ) -> LaneNote:
         role_terms = set(self._tokenize(perspective.role))
         prompt_terms = set(self._tokenize(prompt))
@@ -106,7 +130,11 @@ class LibraryWingRoundTable:
         )
 
     def run(
-        self, prompt: str, context_items: list[dict[str, Any]], rounds: int = 2, max_workers: int = 5
+        self,
+        prompt: str,
+        context_items: list[dict[str, Any]],
+        rounds: int = 2,
+        max_workers: int = 5,
     ) -> dict[str, Any]:
         now = dt.datetime.now(dt.UTC).isoformat()
         notes: list[LaneNote] = []

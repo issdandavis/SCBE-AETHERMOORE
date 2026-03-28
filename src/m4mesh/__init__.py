@@ -7,7 +7,11 @@ try:
     from .mesh_graph import MeshOps, build_mesh_ops_grid2d
     from .scbe_graph import build_phdm_mesh_ops
     from .cvl import BlockLayout, CVLFuser
-    from .geometry import BlockGate, tanh_ball_projection, blockwise_tanh_ball_projection
+    from .geometry import (
+        BlockGate,
+        tanh_ball_projection,
+        blockwise_tanh_ball_projection,
+    )
     from .tie_kb import TIEKB, retrieve_tie
     from .wave import damped_wave
     from .smear import smear

@@ -52,7 +52,10 @@ def test_build_research_training_bundle_writes_expected_outputs(tmp_path: Path) 
 
     corpus_path = Path(result["corpus_path"])
     rows = [json.loads(line) for line in corpus_path.read_text(encoding="utf-8").splitlines() if line.strip()]
-    assert {row["category"] for row in rows} == {"research_bridge_arxiv", "research_bridge_obsidian"}
+    assert {row["category"] for row in rows} == {
+        "research_bridge_arxiv",
+        "research_bridge_obsidian",
+    }
     arxiv_row = next(row for row in rows if row["category"] == "research_bridge_arxiv")
     assert arxiv_row["metadata"]["arxiv_id"] == "2501.12345"
     note_row = next(row for row in rows if row["category"] == "research_bridge_obsidian")

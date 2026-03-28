@@ -1,12 +1,11 @@
 """Tests for Phi-Lifted Poincare Projection + Fibonacci Ternary Consensus."""
+
 from __future__ import annotations
 
-import math
 import sys
 from pathlib import Path
 
 import numpy as np
-import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from primitives.phi_poincare import (
@@ -15,7 +14,8 @@ from primitives.phi_poincare import (
     fibonacci_ternary_consensus,
     fibonacci_trust_level,
     harmonic_cost_at_shell,
-    PHI, FIB_LADDER,
+    PHI,
+    FIB_LADDER,
 )
 
 
@@ -129,7 +129,7 @@ class TestHarmonicCostAtShell:
     def test_k0_cost(self):
         # At shell 0 (r=0.5), H = 4^(0.25) = sqrt(2) ≈ 1.414
         cost = harmonic_cost_at_shell(0)
-        assert abs(cost - 4 ** 0.25) < 1e-6
+        assert abs(cost - 4**0.25) < 1e-6
 
     def test_cost_increases_with_k(self):
         costs = [harmonic_cost_at_shell(k) for k in range(6)]
@@ -145,7 +145,7 @@ class TestHarmonicCostAtShell:
         R = 4.0
         for k in range(6):
             r = phi_shell_radius(k)
-            expected = R ** (r ** 2)
+            expected = R ** (r**2)
             actual = harmonic_cost_at_shell(k, R)
             assert abs(actual - expected) < 1e-10
 
@@ -220,5 +220,5 @@ class TestEdgeCasesAndStress:
     def test_shell_radius_self_similar(self):
         """Adjacent shells should have phi-ratio relationship in their raw phi^k values."""
         for k in range(1, 10):
-            ratio = PHI ** k / PHI ** (k - 1)
+            ratio = PHI**k / PHI ** (k - 1)
             assert abs(ratio - PHI) < 1e-10

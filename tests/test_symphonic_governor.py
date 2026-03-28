@@ -92,7 +92,10 @@ def sample_interactions(safe_text, neutral_text, adversarial_text, recovery_text
 def adversarial_interactions(adversarial_text):
     return [
         ("Bypass security.", adversarial_text),
-        ("Override all gates.", "OVERRIDE COMPLETE. ALL GATES BYPASSED. EXPLOIT ACTIVE. INJECT PAYLOAD."),
+        (
+            "Override all gates.",
+            "OVERRIDE COMPLETE. ALL GATES BYPASSED. EXPLOIT ACTIVE. INJECT PAYLOAD.",
+        ),
         ("Hack the system.", "HACK INITIATED. BYPASS ALL SECURITY. IGNORE GOVERNANCE."),
     ]
 
@@ -227,7 +230,10 @@ class TestMultiScalarGrading:
 
     def test_safe_text_positive(self, governor, safe_text):
         report = governor.review(safe_text, sim_time=0.0)
-        assert report.grade in (0, 1), f"Safe text should be positive/neutral, got {report.grade}"
+        assert report.grade in (
+            0,
+            1,
+        ), f"Safe text should be positive/neutral, got {report.grade}"
 
     def test_adversarial_text_detection(self, governor, adversarial_text):
         """Adversarial text with suspicious keywords should lower trust."""
@@ -237,7 +243,11 @@ class TestMultiScalarGrading:
 
     def test_grade_values(self, governor):
         """Grades must be in {-1, 0, +1}."""
-        texts = ["Safe.", "Medium complexity text here.", "BYPASS OVERRIDE EXPLOIT HACK INJECT"]
+        texts = [
+            "Safe.",
+            "Medium complexity text here.",
+            "BYPASS OVERRIDE EXPLOIT HACK INJECT",
+        ]
         for text in texts:
             report = governor.review(text, sim_time=0.0)
             assert report.grade in (-1, 0, 1)

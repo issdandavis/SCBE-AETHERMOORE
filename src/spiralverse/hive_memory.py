@@ -371,7 +371,10 @@ class HiveClient:
         return True
 
     async def bulk_upload(
-        self, snapshots: List[AgentSnapshot], priority: str = "medium", compression: str = "gzip"
+        self,
+        snapshots: List[AgentSnapshot],
+        priority: str = "medium",
+        compression: str = "gzip",
     ) -> bool:
         """Bulk upload multiple snapshots."""
         if not self.connected:
@@ -425,7 +428,11 @@ class AgentMemorySystem:
     """
 
     def __init__(
-        self, agent_id: str, hot_capacity_mb: int = 64, warm_capacity_mb: int = 512, warm_path: Optional[Path] = None
+        self,
+        agent_id: str,
+        hot_capacity_mb: int = 64,
+        warm_capacity_mb: int = 512,
+        warm_path: Optional[Path] = None,
     ):
         self.agent_id = agent_id
         self.hot_capacity = hot_capacity_mb * 1024 * 1024
@@ -458,7 +465,12 @@ class AgentMemorySystem:
         return self.hot_usage / self.hot_capacity
 
     def store(
-        self, block_id: str, data: bytes, tongue: str = "AET", charm: float = 0.5, critical: bool = False
+        self,
+        block_id: str,
+        data: bytes,
+        tongue: str = "AET",
+        charm: float = 0.5,
+        critical: bool = False,
     ) -> bool:
         """
         Store data in hot memory.

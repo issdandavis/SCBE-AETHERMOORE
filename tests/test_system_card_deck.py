@@ -44,8 +44,20 @@ def test_build_system_cards_assigns_standard_ranks():
 
 def test_build_workflow_cards_sorts_red_first():
     workflows = [
-        {"name": "ci", "category": "ci", "triage": "yellow", "conclusion": "failure", "fix": "inspect"},
-        {"name": "codeql", "category": "security", "triage": "green", "conclusion": "success", "fix": None},
+        {
+            "name": "ci",
+            "category": "ci",
+            "triage": "yellow",
+            "conclusion": "failure",
+            "fix": "inspect",
+        },
+        {
+            "name": "codeql",
+            "category": "security",
+            "triage": "green",
+            "conclusion": "success",
+            "fix": None,
+        },
         {
             "name": "kindle-build",
             "category": "deploy",

@@ -11,7 +11,10 @@ import pytest
 try:
     from cryptography.fernet import Fernet  # noqa: F401
 except BaseException:
-    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+    pytest.skip(
+        "cryptography package not functional (cffi backend missing)",
+        allow_module_level=True,
+    )
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -66,7 +69,10 @@ def test_secret_store_migrates_legacy_plaintext_entries(tmp_path: Path, monkeypa
     monkeypatch.delenv("SCBE_LEGACY_SECRET", raising=False)
 
     store_path.write_text(
-        json.dumps({"SCBE_LEGACY_SECRET": {"value": "legacy-secret", "note": "legacy"}}, indent=2),
+        json.dumps(
+            {"SCBE_LEGACY_SECRET": {"value": "legacy-secret", "note": "legacy"}},
+            indent=2,
+        ),
         encoding="utf-8",
     )
 

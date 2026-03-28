@@ -193,7 +193,7 @@ class Workflow:
         completed = {name for name, step in self.steps.items() if step.task.status == TaskStatus.COMPLETED}
 
         ready = []
-        for name, step in self.steps.items():
+        for _name, step in self.steps.items():
             if step.task.is_ready(completed):
                 # Check condition if exists
                 if step.condition and not step.condition(self.context):
@@ -319,7 +319,7 @@ class WorkflowExecutor:
         )
 
         # Add all tasks to queue
-        for name, step in workflow.steps.items():
+        for _name, step in workflow.steps.items():
             self.task_queue.add(step.task)
 
         try:

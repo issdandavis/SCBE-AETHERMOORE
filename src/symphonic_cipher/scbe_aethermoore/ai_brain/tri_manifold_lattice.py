@@ -397,7 +397,9 @@ class TriManifoldLattice:
             tick=self._tick,
             triadic_distance=latest.triadic_distance if latest else 0.0,
             harmonic_cost=latest.harmonic_cost if latest else 0.0,
-            manifold_distances=latest.manifold_distances if latest else {"immediate": 0, "memory": 0, "governance": 0},
+            manifold_distances=(
+                latest.manifold_distances if latest else {"immediate": 0, "memory": 0, "governance": 0}
+            ),
             weights=TriadicWeights(self._weights.immediate, self._weights.memory, self._weights.governance),
             node_count=len(self._nodes),
             drift_velocity=self.drift_velocity(),

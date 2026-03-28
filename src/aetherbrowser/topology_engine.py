@@ -326,9 +326,24 @@ def compute_page_topology(
 
     # Zone rings
     zone_rings = [
-        {"zone": "GREEN", "inner_radius": 0, "outer_radius": ZONE_GREEN_MAX, "color": "#3fb950"},
-        {"zone": "YELLOW", "inner_radius": ZONE_GREEN_MAX, "outer_radius": ZONE_YELLOW_MAX, "color": "#d29922"},
-        {"zone": "RED", "inner_radius": ZONE_YELLOW_MAX, "outer_radius": 1.0, "color": "#f85149"},
+        {
+            "zone": "GREEN",
+            "inner_radius": 0,
+            "outer_radius": ZONE_GREEN_MAX,
+            "color": "#3fb950",
+        },
+        {
+            "zone": "YELLOW",
+            "inner_radius": ZONE_GREEN_MAX,
+            "outer_radius": ZONE_YELLOW_MAX,
+            "color": "#d29922",
+        },
+        {
+            "zone": "RED",
+            "inner_radius": ZONE_YELLOW_MAX,
+            "outer_radius": 1.0,
+            "color": "#f85149",
+        },
     ]
 
     # Langues cost gradient

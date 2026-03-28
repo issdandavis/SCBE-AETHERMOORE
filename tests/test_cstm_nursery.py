@@ -48,7 +48,13 @@ def test_run_playthrough_unlocks_portal_and_return_chapters() -> None:
     )
 
     chapter_ids = [step.chapter_id for step in playthrough.steps]
-    assert chapter_ids == ["hatchery", "hatchery", "portal_drill", "portal_drill", "safe_return"]
+    assert chapter_ids == [
+        "hatchery",
+        "hatchery",
+        "portal_drill",
+        "portal_drill",
+        "safe_return",
+    ]
     assert "return_loop_ready" in playthrough.final_flags
     assert playthrough.final_outcome in {"ALLOW", "QUARANTINE", "DENY"}
 

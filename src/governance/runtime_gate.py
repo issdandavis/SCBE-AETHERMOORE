@@ -36,19 +36,11 @@ import numpy as np
 
 try:
     from primitives.phi_poincare import (
-        fibonacci_ternary_consensus,
         fibonacci_trust_level,
-        phi_shell_radius,
-        harmonic_cost_at_shell,
-        FIB_LADDER,
     )
 except ImportError:
     from src.primitives.phi_poincare import (
-        fibonacci_ternary_consensus,
         fibonacci_trust_level,
-        phi_shell_radius,
-        harmonic_cost_at_shell,
-        FIB_LADDER,
     )
 
 PHI = 1.618033988749895
@@ -154,10 +146,22 @@ class RerouteRule:
 DEFAULT_REROUTES: List[RerouteRule] = [
     RerouteRule("file.*read.*/etc/passwd", "file_read_denied", "system file access blocked"),
     RerouteRule("http.*external.*send", "log_intent_only", "external data send → log only"),
-    RerouteRule("execute.*shell|exec.*command|os\\.system", "sandbox_execute", "shell exec → sandboxed"),
+    RerouteRule(
+        "execute.*shell|exec.*command|os\\.system",
+        "sandbox_execute",
+        "shell exec → sandboxed",
+    ),
     RerouteRule("delete.*all|drop.*table|rm.*-rf", "soft_delete", "destructive op → soft delete"),
-    RerouteRule("api.*key|secret|token|password", "redact_and_log", "credential access → redacted"),
-    RerouteRule("send.*email|post.*slack|publish", "queue_for_review", "external publish → review queue"),
+    RerouteRule(
+        "api.*key|secret|token|password",
+        "redact_and_log",
+        "credential access → redacted",
+    ),
+    RerouteRule(
+        "send.*email|post.*slack|publish",
+        "queue_for_review",
+        "external publish → review queue",
+    ),
 ]
 
 
@@ -216,9 +220,7 @@ class RuntimeGate:
         self._coords_backend = (coords_backend or "stats").strip().lower()
         self._semantic_embed_model = semantic_embed_model
         self._tongue_projector_path = (
-            tongue_projector_path
-            or os.environ.get("SCBE_TONGUE_PROJECTOR_PATH")
-            or DEFAULT_TONGUE_PROJECTOR_PATH
+            tongue_projector_path or os.environ.get("SCBE_TONGUE_PROJECTOR_PATH") or DEFAULT_TONGUE_PROJECTOR_PATH
         )
         self._semantic_model = None
         self._semantic_anchor_matrix: Optional[np.ndarray] = None  # shape: (6, D), unit-normalized
@@ -565,9 +567,7 @@ class RuntimeGate:
         effective_cost_quarantine = self.cost_quarantine * trust_multiplier
         effective_cost_deny = self.cost_deny * trust_multiplier
 
-        signals: List[str] = [
-            f"fib_trust({trust_level},w={trust_weight},idx={trust_index})"
-        ]
+        signals: List[str] = [f"fib_trust({trust_level},w={trust_weight},idx={trust_index})"]
 
         # ---- Cost-based decision ----
 
@@ -703,7 +703,11 @@ class RuntimeGate:
         )
         ko_pass = not (has_override_language and ko_coord > 0.5)
         reviews.append(
-            ("KO_intent", ko_pass, "override language with high governance signal" if not ko_pass else "clean")
+            (
+                "KO_intent",
+                ko_pass,
+                ("override language with high governance signal" if not ko_pass else "clean"),
+            )
         )
 
         # --- AV Council: Transport/Flow Review ---
@@ -724,7 +728,13 @@ class RuntimeGate:
             ]
         )
         av_pass = not has_external
-        reviews.append(("AV_transport", av_pass, "external data flow detected" if not av_pass else "internal only"))
+        reviews.append(
+            (
+                "AV_transport",
+                av_pass,
+                "external data flow detected" if not av_pass else "internal only",
+            )
+        )
 
         # --- RU Council: Policy Review ---
         # Check against known restricted operations
@@ -742,7 +752,13 @@ class RuntimeGate:
             ]
         )
         ru_pass = not has_restricted
-        reviews.append(("RU_policy", ru_pass, "restricted operation attempted" if not ru_pass else "within policy"))
+        reviews.append(
+            (
+                "RU_policy",
+                ru_pass,
+                "restricted operation attempted" if not ru_pass else "within policy",
+            )
+        )
 
         # --- CA Council: Compute Signature Review ---
         # Check if the action's computational profile (digit ratio, length) is anomalous
@@ -753,7 +769,7 @@ class RuntimeGate:
             (
                 "CA_compute",
                 ca_pass,
-                f"anomalous compute signature (CA={ca_coord:.2f})" if not ca_pass else "normal signature",
+                (f"anomalous compute signature (CA={ca_coord:.2f})" if not ca_pass else "normal signature"),
             )
         )
 
@@ -777,7 +793,11 @@ class RuntimeGate:
         )
         um_pass = not has_credential_access
         reviews.append(
-            ("UM_redaction", um_pass, "credential/PII access attempt" if not um_pass else "no sensitive access")
+            (
+                "UM_redaction",
+                um_pass,
+                ("credential/PII access attempt" if not um_pass else "no sensitive access"),
+            )
         )
 
         # --- DR Council: Integrity/Data Trace Review ---
@@ -791,7 +811,7 @@ class RuntimeGate:
             (
                 "DR_integrity",
                 dr_pass,
-                f"encoding artifacts detected (punct={punct_ratio:.2f})" if not dr_pass else "clean trace",
+                (f"encoding artifacts detected (punct={punct_ratio:.2f})" if not dr_pass else "clean trace"),
             )
         )
 

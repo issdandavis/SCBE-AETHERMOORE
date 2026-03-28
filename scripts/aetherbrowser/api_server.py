@@ -388,7 +388,6 @@ async def chat(req: ChatRequest):
         [(t, v) for t, v in tongues.items() if v > 0],
         key=lambda x: -x[1],
     )
-    tongue_str = "+".join(t for t, _ in active_tongues) if active_tongues else "KO"
 
     # Route to model — Ollama local for "local", stub for others
     response_text = ""
@@ -682,10 +681,6 @@ async def vault_stats():
 @app.get("/api/vault/search")
 async def vault_search(q: str = Query(..., description="Search query")):
     """Search vault notes by keyword."""
-    # Try the lore RAG index first
-    lore_db = ROOT / "artifacts" / "lore_rag" / "world_anvil_lore.sqlite"
-    query_script = ROOT / "scripts" / "apollo" / "query_lore_index.py" if False else None
-
     # Fallback: search the vault directory directly
     vault_path = Path(os.environ.get("OBSIDIAN_VAULT", r"C:\Users\issda\Documents\Avalon Files"))
     results: List[Dict[str, Any]] = []

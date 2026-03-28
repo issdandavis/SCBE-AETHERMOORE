@@ -56,7 +56,6 @@ STOPWORDS = {
     "should",
     "would",
     "about",
-    "into",
     "also",
     "more",
     "than",

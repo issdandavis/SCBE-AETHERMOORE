@@ -13,14 +13,12 @@ attested by this signer, encoded in this Sacred Tongue.
 
 from __future__ import annotations
 
-import base64
 import hashlib
 import hmac
 import json
 import os
 import time
-from dataclasses import asdict, dataclass, field
-from typing import List, Optional
+from dataclasses import asdict, dataclass
 
 # ── Sacred Tongue token tables (subset for hash encoding) ──────────────────
 
@@ -224,7 +222,14 @@ def batch_notarize(
 ) -> list[NotarizationCert]:
     """Notarize multiple items. Each item is (data, description)."""
     return [
-        notarize(data, tongue=tongue, signer=signer, signing_key=signing_key, description=desc) for data, desc in items
+        notarize(
+            data,
+            tongue=tongue,
+            signer=signer,
+            signing_key=signing_key,
+            description=desc,
+        )
+        for data, desc in items
     ]
 
 

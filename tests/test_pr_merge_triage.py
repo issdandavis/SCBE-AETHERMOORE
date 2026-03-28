@@ -26,7 +26,14 @@ def test_build_triage_orders_merge_ready_first():
             "labels": [{"name": "needs-rebase"}],
             "url": "x",
         },
-        {"number": 1, "title": "ready", "headRefName": "ready", "isDraft": False, "labels": [], "url": "y"},
+        {
+            "number": 1,
+            "title": "ready",
+            "headRefName": "ready",
+            "isDraft": False,
+            "labels": [],
+            "url": "y",
+        },
     ]
     checks = {
         1: [{"bucket": "pass", "name": "ci"}],

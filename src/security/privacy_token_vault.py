@@ -343,7 +343,13 @@ class PrivacyTokenVault:
             raise ValueError("decrypted payload must be a JSON object")
         return payload
 
-    def put(self, value: str, *, kind: str = VAULT_KIND_GENERIC, metadata: dict[str, Any] | None = None) -> VaultEntry:
+    def put(
+        self,
+        value: str,
+        *,
+        kind: str = VAULT_KIND_GENERIC,
+        metadata: dict[str, Any] | None = None,
+    ) -> VaultEntry:
         kind = _kind_prefix(kind)
         normalized = normalize_identifier(value, kind)
         alias = self.alias_for(value, kind)
@@ -363,7 +369,7 @@ class PrivacyTokenVault:
             "value": value,
             "normalized": normalized,
             "metadata": safe_metadata,
-            "created_at_utc": entry.get("created_at_utc") if isinstance(entry, dict) else now,
+            "created_at_utc": (entry.get("created_at_utc") if isinstance(entry, dict) else now),
         }
         encrypted = self._encrypt_record(alias, kind, record_payload)
         blob_path.write_bytes(encrypted)
@@ -374,7 +380,7 @@ class PrivacyTokenVault:
             blob_file=str(blob_path),
             value_sha256=value_sha256,
             value_length=len(value),
-            created_at_utc=str(entry.get("created_at_utc", now)) if isinstance(entry, dict) else now,
+            created_at_utc=(str(entry.get("created_at_utc", now)) if isinstance(entry, dict) else now),
             updated_at_utc=now,
             metadata=safe_metadata,
         )

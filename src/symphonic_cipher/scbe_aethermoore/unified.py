@@ -365,7 +365,7 @@ def entropy_rate_estimate(sequence: List, order: int = 1) -> float:
     total_entropy = 0.0
     total_contexts = 0
 
-    for context, next_counts in transitions.items():
+    for _context, next_counts in transitions.items():
         context_total = sum(next_counts.values())
         if context_total == 0:
             continue
@@ -1023,7 +1023,7 @@ def verify_hmac_chain(
 
     prev_tag = iv
 
-    for i, (msg, nonce, tag) in enumerate(zip(messages, nonces, tags)):
+    for _i, (msg, nonce, tag) in enumerate(zip(messages, nonces, tags)):
         # Verify tag (HMAC integrity)
         expected_tag = hmac_chain_tag(msg, nonce, prev_tag, key)
         if not hmac.compare_digest(tag, expected_tag):

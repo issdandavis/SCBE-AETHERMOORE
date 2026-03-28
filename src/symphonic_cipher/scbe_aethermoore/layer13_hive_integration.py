@@ -367,7 +367,7 @@ class HiveIntegratedLayer13:
                 self._decision_counts["DENY"] + self._decision_counts["REJECT"] + self._decision_counts["SNAP"]
             )
             / self._total_decisions,
-            "recent_risk_mean": sum(recent_risks) / len(recent_risks) if recent_risks else 0,
+            "recent_risk_mean": (sum(recent_risks) / len(recent_risks) if recent_risks else 0),
             "recent_risk_max": max(recent_risks) if recent_risks else 0,
             "session_id": self.session_id,
             "agent_id": self.agent_id,

@@ -34,9 +34,15 @@ SECRET_STORE_KEY_ENV = "SCBE_SECRET_STORE_KEY"
 SECRET_STORE_KEY_SALT_ENV = "SCBE_SECRET_STORE_KEY_SALT"
 
 _SENSITIVE_TEXT_PATTERNS: list[tuple[re.Pattern[str], str]] = [
-    (re.compile(r"Authorization:\s*Bearer\s+[^\s]+", re.IGNORECASE), "Authorization: Bearer [redacted]"),
     (
-        re.compile(r"\b(api[_-]?key|token|secret|password)\s*[:=]\s*['\"]?[^'\"\s]+['\"]?", re.IGNORECASE),
+        re.compile(r"Authorization:\s*Bearer\s+[^\s]+", re.IGNORECASE),
+        "Authorization: Bearer [redacted]",
+    ),
+    (
+        re.compile(
+            r"\b(api[_-]?key|token|secret|password)\s*[:=]\s*['\"]?[^'\"\s]+['\"]?",
+            re.IGNORECASE,
+        ),
         r"\1=[redacted]",
     ),
     (re.compile(r"\bsk-[A-Za-z0-9_-]{8,}\b"), "[redacted]"),
@@ -182,7 +188,10 @@ def _dpapi_encrypt(value: str) -> str:
     from ctypes import wintypes
 
     class DATA_BLOB(ctypes.Structure):
-        _fields_ = [("cbData", wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_byte))]
+        _fields_ = [
+            ("cbData", wintypes.DWORD),
+            ("pbData", ctypes.POINTER(ctypes.c_byte)),
+        ]
 
     crypt32 = ctypes.windll.crypt32
     kernel32 = ctypes.windll.kernel32
@@ -216,7 +225,10 @@ def _dpapi_decrypt(ciphertext: str) -> str:
     from ctypes import wintypes
 
     class DATA_BLOB(ctypes.Structure):
-        _fields_ = [("cbData", wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_byte))]
+        _fields_ = [
+            ("cbData", wintypes.DWORD),
+            ("pbData", ctypes.POINTER(ctypes.c_byte)),
+        ]
 
     crypt32 = ctypes.windll.crypt32
     kernel32 = ctypes.windll.kernel32
@@ -273,7 +285,10 @@ def redact_sensitive_text(text: str | None) -> str:
 
 
 def sensitive_fingerprint(
-    value: str, *, salt_env: str = "SCBE_METADATA_HASH_KEY", salt_default: str = "scbe-metadata"
+    value: str,
+    *,
+    salt_env: str = "SCBE_METADATA_HASH_KEY",
+    salt_default: str = "scbe-metadata",
 ) -> str:
     """PBKDF2 fingerprint for audit without exposing the actual value."""
     salt = os.getenv(salt_env, salt_default).encode("utf-8")

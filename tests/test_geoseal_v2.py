@@ -184,7 +184,14 @@ class TestRepulsionV2:
 class TestUncertaintyEvolution:
     def test_sigma_decays_for_consistent(self):
         agents = [
-            MixedAgent(f"ko{i}", pos, TONGUE_PHASES["KO"], sigma=0.5, tongue="KO", trust_score=1.0)
+            MixedAgent(
+                f"ko{i}",
+                pos,
+                TONGUE_PHASES["KO"],
+                sigma=0.5,
+                tongue="KO",
+                trust_score=1.0,
+            )
             for i, pos in enumerate([[0.1, 0], [-0.1, 0], [0, 0.1], [0, -0.1]])
         ]
         initial = agents[0].sigma
@@ -205,8 +212,22 @@ class TestUncertaintyEvolution:
 
     def test_sigma_never_negative(self):
         agents = [
-            MixedAgent("a", [0.1, 0], TONGUE_PHASES["KO"], sigma=0.01, tongue="KO", trust_score=1.0),
-            MixedAgent("b", [-0.1, 0], TONGUE_PHASES["KO"], sigma=0.01, tongue="KO", trust_score=1.0),
+            MixedAgent(
+                "a",
+                [0.1, 0],
+                TONGUE_PHASES["KO"],
+                sigma=0.01,
+                tongue="KO",
+                trust_score=1.0,
+            ),
+            MixedAgent(
+                "b",
+                [-0.1, 0],
+                TONGUE_PHASES["KO"],
+                sigma=0.01,
+                tongue="KO",
+                trust_score=1.0,
+            ),
         ]
         run_swarm_v2(agents, num_steps=50, drift_rate=0.005, sigma_decay=0.1)
         assert agents[0].sigma >= 0
@@ -243,7 +264,14 @@ class TestSwarmV2:
 
     def test_positions_clamped(self):
         agents = [
-            MixedAgent("a", [0.95, 0], TONGUE_PHASES["KO"], sigma=0, tongue="KO", trust_score=1.0),
+            MixedAgent(
+                "a",
+                [0.95, 0],
+                TONGUE_PHASES["KO"],
+                sigma=0,
+                tongue="KO",
+                trust_score=1.0,
+            ),
             MixedAgent("rogue", [0.96, 0], None, sigma=1.0),
         ]
         run_swarm_v2(agents, 10, 0.01)

@@ -118,7 +118,12 @@ _HODGE_EGGS: List[_EggDef] = [
 
 # Omni egg
 _OMNI_EGG = _EggDef(
-    "omni_prism", "Prism Egg", "nexus", None, lambda v: all(x >= 0.35 for x in v), "Every tongue >= 0.35"
+    "omni_prism",
+    "Prism Egg",
+    "nexus",
+    None,
+    lambda v: all(x >= 0.35 for x in v),
+    "Every tongue >= 0.35",
 )
 
 # Evaluation order: omni → hodge → mono (rarer first)
