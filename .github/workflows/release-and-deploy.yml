@@ -1,9 +1,6 @@
 name: SCBE-AETHERMOORE Release & Deploy
 
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
     inputs:
       release_type:

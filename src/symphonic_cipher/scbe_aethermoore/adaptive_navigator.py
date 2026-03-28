@@ -102,7 +102,11 @@ class AdaptiveHyperbolicNavigator:
             print('High deviation detected')
     """
 
-    def __init__(self, config: Optional[AdaptiveNavigatorConfig] = None, initial_position: Optional[np.ndarray] = None):
+    def __init__(
+        self,
+        config: Optional[AdaptiveNavigatorConfig] = None,
+        initial_position: Optional[np.ndarray] = None,
+    ):
         self.config = config or AdaptiveNavigatorConfig()
         self.position = np.array(initial_position) if initial_position is not None else np.zeros(self.config.dimension)
         self.velocity = np.zeros(self.config.dimension)
@@ -234,7 +238,12 @@ class AdaptiveHyperbolicNavigator:
         return attraction + repulsion + chaos
 
     def _drift_ode(
-        self, pos: np.ndarray, t: float, targets: List[str], coherence: float, mutations: float
+        self,
+        pos: np.ndarray,
+        t: float,
+        targets: List[str],
+        coherence: float,
+        mutations: float,
     ) -> np.ndarray:
         """ODE system for scipy.integrate.odeint."""
         return self._compute_drift(pos, targets, coherence, mutations)
@@ -244,7 +253,11 @@ class AdaptiveHyperbolicNavigator:
     # ═══════════════════════════════════════════════════════════════
 
     def update(
-        self, intent_tongues: List[str], coherence: float = 1.0, mutations: float = 0, dt: float = 0.1
+        self,
+        intent_tongues: List[str],
+        coherence: float = 1.0,
+        mutations: float = 0,
+        dt: float = 0.1,
     ) -> NavigatorState:
         """
         Update navigator position with intent and coherence.
@@ -433,7 +446,8 @@ class AdaptiveHyperbolicNavigator:
 
 
 def create_adaptive_navigator(
-    config: Optional[AdaptiveNavigatorConfig] = None, initial_position: Optional[np.ndarray] = None
+    config: Optional[AdaptiveNavigatorConfig] = None,
+    initial_position: Optional[np.ndarray] = None,
 ) -> AdaptiveHyperbolicNavigator:
     """Create an adaptive navigator with sensible defaults."""
     return AdaptiveHyperbolicNavigator(config, initial_position)

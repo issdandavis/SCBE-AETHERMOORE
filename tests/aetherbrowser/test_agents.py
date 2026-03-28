@@ -14,7 +14,14 @@ class TestSquadCreation:
         feed = WsFeed()
         squad = AgentSquad(feed)
         roles = {a.role for a in squad.agents.values()}
-        assert roles == {TongueRole.KO, TongueRole.AV, TongueRole.RU, TongueRole.CA, TongueRole.UM, TongueRole.DR}
+        assert roles == {
+            TongueRole.KO,
+            TongueRole.AV,
+            TongueRole.RU,
+            TongueRole.CA,
+            TongueRole.UM,
+            TongueRole.DR,
+        }
 
     def test_all_start_idle(self):
         feed = WsFeed()

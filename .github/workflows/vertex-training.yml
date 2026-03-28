@@ -17,10 +17,6 @@ on:
         required: false
         default: ''
         type: string
-  push:
-    branches: [main]
-    paths:
-      - 'training/**'
 
 env:
   GCP_PROJECT_ID: gen-lang-client-0103521392

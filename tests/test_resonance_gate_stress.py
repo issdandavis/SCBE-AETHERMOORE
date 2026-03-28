@@ -15,7 +15,14 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 PHI = (1 + math.sqrt(5)) / 2
 F0 = 440
 TONGUE_WEIGHTS = [1.0, PHI, PHI**2, PHI**3, PHI**4, PHI**5]
-TONGUE_PHASES = [0, math.pi / 3, 2 * math.pi / 3, math.pi, 4 * math.pi / 3, 5 * math.pi / 3]
+TONGUE_PHASES = [
+    0,
+    math.pi / 3,
+    2 * math.pi / 3,
+    math.pi,
+    4 * math.pi / 3,
+    5 * math.pi / 3,
+]
 TONGUE_NAMES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 
 
@@ -285,7 +292,12 @@ if __name__ == "__main__":
         "elapsed_s": round(elapsed, 3),
         "results": results,
     }
-    report_path = os.path.join(os.path.dirname(__file__), "..", "artifacts", "resonance_gate_stress_report.json")
+    report_path = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "artifacts",
+        "resonance_gate_stress_report.json",
+    )
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
     with open(report_path, "w") as f:
         json.dump(report, f, indent=2)

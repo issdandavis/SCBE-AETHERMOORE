@@ -278,14 +278,26 @@ class MultiAngleAnalyzer:
     """Analyze the knowledge graph from multiple perspectives to find connections."""
 
     ANGLES = [
-        ("security_vs_math", ["security", "math", "quantum"], "Where does security meet mathematics?"),
+        (
+            "security_vs_math",
+            ["security", "math", "quantum"],
+            "Where does security meet mathematics?",
+        ),
         (
             "ai_vs_governance",
             ["ai", "governance", "swarm"],
             "How does AI governance intersect with swarm intelligence?",
         ),
-        ("nlp_vs_geometry", ["nlp", "geometry", "math"], "Language models and geometric embeddings"),
-        ("lore_vs_research", ["lore", "research", "tongues"], "Narrative patterns in research structures"),
+        (
+            "nlp_vs_geometry",
+            ["nlp", "geometry", "math"],
+            "Language models and geometric embeddings",
+        ),
+        (
+            "lore_vs_research",
+            ["lore", "research", "tongues"],
+            "Narrative patterns in research structures",
+        ),
         ("cross_domain", None, "Highest-connected nodes across all categories"),
     ]
 
@@ -574,7 +586,16 @@ def hydra_arxiv_expand(query: str, max_results: int = 5) -> list[str]:
 
     try:
         result = subprocess.run(
-            [sys.executable, "-m", "hydra", "arxiv", "search", query, "--max", str(max_results)],
+            [
+                sys.executable,
+                "-m",
+                "hydra",
+                "arxiv",
+                "search",
+                query,
+                "--max",
+                str(max_results),
+            ],
             capture_output=True,
             text=True,
             timeout=30,
@@ -796,7 +817,10 @@ def run_cycle(
     all_allowed: list[KnowledgeChunk] = []
 
     # Import scrapers
-    from src.knowledge.scrapers.arxiv_scraper import search_arxiv, CATEGORIES as ARXIV_CATS
+    from src.knowledge.scrapers.arxiv_scraper import (
+        search_arxiv,
+        CATEGORIES as ARXIV_CATS,
+    )
     from src.knowledge.scrapers.semantic_scholar_scraper import search_papers
     from src.knowledge.scrapers.loc_scraper import search_loc
     from src.knowledge.scrapers.internet_archive_scraper import search_archive

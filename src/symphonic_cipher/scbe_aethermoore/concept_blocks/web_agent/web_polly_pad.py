@@ -200,7 +200,10 @@ class WebPollyPad:
         if action.action_type == ActionType.NAVIGATE:
             visits = self._loop_detector.get(action.target, 0)
             if visits >= 3:
-                return "DENY", f"Navigation loop detected: visited {action.target} {visits} times"
+                return (
+                    "DENY",
+                    f"Navigation loop detected: visited {action.target} {visits} times",
+                )
 
         return "ALLOW", None
 

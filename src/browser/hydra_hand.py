@@ -232,7 +232,8 @@ class Finger:
         """Extract all links from current page."""
         try:
             links = await self.page.eval_on_selector_all(
-                "a[href]", "els => els.map(e => e.href).filter(h => h.startsWith('http'))"
+                "a[href]",
+                "els => els.map(e => e.href).filter(h => h.startsWith('http'))",
             )
             return links[:100]  # Cap at 100
         except Exception:
@@ -313,7 +314,11 @@ class HydraHand:
     6. KO synthesizes and returns the final result
     """
 
-    def __init__(self, head_id: str = "default", vision_tier: ObservationTier = ObservationTier.TIER_2):
+    def __init__(
+        self,
+        head_id: str = "default",
+        vision_tier: ObservationTier = ObservationTier.TIER_2,
+    ):
         self.head_id = head_id
         self.vision_tier = vision_tier
         self.fingers: Dict[Tongue, Finger] = {t: Finger(tongue=t, vision=PollyVision(tier=vision_tier)) for t in Tongue}
@@ -519,7 +524,12 @@ class HydraHand:
         report["structured"] = structured
         report["elapsed_ms"] = (time.monotonic() - start) * 1000
 
-        logger.info("[%s] Research complete: %d sources, %.0fms", self.head_id, len(extractions), report["elapsed_ms"])
+        logger.info(
+            "[%s] Research complete: %d sources, %.0fms",
+            self.head_id,
+            len(extractions),
+            report["elapsed_ms"],
+        )
         return report
 
     async def research_and_funnel(
@@ -981,7 +991,13 @@ async def swarm_research(
     per_query: List[Dict[str, Any]] = []
     for batch in batch_results:
         if isinstance(batch, Exception):
-            per_query.append({"error": str(batch), "extractions": [], "structured": {"mesh_nodes": []}})
+            per_query.append(
+                {
+                    "error": str(batch),
+                    "extractions": [],
+                    "structured": {"mesh_nodes": []},
+                }
+            )
         else:
             per_query.extend(batch)
 

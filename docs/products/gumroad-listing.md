@@ -37,7 +37,7 @@ SCBE-AETHERMOORE passes every agent request through a 14-layer security pipeline
 - AI startups that need a governance layer before going to market
 - Solo developers building multi-agent systems who need audit trails
 
-**Benchmarked performance:** 95.3% adversarial detection rate, zero false positives on legitimate agents. Post-quantum cryptography (NIST-approved ML-KEM-768, ML-DSA-65) secures all sealed data.
+**Public benchmark:** 91/91 adversarial attacks blocked across the current public suite, with 0/15 clean false positives. Post-quantum cryptography (NIST-approved ML-KEM-768, ML-DSA-65) secures all sealed data.
 
 Ships with access to the open-source SCBE-AETHERMOORE codebase (MIT licensed core). The guide is the accelerator that gets you from clone to production in an afternoon, not a month.
 

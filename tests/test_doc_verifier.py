@@ -162,7 +162,11 @@ class TestManifest:
                 "filename": "nonexistent.md",
                 "content_hash": "sha256:" + "0" * 64,
                 "category": "reference",
-                "verification": {"status": "unverified", "consensus_required": 3, "verified_by": []},
+                "verification": {
+                    "status": "unverified",
+                    "consensus_required": 3,
+                    "verified_by": [],
+                },
             }
         ]
         manifest = build_manifest(docs)

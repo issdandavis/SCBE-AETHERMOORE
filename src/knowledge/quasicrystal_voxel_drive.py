@@ -196,7 +196,12 @@ class QuasiCrystalVoxelDrive:
         return [max(0, min(self.resolution - 1, int((c + 1) / 2 * self.resolution))) for c in coords]
 
     def store(
-        self, chunk_id: str, content: bytes, tongue_coords: list, category: str = "general", parent_id: str = ""
+        self,
+        chunk_id: str,
+        content: bytes,
+        tongue_coords: list,
+        category: str = "general",
+        parent_id: str = "",
     ) -> VoxelCell:
         """
         Store a knowledge chunk in the 6D tensor drive.

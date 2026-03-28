@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aethermoor Outreach</title>
+  <style>
+    :root {
+      --bg-primary: #071412;
+      --bg-secondary: #0d1f1b;
+      --bg-card: #122a24;
+      --bg-input: #0a1c18;
+      --border: #1e3d35;
+      --border-hover: #2d5c50;
+      --accent: #3ecfa5;
+      --accent-dim: #2a9474;
+      --accent-glow: rgba(62, 207, 165, 0.15);
+      --text-primary: #e8f0ed;
+      --text-secondary: #8fa89f;
+      --text-muted: #5c7a70;
+      --danger: #e05555;
+      --warning: #d4a843;
+      --success: #3ecfa5;
+      --radius: 8px;
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      --mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 24px 0;
+      background: var(--bg-secondary);
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    .compliance-notice {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    main {
+      padding: 32px 0 64px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      color: var(--accent);
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .card h3 {
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    /* Forms */
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    textarea { resize: vertical; min-height: 80px; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-group { margin-bottom: 16px; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: var(--font);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg-primary);
+      border-color: var(--accent);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-dim);
+      border-color: var(--accent-dim);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--accent);
+      border-color: var(--accent-dim);
+    }
+
+    .btn-secondary:hover {
+      background: var(--accent-glow);
+      border-color: var(--accent);
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Chips */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .chip {
+      padding: 6px 14px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-glow);
+    }
+
+    /* Workflow steps */
+    .step {
+      border-left: 3px solid var(--border);
+      padding: 12px 0 12px 20px;
+      margin-left: 12px;
+      position: relative;
+    }
+
+    .step::before {
+      content: attr(data-step);
+      position: absolute;
+      left: -14px;
+      top: 12px;
+      width: 26px;
+      height: 26px;
+      background: var(--bg-card);
+      border: 2px solid var(--accent-dim);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .step.completed { border-left-color: var(--success); }
+    .step.completed::before { border-color: var(--success); background: var(--success); color: var(--bg-primary); }
+
+    .step-desc { font-size: 0.9rem; color: var(--text-primary); margin-bottom: 4px; }
+    .step-meta { font-size: 0.78rem; color: var(--text-muted); }
+    .step-meta span { margin-right: 16px; }
+
+    /* Opportunity panel */
+    .opp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .opp-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+    }
+
+    .opp-item strong {
+      color: var(--accent);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .opp-item p, .opp-item ul {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .opp-item ul { padding-left: 18px; }
+    .opp-item li { margin-bottom: 2px; }
+
+    /* Routing targets */
+    .target-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    .target-card h4 {
+      color: var(--accent);
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+    }
+
+    .target-card .target-info {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+
+    .target-card .target-info span {
+      display: inline-block;
+      margin-right: 18px;
+      margin-bottom: 2px;
+    }
+
+    .target-card .target-notes {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    /* Document viewer */
+    .doc-content {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 500px;
+      overflow-y: auto;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+
+    /* Events timeline */
+    .event {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+
+    .event:last-child { border-bottom: none; }
+
+    .event-type {
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+    }
+
+    .event-time {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    /* Dashboard table */
+    .dash-row {
+      display: grid;
+      grid-template-columns: 1fr 120px 140px 100px;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+
+    .dash-row:last-child { border-bottom: none; }
+
+    .dash-header {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .dash-name { font-weight: 500; }
+    .dash-intent {
+      font-size: 0.8rem;
+      color: var(--accent-dim);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .badge-open { background: rgba(62, 207, 165, 0.15); color: var(--accent); }
+    .badge-closed { background: rgba(90, 90, 90, 0.2); color: var(--text-muted); }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      padding: 10px 18px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      font-family: var(--font);
+      background: transparent;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+
+    .tab:hover { color: var(--text-secondary); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+
+    .toast {
+      background: var(--bg-card);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 12px 18px;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .toast.error { border-color: var(--danger); }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Hidden */
+    .hidden { display: none !important; }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      .form-row { grid-template-columns: 1fr; }
+      .opp-grid { grid-template-columns: 1fr; }
+      .dash-row { grid-template-columns: 1fr; gap: 4px; }
+      .dash-header { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>Aethermoor Outreach</h1>
+    <p>Official pathways. On your time.</p>
+    <div class="compliance-notice">
+      Assistive interface for civic and business navigation in Port Angeles, WA.
+      Not an official government agent. Human review required on all outbound communication.
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="intake">New Intake</button>
+      <button class="tab" data-tab="dashboard">Dashboard</button>
+      <button class="tab" data-tab="case-view">Case Details</button>
+    </div>
+
+    <!-- ===================== INTAKE TAB ===================== -->
+    <div class="tab-content active" id="tab-intake">
+
+      <!-- Intake Form -->
+      <div class="card">
+        <h2>Submit Your Intent</h2>
+        <form id="intake-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="intake-name">Your Name</label>
+              <input type="text" id="intake-name" placeholder="e.g., Issac Davis" required>
+            </div>
+            <div class="form-group">
+              <label for="intake-location">Area of Port Angeles</label>
+              <select id="intake-location" required>
+                <option value="">Select area...</option>
+                <option value="downtown">Downtown</option>
+                <option value="waterfront">Waterfront / Port</option>
+                <option value="east_side">East Side</option>
+                <option value="west_end">West End</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="intake-intent">What do you want to do?</label>
+            <textarea id="intake-intent" placeholder="Describe your goal..." required></textarea>
+            <div class="chips">
+              <span class="chip" data-text="I want to start a business">Start a business</span>
+              <span class="chip" data-text="I need a building permit">Get a permit</span>
+              <span class="chip" data-text="I want to find grants or funding">Find grants</span>
+              <span class="chip" data-text="I want to file a patent">File a patent</span>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" id="intake-submit">Submit Intake</button>
+        </form>
+      </div>
+
+      <!-- Opportunity Panel -->
+      <div class="card hidden" id="opportunity-panel">
+        <h2>Location Opportunity Profile</h2>
+        <div id="opportunity-content"></div>
+      </div>
+
+      <!-- Results (workflow, docs, routing) -->
+      <div class="hidden" id="intake-results">
+
+        <!-- Classification -->
+        <div class="card" id="classification-panel">
+          <h2>Intent Classification</h2>
+          <div id="classification-content"></div>
+        </div>
+
+        <!-- Workflow -->
+        <div class="card">
+          <h2>Your Workflow</h2>
+          <div id="workflow-content"></div>
+        </div>
+
+        <!-- Documents -->
+        <div class="card">
+          <h2>Documents</h2>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+            Generate templates for your workflow. All documents require your review and customization.
+          </p>
+          <div id="doc-buttons"></div>
+          <div id="doc-viewer" class="hidden" style="margin-top: 16px;">
+            <h3 id="doc-title"></h3>
+            <div class="doc-content" id="doc-content"></div>
+          </div>
+        </div>
+
+        <!-- Routing -->
+        <div class="card">
+          <h2>Who to Contact</h2>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+            Relevant agencies and contacts. Verify hours before visiting.
+          </p>
+          <div id="routing-content"></div>
+        </div>
+
+        <!-- Case Events -->
+        <div class="card">
+          <h2>Case Timeline</h2>
+          <div id="events-content"></div>
+          <div style="margin-top: 16px;">
+            <h3>Add Note</h3>
+            <div class="form-row" style="margin-top: 8px;">
+              <input type="text" id="event-desc" placeholder="What happened?">
+              <div>
+                <select id="event-type" style="margin-bottom: 8px;">
+                  <option value="note">Note</option>
+                  <option value="phone_call">Phone Call</option>
+                  <option value="meeting">Meeting</option>
+                  <option value="document_submitted">Document Submitted</option>
+                  <option value="approval_received">Approval Received</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-small" id="add-event-btn">Add Event</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===================== DASHBOARD TAB ===================== -->
+    <div class="tab-content" id="tab-dashboard">
+      <div class="card">
+        <h2>All Projects</h2>
+        <div id="dashboard-content">
+          <div class="loading"><span class="spinner"></span> Loading dashboard...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== CASE VIEW TAB ===================== -->
+    <div class="tab-content" id="tab-case-view">
+      <div class="card">
+        <h2>Case Details</h2>
+        <div class="form-row" style="margin-bottom: 16px;">
+          <div class="form-group">
+            <label for="case-id-input">Case ID</label>
+            <input type="number" id="case-id-input" placeholder="Enter case ID">
+          </div>
+          <div style="display: flex; align-items: flex-end;">
+            <button class="btn btn-secondary" id="load-case-btn">Load Case</button>
+          </div>
+        </div>
+        <div id="case-detail-content"></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// =========================================================================
+// Aethermoor Outreach -- Frontend
+// =========================================================================
+
+const API = window.location.origin;
+
+// State
+let currentProjectId = null;
+let currentCaseId = null;
+
+// ---- Helpers ----
+
+async function apiFetch(path, options = {}) {
+  const url = API + path;
+  const defaults = {
+    headers: { 'Content-Type': 'application/json' },
+  };
+  const opts = { ...defaults, ...options };
+  if (opts.body && typeof opts.body === 'object' && !(opts.body instanceof FormData)) {
+    opts.body = JSON.stringify(opts.body);
+  }
+  const res = await fetch(url, opts);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || 'Request failed');
+  }
+  return res.json();
+}
+
+function toast(msg, isError = false) {
+  const container = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = 'toast' + (isError ? ' error' : '');
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+
+// ---- Tabs ----
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+
+    if (tab.dataset.tab === 'dashboard') loadDashboard();
+  });
+});
+
+// ---- Suggestion Chips ----
+
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.getElementById('intake-intent').value = chip.dataset.text;
+    document.getElementById('intake-intent').focus();
+  });
+});
+
+// ---- Opportunity Panel ----
+
+document.getElementById('intake-location').addEventListener('change', async (e) => {
+  const loc = e.target.value;
+  if (!loc) {
+    hide('opportunity-panel');
+    return;
+  }
+  try {
+    const data = await apiFetch('/api/locations/' + loc + '/opportunity');
+    renderOpportunity(data);
+    show('opportunity-panel');
+  } catch (err) {
+    hide('opportunity-panel');
+  }
+});
+
+function renderOpportunity(data) {
+  const el = document.getElementById('opportunity-content');
+  el.innerHTML = `
+    <h3>${data.area}</h3>
+    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 12px;">${data.description}</p>
+    <div class="opp-grid">
+      <div class="opp-item">
+        <strong>Walkability</strong>
+        <p>${data.walkability}</p>
+      </div>
+      <div class="opp-item">
+        <strong>Competition</strong>
+        <p>${data.competition_level}</p>
+      </div>
+      <div class="opp-item">
+        <strong>Avg. Commercial Rent</strong>
+        <p>${data.avg_commercial_rent}</p>
+      </div>
+      <div class="opp-item">
+        <strong>Opportunity Types</strong>
+        <p>${data.opportunity_types.join(', ')}</p>
+      </div>
+    </div>
+    <div class="opp-grid" style="margin-top: 12px;">
+      <div class="opp-item">
+        <strong>Highlights</strong>
+        <ul>${data.highlights.map(h => '<li>' + h + '</li>').join('')}</ul>
+      </div>
+      <div class="opp-item">
+        <strong>Challenges</strong>
+        <ul>${data.challenges.map(c => '<li>' + c + '</li>').join('')}</ul>
+      </div>
+    </div>
+    ${data.key_contacts ? `
+    <div style="margin-top: 12px;">
+      <strong style="color: var(--accent); font-size: 0.8rem; text-transform: uppercase;">Key Contacts</strong>
+      <ul style="font-size: 0.85rem; color: var(--text-secondary); padding-left: 18px; margin-top: 4px;">
+        ${data.key_contacts.map(c => '<li>' + c + '</li>').join('')}
+      </ul>
+    </div>` : ''}
+  `;
+}
+
+// ---- Intake Form ----
+
+document.getElementById('intake-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('intake-submit');
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
+
+  try {
+    const payload = {
+      name: document.getElementById('intake-name').value,
+      location: document.getElementById('intake-location').value,
+      intent: document.getElementById('intake-intent').value,
+    };
+
+    const data = await apiFetch('/api/intake', {
+      method: 'POST',
+      body: payload,
+    });
+
+    currentProjectId = data.project_id;
+    currentCaseId = data.case_id;
+
+    renderClassification(data.classification);
+    renderWorkflow(data.workflow_steps);
+    loadRouting(data.classification.intent);
+    loadDocButtons(data.classification.intent);
+    loadEvents(currentCaseId);
+
+    show('intake-results');
+    toast('Intake submitted. Case #' + data.case_id + ' created.');
+
+  } catch (err) {
+    toast(err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Submit Intake';
+  }
+});
+
+function renderClassification(cls) {
+  const el = document.getElementById('classification-content');
+  const conf = Math.round(cls.confidence * 100);
+  el.innerHTML = `
+    <p><strong>Classified as:</strong> <span style="color: var(--accent)">${cls.intent.replace(/_/g, ' ')}</span></p>
+    <p><strong>Confidence:</strong> ${conf}%</p>
+    <p><strong>Description:</strong> ${cls.description}</p>
+    ${cls.keywords_matched.length ? '<p><strong>Keywords matched:</strong> ' + cls.keywords_matched.join(', ') + '</p>' : ''}
+  `;
+}
+
+function renderWorkflow(steps) {
+  const el = document.getElementById('workflow-content');
+  el.innerHTML = steps.map(s => `
+    <div class="step" data-step="${s.step_number}">
+      <div class="step-desc">${s.description}</div>
+      <div class="step-meta">
+        <span>Agency: ${s.agency || 'N/A'}</span>
+        <span>Est. time: ${s.estimated_time || 'Varies'}</span>
+      </div>
+      ${s.required_docs ? '<div class="step-meta">Docs: ' + s.required_docs + '</div>' : ''}
+    </div>
+  `).join('');
+}
+
+// ---- Document Generation ----
+
+const DOC_TYPE_LABELS = {
+  business_plan_summary: 'Business Plan Summary',
+  permit_inquiry_letter: 'Permit Inquiry Letter',
+  grant_inquiry_email: 'Grant Inquiry Email',
+  patent_description: 'Invention Disclosure',
+  general_inquiry: 'General Inquiry',
+};
+
+const INTENT_DOC_MAP = {
+  start_business: ['business_plan_summary', 'general_inquiry'],
+  permit_inquiry: ['permit_inquiry_letter', 'general_inquiry'],
+  grant_discovery: ['grant_inquiry_email', 'general_inquiry'],
+  patent_filing: ['patent_description', 'general_inquiry'],
+  general_inquiry: ['general_inquiry'],
+};
+
+function loadDocButtons(intent) {
+  const types = INTENT_DOC_MAP[intent] || ['general_inquiry'];
+  const el = document.getElementById('doc-buttons');
+  el.innerHTML = types.map(t => `
+    <button class="btn btn-secondary btn-small" style="margin-right: 8px; margin-bottom: 8px;"
+            onclick="generateDoc('${t}')">${DOC_TYPE_LABELS[t] || t}</button>
+  `).join('');
+}
+
+async function generateDoc(docType) {
+  if (!currentCaseId) return;
+  try {
+    const data = await apiFetch('/api/documents/generate', {
+      method: 'POST',
+      body: {
+        case_id: currentCaseId,
+        doc_type: docType,
+        context: {
+          name: document.getElementById('intake-name').value,
+          location: document.getElementById('intake-location').selectedOptions[0]?.text || 'Port Angeles',
+          intent: document.getElementById('intake-intent').value,
+        },
+      },
+    });
+    document.getElementById('doc-title').textContent = data.title;
+    document.getElementById('doc-content').textContent = data.content;
+    show('doc-viewer');
+    loadEvents(currentCaseId);
+    toast('Document generated: ' + data.title);
+  } catch (err) {
+    toast(err.message, true);
+  }
+}
+
+// ---- Routing ----
+
+async function loadRouting(intent) {
+  try {
+    const data = await apiFetch('/api/routing/recommend', {
+      method: 'POST',
+      body: { intent },
+    });
+    renderRouting(data.targets);
+  } catch (err) {
+    document.getElementById('routing-content').innerHTML =
+      '<p style="color: var(--text-muted);">Could not load routing targets.</p>';
+  }
+}
+
+function renderRouting(targets) {
+  const el = document.getElementById('routing-content');
+  if (!targets.length) {
+    el.innerHTML = '<p style="color: var(--text-muted);">No specific routing targets for this intent.</p>';
+    return;
+  }
+  el.innerHTML = targets.map(t => `
+    <div class="target-card">
+      <h4>${t.name}</h4>
+      <div class="target-info">
+        ${t.phone ? '<span>Phone: ' + t.phone + '</span>' : ''}
+        ${t.contact_info ? '<span>Email: ' + t.contact_info + '</span>' : ''}
+        ${t.hours ? '<span>Hours: ' + t.hours + '</span>' : ''}
+        ${t.website ? '<span><a href="' + t.website + '" target="_blank" style="color: var(--accent);">' + t.website + '</a></span>' : ''}
+      </div>
+      ${t.notes ? '<div class="target-notes">' + t.notes + '</div>' : ''}
+    </div>
+  `).join('');
+}
+
+// ---- Events ----
+
+async function loadEvents(caseId) {
+  try {
+    const data = await apiFetch('/api/cases/' + caseId);
+    renderEvents(data.events);
+  } catch (err) {
+    // Silently fail on events load
+  }
+}
+
+function renderEvents(events) {
+  const el = document.getElementById('events-content');
+  if (!events.length) {
+    el.innerHTML = '<p style="color: var(--text-muted);">No events yet.</p>';
+    return;
+  }
+  el.innerHTML = events.map(ev => `
+    <div class="event">
+      <span class="event-type">${ev.event_type.replace(/_/g, ' ')}</span>
+      <span class="event-time">${ev.created_at ? new Date(ev.created_at).toLocaleString() : ''}</span>
+      <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">${ev.description}</div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('add-event-btn').addEventListener('click', async () => {
+  if (!currentCaseId) return;
+  const desc = document.getElementById('event-desc').value;
+  if (!desc) { toast('Enter a description', true); return; }
+  try {
+    await apiFetch('/api/cases/' + currentCaseId + '/events', {
+      method: 'POST',
+      body: {
+        event_type: document.getElementById('event-type').value,
+        description: desc,
+      },
+    });
+    document.getElementById('event-desc').value = '';
+    loadEvents(currentCaseId);
+    toast('Event added.');
+  } catch (err) {
+    toast(err.message, true);
+  }
+});
+
+// ---- Dashboard ----
+
+async function loadDashboard() {
+  const el = document.getElementById('dashboard-content');
+  el.innerHTML = '<div class="loading"><span class="spinner"></span> Loading...</div>';
+  try {
+    const data = await apiFetch('/api/dashboard');
+    if (!data.projects.length) {
+      el.innerHTML = '<p style="color: var(--text-muted);">No projects yet. Submit an intake to get started.</p>';
+      return;
+    }
+    let html = `
+      <div class="dash-row dash-header">
+        <div>Project</div>
+        <div>Intent</div>
+        <div>Progress</div>
+        <div>Actions</div>
+      </div>
+    `;
+    for (const p of data.projects) {
+      const c = p.cases[0];
+      const progress = c ? `${c.completed_steps}/${c.total_steps} steps` : 'No case';
+      const status = c ? c.status : '-';
+      html += `
+        <div class="dash-row">
+          <div>
+            <div class="dash-name">${p.name}</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">${p.location} | ${new Date(p.created_at).toLocaleDateString()}</div>
+          </div>
+          <div class="dash-intent">${(p.intent_classified || 'general').replace(/_/g, ' ')}</div>
+          <div>
+            <span class="badge badge-${status}">${status}</span>
+            <span style="font-size: 0.8rem; margin-left: 6px;">${progress}</span>
+          </div>
+          <div>
+            ${c ? '<button class="btn btn-secondary btn-small" onclick="viewCase(' + c.id + ')">View</button>' : ''}
+          </div>
+        </div>
+      `;
+    }
+    el.innerHTML = html;
+  } catch (err) {
+    el.innerHTML = '<p style="color: var(--danger);">Error: ' + err.message + '</p>';
+  }
+}
+
+// ---- Case View ----
+
+async function viewCase(caseId) {
+  // Switch to case tab
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+  document.querySelector('[data-tab="case-view"]').classList.add('active');
+  document.getElementById('tab-case-view').classList.add('active');
+
+  document.getElementById('case-id-input').value = caseId;
+  await loadCaseDetail(caseId);
+}
+
+document.getElementById('load-case-btn').addEventListener('click', () => {
+  const id = document.getElementById('case-id-input').value;
+  if (id) loadCaseDetail(parseInt(id));
+});
+
+async function loadCaseDetail(caseId) {
+  const el = document.getElementById('case-detail-content');
+  el.innerHTML = '<div class="loading"><span class="spinner"></span> Loading...</div>';
+  try {
+    const data = await apiFetch('/api/cases/' + caseId);
+    let html = `
+      <div style="margin-bottom: 16px;">
+        <p><strong>Project:</strong> ${data.project_name} (ID: ${data.project_id})</p>
+        <p><strong>Status:</strong> <span class="badge badge-${data.status}">${data.status}</span></p>
+        <p><strong>Created:</strong> ${new Date(data.created_at).toLocaleString()}</p>
+      </div>
+
+      <h3>Workflow Steps</h3>
+      <div style="margin-bottom: 20px;">
+        ${data.workflow_steps.map(s => `
+          <div class="step ${s.status === 'completed' ? 'completed' : ''}" data-step="${s.step_number}">
+            <div class="step-desc">${s.description}</div>
+            <div class="step-meta">
+              <span>Agency: ${s.agency || 'N/A'}</span>
+              <span>Status: ${s.status}</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <h3>Documents (${data.documents.length})</h3>
+      <div style="margin-bottom: 20px;">
+        ${data.documents.length ? data.documents.map(d => `
+          <div class="target-card">
+            <h4>${d.title}</h4>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">${d.doc_type} | ${new Date(d.created_at).toLocaleString()}</div>
+          </div>
+        `).join('') : '<p style="color: var(--text-muted);">No documents generated yet.</p>'}
+      </div>
+
+      <h3>Timeline</h3>
+      ${data.events.map(ev => `
+        <div class="event">
+          <span class="event-type">${ev.event_type.replace(/_/g, ' ')}</span>
+          <span class="event-time">${ev.created_at ? new Date(ev.created_at).toLocaleString() : ''}</span>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">${ev.description}</div>
+        </div>
+      `).join('')}
+    `;
+    el.innerHTML = html;
+  } catch (err) {
+    el.innerHTML = '<p style="color: var(--danger);">Error: ' + err.message + '</p>';
+  }
+}
+
+// ---- Init ----
+// Pre-warm health check
+apiFetch('/health').then(() => {
+  console.log('Aethermoor Outreach backend connected.');
+}).catch(() => {
+  console.warn('Backend not reachable -- ensure the server is running on port 8300.');
+});
+</script>
+
+</body>
+</html>

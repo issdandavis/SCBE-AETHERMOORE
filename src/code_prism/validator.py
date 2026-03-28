@@ -41,10 +41,18 @@ def validate_generated_code(source: str, language: str) -> List[ValidationIssue]
 
     if lang in {"typescript", "ts"}:
         if "export function" not in source:
-            issues.append(ValidationIssue(code="ts_missing_export_function", message="No exported function found."))
+            issues.append(
+                ValidationIssue(
+                    code="ts_missing_export_function",
+                    message="No exported function found.",
+                )
+            )
         if not _balanced_braces(source, "{", "}"):
             issues.append(
-                ValidationIssue(code="ts_unbalanced_braces", message="Unbalanced braces in TypeScript output.")
+                ValidationIssue(
+                    code="ts_unbalanced_braces",
+                    message="Unbalanced braces in TypeScript output.",
+                )
             )
         return issues
 
@@ -54,7 +62,12 @@ def validate_generated_code(source: str, language: str) -> List[ValidationIssue]
         if "func " not in source:
             issues.append(ValidationIssue(code="go_missing_function", message="No Go function emitted."))
         if not _balanced_braces(source, "{", "}"):
-            issues.append(ValidationIssue(code="go_unbalanced_braces", message="Unbalanced braces in Go output."))
+            issues.append(
+                ValidationIssue(
+                    code="go_unbalanced_braces",
+                    message="Unbalanced braces in Go output.",
+                )
+            )
         return issues
 
     issues.append(ValidationIssue(code="unsupported_language", message=f"Unsupported language {language}."))

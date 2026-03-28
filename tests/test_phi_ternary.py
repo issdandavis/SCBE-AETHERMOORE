@@ -1,4 +1,5 @@
 """Tests for Phi-Ternary Primitive."""
+
 from __future__ import annotations
 
 import sys
@@ -8,9 +9,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from primitives import (
-    phi_ternary, dual_phi_ternary, tongue_phi_ternary,
+    phi_ternary,
+    dual_phi_ternary,
+    tongue_phi_ternary,
     tongue_vector_to_phi_ternary,
-    phi_ternary_energy, phi_ternary_center, phi_ternary_symmetry,
+    phi_ternary_energy,
+    phi_ternary_center,
+    phi_ternary_symmetry,
     PHI,
 )
 
@@ -111,10 +116,10 @@ class TestTongueMapping:
         activations = [0.5, -0.3, 0.8, 0.0, -0.2, 0.9]
         result = tongue_vector_to_phi_ternary(activations, threshold=0.1)
         assert len(result) == 6
-        assert result[0].q == 1   # KO positive
+        assert result[0].q == 1  # KO positive
         assert result[1].q == -1  # AV negative
-        assert result[3].q == 0   # CA neutral
-        assert result[5].q == 1   # DR positive
+        assert result[3].q == 0  # CA neutral
+        assert result[5].q == 1  # DR positive
 
     def test_all_neutral(self):
         activations = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -166,7 +171,8 @@ class TestSymmetry:
 
     def test_partial_symmetry(self):
         values = [
-            phi_ternary(1, 0), phi_ternary(-1, 0),  # balanced pair
+            phi_ternary(1, 0),
+            phi_ternary(-1, 0),  # balanced pair
             phi_ternary(1, 1),  # unbalanced extra
         ]
         sym = phi_ternary_symmetry(values)
@@ -203,9 +209,12 @@ class TestForcedCenter:
         """A balanced tongue vector should have center near 0."""
         # Equal positive and negative across tongues
         values = [
-            phi_ternary(1, 0), phi_ternary(-1, 1),
-            phi_ternary(1, 2), phi_ternary(-1, 3),
-            phi_ternary(0, 4), phi_ternary(0, 5),
+            phi_ternary(1, 0),
+            phi_ternary(-1, 1),
+            phi_ternary(1, 2),
+            phi_ternary(-1, 3),
+            phi_ternary(0, 4),
+            phi_ternary(0, 5),
         ]
         center = phi_ternary_center(values)
         # Not exactly 0 because phi weights differ, but the CENTER concept holds

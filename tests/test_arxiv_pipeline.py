@@ -14,7 +14,8 @@ def test_aggregate_collects_documents(tmp_path: Path) -> None:
     docs = repo / "docs"
     docs.mkdir()
     (docs / "A.md").write_text(
-        "Doc body with sufficient narrative length to be included in synthesis.", encoding="utf-8"
+        "Doc body with sufficient narrative length to be included in synthesis.",
+        encoding="utf-8",
     )
 
     out = aggregate(root=repo, include=["README.md", "docs"], max_chars=10000)

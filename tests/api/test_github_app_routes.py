@@ -7,7 +7,10 @@ import pytest
 try:
     from cryptography.fernet import Fernet  # noqa: F401
 except BaseException:
-    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+    pytest.skip(
+        "cryptography package not functional (cffi backend missing)",
+        allow_module_level=True,
+    )
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -86,7 +89,10 @@ def test_webhook_processes_valid_pull_request(monkeypatch) -> None:
         "action": "opened",
         "number": 42,
         "repository": {"full_name": "issdandavis/SCBE-AETHERMOORE"},
-        "pull_request": {"title": "Add health check", "body": "Includes tests and docs."},
+        "pull_request": {
+            "title": "Add health check",
+            "body": "Includes tests and docs.",
+        },
     }
     body = json.dumps(payload).encode("utf-8")
     response = client.post(

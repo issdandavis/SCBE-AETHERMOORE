@@ -13,8 +13,8 @@ h1{font-size:28px;margin-bottom:4px}
 .subtitle{color:#888;margin-bottom:24px}
 .nav{display:flex;gap:16px;margin-bottom:24px;font-size:14px;flex-wrap:wrap}
 .input-row{display:flex;gap:12px;margin-bottom:24px}
-.input-row input{flex:1;background:#12122e;border:1px solid #1a1a3e;border-radius:8px;padding:14px;color:#e2e2e2;font-size:16px}
-.input-row input:focus{outline:none;border-color:#6c5ce7}
+.input-row textarea{flex:1;background:#12122e;border:1px solid #1a1a3e;border-radius:8px;padding:14px;color:#e2e2e2;font-size:15px;line-height:1.4;min-height:76px;resize:vertical}
+.input-row textarea:focus{outline:none;border-color:#6c5ce7}
 .btn{background:#6c5ce7;color:#fff;padding:14px 24px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:600;white-space:nowrap}
 .btn:hover{background:#5a4bd1}
 .pipeline{display:flex;flex-direction:column;gap:2px;margin:24px 0}
@@ -59,6 +59,7 @@ h1{font-size:28px;margin-bottom:4px}
     <a href="tongue-encoder.html">L3: Tongues</a>
     <a href="distance-explorer.html">L5: Distance</a>
     <a href="risk-calculator.html">L12: Risk</a>
+    <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
   </div>
 
   <h1>L13: Governance Gate</h1>
@@ -76,8 +77,8 @@ h1{font-size:28px;margin-bottom:4px}
   </div>
 
   <div class="input-row">
-    <input type="text" id="promptInput" placeholder="Type any prompt..." value="What is the weather today?">
-    <button class="btn" onclick="evaluate()">Evaluate</button>
+    <textarea id="promptInput" placeholder="Type any prompt (multi-line supported)..." rows="4">What is the weather today?</textarea>
+    <button class="btn" onclick="evaluate()" title="Ctrl+Enter">Evaluate</button>
   </div>
 
   <div class="tongue-bar" id="tongueBar">
@@ -101,8 +102,8 @@ h1{font-size:28px;margin-bottom:4px}
     domains activated (bright = high activation). Layer scores accumulate into a final risk score.
     The governance gate makes the binary decision: pass or block.
     <br><br>
-    <strong>This is a simulation</strong> of the real 14-layer pipeline. The actual system uses hyperbolic embeddings,
-    FFT spectral analysis, and post-quantum cryptography. This demo shows the decision logic, not the full math.
+    <strong>This runs in your browser</strong> and evaluates any prompt deterministically through a simplified
+    14-layer reference path (hyperbolic distance, harmonic wall scaling, and spectral proxies). It does not call a cloud model.
     <br><br>
     <a href="https://a.co/d/024VowjS">Read the novel</a> |
     <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">View source</a> |
@@ -114,6 +115,78 @@ h1{font-size:28px;margin-bottom:4px}
 const PHI = (1 + Math.sqrt(5)) / 2;
 const TONGUE_WEIGHTS = [1, PHI, PHI**2, PHI**3, PHI**4, PHI**5];
 const TONGUE_NAMES = ['KO','AV','RU','CA','UM','DR'];
+
+function clamp(v, lo, hi) {
+  return Math.max(lo, Math.min(hi, v));
+}
+
+function fnv1a32(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+function hashUnit(str, salt) {
+  const h = fnv1a32(`${salt}::${str}`);
+  return (h % 1000000) / 1000000;
+}
+
+function tokenize(str) {
+  return (str.toLowerCase().match(/[a-z0-9]+/g) || []);
+}
+
+function countMatches(str, re) {
+  const r = new RegExp(re.source, re.flags.includes('i') ? 'gi' : 'g');
+  const m = str.match(r);
+  return m ? m.length : 0;
+}
+
+function shannonEntropyChar(str) {
+  const s = (str || '').toLowerCase();
+  const freq = {};
+  let n = 0;
+  for (const c of s) {
+    if (c === ' ' || c === '\n' || c === '\t' || c === '\r') continue;
+    freq[c] = (freq[c] || 0) + 1;
+    n++;
+  }
+  const keys = Object.keys(freq);
+  if (!n || keys.length < 2) return 0;
+  let H = 0;
+  for (const k of keys) {
+    const p = freq[k] / n;
+    H -= p * Math.log2(p);
+  }
+  const maxH = Math.log2(keys.length);
+  return clamp(H / (maxH || 1), 0, 1);
+}
+
+const HISTORY_KEY = 'scbe_demo_gate_history_v1';
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
+}
+function saveHistory(arr) {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr.slice(-12))); } catch {}
+}
+function temporalRisk(text, energyBarrier) {
+  const now = Date.now();
+  const hist = loadHistory();
+  const recent = hist.filter(e => now - (e.ts || 0) < 5 * 60 * 1000);
+  if (!recent.length) return 0.05;
+  const last = recent[recent.length - 1];
+  const dt = Math.max(1, now - (last.ts || now));
+  const q = new Set(tokenize(text));
+  const p = new Set(tokenize(last.text || ''));
+  let inter = 0;
+  for (const t of q) if (p.has(t)) inter++;
+  const jacc = inter / Math.max(1, q.size + p.size - inter);
+  const escalation = Math.max(0, (energyBarrier - (last.energyBarrier || 0)) / 10);
+  const recency = Math.exp(-dt / 90000);
+  return clamp(0.08 + jacc * 0.55 * recency + escalation * 0.45, 0, 1);
+}
 
 // Adversarial patterns
 const PATTERNS = {
@@ -137,20 +210,46 @@ const TONGUE_KEYWORDS = {
 };
 
 const LAYERS = [
-  { num: '1', name: 'Complex Context Embedding', fn: (t, s) => { s.contextLen = t.length; return t.length > 3 ? 'pass' : 'warn'; }},
-  { num: '2', name: 'Realification', fn: (t, s) => { s.realVec = Math.random() * 0.3 + 0.7; return 'pass'; }},
+  { num: '1', name: 'Complex Context Embedding', fn: (t, s) => {
+    s.contextLen = t.length;
+    s.tokens = tokenize(t);
+    const uniq = new Set(s.tokens);
+    s.tokenCount = s.tokens.length;
+    s.uniqueRatio = s.tokenCount ? (uniq.size / s.tokenCount) : 0;
+    // Very short prompts are inherently ambiguous.
+    return t.length >= 4 ? 'pass' : 'warn';
+  }},
+  { num: '2', name: 'Realification', fn: (t, s) => {
+    // Deterministic "realification": derive a stable 6D vector from the text.
+    s.realPos = [];
+    for (let i = 0; i < 6; i++) {
+      const u = hashUnit(t, `real:${i}`);
+      s.realPos.push((u * 2) - 1);
+    }
+    const norm = Math.sqrt(s.realPos.reduce((a, x) => a + x * x, 0));
+    s.realNorm = clamp(norm / Math.sqrt(6), 0, 0.99);
+    return 'pass';
+  }},
   { num: '3', name: 'Tongue Activation (Weighted)', fn: (t, s) => {
     s.tongues = {};
     TONGUE_NAMES.forEach((tn, i) => {
-      const match = t.match(TONGUE_KEYWORDS[tn]);
-      s.tongues[tn] = match ? TONGUE_WEIGHTS[i] * 0.3 : TONGUE_WEIGHTS[i] * 0.02;
+      const hits = countMatches(t, TONGUE_KEYWORDS[tn]);
+      const base = 0.02;
+      const boost = clamp(base + hits * 0.06, 0.02, 0.30);
+      s.tongues[tn] = TONGUE_WEIGHTS[i] * boost;
     });
+    // Adversarial patterns "pull" toward RU/UM/CA.
+    if (PATTERNS.injection.test(t)) s.tongues.RU += TONGUE_WEIGHTS[2] * 0.18;
+    if (PATTERNS.exfil.test(t)) s.tongues.UM += TONGUE_WEIGHTS[4] * 0.18;
+    if (PATTERNS.command.test(t)) s.tongues.CA += TONGUE_WEIGHTS[3] * 0.15;
     return 'pass';
   }},
   { num: '4', name: 'Poincare Ball Projection', fn: (t, s) => {
-    const totalWeight = Object.values(s.tongues).reduce((a, b) => a + b, 0);
-    s.poincareDist = Math.min(totalWeight / 20, 0.95);
-    return s.poincareDist < 0.7 ? 'pass' : 'warn';
+    const tongueSum = Object.values(s.tongues).reduce((a, b) => a + b, 0);
+    // Interpret "distance" as a blend of semantic activation and the 6D realified norm.
+    const d = 0.10 + (s.realNorm || 0) * 0.60 + (tongueSum / 42) * 0.30;
+    s.poincareDist = clamp(d, 0, 0.95);
+    return s.poincareDist < 0.72 ? 'pass' : 'warn';
   }},
   { num: '5', name: 'Hyperbolic Distance', fn: (t, s) => {
     const d = s.poincareDist;
@@ -167,42 +266,59 @@ const LAYERS = [
     return 'pass';
   }},
   { num: '8', name: 'Hamiltonian Energy Wells', fn: (t, s) => {
-    // Check if input is near a trust center or in the wild
-    const patternCount = Object.values(PATTERNS).filter(p => p.test(t)).length;
-    s.energyBarrier = patternCount * 2.5;
-    return patternCount === 0 ? 'pass' : patternCount < 2 ? 'warn' : 'fail';
+    // Energy barrier is the weighted sum of adversarial pattern hits.
+    const weights = { injection: 2.0, encoding: 2.0, jailbreak: 3.0, exfil: 4.0, command: 4.0, privilege: 5.0, manipulation: 1.5 };
+    s.patternHits = {};
+    let barrier = 0;
+    Object.entries(PATTERNS).forEach(([k, re]) => {
+      const hit = re.test(t);
+      s.patternHits[k] = hit;
+      if (hit) barrier += (weights[k] || 1);
+    });
+    s.energyBarrier = barrier;
+    return barrier === 0 ? 'pass' : barrier < 4 ? 'warn' : 'fail';
   }},
   { num: '9', name: 'Spectral Coherence (FFT)', fn: (t, s) => {
-    // Measure "naturalness" — real text has smooth frequency distribution
-    const charFreq = {};
-    for (const c of t.toLowerCase()) charFreq[c] = (charFreq[c] || 0) + 1;
-    const freqs = Object.values(charFreq).sort((a, b) => b - a);
-    const topRatio = freqs[0] / (freqs[freqs.length - 1] || 1);
-    s.spectralCoherence = Math.min(topRatio / 10, 1);
-    return s.spectralCoherence < 0.6 ? 'pass' : 'warn';
+    // Browser-safe spectral proxy: normalized Shannon entropy of the character stream.
+    // Mid-entropy tends to be natural language; extremes often correlate with obfuscation or repetition.
+    const ent = shannonEntropyChar(t);
+    s.spectralEntropy = ent;
+    const coherence = 1 - Math.abs(ent - 0.68) * 1.6;
+    s.spectralCoherence = clamp(coherence, 0, 1);
+    return s.spectralCoherence > 0.55 ? 'pass' : s.spectralCoherence > 0.35 ? 'warn' : 'fail';
   }},
   { num: '10', name: 'Spin Coherence', fn: (t, s) => {
     // Cross-check tongue activations for consistency
     const vals = Object.values(s.tongues);
     const max = Math.max(...vals), min = Math.min(...vals);
     s.spinCoherence = max / (min || 0.01);
-    return s.spinCoherence < 20 ? 'pass' : 'warn';
+    return s.spinCoherence < 18 ? 'pass' : s.spinCoherence < 28 ? 'warn' : 'fail';
   }},
   { num: '11', name: 'Triadic Temporal Distance', fn: (t, s) => {
-    s.temporalScore = 0.1; // single prompt, no session history
-    return 'pass';
+    s.temporalScore = temporalRisk(t, s.energyBarrier || 0);
+    return s.temporalScore < 0.35 ? 'pass' : s.temporalScore < 0.65 ? 'warn' : 'fail';
   }},
   { num: '12', name: 'Harmonic Wall', fn: (t, s) => {
-    const d = Math.min(s.poincareDist + s.energyBarrier * 0.1, 0.99);
-    const R = 4.0;
-    s.harmonicCost = Math.pow(R, d * d);
-    return s.harmonicCost < 2 ? 'pass' : s.harmonicCost < 10 ? 'warn' : 'fail';
+    // Harmonic scaling (exponential cost amplification).
+    // This is intentionally browser-safe and deterministic.
+    const d = clamp((s.poincareDist || 0) + (s.energyBarrier || 0) * 0.08 + (s.temporalScore || 0) * 0.12, 0, 0.99);
+    const R = 1.5; // harmonic ratio (perfect fifth)
+    s.harmonicCost = Math.pow(R, (d * d) * 16);
+    return s.harmonicCost < 2 ? 'pass' : s.harmonicCost < 12 ? 'warn' : 'fail';
   }},
   { num: '13', name: 'Risk Decision Gate', fn: (t, s) => {
-    const cost = s.harmonicCost + s.energyBarrier;
-    if (cost < 2) { s.decision = 'ALLOW'; return 'pass'; }
-    if (cost < 10) { s.decision = 'QUARANTINE'; return 'warn'; }
-    if (cost < 100) { s.decision = 'ESCALATE'; return 'warn'; }
+    // Aggregate into a single risk score. Lower is safer.
+    const cohPenalty = (1 - (s.spectralCoherence || 0.5)) * 4.5;
+    const spinPenalty = clamp(((s.spinCoherence || 1) - 1) / 18, 0, 2.5);
+    const temporalPenalty = (s.temporalScore || 0) * 5.0;
+    const distPenalty = clamp((s.hypDist || 0) / 4, 0, 2.5);
+    const energyPenalty = (s.energyBarrier || 0) * 1.25;
+    const harmonicPenalty = Math.log10((s.harmonicCost || 1) + 1) * 3.0;
+
+    s.riskScore = cohPenalty + spinPenalty + temporalPenalty + distPenalty + energyPenalty + harmonicPenalty;
+    if (s.riskScore < 3.0) { s.decision = 'ALLOW'; return 'pass'; }
+    if (s.riskScore < 7.0) { s.decision = 'QUARANTINE'; return 'warn'; }
+    if (s.riskScore < 12.0) { s.decision = 'ESCALATE'; return 'warn'; }
     s.decision = 'DENY'; return 'fail';
   }},
   { num: '14', name: 'Audio Telemetry', fn: (t, s) => {
@@ -245,11 +361,13 @@ async function evaluate() {
     // Show value
     const valEl = el.querySelector('.layer-val');
     if (layer.num === '1') valEl.textContent = `${text.length} chars`;
+    else if (layer.num === '2') valEl.textContent = `r=${(state.realNorm || 0).toFixed(2)}`;
     else if (layer.num === '3') valEl.textContent = Object.entries(state.tongues).filter(([,v]) => v > 1).map(([k]) => k).join('+') || 'neutral';
     else if (layer.num === '4') valEl.textContent = `d=${state.poincareDist.toFixed(3)}`;
     else if (layer.num === '5') valEl.textContent = `d_H=${state.hypDist.toFixed(2)}`;
     else if (layer.num === '8') valEl.textContent = `E=${state.energyBarrier.toFixed(1)}`;
     else if (layer.num === '9') valEl.textContent = `coh=${state.spectralCoherence.toFixed(2)}`;
+    else if (layer.num === '11') valEl.textContent = `tau=${state.temporalScore.toFixed(2)}`;
     else if (layer.num === '12') valEl.textContent = `H=${state.harmonicCost > 1000 ? '>1K' : state.harmonicCost.toFixed(1)}`;
     else if (layer.num === '13') valEl.textContent = state.decision;
     else if (layer.num === '14') valEl.textContent = `${state.telemetryFreq}Hz`;
@@ -272,12 +390,23 @@ async function evaluate() {
   document.getElementById('verdict').textContent = decision;
 
   const details = {
-    ALLOW: `Safe operation. Harmonic cost: ${state.harmonicCost.toFixed(2)}x. All layers pass.`,
-    QUARANTINE: `Suspicious. Harmonic cost: ${state.harmonicCost.toFixed(1)}x + energy barrier: ${state.energyBarrier.toFixed(1)}. Needs review.`,
+    ALLOW: `Safe operation. Risk=${state.riskScore.toFixed(2)}. Harmonic cost: ${state.harmonicCost.toFixed(2)}x.`,
+    QUARANTINE: `Suspicious. Risk=${state.riskScore.toFixed(2)}. Harmonic=${state.harmonicCost.toFixed(1)}x + barrier=${state.energyBarrier.toFixed(1)}.`,
     ESCALATE: `High risk. Multiple adversarial signals detected. Requires governance council.`,
-    DENY: `Blocked. Attack cost: ${(state.harmonicCost + state.energyBarrier).toFixed(0)}x. Geometrically infeasible.`,
+    DENY: `Blocked. Risk=${state.riskScore.toFixed(2)}. Harmonic=${state.harmonicCost.toFixed(1)}x + barrier=${state.energyBarrier.toFixed(1)}.`,
   };
   document.getElementById('detail').textContent = details[decision];
+
+  // Update temporal history (browser-local).
+  const hist = loadHistory();
+  hist.push({
+    ts: Date.now(),
+    decision,
+    risk: state.riskScore,
+    energyBarrier: state.energyBarrier,
+    text: text.slice(0, 600),
+  });
+  saveHistory(hist);
 
   // Play tone
   try {
@@ -292,6 +421,11 @@ async function evaluate() {
     osc.start(); osc.stop(ac.currentTime + 0.3);
   } catch (e) {}
 }
+
+// Keyboard shortcut: Ctrl+Enter evaluates
+document.getElementById('promptInput').addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') evaluate();
+});
 
 // Run initial evaluation
 evaluate();

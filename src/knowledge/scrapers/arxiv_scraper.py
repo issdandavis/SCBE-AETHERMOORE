@@ -47,7 +47,10 @@ def search_arxiv(query: str, category: str = "cs.AI", max_results: int = 20) -> 
         data = response.read()
 
     root = ET.fromstring(data)
-    ns = {"atom": "http://www.w3.org/2005/Atom", "arxiv": "http://arxiv.org/schemas/atom"}
+    ns = {
+        "atom": "http://www.w3.org/2005/Atom",
+        "arxiv": "http://arxiv.org/schemas/atom",
+    }
 
     chunks = []
     for entry in root.findall("atom:entry", ns):
@@ -79,7 +82,7 @@ def search_arxiv(query: str, category: str = "cs.AI", max_results: int = 20) -> 
             metadata={
                 "authors": authors,
                 "arxiv_category": category,
-                "arxiv_id": arxiv_url.split("/abs/")[-1] if "/abs/" in arxiv_url else "",
+                "arxiv_id": (arxiv_url.split("/abs/")[-1] if "/abs/" in arxiv_url else ""),
             },
         )
         chunks.append(chunk)

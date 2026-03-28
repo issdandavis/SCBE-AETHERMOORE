@@ -385,7 +385,7 @@ def test_attacker_resistance():
     num_samples = 10
 
     waveforms = []
-    for i in range(num_samples):
+    for _i in range(num_samples):
         nonce = os.urandom(NONCE_BYTES)
         sig, _ = flat_slope_adaptive_encode(token_id, MASTER_KEY, nonce)
         waveforms.append(sig)
@@ -404,7 +404,7 @@ def test_attacker_resistance():
     # Compare BINARY (no phase randomization) as control
     print("\n  Control: Binary mode (no randomization)")
     binary_waveforms = []
-    for i in range(num_samples):
+    for _i in range(num_samples):
         sig, _ = flat_slope_binary_encode(token_id, MASTER_KEY)
         binary_waveforms.append(sig)
 
@@ -620,7 +620,7 @@ def plot_comparison():
 
     # Nonce correlation test
     correlations = []
-    for i in range(20):
+    for _i in range(20):
         nonce_i = os.urandom(NONCE_BYTES)
         sig_i, _ = flat_slope_adaptive_encode(token_id, MASTER_KEY, nonce_i)
         corr = np.corrcoef(adaptive_sig, sig_i)[0, 1]
