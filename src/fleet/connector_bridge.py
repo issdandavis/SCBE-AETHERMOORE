@@ -101,7 +101,11 @@ class ConnectorBridge:
         try:
             parsed = json.loads(stdout_text) if stdout_text else {}
         except json.JSONDecodeError:
-            parsed = {"ok": process.returncode == 0, "stdout": stdout_text, "stderr": stderr_text}
+            parsed = {
+                "ok": process.returncode == 0,
+                "stdout": stdout_text,
+                "stderr": stderr_text,
+            }
         if stderr_text and "stderr" not in parsed:
             parsed["stderr"] = stderr_text
         if "ok" not in parsed:
@@ -129,7 +133,11 @@ class ConnectorBridge:
             elif platform == "automations":
                 result = await self._execute_automations(action, payload)
             else:
-                return ConnectorResult(success=False, error=f"Unknown platform: {platform}", platform=platform)
+                return ConnectorResult(
+                    success=False,
+                    error=f"Unknown platform: {platform}",
+                    platform=platform,
+                )
         except Exception as exc:  # noqa: BLE001
             result = ConnectorResult(success=False, error=str(exc), platform=platform)
         result.platform = platform
@@ -197,7 +205,7 @@ class ConnectorBridge:
         return ConnectorResult(
             success=ok,
             data=raw if ok else {},
-            error="" if ok else str(raw.get("error") or raw.get("stderr") or "NotebookLM connector failed"),
+            error=("" if ok else str(raw.get("error") or raw.get("stderr") or "NotebookLM connector failed")),
         )
 
     async def _execute_automations(self, action: str, payload: dict[str, Any]) -> ConnectorResult:

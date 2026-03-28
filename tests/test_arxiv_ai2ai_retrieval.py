@@ -58,7 +58,14 @@ class _MemoryStub:
     def __init__(self) -> None:
         self.calls: List[Dict[str, Any]] = []
 
-    def remember(self, key: str, value: Any, category: str, importance: float, keywords: List[str]) -> None:
+    def remember(
+        self,
+        key: str,
+        value: Any,
+        category: str,
+        importance: float,
+        keywords: List[str],
+    ) -> None:
         self.calls.append(
             {
                 "key": key,

@@ -515,7 +515,7 @@ def risk_gradient(
     # Numerical gradient (small perturbation)
     gradients = {}
 
-    for name, val, w in [
+    for name, _val, w in [
         ("s_spec", s_spec, -weights.w_spectral),
         ("c_spin", c_spin, -weights.w_spin),
         ("d_tri", d_tri_norm, weights.w_triadic),

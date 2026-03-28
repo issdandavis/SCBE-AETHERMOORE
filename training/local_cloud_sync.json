@@ -54,18 +54,18 @@
       "enabled": true,
       "use_api": false,
       "base_path": "/SCBE/local-workspace-sync",
-      "base_dir": ""
+      "base_dir": "C:\\Users\\issda\\Dropbox"
     },
     "adobe": {
-      "enabled": true,
+      "enabled": false,
       "base_dir": ""
     },
     "gdrive": {
       "enabled": true,
-      "base_dir": "G:\\My Drive"
+      "base_dir": "C:\\Users\\issda\\Drive"
     },
     "proton": {
-      "enabled": true,
+      "enabled": false,
       "base_dir": ""
     }
   }

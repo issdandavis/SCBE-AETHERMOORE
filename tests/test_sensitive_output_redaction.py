@@ -11,7 +11,10 @@ import pytest
 try:
     from cryptography.fernet import Fernet  # noqa: F401
 except BaseException:
-    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+    pytest.skip(
+        "cryptography package not functional (cffi backend missing)",
+        allow_module_level=True,
+    )
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -33,8 +36,8 @@ _ss_mod.set_secret = lambda key, value, note="", tongue=None: None
 src_module = sys.modules.setdefault("src", types.ModuleType("src"))
 security_module = sys.modules.setdefault("src.security", types.ModuleType("src.security"))
 sys.modules["src.security.secret_store"] = _ss_mod
-setattr(src_module, "security", security_module)
-setattr(src_module, "security", security_module)
+src_module.security = security_module
+src_module.security = security_module
 
 
 def _load_module(name: str, relative_path: str):

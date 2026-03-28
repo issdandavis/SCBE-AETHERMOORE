@@ -54,7 +54,14 @@ def test_step_produces_valid_decision_and_progress_fields() -> None:
     assert isinstance(out.lock_vector, dict)
     assert "harm_score" in out.lock_vector
     assert len(out.voxel_key.split(":")) == 6
-    assert out.terrain in {"glow_meadow", "crystal_garden", "storm_maw", "shadow_brush", "rift_spines", "ember_steppe"}
+    assert out.terrain in {
+        "glow_meadow",
+        "crystal_garden",
+        "storm_maw",
+        "shadow_brush",
+        "rift_spines",
+        "ember_steppe",
+    }
     assert isinstance(out.voxel_discovered, bool)
     assert 0.0 <= out.watcher_fast <= 1.0
     assert 0.0 <= out.watcher_memory <= 1.0

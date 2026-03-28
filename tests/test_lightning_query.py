@@ -202,7 +202,10 @@ class TestLightningStats:
 
 class TestLightningIntegration:
     def test_with_bridge_workload(self):
-        from scripts.system.storage_bridge_lab import build_bridge_workload, _note_to_geometry
+        from scripts.system.storage_bridge_lab import (
+            build_bridge_workload,
+            _note_to_geometry,
+        )
         from src.storage.langues_dispersal import dispersal_route, compute_dispersal
 
         notes = build_bridge_workload(seed=42, count=200)

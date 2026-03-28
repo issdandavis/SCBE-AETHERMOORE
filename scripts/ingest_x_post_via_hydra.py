@@ -285,7 +285,7 @@ def push_to_hf_dataset(
     api = HfApi(token=token)
     prefix = f"ingest/x/{post_id}"
     uploaded = []
-    for name, path in files.items():
+    for _name, path in files.items():
         api.upload_file(
             path_or_fileobj=str(path),
             path_in_repo=f"{prefix}/{path.name}",

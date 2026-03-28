@@ -154,9 +154,24 @@ RiskDecision = Literal["ALLOW", "QUARANTINE", "ESCALATE", "DENY"]
 #  Companion enums
 # ---------------------------------------------------------------------------
 
-DisciplineTrait = Literal["careful_verifier", "fast_heuristic", "collaborative", "solo", "risk_tolerant", "guardian"]
+DisciplineTrait = Literal[
+    "careful_verifier",
+    "fast_heuristic",
+    "collaborative",
+    "solo",
+    "risk_tolerant",
+    "guardian",
+]
 
-EmotionalState = Literal["content", "excited", "anxious", "determined", "exhausted", "corrupted", "transcendent"]
+EmotionalState = Literal[
+    "content",
+    "excited",
+    "anxious",
+    "determined",
+    "exhausted",
+    "corrupted",
+    "transcendent",
+]
 
 FormationRole = Literal["storm", "phalanx", "lance", "web"]
 
@@ -240,9 +255,39 @@ TRANSFORM_RISK: Dict[TransformAction, Literal["low", "medium", "high"]] = {
 
 SYNESTHESIA_MAP: Dict[TongueCode, Dict[str, object]] = {
     "KO": {"hue": 0, "hex": "#DC3C3C", "note": "A", "freq": 220, "instrument": "brass"},
-    "AV": {"hue": 60, "hex": "#DCB43C", "note": "B", "freq": 247, "instrument": "strings"},
-    "RU": {"hue": 120, "hex": "#3CDC78", "note": "C#", "freq": 277, "instrument": "synth"},
-    "CA": {"hue": 180, "hex": "#3CDCDC", "note": "D#", "freq": 311, "instrument": "piano"},
-    "UM": {"hue": 240, "hex": "#3C3CDC", "note": "F", "freq": 349, "instrument": "choir"},
-    "DR": {"hue": 300, "hex": "#DC3CDC", "note": "G", "freq": 392, "instrument": "harp"},
+    "AV": {
+        "hue": 60,
+        "hex": "#DCB43C",
+        "note": "B",
+        "freq": 247,
+        "instrument": "strings",
+    },
+    "RU": {
+        "hue": 120,
+        "hex": "#3CDC78",
+        "note": "C#",
+        "freq": 277,
+        "instrument": "synth",
+    },
+    "CA": {
+        "hue": 180,
+        "hex": "#3CDCDC",
+        "note": "D#",
+        "freq": 311,
+        "instrument": "piano",
+    },
+    "UM": {
+        "hue": 240,
+        "hex": "#3C3CDC",
+        "note": "F",
+        "freq": 349,
+        "instrument": "choir",
+    },
+    "DR": {
+        "hue": 300,
+        "hex": "#DC3CDC",
+        "note": "G",
+        "freq": 392,
+        "instrument": "harp",
+    },
 }

@@ -46,7 +46,8 @@ class CodePrismBuilder:
                     valid=False,
                     issues=[
                         ValidationIssue(
-                            code="unsupported_route", message=f"{source} -> {target_lang} not allowed by matrix."
+                            code="unsupported_route",
+                            message=f"{source} -> {target_lang} not allowed by matrix.",
                         )
                     ],
                     metadata={"tongue_combo": tongue_combo, "route_allowed": False},

@@ -214,12 +214,23 @@ def test_emit_packet_persists_parallel_browser_metadata(tmp_path, monkeypatch):
         worker_id="worker-colab-01",
         lease={"provider": "colab", "resource_class": "t4", "lease_seconds": 1800},
         rails={
-            "P+": [{"type": "action", "action": "navigate", "target": "https://example.com"}],
+            "P+": [
+                {
+                    "type": "action",
+                    "action": "navigate",
+                    "target": "https://example.com",
+                }
+            ],
             "P-": [{"type": "blocked_actions", "count": 1}],
             "D+": [{"type": "decision", "value": "QUARANTINE"}],
             "D-": [{"type": "antivirus_turnstile", "action": "HOLD"}],
         },
-        layer14={"energy": 0.75, "flux": 0.25, "stability": 0.8, "channel": "layer14-comms"},
+        layer14={
+            "energy": 0.75,
+            "flux": 0.25,
+            "stability": 0.8,
+            "channel": "layer14-comms",
+        },
     )
 
     packet_path = Path(result["lanes"]["dated_json"]["path"])

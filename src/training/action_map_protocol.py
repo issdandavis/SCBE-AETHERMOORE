@@ -664,7 +664,7 @@ def build_action_map(run_root: Path, run_id: str) -> dict[str, Any]:
         "run_id": run_id,
         "task": task,
         "started_at": events[0].timestamp_utc,
-        "closed_at": events[-1].timestamp_utc if events[-1].event_type == "close" else "",
+        "closed_at": (events[-1].timestamp_utc if events[-1].event_type == "close" else ""),
         "workflow_signature": signature,
         "summary": {
             "terminal_status": terminal_status,
@@ -739,11 +739,20 @@ def status(run_root: Path, run_id: str | None = None) -> dict[str, Any]:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Record and compile SCBE action-map workflow telemetry.")
-    parser.add_argument("--run-root", default=str(DEFAULT_RUN_ROOT), help=f"Run root (default: {DEFAULT_RUN_ROOT})")
+    parser.add_argument(
+        "--run-root",
+        default=str(DEFAULT_RUN_ROOT),
+        help=f"Run root (default: {DEFAULT_RUN_ROOT})",
+    )
     sub = parser.add_subparsers(dest="subcommand", required=True)
 
     def add_common_arguments(p: argparse.ArgumentParser, *, require_summary: bool = True) -> None:
-        p.add_argument("--summary", required=require_summary, default="", help="Human summary for this event.")
+        p.add_argument(
+            "--summary",
+            required=require_summary,
+            default="",
+            help="Human summary for this event.",
+        )
         p.add_argument("--operator", default="agent.codex")
         p.add_argument("--lane", default="terminal")
         p.add_argument("--tool", default="")

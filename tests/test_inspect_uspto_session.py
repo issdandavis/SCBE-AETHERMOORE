@@ -1,11 +1,18 @@
 import pytest
 
 try:
-    from scripts.system.inspect_uspto_session import classify_session, cookie_domain_summary, trim_text
+    from scripts.system.inspect_uspto_session import (
+        classify_session,
+        cookie_domain_summary,
+        trim_text,
+    )
 except ImportError:
     classify_session = cookie_domain_summary = trim_text = None
 
-pytestmark = pytest.mark.skipif(classify_session is None, reason="scripts.system.inspect_uspto_session not importable")
+pytestmark = pytest.mark.skipif(
+    classify_session is None,
+    reason="scripts.system.inspect_uspto_session not importable",
+)
 
 
 def test_classify_session_detects_auth_wall_from_password_field() -> None:

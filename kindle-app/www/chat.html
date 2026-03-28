@@ -2,13 +2,204 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=./ops.html">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Chat Redirect</title>
+<title>Polly Chat</title>
 <link rel="manifest" href="./manifest.json">
-<script>
-window.location.replace("./ops.html" + window.location.search + window.location.hash);
-</script>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #08101b;
+    --panel: rgba(9, 20, 35, 0.82);
+    --panel-strong: rgba(13, 28, 47, 0.94);
+    --line: rgba(183, 218, 255, 0.16);
+    --text: #eef5ff;
+    --muted: #9fb6cf;
+    --accent: #73d2ff;
+    --accent-2: #d4b676;
+    --shadow: 0 26px 80px rgba(0, 0, 0, 0.45);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Aptos", "Segoe UI Variable Text", "Trebuchet MS", sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(115, 210, 255, 0.15), transparent 34%),
+      radial-gradient(circle at bottom right, rgba(212, 182, 118, 0.16), transparent 30%),
+      linear-gradient(180deg, #07101b 0%, #08111d 48%, #050b14 100%);
+    color: var(--text);
+  }
+
+  .shell {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(260px, 360px) 1fr;
+  }
+
+  .rail {
+    padding: 28px 22px 24px;
+    border-right: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(4, 10, 18, 0.78), rgba(4, 10, 18, 0.38));
+    backdrop-filter: blur(18px);
+  }
+
+  .eyebrow {
+    margin: 0 0 12px;
+    color: var(--accent);
+    font-size: 0.76rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin: 0 0 12px;
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 0.94;
+  }
+
+  .lead {
+    margin: 0 0 20px;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 28rem;
+  }
+
+  .rail-group {
+    margin-top: 28px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+
+  .rail-group h2 {
+    margin: 0 0 10px;
+    font-size: 0.96rem;
+    font-weight: 600;
+  }
+
+  .rail-list {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .rail-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .rail-links a {
+    color: var(--text);
+    text-decoration: none;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 14px;
+  }
+
+  .main {
+    padding: 24px;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+  }
+
+  .chat-stage {
+    width: min(100%, 1120px);
+    min-height: calc(100vh - 48px);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-strong) 100%);
+    backdrop-filter: blur(22px);
+  }
+
+  @media (max-width: 960px) {
+    .shell {
+      grid-template-columns: 1fr;
+    }
+
+    .rail {
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 18px;
+    }
+
+    .main {
+      padding: 16px;
+    }
+
+    .chat-stage {
+      min-height: calc(100vh - 32px);
+      border-radius: 20px;
+    }
+  }
+</style>
 </head>
-<body></body>
+<body>
+  <div class="shell">
+    <aside class="rail">
+      <p class="eyebrow">SCBE assistant lane</p>
+      <h1>Polly Chat</h1>
+      <p class="lead">
+        This is the first real HF-backed assistant surface for the Kindle app. It is designed to work in full-page mode now and collapse into a sidebar later without changing the core client.
+      </p>
+
+      <div class="rail-group">
+        <h2>Default model path</h2>
+        <ul class="rail-list">
+          <li>Chat default: <code>issdandavis/scbe-pivot-qwen-0.5b</code></li>
+          <li><code>phdm-21d-embedding</code> stays for embeddings, not chat</li>
+          <li><code>spiralverse-ai-federated-v1</code> stays for federated learning, not chat</li>
+        </ul>
+      </div>
+
+      <div class="rail-group">
+        <h2>Security rule</h2>
+        <ul class="rail-list">
+          <li>Local app use can store an HF token on-device.</li>
+          <li>Public site use should go through a proxy endpoint.</li>
+          <li>Conversation feedback can be exported for future training.</li>
+        </ul>
+      </div>
+
+      <div class="rail-group">
+        <h2>Quick routes</h2>
+        <div class="rail-links">
+          <a href="./polly-pad.html">Back to Polly Pad</a>
+          <a href="./browse.html">Open Browse lane</a>
+          <a href="./ops.html">Open Ops lane</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="chat-stage">
+        <div id="chatApp"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./static/polly-hf-chat.js"></script>
+  <script>
+    window.PollyHFChat.mount(document.getElementById("chatApp"), {
+      title: "Polly",
+      subtitle: "HF-backed chat surface for apps, sidebars, and private device use.",
+      model: "issdandavis/scbe-pivot-qwen-0.5b",
+      suggestions: [
+        "Summarize the current SCBE product surfaces and tell me what is actually sellable right now.",
+        "Walk me through one clean buyer flow from landing page to delivery bundle.",
+        "Read this page state and tell me the next operational action, not a theory essay."
+      ],
+      initialAssistantText: "I am ready. Add an HF token for direct device use, or set a proxy endpoint if this surface moves to a public site."
+    });
+  </script>
+</body>
 </html>

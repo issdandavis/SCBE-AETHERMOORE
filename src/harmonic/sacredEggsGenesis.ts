@@ -37,6 +37,7 @@ import {
   type SacredEgg,
   type VerifierState,
   type Approval,
+  computeEggSelfIdentity,
   predicateTongue,
   predicateGeo,
   predicatePath,
@@ -97,6 +98,12 @@ export interface GenesisCertificate {
   agentId: string;
   /** Epoch at which the agent was spawned */
   epoch: number;
+  /** Egg identifier (bind certificate to the originating egg) */
+  eggId: string;
+  /** Egg self identity tag (genesis protocol label) */
+  eggSelfTag: string;
+  /** Egg self identity shape (stable hash of base shape + tag) */
+  eggSelfShape: string;
   /** Tongue domain the agent belongs to */
   tongueDomain: Tongue;
   /** Ring level at spawn (trust radius) */
@@ -257,6 +264,9 @@ export function evaluateGenesis(
 function generateGenesisSeal(
   agentId: string,
   epoch: number,
+  eggId: string,
+  eggSelfTag: string,
+  eggSelfShape: string,
   tongue: Tongue,
   ring: RingLevel,
   hatchWeight: number,
@@ -266,6 +276,9 @@ function generateGenesisSeal(
   const data = [
     agentId,
     epoch.toString(),
+    eggId,
+    eggSelfTag,
+    eggSelfShape,
     tongue,
     ring.toString(),
     hatchWeight.toFixed(10),
@@ -359,10 +372,17 @@ export function genesis(
   const agentId = crypto.randomUUID();
   const epoch = Date.now();
 
+  // Bind egg identity (shape + tag) into the certificate.
+  // If self identity fields are missing, compute deterministically from egg header + DEFAULT_EGG_SELF_TAG.
+  const selfId = computeEggSelfIdentity(egg);
+
   // Build genesis seal
   const seal = generateGenesisSeal(
     agentId,
     epoch,
+    egg.header.id,
+    selfId.selfTag,
+    selfId.selfShape,
     egg.policy.primaryTongue,
     ringLevel,
     evaluation.hatchWeight,
@@ -372,6 +392,9 @@ export function genesis(
   const certificate: GenesisCertificate = {
     agentId,
     epoch,
+    eggId: egg.header.id,
+    eggSelfTag: selfId.selfTag,
+    eggSelfShape: selfId.selfShape,
     tongueDomain: egg.policy.primaryTongue,
     ringLevel,
     hatchWeight: evaluation.hatchWeight,
@@ -393,6 +416,9 @@ export function verifyCertificateSeal(cert: GenesisCertificate): boolean {
   const recomputed = generateGenesisSeal(
     cert.agentId,
     cert.epoch,
+    cert.eggId,
+    cert.eggSelfTag,
+    cert.eggSelfShape,
     cert.tongueDomain,
     cert.ringLevel,
     cert.hatchWeight,

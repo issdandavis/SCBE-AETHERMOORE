@@ -1,0 +1,1687 @@
+# Documentation Catalog
+
+Generated on 2026-03-25 from the current `docs/` tree.
+
+Total indexed files: 779
+
+This catalog has two views:
+- Priority view: grouped by operational importance, then by system part, alphabetized within each group.
+- Alphabetical view: every indexed doc with its assigned priority and system part.
+
+## Critical
+
+### Agents, Browser, and Control Plane
+
+- [AGENT_ARCHITECTURE.md](AGENT_ARCHITECTURE.md)
+- [HYDRA_COORDINATION.md](HYDRA_COORDINATION.md)
+- [ISSAC_QUICKSTART.md](ISSAC_QUICKSTART.md)
+- [POLLY_PADS_ARCHITECTURE.md](POLLY_PADS_ARCHITECTURE.md)
+- [TERMINAL_OPS_QUICKSTART.md](TERMINAL_OPS_QUICKSTART.md)
+
+### Architecture
+
+- [01-architecture/aetherbrain-phdm-mathematical-framework.md](01-architecture/aetherbrain-phdm-mathematical-framework.md)
+- [01-architecture/diagrams/SECURITY_FLOW_DIAGRAM.md](01-architecture/diagrams/SECURITY_FLOW_DIAGRAM.md)
+- [01-architecture/README.md](01-architecture/README.md)
+- [01-architecture/sacred-eggs-systems-model.md](01-architecture/sacred-eggs-systems-model.md)
+- [01-architecture/system-overview-mindmap.md](01-architecture/system-overview-mindmap.md)
+
+### Core Governance and Math
+
+- [GEOSEAL_ACCESS_CONTROL.md](GEOSEAL_ACCESS_CONTROL.md)
+- [LANGUES_WEIGHTING_SYSTEM.md](LANGUES_WEIGHTING_SYSTEM.md)
+- [SCBE_COMPLETE_SYSTEM.md](SCBE_COMPLETE_SYSTEM.md)
+- [SCBE_FULL_SYSTEM_LAYER_MAP.md](SCBE_FULL_SYSTEM_LAYER_MAP.md)
+
+### Deployment
+
+- [03-deployment/firebase-setup.md](03-deployment/firebase-setup.md)
+- [03-deployment/firebase-studio-game-sync.md](03-deployment/firebase-studio-game-sync.md)
+- [03-deployment/github-app-latticegate.md](03-deployment/github-app-latticegate.md)
+- [03-deployment/zapier-setup.md](03-deployment/zapier-setup.md)
+
+### Gateway and Authorization
+
+- [gateway/AI_COLLABORATION_LOG.md](gateway/AI_COLLABORATION_LOG.md)
+- [gateway/AUTHORIZE_GATEWAY.md](gateway/AUTHORIZE_GATEWAY.md)
+- [gateway/COMPREHENSIVE_MATH_SCBE.md](gateway/COMPREHENSIVE_MATH_SCBE.md)
+- [gateway/ENTROPIC_DUAL_QUANTUM_SYSTEM.md](gateway/ENTROPIC_DUAL_QUANTUM_SYSTEM.md)
+- [gateway/MULTI_AGENT_THREAT_MODEL.md](gateway/MULTI_AGENT_THREAT_MODEL.md)
+- [gateway/QUASICRYSTAL_LATTICE_VERIFICATION.md](gateway/QUASICRYSTAL_LATTICE_VERIFICATION.md)
+- [gateway/README.md](gateway/README.md)
+- [gateway/SIX_SACRED_TONGUES_CODEX.md](gateway/SIX_SACRED_TONGUES_CODEX.md)
+
+### General Root Docs
+
+- [API.md](API.md)
+- [api/index.html](api/index.html)
+- [api/openapi.json](api/openapi.json)
+- [ARCHITECTURE.md](ARCHITECTURE.md)
+- [CAPABILITIES.md](CAPABILITIES.md)
+- [FAST_ACCESS_GUIDE.md](FAST_ACCESS_GUIDE.md)
+- [README.md](README.md)
+- [START_HERE_AETHERMOORE.md](START_HERE_AETHERMOORE.md)
+- [SYSTEM_ANATOMY.md](SYSTEM_ANATOMY.md)
+
+### Guides
+
+- [guides/ACTION_MAP_PROTOCOL.md](guides/ACTION_MAP_PROTOCOL.md)
+- [guides/AETHERBROWSER_AND_OPERATOR_LANE.md](guides/AETHERBROWSER_AND_OPERATOR_LANE.md)
+- [guides/ARTICLE_PUBLISHING_SYSTEM.md](guides/ARTICLE_PUBLISHING_SYSTEM.md)
+- [guides/CLI_OPERATOR_UPGRADE_PLAN.md](guides/CLI_OPERATOR_UPGRADE_PLAN.md)
+- [guides/CONTEXT_BROKER_AND_MEMORY.md](guides/CONTEXT_BROKER_AND_MEMORY.md)
+- [guides/CONTROL_PLANE_AND_COMMAND_CENTER.md](guides/CONTROL_PLANE_AND_COMMAND_CENTER.md)
+- [guides/CORE_SYSTEM_MAP.md](guides/CORE_SYSTEM_MAP.md)
+- [guides/GEOSEAL_AND_TONGUES.md](guides/GEOSEAL_AND_TONGUES.md)
+- [guides/GITHUB_AND_CI_OPERATIONS.md](guides/GITHUB_AND_CI_OPERATIONS.md)
+- [guides/POLLY_PADS_AND_PHONE_LANE.md](guides/POLLY_PADS_AND_PHONE_LANE.md)
+- [guides/STORAGE_OFFLOAD_AND_CLOUD_SYNC.md](guides/STORAGE_OFFLOAD_AND_CLOUD_SYNC.md)
+- [guides/TRAINING_HUGGINGFACE_AND_PRIVACY.md](guides/TRAINING_HUGGINGFACE_AND_PRIVACY.md)
+
+### HYDRA
+
+- [hydra/ARCHITECTURE.md](hydra/ARCHITECTURE.md)
+
+### Industry Guides
+
+- [05-industry-guides/banking-financial.md](05-industry-guides/banking-financial.md)
+- [05-industry-guides/government-defense.md](05-industry-guides/government-defense.md)
+- [05-industry-guides/healthcare.md](05-industry-guides/healthcare.md)
+- [05-industry-guides/README.md](05-industry-guides/README.md)
+- [05-industry-guides/technology-saas.md](05-industry-guides/technology-saas.md)
+
+### Integration
+
+- [06-integration/README.md](06-integration/README.md)
+- [06-integration/templates/agent-onboarding.md](06-integration/templates/agent-onboarding.md)
+- [06-integration/templates/integration-assessment.md](06-integration/templates/integration-assessment.md)
+
+### Narrative and Creative
+
+- [RUNBOOK.md](RUNBOOK.md)
+
+### Operations and Coordination
+
+- [map-room/README.md](map-room/README.md)
+- [map-room/session_handoff_latest.md](map-room/session_handoff_latest.md)
+- [map-room/session_handoff_template.md](map-room/session_handoff_template.md)
+- [map-room/training_totals_latest.md](map-room/training_totals_latest.md)
+- [operations/2026-03-14-monorepo-baseline.md](operations/2026-03-14-monorepo-baseline.md)
+- [operations/2026-03-16-github-portfolio-map.md](operations/2026-03-16-github-portfolio-map.md)
+- [operations/2026-03-24-next-session-checklist.md](operations/2026-03-24-next-session-checklist.md)
+- [operations/2026-03-24-stability-guardrails.md](operations/2026-03-24-stability-guardrails.md)
+- [operations/aetherbrowser_browser_first_runbook.md](operations/aetherbrowser_browser_first_runbook.md)
+- [operations/AI_TERMINAL_GITHUB_MANAGEMENT.md](operations/AI_TERMINAL_GITHUB_MANAGEMENT.md)
+- [operations/CLAUDE_MEMORY_SYNC_2026-03-15.md](operations/CLAUDE_MEMORY_SYNC_2026-03-15.md)
+- [operations/LOCAL_IMAGE_RUNTIME_2026-03-15.md](operations/LOCAL_IMAGE_RUNTIME_2026-03-15.md)
+- [operations/six_agent_mesh_runbook.md](operations/six_agent_mesh_runbook.md)
+- [operations/USER_DESIGN_PHILOSOPHY.md](operations/USER_DESIGN_PHILOSOPHY.md)
+- [ops/2026-03-04-browser-sentinel-2.md](ops/2026-03-04-browser-sentinel-2.md)
+- [ops/2026-03-04-browser-sentinel.md](ops/2026-03-04-browser-sentinel.md)
+- [ops/2026-03-04-dual-side-3agent-control-report.md](ops/2026-03-04-dual-side-3agent-control-report.md)
+- [ops/2026-03-04-runtime-anchor-2.md](ops/2026-03-04-runtime-anchor-2.md)
+- [ops/2026-03-04-runtime-anchor.md](ops/2026-03-04-runtime-anchor.md)
+- [ops/2026-03-04-shopify-storefront-launch.md](ops/2026-03-04-shopify-storefront-launch.md)
+- [ops/2026-03-04-skill-corkscrew.md](ops/2026-03-04-skill-corkscrew.md)
+- [ops/2026-03-05-code-to-profit-runbook.md](ops/2026-03-05-code-to-profit-runbook.md)
+- [ops/2026-03-14-polly-pad-emulator-lane.md](ops/2026-03-14-polly-pad-emulator-lane.md)
+- [ops/aetherpath_audit_latest.md](ops/aetherpath_audit_latest.md)
+- [ops/connector_interoperability_matrix.md](ops/connector_interoperability_matrix.md)
+- [ops/DAILY_SOCIAL_UPDATES.md](ops/DAILY_SOCIAL_UPDATES.md)
+- [ops/FREE_COMPUTE_OPTIONS.md](ops/FREE_COMPUTE_OPTIONS.md)
+- [ops/polly_cross_model_training_quickstart.md](ops/polly_cross_model_training_quickstart.md)
+- [ops/polly_npc_roundtable_quickstart.md](ops/polly_npc_roundtable_quickstart.md)
+- [ops/TERMINAL_AI_AUTOPILOT_SETUP.md](ops/TERMINAL_AI_AUTOPILOT_SETUP.md)
+- [ops/terminal_ai_router_quickstart.md](ops/terminal_ai_router_quickstart.md)
+- [system/CANONICAL_NAMING_HYDRA_ARMOR_OCTOARMOR_AETHER_ANTIVIRUS.md](system/CANONICAL_NAMING_HYDRA_ARMOR_OCTOARMOR_AETHER_ANTIVIRUS.md)
+- [system/CROSSTALK_RELIABILITY_RUNBOOK.md](system/CROSSTALK_RELIABILITY_RUNBOOK.md)
+- [system/NOTEBOOKLM_CONNECTOR.md](system/NOTEBOOKLM_CONNECTOR.md)
+- [system/SMALL_AGENT_REFERENCE_CENTER.md](system/SMALL_AGENT_REFERENCE_CENTER.md)
+
+### Overview and Onboarding
+
+- [00-overview/executive-summary.md](00-overview/executive-summary.md)
+- [00-overview/getting-started.md](00-overview/getting-started.md)
+- [00-overview/glossary.md](00-overview/glossary.md)
+- [00-overview/README.md](00-overview/README.md)
+- [00-overview/scbe-developer-guide.mmd](00-overview/scbe-developer-guide.mmd)
+
+### Reference
+
+- [08-reference/README.md](08-reference/README.md)
+
+### Security
+
+- [security/2026-03-17-browser-sandbox-advisory.md](security/2026-03-17-browser-sandbox-advisory.md)
+- [security/AETHER_ANTIVIRUS.md](security/AETHER_ANTIVIRUS.md)
+- [security/SCBE_ADVERSARIAL_ATTACK_SUITE_DESIGN.md](security/SCBE_ADVERSARIAL_ATTACK_SUITE_DESIGN.md)
+
+## Important
+
+### Agents, Browser, and Control Plane
+
+- [action_summary.aetherbrowse-auth-ops.yaml](action_summary.aetherbrowse-auth-ops.yaml)
+- [AETHERBROWSE_BLUEPRINT.md](AETHERBROWSE_BLUEPRINT.md)
+- [AETHERBROWSE_CLOUD_RUN.md](AETHERBROWSE_CLOUD_RUN.md)
+- [AETHERBROWSE_GOVERNANCE.md](AETHERBROWSE_GOVERNANCE.md)
+- [AI_BRIDGE_TERMINAL_BROWSER.md](AI_BRIDGE_TERMINAL_BROWSER.md)
+- [AI_BROWSER_ACCESS.md](AI_BROWSER_ACCESS.md)
+- [ASANA_AETHERBROWSE_AUTOMATION.md](ASANA_AETHERBROWSE_AUTOMATION.md)
+- [AUTONOMOUS_WEB_AGENT_RESEARCH_REPORT.md](AUTONOMOUS_WEB_AGENT_RESEARCH_REPORT.md)
+- [CONNECTOR_ONBOARDING.md](CONNECTOR_ONBOARDING.md)
+- [DISTRIBUTED_AGENTIC_WORKFLOW.md](DISTRIBUTED_AGENTIC_WORKFLOW.md)
+- [DOCKER_TERMINAL_OPERATIONS.md](DOCKER_TERMINAL_OPERATIONS.md)
+- [FRANKENMODEL_SWARM_AGENT.md](FRANKENMODEL_SWARM_AGENT.md)
+- [HYDRA_CLI_USER_GUIDE.md](HYDRA_CLI_USER_GUIDE.md)
+- [HYDRA_HEADLESS_MMX_COORDINATOR.md](HYDRA_HEADLESS_MMX_COORDINATOR.md)
+- [HYDRA_LONG_MISSION_PLAYBOOK.md](HYDRA_LONG_MISSION_PLAYBOOK.md)
+- [HYDRA_MULTI_AGENT_COORDINATION_SYSTEM_COMPLETE_ARCHITECTURE.md](HYDRA_MULTI_AGENT_COORDINATION_SYSTEM_COMPLETE_ARCHITECTURE.md)
+- [ISSAC_COMMAND_CENTER.md](ISSAC_COMMAND_CENTER.md)
+- [MCP_SERVER_BOOTSTRAP.md](MCP_SERVER_BOOTSTRAP.md)
+- [MODEL_SYNTHESIS_AGENT.md](MODEL_SYNTHESIS_AGENT.md)
+- [N8N_AETHERBROWSE_INTEGRATION.md](N8N_AETHERBROWSE_INTEGRATION.md)
+- [NEXT_GEN_BROWSER_AGENT_IMPLEMENTATION.md](NEXT_GEN_BROWSER_AGENT_IMPLEMENTATION.md)
+- [NEXTGEN_BROWSER_AGENT_SYSTEM.md](NEXTGEN_BROWSER_AGENT_SYSTEM.md)
+- [NOTION_MCP_TOKEN_FIX_2026-02-22.md](NOTION_MCP_TOKEN_FIX_2026-02-22.md)
+- [NOTION_PAGE_INDEX.md](NOTION_PAGE_INDEX.md)
+- [notion_pages_manifest.json](notion_pages_manifest.json)
+- [notion_pages_sweep_notes.md](notion_pages_sweep_notes.md)
+- [OBSIDIAN_MULTI_AI_DOMINO.md](OBSIDIAN_MULTI_AI_DOMINO.md)
+- [PLAYWRIGHT_BOTH_SIDE.md](PLAYWRIGHT_BOTH_SIDE.md)
+- [POLLY_CLAY_SQUAD.md](POLLY_CLAY_SQUAD.md)
+- [polly_pad_auditable_runtime.md](polly_pad_auditable_runtime.md)
+- [ROM_OBSIDIAN_EXECUTION_PLAN_2026-02-24.md](ROM_OBSIDIAN_EXECUTION_PLAN_2026-02-24.md)
+- [SELF_IMPROVEMENT_AGENTS.md](SELF_IMPROVEMENT_AGENTS.md)
+- [SYSTEM_CONNECTOR_HUB.md](SYSTEM_CONNECTOR_HUB.md)
+- [TIERED_SUBAGENT_ARCHITECTURE.md](TIERED_SUBAGENT_ARCHITECTURE.md)
+
+### Core Governance and Math
+
+- [AXIOM_CROSS_REFERENCE.md](AXIOM_CROSS_REFERENCE.md)
+- [BILLING_METRICS.md](BILLING_METRICS.md)
+- [CHAPTER_6_PHDM_POLYHEDRAL_HAMILTONIAN_DYNAMIC_MESH.md](CHAPTER_6_PHDM_POLYHEDRAL_HAMILTONIAN_DYNAMIC_MESH.md)
+- [CORE_AXIOMS_CANONICAL_INDEX.md](CORE_AXIOMS_CANONICAL_INDEX.md)
+- [core-theorems/SACRED_EGGS_GENESIS_BOOTSTRAP_AUTHORIZATION.md](core-theorems/SACRED_EGGS_GENESIS_BOOTSTRAP_AUTHORIZATION.md)
+- [DUAL_LATTICE_STACK_V2.md](DUAL_LATTICE_STACK_V2.md)
+- [evidence/layer1_complex_state.json](evidence/layer1_complex_state.json)
+- [evidence/SCBE_SECURITY_EVIDENCE_PACK.md](evidence/SCBE_SECURITY_EVIDENCE_PACK.md)
+- [KERNEL_ANTIVIRUS_SCBE.md](KERNEL_ANTIVIRUS_SCBE.md)
+- [MASTER_SPEC_M4_21D.md](MASTER_SPEC_M4_21D.md)
+- [math-core-replication.md](math-core-replication.md)
+- [metrics-telemetry.md](metrics-telemetry.md)
+- [PHDM_BRAIN_ARCHITECTURE.md](PHDM_BRAIN_ARCHITECTURE.md)
+- [PHDM_NOMENCLATURE.md](PHDM_NOMENCLATURE.md)
+- [SACRED_TONGUE_SPECTRAL_MAP.md](SACRED_TONGUE_SPECTRAL_MAP.md)
+- [sacred-tongue-tutorials.md](sacred-tongue-tutorials.md)
+- [SCBE_AETHERMOORE_TECH_DECK_V5_COMPLETE.md](SCBE_AETHERMOORE_TECH_DECK_V5_COMPLETE.md)
+- [SCBE_CONTEXT_AETHERBROWSE_AGENT.md](SCBE_CONTEXT_AETHERBROWSE_AGENT.md)
+- [scbe_full_system_layer_manifest.json](scbe_full_system_layer_manifest.json)
+- [scbe_full_system_layer_manifest.schema.json](scbe_full_system_layer_manifest.schema.json)
+- [SCBE_HYDRA_TARSKI_SHEAF.md](SCBE_HYDRA_TARSKI_SHEAF.md)
+- [SCBE_SELF_IMPROVEMENT_LOOP_2026-02-17.md](SCBE_SELF_IMPROVEMENT_LOOP_2026-02-17.md)
+- [SCBE_SYSTEM_CLI.md](SCBE_SYSTEM_CLI.md)
+- [SCBE_TECH_DECK_V5.md](SCBE_TECH_DECK_V5.md)
+- [SCBE_TOPOLOGICAL_CFI_UNIFIED.md](SCBE_TOPOLOGICAL_CFI_UNIFIED.md)
+- [SCBE_WEB_AGENT_ARCHITECTURE.md](SCBE_WEB_AGENT_ARCHITECTURE.md)
+- [scbe-knowledge-v4.aetherbrowse.yaml](scbe-knowledge-v4.aetherbrowse.yaml)
+- [SPIRALVERSE_CODEX.md](SPIRALVERSE_CODEX.md)
+- [SPIRALVERSE_GAME_DESIGN_BIBLE.md](SPIRALVERSE_GAME_DESIGN_BIBLE.md)
+- [TECHNICAL_REFERENCE.md](TECHNICAL_REFERENCE.md)
+- [ZAPIER_SCBE_AUTOMATION.md](ZAPIER_SCBE_AUTOMATION.md)
+
+### Demos
+
+- [demos/audio-composition.html](demos/audio-composition.html)
+- [demos/audio-telemetry.html](demos/audio-telemetry.html)
+- [demos/breathing-phase.html](demos/breathing-phase.html)
+- [demos/context-fingerprint.html](demos/context-fingerprint.html)
+- [demos/distance-explorer.html](demos/distance-explorer.html)
+- [demos/embedding-space.html](demos/embedding-space.html)
+- [demos/energy-landscape.html](demos/energy-landscape.html)
+- [demos/energy-wells.html](demos/energy-wells.html)
+- [demos/governance-gate.html](demos/governance-gate.html)
+- [demos/index.html](demos/index.html)
+- [demos/risk-calculator.html](demos/risk-calculator.html)
+- [demos/spectral-coherence.html](demos/spectral-coherence.html)
+- [demos/swarm-formations.html](demos/swarm-formations.html)
+- [demos/temporal-session.html](demos/temporal-session.html)
+- [demos/tongue-encoder.html](demos/tongue-encoder.html)
+
+### General Root Docs
+
+- [_config.yml](_config.yml)
+- [AETHERAUTH_IMPLEMENTATION.md](AETHERAUTH_IMPLEMENTATION.md)
+- [AETHERBRAIN_ROADMAP.md](AETHERBRAIN_ROADMAP.md)
+- [AI_COGNITIVE_GOVERNANCE_MIND_MAP.md](AI_COGNITIVE_GOVERNANCE_MIND_MAP.md)
+- [AI_KERNEL_BOOTSTRAP.md](AI_KERNEL_BOOTSTRAP.md)
+- [AI2AI_ARXIV_RETRIEVAL_SERVICE.md](AI2AI_ARXIV_RETRIEVAL_SERVICE.md)
+- [arena.html](arena.html)
+- [ARXIV_AUTOMATION.md](ARXIV_AUTOMATION.md)
+- [audit-export-offline-verification.md](audit-export-offline-verification.md)
+- [BUILD_YOUR_OWN_AI_ASSISTANT.md](BUILD_YOUR_OWN_AI_ASSISTANT.md)
+- [CHANGE_NOTES_SPIRAL_ENGINE_2026-02-20.md](CHANGE_NOTES_SPIRAL_ENGINE_2026-02-20.md)
+- [CLAIMS_AUDIT_V4.md](CLAIMS_AUDIT_V4.md)
+- [CLAIMS_EVIDENCE_LEDGER.md](CLAIMS_EVIDENCE_LEDGER.md)
+- [CLOUD_KERNEL_DATA_PIPELINE.md](CLOUD_KERNEL_DATA_PIPELINE.md)
+- [CNAME](CNAME)
+- [COMPLEX_SYSTEMS_ANALYSIS_STYLE_GUIDE.md](COMPLEX_SYSTEMS_ANALYSIS_STYLE_GUIDE.md)
+- [CSTM_design.md](CSTM_design.md)
+- [dag.mmd](dag.mmd)
+- [DOCS_CATALOG.md](DOCS_CATALOG.md)
+- [DRONE_FLEET_UPGRADES.md](DRONE_FLEET_UPGRADES.md)
+- [EMULATOR_SIMPLE_CORE_MINIGAMES.md](EMULATOR_SIMPLE_CORE_MINIGAMES.md)
+- [ENABLEMENT.md](ENABLEMENT.md)
+- [END_TO_END_SYSTEM_MAP_AND_IMPACT.md](END_TO_END_SYSTEM_MAP_AND_IMPACT.md)
+- [evidence/concurrent_operations.json](evidence/concurrent_operations.json)
+- [evidence/layer14_audio_axis.json](evidence/layer14_audio_axis.json)
+- [evidence/layer4_poincare_embedding.json](evidence/layer4_poincare_embedding.json)
+- [evidence/layer5_hyperbolic_distance.json](evidence/layer5_hyperbolic_distance.json)
+- [evidence/layer6_breathing_transform.json](evidence/layer6_breathing_transform.json)
+- [evidence/memory_footprint.json](evidence/memory_footprint.json)
+- [evidence/PASS2_ORGAN_TEST_RESULTS.md](evidence/PASS2_ORGAN_TEST_RESULTS.md)
+- [EXECUTIVE_SUMMARY_FOR_PARTNERS.md](EXECUTIVE_SUMMARY_FOR_PARTNERS.md)
+- [EXPERIMENT_QUEUE.md](EXPERIMENT_QUEUE.md)
+- [FEDERATED_MULTI_CLOUD_TRAINING_PLAN.md](FEDERATED_MULTI_CLOUD_TRAINING_PLAN.md)
+- [FLEET_MANAGEMENT.md](FLEET_MANAGEMENT.md)
+- [GITHUB_DOCS_AUDIT_2026-02-20.md](GITHUB_DOCS_AUDIT_2026-02-20.md)
+- [GITHUB_ORDER_AND_NOTES_SYNC.md](GITHUB_ORDER_AND_NOTES_SYNC.md)
+- [GOOGLE_CLOUD_SETUP.md](GOOGLE_CLOUD_SETUP.md)
+- [google7193f08d2589e861.html](google7193f08d2589e861.html)
+- [grok_image_gen.md](grok_image_gen.md)
+- [headless_ide_quickstart.md](headless_ide_quickstart.md)
+- [hyperbolic-mind-map-construction.md](hyperbolic-mind-map-construction.md)
+- [ide/ARCH_OPTIONS.md](ide/ARCH_OPTIONS.md)
+- [ide/BUILD_PLAN_90D.md](ide/BUILD_PLAN_90D.md)
+- [ide/ENVELOPE_SIGNING_SPEC.md](ide/ENVELOPE_SIGNING_SPEC.md)
+- [ide/MISSION_CONTROL_SPEC.md](ide/MISSION_CONTROL_SPEC.md)
+- [ide/MVP_SPEC.md](ide/MVP_SPEC.md)
+- [ide/THREAT_MODEL.md](ide/THREAT_MODEL.md)
+- [IMPLEMENTATION_GAP_ANALYSIS.md](IMPLEMENTATION_GAP_ANALYSIS.md)
+- [index.html](index.html)
+- [index.md](index.md)
+- [INTEGRATION_GUIDE_SPIRAL_ENGINE_OMEGA_WATCHERS.md](INTEGRATION_GUIDE_SPIRAL_ENGINE_OMEGA_WATCHERS.md)
+- [INTEGRATION_ROADMAP.md](INTEGRATION_ROADMAP.md)
+- [INTEGRATIONS.md](INTEGRATIONS.md)
+- [ISA_V0.md](ISA_V0.md)
+- [LANDING_PAGE.md](LANDING_PAGE.md)
+- [LANGUAGE_GUARDRAILS.md](LANGUAGE_GUARDRAILS.md)
+- [llms.txt](llms.txt)
+- [LOCAL_CLOUD_AUTOSYNC.md](LOCAL_CLOUD_AUTOSYNC.md)
+- [local-run.md](local-run.md)
+- [manifest.json](manifest.json)
+- [MEDICAL_NANOBOT_SWARMS.md](MEDICAL_NANOBOT_SWARMS.md)
+- [MONOREPO_RESTRUCTURING_PLAN.md](MONOREPO_RESTRUCTURING_PLAN.md)
+- [MULTI_AI_COORDINATION.md](MULTI_AI_COORDINATION.md)
+- [MULTI_AI_OFFLINE_ONLINE_SETUP.md](MULTI_AI_OFFLINE_ONLINE_SETUP.md)
+- [MULTI_CLOUD_LONGRUN_TRAINING_BOOTSTRAP.md](MULTI_CLOUD_LONGRUN_TRAINING_BOOTSTRAP.md)
+- [N8N_X_MONETIZE_AUTOMATION.md](N8N_X_MONETIZE_AUTOMATION.md)
+- [NIGHTLY_CHANGE_NOTES_2026-02-21.md](NIGHTLY_CHANGE_NOTES_2026-02-21.md)
+- [NIGHTLY_CHANGE_NOTES_2026-02-22.md](NIGHTLY_CHANGE_NOTES_2026-02-22.md)
+- [NIGHTLY_NOTES_2026-02-23.md](NIGHTLY_NOTES_2026-02-23.md)
+- [NONBINARY_KERNEL_SPEC.md](NONBINARY_KERNEL_SPEC.md)
+- [OFFLINE_MODE_SPEC.md](OFFLINE_MODE_SPEC.md)
+- [open_source_tools_research.md](open_source_tools_research.md)
+- [PATENT_PROVISIONAL_ABSTRACT_BACKGROUND.md](PATENT_PROVISIONAL_ABSTRACT_BACKGROUND.md)
+- [PR247_PHASED_MERGE_PLAN_2026-02-22.md](PR247_PHASED_MERGE_PLAN_2026-02-22.md)
+- [qkd-integration.md](qkd-integration.md)
+- [QUASI_VECTOR_MAGNETICS.md](QUASI_VECTOR_MAGNETICS.md)
+- [redteam.html](redteam.html)
+- [REMAINING_WORK.md](REMAINING_WORK.md)
+- [REPO_CONSOLIDATION.md](REPO_CONSOLIDATION.md)
+- [robots.txt](robots.txt)
+- [ROM_EMULATOR_COLAB.md](ROM_EMULATOR_COLAB.md)
+- [SAFE_EXTENSION_GATE.md](SAFE_EXTENSION_GATE.md)
+- [SEMANTIC_MESH_230.md](SEMANTIC_MESH_230.md)
+- [sitemap.xml](sitemap.xml)
+- [SIX_TONGUES_CLI.md](SIX_TONGUES_CLI.md)
+- [six-tongues-protocol-spaceflight.md](six-tongues-protocol-spaceflight.md)
+- [SPACE_DEBRIS_FLEET.md](SPACE_DEBRIS_FLEET.md)
+- [SPIRAL_FORGE_GDD.md](SPIRAL_FORGE_GDD.md)
+- [SS1_TOKENIZER_PROTOCOL.md](SS1_TOKENIZER_PROTOCOL.md)
+- [ST_ISA_V0.md](ST_ISA_V0.md)
+- [STRATEGIC_REVIEW_20260322.md](STRATEGIC_REVIEW_20260322.md)
+- [STVM_EXECUTION_MODEL.md](STVM_EXECUTION_MODEL.md)
+- [superpowers/specs/2026-03-15-beat-expansion-pipeline-design.md](superpowers/specs/2026-03-15-beat-expansion-pipeline-design.md)
+- [support.html](support.html)
+- [SWARM_CODER_ONEPAGER.md](SWARM_CODER_ONEPAGER.md)
+- [SWARM_FORMATIONS.md](SWARM_FORMATIONS.md)
+- [SYSTEM_ACCESS_AUDIT_2026-02-22.md](SYSTEM_ACCESS_AUDIT_2026-02-22.md)
+- [SYSTEM_COMPLETION_MASTER_PLAN_2026-02-22.md](SYSTEM_COMPLETION_MASTER_PLAN_2026-02-22.md)
+- [TAX_EXPENSE_TRACKER_2026.csv](TAX_EXPENSE_TRACKER_2026.csv)
+- [TAX_NOTES.md](TAX_NOTES.md)
+- [test-audit-report-2026-01-20.md](test-audit-report-2026-01-20.md)
+- [TOMORROW_CODE_PRISM_2026-02-22.md](TOMORROW_CODE_PRISM_2026-02-22.md)
+- [UNIFIED_SYSTEM_REPORT.md](UNIFIED_SYSTEM_REPORT.md)
+- [UNITY_VISUALIZATION_STRATEGY.md](UNITY_VISUALIZATION_STRATEGY.md)
+- [VOXEL_GOVERNANCE_SIM.md](VOXEL_GOVERNANCE_SIM.md)
+- [WEB_CURSOR_PR_MERGE.md](WEB_CURSOR_PR_MERGE.md)
+- [WEB_RESEARCH_TRAINING_PIPELINE.md](WEB_RESEARCH_TRAINING_PIPELINE.md)
+- [WORKFLOW_VECTOR_Z.md](WORKFLOW_VECTOR_Z.md)
+
+### HYDRA
+
+- [hydra/MISSION_1000_STEP_ACCEPTANCE.md](hydra/MISSION_1000_STEP_ACCEPTANCE.md)
+- [hydra/MISSION_1000_SYNTHETIC_JOBS.json](hydra/MISSION_1000_SYNTHETIC_JOBS.json)
+
+### Monetization and Market
+
+- [market/2026-03-06-government-contract-lanes.md](market/2026-03-06-government-contract-lanes.md)
+- [market/2026-03-06-outreach-cadence.md](market/2026-03-06-outreach-cadence.md)
+- [market/2026-03-06-pilot-conversion-packet.md](market/2026-03-06-pilot-conversion-packet.md)
+- [market/2026-03-06-target-pipeline.csv](market/2026-03-06-target-pipeline.csv)
+- [monetization/2026-03-04-agent-swarm-revenue-sprint.md](monetization/2026-03-04-agent-swarm-revenue-sprint.md)
+- [monetization/2026-03-04-outreach-pack.md](monetization/2026-03-04-outreach-pack.md)
+- [monetization/lead_sheet_template.csv](monetization/lead_sheet_template.csv)
+- [monetization/OUTBOUND_ONE_PAGER_2026-03-09.md](monetization/OUTBOUND_ONE_PAGER_2026-03-09.md)
+- [monetization/README.md](monetization/README.md)
+
+### Narrative and Creative
+
+- [AETHERMORE_ROUNDABOUT_CITY_ARCH.md](AETHERMORE_ROUNDABOUT_CITY_ARCH.md)
+- [MOBILE_AUTONOMY_RUNBOOK.md](MOBILE_AUTONOMY_RUNBOOK.md)
+- [six-tongues-protocol-story.md](six-tongues-protocol-story.md)
+- [WORLDFORGE_TEMPLATE.md](WORLDFORGE_TEMPLATE.md)
+
+### Patent and Paper
+
+- [paper/davis-2026-intent-modulated-governance.md](paper/davis-2026-intent-modulated-governance.md)
+- [paper/davis-2026-phase-tunnel-gate.md](paper/davis-2026-phase-tunnel-gate.md)
+- [patent/CIP_FILING_EXECUTION_PLAN_2026-03-06.md](patent/CIP_FILING_EXECUTION_PLAN_2026-03-06.md)
+- [patent/CIP_TECHNICAL_SPECIFICATION.md](patent/CIP_TECHNICAL_SPECIFICATION.md)
+- [patent/CLAIMS_INVENTORY.md](patent/CLAIMS_INVENTORY.md)
+- [patent/CONTINUATION_CLAIMS_20260322.md](patent/CONTINUATION_CLAIMS_20260322.md)
+- [patent/filing_kit/01-urgent/Combined_Filing_Package.pdf](patent/filing_kit/01-urgent/Combined_Filing_Package.pdf)
+- [patent/filing_kit/01-urgent/Cover_Letter_Missing_Parts.pdf](patent/filing_kit/01-urgent/Cover_Letter_Missing_Parts.pdf)
+- [patent/filing_kit/01-urgent/EMAIL_TO_MOM_SUBMISSION_TEMPLATE.txt](patent/filing_kit/01-urgent/EMAIL_TO_MOM_SUBMISSION_TEMPLATE.txt)
+- [patent/filing_kit/01-urgent/FILING_PACKAGE_STATUS.md](patent/filing_kit/01-urgent/FILING_PACKAGE_STATUS.md)
+- [patent/filing_kit/01-urgent/FILING_WALKTHROUGH.md](patent/filing_kit/01-urgent/FILING_WALKTHROUGH.md)
+- [patent/filing_kit/01-urgent/PTO_SB_15A_MICRO_ENTITY_CERT.md](patent/filing_kit/01-urgent/PTO_SB_15A_MICRO_ENTITY_CERT.md)
+- [patent/filing_kit/01-urgent/PTO_SB_15A_Micro_Entity_Certification.pdf](patent/filing_kit/01-urgent/PTO_SB_15A_Micro_Entity_Certification.pdf)
+- [patent/filing_kit/01-urgent/PTO_SB_16_COVER_SHEET.md](patent/filing_kit/01-urgent/PTO_SB_16_COVER_SHEET.md)
+- [patent/filing_kit/01-urgent/PTO_SB_16_Cover_Sheet.pdf](patent/filing_kit/01-urgent/PTO_SB_16_Cover_Sheet.pdf)
+- [patent/filing_kit/01-urgent/USPTO_Filing_Package_Draft.eml](patent/filing_kit/01-urgent/USPTO_Filing_Package_Draft.eml)
+- [patent/filing_kit/01-urgent/USPTO_Payment_Receipt_2026-03-17.pdf](patent/filing_kit/01-urgent/USPTO_Payment_Receipt_2026-03-17.pdf)
+- [patent/PRIOR_ART_ANALYSIS.md](patent/PRIOR_ART_ANALYSIS.md)
+- [patent/USPTO_QUICK_REFERENCE.md](patent/USPTO_QUICK_REFERENCE.md)
+
+### Product Manuals
+
+- [product-manual/ai-governance-toolkit.html](product-manual/ai-governance-toolkit.html)
+- [product-manual/content-spin-engine.html](product-manual/content-spin-engine.html)
+- [product-manual/delivery-and-access.html](product-manual/delivery-and-access.html)
+- [product-manual/hydra-agent-templates.html](product-manual/hydra-agent-templates.html)
+- [product-manual/index.html](product-manual/index.html)
+- [product-manual/n8n-workflow-pack.html](product-manual/n8n-workflow-pack.html)
+- [product-manual/TABLE_OF_CONTENTS.md](product-manual/TABLE_OF_CONTENTS.md)
+- [product-manual/user-guide.html](product-manual/user-guide.html)
+
+### Product Packaging
+
+- [product/LAUNCH_SKU.md](product/LAUNCH_SKU.md)
+- [product/SCBE_KERNEL_V1_API.md](product/SCBE_KERNEL_V1_API.md)
+- [products/ai-governance-starter-kit.md](products/ai-governance-starter-kit.md)
+- [products/gumroad-listing.md](products/gumroad-listing.md)
+
+### Product, GTM, and Outreach
+
+- [BUYER_PROOF_CHECKLIST.md](BUYER_PROOF_CHECKLIST.md)
+- [COMMERCIAL_AGREEMENT.md](COMMERCIAL_AGREEMENT.md)
+- [DARPA_OUTREACH_PACKAGE.md](DARPA_OUTREACH_PACKAGE.md)
+- [DARPA_SWARM_BRIEF.md](DARPA_SWARM_BRIEF.md)
+- [EBOOK_GRAPHIC_PRODUCT_PLAN.md](EBOOK_GRAPHIC_PRODUCT_PLAN.md)
+- [GO_TO_MARKET_SKUS.md](GO_TO_MARKET_SKUS.md)
+- [MONETIZATION_ACTION_PLAN.md](MONETIZATION_ACTION_PLAN.md)
+- [OFFER_PILOT.md](OFFER_PILOT.md)
+- [ONE_PAGER_INVESTOR.md](ONE_PAGER_INVESTOR.md)
+- [PUBLISHING.md](PUBLISHING.md)
+- [QUICKSTART_MONETIZATION.md](QUICKSTART_MONETIZATION.md)
+- [REVENUE_PLAN_90_DAYS.md](REVENUE_PLAN_90_DAYS.md)
+- [shopify-headless-workflow.md](shopify-headless-workflow.md)
+
+### Specifications
+
+- [specs/AETHER_REALTIME_VOICE_CALL_OPTIONS.md](specs/AETHER_REALTIME_VOICE_CALL_OPTIONS.md)
+- [specs/AETHERBROWSER_COMPETITIVE_GOAL.md](specs/AETHERBROWSER_COMPETITIVE_GOAL.md)
+- [specs/AETHERBROWSER_CONFIG.md](specs/AETHERBROWSER_CONFIG.md)
+- [specs/AETHERBROWSER_GOVERNED_WEB_MCP_PHASE_C.md](specs/AETHERBROWSER_GOVERNED_WEB_MCP_PHASE_C.md)
+- [specs/AETHERBROWSER_PERPLEXITY_CONNECTOR.md](specs/AETHERBROWSER_PERPLEXITY_CONNECTOR.md)
+- [specs/aetherbrowser_search_mesh.md](specs/aetherbrowser_search_mesh.md)
+- [specs/DECISION_ENVELOPE_V1.md](specs/DECISION_ENVELOPE_V1.md)
+- [specs/FULL_PIPELINE_LOAD_TEST_SPEC_2026-03-24.md](specs/FULL_PIPELINE_LOAD_TEST_SPEC_2026-03-24.md)
+- [specs/HF_TRAINING_CURRICULUM_MAP_2026-03-24.md](specs/HF_TRAINING_CURRICULUM_MAP_2026-03-24.md)
+- [specs/hf_training_lane_for_scbe_agents.md](specs/hf_training_lane_for_scbe_agents.md)
+- [specs/HYDRA_PARALLEL_BROWSER_COMMS_LATTICE.md](specs/HYDRA_PARALLEL_BROWSER_COMMS_LATTICE.md)
+- [specs/INTEGRATIONS.md](specs/INTEGRATIONS.md)
+- [specs/MEDICAL_NANOBOT_SWARMS.md](specs/MEDICAL_NANOBOT_SWARMS.md)
+- [specs/patent/MASTER_PATENT_DOCUMENT.md](specs/patent/MASTER_PATENT_DOCUMENT.md)
+- [specs/patent/RESEARCH_PATENT_ANALYSIS.md](specs/patent/RESEARCH_PATENT_ANALYSIS.md)
+- [specs/POLLY_CHAT_MODEL_BLUEPRINT_2026-03-24.md](specs/POLLY_CHAT_MODEL_BLUEPRINT_2026-03-24.md)
+- [specs/polyhedral_workflow_mesh.md](specs/polyhedral_workflow_mesh.md)
+- [specs/PROTON_MAIL_BRIDGE_AI_WORKFLOW_2026-03-24.md](specs/PROTON_MAIL_BRIDGE_AI_WORKFLOW_2026-03-24.md)
+- [specs/RESONANCE_GATE_SPEC.md](specs/RESONANCE_GATE_SPEC.md)
+- [specs/SACRED_TONGUE_INTEROP_MATRIX.md](specs/SACRED_TONGUE_INTEROP_MATRIX.md)
+- [specs/SCBE_AUDIO_GATE_SPECTRUM_EXPERIMENT.md](specs/SCBE_AUDIO_GATE_SPECTRUM_EXPERIMENT.md)
+- [specs/SCBE_MASTER_2026_001_CONSOLIDATED_SUBMISSION_NOTES_2026_02_19.md](specs/SCBE_MASTER_2026_001_CONSOLIDATED_SUBMISSION_NOTES_2026_02_19.md)
+- [specs/SCBE_VOICE_EMOTIONAL_TIMBRE_SYSTEM.md](specs/SCBE_VOICE_EMOTIONAL_TIMBRE_SYSTEM.md)
+- [specs/SPACE_DEBRIS_FLEET.md](specs/SPACE_DEBRIS_FLEET.md)
+- [specs/SPIRALVERSE_CANONICAL_LINGUISTIC_CODEX_V1.md](specs/SPIRALVERSE_CANONICAL_LINGUISTIC_CODEX_V1.md)
+- [specs/spiralverse_canonical_registry.v1.json](specs/spiralverse_canonical_registry.v1.json)
+- [specs/SPIRALVERSE_PROTOCOL_RWP_V3_0_ALPHA_QUANTUM_RESISTANT_ARCHITECTURE.md](specs/SPIRALVERSE_PROTOCOL_RWP_V3_0_ALPHA_QUANTUM_RESISTANT_ARCHITECTURE.md)
+- [specs/STATE_MANIFOLD_21D_PRODUCT_METRIC.md](specs/STATE_MANIFOLD_21D_PRODUCT_METRIC.md)
+- [specs/SWARM_TELEMETRY_NOTION_MAP_2026-03-24.md](specs/SWARM_TELEMETRY_NOTION_MAP_2026-03-24.md)
+- [specs/SYSTEM_BLUEPRINT_v1_ORIGINAL_2026-01-18.md](specs/SYSTEM_BLUEPRINT_v1_ORIGINAL_2026-01-18.md)
+- [specs/SYSTEM_BLUEPRINT_v2_CURRENT.md](specs/SYSTEM_BLUEPRINT_v2_CURRENT.md)
+- [specs/WEBTOON_CH01_VISUAL_MEMORY_PACKET.md](specs/WEBTOON_CH01_VISUAL_MEMORY_PACKET.md)
+- [specs/WEBTOON_IMAGE_CONSISTENCY_SYSTEM.md](specs/WEBTOON_IMAGE_CONSISTENCY_SYSTEM.md)
+- [specs/WEBTOON_REFERENCE_CHAPTER_WORKFLOW.md](specs/WEBTOON_REFERENCE_CHAPTER_WORKFLOW.md)
+
+## Supporting
+
+### Agents, Browser, and Control Plane
+
+- [plans/2026-03-04-aetherbrowse-play-store-deploy.md](plans/2026-03-04-aetherbrowse-play-store-deploy.md)
+- [plans/2026-03-04-connector-closure-plan.md](plans/2026-03-04-connector-closure-plan.md)
+- [plans/2026-03-04-openclaw-terminal-1000-plan.md](plans/2026-03-04-openclaw-terminal-1000-plan.md)
+
+### Blog
+
+- [blog/00-scbe-aethermoore-definitive.md](blog/00-scbe-aethermoore-definitive.md)
+- [blog/01-scbe-governance-framework.md](blog/01-scbe-governance-framework.md)
+- [blog/02-flock-shepherd-multi-ai.md](blog/02-flock-shepherd-multi-ai.md)
+- [blog/03-polly-pads-dual-zone.md](blog/03-polly-pads-dual-zone.md)
+
+### Core Governance and Math
+
+- [plans/2026-03-04-scbe-ops-control-design.md](plans/2026-03-04-scbe-ops-control-design.md)
+
+### General Root Docs
+
+- [notes/PATENT_AWS_WORKING_NOTES_2026-03-24.md](notes/PATENT_AWS_WORKING_NOTES_2026-03-24.md)
+- [plans/2026-03-04-app-factory-thought-plan.md](plans/2026-03-04-app-factory-thought-plan.md)
+- [plans/2026-03-04-dual-side-loop-self-improvement.md](plans/2026-03-04-dual-side-loop-self-improvement.md)
+- [plans/2026-03-04-kindle-app-design.md](plans/2026-03-04-kindle-app-design.md)
+- [plans/2026-03-04-kindle-virtual-upload-research.md](plans/2026-03-04-kindle-virtual-upload-research.md)
+- [plans/2026-03-04-system-rename-organization-consolidation-plan.md](plans/2026-03-04-system-rename-organization-consolidation-plan.md)
+- [plans/2026-03-05-polyglot-translation-matrix-system.md](plans/2026-03-05-polyglot-translation-matrix-system.md)
+
+### News
+
+- [news/latest.md](news/latest.md)
+- [news/node_fleet_20260217T105928Z.json](news/node_fleet_20260217T105928Z.json)
+- [news/node_fleet_20260217T105928Z.md](news/node_fleet_20260217T105928Z.md)
+- [news/node_fleet_20260217T110715Z.json](news/node_fleet_20260217T110715Z.json)
+- [news/node_fleet_20260217T110715Z.md](news/node_fleet_20260217T110715Z.md)
+- [news/node_fleet_20260217T143132Z.json](news/node_fleet_20260217T143132Z.json)
+- [news/node_fleet_20260217T143132Z.md](news/node_fleet_20260217T143132Z.md)
+- [news/node_fleet_20260218T003239Z.json](news/node_fleet_20260218T003239Z.json)
+- [news/node_fleet_20260218T003239Z.md](news/node_fleet_20260218T003239Z.md)
+
+### Operations and Coordination
+
+- [notion/NOTION_TECH_CORPUS_INVENTORY_2026-03-15.md](notion/NOTION_TECH_CORPUS_INVENTORY_2026-03-15.md)
+- [notion/NOTION_USEFUL_PAGES_SHORTLIST_2026-03-15.md](notion/NOTION_USEFUL_PAGES_SHORTLIST_2026-03-15.md)
+
+### Research
+
+- [research/2026-03-04-kindle-dev-and-virtual-upload-brief.md](research/2026-03-04-kindle-dev-and-virtual-upload-brief.md)
+- [research/2026-03-05-aetherbrowse-improvement-brief.md](research/2026-03-05-aetherbrowse-improvement-brief.md)
+- [research/2026-03-05-context-capsule-loader.md](research/2026-03-05-context-capsule-loader.md)
+- [research/2026-03-05-library-wing-roundtable.md](research/2026-03-05-library-wing-roundtable.md)
+- [research/2026-03-05-open-source-connector-library.md](research/2026-03-05-open-source-connector-library.md)
+- [research/2026-03-13-l11-triadic-temporal-axiom-draft.md](research/2026-03-13-l11-triadic-temporal-axiom-draft.md)
+- [research/2026-03-15-arckit-dual-track.md](research/2026-03-15-arckit-dual-track.md)
+- [research/2026-03-15-ch01-book-panel-tandem-audit.md](research/2026-03-15-ch01-book-panel-tandem-audit.md)
+- [research/2026-03-15-phone-emulator-architecture-research.md](research/2026-03-15-phone-emulator-architecture-research.md)
+- [research/2026-03-15-scattercast-scbe-overlay-note.md](research/2026-03-15-scattercast-scbe-overlay-note.md)
+- [research/2026-03-16-game-ai-company-patterns.md](research/2026-03-16-game-ai-company-patterns.md)
+- [research/2026-03-16-phase-control-modulation-matrices.md](research/2026-03-16-phase-control-modulation-matrices.md)
+- [research/2026-03-17-aetherbrowser-extension-ownership-stack.md](research/2026-03-17-aetherbrowser-extension-ownership-stack.md)
+- [research/2026-03-17-global-agent-senses-choice-monitoring.md](research/2026-03-17-global-agent-senses-choice-monitoring.md)
+- [research/2026-03-18-adaptive-training-systems.md](research/2026-03-18-adaptive-training-systems.md)
+- [research/2026-03-18-free-compute-landscape.md](research/2026-03-18-free-compute-landscape.md)
+- [research/2026-03-18-tower-training-architecture.md](research/2026-03-18-tower-training-architecture.md)
+- [research/2026-03-21-synthetic-data-privacy-blueprint.md](research/2026-03-21-synthetic-data-privacy-blueprint.md)
+- [research/AETHERMOOR_SPIRAL_ENGINE_MVP.md](research/AETHERMOOR_SPIRAL_ENGINE_MVP.md)
+- [research/BENCHMARK_VERIFICATION_2026-03-23.md](research/BENCHMARK_VERIFICATION_2026-03-23.md)
+- [research/FREE_OPEN_MAPPING_STACK_RESEARCH_2026-03-25.md](research/FREE_OPEN_MAPPING_STACK_RESEARCH_2026-03-25.md)
+- [research/FULL_CODEBASE_RESEARCH_2026-03-23.md](research/FULL_CODEBASE_RESEARCH_2026-03-23.md)
+- [research/hsm-source-code-review.md](research/hsm-source-code-review.md)
+- [research/index.html](research/index.html)
+- [research/layer-coupling.html](research/layer-coupling.html)
+- [research/math-flow.html](research/math-flow.html)
+- [research/MULTI_MODEL_MODAL_MATRIX.md](research/MULTI_MODEL_MODAL_MATRIX.md)
+- [research/MULTIMODAL_MATRIX_TRAINING.md](research/MULTIMODAL_MATRIX_TRAINING.md)
+- [research/null-space-tongue-signatures.html](research/null-space-tongue-signatures.html)
+- [research/QUASI_VECTOR_SPIN_VOXELS.md](research/QUASI_VECTOR_SPIN_VOXELS.md)
+- [research/QUASI_VOXEL_TERNARY_STORAGE.md](research/QUASI_VOXEL_TERNARY_STORAGE.md)
+- [research/README.md](research/README.md)
+- [research/ROME_INCIDENT_RESPONSE.md](research/ROME_INCIDENT_RESPONSE.md)
+- [research/SHEAF_CONSENSUS_GATE.md](research/SHEAF_CONSENSUS_GATE.md)
+- [research/SIGNED_MULTIPLANE_ENCODING.md](research/SIGNED_MULTIPLANE_ENCODING.md)
+- [research/SWLE_semantic_weighted_letter_encoding.md](research/SWLE_semantic_weighted_letter_encoding.md)
+- [research/SWLE_V0_DATASET_AND_BENCHMARK.md](research/SWLE_V0_DATASET_AND_BENCHMARK.md)
+- [research/trajectory.html](research/trajectory.html)
+- [research/verification.html](research/verification.html)
+
+## Archived
+
+### Archive
+
+- [archive/ACTION_ITEMS_FROM_REVIEW.md](archive/ACTION_ITEMS_FROM_REVIEW.md)
+- [archive/ADVANCED_MATH_TELEMETRY_COMPLETE.md](archive/ADVANCED_MATH_TELEMETRY_COMPLETE.md)
+- [archive/AETHERMOORE_AI_WORKFLOW_PLATFORM_DRAFT.md](archive/AETHERMOORE_AI_WORKFLOW_PLATFORM_DRAFT.md)
+- [archive/AETHERMOORE_CONSTANTS_COMPLETE.md](archive/AETHERMOORE_CONSTANTS_COMPLETE.md)
+- [archive/AETHERMOORE_CONSTANTS_IP_PORTFOLIO.md](archive/AETHERMOORE_CONSTANTS_IP_PORTFOLIO.md)
+- [archive/AGENT_README.md](archive/AGENT_README.md)
+- [archive/ARCHITECTURE_5_LAYERS.md](archive/ARCHITECTURE_5_LAYERS.md)
+- [archive/ARCHITECTURE_FOR_PILOTS.md](archive/ARCHITECTURE_FOR_PILOTS.md)
+- [archive/AUDIT_SUMMARY.md](archive/AUDIT_SUMMARY.md)
+- [archive/AXIOM_VERIFICATION_STATUS.md](archive/AXIOM_VERIFICATION_STATUS.md)
+- [archive/BUG_REPORT.md](archive/BUG_REPORT.md)
+- [archive/CHANGELOG.md](archive/CHANGELOG.md)
+- [archive/CLI_COMPLETE.md](archive/CLI_COMPLETE.md)
+- [archive/CLI_README.md](archive/CLI_README.md)
+- [archive/CLI_SETUP.md](archive/CLI_SETUP.md)
+- [archive/CODEBASE_REVIEW_REPORT.md](archive/CODEBASE_REVIEW_REPORT.md)
+- [archive/COMPLETE_INTEGRATION_MASTER.md](archive/COMPLETE_INTEGRATION_MASTER.md)
+- [archive/COMPLETE_INVENTORY.md](archive/COMPLETE_INVENTORY.md)
+- [archive/COMPLETE_IP_PORTFOLIO_READY_FOR_USPTO.md](archive/COMPLETE_IP_PORTFOLIO_READY_FOR_USPTO.md)
+- [archive/COMPLETE_SYSTEM_OVERVIEW.md](archive/COMPLETE_SYSTEM_OVERVIEW.md)
+- [archive/COMPLETE_SYSTEM.md](archive/COMPLETE_SYSTEM.md)
+- [archive/compliance_report.md](archive/compliance_report.md)
+- [archive/CONTEXT_TRANSFER_SUMMARY.md](archive/CONTEXT_TRANSFER_SUMMARY.md)
+- [archive/CONTRIBUTING.md](archive/CONTRIBUTING.md)
+- [archive/CREDIBILITY_SUMMARY.md](archive/CREDIBILITY_SUMMARY.md)
+- [archive/DEMO_COMPLETE.md](archive/DEMO_COMPLETE.md)
+- [archive/DEMO_SUCCESS.md](archive/DEMO_SUCCESS.md)
+- [archive/DEMOS.md](archive/DEMOS.md)
+- [archive/DEPLOYMENT.md](archive/DEPLOYMENT.md)
+- [archive/DIMENSIONAL_THEORY_COMPLETE.md](archive/DIMENSIONAL_THEORY_COMPLETE.md)
+- [archive/DIMENSIONAL_THEORY_INTEGRATION.md](archive/DIMENSIONAL_THEORY_INTEGRATION.md)
+- [archive/DIMENSIONAL_THEORY_VISUAL_SUMMARY.md](archive/DIMENSIONAL_THEORY_VISUAL_SUMMARY.md)
+- [archive/DUAL_CHANNEL_IMPLEMENTATION_COMPLETE.md](archive/DUAL_CHANNEL_IMPLEMENTATION_COMPLETE.md)
+- [archive/ENABLEMENT_COMPLETE.md](archive/ENABLEMENT_COMPLETE.md)
+- [archive/ENGINEERING_REVIEW_CORRECTIONS.md](archive/ENGINEERING_REVIEW_CORRECTIONS.md)
+- [archive/ENTERPRISE_AI_ORCHESTRATION_INTEGRATION.md](archive/ENTERPRISE_AI_ORCHESTRATION_INTEGRATION.md)
+- [archive/ENTERPRISE_TESTING_COMPLETE.md](archive/ENTERPRISE_TESTING_COMPLETE.md)
+- [archive/ENTERPRISE_TESTING_SUCCESS.md](archive/ENTERPRISE_TESTING_SUCCESS.md)
+- [archive/ENTERPRISE_TESTS_FIXED.md](archive/ENTERPRISE_TESTS_FIXED.md)
+- [archive/FEATURES.md](archive/FEATURES.md)
+- [archive/FINAL_ENGINEERING_STATUS.md](archive/FINAL_ENGINEERING_STATUS.md)
+- [archive/FINAL_PACKAGE_STATUS.md](archive/FINAL_PACKAGE_STATUS.md)
+- [archive/FINAL_SHIPPING_STATUS.md](archive/FINAL_SHIPPING_STATUS.md)
+- [archive/FINAL_STATUS_REPORT.md](archive/FINAL_STATUS_REPORT.md)
+- [archive/FINAL_SUMMARY.md](archive/FINAL_SUMMARY.md)
+- [archive/FINAL_TEST_REPORT.md](archive/FINAL_TEST_REPORT.md)
+- [archive/FULL_SYSTEM_ENABLEMENT.md](archive/FULL_SYSTEM_ENABLEMENT.md)
+- [archive/GITHUB_INTEGRATION_COMPLETE.md](archive/GITHUB_INTEGRATION_COMPLETE.md)
+- [archive/HOW_TO_USE.md](archive/HOW_TO_USE.md)
+- [archive/IMPLEMENTATION_STATUS_HONEST.md](archive/IMPLEMENTATION_STATUS_HONEST.md)
+- [archive/IMPLEMENTATION_STATUS.md](archive/IMPLEMENTATION_STATUS.md)
+- [archive/INDUSTRY_STANDARD_TESTS_SUMMARY.md](archive/INDUSTRY_STANDARD_TESTS_SUMMARY.md)
+- [archive/INSTALL.md](archive/INSTALL.md)
+- [archive/INTEGRATION_COMPLETE.md](archive/INTEGRATION_COMPLETE.md)
+- [archive/INTEGRATION_QUICK_START.md](archive/INTEGRATION_QUICK_START.md)
+- [archive/INTEGRATION_ROADMAP.md](archive/INTEGRATION_ROADMAP.md)
+- [archive/ISSUES_FIXED.md](archive/ISSUES_FIXED.md)
+- [archive/KIRO_STARTUP_FIX.md](archive/KIRO_STARTUP_FIX.md)
+- [archive/KIRO_STARTUP_TROUBLESHOOTING.md](archive/KIRO_STARTUP_TROUBLESHOOTING.md)
+- [archive/KIRO_SYSTEM_MAP.md](archive/KIRO_SYSTEM_MAP.md)
+- [archive/LAYER_INDEX.md](archive/LAYER_INDEX.md)
+- [archive/MARS_DEMO_GUIDE.md](archive/MARS_DEMO_GUIDE.md)
+- [archive/MASTER_INDEX.md](archive/MASTER_INDEX.md)
+- [archive/MATHEMATICAL_FOUNDATION_COMPLETE.md](archive/MATHEMATICAL_FOUNDATION_COMPLETE.md)
+- [archive/MATHEMATICAL_REVIEW_RESPONSE.md](archive/MATHEMATICAL_REVIEW_RESPONSE.md)
+- [archive/MEMORY_SHARD_DEMO.md](archive/MEMORY_SHARD_DEMO.md)
+- [archive/MISSION_ACCOMPLISHED.md](archive/MISSION_ACCOMPLISHED.md)
+- [archive/MVP_API_ROADMAP.md](archive/MVP_API_ROADMAP.md)
+- [archive/MVP_IMPLEMENTATION_COMPLETE.md](archive/MVP_IMPLEMENTATION_COMPLETE.md)
+- [archive/MVP_QUICK_START.md](archive/MVP_QUICK_START.md)
+- [archive/NPM_PUBLISH_NOW.md](archive/NPM_PUBLISH_NOW.md)
+- [archive/PACKAGE_COMPLETE.md](archive/PACKAGE_COMPLETE.md)
+- [archive/PACKAGE_INSTRUCTIONS.md](archive/PACKAGE_INSTRUCTIONS.md)
+- [archive/PACKAGE_PREPARATION.md](archive/PACKAGE_PREPARATION.md)
+- [archive/PACKAGE_READY.md](archive/PACKAGE_READY.md)
+- [archive/PATENT_CLAIMS_CORRECTED.md](archive/PATENT_CLAIMS_CORRECTED.md)
+- [archive/PATENT_CLAIMS_QUICK_REFERENCE.md](archive/PATENT_CLAIMS_QUICK_REFERENCE.md)
+- [archive/PATENT_PROVISIONAL_APPLICATION.md](archive/PATENT_PROVISIONAL_APPLICATION.md)
+- [archive/PATENT_UPDATE_COMPLETE.md](archive/PATENT_UPDATE_COMPLETE.md)
+- [archive/PERFORMANCE_OPTIMIZATION.md](archive/PERFORMANCE_OPTIMIZATION.md)
+- [archive/PHASE_SHIFT_EXTENSION.md](archive/PHASE_SHIFT_EXTENSION.md)
+- [archive/PHASE_SHIFT_SUMMARY.md](archive/PHASE_SHIFT_SUMMARY.md)
+- [archive/PHDM_ACHIEVEMENT.md](archive/PHDM_ACHIEVEMENT.md)
+- [archive/PHDM_COMPLETE.md](archive/PHDM_COMPLETE.md)
+- [archive/PILOT_PROGRAM_TERMS.md](archive/PILOT_PROGRAM_TERMS.md)
+- [archive/PRODUCT_READY.md](archive/PRODUCT_READY.md)
+- [archive/PRODUCT_STATUS.md](archive/PRODUCT_STATUS.md)
+- [archive/PRODUCTION_READINESS_AUDIT.md](archive/PRODUCTION_READINESS_AUDIT.md)
+- [archive/PROJECT_COMPLETION_STATUS.md](archive/PROJECT_COMPLETION_STATUS.md)
+- [archive/PROJECT_STATUS_SUMMARY.md](archive/PROJECT_STATUS_SUMMARY.md)
+- [archive/PUBLISH_GUIDE.md](archive/PUBLISH_GUIDE.md)
+- [archive/PUBLISHED_SUCCESS.md](archive/PUBLISHED_SUCCESS.md)
+- [archive/PUSH_AND_TEST_COMPLETE.md](archive/PUSH_AND_TEST_COMPLETE.md)
+- [archive/QUICK_REFERENCE.md](archive/QUICK_REFERENCE.md)
+- [archive/QUICK_START.md](archive/QUICK_START.md)
+- [archive/QUICKSTART.md](archive/QUICKSTART.md)
+- [archive/README_SHIP_NOW.md](archive/README_SHIP_NOW.md)
+- [archive/RELEASE_SUMMARY.md](archive/RELEASE_SUMMARY.md)
+- [archive/REVIEW_EXECUTIVE_SUMMARY.md](archive/REVIEW_EXECUTIVE_SUMMARY.md)
+- [archive/RWP_V3_INTEGRATION_COMPLETE.md](archive/RWP_V3_INTEGRATION_COMPLETE.md)
+- [archive/RWP_V3_QUICKSTART.md](archive/RWP_V3_QUICKSTART.md)
+- [archive/SACRED_TONGUE_PQC_INTEGRATION.md](archive/SACRED_TONGUE_PQC_INTEGRATION.md)
+- [archive/SACRED_TONGUE_QUICK_REFERENCE.md](archive/SACRED_TONGUE_QUICK_REFERENCE.md)
+- [archive/SACRED_TONGUE_STATUS.md](archive/SACRED_TONGUE_STATUS.md)
+- [archive/SACRED_TONGUE_TEST_RESULTS.md](archive/SACRED_TONGUE_TEST_RESULTS.md)
+- [archive/SCBE_AETHERMOORE_TOPOLOGICAL_CFI_UNIFIED_STRATEGY.md](archive/SCBE_AETHERMOORE_TOPOLOGICAL_CFI_UNIFIED_STRATEGY.md)
+- [archive/SCBE_CHEATSHEET.md](archive/SCBE_CHEATSHEET.md)
+- [archive/SCBE_COMPLETE_JOURNEY.md](archive/SCBE_COMPLETE_JOURNEY.md)
+- [archive/SCBE_SYSTEM_ARCHITECTURE_COMPLETE.md](archive/SCBE_SYSTEM_ARCHITECTURE_COMPLETE.md)
+- [archive/SCBE_TOPOLOGICAL_CFI_UNIFIED.md](archive/SCBE_TOPOLOGICAL_CFI_UNIFIED.md)
+- [archive/SCBE_VISUAL_ARCHITECTURE.md](archive/SCBE_VISUAL_ARCHITECTURE.md)
+- [archive/SECURITY_HARDENING_PLAYBOOK.md](archive/SECURITY_HARDENING_PLAYBOOK.md)
+- [archive/SESSION_COMPLETE_SUMMARY.md](archive/SESSION_COMPLETE_SUMMARY.md)
+- [archive/SHARE_PROJECT.md](archive/SHARE_PROJECT.md)
+- [archive/SHIP_IT_NOW.md](archive/SHIP_IT_NOW.md)
+- [archive/SOCIAL_MEDIA_ANNOUNCEMENTS.md](archive/SOCIAL_MEDIA_ANNOUNCEMENTS.md)
+- [archive/SPIRALVERSE_COMPLETE_ARCHITECTURE.md](archive/SPIRALVERSE_COMPLETE_ARCHITECTURE.md)
+- [archive/SPIRALVERSE_EXPLAINED_SIMPLE.md](archive/SPIRALVERSE_EXPLAINED_SIMPLE.md)
+- [archive/SPIRALVERSE_INTEGRATION_SUMMARY.md](archive/SPIRALVERSE_INTEGRATION_SUMMARY.md)
+- [archive/SPIRALVERSE_MASTER_PACK_COMPLETE.md](archive/SPIRALVERSE_MASTER_PACK_COMPLETE.md)
+- [archive/SPIRALVERSE_SECURITY_FIXES_COMPLETE.md](archive/SPIRALVERSE_SECURITY_FIXES_COMPLETE.md)
+- [archive/SPIRALVERSE_VISUAL_GUIDE.md](archive/SPIRALVERSE_VISUAL_GUIDE.md)
+- [archive/SYSTEM_BUILD_GUIDE.md](archive/SYSTEM_BUILD_GUIDE.md)
+- [archive/SYSTEM_INTEGRATION.md](archive/SYSTEM_INTEGRATION.md)
+- [archive/SYSTEM_ORGANIZATION_COMPLETE.md](archive/SYSTEM_ORGANIZATION_COMPLETE.md)
+- [archive/TECHNICAL_FOUNDATION_SUMMARY.md](archive/TECHNICAL_FOUNDATION_SUMMARY.md)
+- [archive/TELEMETRY_PUSH_SUCCESS.md](archive/TELEMETRY_PUSH_SUCCESS.md)
+- [archive/TEST_AUDIT_REPORT.md](archive/TEST_AUDIT_REPORT.md)
+- [archive/TEST_EXECUTION_PLAN.md](archive/TEST_EXECUTION_PLAN.md)
+- [archive/TEST_FAILURE_ANALYSIS.md](archive/TEST_FAILURE_ANALYSIS.md)
+- [archive/TEST_RESULTS_SUMMARY.md](archive/TEST_RESULTS_SUMMARY.md)
+- [archive/TEST_SUITE_EXECUTIVE_SUMMARY.md](archive/TEST_SUITE_EXECUTIVE_SUMMARY.md)
+- [archive/TEST_SUITE_OVERVIEW.md](archive/TEST_SUITE_OVERVIEW.md)
+- [archive/TESTS_COMPLETE.md](archive/TESTS_COMPLETE.md)
+- [archive/THEORETICAL_AXIOMS_COMPLETE.md](archive/THEORETICAL_AXIOMS_COMPLETE.md)
+- [archive/TRUST_MANAGER_COMPLETE.md](archive/TRUST_MANAGER_COMPLETE.md)
+- [archive/UNIFIED_VISION.md](archive/UNIFIED_VISION.md)
+- [archive/USAGE_GUIDE.md](archive/USAGE_GUIDE.md)
+- [archive/VERIFICATION_REPORT.md](archive/VERIFICATION_REPORT.md)
+- [archive/VIDEO_SCRIPT_90SEC.md](archive/VIDEO_SCRIPT_90SEC.md)
+
+### Reference
+
+- [08-reference/archive/AETHERMOORE_AI_WORKFLOW_PLATFORM_DRAFT.md](08-reference/archive/AETHERMOORE_AI_WORKFLOW_PLATFORM_DRAFT.md)
+- [08-reference/archive/AGENT_README.md](08-reference/archive/AGENT_README.md)
+- [08-reference/archive/architecture/ARCHITECTURE_5_LAYERS.md](08-reference/archive/architecture/ARCHITECTURE_5_LAYERS.md)
+- [08-reference/archive/architecture/ARCHITECTURE_FOR_PILOTS.md](08-reference/archive/architecture/ARCHITECTURE_FOR_PILOTS.md)
+- [08-reference/archive/AUDIT_RESPONSE_ACTION_PLAN.md](08-reference/archive/AUDIT_RESPONSE_ACTION_PLAN.md)
+- [08-reference/archive/AWS_LAMBDA_DEPLOYMENT.md](08-reference/archive/AWS_LAMBDA_DEPLOYMENT.md)
+- [08-reference/archive/AXIOMS.md](08-reference/archive/AXIOMS.md)
+- [08-reference/archive/BANK_PILOT.md](08-reference/archive/BANK_PILOT.md)
+- [08-reference/archive/COMPETITIVE_ANALYSIS_2026.md](08-reference/archive/COMPETITIVE_ANALYSIS_2026.md)
+- [08-reference/archive/COMPETITIVE_ANALYSIS.md](08-reference/archive/COMPETITIVE_ANALYSIS.md)
+- [08-reference/archive/COMPLETE_INVENTORY.md](08-reference/archive/COMPLETE_INVENTORY.md)
+- [08-reference/archive/COMPLETE_SYSTEM_OVERVIEW.md](08-reference/archive/COMPLETE_SYSTEM_OVERVIEW.md)
+- [08-reference/archive/COMPLETE_SYSTEM.md](08-reference/archive/COMPLETE_SYSTEM.md)
+- [08-reference/archive/COMPREHENSIVE_MATH_SCBE.md](08-reference/archive/COMPREHENSIVE_MATH_SCBE.md)
+- [08-reference/archive/CONTEXT_TRANSFER_SUMMARY.md](08-reference/archive/CONTEXT_TRANSFER_SUMMARY.md)
+- [08-reference/archive/CREDIBILITY_SUMMARY.md](08-reference/archive/CREDIBILITY_SUMMARY.md)
+- [08-reference/archive/DEMONSTRATION_SUMMARY.md](08-reference/archive/DEMONSTRATION_SUMMARY.md)
+- [08-reference/archive/DIMENSIONAL_THEORY_INTEGRATION.md](08-reference/archive/DIMENSIONAL_THEORY_INTEGRATION.md)
+- [08-reference/archive/DIMENSIONAL_THEORY_VISUAL_SUMMARY.md](08-reference/archive/DIMENSIONAL_THEORY_VISUAL_SUMMARY.md)
+- [08-reference/archive/DUAL_CHANNEL_CONSENSUS.md](08-reference/archive/DUAL_CHANNEL_CONSENSUS.md)
+- [08-reference/archive/DUAL_CHANNEL_IMPLEMENTATION_GUIDE.md](08-reference/archive/DUAL_CHANNEL_IMPLEMENTATION_GUIDE.md)
+- [08-reference/archive/ENTERPRISE_AI_ORCHESTRATION_INTEGRATION.md](08-reference/archive/ENTERPRISE_AI_ORCHESTRATION_INTEGRATION.md)
+- [08-reference/archive/ENTERPRISE_TESTING_GUIDE.md](08-reference/archive/ENTERPRISE_TESTING_GUIDE.md)
+- [08-reference/archive/ENTERPRISE_TESTING_SUCCESS.md](08-reference/archive/ENTERPRISE_TESTING_SUCCESS.md)
+- [08-reference/archive/ENTERPRISE_TESTS_FIXED.md](08-reference/archive/ENTERPRISE_TESTS_FIXED.md)
+- [08-reference/archive/evidence/2026-01-20_105222/demo_memory_shard_exit_code.txt](08-reference/archive/evidence/2026-01-20_105222/demo_memory_shard_exit_code.txt)
+- [08-reference/archive/evidence/2026-01-20_105222/demo_memory_shard_output.txt](08-reference/archive/evidence/2026-01-20_105222/demo_memory_shard_output.txt)
+- [08-reference/archive/evidence/2026-01-20_105222/npm_deps.txt](08-reference/archive/evidence/2026-01-20_105222/npm_deps.txt)
+- [08-reference/archive/evidence/2026-01-20_105222/npm_test_duration.txt](08-reference/archive/evidence/2026-01-20_105222/npm_test_duration.txt)
+- [08-reference/archive/evidence/2026-01-20_105222/npm_test_exit_code.txt](08-reference/archive/evidence/2026-01-20_105222/npm_test_exit_code.txt)
+- [08-reference/archive/evidence/2026-01-20_105222/npm_test_output.txt](08-reference/archive/evidence/2026-01-20_105222/npm_test_output.txt)
+- [08-reference/archive/evidence/2026-01-20_105222/pip_freeze.txt](08-reference/archive/evidence/2026-01-20_105222/pip_freeze.txt)
+- [08-reference/archive/evidence/2026-01-20_105222/pytest_duration.txt](08-reference/archive/evidence/2026-01-20_105222/pytest_duration.txt)
+- [08-reference/archive/evidence/2026-01-20_105222/pytest_exit_code.txt](08-reference/archive/evidence/2026-01-20_105222/pytest_exit_code.txt)
+- [08-reference/archive/evidence/2026-01-20_105222/pytest_output.txt](08-reference/archive/evidence/2026-01-20_105222/pytest_output.txt)
+- [08-reference/archive/evidence/2026-01-20_105222/system_info.txt](08-reference/archive/evidence/2026-01-20_105222/system_info.txt)
+- [08-reference/archive/evidence/2026-01-20_105222/warnings.txt](08-reference/archive/evidence/2026-01-20_105222/warnings.txt)
+- [08-reference/archive/evidence/README.md](08-reference/archive/evidence/README.md)
+- [08-reference/archive/EXECUTIVE_SUMMARY.md](08-reference/archive/EXECUTIVE_SUMMARY.md)
+- [08-reference/archive/FEATURES.md](08-reference/archive/FEATURES.md)
+- [08-reference/archive/FINAL_SUMMARY.md](08-reference/archive/FINAL_SUMMARY.md)
+- [08-reference/archive/FINAL_TEST_REPORT.md](08-reference/archive/FINAL_TEST_REPORT.md)
+- [08-reference/archive/FOURIER_SERIES_FOUNDATIONS.md](08-reference/archive/FOURIER_SERIES_FOUNDATIONS.md)
+- [08-reference/archive/FULL_SYSTEM_ENABLEMENT.md](08-reference/archive/FULL_SYSTEM_ENABLEMENT.md)
+- [08-reference/archive/FUTURE_WORK.md](08-reference/archive/FUTURE_WORK.md)
+- [08-reference/archive/GEOSEAL_CONCEPT.md](08-reference/archive/GEOSEAL_CONCEPT.md)
+- [08-reference/archive/GETTING_STARTED.md](08-reference/archive/GETTING_STARTED.md)
+- [08-reference/archive/GITHUB_INTEGRATION_GUIDE.md](08-reference/archive/GITHUB_INTEGRATION_GUIDE.md)
+- [08-reference/archive/guides/CLI_README.md](08-reference/archive/guides/CLI_README.md)
+- [08-reference/archive/guides/CLI_SETUP.md](08-reference/archive/guides/CLI_SETUP.md)
+- [08-reference/archive/guides/DEMO_SUCCESS.md](08-reference/archive/guides/DEMO_SUCCESS.md)
+- [08-reference/archive/guides/DEPLOYMENT.md](08-reference/archive/guides/DEPLOYMENT.md)
+- [08-reference/archive/guides/HOW_TO_USE.md](08-reference/archive/guides/HOW_TO_USE.md)
+- [08-reference/archive/guides/INSTALL.md](08-reference/archive/guides/INSTALL.md)
+- [08-reference/archive/guides/MARS_DEMO_GUIDE.md](08-reference/archive/guides/MARS_DEMO_GUIDE.md)
+- [08-reference/archive/guides/MVP_API_ROADMAP.md](08-reference/archive/guides/MVP_API_ROADMAP.md)
+- [08-reference/archive/guides/MVP_QUICK_START.md](08-reference/archive/guides/MVP_QUICK_START.md)
+- [08-reference/archive/guides/NPM_PUBLISH_NOW.md](08-reference/archive/guides/NPM_PUBLISH_NOW.md)
+- [08-reference/archive/guides/PACKAGE_INSTRUCTIONS.md](08-reference/archive/guides/PACKAGE_INSTRUCTIONS.md)
+- [08-reference/archive/guides/PACKAGE_PREPARATION.md](08-reference/archive/guides/PACKAGE_PREPARATION.md)
+- [08-reference/archive/guides/PACKAGE_READY.md](08-reference/archive/guides/PACKAGE_READY.md)
+- [08-reference/archive/guides/PRODUCT_READY.md](08-reference/archive/guides/PRODUCT_READY.md)
+- [08-reference/archive/guides/PRODUCTION_READINESS_AUDIT.md](08-reference/archive/guides/PRODUCTION_READINESS_AUDIT.md)
+- [08-reference/archive/guides/PUBLISH_GUIDE.md](08-reference/archive/guides/PUBLISH_GUIDE.md)
+- [08-reference/archive/guides/PUBLISHED_SUCCESS.md](08-reference/archive/guides/PUBLISHED_SUCCESS.md)
+- [08-reference/archive/guides/QUICK_START.md](08-reference/archive/guides/QUICK_START.md)
+- [08-reference/archive/guides/QUICKSTART.md](08-reference/archive/guides/QUICKSTART.md)
+- [08-reference/archive/guides/README_SHIP_NOW.md](08-reference/archive/guides/README_SHIP_NOW.md)
+- [08-reference/archive/guides/RWP_V3_QUICKSTART.md](08-reference/archive/guides/RWP_V3_QUICKSTART.md)
+- [08-reference/archive/guides/SHIP_IT_NOW.md](08-reference/archive/guides/SHIP_IT_NOW.md)
+- [08-reference/archive/guides/SPIRALVERSE_VISUAL_GUIDE.md](08-reference/archive/guides/SPIRALVERSE_VISUAL_GUIDE.md)
+- [08-reference/archive/guides/SYSTEM_BUILD_GUIDE.md](08-reference/archive/guides/SYSTEM_BUILD_GUIDE.md)
+- [08-reference/archive/guides/USAGE_GUIDE.md](08-reference/archive/guides/USAGE_GUIDE.md)
+- [08-reference/archive/HARMONIC_SCALING_BUG_FIXES.md](08-reference/archive/HARMONIC_SCALING_BUG_FIXES.md)
+- [08-reference/archive/INDUSTRY_STANDARD_TESTS_SUMMARY.md](08-reference/archive/INDUSTRY_STANDARD_TESTS_SUMMARY.md)
+- [08-reference/archive/integration/COMPLETE_INTEGRATION_MASTER.md](08-reference/archive/integration/COMPLETE_INTEGRATION_MASTER.md)
+- [08-reference/archive/integration/INTEGRATION_COMPLETE.md](08-reference/archive/integration/INTEGRATION_COMPLETE.md)
+- [08-reference/archive/integration/INTEGRATION_QUICK_START.md](08-reference/archive/integration/INTEGRATION_QUICK_START.md)
+- [08-reference/archive/integration/INTEGRATION_ROADMAP.md](08-reference/archive/integration/INTEGRATION_ROADMAP.md)
+- [08-reference/archive/ip/AETHERMOORE_CONSTANTS_IP_PORTFOLIO.md](08-reference/archive/ip/AETHERMOORE_CONSTANTS_IP_PORTFOLIO.md)
+- [08-reference/archive/ip/COMPLETE_IP_PORTFOLIO_READY_FOR_USPTO.md](08-reference/archive/ip/COMPLETE_IP_PORTFOLIO_READY_FOR_USPTO.md)
+- [08-reference/archive/ip/PATENT_CLAIMS_CORRECTED.md](08-reference/archive/ip/PATENT_CLAIMS_CORRECTED.md)
+- [08-reference/archive/ip/PATENT_PROVISIONAL_APPLICATION.md](08-reference/archive/ip/PATENT_PROVISIONAL_APPLICATION.md)
+- [08-reference/archive/ip/PATENT_STRATEGY_ACTION_ITEMS.md](08-reference/archive/ip/PATENT_STRATEGY_ACTION_ITEMS.md)
+- [08-reference/archive/KIRO_SPECS_PACK.md](08-reference/archive/KIRO_SPECS_PACK.md)
+- [08-reference/archive/lambda/PATENT_CLAIMS_COVERAGE.md](08-reference/archive/lambda/PATENT_CLAIMS_COVERAGE.md)
+- [08-reference/archive/lambda/README.md](08-reference/archive/lambda/README.md)
+- [08-reference/archive/lambda/SCBE_PATENT_PORTFOLIO.md](08-reference/archive/lambda/SCBE_PATENT_PORTFOLIO.md)
+- [08-reference/archive/lambda/SCBE_SYSTEM_OVERVIEW.md](08-reference/archive/lambda/SCBE_SYSTEM_OVERVIEW.md)
+- [08-reference/archive/LANGUES_WEIGHTING_SYSTEM.md](08-reference/archive/LANGUES_WEIGHTING_SYSTEM.md)
+- [08-reference/archive/legal/PILOT_PROGRAM_AGREEMENT.md](08-reference/archive/legal/PILOT_PROGRAM_AGREEMENT.md)
+- [08-reference/archive/MASTER_INDEX.md](08-reference/archive/MASTER_INDEX.md)
+- [08-reference/archive/MATH_STABILITY_VERIFICATION.md](08-reference/archive/MATH_STABILITY_VERIFICATION.md)
+- [08-reference/archive/MATHEMATICAL_PROOFS.md](08-reference/archive/MATHEMATICAL_PROOFS.md)
+- [08-reference/archive/MATHEMATICAL_REVIEW_RESPONSE.md](08-reference/archive/MATHEMATICAL_REVIEW_RESPONSE.md)
+- [08-reference/archive/MEMORY_SHARD_DEMO.md](08-reference/archive/MEMORY_SHARD_DEMO.md)
+- [08-reference/archive/MISSION_ACCOMPLISHED.md](08-reference/archive/MISSION_ACCOMPLISHED.md)
+- [08-reference/archive/ops/Sentinel_Steward_Runbook.md](08-reference/archive/ops/Sentinel_Steward_Runbook.md)
+- [08-reference/archive/PATENT_CLAIMS_COVERAGE.md](08-reference/archive/PATENT_CLAIMS_COVERAGE.md)
+- [08-reference/archive/PATENT_EVIDENCE_PACKAGE.md](08-reference/archive/PATENT_EVIDENCE_PACKAGE.md)
+- [08-reference/archive/PERFORMANCE_OPTIMIZATION.md](08-reference/archive/PERFORMANCE_OPTIMIZATION.md)
+- [08-reference/archive/PHASE_COUPLED_DIMENSIONALITY_COLLAPSE.md](08-reference/archive/PHASE_COUPLED_DIMENSIONALITY_COLLAPSE.md)
+- [08-reference/archive/PHASE_SHIFT_EXTENSION.md](08-reference/archive/PHASE_SHIFT_EXTENSION.md)
+- [08-reference/archive/PHASE_SHIFT_SUMMARY.md](08-reference/archive/PHASE_SHIFT_SUMMARY.md)
+- [08-reference/archive/PHDM_ACHIEVEMENT.md](08-reference/archive/PHDM_ACHIEVEMENT.md)
+- [08-reference/archive/PILOT_PROGRAM_TERMS.md](08-reference/archive/PILOT_PROGRAM_TERMS.md)
+- [08-reference/archive/PRODUCT_READINESS_PLAN.md](08-reference/archive/PRODUCT_READINESS_PLAN.md)
+- [08-reference/archive/reference/ADVANCED_MATH_TELEMETRY_COMPLETE.md](08-reference/archive/reference/ADVANCED_MATH_TELEMETRY_COMPLETE.md)
+- [08-reference/archive/reference/AETHERMOORE_CONSTANTS_COMPLETE.md](08-reference/archive/reference/AETHERMOORE_CONSTANTS_COMPLETE.md)
+- [08-reference/archive/reference/AXIOM_VERIFICATION_STATUS.md](08-reference/archive/reference/AXIOM_VERIFICATION_STATUS.md)
+- [08-reference/archive/reference/CLI_COMPLETE.md](08-reference/archive/reference/CLI_COMPLETE.md)
+- [08-reference/archive/reference/DEMO_COMPLETE.md](08-reference/archive/reference/DEMO_COMPLETE.md)
+- [08-reference/archive/reference/DIMENSIONAL_THEORY_COMPLETE.md](08-reference/archive/reference/DIMENSIONAL_THEORY_COMPLETE.md)
+- [08-reference/archive/reference/DUAL_CHANNEL_IMPLEMENTATION_COMPLETE.md](08-reference/archive/reference/DUAL_CHANNEL_IMPLEMENTATION_COMPLETE.md)
+- [08-reference/archive/reference/ENABLEMENT_COMPLETE.md](08-reference/archive/reference/ENABLEMENT_COMPLETE.md)
+- [08-reference/archive/reference/ENTERPRISE_TESTING_COMPLETE.md](08-reference/archive/reference/ENTERPRISE_TESTING_COMPLETE.md)
+- [08-reference/archive/reference/FINAL_ENGINEERING_STATUS.md](08-reference/archive/reference/FINAL_ENGINEERING_STATUS.md)
+- [08-reference/archive/reference/FINAL_PACKAGE_STATUS.md](08-reference/archive/reference/FINAL_PACKAGE_STATUS.md)
+- [08-reference/archive/reference/FINAL_SHIPPING_STATUS.md](08-reference/archive/reference/FINAL_SHIPPING_STATUS.md)
+- [08-reference/archive/reference/FINAL_STATUS_REPORT.md](08-reference/archive/reference/FINAL_STATUS_REPORT.md)
+- [08-reference/archive/reference/GITHUB_INTEGRATION_COMPLETE.md](08-reference/archive/reference/GITHUB_INTEGRATION_COMPLETE.md)
+- [08-reference/archive/reference/IMPLEMENTATION_STATUS_HONEST.md](08-reference/archive/reference/IMPLEMENTATION_STATUS_HONEST.md)
+- [08-reference/archive/reference/IMPLEMENTATION_STATUS.md](08-reference/archive/reference/IMPLEMENTATION_STATUS.md)
+- [08-reference/archive/reference/MATHEMATICAL_FOUNDATION_COMPLETE.md](08-reference/archive/reference/MATHEMATICAL_FOUNDATION_COMPLETE.md)
+- [08-reference/archive/reference/MVP_IMPLEMENTATION_COMPLETE.md](08-reference/archive/reference/MVP_IMPLEMENTATION_COMPLETE.md)
+- [08-reference/archive/reference/PACKAGE_COMPLETE.md](08-reference/archive/reference/PACKAGE_COMPLETE.md)
+- [08-reference/archive/reference/PATENT_CLAIMS_QUICK_REFERENCE.md](08-reference/archive/reference/PATENT_CLAIMS_QUICK_REFERENCE.md)
+- [08-reference/archive/reference/PATENT_UPDATE_COMPLETE.md](08-reference/archive/reference/PATENT_UPDATE_COMPLETE.md)
+- [08-reference/archive/reference/PHDM_COMPLETE.md](08-reference/archive/reference/PHDM_COMPLETE.md)
+- [08-reference/archive/reference/PRODUCT_STATUS.md](08-reference/archive/reference/PRODUCT_STATUS.md)
+- [08-reference/archive/reference/PROJECT_COMPLETION_STATUS.md](08-reference/archive/reference/PROJECT_COMPLETION_STATUS.md)
+- [08-reference/archive/reference/PROJECT_STATUS_SUMMARY.md](08-reference/archive/reference/PROJECT_STATUS_SUMMARY.md)
+- [08-reference/archive/reference/PUSH_AND_TEST_COMPLETE.md](08-reference/archive/reference/PUSH_AND_TEST_COMPLETE.md)
+- [08-reference/archive/reference/QUICK_REFERENCE.md](08-reference/archive/reference/QUICK_REFERENCE.md)
+- [08-reference/archive/reference/RWP_V3_INTEGRATION_COMPLETE.md](08-reference/archive/reference/RWP_V3_INTEGRATION_COMPLETE.md)
+- [08-reference/archive/reference/SACRED_TONGUE_QUICK_REFERENCE.md](08-reference/archive/reference/SACRED_TONGUE_QUICK_REFERENCE.md)
+- [08-reference/archive/reference/SACRED_TONGUE_STATUS.md](08-reference/archive/reference/SACRED_TONGUE_STATUS.md)
+- [08-reference/archive/reference/SCBE_SYSTEM_ARCHITECTURE_COMPLETE.md](08-reference/archive/reference/SCBE_SYSTEM_ARCHITECTURE_COMPLETE.md)
+- [08-reference/archive/reference/SPIRALVERSE_MASTER_PACK_COMPLETE.md](08-reference/archive/reference/SPIRALVERSE_MASTER_PACK_COMPLETE.md)
+- [08-reference/archive/reference/SPIRALVERSE_SECURITY_FIXES_COMPLETE.md](08-reference/archive/reference/SPIRALVERSE_SECURITY_FIXES_COMPLETE.md)
+- [08-reference/archive/reference/SYSTEM_ORGANIZATION_COMPLETE.md](08-reference/archive/reference/SYSTEM_ORGANIZATION_COMPLETE.md)
+- [08-reference/archive/reference/TESTS_COMPLETE.md](08-reference/archive/reference/TESTS_COMPLETE.md)
+- [08-reference/archive/reference/THEORETICAL_AXIOMS_COMPLETE.md](08-reference/archive/reference/THEORETICAL_AXIOMS_COMPLETE.md)
+- [08-reference/archive/reference/TRUST_MANAGER_COMPLETE.md](08-reference/archive/reference/TRUST_MANAGER_COMPLETE.md)
+- [08-reference/archive/RELEASE_SUMMARY.md](08-reference/archive/RELEASE_SUMMARY.md)
+- [08-reference/archive/reports/ACTION_ITEMS_FROM_REVIEW.md](08-reference/archive/reports/ACTION_ITEMS_FROM_REVIEW.md)
+- [08-reference/archive/reports/AUDIT_SUMMARY.md](08-reference/archive/reports/AUDIT_SUMMARY.md)
+- [08-reference/archive/reports/BUG_REPORT.md](08-reference/archive/reports/BUG_REPORT.md)
+- [08-reference/archive/reports/CODEBASE_REVIEW_REPORT.md](08-reference/archive/reports/CODEBASE_REVIEW_REPORT.md)
+- [08-reference/archive/reports/compliance_report.md](08-reference/archive/reports/compliance_report.md)
+- [08-reference/archive/reports/ENGINEERING_REVIEW_CORRECTIONS.md](08-reference/archive/reports/ENGINEERING_REVIEW_CORRECTIONS.md)
+- [08-reference/archive/reports/ISSUES_FIXED.md](08-reference/archive/reports/ISSUES_FIXED.md)
+- [08-reference/archive/reports/KIRO_STARTUP_FIX.md](08-reference/archive/reports/KIRO_STARTUP_FIX.md)
+- [08-reference/archive/reports/KIRO_STARTUP_TROUBLESHOOTING.md](08-reference/archive/reports/KIRO_STARTUP_TROUBLESHOOTING.md)
+- [08-reference/archive/reports/KIRO_SYSTEM_MAP.md](08-reference/archive/reports/KIRO_SYSTEM_MAP.md)
+- [08-reference/archive/reports/TEST_EXECUTION_PLAN.md](08-reference/archive/reports/TEST_EXECUTION_PLAN.md)
+- [08-reference/archive/reports/TEST_RESULTS_SUMMARY.md](08-reference/archive/reports/TEST_RESULTS_SUMMARY.md)
+- [08-reference/archive/reports/TEST_SUITE_EXECUTIVE_SUMMARY.md](08-reference/archive/reports/TEST_SUITE_EXECUTIVE_SUMMARY.md)
+- [08-reference/archive/reports/TEST_SUITE_OVERVIEW.md](08-reference/archive/reports/TEST_SUITE_OVERVIEW.md)
+- [08-reference/archive/reports/VERIFICATION_REPORT.md](08-reference/archive/reports/VERIFICATION_REPORT.md)
+- [08-reference/archive/REVIEW_EXECUTIVE_SUMMARY.md](08-reference/archive/REVIEW_EXECUTIVE_SUMMARY.md)
+- [08-reference/archive/RWP_v3_SACRED_TONGUE_HARMONIC_VERIFICATION.md](08-reference/archive/RWP_v3_SACRED_TONGUE_HARMONIC_VERIFICATION.md)
+- [08-reference/archive/SACRED_TONGUE_PQC_INTEGRATION.md](08-reference/archive/SACRED_TONGUE_PQC_INTEGRATION.md)
+- [08-reference/archive/SACRED_TONGUE_TEST_RESULTS.md](08-reference/archive/SACRED_TONGUE_TEST_RESULTS.md)
+- [08-reference/archive/SCBE_AETHERMOORE_TOPOLOGICAL_CFI_UNIFIED_STRATEGY.md](08-reference/archive/SCBE_AETHERMOORE_TOPOLOGICAL_CFI_UNIFIED_STRATEGY.md)
+- [08-reference/archive/SCBE_CHEATSHEET.md](08-reference/archive/SCBE_CHEATSHEET.md)
+- [08-reference/archive/SCBE_COMPLETE_JOURNEY.md](08-reference/archive/SCBE_COMPLETE_JOURNEY.md)
+- [08-reference/archive/SCBE_MASTER_2026_001.md](08-reference/archive/SCBE_MASTER_2026_001.md)
+- [08-reference/archive/SCBE_PATENT_FIGURES.md](08-reference/archive/SCBE_PATENT_FIGURES.md)
+- [08-reference/archive/SCBE_PATENT_PORTFOLIO.md](08-reference/archive/SCBE_PATENT_PORTFOLIO.md)
+- [08-reference/archive/SCBE_PATENT_SPECIFICATION.md](08-reference/archive/SCBE_PATENT_SPECIFICATION.md)
+- [08-reference/archive/SCBE_Production_Security_Spec.md](08-reference/archive/SCBE_Production_Security_Spec.md)
+- [08-reference/archive/SCBE_SYSTEM_OVERVIEW.md](08-reference/archive/SCBE_SYSTEM_OVERVIEW.md)
+- [08-reference/archive/SCBE_TOPOLOGICAL_CFI_UNIFIED.md](08-reference/archive/SCBE_TOPOLOGICAL_CFI_UNIFIED.md)
+- [08-reference/archive/SCBE_VISUAL_ARCHITECTURE.md](08-reference/archive/SCBE_VISUAL_ARCHITECTURE.md)
+- [08-reference/archive/scbe-layer9-corrections.md](08-reference/archive/scbe-layer9-corrections.md)
+- [08-reference/archive/SECURITY_HARDENING_CHECKLIST.md](08-reference/archive/SECURITY_HARDENING_CHECKLIST.md)
+- [08-reference/archive/SECURITY_HARDENING_PLAYBOOK.md](08-reference/archive/SECURITY_HARDENING_PLAYBOOK.md)
+- [08-reference/archive/SESSION_COMPLETE_SUMMARY.md](08-reference/archive/SESSION_COMPLETE_SUMMARY.md)
+- [08-reference/archive/SHARE_PROJECT.md](08-reference/archive/SHARE_PROJECT.md)
+- [08-reference/archive/SOCIAL_MEDIA_ANNOUNCEMENTS.md](08-reference/archive/SOCIAL_MEDIA_ANNOUNCEMENTS.md)
+- [08-reference/archive/SPIRALSEAL_SS1_COMPLETE.md](08-reference/archive/SPIRALSEAL_SS1_COMPLETE.md)
+- [08-reference/archive/SPIRALVERSE_COMPLETE_ARCHITECTURE.md](08-reference/archive/SPIRALVERSE_COMPLETE_ARCHITECTURE.md)
+- [08-reference/archive/SPIRALVERSE_EXPLAINED_SIMPLE.md](08-reference/archive/SPIRALVERSE_EXPLAINED_SIMPLE.md)
+- [08-reference/archive/SPIRALVERSE_INTEGRATION_SUMMARY.md](08-reference/archive/SPIRALVERSE_INTEGRATION_SUMMARY.md)
+- [08-reference/archive/SYSTEM_INTEGRATION.md](08-reference/archive/SYSTEM_INTEGRATION.md)
+- [08-reference/archive/TASKS.md](08-reference/archive/TASKS.md)
+- [08-reference/archive/TECHNICAL_FOUNDATION_SUMMARY.md](08-reference/archive/TECHNICAL_FOUNDATION_SUMMARY.md)
+- [08-reference/archive/TELEMETRY_PUSH_SUCCESS.md](08-reference/archive/TELEMETRY_PUSH_SUCCESS.md)
+- [08-reference/archive/TEST_AUDIT.md](08-reference/archive/TEST_AUDIT.md)
+- [08-reference/archive/UNIFIED_VISION.md](08-reference/archive/UNIFIED_VISION.md)
+- [08-reference/archive/WHAT_YOU_BUILT.md](08-reference/archive/WHAT_YOU_BUILT.md)
+
+## Full alphabetical index
+
+- [_config.yml](_config.yml) - Important - General Root Docs
+- [00-overview/executive-summary.md](00-overview/executive-summary.md) - Critical - Overview and Onboarding
+- [00-overview/getting-started.md](00-overview/getting-started.md) - Critical - Overview and Onboarding
+- [00-overview/glossary.md](00-overview/glossary.md) - Critical - Overview and Onboarding
+- [00-overview/README.md](00-overview/README.md) - Critical - Overview and Onboarding
+- [00-overview/scbe-developer-guide.mmd](00-overview/scbe-developer-guide.mmd) - Critical - Overview and Onboarding
+- [01-architecture/aetherbrain-phdm-mathematical-framework.md](01-architecture/aetherbrain-phdm-mathematical-framework.md) - Critical - Architecture
+- [01-architecture/diagrams/SECURITY_FLOW_DIAGRAM.md](01-architecture/diagrams/SECURITY_FLOW_DIAGRAM.md) - Critical - Architecture
+- [01-architecture/README.md](01-architecture/README.md) - Critical - Architecture
+- [01-architecture/sacred-eggs-systems-model.md](01-architecture/sacred-eggs-systems-model.md) - Critical - Architecture
+- [01-architecture/system-overview-mindmap.md](01-architecture/system-overview-mindmap.md) - Critical - Architecture
+- [03-deployment/firebase-setup.md](03-deployment/firebase-setup.md) - Critical - Deployment
+- [03-deployment/firebase-studio-game-sync.md](03-deployment/firebase-studio-game-sync.md) - Critical - Deployment
+- [03-deployment/github-app-latticegate.md](03-deployment/github-app-latticegate.md) - Critical - Deployment
+- [03-deployment/zapier-setup.md](03-deployment/zapier-setup.md) - Critical - Deployment
+- [05-industry-guides/banking-financial.md](05-industry-guides/banking-financial.md) - Critical - Industry Guides
+- [05-industry-guides/government-defense.md](05-industry-guides/government-defense.md) - Critical - Industry Guides
+- [05-industry-guides/healthcare.md](05-industry-guides/healthcare.md) - Critical - Industry Guides
+- [05-industry-guides/README.md](05-industry-guides/README.md) - Critical - Industry Guides
+- [05-industry-guides/technology-saas.md](05-industry-guides/technology-saas.md) - Critical - Industry Guides
+- [06-integration/README.md](06-integration/README.md) - Critical - Integration
+- [06-integration/templates/agent-onboarding.md](06-integration/templates/agent-onboarding.md) - Critical - Integration
+- [06-integration/templates/integration-assessment.md](06-integration/templates/integration-assessment.md) - Critical - Integration
+- [08-reference/archive/AETHERMOORE_AI_WORKFLOW_PLATFORM_DRAFT.md](08-reference/archive/AETHERMOORE_AI_WORKFLOW_PLATFORM_DRAFT.md) - Archived - Reference
+- [08-reference/archive/AGENT_README.md](08-reference/archive/AGENT_README.md) - Archived - Reference
+- [08-reference/archive/architecture/ARCHITECTURE_5_LAYERS.md](08-reference/archive/architecture/ARCHITECTURE_5_LAYERS.md) - Archived - Reference
+- [08-reference/archive/architecture/ARCHITECTURE_FOR_PILOTS.md](08-reference/archive/architecture/ARCHITECTURE_FOR_PILOTS.md) - Archived - Reference
+- [08-reference/archive/AUDIT_RESPONSE_ACTION_PLAN.md](08-reference/archive/AUDIT_RESPONSE_ACTION_PLAN.md) - Archived - Reference
+- [08-reference/archive/AWS_LAMBDA_DEPLOYMENT.md](08-reference/archive/AWS_LAMBDA_DEPLOYMENT.md) - Archived - Reference
+- [08-reference/archive/AXIOMS.md](08-reference/archive/AXIOMS.md) - Archived - Reference
+- [08-reference/archive/BANK_PILOT.md](08-reference/archive/BANK_PILOT.md) - Archived - Reference
+- [08-reference/archive/COMPETITIVE_ANALYSIS_2026.md](08-reference/archive/COMPETITIVE_ANALYSIS_2026.md) - Archived - Reference
+- [08-reference/archive/COMPETITIVE_ANALYSIS.md](08-reference/archive/COMPETITIVE_ANALYSIS.md) - Archived - Reference
+- [08-reference/archive/COMPLETE_INVENTORY.md](08-reference/archive/COMPLETE_INVENTORY.md) - Archived - Reference
+- [08-reference/archive/COMPLETE_SYSTEM_OVERVIEW.md](08-reference/archive/COMPLETE_SYSTEM_OVERVIEW.md) - Archived - Reference
+- [08-reference/archive/COMPLETE_SYSTEM.md](08-reference/archive/COMPLETE_SYSTEM.md) - Archived - Reference
+- [08-reference/archive/COMPREHENSIVE_MATH_SCBE.md](08-reference/archive/COMPREHENSIVE_MATH_SCBE.md) - Archived - Reference
+- [08-reference/archive/CONTEXT_TRANSFER_SUMMARY.md](08-reference/archive/CONTEXT_TRANSFER_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/CREDIBILITY_SUMMARY.md](08-reference/archive/CREDIBILITY_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/DEMONSTRATION_SUMMARY.md](08-reference/archive/DEMONSTRATION_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/DIMENSIONAL_THEORY_INTEGRATION.md](08-reference/archive/DIMENSIONAL_THEORY_INTEGRATION.md) - Archived - Reference
+- [08-reference/archive/DIMENSIONAL_THEORY_VISUAL_SUMMARY.md](08-reference/archive/DIMENSIONAL_THEORY_VISUAL_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/DUAL_CHANNEL_CONSENSUS.md](08-reference/archive/DUAL_CHANNEL_CONSENSUS.md) - Archived - Reference
+- [08-reference/archive/DUAL_CHANNEL_IMPLEMENTATION_GUIDE.md](08-reference/archive/DUAL_CHANNEL_IMPLEMENTATION_GUIDE.md) - Archived - Reference
+- [08-reference/archive/ENTERPRISE_AI_ORCHESTRATION_INTEGRATION.md](08-reference/archive/ENTERPRISE_AI_ORCHESTRATION_INTEGRATION.md) - Archived - Reference
+- [08-reference/archive/ENTERPRISE_TESTING_GUIDE.md](08-reference/archive/ENTERPRISE_TESTING_GUIDE.md) - Archived - Reference
+- [08-reference/archive/ENTERPRISE_TESTING_SUCCESS.md](08-reference/archive/ENTERPRISE_TESTING_SUCCESS.md) - Archived - Reference
+- [08-reference/archive/ENTERPRISE_TESTS_FIXED.md](08-reference/archive/ENTERPRISE_TESTS_FIXED.md) - Archived - Reference
+- [08-reference/archive/evidence/2026-01-20_105222/demo_memory_shard_exit_code.txt](08-reference/archive/evidence/2026-01-20_105222/demo_memory_shard_exit_code.txt) - Archived - Reference
+- [08-reference/archive/evidence/2026-01-20_105222/demo_memory_shard_output.txt](08-reference/archive/evidence/2026-01-20_105222/demo_memory_shard_output.txt) - Archived - Reference
+- [08-reference/archive/evidence/2026-01-20_105222/npm_deps.txt](08-reference/archive/evidence/2026-01-20_105222/npm_deps.txt) - Archived - Reference
+- [08-reference/archive/evidence/2026-01-20_105222/npm_test_duration.txt](08-reference/archive/evidence/2026-01-20_105222/npm_test_duration.txt) - Archived - Reference
+- [08-reference/archive/evidence/2026-01-20_105222/npm_test_exit_code.txt](08-reference/archive/evidence/2026-01-20_105222/npm_test_exit_code.txt) - Archived - Reference
+- [08-reference/archive/evidence/2026-01-20_105222/npm_test_output.txt](08-reference/archive/evidence/2026-01-20_105222/npm_test_output.txt) - Archived - Reference
+- [08-reference/archive/evidence/2026-01-20_105222/pip_freeze.txt](08-reference/archive/evidence/2026-01-20_105222/pip_freeze.txt) - Archived - Reference
+- [08-reference/archive/evidence/2026-01-20_105222/pytest_duration.txt](08-reference/archive/evidence/2026-01-20_105222/pytest_duration.txt) - Archived - Reference
+- [08-reference/archive/evidence/2026-01-20_105222/pytest_exit_code.txt](08-reference/archive/evidence/2026-01-20_105222/pytest_exit_code.txt) - Archived - Reference
+- [08-reference/archive/evidence/2026-01-20_105222/pytest_output.txt](08-reference/archive/evidence/2026-01-20_105222/pytest_output.txt) - Archived - Reference
+- [08-reference/archive/evidence/2026-01-20_105222/system_info.txt](08-reference/archive/evidence/2026-01-20_105222/system_info.txt) - Archived - Reference
+- [08-reference/archive/evidence/2026-01-20_105222/warnings.txt](08-reference/archive/evidence/2026-01-20_105222/warnings.txt) - Archived - Reference
+- [08-reference/archive/evidence/README.md](08-reference/archive/evidence/README.md) - Archived - Reference
+- [08-reference/archive/EXECUTIVE_SUMMARY.md](08-reference/archive/EXECUTIVE_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/FEATURES.md](08-reference/archive/FEATURES.md) - Archived - Reference
+- [08-reference/archive/FINAL_SUMMARY.md](08-reference/archive/FINAL_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/FINAL_TEST_REPORT.md](08-reference/archive/FINAL_TEST_REPORT.md) - Archived - Reference
+- [08-reference/archive/FOURIER_SERIES_FOUNDATIONS.md](08-reference/archive/FOURIER_SERIES_FOUNDATIONS.md) - Archived - Reference
+- [08-reference/archive/FULL_SYSTEM_ENABLEMENT.md](08-reference/archive/FULL_SYSTEM_ENABLEMENT.md) - Archived - Reference
+- [08-reference/archive/FUTURE_WORK.md](08-reference/archive/FUTURE_WORK.md) - Archived - Reference
+- [08-reference/archive/GEOSEAL_CONCEPT.md](08-reference/archive/GEOSEAL_CONCEPT.md) - Archived - Reference
+- [08-reference/archive/GETTING_STARTED.md](08-reference/archive/GETTING_STARTED.md) - Archived - Reference
+- [08-reference/archive/GITHUB_INTEGRATION_GUIDE.md](08-reference/archive/GITHUB_INTEGRATION_GUIDE.md) - Archived - Reference
+- [08-reference/archive/guides/CLI_README.md](08-reference/archive/guides/CLI_README.md) - Archived - Reference
+- [08-reference/archive/guides/CLI_SETUP.md](08-reference/archive/guides/CLI_SETUP.md) - Archived - Reference
+- [08-reference/archive/guides/DEMO_SUCCESS.md](08-reference/archive/guides/DEMO_SUCCESS.md) - Archived - Reference
+- [08-reference/archive/guides/DEPLOYMENT.md](08-reference/archive/guides/DEPLOYMENT.md) - Archived - Reference
+- [08-reference/archive/guides/HOW_TO_USE.md](08-reference/archive/guides/HOW_TO_USE.md) - Archived - Reference
+- [08-reference/archive/guides/INSTALL.md](08-reference/archive/guides/INSTALL.md) - Archived - Reference
+- [08-reference/archive/guides/MARS_DEMO_GUIDE.md](08-reference/archive/guides/MARS_DEMO_GUIDE.md) - Archived - Reference
+- [08-reference/archive/guides/MVP_API_ROADMAP.md](08-reference/archive/guides/MVP_API_ROADMAP.md) - Archived - Reference
+- [08-reference/archive/guides/MVP_QUICK_START.md](08-reference/archive/guides/MVP_QUICK_START.md) - Archived - Reference
+- [08-reference/archive/guides/NPM_PUBLISH_NOW.md](08-reference/archive/guides/NPM_PUBLISH_NOW.md) - Archived - Reference
+- [08-reference/archive/guides/PACKAGE_INSTRUCTIONS.md](08-reference/archive/guides/PACKAGE_INSTRUCTIONS.md) - Archived - Reference
+- [08-reference/archive/guides/PACKAGE_PREPARATION.md](08-reference/archive/guides/PACKAGE_PREPARATION.md) - Archived - Reference
+- [08-reference/archive/guides/PACKAGE_READY.md](08-reference/archive/guides/PACKAGE_READY.md) - Archived - Reference
+- [08-reference/archive/guides/PRODUCT_READY.md](08-reference/archive/guides/PRODUCT_READY.md) - Archived - Reference
+- [08-reference/archive/guides/PRODUCTION_READINESS_AUDIT.md](08-reference/archive/guides/PRODUCTION_READINESS_AUDIT.md) - Archived - Reference
+- [08-reference/archive/guides/PUBLISH_GUIDE.md](08-reference/archive/guides/PUBLISH_GUIDE.md) - Archived - Reference
+- [08-reference/archive/guides/PUBLISHED_SUCCESS.md](08-reference/archive/guides/PUBLISHED_SUCCESS.md) - Archived - Reference
+- [08-reference/archive/guides/QUICK_START.md](08-reference/archive/guides/QUICK_START.md) - Archived - Reference
+- [08-reference/archive/guides/QUICKSTART.md](08-reference/archive/guides/QUICKSTART.md) - Archived - Reference
+- [08-reference/archive/guides/README_SHIP_NOW.md](08-reference/archive/guides/README_SHIP_NOW.md) - Archived - Reference
+- [08-reference/archive/guides/RWP_V3_QUICKSTART.md](08-reference/archive/guides/RWP_V3_QUICKSTART.md) - Archived - Reference
+- [08-reference/archive/guides/SHIP_IT_NOW.md](08-reference/archive/guides/SHIP_IT_NOW.md) - Archived - Reference
+- [08-reference/archive/guides/SPIRALVERSE_VISUAL_GUIDE.md](08-reference/archive/guides/SPIRALVERSE_VISUAL_GUIDE.md) - Archived - Reference
+- [08-reference/archive/guides/SYSTEM_BUILD_GUIDE.md](08-reference/archive/guides/SYSTEM_BUILD_GUIDE.md) - Archived - Reference
+- [08-reference/archive/guides/USAGE_GUIDE.md](08-reference/archive/guides/USAGE_GUIDE.md) - Archived - Reference
+- [08-reference/archive/HARMONIC_SCALING_BUG_FIXES.md](08-reference/archive/HARMONIC_SCALING_BUG_FIXES.md) - Archived - Reference
+- [08-reference/archive/INDUSTRY_STANDARD_TESTS_SUMMARY.md](08-reference/archive/INDUSTRY_STANDARD_TESTS_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/integration/COMPLETE_INTEGRATION_MASTER.md](08-reference/archive/integration/COMPLETE_INTEGRATION_MASTER.md) - Archived - Reference
+- [08-reference/archive/integration/INTEGRATION_COMPLETE.md](08-reference/archive/integration/INTEGRATION_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/integration/INTEGRATION_QUICK_START.md](08-reference/archive/integration/INTEGRATION_QUICK_START.md) - Archived - Reference
+- [08-reference/archive/integration/INTEGRATION_ROADMAP.md](08-reference/archive/integration/INTEGRATION_ROADMAP.md) - Archived - Reference
+- [08-reference/archive/ip/AETHERMOORE_CONSTANTS_IP_PORTFOLIO.md](08-reference/archive/ip/AETHERMOORE_CONSTANTS_IP_PORTFOLIO.md) - Archived - Reference
+- [08-reference/archive/ip/COMPLETE_IP_PORTFOLIO_READY_FOR_USPTO.md](08-reference/archive/ip/COMPLETE_IP_PORTFOLIO_READY_FOR_USPTO.md) - Archived - Reference
+- [08-reference/archive/ip/PATENT_CLAIMS_CORRECTED.md](08-reference/archive/ip/PATENT_CLAIMS_CORRECTED.md) - Archived - Reference
+- [08-reference/archive/ip/PATENT_PROVISIONAL_APPLICATION.md](08-reference/archive/ip/PATENT_PROVISIONAL_APPLICATION.md) - Archived - Reference
+- [08-reference/archive/ip/PATENT_STRATEGY_ACTION_ITEMS.md](08-reference/archive/ip/PATENT_STRATEGY_ACTION_ITEMS.md) - Archived - Reference
+- [08-reference/archive/KIRO_SPECS_PACK.md](08-reference/archive/KIRO_SPECS_PACK.md) - Archived - Reference
+- [08-reference/archive/lambda/PATENT_CLAIMS_COVERAGE.md](08-reference/archive/lambda/PATENT_CLAIMS_COVERAGE.md) - Archived - Reference
+- [08-reference/archive/lambda/README.md](08-reference/archive/lambda/README.md) - Archived - Reference
+- [08-reference/archive/lambda/SCBE_PATENT_PORTFOLIO.md](08-reference/archive/lambda/SCBE_PATENT_PORTFOLIO.md) - Archived - Reference
+- [08-reference/archive/lambda/SCBE_SYSTEM_OVERVIEW.md](08-reference/archive/lambda/SCBE_SYSTEM_OVERVIEW.md) - Archived - Reference
+- [08-reference/archive/LANGUES_WEIGHTING_SYSTEM.md](08-reference/archive/LANGUES_WEIGHTING_SYSTEM.md) - Archived - Reference
+- [08-reference/archive/legal/PILOT_PROGRAM_AGREEMENT.md](08-reference/archive/legal/PILOT_PROGRAM_AGREEMENT.md) - Archived - Reference
+- [08-reference/archive/MASTER_INDEX.md](08-reference/archive/MASTER_INDEX.md) - Archived - Reference
+- [08-reference/archive/MATH_STABILITY_VERIFICATION.md](08-reference/archive/MATH_STABILITY_VERIFICATION.md) - Archived - Reference
+- [08-reference/archive/MATHEMATICAL_PROOFS.md](08-reference/archive/MATHEMATICAL_PROOFS.md) - Archived - Reference
+- [08-reference/archive/MATHEMATICAL_REVIEW_RESPONSE.md](08-reference/archive/MATHEMATICAL_REVIEW_RESPONSE.md) - Archived - Reference
+- [08-reference/archive/MEMORY_SHARD_DEMO.md](08-reference/archive/MEMORY_SHARD_DEMO.md) - Archived - Reference
+- [08-reference/archive/MISSION_ACCOMPLISHED.md](08-reference/archive/MISSION_ACCOMPLISHED.md) - Archived - Reference
+- [08-reference/archive/ops/Sentinel_Steward_Runbook.md](08-reference/archive/ops/Sentinel_Steward_Runbook.md) - Archived - Reference
+- [08-reference/archive/PATENT_CLAIMS_COVERAGE.md](08-reference/archive/PATENT_CLAIMS_COVERAGE.md) - Archived - Reference
+- [08-reference/archive/PATENT_EVIDENCE_PACKAGE.md](08-reference/archive/PATENT_EVIDENCE_PACKAGE.md) - Archived - Reference
+- [08-reference/archive/PERFORMANCE_OPTIMIZATION.md](08-reference/archive/PERFORMANCE_OPTIMIZATION.md) - Archived - Reference
+- [08-reference/archive/PHASE_COUPLED_DIMENSIONALITY_COLLAPSE.md](08-reference/archive/PHASE_COUPLED_DIMENSIONALITY_COLLAPSE.md) - Archived - Reference
+- [08-reference/archive/PHASE_SHIFT_EXTENSION.md](08-reference/archive/PHASE_SHIFT_EXTENSION.md) - Archived - Reference
+- [08-reference/archive/PHASE_SHIFT_SUMMARY.md](08-reference/archive/PHASE_SHIFT_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/PHDM_ACHIEVEMENT.md](08-reference/archive/PHDM_ACHIEVEMENT.md) - Archived - Reference
+- [08-reference/archive/PILOT_PROGRAM_TERMS.md](08-reference/archive/PILOT_PROGRAM_TERMS.md) - Archived - Reference
+- [08-reference/archive/PRODUCT_READINESS_PLAN.md](08-reference/archive/PRODUCT_READINESS_PLAN.md) - Archived - Reference
+- [08-reference/archive/reference/ADVANCED_MATH_TELEMETRY_COMPLETE.md](08-reference/archive/reference/ADVANCED_MATH_TELEMETRY_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/AETHERMOORE_CONSTANTS_COMPLETE.md](08-reference/archive/reference/AETHERMOORE_CONSTANTS_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/AXIOM_VERIFICATION_STATUS.md](08-reference/archive/reference/AXIOM_VERIFICATION_STATUS.md) - Archived - Reference
+- [08-reference/archive/reference/CLI_COMPLETE.md](08-reference/archive/reference/CLI_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/DEMO_COMPLETE.md](08-reference/archive/reference/DEMO_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/DIMENSIONAL_THEORY_COMPLETE.md](08-reference/archive/reference/DIMENSIONAL_THEORY_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/DUAL_CHANNEL_IMPLEMENTATION_COMPLETE.md](08-reference/archive/reference/DUAL_CHANNEL_IMPLEMENTATION_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/ENABLEMENT_COMPLETE.md](08-reference/archive/reference/ENABLEMENT_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/ENTERPRISE_TESTING_COMPLETE.md](08-reference/archive/reference/ENTERPRISE_TESTING_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/FINAL_ENGINEERING_STATUS.md](08-reference/archive/reference/FINAL_ENGINEERING_STATUS.md) - Archived - Reference
+- [08-reference/archive/reference/FINAL_PACKAGE_STATUS.md](08-reference/archive/reference/FINAL_PACKAGE_STATUS.md) - Archived - Reference
+- [08-reference/archive/reference/FINAL_SHIPPING_STATUS.md](08-reference/archive/reference/FINAL_SHIPPING_STATUS.md) - Archived - Reference
+- [08-reference/archive/reference/FINAL_STATUS_REPORT.md](08-reference/archive/reference/FINAL_STATUS_REPORT.md) - Archived - Reference
+- [08-reference/archive/reference/GITHUB_INTEGRATION_COMPLETE.md](08-reference/archive/reference/GITHUB_INTEGRATION_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/IMPLEMENTATION_STATUS_HONEST.md](08-reference/archive/reference/IMPLEMENTATION_STATUS_HONEST.md) - Archived - Reference
+- [08-reference/archive/reference/IMPLEMENTATION_STATUS.md](08-reference/archive/reference/IMPLEMENTATION_STATUS.md) - Archived - Reference
+- [08-reference/archive/reference/MATHEMATICAL_FOUNDATION_COMPLETE.md](08-reference/archive/reference/MATHEMATICAL_FOUNDATION_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/MVP_IMPLEMENTATION_COMPLETE.md](08-reference/archive/reference/MVP_IMPLEMENTATION_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/PACKAGE_COMPLETE.md](08-reference/archive/reference/PACKAGE_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/PATENT_CLAIMS_QUICK_REFERENCE.md](08-reference/archive/reference/PATENT_CLAIMS_QUICK_REFERENCE.md) - Archived - Reference
+- [08-reference/archive/reference/PATENT_UPDATE_COMPLETE.md](08-reference/archive/reference/PATENT_UPDATE_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/PHDM_COMPLETE.md](08-reference/archive/reference/PHDM_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/PRODUCT_STATUS.md](08-reference/archive/reference/PRODUCT_STATUS.md) - Archived - Reference
+- [08-reference/archive/reference/PROJECT_COMPLETION_STATUS.md](08-reference/archive/reference/PROJECT_COMPLETION_STATUS.md) - Archived - Reference
+- [08-reference/archive/reference/PROJECT_STATUS_SUMMARY.md](08-reference/archive/reference/PROJECT_STATUS_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/reference/PUSH_AND_TEST_COMPLETE.md](08-reference/archive/reference/PUSH_AND_TEST_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/QUICK_REFERENCE.md](08-reference/archive/reference/QUICK_REFERENCE.md) - Archived - Reference
+- [08-reference/archive/reference/RWP_V3_INTEGRATION_COMPLETE.md](08-reference/archive/reference/RWP_V3_INTEGRATION_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/SACRED_TONGUE_QUICK_REFERENCE.md](08-reference/archive/reference/SACRED_TONGUE_QUICK_REFERENCE.md) - Archived - Reference
+- [08-reference/archive/reference/SACRED_TONGUE_STATUS.md](08-reference/archive/reference/SACRED_TONGUE_STATUS.md) - Archived - Reference
+- [08-reference/archive/reference/SCBE_SYSTEM_ARCHITECTURE_COMPLETE.md](08-reference/archive/reference/SCBE_SYSTEM_ARCHITECTURE_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/SPIRALVERSE_MASTER_PACK_COMPLETE.md](08-reference/archive/reference/SPIRALVERSE_MASTER_PACK_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/SPIRALVERSE_SECURITY_FIXES_COMPLETE.md](08-reference/archive/reference/SPIRALVERSE_SECURITY_FIXES_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/SYSTEM_ORGANIZATION_COMPLETE.md](08-reference/archive/reference/SYSTEM_ORGANIZATION_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/TESTS_COMPLETE.md](08-reference/archive/reference/TESTS_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/THEORETICAL_AXIOMS_COMPLETE.md](08-reference/archive/reference/THEORETICAL_AXIOMS_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/reference/TRUST_MANAGER_COMPLETE.md](08-reference/archive/reference/TRUST_MANAGER_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/RELEASE_SUMMARY.md](08-reference/archive/RELEASE_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/reports/ACTION_ITEMS_FROM_REVIEW.md](08-reference/archive/reports/ACTION_ITEMS_FROM_REVIEW.md) - Archived - Reference
+- [08-reference/archive/reports/AUDIT_SUMMARY.md](08-reference/archive/reports/AUDIT_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/reports/BUG_REPORT.md](08-reference/archive/reports/BUG_REPORT.md) - Archived - Reference
+- [08-reference/archive/reports/CODEBASE_REVIEW_REPORT.md](08-reference/archive/reports/CODEBASE_REVIEW_REPORT.md) - Archived - Reference
+- [08-reference/archive/reports/compliance_report.md](08-reference/archive/reports/compliance_report.md) - Archived - Reference
+- [08-reference/archive/reports/ENGINEERING_REVIEW_CORRECTIONS.md](08-reference/archive/reports/ENGINEERING_REVIEW_CORRECTIONS.md) - Archived - Reference
+- [08-reference/archive/reports/ISSUES_FIXED.md](08-reference/archive/reports/ISSUES_FIXED.md) - Archived - Reference
+- [08-reference/archive/reports/KIRO_STARTUP_FIX.md](08-reference/archive/reports/KIRO_STARTUP_FIX.md) - Archived - Reference
+- [08-reference/archive/reports/KIRO_STARTUP_TROUBLESHOOTING.md](08-reference/archive/reports/KIRO_STARTUP_TROUBLESHOOTING.md) - Archived - Reference
+- [08-reference/archive/reports/KIRO_SYSTEM_MAP.md](08-reference/archive/reports/KIRO_SYSTEM_MAP.md) - Archived - Reference
+- [08-reference/archive/reports/TEST_EXECUTION_PLAN.md](08-reference/archive/reports/TEST_EXECUTION_PLAN.md) - Archived - Reference
+- [08-reference/archive/reports/TEST_RESULTS_SUMMARY.md](08-reference/archive/reports/TEST_RESULTS_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/reports/TEST_SUITE_EXECUTIVE_SUMMARY.md](08-reference/archive/reports/TEST_SUITE_EXECUTIVE_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/reports/TEST_SUITE_OVERVIEW.md](08-reference/archive/reports/TEST_SUITE_OVERVIEW.md) - Archived - Reference
+- [08-reference/archive/reports/VERIFICATION_REPORT.md](08-reference/archive/reports/VERIFICATION_REPORT.md) - Archived - Reference
+- [08-reference/archive/REVIEW_EXECUTIVE_SUMMARY.md](08-reference/archive/REVIEW_EXECUTIVE_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/RWP_v3_SACRED_TONGUE_HARMONIC_VERIFICATION.md](08-reference/archive/RWP_v3_SACRED_TONGUE_HARMONIC_VERIFICATION.md) - Archived - Reference
+- [08-reference/archive/SACRED_TONGUE_PQC_INTEGRATION.md](08-reference/archive/SACRED_TONGUE_PQC_INTEGRATION.md) - Archived - Reference
+- [08-reference/archive/SACRED_TONGUE_TEST_RESULTS.md](08-reference/archive/SACRED_TONGUE_TEST_RESULTS.md) - Archived - Reference
+- [08-reference/archive/SCBE_AETHERMOORE_TOPOLOGICAL_CFI_UNIFIED_STRATEGY.md](08-reference/archive/SCBE_AETHERMOORE_TOPOLOGICAL_CFI_UNIFIED_STRATEGY.md) - Archived - Reference
+- [08-reference/archive/SCBE_CHEATSHEET.md](08-reference/archive/SCBE_CHEATSHEET.md) - Archived - Reference
+- [08-reference/archive/SCBE_COMPLETE_JOURNEY.md](08-reference/archive/SCBE_COMPLETE_JOURNEY.md) - Archived - Reference
+- [08-reference/archive/SCBE_MASTER_2026_001.md](08-reference/archive/SCBE_MASTER_2026_001.md) - Archived - Reference
+- [08-reference/archive/SCBE_PATENT_FIGURES.md](08-reference/archive/SCBE_PATENT_FIGURES.md) - Archived - Reference
+- [08-reference/archive/SCBE_PATENT_PORTFOLIO.md](08-reference/archive/SCBE_PATENT_PORTFOLIO.md) - Archived - Reference
+- [08-reference/archive/SCBE_PATENT_SPECIFICATION.md](08-reference/archive/SCBE_PATENT_SPECIFICATION.md) - Archived - Reference
+- [08-reference/archive/SCBE_Production_Security_Spec.md](08-reference/archive/SCBE_Production_Security_Spec.md) - Archived - Reference
+- [08-reference/archive/SCBE_SYSTEM_OVERVIEW.md](08-reference/archive/SCBE_SYSTEM_OVERVIEW.md) - Archived - Reference
+- [08-reference/archive/SCBE_TOPOLOGICAL_CFI_UNIFIED.md](08-reference/archive/SCBE_TOPOLOGICAL_CFI_UNIFIED.md) - Archived - Reference
+- [08-reference/archive/SCBE_VISUAL_ARCHITECTURE.md](08-reference/archive/SCBE_VISUAL_ARCHITECTURE.md) - Archived - Reference
+- [08-reference/archive/scbe-layer9-corrections.md](08-reference/archive/scbe-layer9-corrections.md) - Archived - Reference
+- [08-reference/archive/SECURITY_HARDENING_CHECKLIST.md](08-reference/archive/SECURITY_HARDENING_CHECKLIST.md) - Archived - Reference
+- [08-reference/archive/SECURITY_HARDENING_PLAYBOOK.md](08-reference/archive/SECURITY_HARDENING_PLAYBOOK.md) - Archived - Reference
+- [08-reference/archive/SESSION_COMPLETE_SUMMARY.md](08-reference/archive/SESSION_COMPLETE_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/SHARE_PROJECT.md](08-reference/archive/SHARE_PROJECT.md) - Archived - Reference
+- [08-reference/archive/SOCIAL_MEDIA_ANNOUNCEMENTS.md](08-reference/archive/SOCIAL_MEDIA_ANNOUNCEMENTS.md) - Archived - Reference
+- [08-reference/archive/SPIRALSEAL_SS1_COMPLETE.md](08-reference/archive/SPIRALSEAL_SS1_COMPLETE.md) - Archived - Reference
+- [08-reference/archive/SPIRALVERSE_COMPLETE_ARCHITECTURE.md](08-reference/archive/SPIRALVERSE_COMPLETE_ARCHITECTURE.md) - Archived - Reference
+- [08-reference/archive/SPIRALVERSE_EXPLAINED_SIMPLE.md](08-reference/archive/SPIRALVERSE_EXPLAINED_SIMPLE.md) - Archived - Reference
+- [08-reference/archive/SPIRALVERSE_INTEGRATION_SUMMARY.md](08-reference/archive/SPIRALVERSE_INTEGRATION_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/SYSTEM_INTEGRATION.md](08-reference/archive/SYSTEM_INTEGRATION.md) - Archived - Reference
+- [08-reference/archive/TASKS.md](08-reference/archive/TASKS.md) - Archived - Reference
+- [08-reference/archive/TECHNICAL_FOUNDATION_SUMMARY.md](08-reference/archive/TECHNICAL_FOUNDATION_SUMMARY.md) - Archived - Reference
+- [08-reference/archive/TELEMETRY_PUSH_SUCCESS.md](08-reference/archive/TELEMETRY_PUSH_SUCCESS.md) - Archived - Reference
+- [08-reference/archive/TEST_AUDIT.md](08-reference/archive/TEST_AUDIT.md) - Archived - Reference
+- [08-reference/archive/UNIFIED_VISION.md](08-reference/archive/UNIFIED_VISION.md) - Archived - Reference
+- [08-reference/archive/WHAT_YOU_BUILT.md](08-reference/archive/WHAT_YOU_BUILT.md) - Archived - Reference
+- [08-reference/README.md](08-reference/README.md) - Critical - Reference
+- [action_summary.aetherbrowse-auth-ops.yaml](action_summary.aetherbrowse-auth-ops.yaml) - Important - Agents, Browser, and Control Plane
+- [AETHERAUTH_IMPLEMENTATION.md](AETHERAUTH_IMPLEMENTATION.md) - Important - General Root Docs
+- [AETHERBRAIN_ROADMAP.md](AETHERBRAIN_ROADMAP.md) - Important - General Root Docs
+- [AETHERBROWSE_BLUEPRINT.md](AETHERBROWSE_BLUEPRINT.md) - Important - Agents, Browser, and Control Plane
+- [AETHERBROWSE_CLOUD_RUN.md](AETHERBROWSE_CLOUD_RUN.md) - Important - Agents, Browser, and Control Plane
+- [AETHERBROWSE_GOVERNANCE.md](AETHERBROWSE_GOVERNANCE.md) - Important - Agents, Browser, and Control Plane
+- [AETHERMORE_ROUNDABOUT_CITY_ARCH.md](AETHERMORE_ROUNDABOUT_CITY_ARCH.md) - Important - Narrative and Creative
+- [AGENT_ARCHITECTURE.md](AGENT_ARCHITECTURE.md) - Critical - Agents, Browser, and Control Plane
+- [AI_BRIDGE_TERMINAL_BROWSER.md](AI_BRIDGE_TERMINAL_BROWSER.md) - Important - Agents, Browser, and Control Plane
+- [AI_BROWSER_ACCESS.md](AI_BROWSER_ACCESS.md) - Important - Agents, Browser, and Control Plane
+- [AI_COGNITIVE_GOVERNANCE_MIND_MAP.md](AI_COGNITIVE_GOVERNANCE_MIND_MAP.md) - Important - General Root Docs
+- [AI_KERNEL_BOOTSTRAP.md](AI_KERNEL_BOOTSTRAP.md) - Important - General Root Docs
+- [AI2AI_ARXIV_RETRIEVAL_SERVICE.md](AI2AI_ARXIV_RETRIEVAL_SERVICE.md) - Important - General Root Docs
+- [API.md](API.md) - Critical - General Root Docs
+- [api/index.html](api/index.html) - Critical - General Root Docs
+- [api/openapi.json](api/openapi.json) - Critical - General Root Docs
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Critical - General Root Docs
+- [archive/ACTION_ITEMS_FROM_REVIEW.md](archive/ACTION_ITEMS_FROM_REVIEW.md) - Archived - Archive
+- [archive/ADVANCED_MATH_TELEMETRY_COMPLETE.md](archive/ADVANCED_MATH_TELEMETRY_COMPLETE.md) - Archived - Archive
+- [archive/AETHERMOORE_AI_WORKFLOW_PLATFORM_DRAFT.md](archive/AETHERMOORE_AI_WORKFLOW_PLATFORM_DRAFT.md) - Archived - Archive
+- [archive/AETHERMOORE_CONSTANTS_COMPLETE.md](archive/AETHERMOORE_CONSTANTS_COMPLETE.md) - Archived - Archive
+- [archive/AETHERMOORE_CONSTANTS_IP_PORTFOLIO.md](archive/AETHERMOORE_CONSTANTS_IP_PORTFOLIO.md) - Archived - Archive
+- [archive/AGENT_README.md](archive/AGENT_README.md) - Archived - Archive
+- [archive/ARCHITECTURE_5_LAYERS.md](archive/ARCHITECTURE_5_LAYERS.md) - Archived - Archive
+- [archive/ARCHITECTURE_FOR_PILOTS.md](archive/ARCHITECTURE_FOR_PILOTS.md) - Archived - Archive
+- [archive/AUDIT_SUMMARY.md](archive/AUDIT_SUMMARY.md) - Archived - Archive
+- [archive/AXIOM_VERIFICATION_STATUS.md](archive/AXIOM_VERIFICATION_STATUS.md) - Archived - Archive
+- [archive/BUG_REPORT.md](archive/BUG_REPORT.md) - Archived - Archive
+- [archive/CHANGELOG.md](archive/CHANGELOG.md) - Archived - Archive
+- [archive/CLI_COMPLETE.md](archive/CLI_COMPLETE.md) - Archived - Archive
+- [archive/CLI_README.md](archive/CLI_README.md) - Archived - Archive
+- [archive/CLI_SETUP.md](archive/CLI_SETUP.md) - Archived - Archive
+- [archive/CODEBASE_REVIEW_REPORT.md](archive/CODEBASE_REVIEW_REPORT.md) - Archived - Archive
+- [archive/COMPLETE_INTEGRATION_MASTER.md](archive/COMPLETE_INTEGRATION_MASTER.md) - Archived - Archive
+- [archive/COMPLETE_INVENTORY.md](archive/COMPLETE_INVENTORY.md) - Archived - Archive
+- [archive/COMPLETE_IP_PORTFOLIO_READY_FOR_USPTO.md](archive/COMPLETE_IP_PORTFOLIO_READY_FOR_USPTO.md) - Archived - Archive
+- [archive/COMPLETE_SYSTEM_OVERVIEW.md](archive/COMPLETE_SYSTEM_OVERVIEW.md) - Archived - Archive
+- [archive/COMPLETE_SYSTEM.md](archive/COMPLETE_SYSTEM.md) - Archived - Archive
+- [archive/compliance_report.md](archive/compliance_report.md) - Archived - Archive
+- [archive/CONTEXT_TRANSFER_SUMMARY.md](archive/CONTEXT_TRANSFER_SUMMARY.md) - Archived - Archive
+- [archive/CONTRIBUTING.md](archive/CONTRIBUTING.md) - Archived - Archive
+- [archive/CREDIBILITY_SUMMARY.md](archive/CREDIBILITY_SUMMARY.md) - Archived - Archive
+- [archive/DEMO_COMPLETE.md](archive/DEMO_COMPLETE.md) - Archived - Archive
+- [archive/DEMO_SUCCESS.md](archive/DEMO_SUCCESS.md) - Archived - Archive
+- [archive/DEMOS.md](archive/DEMOS.md) - Archived - Archive
+- [archive/DEPLOYMENT.md](archive/DEPLOYMENT.md) - Archived - Archive
+- [archive/DIMENSIONAL_THEORY_COMPLETE.md](archive/DIMENSIONAL_THEORY_COMPLETE.md) - Archived - Archive
+- [archive/DIMENSIONAL_THEORY_INTEGRATION.md](archive/DIMENSIONAL_THEORY_INTEGRATION.md) - Archived - Archive
+- [archive/DIMENSIONAL_THEORY_VISUAL_SUMMARY.md](archive/DIMENSIONAL_THEORY_VISUAL_SUMMARY.md) - Archived - Archive
+- [archive/DUAL_CHANNEL_IMPLEMENTATION_COMPLETE.md](archive/DUAL_CHANNEL_IMPLEMENTATION_COMPLETE.md) - Archived - Archive
+- [archive/ENABLEMENT_COMPLETE.md](archive/ENABLEMENT_COMPLETE.md) - Archived - Archive
+- [archive/ENGINEERING_REVIEW_CORRECTIONS.md](archive/ENGINEERING_REVIEW_CORRECTIONS.md) - Archived - Archive
+- [archive/ENTERPRISE_AI_ORCHESTRATION_INTEGRATION.md](archive/ENTERPRISE_AI_ORCHESTRATION_INTEGRATION.md) - Archived - Archive
+- [archive/ENTERPRISE_TESTING_COMPLETE.md](archive/ENTERPRISE_TESTING_COMPLETE.md) - Archived - Archive
+- [archive/ENTERPRISE_TESTING_SUCCESS.md](archive/ENTERPRISE_TESTING_SUCCESS.md) - Archived - Archive
+- [archive/ENTERPRISE_TESTS_FIXED.md](archive/ENTERPRISE_TESTS_FIXED.md) - Archived - Archive
+- [archive/FEATURES.md](archive/FEATURES.md) - Archived - Archive
+- [archive/FINAL_ENGINEERING_STATUS.md](archive/FINAL_ENGINEERING_STATUS.md) - Archived - Archive
+- [archive/FINAL_PACKAGE_STATUS.md](archive/FINAL_PACKAGE_STATUS.md) - Archived - Archive
+- [archive/FINAL_SHIPPING_STATUS.md](archive/FINAL_SHIPPING_STATUS.md) - Archived - Archive
+- [archive/FINAL_STATUS_REPORT.md](archive/FINAL_STATUS_REPORT.md) - Archived - Archive
+- [archive/FINAL_SUMMARY.md](archive/FINAL_SUMMARY.md) - Archived - Archive
+- [archive/FINAL_TEST_REPORT.md](archive/FINAL_TEST_REPORT.md) - Archived - Archive
+- [archive/FULL_SYSTEM_ENABLEMENT.md](archive/FULL_SYSTEM_ENABLEMENT.md) - Archived - Archive
+- [archive/GITHUB_INTEGRATION_COMPLETE.md](archive/GITHUB_INTEGRATION_COMPLETE.md) - Archived - Archive
+- [archive/HOW_TO_USE.md](archive/HOW_TO_USE.md) - Archived - Archive
+- [archive/IMPLEMENTATION_STATUS_HONEST.md](archive/IMPLEMENTATION_STATUS_HONEST.md) - Archived - Archive
+- [archive/IMPLEMENTATION_STATUS.md](archive/IMPLEMENTATION_STATUS.md) - Archived - Archive
+- [archive/INDUSTRY_STANDARD_TESTS_SUMMARY.md](archive/INDUSTRY_STANDARD_TESTS_SUMMARY.md) - Archived - Archive
+- [archive/INSTALL.md](archive/INSTALL.md) - Archived - Archive
+- [archive/INTEGRATION_COMPLETE.md](archive/INTEGRATION_COMPLETE.md) - Archived - Archive
+- [archive/INTEGRATION_QUICK_START.md](archive/INTEGRATION_QUICK_START.md) - Archived - Archive
+- [archive/INTEGRATION_ROADMAP.md](archive/INTEGRATION_ROADMAP.md) - Archived - Archive
+- [archive/ISSUES_FIXED.md](archive/ISSUES_FIXED.md) - Archived - Archive
+- [archive/KIRO_STARTUP_FIX.md](archive/KIRO_STARTUP_FIX.md) - Archived - Archive
+- [archive/KIRO_STARTUP_TROUBLESHOOTING.md](archive/KIRO_STARTUP_TROUBLESHOOTING.md) - Archived - Archive
+- [archive/KIRO_SYSTEM_MAP.md](archive/KIRO_SYSTEM_MAP.md) - Archived - Archive
+- [archive/LAYER_INDEX.md](archive/LAYER_INDEX.md) - Archived - Archive
+- [archive/MARS_DEMO_GUIDE.md](archive/MARS_DEMO_GUIDE.md) - Archived - Archive
+- [archive/MASTER_INDEX.md](archive/MASTER_INDEX.md) - Archived - Archive
+- [archive/MATHEMATICAL_FOUNDATION_COMPLETE.md](archive/MATHEMATICAL_FOUNDATION_COMPLETE.md) - Archived - Archive
+- [archive/MATHEMATICAL_REVIEW_RESPONSE.md](archive/MATHEMATICAL_REVIEW_RESPONSE.md) - Archived - Archive
+- [archive/MEMORY_SHARD_DEMO.md](archive/MEMORY_SHARD_DEMO.md) - Archived - Archive
+- [archive/MISSION_ACCOMPLISHED.md](archive/MISSION_ACCOMPLISHED.md) - Archived - Archive
+- [archive/MVP_API_ROADMAP.md](archive/MVP_API_ROADMAP.md) - Archived - Archive
+- [archive/MVP_IMPLEMENTATION_COMPLETE.md](archive/MVP_IMPLEMENTATION_COMPLETE.md) - Archived - Archive
+- [archive/MVP_QUICK_START.md](archive/MVP_QUICK_START.md) - Archived - Archive
+- [archive/NPM_PUBLISH_NOW.md](archive/NPM_PUBLISH_NOW.md) - Archived - Archive
+- [archive/PACKAGE_COMPLETE.md](archive/PACKAGE_COMPLETE.md) - Archived - Archive
+- [archive/PACKAGE_INSTRUCTIONS.md](archive/PACKAGE_INSTRUCTIONS.md) - Archived - Archive
+- [archive/PACKAGE_PREPARATION.md](archive/PACKAGE_PREPARATION.md) - Archived - Archive
+- [archive/PACKAGE_READY.md](archive/PACKAGE_READY.md) - Archived - Archive
+- [archive/PATENT_CLAIMS_CORRECTED.md](archive/PATENT_CLAIMS_CORRECTED.md) - Archived - Archive
+- [archive/PATENT_CLAIMS_QUICK_REFERENCE.md](archive/PATENT_CLAIMS_QUICK_REFERENCE.md) - Archived - Archive
+- [archive/PATENT_PROVISIONAL_APPLICATION.md](archive/PATENT_PROVISIONAL_APPLICATION.md) - Archived - Archive
+- [archive/PATENT_UPDATE_COMPLETE.md](archive/PATENT_UPDATE_COMPLETE.md) - Archived - Archive
+- [archive/PERFORMANCE_OPTIMIZATION.md](archive/PERFORMANCE_OPTIMIZATION.md) - Archived - Archive
+- [archive/PHASE_SHIFT_EXTENSION.md](archive/PHASE_SHIFT_EXTENSION.md) - Archived - Archive
+- [archive/PHASE_SHIFT_SUMMARY.md](archive/PHASE_SHIFT_SUMMARY.md) - Archived - Archive
+- [archive/PHDM_ACHIEVEMENT.md](archive/PHDM_ACHIEVEMENT.md) - Archived - Archive
+- [archive/PHDM_COMPLETE.md](archive/PHDM_COMPLETE.md) - Archived - Archive
+- [archive/PILOT_PROGRAM_TERMS.md](archive/PILOT_PROGRAM_TERMS.md) - Archived - Archive
+- [archive/PRODUCT_READY.md](archive/PRODUCT_READY.md) - Archived - Archive
+- [archive/PRODUCT_STATUS.md](archive/PRODUCT_STATUS.md) - Archived - Archive
+- [archive/PRODUCTION_READINESS_AUDIT.md](archive/PRODUCTION_READINESS_AUDIT.md) - Archived - Archive
+- [archive/PROJECT_COMPLETION_STATUS.md](archive/PROJECT_COMPLETION_STATUS.md) - Archived - Archive
+- [archive/PROJECT_STATUS_SUMMARY.md](archive/PROJECT_STATUS_SUMMARY.md) - Archived - Archive
+- [archive/PUBLISH_GUIDE.md](archive/PUBLISH_GUIDE.md) - Archived - Archive
+- [archive/PUBLISHED_SUCCESS.md](archive/PUBLISHED_SUCCESS.md) - Archived - Archive
+- [archive/PUSH_AND_TEST_COMPLETE.md](archive/PUSH_AND_TEST_COMPLETE.md) - Archived - Archive
+- [archive/QUICK_REFERENCE.md](archive/QUICK_REFERENCE.md) - Archived - Archive
+- [archive/QUICK_START.md](archive/QUICK_START.md) - Archived - Archive
+- [archive/QUICKSTART.md](archive/QUICKSTART.md) - Archived - Archive
+- [archive/README_SHIP_NOW.md](archive/README_SHIP_NOW.md) - Archived - Archive
+- [archive/RELEASE_SUMMARY.md](archive/RELEASE_SUMMARY.md) - Archived - Archive
+- [archive/REVIEW_EXECUTIVE_SUMMARY.md](archive/REVIEW_EXECUTIVE_SUMMARY.md) - Archived - Archive
+- [archive/RWP_V3_INTEGRATION_COMPLETE.md](archive/RWP_V3_INTEGRATION_COMPLETE.md) - Archived - Archive
+- [archive/RWP_V3_QUICKSTART.md](archive/RWP_V3_QUICKSTART.md) - Archived - Archive
+- [archive/SACRED_TONGUE_PQC_INTEGRATION.md](archive/SACRED_TONGUE_PQC_INTEGRATION.md) - Archived - Archive
+- [archive/SACRED_TONGUE_QUICK_REFERENCE.md](archive/SACRED_TONGUE_QUICK_REFERENCE.md) - Archived - Archive
+- [archive/SACRED_TONGUE_STATUS.md](archive/SACRED_TONGUE_STATUS.md) - Archived - Archive
+- [archive/SACRED_TONGUE_TEST_RESULTS.md](archive/SACRED_TONGUE_TEST_RESULTS.md) - Archived - Archive
+- [archive/SCBE_AETHERMOORE_TOPOLOGICAL_CFI_UNIFIED_STRATEGY.md](archive/SCBE_AETHERMOORE_TOPOLOGICAL_CFI_UNIFIED_STRATEGY.md) - Archived - Archive
+- [archive/SCBE_CHEATSHEET.md](archive/SCBE_CHEATSHEET.md) - Archived - Archive
+- [archive/SCBE_COMPLETE_JOURNEY.md](archive/SCBE_COMPLETE_JOURNEY.md) - Archived - Archive
+- [archive/SCBE_SYSTEM_ARCHITECTURE_COMPLETE.md](archive/SCBE_SYSTEM_ARCHITECTURE_COMPLETE.md) - Archived - Archive
+- [archive/SCBE_TOPOLOGICAL_CFI_UNIFIED.md](archive/SCBE_TOPOLOGICAL_CFI_UNIFIED.md) - Archived - Archive
+- [archive/SCBE_VISUAL_ARCHITECTURE.md](archive/SCBE_VISUAL_ARCHITECTURE.md) - Archived - Archive
+- [archive/SECURITY_HARDENING_PLAYBOOK.md](archive/SECURITY_HARDENING_PLAYBOOK.md) - Archived - Archive
+- [archive/SESSION_COMPLETE_SUMMARY.md](archive/SESSION_COMPLETE_SUMMARY.md) - Archived - Archive
+- [archive/SHARE_PROJECT.md](archive/SHARE_PROJECT.md) - Archived - Archive
+- [archive/SHIP_IT_NOW.md](archive/SHIP_IT_NOW.md) - Archived - Archive
+- [archive/SOCIAL_MEDIA_ANNOUNCEMENTS.md](archive/SOCIAL_MEDIA_ANNOUNCEMENTS.md) - Archived - Archive
+- [archive/SPIRALVERSE_COMPLETE_ARCHITECTURE.md](archive/SPIRALVERSE_COMPLETE_ARCHITECTURE.md) - Archived - Archive
+- [archive/SPIRALVERSE_EXPLAINED_SIMPLE.md](archive/SPIRALVERSE_EXPLAINED_SIMPLE.md) - Archived - Archive
+- [archive/SPIRALVERSE_INTEGRATION_SUMMARY.md](archive/SPIRALVERSE_INTEGRATION_SUMMARY.md) - Archived - Archive
+- [archive/SPIRALVERSE_MASTER_PACK_COMPLETE.md](archive/SPIRALVERSE_MASTER_PACK_COMPLETE.md) - Archived - Archive
+- [archive/SPIRALVERSE_SECURITY_FIXES_COMPLETE.md](archive/SPIRALVERSE_SECURITY_FIXES_COMPLETE.md) - Archived - Archive
+- [archive/SPIRALVERSE_VISUAL_GUIDE.md](archive/SPIRALVERSE_VISUAL_GUIDE.md) - Archived - Archive
+- [archive/SYSTEM_BUILD_GUIDE.md](archive/SYSTEM_BUILD_GUIDE.md) - Archived - Archive
+- [archive/SYSTEM_INTEGRATION.md](archive/SYSTEM_INTEGRATION.md) - Archived - Archive
+- [archive/SYSTEM_ORGANIZATION_COMPLETE.md](archive/SYSTEM_ORGANIZATION_COMPLETE.md) - Archived - Archive
+- [archive/TECHNICAL_FOUNDATION_SUMMARY.md](archive/TECHNICAL_FOUNDATION_SUMMARY.md) - Archived - Archive
+- [archive/TELEMETRY_PUSH_SUCCESS.md](archive/TELEMETRY_PUSH_SUCCESS.md) - Archived - Archive
+- [archive/TEST_AUDIT_REPORT.md](archive/TEST_AUDIT_REPORT.md) - Archived - Archive
+- [archive/TEST_EXECUTION_PLAN.md](archive/TEST_EXECUTION_PLAN.md) - Archived - Archive
+- [archive/TEST_FAILURE_ANALYSIS.md](archive/TEST_FAILURE_ANALYSIS.md) - Archived - Archive
+- [archive/TEST_RESULTS_SUMMARY.md](archive/TEST_RESULTS_SUMMARY.md) - Archived - Archive
+- [archive/TEST_SUITE_EXECUTIVE_SUMMARY.md](archive/TEST_SUITE_EXECUTIVE_SUMMARY.md) - Archived - Archive
+- [archive/TEST_SUITE_OVERVIEW.md](archive/TEST_SUITE_OVERVIEW.md) - Archived - Archive
+- [archive/TESTS_COMPLETE.md](archive/TESTS_COMPLETE.md) - Archived - Archive
+- [archive/THEORETICAL_AXIOMS_COMPLETE.md](archive/THEORETICAL_AXIOMS_COMPLETE.md) - Archived - Archive
+- [archive/TRUST_MANAGER_COMPLETE.md](archive/TRUST_MANAGER_COMPLETE.md) - Archived - Archive
+- [archive/UNIFIED_VISION.md](archive/UNIFIED_VISION.md) - Archived - Archive
+- [archive/USAGE_GUIDE.md](archive/USAGE_GUIDE.md) - Archived - Archive
+- [archive/VERIFICATION_REPORT.md](archive/VERIFICATION_REPORT.md) - Archived - Archive
+- [archive/VIDEO_SCRIPT_90SEC.md](archive/VIDEO_SCRIPT_90SEC.md) - Archived - Archive
+- [arena.html](arena.html) - Important - General Root Docs
+- [ARXIV_AUTOMATION.md](ARXIV_AUTOMATION.md) - Important - General Root Docs
+- [ASANA_AETHERBROWSE_AUTOMATION.md](ASANA_AETHERBROWSE_AUTOMATION.md) - Important - Agents, Browser, and Control Plane
+- [audit-export-offline-verification.md](audit-export-offline-verification.md) - Important - General Root Docs
+- [AUTONOMOUS_WEB_AGENT_RESEARCH_REPORT.md](AUTONOMOUS_WEB_AGENT_RESEARCH_REPORT.md) - Important - Agents, Browser, and Control Plane
+- [AXIOM_CROSS_REFERENCE.md](AXIOM_CROSS_REFERENCE.md) - Important - Core Governance and Math
+- [BILLING_METRICS.md](BILLING_METRICS.md) - Important - Core Governance and Math
+- [blog/00-scbe-aethermoore-definitive.md](blog/00-scbe-aethermoore-definitive.md) - Supporting - Blog
+- [blog/01-scbe-governance-framework.md](blog/01-scbe-governance-framework.md) - Supporting - Blog
+- [blog/02-flock-shepherd-multi-ai.md](blog/02-flock-shepherd-multi-ai.md) - Supporting - Blog
+- [blog/03-polly-pads-dual-zone.md](blog/03-polly-pads-dual-zone.md) - Supporting - Blog
+- [BUILD_YOUR_OWN_AI_ASSISTANT.md](BUILD_YOUR_OWN_AI_ASSISTANT.md) - Important - General Root Docs
+- [BUYER_PROOF_CHECKLIST.md](BUYER_PROOF_CHECKLIST.md) - Important - Product, GTM, and Outreach
+- [CAPABILITIES.md](CAPABILITIES.md) - Critical - General Root Docs
+- [CHANGE_NOTES_SPIRAL_ENGINE_2026-02-20.md](CHANGE_NOTES_SPIRAL_ENGINE_2026-02-20.md) - Important - General Root Docs
+- [CHAPTER_6_PHDM_POLYHEDRAL_HAMILTONIAN_DYNAMIC_MESH.md](CHAPTER_6_PHDM_POLYHEDRAL_HAMILTONIAN_DYNAMIC_MESH.md) - Important - Core Governance and Math
+- [CLAIMS_AUDIT_V4.md](CLAIMS_AUDIT_V4.md) - Important - General Root Docs
+- [CLAIMS_EVIDENCE_LEDGER.md](CLAIMS_EVIDENCE_LEDGER.md) - Important - General Root Docs
+- [CLOUD_KERNEL_DATA_PIPELINE.md](CLOUD_KERNEL_DATA_PIPELINE.md) - Important - General Root Docs
+- [CNAME](CNAME) - Important - General Root Docs
+- [COMMERCIAL_AGREEMENT.md](COMMERCIAL_AGREEMENT.md) - Important - Product, GTM, and Outreach
+- [COMPLEX_SYSTEMS_ANALYSIS_STYLE_GUIDE.md](COMPLEX_SYSTEMS_ANALYSIS_STYLE_GUIDE.md) - Important - General Root Docs
+- [CONNECTOR_ONBOARDING.md](CONNECTOR_ONBOARDING.md) - Important - Agents, Browser, and Control Plane
+- [CORE_AXIOMS_CANONICAL_INDEX.md](CORE_AXIOMS_CANONICAL_INDEX.md) - Important - Core Governance and Math
+- [core-theorems/SACRED_EGGS_GENESIS_BOOTSTRAP_AUTHORIZATION.md](core-theorems/SACRED_EGGS_GENESIS_BOOTSTRAP_AUTHORIZATION.md) - Important - Core Governance and Math
+- [CSTM_design.md](CSTM_design.md) - Important - General Root Docs
+- [dag.mmd](dag.mmd) - Important - General Root Docs
+- [DARPA_OUTREACH_PACKAGE.md](DARPA_OUTREACH_PACKAGE.md) - Important - Product, GTM, and Outreach
+- [DARPA_SWARM_BRIEF.md](DARPA_SWARM_BRIEF.md) - Important - Product, GTM, and Outreach
+- [demos/audio-composition.html](demos/audio-composition.html) - Important - Demos
+- [demos/audio-telemetry.html](demos/audio-telemetry.html) - Important - Demos
+- [demos/breathing-phase.html](demos/breathing-phase.html) - Important - Demos
+- [demos/context-fingerprint.html](demos/context-fingerprint.html) - Important - Demos
+- [demos/distance-explorer.html](demos/distance-explorer.html) - Important - Demos
+- [demos/embedding-space.html](demos/embedding-space.html) - Important - Demos
+- [demos/energy-landscape.html](demos/energy-landscape.html) - Important - Demos
+- [demos/energy-wells.html](demos/energy-wells.html) - Important - Demos
+- [demos/governance-gate.html](demos/governance-gate.html) - Important - Demos
+- [demos/index.html](demos/index.html) - Important - Demos
+- [demos/risk-calculator.html](demos/risk-calculator.html) - Important - Demos
+- [demos/spectral-coherence.html](demos/spectral-coherence.html) - Important - Demos
+- [demos/swarm-formations.html](demos/swarm-formations.html) - Important - Demos
+- [demos/temporal-session.html](demos/temporal-session.html) - Important - Demos
+- [demos/tongue-encoder.html](demos/tongue-encoder.html) - Important - Demos
+- [DISTRIBUTED_AGENTIC_WORKFLOW.md](DISTRIBUTED_AGENTIC_WORKFLOW.md) - Important - Agents, Browser, and Control Plane
+- [DOCKER_TERMINAL_OPERATIONS.md](DOCKER_TERMINAL_OPERATIONS.md) - Important - Agents, Browser, and Control Plane
+- [DOCS_CATALOG.md](DOCS_CATALOG.md) - Important - General Root Docs
+- [DRONE_FLEET_UPGRADES.md](DRONE_FLEET_UPGRADES.md) - Important - General Root Docs
+- [DUAL_LATTICE_STACK_V2.md](DUAL_LATTICE_STACK_V2.md) - Important - Core Governance and Math
+- [EBOOK_GRAPHIC_PRODUCT_PLAN.md](EBOOK_GRAPHIC_PRODUCT_PLAN.md) - Important - Product, GTM, and Outreach
+- [EMULATOR_SIMPLE_CORE_MINIGAMES.md](EMULATOR_SIMPLE_CORE_MINIGAMES.md) - Important - General Root Docs
+- [ENABLEMENT.md](ENABLEMENT.md) - Important - General Root Docs
+- [END_TO_END_SYSTEM_MAP_AND_IMPACT.md](END_TO_END_SYSTEM_MAP_AND_IMPACT.md) - Important - General Root Docs
+- [evidence/concurrent_operations.json](evidence/concurrent_operations.json) - Important - General Root Docs
+- [evidence/layer1_complex_state.json](evidence/layer1_complex_state.json) - Important - Core Governance and Math
+- [evidence/layer14_audio_axis.json](evidence/layer14_audio_axis.json) - Important - General Root Docs
+- [evidence/layer4_poincare_embedding.json](evidence/layer4_poincare_embedding.json) - Important - General Root Docs
+- [evidence/layer5_hyperbolic_distance.json](evidence/layer5_hyperbolic_distance.json) - Important - General Root Docs
+- [evidence/layer6_breathing_transform.json](evidence/layer6_breathing_transform.json) - Important - General Root Docs
+- [evidence/memory_footprint.json](evidence/memory_footprint.json) - Important - General Root Docs
+- [evidence/PASS2_ORGAN_TEST_RESULTS.md](evidence/PASS2_ORGAN_TEST_RESULTS.md) - Important - General Root Docs
+- [evidence/SCBE_SECURITY_EVIDENCE_PACK.md](evidence/SCBE_SECURITY_EVIDENCE_PACK.md) - Important - Core Governance and Math
+- [EXECUTIVE_SUMMARY_FOR_PARTNERS.md](EXECUTIVE_SUMMARY_FOR_PARTNERS.md) - Important - General Root Docs
+- [EXPERIMENT_QUEUE.md](EXPERIMENT_QUEUE.md) - Important - General Root Docs
+- [FAST_ACCESS_GUIDE.md](FAST_ACCESS_GUIDE.md) - Critical - General Root Docs
+- [FEDERATED_MULTI_CLOUD_TRAINING_PLAN.md](FEDERATED_MULTI_CLOUD_TRAINING_PLAN.md) - Important - General Root Docs
+- [FLEET_MANAGEMENT.md](FLEET_MANAGEMENT.md) - Important - General Root Docs
+- [FRANKENMODEL_SWARM_AGENT.md](FRANKENMODEL_SWARM_AGENT.md) - Important - Agents, Browser, and Control Plane
+- [gateway/AI_COLLABORATION_LOG.md](gateway/AI_COLLABORATION_LOG.md) - Critical - Gateway and Authorization
+- [gateway/AUTHORIZE_GATEWAY.md](gateway/AUTHORIZE_GATEWAY.md) - Critical - Gateway and Authorization
+- [gateway/COMPREHENSIVE_MATH_SCBE.md](gateway/COMPREHENSIVE_MATH_SCBE.md) - Critical - Gateway and Authorization
+- [gateway/ENTROPIC_DUAL_QUANTUM_SYSTEM.md](gateway/ENTROPIC_DUAL_QUANTUM_SYSTEM.md) - Critical - Gateway and Authorization
+- [gateway/MULTI_AGENT_THREAT_MODEL.md](gateway/MULTI_AGENT_THREAT_MODEL.md) - Critical - Gateway and Authorization
+- [gateway/QUASICRYSTAL_LATTICE_VERIFICATION.md](gateway/QUASICRYSTAL_LATTICE_VERIFICATION.md) - Critical - Gateway and Authorization
+- [gateway/README.md](gateway/README.md) - Critical - Gateway and Authorization
+- [gateway/SIX_SACRED_TONGUES_CODEX.md](gateway/SIX_SACRED_TONGUES_CODEX.md) - Critical - Gateway and Authorization
+- [GEOSEAL_ACCESS_CONTROL.md](GEOSEAL_ACCESS_CONTROL.md) - Critical - Core Governance and Math
+- [GITHUB_DOCS_AUDIT_2026-02-20.md](GITHUB_DOCS_AUDIT_2026-02-20.md) - Important - General Root Docs
+- [GITHUB_ORDER_AND_NOTES_SYNC.md](GITHUB_ORDER_AND_NOTES_SYNC.md) - Important - General Root Docs
+- [GO_TO_MARKET_SKUS.md](GO_TO_MARKET_SKUS.md) - Important - Product, GTM, and Outreach
+- [GOOGLE_CLOUD_SETUP.md](GOOGLE_CLOUD_SETUP.md) - Important - General Root Docs
+- [google7193f08d2589e861.html](google7193f08d2589e861.html) - Important - General Root Docs
+- [grok_image_gen.md](grok_image_gen.md) - Important - General Root Docs
+- [guides/ACTION_MAP_PROTOCOL.md](guides/ACTION_MAP_PROTOCOL.md) - Critical - Guides
+- [guides/AETHERBROWSER_AND_OPERATOR_LANE.md](guides/AETHERBROWSER_AND_OPERATOR_LANE.md) - Critical - Guides
+- [guides/ARTICLE_PUBLISHING_SYSTEM.md](guides/ARTICLE_PUBLISHING_SYSTEM.md) - Critical - Guides
+- [guides/CLI_OPERATOR_UPGRADE_PLAN.md](guides/CLI_OPERATOR_UPGRADE_PLAN.md) - Critical - Guides
+- [guides/CONTEXT_BROKER_AND_MEMORY.md](guides/CONTEXT_BROKER_AND_MEMORY.md) - Critical - Guides
+- [guides/CONTROL_PLANE_AND_COMMAND_CENTER.md](guides/CONTROL_PLANE_AND_COMMAND_CENTER.md) - Critical - Guides
+- [guides/CORE_SYSTEM_MAP.md](guides/CORE_SYSTEM_MAP.md) - Critical - Guides
+- [guides/GEOSEAL_AND_TONGUES.md](guides/GEOSEAL_AND_TONGUES.md) - Critical - Guides
+- [guides/GITHUB_AND_CI_OPERATIONS.md](guides/GITHUB_AND_CI_OPERATIONS.md) - Critical - Guides
+- [guides/POLLY_PADS_AND_PHONE_LANE.md](guides/POLLY_PADS_AND_PHONE_LANE.md) - Critical - Guides
+- [guides/STORAGE_OFFLOAD_AND_CLOUD_SYNC.md](guides/STORAGE_OFFLOAD_AND_CLOUD_SYNC.md) - Critical - Guides
+- [guides/TRAINING_HUGGINGFACE_AND_PRIVACY.md](guides/TRAINING_HUGGINGFACE_AND_PRIVACY.md) - Critical - Guides
+- [headless_ide_quickstart.md](headless_ide_quickstart.md) - Important - General Root Docs
+- [HYDRA_CLI_USER_GUIDE.md](HYDRA_CLI_USER_GUIDE.md) - Important - Agents, Browser, and Control Plane
+- [HYDRA_COORDINATION.md](HYDRA_COORDINATION.md) - Critical - Agents, Browser, and Control Plane
+- [HYDRA_HEADLESS_MMX_COORDINATOR.md](HYDRA_HEADLESS_MMX_COORDINATOR.md) - Important - Agents, Browser, and Control Plane
+- [HYDRA_LONG_MISSION_PLAYBOOK.md](HYDRA_LONG_MISSION_PLAYBOOK.md) - Important - Agents, Browser, and Control Plane
+- [HYDRA_MULTI_AGENT_COORDINATION_SYSTEM_COMPLETE_ARCHITECTURE.md](HYDRA_MULTI_AGENT_COORDINATION_SYSTEM_COMPLETE_ARCHITECTURE.md) - Important - Agents, Browser, and Control Plane
+- [hydra/ARCHITECTURE.md](hydra/ARCHITECTURE.md) - Critical - HYDRA
+- [hydra/MISSION_1000_STEP_ACCEPTANCE.md](hydra/MISSION_1000_STEP_ACCEPTANCE.md) - Important - HYDRA
+- [hydra/MISSION_1000_SYNTHETIC_JOBS.json](hydra/MISSION_1000_SYNTHETIC_JOBS.json) - Important - HYDRA
+- [hyperbolic-mind-map-construction.md](hyperbolic-mind-map-construction.md) - Important - General Root Docs
+- [ide/ARCH_OPTIONS.md](ide/ARCH_OPTIONS.md) - Important - General Root Docs
+- [ide/BUILD_PLAN_90D.md](ide/BUILD_PLAN_90D.md) - Important - General Root Docs
+- [ide/ENVELOPE_SIGNING_SPEC.md](ide/ENVELOPE_SIGNING_SPEC.md) - Important - General Root Docs
+- [ide/MISSION_CONTROL_SPEC.md](ide/MISSION_CONTROL_SPEC.md) - Important - General Root Docs
+- [ide/MVP_SPEC.md](ide/MVP_SPEC.md) - Important - General Root Docs
+- [ide/THREAT_MODEL.md](ide/THREAT_MODEL.md) - Important - General Root Docs
+- [IMPLEMENTATION_GAP_ANALYSIS.md](IMPLEMENTATION_GAP_ANALYSIS.md) - Important - General Root Docs
+- [index.html](index.html) - Important - General Root Docs
+- [index.md](index.md) - Important - General Root Docs
+- [INTEGRATION_GUIDE_SPIRAL_ENGINE_OMEGA_WATCHERS.md](INTEGRATION_GUIDE_SPIRAL_ENGINE_OMEGA_WATCHERS.md) - Important - General Root Docs
+- [INTEGRATION_ROADMAP.md](INTEGRATION_ROADMAP.md) - Important - General Root Docs
+- [INTEGRATIONS.md](INTEGRATIONS.md) - Important - General Root Docs
+- [ISA_V0.md](ISA_V0.md) - Important - General Root Docs
+- [ISSAC_COMMAND_CENTER.md](ISSAC_COMMAND_CENTER.md) - Important - Agents, Browser, and Control Plane
+- [ISSAC_QUICKSTART.md](ISSAC_QUICKSTART.md) - Critical - Agents, Browser, and Control Plane
+- [KERNEL_ANTIVIRUS_SCBE.md](KERNEL_ANTIVIRUS_SCBE.md) - Important - Core Governance and Math
+- [LANDING_PAGE.md](LANDING_PAGE.md) - Important - General Root Docs
+- [LANGUAGE_GUARDRAILS.md](LANGUAGE_GUARDRAILS.md) - Important - General Root Docs
+- [LANGUES_WEIGHTING_SYSTEM.md](LANGUES_WEIGHTING_SYSTEM.md) - Critical - Core Governance and Math
+- [llms.txt](llms.txt) - Important - General Root Docs
+- [LOCAL_CLOUD_AUTOSYNC.md](LOCAL_CLOUD_AUTOSYNC.md) - Important - General Root Docs
+- [local-run.md](local-run.md) - Important - General Root Docs
+- [manifest.json](manifest.json) - Important - General Root Docs
+- [map-room/README.md](map-room/README.md) - Critical - Operations and Coordination
+- [map-room/session_handoff_latest.md](map-room/session_handoff_latest.md) - Critical - Operations and Coordination
+- [map-room/session_handoff_template.md](map-room/session_handoff_template.md) - Critical - Operations and Coordination
+- [map-room/training_totals_latest.md](map-room/training_totals_latest.md) - Critical - Operations and Coordination
+- [market/2026-03-06-government-contract-lanes.md](market/2026-03-06-government-contract-lanes.md) - Important - Monetization and Market
+- [market/2026-03-06-outreach-cadence.md](market/2026-03-06-outreach-cadence.md) - Important - Monetization and Market
+- [market/2026-03-06-pilot-conversion-packet.md](market/2026-03-06-pilot-conversion-packet.md) - Important - Monetization and Market
+- [market/2026-03-06-target-pipeline.csv](market/2026-03-06-target-pipeline.csv) - Important - Monetization and Market
+- [MASTER_SPEC_M4_21D.md](MASTER_SPEC_M4_21D.md) - Important - Core Governance and Math
+- [math-core-replication.md](math-core-replication.md) - Important - Core Governance and Math
+- [MCP_SERVER_BOOTSTRAP.md](MCP_SERVER_BOOTSTRAP.md) - Important - Agents, Browser, and Control Plane
+- [MEDICAL_NANOBOT_SWARMS.md](MEDICAL_NANOBOT_SWARMS.md) - Important - General Root Docs
+- [metrics-telemetry.md](metrics-telemetry.md) - Important - Core Governance and Math
+- [MOBILE_AUTONOMY_RUNBOOK.md](MOBILE_AUTONOMY_RUNBOOK.md) - Important - Narrative and Creative
+- [MODEL_SYNTHESIS_AGENT.md](MODEL_SYNTHESIS_AGENT.md) - Important - Agents, Browser, and Control Plane
+- [MONETIZATION_ACTION_PLAN.md](MONETIZATION_ACTION_PLAN.md) - Important - Product, GTM, and Outreach
+- [monetization/2026-03-04-agent-swarm-revenue-sprint.md](monetization/2026-03-04-agent-swarm-revenue-sprint.md) - Important - Monetization and Market
+- [monetization/2026-03-04-outreach-pack.md](monetization/2026-03-04-outreach-pack.md) - Important - Monetization and Market
+- [monetization/lead_sheet_template.csv](monetization/lead_sheet_template.csv) - Important - Monetization and Market
+- [monetization/OUTBOUND_ONE_PAGER_2026-03-09.md](monetization/OUTBOUND_ONE_PAGER_2026-03-09.md) - Important - Monetization and Market
+- [monetization/README.md](monetization/README.md) - Important - Monetization and Market
+- [MONOREPO_RESTRUCTURING_PLAN.md](MONOREPO_RESTRUCTURING_PLAN.md) - Important - General Root Docs
+- [MULTI_AI_COORDINATION.md](MULTI_AI_COORDINATION.md) - Important - General Root Docs
+- [MULTI_AI_OFFLINE_ONLINE_SETUP.md](MULTI_AI_OFFLINE_ONLINE_SETUP.md) - Important - General Root Docs
+- [MULTI_CLOUD_LONGRUN_TRAINING_BOOTSTRAP.md](MULTI_CLOUD_LONGRUN_TRAINING_BOOTSTRAP.md) - Important - General Root Docs
+- [N8N_AETHERBROWSE_INTEGRATION.md](N8N_AETHERBROWSE_INTEGRATION.md) - Important - Agents, Browser, and Control Plane
+- [N8N_X_MONETIZE_AUTOMATION.md](N8N_X_MONETIZE_AUTOMATION.md) - Important - General Root Docs
+- [news/latest.md](news/latest.md) - Supporting - News
+- [news/node_fleet_20260217T105928Z.json](news/node_fleet_20260217T105928Z.json) - Supporting - News
+- [news/node_fleet_20260217T105928Z.md](news/node_fleet_20260217T105928Z.md) - Supporting - News
+- [news/node_fleet_20260217T110715Z.json](news/node_fleet_20260217T110715Z.json) - Supporting - News
+- [news/node_fleet_20260217T110715Z.md](news/node_fleet_20260217T110715Z.md) - Supporting - News
+- [news/node_fleet_20260217T143132Z.json](news/node_fleet_20260217T143132Z.json) - Supporting - News
+- [news/node_fleet_20260217T143132Z.md](news/node_fleet_20260217T143132Z.md) - Supporting - News
+- [news/node_fleet_20260218T003239Z.json](news/node_fleet_20260218T003239Z.json) - Supporting - News
+- [news/node_fleet_20260218T003239Z.md](news/node_fleet_20260218T003239Z.md) - Supporting - News
+- [NEXT_GEN_BROWSER_AGENT_IMPLEMENTATION.md](NEXT_GEN_BROWSER_AGENT_IMPLEMENTATION.md) - Important - Agents, Browser, and Control Plane
+- [NEXTGEN_BROWSER_AGENT_SYSTEM.md](NEXTGEN_BROWSER_AGENT_SYSTEM.md) - Important - Agents, Browser, and Control Plane
+- [NIGHTLY_CHANGE_NOTES_2026-02-21.md](NIGHTLY_CHANGE_NOTES_2026-02-21.md) - Important - General Root Docs
+- [NIGHTLY_CHANGE_NOTES_2026-02-22.md](NIGHTLY_CHANGE_NOTES_2026-02-22.md) - Important - General Root Docs
+- [NIGHTLY_NOTES_2026-02-23.md](NIGHTLY_NOTES_2026-02-23.md) - Important - General Root Docs
+- [NONBINARY_KERNEL_SPEC.md](NONBINARY_KERNEL_SPEC.md) - Important - General Root Docs
+- [notes/PATENT_AWS_WORKING_NOTES_2026-03-24.md](notes/PATENT_AWS_WORKING_NOTES_2026-03-24.md) - Supporting - General Root Docs
+- [NOTION_MCP_TOKEN_FIX_2026-02-22.md](NOTION_MCP_TOKEN_FIX_2026-02-22.md) - Important - Agents, Browser, and Control Plane
+- [NOTION_PAGE_INDEX.md](NOTION_PAGE_INDEX.md) - Important - Agents, Browser, and Control Plane
+- [notion_pages_manifest.json](notion_pages_manifest.json) - Important - Agents, Browser, and Control Plane
+- [notion_pages_sweep_notes.md](notion_pages_sweep_notes.md) - Important - Agents, Browser, and Control Plane
+- [notion/NOTION_TECH_CORPUS_INVENTORY_2026-03-15.md](notion/NOTION_TECH_CORPUS_INVENTORY_2026-03-15.md) - Supporting - Operations and Coordination
+- [notion/NOTION_USEFUL_PAGES_SHORTLIST_2026-03-15.md](notion/NOTION_USEFUL_PAGES_SHORTLIST_2026-03-15.md) - Supporting - Operations and Coordination
+- [OBSIDIAN_MULTI_AI_DOMINO.md](OBSIDIAN_MULTI_AI_DOMINO.md) - Important - Agents, Browser, and Control Plane
+- [OFFER_PILOT.md](OFFER_PILOT.md) - Important - Product, GTM, and Outreach
+- [OFFLINE_MODE_SPEC.md](OFFLINE_MODE_SPEC.md) - Important - General Root Docs
+- [ONE_PAGER_INVESTOR.md](ONE_PAGER_INVESTOR.md) - Important - Product, GTM, and Outreach
+- [open_source_tools_research.md](open_source_tools_research.md) - Important - General Root Docs
+- [operations/2026-03-14-monorepo-baseline.md](operations/2026-03-14-monorepo-baseline.md) - Critical - Operations and Coordination
+- [operations/2026-03-16-github-portfolio-map.md](operations/2026-03-16-github-portfolio-map.md) - Critical - Operations and Coordination
+- [operations/2026-03-24-next-session-checklist.md](operations/2026-03-24-next-session-checklist.md) - Critical - Operations and Coordination
+- [operations/2026-03-24-stability-guardrails.md](operations/2026-03-24-stability-guardrails.md) - Critical - Operations and Coordination
+- [operations/aetherbrowser_browser_first_runbook.md](operations/aetherbrowser_browser_first_runbook.md) - Critical - Operations and Coordination
+- [operations/AI_TERMINAL_GITHUB_MANAGEMENT.md](operations/AI_TERMINAL_GITHUB_MANAGEMENT.md) - Critical - Operations and Coordination
+- [operations/CLAUDE_MEMORY_SYNC_2026-03-15.md](operations/CLAUDE_MEMORY_SYNC_2026-03-15.md) - Critical - Operations and Coordination
+- [operations/LOCAL_IMAGE_RUNTIME_2026-03-15.md](operations/LOCAL_IMAGE_RUNTIME_2026-03-15.md) - Critical - Operations and Coordination
+- [operations/six_agent_mesh_runbook.md](operations/six_agent_mesh_runbook.md) - Critical - Operations and Coordination
+- [operations/USER_DESIGN_PHILOSOPHY.md](operations/USER_DESIGN_PHILOSOPHY.md) - Critical - Operations and Coordination
+- [ops/2026-03-04-browser-sentinel-2.md](ops/2026-03-04-browser-sentinel-2.md) - Critical - Operations and Coordination
+- [ops/2026-03-04-browser-sentinel.md](ops/2026-03-04-browser-sentinel.md) - Critical - Operations and Coordination
+- [ops/2026-03-04-dual-side-3agent-control-report.md](ops/2026-03-04-dual-side-3agent-control-report.md) - Critical - Operations and Coordination
+- [ops/2026-03-04-runtime-anchor-2.md](ops/2026-03-04-runtime-anchor-2.md) - Critical - Operations and Coordination
+- [ops/2026-03-04-runtime-anchor.md](ops/2026-03-04-runtime-anchor.md) - Critical - Operations and Coordination
+- [ops/2026-03-04-shopify-storefront-launch.md](ops/2026-03-04-shopify-storefront-launch.md) - Critical - Operations and Coordination
+- [ops/2026-03-04-skill-corkscrew.md](ops/2026-03-04-skill-corkscrew.md) - Critical - Operations and Coordination
+- [ops/2026-03-05-code-to-profit-runbook.md](ops/2026-03-05-code-to-profit-runbook.md) - Critical - Operations and Coordination
+- [ops/2026-03-14-polly-pad-emulator-lane.md](ops/2026-03-14-polly-pad-emulator-lane.md) - Critical - Operations and Coordination
+- [ops/aetherpath_audit_latest.md](ops/aetherpath_audit_latest.md) - Critical - Operations and Coordination
+- [ops/connector_interoperability_matrix.md](ops/connector_interoperability_matrix.md) - Critical - Operations and Coordination
+- [ops/DAILY_SOCIAL_UPDATES.md](ops/DAILY_SOCIAL_UPDATES.md) - Critical - Operations and Coordination
+- [ops/FREE_COMPUTE_OPTIONS.md](ops/FREE_COMPUTE_OPTIONS.md) - Critical - Operations and Coordination
+- [ops/polly_cross_model_training_quickstart.md](ops/polly_cross_model_training_quickstart.md) - Critical - Operations and Coordination
+- [ops/polly_npc_roundtable_quickstart.md](ops/polly_npc_roundtable_quickstart.md) - Critical - Operations and Coordination
+- [ops/TERMINAL_AI_AUTOPILOT_SETUP.md](ops/TERMINAL_AI_AUTOPILOT_SETUP.md) - Critical - Operations and Coordination
+- [ops/terminal_ai_router_quickstart.md](ops/terminal_ai_router_quickstart.md) - Critical - Operations and Coordination
+- [paper/davis-2026-intent-modulated-governance.md](paper/davis-2026-intent-modulated-governance.md) - Important - Patent and Paper
+- [paper/davis-2026-phase-tunnel-gate.md](paper/davis-2026-phase-tunnel-gate.md) - Important - Patent and Paper
+- [PATENT_PROVISIONAL_ABSTRACT_BACKGROUND.md](PATENT_PROVISIONAL_ABSTRACT_BACKGROUND.md) - Important - General Root Docs
+- [patent/CIP_FILING_EXECUTION_PLAN_2026-03-06.md](patent/CIP_FILING_EXECUTION_PLAN_2026-03-06.md) - Important - Patent and Paper
+- [patent/CIP_TECHNICAL_SPECIFICATION.md](patent/CIP_TECHNICAL_SPECIFICATION.md) - Important - Patent and Paper
+- [patent/CLAIMS_INVENTORY.md](patent/CLAIMS_INVENTORY.md) - Important - Patent and Paper
+- [patent/CONTINUATION_CLAIMS_20260322.md](patent/CONTINUATION_CLAIMS_20260322.md) - Important - Patent and Paper
+- [patent/filing_kit/01-urgent/Combined_Filing_Package.pdf](patent/filing_kit/01-urgent/Combined_Filing_Package.pdf) - Important - Patent and Paper
+- [patent/filing_kit/01-urgent/Cover_Letter_Missing_Parts.pdf](patent/filing_kit/01-urgent/Cover_Letter_Missing_Parts.pdf) - Important - Patent and Paper
+- [patent/filing_kit/01-urgent/EMAIL_TO_MOM_SUBMISSION_TEMPLATE.txt](patent/filing_kit/01-urgent/EMAIL_TO_MOM_SUBMISSION_TEMPLATE.txt) - Important - Patent and Paper
+- [patent/filing_kit/01-urgent/FILING_PACKAGE_STATUS.md](patent/filing_kit/01-urgent/FILING_PACKAGE_STATUS.md) - Important - Patent and Paper
+- [patent/filing_kit/01-urgent/FILING_WALKTHROUGH.md](patent/filing_kit/01-urgent/FILING_WALKTHROUGH.md) - Important - Patent and Paper
+- [patent/filing_kit/01-urgent/PTO_SB_15A_MICRO_ENTITY_CERT.md](patent/filing_kit/01-urgent/PTO_SB_15A_MICRO_ENTITY_CERT.md) - Important - Patent and Paper
+- [patent/filing_kit/01-urgent/PTO_SB_15A_Micro_Entity_Certification.pdf](patent/filing_kit/01-urgent/PTO_SB_15A_Micro_Entity_Certification.pdf) - Important - Patent and Paper
+- [patent/filing_kit/01-urgent/PTO_SB_16_COVER_SHEET.md](patent/filing_kit/01-urgent/PTO_SB_16_COVER_SHEET.md) - Important - Patent and Paper
+- [patent/filing_kit/01-urgent/PTO_SB_16_Cover_Sheet.pdf](patent/filing_kit/01-urgent/PTO_SB_16_Cover_Sheet.pdf) - Important - Patent and Paper
+- [patent/filing_kit/01-urgent/USPTO_Filing_Package_Draft.eml](patent/filing_kit/01-urgent/USPTO_Filing_Package_Draft.eml) - Important - Patent and Paper
+- [patent/filing_kit/01-urgent/USPTO_Payment_Receipt_2026-03-17.pdf](patent/filing_kit/01-urgent/USPTO_Payment_Receipt_2026-03-17.pdf) - Important - Patent and Paper
+- [patent/PRIOR_ART_ANALYSIS.md](patent/PRIOR_ART_ANALYSIS.md) - Important - Patent and Paper
+- [patent/USPTO_QUICK_REFERENCE.md](patent/USPTO_QUICK_REFERENCE.md) - Important - Patent and Paper
+- [PHDM_BRAIN_ARCHITECTURE.md](PHDM_BRAIN_ARCHITECTURE.md) - Important - Core Governance and Math
+- [PHDM_NOMENCLATURE.md](PHDM_NOMENCLATURE.md) - Important - Core Governance and Math
+- [plans/2026-03-04-aetherbrowse-play-store-deploy.md](plans/2026-03-04-aetherbrowse-play-store-deploy.md) - Supporting - Agents, Browser, and Control Plane
+- [plans/2026-03-04-app-factory-thought-plan.md](plans/2026-03-04-app-factory-thought-plan.md) - Supporting - General Root Docs
+- [plans/2026-03-04-connector-closure-plan.md](plans/2026-03-04-connector-closure-plan.md) - Supporting - Agents, Browser, and Control Plane
+- [plans/2026-03-04-dual-side-loop-self-improvement.md](plans/2026-03-04-dual-side-loop-self-improvement.md) - Supporting - General Root Docs
+- [plans/2026-03-04-kindle-app-design.md](plans/2026-03-04-kindle-app-design.md) - Supporting - General Root Docs
+- [plans/2026-03-04-kindle-virtual-upload-research.md](plans/2026-03-04-kindle-virtual-upload-research.md) - Supporting - General Root Docs
+- [plans/2026-03-04-openclaw-terminal-1000-plan.md](plans/2026-03-04-openclaw-terminal-1000-plan.md) - Supporting - Agents, Browser, and Control Plane
+- [plans/2026-03-04-scbe-ops-control-design.md](plans/2026-03-04-scbe-ops-control-design.md) - Supporting - Core Governance and Math
+- [plans/2026-03-04-system-rename-organization-consolidation-plan.md](plans/2026-03-04-system-rename-organization-consolidation-plan.md) - Supporting - General Root Docs
+- [plans/2026-03-05-polyglot-translation-matrix-system.md](plans/2026-03-05-polyglot-translation-matrix-system.md) - Supporting - General Root Docs
+- [PLAYWRIGHT_BOTH_SIDE.md](PLAYWRIGHT_BOTH_SIDE.md) - Important - Agents, Browser, and Control Plane
+- [POLLY_CLAY_SQUAD.md](POLLY_CLAY_SQUAD.md) - Important - Agents, Browser, and Control Plane
+- [polly_pad_auditable_runtime.md](polly_pad_auditable_runtime.md) - Important - Agents, Browser, and Control Plane
+- [POLLY_PADS_ARCHITECTURE.md](POLLY_PADS_ARCHITECTURE.md) - Critical - Agents, Browser, and Control Plane
+- [PR247_PHASED_MERGE_PLAN_2026-02-22.md](PR247_PHASED_MERGE_PLAN_2026-02-22.md) - Important - General Root Docs
+- [product-manual/ai-governance-toolkit.html](product-manual/ai-governance-toolkit.html) - Important - Product Manuals
+- [product-manual/content-spin-engine.html](product-manual/content-spin-engine.html) - Important - Product Manuals
+- [product-manual/delivery-and-access.html](product-manual/delivery-and-access.html) - Important - Product Manuals
+- [product-manual/hydra-agent-templates.html](product-manual/hydra-agent-templates.html) - Important - Product Manuals
+- [product-manual/index.html](product-manual/index.html) - Important - Product Manuals
+- [product-manual/n8n-workflow-pack.html](product-manual/n8n-workflow-pack.html) - Important - Product Manuals
+- [product-manual/TABLE_OF_CONTENTS.md](product-manual/TABLE_OF_CONTENTS.md) - Important - Product Manuals
+- [product-manual/user-guide.html](product-manual/user-guide.html) - Important - Product Manuals
+- [product/LAUNCH_SKU.md](product/LAUNCH_SKU.md) - Important - Product Packaging
+- [product/SCBE_KERNEL_V1_API.md](product/SCBE_KERNEL_V1_API.md) - Important - Product Packaging
+- [products/ai-governance-starter-kit.md](products/ai-governance-starter-kit.md) - Important - Product Packaging
+- [products/gumroad-listing.md](products/gumroad-listing.md) - Important - Product Packaging
+- [PUBLISHING.md](PUBLISHING.md) - Important - Product, GTM, and Outreach
+- [qkd-integration.md](qkd-integration.md) - Important - General Root Docs
+- [QUASI_VECTOR_MAGNETICS.md](QUASI_VECTOR_MAGNETICS.md) - Important - General Root Docs
+- [QUICKSTART_MONETIZATION.md](QUICKSTART_MONETIZATION.md) - Important - Product, GTM, and Outreach
+- [README.md](README.md) - Critical - General Root Docs
+- [redteam.html](redteam.html) - Important - General Root Docs
+- [REMAINING_WORK.md](REMAINING_WORK.md) - Important - General Root Docs
+- [REPO_CONSOLIDATION.md](REPO_CONSOLIDATION.md) - Important - General Root Docs
+- [research/2026-03-04-kindle-dev-and-virtual-upload-brief.md](research/2026-03-04-kindle-dev-and-virtual-upload-brief.md) - Supporting - Research
+- [research/2026-03-05-aetherbrowse-improvement-brief.md](research/2026-03-05-aetherbrowse-improvement-brief.md) - Supporting - Research
+- [research/2026-03-05-context-capsule-loader.md](research/2026-03-05-context-capsule-loader.md) - Supporting - Research
+- [research/2026-03-05-library-wing-roundtable.md](research/2026-03-05-library-wing-roundtable.md) - Supporting - Research
+- [research/2026-03-05-open-source-connector-library.md](research/2026-03-05-open-source-connector-library.md) - Supporting - Research
+- [research/2026-03-13-l11-triadic-temporal-axiom-draft.md](research/2026-03-13-l11-triadic-temporal-axiom-draft.md) - Supporting - Research
+- [research/2026-03-15-arckit-dual-track.md](research/2026-03-15-arckit-dual-track.md) - Supporting - Research
+- [research/2026-03-15-ch01-book-panel-tandem-audit.md](research/2026-03-15-ch01-book-panel-tandem-audit.md) - Supporting - Research
+- [research/2026-03-15-phone-emulator-architecture-research.md](research/2026-03-15-phone-emulator-architecture-research.md) - Supporting - Research
+- [research/2026-03-15-scattercast-scbe-overlay-note.md](research/2026-03-15-scattercast-scbe-overlay-note.md) - Supporting - Research
+- [research/2026-03-16-game-ai-company-patterns.md](research/2026-03-16-game-ai-company-patterns.md) - Supporting - Research
+- [research/2026-03-16-phase-control-modulation-matrices.md](research/2026-03-16-phase-control-modulation-matrices.md) - Supporting - Research
+- [research/2026-03-17-aetherbrowser-extension-ownership-stack.md](research/2026-03-17-aetherbrowser-extension-ownership-stack.md) - Supporting - Research
+- [research/2026-03-17-global-agent-senses-choice-monitoring.md](research/2026-03-17-global-agent-senses-choice-monitoring.md) - Supporting - Research
+- [research/2026-03-18-adaptive-training-systems.md](research/2026-03-18-adaptive-training-systems.md) - Supporting - Research
+- [research/2026-03-18-free-compute-landscape.md](research/2026-03-18-free-compute-landscape.md) - Supporting - Research
+- [research/2026-03-18-tower-training-architecture.md](research/2026-03-18-tower-training-architecture.md) - Supporting - Research
+- [research/2026-03-21-synthetic-data-privacy-blueprint.md](research/2026-03-21-synthetic-data-privacy-blueprint.md) - Supporting - Research
+- [research/AETHERMOOR_SPIRAL_ENGINE_MVP.md](research/AETHERMOOR_SPIRAL_ENGINE_MVP.md) - Supporting - Research
+- [research/BENCHMARK_VERIFICATION_2026-03-23.md](research/BENCHMARK_VERIFICATION_2026-03-23.md) - Supporting - Research
+- [research/FREE_OPEN_MAPPING_STACK_RESEARCH_2026-03-25.md](research/FREE_OPEN_MAPPING_STACK_RESEARCH_2026-03-25.md) - Supporting - Research
+- [research/FULL_CODEBASE_RESEARCH_2026-03-23.md](research/FULL_CODEBASE_RESEARCH_2026-03-23.md) - Supporting - Research
+- [research/hsm-source-code-review.md](research/hsm-source-code-review.md) - Supporting - Research
+- [research/index.html](research/index.html) - Supporting - Research
+- [research/layer-coupling.html](research/layer-coupling.html) - Supporting - Research
+- [research/math-flow.html](research/math-flow.html) - Supporting - Research
+- [research/MULTI_MODEL_MODAL_MATRIX.md](research/MULTI_MODEL_MODAL_MATRIX.md) - Supporting - Research
+- [research/MULTIMODAL_MATRIX_TRAINING.md](research/MULTIMODAL_MATRIX_TRAINING.md) - Supporting - Research
+- [research/null-space-tongue-signatures.html](research/null-space-tongue-signatures.html) - Supporting - Research
+- [research/QUASI_VECTOR_SPIN_VOXELS.md](research/QUASI_VECTOR_SPIN_VOXELS.md) - Supporting - Research
+- [research/QUASI_VOXEL_TERNARY_STORAGE.md](research/QUASI_VOXEL_TERNARY_STORAGE.md) - Supporting - Research
+- [research/README.md](research/README.md) - Supporting - Research
+- [research/ROME_INCIDENT_RESPONSE.md](research/ROME_INCIDENT_RESPONSE.md) - Supporting - Research
+- [research/SHEAF_CONSENSUS_GATE.md](research/SHEAF_CONSENSUS_GATE.md) - Supporting - Research
+- [research/SIGNED_MULTIPLANE_ENCODING.md](research/SIGNED_MULTIPLANE_ENCODING.md) - Supporting - Research
+- [research/SWLE_semantic_weighted_letter_encoding.md](research/SWLE_semantic_weighted_letter_encoding.md) - Supporting - Research
+- [research/SWLE_V0_DATASET_AND_BENCHMARK.md](research/SWLE_V0_DATASET_AND_BENCHMARK.md) - Supporting - Research
+- [research/trajectory.html](research/trajectory.html) - Supporting - Research
+- [research/verification.html](research/verification.html) - Supporting - Research
+- [REVENUE_PLAN_90_DAYS.md](REVENUE_PLAN_90_DAYS.md) - Important - Product, GTM, and Outreach
+- [robots.txt](robots.txt) - Important - General Root Docs
+- [ROM_EMULATOR_COLAB.md](ROM_EMULATOR_COLAB.md) - Important - General Root Docs
+- [ROM_OBSIDIAN_EXECUTION_PLAN_2026-02-24.md](ROM_OBSIDIAN_EXECUTION_PLAN_2026-02-24.md) - Important - Agents, Browser, and Control Plane
+- [RUNBOOK.md](RUNBOOK.md) - Critical - Narrative and Creative
+- [SACRED_TONGUE_SPECTRAL_MAP.md](SACRED_TONGUE_SPECTRAL_MAP.md) - Important - Core Governance and Math
+- [sacred-tongue-tutorials.md](sacred-tongue-tutorials.md) - Important - Core Governance and Math
+- [SAFE_EXTENSION_GATE.md](SAFE_EXTENSION_GATE.md) - Important - General Root Docs
+- [SCBE_AETHERMOORE_TECH_DECK_V5_COMPLETE.md](SCBE_AETHERMOORE_TECH_DECK_V5_COMPLETE.md) - Important - Core Governance and Math
+- [SCBE_COMPLETE_SYSTEM.md](SCBE_COMPLETE_SYSTEM.md) - Critical - Core Governance and Math
+- [SCBE_CONTEXT_AETHERBROWSE_AGENT.md](SCBE_CONTEXT_AETHERBROWSE_AGENT.md) - Important - Core Governance and Math
+- [scbe_full_system_layer_manifest.json](scbe_full_system_layer_manifest.json) - Important - Core Governance and Math
+- [scbe_full_system_layer_manifest.schema.json](scbe_full_system_layer_manifest.schema.json) - Important - Core Governance and Math
+- [SCBE_FULL_SYSTEM_LAYER_MAP.md](SCBE_FULL_SYSTEM_LAYER_MAP.md) - Critical - Core Governance and Math
+- [SCBE_HYDRA_TARSKI_SHEAF.md](SCBE_HYDRA_TARSKI_SHEAF.md) - Important - Core Governance and Math
+- [SCBE_SELF_IMPROVEMENT_LOOP_2026-02-17.md](SCBE_SELF_IMPROVEMENT_LOOP_2026-02-17.md) - Important - Core Governance and Math
+- [SCBE_SYSTEM_CLI.md](SCBE_SYSTEM_CLI.md) - Important - Core Governance and Math
+- [SCBE_TECH_DECK_V5.md](SCBE_TECH_DECK_V5.md) - Important - Core Governance and Math
+- [SCBE_TOPOLOGICAL_CFI_UNIFIED.md](SCBE_TOPOLOGICAL_CFI_UNIFIED.md) - Important - Core Governance and Math
+- [SCBE_WEB_AGENT_ARCHITECTURE.md](SCBE_WEB_AGENT_ARCHITECTURE.md) - Important - Core Governance and Math
+- [scbe-knowledge-v4.aetherbrowse.yaml](scbe-knowledge-v4.aetherbrowse.yaml) - Important - Core Governance and Math
+- [security/2026-03-17-browser-sandbox-advisory.md](security/2026-03-17-browser-sandbox-advisory.md) - Critical - Security
+- [security/AETHER_ANTIVIRUS.md](security/AETHER_ANTIVIRUS.md) - Critical - Security
+- [security/SCBE_ADVERSARIAL_ATTACK_SUITE_DESIGN.md](security/SCBE_ADVERSARIAL_ATTACK_SUITE_DESIGN.md) - Critical - Security
+- [SELF_IMPROVEMENT_AGENTS.md](SELF_IMPROVEMENT_AGENTS.md) - Important - Agents, Browser, and Control Plane
+- [SEMANTIC_MESH_230.md](SEMANTIC_MESH_230.md) - Important - General Root Docs
+- [shopify-headless-workflow.md](shopify-headless-workflow.md) - Important - Product, GTM, and Outreach
+- [sitemap.xml](sitemap.xml) - Important - General Root Docs
+- [SIX_TONGUES_CLI.md](SIX_TONGUES_CLI.md) - Important - General Root Docs
+- [six-tongues-protocol-spaceflight.md](six-tongues-protocol-spaceflight.md) - Important - General Root Docs
+- [six-tongues-protocol-story.md](six-tongues-protocol-story.md) - Important - Narrative and Creative
+- [SPACE_DEBRIS_FLEET.md](SPACE_DEBRIS_FLEET.md) - Important - General Root Docs
+- [specs/AETHER_REALTIME_VOICE_CALL_OPTIONS.md](specs/AETHER_REALTIME_VOICE_CALL_OPTIONS.md) - Important - Specifications
+- [specs/AETHERBROWSER_COMPETITIVE_GOAL.md](specs/AETHERBROWSER_COMPETITIVE_GOAL.md) - Important - Specifications
+- [specs/AETHERBROWSER_CONFIG.md](specs/AETHERBROWSER_CONFIG.md) - Important - Specifications
+- [specs/AETHERBROWSER_GOVERNED_WEB_MCP_PHASE_C.md](specs/AETHERBROWSER_GOVERNED_WEB_MCP_PHASE_C.md) - Important - Specifications
+- [specs/AETHERBROWSER_PERPLEXITY_CONNECTOR.md](specs/AETHERBROWSER_PERPLEXITY_CONNECTOR.md) - Important - Specifications
+- [specs/aetherbrowser_search_mesh.md](specs/aetherbrowser_search_mesh.md) - Important - Specifications
+- [specs/DECISION_ENVELOPE_V1.md](specs/DECISION_ENVELOPE_V1.md) - Important - Specifications
+- [specs/FULL_PIPELINE_LOAD_TEST_SPEC_2026-03-24.md](specs/FULL_PIPELINE_LOAD_TEST_SPEC_2026-03-24.md) - Important - Specifications
+- [specs/HF_TRAINING_CURRICULUM_MAP_2026-03-24.md](specs/HF_TRAINING_CURRICULUM_MAP_2026-03-24.md) - Important - Specifications
+- [specs/hf_training_lane_for_scbe_agents.md](specs/hf_training_lane_for_scbe_agents.md) - Important - Specifications
+- [specs/HYDRA_PARALLEL_BROWSER_COMMS_LATTICE.md](specs/HYDRA_PARALLEL_BROWSER_COMMS_LATTICE.md) - Important - Specifications
+- [specs/INTEGRATIONS.md](specs/INTEGRATIONS.md) - Important - Specifications
+- [specs/MEDICAL_NANOBOT_SWARMS.md](specs/MEDICAL_NANOBOT_SWARMS.md) - Important - Specifications
+- [specs/patent/MASTER_PATENT_DOCUMENT.md](specs/patent/MASTER_PATENT_DOCUMENT.md) - Important - Specifications
+- [specs/patent/RESEARCH_PATENT_ANALYSIS.md](specs/patent/RESEARCH_PATENT_ANALYSIS.md) - Important - Specifications
+- [specs/POLLY_CHAT_MODEL_BLUEPRINT_2026-03-24.md](specs/POLLY_CHAT_MODEL_BLUEPRINT_2026-03-24.md) - Important - Specifications
+- [specs/polyhedral_workflow_mesh.md](specs/polyhedral_workflow_mesh.md) - Important - Specifications
+- [specs/PROTON_MAIL_BRIDGE_AI_WORKFLOW_2026-03-24.md](specs/PROTON_MAIL_BRIDGE_AI_WORKFLOW_2026-03-24.md) - Important - Specifications
+- [specs/RESONANCE_GATE_SPEC.md](specs/RESONANCE_GATE_SPEC.md) - Important - Specifications
+- [specs/SACRED_TONGUE_INTEROP_MATRIX.md](specs/SACRED_TONGUE_INTEROP_MATRIX.md) - Important - Specifications
+- [specs/SCBE_AUDIO_GATE_SPECTRUM_EXPERIMENT.md](specs/SCBE_AUDIO_GATE_SPECTRUM_EXPERIMENT.md) - Important - Specifications
+- [specs/SCBE_MASTER_2026_001_CONSOLIDATED_SUBMISSION_NOTES_2026_02_19.md](specs/SCBE_MASTER_2026_001_CONSOLIDATED_SUBMISSION_NOTES_2026_02_19.md) - Important - Specifications
+- [specs/SCBE_VOICE_EMOTIONAL_TIMBRE_SYSTEM.md](specs/SCBE_VOICE_EMOTIONAL_TIMBRE_SYSTEM.md) - Important - Specifications
+- [specs/SPACE_DEBRIS_FLEET.md](specs/SPACE_DEBRIS_FLEET.md) - Important - Specifications
+- [specs/SPIRALVERSE_CANONICAL_LINGUISTIC_CODEX_V1.md](specs/SPIRALVERSE_CANONICAL_LINGUISTIC_CODEX_V1.md) - Important - Specifications
+- [specs/spiralverse_canonical_registry.v1.json](specs/spiralverse_canonical_registry.v1.json) - Important - Specifications
+- [specs/SPIRALVERSE_PROTOCOL_RWP_V3_0_ALPHA_QUANTUM_RESISTANT_ARCHITECTURE.md](specs/SPIRALVERSE_PROTOCOL_RWP_V3_0_ALPHA_QUANTUM_RESISTANT_ARCHITECTURE.md) - Important - Specifications
+- [specs/STATE_MANIFOLD_21D_PRODUCT_METRIC.md](specs/STATE_MANIFOLD_21D_PRODUCT_METRIC.md) - Important - Specifications
+- [specs/SWARM_TELEMETRY_NOTION_MAP_2026-03-24.md](specs/SWARM_TELEMETRY_NOTION_MAP_2026-03-24.md) - Important - Specifications
+- [specs/SYSTEM_BLUEPRINT_v1_ORIGINAL_2026-01-18.md](specs/SYSTEM_BLUEPRINT_v1_ORIGINAL_2026-01-18.md) - Important - Specifications
+- [specs/SYSTEM_BLUEPRINT_v2_CURRENT.md](specs/SYSTEM_BLUEPRINT_v2_CURRENT.md) - Important - Specifications
+- [specs/WEBTOON_CH01_VISUAL_MEMORY_PACKET.md](specs/WEBTOON_CH01_VISUAL_MEMORY_PACKET.md) - Important - Specifications
+- [specs/WEBTOON_IMAGE_CONSISTENCY_SYSTEM.md](specs/WEBTOON_IMAGE_CONSISTENCY_SYSTEM.md) - Important - Specifications
+- [specs/WEBTOON_REFERENCE_CHAPTER_WORKFLOW.md](specs/WEBTOON_REFERENCE_CHAPTER_WORKFLOW.md) - Important - Specifications
+- [SPIRAL_FORGE_GDD.md](SPIRAL_FORGE_GDD.md) - Important - General Root Docs
+- [SPIRALVERSE_CODEX.md](SPIRALVERSE_CODEX.md) - Important - Core Governance and Math
+- [SPIRALVERSE_GAME_DESIGN_BIBLE.md](SPIRALVERSE_GAME_DESIGN_BIBLE.md) - Important - Core Governance and Math
+- [SS1_TOKENIZER_PROTOCOL.md](SS1_TOKENIZER_PROTOCOL.md) - Important - General Root Docs
+- [ST_ISA_V0.md](ST_ISA_V0.md) - Important - General Root Docs
+- [START_HERE_AETHERMOORE.md](START_HERE_AETHERMOORE.md) - Critical - General Root Docs
+- [STRATEGIC_REVIEW_20260322.md](STRATEGIC_REVIEW_20260322.md) - Important - General Root Docs
+- [STVM_EXECUTION_MODEL.md](STVM_EXECUTION_MODEL.md) - Important - General Root Docs
+- [superpowers/specs/2026-03-15-beat-expansion-pipeline-design.md](superpowers/specs/2026-03-15-beat-expansion-pipeline-design.md) - Important - General Root Docs
+- [support.html](support.html) - Important - General Root Docs
+- [SWARM_CODER_ONEPAGER.md](SWARM_CODER_ONEPAGER.md) - Important - General Root Docs
+- [SWARM_FORMATIONS.md](SWARM_FORMATIONS.md) - Important - General Root Docs
+- [SYSTEM_ACCESS_AUDIT_2026-02-22.md](SYSTEM_ACCESS_AUDIT_2026-02-22.md) - Important - General Root Docs
+- [SYSTEM_ANATOMY.md](SYSTEM_ANATOMY.md) - Critical - General Root Docs
+- [SYSTEM_COMPLETION_MASTER_PLAN_2026-02-22.md](SYSTEM_COMPLETION_MASTER_PLAN_2026-02-22.md) - Important - General Root Docs
+- [SYSTEM_CONNECTOR_HUB.md](SYSTEM_CONNECTOR_HUB.md) - Important - Agents, Browser, and Control Plane
+- [system/CANONICAL_NAMING_HYDRA_ARMOR_OCTOARMOR_AETHER_ANTIVIRUS.md](system/CANONICAL_NAMING_HYDRA_ARMOR_OCTOARMOR_AETHER_ANTIVIRUS.md) - Critical - Operations and Coordination
+- [system/CROSSTALK_RELIABILITY_RUNBOOK.md](system/CROSSTALK_RELIABILITY_RUNBOOK.md) - Critical - Operations and Coordination
+- [system/NOTEBOOKLM_CONNECTOR.md](system/NOTEBOOKLM_CONNECTOR.md) - Critical - Operations and Coordination
+- [system/SMALL_AGENT_REFERENCE_CENTER.md](system/SMALL_AGENT_REFERENCE_CENTER.md) - Critical - Operations and Coordination
+- [TAX_EXPENSE_TRACKER_2026.csv](TAX_EXPENSE_TRACKER_2026.csv) - Important - General Root Docs
+- [TAX_NOTES.md](TAX_NOTES.md) - Important - General Root Docs
+- [TECHNICAL_REFERENCE.md](TECHNICAL_REFERENCE.md) - Important - Core Governance and Math
+- [TERMINAL_OPS_QUICKSTART.md](TERMINAL_OPS_QUICKSTART.md) - Critical - Agents, Browser, and Control Plane
+- [test-audit-report-2026-01-20.md](test-audit-report-2026-01-20.md) - Important - General Root Docs
+- [TIERED_SUBAGENT_ARCHITECTURE.md](TIERED_SUBAGENT_ARCHITECTURE.md) - Important - Agents, Browser, and Control Plane
+- [TOMORROW_CODE_PRISM_2026-02-22.md](TOMORROW_CODE_PRISM_2026-02-22.md) - Important - General Root Docs
+- [UNIFIED_SYSTEM_REPORT.md](UNIFIED_SYSTEM_REPORT.md) - Important - General Root Docs
+- [UNITY_VISUALIZATION_STRATEGY.md](UNITY_VISUALIZATION_STRATEGY.md) - Important - General Root Docs
+- [VOXEL_GOVERNANCE_SIM.md](VOXEL_GOVERNANCE_SIM.md) - Important - General Root Docs
+- [WEB_CURSOR_PR_MERGE.md](WEB_CURSOR_PR_MERGE.md) - Important - General Root Docs
+- [WEB_RESEARCH_TRAINING_PIPELINE.md](WEB_RESEARCH_TRAINING_PIPELINE.md) - Important - General Root Docs
+- [WORKFLOW_VECTOR_Z.md](WORKFLOW_VECTOR_Z.md) - Important - General Root Docs
+- [WORLDFORGE_TEMPLATE.md](WORLDFORGE_TEMPLATE.md) - Important - Narrative and Creative
+- [ZAPIER_SCBE_AUTOMATION.md](ZAPIER_SCBE_AUTOMATION.md) - Important - Core Governance and Math
+

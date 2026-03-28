@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Red Team Sandbox — SCBE-AETHERMOORE</title>
+<meta name="description" content="Test your AI against 91 adversarial attacks across 10 categories. $1 for 60 minutes of access. Patent-pending geometric detection. 0/15 clean false positives in the current public suite.">
+<meta property="og:title" content="Red Team Sandbox — SCBE-AETHERMOORE">
+<meta property="og:description" content="91 attacks blocked. 0/15 clean false positives. Beat ProtectAI DeBERTa v2. Try it for $1.">
+<meta property="og:url" content="https://issdandavis.github.io/SCBE-AETHERMOORE/redteam.html">
+<link rel="canonical" href="https://issdandavis.github.io/SCBE-AETHERMOORE/redteam.html">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a1a;color:#e2e2e2;line-height:1.7}
+a{color:#7b8cff;text-decoration:none}
+a:hover{text-decoration:underline}
+.container{max-width:800px;margin:0 auto;padding:32px 20px}
+.nav{display:flex;gap:16px;margin-bottom:32px;font-size:14px;flex-wrap:wrap}
+h1{font-size:36px;margin-bottom:8px}
+.subtitle{color:#888;font-size:18px;margin-bottom:32px}
+.hero-stat{display:flex;gap:24px;flex-wrap:wrap;margin:24px 0}
+.stat-big{text-align:center;flex:1;min-width:120px}
+.stat-big .num{font-size:48px;font-weight:800;font-family:monospace}
+.stat-big .label{font-size:13px;color:#888;text-transform:uppercase;letter-spacing:1px}
+.green{color:#2ecc71}.red{color:#e74c3c}.purple{color:#6c5ce7}.gold{color:#f1c40f}
+
+.comparison{width:100%;border-collapse:collapse;margin:24px 0}
+.comparison th{padding:12px 16px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#6c5ce7;border-bottom:2px solid #1a1a3e}
+.comparison td{padding:12px 16px;border-bottom:1px solid #1a1a3e;font-size:15px}
+.comparison tr.winner{background:rgba(108,92,231,0.08)}
+.comparison tr.winner td{font-weight:700;color:#fff}
+
+.pricing-box{background:linear-gradient(135deg,#12122e,#1a1a3e);border:2px solid #6c5ce7;border-radius:16px;padding:40px;text-align:center;margin:32px 0}
+.pricing-box .price{font-size:64px;font-weight:800;color:#6c5ce7}
+.pricing-box .period{font-size:18px;color:#888}
+.pricing-box .features{list-style:none;margin:24px 0;text-align:left;max-width:400px;margin-left:auto;margin-right:auto}
+.pricing-box .features li{padding:8px 0;border-bottom:1px solid #1a1a3e;font-size:15px}
+.pricing-box .features li::before{content:'\\2713';color:#2ecc71;margin-right:10px;font-weight:700}
+.btn-big{display:inline-block;background:#6c5ce7;color:#fff;padding:16px 48px;border-radius:12px;font-size:18px;font-weight:700;text-decoration:none;transition:background 0.3s}
+.btn-big:hover{background:#5a4bd1;text-decoration:none}
+
+.categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:24px 0}
+.cat-card{background:#12122e;border:1px solid #1a1a3e;border-radius:8px;padding:16px}
+.cat-card h4{font-size:14px;margin-bottom:4px}
+.cat-card .count{font-family:monospace;color:#6c5ce7}
+.cat-card p{font-size:12px;color:#888}
+
+.unique-section{background:#0d0d22;border:1px solid #1a1a3e;border-radius:12px;padding:24px;margin:24px 0}
+.unique-section h3{color:#a29bfe;margin-bottom:12px}
+.unique-item{margin:12px 0;padding-left:16px;border-left:3px solid #6c5ce7}
+.unique-item h4{font-size:15px;margin-bottom:4px}
+.unique-item p{font-size:13px;color:#888}
+
+.cta-bottom{text-align:center;padding:48px 0}
+.info{background:#12122e;border-left:3px solid #6c5ce7;padding:16px;border-radius:0 8px 8px 0;margin:24px 0;font-size:14px;color:#aaa;line-height:1.6}
+footer{border-top:1px solid #1a1a3e;padding:32px;text-align:center;color:#555;font-size:13px;margin-top:48px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="nav">
+    <a href="index.html">Home</a>
+    <a href="demos/index.html">Demos</a>
+    <a href="product-manual/index.html">Manuals</a>
+    <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
+    <a href="https://huggingface.co/datasets/issdandavis/scbe-red-team-benchmarks">HuggingFace</a>
+  </div>
+
+  <h1>Red Team Sandbox</h1>
+  <p class="subtitle">Test your AI security against 91 adversarial attacks. See exactly where it fails.</p>
+
+  <div class="hero-stat">
+    <div class="stat-big"><div class="num green">91/91</div><div class="label">Attacks Blocked</div></div>
+    <div class="stat-big"><div class="num green">0/15</div><div class="label">Clean False Positives</div></div>
+    <div class="stat-big"><div class="num purple">10</div><div class="label">Attack Categories</div></div>
+    <div class="stat-big"><div class="num gold">14</div><div class="label">Security Layers</div></div>
+  </div>
+
+  <h2 style="margin-top:32px;">Head-to-Head Benchmark</h2>
+  <table class="comparison">
+    <thead>
+      <tr><th>System</th><th>Blocked</th><th>ASR</th><th>False Positives</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>No Protection</td><td>0/91</td><td style="color:#e74c3c">100%</td><td>0</td></tr>
+      <tr><td>Meta Prompt Guard</td><td>15/91</td><td style="color:#e74c3c">83.5%</td><td>?</td></tr>
+      <tr><td>Keyword Filter</td><td>27/91</td><td style="color:#e67e22">70.3%</td><td>High</td></tr>
+      <tr><td>ProtectAI DeBERTa v2 (411K downloads)</td><td>62/91</td><td style="color:#f1c40f">31.9%</td><td>?</td></tr>
+      <tr class="winner"><td>SCBE-AETHERMOORE</td><td style="color:#2ecc71">91/91</td><td style="color:#2ecc71">0.0%</td><td style="color:#2ecc71">0/15 clean</td></tr>
+    </tbody>
+  </table>
+
+  <h2 style="margin-top:32px;">10 Attack Categories</h2>
+  <div class="categories">
+    <div class="cat-card"><h4>Direct Override</h4><div class="count">10/10 blocked</div><p>"Ignore previous instructions"</p></div>
+    <div class="cat-card"><h4>Indirect Injection</h4><div class="count">10/10 blocked</div><p>Hidden instructions in context</p></div>
+    <div class="cat-card"><h4>Encoding Obfuscation</h4><div class="count">10/10 blocked</div><p>Base64, rot13, hex payloads</p></div>
+    <div class="cat-card"><h4>Multilingual</h4><div class="count">10/10 blocked</div><p>Cross-language attack vectors</p></div>
+    <div class="cat-card"><h4>Adaptive Sequences</h4><div class="count">11/11 blocked</div><p>Escalating multi-turn attacks</p></div>
+    <div class="cat-card"><h4>Tool Exfiltration</h4><div class="count">10/10 blocked</div><p>API key/credential extraction</p></div>
+    <div class="cat-card"><h4>Tongue Manipulation</h4><div class="count">10/10 blocked</div><p>Sacred Tongue spoofing</p></div>
+    <div class="cat-card"><h4>Spin Drift</h4><div class="count">10/10 blocked</div><p>Gradual trust erosion</p></div>
+    <div class="cat-card"><h4>Boundary Exploits</h4><div class="count">5/5 blocked</div><p>Edge-case geometry attacks</p></div>
+    <div class="cat-card"><h4>Combined Multi-Vector</h4><div class="count">5/5 blocked</div><p>Simultaneous attack types</p></div>
+  </div>
+
+  <div class="unique-section">
+    <h3>Detection Methods Nobody Else Has</h3>
+    <div class="unique-item">
+      <h4>Null Space Attack Fingerprinting</h4>
+      <p>Attacks are identified by which tongue dimensions are ABSENT, not present. Encoding attacks only activate RU (math). Tool exfiltration only activates RU+CA. The silence is the signal.</p>
+    </div>
+    <div class="unique-item">
+      <h4>Session Suspicion Accumulation</h4>
+      <p>Most detectors are stateless. Ours tracks suspicion across sequential prompts. Rapid-fire probing costs exponentially more. A bot blasting 10 injections per second defeats itself.</p>
+    </div>
+    <div class="unique-item">
+      <h4>Triple-Weight Remainder</h4>
+      <p>Three independent scoring methods (phi/moon/foam) process the same input. When they disagree, the disagreement IS the signal. Catches 13 attacks the primary detector misses.</p>
+    </div>
+    <div class="unique-item">
+      <h4>Hyperbolic Cost Scaling</h4>
+      <p>H(d,R) = R^(d^2). Adversarial behavior costs exponentially more. At the boundary, attacks become computationally infeasible. Not blocked by rules — blocked by geometry.</p>
+    </div>
+  </div>
+
+  <div class="pricing-box">
+    <div class="price">$1</div>
+    <div class="period">60 minutes of full access</div>
+    <ul class="features">
+      <li>Run all 91 attacks against the live system</li>
+      <li>See per-layer scores for each attack</li>
+      <li>Test your own custom prompts</li>
+      <li>Export results as JSON</li>
+      <li>Compare against ProtectAI baseline</li>
+      <li>Full null space signature analysis</li>
+    </ul>
+    <a href="https://buy.stripe.com/test_sandbox_redteam" class="btn-big">Start Red Team Session</a>
+    <p style="margin-top:12px;font-size:13px;color:#555">Or run it yourself for free: <code>pip install scbe-aethermoore && python -m pytest tests/adversarial/ -v</code></p>
+  </div>
+
+  <div class="info">
+    <strong>What happens after payment:</strong> You get a time-limited link to a hosted sandbox running the full SCBE test suite.
+    Type any prompt, see all 14 layers evaluate it, get the full score breakdown.
+    After 60 minutes, the session expires. No subscription, no recurring charge.
+    <br><br>
+    <strong>Or run it free:</strong> The entire test suite is open source. Install it, run it locally, verify every claim yourself.
+    The $1 is for people who want the hosted version without setting up Python.
+    <br><br>
+    <strong>Dataset:</strong> <a href="https://huggingface.co/datasets/issdandavis/scbe-red-team-benchmarks">huggingface.co/datasets/issdandavis/scbe-red-team-benchmarks</a>
+    <br>
+    <strong>Patent:</strong> USPTO #63/961,403 (provisional)
+    <br>
+    <strong>Author:</strong> Issac Daniel Davis (ORCID: 0009-0002-3936-9369)
+  </div>
+
+  <div class="cta-bottom">
+    <p style="color:#888;margin-bottom:16px;">Also available</p>
+    <a href="demos/index.html" style="margin:0 8px">Try 14 Free Demos</a> |
+    <a href="https://a.co/d/024VowjS" style="margin:0 8px">Read the Novel ($4.99)</a> |
+    <a href="index.html#government" style="margin:0 8px">Enterprise Evaluation (Free)</a>
+  </div>
+</div>
+
+<footer>
+  Built by <a href="https://github.com/issdandavis">Issac Daniel Davis</a> | Port Angeles, WA
+  <br>USPTO #63/961,403 | ORCID 0009-0002-3936-9369
+</footer>
+</body>
+</html>

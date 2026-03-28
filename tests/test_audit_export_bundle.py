@@ -1,6 +1,10 @@
 """Tests for signed audit export bundles."""
 
-from api.audit_export import build_signed_bundle, filter_records_by_range, verify_manifest
+from api.audit_export import (
+    build_signed_bundle,
+    filter_records_by_range,
+    verify_manifest,
+)
 
 
 def test_signed_bundle_and_manifest_verification_roundtrip():

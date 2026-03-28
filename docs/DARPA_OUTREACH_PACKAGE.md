@@ -75,7 +75,7 @@ I've developed a swarm coordination system that operates without RF communicatio
 
 **Capability Summary:**
 - Jam-resistant: Works under full RF denial
-- Rogue detection: Mathematical anomaly detection, 0 false positives
+- Rogue detection: Mathematical anomaly detection, 0/15 clean false positives on the current public suite
 - Decentralized: No single point of failure
 - Proven: 950 tests passing, simulation-validated
 

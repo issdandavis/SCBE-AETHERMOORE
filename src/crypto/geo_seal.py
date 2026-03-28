@@ -549,7 +549,10 @@ def create_tongue_agents(dimension: int = 64) -> List[SwarmAgent]:
 
 
 def create_candidate_agent(
-    agent_id: str, embedding: np.ndarray, assigned_tongue: Optional[str] = None, initial_trust: float = 0.5
+    agent_id: str,
+    embedding: np.ndarray,
+    assigned_tongue: Optional[str] = None,
+    initial_trust: float = 0.5,
 ) -> SwarmAgent:
     """
     Create a candidate agent for immune evaluation.
@@ -564,7 +567,13 @@ def create_candidate_agent(
     if norm >= 1.0:
         embedding = embedding / (norm + 1e-6) * 0.95
 
-    return SwarmAgent(id=agent_id, position=embedding, phase=phase, tongue=assigned_tongue, trust_score=initial_trust)
+    return SwarmAgent(
+        id=agent_id,
+        position=embedding,
+        phase=phase,
+        tongue=assigned_tongue,
+        trust_score=initial_trust,
+    )
 
 
 def filter_by_trust(agents: List[SwarmAgent], threshold: float = 0.3) -> List[SwarmAgent]:
@@ -759,7 +768,13 @@ def oscillating_tongue_agents(time: float, dimension: int = 64, oscillation_freq
         position = spherical_nodal_position(base_phase, time, oscillation_freq, dimension)
 
         agents.append(
-            SwarmAgent(id=f"tongue-{tongue}", position=position, phase=base_phase, tongue=tongue, trust_score=1.0)
+            SwarmAgent(
+                id=f"tongue-{tongue}",
+                position=position,
+                phase=base_phase,
+                tongue=tongue,
+                trust_score=1.0,
+            )
         )
 
     return agents

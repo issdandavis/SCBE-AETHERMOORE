@@ -49,13 +49,71 @@ _VISUAL_INTENTS = {TaskIntent.VERIFY}
 _COMBINED_INTENTS = {TaskIntent.RESEARCH, TaskIntent.TRAIN}
 
 # Keywords for intent detection
-_SCRAPE_KEYWORDS = {"scrape", "extract", "crawl", "harvest", "pull", "fetch", "download", "bulk", "parallel", "batch"}
-_INTERACT_KEYWORDS = {"click", "fill", "type", "submit", "login", "form", "navigate", "open", "tab", "upload"}
-_VERIFY_KEYWORDS = {"check", "verify", "look", "screenshot", "visual", "inspect", "compare", "review"}
-_POST_KEYWORDS = {"post", "publish", "tweet", "comment", "send", "upload", "share", "announce"}
+_SCRAPE_KEYWORDS = {
+    "scrape",
+    "extract",
+    "crawl",
+    "harvest",
+    "pull",
+    "fetch",
+    "download",
+    "bulk",
+    "parallel",
+    "batch",
+}
+_INTERACT_KEYWORDS = {
+    "click",
+    "fill",
+    "type",
+    "submit",
+    "login",
+    "form",
+    "navigate",
+    "open",
+    "tab",
+    "upload",
+}
+_VERIFY_KEYWORDS = {
+    "check",
+    "verify",
+    "look",
+    "screenshot",
+    "visual",
+    "inspect",
+    "compare",
+    "review",
+}
+_POST_KEYWORDS = {
+    "post",
+    "publish",
+    "tweet",
+    "comment",
+    "send",
+    "upload",
+    "share",
+    "announce",
+}
 _MONITOR_KEYWORDS = {"watch", "monitor", "poll", "track", "alert", "notify", "wait for"}
-_RESEARCH_KEYWORDS = {"research", "search", "find", "discover", "analyze", "summarize", "learn", "read"}
-_TRAIN_KEYWORDS = {"train", "learn", "shadow", "capture", "record", "log", "sft", "dataset"}
+_RESEARCH_KEYWORDS = {
+    "research",
+    "search",
+    "find",
+    "discover",
+    "analyze",
+    "summarize",
+    "learn",
+    "read",
+}
+_TRAIN_KEYWORDS = {
+    "train",
+    "learn",
+    "shadow",
+    "capture",
+    "record",
+    "log",
+    "sft",
+    "dataset",
+}
 
 
 @dataclass
@@ -417,9 +475,14 @@ class TriLaneRouter:
                 {
                     "success": result.success,
                     "lane_results": [
-                        {"lane": r.lane.value, "success": r.success, "actions": r.actions_taken} for r in result.results
+                        {
+                            "lane": r.lane.value,
+                            "success": r.success,
+                            "actions": r.actions_taken,
+                        }
+                        for r in result.results
                     ],
-                    "governance": result.plan.get("review_zone") if result.plan else None,
+                    "governance": (result.plan.get("review_zone") if result.plan else None),
                 }
             ),
             "label": f"browser_routing_{result.intent.value}",

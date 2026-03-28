@@ -156,9 +156,21 @@ def _invert_3x3(m: List[List[float]]) -> List[List[float]]:
 
     inv_det = 1.0 / det
     return [
-        [(e * k - f * h) * inv_det, (c * h - b * k) * inv_det, (b * f - c * e) * inv_det],
-        [(f * g - d * k) * inv_det, (a * k - c * g) * inv_det, (c * d - a * f) * inv_det],
-        [(d * h - e * g) * inv_det, (b * g - a * h) * inv_det, (a * e - b * d) * inv_det],
+        [
+            (e * k - f * h) * inv_det,
+            (c * h - b * k) * inv_det,
+            (b * f - c * e) * inv_det,
+        ],
+        [
+            (f * g - d * k) * inv_det,
+            (a * k - c * g) * inv_det,
+            (c * d - a * f) * inv_det,
+        ],
+        [
+            (d * h - e * g) * inv_det,
+            (b * g - a * h) * inv_det,
+            (a * e - b * d) * inv_det,
+        ],
     ]
 
 

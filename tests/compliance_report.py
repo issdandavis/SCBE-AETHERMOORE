@@ -2188,7 +2188,7 @@ class ComplianceReportGenerator:
 
 """
         categories = {}
-        for test_id, mapping in self.mappings.items():
+        for _test_id, mapping in self.mappings.items():
             cat = mapping.category or "Uncategorized"
             if cat not in categories:
                 categories[cat] = []

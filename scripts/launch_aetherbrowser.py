@@ -172,7 +172,7 @@ def main():
 
     # 3. Check health
     healthy = False
-    for attempt in range(5):
+    for _attempt in range(5):
         if check_server(args.port):
             healthy = True
             break

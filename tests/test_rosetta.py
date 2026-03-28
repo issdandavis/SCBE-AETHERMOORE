@@ -383,7 +383,10 @@ class TestDEDE:
     def test_critical_regime(self, dede):
         # Many diverse actions AND high governance uncertainty
         for i in range(50):
-            dede.observe_action(f"action_{i % 20}", {"allow": 0.3, "deny": 0.3, "quarantine": 0.2, "escalate": 0.2})
+            dede.observe_action(
+                f"action_{i % 20}",
+                {"allow": 0.3, "deny": 0.3, "quarantine": 0.2, "escalate": 0.2},
+            )
         signal = dede.compute_signal()
         # Both entropies should be high
         assert signal.h_behavioral > 1.5
@@ -391,7 +394,10 @@ class TestDEDE:
 
     def test_should_block_when_critical(self, dede):
         for i in range(50):
-            dede.observe_action(f"action_{i % 20}", {"allow": 0.25, "deny": 0.25, "quarantine": 0.25, "escalate": 0.25})
+            dede.observe_action(
+                f"action_{i % 20}",
+                {"allow": 0.25, "deny": 0.25, "quarantine": 0.25, "escalate": 0.25},
+            )
         assert dede.should_block() or dede.should_sandbox()
 
     def test_signal_to_dict(self, dede):

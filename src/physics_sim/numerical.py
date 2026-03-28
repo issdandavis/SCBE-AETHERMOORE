@@ -781,7 +781,7 @@ def particle_swarm_optimization(
     global_best_val = personal_best_val[global_best_idx]
 
     # Main loop
-    for iteration in range(max_iter):
+    for _iteration in range(max_iter):
         for i in range(n_particles):
             pos = particles[i]
             vel = velocities[i]

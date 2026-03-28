@@ -391,7 +391,10 @@ class TriLatticeMembrane:
             avg_feedback_hops=round(sum(r.feedback_hops for r in self._records.values()) / max(1, total), 2),
             frustration_count=self._frustration_count,
             lattice25d_stats=self.lattice25d.stats(),
-            quasicrystal_stats={"type": "quasicrystal", "points_tested": self._qc_count + self._rejection_count},
+            quasicrystal_stats={
+                "type": "quasicrystal",
+                "points_tested": self._qc_count + self._rejection_count,
+            },
             sphere_stats=sphere_stats,
             spin_distribution=dict(sorted(spin_dist.items(), key=lambda x: -x[1])[:20]),
             tongue_routing=self._tongue_routing,

@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from scripts.system.run_core_python_checks import OPTIONAL_TEST_IGNORES, build_pytest_command, summary_payload
+from scripts.system.run_core_python_checks import (
+    OPTIONAL_TEST_IGNORES,
+    build_pytest_command,
+    summary_payload,
+)
 
 
 def test_build_pytest_command_includes_optional_ignores():

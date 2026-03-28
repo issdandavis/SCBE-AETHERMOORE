@@ -1150,7 +1150,7 @@ def main():
     print("\n" + "=" * 70)
     print("COMBINING AND DEDUPLICATING...")
     all_records = []
-    for name, recs in sources.items():
+    for _name, recs in sources.items():
         all_records.extend(recs)
     pre_dedup = len(all_records)
     all_records = deduplicate(all_records)

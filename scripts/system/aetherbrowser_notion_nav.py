@@ -80,7 +80,7 @@ def search_notion_api(query: str, max_results: int = 10, page_size: int = 20) ->
             # Extract title based on object type
             if obj_type == "page":
                 props = item.get("properties", {})
-                for prop_name, prop_val in props.items():
+                for _prop_name, prop_val in props.items():
                     if prop_val.get("type") == "title":
                         title_arr = prop_val.get("title", [])
                         title = "".join(t.get("plain_text", "") for t in title_arr)

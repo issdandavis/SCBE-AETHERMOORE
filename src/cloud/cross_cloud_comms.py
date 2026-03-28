@@ -126,7 +126,10 @@ class ServiceRegistry:
         del self.endpoints[endpoint_id]
 
     def discover(
-        self, agent_type: Optional[str] = None, cloud: Optional[str] = None, healthy_only: bool = True
+        self,
+        agent_type: Optional[str] = None,
+        cloud: Optional[str] = None,
+        healthy_only: bool = True,
     ) -> List[CloudEndpoint]:
         """Discover endpoints matching criteria."""
         results = list(self.endpoints.values())
@@ -163,7 +166,12 @@ class CircuitBreaker:
     Prevents cascading failures across clouds.
     """
 
-    def __init__(self, failure_threshold: int = 5, recovery_timeout: int = 30, half_open_max_calls: int = 3):
+    def __init__(
+        self,
+        failure_threshold: int = 5,
+        recovery_timeout: int = 30,
+        half_open_max_calls: int = 3,
+    ):
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.half_open_max_calls = half_open_max_calls
@@ -328,7 +336,12 @@ class MessageEncryption:
             from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
             # Derive key
-            kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b"scbe_cross_cloud", iterations=100000)
+            kdf = PBKDF2HMAC(
+                algorithm=hashes.SHA256(),
+                length=32,
+                salt=b"scbe_cross_cloud",
+                iterations=100000,
+            )
             key = base64.urlsafe_b64encode(kdf.derive(self.shared_key))
 
             f = Fernet(key)
@@ -346,7 +359,12 @@ class MessageEncryption:
             from cryptography.hazmat.primitives import hashes
             from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-            kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b"scbe_cross_cloud", iterations=100000)
+            kdf = PBKDF2HMAC(
+                algorithm=hashes.SHA256(),
+                length=32,
+                salt=b"scbe_cross_cloud",
+                iterations=100000,
+            )
             key = base64.urlsafe_b64encode(kdf.derive(self.shared_key))
 
             f = Fernet(key)
@@ -374,7 +392,12 @@ class CrossCloudRouter:
     Intelligent message router for cross-cloud communication.
     """
 
-    def __init__(self, registry: ServiceRegistry, circuit_breaker: CircuitBreaker, encryption: MessageEncryption):
+    def __init__(
+        self,
+        registry: ServiceRegistry,
+        circuit_breaker: CircuitBreaker,
+        encryption: MessageEncryption,
+    ):
         self.registry = registry
         self.circuit_breaker = circuit_breaker
         self.encryption = encryption
@@ -384,7 +407,8 @@ class CrossCloudRouter:
         """Route message to best endpoint."""
         # Find target endpoints
         endpoints = self.registry.discover(
-            agent_type=message.target_agent.split(":")[0] if ":" in message.target_agent else None, healthy_only=True
+            agent_type=(message.target_agent.split(":")[0] if ":" in message.target_agent else None),
+            healthy_only=True,
         )
 
         if not endpoints:
@@ -463,11 +487,20 @@ class CrossCloudCommunicator:
         logger.info("Cross-cloud communicator stopped")
 
     def register_endpoint(
-        self, cloud: str, region: str, url: str, agent_type: str, endpoint_id: Optional[str] = None
+        self,
+        cloud: str,
+        region: str,
+        url: str,
+        agent_type: str,
+        endpoint_id: Optional[str] = None,
     ) -> str:
         """Register a cloud endpoint."""
         endpoint = CloudEndpoint(
-            endpoint_id=endpoint_id or str(uuid.uuid4()), cloud=cloud, region=region, url=url, agent_type=agent_type
+            endpoint_id=endpoint_id or str(uuid.uuid4()),
+            cloud=cloud,
+            region=region,
+            url=url,
+            agent_type=agent_type,
         )
         return self.registry.register(endpoint)
 
