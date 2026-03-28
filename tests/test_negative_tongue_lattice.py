@@ -18,11 +18,7 @@ import pytest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from governance.negative_tongue_lattice import NegativeTongueLattice
-from symphonic_cipher.scbe_aethermoore.qc_lattice.phason_secret import (
-    PhasonSecret,
-    PhasonAuditRecord,
-)
-
+from symphonic_cipher.scbe_aethermoore.qc_lattice.phason_secret import PhasonSecret
 
 # =============================================================================
 # NEGATIVE TONGUE LATTICE TESTS
@@ -181,11 +177,7 @@ class TestInterferencePattern:
         lattice = NegativeTongueLattice()
         coords = [0.8, 0.3, 0.6, 0.2, 0.9, 0.4]
         pattern = lattice.interference_pattern(coords)
-        total = (
-            len(pattern["constructive"])
-            + len(pattern["destructive"])
-            + len(pattern["neutral"])
-        )
+        total = len(pattern["constructive"]) + len(pattern["destructive"]) + len(pattern["neutral"])
         assert total == 30
 
 
