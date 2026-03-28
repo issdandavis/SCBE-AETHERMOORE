@@ -265,13 +265,23 @@ class KnowledgeFunnel:
             self.stats["allowed"] += 1
             path = self.basin.deposit(chunk)
             self.chain.append(chunk)
-            return {"decision": decision, "reason": reason, "chunk_id": chunk.id, "path": path}
+            return {
+                "decision": decision,
+                "reason": reason,
+                "chunk_id": chunk.id,
+                "path": path,
+            }
         else:
             self.stats["quarantined"] += 1
             # Quarantined chunks go to a separate area
             chunk.category = f"quarantine/{chunk.category}"
             path = self.basin.deposit(chunk)
-            return {"decision": decision, "reason": reason, "chunk_id": chunk.id, "path": path}
+            return {
+                "decision": decision,
+                "reason": reason,
+                "chunk_id": chunk.id,
+                "path": path,
+            }
 
     def ingest_batch(self, chunks: list[KnowledgeChunk]) -> list[dict]:
         """Process multiple chunks."""

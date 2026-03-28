@@ -4,8 +4,6 @@ import types
 
 import pytest
 
-fastapi = pytest.importorskip("fastapi", reason="fastapi not installed")
-
 from api import main as api_main
 from fastapi import HTTPException
 
@@ -37,7 +35,11 @@ def test_verify_api_key_accepts_legacy_header(monkeypatch) -> None:
 
 
 def test_verify_api_key_prefers_new_header_when_both_present(monkeypatch) -> None:
-    monkeypatch.setattr(api_main, "VALID_API_KEYS", {"new-key": "tenant_new", "legacy-key": "tenant_legacy"})
+    monkeypatch.setattr(
+        api_main,
+        "VALID_API_KEYS",
+        {"new-key": "tenant_new", "legacy-key": "tenant_legacy"},
+    )
     assert asyncio.run(api_main.verify_api_key(api_key="new-key", api_key_legacy="legacy-key")) == "tenant_new"
 
 

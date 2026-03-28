@@ -515,7 +515,10 @@ class AethermoorSpiralEngine:
             sheaf_obstructions=obs,
             trust=self.player.trust,
             coherence=self.player.coherence,
-            mission_progress=(self.mission.packets_routed, self.mission.objective_packets),
+            mission_progress=(
+                self.mission.packets_routed,
+                self.mission.objective_packets,
+            ),
             inventory=Inventory(**self.inventory.__dict__),
             notes=notes,
         )

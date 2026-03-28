@@ -172,16 +172,20 @@ jobs:
       - name: Create Lambda function (if needed)
         if: steps.check-function.outputs.exists == 'false'
         run: |
-          # Create IAM role if needed
-          aws iam create-role \
-            --role-name scbe-lambda-execution-role \
-            --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"}]}' \
-            2>/dev/null || true
+          # Create IAM role if it doesn't already exist
+          if ! aws iam get-role --role-name scbe-lambda-execution-role 2>/dev/null; then
+            aws iam create-role \
+              --role-name scbe-lambda-execution-role \
+              --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"}]}'
+          fi
 
-          aws iam attach-role-policy \
-            --role-name scbe-lambda-execution-role \
-            --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole \
-            2>/dev/null || true
+          # Attach policy if not already attached
+          ATTACHED=$(aws iam list-attached-role-policies --role-name scbe-lambda-execution-role --query "AttachedPolicies[?PolicyArn=='arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole']" --output text)
+          if [ -z "$ATTACHED" ]; then
+            aws iam attach-role-policy \
+              --role-name scbe-lambda-execution-role \
+              --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+          fi
 
           sleep 10
 
@@ -261,13 +265,15 @@ jobs:
               --auto-deploy
 
             # Add permission
-            aws lambda add-permission \
-              --function-name $FUNCTION_NAME \
-              --statement-id "apigateway-invoke-${API_ID}" \
-              --action lambda:InvokeFunction \
-              --principal apigateway.amazonaws.com \
-              --source-arn "arn:aws:execute-api:${AWS_REGION}:${ACCOUNT_ID}:${API_ID}/*" \
-              2>/dev/null || true
+            # Add permission (may already exist from previous deploy)
+            if ! aws lambda get-policy --function-name $FUNCTION_NAME 2>/dev/null | grep -q "apigateway-invoke-${API_ID}"; then
+              aws lambda add-permission \
+                --function-name $FUNCTION_NAME \
+                --statement-id "apigateway-invoke-${API_ID}" \
+                --action lambda:InvokeFunction \
+                --principal apigateway.amazonaws.com \
+                --source-arn "arn:aws:execute-api:${AWS_REGION}:${ACCOUNT_ID}:${API_ID}/*"
+            fi
           fi
 
           echo "API_ID=$API_ID" >> $GITHUB_ENV

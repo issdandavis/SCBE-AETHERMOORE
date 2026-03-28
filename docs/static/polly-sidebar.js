@@ -18,6 +18,18 @@
       copy: 'This page is for understanding the system shape, not for doing package setup.',
       prompt: 'I am on the SCBE demo page. Explain what Hydra, GeoSeal, the CLI, and the manual surfaces are in plain language, and tell me what page I should open next based on my goal.'
     },
+    research: {
+      kicker: 'Research guide',
+      title: 'Keep proof and theory separated.',
+      copy: 'Use this page when you want benchmarks, active tracks, and clear claim boundaries before you follow the deeper theory language.',
+      prompt: 'I am on the SCBE research page. Separate what is benchmarked, what is implemented, and what is still exploratory, then tell me what page I should open next.'
+    },
+    articles: {
+      kicker: 'Article guide',
+      title: 'Read the field notes in order.',
+      copy: 'This hub is for public writing and launch-facing notes, not the whole repo or every private research artifact.',
+      prompt: 'I am on the SCBE article hub. Summarize the featured articles, keep product claims separate from research claims, and tell me which one I should read next.'
+    },
     support: {
       kicker: 'Support guide',
       title: 'Start with the exact break.',
@@ -36,6 +48,12 @@
       copy: 'Do not assume a package needs a key unless the delivery page or manual says it does.',
       prompt: 'I am on the SCBE delivery and access page. Help me verify what should have arrived after purchase and what support details I should gather before emailing.'
     },
+    network: {
+      kicker: 'Ops map',
+      title: 'Follow the flows.',
+      copy: 'Use this when you want the external writing lane (Medium/GitHub) and the internal public lanes (demos, research, manuals) without losing the thread.',
+      prompt: 'I am on the SCBE network page. Summarize the external links (Medium, GitHub, YouTube), then give me the shortest route into demos, manuals, and benchmark proof based on my goal.'
+    },
     site: {
       kicker: 'Page guide',
       title: 'Polly can route you.',
@@ -47,9 +65,15 @@
   const data = contexts[context] || contexts.site;
   const links = [
     { href: `${root}/index.html`, title: 'Home', text: 'Main overview, pricing, benchmarks, and core links.' },
+    { href: `${root}/network.html`, title: 'Network', text: 'External links, writing lanes, and AI-readable entry points.' },
     { href: `${root}/demos/index.html`, title: 'Demos', text: 'Story-first tour of Hydra, GeoSeal, and the public surfaces.' },
+    { href: `${root}/redteam.html`, title: 'Red Team', text: 'Current public benchmark surface, dataset link, and eval entry path.' },
+    { href: `${root}/articles/index.html`, title: 'Articles', text: 'Field notes, public explanations, and launch-facing writing.' },
+    { href: `${root}/research/index.html`, title: 'Research', text: 'Benchmarks, theory packets, and active experiment tracks.' },
     { href: `${root}/product-manual/index.html`, title: 'Manuals', text: 'Buyer-facing package manuals and setup guides.' },
-    { href: `${root}/support.html`, title: 'Support', text: 'Delivery, setup, AI troubleshooting, and broken-link recovery.' }
+    { href: `${root}/support.html`, title: 'Support', text: 'Delivery, setup, AI troubleshooting, and broken-link recovery.' },
+    { href: 'https://github.com/issdandavis', title: 'GitHub', text: 'Repos, code, and source writing.' },
+    { href: 'https://medium.com/@issdandavis7795', title: 'Medium', text: 'External essays and public drafts.' }
   ];
 
   const launcher = document.createElement('button');
@@ -85,7 +109,7 @@
           <p class="polly-prompt-copy" id="pollyPromptText">${data.prompt}</p>
           <div class="polly-actions">
             <button class="polly-btn" type="button" id="pollyCopyPrompt">Copy prompt</button>
-            <a class="polly-btn" href="mailto:issdandavis@gmail.com?subject=SCBE%20Support%20Help">Email support</a>
+            <a class="polly-btn" href="mailto:aethermoregames@pm.me?subject=SCBE%20Support%20Help">Email support</a>
           </div>
           <div class="polly-status" id="pollyStatus" aria-live="polite"></div>
         </div>

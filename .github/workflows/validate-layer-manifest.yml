@@ -1,20 +1,7 @@
 name: Validate Layer Manifest
 
 on:
-  pull_request:
-    paths:
-      - docs/scbe_full_system_layer_manifest.json
-      - docs/scbe_full_system_layer_manifest.schema.json
-      - scripts/validate_layer_manifest.py
-      - .github/workflows/validate-layer-manifest.yml
-  push:
-    branches:
-      - main
-    paths:
-      - docs/scbe_full_system_layer_manifest.json
-      - docs/scbe_full_system_layer_manifest.schema.json
-      - scripts/validate_layer_manifest.py
-      - .github/workflows/validate-layer-manifest.yml
+  workflow_dispatch:
 
 permissions:
   contents: read

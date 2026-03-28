@@ -2,7 +2,11 @@ import math
 
 import pytest
 
-from src.minimal.davis_formula import DavisFormulaInputs, davis_security_score, davis_security_score_from_inputs
+from src.minimal.davis_formula import (
+    DavisFormulaInputs,
+    davis_security_score,
+    davis_security_score_from_inputs,
+)
 
 
 def test_davis_formula_matches_reference_value() -> None:

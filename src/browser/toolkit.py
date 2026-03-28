@@ -231,7 +231,11 @@ def _parse_google_results(html: str) -> List[SearchResult]:
         # Look for text in the next few hundred chars after the match
         after = html[match.end() : match.end() + 500]
         # Snippet is often in a <span> or <div> after the link
-        snippet_match = re.search(r'<(?:span|div)[^>]*class="[^"]*"[^>]*>(.*?)</(?:span|div)>', after, re.DOTALL)
+        snippet_match = re.search(
+            r'<(?:span|div)[^>]*class="[^"]*"[^>]*>(.*?)</(?:span|div)>',
+            after,
+            re.DOTALL,
+        )
         if snippet_match:
             snippet = _extract_text_from_html(snippet_match.group(1)).strip()
 

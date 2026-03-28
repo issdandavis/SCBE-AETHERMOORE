@@ -411,7 +411,19 @@ class TestLLMProviderFactory:
     def test_provider_map_complete(self):
         from hydra.llm_providers import _PROVIDER_MAP
 
-        expected = {"claude", "anthropic", "gpt", "openai", "gemini", "google", "huggingface", "hf", "local", "grok", "xai"}
+        expected = {
+            "claude",
+            "anthropic",
+            "gpt",
+            "openai",
+            "gemini",
+            "google",
+            "huggingface",
+            "hf",
+            "local",
+            "grok",
+            "xai",
+        }
         assert set(_PROVIDER_MAP.keys()) == expected
 
 

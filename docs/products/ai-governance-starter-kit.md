@@ -57,13 +57,12 @@ When an agent requests permission to do something -- read a database, call an ex
 
 The key insight: this is not rule-based filtering. It is geometric. Every agent and every action exists as a point in a 6-dimensional hyperbolic space (the Poincare ball). Safe operations cluster near the center. Risky operations drift toward the boundary. The math makes it exponentially harder for an adversarial agent to fake a safe position.
 
-**Benchmark results:**
-- SCBE detection rate: 95.3%
-- ML anomaly detection: 89.6%
-- Pattern matching: 56.6%
-- Linear threshold: 38.7%
+**Public benchmark results:**
+- SCBE-AETHERMOORE: 91/91 adversarial attacks blocked across 10 categories
+- Clean-prompt false positives: 0/15 on the current public suite
+- ProtectAI DeBERTa v2 baseline: 62/91 blocked on the same comparison page
 
-**Zero false positives on legitimate agents.** Legitimate agents never get flagged because their geometric position is provably safe.
+**Use the benchmark wording exactly.** Public sales copy should use the counted suite above, not floating percentage claims without a linked methodology page.
 
 ---
 
@@ -522,7 +521,7 @@ The EU AI Act (Regulation 2024/1689) classifies AI systems by risk level. SCBE-A
 - [ ] Accuracy metrics established and monitored
 - [ ] Resilience to attacks (adversarial robustness)
 - [ ] Cybersecurity measures in place
-- [ ] SCBE maps: 95.3% detection rate benchmarked; post-quantum cryptography (ML-KEM-768, ML-DSA-65, AES-256-GCM) protects all sealed data; fail-to-noise on DENY prevents data exfiltration
+- [ ] SCBE maps: public adversarial suite shows 91/91 blocked with 0/15 clean false positives; post-quantum cryptography (ML-KEM-768, ML-DSA-65, AES-256-GCM) protects all sealed data; fail-to-noise on DENY prevents data exfiltration
 
 ### Record Keeping (Article 12)
 

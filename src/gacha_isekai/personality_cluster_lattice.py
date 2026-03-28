@@ -317,7 +317,10 @@ def validate_personality_provenance(
         )
 
     if watermark < 0.01:
-        return False, f"Suspiciously clean state: watermark={watermark:.6f} (synthetic/manufactured)"
+        return (
+            False,
+            f"Suspiciously clean state: watermark={watermark:.6f} (synthetic/manufactured)",
+        )
 
     return True, f"Valid organic drift: watermark={watermark:.4f}"
 
@@ -477,7 +480,7 @@ class PersonalityClusterLattice:
                 cluster.add_particle(particle, spin)
 
             # Also add negative-space particles
-            for i in range(3):
+            for _i in range(3):
                 noise = np.random.randn(DIM) * 0.05
                 particle = _poincare_project(facet.negative_point + noise)
                 cluster.add_particle(particle, spin=-1)  # Shadow particles

@@ -122,7 +122,11 @@ class KnowledgeGrounder:
 
     def add_verified_fact(self, fact_id: str, fact: Dict[str, Any], source: str):
         """Add a verified fact from external validation."""
-        self.verified_facts[fact_id] = {**fact, "source": source, "verified_at": datetime.now().isoformat()}
+        self.verified_facts[fact_id] = {
+            **fact,
+            "source": source,
+            "verified_at": datetime.now().isoformat(),
+        }
 
 
 class SemanticConsistencyChecker:
@@ -161,7 +165,12 @@ class SemanticConsistencyChecker:
                 # Check direct negation
                 if self._is_negation(stmt1, stmt2):
                     contradictions.append(
-                        {"type": "direct_negation", "statement_1": stmt1, "statement_2": stmt2, "confidence": 0.9}
+                        {
+                            "type": "direct_negation",
+                            "statement_1": stmt1,
+                            "statement_2": stmt2,
+                            "confidence": 0.9,
+                        }
                     )
 
                 # Check pattern-based contradictions
@@ -283,7 +292,12 @@ class CrossValidator:
         self.validation_cache: Dict[str, List[Dict[str, Any]]] = {}
 
     def submit_validation(
-        self, claim_hash: str, agent_id: str, is_valid: bool, confidence: float, evidence: Optional[str] = None
+        self,
+        claim_hash: str,
+        agent_id: str,
+        is_valid: bool,
+        confidence: float,
+        evidence: Optional[str] = None,
     ):
         """Submit a validation vote from an agent."""
         if claim_hash not in self.validation_cache:
@@ -353,7 +367,13 @@ class HallucinationGuard:
         self.cross_validator = CrossValidator(min_validators) if cross_validation_enabled else None
 
         # Statistics
-        self.stats = {"total_checks": 0, "verified": 0, "rejected": 0, "needs_review": 0, "hallucinations_detected": 0}
+        self.stats = {
+            "total_checks": 0,
+            "verified": 0,
+            "rejected": 0,
+            "needs_review": 0,
+            "hallucinations_detected": 0,
+        }
 
     def extract_claims(self, text: str) -> List[FactClaim]:
         """Extract verifiable claims from text."""
@@ -381,14 +401,21 @@ class HallucinationGuard:
 
             claims.append(
                 FactClaim(
-                    text=sentence, claim_type=claim_type, entities=entities, confidence=0.5  # Default, will be adjusted
+                    text=sentence,
+                    claim_type=claim_type,
+                    entities=entities,
+                    confidence=0.5,  # Default, will be adjusted
                 )
             )
 
         return claims
 
     def verify_output(
-        self, agent_id: str, output: str, context: Optional[Dict[str, Any]] = None, claimed_confidence: float = 0.8
+        self,
+        agent_id: str,
+        output: str,
+        context: Optional[Dict[str, Any]] = None,
+        claimed_confidence: float = 0.8,
     ) -> VerificationResult:
         """
         Verify an agent's output for hallucinations.
@@ -410,7 +437,11 @@ class HallucinationGuard:
 
         for warning in confidence_warnings:
             hallucinations.append(
-                {"type": HallucinationType.CONFIDENCE_INFLATION.value, "description": warning, "severity": "low"}
+                {
+                    "type": HallucinationType.CONFIDENCE_INFLATION.value,
+                    "description": warning,
+                    "severity": "low",
+                }
             )
 
         # 2. Fact Grounding
@@ -455,7 +486,11 @@ class HallucinationGuard:
 
         for contradiction in contradictions:
             hallucinations.append(
-                {"type": HallucinationType.LOGICAL_CONTRADICTION.value, "details": contradiction, "severity": "high"}
+                {
+                    "type": HallucinationType.LOGICAL_CONTRADICTION.value,
+                    "details": contradiction,
+                    "severity": "high",
+                }
             )
 
         # 5. Cross-validation (if enabled and claims need verification)
@@ -556,7 +591,13 @@ class GuardedAgentWrapper:
 
         # Handle based on status
         if verification.status == VerificationStatus.VERIFIED:
-            return {**result, "_verification": {"status": "verified", "confidence": verification.confidence_score}}
+            return {
+                **result,
+                "_verification": {
+                    "status": "verified",
+                    "confidence": verification.confidence_score,
+                },
+            }
         elif verification.status == VerificationStatus.REJECTED:
             self.rejection_log.append(
                 {
@@ -570,7 +611,10 @@ class GuardedAgentWrapper:
             return {
                 "error": "Output rejected due to detected hallucinations",
                 "hallucinations": verification.hallucinations_detected,
-                "_verification": {"status": "rejected", "confidence": verification.confidence_score},
+                "_verification": {
+                    "status": "rejected",
+                    "confidence": verification.confidence_score,
+                },
             }
         else:
             # Uncertain - include warning

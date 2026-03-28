@@ -673,7 +673,7 @@ class CoordinatorAgent(Agent):
         assignments = []
         available = [a for a in self.managed_agents.values() if a.status == AgentStatus.IDLE]
 
-        for i, task in enumerate(tasks):
+        for i, _task in enumerate(tasks):
             if available:
                 agent = available[i % len(available)]
                 task_id = str(uuid.uuid4())

@@ -251,7 +251,11 @@ class Flock:
         if not agent:
             return False
         agent.state = SheepState.ISOLATED
-        self._log_event("isolate", sheep_id, f"Isolated {agent.name} (coherence={agent.coherence:.2f})")
+        self._log_event(
+            "isolate",
+            sheep_id,
+            f"Isolated {agent.name} (coherence={agent.coherence:.2f})",
+        )
         return True
 
     # ── Task Distribution ──

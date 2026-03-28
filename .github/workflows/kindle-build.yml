@@ -1,10 +1,6 @@
 name: Build AetherCode - Play Store and Kindle
 
 on:
-  push:
-    paths:
-      - 'kindle-app/**'
-      - 'public/arena.html'
   workflow_dispatch:
     inputs:
       build_release:

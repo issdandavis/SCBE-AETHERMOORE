@@ -493,7 +493,12 @@ class TestHeartCredits:
         self.vault.close()
 
     def test_contribute_earns_credits(self):
-        node = self.vault.add_node(NodeType.PROVERB, "Test proverb", tongue=TongueAffinity.KO, quality_score=0.8)
+        node = self.vault.add_node(
+            NodeType.PROVERB,
+            "Test proverb",
+            tongue=TongueAffinity.KO,
+            quality_score=0.8,
+        )
         entry = self.ledger.contribute("agent-1", node.id, TongueAffinity.KO, quality_score=0.8)
         assert entry.amount > 0
         assert entry.action == CreditAction.CONTRIBUTE

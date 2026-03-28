@@ -11,6 +11,21 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_DIR = REPO_ROOT / "artifacts" / "system-audit"
 
+# Fast, deterministic smoke lane for PR gating. This should finish quickly on
+# GitHub-hosted runners and avoid pulling in long-running "everything tests".
+CORE_SMOKE_PATHS: tuple[str, ...] = (
+    "tests/test_api_header_compat.py",
+    "tests/test_geoseal_v2.py",
+    "tests/test_notarize.py",
+    "tests/test_phi_ternary.py",
+    "tests/test_runtime_gate.py",
+    "tests/test_sacred_eggs.py",
+    "tests/test_sacred_egg_registry.py",
+    "tests/test_semantic_projector_deep.py",
+    "tests/test_triangulated_lattice.py",
+    "tests/crypto",
+)
+
 # Optional or experimental lanes that currently pull in extra services,
 # unpublished modules, or heavyweight third-party stacks. Keep them out of the
 # default merge path and triage them in dedicated workflows instead.
@@ -30,15 +45,19 @@ OPTIONAL_TEST_IGNORES: tuple[str, ...] = (
 )
 
 
-def build_pytest_command(maxfail: int | None = None, extra_args: list[str] | None = None) -> list[str]:
+def build_pytest_command(
+    test_targets: tuple[str, ...],
+    maxfail: int | None = None,
+    extra_args: list[str] | None = None,
+) -> list[str]:
     command = [
         sys.executable,
         "-m",
         "pytest",
-        "tests",
         "-v",
         "--ignore=tests/node_modules",
     ]
+    command.extend(test_targets)
     if maxfail is not None:
         command.append(f"--maxfail={maxfail}")
     command.extend(f"--ignore={path}" for path in OPTIONAL_TEST_IGNORES)
@@ -77,6 +96,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run the curated core Python test lane for merge readiness.")
     parser.add_argument("--dry-run", action="store_true", help="Print the command and exit without running pytest.")
     parser.add_argument("--json", action="store_true", help="Print machine-readable command summary.")
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="Run the full tests/ tree (still excluding known-heavy optional lanes).",
+    )
     parser.add_argument("--maxfail", type=int, default=1, help="Maximum failures before stopping pytest.")
     parser.add_argument("pytest_args", nargs="*", help="Extra pytest args appended after the curated defaults.")
     return parser.parse_args()
@@ -84,7 +108,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    command = build_pytest_command(maxfail=args.maxfail, extra_args=list(args.pytest_args))
+    targets = ("tests",) if args.full else CORE_SMOKE_PATHS
+    command = build_pytest_command(test_targets=targets, maxfail=args.maxfail, extra_args=list(args.pytest_args))
     payload = summary_payload(command)
     summary_path = write_summary(payload)
 

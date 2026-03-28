@@ -483,7 +483,10 @@ class FederatedContextGrid:
         return docs[-limit:]
 
     def query_hierarchy(
-        self, tongue: str | None = None, tier: int | None = None, doc_type: str | None = None
+        self,
+        tongue: str | None = None,
+        tier: int | None = None,
+        doc_type: str | None = None,
     ) -> list[ContextDocument]:
         """
         Hierarchical retrieval: filter by tongue -> tier -> type.
@@ -558,7 +561,10 @@ class FederatedContextGrid:
                             " Answer using ONLY the provided context. Be concise."
                         ),
                     },
-                    {"role": "user", "content": f"Context:\n{context_str}\n\nQuestion: {query}"},
+                    {
+                        "role": "user",
+                        "content": f"Context:\n{context_str}\n\nQuestion: {query}",
+                    },
                 ],
                 model=model,
                 max_tokens=300,
@@ -668,7 +674,7 @@ def load_obsidian_vault(vault_path: str | Path) -> list[dict]:
                 "doc_type": doc_type,
                 "source_path": rel_path,
                 "metadata": metadata,
-                "memory_layer": "identity" if doc_type in ("concept", "moc") else "session",
+                "memory_layer": ("identity" if doc_type in ("concept", "moc") else "session"),
             }
         )
 

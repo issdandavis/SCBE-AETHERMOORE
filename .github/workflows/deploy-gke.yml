@@ -1,16 +1,6 @@
 name: Deploy SCBE to GKE
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'api/**'
-      - 'src/**'
-      - 'k8s/deployment.yaml'
-      - 'k8s/service.yaml'
-      - 'k8s/namespace.yaml'
-      - 'Dockerfile.api'
-      - '.github/workflows/deploy-gke.yml'
   workflow_dispatch:
     inputs:
       image_tag:

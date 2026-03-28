@@ -522,7 +522,10 @@ PARTICLE_AFFINITIES: Dict[str, List[str]] = {
 
 
 def _affinity_tokenize(
-    text: str, affinity_map: Dict[str, List[str]], name_to_idx: Dict[str, int], max_tokens: int
+    text: str,
+    affinity_map: Dict[str, List[str]],
+    name_to_idx: Dict[str, int],
+    max_tokens: int,
 ) -> List[int]:
     """Score text against affinity keywords, return top-N indices."""
     text_lower = text.lower()
@@ -620,7 +623,11 @@ def pack_tokens(tongue_code: str, runic: List[int], particles: List[int], page: 
 
 
 def hash_seed(
-    tongue_code: str, runic: List[int], particles: List[int], page: int, raw_text: str = ""
+    tongue_code: str,
+    runic: List[int],
+    particles: List[int],
+    page: int,
+    raw_text: str = "",
 ) -> Tuple[str, float]:
     """
     Hash packed tokens to a 64-byte SHAKE-256 seed.
@@ -808,7 +815,11 @@ def selftest():
 
     # 6. Tongue classification sanity
     binding = ExtractedPhrase(
-        text="spell of binding upon sand and water", speaker="IZACK", page=1, line_start=0, tongue_bias=""
+        text="spell of binding upon sand and water",
+        speaker="IZACK",
+        page=1,
+        line_start=0,
+        tongue_bias="",
     )
     classify_tongue(binding)
     assert binding.tongue_bias == "" or True  # Just run it

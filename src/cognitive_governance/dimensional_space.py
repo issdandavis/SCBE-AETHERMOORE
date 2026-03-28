@@ -337,7 +337,7 @@ class DimensionalSpace:
         idx = 0
         for valence in StateValence:
             for spatial in range(3):
-                for i, tongue in enumerate(TONGUE_NAMES):
+                for _i, tongue in enumerate(TONGUE_NAMES):
                     # Use seed bytes to determine coordinate
                     byte_val = seed[idx % len(seed)] / 255.0
                     # Scale by radius and tongue weight

@@ -183,7 +183,16 @@ TONGUE_KEYWORDS = {
         "distributed",
         "parallel",
     ],
-    "UM": ["privacy", "security", "stealth", "anonymity", "federated", "differential", "encryption", "obfuscation"],
+    "UM": [
+        "privacy",
+        "security",
+        "stealth",
+        "anonymity",
+        "federated",
+        "differential",
+        "encryption",
+        "obfuscation",
+    ],
     "DR": [
         "safety",
         "alignment",
@@ -232,7 +241,14 @@ def analyze_paper(paper: ArxivPaper) -> ArxivPaper:
 
     # 2. Compute intent vector (6D)
     total = max(sum(tongue_scores.values()), 1)
-    phi_weights = {"KO": 1.0, "AV": PHI, "RU": PHI**2, "CA": PHI**3, "UM": PHI**4, "DR": PHI**5}
+    phi_weights = {
+        "KO": 1.0,
+        "AV": PHI,
+        "RU": PHI**2,
+        "CA": PHI**3,
+        "UM": PHI**4,
+        "DR": PHI**5,
+    }
     iv = []
     for tongue in ["KO", "AV", "RU", "CA", "UM", "DR"]:
         raw = tongue_scores.get(tongue, 0) / total

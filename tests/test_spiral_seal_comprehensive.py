@@ -24,7 +24,10 @@ import pytest
 try:
     from cryptography.fernet import Fernet  # noqa: F401
 except BaseException:
-    pytest.skip("cryptography package not functional (cffi backend missing)", allow_module_level=True)
+    pytest.skip(
+        "cryptography package not functional (cffi backend missing)",
+        allow_module_level=True,
+    )
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from hypothesis import given, strategies as st, settings, assume
@@ -71,7 +74,7 @@ class TestSacredTongueComprehensive:
     # Test 1: All tongues have exactly 256 unique tokens
     def test_01_all_tongues_256_unique_tokens(self):
         """A1: Each tongue must have exactly 256 unique tokens (16×16)."""
-        for code, tongue in TONGUES.items():
+        for code, _tongue in TONGUES.items():
             tokenizer = SacredTongueTokenizer(code)
             tokens = set()
             for b in range(256):

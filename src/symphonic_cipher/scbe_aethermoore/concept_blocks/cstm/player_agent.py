@@ -214,7 +214,7 @@ class HistoryBuffer:
             for tag in e.choice_tags:
                 tag_counts[tag] = tag_counts.get(tag, 0) + 1
         total = max(sum(tag_counts.values()), 1)
-        for i, (tag, count) in enumerate(sorted(tag_counts.items())):
+        for i, (_tag, count) in enumerate(sorted(tag_counts.items())):
             if i >= 32:
                 break
             vec[i] = count / total

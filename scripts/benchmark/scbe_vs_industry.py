@@ -59,6 +59,43 @@ from tests.adversarial.scbe_harness import (
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, get_all_attacks
 
 
+_CONSOLE_REPLACEMENTS = str.maketrans(
+    {
+        "→": "->",
+        "×": "x",
+        "≤": "<=",
+        "≥": ">=",
+        "–": "-",
+        "—": "-",
+        "…": "...",
+        "π": "pi",
+        "φ": "phi",
+        "‚": ",",
+    }
+)
+
+
+def _external_model_loads_enabled() -> bool:
+    """Use external HF pipelines only when explicitly enabled."""
+    value = os.getenv("SCBE_BENCHMARK_USE_EXTERNAL_MODELS", "").strip().lower()
+    return value in {"1", "true", "yes", "on"}
+
+
+def _console_text(text: str) -> str:
+    """Return console-safe text across Windows encodings."""
+    normalized = text.translate(_CONSOLE_REPLACEMENTS)
+    encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+    try:
+        normalized.encode(encoding)
+    except UnicodeEncodeError:
+        normalized = normalized.encode("ascii", "replace").decode("ascii")
+    return normalized
+
+
+def _print_line(text: str = "") -> None:
+    print(_console_text(text))
+
+
 # ═══════════════════════════════════════════════════════════
 # State tracking for every system
 # ═══════════════════════════════════════════════════════════
@@ -116,6 +153,10 @@ def _load_protectai():
     """Try to load the real model, fall back to simulation."""
     global _PROTECTAI_MODEL
     if _PROTECTAI_MODEL is not None:
+        return _PROTECTAI_MODEL
+
+    if not _external_model_loads_enabled():
+        _PROTECTAI_MODEL = "simulated"
         return _PROTECTAI_MODEL
 
     try:
@@ -203,7 +244,7 @@ def group_b_protectai(prompt: str) -> SystemTrace:
         confidence=score,
         latency_ms=latency,
         why=f"Injection score {score:.2f} {'>' if blocked else '<='} 0.5 threshold",
-        how="DeBERTa token classification → binary INJECTION/SAFE",
+        how="DeBERTa token classification -> binary INJECTION/SAFE",
         when_stage="pre-execution (input filter)",
         effect="Blocked before reaching model" if blocked else "Passed to model unchanged",
         cause="Token pattern match" if blocked else "No injection pattern detected",
@@ -226,6 +267,10 @@ _META_GUARD_MODEL = None
 def _load_meta_guard():
     global _META_GUARD_MODEL
     if _META_GUARD_MODEL is not None:
+        return _META_GUARD_MODEL
+
+    if not _external_model_loads_enabled():
+        _META_GUARD_MODEL = "simulated"
         return _META_GUARD_MODEL
 
     try:
@@ -316,7 +361,7 @@ def group_c_meta_guard(prompt: str) -> SystemTrace:
         confidence=score,
         latency_ms=latency,
         why=f"Guard score {score:.2f} {'>' if blocked else '<='} 0.5",
-        how="22M-param classifier → SAFE/INJECTION/JAILBREAK",
+        how="22M-param classifier -> SAFE/INJECTION/JAILBREAK",
         when_stage="pre-execution (input classifier)",
         effect="Rejected at gate" if blocked else "Forwarded to model",
         cause="Jailbreak/injection pattern" if blocked else "Classified as safe input",
@@ -407,7 +452,7 @@ def group_e_scbe(prompt: str, gate: SCBEDetectionGate) -> SystemTrace:
             if blocked
             else "Below detection threshold"
         ),
-        how="14-layer pipeline: tongue encoding → Poincaré embedding → harmonic wall → spin coherence → multi-signal fusion",
+        how="14-layer pipeline: tongue encoding -> Poincare embedding -> harmonic wall -> spin coherence -> multi-signal fusion",
         when_stage="pre-execution (state-space evaluation across 14 layers)",
         effect=(
             "Blocked/quarantined — action never reaches model" if blocked else "Allowed within constrained state space"
@@ -449,8 +494,8 @@ class GroupResult:
 
 def run_full_benchmark():
     attacks = get_all_attacks()
-    print(f"SCBE vs Industry Benchmark: {len(attacks)} attacks × 5 groups")
-    print()
+    _print_line(f"SCBE vs Industry Benchmark: {len(attacks)} attacks x 5 groups")
+    _print_line()
 
     # Calibrate SCBE
     gate = SCBEDetectionGate()
@@ -506,11 +551,11 @@ def run_full_benchmark():
     fp_results["E"] = sum(1 for t in scbe_clean if t.decision == "BLOCK")
 
     # Print results
-    print("=" * 80)
-    print(f"{'SCBE vs INDUSTRY ADVERSARIAL BENCHMARK':^80}")
-    print("=" * 80)
-    print(f"{'Metric':<28} {'A:None':>10} {'B:ProtAI':>10} {'C:Meta':>10} {'D:KeyWd':>10} {'E:SCBE':>10}")
-    print("-" * 80)
+    _print_line("=" * 80)
+    _print_line(f"{'SCBE vs INDUSTRY ADVERSARIAL BENCHMARK':^80}")
+    _print_line("=" * 80)
+    _print_line(f"{'Metric':<28} {'A:None':>10} {'B:ProtAI':>10} {'C:Meta':>10} {'D:KeyWd':>10} {'E:SCBE':>10}")
+    _print_line("-" * 80)
     for metric, getter in [
         ("Attacks blocked", lambda r: r.blocked),
         ("Attacks through", lambda r: r.allowed),
@@ -519,42 +564,42 @@ def run_full_benchmark():
         ("Avg latency (ms)", lambda r: f"{r.avg_latency_ms:.3f}"),
     ]:
         vals = [str(getter(results[k])) for k in "ABCDE"]
-        print(f"{metric:<28} {vals[0]:>10} {vals[1]:>10} {vals[2]:>10} {vals[3]:>10} {vals[4]:>10}")
+        _print_line(f"{metric:<28} {vals[0]:>10} {vals[1]:>10} {vals[2]:>10} {vals[3]:>10} {vals[4]:>10}")
 
     fp_line = [str(fp_results[k]) + f"/{len(BASELINE_CLEAN)}" for k in "ABCDE"]
-    print(
+    _print_line(
         f"{'False positives':<28} {fp_line[0]:>10} {fp_line[1]:>10} {fp_line[2]:>10} {fp_line[3]:>10} {fp_line[4]:>10}"
     )
-    print("=" * 80)
+    _print_line("=" * 80)
 
     # Per-attack-class breakdown
-    print(f"\n{'PER-CLASS DETECTION RATE':^80}")
-    print("-" * 80)
+    _print_line(f"\n{'PER-CLASS DETECTION RATE':^80}")
+    _print_line("-" * 80)
     attack_classes = {}
     for a in attacks:
         attack_classes.setdefault(a["class"], []).append(a)
 
-    print(f"{'Class':<25} {'A:None':>10} {'B:ProtAI':>10} {'C:Meta':>10} {'D:KeyWd':>10} {'E:SCBE':>10}")
-    for cls, class_attacks in sorted(attack_classes.items()):
+    _print_line(f"{'Class':<25} {'A:None':>10} {'B:ProtAI':>10} {'C:Meta':>10} {'D:KeyWd':>10} {'E:SCBE':>10}")
+    for cls, _class_attacks in sorted(attack_classes.items()):
         row = []
         for key in "ABCDE":
             cls_traces = [results[key].traces[i] for i, a in enumerate(attacks) if a["class"] == cls]
             blocked = sum(1 for t in cls_traces if t.decision == "BLOCK")
             row.append(f"{blocked}/{len(cls_traces)}")
-        print(f"{cls:<25} {row[0]:>10} {row[1]:>10} {row[2]:>10} {row[3]:>10} {row[4]:>10}")
+        _print_line(f"{cls:<25} {row[0]:>10} {row[1]:>10} {row[2]:>10} {row[3]:>10} {row[4]:>10}")
 
     # Sample WHY/HOW/WHEN/EFFECT/CAUSE comparison
-    print(f"\n{'SAMPLE TRACE COMPARISON (Attack: A01 — direct override)':^80}")
-    print("-" * 80)
+    _print_line(f"\n{'SAMPLE TRACE COMPARISON (Attack: A01 - direct override)':^80}")
+    _print_line("-" * 80)
     for key in "ABCDE":
         t = results[key].traces[0]
-        print(f"\n  [{t.system}]")
-        print(f"    Decision:   {t.decision} (confidence: {t.confidence:.2f})")
-        print(f"    WHY:        {t.why[:70]}")
-        print(f"    HOW:        {t.how[:70]}")
-        print(f"    WHEN:       {t.when_stage}")
-        print(f"    CAUSE:      {t.cause[:70]}")
-        print(f"    EFFECT:     {t.effect[:70]}")
+        _print_line(f"\n  [{t.system}]")
+        _print_line(f"    Decision:   {t.decision} (confidence: {t.confidence:.2f})")
+        _print_line(f"    WHY:        {t.why[:70]}")
+        _print_line(f"    HOW:        {t.how[:70]}")
+        _print_line(f"    WHEN:       {t.when_stage}")
+        _print_line(f"    CAUSE:      {t.cause[:70]}")
+        _print_line(f"    EFFECT:     {t.effect[:70]}")
 
     # Save report
     out_dir = Path("artifacts/benchmark")
@@ -578,7 +623,7 @@ def run_full_benchmark():
         }
 
     (out_dir / "industry_benchmark_report.json").write_text(json.dumps(report, indent=2))
-    print(f"\nReport: {out_dir / 'industry_benchmark_report.json'}")
+    _print_line(f"\nReport: {out_dir / 'industry_benchmark_report.json'}")
 
     return report
 

@@ -618,7 +618,7 @@ class TestAxiom11_FractionalDimensionFlux:
         # Compute dimension multiple times with different scale ranges
         dimensions = []
 
-        for trial in range(10):
+        for _trial in range(10):
             # Vary scale range slightly
             min_scale = 10 ** (-2 - 0.2 * np.random.rand())
             max_scale = 10 ** (0 - 0.2 * np.random.rand())

@@ -50,7 +50,7 @@ jobs:
         continue-on-error: true
         run: |
           if command -v pytest &>/dev/null && [ -d tests/ ]; then
-            pytest tests/ -v --ignore=tests/node_modules 2>&1 || true
+            pytest tests/ -v --ignore=tests/node_modules 2>&1
           else
             echo "::notice::pytest not available or tests/ missing"
           fi

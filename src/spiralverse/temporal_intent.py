@@ -367,13 +367,23 @@ class TemporalSecurityGate:
             self.histories[agent_id] = IntentHistory(agent_id=agent_id)
         return self.histories[agent_id]
 
-    def record_observation(self, agent_id: str, distance: float, velocity: float = 0.0, harmony: float = 0.0):
+    def record_observation(
+        self,
+        agent_id: str,
+        distance: float,
+        velocity: float = 0.0,
+        harmony: float = 0.0,
+    ):
         """Record an observation for an agent."""
         history = self.get_or_create_history(agent_id)
         history.add_sample(distance, velocity, harmony)
 
     def compute_omega(
-        self, agent_id: str, pqc_valid: bool = True, triadic_stable: float = 1.0, spectral_score: float = 1.0
+        self,
+        agent_id: str,
+        pqc_valid: bool = True,
+        triadic_stable: float = 1.0,
+        spectral_score: float = 1.0,
     ) -> Tuple[float, str]:
         """
         Backward-compatible wrapper returning (omega, decision).

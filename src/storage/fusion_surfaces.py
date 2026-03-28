@@ -170,10 +170,12 @@ class CymaticCone:
             "octree_leaves": oct_stats["leaf_count"],
             "occupied_voxels": oct_stats["occupied_voxels"],
             "node_explosion": round(
-                (oct_stats["node_count"] + oct_stats["leaf_count"]) / max(1, self._record_count), 4
+                (oct_stats["node_count"] + oct_stats["leaf_count"]) / max(1, self._record_count),
+                4,
             ),
             "compaction_score": round(
-                self._record_count / max(1, oct_stats["node_count"] + oct_stats["leaf_count"]), 6
+                self._record_count / max(1, oct_stats["node_count"] + oct_stats["leaf_count"]),
+                6,
             ),
             "unique_chladni_modes": len({(leaf.chladni_n, leaf.chladni_m) for leaf in self.leaves.values()}),
         }

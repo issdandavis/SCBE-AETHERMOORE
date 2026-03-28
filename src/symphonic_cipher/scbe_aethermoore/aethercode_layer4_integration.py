@@ -44,7 +44,16 @@ except ImportError:
 
         @property
         def full_vector(self):
-            return np.array([self.axiom, self.flow, self.glyph, self.oracle, self.charm, self.ledger])
+            return np.array(
+                [
+                    self.axiom,
+                    self.flow,
+                    self.glyph,
+                    self.oracle,
+                    self.charm,
+                    self.ledger,
+                ]
+            )
 
 
 # =============================================================================
@@ -376,7 +385,14 @@ def embed_position_simple(
     Returns:
         6D point in Poincaré ball
     """
-    pos = Position6D(axiom=axiom, flow=flow, glyph=glyph, oracle=oracle, charm=charm, ledger=int(ledger))
+    pos = Position6D(
+        axiom=axiom,
+        flow=flow,
+        glyph=glyph,
+        oracle=oracle,
+        charm=charm,
+        ledger=int(ledger),
+    )
     bridge = AethercodeLayer4Bridge(alpha=alpha)
     result = bridge.embed_position(pos)
     return result.embedded

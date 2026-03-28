@@ -32,7 +32,11 @@ def test_fetch_transcript_normalizes_legacy_api(monkeypatch) -> None:
                 {"text": "world", "start": 1.5, "duration": 1.0},
             ]
 
-    monkeypatch.setitem(sys.modules, "youtube_transcript_api", SimpleNamespace(YouTubeTranscriptApi=FakeApi))
+    monkeypatch.setitem(
+        sys.modules,
+        "youtube_transcript_api",
+        SimpleNamespace(YouTubeTranscriptApi=FakeApi),
+    )
     segments = MODULE.fetch_transcript("dQw4w9WgXcQ", ["en", "es"])
     assert segments == [
         {"text": "Hello", "start": 0.0, "duration": 1.5},

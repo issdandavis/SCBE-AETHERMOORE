@@ -1,0 +1,152 @@
+{
+  "_description": "Curated YouTube channels for transcript collection. Rated by quality and relevance to SCBE training domains. Updated daily via free loops.",
+  "_updated": "2026-03-26",
+  "_policy": "Transcripts only (no video download). Fair use for training. Scrub secrets before storage.",
+
+  "channels": [
+    {
+      "name": "David Perell",
+      "handle": "@david_perell",
+      "domain": "writing, thinking, creativity, internet culture",
+      "tongue": "KO",
+      "rating": 5,
+      "why": "Clear thinking about systems, communication, and building in public. High signal-to-noise."
+    },
+    {
+      "name": "3Blue1Brown",
+      "handle": "@3blue1brown",
+      "domain": "math visualization, linear algebra, topology, calculus",
+      "tongue": "CA",
+      "rating": 5,
+      "why": "Best math explainer on YouTube. Covers hyperbolic geometry, group theory, neural networks — directly relevant to SCBE math."
+    },
+    {
+      "name": "Andrej Karpathy",
+      "handle": "@AndrejKarpathy",
+      "domain": "deep learning, transformers, training, GPT architecture",
+      "tongue": "CA",
+      "rating": 5,
+      "why": "Former Tesla AI lead, OpenAI founding member. Builds things from scratch and explains every step."
+    },
+    {
+      "name": "Yannic Kilcher",
+      "handle": "@YannicKilcher",
+      "domain": "ML paper reviews, AI research, industry analysis",
+      "tongue": "AV",
+      "rating": 4,
+      "why": "Deep paper reviews with honest assessment. Good for understanding what research actually claims vs hype."
+    },
+    {
+      "name": "Lex Fridman",
+      "handle": "@lexfridman",
+      "domain": "AI, science, philosophy, long-form interviews",
+      "tongue": "RU",
+      "rating": 4,
+      "why": "Long interviews with top researchers. Good for understanding how experts actually think, not just what they publish."
+    },
+    {
+      "name": "Computerphile",
+      "handle": "@Computerphile",
+      "domain": "computer science, security, cryptography, algorithms",
+      "tongue": "CA",
+      "rating": 4,
+      "why": "University-level CS explainers. Strong on crypto, security, and networking fundamentals."
+    },
+    {
+      "name": "LiveOverflow",
+      "handle": "@LiveOverflow",
+      "domain": "hacking, CTF, security research, exploit development",
+      "tongue": "UM",
+      "rating": 5,
+      "why": "Best security education channel. Real exploits explained honestly. Perfect for UM tongue training."
+    },
+    {
+      "name": "John Hammond",
+      "handle": "@_JohnHammond",
+      "domain": "cybersecurity, malware analysis, CTF walkthroughs",
+      "tongue": "UM",
+      "rating": 4,
+      "why": "Practical security with real demonstrations. Good complement to LiveOverflow's theory."
+    },
+    {
+      "name": "Fireship",
+      "handle": "@Fireship",
+      "domain": "web dev, programming languages, tech news, 100-second explainers",
+      "tongue": "DR",
+      "rating": 4,
+      "why": "Concise, high-density tech explainers. Good for DR (structure) training — how to compress complex ideas."
+    },
+    {
+      "name": "Two Minute Papers",
+      "handle": "@TwoMinutePapers",
+      "domain": "AI research summaries, computer graphics, simulation",
+      "tongue": "AV",
+      "rating": 4,
+      "why": "Accessible AI research summaries. Good for learning how to communicate complex results simply."
+    },
+    {
+      "name": "Veritasium",
+      "handle": "@veritasium",
+      "domain": "science, physics, engineering, counterintuitive phenomena",
+      "tongue": "RU",
+      "rating": 5,
+      "why": "Deep science storytelling. Challenges assumptions. Perfect for teaching models to question and verify."
+    },
+    {
+      "name": "Numberphile",
+      "handle": "@numberphile",
+      "domain": "mathematics, number theory, Riemann hypothesis, primes",
+      "tongue": "CA",
+      "rating": 4,
+      "why": "Accessible pure math. Has videos on Riemann hypothesis, phi, Fibonacci — directly relevant."
+    },
+    {
+      "name": "NetworkChuck",
+      "handle": "@NetworkChuck",
+      "domain": "networking, Linux, cybersecurity, home lab",
+      "tongue": "DR",
+      "rating": 3,
+      "why": "Practical infrastructure and networking. Good for understanding real-world deployment."
+    },
+    {
+      "name": "Ben Eater",
+      "handle": "@BenEater",
+      "domain": "computer engineering, breadboard computers, networking from scratch",
+      "tongue": "CA",
+      "rating": 5,
+      "why": "Builds computers from transistors. The deepest hardware understanding on YouTube. Teaches fundamentals."
+    },
+    {
+      "name": "Sebastian Lague",
+      "handle": "@SebastianLague",
+      "domain": "procedural generation, simulations, creative coding",
+      "tongue": "DR",
+      "rating": 5,
+      "why": "Builds complex systems from scratch with beautiful visualization. Good for teaching structured thinking."
+    },
+    {
+      "name": "Robert Miles",
+      "handle": "@RobertMilesAI",
+      "domain": "AI safety, alignment, existential risk",
+      "tongue": "KO",
+      "rating": 5,
+      "why": "The best AI safety explainer. Directly relevant to SCBE governance concepts."
+    },
+    {
+      "name": "CGP Grey",
+      "handle": "@CGPGrey",
+      "domain": "systems thinking, governance, rules, decision-making",
+      "tongue": "KO",
+      "rating": 5,
+      "why": "Explains complex governance and decision systems clearly. Perfect for KO (intent/control) training."
+    },
+    {
+      "name": "Primer",
+      "handle": "@PrimerBlobs",
+      "domain": "evolutionary simulation, game theory, emergence",
+      "tongue": "RU",
+      "rating": 4,
+      "why": "Agent-based simulations showing emergent behavior. Relevant to swarm governance and BFT concepts."
+    }
+  ]
+}
