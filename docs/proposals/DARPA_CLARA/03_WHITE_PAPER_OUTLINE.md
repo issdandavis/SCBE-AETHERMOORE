@@ -9,13 +9,13 @@
 
 ## 1. Executive Summary
 
-Current AI security systems rely on pattern-matching classifiers (keyword blocklists, fine-tuned DeBERTa models) that fail predictably against novel adversarial prompts. The fundamental problem: detection-by-recognition requires having seen an attack before. Attackers evolve faster than defenders can retrain.
+We present SCBE-AETHERMOORE, a compositional ML+AR system that defends AI agents against adversarial manipulation using geometric cost scaling in hyperbolic space. Where current defenses ask "have I seen this attack before?" (detection-by-recognition), SCBE asks "how much does this input cost?" (detection-by-cost). The cost is computed via a superexponential harmonic wall operating inside the ML inference pipeline — Automated Reasoning in the guts of Machine Learning, not bolted on as a filter.
 
-SCBE-AETHERMOORE proposes a fundamentally different approach: **geometric intent verification**. Instead of asking "have I seen this attack before?" the system asks "how much does this input cost in hyperbolic space?" The answer is computed mathematically, not learned from examples.
+**Core result**: A trained semantic projector (sentence-transformers to 6D tongue coordinates via ridge regression) improved F1 from 0.481 to **0.813** on a 260-sample adversarial benchmark. Prompt injection ("Ignore all instructions") escalated from ALLOW to QUARANTINE (cost 1.81 to 16.20). Role confusion ("You are DAN") escalated from ALLOW to DENY (cost 19.80 to 69.70). The harmonic wall formula H(d,R) = R^(d^2) was always mathematically sound — the semantic projector gave it the right inputs.
 
-**The core result**: By replacing statistical text features with a trained semantic projector (sentence-transformers all-MiniLM-L6-v2 projected to 6D tongue coordinates via ridge regression), SCBE improved F1 from 0.481 to **0.813** on a 260-sample adversarial benchmark. Prompt injection ("Ignore all instructions") went from ALLOW to QUARANTINE (cost 1.81 to 16.20). Role confusion ("You are DAN") went from ALLOW to DENY (cost 19.80 to 69.70).
+**Why this matters for CLARA**: SCBE composes 3 ML kinds (transformer embeddings, custom tokenizer, spectral FFT) with 3 AR kinds (formal axiom verification, governance rule engine, Byzantine fault-tolerant consensus) across a 14-layer pipeline where each layer is independently verifiable against 5 quantum axioms. This directly satisfies CLARA's requirements for compositional AI with "verifiability based on automated logical proofs and hierarchical, vetted logic building blocks."
 
-**CLARA alignment**: SCBE is a compositional ML+AR system where Automated Reasoning (the harmonic wall, 5 quantum axioms, governance gate) operates *inside* the ML inference pipeline, not as an external filter. This directly addresses CLARA's requirement for "AR in the guts of ML" with "verifiability based on automated logical proofs."
+**What we propose**: Under CLARA, advance SCBE from TRL 4-5 (lab-validated, 950+ tests) to TRL 6-7 (operational demonstration) by expanding the semantic projector, formalizing axiom proofs, and demonstrating composability with the TA2 integration library.
 
 ---
 
