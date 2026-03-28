@@ -215,6 +215,13 @@ def add_connections(suggestions: List[Dict], dry_run: bool = True) -> int:
     for s in suggestions:
         by_source[s["source"]].append(s)
 
+    auto_start = "<!-- scbe-auto-links:start -->"
+    auto_end = "<!-- scbe-auto-links:end -->"
+    auto_block_re = re.compile(
+        r"(?s)\n##\s+Auto links\s*\n\s*<!--\s*scbe-auto-links:start\s*-->\n.*?<!--\s*scbe-auto-links:end\s*-->\n?",
+        re.IGNORECASE,
+    )
+
     for note_name, suggs in by_source.items():
         # Find the file
         matches = list(VAULT_PATH.rglob(f"{note_name}.md"))
@@ -227,9 +234,15 @@ def add_connections(suggestions: List[Dict], dry_run: bool = True) -> int:
         except Exception:
             continue
 
+        before_links = set(WIKI_LINK.findall(content))
         modified = content
+        append_targets: Set[str] = set()
+
         for s in suggs:
             target = s["target"]
+            if target in before_links:
+                continue
+
             # Replace first plain-text mention with wiki-link (case-insensitive)
             pattern = re.compile(re.escape(target), re.IGNORECASE)
             match = pattern.search(modified)
@@ -240,10 +253,29 @@ def add_connections(suggestions: List[Dict], dry_run: bool = True) -> int:
                 before = modified[max(0, start - 2):start]
                 if "[[" not in before:
                     modified = modified[:start] + f"[[{target}|{original}]]" + modified[match.end():]
-                    added += 1
+                    continue
+
+            # Fallback: if we can't inline-link, append an idempotent auto-links block.
+            append_targets.add(target)
+
+        if append_targets:
+            # Remove any existing auto-links block so we can rewrite deterministically.
+            base = auto_block_re.sub("\n", modified).rstrip()
+
+            links_lines = "\n".join(f"- [[{t}]]" for t in sorted(append_targets))
+            auto_block = (
+                "\n\n## Auto links\n"
+                f"{auto_start}\n"
+                f"{links_lines}\n"
+                f"{auto_end}\n"
+            )
+            modified = base + auto_block
 
         if modified != content and not dry_run:
             filepath.write_text(modified, encoding="utf-8")
+
+        after_links = set(WIKI_LINK.findall(modified))
+        added += len(after_links - before_links)
 
     return added
 
