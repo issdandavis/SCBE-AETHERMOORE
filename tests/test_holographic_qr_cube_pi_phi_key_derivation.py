@@ -197,9 +197,7 @@ def test_matches_spec_formula_for_reasonable_ranges_scalar(pi_phi_deriver):
     for R, d_star in test_points:
         out = _as_scalar_or_bytes(_call_deriver(fn, R=R, d_star=d_star))
         if not isinstance(out, float):
-            pytest.skip(
-                "pi^phi derivation returns bytes; scalar formula test not applicable"
-            )
+            pytest.skip("pi^phi derivation returns bytes; scalar formula test not applicable")
         exp = _expected_scalar(R=R, d_star=d_star, phi=phi)
         assert out == pytest.approx(exp, rel=1e-12, abs=1e-12)
 
@@ -213,9 +211,7 @@ def test_monotonic_increasing_in_d_star_for_positive_R_scalar(pi_phi_deriver):
     for d in d_values:
         out = _as_scalar_or_bytes(_call_deriver(fn, R=R, d_star=d))
         if not isinstance(out, float):
-            pytest.skip(
-                "pi^phi derivation returns bytes; monotonic scalar test not applicable"
-            )
+            pytest.skip("pi^phi derivation returns bytes; monotonic scalar test not applicable")
         outs.append(out)
 
     for a, b in zip(outs, outs[1:]):
@@ -246,9 +242,7 @@ def test_log_identity_scalar(pi_phi_deriver):
     for d_star in [-0.75, -0.1, 0.2, 0.9, 1.3]:
         out = _as_scalar_or_bytes(_call_deriver(fn, R=R, d_star=d_star))
         if not isinstance(out, float):
-            pytest.skip(
-                "pi^phi derivation returns bytes; scalar log identity test not applicable"
-            )
+            pytest.skip("pi^phi derivation returns bytes; scalar log identity test not applicable")
         if out <= 0 or R <= 0:
             continue
         lhs = math.log(out / R) / math.log(math.pi)
@@ -266,9 +260,7 @@ def test_small_delta_in_d_star_changes_output_smoothly_scalar(pi_phi_deriver):
     shifted = _as_scalar_or_bytes(_call_deriver(fn, R=R, d_star=d + eps))
 
     if not (isinstance(base, float) and isinstance(shifted, float)):
-        pytest.skip(
-            "pi^phi derivation returns bytes; scalar smoothness test not applicable"
-        )
+        pytest.skip("pi^phi derivation returns bytes; scalar smoothness test not applicable")
 
     assert shifted != base
     assert math.isfinite(shifted)
@@ -300,9 +292,7 @@ def test_bytes_kdf_determinism_if_bytes(pi_phi_deriver):
 
     out1 = _as_scalar_or_bytes(_call_deriver(fn, R=R, d_star=d1))
     if isinstance(out1, float):
-        pytest.skip(
-            "pi^phi derivation returns scalar; bytes determinism test not applicable"
-        )
+        pytest.skip("pi^phi derivation returns scalar; bytes determinism test not applicable")
 
     out1b = _as_scalar_or_bytes(_call_deriver(fn, R=R, d_star=d1))
     assert out1 == out1b
@@ -321,8 +311,6 @@ def test_randomized_regression_against_spec_scalar(pi_phi_deriver):
         d_star = rng.uniform(-2.0, 2.0)
         out = _as_scalar_or_bytes(_call_deriver(fn, R=R, d_star=d_star))
         if not isinstance(out, float):
-            pytest.skip(
-                "pi^phi derivation returns bytes; scalar randomized test not applicable"
-            )
+            pytest.skip("pi^phi derivation returns bytes; scalar randomized test not applicable")
         exp = _expected_scalar(R=R, d_star=d_star, phi=phi)
         assert out == pytest.approx(exp, rel=1e-11, abs=1e-12)

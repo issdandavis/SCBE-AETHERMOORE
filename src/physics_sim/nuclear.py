@@ -249,9 +249,7 @@ def time_for_remaining_fraction(half_life: float, fraction: float) -> float:
 # =============================================================================
 
 
-def bateman_equation(
-    N1_0: float, lambda1: float, lambda2: float, time: float
-) -> Tuple[float, float]:
+def bateman_equation(N1_0: float, lambda1: float, lambda2: float, time: float) -> Tuple[float, float]:
     """
     Solve Bateman equations for simple two-step decay chain.
 
@@ -274,19 +272,12 @@ def bateman_equation(
         # Secular equilibrium case
         N2 = N1_0 * lambda1 * time * math.exp(-lambda1 * time)
     else:
-        N2 = (
-            N1_0
-            * lambda1
-            / (lambda2 - lambda1)
-            * (math.exp(-lambda1 * time) - math.exp(-lambda2 * time))
-        )
+        N2 = N1_0 * lambda1 / (lambda2 - lambda1) * (math.exp(-lambda1 * time) - math.exp(-lambda2 * time))
 
     return N1, N2
 
 
-def secular_equilibrium_ratio(
-    lambda_parent: float, lambda_daughter: float
-) -> Optional[float]:
+def secular_equilibrium_ratio(lambda_parent: float, lambda_daughter: float) -> Optional[float]:
     """
     Calculate activity ratio at secular equilibrium.
 
@@ -446,9 +437,7 @@ def q_value(mass_reactants: float, mass_products: float) -> float:
     return delta_m * AMU_MEV
 
 
-def threshold_energy(
-    Q: float, m_projectile: float, m_target: float, m_heavy_product: float
-) -> float:
+def threshold_energy(Q: float, m_projectile: float, m_target: float, m_heavy_product: float) -> float:
     """
     Calculate threshold energy for endothermic reaction.
 
@@ -537,9 +526,7 @@ def reaction_rate(sigma: float, flux: float, N_target: float) -> float:
     return sigma_cm2 * flux * N_target
 
 
-def breit_wigner(
-    E: float, E_r: float, Gamma: float, g: float, Gamma_i: float, Gamma_f: float
-) -> float:
+def breit_wigner(E: float, E_r: float, Gamma: float, g: float, Gamma_i: float, Gamma_f: float) -> float:
     """
     Breit-Wigner resonance cross section formula.
 
@@ -694,9 +681,7 @@ def absorbed_dose_gray(energy_J: float, mass_kg: float) -> float:
     return energy_J / mass_kg
 
 
-def equivalent_dose_sievert(
-    absorbed_dose_Gy: float, radiation_weighting_factor: float
-) -> float:
+def equivalent_dose_sievert(absorbed_dose_Gy: float, radiation_weighting_factor: float) -> float:
     """
     Calculate equivalent dose.
 

@@ -233,10 +233,7 @@ def embryonic_intake(raw_text: str) -> Dict[str, Any]:
     breath_amplitude = 0.1 * (1.0 + np.sin(breath_phase * 2 * np.pi))
 
     # Apply breathing to embedding (subtle dimensional pulsing)
-    breathed_embedding = [
-        v * (1.0 + breath_amplitude * np.sin(i * np.pi / 3))
-        for i, v in enumerate(embedding)
-    ]
+    breathed_embedding = [v * (1.0 + breath_amplitude * np.sin(i * np.pi / 3)) for i, v in enumerate(embedding)]
     # Re-clamp to Poincare ball
     norm = sum(v * v for v in breathed_embedding) ** 0.5
     if norm >= 1.0:

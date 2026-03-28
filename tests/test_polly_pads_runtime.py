@@ -238,12 +238,8 @@ class TestSquadSpace:
 
     def test_risk_field(self) -> None:
         s = SquadSpace("risk")
-        s.units["safe"] = UnitState(
-            "safe", 0, 0, 0, coherence=0.9, d_star=0.1, h_eff=10
-        )
-        s.units["danger"] = UnitState(
-            "danger", 0, 0, 0, coherence=0.1, d_star=5.0, h_eff=1e7
-        )
+        s.units["safe"] = UnitState("safe", 0, 0, 0, coherence=0.9, d_star=0.1, h_eff=10)
+        s.units["danger"] = UnitState("danger", 0, 0, 0, coherence=0.1, d_star=5.0, h_eff=1e7)
         rf = s.risk_field()
         assert rf["safe"] == "ALLOW"
         assert rf["danger"] == "DENY"
@@ -585,9 +581,7 @@ class TestHyperbolicDistance:
     def test_symmetry(self) -> None:
         u = (0.1, 0.2, 0.0, 0.1, 0.0, 0.1)
         v = (0.3, 0.1, 0.2, 0.0, 0.1, 0.0)
-        assert hyperbolic_distance_6d(u, v) == pytest.approx(
-            hyperbolic_distance_6d(v, u), rel=1e-10
-        )
+        assert hyperbolic_distance_6d(u, v) == pytest.approx(hyperbolic_distance_6d(v, u), rel=1e-10)
 
     def test_grows_with_position(self) -> None:
         origin = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)

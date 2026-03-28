@@ -754,10 +754,7 @@ def test_distance_performance():
         return float(np.arccosh(max(1.0, arg)))
 
     np.random.seed(606)
-    pairs = [
-        (np.random.randn(6) * 0.3, np.random.randn(6) * 0.3)
-        for _ in range(PERFORMANCE_ITERATIONS)
-    ]
+    pairs = [(np.random.randn(6) * 0.3, np.random.randn(6) * 0.3) for _ in range(PERFORMANCE_ITERATIONS)]
 
     start = time.perf_counter()
     for u, v in pairs:
@@ -803,15 +800,9 @@ def run_all_tests():
     runner.run_test("golden_ratio_constant", test_golden_ratio_constant, "unit")
     runner.run_test("realification_isometry", test_realification_isometry, "unit")
     runner.run_test("poincare_ball_containment", test_poincare_ball_containment, "unit")
-    runner.run_test(
-        "hyperbolic_distance_properties", test_hyperbolic_distance_properties, "unit"
-    )
-    runner.run_test(
-        "harmonic_scaling_monotonicity", test_harmonic_scaling_monotonicity, "unit"
-    )
-    runner.run_test(
-        "mobius_addition_properties", test_mobius_addition_properties, "unit"
-    )
+    runner.run_test("hyperbolic_distance_properties", test_hyperbolic_distance_properties, "unit")
+    runner.run_test("harmonic_scaling_monotonicity", test_harmonic_scaling_monotonicity, "unit")
+    runner.run_test("mobius_addition_properties", test_mobius_addition_properties, "unit")
 
     # Unit Tests: Cryptographic Components
     print("\n[UNIT] Cryptographic Components")
@@ -823,9 +814,7 @@ def run_all_tests():
     # Unit Tests: Neural/Energy Components
     print("\n[UNIT] Neural/Energy Components")
     print("-" * 40)
-    runner.run_test(
-        "hopfield_energy_computation", test_hopfield_energy_computation, "unit"
-    )
+    runner.run_test("hopfield_energy_computation", test_hopfield_energy_computation, "unit")
     runner.run_test("coherence_metrics_bounded", test_coherence_metrics_bounded, "unit")
 
     # Unit Tests: Governance Components
@@ -838,14 +827,10 @@ def run_all_tests():
     # Integration Tests
     print("\n[INTEGRATION] End-to-End Flows")
     print("-" * 40)
-    runner.run_test(
-        "full_embedding_pipeline", test_full_embedding_pipeline, "integration"
-    )
+    runner.run_test("full_embedding_pipeline", test_full_embedding_pipeline, "integration")
     runner.run_test("governance_end_to_end", test_governance_end_to_end, "integration")
     runner.run_test("phdm_geodesic_path", test_phdm_geodesic_path, "integration")
-    runner.run_test(
-        "pqc_key_exchange_simulation", test_pqc_key_exchange_simulation, "integration"
-    )
+    runner.run_test("pqc_key_exchange_simulation", test_pqc_key_exchange_simulation, "integration")
 
     # Performance Tests
     print("\n[PERFORMANCE] Benchmarks")
@@ -864,20 +849,12 @@ def run_all_tests():
     for category, stats in summary["by_category"].items():
         pct = 100 * stats["passed"] / stats["total"] if stats["total"] > 0 else 0
         status = "\033[92mPASS\033[0m" if pct == 100 else "\033[91mFAIL\033[0m"
-        print(
-            f"  {category.upper():15} {stats['passed']}/{stats['total']} ({pct:.0f}%) [{status}]"
-        )
+        print(f"  {category.upper():15} {stats['passed']}/{stats['total']} ({pct:.0f}%) [{status}]")
 
     print("-" * 70)
     all_pass = summary["passed"] == summary["total"]
-    status = (
-        "\033[92mALL TESTS PASSED\033[0m"
-        if all_pass
-        else "\033[91mSOME TESTS FAILED\033[0m"
-    )
-    print(
-        f"  TOTAL: {summary['passed']}/{summary['total']} ({summary['success_rate']}) [{status}]"
-    )
+    status = "\033[92mALL TESTS PASSED\033[0m" if all_pass else "\033[91mSOME TESTS FAILED\033[0m"
+    print(f"  TOTAL: {summary['passed']}/{summary['total']} ({summary['success_rate']}) [{status}]")
     print(f"  Time: {summary['total_time_ms']:.2f}ms")
     print("=" * 70)
 

@@ -148,18 +148,14 @@ class TestFusion:
 class TestRepulsionV2:
     def test_uncertainty_amplification(self):
         a = tongue_agent("KO", [0.1, 0])
-        uncertain = MixedAgent(
-            "u", [0.15, 0], TONGUE_PHASES["KO"], sigma=1.0, tongue="KO"
-        )
+        uncertain = MixedAgent("u", [0.15, 0], TONGUE_PHASES["KO"], sigma=1.0, tongue="KO")
         _, amp, anomaly, _ = compute_repel_force_v2(a, uncertain)
         assert amp > 1.0
         assert anomaly is True
 
     def test_no_extra_for_low_sigma(self):
         a = tongue_agent("KO", [0.1, 0])
-        certain = MixedAgent(
-            "c", [0.15, 0], TONGUE_PHASES["KO"], sigma=0.3, tongue="KO"
-        )
+        certain = MixedAgent("c", [0.15, 0], TONGUE_PHASES["KO"], sigma=0.3, tongue="KO")
         _, amp, anomaly, _ = compute_repel_force_v2(a, certain)
         assert anomaly is False
         assert amp == 1.0

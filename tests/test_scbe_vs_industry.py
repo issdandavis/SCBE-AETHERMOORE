@@ -38,9 +38,7 @@ def test_external_models_can_be_opted_in(monkeypatch):
     )
 
     assert benchmark._load_protectai() == "fake-model"
-    assert calls == [
-        ("text-classification", "protectai/deberta-v3-base-prompt-injection-v2", -1)
-    ]
+    assert calls == [("text-classification", "protectai/deberta-v3-base-prompt-injection-v2", -1)]
 
 
 def test_run_full_benchmark_is_console_safe_and_writes_report(monkeypatch, tmp_path):
@@ -55,9 +53,7 @@ def test_run_full_benchmark_is_console_safe_and_writes_report(monkeypatch, tmp_p
 
     fake_stdout.flush()
     output = fake_stdout.buffer.getvalue().decode("cp1252")
-    report_path = (
-        tmp_path / "artifacts" / "benchmark" / "industry_benchmark_report.json"
-    )
+    report_path = tmp_path / "artifacts" / "benchmark" / "industry_benchmark_report.json"
 
     assert "SCBE vs INDUSTRY ADVERSARIAL BENCHMARK" in output
     assert "Attack: A01 - direct override" in output

@@ -214,15 +214,9 @@ class PageAnalyzer:
     ) -> str:
         combined = " ".join([url, title, text[:2000], page_type]).lower()
         tokens = set(re.findall(r"[a-z0-9]+", combined))
-        if forms and (
-            self._contains_hint(combined, _AUTH_HINTS)
-            or self._buttons_match(buttons, _AUTH_HINTS)
-        ):
+        if forms and (self._contains_hint(combined, _AUTH_HINTS) or self._buttons_match(buttons, _AUTH_HINTS)):
             return "authenticate"
-        if forms and (
-            self._contains_hint(combined, _PAYMENT_HINTS)
-            or self._buttons_match(buttons, _PAYMENT_HINTS)
-        ):
+        if forms and (self._contains_hint(combined, _PAYMENT_HINTS) or self._buttons_match(buttons, _PAYMENT_HINTS)):
             return "checkout"
         if _hostname_matches(url, "github.com") or "repository" in combined:
             return "repository_review"
@@ -245,25 +239,14 @@ class PageAnalyzer:
     ) -> tuple[str, list[str]]:
         combined = " ".join([title, text[:3000], page_type]).lower()
         approvals: list[str] = []
-        if forms and (
-            self._contains_hint(combined, _AUTH_HINTS)
-            or self._buttons_match(buttons, _AUTH_HINTS)
-        ):
+        if forms and (self._contains_hint(combined, _AUTH_HINTS) or self._buttons_match(buttons, _AUTH_HINTS)):
             approvals.append("Page contains authentication or credential entry")
-        if forms and (
-            self._contains_hint(combined, _PAYMENT_HINTS)
-            or self._buttons_match(buttons, _PAYMENT_HINTS)
-        ):
+        if forms and (self._contains_hint(combined, _PAYMENT_HINTS) or self._buttons_match(buttons, _PAYMENT_HINTS)):
             approvals.append("Page contains payment or checkout flow")
-        if self._contains_hint(combined, _DESTRUCTIVE_HINTS) or self._buttons_match(
-            buttons, _DESTRUCTIVE_HINTS
-        ):
+        if self._contains_hint(combined, _DESTRUCTIVE_HINTS) or self._buttons_match(buttons, _DESTRUCTIVE_HINTS):
             approvals.append("Page exposes a high-impact state-changing action")
         unique_approvals = list(dict.fromkeys(approvals))
-        if any(
-            "payment" in item.lower() or "high-impact" in item.lower()
-            for item in unique_approvals
-        ):
+        if any("payment" in item.lower() or "high-impact" in item.lower() for item in unique_approvals):
             return "high", unique_approvals
         if unique_approvals or forms:
             return "medium", unique_approvals
@@ -363,9 +346,7 @@ class PageAnalyzer:
     @staticmethod
     def _buttons_match(buttons: list[dict], hints: set[str]) -> bool:
         for button in buttons:
-            button_text = " ".join(
-                str(button.get(key, "")) for key in ("text", "type", "name")
-            ).lower()
+            button_text = " ".join(str(button.get(key, "")) for key in ("text", "type", "name")).lower()
             if any(hint in button_text for hint in hints):
                 return True
         return False

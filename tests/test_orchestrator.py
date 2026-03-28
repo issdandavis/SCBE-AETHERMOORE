@@ -156,9 +156,7 @@ class TestOrchSCBE:
         ]
         for radius, expected_ring in cases:
             result = json.loads(_orch.ring_classify(radius))
-            assert (
-                result["ring"] == expected_ring
-            ), f"radius {radius} expected {expected_ring} got {result['ring']}"
+            assert result["ring"] == expected_ring, f"radius {radius} expected {expected_ring} got {result['ring']}"
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -206,9 +204,7 @@ class TestOrchEggs:
         egg_json, _, _, _ = self._make_egg()
         with tempfile.TemporaryDirectory() as td:
             db = os.path.join(td, "test.db")
-            result = json.loads(
-                _orch.egg_register(egg_json, ttl_seconds=600, db_path=db)
-            )
+            result = json.loads(_orch.egg_register(egg_json, ttl_seconds=600, db_path=db))
             assert result["status"] == "SEALED"
             assert result["egg_id"]
 
@@ -265,9 +261,7 @@ class TestOrchGovernedWeb:
 
     @pytest.mark.asyncio
     async def test_web_search(self, monkeypatch):
-        async def fake_search(
-            query: str, *, num_results: int = 8, agent_id: str = "KO"
-        ):
+        async def fake_search(query: str, *, num_results: int = 8, agent_id: str = "KO"):
             return {
                 "ok": True,
                 "query": query,

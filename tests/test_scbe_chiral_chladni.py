@@ -69,9 +69,7 @@ def test_binding_token_changes_with_handedness() -> None:
     left = ChiralModeAddress(3, 5, handedness="L", chiral_weight=0.2)
     right = ChiralModeAddress(3, 5, handedness="R", chiral_weight=0.2)
 
-    assert derive_binding_token(left, MANIFOLD, SECRET) != derive_binding_token(
-        right, MANIFOLD, SECRET
-    )
+    assert derive_binding_token(left, MANIFOLD, SECRET) != derive_binding_token(right, MANIFOLD, SECRET)
 
 
 def test_binding_token_changes_with_sign_quadrant() -> None:
@@ -90,9 +88,7 @@ def test_wrong_handedness_fails_egg_verification() -> None:
 
     egg = seal_egg(PAYLOAD, sealed_mode, MANIFOLD, SECRET, realm="validation")
     assert verify_egg(egg, PAYLOAD, sealed_mode, MANIFOLD, SECRET, realm="validation")
-    assert not verify_egg(
-        egg, PAYLOAD, wrong_mode, MANIFOLD, SECRET, realm="validation"
-    )
+    assert not verify_egg(egg, PAYLOAD, wrong_mode, MANIFOLD, SECRET, realm="validation")
 
 
 def test_wrong_manifold_fails_egg_verification() -> None:

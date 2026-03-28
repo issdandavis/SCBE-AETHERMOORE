@@ -97,9 +97,7 @@ def squared_energy(input_value: float) -> float:
     return math.log(1 + input_value**2)
 
 
-def reaction_rate(
-    concentration_a: float, concentration_b: float, temperature: float = 1.0
-) -> float:
+def reaction_rate(concentration_a: float, concentration_b: float, temperature: float = 1.0) -> float:
     """
     Calculate reaction rate using mass action kinetics.
 
@@ -127,9 +125,7 @@ def reaction_rate(
 # =============================================================================
 
 
-def ray_refraction(
-    value: float, threat_level: int, max_refraction: float = REFRACTION_BASE
-) -> float:
+def ray_refraction(value: float, threat_level: int, max_refraction: float = REFRACTION_BASE) -> float:
     """
     Apply ray refraction defense.
 
@@ -174,9 +170,7 @@ def harmonic_sink(value: float, sink_depth: int = 3) -> float:
 # =============================================================================
 
 
-def self_heal(
-    current_health: float, target_health: float, healing_rate: float = HEALING_RATE
-) -> float:
+def self_heal(current_health: float, target_health: float, healing_rate: float = HEALING_RATE) -> float:
     """
     Apply self-healing using chemical equilibrium.
 
@@ -195,9 +189,7 @@ def self_heal(
     return current_health + delta * healing_rate
 
 
-def equilibrium_force(
-    position: float, equilibrium: float, spring_constant: float = 1.0
-) -> float:
+def equilibrium_force(position: float, equilibrium: float, spring_constant: float = 1.0) -> float:
     """
     Calculate restoring force toward equilibrium.
 
@@ -290,9 +282,7 @@ class WaveSimulation:
     def spawn_antibodies(self, count: float = 1.0) -> None:
         """Spawn antibody units in response to threat."""
         # Antibodies get efficiency boost at higher threat levels
-        efficiency = (
-            ANTIBODY_EFFICIENCY_BASE + self.threat_level * ANTIBODY_EFFICIENCY_BOOST
-        )
+        efficiency = ANTIBODY_EFFICIENCY_BASE + self.threat_level * ANTIBODY_EFFICIENCY_BOOST
 
         for _ in range(int(count)):
             self.unit_counter += 1
@@ -360,9 +350,7 @@ class WaveSimulation:
             "health": self.health,
         }
 
-    def run_wave(
-        self, steps: int = 100, spawn_interval: int = 5
-    ) -> List[Dict[str, float]]:
+    def run_wave(self, steps: int = 100, spawn_interval: int = 5) -> List[Dict[str, float]]:
         """
         Run a complete wave simulation.
 
@@ -391,9 +379,9 @@ class WaveSimulation:
 
     def get_final_metrics(self) -> Dict[str, Any]:
         """Get final simulation metrics."""
-        propagation_success = (
-            self.total_malicious_spawned - self.total_neutralized
-        ) / max(1, self.total_malicious_spawned)
+        propagation_success = (self.total_malicious_spawned - self.total_neutralized) / max(
+            1, self.total_malicious_spawned
+        )
 
         detection_rate = self.total_neutralized / max(1, self.total_malicious_spawned)
 
@@ -409,9 +397,7 @@ class WaveSimulation:
             "propagation_success_rate": propagation_success,
             "detection_rate": detection_rate,
             "system_stability": self.health / self.max_health,
-            "antibody_efficiency": (
-                self.total_neutralized / max(1, self.total_antibodies_spawned)
-            ),
+            "antibody_efficiency": (self.total_neutralized / max(1, self.total_antibodies_spawned)),
         }
 
 
@@ -464,9 +450,7 @@ class ChemistryAgent:
         else:
             self.state = AgentState.RECOVERING
 
-    def process_input(
-        self, input_value: float, threat_type: ThreatType = ThreatType.NORMAL
-    ) -> Tuple[float, bool]:
+    def process_input(self, input_value: float, threat_type: ThreatType = ThreatType.NORMAL) -> Tuple[float, bool]:
         """
         Process an input through the defense system.
 
@@ -535,9 +519,7 @@ class ChemistryAgent:
     def heal(self) -> None:
         """Apply self-healing."""
         self.health = self_heal(self.health, self.max_health)
-        self.energy_pool = self_heal(
-            self.energy_pool, self.max_energy, healing_rate=0.05
-        )
+        self.energy_pool = self_heal(self.energy_pool, self.max_energy, healing_rate=0.05)
 
     def get_status(self) -> Dict[str, Any]:
         """Get agent status."""
@@ -560,9 +542,7 @@ class ChemistryAgent:
 # =============================================================================
 
 
-def quick_defense_check(
-    input_value: float, threat_level: int = DEFAULT_THREAT_LEVEL
-) -> Tuple[float, bool, float]:
+def quick_defense_check(input_value: float, threat_level: int = DEFAULT_THREAT_LEVEL) -> Tuple[float, bool, float]:
     """
     Quick check if input should be blocked.
 

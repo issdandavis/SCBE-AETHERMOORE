@@ -38,11 +38,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_OUTPUT_DIR = Path(
     os.environ.get(
         "SCBE_TRAINING_OUTPUT",
-        str(
-            Path(__file__).resolve().parent.parent.parent
-            / "training-data"
-            / "gacha_sessions"
-        ),
+        str(Path(__file__).resolve().parent.parent.parent / "training-data" / "gacha_sessions"),
     )
 )
 DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -209,9 +205,7 @@ class HFTrainingLoop:
             )
             return False
 
-        logger.debug(
-            "Layer 9 pair validated: coherence=%.3f, hash=%s", coherence, pair_hash[:16]
-        )
+        logger.debug("Layer 9 pair validated: coherence=%.3f, hash=%s", coherence, pair_hash[:16])
         return True
 
     # -----------------------------------------------------------------
@@ -234,9 +228,7 @@ class HFTrainingLoop:
                 continue
 
             # Compute rho_e
-            event.rho_e = compute_rho_e(
-                np.array([len(event.response), len(event.prompt)])
-            )
+            event.rho_e = compute_rho_e(np.array([len(event.response), len(event.prompt)]))
             if event.rho_e >= self.rho_e_threshold:
                 logger.warning(
                     "Layer 12 high-entropy event rejected: rho_e=%.2f",

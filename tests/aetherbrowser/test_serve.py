@@ -44,19 +44,13 @@ class TestWebSocket:
         original = serve_module.executor
         serve_module.executor = StubExecutor()
         with client.websocket_connect("/ws") as ws:
-            ws.send_json(
-                {"type": "command", "agent": "user", "payload": {"text": "Hello"}}
-            )
+            ws.send_json({"type": "command", "agent": "user", "payload": {"text": "Hello"}})
             messages = [ws.receive_json() for _ in range(7)]
             assert any(
-                msg["type"] == "chat"
-                and msg["payload"].get("execution", {}).get("model_id") == "test-local"
+                msg["type"] == "chat" and msg["payload"].get("execution", {}).get("model_id") == "test-local"
                 for msg in messages
             )
-            assert any(
-                msg["type"] == "agent_status" and msg["payload"]["state"] == "done"
-                for msg in messages
-            )
+            assert any(msg["type"] == "agent_status" and msg["payload"]["state"] == "done" for msg in messages)
         serve_module.executor = original
 
     def test_ws_high_risk_command_requests_zone_approval(self):
@@ -66,9 +60,7 @@ class TestWebSocket:
                 {
                     "type": "command",
                     "agent": "user",
-                    "payload": {
-                        "text": "Open the browser tab, fill the login form, and submit it"
-                    },
+                    "payload": {"text": "Open the browser tab, fill the login form, and submit it"},
                 }
             )
             messages = [ws.receive_json() for _ in range(4)]

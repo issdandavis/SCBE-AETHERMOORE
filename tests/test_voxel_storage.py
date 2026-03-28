@@ -47,9 +47,7 @@ class TestChladniAmplitude:
     def test_center_value(self):
         """Known value at center (0.5, 0.5)."""
         a = chladni_amplitude(0.5, 0.5, n=3, m=2)
-        expected = math.cos(1.5 * math.pi) * math.cos(math.pi) - math.cos(
-            math.pi
-        ) * math.cos(1.5 * math.pi)
+        expected = math.cos(1.5 * math.pi) * math.cos(math.pi) - math.cos(math.pi) * math.cos(1.5 * math.pi)
         assert abs(a - expected) < 1e-10
 
 
@@ -302,9 +300,7 @@ class TestVoxelGridQueries:
         assert results[0][1] > 0.99
 
     def test_query_by_intent_min_similarity(self, populated_grid):
-        results = populated_grid.query_by_intent(
-            [1, 0, 0], top_k=10, min_similarity=0.9
-        )
+        results = populated_grid.query_by_intent([1, 0, 0], top_k=10, min_similarity=0.9)
         labels = [v.intent_label for v, _ in results]
         assert "arch" in labels
         assert "draft" not in labels  # orthogonal

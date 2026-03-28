@@ -75,18 +75,14 @@ class Triangle:
     corner_c: int  # governance node (compression weight)
     governance_weight: float = 1.0  # compression parameter
 
-    def interpolate(
-        self, w1: float, w2: float, w3: float, val_a: float, val_b: float
-    ) -> float:
+    def interpolate(self, w1: float, w2: float, w3: float, val_a: float, val_b: float) -> float:
         """Barycentric interpolation with governance compression.
 
         w1, w2 blend the two tokenizer values.
         w3 * governance_weight compresses/expands the result.
         """
         if abs(w1 + w2 + w3 - 1.0) > 1e-6:
-            raise ValueError(
-                f"Barycentric coords must sum to 1, got {w1 + w2 + w3:.6f}"
-            )
+            raise ValueError(f"Barycentric coords must sum to 1, got {w1 + w2 + w3:.6f}")
         semantic_blend = w1 * val_a + w2 * val_b
         governance_factor = 1.0 + (w3 * (self.governance_weight - 1.0))
         return semantic_blend * governance_factor
@@ -119,19 +115,13 @@ class TriangulatedPHDMLattice:
     def _build_nodes(self):
         """Create 21 PHDM nodes."""
         for name in TONGUE_DIMS:
-            self.nodes.append(
-                LatticeNode(id=self._next_id, name=name, dim_type="tongue")
-            )
+            self.nodes.append(LatticeNode(id=self._next_id, name=name, dim_type="tongue"))
             self._next_id += 1
         for name in PHASE_DIMS:
-            self.nodes.append(
-                LatticeNode(id=self._next_id, name=name, dim_type="phase")
-            )
+            self.nodes.append(LatticeNode(id=self._next_id, name=name, dim_type="phase"))
             self._next_id += 1
         for name in TELEMETRY_DIMS:
-            self.nodes.append(
-                LatticeNode(id=self._next_id, name=name, dim_type="telemetry")
-            )
+            self.nodes.append(LatticeNode(id=self._next_id, name=name, dim_type="telemetry"))
             self._next_id += 1
 
     def _build_edges(self):

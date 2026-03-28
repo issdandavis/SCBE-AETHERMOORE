@@ -116,9 +116,7 @@ def harmonic_cost(d: float, R: float = R_DEFAULT, C_base: float = 1.0) -> float:
     return C_base * (R**d_squared)
 
 
-def security_level_cost(
-    level: int, R: float = R_DEFAULT, C_base: float = 10.0
-) -> float:
+def security_level_cost(level: int, R: float = R_DEFAULT, C_base: float = 10.0) -> float:
     """
     Compute computational cost for accessing a security level.
 
@@ -174,9 +172,7 @@ def lorentz_factor(rho_E: float, rho_critical: float) -> float:
     return 1.0 / np.sqrt(1.0 - ratio_squared)
 
 
-def compute_latency_delay(
-    rho_E: float, rho_critical: float = 100.0, t_base: float = 0.01
-) -> float:
+def compute_latency_delay(rho_E: float, rho_critical: float = 100.0, t_base: float = 0.01) -> float:
     """
     Compute latency delay using virtual gravity.
 
@@ -434,9 +430,7 @@ def context_spin_angles(context: Dict[str, Any]) -> np.ndarray:
     return np.array(angles[:5])
 
 
-def spin_transform(
-    v_input: np.ndarray, context: Dict[str, Any], offset: np.ndarray = None
-) -> np.ndarray:
+def spin_transform(v_input: np.ndarray, context: Dict[str, Any], offset: np.ndarray = None) -> np.ndarray:
     """
     Apply context-dependent spin transformation.
 
@@ -513,9 +507,7 @@ def flux_noise(sigma: float) -> np.ndarray:
     return np.random.normal(0, sigma, 6)
 
 
-def jittered_target(
-    P_target: np.ndarray, network_load: float = 0.0, sigma_base: float = 0.01
-) -> np.ndarray:
+def jittered_target(P_target: np.ndarray, network_load: float = 0.0, sigma_base: float = 0.01) -> np.ndarray:
     """
     Compute jittered target position.
 
@@ -765,9 +757,7 @@ def demo():
     print("1. WEIGHTED METRIC TENSOR")
     print("-" * 70)
     print(f"   g = diag(1, 1, 1, R, R², R³) where R = {engine.R}")
-    print(
-        f"   Behavioral dimension costs: {engine.R}, {engine.R**2:.2f}, {engine.R**3:.2f}"
-    )
+    print(f"   Behavioral dimension costs: {engine.R}, {engine.R**2:.2f}, {engine.R**3:.2f}")
     print()
 
     print("2. HARMONIC SCALING LAW")

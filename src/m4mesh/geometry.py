@@ -4,9 +4,7 @@ from dataclasses import dataclass
 import torch
 
 
-def tanh_ball_projection(
-    x: torch.Tensor, c: float = 1.0, eps: float = 1e-12
-) -> torch.Tensor:
+def tanh_ball_projection(x: torch.Tensor, c: float = 1.0, eps: float = 1e-12) -> torch.Tensor:
     """Project rows of x into open ball using tanh radial map."""
 
     sc = float(c) ** 0.5

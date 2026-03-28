@@ -109,9 +109,7 @@ class CoordinateBlock(ConceptBlock):
     def _do_tick(self, inputs: Dict[str, Any]) -> BlockResult:
         proposals = inputs.get("proposals", [])
         if not proposals:
-            return BlockResult(
-                status=BlockStatus.FAILURE, message="No proposals provided"
-            )
+            return BlockResult(status=BlockStatus.FAILURE, message="No proposals provided")
 
         self._consensus.reset()
         for p in proposals:

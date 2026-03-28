@@ -131,9 +131,7 @@ def derive_harmonic_mask(
     derived = hmac.new(secret_key, context.encode("utf-8"), hashlib.sha256).digest()
 
     # Commitment for later verification
-    key_commitment = hmac.new(
-        secret_key, f"commit:{token_id}".encode("utf-8"), hashlib.sha256
-    ).digest()[:16]
+    key_commitment = hmac.new(secret_key, f"commit:{token_id}".encode("utf-8"), hashlib.sha256).digest()[:16]
 
     # Determine base harmonic pool based on modality
     if modality == ModalityMask.STRICT:
@@ -431,9 +429,7 @@ def verify_envelope_integrity(message: EncodedMessage, secret_key: bytes) -> boo
 # =============================================================================
 
 
-def analyze_frequency_attack_resistance(
-    token_ids: List[int], secret_key: bytes, num_samples: int = 100
-) -> dict:
+def analyze_frequency_attack_resistance(token_ids: List[int], secret_key: bytes, num_samples: int = 100) -> dict:
     """
     Analyze resistance to frequency analysis attacks.
 
@@ -526,9 +522,7 @@ def compare_steep_vs_flat(token_ids: List[int]) -> dict:
 # =============================================================================
 
 
-def resonance_refractor(
-    fingerprints: List[HarmonicFingerprint], interference_depth: float = 0.3
-) -> np.ndarray:
+def resonance_refractor(fingerprints: List[HarmonicFingerprint], interference_depth: float = 0.3) -> np.ndarray:
     """
     Apply resonance refractoring for multi-token encoding.
 
@@ -602,6 +596,4 @@ def generate_key(length: int = 32) -> bytes:
 
 def key_from_passphrase(passphrase: str, salt: bytes = b"flat_slope_v1") -> bytes:
     """Derive key from passphrase using PBKDF2."""
-    return hashlib.pbkdf2_hmac(
-        "sha256", passphrase.encode("utf-8"), salt, iterations=100000, dklen=32
-    )
+    return hashlib.pbkdf2_hmac("sha256", passphrase.encode("utf-8"), salt, iterations=100000, dklen=32)

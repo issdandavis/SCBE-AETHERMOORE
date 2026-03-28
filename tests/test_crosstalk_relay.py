@@ -31,9 +31,7 @@ def test_emit_defaults_without_required_args(monkeypatch):
         }
 
     monkeypatch.setattr(relay, "emit_packet", fake_emit_packet)
-    monkeypatch.setattr(
-        sys, "argv", ["crosstalk_relay.py", "emit", "--summary", "quick note"]
-    )
+    monkeypatch.setattr(sys, "argv", ["crosstalk_relay.py", "emit", "--summary", "quick note"])
 
     relay.main()
 
@@ -156,11 +154,7 @@ def test_emit_packet_creates_cross_talk_note_in_resolved_vault(tmp_path, monkeyp
     monkeypatch.setattr(
         relay,
         "ACK_LANE",
-        tmp_path
-        / "artifacts"
-        / "agent_comm"
-        / "github_lanes"
-        / "cross_talk_acks.jsonl",
+        tmp_path / "artifacts" / "agent_comm" / "github_lanes" / "cross_talk_acks.jsonl",
     )
 
     result = relay.emit_packet(
@@ -206,11 +200,7 @@ def test_emit_packet_persists_parallel_browser_metadata(tmp_path, monkeypatch):
     monkeypatch.setattr(
         relay,
         "ACK_LANE",
-        tmp_path
-        / "artifacts"
-        / "agent_comm"
-        / "github_lanes"
-        / "cross_talk_acks.jsonl",
+        tmp_path / "artifacts" / "agent_comm" / "github_lanes" / "cross_talk_acks.jsonl",
     )
 
     result = relay.emit_packet(

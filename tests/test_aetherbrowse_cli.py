@@ -82,22 +82,16 @@ def test_main_exits_cleanly_on_cdp_readiness_failure(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    async def fake_check_cdp_readiness(
-        host: str, port: int, target_id: str | None
-    ) -> str:
+    async def fake_check_cdp_readiness(host: str, port: int, target_id: str | None) -> str:
         return "CDP unavailable for test"
 
     class FailIfConstructed:
         def __init__(self, config):
-            raise AssertionError(
-                "session should not be constructed when CDP is unavailable"
-            )
+            raise AssertionError("session should not be constructed when CDP is unavailable")
 
     monkeypatch.setattr(cli, "_check_cdp_readiness", fake_check_cdp_readiness)
     monkeypatch.setattr(cli, "AetherbrowseSession", FailIfConstructed)
-    monkeypatch.setattr(
-        sys, "argv", ["aetherbrowse_cli.py", "navigate", "https://example.com"]
-    )
+    monkeypatch.setattr(sys, "argv", ["aetherbrowse_cli.py", "navigate", "https://example.com"])
 
     with pytest.raises(SystemExit) as excinfo:
         cli.main()

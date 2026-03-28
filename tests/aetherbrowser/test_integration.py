@@ -61,23 +61,12 @@ class TestFullCommandFlow:
             assert "agent_status" in types
             assert "chat" in types
             assert "KO" in agents
-            plan_messages = [
-                m
-                for m in messages
-                if m["type"] == "chat" and "plan" in m.get("payload", {})
-            ]
+            plan_messages = [m for m in messages if m["type"] == "chat" and "plan" in m.get("payload", {})]
             assert plan_messages
             assert plan_messages[0]["payload"]["plan"]["risk_tier"] == "low"
-            execution_messages = [
-                m
-                for m in messages
-                if m["type"] == "chat" and "execution" in m.get("payload", {})
-            ]
+            execution_messages = [m for m in messages if m["type"] == "chat" and "execution" in m.get("payload", {})]
             assert execution_messages
-            assert (
-                execution_messages[0]["payload"]["execution"]["model_id"]
-                == "test-local"
-            )
+            assert execution_messages[0]["payload"]["execution"]["model_id"] == "test-local"
         serve_module.executor = original
 
     def test_high_risk_command_waits_for_zone_decision_then_resumes(self):
@@ -99,9 +88,7 @@ class TestFullCommandFlow:
                 {
                     "type": "command",
                     "agent": "user",
-                    "payload": {
-                        "text": "Open the browser tab, fill the login form, and submit it"
-                    },
+                    "payload": {"text": "Open the browser tab, fill the login form, and submit it"},
                 }
             )
             initial = _drain(ws, 4)
@@ -155,13 +142,9 @@ class TestFullCommandFlow:
 
             ca_msgs = [m for m in messages if m.get("agent") == "CA"]
             assert len(ca_msgs) >= 1
-            analysis_messages = [
-                m for m in messages if "page_analysis" in m.get("payload", {})
-            ]
+            analysis_messages = [m for m in messages if "page_analysis" in m.get("payload", {})]
             assert analysis_messages
-            assert (
-                analysis_messages[0]["payload"]["page_analysis"]["risk_tier"] == "low"
-            )
+            assert analysis_messages[0]["payload"]["page_analysis"]["risk_tier"] == "low"
 
     def test_health_reflects_squad_state(self):
         """Health endpoint should show all 6 agents."""

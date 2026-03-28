@@ -52,9 +52,7 @@ class TestInteractiveElement:
     def test_create_element(self):
         from src.browser.polly_vision import InteractiveElement
 
-        el = InteractiveElement(
-            ref_id=1, role="button", name="Submit", tag="button", selector="#submit-btn"
-        )
+        el = InteractiveElement(ref_id=1, role="button", name="Submit", tag="button", selector="#submit-btn")
         assert el.ref_id == 1
         assert el.role == "button"
         assert el.name == "Submit"
@@ -111,9 +109,7 @@ class TestPageObservation:
                     tag="button",
                     selector="#sub",
                 ),
-                InteractiveElement(
-                    ref_id=2, role="link", name="Home", tag="a", selector="a.home"
-                ),
+                InteractiveElement(ref_id=2, role="link", name="Home", tag="a", selector="a.home"),
             ],
             screenshot_bytes=None,
             screenshot_b64=None,
@@ -219,15 +215,9 @@ class TestPollyVisionEngine:
         from src.browser.polly_vision import PollyVision, InteractiveElement
 
         elements = [
-            InteractiveElement(
-                ref_id=1, role="button", name="Go", tag="button", selector="#go"
-            ),
-            InteractiveElement(
-                ref_id=2, role="button", name="Stop", tag="button", selector="#stop"
-            ),
-            InteractiveElement(
-                ref_id=3, role="link", name="Home", tag="a", selector="a"
-            ),
+            InteractiveElement(ref_id=1, role="button", name="Go", tag="button", selector="#go"),
+            InteractiveElement(ref_id=2, role="button", name="Stop", tag="button", selector="#stop"),
+            InteractiveElement(ref_id=3, role="link", name="Home", tag="a", selector="a"),
         ]
         summary = PollyVision._generate_summary("My Page", "https://x.com", elements)
         assert "My Page" in summary
@@ -448,7 +438,7 @@ class TestHydraHandVisionInit:
         hand = HydraHand(head_id="test")
         assert hand.vision_tier == ObservationTier.TIER_2
 
-        for tongue, finger in hand.fingers.items():
+        for _tongue, finger in hand.fingers.items():
             assert finger.vision is not None
             assert finger.vision.tier == ObservationTier.TIER_2
 
@@ -526,13 +516,8 @@ class TestTongueWeights:
     def test_weight_ordering(self):
         from src.browser.hydra_hand import TONGUE_WEIGHT, Tongue
 
-        weights = [
-            TONGUE_WEIGHT[t]
-            for t in [Tongue.KO, Tongue.AV, Tongue.RU, Tongue.CA, Tongue.UM, Tongue.DR]
-        ]
-        assert weights == sorted(
-            weights
-        ), "Tongue weights should be in ascending phi order"
+        weights = [TONGUE_WEIGHT[t] for t in [Tongue.KO, Tongue.AV, Tongue.RU, Tongue.CA, Tongue.UM, Tongue.DR]]
+        assert weights == sorted(weights), "Tongue weights should be in ascending phi order"
 
 
 class TestProximityMapping:

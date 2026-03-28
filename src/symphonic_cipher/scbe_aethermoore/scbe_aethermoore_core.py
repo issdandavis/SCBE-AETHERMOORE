@@ -93,9 +93,7 @@ def langues_metric(xi: np.ndarray) -> np.ndarray:
     g = np.zeros(6)
     for i in range(6):
         # Specific harmonic functions from spec
-        g_i = (
-            np.sin(np.pi * xi[i] / 256.0) ** 2 if i == 0 else np.sin(np.pi * xi[i]) ** 2
-        )
+        g_i = np.sin(np.pi * xi[i] / 256.0) ** 2 if i == 0 else np.sin(np.pi * xi[i]) ** 2
         g[i] = (PHI**i) * (1 + g_i)
     return g
 
@@ -121,9 +119,7 @@ class TorusState:
 # ============================================================================
 # LAYER 6: FRACTAL DIMENSION (Complexity)
 # ============================================================================
-def fractal_dimension(
-    trajectory: np.ndarray, scales: Optional[List[float]] = None
-) -> float:
+def fractal_dimension(trajectory: np.ndarray, scales: Optional[List[float]] = None) -> float:
     """Layer 6: Box-counting dimension estimate."""
     if scales is None:
         scales = [0.1, 0.05, 0.01]
@@ -191,9 +187,7 @@ class Polyhedron:
 # ============================================================================
 # LAYER 9: GUSCF (Spectral Coherence)
 # ============================================================================
-def spectral_coherence(
-    state1: np.ndarray, state2: np.ndarray, mu: float = 1.0
-) -> float:
+def spectral_coherence(state1: np.ndarray, state2: np.ndarray, mu: float = 1.0) -> float:
     """Layer 9: Gaussian kernel on state vectors."""
     if len(state1) == 0:
         return 0.0
@@ -273,9 +267,7 @@ class FeistelCipher:
         # 4-Round Feistel
         for i in range(4):
             # Round function using HMAC as PRF
-            f_out = hmac.new(
-                self.key, R + struct.pack("B", i), hashlib.sha256
-            ).digest()[:half]
+            f_out = hmac.new(self.key, R + struct.pack("B", i), hashlib.sha256).digest()[:half]
             # XOR
             new_R = bytes(a ^ b for a, b in zip(L, f_out))
             L = R
@@ -292,9 +284,7 @@ class FeistelCipher:
 
         # Reverse 4-Round Feistel
         for i in range(3, -1, -1):
-            f_out = hmac.new(
-                self.key, L + struct.pack("B", i), hashlib.sha256
-            ).digest()[:half]
+            f_out = hmac.new(self.key, L + struct.pack("B", i), hashlib.sha256).digest()[:half]
             new_L = bytes(a ^ b for a, b in zip(R, f_out))
             R = L
             L = new_L
@@ -321,21 +311,14 @@ class AethermooreState:
         return np.array([self.u1, self.u2, self.phi, self.t, self.S])
 
 
-def aethermoore_snap(
-    state: AethermooreState, V_max: float = 1.5
-) -> Tuple[AethermooreState, str]:
+def aethermoore_snap(state: AethermooreState, V_max: float = 1.5) -> Tuple[AethermooreState, str]:
     """Layer 13: The Snap Logic."""
     # 1. Hyperbolic Potential
     d_H = hyperbolic_distance(np.array([state.u1, 0]), np.array([state.u2, 0]))
 
     # 2. Total Potential V(x)
     xi_norm = np.linalg.norm(np.array([state.xi1, state.xi2, state.xi3]))
-    V = (
-        1.0 * d_H**2
-        + 0.5 * (state.S - 0.5) ** 2
-        + 1.0 * (1 - np.cos(state.phi))
-        + 0.5 * xi_norm**2
-    )
+    V = 1.0 * d_H**2 + 0.5 * (state.S - 0.5) ** 2 + 1.0 * (1 - np.cos(state.phi)) + 0.5 * xi_norm**2
 
     if V <= 0.5:
         return state, "NORMAL"
@@ -407,15 +390,11 @@ class SCBEAethermooreVerifier:
         self.feistel.encrypt(payload)
 
         # 13. Aethermoore
-        aether_state = AethermooreState(
-            u1=trust_vec[0], u2=trust_vec[1], phi=self.torus.theta, S=0.5
-        )
+        aether_state = AethermooreState(u1=trust_vec[0], u2=trust_vec[1], phi=self.torus.theta, S=0.5)
         final_state, snap_status = aethermoore_snap(aether_state)
 
         # Decision Logic
-        is_accept = (
-            hopfield_accept and valid_topo and D_f < 1.5 and snap_status != "SNAP"
-        )
+        is_accept = hopfield_accept and valid_topo and D_f < 1.5 and snap_status != "SNAP"
 
         reason = f"Snap:{snap_status} | AI:{hopfield_conf:.2f} | D_f:{D_f:.2f}"
 

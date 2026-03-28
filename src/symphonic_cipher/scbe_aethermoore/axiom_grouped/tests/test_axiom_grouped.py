@@ -198,9 +198,7 @@ class TestUnitarityAxiom:
 
     def test_verify_layer_unitarity(self):
         """Unitarity verification should pass for unitarity layers."""
-        passed, max_error = unitarity_axiom.verify_layer_unitarity(
-            unitarity_axiom.layer_2_realify, n_tests=50
-        )
+        passed, max_error = unitarity_axiom.verify_layer_unitarity(unitarity_axiom.layer_2_realify, n_tests=50)
         assert passed
         assert max_error < 1e-8
 
@@ -279,11 +277,7 @@ class TestCausalityAxiom:
         """Breathing factor should be in valid range."""
         for t in np.linspace(0, 120, 100):
             b = causality_axiom.breathing_factor(t)
-            assert (
-                1 - causality_axiom.B_BREATH_MAX
-                <= b
-                <= 1 + causality_axiom.B_BREATH_MAX
-            )
+            assert 1 - causality_axiom.B_BREATH_MAX <= b <= 1 + causality_axiom.B_BREATH_MAX
 
     def test_layer_6_stays_in_ball(self):
         """Layer 6 output should remain in Poincaré ball."""
@@ -335,23 +329,17 @@ class TestCausalityAxiom:
     def test_layer_13_decision_levels(self):
         """Layer 13 should return correct decision levels."""
         # Low risk
-        result = causality_axiom.layer_13_decision(
-            d_star=0.3, coherence=0.9, realm_index=0
-        )
+        result = causality_axiom.layer_13_decision(d_star=0.3, coherence=0.9, realm_index=0)
         assert result.level == causality_axiom.RiskLevel.LOW
         assert result.decision == causality_axiom.Decision.ALLOW
 
         # Medium risk
-        result = causality_axiom.layer_13_decision(
-            d_star=1.0, coherence=0.5, realm_index=0
-        )
+        result = causality_axiom.layer_13_decision(d_star=1.0, coherence=0.5, realm_index=0)
         assert result.level == causality_axiom.RiskLevel.MEDIUM
         assert result.decision == causality_axiom.Decision.REVIEW
 
         # High risk
-        result = causality_axiom.layer_13_decision(
-            d_star=2.5, coherence=0.3, realm_index=0
-        )
+        result = causality_axiom.layer_13_decision(d_star=2.5, coherence=0.3, realm_index=0)
         assert result.level == causality_axiom.RiskLevel.HIGH
         assert result.decision == causality_axiom.Decision.DENY
 
@@ -470,9 +458,7 @@ class TestCompositionAxiom:
 
     def test_layer_14_audio_output(self):
         """Layer 14 should produce valid audio output."""
-        audio = composition_axiom.layer_14_audio_axis(
-            risk_level="LOW", coherence=0.8, intent_phase=0.5, duration=0.1
-        )
+        audio = composition_axiom.layer_14_audio_axis(risk_level="LOW", coherence=0.8, intent_phase=0.5, duration=0.1)
 
         assert audio.signal is not None
         assert len(audio.signal) == int(0.1 * 44100)

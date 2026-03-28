@@ -326,7 +326,7 @@ def main():
         null_tongues = [TONGUE_NAMES[i] for i, c in enumerate(pattern) if c == "_"]
         expected = EXPECTED_SIGNATURES.get(cls, {}).get("low", [])
         match = set(null_tongues) & set(expected)
-        match_pct = len(match) / max(len(expected), 1) if expected else 0
+        _match_pct = len(match) / max(len(expected), 1) if expected else 0
         match_str = f"{len(match)}/{len(expected)}" if expected else "n/a"
         print(f"{cls:<25} {pattern:>15} {', '.join(null_tongues) if null_tongues else 'none':>25} {match_str:>15}")
 

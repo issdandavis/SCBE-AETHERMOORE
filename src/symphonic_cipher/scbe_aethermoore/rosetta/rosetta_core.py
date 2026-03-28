@@ -130,9 +130,7 @@ class RosettaStone:
 
             # TAM info
             concept.tam_profile = {
-                lang: TAM_PROFILES.get(lang, {})
-                for lang in concept.surfaces
-                if lang in TAM_PROFILES
+                lang: TAM_PROFILES.get(lang, {}) for lang in concept.surfaces if lang in TAM_PROFILES
             }
 
             self._concepts[concept_id] = concept
@@ -143,9 +141,7 @@ class RosettaStone:
         Uses hash-based projection into the unit ball (norm < 1).
         """
         h = hashlib.sha256(concept_id.encode()).digest()
-        raw = [
-            int.from_bytes(h[i * 4 : (i + 1) * 4], "little") / (2**32) for i in range(6)
-        ]
+        raw = [int.from_bytes(h[i * 4 : (i + 1) * 4], "little") / (2**32) for i in range(6)]
         # Scale into Poincare ball (norm < 0.95)
         norm = math.sqrt(sum(x**2 for x in raw))
         if norm == 0:
@@ -321,8 +317,7 @@ class RosettaStone:
                 "id": f"rosetta-cjk-{hashlib.md5(char.encode()).hexdigest()[:6]}",
                 "category": "rosetta-cognate",
                 "instruction": (
-                    f"What are the readings of the CJK character '{char}'"
-                    " across Chinese, Japanese, and Korean?"
+                    f"What are the readings of the CJK character '{char}'" " across Chinese, Japanese, and Korean?"
                 ),
                 "response": json.dumps(data, ensure_ascii=False),
                 "metadata": {

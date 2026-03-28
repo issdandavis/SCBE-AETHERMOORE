@@ -137,7 +137,7 @@ except ImportError:
         Y = A.copy()
         Z = np.eye(n)
 
-        for i in range(max_iter):
+        for _i in range(max_iter):
             Y_new = 0.5 * (Y + np.linalg.inv(Z))
             Z_new = 0.5 * (Z + np.linalg.inv(Y))
 
@@ -219,9 +219,7 @@ except ImportError:
 
         # Check if t_eval starts at t0 (using tight tolerance for numerical stability)
         t_eval_array = np.asarray(t_eval)
-        if np.isclose(
-            t_eval_array[0], t0, atol=_T_EVAL_TOLERANCE, rtol=_T_EVAL_TOLERANCE
-        ):
+        if np.isclose(t_eval_array[0], t0, atol=_T_EVAL_TOLERANCE, rtol=_T_EVAL_TOLERANCE):
             # t_eval includes t0, so we can include it in results
             t_values = [t0]
             y_values = [y0.copy()]
@@ -393,6 +391,4 @@ def check_scipy_available() -> bool:
 def require_scipy(feature: str = "this feature"):
     """Raise ImportError if scipy is not available."""
     if not SCIPY_AVAILABLE:
-        raise ImportError(
-            f"scipy is required for {feature}. " "Install with: pip install scipy"
-        )
+        raise ImportError(f"scipy is required for {feature}. " "Install with: pip install scipy")

@@ -83,9 +83,7 @@ class TestNISTPQCCompliance:
         chi_square = sum((o - expected) ** 2 / expected for o in observed)
 
         # For 255 degrees of freedom, chi-square < 310 at 99% confidence
-        assert (
-            chi_square < 350
-        ), f"Entropy source fails uniformity test: χ²={chi_square}"
+        assert chi_square < 350, f"Entropy source fails uniformity test: χ²={chi_square}"
 
     def test_nonce_uniqueness(self):
         """Verify nonces are never reused (critical for AEAD security)."""
@@ -313,9 +311,7 @@ class TestAuditTrail:
             agent_id: str
             decision: str
 
-        entry = ImmutableAuditEntry(
-            timestamp=time.time(), agent_id="test", decision="ALLOW"
-        )
+        entry = ImmutableAuditEntry(timestamp=time.time(), agent_id="test", decision="ALLOW")
 
         # Attempt to modify should raise error
         with pytest.raises(FrozenInstanceError):
@@ -346,10 +342,7 @@ class TestAuditTrail:
         # Verify chain integrity
         prev_hash = b"\x00" * 32
         for entry in audit_chain:
-            _ = hashlib.sha256(
-                prev_hash
-                + str({k: v for k, v in entry.items() if k != "hash"}).encode()
-            ).digest()
+            _ = hashlib.sha256(prev_hash + str({k: v for k, v in entry.items() if k != "hash"}).encode()).digest()
 
             # Note: This simplified test verifies chain structure
             assert "hash" in entry
@@ -534,7 +527,7 @@ class TestEnterpriseStress:
         """Verify pipeline handles high request volume."""
         results = []
 
-        for i in range(100):
+        for _i in range(100):
             position = np.random.rand(6) * 10
             result = scbe_14layer_pipeline(t=position, D=6)
             results.append(result)

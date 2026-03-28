@@ -90,9 +90,7 @@ class SCBEGate:
         """Compute Euclidean distance"""
         return math.sqrt(sum((a - b) ** 2 for a, b in zip(u, v)))
 
-    def _hyperbolic_distance(
-        self, u: List[float], v: List[float], eps: float = 1e-10
-    ) -> float:
+    def _hyperbolic_distance(self, u: List[float], v: List[float], eps: float = 1e-10) -> float:
         """
         Compute hyperbolic distance in Poincaré ball.
         d_H(u,v) = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2)))
@@ -192,9 +190,7 @@ class SCBEGate:
         risk_score = min(1.0, raw_risk / 10.0)  # Normalize
 
         # Compute confidence (inverse of distance from thresholds)
-        mid_threshold = (
-            self.config.allow_threshold + self.config.quarantine_threshold
-        ) / 2
+        mid_threshold = (self.config.allow_threshold + self.config.quarantine_threshold) / 2
         confidence = 1.0 - min(1.0, abs(risk_score - mid_threshold) / mid_threshold)
 
         # Make decision
@@ -377,9 +373,7 @@ class SacredTonguesEncoder:
 
     def __init__(self, tongue: str = "KO"):
         if tongue not in self.TONGUES:
-            raise ValueError(
-                f"Unknown tongue: {tongue}. Valid: {list(self.TONGUES.keys())}"
-            )
+            raise ValueError(f"Unknown tongue: {tongue}. Valid: {list(self.TONGUES.keys())}")
         self.tongue = tongue
         self.syllables = self.SYLLABLES[tongue]
 
@@ -406,16 +400,8 @@ class SacredTonguesEncoder:
             if i + 1 >= len(syllables):
                 break
 
-            high_idx = (
-                self.syllables.index(syllables[i])
-                if syllables[i] in self.syllables
-                else 0
-            )
-            low_idx = (
-                self.syllables.index(syllables[i + 1])
-                if syllables[i + 1] in self.syllables
-                else 0
-            )
+            high_idx = self.syllables.index(syllables[i]) if syllables[i] in self.syllables else 0
+            low_idx = self.syllables.index(syllables[i + 1]) if syllables[i + 1] in self.syllables else 0
 
             byte = ((high_idx & 0x0F) << 4) | (low_idx & 0x0F)
             result.append(byte)
@@ -486,9 +472,7 @@ class RWPEnvelope:
         return json.loads(payload_json)
 
 
-def validate_action(
-    context: List[float], action: str = "default", config: Optional[SCBEConfig] = None
-) -> RiskResult:
+def validate_action(context: List[float], action: str = "default", config: Optional[SCBEConfig] = None) -> RiskResult:
     """
     Simple one-function API for risk validation.
 

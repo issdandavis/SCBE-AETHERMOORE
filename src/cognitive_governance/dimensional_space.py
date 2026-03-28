@@ -102,15 +102,10 @@ class CognitivePoint:
 
     # Core coordinates: valence -> spatial_dim -> tongue -> magnitude
     coordinates: Dict[StateValence, Dict[int, Dict[str, float]]] = field(
-        default_factory=lambda: {
-            v: {d: {t: 0.0 for t in TONGUE_NAMES} for d in range(3)}
-            for v in StateValence
-        }
+        default_factory=lambda: {v: {d: {t: 0.0 for t in TONGUE_NAMES} for d in range(3)} for v in StateValence}
     )
     # Phase offsets per tongue (beyond base phase)
-    phase_offsets: Dict[str, float] = field(
-        default_factory=lambda: {t: 0.0 for t in TONGUE_NAMES}
-    )
+    phase_offsets: Dict[str, float] = field(default_factory=lambda: {t: 0.0 for t in TONGUE_NAMES})
     # Metadata
     agent_id: Optional[str] = None
     timestamp: float = 0.0
@@ -119,9 +114,7 @@ class CognitivePoint:
         """Get a single coordinate value."""
         return self.coordinates[valence][spatial][tongue]
 
-    def set_coordinate(
-        self, valence: StateValence, spatial: int, tongue: str, value: float
-    ):
+    def set_coordinate(self, valence: StateValence, spatial: int, tongue: str, value: float):
         """Set a single coordinate value."""
         self.coordinates[valence][spatial][tongue] = value
 
@@ -135,9 +128,7 @@ class CognitivePoint:
         return vec
 
     @classmethod
-    def from_flat_vector(
-        cls, vec: List[float], agent_id: Optional[str] = None
-    ) -> "CognitivePoint":
+    def from_flat_vector(cls, vec: List[float], agent_id: Optional[str] = None) -> "CognitivePoint":
         """Construct from 54-element flat vector."""
         assert len(vec) == 54, f"Expected 54 dimensions, got {len(vec)}"
         point = cls(agent_id=agent_id)
@@ -309,12 +300,8 @@ class DimensionalSpace:
             e1 = p1.tongue_energy(tongue)
             e2 = p2.tongue_energy(tongue)
             if e1 > 1e-10 and e2 > 1e-10:
-                phase1 = math.radians(
-                    TONGUES[tongue]["phase"] + p1.phase_offsets[tongue]
-                )
-                phase2 = math.radians(
-                    TONGUES[tongue]["phase"] + p2.phase_offsets[tongue]
-                )
+                phase1 = math.radians(TONGUES[tongue]["phase"] + p1.phase_offsets[tongue])
+                phase2 = math.radians(TONGUES[tongue]["phase"] + p2.phase_offsets[tongue])
                 total_coupling += math.cos(phase1 - phase2)
                 count += 1
 
@@ -350,7 +337,7 @@ class DimensionalSpace:
         idx = 0
         for valence in StateValence:
             for spatial in range(3):
-                for i, tongue in enumerate(TONGUE_NAMES):
+                for _i, tongue in enumerate(TONGUE_NAMES):
                     # Use seed bytes to determine coordinate
                     byte_val = seed[idx % len(seed)] / 255.0
                     # Scale by radius and tongue weight

@@ -73,9 +73,7 @@ class TestSCBEServer:
             assert decoded["byte_count"] == len(original)
 
     def test_tongue_encode_invalid_tongue(self):
-        result = json.loads(
-            _scbe_mod.tongue_encode("XX", base64.b64encode(b"test").decode())
-        )
+        result = json.loads(_scbe_mod.tongue_encode("XX", base64.b64encode(b"test").decode()))
         assert "error" in result
 
     def test_cross_tokenize(self):
@@ -182,9 +180,7 @@ class TestSCBEServer:
 
         with tempfile.TemporaryDirectory() as td:
             db_path = os.path.join(td, "test_eggs.db")
-            result = json.loads(
-                _scbe_mod.egg_register(egg_json, ttl_seconds=3600, db_path=db_path)
-            )
+            result = json.loads(_scbe_mod.egg_register(egg_json, ttl_seconds=3600, db_path=db_path))
             assert result["status"] == "SEALED"
             assert result["egg_id"]
 
@@ -325,9 +321,7 @@ class TestSwarmServer:
     @pytest.mark.asyncio
     async def test_swarm_execute_task_dry_run(self):
         await _swarm_mod.swarm_launch(dry_run=True)
-        result = json.loads(
-            await _swarm_mod.swarm_execute_task("search for SCBE on GitHub")
-        )
+        result = json.loads(await _swarm_mod.swarm_execute_task("search for SCBE on GitHub"))
         assert "results" in result
         assert result["total_steps"] >= 1
 

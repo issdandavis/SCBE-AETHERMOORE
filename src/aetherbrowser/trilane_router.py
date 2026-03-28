@@ -347,9 +347,7 @@ class TriLaneRouter:
                 }
 
             if not targets:
-                result_data["note"] = (
-                    "No targets extracted from task. Provide URLs or service names."
-                )
+                result_data["note"] = "No targets extracted from task. Provide URLs or service names."
 
             await backend.close()
             return LaneResult(
@@ -390,9 +388,7 @@ class TriLaneRouter:
                     {
                         "label": getattr(action, "label", str(action)),
                         "risk_tier": getattr(action, "risk_tier", "unknown"),
-                        "requires_approval": getattr(
-                            action, "requires_approval", False
-                        ),
+                        "requires_approval": getattr(action, "requires_approval", False),
                         "command_hint": getattr(action, "command_hint", None),
                     }
                 )
@@ -446,10 +442,7 @@ class TriLaneRouter:
                     }
             await backend.close()
 
-            result_data["screenshots"] = {
-                k: {"size": v["size_bytes"], "url": v["url"]}
-                for k, v in screenshots.items()
-            }
+            result_data["screenshots"] = {k: {"size": v["size_bytes"], "url": v["url"]} for k, v in screenshots.items()}
             result_data["screenshot_count"] = len(screenshots)
 
             return LaneResult(
@@ -489,9 +482,7 @@ class TriLaneRouter:
                         }
                         for r in result.results
                     ],
-                    "governance": (
-                        result.plan.get("review_zone") if result.plan else None
-                    ),
+                    "governance": (result.plan.get("review_zone") if result.plan else None),
                 }
             ),
             "label": f"browser_routing_{result.intent.value}",
@@ -570,9 +561,7 @@ async def kiosk_mode():
 
         for lr in result.results:
             status = "OK" if lr.success else f"FAIL: {lr.error}"
-            print(
-                f"  [{lr.lane.value}] {status} ({lr.actions_taken} actions, {lr.duration_ms:.0f}ms)"
-            )
+            print(f"  [{lr.lane.value}] {status} ({lr.actions_taken} actions, {lr.duration_ms:.0f}ms)")
 
         if result.shadow_sft:
             print(f"  [SFT] Training pair captured for {router._shadow_model}")

@@ -289,9 +289,7 @@ class TestGovernanceDecisionLogic:
     def test_zero_sum_quarantines(self):
         assert apply_tri_manifold_governance(GateTriState(1, -1, 0)) == "QUARANTINE"
         assert apply_tri_manifold_governance(GateTriState(-1, 1, 0)) == "QUARANTINE"
-        assert (
-            apply_tri_manifold_governance(GateTriState(1, 0, -1)) == "DENY"
-        )  # t3=-1 overrides
+        assert apply_tri_manifold_governance(GateTriState(1, 0, -1)) == "DENY"  # t3=-1 overrides
 
     def test_all_27_states(self):
         """Exhaustively verify all 27 possible trit combinations."""
@@ -303,21 +301,13 @@ class TestGovernanceDecisionLogic:
                     s = t1 + t2 + t3
 
                     if t3 == -1:
-                        assert (
-                            decision == "DENY"
-                        ), f"({t1},{t2},{t3}): t3=-1 should DENY, got {decision}"
+                        assert decision == "DENY", f"({t1},{t2},{t3}): t3=-1 should DENY, got {decision}"
                     elif s < 0:
-                        assert (
-                            decision == "DENY"
-                        ), f"({t1},{t2},{t3}): sum={s}<0 should DENY, got {decision}"
+                        assert decision == "DENY", f"({t1},{t2},{t3}): sum={s}<0 should DENY, got {decision}"
                     elif s == 0:
-                        assert (
-                            decision == "QUARANTINE"
-                        ), f"({t1},{t2},{t3}): sum=0 should QUARANTINE, got {decision}"
+                        assert decision == "QUARANTINE", f"({t1},{t2},{t3}): sum=0 should QUARANTINE, got {decision}"
                     else:
-                        assert (
-                            decision == "ALLOW"
-                        ), f"({t1},{t2},{t3}): sum={s}>0 should ALLOW, got {decision}"
+                        assert decision == "ALLOW", f"({t1},{t2},{t3}): sum={s}>0 should ALLOW, got {decision}"
 
 
 # ═══════════════════════════════════════════════════
@@ -387,9 +377,7 @@ class TestNegabinaryPipelineIntegrity:
                 continue
             msd = _extract_msd(n)
             expected_sign = 1 if n > 0 else -1
-            assert (
-                msd == expected_sign
-            ), f"MSD of {n} is {msd}, expected {expected_sign}"
+            assert msd == expected_sign, f"MSD of {n} is {msd}, expected {expected_sign}"
 
     def test_fibonacci_aggregates(self):
         """The specific values from the Fibonacci node simulation."""

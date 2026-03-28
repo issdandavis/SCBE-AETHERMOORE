@@ -205,9 +205,7 @@ class UsageMeter:
             "decision_revenue": round(decision_revenue, 2),
             "platform_revenue": round(platform_revenue, 2),
             "agent_revenue": round(agent_revenue, 2),
-            "total_estimated": round(
-                decision_revenue + platform_revenue + agent_revenue, 2
-            ),
+            "total_estimated": round(decision_revenue + platform_revenue + agent_revenue, 2),
             "decisions_counted": decisions,
             "tenants_counted": tenants,
             "agents_counted": agents,

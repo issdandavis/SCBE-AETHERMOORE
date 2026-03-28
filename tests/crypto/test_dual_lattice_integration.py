@@ -194,10 +194,7 @@ class TestLayer5GovernanceDistance:
         """Distance is symmetric."""
         a = np.array([0.1, 0.2, 0.0])
         b = np.array([0.3, 0.1, 0.0])
-        assert (
-            abs(governance_aware_distance(a, b) - governance_aware_distance(b, a))
-            < 1e-6
-        )
+        assert abs(governance_aware_distance(a, b) - governance_aware_distance(b, a)) < 1e-6
 
     def test_phase_affects_distance(self):
         """Phase difference increases total distance."""

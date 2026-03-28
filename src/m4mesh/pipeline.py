@@ -28,9 +28,7 @@ class M4Subsystem:
     phys_gate: BlockGate
 
     @staticmethod
-    def build(
-        ops: MeshOps, layout: BlockLayout, manifest: FluxManifest
-    ) -> "M4Subsystem":
+    def build(ops: MeshOps, layout: BlockLayout, manifest: FluxManifest) -> "M4Subsystem":
         cvl = CVLFuser(
             layout,
             manifest.alpha_C,
@@ -38,12 +36,8 @@ class M4Subsystem:
             manifest.alpha_T,
             manifest.activation,
         )
-        vis_gate = BlockGate(
-            layout.D_C, layout.D_K, layout.D_T, keep_C=True, keep_K=True, keep_T=False
-        )
-        phys_gate = BlockGate(
-            layout.D_C, layout.D_K, layout.D_T, keep_C=True, keep_K=True, keep_T=False
-        )
+        vis_gate = BlockGate(layout.D_C, layout.D_K, layout.D_T, keep_C=True, keep_K=True, keep_T=False)
+        phys_gate = BlockGate(layout.D_C, layout.D_K, layout.D_T, keep_C=True, keep_K=True, keep_T=False)
         return M4Subsystem(
             ops=ops,
             layout=layout,
@@ -79,11 +73,7 @@ class M4Subsystem:
             alpha=self.manifest.wave_alpha,
             gamma=self.manifest.wave_gamma,
             steps=self.manifest.wave_steps,
-            physics_gate=(
-                self.phys_gate.apply
-                if self.manifest.physics_gate.startswith("in_loop")
-                else None
-            ),
+            physics_gate=(self.phys_gate.apply if self.manifest.physics_gate.startswith("in_loop") else None),
             init=self.manifest.wave_init,
         )
 

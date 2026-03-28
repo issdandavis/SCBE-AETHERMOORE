@@ -59,9 +59,7 @@ def _resolve_kdf():
             fn = getattr(m, "derive_pi_phi_key", None)
             if callable(fn):
                 return fn, mod
-        except (
-            Exception
-        ) as e:  # noqa: BLE001 - intentional: we want the last import error
+        except Exception as e:  # noqa: BLE001 - intentional: we want the last import error
             last_err = e
 
     raise AssertionError(
@@ -281,9 +279,7 @@ class TestPiPhiKDFContract:
 
     @pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
     def test_rejects_non_finite_coherence(self, derive_pi_phi_key, bad):
-        with pytest.raises(
-            (ValueError, AssertionError), match="coherence|finite|nan|inf"
-        ):
+        with pytest.raises((ValueError, AssertionError), match="coherence|finite|nan|inf"):
             _call(
                 derive_pi_phi_key,
                 d_star=0.25,

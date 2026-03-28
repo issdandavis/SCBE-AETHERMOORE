@@ -111,16 +111,12 @@ class Hypercube:
                     )
                     self.faces[face.face_id] = face
 
-    def get_face(
-        self, valence: StateValence, spatial: int, tongue: str
-    ) -> HypercubeFace:
+    def get_face(self, valence: StateValence, spatial: int, tongue: str) -> HypercubeFace:
         """Get a specific face."""
         face_id = f"{valence.name}:{spatial}:{tongue}"
         return self.faces[face_id]
 
-    def set_permeability(
-        self, valence: StateValence, spatial: int, tongue: str, perm: float
-    ):
+    def set_permeability(self, valence: StateValence, spatial: int, tongue: str, perm: float):
         """Set permeability for a specific face."""
         face = self.get_face(valence, spatial, tongue)
         face.permeability = max(0.0, min(1.0, perm))
@@ -145,9 +141,7 @@ class Hypercube:
                     coord = point.get_coordinate(valence, spatial, tongue)
                     face = self.get_face(valence, spatial, tongue)
                     # Proximity to face boundary
-                    proximity = (
-                        abs(coord) / self.half_width if self.half_width > 0 else 0
-                    )
+                    proximity = abs(coord) / self.half_width if self.half_width > 0 else 0
                     if proximity > 0.8:  # Near the boundary
                         momentum = coord  # Use coordinate as momentum proxy
                         cost = face.cost_to_cross(momentum)
@@ -205,9 +199,7 @@ class PhaseProjection:
         """Get coupling between two tongues."""
         return self.coupling_matrix.get((tongue1, tongue2), 0.0)
 
-    def project_to_poincare(
-        self, point: CognitivePoint, radius: float = 0.95
-    ) -> CognitivePoint:
+    def project_to_poincare(self, point: CognitivePoint, radius: float = 0.95) -> CognitivePoint:
         """
         Project a point from hypercube coordinates into the Poincare ball.
 
@@ -352,9 +344,7 @@ class DoubleHypercube:
         else:
             return "exterior"
 
-    def selective_wall_check(
-        self, point: CognitivePoint, direction_tongue: str
-    ) -> Tuple[bool, float]:
+    def selective_wall_check(self, point: CognitivePoint, direction_tongue: str) -> Tuple[bool, float]:
         """
         Check if a point can move in a specific tongue direction.
 
@@ -370,11 +360,7 @@ class DoubleHypercube:
             for spatial in range(3):
                 inner_face = self.inner.get_face(valence, spatial, direction_tongue)
                 coord = point.get_coordinate(valence, spatial, direction_tongue)
-                proximity = (
-                    abs(coord) / self.inner.half_width
-                    if self.inner.half_width > 0
-                    else 0
-                )
+                proximity = abs(coord) / self.inner.half_width if self.inner.half_width > 0 else 0
 
                 if proximity > 0.8:
                     if inner_face.permeability <= 0.0:

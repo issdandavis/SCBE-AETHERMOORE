@@ -461,8 +461,7 @@ class HeartVaultGraph:
 
         where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
         rows = self._conn.execute(
-            f"SELECT id, edge_type, source_id, target_id, weight, "
-            f"properties, created_at FROM hv_edges {where}",
+            f"SELECT id, edge_type, source_id, target_id, weight, " f"properties, created_at FROM hv_edges {where}",
             params,
         ).fetchall()
         return [

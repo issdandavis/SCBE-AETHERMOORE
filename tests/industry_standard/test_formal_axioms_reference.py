@@ -34,9 +34,7 @@ except ImportError:
     SCBE_AVAILABLE = False
 
 
-def _ball_point(
-    rng: np.random.Generator, dim: int = 6, max_norm: float = 0.75
-) -> np.ndarray:
+def _ball_point(rng: np.random.Generator, dim: int = 6, max_norm: float = 0.75) -> np.ndarray:
     """Sample a deterministic point well inside the Poincare ball."""
     direction = rng.normal(size=dim)
     direction /= np.linalg.norm(direction) + 1e-12
@@ -65,14 +63,10 @@ class TestLegacyFormalAxioms123:
     def test_axiom3_convexity_of_cost_surface(self):
         distances = np.linspace(0.0, 2.5, 51)
         step = distances[1] - distances[0]
-        values = np.array(
-            [legacy_harmonic_scaling(float(d), R=1.5)[0] for d in distances]
-        )
+        values = np.array([legacy_harmonic_scaling(float(d), R=1.5)[0] for d in distances])
         second_difference = (values[2:] - 2.0 * values[1:-1] + values[:-2]) / (step**2)
 
-        assert np.all(
-            second_difference > 0.0
-        ), "Legacy harmonic wall should remain strictly convex"
+        assert np.all(second_difference > 0.0), "Legacy harmonic wall should remain strictly convex"
 
 
 @pytest.mark.skipif(not SCBE_AVAILABLE, reason="SCBE modules not available")
@@ -178,9 +172,7 @@ class TestReferenceLayer12Regression:
 
     def test_reference_layer12_score_decreases_as_phase_deviation_rises(self):
         phase_deviations = np.linspace(0.0, 1.0, 25)
-        values = [
-            layer_12_harmonic_scaling(0.5, float(phase)) for phase in phase_deviations
-        ]
+        values = [layer_12_harmonic_scaling(0.5, float(phase)) for phase in phase_deviations]
 
         assert all(0.0 < value <= 1.0 for value in values)
         assert all(left > right for left, right in zip(values, values[1:]))

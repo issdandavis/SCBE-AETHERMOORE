@@ -104,9 +104,7 @@ class SCBEContextEncoder:
         weights = np.array([1.0, 1.1, 1.25, 1.33, 1.5, 1.66] * 2)  # 2D → 12D
         return weights[: len(x)] * x
 
-    def embed_to_poincare_ball(
-        self, x_weighted: np.ndarray, alpha: float = 1.5
-    ) -> np.ndarray:
+    def embed_to_poincare_ball(self, x_weighted: np.ndarray, alpha: float = 1.5) -> np.ndarray:
         """
         Layer 4: Embed into Poincaré ball.
         u = tanh(α||x||) * x/||x||
@@ -131,9 +129,7 @@ class SCBEContextEncoder:
         """
         # Extract tokens
         section_tokens = {
-            k: v
-            for k, v in envelope_dict.items()
-            if k in ["aad", "salt", "nonce", "ct", "tag", "redact"]
+            k: v for k, v in envelope_dict.items() if k in ["aad", "salt", "nonce", "ct", "tag", "redact"]
         }
 
         # Layer 1: Tokens → Complex context

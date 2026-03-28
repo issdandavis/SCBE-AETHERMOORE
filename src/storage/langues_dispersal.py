@@ -81,9 +81,7 @@ class SpinVector:
 
     def metric_weighted_norm(self) -> float:
         """||s||_G = sqrt(Σ G_ll · s_l²)."""
-        return math.sqrt(
-            sum(TONGUE_WEIGHTS[lang] * self.spins[lang] ** 2 for lang in range(6))
-        )
+        return math.sqrt(sum(TONGUE_WEIGHTS[lang] * self.spins[lang] ** 2 for lang in range(6)))
 
 
 def quantize_spin(
@@ -166,20 +164,16 @@ def compute_dispersal(
     dispersal_sum = 0.0
     tongue_sums = [0.0] * 6
 
-    for i, (tv, sv) in enumerate(zip(tongue_vectors, spins)):
+    for _i, (tv, sv) in enumerate(zip(tongue_vectors, spins)):
         for lang in range(6):
-            contrib = (
-                G[lang, lang] * abs(sv.spins[lang]) * abs(tv[lang] - centroid[lang])
-            )
+            contrib = G[lang, lang] * abs(sv.spins[lang]) * abs(tv[lang] - centroid[lang])
             dispersal_sum += contrib
             tongue_sums[lang] += contrib
 
     dispersal_rate = dispersal_sum / n
 
     # Per-tongue dispersal
-    tongue_dispersals = {
-        TONGUE_NAMES[lang]: round(tongue_sums[lang] / n, 6) for lang in range(6)
-    }
+    tongue_dispersals = {TONGUE_NAMES[lang]: round(tongue_sums[lang] / n, 6) for lang in range(6)}
 
     # Dominant tongue: highest per-tongue dispersal
     dominant_idx = tongue_sums.index(max(tongue_sums))
@@ -243,10 +237,7 @@ def dispersal_route(
     G = build_metric_tensor()
 
     # Per-record dispersal cost
-    cost = sum(
-        G[lang, lang] * abs(sv.spins[lang]) * abs(tongue_coords[lang] - centroid[lang])
-        for lang in range(6)
-    )
+    cost = sum(G[lang, lang] * abs(sv.spins[lang]) * abs(tongue_coords[lang] - centroid[lang]) for lang in range(6))
 
     # Route decision: high magnitude → cone, low → hemisphere
     if sv.magnitude >= 4:
@@ -258,10 +249,7 @@ def dispersal_route(
 
     # Dominant tongue: highest weighted spin deviation
     weighted_devs = [
-        TONGUE_WEIGHTS[lang]
-        * abs(sv.spins[lang])
-        * abs(tongue_coords[lang] - centroid[lang])
-        for lang in range(6)
+        TONGUE_WEIGHTS[lang] * abs(sv.spins[lang]) * abs(tongue_coords[lang] - centroid[lang]) for lang in range(6)
     ]
     dominant_idx = weighted_devs.index(max(weighted_devs))
 

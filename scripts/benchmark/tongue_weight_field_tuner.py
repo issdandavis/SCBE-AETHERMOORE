@@ -420,7 +420,7 @@ def detect(coords: np.ndarray, centroid: np.ndarray, text: str) -> Tuple[bool, f
 def class_metrics(records: List[Tuple[str, str, np.ndarray]]) -> Tuple[float, float, float, Dict[str, int]]:
     by_label: Dict[str, List[np.ndarray]] = {}
     dom_hist: Dict[str, int] = {name: 0 for name in TONGUE_NAMES}
-    for text, label, coords in records:
+    for _text, label, coords in records:
         by_label.setdefault(label, []).append(coords)
         dom, _ = dominant_info(coords)
         dom_hist[dom] += 1

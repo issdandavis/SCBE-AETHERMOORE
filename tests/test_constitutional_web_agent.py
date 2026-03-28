@@ -154,12 +154,8 @@ class TestBrowseWithGovernance:
                 target="https://example.com",
                 rationale="Go to homepage",
             ),
-            BrowseStep(
-                action="click", target="#products", rationale="Click products link"
-            ),
-            BrowseStep(
-                action="extract", target=".price", rationale="Extract pricing data"
-            ),
+            BrowseStep(action="click", target="#products", rationale="Click products link"),
+            BrowseStep(action="extract", target=".price", rationale="Extract pricing data"),
         ]
 
         result = self.agent.browse_with_governance("Research product prices", steps)
@@ -169,31 +165,23 @@ class TestBrowseWithGovernance:
 
     def test_blocks_malicious_task(self) -> None:
         steps = [
-            BrowseStep(
-                action="navigate", target="https://bank.com", rationale="Go to bank"
-            ),
+            BrowseStep(action="navigate", target="https://bank.com", rationale="Go to bank"),
         ]
 
-        result = self.agent.browse_with_governance(
-            "Steal passwords from bank login", steps
-        )
+        result = self.agent.browse_with_governance("Steal passwords from bank login", steps)
         assert result.status == "blocked"
         assert result.steps_executed == 0
         assert "malicious" in (result.quarantine_reason or "").lower()
 
     def test_quarantines_on_violation_mid_task(self) -> None:
         steps = [
-            BrowseStep(
-                action="navigate", target="https://example.com", rationale="Safe page"
-            ),
+            BrowseStep(action="navigate", target="https://example.com", rationale="Safe page"),
             BrowseStep(
                 action="download",
                 target="https://example.com/malware.exe",
                 rationale="Download executable",
             ),
-            BrowseStep(
-                action="click", target="#next", rationale="Should not reach this"
-            ),
+            BrowseStep(action="click", target="#next", rationale="Should not reach this"),
         ]
 
         result = self.agent.browse_with_governance("Download and install", steps)
@@ -203,15 +191,9 @@ class TestBrowseWithGovernance:
     def test_trust_increases_on_safe_actions(self) -> None:
         self.agent.trust_score = 0.5
         steps = [
-            BrowseStep(
-                action="navigate", target="https://example.com/1", rationale="Page 1"
-            ),
-            BrowseStep(
-                action="navigate", target="https://example.com/2", rationale="Page 2"
-            ),
-            BrowseStep(
-                action="navigate", target="https://example.com/3", rationale="Page 3"
-            ),
+            BrowseStep(action="navigate", target="https://example.com/1", rationale="Page 1"),
+            BrowseStep(action="navigate", target="https://example.com/2", rationale="Page 2"),
+            BrowseStep(action="navigate", target="https://example.com/3", rationale="Page 3"),
         ]
 
         result = self.agent.browse_with_governance("Browse safe pages", steps)
@@ -220,9 +202,7 @@ class TestBrowseWithGovernance:
 
     def test_tongue_resonance_reported(self) -> None:
         steps = [
-            BrowseStep(
-                action="navigate", target="https://example.com", rationale="Safe"
-            ),
+            BrowseStep(action="navigate", target="https://example.com", rationale="Safe"),
         ]
 
         result = self.agent.browse_with_governance("Simple browse", steps)

@@ -33,9 +33,7 @@ class CodePrismBuilder:
         tongue_combo: str = "KO+CA",
     ) -> Dict[str, TranslationArtifact]:
         source = source_language.lower()
-        ir = parse_source_to_ir(
-            source_code, source_language=source, module_name=module_name
-        )
+        ir = parse_source_to_ir(source_code, source_language=source, module_name=module_name)
         artifacts: Dict[str, TranslationArtifact] = {}
 
         for target in target_languages:

@@ -196,9 +196,7 @@ class TestLicenseValidation:
             signing_secret=SIGNING_SECRET,
         )
         # Homebrew has 10,000 decisions/month
-        result = validate_license_key(
-            key, SIGNING_SECRET, current_decisions_this_month=10_001
-        )
+        result = validate_license_key(key, SIGNING_SECRET, current_decisions_this_month=10_001)
         assert result.valid is False
         assert result.reason == "DECISION_QUOTA_EXCEEDED"
 
@@ -208,9 +206,7 @@ class TestLicenseValidation:
             "NearQuotaCorp",
             signing_secret=SIGNING_SECRET,
         )
-        result = validate_license_key(
-            key, SIGNING_SECRET, current_decisions_this_month=9_500
-        )
+        result = validate_license_key(key, SIGNING_SECRET, current_decisions_this_month=9_500)
         assert result.valid is True
         assert len(result.warnings) > 0
         assert "remaining" in result.warnings[0].lower()
@@ -221,9 +217,7 @@ class TestLicenseValidation:
             "UnlimitedCorp",
             signing_secret=SIGNING_SECRET,
         )
-        result = validate_license_key(
-            key, SIGNING_SECRET, current_decisions_this_month=999_999
-        )
+        result = validate_license_key(key, SIGNING_SECRET, current_decisions_this_month=999_999)
         assert result.valid is True
         assert result.remaining_decisions is None  # unlimited
 
@@ -388,7 +382,7 @@ class TestUsageMeter:
         assert p95 == 95.0  # 95th percentile of 0-99
 
     def test_revenue_estimation(self, meter):
-        for i in range(1000):
+        for _i in range(1000):
             meter.record_decision(
                 DecisionRecord(
                     timestamp=time.time(),
@@ -408,7 +402,7 @@ class TestUsageMeter:
         assert rev["total_estimated"] > 0
 
     def test_per_tenant_revenue(self, meter):
-        for i in range(500):
+        for _i in range(500):
             meter.record_decision(
                 DecisionRecord(
                     timestamp=time.time(),
@@ -424,7 +418,7 @@ class TestUsageMeter:
         assert rev["tenants_counted"] == 1
 
     def test_quota_check(self, meter):
-        for i in range(50):
+        for _i in range(50):
             meter.record_decision(
                 DecisionRecord(
                     timestamp=time.time(),
@@ -441,7 +435,7 @@ class TestUsageMeter:
         assert remaining == 50
 
     def test_quota_exceeded(self, meter):
-        for i in range(101):
+        for _i in range(101):
             meter.record_decision(
                 DecisionRecord(
                     timestamp=time.time(),
@@ -463,7 +457,7 @@ class TestUsageMeter:
         assert remaining == -1
 
     def test_slo_report(self, meter):
-        for i in range(100):
+        for _i in range(100):
             meter.record_decision(
                 DecisionRecord(
                     timestamp=time.time(),
@@ -528,27 +522,19 @@ class TestNISTAIRMF:
 
     def test_govern_checks(self, report):
         govern = report.by_function(RMFFunction.GOVERN)
-        assert (
-            len(govern) >= 5
-        )  # Policies, accountability, risk tolerance, oversight, documentation
+        assert len(govern) >= 5  # Policies, accountability, risk tolerance, oversight, documentation
 
     def test_map_checks(self, report):
         mapped = report.by_function(RMFFunction.MAP)
-        assert (
-            len(mapped) >= 4
-        )  # Context, risk categorization, data provenance, architecture
+        assert len(mapped) >= 4  # Context, risk categorization, data provenance, architecture
 
     def test_measure_checks(self, report):
         measured = report.by_function(RMFFunction.MEASURE)
-        assert (
-            len(measured) >= 5
-        )  # Performance, bias, security, crypto, monitoring, audit
+        assert len(measured) >= 5  # Performance, bias, security, crypto, monitoring, audit
 
     def test_manage_checks(self, report):
         managed = report.by_function(RMFFunction.MANAGE)
-        assert (
-            len(managed) >= 4
-        )  # Prioritization, incident response, risk response, fail-safe
+        assert len(managed) >= 4  # Prioritization, incident response, risk response, fail-safe
 
     def test_total_check_count(self, report):
         assert report.total_checks >= 20
@@ -569,9 +555,7 @@ class TestNISTAIRMF:
         assert summary["by_function"]["GOVERN"]["total"] >= 5
 
     def test_pqc_mentioned_in_crypto_check(self, report):
-        crypto_checks = [
-            c for c in report.checks if "cryptographic" in c.description.lower()
-        ]
+        crypto_checks = [c for c in report.checks if "cryptographic" in c.description.lower()]
         assert len(crypto_checks) >= 1
         assert any("ML-KEM" in c.evidence for c in crypto_checks)
 
@@ -656,24 +640,15 @@ class TestPolicyFrameworkReport:
         assert len(p2) >= 2
         assert all(p.pillar_name == "Child Safety & Community Protections" for p in p2)
         # Should reference content governance decisions
-        all_evidence = " ".join(
-            p.evidence + " " + p.scbe_capability for p in p2
-        ).lower()
-        assert (
-            "quarantine" in all_evidence
-            or "deny" in all_evidence
-            or "governance" in all_evidence
-        )
+        all_evidence = " ".join(p.evidence + " " + p.scbe_capability for p in p2).lower()
+        assert "quarantine" in all_evidence or "deny" in all_evidence or "governance" in all_evidence
 
     def test_pillar_3_intellectual_property(self, report):
         p3 = report.by_pillar("PILLAR-3")
         assert len(p3) >= 2
         assert all(p.pillar_name == "Intellectual Property" for p in p3)
         # Should reference patent and licensing
-        assert any(
-            "patent" in p.evidence.lower() or "license" in p.evidence.lower()
-            for p in p3
-        )
+        assert any("patent" in p.evidence.lower() or "license" in p.evidence.lower() for p in p3)
 
     def test_pillar_4_innovation_governance(self, report):
         p4 = report.by_pillar("PILLAR-4")

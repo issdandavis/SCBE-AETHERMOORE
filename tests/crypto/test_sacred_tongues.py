@@ -42,9 +42,7 @@ class TestTongueSpecification:
     def test_harmonic_frequencies_are_unique(self):
         """Harmonic frequencies must be unique per tongue."""
         frequencies = [spec.harmonic_frequency for spec in TONGUES.values()]
-        assert len(frequencies) == len(
-            set(frequencies)
-        ), "Duplicate harmonic frequencies"
+        assert len(frequencies) == len(set(frequencies)), "Duplicate harmonic frequencies"
 
     def test_tongue_domains_are_defined(self):
         """Each tongue must have a domain string."""
@@ -74,9 +72,7 @@ class TestBijectivity:
             tokens = tokenizer.encode_bytes(tongue_code, bytes([b]))
             assert len(tokens) == 1
             all_tokens.add(tokens[0])
-        assert (
-            len(all_tokens) == 256
-        ), f"{tongue_code} has {len(all_tokens)} unique tokens"
+        assert len(all_tokens) == 256, f"{tongue_code} has {len(all_tokens)} unique tokens"
 
     @pytest.mark.parametrize("tongue_code", ["ko", "av", "ru", "ca", "um", "dr"])
     def test_token_format_has_apostrophe(self, tongue_code: str):

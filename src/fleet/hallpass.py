@@ -75,9 +75,7 @@ POLYHEDRA: List[Polyhedron] = [
         5.5,
         (0.5, 0.3, 0.1, 0.0, 0.0, 0.45),
     ),
-    Polyhedron(
-        7, "Snub Dodecahedron", "archimedean", 92, 7.0, (0.6, 0.4, 0.2, 0.0, 0.0, 0.4)
-    ),
+    Polyhedron(7, "Snub Dodecahedron", "archimedean", 92, 7.0, (0.6, 0.4, 0.2, 0.0, 0.0, 0.4)),
     # Kepler-Poinsot Two — high-risk / adversarial (E2 = 12.0–15.0)
     Polyhedron(
         8,
@@ -96,16 +94,10 @@ POLYHEDRA: List[Polyhedron] = [
         (0.9, 0.8, 0.6, 0.0, 0.0, 0.95),
     ),
     # Toroidal Two — cyclic (E3 = 8.0–10.0)
-    Polyhedron(
-        10, "Genus-1 Torus", "toroidal", 24, 8.0, (0.5, 0.5, 0.5, 0.8, 0.0, 0.6)
-    ),
-    Polyhedron(
-        11, "Hexagonal Torus", "toroidal", 36, 10.0, (0.6, 0.5, 0.5, 0.9, 0.0, 0.65)
-    ),
+    Polyhedron(10, "Genus-1 Torus", "toroidal", 24, 8.0, (0.5, 0.5, 0.5, 0.8, 0.0, 0.6)),
+    Polyhedron(11, "Hexagonal Torus", "toroidal", 36, 10.0, (0.6, 0.5, 0.5, 0.9, 0.0, 0.65)),
     # Rhombic Two — space-filling (E3 = 6.0–8.0)
-    Polyhedron(
-        12, "Rhombic Dodecahedron", "rhombic", 12, 6.0, (0.4, 0.3, 0.3, 0.0, 0.5, 0.5)
-    ),
+    Polyhedron(12, "Rhombic Dodecahedron", "rhombic", 12, 6.0, (0.4, 0.3, 0.3, 0.0, 0.5, 0.5)),
     Polyhedron(
         13,
         "Rhombic Triacontahedron",
@@ -115,9 +107,7 @@ POLYHEDRA: List[Polyhedron] = [
         (0.5, 0.4, 0.3, 0.0, 0.6, 0.55),
     ),
     # Johnson Two — edge-case (E3 = 5.0–7.0)
-    Polyhedron(
-        14, "Square Gyrobicupola", "johnson", 18, 5.0, (0.3, 0.4, 0.2, 0.0, 0.3, 0.5)
-    ),
+    Polyhedron(14, "Square Gyrobicupola", "johnson", 18, 5.0, (0.3, 0.4, 0.2, 0.0, 0.3, 0.5)),
     Polyhedron(
         15,
         "Pentagonal Orthobirotunda",
@@ -307,31 +297,11 @@ def classify_tongue_phase(task_description: str) -> int:
     """
     desc = task_description.lower()
     scores = {
-        0: sum(
-            1
-            for kw in ["run", "execute", "pipeline", "flow", "process", "publish"]
-            if kw in desc
-        ),
-        1: sum(
-            1
-            for kw in ["research", "search", "context", "learn", "read", "analyze"]
-            if kw in desc
-        ),
-        2: sum(
-            1
-            for kw in ["integrate", "api", "connect", "bridge", "bind", "link"]
-            if kw in desc
-        ),
-        3: sum(
-            1
-            for kw in ["code", "build", "implement", "write", "compile", "script"]
-            if kw in desc
-        ),
-        4: sum(
-            1
-            for kw in ["security", "governance", "audit", "gate", "safety", "encrypt"]
-            if kw in desc
-        ),
+        0: sum(1 for kw in ["run", "execute", "pipeline", "flow", "process", "publish"] if kw in desc),
+        1: sum(1 for kw in ["research", "search", "context", "learn", "read", "analyze"] if kw in desc),
+        2: sum(1 for kw in ["integrate", "api", "connect", "bridge", "bind", "link"] if kw in desc),
+        3: sum(1 for kw in ["code", "build", "implement", "write", "compile", "script"] if kw in desc),
+        4: sum(1 for kw in ["security", "governance", "audit", "gate", "safety", "encrypt"] if kw in desc),
         5: sum(
             1
             for kw in [
@@ -419,9 +389,7 @@ def harmonic_wall_cost(distance: float) -> float:
     return PHI ** (distance**2)
 
 
-def hyperbolic_distance_approx(
-    pos_a: Tuple[float, ...], pos_b: Tuple[float, ...]
-) -> float:
+def hyperbolic_distance_approx(pos_a: Tuple[float, ...], pos_b: Tuple[float, ...]) -> float:
     """Approximate hyperbolic distance between two 6D positions.
 
     Uses the Poincare ball metric: d = arcosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2)))
@@ -595,9 +563,7 @@ class HallPass:
             "corridor_graph_id": self.corridor_graph_id,
             "branch_policy": self.branch_policy,
             "expected_step_order": self.expected_step_order,
-            "reservation_windows_ms": [
-                list(window) for window in self.reservation_windows_ms
-            ],
+            "reservation_windows_ms": [list(window) for window in self.reservation_windows_ms],
             "ttl_ms": self.ttl_ms,
             "drift_budget": round(self.drift_budget, 4),
             "congestion_budget": round(self.congestion_budget, 4),
@@ -623,8 +589,7 @@ class HallPass:
             f"(saved {self.context_savings_pct:.0%} from {self.total_full_tokens})",
             f"Guidance: lane={self.lane_id} | branch={self.branch_policy} | ttl={self.ttl_ms}ms",
             f"Authorization: external | capability hints={', '.join(self.capability_hints) or '(none)'}",
-            f"Trust Tube: epsilon={self.trust_tube_radius}, "
-            f"barrier at boundary={self.max_barrier_cost:.4f}",
+            f"Trust Tube: epsilon={self.trust_tube_radius}, " f"barrier at boundary={self.max_barrier_cost:.4f}",
             "",
         ]
         for node in self.corridor:
@@ -710,11 +675,7 @@ class HallPassCompiler:
                 ordered_pairs.append((card, poly))
 
         # Step 4: Classify tongue dimension
-        tongue_phase = (
-            tongue_override
-            if tongue_override is not None
-            else classify_tongue_phase(task)
-        )
+        tongue_phase = tongue_override if tongue_override is not None else classify_tongue_phase(task)
 
         # Step 5: Project each card to that face + build corridor nodes
         corridor: List[HallPassNode] = []

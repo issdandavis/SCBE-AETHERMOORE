@@ -247,10 +247,7 @@ class DriftEvent:
             return {}
 
         return {
-            "prompt": (
-                f"Your {self.facet} shifted by {self.drift_magnitude:.3f} "
-                f"in context: {self.context}"
-            ),
+            "prompt": (f"Your {self.facet} shifted by {self.drift_magnitude:.3f} " f"in context: {self.context}"),
             "response": (
                 f"Drift resolved after {self.resolution_time - self.timestamp:.0f}s. "
                 f"Activation moved from {self.old_activation:.2f} to "
@@ -452,9 +449,7 @@ class PersonalityClusterLattice:
         self.planes: Dict[str, ManifoldPlane] = {
             "experience": ManifoldPlane("experience", rotation_angle=0.0, scale=1.0),
             "memory": ManifoldPlane("memory", rotation_angle=math.pi / 6, scale=0.7),
-            "identity": ManifoldPlane(
-                "identity", rotation_angle=math.pi / 3, scale=0.4
-            ),
+            "identity": ManifoldPlane("identity", rotation_angle=math.pi / 3, scale=0.4),
         }
 
         # Portals between clusters
@@ -485,7 +480,7 @@ class PersonalityClusterLattice:
                 cluster.add_particle(particle, spin)
 
             # Also add negative-space particles
-            for i in range(3):
+            for _i in range(3):
                 noise = np.random.randn(DIM) * 0.05
                 particle = _poincare_project(facet.negative_point + noise)
                 cluster.add_particle(particle, spin=-1)  # Shadow particles
@@ -508,9 +503,7 @@ class PersonalityClusterLattice:
             # Adjust bandwidth by tongue bracket magnitude
             src_tongue = self.clusters[src].tongue
             tgt_tongue = self.clusters[tgt].tongue
-            bracket_boost = float(
-                np.linalg.norm(tongue_bracket(src_tongue, tgt_tongue))
-            )
+            bracket_boost = float(np.linalg.norm(tongue_bracket(src_tongue, tgt_tongue)))
             adjusted_bw = min(1.0, bw + bracket_boost * 0.1)
 
             portal_name = f"{src}<>{tgt}"
@@ -568,24 +561,17 @@ class PersonalityClusterLattice:
         # Portal propagation
         portal_results = {}
         for portal_name, portal in self.portals.items():
-            if (
-                portal.source_cluster == cluster_name
-                or portal.target_cluster == cluster_name
-            ):
+            if portal.source_cluster == cluster_name or portal.target_cluster == cluster_name:
                 rho_e = compute_rho_e(np.array([intensity, len(context)]))
                 transferred = portal.transfer(new_particle, rho_e, self.rho_e_threshold)
                 if transferred is not None:
                     # Add transferred particle to target cluster
                     target_name = (
-                        portal.target_cluster
-                        if portal.source_cluster == cluster_name
-                        else portal.source_cluster
+                        portal.target_cluster if portal.source_cluster == cluster_name else portal.source_cluster
                     )
                     target = self.clusters.get(target_name)
                     if target:
-                        target.add_particle(
-                            transferred, spin=0
-                        )  # Neutral spin on transfer
+                        target.add_particle(transferred, spin=0)  # Neutral spin on transfer
                         portal_results[portal_name] = float(np.linalg.norm(transferred))
 
         # Drift detection
@@ -603,9 +589,7 @@ class PersonalityClusterLattice:
 
         # Antivirus provenance check
         personality_vec = self.base.get_personality_vector()
-        provenance_valid, provenance_msg = validate_personality_provenance(
-            personality_vec
-        )
+        provenance_valid, provenance_msg = validate_personality_provenance(personality_vec)
         if not provenance_valid:
             logger.warning("Personality antivirus alert: %s", provenance_msg)
 
@@ -723,21 +707,13 @@ class PersonalityClusterLattice:
 
         # Add cluster info
         active_clusters = sorted(
-            [
-                (name, c.coherence(), c.dominant_spin())
-                for name, c in self.clusters.items()
-                if c.coherence() > 0.3
-            ],
+            [(name, c.coherence(), c.dominant_spin()) for name, c in self.clusters.items() if c.coherence() > 0.3],
             key=lambda x: -x[1],
         )
 
         cluster_info = []
         for name, coh, spin in active_clusters[:3]:
-            spin_word = (
-                "constructive"
-                if spin > 0
-                else ("deconstructive" if spin < 0 else "balanced")
-            )
+            spin_word = "constructive" if spin > 0 else ("deconstructive" if spin < 0 else "balanced")
             cluster_info.append(f"  {name}: coherence={coh:.1f}, intent={spin_word}")
 
         if cluster_info:

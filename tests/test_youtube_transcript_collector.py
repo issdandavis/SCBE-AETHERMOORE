@@ -28,9 +28,7 @@ class TestSearchChannelVideos:
     @patch("subprocess.run")
     def test_uses_handle_when_provided(self, mock_run):
         """When a handle is given, yt-dlp search should use it instead of the display name."""
-        mock_run.return_value = MagicMock(
-            returncode=0, stdout="abc123 Some Video Title\n"
-        )
+        mock_run.return_value = MagicMock(returncode=0, stdout="abc123 Some Video Title\n")
         search_channel_videos("Robert Miles", max_results=3, handle="@RobertMilesAI")
         call_args = mock_run.call_args[0][0]
         # The search query should contain the handle, not the display name
@@ -65,9 +63,7 @@ class TestChannelHandles:
         """Every curated channel should have a handle field for unambiguous search."""
         for c in load_channels():
             assert "handle" in c, f"Channel {c['name']} missing 'handle' field"
-            assert c["handle"].startswith(
-                "@"
-            ), f"Handle for {c['name']} must start with @"
+            assert c["handle"].startswith("@"), f"Handle for {c['name']} must start with @"
 
 
 class TestLoadChannels:
@@ -90,9 +86,7 @@ class TestLoadChannels:
 
 class TestGetTranscript:
     @pytest.mark.skipif(
-        not pytest.importorskip(
-            "youtube_transcript_api", reason="youtube-transcript-api not installed"
-        ),
+        not pytest.importorskip("youtube_transcript_api", reason="youtube-transcript-api not installed"),
         reason="network-dependent",
     )
     def test_real_video_returns_text(self):
@@ -130,9 +124,7 @@ class TestScrubTranscript:
         assert "[URL]" in clean
 
     def test_secrets_scrubbed(self):
-        clean, count = scrub_transcript(
-            "Use api_key=sk-1234567890abcdef to authenticate."
-        )
+        clean, count = scrub_transcript("Use api_key=sk-1234567890abcdef to authenticate.")
         assert "sk-1234567890abcdef" not in clean
         assert count > 0
 
@@ -164,12 +156,8 @@ class TestGenerateSFT:
             "domain": "structure",
             "rating": 4,
         }
-        transcript = (
-            "Here we explain complex system architecture and design patterns. " * 30
-        )
-        pairs = generate_sft_from_transcript(
-            channel, "Architecture Deep Dive", transcript
-        )
+        transcript = "Here we explain complex system architecture and design patterns. " * 30
+        pairs = generate_sft_from_transcript(channel, "Architecture Deep Dive", transcript)
         for p in pairs:
             # Must be serializable
             serialized = json.dumps(p)

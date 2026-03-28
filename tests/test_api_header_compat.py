@@ -26,18 +26,12 @@ from aws import lambda_handler as lambda_module
 
 def test_verify_api_key_accepts_new_header(monkeypatch) -> None:
     monkeypatch.setattr(api_main, "VALID_API_KEYS", {"new-key": "tenant_new"})
-    assert (
-        asyncio.run(api_main.verify_api_key(api_key="new-key", api_key_legacy=None))
-        == "tenant_new"
-    )
+    assert asyncio.run(api_main.verify_api_key(api_key="new-key", api_key_legacy=None)) == "tenant_new"
 
 
 def test_verify_api_key_accepts_legacy_header(monkeypatch) -> None:
     monkeypatch.setattr(api_main, "VALID_API_KEYS", {"legacy-key": "tenant_legacy"})
-    assert (
-        asyncio.run(api_main.verify_api_key(api_key=None, api_key_legacy="legacy-key"))
-        == "tenant_legacy"
-    )
+    assert asyncio.run(api_main.verify_api_key(api_key=None, api_key_legacy="legacy-key")) == "tenant_legacy"
 
 
 def test_verify_api_key_prefers_new_header_when_both_present(monkeypatch) -> None:
@@ -46,12 +40,7 @@ def test_verify_api_key_prefers_new_header_when_both_present(monkeypatch) -> Non
         "VALID_API_KEYS",
         {"new-key": "tenant_new", "legacy-key": "tenant_legacy"},
     )
-    assert (
-        asyncio.run(
-            api_main.verify_api_key(api_key="new-key", api_key_legacy="legacy-key")
-        )
-        == "tenant_new"
-    )
+    assert asyncio.run(api_main.verify_api_key(api_key="new-key", api_key_legacy="legacy-key")) == "tenant_new"
 
 
 def test_verify_api_key_rejects_missing_headers(monkeypatch) -> None:
@@ -63,15 +52,9 @@ def test_verify_api_key_rejects_missing_headers(monkeypatch) -> None:
 
 def test_lambda_extract_api_key_accepts_new_and_legacy_headers() -> None:
     assert lambda_module._extract_api_key({"SCBE_api_key": "new-key"}) == "new-key"
-    assert (
-        lambda_module._extract_api_key({"scbe_api_key": "new-key-lower"})
-        == "new-key-lower"
-    )
+    assert lambda_module._extract_api_key({"scbe_api_key": "new-key-lower"}) == "new-key-lower"
     assert lambda_module._extract_api_key({"X-API-Key": "legacy-key"}) == "legacy-key"
-    assert (
-        lambda_module._extract_api_key({"x-api-key": "legacy-key-lower"})
-        == "legacy-key-lower"
-    )
+    assert lambda_module._extract_api_key({"x-api-key": "legacy-key-lower"}) == "legacy-key-lower"
 
 
 def test_lambda_extract_api_key_prefers_new_header() -> None:

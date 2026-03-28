@@ -105,9 +105,7 @@ class MetricsCollector:
         self.metrics: Dict[str, List[MetricPoint]] = defaultdict(list)
         self.aggregations: Dict[str, Dict[str, float]] = {}
 
-    def record(
-        self, metric_name: str, value: float, labels: Optional[Dict[str, str]] = None
-    ):
+    def record(self, metric_name: str, value: float, labels: Optional[Dict[str, str]] = None):
         """Record a metric value."""
         point = MetricPoint(timestamp=datetime.now(), value=value, labels=labels or {})
 
@@ -118,9 +116,7 @@ class MetricsCollector:
     def _cleanup_old_metrics(self, metric_name: str):
         """Remove metrics older than retention period."""
         cutoff = datetime.now() - timedelta(hours=self.retention_hours)
-        self.metrics[metric_name] = [
-            p for p in self.metrics[metric_name] if p.timestamp > cutoff
-        ]
+        self.metrics[metric_name] = [p for p in self.metrics[metric_name] if p.timestamp > cutoff]
 
     def _update_aggregations(self, metric_name: str):
         """Update aggregated statistics."""
@@ -156,11 +152,7 @@ class MetricsCollector:
         if end_time:
             points = [p for p in points if p.timestamp <= end_time]
         if labels:
-            points = [
-                p
-                for p in points
-                if all(p.labels.get(k) == v for k, v in labels.items())
-            ]
+            points = [p for p in points if all(p.labels.get(k) == v for k, v in labels.items())]
 
         return points
 
@@ -440,9 +432,7 @@ class MonitoringDashboard:
             severity=AlertSeverity.WARNING,
         )
 
-    async def _on_health_change(
-        self, agent_id: str, previous: Dict[str, Any], current: Dict[str, Any]
-    ):
+    async def _on_health_change(self, agent_id: str, previous: Dict[str, Any], current: Dict[str, Any]):
         """Handle health status changes."""
         if current.get("healthy") is False and previous.get("healthy") is True:
             # Agent became unhealthy
@@ -504,22 +494,14 @@ class MonitoringDashboard:
                         agent_metrics = agent.get_metrics()
 
                         # Record metrics
-                        self.metrics.record(
-                            f"{agent_id}.invocations", agent_metrics.invocations
-                        )
+                        self.metrics.record(f"{agent_id}.invocations", agent_metrics.invocations)
                         self.metrics.record(f"{agent_id}.errors", agent_metrics.errors)
-                        self.metrics.record(
-                            f"{agent_id}.latency", agent_metrics.avg_latency_ms
-                        )
+                        self.metrics.record(f"{agent_id}.latency", agent_metrics.avg_latency_ms)
 
                         # Calculate error rate
                         if agent_metrics.invocations > 0:
-                            error_rate = (
-                                agent_metrics.errors / agent_metrics.invocations
-                            )
-                            self.metrics.record(
-                                "error_rate", error_rate, {"agent_id": agent_id}
-                            )
+                            error_rate = agent_metrics.errors / agent_metrics.invocations
+                            self.metrics.record("error_rate", error_rate, {"agent_id": agent_id})
 
                         # Create snapshot
                         snapshot[agent_id] = AgentSnapshot(
@@ -560,7 +542,7 @@ class MonitoringDashboard:
 
         # Aggregate by cloud
         by_cloud = {"aws": [], "gcp": [], "local": []}
-        for agent_id, snap in latest_snapshot.items():
+        for _agent_id, snap in latest_snapshot.items():
             by_cloud[snap.cloud].append(
                 {
                     "agent_id": snap.agent_id,
@@ -573,17 +555,9 @@ class MonitoringDashboard:
         # Health summary
         health_summary = {
             "total": len(latest_snapshot),
-            "healthy": sum(
-                1 for s in latest_snapshot.values() if s.health == "healthy"
-            ),
-            "degraded": sum(
-                1 for s in latest_snapshot.values() if s.health == "degraded"
-            ),
-            "unhealthy": sum(
-                1
-                for s in latest_snapshot.values()
-                if s.health in ["unhealthy", "error"]
-            ),
+            "healthy": sum(1 for s in latest_snapshot.values() if s.health == "healthy"),
+            "degraded": sum(1 for s in latest_snapshot.values() if s.health == "degraded"),
+            "unhealthy": sum(1 for s in latest_snapshot.values() if s.health in ["unhealthy", "error"]),
         }
 
         return {
@@ -593,12 +567,8 @@ class MonitoringDashboard:
                 "clouds": {cloud: len(agents) for cloud, agents in by_cloud.items()},
                 "alerts": {
                     "active": len(self.alert_manager.get_active()),
-                    "critical": len(
-                        self.alert_manager.get_by_severity(AlertSeverity.CRITICAL)
-                    ),
-                    "warning": len(
-                        self.alert_manager.get_by_severity(AlertSeverity.WARNING)
-                    ),
+                    "critical": len(self.alert_manager.get_by_severity(AlertSeverity.CRITICAL)),
+                    "warning": len(self.alert_manager.get_by_severity(AlertSeverity.WARNING)),
                 },
             },
             "agents": {
@@ -637,8 +607,7 @@ class MonitoringDashboard:
     def get_metrics_summary(self) -> Dict[str, Any]:
         """Get metrics summary."""
         return {
-            metric_name: self.metrics.get_aggregation(metric_name)
-            for metric_name in self.metrics.get_all_metrics()
+            metric_name: self.metrics.get_aggregation(metric_name) for metric_name in self.metrics.get_all_metrics()
         }
 
     def get_agent_detail(self, agent_id: str) -> Dict[str, Any]:
@@ -657,10 +626,7 @@ class MonitoringDashboard:
             if metric_name.startswith(f"{agent_id}."):
                 short_name = metric_name.replace(f"{agent_id}.", "")
                 points = self.metrics.get_metric(metric_name)[-100:]
-                metric_data[short_name] = [
-                    {"timestamp": p.timestamp.isoformat(), "value": p.value}
-                    for p in points
-                ]
+                metric_data[short_name] = [{"timestamp": p.timestamp.isoformat(), "value": p.value} for p in points]
 
         return {
             "agent_id": agent_id,
@@ -671,11 +637,7 @@ class MonitoringDashboard:
             "uptime_percent": self.health_checker.get_uptime(agent_id),
             "health_history": health_history,
             "metrics": metric_data,
-            "alerts": [
-                a.__dict__
-                for a in self.alert_manager.alerts.values()
-                if a.source == agent_id
-            ],
+            "alerts": [a.__dict__ for a in self.alert_manager.alerts.values() if a.source == agent_id],
         }
 
     def export_report(self, format: str = "json") -> str:

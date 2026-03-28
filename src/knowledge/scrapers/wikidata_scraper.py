@@ -30,9 +30,7 @@ def search_entities(query: str, limit: int = 20) -> list[KnowledgeChunk]:
         "format": "json",
     }
     url = f"{WIKIDATA_API}?{urlencode(params)}"
-    req = Request(
-        url, headers={"User-Agent": "AetherBrowser/1.0 (SCBE-AETHERMOORE research)"}
-    )
+    req = Request(url, headers={"User-Agent": "AetherBrowser/1.0 (SCBE-AETHERMOORE research)"})
 
     with urlopen(req, timeout=30) as response:
         data = json.loads(response.read())

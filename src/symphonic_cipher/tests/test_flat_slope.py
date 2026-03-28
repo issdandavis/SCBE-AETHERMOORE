@@ -108,9 +108,7 @@ class TestFlatSlopeSecurity:
             result["fundamental_std"] < 5.0
         ), f"Fundamental frequency std dev too high: {result['fundamental_std']} Hz"
 
-        assert (
-            result["frequency_flat"] is True
-        ), "Frequency analysis should report flat slope"
+        assert result["frequency_flat"] is True, "Frequency analysis should report flat slope"
 
     def test_steep_vs_flat_comparison(self):
         """Compare steep (vulnerable) vs flat (secure) encoding."""
@@ -118,15 +116,11 @@ class TestFlatSlopeSecurity:
         result = compare_steep_vs_flat(tokens)
 
         # Steep slope has high variance (attackable)
-        assert (
-            result["steep_slope"]["variance"] > 0
-        ), "Steep slope should have non-zero frequency variance"
+        assert result["steep_slope"]["variance"] > 0, "Steep slope should have non-zero frequency variance"
         assert result["steep_slope"]["attackable"] is True
 
         # Flat slope has zero variance (not attackable)
-        assert (
-            result["flat_slope"]["variance"] == 0.0
-        ), "Flat slope should have zero frequency variance"
+        assert result["flat_slope"]["variance"] == 0.0, "Flat slope should have zero frequency variance"
         assert result["flat_slope"]["attackable"] is False
 
     def test_different_keys_different_masks(self, secret_key, alt_secret_key):
@@ -137,14 +131,10 @@ class TestFlatSlopeSecurity:
         fp2 = derive_harmonic_mask(token_id, alt_secret_key)
 
         # Harmonics should differ
-        assert (
-            fp1.harmonics != fp2.harmonics
-        ), "Different keys produced same harmonic mask - security failure!"
+        assert fp1.harmonics != fp2.harmonics, "Different keys produced same harmonic mask - security failure!"
 
         # Key commitments should differ
-        assert (
-            fp1.key_commitment != fp2.key_commitment
-        ), "Different keys produced same commitment - security failure!"
+        assert fp1.key_commitment != fp2.key_commitment, "Different keys produced same commitment - security failure!"
 
     def test_same_key_deterministic(self, secret_key):
         """Same key + same token = identical fingerprint."""
@@ -169,12 +159,8 @@ class TestFlatSlopeSecurity:
             if key in fingerprints:
                 # Same harmonic set - check if amplitudes/phases differ
                 prev_fp = fingerprints[key]
-                if np.allclose(fp.amplitudes, prev_fp.amplitudes) and np.allclose(
-                    fp.phases, prev_fp.phases
-                ):
-                    pytest.fail(
-                        f"Tokens {prev_fp.token_id} and {token_id} have identical fingerprints!"
-                    )
+                if np.allclose(fp.amplitudes, prev_fp.amplitudes) and np.allclose(fp.phases, prev_fp.phases):
+                    pytest.fail(f"Tokens {prev_fp.token_id} and {token_id} have identical fingerprints!")
 
             fingerprints[key] = fp
 
@@ -214,9 +200,7 @@ class TestHarmonicMaskDerivation:
         """PROBE modality should only have fundamental."""
         fp = derive_harmonic_mask(42, secret_key, modality=ModalityMask.PROBE)
 
-        assert fp.harmonics == {
-            1
-        }, f"PROBE modality should only have fundamental, got {fp.harmonics}"
+        assert fp.harmonics == {1}, f"PROBE modality should only have fundamental, got {fp.harmonics}"
 
     def test_domain_separation(self, secret_key):
         """Different domains should produce different fingerprints."""
@@ -249,9 +233,7 @@ class TestWaveformSynthesis:
 
         wave = synthesize_token(fp, duration_ms=duration_ms)
 
-        assert (
-            len(wave) == expected_samples
-        ), f"Expected {expected_samples} samples, got {len(wave)}"
+        assert len(wave) == expected_samples, f"Expected {expected_samples} samples, got {len(wave)}"
 
     def test_waveform_amplitude_bounded(self, secret_key):
         """Waveform amplitude should be normalized."""
@@ -341,9 +323,7 @@ class TestVerification:
 
         match, confidence = verify_token_fingerprint(wave, fp)
 
-        assert (
-            match is True
-        ), f"Correct fingerprint failed to verify (confidence: {confidence})"
+        assert match is True, f"Correct fingerprint failed to verify (confidence: {confidence})"
         assert confidence >= 0.8, f"Confidence too low: {confidence}"
 
     def test_verify_envelope_integrity_valid(self, secret_key):
@@ -415,9 +395,7 @@ class TestResonanceRefractoring:
         result_321 = resonance_refractor(fps_321)
 
         # Should be different (not all zeros and not identical)
-        assert not np.allclose(
-            result_123, result_321
-        ), "Different token orders produced identical patterns"
+        assert not np.allclose(result_123, result_321), "Different token orders produced identical patterns"
 
 
 # =============================================================================
@@ -496,9 +474,7 @@ class TestAttackResistance:
         variance = np.var(fundamentals)
 
         # Flat slope: variance should be essentially zero
-        assert (
-            variance < 1.0
-        ), f"Frequency analysis attack succeeded! Variance: {variance} Hz"
+        assert variance < 1.0, f"Frequency analysis attack succeeded! Variance: {variance} Hz"
 
     def test_harmonic_analysis_without_key(self, secret_key):
         """

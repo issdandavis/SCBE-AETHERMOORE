@@ -124,7 +124,7 @@ def attempt_hf_voice_clone(reference_wav: Path, text: str, output_path: Path, hf
 
         # Read reference audio
         with open(reference_wav, "rb") as f:
-            audio_bytes = f.read()
+            _audio_bytes = f.read()
 
         # XTTS expects multipart with audio reference
         response = requests.post(

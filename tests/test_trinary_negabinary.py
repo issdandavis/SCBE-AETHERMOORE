@@ -251,9 +251,7 @@ class TestNegaBinaryArithmetic:
         for a in range(-20, 21):
             for b in range(-20, 21):
                 result = NegaBinary.from_int(a) + NegaBinary.from_int(b)
-                assert (
-                    result.to_int() == a + b
-                ), f"{a} + {b} failed: got {result.to_int()}"
+                assert result.to_int() == a + b, f"{a} + {b} failed: got {result.to_int()}"
 
     def test_subtraction(self):
         for a in range(-15, 16):

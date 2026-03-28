@@ -152,9 +152,7 @@ DEFAULT_SOCKETS: List[SocketSpec] = [
     SocketSpec("decide", layer=7, min_ring=EggRing.INNER, tongue="RU"),
     SocketSpec("steer", layer=8, min_ring=EggRing.INNER, tongue="CA"),
     SocketSpec("coordinate", layer=12, min_ring=EggRing.CORE, tongue="UM"),
-    SocketSpec(
-        "proximity", layer=14, min_ring=EggRing.CORE, tongue="DR", required=True
-    ),
+    SocketSpec("proximity", layer=14, min_ring=EggRing.CORE, tongue="DR", required=True),
 ]
 
 
@@ -201,11 +199,7 @@ class PotatoHead:
     @property
     def attached_blocks(self) -> Dict[str, List[str]]:
         """Map of socket_name -> list of attached block names."""
-        return {
-            name: [rec.block.name for rec in recs]
-            for name, recs in self._attachments.items()
-            if recs
-        }
+        return {name: [rec.block.name for rec in recs] for name, recs in self._attachments.items() if recs}
 
     @property
     def empty_sockets(self) -> List[str]:
@@ -215,11 +209,7 @@ class PotatoHead:
     @property
     def missing_required(self) -> List[str]:
         """Required sockets that have no block attached."""
-        return [
-            name
-            for name, spec in self._sockets.items()
-            if spec.required and not self._attachments[name]
-        ]
+        return [name for name, spec in self._sockets.items() if spec.required and not self._attachments[name]]
 
     # -- attach / detach -----------------------------------------------------
 
@@ -239,9 +229,7 @@ class PotatoHead:
         # A5: Composition — attachment must not violate pipeline ordering
         """
         if socket_name not in self._sockets:
-            raise ValueError(
-                f"No socket named '{socket_name}'. Available: {self.socket_names}"
-            )
+            raise ValueError(f"No socket named '{socket_name}'. Available: {self.socket_names}")
 
         spec = self._sockets[socket_name]
 
@@ -255,9 +243,7 @@ class PotatoHead:
         # Capacity check
         current = self._attachments[socket_name]
         if len(current) >= spec.max_blocks:
-            raise ValueError(
-                f"Socket '{socket_name}' is full ({spec.max_blocks} block(s) max)"
-            )
+            raise ValueError(f"Socket '{socket_name}' is full ({spec.max_blocks} block(s) max)")
 
         egg_hash = _compute_egg_hash(block.name, socket_name, ring)
         record = AttachmentRecord(

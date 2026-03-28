@@ -138,9 +138,7 @@ def push_to_huggingface(funnel: KnowledgeFunnel, graph: TokenizerGraph):
 
 def main():
     parser = argparse.ArgumentParser(description="SCBE Knowledge Funnel")
-    parser.add_argument(
-        "--source", choices=["arxiv", "s2", "notion", "all"], default="all"
-    )
+    parser.add_argument("--source", choices=["arxiv", "s2", "notion", "all"], default="all")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--push-hf", action="store_true")
     args = parser.parse_args()

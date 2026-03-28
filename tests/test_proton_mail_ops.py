@@ -233,9 +233,7 @@ def test_apply_triage_plan_filters_to_selected_targets(monkeypatch) -> None:
     )
     monkeypatch.setattr(mail_ops, "_audit", lambda event, payload: None)
 
-    payload = mail_ops.apply_triage_plan(
-        cfg, "INBOX", 10, execute=False, only_targets={"Folders/Admin"}
-    )
+    payload = mail_ops.apply_triage_plan(cfg, "INBOX", 10, execute=False, only_targets={"Folders/Admin"})
     assert payload["move_count"] == 1
     assert payload["filtered_count"] == 1
     assert payload["only_targets"] == ["Folders/Admin"]
@@ -264,9 +262,7 @@ def test_apply_triage_plan_execute_marks_deleted_flag(monkeypatch) -> None:
     )
     monkeypatch.setattr(mail_ops, "_audit", lambda event, payload: None)
 
-    payload = mail_ops.apply_triage_plan(
-        cfg, "INBOX", 10, execute=True, only_targets={"Folders/Admin"}
-    )
+    payload = mail_ops.apply_triage_plan(cfg, "INBOX", 10, execute=True, only_targets={"Folders/Admin"})
     assert payload["move_count"] == 1
     assert fake.copied == [("7", "Folders/Admin")]
     assert fake.stored == [("7", "+FLAGS", r"\Deleted")]
@@ -274,16 +270,12 @@ def test_apply_triage_plan_execute_marks_deleted_flag(monkeypatch) -> None:
 
 
 def test_send_mail_execute_uses_authenticated_bridge_smtp(monkeypatch) -> None:
-    cfg = mail_ops.BridgeConfig(
-        "127.0.0.1", 1143, 1025, "aethermoregames@pm.me", "bridge-password", "Folders"
-    )
+    cfg = mail_ops.BridgeConfig("127.0.0.1", 1143, 1025, "aethermoregames@pm.me", "bridge-password", "Folders")
     fake = FakeSmtp()
     monkeypatch.setattr(mail_ops, "_connect_smtp", lambda config: fake)
     monkeypatch.setattr(mail_ops, "_audit", lambda event, payload: None)
 
-    payload = mail_ops.send_mail(
-        cfg, "buyer@example.com", "Hello", "World", execute=True
-    )
+    payload = mail_ops.send_mail(cfg, "buyer@example.com", "Hello", "World", execute=True)
     assert payload["status"] == "sent"
     assert fake.sent_to == "buyer@example.com"
 

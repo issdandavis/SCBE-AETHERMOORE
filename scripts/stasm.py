@@ -157,7 +157,7 @@ def assemble_text(src: str) -> Tuple[List[Instr], Dict[str, int], List[str]]:
     listing: List[str] = []
     out: List[Instr] = []
     pc = 0
-    for idx, raw in enumerate(lines, start=1):
+    for _idx, raw in enumerate(lines, start=1):
         line = strip_comment(raw)
         if not line:
             continue
