@@ -9,6 +9,8 @@ from types import SimpleNamespace
 
 import pytest
 
+pytest.importorskip("httpx", reason="httpx not installed")
+
 from hydra.research import ResearchConfig, ResearchOrchestrator, html_to_text
 from hydra.switchboard import Switchboard
 

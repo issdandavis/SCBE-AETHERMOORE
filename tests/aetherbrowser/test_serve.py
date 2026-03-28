@@ -1,5 +1,9 @@
 """Tests for the FastAPI server."""
 
+import pytest
+
+pytest.importorskip("fastapi", reason="fastapi not installed")
+
 from fastapi.testclient import TestClient
 import src.aetherbrowser.serve as serve_module
 from src.aetherbrowser.provider_executor import ProviderExecutionResult

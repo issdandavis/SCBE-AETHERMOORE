@@ -45,6 +45,7 @@ class TestProviderExecutor:
         assert snapshot["haiku"]["model_id"] == "claude-3-5-haiku-20241022"
 
     def test_runtime_status_marks_ready_when_env_and_package_exist(self, monkeypatch):
+        pytest.importorskip("openai", reason="openai package required")
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         executor = ProviderExecutor()
 

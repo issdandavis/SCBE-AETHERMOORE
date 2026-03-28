@@ -4,6 +4,10 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
+pytest.importorskip("fastapi", reason="fastapi is required for code scanning batch3 tests")
+
 from src.gacha_isekai import training as gacha_training
 
 ROOT = Path(__file__).resolve().parents[1]

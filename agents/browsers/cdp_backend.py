@@ -52,9 +52,6 @@ class CDPBackend(BrowserBackend):
         port: int = 9222,
         target_id: Optional[str] = None
     ):
-        if not CDP_AVAILABLE:
-            raise ImportError("CDP dependencies not installed. Run: pip install websockets aiohttp")
-
         self.host = host
         self.port = port
         self.target_id = target_id
@@ -69,6 +66,8 @@ class CDPBackend(BrowserBackend):
 
     async def initialize(self) -> bool:
         """Initialize CDP connection."""
+        if not CDP_AVAILABLE:
+            raise ImportError("CDP dependencies not installed. Run: pip install websockets aiohttp")
         try:
             self._http_session = aiohttp.ClientSession()
 
@@ -188,10 +187,11 @@ class CDPBackend(BrowserBackend):
     async def navigate(self, url: str) -> Dict[str, Any]:
         """Navigate to URL."""
         result = await self._send("Page.navigate", {"url": url})
-        self.current_url = url
 
         if result.get("errorText"):
             raise RuntimeError(f"Navigation failed: {result['errorText']}")
+
+        self.current_url = url
 
         await self._wait_for_ready_state()
 
