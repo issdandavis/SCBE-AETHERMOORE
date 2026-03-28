@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://issdandavis.github.io/SCBE-AETHERMOORE/sitemap.xml
+Sitemap: https://aethermoorgames.com/sitemap.xml
