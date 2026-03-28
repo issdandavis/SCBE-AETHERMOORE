@@ -90,9 +90,7 @@ def test_seal_rejects_wrong_sign_quadrant() -> None:
     sealed_mode = SignedModeAddress(-3, 5)
     wrong_mode = SignedModeAddress(3, 5)
     egg_seal = seal_egg(PAYLOAD, sealed_mode, MANIFOLD, SECRET, realm="validation")
-    assert not verify_egg(
-        egg_seal, PAYLOAD, wrong_mode, MANIFOLD, SECRET, realm="validation"
-    )
+    assert not verify_egg(egg_seal, PAYLOAD, wrong_mode, MANIFOLD, SECRET, realm="validation")
 
 
 def test_seal_rejects_wrong_manifold() -> None:
@@ -107,9 +105,7 @@ def test_sign_change_requires_separator_token() -> None:
     assert transition_requires_separator(source, target)
     assert not authorize_transition(source, target, MANIFOLD, SECRET)
     separator = derive_separator_token(source, target, MANIFOLD, SECRET)
-    assert authorize_transition(
-        source, target, MANIFOLD, SECRET, separator_token=separator
-    )
+    assert authorize_transition(source, target, MANIFOLD, SECRET, separator_token=separator)
 
 
 def test_same_quadrant_no_separator_needed() -> None:

@@ -77,10 +77,7 @@ def haversine_km(
 
     dlat = lat2 - lat1
     dlon = lon2 - lon1
-    hav = (
-        math.sin(dlat / 2.0) ** 2
-        + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2.0) ** 2
-    )
+    hav = math.sin(dlat / 2.0) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2.0) ** 2
     return radius_km * 2.0 * math.asin(min(1.0, math.sqrt(hav)))
 
 
@@ -98,9 +95,7 @@ def infer_location_from_ip(ipapi_url: str = "https://ipapi.co/json/") -> Geoloca
     The default endpoint is free and may rate limit; callers should treat this as
     optional infrastructure (not a trust root).
     """
-    req = urllib.request.Request(
-        ipapi_url, headers={"User-Agent": "SCBE-Geoseal-Location/1.0"}
-    )
+    req = urllib.request.Request(ipapi_url, headers={"User-Agent": "SCBE-Geoseal-Location/1.0"})
     with urllib.request.urlopen(req, timeout=4) as resp:
         payload = json.loads(resp.read().decode("utf-8"))
 
@@ -173,9 +168,7 @@ def evaluate_geoseal_location(
     # Combine distance score with a bounded trust radius.
     risk_radius = min(
         1.0,
-        0.85 * distance_score
-        + 0.15
-        * (0.0 if distance_km is None else distance_km / max(outer_radius_km, 1.0)),
+        0.85 * distance_score + 0.15 * (0.0 if distance_km is None else distance_km / max(outer_radius_km, 1.0)),
     )
     trust = round(1.0 - risk_radius, 4)
 

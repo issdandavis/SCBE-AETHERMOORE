@@ -509,9 +509,7 @@ class ResearchHub:
         filepath = self.output_dir / filename
         with open(filepath, "w", encoding="utf-8") as f:
             for paper in papers:
-                f.write(
-                    json.dumps(paper.to_training_record(), ensure_ascii=False) + "\n"
-                )
+                f.write(json.dumps(paper.to_training_record(), ensure_ascii=False) + "\n")
 
         return filepath
 
@@ -536,13 +534,9 @@ class ResearchHub:
         # Write to temp file
         import tempfile
 
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".jsonl", delete=False, encoding="utf-8"
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False, encoding="utf-8") as f:
             for paper in papers:
-                f.write(
-                    json.dumps(paper.to_training_record(), ensure_ascii=False) + "\n"
-                )
+                f.write(json.dumps(paper.to_training_record(), ensure_ascii=False) + "\n")
             temp_path = f.name
 
         try:
@@ -583,15 +577,9 @@ class ResearchHub:
             tongue = p.tongue_affinity or "UNKNOWN"
             by_tongue[tongue] = by_tongue.get(tongue, 0) + 1
 
-        avg_governance = (
-            sum(p.governance_score for p in papers) / len(papers) if papers else 0
-        )
-        avg_relevance = (
-            sum(p.relevance_score for p in papers) / len(papers) if papers else 0
-        )
-        avg_training = (
-            sum(p.training_value for p in papers) / len(papers) if papers else 0
-        )
+        avg_governance = sum(p.governance_score for p in papers) / len(papers) if papers else 0
+        avg_relevance = sum(p.relevance_score for p in papers) / len(papers) if papers else 0
+        avg_training = sum(p.training_value for p in papers) / len(papers) if papers else 0
 
         return {
             "total_papers": len(papers),
@@ -601,10 +589,7 @@ class ResearchHub:
             "avg_governance_score": round(avg_governance, 4),
             "avg_relevance_score": round(avg_relevance, 4),
             "avg_training_value": round(avg_training, 4),
-            "top_papers": [
-                {"title": p.title, "arxiv_id": p.arxiv_id, "score": p.training_value}
-                for p in papers[:5]
-            ],
+            "top_papers": [{"title": p.title, "arxiv_id": p.arxiv_id, "score": p.training_value} for p in papers[:5]],
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
@@ -635,9 +620,7 @@ if __name__ == "__main__":
         papers = hub.search(query, max_results=5)
         for p in papers:
             print(f"\n  [{p.arxiv_id}] {p.title}")
-            print(
-                f"    Tongue: {p.tongue_affinity} | Gov: {p.governance_score:.2f} | Train: {p.training_value:.2f}"
-            )
+            print(f"    Tongue: {p.tongue_affinity} | Gov: {p.governance_score:.2f} | Train: {p.training_value:.2f}")
             print(f"    {p.abs_url}")
     else:
         print("Usage:")

@@ -126,9 +126,7 @@ class TestGateMapping:
         rb = qc.map_gates_to_lattice(b)
         rab = qc.map_gates_to_lattice(ab)
 
-        np.testing.assert_allclose(
-            rab.r_physical, ra.r_physical + rb.r_physical, atol=1e-10
-        )
+        np.testing.assert_allclose(rab.r_physical, ra.r_physical + rb.r_physical, atol=1e-10)
 
 
 # =============================================================================

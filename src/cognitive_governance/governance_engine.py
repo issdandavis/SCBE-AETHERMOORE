@@ -186,9 +186,7 @@ class GovernanceEngine:
                 "sensitivity": sensitivity,
                 "safety_score": round(safety, 4),
                 "hyperbolic_distance": round(distance, 4),
-                "governance_cost": (
-                    round(cost, 4) if cost != float("inf") else "infinity"
-                ),
+                "governance_cost": (round(cost, 4) if cost != float("inf") else "infinity"),
                 "phase_alignment": round(phase_alignment, 4),
                 "classification": classification,
                 "context": context or {},
@@ -326,9 +324,7 @@ class GovernanceEngine:
 
     def get_agent_summary(self, agent_id: str) -> Dict[str, Any]:
         """Get a summary of an agent's governance history."""
-        agent_history = [
-            h for h in self.history if h.explanation.get("agent_id") == agent_id
-        ]
+        agent_history = [h for h in self.history if h.explanation.get("agent_id") == agent_id]
         if not agent_history:
             return {
                 "agent_id": agent_id,

@@ -115,9 +115,7 @@ class TestManifestGeneration:
         assert manifest.license_valid is True
         assert manifest.air_gap_approved is False
         assert manifest.deployment_ready is False  # No air-gap approval
-        assert any(
-            "air-gap" in w.lower() or "air_gap" in w.lower() for w in manifest.warnings
-        )
+        assert any("air-gap" in w.lower() or "air_gap" in w.lower() for w in manifest.warnings)
 
     def test_invalid_signature(self):
         """Tampered license should fail validation."""

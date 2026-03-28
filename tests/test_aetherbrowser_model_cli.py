@@ -37,9 +37,7 @@ def test_render_weighted_context_contains_label_and_weight() -> None:
 
 
 def test_build_logged_input_appends_context_block() -> None:
-    combined = build_logged_input(
-        "Summarize this", "[weighted-context]\nctx\n[/weighted-context]"
-    )
+    combined = build_logged_input("Summarize this", "[weighted-context]\nctx\n[/weighted-context]")
     assert combined.startswith("Summarize this")
     assert "[weighted-context]" in combined
 

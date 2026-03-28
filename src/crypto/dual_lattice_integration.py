@@ -278,9 +278,7 @@ def layers_2_4_process(
 # =============================================================================
 
 
-def governance_aware_distance(
-    a: np.ndarray, b: np.ndarray, phase_a: float = 0.0, phase_b: float = 0.0
-) -> float:
+def governance_aware_distance(a: np.ndarray, b: np.ndarray, phase_a: float = 0.0, phase_b: float = 0.0) -> float:
     """
     Layer 5: Combined hyperbolic + phase distance for governance.
 
@@ -334,9 +332,7 @@ def layer_5_evaluate(
 # =============================================================================
 
 
-def breathing_transform(
-    position: np.ndarray, b: float, origin: np.ndarray = None
-) -> np.ndarray:
+def breathing_transform(position: np.ndarray, b: float, origin: np.ndarray = None) -> np.ndarray:
     """
     Layer 6: Apply breathing transform (diffeomorphic scaling).
 
@@ -359,9 +355,7 @@ def breathing_transform(
     return origin + delta * (new_norm / norm)
 
 
-def apply_realm_breathing(
-    position: np.ndarray, realm: RealmType
-) -> Tuple[np.ndarray, float, LayerDecision]:
+def apply_realm_breathing(position: np.ndarray, realm: RealmType) -> Tuple[np.ndarray, float, LayerDecision]:
     """
     Layer 6-7: Apply breathing based on realm, compute phase.
 
@@ -399,9 +393,7 @@ def apply_realm_breathing(
 # =============================================================================
 
 
-def hierarchical_realm_clustering(
-    points: List[np.ndarray], n_clusters: int = 2
-) -> List[RealmType]:
+def hierarchical_realm_clustering(points: List[np.ndarray], n_clusters: int = 2) -> List[RealmType]:
     """
     Layer 8: Use Ward linkage for realm assignment.
 
@@ -436,9 +428,7 @@ def hierarchical_realm_clustering(
         cluster_centroids[c] = np.linalg.norm(centroid)
 
     # Sort clusters by distance from origin
-    sorted_clusters = sorted(
-        cluster_centroids.keys(), key=lambda c: cluster_centroids[c]
-    )
+    sorted_clusters = sorted(cluster_centroids.keys(), key=lambda c: cluster_centroids[c])
 
     # Assign realms
     realm_map = {}
@@ -587,9 +577,7 @@ def layer_11_temporal_residual(
         dt_k = tau_curr - tau_prev
         dt_next = tau_next - tau_curr
 
-        monotone_violation = max(0.0, TEMPORAL_EPSILON - dt_k) + max(
-            0.0, TEMPORAL_EPSILON - dt_next
-        )
+        monotone_violation = max(0.0, TEMPORAL_EPSILON - dt_k) + max(0.0, TEMPORAL_EPSILON - dt_next)
 
         safe_dt_k = max(dt_k, TEMPORAL_EPSILON)
         safe_dt_next = max(dt_next, TEMPORAL_EPSILON)
@@ -600,9 +588,7 @@ def layer_11_temporal_residual(
         velocity_violation = max(0.0, max(v_k, v_next) - velocity_limit)
         acceleration_violation = max(0.0, abs(v_next - v_k) - acceleration_limit)
 
-        total_residual += (
-            monotone_violation + velocity_violation + acceleration_violation
-        )
+        total_residual += monotone_violation + velocity_violation + acceleration_violation
         max_velocity = max(max_velocity, v_k, v_next)
         max_velocity_delta = max(max_velocity_delta, abs(v_next - v_k))
 
@@ -632,9 +618,7 @@ def validate_hyperpath(
     Layer 9-11: Validate hyperpath with spectral coherence.
     """
     if not path:
-        return False, LayerDecision(
-            layer=11, decision="DENY", score=0.0, metadata={"reason": "Empty path"}
-        )
+        return False, LayerDecision(layer=11, decision="DENY", score=0.0, metadata={"reason": "Empty path"})
 
     # Layer 9: Spectral coherence
     s_spec = spectral_coherence(path)
@@ -649,11 +633,7 @@ def validate_hyperpath(
     )
 
     # Validation
-    is_valid = (
-        s_spec >= coherence_threshold
-        and d_tri < 1.0
-        and temporal_metrics["temporal_admissible"]
-    )
+    is_valid = s_spec >= coherence_threshold and d_tri < 1.0 and temporal_metrics["temporal_admissible"]
 
     layer_decision = LayerDecision(
         layer=11,
@@ -705,9 +685,7 @@ def _extract_spatial_point(state: np.ndarray) -> np.ndarray:
     return point
 
 
-def _phase_signature_point(
-    point: np.ndarray, phase: float, realm: RealmType
-) -> np.ndarray:
+def _phase_signature_point(point: np.ndarray, phase: float, realm: RealmType) -> np.ndarray:
     """
     Derive a third witness point from local phase and realm.
 
@@ -802,9 +780,7 @@ def layer_12_13_evaluate(
     Layer 12-13: Evaluate path with harmonic scaling and make decision.
     """
     if not path:
-        return "DENY", LayerDecision(
-            layer=13, decision="DENY", score=0.0, metadata={"reason": "No path"}
-        )
+        return "DENY", LayerDecision(layer=13, decision="DENY", score=0.0, metadata={"reason": "No path"})
 
     # Compute total cost
     total_cost = compute_path_cost(path, realms=realms)
@@ -853,9 +829,7 @@ def coord_to_frequency(coord: np.ndarray, base_freq: float = 440.0) -> float:
     return float(np.clip(freq, 110, 1760))
 
 
-def hyperpath_to_audio(
-    path: List[np.ndarray], realms: List[RealmType] = None
-) -> List[float]:
+def hyperpath_to_audio(path: List[np.ndarray], realms: List[RealmType] = None) -> List[float]:
     """
     Layer 14: Convert hyperpath to audio signature with realm modulation.
 
@@ -870,7 +844,7 @@ def hyperpath_to_audio(
 
     frequencies = []
 
-    for i, (coord, realm) in enumerate(zip(path, realms)):
+    for _i, (coord, realm) in enumerate(zip(path, realms)):
         # Base frequency from position
         if realm == RealmType.LIGHT:
             base_freq = LIGHT_BASE_FREQ
@@ -890,9 +864,7 @@ def hyperpath_to_audio(
     return frequencies
 
 
-def synthesize_tones(
-    frequencies: List[float], duration_per_tone: float = 0.1, sample_rate: int = 44100
-) -> np.ndarray:
+def synthesize_tones(frequencies: List[float], duration_per_tone: float = 0.1, sample_rate: int = 44100) -> np.ndarray:
     """
     Synthesize audio from frequency list.
     """
@@ -915,9 +887,7 @@ def synthesize_tones(
     return np.array(samples)
 
 
-def layer_14_sonify(
-    path: List[np.ndarray], realms: List[RealmType] = None
-) -> Tuple[List[float], LayerDecision]:
+def layer_14_sonify(path: List[np.ndarray], realms: List[RealmType] = None) -> Tuple[List[float], LayerDecision]:
     """
     Layer 14: Generate audio signature for hyperpath.
     """
@@ -1017,9 +987,7 @@ class DualLatticeIntegrator:
         if context is None:
             context = GeoContext(
                 location=np.array([0.0, 0.0, 0.0]),
-                intent_strength=(
-                    sensitivity if sensitivity > 0.5 else -(1 - sensitivity)
-                ),
+                intent_strength=(sensitivity if sensitivity > 0.5 else -(1 - sensitivity)),
                 temporal_offset=0.0,
                 semantic_weight=1.0,
             )
@@ -1037,9 +1005,7 @@ class DualLatticeIntegrator:
         decisions.append(l7_decision)
 
         # Insert into octree for pathfinding
-        self.octree.insert(
-            breathed[:3] if len(breathed) >= 3 else breathed, realm.value
-        )
+        self.octree.insert(breathed[:3] if len(breathed) >= 3 else breathed, realm.value)
 
         # Build an intrinsic micro-path so L8-L14 can reason over a causal trace
         projected_point = _extract_spatial_point(projected)

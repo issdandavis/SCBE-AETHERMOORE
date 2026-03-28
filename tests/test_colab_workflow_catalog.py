@@ -20,9 +20,7 @@ def _run(*args: str) -> str:
         check=False,
     )
     if proc.returncode != 0:
-        raise AssertionError(
-            f"command failed: {args}\nSTDOUT:\n{proc.stdout}\nSTDERR:\n{proc.stderr}"
-        )
+        raise AssertionError(f"command failed: {args}\nSTDOUT:\n{proc.stdout}\nSTDERR:\n{proc.stderr}")
     return proc.stdout
 
 

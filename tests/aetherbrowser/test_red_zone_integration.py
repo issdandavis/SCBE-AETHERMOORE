@@ -38,20 +38,14 @@ def _load_red_zone_payload() -> dict:
 
     headings = [
         {"level": f"H{level}", "text": _strip_tags(text)}
-        for level, text in re.findall(
-            r"<h([1-6])[^>]*>(.*?)</h\1>", html, re.IGNORECASE | re.DOTALL
-        )
+        for level, text in re.findall(r"<h([1-6])[^>]*>(.*?)</h\1>", html, re.IGNORECASE | re.DOTALL)
     ]
     links = [
         {"href": href, "text": _strip_tags(text)}
-        for href, text in re.findall(
-            r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>', html, re.IGNORECASE | re.DOTALL
-        )
+        for href, text in re.findall(r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>', html, re.IGNORECASE | re.DOTALL)
     ]
     buttons = []
-    for attrs, text in re.findall(
-        r"<button([^>]*)>(.*?)</button>", html, re.IGNORECASE | re.DOTALL
-    ):
+    for attrs, text in re.findall(r"<button([^>]*)>(.*?)</button>", html, re.IGNORECASE | re.DOTALL):
         type_match = re.search(r'type="([^"]+)"', attrs, re.IGNORECASE)
         buttons.append(
             {
@@ -60,9 +54,7 @@ def _load_red_zone_payload() -> dict:
             }
         )
     forms = []
-    for idx, (attrs, body) in enumerate(
-        re.findall(r"<form([^>]*)>(.*?)</form>", html, re.IGNORECASE | re.DOTALL)
-    ):
+    for idx, (attrs, body) in enumerate(re.findall(r"<form([^>]*)>(.*?)</form>", html, re.IGNORECASE | re.DOTALL)):
         method_match = re.search(r'method="([^"]+)"', attrs, re.IGNORECASE)
         forms.append(
             {
@@ -82,9 +74,7 @@ def _load_red_zone_payload() -> dict:
             }
         )
 
-    text = _strip_tags(
-        re.sub(r"<style.*?</style>", " ", html, flags=re.IGNORECASE | re.DOTALL)
-    )
+    text = _strip_tags(re.sub(r"<style.*?</style>", " ", html, flags=re.IGNORECASE | re.DOTALL))
 
     return {
         "url": "https://suspicious-downloads.example.test",
@@ -123,9 +113,7 @@ class TestRedZoneIntegration:
             messages = _drain(ws, 5)
 
         analysis_message = next(
-            msg
-            for msg in messages
-            if msg["type"] == "chat" and "page_analysis" in msg.get("payload", {})
+            msg for msg in messages if msg["type"] == "chat" and "page_analysis" in msg.get("payload", {})
         )
         topology_message = next(msg for msg in messages if msg["type"] == "topology")
 
@@ -135,13 +123,8 @@ class TestRedZoneIntegration:
         assert analysis["risk_tier"] == "high"
         assert analysis["topology_lens"]["zone"] == "RED"
         assert analysis["topology_lens"]["trust_distance"] > 0
-        assert (
-            "identity boundary present" in analysis["topology_lens"]["boundary_signals"]
-        )
-        assert (
-            "state-change controls exposed"
-            in analysis["topology_lens"]["boundary_signals"]
-        )
+        assert "identity boundary present" in analysis["topology_lens"]["boundary_signals"]
+        assert "state-change controls exposed" in analysis["topology_lens"]["boundary_signals"]
 
         assert topology["center"]["label"].startswith("Suspicious Downloads Portal")
         assert topology["node_count"] >= 8
@@ -225,15 +208,9 @@ class TestRedZoneIntegration:
             serve_module.executor = original
 
         execution_message = next(
-            msg
-            for msg in messages
-            if msg["type"] == "chat" and "execution" in msg.get("payload", {})
+            msg for msg in messages if msg["type"] == "chat" and "execution" in msg.get("payload", {})
         )
-        plan_message = next(
-            msg
-            for msg in messages
-            if msg["type"] == "chat" and "plan" in msg.get("payload", {})
-        )
+        plan_message = next(msg for msg in messages if msg["type"] == "chat" and "plan" in msg.get("payload", {}))
 
         assert plan_message["payload"]["plan"]["provider"] == "huggingface"
         assert execution_message["payload"]["execution"]["provider"] == "huggingface"

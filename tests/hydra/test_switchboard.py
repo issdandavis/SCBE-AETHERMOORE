@@ -115,22 +115,14 @@ class TestDeduplication:
     """Dedupe key prevents duplicate enqueues while task is active."""
 
     def test_dedup_blocks_duplicate(self, sb: Switchboard):
-        first = sb.enqueue_task(
-            role="coder", payload={"cmd": "a"}, dedupe_key="build-main"
-        )
-        second = sb.enqueue_task(
-            role="coder", payload={"cmd": "b"}, dedupe_key="build-main"
-        )
+        first = sb.enqueue_task(role="coder", payload={"cmd": "a"}, dedupe_key="build-main")
+        second = sb.enqueue_task(role="coder", payload={"cmd": "b"}, dedupe_key="build-main")
         assert second["deduped"] is True
         assert second["task_id"] == first["task_id"]
 
     def test_different_dedup_keys_allowed(self, sb: Switchboard):
-        first = sb.enqueue_task(
-            role="coder", payload={"cmd": "a"}, dedupe_key="build-main"
-        )
-        second = sb.enqueue_task(
-            role="coder", payload={"cmd": "b"}, dedupe_key="build-dev"
-        )
+        first = sb.enqueue_task(role="coder", payload={"cmd": "a"}, dedupe_key="build-main")
+        second = sb.enqueue_task(role="coder", payload={"cmd": "b"}, dedupe_key="build-dev")
         assert second["deduped"] is False
         assert second["task_id"] != first["task_id"]
 
@@ -141,9 +133,7 @@ class TestDeduplication:
         sb.complete_task(claimed["task_id"], "w1", {"ok": True})
 
         # Now the same dedupe key should be re-enqueueable
-        new = sb.enqueue_task(
-            role="coder", payload={"cmd": "b"}, dedupe_key="build-main"
-        )
+        new = sb.enqueue_task(role="coder", payload={"cmd": "b"}, dedupe_key="build-main")
         assert new["deduped"] is False
 
     def test_no_dedup_key_allows_duplicates(self, sb: Switchboard):

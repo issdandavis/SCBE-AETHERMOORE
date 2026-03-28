@@ -85,9 +85,7 @@ class FluxManifest:
         }
 
     def hash(self) -> str:
-        blob = json.dumps(self.to_dict(), sort_keys=True, separators=(",", ":")).encode(
-            "utf-8"
-        )
+        blob = json.dumps(self.to_dict(), sort_keys=True, separators=(",", ":")).encode("utf-8")
         return hashlib.sha256(blob).hexdigest()
 
     @staticmethod

@@ -108,9 +108,7 @@ class RateLimiter:
         window_start = now - self.window_seconds
 
         # Clean old requests
-        self.requests[key] = [
-            req_time for req_time in self.requests[key] if req_time > window_start
-        ]
+        self.requests[key] = [req_time for req_time in self.requests[key] if req_time > window_start]
 
         # Check limit
         if len(self.requests[key]) >= self.max_requests:
@@ -193,13 +191,9 @@ CONNECTOR_STORE: Dict[str, Dict[str, Any]] = {}
 
 class SealRequest(BaseModel):
     plaintext: str = Field(..., max_length=4096, description="Data to seal (max 4KB)")
-    agent: str = Field(
-        ..., min_length=1, max_length=256, description="Agent identifier"
-    )
+    agent: str = Field(..., min_length=1, max_length=256, description="Agent identifier")
     topic: str = Field(..., min_length=1, max_length=256, description="Topic/category")
-    position: List[int] = Field(
-        ..., min_length=6, max_length=6, description="6D position vector"
-    )
+    position: List[int] = Field(..., min_length=6, max_length=6, description="6D position vector")
 
     @field_validator("position")
     @classmethod
@@ -298,12 +292,8 @@ class MobileGoalRequest(BaseModel):
         pattern="^(simulate|hydra_headless|connector)$",
         description="Execution adapter mode",
     )
-    targets: List[str] = Field(
-        default_factory=list, description="Optional URLs or entity targets"
-    )
-    connector_id: Optional[str] = Field(
-        default=None, description="Connector to use when execution_mode=connector"
-    )
+    targets: List[str] = Field(default_factory=list, description="Optional URLs or entity targets")
+    connector_id: Optional[str] = Field(default=None, description="Connector to use when execution_mode=connector")
     require_human_for_high_risk: bool = Field(
         default=True, description="Require explicit approval for high risk actions"
     )
@@ -325,9 +315,7 @@ class ConnectorRegisterRequest(BaseModel):
     timeout_seconds: int = Field(default=8, ge=2, le=60)
     payload_mode: ConnectorPayloadMode = Field(default=ConnectorPayloadMode.scbe_step)
     auth_type: ConnectorAuthType = Field(default=ConnectorAuthType.none)
-    auth_token: str = Field(
-        default="", max_length=4096, description="Bearer or header token/secret"
-    )
+    auth_token: str = Field(default="", max_length=4096, description="Bearer or header token/secret")
     auth_header_name: str = Field(default="x-api-key", max_length=128)
     default_headers: Dict[str, str] = Field(default_factory=dict)
     shop_domain: str = Field(default="", max_length=255)
@@ -524,13 +512,9 @@ def _sign_connector_payload(payload: Dict[str, Any]) -> tuple[str, str]:
     if not signing_key:
         import logging
 
-        logging.getLogger("scbe.api").warning(
-            "SCBE_CONNECTOR_SIGNING_KEY not set — connector payloads are unsigned"
-        )
+        logging.getLogger("scbe.api").warning("SCBE_CONNECTOR_SIGNING_KEY not set — connector payloads are unsigned")
         return ts, ""
-    sig = hmac.new(
-        signing_key, ts.encode("utf-8") + b"." + body, hashlib.sha256
-    ).hexdigest()
+    sig = hmac.new(signing_key, ts.encode("utf-8") + b"." + body, hashlib.sha256).hexdigest()
     return ts, sig
 
 
@@ -551,9 +535,7 @@ def _build_shopify_endpoint(shop_domain: str, api_version: str) -> str:
     return f"https://{domain}/admin/api/{version}/graphql.json"
 
 
-def _build_scbe_step_payload(
-    record: Dict[str, Any], step: Dict[str, Any]
-) -> Dict[str, Any]:
+def _build_scbe_step_payload(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "goal_id": record["goal_id"],
         "channel": record["channel"],
@@ -567,9 +549,7 @@ def _build_scbe_step_payload(
     }
 
 
-def _build_shopify_graphql_payload(
-    record: Dict[str, Any], step: Dict[str, Any]
-) -> Dict[str, Any]:
+def _build_shopify_graphql_payload(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
     risk = step.get("risk", "low")
     orders = 8 if risk == "low" else 20
     products = 8 if risk == "low" else 20
@@ -619,9 +599,7 @@ query SCBEStoreOpsRead($orders: Int!, $products: Int!) {
     }
 
 
-def _build_connector_payload(
-    record: Dict[str, Any], step: Dict[str, Any]
-) -> Dict[str, Any]:
+def _build_connector_payload(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
     mode = record.get("payload_mode", ConnectorPayloadMode.scbe_step.value)
     if mode == ConnectorPayloadMode.raw_step.value:
         return {"step": step, "goal_id": record["goal_id"]}
@@ -630,9 +608,7 @@ def _build_connector_payload(
     return _build_scbe_step_payload(record, step)
 
 
-def _dispatch_connector_step(
-    record: Dict[str, Any], step: Dict[str, Any]
-) -> Dict[str, Any]:
+def _dispatch_connector_step(record: Dict[str, Any], step: Dict[str, Any]) -> Dict[str, Any]:
     if record["execution_mode"] != "connector":
         return {
             "ok": True,
@@ -667,13 +643,9 @@ def _dispatch_connector_step(
     headers = {"Content-Type": "application/json"}
     for key, value in record.get("default_headers", {}).items():
         headers[str(key)] = str(value)
-    if connector["auth_type"] == ConnectorAuthType.bearer.value and connector.get(
-        "auth_token"
-    ):
+    if connector["auth_type"] == ConnectorAuthType.bearer.value and connector.get("auth_token"):
         headers["Authorization"] = f"Bearer {connector['auth_token']}"
-    elif connector["auth_type"] == ConnectorAuthType.header.value and connector.get(
-        "auth_token"
-    ):
+    elif connector["auth_type"] == ConnectorAuthType.header.value and connector.get("auth_token"):
         hdr = connector.get("auth_header_name", "x-api-key")
         headers[hdr] = connector["auth_token"]
 
@@ -691,9 +663,7 @@ def _dispatch_connector_step(
         method=method,
     )
     try:
-        with urlrequest.urlopen(
-            req, timeout=int(record.get("timeout_seconds", 8))
-        ) as resp:
+        with urlrequest.urlopen(req, timeout=int(record.get("timeout_seconds", 8))) as resp:
             status = int(getattr(resp, "status", 200))
             resp.read().decode("utf-8", errors="replace")
             if 200 <= status < 300:
@@ -790,9 +760,7 @@ async def seal_memory(request: SealRequest, user: str = Depends(verify_api_key))
 
 
 @app.post("/retrieve-memory", tags=["Core"])
-async def retrieve_memory(
-    request: RetrieveRequest, user: str = Depends(verify_api_key)
-):
+async def retrieve_memory(request: RetrieveRequest, user: str = Depends(verify_api_key)):
     """
     ## Retrieve Memory
 
@@ -832,9 +800,7 @@ async def retrieve_memory(
         }
 
         # Run SCBE pipeline with context-aware weights
-        result = scbe_14layer_pipeline(
-            t=position_array, D=6, **context_params[request.context]
-        )
+        result = scbe_14layer_pipeline(t=position_array, D=6, **context_params[request.context])
 
         # Record metrics
         denied = result["decision"] == "DENY"
@@ -948,9 +914,7 @@ async def governance_check(
         }
 
         # Run SCBE pipeline
-        result = scbe_14layer_pipeline(
-            t=np.array(position, dtype=float), D=6, **context_params[context]
-        )
+        result = scbe_14layer_pipeline(t=np.array(position, dtype=float), D=6, **context_params[context])
 
         gov_data = {
             "decision": result["decision"],
@@ -1015,9 +979,7 @@ async def simulate_attack(request: SimulateAttackRequest):
                 f"Layer 12: Harmonic amplification H={result['H']:.4f}",
                 f"Layer 13: Risk' = {result['risk_prime']:.4f} → {result['decision']}",
             ],
-            "coherence_breakdown": {
-                k: float(v) for k, v in result["coherence"].items()
-            },
+            "coherence_breakdown": {k: float(v) for k, v in result["coherence"].items()},
         }
         if result.get("mmx") is not None:
             sim_data["mmx"] = result["mmx"]
@@ -1034,9 +996,7 @@ async def simulate_attack(request: SimulateAttackRequest):
 
 
 @app.post("/mobile/connectors", tags=["Mobile Autonomy"])
-async def register_mobile_connector(
-    request: ConnectorRegisterRequest, user: str = Depends(verify_api_key)
-):
+async def register_mobile_connector(request: ConnectorRegisterRequest, user: str = Depends(verify_api_key)):
     """
     ## Register Connector
 
@@ -1050,9 +1010,7 @@ async def register_mobile_connector(
 
     if request.kind == ConnectorKind.shopify:
         if not endpoint_url:
-            endpoint_url = _build_shopify_endpoint(
-                shop_domain, request.shopify_api_version
-            )
+            endpoint_url = _build_shopify_endpoint(shop_domain, request.shopify_api_version)
             if not endpoint_url:
                 raise HTTPException(
                     400,
@@ -1069,9 +1027,7 @@ async def register_mobile_connector(
 
     connector_id = _connector_id(user, request.name, request.kind.value)
     ts = int(time.time())
-    safe_headers = {
-        str(k): str(v) for k, v in request.default_headers.items() if str(k)
-    }
+    safe_headers = {str(k): str(v) for k, v in request.default_headers.items() if str(k)}
     CONNECTOR_STORE[connector_id] = {
         "connector_id": connector_id,
         "owner": user,
@@ -1134,9 +1090,7 @@ async def get_mobile_connector(connector_id: str, user: str = Depends(verify_api
 
 
 @app.delete("/mobile/connectors/{connector_id}", tags=["Mobile Autonomy"])
-async def delete_mobile_connector(
-    connector_id: str, user: str = Depends(verify_api_key)
-):
+async def delete_mobile_connector(connector_id: str, user: str = Depends(verify_api_key)):
     """
     ## Delete Connector
     """
@@ -1148,9 +1102,7 @@ async def delete_mobile_connector(
 
 
 @app.post("/mobile/goals", tags=["Mobile Autonomy"])
-async def create_mobile_goal(
-    request: MobileGoalRequest, user: str = Depends(verify_api_key)
-):
+async def create_mobile_goal(request: MobileGoalRequest, user: str = Depends(verify_api_key)):
     """
     ## Create Mobile Goal
 
@@ -1158,9 +1110,7 @@ async def create_mobile_goal(
     """
     if request.execution_mode == "connector":
         if not request.connector_id:
-            raise HTTPException(
-                400, "connector_id required when execution_mode=connector"
-            )
+            raise HTTPException(400, "connector_id required when execution_mode=connector")
         conn = CONNECTOR_STORE.get(request.connector_id)
         if conn is None or conn["owner"] != user:
             raise HTTPException(404, "connector not found")
@@ -1299,19 +1249,13 @@ async def advance_mobile_goal(
         record["status"] = GoalStatus.completed.value
         record["completed_at"] = int(time.time())
         record["updated_at"] = record["completed_at"]
-        record["events"].append(
-            {"ts": record["completed_at"], "event": "goal_completed", "detail": ""}
-        )
+        record["events"].append({"ts": record["completed_at"], "event": "goal_completed", "detail": ""})
         return {"status": "ok", "data": _goal_view(record)}
 
     step = record["steps"][idx]
     record["current_step_index"] = idx
 
-    if (
-        step["risk"] == "high"
-        and record["require_human_for_high_risk"]
-        and not record["approved_high_risk"]
-    ):
+    if step["risk"] == "high" and record["require_human_for_high_risk"] and not record["approved_high_risk"]:
         record["status"] = GoalStatus.review_required.value
         record["updated_at"] = int(time.time())
         record["events"].append(
@@ -1349,9 +1293,7 @@ async def advance_mobile_goal(
             "detail": dispatch.get("detail", ""),
         }
     record["updated_at"] = now
-    record["events"].append(
-        {"ts": now, "event": "step_completed", "detail": step["name"]}
-    )
+    record["events"].append({"ts": now, "event": "step_completed", "detail": step["name"]})
 
     nxt = _next_pending_step(record)
     if nxt is None:

@@ -68,10 +68,7 @@ _MODEL_ID_DEFAULTS: dict[ModelProvider, tuple[str, str]] = {
 
 def _resolve_model_ids() -> dict[ModelProvider, str]:
     """Resolve model IDs at call time so env vars set after import are picked up."""
-    return {
-        provider: os.environ.get(env_var, default)
-        for provider, (env_var, default) in _MODEL_ID_DEFAULTS.items()
-    }
+    return {provider: os.environ.get(env_var, default) for provider, (env_var, default) in _MODEL_ID_DEFAULTS.items()}
 
 
 PROVIDER_PACKAGES: dict[ModelProvider, tuple[str, ...]] = {
@@ -116,16 +113,10 @@ class ProviderExecutor:
         return {**_resolve_model_ids(), **self._model_id_overrides}
 
     def runtime_status(self) -> dict[ModelProvider, ProviderRuntimeStatus]:
-        return {
-            provider: self._provider_runtime_status(provider)
-            for provider in ModelProvider
-        }
+        return {provider: self._provider_runtime_status(provider) for provider in ModelProvider}
 
     def runtime_status_snapshot(self) -> dict[str, dict[str, object]]:
-        return {
-            provider.value: status.to_dict()
-            for provider, status in self.runtime_status().items()
-        }
+        return {provider.value: status.to_dict() for provider, status in self.runtime_status().items()}
 
     async def execute(self, plan: CommandPlan) -> ProviderExecutionResult:
         prompt = self._build_prompt(plan)
@@ -164,9 +155,7 @@ class ProviderExecutor:
                 break
         return chain
 
-    def _provider_runtime_status(
-        self, provider: ModelProvider
-    ) -> ProviderRuntimeStatus:
+    def _provider_runtime_status(self, provider: ModelProvider) -> ProviderRuntimeStatus:
         env_vars = PROVIDER_ENV_VARS[provider]
         packages = PROVIDER_PACKAGES[provider]
 
@@ -217,11 +206,7 @@ class ProviderExecutor:
     def _build_prompt(self, plan: CommandPlan) -> str:
         assignment_lines = []
         for assignment in plan.assignments[:6]:
-            role = (
-                assignment["role"].value
-                if hasattr(assignment["role"], "value")
-                else assignment["role"]
-            )
+            role = assignment["role"].value if hasattr(assignment["role"], "value") else assignment["role"]
             assignment_lines.append(f"- {role}: {assignment['task']}")
 
         next_actions = [action.label for action in plan.next_actions[:3]]
@@ -238,9 +223,7 @@ class ProviderExecutor:
             *assignment_lines,
         ]
         if next_actions:
-            prompt_parts.extend(
-                ["Next actions:", *[f"- {label}" for label in next_actions]]
-            )
+            prompt_parts.extend(["Next actions:", *[f"- {label}" for label in next_actions]])
         prompt_parts.append("Respond to the operator with the current best next move.")
         return "\n".join(prompt_parts)
 
@@ -255,17 +238,13 @@ class ProviderExecutor:
             (line for line in lines if line.startswith("Task type: ")),
             "Task type: default",
         )
-        risk_line = next(
-            (line for line in lines if line.startswith("Risk tier: ")), "Risk tier: low"
-        )
+        risk_line = next((line for line in lines if line.startswith("Risk tier: ")), "Risk tier: low")
         browser_line = next(
             (line for line in lines if line.startswith("Browser action required: ")),
             "Browser action required: False",
         )
         action_lines = [line[2:] for line in lines if line.startswith("- ")]
-        first_action = (
-            action_lines[0] if action_lines else "Begin with KO orchestration."
-        )
+        first_action = action_lines[0] if action_lines else "Begin with KO orchestration."
         return (
             f"Local execution lane active. {request_line.replace('User request: ', '')} "
             f"({task_line.replace('Task type: ', '')}, {risk_line.replace('Risk tier: ', '')}). "
@@ -291,9 +270,7 @@ class ProviderExecutor:
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],
         )
-        return "".join(
-            block.text for block in response.content if hasattr(block, "text")
-        )
+        return "".join(block.text for block in response.content if hasattr(block, "text"))
 
     async def _call_openai(self, model_id: str, prompt: str) -> str:
         try:

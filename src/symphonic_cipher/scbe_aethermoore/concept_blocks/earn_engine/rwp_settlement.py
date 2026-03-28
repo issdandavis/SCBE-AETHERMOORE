@@ -238,9 +238,7 @@ class RWPSettlement:
 
     # --- Verification ---
 
-    def verify_settlement(
-        self, envelope: SettlementEnvelope
-    ) -> Tuple[bool, Dict[str, Any]]:
+    def verify_settlement(self, envelope: SettlementEnvelope) -> Tuple[bool, Dict[str, Any]]:
         """
         Verify an RWP2 settlement envelope.
 
@@ -291,9 +289,7 @@ class RWPSettlement:
         age_ms = now_ms - envelope.timestamp_ms
         details["timestamp_check"] = abs(age_ms) <= self._max_nonce_age_ms
 
-        overall = (
-            all_sigs_valid and details["replay_check"] and details["timestamp_check"]
-        )
+        overall = all_sigs_valid and details["replay_check"] and details["timestamp_check"]
         details["overall"] = overall
         return overall, details
 

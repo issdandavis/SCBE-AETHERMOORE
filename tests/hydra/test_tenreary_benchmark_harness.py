@@ -78,9 +78,7 @@ def test_score_run_elite_ready_when_all_gates_pass():
                 "status": "ok",
                 "started_at": "t",
                 "elapsed_ms": 100,
-                "data": {
-                    "analysis": {"keyword_counts": {"shopify": 2, "conversion": 1}}
-                },
+                "data": {"analysis": {"keyword_counts": {"shopify": 2, "conversion": 1}}},
             },
             {
                 "id": "emit",

@@ -468,12 +468,8 @@ except Exception:  # noqa: BLE001
 DecisionEnvelopeV1 = message_factory.GetMessageClass(
     _POOL.FindMessageTypeByName("scbe.governance.v1.DecisionEnvelopeV1")
 )
-ActionState = message_factory.GetMessageClass(
-    _POOL.FindMessageTypeByName("scbe.governance.v1.ActionState")
-)
-EvaluationResult = message_factory.GetMessageClass(
-    _POOL.FindMessageTypeByName("scbe.governance.v1.EvaluationResult")
-)
+ActionState = message_factory.GetMessageClass(_POOL.FindMessageTypeByName("scbe.governance.v1.ActionState"))
+EvaluationResult = message_factory.GetMessageClass(_POOL.FindMessageTypeByName("scbe.governance.v1.EvaluationResult"))
 
 _BOUNDARY_ENUM = _POOL.FindEnumTypeByName("scbe.governance.v1.BoundaryBehavior")
 _RISK_ENUM = _POOL.FindEnumTypeByName("scbe.governance.v1.RiskTier")
@@ -585,15 +581,11 @@ def compute_mmr_leaf_payload(
         },
         "scope": {
             "agent_allowlist": _sorted_unique(list(envelope.scope.agent_allowlist)),
-            "capability_allowlist": _sorted_unique(
-                list(envelope.scope.capability_allowlist)
-            ),
+            "capability_allowlist": _sorted_unique(list(envelope.scope.capability_allowlist)),
             "target_allowlist": _sorted_unique(list(envelope.scope.target_allowlist)),
         },
         "constraints": {
-            "mission_phase_allowlist": _sorted_unique(
-                list(envelope.constraints.mission_phase_allowlist)
-            ),
+            "mission_phase_allowlist": _sorted_unique(list(envelope.constraints.mission_phase_allowlist)),
             "resources": {
                 "power_min": float(envelope.constraints.resources.power_min),
                 "bandwidth_min": float(envelope.constraints.resources.bandwidth_min),
@@ -604,17 +596,11 @@ def compute_mmr_leaf_payload(
         "rules": rules,
     }
 
-    return json.dumps(
-        obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True
-    ).encode("utf-8")
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
 
 
-def mmr_leaf_hash(
-    envelope: Any, mmr_fields: tuple[str, ...] = MMR_REQUIRED_FIELDS_V1
-) -> bytes:
-    return hashlib.sha256(
-        compute_mmr_leaf_payload(envelope, mmr_fields=mmr_fields)
-    ).digest()
+def mmr_leaf_hash(envelope: Any, mmr_fields: tuple[str, ...] = MMR_REQUIRED_FIELDS_V1) -> bytes:
+    return hashlib.sha256(compute_mmr_leaf_payload(envelope, mmr_fields=mmr_fields)).digest()
 
 
 def validate_envelope_schema(envelope: Any) -> list[str]:
@@ -660,9 +646,7 @@ def validate_envelope_schema(envelope: Any) -> list[str]:
             errors.append(f"{prefix}.boundary must be set")
         if int(rule.boundary) in (QUARANTINE, DENY):
             if not str(rule.recovery.path_id).strip():
-                errors.append(
-                    f"{prefix}.recovery.path_id required for boundary={boundary_name(int(rule.boundary))}"
-                )
+                errors.append(f"{prefix}.recovery.path_id required for boundary={boundary_name(int(rule.boundary))}")
             if not str(rule.recovery.playbook_ref).strip():
                 errors.append(
                     f"{prefix}.recovery.playbook_ref required for boundary={boundary_name(int(rule.boundary))}"
@@ -674,27 +658,19 @@ def validate_envelope_schema(envelope: Any) -> list[str]:
     if fields:
         missing = [f for f in MMR_REQUIRED_FIELDS_V1 if f not in fields]
         if missing:
-            errors.append(
-                f"audit.mmr_fields missing required fields: {', '.join(missing)}"
-            )
+            errors.append(f"audit.mmr_fields missing required fields: {', '.join(missing)}")
 
     return errors
 
 
-def sign_envelope_hmac(
-    envelope: Any, signing_key: bytes | str, *, set_mmr_hook: bool = True
-) -> Any:
+def sign_envelope_hmac(envelope: Any, signing_key: bytes | str, *, set_mmr_hook: bool = True) -> Any:
     """
     Sign envelope with deterministic protobuf payload hash.
 
     Dev placeholder signature:
       HMAC-SHA256(signing_key, signed_payload_hash)
     """
-    key = (
-        signing_key.encode("utf-8")
-        if isinstance(signing_key, str)
-        else bytes(signing_key)
-    )
+    key = signing_key.encode("utf-8") if isinstance(signing_key, str) else bytes(signing_key)
     env = _copy_envelope(envelope)
     if int(env.authority.issued_at_ms) == 0:
         env.authority.issued_at_ms = _now_ms()
@@ -707,9 +683,7 @@ def sign_envelope_hmac(
     env.authority.signature = hmac.new(key, payload_hash, hashlib.sha256).digest()
 
     if set_mmr_hook:
-        env.audit.mmr_leaf_hash = mmr_leaf_hash(
-            env, mmr_fields=tuple(env.audit.mmr_fields)
-        )
+        env.audit.mmr_leaf_hash = mmr_leaf_hash(env, mmr_fields=tuple(env.audit.mmr_fields))
     return env
 
 
@@ -743,9 +717,7 @@ def verify_envelope_hmac(
         return False, "signature mismatch"
 
     if len(envelope.audit.mmr_fields) > 0 and bytes(envelope.audit.mmr_leaf_hash):
-        expected_mmr = mmr_leaf_hash(
-            envelope, mmr_fields=tuple(envelope.audit.mmr_fields)
-        )
+        expected_mmr = mmr_leaf_hash(envelope, mmr_fields=tuple(envelope.audit.mmr_fields))
         if bytes(envelope.audit.mmr_leaf_hash) != expected_mmr:
             return False, "mmr_leaf_hash mismatch"
 
@@ -855,9 +827,7 @@ def _in_allowlist(value: str, items: list[str]) -> bool:
 
 def _find_rule(envelope: Any, capability: str, target: str) -> Any | None:
     for rule in envelope.rules:
-        cap_match = (str(rule.capability) == capability) or (
-            str(rule.capability) == "*"
-        )
+        cap_match = (str(rule.capability) == capability) or (str(rule.capability) == "*")
         tgt_match = (str(rule.target) == target) or (str(rule.target) == "*")
         if cap_match and tgt_match:
             return rule
@@ -893,9 +863,7 @@ def evaluate_action_inside_envelope(
     if not _in_allowlist(str(action.agent_id), list(envelope.scope.agent_allowlist)):
         out.reason = "agent_out_of_scope"
         return out
-    if not _in_allowlist(
-        str(action.capability), list(envelope.scope.capability_allowlist)
-    ):
+    if not _in_allowlist(str(action.capability), list(envelope.scope.capability_allowlist)):
         out.reason = "capability_out_of_scope"
         return out
     if not _in_allowlist(str(action.target), list(envelope.scope.target_allowlist)):
@@ -1007,8 +975,6 @@ def make_envelope_v1(
         rule.recovery.path_id = str(recovery.get("path_id", ""))
         rule.recovery.playbook_ref = str(recovery.get("playbook_ref", ""))
         rule.recovery.quorum_min = int(recovery.get("quorum_min", 0))
-        rule.recovery.human_ack_required = bool(
-            recovery.get("human_ack_required", False)
-        )
+        rule.recovery.human_ack_required = bool(recovery.get("human_ack_required", False))
 
     return env

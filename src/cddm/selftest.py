@@ -155,8 +155,7 @@ def selftest() -> int:
     composed = compose(e_to_m, m_to_i)
     check(
         "compose name",
-        "Motivation->Incentive" in composed.name
-        and "Energy->Motivation" in composed.name,
+        "Motivation->Incentive" in composed.name and "Energy->Motivation" in composed.name,
     )
     check("compose call", abs(composed(500_000) - 50.0) < 1e-6)
     check("compose invertible", composed.invertible)
@@ -250,9 +249,7 @@ def selftest() -> int:
     check("non-isomorphic detected", not GraphIsomorphism.is_isomorphic(g1, g3))
 
     # Empty graphs are isomorphic
-    check(
-        "empty isomorphic", GraphIsomorphism.is_isomorphic(DomainGraph(), DomainGraph())
-    )
+    check("empty isomorphic", GraphIsomorphism.is_isomorphic(DomainGraph(), DomainGraph()))
 
     # [6] Tongue Domains
     print("[6] Tongue Domains")
@@ -308,9 +305,7 @@ def selftest() -> int:
 
     trace3 = chain3.apply_traced(100_000)
     check("pipeline trace", len(trace3) == 3)
-    check(
-        "pipeline trace domains", trace3[0][0] == "Energy" and trace3[2][0] == "Danger"
-    )
+    check("pipeline trace domains", trace3[0][0] == "Energy" and trace3[2][0] == "Danger")
 
     # Entropy -> PlotChaos -> Intrigue (RU -> CA narrative bridge)
     chain4 = CompositionChain()

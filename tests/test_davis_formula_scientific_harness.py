@@ -80,14 +80,8 @@ def _replace(
 ) -> DavisFormulaInputs:
     return DavisFormulaInputs(
         time_budget=inputs.time_budget if time_budget is None else time_budget,
-        intent_intensity=(
-            inputs.intent_intensity if intent_intensity is None else intent_intensity
-        ),
-        context_dimensions=(
-            inputs.context_dimensions
-            if context_dimensions is None
-            else context_dimensions
-        ),
+        intent_intensity=(inputs.intent_intensity if intent_intensity is None else intent_intensity),
+        context_dimensions=(inputs.context_dimensions if context_dimensions is None else context_dimensions),
         drift=inputs.drift if drift is None else drift,
     )
 
@@ -110,9 +104,7 @@ class TestProbeReferenceIdentity:
         for control in CONTROLS:
             inputs = control.inputs
             expected = inputs.time_budget / (
-                inputs.intent_intensity
-                * math.factorial(inputs.context_dimensions)
-                * (1.0 + inputs.drift)
+                inputs.intent_intensity * math.factorial(inputs.context_dimensions) * (1.0 + inputs.drift)
             )
             assert _score(inputs) == pytest.approx(expected)
 
@@ -121,11 +113,7 @@ class TestProbeTimeSweep:
     def test_time_sweep_is_monotone_for_all_controls(self) -> None:
         for control in CONTROLS:
             scores = [
-                _score(
-                    _replace(
-                        control.inputs, time_budget=control.inputs.time_budget * scale
-                    )
-                )
+                _score(_replace(control.inputs, time_budget=control.inputs.time_budget * scale))
                 for scale in TIME_SCALES
             ]
             assert scores == sorted(scores)
@@ -151,12 +139,8 @@ class TestProbeContextFactorialSweep:
         for control in CONTROLS:
             start = max(0, control.inputs.context_dimensions - 1)
             for context_dimensions in range(start, start + 4):
-                current = _score(
-                    _replace(control.inputs, context_dimensions=context_dimensions)
-                )
-                next_score = _score(
-                    _replace(control.inputs, context_dimensions=context_dimensions + 1)
-                )
+                current = _score(_replace(control.inputs, context_dimensions=context_dimensions))
+                next_score = _score(_replace(control.inputs, context_dimensions=context_dimensions + 1))
                 assert next_score == pytest.approx(current / (context_dimensions + 1))
 
 

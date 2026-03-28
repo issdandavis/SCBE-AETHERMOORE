@@ -19,9 +19,7 @@ IA_API = "https://archive.org"
 RATE_LIMIT = 1.0
 
 
-def search_archive(
-    query: str, media_type: str = "texts", limit: int = 25
-) -> list[KnowledgeChunk]:
+def search_archive(query: str, media_type: str = "texts", limit: int = 25) -> list[KnowledgeChunk]:
     """Search Internet Archive."""
     params = {
         "q": f"{query} AND mediatype:{media_type}",
@@ -31,9 +29,7 @@ def search_archive(
     }
     url = f"{IA_API}/advancedsearch.php?{urlencode(params, doseq=True)}"
 
-    req = Request(
-        url, headers={"User-Agent": "AetherBrowser/1.0 (SCBE-AETHERMOORE research)"}
-    )
+    req = Request(url, headers={"User-Agent": "AetherBrowser/1.0 (SCBE-AETHERMOORE research)"})
     with urlopen(req, timeout=30) as response:
         data = json.loads(response.read())
 
@@ -87,10 +83,7 @@ def _categorize_ia(title: str, description: str, subjects: list) -> str:
         return "security"
     if any(kw in text for kw in ["geometry", "manifold", "topology", "hyperbolic"]):
         return "math"
-    if any(
-        kw in text
-        for kw in ["artificial intelligence", "machine learning", "neural network"]
-    ):
+    if any(kw in text for kw in ["artificial intelligence", "machine learning", "neural network"]):
         return "ai"
     if any(kw in text for kw in ["quantum", "qubit"]):
         return "quantum"

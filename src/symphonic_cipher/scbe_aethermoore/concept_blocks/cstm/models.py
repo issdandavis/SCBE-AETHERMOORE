@@ -105,9 +105,7 @@ class StoryGraph:
     def get_scene(self, scene_id: str) -> Scene:
         return self._scenes[scene_id]
 
-    def get_available_choices(
-        self, scene_id: str, stats: Optional[Dict[str, float]] = None
-    ) -> List[Choice]:
+    def get_available_choices(self, scene_id: str, stats: Optional[Dict[str, float]] = None) -> List[Choice]:
         """Return choices whose conditions are met (or unconditional)."""
         scene = self._scenes[scene_id]
         if stats is None:
@@ -116,11 +114,7 @@ class StoryGraph:
         from .story_engine import ConditionEvaluator
 
         evaluator = ConditionEvaluator()
-        return [
-            c
-            for c in scene.choices
-            if c.condition is None or evaluator.evaluate(c.condition, stats)
-        ]
+        return [c for c in scene.choices if c.condition is None or evaluator.evaluate(c.condition, stats)]
 
     def total_scenes(self) -> int:
         return len(self._scenes)

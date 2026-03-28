@@ -23,21 +23,9 @@ def test_build_campaign_default_outputs(tmp_path: Path):
     assert result["claim_gate_pass"] is True
     assert note_path.exists()
 
-    manifest = json.loads(
-        (artifact_root / "unit-campaign" / "campaign_manifest.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    posts = json.loads(
-        (artifact_root / "unit-campaign" / "campaign_posts.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    claim_report = json.loads(
-        (artifact_root / "unit-campaign" / "claim_gate_report.json").read_text(
-            encoding="utf-8"
-        )
-    )
+    manifest = json.loads((artifact_root / "unit-campaign" / "campaign_manifest.json").read_text(encoding="utf-8"))
+    posts = json.loads((artifact_root / "unit-campaign" / "campaign_posts.json").read_text(encoding="utf-8"))
+    claim_report = json.loads((artifact_root / "unit-campaign" / "claim_gate_report.json").read_text(encoding="utf-8"))
 
     assert manifest["article_count"] == 3
     assert len(manifest["platforms"]) >= 6

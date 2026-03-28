@@ -27,9 +27,7 @@ def get_random(n: int) -> bytes:
     return os.urandom(n)
 
 
-def aes_gcm_encrypt(
-    key: bytes, plaintext: bytes, aad: bytes = b""
-) -> Tuple[bytes, bytes, bytes]:
+def aes_gcm_encrypt(key: bytes, plaintext: bytes, aad: bytes = b"") -> Tuple[bytes, bytes, bytes]:
     """
     AES-256-GCM encryption.
 
@@ -62,14 +60,10 @@ def aes_gcm_encrypt(
         return nonce, ciphertext, tag
 
     else:
-        raise RuntimeError(
-            "No cryptographic backend available. Install pycryptodome or cryptography."
-        )
+        raise RuntimeError("No cryptographic backend available. Install pycryptodome or cryptography.")
 
 
-def aes_gcm_decrypt(
-    key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad: bytes = b""
-) -> bytes:
+def aes_gcm_decrypt(key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad: bytes = b"") -> bytes:
     """
     AES-256-GCM decryption with authentication.
 
@@ -121,9 +115,7 @@ def constant_time_compare(a: bytes, b: bytes) -> bool:
     return hmac.compare_digest(a, b)
 
 
-def derive_key(
-    master_secret: bytes, salt: bytes, info: bytes, length: int = 32
-) -> bytes:
+def derive_key(master_secret: bytes, salt: bytes, info: bytes, length: int = 32) -> bytes:
     """
     HKDF-SHA256 key derivation.
 

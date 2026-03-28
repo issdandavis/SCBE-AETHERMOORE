@@ -110,17 +110,12 @@ def test_json_projection_round_trips_to_same_signed_proto_bytes() -> None:
     signed = sign_envelope_hmac(env, b"unit-test-signing-key")
 
     original_proto = signed.SerializeToString(deterministic=True)
-    projection = envelope_to_json_projection(
-        signed, include_jsonld=True, include_proto_payload=True
-    )
+    projection = envelope_to_json_projection(signed, include_jsonld=True, include_proto_payload=True)
     restored = json_projection_to_envelope(projection)
     restored_proto = restored.SerializeToString(deterministic=True)
 
     assert original_proto == restored_proto
-    assert (
-        projection["_canonical"]["proto_sha256"]
-        == hashlib.sha256(original_proto).hexdigest()
-    )
+    assert projection["_canonical"]["proto_sha256"] == hashlib.sha256(original_proto).hexdigest()
 
 
 def test_quarantine_boundary_requires_recovery_metadata() -> None:

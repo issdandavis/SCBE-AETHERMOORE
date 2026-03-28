@@ -22,10 +22,8 @@ def _load_module(name: str, relative_path: str):
 
 def _install_fake_vault(monkeypatch):
     src_module = sys.modules.setdefault("src", types.ModuleType("src"))
-    security_module = sys.modules.setdefault(
-        "src.security", types.ModuleType("src.security")
-    )
-    setattr(src_module, "security", security_module)
+    security_module = sys.modules.setdefault("src.security", types.ModuleType("src.security"))
+    src_module.security = security_module
 
     vault_module = types.ModuleType("src.security.privacy_token_vault")
 
@@ -34,13 +32,9 @@ def _install_fake_vault(monkeypatch):
             self.calls = []
             self.counter = 0
 
-        def protect(
-            self, value: str, kind: str | None = None, source_file: str | None = None
-        ) -> str:
+        def protect(self, value: str, kind: str | None = None, source_file: str | None = None) -> str:
             self.counter += 1
-            self.calls.append(
-                {"value": value, "kind": kind, "source_file": source_file}
-            )
+            self.calls.append({"value": value, "kind": kind, "source_file": source_file})
             return f"<<{(kind or 'value').upper()}_{self.counter:04d}>>"
 
     def create_vault(vault_dir=None):
@@ -53,9 +47,7 @@ def _install_fake_vault(monkeypatch):
 
 def test_builder_masks_sensitive_strings_and_writes_manifest(monkeypatch, tmp_path):
     _install_fake_vault(monkeypatch)
-    builder = _load_module(
-        "test_build_protected_corpus", "scripts/build_protected_corpus.py"
-    )
+    builder = _load_module("test_build_protected_corpus", "scripts/build_protected_corpus.py")
 
     input_dir = tmp_path / "inputs"
     input_dir.mkdir()
@@ -67,8 +59,7 @@ def test_builder_masks_sensitive_strings_and_writes_manifest(monkeypatch, tmp_pa
                     {
                         "instruction": "Email alice@example.com and call +1 (415) 555-0199.",
                         "input": (
-                            "Use account id: USER-1234567 and bearer"
-                            " Authorization: Bearer secretBearerToken123456"
+                            "Use account id: USER-1234567 and bearer" " Authorization: Bearer secretBearerToken123456"
                         ),
                         "output": "API key sk-test-abcdef0123456789 and SSN 123-45-6789 plus card 4111 1111 1111 1111.",
                         "messages": [
@@ -132,9 +123,7 @@ def test_builder_masks_sensitive_strings_and_writes_manifest(monkeypatch, tmp_pa
 
 
 def test_builder_fails_clearly_without_vault_module(monkeypatch, tmp_path):
-    builder = _load_module(
-        "test_build_protected_corpus_missing_vault", "scripts/build_protected_corpus.py"
-    )
+    builder = _load_module("test_build_protected_corpus_missing_vault", "scripts/build_protected_corpus.py")
     real_import = builder.importlib.import_module
 
     def fake_import(name, package=None):
@@ -144,17 +133,13 @@ def test_builder_fails_clearly_without_vault_module(monkeypatch, tmp_path):
 
     monkeypatch.setattr(builder.importlib, "import_module", fake_import)
     with pytest.raises(RuntimeError) as exc:
-        builder.build_protected_corpus(
-            [], tmp_path / "out.jsonl", tmp_path / "manifest.json"
-        )
+        builder.build_protected_corpus([], tmp_path / "out.jsonl", tmp_path / "manifest.json")
     assert "privacy_token_vault" in str(exc.value)
 
 
 def test_builder_reports_no_sensitive_matches_for_benign_input(monkeypatch, tmp_path):
     _install_fake_vault(monkeypatch)
-    builder = _load_module(
-        "test_build_protected_corpus_clean", "scripts/build_protected_corpus.py"
-    )
+    builder = _load_module("test_build_protected_corpus_clean", "scripts/build_protected_corpus.py")
 
     clean_note = tmp_path / "clean.md"
     clean_note.write_text(
@@ -175,9 +160,7 @@ def test_builder_reports_no_sensitive_matches_for_benign_input(monkeypatch, tmp_
 
 
 def test_audit_detects_surviving_sensitive_text_and_overlap(monkeypatch, tmp_path):
-    audit = _load_module(
-        "test_privacy_leakage_audit", "scripts/privacy_leakage_audit.py"
-    )
+    audit = _load_module("test_privacy_leakage_audit", "scripts/privacy_leakage_audit.py")
 
     protected_path = tmp_path / "protected.jsonl"
     protected_path.write_text(

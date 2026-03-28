@@ -57,9 +57,7 @@ def test_encode_input_text_preserves_spaces_and_escapes():
 def test_build_webtoon_preview_plan_alternates_capture_and_swipe():
     from src.browser.hydra_android_hand import build_webtoon_preview_plan
 
-    plan = build_webtoon_preview_plan(
-        width=1080, height=2400, steps=3, capture_prefix="ch01"
-    )
+    plan = build_webtoon_preview_plan(width=1080, height=2400, steps=3, capture_prefix="ch01")
 
     assert [task["action"] for task in plan] == [
         "screencap",

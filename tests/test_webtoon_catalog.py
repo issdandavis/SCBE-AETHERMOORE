@@ -9,9 +9,7 @@ from scripts import build_webtoon_catalog
 from scripts.build_webtoon_catalog import build_catalog
 
 
-def test_catalog_prefers_generated_panels_for_ch01(
-    tmp_path: Path, monkeypatch: "pytest.MonkeyPatch"
-) -> None:
+def test_catalog_prefers_generated_panels_for_ch01(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch") -> None:
 
     # Set up a minimal prompts directory with a ch01 entry
     prompts_dir = tmp_path / "prompts"

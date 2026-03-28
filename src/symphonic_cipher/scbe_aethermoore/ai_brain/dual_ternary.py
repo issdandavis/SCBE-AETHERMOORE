@@ -159,9 +159,7 @@ def _clip(value: int) -> int:
     return 0
 
 
-def transition(
-    current: DualTernaryState, delta_p: int, delta_m: int
-) -> DualTernaryState:
+def transition(current: DualTernaryState, delta_p: int, delta_m: int) -> DualTernaryState:
     """Transition from one state to another with deltas."""
     return DualTernaryState(
         primary=_clip(current.primary + delta_p),
@@ -183,9 +181,7 @@ def _quantize(value: float, threshold: float) -> int:
     return 0
 
 
-def encode_to_dual_ternary(
-    amplitude: float, phase: float, threshold: float = 0.33
-) -> DualTernaryState:
+def encode_to_dual_ternary(amplitude: float, phase: float, threshold: float = 0.33) -> DualTernaryState:
     """Encode continuous values into a dual ternary state."""
     return DualTernaryState(
         primary=_quantize(amplitude, threshold),
@@ -193,9 +189,7 @@ def encode_to_dual_ternary(
     )
 
 
-def encode_sequence(
-    values: List[float], threshold: float = 0.33
-) -> List[DualTernaryState]:
+def encode_sequence(values: List[float], threshold: float = 0.33) -> List[DualTernaryState]:
     """Encode a sequence of values into dual ternary states (pairs)."""
     states: List[DualTernaryState] = []
     i = 0
@@ -288,10 +282,7 @@ def compute_spectrum(
 
     primary_mag = [math.hypot(re, im) for re, im in primary_dft]
     mirror_mag = [math.hypot(re, im) for re, im in mirror_dft]
-    cross = [
-        primary_dft[i][0] * mirror_dft[i][0] + primary_dft[i][1] * mirror_dft[i][1]
-        for i in range(n)
-    ]
+    cross = [primary_dft[i][0] * mirror_dft[i][0] + primary_dft[i][1] * mirror_dft[i][1] for i in range(n)]
 
     # 9-fold symmetry energy
     histogram = [0] * 9
@@ -306,11 +297,7 @@ def compute_spectrum(
     total_mirror = sum(v * v for v in mirror_mag)
     total_cross = sum(abs(v) for v in cross)
     total_energy = total_primary + total_mirror
-    coherence = (
-        total_cross / (total_energy + BRAIN_EPSILON)
-        if total_energy > BRAIN_EPSILON
-        else 0.0
-    )
+    coherence = total_cross / (total_energy + BRAIN_EPSILON) if total_energy > BRAIN_EPSILON else 0.0
 
     phase_anomaly = _compute_phase_anomaly(sequence)
 
@@ -329,9 +316,7 @@ def compute_spectrum(
 # ---------------------------------------------------------------------------
 
 
-def _compute_sign_entropy(
-    sequence: List[DualTernaryState], config: DualTernaryConfig
-) -> float:
+def _compute_sign_entropy(sequence: List[DualTernaryState], config: DualTernaryConfig) -> float:
     """Sign entropy contribution to fractal dimension."""
     sign_patterns = [0] * 9
     for s in sequence:
@@ -370,13 +355,9 @@ def _compute_symmetry_breaking(sequence: List[DualTernaryState]) -> float:
     return min(1.0, divergence / math.log(2))
 
 
-def _compute_self_similarity(
-    sequence: List[DualTernaryState], config: DualTernaryConfig
-) -> float:
+def _compute_self_similarity(sequence: List[DualTernaryState], config: DualTernaryConfig) -> float:
     """Self-similarity across scales via energy comparison."""
-    max_depth = min(
-        config.mirror_depth, int(math.log2(len(sequence))) if len(sequence) > 1 else 0
-    )
+    max_depth = min(config.mirror_depth, int(math.log2(len(sequence))) if len(sequence) > 1 else 0)
     if max_depth < 2:
         return 0.0
 
@@ -458,9 +439,7 @@ class DualTernarySystem:
         self._history: List[DualTernaryState] = []
         self._step_counter = 0
 
-    def encode(
-        self, state_21d: List[float], threshold: float = 0.33
-    ) -> List[DualTernaryState]:
+    def encode(self, state_21d: List[float], threshold: float = 0.33) -> List[DualTernaryState]:
         """Encode a 21D brain state into dual ternary representation."""
         self._step_counter += 1
         encoded = encode_sequence(state_21d, threshold)
@@ -480,20 +459,14 @@ class DualTernarySystem:
         spectrum = self.analyze_spectrum()
         fractal = self.analyze_fractal_dimension()
 
-        phase_anomaly_detected = (
-            spectrum.phase_anomaly >= self.config.phase_anomaly_threshold
-        )
+        phase_anomaly_detected = spectrum.phase_anomaly >= self.config.phase_anomaly_threshold
         expected_dim = 2.0
         fractal_deviation = abs(fractal.hausdorff_dimension - expected_dim)
-        fractal_anomaly_detected = (
-            fractal_deviation > self.config.fractal_deviation_threshold
-        )
+        fractal_anomaly_detected = fractal_deviation > self.config.fractal_deviation_threshold
 
         threat_score = min(
             1.0,
-            spectrum.phase_anomaly * 0.4
-            + spectrum.ninefold_energy * 0.3
-            + (fractal_deviation / 2.0) * 0.3,
+            spectrum.phase_anomaly * 0.4 + spectrum.ninefold_energy * 0.3 + (fractal_deviation / 2.0) * 0.3,
         )
 
         return {

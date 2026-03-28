@@ -219,9 +219,7 @@ class LCDAProjector:
 
         self._all_seed_docs = all_docs
 
-    def _score_against_seeds(
-        self, tokens: list[str], pos_vocab: Counter, neg_vocab: Counter
-    ) -> float:
+    def _score_against_seeds(self, tokens: list[str], pos_vocab: Counter, neg_vocab: Counter) -> float:
         """Score a token list against positive/negative seed vocabularies.
 
         Returns a value in [-1, 1]:
@@ -265,9 +263,7 @@ class LCDAProjector:
         scores: dict[str, float] = {}
 
         for i, dim in enumerate(self.dimensions):
-            raw = self._score_against_seeds(
-                tokens, self._positive_vocabs[i], self._negative_vocabs[i]
-            )
+            raw = self._score_against_seeds(tokens, self._positive_vocabs[i], self._negative_vocabs[i])
             # Map from [-1, 1] to [0, 1]
             normalized = (raw + 1.0) / 2.0
             scores[dim.name] = round(normalized, 4)

@@ -69,9 +69,7 @@ class AgentRecord:
 class Cohort:
     """A group of agents progressing through curriculum together."""
 
-    def __init__(
-        self, cohort_id: str, agents: Optional[List[AgentRecord]] = None
-    ) -> None:
+    def __init__(self, cohort_id: str, agents: Optional[List[AgentRecord]] = None) -> None:
         self.cohort_id = cohort_id
         self._agents: Dict[str, AgentRecord] = {}
         if agents:
@@ -92,14 +90,11 @@ class Cohort:
         return [
             a
             for a in self._agents.values()
-            if a.state
-            in (AgentLifecycleState.SPAWNED, AgentLifecycleState.IN_CURRICULUM)
+            if a.state in (AgentLifecycleState.SPAWNED, AgentLifecycleState.IN_CURRICULUM)
         ]
 
     def graduated_agents(self) -> List[AgentRecord]:
-        return [
-            a for a in self._agents.values() if a.state == AgentLifecycleState.GRADUATED
-        ]
+        return [a for a in self._agents.values() if a.state == AgentLifecycleState.GRADUATED]
 
     def population_personality_matrix(self) -> List[List[float]]:
         """Return (N, 21) matrix of current personality vectors."""
@@ -179,11 +174,7 @@ class GraduationCriteria:
         recommendations: List[str] = []
 
         # 1. Curriculum completion
-        completed = (
-            all(record.curriculum_progress.values())
-            if record.curriculum_progress
-            else False
-        )
+        completed = all(record.curriculum_progress.values()) if record.curriculum_progress else False
         scores["curriculum_completion"] = 1.0 if completed else 0.0
         if not completed:
             remaining = [k for k, v in record.curriculum_progress.items() if not v]
@@ -195,9 +186,7 @@ class GraduationCriteria:
         scores["consistency"] = consistency
         if consistency < self.min_consistency:
             failing.append("low_consistency")
-            recommendations.append(
-                f"Consistency {consistency:.3f} < {self.min_consistency}"
-            )
+            recommendations.append(f"Consistency {consistency:.3f} < {self.min_consistency}")
 
         # 3. Safety score (Hamiltonian)
         safety = self._compute_safety(record)
@@ -211,28 +200,19 @@ class GraduationCriteria:
         scores["drift_rate"] = drift_rate
         if drift_rate > self.max_drift_rate:
             failing.append("high_drift")
-            recommendations.append(
-                f"Drift rate {drift_rate:.4f} > {self.max_drift_rate}"
-            )
+            recommendations.append(f"Drift rate {drift_rate:.4f} > {self.max_drift_rate}")
 
         # 5. Diversity preservation
         min_dist = self._compute_min_graduate_distance(record, cohort)
         scores["min_diversity"] = min_dist
         if min_dist < self.min_diversity_distance:
             failing.append("low_diversity")
-            recommendations.append(
-                f"Too similar to existing graduate (dist={min_dist:.3f})"
-            )
+            recommendations.append(f"Too similar to existing graduate (dist={min_dist:.3f})")
 
         # Overall
         passed = len(failing) == 0
         scores["overall"] = (
-            sum(
-                1.0
-                for k in ["curriculum_completion", "consistency", "safety"]
-                if scores.get(k, 0) >= 0.5
-            )
-            / 3.0
+            sum(1.0 for k in ["curriculum_completion", "consistency", "safety"] if scores.get(k, 0) >= 0.5) / 3.0
         )
 
         return GraduationResult(
@@ -304,9 +284,7 @@ class GraduationCriteria:
             total_drift += math.sqrt(sum((a - b) ** 2 for a, b in zip(prev, curr)))
         return total_drift / (len(recent) - 1)
 
-    def _compute_min_graduate_distance(
-        self, record: AgentRecord, cohort: Cohort
-    ) -> float:
+    def _compute_min_graduate_distance(self, record: AgentRecord, cohort: Cohort) -> float:
         """Minimum cosine distance from any already-graduated agent."""
         graduates = cohort.graduated_agents()
         if not graduates:
@@ -315,9 +293,7 @@ class GraduationCriteria:
         for grad in graduates:
             if grad.agent_id == record.agent_id:
                 continue
-            dist = record.agent.personality.cosine_distance_from(
-                grad.agent.personality.vector
-            )
+            dist = record.agent.personality.cosine_distance_from(grad.agent.personality.vector)
             min_dist = min(min_dist, dist)
         return min_dist
 
@@ -419,9 +395,7 @@ class NurseryManager:
         )
         return self._cohort
 
-    def run_agent_story(
-        self, record: AgentRecord, graph: StoryGraph
-    ) -> PlaythroughRecord:
+    def run_agent_story(self, record: AgentRecord, graph: StoryGraph) -> PlaythroughRecord:
         """Run a single agent through a single story (synchronous)."""
         record.state = AgentLifecycleState.IN_CURRICULUM
         playthrough = record.agent.play_story(graph)
@@ -429,9 +403,7 @@ class NurseryManager:
         record.curriculum_progress[graph.story_id] = True
         return playthrough
 
-    def run_curriculum_sync(
-        self, story_graphs: Optional[Dict[str, StoryGraph]] = None
-    ) -> None:
+    def run_curriculum_sync(self, story_graphs: Optional[Dict[str, StoryGraph]] = None) -> None:
         """
         Execute the full curriculum for all agents, synchronously.
 
@@ -491,7 +463,5 @@ class NurseryManager:
             "active": len(self._cohort.active_agents()),
             "graduated": len(self._cohort.graduated_agents()),
             "diversity": self._cohort.diversity_score(),
-            "curriculum_stories": (
-                self._curriculum.total_stories if self._curriculum else 0
-            ),
+            "curriculum_stories": (self._curriculum.total_stories if self._curriculum else 0),
         }

@@ -617,8 +617,7 @@ def _governance_gate(
         return (
             GovernanceAction.ROLLBACK,
             "-1",
-            f"Event horizon reached (r={radial_dist:.3f}). "
-            f"Harmonic Wall denies access beyond r=0.9.",
+            f"Event horizon reached (r={radial_dist:.3f}). " f"Harmonic Wall denies access beyond r=0.9.",
         )
 
     # Energy exhaustion → hold
@@ -627,8 +626,7 @@ def _governance_gate(
         return (
             GovernanceAction.HOLD,
             "-0",
-            f"Energy budget nearly exhausted ({remaining:.1f} remaining). "
-            f"Freezing state for quorum check.",
+            f"Energy budget nearly exhausted ({remaining:.1f} remaining). " f"Freezing state for quorum check.",
         )
 
     # Outer Ring → hold for verification
@@ -636,16 +634,14 @@ def _governance_gate(
         return (
             GovernanceAction.HOLD,
             "+0",
-            f"Outer Ring (r={radial_dist:.3f}). "
-            f"Moderate resistance — verification required.",
+            f"Outer Ring (r={radial_dist:.3f}). " f"Moderate resistance — verification required.",
         )
 
     # Normal operation → run
     return (
         GovernanceAction.RUN,
         "+1",
-        f"{'Core' if ring == 'CORE' else 'Inner'} Ring "
-        f"(r={radial_dist:.3f}). Safe thought space — forward thrust.",
+        f"{'Core' if ring == 'CORE' else 'Inner'} Ring " f"(r={radial_dist:.3f}). Safe thought space — forward thrust.",
     )
 
 
@@ -796,9 +792,7 @@ class PolyDidacticCircuit:
             return trace
 
         # 3. Pick starting node: tongue-affine node with lowest radial band
-        tongue_nodes = [
-            n for n in accessible if self.nodes[n].tongue_affinity == tongue
-        ]
+        tongue_nodes = [n for n in accessible if self.nodes[n].tongue_affinity == tongue]
         if tongue_nodes:
             start = min(tongue_nodes, key=lambda n: self.nodes[n].radial_band[0])
         else:

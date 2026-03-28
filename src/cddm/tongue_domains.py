@@ -40,9 +40,7 @@ TONGUE_DOMAINS: Dict[str, Domain] = {
     # RU — Policy: Entropy, Order, Governance
     "RU": Domain("Entropy", units=("J/K",), bounds=(0, 1e3)),
     "RU_narrative": Domain("PlotChaos", units=("ChaosLevel",), bounds=(0, 10)),
-    "RU_governance": Domain(
-        "PolicyBreakdown", units=("BreakdownIdx",), bounds=(0, 100)
-    ),
+    "RU_governance": Domain("PolicyBreakdown", units=("BreakdownIdx",), bounds=(0, 100)),
     # CA — Compute: Complexity, Processing, Logic
     "CA": Domain("Complexity", units=("FLOP",), bounds=(0, 1e12)),
     "CA_narrative": Domain("Intrigue", units=("IntrigueLevel",), bounds=(0, 10)),
@@ -53,12 +51,8 @@ TONGUE_DOMAINS: Dict[str, Domain] = {
     "UM_governance": Domain("ThreatIndex", units=("ThreatIdx",), bounds=(0, 100)),
     # DR — Schema: Structure, Pattern, Memory
     "DR": Domain("Structure", units=("ShannonBit",), bounds=(0, 1e6)),
-    "DR_narrative": Domain(
-        "WorldComplexity", units=("ComplexityLevel",), bounds=(0, 10)
-    ),
-    "DR_governance": Domain(
-        "SchemaIntegrity", units=("IntegrityPct",), bounds=(0, 100)
-    ),
+    "DR_narrative": Domain("WorldComplexity", units=("ComplexityLevel",), bounds=(0, 10)),
+    "DR_governance": Domain("SchemaIntegrity", units=("IntegrityPct",), bounds=(0, 100)),
 }
 
 

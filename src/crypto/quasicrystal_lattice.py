@@ -394,10 +394,7 @@ class QuasicrystalLattice:
         # Scale by phi-weights: trit * phi^i
         # This makes higher tongues (UM, DR) contribute more to the
         # projection, matching the Langues metric weighting
-        scaled = [
-            int(round(trit * weight))
-            for trit, weight in zip(ternary_trits, TONGUE_WEIGHTS)
-        ]
+        scaled = [int(round(trit * weight)) for trit, weight in zip(ternary_trits, TONGUE_WEIGHTS)]
 
         return self.map_gates(scaled)
 

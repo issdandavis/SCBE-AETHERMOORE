@@ -21,9 +21,7 @@ from typing import Any
 
 try:
     from cryptography.fernet import Fernet, InvalidToken
-except (
-    Exception
-):  # pragma: no cover - cryptography is expected, but fail closed if unavailable
+except Exception:  # pragma: no cover - cryptography is expected, but fail closed if unavailable
     Fernet = None
     InvalidToken = Exception
 
@@ -100,9 +98,7 @@ def has_secret(name: str) -> bool:
     return False
 
 
-def set_secret(
-    name: str, value: str, *, note: str = "", tongue: str | None = None
-) -> None:
+def set_secret(name: str, value: str, *, note: str = "", tongue: str | None = None) -> None:
     """Persist secret to local store and set in current process env."""
     store = _load_store()
     entry: dict[str, Any] = {"note": note}
@@ -122,9 +118,7 @@ def _extract_legacy_plaintext(entry: Any, default: str = "") -> str:
     return default
 
 
-def _migrate_legacy_secret(
-    name: str, value: str, store: dict[str, Any], entry: Any
-) -> None:
+def _migrate_legacy_secret(name: str, value: str, store: dict[str, Any], entry: Any) -> None:
     """Rewrite legacy plaintext entries to encrypted form on first access."""
     if not value:
         return
@@ -298,9 +292,7 @@ def sensitive_fingerprint(
 ) -> str:
     """PBKDF2 fingerprint for audit without exposing the actual value."""
     salt = os.getenv(salt_env, salt_default).encode("utf-8")
-    derived = hashlib.pbkdf2_hmac(
-        "sha256", value.encode("utf-8"), salt, SENSITIVE_METADATA_ITERATIONS
-    )
+    derived = hashlib.pbkdf2_hmac("sha256", value.encode("utf-8"), salt, SENSITIVE_METADATA_ITERATIONS)
     return derived.hex()
 
 

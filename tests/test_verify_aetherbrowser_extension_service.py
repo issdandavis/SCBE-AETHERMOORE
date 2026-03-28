@@ -64,9 +64,7 @@ def test_build_service_report_tracks_provider_state_and_extension_flag():
         "extension_workers": [],
     }
 
-    report = build_service_report(
-        health, cdp, {"research_flow": {"execution_provider": "local"}}
-    )
+    report = build_service_report(health, cdp, {"research_flow": {"execution_provider": "local"}})
 
     assert report["status"] == "ok"
     assert report["ready_providers"] == ["local", "sonnet"]

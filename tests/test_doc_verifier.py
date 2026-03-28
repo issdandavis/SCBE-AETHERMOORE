@@ -113,12 +113,8 @@ class TestAttestation:
             attest_document(doc, ["unknown_ai"])
 
     def test_attestation_hash_deterministic(self):
-        h1 = compute_attestation_hash(
-            "sha256:abc", ["claude", "gpt"], "2026-01-01T00:00:00Z"
-        )
-        h2 = compute_attestation_hash(
-            "sha256:abc", ["gpt", "claude"], "2026-01-01T00:00:00Z"
-        )
+        h1 = compute_attestation_hash("sha256:abc", ["claude", "gpt"], "2026-01-01T00:00:00Z")
+        h2 = compute_attestation_hash("sha256:abc", ["gpt", "claude"], "2026-01-01T00:00:00Z")
         # Sorted internally, so order doesn't matter
         assert h1 == h2
 

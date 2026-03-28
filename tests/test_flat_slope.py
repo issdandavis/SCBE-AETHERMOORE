@@ -26,17 +26,13 @@ DURATION = 0.5
 N_SAMPLES = int(SAMPLE_RATE * DURATION)
 
 
-def get_harmonic_mask(
-    token_id: int, secret_key: bytes, max_harmonics: int = 8
-) -> Set[int]:
+def get_harmonic_mask(token_id: int, secret_key: bytes, max_harmonics: int = 8) -> Set[int]:
     """
     Derive which harmonics are active for a given token.
 
     Returns set of harmonic indices (1-based).
     """
-    mask_seed = hmac.new(
-        secret_key, f"token:{token_id}".encode(), hashlib.sha256
-    ).digest()
+    mask_seed = hmac.new(secret_key, f"token:{token_id}".encode(), hashlib.sha256).digest()
 
     harmonics = set()
     for h in range(1, max_harmonics + 1):
@@ -88,9 +84,7 @@ def analyze_spectrum(signal: np.ndarray) -> dict:
         magnitude = spectrum[idx]
 
         # Normalize to max
-        detected_harmonics[h] = (
-            magnitude / np.max(spectrum) if np.max(spectrum) > 0 else 0
-        )
+        detected_harmonics[h] = magnitude / np.max(spectrum) if np.max(spectrum) > 0 else 0
 
     return detected_harmonics
 
@@ -237,7 +231,7 @@ def test_attacker_without_key():
 
     # Purity: fraction of samples in majority class per cluster
     total_correct = 0
-    for cluster, labels in cluster_contents.items():
+    for _cluster, labels in cluster_contents.items():
         majority = Counter(labels).most_common(1)[0][1]
         total_correct += majority
 

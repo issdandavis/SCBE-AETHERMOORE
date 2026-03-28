@@ -105,9 +105,7 @@ def detect_phase_distance(
         mechanism="phase_distance",
         score=score,
         flagged=score >= threshold,
-        detected_attack_types=(
-            ["wrong_tongue", "synthetic"] if score >= threshold else []
-        ),
+        detected_attack_types=(["wrong_tongue", "synthetic"] if score >= threshold else []),
         metadata={"avg_phase_error": avg_phase, "avg_dist_score": avg_dist},
     )
 
@@ -217,16 +215,11 @@ def detect_threat_lissajous(
     if len(trajectory) < 4:
         return DetectionResult("threat_lissajous", 0, False, [])
 
-    projected = [
-        (p.state[5] if len(p.state) > 5 else 0, p.state[3] if len(p.state) > 3 else 0)
-        for p in trajectory
-    ]
+    projected = [(p.state[5] if len(p.state) > 5 else 0, p.state[3] if len(p.state) > 3 else 0) for p in trajectory]
 
     segments = []
     for i in range(len(projected) - 1):
-        segments.append(
-            (projected[i][0], projected[i][1], projected[i + 1][0], projected[i + 1][1])
-        )
+        segments.append((projected[i][0], projected[i][1], projected[i + 1][0], projected[i + 1][1]))
 
     intersections = 0
     for i in range(len(segments)):
@@ -248,9 +241,7 @@ def detect_threat_lissajous(
         mechanism="threat_lissajous",
         score=score,
         flagged=score >= threshold,
-        detected_attack_types=(
-            ["malicious_pattern", "knot_topology"] if score >= threshold else []
-        ),
+        detected_attack_types=(["malicious_pattern", "knot_topology"] if score >= threshold else []),
         metadata={"intersections": intersections, "winding_number": winding_number},
     )
 
@@ -297,9 +288,7 @@ def detect_decimal_drift(
         mechanism="decimal_drift",
         score=score,
         flagged=score >= threshold,
-        detected_attack_types=(
-            ["no_pipeline", "scale_attack", "synthetic"] if score >= threshold else []
-        ),
+        detected_attack_types=(["no_pipeline", "scale_attack", "synthetic"] if score >= threshold else []),
         metadata={"avg_drift": avg_drift, "uniform_ratio": uniform_ratio},
     )
 
@@ -341,19 +330,12 @@ def detect_six_tonic(
     if len(trajectory) >= 8:
         half = len(trajectory) // 2
         match_count = sum(
-            1
-            for i in range(half)
-            if _vec_norm(_vec_sub(trajectory[i].state, trajectory[i + half].state))
-            < 1e-6
+            1 for i in range(half) if _vec_norm(_vec_sub(trajectory[i].state, trajectory[i + half].state)) < 1e-6
         )
         replay_score = match_count / half
 
     centered = [w - mean for w in weights]
-    zero_crossings = sum(
-        1
-        for i in range(1, len(centered))
-        if (centered[i - 1] >= 0) != (centered[i] >= 0)
-    )
+    zero_crossings = sum(1 for i in range(1, len(centered)) if (centered[i - 1] >= 0) != (centered[i] >= 0))
 
     est_freq_ratio = zero_crossings / (2 * (len(trajectory) - 1))
     exp_freq_ratio = expected_freq / (6 * base_freq)
@@ -426,14 +408,10 @@ def run_combined_detection(
 
     detections = [
         detect_phase_distance(trajectory, expected_tongue_index, detection_threshold),
-        detect_curvature_accumulation(
-            trajectory, curvature_window, detection_threshold
-        ),
+        detect_curvature_accumulation(trajectory, curvature_window, detection_threshold),
         detect_threat_lissajous(trajectory, detection_threshold),
         detect_decimal_drift(trajectory, detection_threshold),
-        detect_six_tonic(
-            trajectory, expected_tongue_index, reference_freq, detection_threshold
-        ),
+        detect_six_tonic(trajectory, expected_tongue_index, reference_freq, detection_threshold),
     ]
 
     max_score = max(d.score for d in detections) if detections else 0

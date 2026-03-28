@@ -168,7 +168,7 @@ def detect_embedding_distance(cmd: str, safe_center: np.ndarray) -> float:
 def detect_tongue_mismatch(cmd: str) -> float:
     """Batch 3: Domain classification mismatch. The garlic butter."""
     classification = _classify_tongue(cmd)
-    primary = classification["primary_tongue"]
+    _primary = classification["primary_tongue"]
     scores = classification["tongue_scores"]
 
     # High security tongue (UM) + low tier = suspicious
@@ -200,7 +200,7 @@ def detect_symphonic(cmd: str, governor: SymphonicGovernor) -> float:
     consonance = report.chord.consonance
     total_L = report.total_L
     grade = report.grade
-    decision = report.decision
+    _decision = report.decision
 
     score = 0.0
 
@@ -283,7 +283,7 @@ def run_batch(name: str, detector_fn, safe_cmds: list, adv_cmds: list, threshold
         else:
             tn += 1
 
-    for cmd, cat in adv_cmds:
+    for cmd, _cat in adv_cmds:
         score = detector_fn(cmd)
         adv_scores.append(score)
         if score >= threshold:

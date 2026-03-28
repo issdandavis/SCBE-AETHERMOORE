@@ -34,22 +34,14 @@ class TestPhiLiftedProjection:
 
     def test_higher_k_closer_to_boundary(self):
         v = np.array([1, 0, 0, 0, 0, 0], dtype=float)
-        r_low = np.linalg.norm(
-            phi_lifted_poincare_projection(v, np.array([0, 0, 0, 0, 0, 0]))
-        )
-        r_high = np.linalg.norm(
-            phi_lifted_poincare_projection(v, np.array([5, 0, 0, 0, 0, 0]))
-        )
+        r_low = np.linalg.norm(phi_lifted_poincare_projection(v, np.array([0, 0, 0, 0, 0, 0])))
+        r_high = np.linalg.norm(phi_lifted_poincare_projection(v, np.array([5, 0, 0, 0, 0, 0])))
         assert r_high > r_low
 
     def test_negative_mirrors_positive(self):
         k = np.array([0, 1, 2, 3, 4, 5])
-        pos = phi_lifted_poincare_projection(
-            np.array([1, 1, 1, 1, 1, 1], dtype=float), k
-        )
-        neg = phi_lifted_poincare_projection(
-            np.array([-1, -1, -1, -1, -1, -1], dtype=float), k
-        )
+        pos = phi_lifted_poincare_projection(np.array([1, 1, 1, 1, 1, 1], dtype=float), k)
+        neg = phi_lifted_poincare_projection(np.array([-1, -1, -1, -1, -1, -1], dtype=float), k)
         # Should be opposite direction, same magnitude
         assert np.allclose(np.linalg.norm(pos), np.linalg.norm(neg), atol=1e-10)
 

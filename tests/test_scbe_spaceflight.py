@@ -85,9 +85,7 @@ class TestDelayTolerantBundle:
         sig = _sha256_hex("sig1")
         bundle.add_custody("relay-1", sig)
         # Force duplicate by directly appending
-        bundle.custody_chain.append(
-            CustodyEntry(relay_id="relay-1", signature_hash=sig, order_index=1)
-        )
+        bundle.custody_chain.append(CustodyEntry(relay_id="relay-1", signature_hash=sig, order_index=1))
         assert bundle.verify_custody_chain() is False
 
     def test_invalid_signature_rejected_on_add(self):
@@ -404,9 +402,7 @@ class TestStarTracker:
         tracker = StarTracker(self.CATALOG)
         obs = [(0.0, 0.0, 100.0, 0.0, 0.0, 0.0)]
         claimed = (50.0, 50.0, 50.0, 0.0, 0.0, 0.0)
-        assert not tracker.verify_position(
-            claimed, tolerance=1.0, observed_positions=obs
-        )
+        assert not tracker.verify_position(claimed, tolerance=1.0, observed_positions=obs)
 
     def test_verify_position_catalog_fallback(self):
         """Without observations, position is checked against the catalog."""
@@ -414,9 +410,7 @@ class TestStarTracker:
         # Exactly at Polaris
         assert tracker.verify_position((0.0, 0.0, 100.0, 0.0, 0.0, 0.0), tolerance=0.1)
         # Nowhere near any star
-        assert not tracker.verify_position(
-            (999.0, 999.0, 999.0, 0.0, 0.0, 0.0), tolerance=1.0
-        )
+        assert not tracker.verify_position((999.0, 999.0, 999.0, 0.0, 0.0, 0.0), tolerance=1.0)
 
     def test_empty_catalog_raises(self):
         """An empty catalog is rejected."""

@@ -110,9 +110,7 @@ class ScalingMode(Enum):
 # =============================================================================
 
 
-def hyperbolic_distance_poincare(
-    u: np.ndarray, v: np.ndarray, eps: float = 1e-10
-) -> float:
+def hyperbolic_distance_poincare(u: np.ndarray, v: np.ndarray, eps: float = 1e-10) -> float:
     """
     Compute hyperbolic distance in the Poincare ball model.
 
@@ -149,9 +147,7 @@ def hyperbolic_distance_poincare(
     return float(np.arccosh(max(cosh_dist, 1.0)))
 
 
-def find_nearest_trusted_realm(
-    point: np.ndarray, trusted_realms: List[np.ndarray]
-) -> Tuple[float, int]:
+def find_nearest_trusted_realm(point: np.ndarray, trusted_realms: List[np.ndarray]) -> Tuple[float, int]:
     """
     Find minimum hyperbolic distance to any trusted realm center.
 
@@ -348,9 +344,7 @@ class HarmonicScalingLaw:
         # Harmonic ratio (coordination constant, not cryptographic)
         self.harmonic_ratio = HARMONIC_RATIO_R
 
-    def compute(
-        self, d_star: float, context_commitment: Optional[bytes] = None
-    ) -> float:
+    def compute(self, d_star: float, context_commitment: Optional[bytes] = None) -> float:
         """
         Compute bounded harmonic scaling factor H(d*).
 
@@ -420,9 +414,7 @@ class HarmonicScalingLaw:
         h = self.compute(d_star, context_commitment)
         return behavioral_risk * h
 
-    def compute_with_components(
-        self, d_star: float, context_commitment: Optional[bytes] = None
-    ) -> dict:
+    def compute_with_components(self, d_star: float, context_commitment: Optional[bytes] = None) -> dict:
         """
         Compute scaling with full component breakdown.
 
@@ -440,11 +432,7 @@ class HarmonicScalingLaw:
             "alpha": self.alpha,
             "beta": self.beta,
             "mode": self.mode.value,
-            "tanh_term": (
-                math.tanh(self.beta * d_star)
-                if self.mode == ScalingMode.BOUNDED_TANH
-                else None
-            ),
+            "tanh_term": (math.tanh(self.beta * d_star) if self.mode == ScalingMode.BOUNDED_TANH else None),
             "H": h,
             "H_min": 1.0,
             "H_max": 1.0 + self.alpha,
@@ -583,9 +571,7 @@ class SecurityDecisionEngine:
             Tuple of (decision: bool, details: dict)
         """
         # Compute scaled risk
-        scaling_components = self.scaling_law.compute_with_components(
-            d_star, context_commitment
-        )
+        scaling_components = self.scaling_law.compute_with_components(d_star, context_commitment)
 
         H = scaling_components["H"]
         final_risk = behavioral_risk * H
@@ -612,9 +598,7 @@ class SecurityDecisionEngine:
 # =============================================================================
 
 
-def get_epsilon_threshold(
-    mode: "CouplingMode", n_dims: int = LANGUES_DIMENSIONS
-) -> float:
+def get_epsilon_threshold(mode: "CouplingMode", n_dims: int = LANGUES_DIMENSIONS) -> float:
     """
     Get the rigorous epsilon threshold for a given coupling mode.
 
@@ -808,8 +792,7 @@ class LanguesMetricTensor:
 
         # Pre-compute coupling matrices
         self._coupling_matrices = [
-            create_coupling_matrix(k, R, epsilon, mode, self._G_0_diag)
-            for k in range(self.n_dims)
+            create_coupling_matrix(k, R, epsilon, mode, self._G_0_diag) for k in range(self.n_dims)
         ]
 
     @property
@@ -885,9 +868,7 @@ class LanguesMetricTensor:
 
         return float(np.sqrt(diff.T @ G_L @ diff))
 
-    def validate_positive_definite(
-        self, r: np.ndarray, eps: float = 1e-10
-    ) -> Tuple[bool, dict]:
+    def validate_positive_definite(self, r: np.ndarray, eps: float = 1e-10) -> Tuple[bool, dict]:
         """
         Validate that G_L(r) is positive definite.
 
@@ -919,9 +900,7 @@ class LanguesMetricTensor:
             "r": r.tolist() if hasattr(r, "tolist") else list(r),
         }
 
-    def validate_stability(
-        self, n_trials: int = 100, seed: Optional[int] = None
-    ) -> dict:
+    def validate_stability(self, n_trials: int = 100, seed: Optional[int] = None) -> dict:
         """
         Run numerical stability validation across random r vectors.
 
@@ -1030,13 +1009,9 @@ class FractalDimensionAnalyzer:
                 raise ValueError(f"fractional_orders must have {self.n_dims} elements")
 
         # Underlying metric tensor
-        self._metric_tensor = LanguesMetricTensor(
-            R, epsilon, mode, validate_epsilon=False
-        )
+        self._metric_tensor = LanguesMetricTensor(R, epsilon, mode, validate_epsilon=False)
 
-    def compute_local_fractal_dimension(
-        self, r: np.ndarray, delta_epsilon: float = 1e-4
-    ) -> float:
+    def compute_local_fractal_dimension(self, r: np.ndarray, delta_epsilon: float = 1e-4) -> float:
         """
         Compute local fractal dimension at a point r.
 
@@ -1057,12 +1032,8 @@ class FractalDimensionAnalyzer:
         eps_lo = max(self.epsilon - delta_epsilon, 1e-6)
         eps_hi = self.epsilon + delta_epsilon
 
-        tensor_lo = LanguesMetricTensor(
-            self.R, eps_lo, self.mode, validate_epsilon=False
-        )
-        tensor_hi = LanguesMetricTensor(
-            self.R, eps_hi, self.mode, validate_epsilon=False
-        )
+        tensor_lo = LanguesMetricTensor(self.R, eps_lo, self.mode, validate_epsilon=False)
+        tensor_hi = LanguesMetricTensor(self.R, eps_hi, self.mode, validate_epsilon=False)
 
         # Compute determinants
         G_lo = tensor_lo.compute_metric(r)
@@ -1081,9 +1052,7 @@ class FractalDimensionAnalyzer:
 
         return d_ln_det / d_ln_eps
 
-    def compute_fractal_dimension_field(
-        self, n_samples: int = 100, seed: Optional[int] = None
-    ) -> dict:
+    def compute_fractal_dimension_field(self, n_samples: int = 100, seed: Optional[int] = None) -> dict:
         """
         Compute fractal dimension field over random samples.
 
@@ -1152,9 +1121,7 @@ class FractalDimensionAnalyzer:
 
         return G_n, det_history
 
-    def compute_hausdorff_dimension(
-        self, r: np.ndarray, tol: float = 1e-8, max_iter: int = 100
-    ) -> float:
+    def compute_hausdorff_dimension(self, r: np.ndarray, tol: float = 1e-8, max_iter: int = 100) -> float:
         """
         Compute Hausdorff dimension D_H of the fractal attractor.
 
@@ -1348,9 +1315,7 @@ class FractalDimensionAnalyzer:
 
         return np.array(attractor_points)
 
-    def estimate_box_counting_dimension(
-        self, points: np.ndarray, n_scales: int = 10
-    ) -> Tuple[float, dict]:
+    def estimate_box_counting_dimension(self, points: np.ndarray, n_scales: int = 10) -> Tuple[float, dict]:
         """
         Estimate fractal dimension via box-counting method.
 
@@ -1549,9 +1514,7 @@ class HyperTorusManifold:
         normalized = hash_int / (2**64)
         return normalized * 2 * np.pi
 
-    def map_interaction(
-        self, domain_contexts: List[str], sequence_data: str
-    ) -> np.ndarray:
+    def map_interaction(self, domain_contexts: List[str], sequence_data: str) -> np.ndarray:
         """
         Map an interaction to n-dimensional angular coordinates.
 
@@ -1584,9 +1547,7 @@ class HyperTorusManifold:
         diff = np.abs(theta2 - theta1)
         return min(diff, 2 * np.pi - diff)
 
-    def _signed_angle_delta(
-        self, theta1: float, theta2: float, dim_mode: int
-    ) -> Tuple[float, float]:
+    def _signed_angle_delta(self, theta1: float, theta2: float, dim_mode: int) -> Tuple[float, float]:
         """
         Compute signed angular difference with directional penalty.
 
@@ -1719,9 +1680,7 @@ class HyperTorusManifold:
             "squared_distance": float(squared_dist) if not frozen_violation else np.inf,
         }
 
-    def validate_write(
-        self, previous_point: Optional[np.ndarray], new_point: np.ndarray
-    ) -> dict:
+    def validate_write(self, previous_point: Optional[np.ndarray], new_point: np.ndarray) -> dict:
         """
         The Snap Protocol: Validate geometric integrity of a write operation.
 
@@ -1769,11 +1728,7 @@ class HyperTorusManifold:
                 "is_genesis": False,
                 "divergence": float(distance) if not np.isinf(distance) else "INFINITY",
                 "threshold": self.trust_threshold,
-                "overshoot": (
-                    float(distance - self.trust_threshold)
-                    if not np.isinf(distance)
-                    else "INFINITY"
-                ),
+                "overshoot": (float(distance - self.trust_threshold) if not np.isinf(distance) else "INFINITY"),
                 "frozen_violation": details.get("frozen_violation", False),
                 **details,
             }
@@ -1847,14 +1802,10 @@ class HyperTorusManifold:
             "K_min": float(K_min),
             "R_major": float(R),
             "r_minor": float(r),
-            "outer_rim_tension_multiplier": (
-                float((R + r) / (R - r)) if R > r else np.inf
-            ),
+            "outer_rim_tension_multiplier": (float((R + r) / (R - r)) if R > r else np.inf),
         }
 
-    def integrate_with_langues(
-        self, langues_tensor: "LanguesMetricTensor", langues_r: np.ndarray
-    ) -> np.ndarray:
+    def integrate_with_langues(self, langues_tensor: "LanguesMetricTensor", langues_r: np.ndarray) -> np.ndarray:
         """
         Integrate Langues Metric weights into the torus metric.
 
@@ -1905,9 +1856,7 @@ def compute_langues_metric_distance(
     return tensor.compute_distance(x, y, r)
 
 
-def validate_langues_metric_stability(
-    epsilon_values: List[float] = None, n_trials: int = 100, seed: int = 42
-) -> dict:
+def validate_langues_metric_stability(epsilon_values: List[float] = None, n_trials: int = 100, seed: int = 42) -> dict:
     """
     Validate langues metric stability across multiple epsilon values.
 
@@ -2045,9 +1994,7 @@ class GrandUnifiedSymphonicCipher:
             coupling_mode: Langues metric coupling mode
         """
         if n_dims < 6:
-            raise ValueError(
-                "Grand Unified formula requires n_dims >= 6 for Langues integration"
-            )
+            raise ValueError("Grand Unified formula requires n_dims >= 6 for Langues integration")
 
         self.n_dims = n_dims
         self.alpha = alpha
@@ -2056,22 +2003,16 @@ class GrandUnifiedSymphonicCipher:
         self.phi = PHI
 
         # Initialize all four pillars
-        self.harmonic_law = HarmonicScalingLaw(
-            alpha=alpha, beta=beta, require_pq_binding=False
-        )
+        self.harmonic_law = HarmonicScalingLaw(alpha=alpha, beta=beta, require_pq_binding=False)
 
-        self.langues_metric = LanguesMetricTensor(
-            epsilon=epsilon, mode=coupling_mode, validate_epsilon=False
-        )
+        self.langues_metric = LanguesMetricTensor(epsilon=epsilon, mode=coupling_mode, validate_epsilon=False)
         # Store the coupling mode for inspection
         self.langues_metric.coupling_mode = coupling_mode
 
         if dimension_modes is None:
             dimension_modes = np.ones(n_dims, dtype=int)  # All FORWARD
 
-        self.hyper_torus = HyperTorusManifold(
-            n_dims=n_dims, dimension_modes=dimension_modes
-        )
+        self.hyper_torus = HyperTorusManifold(n_dims=n_dims, dimension_modes=dimension_modes)
 
         self.fractal_analyzer = FractalDimensionAnalyzer(epsilon=epsilon)
 
@@ -2152,9 +2093,7 @@ class GrandUnifiedSymphonicCipher:
             Ω tensor (n_dims × n_dims matrix)
         """
         # Get scalar factors
-        d_T, _ = self.hyper_torus.compute_geodesic_distance(
-            np.zeros(self.n_dims), theta
-        )
+        d_T, _ = self.hyper_torus.compute_geodesic_distance(np.zeros(self.n_dims), theta)
         H = self.harmonic_law.compute(d_T) if not np.isinf(d_T) else np.inf
         D_f = self.fractal_analyzer.compute_local_fractal_dimension(r)
         complexity = self.phi ** (D_f / self.n_dims)
@@ -2235,12 +2174,8 @@ class GrandUnifiedSymphonicCipher:
             "omega": float(np.exp(log_omega)),
             "contributions": {
                 "harmonic_pct": float(log_H / log_omega * 100) if log_omega != 0 else 0,
-                "geometry_pct": (
-                    float(log_det_factor / log_omega * 100) if log_omega != 0 else 0
-                ),
-                "complexity_pct": (
-                    float(log_complexity / log_omega * 100) if log_omega != 0 else 0
-                ),
+                "geometry_pct": (float(log_det_factor / log_omega * 100) if log_omega != 0 else 0),
+                "complexity_pct": (float(log_complexity / log_omega * 100) if log_omega != 0 else 0),
             },
         }
 
@@ -2335,9 +2270,7 @@ class GrandUnifiedSymphonicCipher:
             "entropy": float(entropy),
             "mean_omega": float(np.mean(omegas[finite_mask])),
             "min_omega": float(np.min(omegas[finite_mask])),
-            "max_omega": (
-                float(np.max(omegas[finite_mask])) if np.any(finite_mask) else np.inf
-            ),
+            "max_omega": (float(np.max(omegas[finite_mask])) if np.any(finite_mask) else np.inf),
         }
 
     def compute_coherence_score(
@@ -2569,9 +2502,7 @@ class DifferentialCryptographyFramework:
 
         return curvature
 
-    def compute_accumulated_phase(
-        self, t: np.ndarray, t_start: float = None, t_end: float = None
-    ) -> float:
+    def compute_accumulated_phase(self, t: np.ndarray, t_start: float = None, t_end: float = None) -> float:
         """
         Compute accumulated phase integral Φ(t) = ∫f(τ)dτ.
 
@@ -2637,9 +2568,7 @@ class DifferentialCryptographyFramework:
             "stability_ratio": float(1 - np.mean(snap_mask)),
         }
 
-    def generate_watermark_signature(
-        self, t: np.ndarray, n_segments: int = 16
-    ) -> np.ndarray:
+    def generate_watermark_signature(self, t: np.ndarray, n_segments: int = 16) -> np.ndarray:
         """
         Generate watermark signature from differential structure.
 
@@ -2680,21 +2609,15 @@ class DifferentialCryptographyFramework:
             velocity_stat = np.mean(np.abs(segment_v))
 
             # Golden ratio weighted combination
-            signature[i] = (
-                phase_integral + self.phi * curvature_stat + self.phi**2 * velocity_stat
-            )
+            signature[i] = phase_integral + self.phi * curvature_stat + self.phi**2 * velocity_stat
 
         # Normalize to [0, 1]
         if np.max(signature) > np.min(signature):
-            signature = (signature - np.min(signature)) / (
-                np.max(signature) - np.min(signature)
-            )
+            signature = (signature - np.min(signature)) / (np.max(signature) - np.min(signature))
 
         return signature
 
-    def generate_chaff_pattern(
-        self, t: np.ndarray, chaff_amplitude: float = 0.01, seed: int = None
-    ) -> np.ndarray:
+    def generate_chaff_pattern(self, t: np.ndarray, chaff_amplitude: float = 0.01, seed: int = None) -> np.ndarray:
         """
         Generate chaff pattern as modulated phase noise.
 
@@ -2828,9 +2751,7 @@ class DifferentialCryptographyFramework:
                 if any(np.isinf(x) for x in [omega_pp, omega_pm, omega_mp, omega_mm]):
                     hessian[i, j] = np.inf
                 else:
-                    hessian[i, j] = (omega_pp - omega_pm - omega_mp + omega_mm) / (
-                        4 * h**2
-                    )
+                    hessian[i, j] = (omega_pp - omega_pm - omega_mp + omega_mm) / (4 * h**2)
 
                 hessian[j, i] = hessian[i, j]  # Symmetric
 
@@ -2918,9 +2839,7 @@ class DifferentialCryptographyFramework:
             omegas.append(omega)
 
             grad = self.compute_trust_gradient(theta, langues_r, guscf)
-            gradients.append(
-                np.linalg.norm(grad) if not np.any(np.isinf(grad)) else np.inf
-            )
+            gradients.append(np.linalg.norm(grad) if not np.any(np.isinf(grad)) else np.inf)
 
             snap = self.detect_geometric_snap(theta, langues_r, guscf)
             if snap["snap_detected"]:
@@ -2947,17 +2866,9 @@ class DifferentialCryptographyFramework:
             "snap_events": snap_events,
             "snap_count": len(snap_events),
             "accumulated_trust": float(accumulated),
-            "mean_trust": (
-                float(np.mean(omegas[finite_mask])) if np.any(finite_mask) else np.inf
-            ),
-            "max_trust": (
-                float(np.max(omegas[finite_mask])) if np.any(finite_mask) else np.inf
-            ),
-            "stability_ratio": (
-                float(1 - len(snap_events) / len(trajectory))
-                if len(trajectory) > 0
-                else 1.0
-            ),
+            "mean_trust": (float(np.mean(omegas[finite_mask])) if np.any(finite_mask) else np.inf),
+            "max_trust": (float(np.max(omegas[finite_mask])) if np.any(finite_mask) else np.inf),
+            "stability_ratio": (float(1 - len(snap_events) / len(trajectory)) if len(trajectory) > 0 else 1.0),
         }
 
     def get_differential_equations(self) -> str:
@@ -3019,9 +2930,7 @@ Connection to Grand Unified Formula:
     # KEY EVOLUTION LAW
     # =========================================================================
 
-    def evolve_key(
-        self, t: np.ndarray, k0: float = 1.0, eta: float = 0.05
-    ) -> np.ndarray:
+    def evolve_key(self, t: np.ndarray, k0: float = 1.0, eta: float = 0.05) -> np.ndarray:
         """
         Evolve key according to the differential key evolution law.
 
@@ -3055,9 +2964,7 @@ Connection to Grand Unified Formula:
 
         return k
 
-    def compute_key_derivative(
-        self, t: np.ndarray, k: np.ndarray, eta: float = 0.05
-    ) -> np.ndarray:
+    def compute_key_derivative(self, t: np.ndarray, k: np.ndarray, eta: float = 0.05) -> np.ndarray:
         """
         Compute dk/dt = η · w(t) · k(t) directly.
 
@@ -3186,9 +3093,7 @@ Connection to Grand Unified Formula:
 
         # Key growth rate
         if len(t) > 1:
-            log_k_ratio = (
-                np.log(np.abs(k[-1] / k[0])) if k[0] != 0 and k[-1] != 0 else 0
-            )
+            log_k_ratio = np.log(np.abs(k[-1] / k[0])) if k[0] != 0 and k[-1] != 0 else 0
             empirical_lyapunov = log_k_ratio / T
         else:
             empirical_lyapunov = 0
@@ -3222,9 +3127,7 @@ Connection to Grand Unified Formula:
             "eta": eta,
         }
 
-    def compute_stability_bounds(
-        self, eta_max: float = 0.5, n_samples: int = 20
-    ) -> dict:
+    def compute_stability_bounds(self, eta_max: float = 0.5, n_samples: int = 20) -> dict:
         """
         Compute stability bounds for the key evolution system.
 
@@ -3514,9 +3417,7 @@ class PolyhedralHamiltonianDefense:
 
         # Initialize Langues metric
         if langues_metric is None:
-            self.langues = LanguesMetricTensor(
-                epsilon=DEFAULT_EPSILON, validate_epsilon=False
-            )
+            self.langues = LanguesMetricTensor(epsilon=DEFAULT_EPSILON, validate_epsilon=False)
         else:
             self.langues = langues_metric
 
@@ -3599,9 +3500,7 @@ class PolyhedralHamiltonianDefense:
 
             for j in range(n):
                 if not visited[j]:
-                    dist = self.langues.compute_distance(
-                        current_centroid, self.polyhedra[j].centroid, r
-                    )
+                    dist = self.langues.compute_distance(current_centroid, self.polyhedra[j].centroid, r)
                     if dist < best_dist:
                         best_dist = dist
                         best_next = j
@@ -3663,9 +3562,7 @@ class PolyhedralHamiltonianDefense:
             Array of shape (n_points, 6) representing γ(t)
         """
         # Get centroids in Hamiltonian order
-        centroids = np.array(
-            [self.polyhedra[idx].centroid for idx in self.hamiltonian_path]
-        )
+        centroids = np.array([self.polyhedra[idx].centroid for idx in self.hamiltonian_path])
 
         # Parameterize by arc length
         t_nodes = np.linspace(0, 1, len(centroids))
@@ -3720,9 +3617,7 @@ class PolyhedralHamiltonianDefense:
 
         return curvature
 
-    def measure_deviation(
-        self, state: np.ndarray, t: float, gamma: np.ndarray = None
-    ) -> float:
+    def measure_deviation(self, state: np.ndarray, t: float, gamma: np.ndarray = None) -> float:
         """
         Measure deviation d(state, γ(t)) from the geodesic curve.
 
@@ -3830,9 +3725,7 @@ class PolyhedralHamiltonianDefense:
             "mean_curvature": mean_curvature,
         }
 
-    def validate_key_chain(
-        self, chain: List[Tuple[Polyhedron, bytes]], initial_key: bytes = None
-    ) -> dict:
+    def validate_key_chain(self, chain: List[Tuple[Polyhedron, bytes]], initial_key: bytes = None) -> dict:
         """
         Validate a key derivation chain for integrity.
 
@@ -3881,9 +3774,7 @@ class PolyhedralHamiltonianDefense:
         }
 
     # Alias for verify_chain_integrity
-    def verify_chain_integrity(
-        self, chain: List[Tuple[Polyhedron, bytes]], initial_key: bytes = None
-    ) -> dict:
+    def verify_chain_integrity(self, chain: List[Tuple[Polyhedron, bytes]], initial_key: bytes = None) -> dict:
         """Alias for validate_key_chain."""
         return self.validate_key_chain(chain, initial_key)
 
@@ -3930,9 +3821,7 @@ class PolyhedralHamiltonianDefense:
         elif attack_type == "curvature":
             # Inject sharp curvature kink
             for i in range(max(0, attack_idx - 2), min(n, attack_idx + 3)):
-                states[i] = (
-                    gamma[i] + np.sin(i * attack_magnitude) * attack_magnitude * 0.5
-                )
+                states[i] = gamma[i] + np.sin(i * attack_magnitude) * attack_magnitude * 0.5
 
         # Run intrusion detection
         timestamps = np.linspace(0, 1, n)
@@ -3955,9 +3844,7 @@ class PolyhedralHamiltonianDefense:
             P = self.polyhedra[idx]
             chi = P.euler_characteristic()
             lines.append(
-                f"{i+1:2d}. {P.name:30s} "
-                f"V={P.vertices:2d} E={P.edges:2d} F={P.faces:2d} "
-                f"χ={chi:2d} g={P.genus}"
+                f"{i+1:2d}. {P.name:30s} " f"V={P.vertices:2d} E={P.edges:2d} F={P.faces:2d} " f"χ={chi:2d} g={P.genus}"
             )
 
         return "\n".join(lines)
@@ -4015,11 +3902,7 @@ Defense Properties:
 """
 
     def __repr__(self) -> str:
-        return (
-            f"PolyhedralHamiltonianDefense("
-            f"n_polyhedra={len(self.polyhedra)}, "
-            f"ε_snap={self.epsilon_snap})"
-        )
+        return f"PolyhedralHamiltonianDefense(" f"n_polyhedra={len(self.polyhedra)}, " f"ε_snap={self.epsilon_snap})"
 
 
 # =============================================================================

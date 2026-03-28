@@ -193,10 +193,7 @@ class TriLatticeMembrane:
             self._centroid_count = 1
         else:
             n = self._centroid_count + 1
-            self._centroid = [
-                (c * self._centroid_count + t) / n
-                for c, t in zip(self._centroid, tongue_coords)
-            ]
+            self._centroid = [(c * self._centroid_count + t) / n for c, t in zip(self._centroid, tongue_coords)]
             self._centroid_count = n
 
     def _try_lattice25d(self, record: TriRecord, index: int) -> bool:
@@ -255,9 +252,7 @@ class TriLatticeMembrane:
             return "quasicrystal"  # high spin → strict acceptance window
         else:
             # Middle ground: use dominant tongue to decide
-            weighted = [
-                abs(c) * w for c, w in zip(record.tongue_coords, TONGUE_WEIGHTS)
-            ]
+            weighted = [abs(c) * w for c, w in zip(record.tongue_coords, TONGUE_WEIGHTS)]
             dom_idx = weighted.index(max(weighted))
             # Low-weight tongues (KO, AV, RU) → lattice25d
             # High-weight tongues (CA, UM, DR) → quasicrystal
@@ -276,9 +271,7 @@ class TriLatticeMembrane:
         record.spin = quantize_spin(record.tongue_coords, centroid, threshold=0.03)
 
         # Track tongue routing
-        self._tongue_routing[record.tongue] = (
-            self._tongue_routing.get(record.tongue, 0) + 1
-        )
+        self._tongue_routing[record.tongue] = self._tongue_routing.get(record.tongue, 0) + 1
 
         # -----------------------------------------------------------
         # SPIN-BASED ROUTING (not try-and-fallback order)
@@ -300,9 +293,7 @@ class TriLatticeMembrane:
             primary, secondary = "quasicrystal", "lattice25d"
         else:
             # Mid spin: use dominant tongue weight to decide
-            weighted = [
-                abs(c) * w for c, w in zip(record.tongue_coords, TONGUE_WEIGHTS)
-            ]
+            weighted = [abs(c) * w for c, w in zip(record.tongue_coords, TONGUE_WEIGHTS)]
             dom_idx = weighted.index(max(weighted))
             if dom_idx >= 3:  # CA, UM, DR → high-security tongues → quasicrystal
                 primary, secondary = "quasicrystal", "lattice25d"
@@ -345,9 +336,7 @@ class TriLatticeMembrane:
             target = self._sphere_feedback(record)
             self._feedback_count += 1
 
-            if target == "lattice25d" and self._try_lattice25d(
-                record, index + hop + 1000
-            ):
+            if target == "lattice25d" and self._try_lattice25d(record, index + hop + 1000):
                 record.accepted_by = f"lattice25d_feedback_{hop+1}"
                 self._lattice25d_count += 1
                 self._records[record.record_id] = record
@@ -399,9 +388,7 @@ class TriLatticeMembrane:
             sphere_feedback=self._feedback_count,
             polyhedral_fallback=self._fallback_count,
             rejection_count=self._rejection_count,
-            avg_feedback_hops=round(
-                sum(r.feedback_hops for r in self._records.values()) / max(1, total), 2
-            ),
+            avg_feedback_hops=round(sum(r.feedback_hops for r in self._records.values()) / max(1, total), 2),
             frustration_count=self._frustration_count,
             lattice25d_stats=self.lattice25d.stats(),
             quasicrystal_stats={

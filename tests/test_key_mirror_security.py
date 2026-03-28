@@ -9,9 +9,7 @@ from pathlib import Path
 import pytest
 
 if platform.system() != "Windows":
-    pytest.skip(
-        "Windows-only tests (requires ctypes.windll / DPAPI)", allow_module_level=True
-    )
+    pytest.skip("Windows-only tests (requires ctypes.windll / DPAPI)", allow_module_level=True)
 
 
 ROOT = Path(__file__).resolve().parents[1]

@@ -151,9 +151,7 @@ def tunnel_radius_4d(
     return spatial * temporal
 
 
-def fiber_volume(
-    d: float, t: float = 0.0, n_tongue: int = 6, R: float = R_BASE, r_max: float = R_MAX
-) -> float:
+def fiber_volume(d: float, t: float = 0.0, n_tongue: int = 6, R: float = R_BASE, r_max: float = R_MAX) -> float:
     """
     Volume of the N-dimensional fiber at (d, t).
 
@@ -165,11 +163,7 @@ def fiber_volume(
 
     This is the agent's total "freedom of action" in multi-D space.
     """
-    r = (
-        tunnel_radius_4d(d, t, R=R, r_max=r_max)
-        if t > 0
-        else tunnel_radius(d, R, r_max)
-    )
+    r = tunnel_radius_4d(d, t, R=R, r_max=r_max) if t > 0 else tunnel_radius(d, R, r_max)
     n = n_tongue
     # Volume of n-ball
     half_n = n / 2.0
@@ -239,11 +233,7 @@ def compute_portals(
     4. Quarantined agents get NO portals
     """
     zone = _d_to_level(d)
-    tr = (
-        tunnel_radius_4d(d, t, R=R, r_max=r_max)
-        if t > 0
-        else tunnel_radius(d, R, r_max)
-    )
+    tr = tunnel_radius_4d(d, t, R=R, r_max=r_max) if t > 0 else tunnel_radius(d, R, r_max)
     cost_base = R ** (d**2)  # Harmonic wall
 
     portals = []
@@ -488,9 +478,7 @@ def ascii_tunnel_slice(
 
     lines.append(f"  ╔══ Garganta Slice @ d={d:.2f}, t={t:.1f} ══╗")
     lines.append(f"  ║ Zone: {ts.zone.value:<12}  Freedom: {ts.freedom_pct:.1f}%")
-    lines.append(
-        f"  ║ Radius: {ts.tunnel_r:.4f}    Portals: {sum(1 for p in ts.portals if p.is_accessible)}/6"
-    )
+    lines.append(f"  ║ Radius: {ts.tunnel_r:.4f}    Portals: {sum(1 for p in ts.portals if p.is_accessible)}/6")
     lines.append(f"  ╚{'═' * 38}╝")
     lines.append("")
 
@@ -502,14 +490,10 @@ def ascii_tunnel_slice(
             dist = math.sqrt(x * x + y * y)
             if abs(dist - r_chars) < 1.5:
                 # Wall — check for portal
-                portal_idx = int(
-                    (math.atan2(y, x) + math.pi) / (2 * math.pi) * len(SACRED_TONGUES)
-                )
+                portal_idx = int((math.atan2(y, x) + math.pi) / (2 * math.pi) * len(SACRED_TONGUES))
                 portal_idx = min(portal_idx, len(SACRED_TONGUES) - 1)
                 tongue = SACRED_TONGUES[portal_idx]
-                is_open = any(
-                    p.tongue == tongue and p.is_accessible for p in ts.portals
-                )
+                is_open = any(p.tongue == tongue and p.is_accessible for p in ts.portals)
                 row_chars.append(tongue[0] if is_open else "█")
             elif dist < r_chars:
                 if abs(x) < 1 and abs(y) < 1:
@@ -521,12 +505,7 @@ def ascii_tunnel_slice(
         lines.append("  " + "".join(row_chars))
 
     lines.append("")
-    lines.append(
-        "  Portals: "
-        + " ".join(
-            f"[{p.tongue}]" if p.is_accessible else f" {p.tongue} " for p in ts.portals
-        )
-    )
+    lines.append("  Portals: " + " ".join(f"[{p.tongue}]" if p.is_accessible else f" {p.tongue} " for p in ts.portals))
 
     return "\n".join(lines)
 
@@ -606,9 +585,7 @@ def ascii_journey(
     lines.append("")
     lines.append("  " + "═" * (width + 20))
     lines.append("  ░ ON_TRACK  ▒ GENTLE  ▓ REDIRECT  █ INSPECT  ╳ QUARANTINE")
-    lines.append(
-        "  ◆ Agent  │ Tunnel Wall  K/A/R/C/U/D = Portal to Sacred Tongue realm"
-    )
+    lines.append("  ◆ Agent  │ Tunnel Wall  K/A/R/C/U/D = Portal to Sacred Tongue realm")
     lines.append("")
 
     # Freedom summary
@@ -622,9 +599,7 @@ def ascii_journey(
         z_val = _d_to_level(d_val)
         portals = compute_portals(d_val, 0.0, agent_tier)
         n_open = sum(1 for p in portals if p.is_accessible)
-        lines.append(
-            f"  │ {d_val:>5.1f}   │ {r_val:>8.4f} │ {f_val:>8.3f}%  │ {z_val.value:<12} │ {n_open}/6     │"
-        )
+        lines.append(f"  │ {d_val:>5.1f}   │ {r_val:>8.4f} │ {f_val:>8.3f}%  │ {z_val.value:<12} │ {n_open}/6     │")
     lines.append("  └─────────┴──────────┴───────────┴──────────────┴─────────┘")
 
     return "\n".join(lines)

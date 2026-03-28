@@ -465,7 +465,7 @@ class SymphonicGovernor:
         skipped = 0
         contracted = 0
 
-        for i, (user_input, response) in enumerate(interactions):
+        for i, (_user_input, response) in enumerate(interactions):
             sim_t = i * (math.pi / len(interactions)) if interactions else 0
             report = self.review(response, sim_time=sim_t)
             reports.append(report)
@@ -497,9 +497,7 @@ class SymphonicGovernor:
             skipped_updates=skipped,
             contracted_updates=contracted,
             mean_L=round(sum(L_vals) / max(len(L_vals), 1), 4),
-            mean_consonance=round(
-                sum(consonance_vals) / max(len(consonance_vals), 1), 4
-            ),
+            mean_consonance=round(sum(consonance_vals) / max(len(consonance_vals), 1), 4),
             grade_distribution=grade_dist,
             decision_distribution=decision_dist,
         )
@@ -518,10 +516,7 @@ class SymphonicGovernor:
             "L_mean": round(sum(self._L_history) / len(self._L_history), 4),
             "L_std": round(
                 math.sqrt(
-                    sum(
-                        (v - sum(self._L_history) / len(self._L_history)) ** 2
-                        for v in self._L_history
-                    )
+                    sum((v - sum(self._L_history) / len(self._L_history)) ** 2 for v in self._L_history)
                     / len(self._L_history)
                 ),
                 4,
@@ -531,8 +526,7 @@ class SymphonicGovernor:
             "grade_negative": sum(1 for g in self._grade_history if g == -1),
             "pi_cycles_completed": self._cycle_count,
             "harmonic_stability": round(
-                sum(1 for g in self._grade_history if g >= 0)
-                / max(len(self._grade_history), 1),
+                sum(1 for g in self._grade_history if g >= 0) / max(len(self._grade_history), 1),
                 4,
             ),
             "rome_class_events": sum(1 for L in self._L_history if L > L_BASE * 5),
@@ -615,9 +609,7 @@ def run_control_and_test_batches(
     results["HARMONIC_A"] = gov_a.run_batch(interactions, "HARMONIC_A", "harmonic")
 
     # TEST B: Dissonant (adversarial inputs)
-    gov_b = SymphonicGovernor(
-        beta_base=1.2, allow_threshold=1.2, quarantine_threshold=2.0
-    )
+    gov_b = SymphonicGovernor(beta_base=1.2, allow_threshold=1.2, quarantine_threshold=2.0)
     results["DISSONANT_B"] = gov_b.run_batch(adversarial, "DISSONANT_B", "adversarial")
 
     # TEST C: Stellar (recovery with cosmic modulation)

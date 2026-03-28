@@ -44,9 +44,7 @@ class TokenPackage:
 
 
 TOKEN_PACKAGES: Tuple[TokenPackage, ...] = (
-    TokenPackage(
-        "starter", "Starter Pack", 100, 4.99, 0, "100 Energy Tokens — ~5 dungeon runs"
-    ),
+    TokenPackage("starter", "Starter Pack", 100, 4.99, 0, "100 Energy Tokens — ~5 dungeon runs"),
     TokenPackage(
         "adventurer",
         "Adventurer Pack",
@@ -87,23 +85,13 @@ class ActivityCost:
 
 
 ACTIVITY_COSTS: Dict[str, ActivityCost] = {
-    "dungeon_run": ActivityCost(
-        "dungeon_run", 20, "Run a dungeon floor (5 encounters + boss)"
-    ),
+    "dungeon_run": ActivityCost("dungeon_run", 20, "Run a dungeon floor (5 encounters + boss)"),
     "tower_floor": ActivityCost("tower_floor", 15, "Attempt one tower floor"),
-    "companion_training": ActivityCost(
-        "companion_training", 30, "AI fine-tune session for one companion"
-    ),
+    "companion_training": ActivityCost("companion_training", 30, "AI fine-tune session for one companion"),
     "fleet_battle": ActivityCost("fleet_battle", 10, "Fleet formation battle"),
-    "codex_deep_query": ActivityCost(
-        "codex_deep_query", 5, "Extended codex research session"
-    ),
-    "evolution_ceremony": ActivityCost(
-        "evolution_ceremony", 50, "Evolution ceremony with model checkpoint"
-    ),
-    "world_simulation": ActivityCost(
-        "world_simulation", 100, "24h autonomous world simulation tick"
-    ),
+    "codex_deep_query": ActivityCost("codex_deep_query", 5, "Extended codex research session"),
+    "evolution_ceremony": ActivityCost("evolution_ceremony", 50, "Evolution ceremony with model checkpoint"),
+    "world_simulation": ActivityCost("world_simulation", 100, "24h autonomous world simulation tick"),
 }
 
 
@@ -171,9 +159,7 @@ class EnergyWallet:
 
     # ----- Purchase (Stripe → Tokens) -----
 
-    def record_purchase(
-        self, package_id: str, stripe_payment_id: str
-    ) -> Optional[PurchaseRecord]:
+    def record_purchase(self, package_id: str, stripe_payment_id: str) -> Optional[PurchaseRecord]:
         pkg = next((p for p in TOKEN_PACKAGES if p.package_id == package_id), None)
         if pkg is None:
             return None
@@ -237,9 +223,7 @@ class EnergyWallet:
     # ----- Refund -----
 
     def process_refund(self, purchase_id: str) -> Tuple[bool, int]:
-        purchase = next(
-            (p for p in self._purchases if p.purchase_id == purchase_id), None
-        )
+        purchase = next((p for p in self._purchases if p.purchase_id == purchase_id), None)
         if purchase is None or purchase.status != "completed":
             return (False, 0)
 
@@ -275,8 +259,6 @@ class EnergyWallet:
             "total_consumed": self._total_consumed,
             "purchase_count": len(self._purchases),
             "activity_count": len(self._consumptions),
-            "training_data_generated": sum(
-                1 for c in self._consumptions if c.generated_training_data
-            ),
+            "training_data_generated": sum(1 for c in self._consumptions if c.generated_training_data),
             "compute_hours_remaining": (self._balance * SECONDS_PER_TOKEN) / 3600,
         }

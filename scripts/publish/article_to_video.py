@@ -732,7 +732,7 @@ def generate_code_slide(code: str, lang: str, output_path: Path) -> None:
     y = panel_top + 20
     x = panel_margin + 30
     max_code_lines = 28
-    for i, (line_text, line_color) in enumerate(highlighted_lines[:max_code_lines]):
+    for _i, (line_text, line_color) in enumerate(highlighted_lines[:max_code_lines]):
         if y > panel_bottom - 30:
             draw.text((x, y), "...", fill=MUTED_COLOR, font=code_font)
             break

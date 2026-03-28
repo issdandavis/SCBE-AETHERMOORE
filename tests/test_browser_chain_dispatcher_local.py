@@ -10,9 +10,7 @@ import pytest
 def _load_dispatcher_module():
     repo_root = Path(__file__).resolve().parents[1]
     script_path = repo_root / "scripts" / "system" / "browser_chain_dispatcher.py"
-    spec = importlib.util.spec_from_file_location(
-        "browser_chain_dispatcher_module", script_path
-    )
+    spec = importlib.util.spec_from_file_location("browser_chain_dispatcher_module", script_path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Unable to load dispatcher module from {script_path}")
     module = importlib.util.module_from_spec(spec)
@@ -37,9 +35,7 @@ def _build_dispatcher():
         ("http://127.0.0.1:8500/arena", "127.0.0.1"),
     ],
 )
-def test_local_preview_surfaces_route_to_preview_tentacle(
-    domain: str, expected_host: str
-):
+def test_local_preview_surfaces_route_to_preview_tentacle(domain: str, expected_host: str):
     dispatcher = _build_dispatcher()
 
     result = dispatcher.assign_task(domain, "navigate", {})

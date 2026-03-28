@@ -43,9 +43,7 @@ def test_gh_doctor_json_reports_blockers(monkeypatch, capsys) -> None:
         },
     )
 
-    args = argparse.Namespace(
-        repo_root=str(ROOT), pr=None, verify=False, limit=5, json_output=True
-    )
+    args = argparse.Namespace(repo_root=str(ROOT), pr=None, verify=False, limit=5, json_output=True)
     rc = scbe_system_cli.cmd_gh_doctor(args)
     assert rc == 0
 
@@ -89,9 +87,7 @@ def test_gh_sweep_json_combines_sections_and_fix_lane(monkeypatch, capsys) -> No
             "open_scan_alerts": 2,
         },
     )
-    monkeypatch.setattr(
-        scbe_system_cli, "_gh_release_payload", lambda: {"tagName": "v9.9.9"}
-    )
+    monkeypatch.setattr(scbe_system_cli, "_gh_release_payload", lambda: {"tagName": "v9.9.9"})
     monkeypatch.setattr(scbe_system_cli.subprocess, "call", lambda cmd: 0)
 
     args = argparse.Namespace(

@@ -183,8 +183,7 @@ class LanguageGraph:
         return [
             e
             for e in self._edges
-            if (e.lang_a == lang_a and e.lang_b == lang_b)
-            or (e.lang_a == lang_b and e.lang_b == lang_a)
+            if (e.lang_a == lang_a and e.lang_b == lang_b) or (e.lang_a == lang_b and e.lang_b == lang_a)
         ]
 
     def shortest_path(self, src_lang: str, dst_lang: str) -> list[str]:
@@ -241,9 +240,7 @@ class LanguageGraph:
         """List all language codes in the graph."""
         return sorted(self._nodes)
 
-    def related_languages(
-        self, lang: str, min_strength: float = 0.3
-    ) -> list[tuple[str, float]]:
+    def related_languages(self, lang: str, min_strength: float = 0.3) -> list[tuple[str, float]]:
         """Find languages related to the given one, sorted by strength."""
         edges = self.get_edges(lang)
         related: dict[str, float] = {}

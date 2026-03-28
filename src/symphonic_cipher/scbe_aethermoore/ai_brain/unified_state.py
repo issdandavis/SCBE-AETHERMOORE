@@ -54,9 +54,7 @@ def apply_golden_weighting(vector: List[float]) -> List[float]:
     return [v * w for v, w in zip(vector, GOLDEN_WEIGHTS)]
 
 
-def safe_poincare_embed(
-    vector: List[float], epsilon: float = BRAIN_EPSILON
-) -> List[float]:
+def safe_poincare_embed(vector: List[float], epsilon: float = BRAIN_EPSILON) -> List[float]:
     """Embed a vector into the Poincare ball with numerically stable boundary clamping.
 
     Uses exponential map from origin: exp_0(v) = tanh(||v||/2) * v/||v||.
@@ -233,9 +231,7 @@ class UnifiedBrainState:
 
     def distance_to(self, other: "UnifiedBrainState") -> float:
         """Compute hyperbolic distance to another brain state."""
-        return hyperbolic_distance_safe(
-            self.to_poincare_point(), other.to_poincare_point()
-        )
+        return hyperbolic_distance_safe(self.to_poincare_point(), other.to_poincare_point())
 
     def distance_from_origin(self) -> float:
         """Compute distance from the safe origin (center of Poincare ball)."""
@@ -314,14 +310,8 @@ class UnifiedBrainState:
                 time_of_day=0.5,
                 intent_alignment=1,
             ),
-            navigation=NavigationVector(
-                x=0, y=0, z=0, time=0, priority=0.5, confidence=1
-            ),
+            navigation=NavigationVector(x=0, y=0, z=0, time=0, priority=0.5, confidence=1),
             cognitive_position=CognitivePosition(px=0, py=0, pz=0),
-            semantic_phase=SemanticPhase(
-                active_tongue=0, phase_angle=0, tongue_weight=1
-            ),
-            swarm_coordination=SwarmCoordination(
-                trust_score=1, byzantine_votes=0, spectral_coherence=1
-            ),
+            semantic_phase=SemanticPhase(active_tongue=0, phase_angle=0, tongue_weight=1),
+            swarm_coordination=SwarmCoordination(trust_score=1, byzantine_votes=0, spectral_coherence=1),
         )

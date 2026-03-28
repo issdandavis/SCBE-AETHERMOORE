@@ -272,9 +272,7 @@ def sacred_egg_genesis(tongue: str, tier: int = 1, payload: bytes = b"") -> np.n
     for d in range(6):
         # Each dimension gets a phase-shifted component
         phase = angle + d * math.pi / 6
-        manifold[d] = (
-            radial_depth * math.sin(phase) * TONGUE_WEIGHTS[TONGUE_KEYS[d % 6]] / 11.09
-        )
+        manifold[d] = radial_depth * math.sin(phase) * TONGUE_WEIGHTS[TONGUE_KEYS[d % 6]] / 11.09
 
     # GeoSeal binding: cryptographic fingerprint of the birth
     seal_material = f"{tongue}:{tier}:{payload.hex() if payload else 'empty'}"
@@ -381,10 +379,7 @@ class TetrisEmbedder:
         chunk = dim // 6
         raw_tc = np.zeros(6)
         for i in range(6):
-            raw_tc[i] = (
-                np.mean(rotated[i * chunk : (i + 1) * chunk])
-                * TONGUE_WEIGHTS[TONGUE_KEYS[i]]
-            )
+            raw_tc[i] = np.mean(rotated[i * chunk : (i + 1) * chunk]) * TONGUE_WEIGHTS[TONGUE_KEYS[i]]
 
         # Blend: 70% learned (from text) + 30% innate (from egg)
         blended_tc = raw_tc * 0.7 + genesis * 0.3
@@ -418,15 +413,10 @@ class TetrisEmbedder:
             tiers = [1] * len(texts)
 
         # Step 1: Augment all texts
-        augmented = [
-            augment_text(t, tongue, tier)
-            for t, tongue, tier in zip(texts, tongues, tiers)
-        ]
+        augmented = [augment_text(t, tongue, tier) for t, tongue, tier in zip(texts, tongues, tiers)]
 
         # Step 2: Batch embed
-        raw_embs = model.encode(
-            augmented, normalize_embeddings=True, show_progress_bar=len(texts) > 20
-        )
+        raw_embs = model.encode(augmented, normalize_embeddings=True, show_progress_bar=len(texts) > 20)
 
         results = []
         for i in range(len(texts)):
@@ -444,10 +434,7 @@ class TetrisEmbedder:
             chunk = dim // 6
             raw_tc = np.zeros(6)
             for d in range(6):
-                raw_tc[d] = (
-                    np.mean(rotated[d * chunk : (d + 1) * chunk])
-                    * TONGUE_WEIGHTS[TONGUE_KEYS[d]]
-                )
+                raw_tc[d] = np.mean(rotated[d * chunk : (d + 1) * chunk]) * TONGUE_WEIGHTS[TONGUE_KEYS[d]]
 
             # Blend: 70% learned + 30% innate
             blended_tc = raw_tc * 0.7 + genesis * 0.3

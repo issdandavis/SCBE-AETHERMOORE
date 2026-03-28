@@ -84,9 +84,7 @@ def get_logger(name, tongue=None, layer=None, level=logging.INFO):
     # Console handler with tongue colors
     ch = logging.StreamHandler()
     ch.setLevel(level)
-    ch.setFormatter(
-        SCBEFormatter("%(asctime)s %(levelname)-8s %(message)s", datefmt="%H:%M:%S")
-    )
+    ch.setFormatter(SCBEFormatter("%(asctime)s %(levelname)-8s %(message)s", datefmt="%H:%M:%S"))
     logger.addHandler(ch)
 
     # JSON file handler

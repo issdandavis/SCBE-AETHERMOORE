@@ -32,9 +32,7 @@ TELEMETRY_DIM = 9
 # Default weighting and scaling for telemetry block.
 # Last two (radial_norm, energy_harmonic) are derived cache slots and default to zero weight
 # to avoid double-counting geometry.
-DEFAULT_TELEMETRY_WEIGHTS = np.array(
-    [1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.0, 0.0], dtype=float
-)
+DEFAULT_TELEMETRY_WEIGHTS = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.0, 0.0], dtype=float)
 DEFAULT_TELEMETRY_SCALES = np.ones(TELEMETRY_DIM, dtype=float)
 
 
@@ -97,9 +95,7 @@ def _wrap_angle_delta(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     return np.arctan2(np.sin(a - b), np.cos(a - b))
 
 
-def hyperbolic_distance_poincare(
-    u: np.ndarray, v: np.ndarray, eps: float = 1e-12
-) -> float:
+def hyperbolic_distance_poincare(u: np.ndarray, v: np.ndarray, eps: float = 1e-12) -> float:
     uu = float(np.dot(u, u))
     vv = float(np.dot(v, v))
     if uu >= 1.0 or vv >= 1.0:
@@ -184,11 +180,7 @@ def product_metric_distance_v1(
     sb = parse_state21_v1(b)
 
     w = np.asarray(
-        (
-            telemetry_weights
-            if telemetry_weights is not None
-            else DEFAULT_TELEMETRY_WEIGHTS
-        ),
+        (telemetry_weights if telemetry_weights is not None else DEFAULT_TELEMETRY_WEIGHTS),
         dtype=float,
     )
     s = np.asarray(

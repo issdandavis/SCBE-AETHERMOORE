@@ -354,7 +354,7 @@ class CrossReferenceEngine:
         """
         # Gather candidate identifiers from identifiers dict.
         explicit_ids: Set[str] = set()
-        for key, val in identifiers.items():
+        for _key, val in identifiers.items():
             explicit_ids.add(val)
 
         # Gather candidate identifiers by regex from text.

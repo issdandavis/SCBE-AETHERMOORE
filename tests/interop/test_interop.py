@@ -63,9 +63,7 @@ class TestSectionMapping:
             # Check token encoding
             input_bytes = bytes.fromhex(vector["input_hex"])
             expected = vector["expected_tokens"]
-            actual = SACRED_TONGUE_TOKENIZER.encode_section(
-                vector["section"], input_bytes
-            )
+            actual = SACRED_TONGUE_TOKENIZER.encode_section(vector["section"], input_bytes)
             assert actual == expected
 
 
@@ -115,12 +113,8 @@ class TestTongueSpecs:
             assert spec.suffixes[15] == vector["last_suffix"]
 
             # Verify sample tokens
-            token_00 = SACRED_TONGUE_TOKENIZER.encode_bytes(vector["tongue"], b"\x00")[
-                0
-            ]
-            token_ff = SACRED_TONGUE_TOKENIZER.encode_bytes(vector["tongue"], b"\xff")[
-                0
-            ]
+            token_00 = SACRED_TONGUE_TOKENIZER.encode_bytes(vector["tongue"], b"\x00")[0]
+            token_ff = SACRED_TONGUE_TOKENIZER.encode_bytes(vector["tongue"], b"\xff")[0]
             assert token_00 == vector["sample_token_0x00"]
             assert token_ff == vector["sample_token_0xFF"]
 
@@ -190,9 +184,7 @@ class TestCrossLanguageTokens:
 
         for tongue, byte_val, expected_token in test_cases:
             actual = SACRED_TONGUE_TOKENIZER.encode_bytes(tongue, bytes([byte_val]))[0]
-            assert (
-                actual == expected_token
-            ), f"Mismatch: {tongue}[{byte_val}] = {actual}, expected {expected_token}"
+            assert actual == expected_token, f"Mismatch: {tongue}[{byte_val}] = {actual}, expected {expected_token}"
 
 
 class TestSummary:

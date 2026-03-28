@@ -35,13 +35,8 @@ def test_process_packet_blocks_when_source_cannot_be_resolved(tmp_path: Path) ->
 
     assert summary["status"] == "blocked-source"
     assert summary["source_verification"]["ok"] is False
-    assert (
-        "source_markdown could not be resolved"
-        in summary["source_verification"]["errors"]
-    )
-    assert (
-        "key_script could not be resolved" in summary["source_verification"]["errors"]
-    )
+    assert "source_markdown could not be resolved" in summary["source_verification"]["errors"]
+    assert "key_script could not be resolved" in summary["source_verification"]["errors"]
 
 
 def test_process_packet_blocks_when_prompt_governance_fails(tmp_path: Path) -> None:
@@ -82,15 +77,10 @@ def test_process_packet_blocks_when_prompt_governance_fails(tmp_path: Path) -> N
 
     assert summary["status"] == "blocked-prompt"
     assert summary["prompt_governance"]["approved"] is False
-    assert any(
-        "unknown character 'mystery_guest'" in error
-        for error in summary["prompt_governance"]["errors"]
-    )
+    assert any("unknown character 'mystery_guest'" in error for error in summary["prompt_governance"]["errors"])
 
 
-def test_process_packet_writes_governed_packet_before_render(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_process_packet_writes_governed_packet_before_render(tmp_path: Path, monkeypatch) -> None:
     source_path = tmp_path / "source.md"
     source_path.write_text("# chapter", encoding="utf-8")
     key_script_path = tmp_path / "script.md"
@@ -123,9 +113,7 @@ def test_process_packet_writes_governed_packet_before_render(
         packet = json.loads(Path(packet_path_arg).read_text(encoding="utf-8"))
         chapter_id = str(packet.get("chapter_id") or "packet")
         manifest_path = (
-            Path(output_root or tmp_path / "out")
-            / chapter_id
-            / f"{Path(packet_path_arg).stem}_router_manifest.json"
+            Path(output_root or tmp_path / "out") / chapter_id / f"{Path(packet_path_arg).stem}_router_manifest.json"
         )
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         manifest_path.write_text(
@@ -160,9 +148,7 @@ def test_process_packet_writes_governed_packet_before_render(
     assert source_report_path.exists()
     assert prompt_report_path.exists()
     assert governed_packet_path.exists()
-    assert governed_packet["panels"][0]["compiled_prompt"].startswith(
-        "manhwa webtoon panel"
-    )
+    assert governed_packet["panels"][0]["compiled_prompt"].startswith("manhwa webtoon panel")
     assert governed_packet["panels"][0]["negative_prompt"]
     assert summary["render"]["ok"] == 1
 
@@ -214,9 +200,7 @@ def test_source_stage_falls_back_to_direct_reader_source_and_title_matched_key_s
         "READER_EDITION_DIR",
         root / "content" / "book" / "reader-edition",
     )
-    monkeypatch.setattr(
-        render_full_book_router, "lookup_episode_metadata", lambda **_: None
-    )
+    monkeypatch.setattr(render_full_book_router, "lookup_episode_metadata", lambda **_: None)
 
     resolved_packet, report = render_full_book_router.source_stage(
         json.loads(packet_path.read_text(encoding="utf-8")), packet_path

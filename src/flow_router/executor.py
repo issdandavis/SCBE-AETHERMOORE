@@ -21,9 +21,7 @@ from .schema import (
     NodeStatus,
 )
 
-NodeHandler = Callable[
-    [dict[str, Any], dict[str, Any], FlowExecutionState], dict[str, Any]
-]
+NodeHandler = Callable[[dict[str, Any], dict[str, Any], FlowExecutionState], dict[str, Any]]
 
 
 @dataclass
@@ -50,9 +48,7 @@ class InMemoryFlowCache:
 
     def set(self, key: str, output: dict[str, Any], ttl_seconds: int | None) -> None:
         expires_at = None if ttl_seconds is None else self._now_fn() + ttl_seconds
-        self._entries[key] = _CacheEntry(
-            output=copy.deepcopy(output), expires_at=expires_at
-        )
+        self._entries[key] = _CacheEntry(output=copy.deepcopy(output), expires_at=expires_at)
 
 
 class NodeRegistry:
@@ -96,9 +92,7 @@ class FlowExecutor:
 
     def load_workflow(self, payload: dict[str, Any]) -> FlowDefinition:
         workflow_id = str(payload.get("workflow_id") or payload.get("id") or "").strip()
-        start_node_id = str(
-            payload.get("start_node_id") or payload.get("start_at") or ""
-        ).strip()
+        start_node_id = str(payload.get("start_node_id") or payload.get("start_at") or "").strip()
         if not workflow_id:
             raise FlowValidationError("Workflow id is required.")
         node_payloads = payload.get("nodes")
@@ -115,23 +109,14 @@ class FlowExecutor:
             nodes[node.node_id] = node
 
         if start_node_id not in nodes:
-            raise FlowValidationError(
-                f"Workflow start node '{start_node_id}' does not exist."
-            )
+            raise FlowValidationError(f"Workflow start node '{start_node_id}' does not exist.")
 
-        edges = tuple(
-            FlowEdgeDefinition.from_dict(edge_payload)
-            for edge_payload in payload.get("edges", [])
-        )
+        edges = tuple(FlowEdgeDefinition.from_dict(edge_payload) for edge_payload in payload.get("edges", []))
         for edge in edges:
             if edge.source not in nodes:
-                raise FlowValidationError(
-                    f"Edge source '{edge.source}' does not exist."
-                )
+                raise FlowValidationError(f"Edge source '{edge.source}' does not exist.")
             if edge.target not in nodes:
-                raise FlowValidationError(
-                    f"Edge target '{edge.target}' does not exist."
-                )
+                raise FlowValidationError(f"Edge target '{edge.target}' does not exist.")
 
         return FlowDefinition(
             workflow_id=workflow_id,
@@ -159,9 +144,7 @@ class FlowExecutor:
         current_node_id = workflow.start_node_id
         while current_node_id:
             node = workflow.nodes[current_node_id]
-            record = run.node_records.setdefault(
-                current_node_id, NodeExecutionRecord(node_id=current_node_id)
-            )
+            record = run.node_records.setdefault(current_node_id, NodeExecutionRecord(node_id=current_node_id))
             try:
                 output = self._execute_node(workflow, node, run, record)
             except FlowQuarantineError as exc:
@@ -217,9 +200,7 @@ class FlowExecutor:
             try:
                 output = handler(copy.deepcopy(resolved_config), run.context, state)
                 if not isinstance(output, dict):
-                    raise FlowQuarantineError(
-                        f"Node '{node.node_id}' returned a non-object payload."
-                    )
+                    raise FlowQuarantineError(f"Node '{node.node_id}' returned a non-object payload.")
                 record.status = NodeStatus.COMPLETED
                 record.output = copy.deepcopy(output)
                 record.error = None
@@ -234,9 +215,7 @@ class FlowExecutor:
                 if not node.retryable or attempt >= attempts_allowed:
                     break
 
-        raise FlowQuarantineError(
-            f"Node '{node.node_id}' failed after {record.attempts} attempt(s): {last_error}"
-        )
+        raise FlowQuarantineError(f"Node '{node.node_id}' failed after {record.attempts} attempt(s): {last_error}")
 
     def _next_node_id(
         self,
@@ -252,21 +231,15 @@ class FlowExecutor:
         if branch_edges:
             result = output.get("result")
             if not isinstance(result, bool):
-                raise FlowQuarantineError(
-                    f"Condition node '{node.node_id}' did not return a boolean result."
-                )
+                raise FlowQuarantineError(f"Condition node '{node.node_id}' did not return a boolean result.")
             route = "true" if result else "false"
             matches = [edge for edge in branch_edges if edge.when == route]
             if len(matches) != 1:
-                raise FlowQuarantineError(
-                    f"Condition node '{node.node_id}' is missing route '{route}'."
-                )
+                raise FlowQuarantineError(f"Condition node '{node.node_id}' is missing route '{route}'.")
             return matches[0].target
 
         if len(outgoing) > 1:
-            raise FlowQuarantineError(
-                f"Node '{node.node_id}' has ambiguous outgoing edges."
-            )
+            raise FlowQuarantineError(f"Node '{node.node_id}' has ambiguous outgoing edges.")
         return outgoing[0].target
 
     def _resolve_value(self, value: Any, context: dict[str, Any]) -> Any:
@@ -275,9 +248,7 @@ class FlowExecutor:
         if isinstance(value, list):
             return [self._resolve_value(item, context) for item in value]
         if isinstance(value, dict):
-            return {
-                key: self._resolve_value(item, context) for key, item in value.items()
-            }
+            return {key: self._resolve_value(item, context) for key, item in value.items()}
         return value
 
     def _resolve_reference(self, token: str, context: dict[str, Any]) -> Any:

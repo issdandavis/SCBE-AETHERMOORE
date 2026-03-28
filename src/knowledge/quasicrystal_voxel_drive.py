@@ -107,8 +107,7 @@ class QuasiCrystalVoxelDrive:
         # Storage
         self.cells: dict[str, VoxelCell] = {}
         self.tensor_slabs: dict[str, TensorSlab] = {
-            name: TensorSlab(tongue=name, tongue_index=i, cells={})
-            for i, name in enumerate(TONGUE_NAMES)
+            name: TensorSlab(tongue=name, tongue_index=i, cells={}) for i, name in enumerate(TONGUE_NAMES)
         }
         self.depth_trees: dict[str, list] = {}
         self.content_store: dict[str, bytes] = {}  # cell_id -> encoded bytes
@@ -173,9 +172,7 @@ class QuasiCrystalVoxelDrive:
     def _chladni_encode(self, data: bytes, n: int, m: int) -> bytes:
         """Cymatic encode: XOR data with Chladni-derived key stream."""
         # Generate key stream from Chladni pattern
-        key_seed = hashlib.sha256(
-            f"chladni:{n}:{m}:{self._phason_epoch}".encode()
-        ).digest()
+        key_seed = hashlib.sha256(f"chladni:{n}:{m}:{self._phason_epoch}".encode()).digest()
         key_stream = bytearray()
         block = key_seed
         while len(key_stream) < len(data):
@@ -196,10 +193,7 @@ class QuasiCrystalVoxelDrive:
 
     def _tensor_index(self, coords: list) -> list:
         """Convert float coords to integer tensor indices."""
-        return [
-            max(0, min(self.resolution - 1, int((c + 1) / 2 * self.resolution)))
-            for c in coords
-        ]
+        return [max(0, min(self.resolution - 1, int((c + 1) / 2 * self.resolution))) for c in coords]
 
     def store(
         self,
@@ -348,10 +342,7 @@ class QuasiCrystalVoxelDrive:
         results = []
         for cell_id, cell in self.cells.items():
             dist = math.sqrt(
-                sum(
-                    (a - b) ** 2 * w
-                    for a, b, w in zip(coords, cell.tongue_coords, TONGUE_WEIGHTS)
-                )
+                sum((a - b) ** 2 * w for a, b, w in zip(coords, cell.tongue_coords, TONGUE_WEIGHTS))
             ) / sum(TONGUE_WEIGHTS)
             if dist < radius:
                 results.append((cell_id, dist))
@@ -376,9 +367,7 @@ class QuasiCrystalVoxelDrive:
                 dict(
                     sorted(
                         {
-                            cat: sum(
-                                1 for c in self.cells.values() if c.category == cat
-                            )
+                            cat: sum(1 for c in self.cells.values() if c.category == cat)
                             for cat in {c.category for c in self.cells.values()}
                         }.items()
                     )

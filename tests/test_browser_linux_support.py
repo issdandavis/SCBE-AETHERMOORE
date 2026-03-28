@@ -45,9 +45,7 @@ def test_resolve_chrome_binary_linux_checks_common_names(monkeypatch):
 def test_get_chrome_launch_command_quotes_linux_path(monkeypatch):
     module = importlib.import_module("agents.browsers.cdp_backend")
 
-    monkeypatch.setattr(
-        module, "resolve_chrome_binary", lambda system=None: "/opt/Google Chrome/chrome"
-    )
+    monkeypatch.setattr(module, "resolve_chrome_binary", lambda system=None: "/opt/Google Chrome/chrome")
 
     cmd = module.get_chrome_launch_command(port=9333, user_data_dir="/tmp/scbe profile")
 
@@ -84,9 +82,7 @@ def test_playwright_wrapper_respects_explicit_channel_over_linux_detection(monke
     monkeypatch.setattr(module.platform, "system", lambda: "Linux")
     monkeypatch.setattr(module.shutil, "which", lambda _name: "/usr/bin/google-chrome")
 
-    wrapper = module.PlaywrightWrapper(
-        module.BrowserConfig(headless=False, browser_channel="chrome")
-    )
+    wrapper = module.PlaywrightWrapper(module.BrowserConfig(headless=False, browser_channel="chrome"))
     options = wrapper._build_launch_options()
 
     assert options == {"headless": False, "channel": "chrome"}

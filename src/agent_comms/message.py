@@ -81,9 +81,7 @@ class AgentMessage:
 
     def __post_init__(self):
         if not self.message_id:
-            self.message_id = hashlib.sha256(
-                f"{self.sender_id}:{time.time()}:{id(self)}".encode()
-            ).hexdigest()[:16]
+            self.message_id = hashlib.sha256(f"{self.sender_id}:{time.time()}:{id(self)}".encode()).hexdigest()[:16]
         if not self.nonce:
             import os
 
@@ -185,9 +183,7 @@ class AgentMessage:
         )
         return msg
 
-    def create_response(
-        self, payload: Dict[str, Any], tongue: Optional[str] = None
-    ) -> "AgentMessage":
+    def create_response(self, payload: Dict[str, Any], tongue: Optional[str] = None) -> "AgentMessage":
         """Create a response message to this message."""
         return AgentMessage(
             sender_id=self.recipient_id,

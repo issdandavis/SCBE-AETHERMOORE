@@ -125,11 +125,7 @@ def _tenant_view(record: Dict[str, Any]) -> Dict[str, Any]:
         "governance_profile": record["governance_profile"],
         "region": record["region"],
         "plan_limits": record["plan_limits"],
-        "flock_count": sum(
-            1
-            for flock in SAAS_FLOCKS.values()
-            if flock["tenant_id"] == record["tenant_id"]
-        ),
+        "flock_count": sum(1 for flock in SAAS_FLOCKS.values() if flock["tenant_id"] == record["tenant_id"]),
         "created_at": record["created_at"],
         "updated_at": record["updated_at"],
     }
@@ -165,9 +161,7 @@ def _require_flock(user: str, flock_id: str) -> Dict[str, Any]:
 
 
 @saas_router.post("/tenants", tags=["SaaS Tenants"])
-async def create_tenant(
-    request: TenantCreateRequest, user: str = Header(..., alias="x-api-key")
-):
+async def create_tenant(request: TenantCreateRequest, user: str = Header(..., alias="x-api-key")):
     owner = await verify_saas_api_key(user)
     tenant_id = _tenant_id()
     now = int(time.time())
@@ -200,14 +194,10 @@ async def get_tenant(tenant_id: str, x_api_key: str = Header(...)):
 
 
 @saas_router.post("/tenants/{tenant_id}/flocks", tags=["SaaS Flocks"])
-async def create_flock(
-    tenant_id: str, request: FlockCreateRequest, x_api_key: str = Header(...)
-):
+async def create_flock(tenant_id: str, request: FlockCreateRequest, x_api_key: str = Header(...)):
     owner = await verify_saas_api_key(x_api_key)
     tenant = _require_tenant(owner, tenant_id)
-    existing_count = sum(
-        1 for flock in SAAS_FLOCKS.values() if flock["tenant_id"] == tenant_id
-    )
+    existing_count = sum(1 for flock in SAAS_FLOCKS.values() if flock["tenant_id"] == tenant_id)
     if existing_count >= tenant["plan_limits"]["flocks"]:
         raise HTTPException(400, "Plan flock limit reached")
 
@@ -237,11 +227,7 @@ async def create_flock(
 async def list_flocks(tenant_id: str, x_api_key: str = Header(...)):
     owner = await verify_saas_api_key(x_api_key)
     _require_tenant(owner, tenant_id)
-    rows = [
-        record
-        for record in SAAS_FLOCKS.values()
-        if record["tenant_id"] == tenant_id and record["owner"] == owner
-    ]
+    rows = [record for record in SAAS_FLOCKS.values() if record["tenant_id"] == tenant_id and record["owner"] == owner]
     rows.sort(key=lambda value: value["created_at"], reverse=True)
     return {"status": "ok", "data": [_flock_view(record) for record in rows]}
 
@@ -253,9 +239,7 @@ async def get_flock(flock_id: str, x_api_key: str = Header(...)):
 
 
 @saas_router.post("/flocks/{flock_id}/sheep", tags=["SaaS Flocks"])
-async def spawn_sheep(
-    flock_id: str, request: SheepCreateRequest, x_api_key: str = Header(...)
-):
+async def spawn_sheep(flock_id: str, request: SheepCreateRequest, x_api_key: str = Header(...)):
     owner = await verify_saas_api_key(x_api_key)
     record = _require_flock(owner, flock_id)
     tenant = _require_tenant(owner, record["tenant_id"])
@@ -288,9 +272,7 @@ async def heartbeat_sheep(flock_id: str, sheep_id: str, x_api_key: str = Header(
 
 
 @saas_router.post("/flocks/{flock_id}/refresh", tags=["SaaS Flocks"])
-async def refresh_flock(
-    flock_id: str, request: RefreshRequest, x_api_key: str = Header(...)
-):
+async def refresh_flock(flock_id: str, request: RefreshRequest, x_api_key: str = Header(...)):
     owner = await verify_saas_api_key(x_api_key)
     record = _require_flock(owner, flock_id)
     summary = record["flock"].refresh(
@@ -302,14 +284,10 @@ async def refresh_flock(
 
 
 @saas_router.post("/flocks/{flock_id}/tasks", tags=["SaaS Tasks"])
-async def create_task(
-    flock_id: str, request: TaskCreateRequest, x_api_key: str = Header(...)
-):
+async def create_task(flock_id: str, request: TaskCreateRequest, x_api_key: str = Header(...)):
     owner = await verify_saas_api_key(x_api_key)
     record = _require_flock(owner, flock_id)
-    task = record["flock"].add_task(
-        request.description, request.track, request.priority
-    )
+    task = record["flock"].add_task(request.description, request.track, request.priority)
     if request.auto_assign:
         record["flock"].assign_task(task.task_id, request.sheep_id)
     record["updated_at"] = int(time.time())
@@ -353,9 +331,7 @@ async def complete_task(
 
 
 @saas_router.post("/governance/check", tags=["SaaS Governance"])
-async def governance_check(
-    request: GovernanceCheckRequest, x_api_key: str = Header(...)
-):
+async def governance_check(request: GovernanceCheckRequest, x_api_key: str = Header(...)):
     owner = await verify_saas_api_key(x_api_key)
     _require_tenant(owner, request.tenant_id)
     record = _require_flock(owner, request.flock_id)
@@ -373,25 +349,17 @@ async def audit_report(tenant_id: str, x_api_key: str = Header(...)):
     owner = await verify_saas_api_key(x_api_key)
     tenant = _require_tenant(owner, tenant_id)
     flocks = [
-        record
-        for record in SAAS_FLOCKS.values()
-        if record["tenant_id"] == tenant_id and record["owner"] == owner
+        record for record in SAAS_FLOCKS.values() if record["tenant_id"] == tenant_id and record["owner"] == owner
     ]
     totals = {
         "flocks": len(flocks),
         "agents": sum(len(record["flock"].sheep) for record in flocks),
         "tasks": sum(len(record["flock"].tasks) for record in flocks),
         "completed_tasks": sum(
-            sum(
-                1
-                for task in record["flock"].tasks.values()
-                if task.status == "completed"
-            )
-            for record in flocks
+            sum(1 for task in record["flock"].tasks.values() if task.status == "completed") for record in flocks
         ),
         "failed_tasks": sum(
-            sum(1 for task in record["flock"].tasks.values() if task.status == "failed")
-            for record in flocks
+            sum(1 for task in record["flock"].tasks.values() if task.status == "failed") for record in flocks
         ),
         "events": sum(len(record["flock"].event_log) for record in flocks),
     }
@@ -419,9 +387,7 @@ async def usage_report(
     now = datetime.utcnow()
     target_year = year or now.year
     target_month = month or now.month
-    rows = _saas_metering_store.export_monthly_usage(
-        target_year, target_month, tenant_id=tenant_id
-    )
+    rows = _saas_metering_store.export_monthly_usage(target_year, target_month, tenant_id=tenant_id)
     totals = {
         GOVERNANCE_EVALUATIONS: 0,
         WORKFLOW_EXECUTIONS: 0,

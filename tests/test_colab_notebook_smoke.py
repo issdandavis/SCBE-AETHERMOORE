@@ -82,9 +82,7 @@ def test_run_scratch_cell_reports_success_when_marker_appears() -> None:
         ]
     )
 
-    result = smoke._run_scratch_cell(
-        page, smoke_code="print('SCBE_COLAB_SMOKE_OK')", wait_ms=5000
-    )
+    result = smoke._run_scratch_cell(page, smoke_code="print('SCBE_COLAB_SMOKE_OK')", wait_ms=5000)
 
     assert result["attempted"] is True
     assert result["success"] is True
@@ -93,14 +91,8 @@ def test_run_scratch_cell_reports_success_when_marker_appears() -> None:
 
 
 def test_runtime_attached_uses_kernel_state_and_connection_timestamp() -> None:
-    assert (
-        smoke._runtime_attached({"usage_visible": True, "kernel_state": "connect"})
-        is True
-    )
-    assert (
-        smoke._runtime_attached({"usage_visible": False, "kernel_state": "connected"})
-        is True
-    )
+    assert smoke._runtime_attached({"usage_visible": True, "kernel_state": "connect"}) is True
+    assert smoke._runtime_attached({"usage_visible": False, "kernel_state": "connected"}) is True
     assert (
         smoke._runtime_attached(
             {

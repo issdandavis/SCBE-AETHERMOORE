@@ -130,23 +130,17 @@ def aggregate_sources(
             bundle["repos"][repo] = github_fetcher(url)
         except Exception as exc:  # noqa: BLE001
             bundle["repos"][repo] = []
-            bundle["fetch_errors"].append(
-                {"source": "github", "target": repo, "error": str(exc)}
-            )
+            bundle["fetch_errors"].append({"source": "github", "target": repo, "error": str(exc)})
 
     npm_url = f"https://registry.npmjs.org/{npm_package}"
     try:
         bundle["npm"] = npm_fetcher(npm_url)
     except Exception as exc:  # noqa: BLE001
         bundle["npm"] = {}
-        bundle["fetch_errors"].append(
-            {"source": "npm", "target": npm_package, "error": str(exc)}
-        )
+        bundle["fetch_errors"].append({"source": "npm", "target": npm_package, "error": str(exc)})
 
     for file_name in space_files:
-        bundle["space"].append(
-            {"file": file_name, "content": "external-export-placeholder"}
-        )
+        bundle["space"].append({"file": file_name, "content": "external-export-placeholder"})
 
     bundle_bytes = json.dumps(bundle, sort_keys=True, default=str).encode("utf-8")
     bundle_hash = hashlib.sha256(bundle_bytes).hexdigest()

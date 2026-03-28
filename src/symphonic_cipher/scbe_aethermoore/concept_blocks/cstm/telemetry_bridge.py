@@ -119,9 +119,7 @@ class HamiltonianTracker:
             self._recent_choices = self._recent_choices[-self._window_size :]
 
         # pd = proportion unsafe in window
-        pd = sum(1 for u in self._recent_choices if u) / max(
-            len(self._recent_choices), 1
-        )
+        pd = sum(1 for u in self._recent_choices if u) / max(len(self._recent_choices), 1)
 
         # H(d, pd) = 1 / (1 + d + 2*pd)
         h = 1.0 / (1.0 + d + 2.0 * pd)
@@ -193,18 +191,13 @@ class TelemetryBridge:
         self._activations.extend(activations)
 
         # Update Hamiltonian if we have personality data
-        if (
-            event.personality_snapshot
-            and event.event_type == TelemetryEventType.CHOICE_MADE
-        ):
+        if event.personality_snapshot and event.event_type == TelemetryEventType.CHOICE_MADE:
             tags = set(event.payload.get("tags", []))
             self._hamiltonian.update(event.personality_snapshot, tags, event.timestamp)
 
         return activations
 
-    def ingest_playthrough(
-        self, record: PlaythroughRecord
-    ) -> List[ConceptBlockActivation]:
+    def ingest_playthrough(self, record: PlaythroughRecord) -> List[ConceptBlockActivation]:
         """Convert a full PlaythroughRecord into telemetry events and activations."""
         all_activations: List[ConceptBlockActivation] = []
         ts = time.time()

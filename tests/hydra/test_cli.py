@@ -28,9 +28,7 @@ def test_resolve_command_defaults_to_execute_with_stdin_payload():
 
 
 def test_resolve_command_prefers_explicit_command():
-    command, args, raw = _resolve_command_and_args(
-        "status", ["x"], '{"action":"status"}'
-    )
+    command, args, raw = _resolve_command_and_args("status", ["x"], '{"action":"status"}')
     assert command == "status"
     assert args == ["x"]
     assert raw == "status"

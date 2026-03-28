@@ -164,9 +164,7 @@ class TestBranchingEngine:
         g.add_finish("no_path")
 
         engine = BranchingEngine()
-        result = engine.explore_sync(
-            g, context={"x": 10}, strategy=ExploreStrategy.ALL_PATHS
-        )
+        result = engine.explore_sync(g, context={"x": 10}, strategy=ExploreStrategy.ALL_PATHS)
         # Only yes_path should be valid
         assert len(result.paths) == 1
         assert "yes_path" in result.paths[0].scenes_visited

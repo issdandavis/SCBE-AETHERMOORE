@@ -119,9 +119,7 @@ class SessionRecord:
             "created_at": self.created_at.isoformat(),
             "expires_at": self.expires_at.isoformat(),
             "last_seen": self.last_seen.isoformat(),
-            "ttl_seconds_remaining": max(
-                0, int((self.expires_at - datetime.now()).total_seconds())
-            ),
+            "ttl_seconds_remaining": max(0, int((self.expires_at - datetime.now()).total_seconds())),
             "context": self.context,
         }
 
@@ -172,18 +170,14 @@ class CloudRunSessionManager:
         rec = self._sessions.get(session_id)
         return rec.to_dict() if rec else None
 
-    def touch_session(
-        self, session_id: str, extend_seconds: int = 300
-    ) -> Optional[Dict[str, Any]]:
+    def touch_session(self, session_id: str, extend_seconds: int = 300) -> Optional[Dict[str, Any]]:
         self._prune_expired()
         rec = self._sessions.get(session_id)
         if not rec:
             return None
         now = datetime.now()
         rec.last_seen = now
-        rec.expires_at = max(rec.expires_at, now) + timedelta(
-            seconds=max(60, int(extend_seconds))
-        )
+        rec.expires_at = max(rec.expires_at, now) + timedelta(seconds=max(60, int(extend_seconds)))
         return rec.to_dict()
 
     def end_session(self, session_id: str) -> bool:
@@ -228,9 +222,7 @@ class CloudAgent(ABC):
         self.error_count = 0
 
     @abstractmethod
-    async def process(
-        self, event: Dict[str, Any], context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def process(self, event: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         """Process an event. Override in subclasses."""
 
     async def health_check(self) -> HealthCheckResult:
@@ -304,9 +296,7 @@ class CloudAgent(ABC):
             "invocation_count": self.invocation_count,
             "error_count": self.error_count,
             "created_at": self.created_at.isoformat(),
-            "last_invocation": (
-                self.last_invocation.isoformat() if self.last_invocation else None
-            ),
+            "last_invocation": (self.last_invocation.isoformat() if self.last_invocation else None),
         }
 
 
@@ -337,9 +327,7 @@ class SecurityTesterAgent(CloudAgent):
         self.scan_results: List[Dict[str, Any]] = []
         self.vulnerabilities_found: List[Dict[str, Any]] = []
 
-    async def process(
-        self, event: Dict[str, Any], context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def process(self, event: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         """Process security testing request."""
         self.invocation_count += 1
         self.last_invocation = datetime.now()
@@ -576,9 +564,7 @@ class PerformanceMonitorAgent(CloudAgent):
             "memory_percent": 85,
         }
 
-    async def process(
-        self, event: Dict[str, Any], context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def process(self, event: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         """Process performance monitoring request."""
         self.invocation_count += 1
         self.last_invocation = datetime.now()
@@ -827,9 +813,7 @@ class HallucinationDetectorAgent(CloudAgent):
         self.false_positive_rate = 0.0
         self.detection_rate = 0.0
 
-    async def process(
-        self, event: Dict[str, Any], context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def process(self, event: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         """Process hallucination detection request."""
         self.invocation_count += 1
         self.last_invocation = datetime.now()
@@ -902,9 +886,7 @@ class HallucinationDetectorAgent(CloudAgent):
         if claims:
             verified_ratio = len(verification["verified_claims"]) / len(claims)
             hallucination_penalty = len(verification["hallucinations_detected"]) * 0.2
-            verification["overall_confidence"] = max(
-                0, verified_ratio - hallucination_penalty
-            )
+            verification["overall_confidence"] = max(0, verified_ratio - hallucination_penalty)
 
         # Determine status
         if verification["hallucinations_detected"]:
@@ -1042,9 +1024,7 @@ class HallucinationDetectorAgent(CloudAgent):
     async def _get_statistics(self) -> Dict[str, Any]:
         """Get detection statistics."""
         total_verifications = len(self.verification_history)
-        total_hallucinations = sum(
-            len(v["hallucinations_detected"]) for v in self.verification_history
-        )
+        total_hallucinations = sum(len(v["hallucinations_detected"]) for v in self.verification_history)
 
         return {
             "total_verifications": total_verifications,
@@ -1085,9 +1065,7 @@ class MultiCloudOrchestratorAgent(CloudAgent):
         self.failover_config: Dict[str, CloudProvider] = {}
         self.session_manager = CloudRunSessionManager()
 
-    async def process(
-        self, event: Dict[str, Any], context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def process(self, event: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         """Process orchestration request."""
         self.invocation_count += 1
         self.last_invocation = datetime.now()
@@ -1207,9 +1185,7 @@ class MultiCloudOrchestratorAgent(CloudAgent):
             if cloud == CloudProvider.LOCAL:
                 continue
 
-            agents_on_cloud = [
-                a for a in self.managed_agents.values() if a["cloud"] == cloud
-            ]
+            agents_on_cloud = [a for a in self.managed_agents.values() if a["cloud"] == cloud]
 
             healthy_count = sum(1 for a in agents_on_cloud if a["status"] == "active")
 
@@ -1217,9 +1193,7 @@ class MultiCloudOrchestratorAgent(CloudAgent):
                 "total_agents": len(agents_on_cloud),
                 "healthy_agents": healthy_count,
                 "health_percent": healthy_count / max(1, len(agents_on_cloud)) * 100,
-                "status": (
-                    "healthy" if healthy_count == len(agents_on_cloud) else "degraded"
-                ),
+                "status": ("healthy" if healthy_count == len(agents_on_cloud) else "degraded"),
             }
 
         return {"clouds": results, "timestamp": datetime.now().isoformat()}
@@ -1276,12 +1250,8 @@ class MultiCloudOrchestratorAgent(CloudAgent):
         """Balance load across clouds."""
         strategy = event.get("strategy", "round_robin")
 
-        aws_agents = [
-            a for a in self.managed_agents.values() if a["cloud"] == CloudProvider.AWS
-        ]
-        gcp_agents = [
-            a for a in self.managed_agents.values() if a["cloud"] == CloudProvider.GCP
-        ]
+        aws_agents = [a for a in self.managed_agents.values() if a["cloud"] == CloudProvider.AWS]
+        gcp_agents = [a for a in self.managed_agents.values() if a["cloud"] == CloudProvider.GCP]
 
         imbalance = abs(len(aws_agents) - len(gcp_agents))
 
@@ -1292,9 +1262,7 @@ class MultiCloudOrchestratorAgent(CloudAgent):
             "imbalance": imbalance,
             "balanced": imbalance <= 2,
             "recommendations": (
-                [
-                    f"Move {imbalance // 2} agents to {'GCP' if len(aws_agents) > len(gcp_agents) else 'AWS'}"
-                ]
+                [f"Move {imbalance // 2} agents to {'GCP' if len(aws_agents) > len(gcp_agents) else 'AWS'}"]
                 if imbalance > 2
                 else []
             ),
@@ -1305,20 +1273,8 @@ class MultiCloudOrchestratorAgent(CloudAgent):
         session_stats = self.session_manager.stats()
         return {
             "managed_agents": len(self.managed_agents),
-            "aws_agents": len(
-                [
-                    a
-                    for a in self.managed_agents.values()
-                    if a["cloud"] == CloudProvider.AWS
-                ]
-            ),
-            "gcp_agents": len(
-                [
-                    a
-                    for a in self.managed_agents.values()
-                    if a["cloud"] == CloudProvider.GCP
-                ]
-            ),
+            "aws_agents": len([a for a in self.managed_agents.values() if a["cloud"] == CloudProvider.AWS]),
+            "gcp_agents": len([a for a in self.managed_agents.values() if a["cloud"] == CloudProvider.GCP]),
             "active_sessions": float(session_stats.get("active_sessions", 0)),
         }
 

@@ -173,8 +173,7 @@ def generate_compliance_report() -> ComplianceReport:
             description="Roles and responsibilities for AI risk management are defined",
             scbe_mapping="src/governance/, src/fleet/ (shepherd/flock roles)",
             evidence=(
-                "Layer 13 governance with ALLOW/QUARANTINE/ESCALATE/DENY"
-                " decisions requiring explicit authorization"
+                "Layer 13 governance with ALLOW/QUARANTINE/ESCALATE/DENY" " decisions requiring explicit authorization"
             ),
         )
     )
@@ -276,8 +275,7 @@ def generate_compliance_report() -> ComplianceReport:
             description="Third-party AI components and their risks are identified",
             scbe_mapping="package.json (dependencies), src/pyproject.toml",
             evidence=(
-                "Explicit dependency list with PQC libraries"
-                " (@noble/post-quantum), MCP SDK, and crypto primitives"
+                "Explicit dependency list with PQC libraries" " (@noble/post-quantum), MCP SDK, and crypto primitives"
             ),
         )
     )

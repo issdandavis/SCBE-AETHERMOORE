@@ -93,9 +93,7 @@ class TestSpinQuantization:
         sv_ko = SpinVector(spins=(1, 0, 0, 0, 0, 0))
         sv_dr = SpinVector(spins=(0, 0, 0, 0, 0, 1))
         assert sv_dr.metric_weighted_norm() > sv_ko.metric_weighted_norm()
-        assert sv_dr.metric_weighted_norm() == pytest.approx(
-            math.sqrt(PHI**5), rel=1e-14
-        )
+        assert sv_dr.metric_weighted_norm() == pytest.approx(math.sqrt(PHI**5), rel=1e-14)
 
 
 # =========================================================================== #

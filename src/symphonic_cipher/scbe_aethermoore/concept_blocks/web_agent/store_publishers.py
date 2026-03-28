@@ -269,8 +269,7 @@ class ShopifyPublisher:
         self.token = access_token or os.environ.get("SHOPIFY_ACCESS_TOKEN", "")
         if not self.shop or not self.token:
             raise ValueError(
-                "Shopify shop name and access token required. "
-                "Set SHOPIFY_SHOP and SHOPIFY_ACCESS_TOKEN env vars."
+                "Shopify shop name and access token required. " "Set SHOPIFY_SHOP and SHOPIFY_ACCESS_TOKEN env vars."
             )
 
     @property

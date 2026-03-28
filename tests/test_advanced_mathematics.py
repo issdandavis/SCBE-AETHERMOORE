@@ -58,9 +58,7 @@ class TelemetryCollector:
 
     def start_test(self, name: str, category: str) -> TelemetryRecord:
         """Start tracking a test"""
-        telem = TelemetryRecord(
-            test_name=name, category=category, start_time=time.time()
-        )
+        telem = TelemetryRecord(test_name=name, category=category, start_time=time.time())
         self.telemetry.append(telem)
         return telem
 
@@ -74,9 +72,7 @@ class TelemetryCollector:
             test_dict = asdict(t)
             # Ensure all values are JSON-serializable
             test_dict["passed"] = bool(test_dict["passed"])
-            test_dict["metrics"] = {
-                k: float(v) for k, v in test_dict["metrics"].items()
-            }
+            test_dict["metrics"] = {k: float(v) for k, v in test_dict["metrics"].items()}
             tests_data.append(test_dict)
 
         data = {
@@ -116,10 +112,7 @@ class TelemetryCollector:
 
         for cat, stats in categories.items():
             total_cat = stats["passed"] + stats["failed"]
-            print(
-                f"  {cat}: {stats['passed']}/{total_cat} passed "
-                f"({stats['total_ms']:.2f}ms total)"
-            )
+            print(f"  {cat}: {stats['passed']}/{total_cat} passed " f"({stats['total_ms']:.2f}ms total)")
 
         print("=" * 80)
 
@@ -141,7 +134,7 @@ class TestHyperbolicGeometry:
         max_norm = 0.0
         violations = 0
 
-        for i in range(iterations):
+        for _i in range(iterations):
             # Random input
             x_G = np.random.randn(12) * np.random.uniform(0.1, 100)
 
@@ -165,9 +158,7 @@ class TestHyperbolicGeometry:
         passed = violations == 0 and max_norm < 1.0
         telem.complete(passed)
 
-        assert (
-            passed
-        ), f"Ball containment violated: {violations} violations, max_norm={max_norm}"
+        assert passed, f"Ball containment violated: {violations} violations, max_norm={max_norm}"
 
     def test_hyperbolic_distance_triangle_inequality(self):
         """Property: d(u,w) ≤ d(u,v) + d(v,w) (triangle inequality)"""
@@ -179,7 +170,7 @@ class TestHyperbolicGeometry:
         max_violation = 0.0
         violations = 0
 
-        for i in range(iterations):
+        for _i in range(iterations):
             # Random points in ball
             u = np.random.rand(12) * 0.7
             v = np.random.rand(12) * 0.7
@@ -205,9 +196,7 @@ class TestHyperbolicGeometry:
         passed = violations == 0
         telem.complete(passed)
 
-        assert (
-            passed
-        ), f"Triangle inequality violated {violations} times, max={max_violation}"
+        assert passed, f"Triangle inequality violated {violations} times, max={max_violation}"
 
     def test_hyperbolic_distance_symmetry(self):
         """Property: d(u,v) = d(v,u) (symmetry)"""
@@ -218,7 +207,7 @@ class TestHyperbolicGeometry:
         iterations = 100
         max_asymmetry = 0.0
 
-        for i in range(iterations):
+        for _i in range(iterations):
             u = np.random.rand(12) * 0.8
             v = np.random.rand(12) * 0.8
 
@@ -255,7 +244,7 @@ class TestHyperbolicGeometry:
         iterations = 100
         max_error = 0.0
 
-        for i in range(iterations):
+        for _i in range(iterations):
             u = np.random.rand(12) * 0.7
             zero = np.zeros(12)
 
@@ -277,9 +266,7 @@ class TestIsometryPreservation:
 
     def test_phase_transform_distance_preservation(self):
         """Property: Phase transform preserves hyperbolic distances (isometry)"""
-        telem = TELEMETRY.start_test(
-            "Phase Transform Isometry", "Isometry Preservation"
-        )
+        telem = TELEMETRY.start_test("Phase Transform Isometry", "Isometry Preservation")
 
         from scbe_14layer_reference import (
             layer_5_hyperbolic_distance,
@@ -289,7 +276,7 @@ class TestIsometryPreservation:
         iterations = 50
         max_distance_change = 0.0
 
-        for i in range(iterations):
+        for _i in range(iterations):
             # Random points INSIDE the Poincaré ball (||u|| < 1)
             # Generate random direction and scale to random radius < 0.9
             direction_u = np.random.randn(12)
@@ -328,16 +315,14 @@ class TestIsometryPreservation:
 
     def test_realification_norm_preservation(self):
         """Property: Realification preserves norm (isometry from ℂ^D to ℝ^{2D})"""
-        telem = TELEMETRY.start_test(
-            "Realification Norm Preservation", "Isometry Preservation"
-        )
+        telem = TELEMETRY.start_test("Realification Norm Preservation", "Isometry Preservation")
 
         from scbe_14layer_reference import layer_2_realification
 
         iterations = 100
         max_norm_error = 0.0
 
-        for i in range(iterations):
+        for _i in range(iterations):
             # Random complex vector
             c = np.random.randn(6) + 1j * np.random.randn(6)
 
@@ -365,16 +350,14 @@ class TestHarmonicScaling:
 
     def test_harmonic_scaling_monotonicity(self):
         """Property: H(d) is strictly decreasing in d (safety drops with distance)"""
-        telem = TELEMETRY.start_test(
-            "Harmonic Scaling Monotonicity", "Harmonic Scaling"
-        )
+        telem = TELEMETRY.start_test("Harmonic Scaling Monotonicity", "Harmonic Scaling")
 
         from scbe_14layer_reference import layer_12_harmonic_scaling
 
         iterations = 100
         violations = 0
 
-        for i in range(iterations):
+        for _i in range(iterations):
             d1 = np.random.uniform(0, 3)
             d2 = d1 + np.random.uniform(0.01, 0.5)
 
@@ -413,9 +396,7 @@ class TestHarmonicScaling:
 
     def test_harmonic_scaling_monotone_decreasing(self):
         """Property: H(d1) > H(d2) when d1 < d2 (decreasing safety)"""
-        telem = TELEMETRY.start_test(
-            "Harmonic Scaling Monotone Decreasing", "Harmonic Scaling"
-        )
+        telem = TELEMETRY.start_test("Harmonic Scaling Monotone Decreasing", "Harmonic Scaling")
 
         from scbe_14layer_reference import layer_12_harmonic_scaling
 
@@ -449,9 +430,7 @@ class TestTopologicalInvariants:
 
     def test_euler_characteristic_platonic_solids(self):
         """Property: χ = V - E + F = 2 for all Platonic solids"""
-        telem = TELEMETRY.start_test(
-            "Euler Characteristic (Platonic)", "Topological Invariants"
-        )
+        telem = TELEMETRY.start_test("Euler Characteristic (Platonic)", "Topological Invariants")
 
         platonic_solids = [
             {"name": "Tetrahedron", "V": 4, "E": 6, "F": 4},
@@ -519,7 +498,7 @@ class TestCoherenceBounds:
         iterations = 50
         violations = []
 
-        for i in range(iterations):
+        for _i in range(iterations):
             # Random signals
             signal = np.random.randn(256)
             phases = np.random.rand(6) * 2 * np.pi
@@ -559,7 +538,7 @@ class TestRiskMonotonicity:
 
         Risk_base = 0.3  # Fixed base risk
 
-        for i in range(iterations):
+        for _i in range(iterations):
             d1 = np.random.uniform(0, 2)
             d2 = d1 + np.random.uniform(0.1, 0.5)
 

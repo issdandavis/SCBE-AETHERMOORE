@@ -104,9 +104,7 @@ def classical_mds(dist_matrix: np.ndarray, n_dims: int = 2) -> np.ndarray:
     return Y
 
 
-def poincare_geodesic(
-    u: np.ndarray, v: np.ndarray, t: float, eps: float = 1e-8
-) -> np.ndarray:
+def poincare_geodesic(u: np.ndarray, v: np.ndarray, t: float, eps: float = 1e-8) -> np.ndarray:
     """
     Compute point on geodesic from u to v at parameter t in [0,1].
 
@@ -222,9 +220,7 @@ def visualize_poincare_disk(
     ax.set_facecolor("black")
 
     # Unit disk boundary
-    disk = Circle(
-        (0, 0), 1.0, edgecolor="white", facecolor="none", linewidth=2, linestyle="--"
-    )
+    disk = Circle((0, 0), 1.0, edgecolor="white", facecolor="none", linewidth=2, linestyle="--")
     ax.add_patch(disk)
 
     # Origin
@@ -242,7 +238,7 @@ def visualize_poincare_disk(
     )
 
     # Labels
-    for i, label in enumerate(labels):
+    for i, _label in enumerate(labels):
         ax.text(
             coords_2d[i, 0] + 0.02,
             coords_2d[i, 1] + 0.02,
@@ -373,8 +369,7 @@ def visualize_3d_voxels(
         fig.patch.set_facecolor("black")
 
         plt.title(
-            f"3D Poincare Ball Voxels - {view_name.capitalize()}\n"
-            "Gold=Light | Purple=Shadow | Cyan=Paths",
+            f"3D Poincare Ball Voxels - {view_name.capitalize()}\n" "Gold=Light | Purple=Shadow | Cyan=Paths",
             color="white",
             fontsize=12,
         )

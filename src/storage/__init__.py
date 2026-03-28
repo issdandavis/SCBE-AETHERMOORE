@@ -13,9 +13,7 @@ def get_storage_backend(
     backend: Optional[str] = None,
     storage_path: Optional[str] = None,
 ) -> SealedBlobStorage:
-    selected_backend = (
-        backend or os.getenv("SCBE_STORAGE_BACKEND") or "filesystem"
-    ).lower()
+    selected_backend = (backend or os.getenv("SCBE_STORAGE_BACKEND") or "filesystem").lower()
     if selected_backend != "filesystem":
         raise ValueError(
             f"Unsupported storage backend '{selected_backend}'. "

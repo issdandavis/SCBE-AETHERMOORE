@@ -94,9 +94,7 @@ def tongue_decode(tokens: str, tongue: str = "DR") -> bytes:
     result = []
     for t in tokens.split():
         if t not in rev:
-            raise ValueError(
-                f"Unknown token '{t}' in tongue '{tongue}' — possible tampering or corruption"
-            )
+            raise ValueError(f"Unknown token '{t}' in tongue '{tongue}' — possible tampering or corruption")
         result.append(rev[t])
     return bytes(result)
 

@@ -431,11 +431,7 @@ class TestConcentricRingPolicy:
         middle = policy.classify(0.6)
         edge = policy.classify(0.95)
         assert core["pow_bits"] <= middle["pow_bits"] <= edge["pow_bits"]
-        assert (
-            core["required_signatures"]
-            <= middle["required_signatures"]
-            <= edge["required_signatures"]
-        )
+        assert core["required_signatures"] <= middle["required_signatures"] <= edge["required_signatures"]
 
 
 # ---------------------------------------------------------------------------
@@ -708,17 +704,13 @@ class TestSemanticNavigator:
         assert len(nav.history) == 3
 
     def test_self_distance_zero(self):
-        nav = self.SemanticNavigator(
-            initial_pos=[0.1, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.01
-        )
+        nav = self.SemanticNavigator(initial_pos=[0.1, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.01)
         d = nav.distance_to(nav)
         assert d < 1e-6
 
     def test_distance_between_agents(self):
         nav1 = self.SemanticNavigator(chaos_strength=0.01)
-        nav2 = self.SemanticNavigator(
-            initial_pos=[0.3, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.01
-        )
+        nav2 = self.SemanticNavigator(initial_pos=[0.3, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.01)
         d = nav1.distance_to(nav2)
         assert d > 0
 
@@ -746,12 +738,8 @@ class TestSemanticNavigator:
 
     def test_mutation_count_affects_trajectory(self):
         """Non-zero mutation_count should introduce repulsion."""
-        nav1 = self.SemanticNavigator(
-            initial_pos=[0.1, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.0
-        )
-        nav2 = self.SemanticNavigator(
-            initial_pos=[0.1, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.0
-        )
+        nav1 = self.SemanticNavigator(initial_pos=[0.1, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.0)
+        nav2 = self.SemanticNavigator(initial_pos=[0.1, 0.0, 0.0, 0.0, 0.0, 0.0], chaos_strength=0.0)
         # Due to randomness in repulsion, positions may differ
         nav1.update_position(["KO"], coherence=0.5, mutation_count=0, dt=0.01)
         nav2.update_position(["KO"], coherence=0.5, mutation_count=100, dt=0.01)

@@ -251,9 +251,7 @@ TONGUE_ALPHABETS: Dict[TongueID, TongueAlphabet] = {
 }
 
 # Signature lookup
-SIGNATURE_TO_TONGUE: Dict[str, TongueID] = {
-    alph.signature: alph.tongue_id for alph in TONGUE_ALPHABETS.values()
-}
+SIGNATURE_TO_TONGUE: Dict[str, TongueID] = {alph.signature: alph.tongue_id for alph in TONGUE_ALPHABETS.values()}
 
 
 # =============================================================================
@@ -452,9 +450,7 @@ class PolyglotSDK:
         _, decoded = decompose_polyglot_message(message)
         return decoded
 
-    def verify(
-        self, message: str, expected_tongues: Optional[List[TongueID]] = None
-    ) -> bool:
+    def verify(self, message: str, expected_tongues: Optional[List[TongueID]] = None) -> bool:
         """Verify a message's tongue signatures."""
         try:
             tongues, _ = decompose_polyglot_message(message)
@@ -502,9 +498,7 @@ def calculate_cipher_strength(tongues: List[TongueID]) -> Dict[str, any]:
         "keyspace_size": keyspace,
         "xor_depth": xor_depth,
         "brute_force_complexity": f"O(2^{bits_per_tongue * n} * {n})",
-        "security_rating": (
-            "LOW" if n == 1 else "MEDIUM" if n <= 3 else "HIGH" if n <= 5 else "MAXIMUM"
-        ),
+        "security_rating": ("LOW" if n == 1 else "MEDIUM" if n <= 3 else "HIGH" if n <= 5 else "MAXIMUM"),
     }
 
 
@@ -560,9 +554,7 @@ def demo():
     for n in [1, 2, 3, 4, 5, 6]:
         test_tongues = list(TongueID)[:n]
         strength = calculate_cipher_strength(test_tongues)
-        print(
-            f"  {n} tongue(s): keyspace=2^{strength['keyspace_bits']}, rating={strength['security_rating']}"
-        )
+        print(f"  {n} tongue(s): keyspace=2^{strength['keyspace_bits']}, rating={strength['security_rating']}")
     print()
 
     # Verification

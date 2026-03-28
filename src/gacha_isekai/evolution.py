@@ -277,8 +277,7 @@ class EvolutionSimulator:
             "rho_e": rho_e,
             "training_pair": {
                 "prompt": f"Career: {evo_state.name} advances in {career.value}",
-                "response": f"Career progression in {career.value} with "
-                f"discipline={discipline_bonus:.2f}.",
+                "response": f"Career progression in {career.value} with " f"discipline={discipline_bonus:.2f}.",
                 "provenance": "gacha_career_v1",
             },
         }
@@ -298,6 +297,4 @@ class EvolutionSimulator:
         # Evolution pressure grows with each action
         # E_pressure = pi^(phi * d*) where d* is accumulated deviation
         d_star = evo_state.risk_accumulated / max(1, evo_state.total_actions)
-        evo_state.evolution_pressure = (
-            math.pi ** (PHI * d_star) if d_star < 3.0 else 100.0
-        )
+        evo_state.evolution_pressure = math.pi ** (PHI * d_star) if d_star < 3.0 else 100.0

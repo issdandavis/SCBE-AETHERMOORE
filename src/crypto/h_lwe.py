@@ -157,9 +157,7 @@ def mobius_neg(x: np.ndarray) -> np.ndarray:
 # ---------------------------------------------------------------------------
 
 
-def hkdf_sha256(
-    ikm: bytes, *, salt: bytes = b"", info: bytes = b"", length: int = 32
-) -> bytes:
+def hkdf_sha256(ikm: bytes, *, salt: bytes = b"", info: bytes = b"", length: int = 32) -> bytes:
     """Minimal HKDF (RFC 5869) with SHA-256."""
     if length <= 0:
         raise ValueError("HKDF length must be > 0.")
@@ -268,18 +266,14 @@ class HLWESymmetric:
         """Validate that a vector is inside the Poincare ball."""
         x = np.asarray(x, dtype=float).reshape(-1)
         if x.shape[0] != self.dim:
-            raise InvalidVector(
-                f"{label} must have shape ({self.dim},), got {x.shape}."
-            )
+            raise InvalidVector(f"{label} must have shape ({self.dim},), got {x.shape}.")
         n = _norm(x)
         if not np.isfinite(n):
             raise InvalidVector(f"{label} norm not finite.")
         if n >= 1.0:
             raise InvalidVector(f"{label} must satisfy ||x|| < 1.0 (Poincare ball).")
         if n >= self.max_radius:
-            raise InvalidVector(
-                f"{label} too close to boundary: ||x||={n:.6f} >= max_radius={self.max_radius}."
-            )
+            raise InvalidVector(f"{label} too close to boundary: ||x||={n:.6f} >= max_radius={self.max_radius}.")
         return x
 
     def sample_noise(self) -> np.ndarray:
@@ -295,9 +289,7 @@ class HLWESymmetric:
         meta: Optional[Dict[str, Any]] = None,
     ) -> HLWECiphertext:
         """Encrypt a Poincare ball vector with a symmetric key vector."""
-        key = self.validate_vector(
-            project_to_ball(key, max_norm=self.max_radius * 0.5), label="key"
-        )
+        key = self.validate_vector(project_to_ball(key, max_norm=self.max_radius * 0.5), label="key")
         x = self.validate_vector(x, label="plaintext")
         n_hyp = self.sample_noise()
         ct = mobius_add(mobius_add(x, key, c=self.c), n_hyp, c=self.c)
@@ -311,9 +303,7 @@ class HLWESymmetric:
         Returns (recovered_vector, radius).
         Raises ContainmentBreach if radius >= max_radius.
         """
-        key = self.validate_vector(
-            project_to_ball(key, max_norm=self.max_radius * 0.5), label="key"
-        )
+        key = self.validate_vector(project_to_ball(key, max_norm=self.max_radius * 0.5), label="key")
         ctv = np.asarray(ct.ct, dtype=float).reshape(-1)
         if ctv.shape[0] != self.dim:
             raise InvalidVector(f"ciphertext vector has wrong shape: {ctv.shape}")
@@ -323,9 +313,7 @@ class HLWESymmetric:
         x_hat = mobius_add(mobius_neg(key), ctv, c=self.c)
         r = _norm(x_hat)
         if r >= self.max_radius:
-            raise ContainmentBreach(
-                f"Decrypted radius {r:.6f} >= max_radius {self.max_radius}."
-            )
+            raise ContainmentBreach(f"Decrypted radius {r:.6f} >= max_radius {self.max_radius}.")
         return x_hat, r
 
 
@@ -362,9 +350,7 @@ class HLWEHybridKEM:
         noise_scale: float = 0.02,
         max_radius: float = 0.95,
     ):
-        self.sym = HLWESymmetric(
-            dim=dim, c=c, noise_scale=noise_scale, max_radius=max_radius
-        )
+        self.sym = HLWESymmetric(dim=dim, c=c, noise_scale=noise_scale, max_radius=max_radius)
         # Lazy import to avoid hard dependency
         from src.crypto.quasi_lwe import QuasiLWEKEM  # type: ignore
 
@@ -385,9 +371,7 @@ class HLWEHybridKEM:
             return b"nd:" + obj.astype(np.float64).tobytes()
         if isinstance(obj, dict):
             items = sorted((str(k), obj[k]) for k in obj.keys())
-            return b"d:" + b"|".join(
-                k.encode() + b"=" + HLWEHybridKEM._serialize_any(v) for k, v in items
-            )
+            return b"d:" + b"|".join(k.encode() + b"=" + HLWEHybridKEM._serialize_any(v) for k, v in items)
         if isinstance(obj, (list, tuple)):
             return b"a:" + b"|".join(HLWEHybridKEM._serialize_any(v) for v in obj)
         return b"repr:" + repr(obj).encode("utf-8", "surrogatepass")
@@ -416,9 +400,7 @@ class HLWEHybridKEM:
         vec_ct = self.sym.encrypt(key_vec, x, meta=meta)
         tag = self._tag(shared_secret, kem_ct, vec_ct)
 
-        return HLWEHybridCiphertext(
-            kem_ct=kem_ct, vec_ct=vec_ct, tag=tag, meta=dict(meta or {})
-        )
+        return HLWEHybridCiphertext(kem_ct=kem_ct, vec_ct=vec_ct, tag=tag, meta=dict(meta or {}))
 
     def decrypt(self, sk: Any, ct: HLWEHybridCiphertext) -> Tuple[np.ndarray, float]:
         """Decrypt a hybrid ciphertext. Verifies HMAC tag first."""
