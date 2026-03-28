@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import math
 
-import numpy as np
+import pytest
+
+np = pytest.importorskip("numpy", reason="numpy is required for PHDM conservation tests")
+hypothesis = pytest.importorskip("hypothesis", reason="hypothesis is required for PHDM conservation tests")
+
 from hypothesis import given
 from hypothesis import strategies as st
 

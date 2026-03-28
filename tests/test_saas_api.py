@@ -3,6 +3,9 @@ from __future__ import annotations
 from datetime import datetime
 
 import pytest
+
+pytest.importorskip("fastapi", reason="fastapi not installed")
+
 from fastapi.testclient import TestClient
 
 import src.api.saas_routes as saas_routes
