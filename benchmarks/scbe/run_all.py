@@ -6,11 +6,13 @@ Usage:
     python -m benchmarks.scbe.run_all --scale 50
     python -m benchmarks.scbe.run_all --adaptive-rounds 10
     python -m benchmarks.scbe.run_all --no-adaptive
+    python -m benchmarks.scbe.run_all --synthetic-only
 
 Options:
     --no-hf             Skip HuggingFace dataset loading
     --no-deberta        Skip DeBERTa baseline (faster if no GPU)
     --no-adaptive       Skip adaptive attack runs
+    --synthetic-only    Use only synthetic dataset (no HF, no local corpus)
     --scale N           Attacks per category for generator (default: 20)
     --adaptive-rounds N Number of adaptive rounds (default: 5)
     --output PATH       Output report path (default: auto-timestamped)
@@ -35,13 +37,17 @@ if _REPO_ROOT not in sys.path:
 # Now import benchmark modules
 from benchmarks.scbe.config import (
     ADAPTIVE_ROUNDS,
+    ARTIFACTS_DIR,
     DEFAULT_ATTACKS_PER_CATEGORY,
     REPORTS_DIR,
 )
 from benchmarks.scbe.datasets.loader import load_all_datasets
+from benchmarks.scbe.datasets.synthetic import (
+    load_synthetic_dataset,
+    CALIBRATION_PROMPTS,
+)
 from benchmarks.scbe.attacks.generator import generate_attacks
 from benchmarks.scbe.baselines.base_llm import NakedBaseline
-from benchmarks.scbe.baselines.deberta_guard import DeBERTaGuard
 from benchmarks.scbe.baselines.scbe_system import SCBESystem
 from benchmarks.scbe.runners.core import (
     SystemBenchmarkResult,
@@ -81,6 +87,11 @@ def parse_args() -> argparse.Namespace:
         "--no-adaptive",
         action="store_true",
         help="Skip adaptive attack runs",
+    )
+    parser.add_argument(
+        "--synthetic-only",
+        action="store_true",
+        help="Use only synthetic dataset (skip HF and local corpus)",
     )
     parser.add_argument(
         "--scale",
@@ -136,21 +147,25 @@ def setup_systems(
     naked = NakedBaseline()
     systems[naked.name] = naked
 
-    # 2. SCBE Detection Gate
+    # 2. SCBE RuntimeGate system
     scbe = SCBESystem()
     if scbe.available:
         systems[scbe.name] = scbe
     else:
         print("  [WARN] SCBE system unavailable -- skipping")
 
-    # 3. DeBERTa guard
+    # 3. DeBERTa guard (optional)
     if not skip_deberta:
-        deberta = DeBERTaGuard()
-        if deberta.available:
-            systems[deberta.name] = deberta
-        else:
-            print("  [WARN] DeBERTa guard unavailable -- skipping")
-            print("         Install: pip install transformers torch")
+        try:
+            from benchmarks.scbe.baselines.deberta_guard import DeBERTaGuard
+            deberta = DeBERTaGuard()
+            if deberta.available:
+                systems[deberta.name] = deberta
+            else:
+                print("  [WARN] DeBERTa guard unavailable -- skipping")
+                print("         Install: pip install transformers torch")
+        except Exception:
+            print("  [WARN] DeBERTa guard import failed -- skipping")
     else:
         print("  [INFO] DeBERTa guard skipped (--no-deberta)")
 
@@ -175,42 +190,54 @@ def run_all(args: argparse.Namespace) -> None:
     # 1. Load datasets
     # -----------------------------------------------------------------------
     print("  [1/5] Loading datasets...")
-    datasets = load_all_datasets(include_hf=not args.no_hf)
 
-    # Generate additional attacks
-    generated = generate_attacks(scale=args.scale, seed=args.seed)
-    print(f"         Generated {len(generated)} attacks ({args.scale}/category)")
+    if args.synthetic_only:
+        # Use only the synthetic dataset
+        synth = load_synthetic_dataset(
+            attacks_per_category=args.scale,
+            seed=args.seed,
+        )
+        all_attacks = synth["attacks"]
+        all_benign = synth["benign"]
+        calibration_texts = synth["calibration"]
+        print(f"         Synthetic: {synth['stats']['total_attacks']} attacks + "
+              f"{synth['stats']['total_benign']} benign")
+    else:
+        # Load from all sources
+        datasets = load_all_datasets(include_hf=not args.no_hf)
 
-    # Merge generated attacks into the dataset
-    all_attacks = datasets["attacks"] + [
-        {
-            "id": atk["id"],
-            "prompt": atk["prompt"],
-            "label": atk["label"],
-            "source": "generator",
-            "class": atk["class"],
-        }
-        for atk in generated
-    ]
-    all_benign = datasets["benign"]
+        # Generate additional attacks
+        generated = generate_attacks(scale=args.scale, seed=args.seed)
+        print(f"         Generated {len(generated)} attacks ({args.scale}/category)")
+
+        # Merge generated attacks into the dataset
+        all_attacks = datasets["attacks"] + [
+            {
+                "id": atk["id"],
+                "prompt": atk["prompt"],
+                "label": atk["label"],
+                "source": "generator",
+                "class": atk["class"],
+            }
+            for atk in generated
+        ]
+        all_benign = datasets["benign"]
+        calibration_texts = [s["prompt"] for s in all_benign[:50]]
 
     # Combined dataset
     full_dataset = all_attacks + all_benign
-
-    # Calibration texts from benign samples
-    calibration_texts = [s["prompt"] for s in all_benign[:50]]
 
     dataset_info = {
         "total_samples": len(full_dataset),
         "total_attacks": len(all_attacks),
         "total_benign": len(all_benign),
-        "local_attacks": len(datasets["attacks"]),
-        "generated_attacks": len(generated),
-        "hf_included": not args.no_hf,
+        "synthetic_only": args.synthetic_only,
+        "hf_included": not args.no_hf and not args.synthetic_only,
         "generator_scale": args.scale,
     }
 
-    print(f"         Dataset: {len(all_attacks)} attacks + {len(all_benign)} benign = {len(full_dataset)} total")
+    print(f"         Dataset: {len(all_attacks)} attacks + "
+          f"{len(all_benign)} benign = {len(full_dataset)} total")
     print("")
 
     # -----------------------------------------------------------------------
