@@ -40,6 +40,8 @@ from src.api.hydra_routes import hydra_router, init_hydra_spine
 from src.api.saas_routes import saas_router
 from src.api.stripe_billing import billing_router
 
+from src.api.compute_routes import compute_router
+
 try:
     from src.api.mesh_routes import mesh_router
 except ImportError:
@@ -89,6 +91,9 @@ app.include_router(saas_router)
 
 # Stripe billing — checkout, webhooks, API key provisioning.
 app.include_router(billing_router)
+
+# Energy-aware compute authorization — SCBE Sentinel core product.
+app.include_router(compute_router)
 
 # ============================================================================
 # RATE LIMITING
