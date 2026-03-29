@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thank You | SCBE-AETHERMOORE Training Vault</title>
+<meta name="robots" content="noindex">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Georgia,"Times New Roman",serif;background:#071412;color:#e7fff7;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.container{max-width:680px;margin:0 auto;padding:40px 20px;text-align:center}
+h1{font-size:48px;letter-spacing:-0.03em;background:linear-gradient(135deg,#2dd3a6,#17c6cf);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:16px}
+.subtitle{color:#9bc5ba;font-size:18px;margin-bottom:40px}
+.download-card{background:rgba(10,28,24,0.82);border:1px solid rgba(45,211,166,0.25);border-radius:16px;padding:32px;margin-bottom:24px;text-align:left}
+.download-card h3{color:#2dd3a6;font-size:20px;margin-bottom:12px}
+.download-card p{color:#9bc5ba;line-height:1.6;margin-bottom:16px}
+.download-card a{display:inline-block;padding:12px 24px;background:linear-gradient(135deg,#2dd3a6,#17c6cf);color:#071412;font-weight:700;border-radius:10px;text-decoration:none;margin-right:8px;margin-bottom:8px}
+.download-card a:hover{opacity:0.9}
+.quickstart{background:rgba(10,28,24,0.82);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;text-align:left;margin-bottom:24px}
+.quickstart h3{color:#f0bf67;margin-bottom:12px}
+.quickstart pre{background:rgba(0,0,0,0.3);padding:14px;border-radius:8px;overflow-x:auto;color:#8fffd3;font-family:monospace;font-size:14px;line-height:1.5}
+.links{color:#9bc5ba;font-size:14px;margin-top:32px}
+.links a{color:#2dd3a6;text-decoration:none}
+.links a:hover{text-decoration:underline}
+footer{text-align:center;padding:32px;color:#9bc5ba;font-size:13px;margin-top:40px}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>You're in.</h1>
+  <p class="subtitle">Thank you for purchasing the SCBE AI Security Training Vault.</p>
+
+  <div class="download-card">
+    <h3>Your Downloads</h3>
+    <p>Everything you need to train your own AI security model:</p>
+    <a href="https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data" target="_blank">Training Data (HuggingFace)</a>
+    <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/artifacts/projectors" target="_blank">Projector Weights</a>
+    <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/benchmarks" target="_blank">Benchmark Suite</a>
+  </div>
+
+  <div class="quickstart">
+    <h3>Quickstart</h3>
+    <pre>pip install scbe-aethermoore sentence-transformers
+
+# Load the semantic projector
+from src.governance.runtime_gate import RuntimeGate
+gate = RuntimeGate(coords_backend="semantic")
+
+# Evaluate any text
+result = gate.evaluate("your input here")
+print(result.decision, result.cost)</pre>
+  </div>
+
+  <div class="download-card">
+    <h3>Colab Notebook</h3>
+    <p>Fine-tune your own model on Google Colab (free T4 GPU):</p>
+    <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/notebooks" target="_blank">Open Colab Notebook</a>
+  </div>
+
+  <div class="links">
+    <p>Need help? Email <a href="mailto:aethermoregames@pm.me">aethermoregames@pm.me</a></p>
+    <p style="margin-top:8px"><a href="index.html">Back to home</a> · <a href="demos/index.html">Try the demos</a> · <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a></p>
+  </div>
+</div>
+
+<footer>
+  SCBE-AETHERMOORE | Patent Pending: USPTO #63/961,403 | Built by Issac Davis
+</footer>
+</body>
+</html>
