@@ -44,12 +44,14 @@ for _k in list(sys.modules):
 
 # Force-load the src/ variant immediately so collection-time imports find it.
 import symphonic_cipher as _sc_check
+
 if getattr(_sc_check, "_VARIANT", None) != "src":
     # Wrong variant loaded — purge again and re-import with only src/ on path
     for _k in list(sys.modules):
         if _k == "symphonic_cipher" or _k.startswith("symphonic_cipher."):
             del sys.modules[_k]
     import importlib as _il
+
     _sc_check = _il.import_module("symphonic_cipher")
 del _sc_check
 
