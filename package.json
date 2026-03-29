@@ -189,6 +189,9 @@
   "overrides": {
     "tar": ">=7.0.0",
     "esbuild": ">=0.25.0",
-    "fast-xml-parser": ">=5.5.7"
+    "fast-xml-parser": ">=5.5.7",
+    "madge": {
+      "typescript": "^6.0.2"
+    }
   }
 }
