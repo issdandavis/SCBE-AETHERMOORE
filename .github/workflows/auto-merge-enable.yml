@@ -18,7 +18,20 @@ jobs:
       github.actor == 'issdandavis'
     steps:
       - name: Enable auto-merge (squash)
-        run: gh pr merge --auto --squash "$PR_URL"
+        shell: bash
+        run: |
+          set -euo pipefail
+          rc=0
+          out="$(gh pr merge --auto --squash "$PR_URL" 2>&1)" || rc=$?
+          echo "$out"
+          if [ "$rc" -eq 0 ]; then
+            exit 0
+          fi
+          if echo "$out" | grep -q "Merge already in progress"; then
+            echo "Auto-merge already in progress; treating as success."
+            exit 0
+          fi
+          exit "$rc"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
