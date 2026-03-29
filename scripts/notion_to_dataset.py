@@ -133,6 +133,26 @@ def export_page(notion, page_id, category_filter):
         return None
 
 
+def _load_sync_config_page_ids():
+    """Load known page IDs from sync-config.json as a fallback source."""
+    config_path = Path(__file__).parent / "sync-config.json"
+    if not config_path.exists():
+        return []
+    try:
+        with open(config_path) as f:
+            data = json.load(f)
+        page_ids = []
+        for entry in data.values():
+            if isinstance(entry, dict) and "pageId" in entry:
+                page_ids.append(entry["pageId"])
+            elif isinstance(entry, str) and len(entry) == 32:
+                page_ids.append(entry)
+        return page_ids
+    except Exception as e:
+        print(f"Warning: failed to load sync-config.json: {e}")
+        return []
+
+
 def search_all_pages(notion):
     """Search for all pages accessible to the integration."""
     all_pages = []
@@ -146,6 +166,26 @@ def search_all_pages(notion):
         if not results.get("has_more"):
             break
         start_cursor = results.get("next_cursor")
+
+    if len(all_pages) == 0:
+        fallback_ids = _load_sync_config_page_ids()
+        if fallback_ids:
+            print(
+                f"Warning: workspace search returned 0 pages. "
+                f"Falling back to {len(fallback_ids)} known page IDs from sync-config.json.\n"
+                f"Possible causes: NOTION_TOKEN lacks search scope, "
+                f"integration not shared with pages, or API filter rejection."
+            )
+            all_pages = [{"id": pid, "object": "page"} for pid in fallback_ids]
+        else:
+            print(
+                "Error: workspace search returned 0 pages and no fallback page IDs available.\n"
+                "Possible causes:\n"
+                "  - NOTION_TOKEN lacks search scope\n"
+                "  - Integration not shared with any pages\n"
+                "  - scripts/sync-config.json missing or empty"
+            )
+
     return all_pages
 
 
