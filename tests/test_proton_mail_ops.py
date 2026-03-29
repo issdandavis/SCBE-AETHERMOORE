@@ -4,7 +4,14 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
+
+# proton_mail_ops transitively imports cryptography.fernet which requires a
+# working cffi/rust backend.  The Rust binding panics (uncatchable) when cffi
+# is missing, so check for _cffi_backend first.
+pytest.importorskip("_cffi_backend", reason="cffi backend unavailable — cryptography will panic")
 
 
 def _load_module(name: str, relative_path: str):
