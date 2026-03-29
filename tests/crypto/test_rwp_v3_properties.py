@@ -257,7 +257,9 @@ class TestNonceUniqueness:
 
     @given(
         password=st.binary(min_size=1, max_size=32),
-        plaintext=st.binary(min_size=1, max_size=256),
+        # Avoid probabilistic collisions: with 1-byte plaintext, env1.ct can equal env2.ct with ~1/256 chance.
+        # Use longer plaintext so ct equality would be astronomically unlikely for a correct randomized AEAD.
+        plaintext=st.binary(min_size=32, max_size=256),
     )
     @settings(max_examples=50, deadline=None)
     def test_ciphertexts_differ_for_same_plaintext(self, password: bytes, plaintext: bytes):
