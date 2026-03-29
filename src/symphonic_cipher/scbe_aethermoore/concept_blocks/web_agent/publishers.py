@@ -29,7 +29,10 @@ import uuid
 from typing import Any, Dict, List, Optional
 from urllib.parse import urljoin
 
-import httpx
+try:
+    import httpx
+except ModuleNotFoundError:  # optional runtime dep
+    httpx = None  # type: ignore[assignment]
 
 from .buffer_integration import (
     Platform,
