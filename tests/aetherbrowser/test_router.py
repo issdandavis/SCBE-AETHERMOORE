@@ -31,6 +31,22 @@ class TestModelSelection:
         assert model.provider == ModelProvider.LOCAL
         assert model.selection_reason == "local_first_low_complexity"
 
+    def test_local_last_resort_when_no_remote_available(self):
+        router = OctoArmorRouter(
+            enabled_providers={
+                ModelProvider.LOCAL: True,
+                ModelProvider.HAIKU: False,
+                ModelProvider.SONNET: False,
+                ModelProvider.OPUS: False,
+                ModelProvider.FLASH: False,
+                ModelProvider.GROK: False,
+                ModelProvider.HUGGINGFACE: False,
+            }
+        )
+        model = router.select_model(TaskComplexity.MEDIUM, role="KO")
+        assert model.provider == ModelProvider.LOCAL
+        assert model.selection_reason == "local_last_resort_below_recommended_tier"
+
     def test_strongest_for_high(self):
         router = OctoArmorRouter(
             enabled_providers={

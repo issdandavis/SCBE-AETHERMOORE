@@ -84,17 +84,18 @@ class TongueMolecule:
         broken = shift > 0.3
 
         return BondState(
-            name=name, z=z, energy=energy,
-            angle_deg=angle, dissociation=dissociation, broken=broken,
+            name=name,
+            z=z,
+            energy=energy,
+            angle_deg=angle,
+            dissociation=dissociation,
+            broken=broken,
         )
 
     @property
     def bonds(self) -> List[BondState]:
         if self._bonds is None:
-            self._bonds = [
-                self._get_bond(t1, t2, name)
-                for (t1, t2), name in zip(BOND_PAIRS, BOND_NAMES)
-            ]
+            self._bonds = [self._get_bond(t1, t2, name) for (t1, t2), name in zip(BOND_PAIRS, BOND_NAMES)]
         return self._bonds
 
     @property
@@ -117,7 +118,7 @@ class TongueMolecule:
 
     @staticmethod
     def _fuzzy(value: float, center: float, width: float) -> float:
-        return math.exp(-((value - center) ** 2) / (2 * width ** 2))
+        return math.exp(-((value - center) ** 2) / (2 * width**2))
 
     @property
     def fuzzy_safe(self) -> float:
