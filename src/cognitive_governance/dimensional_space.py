@@ -176,11 +176,11 @@ class CognitivePoint:
 
     def dominant_tongue(self) -> str:
         """The tongue with the highest energy."""
-        return max(TONGUE_NAMES, key=lambda t: self.tongue_energy(t))
+        return max(TONGUE_NAMES, key=self.tongue_energy)
 
     def dominant_valence(self) -> StateValence:
         """The valence with the highest energy."""
-        return max(StateValence, key=lambda v: self.valence_energy(v))
+        return max(StateValence, key=self.valence_energy)
 
 
 @dataclass
@@ -272,8 +272,8 @@ class DimensionalSpace:
 
         weighted_diff_sq = 0.0
         idx = 0
-        for _valence in StateValence:
-            for _spatial in range(3):
+        for valence in StateValence:
+            for spatial in range(3):
                 for tongue in TONGUE_NAMES:
                     w = TONGUES[tongue]["weight"]
                     diff = v1[idx] - v2[idx]

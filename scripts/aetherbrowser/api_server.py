@@ -16,6 +16,7 @@ import asyncio
 from collections import deque
 import datetime
 import json
+import logging
 import os
 import re
 import shlex
@@ -25,6 +26,8 @@ import uuid
 from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -114,8 +117,8 @@ def _load_env():
                     value = value.strip().strip('"').strip("'")
                     if key and key not in os.environ:
                         os.environ[key] = value
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Failed to load .env file: %s", e)
 
 
 _load_env()
@@ -379,15 +382,11 @@ async def chat(req: ChatRequest):
                 "tongue_coords": [round(c, 4) for c in gr.tongue_coords],
             }
         except Exception as e:
-            gate_result = {"error": str(e)}
+            logger.warning("Gate evaluation failed: %s", e)
+            gate_result = {"error": "Governance gate evaluation failed"}
 
     fibonacci_index = min(fib_index, len(FIB_SEQUENCE) - 1)
     fib_value = FIB_SEQUENCE[fibonacci_index]
-
-    active_tongues = sorted(
-        [(t, v) for t, v in tongues.items() if v > 0],
-        key=lambda x: -x[1],
-    )
 
     # Route to model — Ollama local for "local", stub for others
     response_text = ""
@@ -527,7 +526,8 @@ async def red_team_run(req: RedTeamRunRequest = RedTeamRunRequest()):
     except subprocess.TimeoutExpired:
         return {"error": "Benchmark timed out (120s limit)", "total": 0, "passed": 0, "failed": 0, "results": []}
     except Exception as e:
-        return {"error": str(e), "total": 0, "passed": 0, "failed": 0, "results": []}
+        logger.warning("Red-team benchmark failed: %s", e)
+        return {"error": "Benchmark execution failed", "total": 0, "passed": 0, "failed": 0, "results": []}
 
 
 @app.get("/api/red-team/suites")
@@ -555,8 +555,8 @@ async def red_team_suites():
                 test_count = len(re.findall(r"^\s*def test_", content, re.MULTILINE))
                 if test_count > 0:
                     suite["probes"] = test_count
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Failed to read test suite %s: %s", path, e)
         suites.append(suite)
 
     return {"suites": suites, "total_probes": sum(s["probes"] for s in suites)}
@@ -645,16 +645,16 @@ async def vault_stats():
                         notes = len(graph["nodes"])
                     if "edges" in graph and isinstance(graph["edges"], list):
                         edges = len(graph["edges"])
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Failed to parse vault graph: %s", e)
 
         # Check SFT output
         sft_file = ROOT / "training-data" / "apollo" / "obsidian_vault_sft.jsonl"
         if sft_file.exists():
             try:
                 sft_pairs = sum(1 for _ in sft_file.open(encoding="utf-8"))
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Failed to count SFT pairs: %s", e)
 
         return {
             "notes": notes,
@@ -688,8 +688,12 @@ async def vault_search(q: str = Query(..., description="Search query")):
     if vault_path.exists():
         try:
             query_lower = q.lower()
+            resolved_vault = vault_path.resolve()
             for md_file in vault_path.rglob("*.md"):
                 try:
+                    # Path containment check — prevent symlink escape
+                    if not md_file.resolve().is_relative_to(resolved_vault):
+                        continue
                     content = md_file.read_text(encoding="utf-8", errors="ignore")
                     if query_lower in content.lower() or query_lower in md_file.stem.lower():
                         # Extract first heading
@@ -706,10 +710,11 @@ async def vault_search(q: str = Query(..., description="Search query")):
                         })
                         if len(results) >= 20:
                             break
-                except Exception:
+                except Exception as e:
+                    logger.debug("vault_search: skipping file: %s", e)
                     continue
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("vault_search: error scanning vault: %s", e)
 
     # If vault not accessible, try searching docs/ in the repo
     if not results:
@@ -779,14 +784,14 @@ async def vault_sync():
                 stats["edges"] = int(s.get("total_links", 0))
                 stats["orphans"] = int(s.get("orphan_count", 0))
                 stats["tongues"] = s.get("tongues", {}) if isinstance(s.get("tongues"), dict) else {}
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Failed to read vault sync graph: %s", e)
     sft_file = ROOT / "training-data" / "apollo" / "obsidian_vault_sft.jsonl"
     if sft_file.exists():
         try:
             stats["sft_pairs"] = sum(1 for _ in sft_file.open(encoding="utf-8"))
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Failed to count vault sync SFT pairs: %s", e)
 
     return {
         "synced": sync_result.get("exit_code", -1) == 0,
@@ -1001,7 +1006,8 @@ async def ops_momentum_latest(train_id: str = "daily_ops"):
     try:
         state = json.loads(state_path.read_text(encoding="utf-8"))
     except Exception as e:
-        return {"error": str(e), "ok": False}
+        logger.warning("Failed to read momentum state: %s", e)
+        return {"error": "Failed to read training state", "ok": False}
 
     stations = state.get("stations", {}) if isinstance(state, dict) else {}
     statuses: dict[str, str] = {}
@@ -1064,7 +1070,8 @@ async def ops_chessboard_latest():
         meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
         packets = json.loads(packets_path.read_text(encoding="utf-8")) if packets_path.exists() else {}
     except Exception as e:
-        return {"error": str(e), "ok": False}
+        logger.warning("Failed to read chessboard data: %s", e)
+        return {"error": "Failed to read chessboard data", "ok": False}
     return {
         "ok": True,
         "output_dir": str(latest.relative_to(ROOT)),
@@ -1358,7 +1365,8 @@ async def cli_run(req: CliRunRequest = CliRunRequest()):
     try:
         parts = shlex.split(raw, posix=True)
     except Exception as e:
-        return {"ok": False, "command": raw, "error": f"Parse error: {e}", "timestamp": _cli_now_iso()}
+        logger.debug("CLI parse error: %s", e)
+        return {"ok": False, "command": raw, "error": "Invalid command syntax", "timestamp": _cli_now_iso()}
 
     result = await _cli_dispatch(parts)
     # Normalise to always include command + timestamp
@@ -1389,7 +1397,8 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
     try:
         parts = shlex.split(raw, posix=True)
     except Exception as e:
-        return {"ok": False, "command": raw, "error": f"Parse error: {e}", "timestamp": _cli_now_iso()}
+        logger.debug("CLI job parse error: %s", e)
+        return {"ok": False, "command": raw, "error": "Invalid command syntax", "timestamp": _cli_now_iso()}
 
     job_id = uuid.uuid4().hex
     started = _cli_now_iso()
