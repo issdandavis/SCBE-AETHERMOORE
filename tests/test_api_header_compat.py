@@ -4,8 +4,14 @@ import types
 
 import pytest
 
-from api import main as api_main
-from fastapi import HTTPException
+# The api.main module transitively imports cryptography via the GitHub App
+# routes.  When the cffi backend is missing (common in lightweight CI images)
+# the Rust binding panics (uncatchable).  Guard by checking for _cffi_backend
+# before any cryptography import.
+pytest.importorskip("_cffi_backend", reason="cffi backend unavailable — cryptography will panic")
+
+from api import main as api_main  # noqa: E402
+from fastapi import HTTPException  # noqa: E402
 
 fake_mangum = types.ModuleType("mangum")
 
