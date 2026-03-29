@@ -263,6 +263,20 @@ class OctoArmorRouter:
 
         candidates = self._candidate_chain(min_tier=min_tier)
         if not candidates:
+            # CI/offline-safe behavior: if no provider meets the recommended tier and
+            # no remote keys are configured, fall back to LOCAL rather than hard-fail.
+            #
+            # This keeps integration tests deterministic and lets users run the
+            # command planner in "no keys" environments while still exposing that
+            # the selection is below the recommended cost tier.
+            if self._is_available(ModelProvider.LOCAL):
+                return SelectedModel(
+                    provider=ModelProvider.LOCAL,
+                    role=role,
+                    complexity=complexity,
+                    selection_reason="local_last_resort_below_recommended_tier",
+                    fallback_chain=[ModelProvider.LOCAL],
+                )
             raise RuntimeError("All models rate-limited or unavailable")
         return SelectedModel(
             provider=candidates[0],

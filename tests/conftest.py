@@ -26,8 +26,14 @@ except ImportError:
     np = None  # type: ignore[assignment]
     NUMPY_AVAILABLE = False
 
-# Add src to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# Ensure repo-local `src/` wins over any installed modules with the same names.
+# CI has observed an installed `governance` module being imported before tests,
+# which breaks imports like `from governance.*` even when tests later tweak sys.path.
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+_SRC_ROOT = _REPO_ROOT / "src"
+sys.path.insert(0, str(_SRC_ROOT))
+sys.path.insert(0, str(_REPO_ROOT))
+sys.modules.pop("governance", None)
 
 # Keep pytest temp factories inside the repo workspace so Windows temp ACL issues
 # do not break tmp_path/tmpdir-based tests.
