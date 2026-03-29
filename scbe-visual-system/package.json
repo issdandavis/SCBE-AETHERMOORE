@@ -32,7 +32,7 @@
     "electron": "^41.0.3",
     "electron-builder": "^26.8.1",
     "jsdom": "^29.0.1",
-    "typescript": "~5.8.2",
+    "typescript": "~6.0.2",
     "vite": "^8.0.1",
     "vitest": "^4.0.18",
     "wait-on": "^9.0.4"
