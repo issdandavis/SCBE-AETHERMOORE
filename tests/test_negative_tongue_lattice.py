@@ -9,13 +9,16 @@ Coverage:
   - Zero-state: lattice object has no stored state after init
 """
 
-import sys
 import os
+import sys
+
+# Ensure local src/ wins over any installed `governance` module that may be
+# imported by plugins before we set up sys.path (GitHub Actions CI observed this).
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.modules.pop("governance", None)
 
 import numpy as np
 import pytest
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from governance.negative_tongue_lattice import NegativeTongueLattice
 from symphonic_cipher.scbe_aethermoore.qc_lattice.phason_secret import PhasonSecret
