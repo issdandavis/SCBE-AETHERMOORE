@@ -29,11 +29,29 @@ except ImportError:
 # Ensure repo-local `src/` wins over any installed modules with the same names.
 # CI has observed an installed `governance` module being imported before tests,
 # which breaks imports like `from governance.*` even when tests later tweak sys.path.
+# IMPORTANT: _SRC_ROOT must come BEFORE _REPO_ROOT on sys.path so that
+# `src/symphonic_cipher/` (safety-score variant with qc_lattice, governance, etc.)
+# is found before the root `symphonic_cipher/` (exponential-cost variant).
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _SRC_ROOT = _REPO_ROOT / "src"
-sys.path.insert(0, str(_SRC_ROOT))
 sys.path.insert(0, str(_REPO_ROOT))
+sys.path.insert(0, str(_SRC_ROOT))
 sys.modules.pop("governance", None)
+# Purge ALL symphonic_cipher submodules so the src/ variant is cleanly imported.
+for _k in list(sys.modules):
+    if _k == "symphonic_cipher" or _k.startswith("symphonic_cipher."):
+        del sys.modules[_k]
+
+# Force-load the src/ variant immediately so collection-time imports find it.
+import symphonic_cipher as _sc_check
+if getattr(_sc_check, "_VARIANT", None) != "src":
+    # Wrong variant loaded — purge again and re-import with only src/ on path
+    for _k in list(sys.modules):
+        if _k == "symphonic_cipher" or _k.startswith("symphonic_cipher."):
+            del sys.modules[_k]
+    import importlib as _il
+    _sc_check = _il.import_module("symphonic_cipher")
+del _sc_check
 
 # Keep pytest temp factories inside the repo workspace so Windows temp ACL issues
 # do not break tmp_path/tmpdir-based tests.
@@ -103,6 +121,7 @@ def _register_ai_brain_aliases():
         "concept_blocks",
         "multimodal",
         "rosetta",
+        "qc_lattice",
         # Modules
         "trinary",
         "negabinary",
