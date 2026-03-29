@@ -9,16 +9,11 @@ Coverage:
   - Zero-state: lattice object has no stored state after init
 """
 
-import sys
-import os
-
 import numpy as np
 import pytest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
-
-from governance.negative_tongue_lattice import NegativeTongueLattice
-from symphonic_cipher.scbe_aethermoore.qc_lattice.phason_secret import PhasonSecret
+from src.governance.negative_tongue_lattice import NegativeTongueLattice
+from src.symphonic_cipher.scbe_aethermoore.qc_lattice.phason_secret import PhasonSecret
 
 # =============================================================================
 # NEGATIVE TONGUE LATTICE TESTS
@@ -403,7 +398,7 @@ class TestRuntimeGateNegativeLattice:
 
     def test_default_lattice_energy_zero(self):
         """Default (no negative lattice) should have lattice_energy=0."""
-        from governance.runtime_gate import RuntimeGate
+        from src.governance.runtime_gate import RuntimeGate
 
         gate = RuntimeGate()
         # Run enough evaluations to get past calibration
@@ -413,7 +408,7 @@ class TestRuntimeGateNegativeLattice:
 
     def test_lattice_energy_nonzero_when_enabled(self):
         """With negative lattice enabled, lattice_energy should be > 0."""
-        from governance.runtime_gate import RuntimeGate
+        from src.governance.runtime_gate import RuntimeGate
 
         gate = RuntimeGate(use_negative_lattice=True)
         # Run past calibration
@@ -424,7 +419,7 @@ class TestRuntimeGateNegativeLattice:
 
     def test_lattice_modulates_cost(self):
         """With lattice enabled, cost should be >= cost without lattice."""
-        from governance.runtime_gate import RuntimeGate
+        from src.governance.runtime_gate import RuntimeGate
 
         gate_plain = RuntimeGate()
         gate_lattice = RuntimeGate(use_negative_lattice=True)
