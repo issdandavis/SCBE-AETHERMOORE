@@ -15,7 +15,7 @@ aws-cdk.cloud-assembly-schema==48.20.0
 aws-opentelemetry-distro==0.16.0
 aws-requests-auth==0.4.3
 beautifulsoup4==4.14.3
-bedrock-agentcore==1.4.1
+bedrock-agentcore==1.4.8
 bedrock-agentcore-starter-toolkit==0.2.5
 black==26.3.1
 blinker==1.9.0
