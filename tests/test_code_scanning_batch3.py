@@ -14,18 +14,40 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _load_module(relative_path: str, module_name: str, extra_paths: list[Path] | None = None):
+    added: list[str] = []
+    # Save and clear any cached modules that extra_paths might shadow
+    saved_mods: dict[str, object] = {}
     if extra_paths:
         for extra in extra_paths:
             extra_str = str(extra)
             if extra_str not in sys.path:
                 sys.path.insert(0, extra_str)
-    path = ROOT / relative_path
-    spec = importlib.util.spec_from_file_location(module_name, path)
-    module = importlib.util.module_from_spec(spec)
-    assert spec and spec.loader
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
-    return module
+                added.append(extra_str)
+        # Clear cached governance so spiral-word-app/governance.py can be found
+        # during module execution (it would otherwise resolve to src/governance/)
+        gov = sys.modules.get("governance")
+        if gov is not None:
+            saved_mods["governance"] = gov
+            del sys.modules["governance"]
+    try:
+        path = ROOT / relative_path
+        spec = importlib.util.spec_from_file_location(module_name, path)
+        module = importlib.util.module_from_spec(spec)
+        assert spec and spec.loader
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        # Remove temporary paths so they don't shadow packages in src/
+        for p in added:
+            try:
+                sys.path.remove(p)
+            except ValueError:
+                pass
+        # Restore original governance module if we cleared it
+        for k, v in saved_mods.items():
+            sys.modules.pop(k, None)  # remove spiral-word-app's governance
+            sys.modules[k] = v        # restore src/governance
 
 
 playwriter_lane_runner = _load_module(
@@ -84,14 +106,28 @@ def test_npc_and_training_sanitizers_strip_script_payloads() -> None:
 
 
 def test_spiralword_public_ai_errors_are_generic() -> None:
-    def boom_provider(prompt: str, options: dict | None = None) -> str:
-        raise RuntimeError("secret trace path")
+    # ai_ports.py lazily imports from spiral-word-app/governance.py at call time,
+    # so we must temporarily add spiral-word-app/ to sys.path for this test.
+    spiralword_dir = str(ROOT / "spiral-word-app")
+    sys.path.insert(0, spiralword_dir)
+    # Clear any cached governance module so the spiral-word-app version is found.
+    sys.modules.pop("governance", None)
+    try:
+        def boom_provider(prompt: str, options: dict | None = None) -> str:
+            raise RuntimeError("secret trace path")
 
-    registry = spiralword_ai_ports.AIPortRegistry()
-    registry.register("boom", boom_provider)
+        registry = spiralword_ai_ports.AIPortRegistry()
+        registry.register("boom", boom_provider)
 
-    result = registry.call("hello world", provider="boom")
-    payload = spiralword_app._public_ai_result_payload(result)
+        result = registry.call("hello world", provider="boom")
+        payload = spiralword_app._public_ai_result_payload(result)
 
-    assert result == "[ERROR] Provider boom failed"
-    assert payload == {"status": "error", "message": "AI provider request failed"}
+        assert result == "[ERROR] Provider boom failed"
+        assert payload == {"status": "error", "message": "AI provider request failed"}
+    finally:
+        try:
+            sys.path.remove(spiralword_dir)
+        except ValueError:
+            pass
+        # Remove the non-package governance so it doesn't break later imports.
+        sys.modules.pop("governance", None)

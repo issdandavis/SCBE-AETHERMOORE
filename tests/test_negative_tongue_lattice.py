@@ -14,8 +14,25 @@ import sys
 
 # Ensure local src/ wins over any installed `governance` module that may be
 # imported by plugins before we set up sys.path (GitHub Actions CI observed this).
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
-sys.modules.pop("governance", None)
+# Also handles the case where spiral-word-app/governance.py (a plain .py file)
+# was imported earlier, which prevents sub-module imports.
+_src_dir = os.path.join(os.path.dirname(__file__), "..", "src")
+if _src_dir not in sys.path:
+    sys.path.insert(0, _src_dir)
+
+# Clear cached non-package governance (e.g. from spiral-word-app/governance.py)
+_prev_gov = sys.modules.get("governance")
+if _prev_gov is not None and not hasattr(_prev_gov, "__path__"):
+    sys.modules.pop("governance", None)
+
+# If the root symphonic_cipher variant was cached by an earlier test, clear it
+# so the src/ variant (which has qc_lattice, governance, etc.) can be found.
+_sc = sys.modules.get("symphonic_cipher")
+if _sc is not None and getattr(_sc, "_VARIANT", None) != "src":
+    # Purge root variant and all its sub-modules
+    for key in list(sys.modules):
+        if key == "symphonic_cipher" or key.startswith("symphonic_cipher."):
+            del sys.modules[key]
 
 import numpy as np
 import pytest
