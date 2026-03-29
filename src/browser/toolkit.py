@@ -40,7 +40,10 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set
 from urllib.parse import quote_plus, urljoin, urlparse
 
-import httpx
+try:
+    import httpx
+except ModuleNotFoundError:  # optional runtime dep
+    httpx = None  # type: ignore[assignment]
 
 logger = logging.getLogger("browser-toolkit")
 

@@ -17,7 +17,10 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-import httpx
+try:
+    import httpx
+except ModuleNotFoundError:  # optional runtime dep
+    httpx = None  # type: ignore[assignment]
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 NOTEBOOKLM_SCRIPT = REPO_ROOT / "scripts" / "system" / "notebooklm_connector.py"
