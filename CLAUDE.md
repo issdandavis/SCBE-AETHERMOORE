@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **Test Frameworks** | Vitest (TS), pytest (Python), Playwright (E2E), Cargo (Rust) |
 | **Property Testing** | fast-check (TS), Hypothesis (Python) |
 | **API** | FastAPI + Uvicorn (Python), Express 5 (TypeScript) |
-| **TypeScript** | ^5.8.3, target ES2022, CommonJS |
+| **TypeScript** | ^6.0.2, target ES2022, CommonJS (`ignoreDeprecations: "6.0"`) |
 | **Package Version** | 3.3.0 (npm + PyPI synced) |
 | **Package Entry** | `./dist/src/index.js` |
 
