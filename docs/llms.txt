@@ -2,6 +2,9 @@
 
 Canonical site: https://aethermoorgames.com/
 Mirror (same content): https://issdandavis.github.io/SCBE-AETHERMOORE/
+Buy Training Vault ($29): https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g
+Book (Amazon KDP): https://www.amazon.com/dp/B0F28PHSPR
+YouTube: https://www.youtube.com/@id8461
 
 SCBE-AETHERMOORE is a public documentation and product surface for an AI governance system, its demos, its buyer manuals, and its support routes. The site is intentionally split into separate lanes so humans and AI assistants can find the right level of detail quickly.
 
