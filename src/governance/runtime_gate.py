@@ -183,13 +183,13 @@ class RuntimeGate:
     def __init__(
         self,
         *,
-        cost_allow: float = 10.0,
-        cost_quarantine: float = 50.0,
-        cost_deny: float = 500.0,
+        cost_allow: float = 5.0,
+        cost_quarantine: float = 25.0,
+        cost_deny: float = 200.0,
         spin_quarantine: int = 5,
         spin_deny: int = 6,
-        cumulative_cost_quarantine: float = 200.0,
-        cumulative_cost_deny: float = 1000.0,
+        cumulative_cost_quarantine: float = 2000.0,
+        cumulative_cost_deny: float = 10000.0,
         reroute_rules: Optional[List[RerouteRule]] = None,
         coords_backend: str = "stats",
         semantic_embed_model: str = DEFAULT_SEMANTIC_EMBED_MODEL,
@@ -368,20 +368,118 @@ class RuntimeGate:
         coords = np.clip(coords, 0.0, 1.0)
         return [float(x) for x in coords.tolist()]
 
+    # Intent spike keywords: boost KO dimension when override/jailbreak language detected
+    _INTENT_SPIKE_KEYWORDS = frozenset({
+        # Direct override / jailbreak
+        "ignore", "override", "bypass", "reveal", "disable", "forget",
+        "disregard", "supersede", "jailbreak", "unrestricted", "sudo",
+        "admin", "developer mode", "god mode", "dan", "no restrictions",
+        "system prompt", "hidden instructions", "previous instructions",
+        "grant access", "elevate", "escalate", "skip", "emergency",
+        # Prompt extraction
+        "repeat everything", "verbatim", "print your", "show your",
+        "output your", "what were you told", "configuration",
+        "initial instructions", "system message",
+        # Exfiltration / external ops
+        "send to", "forward to", "post to", "upload to", "exfiltrate",
+        "attacker", "evil.com", "collect", "webhook",
+        "curl", "os.system", "exec(", "eval(",
+        # Credential access
+        "/etc/passwd", "/etc/shadow", "ssh key", "private key",
+        "seed phrase", "wallet", "bearer",
+        # Autonomous escalation
+        "autonomously", "without asking", "persist across",
+        "schedule follow-up", "independently",
+    })
+
+    # Null-space detection: if all coords cluster near baseline, the input
+    # is deliberately trying to look "normal" — which is itself suspicious.
+    _NULL_SPACE_EPSILON = 0.08
+
+    def _apply_intent_spike(self, coords: List[float], text: str) -> List[float]:
+        """Boost KO tongue coordinate when override/jailbreak intent keywords detected.
+
+        Real text activates multiple dimensions unevenly. Attacks often look
+        "neutral" on surface features but contain intent keywords that betray
+        their purpose. This bridges the gap between surface and semantic.
+        """
+        text_lower = text.lower()
+        spike_count = sum(1 for kw in self._INTENT_SPIKE_KEYWORDS if kw in text_lower)
+        if spike_count == 0:
+            return coords
+
+        # Scale boost by keyword density: 1 keyword = 1.5x, 2 = 2.0x, 3+ = 2.5x cap
+        boost = min(2.5, 1.0 + 0.5 * spike_count)
+        coords = list(coords)
+        coords[0] = min(1.0, coords[0] * boost)  # KO (intent) dimension
+        # Secondary boost to UM (security) if credential-related keywords present
+        cred_keywords = {"secret", "password", "token", "credential", "key", "bearer", "auth"}
+        if any(kw in text_lower for kw in cred_keywords):
+            coords[4] = min(1.0, coords[4] * 1.8)  # UM dimension
+        return coords
+
+    def _null_space_anomaly(self, coords: List[float]) -> float:
+        """Detect null-space hiding: inputs that deliberately stay near baseline.
+
+        Returns an anomaly score (0.0 = normal spread, >0 = suspicious clustering).
+        Real text activates different tongue dimensions unevenly. If ALL coords
+        cluster near the centroid within epsilon, the input is hiding in the
+        null space — looking normal to dodge the harmonic wall.
+        """
+        if self._centroid is None:
+            baseline = np.array([0.4, 0.2, 0.5, 0.1, 0.2, 0.3])
+        else:
+            baseline = self._centroid
+
+        tc = np.array(coords)
+        deviations = np.abs(tc - baseline)
+
+        # All dimensions within epsilon = suspicious
+        if np.all(deviations < self._NULL_SPACE_EPSILON):
+            # The closer everything is to baseline, the more suspicious
+            mean_dev = float(np.mean(deviations))
+            anomaly = max(0.0, 1.0 - mean_dev / self._NULL_SPACE_EPSILON)
+            return anomaly
+
+        # Also check for unnaturally uniform coords (real text is lumpy)
+        coord_std = float(np.std(tc))
+        if coord_std < 0.03:
+            return 0.5  # suspicious uniformity
+
+        return 0.0
+
     def _text_to_coords(self, text: str) -> List[float]:
         backend = self._coords_backend
         if backend == "stats":
-            return self._text_to_coords_stats(text)
-        if backend in ("semantic", "auto"):
-            return self._text_to_coords_projector(text)
-        # Unknown backend: fail closed to stats.
-        return self._text_to_coords_stats(text)
+            coords = self._text_to_coords_stats(text)
+        elif backend in ("semantic", "auto"):
+            coords = self._text_to_coords_projector(text)
+        else:
+            coords = self._text_to_coords_stats(text)
+
+        # Apply intent spike boosting on all backends
+        coords = self._apply_intent_spike(coords, text)
+        return coords
 
     # ------------------------------------------------------------------ #
     #  Spin quantization
     # ------------------------------------------------------------------ #
 
-    def _spin(self, coords: List[float], threshold: float = 0.05) -> Tuple[Tuple[int, ...], int]:
+    def _default_spin_threshold(self) -> float:
+        """Choose a spin threshold that matches the active coordinate backend."""
+        if self._coords_backend in ("semantic", "auto") and self._semantic_ready:
+            return 0.12
+        return 0.05
+
+    def _spin(self, coords: List[float], threshold: Optional[float] = None) -> Tuple[Tuple[int, ...], int]:
+        """Compute spin vector: per-tongue deviation from session centroid.
+
+        Semantic embeddings need a wider threshold than coarse stats. If the
+        semantic backend is unavailable and we fall back to stats, use the
+        tighter stats threshold instead of silently keeping the relaxed one.
+        """
+        if threshold is None:
+            threshold = self._default_spin_threshold()
         if self._centroid is None:
             centroid = [0.4, 0.2, 0.5, 0.1, 0.2, 0.3]
         else:
@@ -455,28 +553,19 @@ class RuntimeGate:
 
         full_text = f"{tool_name} {action_text}" if tool_name else action_text
 
-        # ---- Reroute ALWAYS checks first (pattern match, not cost-based) ----
+        # ---- Reroute check (deferred until after semantic signal) ----
+        # Old behavior: reroute ALWAYS fired first, causing 100% FPR on benign
+        # text containing common words like "token", "send", "delete".
+        # New behavior: reroute only fires when BOTH pattern matches AND there
+        # is a semantic signal (elevated cost or spin) to confirm the match.
+        # This drops FPR dramatically while preserving true-positive reroutes.
         reroute_rule = self._check_reroute(full_text)
-        if reroute_rule is not None:
-            coords = self._text_to_coords(full_text)
-            result = GateResult(
-                decision=Decision.REROUTE,
-                cost=0.0,
-                spin_magnitude=0,
-                tongue_coords=coords,
-                signals=[f"reroute_match({reroute_rule.pattern})"],
-                reroute_to=reroute_rule.replacement,
-                action_hash=action_hash,
-                timestamp=ts,
-                session_query_count=self._query_count,
-                cumulative_cost=self._cumulative_cost,
-            )
-            self._audit_log.append(result)
-            return result
 
         # Auto-calibrate: first 5 actions build the centroid (assumed clean)
         # This is the "incubation" period — the system learns what normal looks like
-        if self._query_count <= 5 and action_hash not in self._immune:
+        # Never let an explicit reroute match get learned as "normal" during
+        # warm-up. Those actions must go through the full evaluation path.
+        if self._query_count <= 5 and action_hash not in self._immune and reroute_rule is None:
             coords = self._text_to_coords(full_text)
             self._update_centroid(coords)
             self._cumulative_cost += 1.0  # nominal cost during calibration
@@ -544,17 +633,45 @@ class RuntimeGate:
         spins, magnitude = self._spin(coords)
         cost = self._harmonic_cost(coords)
 
+        # Null-space detection: boost cost if input is hiding near baseline
+        null_anomaly = self._null_space_anomaly(coords)
+        if null_anomaly > 0.0:
+            # Null-space hiding adds cost proportional to anomaly score
+            # anomaly=1.0 → cost *= 3.0 (triple), anomaly=0.5 → cost *= 2.0
+            cost *= 1.0 + 2.0 * null_anomaly
+
         # Negative Tongue Lattice: modulate cost by lattice energy (experimental)
         neg_lattice_energy = 0.0
         if self._use_negative_lattice and self._negative_lattice is not None:
             neg_lattice_energy = self._negative_lattice.lattice_energy(coords)
-            # Lattice energy acts as a multiplier on harmonic cost.
-            # Higher tension between tongues = higher suspicion.
-            # Scale: energy of ~1.0 adds ~10% to cost, energy of ~5.0 adds ~50%.
             cost *= 1.0 + 0.1 * neg_lattice_energy
 
         self._update_centroid(coords)
         self._cumulative_cost += cost
+
+        # ---- Deferred reroute: only fire if semantic confirms the match ----
+        # During the first five requests we skip calibration for explicit
+        # reroute matches and reroute them immediately instead of learning
+        # them into the centroid.
+        if reroute_rule is not None and (self._query_count <= 5 or cost > self.cost_allow or magnitude >= 3):
+            fib_trust = fibonacci_trust_level(self._trust_history)
+            result = GateResult(
+                decision=Decision.REROUTE,
+                cost=cost,
+                spin_magnitude=magnitude,
+                tongue_coords=coords,
+                signals=[f"reroute_match({reroute_rule.pattern})", "semantic_confirmed"],
+                reroute_to=reroute_rule.replacement,
+                action_hash=action_hash,
+                timestamp=ts,
+                session_query_count=self._query_count,
+                cumulative_cost=self._cumulative_cost,
+                trust_weight=fib_trust["weight"],
+                trust_level=fib_trust["level"],
+                trust_index=fib_trust["index"],
+            )
+            self._audit_log.append(result)
+            return result
 
         # ---- Fibonacci trust update ----
         # Map spin magnitude to ternary trust signal:

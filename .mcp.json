@@ -63,6 +63,19 @@
         "NOTION_TOKEN": "${NOTION_TOKEN}",
         "NOTION_MCP_TOKEN": "${NOTION_MCP_TOKEN}"
       }
+    },
+    "kaggle": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://www.kaggle.com/mcp",
+        "--header",
+        "Authorization: Bearer ${KAGGLE_API_TOKEN}"
+      ],
+      "env": {
+        "KAGGLE_API_TOKEN": "${KAGGLE_API_TOKEN}"
+      }
     }
   }
 }
