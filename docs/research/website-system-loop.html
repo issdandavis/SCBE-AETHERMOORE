@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCBE Website System Loop | Code, Notes, Assistant, Research, and Agents</title>
+    <meta
+        name="description"
+        content="Public map of the SCBE website system: code vault, content vault, grounded assistant, training capture, public research output, and agent control."
+    >
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://aethermoorgames.com/research/website-system-loop.html">
+    <link rel="icon" type="image/png" href="../static/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="../static/icons/icon-192.png">
+    <meta property="og:title" content="SCBE Website System Loop">
+    <meta
+        property="og:description"
+        content="How the SCBE site works as one system: repo, notes, grounded assistant, training capture, public research, and agent lanes."
+    >
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aethermoorgames.com/research/website-system-loop.html">
+    <meta property="og:image" content="https://aethermoorgames.com/static/icons/icon-512.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SCBE Website System Loop">
+    <meta
+        name="twitter:description"
+        content="A public systems map for the SCBE website: evidence-first pages, grounded assistant, training capture, and agent routing."
+    >
+    <meta name="twitter:image" content="https://aethermoorgames.com/static/icons/icon-512.png">
+    <style>
+        :root {
+            --bg: #06111a;
+            --bg-2: #0b1724;
+            --panel: rgba(13, 23, 37, 0.92);
+            --panel-2: rgba(9, 16, 27, 0.98);
+            --line: rgba(130, 169, 255, 0.18);
+            --text: #f3f7ff;
+            --muted: #a4b2cf;
+            --blue: #8fcbff;
+            --green: #87f0cf;
+            --gold: #ddb86d;
+            --max: 1220px;
+            --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Segoe UI", "Inter", system-ui, sans-serif;
+            color: var(--text);
+            line-height: 1.65;
+            background:
+                radial-gradient(circle at top left, rgba(143, 203, 255, 0.18), transparent 27%),
+                radial-gradient(circle at top right, rgba(135, 240, 207, 0.12), transparent 24%),
+                linear-gradient(180deg, var(--bg) 0%, #09131e 48%, var(--bg) 100%);
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .skip-link {
+            position: absolute;
+            left: 16px;
+            top: -56px;
+            z-index: 100;
+            padding: 12px 16px;
+            border-radius: 999px;
+            background: #ffffff;
+            color: #06111a;
+            font-weight: 700;
+            transition: top 160ms ease;
+        }
+
+        .skip-link:focus { top: 16px; }
+
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            backdrop-filter: blur(18px);
+            background: rgba(6, 17, 26, 0.86);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .shell,
+        .footer-shell {
+            width: min(var(--max), calc(100% - 32px));
+            margin: 0 auto;
+        }
+
+        .header-shell {
+            min-height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .brand {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-mark {
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .brand-name {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 19px;
+            font-weight: 700;
+        }
+
+        .site-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .site-nav a:hover,
+        .site-nav a:focus-visible { color: var(--text); }
+
+        .wrap {
+            width: min(var(--max), calc(100% - 32px));
+            margin: 0 auto;
+            padding: 34px 0 90px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.02fr) minmax(320px, 0.98fr);
+            gap: 22px;
+            align-items: end;
+            min-height: calc(100svh - 106px);
+            padding: 14px 0 18px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--blue);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-size: 12px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .eyebrow::before {
+            content: "";
+            width: 28px;
+            height: 1px;
+            background: rgba(143, 203, 255, 0.46);
+        }
+
+        h1, h2, h3 {
+            font-family: Georgia, "Times New Roman", serif;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: clamp(40px, 7vw, 84px);
+            line-height: 0.94;
+            letter-spacing: -0.05em;
+            max-width: 10ch;
+            margin-bottom: 18px;
+        }
+
+        .hero-copy {
+            max-width: 62ch;
+            color: var(--muted);
+            font-size: clamp(17px, 2vw, 21px);
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 26px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
+            padding: 12px 20px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 800;
+            transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+        }
+
+        .btn:hover,
+        .btn:focus-visible { transform: translateY(-1px); }
+
+        .btn-primary {
+            color: #06111a;
+            background: linear-gradient(135deg, var(--blue), var(--green));
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text);
+        }
+
+        .hero-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-top: 16px;
+            color: #dde5fb;
+            font-size: 14px;
+        }
+
+        .hero-links a,
+        .section-links a,
+        .zone-links a {
+            text-decoration: underline;
+            text-decoration-color: rgba(221, 184, 109, 0.32);
+            text-underline-offset: 4px;
+        }
+
+        .poster {
+            position: relative;
+            min-height: 620px;
+            border-radius: 28px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            background:
+                radial-gradient(circle at 18% 18%, rgba(143, 203, 255, 0.18), transparent 22%),
+                radial-gradient(circle at 80% 20%, rgba(221, 184, 109, 0.14), transparent 18%),
+                radial-gradient(circle at 50% 72%, rgba(135, 240, 207, 0.1), transparent 22%),
+                linear-gradient(180deg, rgba(12, 24, 38, 0.98) 0%, rgba(7, 14, 24, 0.98) 100%);
+            box-shadow: var(--shadow);
+        }
+
+        .poster-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 72px 72px;
+            mask-image: linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.3));
+        }
+
+        .pulse {
+            position: absolute;
+            inset: 50% auto auto 50%;
+            width: 420px;
+            height: 420px;
+            transform: translate(-50%, -50%);
+            border-radius: 999px;
+            border: 1px solid rgba(143, 203, 255, 0.12);
+            box-shadow:
+                0 0 0 68px rgba(143, 203, 255, 0.03),
+                0 0 0 132px rgba(143, 203, 255, 0.02);
+        }
+
+        .core-node,
+        .orbit-node {
+            position: absolute;
+            border-radius: 22px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(8, 15, 25, 0.9);
+            padding: 18px 18px 16px;
+            backdrop-filter: blur(12px);
+        }
+
+        .core-node {
+            left: 50%;
+            top: 50%;
+            width: min(82%, 360px);
+            transform: translate(-50%, -50%);
+            border-color: rgba(143, 203, 255, 0.28);
+        }
+
+        .orbit-node {
+            width: min(42%, 220px);
+        }
+
+        .orbit-node strong,
+        .core-node strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 16px;
+        }
+
+        .orbit-node p,
+        .core-node p {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .n-code { left: 24px; top: 34px; }
+        .n-content { right: 24px; top: 56px; }
+        .n-training { left: 36px; bottom: 52px; }
+        .n-research { right: 30px; bottom: 84px; }
+
+        section {
+            margin-top: 48px;
+            padding-top: 8px;
+        }
+
+        h2 {
+            font-size: clamp(28px, 4vw, 44px);
+            line-height: 1.02;
+            margin-bottom: 12px;
+        }
+
+        .section-copy {
+            max-width: 64ch;
+            color: var(--muted);
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .zones {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+        }
+
+        .zone {
+            background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 22px;
+            box-shadow: var(--shadow);
+        }
+
+        .zone-kicker {
+            display: block;
+            color: var(--gold);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .zone h3 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .zone p {
+            color: var(--muted);
+            font-size: 15px;
+            margin-bottom: 14px;
+        }
+
+        .zone ul {
+            list-style: none;
+            display: grid;
+            gap: 8px;
+            color: #d9e3fb;
+            font-size: 14px;
+        }
+
+        .zone li::before {
+            content: "•";
+            color: var(--green);
+            padding-right: 8px;
+        }
+
+        .zone-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 14px;
+            color: #dbe4ff;
+            font-size: 14px;
+        }
+
+        .flow {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .step,
+        .rail {
+            border-radius: 20px;
+            padding: 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .step strong,
+        .rail strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .step p,
+        .rail p {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        .rails {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(6, 17, 26, 0.94);
+        }
+
+        .footer-shell {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding: 26px 0 34px;
+        }
+
+        .footer-copy {
+            max-width: 52ch;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            color: #dfe6fb;
+            font-size: 14px;
+        }
+
+        code {
+            color: var(--green);
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        }
+
+        @media (max-width: 1080px) {
+            .hero,
+            .rails,
+            .flow {
+                grid-template-columns: 1fr;
+            }
+
+            .poster {
+                min-height: 700px;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .site-nav {
+                gap: 12px;
+                font-size: 13px;
+            }
+
+            .wrap,
+            .shell,
+            .footer-shell {
+                width: min(var(--max), calc(100% - 24px));
+            }
+
+            .hero {
+                min-height: auto;
+                padding-top: 8px;
+            }
+
+            .poster {
+                min-height: 760px;
+            }
+
+            .orbit-node {
+                width: calc(100% - 48px);
+                left: 24px;
+                right: 24px;
+            }
+
+            .n-code { top: 24px; }
+            .n-content { top: 180px; }
+            .n-training { bottom: 200px; }
+            .n-research { bottom: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <header class="site-header">
+        <div class="shell header-shell">
+            <a class="brand" href="./index.html">
+                <span class="brand-mark">SCBE-AETHERMOORE</span>
+                <span class="brand-name">Website System Loop</span>
+            </a>
+            <nav class="site-nav" aria-label="Main navigation">
+                <a href="../index.html">Home</a>
+                <a href="./index.html">Research</a>
+                <a href="../demos/index.html">Demos</a>
+                <a href="../articles/index.html">Articles</a>
+                <a href="#zones">Zones</a>
+                <a href="#flow">Flow</a>
+                <a href="#agents">Agents</a>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-content" class="wrap">
+        <section class="hero" aria-labelledby="hero-title">
+            <div>
+                <div class="eyebrow">Public systems map</div>
+                <h1 id="hero-title">One website, seven linked systems.</h1>
+                <p class="hero-copy">
+                    The site is not just a homepage. It is a loop that connects the repo, the notes vault, the grounded assistant,
+                    training capture, public research surfaces, and agent lanes. The point is to keep the public surface readable
+                    while the backend system stays rigorous and reusable.
+                </p>
+                <div class="hero-actions">
+                    <a href="./index.html#grounded-assistant" class="btn btn-primary">Open the grounded assistant</a>
+                    <a href="./sphere-grid.html" class="btn btn-secondary">Open the skill vault</a>
+                </div>
+                <div class="hero-links">
+                    <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener noreferrer">Open the repo</a>
+                    <a href="./index.html">Return to research</a>
+                    <a href="../articles/index.html">Follow the article funnel</a>
+                </div>
+            </div>
+            <div class="poster" aria-label="Website system diagram">
+                <div class="poster-grid"></div>
+                <div class="pulse"></div>
+                <div class="orbit-node n-code">
+                    <strong>Code vault</strong>
+                    <p>Repo-owned public pages, API routes, dispatch spine, and evidence-aware scripts.</p>
+                </div>
+                <div class="orbit-node n-content">
+                    <strong>Content vault</strong>
+                    <p>Notes, prompts, planning packets, and canonical language that feed retrieval and writing.</p>
+                </div>
+                <div class="core-node">
+                    <strong>Grounded website core</strong>
+                    <p>
+                        Public page surfaces, grounded assistant, source packet rendering, and zero-cost-first delivery. This is the user-facing
+                        layer that should stay readable even when the backend system is much deeper.
+                    </p>
+                </div>
+                <div class="orbit-node n-training">
+                    <strong>Training capture</strong>
+                    <p>Interaction logs and reviewed data packets for model improvement without blind auto-training.</p>
+                </div>
+                <div class="orbit-node n-research">
+                    <strong>Research + agent lanes</strong>
+                    <p>Benchmark pages, article outputs, HYDRA browse evidence, and dispatchable website work packets.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="zones" aria-labelledby="zones-title">
+            <div class="eyebrow">Seven zones</div>
+            <h2 id="zones-title">Each zone has one job</h2>
+            <p class="section-copy">
+                The site gets messy when one layer tries to do every job. The fix is to keep each zone narrow and make the connections explicit.
+            </p>
+            <div class="zones">
+                <article class="zone">
+                    <span class="zone-kicker">01</span>
+                    <h3>Code vault</h3>
+                    <p>The repo is the implementation authority.</p>
+                    <ul>
+                        <li>Public pages under <code>docs/</code></li>
+                        <li>Assistant/backend routes in <code>scripts/aetherbrowser/</code></li>
+                        <li>Dispatch and system scripts under <code>scripts/system/</code></li>
+                    </ul>
+                </article>
+                <article class="zone">
+                    <span class="zone-kicker">02</span>
+                    <h3>Content vault</h3>
+                    <p>Notes hold the raw ideas before they become public claims.</p>
+                    <ul>
+                        <li>Obsidian notes as retrieval corpus</li>
+                        <li>Planning packets stay private first</li>
+                        <li>Useful fragments move into the site when they are clear enough</li>
+                    </ul>
+                </article>
+                <article class="zone">
+                    <span class="zone-kicker">03</span>
+                    <h3>Website surfaces</h3>
+                    <p>Readable, evidence-first pages for humans.</p>
+                    <ul>
+                        <li>Homepage for orientation</li>
+                        <li>Research pages for proof and architecture</li>
+                        <li>Demo pages for interactive slices</li>
+                    </ul>
+                </article>
+                <article class="zone">
+                    <span class="zone-kicker">04</span>
+                    <h3>Training capture</h3>
+                    <p>Interactions become training only after review.</p>
+                    <ul>
+                        <li>Raw interaction logs</li>
+                        <li>Reviewed SFT packets</li>
+                        <li>No blind train-on-everything loop</li>
+                    </ul>
+                </article>
+                <article class="zone">
+                    <span class="zone-kicker">05</span>
+                    <h3>Grounded assistant</h3>
+                    <p>The assistant should retrieve first and cite before it improvises.</p>
+                    <ul>
+                        <li>Search <code>notes/</code> and <code>docs/</code></li>
+                        <li>Route into Hugging Face or local AetherBot after retrieval</li>
+                        <li>Keep source packets visible</li>
+                    </ul>
+                </article>
+                <article class="zone">
+                    <span class="zone-kicker">06</span>
+                    <h3>Public research output</h3>
+                    <p>The site needs clean places for what is proven and what is still exploratory.</p>
+                    <ul>
+                        <li>Benchmarks and verification packets</li>
+                        <li>Architecture explainers</li>
+                        <li>Article landing routes</li>
+                    </ul>
+                </article>
+                <article class="zone">
+                    <span class="zone-kicker">07</span>
+                    <h3>Agent control</h3>
+                    <p>Website work should be packetized so it can be repeated or delegated safely.</p>
+                    <ul>
+                        <li>Dispatch capabilities for website work</li>
+                        <li>HYDRA browse evidence for comparisons</li>
+                        <li>Swarm lanes only when the task is bounded</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section id="flow" aria-labelledby="flow-title">
+            <div class="eyebrow">Operating loop</div>
+            <h2 id="flow-title">The website gets better through one loop</h2>
+            <p class="section-copy">
+                This is the bounded version of the bigger dream: one assistant, one evidence loop, one training loop, and then expand.
+            </p>
+            <div class="flow">
+                <article class="step">
+                    <strong>1. Ask</strong>
+                    <p>A public question, demo interaction, or client task hits the site.</p>
+                </article>
+                <article class="step">
+                    <strong>2. Ground</strong>
+                    <p>The system retrieves from local notes and docs before it routes to a model.</p>
+                </article>
+                <article class="step">
+                    <strong>3. Curate</strong>
+                    <p>The interaction is logged, reviewed, and only then promoted toward training data.</p>
+                </article>
+                <article class="step">
+                    <strong>4. Publish</strong>
+                    <p>Better answers, cleaner pages, and stronger research packets feed the next article and product surface.</p>
+                </article>
+            </div>
+        </section>
+
+        <section id="agents" aria-labelledby="agents-title">
+            <div class="eyebrow">Agent lanes</div>
+            <h2 id="agents-title">Agent work should stay packetized</h2>
+            <p class="section-copy">
+                The site can plug into HYDRA and the dispatch spine, but only through bounded lanes. The website should not become a dumping ground for uncontrolled automation.
+            </p>
+            <div class="rails">
+                <article class="rail">
+                    <strong>Website surface lane</strong>
+                    <p>Use the docs/research/demo routes as the mutable public surface.</p>
+                </article>
+                <article class="rail">
+                    <strong>Assistant lane</strong>
+                    <p>Use the grounded assistant backend and source rendering before adding more tools or autonomy.</p>
+                </article>
+                <article class="rail">
+                    <strong>Research lane</strong>
+                    <p>Use deterministic browse evidence for reference scans and competitive comparisons.</p>
+                </article>
+            </div>
+            <div class="hero-links">
+                <a href="./sphere-grid.html">Inspect the public skill vault</a>
+                <a href="./index.html#grounded-assistant">Use the grounded assistant</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-shell">
+            <div>
+                <div class="brand-mark">SCBE website system</div>
+                <p class="footer-copy">
+                    Public map for the repo, notes vault, grounded assistant, training capture, research surfaces, and agent control loop.
+                </p>
+            </div>
+            <div class="footer-links" aria-label="Footer links">
+                <a href="./index.html">Research</a>
+                <a href="../demos/index.html">Demos</a>
+                <a href="../articles/index.html">Articles</a>
+                <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
