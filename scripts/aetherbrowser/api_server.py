@@ -22,12 +22,12 @@ import re
 import shlex
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 import uuid
 from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-
-logger = logging.getLogger(__name__)
 
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -47,6 +47,15 @@ CHESSBOARD_ARTIFACTS_DIR = ROOT / "artifacts" / "chessboard"
 IDE_LOGS_DIR = ROOT / "artifacts" / "ai_ide_logs"
 IDE_CHAT_LOG = IDE_LOGS_DIR / "chat.jsonl"
 IDE_CLI_LOG = IDE_LOGS_DIR / "cli.jsonl"
+KNOWLEDGE_SEARCH_ROOTS: tuple[Path, ...] = (ROOT / "notes", ROOT / "docs")
+KNOWLEDGE_SUFFIXES = {".md", ".txt", ".html"}
+DEFAULT_OLLAMA_MODEL = os.environ.get("AETHERBOT_OLLAMA_MODEL", "issdandavis7795/AetherBot").strip()
+DEFAULT_HF_CHAT_MODEL = (
+    os.environ.get("AETHERBOT_HF_MODEL", "").strip()
+    or os.environ.get("HF_CHAT_MODEL", "").strip()
+)
+HF_CHAT_ROUTER_URL = os.environ.get("HF_CHAT_ROUTER_URL", "https://router.huggingface.co/v1/chat/completions").strip()
+SAFE_VAULT_ROOT = (ROOT / "notes").resolve()
 
 MOMENTUM_TRAIN_CONFIGS: dict[str, Path] = {
     "daily_ops": WORKFLOWS_DIR / "daily_ops_train.json",
@@ -66,11 +75,63 @@ CLI_DOCS_REGISTRY: dict[str, Path] = {
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
+logger = logging.getLogger(__name__)
+
 # ---------------------------------------------------------------------------
 #  Lazy-load the runtime gate (best effort — works even if deps are missing)
 # ---------------------------------------------------------------------------
 
 _runtime_gate = None
+
+
+def _env_flag(name: str, default: bool = False) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _env_float(name: str) -> Optional[float]:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return None
+    try:
+        return float(raw)
+    except ValueError:
+        logger.warning("Ignoring invalid float env %s=%r", name, raw)
+        return None
+
+
+def _runtime_gate_kwargs() -> dict[str, Any]:
+    kwargs: dict[str, Any] = {
+        "coords_backend": os.environ.get("SCBE_COORDS_BACKEND", "semantic"),
+    }
+    if _env_flag("SCBE_USE_CLASSIFIER"):
+        kwargs["use_classifier"] = True
+    if _env_flag("SCBE_USE_TRICHROMATIC_GOVERNANCE"):
+        kwargs["use_trichromatic_governance"] = True
+
+    classifier_model_dir = os.environ.get("SCBE_CLASSIFIER_MODEL_DIR", "").strip()
+    if classifier_model_dir:
+        kwargs["classifier_model_dir"] = classifier_model_dir
+
+    quarantine_threshold = _env_float("SCBE_CLASSIFIER_QUARANTINE_THRESHOLD")
+    if quarantine_threshold is not None:
+        kwargs["classifier_quarantine_threshold"] = quarantine_threshold
+
+    deny_threshold = _env_float("SCBE_CLASSIFIER_DENY_THRESHOLD")
+    if deny_threshold is not None:
+        kwargs["classifier_deny_threshold"] = deny_threshold
+
+    trichromatic_quarantine = _env_float("SCBE_TRICHROMATIC_QUARANTINE_THRESHOLD")
+    if trichromatic_quarantine is not None:
+        kwargs["trichromatic_quarantine_threshold"] = trichromatic_quarantine
+
+    trichromatic_deny = _env_float("SCBE_TRICHROMATIC_DENY_THRESHOLD")
+    if trichromatic_deny is not None:
+        kwargs["trichromatic_deny_threshold"] = trichromatic_deny
+
+    return kwargs
 
 
 def _get_gate():
@@ -79,13 +140,11 @@ def _get_gate():
     if _runtime_gate is None:
         try:
             from governance.runtime_gate import RuntimeGate
-            coords_backend = os.environ.get("SCBE_COORDS_BACKEND", "stats")
-            _runtime_gate = RuntimeGate(coords_backend=coords_backend)
+            _runtime_gate = RuntimeGate(**_runtime_gate_kwargs())
         except Exception:
             try:
                 from src.governance.runtime_gate import RuntimeGate
-                coords_backend = os.environ.get("SCBE_COORDS_BACKEND", "stats")
-                _runtime_gate = RuntimeGate(coords_backend=coords_backend)
+                _runtime_gate = RuntimeGate(**_runtime_gate_kwargs())
             except Exception:
                 _runtime_gate = None
     return _runtime_gate
@@ -117,8 +176,8 @@ def _load_env():
                     value = value.strip().strip('"').strip("'")
                     if key and key not in os.environ:
                         os.environ[key] = value
-        except Exception as e:
-            logger.debug("Failed to load .env file: %s", e)
+        except Exception:
+            logger.debug("Failed to load connector oauth env file", exc_info=True)
 
 
 _load_env()
@@ -168,7 +227,7 @@ def _append_jsonl(path: Path, record: dict[str, Any]) -> None:
             f.write(json.dumps(safe, ensure_ascii=True) + "\n")
     except Exception:
         # Logging must never break the API server.
-        pass
+        logger.debug("Failed to append JSONL record to %s", path, exc_info=True)
 
 
 def _tail_jsonl(path: Path, n: int) -> list[dict[str, Any]]:
@@ -192,6 +251,23 @@ def _tail_jsonl(path: Path, n: int) -> list[dict[str, Any]]:
         return out
     except Exception:
         return []
+
+
+def _is_path_within(candidate: Path, root: Path) -> bool:
+    try:
+        candidate.resolve().relative_to(root.resolve())
+        return True
+    except Exception:
+        return False
+
+
+def _safe_vault_root() -> Path:
+    configured = Path(os.environ.get("OBSIDIAN_VAULT", str(SAFE_VAULT_ROOT)))
+    resolved = configured.resolve(strict=False)
+    if _is_path_within(resolved, SAFE_VAULT_ROOT):
+        return resolved
+    logger.warning("Rejected unsafe vault root outside allowed tree: %s", configured)
+    return SAFE_VAULT_ROOT
 
 # ---------------------------------------------------------------------------
 #  FastAPI App
@@ -331,12 +407,47 @@ _TONGUE_PATTERNS = {
 }
 
 FIB_SEQUENCE = [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
+SEARCH_STOPWORDS = {
+    "a",
+    "an",
+    "and",
+    "are",
+    "as",
+    "at",
+    "be",
+    "by",
+    "for",
+    "from",
+    "how",
+    "i",
+    "if",
+    "in",
+    "into",
+    "is",
+    "it",
+    "of",
+    "on",
+    "or",
+    "our",
+    "the",
+    "this",
+    "to",
+    "we",
+    "what",
+    "when",
+    "where",
+    "which",
+    "with",
+    "you",
+    "your",
+}
 
 
 class ChatRequest(BaseModel):
     message: str
     model: str = "claude"
     mode: Optional[str] = None
+    hf_model: Optional[str] = None
     active_file_name: Optional[str] = None
     active_file_content: Optional[str] = None
 
@@ -353,6 +464,256 @@ def _classify_tongues(text: str) -> Dict[str, float]:
     if all(v == 0.0 for v in activations.values()):
         activations["KO"] = 0.5
     return activations
+
+
+class FactCheckRequest(BaseModel):
+    question: str
+    provider: str = "grounded"
+    mode: str = "fact-check"
+    max_sources: int = 6
+    hf_model: Optional[str] = None
+    allow_web: bool = False
+
+
+def _normalize_text_blob(text: str) -> str:
+    if not text:
+        return ""
+    out = re.sub(r"<[^>]+>", " ", text)
+    out = re.sub(r"!\[[^\]]*\]\([^)]+\)", " ", out)
+    out = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", out)
+    out = re.sub(r"\[\[([^\]]+)\]\]", r"\1", out)
+    out = re.sub(r"`{1,3}", " ", out)
+    out = re.sub(r"[#>*_~|-]", " ", out)
+    out = re.sub(r"\s+", " ", out)
+    return out.strip()
+
+
+def _query_terms(text: str) -> list[str]:
+    terms: list[str] = []
+    seen: set[str] = set()
+    for token in re.findall(r"[A-Za-z0-9][A-Za-z0-9_-]{2,}", text.lower()):
+        if token in SEARCH_STOPWORDS or token in seen:
+            continue
+        seen.add(token)
+        terms.append(token)
+    return terms[:12]
+
+
+def _knowledge_files() -> list[Path]:
+    files: list[Path] = []
+    for root in KNOWLEDGE_SEARCH_ROOTS:
+        if not root.exists():
+            continue
+        for path in root.rglob("*"):
+            if not path.is_file():
+                continue
+            if path.suffix.lower() not in KNOWLEDGE_SUFFIXES:
+                continue
+            try:
+                if path.stat().st_size > 1_500_000:
+                    continue
+            except OSError:
+                continue
+            files.append(path)
+    return files
+
+
+def _public_source_url(path: Path) -> Optional[str]:
+    try:
+        relative = path.relative_to(ROOT / "docs")
+    except ValueError:
+        return None
+    return "/" + str(relative).replace("\\", "/")
+
+
+def _build_snippet(text: str, terms: list[str], max_chars: int = 320) -> str:
+    if not text:
+        return ""
+    lower = text.lower()
+    indices = [lower.find(term) for term in terms if lower.find(term) >= 0]
+    anchor = min(indices) if indices else 0
+    start = max(0, anchor - 110)
+    end = min(len(text), anchor + max_chars)
+    snippet = text[start:end].strip()
+    if start > 0:
+        snippet = "..." + snippet
+    if end < len(text):
+        snippet = snippet + "..."
+    return snippet
+
+
+def _search_local_knowledge(query: str, max_sources: int = 6) -> list[dict[str, Any]]:
+    query_text = (query or "").strip()
+    if not query_text:
+        return []
+    query_lower = query_text.lower()
+    terms = _query_terms(query_text)
+    results: list[dict[str, Any]] = []
+    for path in _knowledge_files():
+        try:
+            raw = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        normalized = _normalize_text_blob(raw)
+        if not normalized:
+            continue
+        haystack = normalized.lower()
+        path_text = str(path.relative_to(ROOT)).replace("\\", "/").lower()
+        score = 0
+        if query_lower in haystack:
+            score += 8
+        if query_lower in path_text:
+            score += 8
+        for term in terms:
+            if term in path_text:
+                score += 4
+            hits = haystack.count(term)
+            if hits:
+                score += min(hits, 5)
+        if score <= 0:
+            continue
+        results.append(
+            {
+                "title": path.stem.replace("-", " ").replace("_", " "),
+                "path": str(path.relative_to(ROOT)).replace("\\", "/"),
+                "excerpt": _build_snippet(normalized, terms or [query_lower]),
+                "score": score,
+                "public_url": _public_source_url(path),
+            }
+        )
+    results.sort(key=lambda item: (-int(item["score"]), item["path"]))
+    return results[: max(1, min(int(max_sources), 8))]
+
+
+def _mode_guidance(mode: str) -> str:
+    mapping = {
+        "fact-check": "Answer only from the evidence packet. Distinguish supported claims from gaps or uncertainty.",
+        "research": "Synthesize the evidence packet into a readable research answer, but do not invent support that is not present.",
+        "draft": "Use the evidence packet to draft a useful response. Label any sentence that extends beyond the evidence as a draft inference.",
+        "code": "Answer like an implementation assistant grounded in the repo notes and docs. Prefer concrete steps, file paths, and constraints.",
+        "math": "Answer like a math explainer grounded in the local SCBE corpus. Keep equations and assumptions explicit.",
+        "skills": "Answer using the local skill vault and docs as the operating reference. Point to skill paths and likely invocation patterns.",
+    }
+    return mapping.get(mode, mapping["fact-check"])
+
+
+def _grounding_prompt(question: str, mode: str, sources: list[dict[str, Any]]) -> str:
+    evidence_lines: list[str] = []
+    if sources:
+        for index, source in enumerate(sources, start=1):
+            evidence_lines.append(
+                f"[S{index}] {source['path']}\nTitle: {source['title']}\nExcerpt: {source['excerpt']}"
+            )
+    else:
+        evidence_lines.append("[S0] No matching local evidence was found in notes/ or docs/.")
+    return (
+        "You are AetherBot for the SCBE research surface.\n"
+        f"Mode: {mode}\n"
+        f"Instruction: {_mode_guidance(mode)}\n"
+        "Rules:\n"
+        "- Cite supporting claims inline as [S1], [S2], etc.\n"
+        "- If the evidence packet is weak, say that directly.\n"
+        "- Do not claim you accessed sources outside the provided packet.\n\n"
+        "Evidence Packet:\n"
+        f"{chr(10).join(evidence_lines)}\n\n"
+        f"User question:\n{question}\n\n"
+        "Answer:"
+    )
+
+
+def _grounded_fallback_answer(question: str, mode: str, sources: list[dict[str, Any]]) -> str:
+    if not sources:
+        return (
+            "I could not find direct support for that question in the local SCBE notes/docs corpus. "
+            "Use a narrower query or route this through a model provider after the retrieval layer is strengthened."
+        )
+    lines = [
+        f"Grounded {mode} packet for: {question}",
+        "",
+        "Best local evidence:",
+    ]
+    for index, source in enumerate(sources[:4], start=1):
+        lines.append(f"[S{index}] {source['title']} ({source['path']})")
+        lines.append(source["excerpt"])
+        lines.append("")
+    lines.append("This answer is retrieval-only. It summarizes the local evidence packet without a model rewrite.")
+    return "\n".join(lines).strip()
+
+
+def _call_local_ollama(prompt: str, model_id: Optional[str] = None) -> dict[str, Any]:
+    try:
+        import requests as _req
+    except Exception:
+        return {"ok": False, "error": "requests is not available for Ollama calls"}
+    chosen_model = (model_id or DEFAULT_OLLAMA_MODEL).strip()
+    try:
+        response = _req.post(
+            "http://localhost:11434/api/generate",
+            json={"model": chosen_model, "prompt": prompt, "stream": False},
+            timeout=120,
+        )
+        if response.status_code != 200:
+            return {"ok": False, "error": f"Ollama error {response.status_code}", "model": chosen_model}
+        payload = response.json() if response.content else {}
+        return {"ok": True, "text": str(payload.get("response", "")).strip(), "model": chosen_model}
+    except Exception as exc:
+        return {"ok": False, "error": f"Ollama unavailable: {exc}", "model": chosen_model}
+
+
+def _call_huggingface_chat(prompt: str, model_id: Optional[str] = None) -> dict[str, Any]:
+    token = os.environ.get("HF_TOKEN", "").strip()
+    chosen_model = (model_id or DEFAULT_HF_CHAT_MODEL).strip()
+    if not token:
+        return {"ok": False, "error": "HF_TOKEN is not configured", "model": chosen_model or None}
+    if not chosen_model:
+        return {"ok": False, "error": "No Hugging Face chat model is configured", "model": None}
+    payload = {
+        "model": chosen_model,
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are AetherBot for SCBE-AETHERMOORE. "
+                    "Answer from the supplied evidence packet, cite it as [S1], [S2], etc, and say when support is missing."
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.2,
+        "max_tokens": 900,
+    }
+    request = urllib.request.Request(
+        HF_CHAT_ROUTER_URL,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=120) as response:
+            body = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="ignore")
+        return {"ok": False, "error": f"Hugging Face router error {exc.code}: {detail[:240]}", "model": chosen_model}
+    except Exception as exc:
+        return {"ok": False, "error": f"Hugging Face unavailable: {exc}", "model": chosen_model}
+    choice = body.get("choices", [{}])[0] if isinstance(body, dict) else {}
+    message = choice.get("message", {}) if isinstance(choice, dict) else {}
+    text = str(message.get("content", "")).strip()
+    if not text:
+        return {"ok": False, "error": "Hugging Face returned an empty response", "model": chosen_model}
+    return {"ok": True, "text": text, "model": chosen_model}
+
+
+def _provider_response(provider: str, prompt: str, hf_model: Optional[str] = None) -> dict[str, Any]:
+    provider_key = (provider or "grounded").strip().lower()
+    if provider_key == "local":
+        return _call_local_ollama(prompt)
+    if provider_key == "huggingface":
+        return _call_huggingface_chat(prompt, model_id=hf_model)
+    return {"ok": False, "error": f"Unknown provider: {provider_key}"}
 
 
 @app.post("/api/chat")
@@ -381,43 +742,34 @@ async def chat(req: ChatRequest):
                 "signals": gr.signals,
                 "tongue_coords": [round(c, 4) for c in gr.tongue_coords],
             }
-        except Exception as e:
-            logger.warning("Gate evaluation failed: %s", e)
-            gate_result = {"error": "Governance gate evaluation failed"}
+        except Exception:
+            logger.exception("Runtime gate evaluation failed")
+            gate_result = {"error": "runtime gate unavailable"}
 
     fibonacci_index = min(fib_index, len(FIB_SEQUENCE) - 1)
     fib_value = FIB_SEQUENCE[fibonacci_index]
 
     # Route to model — Ollama local for "local", stub for others
     response_text = ""
-    if req.model == "local" and decision != "DENY":
-        try:
-            import requests as _req
-            # Provide lightweight IDE context to improve code-aware answers.
-            ctx_lines: list[str] = []
-            if req.mode:
-                ctx_lines.append(f"MODE: {req.mode}")
-            if req.active_file_name:
-                ctx_lines.append(f"ACTIVE_FILE: {req.active_file_name}")
-            if req.active_file_content:
-                content = req.active_file_content
-                if len(content) > 12000:
-                    content = content[:12000] + "\n...[TRUNCATED]..."
-                ctx_lines.append("ACTIVE_FILE_CONTENT:\n" + content)
-            prompt = req.message
-            if ctx_lines:
-                prompt = "\n".join(ctx_lines) + "\n\nUSER:\n" + req.message + "\n\nASSISTANT:"
-            ollama_resp = _req.post(
-                "http://localhost:11434/api/generate",
-                json={"model": "issdandavis7795/AetherBot", "prompt": prompt, "stream": False},
-                timeout=120,
-            )
-            if ollama_resp.status_code == 200:
-                response_text = ollama_resp.json().get("response", "")
-            else:
-                response_text = f"[Ollama error: {ollama_resp.status_code}]"
-        except Exception as e:
-            response_text = f"[Ollama unavailable: {e}. Start with: ollama serve]"
+    if req.model in {"local", "huggingface"} and decision != "DENY":
+        ctx_lines: list[str] = []
+        if req.mode:
+            ctx_lines.append(f"MODE: {req.mode}")
+        if req.active_file_name:
+            ctx_lines.append(f"ACTIVE_FILE: {req.active_file_name}")
+        if req.active_file_content:
+            content = req.active_file_content
+            if len(content) > 12000:
+                content = content[:12000] + "\n...[TRUNCATED]..."
+            ctx_lines.append("ACTIVE_FILE_CONTENT:\n" + content)
+        prompt = req.message
+        if ctx_lines:
+            prompt = "\n".join(ctx_lines) + "\n\nUSER:\n" + req.message + "\n\nASSISTANT:"
+        model_result = await asyncio.to_thread(_provider_response, req.model, prompt, req.hf_model)
+        if model_result.get("ok"):
+            response_text = str(model_result.get("text", ""))
+        else:
+            response_text = f"[{req.model.capitalize()} unavailable: {model_result.get('error', 'unknown error')}]"
     elif decision == "DENY":
         response_text = f"[DENIED by governance gate. Cost: {cost}. Signals: {gate_result.get('signals', []) if gate_result else []}]"
     else:
@@ -437,7 +789,7 @@ async def chat(req: ChatRequest):
                 "model": req.model,
                 "mode": req.mode,
                 "active_file_name": req.active_file_name,
-                "active_file_content_preview": (req.active_file_content or "")[:4000],
+                "active_file_content_preview": _scrub_text((req.active_file_content or "")[:4000]),
                 "active_file_content_len": len(req.active_file_content or ""),
             },
             "response": {
@@ -462,6 +814,106 @@ async def chat(req: ChatRequest):
         "cost": cost,
         "model": req.model,
         "gate": gate_result,
+    }
+
+
+@app.post("/api/fact-check")
+async def fact_check(req: FactCheckRequest):
+    question = (req.question or "").strip()
+    if not question:
+        return {"ok": False, "error": "Question is required"}
+
+    mode = (req.mode or "fact-check").strip().lower()
+    provider = (req.provider or "grounded").strip().lower()
+    sources = await asyncio.to_thread(_search_local_knowledge, question, req.max_sources)
+    grounding_prompt = _grounding_prompt(question, mode, sources)
+    answer = _grounded_fallback_answer(question, mode, sources)
+    provider_meta: dict[str, Any] = {"provider": provider, "status": "grounded-only"}
+
+    gate = _get_gate()
+    gate_result = None
+    decision = "ALLOW"
+    trust_level = "PROVISIONAL"
+    cost = 0.0
+    if gate is not None:
+        try:
+            gr = gate.evaluate(question)
+            decision = gr.decision.value
+            trust_level = gr.trust_level
+            cost = round(gr.cost, 4)
+            gate_result = {
+                "decision": decision,
+                "cost": cost,
+                "spin_magnitude": gr.spin_magnitude,
+                "signals": gr.signals,
+                "tongue_coords": [round(c, 4) for c in gr.tongue_coords],
+            }
+        except Exception:
+            gate_result = {"error": "Runtime gate evaluation failed"}
+
+    if decision == "DENY":
+        answer = "The governance gate denied this request before model routing. Narrow the question and retry."
+        provider_meta = {"provider": provider, "status": "blocked-by-governance"}
+    elif provider in {"local", "huggingface"}:
+        model_result = await asyncio.to_thread(_provider_response, provider, grounding_prompt, req.hf_model)
+        provider_meta = {
+            "provider": provider,
+            "status": "ok" if model_result.get("ok") else "fallback",
+            "model": model_result.get("model"),
+        }
+        if model_result.get("ok"):
+            answer = str(model_result.get("text", "")).strip()
+        else:
+            provider_meta["error"] = model_result.get("error")
+            answer = (
+                f"{answer}\n\nModel provider note: {model_result.get('error', 'provider unavailable')}."
+            )
+
+    _append_jsonl(
+        IDE_CHAT_LOG,
+        {
+            "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "kind": "fact_check",
+            "request": {
+                "question": question,
+                "provider": provider,
+                "mode": mode,
+                "max_sources": req.max_sources,
+                "allow_web": bool(req.allow_web),
+            },
+            "response": {
+                "answer": answer,
+                "source_count": len(sources),
+                "governance_decision": decision,
+                "trust_level": trust_level,
+                "cost": cost,
+                "provider_meta": provider_meta,
+            },
+        },
+    )
+
+    return {
+        "ok": True,
+        "question": question,
+        "answer": answer,
+        "mode": mode,
+        "provider": provider,
+        "provider_meta": provider_meta,
+        "sources": sources,
+        "source_count": len(sources),
+        "governance_decision": decision,
+        "trust_level": trust_level,
+        "cost": cost,
+        "gate": gate_result,
+        "web_search": {
+            "enabled": False,
+            "requested": bool(req.allow_web),
+            "status": "not-wired-yet",
+        },
+        "training_capture": {
+            "logged": True,
+            "log_path": str(IDE_CHAT_LOG),
+        },
     }
 
 
@@ -525,8 +977,8 @@ async def red_team_run(req: RedTeamRunRequest = RedTeamRunRequest()):
         }
     except subprocess.TimeoutExpired:
         return {"error": "Benchmark timed out (120s limit)", "total": 0, "passed": 0, "failed": 0, "results": []}
-    except Exception as e:
-        logger.warning("Red-team benchmark failed: %s", e)
+    except Exception:
+        logger.exception("Red team benchmark execution failed")
         return {"error": "Benchmark execution failed", "total": 0, "passed": 0, "failed": 0, "results": []}
 
 
@@ -555,8 +1007,8 @@ async def red_team_suites():
                 test_count = len(re.findall(r"^\s*def test_", content, re.MULTILINE))
                 if test_count > 0:
                     suite["probes"] = test_count
-            except Exception as e:
-                logger.debug("Failed to read test suite %s: %s", path, e)
+            except Exception:
+                logger.debug("Failed to inspect adversarial suite file %s", path, exc_info=True)
         suites.append(suite)
 
     return {"suites": suites, "total_probes": sum(s["probes"] for s in suites)}
@@ -584,8 +1036,9 @@ def _run_subprocess(cmd: List[str], timeout: int = 60) -> Dict[str, Any]:
         }
     except subprocess.TimeoutExpired:
         return {"stdout": "", "stderr": "timeout", "exit_code": -1}
-    except Exception as e:
-        return {"stdout": "", "stderr": str(e), "exit_code": -1}
+    except Exception:
+        logger.exception("Subprocess invocation failed")
+        return {"stdout": "", "stderr": "subprocess failed", "exit_code": -1}
 
 
 @app.get("/api/vault/stats")
@@ -645,16 +1098,16 @@ async def vault_stats():
                         notes = len(graph["nodes"])
                     if "edges" in graph and isinstance(graph["edges"], list):
                         edges = len(graph["edges"])
-            except Exception as e:
-                logger.debug("Failed to parse vault graph: %s", e)
+            except Exception:
+                pass
 
         # Check SFT output
         sft_file = ROOT / "training-data" / "apollo" / "obsidian_vault_sft.jsonl"
         if sft_file.exists():
             try:
                 sft_pairs = sum(1 for _ in sft_file.open(encoding="utf-8"))
-            except Exception as e:
-                logger.debug("Failed to count SFT pairs: %s", e)
+            except Exception:
+                pass
 
         return {
             "notes": notes,
@@ -682,17 +1135,17 @@ async def vault_stats():
 async def vault_search(q: str = Query(..., description="Search query")):
     """Search vault notes by keyword."""
     # Fallback: search the vault directory directly
-    vault_path = Path(os.environ.get("OBSIDIAN_VAULT", r"C:\Users\issda\Documents\Avalon Files"))
+    vault_path = _safe_vault_root()
     results: List[Dict[str, Any]] = []
 
     if vault_path.exists():
         try:
             query_lower = q.lower()
-            resolved_vault = vault_path.resolve()
             for md_file in vault_path.rglob("*.md"):
                 try:
-                    # Path containment check — prevent symlink escape
-                    if not md_file.resolve().is_relative_to(resolved_vault):
+                    resolved_file = md_file.resolve(strict=False)
+                    if not _is_path_within(resolved_file, vault_path):
+                        logger.warning("Skipping vault search file outside allowed root: %s", md_file)
                         continue
                     content = md_file.read_text(encoding="utf-8", errors="ignore")
                     if query_lower in content.lower() or query_lower in md_file.stem.lower():
@@ -710,11 +1163,11 @@ async def vault_search(q: str = Query(..., description="Search query")):
                         })
                         if len(results) >= 20:
                             break
-                except Exception as e:
-                    logger.debug("vault_search: skipping file: %s", e)
+                except Exception:
+                    logger.debug("Suppressed vault search read failure for %s", md_file, exc_info=True)
                     continue
-        except Exception as e:
-            logger.debug("vault_search: error scanning vault: %s", e)
+        except Exception:
+            logger.debug("Suppressed vault search traversal failure for %s", vault_path, exc_info=True)
 
     # If vault not accessible, try searching docs/ in the repo
     if not results:
@@ -738,6 +1191,7 @@ async def vault_search(q: str = Query(..., description="Search query")):
                         if len(results) >= 20:
                             break
                 except Exception:
+                    logger.debug("Suppressed docs search read failure for %s", md_file, exc_info=True)
                     continue
 
     return {"query": q, "count": len(results), "results": results}
@@ -784,14 +1238,14 @@ async def vault_sync():
                 stats["edges"] = int(s.get("total_links", 0))
                 stats["orphans"] = int(s.get("orphan_count", 0))
                 stats["tongues"] = s.get("tongues", {}) if isinstance(s.get("tongues"), dict) else {}
-        except Exception as e:
-            logger.debug("Failed to read vault sync graph: %s", e)
+        except Exception:
+            logger.debug("Suppressed obsidian graph stats read failure", exc_info=True)
     sft_file = ROOT / "training-data" / "apollo" / "obsidian_vault_sft.jsonl"
     if sft_file.exists():
         try:
             stats["sft_pairs"] = sum(1 for _ in sft_file.open(encoding="utf-8"))
-        except Exception as e:
-            logger.debug("Failed to count vault sync SFT pairs: %s", e)
+        except Exception:
+            logger.debug("Suppressed obsidian SFT count failure", exc_info=True)
 
     return {
         "synced": sync_result.get("exit_code", -1) == 0,
@@ -1005,9 +1459,8 @@ async def ops_momentum_latest(train_id: str = "daily_ops"):
         return {"error": f"state.json missing for {latest.name}", "ok": False}
     try:
         state = json.loads(state_path.read_text(encoding="utf-8"))
-    except Exception as e:
-        logger.warning("Failed to read momentum state: %s", e)
-        return {"error": "Failed to read training state", "ok": False}
+    except Exception:
+        return {"error": "Could not read momentum train state", "ok": False}
 
     stations = state.get("stations", {}) if isinstance(state, dict) else {}
     statuses: dict[str, str] = {}
@@ -1069,9 +1522,8 @@ async def ops_chessboard_latest():
     try:
         meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
         packets = json.loads(packets_path.read_text(encoding="utf-8")) if packets_path.exists() else {}
-    except Exception as e:
-        logger.warning("Failed to read chessboard data: %s", e)
-        return {"error": "Failed to read chessboard data", "ok": False}
+    except Exception:
+        return {"error": "Could not read latest chessboard artifacts", "ok": False}
     return {
         "ok": True,
         "output_dir": str(latest.relative_to(ROOT)),
@@ -1222,9 +1674,9 @@ def _cli_docs_show(key: str, max_chars: int = 9000) -> dict[str, Any]:
         return {"ok": False, "error": f"Doc missing: {path}", "key": key, "path": str(path)}
     try:
         content = path.read_text(encoding="utf-8", errors="replace")
-    except Exception as e:
-        logger.warning("Failed to read doc %s: %s", key, e)
-        return {"ok": False, "error": "Failed to read document", "key": key, "path": str(path)}
+    except Exception:
+        logger.exception("Failed to read CLI doc %s", path)
+        return {"ok": False, "error": "Could not read document", "key": key, "path": str(path)}
     return {
         "ok": True,
         "key": key,
@@ -1366,8 +1818,7 @@ async def cli_run(req: CliRunRequest = CliRunRequest()):
     try:
         parts = shlex.split(raw, posix=True)
     except Exception as e:
-        logger.debug("CLI parse error: %s", e)
-        return {"ok": False, "command": raw, "error": "Invalid command syntax", "timestamp": _cli_now_iso()}
+        return {"ok": False, "command": raw, "error": f"Parse error: {e}", "timestamp": _cli_now_iso()}
 
     result = await _cli_dispatch(parts)
     # Normalise to always include command + timestamp
@@ -1398,8 +1849,7 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
     try:
         parts = shlex.split(raw, posix=True)
     except Exception as e:
-        logger.debug("CLI job parse error: %s", e)
-        return {"ok": False, "command": raw, "error": "Invalid command syntax", "timestamp": _cli_now_iso()}
+        return {"ok": False, "command": raw, "error": f"Parse error: {e}", "timestamp": _cli_now_iso()}
 
     job_id = uuid.uuid4().hex
     started = _cli_now_iso()
@@ -1428,7 +1878,8 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
                 "finished_at": _cli_now_iso(),
                 "result": out,
             }
-        except Exception as e:
+        except Exception:
+            logger.exception("CLI job failed for command: %s", raw)
             _append_jsonl(
                 IDE_CLI_LOG,
                 {
@@ -1437,10 +1888,9 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
                     "job_id": job_id,
                     "command": raw,
                     "status": "failed",
-                    "error": f"{type(e).__name__}: see server logs",
+                    "error": "CLI job failed",
                 },
             )
-            logger.error("CLI job %s failed: %s", job_id, e, exc_info=True)
             _cli_jobs[job_id] = {
                 "ok": False,
                 "job_id": job_id,
@@ -1448,7 +1898,7 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
                 "status": "failed",
                 "started_at": started,
                 "finished_at": _cli_now_iso(),
-                "error": "Job execution failed — see server logs",
+                "error": "CLI job failed",
             }
 
     asyncio.create_task(_runner())
