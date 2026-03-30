@@ -257,10 +257,13 @@ body {
 
 .hex-label {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 22px;
+  font-size: 14px;
   font-weight: 700;
   position: relative;
   z-index: 2;
+  line-height: 1.05;
+  text-align: center;
+  padding: 0 6px;
   text-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 
@@ -535,7 +538,7 @@ body {
       <div class="hex-cell" data-tongue="KO">
         <div class="hex-bg"></div>
         <div class="hex-glow"></div>
-        <div class="hex-label">KO</div>
+        <div class="hex-label">Kor'aelin</div>
         <div class="hex-name">Intent</div>
         <div class="hex-value" id="val-KO">0.00</div>
         <div class="hex-weight">&phi;^0 = 1.00</div>
@@ -544,7 +547,7 @@ body {
       <div class="hex-cell" data-tongue="AV">
         <div class="hex-bg"></div>
         <div class="hex-glow"></div>
-        <div class="hex-label">AV</div>
+        <div class="hex-label">Avali</div>
         <div class="hex-name">Transport</div>
         <div class="hex-value" id="val-AV">0.00</div>
         <div class="hex-weight">&phi;^1 = 1.62</div>
@@ -553,7 +556,7 @@ body {
       <div class="hex-cell" data-tongue="RU">
         <div class="hex-bg"></div>
         <div class="hex-glow"></div>
-        <div class="hex-label">RU</div>
+        <div class="hex-label">Runethic</div>
         <div class="hex-name">Policy</div>
         <div class="hex-value" id="val-RU">0.00</div>
         <div class="hex-weight">&phi;^2 = 2.62</div>
@@ -562,7 +565,7 @@ body {
       <div class="hex-cell" data-tongue="CA">
         <div class="hex-bg"></div>
         <div class="hex-glow"></div>
-        <div class="hex-label">CA</div>
+        <div class="hex-label">Cassisivadan</div>
         <div class="hex-name">Compute</div>
         <div class="hex-value" id="val-CA">0.00</div>
         <div class="hex-weight">&phi;^3 = 4.24</div>
@@ -571,7 +574,7 @@ body {
       <div class="hex-cell" data-tongue="UM">
         <div class="hex-bg"></div>
         <div class="hex-glow"></div>
-        <div class="hex-label">UM</div>
+        <div class="hex-label">Umbroth</div>
         <div class="hex-name">Security</div>
         <div class="hex-value" id="val-UM">0.00</div>
         <div class="hex-weight">&phi;^4 = 6.85</div>
@@ -580,7 +583,7 @@ body {
       <div class="hex-cell" data-tongue="DR">
         <div class="hex-bg"></div>
         <div class="hex-glow"></div>
-        <div class="hex-label">DR</div>
+        <div class="hex-label">Draumric</div>
         <div class="hex-name">Structure</div>
         <div class="hex-value" id="val-DR">0.00</div>
         <div class="hex-weight">&phi;^5 = 11.09</div>
@@ -593,32 +596,32 @@ body {
     <div class="bar-grid" id="barGrid">
       <div class="bar-col">
         <div class="bar-track"><div class="bar-fill" id="bar-KO"></div></div>
-        <div class="bar-label" style="color:var(--ko)">KO</div>
+        <div class="bar-label" style="color:var(--ko)">Intent</div>
         <div class="bar-num" id="barnum-KO">0.00</div>
       </div>
       <div class="bar-col">
         <div class="bar-track"><div class="bar-fill" id="bar-AV"></div></div>
-        <div class="bar-label" style="color:var(--av)">AV</div>
+        <div class="bar-label" style="color:var(--av)">Transport</div>
         <div class="bar-num" id="barnum-AV">0.00</div>
       </div>
       <div class="bar-col">
         <div class="bar-track"><div class="bar-fill" id="bar-RU"></div></div>
-        <div class="bar-label" style="color:var(--ru)">RU</div>
+        <div class="bar-label" style="color:var(--ru)">Policy</div>
         <div class="bar-num" id="barnum-RU">0.00</div>
       </div>
       <div class="bar-col">
         <div class="bar-track"><div class="bar-fill" id="bar-CA"></div></div>
-        <div class="bar-label" style="color:var(--ca)">CA</div>
+        <div class="bar-label" style="color:var(--ca)">Compute</div>
         <div class="bar-num" id="barnum-CA">0.00</div>
       </div>
       <div class="bar-col">
         <div class="bar-track"><div class="bar-fill" id="bar-UM"></div></div>
-        <div class="bar-label" style="color:var(--um)">UM</div>
+        <div class="bar-label" style="color:var(--um)">Security</div>
         <div class="bar-num" id="barnum-UM">0.00</div>
       </div>
       <div class="bar-col">
         <div class="bar-track"><div class="bar-fill" id="bar-DR"></div></div>
-        <div class="bar-label" style="color:var(--dr)">DR</div>
+        <div class="bar-label" style="color:var(--dr)">Structure</div>
         <div class="bar-num" id="barnum-DR">0.00</div>
       </div>
     </div>
@@ -724,7 +727,8 @@ body {
 
 // ─── Tongue Config ──────────────────────────────────────────────
 const TONGUES = ['KO', 'AV', 'RU', 'CA', 'UM', 'DR'];
-const TONGUE_NAMES = { KO: 'Intent', AV: 'Transport', RU: 'Policy', CA: 'Compute', UM: 'Security', DR: 'Structure' };
+const TONGUE_FULL = { KO: "Kor'aelin", AV: "Avali", RU: "Runethic", CA: "Cassisivadan", UM: "Umbroth", DR: "Draumric" };
+const TONGUE_DOMAINS = { KO: 'Intent', AV: 'Transport', RU: 'Policy', CA: 'Compute', UM: 'Security', DR: 'Structure' };
 const TONGUE_COLORS = {
   KO: [108, 92, 231],
   AV: [0, 206, 209],
@@ -922,9 +926,9 @@ function updateUI(activation) {
   if (maxVal > 0.05) {
     const dt = TONGUES[dominantIdx];
     const [r, g, b] = TONGUE_COLORS[dt];
-    domEl.textContent = dt;
+    domEl.textContent = TONGUE_FULL[dt] || dt;
     domEl.style.color = `rgb(${r}, ${g}, ${b})`;
-    domNameEl.textContent = TONGUE_NAMES[dt];
+    domNameEl.textContent = TONGUE_DOMAINS[dt];
   } else {
     domEl.textContent = '--';
     domEl.style.color = '';

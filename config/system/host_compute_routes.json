@@ -1,0 +1,192 @@
+{
+  "snapshot_date": "2026-03-29",
+  "summary": {
+    "goal": "Quick-call map for Hugging Face, Kaggle, and Colab so SCBE assets can be evaluated, routed into datasets, and reused for training.",
+    "source_of_truth": [
+      "scripts/system/colab_workflow_catalog.py",
+      "scripts/eval_legacy_hf_model.py",
+      "scripts/cloud_kernel_data_pipeline.py",
+      "scripts/hf_training_loop.py",
+      "scripts/hf-bootstrap-aethermore-org.ps1",
+      "artifacts/host_inventory/*"
+    ]
+  },
+  "hosts": {
+    "huggingface": {
+      "status": "connected",
+      "owner": "issdandavis",
+      "org": "SCBE-AETHER",
+      "inventory_files": {
+        "user_models": "artifacts/host_inventory/hf_models_issdandavis.txt",
+        "user_datasets": "artifacts/host_inventory/hf_datasets_issdandavis.txt",
+        "user_spaces": "artifacts/host_inventory/hf_spaces_issdandavis.txt",
+        "org_models": "artifacts/host_inventory/hf_models_scbe_aether.txt",
+        "org_datasets": "artifacts/host_inventory/hf_datasets_scbe_aether.txt",
+        "org_spaces": "artifacts/host_inventory/hf_spaces_scbe_aether.txt"
+      },
+      "user_models": [
+        "issdandavis/phdm-21d-embedding",
+        "issdandavis/spiralverse-ai-federated-v1",
+        "issdandavis/scbe-ops-assets",
+        "issdandavis/geoseed-network",
+        "issdandavis/scbe-pivot-qwen-0.5b",
+        "issdandavis/polly-chat-qwen-0.5b"
+      ],
+      "user_datasets": [
+        "issdandavis/scbe-aethermoore-knowledge-base",
+        "issdandavis/scbe-interaction-logs",
+        "issdandavis/scbe-aethermoore-training-data",
+        "issdandavis/56230",
+        "issdandavis/perplexity-spaces-datacenter",
+        "issdandavis/scbe-aethermoore-datasets",
+        "issdandavis/aethermoor-rag-training-data",
+        "issdandavis/UltraData-Math",
+        "issdandavis/scbe-notes-dossier",
+        "issdandavis/scbe-context-vault",
+        "issdandavis/kyle-axtell-reincarnation-data",
+        "issdandavis/scbe-webtoon-job-scratch",
+        "issdandavis/six-tongues-webtoon-seeds",
+        "issdandavis/six-tongues-art-style",
+        "issdandavis/polly-chat-seed",
+        "issdandavis/scbe-red-team-benchmark"
+      ],
+      "user_spaces": [
+        "issdandavis/SCBE-AETHERMOORE-Demo",
+        "issdandavis/scbe-aethermoore-ai-hub",
+        "issdandavis/autotrain-advanced",
+        "issdandavis/phdm-21d-embedding",
+        "issdandavis/six-tongues-protocol",
+        "issdandavis/scbe-red-team-sandbox"
+      ],
+      "org_models": [
+        "SCBE-AETHER/phdm-21d-embedding",
+        "SCBE-AETHER/spiralverse-ai-federated-v1"
+      ],
+      "org_datasets": [
+        "SCBE-AETHER/ultradata-math",
+        "SCBE-AETHER/aethermoor-rag-training-data",
+        "SCBE-AETHER/scbe-aethermoore-datasets",
+        "SCBE-AETHER/scbe-interaction-logs",
+        "SCBE-AETHER/scbe-aethermoore-training-data",
+        "SCBE-AETHER/scbe-aethermoore-knowledge-base",
+        "SCBE-AETHER/perplexity-spaces-datacenter"
+      ],
+      "org_spaces": [
+        "SCBE-AETHER/README"
+      ]
+    },
+    "kaggle": {
+      "status": "token_wired_but_sandbox_blocked",
+      "owner": "issacizrealdavis",
+      "local_secret_shape": "KAGGLE_API_TOKEN is present locally and the newer kaggle client attempts token introspection.",
+      "observed_results": {
+        "config": "quick-call loads username + API token in process",
+        "datasets": "sandbox fetch blocked before remote list returns",
+        "models": "sandbox fetch blocked before remote list returns",
+        "kernels": "sandbox fetch blocked before remote list returns",
+        "competitions": "sandbox fetch blocked before remote list returns"
+      },
+      "next_fix": [
+        "Run the quick-call Kaggle inventory action in a normal local shell outside the Codex sandbox",
+        "Persist the resulting CSV files under artifacts/host_inventory",
+        "Use Kaggle primarily as a remote notebook/competition lane after the inventory snapshot is captured"
+      ]
+    },
+    "colab": {
+      "status": "repo-routed",
+      "catalog_script": "scripts/system/colab_workflow_catalog.py",
+      "priority_notebooks": [
+        {
+          "name": "scbe-pivot-v2",
+          "path": "notebooks/scbe_pivot_training_v2.ipynb",
+          "category": "training",
+          "purpose": "Pivot-conversation SFT and DPO preparation."
+        },
+        {
+          "name": "scbe-finetune-free",
+          "path": "notebooks/scbe_finetune_colab.ipynb",
+          "category": "training",
+          "purpose": "Free T4 LoRA fine-tune lane for governance data."
+        },
+        {
+          "name": "qlora-training",
+          "path": "notebooks/colab_qlora_training.ipynb",
+          "category": "training",
+          "purpose": "Compact QLoRA adaptation lane."
+        },
+        {
+          "name": "aethermoor-datagen",
+          "path": "notebooks/colab_aethermoor_datagen.ipynb",
+          "category": "data",
+          "purpose": "Generate or expand Aethermoor training data."
+        },
+        {
+          "name": "cloud-workspace",
+          "path": "notebooks/scbe_cloud_workspace.ipynb",
+          "category": "ops",
+          "purpose": "General Colab compute workspace for SCBE experiments."
+        }
+      ]
+    }
+  },
+  "routes": {
+    "evaluate_models": [
+      {
+        "label": "Legacy HF compliance eval",
+        "script": "scripts/eval_legacy_hf_model.py",
+        "default_target": "issdandavis/scbe-pivot-qwen-0.5b",
+        "purpose": "Run the legacy SCBE compliance eval suite against a hosted text-generation model."
+      }
+    ],
+    "build_trainable_datasets": [
+      {
+        "label": "Cloud kernel dataset pipeline",
+        "script": "scripts/cloud_kernel_data_pipeline.py",
+        "purpose": "Build, verify, audit, and optionally ship curated training datasets to cloud sinks."
+      },
+      {
+        "label": "Autonomous HF training loop",
+        "script": "scripts/hf_training_loop.py",
+        "purpose": "Collect local interaction/game-session data and push approved JSONL batches to a Hugging Face dataset repo."
+      }
+    ],
+    "dataset_targets": [
+      {
+        "target": "SCBE-AETHER/scbe-aethermoore-training-data",
+        "purpose": "Primary SFT corpus for trainable instruction-response data."
+      },
+      {
+        "target": "SCBE-AETHER/scbe-aethermoore-knowledge-base",
+        "purpose": "Grounding corpus for retrieval, fact-checking, and knowledge export."
+      },
+      {
+        "target": "SCBE-AETHER/scbe-interaction-logs",
+        "purpose": "Curated interaction logs before promotion into training data."
+      },
+      {
+        "target": "SCBE-AETHER/aethermoor-rag-training-data",
+        "purpose": "Narrative and worldbuilding retrieval/training lane."
+      },
+      {
+        "target": "issdandavis/scbe-red-team-benchmark",
+        "purpose": "Adversarial evaluation and benchmark examples."
+      }
+    ],
+    "route_to_colab": [
+      {
+        "label": "Notebook catalog",
+        "script": "scripts/system/colab_workflow_catalog.py",
+        "purpose": "Resolve the right Colab notebook and direct Colab URL before running training."
+      }
+    ]
+  },
+  "recommended_sequence": [
+    "Use scripts/system/model_host_quickcall.ps1 -Action routes",
+    "Use scripts/system/model_host_quickcall.ps1 -Action inventory-colab",
+    "Evaluate the live HF models first with scripts/eval_legacy_hf_model.py",
+    "Choose a Colab notebook from scripts/system/colab_workflow_catalog.py",
+    "Run scripts/cloud_kernel_data_pipeline.py to consolidate trainable records",
+    "Push or sync the approved dataset into SCBE-AETHER dataset repos",
+    "Run the Kaggle inventory action in a normal local shell when you need Kaggle-side notebook or competition work"
+  ]
+}
