@@ -1,0 +1,14 @@
+{
+  "zip_path": "C:\\Users\\issda\\Downloads\\data-2026-03-30-13-50-27-batch-0000.zip",
+  "output_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\claude_export_lore_sft.jsonl",
+  "rows_written": 5458,
+  "doc_rows": 5447,
+  "memory_rows": 11,
+  "docs_total": 470,
+  "docs_kept": 405,
+  "docs_skipped_noise": 65,
+  "doc_chunks": 5447,
+  "doc_duplicates": 454,
+  "memories_total": 13,
+  "memories_kept": 11
+}

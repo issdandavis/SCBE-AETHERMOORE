@@ -1,0 +1,24 @@
+{
+  "input_files": [
+    "training-data\\sft\\consolidated_root_sft.jsonl",
+    "training-data\\sft\\claude_conversations_sft.jsonl",
+    "training-data\\sft\\claude_export_lore_sft.jsonl"
+  ],
+  "rows_read": 51795,
+  "rows_written": 51752,
+  "duplicates_removed": 43,
+  "skipped": 0,
+  "per_source": {
+    "training-data/sft/consolidated_root_sft.jsonl": 43682,
+    "training-data/sft/claude_conversations_sft.jsonl": 2612,
+    "training-data/sft/claude_export_lore_sft.jsonl": 5458
+  },
+  "sharded": true,
+  "shard_lines": 18000,
+  "shards": [
+    "training-data/sft/consolidated_plus_claude_exports_sft/part-0001.jsonl",
+    "training-data/sft/consolidated_plus_claude_exports_sft/part-0002.jsonl",
+    "training-data/sft/consolidated_plus_claude_exports_sft/part-0003.jsonl"
+  ],
+  "output_dir": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\consolidated_plus_claude_exports_sft"
+}

@@ -179,3 +179,4 @@ config/tor/hidden_service/hs_ed25519_secret_key
 config/tor/hidden_service/hs_ed25519_public_key
 config/tor/data/
 config/tor/tor.log
+artifacts/claude_export/
