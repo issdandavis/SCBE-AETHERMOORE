@@ -273,8 +273,9 @@ class DimensionalSpace:
         weighted_diff_sq = 0.0
         num_valences = len(StateValence)
         num_spatial = 3
-        for idx in range(num_valences * num_spatial * len(TONGUE_NAMES)):
-            tongue = TONGUE_NAMES[idx % len(TONGUE_NAMES)]
+        num_tongues = len(TONGUE_NAMES)
+        for idx in range(num_valences * num_spatial * num_tongues):
+            tongue = TONGUE_NAMES[idx % num_tongues]
             w = TONGUES[tongue]["weight"]
             diff = v1[idx] - v2[idx]
             weighted_diff_sq += w * diff * diff
