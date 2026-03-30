@@ -17,8 +17,9 @@ Usage:
     python scripts/unified_training_pipeline.py --epochs 5  # more epochs
 
 Environment:
-    HF_TOKEN          — HuggingFace write token (required for --push)
-    KAGGLE_KEY        — Kaggle API key (auto-detected from ~/.kaggle/kaggle.json)
+    HF_TOKEN               — HuggingFace write token (required for --push)
+    KAGGLE_KEY             — Kaggle API key
+    KAGGLE_API_TOKEN       — Alternate Kaggle token shape; normalized to KAGGLE_KEY
 
 Connections used:
     - Kaggle MCP:     Download adversarial prompt dataset (40K samples)
@@ -63,12 +64,23 @@ HF_OUTPUT_MODEL = f"{HF_USER}/scbe-governance-classifier-v1"
 KAGGLE_DATASET = "mohammedaminejebbar/malicious-prompt-detection-dataset-mpdd"
 
 
+def ensure_kaggle_env() -> None:
+    """Normalize Kaggle credential env vars for kagglehub and kaggle CLI."""
+    api_token = os.environ.get("KAGGLE_API_TOKEN")
+    key = os.environ.get("KAGGLE_KEY")
+    if api_token and not key:
+        os.environ["KAGGLE_KEY"] = api_token
+    elif key and not api_token:
+        os.environ["KAGGLE_API_TOKEN"] = key
+
+
 # ---------------------------------------------------------------------------
 #  Step 1: Load data from all sources
 # ---------------------------------------------------------------------------
 
 def load_kaggle_data(max_samples: int = 10000) -> List[Dict[str, Any]]:
     """Pull adversarial prompt dataset from Kaggle."""
+    ensure_kaggle_env()
     logger.info("[1a] Loading Kaggle dataset: %s", KAGGLE_DATASET)
 
     cache_path = ARTIFACTS_DIR / "kaggle_mpdd_cache.jsonl"
