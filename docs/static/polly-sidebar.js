@@ -12,6 +12,12 @@
       copy: 'The homepage is the front door: offers first, demos second, proof stack behind them.',
       prompt: 'I am on the SCBE-AETHERMOORE homepage. Summarize the site, separate the buy lane, the demo lane, and the research proof lane, and tell me which one I should open next.'
     },
+    offers: {
+      kicker: 'Offers guide',
+      title: 'This is the owned storefront lane.',
+      copy: 'Use this page to compare packages, open manuals, confirm delivery expectations, and choose a direct checkout path without falling into the research stack.',
+      prompt: 'I am on the SCBE offers page. Separate the flagship package, the builder lane, the operator packs, the manual routes, and the delivery path, then tell me which package or proof page I should open next.'
+    },
     demos: {
       kicker: 'Demo guide',
       title: 'Polly can orient this page.',
@@ -71,6 +77,7 @@
   const data = contexts[context] || contexts.site;
   const links = [
     { href: `${root}/index.html`, title: 'Home', text: 'Front door for offers, demos, and proof routing.' },
+    { href: `${root}/offers/index.html`, title: 'Offers', text: 'Owned package catalog with manuals, delivery, and direct checkout routes.' },
     { href: `${root}/network.html`, title: 'Network', text: 'External links, writing lanes, and AI-readable entry points.' },
     { href: `${root}/demos/index.html`, title: 'Demos', text: 'Working browser demos and operator-facing public surfaces.' },
     { href: `${root}/games/index.html`, title: 'Games', text: 'AI-playable arenas, model docks, training bridges, and long-horizon game lanes.' },

@@ -7,6 +7,12 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://aethermoorgames.com/offers/index.html</loc>
+    <lastmod>2026-03-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.92</priority>
+  </url>
+  <url>
     <loc>https://aethermoorgames.com/demos/index.html</loc>
     <lastmod>2026-03-29</lastmod>
     <changefreq>weekly</changefreq>
