@@ -18,6 +18,12 @@
       copy: 'This page is the try-it-now lane for working public surfaces, not the full manual or the full research archive.',
       prompt: 'I am on the SCBE demo page. Explain the working surfaces in plain language, then tell me whether I should open the product path, the manual hub, or the research proof stack next.'
     },
+    games: {
+      kicker: 'Games guide',
+      title: 'This is the public play shelf.',
+      copy: 'Use this page for AI-playable arenas, browser-task lanes, public Hugging Face models and datasets, host-side training bridges, and future long-horizon game routes without mixing them into the sales page or the proof stack.',
+      prompt: 'I am on the SCBE games and training hub. Separate what is live now, what is hosted on Hugging Face, what is part of the host-side training bridge, what is benchmark proof, and what is still planned, then tell me whether I should open the arena, the browser demo, the model dock, the training bridge, the eval lab, or the product path next.'
+    },
     research: {
       kicker: 'Research guide',
       title: 'Keep proof and theory separated.',
@@ -67,6 +73,8 @@
     { href: `${root}/index.html`, title: 'Home', text: 'Front door for offers, demos, and proof routing.' },
     { href: `${root}/network.html`, title: 'Network', text: 'External links, writing lanes, and AI-readable entry points.' },
     { href: `${root}/demos/index.html`, title: 'Demos', text: 'Working browser demos and operator-facing public surfaces.' },
+    { href: `${root}/games/index.html`, title: 'Games', text: 'AI-playable arenas, model docks, training bridges, and long-horizon game lanes.' },
+    { href: 'https://huggingface.co/issdandavis', title: 'Hugging Face', text: 'Public models, datasets, and Spaces for SCBE.' },
     { href: `${root}/redteam.html`, title: 'Red Team', text: 'Current public benchmark surface, dataset link, and eval entry path.' },
     { href: `${root}/articles/index.html`, title: 'Articles', text: 'Field notes, public explanations, and launch-facing writing.' },
     { href: `${root}/research/index.html`, title: 'Research', text: 'Back-page proof stack, benchmarks, and active experiment tracks.' },
