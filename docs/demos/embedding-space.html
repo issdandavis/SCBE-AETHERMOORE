@@ -51,7 +51,7 @@ canvas{width:100%;height:100%}
     <button class="btn" onclick="addPoint()">Embed</button>
     <select id="projection">
       <option value="pca">PCA (principal components)</option>
-      <option value="tongue">Tongue Plane (KO vs DR)</option>
+      <option value="tongue">Tongue Plane (Kor'aelin vs Draumric)</option>
       <option value="risk">Risk Plane (distance vs cost)</option>
     </select>
     <button class="btn" onclick="loadPresets()" style="background:#2a2a4e">Load Examples</button>
@@ -74,7 +74,7 @@ canvas{width:100%;height:100%}
   <div class="info">
     <strong>What you're seeing:</strong> Each text input is embedded into a 21-dimensional space through the PHDM
     (Polyhedral Hamiltonian Defense Manifold). The 21 dimensions come from:
-    <br>- 6 Sacred Tongue activations (KO, AV, RU, CA, UM, DR)
+    <br>- 6 Sacred Tongue activations (Kor'aelin, Avali, Runethic, Cassisivadan, Umbroth, Draumric)
     <br>- 6 tongue interaction cross-terms
     <br>- 3 temporal dimensions (context, session, history)
     <br>- 3 intent dimensions (valence, arousal, dominance)
@@ -300,9 +300,9 @@ function draw() {
   ctx.font = `${w * 0.016}px sans-serif`;
   ctx.textAlign = 'center';
   if (proj === 'tongue') {
-    ctx.fillText('KO (Intent) -->', w / 2, h - 10);
+    ctx.fillText("Kor'aelin (Intent) -->", w / 2, h - 10);
     ctx.save(); ctx.translate(15, h / 2); ctx.rotate(-Math.PI / 2);
-    ctx.fillText('DR (Schema) -->', 0, 0); ctx.restore();
+    ctx.fillText('Draumric (Schema) -->', 0, 0); ctx.restore();
   } else if (proj === 'risk') {
     ctx.fillText('Vector Norm (distance from origin) -->', w / 2, h - 10);
     ctx.save(); ctx.translate(15, h / 2); ctx.rotate(-Math.PI / 2);
