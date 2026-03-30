@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Negative Tongue Lattice: 12D Lazy Sign-Flip Detection | SCBE Research</title>
+    <meta name="description" content="A novel 12-dimensional lattice detection system using negative tongue images and golden ratio bridge weighting to catch adversarial inputs through interference pattern analysis.">
+    <link rel="canonical" href="https://aethermoorgames.com/research/negative-tongue-lattice.html">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #07111d; color: #eef3ff; line-height: 1.7; }
+        a { color: #84c5ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 36px 24px 72px; }
+        .nav { display: flex; gap: 16px; flex-wrap: wrap; color: #a9b6d1; font-size: 14px; margin-bottom: 26px; }
+        .nav a { color: #a9b6d1; }
+        .eyebrow { color: #87a0ff; text-transform: uppercase; letter-spacing: 0.16em; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+        h1 { font-size: clamp(28px, 5vw, 48px); line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 16px; max-width: 820px; }
+        h2 { font-size: 22px; margin: 36px 0 14px; color: #84c5ff; }
+        h3 { font-size: 17px; margin: 24px 0 10px; color: #7df0d7; }
+        p, li { color: #b5c0d9; max-width: 780px; margin-bottom: 12px; }
+        ul, ol { padding-left: 24px; margin-bottom: 16px; }
+        code { background: #132038; padding: 2px 8px; border-radius: 4px; font-size: 14px; color: #84c5ff; }
+        pre { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 12px; padding: 20px; overflow-x: auto; margin: 16px 0; font-size: 14px; color: #eef3ff; }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid rgba(126, 146, 255, 0.12); }
+        th { color: #84c5ff; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+        td { color: #b5c0d9; }
+        .panel { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 18px; padding: 24px; margin: 18px 0; }
+        .tag { display: inline-block; background: rgba(126, 146, 255, 0.12); color: #84c5ff; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; margin: 4px 4px 4px 0; }
+        .metric { font-size: 42px; font-weight: 800; color: #7df0d7; line-height: 1; }
+        .metric-label { font-size: 13px; color: #a9b6d1; margin-top: 4px; }
+        .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 18px; margin: 24px 0; }
+        .formula { background: #132038; border-left: 3px solid #87a0ff; padding: 16px 20px; border-radius: 0 12px 12px 0; margin: 16px 0; font-family: 'Courier New', monospace; font-size: 16px; color: #eef3ff; }
+        footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid rgba(126, 146, 255, 0.12); color: #6b7a99; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <div class="nav">
+            <a href="../index.html">Home</a>
+            <a href="./index.html">Research</a>
+            <a href="./architecture-overview.html">Architecture</a>
+            <a href="../redteam.html">Red Team</a>
+        </div>
+
+        <div class="eyebrow">Novel architecture</div>
+        <h1>Negative Tongue Lattice: 12D Lazy Sign-Flip Detection</h1>
+        <p>A detection architecture that doubles the Sacred Tongues coordinate space from 6D to 12D by computing negative images of every tongue dimension, then uses golden-ratio-weighted bridges between positive and negative coordinates to create interference patterns that expose adversarial intent through energy analysis.</p>
+
+        <div class="tag">Architecture</div>
+        <div class="tag">Detection</div>
+        <div class="tag">Geometry</div>
+        <div class="tag">Zero-State</div>
+
+        <h2>The Problem</h2>
+        <div class="panel">
+            <p>Adversarial inputs are designed to minimize detection signals. They slip through safety classifiers by staying close to the decision boundary -- appearing safe in standard feature spaces while carrying harmful intent.</p>
+            <ul>
+                <li>Standard detectors look for <em>presence</em> of threat signals. Adversaries learn to suppress those signals.</li>
+                <li>The 6D Sacred Tongue coordinate space (KO, AV, RU, CA, UM, DR) captures intent geometry, but sophisticated attacks can craft inputs that appear geometrically benign in all 6 dimensions simultaneously.</li>
+                <li>Single-space detectors create a fixed target for adversaries to optimize against.</li>
+            </ul>
+            <p>The core insight: if an adversary suppresses signal in the positive space, they <em>must</em> amplify signal in the negative space. The lattice catches what the positive space misses.</p>
+        </div>
+
+        <h2>The Solution: Dual-Image Lattice</h2>
+        <p>For every input, the system computes both the standard 6D Sacred Tongue coordinate and its negative image -- the vector that represents everything the input is <em>not</em>.</p>
+
+        <h3>Step 1: Compute the 12D embedding</h3>
+        <p>Given a 6D tongue coordinate <code>[KO, AV, RU, CA, UM, DR]</code>, the negative image is:</p>
+        <div class="formula">neg = [1 - KO, 1 - AV, 1 - RU, 1 - CA, 1 - UM, 1 - DR]</div>
+        <p>The full 12D vector is the concatenation: <code>[KO, AV, RU, CA, UM, DR, neg_KO, neg_AV, neg_RU, neg_CA, neg_UM, neg_DR]</code>.</p>
+
+        <h3>Step 2: Build cross-tongue bridges</h3>
+        <p>Between every pair of tongue dimensions <code>(i, j)</code>, a bridge is constructed that couples the positive coordinate of one tongue with the negative coordinate of the other, and vice versa.</p>
+
+        <div class="formula">bridge(i, j) = |neg_i * coord_j + neg_j * coord_i| * &phi;<sup>|i - j|</sup></div>
+
+        <p>Where <code>&phi; = 1.618...</code> is the golden ratio. The exponent <code>|i - j|</code> is the distance between tongue indices (KO=0, AV=1, RU=2, CA=3, UM=4, DR=5), so adjacent tongues couple weakly and distant tongues couple strongly.</p>
+
+        <h3>Why golden ratio weighting?</h3>
+        <div class="panel">
+            <p>The Sacred Tongues already use golden ratio scaling for their base weights: KO=1.00, AV=1.62, RU=2.62, CA=4.24, UM=6.85, DR=11.09. Using <code>&phi;^|i-j|</code> for bridge weights maintains the self-similar scaling structure of the tongue system. It also means that cross-dimensional attacks (which must span multiple tongue dimensions to be effective) face exponentially increasing bridge tension.</p>
+        </div>
+
+        <h3>Step 3: Compute interference patterns</h3>
+        <p>With 6 tongue dimensions, there are <code>C(6,2) = 15</code> unique bridges. Each bridge produces a tension value. The pattern of tensions across all 15 bridges creates an interference signature:</p>
+
+        <ul>
+            <li><strong>Constructive interference</strong> (aligned intent): Bridge tensions are low and roughly uniform. The positive and negative images agree on what the input is and what it is not. This indicates genuine, unambiguous intent.</li>
+            <li><strong>Destructive interference</strong> (adversarial): Bridge tensions spike asymmetrically. The input claims to be one thing in the positive space but the negative image contradicts it. This is the signature of concealed intent.</li>
+        </ul>
+
+        <h2>Energy Function</h2>
+        <p>The total lattice energy is the sum of all 15 bridge tensions:</p>
+
+        <div class="formula">E<sub>lattice</sub> = &Sigma;<sub>i&lt;j</sub> bridge(i, j)</div>
+
+        <div class="metrics-row">
+            <div class="panel">
+                <div class="metric">12D</div>
+                <div class="metric-label">Total embedding dimensions</div>
+            </div>
+            <div class="panel">
+                <div class="metric">15</div>
+                <div class="metric-label">Cross-tongue bridges</div>
+            </div>
+            <div class="panel">
+                <div class="metric">&phi;<sup>5</sup></div>
+                <div class="metric-label">Max bridge weight (KO-DR)</div>
+            </div>
+            <div class="panel">
+                <div class="metric">0</div>
+                <div class="metric-label">Stored state (zero-state)</div>
+            </div>
+        </div>
+
+        <h2>The ZERO State Property</h2>
+        <div class="panel">
+            <h3>The lattice stores nothing</h3>
+            <p>This is the most important architectural property. The Negative Tongue Lattice has no persistent state. It does not learn. It does not accumulate. It does not drift.</p>
+            <ul>
+                <li>Every computation is a pure function of the input coordinates.</li>
+                <li>No training data is stored in the lattice itself -- it operates on the geometric structure of the tongue system.</li>
+                <li>The lattice cannot be poisoned because there is nothing to poison.</li>
+                <li>It cannot be extracted because there is nothing to extract.</li>
+                <li>It cannot degrade over time because there is no state to degrade.</li>
+            </ul>
+            <p>The lattice <em>computes everything on demand</em> from first principles. The bridge formula, the golden ratio weights, and the tongue coordinate system are fixed mathematical constants -- not learned parameters.</p>
+        </div>
+
+        <h2>Integration with RuntimeGate</h2>
+        <p>The lattice energy <code>E_lattice</code> modulates the harmonic cost function in the RuntimeGate (Layer 12-13 of the 14-layer pipeline):</p>
+
+        <div class="formula">H_eff(d, R) = H(d, R) * (1 + &alpha; * E<sub>lattice</sub>)</div>
+
+        <p>Where <code>H(d, R)</code> is the base harmonic cost, <code>&alpha;</code> is a coupling constant, and <code>E_lattice</code> is the total lattice energy. When the lattice detects destructive interference (high energy), the effective harmonic cost increases, pushing the input further toward QUARANTINE or DENY decisions.</p>
+
+        <h3>Detection flow</h3>
+        <ol>
+            <li>Input arrives at the 14-layer pipeline.</li>
+            <li>Layer 3-4: Sacred Tongue tokenization produces 6D coordinate.</li>
+            <li>Negative Tongue Lattice computes 12D embedding, 15 bridges, and total energy.</li>
+            <li>Layer 12: Lattice energy modulates harmonic cost.</li>
+            <li>Layer 13: Governance decision (ALLOW / QUARANTINE / ESCALATE / DENY).</li>
+        </ol>
+
+        <h2>Worked Example</h2>
+        <div class="panel">
+            <h3>Benign input</h3>
+            <pre>coord  = [0.82, 0.71, 0.65, 0.58, 0.44, 0.30]   # KO AV RU CA UM DR
+neg    = [0.18, 0.29, 0.35, 0.42, 0.56, 0.70]
+bridges = 15 values, all in range [0.12, 0.48]
+E_lattice = 3.71  (low, uniform -- constructive interference)
+Decision: ALLOW</pre>
+
+            <h3>Adversarial input (concealed injection)</h3>
+            <pre>coord  = [0.51, 0.49, 0.50, 0.48, 0.52, 0.50]   # Crafted to look neutral
+neg    = [0.49, 0.51, 0.50, 0.52, 0.48, 0.50]
+bridges = 15 values, range [0.08, 2.94]  -- spike on UM-DR bridge
+E_lattice = 14.87  (high, asymmetric -- destructive interference)
+Decision: QUARANTINE</pre>
+            <p>The adversarial input was carefully crafted to appear centered in the positive 6D space. But the lattice bridges expose the asymmetry: the UM-DR bridge (weighted by <code>&phi;^1 = 1.618</code>) shows high tension because the intent signal in the UM security dimension contradicts the DR structure dimension. The positive space alone would have scored this as ALLOW. The lattice caught it.</p>
+        </div>
+
+        <h2>Mathematical Properties</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Embedding dimension</td><td>12 (6 positive + 6 negative)</td></tr>
+                <tr><td>Bridge count</td><td>15 (C(6,2) unique pairs)</td></tr>
+                <tr><td>Min bridge weight</td><td>&phi;^0 = 1.000 (adjacent tongues)</td></tr>
+                <tr><td>Max bridge weight</td><td>&phi;^5 = 11.090 (KO to DR)</td></tr>
+                <tr><td>Energy range</td><td>[0, theoretical unbounded] -- benign inputs typically E &lt; 6</td></tr>
+                <tr><td>Computation cost</td><td>O(1) -- fixed 15 multiplications + 1 sum, no iteration</td></tr>
+                <tr><td>State size</td><td>0 bytes -- pure function, no learned parameters</td></tr>
+                <tr><td>Adversarial training required</td><td>None -- operates on geometric invariants</td></tr>
+            </tbody>
+        </table>
+
+        <h2>Why "Lazy Sign-Flip"?</h2>
+        <div class="panel">
+            <p>The term "lazy" refers to the computational strategy: the negative image is computed by a simple sign flip (<code>1 - x</code>), not by an expensive adversarial search or contrastive loss computation. The lattice does not try to find adversarial examples -- it assumes every input has a shadow and checks whether the shadow is consistent with the light.</p>
+            <p>This laziness is a feature, not a limitation. Because the negative image is deterministic and O(1), the lattice adds near-zero latency to the pipeline while doubling the effective detection dimensionality.</p>
+        </div>
+
+        <footer>SCBE-AETHERMOORE Research | Issac Daniel Davis | 2026</footer>
+    </main>
+</body>
+</html>

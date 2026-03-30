@@ -42,9 +42,16 @@ pnpm-debug.log*
 .env.*
 config/connector_oauth/*.json
 config/connector_oauth/.kaggle.env
+*.pem
+*.key
+*.p12
+**/credentials.json
 .venv/
 venv/
 .python-version
+
+# n8n local isolation (may contain credential databases)
+.n8n_local_iso/
 
 # Editors / OS
 .dbxignore
