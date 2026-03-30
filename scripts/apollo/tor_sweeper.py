@@ -76,7 +76,7 @@ def check_tor() -> dict:
         )
         result["tor_running"] = "tor" in out.stdout.lower()
     except Exception:
-        pass
+        logger.debug("Tor process check failed", exc_info=True)
 
     # Check SOCKS proxy
     try:
