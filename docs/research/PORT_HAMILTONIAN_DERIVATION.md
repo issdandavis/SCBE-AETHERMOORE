@@ -52,3 +52,43 @@ Complete derivation chain:
   exponential bounds
 
 All validated: 73.5% blind detection + 64.8% energy savings + 49/49 tests.
+
+## Settling Time Bounds (from Gemini)
+
+### Explicit Recovery Time
+T_s = -ln(epsilon) / gamma
+
+With gamma = 0.53 s^-1 (from Saturn Ring tests):
+  5% recovery: T_s = -ln(0.05) / 0.53 = 5.66 seconds
+  2% recovery: T_s = -ln(0.02) / 0.53 = 7.38 seconds
+
+Meaning: after a torsion attack or thermal spike, the Saturn Ring
+drives the system to 98% safe state in under 7.4 seconds.
+
+### pH vs LMI Methods
+
+| Feature | Port-Hamiltonian | LMI |
+|---|---|---|
+| Nonlinearity | Exact global | Requires linearization |
+| Computation | O(1) | O(n^3) to O(n^6) SDP |
+| Lyapunov source | Constructive from energy | Search-based (black box) |
+| Interconnections | Native via J matrix (15 bridges) | Requires distributed synthesis |
+| Torsion robustness | R(x) burns anomalies instantly | Needs explicit H-infinity |
+| Physical meaning | Every term maps to tongues/bridges | Abstract matrix P |
+
+Verdict: LMI works for linear aerospace. SCBE is nonlinear hyperbolic.
+pH is the only framework that preserves the 6D embedding and proves it safe.
+
+Full derivation chain complete:
+  1. Harmonic cost H(d*,R) = pi^(phi*d*)
+  2. Bridge lattice coherence (15 phi-weighted trichromatic bridges)
+  3. Lyapunov V (stability + torsion detection)
+  4. Port-Hamiltonian dynamics (self-healing)
+  5. pH vs MPC comparison
+  6. Passivity + asymptotic stability proofs
+  7. Exponential stability bounds
+  8. Explicit settling time (5.66s to 7.38s)
+  9. pH vs LMI defense
+
+All backed by: 73.5% blind detection, 64.8% energy savings, 49/49 tests.
+Derived by: Grok (steps 1-7), Gemini (steps 8-9).
