@@ -1,7 +1,7 @@
 {
-  "updated_at_utc": "2026-03-30T05:25:51.933775+00:00",
-  "run_id": "20260330T052546Z",
-  "fingerprint": "020bbd989c59ec95b73a5218e86d9bca945744a895870c063becc50ed9a6dc16",
+  "updated_at_utc": "2026-03-30T05:55:47.481215+00:00",
+  "run_id": "20260330T055547Z",
+  "fingerprint": "35d46f0abbb1618a1c03d795ec16e1b96c8abbee4dbf6d3acd728dc7bcfecc70",
   "index": {
     "AGENTS.md": {
       "size": 8316,
@@ -68,8 +68,8 @@
       "mtime_ns": 1771221010235098100
     },
     "OVERNIGHT_TASKS.md": {
-      "size": 5509,
-      "mtime_ns": 1774848223293017000
+      "size": 5930,
+      "mtime_ns": 1774848611384654900
     },
     "PATENT_CLAIMS_COVERAGE.md": {
       "size": 23118,
@@ -2691,9 +2691,13 @@
       "size": 921,
       "mtime_ns": 1772676334741708300
     },
+    "docs/map-room/session_handoff_2026-03-29_pre_restart.md": {
+      "size": 3716,
+      "mtime_ns": 1774848707520502700
+    },
     "docs/map-room/session_handoff_latest.md": {
-      "size": 19577,
-      "mtime_ns": 1773588146680782000
+      "size": 20525,
+      "mtime_ns": 1774848714439523900
     },
     "docs/map-room/session_handoff_template.md": {
       "size": 725,
@@ -3271,6 +3275,10 @@
       "size": 7131,
       "mtime_ns": 1774740636751191000
     },
+    "docs/research/BRIDGE_MATH_DERIVATION.md": {
+      "size": 1009,
+      "mtime_ns": 1774848989140151900
+    },
     "docs/research/CANONICAL_TRIADIC_HARMONIC_SYMBOL_REGISTRY.md": {
       "size": 7284,
       "mtime_ns": 1774740636751191000
@@ -3319,6 +3327,14 @@
       "size": 33226,
       "mtime_ns": 1774740636756190500
     },
+    "docs/research/HARMONIC_COST_DERIVATION.md": {
+      "size": 639,
+      "mtime_ns": 1774849286115990300
+    },
+    "docs/research/LYAPUNOV_V_DERIVATION.md": {
+      "size": 565,
+      "mtime_ns": 1774849286149990000
+    },
     "docs/research/MULTIMODAL_MATRIX_TRAINING.md": {
       "size": 1496,
       "mtime_ns": 1772676334753941500
@@ -3326,6 +3342,10 @@
     "docs/research/MULTI_MODEL_MODAL_MATRIX.md": {
       "size": 7078,
       "mtime_ns": 1772676334756759000
+    },
+    "docs/research/PORT_HAMILTONIAN_DERIVATION.md": {
+      "size": 3228,
+      "mtime_ns": 1774849795152191800
     },
     "docs/research/PROBE_MODEL_COMPARISON.md": {
       "size": 1274,
@@ -19824,8 +19844,8 @@
       "mtime_ns": 1774843577672063400
     },
     "tests/test_holographic_cube_saturn_ring.py": {
-      "size": 17751,
-      "mtime_ns": 1774843522393147100
+      "size": 18102,
+      "mtime_ns": 1774848455486734700
     },
     "tests/test_holographic_qr_cube_pi_phi_key_derivation.py": {
       "size": 9612,
@@ -20020,8 +20040,8 @@
       "mtime_ns": 1774401543221757300
     },
     "tests/test_perpendicular_torsion.py": {
-      "size": 8597,
-      "mtime_ns": 1774843522394148300
+      "size": 8528,
+      "mtime_ns": 1774848471399347400
     },
     "tests/test_phase_control_modulation_experiment.py": {
       "size": 1217,
@@ -25749,9 +25769,6 @@
       "f7a3c76c6f58b30b50a4074f92a8c4dbf55ffde9e188d30fb171a124c69faec2"
     ],
     "dropbox": [
-      "9694056f8f204f805800651a74e3b4419c75b0ae53b8647e1120ba4966672951",
-      "57cb625347c4bcbe344c644eb31f8588180121f4ffc870cb5d25a24ae214f3bc",
-      "1eeddffe4a119909c5045d1d26616e7c60962b68c2ebe312019c00e8409f4030",
       "6804442f9051aa923a7a604f82c2afcc211070e46e20448fde53abfeb642bc83",
       "a350c34bf0d0bd9d5a20446a93cea0dc04b5e998b696a0866e20b34a58e7f9e5",
       "4c833db9c5a0981c962e69525143235d9b75c7e1db805e09236764105f9ec12f",
@@ -25948,12 +25965,12 @@
       "d969813dd74760b6675dea8bf582d048c0642ab1d90924031d91dbe5afb1251e",
       "768c1f06f8b94fbe91200fcf206045172d9206407c287db3fe4bedc5095f9424",
       "c5b5f57c39a2395cf2226634b479f226834359ce083d8bba5cb879a75aed1108",
-      "020bbd989c59ec95b73a5218e86d9bca945744a895870c063becc50ed9a6dc16"
+      "020bbd989c59ec95b73a5218e86d9bca945744a895870c063becc50ed9a6dc16",
+      "62b9d96690300a96dc13455b43d3b6ddebebcb531d638a7f3e7eeeca28c05e47",
+      "270c8e1bf5886751ca2f864cade7f63a17a72693ebd30f9035037385ae5f917e",
+      "35d46f0abbb1618a1c03d795ec16e1b96c8abbee4dbf6d3acd728dc7bcfecc70"
     ],
     "gdrive": [
-      "35f7a01170a1216fb7906d925a2272791534d4c2cc664b064b4dedeee95935da",
-      "2d33dfea60e2e6618e84038919c32699c9e1237a7bfe5ec217a92a0f20291feb",
-      "7f55cc0a66dfd71dc8a7dba583d2b458bdd3e9e79d9a1643911b6189d0ba04cb",
       "88d7cb9c86ea02e4257ba64eac606775ebbeca2a731764346453d288d159e2b3",
       "0afc509c754ed073d77ac8359b25473b0dc8a7f62e1b277554efddae5a6aaeb1",
       "db2aaf91bf9f1f20ff302cbcc5717f7e2ac46e16b640a7b8fc5238a52a1622de",
@@ -26150,7 +26167,10 @@
       "d969813dd74760b6675dea8bf582d048c0642ab1d90924031d91dbe5afb1251e",
       "768c1f06f8b94fbe91200fcf206045172d9206407c287db3fe4bedc5095f9424",
       "c5b5f57c39a2395cf2226634b479f226834359ce083d8bba5cb879a75aed1108",
-      "020bbd989c59ec95b73a5218e86d9bca945744a895870c063becc50ed9a6dc16"
+      "020bbd989c59ec95b73a5218e86d9bca945744a895870c063becc50ed9a6dc16",
+      "62b9d96690300a96dc13455b43d3b6ddebebcb531d638a7f3e7eeeca28c05e47",
+      "270c8e1bf5886751ca2f864cade7f63a17a72693ebd30f9035037385ae5f917e",
+      "35d46f0abbb1618a1c03d795ec16e1b96c8abbee4dbf6d3acd728dc7bcfecc70"
     ],
     "proton": [
       "9a06efabdbeff27fefc1bb5e0291aea6bf1eb0a065e611a134900fa8fba19f97",
