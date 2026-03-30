@@ -127,15 +127,31 @@ function analyze(text) {
 
 function drawBars(activations) {
   const container = document.getElementById('bars');
-  container.innerHTML = TONGUES.map((t, i) => {
+  container.replaceChildren();
+  TONGUES.forEach((t, i) => {
     const val = activations[t];
     const pct = (val * 100).toFixed(0);
-    return `<div class="vec-bar">
-      <div class="label" style="color:${COLORS[i]}">${t}</div>
-      <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${COLORS[i]}"></div></div>
-      <div class="val">${val.toFixed(3)}</div>
-    </div>`;
-  }).join('');
+    const bar = document.createElement('div');
+    bar.className = 'vec-bar';
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.style.color = COLORS[i];
+    label.textContent = t;
+    const barWrap = document.createElement('div');
+    barWrap.className = 'bar-wrap';
+    const barFill = document.createElement('div');
+    barFill.className = 'bar-fill';
+    barFill.style.width = pct + '%';
+    barFill.style.background = COLORS[i];
+    barWrap.appendChild(barFill);
+    const valDiv = document.createElement('div');
+    valDiv.className = 'val';
+    valDiv.textContent = val.toFixed(3);
+    bar.appendChild(label);
+    bar.appendChild(barWrap);
+    bar.appendChild(valDiv);
+    container.appendChild(bar);
+  });
 }
 
 function drawRadar(activations) {
@@ -208,7 +224,7 @@ function drawRadar(activations) {
 function drawWordCloud(wordMap, words) {
   const container = document.getElementById('wordCloud');
   const seen = new Set();
-  container.innerHTML = '';
+  container.replaceChildren();
   words.forEach(w => {
     if (seen.has(w)) return;
     seen.add(w);
