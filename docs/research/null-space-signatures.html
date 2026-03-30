@@ -60,7 +60,7 @@
                 <div class="eyebrow">Activation vector</div>
                 <h2 id="title">Benign prompt</h2>
                 <div class="bars" id="bars"></div>
-                <div class="legend">Channels: KO intent, AV context, RU policy, CA execution, UM security, DR schema.</div>
+                <div class="legend">Channels: Kor'aelin (Intent), Avali (Context), Runethic (Policy), Cassisivadan (Execution), Umbroth (Security), Draumric (Schema).</div>
                 <div class="null-list" id="nullList"></div>
             </section>
 
@@ -86,15 +86,16 @@
             },
             injection: {
                 title: 'Prompt injection',
-                description: 'This profile suppresses RU and UM relative to the rest of the vector. The missing policy/security channels become the signature.',
+                description: 'This profile suppresses Runethic and Umbroth relative to the rest of the vector. The missing policy/security channels become the signature.',
                 values: { KO: 0.83, AV: 0.69, RU: 0.04, CA: 0.52, UM: 0.03, DR: 0.38 }
             },
             tool: {
                 title: 'Tool exfiltration',
-                description: 'This profile over-focuses execution/logic and leaves structural and security channels thin. The hole is the warning, not just the presence of keywords.',
+                description: 'This profile over-focuses execution/logic and leaves structure and security channels thin. The hole is the warning, not just the presence of keywords.',
                 values: { KO: 0.19, AV: 0.15, RU: 0.48, CA: 0.84, UM: 0.07, DR: 0.05 }
             }
         };
+        const TONGUE_FULL = { KO: "Kor'aelin", AV: "Avali", RU: "Runethic", CA: "Cassisivadan", UM: "Umbroth", DR: "Draumric" };
 
         let current = presets.benign;
 
@@ -112,9 +113,10 @@
                 const row = document.createElement('div');
                 row.className = 'bar-row';
                 const isNull = value < threshold;
-                if (isNull) nulls.push(name);
+                const label = TONGUE_FULL[name] || name;
+                if (isNull) nulls.push(label);
                 row.innerHTML = `
-                    <strong>${name}</strong>
+                    <strong>${label}</strong>
                     <div class="track"><div class="fill ${isNull ? 'null' : ''}" style="width:${Math.max(value * 100, 2)}%"></div></div>
                     <span>${value.toFixed(2)}</span>
                 `;

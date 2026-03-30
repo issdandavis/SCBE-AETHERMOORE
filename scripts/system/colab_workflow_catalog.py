@@ -94,7 +94,7 @@ def _normalize(value: str) -> str:
 
 
 def _github_repo() -> str:
-    return str(Path(CANONICAL_REPO)) if CANONICAL_REPO else "issdandavis/SCBE-AETHERMOORE"
+    return CANONICAL_REPO.replace("\\", "/") if CANONICAL_REPO else "issdandavis/SCBE-AETHERMOORE"
 
 
 def _github_branch() -> str:

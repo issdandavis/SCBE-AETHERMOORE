@@ -106,8 +106,8 @@ canvas{width:100%;border-radius:8px}
     Adversarial text (base64, shellcode, repetitive injection) has unnatural frequency spikes.
     <br><br>
     <strong>L10 (Spin Coherence):</strong> Each tongue dimension "spins" at a different phase. The 6 tongue
-    activations should be internally consistent — high KO (intent) without corresponding RU (policy)
-    or CA (compute) is suspicious. Spin coherence measures this alignment.
+    activations should be internally consistent — high Kor'aelin (Intent) without corresponding Runethic (Policy)
+    or Cassisivadan (Compute) is suspicious. Spin coherence measures this alignment.
     <br><br>
     <a href="https://a.co/d/024VowjS">Read the novel</a> |
     <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">Source</a>
@@ -117,6 +117,7 @@ canvas{width:100%;border-radius:8px}
 <script>
 const PHI = (1 + Math.sqrt(5)) / 2;
 const TONGUES = ['KO','AV','RU','CA','UM','DR'];
+const TONGUE_FULL = { KO: "Kor'aelin", AV: "Avali", RU: "Runethic", CA: "Cassisivadan", UM: "Umbroth", DR: "Draumric" };
 const COLORS = ['#6c5ce7','#00ced1','#ff6b6b','#ffa500','#9370db','#32cd32'];
 
 function setInput(text) {
@@ -250,9 +251,14 @@ function drawSpin(tongueVals, alignment) {
     ctx.fillStyle = COLORS[i];
     ctx.fillRect(i * barW + 4, h - barH - 20, barW - 8, barH);
     ctx.fillStyle = '#888';
-    ctx.font = 'bold 12px monospace';
+    ctx.font = 'bold 10px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(TONGUES[i], i * barW + barW/2, h - 4);
+    const label = TONGUE_FULL[TONGUES[i]] || TONGUES[i];
+    ctx.save();
+    ctx.translate(i * barW + barW/2, h - 4);
+    ctx.rotate(-Math.PI / 6);
+    ctx.fillText(label, 0, 0);
+    ctx.restore();
   });
 
   // Alignment line

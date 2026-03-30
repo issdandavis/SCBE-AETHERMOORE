@@ -677,16 +677,40 @@ function openSettings() {
   PLAYERS.forEach(p => {
     const cfg = PROVIDER_KEY_MAP[p.id];
     if (!cfg) return;
+    const safeId = String(p.id || '').replace(/[^a-zA-Z0-9_-]/g, '');
     if (p.id === 'ollama') {
       const row = document.createElement('div');
       row.className = 'settings-row';
-      row.innerHTML = `<div class="dot" style="background:${p.color}"></div><label>${cfg.label}</label><input disabled value="localhost:11434 (no key needed)" style="opacity:.5"/>`;
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.style.background = p.color;
+      const label = document.createElement('label');
+      label.textContent = cfg.label;
+      const input = document.createElement('input');
+      input.disabled = true;
+      input.value = 'localhost:11434 (no key needed)';
+      input.style.opacity = '.5';
+      row.appendChild(dot);
+      row.appendChild(label);
+      row.appendChild(input);
       container.appendChild(row);
       return;
     }
     const row = document.createElement('div');
     row.className = 'settings-row';
-    row.innerHTML = `<div class="dot" style="background:${p.color}"></div><label>${cfg.label}</label><input type="password" id="key-${p.id}" placeholder="${cfg.envName}" value="${escHtml(keys[p.id] || '')}"/>`;
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    dot.style.background = p.color;
+    const label = document.createElement('label');
+    label.textContent = cfg.label;
+    const input = document.createElement('input');
+    input.type = 'password';
+    input.id = 'key-' + safeId;
+    input.placeholder = cfg.envName;
+    input.value = keys[p.id] || '';
+    row.appendChild(dot);
+    row.appendChild(label);
+    row.appendChild(input);
     container.appendChild(row);
   });
   overlay.classList.add('open');

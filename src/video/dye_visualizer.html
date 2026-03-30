@@ -649,19 +649,33 @@ function renderScan(scan, index) {
   // Summary
   const summaryCard = document.createElement('div');
   summaryCard.className = 'card';
-  const decClass = `decision-${s.governance_decision || 'ALLOW'}`;
+  const rawDecision = String(s.governance_decision || 'ALLOW');
+  const decClass = ['ALLOW', 'DENY', 'ESCALATE', 'QUARANTINE'].includes(rawDecision)
+    ? `decision-${rawDecision}`
+    : 'decision-ALLOW';
+  const safeDecision = escHtml(rawDecision);
+  const safeTrustLevel = escHtml(String(s.trust_level || '?'));
+  const safeSpinMagnitude = escHtml(String(s.spin_magnitude ?? '?'));
+  const safeFibIndex = escHtml(String(s.fibonacci_index ?? '?'));
+  const hottestTongue = TONGUES.includes(s.hottest_tongue) ? s.hottest_tongue : '';
+  const coldestTongue = TONGUES.includes(s.coldest_tongue) ? s.coldest_tongue : '';
+  const hottestColor = TONGUE_COLORS[hottestTongue] || '#ffffff';
+  const coldestColor = TONGUE_COLORS[coldestTongue] || '#ffffff';
+  const safeHottestTongue = escHtml(String(s.hottest_tongue || '?'));
+  const safeColdestTongue = escHtml(String(s.coldest_tongue || '?'));
+  const safeScanId = escHtml(String((scan.scan_id || '?').slice(0, 12)));
   summaryCard.innerHTML = `
     <h2>Scan Summary</h2>
     <div class="summary-grid">
-      <div class="summary-item"><span class="label">Decision</span><span class="value"><span class="decision-badge ${decClass}">${s.governance_decision || '?'}</span></span></div>
-      <div class="summary-item"><span class="label">Trust Level</span><span class="value">${s.trust_level || '?'}</span></div>
+      <div class="summary-item"><span class="label">Decision</span><span class="value"><span class="decision-badge ${decClass}">${safeDecision}</span></span></div>
+      <div class="summary-item"><span class="label">Trust Level</span><span class="value">${safeTrustLevel}</span></div>
       <div class="summary-item"><span class="label">Harmonic Cost</span><span class="value">${(s.harmonic_cost || 0).toFixed(2)}</span></div>
-      <div class="summary-item"><span class="label">Spin Magnitude</span><span class="value">${s.spin_magnitude ?? '?'}</span></div>
-      <div class="summary-item"><span class="label">Fibonacci Index</span><span class="value">${s.fibonacci_index ?? '?'}</span></div>
-      <div class="summary-item"><span class="label">Hottest Tongue</span><span class="value" style="color:${TONGUE_COLORS[s.hottest_tongue]}">${s.hottest_tongue || '?'}</span></div>
-      <div class="summary-item"><span class="label">Coldest Tongue</span><span class="value" style="color:${TONGUE_COLORS[s.coldest_tongue]}">${s.coldest_tongue || '?'}</span></div>
+      <div class="summary-item"><span class="label">Spin Magnitude</span><span class="value">${safeSpinMagnitude}</span></div>
+      <div class="summary-item"><span class="label">Fibonacci Index</span><span class="value">${safeFibIndex}</span></div>
+      <div class="summary-item"><span class="label">Hottest Tongue</span><span class="value" style="color:${hottestColor}">${safeHottestTongue}</span></div>
+      <div class="summary-item"><span class="label">Coldest Tongue</span><span class="value" style="color:${coldestColor}">${safeColdestTongue}</span></div>
       <div class="summary-item"><span class="label">Null Space</span><span class="value">${s.null_space_detected ? 'DETECTED' : 'None'}</span></div>
-      <div class="summary-item"><span class="label">Scan ID</span><span class="value">${(scan.scan_id || '?').slice(0, 12)}</span></div>
+      <div class="summary-item"><span class="label">Scan ID</span><span class="value">${safeScanId}</span></div>
       <div class="summary-item"><span class="label">Duration</span><span class="value">${(scan.scan_duration_ms || 0).toFixed(1)} ms</span></div>
     </div>
     ${s.null_space_detected ? '<div class="null-space-warning">Null space detected: one or more tongue dimensions show near-zero activation. Signal may be evading detection through dimensional collapse.</div>' : ''}
