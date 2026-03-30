@@ -75,8 +75,8 @@ def strip_html(html: str) -> str:
 
 
 def count_links(html: str) -> tuple[int, int]:
-    hrefs = re.findall(r'href="([^"]+)"', html, flags=re.I)
-    external = sum(1 for href in hrefs if href.startswith("http"))
+    hrefs = re.findall(r'href=["\']([^"\']+)["\']', html, flags=re.I)
+    external = sum(1 for href in hrefs if href.startswith(("http://", "https://")))
     internal = len(hrefs) - external
     return internal, external
 

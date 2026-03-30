@@ -145,7 +145,7 @@ def score_description(description: str) -> tuple[int, list, list]:
     elif len(description) > 200:
         score += 2  # substantial description
 
-    if "github.com" in description or "http" in description:
+    if "github.com" in description or "https://" in description or "http://" in description:
         score += 1  # has links
 
     if "#" in description:
