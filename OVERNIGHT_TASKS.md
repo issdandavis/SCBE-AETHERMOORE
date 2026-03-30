@@ -70,6 +70,9 @@
 - [x] **10:17 PM** — Retrained with multilingual: **73.5% blind detection** (was 34.5%)
 - [x] **10:23 PM** — Pushed new model + results to HuggingFace
 - [x] **10:23 PM** — Pushed new results to Kaggle
+- [x] **10:30 PM** — Wired Lyapunov V into cube validation → torsion xfail FIXED (49/49 pass)
+- [x] **10:35 PM** — Backed up 1.6 GB critical data to Dropbox/SCBE/backup-2026-03-30/
+- [x] **10:35 PM** — Bridge sentences agent running (adding full tongue names to research pages)
 
 ---
 
