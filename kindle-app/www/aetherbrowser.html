@@ -1539,7 +1539,8 @@ window.AetherBrowser = (function() {
     var level = result.trust_level || result.level || 'UNKNOWN';
     var domain = result.domain || '';
     var tier = result.tier || 'UNKNOWN';
-    var color = result.color || 'unknown';
+    var allowedColors = { core: 1, trusted: 1, provisional: 1, quarantine: 1, unknown: 1, blocked: 1 };
+    var color = allowedColors[String(result.color || 'unknown').toLowerCase()] ? String(result.color).toLowerCase() : 'unknown';
     var governance = result.governance_decision || 'QUARANTINE';
     var fillMap = { CORE: 100, TRUSTED: 75, PROVISIONAL: 50, QUARANTINE: 25, UNKNOWN: 10, BLOCKED: 0 };
 
