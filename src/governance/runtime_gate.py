@@ -99,6 +99,14 @@ class Decision(str, Enum):
     REVIEW = "REVIEW"  # 6-council deep inspection — throw the book at them
 
 
+DECISION_SEVERITY: Dict[Decision, int] = {
+    Decision.ALLOW: 0,
+    Decision.REVIEW: 1,
+    Decision.QUARANTINE: 2,
+    Decision.DENY: 3,
+}
+
+
 @dataclass
 class GateResult:
     """What the gate returns for every action."""
@@ -132,6 +140,18 @@ class GateResult:
     timestamp: float = 0.0
     session_query_count: int = 0
     cumulative_cost: float = 0.0
+
+
+def _escalate_decision(current: Decision, proposed: Decision) -> Decision:
+    """Raise decision severity without allowing silent downgrades.
+
+    REROUTE is a separate action path and is kept out of severity comparisons.
+    """
+    if current == Decision.REROUTE or proposed == Decision.REROUTE:
+        return current if current == Decision.REROUTE else proposed
+    if DECISION_SEVERITY[proposed] > DECISION_SEVERITY[current]:
+        return proposed
+    return current
 
 
 def _fail_to_noise(action_hash: str, length: int = 32) -> bytes:
@@ -673,6 +693,11 @@ class RuntimeGate:
             classifier_score is not None and classifier_score >= self._classifier_quarantine_threshold
         )
         classifier_deny = classifier_score is not None and classifier_score >= self._classifier_deny_threshold
+        classifier_decision = (
+            Decision.DENY
+            if classifier_deny
+            else Decision.QUARANTINE if classifier_quarantine else Decision.ALLOW
+        )
         trichromatic_coherence = 0.0
         trichromatic_lattice_score = 0.0
         trichromatic_anomaly = 0.0
@@ -680,6 +705,7 @@ class RuntimeGate:
         trichromatic_flagged = False
         trichromatic_state_hash = ""
         trichromatic_strongest_bridge = ""
+        trichromatic_decision = Decision.ALLOW
 
         # Auto-calibrate: first 5 actions build the centroid (assumed clean)
         # This is the "incubation" period — the system learns what normal looks like
@@ -811,6 +837,13 @@ class RuntimeGate:
             trichromatic_state_hash = tri_state.state_hash
             trichromatic_strongest_bridge = tri_scores.strongest_bridge
             trichromatic_flagged = trichromatic_risk >= self._trichromatic_quarantine_threshold
+            trichromatic_decision = (
+                Decision.DENY
+                if trichromatic_risk >= self._trichromatic_deny_threshold
+                else Decision.QUARANTINE
+                if trichromatic_risk >= self._trichromatic_quarantine_threshold
+                else Decision.ALLOW
+            )
 
         self._update_centroid(coords)
         self._cumulative_cost += cost
@@ -941,38 +974,43 @@ class RuntimeGate:
                     self._immune.add(action_hash)
                     noise = _fail_to_noise(action_hash)
 
-        # Classifier overlay: standard attack detector can only raise severity.
-        if classifier_deny and decision != Decision.REROUTE:
-            signals.append(
-                f"classifier_deny({classifier_score:.2f}>{self._classifier_deny_threshold:.2f})"
-            )
-            decision = Decision.DENY
-            self._immune.add(action_hash)
-            noise = _fail_to_noise(action_hash)
-        elif classifier_quarantine and decision == Decision.ALLOW:
-            signals.append(
-                f"classifier_quarantine({classifier_score:.2f}>{self._classifier_quarantine_threshold:.2f})"
-            )
-            decision = Decision.QUARANTINE
+        # Overlay signals can only raise severity after the council path.
+        # This preserves rare subsystem catches instead of letting a later
+        # all-pass verdict silently neutralize them.
+        if decision != Decision.REROUTE:
+            escalated = _escalate_decision(decision, classifier_decision)
+            if escalated != decision and classifier_score is not None:
+                if escalated == Decision.DENY:
+                    signals.append(
+                        f"classifier_veto_deny({classifier_score:.2f}>{self._classifier_deny_threshold:.2f})"
+                    )
+                    self._immune.add(action_hash)
+                    noise = _fail_to_noise(action_hash)
+                elif escalated == Decision.QUARANTINE:
+                    signals.append(
+                        "classifier_veto_quarantine("
+                        f"{classifier_score:.2f}>{self._classifier_quarantine_threshold:.2f})"
+                    )
+                decision = escalated
 
-        # Trichromatic overlay: IR+Visible+UV state can only raise severity.
-        # This MUST fire after council — a trichromatic quarantine cannot be
-        # silently neutralized by an all-pass council outcome.
-        if self._trichromatic_engine is not None:
-            if trichromatic_risk >= self._trichromatic_deny_threshold and decision != Decision.DENY:
-                signals.append(
-                    f"trichromatic_escalate_deny({trichromatic_risk:.2f}>{self._trichromatic_deny_threshold:.2f})"
-                )
-                decision = Decision.DENY
-                self._immune.add(action_hash)
-                noise = _fail_to_noise(action_hash)
-            elif trichromatic_risk >= self._trichromatic_quarantine_threshold and decision == Decision.ALLOW:
-                signals.append(
-                    f"trichromatic_escalate_quarantine({trichromatic_risk:.2f}>{self._trichromatic_quarantine_threshold:.2f})"
-                )
-                decision = Decision.QUARANTINE
+            if self._trichromatic_engine is not None:
+                escalated = _escalate_decision(decision, trichromatic_decision)
+                if escalated != decision:
+                    if escalated == Decision.DENY:
+                        signals.append(
+                            "trichromatic_veto_deny("
+                            f"{trichromatic_risk:.2f}>{self._trichromatic_deny_threshold:.2f})"
+                        )
+                        self._immune.add(action_hash)
+                        noise = _fail_to_noise(action_hash)
+                    elif escalated == Decision.QUARANTINE:
+                        signals.append(
+                            "trichromatic_veto_quarantine("
+                            f"{trichromatic_risk:.2f}>{self._trichromatic_quarantine_threshold:.2f})"
+                        )
+                    decision = escalated
 
-            if decision == Decision.ALLOW:
+            if decision == Decision.ALLOW and self._trichromatic_engine is not None:
                 self._trichromatic_engine.update_baseline(tri_state)
 
         # Clean → learn as safe reflex (fast-path for future)
@@ -1045,12 +1083,16 @@ class RuntimeGate:
         Returns: (decision, signals)
         """
         reviews: List[Tuple[str, bool, str]] = []
+        text_lower = action_text.lower()
+        text_upper = action_text.upper()
+        chars = max(len(action_text), 1)
+        digit_ratio = sum(ch.isdigit() for ch in action_text) / chars
 
         # --- KO Council: Intent Review ---
         # Check if action text sentiment matches the tongue coordinate
         ko_coord = coords[0]
         has_override_language = any(
-            w in action_text.upper()
+            w in text_upper
             for w in [
                 "OVERRIDE",
                 "BYPASS",
@@ -1076,7 +1118,7 @@ class RuntimeGate:
         # --- AV Council: Transport/Flow Review ---
         # Check for external data exfiltration patterns
         has_external = any(
-            w in action_text.lower()
+            w in text_lower
             for w in [
                 "external",
                 "send to",
@@ -1102,7 +1144,7 @@ class RuntimeGate:
         # --- RU Council: Policy Review ---
         # Check against known restricted operations
         has_restricted = any(
-            w in action_text.lower()
+            w in text_lower
             for w in [
                 "delete all",
                 "drop table",
@@ -1127,19 +1169,74 @@ class RuntimeGate:
         # Check if the action's computational profile (digit ratio, length) is anomalous
         ca_coord = coords[3]  # CA dimension
         ca_anomalous = ca_coord > 0.7  # high numeric content = suspicious
-        ca_pass = not ca_anomalous
+        has_compute_exec_language = any(
+            w in text_lower
+            for w in [
+                "run code",
+                "execute",
+                "command",
+                "shell",
+                "terminal",
+                "powershell",
+                "bash",
+                "python",
+                "script",
+                "docker",
+                "compile",
+                "gpu",
+                "cpu",
+                "tool call",
+                "system prompt",
+                "api key",
+                "secret",
+                "credential",
+            ]
+        )
+        has_benign_numeric_context = (
+            ca_anomalous
+            and digit_ratio < 0.25
+            and not has_compute_exec_language
+            and not has_override_language
+            and not has_external
+            and not has_restricted
+            and any(
+                w in text_lower
+                for w in [
+                    "calculate",
+                    "interest",
+                    "investment",
+                    "loan",
+                    "mortgage",
+                    "equation",
+                    "probability",
+                    "finance",
+                    "financial",
+                    "budget",
+                    "classroom",
+                    "homework",
+                    "math",
+                ]
+            )
+        )
+        ca_pass = (not ca_anomalous) or has_benign_numeric_context
         reviews.append(
             (
                 "CA_compute",
                 ca_pass,
-                (f"anomalous compute signature (CA={ca_coord:.2f})" if not ca_pass else "normal signature"),
+                (
+                    "benign numeric context"
+                    if has_benign_numeric_context
+                    else f"anomalous compute signature (CA={ca_coord:.2f})"
+                    if not ca_pass
+                    else "normal signature"
+                ),
             )
         )
 
         # --- UM Council: Redaction Review ---
         # Check for attempts to access credentials, secrets, PII
         has_credential_access = any(
-            w in action_text.lower()
+            w in text_lower
             for w in [
                 "password",
                 "secret",
@@ -1165,9 +1262,8 @@ class RuntimeGate:
 
         # --- DR Council: Integrity/Data Trace Review ---
         # Check for signs of injection or encoded payloads
-        chars = max(len(action_text), 1)
         punct_ratio = sum(c in "!@#$%^&*()_+-=[]{}|;':\",./<>?" for c in action_text) / chars
-        has_encoding_artifacts = punct_ratio > 0.15 or "base64" in action_text.lower() or "\\x" in action_text
+        has_encoding_artifacts = punct_ratio > 0.15 or "base64" in text_lower or "\\x" in action_text
         # Also check if action hash has been seen in a suspicious context before
         dr_pass = not has_encoding_artifacts
         reviews.append(
