@@ -104,13 +104,13 @@ class TestPerpendicularTorsion:
         assert ko_um == max_bridge, \
             f"KO-UM bridge ({ko_um:.4f}) should be the strongest (max={max_bridge:.4f})"
 
-    @pytest.mark.xfail(reason=(
-        "KNOWN GAP: validate_cube checks h (barrier) and E_port but not V (Lyapunov). "
-        "Torsion attack has V=1.26 (100x benign) but cost=15.38 (inside barrier). "
-        "Fix: add V threshold to validate_cube. See Saturn Ring stabilizer research."
-    ))
     def test_cube_catches_torsion_attack(self):
-        """A cube snapshot of the torsion state should NOT be ALLOW."""
+        """A cube snapshot of the torsion state should NOT be ALLOW.
+
+        Previously xfail because validate_cube didn't check V (Lyapunov).
+        Now fixed: V > 0.5 triggers ESCALATE, catching torsion attacks where
+        the barrier (h) is fine but Lyapunov deviation is extreme.
+        """
         centroid = self._make_neutral_centroid()
         torsion = self._make_torsion_coords()
         cost = harmonic_cost(lyapunov_V(torsion, centroid), R=1.5)

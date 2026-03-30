@@ -124,9 +124,17 @@ def encode_cube(coords, centroid, cost, spin_magnitude, phase, trust_history):
 
 
 def validate_cube(cube):
-    """Validate cube integrity -> governance decision."""
+    """Validate cube integrity -> governance decision.
+
+    Uses three checks:
+      1. Barrier h(x): negative = outside safe region → DENY
+      2. Lyapunov V: high = far from stable equilibrium → ESCALATE
+      3. Bridge energy E_port: high = cross-tongue tension → QUARANTINE
+    """
     if cube["h"] < 0:
         return "DENY"
+    if cube["V"] > 0.5:  # Lyapunov deviation threshold (catches torsion attacks)
+        return "ESCALATE"
     if cube["h"] < 25:
         return "ESCALATE"
     if cube["E_port"] > 5.0:
