@@ -20,6 +20,7 @@ import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import List, Optional
+from urllib.parse import urlparse as _urlparse
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
@@ -145,8 +146,10 @@ def score_description(description: str) -> tuple[int, list, list]:
     elif len(description) > 200:
         score += 2  # substantial description
 
-    if "github.com" in description or "https://" in description or "http://" in description:
-        score += 1  # has links
+    # Use urlparse for proper URL detection instead of substring matching
+    url_candidates = re.findall(r'https?://[^\s\'"<>]+', description)
+    if any(_urlparse(u).netloc for u in url_candidates):
+        score += 1  # has valid links
 
     if "#" in description:
         score += 1  # has hashtags
