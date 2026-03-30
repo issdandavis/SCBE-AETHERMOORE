@@ -30,8 +30,9 @@ except ImportError:
 # CI has observed an installed `governance` module being imported before tests,
 # which breaks imports like `from governance.*` even when tests later tweak sys.path.
 # IMPORTANT: _SRC_ROOT must come BEFORE _REPO_ROOT on sys.path so that
-# `src/symphonic_cipher/` (safety-score variant with qc_lattice, governance, etc.)
-# is found before the root `symphonic_cipher/` (exponential-cost variant).
+# the repo's primary `src/` package tree is imported first for modules that only
+# exist there (qc_lattice, governance, browser-facing adapters, etc.). Shared
+# modules must still keep the same public contract across both trees.
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _SRC_ROOT = _REPO_ROOT / "src"
 sys.path.insert(0, str(_REPO_ROOT))
@@ -63,6 +64,42 @@ tempfile.tempdir = str(_PYTEST_TEMP_ROOT)
 os.environ["TMPDIR"] = str(_PYTEST_TEMP_ROOT)
 os.environ["TEMP"] = str(_PYTEST_TEMP_ROOT)
 os.environ["TMP"] = str(_PYTEST_TEMP_ROOT)
+
+
+def _repo_local_mkdtemp(suffix=None, prefix=None, dir=None):
+    """Create a repo-local temp dir without relying on Windows stdlib ACL setup.
+
+    Python 3.14 on this Windows lane can create TemporaryDirectory/mkdtemp paths
+    that immediately become inaccessible to the same interpreter. Building the
+    directory directly under the repo-local pytest temp root avoids that ACL
+    behavior while keeping test isolation deterministic.
+    """
+
+    base = Path(dir) if dir is not None else _PYTEST_TEMP_ROOT
+    base.mkdir(parents=True, exist_ok=True)
+    name = f"{prefix or 'tmp'}{uuid.uuid4().hex[:8]}{suffix or ''}"
+    path = base / name
+    path.mkdir(parents=True, exist_ok=False)
+    return str(path.resolve())
+
+
+class _RepoLocalTemporaryDirectory:
+    def __init__(self, suffix=None, prefix=None, dir=None, ignore_cleanup_errors=False):
+        self.name = _repo_local_mkdtemp(suffix=suffix, prefix=prefix, dir=dir)
+        self._ignore_cleanup_errors = ignore_cleanup_errors
+
+    def __enter__(self):
+        return self.name
+
+    def __exit__(self, exc_type, exc, tb):
+        self.cleanup()
+
+    def cleanup(self):
+        shutil.rmtree(self.name, ignore_errors=self._ignore_cleanup_errors)
+
+
+tempfile.mkdtemp = _repo_local_mkdtemp
+tempfile.TemporaryDirectory = _RepoLocalTemporaryDirectory
 
 
 @pytest.fixture

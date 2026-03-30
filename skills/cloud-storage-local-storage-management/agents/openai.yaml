@@ -1,0 +1,3 @@
+display_name: Cloud Storage and Local Storage Management
+short_description: Scan, sort, route, and back up large Windows workspaces across local disks and cloud-sync targets without recursive backup failures.
+default_prompt: Audit my Windows storage layout, rank the safest backup routes, generate a cleanup plan, and if the route is safe run the backup with sane excludes.
