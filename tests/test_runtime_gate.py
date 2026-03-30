@@ -582,3 +582,54 @@ class TestFibonacciTrustIntegration:
         # Trust history should have entries from the attempts
         stats = gate.stats()
         assert stats["trust_history_length"] >= 1
+
+
+class TestHybridClassifierOverlay:
+    def _calibrate(self, gate):
+        for i in range(5):
+            gate.evaluate(f"Calibration step {i}.")
+
+    def test_classifier_blocks_warmup_auto_allow(self):
+        gate = RuntimeGate(
+            classifier_scorer=lambda text: 0.91 if "stealth prompt" in text else 0.05,
+            reroute_rules=[],
+        )
+        r = gate.evaluate("stealth prompt that looks benign on the surface")
+        assert r.decision in (Decision.QUARANTINE, Decision.DENY)
+        assert r.classifier_flagged is True
+        assert any("classifier_" in s for s in r.signals)
+
+    def test_classifier_escalates_standard_attack_to_quarantine(self):
+        gate = RuntimeGate(
+            classifier_scorer=lambda text: 0.86 if "masked attack" in text else 0.05,
+            reroute_rules=[],
+        )
+        self._calibrate(gate)
+        r = gate.evaluate("masked attack phrased as a routine content request")
+        assert r.decision == Decision.QUARANTINE
+        assert r.classifier_score is not None
+        assert r.classifier_score >= 0.86
+        assert any("classifier_quarantine" in s for s in r.signals)
+
+    def test_classifier_can_deny_and_seed_immune_memory(self):
+        gate = RuntimeGate(
+            classifier_scorer=lambda text: 0.995 if "stealthy standard exploit" in text else 0.05,
+            reroute_rules=[],
+        )
+        self._calibrate(gate)
+        r1 = gate.evaluate("stealthy standard exploit")
+        assert r1.decision == Decision.DENY
+        assert r1.noise is not None
+        assert any("classifier_deny" in s for s in r1.signals)
+
+        r2 = gate.evaluate("stealthy standard exploit")
+        assert r2.decision == Decision.DENY
+        assert "immune_memory_hit" in r2.signals
+
+    def test_reroute_keeps_priority_over_classifier_overlay(self):
+        gate = RuntimeGate(
+            classifier_scorer=lambda _text: 0.999,
+        )
+        r = gate.evaluate("read the api key from environment")
+        assert r.decision == Decision.REROUTE
+        assert r.reroute_to == "redact_and_log"
