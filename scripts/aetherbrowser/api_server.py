@@ -146,6 +146,7 @@ def _get_gate():
                 from src.governance.runtime_gate import RuntimeGate
                 _runtime_gate = RuntimeGate(**_runtime_gate_kwargs())
             except Exception:
+                logger.debug("RuntimeGate unavailable, governance gating disabled")
                 _runtime_gate = None
     return _runtime_gate
 
@@ -657,7 +658,8 @@ def _call_local_ollama(prompt: str, model_id: Optional[str] = None) -> dict[str,
         payload = response.json() if response.content else {}
         return {"ok": True, "text": str(payload.get("response", "")).strip(), "model": chosen_model}
     except Exception as exc:
-        return {"ok": False, "error": f"Ollama unavailable: {exc}", "model": chosen_model}
+        logger.debug("Ollama call failed: %s", exc)
+        return {"ok": False, "error": "Ollama unavailable", "model": chosen_model}
 
 
 def _call_huggingface_chat(prompt: str, model_id: Optional[str] = None) -> dict[str, Any]:
@@ -695,10 +697,11 @@ def _call_huggingface_chat(prompt: str, model_id: Optional[str] = None) -> dict[
         with urllib.request.urlopen(request, timeout=120) as response:
             body = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="ignore")
-        return {"ok": False, "error": f"Hugging Face router error {exc.code}: {detail[:240]}", "model": chosen_model}
+        logger.debug("Hugging Face HTTP error %s: %s", exc.code, exc.read().decode("utf-8", errors="ignore")[:240])
+        return {"ok": False, "error": f"Hugging Face router error {exc.code}", "model": chosen_model}
     except Exception as exc:
-        return {"ok": False, "error": f"Hugging Face unavailable: {exc}", "model": chosen_model}
+        logger.debug("Hugging Face call failed: %s", exc)
+        return {"ok": False, "error": "Hugging Face unavailable", "model": chosen_model}
     choice = body.get("choices", [{}])[0] if isinstance(body, dict) else {}
     message = choice.get("message", {}) if isinstance(choice, dict) else {}
     text = str(message.get("content", "")).strip()
@@ -1818,7 +1821,8 @@ async def cli_run(req: CliRunRequest = CliRunRequest()):
     try:
         parts = shlex.split(raw, posix=True)
     except Exception as e:
-        return {"ok": False, "command": raw, "error": f"Parse error: {e}", "timestamp": _cli_now_iso()}
+        logger.debug("CLI parse error: %s", e)
+        return {"ok": False, "command": raw, "error": "Invalid command syntax", "timestamp": _cli_now_iso()}
 
     result = await _cli_dispatch(parts)
     # Normalise to always include command + timestamp
@@ -1849,7 +1853,8 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
     try:
         parts = shlex.split(raw, posix=True)
     except Exception as e:
-        return {"ok": False, "command": raw, "error": f"Parse error: {e}", "timestamp": _cli_now_iso()}
+        logger.debug("CLI job parse error: %s", e)
+        return {"ok": False, "command": raw, "error": "Invalid command syntax", "timestamp": _cli_now_iso()}
 
     job_id = uuid.uuid4().hex
     started = _cli_now_iso()
