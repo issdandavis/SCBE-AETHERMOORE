@@ -1223,7 +1223,8 @@ def _cli_docs_show(key: str, max_chars: int = 9000) -> dict[str, Any]:
     try:
         content = path.read_text(encoding="utf-8", errors="replace")
     except Exception as e:
-        return {"ok": False, "error": str(e), "key": key, "path": str(path)}
+        logger.warning("Failed to read doc %s: %s", key, e)
+        return {"ok": False, "error": "Failed to read document", "key": key, "path": str(path)}
     return {
         "ok": True,
         "key": key,
@@ -1436,9 +1437,10 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
                     "job_id": job_id,
                     "command": raw,
                     "status": "failed",
-                    "error": str(e),
+                    "error": f"{type(e).__name__}: see server logs",
                 },
             )
+            logger.error("CLI job %s failed: %s", job_id, e, exc_info=True)
             _cli_jobs[job_id] = {
                 "ok": False,
                 "job_id": job_id,
@@ -1446,7 +1448,7 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
                 "status": "failed",
                 "started_at": started,
                 "finished_at": _cli_now_iso(),
-                "error": str(e),
+                "error": "Job execution failed — see server logs",
             }
 
     asyncio.create_task(_runner())
