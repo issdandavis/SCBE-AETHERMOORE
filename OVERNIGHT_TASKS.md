@@ -63,7 +63,13 @@
 
 ## COMPLETED TASKS (log here)
 
-_Tasks move here when done. Include timestamp and result._
+- [x] **10:11 PM** — TS tests confirmed 174/174 (5,957 passed)
+- [x] **10:12 PM** — Python core tests confirmed 152/152 + 1 xfail
+- [x] **10:12 PM** — build_pytest_command() already passing (Codex fixed)
+- [x] **10:15 PM** — Pulled darkknight25 multilingual data: 4,898 records, 7 languages
+- [x] **10:17 PM** — Retrained with multilingual: **73.5% blind detection** (was 34.5%)
+- [x] **10:23 PM** — Pushed new model + results to HuggingFace
+- [x] **10:23 PM** — Pushed new results to Kaggle
 
 ---
 
