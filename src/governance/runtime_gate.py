@@ -30,11 +30,12 @@ import time
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
 from .negative_tongue_lattice import NegativeTongueLattice
+from .trichromatic_governance import TrichromaticGovernanceEngine
 
 try:
     from primitives.phi_poincare import (
@@ -53,6 +54,9 @@ WORD_RE = re.compile(r"[A-Za-z0-9_']+")
 DEFAULT_SEMANTIC_EMBED_MODEL = "all-MiniLM-L6-v2"
 DEFAULT_TONGUE_PROJECTOR_PATH = str(
     (Path(__file__).resolve().parents[2] / "artifacts" / "projectors" / "tongue_projector.npz")
+)
+DEFAULT_CLASSIFIER_MODEL_DIR = str(
+    (Path(__file__).resolve().parents[2] / "artifacts" / "training" / "governance_classifier_sklearn")
 )
 
 # Anchor prompts for semantic tongue projection.
@@ -112,6 +116,17 @@ class GateResult:
     trust_index: int = 0
     # Negative Tongue Lattice (experimental)
     lattice_energy: float = 0.0
+    # Optional classifier overlay (standard attack detector)
+    classifier_score: Optional[float] = None
+    classifier_flagged: bool = False
+    # Optional trichromatic overlay (IR + visible + UV state)
+    trichromatic_triplet_coherence: float = 0.0
+    trichromatic_lattice_energy_score: float = 0.0
+    trichromatic_whole_state_anomaly: float = 0.0
+    trichromatic_risk_score: float = 0.0
+    trichromatic_flagged: bool = False
+    trichromatic_state_hash: str = ""
+    trichromatic_strongest_bridge: str = ""
     # Audit
     action_hash: str = ""
     timestamp: float = 0.0
@@ -144,6 +159,57 @@ class RerouteRule:
     pattern: str
     replacement: str
     reason: str
+
+
+class _SklearnPromptAttackClassifier:
+    """Lazy loader for the sklearn governance classifier artifact.
+
+    This is optional. If the artifact or joblib dependency is missing, the
+    caller gets a clean `None` score and the gate falls back to its normal
+    structural semantics.
+    """
+
+    def __init__(self, model_dir: str):
+        self._model_dir = Path(model_dir)
+        self._loaded: Optional[bool] = None
+        self._model: Any = None
+        self._vectorizer: Any = None
+
+    def _ensure_loaded(self) -> bool:
+        if self._loaded is not None:
+            return self._loaded
+
+        try:
+            import joblib  # type: ignore[import-untyped]
+
+            self._model = joblib.load(self._model_dir / "model.joblib")
+            self._vectorizer = joblib.load(self._model_dir / "vectorizer.joblib")
+            self._loaded = True
+        except Exception:
+            self._model = None
+            self._vectorizer = None
+            self._loaded = False
+
+        return self._loaded
+
+    def score(self, text: str) -> Optional[float]:
+        if not self._ensure_loaded():
+            return None
+
+        assert self._model is not None
+        assert self._vectorizer is not None
+
+        vector = self._vectorizer.transform([text])
+
+        if hasattr(self._model, "predict_proba"):
+            return float(self._model.predict_proba(vector)[0][1])
+
+        if hasattr(self._model, "decision_function"):
+            raw_score = float(np.asarray(self._model.decision_function(vector)).reshape(-1)[0])
+            return float(1.0 / (1.0 + math.exp(-raw_score)))
+
+        prediction = float(np.asarray(self._model.predict(vector)).reshape(-1)[0])
+        return prediction
 
 
 # Default reroute table — dangerous actions → safe alternatives
@@ -195,6 +261,14 @@ class RuntimeGate:
         semantic_embed_model: str = DEFAULT_SEMANTIC_EMBED_MODEL,
         tongue_projector_path: Optional[str] = None,
         use_negative_lattice: bool = False,
+        use_classifier: bool = False,
+        classifier_model_dir: Optional[str] = None,
+        classifier_quarantine_threshold: float = 0.75,
+        classifier_deny_threshold: float = 0.97,
+        classifier_scorer: Optional[Callable[[str], Optional[float]]] = None,
+        use_trichromatic_governance: bool = False,
+        trichromatic_quarantine_threshold: float = 0.48,
+        trichromatic_deny_threshold: float = 0.76,
     ):
         # Thresholds
         self.cost_allow = cost_allow
@@ -237,6 +311,26 @@ class RuntimeGate:
         self._use_negative_lattice = use_negative_lattice
         self._negative_lattice: Optional[NegativeTongueLattice] = (
             NegativeTongueLattice() if use_negative_lattice else None
+        )
+
+        # Optional classifier overlay: catches standard prompt-attack patterns
+        # that may not create a strong geometric or structural signal.
+        self._classifier_enabled = use_classifier or classifier_scorer is not None
+        self._classifier_quarantine_threshold = classifier_quarantine_threshold
+        self._classifier_deny_threshold = max(classifier_deny_threshold, classifier_quarantine_threshold)
+        self._classifier_scorer = classifier_scorer
+        self._classifier = (
+            _SklearnPromptAttackClassifier(classifier_model_dir or DEFAULT_CLASSIFIER_MODEL_DIR)
+            if self._classifier_enabled and classifier_scorer is None
+            else None
+        )
+        self._trichromatic_enabled = use_trichromatic_governance
+        self._trichromatic_quarantine_threshold = trichromatic_quarantine_threshold
+        self._trichromatic_deny_threshold = max(
+            trichromatic_deny_threshold, trichromatic_quarantine_threshold
+        )
+        self._trichromatic_engine: Optional[TrichromaticGovernanceEngine] = (
+            TrichromaticGovernanceEngine() if self._trichromatic_enabled else None
         )
 
     # ------------------------------------------------------------------ #
@@ -522,6 +616,20 @@ class RuntimeGate:
                 return rule
         return None
 
+    def _classify_attack(self, text: str) -> Optional[float]:
+        if not self._classifier_enabled:
+            return None
+
+        try:
+            if self._classifier_scorer is not None:
+                return self._classifier_scorer(text)
+            if self._classifier is not None:
+                return self._classifier.score(text)
+        except Exception:
+            return None
+
+        return None
+
     # ------------------------------------------------------------------ #
     #  Centroid update
     # ------------------------------------------------------------------ #
@@ -560,13 +668,47 @@ class RuntimeGate:
         # is a semantic signal (elevated cost or spin) to confirm the match.
         # This drops FPR dramatically while preserving true-positive reroutes.
         reroute_rule = self._check_reroute(full_text)
+        classifier_score = self._classify_attack(full_text)
+        classifier_quarantine = (
+            classifier_score is not None and classifier_score >= self._classifier_quarantine_threshold
+        )
+        classifier_deny = classifier_score is not None and classifier_score >= self._classifier_deny_threshold
+        trichromatic_coherence = 0.0
+        trichromatic_lattice_score = 0.0
+        trichromatic_anomaly = 0.0
+        trichromatic_risk = 0.0
+        trichromatic_flagged = False
+        trichromatic_state_hash = ""
+        trichromatic_strongest_bridge = ""
 
         # Auto-calibrate: first 5 actions build the centroid (assumed clean)
         # This is the "incubation" period — the system learns what normal looks like
         # Never let an explicit reroute match get learned as "normal" during
         # warm-up. Those actions must go through the full evaluation path.
-        if self._query_count <= 5 and action_hash not in self._immune and reroute_rule is None:
+        if (
+            self._query_count <= 5
+            and action_hash not in self._immune
+            and reroute_rule is None
+            and not classifier_quarantine
+        ):
             coords = self._text_to_coords(full_text)
+            if self._trichromatic_engine is not None:
+                tri_state = self._trichromatic_engine.build_state(
+                    coords,
+                    1.0,
+                    0,
+                    self._trust_history,
+                    self._cumulative_cost + 1.0,
+                    self._query_count,
+                )
+                tri_scores = self._trichromatic_engine.score_state(tri_state)
+                self._trichromatic_engine.update_baseline(tri_state)
+                trichromatic_coherence = tri_scores.triplet_coherence_score
+                trichromatic_lattice_score = tri_scores.lattice_energy_score
+                trichromatic_anomaly = tri_scores.whole_state_anomaly_score
+                trichromatic_risk = tri_scores.risk_score
+                trichromatic_state_hash = tri_state.state_hash
+                trichromatic_strongest_bridge = tri_scores.strongest_bridge
             self._update_centroid(coords)
             self._cumulative_cost += 1.0  # nominal cost during calibration
             self._trust_history.append(1)  # calibration = +1 trust
@@ -580,6 +722,12 @@ class RuntimeGate:
                 trust_weight=fib["weight"],
                 trust_level=fib["level"],
                 trust_index=fib["index"],
+                trichromatic_triplet_coherence=trichromatic_coherence,
+                trichromatic_lattice_energy_score=trichromatic_lattice_score,
+                trichromatic_whole_state_anomaly=trichromatic_anomaly,
+                trichromatic_risk_score=trichromatic_risk,
+                trichromatic_state_hash=trichromatic_state_hash,
+                trichromatic_strongest_bridge=trichromatic_strongest_bridge,
                 action_hash=action_hash,
                 timestamp=ts,
                 session_query_count=self._query_count,
@@ -606,7 +754,7 @@ class RuntimeGate:
             return result
 
         # Reflex table: known safe → instant ALLOW (still builds trust)
-        if action_hash in self._reflex:
+        if action_hash in self._reflex and not classifier_quarantine:
             self._trust_history.append(1)  # known-safe = +1 trust
             fib = fibonacci_trust_level(self._trust_history)
             result = GateResult(
@@ -646,6 +794,24 @@ class RuntimeGate:
             neg_lattice_energy = self._negative_lattice.lattice_energy(coords)
             cost *= 1.0 + 0.1 * neg_lattice_energy
 
+        if self._trichromatic_engine is not None:
+            tri_state = self._trichromatic_engine.build_state(
+                coords,
+                cost,
+                magnitude,
+                self._trust_history,
+                self._cumulative_cost + cost,
+                self._query_count,
+            )
+            tri_scores = self._trichromatic_engine.score_state(tri_state)
+            trichromatic_coherence = tri_scores.triplet_coherence_score
+            trichromatic_lattice_score = tri_scores.lattice_energy_score
+            trichromatic_anomaly = tri_scores.whole_state_anomaly_score
+            trichromatic_risk = tri_scores.risk_score
+            trichromatic_state_hash = tri_state.state_hash
+            trichromatic_strongest_bridge = tri_scores.strongest_bridge
+            trichromatic_flagged = trichromatic_risk >= self._trichromatic_quarantine_threshold
+
         self._update_centroid(coords)
         self._cumulative_cost += cost
 
@@ -676,7 +842,9 @@ class RuntimeGate:
         # ---- Fibonacci trust update ----
         # Map spin magnitude to ternary trust signal:
         #   0 spins = clean (+1), 1-3 spins = neutral (0), 4+ spins = suspicious (-1)
-        if magnitude == 0:
+        if classifier_quarantine:
+            trust_signal = -1
+        elif magnitude == 0:
             trust_signal = 1
         elif magnitude <= 3:
             trust_signal = 0
@@ -728,6 +896,20 @@ class RuntimeGate:
         elif self._cumulative_cost > self.cumulative_cost_quarantine:
             signals.append(f"cumulative_quarantine({self._cumulative_cost:.1f}>{self.cumulative_cost_quarantine})")
 
+        if classifier_score is not None:
+            signals.append(f"classifier_score({classifier_score:.3f})")
+        if self._trichromatic_engine is not None:
+            signals.append(f"trichromatic_risk({trichromatic_risk:.3f})")
+            if trichromatic_risk >= self._trichromatic_deny_threshold:
+                signals.append(
+                    f"trichromatic_deny({trichromatic_risk:.2f}>{self._trichromatic_deny_threshold:.2f})"
+                )
+            elif trichromatic_risk >= self._trichromatic_quarantine_threshold:
+                signals.append(
+                    "trichromatic_quarantine("
+                    f"{trichromatic_risk:.2f}>{self._trichromatic_quarantine_threshold:.2f})"
+                )
+
         # ---- Decision logic ----
 
         decision = Decision.ALLOW
@@ -759,6 +941,40 @@ class RuntimeGate:
                     self._immune.add(action_hash)
                     noise = _fail_to_noise(action_hash)
 
+        # Classifier overlay: standard attack detector can only raise severity.
+        if classifier_deny and decision != Decision.REROUTE:
+            signals.append(
+                f"classifier_deny({classifier_score:.2f}>{self._classifier_deny_threshold:.2f})"
+            )
+            decision = Decision.DENY
+            self._immune.add(action_hash)
+            noise = _fail_to_noise(action_hash)
+        elif classifier_quarantine and decision == Decision.ALLOW:
+            signals.append(
+                f"classifier_quarantine({classifier_score:.2f}>{self._classifier_quarantine_threshold:.2f})"
+            )
+            decision = Decision.QUARANTINE
+
+        # Trichromatic overlay: IR+Visible+UV state can only raise severity.
+        # This MUST fire after council — a trichromatic quarantine cannot be
+        # silently neutralized by an all-pass council outcome.
+        if self._trichromatic_engine is not None:
+            if trichromatic_risk >= self._trichromatic_deny_threshold and decision != Decision.DENY:
+                signals.append(
+                    f"trichromatic_escalate_deny({trichromatic_risk:.2f}>{self._trichromatic_deny_threshold:.2f})"
+                )
+                decision = Decision.DENY
+                self._immune.add(action_hash)
+                noise = _fail_to_noise(action_hash)
+            elif trichromatic_risk >= self._trichromatic_quarantine_threshold and decision == Decision.ALLOW:
+                signals.append(
+                    f"trichromatic_escalate_quarantine({trichromatic_risk:.2f}>{self._trichromatic_quarantine_threshold:.2f})"
+                )
+                decision = Decision.QUARANTINE
+
+            if decision == Decision.ALLOW:
+                self._trichromatic_engine.update_baseline(tri_state)
+
         # Clean → learn as safe reflex (fast-path for future)
         if decision == Decision.ALLOW and not any("council" in s for s in signals):
             self._reflex[action_hash] = True
@@ -774,6 +990,15 @@ class RuntimeGate:
             trust_level=trust_level,
             trust_index=trust_index,
             lattice_energy=neg_lattice_energy,
+            classifier_score=classifier_score,
+            classifier_flagged=(classifier_quarantine or classifier_deny),
+            trichromatic_triplet_coherence=trichromatic_coherence,
+            trichromatic_lattice_energy_score=trichromatic_lattice_score,
+            trichromatic_whole_state_anomaly=trichromatic_anomaly,
+            trichromatic_risk_score=trichromatic_risk,
+            trichromatic_flagged=trichromatic_flagged,
+            trichromatic_state_hash=trichromatic_state_hash,
+            trichromatic_strongest_bridge=trichromatic_strongest_bridge,
             action_hash=action_hash,
             timestamp=ts,
             session_query_count=self._query_count,
@@ -986,6 +1211,8 @@ class RuntimeGate:
         self._query_count = 0
         self._audit_log = []
         self._trust_history = []
+        if self._trichromatic_engine is not None:
+            self._trichromatic_engine.reset()
 
     def stats(self) -> Dict[str, Any]:
         decisions = {}
@@ -1002,4 +1229,5 @@ class RuntimeGate:
             "audit_log_size": len(self._audit_log),
             "fibonacci_trust": fib,
             "trust_history_length": len(self._trust_history),
+            "trichromatic_enabled": self._trichromatic_enabled,
         }
