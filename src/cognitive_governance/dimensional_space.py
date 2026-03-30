@@ -272,8 +272,8 @@ class DimensionalSpace:
 
         weighted_diff_sq = 0.0
         idx = 0
-        for valence in StateValence:
-            for spatial in range(3):
+        for _valence in StateValence:
+            for _spatial in range(3):
                 for tongue in TONGUE_NAMES:
                     w = TONGUES[tongue]["weight"]
                     diff = v1[idx] - v2[idx]
