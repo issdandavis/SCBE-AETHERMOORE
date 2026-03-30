@@ -639,11 +639,28 @@ function renderScan(scan, index) {
   // Radar
   const radarCard = document.createElement('div');
   radarCard.className = 'card';
-  radarCard.innerHTML = '<h2>6D Tongue Pathway Heatmap</h2><div class="radar-container"><canvas id="radar-' + index + '"></canvas></div>';
-  const legendHtml = TONGUES.map(t =>
-    `<div class="tongue-legend-item"><div class="tongue-dot" style="background:${TONGUE_COLORS[t]}"></div>${t} (${TONGUE_LABELS[t]})</div>`
-  ).join('');
-  radarCard.innerHTML += `<div class="tongue-legend">${legendHtml}</div>`;
+  const radarH2 = document.createElement('h2');
+  radarH2.textContent = '6D Tongue Pathway Heatmap';
+  radarCard.appendChild(radarH2);
+  const radarContainer = document.createElement('div');
+  radarContainer.className = 'radar-container';
+  const radarCanvas = document.createElement('canvas');
+  radarCanvas.id = 'radar-' + index;
+  radarContainer.appendChild(radarCanvas);
+  radarCard.appendChild(radarContainer);
+  const legendDiv = document.createElement('div');
+  legendDiv.className = 'tongue-legend';
+  TONGUES.forEach(t => {
+    const item = document.createElement('div');
+    item.className = 'tongue-legend-item';
+    const dot = document.createElement('div');
+    dot.className = 'tongue-dot';
+    dot.style.background = TONGUE_COLORS[t];
+    item.appendChild(dot);
+    item.appendChild(document.createTextNode(t + ' (' + TONGUE_LABELS[t] + ')'));
+    legendDiv.appendChild(item);
+  });
+  radarCard.appendChild(legendDiv);
   wrapper.appendChild(radarCard);
 
   // Summary
@@ -718,12 +735,12 @@ function renderScan(scan, index) {
       const segments = TONGUES.map(t => {
         const v = acts[t] || 0;
         const pct = (v / total) * 100;
-        return `<div class="tongue-bar-segment" style="width:${pct}%;background:${TONGUE_COLORS[t]}" data-tooltip="${t}: ${v.toFixed(4)}"></div>`;
+        return `<div class="tongue-bar-segment" style="width:${pct}%;background:${TONGUE_COLORS[t]}" data-tooltip="${escAttr(t)}: ${v.toFixed(4)}"></div>`;
       }).join('');
       barsHtml += `
         <div class="layer-row">
           <div class="layer-num">L${layer.layer}</div>
-          <div class="layer-name" title="${layer.name} [${layer.axiom}]">${layer.name}</div>
+          <div class="layer-name" title="${escAttr(layer.name)} [${escAttr(layer.axiom)}]">${escHtml(layer.name)}</div>
           <div class="tongue-bar-group">${segments}</div>
           <div class="layer-energy">${layer.layer_energy.toFixed(2)}</div>
         </div>`;
@@ -766,7 +783,7 @@ function loadScans(scans) {
   loadedScans = scans;
   activeScanIdx = 0;
   const grid = document.getElementById('main-grid');
-  grid.innerHTML = '';
+  grid.replaceChildren();
   document.getElementById('empty-state')?.remove();
   scans.forEach((scan, i) => renderScan(scan, i));
 }
@@ -775,6 +792,10 @@ function escHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+function escAttr(str) {
+  return escHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 // --- File input ---
