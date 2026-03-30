@@ -99,34 +99,90 @@ def load_kaggle_data(max_samples: int = 10000) -> List[Dict[str, Any]]:
             logger.warning("  Kaggle download failed: %s. Using synthetic data.", e)
             return _generate_synthetic_adversarial(max_samples)
 
-    # Parse CSV
+    # Parse CSV -- handle multiple file formats in this dataset
     records = []
     import csv
+
+    # Files that are implicitly ALL adversarial (no label column)
+    IMPLICIT_MALICIOUS = {"forbidden_question_set_df", "jailbreak_prompts",
+                          "malicous_deepset", "malignant", "predictionguard_df"}
+
     for csv_file in Path(path).rglob("*.csv"):
+        stem = csv_file.stem
+        is_implicit_malicious = stem in IMPLICIT_MALICIOUS
+        file_count = 0
+
         with open(csv_file, newline="", encoding="utf-8", errors="replace") as f:
             reader = csv.DictReader(f)
-            for row in reader:
-                text = row.get("prompt") or row.get("text") or row.get("input") or ""
-                label_raw = row.get("label") or row.get("is_malicious") or row.get("class") or "0"
-                try:
-                    label = int(float(label_raw))
-                except (ValueError, TypeError):
-                    label = 1 if label_raw.lower() in ("malicious", "jailbreak", "injection", "1", "true") else 0
+            cols = reader.fieldnames or []
 
-                if text.strip():
-                    records.append({
-                        "text": text.strip()[:2000],
-                        "label": label,
-                        "source": "kaggle_mpdd",
-                    })
+            # Skip files without usable text columns
+            text_col = None
+            for candidate in ["Prompt", "prompt", "text", "question1", "Input"]:
+                if candidate in cols:
+                    text_col = candidate
+                    break
+            if text_col is None:
+                continue
+
+            # Determine label column
+            label_col = None
+            for candidate in ["isMalicious", "is_malicious", "label", "Label", "class"]:
+                if candidate in cols:
+                    label_col = candidate
+                    break
+
+            for row in reader:
+                text = row.get(text_col, "").strip()
+                if len(text) < 10:
+                    continue
+                # Skip rows with embeddings in the text (corrupted)
+                if text.startswith("[[") or text.startswith("[-"):
+                    continue
+
+                if is_implicit_malicious:
+                    label = 1  # These files are ALL adversarial
+                elif label_col:
+                    try:
+                        label = int(float(row.get(label_col, "0")))
+                    except (ValueError, TypeError):
+                        raw = str(row.get(label_col, "")).lower()
+                        label = 1 if raw in ("malicious", "jailbreak", "1", "true") else 0
+                else:
+                    label = 0  # Default to benign if no label
+
+                records.append({
+                    "text": text[:2000],
+                    "label": label,
+                    "source": f"kaggle_{stem}",
+                })
+                file_count += 1
+
+        if file_count > 0:
+            logger.info("    %s: %d records (implicit_malicious=%s)", stem, file_count, is_implicit_malicious)
+
+    # Apply max_samples BEFORE caching (per-label cap to keep balance)
+    import random as _rng
+    _rng.seed(42)
+    pos_recs = [r for r in records if r["label"] == 1]
+    neg_recs = [r for r in records if r["label"] == 0]
+    half = max_samples // 2
+    if len(pos_recs) > half:
+        pos_recs = _rng.sample(pos_recs, half)
+    if len(neg_recs) > half:
+        neg_recs = _rng.sample(neg_recs, half)
+    records = pos_recs + neg_recs
+    _rng.shuffle(records)
+
+    logger.info("  After balance cap: %d adversarial + %d benign = %d total",
+                len(pos_recs), len(neg_recs), len(records))
 
     # Cache for next run
     with open(cache_path, "w") as f:
         for r in records:
             f.write(json.dumps(r) + "\n")
 
-    logger.info("  Loaded %d samples from Kaggle", len(records))
-    return records[:max_samples]
+    return records
 
 
 def _generate_synthetic_adversarial(n: int) -> List[Dict[str, Any]]:
@@ -198,8 +254,13 @@ def load_local_sft() -> List[Dict[str, Any]]:
 
 
 def load_scbe_benchmark_attacks() -> List[Dict[str, Any]]:
-    """Load attack vectors from SCBE benchmark suite."""
-    logger.info("[1c] Loading SCBE benchmark attacks (20 categories)")
+    """Load attack vectors from SCBE benchmark suite.
+
+    IMPORTANT: These are used ONLY for blind evaluation, NEVER for training.
+    This is the strict data isolation boundary. If benchmark attacks leak
+    into training data, the benchmark numbers are meaningless.
+    """
+    logger.info("[1c] Loading SCBE benchmark attacks (20 categories) — HOLDOUT ONLY")
     from benchmarks.scbe.attacks.generator import generate_attacks
     attacks = generate_attacks(scale=20)
     records = []
@@ -208,57 +269,128 @@ def load_scbe_benchmark_attacks() -> List[Dict[str, Any]]:
             "text": atk["prompt"][:2000],
             "label": 1,
             "source": f"scbe_benchmark_{atk['class']}",
+            "category": atk["class"],
         })
-    logger.info("  Loaded %d benchmark attacks", len(records))
+    logger.info("  Loaded %d benchmark attacks (reserved for blind test)", len(records))
+    return records
+
+
+def load_additional_benign() -> List[Dict[str, Any]]:
+    """Load extra benign text from markdown docs for negative class balance."""
+    logger.info("[1d] Loading benign text from docs/ and training-data/")
+    records = []
+
+    # Pull sentences from markdown docs (real benign content)
+    docs_dir = REPO_ROOT / "docs"
+    count = 0
+    for md_file in sorted(docs_dir.rglob("*.md")):
+        if count >= 500:
+            break
+        try:
+            text = md_file.read_text(encoding="utf-8", errors="replace")
+            # Extract paragraphs (lines with 30+ chars that aren't headers/code)
+            for line in text.split("\n"):
+                line = line.strip()
+                if (len(line) >= 40
+                    and not line.startswith("#")
+                    and not line.startswith("```")
+                    and not line.startswith("|")
+                    and not line.startswith("-")
+                    and "http" not in line.lower()):
+                    records.append({
+                        "text": line[:500],
+                        "label": 0,
+                        "source": f"docs_{md_file.stem}",
+                    })
+                    count += 1
+                    if count >= 500:
+                        break
+        except Exception:
+            continue
+
+    logger.info("  Loaded %d benign text samples from docs", len(records))
     return records
 
 
 # ---------------------------------------------------------------------------
-#  Step 2: Prepare dataset
+#  Step 2: Prepare dataset with STRICT DATA ISOLATION
 # ---------------------------------------------------------------------------
 
-def prepare_dataset(records: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Deduplicate, balance, and split into train/eval."""
+def prepare_dataset(
+    train_records: List[Dict[str, Any]],
+    holdout_records: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Prepare training data with strict isolation from benchmark holdout.
+
+    CRITICAL RULE: train_records and holdout_records must have ZERO overlap.
+    The model trains on train_records only. Holdout is used for blind eval.
+    If any holdout text appears in training, the benchmark is compromised.
+    """
     import hashlib
 
-    logger.info("[2] Preparing dataset from %d raw records", len(records))
+    logger.info("[2] Preparing dataset with STRICT DATA ISOLATION")
 
-    # Deduplicate by text hash
+    # Hash all holdout texts to ensure no contamination
+    holdout_hashes = set()
+    for r in holdout_records:
+        holdout_hashes.add(hashlib.md5(r["text"].encode()).hexdigest())
+    logger.info("  Holdout fingerprints: %d (these MUST NOT appear in training)", len(holdout_hashes))
+
+    # Deduplicate training data AND filter out any holdout contamination
     seen = set()
-    unique = []
-    for r in records:
+    clean_train = []
+    contamination_count = 0
+    for r in train_records:
         h = hashlib.md5(r["text"].encode()).hexdigest()
+        if h in holdout_hashes:
+            contamination_count += 1
+            continue  # BLOCK: this text is in the holdout set
         if h not in seen:
             seen.add(h)
-            unique.append(r)
+            clean_train.append(r)
 
-    logger.info("  After dedup: %d unique records", len(unique))
+    if contamination_count > 0:
+        logger.warning("  BLOCKED %d records that leaked from holdout into training", contamination_count)
+    else:
+        logger.info("  No contamination detected — holdout is clean")
+
+    logger.info("  After dedup + isolation: %d clean training records", len(clean_train))
 
     # Count by label
-    pos = [r for r in unique if r["label"] == 1]
-    neg = [r for r in unique if r["label"] == 0]
+    pos = [r for r in clean_train if r["label"] == 1]
+    neg = [r for r in clean_train if r["label"] == 0]
     logger.info("  Positive (adversarial): %d, Negative (benign): %d", len(pos), len(neg))
 
-    # Balance: undersample majority class
+    # Balance classes
     import random
     random.seed(42)
-    min_class = min(len(pos), len(neg))
-    if min_class == 0:
+    if len(pos) == 0 or len(neg) == 0:
         logger.warning("  One class is empty! Using all data unbalanced.")
-        balanced = unique
+        balanced = clean_train
     else:
-        balanced = random.sample(pos, min(len(pos), min_class * 2)) + \
-                   random.sample(neg, min(len(neg), min_class * 2))
+        # Use all of minority class, sample up to 2x from majority
+        min_size = min(len(pos), len(neg))
+        max_size = min_size * 3  # Allow 3:1 ratio max
+        sampled_pos = random.sample(pos, min(len(pos), max_size))
+        sampled_neg = random.sample(neg, min(len(neg), max_size))
+        balanced = sampled_pos + sampled_neg
         random.shuffle(balanced)
 
-    # Split 80/20
+    # Split 80/20 (this eval split is for training loss tracking only)
+    # The REAL eval is the holdout benchmark — never touched during training
     split_idx = int(len(balanced) * 0.8)
     train = balanced[:split_idx]
     eval_data = balanced[split_idx:]
 
-    logger.info("  Train: %d, Eval: %d", len(train), len(eval_data))
+    logger.info("  Train: %d, Train-eval: %d, Blind holdout: %d", len(train), len(eval_data), len(holdout_records))
 
-    return {"train": train, "eval": eval_data, "total": len(balanced)}
+    return {
+        "train": train,
+        "eval": eval_data,
+        "holdout": holdout_records,
+        "total": len(balanced),
+        "contamination_blocked": contamination_count,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -564,7 +696,7 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Test pipeline without training")
     parser.add_argument("--epochs", type=int, default=3, help="Training epochs (default: 3)")
     parser.add_argument("--batch-size", type=int, default=32, help="Batch size (default: 32)")
-    parser.add_argument("--max-kaggle", type=int, default=10000, help="Max Kaggle samples (default: 10000)")
+    parser.add_argument("--max-kaggle", type=int, default=40000, help="Max Kaggle samples (default: 40000, full dataset)")
     parser.add_argument("--sklearn", action="store_true", help="Force sklearn fallback (faster, no GPU needed)")
     args = parser.parse_args()
 
@@ -580,14 +712,20 @@ def main():
     # Step 1: Load data from all sources
     kaggle_data = load_kaggle_data(max_samples=args.max_kaggle)
     local_sft = load_local_sft()
-    benchmark_attacks = load_scbe_benchmark_attacks()
+    extra_benign = load_additional_benign()
 
-    all_records = kaggle_data + local_sft + benchmark_attacks
-    logger.info("[1] Total raw records: %d (Kaggle: %d, Local: %d, Benchmark: %d)",
-                len(all_records), len(kaggle_data), len(local_sft), len(benchmark_attacks))
+    # STRICT ISOLATION: benchmark attacks are NEVER in the training pool
+    benchmark_holdout = load_scbe_benchmark_attacks()
 
-    # Step 2: Prepare dataset
-    dataset = prepare_dataset(all_records)
+    # Training pool = Kaggle + Local SFT + extra benign docs (NO benchmark attacks)
+    train_pool = kaggle_data + local_sft + extra_benign
+    logger.info("[1] Training pool: %d (Kaggle: %d, Local SFT: %d, Benign docs: %d)",
+                len(train_pool), len(kaggle_data), len(local_sft), len(extra_benign))
+    logger.info("    Blind holdout: %d benchmark attacks (NEVER seen during training)",
+                len(benchmark_holdout))
+
+    # Step 2: Prepare dataset with strict isolation
+    dataset = prepare_dataset(train_pool, benchmark_holdout)
 
     # Step 3: Train
     if args.sklearn:
@@ -597,29 +735,43 @@ def main():
             dataset, epochs=args.epochs, batch_size=args.batch_size, dry_run=args.dry_run,
         )
 
-    # Step 4: Evaluate against benchmark
+    # Step 4: BLIND EVALUATION against holdout benchmark
+    # The model has NEVER seen these attacks during training.
+    # This is the only number that matters.
     benchmark_results = evaluate_against_benchmark(
         training_results["model_path"], dry_run=args.dry_run,
     )
 
     # Step 5: Save report
     report = {
-        "pipeline": "unified_scbe_training",
+        "pipeline": "unified_scbe_training_v2_strict_isolation",
         "timestamp": datetime.now(timezone.utc).isoformat(),
+        "data_isolation": {
+            "method": "strict_holdout",
+            "holdout_source": "scbe_benchmark_20_categories",
+            "holdout_size": len(benchmark_holdout),
+            "contamination_blocked": dataset.get("contamination_blocked", 0),
+            "rule": "Benchmark attacks NEVER appear in training data. This is the blind test.",
+        },
         "data_sources": {
             "kaggle": {"dataset": KAGGLE_DATASET, "samples": len(kaggle_data)},
             "local_sft": {"dir": str(SFT_DIR), "samples": len(local_sft)},
-            "scbe_benchmark": {"categories": 20, "samples": len(benchmark_attacks)},
+            "benign_docs": {"samples": len(extra_benign)},
+            "blind_holdout": {"categories": 20, "samples": len(benchmark_holdout)},
         },
-        "dataset": {"train": len(dataset["train"]), "eval": len(dataset["eval"])},
+        "dataset": {
+            "train": len(dataset["train"]),
+            "train_eval": len(dataset["eval"]),
+            "blind_holdout": len(benchmark_holdout),
+        },
         "training": training_results,
-        "benchmark_eval": benchmark_results,
+        "blind_benchmark_eval": benchmark_results,
         "connections_used": [
-            "Kaggle MCP (dataset download)",
+            "Kaggle MCP (40K adversarial prompt dataset)",
             "HuggingFace Hub (base model + push)",
             "Local SCBE SFT (training-data/sft/)",
-            "SCBE Benchmark (20-category attack suite)",
-            "RuntimeGate (governance labeling)",
+            "Local docs (benign text corpus)",
+            "SCBE Benchmark (20-category blind holdout)",
         ],
     }
 
@@ -637,17 +789,26 @@ def main():
     # Print summary
     print("")
     print("=" * 70)
-    print("  TRAINING COMPLETE")
+    print("  TRAINING COMPLETE — STRICT DATA ISOLATION")
     print("=" * 70)
-    print(f"  Time:           {elapsed:.1f}s")
-    print(f"  Data sources:   Kaggle ({len(kaggle_data)}) + Local ({len(local_sft)}) + Benchmark ({len(benchmark_attacks)})")
-    print(f"  Train/Eval:     {len(dataset['train'])} / {len(dataset['eval'])}")
-    print(f"  Eval accuracy:  {training_results.get('eval_accuracy', 'N/A')}")
+    print(f"  Time:              {elapsed:.1f}s")
+    print(f"  Training data:     Kaggle ({len(kaggle_data)}) + Local SFT ({len(local_sft)}) + Benign docs ({len(extra_benign)})")
+    print(f"  Train / Train-eval: {len(dataset['train'])} / {len(dataset['eval'])}")
+    print(f"  Train-eval acc:    {training_results.get('eval_accuracy', 'N/A')}")
+    print("")
+    print("  --- BLIND HOLDOUT (model NEVER saw these during training) ---")
+    print(f"  Holdout attacks:   {len(benchmark_holdout)} (20 categories)")
     if isinstance(benchmark_results.get("overall_detection_rate"), float):
-        print(f"  Benchmark det:  {benchmark_results['overall_detection_rate']:.1%}")
-    print(f"  Report:         {report_path}")
+        print(f"  Blind detection:   {benchmark_results['overall_detection_rate']:.1%} ({benchmark_results['overall_detected']}/{benchmark_results['overall_total']})")
+    contaminated = dataset.get("contamination_blocked", 0)
+    if contaminated > 0:
+        print(f"  Contamination:     {contaminated} records BLOCKED from training")
+    else:
+        print(f"  Contamination:     CLEAN (zero holdout leaks)")
+    print("")
+    print(f"  Report:            {report_path}")
     if args.push:
-        print(f"  Pushed to:      {HF_DATASET}")
+        print(f"  Pushed to:         {HF_DATASET}")
     print("")
     print("=" * 70)
 
