@@ -982,9 +982,7 @@ def cmd_gendec(args):
 
 
 def cmd_egg_create(args):
-    from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
-        SacredEggIntegrator,
-    )
+    from .sacred_egg_integrator import SacredEggIntegrator
 
     lex = Lexicons()
     tok = TongueTokenizer(lex)
@@ -1013,9 +1011,7 @@ def cmd_egg_create(args):
 
 
 def cmd_egg_hatch(args):
-    from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
-        SacredEggIntegrator,
-    )
+    from .sacred_egg_integrator import SacredEggIntegrator
 
     lex = load_lexicons(getattr(args, "lexicons", None))
     tok = TongueTokenizer(lex)
@@ -1051,9 +1047,7 @@ def cmd_egg_hatch(args):
 
 
 def cmd_egg_paint(args):
-    from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
-        SacredEggIntegrator,
-    )
+    from .sacred_egg_integrator import SacredEggIntegrator
 
     lex = Lexicons()
     tok = TongueTokenizer(lex)
