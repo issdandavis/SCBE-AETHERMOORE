@@ -587,3 +587,34 @@ node services/kernel-runner/server.mjs
 - New consolidated submission ingested: `docs/specs/SCBE_MASTER_2026_001_CONSOLIDATED_SUBMISSION_NOTES_2026_02_19.md`
 - Includes mixed 13-layer + 14-layer historical content, claims-audit excerpts, dual-lattice/brain-manifold updates, and source-index references.
 - Reconciliation required: canonical layer mapping and `reported` vs `verified` metric normalization before external publication.
+
+
+## Integrity Addendum — 2026-03-29 / 2026-03-30
+
+### StateVector
+- worker_id: `codex-agent`
+- task_id: `pre-restart-integrity-verification`
+- role: `implementer`
+- status: `completed`
+- timestamp: `2026-03-29 America/Los_Angeles`
+
+### DecisionRecord
+- action: `ALLOW`
+- signature: `codex-agent:pre-restart-integrity-verification:2026-03-29`
+- timestamp: `2026-03-29`
+- reason: `Verified remote preservation across GitHub, GitLab, and Hugging Face before restart; only remaining local-only delta is the dirty external plugin sub-repo.`
+- confidence: `0.98`
+
+### Git refs to preserve
+- `overnight/2026-03-30` -> `aef56e3dc8747c539a33c76cdf5261edea9bed7a`
+- `backup/pre-restart-2026-03-29` -> `21bdf525c31edc91641801f4346fb7d1d65e72ab`
+- `backup/pre-restart-2026-03-29-incremental` -> `c4082a35d13f63bc2eb16e75e46ac9a3776c8cde`
+
+### Remote backup state
+- GitHub branch refs pushed and mirrored to GitLab.
+- Hugging Face backup dataset repo: `issdandavis/scbe-aethermoore-restart-backup`
+- Full pre-restart archive uploaded there; remote manifest is present.
+
+### Remaining local-only risk
+- `external/claude-code-plugins-plus-skills` remains a dirty nested working tree and was not pushed from this parent repo session.
+- Snapshot note for that state: `artifacts/backup/submodule_snapshot_claude_code_plugins_plus_skills_2026-03-29.md`
