@@ -37,6 +37,24 @@ except ImportError:
     pass
 
 
+def _env_flag(name: str, default: bool = False) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _env_float(name: str) -> Optional[float]:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return None
+    try:
+        return float(raw)
+    except ValueError:
+        logger.warning("Ignoring invalid float env %s=%r", name, raw)
+        return None
+
+
 class SCBESystem:
     """SCBE RuntimeGate wrapped for benchmark comparison.
 
@@ -47,20 +65,58 @@ class SCBESystem:
     """
 
     name = "scbe_system"
-    description = "SCBE RuntimeGate (14-layer harmonic + tongue + spin + trust)"
+    description = (
+        "SCBE RuntimeGate (14-layer harmonic + tongue + spin + trust + "
+        "optional classifier/trichromatic overlays)"
+    )
 
-    def __init__(self, *, coords_backend: Optional[str] = None):
+    def __init__(
+        self,
+        *,
+        coords_backend: Optional[str] = None,
+        use_classifier: Optional[bool] = None,
+        classifier_model_dir: Optional[str] = None,
+        classifier_quarantine_threshold: Optional[float] = None,
+        classifier_deny_threshold: Optional[float] = None,
+        use_trichromatic_governance: Optional[bool] = None,
+        trichromatic_quarantine_threshold: Optional[float] = None,
+        trichromatic_deny_threshold: Optional[float] = None,
+    ):
         self._gate: Optional[Any] = None
         self._harness_gate: Optional[Any] = None
         self._available = _SCBE_AVAILABLE or _HARNESS_AVAILABLE
         self._using_runtime_gate = _SCBE_AVAILABLE
         self._coords_backend = coords_backend or os.environ.get("SCBE_COORDS_BACKEND")
+        self._use_classifier = _env_flag("SCBE_USE_CLASSIFIER") if use_classifier is None else use_classifier
+        self._classifier_model_dir = classifier_model_dir or os.environ.get("SCBE_CLASSIFIER_MODEL_DIR")
+        self._classifier_quarantine_threshold = (
+            _env_float("SCBE_CLASSIFIER_QUARANTINE_THRESHOLD")
+            if classifier_quarantine_threshold is None
+            else classifier_quarantine_threshold
+        )
+        self._classifier_deny_threshold = (
+            _env_float("SCBE_CLASSIFIER_DENY_THRESHOLD")
+            if classifier_deny_threshold is None
+            else classifier_deny_threshold
+        )
+        self._use_trichromatic_governance = (
+            _env_flag("SCBE_USE_TRICHROMATIC_GOVERNANCE")
+            if use_trichromatic_governance is None
+            else use_trichromatic_governance
+        )
+        self._trichromatic_quarantine_threshold = (
+            _env_float("SCBE_TRICHROMATIC_QUARANTINE_THRESHOLD")
+            if trichromatic_quarantine_threshold is None
+            else trichromatic_quarantine_threshold
+        )
+        self._trichromatic_deny_threshold = (
+            _env_float("SCBE_TRICHROMATIC_DENY_THRESHOLD")
+            if trichromatic_deny_threshold is None
+            else trichromatic_deny_threshold
+        )
 
         if _SCBE_AVAILABLE:
-            if self._coords_backend:
-                self._gate = RuntimeGate(coords_backend=str(self._coords_backend))
-            else:
-                self._gate = RuntimeGate()
+            self._gate = self._build_runtime_gate()
         elif _HARNESS_AVAILABLE:
             self._harness_gate = SCBEDetectionGate()
 
@@ -86,12 +142,29 @@ class SCBESystem:
     def reset(self) -> None:
         """Reset the gate state (new session)."""
         if _SCBE_AVAILABLE:
-            if self._coords_backend:
-                self._gate = RuntimeGate(coords_backend=str(self._coords_backend))
-            else:
-                self._gate = RuntimeGate()
+            self._gate = self._build_runtime_gate()
         elif _HARNESS_AVAILABLE:
             self._harness_gate = SCBEDetectionGate()
+
+    def _build_runtime_gate(self) -> RuntimeGate:
+        kwargs: Dict[str, Any] = {}
+        if self._coords_backend:
+            kwargs["coords_backend"] = str(self._coords_backend)
+        if self._use_classifier:
+            kwargs["use_classifier"] = True
+        if self._classifier_model_dir:
+            kwargs["classifier_model_dir"] = self._classifier_model_dir
+        if self._classifier_quarantine_threshold is not None:
+            kwargs["classifier_quarantine_threshold"] = self._classifier_quarantine_threshold
+        if self._classifier_deny_threshold is not None:
+            kwargs["classifier_deny_threshold"] = self._classifier_deny_threshold
+        if self._use_trichromatic_governance:
+            kwargs["use_trichromatic_governance"] = True
+        if self._trichromatic_quarantine_threshold is not None:
+            kwargs["trichromatic_quarantine_threshold"] = self._trichromatic_quarantine_threshold
+        if self._trichromatic_deny_threshold is not None:
+            kwargs["trichromatic_deny_threshold"] = self._trichromatic_deny_threshold
+        return RuntimeGate(**kwargs)
 
     def detect(self, prompt: str) -> Tuple[bool, List[str], Dict[str, Any]]:
         """Process a prompt through SCBE detection.
@@ -144,6 +217,14 @@ class SCBESystem:
             "cumulative_cost": result.cumulative_cost,
             "session_query_count": result.session_query_count,
             "action_hash": result.action_hash,
+            "classifier_score": result.classifier_score,
+            "classifier_flagged": result.classifier_flagged,
+            "trichromatic_triplet_coherence": result.trichromatic_triplet_coherence,
+            "trichromatic_lattice_energy_score": result.trichromatic_lattice_energy_score,
+            "trichromatic_whole_state_anomaly": result.trichromatic_whole_state_anomaly,
+            "trichromatic_risk_score": result.trichromatic_risk_score,
+            "trichromatic_state_hash": result.trichromatic_state_hash,
+            "trichromatic_strongest_bridge": result.trichromatic_strongest_bridge,
             "flags": {
                 "spin_drift": result.spin_magnitude >= 5,
                 "tongue_imbalance": False,  # RuntimeGate does not expose this
@@ -152,6 +233,8 @@ class SCBESystem:
                 "adversarial_lexical": False,
                 "cross_lingual_override": False,
                 "dispersal_shift": False,
+                "classifier_flagged": result.classifier_flagged,
+                "trichromatic_flagged": result.trichromatic_flagged,
             },
         }
 
