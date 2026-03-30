@@ -9,20 +9,20 @@
     home: {
       kicker: 'Site guide',
       title: "Polly's got the map.",
-      copy: 'Use this when you want the fastest route through the public site without digging through every page.',
-      prompt: 'I am on the SCBE-AETHERMOORE homepage. Summarize the site, tell me where to start, and separate demos, manuals, support, and research so I do not mix them up.'
+      copy: 'The homepage is the front door: offers first, demos second, proof stack behind them.',
+      prompt: 'I am on the SCBE-AETHERMOORE homepage. Summarize the site, separate the buy lane, the demo lane, and the research proof lane, and tell me which one I should open next.'
     },
     demos: {
       kicker: 'Demo guide',
       title: 'Polly can orient this page.',
-      copy: 'This page is for understanding the system shape, not for doing package setup.',
-      prompt: 'I am on the SCBE demo page. Explain what Hydra, GeoSeal, the CLI, and the manual surfaces are in plain language, and tell me what page I should open next based on my goal.'
+      copy: 'This page is the try-it-now lane for working public surfaces, not the full manual or the full research archive.',
+      prompt: 'I am on the SCBE demo page. Explain the working surfaces in plain language, then tell me whether I should open the product path, the manual hub, or the research proof stack next.'
     },
     research: {
       kicker: 'Research guide',
       title: 'Keep proof and theory separated.',
-      copy: 'Use this page when you want benchmarks, active tracks, and clear claim boundaries before you follow the deeper theory language.',
-      prompt: 'I am on the SCBE research page. Separate what is benchmarked, what is implemented, and what is still exploratory, then tell me what page I should open next.'
+      copy: 'This page is the back-page proof stack behind the demos and sales surfaces. Use it when you need evidence and claim boundaries first.',
+      prompt: 'I am on the SCBE research page. Separate what is benchmarked, what is implemented, and what is still exploratory, then tell me whether I should go next to demos, manuals, support, or the product page.'
     },
     articles: {
       kicker: 'Article guide',
@@ -64,12 +64,12 @@
 
   const data = contexts[context] || contexts.site;
   const links = [
-    { href: `${root}/index.html`, title: 'Home', text: 'Main overview, pricing, benchmarks, and core links.' },
+    { href: `${root}/index.html`, title: 'Home', text: 'Front door for offers, demos, and proof routing.' },
     { href: `${root}/network.html`, title: 'Network', text: 'External links, writing lanes, and AI-readable entry points.' },
-    { href: `${root}/demos/index.html`, title: 'Demos', text: 'Story-first tour of Hydra, GeoSeal, and the public surfaces.' },
+    { href: `${root}/demos/index.html`, title: 'Demos', text: 'Working browser demos and operator-facing public surfaces.' },
     { href: `${root}/redteam.html`, title: 'Red Team', text: 'Current public benchmark surface, dataset link, and eval entry path.' },
     { href: `${root}/articles/index.html`, title: 'Articles', text: 'Field notes, public explanations, and launch-facing writing.' },
-    { href: `${root}/research/index.html`, title: 'Research', text: 'Benchmarks, theory packets, and active experiment tracks.' },
+    { href: `${root}/research/index.html`, title: 'Research', text: 'Back-page proof stack, benchmarks, and active experiment tracks.' },
     { href: `${root}/product-manual/index.html`, title: 'Manuals', text: 'Buyer-facing package manuals and setup guides.' },
     { href: `${root}/support.html`, title: 'Support', text: 'Delivery, setup, AI troubleshooting, and broken-link recovery.' },
     { href: 'https://github.com/issdandavis', title: 'GitHub', text: 'Repos, code, and source writing.' },
