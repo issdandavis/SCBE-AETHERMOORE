@@ -72,7 +72,9 @@
 - [x] **10:23 PM** — Pushed new results to Kaggle
 - [x] **10:30 PM** — Wired Lyapunov V into cube validation → torsion xfail FIXED (49/49 pass)
 - [x] **10:35 PM** — Backed up 1.6 GB critical data to Dropbox/SCBE/backup-2026-03-30/
-- [x] **10:35 PM** — Bridge sentences agent running (adding full tongue names to research pages)
+- [x] **10:35 PM** — Bridge sentences added to 6 research pages (full tongue names)
+- [x] **10:40 PM** — PR #873 created for overnight work
+- [x] **10:40 PM** — Codex taking over Python test suite stabilization (until midnight)
 
 ---
 
