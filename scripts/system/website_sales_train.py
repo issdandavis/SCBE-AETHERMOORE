@@ -103,35 +103,96 @@ def clamp_0_10(value: float) -> float:
     return max(0.0, min(10.0, value))
 
 
-def extract_section_by_id(html: str, section_id: str) -> str:
-    pattern = re.compile(
-        rf"<section[^>]*\bid=\"{re.escape(section_id)}\"[^>]*>[\s\S]*?</section>",
+class _SectionExtractor(HTMLParser):
+    """Extract a <section> element by its id attribute."""
+
+    def __init__(self, target_id: str) -> None:
+        super().__init__()
+        self._target_id = target_id.lower()
+        self._depth = 0
+        self._capturing = False
+        self._buf: list[str] = []
+        self._start_offset: int | None = None
+        self._end_offset: int | None = None
+
+    def handle_starttag(self, tag: str, attrs: dict) -> None:
+        if tag.lower() == "section":
+            attr_id = dict(attrs).get("id", "").lower()
+            if attr_id == self._target_id and not self._capturing:
+                self._capturing = True
+                self._depth = 1
+                self._start_offset = self.getpos()
+                return
+            if self._capturing:
+                self._depth += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if self._capturing and tag.lower() == "section":
+            self._depth -= 1
+            if self._depth <= 0:
+                self._capturing = False
+                self._end_offset = self.getpos()
+
+
+def _find_section_span(html: str, section_id: str) -> tuple[int, int] | None:
+    """Return (start, end) byte offsets of a <section id=...>...</section> block."""
+    lower = html.lower()
+    # Find the opening tag
+    tag_pattern = re.compile(
+        rf"<section[^>]*\bid=\"{re.escape(section_id.lower())}\"[^>]*>",
         flags=re.I,
     )
-    m = pattern.search(html)
+    m = tag_pattern.search(lower)
     if not m:
+        return None
+    start = m.start()
+    # Walk forward to find the matching </section>, respecting nesting
+    depth = 1
+    pos = m.end()
+    open_pat = re.compile(r"<section\b", re.I)
+    close_pat = re.compile(r"</section\s*>", re.I)
+    while depth > 0 and pos < len(lower):
+        next_open = open_pat.search(lower, pos)
+        next_close = close_pat.search(lower, pos)
+        if next_close is None:
+            return None
+        if next_open and next_open.start() < next_close.start():
+            depth += 1
+            pos = next_open.end()
+        else:
+            depth -= 1
+            if depth == 0:
+                return (start, next_close.end())
+            pos = next_close.end()
+    return None
+
+
+def extract_section_by_id(html: str, section_id: str) -> str:
+    span = _find_section_span(html, section_id)
+    if span is None:
         raise ValueError(f"Section id not found: {section_id}")
-    return m.group(0)
+    return html[span[0]:span[1]]
 
 
 def replace_section_by_id(html: str, section_id: str, replacement: str) -> str:
-    pattern = re.compile(
-        rf"<section[^>]*\bid=\"{re.escape(section_id)}\"[^>]*>[\s\S]*?</section>",
-        flags=re.I,
-    )
-    if not pattern.search(html):
+    span = _find_section_span(html, section_id)
+    if span is None:
         raise ValueError(f"Section id not found: {section_id}")
-    return pattern.sub(replacement, html, count=1)
+    return html[:span[0]] + replacement + html[span[1]:]
 
 
 def page_flags(html: str) -> dict[str, bool]:
     lower = html.lower()
 
-    includes_match = re.search(r"<section[^>]*\bid=\"includes\"[^>]*>([\s\S]*?)</section>", lower)
-    includes_text = includes_match.group(1) if includes_match else ""
+    try:
+        includes_text = extract_section_by_id(html, "includes").lower()
+    except ValueError:
+        includes_text = ""
 
-    offer_match = re.search(r"<section[^>]*\bid=\"offer\"[^>]*>([\s\S]*?)</section>", lower)
-    offer_text = offer_match.group(1) if offer_match else ""
+    try:
+        offer_text = extract_section_by_id(html, "offer").lower()
+    except ValueError:
+        offer_text = ""
 
     has_concrete_includes = all(term in includes_text for term in REQUIRED_INCLUDES_TERMS)
 

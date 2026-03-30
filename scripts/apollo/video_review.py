@@ -146,7 +146,7 @@ def score_description(description: str) -> tuple[int, list, list]:
     elif len(description) > 200:
         score += 2  # substantial description
 
-    if any(urllib.parse.urlparse(w).scheme in ("http", "https") for w in description.split()):
+    if re.search(r"https?://[^\s]+", description):
         score += 1  # has links
 
     if "#" in description:
