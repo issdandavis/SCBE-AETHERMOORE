@@ -18,6 +18,7 @@ Integration points:
     - hydra/swarm_governance.py -> SwarmAgent, BFT consensus
     - trinary.py             -> Governance decision packing
     - negabinary.py          -> Gate stability analysis
+    - energy_budget.py       -> Energy-bounded lifecycle (optimal foraging)
 
 @module flock_shepherd
 @layer Layer 13 (Governance), Layer 12 (Entropy)
@@ -32,6 +33,12 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+from .energy_budget import (
+    EnergyBoundedAgent,
+    EnergyPhase,
+    FleetEnergyManager,
+    harmonic_cost,
+)
 from .trinary import BalancedTernary
 
 # ---------------------------------------------------------------------------
@@ -119,6 +126,9 @@ class Sheep:
     # Current task
     current_task: Optional[str] = None
 
+    # Energy-bounded lifecycle (optimal foraging)
+    energy_agent: Optional[EnergyBoundedAgent] = field(default=None, repr=False)
+
     @property
     def tongue(self) -> str:
         """Sacred Tongue affinity based on role."""
@@ -131,6 +141,20 @@ class Sheep:
     @property
     def is_available(self) -> bool:
         return self.state in (SheepState.ACTIVE, SheepState.IDLE) and self.current_task is None
+
+    @property
+    def energy_phase(self) -> Optional[EnergyPhase]:
+        """Current energy lifecycle phase, if energy tracking is enabled."""
+        if self.energy_agent is None:
+            return None
+        return self.energy_agent.phase
+
+    @property
+    def energy_remaining(self) -> Optional[float]:
+        """Remaining energy budget, if energy tracking is enabled."""
+        if self.energy_agent is None:
+            return None
+        return self.energy_agent.energy_remaining
 
     @property
     def health_label(self) -> str:
@@ -158,11 +182,37 @@ class Sheep:
         if self.state == SheepState.ISOLATED and self.coherence >= COHERENCE_WARN:
             self.state = SheepState.ACTIVE
 
-    def complete_task(self, success: bool = True) -> None:
-        """Record task completion."""
+    def spend_energy(self, coords: List[float], label: str = "") -> Optional[Dict[str, Any]]:
+        """Spend energy for an action at the given 6D tongue coordinates.
+
+        Returns the energy receipt, or None if energy tracking is disabled.
+        If the agent's energy is exhausted, transitions to ISOLATED state.
+        """
+        if self.energy_agent is None:
+            return None
+
+        receipt = self.energy_agent.spend(coords, label)
+
+        # Energy exhaustion -> quarantine
+        if not receipt["permitted"]:
+            self.state = SheepState.ISOLATED
+            self.coherence = min(self.coherence, COHERENCE_ISOLATE - 0.01)
+
+        return receipt
+
+    def complete_task(self, success: bool = True, nectar_value: float = 1.0) -> None:
+        """Record task completion.
+
+        Args:
+            success: Whether the task completed successfully.
+            nectar_value: Value of work produced (for foraging efficiency tracking).
+        """
         if success:
             self.tasks_completed += 1
             self.recover()
+            # Record nectar collected (successful work output)
+            if self.energy_agent is not None:
+                self.energy_agent.collect_nectar(nectar_value)
         else:
             self.tasks_failed += 1
             self.degrade()
@@ -204,10 +254,11 @@ class Flock:
     - Status dashboard
     """
 
-    def __init__(self) -> None:
+    def __init__(self, energy_budget: float = 2000.0) -> None:
         self.sheep: Dict[str, Sheep] = {}
         self.tasks: Dict[str, FlockTask] = {}
         self._log: List[Dict[str, Any]] = []
+        self._energy_manager = FleetEnergyManager(default_budget=energy_budget)
 
     # ── Agent Lifecycle ──
 
@@ -216,10 +267,21 @@ class Flock:
         name: str,
         track: TrainingTrack = TrainingTrack.SYSTEM,
         role: Optional[SheepRole] = None,
+        energy_budget: Optional[float] = None,
     ) -> Sheep:
-        """Spawn a new agent in the flock."""
+        """Spawn a new agent in the flock.
+
+        Each agent is provisioned with an energy budget (the bee fills
+        its crop with honey before leaving the hive).
+        """
         sheep_id = f"sheep-{uuid.uuid4().hex[:8]}"
         agent_role = role or TRACK_ROLE_MAP.get(track, SheepRole.VALIDATOR)
+
+        # Provision energy budget
+        energy_agent = self._energy_manager.provision(
+            sheep_id,
+            budget=energy_budget,
+        )
 
         agent = Sheep(
             sheep_id=sheep_id,
@@ -227,16 +289,22 @@ class Flock:
             role=agent_role,
             state=SheepState.ACTIVE,
             track=track,
+            energy_agent=energy_agent,
         )
         self.sheep[sheep_id] = agent
-        self._log_event("spawn", sheep_id, f"Spawned {name} as {agent_role.value}")
+        self._log_event("spawn", sheep_id, f"Spawned {name} as {agent_role.value} (budget={energy_agent.budget})")
         return agent
 
     def retire(self, sheep_id: str) -> bool:
-        """Remove an agent from the flock."""
+        """Remove an agent from the flock.
+
+        Archives the agent's energy record (post-mortem foraging data).
+        """
         if sheep_id not in self.sheep:
             return False
         agent = self.sheep.pop(sheep_id)
+        # Archive energy data
+        self._energy_manager.retire(sheep_id)
         # Orphan any active tasks
         for task in self.tasks.values():
             if task.owner == sheep_id and task.status == "active":
@@ -374,6 +442,42 @@ class Flock:
         n = sum(1 for s in self.sheep.values() if s.state != SheepState.FROZEN)
         return max(0, (n - 1) // 3)
 
+    # ── Energy Management ──
+
+    @property
+    def energy_manager(self) -> FleetEnergyManager:
+        """Access the fleet energy manager."""
+        return self._energy_manager
+
+    def spend_energy(self, sheep_id: str, coords: List[float], label: str = "") -> Optional[Dict[str, Any]]:
+        """Spend energy for an agent action. Quarantines if budget exhausted.
+
+        This is the primary integration point: every action an agent takes
+        flows through here before execution.
+        """
+        agent = self.sheep.get(sheep_id)
+        if not agent:
+            return None
+
+        receipt = agent.spend_energy(coords, label)
+
+        # If energy caused isolation, log it and orphan tasks
+        if receipt and not receipt["permitted"]:
+            self._log_event(
+                "energy_quarantine",
+                sheep_id,
+                f"Energy depleted for {agent.name} (spent={receipt.get('cost', 0):.1f})",
+            )
+            # Orphan any active task
+            if agent.current_task:
+                task = self.tasks.get(agent.current_task)
+                if task and task.status == "active":
+                    task.status = "orphaned"
+                    task.owner = None
+                agent.current_task = None
+
+        return receipt
+
     # ── Health Monitoring ──
 
     def health_check(self) -> Dict[str, Any]:
@@ -398,6 +502,8 @@ class Flock:
                 "avg_coherence": (sum(a.coherence for a in agents) / len(agents) if agents else 0.0),
             }
 
+        energy_status = self._energy_manager.fleet_status()
+
         return {
             "total": total,
             "active": active,
@@ -409,6 +515,7 @@ class Flock:
             "healthy_ratio": f"{healthy_count}/{total}",
             "bft_tolerance": self.bft_tolerance,
             "tracks": tracks,
+            "energy": energy_status,
         }
 
     def status_dashboard(self) -> str:
@@ -436,10 +543,14 @@ class Flock:
             lines.append("Agents:")
             for s in sorted(self.sheep.values(), key=lambda x: x.sheep_id):
                 task_info = f" [{s.current_task}]" if s.current_task else ""
+                energy_info = ""
+                if s.energy_agent is not None:
+                    ef = s.energy_agent.energy_fraction
+                    energy_info = f" | E={ef*100:.0f}%({s.energy_agent.phase.value})"
                 lines.append(
                     f"  {s.sheep_id} | {s.name:<20s} | {s.role.value:<10s} | "
                     f"{s.state.value:<10s} | coh={s.coherence:.2f} | "
-                    f"{s.tongue}{task_info}"
+                    f"{s.tongue}{energy_info}{task_info}"
                 )
 
         # Pending tasks
