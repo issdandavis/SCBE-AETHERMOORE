@@ -698,6 +698,75 @@ def push_to_huggingface(
         logger.error("  HF push failed: %s", e)
 
 
+def push_to_kaggle(report: Dict[str, Any], push: bool = False) -> None:
+    """Push eval results back to Kaggle dataset (closes the feedback loop)."""
+    logger.info("[6] Kaggle push")
+
+    if not push:
+        logger.info("  Kaggle push skipped (use --push to enable)")
+        return
+
+    try:
+        import csv
+        import subprocess
+
+        kaggle_dir = ARTIFACTS_DIR / "kaggle_upload"
+        kaggle_dir.mkdir(parents=True, exist_ok=True)
+
+        # Build summary CSV
+        with open(kaggle_dir / "summary_stats.csv", "w", newline="") as f:
+            w = csv.writer(f)
+            w.writerow(["Metric", "Value", "Context"])
+            t = report.get("training", {})
+            b = report.get("blind_benchmark_eval", {})
+            w.writerow(["Training Samples", t.get("train_size", "N/A"), "Kaggle + local SFT + benign docs"])
+            w.writerow(["Train-Eval Accuracy", f"{t.get('eval_accuracy', 0):.1%}", "In-distribution holdout"])
+            w.writerow(["Blind Detection Rate", f"{b.get('overall_detection_rate', 0):.1%}", "20 categories, strict isolation"])
+            w.writerow(["Contamination", report.get("data_isolation", {}).get("contamination_blocked", 0), "Records blocked from training"])
+            w.writerow(["Timestamp", report.get("timestamp", ""), "Pipeline run time"])
+
+        # Build per-category CSV
+        per_cat = b.get("per_category", {})
+        if per_cat:
+            with open(kaggle_dir / "benchmark_results.csv", "w", newline="") as f:
+                w = csv.writer(f)
+                w.writerow(["Category", "Total", "Detected", "Rate"])
+                for cat, d in sorted(per_cat.items(), key=lambda x: -x[1].get("rate", 0)):
+                    w.writerow([cat, d["total"], d["detected"], f"{d['rate']*100:.0f}%"])
+
+        # Copy training report JSON
+        report_path = ARTIFACTS_DIR / "training_report.json"
+        if report_path.exists():
+            import shutil
+            shutil.copy2(report_path, kaggle_dir / "training_report.json")
+
+        # Write metadata
+        metadata = {
+            "id": "issacizrealdavis/scbe-governance-research-results",
+            "title": "SCBE-AETHERMOORE Governance Research Results",
+            "subtitle": "AI safety benchmarks, trichromatic governance, energy simulation results",
+            "isPrivate": False,
+            "licenses": [{"name": "MIT"}],
+            "keywords": ["nlp", "deep learning", "energy", "cyber security", "classification"],
+        }
+        with open(kaggle_dir / "dataset-metadata.json", "w") as f:
+            json.dump(metadata, f, indent=2)
+
+        # Push new version
+        result = subprocess.run(
+            ["kaggle", "datasets", "version", "-p", str(kaggle_dir),
+             "-m", f"Auto-update from training pipeline ({report.get('timestamp', 'unknown')})"],
+            capture_output=True, text=True, timeout=120,
+        )
+        if result.returncode == 0:
+            logger.info("  Pushed results to Kaggle: issacizrealdavis/scbe-governance-research-results")
+        else:
+            logger.warning("  Kaggle push returned: %s", result.stderr.strip())
+
+    except Exception as e:
+        logger.error("  Kaggle push failed: %s", e)
+
+
 # ---------------------------------------------------------------------------
 #  Main
 # ---------------------------------------------------------------------------
@@ -791,10 +860,13 @@ def main():
     with open(report_path, "w") as f:
         json.dump(report, f, indent=2)
 
-    # Step 6: Push to HuggingFace
+    # Step 6: Push to HuggingFace (trained model + report)
     push_to_huggingface(
         training_results["model_path"], training_results, benchmark_results, push=args.push,
     )
+
+    # Step 7: Push eval results back to Kaggle (closes the feedback loop)
+    push_to_kaggle(report, push=args.push)
 
     elapsed = time.perf_counter() - start
 
