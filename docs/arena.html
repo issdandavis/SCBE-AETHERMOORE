@@ -69,7 +69,7 @@ body{
 .seat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .seat-name{font-size:12px;font-weight:700;flex:1}
 .seat-model{font-size:9px;color:var(--dim);background:var(--card);padding:2px 5px;border-radius:4px}
-.seat-tongue{font-size:9px;color:var(--accent);background:rgba(99,102,241,0.15);padding:2px 5px;border-radius:4px;font-weight:700}
+.seat-tongue{font-size:9px;color:var(--accent);background:rgba(99,102,241,0.15);padding:2px 5px;border-radius:4px;font-weight:700;max-width:110px;overflow-wrap:anywhere;text-align:center}
 .seat-role{font-size:8px;color:var(--dim);width:100%;margin-top:2px}
 .seat-status{font-size:9px;padding:2px 5px;border-radius:4px}
 .seat-status.idle{color:var(--green);background:rgba(16,185,129,0.1)}
@@ -172,6 +172,8 @@ const TONGUE_INSTRUCTIONS = {
   UM: 'Assess policy compliance, ethics, and governance alignment.',
   DR: 'Synthesize all perspectives into a coherent, actionable plan.',
 };
+const TONGUE_FULL = { KO: "Kor'aelin", AV: "Avali", RU: "Runethic", CA: "Cassisivadan", UM: "Umbroth", DR: "Draumric" };
+function tongueDisplay(code) { return TONGUE_FULL[code] || code; }
 
 // State
 const seats = {};
@@ -345,7 +347,7 @@ function createSeat(player) {
     <div class="seat-header">
       <div class="seat-dot" style="background:${player.color}"></div>
       <span class="seat-name" style="color:${player.color}">${player.name}</span>
-      <span class="seat-tongue">${player.tongue}</span>
+      <span class="seat-tongue">${tongueDisplay(player.tongue)}</span>
       <span class="seat-model">${player.model}</span>
       <span class="seat-status idle" id="status-${player.id}">ready</span>
       <span class="seat-role">${player.role}</span>
@@ -421,10 +423,8 @@ function addMessage(playerId, role, text, meta) {
   if (!chat) return;
   const div = document.createElement('div');
   div.className = 'msg ' + (role === 'error' ? 'err' : role === 'synthesis' ? 'synthesis' : role);
-  let content = escHtml(text);
-  content = content.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre>$2</pre>');
-  content = content.replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.06);padding:1px 4px;border-radius:3px">$1</code>');
-  div.innerHTML = content;
+  div.textContent = text;
+  div.style.whiteSpace = 'pre-wrap';
   if (meta) {
     const m = document.createElement('div');
     m.className = 'meta';
@@ -480,7 +480,7 @@ async function askPlayer(playerId, message) {
 
   const player = PLAYERS.find(p => p.id === playerId);
   const tongueInstruction = player ? TONGUE_INSTRUCTIONS[player.tongue] || '' : '';
-  const roleContext = player ? `You are the ${player.role} (${player.tongue} tongue) in the AI Round Table. ${tongueInstruction}` : '';
+  const roleContext = player ? `You are the ${player.role} (${tongueDisplay(player.tongue)} tongue) in the AI Round Table. ${tongueInstruction}` : '';
 
   try {
     const body = {
@@ -642,7 +642,7 @@ async function deliberate() {
   // Phase 2: Collect responses
   const responses = results
     .filter(r => r.status === 'fulfilled' && r.value)
-    .map(r => `[${r.value.name} / ${r.value.tongue} / ${r.value.role}]:\n${r.value.response}`)
+    .map(r => `[${r.value.name} / ${tongueDisplay(r.value.tongue)} / ${r.value.role}]:\n${r.value.response}`)
     .join('\n\n---\n\n');
 
   if (!responses) {
@@ -652,7 +652,7 @@ async function deliberate() {
   }
 
   // Phase 3: Synthesis round — send all responses to Lead Architect (Google AI / DR)
-  const synthesisPrompt = `ROUND TABLE SYNTHESIS\n\nThe AI Round Table was asked: "${text}"\n\n${PLAYERS.length} models responded. Their answers:\n\n${responses}\n\nAs Lead Architect (DR tongue), synthesize:\n1. Points of agreement\n2. Points of disagreement\n3. Your unified recommendation\n4. Action items`;
+  const synthesisPrompt = `ROUND TABLE SYNTHESIS\n\nThe AI Round Table was asked: "${text}"\n\n${PLAYERS.length} models responded. Their answers:\n\n${responses}\n\nAs Lead Architect (Draumric tongue), synthesize:\n1. Points of agreement\n2. Points of disagreement\n3. Your unified recommendation\n4. Action items`;
 
   const synthesis = await askPlayer('google_ai', synthesisPrompt);
   if (synthesis) {

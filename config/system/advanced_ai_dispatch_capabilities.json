@@ -1,0 +1,65 @@
+{
+  "browser.navigate": {
+    "lane": "browser",
+    "owner_role": "agent.browser",
+    "default_priority": 60,
+    "default_task_type": "navigate",
+    "notes": "Open, inspect, and interact with governed browser surfaces."
+  },
+  "browser.research": {
+    "lane": "browser",
+    "owner_role": "agent.research",
+    "default_priority": 65,
+    "default_task_type": "research",
+    "notes": "Search, read, and gather evidence from web surfaces."
+  },
+  "code.patch": {
+    "lane": "local_code",
+    "owner_role": "agent.code",
+    "default_priority": 80,
+    "default_task_type": "patch",
+    "notes": "Repo-local implementation and bounded code edits."
+  },
+  "docs.publish": {
+    "lane": "docs",
+    "owner_role": "agent.docs",
+    "default_priority": 70,
+    "default_task_type": "publish",
+    "notes": "Public documentation, website surfaces, and support packets."
+  },
+  "website.surface": {
+    "lane": "docs",
+    "owner_role": "agent.website",
+    "default_priority": 78,
+    "default_task_type": "surface",
+    "notes": "Public website surfaces, GitHub Pages routes, demos, research pages, and content flow improvements."
+  },
+  "website.assistant": {
+    "lane": "local_code",
+    "owner_role": "agent.website",
+    "default_priority": 79,
+    "default_task_type": "assistant",
+    "notes": "Grounded chatbot, retrieval, citation, and model-adapter work for the public website."
+  },
+  "website.research": {
+    "lane": "browser",
+    "owner_role": "agent.research",
+    "default_priority": 68,
+    "default_task_type": "compare",
+    "notes": "Competitive scans, reference capture, and evidence-driven website research loops."
+  },
+  "system.admin": {
+    "lane": "admin",
+    "owner_role": "agent.admin",
+    "default_priority": 85,
+    "default_task_type": "stabilize",
+    "notes": "Local system health, storage, services, and guarded admin work."
+  },
+  "relay.sync": {
+    "lane": "relay",
+    "owner_role": "agent.sync",
+    "default_priority": 55,
+    "default_task_type": "sync",
+    "notes": "Cross-talk packets, handoffs, and coordination updates."
+  }
+}

@@ -1559,11 +1559,27 @@ window.AetherBrowser = (function() {
     govLabel.style.color = govColorMap[governance] || 'var(--muted)';
 
     var wv = document.getElementById('browseWebview');
+    wv.innerHTML = '';
+    var icon = document.createElement('div');
+    icon.className = 'wv-icon';
+    var title = document.createElement('div');
+    var meta = document.createElement('div');
+    meta.style.fontSize = '11px';
+    meta.style.color = 'var(--dim)';
     if (level === 'BLOCKED') {
-      wv.innerHTML = '<div class="wv-icon" style="background:rgba(255,107,107,0.15);">&#128683;</div><div style="color:var(--red);">BLOCKED: ' + domain + '</div><div style="font-size:11px; color:var(--dim);">This domain is in the block list. Navigation denied.</div>';
+      icon.style.background = 'rgba(255,107,107,0.15)';
+      icon.textContent = 'X';
+      title.style.color = 'var(--red)';
+      title.textContent = 'BLOCKED: ' + domain;
+      meta.textContent = 'This domain is in the block list. Navigation denied.';
     } else {
-      wv.innerHTML = '<div class="wv-icon">&#127760;</div><div>Loading: ' + domain + '</div><div style="font-size:11px; color:var(--dim);">Trust: ' + level + ' | Governance: ' + governance + ' | Tier: ' + tier + '</div>';
+      icon.textContent = 'O';
+      title.textContent = 'Loading: ' + domain;
+      meta.textContent = 'Trust: ' + level + ' | Governance: ' + governance + ' | Tier: ' + tier;
     }
+    wv.appendChild(icon);
+    wv.appendChild(title);
+    wv.appendChild(meta);
 
     updateStatusBar(level);
   }
@@ -1694,7 +1710,11 @@ window.AetherBrowser = (function() {
     const messages = document.getElementById('chatMessages');
     const userMsg = document.createElement('div');
     userMsg.className = 'chat-msg user';
-    userMsg.innerHTML = text + '<div class="msg-meta">' + tongues.map(t => t.toUpperCase()).join('+') + '</div>';
+    userMsg.textContent = text;
+    const userMeta = document.createElement('div');
+    userMeta.className = 'msg-meta';
+    userMeta.textContent = tongues.map(t => t.toUpperCase()).join('+');
+    userMsg.appendChild(userMeta);
     messages.appendChild(userMsg);
     messages.scrollTop = messages.scrollHeight;
 
@@ -1723,8 +1743,11 @@ window.AetherBrowser = (function() {
       var fibVal = data.fibonacci_value || state.fibTrust;
       var govDecision = data.governance_decision || 'ALLOW';
 
-      assistantMsg.innerHTML = data.response
-        + '<div class="msg-meta">' + modelName + ' -- ' + tongueStr + ' -- FIB ' + fibVal + ' -- ' + govDecision + '</div>';
+      assistantMsg.textContent = data.response;
+      var assistantMeta = document.createElement('div');
+      assistantMeta.className = 'msg-meta';
+      assistantMeta.textContent = modelName + ' -- ' + tongueStr + ' -- FIB ' + fibVal + ' -- ' + govDecision;
+      assistantMsg.appendChild(assistantMeta);
       messages.appendChild(assistantMsg);
       messages.scrollTop = messages.scrollHeight;
 
@@ -1739,8 +1762,11 @@ window.AetherBrowser = (function() {
       assistantMsg.className = 'chat-msg assistant';
       var modelName = state.currentModel.charAt(0).toUpperCase() + state.currentModel.slice(1);
       var tongueStr = tongues.map(function(t) { return t.toUpperCase(); }).join('+');
-      assistantMsg.innerHTML = '[' + modelName + ' offline] Backend at ' + API_BASE + ' not reachable. Start with: python scripts/aetherbrowser/api_server.py'
-        + '<div class="msg-meta">' + modelName + ' -- ' + tongueStr + ' -- FIB ' + state.fibTrust + '</div>';
+      assistantMsg.textContent = '[' + modelName + ' offline] Backend at ' + API_BASE + ' not reachable. Start with: python scripts/aetherbrowser/api_server.py';
+      var offlineMeta = document.createElement('div');
+      offlineMeta.className = 'msg-meta';
+      offlineMeta.textContent = modelName + ' -- ' + tongueStr + ' -- FIB ' + state.fibTrust;
+      assistantMsg.appendChild(offlineMeta);
       messages.appendChild(assistantMsg);
       messages.scrollTop = messages.scrollHeight;
     });
@@ -1782,7 +1808,7 @@ window.AetherBrowser = (function() {
           data.results.forEach(function(r) {
             var line = document.createElement('div');
             var color = r.status === 'PASSED' ? 'mint' : 'red';
-            line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> ' + r.test + ': <span style="color:var(--' + color + ');">' + r.status + '</span>';
+            line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> ' + _escHtml(r.test) + ': <span style="color:var(--' + color + ');">' + _escHtml(r.status) + '</span>';
             log.appendChild(line);
           });
         }
@@ -1800,7 +1826,7 @@ window.AetherBrowser = (function() {
 
         if (data.error) {
           var errLine = document.createElement('div');
-          errLine.innerHTML = '<span style="color:var(--red);">Error: ' + data.error + '</span>';
+          errLine.innerHTML = '<span style="color:var(--red);">Error: ' + _escHtml(data.error) + '</span>';
           log.appendChild(errLine);
         }
       })
@@ -1825,7 +1851,7 @@ window.AetherBrowser = (function() {
             scoreEl.textContent = pass + '/' + suite.probes;
             scoreEl.className = 'score-badge ' + (ok ? 'pass' : 'fail');
             var line = document.createElement('div');
-            line.innerHTML = '<span style="color:var(--dim);">[' + new Date().toLocaleTimeString() + ']</span> ' + suite.name + ': <span style="color:var(--' + (ok ? 'mint' : 'red') + ');">' + pass + '/' + suite.probes + '</span>';
+            line.innerHTML = '<span style="color:var(--dim);">[' + new Date().toLocaleTimeString() + ']</span> ' + _escHtml(suite.name) + ': <span style="color:var(--' + (ok ? 'mint' : 'red') + ');">' + _escHtml(pass + '/' + suite.probes) + '</span>';
             log.appendChild(line);
             log.scrollTop = log.scrollHeight;
             if (idx === suites.length - 1) {
@@ -1844,25 +1870,73 @@ window.AetherBrowser = (function() {
     if (!query) return;
 
     var results = document.getElementById('vaultResults');
-    results.innerHTML = '<div class="list-item"><div class="list-item-left"><div class="list-item-icon" style="background:rgba(109,216,255,0.12); color:var(--aqua);">&#8987;</div><div class="list-item-text"><div class="list-item-title">Searching: "' + query + '"</div><div class="list-item-meta">Querying vault...</div></div></div></div>';
+    function appendVaultStatus(titleText, metaText, bgColor, fgColor, glyph) {
+      var item = document.createElement('div');
+      item.className = 'list-item';
+      var left = document.createElement('div');
+      left.className = 'list-item-left';
+      var icon = document.createElement('div');
+      icon.className = 'list-item-icon';
+      icon.style.background = bgColor;
+      icon.style.color = fgColor;
+      icon.textContent = glyph;
+      var textWrap = document.createElement('div');
+      textWrap.className = 'list-item-text';
+      var title = document.createElement('div');
+      title.className = 'list-item-title';
+      title.textContent = titleText;
+      var meta = document.createElement('div');
+      meta.className = 'list-item-meta';
+      meta.textContent = metaText;
+      textWrap.appendChild(title);
+      textWrap.appendChild(meta);
+      left.appendChild(icon);
+      left.appendChild(textWrap);
+      item.appendChild(left);
+      results.appendChild(item);
+    }
+
+    results.innerHTML = '';
+    appendVaultStatus('Searching: "' + query + '"', 'Querying vault...', 'rgba(109,216,255,0.12)', 'var(--aqua)', '...');
 
     fetch(API_BASE + '/vault/search?q=' + encodeURIComponent(query))
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (!data.results || data.results.length === 0) {
-          results.innerHTML = '<div class="list-item"><div class="list-item-left"><div class="list-item-icon" style="background:rgba(255,217,119,0.12); color:var(--gold);">&#128269;</div><div class="list-item-text"><div class="list-item-title">No results for "' + query + '"</div><div class="list-item-meta">' + data.count + ' matches</div></div></div></div>';
+          results.innerHTML = '';
+          appendVaultStatus('No results for "' + query + '"', String(data.count) + ' matches', 'rgba(255,217,119,0.12)', 'var(--gold)', '?');
           return;
         }
         results.innerHTML = '';
         data.results.forEach(function(note) {
           var item = document.createElement('div');
           item.className = 'list-item';
-          item.innerHTML = '<div class="list-item-left"><div class="list-item-icon" style="background:rgba(143,255,211,0.12); color:var(--mint);">&#128196;</div><div class="list-item-text"><div class="list-item-title">' + note.title + '</div><div class="list-item-meta">' + note.path + (note.snippet ? ' -- ' + note.snippet.substring(0, 80) + '...' : '') + '</div></div></div>';
+          var left = document.createElement('div');
+          left.className = 'list-item-left';
+          var icon = document.createElement('div');
+          icon.className = 'list-item-icon';
+          icon.style.background = 'rgba(143,255,211,0.12)';
+          icon.style.color = 'var(--mint)';
+          icon.textContent = 'DOC';
+          var textWrap = document.createElement('div');
+          textWrap.className = 'list-item-text';
+          var title = document.createElement('div');
+          title.className = 'list-item-title';
+          title.textContent = note.title;
+          var meta = document.createElement('div');
+          meta.className = 'list-item-meta';
+          meta.textContent = note.path + (note.snippet ? ' -- ' + note.snippet.substring(0, 80) + '...' : '');
+          textWrap.appendChild(title);
+          textWrap.appendChild(meta);
+          left.appendChild(icon);
+          left.appendChild(textWrap);
+          item.appendChild(left);
           results.appendChild(item);
         });
       })
       .catch(function() {
-        results.innerHTML = '<div class="list-item"><div class="list-item-left"><div class="list-item-icon" style="background:rgba(255,107,107,0.12); color:var(--red);">&#128269;</div><div class="list-item-text"><div class="list-item-title">Search: "' + query + '"</div><div class="list-item-meta">API offline -- start api_server.py</div></div></div></div>';
+        results.innerHTML = '';
+        appendVaultStatus('Search: "' + query + '"', 'API offline -- start api_server.py', 'rgba(255,107,107,0.12)', 'var(--red)', '!');
       });
   }
 
@@ -1907,7 +1981,7 @@ window.AetherBrowser = (function() {
         resultEl.textContent = fb.result;
         resultEl.style.color = 'var(--mint)';
         var line = document.createElement('div');
-        line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> <span style="color:var(--aqua);">' + command.toUpperCase() + '</span>: ' + fb.result;
+        line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> <span style="color:var(--aqua);">' + _escHtml(command.toUpperCase()) + '</span>: ' + _escHtml(fb.result);
         log.appendChild(line);
         log.scrollTop = log.scrollHeight;
         state.opsResults[command] = { result: fb.result, time: ts };
@@ -1929,7 +2003,7 @@ window.AetherBrowser = (function() {
         resultEl.style.color = data.error ? 'var(--gold)' : 'var(--mint)';
 
         var line = document.createElement('div');
-        line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> <span style="color:var(--aqua);">' + command.toUpperCase() + '</span>: ' + resultText;
+        line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> <span style="color:var(--aqua);">' + _escHtml(command.toUpperCase()) + '</span>: ' + _escHtml(resultText);
         log.appendChild(line);
         log.scrollTop = log.scrollHeight;
 
@@ -1949,7 +2023,7 @@ window.AetherBrowser = (function() {
         if (command === 'git' && data.recent_commits) {
           data.recent_commits.forEach(function(c) {
             var cLine = document.createElement('div');
-            cLine.innerHTML = '<span style="color:var(--dim);margin-left:16px;">  ' + c + '</span>';
+            cLine.innerHTML = '<span style="color:var(--dim);margin-left:16px;">  ' + _escHtml(c) + '</span>';
             log.appendChild(cLine);
           });
           log.scrollTop = log.scrollHeight;
@@ -1959,7 +2033,7 @@ window.AetherBrowser = (function() {
         resultEl.textContent = 'API offline';
         resultEl.style.color = 'var(--red)';
         var line = document.createElement('div');
-        line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> <span style="color:var(--red);">' + command.toUpperCase() + '</span>: API offline -- start api_server.py';
+        line.innerHTML = '<span style="color:var(--dim);">[' + ts + ']</span> <span style="color:var(--red);">' + _escHtml(command.toUpperCase()) + '</span>: API offline -- start api_server.py';
         log.appendChild(line);
         log.scrollTop = log.scrollHeight;
       });
