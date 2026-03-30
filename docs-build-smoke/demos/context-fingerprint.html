@@ -208,13 +208,26 @@ function drawRadar(activations) {
 function drawWordCloud(wordMap, words) {
   const container = document.getElementById('wordCloud');
   const seen = new Set();
-  container.innerHTML = words.map(w => {
-    if (seen.has(w)) return '';
+  container.innerHTML = '';
+  words.forEach(w => {
+    if (seen.has(w)) return;
     seen.add(w);
     const t = wordMap[w];
     const i = TONGUES.indexOf(t);
-    return `<span class="word-tag" style="background:${COLORS[i]}22;color:${COLORS[i]};border:1px solid ${COLORS[i]}44">${w}<sup style="font-size:9px;opacity:0.6">${t}</sup></span>`;
-  }).join('');
+    const color = COLORS[i] || '#ffffff';
+    const tag = document.createElement('span');
+    tag.className = 'word-tag';
+    tag.style.background = `${color}22`;
+    tag.style.color = color;
+    tag.style.border = `1px solid ${color}44`;
+    tag.appendChild(document.createTextNode(w));
+    const sup = document.createElement('sup');
+    sup.style.fontSize = '9px';
+    sup.style.opacity = '0.6';
+    sup.textContent = t;
+    tag.appendChild(sup);
+    container.appendChild(tag);
+  });
 }
 
 function drawPhase(activations) {
