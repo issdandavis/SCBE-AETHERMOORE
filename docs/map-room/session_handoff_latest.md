@@ -1,5 +1,36 @@
 # Session Handoff (Latest)
 
+## Update Snapshot — 2026-03-29 (Pre-Restart Backup / Remote Safety)
+
+### StateVector
+- worker_id: `codex-agent`
+- task_id: `pre-restart-remote-safety`
+- role: `implementer`
+- status: `in_progress`
+- timestamp: `2026-03-29`
+
+### DecisionRecord
+- action: `ALLOW`
+- signature: `codex-agent:pre-restart-remote-safety:2026-03-29`
+- timestamp: `2026-03-29`
+- reason: `Emergency git snapshots pushed to GitHub and GitLab; next priority is remote archive of ignored high-value directories.`
+- confidence: `0.98`
+
+### Current result
+- Git emergency branches pushed:
+  - `backup/pre-restart-2026-03-29`
+  - `backup/pre-restart-2026-03-29-incremental`
+- Working branch restored:
+  - `overnight/2026-03-30`
+- Full handoff packet:
+  - `docs/map-room/session_handoff_2026-03-29_pre_restart.md`
+
+### Remaining risk
+- dirty local sub-repo state in `external/claude-code-plugins-plus-skills`
+- ignored large directories still need second-stage remote archive
+
+---
+
 ## Metadata
 
 - Timestamp (UTC): 2026-02-19
