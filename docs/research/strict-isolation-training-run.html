@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strict Isolation Training Run | SCBE Research</title>
+    <meta name="description" content="March 30 training snapshot for the SCBE governance classifier: Kaggle plus local SFT plus blind holdout, with strict isolation between training and benchmark data.">
+    <link rel="canonical" href="https://aethermoorgames.com/research/strict-isolation-training-run.html">
+    <meta property="og:title" content="Strict Isolation Training Run | SCBE Research">
+    <meta property="og:description" content="A timestamped SCBE training run showing the Kaggle-to-local flywheel, blind holdout rule, and the current March 30 benchmark snapshot.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://aethermoorgames.com/research/strict-isolation-training-run.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Strict Isolation Training Run | SCBE Research">
+    <meta name="twitter:description" content="Kaggle plus local SFT plus blind holdout, kept separate on purpose so the benchmark stays real.">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #07111d; color: #eef3ff; line-height: 1.7; }
+        a { color: #84c5ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 36px 24px 72px; }
+        .nav { display: flex; gap: 16px; flex-wrap: wrap; color: #a9b6d1; font-size: 14px; margin-bottom: 26px; }
+        .nav a { color: #a9b6d1; }
+        .eyebrow { color: #87a0ff; text-transform: uppercase; letter-spacing: 0.16em; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+        h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.08; letter-spacing: -0.03em; margin-bottom: 16px; max-width: 860px; }
+        h2 { font-size: 22px; margin: 36px 0 14px; color: #84c5ff; }
+        h3 { font-size: 17px; margin: 24px 0 10px; color: #7df0d7; }
+        p, li { color: #b5c0d9; max-width: 820px; margin-bottom: 12px; }
+        ul { padding-left: 24px; margin-bottom: 16px; }
+        code { background: #132038; padding: 2px 8px; border-radius: 4px; font-size: 14px; color: #84c5ff; }
+        pre { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 12px; padding: 18px; overflow-x: auto; margin: 16px 0; font-size: 14px; color: #eef3ff; }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid rgba(126, 146, 255, 0.12); vertical-align: top; }
+        th { color: #84c5ff; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+        td { color: #b5c0d9; }
+        .panel { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 18px; padding: 24px; margin: 18px 0; }
+        .tag { display: inline-block; background: rgba(126, 146, 255, 0.12); color: #84c5ff; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; margin: 4px 4px 4px 0; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 18px; margin: 24px 0; }
+        .metric-card { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 18px; padding: 20px; }
+        .metric { font-size: 34px; font-weight: 800; color: #7df0d7; line-height: 1; }
+        .metric-label { font-size: 13px; color: #a9b6d1; margin-top: 6px; }
+        .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 18px; border-radius: 999px; font-weight: 700; text-decoration: none; }
+        .btn-primary { background: #7df0d7; color: #07111d; }
+        .btn-secondary { border: 1px solid rgba(126, 146, 255, 0.2); color: #eef3ff; }
+        footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid rgba(126, 146, 255, 0.12); color: #6b7a99; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <div class="nav">
+            <a href="../index.html">Home</a>
+            <a href="./index.html">Research</a>
+            <a href="./hybrid-overlap-scorecard.html">Hybrid scorecard</a>
+            <a href="./eval-pack.html">Eval pack</a>
+            <a href="../demos/index.html">Demo lab</a>
+        </div>
+
+        <div class="eyebrow">Training flywheel</div>
+        <h1>Strict isolation training run: Kaggle + local SFT + blind holdout</h1>
+        <p>The March 30 snapshot ties together the public Kaggle adversarial dataset, local SCBE-specific SFT records, benign document slices, and a separate 20-category blind holdout. The point of this page is not the highest number. The point is that the benchmark stayed separate from training.</p>
+
+        <div style="margin: 12px 0 24px;">
+            <span class="tag">March 30, 2026</span>
+            <span class="tag">Kaggle</span>
+            <span class="tag">Hugging Face</span>
+            <span class="tag">Strict isolation</span>
+            <span class="tag">Blind holdout</span>
+        </div>
+
+        <div class="panel" style="border-left: 3px solid #7df0d7;">
+            <p style="color:#eef3ff; font-size: 18px; font-weight: 600;">Evidence rule: benchmark attacks never enter training data.</p>
+            <p>The classifier can look strong on in-distribution attack patterns and still fail on structural attack families. This run keeps that distinction visible instead of hiding it behind one blended score.</p>
+            <div class="cta-row">
+                <a class="btn btn-primary" href="./hybrid-overlap-scorecard.html">Inspect the overlap scorecard</a>
+                <a class="btn btn-secondary" href="./index.html">Return to research hub</a>
+            </div>
+        </div>
+
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric">40K</div>
+                <div class="metric-label">Kaggle adversarial samples</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric">4,846</div>
+                <div class="metric-label">Local SCBE SFT records</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric">500</div>
+                <div class="metric-label">Benign document samples</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric">400</div>
+                <div class="metric-label">Blind holdout prompts</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric">94.9%</div>
+                <div class="metric-label">Train-eval accuracy</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric">73.5%</div>
+                <div class="metric-label">Blind benchmark detection</div>
+            </div>
+        </div>
+
+        <h2>Pipeline in one command</h2>
+        <p>The repo records this loop as a repeatable training path, not a one-off notebook experiment:</p>
+        <pre>python scripts/unified_training_pipeline.py --sklearn --push</pre>
+        <table>
+            <tr><th>Stage</th><th>Source</th><th>Role in the run</th></tr>
+            <tr><td>1</td><td>Kaggle MPDD</td><td>Standard adversarial prompt corpus</td></tr>
+            <tr><td>2</td><td>Local SCBE SFT</td><td>Repo-specific instruction and governance records</td></tr>
+            <tr><td>3</td><td>Benign docs</td><td>Safe language baseline</td></tr>
+            <tr><td>4</td><td>20-category holdout</td><td>Blind benchmark that stays outside training</td></tr>
+            <tr><td>5</td><td>Hugging Face publish lane</td><td>Model artifact and report persistence</td></tr>
+        </table>
+
+        <h2>Why this page exists</h2>
+        <p>Earlier SCBE notes documented a much harder overlap-harness result: raw classifier recall at 34.5 percent on the 20-category benchmark. That older result is still useful, because it proves the public Kaggle distribution does not cover every SCBE attack family. This newer strict-isolation run shows the training lane has moved forward, but it does not erase the need for a separate overlap harness and structural gate.</p>
+
+        <h2>Current weak spots in the blind holdout</h2>
+        <p>The latest training report still leaves obvious attack families under-covered. The weakest measured categories in the current run are the ones that should shape the next data pull and the next architecture pass.</p>
+        <table>
+            <tr><th>Category</th><th>Detection</th><th>What it suggests</th></tr>
+            <tr><td>context_overflow</td><td>20%</td><td>Need more window-manipulation and long-context training examples</td></tr>
+            <tr><td>multi_step_chain</td><td>40%</td><td>Multi-turn escalation still under-modeled</td></tr>
+            <tr><td>encoding_obfuscation</td><td>50%</td><td>Wrapper and encoding patterns need more direct coverage</td></tr>
+            <tr><td>model_extraction</td><td>50%</td><td>Weights, architecture, and prompt-leak behavior still need data</td></tr>
+        </table>
+
+        <h2>Evidence packet</h2>
+        <p>This page is derived from a timestamped repo artifact, not a hand-edited marketing summary.</p>
+        <pre>artifacts/training/training_report.json
+pipeline: unified_scbe_training_v2_strict_isolation
+timestamp: 2026-03-30T05:22:53Z</pre>
+
+        <footer>
+            Public research surface. Numbers on this page refer to the strict-isolation training run recorded on March 30, 2026.
+        </footer>
+    </main>
+</body>
+</html>
