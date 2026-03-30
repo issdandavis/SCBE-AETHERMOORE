@@ -545,10 +545,10 @@ function createSeat(player) {
       <span class="seat-status idle" id="status-${escHtml(player.id)}">ready</span>
       <span class="seat-role">${escHtml(player.role)}</span>
     </div>
-    <div class="seat-chat" id="chat-${player.id}"></div>
+    <div class="seat-chat" id="chat-${escHtml(player.id)}"></div>
     <div class="seat-input-row">
-      <input class="seat-input" id="input-${player.id}" placeholder="Ask ${player.name}..." />
-      <button class="seat-send" onclick="askPlayer('${player.id}')">Ask</button>
+      <input class="seat-input" id="input-${escHtml(player.id)}" placeholder="Ask ${escHtml(player.name)}..." />
+      <button class="seat-send" onclick="askPlayer('${escHtml(player.id)}')">Ask</button>
     </div>
   `;
 
