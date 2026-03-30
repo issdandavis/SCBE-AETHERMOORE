@@ -8,6 +8,8 @@ import time
 import urllib.error
 import urllib.request
 from dataclasses import asdict, dataclass
+from html.parser import HTMLParser
+from io import StringIO
 from pathlib import Path
 from typing import Iterable
 
@@ -40,11 +42,36 @@ class PageAudit:
     strengths: list[str]
 
 
+class _HTMLTextExtractor(HTMLParser):
+    """Extract visible text from HTML, skipping script/style content."""
+
+    _SKIP_TAGS = frozenset({"script", "style"})
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._buf = StringIO()
+        self._skip_depth = 0
+
+    def handle_starttag(self, tag: str, attrs: list) -> None:
+        if tag.lower() in self._SKIP_TAGS:
+            self._skip_depth += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() in self._SKIP_TAGS and self._skip_depth > 0:
+            self._skip_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if self._skip_depth == 0:
+            self._buf.write(data)
+
+    def get_text(self) -> str:
+        return re.sub(r"\s+", " ", self._buf.getvalue()).strip()
+
+
 def strip_html(html: str) -> str:
-    text = re.sub(r"<script[\s\S]*?</script>", " ", html, flags=re.I)
-    text = re.sub(r"<style[\s\S]*?</style>", " ", text, flags=re.I)
-    text = re.sub(r"<[^>]+>", " ", text)
-    return re.sub(r"\s+", " ", text).strip()
+    parser = _HTMLTextExtractor()
+    parser.feed(html)
+    return parser.get_text()
 
 
 def count_links(html: str) -> tuple[int, int]:
