@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Harmonic Cost Function: Why Attacks Cost Exponentially More | SCBE Research</title>
+    <meta name="description" content="The mathematical foundation of SCBE: how hyperbolic geometry and golden ratio scaling make adversarial AI behavior computationally infeasible.">
+    <link rel="canonical" href="https://aethermoorgames.com/research/harmonic-cost-function.html">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #07111d; color: #eef3ff; line-height: 1.7; }
+        a { color: #84c5ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 36px 24px 72px; }
+        .nav { display: flex; gap: 16px; flex-wrap: wrap; color: #a9b6d1; font-size: 14px; margin-bottom: 26px; }
+        .nav a { color: #a9b6d1; }
+        .eyebrow { color: #87a0ff; text-transform: uppercase; letter-spacing: 0.16em; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+        h1 { font-size: clamp(28px, 5vw, 48px); line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 16px; max-width: 820px; }
+        h2 { font-size: 22px; margin: 36px 0 14px; color: #84c5ff; }
+        h3 { font-size: 17px; margin: 24px 0 10px; color: #7df0d7; }
+        p, li { color: #b5c0d9; max-width: 780px; margin-bottom: 12px; }
+        ul, ol { padding-left: 24px; margin-bottom: 16px; }
+        code { background: #132038; padding: 2px 8px; border-radius: 4px; font-size: 14px; color: #84c5ff; }
+        pre { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 12px; padding: 20px; overflow-x: auto; margin: 16px 0; font-size: 14px; color: #eef3ff; }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid rgba(126, 146, 255, 0.12); }
+        th { color: #84c5ff; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+        td { color: #b5c0d9; }
+        .panel { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 18px; padding: 24px; margin: 18px 0; }
+        .tag { display: inline-block; background: rgba(126, 146, 255, 0.12); color: #84c5ff; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; margin: 4px 4px 4px 0; }
+        .metric { font-size: 42px; font-weight: 800; color: #7df0d7; line-height: 1; }
+        .metric-label { font-size: 13px; color: #a9b6d1; margin-top: 4px; }
+        .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 18px; margin: 24px 0; }
+        .formula { background: #132038; border-left: 3px solid #87a0ff; padding: 16px 20px; border-radius: 0 12px 12px 0; margin: 16px 0; font-family: 'Courier New', monospace; font-size: 16px; color: #eef3ff; }
+        footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid rgba(126, 146, 255, 0.12); color: #6b7a99; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <div class="nav">
+            <a href="../index.html">Home</a>
+            <a href="./index.html">Research</a>
+            <a href="./architecture-overview.html">Architecture</a>
+            <a href="../redteam.html">Red Team</a>
+        </div>
+        <div class="eyebrow">Core mathematics</div>
+        <h1>The Harmonic Cost Function: Why Attacks Cost Exponentially More</h1>
+        <p>The central mathematical insight behind SCBE is deceptively simple: safe operations are cheap, and dangerous operations cost exponentially more. This is not enforced by rules or filters -- it is a geometric property of the space itself. Adversarial intent must climb an exponentially steepening cost curve in hyperbolic space, making attacks computationally infeasible long before they reach dangerous territory.</p>
+
+        <div class="metrics-row">
+            <div class="panel">
+                <div class="metric">d^2</div>
+                <div class="metric-label">Cost scales with distance squared</div>
+            </div>
+            <div class="panel">
+                <div class="metric">phi</div>
+                <div class="metric-label">Golden ratio scaling constant</div>
+            </div>
+            <div class="panel">
+                <div class="metric">14</div>
+                <div class="metric-label">Pipeline layers</div>
+            </div>
+            <div class="panel">
+                <div class="metric">6D</div>
+                <div class="metric-label">Tongue metric dimensions</div>
+            </div>
+        </div>
+
+        <h2>The Core Insight</h2>
+        <p>In Euclidean space, the cost of moving from point A to point B scales linearly with distance. An adversary who needs to drift 10 units from safe operation pays 10x the cost of drifting 1 unit. This is easy to budget for.</p>
+        <p>In hyperbolic space -- specifically the Poincare ball model -- the cost of movement scales exponentially as you approach the boundary. Near the origin (safe operation), movements are cheap. But as you drift toward the boundary (dangerous operation), each additional unit of drift costs exponentially more than the last. The adversary hits a wall of exponential cost long before reaching truly dangerous territory.</p>
+
+        <h2>Two Formulations</h2>
+
+        <h3>Root Variant: Exponential Cost Multiplier</h3>
+        <div class="panel">
+            <p>The root-level <code>symphonic_cipher</code> implements the raw cost multiplier:</p>
+            <div class="formula">H(d, R) = R^(d^2)</div>
+            <p>Where <code>d</code> is the hyperbolic distance from the safe baseline and <code>R</code> is the base cost radius. At <code>d=0</code> (safe), the cost is <code>R^0 = 1</code> (no penalty). At <code>d=1</code>, cost is <code>R</code>. At <code>d=2</code>, cost is <code>R^4</code>. At <code>d=3</code>, cost is <code>R^9</code>. The quadratic exponent makes the cost curve steepen dramatically.</p>
+        </div>
+
+        <h3>Production Variant: Super-Exponential via Golden Ratio</h3>
+        <div class="panel">
+            <p>The production pipeline (Layer 12) uses an enhanced formulation that incorporates the golden ratio for even steeper scaling:</p>
+            <div class="formula">H(d*, R) = pi^(phi * d*)</div>
+            <p>Where <code>phi = (1 + sqrt(5)) / 2 = 1.618...</code> is the golden ratio and <code>d*</code> is the weighted hyperbolic distance. The golden ratio amplifies the exponent, making the cost curve super-exponential. At <code>d*=1</code>, cost is <code>pi^1.618 = 5.19</code>. At <code>d*=2</code>, cost is <code>pi^3.236 = 31.5</code>. At <code>d*=3</code>, cost is <code>pi^4.854 = 191.2</code>.</p>
+        </div>
+
+        <h2>Layer 12: The Full Harmonic Wall</h2>
+        <p>At Layer 12 of the 14-layer pipeline, the harmonic cost function is evaluated with full context, including spectral coherence from Layers 9-10:</p>
+
+        <div class="formula">H(d*, C) = R * pi^(phi * d*) * (1 + gamma * (1 - C))</div>
+
+        <p>Where:</p>
+        <ul>
+            <li><code>R</code> = base cost radius (configurable per deployment)</li>
+            <li><code>d*</code> = weighted hyperbolic distance from safe baseline</li>
+            <li><code>phi</code> = golden ratio (1.618...)</li>
+            <li><code>C</code> = spectral coherence score from FFT analysis (0 to 1)</li>
+            <li><code>gamma</code> = coherence penalty weight</li>
+        </ul>
+        <p>The coherence term <code>(1 + gamma * (1 - C))</code> means that incoherent signals (low C) receive an additional cost penalty. An adversary who tries to mask their intent with noise pays more, not less.</p>
+
+        <h2>Poincare Ball Distance</h2>
+        <p>The hyperbolic distance <code>d*</code> is computed using the Poincare ball model distance formula at Layer 5:</p>
+
+        <div class="formula">dH = arcosh(1 + 2 * ||u - v||^2 / ((1 - ||u||^2)(1 - ||v||^2)))</div>
+
+        <p>Where <code>u</code> and <code>v</code> are points in the Poincare ball (unit ball in R^n). This distance has a critical property: it diverges to infinity as either point approaches the boundary of the ball (<code>||u|| -> 1</code> or <code>||v|| -> 1</code>). Points near the center of the ball are "close" to everything. Points near the boundary are "infinitely far" from the center. This is exactly the geometry we want: safe operations cluster near the center, and adversarial operations are pushed toward the boundary where everything costs infinity.</p>
+
+        <h2>Sacred Tongue Weights</h2>
+        <p>The 6 Sacred Tongues define a 6-dimensional metric space where each dimension is weighted by successive powers of the golden ratio:</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Tongue</th>
+                    <th>Dimension</th>
+                    <th>Weight</th>
+                    <th>Value</th>
+                    <th>Domain</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>KO</code></td>
+                    <td>Intent</td>
+                    <td>phi^0</td>
+                    <td>1.000</td>
+                    <td>Override language detection</td>
+                </tr>
+                <tr>
+                    <td><code>AV</code></td>
+                    <td>Transport</td>
+                    <td>phi^1</td>
+                    <td>1.618</td>
+                    <td>External data flow patterns</td>
+                </tr>
+                <tr>
+                    <td><code>RU</code></td>
+                    <td>Policy</td>
+                    <td>phi^2</td>
+                    <td>2.618</td>
+                    <td>Restricted operation checking</td>
+                </tr>
+                <tr>
+                    <td><code>CA</code></td>
+                    <td>Compute</td>
+                    <td>phi^3</td>
+                    <td>4.236</td>
+                    <td>Computational anomaly detection</td>
+                </tr>
+                <tr>
+                    <td><code>UM</code></td>
+                    <td>Redaction</td>
+                    <td>phi^4</td>
+                    <td>6.854</td>
+                    <td>Credential/PII access attempts</td>
+                </tr>
+                <tr>
+                    <td><code>DR</code></td>
+                    <td>Integrity</td>
+                    <td>phi^5</td>
+                    <td>11.09</td>
+                    <td>Encoding artifacts and injection</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>The golden ratio weighting is not decorative. It means that violations in higher-weight dimensions (DR, UM) are exponentially more expensive than violations in lower-weight dimensions (KO, AV). An encoding injection attack (DR dimension) costs 11x more than an intent manipulation attempt (KO dimension), reflecting the reality that structural attacks are more dangerous than semantic ones.</p>
+
+        <h2>6D Harmonic Metric Tensor</h2>
+        <p>The 6 tongue weights define a diagonal metric tensor over the governance space:</p>
+
+        <div class="formula">g_H = diag(1, 1, 1, R5, R5^2, R5^3)</div>
+
+        <p>Where <code>R5 = phi = 1.618...</code>. The first three dimensions (KO, AV, RU) use near-unit weights, making them the "cheap" governance dimensions. The last three (CA, UM, DR) use exponentially increasing weights, making them the "expensive" dimensions. This metric tensor defines the geometry of the governance space: movements in the CA/UM/DR directions are geometrically more costly than movements in the KO/AV/RU directions.</p>
+
+        <h2>Why This Works</h2>
+        <div class="panel">
+            <h3>Geometric Impossibility, Not Rule-Based Filtering</h3>
+            <p>Traditional safety systems say "you cannot do X." SCBE says "you can try to do X, but it will cost you R^(d^2)." This is a fundamentally different paradigm. Rules can be bypassed by finding exceptions. Cost curves cannot be bypassed because they are properties of the space, not policies imposed on it.</p>
+            <p>The cost scales with the <strong>square</strong> of the distance from the safe baseline. This means:</p>
+            <ul>
+                <li>Small deviations (d=0.1): cost multiplier of ~1.01x -- essentially free</li>
+                <li>Moderate deviations (d=1.0): cost multiplier of R -- noticeable but manageable</li>
+                <li>Large deviations (d=2.0): cost multiplier of R^4 -- prohibitively expensive</li>
+                <li>Adversarial deviations (d=3.0): cost multiplier of R^9 -- computationally infeasible</li>
+            </ul>
+        </div>
+
+        <h2>Dual Application: Security AND Efficiency</h2>
+        <p>The same cost function governs both security and computational efficiency. Safe, well-governed operations are cheap to execute. Poorly governed or anomalous operations consume more resources. This creates a natural incentive alignment: the cheapest way to use the system is the safest way to use it.</p>
+        <p>For energy-constrained deployments (edge devices, TinyML, battery-powered nodes), this means that the governance layer does not add overhead to normal operations -- it only adds cost when something anomalous is detected.</p>
+
+        <h2>AETHERMOORE Constants</h2>
+        <p>Two derived constants anchor the system's numerical identity:</p>
+
+        <div class="formula">PHI_AETHER = phi^(2/3) = 1.3819...
+LAMBDA_ISAAC = R5 * phi^2 = phi^3 = 4.2360...</div>
+
+        <ul>
+            <li><code>PHI_AETHER</code> is the fractional golden ratio power used as the base breathing frequency in Layer 6-7 transforms. It determines the rate at which the Poincare ball "breathes" -- expanding and contracting to probe the stability of embeddings.</li>
+            <li><code>LAMBDA_ISAAC</code> is the canonical scaling constant for the 21D brain mapping lift. It sets the energy scale at which the 6D tongue space is embedded into the full 21-dimensional canonical state vector.</li>
+        </ul>
+
+        <h2>Numerical Examples</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Scenario</th>
+                    <th>d*</th>
+                    <th>H(d*, R=pi)</th>
+                    <th>Decision</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Normal query</td>
+                    <td>0.05</td>
+                    <td>1.13</td>
+                    <td>ALLOW</td>
+                </tr>
+                <tr>
+                    <td>Edge case query</td>
+                    <td>0.5</td>
+                    <td>5.19</td>
+                    <td>ALLOW (logged)</td>
+                </tr>
+                <tr>
+                    <td>Suspicious pattern</td>
+                    <td>1.0</td>
+                    <td>26.9</td>
+                    <td>QUARANTINE</td>
+                </tr>
+                <tr>
+                    <td>Prompt injection attempt</td>
+                    <td>2.0</td>
+                    <td>724</td>
+                    <td>DENY</td>
+                </tr>
+                <tr>
+                    <td>Coordinated attack</td>
+                    <td>3.0</td>
+                    <td>19,478</td>
+                    <td>DENY + ESCALATE</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top: 24px;">
+            <span class="tag">Mathematics</span>
+            <span class="tag">Hyperbolic</span>
+            <span class="tag">Cost Function</span>
+            <span class="tag">Golden Ratio</span>
+            <span class="tag">Poincare</span>
+        </div>
+
+        <footer>SCBE-AETHERMOORE Research | Issac Daniel Davis | 2026</footer>
+    </main>
+</body>
+</html>
