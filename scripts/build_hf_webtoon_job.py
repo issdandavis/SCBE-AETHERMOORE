@@ -30,16 +30,66 @@ def prepare_chapters(chapters: list[dict]) -> list[dict]:
     return prepared
 
 
+def _chapter_order(chapter_id: str) -> tuple[int, int]:
+    if chapter_id.startswith("ch") and chapter_id[2:].isdigit():
+        return (0, int(chapter_id[2:]))
+    if chapter_id.startswith("int") and chapter_id[3:].isdigit():
+        return (1, int(chapter_id[3:]))
+    if chapter_id == "rootlight":
+        return (2, 0)
+    return (3, 0)
+
+
+def _synthesize_missing_prompt_pack(existing_by_id: dict[str, dict]) -> dict[str, dict]:
+    from scripts.build_ch01_prompts_v4 import build_packet as build_ch01_packet
+    from scripts.gen_full_book_panels import (
+        DEFAULT_SOURCE_DIR,
+        create_panel_prompts_from_chapter,
+        get_all_chapters,
+        read_chapter,
+        repo_relative_path,
+    )
+    from scripts.webtoon_quality_gate import lookup_episode_metadata
+
+    synthesized = dict(existing_by_id)
+    source_dir = DEFAULT_SOURCE_DIR
+
+    if "ch01" not in synthesized:
+        synthesized["ch01"] = build_ch01_packet()
+
+    for chapter_ref in get_all_chapters(source_dir):
+        chapter_id = chapter_ref["id"]
+        if chapter_id in synthesized:
+            continue
+
+        chapter_text = read_chapter(chapter_ref["file"], source_dir)
+        if not chapter_text:
+            continue
+
+        source_markdown = repo_relative_path(source_dir / chapter_ref["file"])
+        episode_metadata = lookup_episode_metadata(chapter_id=chapter_id, source_markdown=source_markdown)
+        synthesized[chapter_id] = create_panel_prompts_from_chapter(
+            chapter_id,
+            chapter_text,
+            source_markdown=source_markdown,
+            episode_metadata=episode_metadata,
+        )
+
+    return synthesized
+
+
 def load_prompt_pack(prompts_dir: Path = PROMPTS_DIR) -> tuple[list[dict], int]:
     prompt_files = sorted(prompts_dir.glob("*_prompts.json"))
-    chapters: list[dict] = []
-    total_panels = 0
+    chapters_by_id: dict[str, dict] = {}
 
     for prompt_file in prompt_files:
         chapter = json.loads(prompt_file.read_text(encoding="utf-8"))
-        chapters.append(chapter)
-        total_panels += len(chapter.get("panels", []))
+        chapter_id = str(chapter.get("chapter_id") or prompt_file.stem.replace("_prompts", ""))
+        chapters_by_id[chapter_id] = chapter
 
+    chapters_by_id = _synthesize_missing_prompt_pack(chapters_by_id)
+    chapters = [chapter for _, chapter in sorted(chapters_by_id.items(), key=lambda item: _chapter_order(item[0]))]
+    total_panels = sum(len(chapter.get("panels", [])) for chapter in chapters)
     return prepare_chapters(chapters), total_panels
 
 
