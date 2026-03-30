@@ -160,6 +160,7 @@ def _load_trusted_sites() -> dict:
     try:
         return json.loads(TRUSTED_SITES_PATH.read_text(encoding="utf-8"))
     except Exception:
+        logger.debug("Suppressed error", exc_info=True)
         return {}
 
 
@@ -248,9 +249,11 @@ def _tail_jsonl(path: Path, n: int) -> list[dict[str, Any]]:
                 if isinstance(item, dict):
                     out.append(item)
             except Exception:
+                logger.debug("Suppressed error", exc_info=True)
                 continue
         return out
     except Exception:
+        logger.debug("Suppressed error", exc_info=True)
         return []
 
 
@@ -259,6 +262,7 @@ def _is_path_within(candidate: Path, root: Path) -> bool:
         candidate.resolve().relative_to(root.resolve())
         return True
     except Exception:
+        logger.debug("Suppressed error", exc_info=True)
         return False
 
 
@@ -325,6 +329,7 @@ def _classify_url(url: str) -> Dict[str, Any]:
         from urllib.parse import urlparse
         hostname = urlparse(url).hostname or url
     except Exception:
+        logger.debug("Suppressed error", exc_info=True)
         hostname = url
     domain = re.sub(r"^www\.", "", hostname)
 
@@ -514,6 +519,7 @@ def _knowledge_files() -> list[Path]:
                 if path.stat().st_size > 1_500_000:
                     continue
             except OSError:
+                logger.debug("Suppressed error", exc_info=True)
                 continue
             files.append(path)
     return files
@@ -523,6 +529,7 @@ def _public_source_url(path: Path) -> Optional[str]:
     try:
         relative = path.relative_to(ROOT / "docs")
     except ValueError:
+        logger.debug("Suppressed error", exc_info=True)
         return None
     return "/" + str(relative).replace("\\", "/")
 
@@ -554,6 +561,7 @@ def _search_local_knowledge(query: str, max_sources: int = 6) -> list[dict[str, 
         try:
             raw = path.read_text(encoding="utf-8", errors="ignore")
         except OSError:
+            logger.debug("Suppressed error", exc_info=True)
             continue
         normalized = _normalize_text_blob(raw)
         if not normalized:
@@ -645,6 +653,7 @@ def _call_local_ollama(prompt: str, model_id: Optional[str] = None) -> dict[str,
     try:
         import requests as _req
     except Exception:
+        logger.debug("Suppressed error", exc_info=True)
         return {"ok": False, "error": "requests is not available for Ollama calls"}
     chosen_model = (model_id or DEFAULT_OLLAMA_MODEL).strip()
     try:
@@ -852,6 +861,7 @@ async def fact_check(req: FactCheckRequest):
                 "tongue_coords": [round(c, 4) for c in gr.tongue_coords],
             }
         except Exception:
+            logger.debug("Suppressed error", exc_info=True)
             gate_result = {"error": "Runtime gate evaluation failed"}
 
     if decision == "DENY":
@@ -979,6 +989,7 @@ async def red_team_run(req: RedTeamRunRequest = RedTeamRunRequest()):
             "stderr_tail": stderr[-1000:] if len(stderr) > 1000 else stderr,
         }
     except subprocess.TimeoutExpired:
+        logger.debug("Suppressed error", exc_info=True)
         return {"error": "Benchmark timed out (120s limit)", "total": 0, "passed": 0, "failed": 0, "results": []}
     except Exception:
         logger.exception("Red team benchmark execution failed")
@@ -1038,6 +1049,7 @@ def _run_subprocess(cmd: List[str], timeout: int = 60) -> Dict[str, Any]:
             "exit_code": proc.returncode,
         }
     except subprocess.TimeoutExpired:
+        logger.debug("Suppressed error", exc_info=True)
         return {"stdout": "", "stderr": "timeout", "exit_code": -1}
     except Exception:
         logger.exception("Subprocess invocation failed")
@@ -1102,7 +1114,7 @@ async def vault_stats():
                     if "edges" in graph and isinstance(graph["edges"], list):
                         edges = len(graph["edges"])
             except Exception:
-                pass
+                logger.debug("Suppressed error", exc_info=True)
 
         # Check SFT output
         sft_file = ROOT / "training-data" / "apollo" / "obsidian_vault_sft.jsonl"
@@ -1110,7 +1122,7 @@ async def vault_stats():
             try:
                 sft_pairs = sum(1 for _ in sft_file.open(encoding="utf-8"))
             except Exception:
-                pass
+                logger.debug("Suppressed error", exc_info=True)
 
         return {
             "notes": notes,
@@ -1411,6 +1423,7 @@ def _parse_last_json(stdout: str) -> dict[str, Any] | None:
             payload = json.loads(line)
             return payload if isinstance(payload, dict) else None
         except Exception:
+            logger.debug("Suppressed error", exc_info=True)
             continue
     return None
 
@@ -1463,6 +1476,7 @@ async def ops_momentum_latest(train_id: str = "daily_ops"):
     try:
         state = json.loads(state_path.read_text(encoding="utf-8"))
     except Exception:
+        logger.debug("Suppressed error", exc_info=True)
         return {"error": "Could not read momentum train state", "ok": False}
 
     stations = state.get("stations", {}) if isinstance(state, dict) else {}
@@ -1526,6 +1540,7 @@ async def ops_chessboard_latest():
         meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
         packets = json.loads(packets_path.read_text(encoding="utf-8")) if packets_path.exists() else {}
     except Exception:
+        logger.debug("Suppressed error", exc_info=True)
         return {"error": "Could not read latest chessboard artifacts", "ok": False}
     return {
         "ok": True,
@@ -1706,6 +1721,7 @@ def _cli_parse_flags(parts: list[str]) -> dict[str, Any]:
             try:
                 out["max_parallel"] = int(parts[i + 1])
             except Exception:
+                logger.debug("Suppressed error", exc_info=True)
                 out["max_parallel"] = parts[i + 1]
             i += 2
             continue

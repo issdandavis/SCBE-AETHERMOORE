@@ -419,7 +419,7 @@ function renderServiceGrid() {
       </div>
       <div class="service-path">${escHtml(svc.path)}</div>
       <div class="service-hint">${escHtml(svc.hint)}</div>
-      <a class="service-open" href="${svc.url}" target="_blank" rel="noreferrer">Open</a>
+      <a class="service-open" href="${safeHref(svc.url)}" target="_blank" rel="noreferrer">Open</a>
     </div>
   `).join('');
 }
@@ -448,8 +448,8 @@ function renderGammaGrid() {
         <div class="service-path">Resource: ${escHtml(site.resource_url || '')}</div>
         <div class="service-path">Primary CTA: ${escHtml(site.primary_cta || '')}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <a class="service-open" href="${site.resource_url}" target="_blank" rel="noreferrer">Open Source</a>
-          <a class="service-open" href="${gammaUrl}" target="_blank" rel="noreferrer">${gammaLabel}</a>
+          <a class="service-open" href="${safeHref(site.resource_url)}" target="_blank" rel="noreferrer">Open Source</a>
+          <a class="service-open" href="${safeHref(gammaUrl)}" target="_blank" rel="noreferrer">${escHtml(gammaLabel)}</a>
         </div>
       </div>
     `;
@@ -471,7 +471,7 @@ async function loadGammaLandingSites() {
 
 function buildTable() {
   const table = document.getElementById('table');
-  table.innerHTML = '';
+  table.replaceChildren();
 
   const leftPlayers = PLAYERS.slice(0, 5);
   const rightPlayers = PLAYERS.slice(5);
@@ -538,12 +538,12 @@ function createSeat(player) {
   el.id = 'seat-' + player.id;
   el.innerHTML = `
     <div class="seat-header">
-      <div class="seat-dot" style="background:${player.color}"></div>
-      <span class="seat-name" style="color:${player.color}">${player.name}</span>
-      <span class="seat-tongue">${player.tongue}</span>
-      <span class="seat-model">${player.model}</span>
-      <span class="seat-status idle" id="status-${player.id}">ready</span>
-      <span class="seat-role">${player.role}</span>
+      <div class="seat-dot" style="background:${escHtml(player.color)}"></div>
+      <span class="seat-name" style="color:${escHtml(player.color)}">${escHtml(player.name)}</span>
+      <span class="seat-tongue">${escHtml(player.tongue)}</span>
+      <span class="seat-model">${escHtml(player.model)}</span>
+      <span class="seat-status idle" id="status-${escHtml(player.id)}">ready</span>
+      <span class="seat-role">${escHtml(player.role)}</span>
     </div>
     <div class="seat-chat" id="chat-${player.id}"></div>
     <div class="seat-input-row">
@@ -564,7 +564,15 @@ function createSeat(player) {
 }
 
 function escHtml(s) {
-  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function safeHref(url) {
+  try {
+    const u = new URL(url);
+    if (u.protocol === 'https:' || u.protocol === 'http:') return escHtml(url);
+  } catch {}
+  return '#';
 }
 
 function safeLoreImageUrl(url) {
@@ -673,7 +681,7 @@ function openSettings() {
   const overlay = document.getElementById('settingsOverlay');
   const container = document.getElementById('settingsRows');
   const keys = loadArenaKeys();
-  container.innerHTML = '';
+  container.replaceChildren();
   PLAYERS.forEach(p => {
     const cfg = PROVIDER_KEY_MAP[p.id];
     if (!cfg) return;
