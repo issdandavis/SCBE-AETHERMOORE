@@ -50,7 +50,29 @@
 - [ ] Generate training receipt (ASCII format like cc-receipt)
 - [ ] Update `docs/research/TRAINING_INSIGHTS_2026-03-30.md` with new results
 
-### Priority 4: Architecture Improvements (target: 2 hours, if time)
+### Priority 4: Train a CHATBOT (target: 2-3 hours)
+
+Goal: Fine-tune a small chat model so Issac can TALK to his AI.
+
+- [ ] Pick base model: Qwen2.5-3B-Instruct (best free option for Kaggle GPU)
+- [ ] Upload 7,132 SFT pairs to Kaggle as a dataset
+- [ ] Create Kaggle notebook for fine-tune (LoRA/QLoRA, 4-bit quantized)
+- [ ] Train for 3 epochs on Kaggle free GPU (P100 or T4)
+- [ ] Export LoRA adapter
+- [ ] Push trained model to HuggingFace: issdandavis/scbe-polly-chat-v1
+- [ ] Create Gradio space on HuggingFace for live chat demo
+- [ ] Wire PHDM embedding as trust gate (score input before chatbot responds)
+
+The chatbot should:
+  - Know SCBE architecture (from 4,786 docs SFT pairs)
+  - Know governance concepts (from 1,262 Obsidian notes)
+  - Know the Sacred Tongues by full name (Kor'aelin, Avali, etc.)
+  - Respond as "Polly" (the SCBE governance assistant)
+  - Refuse unsafe requests using the governance vocabulary
+
+NOT a general chatbot. A SCBE-specific assistant that knows the system.
+
+### Priority 5: Architecture Improvements (target: 2 hours, if time)
 
 - [ ] Calibrate trichromatic quarantine/deny thresholds (currently 6% detection)
 - [ ] Add `ESCALATE` and `DIRECT` to `Decision` enum in `runtime_gate.py`
