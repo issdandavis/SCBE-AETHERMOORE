@@ -3,342 +3,1081 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCBE-AETHERMOORE Research Domain</title>
-    <meta name="description" content="Public SCBE research domain for benchmarks, mathematical framing, and active experimental tracks.">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #070711;
-            color: #edf0ff;
-            line-height: 1.7;
+    <title>SCBE Research | Benchmarks, Architecture, and Active Tracks</title>
+    <meta
+        name="description"
+        content="Public SCBE research surface for benchmark summaries, architecture maps, math references, and active experiment tracks."
+    >
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://aethermoorgames.com/research/index.html">
+    <link rel="icon" type="image/png" href="../static/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="../static/icons/icon-192.png">
+    <meta property="og:title" content="SCBE Research">
+    <meta
+        property="og:description"
+        content="Benchmarks, architecture notes, and active research tracks for the SCBE governance stack."
+    >
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aethermoorgames.com/research/index.html">
+    <meta property="og:image" content="https://aethermoorgames.com/static/icons/icon-512.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SCBE Research">
+    <meta
+        name="twitter:description"
+        content="Public benchmark summaries, architecture maps, and active experiment tracks for SCBE-AETHERMOORE."
+    >
+    <meta name="twitter:image" content="https://aethermoorgames.com/static/icons/icon-512.png">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "SCBE Research",
+      "url": "https://aethermoorgames.com/research/index.html",
+      "description": "Public benchmark summaries, architecture maps, and active experiment tracks for the SCBE governance stack.",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "SCBE-AETHERMOORE",
+        "url": "https://aethermoorgames.com/"
+      },
+      "about": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "SCBE-AETHERMOORE"
+        },
+        {
+          "@type": "Thing",
+          "name": "AI governance research"
         }
+      ]
+    }
+    </script>
+    <style>
+        :root {
+            --bg: #081018;
+            --bg-soft: #101926;
+            --panel: rgba(15, 24, 37, 0.9);
+            --panel-strong: rgba(11, 18, 29, 0.96);
+            --text: #f2f5ff;
+            --muted: #aab4cf;
+            --line: rgba(126, 154, 255, 0.16);
+            --accent: #84c5ff;
+            --accent-2: #7df0d7;
+            --accent-3: #d9b869;
+            --max: 1180px;
+            --shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: "Segoe UI", "Inter", system-ui, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(132, 197, 255, 0.16), transparent 28%),
+                radial-gradient(circle at top right, rgba(125, 240, 215, 0.12), transparent 26%),
+                linear-gradient(180deg, #081018 0%, #0b1320 45%, #081018 100%);
+            color: var(--text);
+            line-height: 1.65;
+        }
+
         a { color: inherit; text-decoration: none; }
-        .topbar {
+
+        .skip-link {
+            position: absolute;
+            left: 16px;
+            top: -56px;
+            z-index: 100;
+            padding: 12px 16px;
+            border-radius: 999px;
+            background: #ffffff;
+            color: #081018;
+            font-weight: 700;
+            transition: top 160ms ease;
+        }
+
+        .skip-link:focus { top: 16px; }
+
+        .site-header {
             position: sticky;
             top: 0;
-            z-index: 30;
+            z-index: 40;
+            backdrop-filter: blur(18px);
+            background: rgba(8, 16, 24, 0.86);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .header-shell,
+        .wrap,
+        .footer-shell {
+            width: min(var(--max), calc(100% - 32px));
+            margin: 0 auto;
+        }
+
+        .header-shell {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 16px 24px;
-            background: rgba(7, 7, 17, 0.9);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(123, 140, 255, 0.14);
+            justify-content: space-between;
+            gap: 18px;
+            min-height: 72px;
+            position: relative;
         }
-        .topbar .brand {
+
+        .brand {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-mark {
+            color: var(--accent-3);
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            font-size: 12px;
             font-weight: 800;
-            letter-spacing: 0.08em;
         }
-        .topbar nav {
+
+        .brand-name {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-toggle {
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 10px 14px;
+            font: inherit;
+            font-weight: 700;
+        }
+
+        .site-nav {
             display: flex;
+            align-items: center;
             gap: 18px;
             flex-wrap: wrap;
-            color: #b4b9df;
+            color: var(--muted);
             font-size: 14px;
         }
-        .wrap {
-            max-width: 1160px;
-            margin: 0 auto;
-            padding: 42px 24px 80px;
-        }
+
+        .site-nav a:hover,
+        .site-nav a:focus-visible { color: var(--text); }
+
+        .wrap { padding: 40px 0 88px; }
+
         .hero {
-            padding: 34px 0 28px;
+            padding: 28px 0 18px;
         }
+
         .eyebrow {
-            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent);
             text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #8590ff;
+            letter-spacing: 0.16em;
+            font-size: 12px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .eyebrow::before {
+            content: "";
+            width: 28px;
+            height: 1px;
+            background: rgba(132, 197, 255, 0.45);
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: Georgia, "Times New Roman", serif;
             font-weight: 700;
-            margin-bottom: 10px;
         }
+
         h1 {
-            font-size: clamp(34px, 6vw, 64px);
-            line-height: 0.96;
+            font-size: clamp(38px, 7vw, 78px);
+            line-height: 0.95;
             letter-spacing: -0.045em;
+            max-width: 12ch;
             margin-bottom: 18px;
-            max-width: 900px;
         }
-        .hero p {
-            max-width: 820px;
-            color: #afb5da;
-            font-size: 18px;
+
+        .hero-copy {
+            max-width: 64ch;
+            color: var(--muted);
+            font-size: clamp(17px, 2vw, 21px);
         }
+
         .hero-actions {
-            margin-top: 24px;
             display: flex;
             gap: 14px;
             flex-wrap: wrap;
+            margin-top: 28px;
         }
+
         .btn {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
             padding: 12px 20px;
             border-radius: 999px;
             font-size: 14px;
-            font-weight: 700;
+            font-weight: 800;
+            transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
         }
+
+        .btn:hover,
+        .btn:focus-visible { transform: translateY(-1px); }
+
         .btn-primary {
-            background: linear-gradient(135deg, #6f84ff 0%, #9160ff 100%);
-            color: #fff;
+            color: #081018;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            box-shadow: var(--shadow);
         }
-        .btn-ghost {
-            border: 1px solid rgba(123, 140, 255, 0.22);
-            background: rgba(255, 255, 255, 0.02);
-            color: #dce0ff;
+
+        .btn-secondary {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text);
         }
-        section {
-            margin-top: 34px;
-            padding-top: 18px;
-        }
-        h2 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-        .section-copy {
-            color: #aeb4d7;
-            max-width: 760px;
-            margin-bottom: 20px;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 18px;
-        }
-        .panel {
-            background: linear-gradient(180deg, #101122 0%, #0a0b15 100%);
-            border: 1px solid rgba(123, 140, 255, 0.14);
-            border-radius: 20px;
-            padding: 24px;
-        }
-        .panel h3 {
-            font-size: 20px;
-            margin-bottom: 10px;
-        }
-        .panel p {
-            color: #a7add0;
-            font-size: 14px;
-            margin-bottom: 16px;
-        }
-        .tags {
+
+        .hero-links {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-        }
-        .tags span {
-            font-size: 12px;
-            color: #d4d8ff;
-            background: rgba(123, 140, 255, 0.08);
-            border: 1px solid rgba(123, 140, 255, 0.12);
-            border-radius: 999px;
-            padding: 4px 9px;
-        }
-        .benchmark-board {
-            display: grid;
-            grid-template-columns: 1.2fr 1fr;
             gap: 18px;
             margin-top: 16px;
+            color: #d7def6;
+            font-size: 14px;
         }
-        .metric-list {
+
+        .hero-links a {
+            text-decoration: underline;
+            text-decoration-color: rgba(217, 184, 105, 0.35);
+            text-underline-offset: 4px;
+        }
+
+        .meta-strip {
             display: grid;
-            gap: 12px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 34px;
         }
-        .metric {
-            padding: 14px 16px;
-            border-radius: 14px;
+
+        .meta-chip {
+            padding: 16px 18px;
+            border-radius: 18px;
             background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(123, 140, 255, 0.1);
+            border: 1px solid var(--line);
         }
-        .metric strong {
+
+        .meta-chip .mini {
             display: block;
-            color: #fff;
+            color: #91a0ca;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 8px;
+        }
+
+        .meta-chip strong {
+            display: block;
+            font-size: 16px;
             margin-bottom: 4px;
         }
+
+        .meta-chip p {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        section {
+            margin-top: 42px;
+            padding-top: 8px;
+        }
+
+        h2 {
+            font-size: clamp(28px, 4vw, 42px);
+            line-height: 1.02;
+            margin-bottom: 12px;
+        }
+
+        .section-copy {
+            max-width: 62ch;
+            color: var(--muted);
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .benchmark-board {
+            display: grid;
+            grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+            gap: 18px;
+        }
+
+        .panel {
+            background: linear-gradient(180deg, var(--panel) 0%, var(--panel-strong) 100%);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .panel h3 {
+            font-size: 22px;
+            margin-bottom: 12px;
+        }
+
+        .panel p {
+            color: var(--muted);
+            font-size: 15px;
+            margin-bottom: 16px;
+        }
+
         .score {
-            font-size: 30px;
+            font-size: clamp(34px, 5vw, 52px);
+            line-height: 0.95;
             font-weight: 800;
-            color: #7cf3db;
-            margin-bottom: 4px;
+            color: var(--accent-2);
+            margin-bottom: 10px;
         }
+
+        .metric-list,
         .rail {
             display: grid;
             gap: 12px;
         }
+
+        .metric,
         .rail-item {
+            border-radius: 16px;
             padding: 16px;
-            border-radius: 14px;
             background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(123, 140, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        .rail-item .mini {
+
+        .metric strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        .mini {
+            display: block;
+            color: #97a5cf;
             font-size: 12px;
             text-transform: uppercase;
-            letter-spacing: 1.4px;
-            color: #9098d6;
-            margin-bottom: 6px;
+            letter-spacing: 0.12em;
+            margin-bottom: 8px;
         }
+
+        .rail-item h3,
         .rail-item h4 {
+            font-family: "Segoe UI", "Inter", system-ui, sans-serif;
             font-size: 16px;
             margin-bottom: 6px;
         }
+
         .rail-item p {
-            color: #a6acd0;
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        .section-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 18px;
+            color: #dbe4ff;
+        }
+
+        .section-links a {
+            text-decoration: underline;
+            text-decoration-color: rgba(132, 197, 255, 0.32);
+            text-underline-offset: 4px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+        }
+
+        .assistant-shell {
+            display: grid;
+            grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+            gap: 18px;
+        }
+
+        .assistant-form,
+        .assistant-output {
+            min-height: 100%;
+        }
+
+        .field {
+            display: block;
+        }
+
+        .field + .field {
+            margin-top: 14px;
+        }
+
+        .field textarea,
+        .field select {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text);
+            font: inherit;
+            padding: 14px 16px;
+        }
+
+        .field textarea {
+            min-height: 190px;
+            resize: vertical;
+        }
+
+        .assistant-controls {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        .assistant-note {
+            color: var(--muted);
+            font-size: 14px;
+            margin-top: 14px;
+        }
+
+        .prompt-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .prompt-chip {
+            border: 1px solid rgba(132, 197, 255, 0.16);
+            background: rgba(132, 197, 255, 0.06);
+            color: #dfe9ff;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font: inherit;
             font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
         }
-        @media (max-width: 840px) {
-            .benchmark-board { grid-template-columns: 1fr; }
+
+        .prompt-chip:hover,
+        .prompt-chip:focus-visible {
+            border-color: rgba(132, 197, 255, 0.34);
+            background: rgba(132, 197, 255, 0.12);
         }
+
+        .status-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #dfe6fb;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .answer-box {
+            color: var(--text);
+            font-size: 15px;
+            line-height: 1.75;
+            white-space: pre-wrap;
+        }
+
+        .source-list {
+            list-style: none;
+            display: grid;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .source-item {
+            border-radius: 16px;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .source-item strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        .source-path {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--accent-2);
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        .source-link {
+            color: #dbe4ff;
+            text-decoration: underline;
+            text-decoration-color: rgba(132, 197, 255, 0.3);
+            text-underline-offset: 4px;
+        }
+
+        .source-item p {
+            margin-bottom: 0;
+        }
+
+        .assistant-empty {
+            color: var(--muted);
+        }
+
+        .track-card,
+        .link-card {
+            display: block;
+            transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+        }
+
+        .track-card:hover,
+        .track-card:focus-visible,
+        .link-card:hover,
+        .link-card:focus-visible {
+            transform: translateY(-2px);
+            border-color: rgba(132, 197, 255, 0.3);
+            background: linear-gradient(180deg, rgba(18, 28, 43, 0.98) 0%, rgba(11, 18, 29, 0.98) 100%);
+        }
+
+        .card-kicker {
+            display: block;
+            color: var(--accent-3);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .tags span {
+            font-size: 12px;
+            color: #dbe4ff;
+            background: rgba(132, 197, 255, 0.08);
+            border: 1px solid rgba(132, 197, 255, 0.14);
+            border-radius: 999px;
+            padding: 5px 10px;
+        }
+
+        .footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(8, 16, 24, 0.94);
+        }
+
+        .footer-shell {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding: 26px 0 34px;
+        }
+
+        .footer-copy {
+            max-width: 48ch;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            color: #dfe6fb;
+            font-size: 14px;
+        }
+
+        code {
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            color: var(--accent-2);
+        }
+
+        @media (max-width: 920px) {
+            .meta-strip,
+            .benchmark-board,
+            .assistant-shell {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .nav-toggle { display: inline-flex; }
+
+            .site-nav {
+                display: none;
+                position: absolute;
+                top: calc(100% + 10px);
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0;
+                padding: 10px;
+                border-radius: 20px;
+                border: 1px solid var(--line);
+                background: rgba(8, 16, 24, 0.98);
+                box-shadow: var(--shadow);
+            }
+
+            .site-nav.open { display: flex; }
+
+            .site-nav a {
+                padding: 12px 14px;
+                border-radius: 14px;
+            }
+
+            .site-nav a:hover,
+            .site-nav a:focus-visible {
+                background: rgba(255, 255, 255, 0.04);
+            }
+
+            .wrap { padding-top: 26px; }
+
+            .hero {
+                padding-top: 10px;
+            }
+        }
+
         @media (max-width: 520px) {
-            .topbar { padding: 14px 18px; }
-            .wrap { padding: 34px 18px 64px; }
+            .header-shell,
+            .wrap,
+            .footer-shell {
+                width: min(var(--max), calc(100% - 24px));
+            }
+
+            .assistant-controls,
+            .btn { width: 100%; }
         }
     </style>
 </head>
 <body>
-    <div class="topbar">
-        <div class="brand"><a href="../">SCBE RESEARCH</a></div>
-        <nav>
-            <a href="../">Home</a>
-            <a href="../demos/">Demos</a>
-            <a href="../articles/">Articles</a>
-            <a href="#benchmark-board">Benchmarks</a>
-            <a href="./layer-coupling.html">Coupling</a>
-            <a href="#active-tracks">Tracks</a>
-            <a href="./sphere-grid.html">Sphere Grid</a>
-            <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
-            <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a>
-        </nav>
-    </div>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    <main class="wrap">
-        <section class="hero">
-            <div class="eyebrow">Public research layer</div>
-            <h1>Keep the product page lean. Put the proof here.</h1>
-            <p>
-                This domain layer is for benchmark summaries, mathematical framing, and active experiment tracks.
-                It separates what is public, what is replicated, and what is still exploratory.
+    <header class="site-header">
+        <div class="header-shell">
+            <a class="brand" href="../index.html">
+                <span class="brand-mark">SCBE-AETHERMOORE</span>
+                <span class="brand-name">Research</span>
+            </a>
+            <button
+                class="nav-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="site-nav"
+                data-nav-toggle
+            >
+                Menu
+            </button>
+            <nav id="site-nav" class="site-nav" aria-label="Main navigation">
+                <a href="../index.html">Home</a>
+                <a href="../demos/index.html">Demos</a>
+                <a href="../articles/index.html">Articles</a>
+                <a href="#benchmark-board">Benchmarks</a>
+                <a href="#active-tracks">Tracks</a>
+                <a href="#grounded-assistant">Assistant</a>
+                <a href="./website-system-loop.html">System Loop</a>
+                <a href="./sphere-grid.html">Skill Vault</a>
+                <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener noreferrer">YouTube</a>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-content" class="wrap">
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="eyebrow">Public research surface</div>
+            <h1 id="hero-title">Benchmarks, architecture, and active SCBE tracks.</h1>
+            <p class="hero-copy">
+                This page is the readable public layer for the SCBE governance stack. Start here for confirmed
+                benchmark signals, the current architecture map, and the active experiments that are still moving
+                from theory into repeatable surfaces.
             </p>
             <div class="hero-actions">
-                <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/scripts/benchmark" class="btn btn-primary" target="_blank">Open benchmark code</a>
-                <a href="./verification.html" class="btn btn-ghost">Five-run verification</a>
-                <a href="./eval-pack.html" class="btn btn-ghost">Eval pack</a>
-                <a href="./null-space-signatures.html" class="btn btn-ghost">Null-space signatures</a>
-                <a href="./architecture-overview.html" class="btn btn-ghost">Architecture overview</a>
-                <a href="../demos/" class="btn btn-ghost">Return to demo lab</a>
+                <a href="./eval-pack.html" class="btn btn-primary">Open the eval pack</a>
+                <a href="./architecture-overview.html" class="btn btn-secondary">See the architecture map</a>
+            </div>
+            <div class="hero-links">
+                <a
+                    href="https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/scripts/benchmark"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >Open benchmark code</a>
+                <a href="../demos/index.html">Browse the demo lab</a>
+                <a href="#grounded-assistant">Try the grounded assistant</a>
+                <a href="./website-system-loop.html">See the full website loop</a>
+                <a href="./verification.html">Read the verification packet</a>
+            </div>
+            <div class="meta-strip" aria-label="Research overview">
+                <article class="meta-chip">
+                    <span class="mini">Implemented</span>
+                    <strong>Eval pack and benchmark surfaces</strong>
+                    <p>Use these when you need the current reproducible public packet.</p>
+                </article>
+                <article class="meta-chip">
+                    <span class="mini">Documented</span>
+                    <strong>Architecture and math references</strong>
+                    <p>Canonical maps for the current 14-layer stack and its public explanations.</p>
+                </article>
+                <article class="meta-chip">
+                    <span class="mini">Experimental</span>
+                    <strong>Context, flux, and spectral tracks</strong>
+                    <p>Useful research lanes that still need stronger real-world baselines.</p>
+                </article>
             </div>
         </section>
 
-        <section id="benchmark-board">
+        <section id="benchmark-board" aria-labelledby="benchmark-title">
             <div class="eyebrow">Benchmark board</div>
-            <h2>Current public signals</h2>
+            <h2 id="benchmark-title">Current public signals</h2>
             <p class="section-copy">
-                The board below is the readable surface. The repo remains the audit surface. Keep both connected.
+                These are the top-line signals worth showing on the public site. The repo remains the audit trail
+                and replication surface; this page stays focused on the results that help a technical reader orient quickly.
             </p>
             <div class="benchmark-board">
-                <div class="panel">
-                    <div class="score">91 / 91</div>
+                <article class="panel">
+                    <div class="score" aria-label="91 out of 91 adversarial benchmark cases blocked">91 / 91</div>
                     <h3>Adversarial benchmark blocked</h3>
                     <p>
-                        Public benchmark headline for the landing page. Use this as the clean summary, then send technical readers
-                        deeper into methodology and replication notes rather than compressing everything into a single hero claim.
+                        The current public headline is simple: the benchmark pack blocks the published adversarial set.
+                        Readers who need more than the headline should go directly into the eval pack and benchmark code.
                     </p>
                     <div class="metric-list">
                         <div class="metric">
                             <strong>Context benchmark v2</strong>
-                            Euclidean currently wins recall in the stricter synthetic benchmark. Tongue still wins compression structure and speed.
+                            Euclidean baselines remain stronger on strict synthetic recall. The tongue-weighted path remains useful
+                            for compression structure and runtime speed.
                         </div>
                         <div class="metric">
                             <strong>Flux benchmark v2</strong>
-                            Methods are now distinct, deterministic, and target-relative rather than sign-of-delta theater.
+                            Trajectory methods are now deterministic and target-relative, which makes the signal easier to inspect and repeat.
                         </div>
                         <div class="metric">
                             <strong>Spectral benchmark</strong>
-                            Amplitude and coherence are the strongest synthetic discriminators. Settling is weak and should stay secondary.
+                            Amplitude and coherence remain the most useful synthetic discriminators. Settling stays a secondary diagnostic.
                         </div>
                     </div>
-                </div>
-                <div class="rail">
+                    <div class="section-links">
+                        <a href="./eval-pack.html">Read the eval pack</a>
+                        <a href="./verification.html">Review the five-run verification</a>
+                    </div>
+                </article>
+                <aside class="rail" aria-label="Benchmark supporting notes">
                     <div class="rail-item">
-                        <div class="mini">Confirmed output</div>
-                        <h4>Attack benchmark</h4>
-                        <p>Good public-facing proof surface. Strongest current result.</p>
+                        <span class="mini">Confirmed output</span>
+                        <h3>Attack benchmark</h3>
+                        <p>The strongest current public proof surface. This is the number to cite first.</p>
                     </div>
                     <div class="rail-item">
-                        <div class="mini">Active experiment</div>
-                        <h4>Context / dual-space retrieval</h4>
-                        <p>Promising, but still synthetic until a real encoder baseline is swapped in.</p>
+                        <span class="mini">Architecture fit</span>
+                        <h3>Layer coupling</h3>
+                        <p>
+                            <a href="./layer-coupling.html">See where L3, L7, L12, and L13 couple</a> when the decision path turns from signal into governance.
+                        </p>
                     </div>
                     <div class="rail-item">
-                        <div class="mini">Method layer</div>
-                        <h4>Flux + spectral diagnostics</h4>
-                        <p>Useful as explainability instrumentation even before they become headline claims.</p>
+                        <span class="mini">Open question</span>
+                        <h3>Real encoder baseline</h3>
+                        <p>Context work still needs a stronger non-synthetic encoder baseline before it should be treated as headline proof.</p>
                     </div>
                     <div class="rail-item">
-                        <div class="mini">Interaction map</div>
-                        <h4><a href="./layer-coupling.html">Where the variables couple</a></h4>
-                        <p>Explains the benchmark split and the real decision path through L3, L7, L12, and L13.</p>
+                        <span class="mini">Replication</span>
+                        <h3>Repo audit trail</h3>
+                        <p>
+                            <a
+                                href="https://github.com/issdandavis/SCBE-AETHERMOORE"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >Open the repo</a> when you need scripts, docs, and implementation context together.
+                        </p>
                     </div>
-                </div>
+                </aside>
             </div>
         </section>
 
-        <section id="active-tracks">
+        <section id="active-tracks" aria-labelledby="tracks-title">
             <div class="eyebrow">Active tracks</div>
-            <h2>What this domain should grow into</h2>
+            <h2 id="tracks-title">Research tracks in progress</h2>
             <p class="section-copy">
-                Build outward in tracks: public summaries first, charts second, then live explainers when the underlying method is stable enough.
+                These tracks are active but not all at the same maturity level. Each card links to the current packet,
+                benchmark surface, or explainer instead of pretending the work is finished.
             </p>
             <div class="grid">
-                <article class="panel">
-                    <h3>History + Bible theory packet</h3>
-                    <p>Bounded training packet built from the local theory corpus around witness, covenant, genesis control, memory, and sanctuary-building. Research language stays separated from implemented claims.</p>
+                <a class="panel track-card" href="./security-eval-lab.html">
+                    <span class="card-kicker">Security + sales lane</span>
+                    <h3>Benchmark + GeoSeal eval lab</h3>
+                    <p>
+                        Public surface for the upgraded benchmark, GeoSeal boundary story, sellable evaluation offers,
+                        and demo links that show the stack instead of only describing it.
+                    </p>
                     <div class="tags">
-                        <span>theory corpus</span>
-                        <span>history</span>
-                        <span>bounded training</span>
+                        <span>Benchmark</span>
+                        <span>GeoSeal</span>
+                        <span>Demos</span>
+                        <span>Offers</span>
                     </div>
-                </article>
-                <article class="panel">
+                </a>
+                <a class="panel track-card" href="./history-bible-theory-training.html">
+                    <span class="card-kicker">Theory corpus</span>
+                    <h3>History + Bible theory packet</h3>
+                    <p>
+                        Bounded training packet around witness, covenant, genesis control, memory, and sanctuary-building.
+                        Research language stays separated from implemented claims.
+                    </p>
+                    <div class="tags">
+                        <span>History</span>
+                        <span>Covenant</span>
+                        <span>Training packet</span>
+                    </div>
+                </a>
+                <a class="panel track-card" href="./eval-pack.html">
+                    <span class="card-kicker">Context systems</span>
                     <h3>Context embedding lab</h3>
-                    <p>Dual-space retrieval, tongue compression, and 21D state comparison. Best next step is replacing synthetic embeddings with a real encoder baseline.</p>
+                    <p>
+                        Dual-space retrieval, tongue compression, and 21D state comparison. The next serious move is replacing synthetic embeddings
+                        with a stronger real encoder baseline.
+                    </p>
                     <div class="tags">
                         <span>Euclidean</span>
                         <span>Hyperbolic</span>
                         <span>Dual-space</span>
                         <span>21D</span>
                     </div>
-                </article>
-                <article class="panel">
+                </a>
+                <a class="panel track-card" href="./math-flow.html">
+                    <span class="card-kicker">Trajectory diagnostics</span>
                     <h3>Flux trail</h3>
-                    <p>A-to-Z trajectories instead of A-to-B endpoints. Good for showing where embeddings oscillate, reverse, and settle.</p>
+                    <p>
+                        Track A-to-Z trajectories instead of only endpoint scores. Useful when embeddings oscillate, reverse, or settle in ways a scalar score hides.
+                    </p>
                     <div class="tags">
                         <span>Positive</span>
                         <span>Negative</span>
                         <span>Neutral</span>
-                        <span>Fluctuating</span>
+                        <span>Trajectory</span>
                     </div>
-                </article>
-                <article class="panel">
+                </a>
+                <a class="panel track-card" href="./null-space-signatures.html">
+                    <span class="card-kicker">Signal views</span>
                     <h3>Spectral telescope</h3>
-                    <p>Frequency, amplitude, coherence, spin, tongue dominance, and settling as six views on the same underlying signal.</p>
+                    <p>
+                        Frequency, amplitude, coherence, spin, tongue dominance, and settling as linked views on the same underlying signal.
+                    </p>
                     <div class="tags">
                         <span>FFT</span>
                         <span>Amplitude</span>
                         <span>Coherence</span>
                         <span>Tongues</span>
                     </div>
-                </article>
+                </a>
+                <a class="panel track-card" href="./harmonic-cost-function.html">
+                    <span class="card-kicker">Core mathematics</span>
+                    <h3>Harmonic cost function</h3>
+                    <p>
+                        Why attacks cost exponentially more. The same H(d*,R) = pi^(phi*d*) function governs
+                        both security and energy/compute. Golden ratio weights, Poincare distance, dual application.
+                    </p>
+                    <div class="tags">
+                        <span>Mathematics</span>
+                        <span>Hyperbolic</span>
+                        <span>Golden ratio</span>
+                    </div>
+                </a>
+                <a class="panel track-card" href="./compute-governor.html">
+                    <span class="card-kicker">Energy-aware compute</span>
+                    <h3>SCBE Sentinel Compute Governor</h3>
+                    <p>
+                        4-tier authorization (TINY/MEDIUM/FULL/DENY) cuts energy 64.8%, peak demand 67.7%.
+                        Validated on real Kaggle microgrid data. Maps to NIST, DoD, DOE, FERC standards.
+                    </p>
+                    <div class="tags">
+                        <span>Energy</span>
+                        <span>Compute</span>
+                        <span>DERMS</span>
+                        <span>Defense</span>
+                    </div>
+                </a>
+                <a class="panel track-card" href="./military-eval-scale.html">
+                    <span class="card-kicker">Security evaluation</span>
+                    <h3>17-point military-grade eval scale</h3>
+                    <p>
+                        Proprietary 17-level AI security framework. 20 attack categories mapped to MITRE ATLAS,
+                        OWASP LLM Top 10, NIST, DoD. SCBE at Level 8, borderline Level 10.
+                    </p>
+                    <div class="tags">
+                        <span>Benchmark</span>
+                        <span>MITRE</span>
+                        <span>OWASP</span>
+                        <span>Defense</span>
+                    </div>
+                </a>
+                <a class="panel track-card" href="./bft-governance-consensus.html">
+                    <span class="card-kicker">Consensus protocol</span>
+                    <h3>Byzantine fault tolerant AI governance</h3>
+                    <p>
+                        6 independent councils vote on every elevated action. Tolerates 1 compromised council.
+                        Fibonacci trust rewards consistent good behavior with higher thresholds.
+                    </p>
+                    <div class="tags">
+                        <span>BFT</span>
+                        <span>Consensus</span>
+                        <span>Multi-agent</span>
+                    </div>
+                </a>
+                <a class="panel track-card" href="./pqc-crypto-suite.html">
+                    <span class="card-kicker">Post-quantum cryptography</span>
+                    <h3>PQC crypto suite</h3>
+                    <p>
+                        ML-KEM-768, ML-DSA-65, AES-256-GCM, BLAKE2s. Plus GeoSeal (location-bound encryption),
+                        Sacred Eggs (controlled mutation), and RWP v3 quantum-resistant envelopes.
+                    </p>
+                    <div class="tags">
+                        <span>PQC</span>
+                        <span>ML-KEM</span>
+                        <span>GeoSeal</span>
+                        <span>NIST FIPS</span>
+                    </div>
+                </a>
+                <a class="panel track-card" href="./negative-tongue-lattice.html">
+                    <span class="card-kicker">Novel architecture</span>
+                    <h3>Negative tongue lattice</h3>
+                    <p>
+                        12D lazy sign-flip detection. Cross-tongue bridges weighted by golden ratio.
+                        Zero state: stores nothing, computes everything on demand. Modulates harmonic cost.
+                    </p>
+                    <div class="tags">
+                        <span>Architecture</span>
+                        <span>Detection</span>
+                        <span>Zero-state</span>
+                    </div>
+                </a>
             </div>
         </section>
 
-        <section id="math">
-            <div class="eyebrow">Math stack</div>
-            <h2>Public entry points into the harder material</h2>
+        <section id="grounded-assistant" aria-labelledby="assistant-title">
+            <div class="eyebrow">Grounded assistant</div>
+            <h2 id="assistant-title">Ask the research stack</h2>
             <p class="section-copy">
-                Link people from summaries into the real documents rather than trying to make the landing page carry the full weight.
+                This assistant searches the local SCBE docs, notes, and public skill-vault pages first. After retrieval,
+                it can stay in grounded-evidence mode or route the evidence packet into your Hugging Face model or local
+                AetherBot lane instead of answering from scratch.
+            </p>
+            <div class="assistant-shell">
+                <form id="assistant-form" class="panel assistant-form">
+                    <span class="card-kicker">Input packet</span>
+                    <label class="field" for="assistant-question">
+                        <span class="mini">Question</span>
+                        <textarea
+                            id="assistant-question"
+                            name="question"
+                            placeholder="Ask about benchmarks, architecture, skill-vault workflows, code structure, or math packets."
+                        >How does the benchmark board connect to the skill vault and the grounded chatbot plan?</textarea>
+                    </label>
+                    <div class="assistant-controls">
+                        <label class="field" for="assistant-mode">
+                            <span class="mini">Mode</span>
+                            <select id="assistant-mode" name="mode">
+                                <option value="fact-check">Fact-check</option>
+                                <option value="research">Research synthesis</option>
+                                <option value="skills">Skill vault</option>
+                                <option value="code">Code help</option>
+                                <option value="math">Math help</option>
+                                <option value="draft">Drafting</option>
+                            </select>
+                        </label>
+                        <label class="field" for="assistant-provider">
+                            <span class="mini">Provider</span>
+                            <select id="assistant-provider" name="provider">
+                                <option value="grounded">Grounded retrieval only</option>
+                                <option value="huggingface">Hugging Face model</option>
+                                <option value="local">Local AetherBot (Ollama)</option>
+                            </select>
+                        </label>
+                    </div>
+                    <p class="assistant-note">
+                        First slice only: local retrieval is wired now. Web search and autonomous website actions stay separate until
+                        the evidence path is reliable.
+                    </p>
+                    <div class="prompt-row" aria-label="Suggested prompts">
+                        <button
+                            class="prompt-chip"
+                            type="button"
+                            data-assistant-prompt="What does the current research page prove, and what is still exploratory?"
+                        >Public proof</button>
+                        <button
+                            class="prompt-chip"
+                            type="button"
+                            data-assistant-prompt="Which skill-vault surfaces can help a client with drafting, code, or math tasks?"
+                        >Skill vault tasks</button>
+                        <button
+                            class="prompt-chip"
+                            type="button"
+                            data-assistant-prompt="How should the website, notes, and training data connect into one feedback loop?"
+                        >System loop</button>
+                    </div>
+                    <div class="hero-actions">
+                        <button class="btn btn-primary" type="submit">Ask the assistant</button>
+                    </div>
+                </form>
+                <div class="panel assistant-output" aria-live="polite">
+                    <span class="card-kicker">Response packet</span>
+                    <div id="assistant-status" class="status-badges">
+                        <span class="status-badge">Idle</span>
+                        <span class="status-badge">Grounded corpus ready</span>
+                    </div>
+                    <div id="assistant-answer" class="answer-box assistant-empty">
+                        Ask a question to see a grounded answer, governance status, and the evidence packet that backed it.
+                    </div>
+                    <div id="assistant-sources" class="source-list" aria-label="Assistant sources"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="math-stack" aria-labelledby="math-title">
+            <div class="eyebrow">Math stack</div>
+            <h2 id="math-title">Entry points into the deeper math</h2>
+            <p class="section-copy">
+                These documents are for readers who want the mechanism layer rather than the public summary. Use them as the bridge into the harder material.
             </p>
             <div class="grid">
-                <a class="panel" href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/01-architecture/aetherbrain-phdm-mathematical-framework.md" target="_blank">
+                <a
+                    class="panel link-card"
+                    href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/01-architecture/aetherbrain-phdm-mathematical-framework.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <span class="card-kicker">Control shell</span>
                     <h3>AetherBrain / PHDM framework</h3>
                     <p>Two-layer intelligence model, deterministic control shell, and hyperbolic permission space.</p>
                     <div class="tags">
@@ -346,17 +1085,29 @@
                         <span>Control theory</span>
                     </div>
                 </a>
-                <a class="panel" href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/LANGUES_WEIGHTING_SYSTEM.md" target="_blank">
+                <a
+                    class="panel link-card"
+                    href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/LANGUES_WEIGHTING_SYSTEM.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <span class="card-kicker">Semantic weighting</span>
                     <h3>Langues weighting system</h3>
                     <p>The six sacred tongues, phi-weighting, and semantic decomposition.</p>
                     <div class="tags">
-                        <span>KO-DR</span>
+                        <span>Kor'aelin-Draumric</span>
                         <span>Phi</span>
                     </div>
                 </a>
-                <a class="panel" href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/SACRED_TONGUE_SPECTRAL_MAP.md" target="_blank">
+                <a
+                    class="panel link-card"
+                    href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/SACRED_TONGUE_SPECTRAL_MAP.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <span class="card-kicker">Signal bridge</span>
                     <h3>Spectral map</h3>
-                    <p>Good bridge document between symbolic language, signal view, and experimental output framing.</p>
+                    <p>Bridge document between symbolic language, signal interpretation, and experimental output framing.</p>
                     <div class="tags">
                         <span>Spectral</span>
                         <span>Signal model</span>
@@ -365,17 +1116,18 @@
             </div>
         </section>
 
-        <section id="skill-vault">
+        <section id="skill-vault" aria-labelledby="vault-title">
             <div class="eyebrow">Skill vault</div>
-            <h2>Sphere Grid skill map</h2>
+            <h2 id="vault-title">Sphere Grid skill map</h2>
             <p class="section-copy">
-                A 3D navigation surface for the Codex skill library. Click spheres to open the vault notes and then copy an invocation prompt
-                for local Llama (Ollama) or Hugging Face inference.
+                The Sphere Grid is the current public entry point into the Codex skill library. Open it to inspect the mapped skill clusters,
+                then follow the linked vault notes for invocation prompts and operating guidance.
             </p>
             <div class="grid">
-                <a class="panel" href="./sphere-grid.html">
+                <a class="panel track-card" href="./sphere-grid.html">
+                    <span class="card-kicker">Interactive map</span>
                     <h3>Open the Sphere Grid</h3>
-                    <p>Six tongues, four tiers each, mapped skills, and the exported <code>SKILL.md</code> playbooks.</p>
+                    <p>Six tongues, four tiers each, mapped skills, and exported <code>SKILL.md</code> playbooks.</p>
                     <div class="tags">
                         <span>3D map</span>
                         <span>Skills</span>
@@ -386,5 +1138,182 @@
             </div>
         </section>
     </main>
+
+    <footer class="footer">
+        <div class="footer-shell">
+            <div>
+                <div class="brand-mark">SCBE research surface</div>
+                <p class="footer-copy">
+                    Public benchmark summaries, architecture maps, and active experiment tracks for the SCBE governance stack.
+                    Use the website for orientation and the repo for audit depth.
+                </p>
+            </div>
+            <div class="footer-links" aria-label="Footer links">
+                <a href="../articles/index.html">Articles</a>
+                <a href="../demos/index.html">Demos</a>
+                <a href="#grounded-assistant">Assistant</a>
+                <a href="./website-system-loop.html">System Loop</a>
+                <a href="./eval-pack.html">Eval Pack</a>
+                <a href="./security-eval-lab.html">Eval Lab</a>
+                <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener noreferrer">YouTube</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        (() => {
+            const toggle = document.querySelector("[data-nav-toggle]");
+            const nav = document.getElementById("site-nav");
+            if (!toggle || !nav) {
+                return;
+            }
+
+            const closeMenu = () => {
+                nav.classList.remove("open");
+                toggle.setAttribute("aria-expanded", "false");
+            };
+
+            toggle.addEventListener("click", () => {
+                const next = toggle.getAttribute("aria-expanded") !== "true";
+                toggle.setAttribute("aria-expanded", String(next));
+                nav.classList.toggle("open", next);
+            });
+
+            nav.querySelectorAll("a").forEach((link) => {
+                link.addEventListener("click", () => {
+                    if (window.innerWidth <= 760) {
+                        closeMenu();
+                    }
+                });
+            });
+
+            window.addEventListener("resize", () => {
+                if (window.innerWidth > 760) {
+                    closeMenu();
+                }
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") {
+                    closeMenu();
+                }
+            });
+        })();
+
+        (() => {
+            const form = document.getElementById("assistant-form");
+            const question = document.getElementById("assistant-question");
+            const mode = document.getElementById("assistant-mode");
+            const provider = document.getElementById("assistant-provider");
+            const answer = document.getElementById("assistant-answer");
+            const sources = document.getElementById("assistant-sources");
+            const status = document.getElementById("assistant-status");
+            if (!form || !question || !mode || !provider || !answer || !sources || !status) {
+                return;
+            }
+
+            const apiBase = String(window.AETHER_API_BASE || "").replace(/\/$/, "");
+
+            const setBadges = (badges) => {
+                status.textContent = "";
+                badges.forEach((label) => {
+                    const chip = document.createElement("span");
+                    chip.className = "status-badge";
+                    chip.textContent = label;
+                    status.appendChild(chip);
+                });
+            };
+
+            const renderSources = (items) => {
+                sources.textContent = "";
+                if (!Array.isArray(items) || !items.length) {
+                    const empty = document.createElement("div");
+                    empty.className = "assistant-empty";
+                    empty.textContent = "No source packet returned.";
+                    sources.appendChild(empty);
+                    return;
+                }
+                items.forEach((item, index) => {
+                    const wrapper = document.createElement("article");
+                    wrapper.className = "source-item";
+
+                    const title = document.createElement("strong");
+                    title.textContent = `[S${index + 1}] ${item.title || item.path || "Source"}`;
+                    wrapper.appendChild(title);
+
+                    if (item.public_url) {
+                        const link = document.createElement("a");
+                        link.className = "source-path source-link";
+                        link.href = item.public_url;
+                        link.textContent = item.path || item.public_url;
+                        wrapper.appendChild(link);
+                    } else if (item.path) {
+                        const pathText = document.createElement("span");
+                        pathText.className = "source-path";
+                        pathText.textContent = item.path;
+                        wrapper.appendChild(pathText);
+                    }
+
+                    const excerpt = document.createElement("p");
+                    excerpt.textContent = item.excerpt || "No excerpt returned.";
+                    wrapper.appendChild(excerpt);
+                    sources.appendChild(wrapper);
+                });
+            };
+
+            document.querySelectorAll("[data-assistant-prompt]").forEach((button) => {
+                button.addEventListener("click", () => {
+                    question.value = button.getAttribute("data-assistant-prompt") || "";
+                    question.focus();
+                });
+            });
+
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                const payload = {
+                    question: question.value.trim(),
+                    mode: mode.value,
+                    provider: provider.value,
+                    max_sources: 6
+                };
+                if (!payload.question) {
+                    answer.textContent = "Enter a question first.";
+                    renderSources([]);
+                    setBadges(["Question required"]);
+                    return;
+                }
+
+                answer.textContent = "Searching local notes/docs and building the evidence packet...";
+                renderSources([]);
+                setBadges(["Working", payload.mode, payload.provider]);
+
+                try {
+                    const response = await fetch(`${apiBase}/api/fact-check`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await response.json();
+                    if (!response.ok || data.ok === false) {
+                        throw new Error(data.error || `Request failed with status ${response.status}`);
+                    }
+                    answer.textContent = data.answer || "No answer returned.";
+                    renderSources(data.sources || []);
+                    setBadges([
+                        `Provider: ${data.provider || payload.provider}`,
+                        `Decision: ${data.governance_decision || "unknown"}`,
+                        `Sources: ${data.source_count || 0}`
+                    ]);
+                } catch (error) {
+                    answer.textContent =
+                        `Assistant request failed: ${error.message}. ` +
+                        "If this page is being served as static-only HTML, point window.AETHER_API_BASE at the running AetherBrowser API host.";
+                    renderSources([]);
+                    setBadges(["API unavailable", payload.provider]);
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
