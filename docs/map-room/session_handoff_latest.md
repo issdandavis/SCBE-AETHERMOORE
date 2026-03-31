@@ -3,7 +3,7 @@ objective: Train Polly chatbot with binary-first orientation stack
 status: in_progress
 phase: 6 — training pipeline + architecture validation
 started: 2026-03-30T06:30:00-07:00
-updated: 2026-03-31T01:00:00-07:00
+updated: 2026-03-31T02:00:00-07:00
 ---
 
 ## Source Re-anchor
@@ -65,12 +65,18 @@ L3 expression:  ~150K+ (99.9%)  — everything else
 - Tongue binary analysis script: `scripts/tongue_binary_analysis.py`
 - GRAND TOTAL SFT: 123,929 pairs (sft/ directory) + 42K mega files (overlap)
 
-## Active: Training Pipeline
-- Merge training data for Kaggle/HuggingFace upload
-- Train Polly on Kaggle free GPU (Qwen2.5-3B + QLoRA)
-- Test pump packet at inference time
-- Verify Sacred Tongues encoding/decoding in trained model
-- Run adversarial detection with null-space signatures
+## Overnight Build Complete
+- 223,179 multi-view SFT pairs built and uploaded to HuggingFace
+- 1,000-bundle pump aquifer built and uploaded
+- 47 eval benchmark tasks generated
+- Kaggle comparison notebook ready (baseline vs stack-lite)
+- Interactive pump chat interface built and tested
+- 16 CodeQL high-severity security alerts fixed
+- CodeQL warnings/notes cleanup in progress
+- 48 tests passing (pump + Sacred Tongues + crypto)
+- All artifacts verified (0 parse errors)
+- HuggingFace dataset README updated with full documentation
+- 8 commits pushed to remote
 
 ## Next Actions
 1. **Merge + upload** training data to HuggingFace/Kaggle
