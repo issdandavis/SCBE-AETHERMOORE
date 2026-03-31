@@ -82,6 +82,11 @@ training/runs/
 training-data/sft_combined*.jsonl
 training-data/sft_*_regen*.jsonl
 training-data/mega_*.jsonl
+training-data/polly_training_merged.jsonl
+training-data/merged_sft.jsonl
+training-data/sft/consolidated*.jsonl
+training-data/sft/claude_*_sft.jsonl
+training-data/sft/consolidated_plus_claude_exports_sft/
 training/sft_records/sft_combined*
 training/notion_codebase_comparison.json
 
