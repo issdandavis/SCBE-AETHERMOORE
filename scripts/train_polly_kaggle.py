@@ -58,36 +58,63 @@ LORA_DROPOUT = 0.05
 # ============================================================
 print("Loading training data...")
 
-# On Kaggle, the dataset is at /kaggle/input/scbe-polly-training-data/
-data_path = Path("/kaggle/input/scbe-polly-training-data/polly_training_merged.jsonl")
-if not data_path.exists():
-    # Local fallback
-    data_path = Path("training-data/polly_training_merged.jsonl")
+# Try HuggingFace dataset first, then Kaggle input, then local fallback
+data_path = None
+try:
+    from datasets import load_dataset as _ld
+    hf_ds = _ld("issdandavis/scbe-aethermoore-training-data",
+                data_files="polly_training_merged.jsonl", split="train")
+    print(f"Loaded {len(hf_ds):,} rows from HuggingFace")
+    USE_HF_DIRECT = True
+except Exception:
+    USE_HF_DIRECT = False
+    data_path = Path("/kaggle/input/scbe-polly-training-data/polly_training_merged.jsonl")
+    if not data_path.exists():
+        data_path = Path("training-data/polly_training_merged.jsonl")
 
 records = []
-with open(data_path, encoding="utf-8", errors="replace") as f:
-    for line in f:
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            rec = json.loads(line)
-            msgs = rec.get("messages", [])
-            # Build chat template string
-            text_parts = []
-            for m in msgs:
-                role = m.get("role", "")
-                content = m.get("content", "")
+
+if USE_HF_DIRECT:
+    # Already loaded from HuggingFace
+    for row in hf_ds:
+        rec = json.loads(row["text"]) if isinstance(row.get("text"), str) else row
+        msgs = rec.get("messages", [])
+        text_parts = []
+        for m in msgs:
+            role = m.get("role", "")
+            content = m.get("content", "")
+            if role == "system":
+                text_parts.append(f"<|im_start|>system\n{content}<|im_end|>")
+            elif role == "user":
+                text_parts.append(f"<|im_start|>user\n{content}<|im_end|>")
+            elif role == "assistant":
+                text_parts.append(f"<|im_start|>assistant\n{content}<|im_end|>")
+        if text_parts:
+            records.append({"text": "\n".join(text_parts)})
+else:
+    with open(data_path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+                msgs = rec.get("messages", [])
+                # Build chat template string
+                text_parts = []
+                for m in msgs:
+                    role = m.get("role", "")
+                    content = m.get("content", "")
                 if role == "system":
                     text_parts.append(f"<|im_start|>system\n{content}<|im_end|>")
                 elif role == "user":
                     text_parts.append(f"<|im_start|>user\n{content}<|im_end|>")
                 elif role == "assistant":
                     text_parts.append(f"<|im_start|>assistant\n{content}<|im_end|>")
-            if text_parts:
-                records.append({"text": "\n".join(text_parts)})
-        except:
-            continue
+                if text_parts:
+                    records.append({"text": "\n".join(text_parts)})
+            except:
+                continue
 
 print(f"Loaded {len(records):,} training records")
 dataset = Dataset.from_list(records)

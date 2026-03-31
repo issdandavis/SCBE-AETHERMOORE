@@ -280,5 +280,14 @@ All training data is derived from:
 - **Notion Workspace** -- Research notes, context rooms, and AI coordination
 
 **Author**: Issac Davis
+**ORCID**: [0009-0002-3936-9369](https://orcid.org/0009-0002-3936-9369)
 **Repository**: [github.com/issdandavis/SCBE-AETHERMOORE](https://github.com/issdandavis/SCBE-AETHERMOORE)
-**Date**: February 2026
+**HuggingFace**: [issdandavis](https://huggingface.co/issdandavis)
+**Date**: February–March 2026
+
+### Original Intellectual Property
+
+The **Six Sacred Tongues** conlang system (Kor'aelin, Avali, Runethic, Cassisivadan, Umbroth, Draumric)
+with 256 tokens per language and phi-weighted scaling was created by Issac Davis. These languages
+originated in Everweave RPG sessions and were subsequently formalized into the SCBE tokenizer system.
+The name "Cassisivadan" encodes the author's identity (Cassi = Issac reversed, Sivad = Davis reversed).
