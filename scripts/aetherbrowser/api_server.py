@@ -195,6 +195,10 @@ _SECRET_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"(?i)\b(api[_-]?key|token|secret|password)\b\s*[:=]\s*([^\s\"']{8,})"),
     # Common prefix-style keys
     re.compile(r"\bsk-[A-Za-z0-9]{16,}\b"),
+    # Hugging Face tokens
+    re.compile(r"\bhf_[A-Za-z0-9]{10,}\b"),
+    # Bearer tokens
+    re.compile(r"Bearer\s+[A-Za-z0-9._-]{20,}"),
     # Long opaque tokens (avoid grabbing normal code identifiers by requiring mixed charset + length)
     re.compile(r"\b[A-Za-z0-9_-]{40,}\b"),
 ]
@@ -1158,8 +1162,8 @@ async def vault_search(q: str = Query(..., description="Search query")):
             query_lower = q.lower()
             for md_file in vault_path.rglob("*.md"):
                 try:
-                    resolved_file = md_file.resolve(strict=False)
-                    if not _is_path_within(resolved_file, vault_path):
+                    resolved_file = md_file.resolve()
+                    if md_file.is_symlink() or not _is_path_within(resolved_file, vault_path):
                         logger.warning("Skipping vault search file outside allowed root: %s", md_file)
                         continue
                     content = md_file.read_text(encoding="utf-8", errors="ignore")
@@ -1900,7 +1904,8 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
                 "result": out,
             }
         except Exception:
-            logger.exception("CLI job failed for command: %s", raw[:40] + "..." if len(raw) > 40 else raw)
+            safe_cmd = (raw[:40] + "..." if len(raw) > 40 else raw).replace("\n", " ").replace("\r", " ")
+            logger.exception("CLI job failed for command: %s", safe_cmd)
             _append_jsonl(
                 IDE_CLI_LOG,
                 {

@@ -246,7 +246,7 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
             if clearnet and clearnet != "none" and clearnet != "none (onion-only)":
                 # Fetch clearnet version through Tor for anonymity
                 url = f"https://{clearnet}"
-                logger.debug("Fetching %s via %s", site["name"], url)
+                logger.debug("Fetching %s via Tor", site["name"])
                 print(f"    Fetching {site['name']}...", end=" ")
                 result = sandboxed_fetch(url)
                 result["site_name"] = site["name"]
