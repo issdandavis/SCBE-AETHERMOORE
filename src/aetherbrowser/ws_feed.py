@@ -95,6 +95,16 @@ class WsFeed:
             payload={"current": current, "total": total, "label": label},
         )
 
+    def topology(
+        self,
+        agent: Agent,
+        payload: dict[str, Any],
+        *,
+        model: str | None = None,
+        zone: str | None = None,
+    ) -> dict:
+        return self._base(MsgType.TOPOLOGY, agent, model=model, zone=zone, payload=payload)
+
     def error(self, reason: str, agent: Agent = Agent.SYSTEM) -> dict:
         return self._base(MsgType.ERROR, agent, payload={"reason": reason})
 

@@ -120,9 +120,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--scbe-coords",
         type=str,
-        default=os.environ.get("SCBE_COORDS_BACKEND", "stats"),
+        default=os.environ.get("SCBE_COORDS_BACKEND", "semantic"),
         choices=["stats", "semantic", "auto"],
-        help="SCBE RuntimeGate tongue-coordinate extractor backend (stats|semantic|auto)",
+        help="SCBE RuntimeGate tongue-coordinate extractor backend (default: semantic)",
     )
     parser.add_argument(
         "--verbose",

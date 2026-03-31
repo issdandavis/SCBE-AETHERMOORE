@@ -47,7 +47,7 @@ def _load_module(relative_path: str, module_name: str, extra_paths: list[Path] |
         # Restore original governance module if we cleared it
         for k, v in saved_mods.items():
             sys.modules.pop(k, None)  # remove spiral-word-app's governance
-            sys.modules[k] = v        # restore src/governance
+            sys.modules[k] = v  # restore src/governance
 
 
 playwriter_lane_runner = _load_module(
@@ -113,6 +113,7 @@ def test_spiralword_public_ai_errors_are_generic() -> None:
     # Clear any cached governance module so the spiral-word-app version is found.
     sys.modules.pop("governance", None)
     try:
+
         def boom_provider(prompt: str, options: dict | None = None) -> str:
             raise RuntimeError("secret trace path")
 

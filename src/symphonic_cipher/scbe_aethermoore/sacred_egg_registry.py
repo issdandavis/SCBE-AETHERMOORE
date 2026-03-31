@@ -27,7 +27,7 @@ import sqlite3
 import time
 from typing import List, Optional
 
-from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
+from .sacred_egg_integrator import (
     SacredEgg,
     DEFAULT_EGG_SELF_TAG,
     self_detect_shape,

@@ -18,11 +18,14 @@ import argparse
 import datetime
 import hashlib
 import json
+import logging
 import os
 import re
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
@@ -78,9 +81,9 @@ def search_channel_videos(channel_name: str, max_results: int = 5, handle: str |
                         videos.append({"id": parts[0], "title": parts[1]})
             return videos[:max_results]
     except FileNotFoundError:
-        pass
+        logger.debug("yt-dlp not found, falling back to manual list")
     except Exception:
-        pass
+        logger.debug("yt-dlp search failed", exc_info=True)
 
     # Manual fallback: use known video IDs if yt-dlp not available
     return []

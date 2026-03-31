@@ -27,11 +27,14 @@ import argparse
 import datetime
 import hashlib
 import json
+import logging
 import os
 import sys
 import time
 from pathlib import Path
 from typing import Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
@@ -73,7 +76,7 @@ def check_tor() -> dict:
         )
         result["tor_running"] = "tor" in out.stdout.lower()
     except Exception:
-        pass
+        logger.debug("Tor process check failed", exc_info=True)
 
     # Check SOCKS proxy
     try:
@@ -224,8 +227,10 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
 
         return results
 
-    print(f"  Tor: CONNECTED (exit IP: {tor_status.get('exit_ip', '?')})")
-    print(f"  Double-sandbox: Tor SOCKS5 + Governance Gate")
+    logger.info("Tor: CONNECTED (exit IP redacted)")
+    logger.debug("Tor exit IP: %s", tor_status.get("exit_ip", "?"))
+    print("  Tor: CONNECTED")
+    print("  Double-sandbox: Tor SOCKS5 + Governance Gate")
     print()
 
     for tier_name, tier_data in registry.get("tiers", {}).items():
@@ -241,7 +246,8 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
             if clearnet and clearnet != "none" and clearnet != "none (onion-only)":
                 # Fetch clearnet version through Tor for anonymity
                 url = f"https://{clearnet}"
-                print(f"    Fetching {site['name']} via {url}...", end=" ")
+                logger.debug("Fetching %s via %s", site["name"], url)
+                print(f"    Fetching {site['name']}...", end=" ")
                 result = sandboxed_fetch(url)
                 result["site_name"] = site["name"]
                 result["tier"] = tier_name

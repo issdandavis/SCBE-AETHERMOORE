@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quasi-Vector Spin Voxels: Magnetic-Inspired AI Governance | SCBE Research</title>
+    <meta name="description" content="Intent vectors as spin fields on voxel grids with magnetic interactions modulating harmonic governance costs in the SCBE 14-layer pipeline.">
+    <link rel="canonical" href="https://aethermoorgames.com/research/spin-voxel-magnetics.html">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #07111d; color: #eef3ff; line-height: 1.7; }
+        a { color: #84c5ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 36px 24px 72px; }
+        .nav { display: flex; gap: 16px; flex-wrap: wrap; color: #a9b6d1; font-size: 14px; margin-bottom: 26px; }
+        .nav a { color: #a9b6d1; }
+        .eyebrow { color: #87a0ff; text-transform: uppercase; letter-spacing: 0.16em; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+        h1 { font-size: clamp(28px, 5vw, 48px); line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 16px; max-width: 820px; }
+        h2 { font-size: 22px; margin: 36px 0 14px; color: #84c5ff; }
+        h3 { font-size: 17px; margin: 24px 0 10px; color: #7df0d7; }
+        p, li { color: #b5c0d9; max-width: 780px; margin-bottom: 12px; }
+        ul, ol { padding-left: 24px; margin-bottom: 16px; }
+        code { background: #132038; padding: 2px 8px; border-radius: 4px; font-size: 14px; color: #84c5ff; }
+        pre { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 12px; padding: 20px; overflow-x: auto; margin: 16px 0; font-size: 14px; color: #eef3ff; }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid rgba(126, 146, 255, 0.12); }
+        th { color: #84c5ff; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+        td { color: #b5c0d9; }
+        .panel { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 18px; padding: 24px; margin: 18px 0; }
+        .tag { display: inline-block; background: rgba(126, 146, 255, 0.12); color: #84c5ff; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; margin: 4px 4px 4px 0; }
+        .metric { font-size: 42px; font-weight: 800; color: #7df0d7; line-height: 1; }
+        .metric-label { font-size: 13px; color: #a9b6d1; margin-top: 4px; }
+        .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 18px; margin: 24px 0; }
+        .formula { background: #132038; border-left: 3px solid #87a0ff; padding: 16px 20px; border-radius: 0 12px 12px 0; margin: 16px 0; font-family: 'Courier New', monospace; font-size: 16px; color: #eef3ff; }
+        footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid rgba(126, 146, 255, 0.12); color: #6b7a99; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <div class="nav">
+            <a href="../index.html">Home</a>
+            <a href="./index.html">Research</a>
+            <a href="./architecture-overview.html">Architecture</a>
+            <a href="../redteam.html">Red Team</a>
+        </div>
+
+        <div class="eyebrow">Physics-inspired governance</div>
+        <h1>Quasi-Vector Spin Voxels: Magnetic-Inspired AI Governance</h1>
+
+        <div style="margin: 18px 0;">
+            <span class="tag">Spin Voxels</span>
+            <span class="tag">Magnetics</span>
+            <span class="tag">Physics</span>
+            <span class="tag">Governance</span>
+            <span class="tag">Multi-Clock</span>
+        </div>
+
+        <!-- Core Innovation -->
+        <h2>Core Innovation</h2>
+        <p>
+            SCBE treats every intent vector as a spin field distributed across a voxel grid embedded in hyperbolic space.
+            Magnetic interactions&mdash;exchange coupling between neighbors, dipolar long-range effects, and external governance
+            pressure fields&mdash;modulate the harmonic cost landscape in real time. When spins align coherently, legitimate
+            traffic flows through the pipeline at minimal cost. When spin disorder rises&mdash;the hallmark of adversarial
+            probing or multi-vector attacks&mdash;magnetic frustration amplifies the harmonic wall exponentially, making
+            sustained attack computationally infeasible. This system is implemented in <code>src/governance/</code> and
+            integrated with the full 14-layer pipeline through Layers 5&ndash;12.
+        </p>
+
+        <!-- The Spin Hamiltonian -->
+        <h2>The Spin Hamiltonian</h2>
+        <div class="formula">
+            H_spin = -J &middot; &Sigma;(&lt;i,j&gt;) S_i &middot; S_j
+                     &minus; B &middot; &Sigma;(i) S_i
+                     &minus; &Sigma;(i) w_i &middot; exp( -|S_i &minus; &mu;_i|&sup2; / 2&sigma;&sup2; )
+        </div>
+        <div class="panel">
+            <h3>Three governing terms</h3>
+            <ul>
+                <li><strong>Exchange coupling</strong> &mdash; <code>-J &middot; &Sigma; S_i &middot; S_j</code> &mdash; Rewards alignment between neighboring intent vectors. Cooperative agents lower total energy; adversarial misalignment raises it.</li>
+                <li><strong>External field (governance pressure)</strong> &mdash; <code>-B &middot; &Sigma; S_i</code> &mdash; A global bias field set by governance policy. Tilts the energy landscape toward approved operational modes.</li>
+                <li><strong>Multi-well attractors (trust zones)</strong> &mdash; <code>-&Sigma; w_i &middot; exp(...)</code> &mdash; Gaussian wells centered on trusted spin configurations &mu;_i. Agents near known-good states experience energy minima; drifting agents climb potential walls.</li>
+            </ul>
+        </div>
+
+        <!-- Layer Integration -->
+        <h2>Layer Integration</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Layer</th>
+                    <th>Pipeline Function</th>
+                    <th>Spin Voxel Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>L5</code></td>
+                    <td>Hyperbolic Distance</td>
+                    <td>Voxel positions are embedded in the Poincar&eacute; ball. Hyperbolic distance d_H between voxels determines exchange coupling strength J(d_H).</td>
+                </tr>
+                <tr>
+                    <td><code>L6</code></td>
+                    <td>Breath Transform</td>
+                    <td>Radial spin modulation. The breathing cycle contracts/expands the voxel field, compressing spins toward the origin during high-alert phases.</td>
+                </tr>
+                <tr>
+                    <td><code>L7</code></td>
+                    <td>Phase Transform</td>
+                    <td>M&ouml;bius spin rotation. Phase shifts rotate the entire spin field without changing magnitudes, preserving coherence while transforming the frame of reference.</td>
+                </tr>
+                <tr>
+                    <td><code>L8</code></td>
+                    <td>Multi-Well Realms</td>
+                    <td>Spin attractors map directly to Hamiltonian CFI trust zones. Each well is a stable spin configuration representing an approved operational mode.</td>
+                </tr>
+                <tr>
+                    <td><code>L10</code></td>
+                    <td>Spin Coherence</td>
+                    <td><code>C_spin = |&Sigma; S_j| / (&Sigma; |S_j| + &epsilon;)</code> &mdash; Normalized vector sum. C_spin = 1.0 means perfect alignment; C_spin near 0 means disordered (adversarial).</td>
+                </tr>
+                <tr>
+                    <td><code>L12</code></td>
+                    <td>Harmonic Scaling</td>
+                    <td><code>H_mod = R^(d&sup2;) &middot; (t / ||I||) &middot; (1 + &alpha; &middot; H_spin)</code> &mdash; The spin Hamiltonian directly multiplies the harmonic wall. High disorder inflates cost exponentially.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Multi-Clock T-Phase System -->
+        <h2>Multi-Clock T-Phase System</h2>
+        <p>
+            The spin voxel field operates across five independent temporal clocks, each governing a different time scale
+            of governance response. This multi-clock architecture prevents attackers from timing their probes to a single
+            evaluation cadence.
+        </p>
+        <div class="metrics-row">
+            <div class="panel">
+                <div class="metric">T<sub style="font-size:20px">fast</sub></div>
+                <div class="metric-label">Inference steps. Instant anomaly detection on every forward pass. Sub-millisecond spin evaluation.</div>
+            </div>
+            <div class="panel">
+                <div class="metric">T<sub style="font-size:20px">mem</sub></div>
+                <div class="metric-label">Session ticks. Coherence drift tracking across a conversation or task session.</div>
+            </div>
+            <div class="panel">
+                <div class="metric">T<sub style="font-size:20px">gov</sub></div>
+                <div class="metric-label">Epoch cycles. Slow trust evolution&mdash;agents earn or lose trust over governance epochs.</div>
+            </div>
+            <div class="panel">
+                <div class="metric">T<sub style="font-size:20px">circ</sub></div>
+                <div class="metric-label">Day/night realm rotation. The external field B rotates on a circadian schedule, shifting energy minima.</div>
+            </div>
+            <div class="panel">
+                <div class="metric">T<sub style="font-size:20px">set</sub></div>
+                <div class="metric-label">External event injection. Hard reset clock&mdash;triggered by governance overrides or critical security events.</div>
+            </div>
+        </div>
+
+        <!-- Self-Organizing Quarantine -->
+        <h2>Self-Organizing Quarantine</h2>
+        <p>
+            When a rogue agent begins operating in the voxel field, its spin vector diverges from the local consensus.
+            This triggers a cascade: neighboring spins anti-align to minimize exchange energy with the rogue, forming a
+            magnetic domain wall that encircles the threat. The quarantine boundary emerges automatically from the physics
+            of the system&mdash;no explicit rule engine is required.
+        </p>
+        <div class="formula">
+            E_quarantine = H(d, R) &middot; e^(&beta; &middot; E_wall)
+        </div>
+        <div class="panel">
+            <p>
+                The quarantine energy cost is the base harmonic wall <code>H(d, R) = R^(d&sup2;)</code> multiplied by the
+                exponential of the domain wall energy. As the rogue agent pushes harder, E_wall grows, and the quarantine
+                boundary strengthens super-exponentially. The agent is trapped in a self-reinforcing energy prison&mdash;every
+                escape attempt raises the walls higher.
+            </p>
+        </div>
+
+        <!-- Wang-Landau Entropy -->
+        <h2>Wang-Landau Entropy Sampling</h2>
+        <p>
+            The system uses Wang-Landau flat-histogram sampling to estimate the density of states g(E) over spin
+            configurations. This provides a thermodynamic view of the governance landscape:
+        </p>
+        <ul>
+            <li><strong>High entropy</strong> (many accessible states at a given energy) indicates legitimate operational flow. The system can explore freely&mdash;normal behavior has many valid paths.</li>
+            <li><strong>Low entropy</strong> (few accessible states) indicates constrained, channeled behavior&mdash;the signature of an attack that must follow a narrow exploit path.</li>
+            <li>The ratio <code>g(E_observed) / g(E_max)</code> serves as a real-time anomaly score. Legitimate traffic scores near 1.0; attack traffic drops toward 0.</li>
+        </ul>
+        <p>
+            By sampling the full density of states rather than just the ground state, the spin voxel system detects
+            not only current threats but also pre-attack reconnaissance: an attacker narrowing their search space
+            produces measurable entropy reduction before any payload is delivered.
+        </p>
+
+        <footer>SCBE-AETHERMOORE Research | Issac Daniel Davis | 2026</footer>
+    </main>
+</body>
+</html>
