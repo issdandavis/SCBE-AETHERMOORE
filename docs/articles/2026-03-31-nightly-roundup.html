@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nightly Roundup (March 31, 2026) | SCBE-AETHERMOORE</title>
+  <meta name="description" content="Nightly SCBE roundup covering the compiler, genesis seed, benchmark scaffolds, security cleanup, and the article/posting lane prepared from local repo evidence." />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:title" content="Nightly Roundup (March 31, 2026)" />
+  <meta property="og:description" content="A repo-backed nightly roundup: compiler, genesis seed, benchmark scaffolds, security cleanup, and the next publish lane." />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://aethermoorgames.com/articles/2026-03-31-nightly-roundup.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Nightly Roundup (March 31, 2026)" />
+  <meta name="twitter:description" content="Repo-backed overnight update for SCBE-AETHERMOORE: what changed, what was verified, and what ships next." />
+  <link rel="canonical" href="https://aethermoorgames.com/articles/2026-03-31-nightly-roundup.html" />
+  <link rel="stylesheet" href="../static/polly-sidebar.css" />
+  <style>
+    :root { --bg:#071019; --panel:rgba(12,20,31,0.92); --line:rgba(128,194,255,0.16); --text:#edf5ff; --muted:#a9b9cb; --ice:#80c2ff; --mint:#8cf0d1; --gold:#ffd27a; --max:980px; --shadow:0 28px 70px rgba(0,0,0,0.34); }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Georgia, "Times New Roman", serif; color: var(--text); background: radial-gradient(circle at top left, rgba(128,194,255,0.14), transparent 30%), radial-gradient(circle at 78% 18%, rgba(140,240,209,0.10), transparent 28%), radial-gradient(circle at 70% 88%, rgba(255,210,122,0.08), transparent 36%), linear-gradient(180deg, #050b12 0%, #09121d 52%, #050b12 100%); }
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(var(--max), calc(100% - 32px)); margin: 0 auto; }
+    .topbar { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(16px); background: rgba(5, 11, 18, 0.82); border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .topbar-inner { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .brand-kicker, .eyebrow, .mini { text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px; color: var(--ice); }
+    .brand strong { display: block; font-size: 18px; letter-spacing: -0.03em; }
+    .nav { display: flex; flex-wrap: wrap; gap: 10px; }
+    .nav a { color: var(--muted); padding: 10px 14px; border-radius: 999px; border: 1px solid transparent; }
+    .nav a:hover { color: var(--text); border-color: var(--line); background: rgba(255,255,255,0.03); }
+    .hero { padding: 58px 0 18px; }
+    .hero-card, .panel { border-radius: 24px; border: 1px solid var(--line); background: linear-gradient(180deg, rgba(12,20,31,0.94), rgba(8,14,23,0.96)); box-shadow: var(--shadow); }
+    .hero-card { padding: 32px; }
+    h1, h2, h3 { margin: 0; letter-spacing: -0.04em; }
+    h1 { font-size: clamp(40px, 5.6vw, 64px); line-height: 0.96; }
+    h2 { font-size: 26px; margin-bottom: 10px; }
+    h3 { font-size: 18px; }
+    .lede, p, li { color: var(--muted); line-height: 1.8; }
+    .lede { margin-top: 18px; font-size: 18px; max-width: 74ch; }
+    .meta { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 14px; }
+    .meta span::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 8px; border-radius: 50%; background: var(--gold); vertical-align: middle; }
+    main { padding: 18px 0 60px; }
+    section { margin-top: 18px; }
+    .panel { padding: 26px; }
+    ul { margin: 12px 0; padding-left: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 14px; }
+    .tile { border-radius: 18px; border: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.03); padding: 16px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .tags span { border-radius: 999px; padding: 5px 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); font-size: 12px; color: #d6e7fb; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 16px; border-radius: 999px; font-weight: 700; }
+    .btn-primary { background: linear-gradient(135deg, var(--ice), var(--mint)); color: #061017; }
+    .btn-secondary { background: rgba(255,255,255,0.03); border: 1px solid var(--line); color: var(--text); }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    pre { overflow: auto; background: rgba(0,0,0,0.26); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 14px; }
+    footer { padding: 34px 0 70px; color: var(--muted); }
+  </style>
+</head>
+<body data-polly-context="articles" data-polly-root="..">
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <div class="brand-kicker">SCBE nightly round</div>
+        <strong>Nightly roundup</strong>
+      </div>
+      <nav class="nav">
+        <a href="../index.html">Home</a>
+        <a href="index.html">Articles</a>
+        <a href="../research/index.html">Research</a>
+        <a href="../demos/index.html">Demos</a>
+        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <article class="hero-card">
+        <div class="eyebrow">Repo-backed overnight packet</div>
+        <h1>Nightly roundup for March 31, 2026</h1>
+        <p class="lede">This nightly packet compresses the last local build cycle into one public page: compiler work, identity-seed scaffolding, benchmark staging, security cleanup, and the article/social publish lane prepared from repo evidence instead of loose memory.</p>
+        <div class="meta">
+          <span>Updated: 2026-03-31</span>
+          <span>Evidence-first</span>
+          <span>Website + GitHub + social staging</span>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/content/articles/2026-03-31-system-update.md" target="_blank" rel="noopener">Open source markdown</a>
+          <a class="btn btn-secondary" href="../research/index.html">Open research hub</a>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>What shipped into the repo lane</h2>
+      <div class="grid">
+        <div class="tile">
+          <div class="mini">Pump stack</div>
+          <h3>Canonical event compiler</h3>
+          <p>The compiler normalizes one record into synchronized views: bytes, tongue tokens, pump packet, and natural text. That gives the training lane a real pre-training shell instead of prose-only wrappers.</p>
+          <div class="tags"><span>compiler</span><span>multi-view</span><span>training shell</span></div>
+        </div>
+        <div class="tile">
+          <div class="mini">Identity seed</div>
+          <h3>Genesis rows for Polly</h3>
+          <p>The overnight lane added an explicit genesis seed so identity and lineage can be established before ordinary instruction data. This is the difference between a generic assistant and a bounded in-world operator.</p>
+          <div class="tags"><span>genesis</span><span>identity</span><span>seed packet</span></div>
+        </div>
+        <div class="tile">
+          <div class="mini">Governance</div>
+          <h3>Security and code-quality pass</h3>
+          <p>The code-scanning cleanup lane landed first so the repo could stabilize before more publishing or benchmark claims were added. The point was not new theory. It was reducing obvious breakage and tightening boundaries.</p>
+          <div class="tags"><span>CodeQL</span><span>hygiene</span><span>claim discipline</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>What was verified locally</h2>
+      <ul>
+        <li>The daily system update source files were generated under <code>content/articles/</code> for GitHub, X, and LinkedIn.</li>
+        <li>The benchmark scaffold still runs in dry-run mode through <code>scripts/eval_polly_stack.py --dry-run</code>, producing a concrete task file instead of a vague future claim.</li>
+        <li>The training vault count remains grounded in the local multiview corpus: <code>223,179</code> total rows with visible L0-L3 distribution.</li>
+        <li>The site article hub and publish lane now have a dedicated nightly-roundup surface instead of burying the update in raw markdown only.</li>
+      </ul>
+      <pre><code>content/articles/2026-03-31-system-update.md
+content/articles/x_thread_system_update_2026_03_31.md
+content/articles/linkedin_system_update_2026_03_31.md</code></pre>
+    </section>
+
+    <section class="panel">
+      <h2>Why this nightly pass matters</h2>
+      <p>SCBE gets weaker when everything blurs together: code, lore, claims, research, sales, and ops all jammed into one surface. A nightly roundup is the opposite move. It takes one build cycle and turns it into a bounded packet that can route cleanly to the right audience.</p>
+      <div class="grid">
+        <div class="tile">
+          <h3>For buyers</h3>
+          <p>It shows forward motion without forcing them to read the full repo.</p>
+        </div>
+        <div class="tile">
+          <h3>For researchers</h3>
+          <p>It points back to source markdown and benchmark surfaces instead of hiding the evidence chain.</p>
+        </div>
+        <div class="tile">
+          <h3>For the team</h3>
+          <p>It gives one stable packet that can be reused for GitHub, Hugging Face discussions, X threads, LinkedIn posts, and future article campaigns.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Next route</h2>
+      <p>The immediate follow-up is mechanical, not mystical:</p>
+      <ul>
+        <li>keep the article hub current,</li>
+        <li>run social/GitHub posting in dry-run first,</li>
+        <li>only claim live publication when there is evidence output or a URL,</li>
+        <li>keep benchmark language tied to the exact harness that produced it.</li>
+      </ul>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="index.html">Back to article hub</a>
+        <a class="btn btn-secondary" href="../network.html">Open network map</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">Nightly roundup page for SCBE-AETHERMOORE. Public packet only: shipping state, verified scaffolds, and the next publish lane.</footer>
+  <script src="../static/polly-sidebar.js"></script>
+</body>
+</html>
