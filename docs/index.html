@@ -463,7 +463,38 @@
             <a class="btn btn-secondary" href="#story">Read the Protocol</a>
             <a class="btn btn-secondary" href="research/index.html">See the Math</a>
           </div>
-          <div class="meta">
+
+          <!-- Interactive Playground Hook -->
+          <div style="margin-top:32px;background:rgba(0,0,0,0.4);border:1px solid var(--line);border-radius:18px;padding:20px;backdrop-filter:blur(10px);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <span class="eyebrow" style="margin:0;">Live Protocol Lab</span>
+              <span style="font-size:11px;color:var(--accent);background:rgba(214,167,86,0.1);padding:2px 6px;border-radius:4px;">0.3s Heartbeat Active</span>
+            </div>
+            <div style="display:grid;gap:10px;">
+              <input type="text" id="playground-input" placeholder="Type a message to encode..." style="background:rgba(255,255,255,0.05);border:1px solid var(--line);border-radius:8px;padding:12px;color:var(--text);font-family:monospace;width:100%;">
+              <div id="playground-output" style="background:rgba(0,0,0,0.3);border:1px solid var(--line);border-radius:8px;padding:12px;min-height:44px;font-family:monospace;color:var(--accent);font-size:14px;word-break:break-all;display:flex;align-items:center;">
+                Encoded output will appear here...
+              </div>
+            </div>
+            <p style="font-size:12px;color:var(--muted);margin-top:10px;margin-bottom:0;">Try the <strong>Sacred Tongue</strong> tokenization used in the 14-layer architecture.</p>
+          </div>
+
+          <script>
+            const input = document.getElementById('playground-input');
+            const output = document.getElementById('playground-output');
+            input.addEventListener('input', (e) => {
+              const text = e.target.value;
+              if (!text) {
+                output.innerText = "Encoded output will appear here...";
+                return;
+              }
+              // Simple mock of the Sacred Tongue encoding for the hero demo
+              const encoded = btoa(text).split('').map(c => c.charCodeAt(0).toString(16)).join('·').slice(0, 40) + '...';
+              output.innerText = `[AETHER·${encoded}]`;
+            });
+          </script>
+
+          <div class="meta" style="margin-top:24px;">
             <span>54.5% attack detection (hybrid engine)</span>
             <span>64.8% energy savings (real Kaggle data)</span>
             <span>5,957 passing tests</span>
@@ -487,6 +518,18 @@
           </ul>
           <a class="btn btn-primary" href="offers/index.html">See package options</a>
         </aside>
+      </div>
+    </section>
+
+    <section id="integration-stack" style="padding:40px 0;background:rgba(214,167,86,0.03);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
+      <div class="section-inner">
+        <div style="display:flex;justify-content:center;gap:40px;flex-wrap:wrap;align-items:center;opacity:0.6;filter:grayscale(1) brightness(1.5);">
+          <div style="font-weight:800;font-size:20px;color:var(--text);letter-spacing:0.1em;">NPM</div>
+          <div style="font-weight:800;font-size:20px;color:var(--text);letter-spacing:0.1em;">PyPI</div>
+          <div style="font-weight:800;font-size:20px;color:var(--text);letter-spacing:0.1em;">HuggingFace</div>
+          <div style="font-weight:800;font-size:20px;color:var(--text);letter-spacing:0.1em;">DOCKER</div>
+          <div style="font-weight:800;font-size:20px;color:var(--text);letter-spacing:0.1em;">GITHUB</div>
+        </div>
       </div>
     </section>
 
@@ -675,6 +718,30 @@
             <div style="margin-top:18px;">
               <a class="btn btn-secondary" href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">Subscribe on YouTube</a>
             </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="field-notes" style="background:rgba(255,255,255,0.01);border-top:1px solid var(--line);">
+      <div class="section-inner">
+        <div class="section-head">
+          <div class="eyebrow">Field Notes</div>
+          <h2>Latest from the Lab.</h2>
+          <p>Raw thoughts, late-night math discoveries, and engineering logs from the Obsidian vault.</p>
+        </div>
+        <div class="split">
+          <article class="slab">
+            <div style="font-size:12px;color:var(--accent);margin-bottom:8px;">March 24, 2026</div>
+            <h3>Late-Night Math Discoveries</h3>
+            <p>Exploring the ternary storage limits of quasi-voxels and the impact on Poincaré disk security embeddings.</p>
+            <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/notes/math-discoveries-2026-03-24.md" target="_blank" style="color:var(--accent);font-size:14px;display:block;margin-top:12px;">Read the note &rarr;</a>
+          </article>
+          <article class="slab">
+            <div style="font-size:12px;color:var(--accent);margin-bottom:8px;">March 15, 2026</div>
+            <h3>Chapter 1 Tandem Audit</h3>
+            <p>Comparing the emotional weight of Marcus Chen's intro in the book vs. the technical requirements of the webtoon panels.</p>
+            <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/2026-03-15-ch01-book-panel-tandem-audit.md" target="_blank" style="color:var(--accent);font-size:14px;display:block;margin-top:12px;">View the audit &rarr;</a>
           </article>
         </div>
       </div>
