@@ -19,6 +19,7 @@ Components:
 from .packet import PumpPacket, sense
 from .retriever import BundleRetriever, RetrievedBundle
 from .stabilizer import stabilize
+from .compiler import CompiledEvent, compile_event, compile_messages, compile_batch
 
 __all__ = [
     "PumpPacket",
@@ -26,4 +27,8 @@ __all__ = [
     "BundleRetriever",
     "RetrievedBundle",
     "stabilize",
+    "CompiledEvent",
+    "compile_event",
+    "compile_messages",
+    "compile_batch",
 ]
