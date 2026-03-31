@@ -11,7 +11,19 @@ export default defineConfig({
   esbuild: {
     // Ensure proper ESM/CJS handling
     format: 'esm',
+    // Strip shebangs from .mjs files in external/ submodules
+    banner: '',
   },
+  plugins: [
+    {
+      name: 'strip-shebang',
+      transform(code: string, id: string) {
+        if (id.endsWith('.mjs') && code.startsWith('#!')) {
+          return { code: code.replace(/^#![^\n]*\n/, '\n'), map: null };
+        }
+      },
+    },
+  ],
   test: {
     globals: true,
     environment: 'node',

@@ -56,12 +56,12 @@ select { cursor: pointer; }
     <div>
       <label>Tongue</label>
       <select id="tongue">
-        <option value="KO" selected>KO (Kor'aelin) — Intent</option>
-        <option value="AV">AV (Avali) — Transport</option>
-        <option value="RU">RU (Runethic) — Policy</option>
-        <option value="CA">CA (Cassisivadan) — Compute</option>
-        <option value="UM">UM (Umbroth) — Security</option>
-        <option value="DR">DR (Draumric) — Schema</option>
+        <option value="KO" selected>Kor'aelin — Intent</option>
+        <option value="AV">Avali — Transport</option>
+        <option value="RU">Runethic — Policy</option>
+        <option value="CA">Cassisivadan — Compute</option>
+        <option value="UM">Umbroth — Security</option>
+        <option value="DR">Draumric — Schema</option>
       </select>
       <div style="margin-top: 16px;">
         <label>Decode (paste tokens back)</label>
@@ -86,7 +86,7 @@ select { cursor: pointer; }
   <div class="info">
     <strong>How it works:</strong> Each Sacred Tongue has a 256-token vocabulary — one token per byte value.
     Text is UTF-8 encoded, then each byte maps to a conlang token. The tongue's phi-weighted cost
-    (1.0 for KO up to 11.09 for DR) determines how expensive governance operations are in that domain.
+    (1.0 for Kor'aelin up to 11.09 for Draumric) determines how expensive governance operations are in that domain.
     Higher-privilege tongues cost exponentially more, making unauthorized access mathematically infeasible.
     <br><br>
     <strong>Try it:</strong> Switch between tongues and watch the same text encode differently.
