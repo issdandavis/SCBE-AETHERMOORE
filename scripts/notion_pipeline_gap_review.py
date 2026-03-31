@@ -51,29 +51,35 @@ def _safe_load_yaml(path: Path) -> Dict[str, Any]:
             line = raw.rstrip()
             if not line or line.lstrip().startswith("#"):
                 continue
+
+            # Match top-level keys (no indentation)
             if re.match(r"^[A-Za-z_][A-Za-z0-9_-]*:\s*$", line):
-                key = line[:-1]
+                key = line.strip().rstrip(":")
                 current = key
                 if key == "fine_tune":
                     data[key] = {}
                     in_fine_tune = True
                     in_streams = False
-                    continue
-                if in_fine_tune and key == "streams":
+                else:
+                    in_streams = False
+                    in_fine_tune = False
+                    active_stream = None
+                continue
+
+            # Match indented sub-keys under fine_tune (e.g. "  streams:")
+            if in_fine_tune and re.match(r"^\s{2}[A-Za-z_][A-Za-z0-9_-]*:\s*$", line):
+                sub_key = line.strip().rstrip(":")
+                if sub_key == "streams":
                     data.setdefault("fine_tune", {})
                     data["fine_tune"]["streams"] = []
                     in_streams = True
-                    continue
-                in_streams = False
-                in_fine_tune = False
-                active_stream = None
+                else:
+                    # Sibling key like quality_checks — stop stream parsing
+                    in_streams = False
+                    active_stream = None
                 continue
 
             if not in_fine_tune:
-                continue
-
-            if in_streams and re.match(r"^\s{2,4}streams:\s*$", line):
-                in_streams = True
                 continue
 
             if in_streams and re.match(r"^\s{4}-\s*name:\s*", line):
@@ -316,7 +322,9 @@ def _evaluate_funnel_config(
                 )
 
 
-def _evaluate_metadata(metadata: Dict[str, Any], tasks: List[Dict[str, Any]]) -> None:
+def _evaluate_metadata(
+    metadata: Dict[str, Any], tasks: List[Dict[str, Any]], actual_record_count: int = 0
+) -> None:
     if not metadata:
         tasks.append(
             _build_task(
@@ -336,21 +344,42 @@ def _evaluate_metadata(metadata: Dict[str, Any], tasks: List[Dict[str, Any]]) ->
 
     exported = int(metadata.get("exported_records", 0))
     if exported == 0:
-        tasks.append(
-            _build_task(
-                title="Notion export returned zero records",
-                description="The last notion-to-dataset run exported 0 records, indicating token scope or query issues.",
-                component="Notion Export Pipeline",
-                mode="code-assistant",
-                priority="critical",
-                confidence=0.98,
-                evidence=metadata,
-                suggested_actions=[
-                    "Verify NOTION token has readable workspace scope.",
-                    "Confirm notion_to_dataset filters are not over-restrictive.",
-                ],
+        # Cross-reference: if actual JSONL records exist on disk, metadata is just stale
+        if actual_record_count > 0:
+            tasks.append(
+                _build_task(
+                    title="Stale metadata — exported_records is 0 but JSONL data exists",
+                    description=(
+                        f"metadata.json reports 0 exported records, but {actual_record_count} "
+                        "JSONL records exist on disk. Refresh metadata.json."
+                    ),
+                    component="Notion Export Pipeline",
+                    mode="code-assistant",
+                    priority="medium",
+                    confidence=0.90,
+                    evidence={**metadata, "actual_jsonl_records": actual_record_count},
+                    suggested_actions=[
+                        "Re-run notion-to-dataset to refresh metadata.json.",
+                        "Or manually update exported_records to match actual data.",
+                    ],
+                )
             )
-        )
+        else:
+            tasks.append(
+                _build_task(
+                    title="Notion export returned zero records",
+                    description="The last notion-to-dataset run exported 0 records, indicating token scope or query issues.",
+                    component="Notion Export Pipeline",
+                    mode="code-assistant",
+                    priority="critical",
+                    confidence=0.98,
+                    evidence=metadata,
+                    suggested_actions=[
+                        "Verify NOTION token has readable workspace scope.",
+                        "Confirm notion_to_dataset filters are not over-restrictive.",
+                    ],
+                )
+            )
 
     export_date = metadata.get("export_date")
     if export_date:
@@ -411,7 +440,7 @@ def run_gap_review(
 
     _evaluate_sync_config(sync_config, datetime.now(timezone.utc), tasks)
     _evaluate_funnel_config(pipeline_config, records, tasks)
-    _evaluate_metadata(metadata, tasks)
+    _evaluate_metadata(metadata, tasks, actual_record_count=len(records))
 
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -502,7 +531,8 @@ def main() -> int:
 
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    # NOTE: manifests may contain Path objects; ensure JSON serialization is stable in CI.
+    output_path.write_text(json.dumps(manifest, indent=2, default=str), encoding="utf-8")
     _write_summary(Path(args.summary_path), manifest)
 
     print(f"Notion gap review written to {output_path}")
