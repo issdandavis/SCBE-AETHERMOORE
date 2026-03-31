@@ -37,7 +37,6 @@ from .energy_budget import (
     EnergyBoundedAgent,
     EnergyPhase,
     FleetEnergyManager,
-    harmonic_cost,
 )
 from .trinary import BalancedTernary
 
