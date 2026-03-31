@@ -39,7 +39,11 @@ jobs:
             --repo-type model \
             --include "src/**" "docs/**" "README.md" "package.json" \
             --exclude ".git/**" "node_modules/**" \
-            --token $HF_TOKEN || echo "Primary sync failed, continuing..."
+            --token $HF_TOKEN
+          if [ $? -ne 0 ]; then
+            echo "::error::Primary HuggingFace sync failed"
+            exit 1
+          fi
 
       - name: Sync to Backup HF Datacenter
         env:
@@ -50,7 +54,10 @@ jobs:
             --repo-type model \
             --include "src/**" "docs/**" "README.md" \
             --exclude ".git/**" "node_modules/**" \
-            --token $HF_TOKEN || echo "Backup sync failed, continuing..."
+            --token $HF_TOKEN
+          if [ $? -ne 0 ]; then
+            echo "::warning::Backup HuggingFace sync failed"
+          fi
 
       - name: Generate Sync Report
         run: |
@@ -69,6 +76,14 @@ jobs:
       - name: Verify HF Repos Accessible
         run: |
           echo "Checking primary datacenter..."
-          curl -sf https://huggingface.co/api/models/$PRIMARY_HF_REPO > /dev/null && echo "Primary: OK" || echo "Primary: UNREACHABLE"
+          if ! curl -sf https://huggingface.co/api/models/$PRIMARY_HF_REPO > /dev/null; then
+            echo "::error::Primary HF repo UNREACHABLE: $PRIMARY_HF_REPO"
+            exit 1
+          fi
+          echo "Primary: OK"
           echo "Checking backup datacenter..."
-          curl -sf https://huggingface.co/api/models/$BACKUP_HF_REPO > /dev/null && echo "Backup: OK" || echo "Backup: UNREACHABLE"
+          if ! curl -sf https://huggingface.co/api/models/$BACKUP_HF_REPO > /dev/null; then
+            echo "::warning::Backup HF repo UNREACHABLE: $BACKUP_HF_REPO"
+          else
+            echo "Backup: OK"
+          fi

@@ -22,7 +22,7 @@ canvas{width:100%;border-radius:8px}
 .word-cloud{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
 .word-tag{padding:4px 8px;border-radius:4px;font-size:12px;font-family:monospace;transition:all 0.3s}
 .vec-bar{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:13px}
-.vec-bar .label{width:30px;font-weight:700;font-family:monospace}
+.vec-bar .label{width:120px;font-weight:700;font-family:inherit;font-size:12px}
 .vec-bar .bar-wrap{flex:1;height:20px;background:#1a1a3e;border-radius:4px;overflow:hidden}
 .vec-bar .bar-fill{height:100%;border-radius:4px;transition:width 0.4s}
 .vec-bar .val{width:50px;text-align:right;font-family:monospace;font-size:12px;color:#888}
@@ -67,7 +67,7 @@ canvas{width:100%;border-radius:8px}
 
   <div class="info">
     <strong>L1 (Complex Embedding):</strong> Each word activates one or more tongue dimensions based on its semantic domain.
-    "password" lights up UM (security). "calculate" lights up CA (compute). The phase diagram shows
+    "password" lights up Umbroth (Security). "calculate" lights up Cassisivadan (Compute). The phase diagram shows
     the complex-valued embedding before realification.
     <br><br>
     <strong>L2 (Realification):</strong> The complex vector is projected to real coordinates — the 6 tongue activations
@@ -81,6 +81,8 @@ canvas{width:100%;border-radius:8px}
 <script>
 const PHI = (1 + Math.sqrt(5)) / 2;
 const TONGUES = ['KO','AV','RU','CA','UM','DR'];
+const TONGUE_FULL = { KO: "Kor'aelin", AV: "Avali", RU: "Runethic", CA: "Cassisivadan", UM: "Umbroth", DR: "Draumric" };
+const TONGUE_DOMAINS = { KO: "Intent", AV: "Transport", RU: "Policy", CA: "Compute", UM: "Security", DR: "Structure" };
 const WEIGHTS = TONGUES.map((_,i) => Math.pow(PHI, i));
 const COLORS = ['#6c5ce7','#00ced1','#ff6b6b','#ffa500','#9370db','#32cd32'];
 
@@ -132,7 +134,7 @@ function drawBars(activations) {
     const val = activations[t];
     const pct = (val * 100).toFixed(0);
     return `<div class="vec-bar">
-      <div class="label" style="color:${COLORS[i]}">${t}</div>
+      <div class="label" style="color:${COLORS[i]}">${TONGUE_FULL[t] || t}</div>
       <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${COLORS[i]}"></div></div>
       <div class="val">${val.toFixed(3)}</div>
     </div>`;
@@ -172,9 +174,9 @@ function drawRadar(activations) {
     const lx = cx + Math.cos(angle) * (r + 18);
     const ly = cy + Math.sin(angle) * (r + 18);
     ctx.fillStyle = COLORS[i];
-    ctx.font = 'bold 13px monospace';
+    ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(TONGUES[i], lx, ly + 4);
+    ctx.fillText(TONGUE_FULL[TONGUES[i]] || TONGUES[i], lx, ly + 4);
   }
 
   // Data shape
@@ -214,7 +216,7 @@ function drawWordCloud(wordMap, words) {
     seen.add(w);
     const t = wordMap[w];
     const i = TONGUES.indexOf(t);
-    return `<span class="word-tag" style="background:${COLORS[i]}22;color:${COLORS[i]};border:1px solid ${COLORS[i]}44">${w}<sup style="font-size:9px;opacity:0.6">${t}</sup></span>`;
+    return `<span class="word-tag" style="background:${COLORS[i]}22;color:${COLORS[i]};border:1px solid ${COLORS[i]}44">${w}<sup style="font-size:9px;opacity:0.6">${TONGUE_DOMAINS[t] || t}</sup></span>`;
   }).join('');
 }
 
@@ -296,9 +298,9 @@ function drawPhase(activations) {
     ctx.fillStyle = COLORS[i];
     ctx.fillRect(barX, y, barW * val, 12);
     ctx.fillStyle = '#888';
-    ctx.font = '9px monospace';
+    ctx.font = '9px sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText(t, barX - 4, y + 10);
+    ctx.fillText(TONGUE_FULL[t] || t, barX - 4, y + 10);
   });
 
   // Labels

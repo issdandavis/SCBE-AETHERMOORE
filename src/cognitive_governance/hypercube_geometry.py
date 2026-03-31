@@ -238,7 +238,7 @@ class PhaseProjection:
             return result
 
         # Scale to hypercube boundary
-        scale = 1.0 / norm if norm > 0 else 1.0
+        scale = 1.0 / norm
 
         for valence in StateValence:
             for spatial in range(3):

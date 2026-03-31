@@ -33,12 +33,12 @@ import os
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 if TYPE_CHECKING:
-    from src.symphonic_cipher.scbe_aethermoore.cli_toolkit import CrossTokenizer
+    from .cli_toolkit import CrossTokenizer
 
 
 def _cli_toolkit():
     """Lazy-load cli_toolkit to avoid import cycles with CLI entrypoints."""
-    from src.symphonic_cipher.scbe_aethermoore import cli_toolkit
+    from . import cli_toolkit
 
     return cli_toolkit
 

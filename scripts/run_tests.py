@@ -35,6 +35,8 @@ def run_tests(
 ):
     """Run tests at the specified tier level."""
 
+    repo_root = Path(__file__).resolve().parent.parent
+
     # Base pytest command
     cmd = ["python", "-m", "pytest"]
 
@@ -120,13 +122,13 @@ def run_tests(
         ]
         pf_cmd = ["python", "-m", "py_compile", *preflight_files]
         print("Preflight:", " ".join(pf_cmd))
-        pf = subprocess.run(pf_cmd, cwd=Path(__file__).parent)
+        pf = subprocess.run(pf_cmd, cwd=repo_root)
         if pf.returncode != 0:
             print("Preflight failed; aborting test run.")
             return pf.returncode
 
     # Run tests
-    result = subprocess.run(cmd, cwd=Path(__file__).parent)
+    result = subprocess.run(cmd, cwd=repo_root)
 
     elapsed = time.time() - start_time
 

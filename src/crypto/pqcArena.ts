@@ -344,11 +344,25 @@ export class ShiftingKeyspace {
     temporal: boolean;
     description: string;
   }): GovernanceAxis {
+    if (!Number.isInteger(params.cardinality) || params.cardinality <= 0) {
+      throw new Error('Governance axis cardinality must be a positive integer');
+    }
+
+    const randomBelow = (limit: number): number => {
+      const maxUInt32Exclusive = 0x1_0000_0000;
+      const unbiasedUpperBound = Math.floor(maxUInt32Exclusive / limit) * limit;
+      let candidate = 0;
+      do {
+        candidate = randomBytes(4).readUInt32BE(0);
+      } while (candidate >= unbiasedUpperBound);
+      return candidate % limit;
+    };
+
     const bitsAdded = Math.log2(params.cardinality);
     const axis: GovernanceAxis = {
       ...params,
       bitsAdded,
-      currentValue: randomBytes(4).readUInt32BE(0) % params.cardinality,
+      currentValue: randomBelow(params.cardinality),
     };
     this.axes.push(axis);
     this.shiftCount++;
