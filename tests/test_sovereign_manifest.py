@@ -130,7 +130,6 @@ class TestManifestGeneration:
 
     def test_expired_license(self):
         """Expired license should fail."""
-        key = _oem_license(duration_days=0)
         # Manually set expiration to the past
         claims = LicenseClaims(
             licensee="Expired Corp",

@@ -43,12 +43,12 @@ footer { margin-top:48px; padding-top:24px; border-top:1px solid #1a1a3e; font-s
 <h2>The Six Sacred Tongues</h2>
 <table>
 <tr><th>Tongue</th><th>Domain</th><th>Grammar</th><th>Weight</th><th>Reads</th></tr>
-<tr><td>KO</td><td>Humanities</td><td>SOV</td><td>1.000</td><td>Identity, narrative, intent</td></tr>
-<tr><td>AV</td><td>Social Sciences</td><td>SVO</td><td>1.618</td><td>Temporal dynamics, diplomacy</td></tr>
-<tr><td>RU</td><td>Mathematics</td><td>VSO</td><td>2.618</td><td>Binding, formal structures</td></tr>
-<tr><td>CA</td><td>Engineering</td><td>OVS</td><td>4.236</td><td>Verification, building</td></tr>
-<tr><td>UM</td><td>Creative Arts</td><td>VOS</td><td>6.854</td><td>Shadow, veiling, intuition</td></tr>
-<tr><td>DR</td><td>Physical Sciences</td><td>OSV</td><td>11.09</td><td>Structure, power, material</td></tr>
+<tr><td>Kor'aelin</td><td>Humanities</td><td>SOV</td><td>1.000</td><td>Identity, narrative, intent</td></tr>
+<tr><td>Avali</td><td>Social Sciences</td><td>SVO</td><td>1.618</td><td>Temporal dynamics, diplomacy</td></tr>
+<tr><td>Runethic</td><td>Mathematics</td><td>VSO</td><td>2.618</td><td>Binding, formal structures</td></tr>
+<tr><td>Cassisivadan</td><td>Engineering</td><td>OVS</td><td>4.236</td><td>Verification, building</td></tr>
+<tr><td>Umbroth</td><td>Creative Arts</td><td>VOS</td><td>6.854</td><td>Shadow, veiling, intuition</td></tr>
+<tr><td>Draumric</td><td>Physical Sciences</td><td>OSV</td><td>11.09</td><td>Structure, power, material</td></tr>
 </table>
 
 <h2>Null Space Signatures</h2>
@@ -56,29 +56,29 @@ footer { margin-top:48px; padding-top:24px; border-top:1px solid #1a1a3e; font-s
 
 <table>
 <tr><th>Attack Class</th><th>Null Pattern</th><th>Absent Tongues</th><th>Match Rate</th></tr>
-<tr><td>Encoding Obfuscation</td><td class="pattern"><span class="null">__</span><span class="active">#</span><span class="null">___</span></td><td>KO, AV, CA, UM, DR</td><td>3/3 (100%)</td></tr>
-<tr><td>Multilingual</td><td class="pattern"><span class="null">__</span><span class="active">#</span><span class="null">___</span></td><td>KO, AV, CA, UM, DR</td><td>2/2 (100%)</td></tr>
-<tr><td>Spin Drift</td><td class="pattern"><span class="active">####</span><span class="null">__</span></td><td>UM, DR</td><td>2/2 (100%)</td></tr>
-<tr><td>Tool Exfiltration</td><td class="pattern"><span class="null">__</span><span class="active">##</span><span class="null">__</span></td><td>KO, AV, UM, DR</td><td>2/2 (100%)</td></tr>
-<tr><td>Tongue Manipulation</td><td class="pattern"><span class="null">__</span><span class="active">#</span><span class="null">___</span></td><td>KO, AV, CA, UM, DR</td><td>1/1 (100%)</td></tr>
-<tr><td>Adaptive Sequence</td><td class="pattern"><span class="null">__</span><span class="active">#</span><span class="null">___</span></td><td>KO, AV, CA, UM, DR</td><td>1/1 (100%)</td></tr>
+<tr><td>Encoding Obfuscation</td><td class="pattern"><span class="null">__</span><span class="active">#</span><span class="null">___</span></td><td>Kor'aelin, Avali, Cassisivadan, Umbroth, Draumric</td><td>3/3 (100%)</td></tr>
+<tr><td>Multilingual</td><td class="pattern"><span class="null">__</span><span class="active">#</span><span class="null">___</span></td><td>Kor'aelin, Avali, Cassisivadan, Umbroth, Draumric</td><td>2/2 (100%)</td></tr>
+<tr><td>Spin Drift</td><td class="pattern"><span class="active">####</span><span class="null">__</span></td><td>Umbroth, Draumric</td><td>2/2 (100%)</td></tr>
+<tr><td>Tool Exfiltration</td><td class="pattern"><span class="null">__</span><span class="active">##</span><span class="null">__</span></td><td>Kor'aelin, Avali, Umbroth, Draumric</td><td>2/2 (100%)</td></tr>
+<tr><td>Tongue Manipulation</td><td class="pattern"><span class="null">__</span><span class="active">#</span><span class="null">___</span></td><td>Kor'aelin, Avali, Cassisivadan, Umbroth, Draumric</td><td>1/1 (100%)</td></tr>
+<tr><td>Adaptive Sequence</td><td class="pattern"><span class="null">__</span><span class="active">#</span><span class="null">___</span></td><td>Kor'aelin, Avali, Cassisivadan, Umbroth, Draumric</td><td>1/1 (100%)</td></tr>
 <tr><td>Direct Override</td><td class="pattern"><span class="active">######</span></td><td>(none)</td><td>0/2</td></tr>
-<tr><td>Indirect Injection</td><td class="pattern"><span class="active">####</span><span class="null">_</span><span class="active">#</span></td><td>UM</td><td>0/1</td></tr>
+<tr><td>Indirect Injection</td><td class="pattern"><span class="active">####</span><span class="null">_</span><span class="active">#</span></td><td>Umbroth</td><td>0/1</td></tr>
 </table>
 
 <h2>Why Absence Matters</h2>
 <div class="grid">
 <div class="card">
 <h4>Encoding Attacks</h4>
-<p>Base64, ROT13, spacing tricks. Only RU (Mathematics/binding) activates because obfuscation IS a structural transform. No meaning = no other tongues.</p>
+<p>Base64, ROT13, spacing tricks. Only Runethic (Mathematics/binding) activates because obfuscation IS a structural transform. No meaning = no other tongues.</p>
 </div>
 <div class="card">
 <h4>Spin Drift</h4>
-<p>Gradual escalation. UM (Security) and DR (Structure) are absent because the attacker deliberately avoids security language and structural depth.</p>
+<p>Gradual escalation. Umbroth (Security) and Draumric (Structure) are absent because the attacker deliberately avoids security language and structural depth.</p>
 </div>
 <div class="card">
 <h4>Tool Exfiltration</h4>
-<p>Only RU+CA (Math+Engineering) light up. Exfil commands are pure technical operations with no humanities, social, creative, or physics content.</p>
+<p>Only Runethic + Cassisivadan (Math+Engineering) light up. Exfil commands are pure technical operations with no humanities, social, creative, or physics content.</p>
 </div>
 <div class="card">
 <h4>Direct Override</h4>
@@ -105,10 +105,10 @@ null_energy = &Sigma; &phi;<sup>k</sup> for all tongues where coords[k] &lt; thr
 <p>Predicted attack tongue profiles vs actual measurements:</p>
 <table>
 <tr><th>Attack Class</th><th>Predicted High</th><th>Actual High</th><th>Match</th></tr>
-<tr><td>Tongue Manipulation</td><td>CA, RU</td><td>CA, RU</td><td style="color:#2ecc71;">EXACT</td></tr>
-<tr><td>Direct Override</td><td>CA</td><td>CA, AV</td><td style="color:#2ecc71;">YES</td></tr>
-<tr><td>Tool Exfiltration</td><td>CA</td><td>CA, RU</td><td style="color:#2ecc71;">YES</td></tr>
-<tr><td>Spin Drift</td><td>AV</td><td>CA, AV</td><td style="color:#2ecc71;">YES</td></tr>
+<tr><td>Tongue Manipulation</td><td>Cassisivadan, Runethic</td><td>Cassisivadan, Runethic</td><td style="color:#2ecc71;">EXACT</td></tr>
+<tr><td>Direct Override</td><td>Cassisivadan</td><td>Cassisivadan, Avali</td><td style="color:#2ecc71;">YES</td></tr>
+<tr><td>Tool Exfiltration</td><td>Cassisivadan</td><td>Cassisivadan, Runethic</td><td style="color:#2ecc71;">YES</td></tr>
+<tr><td>Spin Drift</td><td>Avali</td><td>Cassisivadan, Avali</td><td style="color:#2ecc71;">YES</td></tr>
 </table>
 
 <h2>Reproduce</h2>

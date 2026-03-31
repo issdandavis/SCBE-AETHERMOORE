@@ -294,8 +294,9 @@ def run_field_trip(route_name: str = "standard") -> FieldTripReport:
             exit_ips.add(hop.exit_ip)
 
         gov_sym = {"ALLOW": "OK", "QUARANTINE": "Q ", "DENY": "X "}
+        redacted_ip = hop.exit_ip[:3] + "***" if hop.exit_ip else "?"
         print(f"         [{gov_sym.get(hop.governance, '??')}] {hop.title[:50]} | "
-              f"{hop.content_length}B | {hop.latency_ms}ms | exit:{hop.exit_ip[:15]}")
+              f"{hop.content_length}B | {hop.latency_ms}ms | exit:{redacted_ip}")
 
         if hop.secrets_scrubbed > 0:
             print(f"         Scrubbed {hop.secrets_scrubbed} secrets")

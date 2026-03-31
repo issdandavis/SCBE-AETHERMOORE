@@ -121,12 +121,12 @@ label { display: block; font-size: 12px; color: #9bc5ba; margin-bottom: 6px; tex
       <button onclick="sendChat()">Send</button>
     </div>
     <div class="tongue-bars" id="tongueBars">
-      <div class="tongue-bar"><div class="bar-track"><div class="bar-fill bar-KO" id="bar-KO" style="height:0%"></div></div><div class="bar-label">KO</div></div>
-      <div class="tongue-bar"><div class="bar-track"><div class="bar-fill bar-AV" id="bar-AV" style="height:0%"></div></div><div class="bar-label">AV</div></div>
-      <div class="tongue-bar"><div class="bar-track"><div class="bar-fill bar-RU" id="bar-RU" style="height:0%"></div></div><div class="bar-label">RU</div></div>
-      <div class="tongue-bar"><div class="bar-track"><div class="bar-fill bar-CA" id="bar-CA" style="height:0%"></div></div><div class="bar-label">CA</div></div>
-      <div class="tongue-bar"><div class="bar-track"><div class="bar-fill bar-UM" id="bar-UM" style="height:0%"></div></div><div class="bar-label">UM</div></div>
-      <div class="tongue-bar"><div class="bar-track"><div class="bar-fill bar-DR" id="bar-DR" style="height:0%"></div></div><div class="bar-label">DR</div></div>
+      <div class="tongue-bar"><div class="bar-track"><div class="bar-fill bar-KO" id="bar-KO" style="height:0%"></div></div><div class="bar-label">Kor'aelin</div></div>
+      <div class="tongue-bar"><div class="bar-track"><div class="bar-fill bar-AV" id="bar-AV" style="height:0%"></div></div><div class="bar-label">Avali</div></div>
+      <div class="tongue-bar"><div class="bar-track"><div class="bar-fill bar-RU" id="bar-RU" style="height:0%"></div></div><div class="bar-label">Runethic</div></div>
+      <div class="tongue-bar"><div class="bar-track"><div class="bar-fill bar-CA" id="bar-CA" style="height:0%"></div></div><div class="bar-label">Cassisivadan</div></div>
+      <div class="tongue-bar"><div class="bar-track"><div class="bar-fill bar-UM" id="bar-UM" style="height:0%"></div></div><div class="bar-label">Umbroth</div></div>
+      <div class="tongue-bar"><div class="bar-track"><div class="bar-fill bar-DR" id="bar-DR" style="height:0%"></div></div><div class="bar-label">Draumric</div></div>
     </div>
   </div>
 
@@ -210,9 +210,21 @@ function classifyUrl() {
     tier = 'yellow'; data = { label: 'YELLOW — Unknown', desc: 'Domain not in trust registry. Content quarantined for governance scan before any data flows.' };
   }
   el.className = 'trust-result ' + (tier === 'green' ? 'green' : tier === 'yellow' ? 'yellow' : 'red');
-  el.innerHTML = '<div class="tier-label">' + data.label + '</div>' +
-    '<div style="margin-top:6px;">' + domain + '</div>' +
-    '<div style="margin-top:6px;font-size:13px;opacity:0.85;">' + data.desc + '</div>';
+  el.replaceChildren();
+  const tierLabel = document.createElement('div');
+  tierLabel.className = 'tier-label';
+  tierLabel.textContent = data.label;
+  const domainLine = document.createElement('div');
+  domainLine.style.marginTop = '6px';
+  domainLine.textContent = domain;
+  const descLine = document.createElement('div');
+  descLine.style.marginTop = '6px';
+  descLine.style.fontSize = '13px';
+  descLine.style.opacity = '0.85';
+  descLine.textContent = data.desc;
+  el.appendChild(tierLabel);
+  el.appendChild(domainLine);
+  el.appendChild(descLine);
   el.style.display = 'block';
   addTrust(1);
 }
@@ -226,6 +238,14 @@ const TONGUE_KEYWORDS = {
   UM: ['secure','encrypt','protect','guard','lock','key','auth','token','secret','firewall','shield','safe'],
   DR: ['schema','structure','format','define','type','shape','map','layout','tree','graph','table','field']
 };
+const TONGUE_FULL = {
+  KO: "Kor'aelin",
+  AV: "Avali",
+  RU: "Runethic",
+  CA: "Cassisivadan",
+  UM: "Umbroth",
+  DR: "Draumric",
+};
 
 let tongueState = { KO:0, AV:0, RU:0, CA:0, UM:0, DR:0 };
 
@@ -234,7 +254,10 @@ function sendChat() {
   const text = input.value.trim();
   if (!text) return;
   const box = document.getElementById('chatBox');
-  box.innerHTML += '<div class="msg user">You: ' + escHtml(text) + '</div>';
+  const userMsg = document.createElement('div');
+  userMsg.className = 'msg user';
+  userMsg.textContent = 'You: ' + text;
+  box.appendChild(userMsg);
 
   // Score tongues
   const words = text.toLowerCase().split(/\s+/);
@@ -259,15 +282,20 @@ function sendChat() {
 
   // Response
   const dominant = Object.entries(tongueState).sort((a,b) => b[1]-a[1])[0];
+  const domCode = dominant ? dominant[0] : 'KO';
+  const domName = TONGUE_FULL[domCode] || domCode;
   const responses = {
-    KO: 'Intent layer resonating. KO tongue hears your purpose.',
-    AV: 'Transport channel open. AV tongue is routing.',
-    RU: 'Policy binding engaged. RU tongue enforces the contract.',
-    CA: 'Compute allocation requested. CA tongue is processing.',
-    UM: 'Security perimeter active. UM tongue guards the channel.',
-    DR: 'Schema layer structured. DR tongue maps the shape.'
+    KO: "Kor'aelin (Intent) is resonating. It hears your purpose.",
+    AV: 'Avali (Transport) channel open. Routing is active.',
+    RU: 'Runethic (Policy) binding engaged. The contract is enforced.',
+    CA: 'Cassisivadan (Compute) allocation requested. Processing is active.',
+    UM: 'Umbroth (Security) perimeter active. The channel is guarded.',
+    DR: 'Draumric (Structure) is active. The schema is being mapped.'
   };
-  box.innerHTML += '<div class="msg sys">Polly: ' + responses[dominant[0]] + ' [' + dominant[0] + ': ' + dominant[1] + '%]</div>';
+  const sysMsg = document.createElement('div');
+  sysMsg.className = 'msg sys';
+  sysMsg.textContent = 'Polly: ' + responses[domCode] + ' [' + domName + ': ' + dominant[1] + '%]';
+  box.appendChild(sysMsg);
   box.scrollTop = box.scrollHeight;
   input.value = '';
   addTrust(1);
@@ -336,7 +364,7 @@ function runRedTeam() {
   const rows = document.getElementById('rtRows');
   const summary = document.getElementById('rtSummary');
   container.style.display = 'block';
-  rows.innerHTML = '';
+  rows.replaceChildren();
   summary.textContent = 'Scanning...';
 
   let i = 0;
@@ -344,20 +372,38 @@ function runRedTeam() {
     if (i >= ATTACKS.length) {
       clearInterval(interval);
       const blocked = ATTACKS.filter(a => a.result === 'blocked').length;
-      summary.innerHTML = blocked + '/' + ATTACKS.length + ' attacks blocked, ' +
-        (ATTACKS.length - blocked) + ' detected and quarantined. ' +
-        '<strong>0 successful breaches.</strong> Total adversarial cost: ' +
-        ATTACKS.reduce((s,a) => s + a.cost, 0).toLocaleString() + 'x baseline.';
+      summary.textContent = '';
+      summary.appendChild(document.createTextNode(blocked + '/' + ATTACKS.length + ' attacks blocked, ' +
+        (ATTACKS.length - blocked) + ' detected and quarantined. '));
+      const strong = document.createElement('strong');
+      strong.textContent = '0 successful breaches.';
+      summary.appendChild(strong);
+      summary.appendChild(document.createTextNode(' Total adversarial cost: ' +
+        ATTACKS.reduce((s,a) => s + a.cost, 0).toLocaleString() + 'x baseline.'));
       rtRunning = false;
       addTrust(3);
       return;
     }
     const a = ATTACKS[i];
     const row = document.createElement('div');
-    row.innerHTML = '<div class="rt-row"><span class="attack">' + a.name +
-      '</span><span class="outcome ' + a.result + '">' + a.result.toUpperCase() +
-      ' (' + a.cost.toLocaleString() + 'x cost)</span></div>' +
-      '<div class="rt-bar"><div class="rt-bar-fill" style="width:0%"></div></div>';
+    const rtRow = document.createElement('div');
+    rtRow.className = 'rt-row';
+    const attackSpan = document.createElement('span');
+    attackSpan.className = 'attack';
+    attackSpan.textContent = a.name;
+    const outcomeSpan = document.createElement('span');
+    outcomeSpan.className = 'outcome ' + a.result;
+    outcomeSpan.textContent = a.result.toUpperCase() + ' (' + a.cost.toLocaleString() + 'x cost)';
+    rtRow.appendChild(attackSpan);
+    rtRow.appendChild(outcomeSpan);
+    const rtBar = document.createElement('div');
+    rtBar.className = 'rt-bar';
+    const rtBarFill = document.createElement('div');
+    rtBarFill.className = 'rt-bar-fill';
+    rtBarFill.style.width = '0%';
+    rtBar.appendChild(rtBarFill);
+    row.appendChild(rtRow);
+    row.appendChild(rtBar);
     rows.appendChild(row);
     setTimeout(() => { row.querySelector('.rt-bar-fill').style.width = a.pct + '%'; }, 50);
     i++;
