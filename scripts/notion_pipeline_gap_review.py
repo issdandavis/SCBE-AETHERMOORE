@@ -72,6 +72,13 @@ def _safe_load_yaml(path: Path) -> Dict[str, Any]:
             if not in_fine_tune:
                 continue
 
+            # Detect indented 'streams:' key under fine_tune
+            if not in_streams and re.match(r"^\s{2,4}streams:\s*$", line):
+                data.setdefault("fine_tune", {})
+                data["fine_tune"]["streams"] = []
+                in_streams = True
+                continue
+
             if in_streams and re.match(r"^\s{2,4}streams:\s*$", line):
                 in_streams = True
                 continue
