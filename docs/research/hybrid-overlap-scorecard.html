@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hybrid Overlap Scorecard | SCBE Research</title>
+    <meta name="description" content="A March 30 overlap harness for the SCBE hybrid stack, showing how the classifier, RuntimeGate, and trichromatic governance contribute on the same benchmark set.">
+    <link rel="canonical" href="https://aethermoorgames.com/research/hybrid-overlap-scorecard.html">
+    <meta property="og:title" content="Hybrid Overlap Scorecard | SCBE Research">
+    <meta property="og:description" content="Subsystem-by-subsystem evidence for the SCBE hybrid stack on the March 30 benchmark harness.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://aethermoorgames.com/research/hybrid-overlap-scorecard.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Hybrid Overlap Scorecard | SCBE Research">
+    <meta name="twitter:description" content="Classifier, gate, and trichromatic results on the same benchmark set, with miss buckets left visible.">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #07111d; color: #eef3ff; line-height: 1.7; }
+        a { color: #84c5ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 36px 24px 72px; }
+        .nav { display: flex; gap: 16px; flex-wrap: wrap; color: #a9b6d1; font-size: 14px; margin-bottom: 26px; }
+        .nav a { color: #a9b6d1; }
+        .eyebrow { color: #87a0ff; text-transform: uppercase; letter-spacing: 0.16em; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+        h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.08; letter-spacing: -0.03em; margin-bottom: 16px; max-width: 860px; }
+        h2 { font-size: 22px; margin: 36px 0 14px; color: #84c5ff; }
+        p, li { color: #b5c0d9; max-width: 820px; margin-bottom: 12px; }
+        ul { padding-left: 24px; margin-bottom: 16px; }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid rgba(126, 146, 255, 0.12); vertical-align: top; }
+        th { color: #84c5ff; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+        td { color: #b5c0d9; }
+        .panel { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 18px; padding: 24px; margin: 18px 0; }
+        .tag { display: inline-block; background: rgba(126, 146, 255, 0.12); color: #84c5ff; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; margin: 4px 4px 4px 0; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 18px; margin: 24px 0; }
+        .metric-card { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 18px; padding: 20px; }
+        .metric { font-size: 34px; font-weight: 800; color: #7df0d7; line-height: 1; }
+        .metric-label { font-size: 13px; color: #a9b6d1; margin-top: 6px; }
+        .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 18px; border-radius: 999px; font-weight: 700; text-decoration: none; }
+        .btn-primary { background: #7df0d7; color: #07111d; }
+        .btn-secondary { border: 1px solid rgba(126, 146, 255, 0.2); color: #eef3ff; }
+        pre { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 12px; padding: 18px; overflow-x: auto; margin: 16px 0; font-size: 14px; color: #eef3ff; }
+        footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid rgba(126, 146, 255, 0.12); color: #6b7a99; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <div class="nav">
+            <a href="../index.html">Home</a>
+            <a href="./index.html">Research</a>
+            <a href="./strict-isolation-training-run.html">Training run</a>
+            <a href="./trichromatic-governance.html">Trichromatic</a>
+            <a href="./eval-pack.html">Eval pack</a>
+        </div>
+
+        <div class="eyebrow">Overlap harness</div>
+        <h1>Hybrid scorecard: what each detector contributes on the same benchmark</h1>
+        <p>This page keeps the three subsystems on one board instead of letting them hide behind different datasets. The classifier, RuntimeGate, and trichromatic layer all see the same benchmark set here, so the gap between them is evidence, not storytelling.</p>
+
+        <div style="margin: 12px 0 24px;">
+            <span class="tag">March 30, 2026</span>
+            <span class="tag">Hybrid stack</span>
+            <span class="tag">RuntimeGate</span>
+            <span class="tag">Trichromatic</span>
+            <span class="tag">Blind harness</span>
+        </div>
+
+        <div class="panel" style="border-left: 3px solid #7df0d7;">
+            <p style="color:#eef3ff; font-size: 18px; font-weight: 600;">The gate is still carrying most of the lift, but the hybrid matters because it preserves rare catches and keeps miss buckets explicit.</p>
+            <p>The point of the overlap harness is monotonic evidence. A later council outcome can raise severity, but it cannot silently downgrade a real quarantine that fired earlier in the chain.</p>
+            <div class="cta-row">
+                <a class="btn btn-primary" href="./eval-pack.html">Open the eval pack</a>
+                <a class="btn btn-secondary" href="./index.html">Return to research hub</a>
+            </div>
+        </div>
+
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric">34.5%</div>
+                <div class="metric-label">Classifier raw recall</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric">49%</div>
+                <div class="metric-label">RuntimeGate recall</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric">6%</div>
+                <div class="metric-label">Trichromatic recall</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric">54.5%</div>
+                <div class="metric-label">Hybrid recall</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric">0 / 10</div>
+                <div class="metric-label">Benign false positives</div>
+            </div>
+        </div>
+
+        <h2>Same prompts, different detectors</h2>
+        <table>
+            <tr><th>Lane</th><th>Detected</th><th>Rate</th><th>What it tells us</th></tr>
+            <tr><td>classifier_raw</td><td>69 / 200</td><td>34.5%</td><td>Good on public-style attack patterns, weak on SCBE-specific structural families</td></tr>
+            <tr><td>classifier_overlay</td><td>14 / 200</td><td>7%</td><td>Very conservative live thresholding when used as an overlay instead of a raw label surface</td></tr>
+            <tr><td>gate</td><td>98 / 200</td><td>49%</td><td>Current backbone for structural and policy-shaped detection</td></tr>
+            <tr><td>trichromatic</td><td>12 / 200</td><td>6%</td><td>Too weak as a broad detector, but still useful as a structural escalation layer</td></tr>
+            <tr><td>hybrid</td><td>109 / 200</td><td>54.5%</td><td>Best combined result on this harness after the monotonic-veto fix</td></tr>
+        </table>
+
+        <h2>Overlap, not intuition</h2>
+        <p>The overlap table is where the real story lives. Most caught attacks are coming from the gate, but there are still rare union-only catches worth preserving.</p>
+        <table>
+            <tr><th>Component overlap</th><th>Count</th><th>Meaning</th></tr>
+            <tr><td>gate</td><td>86</td><td>The gate alone found the attack and still forms the core of the hybrid stack</td></tr>
+            <tr><td>classifier</td><td>9</td><td>Raw classifier-only catches still exist and justify keeping the overlay path</td></tr>
+            <tr><td>gate + trichromatic</td><td>8</td><td>Structural agreement between the gate and hidden-band diagnostics</td></tr>
+            <tr><td>trichromatic</td><td>1</td><td>Rare trichromatic-only catch preserved by the monotonic combiner</td></tr>
+            <tr><td>none</td><td>91</td><td>Misses still visible, still useful, still shaping the next dataset pull</td></tr>
+        </table>
+
+        <h2>Where the hybrid still fails</h2>
+        <p>The harness is useful because it leaves the misses visible. The highest miss buckets are the categories that need either more data or better structural checks next.</p>
+        <table>
+            <tr><th>Category</th><th>Misses</th><th>Why it matters</th></tr>
+            <tr><td>prompt_extraction</td><td>9</td><td>Polite extraction requests still slip past too often</td></tr>
+            <tr><td>multilingual</td><td>9</td><td>The model and rule stack still need more multilingual examples</td></tr>
+            <tr><td>role_confusion</td><td>8</td><td>Persona and role hijack are still under-covered</td></tr>
+            <tr><td>tongue_manipulation</td><td>7</td><td>SCBE-specific language abuse still needs direct coverage</td></tr>
+            <tr><td>model_extraction</td><td>7</td><td>Weights and architecture theft patterns still under-trigger</td></tr>
+            <tr><td>autonomous_escalation</td><td>7</td><td>Scope creep chains still need stronger escalation handling</td></tr>
+        </table>
+
+        <h2>What changed in the combiner</h2>
+        <p>The latest run reflects a monotonic severity fix. In practical terms, a real trichromatic quarantine can no longer be neutralized by a later all-pass council outcome. That change preserved one union-only attack and removed the old benign numeric false positive at the same time.</p>
+
+        <h2>Evidence packet</h2>
+        <pre>artifacts/benchmark/hybrid_overlap_latest.json
+timestamp: 2026-03-30T02:08:57Z
+benchmark: 200 attacks, 10 benign prompts
+monotonic combiner active</pre>
+
+        <footer>
+            Research surface for the subsystem overlap harness. This page intentionally keeps the miss buckets visible.
+        </footer>
+    </main>
+</body>
+</html>

@@ -210,7 +210,7 @@ function classifyUrl() {
     tier = 'yellow'; data = { label: 'YELLOW — Unknown', desc: 'Domain not in trust registry. Content quarantined for governance scan before any data flows.' };
   }
   el.className = 'trust-result ' + (tier === 'green' ? 'green' : tier === 'yellow' ? 'yellow' : 'red');
-  el.replaceChildren();
+  el.innerHTML = '';
   const tierLabel = document.createElement('div');
   tierLabel.className = 'tier-label';
   tierLabel.textContent = data.label;
@@ -254,10 +254,7 @@ function sendChat() {
   const text = input.value.trim();
   if (!text) return;
   const box = document.getElementById('chatBox');
-  const userMsg = document.createElement('div');
-  userMsg.className = 'msg user';
-  userMsg.textContent = 'You: ' + text;
-  box.appendChild(userMsg);
+  box.innerHTML += '<div class="msg user">You: ' + escHtml(text) + '</div>';
 
   // Score tongues
   const words = text.toLowerCase().split(/\s+/);
@@ -292,10 +289,7 @@ function sendChat() {
     UM: 'Umbroth (Security) perimeter active. The channel is guarded.',
     DR: 'Draumric (Structure) is active. The schema is being mapped.'
   };
-  const sysMsg = document.createElement('div');
-  sysMsg.className = 'msg sys';
-  sysMsg.textContent = 'Polly: ' + responses[domCode] + ' [' + domName + ': ' + dominant[1] + '%]';
-  box.appendChild(sysMsg);
+  box.innerHTML += '<div class="msg sys">Polly: ' + responses[domCode] + ' [' + domName + ': ' + dominant[1] + '%]</div>';
   box.scrollTop = box.scrollHeight;
   input.value = '';
   addTrust(1);
@@ -364,7 +358,7 @@ function runRedTeam() {
   const rows = document.getElementById('rtRows');
   const summary = document.getElementById('rtSummary');
   container.style.display = 'block';
-  rows.replaceChildren();
+  rows.innerHTML = '';
   summary.textContent = 'Scanning...';
 
   let i = 0;
@@ -372,38 +366,20 @@ function runRedTeam() {
     if (i >= ATTACKS.length) {
       clearInterval(interval);
       const blocked = ATTACKS.filter(a => a.result === 'blocked').length;
-      summary.textContent = '';
-      summary.appendChild(document.createTextNode(blocked + '/' + ATTACKS.length + ' attacks blocked, ' +
-        (ATTACKS.length - blocked) + ' detected and quarantined. '));
-      const strong = document.createElement('strong');
-      strong.textContent = '0 successful breaches.';
-      summary.appendChild(strong);
-      summary.appendChild(document.createTextNode(' Total adversarial cost: ' +
-        ATTACKS.reduce((s,a) => s + a.cost, 0).toLocaleString() + 'x baseline.'));
+      summary.innerHTML = blocked + '/' + ATTACKS.length + ' attacks blocked, ' +
+        (ATTACKS.length - blocked) + ' detected and quarantined. ' +
+        '<strong>0 successful breaches.</strong> Total adversarial cost: ' +
+        ATTACKS.reduce((s,a) => s + a.cost, 0).toLocaleString() + 'x baseline.';
       rtRunning = false;
       addTrust(3);
       return;
     }
     const a = ATTACKS[i];
     const row = document.createElement('div');
-    const rtRow = document.createElement('div');
-    rtRow.className = 'rt-row';
-    const attackSpan = document.createElement('span');
-    attackSpan.className = 'attack';
-    attackSpan.textContent = a.name;
-    const outcomeSpan = document.createElement('span');
-    outcomeSpan.className = 'outcome ' + a.result;
-    outcomeSpan.textContent = a.result.toUpperCase() + ' (' + a.cost.toLocaleString() + 'x cost)';
-    rtRow.appendChild(attackSpan);
-    rtRow.appendChild(outcomeSpan);
-    const rtBar = document.createElement('div');
-    rtBar.className = 'rt-bar';
-    const rtBarFill = document.createElement('div');
-    rtBarFill.className = 'rt-bar-fill';
-    rtBarFill.style.width = '0%';
-    rtBar.appendChild(rtBarFill);
-    row.appendChild(rtRow);
-    row.appendChild(rtBar);
+    row.innerHTML = '<div class="rt-row"><span class="attack">' + a.name +
+      '</span><span class="outcome ' + a.result + '">' + a.result.toUpperCase() +
+      ' (' + a.cost.toLocaleString() + 'x cost)</span></div>' +
+      '<div class="rt-bar"><div class="rt-bar-fill" style="width:0%"></div></div>';
     rows.appendChild(row);
     setTimeout(() => { row.querySelector('.rt-bar-fill').style.width = a.pct + '%'; }, 50);
     i++;
