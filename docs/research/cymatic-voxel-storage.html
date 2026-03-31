@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cymatic Voxel Storage: Chladni Pattern Data Addressing | SCBE Research</title>
+    <meta name="description" content="Data stored in anti-nodal regions of 6D acoustic interference patterns using Chladni nodal lines as storage addresses in the SCBE pipeline.">
+    <link rel="canonical" href="https://aethermoorgames.com/research/cymatic-voxel-storage.html">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #07111d; color: #eef3ff; line-height: 1.7; }
+        a { color: #84c5ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 36px 24px 72px; }
+        .nav { display: flex; gap: 16px; flex-wrap: wrap; color: #a9b6d1; font-size: 14px; margin-bottom: 26px; }
+        .nav a { color: #a9b6d1; }
+        .eyebrow { color: #87a0ff; text-transform: uppercase; letter-spacing: 0.16em; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+        h1 { font-size: clamp(28px, 5vw, 48px); line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 16px; max-width: 820px; }
+        h2 { font-size: 22px; margin: 36px 0 14px; color: #84c5ff; }
+        h3 { font-size: 17px; margin: 24px 0 10px; color: #7df0d7; }
+        p, li { color: #b5c0d9; max-width: 780px; margin-bottom: 12px; }
+        ul, ol { padding-left: 24px; margin-bottom: 16px; }
+        code { background: #132038; padding: 2px 8px; border-radius: 4px; font-size: 14px; color: #84c5ff; }
+        pre { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 12px; padding: 20px; overflow-x: auto; margin: 16px 0; font-size: 14px; color: #eef3ff; }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid rgba(126, 146, 255, 0.12); }
+        th { color: #84c5ff; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+        td { color: #b5c0d9; }
+        .panel { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 18px; padding: 24px; margin: 18px 0; }
+        .tag { display: inline-block; background: rgba(126, 146, 255, 0.12); color: #84c5ff; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; margin: 4px 4px 4px 0; }
+        .metric { font-size: 42px; font-weight: 800; color: #7df0d7; line-height: 1; }
+        .metric-label { font-size: 13px; color: #a9b6d1; margin-top: 4px; }
+        .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 18px; margin: 24px 0; }
+        .formula { background: #132038; border-left: 3px solid #87a0ff; padding: 16px 20px; border-radius: 0 12px 12px 0; margin: 16px 0; font-family: 'Courier New', monospace; font-size: 16px; color: #eef3ff; }
+        footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid rgba(126, 146, 255, 0.12); color: #6b7a99; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <div class="nav">
+            <a href="../index.html">Home</a>
+            <a href="./index.html">Research</a>
+            <a href="./architecture-overview.html">Architecture</a>
+            <a href="../redteam.html">Red Team</a>
+        </div>
+
+        <div class="eyebrow">Acoustic data architecture</div>
+        <h1>Cymatic Voxel Storage: Chladni Pattern Data Addressing</h1>
+
+        <div style="margin: 18px 0;">
+            <span class="tag">Cymatic</span>
+            <span class="tag">Chladni</span>
+            <span class="tag">Storage</span>
+            <span class="tag">FFT</span>
+            <span class="tag">Acoustic</span>
+            <span class="tag">Voxel</span>
+        </div>
+
+        <!-- Core Innovation -->
+        <h2>Core Innovation</h2>
+        <p>
+            SCBE stores governed data in the anti-nodal regions of 6-dimensional acoustic interference patterns.
+            Chladni nodal lines&mdash;the silence boundaries where standing waves cancel&mdash;become natural
+            storage addresses. Data lives where waves constructively interfere; boundaries form where they destructively
+            cancel. This gives every stored record an intrinsic physical address defined by the mode numbers of the
+            standing wave, and volume scales exponentially with the hyperbolic radius of the embedding space.
+        </p>
+        <div class="formula">
+            V(r) ~ (&pi;&sup3; &middot; r&sup3; / 6) &middot; e^(5r)
+        </div>
+        <p>
+            The exponential term <code>e^(5r)</code> is the key: hyperbolic space provides exponentially more storage
+            volume than Euclidean space at any given radius. This is implemented in <code>src/spectral/</code> and
+            integrated with the L9&ndash;L10 FFT coherence pipeline and the L14 audio axis.
+        </p>
+
+        <!-- The Chladni Formula -->
+        <h2>The Chladni Addressing Formula</h2>
+        <div class="formula">
+            cos(n&pi;x) &middot; cos(m&pi;y) &minus; cos(m&pi;x) &middot; cos(n&pi;y) = 0
+        </div>
+        <div class="panel">
+            <p class="lead">The six Sacred Tongues -- Kor'aelin (KO), Avali (AV), Runethic (RU), Cassisivadan (CA), Umbroth (UM), and Draumric (DR) -- are unified governance languages, each carrying a 256-token lexicon, phi-weighted cost scaling, trichromatic spectral bands, and cross-stitch bridge connections.</p>
+            <p>
+                The classical Chladni equation defines the nodal lines of a vibrating plate. In the SCBE system,
+                this is lifted to 6 dimensions corresponding to the Sacred Tongues (KO, AV, RU, CA, UM, DR):
+            </p>
+            <ul>
+                <li><strong>n, m</strong> &mdash; Velocity dimensions. These are the mode numbers that select different
+                    standing wave patterns. Higher modes produce finer nodal grids with more storage cells.</li>
+                <li><strong>x, y</strong> &mdash; Security dimensions. These map to the governance evaluation axes
+                    (intent distance and policy distance).</li>
+                <li>The remaining dimensions extend the 2D plate to a 6D lattice, where each Sacred Tongue contributes
+                    its own vibrational mode, weighted by the golden ratio sequence (KO=1.00 through DR=11.09).</li>
+            </ul>
+        </div>
+
+        <!-- How It Works -->
+        <h2>How It Works</h2>
+        <div class="panel">
+            <h3>Anti-nodal regions = data storage zones</h3>
+            <p>
+                Where waves constructively interfere, amplitude is maximal. These high-amplitude anti-nodal regions
+                are the storage locations. Data is encoded as perturbations to the standing wave amplitude at each
+                anti-nodal point. The higher the amplitude, the more robust the storage against noise.
+            </p>
+        </div>
+        <div class="panel">
+            <h3>Nodal lines = natural boundaries</h3>
+            <p>
+                Where destructive interference creates zero amplitude, natural boundaries form between data cells.
+                No explicit partitioning is needed&mdash;the wave physics creates isolation between storage regions
+                automatically. Cross-cell interference is zero by definition.
+            </p>
+        </div>
+        <div class="panel">
+            <h3>Mode numbers select storage patterns</h3>
+            <p>
+                Each pair <code>(n, m)</code> produces a unique Chladni pattern with a distinct set of nodal lines
+                and anti-nodal regions. Selecting different mode numbers is equivalent to choosing a different storage
+                schema. Low modes (n=1, m=2) give coarse, high-reliability storage. High modes (n=12, m=13) give
+                fine-grained, high-density storage.
+            </p>
+        </div>
+        <div class="panel">
+            <h3>Higher modes = finer granularity = more density</h3>
+            <p>
+                The number of anti-nodal cells scales as <code>O(n &middot; m)</code> per 2D slice. In the full 6D
+                lattice, this compounds to <code>O((n&middot;m)&sup3;)</code> cells. At mode (8, 9) the system
+                provides over 370,000 addressable cells per 6D block, each with intrinsic wave-physics isolation.
+            </p>
+        </div>
+
+        <!-- Combo: Cymatic + Spin Voxels -->
+        <h2>Cymatic + Spin Voxels</h2>
+        <p>
+            The cymatic storage layer and the <a href="./spin-voxel-magnetics.html">spin voxel governance layer</a>
+            operate on the same voxel grid. Each anti-nodal storage voxel carries a spin vector S_i that encodes
+            the governance state of the data it holds.
+        </p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Property</th>
+                    <th>Cymatic Interpretation</th>
+                    <th>Spin Interpretation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Spin alignment</td>
+                    <td>Constructive wave coherence</td>
+                    <td>Data integrity (high C_spin)</td>
+                </tr>
+                <tr>
+                    <td>Spin disorder</td>
+                    <td>Destructive interference spreading</td>
+                    <td>Entropic defense activation</td>
+                </tr>
+                <tr>
+                    <td>Phase inversion (node &harr; anti-node)</td>
+                    <td>Storage cell becomes boundary</td>
+                    <td>Spin flip: S &rarr; -S</td>
+                </tr>
+                <tr>
+                    <td>Mode change (n,m shift)</td>
+                    <td>Storage topology reorganization</td>
+                    <td>Global spin field rotation</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            When a spin flip occurs&mdash;a governance state reversal&mdash;the corresponding voxel transitions from
+            anti-nodal (storage) to nodal (boundary). The data is not destroyed; it becomes inaccessible behind a
+            wave-physics barrier. Recovery requires restoring the spin to its original orientation, which requires
+            crossing the energy barrier set by the Spin Hamiltonian.
+        </p>
+
+        <!-- Combo: Cymatic + Spectral FFT -->
+        <h2>Cymatic + Spectral FFT (L9&ndash;L10)</h2>
+        <p>
+            The FFT engine that drives Layers 9 and 10 of the 14-layer pipeline also computes the Chladni patterns
+            for cymatic storage. This is not a coincidence&mdash;both systems are frequency-domain operations on the
+            same underlying signal.
+        </p>
+        <div class="panel">
+            <h3>Shared FFT pipeline</h3>
+            <ul>
+                <li><strong>L9 Spectral Coherence</strong> analyzes the frequency spectrum of intent signals to detect
+                    anomalous harmonics. The same FFT output feeds the Chladni mode selector.</li>
+                <li><strong>L10 Spin Coherence</strong> evaluates spin alignment across the voxel field. The coherence
+                    score C_spin determines which Chladni modes are active for storage.</li>
+                <li><strong>L14 Audio Axis</strong> generates the acoustic telemetry that makes the standing wave patterns
+                    physically observable as sound. The Chladni pattern is literally audible.</li>
+            </ul>
+        </div>
+        <div class="formula">
+            Parseval: &Sigma;|x(t)|&sup2; = (1/N) &middot; &Sigma;|X(f)|&sup2;
+        </div>
+        <p>
+            Parseval's theorem guarantees energy conservation between the time domain (voxel grid) and the frequency
+            domain (Chladni modes). No information is lost in the transform. The total energy of the spatial voxel
+            field equals the total energy of the frequency-domain mode spectrum. This is the mathematical guarantee
+            that cymatic addressing preserves data integrity.
+        </p>
+
+        <!-- Volume Scaling -->
+        <h2>Volume Scaling</h2>
+        <p>
+            The exponential volume growth of hyperbolic space means storage capacity explodes with radius.
+            Here is what the formula <code>V(r) ~ (&pi;&sup3; r&sup3; / 6) &middot; e^(5r)</code> delivers in practice:
+        </p>
+        <div class="metrics-row">
+            <div class="panel">
+                <div class="metric">~10<sup style="font-size:20px">3</sup></div>
+                <div class="metric-label">r = 2 &mdash; Approx. 1,700 addressable voxels. Enough for a single session context window.</div>
+            </div>
+            <div class="panel">
+                <div class="metric">~10<sup style="font-size:20px">6</sup></div>
+                <div class="metric-label">r = 3 &mdash; Approx. 2.3 million voxels. Entire model weight checkpoint in a single cymatic frame.</div>
+            </div>
+            <div class="panel">
+                <div class="metric">~10<sup style="font-size:20px">9</sup></div>
+                <div class="metric-label">r = 4 &mdash; Approx. 5.4 billion voxels. Full training dataset addressable within one hyperbolic ball.</div>
+            </div>
+            <div class="panel">
+                <div class="metric">~10<sup style="font-size:20px">12</sup></div>
+                <div class="metric-label">r = 5 &mdash; Approx. 16 trillion voxels. Enterprise-scale governed data lake in a single cymatic lattice.</div>
+            </div>
+        </div>
+        <p>
+            Euclidean storage at the same radii would give <code>V_euclid ~ r&sup3;</code>&mdash;cubic growth.
+            At r=5 that is 125 cells versus 16 trillion. Hyperbolic geometry provides a 10<sup>11</sup>x advantage.
+            This is why SCBE embeds everything in the Poincar&eacute; ball: the geometry itself is the scaling engine.
+        </p>
+
+        <footer>SCBE-AETHERMOORE Research | Issac Daniel Davis | 2026</footer>
+    </main>
+</body>
+</html>

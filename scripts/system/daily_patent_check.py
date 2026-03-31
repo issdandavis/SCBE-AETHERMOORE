@@ -78,9 +78,10 @@ def check_protonmail():
         if not password:
             env_path = os.path.join(os.path.dirname(__file__), "..", "..", "config", "connector_oauth", ".env.connector.oauth")
             if os.path.exists(env_path):
-                for line in open(env_path).read().splitlines():
-                    if line.strip().startswith("PROTONMAIL_BRIDGE_PASSWORD="):
-                        password = line.split("=", 1)[1].strip().strip("\"'")
+                with open(env_path) as f:
+                    for line in f.read().splitlines():
+                        if line.strip().startswith("PROTONMAIL_BRIDGE_PASSWORD="):
+                            password = line.split("=", 1)[1].strip().strip("\"'")
 
         if not password:
             print("  EMAIL: No PROTONMAIL_BRIDGE_PASSWORD set. Skipping email check.")

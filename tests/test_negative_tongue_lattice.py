@@ -20,6 +20,11 @@ _src_dir = os.path.join(os.path.dirname(__file__), "..", "src")
 if _src_dir not in sys.path:
     sys.path.insert(0, _src_dir)
 
+# Ensure project root is also on path for src.* imports
+_PROJECT_ROOT = os.path.join(os.path.dirname(__file__), "..")
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
 # Clear cached non-package governance (e.g. from spiral-word-app/governance.py)
 _prev_gov = sys.modules.get("governance")
 if _prev_gov is not None and not hasattr(_prev_gov, "__path__"):
@@ -29,7 +34,6 @@ if _prev_gov is not None and not hasattr(_prev_gov, "__path__"):
 # so the src/ variant (which has qc_lattice, governance, etc.) can be found.
 _sc = sys.modules.get("symphonic_cipher")
 if _sc is not None and getattr(_sc, "_VARIANT", None) != "src":
-    # Purge root variant and all its sub-modules
     for key in list(sys.modules):
         if key == "symphonic_cipher" or key.startswith("symphonic_cipher."):
             del sys.modules[key]
@@ -37,8 +41,8 @@ if _sc is not None and getattr(_sc, "_VARIANT", None) != "src":
 import numpy as np
 import pytest
 
-from governance.negative_tongue_lattice import NegativeTongueLattice
-from symphonic_cipher.scbe_aethermoore.qc_lattice.phason_secret import PhasonSecret
+from src.governance.negative_tongue_lattice import NegativeTongueLattice
+from src.symphonic_cipher.scbe_aethermoore.qc_lattice.phason_secret import PhasonSecret
 
 # =============================================================================
 # NEGATIVE TONGUE LATTICE TESTS
