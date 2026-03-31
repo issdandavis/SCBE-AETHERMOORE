@@ -104,13 +104,13 @@ jobs:
           python -m black --target-version py311 --line-length 120 src/ tests/
 
       - name: Apply npm audit fix
-        if: steps.detect.outputs.failure_count > 0
+        if: steps.detect.outputs.failure_count != '0'
         continue-on-error: true
         run: npm audit fix
 
       # -- Create PR if changes were made --
       - name: Create fix PR
-        if: steps.detect.outputs.failure_count > 0
+        if: steps.detect.outputs.failure_count != '0'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
