@@ -17,6 +17,7 @@ import json
 import os
 import re
 import sys
+import urllib.parse
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import List, Optional
@@ -145,7 +146,7 @@ def score_description(description: str) -> tuple[int, list, list]:
     elif len(description) > 200:
         score += 2  # substantial description
 
-    if "github.com" in description or "https://" in description or "http://" in description:
+    if any(urllib.parse.urlparse(w).scheme in ("http", "https") for w in description.split()):
         score += 1  # has links
 
     if "#" in description:

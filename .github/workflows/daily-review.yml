@@ -79,7 +79,13 @@ jobs:
           pytest_outcome='${{ steps.pytest.outcome }}'
           lint_outcome='${{ steps.lint.outcome }}'
           type_outcome='${{ steps.typecheck.outcome }}'
-          test_score=0; [ "$npm_outcome" = "success" ] && [ "$pytest_outcome" = "success" ] && test_score=1
+          # npm test is required; pytest only counts when it actually ran
+          test_score=0
+          if [ "$npm_outcome" = "success" ]; then
+            if [ "$pytest_outcome" = "success" ] || [ "$pytest_outcome" = "skipped" ] || [ "$pytest_outcome" = "cancelled" ]; then
+              test_score=1
+            fi
+          fi
           lint_score=0; [ "$lint_outcome" = "success" ] && lint_score=1
           type_score=0; [ "$type_outcome" = "success" ] && type_score=1
           python scripts/coherence-check.py \

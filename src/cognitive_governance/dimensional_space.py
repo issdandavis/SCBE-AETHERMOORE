@@ -271,14 +271,14 @@ class DimensionalSpace:
         v2 = p2.to_flat_vector()
 
         weighted_diff_sq = 0.0
-        idx = 0
-        for _valence in StateValence:
-            for _spatial in range(3):
-                for tongue in TONGUE_NAMES:
-                    w = TONGUES[tongue]["weight"]
-                    diff = v1[idx] - v2[idx]
-                    weighted_diff_sq += w * diff * diff
-                    idx += 1
+        num_valences = len(StateValence)
+        num_spatial = 3
+        num_tongues = len(TONGUE_NAMES)
+        for idx in range(num_valences * num_spatial * num_tongues):
+            tongue = TONGUE_NAMES[idx % num_tongues]
+            w = TONGUES[tongue]["weight"]
+            diff = v1[idx] - v2[idx]
+            weighted_diff_sq += w * diff * diff
 
         return math.sqrt(weighted_diff_sq)
 
@@ -337,7 +337,7 @@ class DimensionalSpace:
         idx = 0
         for valence in StateValence:
             for spatial in range(3):
-                for _i, tongue in enumerate(TONGUE_NAMES):
+                for tongue in TONGUE_NAMES:
                     # Use seed bytes to determine coordinate
                     byte_val = seed[idx % len(seed)] / 255.0
                     # Scale by radius and tongue weight

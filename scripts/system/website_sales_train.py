@@ -74,10 +74,28 @@ def strip_html(html: str) -> str:
     return parser.get_text()
 
 
+class _LinkExtractor(HTMLParser):
+    """Extract href values from anchor tags."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.links: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list) -> None:
+        if tag.lower() == "a":
+            for attr, value in attrs:
+                if attr.lower() == "href" and value:
+                    self.links.append(value)
+
+
 def count_links(html: str) -> tuple[int, int]:
-    hrefs = re.findall(r'href=["\']([^"\']+)["\']', html, flags=re.I)
-    external = sum(1 for href in hrefs if href.startswith(("http://", "https://")))
-    internal = len(hrefs) - external
+    parser = _LinkExtractor()
+    try:
+        parser.feed(html)
+    except Exception:
+        return 0, 0
+    external = sum(1 for href in parser.links if href.startswith(("http://", "https://")))
+    internal = len(parser.links) - external
     return internal, external
 
 
