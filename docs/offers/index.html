@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCBE Offers | Direct Packages, Manuals, and Delivery Paths</title>
+  <meta name="description" content="Direct SCBE package catalog with prices, public manuals, delivery guidance, support routes, and owned checkout links.">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta property="og:title" content="SCBE Offers">
+  <meta property="og:description" content="Direct package catalog for SCBE toolkits, operator packs, workflow packs, and training lanes.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://aethermoorgames.com/offers/index.html">
+  <meta property="og:image" content="https://aethermoorgames.com/hero.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SCBE Offers">
+  <meta name="twitter:description" content="Direct package catalog with public manuals, delivery routes, and owned checkout links.">
+  <meta name="twitter:image" content="https://aethermoorgames.com/hero.png">
+  <link rel="canonical" href="https://aethermoorgames.com/offers/index.html">
+  <link rel="stylesheet" href="../static/polly-sidebar.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #090d13;
+      --bg-soft: #111723;
+      --panel: rgba(15, 20, 31, 0.9);
+      --panel-soft: rgba(18, 25, 38, 0.8);
+      --line: rgba(214, 167, 86, 0.18);
+      --text: #f2efe9;
+      --muted: #aeb5c2;
+      --gold: #d6a756;
+      --gold-strong: #efc46f;
+      --cool: #8cb4ff;
+      --mint: #6fd5c8;
+      --max: 1200px;
+      --shadow: 0 26px 80px rgba(0, 0, 0, 0.38);
+      --radius-xl: 30px;
+      --radius-lg: 24px;
+      --radius-md: 18px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(214, 167, 86, 0.18), transparent 30%),
+        radial-gradient(circle at 85% 12%, rgba(140, 180, 255, 0.12), transparent 28%),
+        linear-gradient(180deg, #080c12 0%, #0b1018 44%, #090d13 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: radial-gradient(circle at center, black 36%, transparent 100%);
+      opacity: 0.36;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    .wrap {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 14;
+      backdrop-filter: blur(18px);
+      background: rgba(8, 12, 18, 0.82);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .topbar-inner {
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .brand-kicker,
+    .eyebrow,
+    .mini {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--gold);
+    }
+
+    .brand strong,
+    h1,
+    h2,
+    h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      letter-spacing: -0.04em;
+    }
+
+    .brand strong {
+      font-size: 18px;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav a {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: 180ms ease;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+      border-color: var(--line);
+      background: rgba(214, 167, 86, 0.08);
+    }
+
+    .hero {
+      padding: 62px 0 34px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .hero-copy,
+    .hero-visual,
+    .strip,
+    .catalog-card,
+    .support-panel,
+    .matrix,
+    .callout {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      background: linear-gradient(180deg, rgba(14, 20, 31, 0.92), rgba(8, 12, 19, 0.96));
+      box-shadow: var(--shadow);
+    }
+
+    .hero-copy {
+      position: relative;
+      overflow: hidden;
+      padding: 34px;
+      min-height: 540px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -34% 24%;
+      height: 320px;
+      background: radial-gradient(circle, rgba(214, 167, 86, 0.2), transparent 72%);
+      pointer-events: none;
+    }
+
+    h1 {
+      font-size: clamp(46px, 7vw, 82px);
+      line-height: 0.93;
+      max-width: 9.5ch;
+      margin-top: 14px;
+    }
+
+    .lede {
+      max-width: 60ch;
+      margin-top: 22px;
+      font-size: 18px;
+      line-height: 1.72;
+      color: var(--muted);
+    }
+
+    .lede strong { color: var(--text); }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 14px 20px;
+      border-radius: 999px;
+      font-weight: 700;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+      color: #130f08;
+      background: linear-gradient(135deg, var(--gold), var(--gold-strong));
+      box-shadow: 0 16px 36px rgba(214, 167, 86, 0.22);
+    }
+
+    .btn-secondary {
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text);
+    }
+
+    .hero-notes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .hero-notes span {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .hero-visual {
+      padding: 28px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 18px;
+      overflow: hidden;
+    }
+
+    .hero-visual img {
+      width: 100%;
+      border-radius: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      object-fit: cover;
+      min-height: 220px;
+    }
+
+    .visual-copy {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .visual-copy p {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      padding: 16px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 6px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    main section { padding: 22px 0; }
+
+    .section-head {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .section-head h2 {
+      font-size: clamp(30px, 5vw, 46px);
+      line-height: 1;
+      max-width: 11ch;
+    }
+
+    .section-head p {
+      max-width: 68ch;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .strip {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .strip ul,
+    .support-panel ul {
+      list-style: none;
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+    }
+
+    .strip li::before,
+    .support-panel li::before {
+      content: "+";
+      color: var(--mint);
+      margin-right: 10px;
+    }
+
+    .catalog {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .catalog-card {
+      padding: 24px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .price-line {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .price-line strong {
+      font-size: 40px;
+      color: var(--gold-strong);
+    }
+
+    .price-line span {
+      color: var(--muted);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .catalog-card p {
+      color: var(--muted);
+      line-height: 1.72;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tag {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .catalog-card ul {
+      list-style: none;
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+    }
+
+    .catalog-card li::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .matrix {
+      padding: 28px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 14px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 11px;
+    }
+
+    td { color: var(--muted); }
+
+    .support-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .support-panel,
+    .callout {
+      padding: 24px;
+    }
+
+    .support-panel p,
+    .callout p {
+      color: var(--muted);
+      line-height: 1.72;
+      margin-top: 10px;
+    }
+
+    .footer {
+      padding: 42px 0 72px;
+      color: var(--muted);
+    }
+
+    .footer-inner {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 24px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .footer a:hover { color: var(--text); }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .strip,
+      .support-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .catalog {
+        grid-template-columns: 1fr;
+      }
+
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .hero-copy,
+      .hero-visual,
+      .strip,
+      .matrix,
+      .catalog-card,
+      .support-panel,
+      .callout {
+        padding: 22px;
+      }
+
+      h1 { max-width: 11ch; }
+
+      table, tbody, tr, td, th, thead {
+        display: block;
+      }
+
+      thead { display: none; }
+
+      tr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 10px 0;
+      }
+
+      td {
+        padding: 8px 0;
+      }
+    }
+  </style>
+</head>
+<body data-polly-context="offers" data-polly-root="..">
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="../index.html">
+        <span class="brand-kicker">Owned storefront lane</span>
+        <strong>SCBE Offers</strong>
+      </a>
+      <nav class="nav" aria-label="Offers navigation">
+        <a href="../index.html">Home</a>
+        <a href="#catalog">Catalog</a>
+        <a href="../product-manual/index.html">Manuals</a>
+        <a href="../demos/index.html">Demos</a>
+        <a href="../research/index.html">Research</a>
+        <a href="../support.html">Support</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <div>
+            <div class="eyebrow">Direct packages, no Shopify shell</div>
+            <h1>Buy from the site you are already standing on.</h1>
+            <p class="lede">
+              This is the owned SCBE buy lane: package cards, direct checkout, public manuals, delivery guidance, and support routes in one place. <strong>The point is to reduce friction, not to make buyers wander through the repo.</strong>
+            </p>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="#catalog">Pick a package</a>
+              <a class="btn btn-secondary" href="../product-manual/index.html">Open the buyer start guide</a>
+            </div>
+            <div class="hero-notes">
+              <span>Direct Stripe checkout</span>
+              <span>Manual-first delivery</span>
+              <span>Support route on-site</span>
+            </div>
+          </div>
+          <div class="callout">
+            <div class="mini">Why this page exists</div>
+            <p>
+              The homepage is the front door. The manuals are the operator layer. This page is the storefront layer that sits between them.
+            </p>
+          </div>
+        </div>
+
+        <aside class="hero-visual" aria-label="Offer summary">
+          <img src="../hero.png" alt="SCBE packages and governance toolkit">
+          <div class="visual-copy">
+            <div class="mini">Current offer mix</div>
+            <p>
+              One flagship toolkit, one model-training lane, and three narrower operator packs. Buyers can compare price, purpose, proof, and delivery without leaving the site.
+            </p>
+            <div class="metrics">
+              <div class="metric">
+                <strong>5</strong>
+                <span>live offer lanes</span>
+              </div>
+              <div class="metric">
+                <strong>4</strong>
+                <span>public package manuals</span>
+              </div>
+              <div class="metric">
+                <strong>1</strong>
+                <span>support route</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap strip">
+        <div>
+          <div class="eyebrow">Buyer logic</div>
+          <h2>Each offer needs four things: price, fit, proof, and recovery.</h2>
+        </div>
+        <ul>
+          <li>Price is public before checkout.</li>
+          <li>Each package points to a manual or proof surface.</li>
+          <li>Delivery expectations are explicit.</li>
+          <li>Support stays on the owned site instead of a third-party storefront.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="catalog">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">Catalog</div>
+          <h2>Choose the smallest useful package.</h2>
+          <p>
+            These are the current public packages. The goal is not to sell the whole SCBE universe at once. The goal is to let a buyer pick one concrete lane and start.
+          </p>
+        </div>
+
+        <div class="catalog">
+          <article class="catalog-card">
+            <div class="mini">Flagship package</div>
+            <h3>AI Governance Toolkit</h3>
+            <div class="price-line"><strong>$29</strong><span>one time</span></div>
+            <p>Templates, thresholds, decision records, and a manual-first path for governed AI workflows.</p>
+            <div class="tag-row">
+              <span class="tag">Manual</span>
+              <span class="tag">Starter pack</span>
+              <span class="tag">Thresholds</span>
+            </div>
+            <ul>
+              <li>Decision record template</li>
+              <li>Threshold worksheet</li>
+              <li>Pilot checklist</li>
+              <li>Recovery and delivery path</li>
+            </ul>
+            <div class="card-actions">
+              <a class="btn btn-primary" href="https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06" target="_blank" rel="noopener">Buy toolkit</a>
+              <a class="btn btn-secondary" href="../product-manual/ai-governance-toolkit.html">Read manual</a>
+            </div>
+          </article>
+
+          <article class="catalog-card">
+            <div class="mini">Builder lane</div>
+            <h3>AI Security Training Vault</h3>
+            <div class="price-line"><strong>$29</strong><span>one time</span></div>
+            <p>Training data, projector weights, benchmark surfaces, and a Colab-friendly path for governed model work.</p>
+            <div class="tag-row">
+              <span class="tag">Training data</span>
+              <span class="tag">Benchmark</span>
+              <span class="tag">Colab</span>
+            </div>
+            <ul>
+              <li>SFT dataset lane</li>
+              <li>Projector weights</li>
+              <li>Benchmark suite</li>
+              <li>Model-training proof surface</li>
+            </ul>
+            <div class="card-actions">
+              <a class="btn btn-primary" href="https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g" target="_blank" rel="noopener">Buy vault</a>
+              <a class="btn btn-secondary" href="../redteam.html">Inspect benchmark lane</a>
+            </div>
+          </article>
+
+          <article class="catalog-card">
+            <div class="mini">Operator packet</div>
+            <h3>HYDRA Agent Templates</h3>
+            <div class="price-line"><strong>$9</strong><span>one time</span></div>
+            <p>Ready-made agent roles, packet shapes, and launch structures for small governed swarms.</p>
+            <div class="tag-row">
+              <span class="tag">Templates</span>
+              <span class="tag">Packets</span>
+              <span class="tag">Swarm ops</span>
+            </div>
+            <ul>
+              <li>Role scaffolds</li>
+              <li>Packet naming patterns</li>
+              <li>Launch structure examples</li>
+              <li>Manual and verification path</li>
+            </ul>
+            <div class="card-actions">
+              <a class="btn btn-primary" href="https://buy.stripe.com/6oUeVe5Ca2TJdx6262dby08" target="_blank" rel="noopener">Buy templates</a>
+              <a class="btn btn-secondary" href="../product-manual/hydra-agent-templates.html">Read manual</a>
+            </div>
+          </article>
+
+          <article class="catalog-card">
+            <div class="mini">Automation lane</div>
+            <h3>n8n Workflow Pack</h3>
+            <div class="price-line"><strong>$49</strong><span>one time</span></div>
+            <p>Governed workflow building blocks for teams that want a clearer automation path without starting from zero.</p>
+            <div class="tag-row">
+              <span class="tag">Automation</span>
+              <span class="tag">Workflow pack</span>
+              <span class="tag">Ops</span>
+            </div>
+            <ul>
+              <li>Importable building blocks</li>
+              <li>Governance-aware workflow patterns</li>
+              <li>Manual-first setup</li>
+              <li>Delivery and recovery route</li>
+            </ul>
+            <div class="card-actions">
+              <a class="btn btn-primary" href="https://buy.stripe.com/8x228sc0y3XNeBafWSdby05" target="_blank" rel="noopener">Buy workflow pack</a>
+              <a class="btn btn-secondary" href="../product-manual/n8n-workflow-pack.html">Read manual</a>
+            </div>
+          </article>
+
+          <article class="catalog-card">
+            <div class="mini">Creator workflow</div>
+            <h3>Content Spin Engine</h3>
+            <div class="price-line"><strong>$19</strong><span>one time</span></div>
+            <p>Source-once creator workflow for adapting, reviewing, and publishing content with less drift across channels.</p>
+            <div class="tag-row">
+              <span class="tag">Content ops</span>
+              <span class="tag">Review</span>
+              <span class="tag">Publishing</span>
+            </div>
+            <ul>
+              <li>Source-to-channel workflow</li>
+              <li>Faster review loop</li>
+              <li>Lower content drift</li>
+              <li>Manual and support path</li>
+            </ul>
+            <div class="card-actions">
+              <a class="btn btn-primary" href="https://buy.stripe.com/5kQ5kE5Ca65V78I5iedby07" target="_blank" rel="noopener">Buy content engine</a>
+              <a class="btn btn-secondary" href="../product-manual/content-spin-engine.html">Read manual</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">Comparison</div>
+          <h2>Use the package that matches the job.</h2>
+        </div>
+        <div class="matrix">
+          <table>
+            <thead>
+              <tr>
+                <th>Offer</th>
+                <th>Best for</th>
+                <th>Public proof/manual</th>
+                <th>Checkout</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>AI Governance Toolkit</td>
+                <td>Teams starting governed AI workflow design</td>
+                <td><a href="../product-manual/ai-governance-toolkit.html">Toolkit manual</a></td>
+                <td>$29</td>
+              </tr>
+              <tr>
+                <td>AI Security Training Vault</td>
+                <td>Builders training or evaluating governed models</td>
+                <td><a href="../redteam.html">Benchmark lane</a></td>
+                <td>$29</td>
+              </tr>
+              <tr>
+                <td>HYDRA Agent Templates</td>
+                <td>Operators launching small governed swarms</td>
+                <td><a href="../product-manual/hydra-agent-templates.html">HYDRA manual</a></td>
+                <td>$9</td>
+              </tr>
+              <tr>
+                <td>n8n Workflow Pack</td>
+                <td>Automation teams that want importable governed building blocks</td>
+                <td><a href="../product-manual/n8n-workflow-pack.html">n8n manual</a></td>
+                <td>$49</td>
+              </tr>
+              <tr>
+                <td>Content Spin Engine</td>
+                <td>Creator workflows and multi-channel publishing</td>
+                <td><a href="../product-manual/content-spin-engine.html">Content manual</a></td>
+                <td>$19</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap support-grid">
+        <article class="support-panel">
+          <div class="eyebrow">Delivery</div>
+          <h3>What happens after checkout</h3>
+          <p>
+            Receipt first, delivery packet second, manual immediately after, and support if anything is missing or broken. That path is part of the offer, not an afterthought.
+          </p>
+          <ul>
+            <li><a href="../product-manual/delivery-and-access.html">Read delivery and access</a></li>
+            <li><a href="../product-manual/index.html">Open the manual hub</a></li>
+            <li><a href="../support.html">Use the support page</a></li>
+          </ul>
+        </article>
+
+        <article class="support-panel">
+          <div class="eyebrow">Proof before purchase</div>
+          <h3>Inspect the system first if you need to.</h3>
+          <p>
+            Buyers do not need to trust blind. The demo hub, research stack, benchmark surfaces, and support routes stay visible before checkout.
+          </p>
+          <ul>
+            <li><a href="../demos/index.html">Open the demo hub</a></li>
+            <li><a href="../research/index.html">Open the proof stack</a></li>
+            <li><a href="../games/index.html">See the games and training hub</a></li>
+          </ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-links">
+        <a href="../index.html">Home</a>
+        <a href="../demos/index.html">Demos</a>
+        <a href="../research/index.html">Research</a>
+        <a href="../product-manual/index.html">Manuals</a>
+        <a href="../product-manual/delivery-and-access.html">Delivery</a>
+        <a href="../support.html">Support</a>
+        <a href="mailto:aethermoregames@pm.me?subject=SCBE%20Package%20Support">Email</a>
+      </div>
+      <div>This page is the owned storefront lane for SCBE packages, not the research archive and not a third-party shop shell.</div>
+    </div>
+  </footer>
+  <script src="../static/polly-sidebar.js"></script>
+</body>
+</html>
