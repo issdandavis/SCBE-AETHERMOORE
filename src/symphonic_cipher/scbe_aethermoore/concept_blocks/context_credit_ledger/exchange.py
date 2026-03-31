@@ -399,6 +399,7 @@ class ComputeExchange:
     def summary(self) -> Dict[str, Any]:
         by_state: Dict[str, int] = {}
         total_volume = 0.0
+        denominations = list(Denomination)
         for tx in self._transactions.values():
             by_state[tx.state.value] = by_state.get(tx.state.value, 0) + 1
             if tx.state == ExchangeState.SETTLED:
@@ -412,8 +413,8 @@ class ComputeExchange:
             "total_volume_settled": round(total_volume, 6),
             "exchange_rates": {
                 f"{d1.value}/{d2.value}": round(DENOMINATION_WEIGHTS[d1] / DENOMINATION_WEIGHTS[d2], 4)
-                for d1 in list(Denomination)
-                for d2 in list(Denomination)
+                for d1 in denominations
+                for d2 in denominations
                 if d1 != d2 and d1.value < d2.value
             },
         }

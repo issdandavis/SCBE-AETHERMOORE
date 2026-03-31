@@ -129,6 +129,7 @@ class TrichromaticGovernanceEngine:
             )
 
         bridges: Dict[str, Tuple[float, float, float]] = {}
+        max_bridge = PHI**5
         for i, left in enumerate(tongue_triplets):
             for j in range(i + 1, len(tongue_triplets)):
                 right = tongue_triplets[j]
@@ -142,7 +143,6 @@ class TrichromaticGovernanceEngine:
                 uv_bridge = abs(
                     left.color.uv * right.color.ir + right.color.uv * left.color.ir
                 ) * phi_bridge
-                max_bridge = PHI**5
                 bridges[f"{left.tongue}-{right.tongue}"] = (
                     round(min(1.0, ir_bridge / max_bridge), 4),
                     round(min(1.0, vis_bridge / max_bridge), 4),
@@ -237,7 +237,6 @@ class TrichromaticGovernanceEngine:
         uv_match = 0
         full_match = 0
 
-        forged_bridge_delta = 0.0
         for tongue_triplet in state.tongues:
             forged = ColorTriplet(
                 ir=round(float(rng.uniform(0.0, 1.0)), 4),
@@ -327,6 +326,7 @@ class TrichromaticGovernanceEngine:
         self, tongue_triplets: Sequence[TongueTriplet]
     ) -> Dict[str, Tuple[float, float, float]]:
         bridges: Dict[str, Tuple[float, float, float]] = {}
+        max_bridge = PHI**5
         for i, left in enumerate(tongue_triplets):
             for j in range(i + 1, len(tongue_triplets)):
                 right = tongue_triplets[j]
@@ -340,7 +340,6 @@ class TrichromaticGovernanceEngine:
                 uv_bridge = abs(
                     left.color.uv * right.color.ir + right.color.uv * left.color.ir
                 ) * phi_bridge
-                max_bridge = PHI**5
                 bridges[f"{left.tongue}-{right.tongue}"] = (
                     round(min(1.0, ir_bridge / max_bridge), 4),
                     round(min(1.0, vis_bridge / max_bridge), 4),

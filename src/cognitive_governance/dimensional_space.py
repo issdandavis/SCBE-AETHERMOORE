@@ -271,14 +271,15 @@ class DimensionalSpace:
         v2 = p2.to_flat_vector()
 
         weighted_diff_sq = 0.0
-        idx = 0
+        weights: list[float] = []
         for _valence in StateValence:
-            for _spatial in range(3):
+            for _band in range(3):
                 for tongue in TONGUE_NAMES:
-                    w = TONGUES[tongue]["weight"]
-                    diff = v1[idx] - v2[idx]
-                    weighted_diff_sq += w * diff * diff
-                    idx += 1
+                    weights.append(TONGUES[tongue]["weight"])
+
+        for a, b, weight in zip(v1, v2, weights):
+            diff = a - b
+            weighted_diff_sq += weight * diff * diff
 
         return math.sqrt(weighted_diff_sq)
 

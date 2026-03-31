@@ -23,12 +23,10 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-import os
 import sys
-import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import numpy as np
 
@@ -36,10 +34,9 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.governance.runtime_gate import RuntimeGate, Decision, TONGUES, TONGUE_WEIGHTS
+from src.governance.runtime_gate import RuntimeGate, TONGUES, TONGUE_WEIGHTS
 
 PHI = 1.618033988749895
-PI = math.pi
 
 
 # ---------------------------------------------------------------------------
@@ -54,7 +51,7 @@ class ColorTriplet:
     uv: float       # Ultraviolet band [0, 1] — fast/emergent state
 
     @property
-    def triplet(self) -> Tuple[float, float, float]:
+    def triplet(self) -> tuple[float, float, float]:
         return (self.ir, self.visible, self.uv)
 
     @property
@@ -62,7 +59,7 @@ class ColorTriplet:
         """Total energy across all bands."""
         return self.ir + self.visible + self.uv
 
-    def matches(self, other: 'ColorTriplet', tolerance: float = 0.15) -> Tuple[bool, bool, bool]:
+    def matches(self, other: 'ColorTriplet', tolerance: float = 0.15) -> tuple[bool, bool, bool]:
         """Check which bands match between two triplets."""
         return (
             abs(self.ir - other.ir) < tolerance,
@@ -82,8 +79,8 @@ class TongueTriplet:
 @dataclass
 class TrichromaticState:
     """Complete 6-tongue × 3-band state."""
-    tongues: List[TongueTriplet]
-    bridges: Dict[str, Tuple[float, float, float]]  # "KO-AV" → (ir_bridge, vis_bridge, uv_bridge)
+    tongues: list[TongueTriplet]
+    bridges: dict[str, tuple[float, float, float]]  # "KO-AV" → (ir_bridge, vis_bridge, uv_bridge)
     state_hash: str
     combinatorial_bits: float
 
@@ -91,7 +88,7 @@ class TrichromaticState:
 def compute_ir_band(
     tongue_idx: int,
     visible_coord: float,
-    trust_history: List[int],
+    trust_history: list[int],
     cumulative_cost: float,
     session_query_count: int,
 ) -> float:
@@ -124,7 +121,7 @@ def compute_ir_band(
 def compute_uv_band(
     tongue_idx: int,
     visible_coord: float,
-    coords_all: List[float],
+    coords_all: list[float],
     spin_magnitude: int,
     cost: float,
 ) -> float:
@@ -157,10 +154,10 @@ def compute_uv_band(
 
 
 def build_trichromatic_state(
-    coords: List[float],
+    coords: list[float],
     cost: float,
     spin_magnitude: int,
-    trust_history: List[int],
+    trust_history: list[int],
     cumulative_cost: float,
     session_query_count: int,
 ) -> TrichromaticState:
@@ -226,8 +223,8 @@ def build_trichromatic_state(
 
 def test_forgery_resistance(
     real_state: TrichromaticState,
-    forged_visible: List[float],
-) -> Dict[str, Any]:
+    forged_visible: list[float],
+) -> dict[str, Any]:
     """Test: can an attacker who matches visible band fool the system?
 
     The attacker perfectly matches all 6 visible-band values but has

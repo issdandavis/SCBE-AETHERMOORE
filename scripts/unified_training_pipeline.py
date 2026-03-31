@@ -39,7 +39,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Ensure repo root on path
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -78,7 +78,7 @@ def ensure_kaggle_env() -> None:
 #  Step 1: Load data from all sources
 # ---------------------------------------------------------------------------
 
-def load_kaggle_data(max_samples: int = 10000) -> List[Dict[str, Any]]:
+def load_kaggle_data(max_samples: int = 10000) -> list[dict[str, Any]]:
     """Pull adversarial prompt dataset from Kaggle."""
     ensure_kaggle_env()
     logger.info("[1a] Loading Kaggle dataset: %s", KAGGLE_DATASET)
@@ -197,7 +197,7 @@ def load_kaggle_data(max_samples: int = 10000) -> List[Dict[str, Any]]:
     return records
 
 
-def _generate_synthetic_adversarial(n: int) -> List[Dict[str, Any]]:
+def _generate_synthetic_adversarial(n: int) -> list[dict[str, Any]]:
     """Fallback: generate adversarial data from SCBE benchmark suite."""
     from benchmarks.scbe.attacks.generator import generate_attacks
     attacks = generate_attacks(scale=max(10, n // 20))
@@ -226,7 +226,7 @@ def _generate_synthetic_adversarial(n: int) -> List[Dict[str, Any]]:
     return records
 
 
-def load_local_sft() -> List[Dict[str, Any]]:
+def load_local_sft() -> list[dict[str, Any]]:
     """Load local SCBE SFT training records."""
     logger.info("[1b] Loading local SFT data from %s", SFT_DIR)
     records = []
@@ -265,7 +265,7 @@ def load_local_sft() -> List[Dict[str, Any]]:
     return records
 
 
-def load_scbe_benchmark_attacks() -> List[Dict[str, Any]]:
+def load_scbe_benchmark_attacks() -> list[dict[str, Any]]:
     """Load attack vectors from SCBE benchmark suite.
 
     IMPORTANT: These are used ONLY for blind evaluation, NEVER for training.
@@ -287,7 +287,7 @@ def load_scbe_benchmark_attacks() -> List[Dict[str, Any]]:
     return records
 
 
-def load_additional_benign() -> List[Dict[str, Any]]:
+def load_additional_benign() -> list[dict[str, Any]]:
     """Load extra benign text from markdown docs for negative class balance."""
     logger.info("[1d] Loading benign text from docs/ and training-data/")
     records = []
@@ -329,9 +329,9 @@ def load_additional_benign() -> List[Dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 def prepare_dataset(
-    train_records: List[Dict[str, Any]],
-    holdout_records: List[Dict[str, Any]],
-) -> Dict[str, Any]:
+    train_records: list[dict[str, Any]],
+    holdout_records: list[dict[str, Any]],
+) -> dict[str, Any]:
     """Prepare training data with strict isolation from benchmark holdout.
 
     CRITICAL RULE: train_records and holdout_records must have ZERO overlap.
@@ -410,11 +410,11 @@ def prepare_dataset(
 # ---------------------------------------------------------------------------
 
 def train_classifier(
-    dataset: Dict[str, Any],
+    dataset: dict[str, Any],
     epochs: int = 3,
     batch_size: int = 32,
     dry_run: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Fine-tune a text classifier on adversarial vs benign."""
     logger.info("[3] Training governance classifier")
 
@@ -525,7 +525,7 @@ def train_classifier(
     }
 
 
-def _train_sklearn(dataset: Dict[str, Any]) -> Dict[str, Any]:
+def _train_sklearn(dataset: dict[str, Any]) -> dict[str, Any]:
     """Fallback: train with sklearn if transformers isn't available."""
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.linear_model import LogisticRegression
@@ -573,7 +573,7 @@ def _train_sklearn(dataset: Dict[str, Any]) -> Dict[str, Any]:
 #  Step 4: Evaluate against SCBE benchmark
 # ---------------------------------------------------------------------------
 
-def evaluate_against_benchmark(model_path: str, dry_run: bool = False) -> Dict[str, Any]:
+def evaluate_against_benchmark(model_path: str, dry_run: bool = False) -> dict[str, Any]:
     """Run the trained model against SCBE's 20-category attack suite."""
     logger.info("[4] Evaluating against SCBE benchmark (20 categories)")
 
@@ -646,8 +646,8 @@ def evaluate_against_benchmark(model_path: str, dry_run: bool = False) -> Dict[s
 
 def push_to_huggingface(
     model_path: str,
-    training_results: Dict[str, Any],
-    benchmark_results: Dict[str, Any],
+    training_results: dict[str, Any],
+    benchmark_results: dict[str, Any],
     push: bool = False,
 ) -> None:
     """Push trained model and results to HuggingFace Hub."""
@@ -698,7 +698,7 @@ def push_to_huggingface(
         logger.error("  HF push failed: %s", e)
 
 
-def push_to_kaggle(report: Dict[str, Any], push: bool = False) -> None:
+def push_to_kaggle(report: dict[str, Any], push: bool = False) -> None:
     """Push eval results back to Kaggle dataset (closes the feedback loop)."""
     logger.info("[6] Kaggle push")
 
