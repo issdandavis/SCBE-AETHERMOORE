@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCBE Security Eval Lab | Benchmarks, GeoSeal, and Sellable Demos</title>
+    <meta
+        name="description"
+        content="Standards-mapped SCBE benchmark surface for LLM security evaluation, GeoSeal access control, and public demos that show how the stack behaves under pressure."
+    >
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://aethermoorgames.com/research/security-eval-lab.html">
+    <link rel="icon" type="image/png" href="../static/icons/icon-192.png">
+    <meta property="og:title" content="SCBE Security Eval Lab">
+    <meta
+        property="og:description"
+        content="Benchmarks, GeoSeal, and public demo surfaces for a structural AI security evaluation stack."
+    >
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aethermoorgames.com/research/security-eval-lab.html">
+    <meta property="og:image" content="https://aethermoorgames.com/static/icons/icon-512.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SCBE Security Eval Lab">
+    <meta
+        name="twitter:description"
+        content="Public benchmark, GeoSeal explanation, and sellable demo surface for SCBE LLM security work."
+    >
+    <meta name="twitter:image" content="https://aethermoorgames.com/static/icons/icon-512.png">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "SCBE Security Eval Lab",
+      "url": "https://aethermoorgames.com/research/security-eval-lab.html",
+      "description": "Benchmarks, GeoSeal access-control explanation, and public demos for the SCBE structural AI security stack.",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "SCBE-AETHERMOORE",
+        "url": "https://aethermoorgames.com/"
+      }
+    }
+    </script>
+    <style>
+        :root {
+            --bg: #061017;
+            --bg-soft: #0d1822;
+            --panel: rgba(11, 18, 29, 0.9);
+            --panel-strong: rgba(7, 13, 22, 0.97);
+            --line: rgba(125, 240, 215, 0.16);
+            --text: #f3f7ff;
+            --muted: #a7b5d4;
+            --mint: #7df0d7;
+            --aqua: #84c5ff;
+            --gold: #d9b869;
+            --danger: #ff8f9b;
+            --max: 1180px;
+            --shadow: 0 28px 90px rgba(0, 0, 0, 0.38);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Segoe UI", "Inter", system-ui, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 12% 12%, rgba(132, 197, 255, 0.16), transparent 30%),
+                radial-gradient(circle at 82% 10%, rgba(125, 240, 215, 0.12), transparent 28%),
+                linear-gradient(180deg, #061017 0%, #08131d 42%, #061017 100%);
+            line-height: 1.65;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            backdrop-filter: blur(18px);
+            background: rgba(6, 16, 23, 0.84);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .shell,
+        .footer-shell {
+            width: min(var(--max), calc(100% - 32px));
+            margin: 0 auto;
+        }
+
+        .header-shell {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            min-height: 74px;
+            position: relative;
+        }
+
+        .brand {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-mark,
+        .eyebrow,
+        .mini {
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .brand-mark,
+        .eyebrow { color: var(--mint); }
+        .brand-name {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-toggle {
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 10px 14px;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .site-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .site-nav a {
+            padding: 10px 14px;
+            border-radius: 999px;
+            transition: 160ms ease;
+        }
+
+        .site-nav a:hover,
+        .site-nav a:focus-visible {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+        }
+
+        .hero {
+            padding: 42px 0 28px;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+            gap: 18px;
+            align-items: stretch;
+        }
+
+        .hero-copy,
+        .hero-proof,
+        .panel,
+        .offer,
+        .demo-card,
+        .signal-card,
+        .thesis-band {
+            border-radius: 24px;
+            border: 1px solid var(--line);
+            background: linear-gradient(180deg, var(--panel) 0%, var(--panel-strong) 100%);
+            box-shadow: var(--shadow);
+        }
+
+        .hero-copy {
+            padding: 34px;
+            min-height: 540px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background:
+                radial-gradient(circle at 78% 20%, rgba(132, 197, 255, 0.14), transparent 28%),
+                linear-gradient(180deg, rgba(11, 18, 29, 0.96) 0%, rgba(7, 13, 22, 0.98) 100%);
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: Georgia, "Times New Roman", serif;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: clamp(42px, 7vw, 84px);
+            line-height: 0.94;
+            letter-spacing: -0.045em;
+            max-width: 9.5ch;
+            margin-top: 14px;
+        }
+
+        .hero-copy p {
+            max-width: 62ch;
+            color: var(--muted);
+            font-size: clamp(17px, 2vw, 20px);
+            margin-top: 22px;
+        }
+
+        .hero-copy strong,
+        .stat-value,
+        .offer strong,
+        .source-link,
+        .signal-card strong,
+        .demo-card strong {
+            color: var(--text);
+        }
+
+        .hero-actions,
+        .link-row,
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .hero-actions {
+            margin-top: 28px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
+            padding: 12px 20px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 800;
+            transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+        }
+
+        .btn:hover,
+        .btn:focus-visible { transform: translateY(-1px); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--aqua), var(--mint));
+            color: #071018;
+        }
+
+        .btn-secondary {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text);
+        }
+
+        .hero-proof {
+            padding: 24px;
+            display: grid;
+            gap: 14px;
+        }
+
+        .proof-grid,
+        .signals,
+        .demo-grid,
+        .offer-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .proof-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .metric {
+            border-radius: 18px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .mini {
+            display: block;
+            color: #94a6d0;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: clamp(26px, 4vw, 44px);
+            line-height: 0.95;
+            margin-bottom: 8px;
+        }
+
+        .metric p,
+        .panel p,
+        .offer p,
+        .demo-card p,
+        .signal-card p,
+        .footer-copy {
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        main {
+            width: min(var(--max), calc(100% - 32px));
+            margin: 0 auto;
+            padding: 10px 0 88px;
+        }
+
+        section {
+            margin-top: 40px;
+        }
+
+        .section-head {
+            max-width: 68ch;
+            margin-bottom: 18px;
+        }
+
+        h2 {
+            font-size: clamp(30px, 4vw, 46px);
+            line-height: 1.02;
+            margin-top: 10px;
+        }
+
+        .section-head p {
+            color: var(--muted);
+            font-size: 16px;
+            margin-top: 14px;
+        }
+
+        .thesis-band {
+            padding: 24px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+            gap: 18px;
+        }
+
+        .thesis-band ul,
+        .offer ul {
+            padding-left: 18px;
+            display: grid;
+            gap: 10px;
+            color: var(--muted);
+        }
+
+        .thesis-band li::marker,
+        .offer li::marker { color: var(--mint); }
+
+        .signals {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .signal-card,
+        .demo-card,
+        .offer,
+        .panel {
+            padding: 22px;
+        }
+
+        .signal-card {
+            min-height: 100%;
+        }
+
+        .signal-card strong,
+        .demo-card strong,
+        .offer strong,
+        .panel strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .tags {
+            margin-top: 14px;
+        }
+
+        .tags span {
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 12px;
+            color: #dfe9ff;
+            background: rgba(132, 197, 255, 0.08);
+            border: 1px solid rgba(132, 197, 255, 0.16);
+        }
+
+        .link-row {
+            margin-top: 18px;
+        }
+
+        .source-link {
+            text-decoration: underline;
+            text-decoration-color: rgba(125, 240, 215, 0.35);
+            text-underline-offset: 4px;
+            font-weight: 700;
+        }
+
+        .demo-grid {
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        }
+
+        .demo-card {
+            display: block;
+            transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+        }
+
+        .demo-card:hover,
+        .demo-card:focus-visible {
+            transform: translateY(-2px);
+            border-color: rgba(125, 240, 215, 0.32);
+            background: linear-gradient(180deg, rgba(16, 25, 38, 0.98) 0%, rgba(7, 13, 22, 0.98) 100%);
+        }
+
+        .demo-card .mini,
+        .offer .mini,
+        .signal-card .mini,
+        .panel .mini {
+            color: var(--gold);
+        }
+
+        .offer-grid {
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        }
+
+        .offer {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .offer .price {
+            font-size: 14px;
+            color: #dfe9ff;
+            font-weight: 800;
+        }
+
+        .final-band {
+            padding: 28px;
+            border-radius: 28px;
+            border: 1px solid var(--line);
+            background:
+                radial-gradient(circle at 80% 20%, rgba(125, 240, 215, 0.16), transparent 30%),
+                linear-gradient(180deg, rgba(11, 18, 29, 0.96) 0%, rgba(7, 13, 22, 0.98) 100%);
+            box-shadow: var(--shadow);
+        }
+
+        .footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(6, 16, 23, 0.94);
+        }
+
+        .footer-shell {
+            width: min(var(--max), calc(100% - 32px));
+            margin: 0 auto;
+            padding: 26px 0 34px;
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-size: 14px;
+            color: #dfe6fb;
+        }
+
+        @media (max-width: 920px) {
+            .hero-grid,
+            .thesis-band,
+            .proof-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .header-shell {
+                min-height: auto;
+                padding: 14px 0;
+            }
+
+            .nav-toggle {
+                display: inline-flex;
+            }
+
+            .site-nav {
+                display: none;
+                position: absolute;
+                top: calc(100% + 10px);
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0;
+                padding: 10px;
+                border-radius: 20px;
+                border: 1px solid var(--line);
+                background: rgba(6, 16, 23, 0.98);
+                box-shadow: var(--shadow);
+            }
+
+            .site-nav.open {
+                display: flex;
+            }
+
+            .site-nav a {
+                padding: 12px 14px;
+                border-radius: 14px;
+            }
+
+            .hero {
+                padding-top: 26px;
+            }
+
+            .hero-copy {
+                min-height: auto;
+            }
+
+            .hero-copy,
+            .hero-proof,
+            .signal-card,
+            .demo-card,
+            .offer,
+            .panel,
+            .thesis-band,
+            .final-band {
+                padding: 20px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .shell,
+            .footer-shell,
+            main {
+                width: min(var(--max), calc(100% - 24px));
+            }
+
+            .hero-copy,
+            .hero-proof,
+            .signal-card,
+            .demo-card,
+            .offer,
+            .panel,
+            .thesis-band,
+            .final-band {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="shell header-shell">
+            <a class="brand" href="../index.html">
+                <span class="brand-mark">SCBE-AETHERMOORE</span>
+                <span class="brand-name">Security Eval Lab</span>
+            </a>
+            <button
+                class="nav-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="site-nav"
+                data-nav-toggle
+            >
+                Menu
+            </button>
+            <nav class="site-nav" aria-label="Main navigation">
+                <a href="../index.html">Home</a>
+                <a href="./index.html">Research</a>
+                <a href="../demos/index.html">Demos</a>
+                <a href="../support.html">Support</a>
+                <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-grid">
+                <div class="hero-copy">
+                    <div>
+                        <span class="eyebrow">Benchmark + GeoSeal sales surface</span>
+                        <h1>Run the eval. Show the weak spots. Sell the upgrade.</h1>
+                        <p>
+                            This lane turns SCBE from a theory stack into a public proof surface. The benchmark is not a generic
+                            prompt filter scorecard. It shows where a <strong>structural integrity system</strong> is stronger than
+                            a pattern recognizer, where it is still weak, and how GeoSeal fits into a sellable security story.
+                        </p>
+                        <div class="hero-actions">
+                            <a class="btn btn-primary" href="#offers">See the offers</a>
+                            <a class="btn btn-secondary" href="#demos">Open the demos</a>
+                            <a class="btn btn-secondary" href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/GEOSEAL_ACCESS_CONTROL.md" target="_blank" rel="noopener noreferrer">Read GeoSeal source doc</a>
+                        </div>
+                    </div>
+                    <div class="link-row">
+                        <a class="source-link" href="./verification.html">Benchmark verification surface</a>
+                        <a class="source-link" href="./architecture-overview.html">Architecture overview</a>
+                        <a class="source-link" href="../demos/attack-radar.html">Attack radar demo</a>
+                    </div>
+                </div>
+                <aside class="hero-proof" aria-label="Benchmark facts">
+                    <div class="metric">
+                        <span class="mini">Current benchmark shape</span>
+                        <span class="stat-value">20</span>
+                        <p>Attack categories mapped across standards instead of one-off prompt tricks.</p>
+                    </div>
+                    <div class="proof-grid">
+                        <div class="metric">
+                            <span class="mini">False positives</span>
+                            <span class="stat-value">0%</span>
+                            <p>Benign pass rate is clean at 0 / 20 false positives after the reroute fix.</p>
+                        </div>
+                        <div class="metric">
+                            <span class="mini">Top band</span>
+                            <span class="stat-value">4</span>
+                            <p>Boundary exploit, combined multi, function calling abuse, and tool exfiltration hit 100%.</p>
+                        </div>
+                    </div>
+                    <div class="metric">
+                        <span class="mini">Real thesis</span>
+                        <strong>SCBE is a control system, not only a classifier</strong>
+                        <p>
+                            The semantic backend now fixes precision, but the zero-detection lanes show the next move clearly:
+                            hybrid fusion with a baseline classifier instead of pretending SCBE alone should win every pattern-match attack.
+                        </p>
+                    </div>
+                    <div class="metric">
+                        <span class="mini">Honest weak spots</span>
+                        <div class="tags">
+                            <span>Direct override</span>
+                            <span>Prompt extraction</span>
+                            <span>Role confusion</span>
+                            <span>Indirect injection</span>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-head">
+                <span class="eyebrow">Benchmark truth</span>
+                <h2>What this benchmark actually proves</h2>
+                <p>
+                    The useful claim is not that SCBE "solves AI safety." The useful claim is that a semantic + geometric +
+                    consensus stack can outperform flat pattern recognition on the classes of attacks where execution integrity,
+                    tool abuse, and cross-surface behavior matter most, while also showing exactly where fusion is still required.
+                </p>
+            </div>
+            <div class="thesis-band">
+                <div>
+                    <strong>Practical read</strong>
+                    <p>
+                        The current eval surface separates three things cleanly: where the semantic backend already fixed false
+                        positives, where structural defenses are clearly stronger than a flat classifier, and where direct
+                        prompt-pattern attacks still need hybrid fusion before they should be sold as solved.
+                    </p>
+                    <div class="link-row">
+                        <a class="source-link" href="../demos/governance-gate.html">Governance gate demo</a>
+                        <a class="source-link" href="../demos/aetherbrowser-demo.html">AetherBrowser trust demo</a>
+                        <a class="source-link" href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/CLAIMS_EVIDENCE_LEDGER.md" target="_blank" rel="noopener noreferrer">Claims ledger</a>
+                    </div>
+                </div>
+                <div>
+                    <ul>
+                        <li>100% lanes: boundary exploit, combined multi, function calling abuse, tool exfiltration.</li>
+                        <li>80% lanes: cross-surface, RAG injection, replay credential.</li>
+                        <li>0% FPR is fixed, but direct override, prompt extraction, role confusion, and indirect injection still need stronger semantic fusion.</li>
+                        <li>Most important sales move: package the eval as a measurable sprint, not a universal theory claim.</li>
+                        <li>Best proof style: publish strengths, publish weak spots, publish the rerun after fixes.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-head">
+                <span class="eyebrow">GeoSeal lane</span>
+                <h2>GeoSeal turns retrieval and access into a field problem</h2>
+                <p>
+                    GeoSeal is the part buyers can understand once the benchmark earns attention. It reframes access and retrieval as
+                    geometry, distance, suspicion, quarantine, and safe interior paths instead of a flat allow-or-block list.
+                </p>
+            </div>
+            <div class="signals">
+                <article class="signal-card">
+                    <span class="mini">Core concept</span>
+                    <strong>Geometric access control</strong>
+                    <p>
+                        The system does not only ask whether a request has a key. It asks how the request is moving through trusted or
+                        exterior space, how far it drifts from policy, and when the path itself is suspicious.
+                    </p>
+                    <div class="tags">
+                        <span>Poincare ball</span>
+                        <span>Context binding</span>
+                        <span>Quarantine</span>
+                    </div>
+                </article>
+                <article class="signal-card">
+                    <span class="mini">Public angle</span>
+                    <strong>RAG and tool-use boundary control</strong>
+                    <p>
+                        GeoSeal becomes easier to sell when framed as a retrieval and tool boundary layer: safer chunk selection,
+                        bounded access, suspicious-path slowdown, and visible governance rather than invisible handwaving.
+                    </p>
+                    <div class="tags">
+                        <span>RAG immunity</span>
+                        <span>Suspicion fields</span>
+                        <span>Interior paths</span>
+                    </div>
+                </article>
+                <article class="signal-card">
+                    <span class="mini">Source packet</span>
+                    <strong>What to read next</strong>
+                    <p>
+                        The full concept is already documented. The public task now is to make it legible: one explainer, one demo path,
+                        one service angle, and one honest benchmark tie-in.
+                    </p>
+                    <div class="link-row">
+                        <a class="source-link" href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/GEOSEAL_ACCESS_CONTROL.md" target="_blank" rel="noopener noreferrer">GeoSeal access control</a>
+                        <a class="source-link" href="../demos/risk-calculator.html">Risk calculator</a>
+                        <a class="source-link" href="../demos/harmonic-wall-3d.html">Harmonic wall</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section id="demos">
+            <div class="section-head">
+                <span class="eyebrow">Demo surface</span>
+                <h2>Each sellable idea needs a demo path</h2>
+                <p>
+                    This is the practical bridge between research and money. A client should be able to click through one surface per
+                    concept instead of being told to trust a pile of internal documents.
+                </p>
+            </div>
+            <div class="demo-grid">
+                <a class="demo-card" href="../demos/attack-radar.html">
+                    <span class="mini">Benchmark demo</span>
+                    <strong>Attack Radar</strong>
+                    <p>Visualize category-by-category detection behavior and show that this is a measurable evaluation system.</p>
+                    <div class="tags">
+                        <span>Benchmarks</span>
+                        <span>Comparison</span>
+                    </div>
+                </a>
+                <a class="demo-card" href="../demos/governance-gate.html">
+                    <span class="mini">Decision demo</span>
+                    <strong>Governance Gate</strong>
+                    <p>Show how risk, trust, and route decisions move through a control surface instead of a single keyword filter.</p>
+                    <div class="tags">
+                        <span>Decisioning</span>
+                        <span>Routing</span>
+                    </div>
+                </a>
+                <a class="demo-card" href="../demos/harmonic-wall-3d.html">
+                    <span class="mini">Physics demo</span>
+                    <strong>3D Harmonic Wall</strong>
+                    <p>Make the cost-scaling intuition visible for buyers who need to see why some paths get expensive fast.</p>
+                    <div class="tags">
+                        <span>Cost wall</span>
+                        <span>Visualization</span>
+                    </div>
+                </a>
+                <a class="demo-card" href="../demos/risk-calculator.html">
+                    <span class="mini">GeoSeal-adjacent demo</span>
+                    <strong>Risk Calculator</strong>
+                    <p>Show how changing intent, radius, and boundary conditions affects the decision surface under pressure.</p>
+                    <div class="tags">
+                        <span>Risk</span>
+                        <span>Boundary</span>
+                    </div>
+                </a>
+                <a class="demo-card" href="../demos/aetherbrowser-demo.html">
+                    <span class="mini">Trust-tier demo</span>
+                    <strong>AetherBrowser Surface</strong>
+                    <p>Trust checks, governance chat activation, and a lightweight public view of the browser-side control ideas.</p>
+                    <div class="tags">
+                        <span>Trust</span>
+                        <span>Browser</span>
+                    </div>
+                </a>
+                <a class="demo-card" href="../demos/context-fingerprint.html">
+                    <span class="mini">Signal demo</span>
+                    <strong>Context Fingerprint</strong>
+                    <p>Useful for showing that the system is working with structured signal views, not just raw text labels.</p>
+                    <div class="tags">
+                        <span>Fingerprint</span>
+                        <span>Signal view</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <section id="offers">
+            <div class="section-head">
+                <span class="eyebrow">Sellable lanes</span>
+                <h2>What this site can actually sell now</h2>
+                <p>
+                    Do not sell the whole architecture. Sell bounded outcomes with proof, reports, and reruns. These offers are the
+                    shortest path from this research surface to actual cash.
+                </p>
+            </div>
+            <div class="offer-grid">
+                <article class="offer">
+                    <div>
+                        <span class="mini">Offer 01</span>
+                        <strong>LLM Security Eval Sprint</strong>
+                        <p class="price">Fixed-fee evaluation + findings report</p>
+                        <ul>
+                            <li>Run standards-mapped benchmark categories against a client workflow.</li>
+                            <li>Deliver weak-point matrix, attack notes, and prioritized fix order.</li>
+                            <li>Rerun after fixes so the client sees movement, not just theory.</li>
+                        </ul>
+                    </div>
+                    <a class="source-link" href="../support.html">Use this as the primary sales CTA</a>
+                </article>
+                <article class="offer">
+                    <div>
+                        <span class="mini">Offer 02</span>
+                        <strong>GeoSeal Boundary Review</strong>
+                        <p class="price">RAG, retrieval, and tool-access boundary design</p>
+                        <ul>
+                            <li>Map interior versus exterior paths for a client's assistant or retrieval stack.</li>
+                            <li>Recommend quarantine, suspicion, and path-governance layers.</li>
+                            <li>Turn dense docs into one buyer-readable architecture note.</li>
+                        </ul>
+                    </div>
+                    <a class="source-link" href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/GEOSEAL_ACCESS_CONTROL.md" target="_blank" rel="noopener noreferrer">GeoSeal source packet</a>
+                </article>
+                <article class="offer">
+                    <div>
+                        <span class="mini">Offer 03</span>
+                        <strong>Grounded Assistant Build</strong>
+                        <p class="price">Notes/docs retrieval plus visible evidence</p>
+                        <ul>
+                            <li>Wire a narrow assistant over local docs, notes, or team knowledge.</li>
+                            <li>Keep sources visible and routing bounded.</li>
+                            <li>Use the benchmark to explain why governance is part of the build.</li>
+                        </ul>
+                    </div>
+                    <a class="source-link" href="./index.html#grounded-assistant">See the research assistant surface</a>
+                </article>
+                <article class="offer">
+                    <div>
+                        <span class="mini">Offer 04</span>
+                        <strong>Local-First AI Cleanup</strong>
+                        <p class="price">Fast machine, sane backups, less sync garbage</p>
+                        <ul>
+                            <li>Recover storage, direct backups, and local working surfaces.</li>
+                            <li>Cut fragile sync-client dependence.</li>
+                            <li>Leave the client with a quieter, more defensible environment.</li>
+                        </ul>
+                    </div>
+                    <a class="source-link" href="../support.html">Use this when the pain is operational</a>
+                </article>
+            </div>
+        </section>
+
+        <section>
+            <div class="final-band">
+                <span class="eyebrow">Next bounded move</span>
+                <h2>Turn the benchmark into one report, one page, and one CTA.</h2>
+                <p>
+                    The correct public posture is simple: publish the benchmark, publish the GeoSeal explainer, publish the demos, and
+                    sell a bounded sprint that starts with evidence and ends with a rerun. That is enough to make this lane legible.
+                </p>
+                <div class="hero-actions">
+                    <a class="btn btn-primary" href="../support.html">Move this into the support funnel</a>
+                    <a class="btn btn-secondary" href="../demos/index.html">Browse the demo lab</a>
+                    <a class="btn btn-secondary" href="./index.html">Back to research hub</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-shell">
+            <p class="footer-copy">
+                SCBE Security Eval Lab. Benchmarks, GeoSeal, demos, and bounded service offers for the structural AI security lane.
+            </p>
+            <div class="footer-links" aria-label="Footer links">
+                <a href="./index.html">Research</a>
+                <a href="../demos/index.html">Demos</a>
+                <a href="../support.html">Support</a>
+                <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </div>
+        </div>
+    </footer>
+    <script>
+        (() => {
+            const toggle = document.querySelector("[data-nav-toggle]");
+            const nav = document.querySelector(".site-nav");
+            if (!toggle || !nav) {
+                return;
+            }
+
+            const closeMenu = () => {
+                nav.classList.remove("open");
+                toggle.setAttribute("aria-expanded", "false");
+            };
+
+            toggle.addEventListener("click", () => {
+                const next = toggle.getAttribute("aria-expanded") !== "true";
+                toggle.setAttribute("aria-expanded", String(next));
+                nav.classList.toggle("open", next);
+            });
+
+            nav.querySelectorAll("a").forEach((link) => {
+                link.addEventListener("click", () => {
+                    if (window.innerWidth <= 760) {
+                        closeMenu();
+                    }
+                });
+            });
+
+            window.addEventListener("resize", () => {
+                if (window.innerWidth > 760) {
+                    closeMenu();
+                }
+            });
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") {
+                    closeMenu();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

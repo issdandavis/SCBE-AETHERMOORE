@@ -23,7 +23,10 @@ import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
+import logging
 from typing import Dict, List, Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
@@ -116,7 +119,7 @@ def auto_resolve_conflict(filepath: str) -> ConflictReport:
             if in_theirs:
                 theirs_lines += 1
     except Exception:
-        pass
+        logger.debug("Could not parse conflict markers in %s", filepath, exc_info=True)
 
     # Determine resolution strategy based on file path
     resolution = "ours"
