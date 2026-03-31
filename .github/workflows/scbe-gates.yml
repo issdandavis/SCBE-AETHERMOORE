@@ -16,7 +16,7 @@ on:
   schedule:
     - cron: '0 2 * * *'
   push:
-    branches: [ main, 'claude/**' ]
+    branches: [ main, master, 'claude/**' ]
 
 permissions:
   contents: read

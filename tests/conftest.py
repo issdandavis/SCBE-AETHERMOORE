@@ -49,6 +49,7 @@ def tmp_path():
     finally:
         shutil.rmtree(path, ignore_errors=True)
 
+
 # Compatibility alias for ai_brain package imports that may resolve through
 # legacy/broken repo symlink paths.
 try:
@@ -271,6 +272,7 @@ def performance_timer():
 # LIBOQS AVAILABILITY CHECK
 # =============================================================================
 
+
 def _liboqs_available() -> bool:
     """
     Check whether liboqs shared library appears available.
@@ -311,23 +313,17 @@ def _liboqs_available() -> bool:
 
     return any(p.exists() for p in candidates)
 
+
 LIBOQS_AVAILABLE = _liboqs_available()
 
 # Skip decorator for tests requiring liboqs
-requires_liboqs = pytest.mark.skipif(
-    not LIBOQS_AVAILABLE,
-    reason="liboqs-python not installed (optional dependency)"
-)
+requires_liboqs = pytest.mark.skipif(not LIBOQS_AVAILABLE, reason="liboqs-python not installed (optional dependency)")
 
 
 def pytest_configure(config):
     """Register custom markers."""
-    config.addinivalue_line(
-        "markers", "enterprise: Enterprise-grade tests (compliance, security)"
-    )
-    config.addinivalue_line(
-        "markers", "professional: Professional/industry standard tests"
-    )
+    config.addinivalue_line("markers", "enterprise: Enterprise-grade tests (compliance, security)")
+    config.addinivalue_line("markers", "professional: Professional/industry standard tests")
     config.addinivalue_line("markers", "homebrew: Quick developer feedback tests")
     config.addinivalue_line("markers", "api: API endpoint tests")
     config.addinivalue_line("markers", "crypto: Cryptographic tests")

@@ -2,7 +2,7 @@ name: Deploy to Google Cloud Run (Free Tier)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 env:

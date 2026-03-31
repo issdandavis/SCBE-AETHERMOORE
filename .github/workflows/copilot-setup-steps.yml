@@ -5,7 +5,7 @@ name: Copilot Setup Steps
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, master]
     paths:
       - "src/**"
       - "tests/**"

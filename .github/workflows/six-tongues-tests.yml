@@ -2,13 +2,13 @@ name: Six Tongues CLI Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
     paths:
       - '**.py'
       - 'requirements*.txt'
       - '.github/workflows/six-tongues-tests.yml'
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
     paths:
       - '**.py'
       - 'requirements*.txt'

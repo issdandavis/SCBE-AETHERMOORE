@@ -2,7 +2,7 @@ name: PQC Python (liboqs)
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 concurrency:

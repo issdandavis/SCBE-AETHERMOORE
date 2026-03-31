@@ -1,7 +1,7 @@
 name: Coherence Gate
 on:
   pull_request:
-    branches: [main]
+    branches: [main, master]
   workflow_dispatch:
     inputs:
       threshold:

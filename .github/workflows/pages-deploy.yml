@@ -3,7 +3,7 @@ name: Deploy GitHub Pages (Static HTML)
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "master"]
     paths:
       - 'docs/**'
       - 'public/**'

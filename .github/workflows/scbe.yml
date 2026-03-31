@@ -2,7 +2,7 @@ name: "SCBE-AETHERMOORE Validation"
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 permissions:

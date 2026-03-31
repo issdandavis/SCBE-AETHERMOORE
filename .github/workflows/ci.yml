@@ -2,14 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
     paths-ignore:
       - 'CHANGELOG.md'
       - 'docs/**'
       - '*.md'
       - '.github/workflows/**'
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 concurrency:

@@ -2,7 +2,7 @@ name: Code Prism Parity
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
     paths:
       - "src/code_prism/**"
       - "tests/code_prism/**"

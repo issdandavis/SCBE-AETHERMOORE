@@ -66,3 +66,7 @@ include = [
     "storage*",
 ]
 exclude = ["tests*", "scripts*", "agents*", "training*"]
+
+[tool.black]
+line-length = 120
+target-version = ["py311", "py312", "py313"]
