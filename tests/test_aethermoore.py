@@ -114,46 +114,52 @@ class TestConstants:
 
 
 class TestHarmonicScaling:
-    """Test H(d, pd) = 1/(1 + d + 2*pd) harmonic scaling (safety score)."""
+    """Test AETHERMOORE harmonic wall scaling H(d, R) = R^(d^2)."""
 
     def test_harmonic_scale_basic(self):
         """Test basic harmonic scaling values."""
-        # H(0) = 1/(1+0) = 1.0
-        assert harmonic_scale(0) == 1.0
+        # H(1, R=1.5) = 1.5^(1^2) = 1.5
+        assert harmonic_scale(1) == 1.5
 
-        # H(1) = 1/(1+1) = 0.5
-        assert harmonic_scale(1) == 0.5
+        # H(2, R=1.5) = 1.5^(2^2) = 1.5^4 = 5.0625
+        assert abs(harmonic_scale(2) - 5.0625) < 1e-10
 
-        # H(2) = 1/(1+2) = 0.333...
-        assert abs(harmonic_scale(2) - 1 / 3) < 1e-10
+        # H(3, R=1.5) = 1.5^(3^2) = 1.5^9
+        assert abs(harmonic_scale(3) - 38.443359375) < 1e-10
 
-    def test_harmonic_scale_with_phase_deviation(self):
-        """Test harmonic scaling with phase deviation."""
-        # H(1, pd=0.5) = 1/(1+1+1) = 0.333...
-        assert abs(harmonic_scale(1, 0.5) - 1 / 3) < 1e-10
+    def test_harmonic_scale_with_custom_ratio(self):
+        """Test harmonic scaling with a non-default harmonic ratio."""
+        # H(2, R=2.0) = 2^(2^2) = 16
+        assert abs(harmonic_scale(2, 2.0) - 16.0) < 1e-10
 
-        # H(0, pd=1.0) = 1/(1+0+2) = 0.333...
-        assert abs(harmonic_scale(0, 1.0) - 1 / 3) < 1e-10
+        # H(3, R=1.25) = 1.25^(3^2) = 1.25^9
+        assert abs(harmonic_scale(3, 1.25) - (1.25**9)) < 1e-10
 
     def test_harmonic_scale_invalid_dimension(self):
         """Test error on invalid inputs."""
         with pytest.raises(ValueError):
+            harmonic_scale(0)
+        with pytest.raises(ValueError):
             harmonic_scale(-1)
         with pytest.raises(ValueError):
-            harmonic_scale(1, -0.5)
+            harmonic_scale(1, 0.0)
 
     def test_security_bits(self):
         """Test security bits calculation."""
-        # S_bits = base + log2(1 + d + 2*pd)
-        # For d=6, pd=0: S = 128 + log2(7) ≈ 130.81
+        # S_bits = base + d^2 * log2(R)
+        # For d=6, R=1.5: S = 128 + 36 * log2(1.5) ≈ 149.06
         s_bits = security_bits(128, 6)
-        expected = 128 + math.log2(7)
+        expected = 128 + (6 * 6) * math.log2(1.5)
         assert abs(s_bits - expected) < 0.01
 
-        # For d=6, pd=1.5: S = 128 + log2(1+6+3) = 128 + log2(10) ≈ 131.32
+        # For d=6, R=2.0: S = 128 + 36 * log2(2) = 164
         s_bits2 = security_bits(128, 6, 1.5)
-        expected2 = 128 + math.log2(10)
+        expected2 = 128 + (6 * 6) * math.log2(1.5)
         assert abs(s_bits2 - expected2) < 0.01
+
+        s_bits3 = security_bits(128, 6, 2.0)
+        expected3 = 128 + (6 * 6) * math.log2(2.0)
+        assert abs(s_bits3 - expected3) < 0.01
 
 
 class TestHarmonicDistance:
@@ -687,14 +693,14 @@ class TestAethermoorIntegration:
         base_bits = 128
         dimension = 6
 
-        # Calculate enhanced security (new formula: base + log2(1+d))
+        # Calculate enhanced security using the harmonic wall formula:
+        # S_bits = base + d^2 * log2(R)
         enhanced_bits = security_bits(base_bits, dimension)
 
-        # Should be > 128 (128 + log2(7) ≈ 130.81)
+        # Should be > 128 (128 + 36 * log2(1.5) ≈ 149.06)
         assert enhanced_bits > base_bits
 
-        # Safety score decreases with distance
+        # Harmonic wall grows super-exponentially with dimension
         h_value = harmonic_scale(dimension)
-        assert 0 < h_value <= 1.0
-        # H(6) = 1/7 ≈ 0.143
-        assert abs(h_value - 1 / 7) < 1e-10
+        assert h_value > 1.0
+        assert abs(h_value - (R_FIFTH ** (dimension * dimension))) < 1e-10

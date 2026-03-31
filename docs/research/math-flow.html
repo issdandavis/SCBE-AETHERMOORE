@@ -241,12 +241,12 @@
           <h2>3. Baseline Tongue Coordinates</h2>
           <p>Initial 6D position from the legacy projection path.</p>
           <ul>
-            <li>KO = command / routing energy</li>
-            <li>AV = context / breadth</li>
-            <li>RU = binding / entropy</li>
-            <li>CA = compute / technical action</li>
-            <li>UM = security / authority</li>
-            <li>DR = structure / governance wall</li>
+            <li>Kor'aelin = command / routing energy</li>
+            <li>Avali = context / breadth</li>
+            <li>Runethic = binding / entropy</li>
+            <li>Cassisivadan = compute / technical action</li>
+            <li>Umbroth = security / authority</li>
+            <li>Draumric = structure / governance wall</li>
           </ul>
         </div>
         <div class="arrow">↓</div>
@@ -254,22 +254,22 @@
           <h2>4. Experimental Weight Field</h2>
           <p>The baseline coordinates are corrected by variable fields.</p>
           <ul>
-            <li>KO gets command lift</li>
-            <li>AV gets context and business lift</li>
-            <li>RU gets base binding minus moons</li>
-            <li>CA gets tech lift</li>
-            <li>UM gets security pressure</li>
-            <li>DR gets structure lift minus moons</li>
+            <li>Kor'aelin gets command lift</li>
+            <li>Avali gets context and business lift</li>
+            <li>Runethic gets base binding minus moons</li>
+            <li>Cassisivadan gets tech lift</li>
+            <li>Umbroth gets security pressure</li>
+            <li>Draumric gets structure lift minus moons</li>
           </ul>
         </div>
         <div class="arrow">↓</div>
         <div class="stage accent-red">
-          <h2>5. RU Anti-Collapse Path</h2>
-          <p>The new experiment damps RU when it tries to saturate at the same value for every class.</p>
+          <h2>5. Runethic Anti-Collapse Path</h2>
+          <p>The new experiment damps Runethic when it tries to saturate at the same value for every class.</p>
           <ul>
-            <li>cubic anti-collapse curve on RU seed</li>
-            <li>mixes raw RU with damped RU</li>
-            <li>keeps RU from swallowing class diversity</li>
+            <li>cubic anti-collapse curve on Runethic seed</li>
+            <li>mixes raw Runethic with damped Runethic</li>
+            <li>keeps Runethic from swallowing class diversity</li>
           </ul>
         </div>
       </div>
@@ -282,7 +282,7 @@
             <li><strong>moon_softmax</strong> = counter-weights + temperature simplex</li>
             <li><strong>foam_fold</strong> = boundary pressure from neighboring tongues</li>
             <li><strong>orbital_sigmoid</strong> = orbital spacing and curve compression</li>
-            <li><strong>ru_anticollapse</strong> = moon field plus cubic RU recovery</li>
+            <li><strong>ru_anticollapse</strong> = moon field plus cubic Runethic recovery</li>
           </ul>
         </div>
         <div class="arrow">↓</div>
@@ -367,14 +367,14 @@ DR_effective = DR_base
   - moon_coherence</code>
       </div>
       <div class="formula-card">
-        <h3>RU Anti-Collapse</h3>
+        <h3>Runethic Anti-Collapse</h3>
         <code>ru_curve = x - alpha*x^3 + beta*(1 - x)^3
 ru_seed = (1 - mix)*raw_ru + mix*ru_curve</code>
       </div>
     </div>
 
     <div class="notes">
-      <strong>Current experimental conclusion:</strong> the moon field solves the main RU-collapse problem, while the RU anti-collapse curve is the next
+      <strong>Current experimental conclusion:</strong> the moon field solves the main Runethic-collapse problem, while the Runethic anti-collapse curve is the next
       test for restoring discriminative range without breaking adversarial detection. This page documents the flow of the math; it does not claim formal
       proof. Proof only starts after holdout performance improves and the staged gates pass.
     </div>
