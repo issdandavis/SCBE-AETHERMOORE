@@ -20,6 +20,7 @@ import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import List, Optional
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
@@ -145,7 +146,7 @@ def score_description(description: str) -> tuple[int, list, list]:
     elif len(description) > 200:
         score += 2  # substantial description
 
-    if "github.com" in description or "http" in description:
+    if _contains_http_url(description):
         score += 1  # has links
 
     if "#" in description:
@@ -158,6 +159,20 @@ def score_description(description: str) -> tuple[int, list, list]:
         score += 1  # maps to code (unique to SCBE)
 
     return min(10, max(0, score)), issues, suggestions
+
+
+def _contains_http_url(text: str) -> bool:
+    """Return True when the text contains at least one valid HTTP(S) URL.
+
+    Uses urllib.parse.urlparse for proper URL validation instead of substring matching.
+    """
+    for match in re.finditer(r"https?://[^\s)>\]]+", text):
+        candidate = match.group().rstrip(".,;:!?")
+        parsed = urlparse(candidate)
+        # Validate scheme is strictly http/https and has a real host
+        if parsed.scheme in {"http", "https"} and parsed.netloc and "." in parsed.netloc:
+            return True
+    return False
 
 
 def score_transcript(transcript: str, duration_s: int) -> tuple[int, list, list]:

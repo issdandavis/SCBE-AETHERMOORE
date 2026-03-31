@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 from collections import deque
 import datetime
+import hashlib
 import json
 import logging
 import os
@@ -196,6 +197,18 @@ _SECRET_PATTERNS: list[re.Pattern[str]] = [
     # Long opaque tokens (avoid grabbing normal code identifiers by requiring mixed charset + length)
     re.compile(r"\b[A-Za-z0-9_-]{40,}\b"),
 ]
+_SENSITIVE_LOG_FIELDS = {
+    "active_file_content_preview",
+    "answer",
+    "command",
+    "content",
+    "message",
+    "question",
+    "stderr",
+    "stdout",
+    "text",
+}
+_SAFE_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 
 
 def _scrub_text(text: str) -> str:
@@ -207,15 +220,40 @@ def _scrub_text(text: str) -> str:
     return out
 
 
-def _scrub_obj(obj: Any) -> Any:
+def _sanitize_log_text(text: str) -> str:
+    """Remove control characters and scrub secrets so log output stays single-line and safe."""
+    if not text:
+        return text
+    cleaned = _scrub_text(text)
+    cleaned = re.sub(r"[\r\n\t]+", " ", cleaned)
+    cleaned = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", "", cleaned)
+    return cleaned.strip()
+
+
+def _redact_logged_text(text: str) -> str:
+    clean = _sanitize_log_text(_scrub_text(text))
+    digest = hashlib.sha256(clean.encode("utf-8")).hexdigest()[:16]
+    return f"[REDACTED len={len(clean)} sha256={digest}]"
+
+
+def _sanitize_identifier(value: str, field_name: str) -> str:
+    text = (value or "").strip()
+    if not _SAFE_ID_RE.fullmatch(text):
+        raise ValueError(f"Invalid {field_name}")
+    return text
+
+
+def _scrub_obj(obj: Any, *, key: Optional[str] = None) -> Any:
     if obj is None:
         return None
     if isinstance(obj, str):
+        if key and key.lower() in _SENSITIVE_LOG_FIELDS:
+            return _redact_logged_text(obj)
         return _scrub_text(obj)
     if isinstance(obj, list):
-        return [_scrub_obj(x) for x in obj]
+        return [_scrub_obj(x, key=key) for x in obj]
     if isinstance(obj, dict):
-        return {str(k): _scrub_obj(v) for k, v in obj.items()}
+        return {str(k): _scrub_obj(v, key=str(k)) for k, v in obj.items()}
     return obj
 
 
@@ -1415,9 +1453,13 @@ def _parse_last_json(stdout: str) -> dict[str, Any] | None:
 @app.post("/api/ops/momentum/run")
 async def ops_momentum_run(req: MomentumRunRequest = MomentumRunRequest()):
     """Run a configured Momentum Train by id (safe allowlist)."""
-    cfg = MOMENTUM_TRAIN_CONFIGS.get(req.train_id)
+    try:
+        safe_train_id = _sanitize_identifier(req.train_id, "train_id")
+    except ValueError:
+        return {"error": "Invalid train_id", "ok": False}
+    cfg = MOMENTUM_TRAIN_CONFIGS.get(safe_train_id)
     if not cfg or not cfg.exists():
-        return {"error": f"Unknown or missing train_id: {req.train_id}", "ok": False}
+        return {"error": f"Unknown or missing train_id: {safe_train_id}", "ok": False}
 
     runner = ROOT / "scripts" / "system" / "momentum_train.py"
     if not runner.exists():
@@ -1437,7 +1479,7 @@ async def ops_momentum_run(req: MomentumRunRequest = MomentumRunRequest()):
         return parsed
     return {
         "ok": result.get("exit_code", -1) == 0,
-        "train_id": req.train_id,
+        "train_id": safe_train_id,
         "stdout": result.get("stdout", "")[:2000],
         "stderr": result.get("stderr", "")[:800] if result.get("stderr") else None,
         "exit_code": result.get("exit_code", -1),
@@ -1447,12 +1489,17 @@ async def ops_momentum_run(req: MomentumRunRequest = MomentumRunRequest()):
 @app.get("/api/ops/momentum/latest")
 async def ops_momentum_latest(train_id: str = "daily_ops"):
     """Return the latest Momentum Train state.json summary (no execution)."""
-    run_root = MOMENTUM_RUNS_DIR / train_id
+    try:
+        safe_train_id = _sanitize_identifier(train_id, "train_id")
+    except ValueError as exc:
+        return {"error": str(exc), "ok": False}
+
+    run_root = MOMENTUM_RUNS_DIR / safe_train_id
     if not run_root.exists():
-        return {"error": f"No runs found for train_id={train_id}", "ok": False}
+        return {"error": f"No runs found for train_id={safe_train_id}", "ok": False}
     dirs = [p for p in run_root.iterdir() if p.is_dir()]
     if not dirs:
-        return {"error": f"No runs found for train_id={train_id}", "ok": False}
+        return {"error": f"No runs found for train_id={safe_train_id}", "ok": False}
     latest = sorted(dirs, key=lambda p: p.name)[-1]
     state_path = latest / "state.json"
     if not state_path.exists():
@@ -1472,7 +1519,7 @@ async def ops_momentum_latest(train_id: str = "daily_ops"):
     completed = sum(1 for v in statuses.values() if v == "completed")
     return {
         "ok": bool(state.get("ok", False)),
-        "train_id": train_id,
+        "train_id": safe_train_id,
         "run_dir": str(latest.relative_to(ROOT)),
         "finished_at": state.get("finished_at"),
         "station_count": len(statuses),
@@ -1815,27 +1862,28 @@ async def cli_run(req: CliRunRequest = CliRunRequest()):
     raw = (req.command or "").strip()
     if not raw:
         raw = "help"
+    safe_raw = _sanitize_log_text(raw)
     try:
         parts = shlex.split(raw, posix=True)
     except Exception as e:
-        return {"ok": False, "command": raw, "error": f"Parse error: {e}", "timestamp": _cli_now_iso()}
+        return {"ok": False, "command": safe_raw, "error": f"Parse error: {_sanitize_log_text(str(e))}", "timestamp": _cli_now_iso()}
 
     result = await _cli_dispatch(parts)
     # Normalise to always include command + timestamp
     if isinstance(result, dict):
         out: dict[str, Any] = dict(result)
         out.setdefault("ok", True)
-        out.setdefault("command", raw)
+        out.setdefault("command", safe_raw)
         out.setdefault("timestamp", _cli_now_iso())
     else:
-        out = {"ok": True, "command": raw, "result": result, "timestamp": _cli_now_iso()}
+        out = {"ok": True, "command": safe_raw, "result": result, "timestamp": _cli_now_iso()}
 
     _append_jsonl(
         IDE_CLI_LOG,
         {
             "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "kind": "cli",
-            "command": raw,
+            "command": safe_raw,
             "result": out,
         },
     )
@@ -1846,14 +1894,15 @@ async def cli_run(req: CliRunRequest = CliRunRequest()):
 async def cli_job(req: CliRunRequest = CliRunRequest()):
     """Run a safe CLI command asynchronously and return a job_id."""
     raw = (req.command or "").strip() or "help"
+    safe_raw = _sanitize_log_text(raw)
     try:
         parts = shlex.split(raw, posix=True)
     except Exception as e:
-        return {"ok": False, "command": raw, "error": f"Parse error: {e}", "timestamp": _cli_now_iso()}
+        return {"ok": False, "command": safe_raw, "error": f"Parse error: {e}", "timestamp": _cli_now_iso()}
 
     job_id = uuid.uuid4().hex
     started = _cli_now_iso()
-    _cli_jobs[job_id] = {"ok": True, "job_id": job_id, "command": raw, "status": "running", "started_at": started}
+    _cli_jobs[job_id] = {"ok": True, "job_id": job_id, "command": safe_raw, "status": "running", "started_at": started}
 
     async def _runner():
         try:
@@ -1864,7 +1913,7 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
                     "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                     "kind": "cli_job",
                     "job_id": job_id,
-                    "command": raw,
+                    "command": safe_raw,
                     "status": "completed",
                     "result": out,
                 },
@@ -1872,21 +1921,21 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
             _cli_jobs[job_id] = {
                 "ok": True,
                 "job_id": job_id,
-                "command": raw,
+                "command": safe_raw,
                 "status": "completed",
                 "started_at": started,
                 "finished_at": _cli_now_iso(),
                 "result": out,
             }
         except Exception:
-            logger.exception("CLI job failed for command: %s", raw)
+            logger.exception("CLI job failed for command: %s", safe_raw)
             _append_jsonl(
                 IDE_CLI_LOG,
                 {
                     "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                     "kind": "cli_job",
                     "job_id": job_id,
-                    "command": raw,
+                    "command": safe_raw,
                     "status": "failed",
                     "error": "CLI job failed",
                 },
@@ -1894,7 +1943,7 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
             _cli_jobs[job_id] = {
                 "ok": False,
                 "job_id": job_id,
-                "command": raw,
+                "command": safe_raw,
                 "status": "failed",
                 "started_at": started,
                 "finished_at": _cli_now_iso(),
@@ -1902,7 +1951,7 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
             }
 
     asyncio.create_task(_runner())
-    return {"ok": True, "job_id": job_id, "command": raw, "status": "running", "started_at": started}
+    return {"ok": True, "job_id": job_id, "command": safe_raw, "status": "running", "started_at": started}
 
 
 @app.get("/api/cli/job/{job_id}")

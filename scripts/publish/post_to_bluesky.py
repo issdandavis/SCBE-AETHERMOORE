@@ -172,7 +172,7 @@ def main():
         print(text[:300])
         return
 
-    print(f"Logging in as {handle}...")
+    print(f"Logging in as {handle[:4]}...{handle[-8:] if len(handle) > 12 else '***'}...")
     token, did = bsky_login(handle, password)
     print(f"Posting ({len(text[:300])} chars)...")
     resp = bsky_post(token, did, text)
@@ -180,7 +180,7 @@ def main():
     # Convert AT URI to web URL
     rkey = uri.split("/")[-1] if "/" in uri else ""
     web_url = f"https://bsky.app/profile/{handle}/post/{rkey}"
-    print(f"POSTED: {web_url}")
+    print(f"POSTED successfully: {web_url}")
 
 
 if __name__ == "__main__":

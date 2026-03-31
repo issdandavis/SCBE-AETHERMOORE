@@ -1479,20 +1479,40 @@ window.AetherBrowser = (function() {
     state.activeTab = tabId;
   }
 
+  function matchesDomainPattern(pattern, domain) {
+    if (!pattern || !domain) return false;
+    if (pattern.startsWith('*.')) {
+      const suffix = pattern.slice(2);
+      return domain === suffix || domain.endsWith('.' + suffix);
+    }
+    return domain === pattern;
+  }
+
   // ---- BROWSE: Trust Classification ----
   function classifyUrl(urlStr) {
     try {
-      let url = urlStr;
+      let url = String(urlStr || '').trim();
+      // Reject dangerous URI schemes before any further processing
+      var schemeMatch = url.match(/^([a-zA-Z][a-zA-Z0-9+.-]*)\s*:/);
+      if (schemeMatch) {
+        var scheme = schemeMatch[1].toLowerCase();
+        if (scheme !== 'http' && scheme !== 'https') {
+          return { level: 'BLOCKED', tier: 'BLOCKED', domain: '(invalid scheme)', color: 'blocked', fill: 0 };
+        }
+      }
       if (!url.startsWith('http://') && !url.startsWith('https://')) {
         url = 'https://' + url;
       }
-      const hostname = new URL(url).hostname;
+      var parsed = new URL(url);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        return { level: 'BLOCKED', tier: 'BLOCKED', domain: '(invalid scheme)', color: 'blocked', fill: 0 };
+      }
+      const hostname = parsed.hostname;
       const domain = hostname.replace(/^www\./, '');
 
       // Check blocked patterns
       for (const pat of TRUST_REGISTRY.BLOCKED_PATTERNS) {
-        const suffix = pat.replace('*', '');
-        if (domain.endsWith(suffix) || domain === pat) {
+        if (matchesDomainPattern(pat, domain)) {
           return { level: 'BLOCKED', tier: 'BLOCKED', domain: domain, color: 'blocked', fill: 0 };
         }
       }
@@ -1525,7 +1545,7 @@ window.AetherBrowser = (function() {
 
       return { level: 'UNKNOWN', tier: 'UNKNOWN', domain: domain, color: 'unknown', fill: 10 };
     } catch (e) {
-      return { level: 'UNKNOWN', tier: 'UNKNOWN', domain: urlStr, color: 'unknown', fill: 0 };
+      return { level: 'UNKNOWN', tier: 'UNKNOWN', domain: '(invalid URL)', color: 'unknown', fill: 0 };
     }
   }
 

@@ -28,11 +28,10 @@ import datetime
 import hashlib
 import json
 import logging
-import os
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +50,14 @@ TOR_CONTROL_PORT = 9051
 TRUSTED_SITES_PATH = ROOT / "config" / "security" / "trusted_onion_sites.json"
 SWEEP_OUTPUT_DIR = ROOT / "artifacts" / "tor_sweeps"
 SWEEP_TRAINING_DIR = ROOT / "training-data" / "apollo" / "tor_sweeps"
+
+
+def _mask_value(value: Optional[str], visible: int = 0) -> str:
+    if not value:
+        return "redacted"
+    if visible <= 0:
+        return "[redacted]"
+    return f"{value[:visible]}...[redacted]"
 
 
 def load_trusted_sites() -> dict:
@@ -221,14 +228,15 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
             sites = tier_data.get("sites", [])
             print(f"  [{trust:12s}] {tier_name} ({len(sites)} sites)")
             for site in sites:
-                print(f"    - {site['name']} ({site.get('clearnet', 'onion-only')})")
-                print(f"      Value: {site.get('value', '?')}")
+                clearnet = site.get("clearnet", "onion-only")
+                transport = "clearnet-linked" if clearnet not in {"none", "none (onion-only)", "onion-only"} else "onion-only"
+                print(f"    - site available ({transport})")
+                print("      Metadata available in trusted registry")
             print()
 
         return results
 
     logger.info("Tor: CONNECTED (exit IP redacted)")
-    logger.debug("Tor exit IP: %s", tor_status.get("exit_ip", "?"))
     print("  Tor: CONNECTED")
     print("  Double-sandbox: Tor SOCKS5 + Governance Gate")
     print()
@@ -246,8 +254,8 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
             if clearnet and clearnet != "none" and clearnet != "none (onion-only)":
                 # Fetch clearnet version through Tor for anonymity
                 url = f"https://{clearnet}"
-                logger.debug("Fetching %s via %s", site["name"], url)
-                print(f"    Fetching {site['name']}...", end=" ")
+                logger.debug("Fetching trusted clearnet site via Tor")
+                print("    Fetching trusted site...", end=" ")
                 result = sandboxed_fetch(url)
                 result["site_name"] = site["name"]
                 result["tier"] = tier_name
@@ -255,7 +263,7 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
 
                 decision = result["governance_decision"]
                 symbol = {"QUARANTINE": "Q", "DENY": "X", "ALLOW": "OK"}
-                print(f"[{symbol.get(decision, '?')}] {result.get('title', '?')[:50]} ({result['content_length']}B)")
+                print(f"[{symbol.get(decision, '?')}] content received ({result['content_length']}B)")
 
                 results.append(result)
                 time.sleep(2)  # be polite
@@ -275,7 +283,7 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
         if r["governance_decision"] != "DENY" and r.get("snippet"):
             sft_pairs.append({
                 "instruction": f"What kind of content is available at {r.get('site_name', 'this site')} on the dark web, and why is it legitimate?",
-                "response": f"{r.get('site_name', 'This site')} ({r.get('tier', 'unknown tier')}, trust level: {r.get('trust', '?')}) provides: {r.get('snippet', 'content not available')[:200]}. This is legitimate because {r.get('site_name', 'it')} is operated by a verified organization with a known clearnet presence at {r.get('url', 'unknown')}.",
+                "response": f"{r.get('site_name', 'This site')} ({r.get('tier', 'unknown tier')}, trust level: {r.get('trust', '?')}) provides: {r.get('snippet', 'content not available')[:200]}. This is legitimate because {r.get('site_name', 'it')} is operated by a verified organization listed in the trusted registry.",
                 "source": "tor_sweeper",
                 "category": "dark_web_legitimate",
             })
@@ -316,8 +324,12 @@ def main():
     if args.command == "check":
         status = check_tor()
         print("TOR STATUS:")
+        _sensitive_keys = {"exit_ip", "ip", "token", "password", "secret", "key"}
         for k, v in status.items():
-            print(f"  {k}: {v}")
+            if k.lower() in _sensitive_keys and v:
+                print(f"  {k}: {_mask_value(str(v), visible=4)}")
+            else:
+                print(f"  {k}: {v}")
 
     elif args.command == "sweep":
         sweep(args.tier)
@@ -325,7 +337,7 @@ def main():
     elif args.command == "identity":
         status = check_tor()
         if status.get("exit_ip"):
-            print(f"Exit IP: {status['exit_ip']}")
+            print(f"Exit IP: {_mask_value(status['exit_ip'], visible=4)}")
             print(f"Is Tor: {status.get('is_tor', '?')}")
         else:
             print("Tor not connected.")
